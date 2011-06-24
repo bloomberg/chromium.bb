@@ -12,7 +12,7 @@ cr.addSingletonGetter(TaskManager);
  * @const
  */
 var DEFAULT_COLUMNS = [['title', 'Title', 300],
-                       ['networkUsage', 'Network', 80],
+                       ['networkUsage', 'Network', 85],
                        ['cpuUsage', 'CPU', 80],
                        ['privateMemory', 'Memory', 80]];
 
@@ -94,6 +94,21 @@ TaskManager.prototype = {
     this.initColumnModel_();
     this.selectionModel_ = new cr.ui.ListSelectionModel();
     this.dataModel_ = new cr.ui.ArrayDataModel([]);
+
+    // Initializes compare functions for column sort.
+    var dm = this.dataModel_;
+    dm.setCompareFunction('networkUsage', function(a, b) {
+        var value_id = 'networkUsageValue';
+        return dm.defaultValuesCompareFunction(a[value_id], b[value_id]);
+    });
+    dm.setCompareFunction('cpuUsage', function(a, b) {
+        var value_id = 'cpuUsageValue';
+        return dm.defaultValuesCompareFunction(a[value_id], b[value_id]);
+    });
+    dm.setCompareFunction('privateMemory', function(a, b) {
+        var value_id = 'privateMemoryValue';
+        return dm.defaultValuesCompareFunction(a[value_id], b[value_id]);
+    });
 
     this.initTable_();
     this.table_.redraw();

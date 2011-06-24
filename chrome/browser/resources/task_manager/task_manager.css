@@ -81,11 +81,15 @@ body {
   background-repeat: no-repeat;
 }
 
-/* cr.ui.Table has a black focus border by default, which we don't want. */
+/* Entire Table (including column header). */
 .detail-table {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-box-flex: 1;
+  border: 0;
+}
+/* cr.ui.Table has a black focus border by default, which we don't want. */
+.detail-table:focus {
   border: 0;
 }
 

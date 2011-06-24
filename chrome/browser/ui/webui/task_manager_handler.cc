@@ -22,9 +22,10 @@ static DictionaryValue* CreateTaskItemValue(const TaskManagerModel* tm,
   DictionaryValue* val = new DictionaryValue();
 
   val->SetInteger("index", index);
-  val->SetString("processId", tm->GetResourceProcessId(index));
+  val->SetInteger("processId", tm->GetProcessId(index));
   val->SetString("title", tm->GetResourceTitle(index));
   val->SetString("cpuUsage", tm->GetResourceCPUUsage(index));
+  val->SetDouble("cpuUsageValue", tm->GetCPUUsage(index));
   val->SetString("networkUsage", tm->GetResourceNetworkUsage(index));
   val->SetDouble("networkUsageValue",
                  static_cast<double>(tm->GetNetworkUsage(index)));
