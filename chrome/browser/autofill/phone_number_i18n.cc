@@ -38,6 +38,87 @@ i18n::phonenumbers::PhoneNumberUtil::PhoneNumberFormat UtilsTypeToPhoneLibType(
   return i18n::phonenumbers::PhoneNumberUtil::NATIONAL;
 }
 
+bool ParsePhoneNumberInternal(const string16& value,
+                              const std::string& locale,
+                              string16* country_code,
+                              string16* city_code,
+                              string16* number,
+                              i18n::phonenumbers::PhoneNumber* i18n_number) {
+  DCHECK(number);
+  DCHECK(city_code);
+  DCHECK(country_code);
+  DCHECK(i18n_number);
+
+  number->clear();
+  city_code->clear();
+  country_code->clear();
+
+  std::string number_text(UTF16ToUTF8(value));
+
+  // Parse phone number based on the locale.
+  i18n::phonenumbers::PhoneNumberUtil* phone_util =
+      i18n::phonenumbers::PhoneNumberUtil::GetInstance();
+  DCHECK(phone_util);
+
+  if (phone_util->Parse(number_text, SanitizeLocaleCode(locale).c_str(),
+                        i18n_number) !=
+      i18n::phonenumbers::PhoneNumberUtil::NO_PARSING_ERROR) {
+    return false;
+  }
+
+  i18n::phonenumbers::PhoneNumberUtil::ValidationResult validation =
+      phone_util->IsPossibleNumberWithReason(*i18n_number);
+  if (validation != i18n::phonenumbers::PhoneNumberUtil::IS_POSSIBLE)
+    return false;
+
+  // This verifies that number has a valid area code (that in some cases could
+  // be empty) for parsed country code. Also verifies that this is a valid
+  // number (in US 1234567 is not valid, because numbers do not start with 1).
+  if (!phone_util->IsValidNumber(*i18n_number))
+    return false;
+
+  std::string national_significant_number;
+  phone_util->GetNationalSignificantNumber(*i18n_number,
+                                           &national_significant_number);
+
+  std::string area_code;
+  std::string subscriber_number;
+
+  int area_length = phone_util->GetLengthOfGeographicalAreaCode(*i18n_number);
+  int destination_length =
+      phone_util->GetLengthOfNationalDestinationCode(*i18n_number);
+  // Some phones have a destination code in lieu of area code: mobile operators
+  // in Europe, toll and toll-free numbers in USA, etc. From our point of view
+  // these two types of codes are the same.
+  if (destination_length > area_length)
+    area_length = destination_length;
+  if (area_length > 0) {
+    area_code = national_significant_number.substr(0, area_length);
+    subscriber_number = national_significant_number.substr(area_length);
+  } else {
+    subscriber_number = national_significant_number;
+  }
+  *number = UTF8ToUTF16(subscriber_number);
+  *city_code = UTF8ToUTF16(area_code);
+  *country_code = string16();
+
+  i18n::phonenumbers::PhoneNumberUtil::NormalizeDigitsOnly(&number_text);
+  string16 normalized_number(UTF8ToUTF16(number_text));
+  // Check if parsed number has country code and it was not inferred from the
+  // locale.
+  if (i18n_number->has_country_code()) {
+    *country_code = UTF8ToUTF16(
+         base::StringPrintf("%d", i18n_number->country_code()));
+    if (normalized_number.length() <= national_significant_number.length() &&
+        (normalized_number.length() < country_code->length() ||
+        normalized_number.compare(0, country_code->length(), *country_code))) {
+      country_code->clear();
+    }
+  }
+
+  return true;
+}
+
 }  // namespace
 
 namespace autofill_i18n {
@@ -70,79 +151,9 @@ bool ParsePhoneNumber(const string16& value,
                       string16* country_code,
                       string16* city_code,
                       string16* number) {
-  DCHECK(number);
-  DCHECK(city_code);
-  DCHECK(country_code);
-
-  number->clear();
-  city_code->clear();
-  country_code->clear();
-
-  std::string number_text(UTF16ToUTF8(value));
-
-  // Parse phone number based on the locale.
   i18n::phonenumbers::PhoneNumber i18n_number;
-  i18n::phonenumbers::PhoneNumberUtil* phone_util =
-      i18n::phonenumbers::PhoneNumberUtil::GetInstance();
-  DCHECK(phone_util);
-
-  if (phone_util->Parse(number_text, SanitizeLocaleCode(locale).c_str(),
-                        &i18n_number) !=
-      i18n::phonenumbers::PhoneNumberUtil::NO_PARSING_ERROR) {
-    return false;
-  }
-
-  i18n::phonenumbers::PhoneNumberUtil::ValidationResult validation =
-      phone_util->IsPossibleNumberWithReason(i18n_number);
-  if (validation != i18n::phonenumbers::PhoneNumberUtil::IS_POSSIBLE)
-    return false;
-
-  // This verifies that number has a valid area code (that in some cases could
-  // be empty) for parsed country code. Also verifies that this is a valid
-  // number (in US 1234567 is not valid, because numbers do not start with 1).
-  if (!phone_util->IsValidNumber(i18n_number))
-    return false;
-
-  std::string national_significant_number;
-  phone_util->GetNationalSignificantNumber(i18n_number,
-                                           &national_significant_number);
-
-  std::string area_code;
-  std::string subscriber_number;
-
-  int area_length = phone_util->GetLengthOfGeographicalAreaCode(i18n_number);
-  int destination_length =
-      phone_util->GetLengthOfNationalDestinationCode(i18n_number);
-  // Some phones have a destination code in lieu of area code: mobile operators
-  // in Europe, toll and toll-free numbers in USA, etc. From our point of view
-  // these two types of codes are the same.
-  if (destination_length > area_length)
-    area_length = destination_length;
-  if (area_length > 0) {
-    area_code = national_significant_number.substr(0, area_length);
-    subscriber_number = national_significant_number.substr(area_length);
-  } else {
-    subscriber_number = national_significant_number;
-  }
-  *number = UTF8ToUTF16(subscriber_number);
-  *city_code = UTF8ToUTF16(area_code);
-  *country_code = string16();
-
-  i18n::phonenumbers::PhoneNumberUtil::NormalizeDigitsOnly(&number_text);
-  string16 normalized_number(UTF8ToUTF16(number_text));
-  // Check if parsed number has country code and it was not inferred from the
-  // locale.
-  if (i18n_number.has_country_code()) {
-    *country_code = UTF8ToUTF16(base::StringPrintf("%d",
-                                                   i18n_number.country_code()));
-    if (normalized_number.length() <= national_significant_number.length() &&
-        (normalized_number.length() < country_code->length() ||
-        normalized_number.compare(0, country_code->length(), *country_code))) {
-      country_code->clear();
-    }
-  }
-
-  return true;
+  return ParsePhoneNumberInternal(value, locale, country_code, city_code,
+                                  number, &i18n_number);
 }
 
 bool ConstructPhoneNumber(const string16& country_code,
@@ -263,6 +274,91 @@ bool PhoneNumbersMatch(const string16& number_a,
                        const string16& number_b,
                        const std::string& country_code) {
   return ComparePhones(number_a, number_b, country_code) == PHONES_EQUAL;
+}
+
+PhoneObject::PhoneObject(const string16& number, const std::string& locale)
+    : locale_(SanitizeLocaleCode(locale)),
+      i18n_number_(NULL) {
+  scoped_ptr<i18n::phonenumbers::PhoneNumber>
+      i18n_number(new i18n::phonenumbers::PhoneNumber);
+  if (ParsePhoneNumberInternal(number, locale_, &country_code_, &city_code_,
+                               &number_, i18n_number.get())) {
+    // Phone successfully parsed - set |i18n_number_| object, |whole_number_|
+    // will be set on the first call to GetWholeNumber().
+    i18n_number_.reset(i18n_number.release());
+  } else {
+    // Parsing failed. Store passed phone "as is" into |whole_number_|.
+    whole_number_ = number;
+  }
+}
+
+PhoneObject::PhoneObject(const PhoneObject& other)
+    : i18n_number_(NULL) {
+  *this = other;
+}
+
+PhoneObject::PhoneObject()
+    : i18n_number_(NULL) {
+}
+
+PhoneObject::~PhoneObject() {
+}
+
+string16 PhoneObject::GetWholeNumber() const {
+  if (i18n_number_.get() && whole_number_.empty()) {
+    i18n::phonenumbers::PhoneNumberUtil::PhoneNumberFormat format =
+        i18n::phonenumbers::PhoneNumberUtil::INTERNATIONAL;
+    if (country_code_.empty())
+      format = i18n::phonenumbers::PhoneNumberUtil::NATIONAL;
+
+    std::string formatted_number;
+    i18n::phonenumbers::PhoneNumberUtil* phone_util =
+        i18n::phonenumbers::PhoneNumberUtil::GetInstance();
+    phone_util->Format(*i18n_number_, format, &formatted_number);
+    i18n::phonenumbers::PhoneNumberUtil::NormalizeDigitsOnly(&formatted_number);
+    whole_number_ = UTF8ToUTF16(formatted_number);
+  }
+  return whole_number_;
+}
+
+PhoneMatch PhoneObject::ComparePhones(const string16& phone_number) const {
+  PhoneObject phone(phone_number, locale_);
+  if (!i18n_number_.get() || !phone.i18n_number_.get()) {
+    if (GetWholeNumber().empty())
+      return PHONES_NOT_EQUAL;
+    return (GetWholeNumber() == phone.GetWholeNumber()) ? PHONES_EQUAL :
+                                                          PHONES_NOT_EQUAL;
+  }
+
+  i18n::phonenumbers::PhoneNumberUtil* phone_util =
+      i18n::phonenumbers::PhoneNumberUtil::GetInstance();
+  switch (phone_util->IsNumberMatch(*i18n_number_, *(phone.i18n_number_))) {
+    case i18n::phonenumbers::PhoneNumberUtil::INVALID_NUMBER:
+    case i18n::phonenumbers::PhoneNumberUtil::NO_MATCH:
+      return PHONES_NOT_EQUAL;
+    case i18n::phonenumbers::PhoneNumberUtil::SHORT_NSN_MATCH:
+      return PHONES_SUBMATCH;
+    case i18n::phonenumbers::PhoneNumberUtil::NSN_MATCH:
+    case i18n::phonenumbers::PhoneNumberUtil::EXACT_MATCH:
+      return PHONES_EQUAL;
+    default:
+      NOTREACHED();
+  }
+  return PHONES_NOT_EQUAL;
+}
+
+PhoneObject& PhoneObject::operator=(const PhoneObject& other) {
+  if (this == &other)
+    return *this;
+  country_code_ = other.country_code_;
+  city_code_ = other.city_code_;
+  number_ = other.number_;
+  locale_ = other.locale_;
+  if (other.i18n_number_.get()) {
+    i18n_number_.reset(new i18n::phonenumbers::PhoneNumber(
+        *other.i18n_number_));
+  }
+  return *this;
 }
 
 }  // namespace autofill_i18n

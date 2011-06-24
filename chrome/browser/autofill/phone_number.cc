@@ -54,7 +54,7 @@ PhoneNumber& PhoneNumber::operator=(const PhoneNumber& number) {
     return *this;
   number_ = number.number_;
   phone_group_ = number.phone_group_;
-  ClearCachedNumbers();
+  cached_parsed_phone_ = number.cached_parsed_phone_;
   return *this;
 }
 
@@ -63,20 +63,20 @@ void PhoneNumber::GetMatchingTypes(const string16& text,
   string16 stripped_text(text);
   StripPunctuation(&stripped_text);
 
-  if (!UpdateCacheIfNeeded())
+  if (!cached_parsed_phone_.IsValidNumber())
     return;
 
-  if (IsNumber(stripped_text, cached_local_number_))
+  if (IsNumber(stripped_text, cached_parsed_phone_.GetNumber()))
     matching_types->insert(GetNumberType());
 
-  if (stripped_text == cached_city_code_)
+  if (stripped_text == cached_parsed_phone_.GetCityCode())
     matching_types->insert(GetCityCodeType());
 
-  if (stripped_text == cached_country_code_)
+  if (stripped_text == cached_parsed_phone_.GetCountryCode())
     matching_types->insert(GetCountryCodeType());
 
-  string16 city_and_local(cached_city_code_);
-  city_and_local.append(cached_local_number_);
+  string16 city_and_local(cached_parsed_phone_.GetCityCode());
+  city_and_local.append(cached_parsed_phone_.GetNumber());
   if (stripped_text == city_and_local)
     matching_types->insert(GetCityAndNumberType());
 
@@ -94,37 +94,38 @@ void PhoneNumber::GetNonEmptyTypes(FieldTypeSet* non_empty_types) const {
 
   non_empty_types->insert(GetWholeNumberType());
 
-  if (!UpdateCacheIfNeeded())
+  if (!cached_parsed_phone_.IsValidNumber())
     return;
 
   non_empty_types->insert(GetNumberType());
 
-  if (!cached_city_code_.empty()) {
+  if (!cached_parsed_phone_.GetCityCode().empty()) {
     non_empty_types->insert(GetCityCodeType());
     non_empty_types->insert(GetCityAndNumberType());
   }
 
-  if (!cached_country_code_.empty())
+  if (!cached_parsed_phone_.GetCountryCode().empty())
     non_empty_types->insert(GetCountryCodeType());
 }
 
 string16 PhoneNumber::GetInfo(AutofillFieldType type) const {
   if (type == GetWholeNumberType())
     return number_;
-  if (!UpdateCacheIfNeeded())
+
+  if (!cached_parsed_phone_.IsValidNumber())
     return string16();
 
   if (type == GetNumberType())
-    return cached_local_number_;
+    return cached_parsed_phone_.GetNumber();
 
   if (type == GetCityCodeType())
-    return cached_city_code_;
+    return cached_parsed_phone_.GetCityCode();
 
   if (type == GetCountryCodeType())
-    return cached_country_code_;
+    return cached_parsed_phone_.GetCountryCode();
 
-  string16 city_and_local(cached_city_code_);
-  city_and_local.append(cached_local_number_);
+  string16 city_and_local(cached_parsed_phone_.GetCityCode());
+  city_and_local.append(cached_parsed_phone_.GetNumber());
   if (type == GetCityAndNumberType())
     return city_and_local;
 
@@ -136,7 +137,6 @@ void PhoneNumber::SetInfo(AutofillFieldType type, const string16& value) {
   FieldTypeGroup group = AutofillType(type).group();
   if (phone_group_ == AutofillType::NO_GROUP)
     phone_group_ = group;  // First call on empty phone - set the group.
-  ClearCachedNumbers();
   if (subgroup == AutofillType::PHONE_NUMBER) {
     // Should not be set directly.
     NOTREACHED();
@@ -149,6 +149,7 @@ void PhoneNumber::SetInfo(AutofillFieldType type, const string16& value) {
   } else if (subgroup == AutofillType::PHONE_CITY_AND_NUMBER ||
              subgroup == AutofillType::PHONE_WHOLE_NUMBER) {
     number_ = value;
+    cached_parsed_phone_ = autofill_i18n::PhoneObject(number_, locale_);
     StripPunctuation(&number_);
   } else {
     NOTREACHED();
@@ -160,14 +161,14 @@ bool PhoneNumber::NormalizePhone() {
   if (number_.empty())
     return true;
 
-  ClearCachedNumbers();
-  number_ = autofill_i18n::NormalizePhoneNumber(number_, locale_);
+  number_ = cached_parsed_phone_.GetWholeNumber();
   return !number_.empty();
 }
 
 void PhoneNumber::set_locale(const std::string& locale) {
   locale_ = locale;
-  ClearCachedNumbers();
+  if (!number_.empty() && cached_parsed_phone_.GetLocale() != locale_)
+    cached_parsed_phone_ = autofill_i18n::PhoneObject(number_, locale_);
 }
 
 AutofillFieldType PhoneNumber::GetNumberType() const {
@@ -269,27 +270,11 @@ bool PhoneNumber::IsNumber(const string16& text, const string16& number) const {
 }
 
 bool PhoneNumber::IsWholeNumber(const string16& text) const {
-  return autofill_i18n::ComparePhones(text, number_, locale_) ==
-         autofill_i18n::PHONES_EQUAL;
+  return cached_parsed_phone_.ComparePhones(text) ==
+      autofill_i18n::PHONES_EQUAL;
 }
 
 // Static.
 void PhoneNumber::StripPunctuation(string16* number) {
   RemoveChars(*number, kPhoneNumberSeparators, number);
-}
-
-void PhoneNumber::ClearCachedNumbers() const {
-  cached_country_code_.clear();
-  cached_city_code_.clear();
-  cached_local_number_.clear();
-}
-
-bool PhoneNumber::UpdateCacheIfNeeded() const {
-  if (cached_local_number_.empty() && !number_.empty()) {
-    return autofill_i18n::ParsePhoneNumber(
-        number_, locale_, &cached_country_code_, &cached_city_code_,
-        &cached_local_number_);
-  } else {
-    return true;
-  }
 }
