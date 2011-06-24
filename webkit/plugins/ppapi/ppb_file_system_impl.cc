@@ -71,7 +71,7 @@ int32_t PPB_FileSystem_Impl::Open(int64_t expected_size,
        fileapi::kFileSystemTypeTemporary :
        fileapi::kFileSystemTypePersistent);
   if (!instance()->delegate()->OpenFileSystem(
-          instance()->container()->element().document().frame()->url(),
+          instance()->container()->element().document().url(),
           file_system_type, expected_size,
           new FileCallbacks(instance()->module()->AsWeakPtr(),
                             GetReferenceNoAddRef(),

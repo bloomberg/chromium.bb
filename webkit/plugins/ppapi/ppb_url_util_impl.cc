@@ -55,11 +55,7 @@ bool SecurityOriginForInstance(PP_Instance instance_id,
     return false;
 
   WebKit::WebElement plugin_element = instance->container()->element();
-  WebKit::WebFrame* plugin_frame = plugin_element.document().frame();
-  if (!plugin_frame)
-    return false;
-
-  *security_origin = plugin_frame->securityOrigin();
+  *security_origin = plugin_element.document().securityOrigin();
   return true;
 }
 
@@ -137,13 +133,10 @@ PP_Var GetDocumentURL(PP_Instance instance_id,
   if (!instance)
     return PP_MakeNull();
 
-  WebKit::WebFrame* frame = instance->container()->element().document().frame();
-  if (!frame)
-    return PP_MakeNull();
-
+  WebKit::WebDocument document = instance->container()->element().document();
   return URLUtilImpl::GenerateURLReturn(Var::GetInterface()->VarFromUtf8,
                                         instance->module()->pp_module(),
-                                        frame->url(), components);
+                                        document.url(), components);
 }
 
 PP_Var GetPluginInstanceURL(PP_Instance instance_id,
