@@ -31,10 +31,6 @@ static void OnDestroy(GtkObject* obj, void* arg) {
 
 // -----------------------------------------------------------------------------
 
-
-// -----------------------------------------------------------------------------
-// Public functions...
-
 GtkNativeViewManager::GtkNativeViewManager() {
 }
 
@@ -47,11 +43,10 @@ GtkNativeViewManager* GtkNativeViewManager::GetInstance() {
 }
 
 gfx::NativeViewId GtkNativeViewManager::GetIdForWidget(gfx::NativeView widget) {
+  DCHECK(CalledOnValidThread());
   // This is just for unit tests:
   if (!widget)
     return 0;
-
-  base::AutoLock locked(lock_);
 
   std::map<gfx::NativeView, gfx::NativeViewId>::const_iterator i =
     native_view_to_id_.find(widget);
@@ -83,8 +78,7 @@ gfx::NativeViewId GtkNativeViewManager::GetIdForWidget(gfx::NativeView widget) {
 }
 
 bool GtkNativeViewManager::GetXIDForId(XID* output, gfx::NativeViewId id) {
-  base::AutoLock locked(lock_);
-
+  DCHECK(CalledOnValidThread());
   std::map<gfx::NativeViewId, NativeViewInfo>::const_iterator i =
       id_to_info_.find(id);
 
@@ -97,8 +91,7 @@ bool GtkNativeViewManager::GetXIDForId(XID* output, gfx::NativeViewId id) {
 
 bool GtkNativeViewManager::GetNativeViewForId(gfx::NativeView* output,
                                               gfx::NativeViewId id) {
-  base::AutoLock locked(lock_);
-
+  DCHECK(CalledOnValidThread());
   std::map<gfx::NativeViewId, NativeViewInfo>::const_iterator i =
       id_to_info_.find(id);
 
@@ -111,8 +104,7 @@ bool GtkNativeViewManager::GetNativeViewForId(gfx::NativeView* output,
 
 bool GtkNativeViewManager::GetPermanentXIDForId(XID* output,
                                                 gfx::NativeViewId id) {
-  base::AutoLock locked(lock_);
-
+  DCHECK(CalledOnValidThread());
   std::map<gfx::NativeViewId, NativeViewInfo>::iterator i =
       id_to_info_.find(id);
 
@@ -144,8 +136,7 @@ bool GtkNativeViewManager::GetPermanentXIDForId(XID* output,
 }
 
 bool GtkNativeViewManager::AddRefPermanentXID(XID xid) {
-  base::AutoLock locked(lock_);
-
+  DCHECK(CalledOnValidThread());
   std::map<XID, PermanentXIDInfo>::iterator i =
     perm_xid_to_info_.find(xid);
 
@@ -158,8 +149,7 @@ bool GtkNativeViewManager::AddRefPermanentXID(XID xid) {
 }
 
 void GtkNativeViewManager::ReleasePermanentXID(XID xid) {
-  base::AutoLock locked(lock_);
-
+  DCHECK(CalledOnValidThread());
   std::map<XID, PermanentXIDInfo>::iterator i =
     perm_xid_to_info_.find(xid);
 
@@ -188,8 +178,7 @@ void GtkNativeViewManager::ReleasePermanentXID(XID xid) {
 // Private functions...
 
 gfx::NativeViewId GtkNativeViewManager::GetWidgetId(gfx::NativeView widget) {
-  lock_.AssertAcquired();
-
+  DCHECK(CalledOnValidThread());
   std::map<gfx::NativeView, gfx::NativeViewId>::const_iterator i =
     native_view_to_id_.find(widget);
 
@@ -198,8 +187,7 @@ gfx::NativeViewId GtkNativeViewManager::GetWidgetId(gfx::NativeView widget) {
 }
 
 void GtkNativeViewManager::OnRealize(gfx::NativeView widget) {
-  base::AutoLock locked(lock_);
-
+  DCHECK(CalledOnValidThread());
   const gfx::NativeViewId id = GetWidgetId(widget);
   std::map<gfx::NativeViewId, NativeViewInfo>::iterator i =
     id_to_info_.find(id);
@@ -211,8 +199,7 @@ void GtkNativeViewManager::OnRealize(gfx::NativeView widget) {
 }
 
 void GtkNativeViewManager::OnUnrealize(gfx::NativeView widget) {
-  base::AutoLock locked(lock_);
-
+  DCHECK(CalledOnValidThread());
   const gfx::NativeViewId id = GetWidgetId(widget);
   std::map<gfx::NativeViewId, NativeViewInfo>::iterator i =
     id_to_info_.find(id);
@@ -221,8 +208,7 @@ void GtkNativeViewManager::OnUnrealize(gfx::NativeView widget) {
 }
 
 void GtkNativeViewManager::OnDestroy(gfx::NativeView widget) {
-  base::AutoLock locked(lock_);
-
+  DCHECK(CalledOnValidThread());
   std::map<gfx::NativeView, gfx::NativeViewId>::iterator i =
     native_view_to_id_.find(widget);
   CHECK(i != native_view_to_id_.end());

@@ -10,6 +10,7 @@
 
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/non_thread_safe.h"
 #include "ui/gfx/native_widget_types.h"
 
 typedef unsigned long XID;
@@ -28,15 +29,13 @@ struct _GtkPreserveWindow;
 //
 // Thus, we have this object. It produces random NativeViewIds from GtkWidget
 // pointers and observes the various signals from the widget for when an X
-// window is created, destroyed etc. Thus it provides a thread safe mapping
-// from NativeViewIds to the current XID for that widget.
-class GtkNativeViewManager {
+// window is created, destroyed etc. Thus it provides a mapping from
+// NativeViewIds to the current XID for that widget.
+class GtkNativeViewManager : public base::NonThreadSafe {
  public:
   // Returns the singleton instance.
   static GtkNativeViewManager* GetInstance();
 
-  // Must be called from the UI thread:
-  //
   // Return a NativeViewId for the given widget and attach to the various
   // signals emitted by that widget. The NativeViewId is pseudo-randomly
   // allocated so that a compromised renderer trying to guess values will fail
@@ -44,8 +43,6 @@ class GtkNativeViewManager {
   // lifetime of the GtkWidget.
   gfx::NativeViewId GetIdForWidget(gfx::NativeView widget);
 
-  // May be called from any thread:
-  //
   // xid: (output) the resulting X window ID, or 0
   // id: a value previously returned from GetIdForWidget
   // returns: true if |id| is a valid id, false otherwise.
@@ -54,14 +51,9 @@ class GtkNativeViewManager {
   // |*xid| is set to 0.
   bool GetXIDForId(XID* xid, gfx::NativeViewId id);
 
-  // May be called from the UI thread:
-  //
   // Same as GetXIDForId except it returns the NativeView (GtkWidget*).
   bool GetNativeViewForId(gfx::NativeView* xid, gfx::NativeViewId id);
 
-  // Must be called from the UI thread because we may need the associated
-  // widget to create a window.
-  //
   // Keeping the XID permanent requires a bit of overhead, so it must
   // be explicitly requested.
   //
@@ -70,14 +62,10 @@ class GtkNativeViewManager {
   // returns: true if |id| is a valid id, false otherwise.
   bool GetPermanentXIDForId(XID* xid, gfx::NativeViewId id);
 
-  // Can be called from any thread.
   // Will return false if the given XID isn't permanent or has already been
   // released.
   bool AddRefPermanentXID(XID xid);
 
-  // Must be called from the UI thread because we may need to access a
-  // GtkWidget or destroy a GdkWindow.
-  //
   // If the widget associated with the XID is still alive, allow the widget
   // to destroy the associated XID when it wants. Otherwise, destroy the
   // GdkWindow associated with the XID.
@@ -102,9 +90,6 @@ class GtkNativeViewManager {
   };
 
   gfx::NativeViewId GetWidgetId(gfx::NativeView id);
-
-  // protects native_view_to_id_ and id_to_info_
-  base::Lock lock_;
 
   // If asked for an id for the same widget twice, we want to return the same
   // id. So this records the current mapping.
