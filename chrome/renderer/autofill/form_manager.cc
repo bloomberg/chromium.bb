@@ -658,7 +658,7 @@ bool FormManager::WebFormElementToFormData(const WebFormElement& element,
 
   form->name = GetFormIdentifier(element);
   form->method = element.method();
-  form->origin = frame->url();
+  form->origin = frame->document().url();
   form->action = frame->document().completeURL(element.action());
   form->user_submitted = element.wasUserSubmitted();
 
@@ -766,7 +766,7 @@ void FormManager::ExtractForms(const WebFrame* frame,
   ResetFrame(frame);
 
   WebVector<WebFormElement> web_forms;
-  frame->forms(web_forms);
+  frame->document().forms(web_forms);
 
   size_t num_fields_seen = 0;
   for (size_t i = 0; i < web_forms.size(); ++i) {

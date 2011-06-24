@@ -111,12 +111,12 @@ void FindFormElements(WebKit::WebView* view,
     if (!doc.isHTMLDocument())
       continue;
 
-    GURL full_origin(f->url());
+    GURL full_origin(doc.url());
     if (data.origin != full_origin.ReplaceComponents(rep))
       continue;
 
     WebKit::WebVector<WebKit::WebFormElement> forms;
-    f->forms(forms);
+    doc.forms(forms);
 
     for (size_t i = 0; i < forms.size(); ++i) {
       WebKit::WebFormElement fe = forms[i];
@@ -325,12 +325,12 @@ bool PasswordAutofillManager::DidSelectAutofillSuggestion(
 void PasswordAutofillManager::SendPasswordForms(WebKit::WebFrame* frame,
                                                 bool only_visible) {
   // Make sure that this security origin is allowed to use password manager.
-  WebKit::WebSecurityOrigin security_origin = frame->securityOrigin();
-  if (!security_origin.canAccessPasswordManager())
+  WebKit::WebSecurityOrigin origin = frame->document().securityOrigin();
+  if (!origin.canAccessPasswordManager())
     return;
 
   WebKit::WebVector<WebKit::WebFormElement> forms;
-  frame->forms(forms);
+  frame->document().forms(forms);
 
   std::vector<webkit_glue::PasswordForm> password_forms;
   for (size_t i = 0; i < forms.size(); ++i) {

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -391,7 +391,7 @@ bool PhishingDOMFeatureExtractor::ResetFrameData() {
   cur_frame_data_->elements = doc.all();
   cur_frame_data_->domain =
       net::RegistryControlledDomainService::GetDomainAndRegistry(
-          cur_frame_->url());
+          cur_frame_->document().url());
   return true;
 }
 

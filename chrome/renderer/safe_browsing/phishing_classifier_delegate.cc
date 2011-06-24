@@ -19,6 +19,7 @@
 #include "content/renderer/navigation_state.h"
 #include "content/renderer/render_thread.h"
 #include "content/renderer/render_view.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
@@ -207,7 +208,7 @@ void PhishingClassifierDelegate::ClassificationDone(
 }
 
 GURL PhishingClassifierDelegate::GetToplevelUrl() {
-  return render_view()->webview()->mainFrame()->url();
+  return render_view()->webview()->mainFrame()->document().url();
 }
 
 void PhishingClassifierDelegate::MaybeStartClassification() {

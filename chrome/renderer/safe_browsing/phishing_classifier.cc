@@ -24,6 +24,7 @@
 #include "crypto/sha2.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
@@ -105,7 +106,7 @@ void PhishingClassifier::BeginFeatureExtraction() {
 
   // Check whether the URL is one that we should classify.
   // Currently, we only classify http: URLs that are GET requests.
-  GURL url(frame->url());
+  GURL url(frame->document().url());
   if (!url.SchemeIs(chrome::kHttpScheme)) {
     RunFailureCallback();
     return;
@@ -171,7 +172,7 @@ void PhishingClassifier::TermExtractionFinished(bool success) {
     FeatureMap hashed_features;
     ClientPhishingRequest verdict;
     verdict.set_model_version(scorer_->model_version());
-    verdict.set_url(main_frame->url().spec());
+    verdict.set_url(main_frame->document().url().spec());
     for (base::hash_map<std::string, double>::const_iterator it =
              features_->features().begin();
          it != features_->features().end(); ++it) {

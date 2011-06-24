@@ -30,6 +30,7 @@
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPageSerializer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
@@ -372,7 +373,7 @@ bool ChromeRenderViewObserver::allowReadFromClipboard(WebFrame* frame,
                                                      bool default_value) {
   bool allowed = false;
   Send(new ViewHostMsg_CanTriggerClipboardRead(
-      routing_id(), frame->url(), &allowed));
+      routing_id(), frame->document().url(), &allowed));
   return allowed;
 }
 
@@ -380,7 +381,7 @@ bool ChromeRenderViewObserver::allowWriteToClipboard(WebFrame* frame,
                                                     bool default_value) {
   bool allowed = false;
   Send(new ViewHostMsg_CanTriggerClipboardWrite(
-      routing_id(), frame->url(), &allowed));
+      routing_id(), frame->document().url(), &allowed));
   return allowed;
 }
 
@@ -438,8 +439,8 @@ void ChromeRenderViewObserver::DidStopLoading() {
           false),
       render_view()->content_state_immediately() ? 0 : kDelayForCaptureMs);
 
-  GURL osd_url =
-      render_view()->webview()->mainFrame()->openSearchDescriptionURL();
+  WebFrame* main_frame = render_view()->webview()->mainFrame();
+  GURL osd_url = main_frame->document().openSearchDescriptionURL();
   if (!osd_url.is_empty()) {
     Send(new ViewHostMsg_PageHasOSDD(
         routing_id(), render_view()->page_id(), osd_url,
@@ -539,7 +540,7 @@ void ChromeRenderViewObserver::CapturePageInfo(int load_id,
     last_indexed_page_id_ = load_id;
 
   // Get the URL for this page.
-  GURL url(main_frame->url());
+  GURL url(main_frame->document().url());
   if (url.is_empty())
     return;
 
@@ -604,7 +605,7 @@ void ChromeRenderViewObserver::CaptureThumbnail() {
     return;
 
   // get the URL for this page
-  GURL url(main_frame->url());
+  GURL url(main_frame->document().url());
   if (url.is_empty())
     return;
 

@@ -10,6 +10,7 @@
 #include "content/common/view_messages.h"
 #include "content/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrameClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
@@ -26,7 +27,7 @@ namespace {
 
 // True if |frame| contains content that is white-listed for content settings.
 static bool IsWhitelistedForContentSettings(WebFrame* frame) {
-  WebSecurityOrigin origin = frame->securityOrigin();
+  WebSecurityOrigin origin = frame->document().securityOrigin();
   if (origin.isEmpty())
     return false;  // Uninitialized document?
 
@@ -35,12 +36,12 @@ static bool IsWhitelistedForContentSettings(WebFrame* frame) {
 
   // If the scheme is ftp: or file:, an empty file name indicates a directory
   // listing, which requires JavaScript to function properly.
-  GURL frame_url = frame->url();
+  GURL document_url = frame->document().url();
   const char* kDirProtocols[] = { chrome::kFtpScheme, chrome::kFileScheme };
   for (size_t i = 0; i < arraysize(kDirProtocols); ++i) {
     if (EqualsASCII(origin.protocol(), kDirProtocols[i])) {
-      return frame_url.SchemeIs(kDirProtocols[i]) &&
-             frame_url.ExtractFileName().empty();
+      return document_url.SchemeIs(kDirProtocols[i]) &&
+             document_url.ExtractFileName().empty();
     }
   }
 
@@ -120,9 +121,9 @@ void ContentSettingsObserver::DidCommitProvisionalLoad(
   ClearBlockedContentSettings();
   plugins_temporarily_allowed_ = false;
 
-  GURL url = frame->url();
+  GURL url = frame->document().url();
 
-  if (frame->securityOrigin().toString() == "null" &&
+  if (frame->document().securityOrigin().toString() == "null" &&
       !url.SchemeIs(chrome::kFileScheme)) {
     // The Frame has a unique security origin. Instead of granting the frame
     // privileges based on it's URL, we fall back to the default content
@@ -165,27 +166,27 @@ bool ContentSettingsObserver::AllowDatabase(WebFrame* frame,
                                             const WebString& name,
                                             const WebString& display_name,
                                             unsigned long estimated_size) {
-  if (frame->securityOrigin().isEmpty() ||
-      frame->top()->securityOrigin().isEmpty())
+  if (frame->document().securityOrigin().isEmpty() ||
+      frame->top()->document().securityOrigin().isEmpty())
     return false; // Uninitialized document.
 
   bool result = false;
   Send(new ViewHostMsg_AllowDatabase(
-      routing_id(), GURL(frame->securityOrigin().toString()),
-      GURL(frame->top()->securityOrigin().toString()),
+      routing_id(), GURL(frame->document().securityOrigin().toString()),
+      GURL(frame->top()->document().securityOrigin().toString()),
       name, display_name, &result));
   return result;
 }
 
 bool ContentSettingsObserver::AllowFileSystem(WebFrame* frame) {
-  if (frame->securityOrigin().isEmpty() ||
-      frame->top()->securityOrigin().isEmpty())
+  if (frame->document().securityOrigin().isEmpty() ||
+      frame->top()->document().securityOrigin().isEmpty())
     return false; // Uninitialized document.
 
   bool result = false;
   Send(new ViewHostMsg_AllowFileSystem(
-      routing_id(), GURL(frame->securityOrigin().toString()),
-      GURL(frame->top()->securityOrigin().toString()), &result));
+      routing_id(), GURL(frame->document().securityOrigin().toString()),
+      GURL(frame->top()->document().securityOrigin().toString()), &result));
   return result;
 }
 
@@ -206,14 +207,14 @@ bool ContentSettingsObserver::AllowImages(WebFrame* frame,
 bool ContentSettingsObserver::AllowIndexedDB(WebFrame* frame,
                                              const WebString& name,
                                              const WebSecurityOrigin& origin) {
-  if (frame->securityOrigin().isEmpty() ||
-      frame->top()->securityOrigin().isEmpty())
+  if (frame->document().securityOrigin().isEmpty() ||
+      frame->top()->document().securityOrigin().isEmpty())
     return false; // Uninitialized document.
 
   bool result = false;
   Send(new ViewHostMsg_AllowIndexedDB(
-      routing_id(), GURL(frame->securityOrigin().toString()),
-      GURL(frame->top()->securityOrigin().toString()),
+      routing_id(), GURL(frame->document().securityOrigin().toString()),
+      GURL(frame->top()->document().securityOrigin().toString()),
       name, &result));
   return result;
 }
@@ -237,20 +238,21 @@ bool ContentSettingsObserver::AllowScript(WebFrame* frame,
 }
 
 bool ContentSettingsObserver::AllowStorage(WebFrame* frame, bool local) {
-  if (frame->securityOrigin().isEmpty() ||
-      frame->top()->securityOrigin().isEmpty())
+  if (frame->document().securityOrigin().isEmpty() ||
+      frame->top()->document().securityOrigin().isEmpty())
     return false; // Uninitialized document.
   bool result = false;
 
-  StoragePermissionsKey key(GURL(frame->securityOrigin().toString()), local);
+  StoragePermissionsKey key(
+      GURL(frame->document().securityOrigin().toString()), local);
   std::map<StoragePermissionsKey, bool>::const_iterator permissions =
       cached_storage_permissions_.find(key);
   if (permissions != cached_storage_permissions_.end())
     return permissions->second;
 
   Send(new ViewHostMsg_AllowDOMStorage(
-      routing_id(), GURL(frame->securityOrigin().toString()),
-      GURL(frame->top()->securityOrigin().toString()),
+      routing_id(), GURL(frame->document().securityOrigin().toString()),
+      GURL(frame->top()->document().securityOrigin().toString()),
       local ? DOM_STORAGE_LOCAL : DOM_STORAGE_SESSION,
       &result));
   cached_storage_permissions_[key] = result;

@@ -9,6 +9,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/search_provider.h"
 #include "content/renderer/render_view.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "v8/include/v8.h"
@@ -157,7 +158,10 @@ v8::Handle<v8::Value> ExternalExtensionWrapper::IsSearchProviderInstalled(
   GURL inquiry_url = GURL(name);
   if (!inquiry_url.is_empty()) {
       render_view->Send(new ViewHostMsg_GetSearchProviderInstallState(
-          render_view->routing_id(), webframe->url(), inquiry_url, &install));
+          render_view->routing_id(),
+          webframe->document().url(),
+          inquiry_url,
+          &install));
   }
 
   if (install == search_provider::DENIED) {

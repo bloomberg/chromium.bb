@@ -32,6 +32,7 @@
 #include "net/base/net_module.h"
 #include "third_party/sqlite/sqlite3.h"
 #include "third_party/tcmalloc/chromium/src/google/malloc_extension.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCrossOriginPreflightResultCache.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFontCache.h"
@@ -117,7 +118,7 @@ class RenderViewContentSettingsSetter : public RenderViewVisitor {
   }
 
   virtual bool Visit(RenderView* render_view) {
-    if (GURL(render_view->webview()->mainFrame()->url()) == url_) {
+    if (GURL(render_view->webview()->mainFrame()->document().url()) == url_) {
       ContentSettingsObserver::Get(render_view)->SetContentSettings(
           content_settings_);
     }

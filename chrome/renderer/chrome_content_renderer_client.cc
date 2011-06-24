@@ -70,6 +70,7 @@
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginParams.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityPolicy.h"
@@ -254,7 +255,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
   GURL url(original_params.url);
   std::string actual_mime_type;
   render_view->Send(new ViewHostMsg_GetPluginInfo(
-      render_view->routing_id(), url, frame->top()->url(),
+      render_view->routing_id(), url, frame->top()->document().url(),
       original_params.mimeType.utf8(), &found, &info, &actual_mime_type));
 
   if (!found)
@@ -271,7 +272,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
   if (cmd->HasSwitch(switches::kEnableResourceContentSettings))
     resource = group->identifier();
   render_view->Send(new ViewHostMsg_GetPluginContentSetting(
-      frame->top()->url(), resource, &plugin_setting));
+      frame->top()->document().url(), resource, &plugin_setting));
   DCHECK(plugin_setting != CONTENT_SETTING_DEFAULT);
 
   WebPluginParams params(original_params);
@@ -396,7 +397,7 @@ void ChromeContentRendererClient::ShowErrorPage(RenderView* render_view,
   if (LocalizedError::HasStrings(LocalizedError::kHttpErrorDomain,
                                  http_status_code)) {
     WebURLError error;
-    error.unreachableURL = frame->url();
+    error.unreachableURL = frame->document().url();
     error.domain = WebString::fromUTF8(LocalizedError::kHttpErrorDomain);
     error.reason = http_status_code;
 
@@ -498,7 +499,9 @@ bool ChromeContentRendererClient::WillSendRequest(WebKit::WebFrame* frame,
   // the request and cause an error.
   if (url.SchemeIs(chrome::kExtensionScheme) &&
       !ExtensionResourceRequestPolicy::CanRequestResource(
-          url, GURL(frame->url()), extension_dispatcher_->extensions())) {
+          url,
+          GURL(frame->document().url()),
+          extension_dispatcher_->extensions())) {
     *new_url = GURL("chrome-extension://invalid/");
     return true;
   }
@@ -563,9 +566,12 @@ bool ChromeContentRendererClient::CrossesExtensionExtents(WebFrame* frame,
   const ExtensionSet* extensions = extension_dispatcher_->extensions();
   // If the URL is still empty, this is a window.open navigation. Check the
   // opener's URL.
-  GURL old_url(frame->url());
+  // TODO(abarth): This code is super sketchy! Are you sure looking at the
+  // opener is correct here?  This appears to let me steal my opener's
+  // privileges if I can make my URL be "empty."
+  GURL old_url(frame->document().url());
   if (old_url.is_empty() && frame->opener())
-    old_url = frame->opener()->url();
+    old_url = frame->opener()->document().url();
 
   // If this is a reload, check whether it has the wrong process type.  We
   // should send it to the browser if it's an extension URL (e.g., hosted app)
