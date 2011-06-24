@@ -372,7 +372,7 @@ void WebAccessibility::Init(const WebKit::WebAccessibilityObject& src,
     if (name.empty())
       name = document.title();
     attributes[ATTR_DOC_TITLE] = document.title();
-    attributes[ATTR_DOC_URL] = document.frame()->url().spec().utf16();
+    attributes[ATTR_DOC_URL] = document.url().spec().utf16();
     if (document.isXHTMLDocument())
       attributes[ATTR_DOC_MIMETYPE] = WebKit::WebString("text/xhtml");
     else

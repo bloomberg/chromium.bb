@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "base/hash_tables.h"
 #include "base/metrics/histogram.h"
 #include "net/base/mime_sniffer.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
@@ -97,7 +98,7 @@ bool SiteIsolationMetrics::AllowedByAccessControlHeader(
   WebSecurityOrigin security_origin =
       WebSecurityOrigin::createFromString(access_control_origin);
   return access_control_origin == WebString::fromUTF8("*") ||
-         frame->securityOrigin().canAccess(security_origin);
+         frame->document().securityOrigin().canAccess(security_origin);
 }
 
 // We want to log any cross-site request that we don't think a renderer should
@@ -129,7 +130,7 @@ void SiteIsolationMetrics::LogMimeTypeForCrossOriginRequest(
     target_type_map.erase(iter);
 
     // Focus on cross-site requests.
-    if (!frame->securityOrigin().canAccess(
+    if (!frame->document().securityOrigin().canAccess(
             WebSecurityOrigin::create(response.url()))) {
       UMA_HISTOGRAM_COUNTS("SiteIsolation.CrossSiteRequests", 1);
 
