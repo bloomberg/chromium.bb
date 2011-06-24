@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -153,7 +153,7 @@ bool ParseWebAppFromWebDocument(WebFrame* frame,
   if (head.isNull())
     return true;
 
-  GURL frame_url = frame->url();
+  GURL document_url = document.url();
   WebNodeList children = head.childNodes();
   for (unsigned i = 0; i < children.length(); ++i) {
     WebNode child = children.item(i);
@@ -174,8 +174,8 @@ bool ParseWebAppFromWebDocument(WebFrame* frame,
         std::string definition_url_string(elem.getAttribute("href").utf8());
         GURL definition_url;
         if (!(definition_url =
-              frame_url.Resolve(definition_url_string)).is_valid() ||
-            definition_url.GetOrigin() != frame_url.GetOrigin()) {
+              document_url.Resolve(definition_url_string)).is_valid() ||
+            definition_url.GetOrigin() != document_url.GetOrigin()) {
           *error = UTF8ToUTF16(WebApplicationInfo::kInvalidDefinitionURL);
           return false;
         }
@@ -194,8 +194,8 @@ bool ParseWebAppFromWebDocument(WebFrame* frame,
         app_info->description = content;
       } else if (name == "application-url") {
         std::string url = content.utf8();
-        app_info->app_url = frame_url.is_valid() ?
-            frame_url.Resolve(url) : GURL(url);
+        app_info->app_url = document_url.is_valid() ?
+            document_url.Resolve(url) : GURL(url);
         if (!app_info->app_url.is_valid())
           app_info->app_url = GURL();
       }
