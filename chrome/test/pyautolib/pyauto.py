@@ -2601,7 +2601,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     """
     return self.UninstallExtensionById(app_id)
 
-  def LaunchApp(self, app_id):
+  def LaunchApp(self, app_id, windex=0):
     """Opens the New Tab Page and launches the specified app from it.
 
     This method will not return until after the contents of a new tab for the
@@ -2609,16 +2609,18 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
 
     Args:
       app_id: The string ID of the app to launch.
+      windex: The index of the browser window to work on.  Defaults to 0 (the
+              first window).
 
     Raises:
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
     """
-    self.AppendTab(GURL('chrome://newtab'))  # Also activates this tab.
+    self.AppendTab(GURL('chrome://newtab'), windex)  # Also activates this tab.
     cmd_dict = {
       'command': 'LaunchApp',
       'id': app_id,
     }
-    return self._GetResultFromJSONRequest(cmd_dict)
+    return self._GetResultFromJSONRequest(cmd_dict, windex=windex)
 
   def SetAppLaunchType(self, app_id, launch_type, windex=0):
     """Sets the launch type for the specified app.
