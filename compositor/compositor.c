@@ -686,6 +686,7 @@ wlsc_surface_raise(struct wlsc_surface *surface)
 
 	wl_list_remove(&surface->link);
 	wl_list_insert(&compositor->surface_list, &surface->link);
+	wlsc_surface_damage(surface);
 }
 
 WL_EXPORT void
