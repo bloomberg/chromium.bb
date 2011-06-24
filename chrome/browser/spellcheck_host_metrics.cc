@@ -34,8 +34,10 @@ void SpellCheckHostMetrics::RecordEnabledStats(bool enabled) {
 void SpellCheckHostMetrics::RecordCheckedWordStats(const string16& word,
                                                    bool misspell) {
   spellchecked_word_count_++;
+  UMA_HISTOGRAM_COUNTS("SpellCheck.CheckedWords", spellchecked_word_count_);
   if (misspell) {
     misspelled_word_count_++;
+    UMA_HISTOGRAM_COUNTS("SpellCheck.MisspelledWords", misspelled_word_count_);
     // If an user misspelled, that user should be counted as a part of
     // the population.  So we ensure to instantiate the histogram
     // entries here at the first time.
@@ -72,11 +74,13 @@ void SpellCheckHostMetrics::RecordDictionaryCorruptionStats(bool corrupted) {
 
 void SpellCheckHostMetrics::RecordSuggestionStats(int delta) {
   suggestion_show_count_ += delta;
+  UMA_HISTOGRAM_COUNTS("SpellCheck.ShownSuggestions", suggestion_show_count_);
   RecordReplacedWordStats(0);
 }
 
 void SpellCheckHostMetrics::RecordReplacedWordStats(int delta) {
   replaced_word_count_ += delta;
+  UMA_HISTOGRAM_COUNTS("SpellCheck.ReplacedWords", replaced_word_count_);
 
   if (misspelled_word_count_) {
     // zero |misspelled_word_count_| is possible when an extension
