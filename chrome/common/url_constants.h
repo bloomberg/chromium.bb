@@ -149,7 +149,6 @@ extern const char kChromeUINetworkViewCacheHost[];
 extern const char kChromeUINewTabHost[];
 extern const char kChromeUIPluginsHost[];
 extern const char kChromeUIPrintHost[];
-extern const char kChromeUIQuotaInternalsHost[];
 extern const char kChromeUIResourcesHost[];
 extern const char kChromeUISessionsHost[];
 extern const char kChromeUISettingsHost[];

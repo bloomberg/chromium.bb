@@ -30,7 +30,6 @@
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "chrome/browser/ui/webui/plugins_ui.h"
 #include "chrome/browser/ui/webui/print_preview_ui.h"
-#include "chrome/browser/ui/webui/quota_internals_ui.h"
 #include "chrome/browser/ui/webui/sessions_ui.h"
 #include "chrome/browser/ui/webui/sync_internals_ui.h"
 #include "chrome/browser/ui/webui/test_chrome_web_ui_factory.h"
@@ -180,8 +179,6 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
     return &NewWebUI<SyncInternalsUI>;
   if (url.host() == chrome::kChromeUISettingsHost)
     return &NewWebUI<OptionsUI>;
-  if (url.host() == chrome::kChromeUIQuotaInternalsHost)
-    return &NewWebUI<QuotaInternalsUI>;
 
 #if defined(OS_CHROMEOS)
   if (url.host() == chrome::kChromeUIChooseMobileNetworkHost)
