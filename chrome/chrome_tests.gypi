@@ -649,6 +649,7 @@
       'sources': [
         'app/chrome_main_uitest.cc',
         'browser/browser_encoding_uitest.cc',
+        'browser/custom_handlers/custom_handlers_uitest.cc',
         'browser/download/save_page_uitest.cc',
         'browser/errorpage_uitest.cc',
         'browser/default_plugin_uitest.cc',

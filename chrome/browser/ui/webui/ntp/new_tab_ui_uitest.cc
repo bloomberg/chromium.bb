@@ -28,7 +28,7 @@ class NewTabUITest : public UITest {
 
     // Setup the DEFAULT_THEME profile (has fake history entries).
     set_template_user_data(UITest::ComputeTypicalUserDataSource(
-        ProxyLauncher::DEFAULT_THEME));
+        UITestBase::DEFAULT_THEME));
   }
 };
 

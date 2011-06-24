@@ -8,6 +8,7 @@
 #include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
+#include "base/string_util.h"
 #include "base/sys_info.h"
 #include "base/test/test_file_util.h"
 #include "base/time.h"
@@ -81,6 +82,43 @@ class StartupTest : public UIPerfTest {
     set_template_user_data(data_dir);
   }
 
+  // Rewrite the preferences file to point to the proper image directory.
+  virtual void SetUpProfile() {
+    UIPerfTest::SetUpProfile();
+    if (profile_type_ != UITestBase::COMPLEX_THEME)
+      return;
+
+    const FilePath pref_template_path(user_data_dir().AppendASCII("Default").
+        AppendASCII("PreferencesTemplate"));
+    const FilePath pref_path(user_data_dir().AppendASCII("Default").
+        AppendASCII("Preferences"));
+
+    // Read in preferences template.
+    std::string pref_string;
+    EXPECT_TRUE(file_util::ReadFileToString(pref_template_path, &pref_string));
+    string16 format_string = ASCIIToUTF16(pref_string);
+
+    // Make sure temp directory has the proper format for writing to prefs file.
+#if defined(OS_POSIX)
+    std::wstring user_data_dir_w(ASCIIToWide(user_data_dir().value()));
+#elif defined(OS_WIN)
+    std::wstring user_data_dir_w(user_data_dir().value());
+    // In Windows, the FilePath will write '\' for the path separators; change
+    // these to a separator that won't trigger escapes.
+    std::replace(user_data_dir_w.begin(),
+                 user_data_dir_w.end(), '\\', '/');
+#endif
+
+    // Rewrite prefs file.
+    std::vector<string16> subst;
+    subst.push_back(WideToUTF16(user_data_dir_w));
+    const std::string prefs_string =
+        UTF16ToASCII(ReplaceStringPlaceholders(format_string, subst, NULL));
+    EXPECT_TRUE(file_util::WriteFile(pref_path, prefs_string.c_str(),
+                                     prefs_string.size()));
+    file_util::EvictFileFromSystemCache(pref_path);
+  }
+
   // Runs a test which loads |tab_count| tabs on startup, either as command line
   // arguments or, if |restore_session| is true, by using session restore.
   // |nth_timed_tab|, if non-zero, will measure time to load the first n+1 tabs.
@@ -90,14 +128,14 @@ class StartupTest : public UIPerfTest {
 
   void RunStartupTest(const char* graph, const char* trace,
                       TestColdness test_cold, TestImportance test_importance,
-                      ProxyLauncher::ProfileType profile_type,
+                      UITestBase::ProfileType profile_type,
                       int num_tabs, int nth_timed_tab) {
     bool important = (test_importance == IMPORTANT);
     profile_type_ = profile_type;
 
     // Sets the profile data for the run.  For now, this is only used for
     // the non-default themes test.
-    if (profile_type != ProxyLauncher::DEFAULT_THEME) {
+    if (profile_type != UITestBase::DEFAULT_THEME) {
       set_template_user_data(UITest::ComputeTypicalUserDataSource(
           profile_type));
     }
@@ -237,20 +275,20 @@ class StartupTest : public UIPerfTest {
 
 TEST_F(StartupTest, PerfWarm) {
   RunStartupTest("warm", "t", WARM, IMPORTANT,
-                 ProxyLauncher::DEFAULT_THEME, 0, 0);
+                 UITestBase::DEFAULT_THEME, 0, 0);
 }
 
 TEST_F(StartupTest, PerfReferenceWarm) {
   UseReferenceBuild();
   RunStartupTest("warm", "t_ref", WARM, IMPORTANT,
-                 ProxyLauncher::DEFAULT_THEME, 0, 0);
+                 UITestBase::DEFAULT_THEME, 0, 0);
 }
 
 // TODO(mpcomplete): Should we have reference timings for all these?
 
 TEST_F(StartupTest, PerfCold) {
   RunStartupTest("cold", "t", COLD, NOT_IMPORTANT,
-                 ProxyLauncher::DEFAULT_THEME, 0, 0);
+                 UITestBase::DEFAULT_THEME, 0, 0);
 }
 
 void StartupTest::RunPerfTestWithManyTabs(const char* graph, const char* trace,
@@ -280,7 +318,7 @@ void StartupTest::RunPerfTestWithManyTabs(const char* graph, const char* trace,
                                         base::IntToString(tab_count));
   }
   RunStartupTest(graph, trace, WARM, NOT_IMPORTANT,
-                 ProxyLauncher::DEFAULT_THEME, tab_count, nth_timed_tab);
+                 UITestBase::DEFAULT_THEME, tab_count, nth_timed_tab);
 }
 
 TEST_F(StartupTest, PerfFewTabs) {
@@ -343,42 +381,42 @@ TEST_F(StartupTest, PerfExtensionEmpty) {
   SetUpWithFileURL();
   SetUpWithExtensionsProfile("empty");
   RunStartupTest("warm", "extension_empty", WARM, NOT_IMPORTANT,
-                 ProxyLauncher::DEFAULT_THEME, 1, 0);
+                 UITestBase::DEFAULT_THEME, 1, 0);
 }
 
 TEST_F(StartupTest, PerfExtensionContentScript1) {
   SetUpWithFileURL();
   SetUpWithExtensionsProfile("content_scripts1");
   RunStartupTest("warm", "extension_content_scripts1", WARM, NOT_IMPORTANT,
-                 ProxyLauncher::DEFAULT_THEME, 1, 0);
+                 UITestBase::DEFAULT_THEME, 1, 0);
 }
 
 TEST_F(StartupTest, MAYBE_PerfExtensionContentScript50) {
   SetUpWithFileURL();
   SetUpWithExtensionsProfile("content_scripts50");
   RunStartupTest("warm", "extension_content_scripts50", WARM, NOT_IMPORTANT,
-                 ProxyLauncher::DEFAULT_THEME, 1, 0);
+                 UITestBase::DEFAULT_THEME, 1, 0);
 }
 
 TEST_F(StartupTest, PerfComplexTheme) {
   RunStartupTest("warm", "t-theme", WARM, NOT_IMPORTANT,
-                 ProxyLauncher::COMPLEX_THEME, 0, 0);
+                 UITestBase::COMPLEX_THEME, 0, 0);
 }
 
 #if defined(TOOLKIT_USES_GTK)
 TEST_F(StartupTest, PerfGtkTheme) {
   RunStartupTest("warm", "gtk-theme", WARM, NOT_IMPORTANT,
-                 ProxyLauncher::NATIVE_THEME, 0, 0);
+                 UITestBase::NATIVE_THEME, 0, 0);
 }
 
 TEST_F(StartupTest, PrefNativeFrame) {
   RunStartupTest("warm", "custom-frame", WARM, NOT_IMPORTANT,
-                 ProxyLauncher::CUSTOM_FRAME, 0, 0);
+                 UITestBase::CUSTOM_FRAME, 0, 0);
 }
 
 TEST_F(StartupTest, PerfNativeFrameGtkTheme) {
   RunStartupTest("warm", "custom-frame-gtk-theme", WARM, NOT_IMPORTANT,
-                 ProxyLauncher::CUSTOM_FRAME_NATIVE_THEME, 0, 0);
+                 UITestBase::CUSTOM_FRAME_NATIVE_THEME, 0, 0);
 }
 #endif
 

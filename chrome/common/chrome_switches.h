@@ -70,6 +70,7 @@ extern const char kDisableBackgroundNetworking[];
 extern const char kDisableClientSidePhishingDetection[];
 extern const char kDisableConnectBackupJobs[];
 extern const char kDisableCustomJumpList[];
+extern const char kDisableCustomProtocolOSCheck[];
 extern const char kDisableDhcpWpad[];
 extern const char kDisableExtensionsFileAccessCheck[];
 extern const char kDisableExtensions[];

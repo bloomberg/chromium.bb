@@ -9,6 +9,7 @@
 #endif
 
 #include "base/base_paths.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/file_path.h"
@@ -161,7 +162,7 @@ void Automation::InitWithBrowserPath(const FilePath& browser_exe,
   ProxyLauncher::LaunchState launch_props = {
       false,  // clear_profile
       FilePath(),  // template_user_data
-      ProxyLauncher::DEFAULT_THEME,
+      base::Closure(),
       command,
       true,  // include_testing_id
       true   // show_window

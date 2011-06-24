@@ -219,6 +219,11 @@ const char kDisableConnectBackupJobs[]      = "disable-connect-backup-jobs";
 // Disables the custom JumpList on Windows 7.
 const char kDisableCustomJumpList[]         = "disable-custom-jumplist";
 
+// Disables checking whether custom protocol handlers are registered with the
+// OS and removing those that are not. This is used during automated testing.
+const char kDisableCustomProtocolOSCheck[]  =
+    "disable-custom-protocol-os-check";
+
 // Disables retrieval of PAC URLs from DHCP as per the WPAD standard.
 const char kDisableDhcpWpad[]               = "disable-dhcp-wpad";
 

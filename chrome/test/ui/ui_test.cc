@@ -14,6 +14,7 @@
 
 #include "app/sql/connection.h"
 #include "base/base_switches.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/file_path.h"
@@ -89,7 +90,7 @@ UITestBase::UITestBase()
       clear_profile_(true),
       include_testing_id_(true),
       enable_file_cookies_(true),
-      profile_type_(ProxyLauncher::DEFAULT_THEME) {
+      profile_type_(UITestBase::DEFAULT_THEME) {
   PathService::Get(chrome::DIR_APP, &browser_directory_);
   PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory_);
 }
@@ -104,7 +105,7 @@ UITestBase::UITestBase(MessageLoop::Type msg_loop_type)
       clear_profile_(true),
       include_testing_id_(true),
       enable_file_cookies_(true),
-      profile_type_(ProxyLauncher::DEFAULT_THEME) {
+      profile_type_(UITestBase::DEFAULT_THEME) {
   PathService::Get(chrome::DIR_APP, &browser_directory_);
   PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory_);
 }
@@ -177,8 +178,10 @@ ProxyLauncher::LaunchState UITestBase::DefaultLaunchState() {
   FilePath browser_executable = browser_directory_.Append(GetExecutablePath());
   CommandLine command(browser_executable);
   command.AppendArguments(launch_arguments_, false);
+  base::Closure setup_profile_callback = base::Bind(&UITestBase::SetUpProfile,
+                                                    base::Unretained(this));
   ProxyLauncher::LaunchState state =
-      { clear_profile_, template_user_data_, profile_type_,
+      { clear_profile_, template_user_data_, setup_profile_callback,
         command, include_testing_id_, show_window_ };
   return state;
 }
@@ -197,6 +200,9 @@ void UITestBase::SetLaunchSwitches() {
     launch_arguments_.AppendSwitchASCII(switches::kHomePage, homepage_);
   if (!test_name_.empty())
     launch_arguments_.AppendSwitchASCII(switches::kTestName, test_name_);
+}
+
+void UITestBase::SetUpProfile() {
 }
 
 void UITestBase::LaunchBrowser() {
@@ -442,25 +448,25 @@ bool UITestBase::CloseBrowser(BrowserProxy* browser,
 
 // static
 FilePath UITestBase::ComputeTypicalUserDataSource(
-    ProxyLauncher::ProfileType profile_type) {
+    UITestBase::ProfileType profile_type) {
   FilePath source_history_file;
   EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA,
                                &source_history_file));
   source_history_file = source_history_file.AppendASCII("profiles");
   switch (profile_type) {
-    case ProxyLauncher::DEFAULT_THEME:
+    case UITestBase::DEFAULT_THEME:
       source_history_file = source_history_file.AppendASCII("typical_history");
       break;
-    case ProxyLauncher::COMPLEX_THEME:
+    case UITestBase::COMPLEX_THEME:
       source_history_file = source_history_file.AppendASCII("complex_theme");
       break;
-    case ProxyLauncher::NATIVE_THEME:
+    case UITestBase::NATIVE_THEME:
       source_history_file = source_history_file.AppendASCII("gtk_theme");
       break;
-    case ProxyLauncher::CUSTOM_FRAME:
+    case UITestBase::CUSTOM_FRAME:
       source_history_file = source_history_file.AppendASCII("custom_frame");
       break;
-    case ProxyLauncher::CUSTOM_FRAME_NATIVE_THEME:
+    case UITestBase::CUSTOM_FRAME_NATIVE_THEME:
       source_history_file =
           source_history_file.AppendASCII("custom_frame_gtk_theme");
       break;

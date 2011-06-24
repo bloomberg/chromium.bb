@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util-inl.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_io_data.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/child_process_security_policy.h"
@@ -182,16 +184,22 @@ void ProtocolHandlerRegistry::Load() {
 
   // For each default protocol handler, check that we are still registered
   // with the OS as the default application.
-  for (ProtocolHandlerMap::const_iterator p = default_handlers_.begin();
-       p != default_handlers_.end(); ++p) {
-    ProtocolHandler handler = p->second;
-    DefaultClientObserver* observer = new DefaultClientObserver(this);
-    scoped_refptr<ShellIntegration::DefaultProtocolClientWorker> worker;
-    worker = new ShellIntegration::DefaultProtocolClientWorker(
-        observer, handler.protocol());
-    observer->SetWorker(worker);
-    default_client_observers_.push_back(observer);
-    worker->StartCheckIsDefault();
+  bool check_os_registration = true;
+  const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
+  if (cmd_line.HasSwitch(switches::kDisableCustomProtocolOSCheck))
+    check_os_registration = false;
+  if (check_os_registration) {
+    for (ProtocolHandlerMap::const_iterator p = default_handlers_.begin();
+         p != default_handlers_.end(); ++p) {
+      ProtocolHandler handler = p->second;
+      DefaultClientObserver* observer = new DefaultClientObserver(this);
+      scoped_refptr<ShellIntegration::DefaultProtocolClientWorker> worker;
+      worker = new ShellIntegration::DefaultProtocolClientWorker(
+          observer, handler.protocol());
+      observer->SetWorker(worker);
+      default_client_observers_.push_back(observer);
+      worker->StartCheckIsDefault();
+    }
   }
 }
 

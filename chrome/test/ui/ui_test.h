@@ -48,6 +48,15 @@ class TabProxy;
 // rather than UITestBase.
 class UITestBase {
  public:
+  // Profile theme type choices.
+  enum ProfileType {
+    DEFAULT_THEME = 0,
+    COMPLEX_THEME = 1,
+    NATIVE_THEME = 2,
+    CUSTOM_FRAME = 3,
+    CUSTOM_FRAME_NATIVE_THEME = 4,
+  };
+
   // ********* Utility functions *********
 
   // Launches the browser only.
@@ -171,8 +180,7 @@ class UITestBase {
 
   // Returns the directory name where the "typical" user data is that we use
   // for testing.
-  static FilePath ComputeTypicalUserDataSource(
-      ProxyLauncher::ProfileType profile_type);
+  static FilePath ComputeTypicalUserDataSource(ProfileType profile_type);
 
   // Return the user data directory being used by the browser instance in
   // UITest::SetUp().
@@ -274,6 +282,10 @@ class UITestBase {
   // added in this function. Add new command-line switches here.
   void SetLaunchSwitches();
 
+  // Called by the ProxyLauncher just before the browser is launched, allowing
+  // setup of the profile for the runtime environment..
+  virtual void SetUpProfile();
+
   // Returns the proxy for the currently active tab, or NULL if there is no
   // tab or there was some kind of error. Only looks at the first window, for
   // backward compatibility. The returned pointer MUST be deleted by the
@@ -332,7 +344,7 @@ class UITestBase {
   scoped_ptr<ProxyLauncher> launcher_;
 
   // Are we using a profile with a complex theme?
-  ProxyLauncher::ProfileType profile_type_;
+  ProfileType profile_type_;
 
   // PID file for websocket server.
   FilePath websocket_pid_file_;

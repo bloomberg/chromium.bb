@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
@@ -29,15 +30,6 @@ class ProxyLauncher {
   // Default path for named testing interface.
   static const char kDefaultInterfacePath[];
 
-  // Profile theme type choices.
-  enum ProfileType {
-    DEFAULT_THEME = 0,
-    COMPLEX_THEME = 1,
-    NATIVE_THEME = 2,
-    CUSTOM_FRAME = 3,
-    CUSTOM_FRAME_NATIVE_THEME = 4,
-  };
-
   // Different ways to quit the browser.
   enum ShutdownType {
     WINDOW_CLOSE,
@@ -54,8 +46,9 @@ class ProxyLauncher {
     // into the user data directory for the test.
     FilePath template_user_data;
 
-    // Profile theme type.
-    ProfileType profile_type;
+    // Called just before starting the browser to allow any setup of the
+    // profile for the run time environment.
+    base::Closure setup_profile_callback;
 
     // Command line to launch the browser.
     CommandLine command;
