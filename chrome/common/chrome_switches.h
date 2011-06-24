@@ -250,7 +250,6 @@ extern const char kShowCompositedLayerTree[];
 extern const char kShowFPSCounter[];
 extern const char kShowIcons[];
 extern const char kSilentDumpOnDCHECK[];
-extern const char kSocketReusePolicy[];
 extern const char kStartMaximized[];
 extern const char kSyncAllowInsecureXmppConnection[];
 extern const char kSyncInvalidateXmppLogin[];

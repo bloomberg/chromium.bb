@@ -923,10 +923,6 @@ const char kSilentDumpOnDCHECK[]            = "silent-dump-on-dcheck";
 // Replaces the buffered data source for <audio> and <video> with a simplified
 // resource loader that downloads the entire resource into memory.
 
-// Choose the socket reuse policy specified. The value should be of type
-// enum ClientSocketReusePolicy.
-const char kSocketReusePolicy[]             = "socket-reuse-policy";
-
 // Start the browser maximized, regardless of any previous settings.
 const char kStartMaximized[]                = "start-maximized";
 

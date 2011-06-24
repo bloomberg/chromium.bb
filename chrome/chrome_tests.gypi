@@ -1291,7 +1291,6 @@
         'browser/bookmarks/bookmark_utils_unittest.cc',
         'browser/browser_about_handler_unittest.cc',
         'browser/browser_commands_unittest.cc',
-        'browser/browser_main_unittest.cc',
         'browser/browser_url_handler_unittest.cc',
         'browser/browsing_data_appcache_helper_unittest.cc',
         'browser/browsing_data_database_helper_unittest.cc',

@@ -52,8 +52,6 @@ class TransportSocket : public net::StreamSocket, public sigslot::has_slots<> {
   virtual void SetOmniboxSpeculation();
   virtual bool WasEverUsed() const;
   virtual bool UsingTCPFastOpen() const;
-  virtual int64 NumBytesRead() const;
-  virtual base::TimeDelta GetConnectTimeMicros() const;
 
   // net::Socket implementation
 

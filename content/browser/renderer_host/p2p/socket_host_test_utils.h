@@ -73,8 +73,6 @@ class FakeSocket : public net::StreamSocket {
   virtual void SetOmniboxSpeculation() OVERRIDE;
   virtual bool WasEverUsed() const OVERRIDE;
   virtual bool UsingTCPFastOpen() const OVERRIDE;
-  virtual int64 NumBytesRead() const OVERRIDE;
-  virtual base::TimeDelta GetConnectTimeMicros() const OVERRIDE;
 
  private:
   bool read_pending_;
@@ -209,14 +207,6 @@ bool FakeSocket::WasEverUsed() const {
 
 bool FakeSocket::UsingTCPFastOpen() const {
   return false;
-}
-
-int64 FakeSocket::NumBytesRead() const {
-  return -1;
-}
-
-base::TimeDelta FakeSocket::GetConnectTimeMicros() const {
-  return base::TimeDelta::FromMicroseconds(-1);
 }
 
 void CreateRandomPacket(std::vector<char>* packet) {

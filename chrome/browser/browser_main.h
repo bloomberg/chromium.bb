@@ -7,7 +7,6 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/tracked_objects.h"
@@ -130,9 +129,6 @@ class BrowserMainParts {
   // specified timeout value is reached.
   void ConnectBackupJobsFieldTrial();
 
-  // A/B test for warmest socket vs. most recently used socket.
-  void WarmConnectionFieldTrial();
-
   // Used to initialize NSPR where appropriate.
   virtual void InitializeSSL() = 0;
 
@@ -175,9 +171,6 @@ class BrowserMainParts {
   // Initialized in SetupMetricsAndFieldTrials.
   scoped_refptr<FieldTrialSynchronizer> field_trial_synchronizer_;
 
-  FRIEND_TEST(BrowserMainTest, WarmConnectionFieldTrial_WarmestSocket);
-  FRIEND_TEST(BrowserMainTest, WarmConnectionFieldTrial_Random);
-  FRIEND_TEST(BrowserMainTest, WarmConnectionFieldTrial_Invalid);
   DISALLOW_COPY_AND_ASSIGN(BrowserMainParts);
 };
 
