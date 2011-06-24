@@ -1232,7 +1232,7 @@ bool BaseTransaction::NotifyTransactionChangingAndEnding(
 
   scoped_ptr<OriginalEntries> originals(entries);
   const base::TimeDelta elapsed = base::TimeTicks::Now() - time_acquired_;
-  VLOG_LOC(from_here_, 1)
+  VLOG_LOC(from_here_, 2)
         << name_ << " transaction completed in " << elapsed.InSecondsF()
         << " seconds.";
 

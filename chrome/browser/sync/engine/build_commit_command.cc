@@ -63,24 +63,6 @@ void SetEntrySpecifics(MutableEntry* meta_entry, SyncEntity* sync_entry) {
 
   DCHECK(meta_entry->GetModelType() == sync_entry->GetModelType());
 }
-
-void SetOldStyleBookmarkData(MutableEntry* meta_entry, SyncEntity* sync_entry) {
-  DCHECK(meta_entry->Get(SPECIFICS).HasExtension(sync_pb::bookmark));
-
-  // Old-style inlined bookmark data.
-  sync_pb::SyncEntity_BookmarkData* bookmark =
-      sync_entry->mutable_bookmarkdata();
-
-  if (!meta_entry->Get(syncable::IS_DIR)) {
-    const sync_pb::BookmarkSpecifics& bookmark_specifics =
-        meta_entry->Get(SPECIFICS).GetExtension(sync_pb::bookmark);
-    bookmark->set_bookmark_url(bookmark_specifics.url());
-    bookmark->set_bookmark_favicon(bookmark_specifics.favicon());
-    bookmark->set_bookmark_folder(false);
-  } else {
-    bookmark->set_bookmark_folder(true);
-  }
-}
 }  // namespace
 
 void BuildCommitCommand::ExecuteImpl(SyncSession* session) {

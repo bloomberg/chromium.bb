@@ -55,12 +55,12 @@ void GenericChangeProcessor::ApplyChangesFromSyncModel(
             " data for received change with id " + changes[i].id);
         return;
       }
-      specifics = &read_node.GetEntitySpecifics();
+      syncer_changes_.push_back(SyncChange(action,
+          SyncData::CreateRemoteData(read_node.GetEntitySpecifics())));
+    } else {
+      syncer_changes_.push_back(
+          SyncChange(action, SyncData::CreateRemoteData(*specifics)));
     }
-    DCHECK_NE(syncable::UNSPECIFIED,
-              syncable::GetModelTypeFromSpecifics(*specifics));
-    syncer_changes_.push_back(
-        SyncChange(action, SyncData::CreateRemoteData(*specifics)));
   }
 }
 

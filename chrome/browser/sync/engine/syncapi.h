@@ -312,6 +312,9 @@ class BaseNode {
   const sync_pb::EntitySpecifics& GetUnencryptedSpecifics(
       const syncable::Entry* entry) const;
 
+  // Copy |specifics| into |unencrypted_data_|.
+  void SetUnencryptedSpecifics(const sync_pb::EntitySpecifics& specifics);
+
  private:
   void* operator new(size_t size);  // Node is meant for stack use only.
 

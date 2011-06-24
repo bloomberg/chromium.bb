@@ -652,11 +652,14 @@ void ProfileSyncService::OnPassphraseRequired(
   // passphrase is needed for decryption but the user is not syncing an
   // encrypted data type on this machine. Otherwise we look for one.
   if (!IsEncryptedDatatypeEnabled() && IsPassphraseRequiredForDecryption()) {
+    VLOG(1) << "Not decrypting and no encrypted datatypes enabled"
+            << ", accepted passphrase.";
     OnPassphraseAccepted();
   }
 
   // First try supplying gaia password as the passphrase.
   if (!gaia_password_.empty()) {
+    VLOG(1) << "Attempting gaia passphrase.";
     SetPassphrase(gaia_password_, false, true);
     gaia_password_ = std::string();
     return;
@@ -665,6 +668,7 @@ void ProfileSyncService::OnPassphraseRequired(
   // If the above failed then try the custom passphrase the user might have
   // entered in setup.
   if (!cached_passphrase_.value.empty()) {
+    VLOG(1) << "Attempting cached passphrase.";
     SetPassphrase(cached_passphrase_.value,
                   cached_passphrase_.is_explicit,
                   cached_passphrase_.is_creation);
@@ -675,6 +679,7 @@ void ProfileSyncService::OnPassphraseRequired(
   // Prompt the user for a password.
   if (WizardIsVisible() && IsEncryptedDatatypeEnabled() &&
       IsPassphraseRequiredForDecryption()) {
+    VLOG(1) << "Prompting user for passphrase.";
     wizard_.Step(SyncSetupWizard::ENTER_PASSPHRASE);
   }
 
@@ -682,6 +687,7 @@ void ProfileSyncService::OnPassphraseRequired(
 }
 
 void ProfileSyncService::OnPassphraseAccepted() {
+  VLOG(1) << "Received OnPassphraseAccepted.";
   // Make sure the data types that depend on the passphrase are started at
   // this time.
   syncable::ModelTypeSet types;

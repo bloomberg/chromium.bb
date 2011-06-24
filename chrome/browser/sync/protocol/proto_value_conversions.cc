@@ -223,6 +223,7 @@ DictionaryValue* BookmarkSpecificsToValue(
   DictionaryValue* value = new DictionaryValue();
   SET_STR(url);
   SET_BYTES(favicon);
+  SET_STR(title);
   return value;
 }
 

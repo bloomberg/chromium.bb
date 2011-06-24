@@ -101,15 +101,20 @@ using syncable::WriterTag;
 using syncable::SPECIFICS;
 using sync_pb::AutofillProfileSpecifics;
 
+namespace {
+
 typedef GoogleServiceAuthError AuthError;
 
 static const int kThreadExitTimeoutMsec = 60000;
 static const int kSSLPort = 443;
 static const int kSyncSchedulerDelayMsec = 250;
+static const char kEncryptedString [] = "encrypted";
 
 #if defined(OS_CHROMEOS)
 static const int kChromeOSNetworkChangeReactionDelayHackMsec = 5000;
 #endif  // OS_CHROMEOS
+
+} // namespace
 
 // We manage the lifetime of sync_api::SyncManager::SyncInternal ourselves.
 DISABLE_RUNNABLE_METHOD_REFCOUNT(sync_api::SyncManager::SyncInternal);
@@ -237,7 +242,8 @@ sync_pb::PasswordSpecificsData* DecryptPasswordSpecifics(
 }
 
 bool BaseNode::DecryptIfNecessary() {
-  if (GetIsFolder()) return true;  // Ignore the top-level datatype folder.
+  if (!GetEntry()->Get(syncable::UNIQUE_SERVER_TAG).empty())
+      return true;  // Ignore unique folders.
   const sync_pb::EntitySpecifics& specifics =
       GetEntry()->Get(syncable::SPECIFICS);
   if (specifics.HasExtension(sync_pb::password)) {
@@ -266,6 +272,9 @@ bool BaseNode::DecryptIfNecessary() {
       syncable::ModelTypeToString(GetModelType()) << ".";
     return false;
   }
+  VLOG(2) << "Decrypted specifics of type "
+          << syncable::ModelTypeToString(GetModelType())
+          << " with content: " << plaintext_data;
   return true;
 }
 
@@ -302,7 +311,15 @@ bool BaseNode::GetIsFolder() const {
 
 std::wstring BaseNode::GetTitle() const {
   std::wstring result;
-  ServerNameToSyncAPIName(GetEntry()->Get(syncable::NON_UNIQUE_NAME), &result);
+  // TODO(zea): refactor bookmarks to not need this functionality.
+  if (syncable::BOOKMARKS == GetModelType() &&
+      GetEntry()->Get(syncable::SPECIFICS).has_encrypted()) {
+    // Special case for legacy bookmarks dealing with encryption.
+    ServerNameToSyncAPIName(GetBookmarkSpecifics().title(), &result);
+  } else {
+    ServerNameToSyncAPIName(GetEntry()->Get(syncable::NON_UNIQUE_NAME),
+        &result);
+  }
   return result;
 }
 
@@ -435,6 +452,16 @@ syncable::ModelType BaseNode::GetModelType() const {
   return GetEntry()->GetModelType();
 }
 
+void BaseNode::SetUnencryptedSpecifics(
+    const sync_pb::EntitySpecifics& specifics) {
+  syncable::ModelType type = syncable::GetModelTypeFromSpecifics(specifics);
+  DCHECK_NE(syncable::UNSPECIFIED, type);
+  if (GetModelType() != syncable::UNSPECIFIED) {
+    DCHECK_EQ(GetModelType(), type);
+  }
+  unencrypted_data_.CopyFrom(specifics);
+}
+
 ////////////////////////////////////
 // WriteNode member definitions
 void WriteNode::EncryptIfNecessary(sync_pb::EntitySpecifics* unencrypted) {
@@ -463,21 +490,14 @@ void WriteNode::EncryptIfNecessary(sync_pb::EntitySpecifics* unencrypted) {
       << ". Dropping.";
     return;
   }
+  VLOG(2) << "Encrypting specifics of type "
+          << syncable::ModelTypeToString(type)
+          << " with content: " << unencrypted->SerializeAsString();
+
   sync_pb::EntitySpecifics encrypted;
   syncable::AddDefaultExtensionValue(type, &encrypted);
-  if (VLOG_IS_ON(2)) {
-    std::string unencrypted_base64;
-    if (!base::Base64Encode(unencrypted->SerializeAsString(),
-                            &unencrypted_base64)) {
-      NOTREACHED();
-    }
-    VLOG(2) << "Encrypted specifics of type "
-            << syncable::ModelTypeToString(type)
-            << " with content: " << unencrypted_base64 << "\n";
-  }
   if (!GetTransaction()->GetCryptographer()->Encrypt(
-      *unencrypted,
-      encrypted.mutable_encrypted())) {
+          *unencrypted, encrypted.mutable_encrypted())) {
     LOG(ERROR) << "Could not encrypt data for node of type " <<
       syncable::ModelTypeToString(type);
     NOTREACHED();
@@ -502,7 +522,20 @@ void WriteNode::SetTitle(const std::wstring& title) {
   if (server_legal_name == old_name)
     return;  // Skip redundant changes.
 
-  entry_->Put(syncable::NON_UNIQUE_NAME, server_legal_name);
+  // Only set NON_UNIQUE_NAME to the title if we're not encrypted.
+  if (GetEntitySpecifics().has_encrypted())
+    entry_->Put(syncable::NON_UNIQUE_NAME, kEncryptedString);
+  else
+    entry_->Put(syncable::NON_UNIQUE_NAME, server_legal_name);
+
+  // For bookmarks, we also set the title field in the specifics.
+  // TODO(zea): refactor bookmarks to not need this functionality.
+  if (GetModelType() == syncable::BOOKMARKS) {
+    sync_pb::BookmarkSpecifics new_value = GetBookmarkSpecifics();
+    new_value.set_title(server_legal_name);
+    SetBookmarkSpecifics(new_value);  // Does it's own encryption checking.
+  }
+
   MarkForSyncing();
 }
 
@@ -599,6 +632,8 @@ void WriteNode::SetEntitySpecifics(
   syncable::ModelType new_specifics_type =
       syncable::GetModelTypeFromSpecifics(new_value);
   DCHECK_NE(new_specifics_type, syncable::UNSPECIFIED);
+  VLOG(1) << "Writing entity specifics of type "
+          << syncable::ModelTypeToString(new_specifics_type);
   // GetModelType() can be unspecified if this is the first time this
   // node is being initialized (see PutModelType()).  Otherwise, it
   // should match |new_specifics_type|.
@@ -613,11 +648,33 @@ void WriteNode::SetEntitySpecifics(
       MergeFrom(GetEntitySpecifics().unknown_fields());
 
   EncryptIfNecessary(&entity_specifics);
+  DCHECK_EQ(new_specifics_type,
+            syncable::GetModelTypeFromSpecifics(entity_specifics));
 
   // Skip redundant changes.
   if (entity_specifics.SerializeAsString() ==
       entry_->Get(SPECIFICS).SerializeAsString()) {
+    VLOG(2) << "Dropping EntitySpecifics write, no change.";
     return;
+  }
+
+  if (entity_specifics.has_encrypted()) {
+    // Overwrite the non-specifics data.
+    entry_->Put(syncable::NON_UNIQUE_NAME, kEncryptedString);
+    // For bookmarks we actually put bogus data into the unencrypted specifics,
+    // else the server will try to do it for us.
+    if (GetModelType() == syncable::BOOKMARKS) {
+      sync_pb::BookmarkSpecifics *bookmark_specifics =
+          entity_specifics.MutableExtension(sync_pb::bookmark);
+      if (!GetIsFolder())
+        bookmark_specifics->set_url(kEncryptedString);
+      bookmark_specifics->set_title(kEncryptedString);
+    }
+
+    // We make a copy of the unencrypted specifics so that if this node is
+    // updated, we do not have to decrypt the old data. Note that this only
+    // modifies the node's local data and is not synced
+    SetUnencryptedSpecifics(new_value);
   }
   entry_->Put(SPECIFICS, entity_specifics);
   MarkForSyncing();
@@ -1418,6 +1475,7 @@ class SyncManager::SyncInternal
 
     if (a.ref(syncable::NON_UNIQUE_NAME) != b.Get(syncable::NON_UNIQUE_NAME))
       return true;
+
     if (a.ref(syncable::IS_DIR) != b.Get(syncable::IS_DIR))
       return true;
     // Check if data has changed (account for encryption).
@@ -1978,6 +2036,7 @@ void SyncManager::SyncInternal::SetPassphrase(
     ReEncryptEverything(&trans);
   }
 
+  VLOG(1) << "Passphrase accepted, bootstrapping encryption.";
   std::string bootstrap_token;
   cryptographer->GetBootstrapToken(&bootstrap_token);
   ObserverList<SyncManager::Observer> temp_obs_list;
@@ -2077,8 +2136,10 @@ void SyncManager::SyncInternal::ReEncryptEverything(WriteTransaction* trans) {
       }
       if (child.GetIsFolder()) {
         to_visit.push(child.GetFirstChildId());
-      } else {
-        // Rewrite the specifics of the node with encrypted data if necessary.
+      }
+      if (child.GetEntry()->Get(syncable::UNIQUE_SERVER_TAG).empty()) {
+      // Rewrite the specifics of the node with encrypted data if necessary
+      // (only rewrite the non-unique folders).
         child.ResetFromSpecifics();
       }
       to_visit.push(child.GetSuccessorId());
