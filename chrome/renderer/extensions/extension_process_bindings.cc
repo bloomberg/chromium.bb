@@ -34,6 +34,7 @@
 #include "content/renderer/render_view_visitor.h"
 #include "grit/common_resources.h"
 #include "grit/renderer_resources.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -81,7 +82,7 @@ class ExtensionViewAccumulator : public RenderViewVisitor {
     if (!ViewTypeMatches(helper->view_type(), view_type_))
       return true;
 
-    GURL url = render_view->webview()->mainFrame()->url();
+    GURL url = render_view->webview()->mainFrame()->document().url();
     if (!url.SchemeIs(chrome::kExtensionScheme))
       return true;
     const std::string& extension_id = url.host();
@@ -420,7 +421,7 @@ class ExtensionImpl : public ExtensionBase {
     GURL source_url;
     WebFrame* webframe = WebFrame::frameForCurrentContext();
     if (webframe)
-      source_url = webframe->url();
+      source_url = webframe->document().url();
 
     int request_id = args[2]->Int32Value();
     bool has_callback = args[3]->BooleanValue();

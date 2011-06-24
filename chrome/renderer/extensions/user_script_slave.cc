@@ -21,6 +21,7 @@
 #include "chrome/renderer/extensions/extension_groups.h"
 #include "googleurl/src/gurl.h"
 #include "grit/renderer_resources.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityPolicy.h"
@@ -235,13 +236,13 @@ void UserScriptSlave::InsertInitExtensionCode(
 
 void UserScriptSlave::InjectScripts(WebFrame* frame,
                                     UserScript::RunLocation location) {
-  GURL frame_url = GURL(frame->url());
-  if (frame_url.is_empty())
+  GURL document_url = GURL(frame->document().url());
+  if (document_url.is_empty())
     return;
 
   if (frame->isViewSourceModeEnabled())
-    frame_url = GURL(chrome::kViewSourceScheme + std::string(":") +
-                     frame_url.spec());
+    document_url = GURL(chrome::kViewSourceScheme + std::string(":") +
+                        document_url.spec());
 
   PerfTimer timer;
   int num_css = 0;
@@ -261,7 +262,7 @@ void UserScriptSlave::InjectScripts(WebFrame* frame,
     if (!extension)
       continue;
 
-    if (!extension->CanExecuteScriptOnPage(frame_url, script, NULL))
+    if (!extension->CanExecuteScriptOnPage(document_url, script, NULL))
       continue;
 
     // We rely on WebCore for CSS injection, but it's still useful to know how

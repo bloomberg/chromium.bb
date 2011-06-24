@@ -12,6 +12,7 @@
 #include "chrome/renderer/extensions/extension_helper.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
 #include "content/renderer/render_view.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
@@ -124,7 +125,8 @@ void UserScriptIdleScheduler::ExecuteCodeImpl(
       //
       // For child frames, we just skip ones the extension doesn't have access
       // to and carry on.
-      if (!extension->CanExecuteScriptOnPage(frame->url(), NULL, NULL)) {
+      if (!extension->CanExecuteScriptOnPage(frame->document().url(),
+                                             NULL, NULL)) {
         if (frame->parent()) {
           continue;
         } else {
@@ -132,7 +134,7 @@ void UserScriptIdleScheduler::ExecuteCodeImpl(
               render_view->routing_id(), params.request_id, false,
               ExtensionErrorUtils::FormatErrorMessage(
                   extension_manifest_errors::kCannotAccessPage,
-                  frame->url().spec())));
+                  frame->document().url().spec())));
           return;
         }
       }
@@ -149,7 +151,8 @@ void UserScriptIdleScheduler::ExecuteCodeImpl(
             &sources.front(), sources.size(), EXTENSION_GROUP_CONTENT_SCRIPTS);
       }
     } else {
-      frame->insertStyleText(WebString::fromUTF8(params.code), WebString());
+      frame->document().insertStyleText(
+          WebString::fromUTF8(params.code), WebString());
     }
   }
 

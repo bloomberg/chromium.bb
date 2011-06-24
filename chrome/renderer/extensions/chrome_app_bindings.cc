@@ -17,6 +17,7 @@
 #include "chrome/renderer/extensions/extension_helper.h"
 #include "content/renderer/render_view.h"
 #include "content/renderer/v8_value_converter.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "v8/include/v8.h"
 
@@ -41,9 +42,9 @@ bool CheckAccessToAppDetails() {
     return false;
   }
 
-  if (!IsCheckoutURL(frame->url().spec())) {
+  if (!IsCheckoutURL(frame->document().url().spec())) {
     std::string error("Access denied for URL: ");
-    error += frame->url().spec();
+    error += frame->document().url().spec();
     v8::ThrowException(v8::String::New(error.c_str()));
     return false;
   }
@@ -103,14 +104,14 @@ class ChromeAppExtensionWrapper : public v8::Extension {
     if (!frame)
       return v8::Boolean::New(false);
 
-    GURL url(frame->url());
+    GURL url(frame->document().url());
     if (url.is_empty() ||
         !url.is_valid() ||
         !(url.SchemeIs("http") || url.SchemeIs("https")))
       return v8::Boolean::New(false);
 
     const ::Extension* extension =
-        extension_dispatcher_->extensions()->GetByURL(frame->url());
+        extension_dispatcher_->extensions()->GetByURL(frame->document().url());
 
     bool has_web_extent = extension &&
         extension_dispatcher_->IsApplicationActive(extension->id());
@@ -163,7 +164,7 @@ class ChromeAppExtensionWrapper : public v8::Extension {
 
   static v8::Handle<v8::Value> GetDetailsForFrameImpl(const WebFrame* frame) {
     const ::Extension* extension =
-        extension_dispatcher_->extensions()->GetByURL(frame->url());
+        extension_dispatcher_->extensions()->GetByURL(frame->document().url());
     if (!extension)
       return v8::Null();
 

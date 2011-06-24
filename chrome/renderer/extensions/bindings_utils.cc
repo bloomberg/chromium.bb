@@ -11,6 +11,7 @@
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "content/renderer/render_view.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "v8/include/v8.h"
@@ -52,7 +53,7 @@ const Extension* ExtensionBase::GetExtensionForCurrentContext() const {
   if (!renderview)
     return NULL;  // this can happen as a tab is closing.
 
-  GURL url = renderview->webview()->mainFrame()->url();
+  GURL url = renderview->webview()->mainFrame()->document().url();
   const ExtensionSet* extensions = extension_dispatcher_->extensions();
   if (!extensions->ExtensionBindingsAllowed(url))
     return NULL;
