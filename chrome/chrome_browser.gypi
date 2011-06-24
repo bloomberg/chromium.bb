@@ -1630,6 +1630,8 @@
         'browser/policy/profile_policy_connector_factory.h',
         'browser/policy/user_policy_cache.cc',
         'browser/policy/user_policy_cache.h',
+        'browser/policy/user_policy_disk_cache.cc',
+        'browser/policy/user_policy_disk_cache.h',
         'browser/policy/user_policy_identity_strategy.cc',
         'browser/policy/user_policy_identity_strategy.h',
         'browser/policy/user_policy_token_cache.cc',

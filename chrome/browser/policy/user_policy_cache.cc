@@ -8,16 +8,13 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/file_util.h"
 #include "base/logging.h"
-#include "base/task.h"
 #include "base/values.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/proto/cloud_policy.pb.h"
 #include "chrome/browser/policy/proto/device_management_local.pb.h"
 #include "chrome/browser/policy/proto/old_generic_format.pb.h"
-#include "content/browser/browser_thread.h"
 #include "policy/configuration_policy_type.h"
 
 namespace policy {
@@ -28,122 +25,10 @@ namespace policy {
 void DecodePolicy(const em::CloudPolicySettings& policy,
                   PolicyMap* mandatory, PolicyMap* recommended);
 
-// Handles the on-disk cache file used by UserPolicyCache. This class handles
-// the necessary thread switching and may outlive the associated UserPolicyCache
-// instance.
-class UserPolicyCache::DiskCache
-    : public base::RefCountedThreadSafe<UserPolicyCache::DiskCache> {
- public:
-  DiskCache(const base::WeakPtr<UserPolicyCache>& cache,
-            const FilePath& backing_file_path);
-
-  // Starts reading the policy cache from disk. Passes the read policy
-  // information back to the hosting UserPolicyCache after a successful cache
-  // load through UserPolicyCache::OnDiskCacheLoaded().
-  void Load();
-
-  // Triggers a write operation to the disk cache on the FILE thread.
-  void Store(const em::CachedCloudPolicyResponse& policy);
-
- private:
-  // Tries to load the cache file on the FILE thread.
-  void LoadOnFileThread();
-
-  // Passes back the successfully read policy to the cache on the UI thread.
-  void FinishLoadOnUIThread(const em::CachedCloudPolicyResponse& policy);
-
-  // Saves a policy blob on the FILE thread.
-  void StoreOnFileThread(const em::CachedCloudPolicyResponse& policy);
-
-  base::WeakPtr<UserPolicyCache> cache_;
-  const FilePath backing_file_path_;
-
-  DISALLOW_COPY_AND_ASSIGN(DiskCache);
-};
-
-UserPolicyCache::DiskCache::DiskCache(
-    const base::WeakPtr<UserPolicyCache>& cache,
-    const FilePath& backing_file_path)
-    : cache_(cache),
-      backing_file_path_(backing_file_path) {}
-
-void UserPolicyCache::DiskCache::Load() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(this, &DiskCache::LoadOnFileThread));
-}
-
-void UserPolicyCache::DiskCache::Store(
-    const em::CachedCloudPolicyResponse& policy) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(this, &DiskCache::StoreOnFileThread, policy));
-}
-
-void UserPolicyCache::DiskCache::LoadOnFileThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  if (!file_util::PathExists(backing_file_path_))
-    return;
-
-  // Read the protobuf from the file.
-  std::string data;
-  if (!file_util::ReadFileToString(backing_file_path_, &data)) {
-    LOG(WARNING) << "Failed to read policy data from "
-                 << backing_file_path_.value();
-    return;
-  }
-
-  // Decode it.
-  em::CachedCloudPolicyResponse cached_response;
-  if (!cached_response.ParseFromArray(data.c_str(), data.size())) {
-    LOG(WARNING) << "Failed to parse policy data read from "
-                 << backing_file_path_.value();
-    return;
-  }
-
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this,
-                        &DiskCache::FinishLoadOnUIThread,
-                        cached_response));
-}
-
-void UserPolicyCache::DiskCache::FinishLoadOnUIThread(
-    const em::CachedCloudPolicyResponse& policy) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (cache_.get())
-    cache_->OnDiskCacheLoaded(policy);
-}
-
-
-void UserPolicyCache::DiskCache::StoreOnFileThread(
-    const em::CachedCloudPolicyResponse& policy) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  std::string data;
-  if (!policy.SerializeToString(&data)) {
-    LOG(WARNING) << "Failed to serialize policy data";
-    return;
-  }
-
-  if (!file_util::CreateDirectory(backing_file_path_.DirName())) {
-    LOG(WARNING) << "Failed to create directory "
-                 << backing_file_path_.DirName().value();
-    return;
-  }
-
-  int size = data.size();
-  if (file_util::WriteFile(backing_file_path_, data.c_str(), size) != size) {
-    LOG(WARNING) << "Failed to write " << backing_file_path_.value();
-    return;
-  }
-}
-
 UserPolicyCache::UserPolicyCache(const FilePath& backing_file_path)
     : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
-  disk_cache_ = new DiskCache(weak_ptr_factory_.GetWeakPtr(),
-                              backing_file_path);
+  disk_cache_ = new UserPolicyDiskCache(weak_ptr_factory_.GetWeakPtr(),
+                                        backing_file_path);
 }
 
 UserPolicyCache::~UserPolicyCache() {

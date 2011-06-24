@@ -12,6 +12,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/policy/cloud_policy_cache_base.h"
+#include "chrome/browser/policy/user_policy_disk_cache.h"
+
+namespace em = enterprise_management;
 
 namespace enterprise_management {
 class CachedCloudPolicyResponse;
@@ -24,7 +27,8 @@ namespace policy {
 
 // CloudPolicyCacheBase implementation that persists policy information
 // into the file specified by the c'tor parameter |backing_file_path|.
-class UserPolicyCache : public CloudPolicyCacheBase {
+class UserPolicyCache : public CloudPolicyCacheBase,
+                        public UserPolicyDiskCache::Delegate {
  public:
   explicit UserPolicyCache(const FilePath& backing_file_path);
   virtual ~UserPolicyCache();
@@ -37,8 +41,9 @@ class UserPolicyCache : public CloudPolicyCacheBase {
  private:
   class DiskCache;
 
-  // Invoked by DiskCache after the file cache has been read successfully.
-  void OnDiskCacheLoaded(const em::CachedCloudPolicyResponse& cached_response);
+  // UserPolicyDiskCache::Delegate implementation:
+  virtual void OnDiskCacheLoaded(
+      const em::CachedCloudPolicyResponse& cached_response) OVERRIDE;
 
   // CloudPolicyCacheBase implementation:
   virtual bool DecodePolicyData(const em::PolicyData& policy_data,
@@ -63,10 +68,10 @@ class UserPolicyCache : public CloudPolicyCacheBase {
   // </Old-style policy support>
 
   // Manages the cache file.
-  scoped_refptr<DiskCache> disk_cache_;
+  scoped_refptr<UserPolicyDiskCache> disk_cache_;
 
   // Used for constructing the weak ptr passed to |disk_cache_|.
-  base::WeakPtrFactory<UserPolicyCache> weak_ptr_factory_;
+  base::WeakPtrFactory<UserPolicyDiskCache::Delegate> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UserPolicyCache);
 };
