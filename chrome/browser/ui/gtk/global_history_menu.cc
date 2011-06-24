@@ -32,10 +32,10 @@
 namespace {
 
 // The maximum number of most visited items to display.
-const unsigned int kMostVisitedCount = 12;
+const unsigned int kMostVisitedCount = 8;
 
 // The number of recently closed items to get.
-const unsigned int kRecentlyClosedCount = 10;
+const unsigned int kRecentlyClosedCount = 8;
 
 // Menus more than this many chars long will get trimmed.
 const int kMaximumMenuWidthInChars = 50;

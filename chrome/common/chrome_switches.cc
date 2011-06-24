@@ -1127,6 +1127,14 @@ const char kRelauncherProcess[]             = "relauncher";
 const char kKioskMode[]                     = "kiosk";
 #endif
 
+#if defined(TOOLKIT_GTK)
+// Enables the global bookmark menu in our global menu bar on Ubuntu
+// Natty. This is disabled because of issues where dbus will hang for over a
+// minute because it doesn't like it when we thrown hundreds of kilobytes (or
+// even megabytes) of favicon data at it.
+const char kEnableGlobalBookmarkMenu[]     = "enable-global-bookmark-menu";
+#endif
+
 #if defined(TOOLKIT_VIEWS)
 // Enables debug paint in views framework. Enabling this causes the damaged
 // region being painted to flash in red.

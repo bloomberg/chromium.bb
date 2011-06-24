@@ -84,7 +84,7 @@ class GlobalMenuBar : public CommandUpdater::CommandObserver,
   GlobalHistoryMenu history_menu_;
 
   // Listens to the bookmark model and updates the menu.
-  GlobalBookmarkMenu bookmark_menu_;
+  scoped_ptr<GlobalBookmarkMenu> bookmark_menu_;
 
   // For some menu items, we want to show the accelerator, but not actually
   // explicitly handle it. To this end we connect those menu items' accelerators

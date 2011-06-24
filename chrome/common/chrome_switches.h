@@ -325,6 +325,10 @@ extern const char kRelauncherProcess[];
 extern const char kKioskMode[];
 #endif
 
+#if defined(TOOLKIT_GTK)
+extern const char kEnableGlobalBookmarkMenu[];
+#endif
+
 #if defined(TOOLKIT_VIEWS)
 extern const char kDebugViewsPaint[];
 extern const char kViewsDesktop[];
