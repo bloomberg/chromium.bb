@@ -3668,6 +3668,7 @@
           ],
         }],
         ['chromeos==1', {
+          'dependencies': ['../third_party/libevent/libevent.gyp:libevent'],
           'sources!': [
             'browser/background_mode_manager_linux.cc',
             'browser/first_run/upgrade_util.cc',
