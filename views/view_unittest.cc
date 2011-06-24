@@ -2458,6 +2458,30 @@ TEST_F(ViewLayerTest, LayerPropertySetter) {
   EXPECT_NE(bounds, v1->layer()->bounds());
 }
 
+// Verifies the bounds of a layer are updated if the bounds of ancestor that
+// doesn't have a layer change.
+TEST_F(ViewLayerTest, BoundsChangeWithLayer) {
+  View* content_view = new View;
+  widget()->SetContentsView(content_view);
+
+  View* v1 = new View;
+  content_view->AddChildView(v1);
+  v1->SetBounds(20, 30, 140, 150);
+
+  View* v2 = new View;
+  v2->SetBounds(10, 11, 40, 50);
+  v1->AddChildView(v2);
+  v2->SetPaintToLayer(true);
+  ASSERT_TRUE(v2->layer() != NULL);
+  EXPECT_EQ(gfx::Rect(30, 41, 40, 50), v2->layer()->bounds());
+
+  v1->SetPosition(gfx::Point(25, 36));
+  EXPECT_EQ(gfx::Rect(35, 47, 40, 50), v2->layer()->bounds());
+
+  v2->SetPosition(gfx::Point(11, 12));
+  EXPECT_EQ(gfx::Rect(36, 48, 40, 50), v2->layer()->bounds());
+}
+
 #endif  // VIEWS_COMPOSITOR || TOUCH_UI
 
 }  // namespace views

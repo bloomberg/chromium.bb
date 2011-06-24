@@ -1445,23 +1445,30 @@ void View::VisibilityChangedImpl(View* starting_from, bool is_visible) {
 
 void View::BoundsChanged(const gfx::Rect& previous_bounds) {
   if (IsVisible()) {
-    if (layer_.get())
-      layer_property_setter_->SetBounds(layer_.get(), bounds_);
-
     // Paint the new bounds.
     SchedulePaintBoundsChanged(
         bounds_.size() == previous_bounds.size() ? SCHEDULE_PAINT_SIZE_SAME :
         SCHEDULE_PAINT_SIZE_CHANGED);
 
-    if (use_acceleration_when_possible && GetCompositor() && !layer_.get()) {
-      // If our bounds have changed, then any descendant layer bounds may
-      // have changed. Update them accordingly.
-      gfx::Point offset(bounds_.origin());
-      View* v = parent_;
-      for (; v && !v->layer_.get(); v = v->parent_)
-        offset.Add(v->bounds().origin());
-      if (v)
+    if (use_acceleration_when_possible) {
+      if (layer_.get()) {
+        if (parent_) {
+          gfx::Point offset(parent_->CalculateOffsetToAncestorWithLayer(NULL));
+          offset.Offset(x(), y());
+          layer_property_setter_->SetBounds(layer_.get(),
+                                            gfx::Rect(offset, size()));
+        } else {
+          layer_property_setter_->SetBounds(layer_.get(), bounds_);
+        }
+      } else if (GetCompositor()) {
+        // If our bounds have changed, then any descendant layer bounds may
+        // have changed. Update them accordingly.
+        gfx::Point offset(CalculateOffsetToAncestorWithLayer(NULL));
+        // CalculateOffsetToAncestorWithLayer includes our location as does
+        // UpdateLayerBounds.
+        offset.Offset(-x(), -y());
         UpdateLayerBounds(offset);
+      }
     }
   }
 
