@@ -200,11 +200,10 @@
             ['disable_pie==1', {
               'ldflags': ['-nopie'],
             }, {
-              # Building with -fPIE fails on ARM and ia32 bots.
-              # http://code.google.com/p/chromium/issues/detail?id=57908
-              # Until that is fixed, at least use it on Linux 64-bit.
+              # Building with -pie needs investigating on ARM.
+              # For now, at least use it on Linux Intel.
               'conditions': [
-                ['target_arch=="x64"', {
+                ['target_arch=="x64" or target_arch=="ia32"', {
                   'ldflags': ['-pie'],
                 }],
               ],
