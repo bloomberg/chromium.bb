@@ -462,6 +462,15 @@ system call NtDeviceIoControlFile InputBuffer
 ...
 iphlpapi.dll!GetAdaptersAddresses
 
+# http://code.google.com/p/drmemory/issues/detail?id=475
+LEAK
+...
+ADVAPI32.dll!CryptAcquireContextA
+...
+CRYPT32.dll!CryptMsgOpenToDecode
+...
+CRYPT32.dll!CryptQueryObject
+
 ############################
 # TODO(timurrrr): investigate these
 UNINITIALIZED READ
