@@ -10,17 +10,13 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "chrome/browser/tab_contents/infobar_container.h"
-#include "chrome/browser/tab_contents/infobar_delegate.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 
 class InfoBar;
 class InfoBarGtk;
 class InfoBarDelegate;
 class Profile;
-class TabContentsWrapper;
 
 namespace gfx {
 class Rect;
@@ -70,6 +66,7 @@ class InfoBarContainerGtk : public InfoBarContainer {
                           InfoBarGtk* infobar);
 
  protected:
+  // InfoBarContainer:
   virtual void PlatformSpecificAddInfoBar(InfoBar* infobar,
                                           size_t position) OVERRIDE;
   virtual void PlatformSpecificRemoveInfoBar(InfoBar* infobar) OVERRIDE;
@@ -81,8 +78,6 @@ class InfoBarContainerGtk : public InfoBarContainer {
                     GdkEventExpose* expose,
                     const gfx::Rect& bounds,
                     InfoBarGtk* source);
-
-  NotificationRegistrar registrar_;
 
   // The profile for the browser that hosts this InfoBarContainer.
   Profile* profile_;

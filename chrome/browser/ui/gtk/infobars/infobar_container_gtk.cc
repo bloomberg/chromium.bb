@@ -8,7 +8,6 @@
 
 #include <utility>
 
-#include "base/command_line.h"
 #include "base/message_loop.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
@@ -16,8 +15,6 @@
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/infobars/infobar_gtk.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/color_utils.h"

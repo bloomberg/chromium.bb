@@ -6,12 +6,13 @@
 #define CHROME_BROWSER_UI_GTK_INFOBARS_INFOBAR_GTK_H_
 #pragma once
 
+#include <gtk/gtk.h>
+
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
-#include "chrome/browser/ui/gtk/owned_widget_gtk.h"
-#include "chrome/browser/ui/gtk/slide_animator_gtk.h"
 #include "chrome/browser/tab_contents/infobar.h"
+#include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "third_party/skia/include/core/SkPaint.h"
@@ -19,7 +20,6 @@
 
 class CustomDrawButton;
 class GtkThemeService;
-class InfoBarContainerGtk;
 class InfoBarDelegate;
 
 class InfoBarGtk : public InfoBar,
@@ -50,14 +50,9 @@ class InfoBarGtk : public InfoBar,
   virtual void GetBottomColor(InfoBarDelegate::Type type,
                               double* r, double* g, double *b);
 
-  // The total height of the info bar.
-  static const int kInfoBarHeight;
-
  protected:
   // Spacing after message (and before buttons).
   static const int kEndOfLabelSpacing;
-  // Spacing between buttons.
-  static const int kButtonButtonSpacing;
 
   // Creates a label with the appropriate font and color for the current
   // gtk-theme state. It is InfoBarGtk's responsibility to observe browser

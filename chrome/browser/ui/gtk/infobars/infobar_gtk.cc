@@ -4,11 +4,8 @@
 
 #include "chrome/browser/ui/gtk/infobars/infobar_gtk.h"
 
-#include <gtk/gtk.h>
-
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/platform_util.h"
-#include "chrome/browser/tab_contents/infobar.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
@@ -30,6 +27,12 @@ const int kElementPadding = 5;
 const int kLeftPadding = 5;
 const int kRightPadding = 5;
 
+// The total height of the info bar.
+const int kInfoBarHeight = 37;
+
+// Spacing between buttons.
+const int kButtonButtonSpacing = 3;
+
 }  // namespace
 
 // static
@@ -38,13 +41,10 @@ const int InfoBar::kDefaultArrowTargetHeight = 9;
 const int InfoBar::kMaximumArrowTargetHeight = 24;
 const int InfoBar::kDefaultArrowTargetHalfWidth = kDefaultArrowTargetHeight;
 const int InfoBar::kMaximumArrowTargetHalfWidth = 14;
-
 const int InfoBar::kDefaultBarTargetHeight = 36;
 
 // static
-const int InfoBarGtk::kInfoBarHeight = 37;
 const int InfoBarGtk::kEndOfLabelSpacing = 6;
-const int InfoBarGtk::kButtonButtonSpacing = 3;
 
 InfoBarGtk::InfoBarGtk(TabContentsWrapper* owner, InfoBarDelegate* delegate)
     : InfoBar(owner, delegate),
