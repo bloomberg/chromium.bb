@@ -110,19 +110,10 @@ int PseudoTcpAdapter::Core::Read(net::IOBuffer* buffer, int buffer_size,
   // Reference the Core in case a callback deletes the adapter.
   scoped_refptr<Core> core(this);
 
-  // TODO(wez): This is a hack for remoting.  See JingleSession.
-  PseudoTcp::TcpState state = pseudo_tcp_.State();
-  int result;
-  if (state == PseudoTcp::TCP_SYN_SENT ||
-      state == PseudoTcp::TCP_SYN_RECEIVED) {
-    result = net::ERR_IO_PENDING;
-
-  } else {
-    result = pseudo_tcp_.Recv(buffer->data(), buffer_size);
-    if (result < 0) {
-      result = net::MapSystemError(pseudo_tcp_.GetError());
-      DCHECK(result < 0);
-    }
+  int result = pseudo_tcp_.Recv(buffer->data(), buffer_size);
+  if (result < 0) {
+    result = net::MapSystemError(pseudo_tcp_.GetError());
+    DCHECK(result < 0);
   }
 
   if (result == net::ERR_IO_PENDING) {
@@ -143,19 +134,10 @@ int PseudoTcpAdapter::Core::Write(net::IOBuffer* buffer, int buffer_size,
   // Reference the Core in case a callback deletes the adapter.
   scoped_refptr<Core> core(this);
 
-  // TODO(wez): This is a hack for remoting.  See JingleSession.
-  PseudoTcp::TcpState state = pseudo_tcp_.State();
-  int result;
-  if (state == PseudoTcp::TCP_SYN_SENT ||
-      state == PseudoTcp::TCP_SYN_RECEIVED) {
-    result = net::ERR_IO_PENDING;
-
-  } else {
-    result = pseudo_tcp_.Send(buffer->data(), buffer_size);
-    if (result < 0) {
-      result = net::MapSystemError(pseudo_tcp_.GetError());
-      DCHECK(result < 0);
-    }
+  int result = pseudo_tcp_.Send(buffer->data(), buffer_size);
+  if (result < 0) {
+    result = net::MapSystemError(pseudo_tcp_.GetError());
+    DCHECK(result < 0);
   }
 
   if (result == net::ERR_IO_PENDING) {
@@ -293,12 +275,17 @@ cricket::IPseudoTcpNotify::WriteResult PseudoTcpAdapter::Core::TcpWritePacket(
     size_t len) {
   DCHECK_EQ(tcp, &pseudo_tcp_);
 
+  // If we already have a write pending, we behave like a congested network,
+  // returning success for the write, but dropping the packet.  PseudoTcp will
+  // back-off and retransmit, adjusting for the perceived congestion.
   if (socket_write_pending_)
     return IPseudoTcpNotify::WR_SUCCESS;
 
   scoped_refptr<net::IOBuffer> write_buffer = new net::IOBuffer(len);
   memcpy(write_buffer->data(), buffer, len);
 
+  // Our underlying socket is datagram-oriented, which means it should either
+  // send exactly as many bytes as we requested, or fail.
   int result = socket_->Write(write_buffer, len, &socket_write_callback_);
   if (result == net::ERR_IO_PENDING) {
     socket_write_pending_ = true;

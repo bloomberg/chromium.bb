@@ -110,15 +110,15 @@ class JingleSession : public protocol::Session,
   // Configures channels and calls InitializeSSL().
   void InitializeChannels();
 
-  // Initialize PseudoTCP + SSL on each of the video, control and input
-  // channels. The channels must have been created before this is called.
-  bool InitializeSSL();
+  // Helper method to initialize PseudoTcp over the datagram-oriented |channel|.
+  // If things don't immediately fail then a new StreamSocket is placed in
+  // |pseudo_tcp|.
+  bool EstablishPseudoTcp(net::Socket* channel,
+                          scoped_ptr<net::StreamSocket>* pseudo_tcp);
 
-  // Helper method to create and initialize PseudoTCP + SSL socket on
-  // top of the provided |channel|. The resultant SSL socket is
-  // written to |ssl_socket|. Return true if successful.
-  bool EstablishSSLConnection(net::Socket* channel,
-                              scoped_ptr<SocketWrapper>* ssl_socket);
+  // Helper method to initialize SSL over a StreamSocket.
+  bool EstablishSSLConnection(net::StreamSocket* socket,
+                              scoped_ptr<net::StreamSocket>* ssl_socket);
 
   // Used for Session.SignalState sigslot.
   void OnSessionState(cricket::BaseSession* session,
@@ -178,23 +178,34 @@ class JingleSession : public protocol::Session,
   // These data members are only set on the receiving side.
   scoped_ptr<const CandidateSessionConfig> candidate_config_;
 
-  // |control_channel_| holds a channel until SSL socket is
-  // created. After that |control_ssl_socket_| owns the channel. The
-  // same is the case fo |event_channel_| and |video_channel_|.
+  // |raw_foo_channel_| is a reference to the Cricket transport channel foo,
+  // which is owned by the Cricket session.
+  // |foo_channel_| owns the Socket adapter for that channel.
+  // |foo_socket_| takes ownership of the Socket from |foo_channel_| and wraps
+  // it with PseudoTcp.  |foo_ssl_socket_| takes ownership from |foo_socket_|
+  // and runs the SSL protocol over it.  Finally |foo_socket_wrapper_| takes
+  // ownership of |foo_ssl_socket_|, wrapping it with a SocketWrapper to work
+  // around issues with callers of the resulting Sockets continuing to access
+  // them after CloseInternal() has completed.
+  // TODO(wez): Fix the tear-down issue and remove SocketWrapper.
+
   cricket::TransportChannel* raw_control_channel_;
   scoped_ptr<jingle_glue::TransportChannelSocketAdapter> control_channel_;
-  scoped_ptr<SocketWrapper> control_ssl_socket_;
+  scoped_ptr<net::StreamSocket> control_socket_;
+  scoped_ptr<net::StreamSocket> control_ssl_socket_;
+  scoped_ptr<SocketWrapper> control_socket_wrapper_;
 
   cricket::TransportChannel* raw_event_channel_;
   scoped_ptr<jingle_glue::TransportChannelSocketAdapter> event_channel_;
-  scoped_ptr<SocketWrapper> event_ssl_socket_;
+  scoped_ptr<net::StreamSocket> event_socket_;
+  scoped_ptr<net::StreamSocket> event_ssl_socket_;
+  scoped_ptr<SocketWrapper> event_socket_wrapper_;
 
   cricket::TransportChannel* raw_video_channel_;
   scoped_ptr<jingle_glue::TransportChannelSocketAdapter> video_channel_;
-  scoped_ptr<SocketWrapper> video_ssl_socket_;
-
-  // Count the number of SSL connections esblished.
-  int ssl_connections_;
+  scoped_ptr<net::StreamSocket> video_socket_;
+  scoped_ptr<net::StreamSocket> video_ssl_socket_;
+  scoped_ptr<SocketWrapper> video_socket_wrapper_;
 
   // Used to verify the certificate received in SSLClientSocket.
   scoped_ptr<net::CertVerifier> cert_verifier_;

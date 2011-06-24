@@ -21,7 +21,7 @@
 using testing::_;
 using testing::AtMost;
 using testing::Exactly;
-using testing::Invoke;
+using testing::InvokeWithoutArgs;
 
 using webkit_glue::P2PTransport;
 
@@ -207,16 +207,23 @@ class TcpChannelTester : public base::RefCountedThreadSafe<TcpChannelTester> {
 
   virtual ~TcpChannelTester() { }
 
-  void Start() {
+  void Init() {
     // Initialize |send_buffer_|.
     send_buffer_ = new net::DrainableIOBuffer(new net::IOBuffer(kTcpDataSize),
                                               kTcpDataSize);
     for (int i = 0; i < kTcpDataSize; ++i) {
       send_buffer_->data()[i] = rand() % 256;
     }
+  }
 
+  void StartRead() {
     message_loop_->PostTask(
-        FROM_HERE, NewRunnableMethod(this, &TcpChannelTester::DoStart));
+        FROM_HERE, NewRunnableMethod(this, &TcpChannelTester::DoRead));
+  }
+
+  void StartWrite() {
+    message_loop_->PostTask(
+        FROM_HERE, NewRunnableMethod(this, &TcpChannelTester::DoWrite));
   }
 
   void CheckResults() {
@@ -235,11 +242,6 @@ class TcpChannelTester : public base::RefCountedThreadSafe<TcpChannelTester> {
   void Done() {
     done_ = true;
     message_loop_->PostTask(FROM_HERE, new MessageLoop::QuitTask());
-  }
-
-  void DoStart() {
-    DoRead();
-    DoWrite();
   }
 
   void DoWrite() {
@@ -388,7 +390,7 @@ TEST_F(P2PTransportImplTest, ConnectUdp) {
 }
 
 TEST_F(P2PTransportImplTest, ConnectTcp) {
-  Init(P2PTransport::PROTOCOL_UDP);
+  Init(P2PTransport::PROTOCOL_TCP);
 
   EXPECT_CALL(event_handler1_, OnCandidateReady(_)).WillRepeatedly(
       AddRemoteCandidate(transport2_.get()));
@@ -445,6 +447,9 @@ TEST_F(P2PTransportImplTest, SendDataTcp) {
   EXPECT_CALL(event_handler2_, OnCandidateReady(_)).WillRepeatedly(
       AddRemoteCandidate(transport1_.get()));
 
+  scoped_refptr<TcpChannelTester> channel_tester = new TcpChannelTester(
+      &message_loop_, transport1_->GetChannel(), transport2_->GetChannel());
+
   // Transport may first become ether readable or writable, but
   // eventually it must be readable and writable.
   EXPECT_CALL(event_handler1_, OnStateChange(P2PTransport::STATE_READABLE))
@@ -454,7 +459,10 @@ TEST_F(P2PTransportImplTest, SendDataTcp) {
   EXPECT_CALL(event_handler1_, OnStateChange(
       static_cast<P2PTransport::State>(P2PTransport::STATE_READABLE |
                                        P2PTransport::STATE_WRITABLE)))
-      .Times(Exactly(1));
+      .Times(Exactly(1))
+      .WillOnce(InvokeWithoutArgs(channel_tester.get(),
+                                  &TcpChannelTester::StartWrite))
+      .RetiresOnSaturation();
 
   EXPECT_CALL(event_handler2_, OnStateChange(P2PTransport::STATE_READABLE))
       .Times(AtMost(1));
@@ -463,15 +471,15 @@ TEST_F(P2PTransportImplTest, SendDataTcp) {
   EXPECT_CALL(event_handler2_, OnStateChange(
       static_cast<P2PTransport::State>(P2PTransport::STATE_READABLE |
                                        P2PTransport::STATE_WRITABLE)))
-      .Times(Exactly(1));
-
-  scoped_refptr<TcpChannelTester> channel_tester = new TcpChannelTester(
-      &message_loop_, transport1_->GetChannel(), transport2_->GetChannel());
+      .Times(Exactly(1))
+      .WillOnce(InvokeWithoutArgs(channel_tester.get(),
+                                  &TcpChannelTester::StartRead))
+      .RetiresOnSaturation();
 
   message_loop_.PostDelayedTask(FROM_HERE, new MessageLoop::QuitTask(),
                                 TestTimeouts::action_max_timeout_ms());
 
-  channel_tester->Start();
+  channel_tester->Init();
   message_loop_.Run();
   channel_tester->CheckResults();
 }
