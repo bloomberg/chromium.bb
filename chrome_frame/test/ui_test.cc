@@ -107,8 +107,7 @@ TEST_P(FullTabUITest, FLAKY_KeyboardBackForward) {
 }
 
 // Tests new window behavior with ctrl+N.
-// Flaky on Chrome Frame Tests (ie6), http://crbug.com/86251.
-TEST_P(FullTabUITest, FLAKY_CtrlN) {
+TEST_P(FullTabUITest, CtrlN) {
   if (IsWorkstationLocked()) {
     LOG(ERROR) << "This test cannot be run in a locked workstation.";
     return;
@@ -135,15 +134,14 @@ TEST_P(FullTabUITest, FLAKY_CtrlN) {
   // reliably delivered immediately upon receipt of the window open event.
   EXPECT_CALL(win_observer_mock, OnWindowOpen(_))
       .Times(testing::AtMost(2))
-      .WillOnce(DelayDoCloseWindow(500))
-      .WillOnce(testing::Return());
-
-  EXPECT_CALL(win_observer_mock, OnWindowClose(_))
-      .Times(testing::AtMost(2))
       .WillOnce(CloseBrowserMock(&ie_mock_))
       .WillOnce(testing::Return());
 
-  LaunchIEAndNavigate(GetSimplePageUrl());
+  EXPECT_CALL(win_observer_mock, OnWindowClose(_))
+      .Times(testing::AtMost(2));
+
+  LaunchIENavigateAndLoop(GetSimplePageUrl(),
+                          kChromeFrameVeryLongNavigationTimeoutInSeconds);
 }
 
 // Test that Ctrl+F opens the Find dialog.
@@ -169,20 +167,15 @@ TEST_P(FullTabUITest, CtrlF) {
           SetFocusToRenderer(&ie_mock_),
           DelaySendChar(&loop_, 1500, 'f', simulate_input::CONTROL)));
 
-  // Watch for find dialog. It appears that the window close message cannot be
-  // reliably delivered immediately upon receipt of the window open event.
   EXPECT_CALL(win_observer_mock, OnWindowOpen(_))
-      .WillOnce(DelayDoCloseWindow(500));
-
-  EXPECT_CALL(win_observer_mock, OnWindowClose(_))
       .WillOnce(CloseBrowserMock(&ie_mock_));
 
-  LaunchIEAndNavigate(GetSimplePageUrl());
+  LaunchIENavigateAndLoop(GetSimplePageUrl(),
+                          kChromeFrameVeryLongNavigationTimeoutInSeconds);
 }
 
 // Test that ctrl+r does cause a refresh.
-// http://code.google.com/p/chromium/issues/detail?id=84297
-TEST_P(FullTabUITest, FLAKY_CtrlR) {
+TEST_P(FullTabUITest, CtrlR) {
   if (IsWorkstationLocked()) {
     LOG(ERROR) << "This test cannot be run in a locked workstation.";
     return;
@@ -201,7 +194,8 @@ TEST_P(FullTabUITest, FLAKY_CtrlR) {
           DelayCloseBrowserMock(&loop_, 4000, &ie_mock_)))
       .WillRepeatedly(testing::Return());
 
-  LaunchIEAndNavigate(GetSimplePageUrl());
+  LaunchIENavigateAndLoop(GetSimplePageUrl(),
+                          kChromeFrameVeryLongNavigationTimeoutInSeconds);
 }
 
 // Test window close with ctrl+w.
@@ -217,12 +211,12 @@ TEST_P(FullTabUITest, CtrlW) {
           SetFocusToRenderer(&ie_mock_),
           DelaySendChar(&loop_, 1000, 'w', simulate_input::CONTROL)));
 
-  LaunchIEAndNavigate(GetSimplePageUrl());
+  LaunchIENavigateAndLoop(GetSimplePageUrl(),
+                          kChromeFrameVeryLongNavigationTimeoutInSeconds);
 }
 
 // Test address bar navigation with Alt+d and URL.
-// http://code.google.com/p/chromium/issues/detail?id=84297
-TEST_P(FullTabUITest, FLAKY_AltD) {
+TEST_P(FullTabUITest, AltD) {
   if (IsWorkstationLocked()) {
     LOG(ERROR) << "This test cannot be run in a locked workstation.";
     return;
@@ -238,7 +232,8 @@ TEST_P(FullTabUITest, FLAKY_AltD) {
                                StrEq(GetLinkPageUrl())))
       .WillOnce(CloseBrowserMock(&ie_mock_));
 
-  LaunchIEAndNavigate(GetSimplePageUrl());
+  LaunchIENavigateAndLoop(GetSimplePageUrl(),
+                          kChromeFrameVeryLongNavigationTimeoutInSeconds);
 }
 
 // Tests that the renderer has focus after navigation.
