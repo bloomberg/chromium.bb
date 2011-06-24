@@ -6,19 +6,25 @@
 #define CHROME_BROWSER_FIRST_RUN_UPGRADE_UTIL_H_
 #pragma once
 
+#include "build/build_config.h"
+
+#if !defined(OS_CHROMEOS)
+
 class CommandLine;
 
 namespace upgrade_util {
+
+// Launches Chrome again simulating a "user" launch. If Chrome could not be
+// launched, returns false.
+bool RelaunchChromeBrowser(const CommandLine& command_line);
+
+#if !defined(OS_MACOSX)
 
 void SetNewCommandLine(CommandLine* new_command_line);
 
 // Launches a new instance of the browser if the current instance in persistent
 // mode an upgrade is detected.
 void RelaunchChromeBrowserWithNewCommandLineIfNeeded();
-
-// Launches chrome again simulating a 'user' launch. If chrome could not be
-// launched the return is false.
-bool RelaunchChromeBrowser(const CommandLine& command_line);
 
 // Windows:
 //  Checks if chrome_new.exe is present in the current instance's install.
@@ -27,6 +33,10 @@ bool RelaunchChromeBrowser(const CommandLine& command_line);
 //  running instance.
 bool IsUpdatePendingRestart();
 
+#endif  // !defined(OS_MACOSX)
+
 }  // namespace upgrade_util
+
+#endif  // !defined(OS_CHROMEOS)
 
 #endif  // CHROME_BROWSER_FIRST_RUN_UPGRADE_UTIL_H_

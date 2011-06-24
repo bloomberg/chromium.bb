@@ -23,7 +23,6 @@ namespace switches {
 
 // All switches in alphabetical order. The switches should be documented
 // alongside the definition of their values in the .cc file.
-extern const char kActivateOnLaunch[];
 extern const char kAllowCrossOriginAuthPrompt[];
 extern const char kAllowFileAccess[];
 extern const char kAllowOutdatedPlugins[];
@@ -317,6 +316,7 @@ extern const char kPasswordStore[];
 
 #if defined(OS_MACOSX)
 extern const char kEnableExposeForTabs[];
+extern const char kRelauncherProcess[];
 #endif
 
 #if !defined(OS_MACOSX)

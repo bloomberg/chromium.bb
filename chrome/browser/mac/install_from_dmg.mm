@@ -15,12 +15,15 @@
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/file_path.h"
 #include "base/logging.h"
 #import "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "chrome/browser/mac/authorization_util.h"
 #include "chrome/browser/mac/scoped_authorizationref.h"
 #import "chrome/browser/mac/keystone_glue.h"
+#include "chrome/browser/mac/relauncher.h"
+#include "chrome/common/chrome_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -307,47 +310,22 @@ bool InstallFromDiskImage(AuthorizationRef authorization_arg,
   return true;
 }
 
-// Launches the application at app_path.  The arguments passed to app_path
-// will be the same as the arguments used to invoke this process, except any
-// arguments beginning with -psn_ will be stripped.
-bool LaunchInstalledApp(NSString* app_path) {
-  const UInt8* app_path_c =
-      reinterpret_cast<const UInt8*>([app_path fileSystemRepresentation]);
-  FSRef app_fsref;
-  OSStatus err = FSPathMakeRef(app_path_c, &app_fsref, NULL);
-  if (err != noErr) {
-    LOG(ERROR) << "FSPathMakeRef: " << err;
-    return false;
-  }
+// Launches the application at installed_path. The helper application
+// contained within install_path will be used for the relauncher process. This
+// keeps Launch Services from ever having to see or think about the helper
+// application on the disk image.
+bool LaunchInstalledApp(NSString* installed_path) {
+  FilePath browser_path([installed_path fileSystemRepresentation]);
 
-  const std::vector<std::string>& argv =
+  FilePath helper_path = browser_path.Append("Contents/Versions");
+  helper_path = helper_path.Append(chrome::kChromeVersion);
+  helper_path = helper_path.Append(chrome::kHelperProcessExecutablePath);
+
+  std::vector<std::string> args =
       CommandLine::ForCurrentProcess()->argv();
-  NSMutableArray* arguments =
-      [NSMutableArray arrayWithCapacity:argv.size() - 1];
-  // Start at argv[1].  LSOpenApplication adds its own argv[0] as the path of
-  // the launched executable.
-  for (size_t index = 1; index < argv.size(); ++index) {
-    std::string argument = argv[index];
-    const char psn_flag[] = "-psn_";
-    const int psn_flag_length = arraysize(psn_flag) - 1;
-    if (argument.compare(0, psn_flag_length, psn_flag) != 0) {
-      // Strip any -psn_ arguments, as they apply to a specific process.
-      [arguments addObject:[NSString stringWithUTF8String:argument.c_str()]];
-    }
-  }
+  args[0] = browser_path.value();
 
-  struct LSApplicationParameters parameters = {0};
-  parameters.flags = kLSLaunchDefaults;
-  parameters.application = &app_fsref;
-  parameters.argv = base::mac::NSToCFCast(arguments);
-
-  err = LSOpenApplication(&parameters, NULL);
-  if (err != noErr) {
-    LOG(ERROR) << "LSOpenApplication: " << err;
-    return false;
-  }
-
-  return true;
+  return mac_relauncher::RelaunchAppWithHelper(helper_path.value(), args);
 }
 
 void ShowErrorDialog() {

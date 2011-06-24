@@ -14,10 +14,6 @@ namespace switches {
 // base/base_switches.cc instead.
 // -----------------------------------------------------------------------------
 
-// Activate (make foreground) myself on launch.  Helpful when Chrome
-// is launched on the command line (e.g. by Selenium).  Only needed on Mac.
-const char kActivateOnLaunch[]              = "activate-on-launch";
-
 // Allow third party content included on a page to prompt for a HTTP
 // basic auth username/password pair.
 const char kAllowCrossOriginAuthPrompt[]    = "allow-cross-origin-auth-prompt";
@@ -1111,6 +1107,10 @@ const char kPasswordStore[]                 = "password-store";
 #if defined(OS_MACOSX)
 // Enables the tabs expose feature ( http://crbug.com/50307 ).
 const char kEnableExposeForTabs[]           = "enable-expose-for-tabs";
+
+// A process type (switches::kProcessType) that relaunches the browser. See
+// chrome/browser/mac/relauncher.h.
+const char kRelauncherProcess[]             = "relauncher";
 #endif
 
 #if !defined(OS_MACOSX)

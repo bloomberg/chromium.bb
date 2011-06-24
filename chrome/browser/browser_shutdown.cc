@@ -231,15 +231,7 @@ void Shutdown() {
     if (!new_cl->HasSwitch(switches::kRestoreLastSession))
       new_cl->AppendSwitch(switches::kRestoreLastSession);
 
-#if defined(OS_WIN) || defined(OS_LINUX)
     upgrade_util::RelaunchChromeBrowser(*new_cl.get());
-#endif  // defined(OS_WIN) || defined(OS_LINUX)
-
-#if defined(OS_MACOSX)
-    new_cl->AppendSwitch(switches::kActivateOnLaunch);
-    base::LaunchApp(*new_cl.get(), false, false, NULL);
-#endif  // defined(OS_MACOSX)
-
 #else
     NOTIMPLEMENTED();
 #endif  // !defined(OS_CHROMEOS)

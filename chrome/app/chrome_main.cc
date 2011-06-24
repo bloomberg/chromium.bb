@@ -63,6 +63,7 @@
 #include "base/mac/os_crash_dumps.h"
 #include "base/mach_ipc_mac.h"
 #include "chrome/app/breakpad_mac.h"
+#include "chrome/browser/mac/relauncher.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "content/browser/mach_broker_mac.h"
 #include "grit/chromium_strings.h"
@@ -305,7 +306,11 @@ bool SubprocessNeedsResourceBundle(const std::string& process_type) {
 
 // Returns true if this process is a child of the browser process.
 bool SubprocessIsBrowserChild(const std::string& process_type) {
-  if (process_type.empty() || process_type == switches::kServiceProcess) {
+  if (process_type.empty() ||
+#if defined(OS_MACOSX)
+      process_type == switches::kRelauncherProcess ||
+#endif
+      process_type == switches::kServiceProcess) {
     return false;
   }
   return true;
@@ -508,6 +513,7 @@ int RunNamedProcessTypeMain(const std::string& process_type,
 #if defined(OS_MACOSX)
     // TODO(port): Use OOP profile import - http://crbug.com/22142 .
     { switches::kProfileImportProcess, ProfileImportMain },
+    { switches::kRelauncherProcess,  mac_relauncher::internal::RelauncherMain },
 #endif
 #if !defined(DISABLE_NACL)
     { switches::kNaClLoaderProcess, NaClMain },
@@ -613,8 +619,10 @@ int ChromeMain(int argc, char** argv) {
 #if defined(OS_MACOSX)
     SendTaskPortToParentProcess();
 #endif
+  }
 
 #if defined(OS_POSIX)
+  if (!process_type.empty()) {
     // When you hit Ctrl-C in a terminal running the browser
     // process, a SIGINT is delivered to the entire process group.
     // When debugging the browser process via gdb, gdb catches the
@@ -628,8 +636,9 @@ int ChromeMain(int argc, char** argv) {
     // TODO(evanm): move this to some shared subprocess-init function.
     if (!base::debug::BeingDebugged())
       signal(SIGINT, SIG_IGN);
-#endif
   }
+#endif
+
   SetupCRT(command_line);
 
 #if defined(USE_NSS)

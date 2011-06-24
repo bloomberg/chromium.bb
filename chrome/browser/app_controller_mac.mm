@@ -212,17 +212,6 @@ void RecordLastRunAppBundlePath() {
 
   // Set up the command updater for when there are no windows open
   [self initMenuState];
-
-  // Activate (bring to foreground) if asked to do so.  On
-  // Windows this logic isn't necessary since
-  // BrowserWindow::Activate() calls ::SetForegroundWindow() which is
-  // adequate.  On Mac, BrowserWindow::Activate() calls -[NSWindow
-  // makeKeyAndOrderFront:] which does not activate the application
-  // itself.
-  const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
-  if (parsed_command_line.HasSwitch(switches::kActivateOnLaunch)) {
-    [NSApp activateIgnoringOtherApps:YES];
-  }
 }
 
 // (NSApplicationDelegate protocol) This is the Apple-approved place to override
