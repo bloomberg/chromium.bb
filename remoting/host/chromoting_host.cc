@@ -346,8 +346,8 @@ void ChromotingHost::set_protocol_config(
 }
 
 void ChromotingHost::LocalMouseMoved(const gfx::Point& new_pos) {
-  if (MessageLoop::current() != context_->main_message_loop()) {
-    context_->main_message_loop()->PostTask(
+  if (MessageLoop::current() != context_->network_message_loop()) {
+    context_->network_message_loop()->PostTask(
         FROM_HERE, base::Bind(&ChromotingHost::LocalMouseMoved, this, new_pos));
     return;
   }

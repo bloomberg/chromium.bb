@@ -13,7 +13,7 @@
 // "echoes" detected by the local input detector. The value should be large
 // enough to cope with the fact that multiple events might be injected before
 // any echoes are detected.
-static const unsigned int kNumRemoteMousePositions = 10;
+static const unsigned int kNumRemoteMousePositions = 50;
 
 // The number of milliseconds for which to block remote input when local input
 // is received.
