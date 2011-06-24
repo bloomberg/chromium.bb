@@ -33,6 +33,7 @@ static const char* const kFilteredHeaderStrings[] = {
   "expect",
   "max-forwards",
   "proxy-authorization",
+  "referer",
   "te",
   "upgrade",
   "via"
