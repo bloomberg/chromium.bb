@@ -176,10 +176,9 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     else:
       raise manifest_version.GenerateBuildSpecException(last_error)
 
-  def CreateNewCandidate(self, version_file, force_version=None, retries=3):
+  def CreateNewCandidate(self, force_version=None, retries=3):
     """Gets the version number of the next build spec to build.
       Args:
-        version_file: File to use in cros when checking for cros version.
         force_version: Forces us to use this version.
         retries: Number of retries for updating the status.
       Returns:
@@ -189,7 +188,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
         GenerateBuildSpecException in case of failure to generate a buildspec
     """
     try:
-      version_info = self._GetCurrentVersionInfo(version_file)
+      version_info = self._GetCurrentVersionInfo()
       self._LoadSpecs(version_info)
       lkgm_info = self._GetLatestCandidateByVersion(version_info)
       if force_version:
