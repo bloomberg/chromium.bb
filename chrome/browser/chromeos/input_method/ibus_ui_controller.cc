@@ -15,6 +15,16 @@
 namespace chromeos {
 namespace input_method {
 
+InputMethodLookupTable::InputMethodLookupTable()
+    : visible(false),
+      cursor_absolute_index(0),
+      page_size(0),
+      orientation(kHorizontal) {
+}
+
+InputMethodLookupTable::~InputMethodLookupTable() {
+}
+
 #if defined(HAVE_IBUS)
 
 // Checks the attribute if this indicates annotation.

@@ -31,12 +31,9 @@ struct InputMethodLookupTable {
     kHorizontal,
   };
 
-  InputMethodLookupTable()
-      : visible(false),
-        cursor_absolute_index(0),
-        page_size(0),
-        orientation(kHorizontal) {
-  }
+  InputMethodLookupTable();
+
+  ~InputMethodLookupTable();
 
   // Returns a string representation of the class. Used for debugging.
   // The function has to be defined here rather than in the .cc file.  If
