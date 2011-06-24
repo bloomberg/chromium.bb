@@ -106,7 +106,7 @@ def RunBuildStages(bot_id, options, build_config):
   sync_stage_class = stages.SyncStage
   completion_stage_class = None
   if build_config['manifest_version']:
-    if build_config['build_type'] == 'binary':
+    if build_config['build_type'] in ('binary', 'chrome'):
       sync_stage_class = stages.LGKMVersionedSyncStage
       completion_stage_class = stages.LGKMVersionedSyncCompletionStage
     else:

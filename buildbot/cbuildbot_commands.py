@@ -202,7 +202,6 @@ def SetupBoard(buildroot, board, fast, usepkg, latest_toolchain,
     cmd.append('--latest_toolchain')
 
   cros_lib.RunCommand(cmd, cwd=cwd, enter_chroot=True, extra_env=extra_env)
-  # TODO(sosa): Add prebuilt call for boards in build_type == chroot.
 
 
 def Build(buildroot, board, build_autotest, fast, usepkg, skip_toolchain_update,
