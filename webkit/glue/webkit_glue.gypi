@@ -36,9 +36,6 @@
         },
       ],
       'includes': [ '../../build/grit_target.gypi' ],
-      'direct_dependent_settings': {
-        'include_dirs': [ '<(grit_out_dir)' ],
-      },
     },
     {
       'target_name': 'webkit_strings',

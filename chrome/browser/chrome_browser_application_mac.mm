@@ -10,12 +10,12 @@
 #import "base/memory/scoped_nsobject.h"
 #import "base/sys_string_conversions.h"
 #import "chrome/app/breakpad_mac.h"
+#include "chrome/browser/accessibility/browser_accessibility_state.h"
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/ui/browser_list.h"
 #import "chrome/browser/ui/cocoa/objc_method_swizzle.h"
 #import "chrome/browser/ui/cocoa/objc_zombie.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "content/browser/accessibility/browser_accessibility_state.h"
 #include "content/browser/renderer_host/render_view_host.h"
 
 // The implementation of NSExceptions break various assumptions in the

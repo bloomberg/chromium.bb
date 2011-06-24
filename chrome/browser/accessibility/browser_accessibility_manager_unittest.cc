@@ -4,8 +4,8 @@
 
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
-#include "content/browser/accessibility/browser_accessibility.h"
-#include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "chrome/browser/accessibility/browser_accessibility.h"
+#include "chrome/browser/accessibility/browser_accessibility_manager.h"
 #include "content/common/view_messages.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/webaccessibility.h"

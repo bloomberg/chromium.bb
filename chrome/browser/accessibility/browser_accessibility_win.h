@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_WIN_H_
-#define CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_WIN_H_
+#ifndef CHROME_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_WIN_H_
+#define CHROME_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_WIN_H_
 #pragma once
 
 #include <atlbase.h>
@@ -12,7 +12,7 @@
 
 #include <vector>
 
-#include "content/browser/accessibility/browser_accessibility.h"
+#include "chrome/browser/accessibility/browser_accessibility.h"
 #include "ia2_api_all.h"  // Generated
 #include "ISimpleDOMDocument.h"  // Generated
 #include "ISimpleDOMNode.h"  // Generated
@@ -496,4 +496,4 @@ class BrowserAccessibilityWin
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityWin);
 };
 
-#endif  // CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_WIN_H_
+#endif  // CHROME_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_WIN_H_

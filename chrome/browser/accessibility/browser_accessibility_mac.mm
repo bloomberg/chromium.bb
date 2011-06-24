@@ -4,11 +4,12 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "content/browser/accessibility/browser_accessibility_mac.h"
+#import "chrome/browser/accessibility/browser_accessibility_mac.h"
 
-#import "content/browser/accessibility/browser_accessibility_cocoa.h"
-#import "content/browser/accessibility/browser_accessibility_delegate_mac.h"
-#include "content/browser/accessibility/browser_accessibility_manager.h"
+#import "chrome/browser/accessibility/browser_accessibility_cocoa.h"
+#import "chrome/browser/accessibility/browser_accessibility_delegate_mac.h"
+#include "chrome/browser/accessibility/browser_accessibility_manager.h"
+#import "chrome/browser/renderer_host/render_widget_host_view_mac.h"
 
 
 // Static.
@@ -29,8 +30,7 @@ void BrowserAccessibilityMac::Initialize() {
   // We take ownership of the cocoa obj here.
   browser_accessibility_cocoa_ = [[BrowserAccessibilityCocoa alloc]
       initWithObject:this
-      delegate:
-          (id<BrowserAccessibilityDelegateCocoa>)manager_->GetParentView()];
+      delegate:(RenderWidgetHostViewCocoa*)manager_->GetParentView()];
 }
 
 void BrowserAccessibilityMac::NativeReleaseReference() {

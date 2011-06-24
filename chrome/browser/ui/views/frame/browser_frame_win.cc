@@ -9,10 +9,10 @@
 
 #include <set>
 
+#include "chrome/browser/accessibility/browser_accessibility_state.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/frame/browser_frame_views.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "content/browser/accessibility/browser_accessibility_state.h"
 #include "grit/theme_resources.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/font.h"
@@ -221,3 +221,4 @@ NativeBrowserFrame* NativeBrowserFrame::CreateNativeBrowserFrame(
     return new BrowserFrameViews(browser_frame, browser_view);
   return new BrowserFrameWin(browser_frame, browser_view);
 }
+

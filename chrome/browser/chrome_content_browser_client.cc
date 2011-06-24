@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "chrome/app/breakpad_mac.h"
+#include "chrome/browser/accessibility/browser_accessibility_state.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/character_encoding.h"
 #include "chrome/browser/chrome_plugin_message_filter.h"
@@ -140,6 +141,9 @@ void ChromeContentBrowserClient::RenderViewHostCreated(
   new ChromeRenderViewHostObserver(render_view_host);
   new DevToolsHandler(render_view_host);
   new ExtensionMessageHandler(render_view_host);
+
+  if (BrowserAccessibilityState::GetInstance()->IsAccessibleBrowser())
+    render_view_host->EnableRendererAccessibility();
 
   InitRenderViewHostForExtensions(render_view_host);
 }
