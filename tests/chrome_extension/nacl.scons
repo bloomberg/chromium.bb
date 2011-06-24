@@ -35,8 +35,12 @@ node = env.PPAPIBrowserTester(
 env.Depends(node, dest_copy)
 env.Alias('all_programs', dest_copy)
 
-env.AddNodeToTestSuite(node,
-                       ['chrome_browser_tests'],
-                       'run_chrome_extension_test',
-                       is_flaky=True, # Don't subject Chrome to our problems.
-                       is_broken=env.PPAPIBrowserTesterIsBroken())
+env.AddNodeToTestSuite(
+    node,
+    ['chrome_browser_tests'],
+    'run_chrome_extension_test',
+    is_flaky=True, # Don't subject Chrome to our problems.
+    # TODO(ncbray): work around the bridge script injection race.
+    # http://code.google.com/p/nativeclient/issues/detail?id=1948
+    is_broken=True)
+    #is_broken=env.PPAPIBrowserTesterIsBroken())
