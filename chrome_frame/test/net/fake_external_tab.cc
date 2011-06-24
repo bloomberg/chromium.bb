@@ -40,6 +40,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
+#include "chrome_frame/crash_server_init.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test/net/test_automation_resource_message_filter.h"
 #include "chrome_frame/test/simulate_input.h"
@@ -551,6 +552,11 @@ int main(int argc, char** argv) {
     return 0;
   }
 
+  base::ProcessHandle crash_service = chrome_frame_test::StartCrashService();
+
+  google_breakpad::scoped_ptr<google_breakpad::ExceptionHandler> breakpad(
+      InitializeCrashReporting(HEADLESS));
+
   // TODO(tommi): Stuff be broke. Needs a fixin'.
   // This is awkward: the TestSuite derived CFUrlRequestUnittestRunner contains
   // the instance of the AtExitManager that RegisterPathProvider() and others
@@ -564,5 +570,11 @@ int main(int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);
   FilterDisabledTests();
   test_suite.RunMainUIThread();
+
+  if (crash_service)
+    base::KillProcess(crash_service, 0, false);
+
+  base::KillProcesses(chrome_frame_test::kIEImageName, 0, NULL);
+  base::KillProcesses(chrome_frame_test::kIEBrokerImageName, 0, NULL);
   return test_suite.test_result();
 }
