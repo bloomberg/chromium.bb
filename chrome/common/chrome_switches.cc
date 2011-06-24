@@ -495,6 +495,9 @@ const char kEnableSyncAutofill[]            = "enable-sync-autofill";
 // Enable sync encryption options.
 const char kEnableSyncEncryption[]          = "enable-sync-encryption";
 
+// Enable OAuth sign-in for sync.
+const char kEnableSyncOAuth[]               = "enable-sync-oauth";
+
 // Enable syncing browser sessions.
 const char kEnableSyncSessions[]            = "enable-sync-sessions";
 

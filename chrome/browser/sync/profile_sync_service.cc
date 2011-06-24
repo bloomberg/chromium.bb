@@ -21,6 +21,7 @@
 #include "base/stringprintf.h"
 #include "base/task.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/browser/net/chrome_cookie_notification_details.h"
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -47,6 +48,7 @@
 #include "content/common/notification_source.h"
 #include "content/common/notification_type.h"
 #include "grit/generated_resources.h"
+#include "net/base/cookie_monster.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using browser_sync::ChangeProcessor;
@@ -173,6 +175,11 @@ void ProfileSyncService::RegisterAuthNotifications() {
   registrar_.Add(this,
                  NotificationType::GOOGLE_SIGNIN_FAILED,
                  Source<Profile>(profile_));
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableSyncOAuth)) {
+    registrar_.Add(this,
+                   NotificationType::COOKIE_CHANGED,
+                   Source<Profile>(profile_));
+  }
 }
 
 void ProfileSyncService::RegisterDataTypeController(
@@ -556,6 +563,59 @@ void ProfileSyncService::OnBackendInitialized() {
     // This should only be hit during integration tests, but there's no good
     // way to assert this.
     DVLOG(1) << "Setup not complete, no wizard - integration tests?";
+  }
+}
+
+namespace {
+const char* CauseName(net::CookieMonster::Delegate::ChangeCause cause) {
+  switch (cause) {
+    case net::CookieMonster::Delegate::CHANGE_COOKIE_EXPLICIT:
+      return "CHANGE_COOKIE_EXPLICIT";
+    case net::CookieMonster::Delegate::CHANGE_COOKIE_OVERWRITE:
+      return "CHANGE_COOKIE_OVERWRITE";
+    case net::CookieMonster::Delegate::CHANGE_COOKIE_EXPIRED:
+      return "CHANGE_COOKIE_EXPIRED";
+    case net::CookieMonster::Delegate::CHANGE_COOKIE_EVICTED:
+      return "CHANGE_COOKIE_EVICTED";
+    case net::CookieMonster::Delegate::CHANGE_COOKIE_EXPIRED_OVERWRITE:
+      return "CHANGE_COOKIE_EXPIRED_OVERWRITE";
+    default:
+      return "<unknown>";
+  }
+}
+}
+
+void ProfileSyncService::OnCookieChanged(Profile* profile,
+                                         ChromeCookieDetails* cookie_details) {
+  const net::CookieMonster::CanonicalCookie* canonical_cookie =
+      cookie_details->cookie;
+  if (canonical_cookie->Name() == "oauth_token") {
+    net::CookieMonster::Delegate::ChangeCause cause = cookie_details->cause;
+    LOG(INFO) << "COOKIE_CHANGED: removed="
+              << (cookie_details->removed ? "true" : "false")
+              << ", cause=" << CauseName(cause)
+              << ", Source=" << canonical_cookie->Source()
+              << ", Name=" << canonical_cookie->Name()
+              << ", Value=" << canonical_cookie->Value()
+              << ", Domain=" << canonical_cookie->Domain()
+              << ", Path=" << canonical_cookie->Path()
+              << ", DoesExpire="
+              << (canonical_cookie->DoesExpire() ? "true" : "false")
+              << ", IsPersistent="
+              << (canonical_cookie->IsPersistent() ? "true" : "false")
+              << ", IsSecure="
+              << (canonical_cookie->IsSecure() ? "true" : "false")
+              << ", IsHttpOnly="
+              << (canonical_cookie->IsHttpOnly() ? "true" : "false")
+              << ", IsDomainCookie="
+              << (canonical_cookie->IsDomainCookie() ? "true" : "false")
+              << ", IsHostCookie="
+              << (canonical_cookie->IsHostCookie() ? "true" : "false")
+              << ", IsExpired="
+              << (const_cast<net::CookieMonster::CanonicalCookie*>(
+                      canonical_cookie)->IsExpired(
+                          base::Time::NowFromSystemTime())
+                  ? "true" : "false");
   }
 }
 
@@ -1305,6 +1365,11 @@ void ProfileSyncService::Observe(NotificationType type,
           !AreCredentialsAvailable()) {
         DisableForUser();
       }
+      break;
+    }
+    case NotificationType::COOKIE_CHANGED: {
+      OnCookieChanged(Source<Profile>(source).ptr(),
+                      Details<ChromeCookieDetails>(details).ptr());
       break;
     }
     default: {
