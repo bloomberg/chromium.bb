@@ -4827,7 +4827,7 @@
    fun:*RunNamedProcessTypeMainERKSsRK18MainFunctionParams
 }
 {
-   <insert_a_suppression_name_here>
+   bug_87245
    Memcheck:Leak
    fun:_Znw*
    fun:_Z17NewRunnableMethodIN11webkit_glue18WebMediaPlayerImpl5ProxyEMS2_FvvEEP14CancelableTaskPT_T0_
