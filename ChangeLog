@@ -1,3 +1,10 @@
+2011-06-24  Christian Egli  <christian.egli@sbs.ch>
+
+	* windows/Makefile.nmake: Rename the Makefile to Makefile.nmake to
+	make sure it's not overwritten by autoconf
+
+	* windows/Makefile.am (SUBDIRS): Add the include sub dir
+
 2011-06-17  Christian Egli  <christian.egli@sbs.ch>
 
 	* tests/Makefile.am (en_gb_g1_italics_SOURCES):
