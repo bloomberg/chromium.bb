@@ -73,7 +73,7 @@ class MyInstance : public pp::Instance, public pp::PaintManager::Client {
   }
 
   // PaintManager::Client implementation.
-  virtual bool OnPaint(pp::Graphics2D&,
+  virtual bool OnPaint(pp::Graphics2D& graphics_2d,
                        const std::vector<pp::Rect>& paint_rects,
                        const pp::Rect& paint_bounds) {
     // Make an image just large enough to hold all dirty rects. We won't
@@ -114,6 +114,7 @@ class MyInstance : public pp::Instance, public pp::PaintManager::Client {
              square.height(),
              0xFF000000);
 
+    graphics_2d.PaintImageData(updated_image, paint_bounds.point());
     return true;
   }
 

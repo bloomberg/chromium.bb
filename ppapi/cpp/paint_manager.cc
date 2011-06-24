@@ -17,7 +17,8 @@ PaintManager::PaintManager()
       is_always_opaque_(false),
       callback_factory_(NULL),
       manual_callback_pending_(false),
-      flush_pending_(false) {
+      flush_pending_(false),
+      has_pending_resize_(false) {
   // Set the callback object outside of the initializer list to avoid a
   // compiler warning about using "this" in an initializer list.
   callback_factory_.Initialize(this);
@@ -31,7 +32,8 @@ PaintManager::PaintManager(Instance* instance,
       is_always_opaque_(is_always_opaque),
       callback_factory_(NULL),
       manual_callback_pending_(false),
-      flush_pending_(false) {
+      flush_pending_(false),
+      has_pending_resize_(false) {
   // Set the callback object outside of the initializer list to avoid a
   // compiler warning about using "this" in an initializer list.
   callback_factory_.Initialize(this);
@@ -53,35 +55,29 @@ void PaintManager::Initialize(Instance* instance,
 }
 
 void PaintManager::SetSize(const Size& new_size) {
-  if (new_size == graphics_.size())
+  if (GetEffectiveSize() == new_size)
     return;
 
-  graphics_ = Graphics2D(instance_, new_size, is_always_opaque_);
-  if (graphics_.is_null())
-    return;
-  instance_->BindGraphics(graphics_);
-
-  manual_callback_pending_ = false;
-  flush_pending_ = false;
-  callback_factory_.CancelAll();
+  has_pending_resize_ = true;
+  pending_size_ = new_size;
 
   Invalidate();
 }
 
 void PaintManager::Invalidate() {
-  // You must call SetDevice before using.
-  PP_DCHECK(!graphics_.is_null());
+  // You must call SetSize before using.
+  PP_DCHECK(!graphics_.is_null() || has_pending_resize_);
 
   EnsureCallbackPending();
-  aggregator_.InvalidateRect(Rect(graphics_.size()));
+  aggregator_.InvalidateRect(Rect(GetEffectiveSize()));
 }
 
 void PaintManager::InvalidateRect(const Rect& rect) {
-  // You must call SetDevice before using.
-  PP_DCHECK(!graphics_.is_null());
+  // You must call SetSize before using.
+  PP_DCHECK(!graphics_.is_null() || has_pending_resize_);
 
   // Clip the rect to the device area.
-  Rect clipped_rect = rect.Intersect(Rect(graphics_.size()));
+  Rect clipped_rect = rect.Intersect(Rect(GetEffectiveSize()));
   if (clipped_rect.IsEmpty())
     return;  // Nothing to do.
 
@@ -90,11 +86,15 @@ void PaintManager::InvalidateRect(const Rect& rect) {
 }
 
 void PaintManager::ScrollRect(const Rect& clip_rect, const Point& amount) {
-  // You must call SetDevice before using.
-  PP_DCHECK(!graphics_.is_null());
+  // You must call SetSize before using.
+  PP_DCHECK(!graphics_.is_null() || has_pending_resize_);
 
   EnsureCallbackPending();
   aggregator_.ScrollRect(clip_rect, amount);
+}
+
+Size PaintManager::GetEffectiveSize() const {
+  return has_pending_resize_ ? pending_size_ : graphics_.size();
 }
 
 void PaintManager::EnsureCallbackPending() {
@@ -125,32 +125,56 @@ void PaintManager::DoPaint() {
   PaintAggregator::PaintUpdate update = aggregator_.GetPendingUpdate();
   aggregator_.ClearPendingUpdate();
 
+  // Apply any pending resize. Setting the graphics to this class must happen
+  // before asking the plugin to paint in case it requests the Graphics2D during
+  // painting. However, the bind must not happen until afterward since we don't
+  // want to have an unpainted device bound. The needs_binding flag tells us
+  // whether to do this later.
+  bool needs_binding = false;
+  if (has_pending_resize_) {
+    graphics_ = Graphics2D(instance_, pending_size_, is_always_opaque_);
+    needs_binding = true;
+
+    // Since we're binding a new one, all of the callbacks have been canceled.
+    manual_callback_pending_ = false;
+    flush_pending_ = false;
+    callback_factory_.CancelAll();
+
+    // This must be cleared before calling into the plugin since it may do
+    // additional invalidation or sizing operations.
+    has_pending_resize_ = false;
+    pending_size_ = Size();
+  }
+
   // Apply any scroll before asking the client to paint.
   if (update.has_scroll)
     graphics_.Scroll(update.scroll_rect, update.scroll_delta);
 
-  if (!client_->OnPaint(graphics_, update.paint_rects, update.paint_bounds))
-    return;  // Nothing was painted, don't schedule a flush.
+  if (client_->OnPaint(graphics_, update.paint_rects, update.paint_bounds)) {
+    // Something was painted, schedule a flush.
+    int32_t result = graphics_.Flush(
+        callback_factory_.NewCallback(&PaintManager::OnFlushComplete));
 
-  int32_t result = graphics_.Flush(
-      callback_factory_.NewCallback(&PaintManager::OnFlushComplete));
+    // If you trigger this assertion, then your plugin has called Flush()
+    // manually. When using the PaintManager, you should not call Flush, it
+    // will handle that for you because it needs to know when it can do the
+    // next paint by implementing the flush callback.
+    //
+    // Another possible cause of this assertion is re-using devices. If you
+    // use one device, swap it with another, then swap it back, we won't know
+    // that we've already scheduled a Flush on the first device. It's best to
+    // not re-use devices in this way.
+    PP_DCHECK(result != PP_ERROR_INPROGRESS);
 
-  // If you trigger this assertion, then your plugin has called Flush()
-  // manually. When using the PaintManager, you should not call Flush, it will
-  // handle that for you because it needs to know when it can do the next paint
-  // by implementing the flush callback.
-  //
-  // Another possible cause of this assertion is re-using devices. If you
-  // use one device, swap it with another, then swap it back, we won't know
-  // that we've already scheduled a Flush on the first device. It's best to not
-  // re-use devices in this way.
-  PP_DCHECK(result != PP_ERROR_INPROGRESS);
-
-  if (result == PP_OK_COMPLETIONPENDING) {
-    flush_pending_ = true;
-  } else {
-    PP_DCHECK(result == PP_OK);  // Catch all other errors in debug mode.
+    if (result == PP_OK_COMPLETIONPENDING) {
+      flush_pending_ = true;
+    } else {
+      PP_DCHECK(result == PP_OK);  // Catch all other errors in debug mode.
+    }
   }
+
+  if (needs_binding)
+    instance_->BindGraphics(graphics_);
 }
 
 void PaintManager::OnFlushComplete(int32_t) {
@@ -174,5 +198,6 @@ void PaintManager::OnManualCallbackComplete(int32_t) {
   if (aggregator_.HasPendingUpdate() && !flush_pending_)
     DoPaint();
 }
+
 
 }  // namespace pp

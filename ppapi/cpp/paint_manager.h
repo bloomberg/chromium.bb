@@ -146,9 +146,12 @@ class PaintManager {
   // position changed).
   void SetSize(const Size& new_size);
 
-  // Provides access to the underlying device in case you need it. Note: if
-  // you call Flush on this device the paint manager will get very confused,
-  // don't do this!
+  // Provides access to the underlying device in case you need it. If you have
+  // done a SetSize, note that the graphics context won't be updated until
+  // right before the next OnPaint call.
+  //
+  // Note: if you call Flush on this device the paint manager will get very
+  // confused, don't do this!
   const Graphics2D& graphics() const { return graphics_; }
   Graphics2D& graphics() { return graphics_; }
 
@@ -160,6 +163,12 @@ class PaintManager {
 
   // The given rect should be scrolled by the given amounts.
   void ScrollRect(const Rect& clip_rect, const Point& amount);
+
+  // Returns the size of the graphics context for the next paint operation.
+  // This is the pending size if a resize is pending (the plugin has called
+  // SetSize but we haven't actually painted it yet), or the current size of
+  // no resize is pending.
+  Size GetEffectiveSize() const;
 
  private:
   // Disallow copy and assign (these are unimplemented).
@@ -200,6 +209,12 @@ class PaintManager {
   // See comment for EnsureCallbackPending for more on how these work.
   bool manual_callback_pending_;
   bool flush_pending_;
+
+  // When we get a resize, we don't bind right away (see SetSize). The
+  // has_pending_resize_ tells us that we need to do a resize for the next
+  // paint operation. When true, the new size is in pending_size_.
+  bool has_pending_resize_;
+  Size pending_size_;
 };
 
 }  // namespace pp

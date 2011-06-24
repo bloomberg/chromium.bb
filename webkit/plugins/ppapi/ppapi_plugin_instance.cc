@@ -1400,29 +1400,6 @@ PP_Bool PluginInstance::BindGraphics(PP_Instance instance,
     if (!graphics_2d->BindToInstance(this))
       return PP_FALSE;  // Can't bind to more than one instance.
 
-    // See http://crbug.com/49403: this can be further optimized by keeping the
-    // old device around and painting from it.
-    if (bound_graphics_2d()) {
-      // Start the new image with the content of the old image until the plugin
-      // repaints.
-      // Use ImageDataAutoMapper to ensure the image data is valid.
-      ImageDataAutoMapper mapper(bound_graphics_2d()->image_data());
-      if (!mapper.is_valid())
-        return PP_FALSE;
-      const SkBitmap* old_backing_bitmap =
-          bound_graphics_2d()->image_data()->GetMappedBitmap();
-      SkRect old_size = SkRect::MakeWH(
-          SkScalar(static_cast<float>(old_backing_bitmap->width())),
-          SkScalar(static_cast<float>(old_backing_bitmap->height())));
-
-      SkCanvas canvas(*graphics_2d->image_data()->GetMappedBitmap());
-      canvas.drawBitmap(*old_backing_bitmap, 0, 0);
-
-      // Fill in any extra space with white.
-      canvas.clipRect(old_size, SkRegion::kDifference_Op);
-      canvas.drawARGB(255, 255, 255, 255);
-    }
-
     bound_graphics_ = graphics_2d;
     setBackingTextureId(0);
     // BindToInstance will have invalidated the plugin if necessary.

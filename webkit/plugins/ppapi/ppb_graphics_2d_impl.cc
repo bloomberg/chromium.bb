@@ -495,19 +495,42 @@ void PPB_Graphics2D_Impl::Paint(WebKit::WebCanvas* canvas,
   CGContextDrawImage(canvas, bitmap_rect, image);
   CGContextRestoreGState(canvas);
 #else
+  SkRect sk_plugin_rect = SkRect::MakeXYWH(
+      SkIntToScalar(plugin_rect.origin().x()),
+      SkIntToScalar(plugin_rect.origin().y()),
+      SkIntToScalar(plugin_rect.width()),
+      SkIntToScalar(plugin_rect.height()));
+  canvas->save();
+  canvas->clipRect(sk_plugin_rect);
+
+  if (instance()->IsFullPagePlugin()) {
+    // When we're resizing a window with a full-frame plugin, the plugin may
+    // not yet have bound a new device, which will leave parts of the
+    // background exposed if the window is getting larger. We want this to
+    // show white (typically less jarring) rather than black or uninitialized.
+    // We don't do this for non-full-frame plugins since we specifically want
+    // the page background to show through.
+    canvas->save();
+    SkRect image_data_rect = SkRect::MakeXYWH(
+        SkIntToScalar(plugin_rect.origin().x()),
+        SkIntToScalar(plugin_rect.origin().y()),
+        SkIntToScalar(image_data_->width()),
+        SkIntToScalar(image_data_->height()));
+    canvas->clipRect(image_data_rect, SkRegion::kDifference_Op);
+
+    SkPaint paint;
+    paint.setXfermodeMode(SkXfermode::kSrc_Mode);
+    paint.setColor(SK_ColorWHITE);
+    canvas->drawRect(sk_plugin_rect, paint);
+    canvas->restore();
+  }
+
   SkPaint paint;
   if (is_always_opaque_) {
     // When we know the device is opaque, we can disable blending for slightly
     // more optimized painting.
     paint.setXfermodeMode(SkXfermode::kSrc_Mode);
   }
-
-  canvas->save();
-  SkRect clip_rect = SkRect::MakeXYWH(SkIntToScalar(plugin_rect.origin().x()),
-                                      SkIntToScalar(plugin_rect.origin().y()),
-                                      SkIntToScalar(plugin_rect.width()),
-                                      SkIntToScalar(plugin_rect.height()));
-  canvas->clipRect(clip_rect);
   canvas->drawBitmap(backing_bitmap,
                      SkIntToScalar(plugin_rect.x()),
                      SkIntToScalar(plugin_rect.y()),
