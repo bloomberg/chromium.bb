@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/websockets/websocket.h"
+
 #include <string>
 #include <vector>
 
@@ -14,7 +16,6 @@
 #include "net/base/test_completion_callback.h"
 #include "net/socket/socket_test_util.h"
 #include "net/url_request/url_request_test_util.h"
-#include "net/websockets/websocket.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/platform_test.h"

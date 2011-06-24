@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/websockets/websocket_handshake.h"
+
 #include <string>
 #include <vector>
 
@@ -9,7 +11,6 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
-#include "net/websockets/websocket_handshake.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"

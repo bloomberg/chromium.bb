@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/websockets/websocket_job.h"
+
 #include <string>
 #include <vector>
 
@@ -15,7 +17,6 @@
 #include "net/base/transport_security_state.h"
 #include "net/socket_stream/socket_stream.h"
 #include "net/url_request/url_request_context.h"
-#include "net/websockets/websocket_job.h"
 #include "net/websockets/websocket_throttle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"

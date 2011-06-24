@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/websockets/websocket_handshake_draft75.h"
+
 #include <string>
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "net/websockets/websocket_handshake_draft75.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/platform_test.h"
