@@ -48,6 +48,11 @@ struct wfd_compositor {
 	uint32_t used_pipelines;
 };
 
+struct wfd_mode {
+	struct wlsc_mode base;
+	WFDPortMode mode;
+};
+
 struct wfd_output {
 	struct wlsc_output   base;
 
@@ -63,8 +68,6 @@ struct wfd_output {
 	EGLImageKHR image[2];
 	GLuint rbo[2];
 	uint32_t current;
-
-	struct wlsc_mode wl_mode;
 };
 
 static int
@@ -176,6 +179,30 @@ wfd_output_set_cursor(struct wlsc_output *output_base,
 }
 
 static int
+wfd_output_add_mode(struct wfd_output *output, WFDPortMode mode)
+{
+	struct wfd_compositor *ec =
+		(struct wfd_compositor *) output->base.compositor;
+	struct wfd_mode *wmode;
+
+	wmode = malloc(sizeof *wmode);
+	if (wmode == NULL)
+		return -1;
+
+	wmode->base.flags = 0;
+	wmode->base.width = wfdGetPortModeAttribi(ec->dev, output->port, mode,
+						  WFD_PORT_MODE_WIDTH);
+	wmode->base.height = wfdGetPortModeAttribi(ec->dev, output->port, mode,
+						   WFD_PORT_MODE_HEIGHT);
+	wmode->base.refresh = wfdGetPortModeAttribi(ec->dev, output->port, mode,
+						    WFD_PORT_MODE_REFRESH_RATE);
+	wmode->mode = mode;
+	wl_list_insert(output->base.mode_list.prev, &wmode->base.link);
+
+	return 0;
+}
+
+static int
 create_output_for_port(struct wfd_compositor *ec,
 		       WFDHandle port,
 		       int x, int y)
@@ -185,7 +212,10 @@ create_output_for_port(struct wfd_compositor *ec,
 	WFDint num_pipelines, *pipelines;
 	WFDint num_modes;
 	WFDint rect[4] = { 0, 0, 0, 0 };
-	int width, height, refresh;
+	int width, height;
+	WFDint native_resolution[2];
+	struct wfd_mode *mode;
+	WFDPortMode *modes;
 
 	output = malloc(sizeof *output);
 	if (output == NULL)
@@ -194,34 +224,51 @@ create_output_for_port(struct wfd_compositor *ec,
 	memset(output, 0, sizeof *output);
 
 	output->port = port;
+	wl_list_init(&output->base.mode_list);
 
 	wfdSetPortAttribi(ec->dev, output->port,
 			  WFD_PORT_POWER_MODE, WFD_POWER_MODE_ON);
 
-	num_modes = wfdGetPortModes(ec->dev, output->port, &output->mode, 1);
-	if (num_modes != 1) {
+	num_modes = wfdGetPortModes(ec->dev, output->port, NULL, 0);
+	if (num_modes < 1) {
 		fprintf(stderr, "failed to get port mode\n");
 		goto cleanup_port;
 	}
 
-	width = wfdGetPortModeAttribi(ec->dev, output->port, output->mode,
-				      WFD_PORT_MODE_WIDTH);
-	height = wfdGetPortModeAttribi(ec->dev, output->port, output->mode,
-				       WFD_PORT_MODE_HEIGHT);
-	refresh = wfdGetPortModeAttribi(ec->dev, output->port, output->mode,
-					WFD_PORT_MODE_REFRESH_RATE);
+	modes = malloc(sizeof(WFDPortMode) * num_modes);
+	if (modes == NULL) 
+		goto cleanup_port;
 
-	output->wl_mode.flags =
-		WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED;
-	output->wl_mode.width = width;
-	output->wl_mode.height = height;
-	output->wl_mode.refresh = refresh;
-	wl_list_init(&output->base.mode_list);
-	wl_list_insert(&output->base.mode_list, &output->wl_mode.link);
+	output->base.compositor = &ec->base;
+	num_modes = wfdGetPortModes(ec->dev, output->port, modes, num_modes);
+	for (i = 0; i < num_modes; ++i)
+		wfd_output_add_mode(output, modes[i]);
 
-	output->base.current = &output->wl_mode;	
+	free(modes);
 
-	wfdSetPortMode(ec->dev, output->port, output->mode);
+	wfdGetPortAttribiv(ec->dev, output->port,
+			   WFD_PORT_NATIVE_RESOLUTION,
+			   2, native_resolution);
+	width = native_resolution[0];
+	height = native_resolution[1];
+
+	output->base.current = NULL;
+	wl_list_for_each(mode, &output->base.mode_list, base.link) {
+		if (mode->base.width == width && mode->base.height == height) {
+			output->base.current = &mode->base;
+			break;
+		}
+	}
+
+	if (output->base.current == NULL) {
+		fprintf(stderr, "failed to find a native mode\n");
+		goto cleanup_port;
+	}
+
+	mode = (struct wfd_mode *) output->base.current;
+	mode->base.flags = WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED;
+
+	wfdSetPortMode(ec->dev, output->port, mode->mode);
 
 	wfdEnumeratePipelines(ec->dev, NULL, 0, NULL);
 
