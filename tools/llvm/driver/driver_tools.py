@@ -73,7 +73,6 @@ INITIAL_ENV = {
                           # TODO(pdox): Either eliminate gold native linking or
                           #             figure out why this is broken in the
                           #             first place.
-  'SKIP_OPT'            : '0',   # Skip llvm-opt after BC linking
   'MC_DIRECT'           : '1',
   'USE_EMULATOR'        : '0',
   'DRIVER_FLAGS'        : '', # Flags passed to the driver
@@ -181,7 +180,6 @@ DriverPatterns = [
   ( '--pnacl-i686-bias',               "env.set('BIAS', 'X8632')"),
   ( '--pnacl-x86_64-bias',             "env.set('BIAS', 'X8664')"),
   ( '--pnacl-bias=(.+)',               "env.set('BIAS', FixArch($0))"),
-  ( '--pnacl-skip-lto',                "env.set('SKIP_OPT', '1')"),
   ( '-save-temps',                     "env.set('SAVE_TEMPS', '1')"),
   ( '-no-save-temps',                  "env.set('SAVE_TEMPS', '0')"),
  ]

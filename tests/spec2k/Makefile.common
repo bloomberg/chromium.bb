@@ -224,9 +224,8 @@ PNACL_FLAGS_COMMON=$(PNACL_FLAGS) $(CFLAGS)
 %.o3.bc: %.cc
 	$(BC_GPP) -O3 $(PNACL_FLAGS_COMMON) $< -c -o $@
 
-# TODO(jvoung): fold --pnacl-skip-lto into the -O number?
 $(IT).unopt.pexe: $(SRC:%.c=%.bc) $(CPPSRC:%.cc=%.bc)
-	$(BC_GPP) -O0 --pnacl-skip-lto $(PNACL_FLAGS_COMMON) $^ \
+	$(BC_GPP) -O0  $(PNACL_FLAGS_COMMON) $^ \
 	-static -lm -lnosys -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 

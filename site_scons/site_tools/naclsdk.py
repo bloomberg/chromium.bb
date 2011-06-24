@@ -215,13 +215,14 @@ def _SetEnvForPnacl(env, root):
   pnacl_sdk_ld =  '${PNACL_ROOT}/bin/pnacl-ld'
   pnacl_sdk_disass = '${PNACL_ROOT}/bin/pnacl-dis'
   # NOTE: XXX_flags start with space for easy concatenation
+  # The flags generated here get baked into the commands (CC, CXX, LINK)
+  # instead of CFLAGS etc to keep them from getting blown away by some
+  # tests. Don't add flags here unless they always need to be preserved.
   pnacl_sdk_cxx_flags = ''
   pnacl_sdk_cc_flags = ' -std=gnu99'
   pnacl_sdk_cc_native_flags = ' -std=gnu99' + arch_flag
   pnacl_sdk_ld_flags = arch_flag
-  pnacl_sdk_ld_flags += ' ' + ' '.join(env['PNACL_BCLDFLAGS'])
-  # passing -O when linking requests LTO
-  pnacl_sdk_ld_flags += ' -O3'
+  pnacl_sdk_ld_flags += ' '.join(env['PNACL_BCLDFLAGS'])
 
   if env.Bit('nacl_pic'):
     pnacl_sdk_cc_flags += ' -fPIC'

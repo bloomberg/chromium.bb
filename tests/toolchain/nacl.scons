@@ -79,7 +79,7 @@ sloppy_env.FilterOut(CFLAGS=['-pedantic', '-O2'])
 sloppy_env.FilterOut(CCFLAGS=['-pedantic', '-O2'])
 # lto inlining breaks this test
 if env.Bit('bitcode'):
-  sloppy_env.Append(LINKFLAGS=['--pnacl-skip-lto'])
+  sloppy_env.FilterOut(LINKFLAGS=['-O3'])
 
 nexe = sloppy_env.ComponentProgram('return_address.nexe', 'return_address.c')
 node = sloppy_env.CommandSelLdrTestNacl('return_address.out',
@@ -110,7 +110,7 @@ def MakeEnv(use_opts, use_frames):
   else:
     new_env.FilterOut(CFLAGS=['-O2'])
     new_env.FilterOut(CCFLAGS=['-O2'])
-    new_env.Append(LINKFLAGS=['--pnacl-skip-lto'])
+    new_env.FilterOut(LINKFLAGS=['-O3'])
   return new_env
 
 ENVIRONMENTS_TO_TRY = [ ('noopt_frame', MakeEnv(False, True)),

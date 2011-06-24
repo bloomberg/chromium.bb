@@ -256,7 +256,7 @@ def main(argv):
       chain.add(WrapDIS, 'before_wrap.ll')
       chain.add(WrapLL, 'after_wrap.ll')
       chain.add(WrapAS, 'after_wrap.' + bitcode_type)
-    if env.getone('OPT_LEVEL') != '0' and not env.getbool('SKIP_OPT'):
+    if env.getone('OPT_LEVEL') != '0':
       chain.add(DoOPT, 'opt.' + bitcode_type)
     elif env.getone('STRIP_MODE') != 'none':
       chain.add(DoStrip, 'stripped.' + bitcode_type)

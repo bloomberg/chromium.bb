@@ -34,7 +34,7 @@ if blob_env.Bit('bitcode'):
   blob_env.Append(LINKFLAGS='--pnacl-allow-native')
   # Without this llc asserts
   # c.f. http://code.google.com/p/nativeclient/issues/detail?id=1225
-  blob_env.Append(LINKFLAGS=['--pnacl-skip-lto'])
+#  blob_env.Append(LINKFLAGS=['-O0'])
 else:
   blob_env.Append(LINKFLAGS='-Wl,-Ttext-segment=${IRT_BLOB_CODE_START}')
 

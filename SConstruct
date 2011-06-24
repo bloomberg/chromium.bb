@@ -2415,6 +2415,10 @@ if nacl_env.Bit('bitcode'):
   #       sneak in startup and cleanup code
   nacl_env.Prepend(EMULATOR=EMULATOR)
 
+  # passing -O when linking requests LTO, which does additional global
+  # optimizations at link time
+  nacl_env.Append(LINKFLAGS=['-O3'])
+
 # TODO(dmichael): Remove this flag when all tests are migrated from scripting.
 if not nacl_env.Bit('pepper_scripting'):
   nacl_env.Append(CPPDEFINES = ['PPAPI_INSTANCE_REMOVE_SCRIPTING',
