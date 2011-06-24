@@ -91,6 +91,9 @@ class DownloadsDOMHandler : public WebUIMessageHandler,
   // The current set of visible DownloadItems for this view received from the
   // DownloadManager. DownloadManager owns the DownloadItems. The vector is
   // kept in order, sorted by ascending start time.
+  // Note that when a download item is removed, the entry in the vector becomes
+  // null.  This should only be a transient state, as a ModelChanged()
+  // notification should follow close on the heels of such a change.
   typedef std::vector<DownloadItem*> OrderedDownloads;
   OrderedDownloads download_items_;
 

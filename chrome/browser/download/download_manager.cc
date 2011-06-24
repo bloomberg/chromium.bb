@@ -1185,6 +1185,10 @@ void DownloadManager::OnCreateDownloadEntryComplete(int32 download_id,
   if (db_handle == DownloadHistory::kUninitializedHandle)
     db_handle = download_history_->GetNextFakeDbHandle();
 
+  // TODO(rdsmith): Convert to DCHECK() when http://crbug.com/84508
+  // is fixed.
+  CHECK_NE(DownloadHistory::kUninitializedHandle, db_handle);
+
   DCHECK(download->db_handle() == DownloadHistory::kUninitializedHandle);
   download->set_db_handle(db_handle);
 
