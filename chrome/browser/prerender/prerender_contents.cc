@@ -60,9 +60,10 @@ class PrerenderContentsFactoryImpl : public PrerenderContents::Factory {
  public:
   virtual PrerenderContents* CreatePrerenderContents(
       PrerenderManager* prerender_manager, PrerenderTracker* prerender_tracker,
-      Profile* profile, const GURL& url, const GURL& referrer) OVERRIDE {
+      Profile* profile, const GURL& url, const GURL& referrer,
+      Origin origin) OVERRIDE {
     return new PrerenderContents(prerender_manager, prerender_tracker, profile,
-                                 url, referrer);
+                                 url, referrer, origin);
   }
 };
 
@@ -124,7 +125,8 @@ PrerenderContents::PrerenderContents(PrerenderManager* prerender_manager,
                                      PrerenderTracker* prerender_tracker,
                                      Profile* profile,
                                      const GURL& url,
-                                     const GURL& referrer)
+                                     const GURL& referrer,
+                                     Origin origin)
     : prerender_manager_(prerender_manager),
       prerender_tracker_(prerender_tracker),
       prerender_url_(url),
@@ -137,7 +139,8 @@ PrerenderContents::PrerenderContents(PrerenderManager* prerender_manager,
       prerendering_has_been_cancelled_(false),
       child_id_(-1),
       route_id_(-1),
-      starting_page_id_(-1) {
+      starting_page_id_(-1),
+      origin_(origin) {
   DCHECK(prerender_manager != NULL);
 }
 
@@ -155,8 +158,6 @@ void PrerenderContents::StartPrerendering(
   DCHECK(profile_ != NULL);
   DCHECK(!prerendering_has_started_);
   DCHECK(prerender_contents_.get() == NULL);
-  DCHECK(source_render_view_host != NULL);
-  DCHECK(source_render_view_host->view() != NULL);
 
   prerendering_has_started_ = true;
   TabContents* new_contents = new TabContents(profile_, NULL, MSG_ROUTING_NONE,
@@ -165,26 +166,29 @@ void PrerenderContents::StartPrerendering(
   TabContentsObserver::Observe(new_contents);
   prerender_contents_->download_tab_helper()->set_delegate(this);
 
-  TabContents* source_tc =
-      source_render_view_host->delegate()->GetAsTabContents();
-  if (source_tc) {
-    // So that history merging will work, get the max page ID
-    // of the old page, and add a safety margin of 10 to it (for things
-    // such as redirects).
-    starting_page_id_ = source_tc->GetMaxPageID();
-    if (starting_page_id_ < 0)
-      starting_page_id_ = 0;
-    starting_page_id_ += kPrerenderPageIdOffset;
-    prerender_contents_->controller().set_max_restored_page_id(
-        starting_page_id_);
+  if (source_render_view_host) {
+    DCHECK(source_render_view_host->view() != NULL);
+    TabContents* source_tc =
+        source_render_view_host->delegate()->GetAsTabContents();
+    if (source_tc) {
+      // So that history merging will work, get the max page ID
+      // of the old page, and add a safety margin of 10 to it (for things
+      // such as redirects).
+      starting_page_id_ = source_tc->GetMaxPageID();
+      if (starting_page_id_ < 0)
+        starting_page_id_ = 0;
+      starting_page_id_ += kPrerenderPageIdOffset;
+      prerender_contents_->controller().set_max_restored_page_id(
+          starting_page_id_);
 
-    tab_contents_delegate_.reset(new TabContentsDelegateImpl(this));
-    new_contents->set_delegate(tab_contents_delegate_.get());
+      tab_contents_delegate_.reset(new TabContentsDelegateImpl(this));
+      new_contents->set_delegate(tab_contents_delegate_.get());
 
-    // Set the size of the new TC to that of the old TC.
-    gfx::Rect tab_bounds;
-    source_tc->view()->GetContainerBounds(&tab_bounds);
-    prerender_contents_->view()->SizeContents(tab_bounds.size());
+      // Set the size of the new TC to that of the old TC.
+      gfx::Rect tab_bounds;
+      source_tc->view()->GetContainerBounds(&tab_bounds);
+      prerender_contents_->view()->SizeContents(tab_bounds.size());
+    }
   }
 
   // Register as an observer of the RenderViewHost so we get messages.
@@ -272,11 +276,12 @@ PrerenderContents::~PrerenderContents() {
   DCHECK(prerendering_has_been_cancelled_ ||
          final_status_ == FINAL_STATUS_USED ||
          final_status_ == FINAL_STATUS_CONTROL_GROUP);
+  DCHECK(origin_ != ORIGIN_MAX);
 
   // If we haven't even started prerendering, we were just in the control
   // group, which means we do not want to record the status.
   if (prerendering_has_started())
-    RecordFinalStatus(final_status_);
+    RecordFinalStatus(origin_, final_status_);
 
   if (child_id_ != -1 && route_id_ != -1)
     prerender_tracker_->OnPrerenderingFinished(child_id_, route_id_);

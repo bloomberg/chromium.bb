@@ -46,7 +46,7 @@ class PrerenderObserver : public TabContentsObserver {
   // Checks with the PrerenderManager if the specified URL has been preloaded,
   // and if so, swap the RenderViewHost with the preload into this TabContents
   // object.
-  bool MaybeUsePreloadedPage(const GURL& url, bool has_opener_set);
+  bool MaybeUsePrerenderedPage(const GURL& url, bool has_opener_set);
 
   // Returns whether the TabContents being observed is currently prerendering.
   bool IsPrerendering();

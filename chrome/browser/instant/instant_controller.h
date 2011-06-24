@@ -193,6 +193,15 @@ class InstantController : public InstantLoaderDelegate {
  private:
   friend class InstantTest;
 
+  enum PreviewCondition {
+    PREVIEW_CONDITION_SUCCESS,
+    PREVIEW_CONDITION_INVALID_TEMPLATE_URL,
+    PREVIEW_CONDITION_JAVASCRIPT_SCHEME,
+    PREVIEW_CONDITION_EXTENSION_KEYWORD,
+    PREVIEW_CONDITION_BLACKLISTED,
+    PREVIEW_CONDITION_INSTANT_SEARCH_ONLY,
+  };
+
   typedef std::set<std::string> HostBlacklist;
 
   // Updates |displayable_loader_| and if necessary notifies the delegate.
@@ -228,10 +237,11 @@ class InstantController : public InstantLoaderDelegate {
                     bool verbatim,
                     string16* suggested_text);
 
-  // Returns true if a preview should be shown for |match|. If |match| has
-  // a TemplateURL that supports the instant API it is set in |template_url|.
-  bool ShouldShowPreviewFor(const AutocompleteMatch& match,
-                            const TemplateURL** template_url);
+  // Returns a PreviewCondition indicating why we might decide not to show a
+  // preview for |match|. If |match| has a TemplateURL that supports the instant
+  // API it is set in |template_url|.
+  PreviewCondition GetPreviewConditionFor(const AutocompleteMatch& match,
+                                          const TemplateURL** template_url);
 
   // Marks the specified search engine id as not supporting instant.
   void BlacklistFromInstant(TemplateURLID id);

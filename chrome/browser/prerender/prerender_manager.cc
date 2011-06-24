@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper_delegate.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_process_host.h"
@@ -205,11 +207,13 @@ struct PrerenderManager::NavigationRecord {
 
 struct PrerenderManager::PendingContentsData {
   PendingContentsData(const GURL& url,
-                      const GURL& referrer)
-      : url_(url), referrer_(referrer) { }
+                      const GURL& referrer,
+                      Origin origin)
+      : url_(url), referrer_(referrer), origin_(origin) { }
   ~PendingContentsData() {}
   GURL url_;
   GURL referrer_;
+  Origin origin_;
 };
 
 void HandleTag(
@@ -227,10 +231,11 @@ void HandleTag(
   std::pair<int, int> child_route_id_pair = std::make_pair(render_process_id,
                                                            render_view_id);
 
-  prerender_manager->AddPreload(child_route_id_pair, url, referrer);
+  prerender_manager->AddPrerenderFromPage(ORIGIN_LINK_REL_PRERENDER,
+                                          child_route_id_pair, url, referrer);
 }
 
-void DestroyPreloadForRenderView(
+void DestroyPrerenderForRenderView(
     const base::WeakPtr<PrerenderManager>& prerender_manager_weak_ptr,
     int render_process_id,
     int render_view_id,
@@ -240,7 +245,7 @@ void DestroyPreloadForRenderView(
   if (!prerender_manager)
     return;
 
-  prerender_manager->DestroyPreloadForChildRouteIdPair(
+  prerender_manager->DestroyPrerenderForChildRouteIdPair(
       std::make_pair(render_process_id, render_view_id),
       final_status);
 }
@@ -276,7 +281,8 @@ void PrerenderManager::SetPrerenderContentsFactory(
   prerender_contents_factory_.reset(prerender_contents_factory);
 }
 
-bool PrerenderManager::AddPreload(
+bool PrerenderManager::AddPrerenderFromPage(
+    Origin origin,
     const std::pair<int, int>& child_route_id_pair,
     const GURL& url_arg,
     const GURL& referrer) {
@@ -285,7 +291,7 @@ bool PrerenderManager::AddPreload(
   // If the referring page is prerendering, defer the prerender.
   if (FindPrerenderContentsForChildRouteIdPair(child_route_id_pair) !=
           prerender_list_.end()) {
-    AddPendingPreload(child_route_id_pair, url_arg, referrer);
+    AddPendingPrerender(origin, child_route_id_pair, url_arg, referrer);
     return true;
   }
 
@@ -313,7 +319,7 @@ bool PrerenderManager::AddPreload(
   // case, when a new tab is added to a process used for prerendering.
   if (RenderProcessHost::ShouldTryToUseExistingProcessHost() &&
       !RenderProcessHost::run_renderer_in_process()) {
-    RecordFinalStatus(FINAL_STATUS_TOO_MANY_PROCESSES);
+    RecordFinalStatus(origin, FINAL_STATUS_TOO_MANY_PROCESSES);
     return false;
   }
 
@@ -322,7 +328,7 @@ bool PrerenderManager::AddPreload(
     // Cancel the prerender. We could add it to the pending prerender list but
     // this doesn't make sense as the next prerender request will be triggered
     // by a navigation and is unlikely to be the same site.
-    RecordFinalStatus(FINAL_STATUS_RATE_LIMIT_EXCEEDED);
+    RecordFinalStatus(origin, FINAL_STATUS_RATE_LIMIT_EXCEEDED);
     return false;
   }
 
@@ -335,13 +341,13 @@ bool PrerenderManager::AddPreload(
     // Don't prerender page if parent RenderViewHost no longer exists, or it has
     // no view.  The latter should only happen when the RenderView has closed.
     if (!source_render_view_host || !source_render_view_host->view()) {
-      RecordFinalStatus(FINAL_STATUS_SOURCE_RENDER_VIEW_CLOSED);
+      RecordFinalStatus(origin, FINAL_STATUS_SOURCE_RENDER_VIEW_CLOSED);
       return false;
     }
   }
 
   PrerenderContents* prerender_contents =
-      CreatePrerenderContents(url, referrer);
+      CreatePrerenderContents(url, referrer, origin);
   if (!prerender_contents || !prerender_contents->Init())
     return false;
 
@@ -349,6 +355,7 @@ bool PrerenderManager::AddPreload(
   PrerenderContentsData data(prerender_contents, GetCurrentTime());
 
   prerender_list_.push_back(data);
+
   if (IsControlGroup()) {
     data.contents_->set_final_status(FINAL_STATUS_CONTROL_GROUP);
   } else {
@@ -364,7 +371,21 @@ bool PrerenderManager::AddPreload(
   return true;
 }
 
-void PrerenderManager::AddPendingPreload(
+bool PrerenderManager::AddPrerender(Origin origin, const GURL& url) {
+  bool should_prerender = true;
+  if (origin == ORIGIN_OMNIBOX) {
+    CommandLine* cl = CommandLine::ForCurrentProcess();
+    should_prerender = cl->HasSwitch(switches::kPrerenderFromOmnibox);
+  }
+
+  if (!should_prerender)
+    return false;
+
+  return AddPrerenderFromPage(origin, std::make_pair(-1, -1), url, GURL());
+}
+
+void PrerenderManager::AddPendingPrerender(
+    Origin origin,
     const std::pair<int, int>& child_route_id_pair,
     const GURL& url,
     const GURL& referrer) {
@@ -378,7 +399,7 @@ void PrerenderManager::AddPendingPreload(
     it = pending_prerender_list_.insert(el).first;
   }
 
-  it->second.push_back(PendingContentsData(url, referrer));
+  it->second.push_back(PendingContentsData(url, referrer, origin));
 }
 
 std::list<PrerenderManager::PrerenderContentsData>::iterator
@@ -403,7 +424,7 @@ std::list<PrerenderManager::PrerenderContentsData>::iterator
   return it;
 }
 
-void PrerenderManager::DestroyPreloadForChildRouteIdPair(
+void PrerenderManager::DestroyPrerenderForChildRouteIdPair(
     const std::pair<int, int>& child_route_id_pair,
     FinalStatus final_status) {
   DCHECK(CalledOnValidThread());
@@ -453,9 +474,9 @@ PrerenderContents* PrerenderManager::GetEntry(const GURL& url) {
   return GetEntryButNotSpecifiedTC(url, NULL);
 }
 
-bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tab_contents,
-                                             const GURL& url,
-                                             bool has_opener_set) {
+bool PrerenderManager::MaybeUsePrerenderedPage(TabContents* tab_contents,
+                                               const GURL& url,
+                                               bool has_opener_set) {
   DCHECK(CalledOnValidThread());
   scoped_ptr<PrerenderContents> prerender_contents(
       GetEntryButNotSpecifiedTC(url, tab_contents));
@@ -560,7 +581,8 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tab_contents,
     for (std::vector<PendingContentsData>::iterator content_it =
             pending_it->second.begin();
          content_it != pending_it->second.end(); ++content_it) {
-      AddPreload(pending_it->first, content_it->url_, content_it->referrer_);
+      AddPrerenderFromPage(content_it->origin_, pending_it->first,
+                           content_it->url_, content_it->referrer_);
     }
     pending_prerender_list_.erase(pending_it);
   }
@@ -588,7 +610,7 @@ void PrerenderManager::MoveEntryToPendingDelete(PrerenderContents* entry) {
        it != prerender_list_.end();
        ++it) {
     if (it->contents_ == entry) {
-      RemovePendingPreload(entry);
+      RemovePendingPrerender(entry);
       prerender_list_.erase(it);
       break;
     }
@@ -629,10 +651,11 @@ bool PrerenderManager::IsPrerenderElementFresh(const base::Time start) const {
 
 PrerenderContents* PrerenderManager::CreatePrerenderContents(
     const GURL& url,
-    const GURL& referrer) {
+    const GURL& referrer,
+    Origin origin) {
   DCHECK(CalledOnValidThread());
   return prerender_contents_factory_->CreatePrerenderContents(
-      this, prerender_tracker_, profile_, url, referrer);
+      this, prerender_tracker_, profile_, url, referrer, origin);
 }
 
 void PrerenderManager::DeletePendingDeleteEntries() {
@@ -772,7 +795,7 @@ void PrerenderManager::RecordTagObserved() {
   last_prerender_seen_time_ = base::TimeTicks::Now();
 }
 
-void PrerenderManager::RemovePendingPreload(PrerenderContents* entry) {
+void PrerenderManager::RemovePendingPrerender(PrerenderContents* entry) {
   DCHECK(CalledOnValidThread());
   int child_id;
   int route_id;

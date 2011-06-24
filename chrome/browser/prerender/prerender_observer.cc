@@ -32,7 +32,7 @@ void PrerenderObserver::ProvisionalChangeToMainFrameUrl(const GURL& url,
   if (prerender_manager->IsTabContentsPrerendering(tab_contents()))
     return;
   prerender_manager->MarkTabContentsAsNotPrerendered(tab_contents());
-  MaybeUsePreloadedPage(url, has_opener_set);
+  MaybeUsePrerenderedPage(url, has_opener_set);
   prerender_manager->RecordNavigation(url);
 }
 
@@ -72,15 +72,15 @@ PrerenderManager* PrerenderObserver::MaybeGetPrerenderManager() {
   return tab_contents()->profile()->GetPrerenderManager();
 }
 
-bool PrerenderObserver::MaybeUsePreloadedPage(const GURL& url,
-                                              bool has_opener_set) {
+bool PrerenderObserver::MaybeUsePrerenderedPage(const GURL& url,
+                                                bool has_opener_set) {
   PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
   if (!prerender_manager)
     return false;
   DCHECK(!prerender_manager->IsTabContentsPrerendering(tab_contents()));
-  return prerender_manager->MaybeUsePreloadedPage(tab_contents(),
-                                                  url,
-                                                  has_opener_set);
+  return prerender_manager->MaybeUsePrerenderedPage(tab_contents(),
+                                                    url,
+                                                    has_opener_set);
 }
 
 bool PrerenderObserver::IsPrerendering() {

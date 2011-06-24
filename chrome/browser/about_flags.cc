@@ -376,6 +376,13 @@ const Experiment kExperiments[] = {
 #endif
     SINGLE_VALUE_TYPE(switches::kEnableSmoothScrolling)
   },
+  {
+    "prerender-from-omnibox",
+    IDS_FLAGS_PRERENDER_FROM_OMNIBOX_NAME,
+    IDS_FLAGS_PRERENDER_FROM_OMNIBOX_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kPrerenderFromOmnibox)
+  },
 };
 
 const Experiment* experiments = kExperiments;

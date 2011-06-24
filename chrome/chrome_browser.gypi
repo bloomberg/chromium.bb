@@ -1700,6 +1700,8 @@
         'browser/prerender/prerender_manager.h',
         'browser/prerender/prerender_observer.cc',
         'browser/prerender/prerender_observer.h',
+        'browser/prerender/prerender_origin.cc',
+        'browser/prerender/prerender_origin.h',
         'browser/prerender/prerender_render_view_host_observer.cc',
         'browser/prerender/prerender_render_view_host_observer.h',
         'browser/prerender/prerender_tracker.cc',

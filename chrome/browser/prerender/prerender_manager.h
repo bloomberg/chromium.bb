@@ -19,6 +19,7 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/prerender/prerender_contents.h"
+#include "chrome/browser/prerender/prerender_origin.h"
 #include "googleurl/src/gurl.h"
 
 class Profile;
@@ -51,7 +52,7 @@ void HandleTag(
     const GURL& url,
     const GURL& referrer);
 
-void DestroyPreloadForRenderView(
+void DestroyPrerenderForRenderView(
     const base::WeakPtr<PrerenderManager>& prerender_manager_weak_ptr,
     int child_id,
     int route_id,
@@ -86,30 +87,38 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   virtual ~PrerenderManager();
 
-  // Preloads |url| if valid.  |child_route_id_pair| identifies the
+  // Starts a prerender for |url| if valid. |child_route_id_pair| identifies the
   // RenderViewHost that the prerender request came from and is used to
   // set the initial window size of the RenderViewHost used for prerendering.
   // Returns true if the URL was added, false if it was not.
   // If |child_route_id_pair| itself is prerendering, adds the preloads as
-  // a pending preload.
-  bool AddPreload(
+  // a pending preload. |origin| enumerates the source of the prerender for
+  // data-tracking purposes.
+  bool AddPrerenderFromPage(
+      Origin origin,
       const std::pair<int, int>& child_route_id_pair,
       const GURL& url,
       const GURL& referrer);
 
-  // Destroy all preloads for the given child route id pair and assign a final
+  // Starts a prerender for |url| if valid. As the prerender request is coming
+  // from a source without a RenderViewHost (ie, the omnibox) we don't have a
+  // child or route id, or a referrer. This method uses sensible values for
+  // those.
+  bool AddPrerender(Origin origin, const GURL& url);
+
+  // Destroy all prerenders for the given child route id pair and assign a final
   // status to them.
-  virtual void DestroyPreloadForChildRouteIdPair(
+  virtual void DestroyPrerenderForChildRouteIdPair(
       const std::pair<int, int>& child_route_id_pair,
       FinalStatus final_status);
 
   // For a given TabContents that wants to navigate to the URL supplied,
-  // determines whether a preloaded version of the URL can be used,
+  // determines whether a prerendered version of the URL can be used,
   // and substitutes the prerendered RVH into the TabContents.  Returns
   // whether or not a prerendered RVH could be used or not.
-  bool MaybeUsePreloadedPage(TabContents* tab_contents,
-                             const GURL& url,
-                             bool has_opener_set);
+  bool MaybeUsePrerenderedPage(TabContents* tab_contents,
+                               const GURL& url,
+                               bool has_opener_set);
 
   // Moves a PrerenderContents to the pending delete list from the list of
   // active prerenders when prerendering should be cancelled.
@@ -240,9 +249,10 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // Adds a pending preload issued by the prerendering RenderView identified by
   // |child_route_id_pair|.  If and when that prerendering RenderView is used,
   // the specified prerender will start.
-  void AddPendingPreload(const std::pair<int, int>& child_route_id_pair,
-                         const GURL& url,
-                         const GURL& referrer);
+  void AddPendingPrerender(Origin origin,
+                           const std::pair<int, int>& child_route_id_pair,
+                           const GURL& url,
+                           const GURL& referrer);
 
   // Starts scheduling periodic cleanups.
   void StartSchedulingPeriodicCleanups();
@@ -264,9 +274,9 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   void DeleteOldEntries();
   virtual base::Time GetCurrentTime() const;
   virtual base::TimeTicks GetCurrentTimeTicks() const;
-  virtual PrerenderContents* CreatePrerenderContents(
-      const GURL& url,
-      const GURL& referrer);
+  virtual PrerenderContents* CreatePrerenderContents(const GURL& url,
+                                                     const GURL& referrer,
+                                                     Origin origin);
 
   // Deletes any PrerenderContents that have been added to the pending delete
   // list.
@@ -290,7 +300,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   // Called when removing a preload to ensure we clean up any pending preloads
   // that might remain in the map.
-  void RemovePendingPreload(PrerenderContents* entry);
+  void RemovePendingPrerender(PrerenderContents* entry);
 
   bool DoesRateLimitAllowPrerender() const;
 

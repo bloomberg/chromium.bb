@@ -217,6 +217,7 @@ extern const char kParentProfile[];
 extern const char kPpapiFlashInProcess[];
 extern const char kPreloadInstantSearch[];
 extern const char kPrerender[];
+extern const char kPrerenderFromOmnibox[];
 extern const char kPrerenderSwitchValueAuto[];
 extern const char kPrerenderSwitchValueDisabled[];
 extern const char kPrerenderSwitchValueEnabled[];

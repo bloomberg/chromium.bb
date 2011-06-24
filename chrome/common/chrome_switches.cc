@@ -779,6 +779,10 @@ const char kPreloadInstantSearch[]          = "preload-instant-search";
 // Controls speculative prerendering of pages, and content prefetching.  Both
 // are dispatched from <link rel=prefetch href=...> elements.
 const char kPrerender[]                     = "prerender";
+// Trigger prerendering of pages from suggestions in the omnibox. Only has an
+// effect when Instant is either disabled or restricted to search, and when
+// prerender is enabled.
+const char kPrerenderFromOmnibox[]          = "prerender-from-omnibox";
 // These are the values the switch may have, as in "--prerender=auto".
 //   auto: Allow field trial selection in both prerender and prefetch.
 const char kPrerenderSwitchValueAuto[]      = "auto";

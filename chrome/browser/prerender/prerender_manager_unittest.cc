@@ -6,6 +6,7 @@
 #include "base/time.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/prerender/prerender_origin.h"
 #include "chrome/test/testing_browser_process.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -24,7 +25,7 @@ class DummyPrerenderContents : public PrerenderContents {
                          const GURL& url,
                          FinalStatus expected_final_status)
       : PrerenderContents(prerender_manager, prerender_tracker, NULL, url,
-                          GURL()),
+                          GURL(), ORIGIN_LINK_REL_PRERENDER),
         has_started_(false),
         expected_final_status_(expected_final_status) {
   }
@@ -118,9 +119,9 @@ class TestPrerenderManager : public PrerenderManager {
     return prerender_contents;
   }
 
-  // Shorthand to add a simple preload with no aliases.
-  bool AddSimplePreload(const GURL& url) {
-    return AddPreload(std::pair<int, int>(-1, -1), url, GURL());
+  // Shorthand to add a simple preload with a reasonable source.
+  bool AddSimplePrerender(const GURL& url) {
+    return AddPrerender(ORIGIN_LINK_REL_PRERENDER, url);
   }
 
   bool IsPendingEntry(const GURL& url) {
@@ -151,7 +152,8 @@ class TestPrerenderManager : public PrerenderManager {
 
   virtual PrerenderContents* CreatePrerenderContents(
       const GURL& url,
-      const GURL& referrer) OVERRIDE {
+      const GURL& referrer,
+      Origin origin) OVERRIDE {
     DCHECK(next_prerender_contents_.get());
     return next_prerender_contents_.release();
   }
@@ -203,7 +205,7 @@ class PrerenderManagerTest : public testing::Test {
 
 TEST_F(PrerenderManagerTest, EmptyTest) {
   GURL url("http://www.google.com/");
-  EXPECT_FALSE(prerender_manager()->MaybeUsePreloadedPage(NULL, url, false));
+  EXPECT_FALSE(prerender_manager()->MaybeUsePrerenderedPage(NULL, url, false));
 }
 
 TEST_F(PrerenderManagerTest, FoundTest) {
@@ -212,7 +214,7 @@ TEST_F(PrerenderManagerTest, FoundTest) {
       prerender_manager()->CreateNextPrerenderContents(
           url,
           FINAL_STATUS_USED);
-  EXPECT_TRUE(prerender_manager()->AddSimplePreload(url));
+  EXPECT_TRUE(prerender_manager()->AddSimplePrerender(url));
   EXPECT_TRUE(prerender_contents->has_started());
   ASSERT_EQ(prerender_contents, prerender_manager()->GetEntry(url));
 }
@@ -226,7 +228,7 @@ TEST_F(PrerenderManagerTest, DropSecondRequestTest) {
           url,
           FINAL_STATUS_USED);
   DummyPrerenderContents* null = NULL;
-  EXPECT_TRUE(prerender_manager()->AddSimplePreload(url));
+  EXPECT_TRUE(prerender_manager()->AddSimplePrerender(url));
   EXPECT_EQ(null, prerender_manager()->next_prerender_contents());
   EXPECT_TRUE(prerender_contents->has_started());
 
@@ -234,7 +236,7 @@ TEST_F(PrerenderManagerTest, DropSecondRequestTest) {
       prerender_manager()->CreateNextPrerenderContents(
           url,
           FINAL_STATUS_MANAGER_SHUTDOWN);
-  EXPECT_FALSE(prerender_manager()->AddSimplePreload(url));
+  EXPECT_FALSE(prerender_manager()->AddSimplePrerender(url));
   EXPECT_EQ(prerender_contents1,
             prerender_manager()->next_prerender_contents());
   EXPECT_FALSE(prerender_contents1->has_started());
@@ -250,7 +252,7 @@ TEST_F(PrerenderManagerTest, ExpireTest) {
           url,
           FINAL_STATUS_TIMED_OUT);
   DummyPrerenderContents* null = NULL;
-  EXPECT_TRUE(prerender_manager()->AddSimplePreload(url));
+  EXPECT_TRUE(prerender_manager()->AddSimplePrerender(url));
   EXPECT_EQ(null, prerender_manager()->next_prerender_contents());
   EXPECT_TRUE(prerender_contents->has_started());
   prerender_manager()->AdvanceTime(prerender_manager()->max_prerender_age()
@@ -267,7 +269,7 @@ TEST_F(PrerenderManagerTest, DropOldestRequestTest) {
           url,
           FINAL_STATUS_EVICTED);
   DummyPrerenderContents* null = NULL;
-  EXPECT_TRUE(prerender_manager()->AddSimplePreload(url));
+  EXPECT_TRUE(prerender_manager()->AddSimplePrerender(url));
   EXPECT_EQ(null, prerender_manager()->next_prerender_contents());
   EXPECT_TRUE(prerender_contents->has_started());
 
@@ -276,7 +278,7 @@ TEST_F(PrerenderManagerTest, DropOldestRequestTest) {
       prerender_manager()->CreateNextPrerenderContents(
           url1,
           FINAL_STATUS_USED);
-  EXPECT_TRUE(prerender_manager()->AddSimplePreload(url1));
+  EXPECT_TRUE(prerender_manager()->AddSimplePrerender(url1));
   EXPECT_EQ(null, prerender_manager()->next_prerender_contents());
   EXPECT_TRUE(prerender_contents1->has_started());
 
@@ -294,7 +296,7 @@ TEST_F(PrerenderManagerTest, TwoElementPrerenderTest) {
           url,
           FINAL_STATUS_EVICTED);
   DummyPrerenderContents* null = NULL;
-  EXPECT_TRUE(prerender_manager()->AddSimplePreload(url));
+  EXPECT_TRUE(prerender_manager()->AddSimplePrerender(url));
   EXPECT_EQ(null, prerender_manager()->next_prerender_contents());
   EXPECT_TRUE(prerender_contents->has_started());
 
@@ -303,7 +305,7 @@ TEST_F(PrerenderManagerTest, TwoElementPrerenderTest) {
       prerender_manager()->CreateNextPrerenderContents(
           url1,
           FINAL_STATUS_USED);
-  EXPECT_TRUE(prerender_manager()->AddSimplePreload(url1));
+  EXPECT_TRUE(prerender_manager()->AddSimplePrerender(url1));
   EXPECT_EQ(null, prerender_manager()->next_prerender_contents());
   EXPECT_TRUE(prerender_contents1->has_started());
 
@@ -312,7 +314,7 @@ TEST_F(PrerenderManagerTest, TwoElementPrerenderTest) {
       prerender_manager()->CreateNextPrerenderContents(
           url2,
           FINAL_STATUS_USED);
-  EXPECT_TRUE(prerender_manager()->AddSimplePreload(url2));
+  EXPECT_TRUE(prerender_manager()->AddSimplePrerender(url2));
   EXPECT_EQ(null, prerender_manager()->next_prerender_contents());
   EXPECT_TRUE(prerender_contents2->has_started());
 
@@ -334,25 +336,25 @@ TEST_F(PrerenderManagerTest, AliasURLTest) {
   DummyPrerenderContents* prerender_contents =
       prerender_manager()->CreateNextPrerenderContents(
           url, alias_urls, FINAL_STATUS_USED);
-  EXPECT_TRUE(prerender_manager()->AddSimplePreload(url));
+  EXPECT_TRUE(prerender_manager()->AddSimplePrerender(url));
   ASSERT_EQ(NULL, prerender_manager()->GetEntry(not_an_alias_url));
   ASSERT_EQ(prerender_contents, prerender_manager()->GetEntry(alias_url1));
   prerender_contents = prerender_manager()->CreateNextPrerenderContents(
           url, alias_urls, FINAL_STATUS_USED);
-  EXPECT_TRUE(prerender_manager()->AddSimplePreload(url));
+  EXPECT_TRUE(prerender_manager()->AddSimplePrerender(url));
   ASSERT_EQ(prerender_contents, prerender_manager()->GetEntry(alias_url2));
   prerender_contents = prerender_manager()->CreateNextPrerenderContents(
           url, alias_urls, FINAL_STATUS_USED);
-  EXPECT_TRUE(prerender_manager()->AddSimplePreload(url));
+  EXPECT_TRUE(prerender_manager()->AddSimplePrerender(url));
   ASSERT_EQ(prerender_contents, prerender_manager()->GetEntry(url));
 
   // Test that alias URLs can not be added.
   prerender_contents = prerender_manager()->CreateNextPrerenderContents(
           url, alias_urls, FINAL_STATUS_USED);
-  EXPECT_TRUE(prerender_manager()->AddSimplePreload(url));
-  EXPECT_FALSE(prerender_manager()->AddSimplePreload(url));
-  EXPECT_FALSE(prerender_manager()->AddSimplePreload(alias_url1));
-  EXPECT_FALSE(prerender_manager()->AddSimplePreload(alias_url2));
+  EXPECT_TRUE(prerender_manager()->AddSimplePrerender(url));
+  EXPECT_FALSE(prerender_manager()->AddSimplePrerender(url));
+  EXPECT_FALSE(prerender_manager()->AddSimplePrerender(alias_url1));
+  EXPECT_FALSE(prerender_manager()->AddSimplePrerender(alias_url2));
   ASSERT_EQ(prerender_contents, prerender_manager()->GetEntry(url));
 }
 
@@ -364,7 +366,7 @@ TEST_F(PrerenderManagerTest, RateLimitInWindowTest) {
           url,
           FINAL_STATUS_MANAGER_SHUTDOWN);
   DummyPrerenderContents* null = NULL;
-  EXPECT_TRUE(prerender_manager()->AddSimplePreload(url));
+  EXPECT_TRUE(prerender_manager()->AddSimplePrerender(url));
   EXPECT_EQ(null, prerender_manager()->next_prerender_contents());
   EXPECT_TRUE(prerender_contents->has_started());
 
@@ -375,7 +377,7 @@ TEST_F(PrerenderManagerTest, RateLimitInWindowTest) {
   prerender_manager()->CreateNextPrerenderContents(
       url,
       FINAL_STATUS_MANAGER_SHUTDOWN);
-  EXPECT_FALSE(prerender_manager()->AddSimplePreload(url1));
+  EXPECT_FALSE(prerender_manager()->AddSimplePrerender(url1));
   prerender_manager()->set_rate_limit_enabled(false);
 }
 
@@ -387,7 +389,7 @@ TEST_F(PrerenderManagerTest, RateLimitOutsideWindowTest) {
           url,
           FINAL_STATUS_EVICTED);
   DummyPrerenderContents* null = NULL;
-  EXPECT_TRUE(prerender_manager()->AddSimplePreload(url));
+  EXPECT_TRUE(prerender_manager()->AddSimplePrerender(url));
   EXPECT_EQ(null, prerender_manager()->next_prerender_contents());
   EXPECT_TRUE(prerender_contents->has_started());
 
@@ -400,19 +402,19 @@ TEST_F(PrerenderManagerTest, RateLimitOutsideWindowTest) {
       prerender_manager()->CreateNextPrerenderContents(
           url1,
           FINAL_STATUS_MANAGER_SHUTDOWN);
-  EXPECT_TRUE(prerender_manager()->AddSimplePreload(url1));
+  EXPECT_TRUE(prerender_manager()->AddSimplePrerender(url1));
   EXPECT_EQ(null, prerender_manager()->next_prerender_contents());
   EXPECT_TRUE(rate_limit_prerender_contents->has_started());
   prerender_manager()->set_rate_limit_enabled(false);
 }
 
-TEST_F(PrerenderManagerTest, PendingPreloadTest) {
+TEST_F(PrerenderManagerTest, PendingPrerenderTest) {
   GURL url("http://www.google.com/");
   DummyPrerenderContents* prerender_contents =
       prerender_manager()->CreateNextPrerenderContents(
           url,
           FINAL_STATUS_USED);
-  EXPECT_TRUE(prerender_manager()->AddSimplePreload(url));
+  EXPECT_TRUE(prerender_manager()->AddSimplePrerender(url));
 
   int child_id;
   int route_id;
@@ -421,10 +423,9 @@ TEST_F(PrerenderManagerTest, PendingPreloadTest) {
 
   GURL pending_url("http://news.google.com/");
 
-  EXPECT_TRUE(
-      prerender_manager()->AddPreload(std::make_pair(child_id, route_id),
-                                      pending_url,
-                                      url));
+  EXPECT_TRUE(prerender_manager()->AddPrerenderFromPage(
+      ORIGIN_LINK_REL_PRERENDER, std::make_pair(child_id, route_id),
+      pending_url, url));
 
   EXPECT_TRUE(prerender_manager()->IsPendingEntry(pending_url));
   EXPECT_TRUE(prerender_contents->has_started());
@@ -460,7 +461,7 @@ TEST_F(PrerenderManagerTest, ControlGroup) {
       prerender_manager()->CreateNextPrerenderContents(
           url,
           FINAL_STATUS_CONTROL_GROUP);
-  EXPECT_TRUE(prerender_manager()->AddSimplePreload(url));
+  EXPECT_TRUE(prerender_manager()->AddSimplePrerender(url));
   EXPECT_FALSE(prerender_contents->has_started());
 }
 
@@ -472,8 +473,8 @@ TEST_F(PrerenderManagerTest, SourceRenderViewClosed) {
   prerender_manager()->CreateNextPrerenderContents(
       url,
       FINAL_STATUS_MANAGER_SHUTDOWN);
-  EXPECT_FALSE(prerender_manager()->AddPreload(
-      std::pair<int, int>(100, 100), url, GURL()));
+  EXPECT_FALSE(prerender_manager()->AddPrerenderFromPage(
+      ORIGIN_LINK_REL_PRERENDER, std::pair<int, int>(100, 100), url, GURL()));
 }
 
 // Tests that the prerender manager ignores fragment references when matching
@@ -485,7 +486,7 @@ TEST_F(PrerenderManagerTest, PageMatchesFragmentTest) {
   DummyPrerenderContents* prerender_contents =
       prerender_manager()->CreateNextPrerenderContents(url,
                                                        FINAL_STATUS_USED);
-  EXPECT_TRUE(prerender_manager()->AddSimplePreload(url));
+  EXPECT_TRUE(prerender_manager()->AddSimplePrerender(url));
   EXPECT_TRUE(prerender_contents->has_started());
   ASSERT_EQ(prerender_contents, prerender_manager()->GetEntry(fragment_url));
 }
@@ -499,7 +500,7 @@ TEST_F(PrerenderManagerTest, FragmentMatchesPageTest) {
   DummyPrerenderContents* prerender_contents =
       prerender_manager()->CreateNextPrerenderContents(fragment_url,
                                                        FINAL_STATUS_USED);
-  EXPECT_TRUE(prerender_manager()->AddSimplePreload(fragment_url));
+  EXPECT_TRUE(prerender_manager()->AddSimplePrerender(fragment_url));
   EXPECT_TRUE(prerender_contents->has_started());
   ASSERT_EQ(prerender_contents, prerender_manager()->GetEntry(url));
 }
@@ -513,7 +514,7 @@ TEST_F(PrerenderManagerTest, FragmentMatchesFragmentTest) {
   DummyPrerenderContents* prerender_contents =
       prerender_manager()->CreateNextPrerenderContents(fragment_url,
                                                        FINAL_STATUS_USED);
-  EXPECT_TRUE(prerender_manager()->AddSimplePreload(fragment_url));
+  EXPECT_TRUE(prerender_manager()->AddSimplePrerender(fragment_url));
   EXPECT_TRUE(prerender_contents->has_started());
   ASSERT_EQ(prerender_contents,
             prerender_manager()->GetEntry(other_fragment_url));
@@ -526,7 +527,7 @@ TEST_F(PrerenderManagerTest, ClearTest) {
       prerender_manager()->CreateNextPrerenderContents(
           url,
           FINAL_STATUS_CACHE_OR_HISTORY_CLEARED);
-  EXPECT_TRUE(prerender_manager()->AddSimplePreload(url));
+  EXPECT_TRUE(prerender_manager()->AddSimplePrerender(url));
   EXPECT_TRUE(prerender_contents->has_started());
   prerender_manager()->ClearData(PrerenderManager::CLEAR_PRERENDER_CONTENTS);
   DummyPrerenderContents* null = NULL;

@@ -51,7 +51,7 @@ COMPILE_ASSERT(arraysize(kFinalStatusNames) == FINAL_STATUS_MAX + 1,
 
 }
 
-void RecordFinalStatus(FinalStatus final_status) {
+void RecordFinalStatus(Origin origin, FinalStatus final_status) {
   DCHECK(final_status != FINAL_STATUS_MAX);
   // FINAL_STATUS_CONTROL_GROUP indicates that the PrerenderContents
   // was created only to measure "would-have-been-prerendered" for
@@ -62,6 +62,21 @@ void RecordFinalStatus(FinalStatus final_status) {
   UMA_HISTOGRAM_ENUMERATION("Prerender.FinalStatus",
                             final_status,
                             FINAL_STATUS_MAX);
+  switch (origin) {
+    case ORIGIN_LINK_REL_PRERENDER:
+      UMA_HISTOGRAM_ENUMERATION("Prerender.FinalStatus_LinkRelPrerender",
+                                final_status,
+                                FINAL_STATUS_MAX);
+      break;
+    case ORIGIN_OMNIBOX:
+      UMA_HISTOGRAM_ENUMERATION("Prerender.FinalStatus_Omnibox",
+                                final_status,
+                                FINAL_STATUS_MAX);
+      break;
+    default:
+      NOTREACHED();
+      break;
+  };
 }
 
 const char* NameFromFinalStatus(FinalStatus final_status) {

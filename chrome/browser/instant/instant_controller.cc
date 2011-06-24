@@ -15,6 +15,7 @@
 #include "chrome/browser/instant/promo_counter.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -167,7 +168,23 @@ void InstantController::Update(TabContentsWrapper* tab_contents,
     return;
   }
 
-  if (!ShouldShowPreviewFor(match, &template_url)) {
+  PreviewCondition preview_condition = GetPreviewConditionFor(match,
+                                                              &template_url);
+  if (preview_condition == PREVIEW_CONDITION_SUCCESS) {
+    // Do nothing if we should show it.
+  } else if (preview_condition == PREVIEW_CONDITION_INSTANT_SEARCH_ONLY) {
+    // Start Prerender of this page instead.
+    prerender::PrerenderManager* prerender_manager =
+        tab_contents_->profile()->GetPrerenderManager();
+    if (prerender_manager) {
+      prerender_manager->AddPrerender(prerender::ORIGIN_OMNIBOX,
+                                      match.destination_url);
+    }
+
+    DestroyPreviewContentsAndLeaveActive();
+    return;
+  } else {
+    // Just destroy the preview and cancel the update.
     DestroyPreviewContentsAndLeaveActive();
     return;
   }
@@ -661,8 +678,8 @@ void InstantController::UpdateLoader(const TemplateURL* template_url,
   UpdateDisplayableLoader();
 }
 
-bool InstantController::ShouldShowPreviewFor(const AutocompleteMatch& match,
-                                             const TemplateURL** template_url) {
+InstantController::PreviewCondition InstantController::GetPreviewConditionFor(
+    const AutocompleteMatch& match, const TemplateURL** template_url) {
   const TemplateURL* t_url = GetTemplateURL(match);
   if (t_url) {
     if (!t_url->id() ||
@@ -671,21 +688,21 @@ bool InstantController::ShouldShowPreviewFor(const AutocompleteMatch& match,
         !t_url->instant_url()->SupportsReplacement()) {
       // To avoid extra load on other search engines we only enable previews if
       // they support the instant API.
-      return false;
+      return PREVIEW_CONDITION_INVALID_TEMPLATE_URL;
     }
   }
   *template_url = t_url;
 
   if (match.destination_url.SchemeIs(chrome::kJavaScriptScheme))
-    return false;
+    return PREVIEW_CONDITION_JAVASCRIPT_SCHEME;
 
-  // Extension keywords don't have a real destionation URL.
+  // Extension keywords don't have a real destination URL.
   if (match.template_url && match.template_url->IsExtensionKeyword())
-    return false;
+    return PREVIEW_CONDITION_EXTENSION_KEYWORD;
 
   // Was the host blacklisted?
   if (host_blacklist_ && host_blacklist_->count(match.destination_url.host()))
-    return false;
+    return PREVIEW_CONDITION_BLACKLISTED;
 
   const CommandLine* cl = CommandLine::ForCurrentProcess();
   if (cl->HasSwitch(switches::kRestrictInstantToSearch) &&
@@ -693,10 +710,10 @@ bool InstantController::ShouldShowPreviewFor(const AutocompleteMatch& match,
       match.type != AutocompleteMatch::SEARCH_HISTORY &&
       match.type != AutocompleteMatch::SEARCH_SUGGEST &&
       match.type != AutocompleteMatch::SEARCH_OTHER_ENGINE) {
-    return false;
+    return PREVIEW_CONDITION_INSTANT_SEARCH_ONLY;
   }
 
-  return true;
+  return PREVIEW_CONDITION_SUCCESS;
 }
 
 void InstantController::BlacklistFromInstant(TemplateURLID id) {

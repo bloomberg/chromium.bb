@@ -23,6 +23,7 @@
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/net/url_fixer_upper.h"
+#include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -79,7 +80,7 @@ AutocompleteEditModel::AutocompleteEditModel(
       control_key_state_(UP),
       is_keyword_hint_(false),
       profile_(profile),
-      update_instant_(true),
+      in_revert_(false),
       allow_exact_keyword_match_(false),
       instant_complete_behavior_(INSTANT_COMPLETE_DELAYED) {
 }
@@ -213,22 +214,33 @@ void AutocompleteEditModel::OnChanged() {
   string16 suggested_text;
   TabContentsWrapper* tab = controller_->GetTabContentsWrapper();
   bool might_support_instant = false;
-  if (update_instant_ && instant && tab) {
-    if (user_input_in_progress() && popup_->IsOpen()) {
-      AutocompleteMatch current_match = CurrentMatch();
-      if (current_match.destination_url == PermanentURL()) {
-        // The destination is the same as the current url. This typically
-        // happens if the user presses the down error in the omnibox, in which
-        // case we don't want to load a preview.
-        instant->DestroyPreviewContentsAndLeaveActive();
+  if (!in_revert_ && tab) {
+    if (instant) {
+      if (user_input_in_progress() && popup_->IsOpen()) {
+        AutocompleteMatch current_match = CurrentMatch();
+        if (current_match.destination_url == PermanentURL()) {
+          // The destination is the same as the current url. This typically
+          // happens if the user presses the down error in the omnibox, in which
+          // case we don't want to load a preview.
+          instant->DestroyPreviewContentsAndLeaveActive();
+        } else {
+          instant->Update(tab, current_match, view_->GetText(),
+                          UseVerbatimInstant(), &suggested_text);
+        }
       } else {
-        instant->Update(tab, CurrentMatch(), view_->GetText(),
-                        UseVerbatimInstant(), &suggested_text);
+        instant->DestroyPreviewContents();
       }
-    } else {
-      instant->DestroyPreviewContents();
+      might_support_instant = instant->MightSupportInstant();
+    } else if (user_input_in_progress() && popup_->IsOpen()) {
+      // Start Prerender of this page instead.
+      CHECK(tab->tab_contents());
+      prerender::PrerenderManager* prerender_manager =
+          tab->tab_contents()->profile()->GetPrerenderManager();
+      if (prerender_manager) {
+        prerender_manager->AddPrerender(prerender::ORIGIN_OMNIBOX,
+                                        CurrentMatch().destination_url);
+      }
     }
-    might_support_instant = instant->MightSupportInstant();
   }
 
   if (!might_support_instant) {
@@ -399,7 +411,7 @@ void AutocompleteEditModel::StartAutocomplete(
 }
 
 void AutocompleteEditModel::StopAutocomplete() {
-  if (popup_->IsOpen() && update_instant_) {
+  if (popup_->IsOpen() && !in_revert_) {
     InstantController* instant = controller_->GetInstant();
     if (instant && !instant->commit_on_mouse_up())
       instant->DestroyPreviewContents();
@@ -534,7 +546,7 @@ void AutocompleteEditModel::OpenMatch(const AutocompleteMatch& match,
   }
 
   if (disposition != NEW_BACKGROUND_TAB) {
-    update_instant_ = false;
+    in_revert_ = true;
     view_->RevertAll();  // Revert the box to its unedited state
   }
 
@@ -548,7 +560,7 @@ void AutocompleteEditModel::OpenMatch(const AutocompleteMatch& match,
   InstantController* instant = controller_->GetInstant();
   if (instant && !popup_->IsOpen())
     instant->DestroyPreviewContents();
-  update_instant_ = true;
+  in_revert_ = false;
 }
 
 bool AutocompleteEditModel::AcceptKeyword() {

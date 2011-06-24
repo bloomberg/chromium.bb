@@ -4348,6 +4348,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_SYNC_TYPED_URLS_DESCRIPTION" desc="Description for the flag to enable syncing the TypedURL datatype">
         Enable typed URLs in the sync options. This allows syncing your typed URL history to other clients to assist in omnibox auto-completion.
       </message>
+      <message name="IDS_FLAGS_PRERENDER_FROM_OMNIBOX_NAME" desc="Title for the flag to prerender from the omnibox">
+        Prerender from omnibox.
+      </message>
+      <message name="IDS_FLAGS_PRERENDER_FROM_OMNIBOX_DESCRIPTION" desc="Description for the flag to prerender from the omnibox">
+        Prerender suggestions given in the omnibox.
+      </message>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">

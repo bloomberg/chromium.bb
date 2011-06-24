@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_PRERENDER_PRERENDER_FINAL_STATUS_H_
 #define CHROME_BROWSER_PRERENDER_PRERENDER_FINAL_STATUS_H_
 
+#include "chrome/browser/prerender/prerender_origin.h"
+
 namespace prerender {
 
 // FinalStatus indicates whether |this| was used, or why it was cancelled.
@@ -45,7 +47,7 @@ enum FinalStatus {
   FINAL_STATUS_MAX,
 };
 
-void RecordFinalStatus(FinalStatus final_status);
+void RecordFinalStatus(Origin origin, FinalStatus final_status);
 
 // Return a human-readable name for |final_status|. |final_status|
 // is expected to be a valid value.

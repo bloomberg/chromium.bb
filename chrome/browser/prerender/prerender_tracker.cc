@@ -287,7 +287,7 @@ bool PrerenderTracker::SetFinalStatus(int child_id, int route_id,
     if (desired_final_status != FINAL_STATUS_USED) {
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          NewRunnableFunction(&DestroyPreloadForRenderView,
+          NewRunnableFunction(&DestroyPrerenderForRenderView,
                               final_status_it->second.prerender_manager,
                               child_id,
                               route_id,
