@@ -290,6 +290,7 @@ function updateStatusBarStats() {
   var videoEncodeLatency = remoting.plugin.videoEncodeLatency;
   var videoDecodeLatency = remoting.plugin.videoDecodeLatency;
   var videoRenderLatency = remoting.plugin.videoRenderLatency;
+  var roundTripLatency = remoting.plugin.roundTripLatency;
 
   var units = '';
   if (videoBandwidth < 1024) {
@@ -310,7 +311,8 @@ function updateStatusBarStats() {
       ', Capture: ' + videoCaptureLatency.toFixed(2) + 'ms' +
       ', Encode: ' + videoEncodeLatency.toFixed(2) + 'ms' +
       ', Decode: ' + videoDecodeLatency.toFixed(2) + 'ms' +
-      ', Render: ' + videoRenderLatency.toFixed(2) + 'ms');
+      ', Render: ' + videoRenderLatency.toFixed(2) + 'ms' +
+      ', Latency: ' + roundTripLatency.toFixed(2) + 'ms');
 
   // Update the stats once per second.
   window.setTimeout('updateStatusBarStats()', 1000);
