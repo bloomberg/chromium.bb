@@ -380,6 +380,29 @@ class AutofillTest(pyauto.PyUITest):
         self.GetAutofillProfile()['profiles'][1]['PHONE_HOME_WHOLE_NUMBER'],
         msg='Aggregated Germany phone number not cleaned.')
 
+  def testAppendCountryCodeForAggregatedPhones(self):
+    """Test Autofill appends country codes to aggregated phone numbers.
+
+    The country code is added for the following case:
+      The phone number contains the correct national number size and
+      is a valid format.
+    """
+    profile = {'NAME_FIRST': 'Bob',
+               'NAME_LAST': 'Smith',
+               'ADDRESS_HOME_LINE1': '1234 H St.',
+               'ADDRESS_HOME_CITY': 'San Jose',
+               'ADDRESS_HOME_STATE': 'CA',
+               'ADDRESS_HOME_ZIP': '95110',
+               'ADDRESS_HOME_COUNTRY': 'Germany',
+               'PHONE_HOME_WHOLE_NUMBER': '(08) 450 777-777',}
+
+    self._FillFormAndSubmit(
+        profile, 'autofill_test_form.html', tab_index=0, windex=0)
+    de_phone = self.GetAutofillProfile()[
+        'profiles'][0]['PHONE_HOME_WHOLE_NUMBER']
+    self.assertEqual('49', de_phone[:2],
+                     msg='Country code missing from phone number.')
+
   def testCCInfoNotStoredWhenAutocompleteOff(self):
     """Test CC info not offered to be saved when autocomplete=off for CC field.
 
