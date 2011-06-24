@@ -10,23 +10,19 @@
 
 #include "base/memory/singleton.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/chromeos/input_method/ibus_ui_controller.h"
 #include "chrome/browser/extensions/extension_function.h"
 
-class InputUiController;
 class ListValue;
 class Profile;
 
-namespace chromeos {
-class InputMethodLookupTable;
-}
-
-class ExtensionInputUiEventRouter {
+class ExtensionInputUiEventRouter
+    : public chromeos::input_method::IBusUiController::Observer {
  public:
   static ExtensionInputUiEventRouter* GetInstance();
   void Init();
 
  private:
-  friend class InputUiController;
   friend class CandidateClickedInputUiFunction;
   friend class CursorUpInputUiFunction;
   friend class CursorDownInputUiFunction;
@@ -46,12 +42,19 @@ class ExtensionInputUiEventRouter {
   void PageUp(Profile* profile, const std::string& extension_id);
   void PageDown(Profile* profile, const std::string& extension_id);
 
-  void OnHideAuxiliaryText();
-  void OnHideLookupTable();
-  void OnSetCursorLocation(int x, int y, int width, int height);
-  void OnUpdateAuxiliaryText(const std::string& utf8_text);
-  void OnUpdateLookupTable(
-      const chromeos::InputMethodLookupTable& lookup_table);
+  // IBusUiController overrides.
+  virtual void OnHideAuxiliaryText();
+  virtual void OnHideLookupTable();
+  virtual void OnHidePreeditText();
+  virtual void OnSetCursorLocation(int x, int y, int width, int height);
+  virtual void OnUpdateAuxiliaryText(const std::string& utf8_text,
+                                     bool visible);
+  virtual void OnUpdateLookupTable(
+      const chromeos::input_method::InputMethodLookupTable& lookup_table);
+  virtual void OnUpdatePreeditText(const std::string& utf8_text,
+                                   unsigned int cursor,
+                                   bool visible);
+  virtual void OnConnectionChange(bool connected);
 
   void DispatchEvent(Profile* profile,
                      const char* event_name,
@@ -59,7 +62,7 @@ class ExtensionInputUiEventRouter {
 
   Profile* profile_;
   std::string extension_id_;
-  scoped_ptr<InputUiController> ui_controller_;
+  scoped_ptr<chromeos::input_method::IBusUiController> ibus_ui_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionInputUiEventRouter);
 };

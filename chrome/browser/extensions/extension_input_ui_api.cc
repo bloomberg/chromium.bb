@@ -15,7 +15,6 @@
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/profiles/profile.h"
 #include "third_party/cros/chromeos_cros_api.h"
-#include "third_party/cros/chromeos_input_method_ui.h"
 
 namespace events {
 
@@ -26,143 +25,6 @@ const char kOnSetCursorLocation[] = "experimental.inputUI.onSetCursorLocation";
 
 }  // namespace events
 
-class InputUiController {
- public:
-  explicit InputUiController(ExtensionInputUiEventRouter* router);
-  ~InputUiController();
-
-  void CandidateClicked(int index, int button, int flags);
-  void CursorUp();
-  void CursorDown();
-  void PageUp();
-  void PageDown();
-
- private:
-  // The function is called when |HideAuxiliaryText| signal is received in
-  // libcros. |ui_controller| is a void pointer to this object.
-  static void OnHideAuxiliaryText(void* ui_controller);
-
-  // The function is called when |HideLookupTable| signal is received in
-  // libcros. |ui_controller| is a void pointer to this object.
-  static void OnHideLookupTable(void* ui_controller);
-
-  // The function is called when |SetCursorLocation| signal is received
-  // in libcros. |ui_controller| is a void pointer to this object.
-  static void OnSetCursorLocation(void* ui_controller,
-                                  int x,
-                                  int y,
-                                  int width,
-                                  int height);
-
-  // The function is called when |UpdateAuxiliaryText| signal is received
-  // in libcros. |ui_controller| is a void pointer to this object.
-  static void OnUpdateAuxiliaryText(void* ui_controller,
-                                    const std::string& utf8_text,
-                                    bool visible);
-
-  // The function is called when |UpdateLookupTable| signal is received
-  // in libcros. |ui_controller| is a void pointer to this object.
-  static void OnUpdateLookupTable(void* ui_controller,
-      const chromeos::InputMethodLookupTable& lookup_table);
-
-  // This function is called by libcros when ibus connects or disconnects.
-  // |ui_controller| is a void pointer to this object.
-  static void OnConnectionChange(void* ui_controller, bool connected);
-
-  ExtensionInputUiEventRouter* router_;
-  chromeos::InputMethodUiStatusConnection* ui_status_connection_;
-
-  DISALLOW_COPY_AND_ASSIGN(InputUiController);
-};
-
-InputUiController::InputUiController(
-    ExtensionInputUiEventRouter* router) :
-  router_(router),
-  ui_status_connection_(NULL) {
-  if (!chromeos::CrosLibrary::Get()->EnsureLoaded())
-    return;
-
-  chromeos::InputMethodUiStatusMonitorFunctions functions;
-  functions.hide_auxiliary_text =
-      &InputUiController::OnHideAuxiliaryText;
-  functions.hide_lookup_table =
-      &InputUiController::OnHideLookupTable;
-  functions.set_cursor_location =
-      &InputUiController::OnSetCursorLocation;
-  functions.update_auxiliary_text =
-      &InputUiController::OnUpdateAuxiliaryText;
-  functions.update_lookup_table =
-      &InputUiController::OnUpdateLookupTable;
-  ui_status_connection_ = chromeos::MonitorInputMethodUiStatus(functions, this);
-
-  if (!ui_status_connection_)
-    LOG(ERROR) << "chromeos::MonitorInputMethodUiStatus() failed!";
-}
-
-InputUiController::~InputUiController() {
-  if (ui_status_connection_)
-    chromeos::DisconnectInputMethodUiStatus(ui_status_connection_);
-}
-
-void InputUiController::CandidateClicked(
-    int index, int button, int flags) {
-  chromeos::NotifyCandidateClicked(ui_status_connection_, index, button, flags);
-}
-
-void InputUiController::CursorUp() {
-  chromeos::NotifyCursorUp(ui_status_connection_);
-}
-
-void InputUiController::CursorDown() {
-  chromeos::NotifyCursorDown(ui_status_connection_);
-}
-
-void InputUiController::PageUp() {
-  chromeos::NotifyPageUp(ui_status_connection_);
-}
-
-void InputUiController::PageDown() {
-  chromeos::NotifyPageDown(ui_status_connection_);
-}
-
-void InputUiController::OnHideAuxiliaryText(
-    void* ui_controller) {
-  InputUiController *self = static_cast<InputUiController*>(ui_controller);
-  self->router_->OnHideAuxiliaryText();
-}
-
-void InputUiController::OnHideLookupTable(
-    void* ui_controller) {
-  InputUiController *self = static_cast<InputUiController*>(ui_controller);
-  self->router_->OnHideLookupTable();
-}
-
-void InputUiController::OnSetCursorLocation(
-    void* ui_controller,
-    int x, int y, int width, int height) {
-  InputUiController *self = static_cast<InputUiController*>(ui_controller);
-  self->router_->OnSetCursorLocation(x, y, width, height);
-}
-
-void InputUiController::OnUpdateAuxiliaryText(
-    void* ui_controller,
-    const std::string& utf8_text,
-    bool visible) {
-  InputUiController *self = static_cast<InputUiController*>(ui_controller);
-  if (!visible) {
-    self->router_->OnHideAuxiliaryText();
-  } else {
-    self->router_->OnUpdateAuxiliaryText(utf8_text);
-  }
-}
-
-void InputUiController::OnUpdateLookupTable(
-    void* ui_controller,
-    const chromeos::InputMethodLookupTable& lookup_table) {
-  InputUiController *self = static_cast<InputUiController*>(ui_controller);
-    self->router_->OnUpdateLookupTable(lookup_table);
-}
-
 ExtensionInputUiEventRouter*
 ExtensionInputUiEventRouter::GetInstance() {
   return Singleton<ExtensionInputUiEventRouter>::get();
@@ -170,15 +32,20 @@ ExtensionInputUiEventRouter::GetInstance() {
 
 ExtensionInputUiEventRouter::ExtensionInputUiEventRouter()
   : profile_(NULL),
-    ui_controller_(NULL) {
+    ibus_ui_controller_(NULL) {
 }
 
 ExtensionInputUiEventRouter::~ExtensionInputUiEventRouter() {
 }
 
 void ExtensionInputUiEventRouter::Init() {
-  if (ui_controller_.get() == NULL) {
-    ui_controller_.reset(new InputUiController(this));
+  if (ibus_ui_controller_.get() == NULL) {
+    ibus_ui_controller_.reset(
+        chromeos::input_method::IBusUiController::Create());
+    // The observer should be added before Connect() so we can capture the
+    // initial connection change.
+    ibus_ui_controller_->AddObserver(this);
+    ibus_ui_controller_->Connect();
   }
 }
 
@@ -193,7 +60,7 @@ void ExtensionInputUiEventRouter::CandidateClicked(Profile* profile,
     if (profile_ != profile || extension_id_ != extension_id) {
       DLOG(WARNING) << "called from unregistered extension";
     }
-    ui_controller_->CandidateClicked(index, button, 0);
+    ibus_ui_controller_->NotifyCandidateClicked(index, button, 0);
 }
 
 void ExtensionInputUiEventRouter::CursorUp(Profile* profile,
@@ -201,7 +68,7 @@ void ExtensionInputUiEventRouter::CursorUp(Profile* profile,
     if (profile_ != profile || extension_id_ != extension_id) {
       DLOG(WARNING) << "called from unregistered extension";
     }
-    ui_controller_->CursorUp();
+    ibus_ui_controller_->NotifyCursorUp();
 }
 
 void ExtensionInputUiEventRouter::CursorDown(Profile* profile,
@@ -209,7 +76,7 @@ void ExtensionInputUiEventRouter::CursorDown(Profile* profile,
     if (profile_ != profile || extension_id_ != extension_id) {
       DLOG(WARNING) << "called from unregistered extension";
     }
-    ui_controller_->CursorDown();
+    ibus_ui_controller_->NotifyCursorDown();
 }
 
 void ExtensionInputUiEventRouter::PageUp(Profile* profile,
@@ -217,7 +84,7 @@ void ExtensionInputUiEventRouter::PageUp(Profile* profile,
     if (profile_ != profile || extension_id_ != extension_id) {
       DLOG(WARNING) << "called from unregistered extension";
     }
-    ui_controller_->PageUp();
+    ibus_ui_controller_->NotifyPageUp();
 }
 
 void ExtensionInputUiEventRouter::PageDown(Profile* profile,
@@ -225,11 +92,11 @@ void ExtensionInputUiEventRouter::PageDown(Profile* profile,
     if (profile_ != profile || extension_id_ != extension_id) {
       DLOG(WARNING) << "called from unregistered extension";
     }
-    ui_controller_->PageDown();
+    ibus_ui_controller_->NotifyPageDown();
 }
 
 void ExtensionInputUiEventRouter::OnHideAuxiliaryText() {
-  OnUpdateAuxiliaryText("");
+  OnUpdateAuxiliaryText("", false);
 }
 
 void ExtensionInputUiEventRouter::OnHideLookupTable() {
@@ -251,6 +118,9 @@ void ExtensionInputUiEventRouter::OnHideLookupTable() {
     extension_id_, events::kOnUpdateLookupTable, json_args, profile_, GURL());
 }
 
+void ExtensionInputUiEventRouter::OnHidePreeditText() {
+}
+
 void ExtensionInputUiEventRouter::OnSetCursorLocation(
     int x, int y, int width, int height) {
 
@@ -270,12 +140,13 @@ void ExtensionInputUiEventRouter::OnSetCursorLocation(
 }
 
 void ExtensionInputUiEventRouter::OnUpdateAuxiliaryText(
-    const std::string& utf8_text) {
+    const std::string& utf8_text,
+    bool visible) {
   if (profile_ == NULL || extension_id_.empty())
     return;
 
   ListValue args;
-  args.Append(Value::CreateStringValue(utf8_text));
+  args.Append(Value::CreateStringValue(visible ? utf8_text : ""));
 
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
@@ -284,7 +155,7 @@ void ExtensionInputUiEventRouter::OnUpdateAuxiliaryText(
 }
 
 void ExtensionInputUiEventRouter::OnUpdateLookupTable(
-    const chromeos::InputMethodLookupTable& lookup_table) {
+    const chromeos::input_method::InputMethodLookupTable& lookup_table) {
   if (profile_ == NULL || extension_id_.empty())
     return;
 
@@ -314,6 +185,15 @@ void ExtensionInputUiEventRouter::OnUpdateLookupTable(
   base::JSONWriter::Write(&args, false, &json_args);
   profile_->GetExtensionEventRouter()->DispatchEventToExtension(
     extension_id_, events::kOnUpdateLookupTable, json_args, profile_, GURL());
+}
+
+void ExtensionInputUiEventRouter::OnUpdatePreeditText(
+    const std::string& utf8_text,
+    unsigned int cursor,
+    bool visible) {
+}
+
+void ExtensionInputUiEventRouter::OnConnectionChange(bool connected) {
 }
 
 bool RegisterInputUiFunction::RunImpl() {
@@ -357,4 +237,3 @@ bool PageDownInputUiFunction::RunImpl() {
       profile(), extension_id());
   return true;
 }
-
