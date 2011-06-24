@@ -92,7 +92,9 @@ MenuItemView::MenuItemView(MenuDelegate* delegate)
       show_mnemonics_(false),
       has_icons_(false),
       top_margin_(-1),
-      bottom_margin_(-1) {
+      bottom_margin_(-1),
+      requested_menu_position_(POSITION_BEST_FIT),
+      actual_menu_position_(requested_menu_position_) {
   // NOTE: don't check the delegate for NULL, UpdateMenuPartSizes supplies a
   // NULL delegate.
   Init(NULL, 0, SUBMENU, delegate);
@@ -513,7 +515,9 @@ MenuItemView::MenuItemView(MenuItemView* parent,
       show_mnemonics_(false),
       has_icons_(false),
       top_margin_(-1),
-      bottom_margin_(-1) {
+      bottom_margin_(-1),
+      requested_menu_position_(POSITION_BEST_FIT),
+      actual_menu_position_(requested_menu_position_) {
   Init(parent, command, type, NULL);
 }
 
@@ -594,7 +598,7 @@ void MenuItemView::PrepareForRun(bool has_mnemonics, bool show_mnemonics) {
 
   // Force us to have a submenu.
   CreateSubmenu();
-
+  actual_menu_position_ = requested_menu_position_;
   canceled_ = false;
 
   has_mnemonics_ = has_mnemonics;

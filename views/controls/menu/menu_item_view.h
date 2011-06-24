@@ -97,6 +97,16 @@ class MenuItemView : public View {
     TOPRIGHT
   };
 
+  // Where the menu should be drawn, above or below the bounds (when
+  // the bounds is non-empty).  POSITION_BEST_FIT (default) positions
+  // the menu below the bounds unless the menu does not fit on the
+  // screen and the re is more space above.
+  enum MenuPosition {
+    POSITION_BEST_FIT,
+    POSITION_ABOVE_BOUNDS,
+    POSITION_BELOW_BOUNDS
+  };
+
   // Constructor for use with the top level menu item. This menu is never
   // shown to the user, rather its use as the parent for all menu items.
   explicit MenuItemView(MenuDelegate* delegate);
@@ -317,6 +327,12 @@ class MenuItemView : public View {
     bottom_margin_ = bottom_margin;
   }
 
+  // Set the position of the menu with respect to the bounds (top
+  // level only).
+  void set_menu_position(MenuPosition menu_position) {
+    requested_menu_position_ = menu_position;
+  }
+
  protected:
   // Creates a MenuItemView. This is used by the various AddXXX methods.
   MenuItemView(MenuItemView* parent, int command, Type type);
@@ -396,6 +412,13 @@ class MenuItemView : public View {
   // Calculates the preferred size.
   gfx::Size CalculatePreferredSize();
 
+  // Used by MenuController to cache the menu position in use by the
+  // active menu.
+  MenuPosition actual_menu_position() const { return actual_menu_position_; }
+  void set_actual_menu_position(MenuPosition actual_menu_position) {
+    actual_menu_position_ = actual_menu_position;
+  }
+
   // The delegate. This is only valid for the root menu item. You shouldn't
   // use this directly, instead use GetDelegate() which walks the tree as
   // as necessary.
@@ -464,6 +487,12 @@ class MenuItemView : public View {
   // Margins in pixels.
   int top_margin_;
   int bottom_margin_;
+
+  // |menu_position_| is the requested position with respect to the bounds.
+  // |actual_menu_position_| is used by the controller to cache the
+  // position of the menu being shown.
+  MenuPosition requested_menu_position_;
+  MenuPosition actual_menu_position_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuItemView);
 };

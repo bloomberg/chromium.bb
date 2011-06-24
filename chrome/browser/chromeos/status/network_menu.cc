@@ -1202,6 +1202,7 @@ NetworkMenu::NetworkMenu() : min_width_(kDefaultMinimumWidth) {
   main_menu_model_.reset(new MainMenuModel(this));
   network_menu_.reset(new views::MenuItemView(main_menu_model_.get()));
   network_menu_->set_has_icons(true);
+  network_menu_->set_menu_position(views::MenuItemView::POSITION_BELOW_BOUNDS);
 }
 
 NetworkMenu::~NetworkMenu() {

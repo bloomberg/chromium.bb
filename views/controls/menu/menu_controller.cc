@@ -1460,19 +1460,36 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
       x = x + state_.initial_bounds.width() - pref.width();
     if (!state_.monitor_bounds.IsEmpty() &&
         y + pref.height() > state_.monitor_bounds.bottom()) {
-      // The menu doesn't fit on screen. If the first location is above the
-      // half way point, show from the mouse location to bottom of screen.
-      // Otherwise show from the top of the screen to the location of the mouse.
-      // While odd, this behavior matches IE.
-      if (y < (state_.monitor_bounds.y() +
-               state_.monitor_bounds.height() / 2)) {
+      // The menu doesn't fit on screen. The menu position with
+      // respect to the bounds will be preserved if it has already
+      // been drawn. On the first drawing if the first location is
+      // above the half way point then show from the mouse location to
+      // bottom of screen, otherwise show from the top of the screen
+      // to the location of the mouse.  While odd, this behavior
+      // matches IE.
+      if (item->actual_menu_position() == MenuItemView::POSITION_BELOW_BOUNDS ||
+          (item->actual_menu_position() == MenuItemView::POSITION_BEST_FIT &&
+           y < (state_.monitor_bounds.y() +
+                state_.monitor_bounds.height() / 2))) {
         pref.set_height(std::min(pref.height(),
                                  state_.monitor_bounds.bottom() - y));
+        item->set_actual_menu_position(MenuItemView::POSITION_BELOW_BOUNDS);
       } else {
         pref.set_height(std::min(pref.height(),
             state_.initial_bounds.y() - state_.monitor_bounds.y()));
         y = state_.initial_bounds.y() - pref.height();
+        item->set_actual_menu_position(MenuItemView::POSITION_ABOVE_BOUNDS);
       }
+    } else if (item->actual_menu_position() ==
+               MenuItemView::POSITION_ABOVE_BOUNDS) {
+      // The menu would fit below the bounds, but it has already been
+      // drawn above so keep it there.
+      pref.set_height(std::min(pref.height(),
+          state_.initial_bounds.y() - state_.monitor_bounds.y()));
+      y = state_.initial_bounds.y() - pref.height();
+      item->set_actual_menu_position(MenuItemView::POSITION_ABOVE_BOUNDS);
+    } else {
+      item->set_actual_menu_position(MenuItemView::POSITION_BELOW_BOUNDS);
     }
   } else {
     // Not the first menu; position it relative to the bounds of the menu
