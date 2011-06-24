@@ -426,6 +426,10 @@ add_config('x86-alex-private-bin', [internal, binary, {
   'board' : 'x86-alex',
 }])
 
+add_config('stumpy-private-bin', [internal, binary, {
+  'board' : 'stumpy',
+}])
+
 add_config('x86-alex-toolchain', [internal, full, official, {
   'board' : 'x86-alex',
   'build_tests' : True,
@@ -465,6 +469,10 @@ add_config('x86-alex-release', [internal, full, official, release, {
 
 add_config('x86-zgb-release', [internal, full, official, release, {
   'board' : 'x86-zgb',
+}])
+
+add_config('stumpy-release', [internal, full, official, release, {
+  'board' : 'stumpy',
 }])
 
 add_config('arm-tegra2_seaboard-release', [
