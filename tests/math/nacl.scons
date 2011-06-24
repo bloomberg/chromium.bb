@@ -7,7 +7,7 @@ Import('env')
 
 #--- Version that tests errno conditions
 
-env.StaticObject('float_math', 'float_math.c')
+env.ComponentObject('float_math', 'float_math.c')
 env.ComponentProgram('float_math.nexe',
                      'float_math',
                      EXTRA_LIBS=['m'])
@@ -22,16 +22,10 @@ env.AddNodeToTestSuite(node,
 
 #--- Version that uses -fno-math-errno and doesn't test errno conditions
 
-# TODO(jvoung) enable this once we fix linking to handle libm dependencies
-# introduced by lowering (llvm intrinsics -> libm functions).
-# c.f. http://code.google.com/p/nativeclient/issues/detail?id=821
-if env.Bit('bitcode'):
-   Return()
-
 noerrno_env = env.Clone()
 noerrno_env.Append(CCFLAGS=['-fno-math-errno'])
 noerrno_env.Append(CPPDEFINES=['NO_ERRNO_CHECK'])
-noerrno_env.StaticObject('float_math_noerrno', 'float_math.c')
+noerrno_env.ComponentObject('float_math_noerrno', 'float_math.c')
 noerrno_env.ComponentProgram('float_math_noerrno.nexe',
                              'float_math_noerrno',
                              EXTRA_LIBS=['m'])
