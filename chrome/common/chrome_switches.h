@@ -144,6 +144,7 @@ extern const char kEnableSSLCachedInfo[];
 extern const char kEnableSync[];
 extern const char kEnableSyncAutofill[];
 extern const char kEnableSyncEncryption[];
+extern const char kEnableSyncOAuth[];
 extern const char kEnableSyncPreferences[];
 extern const char kEnableSyncSessions[];
 extern const char kEnableSyncTypedUrls[];
