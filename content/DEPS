@@ -38,7 +38,13 @@ include_rules = [
   # Allow inclusion of WebKit API files.
   "+third_party/WebKit/Source/WebKit/chromium",
 
-  "+ui",
+  "+ui/base",
+  "+ui/gfx",
+  # Content knows about grd files, but the specifics of how to get a resource
+  # given its id is left to the embedder.
+  "-ui/base/l10n",
+  "-ui/base/resource",
+
   "+views",
   "+webkit",
 ]

@@ -20,6 +20,8 @@
 #include "chrome/common/render_messages.h"
 #include "content/common/pepper_plugin_registry.h"
 #include "remoting/client/plugin/pepper_entrypoints.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_WIN)
 #include "content/common/sandbox_policy.h"
@@ -301,6 +303,22 @@ std::string ChromeContentClient::GetUserAgent(bool mimic_windows) const {
   product += version_info.is_valid() ? version_info.Version() : "0.0.0.0";
 
   return webkit_glue::BuildUserAgentHelper(mimic_windows, product);
+}
+
+string16 ChromeContentClient::GetLocalizedString(int message_id) const {
+#if defined(NACL_WIN64)  // The code this needs isn't linked on Win64 builds.
+  return string16();
+#else
+  return l10n_util::GetStringUTF16(message_id);
+#endif
+}
+
+base::StringPiece ChromeContentClient::GetDataResource(int resource_id) const {
+#if defined(NACL_WIN64)  // The code this needs isn't linked on Win64 builds.
+  return base::StringPiece();
+#else
+  return ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id);
+#endif
 }
 
 #if defined(OS_WIN)

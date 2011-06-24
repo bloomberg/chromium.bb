@@ -732,10 +732,6 @@ base::StringPiece GetDataResource(int resource_id) {
   return base::StringPiece();
 }
 
-HCURSOR LoadCursor(int cursor_id) {
-  return NULL;
-}
-
 bool EnsureFontLoaded(HFONT font) {
   return true;
 }

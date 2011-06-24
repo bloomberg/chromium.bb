@@ -30,8 +30,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
 #include "webkit/glue/scoped_clipboard_writer_glue.h"
 #include "webkit/glue/webkit_glue.h"
@@ -120,16 +118,6 @@ ScopedClipboardWriterGlue::~ScopedClipboardWriterGlue() {
 }
 
 namespace webkit_glue {
-
-base::StringPiece GetDataResource(int resource_id) {
-  return ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id);
-}
-
-#if defined(OS_WIN)
-HCURSOR LoadCursor(int cursor_id) {
-  return ResourceBundle::GetSharedInstance().LoadCursor(cursor_id);
-}
-#endif
 
 // Clipboard glue
 
@@ -285,11 +273,12 @@ std::string GetWebKitLocale() {
   return lang;
 }
 
-// TODO(ananta)
-// We should probably ask the embedder(chrome) for resources like strings, etc.
-// http://code.google.com/p/chromium/issues/detail?id=85757
 string16 GetLocalizedString(int message_id) {
-  return l10n_util::GetStringUTF16(message_id);
+  return content::GetContentClient()->GetLocalizedString(message_id);
+}
+
+base::StringPiece GetDataResource(int resource_id) {
+  return content::GetContentClient()->GetDataResource(resource_id);
 }
 
 std::string BuildUserAgent(bool mimic_windows) {

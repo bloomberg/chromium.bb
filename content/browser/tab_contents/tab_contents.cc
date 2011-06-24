@@ -47,7 +47,6 @@
 #include "net/base/registry_controlled_domain.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "webkit/glue/password_form.h"
 #include "webkit/glue/webpreferences.h"

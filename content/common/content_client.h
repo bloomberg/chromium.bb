@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/string16.h"
 #include "build/build_config.h"
 
 class CommandLine;
@@ -19,6 +20,10 @@ struct PepperPluginInfo;
 
 namespace IPC {
 class Message;
+}
+
+namespace base {
+class StringPiece;
 }
 
 namespace sandbox {
@@ -74,6 +79,12 @@ class ContentClient {
   // return a fake Windows user agent. This is a workaround for broken
   // websites.
   virtual std::string GetUserAgent(bool mimic_windows) const;
+
+  // Returns a string resource given its id.
+  virtual string16 GetLocalizedString(int message_id) const;
+
+  // Return the contents of a resource in a StringPiece given the resource id.
+  virtual base::StringPiece GetDataResource(int resource_id) const;
 
 #if defined(OS_WIN)
   // Allows the embedder to sandbox a plugin, and apply a custom policy.

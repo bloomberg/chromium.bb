@@ -171,11 +171,6 @@ string16 GetLocalizedString(int message_id);
 // specified as BINDATA in the relevant .rc file.
 base::StringPiece GetDataResource(int resource_id);
 
-#if defined(OS_WIN)
-// Loads and returns a cursor.
-HCURSOR LoadCursor(int cursor_id);
-#endif
-
 // Glue to access the clipboard.
 
 // Get a clipboard that can be used to construct a ScopedClipboardWriterGlue.

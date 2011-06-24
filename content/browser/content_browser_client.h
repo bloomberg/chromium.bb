@@ -24,6 +24,7 @@ class RenderViewHost;
 class ResourceDispatcherHost;
 class SSLCertErrorHandler;
 class SSLClientAuthHandler;
+class SkBitmap;
 class TabContents;
 class WorkerProcessHost;
 struct DesktopNotificationHostMsg_Show_Params;
@@ -102,6 +103,9 @@ class ContentBrowserClient {
   // Returns the languages used in the Accept-Languages HTTP header.
   // (Not called GetAcceptLanguages so it doesn't clash with win32).
   virtual std::string GetAcceptLangs(const TabContents* tab);
+
+  // Returns the default favicon.  The callee doesn't own the given bitmap.
+  virtual SkBitmap* GetDefaultFavicon();
 
   // Allow the embedder to control if an AppCache can be used for the given url.
   // This is called on the IO thread.

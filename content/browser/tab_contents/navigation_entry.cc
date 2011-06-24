@@ -6,13 +6,11 @@
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/profiles/profile.h"
+#include "content/browser/content_browser_client.h"
 #include "content/browser/site_instance.h"
 #include "content/common/content_constants.h"
 #include "content/common/url_constants.h"
-#include "grit/app_resources.h"
 #include "net/base/net_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
 
 // Use this to get a new unique ID for a NavigationEntry during construction.
@@ -32,8 +30,7 @@ NavigationEntry::SSLStatus::SSLStatus()
 }
 
 NavigationEntry::FaviconStatus::FaviconStatus() : valid_(false) {
-  ResourceBundle &rb = ResourceBundle::GetSharedInstance();
-  bitmap_ = *rb.GetBitmapNamed(IDR_DEFAULT_FAVICON);
+  bitmap_ = *content::GetContentClient()->browser()->GetDefaultFavicon();
 }
 
 

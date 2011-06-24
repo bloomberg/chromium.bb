@@ -6,8 +6,6 @@
 #define CHROME_COMMON_CHROME_CONTENT_CLIENT_H_
 #pragma once
 
-#include <string>
-
 #include "content/common/content_client.h"
 
 namespace chrome {
@@ -23,6 +21,8 @@ class ChromeContentClient : public content::ContentClient {
   virtual bool CanSendWhileSwappedOut(const IPC::Message* msg);
   virtual bool CanHandleWhileSwappedOut(const IPC::Message& msg);
   virtual std::string GetUserAgent(bool mimic_windows) const;
+  virtual string16 GetLocalizedString(int message_id) const;
+  virtual base::StringPiece GetDataResource(int resource_id) const;
 
 #if defined(OS_WIN)
   virtual bool SandboxPlugin(CommandLine* command_line,

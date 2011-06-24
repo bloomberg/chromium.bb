@@ -9,6 +9,7 @@
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/browser/webui/empty_web_ui_factory.h"
 #include "googleurl/src/gurl.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard.h"
 
 namespace content {
@@ -55,6 +56,11 @@ std::string ContentBrowserClient::GetApplicationLocale() {
 
 std::string ContentBrowserClient::GetAcceptLangs(const TabContents* tab) {
   return std::string();
+}
+
+SkBitmap* ContentBrowserClient::GetDefaultFavicon() {
+  static SkBitmap empty;
+  return &empty;
 }
 
 bool ContentBrowserClient::AllowAppCache(

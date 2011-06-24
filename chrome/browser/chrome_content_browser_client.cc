@@ -57,8 +57,10 @@
 #include "content/browser/worker_host/worker_process_host.h"
 #include "content/common/bindings_policy.h"
 #include "content/common/desktop_notification_messages.h"
+#include "grit/app_resources.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/cookie_options.h"
+#include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_LINUX)
 #include "base/linux_util.h"
@@ -335,6 +337,11 @@ std::string ChromeContentBrowserClient::GetApplicationLocale() {
 
 std::string ChromeContentBrowserClient::GetAcceptLangs(const TabContents* tab) {
   return tab->profile()->GetPrefs()->GetString(prefs::kAcceptLanguages);
+}
+
+SkBitmap* ChromeContentBrowserClient::GetDefaultFavicon() {
+  ResourceBundle &rb = ResourceBundle::GetSharedInstance();
+  return rb.GetBitmapNamed(IDR_DEFAULT_FAVICON);
 }
 
 bool ChromeContentBrowserClient::AllowAppCache(

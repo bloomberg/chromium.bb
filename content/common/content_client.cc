@@ -4,6 +4,8 @@
 
 #include "content/common/content_client.h"
 
+#include "base/string_piece.h"
+
 namespace content {
 
 static ContentClient* g_client;
@@ -33,6 +35,15 @@ bool ContentClient::CanHandleWhileSwappedOut(const IPC::Message& msg) {
 
 std::string ContentClient::GetUserAgent(bool mimic_windows) const {
   return std::string();
+}
+
+string16 ContentClient::GetLocalizedString(int message_id) const {
+  return string16();
+}
+
+// Return the contents of a resource in a StringPiece given the resource id.
+base::StringPiece ContentClient::GetDataResource(int resource_id) const {
+  return base::StringPiece();
 }
 
 #if defined(OS_WIN)
