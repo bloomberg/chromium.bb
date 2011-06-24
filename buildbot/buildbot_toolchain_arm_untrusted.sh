@@ -86,6 +86,8 @@ echo @@@BUILD_STEP clobber@@@
 rm -rf scons-out toolchain compiler ../xcodebuild ../sconsbuild ../out \
     src/third_party/nacl_sdk/arm-newlib
 rm -rf ../toolchain
+# Try to clobber /tmp/ contents to clear temporary chrome files.
+rm -rf /tmp/.org.chromium.Chromium.*
 
 echo @@@BUILD_STEP show-config@@@
 UTMAN_BUILDBOT=true ${UTMAN} show-config

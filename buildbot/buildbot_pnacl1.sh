@@ -43,6 +43,8 @@ clobber() {
   echo "@@@BUILD_STEP clobber@@@"
   rm -rf scons-out toolchain compiler hg ../xcodebuild ../sconsbuild ../out \
     src/third_party/nacl_sdk/arm-newlib
+  # Try to clobber /tmp/ contents to clear temporary chrome files.
+  rm -rf /tmp/.org.chromium.Chromium.*
 }
 
 # This is the first thing you want to run on the bots to install the toolchains
