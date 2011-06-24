@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/json/json_reader.h"
@@ -3288,6 +3289,13 @@ void TestingAutomationProvider::GetPluginsInfo(
     Browser* browser,
     DictionaryValue* args,
     IPC::Message* reply_message) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        base::Bind(&TestingAutomationProvider::GetPluginsInfo,
+                   this, browser, args, reply_message));
+    return;
+  }
   std::vector<webkit::npapi::WebPluginInfo> plugins;
   webkit::npapi::PluginList::Singleton()->GetPlugins(false, &plugins);
   ListValue* items = new ListValue;

@@ -118,6 +118,7 @@ void ContentSettingsObserver::DidCommitProvisionalLoad(
   // so that these functions can correctly detect that a piece of content
   // flipped from "not blocked" to "blocked".
   ClearBlockedContentSettings();
+  plugins_temporarily_allowed_ = false;
 
   GURL url = frame->url();
 
