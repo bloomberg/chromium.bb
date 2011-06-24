@@ -494,7 +494,9 @@ class PrebuiltUploader(object):
       # different gs bucket. The right way is to do the upload in a separate
       # pass of this script.
       if boardname == 'amd64-host':
-        remote_tarfile = 'gs://chromiumos-sdk/cros-sdk-%s.tbz2' % version
+        # FIXME(zbehan): Why does version contain the prefix "chroot-"?
+        remote_tarfile = \
+            'gs://chromiumos-sdk/cros-sdk-%s.tbz2' % version.strip('chroot-')
       if _GsUpload((tarfile, remote_tarfile, self._acl)):
         sys.exit(1)
     finally:
@@ -576,7 +578,7 @@ class PrebuiltUploader(object):
       if board == 'amd64-host':
         sdk_conf = os.path.join(self._build_path, _BINHOST_CONF_DIR,
                                 'host/sdk_version.conf')
-        RevGitFile(sdk_conf, version, key='SDK_LATEST_VERSION')
+        RevGitFile(sdk_conf, version.strip('chroot-'), key='SDK_LATEST_VERSION')
 
     if uploaded:
       # Record URL where prebuilts were uploaded.
