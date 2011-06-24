@@ -28,24 +28,26 @@ using WebKit::WebNode;
 bool PrintWebViewHelper::CreatePreviewDocument(
     const PrintMsg_PrintPages_Params& params, WebKit::WebFrame* frame,
     WebKit::WebNode* node, bool draft) {
-  int page_count = 0;
+  preview_page_count_ = 0;
   printing::PreviewMetafile metafile;
   metafile.set_draft(draft);
   if (!metafile.Init())
     return false;
 
-  if (!RenderPages(params, frame, node, false, &page_count, &metafile, true))
+  if (!RenderPages(params, frame, node, false, &preview_page_count_,
+                   &metafile, true)) {
     return false;
-
+  }
 
   // Get the size of the resulting metafile.
   uint32 buf_size = metafile.GetDataSize();
   DCHECK_GT(buf_size, 0u);
 
   PrintHostMsg_DidPreviewDocument_Params preview_params;
+  preview_params.reuse_existing_data = false;
   preview_params.data_size = buf_size;
   preview_params.document_cookie = params.params.document_cookie;
-  preview_params.expected_pages_count = page_count;
+  preview_params.expected_pages_count = preview_page_count_;
   preview_params.modifiable = IsModifiable(frame, node);
 
   if (!CopyMetafileDataToSharedMem(&metafile,

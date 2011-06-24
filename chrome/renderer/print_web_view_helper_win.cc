@@ -126,13 +126,12 @@ void PrintWebViewHelper::PrintPageInternal(
 bool PrintWebViewHelper::CreatePreviewDocument(
     const PrintMsg_PrintPages_Params& params, WebKit::WebFrame* frame,
     WebKit::WebNode* node, bool draft) {
-  int page_count = 0;
   PrintMsg_Print_Params print_params = params.params;
   UpdatePrintableSizeInPrintParameters(frame, node, &print_params);
   PrepareFrameAndViewForPrint prep_frame_view(print_params, frame, node,
                                               frame->view());
-  page_count = prep_frame_view.GetExpectedPageCount();
-  if (!page_count)
+  preview_page_count_ = prep_frame_view.GetExpectedPageCount();
+  if (!preview_page_count_)
     return false;
 
   scoped_ptr<Metafile> metafile(new printing::PreviewMetafile);
@@ -147,14 +146,14 @@ bool PrintWebViewHelper::CreatePreviewDocument(
   base::TimeTicks page_begin_time = begin_time;
 
   if (params.pages.empty()) {
-    for (int i = 0; i < page_count; ++i) {
+    for (int i = 0; i < preview_page_count_; ++i) {
       float scale_factor = shrink;
       RenderPage(print_params, &scale_factor, i, true, frame, &metafile);
       page_begin_time = ReportPreviewPageRenderTime(page_begin_time);
     }
   } else {
     for (size_t i = 0; i < params.pages.size(); ++i) {
-      if (params.pages[i] >= page_count)
+      if (params.pages[i] >= preview_page_count_)
         break;
       float scale_factor = shrink;
       RenderPage(print_params, &scale_factor,
@@ -174,7 +173,8 @@ bool PrintWebViewHelper::CreatePreviewDocument(
   if (!metafile->FinishDocument())
     NOTREACHED();
 
-  ReportTotalPreviewGenerationTime(params.pages.size(), page_count,
+  ReportTotalPreviewGenerationTime(params.pages.size(),
+                                   preview_page_count_,
                                    render_time,
                                    base::TimeTicks::Now() - begin_time);
 
@@ -183,9 +183,10 @@ bool PrintWebViewHelper::CreatePreviewDocument(
   DCHECK_GT(buf_size, 128u);
 
   PrintHostMsg_DidPreviewDocument_Params preview_params;
+  preview_params.reuse_existing_data = false;
   preview_params.data_size = buf_size;
   preview_params.document_cookie = params.params.document_cookie;
-  preview_params.expected_pages_count = page_count;
+  preview_params.expected_pages_count = preview_page_count_;
   preview_params.modifiable = IsModifiable(frame, node);
 
   if (!CopyMetafileDataToSharedMem(metafile.get(),

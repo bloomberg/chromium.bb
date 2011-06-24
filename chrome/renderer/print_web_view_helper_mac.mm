@@ -67,9 +67,9 @@ bool PrintWebViewHelper::CreatePreviewDocument(
 
   PrepareFrameAndViewForPrint prep_frame_view(printParams,
                                               frame, node, frame->view());
-  int page_count = prep_frame_view.GetExpectedPageCount();
+  preview_page_count_ = prep_frame_view.GetExpectedPageCount();
 
-  if (!page_count)
+  if (!preview_page_count_)
     return false;
 
   printing::PreviewMetafile metafile;
@@ -86,14 +86,14 @@ bool PrintWebViewHelper::CreatePreviewDocument(
   base::TimeTicks page_begin_time = begin_time;
 
   if (params.pages.empty()) {
-    for (int i = 0; i < page_count; ++i) {
+    for (int i = 0; i < preview_page_count_; ++i) {
       RenderPage(printParams.page_size, content_area, scale_factor, i, frame,
                  &metafile);
       page_begin_time = ReportPreviewPageRenderTime(page_begin_time);
     }
   } else {
     for (size_t i = 0; i < params.pages.size(); ++i) {
-      if (params.pages[i] >= page_count)
+      if (params.pages[i] >= preview_page_count_)
         break;
       RenderPage(printParams.page_size, content_area, scale_factor,
                  static_cast<int>(params.pages[i]), frame, &metafile);
@@ -106,14 +106,16 @@ bool PrintWebViewHelper::CreatePreviewDocument(
   prep_frame_view.FinishPrinting();
   metafile.FinishDocument();
 
-  ReportTotalPreviewGenerationTime(params.pages.size(), page_count,
+  ReportTotalPreviewGenerationTime(params.pages.size(),
+                                   preview_page_count_,
                                    render_time,
                                    base::TimeTicks::Now() - begin_time);
 
   PrintHostMsg_DidPreviewDocument_Params preview_params;
+  preview_params.reuse_existing_data = false;
   preview_params.data_size = metafile.GetDataSize();
   preview_params.document_cookie = params.params.document_cookie;
-  preview_params.expected_pages_count = page_count;
+  preview_params.expected_pages_count = preview_page_count_;
   preview_params.modifiable = IsModifiable(frame, node);
 
   // Ask the browser to create the shared memory for us.

@@ -278,6 +278,9 @@ class PrintWebViewHelper : public RenderViewObserver ,
   // the failure came from the browser in the first place.
   bool notify_browser_of_print_failure_;
 
+  int preview_page_count_;
+  scoped_ptr<PrintMsg_PrintPages_Params> old_print_pages_params_;
+
   DISALLOW_COPY_AND_ASSIGN(PrintWebViewHelper);
 };
 

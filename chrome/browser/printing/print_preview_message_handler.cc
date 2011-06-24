@@ -75,6 +75,20 @@ void PrintPreviewMessageHandler::OnPagesReadyForPreview(
   if (!print_preview_tab)
     return;
 
+  PrintPreviewUI* print_preview_ui =
+      static_cast<PrintPreviewUI*>(print_preview_tab->web_ui());
+
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(print_preview_tab);
+
+  if (params.reuse_existing_data) {
+    print_preview_ui->OnPreviewDataIsAvailable(
+        params.expected_pages_count,
+        wrapper->print_view_manager()->RenderSourceName(),
+        params.modifiable);
+    return;
+  }
+
   base::SharedMemory* shared_buf =
       new base::SharedMemory(params.metafile_data_handle, true);
   if (!shared_buf->Map(params.data_size)) {
@@ -83,12 +97,7 @@ void PrintPreviewMessageHandler::OnPagesReadyForPreview(
     return;
   }
 
-  TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(print_preview_tab);
   wrapper->print_view_manager()->OverrideTitle(tab_contents());
-
-  PrintPreviewUI* print_preview_ui =
-      static_cast<PrintPreviewUI*>(print_preview_tab->web_ui());
 
   char* preview_data = static_cast<char*>(shared_buf->memory());
   uint32 preview_data_size = params.data_size;

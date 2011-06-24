@@ -70,6 +70,25 @@ bool PrintMsg_Print_Params_IsEmpty(const PrintMsg_Print_Params& params) {
          !params.supports_alpha_blend;
 }
 
+bool PrintMsg_Print_Params_IsEqual(
+    const PrintMsg_PrintPages_Params& oldParams,
+    const PrintMsg_PrintPages_Params& newParams) {
+  return oldParams.params.desired_dpi == newParams.params.desired_dpi &&
+         oldParams.params.max_shrink == newParams.params.max_shrink &&
+         oldParams.params.min_shrink == newParams.params.min_shrink &&
+         oldParams.params.dpi == newParams.params.dpi &&
+         oldParams.params.printable_size == newParams.params.printable_size &&
+         oldParams.params.selection_only == newParams.params.selection_only &&
+         oldParams.params.page_size == newParams.params.page_size &&
+         oldParams.params.margin_top == newParams.params.margin_top &&
+         oldParams.params.margin_left == newParams.params.margin_left &&
+         oldParams.params.supports_alpha_blend ==
+             newParams.params.supports_alpha_blend &&
+         oldParams.pages.size() == newParams.pages.size() &&
+         std::equal(oldParams.pages.begin(), oldParams.pages.end(),
+             newParams.pages.begin());
+}
+
 }  // namespace
 
 PrepareFrameAndViewForPrint::PrepareFrameAndViewForPrint(
@@ -135,7 +154,8 @@ PrintWebViewHelper::PrintWebViewHelper(RenderView* render_view)
       script_initiated_preview_frame_(NULL),
       context_menu_preview_node_(NULL),
       user_cancelled_scripted_print_count_(0),
-      notify_browser_of_print_failure_(true) {
+      notify_browser_of_print_failure_(true),
+      preview_page_count_(0) {
   is_preview_ = switches::IsPrintPreviewEnabled();
 }
 
@@ -353,7 +373,22 @@ void PrintWebViewHelper::PrintPreview(WebKit::WebFrame* frame,
   if (!settings.GetBoolean(printing::kSettingDraftDocument, &draft))
     draft = false;
 
-  // Render Pages for printing.
+  if (draft && old_print_pages_params_.get() &&
+      PrintMsg_Print_Params_IsEqual(*old_print_pages_params_,
+                                    *print_pages_params_)) {
+    PrintHostMsg_DidPreviewDocument_Params preview_params;
+    preview_params.reuse_existing_data = true;
+    preview_params.data_size = 0;
+    preview_params.document_cookie =
+        print_pages_params_->params.document_cookie;
+    preview_params.expected_pages_count = preview_page_count_;
+    preview_params.modifiable = IsModifiable(frame, node);
+
+    Send(new PrintHostMsg_PagesReadyForPreview(routing_id(), preview_params));
+    return;
+  }
+
+  // Render Pages for preview.
   if (!RenderPagesForPreview(frame, node, draft))
     DidFinishPrinting(FAIL_PREVIEW);
 }
@@ -375,7 +410,9 @@ void PrintWebViewHelper::DidFinishPrinting(PrintingResult result) {
     print_web_view_->close();
     print_web_view_ = NULL;
   }
-  print_pages_params_.reset();
+
+  old_print_pages_params_ .reset(print_pages_params_.release());
+
   notify_browser_of_print_failure_ = true;
 }
 
