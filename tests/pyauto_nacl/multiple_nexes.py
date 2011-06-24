@@ -19,10 +19,7 @@ class NaClTest(pyauto.PyUITest):
            ('ppapi_file_system.html', 1),
            ('ppapi_geturl.html', 1),
            ('ppapi_progress_events.html', 1),
-           # TODO(nfullagar): graphics 2d appears to lock up while waiting
-           # for the replace contents flush callback. Enable this test when
-           # we've figured out why this occurs and the problem is fixed.
-           # ('ppapi_ppb_graphics2d.html', 1),
+           ('ppapi_ppb_graphics2d.html', 1),
            ('srpc_basic.html', 1),
            ('srpc_hw.html', 1),
            # TODO(nfullagar): enable this test when it works on trybots.
@@ -75,6 +72,10 @@ class NaClTest(pyauto.PyUITest):
       # Wait for all the tabs to fully load.
       for i in range(0, num_tabs):
         print '---> pyauto multiple_nexes: Loading tab', str(i) + '...',
+        # Make the tab active to make it visible, which is required
+        # to receive pending Flush completion callbacks in the tests
+        # that use ppb_graphics_2d.
+        self.GetBrowserWindow(0).ActivateTab(i)
         nacl_utils.WaitForNexeLoad(self, tab_index=i)
         print 'done!'
       print '---> pyauto multiple_nexes: All nexes loaded.'
@@ -82,6 +83,7 @@ class NaClTest(pyauto.PyUITest):
       # Make sure every tab successfully passed test(s).
       for i in range(0, num_tabs):
         print '---> pyauto multiple_nexes: Verifying tab ', str(i) + '...',
+        self.GetBrowserWindow(0).ActivateTab(i)
         nacl_utils.VerifyAllTestsPassed(self, tab_index=i)
         print 'done!'
       print '---> pyauto multiple_nexes: All nexes verified.'
