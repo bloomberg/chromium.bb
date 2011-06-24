@@ -1,6 +1,6 @@
 target triple = "armv7-none-linux-gnueabi"
 
-define i32 @foo(i8 zeroext %fmt, ...) nounwind {
+define i32 @foo(i8 signext %fmt, ...) nounwind {
 entry:
   %ap = alloca [4 x i32], align 4
   %ap12 = bitcast [4 x i32]* %ap to i8*
