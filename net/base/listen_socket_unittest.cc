@@ -11,6 +11,8 @@
 #include "net/base/net_util.h"
 #include "testing/platform_test.h"
 
+namespace net {
+
 const int ListenSocketTester::kTestPort = 9999;
 
 static const int kReadBufSize = 1024;
@@ -186,30 +188,29 @@ bool ListenSocketTester::Send(SOCKET sock, const std::string& str) {
   return true;
 }
 
-void ListenSocketTester::DidAccept(net::ListenSocket *server,
-                                   net::ListenSocket *connection) {
+void ListenSocketTester::DidAccept(ListenSocket *server,
+                                   ListenSocket *connection) {
   connection_ = connection;
   connection_->AddRef();
   ReportAction(ListenSocketTestAction(ACTION_ACCEPT));
 }
 
-void ListenSocketTester::DidRead(net::ListenSocket *connection,
+void ListenSocketTester::DidRead(ListenSocket *connection,
                                  const char* data,
                                  int len) {
   std::string str(data, len);
   ReportAction(ListenSocketTestAction(ACTION_READ, str));
 }
 
-void ListenSocketTester::DidClose(net::ListenSocket *sock) {
+void ListenSocketTester::DidClose(ListenSocket *sock) {
   ReportAction(ListenSocketTestAction(ACTION_CLOSE));
 }
 
 ListenSocketTester::~ListenSocketTester() {}
 
-net::ListenSocket* ListenSocketTester::DoListen() {
-  return net::ListenSocket::Listen(kLoopback, kTestPort, this);
+ListenSocket* ListenSocketTester::DoListen() {
+  return ListenSocket::Listen(kLoopback, kTestPort, this);
 }
-
 
 class ListenSocketTest: public PlatformTest {
  public:
@@ -243,3 +244,5 @@ TEST_F(ListenSocketTest, ClientSendLong) {
 TEST_F(ListenSocketTest, ServerSend) {
   tester_->TestServerSend();
 }
+
+}  // namespace net

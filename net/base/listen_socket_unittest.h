@@ -35,6 +35,8 @@ const int INVALID_SOCKET = -1;
 const int SOCKET_ERROR = -1;
 #endif
 
+namespace net {
+
 enum ActionType {
   ACTION_NONE = 0,
   ACTION_LISTEN = 1,
@@ -65,7 +67,7 @@ class ListenSocketTestAction {
 // This had to be split out into a separate class because I couldn't
 // make the testing::Test class refcounted.
 class ListenSocketTester :
-    public net::ListenSocket::ListenSocketDelegate,
+    public ListenSocket::ListenSocketDelegate,
     public base::RefCountedThreadSafe<ListenSocketTester> {
 
  public:
@@ -92,18 +94,15 @@ class ListenSocketTester :
 
   virtual bool Send(SOCKET sock, const std::string& str);
 
-  // net::ListenSocket::ListenSocketDelegate:
-  virtual void DidAccept(net::ListenSocket *server,
-                         net::ListenSocket *connection);
-  virtual void DidRead(net::ListenSocket *connection,
-                       const char* data,
-                       int len);
-  virtual void DidClose(net::ListenSocket *sock);
+  // ListenSocket::ListenSocketDelegate:
+  virtual void DidAccept(ListenSocket *server, ListenSocket *connection);
+  virtual void DidRead(ListenSocket *connection, const char* data, int len);
+  virtual void DidClose(ListenSocket *sock);
 
   scoped_ptr<base::Thread> thread_;
   MessageLoopForIO* loop_;
-  net::ListenSocket* server_;
-  net::ListenSocket* connection_;
+  ListenSocket* server_;
+  ListenSocket* connection_;
   ListenSocketTestAction last_action_;
 
   SOCKET test_socket_;
@@ -118,7 +117,9 @@ class ListenSocketTester :
 
   virtual ~ListenSocketTester();
 
-  virtual net::ListenSocket* DoListen();
+  virtual ListenSocket* DoListen();
 };
+
+}  // namespace net
 
 #endif  // NET_BASE_LISTEN_SOCKET_UNITTEST_H_
