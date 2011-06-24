@@ -137,7 +137,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     return _LKGMCandidateInfo(version_info.VersionString())
 
 
-  def _SetInFlightWithRetry(self, commit_message, retries=3):
+  def _SetInFlightWithRetry(self, commit_message, retries):
     for index in range(retries+1):
       try:
         self._SetInFlight(commit_message)
@@ -182,7 +182,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       logging.error(err_msg)
       raise manifest_version.GenerateBuildSpecException(err_msg)
 
-  def GetLatestCandidate(self, version_file, retries=0):
+  def GetLatestCandidate(self, version_file, retries=5):
     """Gets the version number of the next build spec to build.
       Args:
         version_file: File to use in cros when checking for cros version.
