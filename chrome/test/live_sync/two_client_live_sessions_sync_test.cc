@@ -13,7 +13,9 @@ static const char* kValidPassphrase = "passphrase!";
 // (as well as multi-window). We're currently only checking basic single-window/
 // single-tab functionality.
 
-IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest, SingleClientChanged) {
+// http://crbug.com/85294 All session tests having timing issues.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
+                       FLAKY_SingleClientChanged) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
@@ -34,8 +36,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest, SingleClientChanged) {
   ASSERT_TRUE(WindowsMatch(sessions1[0]->windows, *client0_windows));
 }
 
+// http://crbug.com/85294 All session tests having timing issues.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
-                       SingleClientEnabledEncryption) {
+                       FLAKY_SingleClientEnabledEncryption) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
@@ -47,8 +50,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
   ASSERT_TRUE(IsEncrypted(1));
 }
 
+// http://crbug.com/85294 All session tests having timing issues.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
-                       SingleClientEnabledEncryptionAndChanged) {
+                       FLAKY_SingleClientEnabledEncryptionAndChanged) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
@@ -70,8 +74,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
   ASSERT_TRUE(WindowsMatch(sessions1[0]->windows, *client0_windows));
 }
 
+// http://crbug.com/85294 All session tests having timing issues.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
-                       BothClientsEnabledEncryption) {
+                       FLAKY_BothClientsEnabledEncryption) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
@@ -84,7 +89,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
   ASSERT_TRUE(IsEncrypted(1));
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest, BothChanged) {
+// http://crbug.com/85294 All session tests having timing issues.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest, FLAKY_BothChanged) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
@@ -115,8 +121,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest, BothChanged) {
   ASSERT_TRUE(WindowsMatch(sessions0[0]->windows, *client1_windows));
 }
 
+// http://crbug.com/85294 All session tests having timing issues.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
-                       FirstChangesAndSetsPassphrase) {
+                       FLAKY_FirstChangesAndSetsPassphrase) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
@@ -153,8 +160,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
   ASSERT_TRUE(WindowsMatch(sessions1[0]->windows, *client0_windows));
 }
 
+// http://crbug.com/85294 All session tests having timing issues.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
-                       FirstChangesWhileSecondWaitingForPassphrase) {
+                       FLAKY_FirstChangesWhileSecondWaitingForPassphrase) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
@@ -197,8 +205,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
   ASSERT_TRUE(WindowsMatch(sessions1[0]->windows, *client0_windows));
 }
 
+// http://crbug.com/85294 All session tests having timing issues.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
-                       SecondChangesAfterEncrAndPassphraseChange) {
+                       FLAKY_SecondChangesAfterEncrAndPassphraseChange) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
@@ -243,8 +252,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
   ASSERT_FALSE(GetSessionData(1, &sessions1));
 }
 
+// http://crbug.com/85294 All session tests having timing issues.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
-                       SecondChangesBeforeEncrAndPassphraseChange) {
+                       FLAKY_SecondChangesBeforeEncrAndPassphraseChange) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
