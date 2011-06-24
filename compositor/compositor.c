@@ -774,7 +774,6 @@ wlsc_output_repaint(struct wlsc_output *output)
 			pixman_region32_subtract(&clip, &clip, &region);
 			pixman_region32_fini(&region);
 		}
-						   
 	}
 
 	pixman_region32_subtract(&ec->damage, &ec->damage, &output->region);
@@ -782,6 +781,9 @@ wlsc_output_repaint(struct wlsc_output *output)
 	pixman_region32_union(&total_damage, &new_damage,
 			      &output->previous_damage);
 	pixman_region32_copy(&output->previous_damage, &new_damage);
+
+	pixman_region32_fini(&clip);
+	pixman_region32_fini(&new_damage);
 
 	device = (struct wlsc_input_device *) ec->input_device;
 	if (ec->focus && ec->fade.spring.current < 0.001) {
