@@ -478,7 +478,7 @@ void TestingAutomationProvider::ForgetWifiNetwork(
     return;
   }
 
-  CrosLibrary::Get()->GetNetworkLibrary()->ForgetWifiNetwork(service_path);
+  CrosLibrary::Get()->GetNetworkLibrary()->ForgetNetwork(service_path);
   AutomationJSONReply(this, reply_message).SendSuccess(NULL);
 }
 

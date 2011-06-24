@@ -327,7 +327,7 @@ class Network {
 
   // We don't have a setter for |favorite_| because to unfavorite a network is
   // equivalent to forget a network, so we call forget network on cros for
-  // that.  See ForgetWifiNetwork().
+  // that.  See ForgetNetwork().
 
   void SetAutoConnect(bool auto_connect);
 
@@ -343,6 +343,9 @@ class Network {
 
   // Return true if the network must be in the user profile (e.g. has certs).
   virtual bool RequiresUserProfile() const;
+
+  // Copy any credentials from a remembered network that are unset in |this|.
+  virtual void CopyCredentialsFromRemembered(Network* remembered);
 
   // Static helper function.
   static bool IsConnectingState(ConnectionState state) {
@@ -364,6 +367,9 @@ class Network {
 
   // Erase cached credentials, used when "Save password" is unchecked.
   virtual void EraseCredentials();
+
+  // Calculate a unique identifier for the network.
+  virtual void CalculateUniqueId();
 
   // Methods to asynchronously set network service properties
   virtual void SetStringProperty(const char* prop, const std::string& str,
@@ -479,6 +485,7 @@ class VirtualNetwork : public Network {
 
   // Network overrides.
   virtual bool RequiresUserProfile() const;
+  virtual void CopyCredentialsFromRemembered(Network* remembered);
 
   // Public getters.
   bool NeedMoreInfoToConnect() const;
@@ -496,6 +503,7 @@ class VirtualNetwork : public Network {
   virtual bool ParseValue(int index, const Value* value);
   virtual void ParseInfo(const DictionaryValue* info);
   virtual void EraseCredentials();
+  virtual void CalculateUniqueId();
 
   // VirtualNetwork private methods.
   bool ParseProviderValue(int index, const Value* value);
@@ -730,12 +738,10 @@ class WifiNetwork : public WirelessNetwork {
  private:
   // Network overrides.
   virtual void EraseCredentials();
+  virtual void CalculateUniqueId();
 
   // WirelessNetwork overrides.
   virtual bool ParseValue(int index, const Value* value);
-  virtual void ParseInfo(const DictionaryValue* info);
-
-  void CalculateUniqueId();
 
   void set_encryption(ConnectionSecurity encryption) {
     encryption_ = encryption;
@@ -1012,6 +1018,9 @@ class NetworkLibrary {
   // Returns the current list of virtual networks.
   virtual const VirtualNetworkVector& virtual_networks() const = 0;
 
+  // Returns the current list of virtual networks.
+  virtual const VirtualNetworkVector& remembered_virtual_networks() const = 0;
+
   // Return a pointer to the device, if it exists, or NULL.
   virtual const NetworkDevice* FindNetworkDeviceByPath(
       const std::string& path) const = 0;
@@ -1040,8 +1049,8 @@ class NetworkLibrary {
   virtual VirtualNetwork* FindVirtualNetworkByPath(
       const std::string& path) const = 0;
 
-  // Returns the visible wifi network corresponding to the remembered
-  // wifi network, or NULL if the remembered network is not visible.
+  // Returns the visible network corresponding to the remembered network,
+  // or NULL if the remembered network is not visible.
   virtual Network* FindNetworkFromRemembered(
       const Network* remembered) const = 0;
 
@@ -1162,8 +1171,8 @@ class NetworkLibrary {
   // Disconnect from the specified network.
   virtual void DisconnectFromNetwork(const Network* network) = 0;
 
-  // Forget the wifi network corresponding to service_path.
-  virtual void ForgetWifiNetwork(const std::string& service_path) = 0;
+  // Forget the network corresponding to service_path.
+  virtual void ForgetNetwork(const std::string& service_path) = 0;
 
   // Move the network to the shared/global profile.
   virtual void SetNetworkProfile(const std::string& service_path,

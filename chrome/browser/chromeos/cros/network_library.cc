@@ -55,6 +55,8 @@
 //     remembered in the active Profile ("favorites").
 // remembered_wifi_networks_: ordered vector of WifiNetwork* entries in
 //     remembered_network_map_, in descending order of preference.
+// remembered_virtual_networks_: ordered vector of VirtualNetwork* entries in
+//     remembered_network_map_, in descending order of preference.
 //
 // network_manager_monitor_: a handle to the libcros network Manager handler.
 // NetworkManagerStatusChanged: This handles all messages from the Manager.
@@ -1165,13 +1167,21 @@ void Network::ParseInfo(const DictionaryValue* info) {
                 << " Unhandled key: " << key;
     }
   }
+  CalculateUniqueId();
 }
 
 void Network::EraseCredentials() {
 }
 
+void Network::CalculateUniqueId() {
+  unique_id_ = name_;
+}
+
 bool Network::RequiresUserProfile() const {
   return false;
+}
+
+void Network::CopyCredentialsFromRemembered(Network* remembered) {
 }
 
 void Network::SetValueProperty(const char* prop, Value* val) {
@@ -1404,6 +1414,7 @@ bool VirtualNetwork::ParseValue(int index, const Value* value) {
 void VirtualNetwork::ParseInfo(const DictionaryValue* info) {
   Network::ParseInfo(info);
   VLOG(1) << "VPN: " << name()
+          << " Server: " << server_hostname()
           << " Type: " << ProviderTypeToString(provider_type());
   if (provider_type_ == PROVIDER_TYPE_L2TP_IPSEC_PSK) {
     if (!client_cert_id_.empty())
@@ -1418,8 +1429,30 @@ void VirtualNetwork::EraseCredentials() {
   WipeString(&user_passphrase_);
 }
 
+void VirtualNetwork::CalculateUniqueId() {
+  std::string provider_type(ProviderTypeToString(provider_type_));
+  unique_id_ = provider_type + "|" + server_hostname_;
+}
+
 bool VirtualNetwork::RequiresUserProfile() const {
   return true;
+}
+
+void VirtualNetwork::CopyCredentialsFromRemembered(Network* remembered) {
+  DCHECK(remembered->type() == TYPE_VPN);
+  VirtualNetwork* remembered_vpn = static_cast<VirtualNetwork*>(remembered);
+  VLOG(1) << "Copy VPN credentials: " << name()
+          << " username: " << remembered_vpn->username();
+  if (ca_cert_nss_.empty())
+    ca_cert_nss_ = remembered_vpn->ca_cert_nss();
+  if (psk_passphrase_.empty())
+    psk_passphrase_ = remembered_vpn->psk_passphrase();
+  if (client_cert_id_.empty())
+    client_cert_id_ = remembered_vpn->client_cert_id();
+  if (username_.empty())
+    username_ = remembered_vpn->username();
+  if (user_passphrase_.empty())
+    user_passphrase_ = remembered_vpn->user_passphrase();
 }
 
 bool VirtualNetwork::NeedMoreInfoToConnect() const {
@@ -1964,7 +1997,6 @@ WifiNetwork::WifiNetwork(const std::string& service_path)
 
 WifiNetwork::~WifiNetwork() {}
 
-// Called from ParseNetwork after calling ParseInfo.
 void WifiNetwork::CalculateUniqueId() {
   ConnectionSecurity encryption = encryption_;
   // Flimflam treats wpa and rsn as psk internally, so convert those types
@@ -2096,11 +2128,6 @@ bool WifiNetwork::ParseValue(int index, const Value* value) {
       return WirelessNetwork::ParseValue(index, value);
   }
   return false;
-}
-
-void WifiNetwork::ParseInfo(const DictionaryValue* info) {
-  Network::ParseInfo(info);
-  CalculateUniqueId();
 }
 
 const std::string& WifiNetwork::GetPassphrase() const {
@@ -2276,7 +2303,9 @@ bool WifiNetwork::IsPassphraseRequired() const {
 
 bool WifiNetwork::RequiresUserProfile() const {
   // 8021X requires certificates which are only stored for individual users.
-  if (encryption_ == SECURITY_8021X)
+  if (encryption_ == SECURITY_8021X &&
+      (eap_method_ == EAP_METHOD_TLS ||
+       !eap_client_cert_pkcs11_id().empty()))
     return true;
   return false;
 }
@@ -2536,6 +2565,10 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     return virtual_networks_;
   }
 
+  virtual const VirtualNetworkVector& remembered_virtual_networks() const {
+    return remembered_virtual_networks_;
+  }
+
   /////////////////////////////////////////////////////////////////////////////
 
   virtual const NetworkDevice* FindNetworkDeviceByPath(
@@ -2618,6 +2651,15 @@ class NetworkLibraryImpl : public NetworkLibrary  {
         network_unique_id_map_.find(remembered->unique_id());
     if (found != network_unique_id_map_.end())
       return found->second;
+    return NULL;
+  }
+
+  Network* FindRememberedFromNetwork(const Network* network) const {
+    for (NetworkMap::const_iterator iter = remembered_network_map_.begin();
+         iter != remembered_network_map_.end(); ++iter) {
+      if (iter->second->unique_id() == network->unique_id())
+        return iter->second;
+    }
     return NULL;
   }
 
@@ -3164,11 +3206,11 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     }
   }
 
-  virtual void ForgetWifiNetwork(const std::string& service_path) {
+  virtual void ForgetNetwork(const std::string& service_path) {
     if (!EnsureCrosLoaded())
       return;
     // Remove network from remembered list and notify observers.
-    DeleteRememberedWifiNetwork(service_path);
+    DeleteRememberedNetwork(service_path);
     NotifyNetworkManagerChanged(true);  // Forced update.
   }
 
@@ -3671,7 +3713,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     if (service_path) {
       if (!info) {
         // Remembered network no longer exists.
-        networklib->DeleteRememberedWifiNetwork(std::string(service_path));
+        networklib->DeleteRememberedNetwork(std::string(service_path));
       } else {
         DCHECK_EQ(info->GetType(), Value::TYPE_DICTIONARY);
         const DictionaryValue* dict = static_cast<const DictionaryValue*>(info);
@@ -3825,31 +3867,39 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     delete network;
   }
 
-  void AddRememberedWifiNetwork(WifiNetwork* wifi) {
+  void AddRememberedNetwork(Network* network) {
     std::pair<NetworkMap::iterator,bool> result =
         remembered_network_map_.insert(
-            std::make_pair(wifi->service_path(), wifi));
+            std::make_pair(network->service_path(), network));
     DCHECK(result.second);  // Should only get called with new network.
-    remembered_wifi_networks_.push_back(wifi);
+    if (network->type() == TYPE_WIFI) {
+      remembered_wifi_networks_.push_back(
+          static_cast<WifiNetwork*>(network));
+    } else if (network->type() == TYPE_VPN) {
+      remembered_virtual_networks_.push_back(
+          static_cast<VirtualNetwork*>(network));
+    } else {
+      NOTREACHED();
+    }
     // Find service path in profiles. Flimflam does not set the Profile
     // property for remembered networks, only active networks.
     for (NetworkProfileList::iterator iter = profile_list_.begin();
          iter != profile_list_.end(); ++iter) {
       NetworkProfile& profile = *iter;
-      if (profile.services.find(wifi->service_path()) !=
+      if (profile.services.find(network->service_path()) !=
           profile.services.end()) {
-        wifi->set_profile_path(profile.path);
-        wifi->set_profile_type(profile.type);
-        VLOG(1) << "AddRememberedWifiNetwork: " << wifi->service_path()
+        network->set_profile_path(profile.path);
+        network->set_profile_type(profile.type);
+        VLOG(1) << "AddRememberedNetwork: " << network->service_path()
                 << " Profile: " << profile.path;
         break;
       }
     }
-    DCHECK(!wifi->profile_path().empty())
-        << "Wifi service path not in any profile: " << wifi->service_path();
+    DCHECK(!network->profile_path().empty())
+        << "Service path not in any profile: " << network->service_path();
   }
 
-  void DeleteRememberedWifiNetwork(const std::string& service_path) {
+  void DeleteRememberedNetwork(const std::string& service_path) {
     NetworkMap::iterator found = remembered_network_map_.find(service_path);
     if (found == remembered_network_map_.end()) {
       LOG(WARNING) << "Attempt to delete non-existant remembered network: "
@@ -3860,12 +3910,22 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     // Delete remembered network from lists.
     Network* remembered_network = found->second;
     remembered_network_map_.erase(found);
-    WifiNetworkVector::iterator iter = std::find(
-        remembered_wifi_networks_.begin(), remembered_wifi_networks_.end(),
-        remembered_network);
-    if (iter != remembered_wifi_networks_.end())
-      remembered_wifi_networks_.erase(iter);
 
+    if (remembered_network->type() == TYPE_WIFI) {
+      WifiNetworkVector::iterator iter = std::find(
+          remembered_wifi_networks_.begin(),
+          remembered_wifi_networks_.end(),
+          remembered_network);
+      if (iter != remembered_wifi_networks_.end())
+        remembered_wifi_networks_.erase(iter);
+    } else if (remembered_network->type() == TYPE_VPN) {
+      VirtualNetworkVector::iterator iter = std::find(
+          remembered_virtual_networks_.begin(),
+          remembered_virtual_networks_.end(),
+          remembered_network);
+      if (iter != remembered_virtual_networks_.end())
+        remembered_virtual_networks_.erase(iter);
+    }
     // Delete remembered network from all profiles it is in.
     for (NetworkProfileList::iterator iter = profile_list_.begin();
          iter != profile_list_.end(); ++iter) {
@@ -4094,6 +4154,11 @@ class NetworkLibraryImpl : public NetworkLibrary  {
 
     UpdateActiveNetwork(network);
 
+    // Copy remembered credentials if required.
+    Network* remembered = FindRememberedFromNetwork(network);
+    if (remembered)
+      network->CopyCredentialsFromRemembered(remembered);
+
     // Find and erase entry in update_requests, and set network priority.
     PriorityMap::iterator found2 = network_update_requests_.find(service_path);
     if (found2 != network_update_requests_.end()) {
@@ -4120,31 +4185,49 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   // remembered type. Called from RememberedNetworkServiceUpdate.
   Network* ParseRememberedNetwork(const std::string& service_path,
                                   const DictionaryValue* info) {
-    Network* network;
+    Network* remembered;
     NetworkMap::iterator found = remembered_network_map_.find(service_path);
     if (found != remembered_network_map_.end()) {
-      network = found->second;
+      remembered = found->second;
     } else {
       ConnectionType type = ParseTypeFromDictionary(info);
-      if (type == TYPE_WIFI) {
-        network = CreateNewNetwork(type, service_path);
-        WifiNetwork* wifi = static_cast<WifiNetwork*>(network);
-        AddRememberedWifiNetwork(wifi);
+      if (type == TYPE_WIFI || type == TYPE_VPN) {
+        remembered = CreateNewNetwork(type, service_path);
+        AddRememberedNetwork(remembered);
       } else {
         VLOG(1) << "Ignoring remembered network: " << service_path
                 << " Type: " << ConnectionTypeToString(type);
         return NULL;
       }
     }
-    network->ParseInfo(info);  // virtual.
+    remembered->ParseInfo(info);  // virtual.
 
-    SetProfileTypeFromPath(network);
+    SetProfileTypeFromPath(remembered);
 
-    VLOG(1) << "ParseRememberedNetwork: " << network->name()
-            << " Path: " << network->service_path()
-            << " Profile: " << network->profile_path_;
+    VLOG(1) << "ParseRememberedNetwork: " << remembered->name()
+            << " Path: " << remembered->service_path()
+            << " Profile: " << remembered->profile_path_;
     NotifyNetworkManagerChanged(false);  // Not forced.
-    return network;
+
+    if (remembered->type() == TYPE_VPN) {
+      // VPNs are only stored in profiles. If we don't have a network for it,
+      // request one.
+      if (!FindNetworkFromRemembered(remembered)) {
+        VirtualNetwork* vpn = static_cast<VirtualNetwork*>(remembered);
+        std::string provider_type = ProviderTypeToString(vpn->provider_type());
+        VLOG(1) << "Requesting VPN: " << vpn->name()
+                << " Server: " << vpn->server_hostname()
+                << " Type: " << provider_type;
+        RequestVirtualNetwork(
+            vpn->name().c_str(),
+            vpn->server_hostname().c_str(),
+            provider_type.c_str(),
+            NetworkServiceUpdate,
+            this);
+      }
+    }
+
+    return remembered;
   }
 
   void SetProfileType(Network* network, NetworkProfileType type) {
@@ -4206,6 +4289,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   void ClearRememberedNetworks() {
     remembered_network_map_.clear();
     remembered_wifi_networks_.clear();
+    remembered_virtual_networks_.clear();
   }
 
   void DeleteNetworks() {
@@ -4698,18 +4782,6 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     cellular2->set_network_technology(NETWORK_TECHNOLOGY_UMTS);
     AddNetwork(cellular2);
 
-    // Remembered Networks
-    DeleteRememberedNetworks();
-    NetworkProfile profile("default", PROFILE_SHARED);
-    profile.services.insert("fw2");
-    profile_list_.push_back(profile);
-    WifiNetwork* remembered_wifi2 = new WifiNetwork("fw2");
-    remembered_wifi2->set_name("Fake Wifi 2");
-    remembered_wifi2->set_strength(70);
-    remembered_wifi2->set_connected(true);
-    remembered_wifi2->set_encryption(SECURITY_WEP);
-    AddRememberedWifiNetwork(remembered_wifi2);
-
     // VPNs.
     VirtualNetwork* vpn1 = new VirtualNetwork("fv1");
     vpn1->set_name("Fake VPN Provider 1");
@@ -4735,6 +4807,24 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     AddNetwork(vpn3);
 
     active_virtual_ = vpn2;
+
+    // Remembered Networks
+    DeleteRememberedNetworks();
+    NetworkProfile profile("default", PROFILE_SHARED);
+    profile.services.insert("fw2");
+    profile.services.insert("fv2");
+    profile_list_.push_back(profile);
+    WifiNetwork* remembered_wifi2 = new WifiNetwork("fw2");
+    remembered_wifi2->set_name("Fake Wifi 2");
+    remembered_wifi2->set_encryption(SECURITY_WEP);
+    AddRememberedNetwork(remembered_wifi2);
+    VirtualNetwork* remembered_vpn2 = new VirtualNetwork("fv2");
+    remembered_vpn2->set_name("Fake VPN Provider 2");
+    remembered_vpn2->set_server_hostname("vpn2server.fake.com");
+    remembered_vpn2->set_provider_type(
+        VirtualNetwork::PROVIDER_TYPE_L2TP_IPSEC_USER_CERT);
+    remembered_vpn2->set_connected(true);
+    AddRememberedNetwork(remembered_vpn2);
 
     wifi_scanning_ = false;
     offline_mode_ = false;
@@ -4811,6 +4901,9 @@ class NetworkLibraryImpl : public NetworkLibrary  {
 
   // The current connected (or connecting) virtual network.
   VirtualNetwork* active_virtual_;
+
+  // The remembered virtual networks.
+  VirtualNetworkVector remembered_virtual_networks_;
 
   // The path of the active profile (for retrieving remembered services).
   std::string active_profile_path_;
@@ -4938,6 +5031,9 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
   virtual const VirtualNetworkVector& virtual_networks() const {
     return virtual_networks_;
   }
+  virtual const VirtualNetworkVector& remembered_virtual_networks() const {
+    return virtual_networks_;
+  }
   virtual bool has_cellular_networks() const {
     return cellular_networks_.begin() != cellular_networks_.end();
   }
@@ -5020,7 +5116,7 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
   virtual void SignalCellularPlanPayment() {}
   virtual bool HasRecentCellularPlanPayment() { return false; }
   virtual void DisconnectFromNetwork(const Network* network) {}
-  virtual void ForgetWifiNetwork(const std::string& service_path) {}
+  virtual void ForgetNetwork(const std::string& service_path) {}
   virtual void SetNetworkProfile(const std::string& service_path,
                                  NetworkProfileType type) {}
   virtual std::string GetCellularHomeCarrierId() const { return std::string(); }

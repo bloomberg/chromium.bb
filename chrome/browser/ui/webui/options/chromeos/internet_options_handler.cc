@@ -802,6 +802,8 @@ void InternetOptionsHandler::PopulateVPNDetails(
     const chromeos::VirtualNetwork* vpn,
     DictionaryValue* dictionary) {
   dictionary->SetString("service_name", vpn->name());
+  bool remembered = (vpn->profile_type() != chromeos::PROFILE_NONE);
+  dictionary->SetBoolean("remembered", remembered);
   dictionary->SetString("server_hostname", vpn->server_hostname());
   dictionary->SetString("provider_type", vpn->GetProviderTypeString());
   dictionary->SetString("username", vpn->username());
@@ -867,7 +869,7 @@ void InternetOptionsHandler::HandleWifiButtonClick(
     const std::string& command) {
   chromeos::WifiNetwork* wifi = NULL;
   if (command == "forget") {
-    cros_->ForgetWifiNetwork(service_path);
+    cros_->ForgetNetwork(service_path);
   } else if (service_path == kOtherNetworksFakePath) {
     // Other wifi networks.
     CreateModalPopup(new chromeos::NetworkConfigView(chromeos::TYPE_WIFI));
@@ -912,8 +914,10 @@ void InternetOptionsHandler::HandleVPNButtonClick(
     const std::string& service_path,
     const std::string& command) {
   chromeos::VirtualNetwork* network = NULL;
-  // TODO(altimofeev): verify if service_path in condition is correct.
-  if (service_path == kOtherNetworksFakePath) {
+  if (command == "forget") {
+    cros_->ForgetNetwork(service_path);
+  } else if (service_path == kOtherNetworksFakePath) {
+    // TODO(altimofeev): verify if service_path in condition is correct.
     // Other VPN networks.
     CreateModalPopup(new chromeos::NetworkConfigView(chromeos::TYPE_VPN));
   } else if ((network = cros_->FindVirtualNetworkByPath(service_path))) {
@@ -1142,35 +1146,22 @@ ListValue* InternetOptionsHandler::GetVPNList() {
 }
 
 ListValue* InternetOptionsHandler::GetRememberedList() {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   ListValue* list = new ListValue();
 
-  const chromeos::WifiNetworkVector& remembered_wifi_networks =
-      cros_->remembered_wifi_networks();
-
   for (chromeos::WifiNetworkVector::const_iterator rit =
-           remembered_wifi_networks.begin();
-       rit != remembered_wifi_networks.end(); ++rit) {
+           cros_->remembered_wifi_networks().begin();
+       rit != cros_->remembered_wifi_networks().end(); ++rit) {
     chromeos::WifiNetwork* remembered = *rit;
     chromeos::WifiNetwork* wifi = static_cast<chromeos::WifiNetwork*>(
         cros_->FindNetworkFromRemembered(remembered));
 
-    const SkBitmap* icon = wifi ?
-        chromeos::NetworkMenu::IconForNetworkStrength(wifi) :
-        rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0);
-    // Place the secure badge on the icon if the remembered network is
-    // encrypted (the matching detected network, if any, will have the same
-    // encrypted property by definition).
-    const SkBitmap* bottom_right_badge = remembered->encrypted() ?
-        rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_SECURE) : NULL;
     // Set in_active_profile.
     bool shared =
         cros_->HasMultipleProfiles() &&
         remembered->profile_type() == chromeos::PROFILE_SHARED;
     list->Append(GetNetwork(
         remembered->service_path(),
-        chromeos::NetworkMenu::IconForDisplay(
-            icon, bottom_right_badge, NULL, NULL),
+        chromeos::NetworkMenu::IconForNetwork(wifi ? wifi : remembered),
         remembered->name(),
         wifi ? wifi->connecting() : false,
         wifi ? wifi->connected() : false,
@@ -1181,6 +1172,32 @@ ListValue* InternetOptionsHandler::GetRememberedList() {
         chromeos::ACTIVATION_STATE_UNKNOWN,
         false));
   }
+
+  for (chromeos::VirtualNetworkVector::const_iterator rit =
+           cros_->remembered_virtual_networks().begin();
+       rit != cros_->remembered_virtual_networks().end(); ++rit) {
+    chromeos::VirtualNetwork* remembered = *rit;
+    chromeos::VirtualNetwork* vpn = static_cast<chromeos::VirtualNetwork*>(
+        cros_->FindNetworkFromRemembered(remembered));
+
+    // Set in_active_profile.
+    bool shared =
+        cros_->HasMultipleProfiles() &&
+        remembered->profile_type() == chromeos::PROFILE_SHARED;
+    list->Append(GetNetwork(
+        remembered->service_path(),
+        chromeos::NetworkMenu::IconForNetwork(vpn ? vpn : remembered),
+        remembered->name(),
+        vpn ? vpn->connecting() : false,
+        vpn ? vpn->connected() : false,
+        true,
+        chromeos::TYPE_WIFI,
+        true,
+        shared,
+        chromeos::ACTIVATION_STATE_UNKNOWN,
+        false));
+  }
+
   return list;
 }
 
