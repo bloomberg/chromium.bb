@@ -164,13 +164,14 @@ void FileManagerDialog::SelectFileImpl(
     const FilePath::StringType& default_extension,
     gfx::NativeWindow owner_window,
     void* params) {
-  LOG(INFO) << "FileBrowser: SelectFileImpl default_path "
-      << default_path.value();
   if (owner_window_) {
     LOG(ERROR) << "File dialog already in use!";
     return;
   }
-  Browser* owner_browser = BrowserList::FindBrowserWithWindow(owner_window);
+  // Extension background pages may not supply an owner_window.
+  Browser* owner_browser = (owner_window ?
+      BrowserList::FindBrowserWithWindow(owner_window) :
+      BrowserList::GetLastActive());
   if (!owner_browser) {
     NOTREACHED() << "Can't find owning browser";
     return;
