@@ -64,6 +64,7 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/spellcheck_host.h"
+#include "chrome/browser/spellcheck_host_metrics.h"
 #include "chrome/browser/sync/profile_sync_factory_impl.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/tabs/pinned_tab_service_factory.h"
@@ -396,11 +397,13 @@ void ProfileImpl::DoFinalInit() {
 
   InstantController::RecordMetrics(this);
 
-  // Logs the spell-check enabled status.
-  // For simplicity, we check if spell-check is enabled only at start up
-  // time and don't track preferences change.
-  SpellCheckHost::RecordEnabledStats(
-      GetPrefs()->GetBoolean(prefs::kEnableSpellCheck));
+  // Instantiates Metrics object for spellchecking for use.
+  if (g_browser_process->metrics_service() &&
+      g_browser_process->metrics_service()->recording_active()) {
+    spellcheck_host_metrics_.reset(new SpellCheckHostMetrics());
+    spellcheck_host_metrics_->RecordEnabledStats(
+        GetPrefs()->GetBoolean(prefs::kEnableSpellCheck));
+  }
 
   FilePath cookie_path = GetPath();
   cookie_path = cookie_path.Append(chrome::kCookieFilename);
@@ -1267,7 +1270,7 @@ void ProfileImpl::ReinitializeSpellCheckHost(bool force) {
         this,
         prefs->GetString(prefs::kSpellCheckDictionary),
         GetRequestContext(),
-        g_browser_process->metrics_service()->recording_active());
+        spellcheck_host_metrics_.get());
   } else if (notify) {
     // The spellchecker has been disabled.
     SpellCheckHostInitialized();

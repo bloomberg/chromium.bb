@@ -4,7 +4,6 @@
 
 #include "chrome/browser/spellcheck_host.h"
 
-#include "base/metrics/histogram.h"
 #include "base/string_split.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/profiles/profile.h"
@@ -18,12 +17,12 @@ scoped_refptr<SpellCheckHost> SpellCheckHost::Create(
     SpellCheckHostObserver* observer,
     const std::string& language,
     net::URLRequestContextGetter* request_context_getter,
-    bool metrics_enabled) {
+    SpellCheckHostMetrics* metrics) {
   scoped_refptr<SpellCheckHostImpl> host =
       new SpellCheckHostImpl(observer,
                              language,
                              request_context_getter,
-                             metrics_enabled);
+                             metrics);
   if (!host)
     return NULL;
 
@@ -71,19 +70,4 @@ int SpellCheckHost::GetSpellCheckLanguages(
       return i;
   }
   return -1;
-}
-
-// static
-void SpellCheckHost::RecordCustomWordCountStats(size_t count) {
-  UMA_HISTOGRAM_COUNTS("SpellCheck.CustomWords", count);
-}
-
-// static
-void SpellCheckHost::RecordEnabledStats(bool enabled) {
-  UMA_HISTOGRAM_BOOLEAN("SpellCheck.Enabled", enabled);
-  // Because SpellCheckHost is instantiated lazily, the size of
-  // custom dictionary is unknown at this time. We mark it as -1 and
-  // record actual value later. See SpellCheckHost for more detail.
-  if (enabled)
-    RecordCustomWordCountStats(-1);
 }

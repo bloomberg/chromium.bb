@@ -37,6 +37,7 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/spellcheck_host.h"
+#include "chrome/browser/spellcheck_host_metrics.h"
 #include "chrome/browser/spellchecker_platform_engine.h"
 #include "chrome/browser/translate/translate_manager.h"
 #include "chrome/browser/translate/translate_prefs.h"
@@ -747,8 +748,8 @@ void RenderViewContextMenu::AppendEditableItems() {
     // |spellcheck_host| can be null when the suggested word is
     // provided by Web SpellCheck API.
     SpellCheckHost* spellcheck_host = profile_->GetSpellCheckHost();
-    if (spellcheck_host)
-      spellcheck_host->RecordSuggestionStats(1);
+    if (spellcheck_host && spellcheck_host->GetMetrics())
+      spellcheck_host->GetMetrics()->RecordSuggestionStats(1);
   }
 
   // If word is misspelled, give option for "Add to dictionary"
@@ -1505,8 +1506,9 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
           params_.dictionary_suggestions[id - IDC_SPELLCHECK_SUGGESTION_0]);
       // GetSpellCheckHost() can return null when the suggested word is
       // provided by Web SpellCheck API.
-      if (profile_->GetSpellCheckHost())
-        profile_->GetSpellCheckHost()->RecordReplacedWordStats(1);
+      SpellCheckHost* spellcheck_host = profile_->GetSpellCheckHost();
+      if (spellcheck_host && spellcheck_host->GetMetrics())
+        spellcheck_host->GetMetrics()->RecordReplacedWordStats(1);
       break;
     }
     case IDC_CHECK_SPELLING_OF_THIS_FIELD: {

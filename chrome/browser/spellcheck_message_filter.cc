@@ -7,6 +7,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/spellcheck_host.h"
+#include "chrome/browser/spellcheck_host_metrics.h"
 #include "chrome/browser/spellchecker_platform_engine.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "content/browser/renderer_host/render_process_host.h"
@@ -116,7 +117,7 @@ void SpellCheckMessageFilter::OnNotifyChecked(const string16& word,
   if (!host)
     return;  // Teardown.
   // Delegates to SpellCheckHost which tracks the stats of our spellchecker.
-  Profile* profile = host->profile();
-  if (profile->GetSpellCheckHost())
-    profile->GetSpellCheckHost()->RecordCheckedWordStats(word, misspelled);
+  SpellCheckHost* spellcheck_host = host->profile()->GetSpellCheckHost();
+  if (spellcheck_host && spellcheck_host->GetMetrics())
+    spellcheck_host->GetMetrics()->RecordCheckedWordStats(word, misspelled);
 }

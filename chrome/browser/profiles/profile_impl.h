@@ -22,6 +22,7 @@
 class ExtensionPrefs;
 class ExtensionPrefValueMap;
 class PrefService;
+class SpellCheckHostMetrics;
 
 #if defined(OS_CHROMEOS)
 namespace chromeos {
@@ -259,6 +260,7 @@ class ProfileImpl : public Profile,
   base::Time start_time_;
 
   scoped_refptr<SpellCheckHost> spellcheck_host_;
+  scoped_ptr<SpellCheckHostMetrics> spellcheck_host_metrics_;
 
   // Indicates whether |spellcheck_host_| has told us initialization is
   // finished.
