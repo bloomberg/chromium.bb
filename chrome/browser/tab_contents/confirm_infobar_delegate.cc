@@ -29,7 +29,7 @@ bool ConfirmInfoBarDelegate::Cancel() {
   return true;
 }
 
-string16 ConfirmInfoBarDelegate::GetLinkText() {
+string16 ConfirmInfoBarDelegate::GetLinkText() const {
   return string16();
 }
 

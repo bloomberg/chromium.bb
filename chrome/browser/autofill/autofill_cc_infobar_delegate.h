@@ -46,7 +46,7 @@ class AutofillCCInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
-  virtual string16 GetLinkText() OVERRIDE;
+  virtual string16 GetLinkText() const OVERRIDE;
   virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
 
   // The credit card that should be saved if the user accepts the infobar.

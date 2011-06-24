@@ -43,7 +43,7 @@ class InsecureContentInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual string16 GetMessageText() const;
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
   virtual bool Accept() OVERRIDE;
-  virtual string16 GetLinkText() OVERRIDE;
+  virtual string16 GetLinkText() const OVERRIDE;
   virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
 
   TabContentsWrapper* tab_contents_;

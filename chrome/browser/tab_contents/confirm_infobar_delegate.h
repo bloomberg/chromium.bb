@@ -45,7 +45,7 @@ class ConfirmInfoBarDelegate : public InfoBarDelegate {
 
   // Returns the text of the link to be displayed, if any. Otherwise returns
   // and empty string.
-  virtual string16 GetLinkText();
+  virtual string16 GetLinkText() const;
 
   // Called when the Link is clicked. The |disposition| specifies how the
   // resulting document should be loaded (based on the event flags present when

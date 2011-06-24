@@ -81,7 +81,7 @@ bool AutofillCCInfoBarDelegate::Cancel() {
   return true;
 }
 
-string16 AutofillCCInfoBarDelegate::GetLinkText() {
+string16 AutofillCCInfoBarDelegate::GetLinkText() const {
   return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 

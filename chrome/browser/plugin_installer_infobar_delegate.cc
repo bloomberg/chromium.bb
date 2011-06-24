@@ -52,7 +52,7 @@ bool PluginInstallerInfoBarDelegate::Accept() {
   return true;
 }
 
-string16 PluginInstallerInfoBarDelegate::GetLinkText() {
+string16 PluginInstallerInfoBarDelegate::GetLinkText() const {
   return l10n_util::GetStringUTF16(IDS_PLUGININSTALLER_PROBLEMSINSTALLING);
 }
 

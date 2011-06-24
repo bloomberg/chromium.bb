@@ -60,7 +60,7 @@ bool InsecureContentInfoBarDelegate::Accept() {
   return true;
 }
 
-string16 InsecureContentInfoBarDelegate::GetLinkText() {
+string16 InsecureContentInfoBarDelegate::GetLinkText() const {
   return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 

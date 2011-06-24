@@ -61,7 +61,7 @@ bool RegisterProtocolHandlerInfoBarDelegate::Cancel() {
   return true;
 }
 
-string16 RegisterProtocolHandlerInfoBarDelegate::GetLinkText() {
+string16 RegisterProtocolHandlerInfoBarDelegate::GetLinkText() const {
   // TODO(koz): Make this a 'learn more' link.
   return string16();
 }

@@ -51,7 +51,7 @@ bool MockConfirmInfoBarDelegate::Cancel() {
   return closes_on_action_;
 }
 
-string16 MockConfirmInfoBarDelegate::GetLinkText() {
+string16 MockConfirmInfoBarDelegate::GetLinkText() const {
   link_text_accessed_ = true;
   return string16();
 }

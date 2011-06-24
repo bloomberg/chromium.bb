@@ -130,7 +130,7 @@ class GeolocationConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
-  virtual string16 GetLinkText() OVERRIDE;
+  virtual string16 GetLinkText() const OVERRIDE;
   virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
 
   TabContents* tab_contents_;
@@ -200,7 +200,7 @@ bool GeolocationConfirmInfoBarDelegate::Cancel() {
   return true;
 }
 
-string16 GeolocationConfirmInfoBarDelegate::GetLinkText() {
+string16 GeolocationConfirmInfoBarDelegate::GetLinkText() const {
   return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 

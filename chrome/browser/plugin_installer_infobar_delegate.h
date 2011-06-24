@@ -27,7 +27,7 @@ class PluginInstallerInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual int GetButtons() const OVERRIDE;
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
   virtual bool Accept() OVERRIDE;
-  virtual string16 GetLinkText() OVERRIDE;
+  virtual string16 GetLinkText() const OVERRIDE;
   virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
 
   // The containing TabContents

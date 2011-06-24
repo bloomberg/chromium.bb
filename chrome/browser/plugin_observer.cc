@@ -48,8 +48,8 @@ class PluginInfoBarDelegate : public ConfirmInfoBarDelegate {
 
  private:
   // ConfirmInfoBarDelegate:
-  virtual gfx::Image* GetIcon() const;
-  virtual string16 GetLinkText();
+  virtual gfx::Image* GetIcon() const OVERRIDE;
+  virtual string16 GetLinkText() const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(PluginInfoBarDelegate);
 };
@@ -83,7 +83,7 @@ gfx::Image* PluginInfoBarDelegate::GetIcon() const {
       IDR_INFOBAR_PLUGIN_INSTALL);
 }
 
-string16 PluginInfoBarDelegate::GetLinkText() {
+string16 PluginInfoBarDelegate::GetLinkText() const {
   return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 
