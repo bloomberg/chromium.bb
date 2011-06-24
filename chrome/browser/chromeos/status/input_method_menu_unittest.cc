@@ -24,7 +24,7 @@ TEST(InputMethodMenuTest, GetTextForIndicatorTest) {
     EXPECT_EQ(L"FA", InputMethodMenu::GetTextForIndicator(desc));
   }
   {
-    InputMethodDescriptor desc("hangul", "Korean", "us", "us", "ko");
+    InputMethodDescriptor desc("mozc-hangul", "Korean", "us", "us", "ko");
     EXPECT_EQ(UTF8ToWide("\xed\x95\x9c"),
               InputMethodMenu::GetTextForIndicator(desc));
   }

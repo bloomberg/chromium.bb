@@ -125,7 +125,12 @@ const struct EnglishToResouceId {
   { "Wide Latin", IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_WIDE_LATIN },
 
   // For ibus-hangul: third_party/ibus-hangul/files/po/.
+  // TODO(nona): Remove ibus-hangul support.
   { "Enable/Disable Hanja mode", IDS_STATUSBAR_IME_KOREAN_HANJA_MODE },
+
+  // For ibus-mozc-hangul
+  { "Hanja mode", IDS_STATUSBAR_IME_KOREAN_HANJA_INPUT_MODE },
+  { "Hangul mode", IDS_STATUSBAR_IME_KOREAN_HANGUL_INPUT_MODE },
 
   // For ibus-pinyin.
   { "Full/Half width",

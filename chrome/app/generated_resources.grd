@@ -12295,6 +12295,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_STATUSBAR_IME_KOREAN_HANJA_MODE" desc="In the language menu button, this shows the input mode.">
         Enable/Disable Hanja mode
       </message>
+      <message name="IDS_STATUSBAR_IME_KOREAN_HANJA_INPUT_MODE" desc="In the language menu button, this shows the input mode.">
+        Hanja mode
+      </message>
+      <message name="IDS_STATUSBAR_IME_KOREAN_HANGUL_INPUT_MODE" desc="In the language menu button, this shows the input mode.">
+        Hangul mode
+      </message>
       <message name="IDS_STATUSBAR_IME_CHINESE_PINYIN_TOGGLE_CHINESE_ENGLISH" desc="In the language menu button, this shows the input mode.">
         Toggle Chinese/English mode
       </message>
