@@ -29,12 +29,18 @@ lastworditalafter_SOURCES =	\
 	brl_checks.h            \
 	lastworditalafter.c	
 
+en_gb_g1_italics_SOURCES =	\
+	brl_checks.c            \
+	brl_checks.h            \
+	en_gb_g1_italics.c	
+
 check_PROGRAMS = 		\
 	present_progressive 	\
 	capitalized_word 	\
 	capitalized_with_sentance \
 	inpos_compbrl		\
-	lastworditalafter
+	lastworditalafter	\
+	en_gb_g1_italics
 
 dist_check_SCRIPTS = \
 	check_all_tables.pl \
@@ -46,8 +52,9 @@ dist_check_SCRIPTS = \
 # the issue doesn't seem to be critical enough that anybody has enough
 # interest to fix it.
 XFAIL_TESTS = \
-	present_progressive \
-	lastworditalafter
+	present_progressive 	\
+	lastworditalafter	\
+	en_gb_g1_italics
 
 TESTS =	\
 	$(check_PROGRAMS) \

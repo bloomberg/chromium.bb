@@ -1,3 +1,9 @@
+2011-06-17  Christian Egli  <christian.egli@sbs.ch>
+
+	* tests/Makefile.am (en_gb_g1_italics_SOURCES):
+	* tests/en_gb_g1_italics.c (main): Add a test case for italics
+	with the en-gb-g1.utb table.
+
 2011-05-30  Stefan Moisei  <vortex37@gmail.com>
 
 	* tables/ro.ctb: Updates to Romanian table.
