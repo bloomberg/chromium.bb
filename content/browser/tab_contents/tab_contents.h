@@ -98,7 +98,7 @@ class TabContents : public PageNavigator,
   PropertyBag* property_bag() { return &property_bag_; }
 
   TabContentsDelegate* delegate() const { return delegate_; }
-  void set_delegate(TabContentsDelegate* delegate);
+  void set_delegate(TabContentsDelegate* d) { delegate_ = d; }
 
   // Gets the controller for this tab contents.
   NavigationController& controller() { return controller_; }

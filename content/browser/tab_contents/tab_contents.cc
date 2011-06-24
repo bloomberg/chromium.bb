@@ -253,19 +253,6 @@ TabContents::~TabContents() {
   FOR_EACH_OBSERVER(TabContentsObserver, observers_, TabContentsDestroyed());
 
   net::NetworkChangeNotifier::RemoveOnlineStateObserver(this);
-
-  set_delegate(NULL);
-}
-
-// TODO(cbentzel): Either remove the debugging code, or rename to SetDelegate.
-void TabContents::set_delegate(TabContentsDelegate* delegate) {
-  if (delegate == delegate_)
-    return;
-  if (delegate_)
-    delegate_->Detach(this);
-  delegate_ = delegate;
-  if (delegate_)
-    delegate_->Attach(this);
 }
 
 void TabContents::AddObservers() {
