@@ -12,7 +12,6 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/message_pump_libevent.h"
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include "chrome/common/multi_process_lock.h"
@@ -36,7 +35,7 @@ class WaitableEvent;
 // watching. When it reads |kShutDownMessage|, it performs |shutdown_task_|.
 // Used here to monitor the socket listening to g_signal_socket.
 class ServiceProcessShutdownMonitor
-    : public base::MessagePumpLibevent::Watcher {
+    : public MessageLoopForIO::Watcher {
  public:
 
   enum {
@@ -46,7 +45,7 @@ class ServiceProcessShutdownMonitor
   explicit ServiceProcessShutdownMonitor(Task* shutdown_task);
   virtual ~ServiceProcessShutdownMonitor();
 
-  // base::MessagePumpLibevent::Watcher overrides
+  // MessageLoopForIO::Watcher overrides
   virtual void OnFileCanReadWithoutBlocking(int fd);
   virtual void OnFileCanWriteWithoutBlocking(int fd);
 
@@ -77,7 +76,7 @@ struct ServiceProcessState::StateData
   scoped_ptr<MultiProcessLock> running_lock_;
 #endif
   scoped_ptr<ServiceProcessShutdownMonitor> shut_down_monitor_;
-  base::MessagePumpLibevent::FileDescriptorWatcher watcher_;
+  MessageLoopForIO::FileDescriptorWatcher watcher_;
   int sockets_[2];
   struct sigaction old_action_;
   bool set_action_;

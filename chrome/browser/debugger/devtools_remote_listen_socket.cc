@@ -15,9 +15,6 @@
 #elif defined(OS_POSIX)
 #include <errno.h>
 #include <sys/socket.h>
-#include "base/message_loop.h"
-#include "base/message_pump_libevent.h"
-#include "net/base/net_errors.h"
 #endif
 
 #include "base/compiler_specific.h"
