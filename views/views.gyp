@@ -441,18 +441,14 @@
             }],
           ],
         }],
-        ['chromeos!=1', {
-          'sources/': [
-            ['exclude', 'ime/character_composer.cc'],
-            ['exclude', 'ime/character_composer.h'],
-          ],
-        }],
         ['use_ibus==1', {
           'dependencies': [
             '../build/linux/system.gyp:ibus',
           ],
         }, { # else: use_ibus != 1
           'sources/': [
+            ['exclude', 'ime/character_composer.cc'],
+            ['exclude', 'ime/character_composer.h'],
             ['exclude', 'ime/input_method_ibus.cc'],
             ['exclude', 'ime/input_method_ibus.h'],
           ],
@@ -547,7 +543,7 @@
             '<(DEPTH)/third_party/wtl/include',
           ],
         }],
-        ['chromeos!=1', {
+        ['use_ibus!=1', {
           'sources/': [
             ['exclude', 'ime/character_composer_unittest.cc'],
           ],
