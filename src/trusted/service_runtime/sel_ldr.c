@@ -128,7 +128,8 @@ int NaClAppCtor(struct NaClApp  *nap) {
   nap->secure_service = NULL;
   nap->manifest_proxy = NULL;
   nap->reverse_client = NULL;
-  nap->reverse_channel_initialized = 0;
+  nap->reverse_channel_initialization_state =
+      NACL_REVERSE_CHANNEL_UNINITIALIZED;
 
   if (!NaClMutexCtor(&nap->mu)) {
     goto cleanup_dynamic_load_mutex;
@@ -1180,13 +1181,21 @@ static void NaClSecureReverseClientCallback(
   NaClLog(4, " nap=0x%"NACL_PRIxPTR"\n", (uintptr_t) nap);
   NaClXMutexLock(&nap->mu);
 
-  if (nap->reverse_channel_initialized) {
+  if (NACL_REVERSE_CHANNEL_INITIALIZATION_STARTED !=
+      nap->reverse_channel_initialization_state) {
+    /*
+     * The reverse channel connection capability is used to make the
+     * RPC that invokes this callback (this callback is invoked on a
+     * reverse channel connect), so the plugin wants to initialize the
+     * reverse channel and in particular the state must be either be
+     * in-progress or finished.
+     */
     NaClLog(LOG_FATAL, "Reverse channel already initialized\n");
   }
   if (!NaClSrpcClientCtor(&nap->reverse_channel, new_conn)) {
     NaClLog(LOG_FATAL, "Reverse channel SRPC Client Ctor failed\n");
   }
-  nap->reverse_channel_initialized = 1;
+  nap->reverse_channel_initialization_state = NACL_REVERSE_CHANNEL_INITIALIZED;
 
   NaClXCondVarBroadcast(&nap->cv);
   NaClXMutexUnlock(&nap->mu);
@@ -1212,9 +1221,19 @@ static void NaClSecureReverseClientSetup(struct NaClSrpcRpc     *rpc,
 
   UNREFERENCED_PARAMETER(in_args);
   NaClLog(4, "Entered NaClSecureReverseClientSetup\n");
+
+  NaClXMutexLock(&nap->mu);
   if (NULL != nap->reverse_client) {
     NaClLog(LOG_FATAL, "Double reverse setup RPC\n");
   }
+  if (NACL_REVERSE_CHANNEL_UNINITIALIZED !=
+      nap->reverse_channel_initialization_state) {
+    NaClLog(LOG_FATAL,
+            "Reverse channel initialization state not uninitialized\n");
+  }
+  nap->reverse_channel_initialization_state =
+      NACL_REVERSE_CHANNEL_INITIALIZATION_STARTED;
+  /* the reverse connection is still coming */
   rev = (struct NaClSecureReverseClient *) malloc(sizeof *rev);
   if (NULL == rev) {
     rpc->result = NACL_SRPC_RESULT_APP_ERROR;
@@ -1244,6 +1263,7 @@ static void NaClSecureReverseClientSetup(struct NaClSrpcRpc     *rpc,
   }
 
 done:
+  NaClXMutexUnlock(&nap->mu);
   (*done->Run)(done);
   NaClLog(4, "Leaving NaClSecureReverseClientSetup\n");
 }
@@ -1504,7 +1524,8 @@ static void WINAPI ReverseSetupThread(void *thread_state) {
   /* wait for reverse connection */
   NaClLog(1, "ReverseSetupThread\n");
   NaClXMutexLock(&nap->mu);
-  while (!nap->reverse_channel_initialized) {
+  while (NACL_REVERSE_CHANNEL_INITIALIZED !=
+         nap->reverse_channel_initialization_state) {
     NaClLog(1, "ReverseSetupThread waiting\n");
     NaClXCondVarWait(&nap->cv, &nap->mu);
   }

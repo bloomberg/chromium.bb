@@ -207,7 +207,11 @@ struct NaClApp {
   /* used only during setup, thread dtors before exiting */
   struct NaClManifestProxy        *manifest_proxy;
   struct NaClSecureReverseClient  *reverse_client;
-  int                             reverse_channel_initialized;
+  enum NaClReverseChannelInitializationState {
+    NACL_REVERSE_CHANNEL_UNINITIALIZED,
+    NACL_REVERSE_CHANNEL_INITIALIZATION_STARTED,
+    NACL_REVERSE_CHANNEL_INITIALIZED
+  }                               reverse_channel_initialization_state;
   NaClSrpcChannel                 reverse_channel;
 
   NaClErrorCode             module_load_status;

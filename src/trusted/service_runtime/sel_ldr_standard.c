@@ -527,8 +527,9 @@ int NaClAddrIsValidEntryPt(struct NaClApp *nap,
 }
 
 int NaClAppLaunchServiceThreads(struct NaClApp *nap) {
-  struct NaClManifestProxy  *manifest_proxy = NULL;
-  int                       rv;
+  struct NaClManifestProxy                    *manifest_proxy = NULL;
+  int                                         rv;
+  enum NaClReverseChannelInitializationState  init_state;
 
   NaClNameServiceLaunch(nap->name_service);
 
@@ -550,12 +551,25 @@ int NaClAppLaunchServiceThreads(struct NaClApp *nap) {
    * before the if test.
    */
   NaClXMutexLock(&nap->mu);
-  rv = !nap->reverse_channel_initialized;
+  /*
+   * If no reverse_setup RPC was made, then we do not set up a
+   * manifest proxy.  Otherwise, we make sure that the reverse channel
+   * setup is done, so that the application can actually use
+   * reverse-channel-based services such as the manifest proxy.
+   */
+  if (NACL_REVERSE_CHANNEL_UNINITIALIZED !=
+      (init_state = nap->reverse_channel_initialization_state)) {
+    while (NACL_REVERSE_CHANNEL_INITIALIZED !=
+      (init_state = nap->reverse_channel_initialization_state)) {
+      NaClXCondVarWait(&nap->cv, &nap->mu);
+    }
+  }
   NaClXMutexUnlock(&nap->mu);
-  if (rv) {
+  if (NACL_REVERSE_CHANNEL_INITIALIZED != init_state) {
     NaClLog(3,
             ("NaClAppLaunchServiceThreads: no reverse channel;"
              " NOT launching manifest proxy\n"));
+    rv = 1;
     goto done;
   }
 

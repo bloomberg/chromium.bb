@@ -305,7 +305,8 @@ int NaClManifestProxyConnectionFactory(
   NaClLog(4, "NaClManifestProxyConnectionFactory: nap 0x%"NACL_PRIxPTR"\n",
           (uintptr_t) nap);
   NaClXMutexLock(&nap->mu);
-  if (!nap->reverse_channel_initialized) {
+  if (NACL_REVERSE_CHANNEL_INITIALIZED !=
+      nap->reverse_channel_initialization_state) {
     NaClLog(LOG_FATAL,
             "NaClManifestProxyConnectionFactory invoked w/o reverse channel\n");
   }
