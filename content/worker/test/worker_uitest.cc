@@ -453,9 +453,7 @@ TEST_F(WorkerTest, DISABLED_WorkerHttpLayoutTests) {
   ASSERT_TRUE(http_server.Stop());
 }
 
-// Failing since r89996 (WebKit roll 89393:89412).
-// Probably affected by WebKit r89400.
-TEST_F(WorkerTest, DISABLED_WorkerWebSocketLayoutTests) {
+TEST_F(WorkerTest, WorkerWebSocketLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     "close-in-onmessage-crash.html",
     "close-in-shared-worker.html",
