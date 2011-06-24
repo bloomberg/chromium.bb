@@ -255,6 +255,7 @@ wlsc_surface_create(struct wlsc_compositor *compositor,
 	surface->buffer = NULL;
 
 	pixman_region32_init(&surface->damage);
+	pixman_region32_init(&surface->opaque);
 
 	surface->buffer_destroy_listener.func = surface_handle_buffer_destroy;
 	wl_list_init(&surface->buffer_destroy_listener.link);
@@ -300,6 +301,31 @@ wlsc_surface_damage_below(struct wlsc_surface *surface)
 				   surface->x, surface->y,
 				   surface->width, surface->height);
 	wlsc_compositor_schedule_repaint(surface->compositor);
+}
+
+WL_EXPORT void
+wlsc_surface_configure(struct wlsc_surface *surface,
+		       int x, int y, int width, int height)
+{
+	struct wlsc_compositor *compositor = surface->compositor;
+
+	wlsc_surface_damage_below(surface);
+
+	surface->x = x;
+	surface->y = y;
+	surface->width = width;
+	surface->height = height;
+
+	wlsc_surface_assign_output(surface);
+	wlsc_surface_damage(surface);
+
+	pixman_region32_fini(&surface->opaque);
+	if (surface->visual == &compositor->compositor.rgb_visual)
+		pixman_region32_init_rect(&surface->opaque,
+					  surface->x, surface->y,
+					  surface->width, surface->height);
+	else
+		pixman_region32_init(&surface->opaque);
 }
 
 WL_EXPORT uint32_t
@@ -751,7 +777,7 @@ wlsc_output_repaint(struct wlsc_output *output)
 	struct wlsc_compositor *ec = output->compositor;
 	struct wlsc_surface *es;
 	struct wlsc_input_device *device;
-	pixman_region32_t clip, new_damage, total_damage, region, opaque;
+	pixman_region32_t clip, new_damage, total_damage;
 
 	output->prepare_render(output);
 
@@ -769,11 +795,7 @@ wlsc_output_repaint(struct wlsc_output *output)
 	wl_list_for_each(es, &ec->surface_list, link) {
 		pixman_region32_intersect(&es->damage, &es->damage, &clip);
 		pixman_region32_union(&new_damage, &new_damage, &es->damage);
-		if (es->visual == &ec->compositor.rgb_visual) {
-			pixman_region32_init_rect(&region, es->x, es->y, es->width, es->height);
-			pixman_region32_subtract(&clip, &clip, &region);
-			pixman_region32_fini(&region);
-		}
+		pixman_region32_subtract(&clip, &clip, &es->opaque);
 	}
 
 	pixman_region32_subtract(&ec->damage, &ec->damage, &output->region);
@@ -825,14 +847,10 @@ wlsc_output_repaint(struct wlsc_output *output)
 			glClear(GL_COLOR_BUFFER_BIT);
 		wlsc_surface_draw(es, output, &total_damage);
 	} else {
-		pixman_region32_init(&opaque);
 		wl_list_for_each(es, &ec->surface_list, link) {
-			pixman_region32_subtract(&es->damage, &total_damage, &opaque);
-			if (es->visual == &ec->compositor.rgb_visual)
-				pixman_region32_union_rect(&opaque, &opaque,
-							   es->x, es->y, es->width, es->height);
+			pixman_region32_copy(&es->damage, &total_damage);
+			pixman_region32_subtract(&total_damage, &total_damage, &es->opaque);
 		}
-		pixman_region32_fini(&opaque);
 
 		wl_list_for_each_reverse(es, &ec->surface_list, link) {
 			wlsc_surface_draw(es, output, &es->damage);
@@ -969,13 +987,6 @@ surface_attach(struct wl_client *client,
 {
 	struct wlsc_surface *es = (struct wlsc_surface *) surface;
 
-	/* FIXME: This damages the entire old surface, but we should
-	 * really just damage the part that's no longer covered by the
-	 * surface.  Anything covered by the new surface will be
-	 * damaged by the client. */
-	if (es->buffer)
-		wlsc_surface_damage_below(es);
-
 	buffer->busy_count++;
 	wlsc_buffer_post_release(es->buffer);
 
@@ -984,14 +995,11 @@ surface_attach(struct wl_client *client,
 	wl_list_insert(es->buffer->resource.destroy_listener_list.prev,
 		       &es->buffer_destroy_listener.link);
 
-	es->x += x;
-	es->y += y;
-	es->width = buffer->width;
-	es->height = buffer->height;
-	if (x != 0 || y != 0)
-		wlsc_surface_assign_output(es);
 	if (es->visual == NULL)
 		wl_list_insert(&es->compositor->surface_list, &es->link);
+
+	wlsc_surface_configure(es, es->x + x, es->y + y,
+			       buffer->width, buffer->height);
 
 	wlsc_buffer_attach(buffer, surface);
 

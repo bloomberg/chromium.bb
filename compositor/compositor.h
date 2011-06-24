@@ -238,6 +238,7 @@ struct wlsc_surface {
 	struct wlsc_compositor *compositor;
 	GLuint texture, saved_texture;
 	pixman_region32_t damage;
+	pixman_region32_t opaque;
 	int32_t x, y, width, height;
 	int32_t pitch;
 	int32_t saved_x, saved_y;
@@ -318,6 +319,10 @@ wlsc_binding_destroy(struct wlsc_binding *binding);
 struct wlsc_surface *
 wlsc_surface_create(struct wlsc_compositor *compositor,
 		    int32_t x, int32_t y, int32_t width, int32_t height);
+
+void
+wlsc_surface_configure(struct wlsc_surface *surface,
+		       int x, int y, int width, int height);
 
 void
 wlsc_surface_assign_output(struct wlsc_surface *surface);
