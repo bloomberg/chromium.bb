@@ -70,13 +70,19 @@ class PanelBrowserViewTest : public InProcessBrowserTest {
     bool is_cursor_in_view_;
   };
 
-  PanelBrowserView* CreatePanelBrowserView(const std::string& panel_name) {
+  enum ShowFlag { SHOW_AS_ACTIVE, SHOW_AS_INACTIVE };
+
+  PanelBrowserView* CreatePanelBrowserView(const std::string& panel_name,
+                                           ShowFlag show_flag) {
     Browser* panel_browser = Browser::CreateForApp(Browser::TYPE_PANEL,
                                                    panel_name,
                                                    gfx::Rect(),
                                                    browser()->profile());
-    panel_browser->window()->Show();
     Panel* panel = static_cast<Panel*>(panel_browser->window());
+    if (show_flag == SHOW_AS_ACTIVE)
+      panel->Show();
+    else
+      panel->ShowInactive();
     return static_cast<PanelBrowserView*>(panel->native_panel());
   }
 
@@ -220,7 +226,8 @@ class PanelBrowserViewTest : public InProcessBrowserTest {
 
     // Creates a panel with the app name that comes from the extension ID.
     PanelBrowserView* browser_view = CreatePanelBrowserView(
-        web_app::GenerateApplicationNameFromExtensionId(extension->id()));
+        web_app::GenerateApplicationNameFromExtensionId(extension->id()),
+        SHOW_AS_ACTIVE);
     PanelBrowserFrameView* frame_view = browser_view->GetFrameView();
 
     frame_view->EnsureSettingsMenuCreated();
@@ -251,12 +258,32 @@ class PanelBrowserViewTest : public InProcessBrowserTest {
 
     browser_view->panel()->Close();
   }
+
+  void TestShowPanelActiveOrInactive() {
+    PanelBrowserView* browser_view1 = CreatePanelBrowserView("PanelTest1",
+                                                             SHOW_AS_ACTIVE);
+    PanelBrowserFrameView* frame_view1 = browser_view1->GetFrameView();
+    EXPECT_TRUE(browser_view1->panel()->IsActive());
+    EXPECT_EQ(PanelBrowserFrameView::PAINT_AS_ACTIVE,
+              frame_view1->paint_state_);
+
+    PanelBrowserView* browser_view2 = CreatePanelBrowserView("PanelTest2",
+                                                             SHOW_AS_INACTIVE);
+    PanelBrowserFrameView* frame_view2 = browser_view2->GetFrameView();
+    EXPECT_FALSE(browser_view2->panel()->IsActive());
+    EXPECT_EQ(PanelBrowserFrameView::PAINT_AS_INACTIVE,
+              frame_view2->paint_state_);
+
+    browser_view1->panel()->Close();
+    browser_view2->panel()->Close();
+  }
 };
 
 // Panel is not supported for Linux view yet.
 #if !defined(OS_LINUX) || !defined(TOOLKIT_VIEWS)
 IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, CreatePanel) {
-  PanelBrowserView* browser_view = CreatePanelBrowserView("PanelTest");
+  PanelBrowserView* browser_view = CreatePanelBrowserView("PanelTest",
+                                                          SHOW_AS_ACTIVE);
   PanelBrowserFrameView* frame_view = browser_view->GetFrameView();
 
   // The bounds animation should not be triggered when the panel is up for the
@@ -305,10 +332,17 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, CreatePanel) {
   frame_view->UpdateControlStyles(PanelBrowserFrameView::PAINT_AS_INACTIVE);
   gfx::Font title_label_font2 = frame_view->title_label_->font();
   EXPECT_NE(title_label_font1.GetStyle(), title_label_font2.GetStyle());
+
+  browser_view->panel()->Close();
+}
+
+IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, ShowPanelActiveOrInactive) {
+  TestShowPanelActiveOrInactive();
 }
 
 IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, ShowOrHideSettingsButton) {
-  PanelBrowserView* browser_view = CreatePanelBrowserView("PanelTest");
+  PanelBrowserView* browser_view = CreatePanelBrowserView("PanelTest",
+                                                          SHOW_AS_ACTIVE);
   PanelBrowserFrameView* frame_view = browser_view->GetFrameView();
 
   // Create and hook up the MockMouseWatcher so that we can simulate if the
@@ -342,7 +376,8 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, TitleBarMouseEvent) {
   // TODO(jianli): Move the test to platform-independent PanelManager unittest.
 
   // Creates the 1st panel.
-  PanelBrowserView* browser_view1 = CreatePanelBrowserView("PanelTest1");
+  PanelBrowserView* browser_view1 = CreatePanelBrowserView("PanelTest1",
+                                                           SHOW_AS_ACTIVE);
 
   // The delta is from the pressed location which is the left-top corner of the
   // panel to drag.
@@ -377,8 +412,10 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, TitleBarMouseEvent) {
                    false);
 
   // Creates 2 more panels to test dragging a panel in multi-panel environment.
-  PanelBrowserView* browser_view2 = CreatePanelBrowserView("PanelTest2");
-  PanelBrowserView* browser_view3 = CreatePanelBrowserView("PanelTest3");
+  PanelBrowserView* browser_view2 = CreatePanelBrowserView("PanelTest2",
+                                                           SHOW_AS_ACTIVE);
+  PanelBrowserView* browser_view3 = CreatePanelBrowserView("PanelTest3",
+                                                           SHOW_AS_ACTIVE);
   PanelBrowserView* browser_views[] =
     { browser_view1, browser_view2, browser_view3 };
   size_t browser_view_count = arraysize(browser_views);
@@ -505,7 +542,8 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, TitleBarMouseEvent) {
 }
 
 IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, SetBoundsAnimation) {
-  PanelBrowserView* browser_view = CreatePanelBrowserView("PanelTest");
+  PanelBrowserView* browser_view = CreatePanelBrowserView("PanelTest",
+                                                          SHOW_AS_ACTIVE);
 
   // Validate that animation should be triggered when SetBounds is called.
   gfx::Rect target_bounds(browser_view->GetBounds());

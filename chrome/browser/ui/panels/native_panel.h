@@ -31,6 +31,7 @@ class NativePanel {
   virtual ~NativePanel() {}
 
   virtual void ShowPanel() = 0;
+  virtual void ShowPanelInactive() = 0;
   virtual gfx::Rect GetPanelBounds() const = 0;
   virtual void SetPanelBounds(const gfx::Rect& bounds) = 0;
   virtual void MinimizePanel() = 0;

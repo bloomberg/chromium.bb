@@ -69,6 +69,11 @@ void PanelBrowserWindowCocoa::ShowPanel() {
   [window setFrame:finalFrame display:YES animate:YES];
 }
 
+void PanelBrowserWindowCocoa::ShowPanelInactive() {
+  // TODO(dimich): to be implemented.
+  ShowPanel();
+}
+
 gfx::Rect PanelBrowserWindowCocoa::GetPanelBounds() const {
   return bounds_;
 }

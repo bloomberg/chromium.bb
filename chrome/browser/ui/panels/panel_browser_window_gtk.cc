@@ -79,6 +79,10 @@ void PanelBrowserWindowGtk::ShowPanel() {
   Show();
 }
 
+void PanelBrowserWindowGtk::ShowPanelInactive() {
+  ShowInactive();
+}
+
 gfx::Rect PanelBrowserWindowGtk::GetPanelBounds() const {
   return bounds_;
 }

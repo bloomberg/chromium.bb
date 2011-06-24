@@ -144,6 +144,10 @@ void PanelBrowserView::ShowPanel() {
   Show();
 }
 
+void PanelBrowserView::ShowPanelInactive() {
+  ShowInactive();
+}
+
 gfx::Rect PanelBrowserView::GetPanelBounds() const {
   return bounds_;
 }

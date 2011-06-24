@@ -27,6 +27,7 @@ class PanelBrowserWindowCocoa : public NativePanel {
 
   // Overridden from NativePanel
   virtual void ShowPanel() OVERRIDE;
+  virtual void ShowPanelInactive() OVERRIDE;
   virtual gfx::Rect GetPanelBounds() const OVERRIDE;
   virtual void SetPanelBounds(const gfx::Rect& bounds) OVERRIDE;
   virtual void MinimizePanel() OVERRIDE;

@@ -54,7 +54,7 @@ void Panel::Show() {
 }
 
 void Panel::ShowInactive() {
-  NOTIMPLEMENTED();
+  native_panel_->ShowPanelInactive();
 }
 
 void Panel::SetBounds(const gfx::Rect& bounds) {
