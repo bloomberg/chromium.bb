@@ -86,6 +86,14 @@ def _PrepForChanges(git_repo):
       cros_lib.RunCommand(['git', 'config', 'push.default', 'tracking'],
                           cwd=git_repo)
     else:
+      # Attempt the equivalent of repo abandon for retries.  Master always
+      # exists for manifest_version git repos.
+      try:
+        cros_lib.RunCommand(['git', 'checkout', 'master'], cwd=git_repo)
+        cros_lib.RunCommand(['git', 'branch', '-D', _PUSH_BRANCH], cwd=git_repo)
+      except:
+        pass
+
       cros_lib.RunCommand(['git', 'pull', '--force'], cwd=git_repo)
 
 # TODO Test fix for chromium-os:16249
