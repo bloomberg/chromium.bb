@@ -486,6 +486,15 @@ CRYPT32.dll!CertCreateCertificateChainEngine
 ...
 CRYPT32.dll!CertGetCertificateChain
 
+LEAK
+KERNEL32.dll!LocalAlloc
+...
+CRYPT32.dll!CryptDecodeObjectEx
+...
+CRYPT32.dll!CertGetCRLContextProperty
+...
+CRYPT32.dll!CertGetCertificateChain
+
 ############################
 # TODO(timurrrr): investigate these
 UNINITIALIZED READ
