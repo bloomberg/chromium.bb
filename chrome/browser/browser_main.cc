@@ -100,6 +100,7 @@
 #include "net/base/cookie_monster.h"
 #include "net/base/net_module.h"
 #include "net/base/network_change_notifier.h"
+#include "net/http/http_basic_stream.h"
 #include "net/http/http_network_layer.h"
 #include "net/http/http_stream_factory.h"
 #include "net/socket/client_socket_pool_base.h"
@@ -207,6 +208,18 @@
 #if defined(TOUCH_UI) && defined(HAVE_XINPUT2)
 #include "views/touchui/touch_factory.h"
 #endif
+
+namespace {
+void SetSocketReusePolicy(int warmest_socket_trial_group,
+                          const int socket_policy[],
+                          int num_groups) {
+  const int* result = std::find(socket_policy, socket_policy + num_groups,
+                                warmest_socket_trial_group);
+  DCHECK_NE(result, socket_policy + num_groups)
+      << "Not a valid socket reuse policy group";
+  net::SetSocketReusePolicy(result - socket_policy);
+}
+}
 
 namespace net {
 class NetLog;
@@ -474,6 +487,46 @@ void BrowserMainParts::SpdyFieldTrial() {
   }
 }
 
+// If --socket-reuse-policy is not specified, run an A/B test for choosing the
+// warmest socket.
+void BrowserMainParts::WarmConnectionFieldTrial() {
+  const CommandLine& command_line = parsed_command_line();
+  if (command_line.HasSwitch(switches::kSocketReusePolicy)) {
+    std::string socket_reuse_policy_str = command_line.GetSwitchValueASCII(
+        switches::kSocketReusePolicy);
+    int policy = -1;
+    base::StringToInt(socket_reuse_policy_str, &policy);
+
+    const int policy_list[] = { 0, 1, 2 };
+    VLOG(1) << "Setting socket_reuse_policy = " << policy;
+    SetSocketReusePolicy(policy, policy_list, arraysize(policy_list));
+    return;
+  }
+
+  const base::FieldTrial::Probability kWarmSocketDivisor = 100;
+  const base::FieldTrial::Probability kWarmSocketProbability = 33;
+
+  // After January 30, 2013 builds, it will always be in default group.
+  scoped_refptr<base::FieldTrial> warmest_socket_trial(
+      new base::FieldTrial(
+          "WarmSocketImpact", kWarmSocketDivisor, "last_accessed_socket",
+          2013, 1, 30));
+
+  // Default value is USE_LAST_ACCESSED_SOCKET.
+  const int last_accessed_socket = warmest_socket_trial->kDefaultGroupNumber;
+  const int warmest_socket = warmest_socket_trial->AppendGroup(
+      "warmest_socket", kWarmSocketProbability);
+  const int warm_socket = warmest_socket_trial->AppendGroup(
+      "warm_socket", kWarmSocketProbability);
+
+  const int warmest_socket_trial_group = warmest_socket_trial->group();
+
+  const int policy_list[] = { warmest_socket, warm_socket,
+                              last_accessed_socket };
+  SetSocketReusePolicy(warmest_socket_trial_group, policy_list,
+                       arraysize(policy_list));
+}
+
 // If neither --enable-connect-backup-jobs or --disable-connect-backup-jobs is
 // specified, run an A/B test for automatically establishing backup TCP
 // connections when a certain timeout value is exceeded.
@@ -593,6 +646,7 @@ void BrowserMainParts::SetupFieldTrials(bool metrics_recording_enabled) {
   prerender::ConfigurePrefetchAndPrerender(parsed_command_line());
   SpdyFieldTrial();
   ConnectBackupJobsFieldTrial();
+  WarmConnectionFieldTrial();
 }
 
 // -----------------------------------------------------------------------------

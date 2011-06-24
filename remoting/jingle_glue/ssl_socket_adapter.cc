@@ -270,6 +270,16 @@ bool TransportSocket::UsingTCPFastOpen() const {
   return false;
 }
 
+int64 TransportSocket::NumBytesRead() const {
+  NOTREACHED();
+  return -1;
+}
+
+base::TimeDelta TransportSocket::GetConnectTimeMicros() const {
+  NOTREACHED();
+  return base::TimeDelta::FromMicroseconds(-1);
+}
+
 int TransportSocket::Read(net::IOBuffer* buf, int buf_len,
                           net::CompletionCallback* callback) {
   DCHECK(buf);
