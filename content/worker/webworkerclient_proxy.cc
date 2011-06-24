@@ -20,6 +20,7 @@
 #include "content/worker/worker_thread.h"
 #include "content/worker/worker_webapplicationcachehost_impl.h"
 #include "ipc/ipc_logging.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystemCallbacks.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
@@ -143,11 +144,14 @@ WebApplicationCacheHost* WebWorkerClientProxy::createApplicationCacheHost(
   return host;
 }
 
+// TODO(abarth): Security checks should use WebDocument or WebSecurityOrigin,
+// not WebFrame as the context object because WebFrames can contain different
+// WebDocuments at different times.
 bool WebWorkerClientProxy::allowDatabase(WebFrame* frame,
                                          const WebString& name,
                                          const WebString& display_name,
                                          unsigned long estimated_size) {
-  WebSecurityOrigin origin = frame->securityOrigin();
+  WebSecurityOrigin origin = frame->document().securityOrigin();
   if (origin.isEmpty())
     return false;
 
