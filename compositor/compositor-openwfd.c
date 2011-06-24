@@ -70,6 +70,15 @@ struct wfd_output {
 	uint32_t current;
 };
 
+union wfd_geometry {
+	struct {
+		WFDint x, y;
+		WFDint width, height;
+	} g;
+
+	WFDint array[4];
+};
+
 static int
 wfd_output_prepare_render(struct wlsc_output *output_base)
 {
@@ -211,9 +220,7 @@ create_output_for_port(struct wfd_compositor *ec,
 	int i;
 	WFDint num_pipelines, *pipelines;
 	WFDint num_modes;
-	WFDint rect[4] = { 0, 0, 0, 0 };
-	int width, height;
-	WFDint native_resolution[2];
+	union wfd_geometry geometry;
 	struct wfd_mode *mode;
 	WFDPortMode *modes;
 	WFDfloat physical_size[2];
@@ -223,6 +230,7 @@ create_output_for_port(struct wfd_compositor *ec,
 		return -1;
 
 	memset(output, 0, sizeof *output);
+	memset(&geometry, 0, sizeof geometry);
 
 	output->port = port;
 	wl_list_init(&output->base.mode_list);
@@ -249,18 +257,16 @@ create_output_for_port(struct wfd_compositor *ec,
 
 	wfdGetPortAttribiv(ec->dev, output->port,
 			   WFD_PORT_NATIVE_RESOLUTION,
-			   2, native_resolution);
-	width = native_resolution[0];
-	height = native_resolution[1];
+			   2, &geometry.array[2]);
 
 	output->base.current = NULL;
 	wl_list_for_each(mode, &output->base.mode_list, base.link) {
-		if (mode->base.width == width && mode->base.height == height) {
+		if (mode->base.width == geometry.g.width &&
+		    mode->base.height == geometry.g.height) {
 			output->base.current = &mode->base;
 			break;
 		}
 	}
-
 	if (output->base.current == NULL) {
 		fprintf(stderr, "failed to find a native mode\n");
 		goto cleanup_port;
@@ -348,12 +354,12 @@ create_output_for_port(struct wfd_compositor *ec,
 				  GL_RENDERBUFFER,
 				  output->rbo[output->current]);
 
-	rect[2] = width;
-	rect[3] = height;
 	wfdSetPipelineAttribiv(ec->dev, output->pipeline,
-			       WFD_PIPELINE_SOURCE_RECTANGLE, 4, rect);
+			       WFD_PIPELINE_SOURCE_RECTANGLE,
+			       4, geometry.array);
 	wfdSetPipelineAttribiv(ec->dev, output->pipeline,
-			       WFD_PIPELINE_DESTINATION_RECTANGLE, 4, rect);
+			       WFD_PIPELINE_DESTINATION_RECTANGLE,
+			       4, geometry.array);
 
 	wfdBindSourceToPipeline(ec->dev, output->pipeline,
 				output->source[output->current ^ 1],
