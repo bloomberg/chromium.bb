@@ -53,7 +53,7 @@ deps = {
     'src/third_party/libjpeg_turbo':
         Var('git_url') + '/chromium/deps/libjpeg_turbo.git@6eb4f2096c80f5f3286f63bb76b671eb5eb97d78',
     'src/third_party/libvpx':
-        Var('git_url') + '/chromium/deps/libvpx.git@d0f85024d2dd579f9bd928878936387d3af0a893',
+        Var('git_url') + '/chromium/deps/libvpx.git@23e067305b541d58bccb822a279644077f613a49',
     'src/third_party/ots':
         Var('git_url') + '/external/ots.git@7f9bebe3906fb30f0632f9d010754d12dd6c02d7',
     'src/third_party/pylib':
