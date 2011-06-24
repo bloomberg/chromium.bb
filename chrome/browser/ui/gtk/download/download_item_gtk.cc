@@ -243,7 +243,7 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
   }
 
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
-                 NotificationService::AllSources());
+                 Source<ThemeService>(theme_service_));
   theme_service_->InitThemesFor(this);
 
   // Set the initial width of the widget to be animated.

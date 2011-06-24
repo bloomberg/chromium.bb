@@ -409,7 +409,8 @@ NewTabUI::NewTabUI(TabContents* contents)
 
   // Listen for theme installation.
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
-                 NotificationService::AllSources());
+                 Source<ThemeService>(
+                     ThemeServiceFactory::GetForProfile(GetProfile())));
   // Listen for bookmark bar visibility changes.
   registrar_.Add(this, NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
                  NotificationService::AllSources());

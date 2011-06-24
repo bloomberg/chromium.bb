@@ -159,7 +159,7 @@ BookmarkBarGtk::BookmarkBarGtk(BrowserWindowGtk* window,
   UpdateFloatingState();
 
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
-                 NotificationService::AllSources());
+                 Source<ThemeService>(theme_service_));
 
   edit_bookmarks_enabled_.Init(prefs::kEditBookmarksEnabled,
                                profile_->GetPrefs(), this);

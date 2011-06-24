@@ -50,7 +50,7 @@ StatusBubbleGtk::StatusBubbleGtk(Profile* profile)
 
   theme_service_->InitThemesFor(this);
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
-                 NotificationService::AllSources());
+                 Source<ThemeService>(theme_service_));
 }
 
 StatusBubbleGtk::~StatusBubbleGtk() {

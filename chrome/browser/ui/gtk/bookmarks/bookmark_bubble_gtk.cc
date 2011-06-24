@@ -182,7 +182,7 @@ BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWidget* anchor,
                    G_CALLBACK(&OnRemoveClickedThunk), this);
 
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
-                 NotificationService::AllSources());
+                 Source<ThemeService>(theme_service_));
   theme_service_->InitThemesFor(this);
 }
 

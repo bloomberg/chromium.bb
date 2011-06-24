@@ -274,7 +274,8 @@ class NotificationType {
     // the actual snapshot.
     TAB_SNAPSHOT_TAKEN,
 
-    // The user has changed the browser theme.  There are no details.
+    // The user has changed the browser theme. The source is a
+    // Source<ThemeService>. There are no details.
     BROWSER_THEME_CHANGED,
 
     // Sent when the renderer returns focus to the browser, as part of focus

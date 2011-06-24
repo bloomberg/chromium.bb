@@ -91,8 +91,10 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
   registrar_.Add(this,
                  NotificationType::TAB_CLOSING,
                  Source<NavigationController>(&tab_contents_->controller()));
-  registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
-                 NotificationService::AllSources());
+  registrar_.Add(
+      this,
+      NotificationType::BROWSER_THEME_CHANGED,
+      Source<ThemeService>(ThemeServiceFactory::GetForProfile(profile_)));
   TabContents* tab = inspected_rvh->delegate()->GetAsTabContents();
   if (tab)
     inspected_tab_ = TabContentsWrapper::GetCurrentWrapperForContents(tab);

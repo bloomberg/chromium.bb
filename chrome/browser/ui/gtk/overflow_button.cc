@@ -17,9 +17,10 @@ OverflowButton::OverflowButton(Profile* profile) : profile_(profile) {
   widget_.Own(GtkThemeService::GetFrom(profile)->BuildChromeButton());
   gtk_widget_set_no_show_all(widget_.get(), TRUE);
 
+  GtkThemeService* theme_service = GtkThemeService::GetFrom(profile);
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
-                 NotificationService::AllSources());
-  GtkThemeService::GetFrom(profile)->InitThemesFor(this);
+                 Source<ThemeService>(theme_service));
+  theme_service->InitThemesFor(this);
 }
 
 OverflowButton::~OverflowButton() {

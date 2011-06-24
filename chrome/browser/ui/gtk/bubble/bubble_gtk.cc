@@ -180,7 +180,7 @@ void BubbleGtk::Init(GtkWidget* anchor_widget,
   }
 
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
-                 NotificationService::AllSources());
+                 Source<ThemeService>(theme_service_));
   theme_service_->InitThemesFor(this);
 }
 

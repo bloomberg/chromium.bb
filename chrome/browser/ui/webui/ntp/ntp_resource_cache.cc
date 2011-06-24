@@ -155,7 +155,8 @@ bool InDateRange(double begin, double end) {
 
 NTPResourceCache::NTPResourceCache(Profile* profile) : profile_(profile) {
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
-                 NotificationService::AllSources());
+                 Source<ThemeService>(
+                     ThemeServiceFactory::GetForProfile(profile)));
   registrar_.Add(this, NotificationType::PROMO_RESOURCE_STATE_CHANGED,
                  NotificationService::AllSources());
 

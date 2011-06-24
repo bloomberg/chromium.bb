@@ -403,7 +403,7 @@ void BrowserTitlebar::Init() {
     theme_service_ = GtkThemeService::GetFrom(
         browser_window_->browser()->profile());
     registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
-                   NotificationService::AllSources());
+                   Source<ThemeService>(theme_service_));
     theme_service_->InitThemesFor(this);
     UpdateTitleAndIcon();
   }

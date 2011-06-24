@@ -301,7 +301,7 @@ void FindBarGtk::InitWidgets() {
 
   theme_service_->InitThemesFor(this);
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
-                 NotificationService::AllSources());
+                 Source<ThemeService>(theme_service_));
 
   g_signal_connect(widget(), "parent-set", G_CALLBACK(OnParentSet), this);
 

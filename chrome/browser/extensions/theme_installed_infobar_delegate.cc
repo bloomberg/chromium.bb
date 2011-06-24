@@ -34,7 +34,7 @@ ThemeInstalledInfoBarDelegate::ThemeInstalledInfoBarDelegate(
       tab_contents_(tab_contents) {
   theme_service_->OnInfobarDisplayed();
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
-                 NotificationService::AllSources());
+                 Source<ThemeService>(theme_service_));
 }
 
 bool ThemeInstalledInfoBarDelegate::MatchesTheme(const Extension* theme) const {

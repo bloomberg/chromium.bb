@@ -314,7 +314,7 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   gtk_box_pack_end(GTK_BOX(hbox_), options_alignment, FALSE, FALSE, 0);
 
   notification_registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
-                              NotificationService::AllSources());
+                              Source<ThemeService>(theme_service_));
 
   // We don't do InitThemesFor() because it just forces a redraw.
   gtk_util::ActAsRoundedWindow(frame_container_, gtk_util::kGdkBlack, 3,
