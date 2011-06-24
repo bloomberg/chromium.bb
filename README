@@ -11,8 +11,8 @@ Welsh) and has support for hyphenation. New languages can easily be
 added through tables that support a rule- or dictionary based
 approach. Included are also tools for testing and debugging tables.
 Liblouis also supports math braille (Nemeth and Marburg). The
-formatting of braille is provided by the companion project
-liblouisxml.
+formatting of braille is provided by the companion projects
+liblouisxml and liblouisutdml.
 
 Liblouis has features to support screen-reading programs. This has led
 to its use in two Open Source screenreaders, NVDA and Orca. It is also
@@ -36,7 +36,7 @@ file, html, txt or pdf[1]) in the doc directory. For examples of
 translation tables, see en-us-g2.ctb en-us-g1.ctb chardefs.cti, and
 whatever other files they may include in the tables directory. This
 directory contains tables for many languages. The Nemeth files will
-only work with the sister library liblouisxml.
+only work with the sister libraries liblouisxml and liblouisutdml.
 
 INSTALLATION
 
