@@ -25,15 +25,20 @@ from chromite.buildbot import cbuildbot_stages as stages
 from chromite.lib import cros_build_lib as cros_lib
 
 
+def _PrintValidConfigs():
+  """Print a list of valid buildbot configs."""
+  config_names = cbuildbot_config.config.keys()
+  config_names.sort()
+  for name in config_names:
+    print '  %s' % name
+
+
 def _GetConfig(config_name, options):
   """Gets the configuration for the build"""
   if not cbuildbot_config.config.has_key(config_name):
     print 'Non-existent configuration specified.'
     print 'Please specify one of:'
-    config_names = cbuildbot_config.config.keys()
-    config_names.sort()
-    for name in config_names:
-      print '  %s' % name
+    _PrintValidConfigs()
     sys.exit(1)
 
   result = cbuildbot_config.config[config_name]
@@ -234,7 +239,7 @@ def _ProcessBuildBotOption(option, opt_str, value, parser):
 def _CreateParser():
   """Generate and return the parser with all the options."""
   # Parse options
-  usage = "usage: %prog [options] cbuildbot_config"
+  usage = "usage: %prog [options] buildbot_config"
   parser = optparse.OptionParser(usage=usage)
 
   # Main options
@@ -247,6 +252,9 @@ def _CreateParser():
                     callback=_CheckChromeRevOption,
                     help=('Revision of Chrome to use, of type '
                           '[%s]' % '|'.join(constants.VALID_CHROME_REVISIONS)))
+  parser.add_option('-l', '--list', action='store_true', dest='list',
+                    default=False,
+                    help="List the valid buildbot configs to use.")
   parser.add_option('-p', '--patches', action='callback', dest='patches',
                     metavar="'Id1 *int_Id2...IdN'",
                     default=None, type='string', callback=_CheckPatches,
@@ -318,6 +326,10 @@ def _CreateParser():
 def main():
   parser = _CreateParser()
   (options, args) = parser.parse_args()
+
+  if options.list:
+    _PrintValidConfigs()
+    sys.exit(0)
 
   if len(args) >= 1:
     bot_id = args[-1]
