@@ -622,7 +622,8 @@ class LGKMVersionedSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     if not success:
       raise ImportantBuilderFailedException(
           'An important build failed with this manifest.')
-    else:
+    elif self._build_config['build_type'] == 'binary':
+      # We only promote for the pfq, not chrome pfq.
       ManifestVersionedSyncStage.manifest_manager.PromoteCandidate()
 
 
