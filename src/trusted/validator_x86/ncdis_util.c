@@ -24,7 +24,6 @@
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/validator_x86/ncdecode.h"
 #include "native_client/src/trusted/validator_x86/ncop_exps.h"
-#include "native_client/src/trusted/validator_x86/rex_prefixes.h"
 
 #if NACL_TARGET_SUBARCH == 64
 # include "native_client/src/trusted/validator_x86/gen/ncdisasmtab_64.h"

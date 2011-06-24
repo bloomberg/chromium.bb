@@ -11,7 +11,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_HALT_TRIM_H__
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_HALT_TRIM_H__
 
-#include "native_client/src/trusted/validator_x86/ncdecode.h"
+#include "native_client/src/trusted/validator/x86/types_memory_model.h"
 
 EXTERN_C_BEGIN
 

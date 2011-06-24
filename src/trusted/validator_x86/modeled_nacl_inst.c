@@ -47,7 +47,7 @@ void NaClModeledInstPrint(struct Gio* f, const NaClModeledInst* inst) {
     ++count;
   }
   { /* Print out instruction type less the NACLi_ prefix. */
-    const char* name = kNaClInstTypeString[inst->insttype];
+    const char* name = NaClInstTypeString(inst->insttype);
     gprintf(f, "%s ", name + strlen("NACLi_"));
   }
   if (inst->flags) NaClIFlagsPrint(f, inst->flags);

@@ -12,6 +12,7 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_INST_STATE_INTERNAL_H_
 
 #include "native_client/src/shared/utils/types.h"
+#include "native_client/src/trusted/validator/x86/ncinstbuffer.h"
 #include "native_client/src/trusted/validator_x86/ncop_exps.h"
 
 EXTERN_C_BEGIN

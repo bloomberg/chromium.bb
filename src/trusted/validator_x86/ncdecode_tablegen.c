@@ -35,6 +35,7 @@
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/utils/flags.h"
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/trusted/validator/x86/x86_insts.h"
 #include "native_client/src/trusted/validator_x86/nacl_regsgen.h"
 #include "native_client/src/trusted/validator_x86/ncdecode_forms.h"
 #include "native_client/src/trusted/validator_x86/ncdecode_st.h"
@@ -1945,7 +1946,7 @@ static void NaClInstPrintInternal(struct Gio* f, Bool as_array_element,
     if (i > 0) gprintf(f, ",");
     gprintf(f," 0x%02x", inst->opcode[i]);
   }
-  gprintf(f, " }, %s,\n", kNaClInstTypeString[inst->insttype]);
+  gprintf(f, " }, %s,\n", NaClInstTypeString(inst->insttype));
   gprintf(f, "    ");
   NaClIFlagsPrintInternal(f, inst->flags);
   gprintf(f, ",\n");

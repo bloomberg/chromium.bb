@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -16,7 +16,7 @@
 #endif
 
 #include "native_client/src/shared/utils/types.h"
-#include "native_client/src/trusted/validator_x86/types_memory_model.h"
+#include "native_client/src/trusted/validator/x86/types_memory_model.h"
 
 /* When true, use an instruction iterator instead of NCDecodeSegment.
  */

@@ -15,7 +15,7 @@
 
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/gio/gio.h"
-#include "native_client/src/trusted/validator_x86/ncdecode.h"
+#include "native_client/src/trusted/validator/x86/x86_insts.h"
 #include "native_client/src/shared/utils/types.h"
 
 /* Define enumerated types. */

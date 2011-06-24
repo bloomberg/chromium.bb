@@ -78,11 +78,16 @@
       'variables': {
         'target_base': 'pqlib',
       },
+      # For nacl_cpuid used by nacl_cpuwhitelist.
       'conditions': [
-        ['target_arch=="ia32" or target_arch=="x64"', {
+        ['target_arch=="ia32"', {
           'dependencies': [
-          # For nacl_cpuid used by nacl_cpuwhitelist.
-          '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:nacl_cpuid_lib',
+          '<(DEPTH)/native_client/src/trusted/validator/x86/validate_x86.gyp:ncval_base_x86_32',
+          ],
+        }],
+        ['target_arch=="x64"', {
+          'dependencies': [
+          '<(DEPTH)/native_client/src/trusted/validator/x86/validate_x86.gyp:ncval_base_x86_64',
           ],
         }],
       ],
@@ -100,7 +105,7 @@
           },
           'dependencies': [
             # For nacl_cpuid used by nacl_cpuwhitelist.
-            '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:nacl_cpuid_lib64',
+            '<(DEPTH)/native_client/src/trusted/validator/x86/validate_x86.gyp:ncval_base_x86_64',
           ],
         },
       ],

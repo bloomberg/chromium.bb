@@ -19,17 +19,19 @@ cl_env.Append(CPPPATH=['${TARGET_ROOT}'])
 if env.Bit('target_x86_64'):
   validator_libs = ['ncvalidate_verbose_x86_64',
                     'ncvalidate_x86_64',
-                    'ncvalidate_sfi',
-                    'ncdis_util',
-                    'ncvalidate',
-                    'utils']
+                    'ncval_reg_sfi_x86_64',
+                    'ncdis_util_x86_64',
+                    'ncval_base_x86_64']
+
 else:
   validator_libs = ['ncvalidate_verbose_x86_32',
                     'ncvalidate_x86_32',
-                    'ncdis_util',
-                    'ncvalidate',
+                    'ncval_seg_sfi_x86_32',
+                    'ncdis_util_x86_32',
+                    'ncval_base_x86_32'
                     ]
 
 cl_env.ComponentProgram('ncval_stubout',
                         'ncstubout.c',
-                        EXTRA_LIBS=validator_libs + ['platform', 'gio'])
+                        EXTRA_LIBS=validator_libs + [
+                            'platform', 'gio', 'utils'])

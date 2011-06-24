@@ -17,7 +17,8 @@
 #endif
 
 #include <stdio.h>
-#include "native_client/src/trusted/validator_x86/ncdecode.h"
+#include "native_client/src/trusted/validator/x86/error_reporter.h"
+#include "native_client/src/trusted/validator/x86/types_memory_model.h"
 
 /*
  * Run the decoder and print out the decoded instructions.
