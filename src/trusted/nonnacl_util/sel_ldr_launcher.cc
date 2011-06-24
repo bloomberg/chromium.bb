@@ -117,10 +117,9 @@ bool SelLdrLauncher::StartModule(NaClSrpcChannel* command,
 
 bool SelLdrLauncher::SetupBootstrapChannel() {
   // channel_ is initialized in LaunchFromCommandLine if
-  // channel_number_ is not -1, and both InitCommandLine and
-  // StartFromCommandLine require imc_fd to be supplied which is used
-  // to initialize channel_number_, so channel_ should never be
-  // invalid.
+  // channel_number_ is not -1, and InitCommandLine requires imc_fd to be
+  // supplied which is used to initialize channel_number_, so channel_ should
+  // never be invalid.
 
   CHECK(factory_ == NULL);
   factory_.reset(new DescWrapperFactory);

@@ -23,7 +23,6 @@
       'portable_handle.cc',
       'scriptable_handle.cc',
       'service_runtime.cc',
-      'shared_memory.cc',
       'socket_address.cc',
       'srpc_client.cc',
       'srt_socket.cc',

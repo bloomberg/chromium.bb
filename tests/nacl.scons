@@ -31,7 +31,6 @@ example_nexes = [
     # SRPC Nexe Tests
     'srpc_hw.nexe',          # srpc_hw.html, srpc_hw_fd.html
     'srpc_test.nexe',        # srpc_basic.html, srpc_plugin.html, srpc_perf.html
-    'srpc_shm.nexe',         # srpc_shm.html
     'srpc_nrd_server.nexe',  # srpc_nrd_xfer.html, srpc_sockaddr.html
     'srpc_nrd_client.nexe',  # srpc_nrd_xfer.html, srpc_plugin.html
     'cat.nexe',              # srpc_url_as_nacl_desc.html

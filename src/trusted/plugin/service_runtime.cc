@@ -27,7 +27,6 @@
 #include "native_client/src/trusted/plugin/connected_socket.h"
 #include "native_client/src/trusted/plugin/plugin.h"
 #include "native_client/src/trusted/plugin/scriptable_handle.h"
-#include "native_client/src/trusted/plugin/shared_memory.h"
 #include "native_client/src/trusted/plugin/socket_address.h"
 #include "native_client/src/trusted/plugin/srt_socket.h"
 #include "native_client/src/trusted/plugin/utility.h"
@@ -96,7 +95,8 @@ bool ServiceRuntime::InitCommunication(nacl::Handle bootstrap_socket,
   // Get the first IMC message and receive a socket address FD from it.
   PLUGIN_PRINTF(("ServiceRuntime::InitCommunication"
                  " (this=%p, subprocess=%p, bootstrap_socket=%p)\n",
-                 static_cast<void*>(this), static_cast<void*>(subprocess_),
+                 static_cast<void*>(this),
+                 static_cast<void*>(subprocess_.get()),
                  reinterpret_cast<void*>(bootstrap_socket)));
   // GetSocketAddress implicitly invokes Close(bootstrap_socket).
   // Get service channel descriptor.
@@ -122,11 +122,11 @@ bool ServiceRuntime::InitCommunication(nacl::Handle bootstrap_socket,
     *error_string = "sel_ldr: connect failed";
     return false;
   }
-  runtime_channel_ = new(std::nothrow) SrtSocket(raw_channel,
-                                                 browser_interface_);
+  runtime_channel_.reset(new(std::nothrow) SrtSocket(raw_channel,
+                                                     browser_interface_));
   PLUGIN_PRINTF(("ServiceRuntime::InitCommunication (runtime_channel=%p)\n",
-                 static_cast<void*>(runtime_channel_)));
-  if (NULL == runtime_channel_) {
+                 static_cast<void*>(runtime_channel_.get())));
+  if (NULL == runtime_channel_.get()) {
     raw_channel->Unref();
     *error_string = "sel_ldr: runtime channel creation failed";
     return false;
@@ -232,14 +232,15 @@ bool ServiceRuntime::Start(nacl::DescWrapper* nacl_file_desc,
     *error_string = "sel_ldr: failed to create async receive handle";
     return false;
   }
-  async_receive_desc_ = plugin()->wrapper_factory()->MakeImcSock(recv_handle);
+  async_receive_desc_.reset(
+      plugin()->wrapper_factory()->MakeImcSock(recv_handle));
 
   nacl::Handle send_handle = tmp_subprocess->ExportImcFD(7);
   if (send_handle == nacl::kInvalidHandle) {
     *error_string = "sel_ldr: failed to create async send handle";
     return false;
   }
-  async_send_desc_ = plugin()->wrapper_factory()->MakeImcSock(send_handle);
+  async_send_desc_.reset(plugin()->wrapper_factory()->MakeImcSock(send_handle));
 
   nacl::Handle bootstrap_socket = tmp_subprocess->ExportImcFD(5);
   if (bootstrap_socket == nacl::kInvalidHandle) {
@@ -257,7 +258,7 @@ bool ServiceRuntime::Start(nacl::DescWrapper* nacl_file_desc,
   }
 
   PLUGIN_PRINTF(("ServiceRuntime::Start (return 1)\n"));
-  subprocess_ = tmp_subprocess.release();
+  subprocess_.reset(tmp_subprocess.release());
   return true;
 }
 #else  // !defined(NACL_STANDALONE)
@@ -279,13 +280,13 @@ bool ServiceRuntime::Start(nacl::DescWrapper* nacl_desc,
   }
 
   nacl::Handle bootstrap_socket = sockets[0];
-  async_receive_desc_ = plugin()->wrapper_factory()->MakeImcSock(sockets[1]);
-  async_send_desc_ = plugin()->wrapper_factory()->MakeImcSock(sockets[2]);
+  async_receive_desc_.reset(
+      plugin()->wrapper_factory()->MakeImcSock(sockets[1]));
+  async_send_desc_.reset(plugin()->wrapper_factory()->MakeImcSock(sockets[2]));
 
-  subprocess_ = tmp_subprocess.release();
+  subprocess_.reset(tmp_subprocess.release());
   if (!InitCommunication(bootstrap_socket, nacl_desc, error_string)) {
-    delete subprocess_;
-    subprocess_ = NULL;
+    subprocess_.reset(NULL);
     return false;
   }
 
@@ -308,11 +309,9 @@ void ServiceRuntime::Shutdown() {
   }
 
   // Note that this does waitpid() to get rid of any zombie subprocess.
-  delete subprocess_;
-  subprocess_ = NULL;
+  subprocess_.reset(NULL);
 
-  delete runtime_channel_;
-  runtime_channel_ = NULL;
+  runtime_channel_.reset(NULL);
 
   // subprocess_ killed, but threads waiting on messages from the
   // service runtime may not have noticed yet.  The low-level
@@ -331,17 +330,12 @@ ServiceRuntime::~ServiceRuntime() {
                  static_cast<void*>(this)));
 
   // We do this just in case Terminate() was not called.
-  delete subprocess_;
-  delete runtime_channel_;
+  subprocess_.reset(NULL);
   if (reverse_service_ != NULL) {
     reverse_service_->Unref();
   }
 
   rev_interface_->Unref();
-
-  // TODO(sehr,mseaborn): use scoped_ptr for management of DescWrappers.
-  delete async_receive_desc_;
-  delete async_send_desc_;
 
   anchor_->Abandon();
   anchor_->Unref();

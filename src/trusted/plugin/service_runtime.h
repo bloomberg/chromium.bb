@@ -11,6 +11,7 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SERVICE_RUNTIME_H_
 
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/shared/imc/nacl_imc.h"
 #include "native_client/src/trusted/reverse_service/reverse_service.h"
@@ -73,8 +74,8 @@ class ServiceRuntime {
   Plugin* plugin() const { return plugin_; }
   void Shutdown();
 
-  nacl::DescWrapper* async_receive_desc() { return async_receive_desc_; }
-  nacl::DescWrapper* async_send_desc() { return async_send_desc_; }
+  nacl::DescWrapper* async_receive_desc() { return async_receive_desc_.get(); }
+  nacl::DescWrapper* async_send_desc() { return async_send_desc_.get(); }
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(ServiceRuntime);
@@ -85,16 +86,16 @@ class ServiceRuntime {
   ScriptableHandle* default_socket_address_;  // creates, but does not own
   Plugin* plugin_;
   BrowserInterface* browser_interface_;
-  SrtSocket* runtime_channel_;
+  nacl::scoped_ptr<SrtSocket> runtime_channel_;
   nacl::ReverseService* reverse_service_;
-  nacl::SelLdrLauncher* subprocess_;
+  nacl::scoped_ptr<nacl::SelLdrLauncher> subprocess_;
 
   // We need two IMC sockets rather than one because IMC sockets are
   // not full-duplex on Windows.
   // See http://code.google.com/p/nativeclient/issues/detail?id=690.
   // TODO(mseaborn): We should not have to work around this.
-  nacl::DescWrapper* async_receive_desc_;
-  nacl::DescWrapper* async_send_desc_;
+  nacl::scoped_ptr<nacl::DescWrapper> async_receive_desc_;
+  nacl::scoped_ptr<nacl::DescWrapper> async_send_desc_;
 
   nacl::WeakRefAnchor *anchor_;
 

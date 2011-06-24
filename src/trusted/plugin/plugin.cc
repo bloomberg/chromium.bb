@@ -35,7 +35,6 @@
 #include "native_client/src/trusted/plugin/nexe_arch.h"
 #include "native_client/src/trusted/plugin/scriptable_handle.h"
 #include "native_client/src/trusted/plugin/service_runtime.h"
-#include "native_client/src/trusted/plugin/shared_memory.h"
 #include "native_client/src/trusted/plugin/socket_address.h"
 #include "native_client/src/trusted/plugin/stream_shm_buffer.h"
 #include "native_client/src/trusted/plugin/string_encoding.h"
@@ -44,24 +43,6 @@
 namespace plugin {
 
 namespace {
-
-bool ShmFactory(void* obj, SrpcParams* params) {
-  Plugin* plugin = reinterpret_cast<Plugin*>(obj);
-
-  SharedMemory* portable_shared_memory =
-      SharedMemory::New(plugin, params->ins()[0]->u.ival);
-  ScriptableHandle* shared_memory =
-      plugin->browser_interface()->NewScriptableHandle(portable_shared_memory);
-  if (NULL == shared_memory) {
-    params->set_exception_string("out of memory");
-    portable_shared_memory->Delete();
-    return false;
-  }
-
-  params->outs()[0]->tag = NACL_SRPC_ARG_TYPE_OBJECT;
-  params->outs()[0]->arrays.oval = shared_memory;
-  return true;
-}
 
 bool DefaultSocketAddress(void* obj, SrpcParams* params) {
   Plugin* plugin = reinterpret_cast<Plugin*>(obj);
@@ -211,7 +192,6 @@ void Plugin::LoadMethods() {
   }
   // Experimental methods supported by Plugin.
   // These methods are explicitly not included in shipping versions of Chrome.
-  AddMethodCall(ShmFactory, "__shmFactory", "i", "h");
   AddMethodCall(DefaultSocketAddress, "__defaultSocketAddress", "", "h");
   AddMethodCall(GetSandboxISAProperty, "__getSandboxISA", "", "s");
   AddMethodCall(LaunchExecutableFromFd, "__launchExecutableFromFd", "h", "");

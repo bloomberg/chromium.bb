@@ -26,20 +26,8 @@ srpc_test_nexe = env.ComponentProgram(
 env.Publish(srpc_test_nexe_name, 'run',
     ['srpc_basic.html',
      'srpc_perf.html',
-     'srpc_shm.html',
      'srpc_test.nmf'])
 env.AddPrebuiltBinaryToRepository(srpc_test_nexe)
-
-
-srpc_shm_nexe_name = 'srpc_shm_%s.nexe' % env.get('TARGET_FULLARCH')
-srpc_shm_nexe = env.ComponentProgram(
-    srpc_shm_nexe_name, 'srpc_shm.c',
-    EXTRA_LIBS=['${NON_PPAPI_BROWSER_LIBS}',
-                'srpc', 'imc_syscalls', 'platform', 'gio', 'm', 'pthread'])
-env.Publish(srpc_shm_nexe_name, 'run',
-    ['srpc_shm.html',
-     'srpc_shm.nmf'])
-env.AddPrebuiltBinaryToRepository(srpc_shm_nexe)
 
 
 srpc_nrd_server_nexe_name = ('srpc_nrd_server_%s.nexe' %
@@ -122,17 +110,6 @@ env.AddNodeToTestSuite(node,
                        'run_srpc_basic_test')
 
 node = env.SelUniversalTest(
-    'srpc_shm_test.out',
-    sel_universal_flags=['--command_file',
-                         env.File('srpc_shm_test.stdin')],
-    command=[srpc_shm_nexe],
-    stdout_golden=env.File('srpc_shm_test.stdout'),
-    )
-env.AddNodeToTestSuite(node,
-                       ['sel_ldr_tests', 'small_tests'],
-                       'run_srpc_shm_test')
-
-node = env.SelUniversalTest(
     'srpc_bad_service.out',
     command=[srpc_bad_service_nexe],
     exit_status='1'
@@ -163,16 +140,6 @@ node = env.PPAPIBrowserTester(
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],
                        'run_srpc_nrd_xfer_chrome_browser_test',
-                       is_broken=env.PPAPIBrowserTesterIsBroken())
-
-node = env.PPAPIBrowserTester(
-    'srpc_shm_chrome_browser_test.out',
-    url='srpc_shm.html',
-    files=env.ExtractPublishedFiles(srpc_shm_nexe_name),
-    args=['--enable_experimental_js'])
-env.AddNodeToTestSuite(node,
-                       ['chrome_browser_tests'],
-                       'run_srpc_shm_chrome_browser_test',
                        is_broken=env.PPAPIBrowserTesterIsBroken())
 
 node = env.PPAPIBrowserTester(

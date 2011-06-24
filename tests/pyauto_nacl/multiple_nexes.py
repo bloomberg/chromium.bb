@@ -28,7 +28,6 @@ class NaClTest(pyauto.PyUITest):
            # TODO(nfullagar): enable this test when it works on trybots.
            # ('srpc_hw_fd.html', 1),
            ('srpc_nrd_xfer.html', 2),
-           ('srpc_shm.html', 1),
            ('srpc_sockaddr.html', 1),
            ('srpc_url_as_nacl_desc.html', 1),
            ('test_case.html?mode=nacl&testcase=Graphics2D', 1),

@@ -31,45 +31,6 @@ function enqueueTests(tester, server, client) {
     var server_errors = server.report();
     assertEqual(server_errors, 0);
   });
-  tester.addTest('shared_memory_browser_to_browser', function() {
-    var in_str = 'hello, world';
-    var test_offset = 7;
-    var shared_memory = server.__shmFactory(65536);
-    shared_memory.write(0, in_str.length, in_str);
-    var rval = shared_memory.read(test_offset, in_str.length - test_offset);
-    assertEqual(rval, in_str.substring(test_offset));
-  });
-  tester.addTest('shared_memory_browser_to_nacl', function() {
-    var in_str = 'hello, world';
-    var shared_memory = server.__shmFactory(shm_region_size);
-    shared_memory.write(0, in_str.length, in_str);
-    var server_errors = server.test_shared_memory(shared_memory, in_str);
-    var rval = shared_memory.read(in_str.length, result_compare_string.length);
-    assertEqual(server_errors, 0);
-    assertEqual(rval, result_compare_string);
-  });
-  tester.addTest('shared_memory_nacl_to_browser', function() {
-    var retval = client.shared_memory_client(shm_region_size);
-    var handle = retval[0];
-    var in_str = retval[1];
-    var client_errors = retval[2];
-    var shared_memory = handle.map();
-    var read_string = shared_memory.read(0, in_str.length);
-    assertEqual(client_errors, 0);
-    assertEqual(in_str, read_string);
-  });
-  tester.addTest('shared_memory_nacl_to_nacl', function() {
-    var retval = client.shared_memory_client(shm_region_size);
-    var handle = retval[0];
-    var in_str = retval[1];
-    var client_errors = retval[2];
-    assertEqual(client_errors, 0);
-    var shared_memory = handle.map();
-    var server_errors = server.test_shared_memory(shared_memory, in_str);
-    assertEqual(server_errors, 0);
-    var rval = shared_memory.read(in_str.length, result_compare_string.length);
-    assertEqual(rval, result_compare_string);
-  });
 }
       //]]>
     </script>

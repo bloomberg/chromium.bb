@@ -72,9 +72,6 @@ class NaClTest(pyauto.PyUITest):
   def testReloadSRPCSocketAddress(self):
     self.reloader('srpc_sockaddr.html', 'SRPC')
 
-  def testReloadSRPCSharedMemory(self):
-    self.reloader('srpc_shm.html', 'SRPC')
-
   def testReloadSRPCResourceDescriptor(self):
     self.reloader('srpc_nrd_xfer.html', 'SRPC')
 
