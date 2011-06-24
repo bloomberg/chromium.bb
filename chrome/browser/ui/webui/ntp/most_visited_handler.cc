@@ -209,6 +209,7 @@ void MostVisitedHandler::AddPinnedURL(const MostVisitedPage& page, int index) {
   history::TopSites* ts = web_ui_->GetProfile()->GetTopSites();
   if (ts)
     ts->AddPinnedURL(page.url, index);
+  UserMetrics::RecordAction(UserMetricsAction("MostVisited_UrlPinned"));
 }
 
 void MostVisitedHandler::HandleRemovePinnedURL(const ListValue* args) {
@@ -220,6 +221,7 @@ void MostVisitedHandler::RemovePinnedURL(const GURL& url) {
   history::TopSites* ts = web_ui_->GetProfile()->GetTopSites();
   if (ts)
     ts->RemovePinnedURL(url);
+  UserMetrics::RecordAction(UserMetricsAction("MostVisited_UrlUnpinned"));
 }
 
 bool MostVisitedHandler::GetPinnedURLAtIndex(int index,
@@ -360,6 +362,7 @@ void MostVisitedHandler::BlacklistURL(const GURL& url) {
   history::TopSites* ts = web_ui_->GetProfile()->GetTopSites();
   if (ts)
     ts->AddBlacklistedURL(url);
+  UserMetrics::RecordAction(UserMetricsAction("MostVisited_UrlBlacklisted"));
 }
 
 std::string MostVisitedHandler::GetDictionaryKeyForURL(const std::string& url) {

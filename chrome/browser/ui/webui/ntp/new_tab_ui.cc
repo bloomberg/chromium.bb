@@ -126,8 +126,20 @@ void RecentlyClosedTabsHandler::HandleReopenTab(const ListValue* args) {
     return;
 
   int session_to_restore;
-  if (ExtractIntegerValue(args, &session_to_restore))
-    tab_restore_service_->RestoreEntryById(delegate, session_to_restore, true);
+  if (!ExtractIntegerValue(args, &session_to_restore))
+    return;
+
+  const TabRestoreService::Entries& entries = tab_restore_service_->entries();
+  int index = 0;
+  for (TabRestoreService::Entries::const_iterator iter = entries.begin();
+       iter != entries.end(); ++iter, ++index) {
+    if (session_to_restore == (*iter)->id)
+      break;
+  }
+  // There are actually less than 20 restore tab items displayed in the UI.
+  HISTOGRAM_ENUMERATION("NewTabPage.SessionRestore", index, 20);
+
+  tab_restore_service_->RestoreEntryById(delegate, session_to_restore, true);
   // The current tab has been nuked at this point; don't touch any member
   // variables.
 }
@@ -184,7 +196,10 @@ class MetricsHandler : public WebUIMessageHandler {
   virtual void RegisterMessages();
 
   // Callback which records a user action.
-  void HandleMetrics(const ListValue* args);
+  void HandleRecordAction(const ListValue* args);
+
+  // Callback which records into a histogram.
+  void HandleRecordInHistogram(const ListValue* args);
 
   // Callback for the "logEventTime" message.
   void HandleLogEventTime(const ListValue* args);
@@ -195,16 +210,34 @@ class MetricsHandler : public WebUIMessageHandler {
 };
 
 void MetricsHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("metrics",
-      NewCallback(this, &MetricsHandler::HandleMetrics));
+  web_ui_->RegisterMessageCallback("recordAction",
+      NewCallback(this, &MetricsHandler::HandleRecordAction));
+  web_ui_->RegisterMessageCallback("recordInHistogram",
+      NewCallback(this, &MetricsHandler::HandleRecordInHistogram));
 
   web_ui_->RegisterMessageCallback("logEventTime",
       NewCallback(this, &MetricsHandler::HandleLogEventTime));
 }
 
-void MetricsHandler::HandleMetrics(const ListValue* args) {
+void MetricsHandler::HandleRecordAction(const ListValue* args) {
   std::string string_action = UTF16ToUTF8(ExtractStringValue(args));
   UserMetrics::RecordComputedAction(string_action);
+}
+
+void MetricsHandler::HandleRecordInHistogram(const ListValue* args) {
+  std::string histogram_name;
+  CHECK(args->GetString(0, &histogram_name));
+
+  double value;
+  CHECK(args->GetDouble(1, &value));
+  int int_value = static_cast<int>(value);
+
+  double boundary_value;
+  CHECK(args->GetDouble(2, &boundary_value));
+  int int_boundary_value = static_cast<int>(boundary_value);
+  CHECK_LE(int_boundary_value, 200);
+
+  HISTOGRAM_ENUMERATION(histogram_name, int_value, int_boundary_value);
 }
 
 void MetricsHandler::HandleLogEventTime(const ListValue* args) {

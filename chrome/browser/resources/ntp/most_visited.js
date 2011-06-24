@@ -102,6 +102,8 @@ var MostVisited = (function() {
       }
       this.data[destinationIndex] = sourceData;
       this.data[sourceIndex] = destinationData;
+
+      chrome.send('recordAction', ['MostVisitedReordered']);
     },
 
     updateSettingsLink: function(hasBlacklistedUrls) {
@@ -642,7 +644,8 @@ var MostVisited = (function() {
           var index = Array.prototype.indexOf.call(item.parentNode.children,
                                                    item);
           if (index != -1)
-            chrome.send('metrics', ['NTP_MostVisited' + index]);
+            chrome.send('recordInHistogram',
+                        ['NewTabPage.MostVisited', index, 8]);
         }
       }
     },

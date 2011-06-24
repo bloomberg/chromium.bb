@@ -134,7 +134,7 @@ cr.define('ntp4', function() {
       } else if (target.classList.contains('remove')) {
         this.blacklist_();
       } else {
-        chrome.send('metrics', ['NTP_MostVisited' + this.index]);
+        chrome.send('recordInHistogram', ['NTP_MostVisited', this.index, 8]);
       }
     },
 
