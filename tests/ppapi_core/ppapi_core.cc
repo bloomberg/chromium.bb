@@ -91,57 +91,57 @@ void* InvokeIsMainThread(void* thread_argument) {
 }
 
 // Tests PPB_Core::GetTime().
-PP_Var TestGetTime() {
+void TestGetTime() {
   PP_Time time1 = PPBCore()->GetTime();
-  EXPECT(time1 > 0);
+  EXPECT_ASYNC(time1 > 0);
 
   usleep(100000);  // 0.1 second
 
   PP_Time time2 = PPBCore()->GetTime();
-  EXPECT(time2 > time1);
+  EXPECT_ASYNC(time2 > time1);
 
-  return TEST_PASSED;
+  TEST_PASSED_ASYNC;
 }
 
 // Tests PPB_Core::GetTimeTicks().
-PP_Var TestGetTimeTicks() {
+void TestGetTimeTicks() {
   PP_TimeTicks time_ticks1 = PPBCore()->GetTimeTicks();
-  EXPECT(time_ticks1 > 0);
+  EXPECT_ASYNC(time_ticks1 > 0);
 
   usleep(100000);  // 0.1 second
 
   PP_TimeTicks time_ticks2 = PPBCore()->GetTimeTicks();
-  EXPECT(time_ticks2 > time_ticks1);
+  EXPECT_ASYNC(time_ticks2 > time_ticks1);
 
-  return TEST_PASSED;
+  TEST_PASSED_ASYNC;
 }
 
 // Tests PPB_Core::CallOnMainThread() from the main thread.
-PP_Var TestCallOnMainThreadFromMainThread() {
+void TestCallOnMainThread_FromMainThread() {
   PP_CompletionCallback callback = MakeTestableCompletionCallback(
       "CallOnMainThreadCallback_FromMainThread",
       EmptyCompletionCallback,
       NULL /*user_data*/);
   PPBCore()->CallOnMainThread(0 /*delay*/, callback, kNotPPError);
 
-  return TEST_PASSED;
+  TEST_PASSED_ASYNC;
 }
 
 // Tests PPB_Core::CallOnMainThread() from the main thread after a long delay.
 // This is useful for surf-away/reload tests where the nexe is aborted
 // after the callback was scheduled, but before it was fired.
-PP_Var TestCallOnMainThreadFromMainThreadDelayed() {
+void TestCallOnMainThread_FromMainThreadDelayed() {
   PP_CompletionCallback callback = MakeTestableCompletionCallback(
       "CallOnMainThreadCallback_FromMainThreadDelayed",
       EmptyCompletionCallback,
       NULL /*user_data*/);
   PPBCore()->CallOnMainThread(1000 /*delay in ms*/, callback, kNotPPError);
 
-  return TEST_PASSED;
+  TEST_PASSED_ASYNC;
 }
 
 // Tests PPB_Core::CallOnMainThread from non-main thread.
-PP_Var TestCallOnMainThreadFromNonMainThread() {
+void TestCallOnMainThread_FromNonMainThread() {
   pthread_t tid;
   void* ppb_core = reinterpret_cast<void*>(const_cast<PPB_Core*>(PPBCore()));
   CHECK(pthread_create(&tid, NULL, InvokeCallOnMainThread, ppb_core) == 0);
@@ -150,12 +150,12 @@ PP_Var TestCallOnMainThreadFromNonMainThread() {
   // is called concurrently with the main thread.
   CHECK(pthread_detach(tid) == 0);
 
-  return TEST_PASSED;
+  TEST_PASSED_ASYNC;
 }
 
 // Tests PPB_Core::CallOnMainThread from non-main thread.
 // This is a stress test version that calls many times from many threads.
-PP_Var TestCallOnMainThreadFromNonMainThreadStress() {
+void TestCallOnMainThread_FromNonMainThreadStress() {
   const int kNumThreads = 10;
   const int kNumPerThread = 100;
   const int kNumCallbacks = kNumThreads * kNumPerThread;
@@ -166,80 +166,80 @@ PP_Var TestCallOnMainThreadFromNonMainThreadStress() {
         &tid, NULL, InvokeCallOnMainThreadStress, stress) == 0);
     CHECK(pthread_detach(tid) == 0);
   }
-  return TEST_PASSED;
+  TEST_PASSED_ASYNC;
 }
 
 // Tests PPB_Core::IsMainThread() from the main thread.
-PP_Var TestIsMainThreadFromMainThread() {
-  EXPECT(PPBCore()->IsMainThread() == PP_TRUE);
-  return TEST_PASSED;
+void TestIsMainThread_FromMainThread() {
+  EXPECT_ASYNC(PPBCore()->IsMainThread() == PP_TRUE);
+  TEST_PASSED_ASYNC;
 }
 
 // Tests PPB_Core::IsMainThread() from non-main thread.
-PP_Var TestIsMainThreadFromNonMainThread() {
+void TestIsMainThread_FromNonMainThread() {
   pthread_t tid;
   void* thread_result;
   void* ppb_core = reinterpret_cast<void*>(const_cast<PPB_Core*>(PPBCore()));
   CHECK(pthread_create(&tid, NULL, InvokeIsMainThread, ppb_core) == 0);
   CHECK(pthread_join(tid, &thread_result) == 0);
-  EXPECT(reinterpret_cast<int>(thread_result) == PP_FALSE);
+  EXPECT_ASYNC(reinterpret_cast<int>(thread_result) == PP_FALSE);
 
-  return TEST_PASSED;
+  TEST_PASSED_ASYNC;
 }
 
 
 // Tests PPB_Core::AddRefResource() and PPB_Core::ReleaseResource() with
 // a valid resource.
-PP_Var TestAddRefAndReleaseResource() {
+void TestAddRefAndReleaseResource() {
   PP_Resource valid_resource = PPBURLRequestInfo()->Create(pp_instance());
-  EXPECT(valid_resource != kInvalidResource);
-  EXPECT(PPBURLRequestInfo()->IsURLRequestInfo(valid_resource) == PP_TRUE);
+  EXPECT_ASYNC(valid_resource != kInvalidResource);
+  EXPECT_ASYNC(PPBURLRequestInfo()->IsURLRequestInfo(valid_resource) == PP_TRUE);
 
   // Adjusting ref count should not delete the resource.
   for (size_t j = 0; j < 100; ++j) PPBCore()->AddRefResource(valid_resource);
-  EXPECT(PPBURLRequestInfo()->IsURLRequestInfo(valid_resource) == PP_TRUE);
+  EXPECT_ASYNC(PPBURLRequestInfo()->IsURLRequestInfo(valid_resource) == PP_TRUE);
   for (size_t j = 0; j < 100; ++j) PPBCore()->ReleaseResource(valid_resource);
-  EXPECT(PPBURLRequestInfo()->IsURLRequestInfo(valid_resource) == PP_TRUE);
+  EXPECT_ASYNC(PPBURLRequestInfo()->IsURLRequestInfo(valid_resource) == PP_TRUE);
 
   // Releasing the ref count from Create() must delete the resource.
   PPBCore()->ReleaseResource(valid_resource);
-  EXPECT(PPBURLRequestInfo()->IsURLRequestInfo(valid_resource) != PP_TRUE);
+  EXPECT_ASYNC(PPBURLRequestInfo()->IsURLRequestInfo(valid_resource) != PP_TRUE);
 
-  return TEST_PASSED;
+  TEST_PASSED_ASYNC;
 }
 
 // Tests PPB_Core::AddRefResource() and PPB_Core::ReleaseResource() with
 // an invalid resource.
-PP_Var TestAddRefAndReleaseInvalidResource() {
+void TestAddRefAndReleaseInvalidResource() {
   for (size_t j = 0; j < 100; ++j) {
     PPBCore()->AddRefResource(kInvalidResource);
     PPBCore()->ReleaseResource(kInvalidResource);
   }
 
-  return TEST_PASSED;
+  TEST_PASSED_ASYNC;
 }
 
 }  // namespace
 
 void SetupTests() {
-  RegisterScriptableTest("testGetTime", TestGetTime);
-  RegisterScriptableTest("testGetTimeTicks", TestGetTimeTicks);
-  RegisterScriptableTest("testIsMainThread_FromMainThread",
-                         TestIsMainThreadFromMainThread);
-  RegisterScriptableTest("testIsMainThread_FromNonMainThread",
-                         TestIsMainThreadFromNonMainThread);
-  RegisterScriptableTest("testAddRefAndReleaseResource",
-                         TestAddRefAndReleaseResource);
-  RegisterScriptableTest("testAddRefAndReleaseInvalidResource",
-                         TestAddRefAndReleaseInvalidResource);
-  RegisterScriptableTest("testCallOnMainThread_FromMainThread",
-                         TestCallOnMainThreadFromMainThread);
-  RegisterScriptableTest("testCallOnMainThread_FromMainThreadDelayed",
-                         TestCallOnMainThreadFromMainThreadDelayed);
-  RegisterScriptableTest("testCallOnMainThread_FromNonMainThread",
-                         TestCallOnMainThreadFromNonMainThread);
-  RegisterScriptableTest("testCallOnMainThread_FromNonMainThreadStress",
-                         TestCallOnMainThreadFromNonMainThreadStress);
+  RegisterTest("TestGetTime", TestGetTime);
+  RegisterTest("TestGetTimeTicks", TestGetTimeTicks);
+  RegisterTest("TestIsMainThread_FromMainThread",
+               TestIsMainThread_FromMainThread);
+  RegisterTest("TestIsMainThread_FromNonMainThread",
+               TestIsMainThread_FromNonMainThread);
+  RegisterTest("TestAddRefAndReleaseResource",
+               TestAddRefAndReleaseResource);
+  RegisterTest("TestAddRefAndReleaseInvalidResource",
+               TestAddRefAndReleaseInvalidResource);
+  RegisterTest("TestCallOnMainThread_FromMainThread",
+               TestCallOnMainThread_FromMainThread);
+  RegisterTest("TestCallOnMainThread_FromMainThreadDelayed",
+               TestCallOnMainThread_FromMainThreadDelayed);
+  RegisterTest("TestCallOnMainThread_FromNonMainThread",
+               TestCallOnMainThread_FromNonMainThread);
+  RegisterTest("TestCallOnMainThread_FromNonMainThreadStress",
+               TestCallOnMainThread_FromNonMainThreadStress);
 }
 
 void SetupPluginInterfaces() {

@@ -8,59 +8,50 @@
     <script type="text/javascript" src="nacltest.js"></script>
     <script type="application/x-javascript">
       //<![CDATA[
-function setupTests(tester, plugin) {
+      function setupTests(tester, plugin) {
+        // This function takes an array of messages and asserts that the nexe
+        // calls PostMessage with each of these messages, in order.
+        function expectMessages(test, plugin, messages) {
+          var messages_array = messages
+          var listener = test.wrap(function(message) {
+            plugin.removeEventListener('message', listener, false);
+            test.assertEqual(message.data, messages_array.shift())
+            if (messages_array.length == 0)
+              test.pass();
+            else
+              plugin.addEventListener('message', listener, false);
+          });
+          plugin.addEventListener('message', listener, false);
+        }
 
-    tester.addTest('PPB_Core::GetTime', function(status) {
-      status.assert(plugin.testGetTime());
-    });
+        // Note: this function can take multiple arguments after test_name.
+        // Each subsequent argument is the expected additional response
+        // from the nexe (aside from the usual 'test_name:PASSED' response).
+        function addTest(test_name) {
+          // Convert all the arguments to this function into a proper Array
+          var expected_messages = [].slice.call(addTest.arguments);
+          expected_messages[0] = test_name + ':PASSED';
+          tester.addAsyncTest('PPB_Core::' + test_name, function(test) {
+            expectMessages(test, plugin, expected_messages);
+            plugin.postMessage(test_name)
+          });
+        }
 
-    tester.addTest('PPB_Core::GetTimeTicks', function(status) {
-      status.assert(plugin.testGetTimeTicks());
-    });
-
-    tester.addTest('PPB_Core::IsMainThread_FromMainThread', function(status) {
-      status.assert(plugin.testIsMainThread_FromMainThread());
-    });
-
-    tester.addTest('PPB_Core::IsMainThread_FromNonMainThread',
-                   function(status) {
-      status.assert(plugin.testIsMainThread_FromNonMainThread());
-    });
-
-    tester.addTest('PPB_Core::AddRefResource+ReleaseResource',
-                   function(status) {
-      status.assert(plugin.testAddRefAndReleaseResource());
-    });
-
-    tester.addTest('PPB_Core::AddRefResource+Release(invalid)',
-                   function(status) {
-      status.assert(plugin.testAddRefAndReleaseInvalidResource());
-    });
-
-    tester.addTest('PPB_Core::CallOnMainThread_FromMainThread',
-                   function(status) {
-      status.assert(plugin.testCallOnMainThread_FromMainThread());
-      status.waitForCallback('CallOnMainThreadCallback_FromMainThread', 1);
-    });
-
-    tester.addTest('PPB_Core::CallOnMainThread_FromMainThreadDelayed',
-                   function(status) {
-      status.assert(plugin.testCallOnMainThread_FromMainThreadDelayed());
-      status.waitForCallback(
-        'CallOnMainThreadCallback_FromMainThreadDelayed', 1);
-    });
-
-    tester.addTest('PPB_Core::CallOnMainThread_FromNonMainThread',
-                   function(status) {
-      status.assert(plugin.testCallOnMainThread_FromNonMainThread());
-      status.waitForCallback('CallOnMainThreadCallback_FromNonMainThread', 1);
-    });
-
-    tester.addTest('PPB_Core::CallOnMainThread_ThreadStress', function(status) {
-      status.assert(plugin.testCallOnMainThread_FromNonMainThreadStress());
-      status.waitForCallback('CallOnMainThreadCallback_ThreadStress', 1);
-    });
-}
+        addTest('TestGetTime');
+        addTest('TestGetTimeTicks');
+        addTest('TestIsMainThread_FromMainThread');
+        addTest('TestIsMainThread_FromNonMainThread');
+        addTest('TestAddRefAndReleaseResource');
+        addTest('TestAddRefAndReleaseInvalidResource');
+        addTest('TestCallOnMainThread_FromMainThread',
+                'CallOnMainThreadCallback_FromMainThread');
+        addTest('TestCallOnMainThread_FromMainThreadDelayed',
+                'CallOnMainThreadCallback_FromMainThreadDelayed');
+        addTest('TestCallOnMainThread_FromNonMainThread',
+                'CallOnMainThreadCallback_FromNonMainThread');
+        addTest('TestCallOnMainThread_FromNonMainThreadStress',
+                'CallOnMainThreadCallback_ThreadStress');
+      }
       //]]>
     </script>
     <title>PPAPI PPB_Core Test</title>
