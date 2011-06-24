@@ -186,7 +186,6 @@ class ManifestVersionedSyncStageTest(AbstractStageTest):
     self.tmpdir = tempfile.mkdtemp()
     self.source_repo = 'ssh://source/repo'
     self.manifest_version_url = 'fake manifest url'
-    self.version_file = 'version-file.sh'
     self.branch = 'master'
     self.build_name = 'x86-generic'
     self.incr_type = 'patch'
@@ -209,8 +208,8 @@ class ManifestVersionedSyncStageTest(AbstractStageTest):
 
     os.path.isdir(self.build_root + '/.repo').AndReturn(False)
 
-    self.manager.GetNextBuildSpec(stages.VERSION_FILE,
-        force_version=None, latest=True).AndReturn(self.next_version)
+    self.manager.GetNextBuildSpec(force_version=None,
+        latest=True).AndReturn(self.next_version)
 
     commands.ManifestCheckout(self.build_root,
                               self.TRACKING_BRANCH,

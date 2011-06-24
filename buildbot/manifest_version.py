@@ -13,6 +13,7 @@ import re
 import shutil
 import tempfile
 
+from chromite.buildbot import constants
 from chromite.buildbot import repository
 from chromite.lib import cros_build_lib as cros_lib
 
@@ -447,13 +448,12 @@ class BuildSpecsManager(object):
 
     if self.unprocessed: self.latest_unprocessed = self.unprocessed[-1]
 
-  def _GetCurrentVersionInfo(self, version_file):
+  def _GetCurrentVersionInfo(self):
     """Returns the current version info from the version file.
     Args:
-      version_file: Relative path to the version file inside the repo.
     """
     self.cros_source.Sync(repository.RepoRepository.DEFAULT_MANIFEST)
-    version_file_path = self.cros_source.GetRelativePath(version_file)
+    version_file_path = self.cros_source.GetRelativePath(constants.VERSION_FILE)
     return VersionInfo(version_file=version_file_path,
                        incr_type=self.incr_type)
 
@@ -528,11 +528,10 @@ class BuildSpecsManager(object):
 
     return None
 
-  def GetNextBuildSpec(self, version_file, latest=False, force_version=None,
+  def GetNextBuildSpec(self, latest=False, force_version=None,
                        retries=5):
     """Gets the version number of the next build spec to build.
       Args:
-        version_file: File to use in cros when checking for cros version.
         latest: Whether we need to handout the latest build. Default: False
         force_version: Forces us to use this version.
         retries: Number of retries for updating the status
@@ -544,7 +543,7 @@ class BuildSpecsManager(object):
     last_error = None
     for index in range(0, retries + 1):
       try:
-        version_info = self._GetCurrentVersionInfo(version_file)
+        version_info = self._GetCurrentVersionInfo()
         logging.debug('Using version %s' % version_info.VersionString())
         self._LoadSpecs(version_info)
 

@@ -155,8 +155,7 @@ class LKGMManagerTest(mox.MoxTestBase):
     most_recent_candidate = lkgm_manager._LKGMCandidateInfo('1.2.3.4-rc12')
     new_candidate = lkgm_manager._LKGMCandidateInfo('1.2.3.4-rc13')
 
-    lkgm_manager.LKGMManager._GetCurrentVersionInfo(
-        self.version_file).AndReturn(my_info)
+    lkgm_manager.LKGMManager._GetCurrentVersionInfo().AndReturn(my_info)
     lkgm_manager.LKGMManager._LoadSpecs(my_info)
     lkgm_manager.LKGMManager._GetLatestCandidateByVersion(my_info).AndReturn(
         most_recent_candidate)
@@ -166,7 +165,7 @@ class LKGMManagerTest(mox.MoxTestBase):
         mox.StrContains(new_candidate.VersionString()))
 
     self.mox.ReplayAll()
-    candidate_path = self.manager.CreateNewCandidate(self.version_file)
+    candidate_path = self.manager.CreateNewCandidate()
     self.assertEqual(candidate_path, self._GetPathToManifest(new_candidate))
     self.mox.VerifyAll()
 
@@ -184,8 +183,7 @@ class LKGMManagerTest(mox.MoxTestBase):
     my_info = manifest_version.VersionInfo('1.2.3.4')
     most_recent_candidate = lkgm_manager._LKGMCandidateInfo('1.2.3.4-rc12')
 
-    lkgm_manager.LKGMManager._GetCurrentVersionInfo(
-        self.version_file).AndReturn(my_info)
+    lkgm_manager.LKGMManager._GetCurrentVersionInfo().AndReturn(my_info)
     lkgm_manager.LKGMManager._LoadSpecs(my_info)
     lkgm_manager.LKGMManager._GetLatestCandidateByVersion(my_info).AndReturn(
         most_recent_candidate)
@@ -193,7 +191,7 @@ class LKGMManagerTest(mox.MoxTestBase):
         most_recent_candidate).AndReturn(None)
 
     self.mox.ReplayAll()
-    candidate = self.manager.CreateNewCandidate(self.version_file)
+    candidate = self.manager.CreateNewCandidate()
     self.assertEqual(candidate, None)
     self.mox.VerifyAll()
 
@@ -206,15 +204,14 @@ class LKGMManagerTest(mox.MoxTestBase):
     my_info = manifest_version.VersionInfo('1.2.3.4')
     most_recent_candidate = lkgm_manager._LKGMCandidateInfo('1.2.3.4-rc12')
 
-    lkgm_manager.LKGMManager._GetCurrentVersionInfo(
-        self.version_file).AndReturn(my_info)
+    lkgm_manager.LKGMManager._GetCurrentVersionInfo().AndReturn(my_info)
     lkgm_manager.LKGMManager._LoadSpecs(my_info)
     lkgm_manager.LKGMManager._SetInFlight(
         mox.StrContains(most_recent_candidate.VersionString()))
 
     self.mox.ReplayAll()
     self.manager.latest_unprocessed = '1.2.3.4-rc12'
-    candidate = self.manager.GetLatestCandidate(self.version_file)
+    candidate = self.manager.GetLatestCandidate()
     self.assertEqual(candidate, self._GetPathToManifest(most_recent_candidate))
     self.mox.VerifyAll()
 
@@ -224,13 +221,12 @@ class LKGMManagerTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_LoadSpecs')
 
     my_info = manifest_version.VersionInfo('1.2.3.4')
-    lkgm_manager.LKGMManager._GetCurrentVersionInfo(
-        self.version_file).AndReturn(my_info)
+    lkgm_manager.LKGMManager._GetCurrentVersionInfo().AndReturn(my_info)
     lkgm_manager.LKGMManager._LoadSpecs(my_info)
 
     self.mox.ReplayAll()
     self.manager.MAX_TIMEOUT_SECONDS = 1 # Only run once.
-    candidate = self.manager.GetLatestCandidate(self.version_file)
+    candidate = self.manager.GetLatestCandidate()
     self.assertEqual(candidate, None)
     self.mox.VerifyAll()
 
