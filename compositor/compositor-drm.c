@@ -416,10 +416,6 @@ create_output_for_connector(struct drm_compositor *ec,
 		return -1;
 
 	memset(output, 0, sizeof *output);
-	output->base.x = x;
-	output->base.y = y;
-	output->base.mm_width = connector->mmWidth;
-	output->base.mm_height = connector->mmHeight;
 	output->base.subpixel = drm_subpixel_to_wayland(connector->subpixel);
 	output->base.make = "unknown";
 	output->base.model = "unknown";
@@ -441,7 +437,8 @@ create_output_for_connector(struct drm_compositor *ec,
 	drm_mode->base.flags =
 		WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED;
 
-	wlsc_output_init(&output->base, &ec->base, x, y, 200, 100, 0);
+	wlsc_output_init(&output->base, &ec->base, x, y,
+			 connector->mmWidth, connector->mmHeight, 0);
 
 	wl_list_insert(ec->base.output_list.prev, &output->base.link);
 
