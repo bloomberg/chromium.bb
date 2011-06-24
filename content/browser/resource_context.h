@@ -15,6 +15,7 @@ class ChromeAppCacheService;
 class ChromeBlobStorageContext;
 class ExtensionInfoMap;
 class HostZoomMap;
+class MediaObserver;
 namespace fileapi {
 class FileSystemContext;
 }  // namespace fileapi
@@ -71,6 +72,9 @@ class ResourceContext {
   HostZoomMap* host_zoom_map() const;
   void set_host_zoom_map(HostZoomMap* host_zoom_map);
 
+  MediaObserver* media_observer() const;
+  void set_media_observer(MediaObserver* media_observer);
+
   // =======================================================================
   // TODO(willchan): These don't belong in content/. Remove them eventually.
 
@@ -93,6 +97,7 @@ class ResourceContext {
   ChromeBlobStorageContext* blob_storage_context_;
   quota::QuotaManager* quota_manager_;
   HostZoomMap* host_zoom_map_;
+  MediaObserver* media_observer_;
 
   // Externally-defined data accessible by key.
   typedef std::map<const void*, void*> UserDataMap;

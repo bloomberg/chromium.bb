@@ -18,7 +18,8 @@ ResourceContext::ResourceContext()
       file_system_context_(NULL),
       blob_storage_context_(NULL),
       quota_manager_(NULL),
-      host_zoom_map_(NULL) {
+      host_zoom_map_(NULL),
+      media_observer_(NULL) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
@@ -131,6 +132,17 @@ HostZoomMap* ResourceContext::host_zoom_map() const {
 void ResourceContext::set_host_zoom_map(HostZoomMap* host_zoom_map) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   host_zoom_map_ = host_zoom_map;
+}
+
+MediaObserver* ResourceContext::media_observer() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  EnsureInitialized();
+  return media_observer_;
+}
+
+void ResourceContext::set_media_observer(MediaObserver* media_observer) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  media_observer_ = media_observer;
 }
 
 const base::WeakPtr<prerender::PrerenderManager>&

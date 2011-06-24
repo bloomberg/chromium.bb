@@ -18,6 +18,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_event_router_forwarder.h"
+#include "chrome/browser/media/media_internals.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
@@ -308,6 +309,10 @@ IOThread::Globals::Globals() {}
 
 IOThread::Globals::~Globals() {}
 
+IOThread::Globals::MediaGlobals::MediaGlobals() {}
+
+IOThread::Globals::MediaGlobals::~MediaGlobals() {}
+
 // |local_state| is passed in explicitly in order to (1) reduce implicit
 // dependencies and (2) make IOThread more flexible for testing.
 IOThread::IOThread(
@@ -444,6 +449,8 @@ void IOThread::Init() {
 
   DCHECK(!globals_);
   globals_ = new Globals;
+
+  globals_->media.media_internals.reset(new MediaInternals());
 
   // Add an observer that will emit network change events to the ChromeNetLog.
   // Assuming NetworkChangeNotifier dispatches in FIFO order, we should be

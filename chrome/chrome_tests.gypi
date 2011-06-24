@@ -1450,6 +1450,7 @@
         'browser/instant/promo_counter_unittest.cc',
         'browser/internal_auth_unittest.cc',
         'browser/mac/keystone_glue_unittest.mm',
+        'browser/media/media_internals_unittest.cc',
         'browser/metrics/display_utils_unittest.cc',
         'browser/metrics/metrics_log_unittest.cc',
         'browser/metrics/metrics_response_unittest.cc',

@@ -17,6 +17,7 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/extensions/extension_protocols.h"
 #include "chrome/browser/io_thread.h"
+#include "chrome/browser/media/media_internals.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
 #include "chrome/browser/net/chrome_dns_cert_provenance_checker_factory.h"
 #include "chrome/browser/net/chrome_net_log.h"
@@ -492,6 +493,8 @@ void ProfileIOData::LazyInitialize() const {
   resource_context_.set_host_zoom_map(host_zoom_map_);
   resource_context_.set_prerender_manager(prerender_manager_);
   resource_context_.SetUserData(NULL, const_cast<ProfileIOData*>(this));
+  resource_context_.set_media_observer(
+      io_thread_globals->media.media_internals.get());
 
   LazyInitializeInternal(profile_params_.get());
 
