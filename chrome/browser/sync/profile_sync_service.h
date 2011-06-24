@@ -17,7 +17,6 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "base/tracked.h"
-#include "chrome/browser/net/chrome_cookie_notification_details.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
@@ -208,10 +207,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
                                    const std::string& password,
                                    const std::string& captcha,
                                    const std::string& access_code);
-
-  // Called when a cookie, e. g. oauth_token, changes
-  virtual void OnCookieChanged(Profile* profile,
-                               ChromeCookieDetails* cookie_details);
 
   // Update the last auth error and notify observers of error state.
   void UpdateAuthErrorState(const GoogleServiceAuthError& error);
