@@ -273,13 +273,15 @@ void BrowserFeatureExtractor::SetHostVisitsFeatures(
              features::kHttpHostVisitCount : features::kHttpsHostVisitCount,
              static_cast<double>(num_visits),
              request);
-  AddFeature(
-      is_http_query ?
-      features::kFirstHttpHostVisitMoreThan24hAgo :
-      features::kFirstHttpsHostVisitMoreThan24hAgo,
-      (first_visit < (base::Time::Now() - base::TimeDelta::FromDays(1))) ?
-      1.0 : 0.0,
-      request);
+  if (num_visits > 0) {
+    AddFeature(
+        is_http_query ?
+        features::kFirstHttpHostVisitMoreThan24hAgo :
+        features::kFirstHttpsHostVisitMoreThan24hAgo,
+        (first_visit < (base::Time::Now() - base::TimeDelta::FromDays(1))) ?
+        1.0 : 0.0,
+        request);
+  }
 }
 
 void BrowserFeatureExtractor::StorePendingQuery(
