@@ -945,7 +945,6 @@ class InputApiUnittest(PresubmitTestsBase):
         ],
         [
           # Expected.
-          'a/experimental',
           'a/experimental.cc',
           'a/experimental.S',
         ],
@@ -960,7 +959,6 @@ class InputApiUnittest(PresubmitTestsBase):
         ],
         [
           # Expected.
-          'a/third_party',
           'a/third_party.cc',
         ],
       ),
@@ -970,11 +968,13 @@ class InputApiUnittest(PresubmitTestsBase):
           f('a/LOL_FILE/b'),
           f('b.c/LOL_FILE'),
           f('a/PRESUBMIT.py'),
+          f('a/FOO.json'),
+          f('a/FOO.java'),
         ],
         [
           # Expected.
-          'a/LOL_FILE/b',
           'a/PRESUBMIT.py',
+          'a/FOO.java',
         ],
       ),
       (
@@ -995,7 +995,7 @@ class InputApiUnittest(PresubmitTestsBase):
         False, None, False)
     self.mox.ReplayAll()
 
-    self.assertEqual(len(input_api.DEFAULT_WHITE_LIST), 22)
+    self.assertEqual(len(input_api.DEFAULT_WHITE_LIST), 21)
     self.assertEqual(len(input_api.DEFAULT_BLACK_LIST), 9)
     for item in files:
       results = filter(input_api.FilterSourceFile, item[0])

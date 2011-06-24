@@ -186,15 +186,16 @@ class InputApi(object):
 
   # File extensions that are considered source files from a style guide
   # perspective. Don't modify this list from a presubmit script!
+  #
+  # Files without an extension aren't included in the list. If you want to
+  # filter them as source files, add r"(^|.*?[\\\/])[^.]+$" to the white list.
+  # Note that ALL CAPS files are black listed in DEFAULT_BLACK_LIST below.
   DEFAULT_WHITE_LIST = (
       # C++ and friends
       r".+\.c$", r".+\.cc$", r".+\.cpp$", r".+\.h$", r".+\.m$", r".+\.mm$",
       r".+\.inl$", r".+\.asm$", r".+\.hxx$", r".+\.hpp$", r".+\.s$", r".+\.S$",
       # Scripts
       r".+\.js$", r".+\.py$", r".+\.sh$", r".+\.rb$", r".+\.pl$", r".+\.pm$",
-      # No extension at all, note that ALL CAPS files are black listed in
-      # DEFAULT_BLACK_LIST below.
-      r"(^|.*?[\\\/])[^.]+$",
       # Other
       r".+\.java$", r".+\.mk$", r".+\.am$",
   )
