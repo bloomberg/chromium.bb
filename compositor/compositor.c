@@ -751,7 +751,7 @@ wlsc_output_repaint(struct wlsc_output *output)
 	struct wlsc_compositor *ec = output->compositor;
 	struct wlsc_surface *es;
 	struct wlsc_input_device *device;
-	pixman_region32_t clip, new_damage, total_damage, region;
+	pixman_region32_t clip, new_damage, total_damage, region, opaque;
 
 	output->prepare_render(output);
 
@@ -825,17 +825,21 @@ wlsc_output_repaint(struct wlsc_output *output)
 			glClear(GL_COLOR_BUFFER_BIT);
 		wlsc_surface_draw(es, output, &total_damage);
 	} else {
-		glUseProgram(ec->texture_shader.program);
-		wl_list_for_each_reverse(es, &ec->surface_list, link) {
-			if (ec->overlay == es)
-				continue;
+		pixman_region32_init(&opaque);
+		wl_list_for_each(es, &ec->surface_list, link) {
+			pixman_region32_subtract(&es->damage, &total_damage, &opaque);
+			if (es->visual == &ec->compositor.rgb_visual)
+				pixman_region32_union_rect(&opaque, &opaque,
+							   es->x, es->y, es->width, es->height);
+		}
+		pixman_region32_fini(&opaque);
 
-			wlsc_surface_draw(es, output, &total_damage);
+		wl_list_for_each_reverse(es, &ec->surface_list, link) {
+			wlsc_surface_draw(es, output, &es->damage);
+			pixman_region32_fini(&es->damage);
+			pixman_region32_init(&es->damage);
 		}
 	}
-
-	if (ec->overlay)
-		wlsc_surface_draw(ec->overlay, output, &total_damage);
 
 	if (ec->fade.spring.current > 0.001)
 		fade_output(output, ec->fade.spring.current, &total_damage);
