@@ -254,6 +254,8 @@ wlsc_surface_create(struct wlsc_compositor *compositor,
 
 	surface->buffer = NULL;
 
+	pixman_region32_init(&surface->damage);
+
 	surface->buffer_destroy_listener.func = surface_handle_buffer_destroy;
 	wl_list_init(&surface->buffer_destroy_listener.link);
 
@@ -269,8 +271,8 @@ wlsc_surface_damage_rectangle(struct wlsc_surface *surface,
 {
 	struct wlsc_compositor *compositor = surface->compositor;
 
-	pixman_region32_union_rect(&compositor->damage_region,
-				   &compositor->damage_region,
+	pixman_region32_union_rect(&surface->damage,
+				   &surface->damage,
 				   surface->x + x, surface->y + y,
 				   width, height);
 	wlsc_compositor_schedule_repaint(compositor);
@@ -669,8 +671,8 @@ wlsc_output_damage(struct wlsc_output *output)
 {
 	struct wlsc_compositor *compositor = output->compositor;
 
-	pixman_region32_union(&compositor->damage_region,
-			      &compositor->damage_region, &output->region);
+	pixman_region32_union(&compositor->damage,
+			      &compositor->damage, &output->region);
 	wlsc_compositor_schedule_repaint(compositor);
 }
 
@@ -743,12 +745,13 @@ wlsc_output_repaint(struct wlsc_output *output)
 			   1, GL_FALSE, output->matrix.d);
 	glUniform1i(ec->texture_shader.tex_uniform, 0);
 
+	wl_list_for_each(es, &ec->surface_list, link)
+		pixman_region32_union(&ec->damage, &ec->damage, &es->damage);
+
 	pixman_region32_init(&new_damage);
 	pixman_region32_init(&total_damage);
-	pixman_region32_intersect(&new_damage,
-				  &ec->damage_region, &output->region);
-	pixman_region32_subtract(&ec->damage_region,
-				 &ec->damage_region, &new_damage);
+	pixman_region32_intersect(&new_damage, &ec->damage, &output->region);
+	pixman_region32_subtract(&ec->damage, &ec->damage, &new_damage);
 	pixman_region32_union(&total_damage, &new_damage,
 			      &output->previous_damage_region);
 	pixman_region32_copy(&output->previous_damage_region, &new_damage);
@@ -775,9 +778,7 @@ wlsc_output_repaint(struct wlsc_output *output)
 	    output->prepare_scanout_surface(output, es) == 0) {
 		/* We're drawing nothing now,
 		 * draw the damaged regions later. */
-		pixman_region32_union(&ec->damage_region,
-				      &ec->damage_region,
-				      &total_damage);
+		pixman_region32_union(&ec->damage, &ec->damage, &total_damage);
 
 		output->scanout_buffer = es->buffer;
 		output->scanout_buffer->busy_count++;
@@ -1716,8 +1717,7 @@ wlsc_output_move(struct wlsc_output *output, int x, int y)
 			  2.0 / output->current->width,
 			  flip * 2.0 / output->current->height, 1);
 
-	pixman_region32_union(&c->damage_region,
-			      &c->damage_region, &output->region);
+	pixman_region32_union(&c->damage, &c->damage, &output->region);
 }
 
 WL_EXPORT void
@@ -1873,7 +1873,7 @@ wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 	ec->idle_source = wl_event_loop_add_timer(loop, idle_handler, ec);
 	wl_event_source_timer_update(ec->idle_source, option_idle_time * 1000);
 
-	pixman_region32_init(&ec->damage_region);
+	pixman_region32_init(&ec->damage);
 	wlsc_compositor_schedule_repaint(ec);
 
 	return 0;

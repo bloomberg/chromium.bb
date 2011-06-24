@@ -192,7 +192,7 @@ struct wlsc_compositor {
 
 	/* Repaint state. */
 	struct timespec previous_swap;
-	pixman_region32_t damage_region;
+	pixman_region32_t damage;
 	struct wl_array vertices, indices;
 
 	struct wlsc_surface *overlay;
@@ -237,6 +237,7 @@ struct wlsc_surface {
 	struct wl_surface surface;
 	struct wlsc_compositor *compositor;
 	GLuint texture, saved_texture;
+	pixman_region32_t damage;
 	int32_t x, y, width, height;
 	int32_t pitch;
 	int32_t saved_x, saved_y;
