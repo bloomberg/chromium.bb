@@ -227,7 +227,8 @@ Browser::Browser(Type type, Profile* profile)
       pending_web_app_action_(NONE),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           tab_restore_service_delegate_(
-              new BrowserTabRestoreServiceDelegate(this))) {
+              new BrowserTabRestoreServiceDelegate(this))),
+      bookmark_bar_state_(BookmarkBar::HIDDEN) {
   registrar_.Add(this, NotificationType::SSL_VISIBLE_STATE_CHANGED,
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_UPDATE_DISABLED,
@@ -243,6 +244,8 @@ Browser::Browser(Type type, Profile* profile)
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::TAB_CONTENT_SETTINGS_CHANGED,
+                 NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
                  NotificationService::AllSources());
 
   // Need to know when to alert the user of theme install delay.
@@ -302,6 +305,8 @@ Browser::Browser(Type type, Profile* profile)
   // Make sure TabFinder has been created. This does nothing if TabFinder is
   // not enabled.
   TabFinder::GetInstance();
+
+  UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_INIT);
 }
 
 Browser::~Browser() {
@@ -2955,6 +2960,8 @@ void Browser::ActiveTabChanged(TabContentsWrapper* old_contents,
     session_service->SetSelectedTabInWindow(
         session_id(), tab_handler_->GetTabStripModel()->active_index());
   }
+
+  UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_SWITCH);
 }
 
 void Browser::TabMoved(TabContentsWrapper* contents,
@@ -3279,10 +3286,6 @@ void Browser::ConvertContentsToApplication(TabContents* contents) {
   app_browser->window()->Show();
 }
 
-bool Browser::ShouldDisplayURLField() {
-  return !IsApplication();
-}
-
 void Browser::BeforeUnloadFired(TabContents* tab,
                                 bool proceed,
                                 bool* proceed_to_fire_unload) {
@@ -3407,27 +3410,14 @@ void Browser::WorkerCrashed(TabContents* source) {
       true));
 }
 
-TabContentsDelegate::MainFrameCommitDetails*
-    Browser::CreateMainFrameCommitDetails(TabContents* tab) {
-  if (tab != GetSelectedTabContents())
-    return NULL;
-
-  BrowserMainFrameCommitDetails* details = new BrowserMainFrameCommitDetails;
-  details->bookmark_bar_visible = GetSelectedTabContentsWrapper()->
-      bookmark_tab_helper()->ShouldShowBookmarkBar();
-  return details;  // Caller takes ownership.
+void Browser::DidNavigateMainFramePostCommit(TabContents* tab) {
+  if (tab == GetSelectedTabContents())
+    UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_STATE);
 }
 
-void Browser::DidNavigateMainFramePostCommit(
-    TabContents* tab,
-    const MainFrameCommitDetails& details) {
-  bool visible = static_cast<const BrowserMainFrameCommitDetails&>(details).
-      bookmark_bar_visible;
-  if (tab == GetSelectedTabContents() && visible !=
-      GetSelectedTabContentsWrapper()->bookmark_tab_helper()->
-      ShouldShowBookmarkBar()) {
-    window()->ShelfVisibilityChanged();
-  }
+void Browser::DidNavigateToPendingEntry(TabContents* tab) {
+  if (tab == GetSelectedTabContents())
+    UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_STATE);
 }
 
 content::JavaScriptDialogCreator* Browser::GetJavaScriptDialogCreator() {
@@ -3708,7 +3698,11 @@ void Browser::Observe(NotificationType type,
     }
 
     case NotificationType::INTERSTITIAL_ATTACHED:
-      window()->ShelfVisibilityChanged();
+      UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_STATE);
+      break;
+
+    case NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED:
+      UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_PREF_CHANGE);
       break;
 
     default:
@@ -4701,4 +4695,38 @@ int Browser::GetContentRestrictionsForSelectedTab() {
       content_restrictions |= CONTENT_RESTRICTION_SAVE;
   }
   return content_restrictions;
+}
+
+void Browser::UpdateBookmarkBarState(BookmarkBarStateChangeReason reason) {
+  BookmarkBar::State state;
+  if (profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar) &&
+      profile_->GetPrefs()->GetBoolean(prefs::kEnableBookmarkBar)) {
+    state = BookmarkBar::SHOW;
+  } else {
+    TabContentsWrapper* tab = GetSelectedTabContentsWrapper();
+    if (tab && tab->bookmark_tab_helper()->ShouldShowBookmarkBar())
+      state = BookmarkBar::DETACHED;
+    else
+      state = BookmarkBar::HIDDEN;
+  }
+  if (state == bookmark_bar_state_)
+    return;
+
+  bookmark_bar_state_ = state;
+
+  if (!window_)
+    return;  // This is called from the constructor when window_ is NULL.
+
+  if (reason == BOOKMARK_BAR_STATE_CHANGE_TAB_SWITCH) {
+    // Don't notify BrowserWindow on a tab switch as at the time this is invoked
+    // BrowserWindow hasn't yet switched tabs. The BrowserWindow implementations
+    // end up querying state once they process the tab switch.
+    return;
+  }
+
+  BookmarkBar::AnimateChangeType animate_type =
+      (reason == BOOKMARK_BAR_STATE_CHANGE_PREF_CHANGE) ?
+      BookmarkBar::ANIMATE_STATE_CHANGE :
+      BookmarkBar::DONT_ANIMATE_STATE_CHANGE;
+  window_->BookmarkBarStateChanged(animate_type);
 }

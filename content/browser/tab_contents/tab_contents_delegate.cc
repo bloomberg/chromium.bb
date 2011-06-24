@@ -186,14 +186,11 @@ void TabContentsDelegate::RendererResponsive(TabContents* source) {
 void TabContentsDelegate::WorkerCrashed(TabContents* source) {
 }
 
-TabContentsDelegate::MainFrameCommitDetails*
-TabContentsDelegate::CreateMainFrameCommitDetails(TabContents* tab) {
-  return NULL;
+void TabContentsDelegate::DidNavigateMainFramePostCommit(
+    TabContents* tab) {
 }
 
-void TabContentsDelegate::DidNavigateMainFramePostCommit(
-    TabContents* tab,
-    const MainFrameCommitDetails& details) {
+void TabContentsDelegate::DidNavigateToPendingEntry(TabContents* tab) {
 }
 
 // A stubbed-out version of JavaScriptDialogCreator that doesn't do anything.

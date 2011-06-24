@@ -367,9 +367,6 @@ void BrowserWindowGtk::Init() {
   // Set the initial background color of widgets.
   SetBackgroundColor();
   HideUnsupportedWindowFeatures();
-
-  registrar_.Add(this, NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
-                 NotificationService::AllSources());
 }
 
 gboolean BrowserWindowGtk::OnCustomFrameExpose(GtkWidget* widget,
@@ -737,8 +734,10 @@ void BrowserWindowGtk::UpdateTitleBar() {
     titlebar_->UpdateTitleAndIcon();
 }
 
-void BrowserWindowGtk::ShelfVisibilityChanged() {
-  MaybeShowBookmarkBar(false);
+void BrowserWindowGtk::BookmarkBarStateChanged(
+    BookmarkBar::AnimateChangeType change_type) {
+  // TODO(sky): fix other sites like on views.
+  MaybeShowBookmarkBar(change_type == BookmarkBar::ANIMATE_STATE_CHANGE);
 }
 
 void BrowserWindowGtk::UpdateDevTools() {
@@ -1140,10 +1139,6 @@ void BrowserWindowGtk::Observe(NotificationType type,
                                const NotificationSource& source,
                                const NotificationDetails& details) {
   switch (type.value) {
-    case NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED:
-      MaybeShowBookmarkBar(true);
-      break;
-
     case NotificationType::PREF_CHANGED: {
       std::string* pref_name = Details<std::string>(details).ptr();
       if (*pref_name == prefs::kUseCustomChromeFrame) {

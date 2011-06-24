@@ -553,6 +553,9 @@ bool TabContents::NavigateToEntry(
                     observers_,
                     NavigateToPendingEntry(entry.url(), reload_type));
 
+  if (delegate_)
+    delegate_->DidNavigateToPendingEntry(this);
+
   return true;
 }
 
@@ -1313,13 +1316,8 @@ void TabContents::RenderViewDeleted(RenderViewHost* rvh) {
 
 void TabContents::DidNavigate(RenderViewHost* rvh,
                               const ViewHostMsg_FrameNavigate_Params& params) {
-  scoped_ptr<TabContentsDelegate::MainFrameCommitDetails> commit_details;
-
-  if (PageTransition::IsMainFrame(params.transition)) {
-    if (delegate())
-      commit_details.reset(delegate()->CreateMainFrameCommitDetails(this));
+  if (PageTransition::IsMainFrame(params.transition))
     render_manager_.DidNavigateMainFrame(rvh);
-  }
 
   // Update the site of the SiteInstance if it doesn't have one yet.
   if (!GetSiteInstance()->has_site())
@@ -1374,8 +1372,8 @@ void TabContents::DidNavigate(RenderViewHost* rvh,
   // Run post-commit tasks.
   if (details.is_main_frame) {
     DidNavigateMainFramePostCommit(details, params);
-    if (delegate() && commit_details.get())
-      delegate()->DidNavigateMainFramePostCommit(this, *commit_details);
+    if (delegate())
+      delegate()->DidNavigateMainFramePostCommit(this);
   }
   DidNavigateAnyFramePostCommit(rvh, details, params);
 }

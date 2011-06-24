@@ -2179,6 +2179,7 @@
         'browser/ui/blocked_content/blocked_content_tab_helper.h',
         'browser/ui/blocked_content/blocked_content_tab_helper_delegate.cc',
         'browser/ui/blocked_content/blocked_content_tab_helper_delegate.h',
+        'browser/ui/bookmarks/bookmark_bar.h',
         'browser/ui/bookmarks/bookmark_tab_helper.cc',
         'browser/ui/bookmarks/bookmark_tab_helper.h',
         'browser/ui/bookmarks/bookmark_tab_helper_delegate.cc',

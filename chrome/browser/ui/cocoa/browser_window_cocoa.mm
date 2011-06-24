@@ -174,11 +174,9 @@ void BrowserWindowCocoa::UpdateTitleBar() {
                 modes:[NSArray arrayWithObject:NSDefaultRunLoopMode]];
 }
 
-void BrowserWindowCocoa::ShelfVisibilityChanged() {
-  // Mac doesn't yet support showing the bookmark bar at a different size on
-  // the new tab page. When it does, this method should attempt to relayout the
-  // bookmark bar/extension shelf as their preferred height may have changed.
-  // http://crbug.com/43346
+void BrowserWindowCocoa::BookmarkBarStateChanged(
+    BookmarkBar::AnimateChangeType change_type) {
+  // TODO: route changes to state through this.
 }
 
 void BrowserWindowCocoa::UpdateDevTools() {

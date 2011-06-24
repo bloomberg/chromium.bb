@@ -107,7 +107,8 @@ void Panel::UpdateTitleBar() {
   native_panel_->UpdatePanelTitleBar();
 }
 
-void Panel::ShelfVisibilityChanged() {
+void Panel::BookmarkBarStateChanged(
+    BookmarkBar::AnimateChangeType change_type) {
   NOTIMPLEMENTED();
 }
 

@@ -717,8 +717,14 @@ void BrowserView::UpdateTitleBar() {
     frame_->UpdateWindowIcon();
 }
 
-void BrowserView::ShelfVisibilityChanged() {
-  Layout();
+void BrowserView::BookmarkBarStateChanged(
+    BookmarkBar::AnimateChangeType change_type) {
+  if (bookmark_bar_view_.get()) {
+    bookmark_bar_view_->SetBookmarkBarState(
+        browser_->bookmark_bar_state(), change_type);
+  }
+  if (MaybeShowBookmarkBar(browser_->GetSelectedTabContentsWrapper()))
+    Layout();
 }
 
 void BrowserView::UpdateDevTools() {
@@ -1369,13 +1375,6 @@ void BrowserView::Observe(NotificationType type,
                           const NotificationSource& source,
                           const NotificationDetails& details) {
   switch (type.value) {
-    case NotificationType::PREF_CHANGED:
-      if (*Details<std::string>(details).ptr() == prefs::kShowBookmarkBar &&
-          MaybeShowBookmarkBar(browser_->GetSelectedTabContentsWrapper())) {
-        Layout();
-      }
-      break;
-
     case NotificationType::SIDEBAR_CHANGED:
       if (Details<SidebarContainer>(details)->tab_contents() ==
           browser_->GetSelectedTabContents()) {
@@ -2045,8 +2044,8 @@ void BrowserView::LayoutStatusBubble() {
 
 bool BrowserView::MaybeShowBookmarkBar(TabContentsWrapper* contents) {
   views::View* new_bookmark_bar_view = NULL;
-  if (browser_->SupportsWindowFeature(Browser::FEATURE_BOOKMARKBAR)
-      && contents) {
+  if (browser_->SupportsWindowFeature(Browser::FEATURE_BOOKMARKBAR) &&
+      contents) {
     if (!bookmark_bar_view_.get()) {
       bookmark_bar_view_.reset(new BookmarkBarView(contents->profile(),
                                                    browser_.get()));
@@ -2054,6 +2053,9 @@ bool BrowserView::MaybeShowBookmarkBar(TabContentsWrapper* contents) {
       bookmark_bar_view_->set_background(
           new BookmarkExtensionBackground(this, bookmark_bar_view_.get(),
                                           browser_.get()));
+      bookmark_bar_view_->SetBookmarkBarState(
+          browser_->bookmark_bar_state(),
+          BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
     } else {
       bookmark_bar_view_->SetProfile(contents->profile());
     }
@@ -2564,6 +2566,11 @@ void BrowserView::ProcessTabSelected(TabContentsWrapper* new_contents,
   if (change_tab_contents)
     contents_container_->ChangeTabContents(NULL);
   infobar_container_->ChangeTabContents(new_contents);
+  if (bookmark_bar_view_.get()) {
+    bookmark_bar_view_->SetBookmarkBarState(
+        browser_->bookmark_bar_state(),
+        BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
+  }
   UpdateUIForContents(new_contents);
   if (change_tab_contents)
     contents_container_->ChangeTabContents(new_contents->tab_contents());

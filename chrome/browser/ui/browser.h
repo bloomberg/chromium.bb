@@ -29,6 +29,7 @@
 #include "chrome/browser/tabs/tab_strip_model_delegate.h"  // TODO(beng): remove
 #include "chrome/browser/tabs/tab_strip_model_observer.h"  // TODO(beng): remove
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper_delegate.h"
+#include "chrome/browser/ui/bookmarks/bookmark_bar.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper_delegate.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/download/download_tab_helper_delegate.h"
@@ -221,6 +222,9 @@ class Browser : public TabHandlerDelegate,
 
   // Returns true if a FindBarController exists for this browser.
   bool HasFindBarController() const;
+
+  // Returns the state of the bookmark bar.
+  BookmarkBar::State bookmark_bar_state() const { return bookmark_bar_state_; }
 
   // Setters /////////////////////////////////////////////////////////////////
 
@@ -786,10 +790,19 @@ class Browser : public TabHandlerDelegate,
     DETACH_TYPE_EMPTY
   };
 
-  struct BrowserMainFrameCommitDetails : public MainFrameCommitDetails {
-    virtual ~BrowserMainFrameCommitDetails() {}
+  // Describes where the bookmark bar state change originated from.
+  enum BookmarkBarStateChangeReason {
+    // From the constructor.
+    BOOKMARK_BAR_STATE_CHANGE_INIT,
 
-    bool bookmark_bar_visible;
+    // Change is the result of the active tab changing.
+    BOOKMARK_BAR_STATE_CHANGE_TAB_SWITCH,
+
+    // Change is the result of the bookmark bar pref changing.
+    BOOKMARK_BAR_STATE_CHANGE_PREF_CHANGE,
+
+    // Change is the result of a state change in the active tab.
+    BOOKMARK_BAR_STATE_CHANGE_TAB_STATE,
   };
 
   // Overridden from TabContentsDelegate:
@@ -797,64 +810,64 @@ class Browser : public TabHandlerDelegate,
                               const GURL& url,
                               const GURL& referrer,
                               WindowOpenDisposition disposition,
-                              PageTransition::Type transition);
+                              PageTransition::Type transition) OVERRIDE;
   virtual void NavigationStateChanged(const TabContents* source,
-                                      unsigned changed_flags);
+                                      unsigned changed_flags) OVERRIDE;
   virtual void AddNewContents(TabContents* source,
                               TabContents* new_contents,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_pos,
-                              bool user_gesture);
-  virtual void ActivateContents(TabContents* contents);
-  virtual void DeactivateContents(TabContents* contents);
-  virtual void LoadingStateChanged(TabContents* source);
-  virtual void CloseContents(TabContents* source);
-  virtual void MoveContents(TabContents* source, const gfx::Rect& pos);
-  virtual void DetachContents(TabContents* source);
-  virtual bool IsPopupOrPanel(const TabContents* source) const;
+                              bool user_gesture) OVERRIDE;
+  virtual void ActivateContents(TabContents* contents) OVERRIDE;
+  virtual void DeactivateContents(TabContents* contents) OVERRIDE;
+  virtual void LoadingStateChanged(TabContents* source) OVERRIDE;
+  virtual void CloseContents(TabContents* source) OVERRIDE;
+  virtual void MoveContents(TabContents* source, const gfx::Rect& pos) OVERRIDE;
+  virtual void DetachContents(TabContents* source) OVERRIDE;
+  virtual bool IsPopupOrPanel(const TabContents* source) const OVERRIDE;
   virtual bool CanReloadContents(TabContents* source) const;
-  virtual void UpdateTargetURL(TabContents* source, const GURL& url);
+  virtual void UpdateTargetURL(TabContents* source, const GURL& url) OVERRIDE;
   virtual void ContentsMouseEvent(
-      TabContents* source, const gfx::Point& location, bool motion);
-  virtual void ContentsZoomChange(bool zoom_in);
-  virtual void SetTabContentBlocked(TabContents* contents, bool blocked);
-  virtual void TabContentsFocused(TabContents* tab_content);
-  virtual bool TakeFocus(bool reverse);
-  virtual bool IsApplication() const;
-  virtual void ConvertContentsToApplication(TabContents* source);
-  virtual bool ShouldDisplayURLField();
+      TabContents* source, const gfx::Point& location, bool motion) OVERRIDE;
+  virtual void ContentsZoomChange(bool zoom_in) OVERRIDE;
+  virtual void SetTabContentBlocked(TabContents* contents,
+                                    bool blocked) OVERRIDE;
+  virtual void TabContentsFocused(TabContents* tab_content) OVERRIDE;
+  virtual bool TakeFocus(bool reverse) OVERRIDE;
+  virtual bool IsApplication() const OVERRIDE;
+  virtual void ConvertContentsToApplication(TabContents* source) OVERRIDE;
   virtual void BeforeUnloadFired(TabContents* source,
                                  bool proceed,
-                                 bool* proceed_to_fire_unload);
-  virtual void SetFocusToLocationBar(bool select_all);
-  virtual void RenderWidgetShowing();
-  virtual int GetExtraRenderViewHeight() const;
+                                 bool* proceed_to_fire_unload) OVERRIDE;
+  virtual void SetFocusToLocationBar(bool select_all) OVERRIDE;
+  virtual void RenderWidgetShowing() OVERRIDE;
+  virtual int GetExtraRenderViewHeight() const OVERRIDE;
   virtual void ShowPageInfo(Profile* profile,
                             const GURL& url,
                             const NavigationEntry::SSLStatus& ssl,
-                            bool show_history);
-  virtual void ViewSourceForTab(TabContents* source, const GURL& page_url);
-  virtual void ViewSourceForFrame(TabContents* source,
-                                  const GURL& frame_url,
-                                  const std::string& frame_content_state);
+                            bool show_history) OVERRIDE;
+  virtual void ViewSourceForTab(TabContents* source,
+                                const GURL& page_url) OVERRIDE;
+  virtual void ViewSourceForFrame(
+      TabContents* source,
+      const GURL& frame_url,
+      const std::string& frame_content_state) OVERRIDE;
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
-                                        bool* is_keyboard_shortcut);
-  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
-  virtual void ShowRepostFormWarningDialog(TabContents* tab_contents);
+                                      bool* is_keyboard_shortcut) OVERRIDE;
+  virtual void HandleKeyboardEvent(
+      const NativeWebKeyboardEvent& event) OVERRIDE;
+  virtual void ShowRepostFormWarningDialog(TabContents* tab_contents) OVERRIDE;
   virtual bool ShouldAddNavigationToHistory(
       const history::HistoryAddPageArgs& add_page_args,
-      NavigationType::Type navigation_type);
-  virtual void ContentRestrictionsChanged(TabContents* source);
-  virtual void RendererUnresponsive(TabContents* source);
-  virtual void RendererResponsive(TabContents* source);
-  virtual void WorkerCrashed(TabContents* source);
-  virtual MainFrameCommitDetails* CreateMainFrameCommitDetails(
-      TabContents* tab);
-  virtual void DidNavigateMainFramePostCommit(
-      TabContents* tab,
-      const MainFrameCommitDetails& details);
-  virtual content::JavaScriptDialogCreator* GetJavaScriptDialogCreator()
-      OVERRIDE;
+      NavigationType::Type navigation_type) OVERRIDE;
+  virtual void ContentRestrictionsChanged(TabContents* source) OVERRIDE;
+  virtual void RendererUnresponsive(TabContents* source) OVERRIDE;
+  virtual void RendererResponsive(TabContents* source) OVERRIDE;
+  virtual void WorkerCrashed(TabContents* source) OVERRIDE;
+  virtual void DidNavigateMainFramePostCommit(TabContents* tab) OVERRIDE;
+  virtual void DidNavigateToPendingEntry(TabContents* tab) OVERRIDE;
+  virtual content::JavaScriptDialogCreator*
+  GetJavaScriptDialogCreator() OVERRIDE;
 
   // Overridden from TabContentsWrapperDelegate:
   virtual void OnDidGetApplicationInfo(TabContentsWrapper* source,
@@ -1105,6 +1118,10 @@ class Browser : public TabHandlerDelegate,
   // restrictions active.
   int GetContentRestrictionsForSelectedTab();
 
+  // Resets |bookmark_bar_state_| based on the active tab. Notifies the
+  // BrowserWindow if necessary.
+  void UpdateBookmarkBarState(BookmarkBarStateChangeReason reason);
+
   // Data members /////////////////////////////////////////////////////////////
 
   NotificationRegistrar registrar_;
@@ -1241,6 +1258,8 @@ class Browser : public TabHandlerDelegate,
 
   scoped_ptr<InstantController> instant_;
   scoped_ptr<InstantUnloadHandler> instant_unload_handler_;
+
+  BookmarkBar::State bookmark_bar_state_;
 
   DISALLOW_COPY_AND_ASSIGN(Browser);
 };

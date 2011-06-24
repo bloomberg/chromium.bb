@@ -17,7 +17,6 @@
 #include "chrome/browser/tab_contents/infobar_container.h"
 #include "chrome/browser/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "content/common/notification_registrar.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/x/active_window_watcher_x.h"
 #include "ui/base/x/x11_util.h"
@@ -69,7 +68,8 @@ class BrowserWindowGtk : public BrowserWindow,
   virtual StatusBubble* GetStatusBubble();
   virtual void ToolbarSizeChanged(bool is_animating);
   virtual void UpdateTitleBar();
-  virtual void ShelfVisibilityChanged();
+  virtual void BookmarkBarStateChanged(
+      BookmarkBar::AnimateChangeType change_type);
   virtual void UpdateDevTools();
   virtual void UpdateLoadingAnimations(bool should_animate);
   virtual void SetStarredState(bool is_starred);
@@ -420,8 +420,6 @@ class BrowserWindowGtk : public BrowserWindow,
   // Determine whether we use should default to native decorations or the custom
   // frame based on the currently-running window manager.
   static bool GetCustomFramePrefDefault();
-
-  NotificationRegistrar registrar_;
 
   // The position and size of the current window.
   gfx::Rect bounds_;

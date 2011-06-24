@@ -45,7 +45,8 @@ class BrowserWindowCocoa : public BrowserWindow,
   virtual StatusBubble* GetStatusBubble();
   virtual void ToolbarSizeChanged(bool is_animating);
   virtual void UpdateTitleBar();
-  virtual void ShelfVisibilityChanged();
+  virtual void BookmarkBarStateChanged(
+      BookmarkBar::AnimateChangeType change_type);
   virtual void UpdateDevTools();
   virtual void UpdateLoadingAnimations(bool should_animate);
   virtual void SetStarredState(bool is_starred);

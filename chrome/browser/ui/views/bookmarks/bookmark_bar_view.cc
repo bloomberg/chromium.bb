@@ -368,7 +368,9 @@ BookmarkBarView::BookmarkBarView(Profile* profile, Browser* browser)
       bookmarks_separator_view_(NULL),
       browser_(browser),
       infobar_visible_(false),
-      throbbing_view_(NULL) {
+      throbbing_view_(NULL),
+      bookmark_bar_state_(BookmarkBar::SHOW),
+      animating_detached_(false) {
   if (profile->GetProfileSyncService()) {
     // Obtain a pointer to the profile sync service and add our instance as an
     // observer.
@@ -380,7 +382,7 @@ BookmarkBarView::BookmarkBarView(Profile* profile, Browser* browser)
   Init();
   SetProfile(profile);
 
-  size_animation_->Reset(IsAlwaysShown() ? 1 : 0);
+  size_animation_->Reset(1);
 }
 
 BookmarkBarView::~BookmarkBarView() {
@@ -420,8 +422,6 @@ void BookmarkBarView::SetProfile(Profile* profile) {
   Source<Profile> ns_source(profile_->GetOriginalProfile());
   registrar_.Add(this, NotificationType::BOOKMARK_BUBBLE_SHOWN, ns_source);
   registrar_.Add(this, NotificationType::BOOKMARK_BUBBLE_HIDDEN, ns_source);
-  registrar_.Add(this, NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
-                 NotificationService::AllSources());
 
   // Remove any existing bookmark buttons.
   while (GetBookmarkButtonCount())
@@ -441,35 +441,40 @@ void BookmarkBarView::SetPageNavigator(PageNavigator* navigator) {
   page_navigator_ = navigator;
 }
 
+void BookmarkBarView::SetBookmarkBarState(
+    BookmarkBar::State state,
+    BookmarkBar::AnimateChangeType animate_type) {
+  if (animate_type == BookmarkBar::ANIMATE_STATE_CHANGE) {
+    animating_detached_ = (state == BookmarkBar::DETACHED ||
+                           bookmark_bar_state_ == BookmarkBar::DETACHED);
+    if (state == BookmarkBar::SHOW)
+      size_animation_->Show();
+    else
+      size_animation_->Hide();
+  } else {
+    size_animation_->Reset(state == BookmarkBar::SHOW ? 1 : 0);
+  }
+  bookmark_bar_state_ = state;
+}
+
 void BookmarkBarView::OnFullscreenToggled(bool fullscreen) {
   if (!fullscreen)
-    size_animation_->Reset(IsAlwaysShown() ? 1 : 0);
-  else if (IsAlwaysShown())
+    size_animation_->Reset(bookmark_bar_state_ == BookmarkBar::SHOW ? 1 : 0);
+  else if (bookmark_bar_state_ == BookmarkBar::SHOW)
     size_animation_->Reset(0);
 }
 
-bool BookmarkBarView::IsAlwaysShown() const {
-  return (profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar) &&
-          profile_->GetPrefs()->GetBoolean(prefs::kEnableBookmarkBar));
-}
-
-bool BookmarkBarView::OnNewTabPage() const {
-  return (browser_ && browser_->GetSelectedTabContentsWrapper() &&
-          browser_->GetSelectedTabContentsWrapper()->bookmark_tab_helper()->
-          ShouldShowBookmarkBar());
-}
-
 int BookmarkBarView::GetToolbarOverlap(bool return_max) const {
-  // When not on the New Tab Page, always overlap by the full amount.
-  if (return_max || !OnNewTabPage())
+  // When not detached, always overlap by the full amount.
+  if (return_max || bookmark_bar_state_ != BookmarkBar::DETACHED)
     return kToolbarOverlap;
-  // When on the New Tab Page with an infobar, overlap by 0 whenever the infobar
+  // When detached with an infobar, overlap by 0 whenever the infobar
   // is above us (i.e. when we're detached), since drawing over the infobar
   // looks weird.
   if (IsDetached() && infobar_visible_)
     return 0;
-  // When on the New Tab Page with no infobar, animate the overlap between the
-  // attached and detached states.
+  // When detached with no infobar, animate the overlap between the attached and
+  // detached states.
   return static_cast<int>(kToolbarOverlap * size_animation_->GetCurrentValue());
 }
 
@@ -593,10 +598,8 @@ std::wstring BookmarkBarView::CreateToolTipForURLAndTitle(
 }
 
 bool BookmarkBarView::IsDetached() const {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewTabPage4))
-    return false;
-
-  return OnNewTabPage() && (size_animation_->GetCurrentValue() != 1);
+  return (bookmark_bar_state_ == BookmarkBar::DETACHED) ||
+      (animating_detached_ && size_animation_->is_animating());
 }
 
 double BookmarkBarView::GetAnimationValue() const {
@@ -617,7 +620,7 @@ gfx::Size BookmarkBarView::GetMinimumSize() {
   // Bookmarks" folder, along with appropriate margins and button padding.
   int width = kLeftMargin;
 
-  if (OnNewTabPage()) {
+  if (bookmark_bar_state_ == BookmarkBar::DETACHED) {
     double current_state = 1 - size_animation_->GetCurrentValue();
     width += 2 * static_cast<int>(kNewtabHorizontalPadding * current_state);
   }
@@ -1002,11 +1005,12 @@ void BookmarkBarView::WriteDragDataForView(View* sender,
 int BookmarkBarView::GetDragOperationsForView(View* sender,
                                               const gfx::Point& p) {
   if (size_animation_->is_animating() ||
-      (size_animation_->GetCurrentValue() == 0 && !OnNewTabPage())) {
-    // Don't let the user drag while animating open or we're closed (and not on
-    // the new tab page, on the new tab page size_animation_ is always 0). This
-    // typically is only hit if the user does something to inadvertanty trigger
-    // dnd, such as pressing the mouse and hitting control-b.
+      (size_animation_->GetCurrentValue() == 0 &&
+       bookmark_bar_state_ != BookmarkBar::DETACHED)) {
+    // Don't let the user drag while animating open or we're closed (and not
+    // detached, when detached size_animation_ is always 0). This typically is
+    // only hit if the user does something to inadvertently trigger DnD such as
+    // pressing the mouse and hitting control-b.
     return ui::DragDropTypes::DRAG_NONE;
   }
 
@@ -1145,14 +1149,6 @@ void BookmarkBarView::Observe(NotificationType type,
                               const NotificationDetails& details) {
   DCHECK(profile_);
   switch (type.value) {
-    case NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED:
-      if (IsAlwaysShown()) {
-        size_animation_->Show();
-      } else {
-        size_animation_->Hide();
-      }
-      break;
-
     case NotificationType::BOOKMARK_BUBBLE_SHOWN: {
       StopThrobbing(true);
       GURL url = *(Details<GURL>(details).ptr());
@@ -1626,7 +1622,7 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
   int height = -top_margin - kBottomMargin;
   int separator_margin = kSeparatorMargin;
 
-  if (OnNewTabPage()) {
+  if (IsDetached()) {
     double current_state = 1 - size_animation_->GetCurrentValue();
     x += static_cast<int>(kNewtabHorizontalPadding * current_state);
     y += static_cast<int>(kNewtabVerticalPadding * current_state);
@@ -1746,7 +1742,7 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
   if (compute_bounds_only) {
     x += kRightMargin;
     prefsize.set_width(x);
-    if (OnNewTabPage()) {
+    if (IsDetached()) {
       x += static_cast<int>(
           kNewtabHorizontalPadding * (1 - size_animation_->GetCurrentValue()));
       prefsize.set_height(

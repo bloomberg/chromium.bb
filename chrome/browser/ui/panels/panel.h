@@ -48,7 +48,8 @@ class Panel : public BrowserWindow {
   virtual StatusBubble* GetStatusBubble() OVERRIDE;
   virtual void ToolbarSizeChanged(bool is_animating) OVERRIDE;
   virtual void UpdateTitleBar() OVERRIDE;
-  virtual void ShelfVisibilityChanged() OVERRIDE;
+  virtual void BookmarkBarStateChanged(
+      BookmarkBar::AnimateChangeType change_type) OVERRIDE;
   virtual void UpdateDevTools() OVERRIDE;
   virtual void UpdateLoadingAnimations(bool should_animate) OVERRIDE;
   virtual void SetStarredState(bool is_starred) OVERRIDE;

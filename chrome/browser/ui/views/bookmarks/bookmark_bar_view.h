@@ -14,6 +14,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/ui/bookmarks/bookmark_bar.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_instructions_view.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_menu_controller_views.h"
 #include "chrome/browser/ui/views/detachable_toolbar_view.h"
@@ -89,14 +90,12 @@ class BookmarkBarView : public DetachableToolbarView,
     infobar_visible_ = infobar_visible;
   }
 
+  // Changes the state of the bookmark bar.
+  void SetBookmarkBarState(BookmarkBar::State state,
+                           BookmarkBar::AnimateChangeType animate_type);
+
   // Called when fullscreen mode toggles on or off; this affects our layout.
   void OnFullscreenToggled(bool fullscreen);
-
-  // Returns true if the bookmarks bar preference is set to 'always show'.
-  bool IsAlwaysShown() const;
-
-  // True if we're on a page where the bookmarks bar is always visible.
-  bool OnNewTabPage() const;
 
   // How much we want the bookmark bar to overlap the toolbar.  If |return_max|
   // is true, we return the maximum overlap rather than the current overlap.
@@ -422,6 +421,11 @@ class BookmarkBarView : public DetachableToolbarView,
   // The visible ancestor is either the other_bookmarked_button_,
   // overflow_button_ or a button on the bar.
   views::CustomButton* throbbing_view_;
+
+  BookmarkBar::State bookmark_bar_state_;
+
+  // Are we animating to or from the detached state?
+  bool animating_detached_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkBarView);
 };
