@@ -42,7 +42,7 @@ env.FilterOut(CCFLAGS=['-Wextra', '-Wswitch-enum', '-Wsign-compare'])
 
 #
 #
-# ncopcode_desc_0
+# ncopcode_desc_o
 #
 # This one source file is shared in two projects so we generate it first
 # to prevent conflicts in compile options.
@@ -155,6 +155,7 @@ ncdecode_tablegen = gen_env.ComponentProgram(
      'ncdecode_sse.c',
      'ncdecodeX87.c',
      'nacl_regsgen.c',
+     'modeled_nacl_inst.c',
      ncopcode_desc_o,
      force_cpp_o,
     ],

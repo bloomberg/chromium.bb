@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /* Captures instructions that are considered illegal in native client.
@@ -186,7 +186,7 @@ static const NaClNameOpcodeSeq kNaClIllegal32OpSeq[] = {
 
 void NaClAddNaClIllegalIfApplicable() {
   Bool is_illegal = FALSE;  /* until proven otherwise. */
-  NaClInst* inst = NaClGetDefInst();
+  NaClModeledInst* inst = NaClGetDefInst();
 
   /* TODO(karl) Once all instructions have been modified to be explicitly
    * marked as illegal, remove the corresponding switch from nc_illegal.c.

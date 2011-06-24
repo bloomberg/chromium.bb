@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -116,7 +116,7 @@ static const NaClNameOpcodeSeq kZeroExtend32Opseq[] = {
 /* Add OperandZeroExtends_v to instruction, if it can hold
  * a 32 bit operand.
  */
-static void AddZeroExtendToOpDestArgs(NaClInst* inst) {
+static void AddZeroExtendToOpDestArgs(NaClModeledInst* inst) {
   if (inst->flags & NACL_IFLAG(OperandSize_v)) {
     int i;
     for (i = 0; i < inst->num_operands; ++i) {

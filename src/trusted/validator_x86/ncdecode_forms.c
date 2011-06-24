@@ -278,7 +278,7 @@ static void NaClSetInstCat(NaClInstCat icat) {
   int visible_count = 0;
   int i;
   int num_ops;
-  NaClInst* inst = NaClGetDefInst();
+  NaClModeledInst* inst = NaClGetDefInst();
   num_ops = inst->num_operands;
   for (i = 0; i < num_ops; ++i) {
     Bool is_visible = FALSE;
@@ -326,7 +326,7 @@ static uint8_t SLOpcode(int16_t val) {
  */
 static Bool NaClNameOpcodeSeqMatchesPrefixByte(
     int* prefix_count,
-    NaClInst* inst,
+    NaClModeledInst* inst,
     const NaClNameOpcodeSeq* name_and_opcode_seq,
     int index) {
   int16_t prefix;
@@ -359,7 +359,7 @@ Bool NaClInInstructionSet(const NaClMnemonic* names,
                           const NaClNameOpcodeSeq* name_and_opcode_seq,
                           size_t name_and_opcode_seq_size) {
   size_t i;
-  NaClInst* inst = NaClGetDefInst();
+  NaClModeledInst* inst = NaClGetDefInst();
 
   /* First handle cases where all instances of an instruction
    * mnemonic is in the set.
@@ -462,7 +462,7 @@ static void NaClOperandForm_Eb() {
    * specified yet, we go ahead and assume the effective operand size of the
    * instructruction as being a byte.
    */
-  NaClInst* inst = NaClGetDefInst();
+  NaClModeledInst* inst = NaClGetDefInst();
   if (inst->flags & (NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) |
                      NACL_IFLAG(OperandSize_o))) {
     NaClDefOp(Eb_Operand, NACL_EMPTY_OPFLAGS);
@@ -562,7 +562,7 @@ static void NaClOperandForm_Gw() {
 
 static void NaClOperandForm_Ib() {
   int i;
-  NaClInst* inst = NaClGetDefInst();
+  NaClModeledInst* inst = NaClGetDefInst();
   /* First look to see if 1st or 2nd instance of an immediate value,
    * since different opcode flags that must be used are different.
    */

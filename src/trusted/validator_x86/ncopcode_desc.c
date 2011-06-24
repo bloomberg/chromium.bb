@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /* Descriptors to model instructions, opcodes, and instruction operands. */
@@ -82,7 +82,7 @@ void NaClIFlagsPrint(struct Gio* f, NaClIFlags flags) {
 /* Returns a string defining bytes of the given prefix that are considered
  * prefix bytes, independent of the opcode.
  */
-static const char* OpcodePrefixBytes(NaClInstPrefix prefix) {
+const char* OpcodePrefixBytes(NaClInstPrefix prefix) {
   switch(prefix) {
     case NoPrefix:
     case Prefix0F:

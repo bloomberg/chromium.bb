@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -102,7 +102,7 @@ static const NaClNameOpcodeSeq kNameSeqSizeDefaultIs64[] = {
 };
 
 void NaClAddSizeDefaultIs64() {
-  NaClInst* inst = NaClGetDefInst();
+  NaClModeledInst* inst = NaClGetDefInst();
   if ((X86_64 == NACL_FLAGS_run_mode) &&
       (NaClOperandSizes(inst) & NACL_IFLAG(OperandSize_o)) &&
       NaClInInstructionSet(kNameSizeDefaultIs64,

@@ -1,4 +1,5 @@
-/* Copyright (c) 2009 The Native Client Authors. All rights reserved.
+/*
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -14,7 +15,7 @@
 #error("This file is not meant for use in the TCB")
 #endif
 
-#include "native_client/src/trusted/validator_x86/ncopcode_desc.h"
+#include "native_client/src/trusted/validator_x86/modeled_nacl_inst.h"
 
 struct NaClSymbolTable;
 
@@ -96,7 +97,7 @@ void NaClDefInst(
  * that modifies the current instruction will invalidate the contents
  * returned by this function.
  */
-NaClInst* NaClGetDefInst();
+NaClModeledInst* NaClGetDefInst();
 
 /* Define an opcode extension for the current instruction, which is
  * a value between 0 and 7, that appears in the modrm byte of the
@@ -145,7 +146,7 @@ void NaClAddOpFormat(uint8_t operand_index, const char* format);
 void NaClRemoveOpFlags(uint8_t operand_index, NaClOpFlags flags);
 
 /* Returns the set of operand size flags defined for the given instruction. */
-NaClIFlags NaClOperandSizes(NaClInst* inst);
+NaClIFlags NaClOperandSizes(NaClModeledInst* inst);
 
 /* Defines one byte opcodes. */
 void NaClDefOneByteInsts(struct NaClSymbolTable* context_st);

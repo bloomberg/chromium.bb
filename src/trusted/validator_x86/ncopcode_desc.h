@@ -161,6 +161,11 @@ const NaClOp* NaClGetInstOperand(const NaClInst* inst,
 /* Print out the given operand structure to the given file. */
 void NaClOpPrint(struct Gio* f, const NaClOp* operand);
 
+/* Returns a string defining bytes of the given prefix that are considered
+ * prefix bytes, independent of the opcode.
+ */
+const char* OpcodePrefixBytes(NaClInstPrefix prefix);
+
 /* Print out the given instruction to the given file. However, always
  * print the value NULL for next_rule, even if the value is non-null. This
  * function should be used to print out an individual opcode (instruction)
