@@ -4861,6 +4861,26 @@
    fun:_ZN16DRTDevToolsAgent4callERKN6WebKit9WebStringE
    fun:_ZN16DRTDevToolsAgent13AsyncCallTask10runIfValidEv
 }
+{
+   bug_87396_a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN10disk_cache11BackendImpl8NewEntryENS_4AddrEPPNS_9EntryImplE
+   fun:_ZN10disk_cache11BackendImpl10MatchEntryERKSsjbNS_4AddrEPb
+   fun:_ZN10disk_cache11BackendImpl13OpenEntryImplERKSs
+   fun:_ZN10disk_cache11BackendImpl13SyncOpenEntryERKSsPPNS_5EntryE
+   fun:_ZN10disk_cache9BackendIO23ExecuteBackendOperationEv
+   fun:_ZN10disk_cache9BackendIO16ExecuteOperationEv
+}
+{
+   bug_87396_b
+   Memcheck:Addr4
+   fun:_ZN10disk_cache11BackendImpl13SyncOpenEntryERKSsPPNS_5EntryE
+   fun:_ZN10disk_cache9BackendIO23ExecuteBackendOperationEv
+   fun:_ZN10disk_cache9BackendIO16ExecuteOperationEv
+   fun:_Z16DispatchToMethodIN10disk_cache9BackendIOEMS1_FvvEEvPT_T0_RK6Tuple0
+   fun:_ZN14RunnableMethodIN10disk_cache9BackendIOEMS1_FvvE6Tuple0E3RunEv
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
