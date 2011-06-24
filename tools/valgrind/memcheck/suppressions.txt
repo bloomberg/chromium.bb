@@ -4898,6 +4898,16 @@
    fun:_ZN4base33DefaultRefCountedThreadSafeTraitsIN7history14HistoryBackendEE8DestructEPKS2_
    fun:_ZNK4base20RefCountedThreadSafeIN7history14HistoryBackendENS_33DefaultRefCountedThreadSafeTraitsIS2_EEE7ReleaseEv
 }
+{
+   bug_87423
+   Memcheck:Cond
+   fun:_ZNK3net15HttpBasicStream23LogNumRttVsBytesMetricsEv
+   fun:_ZN3net22HttpNetworkTransaction18DoReadBodyCompleteEi
+   fun:_ZN3net22HttpNetworkTransaction6DoLoopEi
+   fun:_ZN3net22HttpNetworkTransaction4ReadEPNS_8IOBufferEiP14CallbackRunnerI6Tuple1IiEE
+   fun:_Z15ReadTransactionPN3net15HttpTransactionEPSs
+   fun:_ZN3net73HttpNetworkTransactionTest_ErrorResponseTofHttpsConnectViaHttpsProxy_Test8TestBodyEv
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
