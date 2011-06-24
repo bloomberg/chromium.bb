@@ -1135,7 +1135,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_PopupAccelerators) {
   PopupAcceleratorsTest();
 }
 
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, FAILS_BackspaceInKeywordMode) {
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, BackspaceInKeywordMode) {
   BackspaceInKeywordModeTest();
 }
 
@@ -1190,7 +1190,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, TabMoveCursorToEnd) {
 }
 
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
-                       FAILS_PersistKeywordModeOnTabSwitch) {
+                       PersistKeywordModeOnTabSwitch) {
   PersistKeywordModeOnTabSwitch();
 }
 
@@ -1329,7 +1329,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, FLAKY_PasteReplacingAll) {
 }
 #endif
 
-#if defined(TOOLKIT_VIEWS)
+// TODO(beng): enable on windows once it actually works.
+#if defined(TOOLKIT_VIEWS) && !defined(OS_WIN)
 class OmniboxViewViewsTest : public OmniboxViewTest {
  public:
   OmniboxViewViewsTest() {
