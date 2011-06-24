@@ -177,16 +177,18 @@ void SetTouchDeviceList(std::vector<unsigned int>& devices) {
 
 AcceleratorHandler::AcceleratorHandler() {}
 
+#if defined(TOUCH_UI)
+base::MessagePumpDispatcher::DispatchStatus
+    AcceleratorHandler::Dispatch(XEvent* xev) {
+  return DispatchXEvent(xev) ?
+      base::MessagePumpDispatcher::EVENT_PROCESSED :
+      base::MessagePumpDispatcher::EVENT_IGNORED;
+}
+#else
 bool AcceleratorHandler::Dispatch(GdkEvent* event) {
   gtk_main_do_event(event);
   return true;
 }
-
-base::MessagePumpGlibXDispatcher::DispatchStatus
-    AcceleratorHandler::DispatchX(XEvent* xev) {
-  return DispatchXEvent(xev) ?
-      base::MessagePumpGlibXDispatcher::EVENT_PROCESSED :
-      base::MessagePumpGlibXDispatcher::EVENT_IGNORED;
-}
+#endif
 
 }  // namespace views

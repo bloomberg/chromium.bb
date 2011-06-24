@@ -523,6 +523,9 @@
                  '../base/allocator/allocator.gyp:allocator',
                ],
             }],
+            [ 'touchui==1', {
+              'sources!': [ 'focus/accelerator_handler_gtk_unittest.cc' ],
+            }],
           ],
         },
         ],

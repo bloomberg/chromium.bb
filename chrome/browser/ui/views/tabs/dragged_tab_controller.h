@@ -160,6 +160,8 @@ class DraggedTabController : public TabContentsDelegate,
 #if defined(OS_WIN)
   virtual void WillProcessMessage(const MSG& msg) OVERRIDE;
   virtual void DidProcessMessage(const MSG& msg) OVERRIDE;
+#elif defined(TOUCH_UI)
+  virtual EventStatus WillProcessXEvent(XEvent* xevent) OVERRIDE;
 #elif defined(TOOLKIT_USES_GTK)
   virtual void WillProcessEvent(GdkEvent* event) OVERRIDE;
   virtual void DidProcessEvent(GdkEvent* event) OVERRIDE;

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,12 +37,11 @@ class NestedDispatcherGtk : public MessageLoopForUI::Dispatcher {
  private:
   virtual ~NestedDispatcherGtk() {}
 
+#if defined(TOUCH_UI)
+  virtual base::MessagePumpDispatcher::DispatchStatus Dispatch(XEvent* xevent);
+#else
   // Overriden from MessageLoopForUI::Dispatcher:
   virtual bool Dispatch(GdkEvent* event);
-
-#if defined(TOUCH_UI)
-  virtual base::MessagePumpGlibXDispatcher::DispatchStatus
-      DispatchX(XEvent* xevent);
 #endif
 
   // Creator of the nested loop.

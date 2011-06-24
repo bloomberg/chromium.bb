@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,24 +32,15 @@ void NestedDispatcherGtk::CreatorDestroyed() {
   creator_ = NULL;
 }
 
-bool NestedDispatcherGtk::Dispatch(GdkEvent* event) {
-  if (creator_ != NULL) {
 #if defined(TOUCH_UI)
-    return static_cast<base::MessagePumpForUI::Dispatcher*>
-        (creator_)->Dispatch(event);
+base::MessagePumpDispatcher::DispatchStatus
+    NestedDispatcherGtk::Dispatch(XEvent* xevent) {
+  return creator_->Dispatch(xevent);
+}
 #else
-    return creator_->Dispatch(event);
-#endif
-  } else {
-    return false;
-  }
+bool NestedDispatcherGtk::Dispatch(GdkEvent* event) {
+  return creator_ && creator_->Dispatch(event);
 }
-
-#if defined(TOUCH_UI)
-base::MessagePumpGlibXDispatcher::DispatchStatus
-    NestedDispatcherGtk::DispatchX(XEvent* xevent) {
-  return creator_->DispatchX(xevent);
-}
-#endif
+#endif  // defined(TOUCH_UI)
 
 }  // namespace views

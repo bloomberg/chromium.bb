@@ -96,6 +96,12 @@ void XInputHierarchyChangedEventListener::Stop() {
   xiopcode_ = -1;
 }
 
+#if defined(TOUCH_UI)
+base::MessagePumpObserver::EventStatus
+    XInputHierarchyChangedEventListener::WillProcessXEvent(XEvent* xevent) {
+  return ProcessedXEvent(xevent) ? EVENT_HANDLED : EVENT_CONTINUE;
+}
+#else  // defined(TOUCH_UI)
 // static
 GdkFilterReturn XInputHierarchyChangedEventListener::GdkEventFilter(
     GdkXEvent* gxevent, GdkEvent* gevent, gpointer data) {
@@ -103,11 +109,12 @@ GdkFilterReturn XInputHierarchyChangedEventListener::GdkEventFilter(
       static_cast<XInputHierarchyChangedEventListener*>(data);
   XEvent* xevent = static_cast<XEvent*>(gxevent);
 
-  return listener->WillProcessXEvent(xevent) ? GDK_FILTER_REMOVE
-                                             : GDK_FILTER_CONTINUE;
+  return listener->ProcessedXEvent(xevent) ? GDK_FILTER_REMOVE
+                                           : GDK_FILTER_CONTINUE;
 }
+#endif  // defined(TOUCH_UI)
 
-bool XInputHierarchyChangedEventListener::WillProcessXEvent(XEvent* xevent) {
+bool XInputHierarchyChangedEventListener::ProcessedXEvent(XEvent* xevent) {
   if ((xevent->xcookie.type != GenericEvent) ||
       (xevent->xcookie.extension != xiopcode_)) {
     return false;

@@ -44,12 +44,21 @@ class SystemKeyEventListener : public WmMessageListener::Observer,
   SystemKeyEventListener();
   virtual ~SystemKeyEventListener();
 
+#if defined(TOUCH_UI)
+  // MessageLoopForUI::Observer overrides.
+  virtual EventStatus WillProcessXEvent(XEvent* xevent) OVERRIDE;
+#else
   // This event filter intercepts events before they reach GDK, allowing us to
   // check for system level keyboard events regardless of which window has
   // focus.
   static GdkFilterReturn GdkEventFilter(GdkXEvent* gxevent,
                                         GdkEvent* gevent,
                                         gpointer data);
+
+  // MessageLoopForUI::Observer overrides.
+  virtual void WillProcessEvent(GdkEvent* event) OVERRIDE {}
+  virtual void DidProcessEvent(GdkEvent* event) OVERRIDE {}
+#endif
 
   // Tell X we are interested in the specified key/mask combination.
   // Capslock and Numlock are always ignored.
@@ -59,14 +68,8 @@ class SystemKeyEventListener : public WmMessageListener::Observer,
   void OnVolumeDown();
   void OnVolumeUp();
 
-  // MessageLoopForUI::Observer overrides.
-  virtual void WillProcessEvent(GdkEvent* event) OVERRIDE {}
-  virtual void DidProcessEvent(GdkEvent* event) OVERRIDE {}
-  virtual bool WillProcessXEvent(XEvent* xevent)
-#if defined(TOUCH_UI)
-    OVERRIDE
-#endif
-    ;
+  // Returns true if the event was processed, false otherwise.
+  virtual bool ProcessedXEvent(XEvent* xevent);
 
   int32 key_volume_mute_;
   int32 key_volume_down_;

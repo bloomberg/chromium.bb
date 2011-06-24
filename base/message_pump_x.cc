@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/message_pump_glib_x.h"
+#include "base/message_pump_x.h"
 
 #include <gdk/gdkx.h>
 #if defined(HAVE_XINPUT2)
@@ -11,7 +11,7 @@
 #include <X11/Xlib.h>
 #endif
 
-#include "base/message_pump_glib_x_dispatch.h"
+#include "base/basictypes.h"
 
 namespace {
 
@@ -25,7 +25,7 @@ gboolean PlaceholderDispatch(GSource* source,
 
 namespace base {
 
-MessagePumpGlibX::MessagePumpGlibX() : base::MessagePumpForUI(),
+MessagePumpX::MessagePumpX() : MessagePumpGlib(),
 #if defined(HAVE_XINPUT2)
     xiopcode_(-1),
 #endif
@@ -42,15 +42,13 @@ MessagePumpGlibX::MessagePumpGlibX() : base::MessagePumpForUI(),
   InitializeEventsToCapture();
 }
 
-MessagePumpGlibX::~MessagePumpGlibX() {
+MessagePumpX::~MessagePumpX() {
   gdk_window_remove_filter(NULL, &GdkEventFilter, this);
-
-  // It is not necessary to reset the GDK event handler using
-  // gdk_event_handler_set since it's done in the destructor for
-  // MessagePumpForUI.
+  gdk_event_handler_set(reinterpret_cast<GdkEventFunc>(gtk_main_do_event),
+                        this, NULL);
 }
 
-bool MessagePumpGlibX::ShouldCaptureXEvent(XEvent* xev) {
+bool MessagePumpX::ShouldCaptureXEvent(XEvent* xev) {
   return capture_x_events_[xev->type]
 #if defined(HAVE_XINPUT2)
         && (xev->type != GenericEvent || xev->xcookie.extension == xiopcode_)
@@ -59,7 +57,7 @@ bool MessagePumpGlibX::ShouldCaptureXEvent(XEvent* xev) {
 }
 
 
-bool MessagePumpGlibX::ProcessXEvent(XEvent* xev) {
+bool MessagePumpX::ProcessXEvent(XEvent* xev) {
   bool should_quit = false;
 
 #if defined(HAVE_XINPUT2)
@@ -70,15 +68,14 @@ bool MessagePumpGlibX::ProcessXEvent(XEvent* xev) {
   }
 #endif
 
-  if (!WillProcessXEvent(xev)) {
-    MessagePumpGlibXDispatcher::DispatchStatus status =
-      static_cast<MessagePumpGlibXDispatcher*>
-      (GetDispatcher())->DispatchX(xev);
+  if (WillProcessXEvent(xev) == MessagePumpObserver::EVENT_CONTINUE) {
+    MessagePumpDispatcher::DispatchStatus status =
+        GetDispatcher()->Dispatch(xev);
 
-    if (status == MessagePumpGlibXDispatcher::EVENT_QUIT) {
+    if (status == MessagePumpDispatcher::EVENT_QUIT) {
       should_quit = true;
       Quit();
-    } else if (status == MessagePumpGlibXDispatcher::EVENT_IGNORED) {
+    } else if (status == MessagePumpDispatcher::EVENT_IGNORED) {
       VLOG(1) << "Event (" << xev->type << ") not handled.";
     }
   }
@@ -92,10 +89,10 @@ bool MessagePumpGlibX::ProcessXEvent(XEvent* xev) {
   return should_quit;
 }
 
-bool MessagePumpGlibX::RunOnce(GMainContext* context, bool block) {
+bool MessagePumpX::RunOnce(GMainContext* context, bool block) {
   GdkDisplay* gdisp = gdk_display_get_default();
   if (!gdisp || !GetDispatcher())
-    return MessagePumpForUI::RunOnce(context, block);
+    return g_main_context_iteration(context, block);
 
   Display* display = GDK_DISPLAY_XDISPLAY(gdisp);
 
@@ -137,10 +134,10 @@ bool MessagePumpGlibX::RunOnce(GMainContext* context, bool block) {
   return retvalue;
 }
 
-GdkFilterReturn MessagePumpGlibX::GdkEventFilter(GdkXEvent* gxevent,
-                                                 GdkEvent* gevent,
-                                                 gpointer data) {
-  MessagePumpGlibX* pump = static_cast<MessagePumpGlibX*>(data);
+GdkFilterReturn MessagePumpX::GdkEventFilter(GdkXEvent* gxevent,
+                                             GdkEvent* gevent,
+                                             gpointer data) {
+  MessagePumpX* pump = static_cast<MessagePumpX*>(data);
   XEvent* xev = static_cast<XEvent*>(gxevent);
 
   if (pump->ShouldCaptureXEvent(xev) && pump->GetDispatcher()) {
@@ -151,20 +148,18 @@ GdkFilterReturn MessagePumpGlibX::GdkEventFilter(GdkXEvent* gxevent,
   return GDK_FILTER_CONTINUE;
 }
 
-bool MessagePumpGlibX::WillProcessXEvent(XEvent* xevent) {
-  ObserverListBase<Observer>::Iterator it(observers());
-  Observer* obs;
+bool MessagePumpX::WillProcessXEvent(XEvent* xevent) {
+  ObserverListBase<MessagePumpObserver>::Iterator it(observers());
+  MessagePumpObserver* obs;
   while ((obs = it.GetNext()) != NULL) {
-    MessagePumpXObserver* xobs =
-        static_cast<MessagePumpXObserver*>(obs);
-    if (xobs->WillProcessXEvent(xevent))
+    if (obs->WillProcessXEvent(xevent))
       return true;
   }
   return false;
 }
 
-void MessagePumpGlibX::EventDispatcherX(GdkEvent* event, gpointer data) {
-  MessagePumpGlibX* pump_x = reinterpret_cast<MessagePumpGlibX*>(data);
+void MessagePumpX::EventDispatcherX(GdkEvent* event, gpointer data) {
+  MessagePumpX* pump_x = reinterpret_cast<MessagePumpX*>(data);
 
   if (!pump_x->gdksource_) {
     pump_x->gdksource_ = g_main_current_source();
@@ -177,10 +172,10 @@ void MessagePumpGlibX::EventDispatcherX(GdkEvent* event, gpointer data) {
     }
   }
 
-  pump_x->DispatchEvents(event);
+  gtk_main_do_event(event);
 }
 
-void MessagePumpGlibX::InitializeEventsToCapture(void) {
+void MessagePumpX::InitializeEventsToCapture(void) {
   // TODO(sad): Decide which events we want to capture and update the tables
   // accordingly.
   capture_x_events_[KeyPress] = true;
@@ -204,7 +199,7 @@ void MessagePumpGlibX::InitializeEventsToCapture(void) {
 }
 
 #if defined(HAVE_XINPUT2)
-void MessagePumpGlibX::InitializeXInput2(void) {
+void MessagePumpX::InitializeXInput2(void) {
   GdkDisplay* display = gdk_display_get_default();
   if (!display)
     return;
@@ -227,8 +222,11 @@ void MessagePumpGlibX::InitializeXInput2(void) {
 }
 #endif  // HAVE_XINPUT2
 
-bool MessagePumpXObserver::WillProcessXEvent(XEvent* xev) {
-  return false;
+MessagePumpObserver::EventStatus
+    MessagePumpObserver::WillProcessXEvent(XEvent* xev) {
+  return EVENT_CONTINUE;
 }
+
+COMPILE_ASSERT(XLASTEvent >= LASTEvent, XLASTEvent_too_small);
 
 }  // namespace base

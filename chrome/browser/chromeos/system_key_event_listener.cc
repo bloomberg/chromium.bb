@@ -14,7 +14,7 @@
 #include "third_party/cros/chromeos_wm_ipc_enums.h"
 
 #if defined(TOUCH_UI)
-#include "base/message_pump_glib_x_dispatch.h"
+#include "base/message_pump_x.h"
 #endif
 
 namespace chromeos {
@@ -99,6 +99,12 @@ void SystemKeyEventListener::ProcessWmMessage(const WmIpc::Message& message,
   }
 }
 
+#if defined(TOUCH_UI)
+base::MessagePumpObserver::EventStatus
+    SystemKeyEventListener::WillProcessXEvent(XEvent* xevent) {
+  return ProcessedXEvent(xevent) ? EVENT_HANDLED : EVENT_CONTINUE;
+}
+#else  // defined(TOUCH_UI)
 // static
 GdkFilterReturn SystemKeyEventListener::GdkEventFilter(GdkXEvent* gxevent,
                                                        GdkEvent* gevent,
@@ -106,9 +112,10 @@ GdkFilterReturn SystemKeyEventListener::GdkEventFilter(GdkXEvent* gxevent,
   SystemKeyEventListener* listener = static_cast<SystemKeyEventListener*>(data);
   XEvent* xevent = static_cast<XEvent*>(gxevent);
 
-  return listener->WillProcessXEvent(xevent) ? GDK_FILTER_REMOVE
-                                             : GDK_FILTER_CONTINUE;
+  return listener->ProcessedXEvent(xevent) ? GDK_FILTER_REMOVE
+                                           : GDK_FILTER_CONTINUE;
 }
+#endif  // defined(TOUCH_UI)
 
 void SystemKeyEventListener::GrabKey(int32 key, uint32 mask) {
   uint32 num_lock_mask = Mod2Mask;
@@ -160,7 +167,7 @@ void SystemKeyEventListener::OnVolumeUp() {
   BrightnessBubble::GetInstance()->HideBubble();
 }
 
-bool SystemKeyEventListener::WillProcessXEvent(XEvent* xevent) {
+bool SystemKeyEventListener::ProcessedXEvent(XEvent* xevent) {
   if (xevent->type == KeyPress) {
     int32 keycode = xevent->xkey.keycode;
     if (keycode) {

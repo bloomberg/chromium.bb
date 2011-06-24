@@ -1632,7 +1632,7 @@ void NativeWidgetGtk::OnMap(GtkWidget* widget) {
   // a workaround for a bug that X Expose event does not trigger
   // Gdk's expose signal. This happens when you try to open views menu
   // while a virtual keyboard gets kicked in or out. This seems to be
-  // a bug in message_pump_glib_x.cc as we do get X Expose event but
+  // a bug in message_pump_x.cc as we do get X Expose event but
   // it doesn't trigger gtk's expose signal. We're not going to fix this
   // as we're removing gtk and migrating to new compositor.
   gdk_window_process_all_updates();

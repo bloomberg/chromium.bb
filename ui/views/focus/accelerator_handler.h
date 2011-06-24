@@ -50,11 +50,10 @@ class AcceleratorHandler : public MessageLoopForUI::Dispatcher {
   // focus manager
 #if defined(OS_WIN)
   virtual bool Dispatch(const MSG& msg);
+#elif defined(TOUCH_UI)
+  virtual MesasgePumpDispatcher::DispatchStatus Dispatch(XEvent* xev);
 #else
   virtual bool Dispatch(GdkEvent* event);
-#if defined(TOUCH_UI)
-  virtual MessagePumpGlibXDispatcher::DispatchStatus Dispatch(XEvent* xev);
-#endif
 #endif
 
  private:

@@ -858,7 +858,16 @@ bool MenuController::Dispatch(const MSG& msg) {
   DispatchMessage(&msg);
   return exit_type_ == EXIT_NONE;
 }
+#elif defined(TOUCH_UI)
+base::MessagePumpDispatcher::DispatchStatus
+    MenuController::Dispatch(XEvent* xev) {
+  if (!DispatchXEvent(xev))
+    return EVENT_IGNORED;
 
+  return exit_type_ != EXIT_NONE ?
+      base::MessagePumpDispatcher::EVENT_QUIT :
+      base::MessagePumpDispatcher::EVENT_PROCESSED;
+}
 #else
 bool MenuController::Dispatch(GdkEvent* event) {
   if (exit_type_ == EXIT_ALL || exit_type_ == EXIT_DESTROYED) {
@@ -897,19 +906,6 @@ bool MenuController::Dispatch(GdkEvent* event) {
   gtk_main_do_event(event);
   return exit_type_ == EXIT_NONE;
 }
-
-#if defined(TOUCH_UI)
-base::MessagePumpGlibXDispatcher::DispatchStatus
-    MenuController::DispatchX(XEvent* xev) {
-  if (!DispatchXEvent(xev))
-    return EVENT_IGNORED;
-
-  return exit_type_ != EXIT_NONE ?
-      base::MessagePumpGlibXDispatcher::EVENT_QUIT :
-      base::MessagePumpGlibXDispatcher::EVENT_PROCESSED;
-}
-#endif
-
 #endif
 
 bool MenuController::OnKeyDown(int key_code

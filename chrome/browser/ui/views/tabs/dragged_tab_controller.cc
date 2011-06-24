@@ -531,6 +531,11 @@ void DraggedTabController::DidProcessMessage(const MSG& msg) {
   if (msg.message == WM_KEYDOWN && msg.wParam == VK_ESCAPE)
     EndDrag(true);
 }
+#elif defined(TOUCH_UI)
+base::MessagePumpObserver::EventStatus
+    DraggedTabController::WillProcessXEvent(XEvent* xevent) {
+  return EVENT_CONTINUE;
+}
 #elif defined(TOOLKIT_USES_GTK)
 void DraggedTabController::WillProcessEvent(GdkEvent* event) {
 }
