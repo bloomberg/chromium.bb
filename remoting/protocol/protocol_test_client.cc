@@ -14,6 +14,7 @@ extern "C" {
 #include <list>
 
 #include "base/at_exit.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/test/mock_chrome_application_mac.h"
 #include "base/time.h"
@@ -268,7 +269,10 @@ void ProtocolTestClient::Run(const std::string& username,
     closed_event_.Wait();
   }
 
-  client_->Close();
+  base::WaitableEvent closed_event(true, false);
+  client_->Close(base::Bind(&base::WaitableEvent::Signal,
+                            base::Unretained(&closed_event)));
+  closed_event.Wait();
   jingle_thread.Stop();
 }
 

@@ -4,6 +4,7 @@
 
 #include "remoting/client/chromoting_client.h"
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "remoting/base/tracer.h"
 #include "remoting/client/chromoting_view.h"
@@ -57,17 +58,22 @@ void ChromotingClient::Start(scoped_refptr<XmppProxy> xmpp_proxy) {
   }
 }
 
-void ChromotingClient::Stop() {
+void ChromotingClient::Stop(const base::Closure& shutdown_task) {
   if (message_loop() != MessageLoop::current()) {
     message_loop()->PostTask(
-        FROM_HERE,
-        NewRunnableMethod(this, &ChromotingClient::Stop));
+        FROM_HERE, base::Bind(&ChromotingClient::Stop,
+                              base::Unretained(this), shutdown_task));
     return;
   }
 
-  connection_->Disconnect();
+  connection_->Disconnect(base::Bind(&ChromotingClient::OnDisconnected,
+                                     base::Unretained(this), shutdown_task));
+}
 
+void ChromotingClient::OnDisconnected(const base::Closure& shutdown_task) {
   view_->TearDown();
+
+  shutdown_task.Run();
 }
 
 void ChromotingClient::ClientDone() {

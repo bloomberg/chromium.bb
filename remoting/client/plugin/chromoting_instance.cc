@@ -7,9 +7,11 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/stringprintf.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/task.h"
 #include "base/threading/thread.h"
 // TODO(sergeyu): We should not depend on renderer here. Instead P2P
@@ -55,8 +57,13 @@ ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
 }
 
 ChromotingInstance::~ChromotingInstance() {
+  DCHECK(CurrentlyOnPluginThread());
+
   if (client_.get()) {
-    client_->Stop();
+    base::WaitableEvent done_event(true, false);
+    client_->Stop(base::Bind(&base::WaitableEvent::Signal,
+                             base::Unretained(&done_event)));
+    done_event.Wait();
   }
 
   // Stopping the context shutdown all chromoting threads. This is a requirement
@@ -142,7 +149,11 @@ void ChromotingInstance::Disconnect() {
 
   logger_.Log(logging::LOG_INFO, "Disconnecting from host.");
   if (client_.get()) {
-    client_->Stop();
+    // TODO(sergeyu): Should we disconnect asynchronously?
+    base::WaitableEvent done_event(true, false);
+    client_->Stop(base::Bind(&base::WaitableEvent::Signal,
+                             base::Unretained(&done_event)));
+    done_event.Wait();
   }
 
   GetScriptableObject()->SetConnectionInfo(STATUS_CLOSED, QUALITY_UNKNOWN);

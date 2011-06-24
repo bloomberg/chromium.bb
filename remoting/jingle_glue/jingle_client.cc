@@ -4,6 +4,7 @@
 
 #include "remoting/jingle_glue/jingle_client.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
@@ -51,12 +52,12 @@ void JingleClient::Init() {
     initialized_ = true;
   }
 
-  message_loop()->PostTask(
+  message_loop_->PostTask(
       FROM_HERE, NewRunnableMethod(this, &JingleClient::DoInitialize));
 }
 
 void JingleClient::DoInitialize() {
-  DCHECK_EQ(message_loop(), MessageLoop::current());
+  DCHECK_EQ(message_loop_, MessageLoop::current());
 
   if (!network_manager_.get()) {
     VLOG(1) << "Creating talk_base::NetworkManager.";
@@ -111,40 +112,32 @@ void JingleClient::DoStartSession() {
   }
 }
 
-void JingleClient::Close() {
-  Close(NULL);
-}
-
-void JingleClient::Close(Task* closed_task) {
+void JingleClient::Close(const base::Closure& closed_task) {
   {
     base::AutoLock auto_lock(state_lock_);
     // If the client is already closed then don't close again.
     if (closed_) {
-      if (closed_task)
-        message_loop_->PostTask(FROM_HERE, closed_task);
+      message_loop_->PostTask(FROM_HERE, closed_task);
       return;
     }
-    closed_task_.reset(closed_task);
-    closed_ = true;
   }
 
-  message_loop()->PostTask(
-      FROM_HERE, NewRunnableMethod(this, &JingleClient::DoClose));
+  message_loop_->PostTask(
+      FROM_HERE, NewRunnableMethod(this, &JingleClient::DoClose, closed_task));
 }
 
-void JingleClient::DoClose() {
-  DCHECK_EQ(message_loop(), MessageLoop::current());
-  DCHECK(closed_);
+void JingleClient::DoClose(const base::Closure& closed_task) {
+  DCHECK_EQ(message_loop_, MessageLoop::current());
 
   session_manager_.reset();
-  signal_strategy_->EndSession();
-  // TODO(ajwong): SignalStrategy should drop all resources at EndSession().
-  signal_strategy_ = NULL;
-
-  if (closed_task_.get()) {
-    closed_task_->Run();
-    closed_task_.reset();
+  if (signal_strategy_) {
+    signal_strategy_->EndSession();
+    // TODO(ajwong): SignalStrategy should drop all resources at EndSession().
+    signal_strategy_ = NULL;
   }
+
+  closed_ = true;
+  closed_task.Run();
 }
 
 std::string JingleClient::GetFullJid() {
@@ -161,7 +154,7 @@ MessageLoop* JingleClient::message_loop() {
 }
 
 cricket::SessionManager* JingleClient::session_manager() {
-  DCHECK_EQ(message_loop(), MessageLoop::current());
+  DCHECK_EQ(message_loop_, MessageLoop::current());
   return session_manager_.get();
 }
 

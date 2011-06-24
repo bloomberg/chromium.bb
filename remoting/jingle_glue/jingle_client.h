@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -65,11 +66,10 @@ class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
   // |callback| specifies callback object for the client and must not be NULL.
   void Init();
 
-  // Closes XMPP connection and stops the thread. Must be called before the
-  // object is destroyed. If specified, |closed_task| is executed after the
-  // connection is successfully closed.
-  void Close();
-  void Close(Task* closed_task);
+  // Closes XMPP connection and stops the thread. Must be called
+  // before the object is destroyed. |closed_task| is executed after
+  // the connection is successfully closed.
+  void Close(const base::Closure& closed_task);
 
   // Returns JID with resource ID. Empty string is returned if full JID is not
   // known yet, i.e. authentication hasn't finished.
@@ -95,7 +95,7 @@ class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
 
   void DoInitialize();
   void DoStartSession();
-  void DoClose();
+  void DoClose(const base::Closure& closed_task);
 
   // Updates current state of the connection. Must be called only in
   // the jingle thread.

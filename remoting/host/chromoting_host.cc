@@ -639,8 +639,8 @@ void ChromotingHost::ShutdownJingleClient() {
 
   // Disconnect from the talk network.
   if (jingle_client_) {
-    jingle_client_->Close(NewRunnableMethod(
-        this, &ChromotingHost::ShutdownSignallingDisconnected));
+    jingle_client_->Close(base::Bind(
+        &ChromotingHost::ShutdownSignallingDisconnected, this));
   } else {
     ShutdownRecorder();
   }

@@ -78,7 +78,8 @@ class ConnectionToHost : public JingleClient::Callback {
                        HostEventCallback* event_callback,
                        ClientStub* client_stub,
                        VideoStub* video_stub);
-  virtual void Disconnect();
+
+  virtual void Disconnect(const base::Closure& shutdown_task);
 
   virtual const SessionConfig* config();
 
@@ -113,8 +114,9 @@ class ConnectionToHost : public JingleClient::Callback {
 
   // Used by Disconnect() to disconnect chromoting connection, stop chromoting
   // server, and then disconnect XMPP connection.
-  void OnDisconnected();
-  void OnServerClosed();
+  void OnDisconnected(const base::Closure& shutdown_task);
+  void OnServerClosed(const base::Closure& shutdown_task);
+  void OnJingleClientClosed(const base::Closure& shutdown_task);
 
   // Internal state of the connection.
   State state_;

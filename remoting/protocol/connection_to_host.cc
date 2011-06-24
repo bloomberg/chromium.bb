@@ -4,6 +4,7 @@
 
 #include "remoting/protocol/connection_to_host.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/message_loop.h"
 #include "remoting/base/constants.h"
@@ -79,18 +80,20 @@ void ConnectionToHost::Connect(scoped_refptr<XmppProxy> xmpp_proxy,
   host_public_key_ = host_public_key;
 }
 
-void ConnectionToHost::Disconnect() {
+void ConnectionToHost::Disconnect(const base::Closure& shutdown_task) {
   if (MessageLoop::current() != message_loop_) {
     message_loop_->PostTask(
-        FROM_HERE, NewRunnableMethod(this, &ConnectionToHost::Disconnect));
+        FROM_HERE, base::Bind(&ConnectionToHost::Disconnect,
+                              base::Unretained(this), shutdown_task));
     return;
   }
 
   if (session_) {
     session_->Close(
-        NewRunnableMethod(this, &ConnectionToHost::OnDisconnected));
+        NewRunnableMethod(this, &ConnectionToHost::OnDisconnected,
+                          shutdown_task));
   } else {
-    OnDisconnected();
+    OnDisconnected(shutdown_task);
   }
 }
 
@@ -122,23 +125,40 @@ void ConnectionToHost::InitSession() {
       NewCallback(this, &ConnectionToHost::OnSessionStateChange));
 }
 
-void ConnectionToHost::OnDisconnected() {
+void ConnectionToHost::OnDisconnected(const base::Closure& shutdown_task) {
+  DCHECK_EQ(message_loop_, MessageLoop::current());
+
   session_ = NULL;
 
   if (session_manager_) {
     session_manager_->Close(
-        NewRunnableMethod(this, &ConnectionToHost::OnServerClosed));
+        NewRunnableMethod(this, &ConnectionToHost::OnServerClosed,
+                          shutdown_task));
   } else {
-    OnServerClosed();
+    OnServerClosed(shutdown_task);
   }
 }
 
-void ConnectionToHost::OnServerClosed() {
+void ConnectionToHost::OnServerClosed(const base::Closure& shutdown_task) {
+  DCHECK_EQ(message_loop_, MessageLoop::current());
+
   session_manager_ = NULL;
+
   if (jingle_client_) {
-    jingle_client_->Close();
-    jingle_client_ = NULL;
+    jingle_client_->Close(base::Bind(&ConnectionToHost::OnJingleClientClosed,
+                                     base::Unretained(this), shutdown_task));
+  } else {
+    OnJingleClientClosed(shutdown_task);
   }
+}
+
+void ConnectionToHost::OnJingleClientClosed(
+    const base::Closure& shutdown_task) {
+  DCHECK_EQ(message_loop_, MessageLoop::current());
+
+  signal_strategy_.reset();
+
+  shutdown_task.Run();
 }
 
 const SessionConfig* ConnectionToHost::config() {

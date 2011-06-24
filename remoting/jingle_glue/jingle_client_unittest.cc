@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/synchronization/waitable_event.h"
 #include "remoting/jingle_glue/jingle_client.h"
 #include "remoting/jingle_glue/jingle_thread.h"
@@ -66,7 +67,10 @@ TEST_F(JingleClientTest, OnStateChanged) {
       buzz::XmppEngine::STATE_OPENING, &state_changed_event));
   state_changed_event.Wait();
 
-  client_->Close();
+  base::WaitableEvent closed_event(true, false);
+  client_->Close(base::Bind(&base::WaitableEvent::Signal,
+                            base::Unretained(&closed_event)));
+  closed_event.Wait();
 
   thread_.Stop();
 }
@@ -74,7 +78,11 @@ TEST_F(JingleClientTest, OnStateChanged) {
 TEST_F(JingleClientTest, Close) {
   EXPECT_CALL(callback_, OnStateChange(_, _))
       .Times(0);
-  client_->Close();
+  base::WaitableEvent closed_event(true, false);
+  client_->Close(base::Bind(&base::WaitableEvent::Signal,
+                            base::Unretained(&closed_event)));
+  closed_event.Wait();
+
   // Verify that the channel doesn't call callback anymore.
   thread_.message_loop()->PostTask(FROM_HERE, NewRunnableFunction(
       &JingleClientTest::ChangeState, signal_strategy_.get(),
@@ -85,19 +93,16 @@ TEST_F(JingleClientTest, Close) {
 
 TEST_F(JingleClientTest, ClosedTask) {
   bool closed = false;
-  client_->Close(NewRunnableFunction(&JingleClientTest::OnClosed,
-                                     &closed));
+  client_->Close(base::Bind(&JingleClientTest::OnClosed, &closed));
   thread_.Stop();
   EXPECT_TRUE(closed);
 }
 
 TEST_F(JingleClientTest, DoubleClose) {
   bool closed1 = false;
-  client_->Close(NewRunnableFunction(&JingleClientTest::OnClosed,
-                                     &closed1));
+  client_->Close(base::Bind(&JingleClientTest::OnClosed, &closed1));
   bool closed2 = false;
-  client_->Close(NewRunnableFunction(&JingleClientTest::OnClosed,
-                                     &closed2));
+  client_->Close(base::Bind(&JingleClientTest::OnClosed, &closed2));
   thread_.Stop();
   EXPECT_TRUE(closed1 && closed2);
 }

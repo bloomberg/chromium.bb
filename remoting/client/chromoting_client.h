@@ -51,7 +51,7 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
   virtual ~ChromotingClient();
 
   void Start(scoped_refptr<XmppProxy> xmpp_proxy);
-  void Stop();
+  void Stop(const base::Closure& shutdown_task);
   void ClientDone();
 
   // Return the stats recorded by this client.
@@ -108,6 +108,8 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
   // If |last_packet| is true then |decode_start| contains the timestamp when
   // the packet will start to be processed.
   void OnPacketDone(bool last_packet, base::Time decode_start);
+
+  void OnDisconnected(const base::Closure& shutdown_task);
 
   // The following are not owned by this class.
   ClientConfig config_;
