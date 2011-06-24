@@ -50,8 +50,7 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
                    Task* client_done);
   virtual ~ChromotingClient();
 
-  void Start();
-  void StartSandboxed(scoped_refptr<XmppProxy> xmpp_proxy);
+  void Start(scoped_refptr<XmppProxy> xmpp_proxy);
   void Stop();
   void ClientDone();
 

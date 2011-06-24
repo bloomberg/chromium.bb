@@ -120,26 +120,17 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
                                      view_proxy_, rectangle_decoder_.get(),
                                      input_handler_.get(), &logger_, NULL));
 
-  if (config.xmpp_signalling) {
-    logger_.Log(logging::LOG_INFO, "Connecting to %s as %s",
-                config.host_jid.c_str(),
-                config.xmpp_username.c_str());
+  logger_.Log(logging::LOG_INFO, "Connecting.");
 
-    // Kick off the connection.
-    client_->Start();
-  } else {
-    logger_.Log(logging::LOG_INFO, "Attempting sandboxed connection.");
+  // Setup the XMPP Proxy.
+  ChromotingScriptableObject* scriptable_object = GetScriptableObject();
+  scoped_refptr<PepperXmppProxy> xmpp_proxy =
+      new PepperXmppProxy(scriptable_object->AsWeakPtr(),
+                          context_.jingle_thread()->message_loop());
+  scriptable_object->AttachXmppProxy(xmpp_proxy);
 
-    // Setup the XMPP Proxy.
-    ChromotingScriptableObject* scriptable_object = GetScriptableObject();
-    scoped_refptr<PepperXmppProxy> xmpp_proxy =
-        new PepperXmppProxy(scriptable_object->AsWeakPtr(),
-                            context_.jingle_thread()->message_loop());
-    scriptable_object->AttachXmppProxy(xmpp_proxy);
-
-    // Kick off the connection.
-    client_->StartSandboxed(xmpp_proxy);
-  }
+  // Kick off the connection.
+  client_->Start(xmpp_proxy);
 
   logger_.Log(logging::LOG_INFO, "Connection status: Initializing");
   GetScriptableObject()->SetConnectionInfo(STATUS_INITIALIZING,

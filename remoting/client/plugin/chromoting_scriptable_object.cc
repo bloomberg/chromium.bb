@@ -98,8 +98,6 @@ void ChromotingScriptableObject::Init() {
   AddAttribute(kRoundTripLatencyAttribute, Var());
 
   AddMethod("connect", &ChromotingScriptableObject::DoConnect);
-  AddMethod("connectUnsandboxed",
-            &ChromotingScriptableObject::DoConnectUnsandboxed);
   AddMethod("disconnect", &ChromotingScriptableObject::DoDisconnect);
   AddMethod("submitLoginInfo", &ChromotingScriptableObject::DoSubmitLogin);
   AddMethod("setScaleToFit", &ChromotingScriptableObject::DoSetScaleToFit);
@@ -384,81 +382,10 @@ Var ChromotingScriptableObject::DoConnect(const std::vector<Var>& args,
   VLOG(1) << "client_jid: " << client_jid << ", host_jid: " << host_jid
           << ", access_code: " << access_code;
   ClientConfig config;
-  config.xmpp_signalling = false;
   config.local_jid = client_jid;
   config.host_jid = host_jid;
   config.host_public_key = host_public_key;
   config.access_code = access_code;
-  instance_->Connect(config);
-
-  return Var();
-}
-
-Var ChromotingScriptableObject::DoConnectUnsandboxed(
-    const std::vector<Var>& args,
-    Var* exception) {
-  // Parameter order is:
-  //   host_jid
-  //   host_public_key
-  //   username
-  //   auth_token
-  //   access_code (optional)
-  unsigned int arg = 0;
-  if (!args[arg].is_string()) {
-    *exception = Var("The host_jid must be a string.");
-    return Var();
-  }
-  std::string host_jid = args[arg++].AsString();
-
-  if (!args[arg].is_string()) {
-    *exception = Var("The host_public_key must be a string.");
-    return Var();
-  }
-  std::string host_public_key = args[arg++].AsString();
-
-  if (!args[arg].is_string()) {
-    *exception = Var("The username must be a string.");
-    return Var();
-  }
-  std::string username = args[arg++].AsString();
-
-  if (!args[arg].is_string()) {
-    *exception = Var("The auth_token_with_service must be a string.");
-    return Var();
-  }
-  std::string auth_token_with_service = args[arg++].AsString();
-
-  std::string auth_service;
-  std::string auth_token;
-  ParseAuthTokenWithService(auth_token_with_service, &auth_token,
-                            &auth_service);
-
-  std::string access_code;
-  if (args.size() > arg) {
-    if (!args[arg].is_string()) {
-      *exception = Var("The access code must be a string.");
-      return Var();
-    }
-    access_code = args[arg++].AsString();
-  }
-
-  if (args.size() != arg) {
-    *exception = Var("Too many agruments passed to connect().");
-    return Var();
-  }
-
-  LogDebugInfo("Connecting to host.");
-  ClientConfig config;
-  config.xmpp_signalling = true;
-  config.xmpp_username = username;
-  config.xmpp_auth_token = auth_token;
-  config.xmpp_auth_service = auth_service;
-  config.host_jid = host_jid;
-  config.host_public_key = host_public_key;
-  config.access_code = access_code;
-  VLOG(1) << "host_jid: " << host_jid << ", username: " << username
-          << ", auth_service: " << auth_service
-          << ", access_code: " << access_code;
   instance_->Connect(config);
 
   return Var();

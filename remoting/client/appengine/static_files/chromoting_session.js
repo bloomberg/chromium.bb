@@ -22,9 +22,6 @@ chromoting.messageId = 1;
 
 chromoting.scaleToFit = false;
 
-// Default to trying to sandboxed connections.
-chromoting.connectMethod = 'sandboxed';
-
 // This executes a poll loop on the server for more Iq packets, and feeds them
 // to the plugin.
 function feedIq() {
@@ -149,12 +146,7 @@ function init() {
 
   // TODO(garykac): Clean exit if |connect| isn't a function.
   if (typeof plugin.connect === 'function') {
-    if (chromoting.connectMethod == "sandboxed") {
-      registerConnection();
-    } else {
-      plugin.connectUnsandboxed(chromoting.hostjid, chromoting.username,
-                                chromoting.talkToken);
-    }
+    registerConnection();
   } else {
     addToDebugLog('ERROR: chromoting plugin not loaded');
     setClientStateMessage('Plugin not loaded');

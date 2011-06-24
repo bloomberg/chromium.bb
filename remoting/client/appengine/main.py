@@ -43,7 +43,6 @@ class ChromotingSessionHandler(webapp.RequestHandler):
       'hostname': self.request.get('hostname'),
       'username': users.get_current_user().email(),
       'hostjid': self.request.get('hostjid'),
-      'connect_method': self.request.get('connect_method'),
       'insecure': self.request.get('insecure'),
       'talk_token': talk_token,
       'http_xmpp_proxy': self.request.get('http_xmpp_proxy')

@@ -6,7 +6,7 @@
 
 namespace remoting {
 
-ClientConfig::ClientConfig() : xmpp_signalling(false) {
+ClientConfig::ClientConfig() {
 }
 
 ClientConfig::~ClientConfig() {

@@ -55,43 +55,14 @@ MessageLoop* ConnectionToHost::message_loop() {
   return thread_->message_loop();
 }
 
-void ConnectionToHost::Connect(const std::string& username,
-                               const std::string& auth_token,
-                               const std::string& auth_service,
+void ConnectionToHost::Connect(scoped_refptr<XmppProxy> xmpp_proxy,
+                               const std::string& your_jid,
                                const std::string& host_jid,
                                const std::string& host_public_key,
                                const std::string& access_code,
                                HostEventCallback* event_callback,
                                ClientStub* client_stub,
                                VideoStub* video_stub) {
-  event_callback_ = event_callback;
-  client_stub_ = client_stub;
-  video_stub_ = video_stub;
-  access_code_ = access_code;
-
-  // Initialize |jingle_client_|.
-  signal_strategy_.reset(
-      new XmppSignalStrategy(thread_, username, auth_token, auth_service));
-  jingle_client_ =
-      new JingleClient(thread_, signal_strategy_.get(),
-                       network_manager_.release(), socket_factory_.release(),
-                       port_allocator_session_factory_.release(), this);
-  jingle_client_->Init();
-
-  // Save jid of the host. The actual connection is created later after
-  // |jingle_client_| is connected.
-  host_jid_ = host_jid;
-  host_public_key_ = host_public_key;
-}
-
-void ConnectionToHost::ConnectSandboxed(scoped_refptr<XmppProxy> xmpp_proxy,
-                                        const std::string& your_jid,
-                                        const std::string& host_jid,
-                                        const std::string& host_public_key,
-                                        const std::string& access_code,
-                                        HostEventCallback* event_callback,
-                                        ClientStub* client_stub,
-                                        VideoStub* video_stub) {
   event_callback_ = event_callback;
   client_stub_ = client_stub;
   video_stub_ = video_stub;

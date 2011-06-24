@@ -70,24 +70,14 @@ class ConnectionToHost : public JingleClient::Callback {
                    PortAllocatorSessionFactory* session_factory);
   virtual ~ConnectionToHost();
 
-  // TODO(ajwong): We need to generalize this API.
-  virtual void Connect(const std::string& username,
-                       const std::string& auth_token,
-                       const std::string& auth_service,
+  virtual void Connect(scoped_refptr<XmppProxy> xmpp_proxy,
+                       const std::string& your_jid,
                        const std::string& host_jid,
                        const std::string& host_public_key,
                        const std::string& access_code,
                        HostEventCallback* event_callback,
                        ClientStub* client_stub,
                        VideoStub* video_stub);
-  virtual void ConnectSandboxed(scoped_refptr<XmppProxy> xmpp_proxy,
-                                const std::string& your_jid,
-                                const std::string& host_jid,
-                                const std::string& host_public_key,
-                                const std::string& access_code,
-                                HostEventCallback* event_callback,
-                                ClientStub* client_stub,
-                                VideoStub* video_stub);
   virtual void Disconnect();
 
   virtual const SessionConfig* config();

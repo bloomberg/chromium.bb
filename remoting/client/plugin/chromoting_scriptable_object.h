@@ -83,17 +83,13 @@
 //
 //   // Methods for establishing a Chromoting connection.
 //   //
-//   // When using the sandboxed versions, sendIq must be set and responses to
-//   // calls on sendIq must be piped back into onIq().
+//   // sendIq must be set and responses to calls on sendIq must
+//   // be piped back into onIq().
 //   //
 //   // Note that auth_token_with_service should be specified as
 //   // "auth_service:auth_token". For example, "oauth2:5/aBd123".
 //   void connect(string host_jid, string auth_token_with_service,
 //                optional string access_code);
-//   // Non-sandboxed version used for debugging/testing.
-//   // TODO(garykac): Remove this version once we no longer need it.
-//   void connectUnsandboxed(string host_jid, string username,
-//                           string xmpp_token, optional string access_code);
 //
 //   // Terminating a Chromoting connection.
 //   void disconnect();
@@ -214,8 +210,6 @@ class ChromotingScriptableObject
   void SignalDesktopSizeChange();
 
   pp::Var DoConnect(const std::vector<pp::Var>& args, pp::Var* exception);
-  pp::Var DoConnectUnsandboxed(const std::vector<pp::Var>& args,
-                               pp::Var* exception);
   pp::Var DoDisconnect(const std::vector<pp::Var>& args, pp::Var* exception);
 
   // This method is called by JS to provide login information.
@@ -225,7 +219,7 @@ class ChromotingScriptableObject
   pp::Var DoSetScaleToFit(const std::vector<pp::Var>& args, pp::Var* exception);
 
   // This method is caleld by Javascript to provide responses to sendIq()
-  // requests when establishing a sandboxed Chromoting connection.
+  // requests.
   pp::Var DoOnIq(const std::vector<pp::Var>& args, pp::Var* exception);
 
   PropertyNameMap property_names_;

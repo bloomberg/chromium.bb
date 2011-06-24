@@ -20,8 +20,6 @@ remoting.messageId = 1;
 
 remoting.scaleToFit = false;
 
-// Default to trying to sandboxed connections.
-remoting.connectMethod = 'sandboxed';
 remoting.httpXmppProxy =
     'https://chromoting-httpxmpp-oauth2-dev.corp.google.com';
 
@@ -146,19 +144,7 @@ function init_() {
 
   // TODO(garykac): Clean exit if |connect| isn't a function.
   if (typeof plugin.connect === 'function') {
-    if (remoting.connectMethod == 'sandboxed') {
-      registerConnection();
-    } else {
-      if (plugin.apiVersion >= 2) {
-        plugin.connectUnsandboxed(
-            remoting.hostJid, remoting.hostPublicKey, remoting.username,
-            'oauth2:' + remoting.oauth2.getAccessToken(), remoting.accessCode);
-      } else {
-        plugin.connectUnsandboxed(
-            remoting.hostJid, remoting.username,
-            'oauth2:' + remoting.oauth2.getAccessToken(), remoting.accessCode);
-      }
-    }
+    registerConnection();
   } else {
     addToDebugLog('ERROR: remoting plugin not loaded');
     setClientStateMessage('Plugin not loaded');
