@@ -637,11 +637,9 @@ void AutofillManager::OnLoadedServerPredictions(
                                     *metric_logger_);
 
   // If the corresponding flag is set, annotate forms with the predicted types.
-  RenderViewHost* host = NULL;
+  RenderViewHost* host = tab_contents()->render_view_host();
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kShowAutofillTypePredictions) ||
-      !GetHost(personal_data_->profiles(), personal_data_->credit_cards(),
-               &host)) {
+          switches::kShowAutofillTypePredictions) || !host) {
     return;
   }
 
