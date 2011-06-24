@@ -153,11 +153,6 @@ bool GetServiceProcessData(std::string* version, base::ProcessId* pid) {
   return false;
 }
 
-// Gets the name of the service process IPC channel.
-IPC::ChannelHandle GetServiceProcessChannel() {
-  return GetServiceProcessScopedVersionedName("_service_ipc");
-}
-
 #endif  // !OS_MACOSX
 
 ServiceProcessState::ServiceProcessState() : state_(NULL) {

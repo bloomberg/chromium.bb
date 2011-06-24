@@ -73,6 +73,11 @@ class ServiceProcessShutdownMonitor
 
 }  // namespace
 
+// Gets the name of the service process IPC channel.
+IPC::ChannelHandle GetServiceProcessChannel() {
+  return GetServiceProcessScopedVersionedName("_service_ipc");
+}
+
 bool ForceServiceProcessShutdown(const std::string& version,
                                  base::ProcessId process_id) {
   base::win::ScopedHandle shutdown_event;

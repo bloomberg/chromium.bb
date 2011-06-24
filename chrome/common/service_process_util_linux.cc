@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,9 +7,11 @@
 #include <signal.h>
 #include <unistd.h>
 
+#include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/path_service.h"
 #include "base/threading/platform_thread.h"
 #include "chrome/common/auto_start_linux.h"
 #include "chrome/common/multi_process_lock.h"
@@ -66,6 +68,18 @@ bool ForceServiceProcessShutdown(const std::string& version,
   }
   return true;
 }
+
+// Gets the name of the service process IPC channel.
+// Returns an absolute path as required.
+IPC::ChannelHandle GetServiceProcessChannel() {
+  FilePath temp_dir;
+  PathService::Get(base::DIR_TEMP, &temp_dir);
+  std::string pipe_name = GetServiceProcessScopedVersionedName("_service_ipc");
+  std::string pipe_path = temp_dir.Append(pipe_name).value();
+  return pipe_path;
+}
+
+
 
 bool CheckServiceProcessReady() {
   scoped_ptr<MultiProcessLock> running_lock(TakeServiceRunningLock(false));

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,6 +30,9 @@ struct ChannelHandle {
   // Note that serialization for this object is defined in the ParamTraits
   // template specialization in ipc_message_utils.h.
   ChannelHandle() {}
+  // The name that is passed in should be an absolute path for Posix.
+  // Otherwise there may be a problem in IPC communication between
+  // processes with different working directories.
   ChannelHandle(const std::string& n) : name(n) {}
   ChannelHandle(const char* n) : name(n) {}
 #if defined(OS_POSIX)
