@@ -52,16 +52,6 @@ def GenerateTypeInfo(settings):
   # TODO(pdox): Add va_arg structure passing when LLVM supports it
   va_arg_exclude = [ 'char', 'short', 'float' ]
 
-  if not settings.allow_longlong:
-    # Disable testing long long
-    filterfunc = lambda u: u[1] != 'long long'
-    type_info = filter(filterfunc, type_info)
-
-  if not settings.allow_double:
-    # Disable testing double and long double
-    filterfunc = lambda u: u[1] not in ('double', 'long double')
-    type_info = filter(filterfunc, type_info)
-
   if not settings.allow_struct:
     # Disable testing structure arguments
     filterfunc = lambda u: u[1] not in ('tiny_t', 'big_t')
@@ -94,8 +84,6 @@ class Settings(object):
     self.calls_per_func = 0
     self.max_args_per_func = 0
     self.num_modules = 0
-    self.allow_double = 1
-    self.allow_longlong = 1
     self.allow_struct = 1
     self.allow_struct_va_arg = 1
     self._script_argv = None
@@ -106,8 +94,6 @@ class Settings(object):
     self.calls_per_func = int(self.calls_per_func)
     self.max_args_per_func = int(self.max_args_per_func)
     self.num_modules = int(self.num_modules)
-    self.allow_double = bool(int(self.allow_double))
-    self.allow_longlong = bool(int(self.allow_longlong))
     self.allow_struct = bool(int(self.allow_struct))
     self.allow_struct_va_arg = bool(int(self.allow_struct_va_arg))
 
@@ -127,8 +113,6 @@ def Usage():
   print "  --calls_per_func=<calls_per_function>"
   print "  --max_args_per_func=<max_args_per_function>"
   print "  --num_modules=<num_modules>"
-  print "  --allow_double=<0|1>         Test double arguments"
-  print "  --allow_longlong=<0|1>       Test long long arguments"
   print "  --allow_struct=<0|1>         Test struct arguments (by value)"
   print "  --allow_struct_va_arg=<0|1>  Test va_arg on struct arguments"
   sys.exit(1)

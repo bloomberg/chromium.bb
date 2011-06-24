@@ -39,17 +39,13 @@ settings = {
 if env.Bit('bitcode'):
   settings['allow_struct_va_arg'] = 0
 
-# long long / double's are not correctly stack-aligned in PNaCl
-if env.Bit('bitcode') and env.Bit('target_x86_32'):
-  settings['allow_longlong'] = 0
-  settings['allow_double'] = 0
-  # The structures contain long long / double
+# Structure passing in PNaCl is broken.
+# On X86-32, long long and double in structures are passed
+# with the wrong alignment.
+# On X86-64, the ABI is not implemented.
+# There's a good chance ARM has similar problems.
+if env.Bit('bitcode'):
   settings['allow_struct'] = 0
-
-# Structure passing in X86-64 PNaCl does not match NNaCl
-if env.Bit('bitcode') and env.Bit('target_x86_64'):
-  settings['allow_struct'] = 0
-
 
 # Environments for building module sources
 envlist = []
