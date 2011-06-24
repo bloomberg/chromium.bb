@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/views/infobars/infobar_view.h"
 #include "views/controls/menu/view_menu_delegate.h"
 
-class ExtensionContextMenuModel;
 class TabContentsWrapper;
 namespace views {
 class MenuButton;

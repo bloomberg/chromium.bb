@@ -6,9 +6,10 @@
 #define CHROME_BROWSER_UI_VIEWS_INFOBARS_INFOBAR_VIEW_H_
 #pragma once
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/tab_contents/infobar.h"
 #include "chrome/browser/tab_contents/infobar_container.h"
-#include "chrome/browser/ui/views/infobars/infobar_background.h"
 #include "views/controls/button/button.h"
 #include "views/focus/focus_manager.h"
 

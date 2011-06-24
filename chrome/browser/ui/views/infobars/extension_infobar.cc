@@ -8,7 +8,6 @@
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_infobar_delegate.h"
 #include "chrome/browser/platform_util.h"
-#include "chrome/browser/ui/views/infobars/infobar_background.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
@@ -22,18 +21,18 @@
 #include "views/controls/menu/menu_model_adapter.h"
 #include "views/widget/widget.h"
 
-// ExtensionInfoBarDelegate ---------------------------------------------------
+// ExtensionInfoBarDelegate ----------------------------------------------------
 
 InfoBar* ExtensionInfoBarDelegate::CreateInfoBar(TabContentsWrapper* owner) {
   return new ExtensionInfoBar(owner, this);
 }
 
-// ExtensionInfoBar -----------------------------------------------------------
+// ExtensionInfoBar ------------------------------------------------------------
 
 namespace {
 // The horizontal margin between the menu and the Extension (HTML) view.
-static const int kMenuHorizontalMargin = 1;
-};
+const int kMenuHorizontalMargin = 1;
+}  // namespace
 
 ExtensionInfoBar::ExtensionInfoBar(TabContentsWrapper* owner,
                                    ExtensionInfoBarDelegate* delegate)
