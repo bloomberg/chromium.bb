@@ -495,11 +495,13 @@ class BuildSpecsManager(object):
 
     return None
 
-  def GetNextBuildSpec(self, version_file, latest=False, retries=5):
+  def GetNextBuildSpec(self, version_file, latest=False, force_version=None,
+                       retries=5):
     """Gets the version number of the next build spec to build.
       Args:
         version_file: File to use in cros when checking for cros version.
         latest: Whether we need to handout the latest build. Default: False
+        force_version: Forces us to use this version.
         retries: Number of retries for updating the status
       Returns:
         Local path to manifest to build or None in case of no need to build.
@@ -513,12 +515,15 @@ class BuildSpecsManager(object):
         logging.debug('Using version %s' % version_info.VersionString())
         self._LoadSpecs(version_info)
 
-        if not self.unprocessed:
-          self.current_version = self._CreateNewBuildSpec(version_info)
-        elif latest:
-          self.current_version = self.latest_unprocessed
+        if not force_version:
+          if not self.unprocessed:
+            self.current_version = self._CreateNewBuildSpec(version_info)
+          elif latest:
+            self.current_version = self.latest_unprocessed
+          else:
+            self.current_version = self.unprocessed[0]
         else:
-          self.current_version = self.unprocessed[0]
+          self.current_version = force_version
 
         if self.current_version:
           logging.debug('Using build spec: %s', self.current_version)

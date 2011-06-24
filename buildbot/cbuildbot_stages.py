@@ -505,7 +505,8 @@ class ManifestVersionedSyncStage(BuilderStage):
     """Uses the initialized manifest manager to get the next manifest."""
     assert self.manifest_manager, \
         'Must run GetStageManager before checkout out build.'
-    return self.manifest_manager.GetNextBuildSpec(VERSION_FILE, latest=True)
+    return self.manifest_manager.GetNextBuildSpec(
+        VERSION_FILE, force_version=self._options.force_version, latest=True)
 
   def _PerformStage(self):
     if os.path.isdir(os.path.join(self._build_root, '.repo')):
@@ -558,9 +559,11 @@ class LGKMVersionedSyncStage(ManifestVersionedSyncStage):
         'Manifest manager instantiated with wrong class.'
 
     if self._build_config['master']:
-      return self.manifest_manager.CreateNewCandidate(VERSION_FILE)
+      return self.manifest_manager.CreateNewCandidate(
+          VERSION_FILE, force_version=self._options.force_version)
     else:
-      return self.manifest_manager.GetLatestCandidate(VERSION_FILE)
+      return self.manifest_manager.GetLatestCandidate(
+          VERSION_FILE, force_version=self._options.force_version)
 
 
 class ManifestVersionedSyncCompletionStage(ForgivingBuilderStage):

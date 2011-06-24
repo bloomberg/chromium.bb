@@ -316,8 +316,8 @@ def _CreateParser():
   group.add_option('--buildbot', dest='buildbot', action='callback',
                     default=False, callback=_ProcessBuildBotOption,
                     help='This is running on a buildbot')
-  group.add_option('-n', '--buildnumber',
-                    help='build number', type='int', default=0)
+  group.add_option('--buildnumber',
+                   help='build number', type='int', default=0)
   group.add_option('--clobber', action='store_true', dest='clobber',
                     default=False,
                     help='Clears an old checkout before syncing')
@@ -344,9 +344,13 @@ def _CreateParser():
   group.add_option('--resume', action='store_true',
                     default=False,
                     help='Skip stages already successfully completed.')
-  group.add_option('-u', '--url', dest='url',
-                    default=None,
-                    help='Override the GIT repo URL from the build config.')
+  group.add_option('--url', dest='url',
+                   default=None,
+                   help='Override the GIT repo URL from the build config.')
+  group.add_option('--version', dest='force_version', default=None,
+                   help='Used with manifest logic.  Forces use of this version '
+                        'rather than create or get latest.')
+
   parser.add_option_group(group)
 
   # Debug options

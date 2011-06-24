@@ -146,7 +146,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
 
 
   def _SetInFlightWithRetry(self, commit_message, retries):
-    for index in range(retries+1):
+    for index in range(retries + 1):
       try:
         self._SetInFlight(commit_message)
         break
@@ -159,11 +159,12 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     else:
       raise manifest_version.GenerateBuildSpecException(last_error)
 
-  def CreateNewCandidate(self, version_file, retries=3):
+  def CreateNewCandidate(self, version_file, force_version=None, retries=3):
     """Gets the version number of the next build spec to build.
       Args:
         version_file: File to use in cros when checking for cros version.
-        retries: Number of retries for updating the status
+        force_version: Forces us to use this version.
+        retries: Number of retries for updating the status.
       Returns:
         next_build: a string of the next build number for the builder to consume
                     or None in case of no need to build.
@@ -174,8 +175,11 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       version_info = self._GetCurrentVersionInfo(version_file)
       self._LoadSpecs(version_info)
       lkgm_info = self._GetLatestCandidateByVersion(version_info)
+      if force_version:
+        self.current_version = force_version
+      else:
+        self.current_version = self._CreateNewBuildSpec(lkgm_info)
 
-      self.current_version = self._CreateNewBuildSpec(lkgm_info)
       if self.current_version:
         logging.debug('Using build spec: %s', self.current_version)
         commit_message = 'Automatic: Start %s %s' % (self.build_name,
@@ -190,10 +194,11 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       logging.error(err_msg)
       raise manifest_version.GenerateBuildSpecException(err_msg)
 
-  def GetLatestCandidate(self, version_file, retries=5):
+  def GetLatestCandidate(self, version_file, force_version=None, retries=5):
     """Gets the version number of the next build spec to build.
       Args:
         version_file: File to use in cros when checking for cros version.
+        force_version: Forces us to use this version.
         retries: Number of retries for updating the status
       Returns:
         Local path to manifest to build or None in case of no need to build.
@@ -203,7 +208,11 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     try:
       version_info = self._GetCurrentVersionInfo(version_file)
       self._LoadSpecs(version_info)
-      self.current_version = self.latest_unprocessed
+      if force_version:
+        self.current_version = force_version
+      else:
+        self.current_version = self.latest_unprocessed
+
       if self.current_version:
         logging.debug('Using build spec: %s', self.current_version)
         commit_message = 'Automatic: Start %s %s' % (self.build_name,
