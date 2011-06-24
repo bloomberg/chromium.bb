@@ -347,6 +347,7 @@ void DownloadItemView::OnDownloadUpdated(DownloadItem* download) {
   switch (download_->state()) {
     case DownloadItem::IN_PROGRESS:
       download_->is_paused() ? StopDownloadProgress() : StartDownloadProgress();
+      LoadIconIfItemPathChanged();
       break;
     case DownloadItem::INTERRUPTED:
       StopDownloadProgress();
@@ -925,9 +926,18 @@ void DownloadItemView::OpenDownload() {
 
 void DownloadItemView::LoadIcon() {
   IconManager* im = g_browser_process->icon_manager();
-  im->LoadIcon(download_->GetUserVerifiedFilePath(),
+  last_download_item_path_ = download_->GetUserVerifiedFilePath();
+  im->LoadIcon(last_download_item_path_,
                IconLoader::SMALL, &icon_consumer_,
                NewCallback(this, &DownloadItemView::OnExtractIconComplete));
+}
+
+void DownloadItemView::LoadIconIfItemPathChanged() {
+  FilePath current_download_path = download_->GetUserVerifiedFilePath();
+  if (last_download_item_path_ == current_download_path)
+    return;
+
+  LoadIcon();
 }
 
 // Load an icon for the file type we're downloading, and animate any in progress

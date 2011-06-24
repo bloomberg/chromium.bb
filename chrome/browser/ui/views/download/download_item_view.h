@@ -134,6 +134,7 @@ class DownloadItemView : public views::ButtonListener,
   void OpenDownload();
 
   void LoadIcon();
+  void LoadIconIfItemPathChanged();
 
   // Convenience method to paint the 3 vertical bitmaps (bottom, middle, top)
   // that form the background.
@@ -284,6 +285,11 @@ class DownloadItemView : public views::ButtonListener,
 
   // The name of this view as reported to assistive technology.
   string16 accessible_name_;
+
+  // The icon loaded in the download shelf is based on the file path of the
+  // item.  Store the path used, so that we can detect a change in the path
+  // and reload the icon.
+  FilePath last_download_item_path_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadItemView);
 };
