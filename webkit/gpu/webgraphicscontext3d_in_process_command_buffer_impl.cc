@@ -27,6 +27,7 @@
 #include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/GLES2/gles2_command_buffer.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/gfx/gl/gl_share_group.h"
@@ -795,7 +796,7 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::initialize(
 
   GURL active_url;
   if (web_view && web_view->mainFrame())
-    active_url = GURL(web_view->mainFrame()->url());
+    active_url = GURL(web_view->mainFrame()->document().url());
 
   GLInProcessContext* parent_context = NULL;
   if (!render_directly_to_web_view) {
