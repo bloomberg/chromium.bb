@@ -38,8 +38,43 @@
 #include "chrome/browser/browser_about_handler.h"
 #endif
 
+#if defined(OS_WIN)
+// These includes are only necessary for the PluginInfobarExperiment.
+#include "chrome/common/attrition_experiments.h"
+#include "chrome/installer/util/google_update_settings.h"
+#endif
+
 using WebKit::WebCache;
 using WebKit::WebSecurityOrigin;
+
+namespace {
+// Override the behavior of the security infobars for plugins. Only
+// operational on windows and only for a small slice of the of the
+// UMA opted-in population.
+void PluginInfobarExperiment(ContentSetting* outdated_policy,
+                             ContentSetting* authorize_policy) {
+#if !defined(OS_WIN)
+  return;
+#else
+ std::wstring client_value;
+ if (!GoogleUpdateSettings::GetClient(&client_value))
+   return;
+ if (client_value == attrition_experiments::kPluginNoBlockNoOOD) {
+   *authorize_policy = CONTENT_SETTING_ALLOW;
+   *outdated_policy = CONTENT_SETTING_ALLOW;
+ } else if (client_value == attrition_experiments::kPluginNoBlockDoOOD) {
+   *authorize_policy = CONTENT_SETTING_ALLOW;
+   *outdated_policy = CONTENT_SETTING_BLOCK;
+ } else if (client_value == attrition_experiments::kPluginDoBlockNoOOD) {
+   *authorize_policy = CONTENT_SETTING_ASK;
+   *outdated_policy = CONTENT_SETTING_ALLOW;
+ } else if (client_value == attrition_experiments::kPluginDoBlockDoOOD) {
+   *authorize_policy = CONTENT_SETTING_ASK;
+   *outdated_policy = CONTENT_SETTING_BLOCK;
+ }
+#endif
+}
+}  // namespace
 
 ChromeRenderMessageFilter::ChromeRenderMessageFilter(
     int render_process_id,
@@ -375,6 +410,8 @@ void ChromeRenderMessageFilter::OnGetPluginPolicies(
 
   *authorize_policy = always_authorize_plugins_.GetValue() ?
       CONTENT_SETTING_ALLOW : CONTENT_SETTING_ASK;
+
+  PluginInfobarExperiment(outdated_policy, authorize_policy);
 }
 
 void ChromeRenderMessageFilter::OnAllowDatabase(int render_view_id,
