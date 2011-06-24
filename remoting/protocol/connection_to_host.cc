@@ -9,7 +9,6 @@
 #include "remoting/base/constants.h"
 #include "remoting/jingle_glue/http_port_allocator.h"
 #include "remoting/jingle_glue/javascript_signal_strategy.h"
-#include "remoting/jingle_glue/jingle_thread.h"
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
 #include "remoting/protocol/auth_token_utils.h"
 #include "remoting/protocol/client_message_dispatcher.h"
@@ -25,12 +24,12 @@ namespace remoting {
 namespace protocol {
 
 ConnectionToHost::ConnectionToHost(
-    JingleThread* thread,
+    MessageLoop* message_loop,
     talk_base::NetworkManager* network_manager,
     talk_base::PacketSocketFactory* socket_factory,
     PortAllocatorSessionFactory* session_factory)
     : state_(STATE_EMPTY),
-      thread_(thread),
+      message_loop_(message_loop),
       network_manager_(network_manager),
       socket_factory_(socket_factory),
       port_allocator_session_factory_(session_factory),
@@ -51,10 +50,6 @@ HostStub* ConnectionToHost::host_stub() {
   return host_stub_.get();
 }
 
-MessageLoop* ConnectionToHost::message_loop() {
-  return thread_->message_loop();
-}
-
 void ConnectionToHost::Connect(scoped_refptr<XmppProxy> xmpp_proxy,
                                const std::string& your_jid,
                                const std::string& host_jid,
@@ -73,7 +68,7 @@ void ConnectionToHost::Connect(scoped_refptr<XmppProxy> xmpp_proxy,
   strategy->AttachXmppProxy(xmpp_proxy);
   signal_strategy_.reset(strategy);
   jingle_client_ =
-      new JingleClient(thread_, signal_strategy_.get(),
+      new JingleClient(message_loop_, signal_strategy_.get(),
                        network_manager_.release(), socket_factory_.release(),
                        port_allocator_session_factory_.release(), this);
   jingle_client_->Init();
@@ -85,8 +80,8 @@ void ConnectionToHost::Connect(scoped_refptr<XmppProxy> xmpp_proxy,
 }
 
 void ConnectionToHost::Disconnect() {
-  if (MessageLoop::current() != message_loop()) {
-    message_loop()->PostTask(
+  if (MessageLoop::current() != message_loop_) {
+    message_loop_->PostTask(
         FROM_HERE, NewRunnableMethod(this, &ConnectionToHost::Disconnect));
     return;
   }
@@ -100,13 +95,13 @@ void ConnectionToHost::Disconnect() {
 }
 
 void ConnectionToHost::InitSession() {
-  DCHECK_EQ(message_loop(), MessageLoop::current());
+  DCHECK_EQ(message_loop_, MessageLoop::current());
 
   std::string jid = jingle_client_->GetFullJid();
 
   // Initialize chromotocol |session_manager_|.
   JingleSessionManager* session_manager =
-      new JingleSessionManager(thread_);
+      new JingleSessionManager(message_loop_);
   // TODO(ajwong): Make this a command switch when we're more stable.
   session_manager->set_allow_local_ips(true);
   session_manager->Init(
@@ -153,7 +148,7 @@ const SessionConfig* ConnectionToHost::config() {
 // JingleClient::Callback interface.
 void ConnectionToHost::OnStateChange(JingleClient* client,
                                      JingleClient::State state) {
-  DCHECK_EQ(message_loop(), MessageLoop::current());
+  DCHECK_EQ(message_loop_, MessageLoop::current());
   DCHECK(client);
   DCHECK(event_callback_);
 
@@ -168,14 +163,14 @@ void ConnectionToHost::OnStateChange(JingleClient* client,
 
 void ConnectionToHost::OnNewSession(Session* session,
     SessionManager::IncomingSessionResponse* response) {
-  DCHECK_EQ(message_loop(), MessageLoop::current());
+  DCHECK_EQ(message_loop_, MessageLoop::current());
   // Client always rejects incoming sessions.
   *response = SessionManager::DECLINE;
 }
 
 void ConnectionToHost::OnSessionStateChange(
     Session::State state) {
-  DCHECK_EQ(message_loop(), MessageLoop::current());
+  DCHECK_EQ(message_loop_, MessageLoop::current());
   DCHECK(event_callback_);
 
   switch (state) {

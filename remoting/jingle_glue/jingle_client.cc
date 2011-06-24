@@ -19,14 +19,14 @@
 
 namespace remoting {
 
-JingleClient::JingleClient(JingleThread* thread,
+JingleClient::JingleClient(MessageLoop* message_loop,
                            SignalStrategy* signal_strategy,
                            talk_base::NetworkManager* network_manager,
                            talk_base::PacketSocketFactory* socket_factory,
                            PortAllocatorSessionFactory* session_factory,
                            Callback* callback)
     : enable_nat_traversing_(false),
-      thread_(thread),
+      message_loop_(message_loop),
       state_(START),
       initialized_(false),
       closed_(false),
@@ -36,6 +36,7 @@ JingleClient::JingleClient(JingleThread* thread,
       network_manager_(network_manager),
       socket_factory_(socket_factory),
       port_allocator_session_factory_(session_factory) {
+  DCHECK(message_loop_);
 }
 
 JingleClient::~JingleClient() {
@@ -120,7 +121,7 @@ void JingleClient::Close(Task* closed_task) {
     // If the client is already closed then don't close again.
     if (closed_) {
       if (closed_task)
-        thread_->message_loop()->PostTask(FROM_HERE, closed_task);
+        message_loop_->PostTask(FROM_HERE, closed_task);
       return;
     }
     closed_task_.reset(closed_task);
@@ -156,7 +157,7 @@ IqRequest* JingleClient::CreateIqRequest() {
 }
 
 MessageLoop* JingleClient::message_loop() {
-  return thread_->message_loop();
+  return message_loop_;
 }
 
 cricket::SessionManager* JingleClient::session_manager() {

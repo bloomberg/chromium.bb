@@ -64,7 +64,7 @@ class ConnectionToHost : public JingleClient::Callback {
   // |network_manager| and |socket_factory| may be set to NULL.
   //
   // TODO(sergeyu): Constructor shouldn't need thread here.
-  ConnectionToHost(JingleThread* thread,
+  ConnectionToHost(MessageLoop* network_message_loop,
                    talk_base::NetworkManager* network_manager,
                    talk_base::PacketSocketFactory* socket_factory,
                    PortAllocatorSessionFactory* session_factory);
@@ -104,9 +104,6 @@ class ConnectionToHost : public JingleClient::Callback {
   State state() const;
 
  private:
-  // The message loop for the jingle thread this object works on.
-  MessageLoop* message_loop();
-
   // Called on the jingle thread after we've successfully to XMPP server. Starts
   // P2P connection to the host.
   void InitSession();
@@ -122,7 +119,7 @@ class ConnectionToHost : public JingleClient::Callback {
   // Internal state of the connection.
   State state_;
 
-  JingleThread* thread_;
+  MessageLoop* message_loop_;
 
   scoped_ptr<talk_base::NetworkManager> network_manager_;
   scoped_ptr<talk_base::PacketSocketFactory> socket_factory_;

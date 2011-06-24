@@ -37,16 +37,16 @@ JingleThread* ClientContext::jingle_thread() {
   return &jingle_thread_;
 }
 
-MessageLoop* ClientContext::jingle_message_loop() {
-  return jingle_thread_.message_loop();
-}
-
 MessageLoop* ClientContext::main_message_loop() {
   return main_thread_.message_loop();
 }
 
 MessageLoop* ClientContext::decode_message_loop() {
   return decode_thread_.message_loop();
+}
+
+MessageLoop* ClientContext::network_message_loop() {
+  return jingle_thread_.message_loop();
 }
 
 }  // namespace remoting

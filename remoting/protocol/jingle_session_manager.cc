@@ -11,7 +11,6 @@
 #include "base/rand_util.h"
 #include "base/string_number_conversions.h"
 #include "remoting/base/constants.h"
-#include "remoting/jingle_glue/jingle_thread.h"
 #include "remoting/proto/auth.pb.h"
 #include "third_party/libjingle/source/talk/p2p/base/constants.h"
 #include "third_party/libjingle/source/talk/p2p/base/transport.h"
@@ -169,13 +168,12 @@ ContentDescription::ContentDescription(
 
 ContentDescription::~ContentDescription() { }
 
-JingleSessionManager::JingleSessionManager(
-    JingleThread* jingle_thread)
-    : jingle_thread_(jingle_thread),
+JingleSessionManager::JingleSessionManager(MessageLoop* message_loop)
+    : message_loop_(message_loop),
       cricket_session_manager_(NULL),
       allow_local_ips_(false),
       closed_(false) {
-  DCHECK(jingle_thread_);
+  DCHECK(message_loop);
 }
 
 void JingleSessionManager::Init(
@@ -184,8 +182,8 @@ void JingleSessionManager::Init(
     IncomingSessionCallback* incoming_session_callback,
     crypto::RSAPrivateKey* private_key,
     scoped_refptr<net::X509Certificate> certificate) {
-  if (MessageLoop::current() != message_loop()) {
-    message_loop()->PostTask(
+  if (MessageLoop::current() != message_loop_) {
+    message_loop_->PostTask(
         FROM_HERE, NewRunnableMethod(
             this, &JingleSessionManager::Init,
             local_jid, cricket_session_manager, incoming_session_callback,
@@ -209,8 +207,8 @@ JingleSessionManager::~JingleSessionManager() {
 }
 
 void JingleSessionManager::Close(Task* closed_task) {
-  if (MessageLoop::current() != message_loop()) {
-    message_loop()->PostTask(
+  if (MessageLoop::current() != message_loop_) {
+    message_loop_->PostTask(
         FROM_HERE, NewRunnableMethod(this, &JingleSessionManager::Close,
                                      closed_task));
     return;
@@ -247,7 +245,7 @@ scoped_refptr<protocol::Session> JingleSessionManager::Connect(
   jingle_session->set_candidate_config(candidate_config);
   jingle_session->set_receiver_token(receiver_token);
 
-  message_loop()->PostTask(
+  message_loop_->PostTask(
       FROM_HERE, NewRunnableMethod(this, &JingleSessionManager::DoConnect,
                                    jingle_session, host_jid,
                                    host_public_key, receiver_token,
@@ -261,7 +259,7 @@ void JingleSessionManager::DoConnect(
     const std::string& host_public_key,
     const std::string& receiver_token,
     protocol::Session::StateChangeCallback* state_change_callback) {
-  DCHECK_EQ(message_loop(), MessageLoop::current());
+  DCHECK_EQ(message_loop_, MessageLoop::current());
   cricket::Session* cricket_session = cricket_session_manager_->CreateSession(
       local_jid_, kChromotingXmlNamespace);
 
@@ -275,17 +273,13 @@ void JingleSessionManager::DoConnect(
       jingle_session->GetEncryptedMasterKey()));
 }
 
-JingleThread* JingleSessionManager::jingle_thread() {
-  return jingle_thread_;
-}
-
 MessageLoop* JingleSessionManager::message_loop() {
-  return jingle_thread_->message_loop();
+  return message_loop_;
 }
 
 void JingleSessionManager::OnSessionCreate(
     cricket::Session* cricket_session, bool incoming) {
-  DCHECK_EQ(message_loop(), MessageLoop::current());
+  DCHECK_EQ(message_loop_, MessageLoop::current());
 
   // Allow local connections if neccessary.
   cricket_session->set_allow_local_ips(allow_local_ips_);
@@ -303,7 +297,7 @@ void JingleSessionManager::OnSessionCreate(
 }
 
 void JingleSessionManager::OnSessionDestroy(cricket::Session* cricket_session) {
-  DCHECK_EQ(message_loop(), MessageLoop::current());
+  DCHECK_EQ(message_loop_, MessageLoop::current());
 
   std::list<scoped_refptr<JingleSession> >::iterator it;
   for (it = sessions_.begin(); it != sessions_.end(); ++it) {
@@ -318,7 +312,7 @@ void JingleSessionManager::OnSessionDestroy(cricket::Session* cricket_session) {
 void JingleSessionManager::AcceptConnection(
     JingleSession* jingle_session,
     cricket::Session* cricket_session) {
-  DCHECK_EQ(message_loop(), MessageLoop::current());
+  DCHECK_EQ(message_loop_, MessageLoop::current());
 
   // Reject connection if we are closed.
   if (closed_) {

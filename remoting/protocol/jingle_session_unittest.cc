@@ -151,7 +151,7 @@ class JingleSessionTest : public testing::Test {
 
     session_manager_pair_ = new SessionManagerPair(&thread_);
     session_manager_pair_->Init();
-    host_server_ = new JingleSessionManager(&thread_);
+    host_server_ = new JingleSessionManager(thread_.message_loop());
     host_server_->set_allow_local_ips(true);
     host_server_->Init(
         SessionManagerPair::kHostJid,
@@ -161,7 +161,7 @@ class JingleSessionTest : public testing::Test {
         private_key.release(),
         cert);
 
-    client_server_ = new JingleSessionManager(&thread_);
+    client_server_ = new JingleSessionManager(thread_.message_loop());
     client_server_->set_allow_local_ips(true);
     client_server_->Init(
         SessionManagerPair::kClientJid,

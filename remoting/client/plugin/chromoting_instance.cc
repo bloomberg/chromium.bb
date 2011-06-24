@@ -97,7 +97,7 @@ bool ChromotingInstance::Init(uint32_t argc,
 
   // Create the chromoting objects.
   host_connection_.reset(new protocol::ConnectionToHost(
-      context_.jingle_thread(), network_manager, socket_factory,
+      context_.network_message_loop(), network_manager, socket_factory,
       session_factory));
   view_.reset(new PepperView(this, &context_));
   view_proxy_ = new PepperViewProxy(this, view_.get());

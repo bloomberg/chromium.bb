@@ -28,8 +28,6 @@ class SessionManager;
 
 namespace remoting {
 
-class JingleThread;
-
 namespace protocol {
 
 // ContentDescription used for chromoting sessions. It contains the information
@@ -75,7 +73,7 @@ class JingleSessionManager
     : public protocol::SessionManager,
       public cricket::SessionClient {
  public:
-  explicit JingleSessionManager(remoting::JingleThread* jingle_thread);
+  explicit JingleSessionManager(MessageLoop* message_loop);
 
   // Initializes the session client. Doesn't accept ownership of the
   // |session_manager|. Close() must be called _before_ the |session_manager|
@@ -122,10 +120,7 @@ class JingleSessionManager
  private:
   friend class JingleSession;
 
-  // The jingle thread used by this object.
-  JingleThread* jingle_thread();
-
-  // Message loop that corresponds to jingle_thread().
+  // Message loop that corresponds to the network thread.
   MessageLoop* message_loop();
 
   // Called by JingleChromotocolConnection when a new connection is initiated.
@@ -150,7 +145,7 @@ class JingleSessionManager
       scoped_refptr<net::X509Certificate> certificate);
 
   std::string local_jid_;  // Full jid for the local side of the session.
-  JingleThread* jingle_thread_;
+  MessageLoop* message_loop_;
   cricket::SessionManager* cricket_session_manager_;
   scoped_ptr<IncomingSessionCallback> incoming_session_callback_;
   bool allow_local_ips_;

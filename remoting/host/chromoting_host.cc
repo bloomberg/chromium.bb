@@ -117,7 +117,7 @@ void ChromotingHost::Start() {
       new XmppSignalStrategy(context_->jingle_thread(), xmpp_login,
                              xmpp_auth_token,
                              xmpp_auth_service));
-  jingle_client_ = new JingleClient(context_->jingle_thread(),
+  jingle_client_ = new JingleClient(context_->network_message_loop(),
                                     signal_strategy_.get(),
                                     NULL, NULL, NULL, this);
   jingle_client_->Init();
@@ -236,7 +236,7 @@ void ChromotingHost::OnStateChange(JingleClient* jingle_client,
 
     // Create and start session manager.
     protocol::JingleSessionManager* server =
-        new protocol::JingleSessionManager(context_->jingle_thread());
+        new protocol::JingleSessionManager(context_->network_message_loop());
     // TODO(ajwong): Make this a command switch when we're more stable.
     server->set_allow_local_ips(true);
 

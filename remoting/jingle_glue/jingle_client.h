@@ -37,7 +37,6 @@ class SessionManager;
 namespace remoting {
 
 class JingleInfoRequest;
-class JingleThread;
 class PortAllocatorSessionFactory;
 
 class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
@@ -54,7 +53,7 @@ class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
   // Physical sockets are used if |network_manager| and
   // |socket_factory| are set to NULL. Otherwise ownership of these
   // objects is given to JingleClient.
-  JingleClient(JingleThread* thread,
+  JingleClient(MessageLoop* message_loop,
                SignalStrategy* signal_strategy,
                talk_base::NetworkManager* network_manager,
                talk_base::PacketSocketFactory* socket_factory,
@@ -113,8 +112,7 @@ class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
   // network.
   bool enable_nat_traversing_;
 
-  // JingleThread used for the connection. Set in the constructor.
-  JingleThread* thread_;
+  MessageLoop* message_loop_;
 
   // Current state of the object.
   // Must be locked when accessing initialized_ or closed_.

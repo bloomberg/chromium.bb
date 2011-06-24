@@ -231,11 +231,11 @@ void ProtocolTestClient::Run(const std::string& username,
   signal_strategy_.reset(
       new XmppSignalStrategy(&jingle_thread, username, auth_token,
                              auth_service));
-  client_ = new JingleClient(&jingle_thread, signal_strategy_.get(),
-                             NULL, NULL, NULL, this);
+  client_ = new JingleClient(jingle_thread.message_loop(),
+                             signal_strategy_.get(), NULL, NULL, NULL, this);
   client_->Init();
 
-  session_manager_ = new JingleSessionManager(&jingle_thread);
+  session_manager_ = new JingleSessionManager(jingle_thread.message_loop());
 
   host_jid_ = host_jid;
 

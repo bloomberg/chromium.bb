@@ -23,10 +23,10 @@ class ClientContext {
   void Stop();
 
   JingleThread* jingle_thread();
-  MessageLoop* jingle_message_loop();
 
   MessageLoop* main_message_loop();
   MessageLoop* decode_message_loop();
+  MessageLoop* network_message_loop();
 
  private:
   // A thread that handles Jingle network operations (used in

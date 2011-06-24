@@ -40,9 +40,11 @@ class JingleClientTest : public testing::Test {
 
  protected:
   virtual void SetUp() {
+    thread_.Start();
+
     signal_strategy_.reset(new XmppSignalStrategy(&thread_, "", "", ""));
-    client_ = new JingleClient(&thread_, signal_strategy_.get(), NULL,
-                               NULL, NULL, &callback_);
+    client_ = new JingleClient(thread_.message_loop(), signal_strategy_.get(),
+                               NULL, NULL, NULL, &callback_);
     // Fake initialization.
     client_->initialized_ = true;
     signal_strategy_->observer_ = client_;
@@ -58,8 +60,6 @@ TEST_F(JingleClientTest, OnStateChanged) {
   EXPECT_CALL(callback_, OnStateChange(_, JingleClient::CONNECTING))
       .Times(1);
 
-  thread_.Start();
-
   base::WaitableEvent state_changed_event(true, false);
   thread_.message_loop()->PostTask(FROM_HERE, NewRunnableFunction(
       &JingleClientTest::ChangeState, signal_strategy_.get(),
@@ -74,7 +74,6 @@ TEST_F(JingleClientTest, OnStateChanged) {
 TEST_F(JingleClientTest, Close) {
   EXPECT_CALL(callback_, OnStateChange(_, _))
       .Times(0);
-  thread_.Start();
   client_->Close();
   // Verify that the channel doesn't call callback anymore.
   thread_.message_loop()->PostTask(FROM_HERE, NewRunnableFunction(
@@ -85,7 +84,6 @@ TEST_F(JingleClientTest, Close) {
 }
 
 TEST_F(JingleClientTest, ClosedTask) {
-  thread_.Start();
   bool closed = false;
   client_->Close(NewRunnableFunction(&JingleClientTest::OnClosed,
                                      &closed));
@@ -94,7 +92,6 @@ TEST_F(JingleClientTest, ClosedTask) {
 }
 
 TEST_F(JingleClientTest, DoubleClose) {
-  thread_.Start();
   bool closed1 = false;
   client_->Close(NewRunnableFunction(&JingleClientTest::OnClosed,
                                      &closed1));

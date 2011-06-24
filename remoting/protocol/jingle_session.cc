@@ -20,7 +20,6 @@
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/ssl_server_socket.h"
 #include "remoting/base/constants.h"
-#include "remoting/jingle_glue/jingle_thread.h"
 #include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/socket_wrapper.h"
 #include "third_party/libjingle/source/talk/base/thread.h"
