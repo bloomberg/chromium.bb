@@ -23,6 +23,7 @@
 #include "chrome/browser/history/url_database.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
+#include "googleurl/src/url_parse.h"
 #include "googleurl/src/url_util.h"
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
@@ -140,14 +141,29 @@ int ScoreForValue(int value, const int* value_ranks) {
 InMemoryURLIndex::InMemoryURLIndex(const FilePath& history_dir)
     : history_dir_(history_dir),
       history_item_count_(0) {
+  InMemoryURLIndex::InitializeSchemeWhitelist(&scheme_whitelist_);
 }
 
 // Called only by unit tests.
 InMemoryURLIndex::InMemoryURLIndex()
     : history_item_count_(0) {
+  InMemoryURLIndex::InitializeSchemeWhitelist(&scheme_whitelist_);
 }
 
 InMemoryURLIndex::~InMemoryURLIndex() {}
+
+// static
+void InMemoryURLIndex::InitializeSchemeWhitelist(
+    std::set<std::string>* whitelist) {
+  DCHECK(whitelist);
+  whitelist->insert(std::string(chrome::kAboutScheme));
+  whitelist->insert(std::string(chrome::kChromeUIScheme));
+  whitelist->insert(std::string(chrome::kFileScheme));
+  whitelist->insert(std::string(chrome::kFtpScheme));
+  whitelist->insert(std::string(chrome::kHttpScheme));
+  whitelist->insert(std::string(chrome::kHttpsScheme));
+  whitelist->insert(std::string(chrome::kMailToScheme));
+}
 
 // Indexing
 
@@ -165,6 +181,11 @@ void InMemoryURLIndex::ShutDown() {
 
 bool InMemoryURLIndex::IndexRow(const URLRow& row) {
   const GURL& gurl(row.url());
+
+  // Index only URLs with a whitelisted scheme.
+  if (!InMemoryURLIndex::URLSchemeIsWhitelisted(gurl))
+    return true;
+
   string16 url(net::FormatUrl(gurl, languages_,
       net::kFormatUrlOmitUsernamePassword,
       UnescapeRule::SPACES | UnescapeRule::URL_SPECIAL_CHARS,
@@ -479,11 +500,12 @@ InMemoryURLIndex::HistoryIDSet InMemoryURLIndex::HistoryIDsForTerm(
 // static
 InMemoryURLIndex::String16Set InMemoryURLIndex::WordSetFromString16(
     const string16& uni_string) {
+  const size_t kMaxWordLength = 64;
   String16Vector words = WordVectorFromString16(uni_string, false);
   String16Set word_set;
   for (String16Vector::const_iterator iter = words.begin(); iter != words.end();
        ++iter)
-    word_set.insert(base::i18n::ToLower(*iter));
+    word_set.insert(base::i18n::ToLower(*iter).substr(0, kMaxWordLength));
   return word_set;
 }
 
@@ -653,10 +675,14 @@ size_t InMemoryURLIndex::CachedResultsIndexForTerm(
 TermMatches InMemoryURLIndex::MatchTermInString(const string16& term,
                                                 const string16& string,
                                                 int term_num) {
+  const size_t kMaxCompareLength = 2048;
+  const string16& short_string = (string.length() > kMaxCompareLength) ?
+      string.substr(0, kMaxCompareLength) : string;
   TermMatches matches;
-  for (size_t location = string.find(term); location != string16::npos;
-       location = string.find(term, location + 1))
+  for (size_t location = short_string.find(term); location != string16::npos;
+       location = short_string.find(term, location + 1)) {
     matches.push_back(TermMatch(term_num, location, term.size()));
+  }
   return matches;
 }
 
@@ -876,6 +902,10 @@ bool InMemoryURLIndex::GetCacheFilePath(FilePath* file_path) {
     return false;
   *file_path = history_dir_.Append(FILE_PATH_LITERAL("History Provider Cache"));
   return true;
+}
+
+bool InMemoryURLIndex::URLSchemeIsWhitelisted(const GURL& gurl) const {
+  return scheme_whitelist_.find(gurl.scheme()) != scheme_whitelist_.end();
 }
 
 void InMemoryURLIndex::SavePrivateData(InMemoryURLIndexCacheItem* cache) const {

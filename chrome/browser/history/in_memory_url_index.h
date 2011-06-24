@@ -184,6 +184,7 @@ class InMemoryURLIndex {
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, StaticFunctions);
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, TitleSearch);
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, TypedCharacterCaching);
+  FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, WhitelistedURLs);
 
   // Signals that there are no previously cached results for the typed term.
   static const size_t kNoCachedResultForTerm;
@@ -254,6 +255,9 @@ class InMemoryURLIndex {
   // Initializes all index data members in preparation for restoring the index
   // from the cache or a complete rebuild from the history database.
   void ClearPrivateData();
+
+  // Initializes the whitelist of URL schemes.
+  static void InitializeSchemeWhitelist(std::set<std::string>* whitelist);
 
   // Breaks a string down into individual words.
   static String16Set WordSetFromString16(const string16& uni_string);
@@ -348,6 +352,9 @@ class InMemoryURLIndex {
   // returns the cleaned up matches.
   static TermMatches SortAndDeoverlap(const TermMatches& matches);
 
+  // Determines if |gurl| has a whitelisted scheme and returns true if so.
+  bool URLSchemeIsWhitelisted(const GURL& gurl) const;
+
   // Utility functions supporting RestoreFromCache and SaveToCache.
 
   // Construct a file path for the cache file within the same directory where
@@ -401,6 +408,9 @@ class InMemoryURLIndex {
   TermCharWordSetVector term_char_word_set_cache_;
   HistoryInfoMap history_info_map_;
   std::string languages_;
+
+  // Only URLs with a whitelisted scheme are indexed.
+  std::set<std::string> scheme_whitelist_;
 
   DISALLOW_COPY_AND_ASSIGN(InMemoryURLIndex);
 };
