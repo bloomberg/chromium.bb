@@ -609,7 +609,7 @@ class LGKMVersionedSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     if not self._build_config['master']:
       return
 
-    builders = self._GetImportantBuildersForMaster()
+    builders = self._GetImportantBuildersForMaster(cbuildbot_config.config)
     statuses = ManifestVersionedSyncStage.manifest_manager.GetBuildersStatus(
         builders)
     success = True
