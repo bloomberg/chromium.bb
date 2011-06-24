@@ -220,8 +220,15 @@
     'accelerator_table_gtk': {
       'filepath': 'chrome/browser/ui/views/accelerator_table_gtk.cc',
     },
+    'downloads_ui' : {
+      'filepath': 'chrome/browser/resources/downloads\..*' \
+                  '|chrome/browser/ui/webui/.*downloads.*' \
+		  '|chrome/browser/ui/views/download/.*' \
+		  '|chrome/browser/ui/cocoa/download/.*' \
+		  '|chrome/browser/ui/gtk/download/.*'
+    },
   },
-
+  
   'WATCHLISTS': {
     'this_file': ['nirnimesh@chromium.org'],
     'valgrind': ['timurrrr@chromium.org',
@@ -296,5 +303,6 @@
     'importer': ['tfarina@chromium.org'],
     'views': ['dhollowa@chromium.org'],
     'accelerator_table_gtk': ['mazda@chromium.org'],
+    'downloads_ui': ['rdsmith@chromium.org'],
   },
 }
