@@ -11,7 +11,6 @@
 #include <richedit.h>
 #include <textserv.h>
 
-#include "app/win/iat_patch_function.h"
 #include "base/auto_reset.h"
 #include "base/basictypes.h"
 #include "base/i18n/rtl.h"
@@ -19,6 +18,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/iat_patch_function.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autocomplete/autocomplete_accessibility.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
@@ -348,8 +348,8 @@ class PaintPatcher {
 
  private:
   size_t refcount_;
-  app::win::IATPatchFunction begin_paint_;
-  app::win::IATPatchFunction end_paint_;
+  base::win::IATPatchFunction begin_paint_;
+  base::win::IATPatchFunction end_paint_;
 
   DISALLOW_COPY_AND_ASSIGN(PaintPatcher);
 };

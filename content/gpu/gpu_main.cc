@@ -8,11 +8,11 @@
 #include <windows.h>
 #endif
 
-#include "app/win/scoped_com_initializer.h"
 #include "base/environment.h"
 #include "base/message_loop.h"
 #include "base/stringprintf.h"
 #include "base/threading/platform_thread.h"
+#include "base/win/scoped_com_initializer.h"
 #include "build/build_config.h"
 #include "content/common/content_switches.h"
 #include "content/common/gpu/gpu_config.h"
@@ -57,7 +57,7 @@ int GpuMain(const MainFunctionParams& parameters) {
 #endif
   }
 
-  app::win::ScopedCOMInitializer com_initializer;
+  base::win::ScopedCOMInitializer com_initializer;
 
   // We can not tolerate early returns from this code, because the
   // detection of early return of a child process is implemented using

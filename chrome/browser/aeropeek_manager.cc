@@ -7,7 +7,6 @@
 #include <dwmapi.h>
 #include <shobjidl.h>
 
-#include "app/win/shell.h"
 #include "base/command_line.h"
 #include "base/scoped_native_library.h"
 #include "base/synchronization/waitable_event.h"
@@ -35,6 +34,7 @@
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/win/shell.h"
 #include "ui/base/win/window_impl.h"
 #include "ui/gfx/gdi_util.h"
 #include "ui/gfx/icon_util.h"
@@ -254,7 +254,7 @@ class RegisterThumbnailTask : public Task {
     // browser icon in the taskbar.
     // TODO(mattm): This should use ShellIntegration::GetChromiumAppId to work
     // properly with multiple profiles.
-    app::win::SetAppIdForWindow(
+    ui::win::SetAppIdForWindow(
         BrowserDistribution::GetDistribution()->GetBrowserAppId(), window_);
 
     // Register this place-holder window to the taskbar as a child of

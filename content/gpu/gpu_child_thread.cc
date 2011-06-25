@@ -7,9 +7,9 @@
 #include <string>
 #include <vector>
 
-#include "app/win/scoped_com_initializer.h"
 #include "base/command_line.h"
 #include "base/threading/worker_pool.h"
+#include "base/win/scoped_com_initializer.h"
 #include "build/build_config.h"
 #include "content/common/child_process.h"
 #include "content/common/content_client.h"
@@ -259,7 +259,7 @@ void GpuChildThread::OnHang() {
 // Runs on a worker thread. The GPU process never terminates voluntarily so
 // it is safe to assume that its message loop is valid.
 void GpuChildThread::CollectDxDiagnostics(GpuChildThread* thread) {
-  app::win::ScopedCOMInitializer com_initializer;
+  base::win::ScopedCOMInitializer com_initializer;
 
   DxDiagNode node;
   gpu_info_collector::GetDxDiagnostics(&node);

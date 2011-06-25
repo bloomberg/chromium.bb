@@ -7,9 +7,9 @@
 #include <string>
 #include <vector>
 
-#include "app/win/scoped_com_initializer.h"
 #include "base/command_line.h"
 #include "base/threading/worker_pool.h"
+#include "base/win/scoped_com_initializer.h"
 #include "build/build_config.h"
 #include "content/common/child_process.h"
 #include "content/common/gpu/gpu_messages.h"
