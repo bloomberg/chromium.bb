@@ -171,8 +171,10 @@ def _AlternateFilePath(path, alt_dir, input_api):
 def _ChangesMatch(generated_file, static_file):
   """Return True if the two files contain the same textual changes.
 
-  Generated lines may have extra formatting/text at their beginnings and ends.
-  Line numbers may differ.
+  There may be extra generated lines and generated lines are still considered
+  to "match" static ones even if they have extra formatting/text at their
+  beginnings and ends.
+  Line numbers may differ but order may not.
   """
   if not generated_file and not static_file:
     return True  # Neither file affected.
@@ -184,15 +186,26 @@ def _ChangesMatch(generated_file, static_file):
   static_changes = static_file.ChangedContents()
   # ChangedContents() is a list of (line number, text) for all new lines.
   # Ignore the line number, but check that the text for each new line matches.
-  if len(generated_changes) != len(static_changes):
+  if len(generated_changes) < len(static_changes):
     return False
-  for new_line in range(len(generated_changes)):
-    _, generated_text = generated_changes[new_line]
-    _, static_text = static_changes[new_line]
-    # Text need not be identical but the entire static line should be contained
-    # in the generated one (e.g. generated text might have extra formatting).
-    if not static_text in generated_text:
+
+  next_generated = 0
+  for next_static in range(len(static_changes)):
+    _, static_text = static_changes[next_static]
+
+    # Search generated changes for this static text.
+    found = False
+    while not found and next_generated < len(generated_changes):
+      _, generated_text = generated_changes[next_generated]
+      # Text need not be identical but the entire static line should be
+      # in the generated one (e.g. generated text might have extra formatting).
+      if static_text in generated_text:
+        found = True
+      else:
+        next_generated += 1
+    if not found:
       return False
+
   return True
 
 def SampleZipped(sample_file, input_api):

@@ -345,11 +345,20 @@ class TestPresubmit(unittest.TestCase):
     self.assertTrue(PRESUBMIT._ChangesMatch(af1, af2))
     self.assertTrue(PRESUBMIT._ChangesMatch(af2, af1))
 
+  def testChangesMatch_DifferentOrder(self):
+    af = FakeAffectedFile(changed_contents=[(1, 'foo'), (2, 'bar')])
+    af2 = FakeAffectedFile(changed_contents=[(1, 'bar'), (2, 'foo')])
+    self.assertFalse(PRESUBMIT._ChangesMatch(af, af2))
+    self.assertFalse(PRESUBMIT._ChangesMatch(af2, af))
+
   def testChangesMatch_DifferentLength(self):
-    af1 = FakeAffectedFile(changed_contents=[(1, 'foo'), (14, 'bar')])
-    af2 = FakeAffectedFile(changed_contents=[(14, 'bar')])
-    self.assertFalse(PRESUBMIT._ChangesMatch(af1, af2))
-    self.assertFalse(PRESUBMIT._ChangesMatch(af2, af1))
+    af = FakeAffectedFile(changed_contents=[(14, 'bar'), (15, 'qxxy')])
+    af_extra = FakeAffectedFile(changed_contents=[(1, 'foo'), (14, 'bar'),
+                                                  (23, 'baz'), (25, 'qxxy')])
+    # The generated file (first arg) may have extra lines.
+    self.assertTrue(PRESUBMIT._ChangesMatch(af_extra, af))
+    # But not the static file (second arg).
+    self.assertFalse(PRESUBMIT._ChangesMatch(af, af_extra))
 
   def testChangesMatch_SameLengthButDifferentText(self):
     af1 = FakeAffectedFile(changed_contents=[(1, 'foo'), (14, 'bar')])
@@ -362,8 +371,19 @@ class TestPresubmit(unittest.TestCase):
     af_plus = FakeAffectedFile(changed_contents=[(6, 'foo'), (9, '<b>bar</b>')])
     # The generated file (first arg) can have extra formatting.
     self.assertTrue(PRESUBMIT._ChangesMatch(af_plus, af))
-    # But not the static file (second arg)
+    # But not the static file (second arg).
     self.assertFalse(PRESUBMIT._ChangesMatch(af, af_plus))
+
+  def testChangesMatch_DuplicateLines(self):
+    af = FakeAffectedFile(changed_contents=[(1, 'foo'), (2, 'bar')])
+    af_dups = FakeAffectedFile(changed_contents=[(7, 'foo'), (8, 'foo'),
+                                                 (9, 'bar')])
+    # Duplciate lines in the generated file (first arg) will be ignored
+    # like extra lines.
+    self.assertTrue(PRESUBMIT._ChangesMatch(af_dups, af))
+    # Duplicate lines in static file (second arg) must each have a matching
+    # line in the generated file.
+    self.assertFalse(PRESUBMIT._ChangesMatch(af, af_dups))
 
   def testSampleZipped_ZipInAffectedFiles(self):
     sample_file = FakeAffectedFile(
