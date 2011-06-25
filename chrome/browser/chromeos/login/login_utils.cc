@@ -432,6 +432,11 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
 #if defined(HAVE_XINPUT2)
       switches::kTouchDevices,
 #endif
+#if defined(TOUCH_UI)
+      // The virtual keyboard extension for TOUCH_UI (chrome://keyboard) highly
+      // relies on experimental APIs.
+      switches::kEnableExperimentalExtensionApis,
+#endif
   };
   command_line->CopySwitchesFrom(base_command_line,
                                  kForwardSwitches,
