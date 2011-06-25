@@ -645,35 +645,34 @@ ExtensionService::~ExtensionService() {
     ExternalExtensionProviderInterface* provider = i->get();
     provider->ServiceShutdown();
   }
-
-#if defined(OS_CHROMEOS)
-  if (event_routers_initialized_) {
-    ExtensionFileBrowserEventRouter::GetInstance()->
-        StopObservingFileSystemEvents();
-  }
-#endif
 }
 
 void ExtensionService::InitEventRouters() {
   if (event_routers_initialized_)
     return;
 
-  ExtensionHistoryEventRouter::GetInstance()->ObserveProfile(profile_);
+  history_event_router_.reset(new ExtensionHistoryEventRouter());
+  history_event_router_->ObserveProfile(profile_);
   ExtensionAccessibilityEventRouter::GetInstance()->ObserveProfile(profile_);
   browser_event_router_.reset(new ExtensionBrowserEventRouter(profile_));
   browser_event_router_->Init();
   preference_event_router_.reset(new ExtensionPreferenceEventRouter(profile_));
-  ExtensionBookmarkEventRouter::GetInstance()->Observe(
-      profile_->GetBookmarkModel());
-  ExtensionCookiesEventRouter::GetInstance()->Init();
-  ExtensionManagementEventRouter::GetInstance()->Init();
+  bookmark_event_router_.reset(new ExtensionBookmarkEventRouter(
+      profile_->GetBookmarkModel()));
+  bookmark_event_router_->Init();
+  cookies_event_router_.reset(new ExtensionCookiesEventRouter());
+  cookies_event_router_->ObserveProfile(profile_);
+  management_event_router_.reset(new ExtensionManagementEventRouter());
+  management_event_router_->ObserveProfile(profile_);
   ExtensionProcessesEventRouter::GetInstance()->ObserveProfile(profile_);
-  ExtensionWebNavigationEventRouter::GetInstance()->Init();
+  web_navigation_event_router_.reset(
+      new ExtensionWebNavigationEventRouter(profile_));
+  web_navigation_event_router_->Init();
 
 #if defined(OS_CHROMEOS)
-  ExtensionFileBrowserEventRouter::GetInstance()->ObserveFileSystemEvents(
-      profile_);
-  ExtensionMediaPlayerEventRouter::GetInstance()->Init(profile_);
+  file_browser_event_router_.reset(
+      new ExtensionFileBrowserEventRouter(profile_));
+  file_browser_event_router_->Init();
 #endif
 
 #if defined(OS_CHROMEOS) && defined(TOUCH_UI)

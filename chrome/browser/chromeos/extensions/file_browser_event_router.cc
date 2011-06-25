@@ -55,36 +55,32 @@ DictionaryValue* DiskToDictionaryValue(
   return result;
 }
 
-ExtensionFileBrowserEventRouter::ExtensionFileBrowserEventRouter()
+ExtensionFileBrowserEventRouter::ExtensionFileBrowserEventRouter(
+    Profile* profile)
     : delegate_(new ExtensionFileBrowserEventRouter::FileWatcherDelegate()),
-      profile_(NULL) {
+      profile_(profile) {
 }
 
 ExtensionFileBrowserEventRouter::~ExtensionFileBrowserEventRouter() {
   DCHECK(file_watchers_.empty());
   STLDeleteValues(&file_watchers_);
 
-  if (!profile_)
+  if (!profile_) {
+    NOTREACHED();
     return;
+  }
   if (!chromeos::CrosLibrary::Get()->EnsureLoaded())
     return;
   chromeos::MountLibrary* lib =
       chromeos::CrosLibrary::Get()->GetMountLibrary();
   lib->RemoveObserver(this);
-  profile_ = NULL;
 }
 
-// static
-ExtensionFileBrowserEventRouter*
-  ExtensionFileBrowserEventRouter::GetInstance() {
-  return Singleton<ExtensionFileBrowserEventRouter>::get();
-}
-
-void ExtensionFileBrowserEventRouter::ObserveFileSystemEvents(
-    Profile* profile) {
-  if (!profile)
+void ExtensionFileBrowserEventRouter::Init() {
+  if (!profile_) {
+    NOTREACHED();
     return;
-  profile_ = profile;
+  }
   if (!chromeos::CrosLibrary::Get()->EnsureLoaded())
     return;
   if (chromeos::UserManager::Get()->user_is_logged_in()) {
@@ -131,17 +127,6 @@ void ExtensionFileBrowserEventRouter::RemoveFileWatch(
     delete iter->second;
     file_watchers_.erase(iter);
   }
-}
-
-void ExtensionFileBrowserEventRouter::StopObservingFileSystemEvents() {
-  if (!profile_)
-    return;
-  if (!chromeos::CrosLibrary::Get()->EnsureLoaded())
-    return;
-  chromeos::MountLibrary* lib =
-      chromeos::CrosLibrary::Get()->GetMountLibrary();
-  lib->RemoveObserver(this);
-  profile_ = NULL;
 }
 
 void ExtensionFileBrowserEventRouter::DiskChanged(

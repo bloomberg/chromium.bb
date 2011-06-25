@@ -250,16 +250,11 @@ bool UninstallFunction::RunImpl() {
   return true;
 }
 
-// static
-ExtensionManagementEventRouter* ExtensionManagementEventRouter::GetInstance() {
-  return Singleton<ExtensionManagementEventRouter>::get();
-}
-
 ExtensionManagementEventRouter::ExtensionManagementEventRouter() {}
 
 ExtensionManagementEventRouter::~ExtensionManagementEventRouter() {}
 
-void ExtensionManagementEventRouter::Init() {
+void ExtensionManagementEventRouter::ObserveProfile(Profile* profile) {
   NotificationType::Type types[] = {
     NotificationType::EXTENSION_INSTALLED,
     NotificationType::EXTENSION_UNINSTALLED,
@@ -267,13 +262,14 @@ void ExtensionManagementEventRouter::Init() {
     NotificationType::EXTENSION_UNLOADED
   };
 
-  // Don't re-init (eg in the case of multiple profiles).
-  if (registrar_.IsEmpty()) {
-    for (size_t i = 0; i < arraysize(types); i++) {
-      registrar_.Add(this,
-                     types[i],
-                     NotificationService::AllSources());
-    }
+  CHECK(registrar_.IsEmpty());
+  for (size_t i = 0; i < arraysize(types); i++) {
+    registrar_.Add(this,
+                   types[i],
+                   Source<Profile>(profile));
+    registrar_.Add(this,
+                   types[i],
+                   Source<Profile>(profile->GetOffTheRecordProfile()));
   }
 }
 
