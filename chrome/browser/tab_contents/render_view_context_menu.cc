@@ -755,7 +755,7 @@ void RenderViewContextMenu::AppendEditableItems() {
   // If word is misspelled, give option for "Add to dictionary"
   if (!params_.misspelled_word.empty()) {
     if (params_.dictionary_suggestions.empty()) {
-      menu_model_.AddItem(0,
+      menu_model_.AddItem(IDC_CONTENT_CONTEXT_NO_SPELLING_SUGGESTIONS,
           l10n_util::GetStringUTF16(
               IDS_CONTENT_CONTEXT_NO_SPELLING_SUGGESTIONS));
     }
@@ -1093,6 +1093,9 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       }
       return params_.media_type == WebContextMenuData::MediaTypeNone ||
              params_.media_flags & WebContextMenuData::MediaCanPrint;
+
+    case IDC_CONTENT_CONTEXT_NO_SPELLING_SUGGESTIONS:
+      return false;
 
     case IDC_CONTENT_CONTEXT_SEARCHWEBFOR:
     case IDC_CONTENT_CONTEXT_GOTOURL:
