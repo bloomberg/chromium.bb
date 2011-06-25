@@ -8,6 +8,8 @@
 // PLEASE DO NOT LEAVE ENTRIES IN THIS FILE FOR MORE THAN 24 HRS.
 // The need for rebaselines is conflicting with the TIMEOUT expectation upstream
 
+BUGPFELDMAN LINUX : svg/text/svg-zoom-large-value.xhtml = TEXT
+
 // Started crashing in the r89132 roll; canaries seem unaffected.
 BUGCR86570 MAC : http/tests/misc/acid3.html = IMAGE CRASH
 BUGCR86570 MAC : http/tests/misc/font-face-in-multiple-segmented-faces.html = CRASH
