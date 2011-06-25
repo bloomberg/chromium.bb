@@ -301,6 +301,8 @@ def GetBoardPathFromCrosOverlayList(build_path, target):
     cmd += ['--board', board, '--variant', variant]
   elif re.match('.*?-\w+', target):
     cmd += ['--board', target]
+  elif target == 'stumpy':
+    cmd += ['--board', target]
   else:
     raise UnknownBoardFormat('Unknown format: %s' % target)
 
