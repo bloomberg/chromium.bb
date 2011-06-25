@@ -1761,6 +1761,8 @@
         'browser/remove_rows_table_model.h',
         'browser/renderer_host/accelerated_plugin_view_mac.h',
         'browser/renderer_host/accelerated_plugin_view_mac.mm',
+        'browser/renderer_host/accelerated_surface_container_touch.cc',
+        'browser/renderer_host/accelerated_surface_container_touch.h',
         'browser/renderer_host/chrome_render_message_filter.cc',
         'browser/renderer_host/chrome_render_message_filter.h',
         'browser/renderer_host/chrome_render_view_host_observer.cc',
@@ -3697,6 +3699,9 @@
             ['exclude', '^browser/chromeos/login/touch_*'],
             ['exclude', '^browser/extensions/extension_input_ui_api.cc'],
             ['exclude', '^browser/extensions/extension_input_ui_api.h'],
+            ['exclude', '^browser/renderer_host/accelerated_surface_container_touch.cc'],
+            ['exclude', '^browser/renderer_host/accelerated_surface_container_touch.h'],
+            ['exclude', '^browser/renderer_host/render_widget_host_view_views_touch.cc'],
             ['exclude', '^browser/renderer_host/render_widget_host_view_views_touch.cc'],
             ['exclude', '^browser/ui/touch/*'],
             ['exclude', '^browser/ui/views/tab_contents/tab_contents_container_views.cc'],
@@ -3706,6 +3711,9 @@
           ],
         }],
         ['touchui==1', {
+          'dependencies': [
+            '../ui/gfx/gl/gl.gyp:gl',
+          ],
           'sources/': [
             ['include', '^browser/ui/touch/*'],
             ['exclude', '^browser/chromeos/frame/browser_non_client_frame_view_factory_chromeos.cc'],
@@ -3719,6 +3727,9 @@
             ['exclude', '^browser/ui/views/tab_contents/native_tab_contents_view_gtk.*'],
             ['exclude', '^browser/chromeos/input_method/candidate_window.cc'],
             ['exclude', '^browser/chromeos/input_method/candidate_window.h'],
+          ],
+          'include_dirs': [
+            '../third_party/angle/include',
           ],
         }],
         ['toolkit_uses_gtk == 1', {

@@ -29,6 +29,10 @@
 #include "views/ime/input_method.h"
 #include "views/widget/widget.h"
 
+#if defined(TOUCH_UI)
+#include "chrome/browser/renderer_host/accelerated_surface_container_touch.h"
+#endif
+
 static const int kMaxWindowWidth = 4000;
 static const int kMaxWindowHeight = 4000;
 
@@ -566,7 +570,7 @@ views::View* RenderWidgetHostViewViews::GetOwnerViewOfTextInputClient() {
 }
 
 void RenderWidgetHostViewViews::OnPaint(gfx::Canvas* canvas) {
-  if (is_hidden_ || !host_)
+  if (is_hidden_ || !host_ || host_->is_accelerated_compositing_active())
     return;
 
   // Paint a "hole" in the canvas so that the render of the web page is on
@@ -575,11 +579,6 @@ void RenderWidgetHostViewViews::OnPaint(gfx::Canvas* canvas) {
   canvas->FillRectInt(SK_ColorBLACK, 0, 0,
                       bounds().width(), bounds().height(),
                       SkXfermode::kClear_Mode);
-
-  // Don't do any painting if the GPU process is rendering directly
-  // into the View.
-  if (host_->is_accelerated_compositing_active())
-    return;
 
 #if defined(TOOLKIT_USES_GTK)
   GdkWindow* window = GetInnerNativeView()->window;

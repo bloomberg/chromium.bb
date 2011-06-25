@@ -25,7 +25,7 @@ GpuScheduler::GpuScheduler(CommandBuffer* command_buffer,
     : command_buffer_(command_buffer),
       commands_per_update_(100),
       unscheduled_count_(0),
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(TOUCH_UI)
       swap_buffers_count_(0),
       acknowledged_swap_buffers_count_(0),
 #endif
@@ -46,7 +46,7 @@ GpuScheduler::GpuScheduler(CommandBuffer* command_buffer,
     : command_buffer_(command_buffer),
       commands_per_update_(commands_per_update),
       unscheduled_count_(0),
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(TOUCH_UI)
       swap_buffers_count_(0),
       acknowledged_swap_buffers_count_(0),
 #endif
@@ -139,7 +139,7 @@ bool GpuScheduler::SetParent(GpuScheduler* parent_scheduler,
     return decoder_->SetParent(NULL, 0);
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(TOUCH_UI)
 namespace {
 const unsigned int kMaxOutstandingSwapBuffersCallsPerOnscreenContext = 1;
 }
@@ -178,6 +178,11 @@ void GpuScheduler::ProcessCommands() {
 
 #if defined(OS_MACOSX)
   bool do_rate_limiting = surface_.get() != NULL;
+#elif defined(TOUCH_UI)
+  bool do_rate_limiting = back_surface_.get() != NULL;
+#endif
+
+#if defined(OS_MACOSX) || defined(TOUCH_UI)
   // Don't swamp the browser process with SwapBuffers calls it can't handle.
   if (do_rate_limiting &&
       swap_buffers_count_ - acknowledged_swap_buffers_count_ >=

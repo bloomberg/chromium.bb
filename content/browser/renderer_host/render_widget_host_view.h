@@ -265,6 +265,13 @@ class RenderWidgetHostView {
   virtual void GpuRenderingStateDidChange() = 0;
 #endif
 
+#if defined(TOUCH_UI)
+  virtual void AcceleratedSurfaceSetIOSurface(
+      int32 width, int32 height, uint64 surface_id) = 0;
+  virtual void AcceleratedSurfaceBuffersSwapped(uint64 surface_id) = 0;
+  virtual void AcceleratedSurfaceRelease(uint64 surface_id) = 0;
+#endif
+
 #if defined(TOOLKIT_USES_GTK)
   virtual void CreatePluginContainer(gfx::PluginWindowHandle id) = 0;
   virtual void DestroyPluginContainer(gfx::PluginWindowHandle id) = 0;

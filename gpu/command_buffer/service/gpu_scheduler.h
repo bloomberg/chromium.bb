@@ -5,6 +5,7 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GPU_SCHEDULER_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GPU_SCHEDULER_H_
 
+#include <map>
 #include <queue>
 #include <vector>
 
@@ -23,6 +24,8 @@
 
 #if defined(OS_MACOSX)
 #include "ui/gfx/surface/accelerated_surface_mac.h"
+#elif defined(TOUCH_UI)
+#include "ui/gfx/surface/accelerated_surface_linux.h"
 #endif
 
 namespace gfx {
@@ -94,6 +97,19 @@ class GpuScheduler : public CommandBufferEngine {
   // Asynchronously resizes an offscreen frame buffer.
   void ResizeOffscreenFrameBuffer(const gfx::Size& size);
 
+#if defined(OS_MACOSX) || defined(TOUCH_UI)
+  // To prevent the GPU process from overloading the browser process,
+  // we need to track the number of swap buffers calls issued and
+  // acknowledged per on-screen context, and keep the GPU from getting
+  // too far ahead of the browser. Note that this
+  // is also predicated on a flow control mechanism between the
+  // renderer and GPU processes.
+  uint64 swap_buffers_count() const;
+  uint64 acknowledged_swap_buffers_count() const;
+  void set_acknowledged_swap_buffers_count(
+      uint64 acknowledged_swap_buffers_count);
+#endif
+
 #if defined(OS_MACOSX)
   // Needed only on Mac OS X, which does not render into an on-screen
   // window and therefore requires the backing store to be resized
@@ -107,20 +123,21 @@ class GpuScheduler : public CommandBufferEngine {
   virtual void SetTransportDIBAllocAndFree(
       Callback2<size_t, TransportDIB::Handle*>::Type* allocator,
       Callback1<TransportDIB::Id>::Type* deallocator);
-  // Returns the id of the current IOSurface, or 0.
+  // Returns the id of the current surface that is being rendered to
+  // (or 0 if no such surface has been created).
   virtual uint64 GetSurfaceId();
-  // To prevent the GPU process from overloading the browser process,
-  // we need to track the number of swap buffers calls issued and
-  // acknowledged per on-screen (IOSurface-backed) context, and keep
-  // the GPU from getting too far ahead of the browser. Note that this
-  // is also predicated on a flow control mechanism between the
-  // renderer and GPU processes.
-  uint64 swap_buffers_count() const;
-  uint64 acknowledged_swap_buffers_count() const;
-  void set_acknowledged_swap_buffers_count(
-      uint64 acknowledged_swap_buffers_count);
 
   void DidDestroySurface();
+#endif
+
+#if defined(TOUCH_UI)
+  virtual void CreateBackSurface(const gfx::Size& size);
+  // Should not be back_surface_ or front_surface_.
+  virtual void ReleaseSurface(uint64 surface_id);
+
+  // Returns the id of the surface (or 0 if no such surface has been created).
+  virtual uint64 GetBackSurfaceId();
+  virtual uint64 GetFrontSurfaceId();
 #endif
 
   // Sets a callback that is called when a glResizeCHROMIUM command
@@ -183,10 +200,18 @@ class GpuScheduler : public CommandBufferEngine {
 
   scoped_ptr<Callback0::Type> scheduled_callback_;
 
-#if defined(OS_MACOSX)
-  scoped_ptr<AcceleratedSurface> surface_;
+#if defined(OS_MACOSX) || defined(TOUCH_UI)
   uint64 swap_buffers_count_;
   uint64 acknowledged_swap_buffers_count_;
+#endif
+
+#if defined(OS_MACOSX)
+  scoped_ptr<AcceleratedSurface> surface_;
+#elif defined(TOUCH_UI)
+  std::map<uint64, scoped_refptr<AcceleratedSurface> >
+      surfaces_;
+  scoped_refptr<AcceleratedSurface> back_surface_;
+  scoped_refptr<AcceleratedSurface> front_surface_;
 #endif
 
   ScopedRunnableMethodFactory<GpuScheduler> method_factory_;

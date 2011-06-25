@@ -136,6 +136,13 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
 #endif
   virtual void SetVisuallyDeemphasized(const SkColor* color, bool animate) { }
 
+#if defined(TOUCH_UI)
+  virtual void AcceleratedSurfaceSetIOSurface(
+      int32 width, int32 height, uint64 surface_id) { }
+  virtual void AcceleratedSurfaceBuffersSwapped(uint64 surface_id) { }
+  virtual void AcceleratedSurfaceRelease(uint64 surface_id) { }
+#endif
+
 #if defined(TOOLKIT_USES_GTK)
   virtual void CreatePluginContainer(gfx::PluginWindowHandle id) { }
   virtual void DestroyPluginContainer(gfx::PluginWindowHandle id) { }

@@ -46,6 +46,32 @@ IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params)
 IPC_STRUCT_END()
 #endif
 
+#if defined(TOUCH_UI)
+IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params)
+  IPC_STRUCT_MEMBER(int32, renderer_id)
+  IPC_STRUCT_MEMBER(int32, render_view_id)
+  IPC_STRUCT_MEMBER(int32, width)
+  IPC_STRUCT_MEMBER(int32, height)
+  IPC_STRUCT_MEMBER(uint64, identifier)
+  IPC_STRUCT_MEMBER(int32, route_id)
+IPC_STRUCT_END()
+
+IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params)
+  IPC_STRUCT_MEMBER(int32, renderer_id)
+  IPC_STRUCT_MEMBER(int32, render_view_id)
+  IPC_STRUCT_MEMBER(uint64, surface_id)
+  IPC_STRUCT_MEMBER(int32, route_id)
+  IPC_STRUCT_MEMBER(uint64, swap_buffers_count)
+IPC_STRUCT_END()
+
+IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceRelease_Params)
+  IPC_STRUCT_MEMBER(int32, renderer_id)
+  IPC_STRUCT_MEMBER(int32, render_view_id)
+  IPC_STRUCT_MEMBER(uint64, identifier)
+  IPC_STRUCT_MEMBER(int32, route_id)
+IPC_STRUCT_END()
+#endif
+
 IPC_STRUCT_TRAITS_BEGIN(DxDiagNode)
   IPC_STRUCT_TRAITS_MEMBER(values)
   IPC_STRUCT_TRAITS_MEMBER(children)
@@ -121,7 +147,23 @@ IPC_MESSAGE_CONTROL0(GpuMsg_CollectGraphicsInfo)
 IPC_MESSAGE_CONTROL2(GpuMsg_ResizeViewACK,
                      int32 /* renderer_id */,
                      int32 /* command_buffer_id */)
-#elif defined(OS_MACOSX)
+#endif
+
+#if defined(TOUCH_UI)
+// Tells the GPU process that it's safe to start rendering to the surface.
+IPC_MESSAGE_CONTROL3(GpuMsg_AcceleratedSurfaceSetIOSurfaceACK,
+                     int /* renderer_id */,
+                     int32 /* route_id */,
+                     uint64 /* surface_id */)
+
+// Tells the GPU process the surface has been released.
+IPC_MESSAGE_CONTROL3(GpuMsg_AcceleratedSurfaceReleaseACK,
+                     int /* renderer_id */,
+                     int32 /* route_id */,
+                     uint64 /* surface_id */)
+#endif
+
+#if defined(OS_MACOSX) || defined(TOUCH_UI)
 // Tells the GPU process that the browser process handled the swap
 // buffers request with the given number. Note that it is possible
 // for the browser process to coalesce frames; it is not guaranteed
@@ -131,7 +173,9 @@ IPC_MESSAGE_CONTROL3(GpuMsg_AcceleratedSurfaceBuffersSwappedACK,
                      int /* renderer_id */,
                      int32 /* route_id */,
                      uint64 /* swap_buffers_count */)
+#endif
 
+#if defined(OS_MACOSX)
 // Requests the GPU process to destroy the command buffer and remove the
 // associated route. Further messages to this command buffer will result in a
 // channel error.
@@ -203,12 +247,13 @@ IPC_MESSAGE_CONTROL4(GpuHostMsg_ResizeView,
                      int32 /* render_view_id */,
                      int32 /* command_buffer_route_id */,
                      gfx::Size /* size */)
-#elif defined(OS_MACOSX)
-// This message, used on Mac OS X 10.6 and later (where IOSurface is
-// supported), is sent from the GPU process to the browser to indicate that a
-// new backing store was allocated for the given "window" (fake
-// PluginWindowHandle). The renderer ID and render view ID are needed in
-// order to uniquely identify the RenderWidgetHostView on the browser side.
+#endif
+
+#if defined(OS_MACOSX) || defined(TOUCH_UI)
+// This message is sent from the GPU process to the browser to indicate that a
+// new backing store was allocated. The renderer ID and render view ID are
+// needed in order to uniquely identify the RenderWidgetHostView on the
+// browser side.
 IPC_MESSAGE_CONTROL1(GpuHostMsg_AcceleratedSurfaceSetIOSurface,
                      GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params)
 
@@ -217,6 +262,14 @@ IPC_MESSAGE_CONTROL1(GpuHostMsg_AcceleratedSurfaceSetIOSurface,
 // should cause the browser to redraw the compositor's contents.
 IPC_MESSAGE_CONTROL1(GpuHostMsg_AcceleratedSurfaceBuffersSwapped,
                      GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params)
+#endif
+
+#if defined(TOUCH_UI)
+// Tells the browser to release whatever resources are associated with
+// the given surface. The browser must send an ACK once this operation
+// is complete.
+IPC_MESSAGE_CONTROL1(GpuHostMsg_AcceleratedSurfaceRelease,
+                     GpuHostMsg_AcceleratedSurfaceRelease_Params)
 #endif
 
 //------------------------------------------------------------------------------

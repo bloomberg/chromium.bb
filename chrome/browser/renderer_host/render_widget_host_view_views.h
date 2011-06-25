@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "base/time.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
@@ -25,6 +25,7 @@
 namespace ui {
 enum TouchStatus;
 }
+class AcceleratedSurfaceContainerTouch;
 #endif
 
 class RenderWidgetHost;
@@ -143,6 +144,13 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
       base::i18n::TextDirection direction) OVERRIDE;
   virtual views::View* GetOwnerViewOfTextInputClient() OVERRIDE;
 
+#if defined(TOUCH_UI)
+  virtual void AcceleratedSurfaceSetIOSurface(
+      int32 width, int32 height, uint64 surface_id) OVERRIDE;
+  virtual void AcceleratedSurfaceBuffersSwapped(uint64 surface_id) OVERRIDE;
+  virtual void AcceleratedSurfaceRelease(uint64 surface_id) OVERRIDE;
+#endif
+
  protected:
   // Overridden from RenderWidgetHostView / views::View.
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
@@ -226,6 +234,11 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
 
   // Indicates if there is onging composition text.
   bool has_composition_text_;
+
+#if defined(TOUCH_UI)
+  std::map<uint64, scoped_refptr<AcceleratedSurfaceContainerTouch> >
+      accelerated_surface_containers_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewViews);
 };

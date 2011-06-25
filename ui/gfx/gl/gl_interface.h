@@ -168,6 +168,9 @@ class GLInterface {
                             GLenum type,
                             const void* indices) = 0;
 
+  virtual void EGLImageTargetTexture2DOES(
+      GLenum target, GLeglImageOES image) = 0;
+
   virtual void Enable(GLenum cap) = 0;
 
   virtual void EnableVertexAttribArray(GLuint index) = 0;

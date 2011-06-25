@@ -16,6 +16,9 @@
           ['include', '_(gtk|linux|posix|skia|x)\\.cc$'],
           ['include', '/(gtk|x11)_[^/]*\\.cc$'],
         ],
+        'include_dirs': [
+          '<(DEPTH)/third_party/angle/include',
+        ],
       }],
       ['OS=="mac"', {'sources/': [
         ['include', '/cocoa/'],
@@ -44,6 +47,8 @@
         '<(DEPTH)/ui/ui.gyp:ui_gfx',
       ],
       'sources': [
+        'accelerated_surface_linux.cc',
+        'accelerated_surface_linux.h',
         'accelerated_surface_mac.cc',
         'accelerated_surface_mac.h',
         'io_surface_support_mac.cc',
