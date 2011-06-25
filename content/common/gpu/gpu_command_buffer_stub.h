@@ -70,10 +70,15 @@ class GpuCommandBufferStub
 
   void ViewResized();
 
-#if defined(OS_MACOSX)
+#if defined(TOUCH_UI)
+  void AcceleratedSurfaceIOSurfaceSet(uint64 surface_id);
+  void AcceleratedSurfaceReleased(uint64 surface_id);
+#endif  // defined(TOUCH_UI)
+
+#if defined(OS_MACOSX) || defined(TOUCH_UI)
   // Called only by the GpuChannel.
   void AcceleratedSurfaceBuffersSwapped(uint64 swap_buffers_count);
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MACOSX) || defined(TOUCH_UI)
 
   // Called when the command buffer was destroyed, and the stub should now
   // unblock itself and handle pending messages.
@@ -112,8 +117,11 @@ class GpuCommandBufferStub
 
 #if defined(OS_MACOSX)
   void OnSetWindowSize(const gfx::Size& size);
-  void SwapBuffersCallback();
 #endif  // defined(OS_MACOSX)
+
+#if defined(OS_MACOSX) || defined(TOUCH_UI)
+  void SwapBuffersCallback();
+#endif  // defined(TOUCH_UI)
 
   void ResizeCallback(gfx::Size size);
   void ReportState();

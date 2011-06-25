@@ -135,6 +135,9 @@ class MockGLInterface : public GLInterface {
   MOCK_METHOD4(DrawElements, void(
       GLenum mode, GLsizei count, GLenum type, const void* indices));
 
+  MOCK_METHOD2(EGLImageTargetTexture2DOES, void(
+      GLenum target, GLeglImageOES image));
+
   MOCK_METHOD1(Enable, void(GLenum cap));
 
   MOCK_METHOD1(EnableVertexAttribArray, void(GLuint index));

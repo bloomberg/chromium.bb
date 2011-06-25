@@ -5,6 +5,7 @@
 #include "chrome/browser/renderer_host/render_widget_host_view_views.h"
 
 #include "base/logging.h"
+#include "chrome/browser/renderer_host/accelerated_surface_container_touch.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/gtk/WebInputEventFactory.h"
 
@@ -187,3 +188,26 @@ RenderWidgetHostView*
   return reinterpret_cast<RenderWidgetHostView*>(user_data);
 }
 
+void RenderWidgetHostViewViews::AcceleratedSurfaceSetIOSurface(
+    int32 width, int32 height, uint64 surface_id) {
+  // TODO(backer): Currently NO-OPed. Should eventually be something like:
+
+  // context_->MakeCurrent(surface_.get());
+  // accelerated_surface_containers_[surface_id] =
+  //   new AcceleratedSurfaceContainer(surface_id);
+  // glFlush();
+}
+
+void RenderWidgetHostViewViews::AcceleratedSurfaceBuffersSwapped(
+    uint64 surface_id) {
+  // TODO(backer): Currently NO-OPed. Will eventually tie into the
+  // browser compositor.
+}
+
+void RenderWidgetHostViewViews::AcceleratedSurfaceRelease(uint64 surface_id) {
+  // TODO(backer): Currently NO-OPed. Should eventually be something like:
+
+  // context_->MakeCurrent(surface_.get());
+  // accelerated_surface_containers_.erase(surface_id);
+  // glFlush();
+}

@@ -74,9 +74,20 @@ class GpuChannelManager : public IPC::Channel::Listener,
       int32 renderer_id,
       const GPUCreateCommandBufferConfig& init_params);
   void OnResizeViewACK(int32 renderer_id, int32 command_buffer_route_id);
-#if defined(OS_MACOSX)
+
+#if defined(TOUCH_UI)
+  void OnAcceleratedSurfaceSetIOSurfaceACK(
+      int renderer_id, int32 route_id, uint64 surface_id);
+  void OnAcceleratedSurfaceReleaseACK(
+      int renderer_id, int32 route_id, uint64 surface_id);
+#endif
+
+#if defined(OS_MACOSX) || defined(TOUCH_UI)
   void OnAcceleratedSurfaceBuffersSwappedACK(
       int renderer_id, int32 route_id, uint64 swap_buffers_count);
+#endif
+
+#if defined(OS_MACOSX)
   void OnDestroyCommandBuffer(int renderer_id, int32 renderer_view_id);
 #endif
 

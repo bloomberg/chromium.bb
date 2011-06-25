@@ -156,7 +156,7 @@ void GpuCommandBufferStub::OnInitialize(
         scheduler_->SetCommandProcessedCallback(
             NewCallback(this, &GpuCommandBufferStub::OnCommandProcessed));
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(TOUCH_UI)
       if (handle_) {
         // This context conceptually puts its output directly on the
         // screen, rendered by the accelerated plugin layer in
@@ -166,7 +166,7 @@ void GpuCommandBufferStub::OnInitialize(
             NewCallback(this,
                         &GpuCommandBufferStub::SwapBuffersCallback));
       }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MACOSX) || defined(TOUCH_UI)
 
       // Set up a pathway for resizing the output window or framebuffer at the
       // right time relative to other GL commands.
@@ -426,7 +426,34 @@ void GpuCommandBufferStub::SwapBuffersCallback() {
 
   scheduler_->SetScheduled(false);
 }
+#endif  // defined(OS_MACOSX)
 
+#if defined(TOUCH_UI)
+void GpuCommandBufferStub::SwapBuffersCallback() {
+  TRACE_EVENT0("gpu", "GpuCommandBufferStub::SwapBuffersCallback");
+  GpuChannelManager* gpu_channel_manager = channel_->gpu_channel_manager();
+  GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
+  params.renderer_id = renderer_id_;
+  params.render_view_id = render_view_id_;
+  params.surface_id = scheduler_->GetFrontSurfaceId();
+  params.route_id = route_id();
+  params.swap_buffers_count = scheduler_->swap_buffers_count();
+  gpu_channel_manager->Send(
+      new GpuHostMsg_AcceleratedSurfaceBuffersSwapped(params));
+
+  scheduler_->SetScheduled(false);
+}
+
+void GpuCommandBufferStub::AcceleratedSurfaceIOSurfaceSet(uint64 surface_id) {
+  scheduler_->SetScheduled(true);
+}
+
+void GpuCommandBufferStub::AcceleratedSurfaceReleased(uint64 surface_id) {
+  scheduler_->ReleaseSurface(surface_id);
+}
+#endif  // defined(TOUCH_UI)
+
+#if defined(OS_MACOSX) || defined(TOUCH_UI)
 void GpuCommandBufferStub::AcceleratedSurfaceBuffersSwapped(
     uint64 swap_buffers_count) {
   TRACE_EVENT1("gpu",
@@ -446,7 +473,7 @@ void GpuCommandBufferStub::AcceleratedSurfaceBuffersSwapped(
     scheduler_->SetScheduled(true);
   }
 }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MACOSX) || defined(TOUCH_UI)
 
 void GpuCommandBufferStub::CommandBufferWasDestroyed() {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::CommandBufferWasDestroyed");
@@ -474,6 +501,31 @@ void GpuCommandBufferStub::ResizeCallback(gfx::Size size) {
                                   route_id_,
                                   size));
 
+    scheduler_->SetScheduled(false);
+#elif defined(TOUCH_UI)
+    if (scheduler_->GetBackSurfaceId()) {
+      GpuHostMsg_AcceleratedSurfaceRelease_Params params;
+      params.renderer_id = renderer_id_;
+      params.render_view_id = render_view_id_;
+      params.identifier = scheduler_->GetBackSurfaceId();
+      params.route_id = route_id();
+
+      GpuChannelManager* gpu_channel_manager = channel_->gpu_channel_manager();
+      gpu_channel_manager->Send(
+          new GpuHostMsg_AcceleratedSurfaceRelease(params));
+    }
+    scheduler_->CreateBackSurface(size);
+    GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params params;
+    params.renderer_id = renderer_id_;
+    params.render_view_id = render_view_id_;
+    params.width = size.width();
+    params.height = size.height();
+    params.identifier = scheduler_->GetBackSurfaceId();
+    params.route_id = route_id();
+
+    GpuChannelManager* gpu_channel_manager = channel_->gpu_channel_manager();
+    gpu_channel_manager->Send(
+        new GpuHostMsg_AcceleratedSurfaceSetIOSurface(params));
     scheduler_->SetScheduled(false);
 #endif
   }
