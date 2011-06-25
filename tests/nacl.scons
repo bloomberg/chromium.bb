@@ -48,7 +48,7 @@ example_nexes = [
     'earth_cc',               # earth_cc.html
     'ppapi_bad',                   # ppapi_bad.html
     # PPAPI Proxy Tests
-    'ppapi_core',            # ppapi_core.html
+    'ppapi_ppb_core',        # ppapi_ppb_core.html
     'ppapi_ppb_graphics2d',  # ppapi_ppb_graphics2d.html
     'ppapi_file_system',     # ppapi_file_system.html
     'ppapi_messaging',       # ppapi_messaging.html

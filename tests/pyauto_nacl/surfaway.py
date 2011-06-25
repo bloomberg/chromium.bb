@@ -69,7 +69,7 @@ class NaClTest(pyauto.PyUITest):
     self.surfAway('ppapi_progress_events.html', 'PPAPI')
 
   def testSurfAwayPPBCore(self):
-    self.surfAway('ppapi_core.html', 'PPAPI')
+    self.surfAway('ppapi_ppb_core.html', 'PPAPI')
 
   def testSurfAwayPPBGraphics2D(self):
     self.surfAway('ppapi_ppb_graphics2d.html', 'PPAPI')

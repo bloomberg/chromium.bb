@@ -32,12 +32,12 @@ event_example_files = [
     env.File('${STAGING_DIR}/' + ppapi_event_example_nexe_name),
     env.File('${STAGING_DIR}/event_example.html'),
     env.File('${STAGING_DIR}/event_example.nmf')]
-ppapi_core_files = CreateDefaultDeps('ppapi_core')
 ppapi_file_system_files = CreateDefaultDeps('ppapi_file_system')
 ppapi_geturl_files = CreateDefaultDeps('ppapi_geturl') + [
     env.File('${STAGING_DIR}/ppapi_geturl_success.html')]
 ppapi_example_2d_files = CreateDefaultDeps('ppapi_example_2d')
 ppapi_example_audio_files = CreateDefaultDeps('ppapi_example_audio')
+ppapi_ppb_core_files = CreateDefaultDeps('ppapi_ppb_core')
 ppapi_ppb_graphics2d_files = CreateDefaultDeps('ppapi_ppb_graphics2d')
 ppapi_progress_events_files = CreateDefaultDeps('ppapi_progress_events') + [
     env.File('${STAGING_DIR}/ppapi_progress_events.js')]
@@ -84,11 +84,11 @@ core_test_files = [env.File('${STAGING_DIR}/nacltest.js'),
                    earth_c_files +
                    earth_cc_files +
                    event_example_files +
-                   ppapi_core_files +
                    ppapi_example_2d_files +
                    ppapi_example_audio_files +
                    ppapi_file_system_files +
                    ppapi_geturl_files +
+                   ppapi_ppb_core_files +
                    ppapi_ppb_graphics2d_files +
                    ppapi_progress_events_files +
                    ppapi_tests_files +

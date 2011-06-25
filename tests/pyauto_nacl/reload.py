@@ -100,7 +100,7 @@ class NaClTest(pyauto.PyUITest):
     self.reloader('ppapi_progress_events.html', 'PPAPI')
 
   def testReloadPPBCore(self):
-    self.reloader('ppapi_core.html', 'PPAPI')
+    self.reloader('ppapi_ppb_core.html', 'PPAPI')
 
   def testReloadPPBGraphics2D(self):
     self.reloader('ppapi_ppb_graphics2d.html', 'PPAPI')

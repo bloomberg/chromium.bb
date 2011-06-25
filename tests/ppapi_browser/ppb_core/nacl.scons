@@ -9,12 +9,12 @@ Import('env')
 
 env.Prepend(CPPDEFINES=['XP_UNIX'])
 
-nexe = 'ppapi_core_%s' % env.get('TARGET_FULLARCH')
-env.Alias('ppapi_core${PROGSUFFIX}', ['$STAGING_DIR/%s${PROGSUFFIX}' % nexe])
+nexe = 'ppapi_ppb_core_%s' % env.get('TARGET_FULLARCH')
+env.Alias('ppapi_ppb_core${PROGSUFFIX}', ['$STAGING_DIR/%s${PROGSUFFIX}' % nexe])
 
-ppapi_core_nexe = env.ComponentProgram(
+ppapi_ppb_core_nexe = env.ComponentProgram(
     nexe,
-    ['ppapi_core.cc'],
+    ['ppapi_ppb_core.cc'],
     EXTRA_LIBS=['${PPAPI_LIBS}',
                 'ppapi_test_lib',
                 'pthread',
@@ -23,21 +23,21 @@ ppapi_core_nexe = env.ComponentProgram(
 
 # Note that the html is required to run this program.
 dest_copy = env.Replicate('$STAGING_DIR',
-                          ['ppapi_core.html',
-                           'ppapi_core.nmf',
+                          ['ppapi_ppb_core.html',
+                           'ppapi_ppb_core.nmf',
                            env.File('${SCONSTRUCT_DIR}/tools/browser_tester/'
                                     'browserdata/nacltest.js')]
                           )
 env.Depends(nexe, dest_copy)
 
-node = env.PPAPIBrowserTester('ppapi_core_browser_test.out',
-                              url='ppapi_core.html',
-                              files=[ppapi_core_nexe,
-                                     env.File('ppapi_core.nmf'),
-                                     env.File('ppapi_core.html')],
+node = env.PPAPIBrowserTester('ppapi_ppb_core_browser_test.out',
+                              url='ppapi_ppb_core.html',
+                              files=[ppapi_ppb_core_nexe,
+                                     env.File('ppapi_ppb_core.nmf'),
+                                     env.File('ppapi_ppb_core.html')],
                               args=['--enable_experimental_js'])
 
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],
-                       'run_ppapi_core_browser_test',
+                       'run_ppapi_ppb_core_browser_test',
                        is_broken=env.PPAPIBrowserTesterIsBroken())

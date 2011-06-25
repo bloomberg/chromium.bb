@@ -95,7 +95,7 @@ class NaClTest(pyauto.PyUITest):
     self.surfAwayAsync('ppapi_example_2d.html', 'PPAPI')
 
   def testSurfAwayAsyncPPBCore(self):
-    self.surfAwayAsync('ppapi_core.html', 'PPAPI')
+    self.surfAwayAsync('ppapi_ppb_core.html', 'PPAPI')
 
   def testSurfAwayAsyncPPBGraphics2D(self):
     self.surfAwayAsync('ppapi_ppb_graphics2d.html', 'PPAPI')
