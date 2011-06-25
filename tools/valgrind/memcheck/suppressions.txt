@@ -4956,6 +4956,25 @@
    fun:_ZN12_GLOBAL__N_118TaskClosureAdapter3RunEv
    fun:_ZN4base8internal8Invoker1ILb0ENS0_15InvokerStorage1IMN12_GLOBAL__N_118TaskClosureAdapterEFvvEPS4_EES6_E8DoInvokeEPNS0_18InvokerStorageBaseE
 }
+{
+   bug_87499
+   Memcheck:Addr1
+   fun:_ZN20LayoutTestController25deferMainResourceDataLoadEv
+   fun:_ZN11WebViewHost19didCreateDataSourceEPN6WebKit8WebFrameEPNS0_13WebDataSourceE
+   fun:_ZN6WebKit21FrameLoaderClientImpl20createDocumentLoaderERKN7WebCore15ResourceRequestERKNS1_14SubstituteDataE
+   fun:_ZN7WebCore11FrameLoader4loadERKNS_15ResourceRequestERKNS_14SubstituteDataEb
+   fun:_ZN7WebCore11FrameLoader4loadERKNS_15ResourceRequestEb
+   fun:_ZN6WebKit12WebFrameImpl11loadRequestERKNS_13WebURLRequestE
+   fun:_ZN11WebViewHost8navigateERK19TestNavigationEntryb
+   fun:_ZN24TestNavigationController22navigateToPendingEntryEb
+   fun:_ZN24TestNavigationController9loadEntryEP19TestNavigationEntry
+   fun:_ZN11WebViewHost15loadURLForFrameERKN6WebKit6WebURLERKNS0_9WebStringE
+   fun:_ZN11WebViewHostD0Ev
+   fun:_ZN3WTF14deleteOwnedPtrI11WebViewHostEEvPT_
+   fun:_ZN3WTF6OwnPtrI11WebViewHostED1Ev
+   fun:_ZN9TestShellD1Ev
+   fun:main
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
