@@ -91,7 +91,7 @@ void ClockMenuButton::UpdateText() {
       time,
       use_24hour_clock ? base::k24HourClock : base::k12HourClock,
       base::kDropAmPm)));
-  SetTooltipText(UTF16ToWide(base::TimeFormatShortDate(time)));
+  SetTooltipText(UTF16ToWide(base::TimeFormatFriendlyDateAndTime(time)));
   SetAccessibleName(base::TimeFormatFriendlyDateAndTime(time));
   SchedulePaint();
 }
