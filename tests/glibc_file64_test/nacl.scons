@@ -13,5 +13,5 @@ Import('env')
 if not env.Bit('nacl_glibc'):
   Return()
 
-env.ComponentProgram('test_file.nexe', 'test_file.c')
+env.ComponentProgram('test_file', 'test_file.c')
 # We don't want to execute this nexe

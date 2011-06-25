@@ -19,15 +19,16 @@ if 'TRUSTED_ENV' in env and (env['TRUSTED_ENV'].Bit('windows') or
 if 'TRUSTED_ENV' in env and env['TRUSTED_ENV'].Bit('windows'):
   test_is_broken_on_this_os=True
 
-env.ComponentProgram('nanosleep_test.nexe',
-                     'nanosleep_test.c',
-                     EXTRA_LIBS=['pthread'])
+nexe = env.ComponentProgram('nanosleep_test',
+                            'nanosleep_test.c',
+                            EXTRA_LIBS=['pthread'])
 
 # This is a timing test, so we only run on real hardware
 is_on_vm = env.Bit('running_on_vm')
 
 node = env.CommandSelLdrTestNacl(
     'nanosleep_test.out',
-    command=[env.File('nanosleep_test.nexe')] + slop_args)
+    nexe,
+    args=slop_args)
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_nanosleep_test',
     is_broken=is_on_vm or test_is_broken_on_this_os)

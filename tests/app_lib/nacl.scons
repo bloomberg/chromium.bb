@@ -9,10 +9,10 @@ Import('env')
 ######################################################################
 # Smoke Test
 ######################################################################
-env.ComponentProgram('app_lib_test.nexe',
-                     'app_lib_test.c',
-                     EXTRA_LIBS=['pthread'],
-                     )
+nexe = env.ComponentProgram('app_lib_test',
+                            'app_lib_test.c',
+                            EXTRA_LIBS=['pthread'],
+                            )
 
 # NOTE: we are using the same file as stdin and on the command line
 #
@@ -21,7 +21,8 @@ env.ComponentProgram('app_lib_test.nexe',
 # order to access the filesystem.
 node = env.CommandSelLdrTestNacl(
      'app_lib_test.out',
-     command=[env.File('app_lib_test.nexe'), env.File('app_lib_test.stdin')],
+     nexe,
+     args=[env.File('app_lib_test.stdin')],
      stdin=env.File('app_lib_test.stdin'),
      stdout_golden=env.File('app_lib_test.stdout'),
      sel_ldr_flags=['-a'],

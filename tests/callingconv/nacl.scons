@@ -101,12 +101,12 @@ for i in xrange(num_modules):
 # Compile callingconv.c
 callingconv = link_env.ComponentObject('callingconv.c')
 
-prog = link_env.ComponentProgram('callingconv.nexe',
+prog = link_env.ComponentProgram('callingconv',
                                  [callingconv] + modules)
 
 node = link_env.CommandSelLdrTestNacl(
          'callingconv.out',
-         command=[prog],
+         prog,
          stdout_golden=nodes[0])
 
 env.AddNodeToTestSuite(node, ['medium_tests'], 'run_callingconv_test',

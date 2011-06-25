@@ -7,13 +7,13 @@ Import('env')
 
 #--- Version that tests errno conditions
 
-env.ComponentObject('float_math', 'float_math.c')
-env.ComponentProgram('float_math.nexe',
-                     'float_math',
-                     EXTRA_LIBS=['m'])
+float_math_obj = env.ComponentObject('float_math', 'float_math.c')
+float_math_nexe = env.ComponentProgram('float_math',
+                                       float_math_obj,
+                                       EXTRA_LIBS=['m'])
 node = env.CommandSelLdrTestNacl(
   'float_math.out',
-  command=[env.File('float_math.nexe')],
+  float_math_nexe,
   exit_status='55',
   )
 env.AddNodeToTestSuite(node,
@@ -25,13 +25,16 @@ env.AddNodeToTestSuite(node,
 noerrno_env = env.Clone()
 noerrno_env.Append(CCFLAGS=['-fno-math-errno'])
 noerrno_env.Append(CPPDEFINES=['NO_ERRNO_CHECK'])
-noerrno_env.ComponentObject('float_math_noerrno', 'float_math.c')
-noerrno_env.ComponentProgram('float_math_noerrno.nexe',
-                             'float_math_noerrno',
-                             EXTRA_LIBS=['m'])
+
+float_math_noerrno_obj = noerrno_env.ComponentObject('float_math_noerrno',
+                                                     'float_math.c')
+float_math_noerrno_nexe = noerrno_env.ComponentProgram(
+                              'float_math_noerrno',
+                              float_math_noerrno_obj,
+                              EXTRA_LIBS=['m'])
 node = noerrno_env.CommandSelLdrTestNacl(
   'float_math_noerrno.out',
-  command=[noerrno_env.File('float_math_noerrno.nexe')],
+  float_math_noerrno_nexe,
   exit_status='55',
   )
 noerrno_env.AddNodeToTestSuite(node,

@@ -48,7 +48,7 @@ runner = trusted_env.ComponentProgram(
                 ] + VALIDATOR_LIBS + DEBUG_LIBS)
 
 test_prog = env.ComponentProgram(
-    'multidomain_test_guest.nexe', ['multidomain_test_guest.c'],
+    'multidomain_test_guest', ['multidomain_test_guest.c'],
     EXTRA_LIBS=['imc_syscalls'])
 
 node = env.CommandTest('multidomain_test.out', [runner, test_prog],

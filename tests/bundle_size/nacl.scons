@@ -5,10 +5,8 @@
 
 Import('env')
 
-env.ComponentProgram('bundle_size.nexe',
-                     'bundle_size.c',
-                     EXTRA_LIBS=['pthread'])
-node = env.CommandSelLdrTestNacl(
-    'bundle_size.out',
-    command=[env.File('bundle_size.nexe')])
+nexe = env.ComponentProgram('bundle_size',
+                            'bundle_size.c',
+                            EXTRA_LIBS=['pthread'])
+node = env.CommandSelLdrTestNacl('bundle_size.out', nexe)
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_bundle_size')

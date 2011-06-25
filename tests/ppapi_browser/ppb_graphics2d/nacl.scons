@@ -9,8 +9,9 @@ Import('env')
 
 env.Prepend(CPPDEFINES=['XP_UNIX'])
 
-nexe = 'ppapi_ppb_graphics2d_%s.nexe' % env.get('TARGET_FULLARCH')
-env.Alias('ppapi_ppb_graphics2d.nexe', [ '$STAGING_DIR/%s' % nexe ])
+nexe = 'ppapi_ppb_graphics2d_${TARGET_FULLARCH}'
+env.Alias('ppapi_ppb_graphics2d${PROGSUFFIX}',
+          ['$STAGING_DIR/%s${PROGSUFFIX}' % nexe])
 
 ppapi_ppb_graphics2d_nexe = env.ComponentProgram(
     nexe,

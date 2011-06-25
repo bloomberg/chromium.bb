@@ -15,7 +15,7 @@ earthlib = env.ComponentLibrary('earthlib', ['earth.cc'])
 
 # build, C then C++
 cobj=['pepper_c.c']
-c_nexe_name = 'earth_c_%s.nexe' % env.get('TARGET_FULLARCH')
+c_nexe_name = 'earth_c_%s' % env.get('TARGET_FULLARCH')
 cnexe = env.ComponentProgram(c_nexe_name, cobj,
                             EXTRA_LIBS=['earthlib',
                                         '${PPAPI_LIBS}',
@@ -27,7 +27,7 @@ node = env.DemoSelLdrNacl('demo_earth_c', cnexe, args=[])
 Alias('demo_earth_c', node)
 
 ccobj=['pepper_cc.cc']
-cc_nexe_name = 'earth_cc_%s.nexe' % env.get('TARGET_FULLARCH')
+cc_nexe_name = 'earth_cc_%s' % env.get('TARGET_FULLARCH')
 ccnexe = env.ComponentProgram(cc_nexe_name, ccobj,
                             EXTRA_LIBS=['earthlib',
                                         '${PPAPI_LIBS}',

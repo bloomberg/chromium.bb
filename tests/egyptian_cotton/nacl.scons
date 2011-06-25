@@ -9,7 +9,8 @@ Import('env')
 
 env.Replace(EXTRA_LIBS=['pthread'])
 
-env.ComponentProgram('egyptian_cotton.nexe', 'egyptian_cotton.c')
+egyptian_cotton_nexe = env.ComponentProgram('egyptian_cotton',
+                                            'egyptian_cotton.c')
 
 platform_limits_known = False
 
@@ -119,8 +120,9 @@ if env.IsRunningUnderValgrind():
   tests = [t for t in tests if t[0] != 'thread_stack_alloc_test']
 
 def ThreadTestNode(name, args):
-  cmd = [env.File('egyptian_cotton.nexe')] + args
-  return env.CommandSelLdrTestNacl(name + '.out', command = cmd)
+  return env.CommandSelLdrTestNacl(name + '.out',
+                                   egyptian_cotton_nexe,
+                                   args=args)
 
 nodes = [ ThreadTestNode(name, args) for name, args in tests ]
 

@@ -11,7 +11,7 @@ env.FilterOut(CCFLAGS=['-pedantic'])
 
 manifest_good_sources = env.ComponentObject('manifest_good.cc'),
 
-manifest_good_target = ('manifest_good_%s.nexe' %
+manifest_good_target = ('manifest_good_%s' %
                         env.get('TARGET_FULLARCH'))
 env.ComponentProgram(manifest_good_target,
                      [manifest_good_sources],
@@ -23,7 +23,7 @@ env.ComponentProgram(manifest_good_target,
 
 manifest_bad_sources = env.ComponentObject('manifest_bad.cc'),
 
-manifest_bad_target = ('manifest_bad_%s.nexe' %
+manifest_bad_target = ('manifest_bad_%s' %
                        env.get('TARGET_FULLARCH'))
 env.ComponentProgram(manifest_bad_target,
                      [manifest_bad_sources],
@@ -52,12 +52,12 @@ node = env.PPAPIBrowserTester(
           env.File('${STAGING_DIR}/manifest_subdir.nmf'),
           # the 'good' nexe in the root directory will fail.
           '--map_file',
-          manifest_good_target,
-          env.File('${STAGING_DIR}/' + manifest_bad_target),
+          manifest_good_target + env['PROGSUFFIX'],
+          env.File('${STAGING_DIR}/%s${PROGSUFFIX}' % manifest_bad_target),
           # the 'good' nexe in the subdirectory will succeed.
           '--map_file',
-          'subdir/' + manifest_good_target,
-          env.File('${STAGING_DIR}/' + manifest_good_target)])
+          'subdir/' + manifest_good_target + env['PROGSUFFIX'],
+          env.File('${STAGING_DIR}/%s${PROGSUFFIX}' % manifest_good_target)])
 
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],

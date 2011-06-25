@@ -6,7 +6,7 @@
 Import('env')
 
 # NOTE: this test is used as simple sanity check for an SDK
-env.ComponentProgram('null.nexe',
+env.ComponentProgram('null',
                      'null.c',
                      EXTRA_LIBS=['nacl', 'pthread'],
                      )

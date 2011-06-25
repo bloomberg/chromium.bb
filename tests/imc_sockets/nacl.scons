@@ -13,10 +13,11 @@ if env.Bit('host_windows'):
 else:
   test_args = []
 
-env.ComponentProgram('socket_transfer_test.nexe', 'socket_transfer_test.c',
-                     EXTRA_LIBS=['imc_syscalls', 'pthread'])
+nexe = env.ComponentProgram('socket_transfer_test', 'socket_transfer_test.c',
+                            EXTRA_LIBS=['imc_syscalls', 'pthread'])
 
 node = env.CommandSelLdrTestNacl(
   'socket_transfer_test.out',
-  command=[env.File('socket_transfer_test.nexe')] + test_args)
+  nexe,
+  args=test_args)
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_socket_transfer_test')

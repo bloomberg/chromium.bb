@@ -55,7 +55,7 @@ gles_book_examples = {
 }
 
 for demo, sources in gles_book_examples.iteritems():
-    nexe_name = ('ppapi_gles_book_%s_%s.nexe'
+    nexe_name = ('ppapi_gles_book_%s_%s'
                  % (demo, env.get('TARGET_FULLARCH')))
     nmf_name = 'ppapi_gles_book_' + demo + '.nmf'
     nexe = env.ComponentProgram(

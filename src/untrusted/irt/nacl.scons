@@ -83,13 +83,13 @@ def LinkIrt(output, files, libs):
   return blob_env.ComponentProgram(output, irt_support_objs + files,
                                    EXTRA_LIBS=libs + irt_support_libs)
 
-irt_core_library = LinkIrt('irt_core.nexe', irt_nonbrowser, [])
-irt_library = LinkIrt('irt.nexe', irt_browser, ['ppruntime',
-                                                'srpc',
-                                                'imc_syscalls',
-                                                'platform',
-                                                'gio',
-                                                'm'])
+irt_core_library = LinkIrt('irt_core', irt_nonbrowser, [])
+irt_library = LinkIrt('irt', irt_browser, ['ppruntime',
+                                           'srpc',
+                                           'imc_syscalls',
+                                           'platform',
+                                           'gio',
+                                           'm'])
 
 # TODO(mcgrathr): these should be installed, but scons is a mystery
 #env.AddHeaderToSdk(['irt.h'])

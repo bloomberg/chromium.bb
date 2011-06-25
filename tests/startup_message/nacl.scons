@@ -31,7 +31,7 @@ trusted_env = env['TRUSTED_ENV']
 python_extension = trusted_env.File('${STAGING_DIR}/naclimc.so')
 
 sel_ldr = trusted_env.File('${STAGING_DIR}/${PROGPREFIX}sel_ldr${PROGSUFFIX}')
-hello_world = env.File('${STAGING_DIR}/hello_world.nexe')
+hello_world = env.File('${STAGING_DIR}/hello_world${PROGSUFFIX}')
 env_vars = [
     'PYTHONPATH=%s' % ':'.join([os.path.dirname(python_extension.abspath),
                                 '${SCONSTRUCT_DIR}/src/tools/posix_over_imc']),

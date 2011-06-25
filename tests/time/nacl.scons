@@ -6,11 +6,12 @@
 
 Import('env')
 
-env.ComponentProgram('gettimeofday_test.nexe',
-                     'gettimeofday_test.c',
-                     EXTRA_LIBS=['pthread'])
+nexe = env.ComponentProgram('gettimeofday_test',
+                            'gettimeofday_test.c',
+                            EXTRA_LIBS=['pthread'])
 
 node = env.CommandSelLdrTestNacl(
     'gettimeofday_test.out',
-    command=[env.File('gettimeofday_test.nexe'), '-m'])
+    nexe,
+    args=['-m'])
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_gettimeofday_test')

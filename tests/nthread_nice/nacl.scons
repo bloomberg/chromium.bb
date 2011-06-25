@@ -13,16 +13,17 @@ if env.Bit('nacl_glibc'):
 ######################################################################
 # Smoke Test
 ######################################################################
-nexe = env.ComponentProgram('nthread_nice.nexe', 'nthread_nice.c',
+nexe = env.ComponentProgram('nthread_nice', 'nthread_nice.c',
                             EXTRA_LIBS=['pthread'])
 
 # TODO(bradchen): create and then apply framework for
 # non-deterministic test results.
 # node = env.CommandSelLdrTestNacl(
 #    'nthread_nice.out',
-#    command=[env.File('nthread_nice.nexe'), '-- -t -d'],
+#    nexe,
+#    args=['--', '-t', '-d'],
 #    stdout_golden=env.File('nthread_nice.stdout'),
 #    )
 # env.AddNodeToTestSuite(node, ['small_tests'])
 
-env.Publish('nthread_nice.nexe', 'run', [])
+env.Publish('nthread_nice', 'run', [])

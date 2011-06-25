@@ -9,7 +9,7 @@ Import('env')
 
 env.Prepend(CPPDEFINES=['XP_UNIX'])
 
-nexe_name = 'ppapi_example_2d_%s.nexe' % env.get('TARGET_FULLARCH')
+nexe_name = 'ppapi_example_2d_%s' % env.get('TARGET_FULLARCH')
 ppapi_example_2d_nexe = env.ComponentProgram(nexe_name,
     [ '$SOURCE_ROOT/ppapi/examples/2d/graphics_2d_example.c' ],
     EXTRA_LIBS=['${PPAPI_LIBS}'])

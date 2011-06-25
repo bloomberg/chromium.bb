@@ -73,8 +73,8 @@ fake_browser = trusted_env.ComponentProgram('fake_browser_ppapi',
 target_nmf = 'basic_object.nmf';
 basic_object_nmf = env.File('${STAGING_DIR}/' + target_nmf)
 
-basic_object_target = env.File('$STAGING_DIR/ppapi_basic_object_%s.nexe' %
-                               env.get('TARGET_FULLARCH'))
+basic_object_target = env.File(
+    '$STAGING_DIR/ppapi_basic_object_${TARGET_FULLARCH}${PROGSUFFIX}')
 
 if trusted_env.Bit('mac'):
   plugin = trusted_env.File('${STAGING_DIR}/ppNaClPlugin')

@@ -12,7 +12,7 @@ Import('env')
 # Publish nexes and corresponding html to scons-out/.../staging/
 ######################################################################
 
-srpc_test_nexe_name = 'srpc_test_%s.nexe' % env.get('TARGET_FULLARCH')
+srpc_test_nexe_name = 'srpc_test_%s' % env.get('TARGET_FULLARCH')
 srpc_test_nexe = env.ComponentProgram(
     srpc_test_nexe_name, 'srpc_test.c',
     EXTRA_LIBS=[
@@ -30,7 +30,7 @@ env.Publish(srpc_test_nexe_name, 'run',
 env.AddPrebuiltBinaryToRepository(srpc_test_nexe)
 
 
-srpc_nrd_server_nexe_name = ('srpc_nrd_server_%s.nexe' %
+srpc_nrd_server_nexe_name = ('srpc_nrd_server_%s' %
                              env.get('TARGET_FULLARCH'))
 srpc_nrd_server_nexe = env.ComponentProgram(
     srpc_nrd_server_nexe_name, 'srpc_nrd_server.c',
@@ -48,7 +48,7 @@ env.Publish(srpc_nrd_server_nexe_name, 'run',
 env.AddPrebuiltBinaryToRepository(srpc_nrd_server_nexe)
 
 
-srpc_nrd_client_nexe_name = ('srpc_nrd_client_%s.nexe' %
+srpc_nrd_client_nexe_name = ('srpc_nrd_client_%s' %
                              env.get('TARGET_FULLARCH'))
 srpc_nrd_client_nexe = env.ComponentProgram(
     srpc_nrd_client_nexe_name, 'srpc_nrd_client.c',
@@ -68,7 +68,7 @@ env.Publish(srpc_nrd_client_nexe_name, 'run',
 env.AddPrebuiltBinaryToRepository(srpc_nrd_client_nexe)
 
 
-cat_nexe_name = ('cat_%s.nexe' % env.get('TARGET_FULLARCH'))
+cat_nexe_name = ('cat_%s' % env.get('TARGET_FULLARCH'))
 cat_nexe = env.ComponentProgram(
     cat_nexe_name, 'cat.c',
     EXTRA_LIBS=['${NON_PPAPI_BROWSER_LIBS}',
@@ -79,7 +79,7 @@ env.Publish(cat_nexe_name, 'run',
      'cat.nmf'])
 
 
-srpc_bidir_nexe_name = ('srpc_bidir_%s.nexe' % env.get('TARGET_FULLARCH'))
+srpc_bidir_nexe_name = ('srpc_bidir_%s' % env.get('TARGET_FULLARCH'))
 srpc_bidir_nexe = env.ComponentProgram(
     srpc_bidir_nexe_name, 'srpc_bidir.c',
     EXTRA_LIBS=['srpc', 'imc_syscalls', 'platform', 'gio', 'm', 'pthread'])
@@ -88,7 +88,7 @@ env.Publish(srpc_bidir_nexe_name, 'run', [])
 
 # NOTE: at least for ARM the EXTRA_LIBS list should include 'srpc'
 #       but this somehow make the x86 version fragile
-srpc_bad_service_nexe_name = ('srpc_bad_service_%s.nexe' %
+srpc_bad_service_nexe_name = ('srpc_bad_service_%s' %
                               env.get('TARGET_FULLARCH'))
 srpc_bad_service_nexe = env.ComponentProgram(
     srpc_bad_service_nexe_name, 'srpc_bad_service.c',
@@ -101,8 +101,8 @@ env.Publish(srpc_bad_service_nexe_name, 'run', [])
 
 node = env.SelUniversalTest(
     'srpc_basic_test.out',
+    srpc_test_nexe,
     sel_universal_flags=['--command_file', env.File('srpc_basic_test.stdin')],
-    command=[srpc_test_nexe],
     stdout_golden=env.File('srpc_basic_test.stdout'),
     )
 env.AddNodeToTestSuite(node,
@@ -111,7 +111,7 @@ env.AddNodeToTestSuite(node,
 
 node = env.SelUniversalTest(
     'srpc_bad_service.out',
-    command=[srpc_bad_service_nexe],
+    srpc_bad_service_nexe,
     exit_status='1'
     )
 env.AddNodeToTestSuite(node,

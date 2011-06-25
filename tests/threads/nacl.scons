@@ -22,13 +22,15 @@ ANNOTATIONS_LIBS=[]
 if env.Bit('nacl_glibc'):
   ANNOTATIONS_LIBS += ['dynamic_annotations']
 
-env.ComponentProgram('thread_test.nexe',
-                     'thread_test.c',
-                     EXTRA_LIBS=['pthread'] + ANNOTATIONS_LIBS,
-                     )
+thread_test_nexe = env.ComponentProgram(
+    'thread_test',
+    'thread_test.c',
+    EXTRA_LIBS=['pthread'] + ANNOTATIONS_LIBS)
+
 node = env.CommandSelLdrTestNacl(
     'thread_test.out',
-    command=[env.File('thread_test.nexe')] + EXTRA_ARGS,
+    thread_test_nexe,
+    args=EXTRA_ARGS,
     # TODO: investigate why this is slow on old linux system
     size='large',
     )
@@ -45,49 +47,53 @@ env.AddNodeToTestSuite(node, ['small_tests'], 'run_thread_test',
                                   env.Bit('nacl_glibc')))
 
 
-env.ComponentProgram('simple_thread_test.nexe',
-                     'simple_thread_test.c',
-                     EXTRA_LIBS=['pthread'],
-                     )
+simple_thread_test_nexe = env.ComponentProgram(
+    'simple_thread_test',
+    'simple_thread_test.c',
+    EXTRA_LIBS=['pthread'])
+
 node = env.CommandSelLdrTestNacl(
     'simple_thread_test.out',
-    command=[env.File('simple_thread_test.nexe')],
+    simple_thread_test_nexe,
     size='small',
     )
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_simple_thread_test',
                        is_broken=is_broken)
 
-env.ComponentProgram('race_test.nexe',
-                     'race_test.c',
-                     EXTRA_LIBS=['pthread'] + ANNOTATIONS_LIBS,
-                     )
+race_test_nexe = env.ComponentProgram(
+    'race_test',
+    'race_test.c',
+    EXTRA_LIBS=['pthread'] + ANNOTATIONS_LIBS)
+
 node = env.CommandSelLdrTestNacl(
     'race_test.out',
-    command=[env.File('race_test.nexe')],
+    race_test_nexe,
     size='small',
     )
 env.AddNodeToTestSuite(node, ['small_tests', 'tsan_bot_tests'], 'run_race_test',
                        is_broken=is_broken)
 
-env.ComponentProgram('main_thread_pthread_exit_test.nexe',
-                     'main_thread_pthread_exit_test.c',
-                     EXTRA_LIBS=['pthread'],
-                     )
+main_thread_pthread_exit_test_nexe = env.ComponentProgram(
+    'main_thread_pthread_exit_test',
+    'main_thread_pthread_exit_test.c',
+    EXTRA_LIBS=['pthread'],
+    )
 
-env.ComponentProgram('main_thread_pthread_exit_test2.nexe',
-                     'main_thread_pthread_exit_test2.c',
-                     EXTRA_LIBS=['pthread'],
-                     )
+main_thread_pthread_exit_test2_nexe = env.ComponentProgram(
+    'main_thread_pthread_exit_test2',
+    'main_thread_pthread_exit_test2.c',
+    EXTRA_LIBS=['pthread'],
+    )
 
 node = env.CommandSelLdrTestNacl(
     'main_thread_pthread_exit_test.out',
-    command=[env.File('main_thread_pthread_exit_test.nexe')],
+    main_thread_pthread_exit_test_nexe,
     size='small',
     )
 
 node2 = env.CommandSelLdrTestNacl(
     'main_thread_pthread_exit_test2.out',
-    command=[env.File('main_thread_pthread_exit_test2.nexe')],
+    main_thread_pthread_exit_test2_nexe,
     size='small',
     )
 
@@ -103,34 +109,37 @@ if not (env.Bit('nacl_glibc') and env.Bit('nacl_static_link')):
                          'run_main_thread_pthread_exit_test2',
                          is_broken=is_broken or not env.Bit('nacl_glibc'))
 
-env.ComponentProgram('cond_wait_test.nexe',
-                     'cond_wait_test.cc',
-                     EXTRA_LIBS=['pthread'],
-                     )
+cond_wait_test_nexe = env.ComponentProgram(
+    'cond_wait_test',
+    'cond_wait_test.cc',
+    EXTRA_LIBS=['pthread'])
+
 node = env.CommandSelLdrTestNacl(
     'cond_wait_test.out',
-    command=[env.File('cond_wait_test.nexe')],
+    cond_wait_test_nexe,
     size='small',
     )
 env.AddNodeToTestSuite(node, ['small_tests'], 'cond_wait_test',
                        is_broken=is_broken)
 
-env.ComponentProgram('thread_stack_test.nexe',
-                     'thread_stack_test.c',
-                     EXTRA_LIBS=['pthread'],
-                     )
+thread_stack_test_nexe = env.ComponentProgram('thread_stack_test',
+                                              'thread_stack_test.c',
+                                              EXTRA_LIBS=['pthread'])
+
 node = env.CommandSelLdrTestNacl(
     'thread_stack_test.out',
-    command=[env.File('thread_stack_test.nexe')],
+    thread_stack_test_nexe,
     size='small',
     )
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_thread_stack_test',
                        is_broken=is_broken)
 
-test_prog = env.ComponentProgram('second_tls_test.nexe',
-                                 env.RawSyscallObjects(['second_tls_test.c']),
-                                 EXTRA_LIBS=['pthread'])
+second_tls_test_nexe = env.ComponentProgram(
+    'second_tls_test',
+    env.RawSyscallObjects(['second_tls_test.c']),
+    EXTRA_LIBS=['pthread'])
+
 node = env.CommandSelLdrTestNacl('second_tls_test.out',
-                                 command=[env.File(test_prog)])
+                                 second_tls_test_nexe)
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_second_tls_test',
                        is_broken=is_broken)

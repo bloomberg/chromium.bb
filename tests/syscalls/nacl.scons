@@ -11,9 +11,9 @@ if 'TRUSTED_ENV' in env and env['TRUSTED_ENV'].Bit('windows'):
 
 env.ComponentLibrary('syscall_test_framework', ['test.cc'])
 
-env.ComponentProgram('syscalls.nexe',
-                     'syscalls.cc',
-                     EXTRA_LIBS=['pthread'])
+syscalls_nexe = env.ComponentProgram('syscalls',
+                                     'syscalls.cc',
+                                     EXTRA_LIBS=['pthread'])
 
 if not env.Bit('host_windows'):
   # Creating a R/W test file in the output directory.
@@ -31,7 +31,8 @@ if not env.Bit('host_windows'):
   # via the debug flag to sel_ldr
   node = env.CommandSelLdrTestNacl(
       'syscalls_test.out',
-      command=[env.File('syscalls.nexe'), env.File('file_ok_rdwr.txt')],
+      syscalls_nexe,
+      args=[env.File('file_ok_rdwr.txt')],
       stdout_golden=env.File('syscalls.stdout'),
       filter_regex="'^(All tests PASSED)$|^(TEST.*)$'",
       sel_ldr_flags=['-a'],
@@ -39,34 +40,36 @@ if not env.Bit('host_windows'):
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_syscall_test')
 #endif
 
-env.ComponentProgram('getpid_test.nexe',
-                     ['getpid_test.cc'],
-                     EXTRA_LIBS=['syscall_test_framework'])
+getpid_test_nexe = env.ComponentProgram('getpid_test',
+                                        ['getpid_test.cc'],
+                                        EXTRA_LIBS=['syscall_test_framework'])
 node = env.CommandSelLdrTestNacl(
     'getpid_test.out',
-    command=[env.File('getpid_test.nexe')],
+    getpid_test_nexe,
     )
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
                        'run_getpid_test')
 
 raw_syscall_objects = env.RawSyscallObjects(['getpid_test.cc'])
-env.ComponentProgram('raw_getpid_test.nexe',
-                     raw_syscall_objects,
-                     EXTRA_LIBS=['syscall_test_framework'])
+raw_getpid_test_nexe = env.ComponentProgram(
+                           'raw_getpid_test',
+                           raw_syscall_objects,
+                           EXTRA_LIBS=['syscall_test_framework'])
 
 node = env.CommandSelLdrTestNacl('raw_getpid_test.out',
-                                  command=[env.File('raw_getpid_test.nexe')])
+                                 raw_getpid_test_nexe)
+
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
                        'run_raw_getpid_test')
 
 # The next few tests test the exit syscall.
 # The first one checks for exit success.
-env.ComponentProgram('exit_test.nexe', ['exit_test.cc'])
+exit_test_nexe = env.ComponentProgram('exit_test', ['exit_test.cc'])
 node = env.CommandSelLdrTestNacl(
     'exit_success_test.out',
-    command=[env.File('exit_test.nexe')],
+    exit_test_nexe,
     exit_status='0',
     )
 env.AddNodeToTestSuite(node,
@@ -76,7 +79,8 @@ env.AddNodeToTestSuite(node,
 # The next two test positive and negative return values.
 node = env.CommandSelLdrTestNacl(
     'exit_one_test.out',
-    command=[env.File('exit_test.nexe'), '1'],
+    exit_test_nexe,
+    args=['1'],
     exit_status='1',
     )
 env.AddNodeToTestSuite(node,
@@ -86,7 +90,8 @@ env.AddNodeToTestSuite(node,
 # The last one tests some unusually large number.
 node = env.CommandSelLdrTestNacl(
     'exit_large_test.out',
-    command=[env.File('exit_test.nexe'), '123'],
+    exit_test_nexe,
+    args=['123'],
     exit_status='123',
     )
 env.AddNodeToTestSuite(node,
@@ -94,32 +99,35 @@ env.AddNodeToTestSuite(node,
                        'run_exit_large_test')
 
 # Test the semaphore system calls.
-env.ComponentProgram('semaphore_tests.nexe',
-                     ['semaphore_tests.cc'],
-                     EXTRA_LIBS=['pthread', 'syscall_test_framework'])
+semaphore_tests_nexe = env.ComponentProgram(
+    'semaphore_tests',
+    ['semaphore_tests.cc'],
+    EXTRA_LIBS=['pthread', 'syscall_test_framework'])
+
 node = env.CommandSelLdrTestNacl(
       'semaphore_tests.out',
-      command=[env.File('semaphore_tests.nexe')],
+      semaphore_tests_nexe,
       )
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
                        'run_semaphore_tests')
 
-env.ComponentProgram('mem_test.nexe',
-                     ['mem_test.cc'],
-                     EXTRA_LIBS=['syscall_test_framework'])
+mem_test_nexe = env.ComponentProgram('mem_test',
+                                     ['mem_test.cc'],
+                                     EXTRA_LIBS=['syscall_test_framework'])
 node = env.CommandSelLdrTestNacl('mem_test.out',
-                                 command=[env.File('mem_test.nexe')])
+                                 mem_test_nexe)
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
                        'run_mem_test')
 
-env.ComponentProgram('sysbrk_test.nexe',
-                     ['sysbrk_test.cc'],
-                     EXTRA_LIBS=['syscall_test_framework', 'nacl'])
+sysbrk_test_nexe = env.ComponentProgram('sysbrk_test',
+                                        ['sysbrk_test.cc'],
+                                        EXTRA_LIBS=['syscall_test_framework',
+                                                    'nacl'])
 
 node = env.CommandSelLdrTestNacl('sysbrk_test.out',
-                                 command=[env.File('sysbrk_test.nexe')])
+                                 sysbrk_test_nexe)
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
                        'run_sysbrk_test')
@@ -128,13 +136,14 @@ env.AddNodeToTestSuite(node,
 is_on_vm = env.Bit('running_on_vm')
 
 # additions to add syscall tests 40-42
-env.ComponentProgram('timefuncs_test.nexe',
-                     ['timefuncs_test.cc'],
-                     EXTRA_LIBS=['pthread', 'syscall_test_framework'])
+timefuncs_test_nexe = env.ComponentProgram(
+    'timefuncs_test',
+    ['timefuncs_test.cc'],
+    EXTRA_LIBS=['pthread', 'syscall_test_framework'])
+
 node = env.CommandSelLdrTestNacl(
     'timefuncs_test.out',
-    command=[env.File('timefuncs_test.nexe')]
-    )
+    timefuncs_test_nexe)
 
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
@@ -143,12 +152,13 @@ env.AddNodeToTestSuite(node,
                        )
 
 raw_syscall_timefunc_objects = env.RawSyscallObjects(['timefuncs_test.cc'])
-env.ComponentProgram('raw_timefuncs_test.nexe',
-                     raw_syscall_timefunc_objects,
-                     EXTRA_LIBS=['syscall_test_framework'])
+raw_timefuncs_test_nexe = env.ComponentProgram(
+    'raw_timefuncs_test',
+    raw_syscall_timefunc_objects,
+    EXTRA_LIBS=['syscall_test_framework'])
 
 node = env.CommandSelLdrTestNacl('raw_timefuncs_test.out',
-                                 command=[env.File('raw_timefuncs_test.nexe')])
+                                 raw_timefuncs_test_nexe)
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
                        'run_raw_timefuncs_test',

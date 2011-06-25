@@ -5,9 +5,9 @@
 
 Import('env')
 
-env.ComponentProgram('file.nexe',
-                     'file.cc',
-                     EXTRA_LIBS=['pthread'])
+nexe = env.ComponentProgram('file',
+                            'file.cc',
+                            EXTRA_LIBS=['pthread'])
 
 # TODO: add tests back in
 # NOTE: this smoke tests currently fails in "test17"
@@ -17,7 +17,7 @@ env.ComponentProgram('file.nexe',
 #       so for now we invoke file.py (see below)
 
 # node = env.CommandSelLdrTestNacl('file_test.out',
-#                                  env.File('file.nexe'),
+#                                  nexe,
 #                                  flags='-d',
 #                                  )
 # AlwaysBuild(node)

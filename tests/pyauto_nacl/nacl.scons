@@ -6,17 +6,17 @@
 Import('env')
 
 platform = env.get('TARGET_FULLARCH')
-cat_nexe_name = 'cat_%s.nexe' % platform
-ppapi_basic_object_nexe_name = 'ppapi_basic_object_%s.nexe' % platform
-ppapi_event_example_nexe_name = 'ppapi_event_example_%s.nexe' % platform
-ppapi_user_main_nexe_name = 'ppapi_user_main_%s.nexe' % platform
-srpc_test_nexe_name = 'srpc_test_%s.nexe' % platform
-srpc_hw_nexe_name = 'srpc_hw_%s.nexe' % platform
-srpc_nrd_client_nexe_name = 'srpc_nrd_client_%s.nexe' % platform
-srpc_nrd_server_nexe_name = 'srpc_nrd_server_%s.nexe' % platform
+cat_nexe_name = 'cat_%s${PROGSUFFIX}' % platform
+ppapi_basic_object_nexe_name = 'ppapi_basic_object_%s${PROGSUFFIX}' % platform
+ppapi_event_example_nexe_name = 'ppapi_event_example_%s${PROGSUFFIX}' % platform
+ppapi_user_main_nexe_name = 'ppapi_user_main_%s${PROGSUFFIX}' % platform
+srpc_test_nexe_name = 'srpc_test_%s${PROGSUFFIX}' % platform
+srpc_hw_nexe_name = 'srpc_hw_%s${PROGSUFFIX}' % platform
+srpc_nrd_client_nexe_name = 'srpc_nrd_client_%s${PROGSUFFIX}' % platform
+srpc_nrd_server_nexe_name = 'srpc_nrd_server_%s${PROGSUFFIX}' % platform
 
 def CreateDefaultDeps(base_name):
-  return [env.File('${STAGING_DIR}/' + base_name + '_%s.nexe' % platform),
+  return [env.File('${STAGING_DIR}/' + base_name + '_%s${PROGSUFFIX}' % platform),
           env.File('${STAGING_DIR}/' + base_name + '.html'),
           env.File('${STAGING_DIR}/' + base_name + '.nmf')]
 
@@ -43,7 +43,7 @@ ppapi_progress_events_files = CreateDefaultDeps('ppapi_progress_events') + [
     env.File('${STAGING_DIR}/ppapi_progress_events.js')]
 ppapi_test_example_files = CreateDefaultDeps('ppapi_test_example')
 ppapi_tests_files = [
-    env.File('${STAGING_DIR}/ppapi_tests_%s.nexe' % platform),
+    env.File('${STAGING_DIR}/ppapi_tests_%s${PROGSUFFIX}' % platform),
     env.Dir('${STAGING_DIR}/test_url_loader_data/'),
     env.File('${STAGING_DIR}/test_case.html'),
     env.File('${STAGING_DIR}/test_case.nmf'),

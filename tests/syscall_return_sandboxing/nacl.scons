@@ -36,19 +36,21 @@ if asm_env.Bit('bitcode'):
 
 asm_obj = asm_env.ComponentObject(GetAssemblerFile(env))
 
-use_obj_env.ComponentProgram('syscall_return_sandboxing.nexe',
-                             ['syscall_return_sandboxing.c', asm_obj])
+syscall_return_sandboxing_nexe = use_obj_env.ComponentProgram(
+                                   'syscall_return_sandboxing',
+                                   ['syscall_return_sandboxing.c', asm_obj])
 node = env.CommandSelLdrTestNacl(
     'syscall_return_sandboxing.out',
-    command=[env.File('syscall_return_sandboxing.nexe')])
+    syscall_return_sandboxing_nexe)
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
                        'run_syscall_return_sandboxing_test')
 
-env.ComponentProgram('thread_create_bad_address.nexe',
-                     env.RawSyscallObjects(['thread_create_bad_address.c']))
+thread_create_bad_address_nexe = env.ComponentProgram(
+    'thread_create_bad_address',
+    env.RawSyscallObjects(['thread_create_bad_address.c']))
 node = env.CommandSelLdrTestNacl(
     'thread_create_bad_address.out',
-    command=[env.File('thread_create_bad_address.nexe')])
+    thread_create_bad_address_nexe)
 env.AddNodeToTestSuite(node, ['small_tests'],
                        'run_thread_create_bad_address_test')

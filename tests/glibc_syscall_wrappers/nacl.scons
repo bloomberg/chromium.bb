@@ -9,30 +9,31 @@ Import('env')
 if not env.Bit('nacl_glibc'):
   Return()
 
-env.ComponentProgram('test_stat.nexe', 'test_stat.c')
+test_stat_nexe = env.ComponentProgram('test_stat', 'test_stat.c')
 
 test_stat = env.CommandSelLdrTestNacl(
     'test_stat.out',
-     command=[env.File('test_stat.nexe'), env.File('test_stat_data')])
+     test_stat_nexe,
+     args=[env.File('test_stat_data')])
 
 env.AddNodeToTestSuite(test_stat, ['small_tests'], 'run_stat_test')
 
-env.ComponentProgram('test_fstat.nexe', 'test_fstat.c')
+test_fstat_nexe = env.ComponentProgram('test_fstat', 'test_fstat.c')
 
 test_fstat = env.CommandSelLdrTestNacl(
     'test_fstat.out',
-    command=[env.File('test_fstat.nexe'), env.File('test_stat_data')],
+    test_fstat_nexe,
+    args=[env.File('test_stat_data')],
     stdout_golden=env.File('test_fstat.stdout'))
 
 env.AddNodeToTestSuite(test_fstat, ['small_tests'], 'run_fstat_test')
 
-env.ComponentProgram('test_dir.nexe', 'test_dir.c')
-
-test_dir_nexe = env.File('test_dir.nexe')
+test_dir_nexe = env.ComponentProgram('test_dir', 'test_dir.c')
 
 test_dir = env.CommandSelLdrTestNacl(
     'test_dir.out',
-    command=[test_dir_nexe, test_dir_nexe.path.rstrip('test_dir.nexe')])
+    test_dir_nexe,
+    args=[test_dir_nexe.path.rstrip('test_dir${PROGSUFFIX}')])
 
 # TODO(bsy): This is broken because sel_ldr's getdents() syscall
 # expects "struct nacl_abi_dirent" to match up with the kernel's
@@ -41,18 +42,17 @@ test_dir = env.CommandSelLdrTestNacl(
 env.AddNodeToTestSuite(test_dir, ['small_tests'], 'run_dir_test',
                        is_broken=True)
 
-env.ComponentProgram('test_time.nexe', 'test_time.c')
+test_time_nexe = env.ComponentProgram('test_time', 'test_time.c')
 
-test_time = env.CommandSelLdrTestNacl(
-    'test_time.out',
-    command=[env.File('test_time.nexe')])
+test_time = env.CommandSelLdrTestNacl('test_time.out', test_time_nexe)
 
 env.AddNodeToTestSuite(test_time, ['small_tests'], 'run_time_test')
 
-env.ComponentProgram('test_rewind.nexe', 'test_rewind.c')
+test_rewind_nexe = env.ComponentProgram('test_rewind', 'test_rewind.c')
 
 test_rewind = env.CommandSelLdrTestNacl(
     'test_rewind.out',
-    command=[env.File('test_rewind.nexe'), env.File('test_rewind_data')])
+    test_rewind_nexe,
+    args=[env.File('test_rewind_data')])
 
 env.AddNodeToTestSuite(test_rewind, ['small_tests'], 'run_rewind_test')

@@ -8,8 +8,8 @@ Import('env')
 # We are testing a GNU C extension which is disallowed by "-pedantic" mode.
 env.FilterOut(CCFLAGS=['-pedantic'])
 
-prog = env.ComponentProgram('computed_goto.nexe', 'computed_goto.c')
-node = env.CommandSelLdrTestNacl('computed_goto_test.out', command=[prog])
+prog = env.ComponentProgram('computed_goto', 'computed_goto.c')
+node = env.CommandSelLdrTestNacl('computed_goto_test.out', prog)
 # TODO(mseaborn): Enable this for PNaCl when PNaCl is fixed to
 # generate correct code for this program.
 # See http://code.google.com/p/nativeclient/issues/detail?id=1423

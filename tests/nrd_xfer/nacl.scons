@@ -10,8 +10,8 @@ Import('env')
 env.FilterOut(CCFLAGS=['-pedantic'])
 
 
-env.ComponentProgram('nrd_xfer_test2.nexe', 'nrd_xfer_test2.c',
+env.ComponentProgram('nrd_xfer_test2', 'nrd_xfer_test2.c',
                      EXTRA_LIBS=['imc_syscalls', 'pthread'])
 
-env.ComponentProgram('nrd_xfer_perf.nexe', 'nrd_xfer_perf.c',
+env.ComponentProgram('nrd_xfer_perf', 'nrd_xfer_perf.c',
                      EXTRA_LIBS=['imc_syscalls', 'pthread'])

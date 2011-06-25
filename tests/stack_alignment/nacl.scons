@@ -5,18 +5,20 @@
 
 Import('env')
 
-env.ComponentProgram('stack_alignment_test.nexe', 'stack_alignment_test.c',
-                     EXTRA_LIBS=['pthread'])
-node = env.CommandSelLdrTestNacl(
-    'stack_alignment_test.out',
-    command=[env.File('stack_alignment_test.nexe')])
+stack_alignment_test_nexe = env.ComponentProgram('stack_alignment_test',
+                                                 'stack_alignment_test.c',
+                                                 EXTRA_LIBS=['pthread'])
+node = env.CommandSelLdrTestNacl('stack_alignment_test.out',
+                                 stack_alignment_test_nexe)
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_stack_alignment_test')
 
 if env.Bit('build_x86') and not env.Bit('bitcode'):
   # This tests use of x86-specific SSE operations.
-  env.ComponentProgram('sse_alignment_test.nexe', 'sse_alignment_test.c',
-                       EXTRA_CFLAGS=['-msse2'], EXTRA_LIBS=['pthread'])
-  node = env.CommandSelLdrTestNacl(
-      'sse_alignment_test.out',
-      command=[env.File('sse_alignment_test.nexe')])
+  sse_alignment_test_nexe = env.ComponentProgram(
+                                'sse_alignment_test',
+                                'sse_alignment_test.c',
+                                EXTRA_CFLAGS=['-msse2'],
+                                EXTRA_LIBS=['pthread'])
+  node = env.CommandSelLdrTestNacl('sse_alignment_test.out',
+                                   sse_alignment_test_nexe)
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_sse_alignment_test')

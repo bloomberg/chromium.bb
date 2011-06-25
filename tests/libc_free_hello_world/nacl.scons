@@ -5,10 +5,10 @@
 
 Import('env')
 
-env.ComponentProgram('libc_free_hello_world.nexe', 'libc_free_hello_world.c')
+nexe = env.ComponentProgram('libc_free_hello_world', 'libc_free_hello_world.c')
 node = env.CommandSelLdrTestNacl(
     'libc_free_hello_world_test.out',
-    command=[env.File('libc_free_hello_world.nexe')],
+    nexe,
     stdout_golden=env.File('libc_free_hello_world.stdout'),
     )
 env.AddNodeToTestSuite(node,

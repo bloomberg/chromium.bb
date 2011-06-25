@@ -58,31 +58,31 @@ for basename in barebones_tests:
   if env.IsRunningUnderValgrind(): continue
 
   src = 'barebones_' + basename + '.c'
-  nexe = 'barebones_' + basename + '.nexe'
+  nexe_name = 'barebones_' + basename
   out = 'barebones_' + basename + '.out'
   test = 'run_barebones_' + basename + '_test'
   test = 'run_barebones_' + basename + '_test'
-  env.ComponentProgram(nexe, [FAKE_STARTUP, src])
+  nexe = env.ComponentProgram(nexe_name, [FAKE_STARTUP, src])
 
   # NOTE: we avoid using zero as the "good" exit status and just
   #       arbitrarily picked 55. All tests are coded to follow this model.
-  node = env.CommandSelLdrTestNacl(
-      out,
-      command=[env.File(nexe)],
-      exit_status='55',)
+  node = env.CommandSelLdrTestNacl(out, nexe, exit_status='55')
+
   env.AddNodeToTestSuite(node,
                          ['small_tests', 'sel_ldr_tests', 'barebones_tests'],
                          test,
                          is_broken=is_broken)
 
 
-# a test that the validador can handle an empty segment after the last
+# a test that the validator can handle an empty segment after the last
 # real segment. The gold linker produces files this
 if env.Bit('build_arm') and not env.Bit('bitcode'):
-  nexe = '${SCONSTRUCT_DIR}/tests/prebuilt/arm/gold-barebones_hello_world.nexe'
+  nexe = env.File(
+  '${SCONSTRUCT_DIR}/tests/prebuilt/arm/gold-barebones_hello_world${PROGSUFFIX}'
+  )
   node = env.CommandSelLdrTestNacl(
       'gold-barebones_hello_world.out',
-      command=[env.File(nexe)],
+      nexe,
       exit_status='55',)
   env.AddNodeToTestSuite(node,
                          ['small_tests', 'sel_ldr_tests'],

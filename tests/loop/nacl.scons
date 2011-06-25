@@ -5,5 +5,5 @@
 
 Import('env')
 
-env.ComponentProgram('loop.nexe', 'loop.cc')
+env.ComponentProgram('loop', 'loop.cc')
 

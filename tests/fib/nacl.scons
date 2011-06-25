@@ -5,7 +5,8 @@
 
 Import('env')
 
-env.ComponentProgram('fib_array.nexe',
+fib_array_nexe = env.ComponentProgram(
+                     'fib_array',
                      'fib_array.c',
                      EXTRA_LIBS=['srpc',
                                  'platform',
@@ -15,7 +16,7 @@ env.ComponentProgram('fib_array.nexe',
                                  'pthread'])
 node = env.SelUniversalTest(
     'fib_array_test.out',
-    command=[env.File('fib_array.nexe')],
+    fib_array_nexe,
     stdin=env.File('fib_array_test.stdin'),
     stdout_golden=env.File('fib_array_test.stdout')
     )
@@ -25,17 +26,18 @@ env.AddNodeToTestSuite(node,
 
 
 
-env.ComponentProgram('fib_scalar.nexe',
-                     'fib_scalar.c',
-                     EXTRA_LIBS=['srpc',
-                                 'platform',
-                                 'gio',
-                                 'imc',
-                                 'imc_syscalls',
-                                 'pthread'])
+fib_scalar_nexe = env.ComponentProgram(
+                      'fib_scalar',
+                      'fib_scalar.c',
+                      EXTRA_LIBS=['srpc',
+                                  'platform',
+                                  'gio',
+                                  'imc',
+                                  'imc_syscalls',
+                                  'pthread'])
 node = env.SelUniversalTest(
     'fib_scalar_test.out',
-    command=[env.File('fib_scalar.nexe')],
+    fib_scalar_nexe,
     stdin=env.File('fib_scalar_test.stdin'),
     stdout_golden=env.File('fib_scalar_test.stdout')
     )

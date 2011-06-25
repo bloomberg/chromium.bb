@@ -606,7 +606,7 @@ if not env.Bit('mac') and not env.IsRunningUnderValgrind():
 # Test that sel_ldr does not crash if the executable file cannot be opened.
 node = env.CommandSelLdrTestNacl(
     'sel_ldr_exe_not_found.out',
-    command=['name_of_file_that_does_not_exist.nexe'],
+    'name_of_file_that_does_not_exist.nexe',
     exit_status='1')
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_sel_ldr_exe_not_found_test')
 
@@ -619,8 +619,8 @@ env.AddNodeToTestSuite(node, ['small_tests'], 'run_sel_ldr_exe_not_found_test')
 if not env.CrossToolsBuild():
   node = env.CommandSelLdrTestNacl(
       'fuzz_nullptr_test.out',
+      env.File(arch_testdata_dir + '/nullptr.nexe'),
       sel_ldr_flags=['-F'],
-      command = [env.File(arch_testdata_dir + '/nullptr.nexe')],
       exit_status = '0')
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_fuzz_nullptr_test')
 
@@ -691,7 +691,7 @@ def AddIntegrationTest(test, location):
 
   node = env.SelUniversalTest(
       test + '_canned.out',
-      command = [env.File(arch_testdata_dir + '/' + test + '.nexe')],
+      env.File(arch_testdata_dir + '/' + test + '.nexe'),
       stdin = location + '.stdin',
       stdout_golden = location + '.stdout',
       )
@@ -705,7 +705,7 @@ if env.Bit('target_x86'):
 
   node = env.CommandSelLdrTestNacl(
       'nacl_log.out',
-      command = [env.File(arch_testdata_dir + '/hello_world.nexe')],
+      env.File(arch_testdata_dir + '/hello_world.nexe'),
       log_golden = env.File('testdata/hello_world.log'),
       stdout_golden = env.File('testdata/hello_world.stdout'),
       filter_regex = '"' + RE_HELLO + '|' + RE_IDENT + '"',
@@ -748,7 +748,7 @@ def AddDeathTest(test, skip):
 
   node = env.CommandSelLdrTestNacl(
       test  + '.out',
-      command = [env.File(arch_testdata_dir + '/' + test + '.nexe')],
+      env.File(arch_testdata_dir + '/' + test + '.nexe'),
       stderr_golden = env.File('testdata/' + test + '.stderr'),
       filter_regex = ERROR_WHILE_LOADING,
       filter_group_only = 'true',
@@ -760,7 +760,7 @@ if env.Bit('target_x86'):
   # built in tests/nullptr/
   node = env.CommandSelLdrTestNacl(
       'nullptr.out',
-      command=[env.File(arch_testdata_dir + '/nullptr.nexe')],
+      env.File(arch_testdata_dir + '/nullptr.nexe'),
       exit_status='untrusted_segfault')
   env.AddNodeToTestSuite(node, ['medium_tests'])
 

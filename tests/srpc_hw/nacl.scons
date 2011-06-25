@@ -6,7 +6,7 @@
 Import('env')
 
 srpc_hw_obj = env.ComponentObject('srpc_hw.o', 'srpc_hw.c')
-srpc_hw_nexe_name = 'srpc_hw_%s.nexe' % env.get('TARGET_FULLARCH')
+srpc_hw_nexe_name = 'srpc_hw_%s' % env.get('TARGET_FULLARCH')
 srpc_hw_nexe = env.ComponentProgram(srpc_hw_nexe_name,
                                     srpc_hw_obj,
                                     EXTRA_LIBS=[
@@ -21,7 +21,7 @@ srpc_hw_nexe = env.ComponentProgram(srpc_hw_nexe_name,
 # __urlAsNaClDesc with a nexe name.
 # TODO(sehr): We can get rid of this hack if we make that API take a manifest
 # file, but it is currently planned for obsoletion also.
-srpc_hw_undecorated = env.ComponentProgram('srpc_hw.nexe',
+srpc_hw_undecorated = env.ComponentProgram('srpc_hw',
                                            srpc_hw_obj,
                                            EXTRA_LIBS=[
                                                'srpc',
@@ -43,8 +43,8 @@ env.AddPrebuiltBinaryToRepository(srpc_hw_nexe)
 
 node = env.SelUniversalTest(
     'srpc_hw_test.out',
+    srpc_hw_nexe,
     sel_universal_flags=['--command_file', env.File('srpc_hw_test.stdin')],
-    command=[srpc_hw_nexe],
     stdout_golden=env.File('srpc_hw_test.stdout'),
     )
 env.AddNodeToTestSuite(node,

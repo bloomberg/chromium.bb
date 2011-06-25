@@ -9,14 +9,16 @@ trusted_env = env.get('TRUSTED_ENV')
 if trusted_env is None:
   Return()
 
-env.ComponentProgram('crash_test.nexe', 'crash_test.c')
-env.ComponentProgram('crash_in_syscall.nexe', 'crash_in_syscall.c',
-                     EXTRA_LIBS=['imc_syscalls'])
+crash_test_nexe = env.ComponentProgram('crash_test', 'crash_test.c')
+crash_in_syscall_nexe = env.ComponentProgram('crash_in_syscall',
+                                             'crash_in_syscall.c',
+                                             EXTRA_LIBS=['imc_syscalls'])
 nodes = []
 
 # Test that crashes in untrusted code are recognised as such.
 nodes.append(env.CommandSelLdrTestNacl(
-        'untrusted_crash_test.out', command=[env.File('crash_test.nexe')],
+        'untrusted_crash_test.out',
+        crash_test_nexe,
         sel_ldr_flags=['-S'],
         exit_status='untrusted_segfault',
         using_nacl_signal_handler='1'))
@@ -25,7 +27,8 @@ nodes.append(env.CommandSelLdrTestNacl(
 # This test covers crashes that occur outside of a syscall handler,
 # before the NaClApp is set up.
 nodes.append(env.CommandSelLdrTestNacl(
-        'trusted_crash_test.out', command=[env.File('crash_test.nexe')],
+        'trusted_crash_test.out',
+        crash_test_nexe,
         sel_ldr_flags=['-S'],
         osenv='NACL_CRASH_TEST=1',
         exit_status='trusted_segfault',
@@ -34,7 +37,7 @@ nodes.append(env.CommandSelLdrTestNacl(
 # This tests a crash that occurs inside a syscall handler.
 nodes.append(env.CommandSelLdrTestNacl(
         'crash_in_syscall_test.out',
-        command=[env.File('crash_in_syscall.nexe')],
+        crash_in_syscall_nexe,
         sel_ldr_flags=['-S'],
         # Ultimately this should be recognised as a crash caused by
         # untrusted code.

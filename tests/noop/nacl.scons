@@ -5,14 +5,14 @@
 
 Import('env')
 
-env.ComponentProgram('noop.nexe',
-                     'noop.c',
-                     EXTRA_LIBS=['pthread'],
-                     )
+noop_nexe = env.ComponentProgram('noop',
+                                 'noop.c',
+                                 EXTRA_LIBS=['pthread'],
+                                 )
 
 node = env.CommandSelLdrTestNacl(
     'noop_test.out',
-    command=[env.File('noop.nexe')],
+    noop_nexe,
     stdout_golden=env.File('noop.stdout'),
     )
 env.AddNodeToTestSuite(node,
@@ -20,13 +20,13 @@ env.AddNodeToTestSuite(node,
                        'run_noop_test')
 
 
-env.ComponentProgram('noop2.nexe',
-                     'noop2.c',
-                     EXTRA_LIBS=['pthread'],
-                     )
+noop2_nexe = env.ComponentProgram('noop2',
+                                  'noop2.c',
+                                  EXTRA_LIBS=['pthread'],
+                                  )
 node = env.CommandSelLdrTestNacl(
     'noop2_test.out',
-    command=[env.File('noop2.nexe')],
+    noop2_nexe,
     stdout_golden=env.File('noop.stdout'),
     exit_status='2',
     )

@@ -1120,7 +1120,7 @@ pre_base_env.AddMethod(CommandValidatorTestNacl)
 def ExtractPublishedFiles(env, target_name):
   run_files = ['$STAGING_DIR/' + os.path.basename(published_file.path)
                for published_file in env.GetPublished(target_name, 'run')]
-  nexe = '$STAGING_DIR/' + target_name
+  nexe = '$STAGING_DIR/%s${PROGSUFFIX}' % target_name
   return [env.File(file) for file in run_files + [nexe]]
 
 pre_base_env.AddMethod(ExtractPublishedFiles)
@@ -1443,7 +1443,7 @@ def CommandGdbTestNacl(env, name, command,
 pre_base_env.AddMethod(CommandGdbTestNacl)
 
 
-def SelUniversalTest(env, name, command, sel_universal_flags=None, **kwargs):
+def SelUniversalTest(env, name, nexe, sel_universal_flags=None, **kwargs):
   # The dynamic linker's ability to receive arguments over IPC at
   # startup currently requires it to reject the plugin's first
   # connection, but this interferes with the sel_universal-based
@@ -1464,7 +1464,7 @@ def SelUniversalTest(env, name, command, sel_universal_flags=None, **kwargs):
 
   node = CommandSelLdrTestNacl(env,
                                name,
-                               command,
+                               nexe,
                                loader='sel_universal',
                                sel_ldr_flags=sel_universal_flags,
                                **kwargs)
@@ -1505,7 +1505,8 @@ def ShouldUseVerboseOptions(extra):
           'log_golden' in extra)
 
 # ----------------------------------------------------------
-def CommandSelLdrTestNacl(env, name, command,
+def CommandSelLdrTestNacl(env, name, nexe,
+                          args = None,
                           log_verbosity=2,
                           sel_ldr_flags=None,
                           loader='sel_ldr',
@@ -1521,6 +1522,10 @@ def CommandSelLdrTestNacl(env, name, command,
       env['TRUSTED_ENV'].Bit('coverage_enabled') and
       env['TRUSTED_ENV'].Bit('windows')):
     return []
+
+  command = [nexe]
+  if args is not None:
+    command += args
 
   sel_ldr = GetSelLdr(env, loader);
   if not sel_ldr:

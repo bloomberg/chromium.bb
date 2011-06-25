@@ -6,13 +6,13 @@
 
 Import('env')
 
-env.ComponentProgram('write_to_rodata.nexe', ['write_to_rodata.c'])
+nexe = env.ComponentProgram('write_to_rodata', ['write_to_rodata.c'])
 
 # We check the output to ensure that the process doesn't die for an
 # unexpected reason.
 node = env.CommandSelLdrTestNacl(
     'write_to_rodata.out',
-    command=[env.File('write_to_rodata.nexe')],
+    nexe,
     exit_status='untrusted_segfault',
     stdout_golden=env.File('write_to_rodata.stdout'))
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_write_to_rodata_test')

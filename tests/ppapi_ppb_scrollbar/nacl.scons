@@ -7,8 +7,9 @@ Import('env')
 
 env.Prepend(CPPDEFINES=['XP_UNIX'])
 
-nexe = 'ppapi_ppb_scrollbar_%s.nexe' % env.get('TARGET_FULLARCH')
-env.Alias('ppapi_ppb_scrollbar.nexe', [ '$STAGING_DIR/%s' % nexe ])
+nexe = 'ppapi_ppb_scrollbar_${TARGET_FULLARCH}'
+env.Alias('ppapi_ppb_scrollbar${PROGSUFFIX}',
+          ['$STAGING_DIR/%s${PROGSUFFIX}' % nexe])
 
 ppapi_ppb_scrollbar_nexe = env.ComponentProgram(
     nexe,

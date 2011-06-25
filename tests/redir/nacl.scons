@@ -9,7 +9,7 @@ import tempfile
 
 Import('env')
 
-env.ComponentProgram('redir_test.nexe', 'redir_test.c')
+redir_test_nexe = env.ComponentProgram('redir_test', 'redir_test.c')
 
 # windows builds swallow stdout and stderr, so we cannot check
 # against the golden files when stdout and stderr are not redirected
@@ -17,7 +17,7 @@ env.ComponentProgram('redir_test.nexe', 'redir_test.c')
 if not env.Bit('host_windows'):
   node = env.CommandSelLdrTestNacl(
       'redir_test_basic.out',
-      command=[env.File('redir_test.nexe')],
+      redir_test_nexe,
       stdout_golden=env.File('redir_test.stdout'),
       stderr_golden=env.File('redir_test.stderr'),
       filter_regex="'^REALOUTPUT'",
@@ -48,7 +48,7 @@ atexit.register(CleanupBinder(errfile))
 
 node = env.CommandSelLdrTestNacl(
     'redir_test.out',
-    command=[env.File('redir_test.nexe')],
+    redir_test_nexe,
     filter_regex="'^REALOUTPUT'",
     osenv=['NACL_EXE_STDOUT=%s' % outfile,
            'NACL_EXE_STDERR=%s' % errfile])

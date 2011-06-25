@@ -9,7 +9,7 @@ Import('env')
 
 env.Prepend(CPPDEFINES=['XP_UNIX'])
 
-nexe_name = 'ppapi_example_audio_%s.nexe' % env.get('TARGET_FULLARCH')
+nexe_name = 'ppapi_example_audio_%s' % env.get('TARGET_FULLARCH')
 nexe = env.ComponentProgram(nexe_name,
                             [ 'audio.cc' ],
                             EXTRA_LIBS=['${PPAPI_LIBS}',

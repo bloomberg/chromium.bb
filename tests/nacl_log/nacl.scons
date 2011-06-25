@@ -11,12 +11,12 @@ if env.Bit('bitcode'):
 
 env.Replace(EXTRA_LIBS=['platform', 'gio', 'pthread'])
 
-env.ComponentProgram('nacl_log.nexe', 'nacl_log.c')
+nacl_log_nexe = env.ComponentProgram('nacl_log', 'nacl_log.c')
 
 
 node = env.CommandSelLdrTestNacl(
     'nacl_log_test.out',
-    command=[env.File('nacl_log.nexe')],
+    nacl_log_nexe,
     )
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],

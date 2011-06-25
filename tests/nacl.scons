@@ -29,31 +29,33 @@ html_examples = env.Replicate('${STAGING_DIR}', 'examples.html')
 env.Default(html_examples)
 example_nexes = [
     # SRPC Nexe Tests
-    'srpc_hw.nexe',          # srpc_hw.html, srpc_hw_fd.html
-    'srpc_test.nexe',        # srpc_basic.html, srpc_plugin.html, srpc_perf.html
-    'srpc_nrd_server.nexe',  # srpc_nrd_xfer.html, srpc_sockaddr.html
-    'srpc_nrd_client.nexe',  # srpc_nrd_xfer.html, srpc_plugin.html
-    'cat.nexe',              # srpc_url_as_nacl_desc.html
+    'srpc_hw',          # srpc_hw.html, srpc_hw_fd.html
+    'srpc_test',        # srpc_basic.html, srpc_plugin.html, srpc_perf.html
+    'srpc_nrd_server',  # srpc_nrd_xfer.html, srpc_sockaddr.html
+    'srpc_nrd_client',  # srpc_nrd_xfer.html, srpc_plugin.html
+    'cat',              # srpc_url_as_nacl_desc.html
     # SRPC Nexe Performance
-    'mandel_tiled.nexe',         # mandel_tiled.html
-    'autoloader_default.nexe',   # autoloader.html',
+    'mandel_tiled',         # mandel_tiled.html
+    'autoloader_default',   # autoloader.html',
     # PPAPI Nexe Examples
-    'ppapi_basic_object.nexe',     # basic_object.html
-    'ppapi_event_example.nexe',    # event_example.html
-    'ppapi_example_2d.nexe',       # ppapi_example_2d.html
-    'ppapi_example_audio.nexe',    # ppapi_example_audio.html
-    'ppapi_geturl.nexe',           # ppapi_geturl.html
-    'ppapi_progress_events.nexe',  # ppapi_progress_events.html
-    'earth_c.nexe',                # earth_c.html
-    'earth_cc.nexe',               # earth_cc.html
+    'ppapi_basic_object',     # basic_object.html
+    'ppapi_event_example',    # event_example.html
+    'ppapi_example_2d',       # ppapi_example_2d.html
+    'ppapi_example_audio',    # ppapi_example_audio.html
+    'ppapi_geturl',           # ppapi_geturl.html
+    'ppapi_progress_events',  # ppapi_progress_events.html
+    'earth_c',                # earth_c.html
+    'earth_cc',               # earth_cc.html
     'ppapi_bad',                   # ppapi_bad.html
     # PPAPI Proxy Tests
-    'ppapi_core.nexe',            # ppapi_core.html
-    'ppapi_ppb_graphics2d.nexe',  # ppapi_ppb_graphics2d.html
-    'ppapi_file_system.nexe',     # ppapi_file_system.html
-    'ppapi_messaging.nexe',       # ppapi_messaging.html
+    'ppapi_core',            # ppapi_core.html
+    'ppapi_ppb_graphics2d',  # ppapi_ppb_graphics2d.html
+    'ppapi_file_system',     # ppapi_file_system.html
+    'ppapi_messaging',       # ppapi_messaging.html
     ]
 
-env.Depends(html_examples, [ env.Alias(nexe) for nexe in example_nexes ])
+prog_suffix = env['PROGSUFFIX']
+env.Depends(html_examples,
+            [ env.Alias(nexe+prog_suffix) for nexe in example_nexes ])
 env.Alias('html_examples', html_examples)  # scons --mode=nacl examples_html
 env.Alias('examples_html', html_examples)  # scons --mode=nacl html_examples

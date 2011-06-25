@@ -14,19 +14,19 @@ if env.Bit('bitcode'):
   # was disabled for ARM/PNaCl.  TODO(mseaborn): Re-enable both.
   Return()
 
-arch_suffix = '_%s.nexe' % env.get('TARGET_FULLARCH')
 dest_copy = env.Replicate('$STAGING_DIR', 'test_runner.html')
 env.Replicate('$STAGING_DIR',
               '${SCONSTRUCT_DIR}/tools/browser_tester/browserdata/nacltest.js')
 test_files = [
-    env.File('$STAGING_DIR/nacltest.js'),
-    env.File('$STAGING_DIR/dynamic_load_test.nmf'),
-    env.File('$STAGING_DIR/dynamic_load_test' + arch_suffix),
-    env.File('$STAGING_DIR/dynamic_modify_test.nmf'),
-    env.File('$STAGING_DIR/dynamic_modify_test' + arch_suffix),
-    env.File('$STAGING_DIR/imc_shm_mmap_test.nmf'),
-    env.File('$STAGING_DIR/imc_shm_mmap_test' + arch_suffix),
-    ]
+  env.File('$STAGING_DIR/nacltest.js'),
+  env.File('$STAGING_DIR/dynamic_load_test.nmf'),
+  env.File('$STAGING_DIR/dynamic_load_test_${TARGET_FULLARCH}${PROGSUFFIX}'),
+  env.File('$STAGING_DIR/dynamic_modify_test.nmf'),
+  env.File('$STAGING_DIR/dynamic_modify_test_${TARGET_FULLARCH}${PROGSUFFIX}'),
+  env.File('$STAGING_DIR/imc_shm_mmap_test.nmf'),
+  env.File('$STAGING_DIR/imc_shm_mmap_test_${TARGET_FULLARCH}${PROGSUFFIX}'),
+]
+
 # These are not true dependencies: They are not needed for
 # test_runner.html to be replicated to "staging", but they are needed
 # for test_runner.html to work when run.

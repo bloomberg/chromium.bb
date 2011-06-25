@@ -12,7 +12,7 @@ if env.Bit('target_arm'):
   Return()
 
 
-nexe = 'ppapi_test_example_%s.nexe' % env.get('TARGET_FULLARCH')
+nexe = 'ppapi_test_example_${TARGET_FULLARCH}${PROGSUFFIX}'
 
 # Note: this test uses the nexe, manifest.json, background.html and
 # test_bridge.js, but these files are loaded from the disk as part of the

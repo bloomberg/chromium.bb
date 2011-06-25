@@ -14,11 +14,9 @@ if not env.Bit('bitcode'):
   env_inst.Append(CFLAGS=['-finstrument-for-thread-suspension'])
   inputs += env_inst.ComponentObject('gc_instrumentation.c')
 
-  env.ComponentProgram('gc_instrumentation.nexe', inputs,
-                       EXTRA_LIBS=['nacl_dyncode', 'pthread'])
+  nexe = env.ComponentProgram('gc_instrumentation', inputs,
+                              EXTRA_LIBS=['nacl_dyncode', 'pthread'])
 
-  node = env.CommandSelLdrTestNacl(
-        'gc_instrumentation.out',
-        command=[env.File('gc_instrumentation.nexe')] )
+  node = env.CommandSelLdrTestNacl('gc_instrumentation.out', nexe)
 
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_gc_instrumentation_test')

@@ -462,6 +462,14 @@ def ComponentProgram(self, prog_name, *args, **kwargs):
 
   env['PROGRAM_BASENAME'] = prog_name
 
+  if env['PROGSUFFIX'] and env.subst(prog_name).endswith(env['PROGSUFFIX']):
+    # Temporary hack: If there's already an extension, remove it.
+    # Because PPAPI is revision locked, and expects to be able to use .nexe
+    # TODO: When PPAPI deps is rolled, replace with this:
+    # raise Exception("Program name shouldn't have a suffix")
+    prog_name = env.subst(prog_name)
+    prog_name = prog_name[:-len(env['PROGSUFFIX'])]
+
   # Call env.Program()
   out_nodes = env.Program(prog_name, *args, **kwargs)
 

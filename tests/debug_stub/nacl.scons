@@ -21,7 +21,7 @@ if sys.version_info < (2, 6):
 if env.Bit('bitcode'):
   Return()
 
-test_prog = env.ComponentProgram('debugger_test.nexe', 'debugger_test.c')
+test_prog = env.ComponentProgram('debugger_test', 'debugger_test.c')
 
 sel_ldr = trusted_env.File('${STAGING_DIR}/${PROGPREFIX}sel_ldr${PROGSUFFIX}')
 env_vars = [
@@ -46,14 +46,12 @@ env.AddNodeToTestSuite(node, ['large_tests'], 'run_debug_stub_test')
 is_broken = not env.Bit('host_windows')
 
 # Build .nexe to be used with debug_in_browswer test
-browser_test_target = 'debug_browser_test_%s.nexe' % env.get('TARGET_FULLARCH')
+browser_test_target = 'debug_browser_test_%s' % env.get('TARGET_FULLARCH')
 browser_test_nexe = env.ComponentProgram(browser_test_target,
                                          ['debug_browser_test.cc'],
                                          EXTRA_LIBS=['${PPAPI_LIBS}',
                                                       'ppapi_cpp']
                                          )
-
-arch_suffix = '_%s.nexe' % env.get('TARGET_FULLARCH')
 
 # Note that the html and a .nmf manifest is required to run this program.
 dest_copy = env.Replicate('$STAGING_DIR',
@@ -67,7 +65,7 @@ test_files = [
     env.File('$STAGING_DIR/nacltest.js'),
     env.File('$STAGING_DIR/debug_browser_test.nmf'),
     env.File('$STAGING_DIR/debug_browser.html'),
-    env.File('$STAGING_DIR/debug_browser_test' + arch_suffix),
+    env.File('$STAGING_DIR/%s${PROGSUFFIX}' % browser_test_target),
     ]
 
 # For now, we have to force this test to always run using chrome's

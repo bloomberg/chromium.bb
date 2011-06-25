@@ -19,13 +19,13 @@ env.Append(LINKFLAGS='-Wl,--section-start,.rodata=${IRT_DATA_REGION_START}')
 # blob_library_loading output directory.
 hw_o = env.ComponentObject('hello_world.o', '../hello_world/hello_world.c')
 user_executable = env.ComponentProgram(
-    'hello_world_with_segment_gap.nexe',
+    'hello_world_with_segment_gap',
     hw_o)
 
 node = env.CommandSelLdrTestNacl(
     'blob_library_loading_test.out',
+    user_executable,
     sel_ldr_flags=['-B', env.GetIrtNexe()],
-    command=[user_executable],
     stdout_golden=env.File('${SCONSTRUCT_DIR}/tests/hello_world'
                            '/hello_world.stdout'))
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_blob_library_loading_test')

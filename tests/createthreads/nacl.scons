@@ -5,7 +5,7 @@
 
 Import('env')
 
-env.ComponentProgram('createthreads.nexe', 'createthreads.cc',
+env.ComponentProgram('createthreads', 'createthreads.cc',
                      EXTRA_LIBS=['srpc', 'm', 'pthread'])
 
 # TODO: add test

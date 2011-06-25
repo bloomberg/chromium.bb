@@ -30,7 +30,7 @@ ppapi_bad = env.Replicate('${STAGING_DIR}', ppapi_bad_files)
 # Compile all nexes embedded into the above html
 for kind in [ 'ppp_initialize', 'no_ppp_instance', 'ppp_instance_didcreate' ]:
   bad_nmf = 'ppapi_bad_%s.nmf' % kind
-  bad_nexe = ('ppapi_bad_%s_%s.nexe' % (kind, env.get('TARGET_FULLARCH')))
+  bad_nexe = ('ppapi_bad_%s_%s' % (kind, env.get('TARGET_FULLARCH')))
   env.ComponentProgram(bad_nexe,
                        ['ppapi_bad_%s.cc' % kind],
                        EXTRA_LIBS=['${PPAPI_LIBS}',

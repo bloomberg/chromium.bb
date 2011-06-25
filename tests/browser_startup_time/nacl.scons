@@ -11,7 +11,7 @@ Import('env')
 # Hope it does not change to do more than just the barebones.
 # We must make a separate build though, to get a different nexe "key"
 # for the env.Publish() / env.ExtractPublishedFiles() magic.
-nexe = 'browser_startup_time_%s.nexe' % env.get('TARGET_FULLARCH')
+nexe_name = 'browser_startup_time_${TARGET_FULLARCH}'
 
 # Build object file separately to prevent crud left in the source directory.
 browser_startup_obj = env.ComponentObject(
@@ -19,7 +19,7 @@ browser_startup_obj = env.ComponentObject(
     '${SCONSTRUCT_DIR}/tests/ppapi_test_example/ppapi_test_example.cc')
 
 browser_startup_nexe = env.ComponentProgram(
-    nexe,
+    nexe_name,
     [browser_startup_obj],
     EXTRA_LIBS=['${PPAPI_LIBS}',
                 'ppapi_test_lib',
@@ -31,7 +31,7 @@ browser_startup_nexe = env.ComponentProgram(
 # Borrow the smoke tests.
 borrowed_files = [env.File('${STAGING_DIR}/ppapi_test_example.js')]
 
-env.Publish(nexe, 'run',
+env.Publish(nexe_name, 'run',
             ['browser_startup_time.html',
              'browser_startup_time.nmf',
              'browser_startup_time.js'])
@@ -46,7 +46,7 @@ output_processor = ['${PYTHON}',
 node = env.PPAPIBrowserTester(
     test_name,
     url='browser_startup_time.html',
-    files=env.ExtractPublishedFiles(nexe) + borrowed_files,
+    files=env.ExtractPublishedFiles(nexe_name) + borrowed_files,
     args=['--enable_experimental_js'],
     process_output=output_processor,
     # Assume verbosity level of 1 will give us NaClLogs for sel_ldr times.
@@ -67,7 +67,7 @@ env.AddNodeToTestSuite(node,
 
 # Also check the size of this nexe.
 node = env.FileSizeTest('browser_startup_size.out',
-                        nexe)
+                        browser_startup_nexe)
 env.AddNodeToTestSuite(node,
                        test_suites,
                        'run_browser_startup_size_test')

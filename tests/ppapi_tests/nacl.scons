@@ -4,7 +4,7 @@
 
 Import('env')
 
-ppapi_tests_target = 'ppapi_tests_%s.nexe' % env.get('TARGET_FULLARCH')
+ppapi_tests_target = 'ppapi_tests_${TARGET_FULLARCH}'
 
 ppapi_tests_sources = [
     # Common test files

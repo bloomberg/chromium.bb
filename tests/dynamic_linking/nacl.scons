@@ -8,11 +8,9 @@ Import('env')
 if not env.Bit('nacl_glibc'):
   Return()
 
-env.ComponentProgram('dlopen_test.nexe', 'dlopen_test.c', EXTRA_LIBS=['dl'])
+nexe = env.ComponentProgram('dlopen_test', 'dlopen_test.c', EXTRA_LIBS=['dl'])
 
-dlopen_test = env.CommandSelLdrTestNacl(
-    'dlopen_test.out',
-    command=[env.File('dlopen_test.nexe')])
+dlopen_test = env.CommandSelLdrTestNacl('dlopen_test.out', nexe)
 
 # This particular test does not work with static linking, although
 # dlopen() can work with a statically-linked main executable in

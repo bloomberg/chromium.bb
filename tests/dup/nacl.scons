@@ -9,11 +9,11 @@ Import('env')
 if env.Bit('nacl_glibc'):
    Return()
 
-env.ComponentProgram('dup_test.nexe', 'dup_test.c')
+nexe = env.ComponentProgram('dup_test', 'dup_test.c')
 
 node = env.CommandSelLdrTestNacl(
     'dup_test.out',
-    command=[env.File('dup_test.nexe')],
+    nexe,
     stdin=env.File('dup_test.stdin'),
     stdout_golden=env.File('dup_test.stdout'),
     )

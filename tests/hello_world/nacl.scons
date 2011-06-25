@@ -6,10 +6,10 @@
 Import('env')
 import os
 
-hello_nexe = env.ComponentProgram('hello_world.nexe', 'hello_world.c')
+hello_nexe = env.ComponentProgram('hello_world', 'hello_world.c')
 node = env.CommandSelLdrTestNacl(
     'hello_world_test.out',
-    command=[hello_nexe],
+    hello_nexe,
     stdout_golden=env.File('hello_world.stdout'),
     track_cmdtime='1',
     )
@@ -32,10 +32,11 @@ env.AddNodeToTestSuite(node,
                        ['small_tests', 'performance_tests'],
                        'run_hello_world_size_test')
 
-env.ComponentProgram('at_exit.nexe', 'at_exit.c')
+at_exit_nexe = env.ComponentProgram('at_exit', 'at_exit.c')
+
 node = env.CommandSelLdrTestNacl(
     'at_exit_test.out',
-    command=[env.File('at_exit.nexe')],
+    at_exit_nexe,
     stdout_golden=env.File('at_exit.stdout'),
     )
 env.AddNodeToTestSuite(node,
@@ -43,10 +44,10 @@ env.AddNodeToTestSuite(node,
                        'run_at_exit_test')
 
 
-env.ComponentProgram('exit.nexe', 'exit.c')
+exit_nexe = env.ComponentProgram('exit', 'exit.c')
 node = env.CommandSelLdrTestNacl(
     'exit_test.out',
-    command=[env.File('exit.nexe')],
+    exit_nexe,
     exit_status='69',
     )
 env.AddNodeToTestSuite(node,
@@ -54,10 +55,11 @@ env.AddNodeToTestSuite(node,
                        'run_exit_test')
 
 
-env.ComponentProgram('printf.nexe', 'printf.c')
+printf_nexe = env.ComponentProgram('printf', 'printf.c')
 node = env.CommandSelLdrTestNacl(
     'printf_test.out',
-    command=[env.File('printf.nexe'), '1000', '1', '0',],
+    printf_nexe,
+    args=['1000', '1', '0',],
     stdout_golden=env.File('printf.stdout'),
     )
 env.AddNodeToTestSuite(node,
@@ -65,33 +67,32 @@ env.AddNodeToTestSuite(node,
                        'run_printf_test')
 
 
-env.ComponentProgram('float.nexe', 'float.c')
+float_nexe = env.ComponentProgram('float', 'float.c')
 node = env.CommandSelLdrTestNacl(
   'float_test.out',
-  command=[env.File('float.nexe'),
-           '1.0', '3.0', '0.5', '100.0', '0.3'],
+  float_nexe,
+  args=['1.0', '3.0', '0.5', '100.0', '0.3'],
   stdout_golden=env.File('float.stdout'),
   )
 env.AddNodeToTestSuite(node, ['small_tests', 'sel_ldr_tests'], 'run_float_test')
 
 
 # TODO(robertm): use a golden file
-env.ComponentProgram('dump_env.nexe', 'dump_env.c')
+dump_env_nexe = env.ComponentProgram('dump_env', 'dump_env.c')
 node = env.CommandSelLdrTestNacl(
     'dump_env.out',
-    command=[env.File('dump_env.nexe'),
-             'arg1', 'arg2', 'arg3', 'arg4', 'arg5', 'argv6', 'argv7'],
+    dump_env_nexe,
+    args=['arg1', 'arg2', 'arg3', 'arg4', 'arg5', 'argv6', 'argv7'],
     )
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
                        'run_dump_env_test')
 
 
-env.ComponentProgram('misc_math.nexe', 'misc_math.c', EXTRA_LIBS=['m'])
+misc_math_nexe = env.ComponentProgram('misc_math', 'misc_math.c', EXTRA_LIBS=['m'])
 node = env.CommandSelLdrTestNacl(
-     'misc_math_test.out',
-    command=[env.File('misc_math.nexe')],
-    )
+    'misc_math_test.out',
+    misc_math_nexe)
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_misc_math_test')
 
 
@@ -99,9 +100,8 @@ if env.Bit('bitcode'):
   env.Append(CPPDEFINES=['PNACL_ABI_TEST=1'])
 else:
   env.Append(CCFLAGS=['-std=c99'])
-env.ComponentProgram('abi.nexe', 'abi.c')
+abi_nexe = env.ComponentProgram('abi', 'abi.c')
 node = env.CommandSelLdrTestNacl(
     'abi_test.out',
-    command=[env.File('abi.nexe')],
-    )
+    abi_nexe)
 env.AddNodeToTestSuite(node,  ['small_tests'], 'run_abi_test')

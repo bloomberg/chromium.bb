@@ -385,8 +385,7 @@ def generate(env):
       # when unc paths are fixed.
       IMPLICIT_COMMAND_DEPENDENCIES=False,
 
-      # TODO: this could be .nexe and then all the .nexe stuff goes away?
-      PROGSUFFIX=''  # Force PROGSUFFIX to '' on all platforms.
+      PROGSUFFIX='.nexe'
   )
 
   # Get root of the SDK.

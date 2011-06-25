@@ -24,41 +24,41 @@ if not wa_env.Bit('bitcode'):
                             '-Wl,-no-whole-archive'])
 
 
-nexe = wa_env.ComponentProgram('dummy.nexe', 'dummy.c')
+nexe = wa_env.ComponentProgram('dummy', 'dummy.c')
 node = wa_env.CommandValidatorTestNacl('whole_archive_test.out',
                                        image=[nexe])
 wa_env.AddNodeToTestSuite(node,
                           ['toolchain_tests', 'small_tests'],
                           'run_whole_archive_test')
 
-nexe = env.ComponentProgram('setlongjmp.nexe', 'setlongjmp.c')
+nexe = env.ComponentProgram('setlongjmp', 'setlongjmp.c')
 node = env.CommandSelLdrTestNacl('setlongjmp.out',
-                                 command=[nexe],
+                                 nexe,
                                  exit_status='55')
 env.AddNodeToTestSuite(node,
                        ['toolchain_tests','small_tests'],
                        'run_setlongjmp_test')
 
-nexe = env.ComponentProgram('intrinsics.nexe', 'intrinsics.cc')
+nexe = env.ComponentProgram('intrinsics', 'intrinsics.cc')
 node = env.CommandSelLdrTestNacl('intrinsics.out',
-                                 command=[nexe],
+                                 nexe,
                                  exit_status='55')
 env.AddNodeToTestSuite(node,
                        ['toolchain_tests','small_tests'],
                        'run_intrinsics_test')
 
-nexe = env.ComponentProgram('float2.nexe', 'float2.c')
+nexe = env.ComponentProgram('float2', 'float2.c')
 node = env.CommandSelLdrTestNacl('float2.out',
-                                 command=[nexe],
+                                 nexe,
                                  stdout_golden=env.File('float2.stdout'))
 env.AddNodeToTestSuite(node,
                        ['toolchain_tests','small_tests'],
                        'run_float2_test')
 
 
-nexe = env.ComponentProgram('initfini.nexe', 'initfini.c')
+nexe = env.ComponentProgram('initfini', 'initfini.c')
 node = env.CommandSelLdrTestNacl('initfini.out',
-                                 command=[nexe],
+                                 nexe,
                                  stdout_golden=env.File('initfini.stdout'))
 
 # NOTE: this currently only works for PNaCl, c.f:
@@ -81,9 +81,9 @@ sloppy_env.FilterOut(CCFLAGS=['-pedantic', '-O2'])
 if env.Bit('bitcode'):
   sloppy_env.FilterOut(LINKFLAGS=['-O3'])
 
-nexe = sloppy_env.ComponentProgram('return_address.nexe', 'return_address.c')
+nexe = sloppy_env.ComponentProgram('return_address', 'return_address.c')
 node = sloppy_env.CommandSelLdrTestNacl('return_address.out',
-                                        command=[nexe],
+                                        nexe,
                                         exit_status='55')
 sloppy_env.AddNodeToTestSuite(node,
                               ['toolchain_tests', 'small_tests'],
@@ -134,9 +134,9 @@ for tag, e in ENVIRONMENTS_TO_TRY:
 
     name = src.split('.')[0] + '_' + tag
     nobj = e.ComponentObject(name + '.o', src)
-    nexe = e.ComponentProgram(name + '.nexe', nobj)
+    nexe = e.ComponentProgram(name, nobj)
     node = e.CommandSelLdrTestNacl(name + '.out',
-                                   command=[nexe],
+                                   nexe,
                                    exit_status='55')
     e.AddNodeToTestSuite(node, ['toolchain_tests', 'small_tests'],
                          'run_' + name  +'_test', is_broken=is_broken)

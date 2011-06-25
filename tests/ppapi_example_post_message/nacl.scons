@@ -9,7 +9,7 @@ Import('env')
 
 env.Prepend(CPPDEFINES=['XP_UNIX'])
 
-nexe_name = 'ppapi_example_post_message_%s.nexe' % env.get('TARGET_FULLARCH')
+nexe_name = 'ppapi_example_post_message_${TARGET_FULLARCH}'
 nexe = env.ComponentProgram(
     nexe_name,
     ['$SOURCE_ROOT/ppapi/examples/scripting/post_message.cc'],

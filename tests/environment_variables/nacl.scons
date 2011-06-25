@@ -5,13 +5,13 @@
 
 Import('env')
 
-env.ComponentProgram('env_var_test.nexe', 'env_var_test.c')
+nexe = env.ComponentProgram('env_var_test', 'env_var_test.c')
 
 nodes = []
 
 nodes.append(env.CommandSelLdrTestNacl(
     'empty_env_var_test.out',
-    command=[env.File('env_var_test.nexe')],
+    nexe,
     stdout_golden=env.File('empty_env.stdout'),
     osenv='LANG=This_variable_should_not_get_passed_through_by_default'))
 
@@ -31,7 +31,7 @@ example_env_args = [
     '-E', 'Technically_we_do_not_need_an_equals_sign_here']
 nodes.append(env.CommandSelLdrTestNacl(
     'nonempty_env_var_test.out',
-    command=[env.File('env_var_test.nexe')],
+    nexe,
     sel_ldr_flags=example_env_args,
     stdout_golden=env.File('nonempty_env.stdout'),
     osenv='LANG=This_variable_should_not_get_passed_through_by_default'))

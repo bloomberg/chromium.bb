@@ -5,18 +5,20 @@
 
 Import('env')
 
-env.ComponentProgram('nameservice_test.nexe',
-                     'nameservice_test.c',
-                     EXTRA_LIBS=['srpc', 'imc_syscalls',
-                                 'platform', 'gio', 'pthread'])
+nameservice_test_nexe = env.ComponentProgram(
+                            'nameservice_test',
+                            'nameservice_test.c',
+                            EXTRA_LIBS=['srpc', 'imc_syscalls',
+                                        'platform', 'gio', 'pthread'])
 node = env.CommandSelLdrTestNacl(
     'nameservice_test.out',
-    command=[env.File('nameservice_test.nexe')])
+    nameservice_test_nexe)
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_nameservice_test')
+
 
 srpc_ns_obj = env.ComponentObject('srpc_nameservice_test.o',
                                   'srpc_nameservice_test.c')
-srpc_ns_nexe_name = 'srpc_nameservice_test_%s.nexe' % env.get('TARGET_FULLARCH')
+srpc_ns_nexe_name = 'srpc_nameservice_test_%s' % env.get('TARGET_FULLARCH')
 srpc_ns_nexe = env.ComponentProgram(srpc_ns_nexe_name,
                                     srpc_ns_obj,
                                     EXTRA_LIBS=[

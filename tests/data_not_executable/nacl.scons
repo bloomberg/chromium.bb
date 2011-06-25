@@ -11,13 +11,13 @@ prog_env = env.Clone()
 if prog_env.Bit('bitcode'):
   prog_env.AddBiasForPNaCl()
 
-prog_env.ComponentProgram('execute_data.nexe', ['execute_data.c'])
+nexe = prog_env.ComponentProgram('execute_data', ['execute_data.c'])
 
 # We check the output to ensure that the process doesn't die for an
 # unexpected reason.
 node = prog_env.CommandSelLdrTestNacl(
     'execute_data.out',
-    command=[prog_env.File('execute_data.nexe')],
+    nexe,
     exit_status='untrusted_sigsegv_or_equivalent',
     stdout_golden=prog_env.File('execute_data.stdout'))
 

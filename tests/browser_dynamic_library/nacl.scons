@@ -31,7 +31,7 @@ for library_name in libraries:
                        env.File('${NACL_SDK_LIB}/' + library_name)))
 
 
-test_prog_fname = 'ppapi_test_example_%s.nexe' % env.get('TARGET_FULLARCH')
+test_prog_fname = 'ppapi_test_example_${TARGET_FULLARCH}${PROGSUFFIX}'
 test_prog = env.File('${STAGING_DIR}/' + test_prog_fname)
 file_mapping.append((test_prog_fname, test_prog))
 

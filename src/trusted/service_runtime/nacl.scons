@@ -158,12 +158,11 @@ for text_end, variant in test_specs:
 
     base_name = 'nacl_text_' + variant + '_pad' + name_modifier + '_test'
     obj = asm_env.ComponentObject(base_name + '.o', nacl_text_pad_asm)
-    nexe_name = base_name + '.nexe'
 
-    asm_env.ComponentProgram(nexe_name, [obj])
+    nexe = asm_env.ComponentProgram(base_name, [obj])
 
     node = env.CommandSelLdrTestNacl(base_name + '.out',
-                                     command=[env.File(nexe_name)])
+                                     nexe)
     env.AddNodeToTestSuite(node,
                            ['small_tests', 'sel_ldr_sled_tests'],
                            'run_' + base_name)

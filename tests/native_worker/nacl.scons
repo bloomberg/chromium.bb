@@ -5,7 +5,7 @@
 
 Import('env')
 
-env.ComponentProgram('native_worker.nexe', 'native_worker.c',
+env.ComponentProgram('native_worker', 'native_worker.c',
                      EXTRA_LIBS=['srpc',
                                  'platform',
                                  'gio',
@@ -14,10 +14,10 @@ env.ComponentProgram('native_worker.nexe', 'native_worker.c',
                                  'pthread'])
 
 # Note that the html is required to run this program.
-env.Publish('native_worker.nexe', 'run',
+env.Publish('native_worker', 'run',
             ['native_worker.html'])
 
-env.ComponentProgram('mandel_worker.nexe', 'mandel_worker.c',
+env.ComponentProgram('mandel_worker', 'mandel_worker.c',
                      EXTRA_LIBS=['srpc',
                                  'platform',
                                  'gio',
@@ -25,5 +25,5 @@ env.ComponentProgram('mandel_worker.nexe', 'mandel_worker.c',
                                  'imc_syscalls',
                                  'pthread'])
 
-env.Publish('mandel_worker.nexe', 'run', ['mandel_worker.html',
-                                          'mandel_worker.js'])
+env.Publish('mandel_worker', 'run', ['mandel_worker.html',
+                                     'mandel_worker.js'])

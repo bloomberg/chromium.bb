@@ -26,7 +26,7 @@ for case_name, defines in sorted(defines_map.iteritems()):
   env_test = env.Clone()
   env_test.Append(CPPDEFINES=[[define, ''] for define in defines])
   obj = env_test.ComponentObject(full_name + '.o', 'tls.c')
-  prog = env_test.ComponentProgram(full_name + '.nexe', obj, EXTRA_LIBS=libs)
-  node = env_test.CommandSelLdrTestNacl(full_name + '.out', command=[prog],
+  prog = env_test.ComponentProgram(full_name, obj, EXTRA_LIBS=libs)
+  node = env_test.CommandSelLdrTestNacl(full_name + '.out', prog,
                                         size='small')
   env_test.AddNodeToTestSuite(node, ['small_tests'], 'run_' + full_name)

@@ -11,7 +11,7 @@ env.FilterOut(CCFLAGS=['-pedantic'])
 
 progress_events_sources = env.ComponentObject('ppapi_progress_events.cc'),
 
-progress_events_target = ('ppapi_progress_events_%s.nexe' %
+progress_events_target = ('ppapi_progress_events_%s' %
                           env.get('TARGET_FULLARCH'))
 env.ComponentProgram(progress_events_target,
                      [progress_events_sources],

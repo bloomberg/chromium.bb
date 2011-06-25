@@ -15,9 +15,10 @@ Import('env')
 
 env.Prepend(CPPDEFINES=['XP_UNIX'])
 
-nexe = 'ppapi_file_system_%s.nexe' % env.get('TARGET_FULLARCH')
+nexe = 'ppapi_file_system_%s' % env.get('TARGET_FULLARCH')
 
-env.Alias('ppapi_file_system.nexe', ['$STAGING_DIR/%s' % nexe])
+env.Alias('ppapi_file_system${PROGSUFFIX}',
+          ['$STAGING_DIR/%s${PROGSUFFIX}' % nexe])
 
 ppapi_file_system_nexe = env.ComponentProgram(nexe,
                                               ['ppapi_file_system.cc'],

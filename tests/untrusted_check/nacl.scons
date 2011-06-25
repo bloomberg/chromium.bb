@@ -7,11 +7,11 @@ import os
 
 Import('env')
 
-env.ComponentProgram('untrusted_check_test.nexe',
-                     ['untrusted_check_test.c'],
-                     EXTRA_LIBS=['platform',
-                                 'gio',
-                                 'pthread'])
+nexe = env.ComponentProgram('untrusted_check_test',
+                            ['untrusted_check_test.c'],
+                            EXTRA_LIBS=['platform',
+                                        'gio',
+                                        'pthread'])
 
 # nacl-newlib and nacl-glibc's abort() implementations produce
 # different exit codes.
@@ -22,7 +22,7 @@ else:
 
 node = env.CommandSelLdrTestNacl(
     'untrusted_check_test.out',
-    command = [env.File('untrusted_check_test.nexe')],
+    nexe,
     filter_regex = ('"(Fatal error in file[^/\\\\\\\\]*)'
                     '|(LOG_FATAL.*)'
                     '|(Log output.*)"'),
