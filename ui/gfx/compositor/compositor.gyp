@@ -9,10 +9,10 @@
     ],
     'conditions': [
       ['os_posix == 1 and OS != "mac"', {
-        'sources/': [['include', '_(gl)\\.cc$'],]
+        'sources/': [['include', '_(gl)\\.(h|cc)$'],]
       }],
       ['OS == "win"', {
-        'sources/': [['include', '_(win)\\.cc$'],]
+        'sources/': [['include', '_(win)\\.(h|cc)$'],]
       }],
     ],
   },
@@ -30,6 +30,7 @@
         'compositor.cc',
         'compositor.h',
         'compositor_gl.cc',
+        'compositor_gl.h',
         'compositor_win.cc',
         'layer.cc',
         'layer.h',
