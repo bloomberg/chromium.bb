@@ -65,6 +65,15 @@ cr.define('options', function() {
      */
     updateSearchEngineList_: function(defaultEngines, otherEngines) {
       this.defaultsList_.dataModel = new ArrayDataModel(defaultEngines);
+
+      otherEngines = otherEngines.map(function(x) {
+        return [x, x['name'].toLocaleLowerCase()];
+      }).sort(function(a,b){
+        return a[1].localeCompare(b[1]);
+      }).map(function(x){
+        return x[0];
+      });
+
       var othersModel = new ArrayDataModel(otherEngines);
       // Add a "new engine" row.
       othersModel.push({
