@@ -139,6 +139,9 @@ cr.define('options', function() {
       self.tab.tabIndex = -1;
       self.tab.setAttribute('role', '');
 
+      // Don't allow the focus on the search navbar. http://crbug.com/77989
+      self.tab.onfocus = self.tab.blur;
+
       // Handle search events. (No need to throttle, WebKit's search field
       // will do that automatically.)
       searchField.onsearch = function(e) {
