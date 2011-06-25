@@ -152,8 +152,6 @@
         'base/win/hwnd_util.h',
         'base/win/ime_input.cc',
         'base/win/ime_input.h',
-	'base/win/shell.cc',
-	'base/win/shell.h',
         'base/win/window_impl.cc',
         'base/win/window_impl.h',
         'base/x/active_window_watcher_x.cc',

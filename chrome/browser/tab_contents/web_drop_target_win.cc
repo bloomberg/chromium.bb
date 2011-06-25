@@ -41,7 +41,7 @@ DWORD GetPreferredDropEffect(DWORD effect) {
 
 }  // namespace
 
-// InterstitialDropTarget is like a base::win::DropTarget implementation that
+// InterstitialDropTarget is like a app::win::DropTarget implementation that
 // WebDropTarget passes through to if an interstitial is showing.  Rather than
 // passing messages on to the renderer, we just check to see if there's a link
 // in the drop data and handle links as navigations.

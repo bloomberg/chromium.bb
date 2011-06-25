@@ -1,18 +1,18 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CONTENT_BROWSER_GEOLOCATION_WIN7_LOCATION_API_WIN_H_
 #define CONTENT_BROWSER_GEOLOCATION_WIN7_LOCATION_API_WIN_H_
 
-#include <windows.h>
 #include <atlbase.h>
 #include <atlcom.h>
 #include <locationapi.h>
 #include <sensors.h>
+#include <Windows.h>
 
+#include "app/win/scoped_com_initializer.h"
 #include "base/time.h"
-#include "base/win/scoped_com_initializer.h"
 
 struct Geoposition;
 
@@ -50,7 +50,7 @@ class Win7LocationApi {
   virtual bool GetPositionIfFixed(Geoposition* position);
 
   // Ensure that COM has been initialized for this thread.
-  base::win::ScopedCOMInitializer com_initializer_;
+  app::win::ScopedCOMInitializer com_initializer_;
   // ILocation object that lets us communicate with the Location and
   // Sensors platform.
   CComPtr<ILocation> locator_;

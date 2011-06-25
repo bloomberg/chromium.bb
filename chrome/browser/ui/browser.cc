@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/browser.h"
 
 #if defined(OS_WIN)
-#include <windows.h>
 #include <shellapi.h>
+#include <windows.h>
 #endif  // OS_WIN
 
 #include <algorithm>
@@ -138,13 +138,13 @@
 #include "webkit/glue/window_open_disposition.h"
 
 #if defined(OS_WIN)
+#include "app/win/shell.h"
 #include "chrome/browser/autofill/autofill_ie_toolbar_import_win.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ssl/ssl_error_info.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
-#include "ui/base/win/shell.h"
 #endif  // OS_WIN
 
 #if defined(OS_MACOSX)
@@ -439,7 +439,7 @@ void Browser::InitBrowserWindow() {
 
     // Set the app user model id for this application to that of the application
     // name.  See http://crbug.com/7028.
-    ui::win::SetAppIdForWindow(
+    app::win::SetAppIdForWindow(
         is_app() ?
         ShellIntegration::GetAppId(UTF8ToWide(app_name_), profile_->GetPath()) :
         ShellIntegration::GetChromiumAppId(profile_->GetPath()),
