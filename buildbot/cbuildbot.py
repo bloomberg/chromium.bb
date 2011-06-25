@@ -303,6 +303,9 @@ def _CreateParser():
                     help=("Space-separated list of short-form Gerrit "
                           "Change-Id's or change numbers to patch.  Please "
                           "prepend '*' to internal Change-Id's"))
+  parser.add_option('--profile', default=None, type='string', action='store',
+                    dest='profile',
+                    help=('Name of profile to sub-specify board variant.'))
 
   # Advanced options
   group = optparse.OptionGroup(

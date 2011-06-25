@@ -134,6 +134,18 @@ class InterfaceTest(mox.MoxTestBase):
     self.assertEquals(options.debug, True)
     self.assertEquals(options.buildbot, True)
 
+  def testBuildBotWithoutProfileOption(self):
+    """Test that no --profile option gets defaulted."""
+    args = ['--buildbot', self._X86_PREFLIGHT]
+    (options, args) = self.parser.parse_args(args=args)
+    self.assertEquals(options.profile, None)
+
+  def testBuildBotWithProfileOption(self):
+    """Test that --profile option gets parsed."""
+    args = ['--buildbot', '--profile', 'carp', self._X86_PREFLIGHT]
+    (options, args) = self.parser.parse_args(args=args)
+    self.assertEquals(options.profile, 'carp')
+
   def testNoClobberConfirmationForBuildBotBuilds(self):
     """Test that we don't ask for clobber confirmation for --buildbot runs."""
     self.mox.StubOutWithMock(cbuildbot, '_GetInput')

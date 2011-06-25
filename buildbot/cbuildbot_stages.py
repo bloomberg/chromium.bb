@@ -669,7 +669,8 @@ class BuildBoardStage(BuilderStage):
                           usepkg=self._build_config['usepkg_setup_board'],
                           latest_toolchain=latest_toolchain,
                           extra_env=env,
-                          profile=self._build_config['profile'])
+                          profile=self._options.profile or
+                            self._build_config['profile'])
 
     if self._prebuilt_type == 'chroot':
       commands.UploadPrebuilts(

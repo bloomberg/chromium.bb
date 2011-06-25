@@ -413,6 +413,36 @@ class BuildBoardTest(AbstractStageTest):
     self.RunStage()
     self.mox.VerifyAll()
 
+  def testFullBuildWithOverriddenProfile(self):
+    """Tests whether full builds add profile flag when requested."""
+    self.bot_id = 'arm-tegra2_seaboard-tangent-private-full'
+    self.options.profile = 'smock'
+    self.build_config = config.config[self.bot_id]
+    self.mox.StubOutWithMock(commands, 'MakeChroot')
+    self.mox.StubOutWithMock(commands, 'SetupBoard')
+    self.mox.StubOutWithMock(commands, 'RunChrootUpgradeHooks')
+
+    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
+    os.path.isdir(os.path.join(self.build_root, 'chroot')).AndReturn(True)
+    commands.MakeChroot(buildroot=self.build_root,
+                        fast=True,
+                        replace=True,
+                        usepkg=False)
+    os.path.isdir(os.path.join(self.build_root, 'chroot', 'build',
+                               self.build_config['board'])).AndReturn(False)
+    commands.SetupBoard(self.build_root,
+                        board=self.build_config['board'],
+                        fast=True,
+                        usepkg=False,
+                        latest_toolchain=False,
+                        extra_env={},
+                        profile='smock')
+
+    self.mox.ReplayAll()
+    self.RunStage()
+    self.mox.VerifyAll()
+    self.options.profile = None
+
   def testBinBuild(self):
     """Tests whether we skip un-necessary steps for a binary builder."""
     self.mox.StubOutWithMock(commands, 'MakeChroot')
