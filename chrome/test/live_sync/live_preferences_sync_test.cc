@@ -8,6 +8,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/profile_sync_service_harness.h"
 
 LivePreferencesSyncTest::LivePreferencesSyncTest(TestType test_type)
     : LiveSyncTest(test_type),
@@ -199,4 +200,12 @@ bool LivePreferencesSyncTest::ListPrefMatches(const char* pref_name) {
 
 void LivePreferencesSyncTest::DisableVerifier() {
   use_verifier_prefs_ = false;
+}
+
+bool LivePreferencesSyncTest::EnableEncryption(int index) {
+  return GetClient(index)->EnableEncryptionForType(syncable::PREFERENCES);
+}
+
+bool LivePreferencesSyncTest::IsEncrypted(int index) {
+  return GetClient(index)->IsTypeEncrypted(syncable::PREFERENCES);
 }

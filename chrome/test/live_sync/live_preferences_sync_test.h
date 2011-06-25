@@ -100,6 +100,12 @@ class LivePreferencesSyncTest : public LiveSyncTest {
   // longer be reflected in the verifier profile.
   void DisableVerifier();
 
+  // Encrypt Preferences datatype.
+  bool EnableEncryption(int index);
+
+  // Check if Preferences are encrypted.
+  bool IsEncrypted(int index);
+
  private:
   // Indicates whether preference operations should also update the verifier
   // profile's PrefService or not.

@@ -7,6 +7,7 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/test/ui_test_utils.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -47,6 +48,14 @@ BookmarkModel* LiveBookmarksSyncTest::GetVerifierBookmarkModel() {
 
 void LiveBookmarksSyncTest::DisableVerifier() {
   verifier_helper_->set_use_verifier_model(false);
+}
+
+bool LiveBookmarksSyncTest::EnableEncryption(int index) {
+  return GetClient(index)->EnableEncryptionForType(syncable::BOOKMARKS);
+}
+
+bool LiveBookmarksSyncTest::IsEncrypted(int index) {
+  return GetClient(index)->IsTypeEncrypted(syncable::BOOKMARKS);
 }
 
 const BookmarkNode* LiveBookmarksSyncTest::AddURL(int profile,

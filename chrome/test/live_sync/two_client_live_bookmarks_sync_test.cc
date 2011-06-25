@@ -1638,3 +1638,76 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   ASSERT_TRUE(AllModelsMatch());
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 }
+
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
+                       SingleClientEnabledEncryption) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(AllModelsMatchVerifier());
+
+  ASSERT_TRUE(EnableEncryption(0));
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_TRUE(IsEncrypted(0));
+  ASSERT_TRUE(IsEncrypted(1));
+  ASSERT_TRUE(AllModelsMatchVerifier());
+}
+
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
+                       SingleClientEnabledEncryptionAndChanged) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(AllModelsMatchVerifier());
+
+  ASSERT_TRUE(EnableEncryption(0));
+  ASSERT_TRUE(AddURL(0, IndexedURLTitle(0), GURL(IndexedURL(0))) != NULL);
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_TRUE(IsEncrypted(0));
+  ASSERT_TRUE(IsEncrypted(1));
+  ASSERT_TRUE(AllModelsMatchVerifier());
+}
+
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
+                       BothClientsEnabledEncryption) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(AllModelsMatchVerifier());
+
+  ASSERT_TRUE(EnableEncryption(0));
+  ASSERT_TRUE(EnableEncryption(1));
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_TRUE(IsEncrypted(0));
+  ASSERT_TRUE(IsEncrypted(1));
+  ASSERT_TRUE(AllModelsMatchVerifier());
+}
+
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
+                       SingleClientEnabledEncryptionBothChanged) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(AllModelsMatchVerifier());
+
+  ASSERT_TRUE(EnableEncryption(0));
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_TRUE(IsEncrypted(0));
+  ASSERT_TRUE(IsEncrypted(1));
+  ASSERT_TRUE(AddURL(0, IndexedURLTitle(0), GURL(IndexedURL(0))) != NULL);
+  ASSERT_TRUE(AddURL(0, IndexedURLTitle(1), GURL(IndexedURL(1))) != NULL);
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(IsEncrypted(0));
+  ASSERT_TRUE(IsEncrypted(1));
+}
+
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
+                       SingleClientEnabledEncryptionAndChangedMultipleTimes) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(AllModelsMatchVerifier());
+
+  ASSERT_TRUE(AddURL(0, IndexedURLTitle(0), GURL(IndexedURL(0))) != NULL);
+  ASSERT_TRUE(EnableEncryption(0));
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_TRUE(IsEncrypted(0));
+  ASSERT_TRUE(IsEncrypted(1));
+  ASSERT_TRUE(AllModelsMatchVerifier());
+
+  ASSERT_TRUE(AddURL(0, IndexedURLTitle(1), GURL(IndexedURL(1))) != NULL);
+  ASSERT_TRUE(AddFolder(0, IndexedFolderName(0)) != NULL);
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_TRUE(AllModelsMatchVerifier());
+}

@@ -522,3 +522,71 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest, kEnableScreenLock) {
   ASSERT_TRUE(BooleanPrefMatches(prefs::kEnableScreenLock));
 }
 #endif  // OS_CHROMEOS
+
+IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest,
+                       SingleClientEnabledEncryption) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  ASSERT_TRUE(EnableEncryption(0));
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_TRUE(IsEncrypted(0));
+  ASSERT_TRUE(IsEncrypted(1));
+}
+
+IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest,
+                       SingleClientEnabledEncryptionAndChanged) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(BooleanPrefMatches(prefs::kHomePageIsNewTabPage));
+
+  ChangeBooleanPref(0, prefs::kHomePageIsNewTabPage);
+  ASSERT_TRUE(EnableEncryption(0));
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_TRUE(IsEncrypted(0));
+  ASSERT_TRUE(IsEncrypted(1));
+  ASSERT_TRUE(BooleanPrefMatches(prefs::kHomePageIsNewTabPage));
+}
+
+IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest,
+                       BothClientsEnabledEncryption) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  ASSERT_TRUE(EnableEncryption(0));
+  ASSERT_TRUE(EnableEncryption(1));
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_TRUE(IsEncrypted(0));
+  ASSERT_TRUE(IsEncrypted(1));
+}
+
+IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest,
+                       SingleClientEnabledEncryptionBothChanged) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(BooleanPrefMatches(prefs::kHomePageIsNewTabPage));
+  ASSERT_TRUE(StringPrefMatches(prefs::kHomePage));
+
+  ASSERT_TRUE(EnableEncryption(0));
+  ChangeBooleanPref(0, prefs::kHomePageIsNewTabPage);
+  ChangeStringPref(1, prefs::kHomePage, "http://www.google.com/1");
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_TRUE(IsEncrypted(0));
+  ASSERT_TRUE(IsEncrypted(1));
+  ASSERT_TRUE(BooleanPrefMatches(prefs::kHomePageIsNewTabPage));
+  ASSERT_TRUE(StringPrefMatches(prefs::kHomePage));
+}
+
+IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest,
+                       SingleClientEnabledEncryptionAndChangedMultipleTimes) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(BooleanPrefMatches(prefs::kHomePageIsNewTabPage));
+
+  ChangeBooleanPref(0, prefs::kHomePageIsNewTabPage);
+  ASSERT_TRUE(EnableEncryption(0));
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_TRUE(IsEncrypted(0));
+  ASSERT_TRUE(IsEncrypted(1));
+  ASSERT_TRUE(BooleanPrefMatches(prefs::kHomePageIsNewTabPage));
+
+  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
+  ChangeBooleanPref(0, prefs::kShowHomeButton);
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
+}
