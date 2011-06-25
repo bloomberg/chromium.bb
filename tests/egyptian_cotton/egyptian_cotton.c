@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -98,6 +98,7 @@ int main(int ac,
   size_t          stack_size = DEFAULT_STACK_SIZE;
   char const      **line;
   int             rv = 0;
+  int             cleanup_rv;
   pthread_t       thr_state;
   pthread_attr_t  attr;
   size_t          tid;
@@ -223,20 +224,20 @@ int main(int ac,
     rv = 1;
   }
 cleanup_exit:
-  if (0 != (rv = pthread_mutex_lock(&gBarrierMu))) {
+  if (0 != (cleanup_rv = pthread_mutex_lock(&gBarrierMu))) {
     printf("Mutex lock failed at main thread, error %d (%s)\n",
-           rv, strerror(rv));
+           cleanup_rv, strerror(cleanup_rv));
     exit(1);
   }
   gThreadWait = 0;
-  if (0 != (rv = pthread_cond_broadcast(&gBarrierCv))) {
+  if (0 != (cleanup_rv = pthread_cond_broadcast(&gBarrierCv))) {
     printf("Cond wait failed at main thread, error %d (%s)\n",
-           rv, strerror(rv));
+           cleanup_rv, strerror(cleanup_rv));
     exit(1);
   }
-  if (0 != (rv = pthread_mutex_unlock(&gBarrierMu))) {
+  if (0 != (cleanup_rv = pthread_mutex_unlock(&gBarrierMu))) {
     printf("Mutex unlock failed at main thread, error %d (%s)\n",
-           rv, strerror(rv));
+           cleanup_rv, strerror(cleanup_rv));
     exit(1);
   }
 
