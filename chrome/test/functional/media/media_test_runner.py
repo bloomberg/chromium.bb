@@ -19,6 +19,7 @@ in matrix form),
 
 import copy
 import csv
+import glob
 import logging
 import os
 from optparse import OptionParser
@@ -130,6 +131,8 @@ def main():
                     help=('Track file in vtt format (binary should be'
                           ' downloaded from http://www.annacavender.com/track/'
                           ' and put into reference_build_dir).'))
+  parser.add_option('-y', '--track-file_dir', dest='track_file_dir',
+                    help=('A directory that contains vtt format files.'))
 
   options, args = parser.parse_args()
   if args:
@@ -142,9 +145,9 @@ def main():
     # The media file should have the following format:
     # tag(video|audio)|filename|nickname|video_title.
     if len(opts) != 4:
-      logging.error('--media_file option argument does not have correct format.'
-                    'The correct format is tag(video|audio)|filename|nickname'
-                    '|video_title')
+      logging.error('--media_file option argument does not have correct'
+                    'format. The correct format is tag(video|audio)'
+                    '|filename|nickname|video_title')
       sys.exit(1)
     test_data_list.append(opts)
   elif options.input_matrix_filename is None:
@@ -176,33 +179,31 @@ def main():
     reference_build_list = [False, True]
   else:
     reference_build_list = [False]
-  if options.track_file or options.track:
+  track_files = ['']
+  if any([options.track_file, options.track, options.track_file_dir]):
     # TODO(imasaki@chromium.org): change here after track functionality is
     # available on Chrome. Currently, track patch is still under development.
     # So, I need to download the binary from
     # http://www.annacavender.com/track/ and use it for testing.
     # I temporarily use reference build mechanism.
     reference_build_list = [True]
+    if options.track_file_dir:
+      track_files_orig = (
+          glob.glob(os.path.join(options.track_file_dir, '*.vtt')))
+      track_files = []
+      for tf in track_files_orig:
+        # The location should be relative path from HTML files.
+        # So it needs to remove data and media from the path.
+        track_files.append(tf.replace(os.path.join('data', 'media'), ''))
+      if not track_files:
+        logging.warning('No track files in %s', options.track_file_dir)
+    if options.track_file:
+      track_files = [options.track_file]
   # This is a loop for iterating through all videos defined above (list
   # or matrix). Each video has associated tag and nickname for display
   # purpose.
   for tag, filename, nickname, title in test_data_list:
-      # This inner loop iterates twice. The first iteration of the loop
-      # disables the media cache, and the second iteration enables the media
-      # cache.  Other parameters remain the same on both loop iterations.
-      # There are two ways to disable the media cache: setting Chrome option
-      # to --media-cache-size=1 or adding t parameter in query parameter of
-      # URL in which player.js (data/media/html/player.js) disables the
-      # media cache).
-      #
-      # The default name for track vtt file is the name of the video title
-      # in the case --track-file is not set. The track file should be in
-      # the same directory as video files. For example, bear_en.vtt.
-      if options.track and not options.track_file:
-        # TODO(imasaki@chromium.org): add more languages.
-        lang = 'en'
-        options.track_file = os.path.join(os.path.dirname(filename),
-                                          title + '_' + lang + '.vtt')
+    for track_file in track_files:
       for reference_build in reference_build_list:
         parent_envs = copy.deepcopy(os.environ)
         if options.input_matrix_filename is None:
@@ -240,9 +241,8 @@ def main():
         if options.reference_build_dir:
           envs[MediaTestEnvNames.REFERENCE_BUILD_DIR_ENV_NAME] = (
               options.reference_build_dir)
-        if options.track_file:
-          envs[MediaTestEnvNames.TRACK_FILE_ENV_NAME] = (
-              options.track_file)
+        if track_file:
+          envs[MediaTestEnvNames.TRACK_FILE_ENV_NAME] = track_file
         envs.update(parent_envs)
         if options.suite is None and options.test_prog_name is not None:
           # Suite is not used - run test program directly.
@@ -273,8 +273,8 @@ def main():
         proc = Popen(cmd, env=envs, shell=True)
         proc.communicate()
 
-      if options.one_video:
-        break
+    if options.one_video:
+      break
 
 
 if __name__ == '__main__':

@@ -18,9 +18,11 @@ class MediaEventTestBase(MediaTestBase):
   # This is a list of events to test during media playback.
   EVENT_LIST = ['abort', 'canplay', 'canplaythrough', 'durationchange',
                 'emptied', 'ended', 'error', 'load', 'loadeddata',
-                'loadedmetadata', 'loadstart',  'pause', 'play', 'playing',
+                'loadedmetadata', 'loadstart', 'pause', 'play', 'playing',
                 'progress', 'ratechange', 'seeked', 'seeking', 'stalled',
-                'suspend', 'timeupdate', 'volumechange', 'waiting']
+                'suspend', 'timeupdate', 'volumechange', 'waiting',
+                # Track related events.
+                'cuechange', 'enter', 'exit', 'change']
   # These are event types that are not 1 at the end of video playback.
   # There are two types of events listed here:
   #   0: event occurrence is 0.
@@ -37,7 +39,11 @@ class MediaEventTestBase(MediaTestBase):
                            'seeking': 0,
                            'seeked': 0,
                            'volumechange': 0,
-                           'timeupdate': None}
+                           'timeupdate': None,
+                           'cuechange': 0,
+                           'enter': 0,
+                           'exit': 0,
+                           'change': 0}
 
   def _GetEventLog(self):
     """Get the event log from the DOM tree that is produced by player.html.

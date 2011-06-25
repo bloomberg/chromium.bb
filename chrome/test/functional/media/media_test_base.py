@@ -13,6 +13,7 @@ media_test_runner.py is used for generating these variables
 """
 
 import csv
+import logging
 import os
 import time
 
@@ -145,6 +146,7 @@ class MediaTestBase(pyauto.PyUITest):
       url = self.url
       if self._test_scenarios:
         url += '&actions=' + self.test_scenarios[run_counter]
+      logging.debug('Navigate to %s', url)
       self.NavigateToURL(url)
       self.WaitUntil(lambda: _VideoEnded(),
                      self.TIMEOUT)
