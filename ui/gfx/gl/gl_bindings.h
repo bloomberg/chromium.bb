@@ -54,11 +54,9 @@ typedef int EGLint;
 typedef void *EGLConfig;
 typedef void *EGLContext;
 typedef void *EGLDisplay;
-typedef void *EGLImageKHR;
 typedef void *EGLSurface;
 typedef void *EGLClientBuffer;
 typedef void (*__eglMustCastToProperFunctionPointerType)(void);
-typedef void* GLeglImageOES;
 
 #if defined(OS_WIN)
 typedef HDC     EGLNativeDisplayType;

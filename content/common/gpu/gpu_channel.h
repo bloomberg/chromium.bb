@@ -90,19 +90,9 @@ class GpuChannel : public IPC::Channel::Listener,
 
   GpuCommandBufferStub* LookupCommandBuffer(int32 route_id);
 
-#if defined(TOUCH_UI)
-  virtual void AcceleratedSurfaceIOSurfaceSet(
-      int32 route_id, uint64 surface_id);
-  virtual void AcceleratedSurfaceReleased(
-      int32 route_id, uint64 surface_id);
-#endif
-
-#if defined(OS_MACOSX) || defined(TOUCH_UI)
+#if defined(OS_MACOSX)
   virtual void AcceleratedSurfaceBuffersSwapped(
       int32 route_id, uint64 swap_buffers_count);
-#endif
-
-#if defined(OS_MACOSX)
   void DestroyCommandBufferByViewId(int32 render_view_id);
 #endif
 

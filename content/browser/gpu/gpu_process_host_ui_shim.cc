@@ -149,18 +149,11 @@ bool GpuProcessHostUIShim::OnControlMessageReceived(
                         OnLogMessage)
 #if defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI) || defined(OS_WIN)
     IPC_MESSAGE_HANDLER(GpuHostMsg_ResizeView, OnResizeView)
-#endif
-
-#if defined(OS_MACOSX) || defined(TOUCH_UI)
+#elif defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceSetIOSurface,
                         OnAcceleratedSurfaceSetIOSurface)
     IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceBuffersSwapped,
                         OnAcceleratedSurfaceBuffersSwapped)
-#endif
-
-#if defined(TOUCH_UI)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceRelease,
-                        OnAcceleratedSurfaceRelease)
 #endif
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP()
@@ -222,9 +215,7 @@ void GpuProcessHostUIShim::OnResizeView(int32 renderer_id,
   Send(new GpuMsg_ResizeViewACK(renderer_id, command_buffer_route_id));
 }
 
-#endif
-
-#if defined(OS_MACOSX) || defined(TOUCH_UI)
+#elif defined(OS_MACOSX)
 
 void GpuProcessHostUIShim::OnAcceleratedSurfaceSetIOSurface(
     const GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params& params) {
@@ -235,17 +226,10 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceSetIOSurface(
   RenderWidgetHostView* view = host->view();
   if (!view)
     return;
-#if defined(OS_MACOSX)
   view->AcceleratedSurfaceSetIOSurface(params.window,
                                        params.width,
                                        params.height,
                                        params.identifier);
-#elif defined(TOUCH_UI)
-  view->AcceleratedSurfaceSetIOSurface(
-      params.width, params.height, params.identifier);
-  Send(new GpuMsg_AcceleratedSurfaceSetIOSurfaceACK(
-      params.renderer_id, params.route_id, params.identifier));
-#endif
 }
 
 void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
@@ -259,7 +243,6 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
   RenderWidgetHostView* view = host->view();
   if (!view)
     return;
-#if defined (OS_MACOSX)
   view->AcceleratedSurfaceBuffersSwapped(
       // Parameters needed to swap the IOSurface.
       params.window,
@@ -269,30 +252,6 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
       params.route_id,
       host_id_,
       params.swap_buffers_count);
-#elif defined(TOUCH_UI)
-  view->AcceleratedSurfaceBuffersSwapped(params.surface_id);
-  Send(new GpuMsg_AcceleratedSurfaceBuffersSwappedACK(
-      params.renderer_id, params.route_id, params.swap_buffers_count));
-#endif
-}
-
-#endif
-
-#if defined(TOUCH_UI)
-
-void GpuProcessHostUIShim::OnAcceleratedSurfaceRelease(
-    const GpuHostMsg_AcceleratedSurfaceRelease_Params& params) {
-  RenderViewHost* host = RenderViewHost::FromID(params.renderer_id,
-                                                params.render_view_id);
-  if (!host)
-    return;
-  RenderWidgetHostView* view = host->view();
-  if (!view)
-    return;
-  view->AcceleratedSurfaceRelease(params.identifier);
-
-  Send(new GpuMsg_AcceleratedSurfaceReleaseACK(
-      params.renderer_id, params.route_id, params.identifier));
 }
 
 #endif

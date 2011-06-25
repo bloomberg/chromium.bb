@@ -49,18 +49,9 @@ bool GpuChannelManager::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(GpuMsg_VisibilityChanged, OnVisibilityChanged)
 #if defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI) || defined(OS_WIN)
     IPC_MESSAGE_HANDLER(GpuMsg_ResizeViewACK, OnResizeViewACK);
-#endif
-#if defined(TOUCH_UI)
-    IPC_MESSAGE_HANDLER(GpuMsg_AcceleratedSurfaceSetIOSurfaceACK,
-                        OnAcceleratedSurfaceSetIOSurfaceACK)
-    IPC_MESSAGE_HANDLER(GpuMsg_AcceleratedSurfaceReleaseACK,
-                        OnAcceleratedSurfaceReleaseACK)
-#endif
-#if defined(OS_MACOSX) || defined(TOUCH_UI)
+#elif defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(GpuMsg_AcceleratedSurfaceBuffersSwappedACK,
                         OnAcceleratedSurfaceBuffersSwappedACK)
-#endif
-#if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(GpuMsg_DestroyCommandBuffer,
                         OnDestroyCommandBuffer)
 #endif
@@ -147,27 +138,7 @@ void GpuChannelManager::OnResizeViewACK(int32 renderer_id,
   channel->ViewResized(command_buffer_route_id);
 }
 
-#if defined(TOUCH_UI)
-void GpuChannelManager::OnAcceleratedSurfaceSetIOSurfaceACK(
-    int renderer_id, int32 route_id, uint64 surface_id) {
-  GpuChannelMap::const_iterator iter = gpu_channels_.find(renderer_id);
-  if (iter == gpu_channels_.end())
-    return;
-  scoped_refptr<GpuChannel> channel = iter->second;
-  channel->AcceleratedSurfaceIOSurfaceSet(route_id, surface_id);
-}
-
-void GpuChannelManager::OnAcceleratedSurfaceReleaseACK(
-    int renderer_id, int32 route_id, uint64 surface_id) {
-  GpuChannelMap::const_iterator iter = gpu_channels_.find(renderer_id);
-  if (iter == gpu_channels_.end())
-    return;
-  scoped_refptr<GpuChannel> channel = iter->second;
-  channel->AcceleratedSurfaceReleased(route_id, surface_id);
-}
-#endif
-
-#if defined(OS_MACOSX) || defined(TOUCH_UI)
+#if defined(OS_MACOSX)
 void GpuChannelManager::OnAcceleratedSurfaceBuffersSwappedACK(
     int renderer_id, int32 route_id, uint64 swap_buffers_count) {
   GpuChannelMap::const_iterator iter = gpu_channels_.find(renderer_id);
@@ -176,9 +147,7 @@ void GpuChannelManager::OnAcceleratedSurfaceBuffersSwappedACK(
   scoped_refptr<GpuChannel> channel = iter->second;
   channel->AcceleratedSurfaceBuffersSwapped(route_id, swap_buffers_count);
 }
-#endif
 
-#if defined(OS_MACOSX)
 void GpuChannelManager::OnDestroyCommandBuffer(
     int renderer_id, int32 renderer_view_id) {
   GpuChannelMap::const_iterator iter = gpu_channels_.find(renderer_id);

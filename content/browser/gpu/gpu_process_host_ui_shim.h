@@ -25,7 +25,6 @@ class Size;
 }
 
 struct GPUCreateCommandBufferConfig;
-struct GpuHostMsg_AcceleratedSurfaceRelease_Params;
 struct GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params;
 struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
 
@@ -98,18 +97,11 @@ class GpuProcessHostUIShim
                     int32 render_view_id,
                     int32 command_buffer_route_id,
                     gfx::Size size);
-#endif
-
-#if defined(OS_MACOSX) || defined(TOUCH_UI)
+#elif defined(OS_MACOSX)
   void OnAcceleratedSurfaceSetIOSurface(
       const GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params& params);
   void OnAcceleratedSurfaceBuffersSwapped(
       const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params);
-#endif
-
-#if defined(TOUCH_UI)
-  void OnAcceleratedSurfaceRelease(
-      const GpuHostMsg_AcceleratedSurfaceRelease_Params& params);
 #endif
 
   // The serial number of the GpuProcessHost / GpuProcessHostUIShim pair.

@@ -84,8 +84,6 @@ GL_FUNCTIONS = [
 ['void', ['glDrawArrays'], 'GLenum mode, GLint first, GLsizei count'],
 ['void', ['glDrawElements'],
     'GLenum mode, GLsizei count, GLenum type, const void* indices'],
-['void', ['glEGLImageTargetTexture2DOES'],
-    'GLenum target, GLeglImageOES image'],
 ['void', ['glEnable'], 'GLenum cap'],
 ['void', ['glEnableVertexAttribArray'], 'GLuint index'],
 ['void', ['glFinish'], 'void'],
@@ -293,11 +291,6 @@ EGL_FUNCTIONS = [
     'EGLint config_size, EGLint* num_config'],
 ['EGLBoolean', ['eglGetConfigAttrib'],
     'EGLDisplay dpy, EGLConfig config, EGLint attribute, EGLint* value'],
-['EGLImageKHR', ['eglCreateImageKHR'],
-    'EGLDisplay dpy, EGLContext ctx, EGLenum target, EGLClientBuffer buffer, '
-    'const EGLint* attrib_list'],
-['EGLBoolean', ['eglDestroyImageKHR'],
-    'EGLDisplay dpy, EGLImageKHR image'],
 ['EGLSurface', ['eglCreateWindowSurface'],
     'EGLDisplay dpy, EGLConfig config, EGLNativeWindowType win, '
     'const EGLint* attrib_list'],
