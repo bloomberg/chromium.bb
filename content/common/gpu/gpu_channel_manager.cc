@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "app/win/scoped_com_initializer.h"
 #include "base/command_line.h"
 #include "base/threading/worker_pool.h"
 #include "build/build_config.h"

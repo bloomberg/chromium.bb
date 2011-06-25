@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/win/shell.h"
+#include "ui/base/win/shell.h"
 
 #include <shellapi.h>
 #include <shlobj.h>
@@ -14,7 +14,7 @@
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 
-namespace app {
+namespace ui {
 namespace win {
 
 namespace {
@@ -109,4 +109,4 @@ void SetAppIdForWindow(const string16& app_id, HWND hwnd) {
 }
 
 }  // namespace win
-}  // namespace app
+}  // namespace ui

@@ -9,7 +9,6 @@
 #include <exdisp.h>
 
 #include "app/app_paths.h"
-#include "app/win/scoped_com_initializer.h"
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
 #include "base/file_util.h"
@@ -23,6 +22,7 @@
 #include "base/system_monitor/system_monitor.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
+#include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/browser/automation/automation_provider_list.h"
@@ -311,7 +311,7 @@ void CFUrlRequestUnittestRunner::StartChromeFrameInHostBrowser() {
   if (!ShouldLaunchBrowser())
     return;
 
-  app::win::ScopedCOMInitializer com;
+  base::win::ScopedCOMInitializer com;
   chrome_frame_test::CloseAllIEWindows();
 
   test_http_server_.reset(new test_server::SimpleWebServer(kTestServerPort));
@@ -333,7 +333,7 @@ void CFUrlRequestUnittestRunner::StartChromeFrameInHostBrowser() {
 
 void CFUrlRequestUnittestRunner::ShutDownHostBrowser() {
   if (ShouldLaunchBrowser()) {
-    app::win::ScopedCOMInitializer com;
+    base::win::ScopedCOMInitializer com;
     chrome_frame_test::CloseAllIEWindows();
   }
 }

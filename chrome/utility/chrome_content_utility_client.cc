@@ -22,10 +22,10 @@
 #include "webkit/glue/image_decoder.h"
 
 #if defined(OS_WIN)
-#include "app/win/iat_patch_function.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
+#include "base/win/iat_patch_function.h"
 #include "base/win/scoped_handle.h"
 #include "content/common/content_switches.h"
 #include "content/common/sandbox_init_wrapper.h"
@@ -193,7 +193,7 @@ typedef bool (*GetPDFDocInfoProc)(const unsigned char* pdf_buffer,
 // The 2 below IAT patch functions are almost identical to the code in
 // render_process_impl.cc. This is needed to work around specific Windows APIs
 // used by the Chrome PDF plugin that will fail in the sandbox.
-static app::win::IATPatchFunction g_iat_patch_createdca;
+static base::win::IATPatchFunction g_iat_patch_createdca;
 HDC WINAPI UtilityProcess_CreateDCAPatch(LPCSTR driver_name,
                                          LPCSTR device_name,
                                          LPCSTR output,
@@ -207,7 +207,7 @@ HDC WINAPI UtilityProcess_CreateDCAPatch(LPCSTR driver_name,
   return CreateDCA(driver_name, device_name, output, init_data);
 }
 
-static app::win::IATPatchFunction g_iat_patch_get_font_data;
+static base::win::IATPatchFunction g_iat_patch_get_font_data;
 DWORD WINAPI UtilityProcess_GetFontDataPatch(
     HDC hdc, DWORD table, DWORD offset, LPVOID buffer, DWORD length) {
   int rv = GetFontData(hdc, table, offset, buffer, length);

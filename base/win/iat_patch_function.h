@@ -1,16 +1,17 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_WIN_IAT_PATCH_FUNCTION_H_
-#define APP_WIN_IAT_PATCH_FUNCTION_H_
+#ifndef BASE_WIN_IAT_PATCH_FUNCTION_H_
+#define BASE_WIN_IAT_PATCH_FUNCTION_H_
 #pragma once
 
 #include <windows.h>
 
+#include "base/base_api.h"
 #include "base/basictypes.h"
 
-namespace app {
+namespace base {
 namespace win {
 
 // A class that encapsulates Import Address Table patching helpers and restores
@@ -20,7 +21,7 @@ namespace win {
 // This is the case when, for example, we want to intercept
 // CertDuplicateCertificateContext function (exported from crypt32.dll) called
 // by wininet.dll.
-class IATPatchFunction {
+class BASE_API IATPatchFunction {
  public:
   IATPatchFunction();
   ~IATPatchFunction();
@@ -67,6 +68,6 @@ class IATPatchFunction {
 };
 
 }  // namespace win
-}  // namespace app
+}  // namespace base
 
-#endif  // APP_WIN_IAT_PATCH_FUNCTION_H_
+#endif  // BASE_WIN_IAT_PATCH_FUNCTION_H_

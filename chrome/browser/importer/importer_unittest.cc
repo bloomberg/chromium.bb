@@ -16,7 +16,6 @@
 
 #include <vector>
 
-#include "app/win/scoped_com_initializer.h"
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
@@ -25,6 +24,7 @@
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/scoped_com_initializer.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/importer/importer_bridge.h"
 #include "chrome/browser/importer/importer_data_types.h"
@@ -333,7 +333,7 @@ void WritePStore(IPStore* pstore, const GUID* type, const GUID* subtype) {
 
 TEST_F(ImporterTest, IEImporter) {
   // Sets up a favorites folder.
-  app::win::ScopedCOMInitializer com_init;
+  base::win::ScopedCOMInitializer com_init;
   std::wstring path = temp_dir_.path().AppendASCII("Favorites").value();
   CreateDirectory(path.c_str(), NULL);
   CreateDirectory((path + L"\\SubFolder").c_str(), NULL);

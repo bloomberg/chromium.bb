@@ -42,7 +42,7 @@
 #include "v8/include/v8.h"
 
 #if defined(OS_WIN)
-#include "app/win/iat_patch_function.h"
+#include "base/win/iat_patch_function.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -133,7 +133,7 @@ class RenderViewContentSettingsSetter : public RenderViewVisitor {
 };
 
 #if defined(OS_WIN)
-static app::win::IATPatchFunction g_iat_patch_createdca;
+static base::win::IATPatchFunction g_iat_patch_createdca;
 HDC WINAPI CreateDCAPatch(LPCSTR driver_name,
                           LPCSTR device_name,
                           LPCSTR output,
@@ -147,7 +147,7 @@ HDC WINAPI CreateDCAPatch(LPCSTR driver_name,
   return CreateCompatibleDC(NULL);
 }
 
-static app::win::IATPatchFunction g_iat_patch_get_font_data;
+static base::win::IATPatchFunction g_iat_patch_get_font_data;
 DWORD WINAPI GetFontDataPatch(HDC hdc,
                               DWORD table,
                               DWORD offset,

@@ -158,11 +158,11 @@
 // progress and should not be taken as an indication of a real refactoring.
 
 #if defined(OS_WIN)
+#include <windows.h>
 #include <commctrl.h>
 #include <shellapi.h>
-#include <windows.h>
 
-#include "app/win/scoped_com_initializer.h"
+#include "base/win/scoped_com_initializer.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_trial.h"
 #include "chrome/browser/browser_util_win.h"
@@ -1707,7 +1707,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
       preconnect_enabled);
 
 #if defined(OS_WIN)
-  app::win::ScopedCOMInitializer com_initializer;
+  base::win::ScopedCOMInitializer com_initializer;
 
 #if defined(GOOGLE_CHROME_BUILD)
   // Init the RLZ library. This just binds the dll and schedules a task on the

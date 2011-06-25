@@ -223,6 +223,7 @@
         'common/random.h',
         'common/render_messages.cc',
         'common/render_messages.h',
+	'common/scoped_co_mem.h',
         '<(protoc_out_dir)/chrome/common/safe_browsing/client_model.pb.cc',
         '<(protoc_out_dir)/chrome/common/safe_browsing/client_model.pb.h',
         '<(protoc_out_dir)/chrome/common/safe_browsing/csd.pb.cc',

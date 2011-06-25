@@ -15,8 +15,6 @@
 #include <string>
 #include <vector>
 
-#include "app/win/scoped_co_mem.h"
-#include "app/win/scoped_com_initializer.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/string_split.h"
@@ -24,6 +22,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
+#include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
@@ -31,8 +30,9 @@
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/password_manager/ie7_password.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/common/scoped_co_mem.h"
 #include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
@@ -89,7 +89,7 @@ void IEImporter::StartImport(const importer::SourceProfile& source_profile,
   bridge_->NotifyStarted();
 
   // Some IE settings (such as Protected Storage) are obtained via COM APIs.
-  app::win::ScopedCOMInitializer com_initializer;
+  base::win::ScopedCOMInitializer com_initializer;
 
   if ((items & importer::HOME_PAGE) && !cancelled())
     ImportHomepage();  // Doesn't have a UI item.
@@ -463,7 +463,7 @@ void IEImporter::ImportHomepage() {
 }
 
 std::wstring IEImporter::ResolveInternetShortcut(const std::wstring& file) {
-  app::win::ScopedCoMem<wchar_t> url;
+  chrome::common::ScopedCoMem<wchar_t> url;
   base::win::ScopedComPtr<IUniformResourceLocator> url_locator;
   HRESULT result = url_locator.CreateInstance(CLSID_InternetShortcut, NULL,
                                               CLSCTX_INPROC_SERVER);

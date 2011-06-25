@@ -1,9 +1,10 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_WIN_SHELL_H_
-#define APP_WIN_SHELL_H_
+#ifndef UI_BASE_WIN_SHELL_H_
+#define UI_BASE_WIN_SHELL_H_
+#pragma once
 
 #include <windows.h>
 
@@ -11,7 +12,7 @@
 
 class FilePath;
 
-namespace app {
+namespace ui {
 namespace win {
 
 // Open or run a file via the Windows shell. In the event that there is no
@@ -36,6 +37,6 @@ bool OpenItemWithExternalApp(const string16& full_path);
 void SetAppIdForWindow(const string16& app_id, HWND hwnd);
 
 }  // namespace win
-}  // namespace app
+}  // namespace ui
 
-#endif  // APP_WIN_SHELL_H_
+#endif  // UI_BASE_WIN_SHELL_H_

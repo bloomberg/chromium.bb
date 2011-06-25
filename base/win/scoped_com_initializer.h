@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_WIN_SCOPED_COM_INITIALIZER_H_
-#define APP_WIN_SCOPED_COM_INITIALIZER_H_
+#ifndef BASE_WIN_SCOPED_COM_INITIALIZER_H_
+#define BASE_WIN_SCOPED_COM_INITIALIZER_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -13,7 +13,7 @@
 
 #include <objbase.h>
 
-namespace app {
+namespace base {
 namespace win {
 
 // Initializes COM in the constructor (STA), and uninitializes COM in the
@@ -35,11 +35,11 @@ class ScopedCOMInitializer {
 };
 
 }  // namespace win
-}  // namespace app
+}  // namespace base
 
 #else
 
-namespace app {
+namespace base {
 namespace win {
 
 // Do-nothing class for other platforms.
@@ -53,8 +53,8 @@ class ScopedCOMInitializer {
 };
 
 }  // namespace win
-}  // namespace app
+}  // namespace base
 
 #endif
 
-#endif  // APP_WIN_SCOPED_COM_INITIALIZER_H_
+#endif  // BASE_WIN_SCOPED_COM_INITIALIZER_H_

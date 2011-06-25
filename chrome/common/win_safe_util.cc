@@ -7,12 +7,12 @@
 
 #include "chrome/common/win_safe_util.h"
 
-#include "app/win/shell.h"
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/win/scoped_comptr.h"
+#include "ui/base/win/shell.h"
 
 namespace {
 
@@ -70,7 +70,7 @@ bool SaferOpenItemViaShell(HWND hwnd, const std::wstring& window_title,
       NOTREACHED();
       return false;
     }
-    return app::win::OpenItemViaShell(full_path);
+    return ui::win::OpenItemViaShell(full_path);
   }
 
   attachment_services->SetClientGuid(kClientID);
@@ -112,7 +112,7 @@ bool SaferOpenItemViaShell(HWND hwnd, const std::wstring& window_title,
       return false;
     }
   }
-  return app::win::OpenItemViaShellNoZoneCheck(full_path);
+  return ui::win::OpenItemViaShellNoZoneCheck(full_path);
 }
 
 bool SetInternetZoneIdentifier(const FilePath& full_path,
