@@ -44,16 +44,17 @@
 
 namespace {
 
-const bool kColorDefaultValue = false;
-const bool kLandscapeDefaultValue = false;
-
 const char kDisableColorOption[] = "disableColorOption";
 const char kSetColorAsDefault[] = "setColorAsDefault";
+const char kSetDuplexAsDefault[] = "setDuplexAsDefault";
 
 #if defined(USE_CUPS)
 const char kColorDevice[] = "ColorDevice";
+const char kDuplex[] = "Duplex";
+const char kDuplexNone[] = "None";
 #elif defined(OS_WIN)
 const char kPskColor[] = "psk:Color";
+const char kPskOneSided[] = "psk:OneSided";
 #endif
 
 enum UserActionBuckets {
@@ -247,6 +248,7 @@ class PrintSystemTaskProxy
     VLOG(1) << "Get printer capabilities start for " << printer_name;
     printing::PrinterCapsAndDefaults printer_info;
     bool supports_color = true;
+    bool set_duplex_as_default = false;
     if (!print_backend_->GetPrinterCapsAndDefaults(printer_name,
                                                    &printer_info)) {
       return;
@@ -271,6 +273,17 @@ class PrintSystemTaskProxy
       ppd_attr_t* attr = ppdFindAttr(ppd, kColorDevice, NULL);
       if (attr && attr->value)
         supports_color = ppd->color_device;
+
+      ppd_choice_t* ch = ppdFindMarkedChoice(ppd, kDuplex);
+      if (ch == NULL) {
+        ppd_option_t* option = ppdFindOption(ppd, kDuplex);
+        if (option != NULL)
+          ch = ppdFindChoice(option, option->defchoice);
+      }
+
+      if (ch != NULL && strcmp(ch->choice, kDuplexNone) != 0)
+        set_duplex_as_default = true;
+
       ppdClose(ppd);
     }
     file_util::Delete(ppd_file_path, false);
@@ -281,6 +294,8 @@ class PrintSystemTaskProxy
     // http://msdn.microsoft.com/en-us/windows/hardware/gg463431.
     supports_color = (printer_info.printer_capabilities.find(kPskColor) !=
                       std::string::npos);
+    set_duplex_as_default =
+        (printer_info.printer_defaults.find(kPskOneSided) == std::string::npos);
 #else
   NOTIMPLEMENTED();
 #endif
@@ -288,6 +303,7 @@ class PrintSystemTaskProxy
     DictionaryValue settings_info;
     settings_info.SetBoolean(kDisableColorOption, !supports_color);
     settings_info.SetBoolean(kSetColorAsDefault, false);
+    settings_info.SetBoolean(kSetDuplexAsDefault, set_duplex_as_default);
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this,

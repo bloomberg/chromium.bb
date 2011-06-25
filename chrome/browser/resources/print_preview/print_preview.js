@@ -212,9 +212,11 @@ function updateControlsWithSelectedPrinterCapabilities() {
 
   var selectedValue = printerList.options[selectedIndex].value;
   if (selectedValue == PRINT_TO_PDF) {
-    updateWithPrinterCapabilities({'disableColorOption': true,
-                                   'setColorAsDefault': true,
-                                   'disableCopiesOption': true});
+    updateWithPrinterCapabilities({
+        'disableColorOption': true,
+        'setColorAsDefault': true,
+        'setDuplexAsDefault': false,
+        'disableCopiesOption': true});
   } else if (selectedValue == MANAGE_PRINTERS) {
     printerList.selectedIndex = lastSelectedPrinterIndex;
     chrome.send('managePrinters');
@@ -239,6 +241,7 @@ function updateWithPrinterCapabilities(settingInfo) {
   var disableColorOption = settingInfo.disableColorOption;
   var disableCopiesOption = settingInfo.disableCopiesOption;
   var setColorAsDefault = settingInfo.setColorAsDefault;
+  var setDuplexAsDefault = settingInfo.setDuplexAsDefault;
   var color = $('color');
   var bw = $('bw');
   var colorOptions = $('color-options');
@@ -259,6 +262,7 @@ function updateWithPrinterCapabilities(settingInfo) {
     color.checked = setColorAsDefault;
     bw.checked = !setColorAsDefault;
   }
+  $('two-sided').checked = setDuplexAsDefault;
 }
 
 /**
