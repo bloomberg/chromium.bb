@@ -13,8 +13,27 @@ body {
   -webkit-user-select: none;
 }
 
+div.main {
+  display: -webkit-box;
+  margin-top: 5px;
+}
+
+div.canvas {
+  margin-left: 5px;
+  -webkit-box-flex: 1;
+}
+
 div.row {
   margin-top: 5px;
+}
+
+canvas.handwriting {
+  border: 1px solid gray;
+  color: #dbdbdb;
+  float: left;
+  font-family: sans-serif;
+  text-align: center;
+  -webkit-border-radius: 4px;
 }
 
 .ime {
@@ -124,4 +143,3 @@ div.moddown {
 .hide {
   background-image: url("keyboard.svg");
 }
-
