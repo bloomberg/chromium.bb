@@ -305,8 +305,10 @@ class ReadTraceFileTask : public Task {
 
   virtual void Run() {
     std::string* file_contents = new std::string();
-    if (!file_util::ReadFileToString(path_, file_contents))
+    if (!file_util::ReadFileToString(path_, file_contents)) {
+      delete file_contents;
       return;
+    }
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(proxy_.get(),
