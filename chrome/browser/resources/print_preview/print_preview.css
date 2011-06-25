@@ -244,7 +244,7 @@ button.default:disabled {
 }
 
 #decrement {
-  -webkit-margin-start: -6px;
+  -webkit-margin-start: -5px;
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 3px;
   border-top-left-radius: 0;
