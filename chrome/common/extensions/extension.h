@@ -620,6 +620,10 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // component-private permission.
   bool IsComponentOnlyPermission(const ExtensionAPIPermission* api) const;
 
+  // Updates the launch URL and extents for the extension using the given
+  // |override_url|.
+  void OverrideLaunchUrl(const GURL& override_url);
+
   // Cached images for this extension. This should only be touched on the UI
   // thread.
   mutable ImageCache image_cache_;

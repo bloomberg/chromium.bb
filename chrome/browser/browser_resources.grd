@@ -89,6 +89,7 @@
       <include name="IDR_BUGREPORT_HTML" file="resources\bug_report.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_BUGREPORT_HTML_INVALID" file="resources\bug_report_invalid.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_WEBSTORE_MANIFEST" file="resources\webstore_app\manifest.json" type="BINDATA" />
+      <include name="IDR_CLOUDPRINT_MANIFEST" file="resources\cloud_print_app\manifest.json" type="BINDATA" />
       <if expr="pp_ifdef('chromeos')">
         <include name="IDR_ABOUT_SYS_HTML" file="resources\about_sys.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_CHOOSE_MOBILE_NETWORK_HTML" file="resources\chromeos\choose_mobile_network.html" flattenhtml="true" type="BINDATA" />

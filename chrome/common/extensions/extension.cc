@@ -274,6 +274,29 @@ ExtensionPermissionMessages Extension::GetPermissionMessages() const {
   return permission_set_->GetPermissionMessages();
 }
 
+void Extension::OverrideLaunchUrl(const GURL& override_url) {
+  GURL new_url(override_url);
+  if (!new_url.is_valid()) {
+    LOG(WARNING) << "Invalid override url given for " << name();
+  } else {
+    if (new_url.has_port()) {
+      LOG(WARNING) << "Override URL passed for " << name()
+                   << " should not contain a port.  Removing it.";
+
+      GURL::Replacements remove_port;
+      remove_port.ClearPort();
+      new_url = new_url.ReplaceComponents(remove_port);
+    }
+
+    launch_web_url_ = new_url.spec();
+
+    URLPattern pattern(kValidWebExtentSchemes);
+    pattern.Parse(new_url.spec(), URLPattern::PARSE_STRICT);
+    pattern.SetPath(pattern.path() + '*');
+    extent_.AddPattern(pattern);
+  }
+}
+
 std::vector<string16> Extension::GetPermissionMessageStrings() const {
   return permission_set_->GetWarningMessages();
 }
@@ -1019,29 +1042,26 @@ bool Extension::LoadLaunchURL(const DictionaryValue* manifest,
     // Empty string means option was not used.
     if (!gallery_url_str.empty()) {
       GURL gallery_url(gallery_url_str);
-      if (!gallery_url.is_valid()) {
-        LOG(WARNING) << "Invalid url given in switch "
-                     << switches::kAppsGalleryURL;
-      } else {
-        if (gallery_url.has_port()) {
-          LOG(WARNING) << "URLs passed to switch " << switches::kAppsGalleryURL
-                       << " should not contain a port.  Removing it.";
-
-          GURL::Replacements remove_port;
-          remove_port.ClearPort();
-          gallery_url = gallery_url.ReplaceComponents(remove_port);
-        }
-
-        launch_web_url_ = gallery_url.spec();
-
-        URLPattern pattern(kValidWebExtentSchemes);
-        pattern.Parse(gallery_url.spec(), URLPattern::PARSE_STRICT);
-        pattern.SetPath(pattern.path() + '*');
-        extent_.AddPattern(pattern);
-      }
+      OverrideLaunchUrl(gallery_url);
+    }
+  } else if (id() == extension_misc::kCloudPrintAppId) {
+    // In order for the --cloud-print-service switch to work, we must update
+    // the launch URL and web extent.
+    // TODO(sanjeevr): Ideally we want to use CloudPrintURL here but that is
+    // currently under chrome/browser.
+    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+    GURL cloud_print_service_url = GURL(command_line.GetSwitchValueASCII(
+        switches::kCloudPrintServiceURL));
+    if (!cloud_print_service_url.is_empty()) {
+      std::string path(
+          cloud_print_service_url.path() + "/enable_chrome_connector");
+      GURL::Replacements replacements;
+      replacements.SetPathStr(path);
+      GURL cloud_print_enable_connector_url =
+          cloud_print_service_url.ReplaceComponents(replacements);
+      OverrideLaunchUrl(cloud_print_enable_connector_url);
     }
   }
-
   return true;
 }
 

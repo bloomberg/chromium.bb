@@ -536,6 +536,10 @@ void ProfileImpl::RegisterComponentExtensions() {
       FILE_PATH_LITERAL("web_store"),
       IDR_WEBSTORE_MANIFEST));
 
+  component_extensions.push_back(std::make_pair(
+      FILE_PATH_LITERAL("cloud_print"),
+      IDR_CLOUDPRINT_MANIFEST));
+
   for (ComponentExtensionList::iterator iter = component_extensions.begin();
     iter != component_extensions.end(); ++iter) {
     FilePath path(iter->first);

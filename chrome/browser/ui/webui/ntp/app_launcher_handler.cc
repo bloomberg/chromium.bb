@@ -226,10 +226,12 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
   const ExtensionList* extensions = extensions_service_->extensions();
   ExtensionList::const_iterator it;
   for (it = extensions->begin(); it != extensions->end(); ++it) {
-    // Don't include the WebStore.
+    // Don't include the WebStore and the Cloud Print app.
     // The WebStore launcher gets special treatment in ntp/apps.js.
+    // The Cloud Print app should not be displayed in the NTP.
     if ((*it)->is_app() &&
-        (*it)->id() != extension_misc::kWebStoreAppId) {
+        (*it)->id() != extension_misc::kWebStoreAppId &&
+        (*it)->id() != extension_misc::kCloudPrintAppId) {
       DictionaryValue* app_info = new DictionaryValue();
       CreateAppInfo(*it, extensions_service_->extension_prefs(), app_info);
       list->Append(app_info);
@@ -239,7 +241,8 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
   extensions = extensions_service_->disabled_extensions();
   for (it = extensions->begin(); it != extensions->end(); ++it) {
     if ((*it)->is_app() &&
-        (*it)->id() != extension_misc::kWebStoreAppId) {
+        (*it)->id() != extension_misc::kWebStoreAppId &&
+        (*it)->id() != extension_misc::kCloudPrintAppId) {
       DictionaryValue* app_info = new DictionaryValue();
       CreateAppInfo(*it, extensions_service_->extension_prefs(), app_info);
       list->Append(app_info);

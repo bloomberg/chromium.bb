@@ -99,6 +99,7 @@ class ExtensionAPIPermission {
     kContentSettings,
     kContextMenus,
     kCookie,
+    kChromeAuthPrivate,
     kChromePrivate,
     kChromeosInfoPrivate,
     kDebugger,
