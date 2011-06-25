@@ -25,18 +25,16 @@
 
 namespace keys = extension_cookies_api_constants;
 
-ExtensionCookiesEventRouter::ExtensionCookiesEventRouter() {}
+// static
+ExtensionCookiesEventRouter* ExtensionCookiesEventRouter::GetInstance() {
+  return Singleton<ExtensionCookiesEventRouter>::get();
+}
 
-ExtensionCookiesEventRouter::~ExtensionCookiesEventRouter() {}
-
-void ExtensionCookiesEventRouter::ObserveProfile(Profile* profile) {
+void ExtensionCookiesEventRouter::Init() {
   if (registrar_.IsEmpty()) {
     registrar_.Add(this,
                    NotificationType::COOKIE_CHANGED,
-                   Source<Profile>(profile));
-    registrar_.Add(this,
-                   NotificationType::COOKIE_CHANGED,
-                   Source<Profile>(profile->GetOffTheRecordProfile()));
+                   NotificationService::AllSources());
   }
 }
 

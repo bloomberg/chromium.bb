@@ -6,8 +6,10 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_HISTORY_API_H_
 #pragma once
 
+#include <map>
 #include <string>
 
+#include "base/memory/singleton.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_notifications.h"
@@ -17,12 +19,18 @@
 // extension system.
 class ExtensionHistoryEventRouter : public NotificationObserver {
  public:
-  explicit ExtensionHistoryEventRouter();
-  virtual ~ExtensionHistoryEventRouter();
+  // Single instance of the event router.
+  static ExtensionHistoryEventRouter* GetInstance();
 
+  // Safe to call multiple times.
   void ObserveProfile(Profile* profile);
 
  private:
+  friend struct DefaultSingletonTraits<ExtensionHistoryEventRouter>;
+
+  ExtensionHistoryEventRouter();
+  virtual ~ExtensionHistoryEventRouter();
+
   // NotificationObserver::Observe.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
@@ -40,6 +48,10 @@ class ExtensionHistoryEventRouter : public NotificationObserver {
 
   // Used for tracking registrations to history service notifications.
   NotificationRegistrar registrar_;
+
+  // Registered profiles.
+  typedef std::map<uintptr_t, Profile*> ProfileMap;
+  ProfileMap profiles_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionHistoryEventRouter);
 };

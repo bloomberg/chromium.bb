@@ -118,18 +118,22 @@ void BookmarksFunction::Observe(NotificationType type,
   Release();  // Balanced in Run().
 }
 
-ExtensionBookmarkEventRouter::ExtensionBookmarkEventRouter(
-    BookmarkModel* model) : model_(model) {
+// static
+ExtensionBookmarkEventRouter* ExtensionBookmarkEventRouter::GetInstance() {
+  return Singleton<ExtensionBookmarkEventRouter>::get();
+}
+
+ExtensionBookmarkEventRouter::ExtensionBookmarkEventRouter() {
 }
 
 ExtensionBookmarkEventRouter::~ExtensionBookmarkEventRouter() {
-  if (model_) {
-    model_->RemoveObserver(this);
-  }
 }
 
-void ExtensionBookmarkEventRouter::Init() {
-  model_->AddObserver(this);
+void ExtensionBookmarkEventRouter::Observe(BookmarkModel* model) {
+  if (models_.find(model) == models_.end()) {
+    model->AddObserver(this);
+    models_.insert(model);
+  }
 }
 
 void ExtensionBookmarkEventRouter::DispatchEvent(Profile *profile,
@@ -144,11 +148,6 @@ void ExtensionBookmarkEventRouter::DispatchEvent(Profile *profile,
 void ExtensionBookmarkEventRouter::Loaded(BookmarkModel* model) {
   // TODO(erikkay): Perhaps we should send this event down to the extension
   // so they know when it's safe to use the API?
-}
-
-void ExtensionBookmarkEventRouter::BookmarkModelBeingDeleted(
-    BookmarkModel* model) {
-  model_ = NULL;
 }
 
 void ExtensionBookmarkEventRouter::BookmarkNodeMoved(

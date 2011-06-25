@@ -658,23 +658,17 @@ void ExtensionService::InitEventRouters() {
   if (event_routers_initialized_)
     return;
 
-  history_event_router_.reset(new ExtensionHistoryEventRouter());
-  history_event_router_->ObserveProfile(profile_);
+  ExtensionHistoryEventRouter::GetInstance()->ObserveProfile(profile_);
   ExtensionAccessibilityEventRouter::GetInstance()->ObserveProfile(profile_);
   browser_event_router_.reset(new ExtensionBrowserEventRouter(profile_));
   browser_event_router_->Init();
   preference_event_router_.reset(new ExtensionPreferenceEventRouter(profile_));
-  bookmark_event_router_.reset(new ExtensionBookmarkEventRouter(
-      profile_->GetBookmarkModel()));
-  bookmark_event_router_->Init();
-  cookies_event_router_.reset(new ExtensionCookiesEventRouter());
-  cookies_event_router_->ObserveProfile(profile_);
-  management_event_router_.reset(new ExtensionManagementEventRouter());
-  management_event_router_->ObserveProfile(profile_);
+  ExtensionBookmarkEventRouter::GetInstance()->Observe(
+      profile_->GetBookmarkModel());
+  ExtensionCookiesEventRouter::GetInstance()->Init();
+  ExtensionManagementEventRouter::GetInstance()->Init();
   ExtensionProcessesEventRouter::GetInstance()->ObserveProfile(profile_);
-  web_navigation_event_router_.reset(
-      new ExtensionWebNavigationEventRouter(profile_));
-  web_navigation_event_router_->Init();
+  ExtensionWebNavigationEventRouter::GetInstance()->Init();
 
 #if defined(OS_CHROMEOS)
   ExtensionFileBrowserEventRouter::GetInstance()->ObserveFileSystemEvents(

@@ -64,10 +64,8 @@ ExtensionFileBrowserEventRouter::~ExtensionFileBrowserEventRouter() {
   DCHECK(file_watchers_.empty());
   STLDeleteValues(&file_watchers_);
 
-  if (!profile_) {
-    NOTREACHED();
+  if (!profile_)
     return;
-  }
   if (!chromeos::CrosLibrary::Get()->EnsureLoaded())
     return;
   chromeos::MountLibrary* lib =
