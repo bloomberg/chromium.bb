@@ -11,6 +11,7 @@
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
+#include "content/browser/accessibility/browser_accessibility_state.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/renderer_host/backing_store.h"
 #include "content/browser/renderer_host/backing_store_manager.h"
@@ -90,7 +91,8 @@ RenderWidgetHost::RenderWidgetHost(RenderProcessHost* process,
   process_->WidgetRestored();
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kForceRendererAccessibility)) {
+          switches::kForceRendererAccessibility) ||
+      BrowserAccessibilityState::GetInstance()->IsAccessibleBrowser()) {
     EnableRendererAccessibility();
   }
 }

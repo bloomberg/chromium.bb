@@ -4,17 +4,17 @@
 
 #include <execinfo.h>
 
-#import "chrome/browser/accessibility/browser_accessibility_cocoa.h"
+#import "content/browser/accessibility/browser_accessibility_cocoa.h"
 
 #include <map>
 
 #include "base/string16.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/renderer_host/render_widget_host_view_mac.h"
+#include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "content/common/content_client.h"
 #include "grit/webkit_strings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
-#include "ui/base/l10n/l10n_util_mac.h"
 
 namespace {
 
@@ -383,15 +383,24 @@ NSDictionary* attributeToMethodNameMap = nil;
 // Returns a string indicating the role description of this object.
 - (NSString*)roleDescription {
   NSString* role = [self role];
+
+  content::ContentClient* content_client = content::GetContentClient();
+
   // The following descriptions are specific to webkit.
-  if ([role isEqualToString:@"AXWebArea"])
-    return l10n_util::GetNSString(IDS_AX_ROLE_WEB_AREA);
+  if ([role isEqualToString:@"AXWebArea"]) {
+    return base::SysUTF16ToNSString(content_client->GetLocalizedString(
+        IDS_AX_ROLE_WEB_AREA));
+  }
 
-  if ([role isEqualToString:@"NSAccessibilityLinkRole"])
-    return l10n_util::GetNSString(IDS_AX_ROLE_LINK);
+  if ([role isEqualToString:@"NSAccessibilityLinkRole"]) {
+    return base::SysUTF16ToNSString(content_client->GetLocalizedString(
+        IDS_AX_ROLE_LINK));
+  }
 
-  if ([role isEqualToString:@"AXHeading"])
-    return l10n_util::GetNSString(IDS_AX_ROLE_HEADING);
+  if ([role isEqualToString:@"AXHeading"]) {
+    return base::SysUTF16ToNSString(content_client->GetLocalizedString(
+        IDS_AX_ROLE_HEADING));
+  }
 
   if ([role isEqualToString:NSAccessibilityGroupRole] ||
       [role isEqualToString:NSAccessibilityRadioButtonRole]) {

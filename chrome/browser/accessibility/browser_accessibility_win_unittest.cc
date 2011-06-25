@@ -4,8 +4,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/win/scoped_comptr.h"
-#include "chrome/browser/accessibility/browser_accessibility_manager.h"
-#include "chrome/browser/accessibility/browser_accessibility_win.h"
+#include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "content/browser/accessibility/browser_accessibility_win.h"
 #include "content/common/view_messages.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
