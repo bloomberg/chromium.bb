@@ -938,6 +938,8 @@ bool Channel::ChannelImpl::GetClientEuid(uid_t* client_euid) const {
   }
   *client_euid = peer_euid;
   return true;
+#elif defined(OS_SOLARIS)
+  return false;
 #else
   struct ucred cred;
   socklen_t cred_len = sizeof(cred);

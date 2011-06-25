@@ -19,14 +19,14 @@
 #if defined(OS_FREEBSD)
 #include <sys/param.h>
 #include <sys/sysctl.h>
+#elif defined(OS_SOLARIS)
+#include <stdlib.h>
 #endif
 
 namespace base {
 
 #if defined(OS_LINUX)
 const char kSelfExe[] = "/proc/self/exe";
-#elif defined(OS_SOLARIS)
-const char kSelfExe[] = getexecname();
 #endif
 
 // The name of this file relative to the source root. This is used for checking
@@ -56,6 +56,14 @@ bool PathProviderPosix(int key, FilePath* result) {
         return false;
       }
       bin_dir[strlen(bin_dir)] = 0;
+      *result = FilePath(bin_dir);
+      return true;
+#elif defined(OS_SOLARIS)
+      char bin_dir[PATH_MAX + 1];
+      if (realpath(getexecname(), bin_dir) == NULL) {
+        NOTREACHED() << "Unable to resolve " << getexecname() << ".";
+        return false;
+      }
       *result = FilePath(bin_dir);
       return true;
 #endif

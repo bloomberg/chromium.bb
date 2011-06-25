@@ -20,7 +20,7 @@
 class SkDevice;
 struct SkIRect;
 
-#if defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__)
+#if defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__sun)
 typedef struct _cairo cairo_t;
 typedef struct _cairo_rectangle cairo_rectangle_t;
 #elif defined(__APPLE__)
@@ -35,7 +35,7 @@ class PlatformDevice;
 #if defined(WIN32)
 typedef HDC PlatformSurface;
 typedef RECT PlatformRect;
-#elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__)
+#elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__sun)
 typedef cairo_t* PlatformSurface;
 typedef cairo_rectangle_t PlatformRect;
 #elif defined(__APPLE__)
@@ -66,7 +66,7 @@ SK_API PlatformDevice* GetPlatformDevice(SkDevice* device);
 #elif defined(__APPLE__)
 #include "skia/ext/platform_device_mac.h"
 #elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || \
-      defined(__Solaris__)
+      defined(__sun)
 #include "skia/ext/platform_device_linux.h"
 #endif
 

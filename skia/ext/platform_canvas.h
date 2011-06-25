@@ -34,7 +34,7 @@ class SK_API PlatformCanvas : public SkCanvas {
                  CGContextRef context);
   PlatformCanvas(int width, int height, bool is_opaque, uint8_t* context);
 #elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || \
-      defined(__Solaris__)
+      defined(__sun)
   // Linux ---------------------------------------------------------------------
 
   // Construct a canvas from the given memory region. The memory is not cleared
@@ -56,7 +56,7 @@ class SK_API PlatformCanvas : public SkCanvas {
   bool initialize(int width, int height, bool is_opaque, uint8_t* data = NULL);
 
 #elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || \
-      defined(__Solaris__)
+      defined(__sun)
   // For two-part init, call if you use the no-argument constructor above
   bool initialize(int width, int height, bool is_opaque, uint8_t* data = NULL);
 #endif

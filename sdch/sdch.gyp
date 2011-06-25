@@ -1,4 +1,4 @@
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -54,7 +54,7 @@
       },
       'conditions': [
         [ 'OS == "linux"', { 'include_dirs': [ 'linux' ] } ],
-        [ 'OS == "freebsd" or OS == "openbsd"', { 'include_dirs': [ 'bsd' ] } ],
+        [ 'OS == "freebsd" or OS == "openbsd" or OS=="solaris"', { 'include_dirs': [ 'bsd' ] } ],
         [ 'OS == "mac"', { 'include_dirs': [ 'mac' ] } ],
         [ 'OS == "win"', { 'include_dirs': [ 'open-vcdiff/vsprojects' ] } ],
       ],

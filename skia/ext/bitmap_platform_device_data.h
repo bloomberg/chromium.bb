@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,7 @@ namespace skia {
 class BitmapPlatformDevice::BitmapPlatformDeviceData :
 #if defined(WIN32) || defined(__APPLE__)
     public SkRefCnt {
-#elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__)
+#elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__sun)
     // These objects are reference counted and own a Cairo surface. The surface
     // is the backing store for a Skia bitmap and we reference count it so that
     // we can copy BitmapPlatformDevice objects without having to copy all the
@@ -25,13 +25,13 @@ class BitmapPlatformDevice::BitmapPlatformDeviceData :
   typedef HBITMAP PlatformContext;
 #elif defined(__APPLE__)
   typedef CGContextRef PlatformContext;
-#elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__)
+#elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__sun)
   typedef cairo_t* PlatformContext;
 #endif
 
 #if defined(WIN32) || defined(__APPLE__)
   explicit BitmapPlatformDeviceData(PlatformContext bitmap);
-#elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__)
+#elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__sun)
   explicit BitmapPlatformDeviceData(cairo_surface_t* surface);
 #endif
 
@@ -64,7 +64,7 @@ class BitmapPlatformDevice::BitmapPlatformDeviceData :
   }
 
  private:
-#if defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__)
+#if defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__sun)
   friend class base::RefCounted<BitmapPlatformDeviceData>;
 #endif
   virtual ~BitmapPlatformDeviceData();
@@ -75,7 +75,7 @@ class BitmapPlatformDevice::BitmapPlatformDeviceData :
 #if defined(WIN32)
   // Lazily-created DC used to draw into the bitmap, see GetBitmapDC().
   HDC hdc_;
-#elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__)
+#elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__sun)
   cairo_surface_t *const surface_;
 #endif
 
