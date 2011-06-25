@@ -1978,6 +1978,13 @@ int BrowserMain(const MainFunctionParams& parameters) {
   }
 #endif
 
+  // Some tests don't set parameters.ui_task, so they started translate
+  // language fetch that was never completed so we need to cleanup here
+  // otherwise it will be done by the destructor in a wrong thread.
+  if (parameters.ui_task == NULL && translate_manager != NULL)
+    translate_manager->CleanupPendingUlrFetcher();
+
+
   chrome_browser_net_websocket_experiment::WebSocketExperimentRunner::Stop();
 
   process_singleton.Cleanup();

@@ -349,27 +349,19 @@ void TranslateManager::OnURLFetchComplete(const URLFetcher* source,
                                           int response_code,
                                           const net::ResponseCookies& cookies,
                                           const std::string& data) {
-  scoped_ptr<const URLFetcher> delete_ptr(source);
-  DCHECK(translate_script_request_pending_ || language_list_request_pending_);
-  // We quickly recognize that we are handling a translate script request
-  // if we don't have a language_list_request_pending_. Otherwise we do the
-  // more expensive check of confirming we got the kTranslateScriptURL in the
-  // rare case where we would have both requests pending at the same time.
-  bool translate_script_request = !language_list_request_pending_ ||
-      url == GURL(kTranslateScriptURL);
-  // Here we make sure that if we didn't get the translate_script_request,
-  // we actually got a language_list_request.
-  DCHECK(translate_script_request || url == GURL(kLanguageListFetchURL));
-  if (translate_script_request)
-    translate_script_request_pending_ = false;
-  else
-    language_list_request_pending_ = false;
+  if (translate_script_request_pending_.get() != source &&
+      language_list_request_pending_.get() != source) {
+    // Looks like crash on Mac is possibly caused with callback entering here
+    // with unknown fetcher when network is refreshed.
+    scoped_ptr<const URLFetcher> delete_ptr(source);
+    return;
+  }
 
-  bool error =
-      (status.status() != net::URLRequestStatus::SUCCESS ||
-       response_code != 200);
-
-  if (translate_script_request) {
+  bool error = (status.status() != net::URLRequestStatus::SUCCESS ||
+                response_code != 200);
+  if (translate_script_request_pending_.get() == source) {
+    scoped_ptr<const URLFetcher> delete_ptr(
+        translate_script_request_pending_.release());
     if (!error) {
       base::StringPiece str = ResourceBundle::GetSharedInstance().
           GetRawDataResource(IDR_TRANSLATE_JS);
@@ -412,7 +404,9 @@ void TranslateManager::OnURLFetchComplete(const URLFetcher* source,
       }
     }
     pending_requests_.clear();
-  } else {  // if (translate_script_request)
+  } else {  // if (translate_script_request_pending_.get() == source)
+    scoped_ptr<const URLFetcher> delete_ptr(
+        language_list_request_pending_.release());
     if (!error)
       SetSupportedLanguages(data);
     else
@@ -427,9 +421,7 @@ bool TranslateManager::IsShowingTranslateInfobar(TabContents* tab) {
 
 TranslateManager::TranslateManager()
     : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
-      translate_script_expiration_delay_(kTranslateScriptExpirationDelayMS),
-      translate_script_request_pending_(false),
-      language_list_request_pending_(false) {
+      translate_script_expiration_delay_(kTranslateScriptExpirationDelayMS) {
   notification_registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
                               NotificationService::AllSources());
   notification_registrar_.Add(this, NotificationType::TAB_LANGUAGE_DETERMINED,
@@ -705,7 +697,7 @@ void TranslateManager::InitAcceptLanguages(PrefService* prefs) {
 
 void TranslateManager::FetchLanguageListFromTranslateServer(
     PrefService* prefs) {
-  if (language_list_request_pending_)
+  if (language_list_request_pending_.get() != NULL)
     return;
 
   // We don't want to do this when translate is disabled.
@@ -716,24 +708,30 @@ void TranslateManager::FetchLanguageListFromTranslateServer(
     return;
   }
 
-  language_list_request_pending_ = true;
-  URLFetcher* fetcher = URLFetcher::Create(1, GURL(kLanguageListFetchURL),
-                                           URLFetcher::GET, this);
-  fetcher->set_request_context(Profile::GetDefaultRequestContext());
-  fetcher->set_max_retries(kMaxRetryLanguageListFetch);
-  fetcher->Start();
+  language_list_request_pending_.reset(URLFetcher::Create(
+      1, GURL(kLanguageListFetchURL), URLFetcher::GET, this));
+  language_list_request_pending_->set_request_context(
+      Profile::GetDefaultRequestContext());
+  language_list_request_pending_->set_max_retries(kMaxRetryLanguageListFetch);
+  language_list_request_pending_->Start();
+}
+
+void TranslateManager::CleanupPendingUlrFetcher() {
+  language_list_request_pending_.reset();
+  translate_script_request_pending_.reset();
 }
 
 void TranslateManager::RequestTranslateScript() {
-  if (translate_script_request_pending_)
+  if (translate_script_request_pending_.get() != NULL)
     return;
 
-  translate_script_request_pending_ = true;
-  URLFetcher* fetcher = URLFetcher::Create(0, GURL(kTranslateScriptURL),
-                                           URLFetcher::GET, this);
-  fetcher->set_request_context(Profile::GetDefaultRequestContext());
-  fetcher->set_extra_request_headers(kTranslateScriptHeader);
-  fetcher->Start();
+  translate_script_request_pending_.reset(URLFetcher::Create(
+      0, GURL(kTranslateScriptURL), URLFetcher::GET, this));
+  translate_script_request_pending_->set_request_context(
+      Profile::GetDefaultRequestContext());
+  translate_script_request_pending_->set_extra_request_headers(
+      kTranslateScriptHeader);
+  translate_script_request_pending_->Start();
 }
 
 void TranslateManager::ShowInfoBar(TabContents* tab,

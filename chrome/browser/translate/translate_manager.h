@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/lazy_instance.h"
+#include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/common/translate_errors.h"
@@ -44,6 +45,10 @@ class TranslateManager : public NotificationObserver,
   // set or if prefs::kEnableTranslate is set to false.
   // It will not retry more than kMaxRetryLanguageListFetch times.
   void FetchLanguageListFromTranslateServer(PrefService* prefs);
+
+  // Allows caller to cleanup pending URLFetcher objects to make sure they
+  // get released in the appropriate thread... Mainly for tests.
+  void CleanupPendingUlrFetcher();
 
   // Translates the page contents from |source_lang| to |target_lang|.
   // The actual translation might be performed asynchronously if the translate
@@ -189,11 +194,12 @@ class TranslateManager : public NotificationObserver,
   // from the translate server.
   int translate_script_expiration_delay_;
 
-  // Whether the translate JS is currently being retrieved.
-  bool translate_script_request_pending_;
+  // Set when the translate JS is currently being retrieved. NULL otherwise.
+  scoped_ptr<URLFetcher> translate_script_request_pending_;
 
-  // Whether the list of languages is currently being retrieved.
-  bool language_list_request_pending_;
+  // Set when the list of languages is currently being retrieved.
+  // NULL otherwise.
+  scoped_ptr<URLFetcher> language_list_request_pending_;
 
   // The list of pending translate requests.  Translate requests are queued when
   // the translate script is not ready and has to be fetched from the translate
