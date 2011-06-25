@@ -415,7 +415,7 @@ DataView.prototype.onUpdateAllCompleted = function(data) {
 // Once we have access to the file system, create a log file.
 DataView.prototype.onFileSystemCreate_ = function(textBlob, fileSystem) {
   fileSystem.root.getFile(
-      'net_internals_log.txt', {create: true},
+      'net_internals.log', {create: true},
       this.onFileCreate_.bind(this, textBlob),
       this.onFileError_.bind(this, 'Unable to create file.'));
 };
