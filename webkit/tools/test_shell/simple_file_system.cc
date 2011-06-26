@@ -11,6 +11,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystemCallbacks.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystemEntry.h"
@@ -172,7 +173,7 @@ void SimpleFileSystem::OpenFileSystem(
     return;
   }
 
-  GURL origin_url(frame->securityOrigin().toString());
+  GURL origin_url(frame->document().securityOrigin().toString());
   GetNewOperation(callbacks)->OpenFileSystem(origin_url, type, create);
 }
 

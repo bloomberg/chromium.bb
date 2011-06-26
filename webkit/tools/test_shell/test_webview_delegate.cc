@@ -26,6 +26,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebHistoryItem.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebImage.h"
@@ -819,7 +820,7 @@ void TestWebViewDelegate::didFailLoad(
 }
 
 void TestWebViewDelegate::didFinishLoad(WebFrame* frame) {
-  TRACE_EVENT_END_ETW("frame.load", this, frame->url().spec());
+  TRACE_EVENT_END_ETW("frame.load", this, frame->document().url().spec());
   UpdateAddressBar(frame->view());
   LocationChangeDone(frame);
 }
