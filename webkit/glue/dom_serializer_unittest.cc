@@ -58,7 +58,7 @@ WebFrame* FindSubFrameByURL(WebView* web_view, const GURL& url) {
   while (!stack.empty()) {
     WebFrame* current_frame = stack.back();
     stack.pop_back();
-    if (GURL(current_frame->url()) == url)
+    if (GURL(current_frame->document().url()) == url)
       return current_frame;
     WebNodeCollection all = current_frame->document().all();
     for (WebNode node = all.firstItem();
@@ -302,7 +302,7 @@ TEST_F(DomSerializerTests, SerializeHTMLDOMWithDocType) {
   const std::string& serialized_contents =
       GetSerializedContentForFrame(file_url);
   LoadContents(serialized_contents, file_url,
-               web_frame->encoding());
+               web_frame->document().encoding());
   // Make sure serialized contents still have document type.
   web_frame = test_shell_->webView()->mainFrame();
   doc = web_frame->document();
@@ -331,7 +331,7 @@ TEST_F(DomSerializerTests, SerializeHTMLDOMWithoutDocType) {
   const std::string& serialized_contents =
       GetSerializedContentForFrame(file_url);
   LoadContents(serialized_contents, file_url,
-               web_frame->encoding());
+               web_frame->document().encoding());
   // Make sure serialized contents do not have document type.
   web_frame = test_shell_->webView()->mainFrame();
   doc = web_frame->document();
@@ -429,7 +429,7 @@ TEST_F(DomSerializerTests, SerializeHTMLDOMWithNoMetaCharsetInOriginalDoc) {
   const std::string& serialized_contents =
       GetSerializedContentForFrame(file_url);
   LoadContents(serialized_contents, file_url,
-               web_frame->encoding());
+               web_frame->document().encoding());
   // Make sure the first child of HEAD element is META which has charset
   // declaration in serialized contents.
   web_frame = test_shell_->webView()->mainFrame();
@@ -444,7 +444,8 @@ TEST_F(DomSerializerTests, SerializeHTMLDOMWithNoMetaCharsetInOriginalDoc) {
   std::string charset_info2;
   ASSERT_TRUE(IsMetaElement(meta_node, charset_info2));
   ASSERT_TRUE(!charset_info2.empty());
-  ASSERT_TRUE(charset_info2 == std::string(web_frame->encoding().utf8()));
+  ASSERT_EQ(charset_info2,
+            std::string(web_frame->document().encoding().utf8()));
 
   // Make sure no more additional META tags which have charset declaration.
   for (WebNode child = meta_node.nextSibling(); !child.isNull();
@@ -497,7 +498,7 @@ TEST_F(DomSerializerTests,
   const std::string& serialized_contents =
       GetSerializedContentForFrame(file_url);
   LoadContents(serialized_contents, file_url,
-               web_frame->encoding());
+               web_frame->document().encoding());
   // Make sure only first child of HEAD element is META which has charset
   // declaration in serialized contents.
   web_frame = test_shell_->webView()->mainFrame();
@@ -512,7 +513,8 @@ TEST_F(DomSerializerTests,
   std::string charset_info2;
   ASSERT_TRUE(IsMetaElement(meta_node, charset_info2));
   ASSERT_TRUE(!charset_info2.empty());
-  ASSERT_TRUE(charset_info2 == std::string(web_frame->encoding().utf8()));
+  ASSERT_EQ(charset_info2,
+            std::string(web_frame->document().encoding().utf8()));
 
   // Make sure no more additional META tags which have charset declaration.
   for (WebNode child = meta_node.nextSibling(); !child.isNull();
@@ -567,7 +569,7 @@ TEST_F(DomSerializerTests, SerializeHTMLDOMWithEntitiesInText) {
   // We need to append the HEAD content and corresponding META content if we
   // find WebCore-generated HEAD element.
   if (!doc.head().isNull()) {
-    WebString encoding = web_frame->encoding();
+    WebString encoding = web_frame->document().encoding();
     std::string htmlTag("<html>");
     std::string::size_type pos = original_str.find(htmlTag);
     ASSERT_NE(std::string::npos, pos);
@@ -618,7 +620,7 @@ TEST_F(DomSerializerTests, SerializeHTMLDOMWithEntitiesInAttributeValue) {
       WebPageSerializer::generateMarkOfTheWebDeclaration(file_url).utf8();
   original_str += original_contents;
   if (!doc.isNull()) {
-    WebString encoding = web_frame->encoding();
+    WebString encoding = web_frame->document().encoding();
     std::string htmlTag("<html>");
     std::string::size_type pos = original_str.find(htmlTag);
     ASSERT_NE(std::string::npos, pos);
@@ -736,7 +738,7 @@ TEST_F(DomSerializerTests, SerializeHTMLDOMWithBaseTag) {
   const std::string& serialized_contents =
       GetSerializedContentForFrame(file_url);
   LoadContents(serialized_contents, file_url,
-               web_frame->encoding());
+               web_frame->document().encoding());
 
   // Make sure all links are absolute URLs and doc there are some number of
   // BASE tags in serialized HTML data. Each of those BASE tags have same base
@@ -809,7 +811,7 @@ TEST_F(DomSerializerTests, SerializeHTMLDOMWithEmptyHead) {
       GetSerializedContentForFrame(file_url);
 
   // Reload serialized contents and make sure there is only one META tag.
-  LoadContents(serialized_contents, file_url, web_frame->encoding());
+  LoadContents(serialized_contents, file_url, web_frame->document().encoding());
   web_frame = test_shell_->webView()->mainFrame();
   ASSERT_TRUE(web_frame != NULL);
   doc = web_frame->document();
@@ -824,7 +826,8 @@ TEST_F(DomSerializerTests, SerializeHTMLDOMWithEmptyHead) {
   std::string charset_info;
   ASSERT_TRUE(IsMetaElement(meta_node, charset_info));
   ASSERT_TRUE(!charset_info.empty());
-  ASSERT_TRUE(charset_info == std::string(web_frame->encoding().utf8()));
+  ASSERT_EQ(charset_info,
+            std::string(web_frame->document().encoding().utf8()));
 
   // Check the body's first node is text node and its contents are
   // "hello world"
