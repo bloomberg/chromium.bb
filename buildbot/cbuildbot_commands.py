@@ -188,7 +188,7 @@ def SetupBoard(buildroot, board, fast, usepkg, latest_toolchain,
   cmd = ['./setup_board', '--board=%s' % board]
 
   if profile:
-    cmd.append('--profile="%s"' % profile)
+    cmd.append('--profile=%s' % profile)
 
   if not usepkg:
     cmd.append('--nousepkg')
