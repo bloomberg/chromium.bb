@@ -9,9 +9,11 @@
 
 #include "base/logging.h"
 #include "views/controls/native/native_view_host.h"
+#include "views/controls/native/native_view_host_views.h"
 #include "views/focus/focus_manager.h"
 #include "views/widget/gtk_views_fixed.h"
 #include "views/widget/native_widget_gtk.h"
+#include "views/widget/widget.h"
 
 namespace views {
 
@@ -375,7 +377,10 @@ gboolean NativeViewHostGtk::CallFocusIn(GtkWidget* widget,
 // static
 NativeViewHostWrapper* NativeViewHostWrapper::CreateWrapper(
     NativeViewHost* host) {
-  return new NativeViewHostGtk(host);
+  if (Widget::IsPureViews())
+    return new NativeViewHostViews(host);
+  else
+    return new NativeViewHostGtk(host);
 }
 
 }  // namespace views
