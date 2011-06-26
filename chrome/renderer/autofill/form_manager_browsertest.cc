@@ -72,7 +72,7 @@ class FormManagerTest : public RenderViewTest {
 
     const FormData& form = forms[0];
     EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
-    EXPECT_EQ(GURL(web_frame->url()), form.origin);
+    EXPECT_EQ(GURL(web_frame->document().url()), form.origin);
     EXPECT_EQ(GURL("http://cnn.com"), form.action);
 
     const std::vector<FormField>& fields = form.fields;
@@ -356,7 +356,7 @@ TEST_F(FormManagerTest, WebFormElementToFormData) {
   ASSERT_NE(static_cast<WebFrame*>(NULL), frame);
 
   WebVector<WebFormElement> forms;
-  frame->forms(forms);
+  frame->document().forms(forms);
   ASSERT_EQ(1U, forms.size());
 
   FormData form;
@@ -365,7 +365,7 @@ TEST_F(FormManagerTest, WebFormElementToFormData) {
                                                     FormManager::EXTRACT_VALUE,
                                                     &form));
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
-  EXPECT_EQ(GURL(frame->url()), form.origin);
+  EXPECT_EQ(GURL(frame->document().url()), form.origin);
   EXPECT_EQ(GURL("http://cnn.com"), form.action);
 
   const std::vector<FormField>& fields = form.fields;
@@ -428,7 +428,7 @@ TEST_F(FormManagerTest, ExtractMultipleForms) {
   // First form.
   const FormData& form = forms[0];
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
-  EXPECT_EQ(GURL(web_frame->url()), form.origin);
+  EXPECT_EQ(GURL(web_frame->document().url()), form.origin);
   EXPECT_EQ(GURL("http://cnn.com"), form.action);
 
   const std::vector<FormField>& fields = form.fields;
@@ -458,7 +458,7 @@ TEST_F(FormManagerTest, ExtractMultipleForms) {
   // Second form.
   const FormData& form2 = forms[1];
   EXPECT_EQ(ASCIIToUTF16("TestForm2"), form2.name);
-  EXPECT_EQ(GURL(web_frame->url()), form2.origin);
+  EXPECT_EQ(GURL(web_frame->document().url()), form2.origin);
   EXPECT_EQ(GURL("http://zoo.com"), form2.action);
 
   const std::vector<FormField>& fields2 = form2.fields;
@@ -518,7 +518,7 @@ TEST_F(FormManagerTest, WebFormElementToFormDataAutocomplete) {
     ASSERT_NE(static_cast<WebFrame*>(NULL), web_frame);
 
     WebVector<WebFormElement> web_forms;
-    web_frame->forms(web_forms);
+    web_frame->document().forms(web_forms);
     ASSERT_EQ(1U, web_forms.size());
     WebFormElement web_form = web_forms[0];
 
@@ -546,7 +546,7 @@ TEST_F(FormManagerTest, WebFormElementToFormDataAutocomplete) {
     ASSERT_NE(static_cast<WebFrame*>(NULL), web_frame);
 
     WebVector<WebFormElement> web_forms;
-    web_frame->forms(web_forms);
+    web_frame->document().forms(web_forms);
     ASSERT_EQ(1U, web_forms.size());
     WebFormElement web_form = web_forms[0];
 
@@ -556,7 +556,7 @@ TEST_F(FormManagerTest, WebFormElementToFormDataAutocomplete) {
         &form));
 
     EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
-    EXPECT_EQ(GURL(web_frame->url()), form.origin);
+    EXPECT_EQ(GURL(web_frame->document().url()), form.origin);
     EXPECT_EQ(GURL("http://abc.com"), form.action);
 
     const std::vector<FormField>& fields = form.fields;
@@ -599,7 +599,7 @@ TEST_F(FormManagerTest, WebFormElementToFormDataEnabled) {
   ASSERT_NE(static_cast<WebFrame*>(NULL), web_frame);
 
   WebVector<WebFormElement> web_forms;
-  web_frame->forms(web_forms);
+  web_frame->document().forms(web_forms);
   ASSERT_EQ(1U, web_forms.size());
   WebFormElement web_form = web_forms[0];
 
@@ -609,7 +609,7 @@ TEST_F(FormManagerTest, WebFormElementToFormDataEnabled) {
       &form));
 
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
-  EXPECT_EQ(GURL(web_frame->url()), form.origin);
+  EXPECT_EQ(GURL(web_frame->document().url()), form.origin);
   EXPECT_EQ(GURL("http://xyz.com"), form.action);
 
   const std::vector<FormField>& fields = form.fields;
@@ -662,7 +662,7 @@ TEST_F(FormManagerTest, FindForm) {
   EXPECT_TRUE(form_manager.FindFormWithFormControlElement(input_element,
                                                           &form));
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
-  EXPECT_EQ(GURL(web_frame->url()), form.origin);
+  EXPECT_EQ(GURL(web_frame->document().url()), form.origin);
   EXPECT_EQ(GURL("http://buh.com"), form.action);
 
   const std::vector<FormField>& fields = form.fields;
@@ -722,7 +722,7 @@ TEST_F(FormManagerTest, FillForm) {
   EXPECT_TRUE(form_manager.FindFormWithFormControlElement(input_element,
                                                           &form));
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
-  EXPECT_EQ(GURL(web_frame->url()), form.origin);
+  EXPECT_EQ(GURL(web_frame->document().url()), form.origin);
   EXPECT_EQ(GURL("http://buh.com"), form.action);
 
   const std::vector<FormField>& fields = form.fields;
@@ -873,7 +873,7 @@ TEST_F(FormManagerTest, PreviewForm) {
   EXPECT_TRUE(form_manager.FindFormWithFormControlElement(input_element,
                                                           &form));
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
-  EXPECT_EQ(GURL(web_frame->url()), form.origin);
+  EXPECT_EQ(GURL(web_frame->document().url()), form.origin);
   EXPECT_EQ(GURL("http://buh.com"), form.action);
 
   const std::vector<FormField>& fields = form.fields;
@@ -1838,7 +1838,7 @@ TEST_F(FormManagerTest, FillFormMaxLength) {
   EXPECT_TRUE(form_manager.FindFormWithFormControlElement(input_element,
                                                           &form));
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
-  EXPECT_EQ(GURL(web_frame->url()), form.origin);
+  EXPECT_EQ(GURL(web_frame->document().url()), form.origin);
   EXPECT_EQ(GURL("http://buh.com"), form.action);
 
   const std::vector<FormField>& fields = form.fields;
@@ -1876,7 +1876,7 @@ TEST_F(FormManagerTest, FillFormMaxLength) {
   EXPECT_TRUE(form_manager.FindFormWithFormControlElement(input_element,
                                                           &form2));
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form2.name);
-  EXPECT_EQ(GURL(web_frame->url()), form2.origin);
+  EXPECT_EQ(GURL(web_frame->document().url()), form2.origin);
   EXPECT_EQ(GURL("http://buh.com"), form2.action);
 
   const std::vector<FormField>& fields2 = form2.fields;
@@ -1929,7 +1929,7 @@ TEST_F(FormManagerTest, FillFormNegativeMaxLength) {
   EXPECT_TRUE(form_manager.FindFormWithFormControlElement(input_element,
                                                           &form));
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
-  EXPECT_EQ(GURL(web_frame->url()), form.origin);
+  EXPECT_EQ(GURL(web_frame->document().url()), form.origin);
   EXPECT_EQ(GURL("http://buh.com"), form.action);
 
   const std::vector<FormField>& fields = form.fields;
@@ -1967,7 +1967,7 @@ TEST_F(FormManagerTest, FillFormNegativeMaxLength) {
   EXPECT_TRUE(form_manager.FindFormWithFormControlElement(input_element,
                                                           &form2));
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form2.name);
-  EXPECT_EQ(GURL(web_frame->url()), form2.origin);
+  EXPECT_EQ(GURL(web_frame->document().url()), form2.origin);
   EXPECT_EQ(GURL("http://buh.com"), form2.action);
 
   const std::vector<FormField>& fields2 = form2.fields;
@@ -2075,7 +2075,7 @@ TEST_F(FormManagerTest, FillFormMoreFormDataFields) {
   EXPECT_TRUE(form_manager.FindFormWithFormControlElement(input_element,
                                                           &form2));
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form2.name);
-  EXPECT_EQ(GURL(web_frame->url()), form2.origin);
+  EXPECT_EQ(GURL(web_frame->document().url()), form2.origin);
   EXPECT_EQ(GURL("http://buh.com"), form2.action);
 
   const std::vector<FormField>& fields = form2.fields;
@@ -2151,7 +2151,7 @@ TEST_F(FormManagerTest, FillFormFewerFormDataFields) {
   EXPECT_TRUE(form_manager.FindFormWithFormControlElement(input_element,
                                                           &form2));
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form2.name);
-  EXPECT_EQ(GURL(web_frame->url()), form2.origin);
+  EXPECT_EQ(GURL(web_frame->document().url()), form2.origin);
   EXPECT_EQ(GURL("http://buh.com"), form2.action);
 
   const std::vector<FormField>& fields = form2.fields;
@@ -2252,7 +2252,7 @@ TEST_F(FormManagerTest, FillFormChangedFormDataFields) {
   EXPECT_TRUE(form_manager.FindFormWithFormControlElement(input_element,
                                                           &form2));
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form2.name);
-  EXPECT_EQ(GURL(web_frame->url()), form2.origin);
+  EXPECT_EQ(GURL(web_frame->document().url()), form2.origin);
   EXPECT_EQ(GURL("http://buh.com"), form2.action);
 
   const std::vector<FormField>& fields = form2.fields;
@@ -2319,7 +2319,7 @@ TEST_F(FormManagerTest, FillFormExtraFieldInCache) {
   EXPECT_TRUE(form_manager.FindFormWithFormControlElement(input_element,
                                                           &form2));
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form2.name);
-  EXPECT_EQ(GURL(web_frame->url()), form2.origin);
+  EXPECT_EQ(GURL(web_frame->document().url()), form2.origin);
   EXPECT_EQ(GURL("http://buh.com"), form2.action);
 
   const std::vector<FormField>& fields = form2.fields;
@@ -2379,7 +2379,7 @@ TEST_F(FormManagerTest, FillFormEmptyName) {
   EXPECT_TRUE(form_manager.FindFormWithFormControlElement(input_element,
                                                           &form));
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
-  EXPECT_EQ(GURL(web_frame->url()), form.origin);
+  EXPECT_EQ(GURL(web_frame->document().url()), form.origin);
   EXPECT_EQ(GURL("http://buh.com"), form.action);
 
   const std::vector<FormField>& fields = form.fields;
@@ -2417,7 +2417,7 @@ TEST_F(FormManagerTest, FillFormEmptyName) {
   EXPECT_TRUE(form_manager.FindFormWithFormControlElement(input_element,
                                                           &form2));
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form2.name);
-  EXPECT_EQ(GURL(web_frame->url()), form2.origin);
+  EXPECT_EQ(GURL(web_frame->document().url()), form2.origin);
   EXPECT_EQ(GURL("http://buh.com"), form2.action);
 
   const std::vector<FormField>& fields2 = form2.fields;
@@ -2476,7 +2476,7 @@ TEST_F(FormManagerTest, FillFormEmptyFormNames) {
   EXPECT_TRUE(form_manager.FindFormWithFormControlElement(input_element,
                                                           &form));
   EXPECT_EQ(string16(), form.name);
-  EXPECT_EQ(GURL(web_frame->url()), form.origin);
+  EXPECT_EQ(GURL(web_frame->document().url()), form.origin);
   EXPECT_EQ(GURL("http://abc.com"), form.action);
 
   const std::vector<FormField>& fields = form.fields;
@@ -2514,7 +2514,7 @@ TEST_F(FormManagerTest, FillFormEmptyFormNames) {
   EXPECT_TRUE(form_manager.FindFormWithFormControlElement(input_element,
                                                           &form2));
   EXPECT_EQ(string16(), form2.name);
-  EXPECT_EQ(GURL(web_frame->url()), form2.origin);
+  EXPECT_EQ(GURL(web_frame->document().url()), form2.origin);
   EXPECT_EQ(GURL("http://abc.com"), form2.action);
 
   const std::vector<FormField>& fields2 = form2.fields;
@@ -2560,7 +2560,7 @@ TEST_F(FormManagerTest, ThreePartPhone) {
   ASSERT_NE(static_cast<WebFrame*>(NULL), frame);
 
   WebVector<WebFormElement> forms;
-  frame->forms(forms);
+  frame->document().forms(forms);
   ASSERT_EQ(1U, forms.size());
 
   FormData form;
@@ -2569,7 +2569,7 @@ TEST_F(FormManagerTest, ThreePartPhone) {
                                                     FormManager::EXTRACT_VALUE,
                                                     &form));
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
-  EXPECT_EQ(GURL(frame->url()), form.origin);
+  EXPECT_EQ(GURL(frame->document().url()), form.origin);
   EXPECT_EQ(GURL("http://cnn.com"), form.action);
 
   const std::vector<FormField>& fields = form.fields;
@@ -2625,7 +2625,7 @@ TEST_F(FormManagerTest, MaxLengthFields) {
   ASSERT_NE(static_cast<WebFrame*>(NULL), frame);
 
   WebVector<WebFormElement> forms;
-  frame->forms(forms);
+  frame->document().forms(forms);
   ASSERT_EQ(1U, forms.size());
 
   FormData form;
@@ -2634,7 +2634,7 @@ TEST_F(FormManagerTest, MaxLengthFields) {
                                                     FormManager::EXTRACT_VALUE,
                                                     &form));
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
-  EXPECT_EQ(GURL(frame->url()), form.origin);
+  EXPECT_EQ(GURL(frame->document().url()), form.origin);
   EXPECT_EQ(GURL("http://cnn.com"), form.action);
 
   const std::vector<FormField>& fields = form.fields;
@@ -2716,7 +2716,7 @@ TEST_F(FormManagerTest, FillFormNonEmptyField) {
   EXPECT_TRUE(form_manager.FindFormWithFormControlElement(input_element,
                                                           &form));
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
-  EXPECT_EQ(GURL(web_frame->url()), form.origin);
+  EXPECT_EQ(GURL(web_frame->document().url()), form.origin);
   EXPECT_EQ(GURL("http://buh.com"), form.action);
 
   const std::vector<FormField>& fields = form.fields;
@@ -2759,7 +2759,7 @@ TEST_F(FormManagerTest, FillFormNonEmptyField) {
   EXPECT_TRUE(form_manager.FindFormWithFormControlElement(input_element,
                                                           &form2));
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form2.name);
-  EXPECT_EQ(GURL(web_frame->url()), form2.origin);
+  EXPECT_EQ(GURL(web_frame->document().url()), form2.origin);
   EXPECT_EQ(GURL("http://buh.com"), form2.action);
 
   const std::vector<FormField>& fields2 = form2.fields;
@@ -2829,7 +2829,7 @@ TEST_F(FormManagerTest, ClearFormWithNode) {
   FormData form2;
   EXPECT_TRUE(form_manager.FindFormWithFormControlElement(firstname, &form2));
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form2.name);
-  EXPECT_EQ(GURL(web_frame->url()), form2.origin);
+  EXPECT_EQ(GURL(web_frame->document().url()), form2.origin);
   EXPECT_EQ(GURL("http://buh.com"), form2.action);
 
   const std::vector<FormField>& fields2 = form2.fields;
@@ -2910,7 +2910,7 @@ TEST_F(FormManagerTest, ClearFormWithNodeContainingSelectOne) {
   FormData form2;
   EXPECT_TRUE(form_manager.FindFormWithFormControlElement(firstname, &form2));
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form2.name);
-  EXPECT_EQ(GURL(web_frame->url()), form2.origin);
+  EXPECT_EQ(GURL(web_frame->document().url()), form2.origin);
   EXPECT_EQ(GURL("http://buh.com"), form2.action);
 
   const std::vector<FormField>& fields2 = form2.fields;
@@ -3248,7 +3248,7 @@ TEST_F(FormManagerTest, SelectOneAsText) {
   select_element.setValue(WebString::fromUTF8("AL"));
 
   WebVector<WebFormElement> forms;
-  frame->forms(forms);
+  frame->document().forms(forms);
   ASSERT_EQ(1U, forms.size());
 
   FormData form;
@@ -3260,7 +3260,7 @@ TEST_F(FormManagerTest, SelectOneAsText) {
           FormManager::EXTRACT_OPTION_TEXT),
           &form));
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
-  EXPECT_EQ(GURL(frame->url()), form.origin);
+  EXPECT_EQ(GURL(frame->document().url()), form.origin);
   EXPECT_EQ(GURL("http://cnn.com"), form.action);
 
   const std::vector<FormField>& fields = form.fields;
@@ -3294,7 +3294,7 @@ TEST_F(FormManagerTest, SelectOneAsText) {
                                                     FormManager::EXTRACT_VALUE,
                                                     &form));
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
-  EXPECT_EQ(GURL(frame->url()), form.origin);
+  EXPECT_EQ(GURL(frame->document().url()), form.origin);
   EXPECT_EQ(GURL("http://cnn.com"), form.action);
 
   ASSERT_EQ(3U, fields.size());
