@@ -40,8 +40,9 @@ class TextInputClientMacTest : public testing::Test {
 
   // Helper method to post a task on the testing thread's MessageLoop after
   // a short delay.
-  void PostTask(const base::Closure& task, const int64 delay = kTaskDelayMs) {
-    thread_.message_loop()->PostDelayedTask(FROM_HERE, task, delay);
+  void PostTask(const tracked_objects::Location& from_here,
+                const base::Closure& task, const int64 delay = kTaskDelayMs) {
+    thread_.message_loop()->PostDelayedTask(from_here, task, delay);
   }
 
   RenderWidgetHost* widget() {
@@ -82,14 +83,23 @@ class ScopedTestingThread {
   base::Thread& thread_;
 };
 
+// Adapter for OnMessageReceived to ignore return type so it can be posted
+// to a MessageLoop.
+void CallOnMessageReceived(scoped_refptr<TextInputClientMessageFilter> filter,
+                           const IPC::Message& message,
+                           bool* message_was_ok) {
+  filter->OnMessageReceived(message, message_was_ok);
+}
+
 // Test Cases //////////////////////////////////////////////////////////////////
 
 TEST_F(TextInputClientMacTest, GetCharacterIndex) {
   ScopedTestingThread thread(this);
   const NSUInteger kSuccessValue = 42;
 
-  PostTask(base::Bind(&TextInputClientMac::SetCharacterIndexAndSignal,
-      base::Unretained(service()), kSuccessValue));
+  PostTask(FROM_HERE,
+           base::Bind(&TextInputClientMac::SetCharacterIndexAndSignal,
+                      base::Unretained(service()), kSuccessValue));
   NSUInteger index = service()->GetCharacterIndexAtPoint(
       widget(), gfx::Point(2, 2));
 
@@ -114,8 +124,9 @@ TEST_F(TextInputClientMacTest, NotFoundCharacterIndex) {
   const size_t kNotFoundValue = static_cast<size_t>(-1);
 
   // Set an arbitrary value to ensure the index is not |NSNotFound|.
-  PostTask(base::Bind(&TextInputClientMac::SetCharacterIndexAndSignal,
-      base::Unretained(service()), kPreviousValue));
+  PostTask(FROM_HERE,
+           base::Bind(&TextInputClientMac::SetCharacterIndexAndSignal,
+                      base::Unretained(service()), kPreviousValue));
 
   scoped_refptr<TextInputClientMessageFilter> filter(
       new TextInputClientMessageFilter(widget()->process()->id()));
@@ -125,8 +136,8 @@ TEST_F(TextInputClientMacTest, NotFoundCharacterIndex) {
   bool message_ok = true;
   // Set |WTF::notFound| to the index |kTaskDelayMs| after the previous
   // setting.
-  PostTask(base::Bind(&TextInputClientMessageFilter::OnMessageReceived,
-                      filter.get(), *message, &message_ok),
+  PostTask(FROM_HERE,
+           base::Bind(&CallOnMessageReceived, filter, *message, &message_ok),
            kTaskDelayMs * 2);
 
   NSUInteger index = service()->GetCharacterIndexAtPoint(
@@ -147,8 +158,9 @@ TEST_F(TextInputClientMacTest, GetRectForRange) {
   ScopedTestingThread thread(this);
   const NSRect kSuccessValue = NSMakeRect(42, 43, 44, 45);
 
-  PostTask(base::Bind(&TextInputClientMac::SetFirstRectAndSignal,
-      base::Unretained(service()), kSuccessValue));
+  PostTask(FROM_HERE,
+           base::Bind(&TextInputClientMac::SetFirstRectAndSignal,
+                      base::Unretained(service()), kSuccessValue));
   NSRect rect = service()->GetFirstRectForRange(widget(), NSMakeRange(0, 32));
 
   EXPECT_EQ(1U, ipc_sink().message_count());
@@ -174,8 +186,10 @@ TEST_F(TextInputClientMacTest, GetSubstring) {
       [[NSAttributedString alloc] initWithString:@"Barney is a purple dinosaur"
                                       attributes:attributes]);
 
-  PostTask(base::Bind(&TextInputClientMac::SetSubstringAndSignal,
-      base::Unretained(service()), base::Unretained(kSuccessValue.get())));
+  PostTask(FROM_HERE,
+           base::Bind(&TextInputClientMac::SetSubstringAndSignal,
+                      base::Unretained(service()),
+                      base::Unretained(kSuccessValue.get())));
   NSAttributedString* string = service()->GetAttributedSubstringFromRange(
       widget(), NSMakeRange(0, 32));
 
