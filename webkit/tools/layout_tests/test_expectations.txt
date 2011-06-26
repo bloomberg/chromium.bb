@@ -6,9 +6,9 @@
 // until the changes can be landed upstream.
 
 // PLEASE DO NOT LEAVE ENTRIES IN THIS FILE FOR MORE THAN 24 HRS.
-// The need for rebaselines is conflicting with the TIMEOUT expectation upstream
 
 BUGPFELDMAN LINUX : svg/text/svg-zoom-large-value.xhtml = TEXT
+BUGPFELDMAN : fast/text/midword-break-before-surrogate-pair.html = IMAGE
 
 // Started crashing in the r89132 roll; canaries seem unaffected.
 BUGCR86570 MAC : http/tests/misc/acid3.html = IMAGE CRASH
