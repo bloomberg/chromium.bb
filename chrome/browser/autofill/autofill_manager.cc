@@ -354,10 +354,14 @@ void AutofillManager::OnFormSubmitted(const FormData& form) {
     return;
   submitted_form.UpdateFromCache(*cached_submitted_form);
 
-  DeterminePossibleFieldTypesForUpload(&submitted_form);
-  UploadFormData(submitted_form);
-
-  submitted_form.LogQualityMetrics(*metric_logger_);
+  // Only upload server statistics and UMA metrics if at least some local data
+  // is available to use as a baseline.
+  if (!personal_data_->profiles().empty() ||
+      !personal_data_->credit_cards().empty()) {
+    DeterminePossibleFieldTypesForUpload(&submitted_form);
+    UploadFormData(submitted_form);
+    submitted_form.LogQualityMetrics(*metric_logger_);
+  }
 
   if (!submitted_form.IsAutofillable(true))
     return;
