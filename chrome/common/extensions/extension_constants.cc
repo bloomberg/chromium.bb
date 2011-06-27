@@ -407,7 +407,6 @@ const char* kDecodedMessageCatalogsFilename = "DECODED_MESSAGE_CATALOGS";
 namespace extension_misc {
 const char* kBookmarkManagerId = "eemcgdkfndhakfknompkggombfjjjeno";
 const char* kWebStoreAppId = "ahfgeienlihckogmohjhadlkjgocpleb";
-const char* kCloudPrintAppId = "mfehgcgbbipciphmccgaenjidiccnmng";
 const char* kAppsPromoHistogram = "Extensions.AppsPromo";
 const char* kAppLaunchHistogram = "Extensions.AppLaunch";
 #if defined(OS_CHROMEOS)

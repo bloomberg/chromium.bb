@@ -249,10 +249,6 @@ ExtensionPermissionsInfo::ExtensionPermissionsInfo()
 
   // Hosted app and private permissions.
   RegisterPermission(
-      ExtensionAPIPermission::kChromeAuthPrivate, "chromeAuthPrivate", 0,
-      ExtensionPermissionMessage::kNone,
-      true, true, false, false);
-  RegisterPermission(
       ExtensionAPIPermission::kWebstorePrivate, "webstorePrivate", 0,
       ExtensionPermissionMessage::kNone,
       true, true, false, false);

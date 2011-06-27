@@ -6170,47 +6170,5 @@
         ]
       }
     ]
-  },
-  {
-    "namespace": "chromeAuthPrivate",
-    "nodoc": "true",
-    "functions": [
-      {
-        "name": "setCloudPrintCredentials",
-        "description": "Sets the login credentials for Cloud Print.",
-        "type": "function",
-        "parameters": [
-          {
-            "name": "userEmail",
-            "type": "string",
-            "description": "The email address of the user."
-          },
-          {
-            "name": "robotEmail",
-            "type": "string",
-            "description": "The email address of the robot account."
-          },
-          {
-            "name": "credentials",
-            "type": "string",
-            "description": "The login credentials(OAuth2 Auth code)."
-          },
-          {
-            "name": "callback",
-            "type": "function",
-            "description": "Called when a failure happens. Called upon success only in tests.",
-            "optional": "true",
-            "parameters": [
-              {
-                "name": "result",
-                "type": "string",
-                "description": "A string result code. The value is non-empty on success only in tests.",
-                "optional": "true"
-              }
-            ]
-          }
-        ]
-      }
-    ]
   }
 ]

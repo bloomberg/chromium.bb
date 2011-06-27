@@ -162,7 +162,6 @@ TEST(ExtensionAPIPermissionTest, HostedAppPermissions) {
   hosted_perms.insert(ExtensionAPIPermission::kBackground);
   hosted_perms.insert(ExtensionAPIPermission::kClipboardRead);
   hosted_perms.insert(ExtensionAPIPermission::kClipboardWrite);
-  hosted_perms.insert(ExtensionAPIPermission::kChromeAuthPrivate);
   hosted_perms.insert(ExtensionAPIPermission::kChromePrivate);
   hosted_perms.insert(ExtensionAPIPermission::kExperimental);
   hosted_perms.insert(ExtensionAPIPermission::kGeolocation);
@@ -178,14 +177,13 @@ TEST(ExtensionAPIPermissionTest, HostedAppPermissions) {
     EXPECT_EQ(hosted_perms.count(*i) > 0, info->GetByID(*i)->is_hosted_app());
   }
 
-  EXPECT_EQ(10u, count);
-  EXPECT_EQ(10u, info->get_hosted_app_permission_count());
+  EXPECT_EQ(9u, count);
+  EXPECT_EQ(9u, info->get_hosted_app_permission_count());
 }
 
 TEST(ExtensionAPIPermissionTest, ComponentOnlyPermissions) {
   ExtensionPermissionsInfo* info = ExtensionPermissionsInfo::GetInstance();
   ExtensionAPIPermissionSet private_perms;
-  private_perms.insert(ExtensionAPIPermission::kChromeAuthPrivate);
   private_perms.insert(ExtensionAPIPermission::kChromeosInfoPrivate);
   private_perms.insert(ExtensionAPIPermission::kFileBrowserPrivate);
   private_perms.insert(ExtensionAPIPermission::kMediaPlayerPrivate);
@@ -200,7 +198,7 @@ TEST(ExtensionAPIPermissionTest, ComponentOnlyPermissions) {
               info->GetByID(*i)->is_component_only());
   }
 
-  EXPECT_EQ(5, count);
+  EXPECT_EQ(4, count);
 }
 
 TEST(ExtensionPermissionSetTest, EffectiveHostPermissions) {
@@ -499,7 +497,6 @@ TEST(ExtensionPermissionSetTest, PermissionMessages) {
   skip.insert(ExtensionAPIPermission::kWebstorePrivate);
   skip.insert(ExtensionAPIPermission::kFileBrowserPrivate);
   skip.insert(ExtensionAPIPermission::kMediaPlayerPrivate);
-  skip.insert(ExtensionAPIPermission::kChromeAuthPrivate);
   skip.insert(ExtensionAPIPermission::kChromePrivate);
   skip.insert(ExtensionAPIPermission::kChromeosInfoPrivate);
   skip.insert(ExtensionAPIPermission::kWebSocketProxyPrivate);

@@ -1,9 +1,0 @@
-{
-  "name": "Cloud Print Installed App",
-  "version": "0.1",
-  "description": "Cloud Print Installed App Test For Failure",
-  "background_page": "background.html",
-  "permissions": [
-    "chromeAuthPrivate"
-  ]
-}

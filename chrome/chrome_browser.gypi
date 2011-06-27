@@ -874,8 +874,6 @@
         'browser/extensions/extension_browser_actions_api.h',
         'browser/extensions/extension_browser_event_router.cc',
         'browser/extensions/extension_browser_event_router.h',
-        'browser/extensions/extension_chrome_auth_private_api.cc',
-        'browser/extensions/extension_chrome_auth_private_api.h',
         'browser/extensions/extension_content_settings_api.cc',
         'browser/extensions/extension_content_settings_api.h',
         'browser/extensions/extension_content_settings_api_constants.cc',

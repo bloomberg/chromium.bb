@@ -259,7 +259,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kAllowScriptingGallery,
       switches::kAppsCheckoutURL,
       switches::kAppsGalleryURL,
-      switches::kCloudPrintServiceURL,
       switches::kDebugPrint,
 #if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
       // Enabled by default in Google Chrome builds, except on CrOS.
