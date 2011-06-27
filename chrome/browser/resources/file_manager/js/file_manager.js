@@ -53,9 +53,12 @@ function FileManager(dialogDom, rootEntries, params) {
 
   this.defaultPath_ = this.params_.defaultPath || '/';
 
+  // TODO(dgozman): This will be changed to LocaleInfo.
   this.locale_ = new v8Locale(navigator.language);
   this.shortDateFormatter_ =
       this.locale_.createDateTimeFormat({'dateType': 'medium'});
+  this.collator_ = this.locale_.createCollator({
+      'numeric': true, 'ignoreCase': true, 'ignoreAccents': true});
 
   // Optional list of file types.
   this.fileTypes_ = this.params_.typeList;
@@ -549,6 +552,10 @@ FileManager.prototype = {
     this.emptyDataModel_ = new cr.ui.ArrayDataModel([]);
 
     this.dataModel_ = new cr.ui.ArrayDataModel([]);
+    var collator = this.collator_;
+    this.dataModel_.setCompareFunction('name', function(a, b) {
+      return collator.compare(a.name, b.name);
+    });
     this.dataModel_.sort('name');
     this.dataModel_.prepareSort = this.prepareSort_.bind(this);
 

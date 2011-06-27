@@ -66,6 +66,9 @@ cr.define('cr.ui', function() {
      * @param {function(*, *): number} Compare function to set for given field.
      */
     setCompareFunction: function(field, compareFunction) {
+      if (!this.compareFunctions_) {
+        this.compareFunctions_ = {};
+      }
       this.compareFunctions_[field] = compareFunction;
     },
 
