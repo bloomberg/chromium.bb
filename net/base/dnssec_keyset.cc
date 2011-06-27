@@ -170,7 +170,7 @@ uint16 DNSSECKeySet::DNSKEYToKeyID(const base::StringPiece& dnskey) {
   const unsigned char* data =
       reinterpret_cast<const unsigned char*>(dnskey.data());
 
-  // RFC 4043: App B
+  // RFC 4034: App B
   uint32 ac = 0;
   for (unsigned i = 0; i < dnskey.size(); i++) {
     if (i & 1) {
