@@ -67,6 +67,24 @@ testProgressEventStateMachine(
     0,  // abortCount
     0,  // loadCount
     'NaCl module load failed: manifest JSON parsing failed: * Line 1, Column 1\n  Syntax error: value, object or array expected.\n');
+// 'bad_manifest_uses_nexes' loads a manifest with an obsolete 'nexes' section.
+testProgressEventStateMachine(
+    tester,
+    'bad_manifest_uses_nexes',
+    0,  // progressMinCount
+    1,  // errorCount
+    0,  // abortCount
+    0,  // loadCount
+    'NaCl module load failed: manifest: missing \'program\' section.');
+// 'bad_manifest_bad_files' loads a manifest with a bad 'files' section.
+testProgressEventStateMachine(
+    tester,
+    'bad_manifest_bad_files',
+    0,  // progressMinCount
+    1,  // errorCount
+    0,  // abortCount
+    0,  // loadCount
+    'NaCl module load failed: manifest: file \'file.txt\' no version given for current arch and no portable version found.');
 // 'bad_ppp_initialize' loads a manifest, then loads a nexe that fails to
 // initialize PPAPI module
 testProgressEventStateMachine(
@@ -141,6 +159,20 @@ setListeners($('body'));
       class="naclModule"
       width=100 height=20
       src="ppapi_bad.html"
+      style="background-color:gray"
+      type="application/x-nacl" />
+
+    <embed id="bad_manifest_uses_nexes"
+      class="naclModule"
+      width=100 height=20
+      src="ppapi_bad_manifest_uses_nexes.nmf"
+      style="background-color:gray"
+      type="application/x-nacl" />
+
+    <embed id="bad_manifest_bad_files"
+      class="naclModule"
+      width=100 height=20
+      src="ppapi_bad_manifest_bad_files.nmf"
       style="background-color:gray"
       type="application/x-nacl" />
 

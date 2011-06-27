@@ -43,6 +43,11 @@ class Manifest {
   // Gets the full nexe URL for the current sandbox ISA from the manifest file.
   bool GetNexeURL(nacl::string* full_url, ErrorInfo* error_info);
 
+  // Resolves a URL relative to the manifest base URL
+  bool ResolveURL(const nacl::string& relative_url,
+                  nacl::string* full_url,
+                  ErrorInfo* error_info);
+
  private:
   const pp::URLUtil_Dev* url_util_;
   nacl::string manifest_base_url_;

@@ -1,7 +1,7 @@
 {
-  "nexes": {
-    "x86-32": "debug_browser_test_x86-32.nexe",
-    "x86-64": "debug_browser_test_x86-64.nexe",
-    "arm": "debug_browser_test_arm.nexe"
+  "program": {
+    "x86-32": {"url": "debug_browser_test_x86-32.nexe"},
+    "x86-64": {"url": "debug_browser_test_x86-64.nexe"},
+    "arm": {"url": "debug_browser_test_arm.nexe"}
   }
 }

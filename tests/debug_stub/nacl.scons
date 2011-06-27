@@ -7,6 +7,14 @@ Import('env')
 
 import sys
 
+# browser_debug disabled:
+# http://code.google.com/p/nativeclient/issues/detail?id=1956
+# TODO(elijahtaylor) This test can't run on our bots if we don't register
+# the plugin we just built.  Depends on:
+# http://code.google.com/p/chromium/issues/detail?id=85070
+# http://code.google.com/p/nativeclient/issues/detail?id=1917
+Return()
+
 if 'TRUSTED_ENV' not in env:
   Return()
 trusted_env = env['TRUSTED_ENV']

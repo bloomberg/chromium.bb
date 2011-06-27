@@ -1,7 +1,7 @@
 {
-  "nexes": {
-    "x86-32": "ppapi_gles_book_texture_wrap_x86-32.nexe",
-    "x86-64": "ppapi_gles_book_texture_wrap_x86-64.nexe",
-    "arm": "ppapi_gles_book_texture_wrap_arm.nexe"
+  "program": {
+    "x86-32": {"url": "ppapi_gles_book_texture_wrap_x86-32.nexe"},
+    "x86-64": {"url": "ppapi_gles_book_texture_wrap_x86-64.nexe"},
+    "arm": {"url": "ppapi_gles_book_texture_wrap_arm.nexe"}
   }
 }
