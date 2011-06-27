@@ -52,15 +52,22 @@ class ChildProcessFilter : public base::ProcessFilter {
   DISALLOW_COPY_AND_ASSIGN(ChildProcessFilter);
 };
 
-const FilePath::CharType* GetRunningExecutableName() {
+const FilePath::CharType* GetRunningBrowserExecutableName() {
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
   if (cmd_line->HasSwitch(switches::kEnableChromiumBranding))
     return chrome::kBrowserProcessExecutableNameChromium;
   return chrome::kBrowserProcessExecutableName;
 }
 
+const FilePath::CharType* GetRunningHelperExecutableName() {
+  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  if (cmd_line->HasSwitch(switches::kEnableChromiumBranding))
+    return chrome::kHelperProcessExecutableNameChromium;
+  return chrome::kHelperProcessExecutableName;
+}
+
 ChromeProcessList GetRunningChromeProcesses(base::ProcessId browser_pid) {
-  const FilePath::CharType* executable_name = GetRunningExecutableName();
+  const FilePath::CharType* executable_name = GetRunningBrowserExecutableName();
   ChromeProcessList result;
   if (browser_pid == static_cast<base::ProcessId>(-1))
     return result;
@@ -89,7 +96,7 @@ ChromeProcessList GetRunningChromeProcesses(base::ProcessId browser_pid) {
   // name.  We must collect them in a second pass.
   {
     ChildProcessFilter filter(browser_pid);
-    base::NamedProcessIterator it(executable_name, &filter);
+    base::NamedProcessIterator it(GetRunningHelperExecutableName(), &filter);
     while (const base::ProcessEntry* process_entry = it.NextProcessEntry())
       result.push_back(process_entry->pid());
   }
