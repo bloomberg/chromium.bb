@@ -463,7 +463,7 @@ void HostNPScriptObject::OnStateChanged(State state) {
   state_ = state;
   if (on_state_changed_func_) {
     VLOG(2) << "Calling state changed " << state;
-    bool is_good = CallJSFunction(on_state_changed_func_, NULL, 0, NULL);
+    bool is_good = InvokeAndIgnoreResult(on_state_changed_func_, NULL, 0);
     LOG_IF(ERROR, !is_good) << "OnStateChanged failed";
   }
 }
@@ -479,7 +479,7 @@ void HostNPScriptObject::LogDebugInfo(const std::string& message) {
     NPVariant* arg = new NPVariant();
     LOG(INFO) << "Logging: " << message;
     STRINGZ_TO_NPVARIANT(message.c_str(), *arg);
-    bool is_good = CallJSFunction(log_debug_info_func_, arg, 1, NULL);
+    bool is_good = InvokeAndIgnoreResult(log_debug_info_func_, arg, 1);
     LOG_IF(ERROR, !is_good) << "LogDebugInfo failed";
   }
 }
@@ -490,19 +490,14 @@ void HostNPScriptObject::SetException(const std::string& exception_string) {
   LogDebugInfo(exception_string);
 }
 
-bool HostNPScriptObject::CallJSFunction(NPObject* func,
-                                        const NPVariant* args,
-                                        uint32_t argCount,
-                                        NPVariant* result) {
+bool HostNPScriptObject::InvokeAndIgnoreResult(NPObject* func,
+                                               const NPVariant* args,
+                                               uint32_t argCount) {
   NPVariant np_result;
-  bool is_good = func->_class->invokeDefault(func, args, argCount, &np_result);
-  if (is_good) {
-    if (result) {
-      *result = np_result;
-    } else {
+  bool is_good = g_npnetscape_funcs->invokeDefault(plugin_, func, args,
+                                                   argCount, &np_result);
+  if (is_good)
       g_npnetscape_funcs->releasevariantvalue(&np_result);
-    }
-  }
   return is_good;
 }
 

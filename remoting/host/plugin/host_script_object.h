@@ -106,13 +106,11 @@ class HostNPScriptObject : public HostStatusObserver {
   // Callback for ChromotingHost::Shutdown().
   void OnShutdownFinished();
 
-  // Call a JavaScript function wrapped as an NPObject.
-  // If result is non-null, the result of the call will be stored in it.
-  // Caller is responsible for releasing result if they ask for it.
-  static bool CallJSFunction(NPObject* func,
+  // Helper function for executing InvokeDefault on an NPObject, and ignoring
+  // the return value.
+  bool InvokeAndIgnoreResult(NPObject* func,
                              const NPVariant* args,
-                             uint32_t argCount,
-                             NPVariant* result);
+                             uint32_t argCount);
 
   // Posts a task on the main NP thread.
   void PostTaskToNPThread(const tracked_objects::Location& from_here,
