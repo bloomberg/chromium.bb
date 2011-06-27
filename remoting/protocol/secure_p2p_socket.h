@@ -39,6 +39,7 @@ class SecureP2PSocket : public net::Socket {
   // Construct a secured P2P socket using |socket| as the underlying
   // socket. Ownership of |socket| is transfered to this object.
   SecureP2PSocket(net::Socket* socket, const std::string& ice_key);
+  virtual ~SecureP2PSocket();
 
   // Socket implementation.
   virtual int Read(net::IOBuffer* buf, int buf_len,

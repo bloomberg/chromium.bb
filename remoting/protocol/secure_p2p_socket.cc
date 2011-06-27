@@ -114,6 +114,9 @@ SecureP2PSocket::SecureP2PSocket(Socket* socket, const std::string& ice_key)
   DCHECK(ret) << "Initialize HMAC-SHA1 for message failed.";
 }
 
+SecureP2PSocket::~SecureP2PSocket() {
+}
+
 int SecureP2PSocket::Read(IOBuffer* buf, int buf_len,
                           CompletionCallback* callback) {
   DCHECK(!user_read_buf_);
