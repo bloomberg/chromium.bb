@@ -17,7 +17,7 @@ deps = {
     'src/chrome/test/data/extensions/api_test/permissions/nacl_enabled/bin':
         Var('git_url') + '/native_client/src/native_client/tests/prebuilt.git@3e17365176c94624f46cace174f61834b7f3c35d',
     'src/googleurl':
-        Var('git_url') + '/external/google-url.git@e6c487233659930cfd711786487ae6e4b7701c58',
+        Var('git_url') + '/external/google-url.git@e089b6a78a407b19062f3a3b7e01b71dc64ee044',
     'src/native_client':
         Var('git_url') + '/native_client/src/native_client.git@55879e2858bff014682b4d23e028d4f6d0a58908',
     'src/sdch/open-vcdiff':
