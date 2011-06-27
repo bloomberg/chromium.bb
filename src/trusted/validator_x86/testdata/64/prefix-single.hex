@@ -52,6 +52,8 @@ F2 AB
 3E EB FD
 # es jmp $
 26 EB FD
+# jmp dword $
+66 EB FD
 
 # Mandatory prefix.
 # phaddw %xmm0,%xmm1

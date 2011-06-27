@@ -24,6 +24,7 @@
 0000000000000049: 36 eb fd                                     jmp 0x49
 000000000000004c: 3e eb fd                                     jmp 0x4c
 000000000000004f: 26 eb fd                                     jmp 0x4f
-0000000000000052: 66 0f 38 01 c8                               phaddw %xmm1, %xmm0
-0000000000000057: f2 0f 58 c8                                  addsd %xmm1, %xmm0
-000000000000005b: f3 0f c2 c8 00                               cmpss %xmm1, %xmm0, 0x0
+0000000000000052: 66 eb fd                                     jmp 0x52
+0000000000000055: 66 0f 38 01 c8                               phaddw %xmm1, %xmm0
+000000000000005a: f2 0f 58 c8                                  addsd %xmm1, %xmm0
+000000000000005e: f3 0f c2 c8 00                               cmpss %xmm1, %xmm0, 0x0

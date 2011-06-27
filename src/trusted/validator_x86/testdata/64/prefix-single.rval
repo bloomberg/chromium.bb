@@ -26,8 +26,12 @@ VALIDATOR: 000000000000004c: 3e eb fd                                     jmp 0x
 VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
 VALIDATOR: 000000000000004f: 26 eb fd                                     jmp 0x4f
 VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-VALIDATOR: Checking jump targets: 0 to 60
+VALIDATOR: 0000000000000052: 66 eb fd                                     jmp 0x52
+VALIDATOR: ERROR: Use of DATA16 (66) prefix for instruction not allowed by Native Client
+VALIDATOR: Checking jump targets: 0 to 63
 VALIDATOR: Checking that basic blocks are aligned
 VALIDATOR: At address 40:
+VALIDATOR: ERROR: Bad basic block alignment.
+VALIDATOR: At address 60:
 VALIDATOR: ERROR: Bad basic block alignment.
 ***MODULE IS UNSAFE***
