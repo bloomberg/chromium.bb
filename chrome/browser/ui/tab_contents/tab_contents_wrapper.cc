@@ -559,6 +559,9 @@ void TabContentsWrapper::OnJSOutOfMemory() {
 void TabContentsWrapper::OnRegisterProtocolHandler(const std::string& protocol,
                                                    const GURL& url,
                                                    const string16& title) {
+  if (profile()->IsOffTheRecord())
+    return;
+
   ChildProcessSecurityPolicy* policy =
       ChildProcessSecurityPolicy::GetInstance();
   if (policy->IsPseudoScheme(protocol) || policy->IsDisabledScheme(protocol))
