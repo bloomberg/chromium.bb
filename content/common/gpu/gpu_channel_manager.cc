@@ -4,17 +4,8 @@
 
 #include "content/common/gpu/gpu_channel_manager.h"
 
-#include <string>
-#include <vector>
-
-#include "base/command_line.h"
-#include "base/threading/worker_pool.h"
-#include "build/build_config.h"
-#include "content/common/child_process.h"
+#include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_messages.h"
-#include "ipc/ipc_channel_handle.h"
-#include "ui/gfx/gl/gl_context.h"
-#include "ui/gfx/gl/gl_implementation.h"
 
 GpuChannelManager::GpuChannelManager(IPC::Message::Sender* browser_channel,
                                      GpuWatchdog* watchdog,

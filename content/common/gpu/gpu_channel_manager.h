@@ -2,33 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_GPU_GPU_CHANNEL_MANAGER_H_
-#define CONTENT_GPU_GPU_CHANNEL_MANAGER_H_
+#ifndef CONTENT_COMMON_GPU_GPU_CHANNEL_MANAGER_H_
+#define CONTENT_COMMON_GPU_GPU_CHANNEL_MANAGER_H_
 #pragma once
 
-#include <string>
-
-#include "base/basictypes.h"
 #include "base/hash_tables.h"
-#include "base/command_line.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop_proxy.h"
-#include "base/time.h"
 #include "build/build_config.h"
-#include "content/common/child_thread.h"
-#include "content/common/gpu/gpu_channel.h"
-#include "content/common/gpu/gpu_config.h"
-#include "content/common/gpu/x_util.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message.h"
 #include "ui/gfx/native_widget_types.h"
+
+namespace base {
+class WaitableEvent;
+}
 
 namespace IPC {
 struct ChannelHandle;
 }
 
+class GpuChannel;
 class GpuWatchdog;
+struct GPUCreateCommandBufferConfig;
 
 // A GpuChannelManager is a thread responsible for issuing rendering commands
 // managing the lifetimes of GPU channels and forwarding IPC requests from the
@@ -111,4 +107,4 @@ class GpuChannelManager : public IPC::Channel::Listener,
   DISALLOW_COPY_AND_ASSIGN(GpuChannelManager);
 };
 
-#endif  // CONTENT_GPU_GPU_CHANNEL_MANAGER_H_
+#endif  // CONTENT_COMMON_GPU_GPU_CHANNEL_MANAGER_H_
