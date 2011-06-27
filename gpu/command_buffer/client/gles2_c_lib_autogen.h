@@ -198,35 +198,26 @@ void GLES2GenTextures(GLsizei n, GLuint* textures) {
 void GLES2GetActiveAttrib(
     GLuint program, GLuint index, GLsizei bufsize, GLsizei* length, GLint* size,
     GLenum* type, char* name) {
-  GL_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLsizei, length);
-  GL_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLint, size);
-  GL_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLenum, type);
   gles2::GetGLContext()->GetActiveAttrib(
       program, index, bufsize, length, size, type, name);
 }
 void GLES2GetActiveUniform(
     GLuint program, GLuint index, GLsizei bufsize, GLsizei* length, GLint* size,
     GLenum* type, char* name) {
-  GL_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLsizei, length);
-  GL_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLint, size);
-  GL_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLenum, type);
   gles2::GetGLContext()->GetActiveUniform(
       program, index, bufsize, length, size, type, name);
 }
 void GLES2GetAttachedShaders(
     GLuint program, GLsizei maxcount, GLsizei* count, GLuint* shaders) {
-  GL_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLsizei, count);
   gles2::GetGLContext()->GetAttachedShaders(program, maxcount, count, shaders);
 }
 GLint GLES2GetAttribLocation(GLuint program, const char* name) {
   return gles2::GetGLContext()->GetAttribLocation(program, name);
 }
 void GLES2GetBooleanv(GLenum pname, GLboolean* params) {
-  GL_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLboolean, params);
   gles2::GetGLContext()->GetBooleanv(pname, params);
 }
 void GLES2GetBufferParameteriv(GLenum target, GLenum pname, GLint* params) {
-  GL_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLint, params);
   gles2::GetGLContext()->GetBufferParameteriv(target, pname, params);
 }
 GLenum GLES2GetError() {
@@ -237,47 +228,37 @@ void GLES2GetFloatv(GLenum pname, GLfloat* params) {
 }
 void GLES2GetFramebufferAttachmentParameteriv(
     GLenum target, GLenum attachment, GLenum pname, GLint* params) {
-  GL_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLint, params);
   gles2::GetGLContext()->GetFramebufferAttachmentParameteriv(
       target, attachment, pname, params);
 }
 void GLES2GetIntegerv(GLenum pname, GLint* params) {
-  GL_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLint, params);
   gles2::GetGLContext()->GetIntegerv(pname, params);
 }
 void GLES2GetProgramiv(GLuint program, GLenum pname, GLint* params) {
-  GL_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLint, params);
   gles2::GetGLContext()->GetProgramiv(program, pname, params);
 }
 void GLES2GetProgramInfoLog(
     GLuint program, GLsizei bufsize, GLsizei* length, char* infolog) {
-  GL_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLsizei, length);
   gles2::GetGLContext()->GetProgramInfoLog(program, bufsize, length, infolog);
 }
 void GLES2GetRenderbufferParameteriv(
     GLenum target, GLenum pname, GLint* params) {
-  GL_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLint, params);
   gles2::GetGLContext()->GetRenderbufferParameteriv(target, pname, params);
 }
 void GLES2GetShaderiv(GLuint shader, GLenum pname, GLint* params) {
-  GL_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLint, params);
   gles2::GetGLContext()->GetShaderiv(shader, pname, params);
 }
 void GLES2GetShaderInfoLog(
     GLuint shader, GLsizei bufsize, GLsizei* length, char* infolog) {
-  GL_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLsizei, length);
   gles2::GetGLContext()->GetShaderInfoLog(shader, bufsize, length, infolog);
 }
 void GLES2GetShaderPrecisionFormat(
     GLenum shadertype, GLenum precisiontype, GLint* range, GLint* precision) {
-  GL_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLint, range);
-  GL_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLint, precision);
   gles2::GetGLContext()->GetShaderPrecisionFormat(
       shadertype, precisiontype, range, precision);
 }
 void GLES2GetShaderSource(
     GLuint shader, GLsizei bufsize, GLsizei* length, char* source) {
-  GL_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLsizei, length);
   gles2::GetGLContext()->GetShaderSource(shader, bufsize, length, source);
 }
 const GLubyte* GLES2GetString(GLenum name) {
@@ -287,14 +268,12 @@ void GLES2GetTexParameterfv(GLenum target, GLenum pname, GLfloat* params) {
   gles2::GetGLContext()->GetTexParameterfv(target, pname, params);
 }
 void GLES2GetTexParameteriv(GLenum target, GLenum pname, GLint* params) {
-  GL_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLint, params);
   gles2::GetGLContext()->GetTexParameteriv(target, pname, params);
 }
 void GLES2GetUniformfv(GLuint program, GLint location, GLfloat* params) {
   gles2::GetGLContext()->GetUniformfv(program, location, params);
 }
 void GLES2GetUniformiv(GLuint program, GLint location, GLint* params) {
-  GL_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLint, params);
   gles2::GetGLContext()->GetUniformiv(program, location, params);
 }
 GLint GLES2GetUniformLocation(GLuint program, const char* name) {
@@ -304,7 +283,6 @@ void GLES2GetVertexAttribfv(GLuint index, GLenum pname, GLfloat* params) {
   gles2::GetGLContext()->GetVertexAttribfv(index, pname, params);
 }
 void GLES2GetVertexAttribiv(GLuint index, GLenum pname, GLint* params) {
-  GL_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLint, params);
   gles2::GetGLContext()->GetVertexAttribiv(index, pname, params);
 }
 void GLES2GetVertexAttribPointerv(GLuint index, GLenum pname, void** pointer) {

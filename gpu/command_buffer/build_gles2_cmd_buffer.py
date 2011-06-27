@@ -2269,6 +2269,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
                  (func.return_type, func.original_name,
                   func.MakeTypedOriginalArgString("")))
       self.WriteClientGLCallLog(func, file)
+      func.WriteDestinationInitalizationValidation(file)
       for arg in func.GetOriginalArgs():
         arg.WriteClientSideValidationCode(file, func)
       file.Write("  helper_->%s(%s);\n" %
@@ -2691,6 +2692,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
       file.Write("%s %s(%s) {\n" %
                  (func.return_type, func.original_name,
                   func.MakeTypedOriginalArgString("")))
+      func.WriteDestinationInitalizationValidation(file)
       self.WriteClientGLCallLog(func, file)
       for arg in func.GetOriginalArgs():
         arg.WriteClientSideValidationCode(file, func)
@@ -2764,6 +2766,7 @@ class GENnHandler(TypeHandler):
         'count_name': func.GetOriginalArgs()[0].name,
       }
     file.Write("%(return_type)s %(name)s(%(typed_args)s) {\n" % args)
+    func.WriteDestinationInitalizationValidation(file)
     self.WriteClientGLCallLog(func, file)
     for arg in func.GetOriginalArgs():
       arg.WriteClientSideValidationCode(file, func)
@@ -2994,6 +2997,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     file.Write("%s %s(%s) {\n" %
                (func.return_type, func.original_name,
                 func.MakeTypedOriginalArgString("")))
+    func.WriteDestinationInitalizationValidation(file)
     self.WriteClientGLCallLog(func, file)
     for arg in func.GetOriginalArgs():
       arg.WriteClientSideValidationCode(file, func)
@@ -3022,9 +3026,11 @@ class DeleteHandler(TypeHandler):
     file.Write("%s %s(%s) {\n" %
                (func.return_type, func.original_name,
                 func.MakeTypedOriginalArgString("")))
+    func.WriteDestinationInitalizationValidation(file)
     self.WriteClientGLCallLog(func, file)
     for arg in func.GetOriginalArgs():
       arg.WriteClientSideValidationCode(file, func)
+    file.Write("  GPU_DCHECK(%s != 0);\n" % func.GetOriginalArgs()[-1].name)
     file.Write("  program_and_shader_id_handler_->FreeIds(1, &%s);\n" %
                func.GetOriginalArgs()[-1].name)
     file.Write("  helper_->%s(%s);\n" %
@@ -3140,10 +3146,17 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs) {
           'count_name': func.GetOriginalArgs()[0].name,
         }
       file.Write("%(return_type)s %(name)s(%(typed_args)s) {\n" % args)
+      func.WriteDestinationInitalizationValidation(file)
       self.WriteClientGLCallLog(func, file)
       file.Write("""  GPU_CLIENT_LOG_CODE_BLOCK({
     for (GLsizei i = 0; i < n; ++i) {
       GPU_CLIENT_LOG("  " << i << ": " << %s[i]);
+    }
+  });
+""" % func.GetOriginalArgs()[1].name)
+      file.Write("""  GPU_CLIENT_DCHECK_CODE_BLOCK({
+    for (GLsizei i = 0; i < n; ++i) {
+      GPU_DCHECK(%s[i] != 0);
     }
   });
 """ % func.GetOriginalArgs()[1].name)
@@ -3314,6 +3327,7 @@ class GETnHandler(TypeHandler):
       file.Write("%s %s(%s) {\n" %
                  (func.return_type, func.original_name,
                   func.MakeTypedOriginalArgString("")))
+      func.WriteDestinationInitalizationValidation(file)
       self.WriteClientGLCallLog(func, file)
       for arg in func.GetOriginalArgs():
         arg.WriteClientSideValidationCode(file, func)
@@ -3497,6 +3511,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     file.Write("%s %s(%s) {\n" %
                (func.return_type, func.original_name,
                 func.MakeTypedOriginalArgString("")))
+    func.WriteDestinationInitalizationValidation(file)
     self.WriteClientGLCallLog(func, file)
     last_arg_name = func.GetLastOriginalArg().name
     values_str = ' << ", " << '.join(
@@ -3721,6 +3736,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     file.Write("%s %s(%s) {\n" %
                (func.return_type, func.original_name,
                 func.MakeTypedOriginalArgString("")))
+    func.WriteDestinationInitalizationValidation(file)
     self.WriteClientGLCallLog(func, file)
     last_arg_name = func.GetLastOriginalArg().name
     file.Write("""  GPU_CLIENT_LOG_CODE_BLOCK({
@@ -4106,6 +4122,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgsBadSharedMemoryId) {
       file.Write("%s %s(%s) {\n" %
                  (func.return_type, func.original_name,
                   func.MakeTypedOriginalArgString("")))
+      func.WriteDestinationInitalizationValidation(file)
       self.WriteClientGLCallLog(func, file)
       file.Write("  typedef %s::Result Result;\n" % func.name)
       file.Write("  Result* result = GetResultAs<Result*>();\n")
@@ -4142,8 +4159,8 @@ class STRnHandler(TypeHandler):
 
   def WriteGLES2ImplementationHeader(self, func, file):
     """Overrriden from TypeHandler."""
-    code = """%(return_type)s %(func_name)s(%(args)s) {
-  GPU_CLIENT_LOG("[" << this << "] gl%(func_name)s" << "("
+    code_1 = "%(return_type)s %(func_name)s(%(args)s) {\n"
+    code_2 = """  GPU_CLIENT_LOG("[" << this << "] gl%(func_name)s" << "("
       << %(arg0)s << ", "
       << %(arg1)s << ", "
       << static_cast<void*>(%(arg2)s) << ", "
@@ -4166,19 +4183,22 @@ class STRnHandler(TypeHandler):
 }
 """
     args = func.GetOriginalArgs()
-    file.Write(code % {
-          'return_type': func.return_type,
-          'func_name': func.original_name,
-          'args': func.MakeTypedOriginalArgString(""),
-          'id_name': args[0].name,
-          'bufsize_name': args[1].name,
-          'length_name': args[2].name,
-          'dest_name': args[3].name,
-          'arg0': args[0].name,
-          'arg1': args[1].name,
-          'arg2': args[2].name,
-          'arg3': args[3].name,
-        })
+    str_args = {
+      'return_type': func.return_type,
+      'func_name': func.original_name,
+      'args': func.MakeTypedOriginalArgString(""),
+      'id_name': args[0].name,
+      'bufsize_name': args[1].name,
+      'length_name': args[2].name,
+      'dest_name': args[3].name,
+      'arg0': args[0].name,
+      'arg1': args[1].name,
+      'arg2': args[2].name,
+      'arg3': args[3].name,
+    }
+    file.Write(code_1 % str_args)
+    func.WriteDestinationInitalizationValidation(file)
+    file.Write(code_2 % str_args)
 
   def WriteServiceUnitTest(self, func, file):
     """Overrriden from TypeHandler."""
@@ -5503,7 +5523,6 @@ class GLGenerator(object):
       file.Write("%s GLES2%s(%s) {\n" %
                  (func.return_type, func.name,
                   func.MakeTypedOriginalArgString("")))
-      func.WriteDestinationInitalizationValidation(file)
       result_string = "return "
       if func.return_type == "void":
         result_string = ""

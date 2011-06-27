@@ -482,7 +482,7 @@ GLES2Implementation::GLES2Implementation(
   }
 
 #if defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
-  GLint max_vertex_attribs;
+  GLint max_vertex_attribs = 0;
   GetIntegerv(GL_MAX_VERTEX_ATTRIBS, &max_vertex_attribs);
 
   buffer_id_handler_->MakeIds(
@@ -1660,6 +1660,11 @@ void GLES2Implementation::DeleteBuffers(GLsizei n, const GLuint* buffers) {
   GPU_CLIENT_LOG_CODE_BLOCK({
     for (GLsizei i = 0; i < n; ++i) {
       GPU_CLIENT_LOG("  " << i << ": " << buffers[i]);
+    }
+  });
+  GPU_CLIENT_DCHECK_CODE_BLOCK({
+    for (GLsizei i = 0; i < n; ++i) {
+      GPU_DCHECK(buffers[i] != 0);
     }
   });
   if (n < 0) {
