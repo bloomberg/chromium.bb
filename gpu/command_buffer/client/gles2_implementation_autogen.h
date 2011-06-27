@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This file is auto-generated. DO NOT EDIT!
+// This file is auto-generated from
+// gpu/command_buffer/build_gles2_cmd_buffer.py
+// DO NOT EDIT!
 
 // This file is included by gles2_implementation.h to declare the
 // GL api functions.
@@ -1226,6 +1228,9 @@ void SetSurfaceCHROMIUM(GLint surface_id) {
   GPU_CLIENT_LOG("[" << this << "] glSetSurfaceCHROMIUM(" << surface_id << ")");
   helper_->SetSurfaceCHROMIUM(surface_id);
 }
+
+void GetMultipleIntegervCHROMIUM(
+    const GLenum* pnames, GLuint count, GLint* results, GLsizeiptr size);
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_AUTOGEN_H_
 

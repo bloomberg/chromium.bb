@@ -137,6 +137,10 @@ ACTION_P2(SetMemoryAtOffset, offset, obj) {
   memcpy(static_cast<char*>(arg0) + offset, &obj, sizeof(obj));
 }
 
+ACTION_P3(SetMemoryAtOffsetFromArray, offset, array, size) {
+  memcpy(static_cast<char*>(arg0) + offset, array, size);
+}
+
 // Used to help set the transfer buffer result to SizedResult of a single value.
 template <typename T>
 class SizedResultHelper {
@@ -215,9 +219,20 @@ class GLES2ImplementationTest : public testing::Test {
     Buffer ring_buffer = command_buffer_->GetRingBuffer();
     commands_ = static_cast<CommandBufferEntry*>(ring_buffer.ptr) +
                 command_buffer_->GetState().put_offset;
+    ClearCommands();
   }
 
   virtual void TearDown() {
+  }
+
+  void ClearCommands() {
+    Buffer ring_buffer = command_buffer_->GetRingBuffer();
+    memset(ring_buffer.ptr, kInitialValue, ring_buffer.size);
+  }
+
+  bool NoCommandsWritten() {
+    return static_cast<const uint8*>(static_cast<const void*>(commands_))[0] ==
+           kInitialValue;
   }
 
   void ClearTransferBuffer() {
@@ -974,6 +989,108 @@ TEST_F(GLES2ImplementationTest, MapUnmapTexSubImage2DCHROMIUMBadArgs) {
   const char* kPtr = "something";
   gl_->UnmapTexSubImage2DCHROMIUM(kPtr);
   EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), gl_->GetError());
+}
+
+TEST_F(GLES2ImplementationTest, GetMultipleIntegervCHROMIUMValidArgs) {
+  const GLenum pnames[] = {
+    GL_DEPTH_WRITEMASK,
+    GL_COLOR_WRITEMASK,
+    GL_STENCIL_WRITEMASK,
+  };
+  const GLint num_results = 6;
+  GLint results[num_results + 1];
+  struct Cmds {
+    GetMultipleIntegervCHROMIUM get_multiple;
+    cmd::SetToken set_token;
+  };
+  const GLsizei kNumPnames = arraysize(pnames);
+  const GLsizeiptr kResultsSize = num_results * sizeof(results[0]);
+  const uint32 kPnamesOffset = GLES2Implementation::kStartingOffset;
+  const uint32 kResultsOffset = kPnamesOffset + kNumPnames * sizeof(pnames[0]);
+  int32 token = 1;
+  Cmds expected;
+  expected.get_multiple.Init(
+      kTransferBufferId, kPnamesOffset, kNumPnames,
+      kTransferBufferId, kResultsOffset, kResultsSize);
+  expected.set_token.Init(token++);
+
+  const GLint kSentinel = 0x12345678;
+  memset(results, 0, sizeof(results));
+  results[num_results] = kSentinel;
+  const GLint returned_results[] = {
+    1, 0, 1, 0, 1, -1,
+  };
+  // One call to flush to wait for results
+  EXPECT_CALL(*command_buffer_, OnFlush(_))
+      .WillOnce(SetMemoryAtOffsetFromArray(
+          kResultsOffset, returned_results, sizeof(returned_results)))
+      .WillOnce(SetMemory(GLuint(GL_NO_ERROR)))
+      .RetiresOnSaturation();
+
+  gl_->GetMultipleIntegervCHROMIUM(
+      &pnames[0], kNumPnames, &results[0], kResultsSize);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+  EXPECT_EQ(0, memcmp(&returned_results, results, sizeof(returned_results)));
+  EXPECT_EQ(kSentinel, results[num_results]);
+  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), gl_->GetError());
+}
+
+TEST_F(GLES2ImplementationTest, GetMultipleIntegervCHROMIUMBadArgs) {
+  GLenum pnames[] = {
+    GL_DEPTH_WRITEMASK,
+    GL_COLOR_WRITEMASK,
+    GL_STENCIL_WRITEMASK,
+  };
+  const GLint num_results = 6;
+  GLint results[num_results + 1];
+  const GLsizei kNumPnames = arraysize(pnames);
+  const GLsizeiptr kResultsSize = num_results * sizeof(results[0]);
+
+  // Calls to flush to wait for GetError
+  EXPECT_CALL(*command_buffer_, OnFlush(_))
+      .WillOnce(SetMemory(GLuint(GL_NO_ERROR)))
+      .WillOnce(SetMemory(GLuint(GL_NO_ERROR)))
+      .WillOnce(SetMemory(GLuint(GL_NO_ERROR)))
+      .WillOnce(SetMemory(GLuint(GL_NO_ERROR)))
+      .RetiresOnSaturation();
+
+  const GLint kSentinel = 0x12345678;
+  memset(results, 0, sizeof(results));
+  results[num_results] = kSentinel;
+  // try bad size.
+  gl_->GetMultipleIntegervCHROMIUM(
+      &pnames[0], kNumPnames, &results[0], kResultsSize + 1);
+  EXPECT_TRUE(NoCommandsWritten());
+  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), gl_->GetError());
+  EXPECT_EQ(0, results[0]);
+  EXPECT_EQ(kSentinel, results[num_results]);
+  // try bad size.
+  ClearCommands();
+  gl_->GetMultipleIntegervCHROMIUM(
+      &pnames[0], kNumPnames, &results[0], kResultsSize - 1);
+  EXPECT_TRUE(NoCommandsWritten());
+  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), gl_->GetError());
+  EXPECT_EQ(0, results[0]);
+  EXPECT_EQ(kSentinel, results[num_results]);
+  // try uncleared results.
+  ClearCommands();
+  results[2] = 1;
+  gl_->GetMultipleIntegervCHROMIUM(
+      &pnames[0], kNumPnames, &results[0], kResultsSize);
+  EXPECT_TRUE(NoCommandsWritten());
+  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), gl_->GetError());
+  EXPECT_EQ(0, results[0]);
+  EXPECT_EQ(kSentinel, results[num_results]);
+  // try bad enum results.
+  ClearCommands();
+  results[2] = 0;
+  pnames[1] = GL_TRUE;
+  gl_->GetMultipleIntegervCHROMIUM(
+      &pnames[0], kNumPnames, &results[0], kResultsSize);
+  EXPECT_TRUE(NoCommandsWritten());
+  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_ENUM), gl_->GetError());
+  EXPECT_EQ(0, results[0]);
+  EXPECT_EQ(kSentinel, results[num_results]);
 }
 
 }  // namespace gles2
