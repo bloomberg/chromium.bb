@@ -21,6 +21,7 @@
 #include "views/accelerator.h"
 #include "views/background.h"
 #include "views/border.h"
+#include "views/layer_helper.h"
 
 using ui::OSExchangeData;
 
@@ -276,8 +277,12 @@ class View : public AcceleratorTarget {
   // LayerPropertySetter to the default (immediate).
   void SetLayerPropertySetter(LayerPropertySetter* setter);
 
-  const ui::Layer* layer() const { return layer_.get(); }
-  ui::Layer* layer() { return layer_.get(); }
+  const ui::Layer* layer() const {
+    return layer_helper_.get() ? layer_helper_->layer() : NULL;
+  }
+  ui::Layer* layer() {
+    return layer_helper_.get() ? layer_helper_->layer() : NULL;
+  }
 
   // RTL positioning -----------------------------------------------------------
 
@@ -1223,6 +1228,13 @@ class View : public AcceleratorTarget {
   // If |ancestor| is non-NULL it is set to the nearset ancestor with a layer.
   gfx::Point CalculateOffsetToAncestorWithLayer(View** ancestor);
 
+  // Returns the transform, or NULL if no transform has been set or the identity
+  // transform was set. Be careful in using this as it may return NULL. Use
+  // GetTransform() if you always want a non-NULL transform.
+  const ui::Transform* transform() const {
+    return layer_helper_.get() ? layer_helper_->transform() : NULL;
+  }
+
   // Input ---------------------------------------------------------------------
 
   // RootView invokes these. These in turn invoke the appropriate OnMouseXXX
@@ -1336,9 +1348,6 @@ class View : public AcceleratorTarget {
 
   // Transformations -----------------------------------------------------------
 
-  // The transformation matrix (rotation, translate, scale).
-  scoped_ptr<ui::Transform> transform_;
-
   // Clipping parameters. skia transformation matrix does not give us clipping.
   // So we do it ourselves.
   float clip_x_;
@@ -1370,24 +1379,7 @@ class View : public AcceleratorTarget {
 
   // Accelerated painting ------------------------------------------------------
 
-  scoped_ptr<ui::Layer> layer_;
-
-  // If not empty and Paint() is invoked, the canvas is created with the
-  // specified size.
-  // TODO(sky): this should be passed in.
-  gfx::Rect layer_clip_rect_;
-
-  // Is the layer out of date?
-  bool layer_needs_updating_;
-
-  // Is the texture backing the layer being updated externally?
-  // (i.e. by the GPU process when rendering 3D CSS)
-  bool layer_updated_externally_;
-
-  // Should we paint to a layer? See description above setter for details.
-  bool paint_to_layer_;
-
-  scoped_ptr<LayerPropertySetter> layer_property_setter_;
+  scoped_ptr<internal::LayerHelper> layer_helper_;
 
   // Accelerators --------------------------------------------------------------
 

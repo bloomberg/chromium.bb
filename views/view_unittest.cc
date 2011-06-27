@@ -2482,6 +2482,22 @@ TEST_F(ViewLayerTest, BoundsChangeWithLayer) {
   EXPECT_EQ(gfx::Rect(36, 48, 40, 50), v2->layer()->bounds());
 }
 
+// Makes sure a transform persists after toggling the visibility.
+TEST_F(ViewLayerTest, ToggleVisibilityWithTransform) {
+  View* view = new View;
+  ui::Transform transform;
+  transform.SetScale(2.0f, 2.0f);
+  view->SetTransform(transform);
+  widget()->SetContentsView(view);
+  EXPECT_EQ(2.0f, view->GetTransform().matrix()[0]);
+
+  view->SetVisible(false);
+  EXPECT_EQ(2.0f, view->GetTransform().matrix()[0]);
+
+  view->SetVisible(true);
+  EXPECT_EQ(2.0f, view->GetTransform().matrix()[0]);
+}
+
 #endif  // VIEWS_COMPOSITOR || TOUCH_UI
 
 }  // namespace views

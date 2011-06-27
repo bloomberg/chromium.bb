@@ -300,6 +300,8 @@
         'ime/input_method_win.cc',
         'ime/input_method_win.h',
         'ime/text_input_client.h',
+        'layer_helper.cc',
+        'layer_helper.h',
         'layer_property_setter.cc',
         'layer_property_setter.h',
         'layout/box_layout.cc',
