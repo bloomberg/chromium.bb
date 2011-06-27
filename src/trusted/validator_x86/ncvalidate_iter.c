@@ -42,8 +42,6 @@ Bool NACL_FLAGS_validator_trace_instructions = FALSE;
 
 Bool NACL_FLAGS_validator_trace_inst_internals = FALSE;
 
-Bool NACL_FLAGS_ncval_annotate = FALSE;
-
 /* The set of cpu features to use, if non-NULL.
  * NOTE: This global is used to allow the injection of
  * a command-line override of CPU features, from that of the local
@@ -159,8 +157,6 @@ void NaClValidatorStateSetCPUFeatures(NaClValidatorState* state,
   NaClCopyCPUFeatures(&state->cpu_features, features);
 }
 
-/* TODO(karl) Move the print routines to a separate module. */
-
 /* Returns true if an error message should be printed for the given level, in
  * the current validator state.
  * Parameters:
@@ -236,58 +232,6 @@ static void NaClStubOutInst(NaClInstState* inst) {
   memset(memory->mpc, kNaClFullStop, memory->read_length);
 }
 
-/* Does a printf using the error reporter of the state if defined.
- * Uses NaClLogGetGio() if undefined.
- */
-static void NaClPrintVMessage(NaClValidatorState* state,
-                              const char* format,
-                              va_list ap) {
-  if (state) {
-    state->error_reporter->printf_v(state->error_reporter, format, ap);
-  } else {
-    gvprintf(NaClLogGetGio(), format, ap);
-  }
-}
-
-/* Forward declaration to define printf arguments. */
-static void NaClPrintMessage(NaClValidatorState* state,
-                             const char* format,
-                             ...) ATTRIBUTE_FORMAT_PRINTF(2, 3);
-
-/* Does a printf using the error reporter of the state if defined.
- * Uses NaClLogGetGio() if undefined.
- */
-static void NaClPrintMessage(NaClValidatorState* state,
-                             const char* format,
-                             ...) {
-  va_list ap;
-  va_start(ap, format);
-  NaClPrintVMessage(state, format, ap);
-  va_end(ap);
-}
-
-/* Print out a predefined prefix for messages, along with the serverity
- * of the message.
- */
-static void NaClPrintValidatorPrefix(int level,
-                                     NaClValidatorState* state,
-                                     Bool visible_level) {
-  NaClPrintMessage(state, "VALIDATOR: ");
-  if (visible_level) NaClPrintMessage(state, "%s", NaClLogLevelLabel(level));
-}
-
-/* Prints out an instruction on behalf of the validator. */
-static void NaClValidatorPrintInst(int level,
-                                   NaClValidatorState *state,
-                                   NaClInstState *inst) {
-  NaClPrintValidatorPrefix(level, state, FALSE);
-  if (state) {
-    state->error_reporter->print_inst(state->error_reporter, (void*) inst);
-  } else {
-    NaClInstStateInstPrint(NaClLogGetGio(), inst);
-  }
-}
-
 void NaClValidatorMessage(int level,
                           NaClValidatorState *state,
                           const char *format,
@@ -295,10 +239,18 @@ void NaClValidatorMessage(int level,
   level = NaClRecordIfValidatorError(state, level);
   if (NaClPrintValidatorMessages(state, level)) {
     va_list ap;
-    NaClPrintValidatorPrefix(level, state, TRUE);
-    va_start(ap, format);
-    NaClPrintVMessage(state, format, ap);
-    va_end(ap);
+    if (state) {
+      state->error_reporter->printf(
+          state->error_reporter, "VALIDATOR: %s", NaClLogLevelLabel(level));
+      va_start(ap, format);
+      state->error_reporter->printf_v(state->error_reporter, format, ap);
+      va_end(ap);
+    } else {
+      printf("VALIDATOR: %s", NaClLogLevelLabel(level));
+      va_start(ap, format);
+      vprintf(format, ap);
+      va_end(ap);
+    }
     NaClRecordErrorReported(state, level);
   }
 }
@@ -309,23 +261,14 @@ void NaClValidatorVarargMessage(int level,
                                 va_list ap) {
   level = NaClRecordIfValidatorError(state, level);
   if (NaClPrintValidatorMessages(state, level)) {
-    NaClPrintValidatorPrefix(level, state, TRUE);
-    NaClPrintVMessage(state, format, ap);
-    NaClRecordErrorReported(state, level);
-  }
-}
-
-static void NaClValidatorPcAddressMess(
-    int level,
-    NaClValidatorState *state,
-    NaClPcAddress addr,
-    const char *format,
-    va_list ap) {
-  level = NaClRecordIfValidatorError(state, level);
-  if (NaClPrintValidatorMessages(state, level)) {
-    NaClPrintValidatorPrefix(level, state, !NACL_FLAGS_ncval_annotate);
-    NaClPrintMessage(state, "%"NACL_PRIxNaClPcAddress ": ", addr);
-    NaClPrintVMessage(state, format, ap);
+    if (state) {
+      state->error_reporter->printf(
+          state->error_reporter, "VALIDATOR: %s", NaClLogLevelLabel(level));
+      state->error_reporter->printf_v(state->error_reporter, format, ap);
+    } else {
+      printf("VALIDATOR: %s", NaClLogLevelLabel(level));
+      vprintf(format, ap);
+    }
     NaClRecordErrorReported(state, level);
   }
 }
@@ -335,10 +278,19 @@ void NaClValidatorPcAddressMessage(int level,
                                    NaClPcAddress addr,
                                    const char *format,
                                    ...) {
-  va_list ap;
-  va_start(ap, format);
-  NaClValidatorPcAddressMess(level, state, addr, format, ap);
-  va_end(ap);
+  level = NaClRecordIfValidatorError(state, level);
+  if (NaClPrintValidatorMessages(state, level)) {
+    va_list ap;
+    state->error_reporter->printf(
+        state->error_reporter,
+        "VALIDATOR: At address %"NACL_PRIxNaClPcAddress":\n", addr);
+    state->error_reporter->printf(
+        state->error_reporter, "VALIDATOR: %s", NaClLogLevelLabel(level));
+    va_start(ap, format);
+    state->error_reporter->printf(state->error_reporter, format, ap);
+    va_end(ap);
+    NaClRecordErrorReported(state, level);
+  }
 }
 
 void NaClValidatorInstMessage(int level,
@@ -346,22 +298,19 @@ void NaClValidatorInstMessage(int level,
                               NaClInstState *inst,
                               const char *format,
                               ...) {
-  if (NACL_FLAGS_ncval_annotate) {
+  level = NaClRecordIfValidatorError(state, level);
+  if (NaClPrintValidatorMessages(state, level)) {
     va_list ap;
+    /* TODO(karl): empty (%) fmt strings not allowed for NaClLog */
+    state->error_reporter->printf(state->error_reporter,
+                                  "VALIDATOR: %s", "");
+    state->error_reporter->print_inst(state->error_reporter, inst);
+    state->error_reporter->printf(
+        state->error_reporter, "VALIDATOR: %s", NaClLogLevelLabel(level));
     va_start(ap, format);
-    NaClValidatorPcAddressMess(level, state, inst->vpc, format, ap);
+    state->error_reporter->printf_v(state->error_reporter, format, ap);
     va_end(ap);
-  } else {
-    level = NaClRecordIfValidatorError(state, level);
-    if (NaClPrintValidatorMessages(state, level)) {
-      va_list ap;
-      NaClValidatorPrintInst(level, state, inst);
-      NaClPrintValidatorPrefix(level, state, TRUE);
-      va_start(ap, format);
-      NaClPrintVMessage(state, format, ap);
-      va_end(ap);
-      NaClRecordErrorReported(state, level);
-    }
+    NaClRecordErrorReported(state, level);
   }
   if (state->do_stub_out && (level <= LOG_ERROR)) {
     NaClStubOutInst(inst);
@@ -377,17 +326,21 @@ void NaClValidatorTwoInstMessage(int level,
   level = NaClRecordIfValidatorError(state, level);
   if (NaClPrintValidatorMessages(state, level)) {
     va_list ap;
-    NaClPrintValidatorPrefix(level, state, TRUE);
+    state->error_reporter->printf(
+        state->error_reporter, "VALIDATOR: %s", NaClLogLevelLabel(level));
     va_start(ap, format);
-    NaClPrintVMessage(state, format, ap);
+    state->error_reporter->printf_v(state->error_reporter, format, ap);
     va_end(ap);
-    NaClPrintMessage(state, "\n                                   ");
-    NaClValidatorPrintInst(level, state, inst1);
-    NaClPrintMessage(state, "                                   ");
-    NaClValidatorPrintInst(level, state, inst2);
+    state->error_reporter->printf(
+        state->error_reporter, "\n%45s ", "VALIDATOR:");
+    state->error_reporter->print_inst(state->error_reporter, inst1);
+    state->error_reporter->printf(
+        state->error_reporter, "%45s ", "VALIDATOR:");
+    state->error_reporter->print_inst(state->error_reporter, inst2);
     NaClRecordErrorReported(state, level);
   }
   if (state->do_stub_out && (level <= LOG_ERROR)) {
+    NaClStubOutInst(inst1);
     NaClStubOutInst(inst2);
   }
 }

@@ -1,4 +1,5 @@
 VALIDATOR: Checking jump targets: 0 to 5
-VALIDATOR: ERROR: 4: Bad jump target
+VALIDATOR: At address 4:
+VALIDATOR: ERROR: Bad jump target
 VALIDATOR: Checking that basic blocks are aligned
 ***MODULE IS UNSAFE***

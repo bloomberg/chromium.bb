@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
-# Use of this source code is governed by a BSD-style license that can be
-# found in the LICENSE file.
+# Copyright 2009  The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
 
 # Annotates the output of ncval with line numbers, taken from debugging
 # information using binutils' addr2line.
@@ -58,8 +58,7 @@ def check(obj_file, output_fh):
   # around ncval's default of truncating the number of results to 100.
   # Pass --cpuid-all because we are only interested in instructions
   # that are always rejected by the validator.
-  proc = subprocess.Popen(["ncval", "--max_errors=-1", "--cpuid-all",
-                           "--annotate", obj_file],
+  proc = subprocess.Popen(["ncval", "--max_errors=-1", "--cpuid-all", obj_file],
                           stdout=subprocess.PIPE)
   for line in proc.stdout:
     match = ncval_regexp.match(line)

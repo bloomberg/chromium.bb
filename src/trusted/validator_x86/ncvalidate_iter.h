@@ -60,11 +60,6 @@ extern Bool NACL_FLAGS_validator_trace_instructions;
  */
 extern Bool NACL_FLAGS_validator_trace_inst_interals;
 
-/* Command line flag controlling whether address error messages
- * should be printed out using the format needed by ncval_annotate.py
- */
-extern Bool NACL_FLAGS_ncval_annotate;
-
 /* Define the stop instruction. */
 extern const uint8_t kNaClFullStop;
 
