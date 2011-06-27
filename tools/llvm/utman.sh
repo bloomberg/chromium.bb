@@ -205,7 +205,7 @@ readonly LLVM_REV=2f18272824f2
 readonly LLVM_GCC_REV=f14a2b825eeb
 readonly NEWLIB_REV=9bef47f82918
 readonly BINUTILS_REV=0afa2765184c
-readonly COMPILER_RT_REV=8b41cb76e53e
+readonly COMPILER_RT_REV=1a3a6ffb31ea
 
 # Repositories
 readonly REPO_LLVM_GCC="llvm-gcc.nacl-llvm-branches"
