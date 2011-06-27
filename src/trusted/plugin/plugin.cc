@@ -168,9 +168,9 @@ bool Plugin::SendAsyncMessage1(void* obj, SrpcParams* params) {
 
 bool Plugin::StartSrpcServicesWrapper(void* obj, SrpcParams* params) {
   Plugin* plugin = reinterpret_cast<Plugin*>(obj);
-  nacl::string error_string;
-  if (!plugin->StartSrpcServices(&error_string)) {
-    params->set_exception_string(error_string.c_str());
+  ErrorInfo error_info;
+  if (!plugin->StartSrpcServices(&error_info)) {
+    params->set_exception_string(error_info.message().c_str());
     return false;
   }
   return true;
@@ -411,8 +411,7 @@ bool Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
                             ErrorInfo* error_info) {
   // Check ELF magic and ABI version compatibility.
   bool might_be_elf_exe =
-      browser_interface_->MightBeElfExecutable(wrapper,
-                                               error_info->message_ptr());
+      browser_interface_->MightBeElfExecutable(wrapper, error_info);
   PLUGIN_PRINTF(("Plugin::LoadNaClModule (might_be_elf_exe=%d)\n",
                  might_be_elf_exe));
   if (!might_be_elf_exe) {
@@ -434,7 +433,7 @@ bool Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
   }
 
   bool service_runtime_started =
-      service_runtime_->Start(wrapper, error_info->message_ptr());
+      service_runtime_->Start(wrapper, error_info);
   PLUGIN_PRINTF(("Plugin::LoadNaClModule (service_runtime_started=%d)\n",
                  service_runtime_started));
 
@@ -446,7 +445,7 @@ bool Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
     return false;
   }
   CHECK(NULL != socket_address_);
-  if (!StartSrpcServices(error_info->message_ptr())) {  // sets socket_
+  if (!StartSrpcServices(error_info)) {  // sets socket_
     return false;
   }
   PLUGIN_PRINTF(("Plugin::LoadNaClModule (socket_address=%p, socket=%p)\n",
@@ -455,19 +454,20 @@ bool Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
   return true;
 }
 
-bool Plugin::StartSrpcServices(nacl::string* error_string) {
+bool Plugin::StartSrpcServices(ErrorInfo* error_info) {
   UnrefScriptableHandle(&socket_);
   socket_ = socket_address_->handle()->Connect();
   if (socket_ == NULL) {
-    *error_string = "SRPC connection failure.";
+    error_info->SetReport(ERROR_SRPC_CONNECTION_FAIL,
+                          "SRPC connection failure.");
     return false;
   }
-  if (!socket_->handle()->StartJSObjectProxy(this, error_string)) {
+  if (!socket_->handle()->StartJSObjectProxy(this, error_info)) {
     // TODO(sehr,polina): rename the below to ExperimentalSRPCApisAreEnabled.
     if (ExperimentalJavaScriptApisAreEnabled()) {
       // It is not an error for the proxy to fail to start if experimental
       // APIs are enabled.  This means we have an SRPC nexe.
-      *error_string = "";
+      error_info->Reset();
     } else {
       return false;
     }

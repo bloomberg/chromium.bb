@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 
@@ -27,6 +27,7 @@ class NPModule;
 
 namespace plugin {
 
+class ErrorInfo;
 class ScriptableHandle;
 class PortableHandle;
 
@@ -75,7 +76,7 @@ class BrowserInterface {
   // is only done looking at the e_ident bytes.  Fuller checking is done by
   // the service_runtime.
   static bool MightBeElfExecutable(nacl::DescWrapper* wrapper,
-                                   nacl::string* error);
+                                   ErrorInfo* error_info);
 };
 
 }  // namespace plugin

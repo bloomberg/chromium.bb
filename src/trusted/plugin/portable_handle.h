@@ -30,6 +30,7 @@ namespace plugin {
 
 // Forward declarations for externals.
 class BrowserInterface;
+class ErrorInfo;
 class Plugin;
 class ScriptableHandle;
 class ServiceRuntime;
@@ -89,9 +90,9 @@ class PortableHandle {
   // ConnectedSocket, it cannot be declared as doing so, because of
   // the PortableHandle/ScriptableHandle split.  It can only be validly invoked
   // for ConnectedSocket, so it reports an error if this binding is invoked.
-  virtual bool StartJSObjectProxy(Plugin* plugin, nacl::string* error_string) {
+  virtual bool StartJSObjectProxy(Plugin* plugin, ErrorInfo* error_info) {
     UNREFERENCED_PARAMETER(plugin);
-    UNREFERENCED_PARAMETER(error_string);
+    UNREFERENCED_PARAMETER(error_info);
     NACL_NOTREACHED();
     return false;
   }

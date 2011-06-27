@@ -32,12 +32,28 @@ enum PluginErrorCode {
   ERROR_NEXE_ORIGIN_PROTOCOL,
   ERROR_NEXE_FH_DUP,
   ERROR_NEXE_STAT,
-  ERROR_SEL_LDR_INIT
+  ERROR_ELF_CHECK_IO,
+  ERROR_ELF_CHECK_FAIL,
+  ERROR_SEL_LDR_INIT,
+  ERROR_SEL_LDR_CREATE_LAUNCHER,
+  ERROR_SEL_LDR_FD,
+  ERROR_SEL_LDR_LAUNCH,
+  ERROR_SEL_LDR_COMMUNICATION,
+  ERROR_SEL_LDR_SEND_NEXE,
+  ERROR_SEL_LDR_HANDLE_PASSING,
+  ERROR_SEL_LDR_START_MODULE,
+  ERROR_SEL_LDR_START_STATUS,
+  ERROR_SRPC_CONNECTION_FAIL,
+  ERROR_START_PROXY
 };
 
 class ErrorInfo {
  public:
   ErrorInfo() {
+    Reset();
+  }
+
+  void Reset() {
     SetReport(ERROR_UNKNOWN, "");
   }
 
@@ -52,12 +68,6 @@ class ErrorInfo {
 
   const std::string& message() const {
     return message_;
-  }
-
-  // TODO(ncbray): remove once refactorings have been performed.
-  // http://code.google.com/p/nativeclient/issues/detail?id=1923
-  std::string* message_ptr() {
-    return &message_;
   }
 
  private:

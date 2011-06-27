@@ -736,7 +736,7 @@ void PluginPpapi::NexeFileDidOpen(int32_t pp_error) {
 
 
 bool PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel,
-                                        nacl::string* error_string) {
+                                        ErrorInfo* error_info) {
   PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution (srpc_channel=%p)\n",
                  reinterpret_cast<void*>(srpc_channel)));
 
@@ -758,10 +758,11 @@ bool PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel,
   if (NaClSrpcServiceMethodIndex(client_service,
                                  "PPP_InitializeModule:iihs:ii") ==
       kNaClSrpcInvalidMethodIndex) {
-    *error_string =
-        "could not find PPP_InitializeModule() - toolchain version mismatch?";
+    error_info->SetReport(
+        ERROR_START_PROXY,
+        "could not find PPP_InitializeModule() - toolchain version mismatch?");
     PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution (%s)\n",
-                   error_string->c_str()));
+                   error_info->message().c_str()));
     return false;
   }
   nacl::scoped_ptr<BrowserPpp> ppapi_proxy(
@@ -769,7 +770,8 @@ bool PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel,
   PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution (ppapi_proxy=%p)\n",
                  reinterpret_cast<void*>(ppapi_proxy.get())));
   if (ppapi_proxy.get() == NULL) {
-    *error_string = "could not allocate proxy memory.";
+    error_info->SetReport(ERROR_START_PROXY,
+                          "could not allocate proxy memory.");
     return false;
   }
   pp::Module* module = pp::Module::Get();
@@ -782,7 +784,8 @@ bool PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel,
   PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution (pp_error=%"
                  NACL_PRId32")\n", pp_error));
   if (pp_error != PP_OK) {
-    *error_string = "could not initialize module.";
+    error_info->SetReport(ERROR_START_PROXY,
+                          "could not initialize module.");
     return false;
   }
   const PPP_Instance* instance_interface =
@@ -798,7 +801,8 @@ bool PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel,
   PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution (did_create=%d)\n",
                  did_create));
   if (did_create == PP_FALSE) {
-    *error_string = "could not create instance.";
+    error_info->SetReport(ERROR_START_PROXY,
+                          "could not create instance.");
     return false;
   }
 

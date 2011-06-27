@@ -63,10 +63,10 @@ SrpcClient::~SrpcClient() {
 }
 
 bool SrpcClient::StartJSObjectProxy(Plugin* plugin,
-                                    nacl::string* error_string) {
+                                    ErrorInfo *error_info) {
   // Start up PPAPI interaction if the plugin determines that the
   // requisite methods are exported.
-  return plugin->StartProxiedExecution(&srpc_channel_, error_string);
+  return plugin->StartProxiedExecution(&srpc_channel_, error_info);
 }
 
 void SrpcClient::GetMethods() {

@@ -150,7 +150,7 @@ class Plugin : public PortableHandle {
 
   // Start up proxied execution of the browser API.
   virtual bool StartProxiedExecution(NaClSrpcChannel* srpc_channel,
-                                     nacl::string* error_string) = 0;
+                                     ErrorInfo* error_info) = 0;
 
   // Determines whether experimental APIs are usable.
   static bool ExperimentalJavaScriptApisAreEnabled();
@@ -215,7 +215,7 @@ class Plugin : public PortableHandle {
                                nacl::DescWrapper** fds, int fds_count);
   static bool SendAsyncMessage0(void* obj, SrpcParams* params);
   static bool SendAsyncMessage1(void* obj, SrpcParams* params);
-  bool StartSrpcServices(nacl::string* error);
+  bool StartSrpcServices(ErrorInfo* error_info);
   static bool StartSrpcServicesWrapper(void* obj, SrpcParams* params);
 };
 

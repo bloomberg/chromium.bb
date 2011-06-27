@@ -17,6 +17,7 @@
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/plugin/origin.h"
+#include "native_client/src/trusted/plugin/plugin_error.h"
 
 namespace plugin {
 
@@ -24,14 +25,16 @@ namespace {
 
 bool ElfHeaderLooksValid(const char* e_ident_bytes,
                          size_t size,
-                         nacl::string* error) {
+                         ErrorInfo* error_info) {
   if (size < EI_NIDENT) {
-    *error = "not an ELF executable: file too short.";
+    error_info->SetReport(ERROR_ELF_CHECK_FAIL,
+                          "not an ELF executable: file too short.");
     return false;
   }
   if (strncmp(e_ident_bytes, EI_MAG0123, strlen(EI_MAG0123)) != 0) {
     // This can happen if we read a 404 error page, for example.
-    *error = "not an ELF executable: bad magic number.";
+    error_info->SetReport(ERROR_ELF_CHECK_FAIL,
+                          "not an ELF executable: bad magic number.");
     return false;
   }
   if (e_ident_bytes[EI_ABIVERSION] != EF_NACL_ABIVERSION) {
@@ -39,10 +42,10 @@ bool ElfHeaderLooksValid(const char* e_ident_bytes,
     ss << "bad ELF executable: ABI version mismatch:"
        << " expected " << EF_NACL_ABIVERSION
        << ", found " << (unsigned) e_ident_bytes[EI_ABIVERSION] << ".";
-    *error = ss.str();
+    error_info->SetReport(ERROR_ELF_CHECK_FAIL,
+                          ss.str());
     return false;
   }
-  *error = NACL_NO_ERROR;
   return true;
 }
 
@@ -61,22 +64,25 @@ bool BrowserInterface::GetOrigin(InstanceIdentifier instance_id,
 }
 
 bool BrowserInterface::MightBeElfExecutable(nacl::DescWrapper* wrapper,
-                                            nacl::string* error) {
+                                            ErrorInfo* error_info) {
   if (wrapper == NULL) {
-    *error = "bad descriptor for reading.";
+    error_info->SetReport(ERROR_ELF_CHECK_IO,
+                          "elf check: bad descriptor for reading.");
     return false;
   }
   if (wrapper->type_tag() == NACL_DESC_SHM) {
     void* buf;
     size_t size;
     if (0 != wrapper->Map(&buf, &size)) {
-      *error = "Map() failure.";
+      error_info->SetReport(ERROR_ELF_CHECK_IO,
+                            "elf check: Map() failure.");
       return false;
     }
     char* header = reinterpret_cast<char*>(buf);
-    bool might_be_elf = ElfHeaderLooksValid(header, size, error);
+    bool might_be_elf = ElfHeaderLooksValid(header, size, error_info);
     if (0 != wrapper->Unmap(buf, size)) {
-      *error = "Unmap() failure.";
+      error_info->SetReport(ERROR_ELF_CHECK_IO,
+                            "elf check: Unmap() failure.");
       return false;
     }
     return might_be_elf;
@@ -84,10 +90,11 @@ bool BrowserInterface::MightBeElfExecutable(nacl::DescWrapper* wrapper,
     static int const kAbiHeaderSize = sizeof(Elf_Ehdr);
     char elf_hdr[kAbiHeaderSize];
     if (kAbiHeaderSize > wrapper->Read(elf_hdr, sizeof elf_hdr)) {
-      *error = "Read() failure.";
+      error_info->SetReport(ERROR_ELF_CHECK_IO,
+                            "elf check: Read() failure.");
       return false;
     }
-    return ElfHeaderLooksValid(elf_hdr, kAbiHeaderSize, error);
+    return ElfHeaderLooksValid(elf_hdr, kAbiHeaderSize, error_info);
   } else {
     NACL_NOTREACHED();
   }

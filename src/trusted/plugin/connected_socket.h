@@ -17,6 +17,7 @@
 
 namespace plugin {
 
+class ErrorInfo;
 class Plugin;
 class ServiceRuntime;
 class SrpcClient;
@@ -36,7 +37,7 @@ class ConnectedSocket : public DescBasedHandle {
                             CallType call_type,
                             SrpcParams* params);
   bool StartJSObjectProxy(Plugin* plugin,
-                          nacl::string* error_string);
+                          ErrorInfo *error_info);
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(ConnectedSocket);

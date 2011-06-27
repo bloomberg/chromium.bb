@@ -84,7 +84,7 @@ class PluginPpapi : public pp::InstancePrivate, public Plugin {
 
   // Support for proxied execution.
   virtual bool StartProxiedExecution(NaClSrpcChannel* srpc_channel,
-                                     nacl::string* error_string);
+                                     ErrorInfo* error_info);
 
   // Getter for PPAPI proxy interface.
   ppapi_proxy::BrowserPpp* ppapi_proxy() const { return ppapi_proxy_; }

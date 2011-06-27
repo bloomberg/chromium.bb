@@ -13,6 +13,7 @@
 
 #include "native_client/src/trusted/plugin/connected_socket.h"
 #include "native_client/src/trusted/plugin/plugin.h"
+#include "native_client/src/trusted/plugin/plugin_error.h"
 #include "native_client/src/trusted/plugin/srpc_client.h"
 #include "native_client/src/trusted/plugin/utility.h"
 
@@ -48,11 +49,11 @@ bool ConnectedSocket::InitParamsEx(uintptr_t method_id,
 }
 
 bool ConnectedSocket::StartJSObjectProxy(Plugin* plugin,
-                                         nacl::string* error_string) {
+                                         ErrorInfo* error_info) {
   if (srpc_client_) {
-    return srpc_client_->StartJSObjectProxy(plugin, error_string);
+    return srpc_client_->StartJSObjectProxy(plugin, error_info);
   }
-  *error_string = "no connection to start proxy";
+  error_info->SetReport(ERROR_START_PROXY, "no connection to start proxy");
   return false;
 }
 

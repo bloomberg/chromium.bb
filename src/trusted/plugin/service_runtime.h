@@ -28,6 +28,7 @@ namespace plugin {
 
 class BrowserInterface;
 class ConnectedSocket;
+class ErrorInfo;
 class Plugin;
 class SocketAddress;
 class SrtSocket;
@@ -65,7 +66,7 @@ class ServiceRuntime {
   // to be started is passed through |nacl_file_desc|.  On success, returns
   // true.  On failure, returns false and |error_string| is set to something
   // describing the error.
-  bool Start(nacl::DescWrapper* nacl_file_desc, nacl::string* error_string);
+  bool Start(nacl::DescWrapper* nacl_file_desc, ErrorInfo* error_info);
 
   bool Kill();
   bool Log(int severity, nacl::string msg);
@@ -81,7 +82,7 @@ class ServiceRuntime {
   NACL_DISALLOW_COPY_AND_ASSIGN(ServiceRuntime);
   bool InitCommunication(nacl::Handle bootstrap_socket,
                          nacl::DescWrapper* shm,
-                         nacl::string* error_string);
+                         ErrorInfo* error_info);
 
   ScriptableHandle* default_socket_address_;  // creates, but does not own
   Plugin* plugin_;
