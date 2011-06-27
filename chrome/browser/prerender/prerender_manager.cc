@@ -66,9 +66,10 @@ const int kNavigationRecordWindowMs = 5000;
 
 // Valid HTTP methods for prerendering.
 const char* const kValidHttpMethods[] = {
-  "OPTIONS",
   "GET",
   "HEAD",
+  "OPTIONS",
+  "POST",
   "TRACE",
 };
 

@@ -1187,11 +1187,12 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderXhrTrace) {
   NavigateToDestURL();
 }
 
-// Checks that xhr POST cancels prerenders.
+// Checks that xhr POST requests allow prerenders.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderXhrPost) {
   PrerenderTestURL("files/prerender/prerender_xhr_post.html",
-                   FINAL_STATUS_INVALID_HTTP_METHOD,
+                   FINAL_STATUS_USED,
                    1);
+  NavigateToDestURL();
 }
 
 // Checks that xhr PUT cancels prerenders.
