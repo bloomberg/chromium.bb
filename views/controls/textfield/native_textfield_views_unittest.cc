@@ -101,7 +101,7 @@ namespace views {
 
 // TODO(oshima): Move tests that are independent of TextfieldViews to
 // textfield_unittests.cc once we move the test utility functions
-// from chrome/browser/automation/ to app/test/.
+// from chrome/browser/automation/ to ui/base/test/.
 class NativeTextfieldViewsTest : public ViewsTestBase,
                                  public TextfieldController {
  public:

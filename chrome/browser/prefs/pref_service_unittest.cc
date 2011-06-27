@@ -4,7 +4,6 @@
 
 #include <string>
 
-#include "app/test/data/resource.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
@@ -23,6 +22,7 @@
 #include "chrome/test/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/test/data/resource.h"
 
 using testing::_;
 using testing::Mock;
