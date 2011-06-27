@@ -41,7 +41,7 @@ def ColumnNameToFieldType(column_name):
 
   column_name = column_name.lower()
   field_type = "unknown"
-  if column_name in ["guid", "label", "date_modified"]:
+  if column_name in ["guid", "label", "country", "date_modified"]:
     field_type = "ignored"
   elif column_name == "first_name":
     field_type = "NAME_FIRST"
@@ -63,7 +63,7 @@ def ColumnNameToFieldType(column_name):
     field_type = "ADDRESS_HOME_STATE"
   elif column_name == "zipcode":
     field_type = "ADDRESS_HOME_ZIP"
-  elif column_name == "country":
+  elif column_name == "country_code":
     field_type = "ADDRESS_HOME_COUNTRY"
   elif column_name == "phone":
     field_type = "PHONE_HOME_WHOLE_NUMBER"

@@ -20,21 +20,66 @@ def main():
     print "Cannot read database at \"%s\"" % database
     return
 
+  # Read the autofill_profile_names table.
   try:
     connection = sqlite3.connect(database, 0)
     cursor = connection.cursor()
-    cursor.execute("SELECT * from autofill_profiles;")
+    cursor.execute("SELECT * from autofill_profile_names;")
   except sqlite3.OperationalError:
-    print "Failed to read the autofill_profiles table from \"%s\"" % database
+    print ("Failed to read the autofill_profile_names table from \"%s\"" %
+           database)
     raise
 
   # For backward-compatibility, the result of |cursor.description| is a list of
   # 7-tuples, in which the first item is the column name, and the remaining
   # items are 'None'.
   types = [ColumnNameToFieldType(item[0]) for item in cursor.description]
-  profiles = [zip(types, profile) for profile in cursor]
+  profiles = {}
+  for profile in cursor:
+    guid = profile[0]
+    profiles[guid] = zip(types, profile)
 
-  print SerializeProfiles(profiles)
+  # Read the autofill_profile_emails table.
+  try:
+    cursor.execute("SELECT * from autofill_profile_emails;")
+  except sqlite3.OperationalError:
+    print ("Failed to read the autofill_profile_emails table from \"%s\"" %
+           database)
+    raise
+
+  types = [ColumnNameToFieldType(item[0]) for item in cursor.description]
+  for profile in cursor:
+    guid = profile[0]
+    profiles[guid].extend(zip(types, profile))
+
+  # Read the autofill_profiles table.
+  try:
+    cursor.execute("SELECT * from autofill_profiles;")
+  except sqlite3.OperationalError:
+    print "Failed to read the autofill_profiles table from \"%s\"" % database
+    raise
+
+  types = [ColumnNameToFieldType(item[0]) for item in cursor.description]
+  for profile in cursor:
+    guid = profile[0]
+    profiles[guid].extend(zip(types, profile))
+
+  # Read the autofill_profile_phones table.
+  try:
+    cursor.execute("SELECT * from autofill_profile_phones;")
+  except sqlite3.OperationalError:
+    print ("Failed to read the autofill_profile_phones table from \"%s\"" %
+           database)
+    raise
+
+  for profile in cursor:
+    guid = profile[0]
+    if int(profile[1]) == 0:
+      profiles[guid].append(("PHONE_HOME_WHOLE_NUMBER", profile[2]))
+    else:
+      profiles[guid].append(("PHONE_FAX_WHOLE_NUMBER", profile[2]))
+
+  print SerializeProfiles(profiles.values())
 
 
 if __name__ == '__main__':
