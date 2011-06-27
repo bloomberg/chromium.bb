@@ -8,23 +8,28 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "ui/gfx/compositor/compositor_gl.h"
 
 // Helper class for storing image data from the GPU process renderered
 // on behalf of the RWHVV. It assumes that GL context that will display
 // the image data is current  when an instance of this object is created
-//  or destroyed.
-class AcceleratedSurfaceContainerTouch
-    : public base::RefCounted<AcceleratedSurfaceContainerTouch> {
+// or destroyed.
+class AcceleratedSurfaceContainerTouch : public ui::TextureGL {
  public:
-  explicit AcceleratedSurfaceContainerTouch(uint64 surface_handle);
-  uint32 texture() const { return texture_; }
- private:
-  friend class base::RefCounted<AcceleratedSurfaceContainerTouch>;
+  AcceleratedSurfaceContainerTouch(ui::CompositorGL* compositor,
+                                   const gfx::Size& size,
+                                   uint64 surface_handle);
 
+  virtual void SetBitmap(const SkBitmap& bitmap,
+                         const gfx::Point& origin,
+                         const gfx::Size& overall_size) OVERRIDE;
+
+  virtual void Draw(const ui::Transform& transform) OVERRIDE;
+
+ protected:
   ~AcceleratedSurfaceContainerTouch();
 
   void* image_;
-  uint32 texture_;
   DISALLOW_COPY_AND_ASSIGN(AcceleratedSurfaceContainerTouch);
 };
 

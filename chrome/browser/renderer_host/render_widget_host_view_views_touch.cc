@@ -8,6 +8,8 @@
 #include "chrome/browser/renderer_host/accelerated_surface_container_touch.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/gtk/WebInputEventFactory.h"
+#include "ui/gfx/gl/gl_bindings.h"
+#include "views/widget/widget.h"
 
 static const char kRenderWidgetHostViewKey[] = "__RENDER_WIDGET_HOST_VIEW__";
 
@@ -190,24 +192,19 @@ RenderWidgetHostView*
 
 void RenderWidgetHostViewViews::AcceleratedSurfaceSetIOSurface(
     int32 width, int32 height, uint64 surface_id) {
-  // TODO(backer): Currently NO-OPed. Should eventually be something like:
+  accelerated_surface_containers_[surface_id] =
+    new AcceleratedSurfaceContainerTouch(
+        static_cast<ui::CompositorGL*>(GetWidget()->compositor()),
+        gfx::Size(width, height),
+        surface_id);
+}
 
-  // context_->MakeCurrent(surface_.get());
-  // accelerated_surface_containers_[surface_id] =
-  //   new AcceleratedSurfaceContainer(surface_id);
-  // glFlush();
+void RenderWidgetHostViewViews::AcceleratedSurfaceRelease(uint64 surface_id) {
+  accelerated_surface_containers_.erase(surface_id);
 }
 
 void RenderWidgetHostViewViews::AcceleratedSurfaceBuffersSwapped(
     uint64 surface_id) {
-  // TODO(backer): Currently NO-OPed. Will eventually tie into the
-  // browser compositor.
-}
-
-void RenderWidgetHostViewViews::AcceleratedSurfaceRelease(uint64 surface_id) {
-  // TODO(backer): Currently NO-OPed. Should eventually be something like:
-
-  // context_->MakeCurrent(surface_.get());
-  // accelerated_surface_containers_.erase(surface_id);
-  // glFlush();
+  SetExternalTexture(accelerated_surface_containers_[surface_id].get());
+  glFlush();
 }
