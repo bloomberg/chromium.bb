@@ -68,6 +68,9 @@ class TabContentsWrapper;
 // Used to save a tab, if no file is specified, prompts the user to enter it.
 - (void)handlesSaveScriptCommand:(NSScriptCommand*)command;
 
+// Used to close a tab.
+- (void)handlesCloseScriptCommand:(NSScriptCommand*)command;
+
 // Displays the HTML of the tab in a new tab.
 - (void)handlesViewSourceScriptCommand:(NSScriptCommand*)command;
 

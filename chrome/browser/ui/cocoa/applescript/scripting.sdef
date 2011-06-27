@@ -233,6 +233,9 @@
 			<responds-to command="save">
 				<cocoa method="handlesSaveScriptCommand:"/>
 			</responds-to>
+			<responds-to command="close">
+				<cocoa method="handlesCloseScriptCommand:"/>
+			</responds-to>
 			<responds-to command="execute">
 				<cocoa method="handlesExecuteJavascriptScriptCommand:"/>
 			</responds-to>

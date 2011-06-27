@@ -19,6 +19,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
+#include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/common/view_messages.h"
 #include "googleurl/src/gurl.h"
 
@@ -274,6 +275,10 @@
                                                 savePackageType);
 }
 
+- (void)handlesCloseScriptCommand:(NSScriptCommand*)command {
+  TabContents* contents = tabContents_->tab_contents();
+  contents->delegate()->CloseContents(contents);
+}
 
 - (void)handlesViewSourceScriptCommand:(NSScriptCommand*)command {
   NavigationEntry* entry = tabContents_->controller().GetLastCommittedEntry();
