@@ -101,4 +101,9 @@
 <translation id="9191268552238695869">Այս համակարգչի վրա կառավարիչը տեղադրել է Chromium, որը մատչելի է բոլոր օգտվողներին։ Համակարգային մակարդակով տեղադրված Chromium֊ը հիմա կփոխարինի օգտվողային մակարդակով Ձեր տեղադրումը։</translation>
 <translation id="980185455267101462">Այս համակարգչի վրա տեղադրված է Chromium Frame֊ի ավելի նոր տարբերակ։ Եթե ծրագրաշարը չի աշխատում, հեռացրե՛ք Chromium Frame֊ը եւ դարձյալ ներբեռնեք։</translation>
 <translation id="985602178874221306">Chromium֊ի հեղինակները</translation>
+<translation id="4365115785552740256">Chromium֊ը լույս է տեսել շնորհիվ բաց ծածկագրով <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> նախագծի եւ այլ <ph name="BEGIN_LINK_OSS"/>ազատ ծրագրաշարի<ph name="END_LINK_OSS"/>։</translation>
+<translation id="5211087808649701653">Բացել տպման համակարգային երկխոսությունը</translation>
+<translation id="6714487516757221107">Թարմացումը կատարելու համար չի գտնվել տեղադրված Chromium կամ Chromium Frame։</translation>
+<translation id="8628626585870903697">Chromium֊ում ներդրված չէ PDF նշոցների դիտարկիչ, որը պահանջվում է տպումը նախադիտելու համար։</translation>
+<translation id="8974095189086268230">Chromium ՕՀ իրականություն է դարձել շնորհիվ լրացուցիչ <ph name="BEGIN_LINK_CROS_OSS"/>բաց ծածկագրով ծրագրաշարերի<ph name="END_LINK_CROS_OSS"/>։</translation>
 </translationbundle>

@@ -807,7 +807,6 @@
 <translation id="3828029223314399057">Bilatu laster-marketan</translation>
 <translation id="3828924085048779000">Ez da onartzen pasaesaldi hutsa.</translation>
 <translation id="3831099738707437457">&amp;Ezkutatu ortografia-panela</translation>
-<translation id="3834901049798243128">Ezikusi salbuespenak eta blokeatu hirugarrenen cookie-ak ezar daitezen</translation>
 <translation id="3835522725882634757">Ai ene! Zerbitzari hau <ph name="PRODUCT_NAME"/>-(e)k ulertu ezin dituen datuak bidaltzen ari da. <ph name="BEGIN_LINK"/>Jakinarazi akatsa<ph name="END_LINK"/>, eta erantsi <ph name="BEGIN2_LINK"/>zerrenda gordina<ph name="END2_LINK"/>.</translation>
 <translation id="38385141699319881">Irudia deskargatzen...</translation>
 <translation id="3850258314292525915">Desgaitu sinkronizazioa</translation>
@@ -962,7 +961,6 @@
 <translation id="4306718255138772973">Hodeiko inprimatze-proxy-a</translation>
 <translation id="4307992518367153382">Oinarrizkoak</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES"/>K (<ph name="NUM_KILOBYTES_LIVE"/>K bizi)</translation>
-<translation id="4310537301481716192">Hilda dago, Patxi!</translation>
 <translation id="431076611119798497">&amp;Xehetasunak</translation>
 <translation id="4312207540304900419">Aktibatu hurrengo fitxa</translation>
 <translation id="4312280225042158944">&amp;Erakutsi karpetan</translation>
@@ -1237,7 +1235,6 @@
 <translation id="5350198318881239970">Zure profila ez omen da modu zuzenean ireki.\n\Zenbait ezaugarri ez dira erabilgarri egongo.  Egiaztatu profila existitzen dela eta bere edukiak irakurri eta idazteko baimena daukazula.</translation>
 <translation id="5352033265844765294">Data-zigilua</translation>
 <translation id="5352235189388345738">Hurrengoak atzi ditzake:</translation>
-<translation id="5355097969896547230">Bilatu berriro</translation>
 <translation id="5355351445385646029">Sakatu zuriune-tekla hautagaia hautatzeko</translation>
 <translation id="5361734574074701223">Geratzen den denbora kalkulatzen</translation>
 <translation id="5362741141255528695">Hautatu gako pribatuaren fitxategia.</translation>
@@ -2263,7 +2260,6 @@ Gorde zure gako-fitxategia toki seguruan. Zure hedapenaren bertsio berriak sortz
 <translation id="8658163650946386262">Konfiguratu sinkronizazioa...</translation>
 <translation id="8661290697478713397">Ireki esteka i&amp;sileko leihoan</translation>
 <translation id="8664389313780386848">I&amp;kusi orriaren iturburua</translation>
-<translation id="8666632926482119393">Aurkitu aurrekoa</translation>
 <translation id="8673026256276578048">Bilatu sarean...</translation>
 <translation id="8677212948402625567">Tolestu dena...</translation>
 <translation id="8679658258416378906">Aktibatu 5. fitxa</translation>
@@ -2755,7 +2751,6 @@ Gorde zure gako-fitxategia toki seguruan. Zure hedapenaren bertsio berriak sortz
 <translation id="3781488789734864345">Hautatu sare mugikor bat</translation>
 <translation id="385120052649200804">AEBetako nazioarteko teklatua</translation>
 <translation id="3858678421048828670">Italierako teklatua</translation>
-<translation id="4092066334306401966">13px</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4285669636069255873">Errusierako teklatu fonetikoa</translation>
 <translation id="4298972503445160211">Danierako teklatua</translation>
@@ -2782,7 +2777,6 @@ Gorde zure gako-fitxategia toki seguruan. Zure hedapenaren bertsio berriak sortz
 <translation id="6353618411602605519">Kroazierako teklatua</translation>
 <translation id="6392373519963504642">Koreerako teklatua</translation>
 <translation id="6462109140674788769">Grezierako teklatua</translation>
-<translation id="6468252175335241103">%Y/%b/%-d</translation>
 <translation id="6503256918647795660">Suitzako frantseseko teklatua</translation>
 <translation id="657402800789773160">&amp;Birkargatu orri hau</translation>
 <translation id="668171684555832681">Besterik...</translation>
@@ -2791,7 +2785,6 @@ Gorde zure gako-fitxategia toki seguruan. Zure hedapenaren bertsio berriak sortz
 <translation id="6870130893560916279">Ukrainierako teklatua</translation>
 <translation id="7172053773111046550">Estonierako teklatua</translation>
 <translation id="719464814642662924">Visa</translation>
-<translation id="7221585318879598658">sans-serif</translation>
 <translation id="736515969993332243">Sareak bilatzen.</translation>
 <translation id="7369847606959702983">Kreditu-txartela (beste bat)</translation>
 <translation id="7419631653042041064">Katalanerako teklatua</translation>
@@ -2871,7 +2864,6 @@ Gorde zure gako-fitxategia toki seguruan. Zure hedapenaren bertsio berriak sortz
 <translation id="5920618722884262402">Blokeatu irainak</translation>
 <translation id="5948544841277865110">Gehitu sare pribatua</translation>
 <translation id="6005282720244019462">Latinoamerikako teklatua</translation>
-<translation id="603890000178803545">Urt^Ots^Mar^Api^Mai^Eka^Uzt^Abu^Ira^Urr^Aza^Abe</translation>
 <translation id="6147020289383635445">Inprimatze-aurrebistak huts egin du.</translation>
 <translation id="6198252989419008588">Aldatu PINa</translation>
 <translation id="6263541650532042179">berrezarri sinkronizazioa</translation>
@@ -2913,7 +2905,6 @@ Gorde zure gako-fitxategia toki seguruan. Zure hedapenaren bertsio berriak sortz
 <translation id="8448695406146523553">Zure pasaesaldia duen norbaitek soilik irakur ditzake zure datu zifratuak -- pasaesaldia ez zaio Google-i bidaltzen eta Google-k ez du gordetzen. Hura ahazten baduzu, hau egin beharko duzu:</translation>
 <translation id="8464132254133862871">Erabiltzaile-kontu hau ezin da aukeratu zerbitzu honetarako.</translation>
 <translation id="8467548439852845758">Segurtasun gehiago edukitzeko, <ph name="PRODUCT_NAME"/>-(e)k zure pasahitzak zifratu egingo ditu.</translation>
-<translation id="853265131227167869">Ig.^Al.^Ar.^Az.^Og.^Ol.^Lr.</translation>
 <translation id="8628085465172583869">Zerbitzariaren ostalari-izena:</translation>
 <translation id="8666678546361132282">Ingelesa</translation>
 <translation id="8695825812785969222">Ireki &amp;kokapena...</translation>
@@ -3188,7 +3179,6 @@ Gorde zure gako-fitxategia toki seguruan. Zure hedapenaren bertsio berriak sortz
 <translation id="8028653631868039867">Fitxategi hau gaiztoa da. Hala ere, mantendu nahi duzu?</translation>
 <translation id="8678698760965522072">Lineako egoera</translation>
 <translation id="8844703966364420804">Ez dago magiarik.</translation>
-<translation id="1368725949478140659">Kargatu dena den</translation>
 <translation id="1436784010935106834">Kendua</translation>
 <translation id="1954982207163873487">Erakutsi giltza menua</translation>
 <translation id="2232366847796264901">Segurua ez den edukia blokeatu da.</translation>
@@ -3204,4 +3194,18 @@ Gorde zure gako-fitxategia toki seguruan. Zure hedapenaren bertsio berriak sortz
 <translation id="7027559794548152684">Azken aldian <ph name="USER_EMAIL_ADDRESS"/> kontuarekin sinkronizatua. Kudeatu sinkronizazio-datuak <ph name="BEGIN_LINK"/>Google Dashboard<ph name="END_LINK"/>-en</translation>
 <translation id="732014399093750908">Segurua ez den script-a blokeatu da.</translation>
 <translation id="7460131386973988868">IP estatikoen konfigurazioa gaitzen du. Zenbaitetan huts egin dezake.</translation>
+<translation id="1243196447546764522">Blokeatu hirugarrenek cookie-ak ezar ditzaten</translation>
+<translation id="3448976534399424402">Enfokatu Giltza menua</translation>
+<translation id="3589825953300272289">Bilatu laster-markak Giltza menuan edo laster-marken barran.</translation>
+<translation id="3808873045540128170">Hilda zegok, Jokin!</translation>
+<translation id="3853566281579215874">Kargatu dena den (ez da gomendagarria)</translation>
+<translation id="4262366363486082931">Enfokatu tresnabarra</translation>
+<translation id="4882473678324857464">Enfokatu laster-markak</translation>
+<translation id="497421865427891073">Joan aurrera</translation>
+<translation id="50501183967525113">GPU bidez azeleratutako marrazketa</translation>
+<translation id="5227808808023563348">Aurkitu aurreko testua</translation>
+<translation id="6970856801391541997">Inprimatu orri espezifikoak</translation>
+<translation id="6989426679472387780">Gaitu GPU bidez azeleratutako marrazketa orrien edukietarako, konposaketa gaituta dagoenean.</translation>
+<translation id="6993929801679678186">Erakutsi betetze automatikoaren aurresateak</translation>
+<translation id="7469237359338869056">Bilatu testua berriro</translation>
 </translationbundle>

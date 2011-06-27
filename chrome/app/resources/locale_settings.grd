@@ -66,6 +66,9 @@
     </if>
     <output filename="locale_settings_bg.pak" type="data_package" lang="bg" />
     <output filename="locale_settings_bn.pak" type="data_package" lang="bn" />
+    <if expr="pp_ifdef('use_third_party_translations')">
+      <output filename="locale_settings_bs.pak" type="data_package" lang="bs" />
+    </if>
     <output filename="locale_settings_ca.pak" type="data_package" lang="ca" />
     <if expr="pp_ifdef('use_third_party_translations')">
       <output filename="locale_settings_ca@valencia.pak" type="data_package" lang="ca@valencia" />

@@ -51,7 +51,6 @@
 <translation id="911206726377975832">Voleu eliminar també les dades de navegació?</translation>
 <translation id="985602178874221306">Els autors del Chromium</translation>
 <translation id="2407806170074302369">Quant al Chromium Frame...</translation>
-<translation id="2591009028921666540">S'ha generat la pàgina amb el Chromium.</translation>
 <translation id="2682584270762546522">Heu provat d'accedir a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, però el servidor ha presentat un certificat que encara no és vàlid. No hi ha cap informació disponible sobre si el certificat és de confiança. El Chromium no pot garantir amb seguretat que esteu comunicant-vos amb &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; i no amb un atacant. Assegureu-vos que el rellotge i el fus horari estan establerts correctament al vostre sistema. Si no ho estan, haureu de corregir els possibles errors i actualitzar esta pàgina. Si ho estan, no hauríeu de continuar.</translation>
 <translation id="2886012850691518054">Opcional: Ajudeu a millorar el Chromium enviant automàticament estadístiques d'ús i informes d'error a Google.</translation>
 <translation id="2927042866129133279">Els arguments no són vàlids. El Chromium Frame no pot instal·lar-s'en mode preparat sense instal·lar també el Chromium.</translation>

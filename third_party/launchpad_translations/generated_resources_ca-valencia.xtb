@@ -947,7 +947,6 @@
 <translation id="3828924085048779000">No es permeten les paraules de pas buides.</translation>
 <translation id="3829932584934971895">Tipus de proveïdor:</translation>
 <translation id="3831099738707437457">&amp;Oculta el tauler d'ortografia</translation>
-<translation id="3834901049798243128">Ignora les excepcions i bloqueja l'establiment de les galetes de tercers</translation>
 <translation id="3835522725882634757">Este servidor envia dades que <ph name="PRODUCT_NAME"/> no pot entendre. <ph name="BEGIN_LINK"/>Informeu d'un error<ph name="END_LINK"/> i incloeu la <ph name="BEGIN2_LINK"/>llista sense format<ph name="END2_LINK"/>.</translation>
 <translation id="38385141699319881">S'està baixant la imatge...</translation>
 <translation id="3842552989725514455">Tipus de lletra Serif</translation>
@@ -1046,7 +1045,6 @@
 <translation id="4089521618207933045">Té un submenú</translation>
 <translation id="4089663545127310568">Esborra les contrasenyes alçades</translation>
 <translation id="4091434297613116013">fulls de paper</translation>
-<translation id="4092066334306401966">13px</translation>
 <translation id="4092878864607680421">La versió més recent de l'aplicació &quot;<ph name="APP_NAME"/>&quot; requereix més permisos i, per tant, s'ha desactivat.</translation>
 <translation id="4094105377635924481">Afig l'agrupació al menú contextual de les pestanyes</translation>
 <translation id="4094130554533891764">Ara pot accedir a:</translation>
@@ -1126,7 +1124,6 @@
 <translation id="4306718255138772973">Servidor intermediari d'impressió en núvol</translation>
 <translation id="4307992518367153382">Opcions bàsiques</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES"/> K (<ph name="NUM_KILOBYTES_LIVE"/> K actius)</translation>
-<translation id="4310537301481716192">L'hem perdut!</translation>
 <translation id="431076611119798497">&amp;Detalls</translation>
 <translation id="4312207540304900419">Activa la pestanya següent</translation>
 <translation id="4320697033624943677">Afig usuaris</translation>
@@ -1451,7 +1448,6 @@
 <translation id="5350198318881239970">El vostre perfil no s'ha pogut obrir correctament.\n\nÉs possible que algunes funcions no estiguen disponibles. Comproveu que el perfil existisca i que tingueu permís per llegir-ne el contingut i escriure-hi.</translation>
 <translation id="5352033265844765294">Indicació de data i hora</translation>
 <translation id="5352235189388345738">No pot accedir:</translation>
-<translation id="5355097969896547230">Torna a cercar</translation>
 <translation id="5355351445385646029">Premeu Espai per seleccionar el candidat</translation>
 <translation id="5359419173856026110">Mostra la taxa de fotogrames real d'una pàgina, en fotogrames per segon, quan l'acceleració de maquinari és activa.</translation>
 <translation id="5361734574074701223">S'està calculant el temps restant</translation>
@@ -1736,7 +1732,6 @@
 <translation id="6025294537656405544">Cos de lletra mínim</translation>
 <translation id="6030946405726632495">No es pot crear la carpeta &quot;$1&quot;: $2</translation>
 <translation id="6035087343161522833">Si l'opció de bloqueig de l'establiment de les galetes de tercers està activada, estes galetes tampoc no es podran llegir.</translation>
-<translation id="603890000178803545">Gen^Feb^Mar^Abr^Mai^Jun^Jul^Ago^Set^Oct^Nov^Des</translation>
 <translation id="6040143037577758943">Tanca</translation>
 <translation id="604124094241169006">Automàtic</translation>
 <translation id="6042708169578999844">Les vostres dades a <ph name="WEBSITE_1"/> i a <ph name="WEBSITE_2"/></translation>
@@ -1878,7 +1873,6 @@
 <translation id="6462109140674788769">Teclat grec</translation>
 <translation id="6463795194797719782">E&amp;dita</translation>
 <translation id="646727171725540434">Servidor intermediari HTTP</translation>
-<translation id="6468252175335241103">%b %-d, %Y</translation>
 <translation id="6472893788822429178">Mostra el botó de la pàgina d'inici</translation>
 <translation id="6483805311199035658">S'està obrint <ph name="FILE"/>...</translation>
 <translation id="6484929352454160200">Hi ha una nova versió disponible de <ph name="PRODUCT_NAME"/></translation>
@@ -2118,7 +2112,6 @@
 <translation id="721197778055552897"><ph name="BEGIN_LINK"/>Més informació<ph name="END_LINK"/> sobre este problema.</translation>
 <translation id="7211994749225247711">Suprimeix...</translation>
 <translation id="7219179957768738017">La connexió utilitza <ph name="SSL_VERSION"/>.</translation>
-<translation id="7221585318879598658">sans-serif</translation>
 <translation id="7221869452894271364">Torna a carregar esta pàgina</translation>
 <translation id="7222232353993864120">Adreça electrònica</translation>
 <translation id="7224023051066864079">Màscara de subxarxa:</translation>
@@ -2586,7 +2579,6 @@ Alceu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8525552230188318924">Configura la sincronització de contrasenyes.</translation>
 <translation id="8528962588711550376">S'està iniciant la sessió.</translation>
 <translation id="8530339740589765688">Selecciona per domini</translation>
-<translation id="853265131227167869">Dg^Dl^Dm^Dc^Dj^Dv^Ds</translation>
 <translation id="8534801226027872331">En este cas, el certificat presentat al teu navegador té errors i no es pot comprendre. Això pot significar que no podem comprendre la informació d'identitat del certificat o alguna informació utilitzada per assegurar la connexió. No hauries de continuar.</translation>
 <translation id="8535005006684281994">URL de renovació de certificat de Netscape</translation>
 <translation id="8539727552378197395">No (Només HTTP)</translation>
@@ -2632,7 +2624,6 @@ Alceu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8658163650946386262">Configura la sincronització...</translation>
 <translation id="8661290697478713397">Obri l'enllaç en una finestra d'incò&amp;gnit</translation>
 <translation id="8664389313780386848">&amp;Visualitza l'origen de la pàgina</translation>
-<translation id="8666632926482119393">Cerca l'anterior</translation>
 <translation id="8666678546361132282">Anglés</translation>
 <translation id="8673026256276578048">Cerca al web...</translation>
 <translation id="8677212948402625567">Redueix-ho tot...</translation>
@@ -2860,5 +2851,4 @@ Alceu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="996250603853062861">S'està establint una connexió segura...</translation>
 <translation id="3009731429620355204">Sessions</translation>
 <translation id="473775607612524610">Actualitza</translation>
-<translation id="1368725949478140659">Carrega igualment</translation>
 </translationbundle>

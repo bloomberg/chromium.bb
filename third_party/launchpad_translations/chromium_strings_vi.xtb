@@ -100,4 +100,5 @@
 <translation id="9191268552238695869">Một quản trị viên đã cài Chromium vào hệ thống và hiện nó có thể sử dụng cho tất cả người dùng. Cấp độ hệ thống của Chromium sẽ được thay thế bởi cấp độ người dùng của bạn</translation>
 <translation id="980185455267101462">Máy tính này hiện có phiên bản mới hơn của Chromium Frame. Nếu phần mềm không hoạt động xin hãy gỡ bỏ Chromium Frame và tải lại.</translation>
 <translation id="985602178874221306">Các tác giả của Chromium</translation>
+<translation id="1221340462641866827">Chromium OS không hỗ trợ việc chạy ứng dụng để xử lý đường dẫn <ph name="SCHEME"/>. Đường dẫn yêu cầu thì <ph name="PROTOLINK"/>.</translation>
 </translationbundle>

@@ -327,7 +327,6 @@
 <translation id="987264212798334818">Հիմնական</translation>
 <translation id="989988560359834682">Խմբագրել հասցեն</translation>
 <translation id="996250603853062861">Անվտանգ միացման ստեղծում...</translation>
-<translation id="1368725949478140659">Միեւնուն է բեռնել</translation>
 <translation id="1436784010935106834">Հեռացվել է</translation>
 <translation id="1800124151523561876">Ոչ մի խոսք չի հայտնաբերվել։</translation>
 <translation id="1801298019027379214">Սխալ PIN։ Խնդրում ենք փորձել դարձյալ։ Մնացել է <ph name="TRIES_COUNT"/> փորձ։</translation>
@@ -570,4 +569,65 @@
 <translation id="6442697326824312960">Վերացնել ներդիրը</translation>
 <translation id="8072988827236813198">Գամել ներդիրները</translation>
 <translation id="855081842937141170">Գամել ներդիրը</translation>
+<translation id="2159087636560291862">Այս դեպքում վկայագիրը չի ստուգվել երրորդ կողմից, որին վստահում է Ձեր համակարգիչը։ Յուրաքանյուր օգտվողը կարող է ստեղծել վկայագիր, որն ունակ է մարմանվորել ցանկացած այլ էջը։ Այդ պատճառով վկայագրերը պետք է ստուգվեն վստահելի երրորդ կողմից։ Առանց այդպիսի ստուգմանը վկայագրի նույնականացման մասին տեղեկություններն անիմաստ են։ Ինչի պատճառով անհնար է ստուգել թե իրոք Դուք հաղորդակցվում եք <ph name="DOMAIN"/>֊ի այլ ոչ թե ոճրագործների հետ, ովքեր ստեղծել են իրենց անձնական վկայագիրը, մարմնավորելով <ph name="DOMAIN2"/> էջը։ Դուք չպետք է շարունակեք։</translation>
+<translation id="2461687051570989462">Մուտք տպիչների ցանկ ցանկացած համակարգչից կամ խելախոսից։ <ph name="BEGIN_LINK"/>Իմանալ ավելին<ph name="END_LINK"/></translation>
+<translation id="2462724976360937186">Վկայագրման կենտրոնի բանալու նույնացուցիչ</translation>
+<translation id="2466804342846034717">Նշե՛ք ճիշտ գաղտնաբառը և մուտքագրե՛ք նիշերը ստորեւ բերված պատկերակից։</translation>
+<translation id="2476990193835943955">Սեղմե՛ք Control, Alt կամ Shift, որպեսզի տեսնել&lt;br&gt;համապատասխան արագ ստեղները։</translation>
+<translation id="2480626392695177423">Փոխանջատել կետադրության լի/կես լայնության աշխատակերպը</translation>
+<translation id="2485056306054380289">Վկայագրման կենտրոնի սպասարկչի վկայագիր՝</translation>
+<translation id="2489428929217601177">անցյալ օրվա համար</translation>
+<translation id="2489435327075806094">Սլաքի արագությունը՝</translation>
+<translation id="2490270303663597841">Կիրառել միայն այս ծպտյալ նիստի համար</translation>
+<translation id="2491120439723279231">Սպասարկչի վկայագիրը բովանդակում է սխալներ։</translation>
+<translation id="2492538245231809938">Գաղտնագրված տվյալների տեսակներ</translation>
+<translation id="2493021387995458222">Ընտրել «մեկ բառով»</translation>
+<translation id="2496180316473517155">Զննարկումների պատմությունը</translation>
+<translation id="2496540304887968742">Սարքի ծավալը պետք է լինի 4 ԳԲ ոչ պակաս։</translation>
+<translation id="2498131838700757846">Օգտագործել LevelDB փորձնական ներքին միջերեսն IndexedDB֊ի համար։</translation>
+<translation id="2498765460639677199">Հսկայական</translation>
+<translation id="2501173422421700905">Վկայագիրը կասեցված է</translation>
+<translation id="2502105862509471425">Ավելացնել նոր վարկային քարտ...</translation>
+<translation id="2503458975635466059">Հատկագիրն օգտագործվում է <ph name="PROCESS_ID"/> գործընթացի կողմից <ph name="HOST_NAME"/> տիրույթի վրա։ Եթե Դուք համոզված եք, որ այլ գործընթացները չեն օգտագործում այս հատկագիրը, ջնջե՛ք <ph name="LOCK_FILE"/> նշոցը եւ վերագործարկեք <ph name="PRODUCT_NAME"/>֊ը։</translation>
+<translation id="2503522102815150840">Զննարկիչի անուղղելի խորտակում</translation>
+<translation id="2505402373176859469"><ph name="RECEIVED_AMOUNT"/>՝ <ph name="TOTAL_SIZE"/>֊ից</translation>
+<translation id="250599269244456932">Կատարել ինքնաբար (խորհուրդ է տրվում)</translation>
+<translation id="2515586267016047495">Alt</translation>
+<translation id="2517143724531502372"><ph name="DOMAIN"/> կայքի թխուկները թույլատրված են միայն նիստի ժամանակով։</translation>
+<translation id="2519040785135695148">Այս կայքին մերժել են URL֊ի օգտվողային կարգադրիչ գրանցել</translation>
+<translation id="2520481907516975884">Փոխանջատել չիներեն/անգլերեն աշխատակերպը</translation>
+<translation id="2527167509808613699">Ցանկացած տեսակի կապ</translation>
+<translation id="2529133382850673012">ԱՄՆ ստեղնաշար</translation>
+<translation id="2529657954821696995">Հոլանդերեն ստեղնաշար</translation>
+<translation id="2541913031883863396">այնուամենայնիվ շարունակել</translation>
+<translation id="254416073296957292">&amp;Լեզվի կարգավորումներ...</translation>
+<translation id="2550839177807794974">Որոնման համակարգների կառավարելը...</translation>
+<translation id="2551191967044410069">Տեղորոշման բացառություններ</translation>
+<translation id="2552545117464357659">Ավելի նոր</translation>
+<translation id="2553340429761841190">Չհաջողվեց միացնել <ph name="PRODUCT_NAME"/>֊ը <ph name="NETWORK_ID"/>֊ին։ Ընտրեք այլ ցանց կամ փորձեք դարձյալ։</translation>
+<translation id="2557812428283601679">A -- L</translation>
+<translation id="2557899542277210112">Արագ մուտքի համար տեղադրեք էջանիշերն այստեղ — էջանիշերի վահանակում։</translation>
+<translation id="2560794850818211873">Պատճենել տեսանյութի URL</translation>
+<translation id="2565875069387440417">Մտնել, օգտագործելով Google հաշիվը</translation>
+<translation id="2568774940984945469">Տեղեկության վահանակի արկղ</translation>
+<translation id="2570648609346224037">Վերականգման համար պատկերի ներբեռնման ժամանակ տեղի ունեցավ սխալ։</translation>
+<translation id="257088987046510401">Թեմաներ</translation>
+<translation id="2574102660421949343">Թխուկները <ph name="DOMAIN"/> կայքից թույլատրված են։</translation>
+<translation id="2580170710466019930">Խնդրում ենք սպասել մինչ <ph name="PRODUCT_NAME"/>֊ը տեղադրում է համակարգի վերջին թարմացումները։</translation>
+<translation id="2580924999637585241">Ընդամենը՝ <ph name="NUMBER_OF_SHEETS"/> <ph name="SHEETS_LABEL"/></translation>
+<translation id="2587203970400270934">Օպերատորի կոդը՝</translation>
+<translation id="2589855374197350858">Գաղտնագրված տվյալների տեսակներ</translation>
+<translation id="2592884116796016067">Այս էջի բաժիններից մեկում (HTML WebWorker) տեղի ունեցավ խորտակում, որը կարող էր վնասել նրա աշխատանքին։</translation>
+<translation id="2600306978737826651">Չհաջողվեց ներբեռնել պատկերը։ Գրառումը չեղարկվե՛լ է։</translation>
+<translation id="2604243255129603442">Համակարգը ստիպված էր անջատել <ph name="NAME_OF_EXTENSION"/>։ Եթե Դուք անջատեք էջանիշերի համաժամացումը, այն նորից կարելի կլինի միացնել «Գործիքներ» ընտրացանկի «Ըընդլայնումներ» էջում։</translation>
+<translation id="2607101320794533334">Տեղեկություն սուբյեկտի բաց բանալու մասին</translation>
+<translation id="2608770217409477136">Օգտագործել լռելյայն կայանքները</translation>
+<translation id="2609371827041010694">Միշտ գործարկել այս կայքի վրա</translation>
+<translation id="2610260699262139870">&amp;Իրական չափը</translation>
+<translation id="2610780100389066815">Microsoft Վստահության ցանկի ստորագրում</translation>
+<translation id="2615413226240911668">Սակայն այս էջը բովանդակում է այլ պաշարներ, որոնք անվտանգ չեն։ Այդ պաշարները տվյալների փոխանակման ժամանակ կարող են դիտվել երրորդ կողմից, ինչպես նաեւ փոփոխվել ոճրագործի կողմից՝ էջի տեսքը փոխելու համար։</translation>
+<translation id="2617919205928008385">Տեղը բավարար չէ</translation>
+<translation id="2621889926470140926">Փակե՞լ <ph name="PRODUCT_NAME"/>֊ը, չնայած, որ ընթանում է նշոցների ներբեռնումը՝ <ph name="DOWNLOAD_COUNT"/>։</translation>
+<translation id="26224892172169984">Արգելել կայքերին կարգադրել կանխագրերը։</translation>
+<translation id="263325223718984101"><ph name="PRODUCT_NAME"/>֊ը չի կարող ավարտել տեղադրումը, սակայն կշարունակի աշխատանքը սկավառակի վրա գտնվող իր պատկերից։</translation>
 </translationbundle>

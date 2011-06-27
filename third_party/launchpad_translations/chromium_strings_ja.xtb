@@ -31,4 +31,24 @@
 <translation id="7747138024166251722">インストーラは一時ディレクトリを作成できませんでした。ディスクの空き領域およびソフトウェアをインストールするためのアクセス許可を確認してください。</translation>
 <translation id="8453117565092476964">インストーラのアーカイブが壊れているか、または無効です。再度 Chromium をダウンロードしてください。</translation>
 <translation id="8770560772173120024">Chromium は お気に入り/ブックマーク をインポートしています。</translation>
+<translation id="1105130903706696483">Chromiumは正常に終了しませんでした。今まで開いていたページを開くには、復元をクリックしてください。</translation>
+<translation id="1774152462503052664">Chromium をバックグラウンドで実行</translation>
+<translation id="1929939181775079593">Chromiumは反応していません。再起動しますか？</translation>
+<translation id="2407806170074302369">Chromium Frame について...</translation>
+<translation id="263863604136125912">Chromium を開始</translation>
+<translation id="2770231113462710648">デフォルトのブラウザを変更:</translation>
+<translation id="3296368748942286671">Chromium を閉じたときにバックグラウンドのアプリを実行し続ける</translation>
+<translation id="3555616473548901994">アンインストールが完了しました。</translation>
+<translation id="3848258323044014972"><ph name="PAGE_TITLE"/> - Chromium</translation>
+<translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
+<translation id="5398878173008909840">利用可能な Chromium の新しいバージョンがあります。</translation>
+<translation id="6510925080656968729">Chromium のアンインストール</translation>
+<translation id="786596160034915371">このコンピュータは既に Chromium の最新のバージョンを持っています。ソフトウェアが動作しない場合は、 Chromium をアンインストールし、再度ダウンロードしてください。</translation>
+<translation id="8628626585870903697">Chromium には、印刷プレビュー機能に必要な PDF ビューアが含まれていません。</translation>
+<translation id="872034308864968620">Chromium をバックグラウンドで実行させます。</translation>
+<translation id="8738921060445980047">未知のバージョン</translation>
+<translation id="8865765905101981392">インターネット・ブラウザ</translation>
+<translation id="8971920611044657379">Chromium Frame</translation>
+<translation id="9013262824292842194">Chromium は、Windows Vista または Windows XP SP2 以降が必要です。</translation>
+<translation id="911206726377975832">あなたの閲覧データも削除しますか？</translation>
 </translationbundle>
