@@ -300,7 +300,6 @@ gfx::Rect Checkbox::GetThemePaintRect() const {
 
 void Checkbox::GetExtraParams(gfx::NativeTheme::ExtraParams* params) const {
   TextButtonBase::GetExtraParams(params);
-  params->button.is_default = false;
   params->button.checked = checked_;
 }
 

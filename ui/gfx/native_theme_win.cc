@@ -126,7 +126,26 @@ gfx::Size NativeThemeWin::GetPartSize(Part part,
                                 NULL, TS_TRUE, &size);
   ReleaseDC(NULL, hdc);
 
-  return SUCCEEDED(hr) ? Size(size.cx, size.cy) : Size();
+  if (FAILED(hr)) {
+    // TODO(rogerta): For now, we need to support radio buttons and checkboxes
+    // when theming is not enabled.  Support for other parts can be added
+    // if/when needed.
+    switch (part) {
+      case kCheckbox:
+      case kRadio:
+        // TODO(rogerta): I was not able to find any API to get the default
+        // size of these controls, so determined these values empirically.
+        size.cx = 13;
+        size.cy = 13;
+        break;
+      default:
+        size.cx = 0;
+        size.cy = 0;
+        break;
+    }
+  }
+
+  return Size(size.cx, size.cy);
 }
 
 void NativeThemeWin::PaintToNonPlatformCanvas(SkCanvas* canvas,
@@ -497,8 +516,7 @@ HRESULT NativeThemeWin::PaintPushButton(HDC hdc,
   }
 
   RECT rect_win = rect.ToRECT();
-  return PaintButton(hdc, BP_PUSHBUTTON, state_id, extra.classic_state,
-                     &rect_win);
+  return PaintButton(hdc, state, extra, BP_PUSHBUTTON, state_id, &rect_win);
 }
 
 HRESULT NativeThemeWin::PaintRadioButton(HDC hdc,
@@ -526,8 +544,7 @@ HRESULT NativeThemeWin::PaintRadioButton(HDC hdc,
   }
 
   RECT rect_win = rect.ToRECT();
-  return PaintButton(hdc, BP_RADIOBUTTON, state_id, extra.classic_state,
-                     &rect_win);
+  return PaintButton(hdc, state, extra, BP_RADIOBUTTON, state_id, &rect_win);
 }
 
 HRESULT NativeThemeWin::PaintCheckbox(HDC hdc,
@@ -563,18 +580,53 @@ HRESULT NativeThemeWin::PaintCheckbox(HDC hdc,
   }
 
   RECT rect_win = rect.ToRECT();
-  return PaintButton(hdc, BP_CHECKBOX, state_id, extra.classic_state,
-                     &rect_win);
+  return PaintButton(hdc, state, extra, BP_CHECKBOX, state_id, &rect_win);
 }
 
 HRESULT NativeThemeWin::PaintButton(HDC hdc,
+                                    State state,
+                                    const ButtonExtraParams& extra,
                                     int part_id,
                                     int state_id,
-                                    int classic_state,
                                     RECT* rect) const {
   HANDLE handle = GetThemeHandle(BUTTON);
   if (handle && draw_theme_)
     return draw_theme_(handle, hdc, part_id, state_id, rect, NULL);
+
+  // Adjust classic_state based on part, state, and extras.
+  int classic_state = extra.classic_state;
+  switch(part_id) {
+    case BP_CHECKBOX:
+      classic_state |= DFCS_BUTTONCHECK;
+      break;
+    case BP_RADIOBUTTON:
+      classic_state |= DFCS_BUTTONRADIO;
+      break;
+    case BP_PUSHBUTTON:
+      classic_state |= DFCS_BUTTONPUSH;
+      break;
+    default:
+      NOTREACHED() << "Unknown part_id: " << part_id;
+      break;
+  }
+
+  switch(state) {
+    case kDisabled:
+      classic_state |= DFCS_INACTIVE;
+      break;
+    case kPressed:
+      classic_state |= DFCS_PUSHED;
+      break;
+    case kNormal:
+    case kHovered:
+      break;
+    default:
+      NOTREACHED() << "Unknown state: " << state;
+      break;
+  }
+
+  if (extra.checked)
+    classic_state |= DFCS_CHECKED;
 
   // Draw it manually.
   // All pressed states have both low bits set, and no other states do.

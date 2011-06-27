@@ -124,9 +124,10 @@ class NativeThemeWin : public NativeTheme {
                            SIZE* size) const;
 
   HRESULT PaintButton(HDC hdc,
+                      State state,
+                      const ButtonExtraParams& extra,
                       int part_id,
                       int state_id,
-                      int classic_state,
                       RECT* rect) const;
 
   HRESULT PaintMenuSeparator(HDC hdc,

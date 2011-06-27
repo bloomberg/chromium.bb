@@ -137,7 +137,14 @@ gfx::NativeTheme::Part ExampleNativeThemeButton::GetThemePart() const {
 }
 
 gfx::Rect ExampleNativeThemeButton::GetThemePaintRect() const {
-  return GetLocalBounds();
+  gfx::NativeTheme::ExtraParams extra;
+  gfx::NativeTheme::State state = GetThemeState(&extra);
+  gfx::Size size(gfx::NativeTheme::instance()->GetPartSize(GetThemePart(),
+                                                           state,
+                                                           extra));
+  gfx::Rect rect(size);
+  rect.set_x(GetMirroredXForRect(rect));
+  return rect;
 }
 
 gfx::NativeTheme::State ExampleNativeThemeButton::GetThemeState(

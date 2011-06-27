@@ -17,6 +17,7 @@
 #include "views/widget/widget.h"
 
 #if defined(OS_WIN)
+#include "ui/gfx/native_theme_win.h"
 #include "ui/gfx/platform_font_win.h"
 #endif
 
@@ -607,7 +608,12 @@ gfx::NativeTheme::State TextButtonBase::GetThemeState(
 }
 
 const ui::Animation* TextButtonBase::GetThemeAnimation() const {
+#if defined(OS_WIN)
+  return gfx::NativeThemeWin::instance()->IsThemingActive()
+      ? hover_animation_.get() : NULL;
+#else
   return hover_animation_.get();
+#endif
 }
 
 gfx::NativeTheme::State TextButtonBase::GetBackgroundThemeState(
@@ -726,12 +732,8 @@ gfx::NativeTheme::Part TextButton::GetThemePart() const {
 }
 
 void TextButton::GetExtraParams(gfx::NativeTheme::ExtraParams* params) const {
-  params->button.checked = false;
-  params->button.indeterminate = false;
+  TextButtonBase::GetExtraParams(params);
   params->button.is_default = is_default_;
-  params->button.has_border = false;
-  params->button.classic_state = 0;
-  params->button.background_color = kEnabledColor;
 }
 
 gfx::Rect TextButton::GetTextBounds() const {
