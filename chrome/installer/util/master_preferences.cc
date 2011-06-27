@@ -1,9 +1,10 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/installer/util/master_preferences.h"
 
+#include "base/environment.h"
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -182,6 +183,20 @@ void MasterPreferences::InitializeFromCommandLine(const CommandLine& cmd_line) {
     name.resize(arraysize(kDistroDict) - 1);
     name.append(".").append(installer::master_preferences::kLogFile);
     master_dictionary_->SetString(name, str_value);
+  }
+
+  // Handle the special case of --system-level being implied by the presence of
+  // the kGoogleUpdateIsMachineEnvVar environment variable.
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+  if (env != NULL) {
+    std::string is_machine_var;
+    env->GetVar(kGoogleUpdateIsMachineEnvVar, &is_machine_var);
+    if (!is_machine_var.empty() && is_machine_var[0] == '1') {
+      VLOG(1) << "Taking system-level from environment.";
+      name.resize(arraysize(kDistroDict) - 1);
+      name.append(".").append(installer::master_preferences::kSystemLevel);
+      master_dictionary_->SetBoolean(name, true);
+    }
   }
 
   // Cache a pointer to the distribution dictionary. Ignore errors if any.

@@ -194,6 +194,9 @@ extern const wchar_t kInstallerResult[];
 extern const wchar_t kInstallerResultUIString[];
 extern const wchar_t kInstallerSuccessLaunchCmdLine[];
 
+// Google Update named environment variable that implies kSystemLevel.
+extern const char kGoogleUpdateIsMachineEnvVar[];
+
 // Product options.
 extern const wchar_t kOptionMultiInstall[];
 extern const wchar_t kOptionReadyMode[];

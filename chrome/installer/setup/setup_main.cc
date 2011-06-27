@@ -1231,6 +1231,11 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
       // Append --run-as-admin flag to let the new instance of setup.exe know
       // that we already tried to launch ourselves as admin.
       new_cmd.AppendSwitch(installer::switches::kRunAsAdmin);
+      // If system_install became true due to an environment variable, append
+      // it to the command line here since env vars may not propagate past the
+      // elevation.
+      if (!new_cmd.HasSwitch(installer::switches::kSystemLevel))
+        new_cmd.AppendSwitch(installer::switches::kSystemLevel);
       DWORD exit_code = installer::UNKNOWN_STATUS;
       InstallUtil::ExecuteExeAsAdmin(new_cmd, &exit_code);
       return exit_code;

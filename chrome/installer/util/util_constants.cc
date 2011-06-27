@@ -189,6 +189,11 @@ const wchar_t kInstallerResultUIString[] = L"InstallerResultUIString";
 const wchar_t kInstallerSuccessLaunchCmdLine[] =
     L"InstallerSuccessLaunchCmdLine";
 
+// The presence of this environment variable with a value of 1 implies that
+// we should run as a system installation regardless of what is on the
+// command line.
+const char kGoogleUpdateIsMachineEnvVar[] = "GoogleUpdateIsMachine";
+
 const wchar_t kOptionMultiInstall[] = L"multi-install";
 const wchar_t kOptionReadyMode[] = L"ready-mode";
 
