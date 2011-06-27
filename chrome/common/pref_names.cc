@@ -635,6 +635,9 @@ const char kContentSettingsVersion[] = "profile.content_settings.pref_version";
 // kContentSettingsVersion.
 const char kContentSettingsPatterns[] = "profile.content_settings.patterns";
 
+const char kContentSettingsPatternPairs[] =
+    "profile.content_settings.pattern_pairs";
+
 // Boolean that is true if we should unconditionally block third-party cookies,
 // regardless of other content settings.
 const char kBlockThirdPartyCookies[] = "profile.block_third_party_cookies";

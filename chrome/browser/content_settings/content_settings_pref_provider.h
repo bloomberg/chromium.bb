@@ -146,7 +146,7 @@ class PrefProvider : public ProviderInterface,
   // migrated to the new format).
   void MigrateObsoletePerhostPref(PrefService* prefs);
   void MigrateObsoletePopupsPref(PrefService* prefs);
-  void MigrateSinglePatternSettings(PrefService* prefs);
+  void MigrateObsoleteContentSettingsPatternPref(PrefService* prefs);
 
   void CanonicalizeContentSettingsExceptions(
       DictionaryValue* all_settings_dictionary);

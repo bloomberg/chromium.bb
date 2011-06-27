@@ -395,10 +395,12 @@ void PrefProvider::RegisterUserPrefs(PrefService* prefs) {
       prefs::kContentSettingsVersion,
       ContentSettingsPattern::kContentSettingsPatternVersion,
       PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterDictionaryPref(prefs::kContentSettingsPatterns,
+  prefs->RegisterDictionaryPref(prefs::kContentSettingsPatternPairs,
                                 PrefService::SYNCABLE_PREF);
 
   // Obsolete prefs, for migration:
+  prefs->RegisterDictionaryPref(prefs::kContentSettingsPatterns,
+                                PrefService::UNSYNCABLE_PREF);
   prefs->RegisterListPref(prefs::kPopupWhitelistedHosts,
                           PrefService::UNSYNCABLE_PREF);
   prefs->RegisterDictionaryPref(prefs::kPerHostContentSettings,
@@ -419,7 +421,7 @@ void PrefProvider::Init() {
   // Migrate obsolete preferences.
   MigrateObsoletePerhostPref(prefs);
   MigrateObsoletePopupsPref(prefs);
-  MigrateSinglePatternSettings(prefs);
+  MigrateObsoleteContentSettingsPatternPref(prefs);
 
   // Verify preferences version.
   if (!prefs->HasPrefPath(prefs::kContentSettingsVersion)) {
@@ -441,7 +443,7 @@ void PrefProvider::Init() {
   }
 
   pref_change_registrar_.Init(prefs);
-  pref_change_registrar_.Add(prefs::kContentSettingsPatterns, this);
+  pref_change_registrar_.Add(prefs::kContentSettingsPatternPairs, this);
 
   notification_registrar_.Add(this, NotificationType::PROFILE_DESTROYED,
                               Source<Profile>(profile_));
@@ -515,7 +517,7 @@ void PrefProvider::SetContentSetting(
   updating_preferences_ = true;
   {
     DictionaryPrefUpdate update(profile_ ? profile_->GetPrefs() : NULL,
-                                prefs::kContentSettingsPatterns);
+                                prefs::kContentSettingsPatternPairs);
     DictionaryValue* all_settings_dictionary = NULL;
 
     OriginIdentifierValueMap* map_to_modify = &incognito_value_map_;
@@ -621,7 +623,7 @@ void PrefProvider::ResetToDefaults() {
   if (!is_incognito_) {
     PrefService* prefs = profile_->GetPrefs();
     updating_preferences_ = true;
-    prefs->ClearPref(prefs::kContentSettingsPatterns);
+    prefs->ClearPref(prefs::kContentSettingsPatternPairs);
     updating_preferences_ = false;
   }
 }
@@ -633,7 +635,7 @@ void PrefProvider::ClearAllContentSettingsRules(
   updating_preferences_ = true;
   {  // Begin scope of update.
     DictionaryPrefUpdate update(profile_->GetPrefs(),
-                                prefs::kContentSettingsPatterns);
+                                prefs::kContentSettingsPatternPairs);
 
     DictionaryValue* all_settings_dictionary = NULL;
     OriginIdentifierValueMap* map_to_modify = &incognito_value_map_;
@@ -697,7 +699,7 @@ void PrefProvider::Observe(
       return;
 
     std::string* name = Details<std::string>(details).ptr();
-    if (*name == prefs::kContentSettingsPatterns) {
+    if (*name == prefs::kContentSettingsPatternPairs) {
       ReadExceptions(true);
     } else {
       NOTREACHED() << "Unexpected preference observed";
@@ -731,7 +733,7 @@ void PrefProvider::ReadExceptions(bool overwrite) {
 
   PrefService* prefs = profile_->GetPrefs();
   const DictionaryValue* all_settings_dictionary =
-      prefs->GetDictionary(prefs::kContentSettingsPatterns);
+      prefs->GetDictionary(prefs::kContentSettingsPatternPairs);
 
   if (overwrite)
     value_map_.clear();
@@ -739,7 +741,7 @@ void PrefProvider::ReadExceptions(bool overwrite) {
   updating_preferences_ = true;
   // Careful: The returned value could be NULL if the pref has never been set.
   if (all_settings_dictionary != NULL) {
-    DictionaryPrefUpdate update(prefs, prefs::kContentSettingsPatterns);
+    DictionaryPrefUpdate update(prefs, prefs::kContentSettingsPatternPairs);
     DictionaryValue* mutable_settings;
     scoped_ptr<DictionaryValue> mutable_settings_scope;
 
@@ -968,65 +970,48 @@ void PrefProvider::MigrateObsoletePopupsPref(PrefService* prefs) {
   }
 }
 
-void PrefProvider::MigrateSinglePatternSettings(PrefService* prefs) {
-  const DictionaryValue* all_settings_dictionary =
+void PrefProvider::MigrateObsoleteContentSettingsPatternPref(
+    PrefService* prefs) {
+  if (prefs->HasPrefPath(prefs::kContentSettingsPatterns) &&
+      !is_incognito_) {
+    const DictionaryValue* all_settings_dictionary =
       prefs->GetDictionary(prefs::kContentSettingsPatterns);
-  // The all_settings_dictionary can be |NULL| if the preferences hasn't been
-  // set yet. In incognito mode we must not write to preferences.
-  if (all_settings_dictionary && !is_incognito_) {
-    DictionaryPrefUpdate update(prefs, prefs::kContentSettingsPatterns);
-    DictionaryValue* mutable_settings;
-    mutable_settings = update.Get();
 
-    // Create a list of items to migrate.
-    std::list<std::string> move_items;
-    for (DictionaryValue::key_iterator i(mutable_settings->begin_keys());
-         i != mutable_settings->end_keys();
+    DictionaryPrefUpdate update(prefs, prefs::kContentSettingsPatternPairs);
+    DictionaryValue* exceptions_dictionary;
+    exceptions_dictionary = update.Get();
+    for (DictionaryValue::key_iterator i(all_settings_dictionary->begin_keys());
+         i != all_settings_dictionary->end_keys();
          ++i) {
-      const std::string& pattern_str(*i);
+      const std::string& key(*i);
+
+      // Validate pattern string and skip it if it is invalid.
       std::pair<ContentSettingsPattern, ContentSettingsPattern> pattern_pair =
-          ParsePatternString(pattern_str);
-
-      // If the pattern_str contains two valid patterns it must not be migrated,
-      // so we skip it.
-      if (pattern_pair.first.IsValid() &&
-          pattern_pair.second.IsValid()) {
+          ParsePatternString(key);
+      ContentSettingsPattern primary_pattern = pattern_pair.first;
+      if (!primary_pattern.IsValid()) {
+        LOG(DFATAL) << "Invalid pattern string: " << key;
         continue;
       }
-      if (!pattern_pair.first.IsValid()) {
-        // Skip over corrupted and malformed patterns.
-        LOG(DFATAL) << "Invalid pattern string: " << pattern_str;
-        continue;
-      }
-
-      move_items.push_back(pattern_str);
-    }
-
-    // Migrate the items.
-    for (std::list<std::string>::iterator i = move_items.begin();
-         i != move_items.end();
-         ++i) {
-      const std::string& pattern_str(*i);
-      Value* value;
-      bool found = mutable_settings->RemoveWithoutPathExpansion(*i, &value);
+      // Get old settings.
+      DictionaryValue* dictionary = NULL;
+      bool found = all_settings_dictionary->GetDictionaryWithoutPathExpansion(
+          key, &dictionary);
       DCHECK(found);
 
-      // Migrate the content settings types that used to be applied based on the
-      // top level frame URL only.
+      // Create new dictionary key.
       std::string new_pattern_str = CreatePatternString(
-          ContentSettingsPattern::FromString(pattern_str),
-          ContentSettingsPattern::Wildcard());
-      // Check if there is already a entry for the new pattern string.
-      DictionaryValue* dictionary = NULL;
-      found = mutable_settings->GetDictionaryWithoutPathExpansion(
-          new_pattern_str, &dictionary);
-      if (!found) {
-        mutable_settings->SetWithoutPathExpansion(
-            new_pattern_str, value);
+          primary_pattern, ContentSettingsPattern::Wildcard());
+
+      if (!exceptions_dictionary->HasKey(new_pattern_str)) {
+        exceptions_dictionary->SetWithoutPathExpansion(
+            new_pattern_str, dictionary->DeepCopy());
       } else {
-        NOTREACHED();
+        LOG(DFATAL) << "Existing settings for: " << new_pattern_str;
       }
     }
+
+    prefs->ClearPref(prefs::kContentSettingsPatterns);
   }
 }
 

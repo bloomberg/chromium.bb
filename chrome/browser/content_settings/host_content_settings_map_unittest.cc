@@ -349,7 +349,7 @@ TEST_F(HostContentSettingsMapTest, ObserveExceptionPref) {
 
   // Make a copy of the default pref value so we can reset it later.
   scoped_ptr<Value> default_value(prefs->FindPreference(
-      prefs::kContentSettingsPatterns)->GetValue()->DeepCopy());
+      prefs::kContentSettingsPatternPairs)->GetValue()->DeepCopy());
 
   ContentSettingsPattern pattern =
        ContentSettingsPattern::FromString("[*.]example.com");
@@ -367,16 +367,16 @@ TEST_F(HostContentSettingsMapTest, ObserveExceptionPref) {
 
   // Make a copy of the pref's new value so we can reset it later.
   scoped_ptr<Value> new_value(prefs->FindPreference(
-      prefs::kContentSettingsPatterns)->GetValue()->DeepCopy());
+      prefs::kContentSettingsPatternPairs)->GetValue()->DeepCopy());
 
   // Clearing the backing pref should also clear the internal cache.
-  prefs->Set(prefs::kContentSettingsPatterns, *default_value);
+  prefs->Set(prefs::kContentSettingsPatternPairs, *default_value);
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetCookieContentSetting(
                 host, host, true));
 
   // Reseting the pref to its previous value should update the cache.
-  prefs->Set(prefs::kContentSettingsPatterns, *new_value);
+  prefs->Set(prefs::kContentSettingsPatternPairs, *new_value);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetCookieContentSetting(
                 host, host, true));
@@ -717,7 +717,7 @@ TEST_F(HostContentSettingsMapTest, CanonicalizeExceptionsUnicodeOnly) {
 
   // Set utf-8 data.
   {
-    DictionaryPrefUpdate update(prefs, prefs::kContentSettingsPatterns);
+    DictionaryPrefUpdate update(prefs, prefs::kContentSettingsPatternPairs);
     DictionaryValue* all_settings_dictionary = update.Get();
     ASSERT_TRUE(NULL != all_settings_dictionary);
 
@@ -729,7 +729,7 @@ TEST_F(HostContentSettingsMapTest, CanonicalizeExceptionsUnicodeOnly) {
   profile.GetHostContentSettingsMap();
 
   const DictionaryValue* all_settings_dictionary =
-      prefs->GetDictionary(prefs::kContentSettingsPatterns);
+      prefs->GetDictionary(prefs::kContentSettingsPatternPairs);
   DictionaryValue* result = NULL;
   EXPECT_FALSE(all_settings_dictionary->GetDictionaryWithoutPathExpansion(
       "[*.]\xC4\x87ira.com,*", &result));
@@ -749,18 +749,18 @@ TEST_F(HostContentSettingsMapTest, CanonicalizeExceptionsUnicodeAndPunycode) {
 
   scoped_ptr<Value> value(base::JSONReader::Read(
       "{\"[*.]\\xC4\\x87ira.com,*\":{\"per_plugin\":{\"pluginx\":2}}}", false));
-  profile.GetPrefs()->Set(prefs::kContentSettingsPatterns, *value);
+  profile.GetPrefs()->Set(prefs::kContentSettingsPatternPairs, *value);
 
   // Set punycode equivalent, with different setting.
   scoped_ptr<Value> puny_value(base::JSONReader::Read(
       "{\"[*.]xn--ira-ppa.com,*\":{\"per_plugin\":{\"pluginy\":2}}}", false));
-  profile.GetPrefs()->Set(prefs::kContentSettingsPatterns, *puny_value);
+  profile.GetPrefs()->Set(prefs::kContentSettingsPatternPairs, *puny_value);
 
   // Initialize the content map.
   profile.GetHostContentSettingsMap();
 
   const DictionaryValue* content_setting_prefs =
-      profile.GetPrefs()->GetDictionary(prefs::kContentSettingsPatterns);
+      profile.GetPrefs()->GetDictionary(prefs::kContentSettingsPatternPairs);
   std::string prefs_as_json;
   base::JSONWriter::Write(content_setting_prefs, false, &prefs_as_json);
   EXPECT_STREQ("{\"[*.]xn--ira-ppa.com,*\":{\"per_plugin\":{\"pluginy\":2}}}",
@@ -845,7 +845,7 @@ TEST_F(HostContentSettingsMapTest, ResourceIdentifierPrefs) {
   TestingProfile profile;
   scoped_ptr<Value> value(base::JSONReader::Read(
       "{\"[*.]example.com,*\":{\"per_plugin\":{\"someplugin\":2}}}", false));
-  profile.GetPrefs()->Set(prefs::kContentSettingsPatterns, *value);
+  profile.GetPrefs()->Set(prefs::kContentSettingsPatternPairs, *value);
   HostContentSettingsMap* host_content_settings_map =
       profile.GetHostContentSettingsMap();
 
@@ -869,7 +869,7 @@ TEST_F(HostContentSettingsMapTest, ResourceIdentifierPrefs) {
       CONTENT_SETTING_DEFAULT);
 
   const DictionaryValue* content_setting_prefs =
-      profile.GetPrefs()->GetDictionary(prefs::kContentSettingsPatterns);
+      profile.GetPrefs()->GetDictionary(prefs::kContentSettingsPatternPairs);
   std::string prefs_as_json;
   base::JSONWriter::Write(content_setting_prefs, false, &prefs_as_json);
   EXPECT_STREQ("{}", prefs_as_json.c_str());
@@ -882,7 +882,7 @@ TEST_F(HostContentSettingsMapTest, ResourceIdentifierPrefs) {
       CONTENT_SETTING_BLOCK);
 
   content_setting_prefs =
-      profile.GetPrefs()->GetDictionary(prefs::kContentSettingsPatterns);
+      profile.GetPrefs()->GetDictionary(prefs::kContentSettingsPatternPairs);
   base::JSONWriter::Write(content_setting_prefs, false, &prefs_as_json);
   EXPECT_STREQ("{\"[*.]example.com,*\":{\"per_plugin\":{\"otherplugin\":2}}}",
                prefs_as_json.c_str());

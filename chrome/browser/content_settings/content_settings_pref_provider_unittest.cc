@@ -350,20 +350,21 @@ TEST_F(PrefProviderTest, MigrateSinglePatternSettings) {
   all_settings_dictionary->SetWithoutPathExpansion(
       pattern.ToString(), settings_dictionary);
 
+  // Set Obsolete preference.
   prefs->Set(prefs::kContentSettingsPatterns, *all_settings_dictionary);
 
   // Test if single pattern settings are properly migrated.
   content_settings::PrefProvider provider(profile.GetOriginalProfile());
 
+  // Validate migrated preferences
   const DictionaryValue* const_all_settings_dictionary =
-      prefs->GetDictionary(prefs::kContentSettingsPatterns);
+      prefs->GetDictionary(prefs::kContentSettingsPatternPairs);
   EXPECT_EQ(1U, const_all_settings_dictionary->size());
   EXPECT_FALSE(const_all_settings_dictionary->HasKey(pattern.ToString()));
   EXPECT_TRUE(const_all_settings_dictionary->HasKey(
       pattern.ToString() + "," +
       ContentSettingsPattern::Wildcard().ToString()));
 
-  // TODO test provider
   EXPECT_EQ(CONTENT_SETTING_BLOCK,  provider.GetContentSetting(
       GURL("http://www.example.com"),
       GURL("http://www.example.com"),

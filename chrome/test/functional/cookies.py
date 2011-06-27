@@ -119,7 +119,7 @@ class CookiesTest(pyauto.PyUITest):
     self.assertFalse(self.GetCookie(pyauto.GURL(file_url)))
 
     # Creating an exception to allow cookies from http://www.google.com.
-    self.SetPrefs(pyauto.kContentSettingsPatterns,
+    self.SetPrefs(pyauto.kContentSettingsPatternPairs,
                  {'[*.]google.com,*': { 'cookies': 1}})
     # Navigate to google.com and check if cookies are set.
     self.NavigateToURL('http://www.google.com')
@@ -133,7 +133,7 @@ class CookiesTest(pyauto.PyUITest):
     self.assertFalse(self.GetCookie(pyauto.GURL(file_url)))
 
     # Create an exception to block cookies from http://www.google.com
-    self.SetPrefs(pyauto.kContentSettingsPatterns,
+    self.SetPrefs(pyauto.kContentSettingsPatternPairs,
                  {'[*.]google.com,*': { 'cookies': 2}})
 
     # Navigate to google.com and check if cookies are blocked.
@@ -159,7 +159,7 @@ class CookiesTest(pyauto.PyUITest):
     self.assertFalse(self.GetCookie(pyauto.GURL(file_url)))
 
     # Creating an exception to allow cookies for a session for google.com.
-    self.SetPrefs(pyauto.kContentSettingsPatterns,
+    self.SetPrefs(pyauto.kContentSettingsPatternPairs,
                  {'[*.]google.com,*': { 'cookies': 4}})
 
     # Navigate to google.com and check if cookies are set.
