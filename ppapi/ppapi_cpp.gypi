@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -16,6 +16,7 @@
         'c/pp_bool.h',
         'c/pp_completion_callback.h',
         'c/pp_errors.h',
+        'c/pp_file_info.h',
         'c/pp_input_event.h',
         'c/pp_instance.h',
         'c/pp_macros.h',
@@ -31,6 +32,9 @@
         'c/ppb_audio.h',
         'c/ppb_audio_config.h',
         'c/ppb_core.h',
+        'c/ppb_file_io.h',
+        'c/ppb_file_ref.h',
+        'c/ppb_file_system.h',
         'c/ppb_graphics_2d.h',
         'c/ppb_image_data.h',
         'c/ppb_instance.h',
@@ -133,6 +137,12 @@
         'cpp/completion_callback.h',
         'cpp/core.cc',
         'cpp/core.h',
+        'cpp/file_io.cc',
+        'cpp/file_io.h',
+        'cpp/file_ref.cc',
+        'cpp/file_ref.h',
+        'cpp/file_system.cc',
+        'cpp/file_system.h',
         'cpp/graphics_2d.cc',
         'cpp/graphics_2d.h',
         'cpp/image_data.cc',
