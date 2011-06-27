@@ -1564,20 +1564,29 @@
   // the background pattern for the tabs needs to be moved left by 5 pixels.
   const CGFloat kPatternHorizontalOffset = -5;
   // To match Windows and CrOS, have to offset vertically by 2 pixels.
+  // Without tab strip, offset an extra pixel (determined by experimentation).
   const CGFloat kPatternVerticalOffset = 2;
+  const CGFloat kPatternVerticalOffsetNoTabStrip = 3;
 
-  NSView* tabStripView = [self tabStripView];
-  NSRect tabStripViewWindowBounds = [tabStripView bounds];
+  // When we have a tab strip, line up with the top of the tab, otherwise,
+  // line up with the top of the window.
   NSView* windowChromeView = [[[self window] contentView] superview];
-  tabStripViewWindowBounds =
-      [tabStripView convertRect:tabStripViewWindowBounds
-                         toView:windowChromeView];
-  NSPoint phase = NSMakePoint(NSMinX(tabStripViewWindowBounds)
-                                  + kPatternHorizontalOffset,
-                              NSMinY(tabStripViewWindowBounds)
-                                  + [TabStripController defaultTabHeight]
-                                  + kPatternVerticalOffset);
-  return phase;
+  if ([self hasTabStrip]) {
+    NSView* tabStripView = [self tabStripView];
+    NSRect tabStripViewWindowBounds = [tabStripView bounds];
+    tabStripViewWindowBounds =
+        [tabStripView convertRect:tabStripViewWindowBounds
+                           toView:windowChromeView];
+    return NSMakePoint(NSMinX(tabStripViewWindowBounds)
+                           + kPatternHorizontalOffset,
+                       NSMinY(tabStripViewWindowBounds)
+                           + [TabStripController defaultTabHeight]
+                           + kPatternVerticalOffset);
+  } else {
+    return NSMakePoint(kPatternHorizontalOffset,
+                       NSHeight([windowChromeView bounds])
+                       + kPatternVerticalOffsetNoTabStrip);
+  }
 }
 
 - (NSPoint)bookmarkBubblePoint {
