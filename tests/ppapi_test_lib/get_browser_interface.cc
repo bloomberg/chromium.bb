@@ -11,6 +11,7 @@
 #include "ppapi/c/dev/ppb_file_system_dev.h"
 #include "ppapi/c/dev/ppb_scrollbar_dev.h"
 #include "ppapi/c/dev/ppb_surface_3d_dev.h"
+#include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppb_graphics_2d.h"
@@ -109,4 +110,9 @@ const PPB_Scrollbar_Dev* PPBScrollbarDev() {
 const PPB_Surface3D_Dev* PPBSurface3DDev() {
   return  reinterpret_cast<const PPB_Surface3D_Dev*>(
       GetBrowserInterface(PPB_SURFACE_3D_DEV_INTERFACE));
+}
+
+const PPB_Testing_Dev* PPBTestingDev() {
+  return  reinterpret_cast<const PPB_Testing_Dev*>(
+      GetBrowserInterface(PPB_TESTING_DEV_INTERFACE));
 }

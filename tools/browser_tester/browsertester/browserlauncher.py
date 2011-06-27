@@ -281,5 +281,6 @@ class ChromeLauncher(BrowserLauncher):
              '--log-file=%s/log.%%p' % (self.tool_log_dir,)] + cmd
     elif self.options.tool != None:
       raise LaunchFailure('Invalid tool name "%s"' % (self.options.tool,))
+    cmd.extend(self.options.browser_flags)
     cmd.append(url)
     return cmd

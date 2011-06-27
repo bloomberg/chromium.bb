@@ -5,8 +5,6 @@
 // Test cases for PPB_Graphics2D functions.
 // As most of them return void, the test automatically confirms that
 // there is no crash while requiring a visual inspection of the painted output.
-//
-// TODO(polina): use PPB_Testing for additional automatic validation.
 
 #include <string.h>
 
@@ -14,6 +12,7 @@
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/tests/ppapi_test_lib/get_browser_interface.h"
 #include "native_client/tests/ppapi_test_lib/test_interface.h"
+#include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_point.h"
@@ -56,7 +55,7 @@ const ColorPremul kOpaqueGreen = { 0xFF, 0x00, 0xFF, 0x00 };
 const ColorPremul kOpaqueBlack = { 0xFF, 0x00, 0x00, 0x00 };
 const ColorPremul kOpaqueWhite = { 0xFF, 0xFF, 0xFF, 0xFF };
 const ColorPremul kOpaqueYellow = { 0xFF, 0xFF, 0xFF, 0x00 };
-const int kBytesPerPixel = 4;  // BGRA or RGBA
+const int kBytesPerPixel = sizeof(uint32_t);  // 4 bytes for BGRA or RGBA.
 
 // Assumes premultipled Alpha.
 uint32_t FormatColor(PP_ImageDataFormat format, ColorPremul color) {
@@ -78,7 +77,7 @@ PP_Resource CreateGraphics2D_90x90() {
   return graphics2d;
 }
 
-PP_Resource CreateImageData(PP_Size size, ColorPremul pixel_color) {
+PP_Resource CreateImageData(PP_Size size, ColorPremul pixel_color, void** bmp) {
   PP_ImageDataFormat image_format = PPBImageData()->GetNativeImageDataFormat();
   uint32_t formatted_pixel_color = FormatColor(image_format, pixel_color);
   PP_Resource image_data = PPBImageData()->Create(
@@ -86,11 +85,19 @@ PP_Resource CreateImageData(PP_Size size, ColorPremul pixel_color) {
   CHECK(image_data != kInvalidResource);
   PP_ImageDataDesc image_desc;
   CHECK(PPBImageData()->Describe(image_data, &image_desc) == PP_TRUE);
-  uint32_t* bmp = reinterpret_cast<uint32_t*>(PPBImageData()->Map(image_data));
-  int num_pixels = image_desc.stride / kBytesPerPixel * size.height;
+  *bmp = NULL;
+  *bmp = PPBImageData()->Map(image_data);
+  CHECK(*bmp != NULL);
+  uint32_t* bmp_words = static_cast<uint32_t*>(*bmp);
+  int num_pixels = image_desc.stride / kBytesPerPixel * image_desc.size.height;
   for (int i = 0; i < num_pixels; i++)
-    bmp[i] = formatted_pixel_color;
+    bmp_words[i] = formatted_pixel_color;
   return image_data;
+}
+
+PP_Resource CreateImageData(PP_Size size, ColorPremul pixel_color) {
+  void* bitmap = NULL;
+  return CreateImageData(size, pixel_color, &bitmap);
 }
 
 struct FlushData {
@@ -116,7 +123,7 @@ void FlushCallback(void* user_data, int32_t result) {
   CHECK(user_data != NULL);
   CHECK(result == PP_OK);
 
-  FlushData* data = reinterpret_cast<FlushData*>(user_data);
+  FlushData* data = static_cast<FlushData*>(user_data);
   PP_Resource graphics2d = data->graphics2d;
   PP_Resource image_data = data->image_data;
   if (g_expected_flush_calls == 0) {
@@ -134,6 +141,36 @@ void FlushCallback(void* user_data, int32_t result) {
 
 bool IsEqualSize(PP_Size size1, PP_Size size2) {
   return (size1.width == size2.width && size1.height == size2.height);
+}
+
+bool IsSquareOnScreen(PP_Resource graphics2d, PP_Point origin, PP_Size square,
+                      ColorPremul color) {
+  PP_Size size;
+  PP_Bool dummy;
+  CHECK(PP_TRUE == PPBGraphics2D()->Describe(graphics2d, &size, &dummy));
+
+  void* bitmap = NULL;
+  PP_Resource image = CreateImageData(size, kOpaqueBlack, &bitmap);
+
+  PP_ImageDataDesc image_desc;
+  CHECK(PP_TRUE == PPBImageData()->Describe(image, &image_desc));
+  int32_t stride = image_desc.stride / kBytesPerPixel;  // width + padding.
+  uint32_t expected_color = FormatColor(image_desc.format, color);
+  CHECK(origin.x >= 0 && origin.y >= 0 &&
+        (origin.x + square.width) <= stride &&
+        (origin.y + square.height) <= image_desc.size.height);
+
+  CHECK(PP_TRUE == PPBTestingDev()->ReadImageData(graphics2d, image, &kOrigin));
+  bool found_error = false;
+  for (int y = origin.y; y < origin.y + square.height && !found_error; y++) {
+    for (int x = origin.x; x < origin.x + square.width && !found_error; x++) {
+      uint32_t pixel_color = static_cast<uint32_t*>(bitmap)[stride * y + x];
+      found_error = (pixel_color != expected_color);
+    }
+  }
+
+  PPBCore()->ReleaseResource(image);
+  return !found_error;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -261,7 +298,7 @@ void TestPaintImageData() {
   PP_Resource image_data = CreateImageData(k60x60, kSheerBlue);
   PP_Resource image_data_noop = CreateImageData(k60x60, kOpaqueBlack);
   PP_Rect src_rect = { PP_MakePoint(30, 30), k30x30 };
-  PP_Point top_left = PP_MakePoint(30, -30);  // target origin = (60,  0)
+  PP_Point top_left = PP_MakePoint(30, -30);  // target origin = (60,  0);
   PP_Point clip_up = PP_MakePoint(0, -31);    // target origin = (30, -1)
   PP_Point clip_left = PP_MakePoint(-31, 0);  // target origin = (-1, 30)
   PP_Point clip_right = PP_MakePoint(31, 0);  // target origin = (61, 30)
@@ -284,10 +321,13 @@ void TestPaintImageData() {
   ppb->PaintImageData(graphics2d, image_data_noop, NULL, &src_rect);
   ppb->PaintImageData(kInvalidResource, kNotAResource, NULL, &src_rect);
 
-  // Paints backing store image to screen after Flush().
+  // Paints backing store image to screen only after Flush().
+  PP_Point top_right = PP_MakePoint(60, 0);
+  EXPECT_ASYNC(!IsSquareOnScreen(graphics2d, top_right, k30x30, kSheerBlue));
   PP_CompletionCallback cc = MakeTestableFlushCallback(
       "PaintImageDataFlushCallback", graphics2d, image_data, 1);
   EXPECT_ASYNC(PP_OK_COMPLETIONPENDING == ppb->Flush(graphics2d, cc));
+  EXPECT_ASYNC(IsSquareOnScreen(graphics2d, top_right, k30x30, kSheerBlue));
 
   // This should have no effect on Flush().
   ppb->PaintImageData(graphics2d, image_data_noop, &top_left, &src_rect);
@@ -328,10 +368,12 @@ void TestPaintImageDataEntire() {
   ppb->PaintImageData(graphics2d, image_data_noop, NULL, kEntireImage);
   ppb->PaintImageData(kInvalidResource, kNotAResource, NULL, kEntireImage);
 
-  // Paints backing store image to the screen.
+  // Paints backing store image to the screen only after Flush().
+  EXPECT_ASYNC(!IsSquareOnScreen(graphics2d, bottom_left, k30x30, kOpaqueYellow));
   PP_CompletionCallback cc = MakeTestableFlushCallback(
       "PaintImageDataEntireFlushCallback", graphics2d, image_data, 1);
   EXPECT_ASYNC(PP_OK_COMPLETIONPENDING == ppb->Flush(graphics2d, cc));
+  EXPECT_ASYNC(IsSquareOnScreen(graphics2d, bottom_left, k30x30, kOpaqueYellow));
 
   // This should have no effect on Flush().
   ppb->PaintImageData(graphics2d, image_data_noop, &bottom_left, kEntireImage);
@@ -360,10 +402,12 @@ void TestScroll() {
   ppb->Scroll(kNotAResource, &clip_rect, &middle);
   ppb->Scroll(graphics2d, &clip_rect, NULL);  // Internal error in rpc method.
 
-  // Paints backing store image to the sreen.
+  // Paints backing store image to the sreen only after Flush().
+  EXPECT_ASYNC(!IsSquareOnScreen(graphics2d, middle, k30x30, kOpaqueWhite));
   PP_CompletionCallback cc = MakeTestableFlushCallback(
       "ScrollFlushCallback", graphics2d, image_data, 1);
   EXPECT_ASYNC(PP_OK_COMPLETIONPENDING == ppb->Flush(graphics2d, cc));
+  EXPECT_ASYNC(IsSquareOnScreen(graphics2d, middle, k30x30, kOpaqueWhite));
 
   TEST_PASSED_ASYNC;
 }
@@ -386,11 +430,13 @@ void TestScrollEntire() {
   ppb->Scroll(kNotAResource, kEntireImage, &bottom_right);
   ppb->Scroll(graphics2d, kEntireImage, NULL);  // Internal error in rpc method.
 
-  // Paints backing store image to the screen.
+  // Paints backing store image to the screen only after Flush().
+  EXPECT_ASYNC(!IsSquareOnScreen(graphics2d, bottom_right, k30x30, kOpaqueGreen));
   ppb->Scroll(graphics2d, kEntireImage, &bottom_right);
   PP_CompletionCallback cc = MakeTestableFlushCallback(
       "ScrollEntireFlushCallback", graphics2d, image_data, 1);
   EXPECT_ASYNC(PP_OK_COMPLETIONPENDING == ppb->Flush(graphics2d, cc));
+  EXPECT_ASYNC(IsSquareOnScreen(graphics2d, bottom_right, k30x30, kOpaqueGreen));
 
   TEST_PASSED_ASYNC;
 }
@@ -415,10 +461,12 @@ void TestReplaceContents() {
   PPBGraphics2D()->ReplaceContents(kInvalidResource, kNotAResource);
   PPBGraphics2D()->ReplaceContents(graphics2d, image_data_size_mismatch);
 
-  // Paints backing store image to the screen.
+  // Paints backing store image to the screen only after Flush().
+  EXPECT_ASYNC(!IsSquareOnScreen(graphics2d, kOrigin, k90x90, kSheerGray));
   PP_CompletionCallback cc = MakeTestableFlushCallback(
       "ReplaceContentsFlushCallback", graphics2d, image_data, 1);
   EXPECT_ASYNC(PP_OK_COMPLETIONPENDING == PPBGraphics2D()->Flush(graphics2d, cc));
+  EXPECT_ASYNC(IsSquareOnScreen(graphics2d, kOrigin, k90x90, kSheerGray));
 
   // This should have no effect on Flush().
   PPBGraphics2D()->ReplaceContents(graphics2d, image_data_noop);

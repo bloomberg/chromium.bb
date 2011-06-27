@@ -1202,6 +1202,8 @@ def PPAPIBrowserTester(env,
                        extensions=(),
                        log_verbosity=2,
                        args=(),
+                       # list of "--flag=value" pairs (no spaces!)
+                       browser_flags=(),
                        **extra):
   if 'TRUSTED_ENV' not in env:
     return []
@@ -1235,6 +1237,11 @@ def PPAPIBrowserTester(env,
   if 'browser_test_tool' in ARGUMENTS:
     command.extend(['--tool', ARGUMENTS['browser_test_tool']])
   command.extend(args)
+  for flag in browser_flags:
+    if flag.find(' ') != -1:
+      raise Exception('Spaces not allowed in browser_flags: '
+                      'use --flag=value instead')
+    command.extend(['--browser_flag', flag])
   if ShouldUseVerboseOptions(extra):
     env.MakeVerboseExtraOptions(target, log_verbosity, extra)
   return env.CommandTest(target,

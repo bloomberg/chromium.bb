@@ -82,11 +82,14 @@ def BuildArgParser():
   parser.add_option('--extension', dest='browser_extensions', action='append',
                     type='string', default=[],
                     help='Load the browser extensions located at the list of '
-                    'paths.  Note: this currently only works with the Chrome '
+                    'paths. Note: this currently only works with the Chrome '
                     'browser.')
   parser.add_option('--tool', dest='tool', action='store',
                     type='string', default=None,
                     help='Run tests under a tool.')
+  parser.add_option('--browser_flag', dest='browser_flags', action='append',
+                    type='string', default=[],
+                    help='Additional flags for the chrome command.')
 
   return parser
 

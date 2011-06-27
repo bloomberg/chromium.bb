@@ -18,6 +18,7 @@ struct PPB_Instance;
 struct PPB_Messaging;
 struct PPB_Scrollbar_Dev;
 struct PPB_Surface3D_Dev;
+struct PPB_Testing_Dev;
 struct PPB_URLLoader;
 struct PPB_URLRequestInfo;
 struct PPB_URLResponseInfo;
@@ -56,5 +57,6 @@ const PPB_FileIO_Dev* PPBFileIODev();
 const PPB_FileSystem_Dev* PPBFileSystemDev();
 const PPB_Scrollbar_Dev* PPBScrollbarDev();
 const PPB_Surface3D_Dev* PPBSurface3DDev();
+const PPB_Testing_Dev* PPBTestingDev();
 
 #endif  // NATIVE_CLIENT_TESTS_PPAPI_TEST_PPB_TEMPLATE_GET_BROWSER_INTERFACE_H
