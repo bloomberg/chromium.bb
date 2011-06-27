@@ -59,6 +59,9 @@ class SpellCheckHostMetrics {
   void OnHistogramTimerExpired();
 
  private:
+  // Records various counters without changing their values.
+  void RecordWordCounts();
+
   // Number of corrected words of checked words.
   int misspelled_word_count_;
   // Number of checked words.

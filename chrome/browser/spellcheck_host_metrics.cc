@@ -8,11 +8,16 @@
 #include "base/metrics/histogram.h"
 
 SpellCheckHostMetrics::SpellCheckHostMetrics()
-    : start_time_(base::Time::Now()) {
+    : misspelled_word_count_(0),
+      spellchecked_word_count_(0),
+      suggestion_show_count_(0),
+      replaced_word_count_(0),
+      start_time_(base::Time::Now()) {
   const uint64 kHistogramTimerDurationInMinutes = 30;
   recording_timer_.Start(
       base::TimeDelta::FromMinutes(kHistogramTimerDurationInMinutes),
       this, &SpellCheckHostMetrics::OnHistogramTimerExpired);
+  RecordWordCounts();
 }
 
 SpellCheckHostMetrics::~SpellCheckHostMetrics() {
@@ -34,10 +39,8 @@ void SpellCheckHostMetrics::RecordEnabledStats(bool enabled) {
 void SpellCheckHostMetrics::RecordCheckedWordStats(const string16& word,
                                                    bool misspell) {
   spellchecked_word_count_++;
-  UMA_HISTOGRAM_COUNTS("SpellCheck.CheckedWords", spellchecked_word_count_);
   if (misspell) {
     misspelled_word_count_++;
-    UMA_HISTOGRAM_COUNTS("SpellCheck.MisspelledWords", misspelled_word_count_);
     // If an user misspelled, that user should be counted as a part of
     // the population.  So we ensure to instantiate the histogram
     // entries here at the first time.
@@ -53,7 +56,8 @@ void SpellCheckHostMetrics::RecordCheckedWordStats(const string16& word,
   MD5Sum(reinterpret_cast<const unsigned char*>(word.c_str()),
          word.size() * sizeof(char16), &digest);
   checked_word_hashes_.insert(MD5DigestToBase16(digest));
-  UMA_HISTOGRAM_COUNTS("SpellCheck.UniqueWords", checked_word_hashes_.size());
+
+  RecordWordCounts();
 }
 
 void SpellCheckHostMetrics::OnHistogramTimerExpired() {
@@ -74,13 +78,12 @@ void SpellCheckHostMetrics::RecordDictionaryCorruptionStats(bool corrupted) {
 
 void SpellCheckHostMetrics::RecordSuggestionStats(int delta) {
   suggestion_show_count_ += delta;
-  UMA_HISTOGRAM_COUNTS("SpellCheck.ShownSuggestions", suggestion_show_count_);
+  // RecordReplacedWordStats() Calls RecordWordCounts() eventually.
   RecordReplacedWordStats(0);
 }
 
 void SpellCheckHostMetrics::RecordReplacedWordStats(int delta) {
   replaced_word_count_ += delta;
-  UMA_HISTOGRAM_COUNTS("SpellCheck.ReplacedWords", replaced_word_count_);
 
   if (misspelled_word_count_) {
     // zero |misspelled_word_count_| is possible when an extension
@@ -94,4 +97,14 @@ void SpellCheckHostMetrics::RecordReplacedWordStats(int delta) {
     int percentage = (100 * replaced_word_count_) / suggestion_show_count_;
     UMA_HISTOGRAM_PERCENTAGE("SpellCheck.SuggestionHitRatio", percentage);
   }
+
+  RecordWordCounts();
+}
+
+void SpellCheckHostMetrics::RecordWordCounts() {
+  UMA_HISTOGRAM_COUNTS("SpellCheck.CheckedWords", spellchecked_word_count_);
+  UMA_HISTOGRAM_COUNTS("SpellCheck.MisspelledWords", misspelled_word_count_);
+  UMA_HISTOGRAM_COUNTS("SpellCheck.ReplacedWords", replaced_word_count_);
+  UMA_HISTOGRAM_COUNTS("SpellCheck.UniqueWords", checked_word_hashes_.size());
+  UMA_HISTOGRAM_COUNTS("SpellCheck.ShownSuggestions", suggestion_show_count_);
 }

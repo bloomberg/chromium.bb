@@ -4836,15 +4836,6 @@
    fun:_ZN5media17VideoRendererBase10ThreadMainEv
 }
 {
-   bug_87379
-   Memcheck:Cond
-   ...
-   fun:_ZNK4base9Histogram11BucketIndexEi
-   fun:_ZN4base9Histogram3AddEi
-   fun:_ZN21SpellCheckHostMetrics22RecordCheckedWordStatsERKSbItN4base20string16_char_traitsESaItEEb
-   fun:_ZN23SpellCheckMessageFilter15OnNotifyCheckedERKSbItN4base20string16_char_traitsESaItEEb
-}
-{
    bug_87380_a
    Memcheck:Cond
    fun:_ZNK7WebCore33InspectorStyleSheetForInlineStyle4textEPN3WTF6StringE
