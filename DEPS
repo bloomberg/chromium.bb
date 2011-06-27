@@ -29,7 +29,7 @@ deps = {
     "/trunk/deps/support@20411",
 
   "src/googleurl":
-    (Var("googlecode_url") % "google-url") + "/trunk@157",
+    (Var("googlecode_url") % "google-url") + "/trunk@158",
 
   "src/seccompsandbox":
     (Var("googlecode_url") % "seccompsandbox") + "/trunk@155",
