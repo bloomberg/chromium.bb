@@ -7,6 +7,7 @@
 #include "base/scoped_temp_dir.h"
 #include "chrome/browser/download/save_package.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_test.h"

@@ -6,6 +6,7 @@
 
 #include "base/file_path.h"
 #include "base/message_loop.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/constrained_html_ui.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "chrome/common/url_constants.h"

@@ -6,6 +6,7 @@
 
 #include "base/file_path.h"
 #include "base/test/test_timeouts.h"
+#include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/ui/npapi_test_helper.h"
 #include "chrome/test/ui_test_utils.h"

@@ -6,6 +6,7 @@
 #include "base/test/test_timeouts.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"

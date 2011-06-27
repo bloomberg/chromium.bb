@@ -25,12 +25,8 @@
 #include "base/message_loop.h"
 #include "base/process.h"
 #include "base/time.h"
-#include "build/build_config.h"
-// TODO(evanm): we should be able to just forward-declare
-// AutomationProxy here, but many files that #include this one don't
-// themselves #include automation_proxy.h.
-#include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/proxy_launcher.h"
+#include "googleurl/src/gurl.h"
 #include "testing/platform_test.h"
 
 class AutomationProxy;

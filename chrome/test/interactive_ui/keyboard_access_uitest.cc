@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/test/test_timeouts.h"
+#include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
