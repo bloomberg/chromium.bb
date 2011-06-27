@@ -729,6 +729,11 @@ const char kProfileDirectoryMap[] = "profile.directory_map";
 // directories.
 const char kProfilesNumCreated[] = "profile.profiles_created";
 
+// A map of profile data directory to cached information. This cache can be
+// used to display information about profiles without actually having to load
+// them.
+const char kProfileInfoCache[] = "profile.info_cache";
+
 // Prefs for SSLConfigServicePref.
 const char kCertRevocationCheckingEnabled[] = "ssl.rev_checking.enabled";
 const char kSSL3Enabled[] = "ssl.ssl3.enabled";

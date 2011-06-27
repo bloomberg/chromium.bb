@@ -217,7 +217,10 @@
       <!-- NOTE: product_logo_*.* files beyond what's listed above are
            referenced by installer code; don't remove them unless you know what
            you're doing! -->
-      <include name="IDR_PROFILE_AVATAR_1" file="avatar_cupcake.png" type="BINDATA" />
+      <include name="IDR_PROFILE_AVATAR_0" file="avatar_cupcake.png" type="BINDATA" />
+      <include name="IDR_PROFILE_AVATAR_1" file="avatar_beaker.png" type="BINDATA" />
+      <include name="IDR_PROFILE_AVATAR_2" file="avatar_bee.png" type="BINDATA" />
+      <include name="IDR_PROFILE_AVATAR_3" file="avatar_briefcase.png" type="BINDATA" />
       <include name="IDR_RESTORE_BUTTON_MASK" file="restore_button_mask.png" type="BINDATA" />
       <include name="IDR_SAD_FAVICON" file="sadfavicon.png" type="BINDATA" />
       <include name="IDR_SAD_TAB" file="sadtab.png" type="BINDATA" />

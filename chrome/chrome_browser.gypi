@@ -1751,6 +1751,8 @@
         'browser/profiles/profile_impl.h',
         'browser/profiles/profile_impl_io_data.cc',
         'browser/profiles/profile_impl_io_data.h',
+        'browser/profiles/profile_info_cache.cc',
+        'browser/profiles/profile_info_cache.h',
         'browser/profiles/profile_io_data.cc',
         'browser/profiles/profile_io_data.h',
         'browser/profiles/profile_keyed_service_factory.cc',
