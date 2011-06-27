@@ -10,6 +10,7 @@
 #include "base/hash_tables.h"
 #include "base/metrics/histogram.h"
 #include "skia/ext/vector_platform_device_skia.h"
+#include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkScalar.h"
 #include "third_party/skia/include/core/SkStream.h"
@@ -125,13 +126,16 @@ bool PdfMetafileSkia::GetData(void* dst_buffer,
   if (dst_buffer_size < GetDataSize())
     return false;
 
-  memcpy(dst_buffer, data_->pdf_stream_.getStream(), dst_buffer_size);
+  SkAutoDataUnref data(data_->pdf_stream_.copyToData());
+  memcpy(dst_buffer, data.bytes(), dst_buffer_size);
   return true;
 }
 
 bool PdfMetafileSkia::SaveTo(const FilePath& file_path) const {
   DCHECK_GT(data_->pdf_stream_.getOffset(), 0U);
-  if (file_util::WriteFile(file_path, data_->pdf_stream_.getStream(),
+  SkAutoDataUnref data(data_->pdf_stream_.copyToData());
+  if (file_util::WriteFile(file_path,
+                           reinterpret_cast<const char*>(data.data()),
                            GetDataSize()) != static_cast<int>(GetDataSize())) {
     DLOG(ERROR) << "Failed to save file " << file_path.value().c_str();
     return false;
@@ -189,9 +193,10 @@ bool PdfMetafileSkia::RenderPage(unsigned int page_number,
                                  bool center_horizontally,
                                  bool center_vertically) const {
   DCHECK_GT(data_->pdf_stream_.getOffset(), 0U);
-  if (data_->pdf_cg_.GetDataSize() == 0)
-    data_->pdf_cg_.InitFromData(data_->pdf_stream_.getStream(),
-                                data_->pdf_stream_.getOffset());
+  if (data_->pdf_cg_.GetDataSize() == 0) {
+    SkAutoDataUnref data(data_->pdf_stream_.copyToData());
+    data_->pdf_cg_.InitFromData(data.bytes(), data.size());
+  }
   return data_->pdf_cg_.RenderPage(page_number, context, rect, shrink_to_fit,
                                    stretch_to_fit, center_horizontally,
                                    center_vertically);
@@ -208,7 +213,9 @@ bool PdfMetafileSkia::SaveToFD(const base::FileDescriptor& fd) const {
   }
 
   bool result = true;
-  if (file_util::WriteFileDescriptor(fd.fd, data_->pdf_stream_.getStream(),
+  SkAutoDataUnref data(data_->pdf_stream_.copyToData());
+  if (file_util::WriteFileDescriptor(fd.fd,
+                                     reinterpret_cast<const char*>(data.data()),
                                      GetDataSize()) !=
       static_cast<int>(GetDataSize())) {
     DLOG(ERROR) << "Failed to save file with fd " << fd.fd;
