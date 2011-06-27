@@ -88,6 +88,14 @@ bool CurveCPClientSocket::UsingTCPFastOpen() const {
   return false;
 }
 
+int64 CurveCPClientSocket::NumBytesRead() const {
+  return -1;
+}
+
+base::TimeDelta CurveCPClientSocket::GetConnectTimeMicros() const {
+  return base::TimeDelta::FromMicroseconds(-1);
+}
+
 int CurveCPClientSocket::Read(IOBuffer* buf,
                               int buf_len,
                               CompletionCallback* callback) {
