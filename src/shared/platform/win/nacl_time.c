@@ -129,7 +129,7 @@ void NaClTimeInternalInit(struct NaClTimeState *ntsp) {
    * Maximize timer/Sleep resolution.
    */
   timeGetDevCaps(&tc, sizeof tc);
-  if (gNaClTimeState.allow_low_resolution) {
+  if (ntsp->allow_low_resolution) {
     /* Set resolution to max so we don't over-promise. */
     ntsp->wPeriodMin = tc.wPeriodMax;
   } else {
@@ -159,7 +159,9 @@ void NaClTimeInternalInit(struct NaClTimeState *ntsp) {
    * We don't actually grab the lock, since the module initializer
    * should be called before going threaded.
    */
-  NaClCalibrateWindowsClockMu(ntsp);
+  if (!ntsp->allow_low_resolution) {
+    NaClCalibrateWindowsClockMu(ntsp);
+  }
 }
 
 uint64_t NaClTimerResolutionNsInternal(struct NaClTimeState *ntsp) {
@@ -168,7 +170,7 @@ uint64_t NaClTimerResolutionNsInternal(struct NaClTimeState *ntsp) {
 
 void NaClTimeInternalFini(struct NaClTimeState *ntsp) {
   NaClMutexDtor(&ntsp->mu);
-  if (!gNaClTimeState.allow_low_resolution)
+  if (!ntsp->allow_low_resolution)
     timeEndPeriod(ntsp->wPeriodMin);
 }
 
@@ -199,31 +201,33 @@ int NaClGetTimeOfDayIntern(struct nacl_abi_timeval *tv,
 
   NaClMutexLock(&ntsp->mu);
 
-  NaClLog(5, "ms_counter_now       %"NACL_PRIu32"\n",
-          (uint32_t) ms_counter_now);
-  NaClLog(5, "t_ms                 %"NACL_PRId64"\n", t_ms);
-  NaClLog(5, "system_time_start_ms %"NACL_PRIu64"\n",
-          ntsp->system_time_start_ms);
+  if (!ntsp->allow_low_resolution) {
+    NaClLog(5, "ms_counter_now       %"NACL_PRIu32"\n",
+            (uint32_t) ms_counter_now);
+    NaClLog(5, "t_ms                 %"NACL_PRId64"\n", t_ms);
+    NaClLog(5, "system_time_start_ms %"NACL_PRIu64"\n",
+            ntsp->system_time_start_ms);
 
-  ms_counter_at_ft_now = (DWORD)
-      (ntsp->ms_counter_start +
-       (uint32_t) (t_ms - ntsp->system_time_start_ms));
+    ms_counter_at_ft_now = (DWORD)
+        (ntsp->ms_counter_start +
+         (uint32_t) (t_ms - ntsp->system_time_start_ms));
 
-  NaClLog(5, "ms_counter_at_ft_now %"NACL_PRIu32"\n",
-          (uint32_t) ms_counter_at_ft_now);
+    NaClLog(5, "ms_counter_at_ft_now %"NACL_PRIu32"\n",
+            (uint32_t) ms_counter_at_ft_now);
 
-  ms_counter_diff = ms_counter_now - (uint32_t) ms_counter_at_ft_now;
+    ms_counter_diff = ms_counter_now - (uint32_t) ms_counter_at_ft_now;
 
-  NaClLog(5, "ms_counter_diff      %"NACL_PRIu32"\n", ms_counter_diff);
+    NaClLog(5, "ms_counter_diff      %"NACL_PRIu32"\n", ms_counter_diff);
 
-  if (ms_counter_diff <= kMaxMillsecondDriftBeforeRecalibration) {
-    t_ms = t_ms + ms_counter_diff;
-  } else {
-    NaClCalibrateWindowsClockMu(ntsp);
-    t_ms = ntsp->system_time_start_ms;
+    if (ms_counter_diff <= kMaxMillsecondDriftBeforeRecalibration) {
+      t_ms = t_ms + ms_counter_diff;
+    } else {
+      NaClCalibrateWindowsClockMu(ntsp);
+      t_ms = ntsp->system_time_start_ms;
+    }
+
+    NaClLog(5, "adjusted t_ms =      %"NACL_PRIu64"\n", t_ms);
   }
-
-  NaClLog(5, "adjusted t_ms =      %"NACL_PRIu64"\n", t_ms);
 
   unix_time_ms = t_ms - ntsp->epoch_start_ms;
 
