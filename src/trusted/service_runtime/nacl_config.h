@@ -193,7 +193,7 @@
  * http://infocenter.arm.com/help/topic/com.arm.doc.ihi0042a/IHI0042A_aapcs.pdf
  * -- the "public" stack alignment is required to be 8 bytes,
  */
-# define NACL_STACK_ALIGN_MASK    (0x3)
+# define NACL_STACK_ALIGN_MASK    (0x7)
 
 /* TODO(robertm): unify this with NACL_BLOCK_SHIFT */
 /* 16 byte bundles */
