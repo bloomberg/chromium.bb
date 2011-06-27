@@ -21,7 +21,7 @@
 #include <stdio.h>
 
 #include "native_client/src/shared/utils/types.h"
-#include "native_client/src/trusted/validator/x86/types_memory_model.h"
+#include "native_client/src/trusted/validator/types_memory_model.h"
 
 /* The model of a validator state. */
 struct NaClValidatorState;

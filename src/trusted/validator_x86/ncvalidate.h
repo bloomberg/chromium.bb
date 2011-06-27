@@ -9,7 +9,7 @@
 
 #include <stdio.h>
 #include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
-#include "native_client/src/trusted/validator/x86/types_memory_model.h"
+#include "native_client/src/trusted/validator/types_memory_model.h"
 
 /*
  * ncvalidate.h: exports for ncvalidate.c

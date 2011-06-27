@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -20,7 +20,7 @@
 
 #include "native_client/src/include/portability_io.h"
 
-#include "native_client/src/trusted/validator_x86/ncfileutil.h"
+#include "native_client/src/trusted/validator/ncfileutil.h"
 
 /* This module is intended for testing use only, not for production use */
 /* in sel_ldr. To prevent unintended production usage, define a symbol  */

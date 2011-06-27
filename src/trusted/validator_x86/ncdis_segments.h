@@ -16,7 +16,7 @@
 #endif
 
 #include "native_client/src/shared/utils/types.h"
-#include "native_client/src/trusted/validator/x86/types_memory_model.h"
+#include "native_client/src/trusted/validator/types_memory_model.h"
 
 /* When true, use an instruction iterator instead of NCDecodeSegment.
  */

@@ -1,8 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
- * Copyright 2009, Google Inc.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <stdio.h>
@@ -14,9 +13,9 @@
 #include <algorithm>
 
 #include "native_client/src/include/nacl_string.h"
+#include "native_client/src/trusted/validator/ncfileutil.h"
 #include "native_client/src/trusted/validator_arm/model.h"
 #include "native_client/src/trusted/validator_arm/validator.h"
-#include "native_client/src/trusted/validator_x86/ncfileutil.h"
 
 using nacl_arm_val::SfiValidator;
 using nacl_arm_val::CodeSegment;
