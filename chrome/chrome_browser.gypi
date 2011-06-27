@@ -3515,6 +3515,8 @@
         'browser/ui/webui/print_preview_handler.h',
         'browser/ui/webui/print_preview_ui.cc',
         'browser/ui/webui/print_preview_ui.h',
+        'browser/ui/webui/quota_internals_ui.cc',
+        'browser/ui/webui/quota_internals_ui.h',
         'browser/ui/webui/screenshot_source.cc',
         'browser/ui/webui/screenshot_source.h',
         'browser/ui/webui/sessions_ui.cc',
