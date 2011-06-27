@@ -2208,6 +2208,44 @@ TEST_F(ViewTest, ReorderChildren) {
   ASSERT_EQ(foo1, foo3->GetNextFocusableView());
 }
 
+// Verifies that GetViewByID returns the correctly child view from the specified
+// ID.
+// The tree looks like this:
+// v1
+// +-- v2
+//     +-- v3
+//     +-- v4
+TEST_F(ViewTest, GetViewByID) {
+  View v1;
+  const int kV1ID = 1;
+  v1.set_id(kV1ID);
+
+  View v2;
+  const int kV2ID = 2;
+  v2.set_id(kV2ID);
+
+  View v3;
+  const int kV3ID = 3;
+  v3.set_id(kV3ID);
+
+  View v4;
+  const int kV4ID = 4;
+  v4.set_id(kV4ID);
+
+  const int kV5ID = 5;
+
+  v1.AddChildView(&v2);
+  v2.AddChildView(&v3);
+  v2.AddChildView(&v4);
+
+  EXPECT_EQ(&v1, v1.GetViewByID(kV1ID));
+  EXPECT_EQ(&v2, v1.GetViewByID(kV2ID));
+  EXPECT_EQ(&v4, v1.GetViewByID(kV4ID));
+
+  EXPECT_EQ(NULL, v1.GetViewByID(kV5ID));  // No V5 exists.
+  EXPECT_EQ(NULL, v2.GetViewByID(kV1ID));  // It can get only from child views.
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Layers
 ////////////////////////////////////////////////////////////////////////////////
