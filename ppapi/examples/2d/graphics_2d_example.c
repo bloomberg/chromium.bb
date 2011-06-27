@@ -1,4 +1,4 @@
-/* Copyright (c) 2010 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -38,20 +38,20 @@ struct InstanceInfo {
 /** Linked list of all live instances. */
 struct InstanceInfo* all_instances = NULL;
 
-/** Returns a refed resource corresponding to the created device context. */
-PP_Resource MakeAndBindDeviceContext(PP_Instance instance,
-                                     const struct PP_Size* size) {
-  PP_Resource device_context;
+/** Returns a refed resource corresponding to the created graphics 2d. */
+PP_Resource MakeAndBindGraphics2D(PP_Instance instance,
+                                  const struct PP_Size* size) {
+  PP_Resource graphics;
 
-  device_context = g_graphics_2d_interface->Create(instance, size, PP_FALSE);
-  if (!device_context)
+  graphics = g_graphics_2d_interface->Create(instance, size, PP_FALSE);
+  if (!graphics)
     return 0;
 
-  if (!g_instance_interface->BindGraphics(instance, device_context)) {
-    g_core_interface->ReleaseResource(device_context);
+  if (!g_instance_interface->BindGraphics(instance, graphics)) {
+    g_core_interface->ReleaseResource(graphics);
     return 0;
   }
-  return device_context;
+  return graphics;
 }
 
 void FlushCompletionCallback(void* user_data, int32_t result) {
@@ -59,7 +59,7 @@ void FlushCompletionCallback(void* user_data, int32_t result) {
 }
 
 void Repaint(struct InstanceInfo* instance, const struct PP_Size* size) {
-  PP_Resource image, device_context;
+  PP_Resource image, graphics;
   struct PP_ImageDataDesc image_desc;
   uint32_t* image_data;
   int num_words, i;
@@ -81,18 +81,18 @@ void Repaint(struct InstanceInfo* instance, const struct PP_Size* size) {
   for (i = 0; i < num_words; i++)
     image_data[i] = 0xFF0000FF;
 
-  /* Create the device context and paint the image to it. */
-  device_context = MakeAndBindDeviceContext(instance->pp_instance, size);
-  if (!device_context) {
+  /* Create the graphics 2d and paint the image to it. */
+  graphics = MakeAndBindGraphics2D(instance->pp_instance, size);
+  if (!graphics) {
     g_core_interface->ReleaseResource(image);
     return;
   }
 
-  g_graphics_2d_interface->ReplaceContents(device_context, image);
-  g_graphics_2d_interface->Flush(device_context,
+  g_graphics_2d_interface->ReplaceContents(graphics, image);
+  g_graphics_2d_interface->Flush(graphics,
       PP_MakeCompletionCallback(&FlushCompletionCallback, NULL));
 
-  g_core_interface->ReleaseResource(device_context);
+  g_core_interface->ReleaseResource(graphics);
   g_core_interface->ReleaseResource(image);
 }
 

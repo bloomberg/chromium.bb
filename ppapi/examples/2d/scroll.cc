@@ -61,7 +61,7 @@ class MyInstance : public pp::Instance, public pp::PaintManager::Client {
 
  private:
   // PaintManager::Client implementation.
-  virtual bool OnPaint(pp::Graphics2D& device,
+  virtual bool OnPaint(pp::Graphics2D& graphics,
                        const std::vector<pp::Rect>& paint_rects,
                        const pp::Rect& paint_bounds) {
     if (!kicked_off_) {
@@ -81,15 +81,16 @@ class MyInstance : public pp::Instance, public pp::PaintManager::Client {
     int x_offset = x_origin % kSquareSpacing;
     int y_offset = y_origin % kSquareSpacing;
 
-    for (int ys = 0; ys < device.size().height() / kSquareSpacing + 2; ys++) {
-      for (int xs = 0; xs < device.size().width() / kSquareSpacing + 2; xs++) {
+    for (int ys = 0; ys < graphics.size().height() / kSquareSpacing + 2; ys++) {
+      for (int xs = 0; xs < graphics.size().width() / kSquareSpacing + 2;
+           xs++) {
         int x = xs * kSquareSpacing + x_offset - paint_bounds.x();
         int y = ys * kSquareSpacing + y_offset - paint_bounds.y();
         FillRect(&updated_image, pp::Rect(x, y, kSquareSize, kSquareSize),
                  0xFF000000);
       }
     }
-    device.PaintImageData(updated_image, paint_bounds.point());
+    graphics.PaintImageData(updated_image, paint_bounds.point());
     return true;
   }
 

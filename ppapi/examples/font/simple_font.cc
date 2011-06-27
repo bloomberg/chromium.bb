@@ -28,8 +28,8 @@ class MyInstance : public pp::Instance {
     last_size_ = position.size();
 
     pp::ImageData image(this, PP_IMAGEDATAFORMAT_BGRA_PREMUL, last_size_, true);
-    pp::Graphics2D device(this, last_size_, false);
-    BindGraphics(device);
+    pp::Graphics2D graphics(this, last_size_, false);
+    BindGraphics(graphics);
 
     pp::FontDescription_Dev desc;
     desc.set_family(PP_FONTFAMILY_SANSSERIF);
@@ -81,8 +81,8 @@ class MyInstance : public pp::Instance {
       y += 20;
     }
 
-    device.PaintImageData(image, pp::Point(0, 0));
-    device.Flush(pp::CompletionCallback(&DummyCompletionCallback, NULL));
+    graphics.PaintImageData(image, pp::Point(0, 0));
+    graphics.Flush(pp::CompletionCallback(&DummyCompletionCallback, NULL));
   }
 
  private:
