@@ -169,6 +169,11 @@ class Clipboard {
   // format is never controlled by the user.
   void ReadData(const std::string& format, std::string* result);
 
+  // Returns a sequence number which uniquely identifies clipboard state.
+  // This can be used to version the data on the clipboard and determine
+  // whether it has changed.
+  uint64 GetSequenceNumber();
+
   // Get format Identifiers for various types.
   static FormatType GetUrlFormatType();
   static FormatType GetUrlWFormatType();

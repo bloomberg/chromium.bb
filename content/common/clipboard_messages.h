@@ -50,6 +50,9 @@ IPC_SYNC_MESSAGE_CONTROL1_2(ClipboardHostMsg_ReadImage,
                             ui::Clipboard::Buffer /* buffer */,
                             base::SharedMemoryHandle /* PNG-encoded image */,
                             uint32 /* image size */)
+IPC_SYNC_MESSAGE_CONTROL0_1(ClipboardHostMsg_GetSequenceNumber,
+                            uint64 /* result */)
+
 #if defined(OS_MACOSX)
 IPC_MESSAGE_CONTROL1(ClipboardHostMsg_FindPboardWriteStringAsync,
                      string16 /* text */)

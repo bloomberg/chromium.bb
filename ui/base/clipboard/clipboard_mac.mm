@@ -319,6 +319,11 @@ void Clipboard::ReadFiles(std::vector<FilePath>* files) const {
   }
 }
 
+uint64 Clipboard::GetSequenceNumber() {
+  NSPasteboard* pb = GetPasteboard();
+  return [pb changeCount];
+}
+
 // static
 Clipboard::FormatType Clipboard::GetUrlFormatType() {
   static const std::string type = base::SysNSStringToUTF8(NSURLPboardType);

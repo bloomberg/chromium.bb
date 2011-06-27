@@ -183,6 +183,13 @@ bool ClipboardReadFilenames(ui::Clipboard::Buffer buffer,
   return result;
 }
 
+uint64 ClipboardGetSequenceNumber() {
+  uint64 seq_num = 0;
+  RenderThread::current()->Send(
+      new ClipboardHostMsg_GetSequenceNumber(&seq_num));
+  return seq_num;
+}
+
 void GetPlugins(bool refresh,
                 std::vector<webkit::npapi::WebPluginInfo>* plugins) {
   if (!RenderThread::current()->plugin_refresh_allowed())

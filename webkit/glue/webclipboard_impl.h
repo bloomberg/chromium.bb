@@ -26,6 +26,7 @@ class WebClipboardImpl : public WebKit::WebClipboard {
   virtual WebKit::WebString readPlainText(Buffer);
   virtual WebKit::WebString readHTML(Buffer, WebKit::WebURL* source_url);
   virtual WebKit::WebData readImage(Buffer);
+  virtual uint64 getSequenceNumber();
   virtual void writeHTML(
       const WebKit::WebString& html_text,
       const WebKit::WebURL& source_url,

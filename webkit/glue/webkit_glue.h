@@ -201,6 +201,9 @@ void ClipboardReadImage(ui::Clipboard::Buffer buffer, std::string* data);
 bool ClipboardReadData(ui::Clipboard::Buffer buffer, const string16& type,
                        string16* data, string16* metadata);
 
+// Get a sequence number which uniquely identifies clipboard state.
+uint64 ClipboardGetSequenceNumber();
+
 // Reads filenames from the clipboard, if available.
 bool ClipboardReadFilenames(ui::Clipboard::Buffer buffer,
                             std::vector<string16>* filenames);

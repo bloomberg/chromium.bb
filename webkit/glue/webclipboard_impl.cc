@@ -141,6 +141,10 @@ WebData WebClipboardImpl::readImage(Buffer buffer) {
   return WebData(png_data);
 }
 
+uint64 WebClipboardImpl::getSequenceNumber() {
+  return ClipboardGetSequenceNumber();
+}
+
 void WebClipboardImpl::writeHTML(
     const WebString& html_text, const WebURL& source_url,
     const WebString& plain_text, bool write_smart_paste) {

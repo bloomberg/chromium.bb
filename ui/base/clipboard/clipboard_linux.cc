@@ -409,6 +409,13 @@ void Clipboard::ReadData(const std::string& format, std::string* result) {
   gtk_selection_data_free(data);
 }
 
+uint64 Clipboard::GetSequenceNumber() {
+  // TODO(cdn): implement this. For now this interface will advertise
+  // that the Linux clipboard never changes. That's fine as long as we
+  // don't rely on this signal.
+  return 0;
+}
+
 // static
 Clipboard::FormatType Clipboard::GetPlainTextFormatType() {
   return GdkAtomToString(GDK_TARGET_STRING);

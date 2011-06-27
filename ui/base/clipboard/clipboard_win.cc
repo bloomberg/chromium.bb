@@ -552,6 +552,10 @@ void Clipboard::ReadData(const std::string& format, std::string* result) {
   ::GlobalUnlock(data);
 }
 
+uint64 Clipboard::GetSequenceNumber() {
+  return ::GetClipboardSequenceNumber();
+}
+
 // static
 void Clipboard::ParseBookmarkClipboardFormat(const string16& bookmark,
                                              string16* title,

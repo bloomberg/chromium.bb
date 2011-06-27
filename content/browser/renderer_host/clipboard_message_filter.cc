@@ -76,6 +76,7 @@ bool ClipboardMessageFilter::OnMessageReceived(const IPC::Message& message,
 #endif
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_ReadData, OnReadData)
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_ReadFilenames, OnReadFilenames)
+    IPC_MESSAGE_HANDLER(ClipboardHostMsg_GetSequenceNumber, OnGetSequenceNumber)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -208,6 +209,10 @@ void ClipboardMessageFilter::OnReadFilenames(
     ui::Clipboard::Buffer buffer, bool* succeeded,
     std::vector<string16>* filenames) {
   *succeeded = ClipboardDispatcher::ReadFilenames(buffer, filenames);
+}
+
+void ClipboardMessageFilter::OnGetSequenceNumber(uint64* seq_num) {
+  *seq_num = GetClipboard()->GetSequenceNumber();
 }
 
 // static

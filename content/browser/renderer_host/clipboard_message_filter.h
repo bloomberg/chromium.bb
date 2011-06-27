@@ -47,6 +47,7 @@ class ClipboardMessageFilter : public BrowserMessageFilter {
                   bool* succeeded, string16* data, string16* metadata);
   void OnReadFilenames(ui::Clipboard::Buffer buffer, bool* succeeded,
                        std::vector<string16>* filenames);
+  void OnGetSequenceNumber(uint64* seq_num);
 
   // We have our own clipboard because we want to access the clipboard on the
   // IO thread instead of forwarding (possibly synchronous) messages to the UI
