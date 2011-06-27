@@ -112,6 +112,41 @@ const char* OpcodePrefixBytes(NaClInstPrefix prefix) {
 }
 
 void NaClInstPrint(struct Gio* f, const NaClInst* inst) {
+  int i;
+  int count = 2;
+  /* Add prefix bytes if defined by prefix. */
+  const char* prefix = OpcodePrefixBytes(inst->prefix);
+  int prefix_len = (int) strlen(prefix);
+  gprintf(f, "  %s", prefix);
+  if (prefix_len > 0) {
+    count += prefix_len + 1;
+    gprintf(f, " ");
+  }
+
+  /* Add opcode bytes. */
+  for (i = 0; i < inst->num_opcode_bytes; ++i) {
+    if (i > 0) {
+      gprintf(f, " ");
+      ++count;
+    }
+    gprintf(f,"%02x", inst->opcode[i]);
+    count += 2;
+  }
+  if (inst->flags & NACL_IFLAG(OpcodeInModRm)) {
+    gprintf(f, " / %d", inst->opcode[inst->num_opcode_bytes]);
+    count += 4;
+  } else if (inst->flags & NACL_IFLAG(OpcodePlusR)) {
+    gprintf(f, " - r%d", inst->opcode[inst->num_opcode_bytes]);
+    count += 5;
+  }
+  if (inst->flags & NACL_IFLAG(OpcodeInModRmRm)) {
+    gprintf(f, " / %d", inst->opcode[inst->num_opcode_bytes + 1]);
+    count += 4;
+  }
+  while (count < 30) {
+    gprintf(f, " ");
+    ++count;
+  }
   { /* Print out instruction type less the NACLi_ prefix. */
     const char* name = NaClInstTypeString(inst->insttype);
     gprintf(f, "%s ", name + strlen("NACLi_"));

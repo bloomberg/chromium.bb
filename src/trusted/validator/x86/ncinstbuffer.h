@@ -22,7 +22,7 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCINSTBUFFER_H_
 
 #include "native_client/src/include/portability.h"
-#include "native_client/src/trusted/validator/types_memory_model.h"
+#include "native_client/src/trusted/validator/x86/types_memory_model.h"
 
 EXTERN_C_BEGIN
 

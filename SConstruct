@@ -1955,8 +1955,9 @@ base_env.Append(
     'src/trusted/service_runtime/build.scons',
     'src/trusted/simple_service/build.scons',
     'src/trusted/threading/build.scons',
-    'src/trusted/validator/build.scons',
     'src/trusted/validator/x86/build.scons',
+    # TODO: This file has an early out in case we are building for ARM
+    #       but provides nchelper lib. Needs to be cleaned up
     'src/trusted/validator_x86/build.scons',
     'src/trusted/validator/x86/32/build.scons',
     'src/trusted/validator/x86/64/build.scons',

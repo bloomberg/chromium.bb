@@ -94,12 +94,12 @@ NaClExpVector[4] = {
   { ExprConstant[0] , 0xa, ExprUsed | ExprSize8 | ExprUnsignedHex },
 };
 00000000: 90                                           nop
-  [hard coded]                386 
+  90                          386 
     Nop
 NaClExpVector[0] = {
 };
 00000000: 66 90                                        nop
-  [hard coded]                386 
+  90                          386 
     Nop
 NaClExpVector[0] = {
 };
@@ -200,67 +200,67 @@ NaClExpVector[10] = {
   { ExprConstant[0] , 0x0, ExprSize32 | ExprSignedHex },
 };
 00000000: 0f 1f 00                                     nop
-  [hard coded]                386 
+  1f                          386 
     Nop
 NaClExpVector[0] = {
 };
 00000000: 0f 1f 40 00                                  nop
-  [hard coded]                386 
+  1f                          386 
     Nop
 NaClExpVector[0] = {
 };
 00000000: 0f 1f 44 00 00                               nop
-  [hard coded]                386 
+  1f                          386 
     Nop
 NaClExpVector[0] = {
 };
 00000000: 66 0f 1f 44 00 00                            nop
-  [hard coded]                386 
+  1f                          386 
     Nop
 NaClExpVector[0] = {
 };
 00000000: 0f 1f 80 00 00 00 00                         nop
-  [hard coded]                386 
+  1f                          386 
     Nop
 NaClExpVector[0] = {
 };
 00000000: 0f 1f 84 00 00 00 00 00                      nop
-  [hard coded]                386 
+  1f                          386 
     Nop
 NaClExpVector[0] = {
 };
 00000000: 66 0f 1f 84 00 00 00 00 00                   nop
-  [hard coded]                386 
+  1f                          386 
     Nop
 NaClExpVector[0] = {
 };
 00000000: 66 2e 0f 1f 84 00 00 00 00 00                nop
-  [hard coded]                386 
+  1f                          386 
     Nop
 NaClExpVector[0] = {
 };
 00000000: 66 66 2e 0f 1f 84 00 00 00 00 00             nop
-  [hard coded]                386 
+  1f                          386 
     Nop
 NaClExpVector[0] = {
 };
 00000000: 66 66 66 2e 0f 1f 84 00 00 00 00 00          nop
-  [hard coded]                386 
+  1f                          386 
     Nop
 NaClExpVector[0] = {
 };
 00000000: 66 66 66 66 2e 0f 1f 84 00 00 00 00 00       nop
-  [hard coded]                386 
+  1f                          386 
     Nop
 NaClExpVector[0] = {
 };
 00000000: 66 66 66 66 66 2e 0f 1f 84 00 00 00 00 00    nop
-  [hard coded]                386 
+  1f                          386 
     Nop
 NaClExpVector[0] = {
 };
 00000000: 66 66 66 66 66 66 2e 0f 1f 84 00 00 00 00 00 nop
-  [hard coded]                386 
+  1f                          386 
     Nop
 NaClExpVector[0] = {
 };
