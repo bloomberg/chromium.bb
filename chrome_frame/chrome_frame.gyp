@@ -121,6 +121,7 @@
         'vtable_patch_manager_unittest.cc',
       ],
       'include_dirs': [
+        '<(DEPTH)/breakpad/src',
       ],
       'resource_include_dirs': [
         '<(INTERMEDIATE_DIR)',
@@ -141,6 +142,7 @@
           'conditions': [
             ['OS=="win"', {
               'dependencies': [
+                '../breakpad/breakpad.gyp:breakpad_handler',              
                 # TODO(slightlyoff): Get automation targets working on OS X
                 '../chrome/chrome.gyp:automation',
               ],
