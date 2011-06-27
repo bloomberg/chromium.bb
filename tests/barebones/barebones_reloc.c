@@ -20,6 +20,14 @@
 #include "native_client/tests/barebones/barebones.h"
 #endif
 
+/*
+ * NOTE: we declare tls vars below. We do not use them but the may
+ * compiler may generate references to the symbols below, so we provide
+ * some dummy functions below.
+ */
+void *__aeabi_read_tp() { return 0; }
+void *__nacl_read_tp() { return 0; }
+
 volatile __thread int var_tls = 1;
 volatile __thread double var_tls_double = 1.0;
 /*
