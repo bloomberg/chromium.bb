@@ -4,73 +4,66 @@
 
 #include "content/renderer/media/video_capture_impl_manager.h"
 
-#include "base/memory/singleton.h"
-#include "content/renderer/media/video_capture_message_filter_creator.h"
-#include "media/base/message_loop_factory_impl.h"
+#include "base/stl_util-inl.h"
+#include "content/renderer/media/video_capture_impl.h"
+#include "content/renderer/media/video_capture_message_filter.h"
 
-VideoCaptureImplManager::VideoCaptureImplManager() {
-  ml_factory_.reset(new media::MessageLoopFactoryImpl());
-  ml_proxy_ = ml_factory_->GetMessageLoopProxy("VC manager");
+VideoCaptureImplManager::VideoCaptureImplManager()
+    : thread_("VC manager") {
+  thread_.Start();
+  message_loop_proxy_ = thread_.message_loop_proxy();
+  filter_ = new VideoCaptureMessageFilter();
 }
 
-VideoCaptureImplManager::~VideoCaptureImplManager() {}
+VideoCaptureImplManager::~VideoCaptureImplManager() {
+  STLDeleteContainerPairSecondPointers(devices_.begin(), devices_.end());
+  thread_.Stop();
+}
 
-// static
 media::VideoCapture* VideoCaptureImplManager::AddDevice(
     media::VideoCaptureSessionId id,
     media::VideoCapture::EventHandler* handler) {
   DCHECK(handler);
-  VideoCaptureImplManager* manager = GetInstance();
 
-  base::AutoLock auto_lock(manager->lock_);
-  Devices::iterator it = manager->devices_.find(id);
-  if (it == manager->devices_.end()) {
+  base::AutoLock auto_lock(lock_);
+  Devices::iterator it = devices_.find(id);
+  if (it == devices_.end()) {
     VideoCaptureImpl* vc =
-        new VideoCaptureImpl(id, manager->ml_proxy_,
-                             VideoCaptureMessageFilterCreator::SharedFilter());
-    manager->devices_[id] = Device(vc, handler);
+        new VideoCaptureImpl(id, message_loop_proxy_, filter_);
+    devices_[id] = new Device(vc, handler);
     vc->Init();
     return vc;
   }
 
-  manager->devices_[id].clients.push_front(handler);
-  return it->second.vc;
+  devices_[id]->clients.push_front(handler);
+  return it->second->vc;
 }
 
-// static
 void VideoCaptureImplManager::RemoveDevice(
     media::VideoCaptureSessionId id,
     media::VideoCapture::EventHandler* handler) {
   DCHECK(handler);
-  VideoCaptureImplManager* manager = GetInstance();
 
-  base::AutoLock auto_lock(manager->lock_);
-  Devices::iterator it = manager->devices_.find(id);
-  if (it == manager->devices_.end())
+  base::AutoLock auto_lock(lock_);
+  Devices::iterator it = devices_.find(id);
+  if (it == devices_.end())
     return;
 
-  size_t size = it->second.clients.size();
-  it->second.clients.remove(handler);
+  size_t size = it->second->clients.size();
+  it->second->clients.remove(handler);
 
-  if (size == it->second.clients.size() || size > 1)
+  if (size == it->second->clients.size() || size > 1)
     return;
 
-  manager->devices_[id].vc->DeInit(NewRunnableMethod(manager,
-      &VideoCaptureImplManager::FreeDevice, manager->devices_[id].vc));
-  manager->devices_.erase(id);
-  return;
-}
-
-// static
-VideoCaptureImplManager* VideoCaptureImplManager::GetInstance() {
-  return Singleton<VideoCaptureImplManager>::get();
+  devices_[id]->vc->DeInit(NewRunnableMethod(this,
+      &VideoCaptureImplManager::FreeDevice, devices_[id]->vc));
+  delete devices_[id];
+  devices_.erase(id);
 }
 
 void VideoCaptureImplManager::FreeDevice(VideoCaptureImpl* vc) {
   delete vc;
 }
-
-VideoCaptureImplManager::Device::Device() : vc(NULL) {}
 
 VideoCaptureImplManager::Device::Device(
     VideoCaptureImpl* device,
@@ -80,4 +73,3 @@ VideoCaptureImplManager::Device::Device(
 }
 
 VideoCaptureImplManager::Device::~Device() {}
-

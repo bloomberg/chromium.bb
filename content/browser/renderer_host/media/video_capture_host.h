@@ -77,22 +77,21 @@ class VideoCaptureHost : public BrowserMessageFilter,
   virtual ~VideoCaptureHost();
 
   // IPC message: Start capture on the VideoCaptureDevice referenced by
-  // VideoCaptureParams::session_id. device_id is an id created by
+  // VideoCaptureParams::session_id. |device_id| is an id created by
   // VideCaptureMessageFilter to identify a session
   // between a VideCaptureMessageFilter and a VideoCaptureHost.
   void OnStartCapture(int device_id,
                       const media::VideoCaptureParams& params);
 
-  // IPC message: Stop capture on device referenced by device_id.
+  // IPC message: Stop capture on device referenced by |device_id|.
   void OnStopCapture(int device_id);
 
-  // IPC message: Pause capture on device referenced by device_id.
+  // IPC message: Pause capture on device referenced by |device_id|.
   void OnPauseCapture(int device_id);
 
   // IPC message: Receive an empty buffer from renderer. Send it to device
   // referenced by |device_id|.
-  void OnReceiveEmptyBuffer(int device_id,
-                            int buffer_id);
+  void OnReceiveEmptyBuffer(int device_id, int buffer_id);
 
 
   // Called on the IO thread when VideoCaptureController have

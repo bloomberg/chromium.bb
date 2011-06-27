@@ -37,8 +37,8 @@
 #include "content/renderer/gpu/gpu_channel_host.h"
 #include "content/renderer/gpu/gpu_video_service_host.h"
 #include "content/renderer/indexed_db_dispatcher.h"
+#include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/media/video_capture_message_filter.h"
-#include "content/renderer/media/video_capture_message_filter_creator.h"
 #include "content/renderer/plugin_channel_host.h"
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_process_observer.h"
@@ -171,9 +171,8 @@ void RenderThread::Init() {
   db_message_filter_ = new DBMessageFilter();
   AddFilter(db_message_filter_.get());
 
-  VideoCaptureMessageFilter* video_capture_message_filter =
-      VideoCaptureMessageFilterCreator::SharedFilter();
-  AddFilter(video_capture_message_filter);
+  vc_manager_ = new VideoCaptureImplManager();
+  AddFilter(vc_manager_->video_capture_message_filter());
 
   content::GetContentClient()->renderer()->RenderThreadStarted();
 
@@ -189,12 +188,10 @@ RenderThread::~RenderThread() {
     web_database_observer_impl_->WaitForAllDatabasesToClose();
 
   // Shutdown in reverse of the initialization order.
+  RemoveFilter(vc_manager_->video_capture_message_filter());
+
   RemoveFilter(db_message_filter_.get());
   db_message_filter_ = NULL;
-
-  VideoCaptureMessageFilter* video_capture_message_filter =
-      VideoCaptureMessageFilterCreator::SharedFilter();
-  RemoveFilter(video_capture_message_filter);
 
   // Shutdown the file thread if it's running.
   if (file_thread_.get())

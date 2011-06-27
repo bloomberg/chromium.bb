@@ -72,8 +72,6 @@
         'renderer/media/video_capture_impl_manager.h',
         'renderer/media/video_capture_message_filter.cc',
         'renderer/media/video_capture_message_filter.h',
-        'renderer/media/video_capture_message_filter_creator.cc',
-        'renderer/media/video_capture_message_filter_creator.h',
         'renderer/navigation_state.cc',
         'renderer/navigation_state.h',
         'renderer/notification_provider.cc',

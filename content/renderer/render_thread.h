@@ -32,6 +32,7 @@ class RenderProcessObserver;
 class RendererNetPredictor;
 class RendererWebKitClientImpl;
 class SkBitmap;
+class VideoCaptureImplManager;
 class WebDatabaseObserverImpl;
 
 struct RendererPreferences;
@@ -164,6 +165,10 @@ class RenderThread : public RenderThreadBase,
     return indexed_db_dispatcher_.get();
   }
 
+  VideoCaptureImplManager* video_capture_impl_manager() const {
+    return vc_manager_.get();
+  }
+
   bool plugin_refresh_allowed() const { return plugin_refresh_allowed_; }
 
   double idle_notification_delay_in_s() const {
@@ -246,6 +251,9 @@ class RenderThread : public RenderThreadBase,
 
   // Used on the renderer and IPC threads.
   scoped_refptr<DBMessageFilter> db_message_filter_;
+
+  // Used on multiple threads.
+  scoped_refptr<VideoCaptureImplManager> vc_manager_;
 
   // Used on multiple script execution context threads.
   scoped_ptr<WebDatabaseObserverImpl> web_database_observer_impl_;

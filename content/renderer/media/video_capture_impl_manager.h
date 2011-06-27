@@ -13,37 +13,39 @@
 #include <list>
 #include <map>
 
+#include "base/threading/thread.h"
 #include "base/message_loop_proxy.h"
 #include "base/synchronization/lock.h"
-#include "content/renderer/media/video_capture_impl.h"
-#include "content/renderer/media/video_capture_message_filter.h"
-#include "media/base/callback.h"
-#include "media/base/message_loop_factory.h"
 #include "media/video/capture/video_capture.h"
 
-class VideoCaptureImplManager {
+class VideoCaptureImpl;
+class VideoCaptureMessageFilter;
+
+class VideoCaptureImplManager
+    : public base::RefCountedThreadSafe<VideoCaptureImplManager> {
  public:
   VideoCaptureImplManager();
-  ~VideoCaptureImplManager();
+  virtual ~VideoCaptureImplManager();
 
   // Called by video capture client |handler| to add device referenced
   // by |id| to VideoCaptureImplManager's list of opened device list.
   // A pointer to VideoCapture is returned to client so that client can
   // operate on that pointer, such as StartCaptrue, StopCapture.
-  static media::VideoCapture* AddDevice(
+  media::VideoCapture* AddDevice(
       media::VideoCaptureSessionId id,
       media::VideoCapture::EventHandler* handler);
 
   // Called by video capture client |handler| to remove device referenced
   // by |id| from VideoCaptureImplManager's list of opened device list.
-  static void RemoveDevice(media::VideoCaptureSessionId id,
-                           media::VideoCapture::EventHandler* handler);
+  void RemoveDevice(media::VideoCaptureSessionId id,
+                    media::VideoCapture::EventHandler* handler);
 
-  static VideoCaptureImplManager* GetInstance();
+  VideoCaptureMessageFilter* video_capture_message_filter() const {
+    return filter_;
+  }
 
  private:
   struct Device {
-    Device();
     Device(VideoCaptureImpl* device,
            media::VideoCapture::EventHandler* handler);
     ~Device();
@@ -54,15 +56,14 @@ class VideoCaptureImplManager {
 
   void FreeDevice(VideoCaptureImpl* vc);
 
-  typedef std::map<media::VideoCaptureSessionId, Device> Devices;
+  typedef std::map<media::VideoCaptureSessionId, Device*> Devices;
   Devices devices_;
   base::Lock lock_;
-  scoped_refptr<base::MessageLoopProxy> ml_proxy_;
-  scoped_ptr<media::MessageLoopFactory> ml_factory_;
+  scoped_refptr<VideoCaptureMessageFilter> filter_;
+  base::Thread thread_;
+  scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureImplManager);
 };
-
-DISABLE_RUNNABLE_METHOD_REFCOUNT(VideoCaptureImplManager);
 
 #endif  // CONTENT_RENDERER_MEDIA_VIDEO_CAPTURE_IMPL_MANAGER_H_

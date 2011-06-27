@@ -41,21 +41,21 @@ IPC_MESSAGE_CONTROL2(VideoCaptureMsg_DeviceInfo,
                      int /* device_id */,
                      media::VideoCaptureParams)
 
-// Start the video capture specified by (routing_id, device_id).
+// Start the video capture specified by |device_id|.
 IPC_MESSAGE_CONTROL2(VideoCaptureHostMsg_Start,
                      int /* device_id */,
                      media::VideoCaptureParams)
 
-// Pause the video capture specified by (routing_id, device_id).
+// Pause the video capture specified by |device_id|.
 IPC_MESSAGE_CONTROL1(VideoCaptureHostMsg_Pause,
                      int /* device_id */)
 
-// Close the video capture specified by (routing_id, device_id).
+// Close the video capture specified by |device_id|.
 IPC_MESSAGE_CONTROL1(VideoCaptureHostMsg_Stop,
                      int /* device_id */)
 
 // Tell the browser process that the video frame buffer |handle| is ready for
-// device (routing_id, device_id) to fill up.
+// device |device_id| to fill up.
 IPC_MESSAGE_CONTROL2(VideoCaptureHostMsg_BufferReady,
                      int /* device_id */,
                      int /* buffer_id */)
