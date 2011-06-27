@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include "native_client/tests/fake_browser_ppapi/fake_host.h"
@@ -41,7 +41,9 @@ int dlclose(void* handle) {
 namespace fake_browser_ppapi {
 
 Host::Host(const char* plugin_file)
-    : var_interface_(NULL), last_resource_id_(0), last_instance_id_(0) {
+    : var_deprecated_interface_(NULL),
+      last_resource_id_(0),
+      last_instance_id_(0) {
   dl_handle_ = dlopen(plugin_file, RTLD_NOW | RTLD_LOCAL);
   CHECK(dl_handle_ != NULL);
   initialize_module_ =

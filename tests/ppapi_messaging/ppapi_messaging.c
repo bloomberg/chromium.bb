@@ -9,7 +9,6 @@
 
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/platform/nacl_check.h"
-#include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_module.h"
@@ -18,6 +17,7 @@
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/c/ppb_messaging.h"
+#include "ppapi/c/ppb_var.h"
 #include "ppapi/c/ppp.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/ppp_messaging.h"
@@ -32,12 +32,8 @@ struct MessageInfo {
   struct PP_Var message;
 };
 
-/* TODO(dspringer): Replace PPB_Var_Deprecated with PPB_Var when PPB_Var
- * becomes available on the NaCl proxy.
- */
-static struct PPB_Var_Deprecated* GetPPB_Var() {
-  return (struct PPB_Var_Deprecated*)(*get_browser_interface_func)(
-      PPB_VAR_DEPRECATED_INTERFACE);
+static struct PPB_Var* GetPPB_Var() {
+  return (struct PPB_Var*)(*get_browser_interface_func)(PPB_VAR_INTERFACE);
 }
 
 static void SendOnMessageEventCallback(void* data, int32_t result) {
@@ -57,7 +53,7 @@ static void SendOnMessageEventCallback(void* data, int32_t result) {
    * dereference it.
    */
   if (message_to_send->message.type == PP_VARTYPE_STRING) {
-    struct PPB_Var_Deprecated* ppb_var = GetPPB_Var();
+    struct PPB_Var* ppb_var = GetPPB_Var();
     ppb_var->Release(message_to_send->message);
   }
   free(message_to_send);
@@ -74,7 +70,7 @@ void HandleMessage(PP_Instance instance, struct PP_Var message) {
   message_to_send->message = message;
 
   if (message.type == PP_VARTYPE_STRING) {
-    struct PPB_Var_Deprecated* ppb_var = GetPPB_Var();
+    struct PPB_Var* ppb_var = GetPPB_Var();
     /* If the message is a string, add reference to go with the copy we did
      * above.
      */
