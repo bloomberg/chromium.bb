@@ -175,8 +175,10 @@ bool CloudPrintHelpers::ParseResponseJSON(
 
   scoped_ptr<DictionaryValue> response_dict_local(
       static_cast<DictionaryValue*>(message_value.release()));
-  if (succeeded)
-    response_dict_local->GetBoolean(kSuccessValue, succeeded);
+  if (succeeded) {
+    if (!response_dict_local->GetBoolean(kSuccessValue, succeeded))
+      *succeeded = false;
+  }
   if (response_dict)
     *response_dict = response_dict_local.release();
   return true;

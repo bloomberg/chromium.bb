@@ -414,8 +414,7 @@ PrinterJobHandler::HandleJobMetadataResponse(
   bool job_available = false;
   if (succeeded) {
     ListValue* job_list = NULL;
-    json_data->GetList(kJobListValue, &job_list);
-    if (job_list) {
+    if (json_data->GetList(kJobListValue, &job_list) && job_list) {
       // Even though it is a job list, for now we are only interested in the
       // first job
       DictionaryValue* job_data = NULL;

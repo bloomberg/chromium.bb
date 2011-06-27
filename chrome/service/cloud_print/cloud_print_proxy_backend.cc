@@ -845,9 +845,8 @@ CloudPrintProxyBackend::Core::HandlePrinterListResponse(
     return CloudPrintURLFetcher::RETRY_REQUEST;
   }
   ListValue* printer_list = NULL;
-  json_data->GetList(kPrinterListValue, &printer_list);
   // There may be no "printers" value in the JSON
-  if (printer_list) {
+  if (json_data->GetList(kPrinterListValue, &printer_list) && printer_list) {
     for (size_t index = 0; index < printer_list->GetSize(); index++) {
       DictionaryValue* printer_data = NULL;
       if (printer_list->GetDictionary(index, &printer_data)) {
@@ -899,12 +898,11 @@ void CloudPrintProxyBackend::Core::InitJobHandlerForPrinter(
     printer_data->GetString(kPrinterCapsHashValue,
         &printer_info_cloud.caps_hash);
     ListValue* tags_list = NULL;
-    printer_data->GetList(kTagsValue, &tags_list);
-    if (tags_list) {
+    if (printer_data->GetList(kTagsValue, &tags_list) && tags_list) {
       for (size_t index = 0; index < tags_list->GetSize(); index++) {
         std::string tag;
-        tags_list->GetString(index, &tag);
-        if (StartsWithASCII(tag, kTagsHashTagName, false)) {
+        if (tags_list->GetString(index, &tag) &&
+            StartsWithASCII(tag, kTagsHashTagName, false)) {
           std::vector<std::string> tag_parts;
           base::SplitStringDontTrim(tag, '=', &tag_parts);
           DCHECK_EQ(tag_parts.size(), 2U);
@@ -963,10 +961,8 @@ CloudPrintProxyBackend::Core::HandleRegisterPrinterResponse(
   DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
   if (succeeded) {
     ListValue* printer_list = NULL;
-    json_data->GetList(kPrinterListValue, &printer_list);
     // There should be a "printers" value in the JSON
-    DCHECK(printer_list);
-    if (printer_list) {
+    if (json_data->GetList(kPrinterListValue, &printer_list)) {
       DictionaryValue* printer_data = NULL;
       if (printer_list->GetDictionary(0, &printer_data))
         InitJobHandlerForPrinter(printer_data);
