@@ -10,11 +10,11 @@
 
 #include "base/memory/ref_counted.h"
 #include "net/base/x509_certificate.h"
+#include "remoting/protocol/content_description.h"
 #include "remoting/protocol/jingle_session.h"
 #include "remoting/protocol/session_manager.h"
 #include "third_party/libjingle/source/talk/p2p/base/session.h"
 #include "third_party/libjingle/source/talk/p2p/base/sessionclient.h"
-#include "third_party/libjingle/source/talk/p2p/base/sessiondescription.h"
 
 class MessageLoop;
 
@@ -27,44 +27,7 @@ class SessionManager;
 }  // namespace cricket
 
 namespace remoting {
-
 namespace protocol {
-
-// ContentDescription used for chromoting sessions. It contains the information
-// from the content description stanza in the session intialization handshake.
-//
-// This class also provides a type abstraction so that the Chromotocol Session
-// interface does not need to depend on libjingle.
-class ContentDescription : public cricket::ContentDescription {
- public:
-  explicit ContentDescription(const CandidateSessionConfig* config,
-                              const std::string& auth_token,
-                              const std::string& master_key,
-                              scoped_refptr<net::X509Certificate> certificate);
-  virtual ~ContentDescription();
-
-  const CandidateSessionConfig* config() const {
-    return candidate_config_.get();
-  }
-
-  const std::string& auth_token() const { return auth_token_; }
-  const std::string& master_key() const { return master_key_; }
-  scoped_refptr<net::X509Certificate> certificate() const {
-    return certificate_;
-  }
-
- private:
-  scoped_ptr<const CandidateSessionConfig> candidate_config_;
-
-  // This may contain the initiating, or the accepting token depending on
-  // context.
-  std::string auth_token_;
-
-  // Master key used for the session encrypted with the hosts key.
-  std::string master_key_;
-
-  scoped_refptr<net::X509Certificate> certificate_;
-};
 
 // This class implements SessionClient for Chromoting sessions. It acts as a
 // server that accepts chromoting connections and can also make new connections
@@ -160,7 +123,6 @@ class JingleSessionManager
 };
 
 }  // namespace protocol
-
 }  // namespace remoting
 
 #endif  // REMOTING_PROTOCOL_JINGLE_SESSION_MANAGER_H_

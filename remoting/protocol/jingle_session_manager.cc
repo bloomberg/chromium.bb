@@ -2,171 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <limits>
-
 #include "remoting/protocol/jingle_session_manager.h"
 
-#include "base/base64.h"
+#include <limits>
+
 #include "base/message_loop.h"
-#include "base/rand_util.h"
-#include "base/string_number_conversions.h"
 #include "remoting/base/constants.h"
-#include "remoting/proto/auth.pb.h"
 #include "third_party/libjingle/source/talk/p2p/base/constants.h"
 #include "third_party/libjingle/source/talk/p2p/base/transport.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 
-using buzz::QName;
 using buzz::XmlElement;
 
 namespace remoting {
 namespace protocol {
-
-namespace {
-
-const char kDefaultNs[] = "";
-
-const char kChromotingContentName[] = "chromoting";
-
-// Following constants are used to format session description in XML.
-const char kDescriptionTag[] = "description";
-const char kControlTag[] = "control";
-const char kEventTag[] = "event";
-const char kVideoTag[] = "video";
-const char kResolutionTag[] = "initial-resolution";
-const char kAuthenticationTag[] = "authentication";
-const char kCertificateTag[] = "certificate";
-const char kMasterKeyTag[] = "master-key";
-const char kAuthTokenTag[] = "auth-token";
-
-const char kTransportAttr[] = "transport";
-const char kVersionAttr[] = "version";
-const char kCodecAttr[] = "codec";
-const char kWidthAttr[] = "width";
-const char kHeightAttr[] = "height";
-
-const char kStreamTransport[] = "stream";
-const char kDatagramTransport[] = "datagram";
-const char kSrtpTransport[] = "srtp";
-const char kRtpDtlsTransport[] = "rtp-dtls";
-
-const char kVp8Codec[] = "vp8";
-const char kZipCodec[] = "zip";
-
-const char* GetTransportName(ChannelConfig::TransportType type) {
-  switch (type) {
-    case ChannelConfig::TRANSPORT_STREAM:
-      return kStreamTransport;
-    case ChannelConfig::TRANSPORT_DATAGRAM:
-      return kDatagramTransport;
-    case ChannelConfig::TRANSPORT_SRTP:
-      return kSrtpTransport;
-    case ChannelConfig::TRANSPORT_RTP_DTLS:
-      return kRtpDtlsTransport;
-  }
-  NOTREACHED();
-  return NULL;
-}
-
-const char* GetCodecName(ChannelConfig::Codec type) {
-  switch (type) {
-    case ChannelConfig::CODEC_VP8:
-      return kVp8Codec;
-    case ChannelConfig::CODEC_ZIP:
-      return kZipCodec;
-    default:
-      break;
-  }
-  NOTREACHED();
-  return NULL;
-}
-
-
-// Format a channel configuration tag for chromotocol session description,
-// e.g. for video channel:
-//    <video transport="srtp" version="1" codec="vp8" />
-XmlElement* FormatChannelConfig(const ChannelConfig& config,
-                                const std::string& tag_name) {
-  XmlElement* result = new XmlElement(
-      QName(kChromotingXmlNamespace, tag_name));
-
-  result->AddAttr(QName(kDefaultNs, kTransportAttr),
-                   GetTransportName(config.transport));
-
-  result->AddAttr(QName(kDefaultNs, kVersionAttr),
-                  base::IntToString(config.version));
-
-  if (config.codec != ChannelConfig::CODEC_UNDEFINED) {
-    result->AddAttr(QName(kDefaultNs, kCodecAttr),
-                    GetCodecName(config.codec));
-  }
-
-  return result;
-}
-
-bool ParseTransportName(const std::string& value,
-                        ChannelConfig::TransportType* transport) {
-  if (value == kStreamTransport) {
-    *transport = ChannelConfig::TRANSPORT_STREAM;
-  } else if (value == kDatagramTransport) {
-    *transport = ChannelConfig::TRANSPORT_DATAGRAM;
-  } else if (value == kSrtpTransport) {
-    *transport = ChannelConfig::TRANSPORT_SRTP;
-  } else if (value == kRtpDtlsTransport) {
-    *transport = ChannelConfig::TRANSPORT_RTP_DTLS;
-  } else {
-    return false;
-  }
-  return true;
-}
-
-bool ParseCodecName(const std::string& value, ChannelConfig::Codec* codec) {
-  if (value == kVp8Codec) {
-    *codec = ChannelConfig::CODEC_VP8;
-  } else if (value == kZipCodec) {
-    *codec = ChannelConfig::CODEC_ZIP;
-  } else {
-    return false;
-  }
-  return true;
-}
-
-// Returns false if the element is invalid.
-bool ParseChannelConfig(const XmlElement* element, bool codec_required,
-                        ChannelConfig* config) {
-  if (!ParseTransportName(element->Attr(QName(kDefaultNs, kTransportAttr)),
-                          &config->transport) ||
-      !base::StringToInt(element->Attr(QName(kDefaultNs, kVersionAttr)),
-                         &config->version)) {
-    return false;
-  }
-
-  if (codec_required) {
-    if (!ParseCodecName(element->Attr(QName(kDefaultNs, kCodecAttr)),
-                        &config->codec)) {
-      return false;
-    }
-  } else {
-    config->codec = ChannelConfig::CODEC_UNDEFINED;
-  }
-
-  return true;
-}
-
-}  // namespace
-
-ContentDescription::ContentDescription(
-    const CandidateSessionConfig* candidate_config,
-    const std::string& auth_token,
-    const std::string& master_key,
-    scoped_refptr<net::X509Certificate> certificate)
-    : candidate_config_(candidate_config),
-      auth_token_(auth_token),
-      master_key_(master_key),
-      certificate_(certificate) {
-}
-
-ContentDescription::~ContentDescription() { }
 
 JingleSessionManager::JingleSessionManager(MessageLoop* message_loop)
     : message_loop_(message_loop),
@@ -373,131 +222,10 @@ bool JingleSessionManager::ParseContent(
     const XmlElement* element,
     const cricket::ContentDescription** content,
     cricket::ParseError* error) {
-  if (element->Name() == QName(kChromotingXmlNamespace, kDescriptionTag)) {
-    scoped_ptr<CandidateSessionConfig> config(
-        CandidateSessionConfig::CreateEmpty());
-    const XmlElement* child = NULL;
-
-    // <control> tags.
-    QName control_tag(kChromotingXmlNamespace, kControlTag);
-    child = element->FirstNamed(control_tag);
-    while (child) {
-      ChannelConfig channel_config;
-      if (!ParseChannelConfig(child, false, &channel_config))
-        return false;
-      config->mutable_control_configs()->push_back(channel_config);
-      child = child->NextNamed(control_tag);
-    }
-
-    // <event> tags.
-    QName event_tag(kChromotingXmlNamespace, kEventTag);
-    child = element->FirstNamed(event_tag);
-    while (child) {
-      ChannelConfig channel_config;
-      if (!ParseChannelConfig(child, false, &channel_config))
-        return false;
-      config->mutable_event_configs()->push_back(channel_config);
-      child = child->NextNamed(event_tag);
-    }
-
-    // <video> tags.
-    QName video_tag(kChromotingXmlNamespace, kVideoTag);
-    child = element->FirstNamed(video_tag);
-    while (child) {
-      ChannelConfig channel_config;
-      if (!ParseChannelConfig(child, true, &channel_config))
-        return false;
-      config->mutable_video_configs()->push_back(channel_config);
-      child = child->NextNamed(video_tag);
-    }
-
-    // <initial-resolution> tag.
-    child = element->FirstNamed(QName(kChromotingXmlNamespace, kResolutionTag));
-    if (!child)
-      return false; // Resolution must always be specified.
-    int width;
-    int height;
-    if (!base::StringToInt(child->Attr(QName(kDefaultNs, kWidthAttr)),
-                           &width) ||
-        !base::StringToInt(child->Attr(QName(kDefaultNs, kHeightAttr)),
-                           &height)) {
-      return false;
-    }
-    ScreenResolution resolution(width, height);
-    if (!resolution.IsValid()) {
-      return false;
-    }
-
-    *config->mutable_initial_resolution() = resolution;
-
-    // Parse authentication information.
-    scoped_refptr<net::X509Certificate> certificate;
-    std::string auth_token;
-    std::string master_key;
-    child = element->FirstNamed(QName(kChromotingXmlNamespace,
-                                      kAuthenticationTag));
-    if (child) {
-      // Parse the certificate.
-      const XmlElement* cert_tag =
-          child->FirstNamed(QName(kChromotingXmlNamespace, kCertificateTag));
-      if (cert_tag) {
-        std::string base64_cert = cert_tag->BodyText();
-        std::string der_cert;
-        if (!base::Base64Decode(base64_cert, &der_cert)) {
-          LOG(ERROR) << "Failed to decode certificate received from the peer.";
-          return false;
-        }
-
-        certificate = net::X509Certificate::CreateFromBytes(der_cert.data(),
-                                                            der_cert.length());
-        if (!certificate) {
-          LOG(ERROR) << "Failed to create platform-specific certificate handle";
-          return false;
-        }
-      }
-
-      // Parse master-key.
-      const XmlElement* master_key_tag =
-          child->FirstNamed(QName(kChromotingXmlNamespace, kMasterKeyTag));
-      if (master_key_tag) {
-        if (!base::Base64Decode(master_key_tag->BodyText(), &master_key)) {
-          LOG(ERROR) << "Failed to decode master-key received from the peer.";
-          return false;
-        }
-        master_key = master_key_tag->BodyText();
-      }
-
-      // Parse auth-token.
-      const XmlElement* auth_token_tag =
-          child->FirstNamed(QName(kChromotingXmlNamespace, kAuthTokenTag));
-      if (auth_token_tag) {
-        auth_token = auth_token_tag->BodyText();
-      }
-    }
-
-    *content = new ContentDescription(config.release(), auth_token, master_key,
-                                      certificate);
-    return true;
-  }
-  LOG(ERROR) << "Invalid description: " << element->Str();
-  return false;
+  *content = ContentDescription::ParseXml(element);
+  return *content != NULL;
 }
 
-// WriteContent creates content description for chromoting session. The
-// description looks as follows:
-//   <description xmlns="google:remoting">
-//     <control transport="stream" version="1" />
-//     <event transport="datagram" version="1" />
-//     <video transport="srtp" codec="vp8" version="1" />
-//     <initial-resolution width="800" height="600" />
-//     <authentication>
-//       <certificate>[BASE64 Encoded Certificate]</certificate>
-//       <master-key>[master key encrypted with hosts
-//                    public key encoded with BASE64]</master-key>
-//       <auth-token>...</auth-token> // Me2Mom only.
-//     </authentication>
-//   </description>
-//
 bool JingleSessionManager::WriteContent(
     cricket::SignalingProtocol protocol,
     const cricket::ContentDescription* content,
@@ -506,83 +234,7 @@ bool JingleSessionManager::WriteContent(
   const ContentDescription* desc =
       static_cast<const ContentDescription*>(content);
 
-  XmlElement* root = new XmlElement(
-      QName(kChromotingXmlNamespace, kDescriptionTag), true);
-
-  const CandidateSessionConfig* config = desc->config();
-  std::vector<ChannelConfig>::const_iterator it;
-
-  for (it = config->control_configs().begin();
-       it != config->control_configs().end(); ++it) {
-    root->AddElement(FormatChannelConfig(*it, kControlTag));
-  }
-
-  for (it = config->event_configs().begin();
-       it != config->event_configs().end(); ++it) {
-    root->AddElement(FormatChannelConfig(*it, kEventTag));
-  }
-
-  for (it = config->video_configs().begin();
-       it != config->video_configs().end(); ++it) {
-    root->AddElement(FormatChannelConfig(*it, kVideoTag));
-  }
-
-  XmlElement* resolution_tag = new XmlElement(
-      QName(kChromotingXmlNamespace, kResolutionTag));
-  resolution_tag->AddAttr(QName(kDefaultNs, kWidthAttr),
-                          base::IntToString(
-                              config->initial_resolution().width));
-  resolution_tag->AddAttr(QName(kDefaultNs, kHeightAttr),
-                          base::IntToString(
-                              config->initial_resolution().height));
-  root->AddElement(resolution_tag);
-
-  if (desc->certificate() || !desc->auth_token().empty()) {
-    XmlElement* authentication_tag = new XmlElement(
-        QName(kChromotingXmlNamespace, kAuthenticationTag));
-
-    if (desc->certificate()) {
-      XmlElement* certificate_tag = new XmlElement(
-          QName(kChromotingXmlNamespace, kCertificateTag));
-
-      std::string der_cert;
-      if (!desc->certificate()->GetDEREncoded(&der_cert)) {
-        LOG(DFATAL) << "Cannot obtain DER encoded certificate";
-      }
-
-      std::string base64_cert;
-      if (!base::Base64Encode(der_cert, &base64_cert)) {
-        LOG(DFATAL) << "Cannot perform base64 encode on certificate";
-      }
-
-      certificate_tag->SetBodyText(base64_cert);
-      authentication_tag->AddElement(certificate_tag);
-    }
-
-    if (!desc->master_key().empty()) {
-      XmlElement* master_key_tag = new XmlElement(
-          QName(kChromotingXmlNamespace, kMasterKeyTag));
-
-      std::string master_key_base64;
-      if (!base::Base64Encode(desc->master_key(), &master_key_base64)) {
-        LOG(DFATAL) << "Cannot perform base64 encode on master key";
-      }
-
-      master_key_tag->SetBodyText(master_key_base64);
-      authentication_tag->AddElement(master_key_tag);
-    }
-
-    if (!desc->auth_token().empty()) {
-      XmlElement* auth_token_tag = new XmlElement(
-          QName(kChromotingXmlNamespace, kAuthTokenTag));
-      auth_token_tag->SetBodyText(desc->auth_token());
-      authentication_tag->AddElement(auth_token_tag);
-    }
-
-    root->AddElement(authentication_tag);
-  }
-
-  *elem = root;
+  *elem = desc->ToXml();
   return true;
 }
 

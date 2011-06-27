@@ -561,6 +561,8 @@
         'protocol/connection_to_client.h',
         'protocol/connection_to_host.cc',
         'protocol/connection_to_host.h',
+        'protocol/content_description.cc',
+        'protocol/content_description.h',
         'protocol/host_control_sender.cc',
         'protocol/host_control_sender.h',
         'protocol/host_message_dispatcher.cc',
