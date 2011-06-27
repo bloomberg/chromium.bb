@@ -903,6 +903,8 @@ InputMethod* NativeWidgetGtk::GetInputMethodNative() {
       input_method_.reset(new InputMethodGtk(this));
 #endif
       input_method_->Init(GetWidget());
+      if (has_focus_)
+        input_method_->OnFocus();
     }
   }
   return input_method_.get();

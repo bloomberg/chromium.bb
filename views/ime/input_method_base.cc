@@ -39,6 +39,9 @@ void InputMethodBase::Init(Widget* widget) {
   }
 
   widget_ = widget;
+  View* focused = widget->GetFocusManager()->GetFocusedView();
+  if (focused)
+    FocusWillChange(NULL, focused);
   widget->GetFocusManager()->AddFocusChangeListener(this);
 }
 
