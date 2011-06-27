@@ -6,11 +6,13 @@ OBJDIR = obj
 
 OBJECTS=\
 	$(OBJDIR)/gestures.o \
-	$(OBJDIR)/immediate_interpreter.o
+	$(OBJDIR)/immediate_interpreter.o \
+	$(OBJDIR)/scaling_filter_interpreter.o
 
 TEST_OBJECTS=\
 	$(OBJDIR)/gestures_unittest.o \
-	$(OBJDIR)/immediate_interpreter_unittest.o
+	$(OBJDIR)/immediate_interpreter_unittest.o \
+	$(OBJDIR)/scaling_filter_interpreter_unittest.o
 
 TEST_MAIN=\
 	$(OBJDIR)/test_main.o
