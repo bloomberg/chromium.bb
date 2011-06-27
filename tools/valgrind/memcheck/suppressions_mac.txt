@@ -816,6 +816,28 @@
    fun:view_draw
 }
 {
+   bug_50968
+   Memcheck:Addr2
+   fun:sqlite3PcacheClearSyncFlags
+   fun:syncJournal
+   fun:pagerStress
+   fun:sqlite3PcacheFetch
+   fun:sqlite3PagerAcquire2
+   fun:sqlite3PagerAcquire
+   fun:btreeGetPage
+   fun:allocateBtreePage
+   fun:btreeCreateTable
+   fun:sqlite3BtreeCreateTable
+   fun:sqlite3VdbeExec
+   fun:sqlite3Step
+   fun:sqlite3_step
+   fun:sqlite3_exec
+   fun:_ZN3sql10Connection7ExecuteEPKc
+   fun:_ZN17TokenServiceTable4InitEv
+   fun:_ZN11WebDatabase4InitERK8FilePath
+   fun:_ZN14WebDataService29InitializeDatabaseIfNecessaryEv
+}
+{
    bug_52364_a
    Memcheck:Value4
    fun:_ZNK10CMMConvLut7ConvertER10CMMMinBitsP14CMMRuntimeInfomm
