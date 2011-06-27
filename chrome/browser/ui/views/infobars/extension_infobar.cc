@@ -65,8 +65,10 @@ void ExtensionInfoBar::Layout() {
                    menu_size.height());
 
   GetDelegate()->extension_host()->view()->SetBounds(
-      menu_->bounds().right() + kMenuHorizontalMargin, 0,
-      std::max(0, EndX() - StartX() - ContentMinimumWidth()), height());
+      menu_->bounds().right() + kMenuHorizontalMargin,
+      arrow_height(),
+      std::max(0, EndX() - StartX() - ContentMinimumWidth()),
+      height() - arrow_height() - 1);
 }
 
 void ExtensionInfoBar::ViewHierarchyChanged(bool is_add,
