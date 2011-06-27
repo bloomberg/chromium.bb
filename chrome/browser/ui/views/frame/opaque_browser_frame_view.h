@@ -144,6 +144,11 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   void PaintToolbarBackground(gfx::Canvas* canvas);
   void PaintRestoredClientEdge(gfx::Canvas* canvas);
 
+  // Returns the properly themed bitmap and frame color, given various
+  // attributes of this view (normal browser or not, OTR or not, active or not).
+  SkBitmap* GetFrameBitmap() const;
+  SkColor GetFrameColor() const;
+
   // Layout various sub-components of this view.
   void LayoutWindowControls();
   void LayoutTitleBar();

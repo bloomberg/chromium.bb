@@ -619,51 +619,15 @@ void OpaqueBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
       tp->GetBitmapNamed(IDR_WINDOW_BOTTOM_RIGHT_CORNER);
   SkBitmap* bottom_edge = tp->GetBitmapNamed(IDR_WINDOW_BOTTOM_CENTER);
 
-  // Window frame mode and color.
-  SkBitmap* theme_frame;
-  SkColor frame_color;
-  if (!browser_view_->IsBrowserTypeNormal()) {
-    // Never theme app and popup windows.
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    bool is_incognito = browser_view_->IsOffTheRecord();
-    if (ShouldPaintAsActive()) {
-      theme_frame = rb.GetBitmapNamed(is_incognito ?
-                                      IDR_THEME_FRAME_INCOGNITO : IDR_FRAME);
-      frame_color = is_incognito ?
-                    ResourceBundle::frame_color_incognito :
-                    ResourceBundle::frame_color;
-    } else {
-      theme_frame = rb.GetBitmapNamed(is_incognito ?
-                                      IDR_THEME_FRAME_INCOGNITO_INACTIVE :
-                                      IDR_THEME_FRAME_INACTIVE);
-      frame_color = is_incognito ?
-                    ResourceBundle::frame_color_incognito_inactive :
-                    ResourceBundle::frame_color_inactive;
-    }
-  } else if (!browser_view_->IsOffTheRecord()) {
-    if (ShouldPaintAsActive()) {
-      theme_frame = tp->GetBitmapNamed(IDR_THEME_FRAME);
-      frame_color = tp->GetColor(ThemeService::COLOR_FRAME);
-    } else {
-      theme_frame = tp->GetBitmapNamed(IDR_THEME_FRAME_INACTIVE);
-      frame_color = tp->GetColor(ThemeService::COLOR_FRAME_INACTIVE);
-    }
-  } else if (ShouldPaintAsActive()) {
-    theme_frame = tp->GetBitmapNamed(IDR_THEME_FRAME_INCOGNITO);
-    frame_color = tp->GetColor(ThemeService::COLOR_FRAME_INCOGNITO);
-  } else {
-    theme_frame = tp->GetBitmapNamed(IDR_THEME_FRAME_INCOGNITO_INACTIVE);
-    frame_color = tp->GetColor(
-        ThemeService::COLOR_FRAME_INCOGNITO_INACTIVE);
-  }
-
   // Fill with the frame color first so we have a constant background for
   // areas not covered by the theme image.
+  SkBitmap* theme_frame = GetFrameBitmap();
   int top_area_height = theme_frame->height();
   if (browser_view_->IsTabStripVisible() && !browser_view_->UseVerticalTabs()) {
     top_area_height = std::max(top_area_height,
       GetBoundsForTabStrip(browser_view_->tabstrip()).bottom());
   }
+  SkColor frame_color = GetFrameColor();
   canvas->FillRectInt(frame_color, 0, 0, width(), top_area_height);
 
   // Now fill down the sides.
@@ -729,8 +693,6 @@ void OpaqueBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
 
 void OpaqueBrowserFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
   ui::ThemeProvider* tp = GetThemeProvider();
-  // Window frame mode and color
-  SkBitmap* theme_frame;
 
   // Allow customization of these attributes.
   SkBitmap* left = NULL;
@@ -738,25 +700,18 @@ void OpaqueBrowserFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
   int top_offset = 0;
   ModifyMaximizedFramePainting(&top_offset, &left, &right);
 
-  // Never theme app and popup windows.
-  if (!browser_view_->IsBrowserTypeNormal()) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    bool is_incognito = browser_view_->IsOffTheRecord();
-    if (ShouldPaintAsActive()) {
-      theme_frame = rb.GetBitmapNamed(is_incognito ?
-                                      IDR_THEME_FRAME_INCOGNITO : IDR_FRAME);
-    } else {
-      theme_frame = rb.GetBitmapNamed(is_incognito ?
-                                      IDR_THEME_FRAME_INCOGNITO_INACTIVE :
-                                      IDR_FRAME_INACTIVE);
-    }
-  } else if (!browser_view_->IsOffTheRecord()) {
-    theme_frame = tp->GetBitmapNamed(ShouldPaintAsActive() ?
-        IDR_THEME_FRAME : IDR_THEME_FRAME_INACTIVE);
-  } else {
-    theme_frame = tp->GetBitmapNamed(ShouldPaintAsActive() ?
-        IDR_THEME_FRAME_INCOGNITO : IDR_THEME_FRAME_INCOGNITO_INACTIVE);
+  // We will be painting from top_offset to top_offset + theme_frame_height. If
+  // this is less than GetBoundsForTabStrip.bottom, we need to paint the frame
+  // color.
+  SkBitmap* theme_frame = GetFrameBitmap();
+  int theme_frame_bottom = top_offset + theme_frame->height();
+  int top_area_height =
+      GetBoundsForTabStrip(browser_view_->tabstrip()).bottom();
+  if (top_area_height > theme_frame_bottom) {
+    SkColor frame_color = GetFrameColor();
+    canvas->FillRectInt(frame_color, 0, 0, width(), top_area_height);
   }
+
   // Draw the theme frame.  It must be aligned with the tabstrip as if we were
   // in restored mode.  Note that the top of the tabstrip is
   // kTabstripTopShadowThickness px off the top of the screen.
@@ -1015,6 +970,52 @@ void OpaqueBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
   canvas->FillRectInt(toolbar_color, client_area_bounds.right(),
       client_area_top, kClientEdgeThickness,
       client_area_bottom + kClientEdgeThickness - client_area_top);
+}
+
+SkBitmap* OpaqueBrowserFrameView::GetFrameBitmap() const {
+  bool is_incognito = browser_view_->IsOffTheRecord();
+  int resource_id;
+  if (browser_view_->IsBrowserTypeNormal()) {
+    if (ShouldPaintAsActive()) {
+      resource_id = is_incognito ?
+          IDR_THEME_FRAME_INCOGNITO : IDR_THEME_FRAME;
+    } else {
+      resource_id = is_incognito ?
+          IDR_THEME_FRAME_INCOGNITO_INACTIVE : IDR_THEME_FRAME_INACTIVE;
+    }
+    return GetThemeProvider()->GetBitmapNamed(resource_id);
+  }
+  // Never theme app and popup windows.
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  if (ShouldPaintAsActive()) {
+    resource_id = is_incognito ?
+        IDR_THEME_FRAME_INCOGNITO : IDR_FRAME;
+  } else {
+    resource_id = is_incognito ?
+        IDR_THEME_FRAME_INCOGNITO_INACTIVE : IDR_THEME_FRAME_INACTIVE;
+  }
+  return rb.GetBitmapNamed(resource_id);
+}
+
+SkColor OpaqueBrowserFrameView::GetFrameColor() const {
+  bool is_incognito = browser_view_->IsOffTheRecord();
+  if (browser_view_->IsBrowserTypeNormal()) {
+    if (ShouldPaintAsActive()) {
+      return GetThemeProvider()->GetColor(is_incognito ?
+          ThemeService::COLOR_FRAME_INCOGNITO : ThemeService::COLOR_FRAME);
+    }
+    return GetThemeProvider()->GetColor(is_incognito ?
+        ThemeService::COLOR_FRAME_INCOGNITO_INACTIVE :
+        ThemeService::COLOR_FRAME_INACTIVE);
+  }
+  // Never theme app and popup windows.
+  if (ShouldPaintAsActive()) {
+    return is_incognito ?
+        ResourceBundle::frame_color_incognito : ResourceBundle::frame_color;
+  }
+  return is_incognito ?
+      ResourceBundle::frame_color_incognito_inactive :
+      ResourceBundle::frame_color_inactive;
 }
 
 void OpaqueBrowserFrameView::LayoutWindowControls() {
