@@ -266,7 +266,7 @@ add_config('x86-generic-chrome-pre-flight-queue', [{
   'manifest_version': _MANIFEST_VERSIONS_URL,
 }])
 
-add_config('arm-generic-chrome-pre-flight-queue', [{
+add_config('arm-generic-chrome-pre-flight-queue', [arm, {
   'board' : 'arm-generic',
 
   'build_type': 'chrome',
