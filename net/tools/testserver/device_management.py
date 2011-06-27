@@ -176,7 +176,7 @@ class RequestHandler(object):
     policy = self._server.GetPolicies()
     if ('*' not in policy['managed_users'] and
         auth not in policy['managed_users']):
-      return (403, None, 'Unmanaged')
+      return (403, 'Unmanaged')
 
     device_id = self.GetUniqueParam('deviceid')
     if not device_id:
