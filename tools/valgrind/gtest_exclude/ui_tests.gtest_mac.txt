@@ -238,3 +238,6 @@ AutomationProxyTest.GetBrowserWindowCount
 AutomationProxySnapshotTest.LargeSnapshot
 PPAPITest.VarDeprecated
 WorkerFileSystemTest.FileFromFileEntrySync
+
+# http://crbug.com/87625
+PPAPITest.Var
