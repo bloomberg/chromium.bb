@@ -259,6 +259,8 @@ class PrintWebViewHelper : public RenderViewObserver ,
   // Displays the print job error message to the user.
   void DisplayPrintJobError();
 
+  void RequestPrintPreview();
+
   WebKit::WebView* print_web_view_;
 
   // The frame to print for script initiated print preview.

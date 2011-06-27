@@ -178,7 +178,7 @@ void PrintWebViewHelper::PrintPage(WebKit::WebFrame* frame) {
   if (is_preview_) {
     script_initiated_preview_frame_ = frame;
     context_menu_preview_node_.reset();
-    Send(new PrintHostMsg_RequestPrintPreview(routing_id()));
+    RequestPrintPreview();
   } else {
     Print(frame, NULL);
   }
@@ -299,7 +299,7 @@ void PrintWebViewHelper::OnPrintNodeUnderContextMenu() {
   if (is_preview_) {
     context_menu_preview_node_.reset(new WebNode(context_menu_node));
     script_initiated_preview_frame_ = NULL;
-    Send(new PrintHostMsg_RequestPrintPreview(routing_id()));
+    RequestPrintPreview();
   } else {
     WebNode duplicate_node(context_menu_node);
     Print(duplicate_node.document().frame(), &duplicate_node);
@@ -310,7 +310,7 @@ void PrintWebViewHelper::OnInitiatePrintPreview() {
   DCHECK(is_preview_);
   script_initiated_preview_frame_ = NULL;
   context_menu_preview_node_.reset();
-  Send(new PrintHostMsg_RequestPrintPreview(routing_id()));
+  RequestPrintPreview();
 }
 
 void PrintWebViewHelper::Print(WebKit::WebFrame* frame, WebKit::WebNode* node) {
@@ -798,4 +798,9 @@ void PrintWebViewHelper::DisplayPrintJobError() {
   render_view()->runModalAlertDialog(
       web_view->mainFrame(),
       l10n_util::GetStringUTF16(IDS_PRINT_SPOOL_FAILED_ERROR_TEXT));
+}
+
+void PrintWebViewHelper::RequestPrintPreview() {
+  old_print_pages_params_.reset();
+  Send(new PrintHostMsg_RequestPrintPreview(routing_id()));
 }
