@@ -1608,4 +1608,9 @@
    ...
    fun:content_settings::PrefProviderTest_MigrateSinglePatternSettings_Test::TestBody
 }
-
+{
+   bug_87605
+   Heapcheck:Leak
+   fun:net::IOBuffer::IOBuffer
+   fun:net::SpdyWebSocketStream::SendData
+}
