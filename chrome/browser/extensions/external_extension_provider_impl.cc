@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/external_extension_provider_impl.h"
 
-#include "app/app_paths.h"
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
@@ -228,7 +227,7 @@ void ExternalExtensionProviderImpl::CreateExternalProviders(
           new ExternalExtensionProviderImpl(
               service,
               new ExternalPrefExtensionLoader(
-                  app::DIR_EXTERNAL_EXTENSIONS),
+                  chrome::DIR_EXTERNAL_EXTENSIONS),
               Extension::EXTERNAL_PREF,
               Extension::EXTERNAL_PREF_DOWNLOAD)));
 

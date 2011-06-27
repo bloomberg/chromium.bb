@@ -24,8 +24,6 @@
         '../base/base.gyp:base_static',
       ],
       'sources': [
-        'app_paths.h',
-        'app_paths.cc',
         'sql/connection.cc',
         'sql/connection.h',
         'sql/diagnostic_error_delegate.h',
@@ -54,8 +52,6 @@
             '../ui/base/ui_base_paths.cc',
             '../ui/base/ui_base_switches.h',
             '../ui/base/ui_base_switches.cc',
-            'app_paths.h',
-            'app_paths.cc',
           ],
           'include_dirs': [
             '..',

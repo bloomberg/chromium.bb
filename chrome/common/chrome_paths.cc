@@ -308,6 +308,20 @@ bool PathProvider(int key, FilePath* result) {
       break;
     }
 #endif
+    case chrome::DIR_EXTERNAL_EXTENSIONS:
+      if (!PathService::Get(base::DIR_MODULE, &cur))
+        return false;
+#if defined(OS_MACOSX)
+      // On Mac, built-in extensions are in Contents/Extensions, a sibling of
+      // the App dir. If there are none, it may not exist.
+      cur = cur.DirName();
+      cur = cur.Append(FILE_PATH_LITERAL("Extensions"));
+      create_dir = false;
+#else
+      cur = cur.Append(FILE_PATH_LITERAL("extensions"));
+      create_dir = true;
+#endif
+      break;
     default:
       return false;
   }

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/external_pref_extension_loader.h"
 
-#include "app/app_paths.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"

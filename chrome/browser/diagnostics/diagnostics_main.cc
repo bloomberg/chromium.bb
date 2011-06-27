@@ -11,7 +11,6 @@
 
 #include <iostream>
 
-#include "app/app_paths.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/i18n/icu_util.h"
@@ -349,7 +348,6 @@ int DiagnosticsMain(const CommandLine& command_line) {
 
   // We need to have the path providers registered. They both
   // return void so there is no early error signal that we can use.
-  app::RegisterPathProvider();
   ui::RegisterPathProvider();
   chrome::RegisterPathProvider();
 

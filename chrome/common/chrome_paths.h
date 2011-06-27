@@ -56,6 +56,7 @@ enum {
                                  // Getting this path does not create it.
 #endif
 
+  DIR_EXTERNAL_EXTENSIONS,      // Directory where installer places .crx files.
   FILE_RESOURCE_MODULE,         // Full path and filename of the module that
                                 // contains embedded resources (version,
                                 // strings, images, etc.).
@@ -78,7 +79,6 @@ enum {
 #if defined(OS_CHROMEOS)
   FILE_CHROMEOS_API,            // Full path to chrome os api shared object.
 #endif
-
 
   // Valid only in development environment; TODO(darin): move these
   DIR_TEST_DATA,                // Directory where unit test data resides.

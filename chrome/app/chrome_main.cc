@@ -4,7 +4,6 @@
 
 #include "chrome/app/chrome_main.h"
 
-#include "app/app_paths.h"
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
@@ -645,7 +644,6 @@ int ChromeMain(int argc, char** argv) {
 #endif
 
   // Initialize the Chrome path provider.
-  app::RegisterPathProvider();
   ui::RegisterPathProvider();
   chrome::RegisterPathProvider();
   content::RegisterPathProvider();

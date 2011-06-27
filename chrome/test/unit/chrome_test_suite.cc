@@ -4,7 +4,6 @@
 
 #include "chrome/test/unit/chrome_test_suite.h"
 
-#include "app/app_paths.h"
 #include "base/command_line.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/metrics/stats_table.h"
@@ -109,7 +108,6 @@ void ChromeTestSuite::Initialize() {
   scoped_host_resolver_proc_.Init(host_resolver_proc_.get());
 
   chrome::RegisterPathProvider();
-  app::RegisterPathProvider();
   content::RegisterPathProvider();
   ui::RegisterPathProvider();
   g_browser_process = new TestingBrowserProcess;

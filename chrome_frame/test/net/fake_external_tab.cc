@@ -8,7 +8,6 @@
 #include <atlcom.h>
 #include <exdisp.h>
 
-#include "app/app_paths.h"
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
 #include "base/file_util.h"
@@ -231,7 +230,7 @@ void FakeExternalTab::Initialize() {
   icu_util::Initialize();
   TestTimeouts::Initialize();
 
-  app::RegisterPathProvider();
+  chrome::RegisterPathProvider();
   content::RegisterPathProvider();
   ui::RegisterPathProvider();
 

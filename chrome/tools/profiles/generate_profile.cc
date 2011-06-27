@@ -7,7 +7,6 @@
 
 #include "chrome/tools/profiles/thumbnail-inl.h"
 
-#include "app/app_paths.h"
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
@@ -233,7 +232,6 @@ int main(int argc, const char* argv[]) {
   icu_util::Initialize();
 
   chrome::RegisterPathProvider();
-  app::RegisterPathProvider();
   ui::RegisterPathProvider();
   ResourceBundle::InitSharedInstance("en-US");
   NotificationService notification_service;
