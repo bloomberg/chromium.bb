@@ -127,8 +127,9 @@ class ChildProcessLauncher::Context
         mapping.push_back(std::pair<uint32_t, int>(kCrashDumpSignal,
                                                    crash_signal_fd));
       }
-      handle = ZygoteHost::GetInstance()->ForkRenderer(cmd_line->argv(),
-                                                       mapping);
+      handle = ZygoteHost::GetInstance()->ForkRequest(cmd_line->argv(),
+                                                      mapping,
+                                                      process_type);
     } else
     // Fall through to the normal posix case below when we're not zygoting.
 #endif
@@ -374,4 +375,3 @@ void ChildProcessLauncher::SetTerminateChildOnShutdown(
   if (context_)
     context_->set_terminate_child_on_shutdown(terminate_on_shutdown);
 }
-
