@@ -8,6 +8,8 @@
 
 #include <base/logging.h>
 
+#include "gestures/include/immediate_interpreter.h"
+
 // C API:
 
 static const int kMinSupportedVersion = 1;
@@ -39,14 +41,14 @@ void DeleteGestureInterpreter(GestureInterpreter* obj) {
 }
 
 void GestureInterpreterPushHardwareState(GestureInterpreter* obj,
-                                         const struct HardwareState* hwstate) {
+                                         struct HardwareState* hwstate) {
   obj->PushHardwareState(hwstate);
 }
 
 void GestureInterpreterSetHardwareProperties(
     GestureInterpreter* obj,
     const struct HardwareProperties* hwprops) {
-  obj->SetHardwareProps(*hwprops);
+  obj->SetHardwareProperties(*hwprops);
 }
 
 void GestureInterpreterSetCallback(GestureInterpreter* obj,
@@ -77,14 +79,20 @@ GestureInterpreter::GestureInterpreter(int version)
       callback_data_(NULL),
       tap_to_click_(false),
       move_speed_(50),
-      scroll_speed_(50) {}
+      scroll_speed_(50) {
+  interpreter_.reset(new ImmediateInterpreter);
+}
 
 GestureInterpreter::~GestureInterpreter() {}
 
-void GestureInterpreter::PushHardwareState(const HardwareState* hwstate) {
-  LOG(INFO) << "TODO(adlr): handle input";
+void GestureInterpreter::PushHardwareState(HardwareState* hwstate) {
+  Gesture* gs = interpreter_->SyncInterpret(hwstate);
+  if (gs && callback_) {
+    (*callback_)(callback_data_, gs);
+  }
 }
 
-void GestureInterpreter::SetHardwareProps(const HardwareProperties& hwprops) {
-  hw_props_ = hwprops;
+void GestureInterpreter::SetHardwareProperties(
+    const HardwareProperties& hwprops) {
+  interpreter_->SetHardwareProperties(hwprops);
 }

@@ -10,6 +10,7 @@
 
 #ifdef __cplusplus
 #include <base/basictypes.h>
+#include <base/scoped_ptr.h>
 extern "C" {
 #endif
 
@@ -132,13 +133,15 @@ typedef void (*GestureReadyFunction)(void* client_data,
 
 namespace gestures {
 
+class Interpreter;
+
 struct GestureInterpreter {
  public:
   explicit GestureInterpreter(int version);
   ~GestureInterpreter();
-  void PushHardwareState(const HardwareState* hwstate);
+  void PushHardwareState(HardwareState* hwstate);
 
-  void SetHardwareProps(const HardwareProperties& hwprops);
+  void SetHardwareProperties(const HardwareProperties& hwprops);
 
   void set_callback(GestureReadyFunction callback,
                     void* client_data) {
@@ -152,7 +155,7 @@ struct GestureInterpreter {
   GestureReadyFunction callback_;
   void* callback_data_;
 
-  HardwareProperties hw_props_;
+  scoped_ptr<Interpreter> interpreter_;
 
   // Settings
   bool tap_to_click_;
@@ -182,7 +185,7 @@ void GestureInterpreterSetHardwareProperties(GestureInterpreter*,
                                              const struct HardwareProperties*);
 
 void GestureInterpreterPushHardwareState(GestureInterpreter*,
-                                         const struct HardwareState*);
+                                         struct HardwareState*);
 
 void GestureInterpreterSetCallback(GestureInterpreter*,
                                    GestureReadyFunction,
