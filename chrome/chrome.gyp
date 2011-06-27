@@ -1050,6 +1050,11 @@
                 # A real .dSYM is needed for dump_syms to operate on.
                 'mac_real_dsym': 1,
               },
+              'xcode_settings': {
+                # With mac_real_dsym set, strip_from_xcode won't be used.
+                # Specify CHROMIUM_STRIP_SAVE_FILE directly to Xcode.
+                'STRIPFLAGS': '-s $(CHROMIUM_STRIP_SAVE_FILE)',
+              },
             }],
           ],
         },  # target helper_app
