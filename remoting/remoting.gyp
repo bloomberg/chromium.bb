@@ -594,6 +594,8 @@
         'protocol/rtp_video_writer.h',
         'protocol/rtp_writer.cc',
         'protocol/rtp_writer.h',
+        'protocol/secure_p2p_socket.cc',
+        'protocol/secure_p2p_socket.h',
         'protocol/session.h',
         'protocol/session_config.cc',
         'protocol/session_config.h',
@@ -733,6 +735,7 @@
         'protocol/protocol_mock_objects.h',
         'protocol/rtp_video_reader_unittest.cc',
         'protocol/rtp_video_writer_unittest.cc',
+        'protocol/secure_p2p_socket_unittest.cc',
         'protocol/session_manager_pair.cc',
         'protocol/session_manager_pair.h',
         'run_all_unittests.cc',
@@ -746,6 +749,7 @@
             #   ../base/test_suite.h
             #   gtk/gtk.h
             '../build/linux/system.gyp:gtk',
+            '../build/linux/system.gyp:ssl',
           ],
           'conditions': [
             [ 'linux_use_tcmalloc==1', {
