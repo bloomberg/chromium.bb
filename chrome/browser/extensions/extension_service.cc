@@ -2055,10 +2055,14 @@ void ExtensionService::OnExtensionInstalled(const Extension* extension) {
     }
   }
 
-  UMA_HISTOGRAM_ENUMERATION("Extensions.InstallType",
-                            extension->GetType(), 100);
-  RecordPermissionMessagesHistogram(
-      extension, "Extensions.Permissions_Install");
+  // Do not record the install histograms for upgrades.
+  if (!GetExtensionByIdInternal(extension->id(), true, true, false)) {
+    UMA_HISTOGRAM_ENUMERATION("Extensions.InstallType",
+                              extension->GetType(), 100);
+    RecordPermissionMessagesHistogram(
+        extension, "Extensions.Permissions_Install");
+  }
+
   ShownSectionsHandler::OnExtensionInstalled(profile_->GetPrefs(), extension);
   extension_prefs_->OnExtensionInstalled(
       extension, initial_enable ? Extension::ENABLED : Extension::DISABLED);
