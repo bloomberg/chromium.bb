@@ -35,8 +35,9 @@ struct PPB_Messaging {
    *
    * @param[in] instance A PP_Instance indentifying one instance of a module.
    * @param[in] message A PP_Var containing the data to be sent to JavaScript.
-   * Message can have an int32_t, double, bool, or string value (objects
-   * are not supported).
+   * Message can have a numeric, boolean, or string value; arrays and
+   * dictionaries are not yet supported. Ref-counted var types are copied, and
+   * are therefore not shared between the module instance and the browser.
    *
    * Listeners for message events in JavaScript code will receive an object
    * conforming to the HTML 5 MessageEvent interface. Specifically, the value of
@@ -71,10 +72,11 @@ struct PPB_Messaging {
    *
    *
    *  char hello_world[] = "Hello world!";
-   *  PP_Var hello_var = ppb_var_if->VarFromUtf8(instance,
-   *                                             hello_world,
-   *                                             sizeof(hello_world));
-   *  ppb_messaging_if->PostMessage(instance, hello_var);
+   *  PP_Var hello_var = ppb_var_interface->VarFromUtf8(instance,
+   *                                                    hello_world,
+   *                                                    sizeof(hello_world));
+   *  ppb_messaging_interface->PostMessage(instance, hello_var); // Copies var.
+   *  ppb_var_interface->Release(hello_var);
    *
    * @endcode
    *
@@ -87,4 +89,3 @@ struct PPB_Messaging {
  */
 
 #endif  /* PPAPI_C_PPB_MESSAGING_H_ */
-
