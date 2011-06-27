@@ -16,8 +16,8 @@ env = Environment()
 
 def Usage():
   name = sys.argv[0]
-  print "-" * 80
-  info = """
+  print '-' * 80
+  info = '''
 %s [run_py_options] [sel_ldr_options] <nexe> [nexe_parameters]
 
 run.py options:
@@ -29,6 +29,7 @@ run.py options:
                          (default is to use whichever already exists)
   -n | --dry-run         Just print commands, don't execute them
   -h | --help            Display this information
+  -q | --quiet           Don't print nexe information
   --more                 Display sel_ldr usage
 
   -arch <arch> | -m32 | -m64 | -marm
@@ -39,9 +40,9 @@ run.py options:
   --pnacl-glibc-static   Translate a .pexe as static against glibc
                          (These will be removed as soon as pnacl-translate
                           can auto-detect .pexe type)
-"""
+'''
   print info % name
-  print "-" * 80
+  print '-' * 80
   sys.exit(0)
 
 def SetupEnvironment():
@@ -92,6 +93,9 @@ def SetupEnvironment():
   # Force a specific sel_ldr
   env.force_sel_ldr = None
 
+  # Don't print nexe information
+  env.quiet = False
+
   # Arch (x86-32, x86-64, arm)
   env.arch = None
 
@@ -103,17 +107,23 @@ def SetupEnvironment():
 
 
 def SetupEnvFlags():
-  """ Setup environment after config options have been read """
+  ''' Setup environment after config options have been read '''
   if env.pnacl_glibc != '':
     env.pnacl_root = env.pnacl_root_glibc
   else:
     env.pnacl_root = env.pnacl_root_newlib
 
+def PrintBanner(output):
+  if not env.quiet:
+    print '*' * 80
+    print output
+    print '*' * 80
+
 def SetupArch(arch, is_dynamic, allow_build = True):
-  """Setup environment variables that require knowing the
+  '''Setup environment variables that require knowing the
      architecture. We can only do this after we've seen the
      nexe or once we've read -arch off the command-line.
-  """
+  '''
 
   env.arch = arch
 
@@ -165,9 +175,8 @@ def main(argv):
     extra = 'DYNAMIC'
   else:
     extra = 'STATIC'
-  print ("-" * 80)
-  print (" " * 16) + "%s is %s %s" % (os.path.basename(nexe),
-                                      arch.upper(), extra)
+  PrintBanner((' ' * 16) + '%s is %s %s' % (os.path.basename(nexe),
+                                              arch.upper(), extra))
 
   # Setup architecture-specific environment variables
   SetupArch(arch, is_dynamic)
@@ -216,9 +225,7 @@ def FindOrBuildSelLdr(allow_build = True):
 
   # Build it
   if allow_build:
-    print "-" * 80
-    print "sel_ldr not found. Building it with scons."
-    print "-" * 80
+    PrintBanner('sel_ldr not found. Building it with scons.')
     sel_ldr = loaders[0]
     BuildSelLdr(modes[0])
     assert(env.dry_run or os.path.exists(sel_ldr))
@@ -236,7 +243,7 @@ def BuildSelLdr(mode):
 def Translate(pexe):
   arch = env.arch
   if arch is None:
-    Fatal("Missing -arch for PNaCl translation.")
+    Fatal('Missing -arch for PNaCl translation.')
   translator = os.path.join(env.pnacl_root, 'bin', 'pnacl-translate')
   output_file = os.path.splitext(pexe)[0] + '.' + arch + '.nexe'
   args = [ translator, '-arch', arch, pexe, '-o', output_file ]
@@ -259,9 +266,7 @@ def Stringify(args):
 
 def Run(args, cwd = None, capture = False):
   if not capture:
-    print "-" * 80
-    print Stringify(args)
-    print "-" * 80
+    PrintBanner(Stringify(args))
     if env.dry_run:
       return
 
@@ -308,7 +313,7 @@ def ArgSplit(argv):
           path = argv[i+1]
           skip_one = True
         else:
-          Fatal("Missing argument to -L")
+          Fatal('Missing argument to -L')
       else:
         path = arg[len('-L'):]
       env.library_path.append(path)
@@ -336,6 +341,8 @@ def ArgSplit(argv):
       env.dry_run = True
     elif arg in ('-h', '--help'):
       Usage()
+    elif arg in ('-q', '--quiet'):
+      env.quiet = True
     elif arg in '--more':
       Usage2()
     elif arg.endswith('nexe') or arg.endswith('pexe'):
@@ -345,7 +352,7 @@ def ArgSplit(argv):
       sel_ldr_options.append(arg)
 
   if not nexe:
-    Fatal("No nexe given!")
+    Fatal('No nexe given!')
 
   nexe_params = argv[i+1:]
 
@@ -408,11 +415,11 @@ def FindReadElf():
     if os.path.exists(readelf):
       return readelf
 
-  Fatal("Cannot find readelf!")
+  Fatal('Cannot find readelf!')
 
 
 def ReadELFInfo(f):
-  """ Returns: (arch, is_dynamic, is_glibc_static) """
+  ''' Returns: (arch, is_dynamic, is_glibc_static) '''
 
   readelf = env.readelf
   readelf_out = Run([readelf, '-lh', f], capture = True)
@@ -439,7 +446,7 @@ def ReadELFInfo(f):
   elif 'ARM' in machine_line:
     arch = 'arm'
   else:
-    Fatal("%s: Unknown machine type", f)
+    Fatal('%s: Unknown machine type', f)
 
   return (arch, is_dynamic, is_glibc_static)
 
@@ -452,13 +459,13 @@ def GetSconsOS():
     return 'mac'
   if 'cygwin' in name or 'windows' in name:
     return 'win'
-  Fatal("Unsupported platform '%s'" % name)
+  Fatal('Unsupported platform "%s"' % name)
 
 
 def GetBuildOS():
   name = platform.system().lower()
   if name not in ('linux', 'darwin'):
-    Fatal("Unsupported platform '%s'" % (name,))
+    Fatal('Unsupported platform "%s"' % (name,))
   return name
 
 def GetBuildArch():
@@ -466,9 +473,9 @@ def GetBuildArch():
 
 
 def FindBaseDir():
-  """Crawl backwards, starting from the directory containing this script,
+  '''Crawl backwards, starting from the directory containing this script,
      until we find the native_client/ directory.
-  """
+  '''
 
   curdir = os.path.abspath(sys.argv[0])
   while os.path.basename(curdir) != 'native_client':
@@ -477,10 +484,10 @@ def FindBaseDir():
       # We've hit the file system root
       break
 
-  if os.path.basename(curdir) != "native_client":
-    Fatal("Unable to find native_client directory!")
+  if os.path.basename(curdir) != 'native_client':
+    Fatal('Unable to find native_client directory!')
   return curdir
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
   sys.exit(main(sys.argv))
