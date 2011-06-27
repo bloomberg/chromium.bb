@@ -151,6 +151,9 @@ LDPatterns = [
   ( ('(-?-soname)', '(.*)'),      "env.append('LD_FLAGS', $0, $1)"),
   ( '(--eh-frame-hdr)',           "env.append('LD_FLAGS', $0)"),
 
+  ( '(--print-gc-sections)',      "env.append('LD_FLAGS', $0)"),
+  ( '(-gc-sections)',             "env.append('LD_FLAGS', $0)"),
+
   ( '-melf_nacl',          "env.set('ARCH', 'X8632')"),
   ( ('-m','elf_nacl'),     "env.set('ARCH', 'X8632')"),
   ( '-melf64_nacl',        "env.set('ARCH', 'X8664')"),
