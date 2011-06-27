@@ -35,7 +35,7 @@
 using remoting::protocol::ConnectionToClient;
 using remoting::protocol::InputStub;
 
-static const int kContinueWindowTimeoutSecs = 5 * 60;
+static const int kContinueWindowTimeoutSecs = 10 * 60;
 
 namespace remoting {
 
