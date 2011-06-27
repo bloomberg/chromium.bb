@@ -127,8 +127,7 @@ bool BookmarkModelVerifier::ModelsMatch(BookmarkModel* model_a,
     }
     const BookmarkNode* node_b = iterator_b.Next();
     ret_val = ret_val && NodesMatch(node_a, node_b);
-    if (node_a->type() != BookmarkNode::URL ||
-        node_b->type() != BookmarkNode::URL)
+    if (node_a->is_folder() || node_b->is_folder())
       continue;
     ret_val = ret_val && FaviconsMatch(model_a, model_b, node_a, node_b);
   }
@@ -178,7 +177,7 @@ bool BookmarkModelVerifier::ContainsDuplicateBookmarks(
   ui::TreeNodeIterator<const BookmarkNode> iterator(model->root_node());
   while (iterator.has_next()) {
     const BookmarkNode* node = iterator.Next();
-    if (node->type() != BookmarkNode::URL)
+    if (node->is_folder())
       continue;
     std::vector<const BookmarkNode*> nodes;
     model->GetNodesByURL(node->GetURL(), &nodes);

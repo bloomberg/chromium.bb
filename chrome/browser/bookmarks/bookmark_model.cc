@@ -539,7 +539,7 @@ void BookmarkModel::RemoveNode(BookmarkNode* node,
     return;
   }
 
-  if (node->type() == BookmarkNode::URL) {
+  if (node->is_url()) {
     // NOTE: this is called in such a way that url_lock_ is already held. As
     // such, this doesn't explicitly grab the lock.
     NodesOrderedByURLSet::iterator i = nodes_ordered_by_url_set_.find(node);
@@ -690,7 +690,7 @@ BookmarkNode* BookmarkModel::AddNode(BookmarkNode* parent,
 
   index_->Add(node);
 
-  if (node->type() == BookmarkNode::URL && !was_bookmarked) {
+  if (node->is_url() && !was_bookmarked) {
     history::URLsStarredDetails details(true);
     details.changed_urls.insert(node->GetURL());
     NotificationService::current()->Notify(
@@ -781,7 +781,7 @@ void BookmarkModel::OnFaviconDataAvailable(
 }
 
 void BookmarkModel::LoadFavicon(BookmarkNode* node) {
-  if (node->type() != BookmarkNode::URL)
+  if (node->is_folder())
     return;
 
   DCHECK(node->GetURL().is_valid());

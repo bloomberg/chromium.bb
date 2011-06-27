@@ -43,8 +43,6 @@ struct TitleMatch;
 // star id and type. BookmarkNodes are returned from a BookmarkModel.
 //
 class BookmarkNode : public ui::TreeNode<BookmarkNode> {
-  friend class BookmarkModel;
-
  public:
   enum Type {
     URL,
@@ -137,7 +135,9 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
   // HistoryContentsProvider.
 
  private:
-  // helper to initialize various fields during construction.
+  friend class BookmarkModel;
+
+  // Helper to initialize various fields during construction.
   void Initialize(int64 id);
 
   // Unique identifier for this node.
@@ -158,7 +158,7 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
   GURL url_;
 
   // Type of node.
-  BookmarkNode::Type type_;
+  Type type_;
 
   // Date we were created.
   base::Time date_added_;

@@ -734,7 +734,7 @@ class BookmarkModelTestWithProfile : public TestingBrowserProcessTest,
           return;
       } else {
         // No need to check the URL, just the title is enough.
-        ASSERT_TRUE(actual_child->type() == BookmarkNode::URL);
+        ASSERT_TRUE(actual_child->is_url());
       }
     }
   }
