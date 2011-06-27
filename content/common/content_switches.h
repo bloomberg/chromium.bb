@@ -53,6 +53,7 @@ extern const char kDisableSessionStorage[];
 extern const char kDisableSharedWorkers[];
 extern const char kDisableSpeechInput[];
 extern const char kDisableSpellcheckAPI[];
+extern const char kDisableWebAudio[];
 extern const char kDisableWebSockets[];
 extern const char kEnableAccelerated2dCanvas[];
 extern const char kEnableAcceleratedDrawing[];
@@ -70,7 +71,6 @@ extern const char kEnableSeccompSandbox[];
 extern const char kEnableStatsTable[];
 extern const char kEnableVideoFullscreen[];
 extern const char kEnableVideoLogging[];
-extern const char kEnableWebAudio[];
 extern const char kExperimentalLocationFeatures[];
 // TODO(jam): this doesn't belong in content.
 extern const char kExtensionProcess[];

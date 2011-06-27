@@ -596,8 +596,13 @@ void RenderThread::EnsureWebKitInitialized() {
   WebKit::WebRuntimeFeatures::enableMediaStream(
     command_line.HasSwitch(switches::kEnableMediaStream));
 
+#if defined(OS_CHROMEOS)
+  // TODO(crogers): enable once Web Audio has been tested and optimized.
+  WebRuntimeFeatures::enableWebAudio(false);
+#else
   WebRuntimeFeatures::enableWebAudio(
-      command_line.HasSwitch(switches::kEnableWebAudio));
+      !command_line.HasSwitch(switches::kDisableWebAudio));
+#endif
 
   WebRuntimeFeatures::enablePushState(true);
 

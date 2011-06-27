@@ -536,6 +536,7 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kDisableSessionStorage,
     switches::kDisableSharedWorkers,
     switches::kDisableSpeechInput,
+    switches::kDisableWebAudio,
     switches::kDisableWebSockets,
     switches::kEnableAdaptive,
     switches::kEnableBenchmarking,
@@ -557,7 +558,6 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kEnableStatsTable,
     switches::kEnableVideoFullscreen,
     switches::kEnableVideoLogging,
-    switches::kEnableWebAudio,
     switches::kFullMemoryCrashReport,
 #if !defined (GOOGLE_CHROME_BUILD)
     // These are unsupported and not fully tested modes, so don't enable them

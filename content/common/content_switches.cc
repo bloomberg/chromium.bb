@@ -138,6 +138,9 @@ const char kDisableSpeechInput[]            = "disable-speech-input";
 // Disable Spellcheck API.
 const char kDisableSpellcheckAPI[]          = "disable-spellcheck-api";
 
+// Disable web audio API.
+const char kDisableWebAudio[]               = "disable-webaudio";
+
 // Disable Web Sockets support.
 const char kDisableWebSockets[]             = "disable-web-sockets";
 
@@ -198,9 +201,6 @@ const char kEnableVideoFullscreen[]         = "enable-video-fullscreen";
 // Enables video logging where video elements log playback performance data to
 // the debug log.
 const char kEnableVideoLogging[]            = "enable-video-logging";
-
-// Enable web audio API.
-const char kEnableWebAudio[]                = "enable-webaudio";
 
 // Enables experimental features for the geolocation API.
 // Current features:

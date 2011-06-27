@@ -294,7 +294,7 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
     web_prefs.databases_enabled =
         !command_line.HasSwitch(switches::kDisableDatabases);
     web_prefs.webaudio_enabled =
-        command_line.HasSwitch(switches::kEnableWebAudio);
+        !command_line.HasSwitch(switches::kDisableWebAudio);
     web_prefs.experimental_webgl_enabled =
         gpu_enabled() &&
         !command_line.HasSwitch(switches::kDisable3DAPIs) &&
