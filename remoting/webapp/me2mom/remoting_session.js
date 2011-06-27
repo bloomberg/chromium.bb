@@ -134,6 +134,12 @@ function init_() {
   plugin.desktopSizeUpdate = desktopSizeChanged;
   plugin.loginChallenge = loginChallengeCallback;
 
+  if (typeof plugin.connect !== 'function') {
+    setClientStateMessage("Unable to load plugin. Please make sure that " +
+        "'Remoting' and 'P2P API' are enabled in chrome://flags.");
+    return;
+  }
+
   if (!checkVersion(plugin)) {
     // TODO(garykac): We need better messaging here. Perhaps an install link.
     setClientStateMessage("Out of date. Please re-install.");
@@ -141,15 +147,7 @@ function init_() {
   }
 
   addToDebugLog('Connect as user ' + remoting.username);
-
-  // TODO(garykac): Clean exit if |connect| isn't a function.
-  if (typeof plugin.connect === 'function') {
-    registerConnection();
-  } else {
-    addToDebugLog('ERROR: remoting plugin not loaded');
-    setClientStateMessage('Plugin not loaded');
-  }
-
+  registerConnection();
 }
 
 function toggleScaleToFit() {
