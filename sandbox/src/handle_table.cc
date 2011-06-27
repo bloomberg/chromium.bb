@@ -8,10 +8,9 @@
 #include <cstdlib>
 
 #include "base/memory/scoped_ptr.h"
+#include "sandbox/src/win_utils.h"
 
 namespace {
-
-const wchar_t kNtdllDllName[] = L"ntdll.dll";
 
 bool CompareHandleEntries(const SYSTEM_HANDLE_INFORMATION& a,
                           const SYSTEM_HANDLE_INFORMATION& b) {
@@ -22,7 +21,6 @@ bool CompareHandleEntries(const SYSTEM_HANDLE_INFORMATION& a,
 
 namespace sandbox {
 
-HMODULE HandleTable::ntdll_ = 0;
 const char16* HandleTable::kTypeProcess = L"Process";
 const char16* HandleTable::kTypeThread = L"Thread";
 const char16* HandleTable::kTypeFile = L"File";
@@ -41,15 +39,9 @@ const char16* HandleTable::kTypeFileMap = L"FileMap";
 const char16* HandleTable::kTypeAlpcPort = L"ALPC Port";
 
 HandleTable::HandleTable() {
-  static NtQuerySystemInformation QuerySystemInformation;
-  if (!QuerySystemInformation) {
-    if (!ntdll_ && !(ntdll_ = ::GetModuleHandle(kNtdllDllName)))
-      return;
-    QuerySystemInformation = reinterpret_cast<NtQuerySystemInformation>(
-      ::GetProcAddress(ntdll_, "NtQuerySystemInformation"));
-    if (!QuerySystemInformation)
-      return;
-  }
+  static NtQuerySystemInformation QuerySystemInformation = NULL;
+  if (!QuerySystemInformation)
+    ResolveNTFunctionPtr("NtQuerySystemInformation", &QuerySystemInformation);
 
   ULONG size = 0x15000;
   NTSTATUS result;
@@ -92,15 +84,9 @@ HandleTable::HandleEntry::HandleEntry(
 }
 
 void HandleTable::HandleEntry::UpdateInfo(UpdateType flag) {
-  static NtQueryObject QueryObject;
-  if (!QueryObject) {
-    if (!ntdll_ && !(ntdll_ = ::GetModuleHandle(kNtdllDllName)))
-      return;
-    QueryObject = reinterpret_cast<NtQueryObject>(::GetProcAddress(ntdll_,
-        "NtQueryObject"));
-    if (!QueryObject)
-      return;
-  }
+  static NtQueryObject QueryObject = NULL;
+  if (!QueryObject)
+    ResolveNTFunctionPtr("NtQueryObject", &QueryObject);
 
   NTSTATUS result;
 

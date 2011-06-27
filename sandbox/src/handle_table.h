@@ -151,7 +151,6 @@ class HandleTable {
   }
 
   std::vector<BYTE> handle_info_buffer_;
-  static HMODULE ntdll_;
 
   DISALLOW_COPY_AND_ASSIGN(HandleTable);
 };
