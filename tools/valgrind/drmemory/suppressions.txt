@@ -738,5 +738,13 @@ LEAK
 *!net::SSLServerSocketNSS::InitializeSSLOptions
 *!net::SSLServerSocketNSS::Handshake
 
+# http://crbug.com/87616
+LEAK
+...
+*!TestURLRequestContext::Init
+*!TestURLRequestContext::TestURLRequestContext
+*!net::`anonymous namespace'::DummyDhcpProxyScriptAdapterFetcher::DummyDhcpProxyScriptAdapterFetcher
+*!net::`anonymous namespace'::TestImmediateCancel
+
 # Empty line at EOF - workaround for
 # http://code.google.com/p/drmemory/issues/detail?id=41
