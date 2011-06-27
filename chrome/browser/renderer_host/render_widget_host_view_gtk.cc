@@ -291,7 +291,8 @@ class RenderWidgetHostViewGtkWidget {
 
     // Confirm existing composition text on mouse click events, to make sure
     // the input caret won't be moved with an ongoing composition session.
-    host_view->im_context_->ConfirmComposition();
+    if (event->type != GDK_BUTTON_RELEASE)
+      host_view->im_context_->ConfirmComposition();
 
     // We want to translate the coordinates of events that do not originate
     // from this widget to be relative to the top left of the widget.
