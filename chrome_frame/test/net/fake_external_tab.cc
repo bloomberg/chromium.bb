@@ -552,8 +552,6 @@ int main(int argc, char** argv) {
     return 0;
   }
 
-  base::ProcessHandle crash_service = chrome_frame_test::StartCrashService();
-
   google_breakpad::scoped_ptr<google_breakpad::ExceptionHandler> breakpad(
       InitializeCrashReporting(HEADLESS));
 
@@ -562,6 +560,8 @@ int main(int argc, char** argv) {
   // the instance of the AtExitManager that RegisterPathProvider() and others
   // below require. So we have to instantiate this first.
   CFUrlRequestUnittestRunner test_suite(argc, argv);
+
+  base::ProcessHandle crash_service = chrome_frame_test::StartCrashService();
 
   WindowWatchdog watchdog;
   // See url_request_unittest.cc for these credentials.
