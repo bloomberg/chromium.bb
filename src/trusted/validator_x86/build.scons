@@ -531,7 +531,7 @@ __AddNcDisTests(False)
 # tests use extension 'val' while read/write sandbox tests use extension
 # 'rval'. Assumes that a suffix of 0 on the extension implies no CPUID flags
 # set. Otherwise, assume that test is run with all CPUID flags set.
-def __AddNcvalSfiTests(test_readwrite, test_cpuid_all):
+def __AddNcvalSfiTests(test_readwrite, test_cpuid_all, test_annotate):
   if env.Bit('target_x86_64'):
     test = 'ncval64_hex'
     options = ['--use_iter', '--hex_text=-', '--max_errors=-1']
@@ -546,6 +546,9 @@ def __AddNcvalSfiTests(test_readwrite, test_cpuid_all):
     else:
       ext = ext + '0'
       options.append('--cpuid-none')
+    if test_annotate:
+      ext += 'a'
+      options.append('--annotate');
     for base in __GoldenBases(ext):
       command = [ncval] + options
       node_val = test_env.CommandTest(
@@ -558,7 +561,8 @@ def __AddNcvalSfiTests(test_readwrite, test_cpuid_all):
 
 for read_write in [False, True]:
   for cpu_features_all in [False, True]:
-   __AddNcvalSfiTests(read_write, cpu_features_all)
+    for annotate in [False, True]:
+      __AddNcvalSfiTests(read_write, cpu_features_all, annotate)
 
 # Run tests using ncval --use_iter=false on test files.
 def __AddNcvalSegmentTests(test_cpuid_all, test_stats, align_16):
