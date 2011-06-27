@@ -186,3 +186,6 @@ PREFIX: `anonymous namespace'::establishchannelcallback::send___`anonymous names
 
 # 84872
 SUBSTRING: webcore::element::getattribute___webcore::floatwidthofsubstringusingsvgfont___webcore::svgtextrunrenderingcontext::floatwidthusingsvgfont___webcore::font::width
+
+# 87593
+PREFIX: webcore::cachedresource::stoploading___webcore::cachedresourcerequest::didfail___webcore::subresourceloader::didfail___webcore::resourceloader::didfail___webcore::resourcehandleinternal::didfail___webkit_glue::weburlloaderimpl::context::oncompletedrequest___resourcedispatcher::onrequestcomplete
