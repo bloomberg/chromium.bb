@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/string_util.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/icon_messages.h"
@@ -85,6 +86,30 @@ static const size_t kMaxIndexChars = 65535;
 // Size of the thumbnails that we'll generate
 static const int kThumbnailWidth = 212;
 static const int kThumbnailHeight = 132;
+
+// Constants for UMA statistic collection.
+static const char kSSLInsecureContent[] = "SSL.InsecureContent";
+static const char kDotGoogleDotCom[] = ".google.com";
+static const char kWWWDotGoogleDotCom[] = "www.google.com";
+static const char kWWWDotYoutubeDotCom[] = "www.youtube.com";
+static const char kDotJS[] = ".js";
+static const char kDotCSS[] = ".css";
+static const char kDotSWF[] = ".swf";
+static const char kDotHTML[] = ".html";
+enum {
+  INSECURE_CONTENT_DISPLAY = 0,
+  INSECURE_CONTENT_DISPLAY_HOST_GOOGLE,
+  INSECURE_CONTENT_DISPLAY_HOST_WWW_GOOGLE,
+  INSECURE_CONTENT_DISPLAY_HTML,
+  INSECURE_CONTENT_RUN,
+  INSECURE_CONTENT_RUN_HOST_GOOGLE,
+  INSECURE_CONTENT_RUN_HOST_WWW_GOOGLE,
+  INSECURE_CONTENT_RUN_TARGET_YOUTUBE,
+  INSECURE_CONTENT_RUN_JS,
+  INSECURE_CONTENT_RUN_CSS,
+  INSECURE_CONTENT_RUN_SWF,
+  INSECURE_CONTENT_NUM_EVENTS
+};
 
 static bool PaintViewIntoCanvas(WebView* view,
                                 skia::PlatformCanvas& canvas) {
@@ -388,8 +413,26 @@ bool ChromeRenderViewObserver::allowWriteToClipboard(WebFrame* frame,
 bool ChromeRenderViewObserver::allowDisplayingInsecureContent(
     WebKit::WebFrame*,
     bool allowed_per_settings,
-    const WebKit::WebSecurityOrigin&,
-    const WebKit::WebURL&) {
+    const WebKit::WebSecurityOrigin& origin,
+    const WebKit::WebURL& url) {
+  UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+                            INSECURE_CONTENT_DISPLAY,
+                            INSECURE_CONTENT_NUM_EVENTS);
+  std::string host(origin.host().utf8());
+  if (EndsWith(host, kDotGoogleDotCom, false))
+    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+                              INSECURE_CONTENT_DISPLAY_HOST_GOOGLE,
+                              INSECURE_CONTENT_NUM_EVENTS);
+  if (host == kWWWDotGoogleDotCom)
+    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+                              INSECURE_CONTENT_DISPLAY_HOST_WWW_GOOGLE,
+                              INSECURE_CONTENT_NUM_EVENTS);
+  GURL gurl(url);
+  if (EndsWith(gurl.path(), kDotHTML, false))
+    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+                              INSECURE_CONTENT_DISPLAY_HTML,
+                              INSECURE_CONTENT_NUM_EVENTS);
+
   if (allowed_per_settings || allow_displaying_insecure_content_)
     return true;
 
@@ -400,8 +443,38 @@ bool ChromeRenderViewObserver::allowDisplayingInsecureContent(
 bool ChromeRenderViewObserver::allowRunningInsecureContent(
     WebKit::WebFrame*,
     bool allowed_per_settings,
-    const WebKit::WebSecurityOrigin&,
-    const WebKit::WebURL&) {
+    const WebKit::WebSecurityOrigin& origin,
+    const WebKit::WebURL& url) {
+  UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+                            INSECURE_CONTENT_RUN,
+                            INSECURE_CONTENT_NUM_EVENTS);
+  std::string host(origin.host().utf8());
+  if (EndsWith(host, kDotGoogleDotCom, false))
+    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+                              INSECURE_CONTENT_RUN_HOST_GOOGLE,
+                              INSECURE_CONTENT_NUM_EVENTS);
+  if (host == kWWWDotGoogleDotCom)
+    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+                              INSECURE_CONTENT_RUN_HOST_WWW_GOOGLE,
+                              INSECURE_CONTENT_NUM_EVENTS);
+  GURL gurl(url);
+  if (gurl.host() == kWWWDotYoutubeDotCom)
+    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+                              INSECURE_CONTENT_RUN_TARGET_YOUTUBE,
+                              INSECURE_CONTENT_NUM_EVENTS);
+  if (EndsWith(gurl.path(), kDotJS, false))
+    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+                              INSECURE_CONTENT_RUN_JS,
+                              INSECURE_CONTENT_NUM_EVENTS);
+  else if (EndsWith(gurl.path(), kDotCSS, false))
+    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+                              INSECURE_CONTENT_RUN_CSS,
+                              INSECURE_CONTENT_NUM_EVENTS);
+  else if (EndsWith(gurl.path(), kDotSWF, false))
+    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+                              INSECURE_CONTENT_RUN_SWF,
+                              INSECURE_CONTENT_NUM_EVENTS);
+
   if (allowed_per_settings || allow_running_insecure_content_)
     return true;
 
