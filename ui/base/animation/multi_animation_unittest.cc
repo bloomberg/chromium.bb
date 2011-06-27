@@ -8,9 +8,7 @@
 
 namespace ui {
 
-typedef testing::Test MultiAnimationTest;
-
-TEST_F(MultiAnimationTest, Basic) {
+TEST(MultiAnimationTest, Basic) {
   // Create a MultiAnimation with two parts.
   MultiAnimation::Parts parts;
   parts.push_back(MultiAnimation::Part(100, Tween::LINEAR));
@@ -38,7 +36,7 @@ TEST_F(MultiAnimationTest, Basic) {
                    animation.GetCurrentValue());
 }
 
-TEST_F(MultiAnimationTest, DifferingStartAndEnd) {
+TEST(MultiAnimationTest, DifferingStartAndEnd) {
   // Create a MultiAnimation with two parts.
   MultiAnimation::Parts parts;
   parts.push_back(MultiAnimation::Part(200, Tween::LINEAR));
@@ -61,7 +59,7 @@ TEST_F(MultiAnimationTest, DifferingStartAndEnd) {
 }
 
 // Makes sure multi-animation stops if cycles is false.
-TEST_F(MultiAnimationTest, DontCycle) {
+TEST(MultiAnimationTest, DontCycle) {
   MultiAnimation::Parts parts;
   parts.push_back(MultiAnimation::Part(200, Tween::LINEAR));
   MultiAnimation animation(parts);
@@ -77,7 +75,7 @@ TEST_F(MultiAnimationTest, DontCycle) {
 }
 
 // Makes sure multi-animation cycles correctly.
-TEST_F(MultiAnimationTest, Cycle) {
+TEST(MultiAnimationTest, Cycle) {
   MultiAnimation::Parts parts;
   parts.push_back(MultiAnimation::Part(200, Tween::LINEAR));
   MultiAnimation animation(parts);

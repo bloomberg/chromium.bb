@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,7 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/skia_util.h"
 
-typedef testing::Test RectTest;
+namespace ui {
 
 TEST(RectTest, Contains) {
   static const struct ContainsCase {
@@ -328,3 +328,5 @@ TEST(RectTest, ConstructAndAssign) {
   gfx::Rect test2(rect_2);
 }
 #endif
+
+}  // namespace ui

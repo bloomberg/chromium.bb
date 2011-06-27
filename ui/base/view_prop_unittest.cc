@@ -7,17 +7,15 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/view_prop.h"
 
+namespace {
+const char kKey1[] = "key_1";
+const char kKey2[] = "key_2";
+}  // namespace
+
 namespace ui {
 
-typedef testing::Test ViewPropTest;
-
-static const char* kKey1 = "key_1";
-static const char* kKey2 = "key_2";
-
-using ui::ViewProp;
-
 // Test a handful of viewprop assertions.
-TEST_F(ViewPropTest, Basic) {
+TEST(ViewPropTest, Basic) {
   gfx::NativeView nv1 = reinterpret_cast<gfx::NativeView>(1);
   gfx::NativeView nv2 = reinterpret_cast<gfx::NativeView>(2);
 
