@@ -112,16 +112,6 @@
 
 #include <stddef.h>
 
-/*
- * TODO(mcgrathr):
- * This is conditionalized only for the purpose of compiling tls_params.c
- * for pnacl's benefit.  That should go away once the compiler intrinsics
- * are fixed properly, see TODO comment below.
- */
-#ifndef NACL_UNTRUSTED_INLINE
-#define NACL_UNTRUSTED_INLINE static inline __attribute__((__unused__))
-#endif
-
 #if defined(__pnacl__)
 
 /*
@@ -130,34 +120,14 @@
  * See:
  *      hg/llvm-gcc/llvm-gcc-4.2/gcc/builtins.def
  *      hg/llvm-gcc/llvm-gcc-4.2/gcc/builtin-types.def
+ *      hg/llvm/llvm-trunk/include/llvm/CodeGen/ISDOpcodes.h
  *      hg/llvm/llvm-trunk/include/llvm/Intrinsics.td
- *      hg/llvm/llvm-trunk/lib/Target/X86/X86InstrNaCl.td
- *      hg/llvm/llvm-trunk/lib/Target/ARM/ARMInstrInfo.td
- *
- * TODO(mcgrathr): Actually, they're not.  The llvm-gcc frontend defines
- * built-in functions called __builtin_nacl_*, but we don't get those
- * unless we use the __builtin_nacl_* names rather than __nacl_* names.
- * The intent is that those be defined such that the LLVM backend replaces
- * them with their trivial expansions appropriate for each machine.
- * However, the way that was implemented in NaCl's LLVM fork is wrong in
- * two ways, and we don't actually use it.  Those were implemented as
- * target-specific intrinsics that generate explicit assembly code.
- * This means two bad things:
- * 1. They actually are not implemented when LLVM is directly generating
- *    machine code (.o) rather than assembly code (.s)--in fact, LLVM
- *    happily just omits the code, so the functions have the effect of
- *    returning whatever garbage value was in the register chosen as
- *    the output register.
- * 2. They are implemented too low in the compilation to be optimized.
- *    This is quite pessimal for such trivial functions that each either
- *    return a constant or perform one arithmetic operation on an argument.
- *    What would be actually useful is to have them converted to those
- *    constants/arithmetic higher up in the compiler, where their effects
- *    on surrounding code could then be folded in during code generation.
- * Pending that LLVM work being done, we're actually just emitting calls to
- * these as external functions and they are defined by ../stubs/tls_params.c
- * via #include of this file after #define'ing away NACL_UNTRUSTED_INLINE.
- * We hope this is a temporary situation.
+ *      hg/llvm/llvm-trunk/lib/CodeGen/SelectionDAG/SelectionDAG.cpp
+ *      hg/llvm/llvm-trunk/lib/CodeGen/SelectionDAG/SelectionDAGBuilder.cpp
+ *      hg/llvm/llvm-trunk/lib/Target/ARM/ARMISelLowering.h
+ *      hg/llvm/llvm-trunk/lib/Target/ARM/ARMISelLowering.cpp
+ *      hg/llvm/llvm-trunk/lib/Target/X86/X86ISelLowering.h
+ *      hg/llvm/llvm-trunk/lib/Target/X86/X86ISelLowering.cpp
  */
 
 /*
@@ -166,6 +136,7 @@
  * which might be more or less than this.
  */
 size_t __nacl_tp_alignment(void);
+#define __nacl_tp_alignment()           __builtin_nacl_tp_alignment()
 
 /*
  * Signed offset from $tp to the beginning of TLS data.
@@ -174,6 +145,7 @@ size_t __nacl_tp_alignment(void);
  * is what gets initialized with the .tdata image.
  */
 ptrdiff_t __nacl_tp_tls_offset(size_t tls_size);
+#define __nacl_tp_tls_offset(size)      __builtin_nacl_tp_tls_offset(size)
 
 /*
  * Signed offset from $tp to the thread library's private thread data block.
@@ -182,6 +154,7 @@ ptrdiff_t __nacl_tp_tls_offset(size_t tls_size);
  * be a pointer with value $tp.
  */
 ptrdiff_t __nacl_tp_tdb_offset(size_t tdb_size);
+#define __nacl_tp_tdb_offset(size)      __builtin_nacl_tp_tdb_offset(size)
 
 
 /*
@@ -194,6 +167,7 @@ ptrdiff_t __nacl_tp_tdb_offset(size_t tdb_size);
  * address of the thread function would go.)
  */
 size_t __nacl_thread_stack_padding(void);
+#define __nacl_thread_stack_padding()   __builtin_nacl_thread_stack_padding()
 
 #elif defined(__i386__) || defined(__x86_64__)
 
@@ -211,12 +185,12 @@ size_t __nacl_thread_stack_padding(void);
  * In x86-64, __nacl_read_tp() must be called; it returns the $tp address.
  */
 
-NACL_UNTRUSTED_INLINE
+static inline __attribute__((__unused__))
 ptrdiff_t __nacl_tp_tls_offset(size_t tls_size) {
   return -(ptrdiff_t) tls_size;
 }
 
-NACL_UNTRUSTED_INLINE
+static inline __attribute__((__unused__))
 ptrdiff_t __nacl_tp_tdb_offset(size_t tdb_size) {
   return 0;
 }
@@ -226,12 +200,12 @@ ptrdiff_t __nacl_tp_tdb_offset(size_t tdb_size) {
  * behave poorly if the segment is not aligned to a cache line.  Those
  * chips have 64-byte cache lines (Atom).
  */
-NACL_UNTRUSTED_INLINE
+static inline __attribute__((__unused__))
 size_t __nacl_tp_alignment(void) {
   return 64;
 }
 
-NACL_UNTRUSTED_INLINE
+static inline __attribute__((__unused__))
 size_t __nacl_thread_stack_padding(void) {
 #ifdef __x86_64__
   return 8;
@@ -256,12 +230,12 @@ size_t __nacl_thread_stack_padding(void) {
  * In NaCl, this is defined as register r9.
  */
 
-NACL_UNTRUSTED_INLINE
+static inline __attribute__((__unused__))
 ptrdiff_t __nacl_tp_tls_offset(size_t tls_size) {
   return 8;
 }
 
-NACL_UNTRUSTED_INLINE
+static inline __attribute__((__unused__))
 ptrdiff_t __nacl_tp_tdb_offset(size_t tdb_size) {
   return -(ptrdiff_t) tdb_size;
 }
@@ -269,12 +243,12 @@ ptrdiff_t __nacl_tp_tdb_offset(size_t tdb_size) {
 /*
  * No special alignment is required by the ABI.
  */
-NACL_UNTRUSTED_INLINE
+static inline __attribute__((__unused__))
 size_t __nacl_tp_alignment(void) {
   return 4;
 }
 
-NACL_UNTRUSTED_INLINE
+static inline __attribute__((__unused__))
 size_t __nacl_thread_stack_padding(void) {
   return 0;
 }
