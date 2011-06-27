@@ -1611,6 +1611,6 @@
 {
    bug_87605
    Heapcheck:Leak
-   fun:net::IOBuffer::IOBuffer
+   ...
    fun:net::SpdyWebSocketStream::SendData
 }
