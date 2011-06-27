@@ -436,7 +436,7 @@ void AppLauncherHandler::HandleSetLaunchType(const ListValue* args) {
 void AppLauncherHandler::HandleUninstallApp(const ListValue* args) {
   std::string extension_id = UTF16ToUTF8(ExtractStringValue(args));
   const Extension* extension = extensions_service_->GetExtensionById(
-      extension_id, false);
+      extension_id, true);
   if (!extension)
     return;
 
