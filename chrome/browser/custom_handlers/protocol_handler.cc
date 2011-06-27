@@ -70,3 +70,7 @@ bool ProtocolHandler::operator==(const ProtocolHandler& other) const {
     url_ == other.url_ &&
     title_ == other.title_;
 }
+
+bool ProtocolHandler::operator<(const ProtocolHandler& other) const {
+  return title_ < other.title_;
+}

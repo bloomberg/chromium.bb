@@ -46,7 +46,8 @@ class ProtocolHandler {
     return protocol_.empty();
   }
 
-  bool operator==(const ProtocolHandler &other) const;
+  bool operator==(const ProtocolHandler& other) const;
+  bool operator<(const ProtocolHandler& other) const;
 
  private:
   ProtocolHandler(const std::string& protocol,

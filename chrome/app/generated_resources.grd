@@ -383,6 +383,12 @@ are declared in build/common.gypi.
         <message name="IDS_CONTENT_CONTEXT_VIEWPAGESOURCE" desc="The name of the View Page Source command in the content area context menu">
           &amp;View page source
         </message>
+        <message name="IDS_CONTENT_CONTEXT_OPENLINKWITH" desc="The name of the Open Link With... command in the content area context menu">
+          Open link with...
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_OPENLINKWITH_CONFIGURE" desc="In Title Case: The name of the command to configure what handlers are available for the Open Link With... command">
+          Handler settings...
+        </message>
         <message name="IDS_CONTENT_CONTEXT_VIEWPAGEINFO" desc="The name of the View Page Info command in the content area context menu">
           View page &amp;info
         </message>
@@ -567,6 +573,12 @@ are declared in build/common.gypi.
         </message>
         <message name="IDS_CONTENT_CONTEXT_VIEWPAGESOURCE" desc="In Title Case: The name of the View Page Source command in the content area context menu">
           &amp;View Page Source
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_OPENLINKWITH" desc="In Title Case: The name of the Open Link With... command in the content area context menu">
+          Open Link With...
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_OPENLINKWITH_CONFIGURE" desc="In Title Case: The name of the command to configure what handlers are available for the Open Link With... command">
+          Handler Settings...
         </message>
         <message name="IDS_CONTENT_CONTEXT_VIEWPAGEINFO" desc="In Title Case: The name of the View Page Info command in the content area context menu">
           View Page &amp;Info

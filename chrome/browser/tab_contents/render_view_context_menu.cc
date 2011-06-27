@@ -192,7 +192,10 @@ RenderViewContextMenu::RenderViewContextMenu(
       ALLOW_THIS_IN_INITIALIZER_LIST(menu_model_(this)),
       external_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(spellcheck_submenu_model_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(bidi_submenu_model_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(bidi_submenu_model_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(protocol_handler_submenu_model_(this)),
+      protocol_handler_registry_(
+          tab_contents->profile()->GetProtocolHandlerRegistry()) {
 }
 
 RenderViewContextMenu::~RenderViewContextMenu() {
@@ -572,6 +575,9 @@ void RenderViewContextMenu::AppendLinkItems() {
                                   IDS_CONTENT_CONTEXT_OPENLINKNEWTAB);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW,
                                   IDS_CONTENT_CONTEXT_OPENLINKNEWWINDOW);
+  if (params_.link_url.is_valid()) {
+    AppendProtocolHandlerSubMenu();
+  }
   if (!external_) {
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD,
                                     IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD);
@@ -856,6 +862,29 @@ void RenderViewContextMenu::AppendBidiSubMenu() {
 }
 #endif  // OS_MACOSX
 
+void RenderViewContextMenu::AppendProtocolHandlerSubMenu() {
+  const ProtocolHandlerRegistry::ProtocolHandlerList handlers =
+      GetHandlersForLinkUrl();
+  if (handlers.empty())
+    return;
+  size_t max = IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_LAST -
+      IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_FIRST;
+  for (size_t i = 0; i < handlers.size() && i <= max; i++) {
+    protocol_handler_submenu_model_.AddItem(
+        IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_FIRST + i,
+        handlers[i].title());
+  }
+  protocol_handler_submenu_model_.AddSeparator();
+  protocol_handler_submenu_model_.AddItem(
+      IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_SETTINGS,
+      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_OPENLINKWITH_CONFIGURE));
+
+  menu_model_.AddSubMenu(
+      IDC_CONTENT_CONTEXT_OPENLINKWITH,
+      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_OPENLINKWITH),
+      &protocol_handler_submenu_model_);
+}
+
 ExtensionMenuItem* RenderViewContextMenu::GetExtensionMenuItem(int id) const {
   ExtensionMenuManager* manager =
       profile_->GetExtensionService()->menu_manager();
@@ -901,6 +930,11 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
     // In the future we may add APIs for extensions to disable items, but for
     // now all items are implicitly enabled.
+    return true;
+  }
+
+  if (id >= IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_FIRST &&
+      id <= IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_LAST) {
     return true;
   }
 
@@ -1146,6 +1180,12 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDC_SPELLCHECK_MENU:
       return true;
 
+    case IDC_CONTENT_CONTEXT_OPENLINKWITH:
+      return true;
+
+    case IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_SETTINGS:
+      return true;
+
     default:
       NOTREACHED();
       return false;
@@ -1249,6 +1289,22 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
       manager->ExecuteCommand(profile_, source_tab_contents_, params_,
                               i->second);
     }
+    return;
+  }
+
+  if (id >= IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_FIRST &&
+      id <= IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_LAST) {
+    ProtocolHandlerRegistry::ProtocolHandlerList handlers =
+        GetHandlersForLinkUrl();
+    if (handlers.empty()) {
+      return;
+    }
+    int handlerIndex = id - IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_FIRST;
+    OpenURL(
+        handlers[handlerIndex].TranslateUrl(params_.link_url),
+        params_.frame_url.is_empty() ? params_.page_url : params_.frame_url,
+        NEW_FOREGROUND_TAB,
+        PageTransition::LINK);
     return;
   }
 
@@ -1559,11 +1615,25 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
       LookUpInDictionary();
       break;
 #endif  // OS_MACOSX
+    case IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_SETTINGS: {
+      std::string url = std::string(chrome::kChromeUISettingsURL) +
+          chrome::kHandlerSettingsSubPage;
+      OpenURL(GURL(url), GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+      break;
+    }
 
     default:
       NOTREACHED();
       break;
   }
+}
+
+ProtocolHandlerRegistry::ProtocolHandlerList
+RenderViewContextMenu::GetHandlersForLinkUrl() {
+  ProtocolHandlerRegistry::ProtocolHandlerList handlers =
+      protocol_handler_registry_->GetHandlersFor(params_.link_url.scheme());
+  sort(handlers.begin(), handlers.end());
+  return handlers;
 }
 
 void RenderViewContextMenu::MenuWillShow() {
