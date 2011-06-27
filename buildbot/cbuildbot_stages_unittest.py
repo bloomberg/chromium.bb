@@ -280,7 +280,7 @@ class ManifestVersionedSyncStageTest(AbstractStageTest):
     self.mox.VerifyAll()
 
 
-class LGKMVersionedSyncCompletionStage(AbstractStageTest):
+class LKGMCandidateSyncCompletionStage(AbstractStageTest):
   """Tests the two (heavily related) stages ManifestVersionedSync, and
      ManifestVersionedSyncCompleted.
   """
@@ -304,7 +304,7 @@ class LGKMVersionedSyncCompletionStage(AbstractStageTest):
       self.build_name, self.build_type, dry_run=True)
 
   def ConstructStage(self):
-    return stages.LGKMVersionedSyncCompletionStage(self.bot_id, self.options,
+    return stages.LKGMCandidateSyncCompletionStage(self.bot_id, self.options,
                                                    self.build_config,
                                                    success=True)
 

@@ -45,19 +45,6 @@ class GenerateBuildSpecException(Exception):
   pass
 
 
-def _CloneGitRepo(working_dir, repo_url):
-  """"Clone Given git repo
-  Args:
-    repo_url: git repo to clione
-    repo_dir: location where it should be cloned to
-  """
-  if not os.path.exists(working_dir): os.makedirs(working_dir)
-  # Git clone, hide everything as this is called often.
-  cros_lib.RunCommand(['git', 'clone', repo_url, working_dir],
-                      print_cmd=False, redirect_stderr=True,
-                      redirect_stdout=True)
-
-
 def _GitCleanDirectory(directory):
     """"Clean git repo chanages.
 
@@ -341,6 +328,11 @@ class BuildSpecsManager(object):
   STATUS_INFLIGHT = 'inflight'
   STATUS_COMPLETED = [STATUS_PASSED, STATUS_FAILED]
 
+  @classmethod
+  def GetManifestDir(cls):
+    """Get the directory where specs are checked out to."""
+    return cls._TMP_MANIFEST_DIR
+
   def __init__(self, source_dir, checkout_repo, manifest_repo, branch,
                build_name, incr_type, clobber=False, dry_run=True):
     """Initializes a build specs manager.
@@ -353,11 +345,9 @@ class BuildSpecsManager(object):
       incr_type: part of the version to increment. 'patch or branch'
       dry_run: Whether we actually commit changes we make or not.
     """
-    self.work_directory = self._TMP_MANIFEST_DIR
     self.cros_source = repository.RepoRepository(
         checkout_repo, source_dir, branch=branch, clobber=clobber)
     self.manifest_repo = manifest_repo
-    self.manifests_dir = os.path.join(self.work_directory, 'manifests')
     self.branch = branch
     self.build_name = build_name
     self.incr_type = incr_type
@@ -405,8 +395,7 @@ class BuildSpecsManager(object):
       version_info: Info class for version information of cros.
       relative_working_dir: Optional working directory within buildspecs repo.
     """
-    working_dir = os.path.join(self.manifests_dir, relative_working_dir)
-    if not os.path.exists(working_dir): os.makedirs(working_dir)
+    working_dir = os.path.join(self._TMP_MANIFEST_DIR, relative_working_dir)
     dir_pfx = version_info.DirPrefix()
     self.specs_for_builder = os.path.join(working_dir, 'build-name',
                                           '%(builder)s')
@@ -420,8 +409,8 @@ class BuildSpecsManager(object):
                                      BuildSpecsManager.STATUS_INFLIGHT, dir_pfx)
 
     # Conservatively grab the latest manifest versions repository.
-    _RemoveDirs(self.manifests_dir)
-    _CloneGitRepo(self.manifests_dir, self.manifest_repo)
+    _RemoveDirs(self._TMP_MANIFEST_DIR)
+    repository.CloneGitRepo(self._TMP_MANIFEST_DIR, self.manifest_repo)
 
     # Build lists of specs.
     self.all = self._GetMatchingSpecs(version_info, self.all_specs_dir)
@@ -627,10 +616,11 @@ class BuildSpecsManager(object):
     self._PushSpecChanges(message)
 
   def _PrepSpecChanges(self):
-    _PrepForChanges(self.manifests_dir)
+    _PrepForChanges(self._TMP_MANIFEST_DIR)
 
   def _PushSpecChanges(self, commit_message):
-    _PushGitChanges(self.manifests_dir, commit_message, dry_run=self.dry_run)
+    _PushGitChanges(self._TMP_MANIFEST_DIR, commit_message,
+                    dry_run=self.dry_run)
 
   def UpdateStatus(self, success, retries=5):
     """Updates the status of the build for the current build spec.

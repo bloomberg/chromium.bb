@@ -20,6 +20,7 @@ from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import lkgm_manager
 from chromite.buildbot import manifest_version
 from chromite.buildbot import patch as cros_patch
+from chromite.buildbot import repository
 from chromite.lib import cros_build_lib as cros_lib
 
 _FULL_BINHOST = 'FULL_BINHOST'
@@ -517,10 +518,11 @@ class ManifestVersionedSyncStage(BuilderStage):
         cros_lib.Die('Last build status was non-passing.')
 
     # Log this early on for the release team to grep out before we finish.
-    print
-    print 'RELEASETAG: %s' % (
-        ManifestVersionedSyncStage.manifest_manager.current_version)
-    print
+    if ManifestVersionedSyncStage.manifest_manager:
+      print
+      print 'RELEASETAG: %s' % (
+          ManifestVersionedSyncStage.manifest_manager.current_version)
+      print
 
     commands.ManifestCheckout(self._build_root,
                               self._tracking_branch,
@@ -533,7 +535,7 @@ class ManifestVersionedSyncStage(BuilderStage):
       assert os.path.isdir(path), 'Missing overlay: %s' % path
 
 
-class LGKMVersionedSyncStage(ManifestVersionedSyncStage):
+class LKGMCandidateSyncStage(ManifestVersionedSyncStage):
   """Stage that generates a unique manifest file candidate, and sync's to it."""
 
   def InitializeManifestManager(self):
@@ -563,6 +565,24 @@ class LGKMVersionedSyncStage(ManifestVersionedSyncStage):
           VERSION_FILE, force_version=self._options.force_version)
 
 
+class LKGMSyncStage(ManifestVersionedSyncStage):
+  """Stage that syncs to the last known good manifest blessed by builders."""
+
+  def InitializeManifestManager(self):
+    """Override: don't do anything."""
+    pass
+
+  def GetNextManifest(self):
+    """Override: Gets the LKGM."""
+    manifests_dir = lkgm_manager.LKGMManager.GetManifestDir()
+    if os.path.exists(manifests_dir):
+      shutil.rmtree(manifests_dir)
+
+    repository.CloneGitRepo(manifests_dir,
+                            self._build_config['manifest_version'])
+    return lkgm_manager.LKGMManager.GetAbsolutePathToLKGM()
+
+
 class ManifestVersionedSyncCompletionStage(ForgivingBuilderStage):
   """Stage that records board specific results for a unique manifest file."""
 
@@ -581,7 +601,7 @@ class ImportantBuilderFailedException(Exception):
   pass
 
 
-class LGKMVersionedSyncCompletionStage(ManifestVersionedSyncCompletionStage):
+class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
   """Stage that records whether we passed or failed to build/test manifest."""
 
   def _GetImportantBuildersForMaster(self, config):
@@ -605,7 +625,7 @@ class LGKMVersionedSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     if not ManifestVersionedSyncStage.manifest_manager:
       return
 
-    super(LGKMVersionedSyncCompletionStage, self)._PerformStage()
+    super(LKGMCandidateSyncCompletionStage, self)._PerformStage()
     if not self._build_config['master']:
       return
 

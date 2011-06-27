@@ -178,19 +178,19 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
   def testLoadSpecs(self):
     """Tests whether we can load specs correctly."""
     self.mox.StubOutWithMock(manifest_version, '_RemoveDirs')
-    self.mox.StubOutWithMock(manifest_version, '_CloneGitRepo')
+    self.mox.StubOutWithMock(repository, 'CloneGitRepo')
     info = manifest_version.VersionInfo(version_string=FAKE_VERSION_STRING,
                                         incr_type='patch')
     dir_pfx = '1.2'
-    m1 = os.path.join(self.manager.manifests_dir, 'buildspecs', dir_pfx,
+    m1 = os.path.join(self.manager._TMP_MANIFEST_DIR, 'buildspecs', dir_pfx,
                       '1.2.3.2.xml')
-    m2 = os.path.join(self.manager.manifests_dir, 'buildspecs', dir_pfx,
+    m2 = os.path.join(self.manager._TMP_MANIFEST_DIR, 'buildspecs', dir_pfx,
                       '1.2.3.3.xml')
-    m3 = os.path.join(self.manager.manifests_dir, 'buildspecs', dir_pfx,
+    m3 = os.path.join(self.manager._TMP_MANIFEST_DIR, 'buildspecs', dir_pfx,
                       '1.2.3.4.xml')
-    m4 = os.path.join(self.manager.manifests_dir, 'buildspecs', dir_pfx,
+    m4 = os.path.join(self.manager._TMP_MANIFEST_DIR, 'buildspecs', dir_pfx,
                       '1.2.3.5.xml')
-    for_build = os.path.join(self.manager.manifests_dir, 'build-name',
+    for_build = os.path.join(self.manager._TMP_MANIFEST_DIR, 'build-name',
                              self.build_name)
 
     # Create fake buildspecs.
@@ -204,9 +204,9 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
                                                      os.path.basename(m1)))
     manifest_version.CreateSymlink(m1, os.path.join(for_build, 'pass', dir_pfx,
                                                      os.path.basename(m2)))
-    manifest_version._RemoveDirs(self.manager.manifests_dir)
-    manifest_version._CloneGitRepo(self.manager.manifests_dir,
-                                   self.manifest_repo)
+    manifest_version._RemoveDirs(self.manager._TMP_MANIFEST_DIR)
+    repository.CloneGitRepo(self.manager._TMP_MANIFEST_DIR,
+                            self.manifest_repo)
     self.mox.ReplayAll()
     self.manager._LoadSpecs(info)
     self.mox.VerifyAll()
@@ -215,11 +215,12 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
   def testGetMatchingSpecs(self):
     """Tests whether we can get sorted specs correctly from a directory."""
     self.mox.StubOutWithMock(manifest_version, '_RemoveDirs')
-    self.mox.StubOutWithMock(manifest_version, '_CloneGitRepo')
+    self.mox.StubOutWithMock(repository, 'CloneGitRepo')
     info = manifest_version.VersionInfo(version_string=FAKE_VERSION_STRING,
                                         incr_type='branch')
     dir_pfx = '1.2'
-    specs_dir = os.path.join(self.manager.manifests_dir, 'buildspecs', dir_pfx)
+    specs_dir = os.path.join(self.manager._TMP_MANIFEST_DIR, 'buildspecs',
+                             dir_pfx)
     m1 = os.path.join(specs_dir, '1.2.3.5.xml')
     m2 = os.path.join(specs_dir, '1.2.3.10.xml')
     m3 = os.path.join(specs_dir, '1.2.555.6.xml')
@@ -248,7 +249,7 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
 
     info = manifest_version.VersionInfo(version_string=FAKE_VERSION_STRING,
                                          incr_type='patch')
-    self.manager.all_specs_dir = os.path.join(self.manager.manifests_dir,
+    self.manager.all_specs_dir = os.path.join(self.manager._TMP_MANIFEST_DIR,
                                               'buildspecs', '1.2')
     manifest_version._PrepForChanges(mox.IsA(str))
     repository.RepoRepository.ExportManifest(mox.IgnoreArg())
@@ -272,7 +273,7 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
     version_file = VersionInfoTest.CreateFakeVersionFile(self.tmpdir)
     info = manifest_version.VersionInfo(version_file=version_file,
                                          incr_type='patch')
-    self.manager.all_specs_dir = os.path.join(self.manager.manifests_dir,
+    self.manager.all_specs_dir = os.path.join(self.manager._TMP_MANIFEST_DIR,
                                               'buildspecs', '1.2')
     info.IncrementVersion(
         'Automatic: %s - Updating to a new version number from %s' % (

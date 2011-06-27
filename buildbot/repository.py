@@ -38,6 +38,16 @@ def InARepoRepository(directory):
   return output.returncode == 0
 
 
+def CloneGitRepo(working_dir, repo_url):
+  """"Clone given git repo
+  Args:
+    repo_url: git repo to clone
+    repo_dir: location where it should be cloned to
+  """
+  if not os.path.exists(working_dir): os.makedirs(working_dir)
+  cros_lib.RunCommand(['git', 'clone', repo_url, working_dir])
+
+
 class RepoRepository(object):
   """ A Class that encapsulates a repo repository.
   Args:

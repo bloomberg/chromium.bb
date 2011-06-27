@@ -102,6 +102,11 @@ class LKGMManager(manifest_version.BuildSpecsManager):
   # Set path in repository to keep latest approved LKGM manifest.
   LKGM_PATH = 'LKGM/lkgm.xml'
 
+  @classmethod
+  def GetAbsolutePathToLKGM(cls):
+    """Returns the path to the LKGM file blessed by builders."""
+    return os.path.join(cls._TMP_MANIFEST_DIR, cls.LKGM_PATH)
+
   def __init__(self, source_dir, checkout_repo, manifest_repo, branch,
                build_name, build_type, clobber=False,
                dry_run=True):
@@ -260,7 +265,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     def _CheckStatusOfBuildersArray():
       """Helper function that iterates through current statuses."""
       num_complete = 0
-      _SyncGitRepo(self.manifests_dir)
+      _SyncGitRepo(self._TMP_MANIFEST_DIR)
       version_info = _LKGMCandidateInfo(self.current_version)
       for builder in builders_array:
         if builder_statuses.get(builder) not in LKGMManager.STATUS_COMPLETED:
@@ -297,7 +302,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     assert self.current_version, 'No current manifest exists.'
 
     path_to_candidate = self.GetLocalManifest(self.current_version)
-    path_to_lkgm = os.path.join(self.manifests_dir, self.LKGM_PATH)
+    path_to_lkgm = self.GetAbsolutePathToLKGM()
     assert os.path.exists(path_to_candidate), 'Candidate not found locally.'
 
     # This may potentially fail for not being at TOT while pushing.
@@ -306,7 +311,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
         self._PrepSpecChanges()
         manifest_version.CreateSymlink(path_to_candidate, path_to_lkgm)
         cros_lib.RunCommand(['git', 'add', self.LKGM_PATH],
-                            cwd=self.manifests_dir)
+                            cwd=self._TMP_MANIFEST_DIR)
         self._PushSpecChanges('Automatic: %s promoting %s to LKGM' % (
                                   self.build_name, self.current_version))
         return

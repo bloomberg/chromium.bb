@@ -128,11 +128,14 @@ def RunBuildStages(bot_id, options, build_config):
   # Determine the stages to use for syncing and completion.
   sync_stage_class = stages.SyncStage
   completion_stage_class = None
-  # TODO(sosa): Fix temporary hack for chrome_rev tot.
-  if build_config['manifest_version'] and options.chrome_rev != 'tot':
+  if not options.buildbot:
+    # For trybots, always patch to last known good manifest.
+    sync_stage_class = stages.LKGMSyncStage
+  elif build_config['manifest_version'] and options.chrome_rev != 'tot':
+    # TODO(sosa): Fix temporary hack for chrome_rev tot.
     if build_config['build_type'] in ('binary', 'chrome'):
-      sync_stage_class = stages.LGKMVersionedSyncStage
-      completion_stage_class = stages.LGKMVersionedSyncCompletionStage
+      sync_stage_class = stages.LKGMCandidateSyncStage
+      completion_stage_class = stages.LKGMCandidateSyncCompletionStage
     else:
       sync_stage_class = stages.ManifestVersionedSyncStage
       completion_stage_class = stages.ManifestVersionedSyncCompletionStage
