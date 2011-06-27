@@ -48,6 +48,8 @@ static void NaClInstStateInit(NaClInstIter* iter, NaClInstState* state) {
   DEBUG(NaClLog(LOG_INFO,
                 "length limit = %"NACL_PRIu8"\n", state->length_limit));
   state->num_prefix_bytes = 0;
+  state->opcode_prefix = 0;
+  state->num_opcode_bytes = 0;
   state->rexprefix = 0;
   state->num_rex_prefixes = 0;
   state->modrm = 0;
@@ -192,8 +194,10 @@ static void NaClConsume0F38XXNaClInstBytes(NaClInstState* state,
        * ambigous case of both REP and DATA16 prefixes.
        */
       desc->matched_prefix = PrefixF20F38;
+      desc->opcode_prefix = kValueREPNE;
     } else if (NaClHasBit(state->prefix_mask, kPrefixDATA16)) {
       desc->matched_prefix = Prefix660F38;
+      desc->opcode_prefix = kValueDATA16;
     } else {
       desc->matched_prefix = Prefix0F38;
     }
@@ -224,6 +228,7 @@ static void NaClConsume0F3AXXNaClInstBytes(NaClInstState* state,
       NaClExcludesBit(state->prefix_mask, kPrefixREPNE)) {
     if (NaClHasBit(state->prefix_mask, kPrefixDATA16)) {
       desc->matched_prefix = Prefix660F3A;
+      desc->opcode_prefix = kValueDATA16;
     } else {
       desc->matched_prefix = Prefix0F3A;
     }
@@ -246,6 +251,7 @@ static void NaClConsume0FXXNaClInstBytes(NaClInstState* state,
        * ambigous case of both REPNE and DATA16 prefixes.
        */
       desc->matched_prefix = PrefixF20F;
+      desc->opcode_prefix = kValueREPNE;
       return;
     }
   } else {
@@ -254,8 +260,10 @@ static void NaClConsume0FXXNaClInstBytes(NaClInstState* state,
        * ambigous case of both REP and DATA16 prefixes.
        */
       desc->matched_prefix = PrefixF30F;
+      desc->opcode_prefix = kValueREP;
     } else if (NaClHasBit(state->prefix_mask, kPrefixDATA16)) {
       desc->matched_prefix = Prefix660F;
+      desc->opcode_prefix = kValueDATA16;
     } else {
       desc->matched_prefix = Prefix0F;
     }
@@ -293,6 +301,7 @@ static void NaClConsumeInstBytes(NaClInstState* state,
                                  NaClInstPrefixDescriptor* desc) {
 
   /* Initialize descriptor to the fail state. */
+  desc->opcode_prefix = 0;
   desc->opcode_byte = 0x0;
   desc->matched_prefix = NaClInstPrefixEnumSize;
   desc->next_length_adjustment = 0;
@@ -734,10 +743,10 @@ static Bool NaClValidatePrefixFlags(NaClInstState* state) {
   return TRUE;
 }
 
-static void NaClClearInstState(NaClInstState* state, uint8_t opcode_length) {
-  if (state->bytes.length != opcode_length) {
+static void NaClClearInstState(NaClInstState* state, uint8_t inst_length) {
+  if (state->bytes.length != inst_length) {
     NCInstBytesReset(&state->bytes);
-    NCInstBytesReadBytes(opcode_length, &state->bytes);
+    NCInstBytesReadBytes(inst_length, &state->bytes);
   }
   state->modrm = 0;
   state->has_sib = FALSE;
@@ -770,11 +779,11 @@ static void NaClClearInstState(NaClInstState* state, uint8_t opcode_length) {
  */
 static const NaClInst* NaClGetNextInstCandidates(
     NaClInstState* state, NaClInstPrefixDescriptor* desc,
-    uint8_t* opcode_length) {
+    uint8_t* inst_length) {
   const NaClInst* cand_insts;
   if (desc->next_length_adjustment) {
-    (*opcode_length) += desc->next_length_adjustment;
-    desc->opcode_byte = state->bytes.byte[*opcode_length - 1];
+    (*inst_length) += desc->next_length_adjustment;
+    desc->opcode_byte = state->bytes.byte[*inst_length - 1];
   }
   cand_insts = g_OpcodeTable[desc->matched_prefix][desc->opcode_byte];
   DEBUG(NaClLog(LOG_INFO, "Lookup candidates using [%s][%x]\n",
@@ -782,12 +791,15 @@ static const NaClInst* NaClGetNextInstCandidates(
   switch (desc->matched_prefix) {
     case Prefix660F:
       desc->matched_prefix = Prefix0F;
+      desc->opcode_prefix = 0;
       break;
     case Prefix660F38:
       desc->matched_prefix = Prefix0F38;
+      desc->opcode_prefix = 0;
       break;
     case Prefix660F3A:
       desc->matched_prefix = Prefix0F3A;
+      desc->opcode_prefix = 0;
       break;
     case PrefixD8:
     case PrefixD9:
