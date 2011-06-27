@@ -298,15 +298,26 @@ bool WriteProtectedChildMemory(HANDLE child_process, void* address,
 
 };  // namespace sandbox
 
-// TODO(cpu): This is not the final code we want here but we are yet
-// to understand what is going on. See bug 11789.
+// TODO(jschuh): http://crbug.com/11789
+// I'm guessing we have a race where some "security" software is messing
+// with ntdll/imports underneath us. So, we retry a few times, and in the
+// worst case we sleep briefly before a few more attempts. (Normally sleeping
+// would be very bad, but it's better than crashing in this case.)
 void ResolveNTFunctionPtr(const char* name, void* ptr) {
-  HMODULE ntdll = ::GetModuleHandle(sandbox::kNtdllName);
+  const int max_tries = 5;
+  const int sleep_threshold = 2;
+
+  static HMODULE ntdll = ::GetModuleHandle(sandbox::kNtdllName);
+
   FARPROC* function_ptr = reinterpret_cast<FARPROC*>(ptr);
   *function_ptr = ::GetProcAddress(ntdll, name);
-  if (*function_ptr)
-    return;
-  // We have data that re-trying helps.
-  *function_ptr = ::GetProcAddress(ntdll, name);
+
+  for (int tries = 1; !(*function_ptr) && tries < max_tries; ++tries) {
+    if (tries >= sleep_threshold)
+      ::Sleep(1);
+    ntdll = ::GetModuleHandle(sandbox::kNtdllName);
+    *function_ptr = ::GetProcAddress(ntdll, name);
+  }
+
   CHECK(*function_ptr);
 }
