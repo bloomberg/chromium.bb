@@ -129,6 +129,7 @@ ResourceDispatcherTest.ContentDispositionEmpty
 ResourceDispatcherTest.ContentDispositionInline
 ResourceDispatcherTest.SyncXMLHttpRequest
 ResourceDispatcherTest.SniffNoContentTypeNoData
+SessionHistoryTest.BasicBackForward
 SessionHistoryTest.LocationChangeInSubframe
 ShowModalDialogTest.BasicTest
 V8BenchmarkTest.Perf
