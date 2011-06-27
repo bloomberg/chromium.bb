@@ -175,7 +175,10 @@ void PPB_VideoDecoder_Impl::AssignGLESBuffers(
   std::vector<media::GLESBuffer> wrapped_buffers;
   for (uint32 i = 0; i < no_of_buffers; i++) {
     PP_GLESBuffer_Dev in_buf = buffers[i];
-    media::GLESBuffer buffer(in_buf);
+    media::GLESBuffer buffer(
+        in_buf.info.id,
+        gfx::Size(in_buf.info.size.width, in_buf.info.size.height),
+        in_buf.texture_id);
     wrapped_buffers.push_back(buffer);
   }
   platform_video_decoder_->AssignGLESBuffers(wrapped_buffers);
@@ -190,7 +193,17 @@ void PPB_VideoDecoder_Impl::AssignSysmemBuffers(
   std::vector<media::SysmemBuffer> wrapped_buffers;
   for (uint32 i = 0; i < no_of_buffers; i++) {
     PP_SysmemBuffer_Dev in_buf = buffers[i];
-    media::SysmemBuffer buffer(in_buf);
+    // TODO(brettw) we should properly handle the errors here if the buffer
+    // isn't a valid image rather than CHECKing.
+    EnterResourceNoLock<PPB_Buffer_API> enter(in_buf.data, true);
+    CHECK(enter.succeeded());
+    webkit::ppapi::PPB_Buffer_Impl* pepper_buffer =
+        static_cast<webkit::ppapi::PPB_Buffer_Impl*>(enter.object());
+    CHECK(pepper_buffer->IsMapped());
+    media::SysmemBuffer buffer(
+        in_buf.info.id,
+        gfx::Size(in_buf.info.size.width, in_buf.info.size.height),
+        pepper_buffer->Map());
     wrapped_buffers.push_back(buffer);
   }
   platform_video_decoder_->AssignSysmemBuffers(wrapped_buffers);
@@ -325,39 +338,3 @@ void PPB_VideoDecoder_Impl::NotifyInitializeDone() {
 
 }  // namespace ppapi
 }  // namespace webkit
-
-// These functions are declared in picture.h but are defined here because of
-// dependencies (we can't depend on ppapi types from media).
-// TODO(fischman/vrk): Find a way to clean this up as it violates the spirit of
-// checkdeps.
-namespace media {
-BaseBuffer::BaseBuffer(const PP_BufferInfo_Dev& info)
-    : id_(info.id),
-      size_(info.size.width, info.size.height) {
-}
-
-GLESBuffer::GLESBuffer(const PP_GLESBuffer_Dev& buffer)
-    : BaseBuffer(buffer.info),
-      texture_id_(buffer.texture_id) {
-}
-
-SysmemBuffer::SysmemBuffer(const PP_SysmemBuffer_Dev& buffer)
-    : BaseBuffer(buffer.info) {
-  // TODO(brettw) we should properly handle the errors here if the buffer
-  // isn't a valid image rather than CHECKing.
-  EnterResourceNoLock<PPB_Buffer_API> enter(buffer.data, true);
-  CHECK(enter.succeeded());
-  webkit::ppapi::PPB_Buffer_Impl* pepper_buffer =
-      static_cast<webkit::ppapi::PPB_Buffer_Impl*>(enter.object());
-  CHECK(pepper_buffer->IsMapped());
-  data_ = pepper_buffer->Map();
-}
-
-Picture::Picture(const PP_Picture_Dev& picture)
-    : picture_buffer_id_(picture.picture_buffer_id),
-      bitstream_buffer_id_(picture.bitstream_buffer_id),
-      visible_size_(picture.visible_size.width, picture.visible_size.height),
-      decoded_size_(picture.decoded_size.width, picture.decoded_size.height) {
-}
-
-}  // namespace media
