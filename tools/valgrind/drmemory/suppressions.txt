@@ -483,8 +483,6 @@ USERENV.dll!CreateEnvironmentBlock
 CRYPT32.dll!CertOpenStore
 ...
 CRYPT32.dll!CertCreateCertificateChainEngine
-...
-CRYPT32.dll!CertGetCertificateChain
 
 LEAK
 KERNEL32.dll!LocalAlloc
@@ -671,6 +669,23 @@ UNINITIALIZED READ
 ...
 *!vp8_*
 
+# http://crbug.com/70062
+LEAK
+*!PR_Calloc
+*!PR_NewLock
+...
+*!InitSessionCacheLocks
+*!initSessionCacheLocksLazily
+*!PR_CallOnce
+*!ssl_InitSessionCacheLocks
+*!lock_cache
+*!ssl_LookupSID
+*!ssl2_BeginClientHandshake
+*!ssl_Do1stHandshake
+*!SSL_ForceHandshake
+*!net::SSLServerSocketNSS::DoHandshake
+*!net::SSLServerSocketNSS::DoHandshakeLoop
+
 # http://crbug.com/70388
 LEAK
 *!operator new
@@ -715,6 +730,13 @@ LEAK
 *!IPC::ChannelProxy::Context::Context
 *!IPC::ChannelProxy::ChannelProxy
 *!IPCChannelTest_ChannelProxyTest_Test::TestBody
+
+# http://crbug.com/87612
+LEAK
+...
+*!SSL_ConfigSecureServer
+*!net::SSLServerSocketNSS::InitializeSSLOptions
+*!net::SSLServerSocketNSS::Handshake
 
 # Empty line at EOF - workaround for
 # http://code.google.com/p/drmemory/issues/detail?id=41
