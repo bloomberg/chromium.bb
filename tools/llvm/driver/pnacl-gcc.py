@@ -119,7 +119,7 @@ EXTRA_ENV = {
 
   # ${ld_inputs} signifies where to place the objects and libraries
   # provided on the command-line.
-  'LD_ARGS_nostdlib': '${ld_inputs}',
+  'LD_ARGS_nostdlib': '-barebones-link ${ld_inputs}',
 
   'LD_ARGS_newlib_static':
     '-static ${LIBS}/crt1.o ${LIBS_BC}/nacl_startup.bc ${ld_inputs} ' +

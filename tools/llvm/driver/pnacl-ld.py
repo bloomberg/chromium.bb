@@ -36,6 +36,7 @@ EXTRA_ENV = {
   'PIC'      : '0',
 
   'LINK_IN_BITCODE_INTRINSICS' : '1',
+  'BAREBONES_LINK' : '0',
 
   'STRIP_MODE' : 'none',
 
@@ -66,8 +67,9 @@ EXTRA_ENV = {
 
   'GOLD_PLUGIN_ARGS': '-plugin=${GOLD_PLUGIN_SO} ' +
                       '-plugin-opt=emit-llvm ' +
-                      '${LIBMODE_NEWLIB ? ' +
-                      '  -plugin-opt=-add-nacl-read-tp-dependency}',
+                      '${LIBMODE_NEWLIB && !BAREBONES_LINK ? ' +
+                      '-plugin-opt=-add-nacl-read-tp-dependency ' +
+                      '-plugin-opt=-add-libgcc-dependencies}',
 
    # Symbols to wrap
   'WRAP_SYMBOLS': '',
@@ -119,7 +121,7 @@ LDPatterns = [
   ( '-o(.+)',          "env.set('OUTPUT', $0)"),
   ( ('-o', '(.+)'),    "env.set('OUTPUT', $0)"),
 
-  ( '-nostdlib',       ""),
+  ( '-barebones-link',       "env.set('BAREBONES_LINK', '1')"),
 
   ( '-nobitcode-intrinsics', "env.set('LINK_IN_BITCODE_INTRINSICS', '0')"),
 
