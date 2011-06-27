@@ -213,14 +213,19 @@ class WebSocketJobTest : public PlatformTest {
   scoped_refptr<WebSocketJob> websocket_;
   scoped_refptr<MockSocketStream> socket_;
 
-  static const char* kHandshakeRequestWithoutCookie;
-  static const char* kHandshakeRequestWithCookie;
-  static const char* kHandshakeRequestWithFilteredCookie;
-  static const char* kHandshakeResponseWithoutCookie;
-  static const char* kHandshakeResponseWithCookie;
+  static const char kHandshakeRequestWithoutCookie[];
+  static const char kHandshakeRequestWithCookie[];
+  static const char kHandshakeRequestWithFilteredCookie[];
+  static const char kHandshakeResponseWithoutCookie[];
+  static const char kHandshakeResponseWithCookie[];
+  static const size_t kHandshakeRequestWithoutCookieLength;
+  static const size_t kHandshakeRequestWithCookieLength;
+  static const size_t kHandshakeRequestWithFilteredCookieLength;
+  static const size_t kHandshakeResponseWithoutCookieLength;
+  static const size_t kHandshakeResponseWithCookieLength;
 };
 
-const char* WebSocketJobTest::kHandshakeRequestWithoutCookie =
+const char WebSocketJobTest::kHandshakeRequestWithoutCookie[] =
     "GET /demo HTTP/1.1\r\n"
     "Host: example.com\r\n"
     "Connection: Upgrade\r\n"
@@ -232,7 +237,7 @@ const char* WebSocketJobTest::kHandshakeRequestWithoutCookie =
     "\r\n"
     "^n:ds[4U";
 
-const char* WebSocketJobTest::kHandshakeRequestWithCookie =
+const char WebSocketJobTest::kHandshakeRequestWithCookie[] =
     "GET /demo HTTP/1.1\r\n"
     "Host: example.com\r\n"
     "Connection: Upgrade\r\n"
@@ -245,7 +250,7 @@ const char* WebSocketJobTest::kHandshakeRequestWithCookie =
     "\r\n"
     "^n:ds[4U";
 
-const char* WebSocketJobTest::kHandshakeRequestWithFilteredCookie =
+const char WebSocketJobTest::kHandshakeRequestWithFilteredCookie[] =
     "GET /demo HTTP/1.1\r\n"
     "Host: example.com\r\n"
     "Connection: Upgrade\r\n"
@@ -258,7 +263,7 @@ const char* WebSocketJobTest::kHandshakeRequestWithFilteredCookie =
     "\r\n"
     "^n:ds[4U";
 
-const char* WebSocketJobTest::kHandshakeResponseWithoutCookie =
+const char WebSocketJobTest::kHandshakeResponseWithoutCookie[] =
     "HTTP/1.1 101 WebSocket Protocol Handshake\r\n"
     "Upgrade: WebSocket\r\n"
     "Connection: Upgrade\r\n"
@@ -268,7 +273,7 @@ const char* WebSocketJobTest::kHandshakeResponseWithoutCookie =
     "\r\n"
     "8jKS'y:G*Co,Wxa-";
 
-const char* WebSocketJobTest::kHandshakeResponseWithCookie =
+const char WebSocketJobTest::kHandshakeResponseWithCookie[] =
     "HTTP/1.1 101 WebSocket Protocol Handshake\r\n"
     "Upgrade: WebSocket\r\n"
     "Connection: Upgrade\r\n"
@@ -279,6 +284,17 @@ const char* WebSocketJobTest::kHandshakeResponseWithCookie =
     "\r\n"
     "8jKS'y:G*Co,Wxa-";
 
+const size_t WebSocketJobTest::kHandshakeRequestWithoutCookieLength =
+    arraysize(kHandshakeRequestWithoutCookie) - 1;
+const size_t WebSocketJobTest::kHandshakeRequestWithCookieLength =
+    arraysize(kHandshakeRequestWithCookie) - 1;
+const size_t WebSocketJobTest::kHandshakeRequestWithFilteredCookieLength =
+    arraysize(kHandshakeRequestWithFilteredCookie) - 1;
+const size_t WebSocketJobTest::kHandshakeResponseWithoutCookieLength =
+    arraysize(kHandshakeResponseWithoutCookie) - 1;
+const size_t WebSocketJobTest::kHandshakeResponseWithCookieLength =
+    arraysize(kHandshakeResponseWithCookie) - 1;
+
 TEST_F(WebSocketJobTest, SimpleHandshake) {
   // TODO(toyoshim): We need to consider both spdy-enabled and spdy-disabled
   // configuration.
@@ -288,18 +304,18 @@ TEST_F(WebSocketJobTest, SimpleHandshake) {
   InitWebSocketJob(url, &delegate);
 
   bool sent = websocket_->SendData(kHandshakeRequestWithoutCookie,
-                                   strlen(kHandshakeRequestWithoutCookie));
+                                   kHandshakeRequestWithoutCookieLength);
   EXPECT_TRUE(sent);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kHandshakeRequestWithoutCookie, socket_->sent_data());
   EXPECT_EQ(WebSocketJob::CONNECTING, GetWebSocketJobState());
   websocket_->OnSentData(socket_.get(),
-                         strlen(kHandshakeRequestWithoutCookie));
-  EXPECT_EQ(strlen(kHandshakeRequestWithoutCookie), delegate.amount_sent());
+                         kHandshakeRequestWithoutCookieLength);
+  EXPECT_EQ(kHandshakeRequestWithoutCookieLength, delegate.amount_sent());
 
   websocket_->OnReceivedData(socket_.get(),
                              kHandshakeResponseWithoutCookie,
-                             strlen(kHandshakeResponseWithoutCookie));
+                             kHandshakeResponseWithoutCookieLength);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kHandshakeResponseWithoutCookie, delegate.received_data());
   EXPECT_EQ(WebSocketJob::OPEN, GetWebSocketJobState());
@@ -313,7 +329,7 @@ TEST_F(WebSocketJobTest, SlowHandshake) {
   InitWebSocketJob(url, &delegate);
 
   bool sent = websocket_->SendData(kHandshakeRequestWithoutCookie,
-                                   strlen(kHandshakeRequestWithoutCookie));
+                                   kHandshakeRequestWithoutCookieLength);
   EXPECT_TRUE(sent);
   // We assume request is sent in one data chunk (from WebKit)
   // We don't support streaming request.
@@ -321,8 +337,8 @@ TEST_F(WebSocketJobTest, SlowHandshake) {
   EXPECT_EQ(kHandshakeRequestWithoutCookie, socket_->sent_data());
   EXPECT_EQ(WebSocketJob::CONNECTING, GetWebSocketJobState());
   websocket_->OnSentData(socket_.get(),
-                         strlen(kHandshakeRequestWithoutCookie));
-  EXPECT_EQ(strlen(kHandshakeRequestWithoutCookie), delegate.amount_sent());
+                         kHandshakeRequestWithoutCookieLength);
+  EXPECT_EQ(kHandshakeRequestWithoutCookieLength, delegate.amount_sent());
 
   std::vector<std::string> lines;
   base::SplitString(kHandshakeResponseWithoutCookie, '\n', &lines);
@@ -361,18 +377,19 @@ TEST_F(WebSocketJobTest, HandshakeWithCookie) {
   InitWebSocketJob(url, &delegate);
 
   bool sent = websocket_->SendData(kHandshakeRequestWithCookie,
-                                   strlen(kHandshakeRequestWithCookie));
+                                   kHandshakeRequestWithCookieLength);
   EXPECT_TRUE(sent);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kHandshakeRequestWithFilteredCookie, socket_->sent_data());
   EXPECT_EQ(WebSocketJob::CONNECTING, GetWebSocketJobState());
-  websocket_->OnSentData(socket_, strlen(kHandshakeRequestWithFilteredCookie));
-  EXPECT_EQ(strlen(kHandshakeRequestWithCookie),
+  websocket_->OnSentData(socket_,
+                         kHandshakeRequestWithFilteredCookieLength);
+  EXPECT_EQ(kHandshakeRequestWithCookieLength,
             delegate.amount_sent());
 
   websocket_->OnReceivedData(socket_.get(),
                              kHandshakeResponseWithCookie,
-                             strlen(kHandshakeResponseWithCookie));
+                             kHandshakeResponseWithCookieLength);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kHandshakeResponseWithoutCookie, delegate.received_data());
   EXPECT_EQ(WebSocketJob::OPEN, GetWebSocketJobState());
@@ -404,18 +421,18 @@ TEST_F(WebSocketJobTest, HandshakeWithCookieButNotAllowed) {
   InitWebSocketJob(url, &delegate);
 
   bool sent = websocket_->SendData(kHandshakeRequestWithCookie,
-                                   strlen(kHandshakeRequestWithCookie));
+                                   kHandshakeRequestWithCookieLength);
   EXPECT_TRUE(sent);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kHandshakeRequestWithoutCookie, socket_->sent_data());
   EXPECT_EQ(WebSocketJob::CONNECTING, GetWebSocketJobState());
-  websocket_->OnSentData(socket_, strlen(kHandshakeRequestWithoutCookie));
-  EXPECT_EQ(strlen(kHandshakeRequestWithCookie),
+  websocket_->OnSentData(socket_, kHandshakeRequestWithoutCookieLength);
+  EXPECT_EQ(kHandshakeRequestWithCookieLength,
             delegate.amount_sent());
 
   websocket_->OnReceivedData(socket_.get(),
                              kHandshakeResponseWithCookie,
-                             strlen(kHandshakeResponseWithCookie));
+                             kHandshakeResponseWithCookieLength);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kHandshakeResponseWithoutCookie, delegate.received_data());
   EXPECT_EQ(WebSocketJob::OPEN, GetWebSocketJobState());
@@ -453,7 +470,7 @@ TEST_F(WebSocketJobTest, InvalidSendData) {
   InitWebSocketJob(url, &delegate);
 
   bool sent = websocket_->SendData(kHandshakeRequestWithoutCookie,
-                                   strlen(kHandshakeRequestWithoutCookie));
+                                   kHandshakeRequestWithoutCookieLength);
   EXPECT_TRUE(sent);
   // We assume request is sent in one data chunk (from WebKit)
   // We don't support streaming request.
@@ -461,12 +478,12 @@ TEST_F(WebSocketJobTest, InvalidSendData) {
   EXPECT_EQ(kHandshakeRequestWithoutCookie, socket_->sent_data());
   EXPECT_EQ(WebSocketJob::CONNECTING, GetWebSocketJobState());
   websocket_->OnSentData(socket_.get(),
-                         strlen(kHandshakeRequestWithoutCookie));
-  EXPECT_EQ(strlen(kHandshakeRequestWithoutCookie), delegate.amount_sent());
+                         kHandshakeRequestWithoutCookieLength);
+  EXPECT_EQ(kHandshakeRequestWithoutCookieLength, delegate.amount_sent());
 
   // We could not send any data until connection is established.
   sent = websocket_->SendData(kHandshakeRequestWithoutCookie,
-                              strlen(kHandshakeRequestWithoutCookie));
+                              kHandshakeRequestWithoutCookieLength);
   EXPECT_FALSE(sent);
   EXPECT_EQ(WebSocketJob::CONNECTING, GetWebSocketJobState());
   CloseWebSocketJob();
