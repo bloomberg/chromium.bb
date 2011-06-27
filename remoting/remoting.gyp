@@ -53,6 +53,7 @@
       'webapp/me2mom/remoting_session.html',
       'webapp/me2mom/remoting_session.js',
       'webapp/me2mom/spinner.gif',
+      'webapp/me2mom/storage.js',
     ],
   },
 
