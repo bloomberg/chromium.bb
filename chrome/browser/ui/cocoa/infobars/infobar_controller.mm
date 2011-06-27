@@ -377,8 +377,18 @@ const float kAnimateCloseDuration = 0.12;
 - (void)linkClicked {
   WindowOpenDisposition disposition =
       event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
-  if (delegate_ && delegate_->AsLinkInfoBarDelegate()->LinkClicked(disposition))
-    [self removeInfoBar];
+  if (delegate_ &&
+      delegate_->AsLinkInfoBarDelegate()->LinkClicked(disposition)) {
+    // Call |-removeInfoBar| on the outermost runloop to force a delay. As shown
+    // in <http://crbug.com/87201>, the second click event can be delivered
+    // after the animation finishes (and this gets released and deallocated),
+    // which leads to zombie messaging. Unfortnately, the order between the
+    // animation finishing and the click event being delivered is
+    // nondeterministic, so this hack is the best that can be done.
+    [self performSelector:@selector(removeInfoBar)
+               withObject:nil
+               afterDelay:0.0];
+  }
 }
 
 @end

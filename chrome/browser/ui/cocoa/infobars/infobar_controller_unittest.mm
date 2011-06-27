@@ -174,6 +174,12 @@ TEST_F(LinkInfoBarControllerTest, ShowAndClickLink) {
   // Check that clicking on the link calls LinkClicked() on the
   // delegate.  It should also close the infobar.
   [controller_ linkClicked];
+
+  // Spin the runloop because the invocation for closing the infobar is done on
+  // a 0-timer delayed selector.
+  [[NSRunLoop currentRunLoop] runUntilDate:
+      [NSDate dateWithTimeIntervalSinceNow:0.1]];
+
   ASSERT_TRUE(delegate_closed());
   EXPECT_TRUE(closed_delegate_link_clicked_);
 }
