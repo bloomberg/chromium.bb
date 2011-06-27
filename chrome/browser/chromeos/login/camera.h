@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
@@ -57,8 +58,9 @@ class Camera : public base::RefCountedThreadSafe<Camera> {
   // Initializes camera device on camera thread. Corresponding delegate's
   // callback is called on UI thread to notify about success or failure. Does
   // nothing if camera is successfully initialized already. Sets the desired
-  // width and height of the frame to receive from camera.
-  void Initialize(int desired_width, int desired_height);
+  // width and height of the frame to receive from camera. The last parameter
+  // allows to try initializing camera with some delay.
+  void Initialize(int desired_width, int desired_height, int64 delay_in_ms);
 
   // Uninitializes the camera on camera thread. Can be called anytime, any
   // number of times.
@@ -132,8 +134,15 @@ class Camera : public base::RefCountedThreadSafe<Camera> {
   bool IsOnCameraThread() const;
 
   // Posts task to camera thread.
-  void PostCameraTask(const tracked_objects::Location& from_here,
-                      Task* task);
+  void PostCameraTask(
+      const tracked_objects::Location& from_here,
+      Task* task);
+
+  // Same as above but the task is delayed.
+  void PostCameraTaskWithDelay(
+      const tracked_objects::Location& from_here,
+      Task* task,
+      int64 delay_in_ms);
 
   // Defines a buffer in memory where one frame from the camera is stored.
   struct VideoBuffer {

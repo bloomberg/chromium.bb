@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/camera_controller.h"
 
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/threading/thread_restrictions.h"
 
@@ -20,6 +21,9 @@ const int kMaxCameraInitFailureCounter = 3;
 
 // Name for camera thread.
 const char kCameraThreadName[] = "Chrome_CameraThread";
+
+// Delay multiplier for camera initialization retries, milliseconds.
+const int64 kInitializeDelayMs = 200;
 
 }  // namespace
 
@@ -46,7 +50,10 @@ CameraController::~CameraController() {
 void CameraController::Start() {
   Stop();
   camera_ = new Camera(this, camera_thread_.get(), true);
-  camera_->Initialize(frame_width_, frame_height_);
+  camera_->Initialize(
+      frame_width_,
+      frame_height_,
+      kInitializeDelayMs * camera_init_failure_counter_);
 }
 
 void CameraController::Stop() {

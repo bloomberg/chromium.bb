@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
@@ -169,14 +170,18 @@ void Camera::ReportFailure() {
   }
 }
 
-void Camera::Initialize(int desired_width, int desired_height) {
+void Camera::Initialize(
+    int desired_width,
+    int desired_height,
+    int64 delay_in_ms) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  PostCameraTask(
+  PostCameraTaskWithDelay(
       FROM_HERE,
       NewRunnableMethod(this,
                         &Camera::DoInitialize,
                         desired_width,
-                        desired_height));
+                        desired_height),
+      delay_in_ms);
 }
 
 void Camera::DoInitialize(int desired_width, int desired_height) {
@@ -588,11 +593,18 @@ bool Camera::IsOnCameraThread() const {
 
 void Camera::PostCameraTask(const tracked_objects::Location& from_here,
                             Task* task) {
+  PostCameraTaskWithDelay(from_here, task, 0);
+}
+
+void Camera::PostCameraTaskWithDelay(
+    const tracked_objects::Location& from_here,
+    Task* task,
+    int64 delay_in_ms) {
   base::AutoLock lock(thread_lock_);
   if (!thread_)
     return;
   DCHECK(thread_->IsRunning());
-  thread_->message_loop()->PostTask(from_here, task);
+  thread_->message_loop()->PostDelayedTask(from_here, task, delay_in_ms);
 }
 
 }  // namespace chromeos
