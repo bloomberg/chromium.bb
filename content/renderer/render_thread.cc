@@ -436,7 +436,6 @@ void RenderThread::OnCreateNewView(const ViewMsg_New_Params& params) {
   RenderView::Create(
       this,
       params.parent_window,
-      params.compositing_surface,
       MSG_ROUTING_NONE,
       params.renderer_preferences,
       params.web_preferences,

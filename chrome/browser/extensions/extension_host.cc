@@ -197,7 +197,7 @@ bool ExtensionHost::IsRenderViewLive() const {
 }
 
 void ExtensionHost::CreateRenderViewSoon(RenderWidgetHostView* host_view) {
-  render_view_host_->set_view(host_view);
+  render_view_host_->SetView(host_view);
   if (render_view_host_->process()->HasConnection()) {
     // If the process is already started, go ahead and initialize the RenderView
     // synchronously. The process creation is the real meaty part that we want

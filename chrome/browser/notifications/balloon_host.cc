@@ -196,7 +196,7 @@ void BalloonHost::Init() {
   InitRenderWidgetHostView();
   DCHECK(render_widget_host_view());
 
-  rvh->set_view(render_widget_host_view());
+  rvh->SetView(render_widget_host_view());
   rvh->CreateRenderView(string16());
   rvh->NavigateToURL(balloon_->notification().content_url());
 

@@ -246,7 +246,7 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
   // hierarchy right after calling us.
   cocoa_view_ = [[[RenderWidgetHostViewCocoa alloc]
                   initWithRenderWidgetHostViewMac:this] autorelease];
-  render_widget_host_->set_view(this);
+  render_widget_host_->SetView(this);
 
   if (render_widget_host_->IsRenderView()) {
     new SpellCheckRenderViewObserver(

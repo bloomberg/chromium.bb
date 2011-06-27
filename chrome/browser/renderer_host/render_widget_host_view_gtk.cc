@@ -516,7 +516,7 @@ RenderWidgetHostViewGtk::RenderWidgetHostViewGtk(RenderWidgetHost* widget_host)
       dragged_at_vertical_edge_(0),
       compositing_surface_(gfx::kNullPluginWindow),
       last_mouse_down_(NULL) {
-  host_->set_view(this);
+  host_->SetView(this);
 }
 
 RenderWidgetHostViewGtk::~RenderWidgetHostViewGtk() {

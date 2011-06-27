@@ -87,7 +87,7 @@ RenderWidgetHostViewViews::RenderWidgetHostViewViews(RenderWidgetHost* host)
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
       has_composition_text_(false) {
   set_focusable(true);
-  host_->set_view(this);
+  host_->SetView(this);
 }
 
 RenderWidgetHostViewViews::~RenderWidgetHostViewViews() {

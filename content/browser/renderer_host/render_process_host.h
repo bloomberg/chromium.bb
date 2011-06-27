@@ -14,6 +14,7 @@
 #include "base/process_util.h"
 #include "base/time.h"
 #include "ipc/ipc_channel_proxy.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/surface/transport_dib.h"
 
 class Profile;
@@ -225,6 +226,14 @@ class RenderProcessHost : public IPC::Channel::Sender,
   // duplicating the handle from the remote process.  The RenderProcessHost
   // still owns the returned DIB.
   virtual TransportDIB* GetTransportDIB(TransportDIB::Id dib_id) = 0;
+
+  // RenderWidgetHost / compositing surface mapping functions ------------------
+
+  // Set a mapping from a RenderWidgetHost to a compositing surface. Pass a null
+  // handle to remove the mapping.
+  virtual void SetCompositingSurface(
+      int render_widget_id,
+      gfx::PluginWindowHandle compositing_surface) = 0;
 
   // Static management functions -----------------------------------------------
 

@@ -260,7 +260,7 @@ class RenderWidgetHostTest : public testing::Test {
     process_ = new RenderWidgetHostProcess(profile_.get());
     host_.reset(new MockRenderWidgetHost(process_, 1));
     view_.reset(new TestView(host_.get()));
-    host_->set_view(view_.get());
+    host_->SetView(view_.get());
     host_->Init();
   }
   void TearDown() {
@@ -416,13 +416,13 @@ TEST_F(RenderWidgetHostTest, ResizeThenCrash) {
   // Simulate a renderer crash before the update message.  Ensure all the
   // resize ack logic is cleared.  Must clear the view first so it doesn't get
   // deleted.
-  host_->set_view(NULL);
+  host_->SetView(NULL);
   host_->RendererExited(base::TERMINATION_STATUS_PROCESS_CRASHED, -1);
   EXPECT_FALSE(host_->resize_ack_pending_);
   EXPECT_EQ(gfx::Size(), host_->in_flight_size_);
 
   // Reset the view so we can exit the test cleanly.
-  host_->set_view(view_.get());
+  host_->SetView(view_.get());
 }
 
 // Tests setting custom background
@@ -430,7 +430,7 @@ TEST_F(RenderWidgetHostTest, Background) {
 #if !defined(OS_MACOSX)
   scoped_ptr<RenderWidgetHostView> view(
       RenderWidgetHostView::CreateViewForWidget(host_.get()));
-  host_->set_view(view.get());
+  host_->SetView(view.get());
 
   // Create a checkerboard background to test with.
   gfx::CanvasSkia canvas(4, 4, true);

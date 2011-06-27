@@ -98,10 +98,19 @@ RenderWidgetHost::RenderWidgetHost(RenderProcessHost* process,
 }
 
 RenderWidgetHost::~RenderWidgetHost() {
+  SetView(NULL);
+
   // Clear our current or cached backing store if either remains.
   BackingStoreManager::RemoveBackingStore(this);
 
   process_->Release(routing_id_);
+}
+
+void RenderWidgetHost::SetView(RenderWidgetHostView* view) {
+  view_ = view;
+
+  if (!view_)
+    process_->SetCompositingSurface(routing_id_, gfx::kNullPluginWindow);
 }
 
 gfx::NativeViewId RenderWidgetHost::GetNativeViewId() {
@@ -127,9 +136,11 @@ void RenderWidgetHost::Init() {
 
   renderer_initialized_ = true;
 
+  process_->SetCompositingSurface(routing_id_,
+                                  GetCompositingSurface());
+
   // Send the ack along with the information on placement.
-  Send(new ViewMsg_CreatingNew_ACK(
-      routing_id_, GetNativeViewId(), GetCompositingSurface()));
+  Send(new ViewMsg_CreatingNew_ACK(routing_id_, GetNativeViewId()));
   WasResized();
 }
 
@@ -363,7 +374,7 @@ void RenderWidgetHost::LostCapture() {
 void RenderWidgetHost::ViewDestroyed() {
   // TODO(evanm): tracking this may no longer be necessary;
   // eliminate this function if so.
-  view_ = NULL;
+  SetView(NULL);
 }
 
 void RenderWidgetHost::SetIsLoading(bool is_loading) {

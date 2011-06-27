@@ -10,11 +10,14 @@
 
 #include "base/callback.h"
 #include "content/browser/gpu/gpu_process_host.h"
+#include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/common/gpu/gpu_messages.h"
 
-GpuMessageFilter::GpuMessageFilter(int render_process_id)
+GpuMessageFilter::GpuMessageFilter(int render_process_id,
+                                   RenderWidgetHelper* render_widget_helper)
     : gpu_host_id_(0),
-      render_process_id_(render_process_id) {
+      render_process_id_(render_process_id),
+      render_widget_helper_(render_widget_helper) {
 }
 
 // WeakPtrs to a GpuMessageFilter need to be Invalidated from
@@ -153,12 +156,15 @@ void GpuMessageFilter::OnEstablishGpuChannel(
 }
 
 void GpuMessageFilter::OnCreateViewCommandBuffer(
-    gfx::PluginWindowHandle compositing_surface,
     int32 render_view_id,
     const GPUCreateCommandBufferConfig& init_params,
     IPC::Message* reply) {
   GpuProcessHost* host = GpuProcessHost::FromID(gpu_host_id_);
-  if (!host) {
+
+  gfx::PluginWindowHandle compositing_surface =
+      render_widget_helper_->LookupCompositingSurface(render_view_id);
+
+  if (!host || compositing_surface == gfx::kNullPluginWindow) {
     // TODO(apatrick): Eventually, this IPC message will be routed to a
     // GpuProcessStub with a particular routing ID. The error will be set if
     // the GpuProcessStub with that routing ID is not in the MessageRouter.

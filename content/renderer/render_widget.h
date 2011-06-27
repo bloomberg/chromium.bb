@@ -77,10 +77,6 @@ class RenderWidget : public IPC::Channel::Listener,
   // The compositing surface assigned by the RenderWidgetHost
   // (or RenderViewHost). Will be gfx::kNullPluginWindow if not assigned yet,
   // in which case we should not create any GPU command buffers with it.
-  gfx::PluginWindowHandle compositing_surface() const {
-    return compositing_surface_;
-  }
-
   // The routing ID assigned by the RenderProcess. Will be MSG_ROUTING_NONE if
   // not yet assigned a view ID, in which case, the process MUST NOT send
   // messages with this ID to the parent.
@@ -153,8 +149,7 @@ class RenderWidget : public IPC::Channel::Listener,
               IPC::SyncMessage* create_widget_message);
 
   // Finishes creation of a pending view started with Init.
-  void CompleteInit(gfx::NativeViewId parent,
-                    gfx::PluginWindowHandle compositing_surface);
+  void CompleteInit(gfx::NativeViewId parent);
 
   // Sets whether this RenderWidget has been swapped out to be displayed by
   // a RenderWidget in a different process.  If so, no new IPC messages will be
@@ -187,8 +182,7 @@ class RenderWidget : public IPC::Channel::Listener,
 
   // RenderWidget IPC message handlers
   void OnClose();
-  void OnCreatingNewAck(gfx::NativeViewId parent,
-                        gfx::PluginWindowHandle compositing_surface);
+  void OnCreatingNewAck(gfx::NativeViewId parent);
   virtual void OnResize(const gfx::Size& new_size,
                         const gfx::Rect& resizer_rect);
   virtual void OnWasHidden();
@@ -432,10 +426,6 @@ class RenderWidget : public IPC::Channel::Listener,
   // Set to true if painting to the window is handled by the accelerated
   // compositor.
   bool is_accelerated_compositing_active_;
-
-  // Handle to a surface that is drawn to when accelerated compositing is
-  // active.
-  gfx::PluginWindowHandle compositing_surface_;
 
   base::Time animation_floor_time_;
   bool animation_update_pending_;

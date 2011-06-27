@@ -62,7 +62,7 @@ class ThumbnailGeneratorTest : public testing::Test {
     view_.reset(new TestRenderWidgetHostViewWithBackingStoreSkia(
         widget_.get()));
     // Paiting will be skipped if there's no view.
-    widget_->set_view(view_.get());
+    widget_->SetView(view_.get());
 
     // Need to send out a create notification for the RWH to get hooked. This is
     // a little scary in that we don't have a RenderView, but the only listener

@@ -88,7 +88,6 @@ RenderWidget::RenderWidget(RenderThreadBase* render_thread,
       pending_window_rect_count_(0),
       suppress_next_char_events_(false),
       is_accelerated_compositing_active_(false),
-      compositing_surface_(gfx::kNullPluginWindow),
       animation_update_pending_(false),
       animation_task_posted_(false),
       invalidation_task_posted_(false) {
@@ -164,12 +163,10 @@ void RenderWidget::DoInit(int32 opener_id,
 // This is used to complete pending inits and non-pending inits. For non-
 // pending cases, the parent will be the same as the current parent. This
 // indicates we do not need to reparent or anything.
-void RenderWidget::CompleteInit(gfx::NativeViewId parent_hwnd,
-                                gfx::PluginWindowHandle compositing_surface) {
+void RenderWidget::CompleteInit(gfx::NativeViewId parent_hwnd) {
   DCHECK(routing_id_ != MSG_ROUTING_NONE);
 
   host_window_ = parent_hwnd;
-  compositing_surface_ = compositing_surface;
 
   Send(new ViewHostMsg_RenderViewReady(routing_id_));
 }
@@ -234,11 +231,10 @@ bool RenderWidget::Send(IPC::Message* message) {
 // Got a response from the browser after the renderer decided to create a new
 // view.
 void RenderWidget::OnCreatingNewAck(
-    gfx::NativeViewId parent,
-    gfx::PluginWindowHandle compositing_surface) {
+    gfx::NativeViewId parent) {
   DCHECK(routing_id_ != MSG_ROUTING_NONE);
 
-  CompleteInit(parent, compositing_surface);
+  CompleteInit(parent);
 }
 
 void RenderWidget::OnClose() {

@@ -103,6 +103,11 @@ TransportDIB* MockRenderProcessHost::GetTransportDIB(TransportDIB::Id dib_id) {
   return transport_dib_;
 }
 
+void MockRenderProcessHost::SetCompositingSurface(
+    int render_widget_id,
+    gfx::PluginWindowHandle compositing_surface) {
+}
+
 bool MockRenderProcessHost::OnMessageReceived(const IPC::Message& msg) {
   return false;
 }

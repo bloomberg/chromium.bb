@@ -343,7 +343,6 @@ void RenderWidgetFullscreenPepper::CreateContext() {
   };
   context_ = RendererGLContext::CreateViewContext(
       host,
-      compositing_surface(),
       routing_id(),
       "GL_OES_packed_depth_stencil GL_OES_depth24",
       attribs,

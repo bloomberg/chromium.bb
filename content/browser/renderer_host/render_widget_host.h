@@ -144,7 +144,7 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // RenderWidget is being destroyed or the render process crashed. You should
   // never cache this pointer since it can become NULL if the renderer crashes,
   // instead you should always ask for it using the accessor.
-  void set_view(RenderWidgetHostView* view) { view_ = view; }
+  void SetView(RenderWidgetHostView* view);
   RenderWidgetHostView* view() const { return view_; }
 
   RenderProcessHost* process() const { return process_; }

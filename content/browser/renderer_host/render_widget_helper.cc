@@ -333,3 +333,24 @@ void RenderWidgetHelper::ClearAllocatedDIBs() {
   allocated_dibs_.clear();
 }
 #endif
+
+void RenderWidgetHelper::SetCompositingSurface(
+    int render_widget_id,
+    gfx::PluginWindowHandle compositing_surface) {
+  base::AutoLock locked(view_compositing_surface_map_lock_);
+  if (compositing_surface != gfx::kNullPluginWindow)
+    view_compositing_surface_map_[render_widget_id] = compositing_surface;
+  else
+    view_compositing_surface_map_.erase(render_widget_id);
+}
+
+gfx::PluginWindowHandle RenderWidgetHelper::LookupCompositingSurface(
+    int render_widget_id) {
+  base::AutoLock locked(view_compositing_surface_map_lock_);
+  ViewCompositingSurfaceMap::iterator it =
+      view_compositing_surface_map_.find(render_widget_id);
+  if (it == view_compositing_surface_map_.end())
+    return gfx::kNullPluginWindow;
+
+  return it->second;
+}

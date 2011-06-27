@@ -364,7 +364,7 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
   channel_->AddFilter(
       GeolocationDispatcherHost::New(
           id(), profile()->GetGeolocationPermissionContext()));
-  channel_->AddFilter(new GpuMessageFilter(id()));
+  channel_->AddFilter(new GpuMessageFilter(id(), widget_helper_.get()));
   channel_->AddFilter(new PepperFileMessageFilter(id(), profile()));
   channel_->AddFilter(
       new PepperMessageFilter(&profile()->GetResourceContext()));
@@ -713,6 +713,12 @@ void BrowserRenderProcessHost::ClearTransportDIBCache() {
   STLDeleteContainerPairSecondPointers(
       cached_dibs_.begin(), cached_dibs_.end());
   cached_dibs_.clear();
+}
+
+void BrowserRenderProcessHost::SetCompositingSurface(
+    int render_widget_id,
+    gfx::PluginWindowHandle compositing_surface) {
+  widget_helper_->SetCompositingSurface(render_widget_id, compositing_surface);
 }
 
 bool BrowserRenderProcessHost::Send(IPC::Message* msg) {

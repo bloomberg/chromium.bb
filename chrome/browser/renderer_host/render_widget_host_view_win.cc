@@ -241,7 +241,7 @@ RenderWidgetHostViewWin::RenderWidgetHostViewWin(RenderWidgetHost* widget)
       is_loading_(false),
       overlay_color_(0),
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE) {
-  render_widget_host_->set_view(this);
+  render_widget_host_->SetView(this);
   registrar_.Add(this,
                  NotificationType::RENDERER_PROCESS_TERMINATED,
                  NotificationService::AllSources());

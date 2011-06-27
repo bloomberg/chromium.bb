@@ -114,7 +114,6 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
     web_view_ = web_view;
     context_ = RendererGLContext::CreateViewContext(
         host,
-        renderview->compositing_surface(),
         renderview->routing_id(),
         preferred_extensions,
         attribs,

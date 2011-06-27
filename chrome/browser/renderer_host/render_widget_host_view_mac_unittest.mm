@@ -30,7 +30,7 @@ class RenderWidgetHostViewMacTest : public RenderViewHostTestHarness {
   }
   virtual void TearDown() {
     // See comment in SetUp().
-    rvh()->set_view(old_rwhv_);
+    rvh()->SetView(old_rwhv_);
 
     // Make sure the rwhv_mac_ is gone once the superclass's |TearDown()| runs.
     rwhv_cocoa_.reset();

@@ -426,7 +426,7 @@ TabContentsView* InterstitialPage::CreateTabContentsView() {
   TabContentsView* tab_contents_view = tab()->view();
   RenderWidgetHostView* view =
       tab_contents_view->CreateViewForWidget(render_view_host_);
-  render_view_host_->set_view(view);
+  render_view_host_->SetView(view);
   render_view_host_->AllowBindings(BindingsPolicy::DOM_AUTOMATION);
 
   render_view_host_->CreateRenderView(string16());

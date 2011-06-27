@@ -814,7 +814,7 @@ void RenderViewHostManager::SwapInRenderViewHost(RenderViewHost* rvh) {
   // Remove old RenderWidgetHostView with mocked out methods so it can be
   // replaced with a new one that's a child of |delegate_|'s view.
   scoped_ptr<RenderWidgetHostView> old_view(render_view_host_->view());
-  render_view_host_->set_view(NULL);
+  render_view_host_->SetView(NULL);
   delegate_->CreateViewAndSetSizeForRVH(render_view_host_);
   render_view_host_->ActivateDeferredPluginHandles();
   // If the view is gone, then this RenderViewHost died while it was hidden.

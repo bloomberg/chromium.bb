@@ -61,6 +61,9 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   virtual bool FastShutdownIfPossible();
   virtual base::ProcessHandle GetHandle();
   virtual TransportDIB* GetTransportDIB(TransportDIB::Id dib_id);
+  virtual void SetCompositingSurface(
+      int render_widget_id,
+      gfx::PluginWindowHandle compositing_surface);
 
   // IPC::Channel::Sender via RenderProcessHost.
   virtual bool Send(IPC::Message* msg);

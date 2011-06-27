@@ -68,7 +68,6 @@ class GpuChannelHost : public IPC::Channel::Listener,
 
   // Create and connect to a command buffer in the GPU process.
   CommandBufferProxy* CreateViewCommandBuffer(
-      gfx::PluginWindowHandle compositing_surface,
       int render_view_id,
       const std::string& allowed_extensions,
       const std::vector<int32>& attribs,

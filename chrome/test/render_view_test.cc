@@ -125,7 +125,6 @@ void RenderViewTest::SetUp() {
   // This needs to pass the mock render thread to the view.
   view_ = RenderView::Create(&render_thread_,
                              0,
-                             gfx::kNullPluginWindow,
                              kOpenerId,
                              RendererPreferences(),
                              WebPreferences(),

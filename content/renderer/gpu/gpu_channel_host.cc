@@ -105,7 +105,6 @@ bool GpuChannelHost::Send(IPC::Message* message) {
 }
 
 CommandBufferProxy* GpuChannelHost::CreateViewCommandBuffer(
-    gfx::PluginWindowHandle compositing_surface,
     int render_view_id,
     const std::string& allowed_extensions,
     const std::vector<int32>& attribs,
@@ -122,7 +121,7 @@ CommandBufferProxy* GpuChannelHost::CreateViewCommandBuffer(
   int32 route_id;
   if (!RenderThread::current()->Send(
       new GpuHostMsg_CreateViewCommandBuffer(
-          compositing_surface, render_view_id, init_params, &route_id))) {
+          render_view_id, init_params, &route_id))) {
     return NULL;
   }
 

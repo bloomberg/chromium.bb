@@ -51,7 +51,7 @@ TestRenderViewHost::TestRenderViewHost(SiteInstance* instance,
   // For normal RenderViewHosts, this is freed when |Shutdown()| is called.
   // For TestRenderViewHost, the view is explicitly deleted in the destructor
   // below, because TestRenderWidgetHostView::Destroy() doesn't |delete this|.
-  set_view(new TestRenderWidgetHostView(this));
+  SetView(new TestRenderWidgetHostView(this));
 }
 
 TestRenderViewHost::~TestRenderViewHost() {

@@ -155,7 +155,6 @@ RendererGLContext::~RendererGLContext() {
 
 RendererGLContext* RendererGLContext::CreateViewContext(
     GpuChannelHost* channel,
-    gfx::PluginWindowHandle render_surface,
     int render_view_id,
     const char* allowed_extensions,
     const int32* attrib_list,
@@ -164,7 +163,6 @@ RendererGLContext* RendererGLContext::CreateViewContext(
   scoped_ptr<RendererGLContext> context(new RendererGLContext(channel));
   if (!context->Initialize(
       true,
-      render_surface,
       render_view_id,
       gfx::Size(),
       allowed_extensions,
@@ -196,7 +194,6 @@ RendererGLContext* RendererGLContext::CreateOffscreenContext(
   scoped_ptr<RendererGLContext> context(new RendererGLContext(channel));
   if (!context->Initialize(
       false,
-      gfx::kNullPluginWindow,
       0,
       size,
       allowed_extensions,
@@ -397,7 +394,6 @@ RendererGLContext::RendererGLContext(GpuChannelHost* channel)
 }
 
 bool RendererGLContext::Initialize(bool onscreen,
-                                   gfx::PluginWindowHandle render_surface,
                                    int render_view_id,
                                    const gfx::Size& size,
                                    const char* allowed_extensions,
@@ -443,19 +439,13 @@ bool RendererGLContext::Initialize(bool onscreen,
 
   // Create a proxy to a command buffer in the GPU process.
   if (onscreen) {
-    if (render_surface == gfx::kNullPluginWindow) {
-      LOG(ERROR) << "Invalid surface handle for onscreen context.";
-      command_buffer_ = NULL;
-    } else {
-      TRACE_EVENT0("gpu",
-                   "RendererGLContext::Initialize::CreateViewCommandBuffer");
-      command_buffer_ = channel_->CreateViewCommandBuffer(
-          render_surface,
-          render_view_id,
-          allowed_extensions,
-          attribs,
-          active_url);
-    }
+    TRACE_EVENT0("gpu",
+                 "RendererGLContext::Initialize::CreateViewCommandBuffer");
+    command_buffer_ = channel_->CreateViewCommandBuffer(
+        render_view_id,
+        allowed_extensions,
+        attribs,
+        active_url);
   } else {
     command_buffer_ = channel_->CreateOffscreenCommandBuffer(
         size,

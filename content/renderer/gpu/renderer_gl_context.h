@@ -85,7 +85,6 @@ class RendererGLContext : public base::SupportsWeakPtr<RendererGLContext> {
   // more cross-platform.
   static RendererGLContext* CreateViewContext(
       GpuChannelHost* channel,
-      gfx::PluginWindowHandle render_surface,
       int render_view_id,
       const char* allowed_extensions,
       const int32* attrib_list,
@@ -189,7 +188,6 @@ class RendererGLContext : public base::SupportsWeakPtr<RendererGLContext> {
   explicit RendererGLContext(GpuChannelHost* channel);
 
   bool Initialize(bool onscreen,
-                  gfx::PluginWindowHandle render_surface,
                   int render_view_id,
                   const gfx::Size& size,
                   const char* allowed_extensions,
