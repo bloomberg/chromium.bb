@@ -109,16 +109,20 @@ void PostTestMessage(nacl::string test_name, nacl::string message);
 // TODO(polina): rename EXPECT_ASYNC to EXPECT when sync scripting is removed.
 #define EXPECT_ASYNC(expr) do { \
   if (!(expr)) { \
-    fprintf(stderr, \
-            "ERROR: [%s] failed at %s:%d\n", #expr, __FILE__, __LINE__); \
-    PostTestMessage(__FUNCTION__, "ERROR"); \
+    char error[1024]; \
+    snprintf(error, sizeof(error), \
+             "ERROR at %s:%d: %s\n", __FILE__, __LINE__, #expr); \
+    fprintf(stderr, "%s", error); \
+    PostTestMessage(__FUNCTION__, error); \
   } \
 } while (0)
 
 #define EXPECT(expr) do { \
   if (!(expr)) { \
-    fprintf(stderr, \
-            "ERROR: [%s] failed at %s:%d\n", #expr, __FILE__, __LINE__); \
+    char error[1024]; \
+    snprintf(error, sizeof(error), \
+             "ERROR at %s:%d: %s\n", __FILE__, __LINE__, #expr); \
+    fprintf(stderr, "%s", error); \
     return PP_MakeBool(PP_FALSE); \
   } \
 } while (0)
