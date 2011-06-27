@@ -93,7 +93,7 @@ enum BrandFileType {
 
   // The authorization object, when it needs to persist because it's being
   // carried across threads.
-  scoped_AuthorizationRef authorization_;
+  ScopedAuthorizationRef authorization_;
 
   // YES if a synchronous promotion operation is in progress (promotion during
   // installation).

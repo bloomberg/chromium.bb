@@ -21,7 +21,7 @@ namespace authorization_util {
 
 AuthorizationRef AuthorizationCreateToRunAsRoot(CFStringRef prompt) {
   // Create an empty AuthorizationRef.
-  scoped_AuthorizationRef authorization;
+  ScopedAuthorizationRef authorization;
   OSStatus status = AuthorizationCreate(NULL,
                                         kAuthorizationEmptyEnvironment,
                                         kAuthorizationFlagDefaults,

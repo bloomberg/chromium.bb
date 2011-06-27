@@ -11,16 +11,16 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 
-// scoped_AuthorizationRef maintains ownership of an AuthorizationRef.  It is
+// ScopedAuthorizationRef maintains ownership of an AuthorizationRef.  It is
 // patterned after the scoped_ptr interface.
 
-class scoped_AuthorizationRef {
+class ScopedAuthorizationRef {
  public:
-  explicit scoped_AuthorizationRef(AuthorizationRef authorization = NULL)
+  explicit ScopedAuthorizationRef(AuthorizationRef authorization = NULL)
       : authorization_(authorization) {
   }
 
-  ~scoped_AuthorizationRef() {
+  ~ScopedAuthorizationRef() {
     if (authorization_) {
       AuthorizationFree(authorization_, kAuthorizationFlagDestroyRights);
     }
@@ -55,16 +55,16 @@ class scoped_AuthorizationRef {
     return authorization_;
   }
 
-  void swap(scoped_AuthorizationRef& that) {
+  void swap(ScopedAuthorizationRef& that) {
     AuthorizationRef temp = that.authorization_;
     that.authorization_ = authorization_;
     authorization_ = temp;
   }
 
-  // scoped_AuthorizationRef::release() is like scoped_ptr<>::release.  It is
+  // ScopedAuthorizationRef::release() is like scoped_ptr<>::release.  It is
   // NOT a wrapper for AuthorizationFree().  To force a
-  // scoped_AuthorizationRef object to call AuthorizationFree(), use
-  // scoped_AuthorizaitonRef::reset().
+  // ScopedAuthorizationRef object to call AuthorizationFree(), use
+  // ScopedAuthorizationRef::reset().
   AuthorizationRef release() WARN_UNUSED_RESULT {
     AuthorizationRef temp = authorization_;
     authorization_ = NULL;
@@ -74,7 +74,7 @@ class scoped_AuthorizationRef {
  private:
   AuthorizationRef authorization_;
 
-  DISALLOW_COPY_AND_ASSIGN(scoped_AuthorizationRef);
+  DISALLOW_COPY_AND_ASSIGN(ScopedAuthorizationRef);
 };
 
 #endif  // CHROME_BROWSER_MAC_SCOPED_AUTHORIZATIONREF_H_

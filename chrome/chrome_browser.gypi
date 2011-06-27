@@ -1339,6 +1339,7 @@
         'browser/mac/relauncher.cc',
         'browser/mac/relauncher.h',
         'browser/mac/scoped_authorizationref.h',
+        'browser/mac/scoped_ioobject.h',
         'browser/media/media_internals.cc',
         'browser/media/media_internals.h',
         'browser/memory_details.cc',

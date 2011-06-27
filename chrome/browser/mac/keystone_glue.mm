@@ -719,7 +719,7 @@ NSString* const kVersionKey = @"KSVersion";
   NSString* prompt = l10n_util::GetNSStringFWithFixup(
       IDS_PROMOTE_AUTHENTICATION_PROMPT,
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
-  scoped_AuthorizationRef authorization(
+  ScopedAuthorizationRef authorization(
       authorization_util::AuthorizationCreateToRunAsRoot(
           base::mac::NSToCFCast(prompt)));
   if (!authorization.get()) {
@@ -731,7 +731,7 @@ NSString* const kVersionKey = @"KSVersion";
 
 - (void)promoteTicketWithAuthorization:(AuthorizationRef)authorization_arg
                            synchronous:(BOOL)synchronous {
-  scoped_AuthorizationRef authorization(authorization_arg);
+  ScopedAuthorizationRef authorization(authorization_arg);
   authorization_arg = NULL;
 
   if ([self asyncOperationPending]) {

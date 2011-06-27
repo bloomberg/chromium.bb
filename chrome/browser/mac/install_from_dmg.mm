@@ -21,6 +21,7 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "chrome/browser/mac/authorization_util.h"
 #include "chrome/browser/mac/scoped_authorizationref.h"
+#include "chrome/browser/mac/scoped_ioobject.h"
 #import "chrome/browser/mac/keystone_glue.h"
 #include "chrome/browser/mac/relauncher.h"
 #include "chrome/common/chrome_constants.h"
@@ -39,61 +40,6 @@
 #undef catch
 
 namespace {
-
-// Just like ScopedCFTypeRef but for io_object_t and subclasses.
-template<typename IOT>
-class scoped_ioobject {
- public:
-  typedef IOT element_type;
-
-  explicit scoped_ioobject(IOT object = NULL)
-      : object_(object) {
-  }
-
-  ~scoped_ioobject() {
-    if (object_)
-      IOObjectRelease(object_);
-  }
-
-  void reset(IOT object = NULL) {
-    if (object_)
-      IOObjectRelease(object_);
-    object_ = object;
-  }
-
-  bool operator==(IOT that) const {
-    return object_ == that;
-  }
-
-  bool operator!=(IOT that) const {
-    return object_ != that;
-  }
-
-  operator IOT() const {
-    return object_;
-  }
-
-  IOT get() const {
-    return object_;
-  }
-
-  void swap(scoped_ioobject& that) {
-    IOT temp = that.object_;
-    that.object_ = object_;
-    object_ = temp;
-  }
-
-  IOT release() {
-    IOT temp = object_;
-    object_ = NULL;
-    return temp;
-  }
-
- private:
-  IOT object_;
-
-  DISALLOW_COPY_AND_ASSIGN(scoped_ioobject);
-};
 
 // Returns true if |path| is located on a read-only filesystem of a disk
 // image.  Returns false if not, or in the event of an error.
@@ -140,16 +86,16 @@ bool IsPathOnReadOnlyDiskImage(const char path[]) {
                << ": kernel error " << kr;
     return false;
   }
-  scoped_ioobject<io_iterator_t> iterator(iterator_ref);
+  ScopedIOObject<io_iterator_t> iterator(iterator_ref);
   iterator_ref = NULL;
 
   // There needs to be exactly one matching service.
-  scoped_ioobject<io_service_t> filesystem_service(IOIteratorNext(iterator));
+  ScopedIOObject<io_service_t> filesystem_service(IOIteratorNext(iterator));
   if (!filesystem_service) {
     LOG(ERROR) << "IOIteratorNext " << bsd_device_name << ": no service";
     return false;
   }
-  scoped_ioobject<io_service_t> unexpected_service(IOIteratorNext(iterator));
+  ScopedIOObject<io_service_t> unexpected_service(IOIteratorNext(iterator));
   if (unexpected_service) {
     LOG(ERROR) << "IOIteratorNext " << bsd_device_name << ": too many services";
     return false;
@@ -183,9 +129,9 @@ bool IsPathOnReadOnlyDiskImage(const char path[]) {
   // with the parent, iterating all the way up to the device tree's root.  If
   // any ancestor service matches the class used for disk images, the
   // filesystem resides on a disk image.
-  for(scoped_ioobject<io_service_t> ancestor_service(IOIteratorNext(iterator));
-      ancestor_service;
-      ancestor_service.reset(IOIteratorNext(iterator))) {
+  for (ScopedIOObject<io_service_t> ancestor_service(IOIteratorNext(iterator));
+       ancestor_service;
+       ancestor_service.reset(IOIteratorNext(iterator))) {
     if (IOObjectConformsTo(ancestor_service, disk_image_class)) {
       return true;
     }
@@ -254,7 +200,7 @@ bool InstallFromDiskImage(AuthorizationRef authorization_arg,
                           NSString* installer_path,
                           NSString* source_path,
                           NSString* target_path) {
-  scoped_AuthorizationRef authorization(authorization_arg);
+  ScopedAuthorizationRef authorization(authorization_arg);
   authorization_arg = NULL;
   int exit_status;
   if (authorization) {
@@ -397,7 +343,7 @@ bool MaybeInstallFromDiskImage() {
     return false;
   }
 
-  scoped_AuthorizationRef authorization(
+  ScopedAuthorizationRef authorization(
       MaybeShowAuthorizationDialog(application_directory));
   // authorization will be NULL if it's deemed unnecessary or if
   // authentication fails.  In either case, try to install without privilege
