@@ -39,6 +39,18 @@ void SigninManager::Initialize(Profile* profile) {
   }
 }
 
+void SigninManager::CleanupNotificationRegistration() {
+#if !defined(OS_CHROMEOS)
+  if (registrar_.IsRegistered(this,
+                              NotificationType::TOKEN_AVAILABLE,
+                              NotificationService::AllSources())) {
+    registrar_.Remove(this,
+                      NotificationType::TOKEN_AVAILABLE,
+                      NotificationService::AllSources());
+  }
+#endif
+}
+
 // If a username already exists, the user is logged in.
 const std::string& SigninManager::GetUsername() {
   return username_;
@@ -106,6 +118,8 @@ void SigninManager::SignOut() {
   if (!profile_)
     return;
 
+  CleanupNotificationRegistration();
+
   client_login_.reset();
   last_result_ = ClientLoginResult();
   username_.clear();
@@ -157,6 +171,13 @@ void SigninManager::OnGetUserInfoFailure(const GoogleServiceAuthError& error) {
   OnClientLoginFailure(error);
 }
 
+void SigninManager::OnTokenAuthFailure(const GoogleServiceAuthError& error) {
+#if !defined(OS_CHROMEOS)
+  LOG(INFO) << "Unable to retreive the token auth.";
+  CleanupNotificationRegistration();
+#endif
+}
+
 void SigninManager::OnClientLoginFailure(const GoogleServiceAuthError& error) {
   NotificationService::current()->Notify(
       NotificationType::GOOGLE_SIGNIN_FAILED,
@@ -197,9 +218,7 @@ void SigninManager::Observe(NotificationType type,
     client_login_->StartTokenAuth(tok_details->token());
 
     // We only want to do this once per sign-in.
-    registrar_.Remove(this,
-                      NotificationType::TOKEN_AVAILABLE,
-                      NotificationService::AllSources());
+    CleanupNotificationRegistration();
   }
 #endif
 }

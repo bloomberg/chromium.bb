@@ -70,12 +70,16 @@ class SigninManager : public GaiaAuthConsumer , public NotificationObserver {
   void SignOut();
 
   // GaiaAuthConsumer
-  virtual void OnClientLoginSuccess(const ClientLoginResult& result);
-  virtual void OnClientLoginFailure(const GoogleServiceAuthError& error);
+  virtual void OnClientLoginSuccess(const ClientLoginResult& result) OVERRIDE;
+  virtual void OnClientLoginFailure(const GoogleServiceAuthError& error)
+      OVERRIDE;
   virtual void OnGetUserInfoSuccess(const std::string& key,
-                                    const std::string& value);
-  virtual void OnGetUserInfoKeyNotFound(const std::string& key);
-  virtual void OnGetUserInfoFailure(const GoogleServiceAuthError& error);
+                                    const std::string& value) OVERRIDE;
+  virtual void OnGetUserInfoKeyNotFound(const std::string& key) OVERRIDE;
+  virtual void OnGetUserInfoFailure(const GoogleServiceAuthError& error)
+      OVERRIDE;
+  virtual void OnTokenAuthFailure(const GoogleServiceAuthError& error)
+      OVERRIDE;
 
   // NotificationObserver
   virtual void Observe(NotificationType type,
@@ -87,6 +91,8 @@ class SigninManager : public GaiaAuthConsumer , public NotificationObserver {
   std::string username_;
   std::string password_;  // This is kept empty whenever possible.
   bool had_two_factor_error_;
+
+  void CleanupNotificationRegistration();
 
   // Result of the last client login, kept pending the lookup of the
   // canonical email.
