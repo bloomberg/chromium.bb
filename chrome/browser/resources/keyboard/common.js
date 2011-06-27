@@ -24,16 +24,18 @@ MODE_TRANSITIONS[SYMBOL_MODE + SHIFT_MODE] = NUMBER_MODE;
 MODE_TRANSITIONS[SYMBOL_MODE + NUMBER_MODE] = KEY_MODE;
 
 /**
- * The repeat delay in milliseconds before a key starts repeating.
+ * The repeat delay in milliseconds before a key starts repeating. Use the same
+ * rate as Chromebook. (See chrome/browser/chromeos/language_preferences.cc)
  * @type {number}
  */
-var REPEAT_DELAY_MSEC = 250;
+var REPEAT_DELAY_MSEC = 500;
 
 /**
  * The repeat interval or number of milliseconds between subsequent keypresses.
+ * Use the same rate as Chromebook.
  * @type {number}
  */
-var REPEAT_INTERVAL_MSEC = 92;
+var REPEAT_INTERVAL_MSEC = 50;
 
 /**
  * A structure to track the currently repeating key on the keyboard.
