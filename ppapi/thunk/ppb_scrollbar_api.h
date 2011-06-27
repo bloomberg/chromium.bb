@@ -12,6 +12,8 @@ namespace thunk {
 
 class PPB_Scrollbar_API {
  public:
+  virtual ~PPB_Scrollbar_API() {}
+
   virtual uint32_t GetThickness() = 0;
   virtual uint32_t GetValue() = 0;
   virtual void SetValue(uint32_t value) = 0;

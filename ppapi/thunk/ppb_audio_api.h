@@ -12,6 +12,8 @@ namespace thunk {
 
 class PPB_Audio_API {
  public:
+  virtual ~PPB_Audio_API() {}
+
   virtual PP_Resource GetCurrentConfig() = 0;
   virtual PP_Bool StartPlayback() = 0;
   virtual PP_Bool StopPlayback() = 0;

@@ -12,6 +12,8 @@ namespace thunk {
 
 class PPB_FileIO_API {
  public:
+  virtual ~PPB_FileIO_API() {}
+
   virtual int32_t Open(PP_Resource file_ref,
                        int32_t open_flags,
                        PP_CompletionCallback callback) = 0;

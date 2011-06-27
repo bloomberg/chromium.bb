@@ -12,6 +12,8 @@ namespace thunk {
 
 class PPB_Surface3D_API {
  public:
+  virtual ~PPB_Surface3D_API() {}
+
   virtual int32_t SetAttrib(int32_t attribute, int32_t value) = 0;
   virtual int32_t GetAttrib(int32_t attribute, int32_t* value) = 0;
   virtual int32_t SwapBuffers(PP_CompletionCallback callback) = 0;

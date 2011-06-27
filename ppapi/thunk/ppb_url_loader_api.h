@@ -13,6 +13,8 @@ namespace thunk {
 
 class PPB_URLLoader_API {
  public:
+  virtual ~PPB_URLLoader_API() {}
+
   virtual int32_t Open(PP_Resource request_id,
                        PP_CompletionCallback callback) = 0;
   virtual int32_t FollowRedirect(PP_CompletionCallback callback) = 0;

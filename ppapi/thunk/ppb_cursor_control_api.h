@@ -13,8 +13,7 @@ namespace thunk {
 
 class PPB_CursorControl_FunctionAPI {
  public:
-  static const ::pp::proxy::InterfaceID interface_id =
-      ::pp::proxy::INTERFACE_ID_PPB_CURSORCONTROL;
+  virtual ~PPB_CursorControl_FunctionAPI() {}
 
   virtual PP_Bool SetCursor(PP_Instance instance,
                             PP_CursorType_Dev type,
@@ -24,6 +23,10 @@ class PPB_CursorControl_FunctionAPI {
   virtual PP_Bool UnlockCursor(PP_Instance instance) = 0;
   virtual PP_Bool HasCursorLock(PP_Instance instance) = 0;
   virtual PP_Bool CanLockCursor(PP_Instance instance) = 0;
+
+  static const ::pp::proxy::InterfaceID interface_id =
+      ::pp::proxy::INTERFACE_ID_PPB_CURSORCONTROL;
+
 };
 
 }  // namespace thunk

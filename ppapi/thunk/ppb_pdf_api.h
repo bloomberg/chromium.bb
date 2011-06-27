@@ -12,6 +12,8 @@ namespace thunk {
 
 class PPB_PDFFont_API {
  private:
+  virtual ~PPB_PDFFont_API() {}
+
   virtual bool GetFontTableForPrivateFontFile(PP_Resource font_file,
                                               uint32_t table,
                                               void* output,

@@ -13,6 +13,8 @@ namespace thunk {
 
 class PPB_AudioTrusted_API {
  public:
+  virtual ~PPB_AudioTrusted_API() {}
+
   virtual int32_t OpenTrusted(PP_Resource config_id,
                               PP_CompletionCallback create_callback) = 0;
   virtual int32_t GetSyncSocket(int* sync_socket) = 0;

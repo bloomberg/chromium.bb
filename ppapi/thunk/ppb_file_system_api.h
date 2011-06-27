@@ -12,6 +12,8 @@ namespace thunk {
 
 class PPB_FileSystem_API {
  public:
+  virtual ~PPB_FileSystem_API() {}
+
   virtual int32_t Open(int64_t expected_size,
                        PP_CompletionCallback callback) = 0;
   virtual PP_FileSystemType_Dev GetType() = 0;

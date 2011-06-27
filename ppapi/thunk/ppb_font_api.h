@@ -14,15 +14,19 @@ namespace thunk {
 // API for static font functions.
 class PPB_Font_FunctionAPI {
  public:
-  static const ::pp::proxy::InterfaceID interface_id =
-      ::pp::proxy::INTERFACE_ID_PPB_FONT;
+  virtual ~PPB_Font_FunctionAPI() {}
 
   virtual PP_Var GetFontFamilies(PP_Instance instance) = 0;
+
+  static const ::pp::proxy::InterfaceID interface_id =
+      ::pp::proxy::INTERFACE_ID_PPB_FONT;
 };
 
 // API for font resources.
 class PPB_Font_API {
  public:
+  virtual ~PPB_Font_API() {}
+
   virtual PP_Bool Describe(PP_FontDescription_Dev* description,
                            PP_FontMetrics_Dev* metrics) = 0;
   virtual PP_Bool DrawTextAt(PP_Resource image_data,

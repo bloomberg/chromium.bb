@@ -13,6 +13,8 @@ namespace thunk {
 
 class PPB_BufferTrusted_API {
  public:
+  virtual ~PPB_BufferTrusted_API() {}
+
   virtual int32_t GetSharedMemory(int* handle) = 0;
 };
 

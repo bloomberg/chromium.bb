@@ -12,6 +12,8 @@ namespace thunk {
 
 class PPB_LayerCompositor_API {
  public:
+  virtual ~PPB_LayerCompositor_API() {}
+
   virtual PP_Bool AddLayer(PP_Resource layer) = 0;
   virtual void RemoveLayer(PP_Resource layer) = 0;
   virtual void SetZIndex(PP_Resource layer, int32_t index) = 0;

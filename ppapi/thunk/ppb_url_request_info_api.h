@@ -12,6 +12,8 @@ namespace thunk {
 
 class PPB_URLRequestInfo_API {
  public:
+  virtual ~PPB_URLRequestInfo_API() {}
+
   virtual PP_Bool SetProperty(PP_URLRequestProperty property,
                               PP_Var var) = 0;
   virtual PP_Bool AppendDataToBody(const void* data, uint32_t len) = 0;

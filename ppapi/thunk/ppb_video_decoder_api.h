@@ -12,6 +12,8 @@ namespace thunk {
 
 class PPB_VideoDecoder_API {
  public:
+  virtual ~PPB_VideoDecoder_API() {}
+
   virtual PP_Bool GetConfigs(const PP_VideoConfigElement* proto_config,
                              PP_VideoConfigElement* matching_configs,
                              uint32_t matching_configs_size,

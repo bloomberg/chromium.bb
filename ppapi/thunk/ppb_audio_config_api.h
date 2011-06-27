@@ -12,6 +12,8 @@ namespace thunk {
 
 class PPB_AudioConfig_API {
  public:
+  virtual ~PPB_AudioConfig_API() {}
+
   virtual PP_AudioSampleRate GetSampleRate() = 0;
   virtual uint32_t GetSampleFrameCount() = 0;
 };

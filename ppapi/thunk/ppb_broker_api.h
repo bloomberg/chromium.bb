@@ -13,6 +13,8 @@ namespace thunk {
 
 class PPB_Broker_API {
  public:
+  virtual ~PPB_Broker_API() {}
+
   virtual int32_t Connect(PP_CompletionCallback connect_callback) = 0;
   virtual int32_t GetHandle(int32_t* handle) = 0;
 };

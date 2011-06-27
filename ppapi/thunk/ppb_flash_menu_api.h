@@ -12,6 +12,8 @@ namespace thunk {
 
 class PPB_Flash_Menu_API {
  public:
+  virtual ~PPB_Flash_Menu_API() {}
+
   virtual int32_t Show(const PP_Point* location,
                        int32_t* selected_id,
                        PP_CompletionCallback callback) = 0;

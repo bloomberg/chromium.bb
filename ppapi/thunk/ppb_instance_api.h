@@ -16,8 +16,7 @@ namespace thunk {
 
 class PPB_Instance_FunctionAPI {
  public:
-  static const ::pp::proxy::InterfaceID interface_id =
-      ::pp::proxy::INTERFACE_ID_PPB_INSTANCE;
+  virtual ~PPB_Instance_FunctionAPI() {}
 
   virtual PP_Bool BindGraphics(PP_Instance instance, PP_Resource device) = 0;
   virtual PP_Bool IsFullFrame(PP_Instance instance) = 0;
@@ -33,6 +32,9 @@ class PPB_Instance_FunctionAPI {
   virtual PP_Bool IsFullscreen(PP_Instance instance) = 0;
   virtual PP_Bool SetFullscreen(PP_Instance instance, PP_Bool fullscreen) = 0;
   virtual PP_Bool GetScreenSize(PP_Instance instance, PP_Size* size) = 0;
+
+  static const ::pp::proxy::InterfaceID interface_id =
+      ::pp::proxy::INTERFACE_ID_PPB_INSTANCE;
 };
 
 }  // namespace thunk

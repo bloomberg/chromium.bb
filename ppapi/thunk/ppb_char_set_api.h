@@ -13,8 +13,7 @@ namespace thunk {
 
 class PPB_CharSet_FunctionAPI {
  public:
-  static const ::pp::proxy::InterfaceID interface_id =
-      ::pp::proxy::INTERFACE_ID_PPB_CHAR_SET;
+  virtual ~PPB_CharSet_FunctionAPI() {}
 
   virtual char* UTF16ToCharSet(PP_Instance instance,
                                const uint16_t* utf16, uint32_t utf16_len,
@@ -27,6 +26,9 @@ class PPB_CharSet_FunctionAPI {
                                    PP_CharSet_ConversionError on_error,
                                    uint32_t* output_length) = 0;
   virtual PP_Var GetDefaultCharSet(PP_Instance instance) = 0;
+
+  static const ::pp::proxy::InterfaceID interface_id =
+      ::pp::proxy::INTERFACE_ID_PPB_CHAR_SET;
 };
 
 }  // namespace thunk

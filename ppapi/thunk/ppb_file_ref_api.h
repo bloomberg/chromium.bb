@@ -12,6 +12,8 @@ namespace thunk {
 
 class PPB_FileRef_API {
  public:
+  virtual ~PPB_FileRef_API() {}
+
   virtual PP_FileSystemType_Dev GetFileSystemType() const = 0;
   virtual PP_Var GetName() const = 0;
   virtual PP_Var GetPath() const = 0;

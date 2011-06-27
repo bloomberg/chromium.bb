@@ -31,8 +31,7 @@ namespace thunk {
 // creation) so need functional routing based on the instance ID.
 class ResourceCreationAPI {
  public:
-  static const ::pp::proxy::InterfaceID interface_id =
-      ::pp::proxy::INTERFACE_ID_RESOURCE_CREATION;
+  virtual ~ResourceCreationAPI() {}
 
   virtual PP_Resource CreateAudio(PP_Instance instance,
                                   PP_Resource config_id,
@@ -92,6 +91,9 @@ class ResourceCreationAPI {
   virtual PP_Resource CreateVideoDecoder(PP_Instance instance) = 0;
   virtual PP_Resource CreateVideoLayer(PP_Instance instance,
                                        PP_VideoLayerMode_Dev mode) = 0;
+
+  static const ::pp::proxy::InterfaceID interface_id =
+      ::pp::proxy::INTERFACE_ID_RESOURCE_CREATION;
 };
 
 }  // namespace thunk

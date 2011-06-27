@@ -13,6 +13,8 @@ namespace thunk {
 
 class PPB_ImageData_API {
  public:
+  virtual ~PPB_ImageData_API() {}
+
   virtual PP_Bool Describe(PP_ImageDataDesc* desc) = 0;
   virtual void* Map() = 0;
   virtual void Unmap() = 0;

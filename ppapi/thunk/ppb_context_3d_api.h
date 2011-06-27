@@ -14,6 +14,8 @@ namespace thunk {
 
 class PPB_Context3D_API {
  public:
+  virtual ~PPB_Context3D_API() {}
+
   // Context3D.
   virtual int32_t GetAttrib(int32_t attribute, int32_t* value) = 0;
   virtual int32_t BindSurfaces(PP_Resource draw, PP_Resource read) = 0;

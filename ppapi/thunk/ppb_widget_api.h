@@ -12,6 +12,8 @@ namespace thunk {
 
 class PPB_Widget_API {
  public:
+  virtual ~PPB_Widget_API() {}
+
   virtual PP_Bool Paint(const PP_Rect* rect, PP_Resource image_id) = 0;
   virtual PP_Bool HandleEvent(const PP_InputEvent* event) = 0;
   virtual PP_Bool GetLocation(PP_Rect* location) = 0;

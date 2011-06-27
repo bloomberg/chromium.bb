@@ -12,6 +12,8 @@ namespace thunk {
 
 class PPB_DirectoryReader_API {
  public:
+  virtual ~PPB_DirectoryReader_API() {}
+
   virtual int32_t GetNextEntry(PP_DirectoryEntry_Dev* entry,
                                PP_CompletionCallback callback) = 0;
 };

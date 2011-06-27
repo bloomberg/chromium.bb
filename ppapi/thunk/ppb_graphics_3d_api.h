@@ -12,6 +12,8 @@ namespace thunk {
 
 class PPB_Graphics3D_API {
  public:
+  virtual ~PPB_Graphics3D_API() {}
+
   virtual int32_t GetAttribs(int32_t* attrib_list) = 0;
   virtual int32_t SetAttribs(int32_t* attrib_list) = 0;
   virtual int32_t SwapBuffers(PP_CompletionCallback callback) = 0;

@@ -14,6 +14,8 @@ namespace thunk {
 
 class PPB_Graphics2D_API {
  public:
+  virtual ~PPB_Graphics2D_API() {}
+
   virtual PP_Bool Describe(PP_Size* size, PP_Bool* is_always_opaque) = 0;
   virtual void PaintImageData(PP_Resource image_data,
                               const PP_Point* top_left,

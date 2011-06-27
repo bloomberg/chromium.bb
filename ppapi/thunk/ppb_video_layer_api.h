@@ -12,6 +12,8 @@ namespace thunk {
 
 class PPB_VideoLayer_API {
  public:
+  virtual ~PPB_VideoLayer_API() {}
+
   virtual void SetPixelFormat(PP_VideoLayerPixelFormat_Dev pixel_format) = 0;
   virtual void SetNativeSize(const PP_Size* size) = 0;
   virtual void SetClipRect(const PP_Rect* clip_rect) = 0;

@@ -12,6 +12,8 @@ namespace thunk {
 
 class PPB_Transport_API {
  public:
+  virtual ~PPB_Transport_API() {}
+
   virtual PP_Bool IsWritable() = 0;
   virtual int32_t Connect(PP_CompletionCallback callback) = 0;
   virtual int32_t GetNextAddress(PP_Var* address,

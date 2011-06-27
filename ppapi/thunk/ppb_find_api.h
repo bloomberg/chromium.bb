@@ -13,14 +13,16 @@ namespace thunk {
 
 class PPB_Find_FunctionAPI {
  public:
-  static const ::pp::proxy::InterfaceID interface_id =
-      ::pp::proxy::INTERFACE_ID_PPB_FIND;
+  virtual ~PPB_Find_FunctionAPI() {}
 
   virtual void NumberOfFindResultsChanged(PP_Instance instance,
                                           int32_t total,
                                           PP_Bool final_result) = 0;
   virtual void SelectedFindResultChanged(PP_Instance instance,
                                          int32_t index) = 0;
+
+  static const ::pp::proxy::InterfaceID interface_id =
+      ::pp::proxy::INTERFACE_ID_PPB_FIND;
 };
 
 }  // namespace thunk

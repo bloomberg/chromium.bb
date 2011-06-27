@@ -12,6 +12,8 @@ namespace thunk {
 
 class PPB_Flash_NetConnector_API {
  public:
+  virtual ~PPB_Flash_NetConnector_API() {}
+
   virtual int32_t ConnectTcp(const char* host,
                              uint16_t port,
                              PP_FileHandle* socket_out,

@@ -12,6 +12,8 @@ namespace thunk {
 
 class PPB_URLResponseInfo_API {
  public:
+  virtual ~PPB_URLResponseInfo_API() {}
+
   virtual PP_Var GetProperty(PP_URLResponseProperty property) = 0;
   virtual PP_Resource GetBodyAsFileRef() = 0;
 };
