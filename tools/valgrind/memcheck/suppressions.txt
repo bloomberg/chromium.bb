@@ -4953,6 +4953,12 @@
    fun:_ZN9TestShellD1Ev
    fun:main
 }
+{
+   bug_87605
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3net19SpdyWebSocketStream8SendDataEPKci
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
