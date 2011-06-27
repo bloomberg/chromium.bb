@@ -306,11 +306,15 @@ cr.define('gpu', function() {
       for (var i = 0; i < slices.length; ++i) {
         var slice = slices[i];
         if (slice.duration > quickDiscardThresshold) {
-          var labelWidth = quickMeasureText(ctx, slice.title) + 2;
+          var title = slice.title;
+          if (slice.didNotFinish) {
+            title += " (Did Not Finish)";
+          }
+          var labelWidth = quickMeasureText(ctx, title) + 2;
           var labelWidthWorld = pixWidth * labelWidth;
           if (labelWidthWorld < slice.duration) {
             var cX = vp.xWorldToView(slice.start + 0.5 * slice.duration);
-            ctx.fillText(slice.title, cX, 2.5);
+            ctx.fillText(title, cX, 2.5);
           }
         }
       }

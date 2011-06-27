@@ -35,6 +35,7 @@ cr.define('gpu', function() {
     this.start = start;
     this.colorId = colorId;
     this.args = args;
+    this.didNotFinish = false;
     this.subSlices = [];
   }
 
@@ -177,8 +178,10 @@ cr.define('gpu', function() {
         var state = threadStateByPTID[ptid];
         if (event.ph == 'B') {
           var colorId = getColor(event.name);
-          var slice = new TimelineSlice(event.name, colorId, event.ts,
-                                        event.args);
+          var slice =
+              { index: eI,
+                slice: new TimelineSlice(event.name, colorId, event.ts,
+                                         event.args) };
           if (event.args['ui-nest'] === '0') {
             var sliceID = event.name;
             for (var x in event.args) {
@@ -198,21 +201,21 @@ cr.define('gpu', function() {
             var slice = state.openNonNestedSlices[sliceID];
             if (!slice)
               continue;
-            slice.duration = event.ts - slice.start;
+            slice.slice.duration = event.ts - slice.slice.start;
 
             // Store the slice in a non-nested subrow.
             var thread = this.getProcess(event.pid).getThread(event.tid);
-            thread.addNonNestedSlice(slice);
+            thread.addNonNestedSlice(slice.slice);
             delete state.openNonNestedSlices[name];
           } else {
             if (state.openSlices.length == 0) {
               // Ignore E events that that are unmatched.
               continue;
             }
-            var slice = state.openSlices.pop();
+            var slice = state.openSlices.pop().slice;
             slice.duration = event.ts - slice.start;
 
-            // Store the slice on the right subrow.
+            // Store the slice on the correct subrow.
             var thread = this.getProcess(event.pid).getThread(event.tid);
             var subRowIndex = state.openSlices.length;
             thread.getSubrow(subRowIndex).push(slice);
@@ -220,7 +223,7 @@ cr.define('gpu', function() {
             // Add the slice to the subSlices array of its parent.
             if (state.openSlices.length) {
               var parentSlice = state.openSlices[state.openSlices.length - 1];
-              parentSlice.subSlices.push(slice);
+              parentSlice.slice.subSlices.push(slice);
             }
           }
         } else if (event.ph == 'I') {
@@ -231,7 +234,32 @@ cr.define('gpu', function() {
                           '(' + event.name + ')');
         }
       }
+
       this.updateBounds();
+
+      // Add end events for any events that are still on the stack. These
+      // are events that were still open when trace was ended, and can often
+      // indicate deadlock behavior.
+      for (var ptid in threadStateByPTID) {
+        var state = threadStateByPTID[ptid];
+        while (state.openSlices.length > 0) {
+          var slice = state.openSlices.pop();
+          slice.slice.duration = this.maxTimestamp - slice.slice.start;
+          slice.slice.didNotFinish = true;
+          var event = events[slice.index];
+
+          // Store the slice on the correct subrow.
+          var thread = this.getProcess(event.pid).getThread(event.tid);
+          var subRowIndex = state.openSlices.length;
+          thread.getSubrow(subRowIndex).push(slice.slice);
+
+          // Add the slice to the subSlices array of its parent.
+          if (state.openSlices.length) {
+            var parentSlice = state.openSlices[state.openSlices.length - 1];
+            parentSlice.slice.subSlices.push(slice.slice);
+          }
+        }
+      }
 
       this.shiftWorldToMicroseconds();
 
