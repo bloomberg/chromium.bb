@@ -53,6 +53,7 @@
         ['exclude', 'native_menu_x.h$'],
         ['exclude', 'touchui/'],
         ['exclude', '_(touch)\\.cc$'],
+        ['exclude', 'widget/tooltip_manager_views.cc$'],
       ]}],
     ],
   },
@@ -362,6 +363,8 @@
         'widget/root_view.h',
         'widget/tooltip_manager_gtk.cc',
         'widget/tooltip_manager_gtk.h',
+        'widget/tooltip_manager_views.cc',
+        'widget/tooltip_manager_views.h',
         'widget/tooltip_manager_win.cc',
         'widget/tooltip_manager_win.h',
         'widget/tooltip_manager.cc',
@@ -432,6 +435,7 @@
           'sources/': [
             ['exclude', 'focus/accelerator_handler_gtk.cc'],
             ['exclude', 'controls/menu/native_menu_gtk.cc'],
+            ['exclude', 'widget/tooltip_manager_gtk.cc'],
           ],
           'conditions': [
             ['"<!@(<(pkg-config) --atleast-version=2.0 inputproto || echo $?)"!=""', {

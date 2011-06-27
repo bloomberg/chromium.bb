@@ -36,17 +36,20 @@
 #include "views/widget/gtk_views_fixed.h"
 #include "views/widget/gtk_views_window.h"
 #include "views/widget/native_widget_views.h"
-#include "views/widget/tooltip_manager_gtk.h"
+#include "views/widget/root_view.h"
 #include "views/widget/widget_delegate.h"
 #include "views/window/hit_test.h"
 
 #if defined(TOUCH_UI)
+#include "views/widget/tooltip_manager_views.h"
 #if defined(HAVE_XINPUT2)
 #include <gdk/gdkx.h>
 
 #include "ui/gfx/gtk_util.h"
 #include "views/touchui/touch_factory.h"
 #endif
+#else
+#include "views/widget/tooltip_manager_gtk.h"
 #endif
 
 #if defined(HAVE_IBUS)
@@ -776,7 +779,15 @@ void NativeWidgetGtk::InitNativeWidget(const Widget::InitParams& params) {
   ui::GObjectDestructorFILO::GetInstance()->Connect(
       G_OBJECT(widget_), &OnDestroyedThunk, this);
 
+#if defined(TOUCH_UI)
+  if (params.type != Widget::InitParams::TYPE_TOOLTIP) {
+    views::TooltipManagerViews* manager = new views::TooltipManagerViews(
+        static_cast<internal::RootView*>(GetWidget()->GetRootView()));
+    tooltip_manager_.reset(manager);
+  }
+#else
   tooltip_manager_.reset(new TooltipManagerGtk(this));
+#endif
 
   // Register for tooltips.
   g_object_set(G_OBJECT(window_contents_), "has-tooltip", TRUE, NULL);
@@ -1589,7 +1600,12 @@ gboolean NativeWidgetGtk::OnQueryTooltip(GtkWidget* widget,
                                          gint y,
                                          gboolean keyboard_mode,
                                          GtkTooltip* tooltip) {
-  return tooltip_manager_->ShowTooltip(x, y, keyboard_mode, tooltip);
+#if defined(TOUCH_UI)
+  return false; // Tell GTK not to draw tooltips as we draw tooltips in views
+#else
+  return static_cast<TooltipManagerGtk*>(tooltip_manager_.get())->
+      ShowTooltip(x, y, keyboard_mode, tooltip);
+#endif
 }
 
 gboolean NativeWidgetGtk::OnVisibilityNotify(GtkWidget* widget,

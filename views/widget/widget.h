@@ -108,8 +108,9 @@ class Widget : public internal::NativeWidgetDelegate,
                         // An undecorated Window.
       TYPE_CONTROL,     // A control, like a button.
       TYPE_POPUP,       // An undecorated Window, with transient properties.
-      TYPE_MENU         // An undecorated Window, with transient properties
+      TYPE_MENU,        // An undecorated Window, with transient properties
                         // specialized to menus.
+      TYPE_TOOLTIP,
     };
     enum Ownership {
       // Default. Creator is not responsible for managing the lifetime of the

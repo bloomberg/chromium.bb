@@ -361,7 +361,7 @@ class NativeWidgetGtk : public internal::NativeWidgetPrivate,
   // The TooltipManager.
   // WARNING: RootView's destructor calls into the TooltipManager. As such, this
   // must be destroyed AFTER root_view_.
-  scoped_ptr<TooltipManagerGtk> tooltip_manager_;
+  scoped_ptr<TooltipManager> tooltip_manager_;
 
   scoped_ptr<DropTargetGtk> drop_target_;
 
