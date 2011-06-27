@@ -50,9 +50,14 @@ NSPasteboard* LocationIconDecoration::GetDragPasteboard() {
   NSString* title = base::SysUTF16ToNSString(tab->GetTitle());
 
   NSPasteboard* pboard = [NSPasteboard pasteboardWithName:NSDragPboard];
-  [pboard declareURLPasteboardWithAdditionalTypes:[NSArray array]
+  [pboard declareURLPasteboardWithAdditionalTypes:
+        [NSArray arrayWithObject:NSFilesPromisePboardType]
                                             owner:nil];
   [pboard setDataForURL:url title:title];
+
+  [pboard setPropertyList:[NSArray arrayWithObject:@"webloc"]
+                  forType:NSFilesPromisePboardType];
+
   return pboard;
 }
 

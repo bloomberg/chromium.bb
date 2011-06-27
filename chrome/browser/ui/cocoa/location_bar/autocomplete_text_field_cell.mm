@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #import "chrome/browser/ui/cocoa/image_utils.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_decoration.h"
+#import "third_party/mozilla/NSPasteboard+Utils.h"
 
 namespace {
 
@@ -375,6 +376,166 @@ size_t CalculatePositionsInFrame(
     return NO;
 
   return YES;
+}
+
+// Given a newly created .webloc plist url file, also give it a resource
+// fork and insert 'TEXT and 'url ' resources holding further copies of the
+// url data. This is required for apps such as Terminal and Safari to accept it
+// as a real webloc file when dragged in.
+// It's expected that the resource fork requirement will go away at some
+// point and this code can then be deleted.
+OSErr WriteURLToNewWebLocFileResourceFork(NSURL* file, NSString* urlStr) {
+  ResFileRefNum refNum = kResFileNotOpened;
+  ResFileRefNum prevResRef = CurResFile();
+  FSRef fsRef;
+  OSErr err = noErr;
+  HFSUniStr255 resourceForkName;
+  FSGetResourceForkName(&resourceForkName);
+
+  if (![[NSFileManager defaultManager] fileExistsAtPath:[file path]])
+    return fnfErr;
+
+  if (!CFURLGetFSRef((CFURLRef)file, &fsRef))
+    return fnfErr;
+
+  err = FSCreateResourceFork(&fsRef,
+                             resourceForkName.length,
+                             resourceForkName.unicode,
+                             0);
+  if (err)
+    return err;
+  err = FSOpenResourceFile(&fsRef,
+                           resourceForkName.length,
+                           resourceForkName.unicode,
+                           fsRdWrPerm, &refNum);
+  if (err)
+    return err;
+
+  const char* utf8URL = [urlStr UTF8String];
+  int urlChars = strlen(utf8URL);
+
+  Handle urlHandle = NewHandle(urlChars);
+  memcpy(*urlHandle, utf8URL, urlChars);
+
+  Handle textHandle = NewHandle(urlChars);
+  memcpy(*textHandle, utf8URL, urlChars);
+
+  // Data for the 'drag' resource.
+  // This comes from derezzing webloc files made by the Finder.
+  // It's bigendian data, so it's represented here as chars to preserve
+  // byte order.
+  char dragData[] = {
+    0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, // Header.
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02,
+    0x54, 0x45, 0x58, 0x54, 0x00, 0x00, 0x01, 0x00, // 'TEXT', 0, 256
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x75, 0x72, 0x6C, 0x20, 0x00, 0x00, 0x01, 0x00, // 'url ', 0, 256
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+  };
+  Handle dragHandle = NewHandleClear(sizeof(dragData));
+  memcpy(*dragHandle, &dragData[0], sizeof(dragData));
+
+  // Save the resources to the file.
+  ConstStr255Param noName = {0};
+  AddResource(dragHandle, 'drag', 128, noName);
+  AddResource(textHandle, 'TEXT', 256, noName);
+  AddResource(urlHandle, 'url ', 256, noName);
+
+  CloseResFile(refNum);
+  UseResFile(prevResRef);
+  return noErr;
+}
+
+// Returns the file path for file |name| if saved at NSURL |base|.
+static NSString* PathWithBaseURLAndName(NSURL* base, NSString* name) {
+  NSString* filteredName =
+      [name stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+  return [[NSURL URLWithString:filteredName relativeToURL:base] path];
+}
+
+// Returns if there is already a file |name| at dir NSURL |base|.
+static BOOL FileAlreadyExists(NSURL* base, NSString* name) {
+  return [[NSFileManager defaultManager]
+          fileExistsAtPath:PathWithBaseURLAndName(base, name)];
+}
+
+// Takes a destination URL, a suggested file name, & an extension (eg .webloc).
+// Returns the complete file name with extension you should use.
+// The name returned will not contain / or :, will not be longer than
+// kMaxNameLength + length of extension, and will not be a file name that
+// already exists in that directory. If necessary it will try appending a space
+// and a number to the name (but before the extension) trying numbers up to and
+// including kMaxIndex.
+// If the function gives up it returns nil.
+static NSString* UnusedLegalNameForNewDropFile(NSURL* saveLocation,
+                                               NSString *fileName,
+                                               NSString *extension) {
+  int number = 1;
+  const int kMaxIndex = 20;
+  const unsigned kMaxNameLength = 64; // Arbitrary.
+
+  NSString* filteredName = [fileName stringByReplacingOccurrencesOfString:@"/"
+                                                               withString:@"-"];
+  filteredName = [filteredName stringByReplacingOccurrencesOfString:@":"
+                                                         withString:@"-"];
+
+  if ([filteredName length] > kMaxNameLength)
+    filteredName = [filteredName substringToIndex:kMaxNameLength];
+
+  NSString* candidateName = [filteredName stringByAppendingString:extension];
+
+  while (FileAlreadyExists(saveLocation, candidateName)) {
+    if (number > kMaxIndex)
+      return nil;
+    else
+      candidateName = [filteredName stringByAppendingFormat:@" %d%@",
+                       number++, extension];
+  }
+
+  return candidateName;
+}
+
+- (NSArray*)namesOfPromisedFilesDroppedAtDestination:(NSURL*)dropDestination {
+  NSPasteboard* pboard = [NSPasteboard pasteboardWithName:NSDragPboard];
+  NSFileManager* fileManager = [NSFileManager defaultManager];
+
+  if (![pboard containsURLData])
+    return NULL;
+
+  NSArray *urls = NULL;
+  NSArray* titles = NULL;
+  [pboard getURLs:&urls andTitles:&titles convertingFilenames:YES];
+
+  NSString* urlStr = [urls objectAtIndex:0];
+  NSString* nameStr = [titles objectAtIndex:0];
+
+  NSString* nameWithExtensionStr =
+      UnusedLegalNameForNewDropFile(dropDestination, nameStr, @".webloc");
+
+  NSDictionary* urlDict = [NSDictionary dictionaryWithObject:urlStr
+                                                      forKey:@"URL"];
+  NSURL* outputURL =
+      [NSURL fileURLWithPath:PathWithBaseURLAndName(dropDestination,
+                                                    nameWithExtensionStr)];
+  [urlDict writeToURL:outputURL
+           atomically:NO];
+
+  if (![fileManager fileExistsAtPath:[outputURL path]])
+    return NULL;
+
+  NSDictionary* attr = [NSDictionary dictionaryWithObjectsAndKeys:
+      [NSNumber numberWithBool:YES], NSFileExtensionHidden,
+      [NSNumber numberWithUnsignedLong:'ilht'], NSFileHFSTypeCode,
+      [NSNumber numberWithUnsignedLong:'MACS'], NSFileHFSCreatorCode,
+      nil];
+  [fileManager setAttributes:attr
+                ofItemAtPath:[outputURL path]
+                       error:nil];
+  // Add resource data.
+  OSErr resStatus = WriteURLToNewWebLocFileResourceFork(outputURL, urlStr);
+  DCHECK(resStatus == noErr);
+
+  return [NSArray arrayWithObject:nameWithExtensionStr];
 }
 
 - (NSDragOperation)draggingSourceOperationMaskForLocal:(BOOL)isLocal {
