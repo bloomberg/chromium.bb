@@ -221,7 +221,6 @@ GL_APICALL void         GL_APIENTRY glSetLatchCHROMIUM (GLuint latch_id);
 GL_APICALL void         GL_APIENTRY glWaitLatchCHROMIUM (GLuint latch_id);
 GL_APICALL void         GL_APIENTRY glRateLimitOffscreenContextCHROMIUM (void);
 GL_APICALL void         GL_APIENTRY glSetSurfaceCHROMIUM (GLint surface_id);
-GL_APICALL void         GL_APIENTRY glGetMultipleIntegervCHROMIUM (const GLenum* pnames, GLuint count, GLint* results, GLsizeiptr size);
 """
 
 # This is the list of all commmands that will be generated and their Id.
@@ -428,7 +427,6 @@ _CMD_ID_TABLE = {
   'SetLatchCHROMIUM':                                          451,
   'WaitLatchCHROMIUM':                                         452,
   'SetSurfaceCHROMIUM':                                        453,
-  'GetMultipleIntegervCHROMIUM':                               454,
 }
 
 # This is a list of enum names and their valid values. It is used to map
@@ -1326,13 +1324,6 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoGetMaxValueInBufferCHROMIUM',
     'result': ['GLuint'],
     'unit_test': False,
-    'extension': True,
-    'chromium': True,
-  },
-  'GetMultipleIntegervCHROMIUM': {
-    'type': 'Custom',
-    'immediate': False,
-    'expectation': False,
     'extension': True,
     'chromium': True,
   },

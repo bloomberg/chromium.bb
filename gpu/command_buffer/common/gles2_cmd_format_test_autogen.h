@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This file is auto-generated from
-// gpu/command_buffer/build_gles2_cmd_buffer.py
-// DO NOT EDIT!
+// This file is auto-generated. DO NOT EDIT!
 
 // This file contains unit tests for gles2 commmands
 // It is included by gles2_cmd_format_test.cc
@@ -3547,29 +3545,6 @@ TEST(GLES2FormatTest, SetSurfaceCHROMIUM) {
   EXPECT_EQ(static_cast<char*>(next_cmd),
             reinterpret_cast<char*>(&cmd) + sizeof(cmd));
   EXPECT_EQ(static_cast<GLint>(11), cmd.surface_id);
-}
-
-TEST(GLES2FormatTest, GetMultipleIntegervCHROMIUM) {
-  GetMultipleIntegervCHROMIUM cmd = { { 0 } };
-  void* next_cmd = cmd.Set(
-      &cmd,
-      static_cast<uint32>(11),
-      static_cast<uint32>(12),
-      static_cast<GLuint>(13),
-      static_cast<uint32>(14),
-      static_cast<uint32>(15),
-      static_cast<GLsizeiptr>(16));
-  EXPECT_EQ(static_cast<uint32>(GetMultipleIntegervCHROMIUM::kCmdId),
-            cmd.header.command);
-  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<char*>(next_cmd),
-            reinterpret_cast<char*>(&cmd) + sizeof(cmd));
-  EXPECT_EQ(static_cast<uint32>(11), cmd.pnames_shm_id);
-  EXPECT_EQ(static_cast<uint32>(12), cmd.pnames_shm_offset);
-  EXPECT_EQ(static_cast<GLuint>(13), cmd.count);
-  EXPECT_EQ(static_cast<uint32>(14), cmd.results_shm_id);
-  EXPECT_EQ(static_cast<uint32>(15), cmd.results_shm_offset);
-  EXPECT_EQ(static_cast<GLsizeiptr>(16), cmd.size);
 }
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_TEST_AUTOGEN_H_

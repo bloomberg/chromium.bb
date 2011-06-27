@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This file is auto-generated from
-// gpu/command_buffer/build_gles2_cmd_buffer.py
-// DO NOT EDIT!
+// This file is auto-generated. DO NOT EDIT!
 
 // These functions emluate GLES2 over command buffers.
 #ifndef GPU_COMMAND_BUFFER_CLIENT_GLES2_C_LIB_AUTOGEN_H_
@@ -579,11 +577,6 @@ void GLES2RateLimitOffscreenContextCHROMIUM() {
 }
 void GLES2SetSurfaceCHROMIUM(GLint surface_id) {
   gles2::GetGLContext()->SetSurfaceCHROMIUM(surface_id);
-}
-void GLES2GetMultipleIntegervCHROMIUM(
-    const GLenum* pnames, GLuint count, GLint* results, GLsizeiptr size) {
-  gles2::GetGLContext()->GetMultipleIntegervCHROMIUM(
-      pnames, count, results, size);
 }
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_C_LIB_AUTOGEN_H_

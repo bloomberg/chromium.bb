@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This file is auto-generated from
-// gpu/command_buffer/build_gles2_cmd_buffer.py
-// DO NOT EDIT!
+// This file is auto-generated. DO NOT EDIT!
 
 #ifndef GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_
@@ -9014,68 +9012,6 @@ COMPILE_ASSERT(offsetof(SetSurfaceCHROMIUM, header) == 0,
                OffsetOf_SetSurfaceCHROMIUM_header_not_0);
 COMPILE_ASSERT(offsetof(SetSurfaceCHROMIUM, surface_id) == 4,
                OffsetOf_SetSurfaceCHROMIUM_surface_id_not_4);
-
-struct GetMultipleIntegervCHROMIUM {
-  typedef GetMultipleIntegervCHROMIUM ValueType;
-  static const CommandId kCmdId = kGetMultipleIntegervCHROMIUM;
-  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-
-  static uint32 ComputeSize() {
-    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
-  }
-
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
-
-  void Init(
-      uint32 _pnames_shm_id, uint32 _pnames_shm_offset, GLuint _count,
-      uint32 _results_shm_id, uint32 _results_shm_offset, GLsizeiptr _size) {
-    SetHeader();
-    pnames_shm_id = _pnames_shm_id;
-    pnames_shm_offset = _pnames_shm_offset;
-    count = _count;
-    results_shm_id = _results_shm_id;
-    results_shm_offset = _results_shm_offset;
-    size = _size;
-  }
-
-  void* Set(
-      void* cmd, uint32 _pnames_shm_id, uint32 _pnames_shm_offset,
-      GLuint _count, uint32 _results_shm_id, uint32 _results_shm_offset,
-      GLsizeiptr _size) {
-    static_cast<ValueType*>(
-        cmd)->Init(
-            _pnames_shm_id, _pnames_shm_offset, _count, _results_shm_id,
-            _results_shm_offset, _size);
-    return NextCmdAddress<ValueType>(cmd);
-  }
-
-  gpu::CommandHeader header;
-  uint32 pnames_shm_id;
-  uint32 pnames_shm_offset;
-  uint32 count;
-  uint32 results_shm_id;
-  uint32 results_shm_offset;
-  int32 size;
-};
-
-COMPILE_ASSERT(sizeof(GetMultipleIntegervCHROMIUM) == 28,
-               Sizeof_GetMultipleIntegervCHROMIUM_is_not_28);
-COMPILE_ASSERT(offsetof(GetMultipleIntegervCHROMIUM, header) == 0,
-               OffsetOf_GetMultipleIntegervCHROMIUM_header_not_0);
-COMPILE_ASSERT(offsetof(GetMultipleIntegervCHROMIUM, pnames_shm_id) == 4,
-               OffsetOf_GetMultipleIntegervCHROMIUM_pnames_shm_id_not_4);
-COMPILE_ASSERT(offsetof(GetMultipleIntegervCHROMIUM, pnames_shm_offset) == 8,
-               OffsetOf_GetMultipleIntegervCHROMIUM_pnames_shm_offset_not_8);
-COMPILE_ASSERT(offsetof(GetMultipleIntegervCHROMIUM, count) == 12,
-               OffsetOf_GetMultipleIntegervCHROMIUM_count_not_12);
-COMPILE_ASSERT(offsetof(GetMultipleIntegervCHROMIUM, results_shm_id) == 16,
-               OffsetOf_GetMultipleIntegervCHROMIUM_results_shm_id_not_16);
-COMPILE_ASSERT(offsetof(GetMultipleIntegervCHROMIUM, results_shm_offset) == 20,
-               OffsetOf_GetMultipleIntegervCHROMIUM_results_shm_offset_not_20);
-COMPILE_ASSERT(offsetof(GetMultipleIntegervCHROMIUM, size) == 24,
-               OffsetOf_GetMultipleIntegervCHROMIUM_size_not_24);
 
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_

@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This file is auto-generated from
-// gpu/command_buffer/build_gles2_cmd_buffer.py
-// DO NOT EDIT!
+// This file is auto-generated. DO NOT EDIT!
 
 // It is included by gles2_cmd_decoder_unittest_1.cc
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_1_AUTOGEN_H_
