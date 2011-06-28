@@ -4,6 +4,7 @@
 <title i18n-content="title"></title>
 <link rel="stylesheet" href="chrome://resources/css/button.css">
 <link rel="stylesheet" href="chrome://resources/css/select.css">
+<link rel="stylesheet" href="chrome://resources/css/throbber.css">
 <link rel="stylesheet" href="oobe.css">
 <script src="chrome://resources/js/cr.js"></script>
 <script src="chrome://resources/js/cr/event_target.js"></script>
@@ -54,7 +55,8 @@
         <div class="step right hidden" id="eula">
           <div id="eulas" class="eula-columns one-column">
             <div id="cros-eula">
-              <iframe id="cros-eula-frame" class="eula-frame"></iframe>
+              <iframe id="cros-eula-frame" class="eula-frame"
+                src="chrome://terms"></iframe>
             </div>
             <div id="oem-eula">
               <iframe id="oem-eula-frame" class="eula-frame"></iframe>
@@ -95,6 +97,21 @@
   </div>
   <div id="security-info">
     <a id="security-link" href="#" i18n-content="eulaSystemSecuritySetting"></a>
+  </div>
+  <div id="popup-overlay" hidden>
+    <div id="security-info-popup">
+      <h1 i18n-content="eulaSystemSecuritySetting"></h1>
+      <div class="popup-content-area">
+        <p i18n-content="eulaTpmDesc"></p>
+        <p i18n-content="eulaTpmKeyDesc"></p>
+        <div id="tpm-busy">
+          <div id="throbber" class="throbber"></div>
+          <span i18n-content="eulaTpmBusy"></span>
+        </div>
+        <p id="tpm-password" hidden></p>
+      </div>
+      <button id="security-ok-button" i18n-content="eulaTpmOkButton"></button>
+    </div>
   </div>
 </body>
 </html>

@@ -17,11 +17,18 @@ MockEulaScreen::MockEulaScreen(ScreenObserver* screen_observer,
 MockEulaScreen::~MockEulaScreen() {
 }
 
+void MockEulaScreenActor::SetDelegate(Delegate* delegate) {
+  delegate_ = delegate;
+  MockSetDelegate(delegate);
+}
+
 MockEulaScreenActor::MockEulaScreenActor() {
-  EXPECT_CALL(*this, SetDelegate(NotNull())).Times(AtLeast(1));
+  EXPECT_CALL(*this, MockSetDelegate(NotNull())).Times(AtLeast(1));
 }
 
 MockEulaScreenActor::~MockEulaScreenActor() {
+  if (delegate_)
+    delegate_->OnActorDestroyed(this);
 }
 
 }  // namespace chromeos

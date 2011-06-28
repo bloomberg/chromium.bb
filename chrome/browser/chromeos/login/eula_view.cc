@@ -48,6 +48,8 @@
 #include "views/layout/layout_manager.h"
 #include "views/window/dialog_delegate.h"
 
+namespace chromeos {
+
 namespace {
 
 const int kBorderSize = 10;
@@ -55,7 +57,8 @@ const int kCheckboxWidth = 26;
 const int kLastButtonHorizontalMargin = 10;
 const int kMargin = 20;
 const int kTextMargin = 10;
-const int kTpmCheckIntervalMs = 500;
+
+const char kGoogleEulaUrl[] = "about:terms";
 
 enum kLayoutColumnsets {
   SINGLE_CONTROL_ROW,
@@ -77,16 +80,17 @@ struct FillLayoutWithBorder : public views::LayoutManager {
   }
 };
 
+}  // namespace
+
 // System security setting dialog.
 class TpmInfoView : public views::DialogDelegateView {
  public:
-  explicit TpmInfoView(std::string* password)
-      : ALLOW_THIS_IN_INITIALIZER_LIST(runnable_method_factory_(this)),
-        password_(password) {
-    DCHECK(password_);
-  }
+  explicit TpmInfoView(EulaView* eula_view);
+  virtual ~TpmInfoView();
 
   void Init();
+
+  void ShowTpmPassword(const std::string& tpm_password);
 
  protected:
   // views::DialogDelegateView overrides:
@@ -110,12 +114,7 @@ class TpmInfoView : public views::DialogDelegateView {
   }
 
  private:
-  void PullPassword();
-
-  ScopedRunnableMethodFactory<TpmInfoView> runnable_method_factory_;
-
-  // Holds pointer to the password storage.
-  std::string* password_;
+  chromeos::EulaView* eula_view_;
 
   views::Label* busy_label_;
   views::Label* password_label_;
@@ -123,6 +122,15 @@ class TpmInfoView : public views::DialogDelegateView {
 
   DISALLOW_COPY_AND_ASSIGN(TpmInfoView);
 };
+
+TpmInfoView::TpmInfoView(EulaView* eula_view)
+    : eula_view_(eula_view) {
+  DCHECK(eula_view_);
+}
+
+TpmInfoView::~TpmInfoView() {
+  eula_view_->OnTpmInfoViewClosed(this);
+}
 
 void TpmInfoView::Init() {
   views::GridLayout* layout = views::GridLayout::CreatePanel(this);
@@ -181,48 +189,15 @@ void TpmInfoView::Init() {
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_EULA_TPM_BUSY)));
   layout->AddView(busy_label_);
   layout->AddPaddingRow(0, views::kRelatedControlHorizontalSpacing);
-
-  // TODO(avayvod): Refactor this to be usable for WebUI.
-  PullPassword();
 }
 
-void TpmInfoView::PullPassword() {
-  // Since this method is also called directly.
-  runnable_method_factory_.RevokeAll();
-
-  chromeos::CryptohomeLibrary* cryptohome =
-      chromeos::CrosLibrary::Get()->GetCryptohomeLibrary();
-
-  bool password_acquired = false;
-  if (password_->empty() && cryptohome->TpmIsReady()) {
-    password_acquired = cryptohome->TpmGetPassword(password_);
-    if (!password_acquired) {
-      password_->clear();
-    } else if (password_->empty()) {
-      // For a fresh OOBE flow TPM is uninitialized,
-      // ownership process is started at the EULA screen,
-      // password is cleared after EULA is accepted.
-      LOG(ERROR) << "TPM returned an empty password.";
-    }
-  }
-  if (password_->empty() && !password_acquired) {
-    // Password hasn't been acquired, reschedule pulling.
-    MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        runnable_method_factory_.NewRunnableMethod(&TpmInfoView::PullPassword),
-        kTpmCheckIntervalMs);
-  } else {
-    password_label_->SetText(ASCIIToWide(*password_));
-    password_label_->SetVisible(true);
-    busy_label_->SetVisible(false);
-    throbber_->Stop();
-    throbber_->SetVisible(false);
-  }
+void TpmInfoView::ShowTpmPassword(const std::string& tpm_password) {
+  password_label_->SetText(ASCIIToWide(tpm_password));
+  password_label_->SetVisible(true);
+  busy_label_->SetVisible(false);
+  throbber_->Stop();
+  throbber_->SetVisible(false);
 }
-
-}  // namespace
-
-namespace chromeos {
 
 ////////////////////////////////////////////////////////////////////////////////
 // EULATabContentsDelegate, public:
@@ -255,6 +230,7 @@ EulaView::EulaView(ViewsEulaScreenActor* actor)
       system_security_settings_link_(NULL),
       back_button_(NULL),
       continue_button_(NULL),
+      tpm_info_view_(NULL),
       actor_(actor),
       bubble_(NULL) {
 }
@@ -387,7 +363,7 @@ void EulaView::UpdateLocalizedStrings() {
   // Load Google EULA and its title.
   LoadEulaView(google_eula_view_,
                google_eula_label_,
-               actor_->screen()->GetGoogleEulaUrl());
+               GURL(kGoogleEulaUrl));
 
   // Load OEM EULA and its title.
   if (!oem_eula_page_.is_empty())
@@ -422,6 +398,16 @@ bool EulaView::IsUsageStatsChecked() const {
   return usage_statistics_checkbox_ && usage_statistics_checkbox_->checked();
 }
 
+void EulaView::ShowTpmPassword(const std::string& tpm_password) {
+  if (tpm_info_view_)
+    tpm_info_view_->ShowTpmPassword(tpm_password);
+}
+
+void EulaView::OnTpmInfoViewClosed(TpmInfoView* tpm_info_view) {
+  if (tpm_info_view == tpm_info_view_)
+    tpm_info_view_ = NULL;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // EulaView, protected, views::View implementation:
 
@@ -452,14 +438,14 @@ void EulaView::LinkClicked(views::Link* source, int event_flags) {
       help_app_ = new HelpAppLauncher(parent_window);
     help_app_->ShowHelpTopic(HelpAppLauncher::HELP_STATS_USAGE);
   } else if (source == system_security_settings_link_) {
-    TpmInfoView* view =
-        new TpmInfoView(actor_->screen()->GetTpmPasswordStorage());
-    view->Init();
+    tpm_info_view_ = new TpmInfoView(this);
+    tpm_info_view_->Init();
     views::Widget* window = browser::CreateViewsWindow(parent_window,
                                                        gfx::Rect(),
-                                                       view);
+                                                       tpm_info_view_);
     window->SetAlwaysOnTop(true);
     window->Show();
+    actor_->screen()->InitiatePasswordFetch();
   }
 }
 

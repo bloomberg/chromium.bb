@@ -29,6 +29,7 @@ class ViewsEulaScreenActor : public ViewScreen<EulaView>,
   virtual void Show();
   virtual void Hide();
   virtual void SetDelegate(Delegate* delegate);
+  virtual void OnPasswordFetched(const std::string& tpm_password);
 
  private:
   Delegate* screen_;

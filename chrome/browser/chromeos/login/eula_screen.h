@@ -10,6 +10,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/eula_screen_actor.h"
+#include "chrome/browser/chromeos/login/tpm_password_fetcher.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
 #include "googleurl/src/gurl.h"
 
@@ -18,7 +19,8 @@ namespace chromeos {
 // Representation independent class that controls OOBE screen showing EULA
 // to users.
 class EulaScreen : public WizardScreen,
-                   public EulaScreenActor::Delegate {
+                   public EulaScreenActor::Delegate,
+                   public TpmPasswordFetcherDelegate {
  public:
   EulaScreen(ScreenObserver* observer, EulaScreenActor* actor);
   virtual ~EulaScreen();
@@ -30,11 +32,14 @@ class EulaScreen : public WizardScreen,
 
   // EulaScreenActor::Delegate implementation:
   virtual bool IsTpmEnabled() const;
-  virtual GURL GetGoogleEulaUrl() const;
   virtual GURL GetOemEulaUrl() const;
   virtual void OnExit(bool accepted, bool is_usage_stats_checked);
-  virtual std::string* GetTpmPasswordStorage();
+  virtual void InitiatePasswordFetch();
   virtual bool IsUsageStatsEnabled() const;
+  virtual void OnActorDestroyed(EulaScreenActor* actor);
+
+  // TpmPasswordFetcherDelegate implementation:
+  virtual void OnPasswordFetched(const std::string& tpm_password) OVERRIDE;
 
  private:
   // URL of the OEM EULA page (on disk).
@@ -48,6 +53,8 @@ class EulaScreen : public WizardScreen,
   std::string tpm_password_;
 
   EulaScreenActor* actor_;
+
+  TpmPasswordFetcher password_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(EulaScreen);
 };

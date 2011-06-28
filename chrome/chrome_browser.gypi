@@ -563,6 +563,8 @@
         'browser/chromeos/login/textfield_with_margin.h',
         'browser/chromeos/login/touch_login_view.h',
         'browser/chromeos/login/touch_login_view.cc',
+        'browser/chromeos/login/tpm_password_fetcher.cc',
+        'browser/chromeos/login/tpm_password_fetcher.h',
         'browser/chromeos/login/update_screen.cc',
         'browser/chromeos/login/update_screen.h',
         'browser/chromeos/login/update_screen_actor.h',

@@ -27,6 +27,7 @@ class DOMView;
 namespace chromeos {
 
 class HelpAppLauncher;
+class TpmInfoView;
 class ViewsEulaScreenActor;
 
 // Delegate for TabContents that will show EULA.
@@ -84,6 +85,12 @@ class EulaView
   // Returns the state of usage stats checkbox.
   bool IsUsageStatsChecked() const;
 
+  // Shows given TPM password.
+  void ShowTpmPassword(const std::string& tpm_password);
+
+  // This method is called by the TpmInfoView dialog when it is closed.
+  void OnTpmInfoViewClosed(TpmInfoView* tpm_info_view);
+
  protected:
   // views::View implementation.
   virtual void OnLocaleChanged();
@@ -126,6 +133,9 @@ class EulaView
   views::Link* system_security_settings_link_;
   views::NativeTextButton* back_button_;
   views::NativeTextButton* continue_button_;
+
+  // Keeps pointer to the active TpmInfoView if it is opened, NULL if is not.
+  TpmInfoView* tpm_info_view_;
 
   ViewsEulaScreenActor* actor_;
 

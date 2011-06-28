@@ -24,10 +24,16 @@ class MockEulaScreenActor : public EulaScreenActor {
   MockEulaScreenActor();
   virtual ~MockEulaScreenActor();
 
+  virtual void SetDelegate(Delegate* delegate);
+
   MOCK_METHOD0(PrepareToShow, void());
   MOCK_METHOD0(Show, void());
   MOCK_METHOD0(Hide, void());
-  MOCK_METHOD1(SetDelegate, void(Delegate* delegate));
+  MOCK_METHOD1(MockSetDelegate, void(Delegate* delegate));
+  MOCK_METHOD1(OnPasswordFetched, void(const std::string& tpm_password));
+
+ private:
+  Delegate* delegate_;
 };
 
 }  // namespace chromeos

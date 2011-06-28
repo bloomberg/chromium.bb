@@ -10,20 +10,16 @@
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
 
-namespace {
-
-const char kGoogleEulaUrl[] = "about:terms";
-
-}  // namespace
-
 namespace chromeos {
 
 EulaScreen::EulaScreen(ScreenObserver* observer, EulaScreenActor* actor)
-    : WizardScreen(observer), actor_(actor) {
+    : WizardScreen(observer), actor_(actor), password_fetcher_(this) {
   actor_->SetDelegate(this);
 }
 
 EulaScreen::~EulaScreen() {
+  if (actor_)
+    actor_->SetDelegate(NULL);
 }
 
 void EulaScreen::PrepareToShow() {
@@ -51,10 +47,6 @@ bool EulaScreen::IsTpmEnabled() const {
          chromeos::CrosLibrary::Get()->GetCryptohomeLibrary()->TpmIsEnabled();
 }
 
-GURL EulaScreen::GetGoogleEulaUrl() const {
-  return GURL(kGoogleEulaUrl);
-}
-
 GURL EulaScreen::GetOemEulaUrl() const {
   const StartupCustomizationDocument* customization =
       StartupCustomizationDocument::GetInstance();
@@ -78,12 +70,28 @@ void EulaScreen::OnExit(bool accepted, bool is_usage_stats_checked) {
                    : ScreenObserver::EULA_BACK);
 }
 
-std::string* EulaScreen::GetTpmPasswordStorage() {
-  return &tpm_password_;
+void EulaScreen::InitiatePasswordFetch() {
+  if (tpm_password_.empty()) {
+    password_fetcher_.Fetch();
+    // Will call actor after password has been fetched.
+  } else {
+    actor_->OnPasswordFetched(tpm_password_);
+  }
+}
+
+void EulaScreen::OnPasswordFetched(const std::string& tpm_password) {
+  tpm_password_ = tpm_password;
+  if (actor_)
+    actor_->OnPasswordFetched(tpm_password_);
 }
 
 bool EulaScreen::IsUsageStatsEnabled() const {
   return get_screen_observer()->usage_statistics_reporting();
+}
+
+void EulaScreen::OnActorDestroyed(EulaScreenActor* actor) {
+  if (actor_ == actor)
+    actor_ = NULL;
 }
 
 }  // namespace chromeos

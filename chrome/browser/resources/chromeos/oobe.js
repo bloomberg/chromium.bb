@@ -85,6 +85,13 @@ cr.define('cr.ui', function() {
     $('accept-button').addEventListener('click', function(event) {
       chrome.send('eulaOnExit', [true, $('usage-stats').checked]);
     });
+    $('security-link').addEventListener('click', function(event) {
+      chrome.send('eulaOnTpmPopupOpened', []);
+      $('popup-overlay').hidden = false;
+    });
+    $('security-ok-button').addEventListener('click', function(event) {
+      $('popup-overlay').hidden = true;
+    });
 
     chrome.send('screenStateInitialize', []);
   };
@@ -114,13 +121,16 @@ cr.define('cr.ui', function() {
   };
 
   /**
-   * Sets EULA URLs.
-   * @param {text} CrOS EULA URL.
+   * Set OEM EULA URL.
    * @param {text} OEM EULA URL.
    */
-  Oobe.setEulaUrls = function(google_eula_url, oem_eula_url) {
-    $('cros-eula-frame').src = google_eula_url;
-    $('oem-eula-frame').src = oem_eula_url;
+  Oobe.setOemEulaUrl = function(oem_eula_url) {
+    if (oem_eula_url) {
+      $('oem-eula-frame').src = oem_eula_url;
+      $('eulas').classList.remove('one-column');
+    } else {
+      $('eulas').classList.add('one-column');
+    }
   };
 
   /**
@@ -147,6 +157,16 @@ cr.define('cr.ui', function() {
     $('update-screen-curtain').hidden = !enable;
     $('update-screen-main').hidden = enable;
   };
+
+  /**
+   * Sets TPM password.
+   * @param {text} TPM password to be shown.
+   */
+  Oobe.setTpmPassword = function(password) {
+    $('tpm-busy').hidden = true;
+    $('tpm-password').innerText = password;
+    $('tpm-password').hidden = false;
+  }
 
   // Export
   return {
