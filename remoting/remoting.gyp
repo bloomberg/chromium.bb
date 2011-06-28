@@ -705,6 +705,8 @@
         'host/self_access_verifier_unittest.cc',
         'host/screen_recorder_unittest.cc',
         'host/test_key_pair.h',
+        'jingle_glue/fake_signal_strategy.cc',
+        'jingle_glue/fake_signal_strategy.h',
         'jingle_glue/iq_request_unittest.cc',
         'jingle_glue/jingle_client_unittest.cc',
         'jingle_glue/jingle_thread_unittest.cc',
