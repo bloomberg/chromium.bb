@@ -5,9 +5,7 @@
 #import "chrome/browser/ui/cocoa/restart_browser.h"
 
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/common/pref_names.h"
 #include "grit/app_strings.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -43,10 +41,7 @@
   if (returnCode == NSAlertFirstButtonReturn) {
     // Nothing to do. User will restart later.
   } else if (returnCode == NSAlertSecondButtonReturn) {
-    // Set the flag to restore state after the restart.
-    PrefService* pref_service = g_browser_process->local_state();
-    pref_service->SetBoolean(prefs::kRestartLastSessionOnShutdown, true);
-    BrowserList::CloseAllBrowsersAndExit();
+    BrowserList::AttemptRestart();
   } else {
     NOTREACHED();
   }

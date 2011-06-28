@@ -18,11 +18,11 @@
 #include "base/win/windows_version.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/window.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "content/browser/user_metrics.h"
@@ -603,13 +603,7 @@ bool AboutChromeView::IsModal() const {
 }
 
 bool AboutChromeView::Accept() {
-#if defined(OS_WIN)
-  // Set the flag to restore the last session on shutdown.
-  PrefService* pref_service = g_browser_process->local_state();
-  pref_service->SetBoolean(prefs::kRestartLastSessionOnShutdown, true);
-  BrowserList::CloseAllBrowsersAndExit();
-#endif
-
+  BrowserList::AttemptRestart();
   return true;
 }
 

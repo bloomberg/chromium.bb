@@ -110,9 +110,5 @@ void LanguageOptionsHandler::SetApplicationLocale(
 
 void LanguageOptionsHandler::RestartCallback(const ListValue* args) {
   UserMetrics::RecordAction(UserMetricsAction("LanguageOptions_Restart"));
-
-  // Set the flag to restore state after the restart.
-  PrefService* pref_service = g_browser_process->local_state();
-  pref_service->SetBoolean(prefs::kRestartLastSessionOnShutdown, true);
-  BrowserList::CloseAllBrowsersAndExit();
+  BrowserList::AttemptRestart();
 }

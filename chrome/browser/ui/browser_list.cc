@@ -10,10 +10,12 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/pref_names.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/common/notification_registrar.h"
@@ -177,6 +179,53 @@ printing::BackgroundPrintingManager* GetBackgroundPrintingManager() {
   return g_browser_process->background_printing_manager();
 }
 
+// Returns true if all browsers can be closed without user interaction.
+// This currently checks if there is pending download, or if it needs to
+// handle unload handler.
+bool AreAllBrowsersCloseable() {
+  for (BrowserList::const_iterator i = BrowserList::begin();
+       i != BrowserList::end(); ++i) {
+    bool normal_downloads_are_present = false;
+    bool incognito_downloads_are_present = false;
+    (*i)->CheckDownloadsInProgress(&normal_downloads_are_present,
+                                   &incognito_downloads_are_present);
+    if (normal_downloads_are_present ||
+        incognito_downloads_are_present ||
+        (*i)->TabsNeedBeforeUnloadFired())
+      return false;
+  }
+  return true;
+}
+
+#if defined(OS_CHROMEOS)
+
+bool signout = false;
+
+// Fast shutdown for ChromeOS. It tells session manager to start
+// shutdown process when closing browser windows won't be canceled.
+// Returns true if fast shutdown is successfully started.
+bool FastShutdown() {
+  signout = true;
+  if (chromeos::CrosLibrary::Get()->EnsureLoaded()
+      && AreAllBrowsersCloseable()) {
+    BrowserList::NotifyAndTerminate(true);
+    return true;
+  }
+  return false;
+}
+
+void NotifyWindowManagerAboutSignout() {
+  static bool notified = false;
+  if (!notified) {
+    // Let the window manager know that we're going away before we start closing
+    // windows so it can display a graceful transition to a black screen.
+    chromeos::WmIpc::instance()->NotifyAboutSignout();
+    notified = true;
+  }
+}
+
+#endif
+
 }  // namespace
 
 BrowserList::BrowserVector BrowserList::browsers_;
@@ -212,27 +261,27 @@ void BrowserList::MarkAsCleanShutdown() {
   }
 }
 
-#if defined(OS_CHROMEOS)
-// static
-void BrowserList::NotifyWindowManagerAboutSignout() {
-  static bool notified = false;
-  if (!notified) {
-    // Let the window manager know that we're going away before we start closing
-    // windows so it can display a graceful transition to a black screen.
-    chromeos::WmIpc::instance()->NotifyAboutSignout();
-    notified = true;
-  }
-}
+void BrowserList::AttemptExitInternal() {
+  NotificationService::current()->Notify(
+      NotificationType::APP_EXITING,
+      NotificationService::AllSources(),
+      NotificationService::NoDetails());
 
-// static
-bool BrowserList::signout_ = false;
-
+#if !defined(OS_MACOSX)
+  // On most platforms, closing all windows causes the application to exit.
+  CloseAllBrowsers();
+#else
+  // On the Mac, the application continues to run once all windows are closed.
+  // Terminate will result in a CloseAllBrowsers() call, and once (and if)
+  // that is done, will cause the application to exit cleanly.
+  chrome_browser_application_mac::Terminate();
 #endif
+}
 
 // static
 void BrowserList::NotifyAndTerminate(bool fast_path) {
 #if defined(OS_CHROMEOS)
-  if (!signout_) return;
+  if (!signout) return;
   NotifyWindowManagerAboutSignout();
 #endif
 
@@ -317,31 +366,6 @@ void BrowserList::RemoveObserver(BrowserList::Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-#if defined(OS_CHROMEOS)
-// static
-bool BrowserList::NeedBeforeUnloadFired() {
-  bool need_before_unload_fired = false;
-  for (const_iterator i = begin(); i != end(); ++i) {
-    need_before_unload_fired = need_before_unload_fired ||
-      (*i)->TabsNeedBeforeUnloadFired();
-  }
-  return need_before_unload_fired;
-}
-
-// static
-bool BrowserList::PendingDownloads() {
-  for (const_iterator i = begin(); i != end(); ++i) {
-    bool normal_downloads_are_present = false;
-    bool incognito_downloads_are_present = false;
-    (*i)->CheckDownloadsInProgress(&normal_downloads_are_present,
-                                   &incognito_downloads_are_present);
-    if (normal_downloads_are_present || incognito_downloads_are_present)
-      return true;
-  }
-  return false;
-}
-#endif
-
 // static
 void BrowserList::CloseAllBrowsers() {
   bool session_ending =
@@ -397,38 +421,70 @@ void BrowserList::CloseAllBrowsers() {
 }
 
 // static
-void BrowserList::Exit() {
+void BrowserList::AttemptUserExit() {
 #if defined(OS_CHROMEOS)
-  signout_ = true;
-  // Fast shutdown for ChromeOS when there's no unload processing to be done.
-  if (chromeos::CrosLibrary::Get()->EnsureLoaded()
-      && !NeedBeforeUnloadFired()
-      && !PendingDownloads()) {
-    NotifyAndTerminate(true);
+  chromeos::BootTimesLoader::Get()->AddLogoutTimeMarker("LogoutStarted", false);
+  // Write /tmp/uptime-logout-started as well.
+  const char kLogoutStarted[] = "logout-started";
+  chromeos::BootTimesLoader::Get()->RecordCurrentStats(kLogoutStarted);
+
+  // Login screen should show up in owner's locale.
+  PrefService* state = g_browser_process->local_state();
+  if (state) {
+    std::string owner_locale = state->GetString(prefs::kOwnerLocale);
+    if (!owner_locale.empty() &&
+        state->GetString(prefs::kApplicationLocale) != owner_locale &&
+        !state->IsManagedPreference(prefs::kApplicationLocale)) {
+      state->SetString(prefs::kApplicationLocale, owner_locale);
+      state->ScheduleSavePersistentPrefs();
+    }
+  }
+  if (FastShutdown()) {
     return;
   }
+#else
+  // Reset the restart bit that might have been set in cancelled restart
+  // request.
+  PrefService* pref_service = g_browser_process->local_state();
+  pref_service->SetBoolean(prefs::kRestartLastSessionOnShutdown, false);
 #endif
-  CloseAllBrowsersAndExit();
+  AttemptExitInternal();
 }
 
 // static
-void BrowserList::CloseAllBrowsersAndExit() {
-  MarkAsCleanShutdown();  // Don't notify users of crashes beyond this point.
-  NotificationService::current()->Notify(
-      NotificationType::APP_EXITING,
-      NotificationService::AllSources(),
-      NotificationService::NoDetails());
-
-#if !defined(OS_MACOSX)
-  // On most platforms, closing all windows causes the application to exit.
-  CloseAllBrowsers();
+void BrowserList::AttemptRestart() {
+#if defined(OS_CHROMEOS)
+  // For CrOS instead of browser restart (which is not supported) perform a full
+  // sign out. Session will be only restored if user has that setting set.
+  // Same session restore behavior happens in case of full restart after update.
+  AttemptUserExit();
 #else
-  // On the Mac, the application continues to run once all windows are closed.
-  // Terminate will result in a CloseAllBrowsers() call, and once (and if)
-  // that is done, will cause the application to exit cleanly.
-  chrome_browser_application_mac::Terminate();
+  // Set the flag to restore state after the restart.
+  PrefService* pref_service = g_browser_process->local_state();
+  pref_service->SetBoolean(prefs::kRestartLastSessionOnShutdown, true);
+  AttemptExit();
 #endif
 }
+
+// static
+void BrowserList::AttemptExit() {
+  // If we know that all browsers can be closed without blocking,
+  // don't notify users of crashes beyond this point.
+  // Note that MarkAsCleanShutdown does not set UMA's exit cleanly bit
+  // so crashes during shutdown are still reported in UMA.
+  if (AreAllBrowsersCloseable())
+    MarkAsCleanShutdown();
+  AttemptExitInternal();
+}
+
+#if defined(OS_CHROMEOS)
+// static
+void BrowserList::ExitCleanly() {
+  // We always mark exit cleanly.
+  MarkAsCleanShutdown();
+  AttemptExitInternal();
+}
+#endif
 
 // static
 void BrowserList::SessionEnding() {

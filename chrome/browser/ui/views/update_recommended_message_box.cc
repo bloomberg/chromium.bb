@@ -6,10 +6,8 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/window.h"
-#include "chrome/common/pref_names.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -33,16 +31,11 @@ void UpdateRecommendedMessageBox::ShowMessageBox(
 }
 
 bool UpdateRecommendedMessageBox::Accept() {
-  // Set the flag to restore the last session on shutdown.
-  PrefService* pref_service = g_browser_process->local_state();
-  pref_service->SetBoolean(prefs::kRestartLastSessionOnShutdown, true);
-
 #if defined(OS_CHROMEOS)
   chromeos::CrosLibrary::Get()->GetPowerLibrary()->RequestRestart();
   // If running the Chrome OS build, but we're not on the device, fall through
 #endif
-  BrowserList::CloseAllBrowsersAndExit();
-
+  BrowserList::AttemptRestart();
   return true;
 }
 

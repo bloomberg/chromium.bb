@@ -133,12 +133,15 @@ void ShutdownDetector::ThreadMain() {
     }
     bytes_read += ret;
   } while (bytes_read < sizeof(signal));
-
   VLOG(1) << "Handling shutdown for signal " << signal << ".";
+#if defined(OS_CHROMEOS)
+  // On ChromeOS, exiting on signal should be always clean.
+  Task* task = NewRunnableFunction(BrowserList::ExitCleanly);
+#else
+  Task* task = NewRunnableFunction(BrowserList::AttemptExit);
+#endif
 
-  if (!BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(BrowserList::CloseAllBrowsersAndExit))) {
+  if (!BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, task)) {
     // Without a UI thread to post the exit task to, there aren't many
     // options.  Raise the signal again.  The default handler will pick it up
     // and cause an ungraceful exit.

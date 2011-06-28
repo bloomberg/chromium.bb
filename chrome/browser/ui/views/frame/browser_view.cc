@@ -1687,8 +1687,8 @@ const views::Widget* BrowserView::GetWidget() const {
 bool BrowserView::CanClose() {
   // You cannot close a frame for which there is an active originating drag
   // session.
-    if (tabstrip_ && !tabstrip_->IsTabStripCloseable())
-      return false;
+  if (tabstrip_ && !tabstrip_->IsTabStripCloseable())
+    return false;
 
   // Give beforeunload handlers the chance to cancel the close before we hide
   // the window below.

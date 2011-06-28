@@ -240,9 +240,14 @@ class NotificationType {
 #endif
 
     // This is sent when the user has chosen to exit the app, but before any
-    // browsers have closed. This is only sent if the user chooses the exit menu
-    // item, not if Chrome exists by some other means (such as the user closing
-    // the last window). The source and details are unspecified.
+    // browsers have closed. This is sent if the user chooses to exit
+    // (via exit menu item or keyboard shortcut) or to restart the process
+    // (such as in flags page), not if Chrome exists by some other means
+    // (such as the user closing the last window). Note that receiving this
+    // notification does not necessarily mean the process will exit
+    // because the shutdown process can be cancelled by unload handler.
+    // Use APP_TERMINATING for such needs.
+    //  The source and details are unspecified.
     APP_EXITING,
 
     // Indicates that a top window has been closed.  The source is the HWND

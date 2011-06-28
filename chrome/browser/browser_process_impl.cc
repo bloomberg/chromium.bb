@@ -1126,7 +1126,7 @@ void BrowserProcessImpl::RestartPersistentInstance() {
   }
 
   DLOG(WARNING) << "Shutting down current instance of the browser.";
-  BrowserList::CloseAllBrowsersAndExit();
+  BrowserList::AttemptExit();
 
   // Transfer ownership to Upgrade.
   upgrade_util::SetNewCommandLine(new_cl.release());
