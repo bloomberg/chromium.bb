@@ -199,8 +199,11 @@ void SyncSetupFlow::Advance(SyncSetupWizard::State advance_state) {
 }
 
 void SyncSetupFlow::Focus() {
-  DCHECK(flow_handler_);
-  flow_handler_->Focus();
+  // This gets called from SyncSetupWizard::Focus(), and might get called
+  // before flow_handler_ is set in AttachSyncSetupHandler() (which gets
+  // called asynchronously after the UI initializes).
+  if (flow_handler_)
+    flow_handler_->Focus();
 }
 
 // A callback to notify the delegate that the dialog closed.
