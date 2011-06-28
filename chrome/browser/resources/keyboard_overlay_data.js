@@ -278,7 +278,7 @@ var keyboardOverlayData = {
           "label": "forward"
         },
         "3D": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "3E": {
           "label": "full screen"
@@ -598,7 +598,7 @@ var keyboardOverlayData = {
           "label": "forward"
         },
         "3D": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "3E": {
           "label": "full screen"
@@ -914,7 +914,7 @@ var keyboardOverlayData = {
           "label": "forward"
         },
         "3D": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "3E": {
           "label": "full screen"
@@ -1197,7 +1197,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "40": {
           "label": "bright down"
@@ -1499,7 +1499,7 @@ var keyboardOverlayData = {
           "label": "forward"
         },
         "3D": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "3E": {
           "label": "full screen"
@@ -1779,7 +1779,7 @@ var keyboardOverlayData = {
           "label": "forward"
         },
         "3D": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "3E": {
           "label": "full screen"
@@ -2065,7 +2065,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "40": {
           "label": "bright down"
@@ -2368,7 +2368,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "40": {
           "label": "bright down"
@@ -2641,7 +2641,7 @@ var keyboardOverlayData = {
           "label": "forward"
         },
         "3D": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "3E": {
           "label": "full screen"
@@ -2917,7 +2917,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "40": {
           "label": "bright down"
@@ -3182,7 +3182,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "40": {
           "label": "bright down"
@@ -3445,7 +3445,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "40": {
           "label": "bright down"
@@ -3704,7 +3704,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "40": {
           "label": "bright down"
@@ -3964,7 +3964,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "40": {
           "label": "bright down"
@@ -4232,7 +4232,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "40": {
           "label": "bright down"
@@ -4499,7 +4499,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "40": {
           "label": "bright down"
@@ -4793,7 +4793,7 @@ var keyboardOverlayData = {
           "label": "forward"
         },
         "3D": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "3E": {
           "label": "full screen"
@@ -5075,7 +5075,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "40": {
           "label": "bright down"
@@ -5337,7 +5337,7 @@ var keyboardOverlayData = {
           "label": "forward"
         },
         "3D": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "3E": {
           "label": "full screen"
@@ -5608,7 +5608,7 @@ var keyboardOverlayData = {
           "label": "forward"
         },
         "3D": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "3E": {
           "label": "full screen"
@@ -5887,7 +5887,7 @@ var keyboardOverlayData = {
           "label": "forward"
         },
         "3D": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "3E": {
           "label": "full screen"
@@ -6160,7 +6160,7 @@ var keyboardOverlayData = {
           "label": "forward"
         },
         "3D": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "3E": {
           "label": "full screen"
@@ -6445,7 +6445,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "40": {
           "label": "bright down"
@@ -6726,7 +6726,7 @@ var keyboardOverlayData = {
           "label": "forward"
         },
         "3D": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "3E": {
           "label": "full screen"
@@ -7084,7 +7084,7 @@ var keyboardOverlayData = {
           "label": "forward"
         },
         "3D": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "3E": {
           "label": "full screen"
@@ -7373,7 +7373,7 @@ var keyboardOverlayData = {
           "label": "forward"
         },
         "3D": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "3E": {
           "label": "full screen"
@@ -7668,7 +7668,7 @@ var keyboardOverlayData = {
           "label": "forward"
         },
         "3D": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "3E": {
           "label": "full screen"
@@ -7938,7 +7938,7 @@ var keyboardOverlayData = {
           "label": "forward"
         },
         "3D": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "3E": {
           "label": "full screen"
@@ -8217,7 +8217,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "40": {
           "label": "bright down"
@@ -8507,7 +8507,7 @@ var keyboardOverlayData = {
           "label": "forward"
         },
         "3D": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "3E": {
           "label": "full screen"
@@ -8830,7 +8830,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "40": {
           "label": "bright down"
@@ -9142,7 +9142,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "40": {
           "label": "bright down"
@@ -9418,7 +9418,7 @@ var keyboardOverlayData = {
           "label": "forward"
         },
         "3D": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "3E": {
           "label": "full screen"
@@ -9683,7 +9683,7 @@ var keyboardOverlayData = {
           "label": "forward"
         },
         "3D": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "3E": {
           "label": "full screen"
@@ -9961,7 +9961,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "40": {
           "label": "bright down"
@@ -10222,7 +10222,7 @@ var keyboardOverlayData = {
           "label": "forward"
         },
         "3D": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "3E": {
           "label": "full screen"
@@ -10519,7 +10519,7 @@ var keyboardOverlayData = {
           "label": "forward"
         },
         "3D": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "3E": {
           "label": "full screen"
@@ -10797,7 +10797,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "40": {
           "label": "bright down"
@@ -11079,7 +11079,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "40": {
           "label": "bright down"
@@ -11366,7 +11366,7 @@ var keyboardOverlayData = {
           "label": "forward"
         },
         "3D": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "3E": {
           "label": "full screen"
@@ -11687,7 +11687,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "40": {
           "label": "bright down"
@@ -11991,7 +11991,7 @@ var keyboardOverlayData = {
           "label": "forward"
         },
         "3D": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "3E": {
           "label": "full screen"
@@ -12286,7 +12286,7 @@ var keyboardOverlayData = {
           "label": "forward"
         },
         "3D": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "3E": {
           "label": "full screen"
@@ -12570,7 +12570,7 @@ var keyboardOverlayData = {
           "label": "forward"
         },
         "3D": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "3E": {
           "label": "full screen"
@@ -12848,7 +12848,7 @@ var keyboardOverlayData = {
           "label": "forward"
         },
         "3D": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "3E": {
           "label": "full screen"
@@ -13220,7 +13220,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "40": {
           "label": "bright down"
@@ -13480,7 +13480,7 @@ var keyboardOverlayData = {
           "label": "forward"
         },
         "3D": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "3E": {
           "label": "full screen"
@@ -13799,7 +13799,7 @@ var keyboardOverlayData = {
           "label": "forward"
         },
         "3D": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "3E": {
           "label": "full screen"
@@ -14052,7 +14052,7 @@ var keyboardOverlayData = {
           "label": "forward"
         },
         "3D": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "3E": {
           "label": "full screen"
@@ -14322,7 +14322,7 @@ var keyboardOverlayData = {
           "label": "forward"
         },
         "3D": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "3E": {
           "label": "full screen"
@@ -14654,7 +14654,7 @@ var keyboardOverlayData = {
           "label": "full screen"
         },
         "3F": {
-          "label": "switch window"
+          "label": "maximize"
         },
         "40": {
           "label": "bright down"
@@ -16907,6 +16907,7 @@ var keyboardOverlayData = {
     "left<>ALT": "keyboardOverlayGoBack",
     "left<>CTRL<>SHIFT": "keyboardOverlaySelectWordAtATime",
     "m<>CTRL": "keyboardOverlayOpenFileManager",
+    "maximize<>CTRL": "keyboardOverlayTakeScreenshot",
     "n<>CTRL": "keyboardOverlayNewWindow",
     "n<>CTRL<>SHIFT": "keyboardOverlayNewIncognitoWindow",
     "o<>CTRL": "keyboardOverlayContentBrowser",
@@ -16921,12 +16922,11 @@ var keyboardOverlayData = {
     "s<>CTRL": "keyboardOverlaySave",
     "space<>CTRL": "keyboardOverlaySelectPreviousInputMethod",
     "space<>SHIFT": "keyboardOverlayScrollUpOnePage",
-    "switch window<>CTRL": "keyboardOverlayTakeScreenshot",
     "t<>ALT<>SHIFT": "keyboardOverlayFocusToolbar",
     "t<>CTRL": "keyboardOverlayNewTab",
     "t<>CTRL<>SHIFT": "keyboardOverlayReopenLastClosedTab",
-    "tab<>ALT": "keyboardOverlayPreviousWindow",
-    "tab<>ALT<>SHIFT": "keyboardOverlayNextWindow",
+    "tab<>ALT": "keyboardOverlayNextWindow",
+    "tab<>ALT<>SHIFT": "keyboardOverlayPreviousWindow",
     "tab<>CTRL": "keyboardOverlayActivateNextTab",
     "tab<>CTRL<>SHIFT": "keyboardOverlayActivatePreviousTab",
     "u<>CTRL": "keyboardOverlayViewSource",
