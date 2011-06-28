@@ -25,7 +25,7 @@
 
 #include <stdio.h>
 #include "native_client/src/include/portability.h"
-#include "native_client/src/trusted/validator/x86/types_memory_model.h"
+#include "native_client/src/trusted/validator/types_memory_model.h"
 
 /* Given a file, and a byte array of the given size, this function
  * opens the corresponding file, reads the text of hexidecimal values, puts

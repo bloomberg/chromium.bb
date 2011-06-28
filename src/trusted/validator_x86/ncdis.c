@@ -23,11 +23,11 @@
 #include "native_client/src/shared/utils/types.h"
 #include "native_client/src/shared/utils/flags.h"
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/trusted/validator/ncfileutil.h"
 #include "native_client/src/trusted/validator_x86/nc_inst_state.h"
 #include "native_client/src/trusted/validator_x86/nc_read_segment.h"
 #include "native_client/src/trusted/validator_x86/ncdis_segments.h"
 #include "native_client/src/trusted/validator_x86/ncdis_util.h"
-#include "native_client/src/trusted/validator_x86/ncfileutil.h"
 #include "native_client/src/trusted/validator_x86/ncvalidate_internaltypes.h"
 
 /* The name of the executable that is being run. */

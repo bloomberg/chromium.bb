@@ -14,7 +14,7 @@
 #endif
 
 #include "native_client/src/shared/utils/types.h"
-#include "native_client/src/trusted/validator/x86/types_memory_model.h"
+#include "native_client/src/trusted/validator/types_memory_model.h"
 
 /* Returns true if the instruction, defined by SIZE bytes
  * in the given base, is a legal NACL instruction (other than
