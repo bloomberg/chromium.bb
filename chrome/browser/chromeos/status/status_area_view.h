@@ -17,7 +17,6 @@ class InputMethodMenuButton;
 class NetworkMenuButton;
 class PowerMenuButton;
 class StatusAreaHost;
-class WindowSwitcherButton;
 
 // This class is used to wrap the small informative widgets in the upper-right
 // of the window title bar. It is used on ChromeOS only.
@@ -38,9 +37,6 @@ class StatusAreaView : public AccessiblePaneView {
   InputMethodMenuButton* input_method_view() { return input_method_view_; }
   NetworkMenuButton* network_view() { return network_view_; }
   PowerMenuButton* power_view() { return power_view_; }
-  WindowSwitcherButton* window_switcher_view() {
-    return window_switcher_view_;
-  }
 
  private:
   StatusAreaHost* host_;
@@ -49,7 +45,6 @@ class StatusAreaView : public AccessiblePaneView {
   InputMethodMenuButton* input_method_view_;
   NetworkMenuButton* network_view_;
   PowerMenuButton* power_view_;
-  WindowSwitcherButton* window_switcher_view_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusAreaView);
 };

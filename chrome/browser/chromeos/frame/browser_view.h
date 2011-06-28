@@ -10,6 +10,7 @@
 
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "views/context_menu_controller.h"
 #include "views/controls/menu/menu_wrapper.h"
@@ -31,6 +32,7 @@ class MenuItemView;
 
 namespace chromeos {
 
+class LayoutModeButton;
 class StatusAreaView;
 class StatusAreaButton;
 
@@ -38,12 +40,13 @@ class StatusAreaButton;
 // BrowserView created with Browser::TYPE_TABBED. This extender adds controls
 // to the title bar as follows:
 //       ____  __ __
-//      /    \   \  \     [StatusArea]
+//      /    \   \  \     [StatusArea] [LayoutModeButton]
 //
 // and adds the system context menu to the remaining area of the titlebar.
 class BrowserView : public ::BrowserView,
                     public views::ContextMenuController,
                     public views::MenuListener,
+                    public BrowserList::Observer,
                     public StatusAreaHost,
                     public MessageLoopForUI::Observer {
  public:
@@ -72,6 +75,10 @@ class BrowserView : public ::BrowserView,
   // views::MenuListener implementation.
   virtual void OnMenuOpened() OVERRIDE;
 
+  // BrowserList::Observer implementation.
+  virtual void OnBrowserAdded(const Browser* browser) OVERRIDE;
+  virtual void OnBrowserRemoved(const Browser* browser) OVERRIDE;
+
   // StatusAreaHost overrides.
   virtual Profile* GetProfile() const OVERRIDE;
   virtual gfx::NativeWindow GetNativeWindow() const OVERRIDE;
@@ -93,6 +100,9 @@ class BrowserView : public ::BrowserView,
   bool has_hide_status_area_property() const {
     return has_hide_status_area_property_;
   }
+  bool should_show_layout_mode_button() const {
+    return should_show_layout_mode_button_;
+  }
 
   // static implementation for chromeos::PanelBrowserView.
   static WindowOpenDisposition DispositionForPopupBounds(
@@ -110,8 +120,12 @@ class BrowserView : public ::BrowserView,
   // Updates |has_hide_status_area_property_| by querying the X server.
   void FetchHideStatusAreaProperty();
 
-  // Status Area view.
+  // Updates |should_show_layout_mode_button_|.  Changes won't be visible
+  // onscreen until Layout() is called.
+  void UpdateLayoutModeButtonVisibility();
+
   StatusAreaView* status_area_;
+  LayoutModeButton* layout_mode_button_;
 
   // System menu.
   scoped_ptr<views::MenuItemView> system_menu_;
@@ -125,6 +139,10 @@ class BrowserView : public ::BrowserView,
   // _CHROME_STATE X property?  This gets set by window manager to tell us to
   // hide the status area.
   bool has_hide_status_area_property_;
+
+  // Should the layout mode button be shown?  We only show it if there are
+  // multiple browsers open.
+  bool should_show_layout_mode_button_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserView);
 };

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,6 +28,11 @@ void WmMessageListener::DidProcessEvent(GdkEvent* event) {
       ProcessMessage(message, client_event->window);
     else
       wm_ipc->HandleNonChromeClientMessageEvent(*client_event);
+  } else if (event->type == GDK_PROPERTY_NOTIFY) {
+    GdkEventProperty* property_event =
+        reinterpret_cast<GdkEventProperty*>(event);
+    if (property_event->window == gdk_get_default_root_window())
+      WmIpc::instance()->HandleRootWindowPropertyEvent(*property_event);
   }
 }
 

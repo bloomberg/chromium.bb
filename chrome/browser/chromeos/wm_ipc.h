@@ -27,7 +27,8 @@ namespace chromeos {
 class WmIpc {
  public:
   enum AtomType {
-    ATOM_CHROME_LOGGED_IN = 0,
+    ATOM_CHROME_LAYOUT_MODE = 0,
+    ATOM_CHROME_LOGGED_IN,
     ATOM_CHROME_STATE,
     ATOM_CHROME_STATE_COLLAPSED_PANEL,
     ATOM_CHROME_STATE_STATUS_HIDDEN,
@@ -88,6 +89,8 @@ class WmIpc {
   // Returns the single instance of WmIpc.
   static WmIpc* instance();
 
+  WmIpcLayoutMode layout_mode() const { return layout_mode_; }
+
   // Gets or sets a property describing a window's type.
   // WmIpcMessageType is defined in chromeos_wm_ipc_enums.h.  Type-specific
   // parameters may also be supplied.  The caller is responsible for trapping
@@ -122,6 +125,9 @@ class WmIpc {
   // See ICCCM 2.8 for more info about MANAGER selections.
   void HandleNonChromeClientMessageEvent(const GdkEventClient& event);
 
+  // Handle an event reporting a property change on the root window.
+  void HandleRootWindowPropertyEvent(const GdkEventProperty& event);
+
   // Sets a _CHROME_LOGGED_IN property on the root window describing whether
   // the user is currently logged in or not.
   void SetLoggedInProperty(bool logged_in);
@@ -135,10 +141,14 @@ class WmIpc {
   WmIpc();
   ~WmIpc();
 
-  // Initialize 'wm_' and send the window manager a message telling it the
+  // Initializes 'wm_' and sends the window manager a message telling it the
   // version of the IPC protocol that we support.  This is called in our
   // constructor, but needs to be re-run if the window manager gets restarted.
   void InitWmInfo();
+
+  // Updates |layout_mode_| based on the current value of the root window's
+  // _CHROME_LAYOUT_MODE property.
+  void FetchLayoutModeProperty();
 
   // Maps between our Atom enum and the X server's atom IDs and from the
   // server's IDs to atoms' string names.
@@ -149,8 +159,11 @@ class WmIpc {
   // Cached value of type_to_atom_[ATOM_CHROME_WM_MESSAGE].
   Atom wm_message_atom_;
 
-  // Handle to the wm. Used for sending messages.
+  // Handle to the WM. Used for sending messages.
   XID wm_;
+
+  // The current value of the root window's _CHROME_LAYOUT_MODE property.
+  WmIpcLayoutMode layout_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(WmIpc);
 };

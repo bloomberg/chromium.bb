@@ -12,6 +12,7 @@ extern "C" {
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/common/notification_service.h"
 #include "ui/base/x/x11_util.h"
 
 using std::map;
@@ -30,6 +31,7 @@ struct AtomInfo {
 
 // Each value from the Atom enum must be present here.
 static const AtomInfo kAtomInfos[] = {
+  { WmIpc::ATOM_CHROME_LAYOUT_MODE,           "_CHROME_LAYOUT_MODE" },
   { WmIpc::ATOM_CHROME_LOGGED_IN,             "_CHROME_LOGGED_IN" },
   { WmIpc::ATOM_CHROME_STATE,                 "_CHROME_STATE" },
   { WmIpc::ATOM_CHROME_STATE_COLLAPSED_PANEL, "_CHROME_STATE_COLLAPSED_PANEL" },
@@ -200,6 +202,14 @@ void WmIpc::HandleNonChromeClientMessageEvent(const GdkEventClient& event) {
   }
 }
 
+void WmIpc::HandleRootWindowPropertyEvent(const GdkEventProperty& event) {
+  static GdkAtom layout_mode_gdk_atom =
+      gdk_x11_xatom_to_atom(type_to_atom_[ATOM_CHROME_LAYOUT_MODE]);
+
+  if (event.atom == layout_mode_gdk_atom)
+    FetchLayoutModeProperty();
+}
+
 void WmIpc::SetLoggedInProperty(bool logged_in) {
   std::vector<int> values;
   values.push_back(static_cast<int>(logged_in));
@@ -214,7 +224,10 @@ void WmIpc::NotifyAboutSignout() {
   XFlush(ui::GetXDisplay());
 }
 
-WmIpc::WmIpc() {
+WmIpc::WmIpc()
+    : wm_message_atom_(0),
+      wm_(0),
+      layout_mode_(WM_IPC_LAYOUT_MAXIMIZED) {
   scoped_array<char*> names(new char*[kNumAtoms]);
   scoped_array<Atom> atoms(new Atom[kNumAtoms]);
 
@@ -241,9 +254,12 @@ WmIpc::WmIpc() {
   GdkWindow* root = gdk_get_default_root_window();
   GdkEventMask event_mask = gdk_window_get_events(root);
   gdk_window_set_events(
-      root, static_cast<GdkEventMask>(event_mask | GDK_STRUCTURE_MASK));
+      root,
+      static_cast<GdkEventMask>(
+          event_mask | GDK_STRUCTURE_MASK | GDK_PROPERTY_CHANGE_MASK));
 
   InitWmInfo();
+  FetchLayoutModeProperty();
 }
 
 WmIpc::~WmIpc() {}
@@ -258,6 +274,22 @@ void WmIpc::InitWmInfo() {
   // manager, we'll just define the version statically in the header.
   msg.set_param(0, 1);
   SendMessage(msg);
+}
+
+void WmIpc::FetchLayoutModeProperty() {
+  int value = 0;
+  if (ui::GetIntProperty(
+          gdk_x11_get_default_root_xwindow(),
+          GetAtomName(ATOM_CHROME_LAYOUT_MODE),
+          &value)) {
+    layout_mode_ = static_cast<WmIpcLayoutMode>(value);
+    NotificationService::current()->Notify(
+        NotificationType::LAYOUT_MODE_CHANGED,
+        Source<WmIpc>(this),
+        Details<WmIpcLayoutMode>(&layout_mode_));
+  } else {
+    DLOG(WARNING) << "Missing _CHROME_LAYOUT_MODE property on root window";
+  }
 }
 
 }  // namespace chromeos

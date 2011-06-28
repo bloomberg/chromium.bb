@@ -11,7 +11,6 @@
 #include "chrome/browser/chromeos/status/network_menu_button.h"
 #include "chrome/browser/chromeos/status/power_menu_button.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
-#include "chrome/browser/chromeos/status/window_switcher_button.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -32,8 +31,7 @@ StatusAreaView::StatusAreaView(StatusAreaHost* host)
       clock_view_(NULL),
       input_method_view_(NULL),
       network_view_(NULL),
-      power_view_(NULL),
-      window_switcher_view_(NULL) {
+      power_view_(NULL) {
 }
 
 void StatusAreaView::Init() {
@@ -53,10 +51,6 @@ void StatusAreaView::Init() {
   // Power.
   power_view_ = new PowerMenuButton(host_);
   AddChildView(power_view_);
-
-  // Window Switcher.
-  window_switcher_view_ = new WindowSwitcherButton(host_);
-  AddChildView(window_switcher_view_);
 }
 
 gfx::Size StatusAreaView::GetPreferredSize() {

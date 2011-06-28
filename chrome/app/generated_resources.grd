@@ -11730,9 +11730,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_STATUSBAR_WINDOW_RESTORE_TOOLTIP" desc="Tooltip for the layout mode button in the status bar when the window is maximized.">
         Restore
       </message>
-      <message name="IDS_STATUSBAR_WINDOW_SWITCHER_TOOLTIP" desc="Tooltip for the window switcher in the status bar.">
-        Switch windows
-      </message>
       <message name="IDS_VERSION_FIELD_PREFIX" desc="Display the OS version to the user.">
         version
       </message>

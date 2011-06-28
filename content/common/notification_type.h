@@ -1228,6 +1228,9 @@ class NotificationType {
     // Sent when a panel state changed.
     PANEL_STATE_CHANGED,
 
+    // Sent when the window manager's layout mode has changed.
+    LAYOUT_MODE_CHANGED,
+
     // Sent when the wizard's content view is destroyed. The source and details
     // are not used.
     WIZARD_CONTENT_VIEW_DESTROYED,
