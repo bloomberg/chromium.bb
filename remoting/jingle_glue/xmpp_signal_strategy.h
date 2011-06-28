@@ -32,10 +32,9 @@ class XmppSignalStrategy : public SignalStrategy,
 
   // SignalStrategy interface.
   virtual void Init(StatusObserver* observer) OVERRIDE;
+  virtual void Close() OVERRIDE;
   virtual void SetListener(Listener* listener) OVERRIDE;
   virtual void SendStanza(buzz::XmlElement* stanza) OVERRIDE;
-  virtual void StartSession(cricket::SessionManager* session_manager) OVERRIDE;
-  virtual void EndSession() OVERRIDE;
   virtual IqRequest* CreateIqRequest() OVERRIDE;
 
   // buzz::XmppStanzaHandler interface.

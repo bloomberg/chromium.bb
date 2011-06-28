@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "remoting/jingle_glue/iq_request.h"
-#include "remoting/jingle_glue/jingle_signaling_connector.h"
 #include "remoting/jingle_glue/xmpp_proxy.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 
@@ -20,7 +19,6 @@ JavascriptSignalStrategy::JavascriptSignalStrategy(const std::string& your_jid)
 }
 
 JavascriptSignalStrategy::~JavascriptSignalStrategy() {
-  jingle_signaling_connector_.reset();
   DCHECK(listener_ == NULL);
 }
 
@@ -44,6 +42,15 @@ void JavascriptSignalStrategy::Init(StatusObserver* observer) {
   observer->OnStateChange(StatusObserver::CONNECTED);
 }
 
+void JavascriptSignalStrategy::Close() {
+  DCHECK(CalledOnValidThread());
+
+  if (xmpp_proxy_) {
+    xmpp_proxy_->DetachCallback();
+    xmpp_proxy_ = NULL;
+  }
+}
+
 void JavascriptSignalStrategy::SetListener(Listener* listener) {
   DCHECK(CalledOnValidThread());
 
@@ -58,23 +65,6 @@ void JavascriptSignalStrategy::SendStanza(buzz::XmlElement* stanza) {
 
   xmpp_proxy_->SendIq(stanza->Str());
   delete stanza;
-}
-
-void JavascriptSignalStrategy::StartSession(
-    cricket::SessionManager* session_manager) {
-  DCHECK(CalledOnValidThread());
-
-  jingle_signaling_connector_.reset(
-      new JingleSignalingConnector(this, session_manager));
-}
-
-void JavascriptSignalStrategy::EndSession() {
-  DCHECK(CalledOnValidThread());
-
-  if (xmpp_proxy_) {
-    xmpp_proxy_->DetachCallback();
-  }
-  xmpp_proxy_ = NULL;
 }
 
 IqRequest* JavascriptSignalStrategy::CreateIqRequest() {

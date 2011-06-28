@@ -38,6 +38,7 @@ class SessionManager;
 namespace remoting {
 
 class JingleInfoRequest;
+class JingleSignalingConnector;
 class PortAllocatorSessionFactory;
 
 class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
@@ -144,6 +145,7 @@ class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
   scoped_ptr<cricket::SessionManager> session_manager_;
 
   scoped_ptr<JingleInfoRequest> jingle_info_request_;
+  scoped_ptr<JingleSignalingConnector> jingle_signaling_connector_;
 
   DISALLOW_COPY_AND_ASSIGN(JingleClient);
 };

@@ -13,10 +13,6 @@ namespace buzz {
 class XmlElement;
 }  // namespace buzz
 
-namespace cricket {
-class SessionManager;
-}  // namespace cricket
-
 namespace remoting {
 
 class IqRequest;
@@ -45,6 +41,7 @@ class SignalStrategy {
   SignalStrategy() {}
   virtual ~SignalStrategy() {}
   virtual void Init(StatusObserver* observer) = 0;
+  virtual void Close() = 0;
 
   // Set a listener that can listen to all incoming messages. Doesn't
   // take ownership of the |listener|. Can be called with |listener|
@@ -54,10 +51,6 @@ class SignalStrategy {
 
   // Sends a raw XMPP stanza. Takes ownership of the |stanza|.
   virtual void SendStanza(buzz::XmlElement* stanza) = 0;
-
-  // TODO(sergeyu): Do these methods belong to this interface?
-  virtual void StartSession(cricket::SessionManager* session_manager) = 0;
-  virtual void EndSession() = 0;
 
   virtual IqRequest* CreateIqRequest() = 0;
 

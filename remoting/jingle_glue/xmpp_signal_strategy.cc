@@ -10,8 +10,6 @@
 #include "remoting/jingle_glue/xmpp_iq_request.h"
 #include "remoting/jingle_glue/xmpp_socket_adapter.h"
 #include "third_party/libjingle/source/talk/base/asyncsocket.h"
-#include "third_party/libjingle/source/talk/p2p/client/sessionmanagertask.h"
-#include "third_party/libjingle/source/talk/p2p/base/sessionmanager.h"
 #include "third_party/libjingle/source/talk/xmpp/prexmppauth.h"
 #include "third_party/libjingle/source/talk/xmpp/saslcookiemechanism.h"
 
@@ -61,6 +59,15 @@ void XmppSignalStrategy::Init(StatusObserver* observer) {
   xmpp_client_->Start();
 }
 
+void XmppSignalStrategy::Close() {
+  if (xmpp_client_) {
+    xmpp_client_->engine()->RemoveStanzaHandler(this);
+    xmpp_client_->Disconnect();
+    // Client is deleted by TaskRunner.
+    xmpp_client_ = NULL;
+  }
+}
+
 void XmppSignalStrategy::SetListener(Listener* listener) {
   // Don't overwrite an listener without explicitly going
   // through "NULL" first.
@@ -70,23 +77,6 @@ void XmppSignalStrategy::SetListener(Listener* listener) {
 
 void XmppSignalStrategy::SendStanza(buzz::XmlElement* stanza) {
   xmpp_client_->SendStanza(stanza);
-}
-
-void XmppSignalStrategy::StartSession(
-    cricket::SessionManager* session_manager) {
-  cricket::SessionManagerTask* receiver =
-      new cricket::SessionManagerTask(xmpp_client_, session_manager);
-  receiver->EnableOutgoingMessages();
-  receiver->Start();
-}
-
-void XmppSignalStrategy::EndSession() {
-  if (xmpp_client_) {
-    xmpp_client_->engine()->RemoveStanzaHandler(this);
-    xmpp_client_->Disconnect();
-    // Client is deleted by TaskRunner.
-    xmpp_client_ = NULL;
-  }
 }
 
 IqRequest* XmppSignalStrategy::CreateIqRequest() {

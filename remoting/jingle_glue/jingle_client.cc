@@ -11,6 +11,7 @@
 #include "remoting/jingle_glue/http_port_allocator.h"
 #include "remoting/jingle_glue/iq_request.h"
 #include "remoting/jingle_glue/jingle_info_request.h"
+#include "remoting/jingle_glue/jingle_signaling_connector.h"
 #include "remoting/jingle_glue/jingle_thread.h"
 #include "third_party/libjingle/source/talk/base/basicpacketsocketfactory.h"
 #include "third_party/libjingle/source/talk/base/ssladapter.h"
@@ -99,7 +100,8 @@ void JingleClient::DoInitialize() {
 void JingleClient::DoStartSession() {
   session_manager_.reset(
       new cricket::SessionManager(port_allocator_.get()));
-  signal_strategy_->StartSession(session_manager_.get());
+  jingle_signaling_connector_.reset(
+      new JingleSignalingConnector(signal_strategy_, session_manager_.get()));
 
   // TODO(ajwong): Major hack to synchronize state change logic.  Since the Xmpp
   // connection starts first, it move the state to CONNECTED before we've gotten
@@ -129,10 +131,10 @@ void JingleClient::Close(const base::Closure& closed_task) {
 void JingleClient::DoClose(const base::Closure& closed_task) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
+  jingle_signaling_connector_.reset();
   session_manager_.reset();
   if (signal_strategy_) {
-    signal_strategy_->EndSession();
-    // TODO(ajwong): SignalStrategy should drop all resources at EndSession().
+    signal_strategy_->Close();
     signal_strategy_ = NULL;
   }
 

@@ -14,12 +14,9 @@ class MockSignalStrategy : public SignalStrategy {
   virtual ~MockSignalStrategy();
 
   MOCK_METHOD1(Init, void(StatusObserver*));
-  MOCK_METHOD0(port_allocator, cricket::BasicPortAllocator*());
-  MOCK_METHOD2(ConfigureAllocator, void(cricket::HttpPortAllocator*, Task*));
+  MOCK_METHOD0(Close, void());
   MOCK_METHOD1(SetListener, void(Listener* listener));
   MOCK_METHOD1(SendStanza, void(buzz::XmlElement* stanza));
-  MOCK_METHOD1(StartSession, void(cricket::SessionManager*));
-  MOCK_METHOD0(EndSession, void());
   MOCK_METHOD0(CreateIqRequest, IqRequest*());
 };
 
