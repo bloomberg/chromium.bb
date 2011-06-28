@@ -76,8 +76,47 @@ class NaClTest(pyauto.PyUITest):
   def testSurfAwayAsyncExampleAudio(self):
     self.surfAwayAsync('ppapi_example_audio.html#mute', 'PPAPI')
 
+  def testSurfAwayAsyncExampleFont(self):
+    self.surfAwayAsync('ppapi_example_font.html', 'PPAPI')
+
+  # TODO(cstefansen): enable test when bug is fixed
+  # http://code.google.com/p/nativeclient/issues/detail?id=1936
+  def disabledTestSurfAwayAsyncExampleGLES2(self):
+    self.surfAwayAsync('ppapi_example_gles2.html', 'PPAPI')
+
+  def testSurfAwayAsyncExamplePostMessage(self):
+    self.surfAwayAsync('ppapi_example_post_message.html', 'PPAPI')
+
   def testSurfAwayAsyncGetURL(self):
     self.surfAwayAsync('ppapi_geturl.html', 'PPAPI')
+
+  def testSurfAwayAsyncGLESBookHelloTriangle(self):
+    self.surfAwayAsync('ppapi_gles_book.html?manifest='
+                       'ppapi_gles_book_hello_triangle.nmf', 'PPAPI')
+
+  def testSurfAwayAsyncGLESBookMipMap2D(self):
+    self.surfAwayAsync('ppapi_gles_book.html?manifest='
+                       'ppapi_gles_book_mip_map_2d.nmf', 'PPAPI')
+
+  def testSurfAwayAsyncGLESBookSimpleTexture2D(self):
+    self.surfAwayAsync('ppapi_gles_book.html?manifest='
+                       'ppapi_gles_book_simple_texture_2d.nmf', 'PPAPI')
+
+  def testSurfAwayAsyncGLESBookSimpleTextureCubemap(self):
+    self.surfAwayAsync('ppapi_gles_book.html?manifest='
+                       'ppapi_gles_book_simple_texture_cubemap.nmf', 'PPAPI')
+
+  def testSurfAwayAsyncGLESBookSimpleVertexShade(self):
+    self.surfAwayAsync('ppapi_gles_book.html?manifest='
+                       'ppapi_gles_book_simple_vertex_shader.nmf', 'PPAPI')
+
+  def testSurfAwayAsyncGLESBookStencilTest(self):
+    self.surfAwayAsync('ppapi_gles_book.html?manifest='
+                       'ppapi_gles_book_stencil_test.nmf', 'PPAPI')
+
+  def testSurfAwayAsyncGLESBookTextureWrap(self):
+    self.surfAwayAsync('ppapi_gles_book.html?manifest='
+                       'ppapi_gles_book_texture_wrap.nmf', 'PPAPI')
 
   def testSurfAwayAsyncEarthC(self):
     self.surfAwayAsync('earth_c.html', 'Globe')

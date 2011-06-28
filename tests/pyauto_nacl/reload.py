@@ -84,8 +84,47 @@ class NaClTest(pyauto.PyUITest):
   def testReloadExampleAudio(self):
     self.reloader('ppapi_example_audio.html#mute', 'PPAPI')
 
+  def testReloadExampleFont(self):
+    self.reloader('ppapi_example_font.html', 'PPAPI')
+
+  # TODO(cstefansen): enable test when bug is fixed
+  # http://code.google.com/p/nativeclient/issues/detail?id=1936
+  def disabledTestReloadExampleGLES2(self):
+    self.reloader('ppapi_example_gles2.html', 'PPAPI')
+
+  def testReloadExamplePostMessage(self):
+    self.reloader('ppapi_example_post_message.html', 'PPAPI')
+
   def testReloadGetURL(self):
     self.reloader('ppapi_geturl.html', 'PPAPI')
+
+  def testReloadGLESBookHelloTriangle(self):
+    self.reloader('ppapi_gles_book.html?manifest='
+                  'ppapi_gles_book_hello_triangle.nmf', 'PPAPI')
+
+  def testReloadGLESBookMipMap2D(self):
+    self.reloader('ppapi_gles_book.html?manifest='
+                  'ppapi_gles_book_mip_map_2d.nmf', 'PPAPI')
+
+  def testReloadGLESBookSimpleTexture2D(self):
+    self.reloader('ppapi_gles_book.html?manifest='
+                  'ppapi_gles_book_simple_texture_2d.nmf', 'PPAPI')
+
+  def testReloadGLESBookSimpleTextureCubemap(self):
+    self.reloader('ppapi_gles_book.html?manifest='
+                  'ppapi_gles_book_simple_texture_cubemap.nmf', 'PPAPI')
+
+  def testReloadGLESBookSimpleVertexShader(self):
+    self.reloader('ppapi_gles_book.html?manifest='
+                  'ppapi_gles_book_simple_vertex_shader.nmf', 'PPAPI')
+
+  def testReloadGLESBookStencilTest(self):
+    self.reloader('ppapi_gles_book.html?manifest='
+                  'ppapi_gles_book_stencil_test.nmf', 'PPAPI')
+
+  def testReloadGLESBookTextureWrap(self):
+    self.reloader('ppapi_gles_book.html?manifest='
+                  'ppapi_gles_book_texture_wrap.nmf', 'PPAPI')
 
   def testReloadEarthC(self):
     self.reloader('earth_c.html', 'Globe')

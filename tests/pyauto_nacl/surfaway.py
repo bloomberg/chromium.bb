@@ -53,8 +53,47 @@ class NaClTest(pyauto.PyUITest):
   def testSurfAwayExampleAudio(self):
     self.surfAway('ppapi_example_audio.html#mute', 'PPAPI')
 
+  def testSurfAwayExampleFont(self):
+    self.surfAway('ppapi_example_font.html', 'PPAPI')
+
+  # TODO(cstefansen): enable test when bug is fixed
+  # http://code.google.com/p/nativeclient/issues/detail?id=1936
+  def disabledTestSurfAwayExampleGLES2(self):
+    self.surfAway('ppapi_example_gles2.html', 'PPAPI')
+
+  def testSurfAwayExamplePostMessage(self):
+    self.surfAway('ppapi_example_post_message.html', 'PPAPI')
+
   def testSurfAwayGetURL(self):
     self.surfAway('ppapi_geturl.html', 'PPAPI')
+
+  def testSurfAwayGLESBookHelloTriangle(self):
+    self.surfAway('ppapi_gles_book.html?manifest='
+                  'ppapi_gles_book_hello_triangle.nmf', 'PPAPI')
+
+  def testSurfAwayGLESBookMipMap2D(self):
+    self.surfAway('ppapi_gles_book.html?manifest='
+                  'ppapi_gles_book_mip_map_2d.nmf', 'PPAPI')
+
+  def testSurfAwayGLESBookSimpleTexture2D(self):
+    self.surfAway('ppapi_gles_book.html?manifest='
+                  'ppapi_gles_book_simple_texture_2d.nmf', 'PPAPI')
+
+  def testSurfAwayGLESBookSimpleTextureCubemap(self):
+    self.surfAway('ppapi_gles_book.html?manifest='
+                  'ppapi_gles_book_simple_texture_cubemap.nmf', 'PPAPI')
+
+  def testSurfAwayGLESBookSimpleVertexShade(self):
+    self.surfAway('ppapi_gles_book.html?manifest='
+                  'ppapi_gles_book_simple_vertex_shader.nmf', 'PPAPI')
+
+  def testSurfAwayGLESBookStencilTest(self):
+    self.surfAway('ppapi_gles_book.html?manifest='
+                  'ppapi_gles_book_stencil_test.nmf', 'PPAPI')
+
+  def testSurfAwayGLESBookTextureWrap(self):
+    self.surfAway('ppapi_gles_book.html?manifest='
+                  'ppapi_gles_book_texture_wrap.nmf', 'PPAPI')
 
   def testSurfAwayEarthC(self):
     self.surfAway('earth_c.html', 'Globe')
