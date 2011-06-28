@@ -77,6 +77,9 @@ TouchBrowserFrameView::TouchBrowserFrameView(BrowserFrame* frame,
   registrar_.Add(this,
                  NotificationType::SET_KEYBOARD_HEIGHT_INVOKED,
                  NotificationService::AllSources());
+  registrar_.Add(this,
+                 NotificationType::EDITABLE_ELEMENT_TOUCHED,
+                 NotificationService::AllSources());
 
   browser_view->browser()->tabstrip_model()->AddObserver(this);
 
@@ -321,6 +324,8 @@ void TouchBrowserFrameView::Observe(NotificationType type,
       keyboard_height_ = height;
       parent()->Layout();
     }
+  } else if (type == NotificationType::EDITABLE_ELEMENT_TOUCHED) {
+    UpdateKeyboardAndLayout(true);
   }
 }
 

@@ -130,6 +130,12 @@ class RootView : public View,
   virtual const ui::Compositor* GetCompositor() const OVERRIDE;
   virtual ui::Compositor* GetCompositor() OVERRIDE;
 
+#if defined(TOUCH_UI)
+  View* touch_pressed_handler() const {
+    return touch_pressed_handler_;
+  }
+#endif
+
  private:
   friend class View;
   friend class Widget;
