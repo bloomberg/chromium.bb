@@ -134,7 +134,7 @@
         'remoting_base',
         'remoting_host',
         'remoting_jingle_glue',
-        '../third_party/libvpx/libvpx.gyp:libvpx_lib',
+        '../third_party/libvpx/libvpx.gyp:libvpx',
         '../third_party/npapi/npapi.gyp:npapi',
       ],
       'sources': [
@@ -156,16 +156,6 @@
             'INFOPLIST_PREPROCESS': 'YES',
             'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'HOST_PLUGIN_MIME_TYPE=<(host_plugin_mime_type)',
             'WRAPPER_EXTENSION': '<(plugin_extension)',
-            'OTHER_LDFLAGS': [ # TODO(wez): Remove if libvpx gets PIC-fixed.
-              # This is needed because at least part of libvpx is not
-              # PIC-friendly, thus we need to instruct the linker to allow
-              # relocations for read-only segments for this target to be able
-              # to generated the shared library on Mac.
-              #
-              # This hack is cribbed from ffmpeg.gyp, and makes someone called
-              # Mark sad, so at least I'm not alone.
-              '-Wl,-read_only_relocs,suppress',
-            ],
           },
           # TODO(mark): Come up with a fancier way to do this.  It should
           # only be necessary to list framework-Info.plist once, not the
@@ -177,15 +167,6 @@
           'mac_bundle_resources!': [
             'host/plugin/host_plugin-Info.plist',
           ],
-        }],
-        ['OS=="win"', { # TODO(wez): Remove if libvpx is built by MSVC.
-          'msvs_settings': {
-            'VCLinkerTool': {
-              'AdditionalOptions!': [
-                '/safeseh',
-              ],
-            },
-          },
         }],
         ['OS!="win"', {
           'sources!': [
