@@ -122,6 +122,7 @@ if env.IsRunningUnderValgrind():
 def ThreadTestNode(name, args):
   return env.CommandSelLdrTestNacl(name + '.out',
                                    egyptian_cotton_nexe,
+                                   size='large',
                                    args=args)
 
 nodes = [ ThreadTestNode(name, args) for name, args in tests ]
