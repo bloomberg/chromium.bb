@@ -453,7 +453,7 @@ add_config('arm-tegra2_seaboard-tangent-private-full', [internal, arm, full, {
   'profile' : 'tangent',
 }])
 
-add_config('arm-tegra2_seaboard-tangent-private-binary',
+add_config('arm-tegra2_seaboard-tangent-private-bin',
   [internal, arm, binary, {
     'board' : 'tegra2_seaboard',
     'profile' : 'tangent',
