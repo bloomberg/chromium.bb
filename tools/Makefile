@@ -317,7 +317,6 @@ BUILD/stamp-$(CROSSARCH)-binutils: | SRC/binutils BUILD
 	$(MAKE) -C BUILD/build-binutils-$(CROSSARCH) all
 	$(MAKE) -C BUILD/build-binutils-$(CROSSARCH) DESTDIR=$(DESTDIR) install
 	touch $@
-	$(CREATE_REDIRECTORS) "$(DESTDIR)$(SDKROOT)"
 
 .PHONY: binutils
 binutils: BUILD/stamp-$(CROSSARCH)-binutils
@@ -425,7 +424,6 @@ BUILD/stamp-$(CROSSARCH)-pregcc: gcc-extras | SRC/gcc BUILD
 		$(DESTDIR)$(SDKROOT)/lib/gcc/$(CROSSARCH)/$(GCC_VERSION)/32/libgcc_eh.a |\
 	true
 	touch $@
-	$(CREATE_REDIRECTORS) "$(DESTDIR)$(SDKROOT)"
 
 .PHONY: pregcc
 pregcc: BUILD/stamp-$(CROSSARCH)-pregcc
@@ -727,7 +725,6 @@ BUILD/stamp-$(CROSSARCH)-gcc: gcc-extras BUILD/stamp-$(CROSSARCH)-newlib \
 	    -C BUILD/build-gcc-$(CROSSARCH) \
 	    DESTDIR=$(DESTDIR) \
 	    install
-	$(CREATE_REDIRECTORS) "$(DESTDIR)$(SDKROOT)"
 	touch $@
 
 .PHONY: gcc
@@ -760,7 +757,6 @@ BUILD/stamp-$(CROSSARCH)-gdb: | SRC/gdb BUILD
 	    --target=nacl
 	$(MAKE) -C BUILD/build-gdb-$(CROSSARCH) all
 	$(MAKE) -C BUILD/build-gdb-$(CROSSARCH) DESTDIR=$(DESTDIR) install
-	$(CREATE_REDIRECTORS) "$(DESTDIR)$(SDKROOT)"
 	touch $@
 
 .PHONY: gdb
@@ -856,6 +852,7 @@ build-with-newlib:
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-binutils
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-pregcc
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-newlib
+	$(CREATE_REDIRECTORS) "$(DESTDIR)$(SDKROOT)"
 	$(MAKE) -f $(THISMAKEFILE) nc_threads
 	# We need libnacl.a for gfortran, but we don't have a c++ yet
 	$(MAKE) -f $(THISMAKEFILE) nacl_libraries_nocpp
@@ -863,9 +860,9 @@ build-with-newlib:
 	case $$(SRC/binutils/config.guess) in \
 	*-linux*) $(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-gdb ;; \
 	esac
+	$(CREATE_REDIRECTORS) "$(DESTDIR)$(SDKROOT)"
 	$(MAKE) -f $(THISMAKEFILE) nacl_libraries
 	$(MAKE) -f $(THISMAKEFILE) sdk_minimal_test
-	$(CREATE_REDIRECTORS) "$(DESTDIR)$(SDKROOT)"
 	rm -rf "$(DESTDIR)$(SDKROOT)"/{include,lib/*.a*,lib/*.so*,lib32,lib64}
 
 # Newlib toolchain for buildbot.
