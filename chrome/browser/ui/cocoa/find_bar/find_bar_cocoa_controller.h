@@ -52,6 +52,9 @@ class FindNotificationDetails;
 
   // Vertical point of attachment of the FindBar.
   CGFloat maxY_;
+
+  // Default width of FindBar.
+  CGFloat defaultWidth_;
 };
 
 // Initializes a new FindBarCocoaController.
@@ -89,5 +92,8 @@ class FindNotificationDetails;
 // Returns the FindBar's position in the superview's coordinates, but with
 // the Y coordinate growing down.
 - (gfx::Point)findBarWindowPosition;
+
+// Returns the width of the FindBar.
+- (int)findBarWidth;
 
 @end

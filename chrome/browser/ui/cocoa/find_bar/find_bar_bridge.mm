@@ -129,6 +129,5 @@ string16 FindBarBridge::GetMatchCountText() {
 }
 
 int FindBarBridge::GetWidth() {
-  NOTIMPLEMENTED();
-  return 0;
+  return [cocoa_controller_ findBarWidth];
 }

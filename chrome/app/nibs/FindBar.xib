@@ -45,7 +45,7 @@
 					<bool key="EncodedWithXMLCoder">YES</bool>
 					<object class="NSCustomView" id="612665518">
 						<reference key="NSNextResponder" ref="139541997"/>
-						<int key="NSvFlags">256</int>
+						<int key="NSvFlags">258</int>
 						<object class="NSMutableArray" key="NSSubviews">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<object class="NSTextField" id="510660793">

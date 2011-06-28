@@ -91,6 +91,7 @@ const float kRightEdgeOffset = 25;
 
 - (void)awakeFromNib {
   [findBarView_ setFrame:[self hiddenFindBarFrame]];
+  defaultWidth_ = NSWidth([findBarView_ frame]);
 
   // Stopping the search requires a findbar controller, which isn't valid yet
   // during setup. Furthermore, there is no active search yet anyway.
@@ -134,7 +135,7 @@ const float kRightEdgeOffset = 25;
 - (void)positionFindBarViewAtMaxY:(CGFloat)maxY maxWidth:(CGFloat)maxWidth {
   NSView* containerView = [self view];
   CGFloat containerHeight = NSHeight([containerView frame]);
-  CGFloat containerWidth = NSWidth([containerView frame]);
+  CGFloat containerWidth = std::min(maxWidth, defaultWidth_);
 
   // Adjust where we'll actually place the find bar.
   maxY += [containerView cr_lineWidth];
@@ -391,6 +392,9 @@ const float kRightEdgeOffset = 25;
   return view_rect.origin();
 }
 
+- (int)findBarWidth {
+  return NSWidth([[self view] frame]);
+}
 @end
 
 @implementation FindBarCocoaController (PrivateMethods)
