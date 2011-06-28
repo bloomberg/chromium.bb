@@ -264,6 +264,10 @@ void RenderWidgetHostViewWin::InitAsPopup(
   close_on_deactivate_ = true;
   Create(parent_hwnd_, NULL, NULL, WS_POPUP, WS_EX_TOOLWINDOW);
   MoveWindow(pos.x(), pos.y(), pos.width(), pos.height(), TRUE);
+  // To show tooltip on popup window.(e.g. title in <select>)
+  // Popups default to showing, which means |DidBecomeSelected()| isn't invoked.
+  // Ensure the tooltip is created otherwise tooltips are never shown.
+  EnsureTooltip();
   // Popups are not activated.
   ShowWindow(IsActivatable() ? SW_SHOW : SW_SHOWNA);
 }
