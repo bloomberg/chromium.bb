@@ -2390,6 +2390,20 @@
    fun:_Z16DispatchToMethodI14WebDataServiceMS0_FvvEEvPT_T0_RK6Tuple0
 }
 {
+   bug_50968_d
+   Memcheck:Cond
+   ...
+   fun:_ZN14WebDataService29InitializeDatabaseIfNecessaryEv
+   fun:_Z16DispatchToMethodI14WebDataServiceMS0_FvvEEvPT_T0_RK6Tuple0
+}
+{
+   bug_50968_e
+   Memcheck:Value4   
+   ...
+   fun:_ZN14WebDataService29InitializeDatabaseIfNecessaryEv
+   fun:_Z16DispatchToMethodI14WebDataServiceMS0_FvvEEvPT_T0_RK6Tuple0
+}
+{
    bug_56359_a
    Memcheck:Leak
    fun:_Znw*
