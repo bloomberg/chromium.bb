@@ -27,6 +27,7 @@
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/ui_model_worker.h"
 #include "chrome/browser/sync/js_event_router.h"
+#include "chrome/browser/sync/notifier/sync_notifier_factory.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "googleurl/src/gurl.h"
@@ -131,8 +132,6 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   void Initialize(SyncFrontend* frontend,
                   const GURL& service_url,
                   const syncable::ModelTypeSet& types,
-                  const scoped_refptr<net::URLRequestContextGetter>&
-                      baseline_context_getter,
                   const sync_api::SyncCredentials& credentials,
                   bool delete_sync_data_folder);
 
@@ -617,6 +616,8 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   MessageLoop* const frontend_loop_;
 
   Profile* profile_;
+
+  sync_notifier::SyncNotifierFactory sync_notifier_factory_;
 
   // This is state required to implement ModelSafeWorkerRegistrar.
   struct {

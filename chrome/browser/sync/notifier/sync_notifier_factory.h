@@ -19,23 +19,28 @@ namespace sync_notifier {
 
 class SyncNotifier;
 
-// Class to instantiate various implementations of the SyncNotifier interface.
+// Class to instantiate various implementations of the SyncNotifier
+// interface.  Must be created/destroyed on the UI thread.
 class SyncNotifierFactory {
  public:
   // |client_info| is a string identifying the client, e.g. a user
   // agent string.
-  explicit SyncNotifierFactory(const std::string& client_info);
+  SyncNotifierFactory(
+      const std::string& client_info,
+      const scoped_refptr<net::URLRequestContextGetter>&
+          request_context_getter,
+      const CommandLine& command_line);
   ~SyncNotifierFactory();
 
-  // Creates the appropriate sync notifier. The caller should take ownership
-  // of the object returned and delete it when no longer used.
-  SyncNotifier* CreateSyncNotifier(
-      const CommandLine& command_line,
-      const scoped_refptr<net::URLRequestContextGetter>&
-          request_context_getter);
+  // Creates a sync notifier. Caller takes ownership of the returned
+  // object.  However, the returned object must not outlive the
+  // factory from which it was created.  Can be called on any thread.
+  SyncNotifier* CreateSyncNotifier();
 
  private:
   const std::string client_info_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
+  const CommandLine& command_line_;
 };
 
 }  // namespace sync_notifier

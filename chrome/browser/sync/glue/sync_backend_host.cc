@@ -28,7 +28,6 @@
 #include "chrome/browser/sync/js_arg_list.h"
 #include "chrome/browser/sync/js_event_details.h"
 #include "chrome/browser/sync/notifier/sync_notifier.h"
-#include "chrome/browser/sync/notifier/sync_notifier_factory.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 // TODO(tim): Remove this! We should have a syncapi pass-thru instead.
 #include "chrome/browser/sync/syncable/directory_manager.h"  // Cryptographer.
@@ -49,7 +48,6 @@ static const FilePath::CharType kSyncDataFolderName[] =
     FILE_PATH_LITERAL("Sync Data");
 
 using browser_sync::DataTypeController;
-using sync_notifier::SyncNotifierFactory;
 typedef TokenService::TokenAvailableDetails TokenAvailableDetails;
 
 typedef GoogleServiceAuthError AuthError;
@@ -66,6 +64,9 @@ SyncBackendHost::SyncBackendHost(Profile* profile)
       sync_thread_("Chrome_SyncThread"),
       frontend_loop_(MessageLoop::current()),
       profile_(profile),
+      sync_notifier_factory_(webkit_glue::GetUserAgent(GURL()),
+                             profile_->GetRequestContext(),
+                             *CommandLine::ForCurrentProcess()),
       frontend_(NULL),
       sync_data_folder_path_(
           profile_->GetPath().Append(kSyncDataFolderName)),
@@ -77,6 +78,9 @@ SyncBackendHost::SyncBackendHost()
       sync_thread_("Chrome_SyncThread"),
       frontend_loop_(MessageLoop::current()),
       profile_(NULL),
+      sync_notifier_factory_(webkit_glue::GetUserAgent(GURL()),
+                             NULL,
+                             *CommandLine::ForCurrentProcess()),
       frontend_(NULL),
       last_auth_error_(AuthError::None()) {
 }
@@ -90,8 +94,6 @@ void SyncBackendHost::Initialize(
     SyncFrontend* frontend,
     const GURL& sync_service_url,
     const syncable::ModelTypeSet& types,
-    const scoped_refptr<net::URLRequestContextGetter>&
-        baseline_context_getter,
     const SyncCredentials& credentials,
     bool delete_sync_data_folder) {
   if (!sync_thread_.Start())
@@ -130,7 +132,7 @@ void SyncBackendHost::Initialize(
 
   InitCore(Core::DoInitializeOptions(
       sync_service_url,
-      baseline_context_getter,
+      profile_->GetRequestContext(),
       credentials,
       delete_sync_data_folder,
       RestoreEncryptionBootstrapToken(),
@@ -752,12 +754,6 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
   sync_manager_.reset(new sync_api::SyncManager(name_)),
   sync_manager_->AddObserver(this);
   const FilePath& path_str = host_->sync_data_folder_path();
-  const std::string& client_info = webkit_glue::GetUserAgent(GURL());
-  SyncNotifierFactory sync_notifier_factory(client_info);
-  scoped_ptr<sync_notifier::SyncNotifier> sync_notifier(
-      sync_notifier_factory.CreateSyncNotifier(
-          *CommandLine::ForCurrentProcess(),
-          options.request_context_getter));
   success = sync_manager_->Init(
       path_str,
       options.service_url.host() + options.service_url.path(),
@@ -767,7 +763,7 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
       host_,  // ModelSafeWorkerRegistrar.
       MakeUserAgentForSyncApi(),
       options.credentials,
-      sync_notifier.release(),
+      host_->sync_notifier_factory_.CreateSyncNotifier(),
       options.restored_key_for_bootstrapping,
       options.setup_for_test_mode);
   DCHECK(success) << "Syncapi initialization failed!";

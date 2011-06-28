@@ -349,7 +349,6 @@ void ProfileSyncService::InitializeBackend(bool delete_sync_data_folder) {
   backend_->Initialize(this,
                        sync_service_url_,
                        types,
-                       request_context_getter,
                        credentials,
                        delete_sync_data_folder);
 }

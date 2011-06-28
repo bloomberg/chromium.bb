@@ -7,12 +7,14 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "chrome/browser/sync/notifier/non_blocking_invalidation_notifier.h"
 #include "chrome/browser/sync/notifier/p2p_notifier.h"
 #include "chrome/browser/sync/notifier/sync_notifier.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/browser/browser_thread.h"
 #include "jingle/notifier/base/const_communicator.h"
 #include "jingle/notifier/base/notifier_options.h"
 #include "net/base/host_port_pair.h"
@@ -95,17 +97,24 @@ SyncNotifier* CreateDefaultSyncNotifier(
 }
 }  // namespace
 
-SyncNotifierFactory::SyncNotifierFactory(const std::string& client_info)
-    : client_info_(client_info) {}
-
-SyncNotifierFactory::~SyncNotifierFactory() {
+SyncNotifierFactory::SyncNotifierFactory(
+    const std::string& client_info,
+    const scoped_refptr<net::URLRequestContextGetter>&
+        request_context_getter,
+    const CommandLine& command_line)
+    : client_info_(client_info),
+      request_context_getter_(request_context_getter),
+      command_line_(command_line) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-SyncNotifier* SyncNotifierFactory::CreateSyncNotifier(
-    const CommandLine& command_line,
-    const scoped_refptr<net::URLRequestContextGetter>& request_context_getter) {
-  return CreateDefaultSyncNotifier(command_line,
-                                   request_context_getter,
+SyncNotifierFactory::~SyncNotifierFactory() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+}
+
+SyncNotifier* SyncNotifierFactory::CreateSyncNotifier() {
+  return CreateDefaultSyncNotifier(command_line_,
+                                   request_context_getter_,
                                    client_info_);
 }
 }  // namespace sync_notifier

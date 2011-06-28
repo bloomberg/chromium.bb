@@ -94,10 +94,10 @@ int main(int argc, char* argv[]) {
   MessageLoop main_loop;
 
   const char kClientInfo[] = "sync_listen_notifications";
-  sync_notifier::SyncNotifierFactory sync_notifier_factory(kClientInfo);
+  sync_notifier::SyncNotifierFactory sync_notifier_factory(
+      kClientInfo, request_context_getter.get(), command_line);
   scoped_ptr<sync_notifier::SyncNotifier> sync_notifier(
-      sync_notifier_factory.CreateSyncNotifier(command_line,
-                                               request_context_getter.get()));
+      sync_notifier_factory.CreateSyncNotifier());
   NotificationPrinter notification_printer;
   sync_notifier->AddObserver(&notification_printer);
 

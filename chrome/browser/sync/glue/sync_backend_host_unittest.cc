@@ -104,7 +104,6 @@ TEST_F(SyncBackendHostTest, InitShutdown) {
   backend.Initialize(&mock_frontend,
                      GURL(k_mock_url),
                      syncable::ModelTypeSet(),
-                     profile.GetRequestContext(),
                      credentials,
                      true);
   backend.Shutdown(false);
