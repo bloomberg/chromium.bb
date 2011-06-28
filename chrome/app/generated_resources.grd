@@ -8680,6 +8680,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FILE_BROWSER_NEW_FOLDER_PROMPT" desc="Prompt displayed in a message box when user trys to create a new folder.">
         Enter a name for the new folder
       </message>
+      <message name="IDS_FILE_BROWSER_ERROR_NEW_FOLDER_EMPTY_NAME" desc="Warning displayed when user trys to enter empty name for the new folder.">
+        Please specify a folder name
+      </message>
       <message name="IDS_FILE_BROWSER_NEW_FOLDER_BUTTON_LABEL" desc="Label on the 'New folder' button.">
         New folder
       </message>

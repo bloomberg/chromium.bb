@@ -2085,8 +2085,12 @@ FileManager.prototype = {
 
     while (1) {
       name = window.prompt(str('NEW_FOLDER_PROMPT'), name);
-      if (!name)
+      if (name == '') {
+        window.alert(str('ERROR_NEW_FOLDER_EMPTY_NAME'));
+        continue;
+      } else if (!name) {
         return;
+      }
 
       if (this.validateFileName_(name, true)) break;
     }

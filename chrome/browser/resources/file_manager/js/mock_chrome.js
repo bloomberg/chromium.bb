@@ -107,7 +107,7 @@ chrome.fileBrowserPrivate = {
    */
   getStrings: function(callback) {
     // Keep this list in sync with the strings in generated_resources.grd and
-    // extension_file_manager_api.cc!
+    // extension_file_browser_private_api.cc!
     callback({
       // These two are from locale_settings*.grd
       WEB_FONT_FAMILY: 'Chrome Droid Sans,Droid Sans Fallback,sans-serif',
@@ -129,6 +129,7 @@ chrome.fileBrowserPrivate = {
       ERROR_INVALID_FILE_CHARACTER: 'Invalid character in file name: $1',
       ERROR_RESERVED_NAME: 'This name may not be used as a file of folder name',
       NEW_FOLDER_PROMPT: 'Enter a name for the new folder',
+      ERROR_NEW_FOLDER_EMPTY_NAME: 'Please specify a folder name',
       NEW_FOLDER_BUTTON_LABEL: 'New folder',
       FILENAME_LABEL: 'File Name',
 
