@@ -49,8 +49,7 @@ var expected_messages = [
     'Aye carumba! This is an async message.',
     'Message\0containing\0NULLs\0',
     'Top-bit-set bytes: \x80 and \xff',
-    'Echoed: hello world!',
-    'Received 8 bytes, 1 FDs',
+    'Echoed: hello world!'
     ];
 var current_index = 0;
 
@@ -128,7 +127,6 @@ function bodyProcessStart() {
       function() { plugin.__sendAsyncMessage1('foo', {}); });
 
   plugin.__sendAsyncMessage0('hello world!');
-  plugin.__sendAsyncMessage1('with fds', plugin.__defaultSocketAddress());
   log('Sent messages OK');
 }
 

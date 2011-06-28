@@ -52,7 +52,6 @@ class DescBasedHandle : public PortableHandle {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(DescBasedHandle);
-  void LoadMethods();
   Plugin* plugin_;
   nacl::DescWrapper* wrapper_;
 };

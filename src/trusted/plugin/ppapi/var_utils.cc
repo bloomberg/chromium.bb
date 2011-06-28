@@ -333,13 +333,7 @@ pp::Var NaClDescToPPVar(NaClDesc* desc, PluginPpapi* plugin,
                         pp::Var* exception) {
   nacl::DescWrapper* wrapper = plugin->wrapper_factory()->MakeGeneric(desc);
 
-  DescBasedHandle* desc_handle = NULL;
-  if (NACL_DESC_CONN_CAP == wrapper->type_tag() ||
-      NACL_DESC_CONN_CAP_FD == wrapper->type_tag()) {
-    desc_handle = SocketAddress::New(plugin, wrapper);
-  } else {
-    desc_handle = DescBasedHandle::New(plugin, wrapper);
-  }
+  DescBasedHandle* desc_handle = DescBasedHandle::New(plugin, wrapper);
 
   pp::deprecated::ScriptableObject* object =
       ScriptableHandlePpapi::New(desc_handle);

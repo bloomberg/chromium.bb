@@ -20,17 +20,6 @@ function enqueueTests(tester, server, client) {
     var server_errors = server.report();
     assertEqual(server_errors, 0);
   });
-  tester.addTest('socket_address_nacl_to_browser', function() {
-    var socket_address2 = server.start_server();
-    var con_sock = socket_address2.connect();
-    var retval = con_sock.getmsg(100);
-    var str = '';
-    for (var i = 0; i < retval.length && retval[i] != 0; i++) {
-      str += String.fromCharCode(retval[i]);
-    }
-    var server_errors = server.report();
-    assertEqual(server_errors, 0);
-  });
 }
       //]]>
     </script>

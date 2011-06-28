@@ -790,30 +790,6 @@ void TestAsyncMessages() {
   CHECK(!success);
   CHECK(!exception_expected);
 
-  // Test sending a message with a file descriptor.
-  // Get an example FD first.
-  success = fb_NPN_Invoke(plugin_instance, plugin_obj,
-                          fb_NPN_GetStringIdentifier("__defaultSocketAddress"),
-                          NULL, 0, &result);
-  CHECK(success);
-  CHECK(NPVARIANT_IS_OBJECT(result));
-  NPObject* example_fd = NPVARIANT_TO_OBJECT(result);
-  STRINGZ_TO_NPVARIANT("Message with FD.", args[0]);
-  OBJECT_TO_NPVARIANT(example_fd, args[1]);
-  success = fb_NPN_Invoke(plugin_instance, plugin_obj,
-                          fb_NPN_GetStringIdentifier("__sendAsyncMessage1"),
-                          args, 2, &result);
-  CHECK(success);
-  // Test getting a response back.
-  while (callback->got_calls.size() < 5) {
-    AwaitCallbacks(plugin_instance);
-  }
-  ASSERT_EQ(callback->got_calls.size(), 5);
-  AssertStringsEqual(callback->got_calls[4], "Received 16 bytes, 1 FDs");
-  fb_NPN_ReleaseObject(example_fd);
-
-  fb_NPN_ReleaseObject(callback);
-
   DestroyPluginInstance(plugin_instance, /* reverse_deallocate= */ false);
 }
 

@@ -43,8 +43,7 @@ srpc_nrd_server_nexe = env.ComponentProgram(
         'm',
         'pthread'])
 env.Publish(srpc_nrd_server_nexe_name, 'run',
-    ['srpc_sockaddr.html',
-     'srpc_nrd_server.nmf'])
+    ['srpc_nrd_server.nmf'])
 env.AddPrebuiltBinaryToRepository(srpc_nrd_server_nexe)
 
 
@@ -140,16 +139,6 @@ node = env.PPAPIBrowserTester(
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],
                        'run_srpc_nrd_xfer_chrome_browser_test',
-                       is_broken=env.PPAPIBrowserTesterIsBroken())
-
-node = env.PPAPIBrowserTester(
-    'srpc_sockaddr_chrome_browser_test.out',
-    url='srpc_sockaddr.html',
-    files=env.ExtractPublishedFiles(srpc_nrd_server_nexe_name),
-    args=['--enable_experimental_js'])
-env.AddNodeToTestSuite(node,
-                       ['chrome_browser_tests'],
-                       'run_srpc_sockaddr_chrome_browser_test',
                        is_broken=env.PPAPIBrowserTesterIsBroken())
 
 # TODO(sehr): fix this test on windows.

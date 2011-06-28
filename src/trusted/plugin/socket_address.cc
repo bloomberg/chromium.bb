@@ -13,22 +13,6 @@
 #include "native_client/src/trusted/plugin/socket_address.h"
 #include "native_client/src/trusted/plugin/utility.h"
 
-namespace {
-
-bool RpcConnect(void* obj, plugin::SrpcParams *params) {
-  plugin::SocketAddress* socket_addr =
-      reinterpret_cast<plugin::SocketAddress*>(obj);
-  plugin::ScriptableHandle* connected_socket = socket_addr->Connect();
-  if (NULL == connected_socket) {
-    return false;
-  }
-  params->outs()[0]->tag = NACL_SRPC_ARG_TYPE_OBJECT;
-  params->outs()[0]->arrays.oval = connected_socket;
-  return true;
-}
-
-}  // namespace
-
 namespace plugin {
 
 SocketAddress* SocketAddress::New(Plugin* plugin, nacl::DescWrapper* wrapper) {
@@ -46,13 +30,7 @@ bool SocketAddress::Init(Plugin* plugin, nacl::DescWrapper* wrapper) {
   if (!DescBasedHandle::Init(plugin, wrapper)) {
     return false;
   }
-  LoadMethods();
   return true;
-}
-
-void SocketAddress::LoadMethods() {
-  // Methods implemented by SocketAddresses.
-  AddMethodCall(RpcConnect, "connect", "", "h");
 }
 
 SocketAddress::SocketAddress() {

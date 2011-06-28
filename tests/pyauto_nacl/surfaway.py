@@ -37,9 +37,6 @@ class NaClTest(pyauto.PyUITest):
   def testSurfAwaySRPCParameterPassing(self):
     self.surfAway('srpc_basic.html', 'SRPC')
 
-  def testSurfAwaySRPCSocketAddress(self):
-    self.surfAway('srpc_sockaddr.html', 'SRPC')
-
   def testSurfAwaySRPCResourceDescriptor(self):
     self.surfAway('srpc_nrd_xfer.html', 'SRPC')
 

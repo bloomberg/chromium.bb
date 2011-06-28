@@ -25,10 +25,6 @@ function ScalarTypes(tester, server) {
     assertRaises(function() { server.bool(new Array(10)); });
   });
 
-  tester.addTest('handle_as_bool', function() {
-    assertRaises(function() { server.bool(server.__defaultSocketAddress()); });
-  });
-
   tester.addTest('double_passret', function() {
     var dval = 3.1415;
     assertEqual(server.double(dval), -dval);
@@ -45,10 +41,6 @@ function ScalarTypes(tester, server) {
 
   tester.addTest('array_as_double', function() {
     assertRaises(function() { server.double(new Array(10)); });
-  });
-
-  tester.addTest('handle_as_double', function() {
-    assertRaises(function() {server.double(server.__defaultSocketAddress()); });
   });
 
   tester.addTest('int_passret', function() {
@@ -72,10 +64,6 @@ function ScalarTypes(tester, server) {
 
   tester.addTest('array_as_int', function() {
     assertRaises(function() { server.int(new Array(10)); });
-  });
-
-  tester.addTest('handle_as_int', function() {
-    assertRaises(function() { server.int(server.__defaultSocketAddress()); });
   });
 }
 
@@ -110,12 +98,6 @@ function ArrayTypes(tester, server) {
     assertRaises(function() { return server.char_array(1.5); });
   });
 
-  tester.addTest('handle_as_char_array', function() {
-    assertRaises(function() {
-      return server.char_array(server.__defaultSocketAddress());
-    });
-  });
-
   tester.addTest('doublearr_passret', function() {
     var darr = [3.1, 1.4, 4.1, 1.5, 5.9];
     var ret_arr = server.double_array(darr, 5);
@@ -134,12 +116,6 @@ function ArrayTypes(tester, server) {
     assertRaises(function() { return server.double_array(1.0); });
   });
 
-  tester.addTest('handle_as_double_array', function() {
-    assertRaises(function() {
-      return server.double_array(server.__defaultSocketAddress());
-    });
-  });
-
   tester.addTest('intarr_passret', function() {
     var iarr = [1, 2, 3, 4, 5];
     var ret_arr = server.int_array(iarr, 5);
@@ -156,12 +132,6 @@ function ArrayTypes(tester, server) {
 
   tester.addTest('double_as_int_array', function() {
     assertRaises(function() { return server.int_array(1.0); });
-  });
-
-  tester.addTest('handle_as_int_array', function() {
-    assertRaises(function() {
-      return server.int_array(server.__defaultSocketAddress());
-    });
   });
 }
 
@@ -192,11 +162,6 @@ function SpecialTypes(tester, server) {
 
   tester.addTest('array_as_string', function() {
     assertRaises(function() { return server.string([1, 2, 3, 4, 5]); });
-  });
-
-  tester.addTest('handle_send', function() {
-    var hnd = server.__defaultSocketAddress();
-    server.handle(hnd); // Testing this does not fail.
   });
 
   tester.addTest('handle_return', function() {

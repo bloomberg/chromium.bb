@@ -30,7 +30,6 @@ class BrowserInterface;
 class ConnectedSocket;
 class ErrorInfo;
 class Plugin;
-class SocketAddress;
 class SrtSocket;
 class ScriptableHandle;
 class ServiceRuntime;

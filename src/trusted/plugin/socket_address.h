@@ -34,7 +34,6 @@ class SocketAddress : public DescBasedHandle {
   SocketAddress();
   ~SocketAddress();
   bool Init(Plugin* plugin, nacl::DescWrapper* wrapper);
-  void LoadMethods();
 };
 
 }  // namespace plugin

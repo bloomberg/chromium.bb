@@ -44,18 +44,6 @@ namespace plugin {
 
 namespace {
 
-bool DefaultSocketAddress(void* obj, SrpcParams* params) {
-  Plugin* plugin = reinterpret_cast<Plugin*>(obj);
-  if (NULL == plugin->socket_address()) {
-    params->set_exception_string("no socket address");
-    return false;
-  }
-  // Plug the scriptable object into the return values.
-  params->outs()[0]->tag = NACL_SRPC_ARG_TYPE_OBJECT;
-  params->outs()[0]->arrays.oval = plugin->socket_address()->AddRef();
-  return true;
-}
-
 bool GetSandboxISAProperty(void* obj, SrpcParams* params) {
   UNREFERENCED_PARAMETER(obj);
   const char* isa = GetSandboxISA();
@@ -192,7 +180,6 @@ void Plugin::LoadMethods() {
   }
   // Experimental methods supported by Plugin.
   // These methods are explicitly not included in shipping versions of Chrome.
-  AddMethodCall(DefaultSocketAddress, "__defaultSocketAddress", "", "h");
   AddMethodCall(GetSandboxISAProperty, "__getSandboxISA", "", "s");
   AddMethodCall(LaunchExecutableFromFd, "__launchExecutableFromFd", "h", "");
   AddMethodCall(NullPluginMethod, "__nullPluginMethod", "s", "i");
