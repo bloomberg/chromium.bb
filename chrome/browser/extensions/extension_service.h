@@ -40,14 +40,19 @@
 #include "content/common/property_bag.h"
 
 class CrxInstaller;
+class ExtensionBookmarkEventRouter;
 class ExtensionBrowserEventRouter;
 class ExtensionContentSettingsStore;
+class ExtensionCookiesEventRouter;
+class ExtensionHistoryEventRouter;
 class ExtensionInstallUI;
+class ExtensionManagementEventRouter;
 class ExtensionPreferenceEventRouter;
 class ExtensionServiceBackend;
 struct ExtensionSyncData;
 class ExtensionToolbarModel;
 class ExtensionUpdater;
+class ExtensionWebNavigationEventRouter;
 class GURL;
 class PendingExtensionManager;
 class Profile;
@@ -705,9 +710,19 @@ class ExtensionService
   // Flag to make sure event routers are only initialized once.
   bool event_routers_initialized_;
 
+  scoped_ptr<ExtensionHistoryEventRouter> history_event_router_;
+
   scoped_ptr<ExtensionBrowserEventRouter> browser_event_router_;
 
   scoped_ptr<ExtensionPreferenceEventRouter> preference_event_router_;
+
+  scoped_ptr<ExtensionBookmarkEventRouter> bookmark_event_router_;
+
+  scoped_ptr<ExtensionCookiesEventRouter> cookies_event_router_;
+
+  scoped_ptr<ExtensionManagementEventRouter> management_event_router_;
+
+  scoped_ptr<ExtensionWebNavigationEventRouter> web_navigation_event_router_;
 
   // A collection of external extension providers.  Each provider reads
   // a source of external extension information.  Examples include the

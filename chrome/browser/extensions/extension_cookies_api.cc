@@ -25,26 +25,29 @@
 
 namespace keys = extension_cookies_api_constants;
 
-// static
-ExtensionCookiesEventRouter* ExtensionCookiesEventRouter::GetInstance() {
-  return Singleton<ExtensionCookiesEventRouter>::get();
-}
+ExtensionCookiesEventRouter::ExtensionCookiesEventRouter(Profile* profile)
+    : profile_(profile) {}
+
+ExtensionCookiesEventRouter::~ExtensionCookiesEventRouter() {}
 
 void ExtensionCookiesEventRouter::Init() {
-  if (registrar_.IsEmpty()) {
-    registrar_.Add(this,
-                   NotificationType::COOKIE_CHANGED,
-                   NotificationService::AllSources());
-  }
+  CHECK(registrar_.IsEmpty());
+  registrar_.Add(this,
+                 NotificationType::COOKIE_CHANGED,
+                 NotificationService::AllSources());
 }
 
 void ExtensionCookiesEventRouter::Observe(NotificationType type,
                                           const NotificationSource& source,
                                           const NotificationDetails& details) {
+  Profile* profile = Source<Profile>(source).ptr();
+  if (!profile_->IsSameProfile(profile)) {
+    return;
+  }
   switch (type.value) {
     case NotificationType::COOKIE_CHANGED:
       CookieChanged(
-          Source<Profile>(source).ptr(),
+          profile,
           Details<ChromeCookieDetails>(details).ptr());
       break;
 

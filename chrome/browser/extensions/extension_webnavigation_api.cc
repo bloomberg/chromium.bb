@@ -247,15 +247,10 @@ void FrameNavigationState::RemoveTabContentsState(
 
 // ExtensionWebNavigtionEventRouter -------------------------------------------
 
-ExtensionWebNavigationEventRouter::ExtensionWebNavigationEventRouter() {}
+ExtensionWebNavigationEventRouter::ExtensionWebNavigationEventRouter(
+    Profile* profile) : profile_(profile) {}
 
 ExtensionWebNavigationEventRouter::~ExtensionWebNavigationEventRouter() {}
-
-// static
-ExtensionWebNavigationEventRouter*
-ExtensionWebNavigationEventRouter::GetInstance() {
-  return Singleton<ExtensionWebNavigationEventRouter>::get();
-}
 
 void ExtensionWebNavigationEventRouter::Init() {
   if (registrar_.IsEmpty()) {
@@ -284,10 +279,12 @@ void ExtensionWebNavigationEventRouter::Observe(
 void ExtensionWebNavigationEventRouter::CreatingNewWindow(
     TabContents* tab_contents,
     const ViewHostMsg_CreateWindow_Params* details) {
-  DispatchOnBeforeRetarget(tab_contents,
-                           tab_contents->profile(),
-                           details->opener_url,
-                           details->target_url);
+  if (profile_->IsSameProfile(tab_contents->profile())) {
+    DispatchOnBeforeRetarget(tab_contents,
+                             tab_contents->profile(),
+                             details->opener_url,
+                             details->target_url);
+  }
 }
 
 

@@ -250,12 +250,8 @@ bool UninstallFunction::RunImpl() {
   return true;
 }
 
-// static
-ExtensionManagementEventRouter* ExtensionManagementEventRouter::GetInstance() {
-  return Singleton<ExtensionManagementEventRouter>::get();
-}
-
-ExtensionManagementEventRouter::ExtensionManagementEventRouter() {}
+ExtensionManagementEventRouter::ExtensionManagementEventRouter(Profile* profile)
+    : profile_(profile) {}
 
 ExtensionManagementEventRouter::~ExtensionManagementEventRouter() {}
 
@@ -267,13 +263,11 @@ void ExtensionManagementEventRouter::Init() {
     NotificationType::EXTENSION_UNLOADED
   };
 
-  // Don't re-init (eg in the case of multiple profiles).
-  if (registrar_.IsEmpty()) {
-    for (size_t i = 0; i < arraysize(types); i++) {
-      registrar_.Add(this,
-                     types[i],
-                     NotificationService::AllSources());
-    }
+  CHECK(registrar_.IsEmpty());
+  for (size_t i = 0; i < arraysize(types); i++) {
+    registrar_.Add(this,
+                   types[i],
+                   NotificationService::AllSources());
   }
 }
 
@@ -282,6 +276,12 @@ void ExtensionManagementEventRouter::Observe(
     const NotificationSource& source,
     const NotificationDetails& details) {
   const char* event_name = NULL;
+  Profile* profile = Source<Profile>(source).ptr();
+  CHECK(profile);
+  if (!profile_->IsSameProfile(profile)) {
+    return;
+  }
+
   switch (type.value) {
     case NotificationType::EXTENSION_INSTALLED:
       event_name = events::kOnExtensionInstalled;
@@ -299,9 +299,6 @@ void ExtensionManagementEventRouter::Observe(
       NOTREACHED();
       return;
   }
-
-  Profile* profile = Source<Profile>(source).ptr();
-  CHECK(profile);
 
   ListValue args;
   if (event_name == events::kOnExtensionUninstalled) {
