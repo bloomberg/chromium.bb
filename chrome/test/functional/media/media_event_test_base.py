@@ -9,6 +9,8 @@ This class contains all common code needed for event testing. Most of the
 methods should be overridden by the subclass.
 """
 
+import copy
+
 import pyauto_media
 from media_test_base import MediaTestBase
 
@@ -27,8 +29,13 @@ class MediaEventTestBase(MediaTestBase):
   # There are two types of events listed here:
   #   0: event occurrence is 0.
   #   None: event occurrence is more than 1.
+  # When the event is listed in |EVENT_LIST| and not in
+  # |event_expected_values|, it means that we do not assert the event
+  # occurrence.
   # The following are default values that may be overridden.
-  event_expected_values = {'ratechange': 0,
+  event_expected_values = {'play': 1,
+                           'playing': 1,
+                           'ratechange': 0,
                            'pause': 0,
                            'suspend': 0,
                            'load': 0,
@@ -44,6 +51,9 @@ class MediaEventTestBase(MediaTestBase):
                            'enter': 0,
                            'exit': 0,
                            'change': 0}
+  # A dictionary mapping event names to the corresponding related events.
+  related_event_map = {'play': ['playing'], 'seek': ['seeked', 'seeking']}
+  event_expected_values_for_each_run = {}
 
   def _GetEventLog(self):
     """Get the event log from the DOM tree that is produced by player.html.
@@ -68,8 +78,8 @@ class MediaEventTestBase(MediaTestBase):
     """
     for event_name in self.EVENT_LIST:
       event_occurrence = len(all_event_infos[event_name].split())
-      if event_name in self.event_expected_values:
-        if self.event_expected_values[event_name] is None:
+      if event_name in self.event_expected_values_for_each_run:
+        if self.event_expected_values_for_each_run[event_name] is None:
           self.assertTrue(
               event_occurrence > 1,
               msg='the number of events should be more than 1 for %s' %
@@ -77,7 +87,7 @@ class MediaEventTestBase(MediaTestBase):
         else:
           self.assertEqual(
               event_occurrence,
-              self.event_expected_values[event_name],
+              self.event_expected_values_for_each_run[event_name],
               msg='the number of events is wrong for %s' % event_name)
       else:
         # Make sure the value is one.
@@ -85,20 +95,49 @@ class MediaEventTestBase(MediaTestBase):
             event_occurrence, 1,
             msg='the number of events should be 1 for %s' % event_name)
 
+  def _IncrementEventExpectedValue(self, action_name):
+    """Increment event expected value for a given action.
+
+    Args:
+      action_name: the name of the action (e.g., 'play', 'pause', 'seek')
+    """
+    if (not action_name in self.event_expected_values_for_each_run or
+        self.event_expected_values_for_each_run[action_name] is None):
+      self.event_expected_values_for_each_run[action_name] = 0
+    self.event_expected_values_for_each_run[action_name] += 1
+
+  def PreEachRunProcess(self, run_counter):
+    """A method to execute before each run.
+
+    It refreshes the expected values for each run with original event
+    expected values.
+
+    Args:
+      run_counter: a counter for each run.
+    """
+    self.event_expected_values_for_each_run = copy.copy(
+        self.event_expected_values)
+
   def PostEachRunProcess(self, run_counter):
     """A method to execute after each run.
-
-    Terminates the measuring thread and records the measurement in
-    measure_thread.chrome_renderer_process_info.
 
     Args:
       run_counter: a counter for each run.
     """
     MediaTestBase.PostEachRunProcess(self, run_counter)
     all_event_infos = self._GetEventLog()
-    # TODO(imasaki@chromium.org): adjust events based on actions.
-    if not self._test_scenarios:
-      self.AssertEvent(all_event_infos)
+    if self.whole_test_scenarios:
+      test_scenario = self.whole_test_scenarios[self.run_counter]
+      # Test scenario consists of list of triples 'time|action|target'
+      # (e.g., '1000|pause|0' or '2000|seek|1000').
+      test_scenario_elements = test_scenario.split('|')
+      for i in xrange(len(test_scenario_elements) / 3):
+        action_name = test_scenario_elements[i * 3 + 1]
+        self._IncrementEventExpectedValue(action_name)
+        if action_name in self.related_event_map:
+          for related_event in self.related_event_map[action_name]:
+            self._IncrementEventExpectedValue(related_event)
+    self.AssertEvent(all_event_infos)
 
   def GetPlayerHTMLFileName(self):
     """A method to get the player HTML file name."""

@@ -48,7 +48,7 @@ class MediaTestBase(pyauto.PyUITest):
   times = []
   media_filename = ''
   media_filename_nickname = ''
-  _test_scenarios = []
+  whole_test_scenarios = []
   reference_build = False
 
   def _GetMediaURLAndParameterString(self, media_filename):
@@ -130,22 +130,12 @@ class MediaTestBase(pyauto.PyUITest):
       return self.GetDOMValue('document.title').strip() == 'END'
 
     self.PreAllRunsProcess()
-    test_scenario_filename = os.getenv(
-        MediaTestEnvNames.TEST_SCENARIO_FILE_ENV_NAME, '')
-    test_scenario = os.getenv(
-        MediaTestEnvNames.TEST_SCENARIO_ENV_NAME, '')
-    if test_scenario:
-      # Run test with the same action several times.
-      self._test_scenarios = [test_scenario] * self.number_of_runs
-    if test_scenario_filename:
-      self._test_scenarios = self.ReadTestScenarioFiles(test_scenario_filename)
-      # One run per test scenario.
-      self.number_of_runs = len(self._test_scenarios)
     for run_counter in range(self.number_of_runs):
+      self.run_counter = run_counter
       self.PreEachRunProcess(run_counter)
       url = self.url
-      if self._test_scenarios:
-        url += '&actions=' + self.test_scenarios[run_counter]
+      if self.whole_test_scenarios:
+        url += '&actions=' + self.whole_test_scenarios[run_counter]
       logging.debug('Navigate to %s', url)
       self.NavigateToURL(url)
       self.WaitUntil(lambda: _VideoEnded(),
@@ -175,6 +165,18 @@ class MediaTestBase(pyauto.PyUITest):
     self.times = []
     self.reference_build = os.getenv(
         MediaTestEnvNames.REFERENCE_BUILD_ENV_NAME, False)
+    test_scenario_filename = os.getenv(
+        MediaTestEnvNames.TEST_SCENARIO_FILE_ENV_NAME, '')
+    test_scenario = os.getenv(
+        MediaTestEnvNames.TEST_SCENARIO_ENV_NAME, '')
+    if test_scenario:
+      # Run test with the same action several times.
+      self.whole_test_scenarios = [test_scenario] * self.number_of_runs
+    if test_scenario_filename:
+      self.whole_test_scenarios = (
+          self.ReadTestScenarioFiles(test_scenario_filename))
+      # One run per test scenario.
+      self.number_of_runs = len(self.whole_test_scenarios)
 
   def PostAllRunsProcess(self):
     """A method to execute after all runs.
