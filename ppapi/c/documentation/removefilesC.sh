@@ -8,7 +8,6 @@ rm bc_s.png
 rm classes.ezt
 rm closed.png
 rm doxygen.png
-rm footer_8dox.ezt
 rm functions.ezt
 rm functions_vars.ezt
 rm globals.ezt
@@ -19,10 +18,8 @@ rm globals_type.ezt
 rm globals_vars.ezt
 rm graph_legend.ezt
 rm graph_legend.png
-rm header_8dox.ezt
 rm index_8dox.ezt
 rm modules.ezt
-rm modules_8dox.ezt
 rm nav_f.png
 rm nav_h.png
 rm open.png
@@ -34,8 +31,8 @@ rm tab_s.png
 rm *.md5
 rm *.map
 rm *.css
-rm *.py
 rm files.ezt
 rm index.ezt
-
+rm jquery.js
+rm *.html
 
