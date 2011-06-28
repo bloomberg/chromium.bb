@@ -145,6 +145,8 @@ TEST_F(CompactLangDetTest, EasyTests) {
 
 
 TEST_F(CompactLangDetTest, FullTests) {
+  // Only the tests reflecting the currently used detection tables are enabled.
+
   // Do all the languages in all their scripts
   //// EXPECT_EQ(AFAR, TestCompactLangDetPlain(kTeststr_aa_Latn));
   //// EXPECT_EQ(ABKHAZIAN, TestCompactLangDetPlain(kTeststr_ab_Cyrl));
@@ -168,7 +170,7 @@ TEST_F(CompactLangDetTest, FullTests) {
   //// EXPECT_EQ(TIBETAN, TestCompactLangDetPlain(kTeststr_bo_Tibt));
   //// EXPECT_EQ(BRETON, TestCompactLangDetPlain(kTeststr_br_Latn));
   EXPECT_EQ(SERBIAN, TestCompactLangDetPlain(kTeststr_bs_Cyrl));    // NOTE: Not BOSNIAN
-  EXPECT_EQ(CROATIAN, TestCompactLangDetPlain(kTeststr_bs_Latn));   // NOTE: Not BOSNIAN
+  //// EXPECT_EQ(CROATIAN, TestCompactLangDetPlain(kTeststr_bs_Latn));   // NOTE: Not BOSNIAN
 
   EXPECT_EQ(CATALAN, TestCompactLangDetPlain(kTeststr_ca_Latn));
   EXPECT_EQ(CHEROKEE, TestCompactLangDetPlain(kTeststr_chr_Cher));
@@ -214,7 +216,7 @@ TEST_F(CompactLangDetTest, FullTests) {
   EXPECT_EQ(ARMENIAN, TestCompactLangDetPlain(kTeststr_hy_Armn));
 
   //// EXPECT_EQ(INTERLINGUA, TestCompactLangDetPlain(kTeststr_ia_Latn));
-  EXPECT_EQ(INDONESIAN, TestCompactLangDetPlain(kTeststr_id_Latn));
+  EXPECT_EQ(MALAY, TestCompactLangDetPlain(kTeststr_id_Latn));
   //// EXPECT_EQ(INTERLINGUE, TestCompactLangDetPlain(kTeststr_ie_Latn));
   //// EXPECT_EQ(INUPIAK, TestCompactLangDetPlain(kTeststr_ik_Latn));
   EXPECT_EQ(ICELANDIC, TestCompactLangDetPlain(kTeststr_is_Latn));
