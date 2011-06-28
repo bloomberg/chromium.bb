@@ -1,21 +1,18 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/file_descriptor_shuffle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::InjectiveMultimap;
-using base::InjectionArc;
-using base::PerformInjectiveMultimap;
-using base::InjectionDelegate;
-
 namespace {
-typedef testing::Test FileDescriptorShuffleTest;
-}
 
 // 'Duplicated' file descriptors start at this number
-static const int kDuplicateBase = 1000;
+const int kDuplicateBase = 1000;
+
+}  // namespace
+
+namespace base {
 
 struct Action {
   enum Type {
@@ -287,3 +284,5 @@ TEST(FileDescriptorShuffleTest, Simple1WithFailure) {
 
   EXPECT_FALSE(PerformInjectiveMultimap(map, &failing));
 }
+
+}  // namespace base
