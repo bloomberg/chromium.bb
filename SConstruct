@@ -2446,6 +2446,14 @@ nacl_irt_env = nacl_env.Clone(
     NACL_BUILD_FAMILY = 'UNTRUSTED_IRT',
 )
 
+# http://code.google.com/p/nativeclient/issues/detail?id=1225
+if nacl_irt_env.Bit('bitcode'):
+  optflags = ['-O0','-O1','-O2','-O3']
+  nacl_irt_env.FilterOut(LINKFLAGS=optflags)
+  nacl_irt_env.FilterOut(CCFLAGS=optflags)
+  nacl_irt_env.FilterOut(CXXFLAGS=optflags)
+
+
 if nacl_env.Bit('irt'):
   nacl_env.Replace(PPAPI_LIBS=['ppapi'])
   # Even non-PPAPI nexes need this for IRT-compatible linking.

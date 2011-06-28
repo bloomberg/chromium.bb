@@ -37,7 +37,7 @@ EXTRA_ENV = {
   'STDLIB'      : '1',    # Include standard libraries (-nostdlib sets to 0)
   'DIAGNOSTIC'  : '0',    # Diagnostic flag detected
   'STATIC'      : '${LIBMODE_NEWLIB ? 1 : 0}', # -static (on for newlib)
-  'PIC'         : '0',   # Generate PIC
+  'PIC'         : '0',    # Generate PIC
 
   'INPUTS'      : '',    # Input files
   'OUTPUT'      : '',    # Output file
@@ -66,33 +66,40 @@ EXTRA_ENV = {
                   '-nostdinc -DNACL_LINUX=1 -D__native_client__=1 ' +
                   '-D__pnacl__=1 ${BIAS_%BIAS%}',
 
-  'CC_STDINC'   : '${CC_STDINC_%LIBMODE%}',
-    # NOTE: the two competing approaches here
-    #       make the gcc driver "right" or
-    #       put all the logic/knowledge into this driver.
-    #       Currently, we have a messy mixture.
-    # NOTE: order important
-  'CC_STDINC_newlib' :
-    '-isystem ${BASE_LLVM_GCC}/lib/gcc/arm-none-linux-gnueabi/4.2.1/include ' +
-    '-isystem ${BASE_LLVM_GCC}/' +
-      'lib/gcc/arm-none-linux-gnueabi/4.2.1/install-tools/include ' +
-    '-isystem ${BASE_LIBSTDCPP}/include/c++/4.2.1 ' +
-    '-isystem ${BASE_LIBSTDCPP}/include/c++/4.2.1/arm-none-linux-gnueabi ' +
-    '-isystem ${BASE_INCLUDE} ' +
-    '-isystem ${BASE_NEWLIB}/arm-none-linux-gnueabi/include',
 
-  'CC_STDINC_glibc' :
-    '-isystem ${BASE_GLIBC}/include ' +
-    '-isystem ${BASE_LLVM_GCC}/lib/gcc/arm-none-linux-gnueabi/4.2.1/include ' +
-    '-isystem ${BASE_LLVM_GCC}/' +
-      'lib/gcc/arm-none-linux-gnueabi/4.2.1/install-tools/include ' +
-    '-isystem ${BASE_LIBSTDCPP}/include/c++/4.2.1 ' +
-    '-isystem ${BASE_LIBSTDCPP}/include/c++/4.2.1/arm-none-linux-gnueabi',
+  'PREFIXES'        : '${PREFIXES_USER} ${PREFIXES_BUILTIN}',
+  'PREFIXES_BUILTIN': '${STDLIB ? ${LIBS_ARCH}/ ${LIBS_BC}/}',
+  'PREFIXES_USER'   : '', # System prefixes specified by using the -B flag.
 
-  # ${LIBS} must come before ${LIBS_BC} so that the native glibc/libnacl
+  'ISYSTEM'        : '${ISYSTEM_USER} ${ISYSTEM_BUILTIN}',
+  'ISYSTEM_BUILTIN': '${STDINC ? ${ISYSTEM_%LIBMODE%}}',
+  'ISYSTEM_USER'   : '',  # System include directories specified by
+                          # using the -isystem flag.
+
+  'ISYSTEM_newlib' :
+    '${BASE_LLVM_GCC}/lib/gcc/arm-none-linux-gnueabi/4.2.1/include ' +
+    '${BASE_LLVM_GCC}/' +
+      'lib/gcc/arm-none-linux-gnueabi/4.2.1/install-tools/include ' +
+    '${BASE_LIBSTDCPP}/include/c++/4.2.1 ' +
+    '${BASE_LIBSTDCPP}/include/c++/4.2.1/arm-none-linux-gnueabi ' +
+    '${BASE_INCLUDE} ' +
+    '${BASE_NEWLIB}/arm-none-linux-gnueabi/include',
+
+  'ISYSTEM_glibc' :
+    '${BASE_GLIBC}/include ' +
+    '${BASE_LLVM_GCC}/lib/gcc/arm-none-linux-gnueabi/4.2.1/include ' +
+    '${BASE_LLVM_GCC}/' +
+      'lib/gcc/arm-none-linux-gnueabi/4.2.1/install-tools/include ' +
+    '${BASE_LIBSTDCPP}/include/c++/4.2.1 ' +
+    '${BASE_LIBSTDCPP}/include/c++/4.2.1/arm-none-linux-gnueabi',
+
+  # ${LIBS_ARCH} must come before ${LIBS_BC} so that the native glibc/libnacl
   # takes precedence over bitcode libc.
   'LD_FLAGS' : '-O${OPT_LEVEL} ${STATIC ? -static} ${SHARED ? -shared} ' +
-               '${PIC ? -fPIC} -L${LIBS} -L${LIBS_BC}',
+               '${PIC ? -fPIC} ${@AddPrefix:-L:SEARCH_DIRS}',
+
+  'SEARCH_DIRS'      : '${SEARCH_DIRS_USER} ${PREFIXES}',
+  'SEARCH_DIRS_USER' : '', # Directories specified using -L
 
   # Library Strings
   'EMITMODE'         : '${STATIC ? static : ${SHARED ? shared : dynamic}}',
@@ -100,7 +107,7 @@ EXTRA_ENV = {
   # Standard Library Directories
   'LIBS_BC'          : '${BASE}/libs-bitcode',
 
-  'LIBS'             : '${LIBS_%ARCH%}',
+  'LIBS_ARCH'        : '${LIBS_%ARCH%}',
   'LIBS_ARM'         : '${BASE}/libs-arm',
   'LIBS_X8632'       : '${BASE}/libs-x8632',
   'LIBS_X8664'       : '${BASE}/libs-x8664',
@@ -122,47 +129,47 @@ EXTRA_ENV = {
   'LD_ARGS_nostdlib': '-barebones-link ${ld_inputs}',
 
   'LD_ARGS_newlib_static':
-    '-static ${LIBS}/crt1.o ${LIBS_BC}/nacl_startup.bc ${ld_inputs} ' +
+    '-static ${@FindObj:crt1.o} ${@FindObj:nacl_startup.bc} ${ld_inputs} ' +
     '--start-group -lgcc_eh -lgcc -lehsupport -lc -lnacl ' +
-    '${LIBSTDCPP} ${LIBS}/libcrt_platform.a --end-group',
+    '${LIBSTDCPP} ${@FindObj:libcrt_platform.a} --end-group',
 
   # The next three are copied verbatim from nacl-gcc
   'LD_ARGS_glibc_static':
-    '-T ${LIBS}/${EMUL}.x.static ' +
-    '${LIBS}/crt1.o ${LIBS}/crti.o ${LIBS}/crtbeginT.o ' +
+    '-T ${LIBS_ARCH}/${EMUL}.x.static ' +
+    '${@FindObj:crt1.o} ${@FindObj:crti.o} ${@FindObj:crtbeginT.o} ' +
     '${ld_inputs} ${LIBSTDCPP} ' +
     '--start-group -lgcc -lgcc_eh -lehsupport -lc ' +
-    '--end-group ${LIBS}/crtend.o ${LIBS}/crtn.o',
+    '--end-group ${@FindObj:crtend.o} ${@FindObj:crtn.o}',
 
   'LD_ARGS_glibc_shared':
-    '-T ${LIBS}/${EMUL}.xs ' +
-    '--eh-frame-hdr -shared ${LIBS}/crti.o ${LIBS}/crtbeginS.o ' +
+    '-T ${LIBS_ARCH}/${EMUL}.xs ' +
+    '--eh-frame-hdr -shared ${@FindObj:crti.o} ${@FindObj:crtbeginS.o} ' +
     '${ld_inputs} ${LIBSTDCPP} ' +
     '-lgcc -lgcc_eh -lc -lgcc -lgcc_eh ' +
     # When shared libgcc is ready, use this instead:
     # '-lgcc --as-needed -lgcc_s --no-as-needed ' +
     # '-lc -lgcc --as-needed -lgcc_s --no-as-needed ' +
-    '${LIBS}/crtendS.o ${LIBS}/crtn.o -rpath-link ${LIBS}',
+    '${@FindObj:crtendS.o} ${@FindObj:crtn.o} -rpath-link ${LIBS_ARCH}',
 
   'LD_ARGS_glibc_dynamic':
-    '-T ${LIBS}/${EMUL}.x ' +
-    '--eh-frame-hdr ${LIBS}/crt1.o ${LIBS}/crti.o ' +
-    '${LIBS}/crtbegin.o ${ld_inputs} ${LIBSTDCPP} ' +
+    '-T ${LIBS_ARCH}/${EMUL}.x ' +
+    '--eh-frame-hdr ${@FindObj:crt1.o} ${@FindObj:crti.o} ' +
+    '${@FindObj:crtbegin.o} ${ld_inputs} ${LIBSTDCPP} ' +
     '-lgcc -lgcc_eh -lc -lgcc -lgcc_eh -Bstatic -lehsupport -Bdynamic ' +
     # When shared libgcc is ready, use this instead:
     # '-lgcc --as-needed -lgcc_s --no-as-needed ' +
     # '-lc -lgcc --as-needed -lgcc_s --no-as-needed ' +
-    '${LIBS}/crtend.o ${LIBS}/crtn.o -rpath-link ${LIBS}',
+    '${@FindObj:crtend.o} ${@FindObj:crtn.o} -rpath-link ${LIBS_ARCH}',
 
   'LIBSTDCPP'       : '${USE_GXX ? -lstdc++ -lm }',
 
   'CC' : '${USE_GXX ? ${LLVM_GXX} : ${LLVM_GCC}}',
 
   'RUN_CC': '${CC} -emit-llvm ${mode} ${CC_FLAGS} ' +
-            '${STDINC ? ${CC_STDINC}} ' +
+            '${@AddPrefix:-isystem :ISYSTEM} ' +
             '${input} -o ${output}',
 
-  'RUN_PP' : '${CC} -E ${CC_FLAGS} ${CC_STDINC} ' +
+  'RUN_PP' : '${CC} -E ${CC_FLAGS} ${@AddPrefix:-isystem :ISYSTEM} ' +
              '"${input}" -o "${output}"'
 }
 env.update(EXTRA_ENV)
@@ -172,6 +179,17 @@ def AddLDFlag(*args):
 
 def AddCCFlag(*args):
   env.append('CC_FLAGS', *args)
+
+def AddBPrefix(prefix):
+  if os.path.isdir(prefix) and not prefix.endswith(os.sep):
+    prefix += os.sep
+
+  env.append('PREFIXES_USER', prefix)
+
+  # Add prefix/include to isystem if it exists
+  include_dir = prefix + 'include'
+  if os.path.isdir(include_dir):
+    env.append('ISYSTEM_USER', include_dir)
 
 CustomPatterns = [
   ( '--driver=(.+)',                   "env.set('CC', $0)\n"),
@@ -211,21 +229,23 @@ GCCPatterns = [
   ( '(-g)',                   AddCCFlag),
   ( '(-W.*)',                 AddCCFlag),
   ( '(-std=.*)',              AddCCFlag),
-  ( '(-B.*)',                 AddCCFlag),
   ( '(-D.*)',                 AddCCFlag),
   ( '(-f.*)',                 AddCCFlag),
   ( ('(-I)', '(.+)'),         AddCCFlag),
   ( '(-I.+)',                 AddCCFlag),
+  ( ('-isystem', '(.*)'),     "env.append('ISYSTEM_USER', $0)"),
   ( '(-pedantic)',            AddCCFlag),
-  ( ('(-isystem)', '(.+)'),   AddCCFlag),
   ( '(-g.*)',                 AddCCFlag),
   ( '(-xassembler-with-cpp)', AddCCFlag),
 
   ( '-shared',                "env.set('SHARED', '1')"),
   ( '-static',                "env.set('STATIC', '1')"),
 
-  ( ('(-L)','(.+)'),          AddLDFlag),
-  ( '(-L.+)',                 AddLDFlag),
+  ( ('-B','(.*)'),            AddBPrefix),
+  ( ('-B(.+)'),               AddBPrefix),
+
+  ( ('-L','(.+)'),            "env.append('SEARCH_DIRS_USER', $0)"),
+  ( '-L(.+)',                 "env.append('SEARCH_DIRS_USER', $0)"),
   ( '(-Bstatic)',             AddLDFlag),
   ( '(-Bdynamic)',            AddLDFlag),
 
@@ -266,7 +286,7 @@ GCCPatterns = [
   ( '(-print-.*)',            "env.set('DIAGNOSTIC', '1')"),
   ( '(--print.*)',            "env.set('DIAGNOSTIC', '1')"),
   ( '(-dumpspecs)',           "env.set('DIAGNOSTIC', '1')"),
-  ( '(-v|--version|--v|-V)',  "env.set('DIAGNOSTIC', '1')"),
+  ( '(-v|--v|--version|-V)',  "env.set('DIAGNOSTIC', '1')"),
   ( '(-d.*)',                 "env.set('DIAGNOSTIC', '1')"),
 
   # Catch all other command-line arguments
@@ -421,6 +441,20 @@ def main(argv):
   RunDriver('pnacl-ld', ld_flags + ld_args + ['-o', output])
   return 0
 
+@env.register
+def FindObj(name):
+  # This is needed because ${A ? B : C} always evaluates both B and C.
+  # (See the definition of LD_ARG)
+  # TODO(pdox): Fix the evaluator so that short-circuiting evaluation is used.
+  if not env.getbool('STDLIB'):
+    return name
+
+  prefixes = env.get('PREFIXES')
+  for prefix in prefixes:
+    guess = prefix + name
+    if os.path.exists(guess):
+      return prefix + name
+  Log.Fatal("Cannot find %s", name)
 
 def CompileOne(input, output_type, namegen, output = None):
   if output is None:

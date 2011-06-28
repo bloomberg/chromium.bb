@@ -202,6 +202,12 @@ def main(argv):
   # If the user passed -arch, then they want native output.
   do_translate = (GetArch() is not None)
 
+  # Expand all -l flags
+  ExpandLibFlags(inputs)
+
+  # Expand input files which are linker scripts
+  inputs = ExpandLinkerScripts(inputs)
+
   if ForceSegmentGap(inputs):
     # Note: we do not use the native bookend file link_segment_gap.o,
     # so we separately specify the segment gap size 0x10000000 (256 MB) here.
@@ -284,6 +290,39 @@ def IsLib(arg):
 def IsFlag(arg):
   return arg.startswith('-') and not IsLib(arg)
 
+def ExpandLibFlags(inputs):
+  for i in xrange(len(inputs)):
+    f = inputs[i]
+    if IsFlag(f):
+      continue
+    if IsLib(f):
+      inputs[i] = FindLib(f)
+
+def FindLinkerScript(inputs):
+  for i in xrange(len(inputs)):
+    f = inputs[i]
+    if IsFlag(f):
+      continue
+    if FileType(f) == 'ldscript':
+      return (i, f)
+
+  return (None, None)
+
+def ExpandLinkerScripts(inputs):
+  while True:
+    # Find a ldscript in the input list
+    i, path = FindLinkerScript(inputs)
+
+    # If none, we are done.
+    if path is None:
+      break
+
+    new_inputs = ldtools.ParseLinkerScript(path)
+    ExpandLibFlags(new_inputs)
+    inputs = inputs[:i] + new_inputs + inputs[i+1:]
+
+  return inputs
+
 def ForceSegmentGap(inputs):
   # Heuristic to detect when the nexe needs a segment gap (e.g., to be
   # compatible with the IRT). The heuristic is to check for -lppapi.
@@ -297,22 +336,14 @@ def ForceSegmentGap(inputs):
   for f in inputs:
     if IsFlag(f):
       continue
-    if IsLib(f):
-      path = FindLib(f)
-    else:
-      path = f
-    if os.path.basename(path) == 'libppapi.a':
+    if os.path.basename(f) == 'libppapi.a':
       return True
   return False
 
 def IsBitcodeInput(f):
   if IsFlag(f):
     return False
-  if IsLib(f):
-    path = FindLib(f)
-  else:
-    path = f
-  return FileType(path) in ['bclib','po']
+  return FileType(f) in ['bclib','po']
 
 def RemoveBitcode(inputs):
   # Library order is important. We need to reinsert the
@@ -346,21 +377,16 @@ def AnalyzeInputs(inputs):
     if IsFlag(f):
       continue
 
-    if IsLib(f):
-      path = FindLib(f)
-    else:
-      path = f
-
-    intype = FileType(path)
+    intype = FileType(f)
 
     if intype in ['o','so','nlib']:
       has_native |= True
-      info = GetELFInfo(path)
+      info = GetELFHeader(f)
       if info:
         new_arch = FixArch(info[1])
         if arch and new_arch != arch:
           Log.Fatal("%s: File has wrong machine type %s, expecting %s",
-                    path, new_arch, arch)
+                    f, new_arch, arch)
         arch = new_arch
       else:
         if intype == 'o':
@@ -375,7 +401,7 @@ def AnalyzeInputs(inputs):
     elif intype in ['bclib','po']:
       has_bitcode |= True
     else:
-      Log.Fatal("%s: Unexpected type of file for linking", f)
+      Log.Fatal("%s: Unexpected type of file for linking (%s)", f, intype)
     count += 1
 
   if count == 0:
@@ -566,8 +592,6 @@ def TranslateInputs(inputs):
     f = inputs[i]
     if IsFlag(f):
       continue
-    if IsLib(f):
-      f = FindLib(f)
     if FileType(f) == 'pso':
       inputs[i] = TranslatePSO(arch, f)
 
@@ -726,11 +750,7 @@ def FindLib(arg):
 def LinkerFiles(args):
   ret = []
   for f in args:
-    if IsLib(f):
-      libpath = FindLib(f)
-      ret.append(libpath)
-      continue
-    elif IsFlag(f):
+    if IsFlag(f):
       continue
     else:
       if not os.path.exists(f):

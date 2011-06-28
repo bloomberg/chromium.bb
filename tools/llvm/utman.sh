@@ -2647,11 +2647,16 @@ driver-install() {
   StepBanner "DRIVER" "Installing driver adaptors to ${PNACL_BIN}"
   mkdir -p "${PNACL_BIN}"
   rm -f "${PNACL_BIN}"/pnacl-*
-  cp "${DRIVER_DIR}"/driver_tools.py "${PNACL_BIN}"
-  for t in "${DRIVER_DIR}"/pnacl-*; do
+
+  spushd "${DRIVER_DIR}"
+  cp driver_tools.py "${PNACL_BIN}"
+  cp artools.py "${PNACL_BIN}"
+  cp ldtools.py "${PNACL_BIN}"
+  for t in pnacl-*; do
     local name=$(basename "$t")
     cp "${t}" "${PNACL_BIN}/${name/.py}"
   done
+  spopd
 
   # Tell the driver the library mode
   touch "${PNACL_BIN}"/${LIBMODE}.cfg

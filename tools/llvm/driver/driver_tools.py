@@ -17,6 +17,8 @@ import signal
 import platform
 import threading
 import Queue
+import artools
+import ldtools
 
 ######################################################################
 #
@@ -195,6 +197,12 @@ DriverPatterns = [
 class env(object):
   data = {}
   stack = []
+  functions = {}
+
+  @classmethod
+  def register(cls, func):
+    """ Register a function for use in the evaluator """
+    cls.functions[func.__name__] = func
 
   @classmethod
   def update(cls, extra):
@@ -289,11 +297,13 @@ class env(object):
   #
   # str = empty | string literal
   # expr = str | expr '$' '{' bracket_expr '}' expr
-  # bracket_expr = varname | boolexpr ? expr | boolexpr ? expr : expr | @func
+  # bracket_expr = varname | boolexpr ? expr | boolexpr ? expr : expr | @call
   # boolexpr = boolval | boolval '&&' boolexpr | boolval '||' boolexpr
   # boolval = varname | !varname | #varname | !#varname | varname '==' str
   # varname = str | varname '%' bracket_expr '%' varname
+  # call = func | func ':' arglist
   # func = str
+  # arglist = empty | arg ':' arglist
   #
   # Do not call these functions outside of class env.
   # The env.eval method is the external interface to the evaluator.
@@ -420,14 +430,24 @@ class env(object):
 
     if s[pos] == '@':
       # Function call: ${@func}
-      (_,i) = FindFirst(s, pos, terminators)
+      # or possibly  : ${@func:arg1:arg2...}
+      (_,i) = FindFirst(s, pos, [':']+terminators)
       if i == len(s):
         return ('', i) # Error one level up
       funcname = s[pos+1:i]
 
-      val = globals()[funcname]()
+      if s[i] != ':':
+        j = i
+        args = []
+      else:
+        (_,j) = FindFirst(s, i+1, terminators)
+        if j == len(s):
+          return ('', j) # Error one level up
+        args = s[i+1:j].split(':')
+
+      val = cls.functions[funcname](*args)
       contents = cls.eval(val)
-      return (contents, i)
+      return (contents, j)
 
     (m,_) = FindFirst(s, pos, ['?']+terminators)
     if m != '?':
@@ -558,6 +578,7 @@ def memoize(f):
   return newf
 
 
+@env.register
 @memoize
 def GetBuildOS():
   name = platform.system().lower()
@@ -567,6 +588,7 @@ def GetBuildOS():
     Log.Fatal("Unsupported platform '%s'", name)
   return name
 
+@env.register
 @memoize
 def GetBuildArch():
   m = platform.machine()
@@ -594,6 +616,7 @@ def FindBaseDir(function):
 def DriverPath():
   return os.path.abspath(sys.argv[0])
 
+@env.register
 @memoize
 def FindBaseNaCl():
   """ Find native_client/ directory """
@@ -602,6 +625,7 @@ def FindBaseNaCl():
     Log.Fatal("Unable to find 'native_client' directory")
   return shell.escape(dir)
 
+@env.register
 @memoize
 def FindBasePNaCl():
   """ Find the base directory of the PNaCl toolchain """
@@ -617,15 +641,18 @@ def FindBasePNaCl():
     # If we've invoked from tools/llvm/driver
     return '${BASE_TOOLCHAIN}/pnacl_${BUILD_OS}_${BUILD_ARCH}_${LIBMODE}'
 
+@env.register
 @memoize
 def FindBaseDriver():
   """Find the directory with the driver"""
   return shell.escape(os.path.dirname(DriverPath()))
 
+@env.register
 @memoize
 def GetDriverExt():
   return os.path.splitext(sys.argv[0])[1]
 
+@env.register
 @memoize
 def DetectLibMode():
   """ Determine if this is glibc or newlib """
@@ -643,6 +670,11 @@ def DetectLibMode():
     return "glibc"
 
   Log.Fatal("Cannot determine library mode!")
+
+@env.register
+def AddPrefix(prefix, varname):
+  values = env.get(varname)
+  return ' '.join([prefix + shell.escape(v) for v in values ])
 
 ######################################################################
 #
@@ -752,15 +784,17 @@ ELF_ABI_VER = { 0: 'NONE',
 # Otherwise, returns:
 #   (e_type, e_machine, e_osabi, e_abi_ver)
 # Example:
-#  GetELFInfo('/bin/bash') == ('EXEC', 'X86_64', 'UNIX', 'NONE')
-#  GetELFInfo('bundle_size.o') == ('REL', '386', 'NACL', 'NACL')
+#  GetELFHeader('/bin/bash') == ('EXEC', 'X86_64', 'UNIX', 'NONE')
+#  GetELFHeader('bundle_size.o') == ('REL', '386', 'NACL', 'NACL')
 @SimpleCache
-def GetELFInfo(filename):
-  # Pull e_ident, e_type, e_machine
-
+def GetELFHeader(filename):
   fp = DriverOpen(filename, 'rb')
   header = fp.read(16 + 2 + 2)
   DriverClose(fp)
+  return DecodeELFHeader(header, filename)
+
+def DecodeELFHeader(header, filename):
+  # Pull e_ident, e_type, e_machine
   if header[0:4] != ELF_MAGIC:
     return None
   e_osabi = DecodeLE(header[7])
@@ -781,7 +815,7 @@ def GetELFInfo(filename):
           ELF_OSABI[e_osabi], ELF_ABI_VER[e_abiver])
 
 def IsELF(filename):
-  return GetELFInfo(filename) is not None
+  return GetELFHeader(filename) is not None
 
 # Decode Little Endian bytes into an unsigned value
 def DecodeLE(bytes):
@@ -861,15 +895,12 @@ def FileType(filename):
   # Auto-detect bitcode files, since we can't rely on extensions
   ext = filename.split('.')[-1]
 
-  # This is a total hack. We assume all archives contain
-  # bitcode except for the ones in libs-arm*, and libs-x86*.
-  # TODO(pdox): We need some way to actually detect
-  # whether .a files contain bitcode or objects.
+  # Auto-detect linker scripts
+  if ext in ('a','so','pso') and ldtools.IsLinkerScript(filename):
+    return 'ldscript'
+
   if ext == 'a':
-    if ('libs-arm' in filename or
-        'libs-x86' in filename):
-      return 'nlib'
-    return 'bclib'
+    return artools.GetArchiveType(filename)
 
   could_be_bitcode = ext in ('o','os','so','bc','po','pso','pexe')
   if could_be_bitcode and IsBitcode(filename):
@@ -894,13 +925,13 @@ def FileType(filename):
 def GetELFType(filename):
   """ ELF type as determined by ELF metadata """
   assert(IsELF(filename))
-  elfinfo = GetELFInfo(filename)
+  elfheader = GetELFHeader(filename)
   elf_type_map = {
     'EXEC': 'nexe',
     'REL' : 'o',
     'DYN' : 'so'
   }
-  return elf_type_map[elfinfo[0]]
+  return elf_type_map[elfheader[0]]
 
 @SimpleCache
 def GetBitcodeType(filename):
