@@ -200,7 +200,7 @@ class PluginsTest(pyauto.PyUITest):
                      msg='Plug-in not blocked.')
 
     # Add an exception to allow plugins on hulu.com.
-    self.SetPrefs(pyauto.kContentSettingsPatternPairs,
+    self.SetPrefs(pyauto.kContentSettingsPatterns,
                  {'[*.]hulu.com,*': {'plugins': 1}})
     self.AppendTab(pyauto.GURL('http://www.hulu.com'))
     self.assertTrue(self._GetPluginPID('Shockwave Flash'),
@@ -222,7 +222,7 @@ class PluginsTest(pyauto.PyUITest):
         msg='Expected Shockwave Flash plugin to die after killing')
 
     # Add an exception to block plugins on localhost.
-    self.SetPrefs(pyauto.kContentSettingsPatternPairs,
+    self.SetPrefs(pyauto.kContentSettingsPatterns,
                  {'[*.]127.0.0.1,*': {'plugins': 2}})
     self.GetBrowserWindow(0).GetTab(0).Reload()
     self.assertFalse(self._GetPluginPID('Shockwave Flash'),
