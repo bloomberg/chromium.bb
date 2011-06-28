@@ -32,3 +32,4 @@ MacSandboxTest.FileAccess
 
 # http://crbug.com/87769
 BalloonControllerTest.ShowAndCloseTest
+BalloonControllerTest.SizesTest
