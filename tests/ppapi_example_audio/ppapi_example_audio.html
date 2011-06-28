@@ -28,13 +28,14 @@
 function setupTests(tester, plugin) {
 
   tester.addAsyncTest('TestPlayback', function(status) {
-    // Deliberately global - this what the nexe expects.
-    // TODO(nfullagar): use postMessage instead of callback.
-    window['StopPlaybackCompleted'] = status.wrap(function(value) {
-      status.log('Received callback: ' + value);
-      status.assertEqual(value, 'pass');
+    // Register a message listener to receive test result.
+    var messageListener = status.wrap(function(message) {
+      status.log('Received message: ' + message.data);
+      plugin.removeEventListener('message', messageListener, false);
+      status.assertEqual(message.data, 'StopOutput:PASSED');
       status.pass();
     });
+    plugin.addEventListener("message", messageListener, false);
 
     // Tell the nexe to start playing audio.
     plugin.postMessage('StartPlayback');

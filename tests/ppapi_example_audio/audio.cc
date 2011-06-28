@@ -112,7 +112,8 @@ class MyInstance : public pp::Instance {
   static void StopOutput(void* user_data, int32_t err) {
     MyInstance* instance = static_cast<MyInstance*>(user_data);
 
-    const char* result = "unexpected failure";
+    const int kMaxResult = 256;
+    char result[kMaxResult];
     NaClLog(1, "example: StopOutput() invoked on main thread\n");
     if (PP_OK == err) {
       if (instance->audio_.StopPlayback()) {
@@ -121,26 +122,20 @@ class MyInstance : public pp::Instance {
         // TODO(nfullagar): Other ways to determine if machine has audio
         // capabilities. Currently PPAPI returns a valid resource regardless.
         if ((instance->callback_count_ >= 2) || instance->headless_) {
-          result = "pass";
+          snprintf(result, kMaxResult, "StopOutput:PASSED");
         } else {
-          result = "failure: too few callbacks occurred";
+          snprintf(result, kMaxResult, "StopOutput:FAILED - too "
+              "few callbacks (only %d callbacks detected)",
+              static_cast<int>(instance->callback_count_));
         }
       }
-      // At this point, we're done.
+    } else {
+      snprintf(result, kMaxResult,
+          "StopOutput: FAILED - returned err is %d", static_cast<int>(err));
     }
-    // This Call() fails if exception is allowed to default to
-    // NULL.  That is probably a bug, but it doesn't really matter
-    // since this interface is deprecated.  This will need to be
-    // replaced with a postMessage() call when postMessage() is
-    // implemented.
-    // TODO(dmichael): Update this test to use PostMessage.
-#ifdef PPAPI_INSTANCE_REMOVE_SCRIPTING
-    NACL_NOTREACHED();
-#else
-    pp::Var exception;
-    instance->GetWindowObject().Call("StopPlaybackCompleted",
-                                     pp::Var(result), &exception);
-#endif
+    // At this point the test has finished, report result.
+    pp::Var message(result);
+    instance->PostMessage(message);
   }
 
   // To enable basic tests, use basic_tests="1" in the embed tag.
