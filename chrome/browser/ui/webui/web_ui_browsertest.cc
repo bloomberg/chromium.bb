@@ -106,7 +106,8 @@ void WebUIBrowserTest::PreLoadJavascriptLibraries(bool override_chrome_send) {
 
 WebUIBrowserTest::WebUIBrowserTest()
     : test_handler_(new WebUITestHandler()),
-      libraries_preloaded_(false) {}
+      libraries_preloaded_(false),
+      skip_test_(false) {}
 
 void WebUIBrowserTest::SetUpInProcessBrowserTestFixture() {
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory_));
