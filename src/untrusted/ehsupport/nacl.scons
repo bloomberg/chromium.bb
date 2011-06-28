@@ -26,7 +26,11 @@ native_env.Replace(LINK=native_env['C_ONLY_LINK'])
 native_env.Append(CCFLAGS=['-arch', '${TARGET_FULLARCH}',
                       '--pnacl-allow-translate'])
 native_env.Append(LINKFLAGS=['-arch', '${TARGET_FULLARCH}',
-                             '--pnacl-allow-native'])
+                             '--pnacl-allow-native',
+                             # TODO(pdox): This flag shouldn't be necessary,
+                             # the driver should be able to detect when there
+                             # are no bitcode inputs.
+                             '--pnacl-native-hack'])
 
 native_env.NaClSdkLibrary('libehsupport', ['unwind_support.c'])
 
