@@ -29,3 +29,6 @@ SyncBackendHostTest.InitShutdown
 
 # Crashes, see http://crbug.com/86656
 MacSandboxTest.FileAccess
+
+# http://crbug.com/87769
+BalloonControllerTest.ShowAndCloseTest
