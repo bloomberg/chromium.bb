@@ -65,9 +65,9 @@ _start:
     add r2, r1, r0, lsl #2 /* get envp */
     add r2, r2, #4
 
-    bic r3, sp, #7 /* aligned stack value in r3 */
-    teq r3, sp  /* update sp if sp != r3, this will make it 8 aligned  */
-    pushne {r1}
+    nop
+    nop
+    nop
     bl __nacl_startup
 
     /* unreachable */
