@@ -739,7 +739,7 @@ static bool EnterSandbox() {
 #endif  // CHROMIUM_SELINUX
 
 bool ZygoteMain(const MainFunctionParams& params,
-                ZygoteForkDelegate& forkdelegate) {
+                const ZygoteForkDelegate& forkdelegate) {
 #if !defined(CHROMIUM_SELINUX)
   g_am_zygote_or_renderer = true;
 #endif
