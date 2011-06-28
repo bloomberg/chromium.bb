@@ -95,8 +95,14 @@ cr.define('options', function() {
           $('auto-spell-correction-option').hidden = false;
         }
       }
+
+      // Handle spell check enable/disable.
+      Preferences.getInstance().addEventListener(this.enableSpellCheckPref,
+          this.updateEnableSpellCheck_.bind(this));
     },
 
+    // The preference is a boolean that enables/disables spell checking.
+    enableSpellCheckPref: 'browser.enable_spellchecking',
     // The preference is a CSV string that describes preload engines
     // (i.e. active input methods).
     preloadEnginesPref: 'settings.language.preload_engines',
@@ -563,6 +569,18 @@ cr.define('options', function() {
       return (!cr.isChromeOS ||
               this.canDeleteLanguage_(languageCode));
     },
+
+    /**
+     * Handles browse.enable_spellchecking change.
+     * @param {Event} e Change event.
+     * @private
+     */
+     updateEnableSpellCheck_: function() {
+       var value = !$('enable-spell-check').checked;
+
+       $('language-options-spell-check-language-button').disabled = value;
+       $('language-options-add-button').disabled = value;
+     },
 
     /**
      * Handles spellCheckDictionaryPref change.

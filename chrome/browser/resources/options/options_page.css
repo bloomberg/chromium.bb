@@ -437,6 +437,16 @@ div.disabled {
   color: #000;
 }
 
+button[disabled].text-button,
+button[disabled].text-button:active,
+button[disabled].text-button:focus,
+button[disabled].text-button:hover {
+  -webkit-box-shadow: none;
+  background: transparent none;
+  border-color: transparent;
+  color: #AAA;
+}
+
 .settings-list,
 .settings-list-empty {
   border: 1px solid #d9d9d9;
