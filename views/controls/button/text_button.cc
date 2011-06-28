@@ -17,6 +17,7 @@
 #include "views/widget/widget.h"
 
 #if defined(OS_WIN)
+#include "skia/ext/skia_utils_win.h"
 #include "ui/gfx/native_theme_win.h"
 #include "ui/gfx/platform_font_win.h"
 #endif
@@ -785,6 +786,13 @@ NativeTextButton::NativeTextButton(ButtonListener* listener,
 }
 
 void NativeTextButton::Init() {
+#if defined(OS_WIN)
+  // Windows will like to show its own colors.
+  // Halos and such are ignored as they are always set by specific calls.
+  color_enabled_ = skia::COLORREFToSkColor(GetSysColor(COLOR_BTNTEXT));
+  color_disabled_ = skia::COLORREFToSkColor(GetSysColor(COLOR_GRAYTEXT));
+  color_hover_ = color_ = color_enabled_;
+#endif
   set_border(new TextButtonNativeThemeBorder(this));
   set_ignore_minimum_size(false);
   set_alignment(ALIGN_CENTER);
