@@ -50,6 +50,7 @@ PrerenderView.prototype.onPrerenderInfoChanged = function(prerenderInfo) {
 
 PrerenderView.createHistoryTablePrinter = function(prerenderHistory) {
   var tablePrinter = new TablePrinter();
+  tablePrinter.addHeaderCell('Origin');
   tablePrinter.addHeaderCell('URL');
   tablePrinter.addHeaderCell('Final Status');
   tablePrinter.addHeaderCell('Time');
@@ -57,6 +58,7 @@ PrerenderView.createHistoryTablePrinter = function(prerenderHistory) {
   for (var i = 0; i < prerenderHistory.length; i++) {
     var historyEntry = prerenderHistory[i];
     tablePrinter.addRow();
+    tablePrinter.addCell(historyEntry.origin);
     tablePrinter.addCell(historyEntry.url);
     tablePrinter.addCell(historyEntry.final_status);
 

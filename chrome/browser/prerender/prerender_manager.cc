@@ -1048,6 +1048,7 @@ Value* PrerenderManager::GetActivePrerendersAsValue() const {
 void PrerenderManager::AddToHistory(PrerenderContents* contents) {
   PrerenderHistory::Entry entry(contents->prerender_url(),
                                 contents->final_status(),
+                                contents->origin(),
                                 base::Time::Now());
   prerender_history_->AddEntry(entry);
 }

@@ -107,7 +107,9 @@ class PrerenderContents : public NotificationObserver,
   // should only be called once, and should be called before the prerender
   // contents are destroyed.
   void set_final_status(FinalStatus final_status);
-  FinalStatus final_status() const;
+  FinalStatus final_status() const { return final_status_; }
+
+  Origin origin() const { return origin_; }
 
   base::TimeTicks load_start_time() const { return load_start_time_; }
 

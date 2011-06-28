@@ -41,6 +41,7 @@ Value* PrerenderHistory::GetEntriesAsValue() const {
     entry_dict->SetString("url", entry.url.spec());
     entry_dict->SetString("final_status",
                           NameFromFinalStatus(entry.final_status));
+    entry_dict->SetString("origin", NameFromOrigin(entry.origin));
     // Use a string to prevent overflow, as Values don't support 64-bit
     // integers.
     entry_dict->SetString(

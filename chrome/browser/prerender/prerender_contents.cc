@@ -16,6 +16,8 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_render_view_host_observer.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/download/download_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/icon_messages.h"
@@ -166,30 +168,59 @@ void PrerenderContents::StartPrerendering(
   TabContentsObserver::Observe(new_contents);
   prerender_contents_->download_tab_helper()->set_delegate(this);
 
+  gfx::Rect tab_bounds;
   if (source_render_view_host) {
     DCHECK(source_render_view_host->view() != NULL);
     TabContents* source_tc =
         source_render_view_host->delegate()->GetAsTabContents();
     if (source_tc) {
       // So that history merging will work, get the max page ID
-      // of the old page, and add a safety margin of 10 to it (for things
-      // such as redirects).
+      // of the old page as a starting id.
       starting_page_id_ = source_tc->GetMaxPageID();
-      if (starting_page_id_ < 0)
-        starting_page_id_ = 0;
-      starting_page_id_ += kPrerenderPageIdOffset;
-      prerender_contents_->controller().set_max_restored_page_id(
-          starting_page_id_);
-
-      tab_contents_delegate_.reset(new TabContentsDelegateImpl(this));
-      new_contents->set_delegate(tab_contents_delegate_.get());
 
       // Set the size of the new TC to that of the old TC.
-      gfx::Rect tab_bounds;
       source_tc->view()->GetContainerBounds(&tab_bounds);
-      prerender_contents_->view()->SizeContents(tab_bounds.size());
+    }
+  } else {
+    int max_page_id = -1;
+    // Get the largest page ID of all open tabs as a starting id.
+    for (BrowserList::BrowserVector::const_iterator browser_iter =
+            BrowserList::begin();
+         browser_iter != BrowserList::end();
+         ++browser_iter) {
+      const Browser* browser = *browser_iter;
+      int num_tabs = browser->tab_count();
+      for (int tab_index = 0; tab_index < num_tabs; ++tab_index) {
+        TabContents* tab_contents = browser->GetTabContentsAt(tab_index);
+        if (tab_contents != NULL)
+          max_page_id = std::max(max_page_id, tab_contents->GetMaxPageID());
+      }
+    }
+    starting_page_id_ = max_page_id;
+
+    // Try to get the active tab of the active browser and use that for tab
+    // bounds. If the browser has never been active, we will fail to get a size
+    // but we shouldn't be prerendering in that case anyway.
+    Browser* active_browser = BrowserList::GetLastActive();
+    if (active_browser) {
+      TabContents* active_tab_contents = active_browser->GetTabContentsAt(
+          active_browser->active_index());
+      active_tab_contents->view()->GetContainerBounds(&tab_bounds);
     }
   }
+
+  // Add a safety margin of kPrerenderPageIdOffset to the starting page id (for
+  // things such as redirects).
+  if (starting_page_id_ < 0)
+    starting_page_id_ = 0;
+  starting_page_id_ += kPrerenderPageIdOffset;
+  prerender_contents_->controller().set_max_restored_page_id(starting_page_id_);
+
+  tab_contents_delegate_.reset(new TabContentsDelegateImpl(this));
+  new_contents->set_delegate(tab_contents_delegate_.get());
+
+  // Set the size of the prerender TabContents.
+  prerender_contents_->view()->SizeContents(tab_bounds.size());
 
   // Register as an observer of the RenderViewHost so we get messages.
   render_view_host_observer_.reset(
@@ -265,10 +296,6 @@ void PrerenderContents::set_final_status(FinalStatus final_status) {
     return;
 
   final_status_ = final_status;
-}
-
-FinalStatus PrerenderContents::final_status() const {
-  return final_status_;
 }
 
 PrerenderContents::~PrerenderContents() {
