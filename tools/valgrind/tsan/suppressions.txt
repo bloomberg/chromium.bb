@@ -566,6 +566,13 @@
    fun:URLFetcher::Core::StartURLRequestWhenAppropriate
    fun:DispatchToMethod
 }
+{
+   bug_87698
+   ThreadSanitizer:Race
+   fun:webkit_glue::GetUserAgent
+   fun:ChromeURLRequestContext::GetUserAgent
+}
+ 
 
 ############################
 # TSan false positives
