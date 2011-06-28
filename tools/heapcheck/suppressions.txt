@@ -1608,9 +1608,3 @@
    ...
    fun:content_settings::PrefProviderTest_MigrateSinglePatternSettings_Test::TestBody
 }
-{
-   bug_87605
-   Heapcheck:Leak
-   ...
-   fun:net::SpdyWebSocketStream::SendData
-}

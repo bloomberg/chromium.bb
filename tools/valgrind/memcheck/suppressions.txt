@@ -4790,12 +4790,6 @@
    fun:_ZN4base8internal8Invoker1ILb0ENS0_15InvokerStorage1IMN12_GLOBAL__N_118TaskClosureAdapterEFvvEPS4_EES6_E8DoInvokeEPNS0_18InvokerStorageBaseE
 }
 {
-   bug_87605
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN3net19SpdyWebSocketStream8SendDataEPKci
-}
-{
    bug_87705
    Memcheck:Leak
    fun:_Znw*
