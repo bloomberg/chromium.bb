@@ -662,7 +662,7 @@ std::wstring InputMethodMenu::GetTextForMenu(
       language_code == "de") {
     text = GetLanguageName(language_code) + L" - ";
   }
-  text += input_method::GetString(input_method.display_name, input_method.id);
+  text += input_method::GetString(input_method.id, input_method.id);
 
   DCHECK(!text.empty());
   return text;

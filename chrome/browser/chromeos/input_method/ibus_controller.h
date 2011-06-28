@@ -23,7 +23,6 @@ struct InputMethodDescriptor {
 
   // Do not call this function directly. Use CreateInputMethodDescriptor().
   InputMethodDescriptor(const std::string& in_id,
-                        const std::string& in_display_name,
                         const std::string& in_keyboard_layout,
                         const std::string& in_virtual_keyboard_layouts,
                         const std::string& in_language_code);
@@ -38,7 +37,6 @@ struct InputMethodDescriptor {
   std::string ToString() const {
     std::stringstream stream;
     stream << "id=" << id
-           << ", display_name=" << display_name
            << ", keyboard_layout=" << keyboard_layout
            << ", virtual_keyboard_layouts=" << virtual_keyboard_layouts_
            << ", language_code=" << language_code;
@@ -65,8 +63,6 @@ struct InputMethodDescriptor {
   // An ID that identifies an input method engine (e.g., "t:latn-post",
   // "pinyin", "hangul").
   std::string id;
-  // An input method name which can be used in the UI (e.g., "Pinyin").
-  std::string display_name;
   // A preferred physical keyboard layout for the input method (e.g., "us",
   // "us(dvorak)", "jp"). Comma separated layout names do NOT appear.
   std::string keyboard_layout;
@@ -296,7 +292,6 @@ bool InputMethodIdIsWhitelisted(const std::string& input_method_id);
 bool XkbLayoutIsSupported(const std::string& xkb_layout);
 InputMethodDescriptor CreateInputMethodDescriptor(
     const std::string& id,
-    const std::string& display_name,
     const std::string& raw_layout,
     const std::string& language_code);
 

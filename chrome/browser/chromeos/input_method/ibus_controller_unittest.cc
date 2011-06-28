@@ -13,7 +13,7 @@ namespace input_method {
 namespace {
 InputMethodDescriptor GetDesc(const std::string& raw_layout) {
   return CreateInputMethodDescriptor(
-      "id", "display_name", raw_layout, "language_code");
+      "id", raw_layout, "language_code");
 }
 }  // namespace
 

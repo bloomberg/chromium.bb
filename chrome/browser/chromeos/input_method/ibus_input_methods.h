@@ -14,7 +14,8 @@ namespace input_method {
 
 struct IBusEngineInfo {
   const char* id;
-  const char* longname;
+  // TODO(satorux): Remove this field when we we auto-generate this file.
+  const char* unused_longname;
   const char* layout;
   const char* language;
 };

@@ -29,13 +29,11 @@ InputMethodDescriptor::InputMethodDescriptor() {
 
 InputMethodDescriptor::InputMethodDescriptor(
     const std::string& in_id,
-    const std::string& in_display_name,
     const std::string& in_keyboard_layout,
     const std::string& in_virtual_keyboard_layouts,
     const std::string& in_language_code)
     : virtual_keyboard_layouts_(in_virtual_keyboard_layouts),
       id(in_id),
-      display_name(in_display_name),
       keyboard_layout(in_keyboard_layout),
       language_code(in_language_code) {
   DCHECK(keyboard_layout.find(",") == std::string::npos);
@@ -85,7 +83,6 @@ InputMethodDescriptors* GetSupportedInputMethodDescriptors() {
     if (InputMethodIdIsWhitelisted(kIBusEngines[i].id)) {
       input_methods->push_back(CreateInputMethodDescriptor(
           kIBusEngines[i].id,
-          kIBusEngines[i].longname,
           kIBusEngines[i].layout,
           kIBusEngines[i].language));
     }
@@ -122,7 +119,6 @@ bool XkbLayoutIsSupported(const std::string& xkb_layout) {
 // (e.g. "special-us-virtual-keyboard-for-the-input-method,us")
 InputMethodDescriptor CreateInputMethodDescriptor(
     const std::string& id,
-    const std::string& display_name,
     const std::string& raw_layout,
     const std::string& language_code) {
   static const char fallback_layout[] = "us";
@@ -143,7 +139,6 @@ InputMethodDescriptor CreateInputMethodDescriptor(
   }
 
   return InputMethodDescriptor(id,
-                               display_name,
                                physical_keyboard_layout,
                                virtual_keyboard_layout,
                                language_code);
@@ -213,12 +208,10 @@ void AddInputMethodNames(const GList* engines, InputMethodDescriptors* out) {
   for (; engines; engines = g_list_next(engines)) {
     IBusEngineDesc* engine_desc = IBUS_ENGINE_DESC(engines->data);
     const gchar* name = ibus_engine_desc_get_name(engine_desc);
-    const gchar* longname = ibus_engine_desc_get_longname(engine_desc);
     const gchar* layout = ibus_engine_desc_get_layout(engine_desc);
     const gchar* language = ibus_engine_desc_get_language(engine_desc);
     if (InputMethodIdIsWhitelisted(name)) {
       out->push_back(CreateInputMethodDescriptor(name,
-                                                 longname,
                                                  layout,
                                                  language));
       VLOG(1) << name << " (preloaded)";
@@ -961,7 +954,6 @@ class IBusControllerImpl : public IBusController {
 
     InputMethodDescriptor current_input_method =
         CreateInputMethodDescriptor(engine_info->id,
-                                    engine_info->longname,
                                     engine_info->layout,
                                     engine_info->language);
 

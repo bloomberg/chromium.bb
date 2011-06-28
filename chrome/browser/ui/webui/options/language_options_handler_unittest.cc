@@ -24,14 +24,13 @@ using chromeos::input_method::InputMethodDescriptors;
 static InputMethodDescriptors CreateInputMethodDescriptors() {
   InputMethodDescriptors descriptors;
   descriptors.push_back(
-      InputMethodDescriptor("xkb:us::eng", "USA", "us", "us", "eng"));
+      InputMethodDescriptor("xkb:us::eng", "us", "us", "eng"));
   descriptors.push_back(
-      InputMethodDescriptor("xkb:fr::fra", "France", "fr", "fr", "fra"));
+      InputMethodDescriptor("xkb:fr::fra", "fr", "fr", "fra"));
   descriptors.push_back(
-      InputMethodDescriptor("xkb:be::fra", "Belgium", "be", "be", "fr"));
+      InputMethodDescriptor("xkb:be::fra", "be", "be", "fr"));
   descriptors.push_back(
-      InputMethodDescriptor("mozc", "Mozc (US keyboard layout)",
-                            "us", "us", "ja"));
+      InputMethodDescriptor("mozc", "us", "us", "ja"));
   return descriptors;
 }
 
