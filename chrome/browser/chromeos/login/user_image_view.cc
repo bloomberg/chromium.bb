@@ -109,6 +109,7 @@ void UserImageView::Init() {
 
   ok_button_ = new login::WideButton(
       this, UTF16ToWide(l10n_util::GetStringUTF16(IDS_OK)));
+  ok_button_->set_focusable(true);
   ok_button_->SetEnabled(false);
 
   accel_ok_ = views::Accelerator(ui::VKEY_RETURN, false, false, false);
@@ -227,33 +228,33 @@ gfx::Size UserImageView::GetPreferredSize() {
   return gfx::Size(width(), height());
 }
 
+void UserImageView::NotifyDelegateOfImageSelected() {
+  DCHECK(delegate_);
+  DCHECK(default_images_view_);
+  DCHECK(take_photo_view_);
+  if (default_images_view_->GetDefaultImageIndex() == -1) {
+    delegate_->OnPhotoTaken(take_photo_view_->GetImage());
+  } else {
+    delegate_->OnDefaultImageSelected(
+        default_images_view_->GetDefaultImageIndex());
+  }
+}
+
 void UserImageView::ButtonPressed(
     views::Button* sender, const views::Event& event) {
   DCHECK(delegate_);
-  if (sender == ok_button_) {
-    if (default_images_view_->GetDefaultImageIndex() == -1) {
-      delegate_->OnPhotoTaken(take_photo_view_->GetImage());
-    } else {
-      delegate_->OnDefaultImageSelected(
-          default_images_view_->GetDefaultImageIndex());
-    }
-  } else {
+  if (sender == ok_button_)
+    NotifyDelegateOfImageSelected();
+  else
     NOTREACHED();
-  }
 }
 
 bool UserImageView::AcceleratorPressed(const views::Accelerator& accel) {
   if (accel == accel_ok_) {
-    if (default_images_view_->GetDefaultImageIndex() == -1) {
-      if (IsCapturing()) {
-        take_photo_view_->CaptureImage();
-      } else {
-        delegate_->OnPhotoTaken(take_photo_view_->GetImage());
-      }
-    } else {
-      delegate_->OnDefaultImageSelected(
-          default_images_view_->GetDefaultImageIndex());
-    }
+    if (IsCapturing())
+      take_photo_view_->CaptureImage();
+    else
+      NotifyDelegateOfImageSelected();
   } else if (accel == accel_up_) {
     default_images_view_->SelectPreviousRowImage();
   } else if (accel == accel_down_) {

@@ -89,6 +89,10 @@ class CameraImageView : public views::ImageView {
             IDR_USER_IMAGE_NO_VIDEO));
   }
 
+  bool HasSnapshot() const {
+    return !throbber_->IsVisible() && !message_->IsVisible();
+  }
+
  private:
   void ShowThrobber() {
     DCHECK(throbber_);
@@ -259,6 +263,7 @@ const SkBitmap& TakePhotoView::GetImage() const {
 void TakePhotoView::SetImage(SkBitmap* image) {
   is_capturing_ = false;
   snapshot_button_->SetVisible(false);
+  snapshot_button_->SetEnabled(false);
   user_image_->SetNormalState();
   user_image_->SetImage(image);
 }
@@ -266,7 +271,7 @@ void TakePhotoView::SetImage(SkBitmap* image) {
 void TakePhotoView::CaptureImage() {
   DCHECK(delegate_);
   DCHECK(is_capturing_);
-  if (is_capturing_) {
+  if (is_capturing_ && user_image_->HasSnapshot()) {
     is_capturing_ = false;
     snapshot_button_->SetImage(
         views::CustomButton::BS_NORMAL,
@@ -285,21 +290,17 @@ void TakePhotoView::ButtonPressed(
     views::Button* sender, const views::Event& event) {
   DCHECK(delegate_);
   DCHECK(sender == snapshot_button_);
-  is_capturing_ = !is_capturing_;
   if (is_capturing_) {
+    CaptureImage();
+  } else {
+    is_capturing_ = true;
     snapshot_button_->SetImage(
         views::CustomButton::BS_NORMAL,
         ResourceBundle::GetSharedInstance().GetBitmapNamed(
             IDR_USER_IMAGE_CAPTURE));
     delegate_->OnCapturingStarted();
-  } else {
-    snapshot_button_->SetImage(
-        views::CustomButton::BS_NORMAL,
-        ResourceBundle::GetSharedInstance().GetBitmapNamed(
-            IDR_USER_IMAGE_RECYCLE));
-    delegate_->OnCapturingStopped();
+    snapshot_button_->SchedulePaint();
   }
-  snapshot_button_->SchedulePaint();
 }
 
 }  // namespace chromeos
