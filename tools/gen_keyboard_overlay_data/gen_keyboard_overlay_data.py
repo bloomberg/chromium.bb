@@ -63,7 +63,7 @@ LABEL_MAP = {
   # Kana/Eisu key on Japanese keyboard
   'glyph_ime': u'\u304b\u306a\u0020\u002f\u0020\u82f1\u6570',
   'glyph_lock': 'lock',
-  'glyph_overview': 'switch window',
+  'glyph_overview': 'maximize',
   'glyph_power': 'power',
   'glyph_right': 'right',
   'glyph_reload': 'reload',
@@ -360,7 +360,7 @@ def OutputJson(keyboard_glyph_data, hotkey_data, layouts, var_name, outfile):
   json_data =  json.dumps(data, sort_keys=True, indent=2)
   # Remove redundant spaces after ','
   json_data = json_data.replace(', \n', ',\n')
-  out.write('var %s = %s;' % (var_name, json_data))
+  out.write('var %s = %s;\n' % (var_name, json_data))
 
 
 def OutputGrd(hotkey_data, outfile):
