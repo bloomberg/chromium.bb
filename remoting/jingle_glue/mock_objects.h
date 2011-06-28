@@ -17,6 +17,7 @@ class MockSignalStrategy : public SignalStrategy {
   MOCK_METHOD0(Close, void());
   MOCK_METHOD1(SetListener, void(Listener* listener));
   MOCK_METHOD1(SendStanza, void(buzz::XmlElement* stanza));
+  MOCK_METHOD0(GetNextId, std::string());
   MOCK_METHOD0(CreateIqRequest, IqRequest*());
 };
 

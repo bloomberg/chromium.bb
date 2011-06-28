@@ -52,6 +52,12 @@ class SignalStrategy {
   // Sends a raw XMPP stanza. Takes ownership of the |stanza|.
   virtual void SendStanza(buzz::XmlElement* stanza) = 0;
 
+  // Returns new ID that should be used for the next outgoing IQ
+  // request.
+  virtual std::string GetNextId() = 0;
+
+  // TODO(sergeyu): Do we really need this method to be part of this
+  // interface?
   virtual IqRequest* CreateIqRequest() = 0;
 
  private:

@@ -26,8 +26,8 @@ class JavascriptIqRegistry {
   // Does not take ownership of stanza.
   void DispatchResponse(buzz::XmlElement* stanza);
 
-  // Registers |request|, returning the request ID used.
-  std::string RegisterRequest(JavascriptIqRequest* request);
+  // Registers |request| with the specified |id|.
+  void RegisterRequest(JavascriptIqRequest* request, const std::string& id);
 
   // Removes all entries in the registry that refer to |request|.  Useful when
   // |request| is about to be destructed.
@@ -42,7 +42,6 @@ class JavascriptIqRegistry {
   typedef std::map<std::string, JavascriptIqRequest*> IqRequestMap;
 
   IqRequestMap requests_;
-  int current_id_;
   JavascriptIqRequest* default_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(JavascriptIqRegistry);

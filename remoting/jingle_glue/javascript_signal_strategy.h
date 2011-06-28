@@ -33,6 +33,7 @@ class JavascriptSignalStrategy : public SignalStrategy,
   virtual void Close() OVERRIDE;
   virtual void SetListener(Listener* listener) OVERRIDE;
   virtual void SendStanza(buzz::XmlElement* stanza) OVERRIDE;
+  virtual std::string GetNextId() OVERRIDE;
   virtual IqRequest* CreateIqRequest() OVERRIDE;
 
   // XmppProxy::ResponseCallback interface.
@@ -44,6 +45,8 @@ class JavascriptSignalStrategy : public SignalStrategy,
   JavascriptIqRegistry iq_registry_;
 
   Listener* listener_;
+
+  int last_id_;
 
   DISALLOW_COPY_AND_ASSIGN(JavascriptSignalStrategy);
 };

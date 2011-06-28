@@ -35,6 +35,7 @@ class XmppSignalStrategy : public SignalStrategy,
   virtual void Close() OVERRIDE;
   virtual void SetListener(Listener* listener) OVERRIDE;
   virtual void SendStanza(buzz::XmlElement* stanza) OVERRIDE;
+  virtual std::string GetNextId() OVERRIDE;
   virtual IqRequest* CreateIqRequest() OVERRIDE;
 
   // buzz::XmppStanzaHandler interface.

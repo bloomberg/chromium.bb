@@ -54,6 +54,13 @@ void JingleSignalingConnector::OnOutgoingMessage(
     const buzz::XmlElement* stanza) {
   DCHECK_EQ(session_manager, session_manager_);
   scoped_ptr<buzz::XmlElement> stanza_copy(new buzz::XmlElement(*stanza));
+
+  // Add ID attribute for Iq stanzas if it is not there.
+  if (stanza_copy->Name() == buzz::QN_IQ &&
+      stanza_copy->Attr(buzz::QN_ID).empty()) {
+    stanza_copy->SetAttr(buzz::QN_ID, signal_strategy_->GetNextId());
+  }
+
   signal_strategy_->SendStanza(stanza_copy.release());
 }
 

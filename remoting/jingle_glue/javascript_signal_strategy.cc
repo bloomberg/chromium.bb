@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/string_number_conversions.h"
 #include "remoting/jingle_glue/iq_request.h"
 #include "remoting/jingle_glue/xmpp_proxy.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
@@ -15,7 +16,8 @@ namespace remoting {
 
 JavascriptSignalStrategy::JavascriptSignalStrategy(const std::string& your_jid)
     : your_jid_(your_jid),
-      listener_(NULL) {
+      listener_(NULL),
+      last_id_(0) {
 }
 
 JavascriptSignalStrategy::~JavascriptSignalStrategy() {
@@ -65,6 +67,11 @@ void JavascriptSignalStrategy::SendStanza(buzz::XmlElement* stanza) {
 
   xmpp_proxy_->SendIq(stanza->Str());
   delete stanza;
+}
+
+std::string JavascriptSignalStrategy::GetNextId() {
+  ++last_id_;
+  return base::IntToString(last_id_);
 }
 
 IqRequest* JavascriptSignalStrategy::CreateIqRequest() {

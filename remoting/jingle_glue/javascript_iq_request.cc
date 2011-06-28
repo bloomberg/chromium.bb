@@ -12,8 +12,7 @@
 
 namespace remoting {
 
-JavascriptIqRegistry::JavascriptIqRegistry()
-   : current_id_(0) {
+JavascriptIqRegistry::JavascriptIqRegistry() {
 }
 
 JavascriptIqRegistry::~JavascriptIqRegistry() {
@@ -67,13 +66,10 @@ void JavascriptIqRegistry::OnIncomingStanza(const buzz::XmlElement* stanza) {
   }
 }
 
-std::string JavascriptIqRegistry::RegisterRequest(
-    JavascriptIqRequest* request) {
-  ++current_id_;
-  std::string id_as_string = base::IntToString(current_id_);
-
-  requests_[id_as_string] = request;
-  return id_as_string;
+void JavascriptIqRegistry::RegisterRequest(
+    JavascriptIqRequest* request, const std::string& id) {
+  DCHECK(requests_.find(id) == requests_.end());
+  requests_[id] = request;
 }
 
 JavascriptIqRequest::JavascriptIqRequest(SignalStrategy* signal_strategy,
@@ -89,8 +85,9 @@ JavascriptIqRequest::~JavascriptIqRequest() {
 void JavascriptIqRequest::SendIq(const std::string& type,
                                  const std::string& addressee,
                                  buzz::XmlElement* iq_body) {
-  signal_strategy_->SendStanza(
-      MakeIqStanza(type, addressee, iq_body, registry_->RegisterRequest(this)));
+  std::string id = signal_strategy_->GetNextId();
+  registry_->RegisterRequest(this, id);
+  signal_strategy_->SendStanza(MakeIqStanza(type, addressee, iq_body, id));
 }
 
 void JavascriptIqRequest::set_callback(ReplyCallback* callback) {

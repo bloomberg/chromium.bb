@@ -79,6 +79,10 @@ void XmppSignalStrategy::SendStanza(buzz::XmlElement* stanza) {
   xmpp_client_->SendStanza(stanza);
 }
 
+std::string XmppSignalStrategy::GetNextId() {
+  return xmpp_client_->NextId();
+}
+
 IqRequest* XmppSignalStrategy::CreateIqRequest() {
   return new XmppIqRequest(thread_->message_loop(), xmpp_client_);
 }
