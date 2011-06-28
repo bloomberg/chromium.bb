@@ -106,7 +106,7 @@ namespace {
 
 // Add paths here to be included in chrome://chrome-urls/.
 // These paths will also be suggested by BuiltinProvider.
-const char* kChromePaths[] = {
+const char* const kChromePaths[] = {
   chrome::kChromeUIAppCacheInternalsHost,
   chrome::kChromeUIBlobInternalsHost,
   chrome::kChromeUIChromeURLsHost,
@@ -145,7 +145,7 @@ const char* kChromePaths[] = {
 
 // Debug paths, presented without links in chrome://about.
 // These paths will not be suggested by BuiltinProvider.
-const char* kDebugChromePaths[] = {
+const char* const kDebugChromePaths[] = {
   chrome::kChromeUICrashHost,
   chrome::kChromeUIKillHost,
   chrome::kChromeUIHangHost,
@@ -156,7 +156,7 @@ const char* kDebugChromePaths[] = {
 };
 
 // AboutSource handles these chrome:// paths.
-const char *kAboutSourceNames[] = {
+const char* const kAboutSourceNames[] = {
   chrome::kChromeUIChromeURLsHost,
   chrome::kChromeUICreditsHost,
   chrome::kChromeUIDNSHost,
@@ -183,6 +183,12 @@ const char *kAboutSourceNames[] = {
 #endif
 };
 
+const char kCreditsJsPath[] = "credits.js";
+const char kMemoryJsPath[] = "memory.js";
+const char kStatsJsPath[] = "stats.js";
+const char kStringsJsPath[] = "strings.js";
+const char kVersionJsPath[] = "version.js";
+
 class AboutSource : public ChromeURLDataManager::DataSource {
  public:
   // Construct a data source for the specified |source_name|.
@@ -194,9 +200,7 @@ class AboutSource : public ChromeURLDataManager::DataSource {
                                 bool is_incognito,
                                 int request_id) OVERRIDE;
 
-  virtual std::string GetMimeType(const std::string&) const OVERRIDE {
-    return "text/html";
-  }
+  virtual std::string GetMimeType(const std::string& path) const OVERRIDE;
 
   // Send the response data.
   void FinishDataRequest(const std::string& html, int request_id);
@@ -359,9 +363,37 @@ class ChromeOSTermsHandler
 
 // Individual about handlers ---------------------------------------------------
 
+void AppendHeader(std::string* output, int refresh,
+                  const std::string& unescaped_title) {
+  output->append("<!DOCTYPE HTML>\n<html>\n<head>\n");
+  if (!unescaped_title.empty()) {
+    output->append("<title>");
+    output->append(EscapeForHTML(unescaped_title));
+    output->append("</title>\n");
+  }
+  output->append(
+      "<meta charset=\"utf-8\">\n<meta http-equiv=\"X-WebKit-CSP\" "
+      "content=\"object-src 'none'; script-src 'self' 'unsafe-eval'\">\n");
+  if (refresh > 0) {
+    output->append("<meta http-equiv=\"refresh\" content=\"");
+    output->append(base::IntToString(refresh));
+    output->append("\"/>\n");
+  }
+}
+
+void AppendBody(std::string *output) {
+  output->append("</head>\n<body>\n");
+}
+
+void AppendFooter(std::string *output) {
+  output->append("</body>\n</html>\n");
+}
+
 std::string ChromeURLs() {
-  std::string html("<html><head><title>Chrome URLs</title></head>\n"
-      "<body><h2>List of Chrome URLs</h2>\n<ul>");
+  std::string html;
+  AppendHeader(&html, 0, "Chrome URLs");
+  AppendBody(&html);
+  html += "<h2>List of Chrome URLs</h2>\n<ul>\n";
   std::vector<std::string> paths(ChromePaths());
   for (std::vector<std::string>::const_iterator i = paths.begin();
        i != paths.end(); ++i)
@@ -372,13 +404,13 @@ std::string ChromeURLs() {
       "them into the address bar if you need them.</p>\n<ul>";
   for (size_t i = 0; i < arraysize(kDebugChromePaths); i++)
     html += "<li>chrome://" + std::string(kDebugChromePaths[i]) + "</li>\n";
-  html += "</ul>\n</body></html>";
+  html += "</ul>\n";
+  AppendFooter(&html);
   return html;
 }
 
 #if defined(OS_CHROMEOS)
 
-namespace {
 // Html output helper functions
 // TODO(stevenjb): L10N this.
 
@@ -397,27 +429,16 @@ std::string WrapWithTR(const std::string& text) {
   return "<tr>" + text + "</tr>";
 }
 
-std::string AboutHeader(int refresh, const std::string& name) {
-  std::string output;
-  output.append("<head>");
-  output.append("<title>About " + name + "</title>");
-  if (refresh > 0)
-    output.append("<meta http-equiv=\"refresh\" content=\"" +
-                  base::IntToString(refresh) + "\"/>");
-  output.append("</head>");
-  return output;
-}
-
-std::string AboutRefresh(int refresh, const std::string& name) {
-  std::string output;
+void AppendRefresh(std::string *output, int refresh, const std::string& name) {
   if (refresh > 0) {
-    output.append("(Auto-refreshing page every " +
-                  base::IntToString(refresh) + "s)");
+    output->append("(Auto-refreshing page every ");
+    output->append(base::IntToString(refresh));
+    output->append("s)");
   } else {
-    output.append("(To auto-refresh this page: about:" + name
-                  + "/&lt;secs&gt;)");
+    output->append("(To auto-refresh this page: about:");
+    output->append(name);
+    output->append("/&lt;secs&gt;)");
   }
-  return output;
 }
 
 // Helper function to create an Html table header for a Network.
@@ -499,10 +520,9 @@ std::string GetNetworkHtmlInfo(int refresh) {
   chromeos::NetworkLibrary* cros =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
   std::string output;
-  output.append("<html>");
-  output.append(AboutHeader(refresh, "Network"));
-  output.append("<body>");
-  output.append(AboutRefresh(refresh, "network"));
+  AppendHeader(&output, refresh, "About Network");
+  AppendBody(&output);
+  AppendRefresh(&output, refresh, "network");
 
   if (cros->ethernet_enabled()) {
     output.append("<h3>Ethernet:</h3><table border=1>");
@@ -558,7 +578,8 @@ std::string GetNetworkHtmlInfo(int refresh) {
     }
   }
 
-  output.append("</table></body></html>");
+  output.append("</table>");
+  AppendFooter(&output);
   return output;
 }
 
@@ -586,10 +607,9 @@ std::string GetCryptohomeHtmlInfo(int refresh) {
   chromeos::CryptohomeLibrary* cryptohome =
       chromeos::CrosLibrary::Get()->GetCryptohomeLibrary();
   std::string output;
-  output.append("<html>");
-  output.append(AboutHeader(refresh, "Cryptohome"));
-  output.append("<body>");
-  output.append(AboutRefresh(refresh, "cryptohome"));
+  AppendHeader(&output, refresh, "About Cryptohome");
+  AppendBody(&output);
+  AppendRefresh(&output, refresh, "cryptohome");
 
   output.append("<h3>CryptohomeLibrary:</h3>");
   output.append("<table>");
@@ -610,9 +630,8 @@ std::string GetCryptohomeHtmlInfo(int refresh) {
   output.append(AddStringRow("token_name", token_name));
   output.append(AddStringRow("user_pin", std::string(user_pin.length(), '*')));
   output.append("</table>");
+  AppendFooter(&output);
 
-  output.append("</body>");
-  output.append("</html>");
   return output;
 }
 
@@ -622,8 +641,7 @@ std::string AboutCryptohome(const std::string& query) {
   return GetCryptohomeHtmlInfo(refresh);
 }
 
-}  // namespace
-#endif
+#endif  // OS_CHROMEOS
 
 // AboutDnsHandler bounces the request back to the IO thread to collect
 // the DNS information.
@@ -654,7 +672,10 @@ class AboutDnsHandler : public base::RefCountedThreadSafe<AboutDnsHandler> {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
     std::string data;
+    AppendHeader(&data, 0, "About DNS");
+    AppendBody(&data);
     chrome_browser_net::PredictorGetHtmlInfo(&data);
+    AppendFooter(&data);
 
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
@@ -682,7 +703,8 @@ std::string AboutTcmalloc() {
       AboutTcmallocOutputs::GetInstance()->outputs();
 
   // Display any stats for which we sent off requests the last time.
-  data.append("<html><head><title>About tcmalloc</title></head><body>\n");
+  AppendHeader(&data, 0, "About tcmalloc");
+  AppendBody(&data);
   data.append("<p>Stats as of last page load;");
   data.append("reload to get stats as of this page load.</p>\n");
   data.append("<table width=\"100%\">\n");
@@ -697,7 +719,7 @@ std::string AboutTcmalloc() {
     data.append("</pre></td></tr>\n");
   }
   data.append("</table>\n");
-  data.append("</body></html>\n");
+  AppendFooter(&data);
 
   // Reset our collector singleton.
   outputs->clear();
@@ -726,23 +748,48 @@ std::string AboutHistograms(const std::string& query) {
   DCHECK(current_synchronizer != NULL);
   current_synchronizer->FetchRendererHistogramsSynchronously(wait_time);
 
+  std::string unescaped_query;
+  std::string unescaped_title("About Histograms");
+  if (!query.empty()) {
+    unescaped_query = UnescapeURLComponent(query, UnescapeRule::NORMAL);
+    unescaped_title += " - " + unescaped_query;
+  }
+
   std::string data;
-  base::StatisticsRecorder::WriteHTMLGraph(query, &data);
+  AppendHeader(&data, 0, unescaped_title);
+  AppendBody(&data);
+  base::StatisticsRecorder::WriteHTMLGraph(unescaped_query, &data);
+  AppendFooter(&data);
   return data;
 }
 
-void AboutMemory(AboutSource* source, int request_id) {
-  // The AboutMemoryHandler cleans itself up, but |StartFetch()| will want the
-  // refcount to be greater than 0.
-  scoped_refptr<AboutMemoryHandler>
-      handler(new AboutMemoryHandler(source, request_id));
-  handler->StartFetch();
+void AboutMemory(const std::string& path, AboutSource* source, int request_id) {
+  if (path == kStringsJsPath) {
+    // The AboutMemoryHandler cleans itself up, but |StartFetch()| will want the
+    // refcount to be greater than 0.
+    scoped_refptr<AboutMemoryHandler>
+        handler(new AboutMemoryHandler(source, request_id));
+    handler->StartFetch();
+  } else {
+    source->FinishDataRequest(
+        ResourceBundle::GetSharedInstance().GetRawDataResource(
+            path == kMemoryJsPath ? IDR_ABOUT_MEMORY_JS :
+                IDR_ABOUT_MEMORY_HTML).as_string(), request_id);
+  }
 }
 
 #ifdef TRACK_ALL_TASK_OBJECTS
 static std::string AboutObjects(const std::string& query) {
+  std::string unescaped_title("About Histograms");
+  if (!query.empty()) {
+    unescaped_title += " - ";
+    unescaped_title += UnescapeURLComponent(query, UnescapeRule::NORMAL);
+  }
   std::string data;
+  AppendHeader(&data, 0, unescaped_title);
+  AppendBody(&data);
   tracked_objects::ThreadData::WriteHTML(query, &data);
+  AppendFooter(&data);
   return data;
 }
 #endif  // TRACK_ALL_TASK_OBJECTS
@@ -852,8 +899,10 @@ std::string AboutStats(const std::string& query) {
   }
 
   std::string data;
-  if (query == "json") {
+  if (query == "json" || query == kStringsJsPath) {
     base::JSONWriter::WriteWithOptionalEscape(&root, true, false, &data);
+    if (query == kStringsJsPath)
+      data = "var templateData = " + data + ";";
   } else if (query == "raw") {
     // Dump the raw counters which have changed in text format.
     data = "<pre>";
@@ -886,22 +935,21 @@ std::string AboutStats(const std::string& query) {
     }
     data.append("</pre>");
   } else {
-    // Get about_stats.html and process a pretty page.
-    static const base::StringPiece stats_html(
-        ResourceBundle::GetSharedInstance().GetRawDataResource(
-            IDR_ABOUT_STATS_HTML));
+    // Get about_stats.html/js from resource bundle.
+    data = ResourceBundle::GetSharedInstance().GetRawDataResource(
+        (query == kStatsJsPath ? IDR_ABOUT_STATS_JS : IDR_ABOUT_STATS_HTML)).
+        as_string();
 
-    // Create jstemplate and return.
-    data = jstemplate_builder::GetTemplateHtml(
-        stats_html, &root, "t" /* template root node id */);
-
-    // Clear the timer list since we stored the data in the timers list as well.
-    for (int index = static_cast<int>(timers->GetSize())-1; index >= 0;
-         index--) {
-      Value* value;
-      timers->Remove(index, &value);
-      // We don't care about the value pointer; it's still tracked
-      // on the counters list.
+    if (query != kStatsJsPath) {
+      // Clear the timer list since we stored the data in the timers list
+      // as well.
+      for (int index = static_cast<int>(timers->GetSize())-1; index >= 0;
+           index--) {
+        Value* value;
+        timers->Remove(index, &value);
+        // We don't care about the value pointer; it's still tracked
+        // on the counters list.
+      }
     }
   }
 
@@ -911,18 +959,16 @@ std::string AboutStats(const std::string& query) {
 #if defined(OS_LINUX)
 std::string AboutLinuxProxyConfig() {
   std::string data;
-  data.append("<!DOCTYPE HTML>\n");
-  data.append("<html><head><meta charset=\"utf-8\"><title>");
-  data.append(l10n_util::GetStringUTF8(IDS_ABOUT_LINUX_PROXY_CONFIG_TITLE));
-  data.append("</title>");
+  AppendHeader(&data, 0,
+               l10n_util::GetStringUTF8(IDS_ABOUT_LINUX_PROXY_CONFIG_TITLE));
   data.append("<style>body { max-width: 70ex; padding: 2ex 5ex; }</style>");
-  data.append("</head><body>\n");
+  AppendBody(&data);
   FilePath binary = CommandLine::ForCurrentProcess()->GetProgram();
   data.append(l10n_util::GetStringFUTF8(
-                  IDS_ABOUT_LINUX_PROXY_CONFIG_BODY,
-                  l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-                  ASCIIToUTF16(binary.BaseName().value())));
-  data.append("</body></html>\n");
+      IDS_ABOUT_LINUX_PROXY_CONFIG_BODY,
+      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
+      ASCIIToUTF16(binary.BaseName().value())));
+  AppendFooter(&data);
   return data;
 }
 
@@ -945,11 +991,8 @@ void AboutSandboxRow(std::string* data, const std::string& prefix, int name_id,
 
 std::string AboutSandbox() {
   std::string data;
-  data.append("<!DOCTYPE HTML>\n");
-  data.append("<html><head><meta charset=\"utf-8\"><title>");
-  data.append(l10n_util::GetStringUTF8(IDS_ABOUT_SANDBOX_TITLE));
-  data.append("</title>");
-  data.append("</head><body>\n");
+  AppendHeader(&data, 0, l10n_util::GetStringUTF8(IDS_ABOUT_SANDBOX_TITLE));
+  AppendBody(&data);
   data.append("<h1>");
   data.append(l10n_util::GetStringUTF8(IDS_ABOUT_SANDBOX_TITLE));
   data.append("</h1>");
@@ -981,12 +1024,20 @@ std::string AboutSandbox() {
   }
   data.append("</p>");
 
-  data.append("</body></html>\n");
+  AppendFooter(&data);
   return data;
 }
 #endif
 
-std::string AboutVersion(DictionaryValue* localized_strings, Profile* profile) {
+std::string AboutVersionStaticContent(const std::string& query) {
+  return ResourceBundle::GetSharedInstance().GetRawDataResource(
+      query ==  kVersionJsPath ?
+      IDR_ABOUT_VERSION_JS :
+      IDR_ABOUT_VERSION_HTML).as_string();
+}
+
+std::string AboutVersionStrings(DictionaryValue* localized_strings,
+                                Profile* profile) {
   localized_strings->SetString("title",
       l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_TITLE));
   chrome::VersionInfo version_info;
@@ -1086,96 +1137,9 @@ std::string AboutVersion(DictionaryValue* localized_strings, Profile* profile) {
         l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_PATH_NOTFOUND));
   }
 
-  base::StringPiece version_html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_ABOUT_VERSION_HTML));
-
-  return jstemplate_builder::GetTemplatesHtml(
-      version_html, localized_strings, "t" /* template root node id */);
-}
-
-// AboutSource -----------------------------------------------------------------
-
-AboutSource::AboutSource(const std::string& source_name, Profile* profile)
-    : DataSource(source_name, MessageLoop::current()),
-      profile_(profile) {
-}
-
-AboutSource::~AboutSource() {
-}
-
-void AboutSource::StartDataRequest(const std::string& path,
-                                   bool is_incognito,
-                                   int request_id) {
-  std::string response;
-  std::string host = source_name();
-  if (host == chrome::kChromeUIDNSHost) {
-    AboutDnsHandler::Start(this, request_id);
-    return;
-  } else if (host == chrome::kChromeUIHistogramsHost) {
-    response = AboutHistograms(path);
-  } else if (host == chrome::kChromeUIMemoryHost) {
-    response = GetAboutMemoryRedirectResponse(profile());
-  } else if (host == chrome::kChromeUIMemoryRedirectHost) {
-    AboutMemory(this, request_id);
-    return;
-#ifdef TRACK_ALL_TASK_OBJECTS
-  } else if (host == chrome::kChromeUITasksHost) {
-    response = AboutObjects(path);
-#endif
-  } else if (host == chrome::kChromeUIStatsHost) {
-    response = AboutStats(path);
-#if defined(USE_TCMALLOC)
-  } else if (host == chrome::kChromeUITCMallocHost) {
-    response = AboutTcmalloc();
-#endif
-  } else if (host == chrome::kChromeUIVersionHost) {
-#if defined(OS_CHROMEOS)
-    new ChromeOSAboutVersionHandler(this, request_id);
-    return;
-#else
-    DictionaryValue localized_strings;
-    localized_strings.SetString("os_version", "");
-    response = AboutVersion(&localized_strings, profile_);
-#endif
-  } else if (host == chrome::kChromeUICreditsHost) {
-    response = ResourceBundle::GetSharedInstance().GetRawDataResource(
-        IDR_CREDITS_HTML).as_string();
-  } else if (host == chrome::kChromeUIChromeURLsHost) {
-    response = ChromeURLs();
-#if defined(OS_CHROMEOS)
-  } else if (host == chrome::kChromeUIOSCreditsHost) {
-    response = ResourceBundle::GetSharedInstance().GetRawDataResource(
-        IDR_OS_CREDITS_HTML).as_string();
-  } else if (host == chrome::kChromeUINetworkHost) {
-    response = AboutNetwork(path);
-  } else if (host == chrome::kChromeUICryptohomeHost) {
-    response = AboutCryptohome(path);
-#endif
-  } else if (host == chrome::kChromeUITermsHost) {
-#if defined(OS_CHROMEOS)
-    ChromeOSTermsHandler::Start(this, request_id);
-    return;
-#else
-    response = ResourceBundle::GetSharedInstance().GetRawDataResource(
-        IDR_TERMS_HTML).as_string();
-#endif
-#if defined(OS_LINUX)
-  } else if (host == chrome::kChromeUILinuxProxyConfigHost) {
-    response = AboutLinuxProxyConfig();
-  } else if (host == chrome::kChromeUISandboxHost) {
-    response = AboutSandbox();
-#endif
-  }
-
-  FinishDataRequest(response, request_id);
-}
-
-void AboutSource::FinishDataRequest(const std::string& html, int request_id) {
-  scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
-  html_bytes->data.resize(html.size());
-  std::copy(html.begin(), html.end(), html_bytes->data.begin());
-  SendResponse(request_id, html_bytes);
+  std::string data;
+  jstemplate_builder::AppendJsonJS(localized_strings, &data);
+  return data;
 }
 
 // AboutMemoryHandler ----------------------------------------------------------
@@ -1299,23 +1263,17 @@ void AboutMemoryHandler::OnDetailsAvailable() {
   root.SetBoolean("show_other_browsers",
       browser_defaults::kShowOtherBrowsersInAboutMemory);
 
-  // Get about_memory.html
-  static const base::StringPiece memory_html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_ABOUT_MEMORY_HTML));
-
-  // Create jstemplate and return.
-  std::string template_html = jstemplate_builder::GetTemplateHtml(
-      memory_html, &root, "t" /* template root node id */);
-
-  source_->FinishDataRequest(template_html, request_id_);
+  std::string data;
+  jstemplate_builder::AppendJsonJS(&root, &data);
+  source_->FinishDataRequest(data, request_id_);
 }
 
 #if defined(OS_CHROMEOS)
 // ChromeOSAboutVersionHandler  -----------------------------------------------
 
-ChromeOSAboutVersionHandler::ChromeOSAboutVersionHandler(AboutSource* source,
-                                                         int request_id)
+ChromeOSAboutVersionHandler::ChromeOSAboutVersionHandler(
+    AboutSource* source,
+    int request_id)
     : source_(source),
       request_id_(request_id) {
   loader_.EnablePlatformVersions(true);
@@ -1329,8 +1287,8 @@ void ChromeOSAboutVersionHandler::OnVersion(
     std::string version) {
   DictionaryValue localized_strings;
   localized_strings.SetString("os_version", version);
-  source_->FinishDataRequest(AboutVersion(&localized_strings,
-                                          source_->profile()), request_id_);
+  source_->FinishDataRequest(AboutVersionStrings(
+      &localized_strings, source_->profile()), request_id_);
 
   // CancelableRequestProvider isn't happy when it's deleted and servicing a
   // task, so we delay the deletion.
@@ -1340,6 +1298,106 @@ void ChromeOSAboutVersionHandler::OnVersion(
 #endif
 
 }  // namespace
+
+// AboutSource -----------------------------------------------------------------
+
+AboutSource::AboutSource(const std::string& source_name, Profile* profile)
+    : DataSource(source_name, MessageLoop::current()),
+      profile_(profile) {
+}
+
+AboutSource::~AboutSource() {
+}
+
+void AboutSource::StartDataRequest(const std::string& path,
+                                   bool is_incognito,
+                                   int request_id) {
+  std::string response;
+  std::string host = source_name();
+  if (host == chrome::kChromeUIDNSHost) {
+    AboutDnsHandler::Start(this, request_id);
+    return;
+  } else if (host == chrome::kChromeUIHistogramsHost) {
+    response = AboutHistograms(path);
+  } else if (host == chrome::kChromeUIMemoryHost) {
+    response = GetAboutMemoryRedirectResponse(profile());
+  } else if (host == chrome::kChromeUIMemoryRedirectHost) {
+    AboutMemory(path, this, request_id);
+    return;
+#ifdef TRACK_ALL_TASK_OBJECTS
+  } else if (host == chrome::kChromeUITasksHost) {
+    response = AboutObjects(path);
+#endif
+  } else if (host == chrome::kChromeUIStatsHost) {
+    response = AboutStats(path);
+#if defined(USE_TCMALLOC)
+  } else if (host == chrome::kChromeUITCMallocHost) {
+    response = AboutTcmalloc();
+#endif
+  } else if (host == chrome::kChromeUIVersionHost) {
+    if (path == kStringsJsPath) {
+#if defined(OS_CHROMEOS)
+      new ChromeOSAboutVersionHandler(this, request_id);
+      return;
+#else
+      DictionaryValue localized_strings;
+      localized_strings.SetString("os_version", "");
+      response = AboutVersionStrings(&localized_strings, profile_);
+#endif
+    } else {
+      response = AboutVersionStaticContent(path);
+    }
+  } else if (host == chrome::kChromeUICreditsHost) {
+    int idr = (path == kCreditsJsPath) ? IDR_CREDITS_JS : IDR_CREDITS_HTML;
+    response = ResourceBundle::GetSharedInstance().GetRawDataResource(
+        idr).as_string();
+  } else if (host == chrome::kChromeUIChromeURLsHost) {
+    response = ChromeURLs();
+#if defined(OS_CHROMEOS)
+  } else if (host == chrome::kChromeUIOSCreditsHost) {
+    response = ResourceBundle::GetSharedInstance().GetRawDataResource(
+        IDR_OS_CREDITS_HTML).as_string();
+  } else if (host == chrome::kChromeUINetworkHost) {
+    response = AboutNetwork(path);
+  } else if (host == chrome::kChromeUICryptohomeHost) {
+    response = AboutCryptohome(path);
+#endif
+  } else if (host == chrome::kChromeUITermsHost) {
+#if defined(OS_CHROMEOS)
+    ChromeOSTermsHandler::Start(this, request_id);
+    return;
+#else
+    response = ResourceBundle::GetSharedInstance().GetRawDataResource(
+        IDR_TERMS_HTML).as_string();
+#endif
+#if defined(OS_LINUX)
+  } else if (host == chrome::kChromeUILinuxProxyConfigHost) {
+    response = AboutLinuxProxyConfig();
+  } else if (host == chrome::kChromeUISandboxHost) {
+    response = AboutSandbox();
+#endif
+  }
+
+  FinishDataRequest(response, request_id);
+}
+
+void AboutSource::FinishDataRequest(const std::string& html, int request_id) {
+  scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
+  html_bytes->data.resize(html.size());
+  std::copy(html.begin(), html.end(), html_bytes->data.begin());
+  SendResponse(request_id, html_bytes);
+}
+
+std::string AboutSource::GetMimeType(const std::string& path) const {
+  if (path == kCreditsJsPath ||
+      path == kStatsJsPath   ||
+      path == kStringsJsPath ||
+      path == kVersionJsPath ||
+      path == kMemoryJsPath) {
+    return "application/javascript";
+  }
+  return "text/html";
+}
 
 // -----------------------------------------------------------------------------
 

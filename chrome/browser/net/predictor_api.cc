@@ -360,10 +360,6 @@ static base::LazyInstance<OffTheRecordObserver> g_off_the_record_observer(
 void PredictorGetHtmlInfo(std::string* output) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  output->append("<html><head><title>About DNS</title>"
-                 // We'd like the following no-cache... but it doesn't work.
-                 // "<META HTTP-EQUIV=\"Pragma\" CONTENT=\"no-cache\">"
-                 "</head><body>");
   if (!predictor_enabled  || NULL == g_predictor) {
     output->append("DNS pre-resolution and TCP pre-connection is disabled.");
   } else {
@@ -379,7 +375,6 @@ void PredictorGetHtmlInfo(std::string* output) {
       g_predictor->GetHtmlInfo(output);
     }
   }
-  output->append("</body></html>");
 }
 
 void ClearPredictorCache() {

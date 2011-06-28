@@ -4,10 +4,10 @@
 about:memory template page
 -->
 <html id="t">
-  <head>
-    <title>About Memory</title>
+<head>
+  <title>About Memory</title>
+  <meta http-equiv="X-WebKit-CSP" content="object-src 'none'; script-src chrome://resources 'self' 'unsafe-eval'">
     <link rel="stylesheet" href="shared/css/about_memory.css">
-
 <style>
 body {
   font-family: Helvetica, sans-serif;
@@ -32,79 +32,8 @@ table.list#memoryDetails tr.firstRow th:nth-child(2) {
   border-right: 1px solid #b5c6de;
 }
 </style>
-<script>
-function reload() {
-  if (document.getElementById('helpTooltip'))
-    return;
-  history.go(0);
-}
-
-function formatNumber(str) {
-  str += '';
-  if (str == '0') {
-    return 'N/A ';
-  }
-  var x = str.split('.');
-  var x1 = x[0];
-  var x2 = x.length > 1 ? '.' + x[1] : '';
-  var regex = /(\d+)(\d{3})/;
-  while (regex.test(x1)) {
-    x1 = x1.replace(regex, '$1' + ',' + '$2');
-  }
-  return x1;
-}
-
-function addToSum(id, value) {
-  var target = document.getElementById(id);
-  var sum = parseInt(target.innerHTML);
-  sum += parseInt(value);
-  target.innerHTML = sum;
-}
-
-function handleHelpTooltipMouseOver(event) {
-  var el = document.createElement('div');
-  el.id = 'helpTooltip';
-  el.innerHTML = event.toElement.getElementsByTagName('div')[0].innerHTML;
-  el.style.top = 0;
-  el.style.left = 0;
-  el.style.visibility = 'hidden';
-  document.body.appendChild(el);
-
-  var width = el.offsetWidth;
-  var height = el.offsetHeight;
-
-  if (event.pageX - width - 50 + document.body.scrollLeft >= 0 ) {
-    el.style.left = (event.pageX - width - 20) + 'px';
-  } else {
-    el.style.left = (event.pageX + 20) + 'px';
-  }
-
-
-  if (event.pageY - height - 50 + document.body.scrollTop >= 0) {
-    el.style.top = (event.pageY - height - 20) + 'px';
-  } else {
-    el.style.top = (event.pageY + 20) + 'px';
-  }
-
-  el.style.visibility = 'visible';
-}
-
-function handleHelpTooltipMouseOut(event) {
-  var el = document.getElementById('helpTooltip');
-  el.parentNode.removeChild(el);
-}
-
-function enableHelpTooltips() {
-  var helpEls = document.getElementsByClassName('help');
-
-  for (var i = 0, helpEl; helpEl = helpEls[i]; i++) {
-    helpEl.onmouseover = handleHelpTooltipMouseOver;
-    helpEl.onmouseout = handleHelpTooltipMouseOut;
-  }
-}
-
-//setInterval("reload()", 10000);
-</script>
+<script src="chrome://memory-redirect/memory.js"></script>
+<script src="chrome://memory-redirect/strings.js"></script>
 </head>
 <body>
     <div id='header'>
@@ -327,8 +256,6 @@ function enableHelpTooltips() {
         (Note: Due to memory sharing between processes, summing memory usage does not give total memory usage.)
       </div>
     </div>
+    <script src="chrome://resources/js/jstemplate_compiled.js"></script>
 </body>
-<script>
-  enableHelpTooltips();
-</script>
 </html>

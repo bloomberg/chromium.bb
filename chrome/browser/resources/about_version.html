@@ -7,6 +7,7 @@ about:version template page
 <html id="t">
   <head>
     <title i18n-content="title"></title>
+    <meta http-equiv="X-WebKit-CSP" content="object-src 'none'; script-src chrome://resources 'self' 'unsafe-eval'">
     <style>
       body {
         font-family:Helvetica,Arial,sans-serif;
@@ -61,6 +62,8 @@ about:version template page
         max-width: 430px;
       }
     </style>
+  <script src="chrome://version/version.js"></script>
+  <script src="chrome://version/strings.js"></script>
   </head>
 
   <body>
@@ -100,6 +103,9 @@ about:version template page
         </tr>
       </table>
     </div>
+    <script src="chrome://resources/js/i18n_template.js"></script>
+    <script src="chrome://resources/js/i18n_process.js"></script>
+    <script src="chrome://resources/js/jstemplate_compiled.js"></script>
   </body>
 
 </html>

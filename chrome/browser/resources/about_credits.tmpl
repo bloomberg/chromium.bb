@@ -2,6 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
+<meta http-equiv="X-WebKit-CSP" content="object-src 'none'; script-src 'self'">
 <title>Credits</title>
 <style>
 body {
@@ -51,33 +52,13 @@ body {
   margin-top:0px;
 }
 </style>
-<script>
-function $(o) {return document.getElementById(o);}
-function toggle(o) {
-  var licence = o.nextSibling;
-
-  while (licence.className != 'licence') {
-    if (!licence) return false;
-    licence = licence.nextSibling;
-  }
-
-  if (licence.style && licence.style.display == 'block') {
-    licence.style.display = 'none';
-    o.innerHTML = 'show license';
-  } else {
-    licence.style.display = 'block';
-    o.innerHTML = 'hide license';
-  }
-  return false;
-}
-</script>
 </head>
 <body>
 <span class="page-title" style="float:left;">Credits</span>
-<a href="javascript:window.print();" style="float:right;">Print</a>
+<a id="print-link" href="#" style="float:right;">Print</a>
 <div style="clear:both; overflow:auto;"><!-- Chromium <3s the following projects -->
 {{entries}}
 </div>
-
+<script src="chrome://credits/credits.js"></script>
 </body>
 </html>
