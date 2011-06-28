@@ -33,13 +33,14 @@ cr.define('options', function() {
     initializePage: function() {
       // Call base class implementation to starts preference initialization.
       OptionsPage.prototype.initializePage.call(this);
-
-      $('take-photo-button').addEventListener('click',
-                                              this.handleTakePhoto_,
-                                              false);
-      $('choose-file-button').addEventListener('click',
-                                               this.handleChooseFile_,
-                                               false);
+      // Add "Take photo" and "Choose a file" buttons in a uniform way with
+      // other buttons.
+      this.addUserImage_(
+          'chrome://theme/IDR_BUTTON_USER_IMAGE_TAKE_PHOTO',
+          this.handleTakePhoto_);
+      this.addUserImage_(
+          'chrome://theme/IDR_BUTTON_USER_IMAGE_CHOOSE_FILE',
+          this.handleChooseFile_);
       chrome.send('getAvailableImages');
     },
 
@@ -76,13 +77,14 @@ cr.define('options', function() {
     /**
      * Appends new image to the end of the image list.
      * @param {string} src A url for the user image.
+     * @param {function} clickHandler A handler for click on image.
      * @private
      */
-    addUserImage_: function(src) {
+    addUserImage_: function(src, clickHandler) {
       var imageElement = document.createElement('img');
       imageElement.src = src;
       imageElement.addEventListener('click',
-                                    this.handleImageClick_,
+                                    clickHandler,
                                     false);
       var divElement = document.createElement('div');
       divElement.classList.add('list-element');
@@ -98,7 +100,7 @@ cr.define('options', function() {
     addUserImages_: function(images) {
       for (var i = 0; i < images.length; i++) {
         var imageUrl = images[i];
-        this.addUserImage_(imageUrl);
+        this.addUserImage_(imageUrl, this.handleImageClick_);
       }
     },
   };
