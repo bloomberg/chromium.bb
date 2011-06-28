@@ -55,7 +55,7 @@ void BookmarkMenuBridge::UpdateSubMenu(NSMenu* bookmark_menu) {
 void BookmarkMenuBridge::UpdateMenuInternal(NSMenu* bookmark_menu,
                                             bool is_submenu) {
   DCHECK(bookmark_menu);
-  if (menuIsValid_ && !is_submenu)
+  if (menuIsValid_)
     return;
   BookmarkModel* model = GetBookmarkModel();
   if (!model || !model->IsLoaded())
@@ -86,9 +86,7 @@ void BookmarkMenuBridge::UpdateMenuInternal(NSMenu* bookmark_menu,
                    other_items_title,
                    !is_submenu);
 
-  // The valid flag is just for state of the main menu.
-  if (!is_submenu)
-    menuIsValid_ = true;
+  menuIsValid_ = true;
 }
 
 void BookmarkMenuBridge::BookmarkModelBeingDeleted(BookmarkModel* model) {

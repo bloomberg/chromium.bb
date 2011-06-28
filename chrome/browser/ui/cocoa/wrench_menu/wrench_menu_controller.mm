@@ -111,10 +111,17 @@ class ZoomLevelObserver : public NotificationObserver {
 }
 
 - (void)updateBookmarkSubMenu {
-  BookmarkMenuBridge* bridge = [[NSApp delegate] bookmarkMenuBridge];
   NSMenu* bookmarkMenu = [self bookmarkSubMenu];
-  if (bridge && bookmarkMenu)
-    bridge->UpdateSubMenu(bookmarkMenu);
+  DCHECK(bookmarkMenu != NULL);
+
+  if (!bookmarkMenuBridge_.get()) {
+    bookmarkMenuBridge_.reset(
+        new BookmarkMenuBridge([self wrenchMenuModel]->browser()->profile()));
+  }
+  DCHECK(bookmarkMenuBridge_.get() != NULL);
+
+  if (bookmarkMenuBridge_.get() && bookmarkMenu)
+    bookmarkMenuBridge_->UpdateSubMenu(bookmarkMenu);
 }
 
 - (void)menuWillOpen:(NSMenu*)menu {

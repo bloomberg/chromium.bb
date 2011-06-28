@@ -10,6 +10,7 @@
 
 #import "base/mac/cocoa_protocols.h"
 #include "base/memory/scoped_ptr.h"
+#import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_bridge.h"
 #import "chrome/browser/ui/cocoa/menu_controller.h"
 
 @class MenuTrackedRootView;
@@ -40,6 +41,7 @@ class ZoomLevelObserver;
   IBOutlet NSButton* zoomMinus_;
   IBOutlet NSButton* zoomFullScreen_;
 
+  scoped_ptr<BookmarkMenuBridge> bookmarkMenuBridge_;
   scoped_ptr<WrenchMenuControllerInternal::ZoomLevelObserver> observer_;
 }
 
