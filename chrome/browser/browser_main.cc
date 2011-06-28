@@ -1874,15 +1874,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
 #endif
 #endif
 
-  // Initialize extension event routers. Note that on Chrome OS, this will
-  // not succeed if the user has not logged in yet, in which case the
-  // event routers are initialized in LoginUtilsImpl::CompleteLogin instead.
-  if (profile->GetExtensionService()) {
-    // This will initialize bookmarks. Call it after bookmark import is done.
-    // See issue 40144.
-    profile->GetExtensionService()->InitEventRouters();
-  }
-
   // The extension service may be available at this point. If the command line
   // specifies --uninstall-extension, attempt the uninstall extension startup
   // action.
