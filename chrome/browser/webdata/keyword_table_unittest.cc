@@ -13,6 +13,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;
+using base::TimeDelta;
 
 class KeywordTableTest : public testing::Test {
  public:
@@ -71,6 +72,8 @@ TEST_F(KeywordTableTest, Keywords) {
   template_url.set_safe_for_autoreplace(true);
   Time created_time = Time::Now();
   template_url.set_date_created(created_time);
+  Time last_modified_time = created_time + TimeDelta::FromSeconds(10);
+  template_url.set_last_modified(last_modified_time);
   template_url.set_show_in_default_list(true);
   template_url.set_originating_url(originating_url);
   template_url.set_usage_count(32);
@@ -102,6 +105,9 @@ TEST_F(KeywordTableTest, Keywords) {
 
   // The database stores time only at the resolution of a second.
   EXPECT_EQ(created_time.ToTimeT(), restored_url->date_created().ToTimeT());
+
+  EXPECT_EQ(last_modified_time.ToTimeT(),
+            restored_url->last_modified().ToTimeT());
 
   EXPECT_TRUE(restored_url->show_in_default_list());
 

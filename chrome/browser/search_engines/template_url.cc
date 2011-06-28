@@ -594,6 +594,7 @@ TemplateURL::TemplateURL()
       safe_for_autoreplace_(false),
       id_(0),
       date_created_(base::Time::Now()),
+      last_modified_(base::Time::Now()),
       created_by_policy_(false),
       usage_count_(0),
       search_engine_type_(SEARCH_ENGINE_OTHER),

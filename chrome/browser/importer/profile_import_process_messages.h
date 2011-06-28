@@ -274,6 +274,7 @@ struct ParamTraits<TemplateURL> {
     WriteParam(m, p.languages());
     WriteParam(m, p.input_encodings());
     WriteParam(m, p.date_created());
+    WriteParam(m, p.last_modified());
     WriteParam(m, p.usage_count());
     WriteParam(m, p.prepopulate_id());
   }
@@ -291,6 +292,7 @@ struct ParamTraits<TemplateURL> {
     std::vector<string16> languages;
     std::vector<std::string> input_encodings;
     base::Time date_created;
+    base::Time last_modified;
     int usage_count;
     int prepopulate_id;
 
@@ -332,6 +334,7 @@ struct ParamTraits<TemplateURL> {
     if (!ReadParam(m, iter, &languages) ||
         !ReadParam(m, iter, &input_encodings) ||
         !ReadParam(m, iter, &date_created) ||
+        !ReadParam(m, iter, &last_modified) ||
         !ReadParam(m, iter, &usage_count) ||
         !ReadParam(m, iter, &prepopulate_id))
       return false;
@@ -355,6 +358,7 @@ struct ParamTraits<TemplateURL> {
     }
     p->set_input_encodings(input_encodings);
     p->set_date_created(date_created);
+    p->set_last_modified(last_modified);
     p->set_usage_count(usage_count);
     p->set_prepopulate_id(prepopulate_id);
     return true;

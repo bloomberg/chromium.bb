@@ -3394,6 +3394,7 @@ TemplateURL* MakePrepopulatedTemplateURL(const wchar_t* name,
   new_turl->set_show_in_default_list(true);
   new_turl->set_safe_for_autoreplace(true);
   new_turl->set_date_created(Time());
+  new_turl->set_last_modified(Time());
   std::vector<std::string> turl_encodings;
   turl_encodings.push_back(encoding);
   new_turl->set_input_encodings(turl_encodings);

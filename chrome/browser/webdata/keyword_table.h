@@ -47,6 +47,8 @@ class Time;
 //                          in version 26.
 //   instant_url            See TemplateURL::instant_url.  This was added
 //                          in version 29.
+//   last_modified          See TemplateURL::last_modified.  This was added in
+//                          version 38.
 //
 class KeywordTable : public WebDatabaseTable {
  public:
@@ -87,6 +89,7 @@ class KeywordTable : public WebDatabaseTable {
   bool MigrateToVersion26AddCreatedByPolicyColumn();
   bool MigrateToVersion28SupportsInstantColumn();
   bool MigrateToVersion29InstantUrlToSupportsInstant();
+  bool MigrateToVersion38AddLastModifiedColumn();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(KeywordTable);

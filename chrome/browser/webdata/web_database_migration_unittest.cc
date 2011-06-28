@@ -41,7 +41,7 @@ void AutofillProfile31FromStatement(const sql::Statement& s,
   *unique_id = s.ColumnInt(1);
   profile->SetInfo(NAME_FIRST, s.ColumnString16(2));
   profile->SetInfo(NAME_MIDDLE, s.ColumnString16(3));
-  profile->SetInfo(NAME_LAST,s.ColumnString16(4));
+  profile->SetInfo(NAME_LAST, s.ColumnString16(4));
   profile->SetInfo(EMAIL_ADDRESS, s.ColumnString16(5));
   profile->SetInfo(COMPANY_NAME, s.ColumnString16(6));
   profile->SetInfo(ADDRESS_HOME_LINE1, s.ColumnString16(7));
@@ -186,7 +186,7 @@ class WebDatabaseMigrationTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseMigrationTest);
 };
 
-const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 37;
+const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 38;
 
 void WebDatabaseMigrationTest::LoadDatabase(const FilePath::StringType& file) {
   std::string contents;
@@ -454,7 +454,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion25ToCurrent) {
     // Check version.
     EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
 
-    // |keywords| |logo_id| column should have been added.
+    // |keywords| |created_by_policy| column should have been added.
     EXPECT_TRUE(connection.DoesColumnExist("keywords", "id"));
     EXPECT_TRUE(connection.DoesColumnExist("keywords", "created_by_policy"));
   }
@@ -587,7 +587,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion26ToCurrentStringIDs) {
     // Check version.
     EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
 
-    // |keywords| |logo_id| column should have been added.
+    // |keywords| |created_by_policy| column should have been added.
     EXPECT_TRUE(connection.DoesColumnExist("keywords", "id"));
     EXPECT_TRUE(connection.DoesColumnExist("keywords", "created_by_policy"));
     EXPECT_FALSE(connection.DoesColumnExist("credit_cards", "billing_address"));
@@ -601,7 +601,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion26ToCurrentStringIDs) {
     EXPECT_EQ("Jack", s.ColumnString(1));
     EXPECT_EQ(2, s.ColumnInt(2));
     EXPECT_EQ(2012, s.ColumnInt(3));
-    // Column 5 is encrypted credit card number blob.
+    // Column 5 is encrypted credit card number blo b.
     // Column 6 is date_modified.
   }
 }
@@ -1169,7 +1169,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion32ToCurrent) {
     // John Doe fax.
     ASSERT_TRUE(s4.Step());
     EXPECT_EQ("00580526-FF81-EE2A-0546-1AC593A32E2F", s4.ColumnString(0));
-    EXPECT_EQ(1, s4.ColumnInt(1)); // 1 means phone.
+    EXPECT_EQ(1, s4.ColumnInt(1));  // 1 means phone.
     EXPECT_EQ(ASCIIToUTF16("4153334444"), s4.ColumnString16(2));
 
     // John P. Doe phone.
@@ -1183,25 +1183,25 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion32ToCurrent) {
     // 2 Main Street phone.
     ASSERT_TRUE(s4.Step());
     EXPECT_EQ("4C74A9D8-7EEE-423E-F9C2-E7FA70ED1396", s4.ColumnString(0));
-    EXPECT_EQ(0, s4.ColumnInt(1)); // 0 means phone.
+    EXPECT_EQ(0, s4.ColumnInt(1));  // 0 means phone.
     EXPECT_EQ(ASCIIToUTF16(""), s4.ColumnString16(2));
 
     // 2 Main Street fax.
     ASSERT_TRUE(s4.Step());
     EXPECT_EQ("4C74A9D8-7EEE-423E-F9C2-E7FA70ED1396", s4.ColumnString(0));
-    EXPECT_EQ(1, s4.ColumnInt(1)); // 1 means fax.
+    EXPECT_EQ(1, s4.ColumnInt(1));  // 1 means fax.
     EXPECT_EQ(ASCIIToUTF16(""), s4.ColumnString16(2));
 
     // 2 Main St phone.
     ASSERT_TRUE(s4.Step());
     EXPECT_EQ("722DF5C4-F74A-294A-46F0-31FFDED0D635", s4.ColumnString(0));
-    EXPECT_EQ(0, s4.ColumnInt(1)); // 0 means phone.
+    EXPECT_EQ(0, s4.ColumnInt(1));  // 0 means phone.
     EXPECT_EQ(ASCIIToUTF16(""), s4.ColumnString16(2));
 
     // 2 Main St fax.
     ASSERT_TRUE(s4.Step());
     EXPECT_EQ("722DF5C4-F74A-294A-46F0-31FFDED0D635", s4.ColumnString(0));
-    EXPECT_EQ(1, s4.ColumnInt(1)); // 1 means fax.
+    EXPECT_EQ(1, s4.ColumnInt(1));  // 1 means fax.
     EXPECT_EQ(ASCIIToUTF16(""), s4.ColumnString16(2));
 
     // Note no phone or fax for Alfred E Newman.
@@ -1209,13 +1209,13 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion32ToCurrent) {
     // 3 Main St phone.
     ASSERT_TRUE(s4.Step());
     EXPECT_EQ("9E5FE298-62C7-83DF-6293-381BC589183F", s4.ColumnString(0));
-    EXPECT_EQ(0, s4.ColumnInt(1)); // 0 means phone.
+    EXPECT_EQ(0, s4.ColumnInt(1));  // 0 means phone.
     EXPECT_EQ(ASCIIToUTF16(""), s4.ColumnString16(2));
 
     // 2 Main St fax.
     ASSERT_TRUE(s4.Step());
     EXPECT_EQ("9E5FE298-62C7-83DF-6293-381BC589183F", s4.ColumnString(0));
-    EXPECT_EQ(1, s4.ColumnInt(1)); // 1 means fax.
+    EXPECT_EQ(1, s4.ColumnInt(1));  // 1 means fax.
     EXPECT_EQ(ASCIIToUTF16(""), s4.ColumnString16(2));
 
     // Should be all.
@@ -1422,5 +1422,45 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion35ToCurrent) {
 
     // That should be it.
     ASSERT_FALSE(s2.Step());
+  }
+}
+
+// Tests that the |keywords| |last_modified| column gets added to the schema for
+// a version 37 database.
+TEST_F(WebDatabaseMigrationTest, MigrateVersion37ToCurrent) {
+  // This schema is taken from a build prior to the addition of the |keywords|
+  // |last_modified| column.
+  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_37.sql")));
+
+  // Verify pre-conditions.  These are expectations for version 37 of the
+  // database.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+
+    // Columns existing and not existing before current version.
+    ASSERT_TRUE(connection.DoesColumnExist("keywords", "id"));
+    ASSERT_FALSE(connection.DoesColumnExist("keywords", "last_modified"));
+  }
+
+  // Load the database via the WebDatabase class and migrate the database to
+  // the current version.
+  {
+    WebDatabase db;
+    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath()));
+  }
+
+  // Verify post-conditions.  These are expectations for current version of the
+  // database.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+
+    // Check version.
+    EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
+
+    // |keywords| |last_modified| column should have been added.
+    EXPECT_TRUE(connection.DoesColumnExist("keywords", "id"));
+    EXPECT_TRUE(connection.DoesColumnExist("keywords", "last_modified"));
   }
 }

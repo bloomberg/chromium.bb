@@ -62,6 +62,8 @@ class TemplateURLService : public WebDataServiceConsumer,
  public:
   typedef std::map<std::string, std::string> QueryTerms;
   typedef std::vector<const TemplateURL*> TemplateURLVector;
+  // Type for a static function pointer that acts as a time source.
+  typedef base::Time(TimeProvider)();
 
   // Struct used for initializing the data store with fake data.
   // Each initializer is mapped to a TemplateURL.
@@ -239,6 +241,14 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   // Registers the preferences used to save a TemplateURL to prefs.
   static void RegisterUserPrefs(PrefService* prefs);
+
+#if defined(UNIT_TEST)
+  // Set a different time provider function, such as
+  // base::MockTimeProvider::StaticNow, when testing calls to base::Time::Now.
+  void set_time_provider(TimeProvider* time_provider) {
+    time_provider_ = time_provider;
+  }
+#endif
 
  protected:
   // Cover method for the method of the same name on the HistoryService.
@@ -439,6 +449,9 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   // List of extension IDs waiting for Load to have keywords registered.
   std::vector<std::string> pending_extension_ids_;
+
+  // Function returning current time in base::Time units.
+  TimeProvider* time_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(TemplateURLService);
 };

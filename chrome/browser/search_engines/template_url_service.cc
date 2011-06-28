@@ -102,7 +102,8 @@ TemplateURLService::TemplateURLService(Profile* profile)
       load_handle_(0),
       default_search_provider_(NULL),
       is_default_search_managed_(false),
-      next_id_(1) {
+      next_id_(1),
+      time_provider_(&base::Time::Now) {
   DCHECK(profile_);
   Init(NULL, 0);
 }
@@ -116,7 +117,8 @@ TemplateURLService::TemplateURLService(const Initializer* initializers,
       service_(NULL),
       default_search_provider_(NULL),
       is_default_search_managed_(false),
-      next_id_(1) {
+      next_id_(1),
+      time_provider_(&base::Time::Now) {
   Init(initializers, count);
 }
 
@@ -399,6 +401,7 @@ void TemplateURLService::ResetTemplateURL(const TemplateURL* url,
     new_url.SetURL(search_url, 0, 0);
   }
   new_url.set_safe_for_autoreplace(false);
+  new_url.set_last_modified(time_provider_());
   UpdateNoNotify(url, new_url);
   NotifyObservers();
 }

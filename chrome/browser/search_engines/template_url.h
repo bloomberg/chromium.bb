@@ -142,6 +142,7 @@ class TemplateURLRef {
   friend class TemplateURLTest;
   FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, ParseParameterKnown);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, ParseParameterUnknown);
+  FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, ParseParameterReallyUnknown);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, ParseURLEmpty);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, ParseURLNoTemplateEnd);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, ParseURLNoKnownParameters);
@@ -425,6 +426,12 @@ class TemplateURL {
   void set_date_created(base::Time time) { date_created_ = time; }
   base::Time date_created() const { return date_created_; }
 
+  // The last time this keyword was modified by a user, since creation.
+  //
+  // NOTE: Like date_created above, this may be 0.
+  void set_last_modified(base::Time time) { last_modified_ = time; }
+  base::Time last_modified() const { return last_modified_; }
+
   // True if this TemplateURL was automatically created by the administrator via
   // group policy.
   void set_created_by_policy(bool created_by_policy) {
@@ -510,6 +517,7 @@ class TemplateURL {
   std::vector<std::string> input_encodings_;
   TemplateURLID id_;
   base::Time date_created_;
+  base::Time last_modified_;
   bool created_by_policy_;
   int usage_count_;
   SearchEngineType search_engine_type_;
