@@ -10,9 +10,9 @@
 
 #import "base/mac/cocoa_protocols.h"
 #include "base/memory/scoped_ptr.h"
-#import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_bridge.h"
 #import "chrome/browser/ui/cocoa/menu_controller.h"
 
+class BookmarkMenuBridge;
 @class MenuTrackedRootView;
 @class ToolbarController;
 class WrenchMenuModel;
