@@ -110,6 +110,7 @@ struct AutomationResourceMessageFilter::CookieCompletionInfo {
   int render_process_id;
   IPC::Message* reply_msg;
   scoped_refptr<net::CookieStore> cookie_store;
+  scoped_refptr<AutomationResourceMessageFilter> automation_message_filter;
 };
 
 AutomationResourceMessageFilter::AutomationResourceMessageFilter()
@@ -156,6 +157,18 @@ void AutomationResourceMessageFilter::OnChannelClosing() {
       filtered_render_views_.Get().erase(index++);
     } else {
       index++;
+    }
+  }
+
+  CompletionCallbackMap::iterator callback_index =
+      completion_callback_map_.Get().begin();
+  while (callback_index != completion_callback_map_.Get().end()) {
+    const CookieCompletionInfo& cookie_completion_info =
+        (*callback_index).second;
+    if (cookie_completion_info.automation_message_filter.get() == this) {
+      completion_callback_map_.Get().erase(callback_index++);
+    } else {
+      callback_index++;
     }
   }
 }
@@ -468,6 +481,8 @@ void AutomationResourceMessageFilter::GetCookiesForUrl(
   cookie_info.render_process_id = render_process_id;
   cookie_info.reply_msg = reply_msg;
   cookie_info.cookie_store = automation_details_iter->second.cookie_store_;
+  cookie_info.automation_message_filter =
+      automation_details_iter->second.filter;
 
   completion_callback_map_.Get()[completion_callback_id] = cookie_info;
 
