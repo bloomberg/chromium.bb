@@ -131,13 +131,7 @@ class MockGaiaConsumer : public GaiaAuthConsumer {
   MOCK_METHOD1(OnTokenAuthFailure, void(const GoogleServiceAuthError& error));
 };
 
-#if defined(OS_WIN)
-#define MAYBE_ErrorComparator DISABLED_ErrorComparator
-#else
-#define MAYBE_ErrorComparator ErrorComparator
-#endif
-
-TEST_F(GaiaAuthFetcherTest, MAYBE_ErrorComparator) {
+TEST_F(GaiaAuthFetcherTest, ErrorComparator) {
   GoogleServiceAuthError expected_error =
       GoogleServiceAuthError::FromConnectionError(-101);
 
