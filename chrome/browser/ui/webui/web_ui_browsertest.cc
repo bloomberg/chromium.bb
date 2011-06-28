@@ -95,8 +95,19 @@ bool WebUIBrowserTest::RunJavascriptTest(
   return RunJavascriptUsingHandler(test_name, test_arguments, true);
 }
 
+void WebUIBrowserTest::PreLoadJavascriptLibraries(bool override_chrome_send) {
+  ASSERT_FALSE(libraries_preloaded_);
+  scoped_ptr<Value> override_chrome_send_arg(
+      Value::CreateBooleanValue(override_chrome_send));
+  RunJavascriptFunction("preloadJavascriptLibraries",
+                        *override_chrome_send_arg);
+  libraries_preloaded_ = true;
+}
+
 WebUIBrowserTest::WebUIBrowserTest()
-    : test_handler_(new WebUITestHandler()) {}
+    : test_handler_(new WebUITestHandler()),
+      libraries_preloaded_(false),
+      skip_test_(false) {}
 
 void WebUIBrowserTest::SetUpInProcessBrowserTestFixture() {
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory_));
@@ -114,13 +125,28 @@ WebUIMessageHandler* WebUIBrowserTest::GetMockMessageHandler() {
   return NULL;
 }
 
+void WebUIBrowserTest::skipTest(const std::string& skip_test_message) {
+  skip_test_ = true;
+  skip_test_message_.assign(skip_test_message);
+}
+
+GURL WebUIBrowserTest::WebUITestDataPathToURL(
+    const FilePath::StringType& path) {
+  FilePath dir_test_data;
+  EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &dir_test_data));
+  FilePath test_path(dir_test_data.AppendASCII("webui"));
+  test_path = test_path.Append(path);
+  EXPECT_TRUE(file_util::PathExists(test_path));
+  return net::FilePathToFileURL(test_path);
+}
+
 void WebUIBrowserTest::BuildJavascriptLibraries(std::string* content) {
   ASSERT_TRUE(content != NULL);
   std::string library_content, src_content;
 
   std::vector<FilePath>::iterator user_libraries_iterator;
-  for (user_libraries_iterator = user_libraries.begin();
-       user_libraries_iterator != user_libraries.end();
+  for (user_libraries_iterator = user_libraries_.begin();
+       user_libraries_iterator != user_libraries_.end();
        ++user_libraries_iterator) {
     if (user_libraries_iterator->IsAbsolute()) {
       ASSERT_TRUE(file_util::ReadFileToString(*user_libraries_iterator,
@@ -156,8 +182,16 @@ bool WebUIBrowserTest::RunJavascriptUsingHandler(
     const std::string& function_name,
     const ConstValueVector& function_arguments,
     bool is_test) {
+  if (skip_test_) {
+    SUCCEED();
+    LOG(WARNING)
+        << "Skipping test " << function_name << ": " << skip_test_message_;
+    return true;
+  }
+
   std::string content;
-  BuildJavascriptLibraries(&content);
+  if (!libraries_preloaded_)
+    BuildJavascriptLibraries(&content);
 
   if (!function_name.empty()) {
     string16 called_function;
@@ -194,7 +228,7 @@ void WebUIBrowserTest::SetupHandlers() {
 }
 
 void WebUIBrowserTest::AddLibrary(const FilePath& library_path) {
-  user_libraries.push_back(library_path);
+  user_libraries_.push_back(library_path);
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIBrowserTest, TestSamplePass) {
