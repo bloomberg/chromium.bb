@@ -2625,14 +2625,6 @@ driver() {
   # otherwise linker-install will stomp it.
   linker-install
   driver-install
-  driver-intrinsics
-}
-
-driver-intrinsics() {
-  StepBanner "DRIVER" "Install LLVM intrinsics"
-  "${LLVM_INSTALL_DIR}"/bin/llvm-as \
-    tools/llvm/llvm-intrinsics.ll \
-    -o "${PNACL_ROOT}/llvm-intrinsics.bc"
 }
 
 # Just in case we're calling this manually

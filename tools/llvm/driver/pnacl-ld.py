@@ -35,7 +35,6 @@ EXTRA_ENV = {
   'STATIC'   : '0',
   'PIC'      : '0',
 
-  'LINK_IN_BITCODE_INTRINSICS' : '1',
   'BAREBONES_LINK' : '0',
 
   'STRIP_MODE' : 'none',
@@ -105,7 +104,6 @@ EXTRA_ENV = {
   'RUN_LD' : '${LD} ${LD_FLAGS} ${inputs} -o "${output}"',
 
   'RUN_BCLD': ('${BCLD} ${BCLD_FLAGS} ${inputs} '
-               '${LINK_IN_BITCODE_INTRINSICS ? ${BASE}/llvm-intrinsics.bc} '
                '-o "${output}"'),
 }
 env.update(EXTRA_ENV)
@@ -122,8 +120,6 @@ LDPatterns = [
   ( ('-o', '(.+)'),    "env.set('OUTPUT', $0)"),
 
   ( '-barebones-link',       "env.set('BAREBONES_LINK', '1')"),
-
-  ( '-nobitcode-intrinsics', "env.set('LINK_IN_BITCODE_INTRINSICS', '0')"),
 
   ( '-shared',         "env.set('SHARED', '1')"),
 
