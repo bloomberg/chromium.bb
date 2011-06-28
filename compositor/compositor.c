@@ -771,13 +771,53 @@ fade_output(struct wlsc_output *output,
 	glUniform4fv(compositor->solid_shader.color_uniform, 1, color);
 	wlsc_surface_draw(&surface, output, region);
 }
+
+static void
+wlsc_output_set_cursor(struct wlsc_output *output,
+		       struct wl_input_device *dev, int force_sw)
+{
+	struct wlsc_compositor *ec = output->compositor;
+	struct wlsc_input_device *device = (struct wlsc_input_device *) dev;
+	pixman_region32_t cursor_region;
+	int use_hardware_cursor = 1, prior_was_hardware;
+
+	pixman_region32_init_rect(&cursor_region,
+				  device->sprite->x, device->sprite->y,
+				  device->sprite->width,
+				  device->sprite->height);
+
+	pixman_region32_intersect(&cursor_region, &cursor_region, &output->region);
+
+	if (!pixman_region32_not_empty(&cursor_region)) {
+ 		output->set_hardware_cursor(output, NULL);
+		goto out;
+	}
+
+	prior_was_hardware = wl_list_empty(&device->sprite->link);
+	if (force_sw || output->set_hardware_cursor(output, device) < 0) {
+		if (prior_was_hardware)
+			wlsc_surface_damage(device->sprite);
+		use_hardware_cursor = 0;
+	} else if (!prior_was_hardware) {
+		wlsc_surface_damage_below(device->sprite);
+	}
+
+	/* Remove always to be on top. */
+	wl_list_remove(&device->sprite->link);
+	if (!use_hardware_cursor)
+		wl_list_insert(&ec->surface_list, &device->sprite->link);
+	else
+		wl_list_init(&device->sprite->link);
+
+out:
+	pixman_region32_fini(&cursor_region);
+}
  
 static void
 wlsc_output_repaint(struct wlsc_output *output)
 {
 	struct wlsc_compositor *ec = output->compositor;
 	struct wlsc_surface *es;
-	struct wlsc_input_device *device;
 	pixman_region32_t clip, new_damage, total_damage;
 
 	output->prepare_render(output);
@@ -788,6 +828,9 @@ wlsc_output_repaint(struct wlsc_output *output)
 	glUniformMatrix4fv(ec->texture_shader.proj_uniform,
 			   1, GL_FALSE, output->matrix.d);
 	glUniform1i(ec->texture_shader.tex_uniform, 0);
+
+	wlsc_output_set_cursor(output, ec->input_device,
+			       !(ec->focus && ec->fade.spring.current < 0.001));
 
 	pixman_region32_init(&new_damage);
 	pixman_region32_intersect(&new_damage, &ec->damage, &output->region);
@@ -807,22 +850,6 @@ wlsc_output_repaint(struct wlsc_output *output)
 
 	pixman_region32_fini(&clip);
 	pixman_region32_fini(&new_damage);
-
-	device = (struct wlsc_input_device *) ec->input_device;
-	if (ec->focus && ec->fade.spring.current < 0.001) {
-		if (!wl_list_empty(&device->sprite->link)) {
-			wl_list_remove(&device->sprite->link);
-			wl_list_init(&device->sprite->link);
-		}
-		if (output->set_hardware_cursor(output, device) < 0)
-			wl_list_insert(&ec->surface_list,
-				       &device->sprite->link);
- 	} else {
- 		output->set_hardware_cursor(output, NULL);
-		if (wl_list_empty(&device->sprite->link))
-			wl_list_insert(&ec->surface_list,
-				       &device->sprite->link);
- 	}
 
 	es = container_of(ec->surface_list.next, struct wlsc_surface, link);
 

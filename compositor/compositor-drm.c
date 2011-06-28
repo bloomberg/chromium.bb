@@ -210,10 +210,8 @@ drm_output_set_cursor(struct wlsc_output *output_base,
 				       output->base.current->width,
 				       output->base.current->height);
 
-	if (!pixman_region32_not_empty(&cursor_region)) {
-		ret = 0;
+	if (!pixman_region32_not_empty(&cursor_region))
 		goto out;
-	}
 
 	if (eid->sprite->image == EGL_NO_IMAGE_KHR)
 		goto out;
