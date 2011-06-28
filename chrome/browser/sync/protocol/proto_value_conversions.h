@@ -23,6 +23,7 @@ class NigoriSpecifics;
 class PasswordSpecifics;
 class PasswordSpecificsData;
 class PreferenceSpecifics;
+class SearchEngineSpecifics;
 class SessionHeader;
 class SessionSpecifics;
 class SessionTab;
@@ -98,6 +99,9 @@ DictionaryValue* PasswordSpecificsToValue(
 
 DictionaryValue* PreferenceSpecificsToValue(
     const sync_pb::PreferenceSpecifics& password_specifics);
+
+DictionaryValue* SearchEngineSpecificsToValue(
+    const sync_pb::SearchEngineSpecifics& search_engine_specifics);
 
 DictionaryValue* SessionSpecificsToValue(
     const sync_pb::SessionSpecifics& session_specifics);

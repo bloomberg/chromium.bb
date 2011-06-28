@@ -33,6 +33,7 @@ static const syncable::ModelType kStartOrder[] = {
   syncable::THEMES,
   syncable::TYPED_URLS,
   syncable::PASSWORDS,
+  syncable::SEARCH_ENGINES,
   syncable::SESSIONS,
 };
 
@@ -285,7 +286,6 @@ void DataTypeManagerImpl::TypeStartCallback(
   needs_start_.erase(needs_start_.begin());
 
   if (result == DataTypeController::NEEDS_CRYPTO) {
-
   }
   // If the type started normally, continue to the next type.
   // If the type is waiting for the cryptographer, continue to the next type.

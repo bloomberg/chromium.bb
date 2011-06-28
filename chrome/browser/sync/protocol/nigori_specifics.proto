@@ -46,6 +46,7 @@ message NigoriSpecifics {
   optional bool encrypt_extensions = 9;
   optional bool encrypt_sessions = 10;
   optional bool encrypt_apps = 11;
+  optional bool encrypt_search_engines = 12;
 }
 
 extend EntitySpecifics {

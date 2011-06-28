@@ -23,6 +23,7 @@ void FillNigoriEncryptedTypes(const ModelTypeSet& types,
   nigori->set_encrypt_themes(types.count(THEMES) > 0);
   nigori->set_encrypt_typed_urls(types.count(TYPED_URLS) > 0);
   nigori->set_encrypt_extensions(types.count(EXTENSIONS) > 0);
+  nigori->set_encrypt_search_engines(types.count(SEARCH_ENGINES) > 0);
   nigori->set_encrypt_sessions(types.count(SESSIONS) > 0);
   nigori->set_encrypt_apps(types.count(APPS) > 0);
 }

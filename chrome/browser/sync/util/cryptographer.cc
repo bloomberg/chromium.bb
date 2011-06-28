@@ -275,6 +275,8 @@ void Cryptographer::SetEncryptedTypes(const sync_pb::NigoriSpecifics& nigori) {
     encrypted_types_.insert(syncable::TYPED_URLS);
   if (nigori.encrypt_extensions())
     encrypted_types_.insert(syncable::EXTENSIONS);
+  if (nigori.encrypt_search_engines())
+    encrypted_types_.insert(syncable::SEARCH_ENGINES);
   if (nigori.encrypt_sessions())
     encrypted_types_.insert(syncable::SESSIONS);
   if (nigori.encrypt_apps())

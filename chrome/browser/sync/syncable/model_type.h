@@ -63,8 +63,10 @@ enum ModelType {
   TYPED_URLS,
   // An extension folder or an extension object.
   EXTENSIONS,
-  // An object represeting a set of Nigori keys.
+  // An object representing a set of Nigori keys.
   NIGORI,
+  // An object representing a custom search engine.
+  SEARCH_ENGINES,
   // An object representing a browser session.
   SESSIONS,
   // An app folder or an app object.

@@ -25,6 +25,7 @@ import extension_specifics_pb2
 import nigori_specifics_pb2
 import password_specifics_pb2
 import preference_specifics_pb2
+import search_engine_specifics_pb2
 import session_specifics_pb2
 import sync_pb2
 import theme_specifics_pb2
@@ -44,9 +45,10 @@ ALL_TYPES = (
     NIGORI,
     PASSWORD,
     PREFERENCE,
+    SEARCH_ENGINE,
     SESSION,
     THEME,
-    TYPED_URL) = range(12)
+    TYPED_URL) = range(13)
 
 # Well-known server tag of the top level 'Google Chrome' folder.
 TOP_LEVEL_FOLDER_TAG = 'google_chrome'
@@ -62,6 +64,7 @@ SYNC_TYPE_TO_EXTENSION = {
     NIGORI: nigori_specifics_pb2.nigori,
     PASSWORD: password_specifics_pb2.password,
     PREFERENCE: preference_specifics_pb2.preference,
+    SEARCH_ENGINE: search_engine_specifics_pb2.search_engine,
     SESSION: session_specifics_pb2.session,
     THEME: theme_specifics_pb2.theme,
     TYPED_URL: typed_url_specifics_pb2.typed_url,
@@ -381,6 +384,8 @@ class SyncDataModel(object):
                     parent_tag='google_chrome', sync_type=EXTENSIONS),
       PermanentItem('google_chrome_passwords', name='Passwords',
                     parent_tag='google_chrome', sync_type=PASSWORD),
+      PermanentItem('google_chrome_search_engines', name='Search Engines',
+                    parent_tag='google_chrome', sync_type=SEARCH_ENGINE),
       PermanentItem('google_chrome_sessions', name='Sessions',
                     parent_tag='google_chrome', sync_type=SESSION),
       PermanentItem('google_chrome_themes', name='Themes',

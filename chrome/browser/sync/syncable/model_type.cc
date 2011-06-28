@@ -14,6 +14,7 @@
 #include "chrome/browser/sync/protocol/nigori_specifics.pb.h"
 #include "chrome/browser/sync/protocol/password_specifics.pb.h"
 #include "chrome/browser/sync/protocol/preference_specifics.pb.h"
+#include "chrome/browser/sync/protocol/search_engine_specifics.pb.h"
 #include "chrome/browser/sync/protocol/session_specifics.pb.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/protocol/theme_specifics.pb.h"
@@ -50,6 +51,9 @@ void AddDefaultExtensionValue(syncable::ModelType datatype,
       break;
     case NIGORI:
       specifics->MutableExtension(sync_pb::nigori);
+      break;
+    case SEARCH_ENGINES:
+      specifics->MutableExtension(sync_pb::search_engine);
       break;
     case SESSIONS:
       specifics->MutableExtension(sync_pb::session);
@@ -100,6 +104,9 @@ int GetExtensionFieldNumberFromModelType(ModelType model_type) {
       break;
     case NIGORI:
       return sync_pb::kNigoriFieldNumber;
+      break;
+    case SEARCH_ENGINES:
+      return sync_pb::kSearchEngineFieldNumber;
       break;
     case SESSIONS:
       return sync_pb::kSessionFieldNumber;
@@ -178,6 +185,9 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
   if (specifics.HasExtension(sync_pb::app))
     return APPS;
 
+  if (specifics.HasExtension(sync_pb::search_engine))
+    return SEARCH_ENGINES;
+
   if (specifics.HasExtension(sync_pb::session))
     return SESSIONS;
 
@@ -202,6 +212,8 @@ std::string ModelTypeToString(ModelType model_type) {
       return "Extensions";
     case NIGORI:
       return "Encryption keys";
+    case SEARCH_ENGINES:
+      return "Search Engines";
     case SESSIONS:
       return "Sessions";
     case APPS:
@@ -257,6 +269,8 @@ ModelType ModelTypeFromString(const std::string& model_type_string) {
     return EXTENSIONS;
   else if (model_type_string == "Encryption keys")
     return NIGORI;
+  else if (model_type_string == "Search Engines")
+    return SEARCH_ENGINES;
   else if (model_type_string == "Sessions")
     return SESSIONS;
   else if (model_type_string == "Apps")
@@ -341,6 +355,8 @@ std::string ModelTypeToRootTag(ModelType type) {
       return "google_chrome_extensions";
     case NIGORI:
       return "google_chrome_nigori";
+    case SEARCH_ENGINES:
+      return "google_chrome_search_engines";
     case SESSIONS:
       return "google_chrome_sessions";
     case APPS:
@@ -398,6 +414,10 @@ void PostTimeToTypeHistogram(ModelType model_type, base::TimeDelta time) {
         SYNC_FREQ_HISTOGRAM("Sync.FreqNigori", time);
         return;
     }
+    case SEARCH_ENGINES: {
+        SYNC_FREQ_HISTOGRAM("Sync.FreqSearchEngines", time);
+        return;
+    }
     case SESSIONS: {
         SYNC_FREQ_HISTOGRAM("Sync.FreqSessions", time);
         return;
@@ -425,6 +445,7 @@ const char kTypedUrlNotificationType[] = "TYPED_URL";
 const char kExtensionNotificationType[] = "EXTENSION";
 const char kNigoriNotificationType[] = "NIGORI";
 const char kAppNotificationType[] = "APP";
+const char kSearchEngineNotificationType[] = "SEARCH_ENGINE";
 const char kSessionNotificationType[] = "SESSION";
 const char kAutofillProfileNotificationType[] = "AUTOFILL_PROFILE";
 }  // namespace
@@ -458,6 +479,9 @@ bool RealModelTypeToNotificationType(ModelType model_type,
       return true;
     case APPS:
       *notification_type = kAppNotificationType;
+      return true;
+    case SEARCH_ENGINES:
+      *notification_type = kSearchEngineNotificationType;
       return true;
     case SESSIONS:
       *notification_type = kSessionNotificationType;
@@ -500,6 +524,9 @@ bool NotificationTypeToRealModelType(const std::string& notification_type,
     return true;
   } else if (notification_type == kAppNotificationType) {
     *model_type = APPS;
+    return true;
+  } else if (notification_type == kSearchEngineNotificationType) {
+    *model_type = SEARCH_ENGINES;
     return true;
   } else if (notification_type == kSessionNotificationType) {
     *model_type = SESSIONS;

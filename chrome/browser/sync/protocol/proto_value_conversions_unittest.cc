@@ -16,6 +16,7 @@
 #include "chrome/browser/sync/protocol/nigori_specifics.pb.h"
 #include "chrome/browser/sync/protocol/password_specifics.pb.h"
 #include "chrome/browser/sync/protocol/preference_specifics.pb.h"
+#include "chrome/browser/sync/protocol/search_engine_specifics.pb.h"
 #include "chrome/browser/sync/protocol/session_specifics.pb.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/protocol/theme_specifics.pb.h"
@@ -43,7 +44,7 @@ TEST_F(ProtoValueConversionsTest, ProtoChangeCheck) {
   // If this number changes, that means we added or removed a data
   // type.  Don't forget to add a unit test for {New
   // type}SpecificsToValue below.
-  EXPECT_EQ(13, syncable::MODEL_TYPE_COUNT);
+  EXPECT_EQ(14, syncable::MODEL_TYPE_COUNT);
 
   // We'd also like to check if we changed any field in our messages.
   // However, that's hard to do: sizeof could work, but it's
@@ -118,6 +119,10 @@ TEST_F(ProtoValueConversionsTest, PreferenceSpecificsToValue) {
   TestSpecificsToValue(PreferenceSpecificsToValue);
 }
 
+TEST_F(ProtoValueConversionsTest, SearchEngineSpecificsToValue) {
+  TestSpecificsToValue(SearchEngineSpecificsToValue);
+}
+
 TEST_F(ProtoValueConversionsTest, SessionSpecificsToValue) {
   TestSpecificsToValue(SessionSpecificsToValue);
 }
@@ -146,6 +151,7 @@ TEST_F(ProtoValueConversionsTest, EntitySpecificsToValue) {
   SET_EXTENSION(nigori);
   SET_EXTENSION(password);
   SET_EXTENSION(preference);
+  SET_EXTENSION(search_engine);
   SET_EXTENSION(session);
   SET_EXTENSION(theme);
   SET_EXTENSION(typed_url);

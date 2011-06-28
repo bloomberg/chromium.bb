@@ -1,0 +1,41 @@
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Sync protocol datatype extension for custom search engines.
+
+// Update proto_value_conversions{.h,.cc,_unittest.cc} if you change
+// any fields in this file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+option retain_unknown_fields = true;
+
+package sync_pb;
+
+import "sync.proto";
+
+// Properties of custom search engine sync objects.
+message SearchEngineSpecifics {
+  optional string short_name = 1;
+  optional string keyword = 2;
+  optional string favicon_url = 3;
+  optional string url = 4;
+  optional bool safe_for_autoreplace = 5;
+  optional string originating_url = 6;
+  optional int64 date_created = 7;
+  optional string input_encodings = 8;
+  optional bool show_in_default_list = 9;
+  optional string suggestions_url = 10;
+  optional int32 prepopulate_id = 11;
+  optional bool autogenerate_keyword = 12;
+  optional int32 logo_id = 13;
+  optional bool created_by_policy = 14;
+  optional string instant_url = 15;
+  optional int64 id = 16;
+}
+
+extend EntitySpecifics {
+  optional SearchEngineSpecifics search_engine = 88610;
+}

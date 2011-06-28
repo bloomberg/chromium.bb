@@ -20,6 +20,7 @@
 #include "chrome/browser/sync/protocol/password_specifics.pb.h"
 #include "chrome/browser/sync/protocol/preference_specifics.pb.h"
 #include "chrome/browser/sync/protocol/proto_enum_conversions.h"
+#include "chrome/browser/sync/protocol/search_engine_specifics.pb.h"
 #include "chrome/browser/sync/protocol/session_specifics.pb.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/protocol/theme_specifics.pb.h"
@@ -262,6 +263,28 @@ DictionaryValue* PreferenceSpecificsToValue(
   return value;
 }
 
+DictionaryValue* SearchEngineSpecificsToValue(
+    const sync_pb::SearchEngineSpecifics& proto) {
+  DictionaryValue* value = new DictionaryValue();
+  SET_STR(short_name);
+  SET_STR(keyword);
+  SET_STR(favicon_url);
+  SET_STR(url);
+  SET_BOOL(safe_for_autoreplace);
+  SET_STR(originating_url);
+  SET_INT64(date_created);
+  SET_STR(input_encodings);
+  SET_BOOL(show_in_default_list);
+  SET_STR(suggestions_url);
+  SET_INT32(prepopulate_id);
+  SET_BOOL(autogenerate_keyword);
+  SET_INT32(logo_id);
+  SET_BOOL(created_by_policy);
+  SET_STR(instant_url);
+  SET_INT64(id);
+  return value;
+}
+
 DictionaryValue* SessionSpecificsToValue(
     const sync_pb::SessionSpecifics& proto) {
   DictionaryValue* value = new DictionaryValue();
@@ -304,6 +327,7 @@ DictionaryValue* EntitySpecificsToValue(
   SET_EXTENSION(sync_pb, nigori, NigoriSpecificsToValue);
   SET_EXTENSION(sync_pb, password, PasswordSpecificsToValue);
   SET_EXTENSION(sync_pb, preference, PreferenceSpecificsToValue);
+  SET_EXTENSION(sync_pb, search_engine, SearchEngineSpecificsToValue);
   SET_EXTENSION(sync_pb, session, SessionSpecificsToValue);
   SET_EXTENSION(sync_pb, theme, ThemeSpecificsToValue);
   SET_EXTENSION(sync_pb, typed_url, TypedUrlSpecificsToValue);
