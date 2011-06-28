@@ -26,6 +26,7 @@
 #include "chrome/common/autofill_messages.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_profile.h"
+#include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
@@ -481,7 +482,10 @@ class AutofillManagerTest : public TabContentsWrapperTestHarness {
  public:
   typedef AutofillManager::GUIDPair GUIDPair;
 
-  AutofillManagerTest() {}
+  AutofillManagerTest()
+      : TabContentsWrapperTestHarness(),
+        browser_thread_(BrowserThread::UI, &message_loop_) {}
+
   virtual ~AutofillManagerTest() {
     // Order of destruction is important as AutofillManager relies on
     // PersonalDataManager to be around when it gets destroyed.
@@ -576,6 +580,8 @@ class AutofillManagerTest : public TabContentsWrapperTestHarness {
   }
 
  protected:
+  BrowserThread browser_thread_;
+
   scoped_ptr<TestAutofillManager> autofill_manager_;
   scoped_refptr<TestPersonalDataManager> test_personal_data_;
 

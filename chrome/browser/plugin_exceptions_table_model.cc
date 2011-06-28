@@ -20,7 +20,11 @@ PluginExceptionsTableModel::PluginExceptionsTableModel(
       updates_disabled_(false),
       observer_(NULL) {
   registrar_.Add(this, NotificationType::CONTENT_SETTINGS_CHANGED,
-                 NotificationService::AllSources());
+                 Source<HostContentSettingsMap>(map_));
+  if (otr_map_) {
+    registrar_.Add(this, NotificationType::CONTENT_SETTINGS_CHANGED,
+                   Source<HostContentSettingsMap>(otr_map_));
+  }
 }
 
 PluginExceptionsTableModel::~PluginExceptionsTableModel() {

@@ -278,7 +278,7 @@ void ContentSettingsHandler::Initialize() {
   UpdateAllExceptionsViewsFromModel();
   notification_registrar_.Add(
       this, NotificationType::CONTENT_SETTINGS_CHANGED,
-      NotificationService::AllSources());
+      Source<HostContentSettingsMap>(settings_map));
   notification_registrar_.Add(
       this, NotificationType::DESKTOP_NOTIFICATION_DEFAULT_CHANGED,
       NotificationService::AllSources());

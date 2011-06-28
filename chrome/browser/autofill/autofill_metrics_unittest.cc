@@ -14,8 +14,9 @@
 #include "chrome/browser/autofill/autofill_metrics.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/webdata/web_data_service.h"
-#include "content/browser/tab_contents/test_tab_contents.h"
 #include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
+#include "content/browser/browser_thread.h"
+#include "content/browser/tab_contents/test_tab_contents.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/form_data.h"
@@ -199,10 +200,14 @@ class AutofillMetricsTest : public TabContentsWrapperTestHarness {
   scoped_refptr<TestPersonalDataManager> test_personal_data_;
 
  private:
+  BrowserThread browser_thread_;
+
   DISALLOW_COPY_AND_ASSIGN(AutofillMetricsTest);
 };
 
-AutofillMetricsTest::AutofillMetricsTest() {
+AutofillMetricsTest::AutofillMetricsTest()
+  : TabContentsWrapperTestHarness(),
+    browser_thread_(BrowserThread::UI, &message_loop_) {
 }
 
 AutofillMetricsTest::~AutofillMetricsTest() {

@@ -9,6 +9,7 @@
 #include "chrome/browser/automation/mock_tab_event_observer.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
+#include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -18,6 +19,10 @@ using testing::_;
 
 class AutomationTabHelperTest : public TabContentsWrapperTestHarness {
  public:
+  AutomationTabHelperTest()
+      : TabContentsWrapperTestHarness(),
+        browser_thread_(BrowserThread::UI, &message_loop_) {}
+
   virtual void SetUp() {
     TabContentsWrapperTestHarness::SetUp();
     mock_observer_.StartObserving(tab_helper());
@@ -49,6 +54,8 @@ class AutomationTabHelperTest : public TabContentsWrapperTestHarness {
   AutomationTabHelper* tab_helper() {
     return contents_wrapper()->automation_tab_helper();
   }
+
+  BrowserThread browser_thread_;
 
   MockTabEventObserver mock_observer_;
 };

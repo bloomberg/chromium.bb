@@ -14,7 +14,9 @@ class DownloadRequestLimiterTest
     : public TabContentsWrapperTestHarness,
       public DownloadRequestLimiter::Callback {
  public:
-  DownloadRequestLimiterTest() : io_thread_(BrowserThread::IO, &message_loop_) {
+  DownloadRequestLimiterTest()
+      : ui_thread_(BrowserThread::UI, &message_loop_),
+        io_thread_(BrowserThread::IO, &message_loop_) {
   }
 
   virtual void SetUp() {
@@ -82,6 +84,7 @@ class DownloadRequestLimiterTest
   // Number of times ShouldAllowDownload was invoked.
   int ask_allow_count_;
 
+  BrowserThread ui_thread_;
   BrowserThread io_thread_;
 };
 

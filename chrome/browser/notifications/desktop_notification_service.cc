@@ -298,8 +298,7 @@ void DesktopNotificationService::StartObserving() {
     notification_registrar_.Add(
         this,
         NotificationType::CONTENT_SETTINGS_CHANGED,
-        // TODO(markusheintz): Remember to change to HostContentSettingsMap.
-        NotificationService::AllSources());
+        Source<HostContentSettingsMap>(profile_->GetHostContentSettingsMap()));
   }
   notification_registrar_.Add(this, NotificationType::PROFILE_DESTROYED,
                               Source<Profile>(profile_));

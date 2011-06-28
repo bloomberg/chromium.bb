@@ -4,6 +4,7 @@
 
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/test/testing_profile.h"
+#include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "net/base/cookie_monster.h"
@@ -11,9 +12,13 @@
 
 class TabSpecificContentSettingsTest : public RenderViewHostTestHarness {
  public:
-  TabSpecificContentSettingsTest() : RenderViewHostTestHarness() {}
+  TabSpecificContentSettingsTest()
+      : RenderViewHostTestHarness(),
+        browser_thread_(BrowserThread::UI, &message_loop_) {}
 
  private:
+  BrowserThread browser_thread_;
+
   DISALLOW_COPY_AND_ASSIGN(TabSpecificContentSettingsTest);
 };
 

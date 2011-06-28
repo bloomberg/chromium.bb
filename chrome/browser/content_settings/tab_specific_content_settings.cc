@@ -55,7 +55,8 @@ TabSpecificContentSettings::TabSpecificContentSettings(TabContents* tab)
   g_tab_specific.Get().push_back(this);
 
   registrar_.Add(this, NotificationType::CONTENT_SETTINGS_CHANGED,
-                 NotificationService::AllSources());
+                 Source<HostContentSettingsMap>(
+                     tab->profile()->GetHostContentSettingsMap()));
 }
 
 TabSpecificContentSettings::~TabSpecificContentSettings() {

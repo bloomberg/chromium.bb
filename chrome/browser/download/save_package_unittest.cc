@@ -11,6 +11,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/download/save_package.h"
 #include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
+#include "content/browser/browser_thread.h"
 #include "content/browser/net/url_request_mock_http_job.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "googleurl/src/gurl.h"
@@ -63,7 +64,7 @@ bool HasOrdinalNumber(const FilePath::StringType& filename) {
 
 class SavePackageTest : public TabContentsWrapperTestHarness {
  public:
-  SavePackageTest() {
+  SavePackageTest() : browser_thread_(BrowserThread::UI, &message_loop_) {
   }
 
   bool GetGeneratedFilename(bool need_success_generate_filename,
@@ -118,6 +119,8 @@ class SavePackageTest : public TabContentsWrapperTestHarness {
   }
 
  private:
+  BrowserThread browser_thread_;
+
   // SavePackage for successfully generating file name.
   scoped_refptr<SavePackage> save_package_success_;
   // SavePackage for failed generating file name.

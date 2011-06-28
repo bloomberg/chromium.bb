@@ -153,9 +153,9 @@ class ClientSideDetectionHostTest : public TabContentsWrapperTestHarness {
   }
 
   virtual void TearDown() {
+    TabContentsWrapperTestHarness::TearDown();
     io_thread_.reset();
     ui_thread_.reset();
-    TabContentsWrapperTestHarness::TearDown();
   }
 
   void OnDetectedPhishingSite(const std::string& verdict_str) {
