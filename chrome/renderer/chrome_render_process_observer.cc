@@ -391,15 +391,6 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver() {
   PathService::Get(chrome::DIR_MEDIA_LIBS, &media_path);
   if (!media_path.empty())
     media::InitializeMediaLibrary(media_path);
-
-#if !defined(OS_MACOSX)
-  // TODO(hclam): Add more checks here. Currently this is not used.
-  if (media::IsMediaLibraryInitialized() &&
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableOpenMax)) {
-    media::InitializeOpenMaxLibrary(media_path);
-  }
-#endif
 }
 
 ChromeRenderProcessObserver::~ChromeRenderProcessObserver() {
@@ -518,4 +509,3 @@ void ChromeRenderProcessObserver::OnPurgeMemory() {
   MallocExtension::instance()->ReleaseFreeMemory();
 #endif
 }
-

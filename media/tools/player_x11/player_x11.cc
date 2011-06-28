@@ -26,7 +26,6 @@
 #include "media/filters/ffmpeg_video_decoder.h"
 #include "media/filters/file_data_source_factory.h"
 #include "media/filters/null_audio_renderer.h"
-#include "media/filters/omx_video_decoder.h"
 
 // TODO(jiesun): implement different video decode contexts according to
 // these flags. e.g.
@@ -95,14 +94,6 @@ bool InitPipeline(MessageLoop* message_loop,
                   scoped_refptr<media::PipelineImpl>* pipeline,
                   MessageLoop* paint_message_loop,
                   media::MessageLoopFactory* message_loop_factory) {
-  // Initialize OpenMAX.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableOpenMax) &&
-      !media::InitializeOpenMaxLibrary(FilePath())) {
-    std::cout << "Unable to initialize OpenMAX library."<< std::endl;
-    return false;
-  }
-
   // Load media libraries.
   if (!media::InitializeMediaLibrary(FilePath())) {
     std::cout << "Unable to initialize the media library." << std::endl;
@@ -118,16 +109,9 @@ bool InitPipeline(MessageLoop* message_loop,
               new media::FileDataSourceFactory(), message_loop)));
   collection->AddAudioDecoder(new media::FFmpegAudioDecoder(
       message_loop_factory->GetMessageLoop("AudioDecoderThread")));
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableOpenMax)) {
-    collection->AddVideoDecoder(new media::OmxVideoDecoder(
-        message_loop_factory->GetMessageLoop("VideoDecoderThread"),
-        NULL));
-  } else {
-    collection->AddVideoDecoder(new media::FFmpegVideoDecoder(
-        message_loop_factory->GetMessageLoop("VideoDecoderThread"),
-        NULL));
-  }
+  collection->AddVideoDecoder(new media::FFmpegVideoDecoder(
+      message_loop_factory->GetMessageLoop("VideoDecoderThread"),
+      NULL));
   collection->AddVideoRenderer(new Renderer(g_display,
                                             g_window,
                                             paint_message_loop));
@@ -234,7 +218,6 @@ int main(int argc, char** argv) {
     std::cout << "Usage: " << argv[0] << " --file=FILE" << std::endl
               << std::endl
               << "Optional arguments:" << std::endl
-              << "  [--enable-openmax]"
               << "  [--audio]"
               << "  [--alsa-device=DEVICE]" << std::endl
               << " Press [ESC] to stop" << std::endl

@@ -231,7 +231,6 @@ static void SetUpTestEnvironmentImpl(bool unit_test_mode) {
   // CommandLine::ForCurrentProcess().  We don't use the actual command-line
   // arguments of DRT to avoid unexpected behavior change.
   //
-  // webkit/glue/webmediaplayer_impl.cc checks --enable-openmax.
   // webkit/glue/plugin/plugin_list_posix.cc checks --debug-plugin-loading.
   // webkit/glue/plugin/plugin_list_win.cc checks --old-wmp.
   // If DRT needs these flags, specify them in the following kFixedArguments.

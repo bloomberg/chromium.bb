@@ -545,7 +545,6 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kEnableGPUClientLogging,
     switches::kEnableLogging,
     switches::kEnableMediaStream,
-    switches::kEnableOpenMax,
 #if defined(ENABLE_P2P_APIS)
     switches::kEnableP2PApi,
 #endif
