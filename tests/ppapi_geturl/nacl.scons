@@ -18,15 +18,14 @@ Import('env')
 
 env.Prepend(CPPDEFINES=['XP_UNIX'])
 
-ppapi_geturl_target = 'ppapi_geturl_%s' % env.get('TARGET_FULLARCH')
+nexe = 'ppapi_geturl_%s' % env.get('TARGET_FULLARCH')
 env.Alias('ppapi_geturl${PROGSUFFIX}',
-          ['$STAGING_DIR/%s${PROGSUFFIX}' % ppapi_geturl_target])
+          ['$STAGING_DIR/%s${PROGSUFFIX}' % nexe])
 
-ppapi_geturl_nexe = env.ComponentProgram(ppapi_geturl_target,
+ppapi_geturl_nexe = env.ComponentProgram(nexe,
                                          ['nacl_file_main.cc',
                                           'module.cc',
                                           'ppapi_geturl.cc',
-                                          'scriptable_object.cc',
                                           'url_load_request.cc',
                                           ],
                                          EXTRA_LIBS=[
@@ -45,28 +44,17 @@ ppapi_geturl_nexe = env.ComponentProgram(ppapi_geturl_target,
                                                           '-Wl,--wrap=lseek',
                                                           '-Wl,--wrap=close'])
 
-# Note that the html and a .nmf manifest is required to run this program.
-dest_copy = env.Replicate('$STAGING_DIR',
+env.Publish(nexe, 'run',
             ['ppapi_geturl.html',
              'ppapi_geturl.nmf',
-             'ppapi_geturl_success.html',
-             env.File('${SCONSTRUCT_DIR}/tools/browser_tester/browserdata/'
-                      'nacltest.js'),
-             ])
-env.Depends(ppapi_geturl_target, dest_copy)
+             'ppapi_geturl_success.html'])
 
-node = env.PPAPIBrowserTester(
-    'ppapi_geturl_browser_test.out',
-     url='ppapi_geturl.html',
-     files=[ppapi_geturl_nexe,
-            env.File('ppapi_geturl.html'),
-            env.File('ppapi_geturl.nmf'),
-            env.File('ppapi_geturl_success.html'),
-            env.File('${SCONSTRUCT_DIR}/tools/browser_tester/browserdata/'
-                     'nacltest.js'),
-            ],
-     args=['--allow_404', '--enable_experimental_js'],
-     )
+node = env.PPAPIBrowserTester('ppapi_geturl_browser_test.out',
+                              url='ppapi_geturl.html',
+                              files=env.ExtractPublishedFiles(nexe),
+                              args=['--allow_404', '--enable_experimental_js'],
+                              )
+
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],
                        'run_ppapi_geturl_browser_test',

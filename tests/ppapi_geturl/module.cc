@@ -8,16 +8,20 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <string>
+
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/untrusted/ppapi/nacl_file.h"
 #include "native_client/tests/ppapi_geturl/nacl_file_main.h"
-#include "native_client/tests/ppapi_geturl/scriptable_object.h"
+#include "native_client/tests/ppapi_geturl/url_load_request.h"
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/c/dev/ppp_class_deprecated.h"
+#include "ppapi/c/pp_var.h"
+#include "ppapi/c/ppp_instance.h"
+#include "ppapi/c/ppp_messaging.h"
 
 #if !defined(__native_client__)
 int32_t LoadUrl(PP_Instance /*instance*/, const char* /*url*/,
@@ -25,7 +29,23 @@ int32_t LoadUrl(PP_Instance /*instance*/, const char* /*url*/,
 #endif
 
 namespace {
+// These constants need to match their corresponding JavaScript values in
+// ppapi_geturl.html.  The JavaScript variables are all upper-case; for example
+// kTrueStringValue corresponds to TRUE_STRING_VALUE.
+const char* const kLoadUrlMethodId = "loadUrl";
+const char* const kTrueStringValue = "1";
+const char* const kFalseStringValue = "0";
+static const char kArgumentSeparator = '|';
+
+// A helper function to convert a bool to a string, used when assembling
+// messages posted back to the browser.  |true| is converted to "1", |false| to
+// "0".
+const std::string BoolToString(bool bool_value) {
+  return bool_value ? kTrueStringValue : kFalseStringValue;
+}
+
 PPP_Instance instance_interface;
+PPP_Messaging messaging_interface;
 Module* singleton_ = NULL;
 
 void RunTests(void* user_data) {
@@ -104,19 +124,63 @@ PP_Bool Instance_HandleDocumentLoad(PP_Instance /*pp_instance*/,
   return PP_FALSE;
 }
 
-PP_Var Instance_GetInstanceObject(PP_Instance pp_instance) {
-  printf("--- Instance_GetInstanceObject\n");
-  Module* module = Module::Get();
-  if (NULL != module) {
-    const PPB_Var_Deprecated* ppb_var_interface = module->ppb_var_interface();
-    if (NULL != ppb_var_interface) {
-      ScriptableObject* obj = new ScriptableObject(pp_instance);
-      return ppb_var_interface->CreateObject(pp_instance,
-                                             obj->ppp_class(),
-                                             obj);
+void Messaging_HandleMessage(PP_Instance instance, struct PP_Var var_message) {
+  if (var_message.type != PP_VARTYPE_STRING) {
+    /* Only handle string messages */
+    return;
+  }
+  char* message_cstr = Module::Get()->VarToCStr(var_message);
+  if (message_cstr == NULL)
+    return;
+  std::string message(message_cstr);
+  free(message_cstr);
+  printf("--- Messaging_HandleMessage(%s)\n", message.c_str());
+  if (message.find(kLoadUrlMethodId) == 0) {
+    // The argument to getUrl is everything after the first '|' and up to an
+    // optional second '|'.
+    size_t arg0_pos = message.find_first_of(kArgumentSeparator);
+    if (arg0_pos != std::string::npos) {
+      size_t arg1_pos = message.find_first_of(kArgumentSeparator,
+                                              arg0_pos + 1);
+      size_t arg0_length = std::string::npos;
+      bool stream_as_file = false;
+      if (arg1_pos != std::string::npos) {
+        arg0_length = arg1_pos - arg0_pos;
+        if (arg0_length == 0)
+          return;
+        // If the second optional argument is a '1', assume it means
+        // |stream_as_file| is true.  Anything else means |stream_as_file| is
+        // false.
+        if (arg1_pos + 1 < message.length()) {
+          char stream_as_file_arg = message.at(arg1_pos + 1);
+          stream_as_file = stream_as_file_arg == '1';
+        }
+      }
+
+      std::string url = message.substr(arg0_pos + 1, arg0_length - 1);
+      printf("--- Messaging_HandleMessage(method='%s', "
+                                          "url='%s', "
+                                          "stream_as_file='%s')\n",
+             message.c_str(),
+             url.c_str(),
+             stream_as_file ? "true" : "false");
+      fflush(stdout);
+
+      UrlLoadRequest* url_load_request = new UrlLoadRequest(instance);
+      if (NULL == url_load_request) {
+        Module::Get()->ReportResult(instance,
+                                    url.c_str(),
+                                    stream_as_file,
+                                    "LoadUrl: memory allocation failed",
+                                    false);
+        return;
+      }
+      // On success or failure url_load_request will call ReportResult().
+      // This is the time to clean it up.
+      url_load_request->set_delete_this_after_report();
+      url_load_request->Load(stream_as_file, url);
     }
   }
-  return PP_MakeUndefined();
 }
 
 Module* Module::Create(PP_Module module_id,
@@ -140,7 +204,7 @@ Module::Module(PP_Module module_id, PPB_GetInterface get_browser_interface)
   : module_id_(module_id),
     get_browser_interface_(get_browser_interface),
     ppb_core_interface_(NULL),
-    ppb_instance_interface_(NULL),
+    ppb_messaging_interface_(NULL),
     ppb_var_interface_(NULL) {
   printf("--- Module::Module\n");
   memset(&instance_interface, 0, sizeof(instance_interface));
@@ -150,24 +214,27 @@ Module::Module(PP_Module module_id, PPB_GetInterface get_browser_interface)
   instance_interface.DidChangeFocus = Instance_DidChangeFocus;
   instance_interface.HandleInputEvent = Instance_HandleInputEvent;
   instance_interface.HandleDocumentLoad = Instance_HandleDocumentLoad;
-#ifndef PPAPI_INSTANCE_REMOVE_SCRIPTING
-  instance_interface.GetInstanceObject = Instance_GetInstanceObject;
-#endif
+
+  memset(&messaging_interface, 0, sizeof(messaging_interface));
+  messaging_interface.HandleMessage = Messaging_HandleMessage;
+
   ppb_core_interface_ =
-      reinterpret_cast<const PPB_Core*>(
+      static_cast<const PPB_Core*>(
           GetBrowserInterface(PPB_CORE_INTERFACE));
-  ppb_instance_interface_ =
-      reinterpret_cast<const PPB_Instance*>(
-          GetBrowserInterface(PPB_INSTANCE_INTERFACE));
+  ppb_messaging_interface_ =
+      static_cast<const PPB_Messaging*>(
+          GetBrowserInterface(PPB_MESSAGING_INTERFACE));
   ppb_var_interface_ =
-      reinterpret_cast<const PPB_Var_Deprecated*>(
-          GetBrowserInterface(PPB_VAR_DEPRECATED_INTERFACE));
+      static_cast<const PPB_Var*>(
+          GetBrowserInterface(PPB_VAR_INTERFACE));
 }
 
 const void* Module::GetPluginInterface(const char* interface_name) {
   printf("--- Module::GetPluginInterface(%s)\n", interface_name);
   if (strcmp(interface_name, PPP_INSTANCE_INTERFACE) == 0)
     return &instance_interface;
+  if (strcmp(interface_name, PPP_MESSAGING_INTERFACE) == 0)
+    return &messaging_interface;
   return NULL;
 }
 
@@ -181,7 +248,7 @@ char* Module::VarToCStr(const PP_Var& var) {
   Module* module = Get();
   if (NULL == module)
     return NULL;
-  const PPB_Var_Deprecated* ppb_var = module->ppb_var_interface();
+  const PPB_Var* ppb_var = module->ppb_var_interface();
   if (NULL == ppb_var)
     return NULL;
   uint32_t len = 0;
@@ -210,7 +277,7 @@ PP_Var Module::StrToVar(const char* str) {
   Module* module = Get();
   if (NULL == module)
     return PP_MakeUndefined();
-  const PPB_Var_Deprecated* ppb_var = module->ppb_var_interface();
+  const PPB_Var* ppb_var = module->ppb_var_interface();
   if (NULL != ppb_var)
     return ppb_var->VarFromUtf8(module->module_id(), str, strlen(str));
   return PP_MakeUndefined();
@@ -250,42 +317,21 @@ void Module::ReportResult(PP_Instance pp_instance,
                           bool success) {
   printf("--- ReportResult('%s', as_file=%d, '%s', success=%d)\n",
          url, as_file, text, success);
-  const PPB_Instance* ppb_instance_interface = Get()->ppb_instance_interface_;
-  if (NULL == ppb_instance_interface) {
-    printf("--- GetBrowserInterface("PPB_INSTANCE_INTERFACE") failed\n");
-    return;
+  // Post a message with the results back to the browser.
+  std::string result(url);
+  result += kArgumentSeparator;
+  result += BoolToString(as_file);
+  result += kArgumentSeparator;
+  result += text;
+  result += kArgumentSeparator;
+  result += BoolToString(success);
+  printf("--- ReportResult posts result string:\n\t%s\n", result.c_str());
+  struct PP_Var var_result = StrToVar(result);
+  ppb_messaging_interface()->PostMessage(pp_instance, var_result);
+  // If the message was created using VarFromUtf8() it needs to be released.
+  // See the comments about VarFromUtf8() in ppapi/c/ppb_var.h for more
+  // information.
+  if (var_result.type == PP_VARTYPE_STRING) {
+    ppb_var_interface()->Release(var_result);
   }
-  const PPB_Var_Deprecated* ppb_var_interface = Get()->ppb_var_interface_;
-  if (NULL == ppb_var_interface) {
-    printf("--- GetBrowserInterface("PPB_VAR_DEPRECATED_INTERFACE") failed\n");
-    return;
-  }
-  PP_Var window_var = PP_MakeUndefined();
-#ifdef PPAPI_INSTANCE_REMOVE_SCRIPTING
-  UNREFERENCED_PARAMETER(pp_instance);
-  NACL_NOTREACHED();
-#else
-  window_var = ppb_instance_interface->GetWindowObject(pp_instance);
-#endif
-  if (PP_VARTYPE_OBJECT != window_var.type) {
-    printf("--- PPB_Instance::GetWindowObject() failed\n");
-    return;
-  }
-  PP_Var method_name_var = Module::StrToVar("ReportResult");
-  PP_Var exception_var = PP_MakeUndefined();
-  PP_Var args[4];
-  args[0] = Module::StrToVar(url);
-  args[1] = PP_MakeBool(as_file ? PP_TRUE : PP_FALSE);
-  args[2] = Module::StrToVar(text);
-  args[3] = PP_MakeBool(success ? PP_TRUE : PP_FALSE);
-  ppb_var_interface->Call(window_var,
-                          method_name_var,
-                          sizeof(args) / sizeof(args[0]),
-                          args,
-                          &exception_var);
-  ppb_var_interface->Release(method_name_var);
-  ppb_var_interface->Release(args[0]);
-  ppb_var_interface->Release(args[2]);
-  ppb_var_interface->Release(exception_var);
-  ppb_var_interface->Release(window_var);
 }

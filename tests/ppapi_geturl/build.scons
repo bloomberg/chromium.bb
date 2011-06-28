@@ -1,7 +1,7 @@
 # -*- python -*-
-# Copyright 2010 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 # A way to build the nexe as a trusted plugin to validate directly
 # against Chrome on Linux using
@@ -20,7 +20,6 @@ if env.Bit('linux'):
               # plugin as a dll.
               'nacl_file_main.cc',
               'ppapi_geturl.cc',
-              'scriptable_object.cc',
               'url_load_request.cc' ]
 
   libs = [ 'ppapi_cpp',
