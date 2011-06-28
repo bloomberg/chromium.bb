@@ -677,7 +677,8 @@ function createPDFPlugin(previewUid) {
 
   pdfViewer = document.createElement('embed');
   pdfViewer.setAttribute('id', 'pdf-viewer');
-  pdfViewer.setAttribute('type', 'application/pdf');
+  pdfViewer.setAttribute('type',
+                         'application/x-google-chrome-print-preview-pdf');
   pdfViewer.setAttribute('src', 'chrome://print/' + previewUid + '/print.pdf');
   pdfViewer.setAttribute('aria-live', 'polite');
   pdfViewer.setAttribute('aria-atomic', 'true');

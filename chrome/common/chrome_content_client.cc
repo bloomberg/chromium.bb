@@ -36,6 +36,8 @@ const char* kPDFPluginName = "Chrome PDF Viewer";
 const char* kPDFPluginMimeType = "application/pdf";
 const char* kPDFPluginExtension = "pdf";
 const char* kPDFPluginDescription = "Portable Document Format";
+const char* kPDFPluginPrintPreviewMimeType
+    = "application/x-google-chrome-print-preview-pdf";
 
 const char* kNaClPluginName = "Chrome NaCl";
 const char* kNaClPluginMimeType = "application/x-nacl";
@@ -86,7 +88,12 @@ void ComputeBuiltInPlugins(std::vector<PepperPluginInfo>* plugins) {
       webkit::npapi::WebPluginMimeType pdf_mime_type(kPDFPluginMimeType,
                                                      kPDFPluginExtension,
                                                      kPDFPluginDescription);
+      webkit::npapi::WebPluginMimeType print_preview_pdf_mime_type(
+          kPDFPluginPrintPreviewMimeType,
+          kPDFPluginExtension,
+          kPDFPluginDescription);
       pdf.mime_types.push_back(pdf_mime_type);
+      pdf.mime_types.push_back(print_preview_pdf_mime_type);
       plugins->push_back(pdf);
 
       skip_pdf_file_check = true;
