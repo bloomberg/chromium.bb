@@ -10,7 +10,8 @@ cr.define('options.passwordManager', function() {
 
   /**
    * Creates a new passwords list item.
-   * @param {Array} entry An array of the form [url, username, password].
+   * @param {Array} entry An array of the form [url, username, password]. When
+   *     the list has been filtered, a fourth element [index] may be present.
    * @constructor
    * @extends {cr.ui.ListItem}
    */
@@ -229,6 +230,11 @@ cr.define('options.passwordManager', function() {
 
     /** @inheritDoc */
     deleteItemAtIndex: function(index) {
+      var item = this.dataModel.item(index);
+      if (item && item.length > 3) {
+        // The fourth element, if present, is the original index to delete.
+        index = item[3];
+      }
       PasswordManager.removeSavedPassword(index);
     },
 

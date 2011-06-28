@@ -153,9 +153,15 @@ cr.define('options', function() {
         // Implement password searching here in javascript, rather than in C++.
         // The number of saved passwords shouldn't be too big for us to handle.
         var query = this.lastQuery_;
-        var filter = function(entry) {
+        var filter = function(entry, index, list) {
           // Search both URL and username.
-          return entry[0].indexOf(query) >= 0 || entry[1].indexOf(query) >= 0;
+          if (entry[0].indexOf(query) >= 0 || entry[1].indexOf(query) >= 0) {
+            // Keep the original index so we can delete correctly. See also
+            // deleteItemAtIndex() in password_manager_list.js that uses this.
+            entry[3] = index;
+            return true;
+          }
+          return false;
         };
         entries = entries.filter(filter);
       }
