@@ -4795,6 +4795,15 @@
    fun:_Znw*
    fun:_ZN3net19SpdyWebSocketStream8SendDataEPKci
 }
+{
+   bug_87705
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN12_GLOBAL__N_19RunZygoteERK18MainFunctionParams
+   fun:_ZN12_GLOBAL__N_123RunNamedProcessTypeMainERKSsRK18MainFunctionParams
+   fun:ChromeMain
+   fun:main
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
