@@ -378,6 +378,7 @@ UNINITIALIZED READ
 *!replace_memcmp
 ...
 *!testing::internal::CmpHelperEQ*
+...
 *!SymmetricKeyTest_ImportGeneratedKey_Test::TestBody
 
 # http://code.google.com/p/drmemory/issues/detail?id=425
@@ -465,6 +466,19 @@ UNINITIALIZED READ
 # http://code.google.com/p/drmemory/issues/detail?id=473
 UNINITIALIZED READ
 system call NtDeviceIoControlFile InputBuffer
+...
+iphlpapi.dll!GetAdaptersAddresses
+
+POSSIBLE LEAK
+ESENT.dll!*
+ESENT.dll!*
+ESENT.dll!*
+ntdll.dll!Ldr*Init*
+ntdll.dll!Ldr*
+ntdll.dll!*
+ntdll.dll!LdrLoadDll
+...
+iphlpapi.dll!GetPerAdapterInfo
 ...
 iphlpapi.dll!GetAdaptersAddresses
 
