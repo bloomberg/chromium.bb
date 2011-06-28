@@ -45,16 +45,10 @@ namespace views {
 
 typedef ViewsTestBase ViewTest;
 
-////////////////////////////////////////////////////////////////////////////////
-//
-// A view subclass for testing purpose
-//
-////////////////////////////////////////////////////////////////////////////////
+// A derived class for testing purpose.
 class TestView : public View {
  public:
-  TestView() : View(), in_touch_sequence_(false) {
-  }
-
+  TestView() : View(), in_touch_sequence_(false) {}
   virtual ~TestView() {}
 
   // Reset all test state
@@ -77,33 +71,33 @@ class TestView : public View {
   virtual void SchedulePaintInternal(const gfx::Rect& rect) OVERRIDE;
   virtual bool AcceleratorPressed(const Accelerator& accelerator) OVERRIDE;
 
-  // OnBoundsChanged test
+  // OnBoundsChanged.
   bool did_change_bounds_;
   gfx::Rect new_bounds_;
 
-  // MouseEvent
+  // MouseEvent.
   int last_mouse_event_type_;
   gfx::Point location_;
 
-  // Painting
+  // Painting.
   std::vector<gfx::Rect> scheduled_paint_rects_;
 
-  // TouchEvent
+  // TouchEvent.
   int last_touch_event_type_;
   bool last_touch_event_was_handled_;
   bool in_touch_sequence_;
 
-  // Painting
+  // Painting.
   SkRect last_clip_;
 
-  // Accelerators
+  // Accelerators.
   std::map<Accelerator, int> accelerator_count_map_;
 };
 
 // Mock instance of the GestureManager for testing.
 class MockGestureManager : public GestureManager {
  public:
-  // Reset all test state
+  // Reset all test state.
   void Reset() {
     last_touch_event_ = 0;
     last_view_ = NULL;
@@ -127,10 +121,9 @@ class MockGestureManager : public GestureManager {
 // A view subclass that ignores all touch events for testing purposes.
 class TestViewIgnoreTouch : public TestView {
  public:
-  TestViewIgnoreTouch() : TestView() {
-  }
-
+  TestViewIgnoreTouch() : TestView() {}
   virtual ~TestViewIgnoreTouch() {}
+
  private:
   virtual ui::TouchStatus OnTouchEvent(const TouchEvent& event) OVERRIDE;
 };
@@ -145,20 +138,18 @@ void TestView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 }
 
 TEST_F(ViewTest, OnBoundsChanged) {
-  TestView* v = new TestView();
+  TestView v;
 
   gfx::Rect prev_rect(0, 0, 200, 200);
   gfx::Rect new_rect(100, 100, 250, 250);
 
-  v->SetBoundsRect(prev_rect);
-  v->Reset();
+  v.SetBoundsRect(prev_rect);
+  v.Reset();
+  v.SetBoundsRect(new_rect);
 
-  v->SetBoundsRect(new_rect);
-  EXPECT_EQ(v->did_change_bounds_, true);
-  EXPECT_EQ(v->new_bounds_, new_rect);
-
-  EXPECT_EQ(v->bounds(), gfx::Rect(new_rect));
-  delete v;
+  EXPECT_EQ(v.did_change_bounds_, true);
+  EXPECT_EQ(v.new_bounds_, new_rect);
+  EXPECT_EQ(v.bounds(), new_rect);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
