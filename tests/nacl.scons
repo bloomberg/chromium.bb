@@ -39,14 +39,14 @@ example_nexes = [
     'autoloader_default',   # autoloader.html',
     # PPAPI Nexe Examples
     'ppapi_basic_object',     # basic_object.html
-    'ppapi_event_example',    # event_example.html
+    'ppapi_example_events',   # ppapi_example_events.html
     'ppapi_example_2d',       # ppapi_example_2d.html
     'ppapi_example_audio',    # ppapi_example_audio.html
     'ppapi_geturl',           # ppapi_geturl.html
     'ppapi_progress_events',  # ppapi_progress_events.html
     'earth_c',                # earth_c.html
     'earth_cc',               # earth_cc.html
-    'ppapi_bad',                   # ppapi_bad.html
+    'ppapi_bad',              # ppapi_bad.html
     # PPAPI Proxy Tests
     'ppapi_ppb_core',        # ppapi_ppb_core.html
     'ppapi_ppb_graphics2d',  # ppapi_ppb_graphics2d.html

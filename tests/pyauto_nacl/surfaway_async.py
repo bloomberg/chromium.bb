@@ -71,7 +71,7 @@ class NaClTest(pyauto.PyUITest):
     self.surfAwayAsync('basic_object.html', 'PPAPI')
 
   def testSurfAwayAsyncEvents(self):
-    self.surfAwayAsync('event_example.html', 'PPAPI')
+    self.surfAwayAsync('ppapi_example_events.html', 'PPAPI')
 
   def testSurfAwayAsyncExampleAudio(self):
     self.surfAwayAsync('ppapi_example_audio.html#mute', 'PPAPI')

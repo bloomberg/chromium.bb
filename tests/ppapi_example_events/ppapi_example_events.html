@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <!--
-  Copyright (c) 2010 The Native Client Authors. All rights reserved.
+  Copyright (c) 2011 The Native Client Authors. All rights reserved.
   Use of this source code is governed by a BSD-style license that can be
   found in the LICENSE file.
   -->
@@ -9,14 +9,6 @@
   <title>PPAPI InputEvent test</title>
 
   <script type="text/javascript">
-    module = null;  // Global application object.
-    function moduleDidLoad() {
-      module = document.getElementById('event_module');
-      // Get the events property to force creation of the instance object when
-      // EventInstance::GetInstanceObject is called.
-      var initialEventsString = module.events;
-    }
-
     function $(id) {
      return document.getElementById(id);
     }
@@ -29,7 +21,7 @@
 
     function getEvents() {
       try {
-        var event_dump = document.getElementById('event_dump');
+        var event_dump = $('event_dump');
         event_dump.firstChild.nodeValue = events;
         events = '';
       } catch(e) {
@@ -42,21 +34,23 @@
 <h1>InputEvent Handling Example</h1>
   <div id="listener">
     <script type="text/javascript">
-      $('listener').addEventListener('load', moduleDidLoad, true);
       $('listener').addEventListener('message', receiveMessage, true);
     </script>
 
     <embed name="nacl_module"
            id="event_module"
            width=400 height=400
-           src="event_example.nmf"
+           src="ppapi_example_events.nmf"
            type="application/x-nacl"
            style="background-color:gray" />
  </div>
 <p>
-This example demonstrates input events in ppapi.  Each time an input event
-happens in the context of the gray box, the embedded NaCl module prints a
-message describing the event to the shell where you started your Browser.
+This example demonstrates handling of input events in PPAPI.
+<p>
+Each time an input event happens in the context of the gray box,
+the embedded NaCl module prints a message describing the event to the shell
+where you started your Browser.
+<p>
 Alternatively, you can click the "Get Events" button to display
 all input events that have happened since the last time you clicked the
 button.

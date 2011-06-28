@@ -2574,6 +2574,7 @@ nacl_env.Append(
     'tests/ppapi_browser/progress_events/nacl.scons',
     'tests/ppapi_example_2d/nacl.scons',
     'tests/ppapi_example_audio/nacl.scons',
+    'tests/ppapi_example_events/nacl.scons',
     'tests/ppapi_example_font/nacl.scons',
     'tests/ppapi_example_gles2/nacl.scons',
     'tests/ppapi_example_post_message/nacl.scons',
