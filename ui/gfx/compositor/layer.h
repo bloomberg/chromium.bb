@@ -57,6 +57,7 @@ class Layer {
 
   // Passing NULL will cause the layer to get a texture from its compositor.
   void SetTexture(ui::Texture* texture);
+  const ui::Texture* texture() const { return texture_.get(); }
 
   // Resets the bitmap of the texture.
   void SetBitmap(const SkBitmap& bitmap, const gfx::Point& origin);

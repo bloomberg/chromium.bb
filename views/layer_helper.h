@@ -73,6 +73,10 @@ class LayerHelper {
   }
   bool layer_updated_externally() const { return layer_updated_externally_; }
 
+  // If true the complete bounds of the view needs to be painted.
+  void set_needs_paint_all(bool value) { needs_paint_all_ = value; }
+  bool needs_paint_all() const { return needs_paint_all_; }
+
   // Returns true if the layer needs to be used.
   bool ShouldPaintToLayer() const;
 
@@ -100,6 +104,8 @@ class LayerHelper {
   bool paint_to_layer_;
 
   bool property_setter_explicitly_set_;
+
+  bool needs_paint_all_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerHelper);
 };

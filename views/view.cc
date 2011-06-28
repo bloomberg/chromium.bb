@@ -1198,7 +1198,10 @@ void View::PaintToLayer(const gfx::Rect& dirty_region) {
     return;
 
   if (layer() && layer_helper_->bitmap_needs_updating()) {
-    layer_helper_->set_clip_rect(dirty_region);
+    if (!layer_helper_->needs_paint_all())
+      layer_helper_->set_clip_rect(dirty_region);
+    else
+      layer_helper_->set_needs_paint_all(false);
     Paint(NULL);
     layer_helper_->set_clip_rect(gfx::Rect());
   } else {
@@ -1493,6 +1496,12 @@ void View::BoundsChanged(const gfx::Rect& previous_bounds) {
         } else {
           layer_helper_->property_setter()->SetBounds(layer(), bounds_);
         }
+        if (previous_bounds.size() != bounds_.size() &&
+            !layer_helper_->layer_updated_externally()) {
+          // If our bounds have changed then we need to update the complete
+          // texture.
+          layer_helper_->set_needs_paint_all(true);
+        }
       } else if (GetCompositor()) {
         // If our bounds have changed, then any descendant layer bounds may
         // have changed. Update them accordingly.
@@ -1687,6 +1696,7 @@ void View::CreateLayer() {
   if (ancestor_with_layer)
     ancestor_with_layer->layer()->Add(layer());
   layer_helper_->set_bitmap_needs_updating(true);
+  layer_helper_->set_needs_paint_all(true);
 
   for (int i = 0, count = child_count(); i < count; ++i)
     GetChildViewAt(i)->MoveLayerToParent(layer(), gfx::Point());

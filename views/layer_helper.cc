@@ -16,7 +16,8 @@ LayerHelper::LayerHelper()
     : bitmap_needs_updating_(true),
       layer_updated_externally_(false),
       paint_to_layer_(false),
-      property_setter_explicitly_set_(false) {
+      property_setter_explicitly_set_(false),
+      needs_paint_all_(true) {
 }
 
 LayerHelper::~LayerHelper() {

@@ -2267,21 +2267,35 @@ class TestTexture : public ui::Texture {
   static void reset_live_count() { live_count_ = 0; }
   static int live_count() { return live_count_; }
 
+  // Bounds of the last bitmap passed to SetBitmap.
+  const gfx::Rect& bounds_of_last_paint() const {
+    return bounds_of_last_paint_;
+  }
+
   // ui::Texture
   virtual void SetBitmap(const SkBitmap& bitmap,
                          const gfx::Point& origin,
-                         const gfx::Size& overall_size) OVERRIDE {}
+                         const gfx::Size& overall_size) OVERRIDE;
   virtual void Draw(const ui::Transform& transform) OVERRIDE {}
 
  private:
   // Number of live instances.
   static int live_count_;
 
+  gfx::Rect bounds_of_last_paint_;
+
   DISALLOW_COPY_AND_ASSIGN(TestTexture);
 };
 
 // static
 int TestTexture::live_count_ = 0;
+
+void TestTexture::SetBitmap(const SkBitmap& bitmap,
+                            const gfx::Point& origin,
+                            const gfx::Size& overall_size) {
+  bounds_of_last_paint_.SetRect(
+      origin.x(), origin.y(), bitmap.width(), bitmap.height());
+}
 
 class TestCompositor : public ui::Compositor {
  public:
@@ -2534,6 +2548,19 @@ TEST_F(ViewLayerTest, ToggleVisibilityWithTransform) {
 
   view->SetVisible(true);
   EXPECT_EQ(2.0f, view->GetTransform().matrix()[0]);
+}
+
+// Verifies that the complete bounds of a texture are updated if the texture
+// needs to be refreshed and paint with a clip is invoked.
+TEST_F(ViewLayerTest, PaintAll) {
+  View* view = widget()->GetRootView();
+  view->SetBounds(0, 0, 200, 200);
+  widget()->OnNativeWidgetPaintAccelerated(gfx::Rect(0, 0, 1, 1));
+  ASSERT_TRUE(view->layer() != NULL);
+  const TestTexture* texture =
+      static_cast<const TestTexture*>(view->layer()->texture());
+  ASSERT_TRUE(texture != NULL);
+  EXPECT_EQ(view->GetLocalBounds(), texture->bounds_of_last_paint());
 }
 
 #endif  // VIEWS_COMPOSITOR || TOUCH_UI
