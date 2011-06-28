@@ -180,6 +180,7 @@ class WebserverTest(unittest.TestCase):
   """Tests the built-in ChromeDriver webserver."""
 
   def testShouldNotServeFilesByDefault(self):
+    launcher = ChromeDriverLauncher()
     try:
       SendRequest(launcher.GetURL(), method='GET')
       self.fail('Should have raised a urllib.HTTPError for returned 403')
