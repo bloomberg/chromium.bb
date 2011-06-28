@@ -41,6 +41,7 @@ Basic operation:
 import codecs
 import copy
 import errno
+import heapq
 import multiprocessing
 import os
 import Queue
@@ -511,10 +512,6 @@ class DepGraphGenerator(object):
       # contains the type of dependency (e.g. build, runtime, runtime_post,
       # etc.)
       #
-      # Emerge itself actually treats some dependencies as "soft" dependencies
-      # and sometimes ignores them. We don't do that -- we honor all
-      # dependencies unless we're forced to prune them because they're cyclic.
-      #
       # Portage refers to the identifiers for packages as a CPV. This acronym
       # stands for Component/Path/Version.
       #
@@ -529,7 +526,7 @@ class DepGraphGenerator(object):
       for child, priorities in node_deps[0].items():
         if isinstance(child, SetArg): continue
         deps[str(child.cpv)] = dict(action=str(child.operation),
-                                    deptype=str(priorities[-1]),
+                                    deptypes=[str(x) for x in priorities],
                                     deps={})
 
       # We've built our list of deps, so we can add our package to the tree.
@@ -600,23 +597,42 @@ class DepGraphGenerator(object):
       Returns:
         Unsanitized digraph.
       """
+      binpkg_phases = set(["setup", "preinst", "postinst"])
+      needed_dep_types = set(["buildtime", "runtime"])
       for pkg in packages:
 
         # Create an entry for the package
         action = packages[pkg]["action"]
-        default_pkg = {"needs": {}, "provides": set(), "action": action}
+        default_pkg = {"needs": {}, "provides": set(), "action": action,
+                       "nodeps": False, "binary": False}
         this_pkg = deps_map.setdefault(pkg, default_pkg)
+
+        if pkg in deps_info:
+          this_pkg["idx"] = deps_info[pkg]["idx"]
+
+        # If a package doesn't have any defined phases that might use the
+        # dependent packages (i.e. pkg_setup, pkg_preinst, or pkg_postinst),
+        # we can install this package before its deps are ready.
+        emerge_pkg = self.package_db.get(pkg)
+        if emerge_pkg and emerge_pkg.type_name == "binary":
+          this_pkg["binary"] = True
+          defined_phases = emerge_pkg.metadata.defined_phases
+          defined_binpkg_phases = binpkg_phases.intersection(defined_phases)
+          if not defined_binpkg_phases:
+            this_pkg["nodeps"] = True
 
         # Create entries for dependencies of this package first.
         ReverseTree(packages[pkg]["deps"])
 
         # Add dependencies to this package.
         for dep, dep_item in packages[pkg]["deps"].iteritems():
-          dep_pkg = deps_map[dep]
-          dep_type = dep_item["deptype"]
-          if dep_type != "runtime_post":
-            dep_pkg["provides"].add(pkg)
-            this_pkg["needs"][dep] = dep_type
+          # We only need to enforce strict ordering of dependencies if the
+          # dependency is a buildtime or runtime dependency. (I.e., ignored,
+          # optional, and runtime_post dependencies don't depend on ordering.)
+          dep_types = dep_item["deptypes"]
+          if needed_dep_types.intersection(dep_types):
+            deps_map[dep]["provides"].add(pkg)
+            this_pkg["needs"][dep] = "/".join(dep_types)
 
     def FindCycles():
       """Find cycles in the dependency tree.
@@ -691,12 +707,8 @@ class DepGraphGenerator(object):
          We are breaking a cycle where dep needs basedep. mycycle is an
          example cycle which contains dep -> basedep."""
 
-      # If it's an optional dependency, there's no need to spam the user with
-      # warning messages.
       needs = deps_map[dep]["needs"]
       depinfo = needs.get(basedep, "deleted")
-      if depinfo == "optional":
-        return
 
       # Notify the user that we're breaking a cycle.
       print "Breaking %s -> %s (%s)" % (dep, basedep, depinfo)
@@ -735,12 +747,33 @@ class DepGraphGenerator(object):
       if "--quiet" not in emerge.opts and seconds >= 0.1:
         print "Tree sanitized in %dm%.1fs" % (seconds / 60, seconds % 60)
 
+    def FindRecursiveProvides(pkg, seen):
+      """Find all nodes that require a particular package.
+
+      Assumes that graph is acyclic.
+
+      Args:
+        pkg: Package identifier.
+        seen: Nodes that have been visited so far.
+      """
+      if pkg in seen:
+        return
+      seen.add(pkg)
+      info = deps_map[pkg]
+      info["tprovides"] = info["provides"].copy()
+      for dep in info["provides"]:
+        FindRecursiveProvides(dep, seen)
+        info["tprovides"].update(deps_map[dep]["tprovides"])
+
     ReverseTree(deps_tree)
 
     # We need to remove unused packages so that we can use the dependency
     # ordering of the install process to show us what cycles to crack.
     RemoveUnusedPackages()
     SanitizeTree()
+    seen = set()
+    for pkg in deps_map:
+      FindRecursiveProvides(pkg, seen)
     return deps_map
 
   def PrintInstallPlan(self, deps_map):
@@ -1045,6 +1078,7 @@ class EmergeQueue(object):
     self._deps_map = deps_map
     # Initialize the running queue to empty
     self._jobs = {}
+    self._ready = []
     # List of total package installs represented in deps_map.
     install_jobs = [x for x in deps_map if deps_map[x]["action"] == "merge"]
     self._total_jobs = len(install_jobs)
@@ -1067,6 +1101,7 @@ class EmergeQueue(object):
     # jobs.
     procs = min(self._total_jobs,
                 emerge.opts.pop("--jobs", multiprocessing.cpu_count()))
+    self._load_avg = emerge.opts.pop("--load-average", None)
     self._emerge_queue = multiprocessing.Queue()
     self._job_queue = multiprocessing.Queue()
     self._print_queue = multiprocessing.Queue()
@@ -1080,17 +1115,21 @@ class EmergeQueue(object):
     self._retry_queue = []
     self._failed = set()
 
-    # Print an update before we launch the merges.
-    self._Status()
-
     # Setup an exit handler so that we print nice messages if we are
     # terminated.
     self._SetupExitHandler()
 
     # Schedule our jobs.
     for target, info in deps_map.items():
-      if not info["needs"]:
-        self._Schedule(target)
+      if info["nodeps"] or not info["needs"]:
+        score = (-len(info["tprovides"]), info["binary"], info["idx"])
+        self._ready.append((score, target))
+    heapq.heapify(self._ready)
+    self._procs = procs
+    self._ScheduleLoop()
+
+    # Print an update.
+    self._Status()
 
   def _SetupExitHandler(self):
 
@@ -1122,22 +1161,33 @@ class EmergeQueue(object):
 
   def _Schedule(self, target):
     # We maintain a tree of all deps, if this doesn't need
-    # to be installed just free up it's children and continue.
+    # to be installed just free up its children and continue.
     # It is possible to reinstall deps of deps, without reinstalling
     # first level deps, like so:
     # chromeos (merge) -> eselect (nomerge) -> python (merge)
-    if target not in self._deps_map:
+    this_pkg = self._deps_map.get(target)
+    if this_pkg is None:
       pass
-    elif self._deps_map[target]["action"] == "nomerge":
+    elif this_pkg["action"] == "nomerge":
       self._Finish(target)
     elif target not in self._jobs:
       # Kick off the build if it's marked to be built.
       self._jobs[target] = None
       self._emerge_queue.put(target)
+      return True
 
-  def _LoadAvg(self):
-    loads = open("/proc/loadavg", "r").readline().split()[:3]
-    return " ".join(loads)
+  def _ScheduleLoop(self):
+    # If the current load exceeds our desired load average, don't schedule
+    # more than one job.
+    if self._load_avg and os.getloadavg()[0] > self._load_avg:
+      needed_jobs = 1
+    else:
+      needed_jobs = self._procs
+
+    # Schedule more jobs.
+    while self._ready and len(self._jobs) < needed_jobs:
+      score, pkg = heapq.heappop(self._ready)
+      self._Schedule(pkg)
 
   def _Print(self, line):
     """Print a single line."""
@@ -1179,24 +1229,38 @@ class EmergeQueue(object):
       seconds = current_time - GLOBAL_START
       line = ("Pending %s, Ready %s, Running %s, Retrying %s, Total %s "
               "[Time %dm%.1fs Load %s]")
-      qsize = self._emerge_queue.qsize()
-      self._Print(line % (len(self._deps_map), qsize, len(self._jobs) - qsize,
-                          len(self._retry_queue), self._total_jobs,
-                          seconds / 60, seconds % 60, self._LoadAvg()))
+      load =  " ".join(str(x) for x in os.getloadavg())
+      self._Print(line % (len(self._deps_map), len(self._ready),
+                          len(self._jobs), len(self._retry_queue),
+                          self._total_jobs, seconds / 60, seconds % 60, load))
 
   def _Finish(self, target):
-    """Mark a target as completed and unblock dependecies."""
-    for dep in self._deps_map[target]["provides"]:
-      del self._deps_map[dep]["needs"][target]
-      if not self._deps_map[dep]["needs"]:
-        self._Schedule(dep)
-    self._deps_map.pop(target)
+    """Mark a target as completed and unblock dependencies."""
+    this_pkg = self._deps_map[target]
+    if this_pkg["needs"] and this_pkg["nodeps"]:
+      # We got installed, but our deps have not been installed yet. Dependent
+      # packages should only be installed when our needs have been fully met.
+      this_pkg["action"] = "nomerge"
+    else:
+      finish = []
+      for dep in this_pkg["provides"]:
+        dep_pkg = self._deps_map[dep]
+        del dep_pkg["needs"][target]
+        if not dep_pkg["needs"]:
+          if dep_pkg["nodeps"] and dep_pkg["action"] == "nomerge":
+            self._Finish(dep)
+          else:
+            score = (-len(dep_pkg["tprovides"]), dep_pkg["binary"],
+                     dep_pkg["idx"])
+            heapq.heappush(self._ready, (score, dep))
+      self._deps_map.pop(target)
 
   def _Retry(self):
-    if self._retry_queue:
+    while self._retry_queue:
       target = self._retry_queue.pop(0)
-      self._Schedule(target)
-      self._Print("Retrying emerge of %s." % target)
+      if self._Schedule(target):
+        self._Print("Retrying emerge of %s." % target)
+        break
 
   def _Exit(self):
     # Tell emerge workers to exit. They all exit when 'None' is pushed
@@ -1220,6 +1284,7 @@ class EmergeQueue(object):
       if (self._emerge_queue.empty() and
           self._job_queue.empty() and
           not self._jobs and
+          not self._ready and
           self._deps_map):
         # If we have failed on a package, retry it now.
         if self._retry_queue:
@@ -1242,6 +1307,7 @@ class EmergeQueue(object):
         job = self._job_queue.get(timeout=5)
       except Queue.Empty:
         # Print an update.
+        self._ScheduleLoop()
         self._Status()
         continue
 
@@ -1284,8 +1350,9 @@ class EmergeQueue(object):
         # Mark as completed and unblock waiting ebuilds.
         self._Finish(target)
 
-        # Print an update.
-        self._Status()
+      # Schedule pending jobs and print an update.
+      self._ScheduleLoop()
+      self._Status()
 
     # Tell child threads to exit.
     self._Print("Merge complete")
