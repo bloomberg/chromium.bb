@@ -1,32 +1,83 @@
-#include <gtest/gtest.h>
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 #include <gmock/gmock.h>
+#include <gtest/gtest.h>
+
 #include "base/memory/scoped_ptr.h"
-#include "imageburner_impl.h"
+#include "chrome/browser/ui/webui/chromeos/imageburner/imageburner_utils.h"
 
 namespace imageburner {
+
 using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::InSequence;
 
-std::string ValidConfigFile =
+const std::string kConfigFileWithNoHwidProperty =
     "name=some_name\n"
     "version=version\n"
-    "hwid=hwid1\n"
-    "hwid=hwid2\n"
-    "hwid=hwid3\n"
-    "\n"
     "filesize=1000\n"
+    "url=http://image.bin.zip\n";
+
+const std::string kConfigFileWithNoNameProperty =
+    "version=version\n"
+    "filesize=2000\n"
+    "url=http://some_image.bin.zip\n";
+
+const std::string kConfigFileWithNoNewLineAtEnd =
+    "name=some_name\n"
+    "version=version\n"
+    "filesize=1000\n"
+    "hwid=some_hwid\n"
     "url=http://image.bin.zip";
 
-std::string InvalidConfigFile =
-    "name=some_name\n"  // Good line.
-    "version=version \n"  // Trailing whitespace.
-    "hwid=hwid1=q\n"  // Extra =.
-    "hwid=hwid2\n"
-    "hwid=  \n"  // Blank property value.
+const std::string kSampleConfigFile =
+    "version=aaa\n"
+    "hwid=block_no_name\n"
+    "url=aaa\n"
     "\n"
+    "name=some_name1\n"
+    "version=version1\n"
+    "hwid=hwid11\n"
+    "hwid=hwid12\n"
+    "hwid=hwid13\n"
+    "\n"
+    "filesize=1000\n"
+    "url=http://image1.bin.zip\n"
+    "file=url\n"
+    "name=some_name2\n"
+    "version=version2\n"
+    "hwid=hwid21\n"
+    "hwid=hwid22\n"
+    "hwid=hwid23\n"
+    "\n"
+    "filesize=1200\n"
+    "url=http://image2.bin.zip\n"
+    "file=file2"
+    "\n"
+    "name=some_name3\n"
+    "version=version3\n"
+    "hwid=hwid31\n"
+    "\n"
+    "filesize=3\n"
+    "url=http://image3.bin.zip\n"
+    "file=file3"
+    "\n"
+    "name=some_block_with_no_hwid\n"
+    "url=some_url\n"
+    "\n"
+    "name=some_name_invalid_block\n"  // Good line.
+    "version=version \n"  // Trailing whitespace.
+    "hwid=hwid41=q\n"  // Extra =.
+    "hwid=hwid42\n"
+    "hwid=  \n"  // Blank property value.
+    "=\n"
     "filesize=\n"  // Empty property value.
-    "url";  // No =.
+    "url\n"  // No =.
+    "   =something\n"
+    "name=another_block_with_no_hwid\n"
+    "version=version\n";
 
 TEST(ImageBurnerUtilsTest, ConfigFileTest) {
   scoped_ptr<ConfigFile> cf(new ConfigFile());
@@ -35,31 +86,49 @@ TEST(ImageBurnerUtilsTest, ConfigFileTest) {
   cf.reset(new ConfigFile(""));
   EXPECT_TRUE(cf->empty());
 
-  cf.reset(new ConfigFile(ValidConfigFile));
-  EXPECT_FALSE(cf->empty());
-  EXPECT_EQ("some_name", cf->GetProperty("name"));
-  EXPECT_EQ("version", cf->GetProperty("version"));
-  EXPECT_EQ("1000", cf->GetProperty("filesize"));
-  EXPECT_EQ("http://image.bin.zip", cf->GetProperty("url"));
-  EXPECT_EQ("", cf->GetProperty("hwid"));
-  EXPECT_EQ("", cf->GetProperty(""));
-  EXPECT_EQ("", cf->GetProperty("some_name"));
-  EXPECT_TRUE(cf->ContainsHwid("hwid2"));
-  EXPECT_TRUE(cf->ContainsHwid("hwid1"));
-  EXPECT_FALSE(cf->ContainsHwid("hwid"));
-
-  cf->clear();
+  cf.reset(new ConfigFile(kConfigFileWithNoNameProperty));
   EXPECT_TRUE(cf->empty());
 
-  cf->reset(InvalidConfigFile);
+  cf.reset(new ConfigFile(kConfigFileWithNoHwidProperty));
+  EXPECT_TRUE(cf->empty());
+
+  cf.reset(new ConfigFile(kConfigFileWithNoNewLineAtEnd));
   EXPECT_FALSE(cf->empty());
-  EXPECT_EQ("some_name", cf->GetProperty("name"));
- // EXPECT_EQ("version", cf->GetProperty("version"));
-  EXPECT_EQ("", cf->GetProperty("filesize"));
-  EXPECT_EQ("", cf->GetProperty("url"));
-  EXPECT_TRUE(cf->ContainsHwid("hwid2"));
-  EXPECT_FALSE(cf->ContainsHwid("hwid1"));
- // EXPECT_FALSE(cf->ContainsHwid("  "));
+  EXPECT_EQ(1u, cf->size());
+  EXPECT_EQ("http://image.bin.zip", cf->GetProperty("url", "some_hwid"));
+  EXPECT_EQ("some_name", cf->GetProperty("name", "some_hwid"));
+
+  cf.reset(new ConfigFile(kSampleConfigFile));
+  EXPECT_FALSE(cf->empty());
+
+  EXPECT_EQ(4u, cf->size());
+
+  EXPECT_EQ("", cf->GetProperty("version", "block_no_name"));
+
+  EXPECT_EQ("some_name1", cf->GetProperty("name", "hwid11"));
+  EXPECT_EQ("version1", cf->GetProperty("version", "hwid12"));
+  EXPECT_EQ("", cf->GetProperty("filesize", "hwid1_non_existent"));
+  EXPECT_EQ("http://image1.bin.zip", cf->GetProperty("url", "hwid13"));
+  EXPECT_EQ("", cf->GetProperty("hwid", "hwid11"));
+  EXPECT_EQ("", cf->GetProperty("", "hwid12"));
+  EXPECT_EQ("", cf->GetProperty("name", ""));
+  EXPECT_EQ("", cf->GetProperty("some_name", "hwid11"));
+  EXPECT_EQ("url", cf->GetProperty("file", "hwid11"));
+
+  EXPECT_EQ("http://image2.bin.zip", cf->GetProperty("url", "hwid21"));
+  EXPECT_EQ("some_name2", cf->GetProperty("name", "hwid23"));
+
+  EXPECT_EQ("http://image3.bin.zip", cf->GetProperty("url", "hwid31"));
+  EXPECT_EQ("some_name3", cf->GetProperty("name", "hwid31"));
+
+  EXPECT_EQ("some_name_invalid_block", cf->GetProperty("name", "hwid42"));
+  // TODO(tbarzic): make this pass.
+  // EXPECT_EQ("version", cf->GetProperty("version", "hwid42"));
+  EXPECT_EQ("", cf->GetProperty("filesize", "hwid42"));
+  EXPECT_EQ("", cf->GetProperty("url", "hwid42"));
+  // TODO(tbarzic): make this pass.
+  // EXPECT_EQ("", cf->GetProperty("  ", "hwid42"));
+  EXPECT_EQ("", cf->GetProperty("name", "hwid41"));
 }
 
 class MockStateMachineObserver : public StateMachine::Observer {
@@ -109,7 +178,8 @@ TEST(ImageBurnerUtilsTest, StateMachineNormalWorkflow) {
   
   state_machine->OnDownloadFinished();
 
- // EXPECT_EQ(StateMachine::INITIAL, state_machine->state());
+  // TODO(tbarzic): make this pass.
+  // EXPECT_EQ(StateMachine::INITIAL, state_machine->state());
   EXPECT_TRUE(state_machine->image_download_requested());
   EXPECT_TRUE(state_machine->download_started());
   EXPECT_TRUE(state_machine->download_finished());
@@ -262,25 +332,8 @@ TEST(ImageBurnerUtilsTest, StateMachineObservers) {
   state_machine->OnError(1);
 }
 
-MockDownloaderListener :: Downloader::Listener {
- public:
-  MOCK_METHOD_1(OnBurnStarted, void(bool));
-};
+}  // namespace imageburner.
 
-class DownloaderTest : public testing::Test {
- public:
-
-
- protected:
-  MessageLoopForUI message_loop_;
-  BrowserThread ui_thread_;
-  BrowserThread file_thread_;
-  BrowserThread download_thread_;
-
-}
-
-
-}
 
 
 

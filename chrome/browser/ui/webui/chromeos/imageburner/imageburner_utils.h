@@ -85,6 +85,20 @@ class Downloader {
   DISALLOW_COPY_AND_ASSIGN(Downloader);
 };
 
+// Config file is divided into blocks. Each block is associated with one image
+// and containes information about that image in form of key-value pairs, one
+// pair per line. Each block starts with name property.
+// Also, Each image can be associated with multiple hardware classes, so we
+// treat hwid property separately.
+// Config file example:
+//   name=image1
+//   version=version1
+//   hwid=hwid1
+//   hwid=hwid2
+//
+//   name=name2
+//   version=version2
+//   hwid=hwid3
 class ConfigFile {
  public:
   ConfigFile();
@@ -93,23 +107,42 @@ class ConfigFile {
 
   ~ConfigFile();
 
+  // Builds config file data structure.
   void reset(const std::string& file_content);
 
   void clear();
 
-  bool empty() {
-    return config_struct_.empty() && hwids_.empty();
-  }
+  bool empty() const { return config_struct_.empty(); }
 
-  const std::string& GetProperty(const std::string& property_name) const;
+  size_t size() const { return config_struct_.size(); }
 
-  bool ContainsHwid(const std::string& hwid) const {
-    return hwids_.find(hwid) != hwids_.end();
-  }
+  // Returns property_name property of image for hardware class hwid.
+  const std::string& GetProperty(const std::string& property_name,
+                                 const std::string& hwid) const;
 
  private:
-  std::map<std::string, std::string> config_struct_;
-  std::set<std::string> hwids_;
+  void DeleteLastBlockIfHasNoHwid();
+  void ProcessLine(const std::vector<std::string>& line);
+
+  typedef std::map<std::string, std::string> PropertyMap;
+  typedef std::set<std::string> HwidsSet;
+
+  // Struct that contains config file block info. We separate hwid from other
+  // properties for two reasons:
+  //   * there are multiple hwids defined for each block.
+  //   * we will retieve properties by hwid.
+  struct ConfigFileBlock {
+    PropertyMap properties;
+    HwidsSet hwids;
+  };
+
+  // At the moment we have only two entries in the config file, so we can live
+  // with linear search. Should consider changing data structure if number of
+  // entries gets bigger.
+  // Also, there is only one entry for each hwid, if that changes we should
+  // return vector of strings.
+  typedef std::list<ConfigFileBlock> BlockList;
+  BlockList config_struct_;
 };
 
 class StateMachine {

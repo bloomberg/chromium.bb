@@ -1855,6 +1855,7 @@
         'browser/ui/views/tabs/side_tab_strip_unittest.cc',
         'browser/ui/views/tabs/tab_strip_unittest.cc',
         'browser/ui/webui/chromeos/enterprise_enrollment_ui_unittest.cc',
+        'browser/ui/webui/chromeos/imageburner/imageburner_utils_unittest.cc',
         'browser/ui/webui/html_dialog_tab_contents_delegate_unittest.cc',
         'browser/ui/webui/ntp/shown_sections_handler_unittest.cc',
         'browser/ui/webui/options/language_options_handler_unittest.cc',
@@ -2060,6 +2061,7 @@
             ['exclude', '^browser/policy/device_policy_cache_unittest.cc'],
             ['exclude', '^browser/policy/enterprise_install_attributes_unittest.cc' ],
             ['exclude', '^browser/ui/webui/chromeos/login'],
+            ['exclude', '^browser/ui/webui/chromeos/imageburner/'],
           ],
         }],
         ['toolkit_uses_gtk == 1', {

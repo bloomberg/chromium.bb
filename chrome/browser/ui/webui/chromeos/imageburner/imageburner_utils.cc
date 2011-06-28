@@ -42,35 +42,82 @@ void ConfigFile::reset(const std::string& file_content) {
 
   std::vector<std::string> key_value_pair;
   for (size_t i = 0; i < lines.size(); ++i) {
-    if (lines[i].length() == 0)
+    if (lines[i].empty())
       continue;
+
     key_value_pair.clear();
     Tokenize(lines[i], "=", &key_value_pair);
-    if (key_value_pair.size() != 2)
+    // Skip lines that don't contain key-value pair and lines without a key.
+    if (key_value_pair.size() != 2 || key_value_pair[0].empty())
       continue;
-    if (key_value_pair[0] != kHwid) {
-      config_struct_.insert(std::make_pair(key_value_pair[0],
-          key_value_pair[1]));
-    } else {
-      hwids_.insert(key_value_pair[1]);
-    }
+
+    ProcessLine(key_value_pair);
   }
+
+  // Make sure last block has at least one hwid associated with it.
+  DeleteLastBlockIfHasNoHwid();
 }
 
 void ConfigFile::clear() {
   config_struct_.clear();
-  hwids_.clear();
 }
 
 const std::string& ConfigFile::GetProperty(
-    const std::string& property_name)
-    const {
-  std::map<std::string, std::string>::const_iterator property =
-      config_struct_.find(property_name);
-  if (property != config_struct_.end())
-    return property->second;
-  else
-    return EmptyString();
+    const std::string& property_name,
+    const std::string& hwid) const {
+  // We search for block that has desired hwid property, and if we find it, we
+  // return its property_name property.
+  for (BlockList::const_iterator block_it = config_struct_.begin();
+       block_it != config_struct_.end();
+       ++block_it) {
+    if (block_it->hwids.find(hwid) != block_it->hwids.end()) {
+      PropertyMap::const_iterator property =
+          block_it->properties.find(property_name);
+      if (property != block_it->properties.end()) {
+        return property->second;
+      } else {
+        return EmptyString();
+      }
+    }
+  }
+
+  return EmptyString();
+}
+
+// Check if last block has a hwid associated with it, and erase it if it
+// doesn't,
+void ConfigFile::DeleteLastBlockIfHasNoHwid() {
+  if (!config_struct_.empty() && config_struct_.back().hwids.empty()) {
+    config_struct_.pop_back();
+  }
+}
+
+void ConfigFile::ProcessLine(const std::vector<std::string>& line) {
+  // If line contains name key, new image block is starting, so we have to add
+  // new entry to our data structure.
+  if (line[0] == kName) {
+    // If there was no hardware class defined for previous block, we can
+    // disregard is since we won't be abble to access any of its properties
+    // anyway. This should not happen, but let's be defensive.
+    DeleteLastBlockIfHasNoHwid();
+    config_struct_.resize(config_struct_.size() + 1);
+  }
+
+  // If we still haven't added any blocks to data struct, we disregard this
+  // line. Again, this should never happen.
+  if (config_struct_.empty())
+    return;
+
+  ConfigFileBlock& last_block = config_struct_.back();
+
+  if (line[0] == kHwid) {
+    // Check if line contains hwid property. If so, add it to set of hwids
+    // associated with current block.
+    last_block.hwids.insert(line[1]);
+  } else {
+    // Add new block property.
+    last_block.properties.insert(std::make_pair(line[0], line[1]));
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

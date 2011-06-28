@@ -159,6 +159,8 @@ class WebUIHandler
 
   void ProcessError(int message_id);
 
+  bool ExtractInfoFromConfigFile(const ConfigFile& config_file);
+
   void CleanupDownloadObjects();
 
   void SendDeviceTooSmallSignal(int64 device_size);

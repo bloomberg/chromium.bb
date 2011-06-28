@@ -10,6 +10,7 @@
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/system_access.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/time_format.h"
@@ -28,6 +29,10 @@ static const char kPropertyDevicePath[] = "devicePath";
 static const char kPropertyFilePath[] = "filePath";
 static const char kPropertyLabel[] = "label";
 static const char kPropertyPath[] = "path";
+
+// Name for hwid in machine statistics.
+const std::string kHwidStatistic = "hardware_class";
+
 
 static const char kImageZipFileName[] = "chromeos_image.bin.zip";
 
@@ -420,12 +425,11 @@ void WebUIHandler::ImageDirCreatedOnUIThread(bool success) {
 
 void WebUIHandler::OnConfigFileFetched(const ConfigFile&
     config_file, bool success) {
-  if (!success) {
+
+  if (!success || !ExtractInfoFromConfigFile(config_file)) {
     DownloadCompleted(false);
     return;
   }
-  image_download_url_ = GURL(config_file.GetProperty(kUrl));
-  image_file_name_ = config_file.GetProperty(kFileName);
 
   if (state_machine_->download_finished()) {
     BurnImage();
@@ -523,6 +527,25 @@ void WebUIHandler::ProcessError(int message_id) {
     observing_burn_lib_ = false;
   }
   burn_manager_->ResetTargetPaths();
+}
+
+bool WebUIHandler::ExtractInfoFromConfigFile(const ConfigFile& config_file) {
+  std::string hwid;
+  if (!chromeos::SystemAccess::GetInstance()->GetMachineStatistic(
+          kHwidStatistic, &hwid))
+    return false;
+
+  image_file_name_ = config_file.GetProperty(kFileName, hwid);
+  if (image_file_name_.empty())
+    return false;
+
+  image_download_url_ = GURL(config_file.GetProperty(kUrl, hwid));
+  if (image_download_url_.is_empty()) {
+    image_file_name_.clear();
+    return false;
+  }
+
+  return true;
 }
 
 void WebUIHandler::CleanupDownloadObjects() {
