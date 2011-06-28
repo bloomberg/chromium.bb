@@ -374,6 +374,12 @@ UNINITIALIZED READ
 ...
 CRYPT32.dll!Crypt*
 
+UNINITIALIZED READ
+*!replace_memcmp
+...
+*!testing::internal::CmpHelperEQ*
+*!SymmetricKeyTest_ImportGeneratedKey_Test::TestBody
+
 # http://code.google.com/p/drmemory/issues/detail?id=425
 UNINITIALIZED READ
 CLBCatQ.DLL!DestroyStgDatabase
@@ -683,8 +689,8 @@ LEAK
 *!ssl2_BeginClientHandshake
 *!ssl_Do1stHandshake
 *!SSL_ForceHandshake
-*!net::SSLServerSocketNSS::DoHandshake
-*!net::SSLServerSocketNSS::DoHandshakeLoop
+*!net::SSL*SocketNSS::DoHandshake
+*!net::SSL*SocketNSS::DoHandshakeLoop
 
 # http://crbug.com/70388
 LEAK
