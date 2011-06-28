@@ -526,11 +526,11 @@
             'chrome_strings',
             'common_constants_win64',
             'app/policy/cloud_policy_codegen.gyp:policy_win64',
-            '../app/app.gyp:app_base_nacl_win64',
             '../app/app.gyp:app_resources',
             '../base/base.gyp:base_nacl_win64',
             '../ipc/ipc.gyp:ipc_win64',
             '../third_party/libxml/libxml.gyp:libxml',
+            '../ui/ui.gyp:ui_base_nacl_win64',
           ],
           'include_dirs': [
             '../third_party/icu/public/i18n',

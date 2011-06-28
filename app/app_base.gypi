@@ -37,32 +37,4 @@
       ],
     },
   ],
-  'conditions': [
-    ['OS=="win"', {
-      'targets': [
-        {
-          'target_name': 'app_base_nacl_win64',
-          'type': 'static_library',
-          'defines': [
-            '<@(nacl_win64_defines)',
-          ],
-          'sources': [
-            '../ui/base/resource/resource_bundle_dummy.cc',
-            '../ui/base/ui_base_paths.h',
-            '../ui/base/ui_base_paths.cc',
-            '../ui/base/ui_base_switches.h',
-            '../ui/base/ui_base_switches.cc',
-          ],
-          'include_dirs': [
-            '..',
-          ],
-          'configurations': {
-            'Common_Base': {
-              'msvs_target_platform': 'x64',
-            },
-          },
-        },
-      ],
-    }],
-  ],
 }

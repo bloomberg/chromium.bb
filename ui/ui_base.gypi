@@ -239,6 +239,34 @@
       ],
     },
   ],
+  'conditions': [
+    ['OS=="win"', {
+      'targets': [
+        {
+          'target_name': 'ui_base_nacl_win64',
+          'type': 'static_library',
+          'defines': [
+            '<@(nacl_win64_defines)',
+          ],
+          'sources': [
+            'base/resource/resource_bundle_dummy.cc',
+            'base/ui_base_paths.h',
+            'base/ui_base_paths.cc',
+            'base/ui_base_switches.h',
+            'base/ui_base_switches.cc',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'configurations': {
+            'Common_Base': {
+              'msvs_target_platform': 'x64',
+            },
+          },
+        },
+      ],
+    }],
+  ],
 }
 
 # Local Variables:
