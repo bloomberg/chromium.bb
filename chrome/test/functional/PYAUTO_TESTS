@@ -150,6 +150,8 @@
       '-prefs.PrefsTest.testDownloadDirPref',
       # crbug.com/86949
       '-sync.SyncTest.testRestartBrowser',
+      # crbug.com/87642
+      '-sync.SyncTest.testDisableAndEnableDatatypes',
     ],
 
     'mac': [
