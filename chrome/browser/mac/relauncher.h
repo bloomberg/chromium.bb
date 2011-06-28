@@ -37,6 +37,12 @@ struct MainFunctionParams;
 
 namespace mac_relauncher {
 
+// The relauncher process can unmount and eject a mounted disk image and move
+// its disk image file to the trash. This argument may be supplied to
+// RelaunchAppWithHelper to achieve this. The argument's value must be a BSD
+// device name of the form "diskN" or "diskNsM".
+extern const char* const kRelauncherDMGDeviceArg;
+
 // Relaunches the application using the helper application associated with the
 // currently running instance of Chrome in the parent browser process as the
 // executable for the relauncher process. |args| is an argv-style vector of
@@ -51,13 +57,16 @@ namespace mac_relauncher {
 bool RelaunchApp(const std::vector<std::string>& args);
 
 // Identical to RelaunchApp, but uses |helper| as the path to the relauncher
-// process. Unlike args[0], |helper| must be a pathname to an executable file.
-// The helper path given must be from the same version of Chrome as the
-// running parent browser process, as there are no guarantees that the parent
-// and relauncher processes from different versions will be able to
-// communicate with one another. This variant can be useful to relaunch the
-// same version of Chrome from another location, using that location's helper.
+// process, and allows additional arguments to be supplied to the relauncher
+// process in relauncher_args. Unlike args[0], |helper| must be a pathname to
+// an executable file. The helper path given must be from the same version of
+// Chrome as the running parent browser process, as there are no guarantees
+// that the parent and relauncher processes from different versions will be
+// able to communicate with one another. This variant can be useful to
+// relaunch the same version of Chrome from another location, using that
+// location's helper.
 bool RelaunchAppWithHelper(const std::string& helper,
+                           const std::vector<std::string>& relauncher_args,
                            const std::vector<std::string>& args);
 
 namespace internal {

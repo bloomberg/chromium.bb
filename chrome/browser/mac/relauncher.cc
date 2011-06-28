@@ -26,6 +26,7 @@
 #include "base/process_util.h"
 #include "base/stringprintf.h"
 #include "base/sys_string_conversions.h"
+#include "chrome/browser/mac/install_from_dmg.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/common/content_paths.h"
 #include "content/common/content_switches.h"
@@ -41,6 +42,8 @@
 #endif
 
 namespace mac_relauncher {
+
+const char* const kRelauncherDMGDeviceArg = "--dmg-device=";
 
 namespace {
 
@@ -91,10 +94,12 @@ bool RelaunchApp(const std::vector<std::string>& args) {
     return false;
   }
 
-  return RelaunchAppWithHelper(child_path.value(), args);
+  std::vector<std::string> relauncher_args;
+  return RelaunchAppWithHelper(child_path.value(), relauncher_args, args);
 }
 
 bool RelaunchAppWithHelper(const std::string& helper,
+                           const std::vector<std::string>& relauncher_args,
                            const std::vector<std::string>& args) {
   std::vector<std::string> relaunch_args;
   relaunch_args.push_back(helper);
@@ -105,6 +110,9 @@ bool RelaunchAppWithHelper(const std::string& helper,
   if (!base::mac::AmIForeground()) {
     relaunch_args.push_back(kRelauncherBackgroundArg);
   }
+
+  relaunch_args.insert(relaunch_args.end(),
+                       relauncher_args.begin(), relauncher_args.end());
 
   relaunch_args.push_back(kRelauncherArgSeparator);
 
@@ -295,6 +303,7 @@ int RelauncherMain(const MainFunctionParams& main_parameters) {
   // start it in the background.
   bool background = false;
   bool in_relaunch_args = false;
+  std::string dmg_bsd_device_name;
   bool seen_relaunch_executable = false;
   std::string relaunch_executable;
   const std::string relauncher_arg_separator(kRelauncherArgSeparator);
@@ -311,6 +320,9 @@ int RelauncherMain(const MainFunctionParams& main_parameters) {
         in_relaunch_args = true;
       } else if (arg == kRelauncherBackgroundArg) {
         background = true;
+      } else if (arg.compare(0, strlen(kRelauncherDMGDeviceArg),
+                             kRelauncherDMGDeviceArg) == 0) {
+        dmg_bsd_device_name.assign(arg.substr(strlen(kRelauncherDMGDeviceArg)));
       }
     } else {
       if (!seen_relaunch_executable) {
@@ -358,6 +370,14 @@ int RelauncherMain(const MainFunctionParams& main_parameters) {
   if (err != noErr) {
     LOG(ERROR) << "LSOpenApplication: " << err;
     return 1;
+  }
+
+  // The application should have relaunched (or is in the process of
+  // relaunching). From this point on, only clean-up tasks should occur, and
+  // failures are tolerable.
+
+  if (!dmg_bsd_device_name.empty()) {
+    EjectAndTrashDiskImage(dmg_bsd_device_name);
   }
 
   return 0;

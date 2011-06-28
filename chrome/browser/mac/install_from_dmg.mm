@@ -8,17 +8,23 @@
 #import <AppKit/AppKit.h>
 #include <CoreFoundation/CoreFoundation.h>
 #include <CoreServices/CoreServices.h>
+#include <DiskArbitration/DiskArbitration.h>
 #include <IOKit/IOKitLib.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/param.h>
 #include <sys/mount.h>
 
+#include "base/auto_reset.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/logging.h"
 #import "base/mac/mac_util.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
+#include "base/string_util.h"
+#include "base/sys_string_conversions.h"
 #include "chrome/browser/mac/authorization_util.h"
 #include "chrome/browser/mac/scoped_authorizationref.h"
 #include "chrome/browser/mac/scoped_ioobject.h"
@@ -41,9 +47,117 @@
 
 namespace {
 
+// Given an io_service_t (expected to be of class IOMedia), walks the ancestor
+// chain, returning the closest ancestor that implements class IOHDIXHDDrive,
+// if any. If no such ancestor is found, returns NULL. Following the "copy"
+// rule, the caller assumes ownership of the returned value.
+//
+// Note that this looks for a class that inherits from IOHDIXHDDrive, but it
+// will not likely find a concrete IOHDIXHDDrive. It will be
+// IOHDIXHDDriveOutKernel for disk images mounted "out-of-kernel" or
+// IOHDIXHDDriveInKernel for disk images mounted "in-kernel." Out-of-kernel is
+// the default as of Mac OS X 10.5. See the documentation for "hdiutil attach
+// -kernel" for more information.
+io_service_t CopyHDIXDriveServiceForMedia(io_service_t media) {
+  const char disk_image_class[] = "IOHDIXHDDrive";
+
+  // This is highly unlikely. media as passed in is expected to be of class
+  // IOMedia. Since the media service's entire ancestor chain will be checked,
+  // though, check it as well.
+  if (IOObjectConformsTo(media, disk_image_class)) {
+    IOObjectRetain(media);
+    return media;
+  }
+
+  io_iterator_t iterator_ref;
+  kern_return_t kr =
+      IORegistryEntryCreateIterator(media,
+                                    kIOServicePlane,
+                                    kIORegistryIterateRecursively |
+                                        kIORegistryIterateParents,
+                                    &iterator_ref);
+  if (kr != KERN_SUCCESS) {
+    LOG(ERROR) << "IORegistryEntryCreateIterator: " << kr;
+    return NULL;
+  }
+  ScopedIOObject<io_iterator_t> iterator(iterator_ref);
+  iterator_ref = NULL;
+
+  // Look at each of the ancestor services, beginning with the parent,
+  // iterating all the way up to the device tree's root. If any ancestor
+  // service matches the class used for disk images, the media resides on a
+  // disk image, and the disk image file's path can be determined by examining
+  // the image-path property.
+  for (ScopedIOObject<io_service_t> ancestor(IOIteratorNext(iterator));
+       ancestor;
+       ancestor.reset(IOIteratorNext(iterator))) {
+    if (IOObjectConformsTo(ancestor, disk_image_class)) {
+      return ancestor.release();
+    }
+  }
+
+  // The media does not reside on a disk image.
+  return NULL;
+}
+
+// Given an io_service_t (expected to be of class IOMedia), determines whether
+// that service is on a disk image. If it is, returns true. If image_path is
+// present, it will be set to the pathname of the disk image file, encoded in
+// filesystem encoding.
+bool MediaResidesOnDiskImage(io_service_t media, std::string* image_path) {
+  if (image_path) {
+    image_path->clear();
+  }
+
+  ScopedIOObject<io_service_t> hdix_drive(CopyHDIXDriveServiceForMedia(media));
+  if (!hdix_drive) {
+    return false;
+  }
+
+  if (image_path) {
+    base::mac::ScopedCFTypeRef<CFTypeRef> image_path_cftyperef(
+        IORegistryEntryCreateCFProperty(hdix_drive,
+                                        CFSTR("image-path"),
+                                        NULL,
+                                        0));
+    if (!image_path_cftyperef) {
+      LOG(ERROR) << "IORegistryEntryCreateCFProperty";
+      return true;
+    }
+    if (CFGetTypeID(image_path_cftyperef) != CFDataGetTypeID()) {
+      base::mac::ScopedCFTypeRef<CFStringRef> observed_type_cf(
+          CFCopyTypeIDDescription(CFGetTypeID(image_path_cftyperef)));
+      std::string observed_type;
+      if (observed_type_cf) {
+        observed_type.assign(", observed ");
+        observed_type.append(base::SysCFStringRefToUTF8(observed_type_cf));
+      }
+      LOG(ERROR) << "image-path: expected CFData" << observed_type;
+      return true;
+    }
+
+    CFDataRef image_path_data = static_cast<CFDataRef>(
+        image_path_cftyperef.get());
+    CFIndex length = CFDataGetLength(image_path_data);
+    char* image_path_c = WriteInto(image_path, length + 1);
+    CFDataGetBytes(image_path_data,
+                   CFRangeMake(0, length),
+                   reinterpret_cast<UInt8*>(image_path_c));
+  }
+
+  return true;
+}
+
 // Returns true if |path| is located on a read-only filesystem of a disk
-// image.  Returns false if not, or in the event of an error.
-bool IsPathOnReadOnlyDiskImage(const char path[]) {
+// image. Returns false if not, or in the event of an error. If
+// out_dmg_bsd_device_name is present, it will be set to the BSD device name
+// for the disk image's device, in "diskNsM" form.
+bool IsPathOnReadOnlyDiskImage(const char path[],
+                               std::string* out_dmg_bsd_device_name) {
+  if (out_dmg_bsd_device_name) {
+    out_dmg_bsd_device_name->clear();
+  }
+
   struct statfs statfs_buf;
   if (statfs(path, &statfs_buf) != 0) {
     PLOG(ERROR) << "statfs " << path;
@@ -63,7 +177,10 @@ bool IsPathOnReadOnlyDiskImage(const char path[]) {
   }
 
   // BSD names in IOKit don't include dev_root.
-  const char* bsd_device_name = statfs_buf.f_mntfromname + dev_root_length;
+  const char* dmg_bsd_device_name = statfs_buf.f_mntfromname + dev_root_length;
+  if (out_dmg_bsd_device_name) {
+    out_dmg_bsd_device_name->assign(dmg_bsd_device_name);
+  }
 
   const mach_port_t master_port = kIOMasterPortDefault;
 
@@ -71,9 +188,9 @@ bool IsPathOnReadOnlyDiskImage(const char path[]) {
   // IOServiceGetMatchingServices will assume that reference.
   CFMutableDictionaryRef match_dict = IOBSDNameMatching(master_port,
                                                         0,
-                                                        bsd_device_name);
+                                                        dmg_bsd_device_name);
   if (!match_dict) {
-    LOG(ERROR) << "IOBSDNameMatching " << bsd_device_name;
+    LOG(ERROR) << "IOBSDNameMatching " << dmg_bsd_device_name;
     return false;
   }
 
@@ -82,70 +199,37 @@ bool IsPathOnReadOnlyDiskImage(const char path[]) {
                                                   match_dict,
                                                   &iterator_ref);
   if (kr != KERN_SUCCESS) {
-    LOG(ERROR) << "IOServiceGetMatchingServices " << bsd_device_name
-               << ": kernel error " << kr;
+    LOG(ERROR) << "IOServiceGetMatchingServices: " << kr;
     return false;
   }
   ScopedIOObject<io_iterator_t> iterator(iterator_ref);
   iterator_ref = NULL;
 
   // There needs to be exactly one matching service.
-  ScopedIOObject<io_service_t> filesystem_service(IOIteratorNext(iterator));
-  if (!filesystem_service) {
-    LOG(ERROR) << "IOIteratorNext " << bsd_device_name << ": no service";
+  ScopedIOObject<io_service_t> media(IOIteratorNext(iterator));
+  if (!media) {
+    LOG(ERROR) << "IOIteratorNext: no service";
     return false;
   }
   ScopedIOObject<io_service_t> unexpected_service(IOIteratorNext(iterator));
   if (unexpected_service) {
-    LOG(ERROR) << "IOIteratorNext " << bsd_device_name << ": too many services";
+    LOG(ERROR) << "IOIteratorNext: too many services";
     return false;
   }
 
   iterator.reset();
 
-  const char disk_image_class[] = "IOHDIXController";
-
-  // This is highly unlikely.  The filesystem service is expected to be of
-  // class IOMedia.  Since the filesystem service's entire ancestor chain
-  // will be checked, though, check the filesystem service's class itself.
-  if (IOObjectConformsTo(filesystem_service, disk_image_class)) {
-    return true;
-  }
-
-  kr = IORegistryEntryCreateIterator(filesystem_service,
-                                     kIOServicePlane,
-                                     kIORegistryIterateRecursively |
-                                         kIORegistryIterateParents,
-                                     &iterator_ref);
-  if (kr != KERN_SUCCESS) {
-    LOG(ERROR) << "IORegistryEntryCreateIterator " << bsd_device_name
-               << ": kernel error " << kr;
-    return false;
-  }
-  iterator.reset(iterator_ref);
-  iterator_ref = NULL;
-
-  // Look at each of the filesystem service's ancestor services, beginning
-  // with the parent, iterating all the way up to the device tree's root.  If
-  // any ancestor service matches the class used for disk images, the
-  // filesystem resides on a disk image.
-  for (ScopedIOObject<io_service_t> ancestor_service(IOIteratorNext(iterator));
-       ancestor_service;
-       ancestor_service.reset(IOIteratorNext(iterator))) {
-    if (IOObjectConformsTo(ancestor_service, disk_image_class)) {
-      return true;
-    }
-  }
-
-  // The filesystem does not reside on a disk image.
-  return false;
+  return MediaResidesOnDiskImage(media, NULL);
 }
 
 // Returns true if the application is located on a read-only filesystem of a
-// disk image.  Returns false if not, or in the event of an error.
-bool IsAppRunningFromReadOnlyDiskImage() {
+// disk image. Returns false if not, or in the event of an error. If
+// dmg_bsd_device_name is present, it will be set to the BSD device name for
+// the disk image's device, in "diskNsM" form.
+bool IsAppRunningFromReadOnlyDiskImage(std::string* dmg_bsd_device_name) {
   return IsPathOnReadOnlyDiskImage(
-      [[[NSBundle mainBundle] bundlePath] fileSystemRepresentation]);
+      [[[NSBundle mainBundle] bundlePath] fileSystemRepresentation],
+      dmg_bsd_device_name);
 }
 
 // Shows a dialog asking the user whether or not to install from the disk
@@ -259,8 +343,10 @@ bool InstallFromDiskImage(AuthorizationRef authorization_arg,
 // Launches the application at installed_path. The helper application
 // contained within install_path will be used for the relauncher process. This
 // keeps Launch Services from ever having to see or think about the helper
-// application on the disk image.
-bool LaunchInstalledApp(NSString* installed_path) {
+// application on the disk image. The relauncher process will be asked to
+// call EjectAndTrashDiskImage on dmg_bsd_device_name.
+bool LaunchInstalledApp(NSString* installed_path,
+                        const std::string& dmg_bsd_device_name) {
   FilePath browser_path([installed_path fileSystemRepresentation]);
 
   FilePath helper_path = browser_path.Append("Contents/Versions");
@@ -271,7 +357,16 @@ bool LaunchInstalledApp(NSString* installed_path) {
       CommandLine::ForCurrentProcess()->argv();
   args[0] = browser_path.value();
 
-  return mac_relauncher::RelaunchAppWithHelper(helper_path.value(), args);
+  std::vector<std::string> relauncher_args;
+  if (!dmg_bsd_device_name.empty()) {
+    std::string dmg_arg(mac_relauncher::kRelauncherDMGDeviceArg);
+    dmg_arg.append(dmg_bsd_device_name);
+    relauncher_args.push_back(dmg_arg);
+  }
+
+  return mac_relauncher::RelaunchAppWithHelper(helper_path.value(),
+                                               relauncher_args,
+                                               args);
 }
 
 void ShowErrorDialog() {
@@ -296,7 +391,8 @@ void ShowErrorDialog() {
 bool MaybeInstallFromDiskImage() {
   base::mac::ScopedNSAutoreleasePool autorelease_pool;
 
-  if (!IsAppRunningFromReadOnlyDiskImage()) {
+  std::string dmg_bsd_device_name;
+  if (!IsAppRunningFromReadOnlyDiskImage(&dmg_bsd_device_name)) {
     return false;
   }
 
@@ -353,10 +449,217 @@ bool MaybeInstallFromDiskImage() {
                             installer_path,
                             source_path,
                             target_path) ||
-      !LaunchInstalledApp(target_path)) {
+      !LaunchInstalledApp(target_path, dmg_bsd_device_name)) {
     ShowErrorDialog();
     return false;
   }
 
   return true;
+}
+
+namespace {
+
+// A simple scoper that calls DASessionScheduleWithRunLoop when created and
+// DASessionUnscheduleFromRunLoop when destroyed.
+class ScopedDASessionScheduleWithRunLoop {
+ public:
+  ScopedDASessionScheduleWithRunLoop(DASessionRef session,
+                                     CFRunLoopRef run_loop,
+                                     CFStringRef run_loop_mode)
+      : session_(session),
+        run_loop_(run_loop),
+        run_loop_mode_(run_loop_mode) {
+    DASessionScheduleWithRunLoop(session_, run_loop_, run_loop_mode_);
+  }
+
+  ~ScopedDASessionScheduleWithRunLoop() {
+    DASessionUnscheduleFromRunLoop(session_, run_loop_, run_loop_mode_);
+  }
+
+ private:
+  DASessionRef session_;
+  CFRunLoopRef run_loop_;
+  CFStringRef run_loop_mode_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedDASessionScheduleWithRunLoop);
+};
+
+// A small structure used to ferry data between SynchronousDAOperation and
+// SynchronousDACallbackAdapter.
+struct SynchronousDACallbackData {
+ public:
+  SynchronousDACallbackData()
+      : callback_called(false),
+        run_loop_running(false) {
+  }
+
+  base::mac::ScopedCFTypeRef<DADissenterRef> dissenter;
+  bool callback_called;
+  bool run_loop_running;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SynchronousDACallbackData);
+};
+
+// The callback target for SynchronousDAOperation. Set the fields in
+// SynchronousDACallbackData properly and then stops the run loop so that
+// SynchronousDAOperation may proceed.
+void SynchronousDACallbackAdapter(DADiskRef disk,
+                                  DADissenterRef dissenter,
+                                  void* context) {
+  SynchronousDACallbackData* callback_data =
+      static_cast<SynchronousDACallbackData*>(context);
+  callback_data->callback_called = true;
+
+  if (dissenter) {
+    CFRetain(dissenter);
+    callback_data->dissenter.reset(dissenter);
+  }
+
+  // Only stop the run loop if SynchronousDAOperation started it. Don't stop
+  // anything if this callback was reached synchronously from DADiskUnmount or
+  // DADiskEject.
+  if (callback_data->run_loop_running) {
+    CFRunLoopStop(CFRunLoopGetCurrent());
+  }
+}
+
+// Performs a DiskArbitration operation synchronously. After the operation is
+// requested by SynchronousDADiskUnmount or SynchronousDADiskEject, those
+// functions will call this one to run a run loop for a period of time,
+// waiting for the callback to be called. When the callback is called, the
+// run loop will be stopped, and this function will examine the result. If
+// a dissenter prevented the operation from completing, or if the run loop
+// timed out without the callback being called, this function will return
+// false. When the callback completes successfully with no dissenters within
+// the time allotted, this function returns true. This function requires that
+// the DASession being used for the operation being performed has been added
+// to the current run loop with DASessionScheduleWithRunLoop.
+bool SynchronousDAOperation(const char* name,
+                            SynchronousDACallbackData* callback_data) {
+  // The callback may already have been called synchronously. In that case,
+  // avoid spinning the run loop at all.
+  if (!callback_data->callback_called) {
+    const CFTimeInterval kOperationTimeoutSeconds = 15;
+    AutoReset<bool> running_reset(&callback_data->run_loop_running, true);
+    CFRunLoopRunInMode(kCFRunLoopDefaultMode, kOperationTimeoutSeconds, FALSE);
+  }
+
+  if (!callback_data->callback_called) {
+    LOG(ERROR) << name << ": timed out";
+    return false;
+  } else if (callback_data->dissenter) {
+    CFStringRef status_string_cf =
+        DADissenterGetStatusString(callback_data->dissenter);
+    std::string status_string;
+    if (status_string_cf) {
+      status_string.assign(" ");
+      status_string.append(base::SysCFStringRefToUTF8(status_string_cf));
+    }
+    LOG(ERROR) << name << ": dissenter: "
+               << DADissenterGetStatus(callback_data->dissenter)
+               << status_string;
+    return false;
+  }
+
+  return true;
+}
+
+// Calls DADiskUnmount synchronously, returning the result.
+bool SynchronousDADiskUnmount(DADiskRef disk, DADiskUnmountOptions options) {
+  SynchronousDACallbackData callback_data;
+  DADiskUnmount(disk, options, SynchronousDACallbackAdapter, &callback_data);
+  return SynchronousDAOperation("DADiskUnmount", &callback_data);
+}
+
+// Calls DADiskEject synchronously, returning the result.
+bool SynchronousDADiskEject(DADiskRef disk, DADiskEjectOptions options) {
+  SynchronousDACallbackData callback_data;
+  DADiskEject(disk, options, SynchronousDACallbackAdapter, &callback_data);
+  return SynchronousDAOperation("DADiskEject", &callback_data);
+}
+
+}  // namespace
+
+void EjectAndTrashDiskImage(const std::string& dmg_bsd_device_name) {
+  base::mac::ScopedCFTypeRef<DASessionRef> session(DASessionCreate(NULL));
+  if (!session.get()) {
+    LOG(ERROR) << "DASessionCreate";
+    return;
+  }
+
+  base::mac::ScopedCFTypeRef<DADiskRef> disk(
+      DADiskCreateFromBSDName(NULL, session, dmg_bsd_device_name.c_str()));
+  if (!disk.get()) {
+    LOG(ERROR) << "DADiskCreateFromBSDName";
+    return;
+  }
+
+  // dmg_bsd_device_name may only refer to part of the disk: it may be a
+  // single filesystem on a larger disk. Use the "whole disk" object to
+  // be able to unmount all mounted filesystems from the disk image, and eject
+  // the image. This is harmless if dmg_bsd_device_name already referred to a
+  // "whole disk."
+  disk.reset(DADiskCopyWholeDisk(disk));
+  if (!disk.get()) {
+    LOG(ERROR) << "DADiskCopyWholeDisk";
+    return;
+  }
+
+  ScopedIOObject<io_service_t> media(DADiskCopyIOMedia(disk));
+  if (!media.get()) {
+    LOG(ERROR) << "DADiskCopyIOMedia";
+    return;
+  }
+
+  // Make sure the device is a disk image, and get the path to its disk image
+  // file.
+  std::string disk_image_path;
+  if (!MediaResidesOnDiskImage(media, &disk_image_path)) {
+    LOG(ERROR) << "MediaResidesOnDiskImage";
+    return;
+  }
+
+  // SynchronousDADiskUnmount and SynchronousDADiskEject require that the
+  // session be scheduled with the current run loop.
+  ScopedDASessionScheduleWithRunLoop session_run_loop(session,
+                                                      CFRunLoopGetCurrent(),
+                                                      kCFRunLoopCommonModes);
+
+  if (!SynchronousDADiskUnmount(disk, kDADiskUnmountOptionWhole)) {
+    LOG(ERROR) << "SynchronousDADiskUnmount";
+    return;
+  }
+
+  if (!SynchronousDADiskEject(disk, kDADiskEjectOptionDefault)) {
+    LOG(ERROR) << "SynchronousDADiskEject";
+    return;
+  }
+
+  char* disk_image_path_in_trash_c;
+  OSStatus status = FSPathMoveObjectToTrashSync(disk_image_path.c_str(),
+                                                &disk_image_path_in_trash_c,
+                                                kFSFileOperationDefaultOptions);
+  if (status != noErr) {
+    LOG(ERROR) << "FSPathMoveObjectToTrashSync: " << status;
+    return;
+  }
+
+  // FSPathMoveObjectToTrashSync alone doesn't result in the Trash icon in the
+  // Dock indicating that any garbage has been placed within it. Using the
+  // trash path that FSPathMoveObjectToTrashSync claims to have used, call
+  // FNNotifyByPath to fatten up the icon.
+  FilePath disk_image_path_in_trash(disk_image_path_in_trash_c);
+  free(disk_image_path_in_trash_c);
+
+  FilePath trash_path = disk_image_path_in_trash.DirName();
+  const UInt8* trash_path_u8 = reinterpret_cast<const UInt8*>(
+      trash_path.value().c_str());
+  status = FNNotifyByPath(trash_path_u8,
+                          kFNDirectoryModifiedMessage,
+                          kNilOptions);
+  if (status != noErr) {
+    LOG(ERROR) << "FNNotifyByPath: " << status;
+    return;
+  }
 }
