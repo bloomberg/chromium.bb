@@ -9,7 +9,6 @@
 #endif  // defined(OS_WIN)
 
 #include <algorithm>
-#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -50,12 +49,6 @@
 #endif  // defined(OS_WIN)
 
 namespace {
-// The pixel width of the version text field. Ideally, we'd like to have the
-// bounds set to the edge of the icon. However, the icon is not a view but a
-// part of the background, so we have to hard code the width to make sure
-// the version field doesn't overlap it.
-const int kVersionFieldWidth = 195;
-
 // These are used as placeholder text around the links in the text in the about
 // dialog.
 const wchar_t* kBeginLink = L"BEGIN_LINK";
@@ -152,16 +145,16 @@ void AboutChromeView::Init() {
   std::string version_modifier =
       chrome::VersionInfo::GetVersionStringModifier();
   if (!version_modifier.empty())
-    version_details_ += " " + version_modifier;
+    version_details_ += ASCIIToUTF16(" ") + ASCIIToUTF16(version_modifier);
 
 #if !defined(GOOGLE_CHROME_BUILD)
-  version_details_ += " (";
-  version_details_ += l10n_util::GetStringUTF8(
+  version_details_ += ASCIIToUTF16(" (");
+  version_details_ += l10n_util::GetStringUTF16(
       version_info.IsOfficialBuild() ?
       IDS_ABOUT_VERSION_OFFICIAL : IDS_ABOUT_VERSION_UNOFFICIAL);
-  version_details_ += " ";
-  version_details_ += version_info.LastChange();
-  version_details_ += ")";
+  version_details_ += ASCIIToUTF16(" ");
+  version_details_ += ASCIIToUTF16(version_info.LastChange());
+  version_details_ += ASCIIToUTF16(")");
 #endif
 
   // Views we will add to the *parent* of this dialog, since it will display
@@ -206,7 +199,7 @@ void AboutChromeView::Init() {
 
   // This is a text field so people can copy the version number from the dialog.
   version_label_ = new views::Textfield();
-  version_label_->SetText(ASCIIToUTF16(current_version_ + version_details_));
+  version_label_->SetText(ASCIIToUTF16(current_version_) + version_details_);
   version_label_->SetReadOnly(true);
   version_label_->RemoveBorder();
   version_label_->SetTextColor(SK_ColorBLACK);
@@ -349,7 +342,8 @@ void AboutChromeView::Layout() {
                             about_title_label_->y() +
                                 about_title_label_->height() +
                                 views::kRelatedControlVerticalSpacing,
-                            kVersionFieldWidth,
+                            panel_size.width() -
+                                about_dlg_background_logo_->width(),
                             sz.height());
 
   // Then we have the version number right below it.
@@ -359,7 +353,8 @@ void AboutChromeView::Layout() {
       version_label_->y() +
           version_label_->height() +
           views::kRelatedControlVerticalSpacing,
-      kVersionFieldWidth,
+      panel_size.width() -
+          about_dlg_background_logo_->width(),
       sz.height());
 
   // For the width of the main text label we want to use up the whole panel
@@ -418,7 +413,6 @@ void AboutChromeView::Layout() {
                           parent_bounds.width() - update_label_x,
                           sz.height());
 }
-
 
 void AboutChromeView::OnPaint(gfx::Canvas* canvas) {
   views::View::OnPaint(canvas);
