@@ -11,7 +11,7 @@ Import('env')
 # we want to keep building the tests.
 # TODO(mseaborn): To fix this, either switch these tests to
 # dynamically link against libc, or make use of ld.so optional.
-is_broken = env.Bit('nacl_glibc')
+is_glibc = env.Bit('nacl_glibc')
 
 LINK_FLAGS_MULTILIB = ['-nostdlib']
 
@@ -37,6 +37,8 @@ if env.Bit('build_arm'):
 FAKE_STARTUP = env.ComponentObject('fake_startup', 'fake_startup.c')
 
 barebones_tests = ['addr_modes',
+                   'stack_alignment8',
+                   'stack_alignment16',
                    'exit',
                    'fib',
                    'hello_world',
@@ -50,12 +52,21 @@ barebones_tests = ['addr_modes',
                    ]
 
 for basename in barebones_tests:
-
-  # c.f. http://code.google.com/p/nativeclient/issues/detail?id=783
-  if env.Bit('build_arm') and basename == 'vaarg': continue
-
   # TODO(kcc): the barebones tests confuse the current nacl-ified valgrind.
   if env.IsRunningUnderValgrind(): continue
+  # NOTE: the expected alignments are described via NACL_STACK_ALIGN_MASK in
+  # src/trusted/service_runtime/nacl_config.h
+  # For x86-32 and x86-64 we currently rely on startup code (crt1_*)
+  # to fix the stack alignment which does not help for barebones tests, c.f.
+  # http://code.google.com/p/nativeclient/issues/detail?id=651
+  if basename == 'stack_alignment16' and not env.Bit('build_x86'):
+    continue
+  if basename == 'stack_alignment8' and not env.Bit('build_arm'):
+    continue
+  is_broken = is_glibc
+  # TODO(robertm): enable this when ready (see above)
+  if basename == 'stack_alignment16' and env.Bit('build_x86'):
+    is_broken = True
 
   src = 'barebones_' + basename + '.c'
   nexe_name = 'barebones_' + basename
@@ -87,4 +98,4 @@ if env.Bit('build_arm') and not env.Bit('bitcode'):
   env.AddNodeToTestSuite(node,
                          ['small_tests', 'sel_ldr_tests'],
                          'run_gold-barebones_hello_world_test',
-                         is_broken=is_broken)
+                         is_broken=is_glibc)
