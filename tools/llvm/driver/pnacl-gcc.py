@@ -155,7 +155,7 @@ EXTRA_ENV = {
     '-T ${LIBS_ARCH}/${EMUL}.x ' +
     '--eh-frame-hdr ${@FindObj:crt1.o} ${@FindObj:crti.o} ' +
     '${@FindObj:crtbegin.o} ${ld_inputs} ${LIBSTDCPP} ' +
-    '-lgcc -lgcc_eh -lc -lgcc -lgcc_eh -Bstatic -lehsupport -Bdynamic ' +
+    '-lgcc -lgcc_eh -lc -lgcc -lgcc_eh -lehsupport ' +
     # When shared libgcc is ready, use this instead:
     # '-lgcc --as-needed -lgcc_s --no-as-needed ' +
     # '-lc -lgcc --as-needed -lgcc_s --no-as-needed ' +
@@ -222,6 +222,8 @@ GCCPatterns = [
   ( '(-l.+)',             "env.append('INPUTS', $0)"),
   ( ('-Xlinker','(.*)'),  "env.append('INPUTS', '-Xlinker=' + $0)"),
   ( '(-Wl,.*)',           "env.append('INPUTS', $0)"),
+  ( '(-Bstatic)',         "env.append('INPUTS', $0)"),
+  ( '(-Bdynamic)',        "env.append('INPUTS', $0)"),
 
   ( '-O([0-4s])',         "env.set('OPT_LEVEL', $0)\n"),
   ( '-O',                 "env.set('OPT_LEVEL', 1)\n"),
@@ -246,8 +248,6 @@ GCCPatterns = [
 
   ( ('-L','(.+)'),            "env.append('SEARCH_DIRS_USER', $0)"),
   ( '-L(.+)',                 "env.append('SEARCH_DIRS_USER', $0)"),
-  ( '(-Bstatic)',             AddLDFlag),
-  ( '(-Bdynamic)',            AddLDFlag),
 
   ( '(-Wp,.*)',               AddCCFlag),
   ( '(-MMD)',                 AddCCFlag),

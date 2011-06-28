@@ -390,7 +390,7 @@ def AnalyzeInputs(inputs):
         arch = new_arch
       else:
         if intype == 'o':
-          Log.Fatal("%s: Cannot read object file ELF header")
+          Log.Fatal("%s: Cannot read object file ELF header", f)
         elif intype == 'so':
           # This .so must be a linker script, so we can't easily see
           # what architecture it links.
