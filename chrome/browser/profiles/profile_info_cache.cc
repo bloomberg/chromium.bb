@@ -51,6 +51,12 @@ bool IsDefaultAvatarIconUrl(const std::string& url, size_t* icon_index) {
   return false;
 }
 
+// Returns a URL for the default avatar icon with specified index.
+std::string GetDefaultAvatarIconUrl(int icon_index) {
+  DCHECK_LT(icon_index, kDefaultAvatarIconsCount);
+  return StringPrintf("%s%d", kDefaultUrlPrefix, icon_index);
+}
+
 } // namespace
 
 ProfileInfoCache::ProfileInfoCache(PrefService* prefs,
@@ -102,18 +108,6 @@ size_t ProfileInfoCache::GetNumberOfProfiles() const {
   return sorted_keys_.size();
 }
 
-size_t ProfileInfoCache::GetIndexOfProfileWithPath(
-    const FilePath& profile_path) const {
-  if (profile_path.DirName() != user_data_dir_)
-    return std::string::npos;
-  std::string search_key = profile_path.BaseName().MaybeAsASCII();
-  for (size_t i = 0; i < sorted_keys_.size(); ++i) {
-    if (sorted_keys_[i] == search_key)
-      return i;
-  }
-  return std::string::npos;
-}
-
 string16 ProfileInfoCache::GetNameOfProfileAtIndex(size_t index) const {
   string16 name;
   GetInfoForProfileAtIndex(index)->GetString(kNameKey, &name);
@@ -132,21 +126,17 @@ FilePath ProfileInfoCache::GetPathOfProfileAtIndex(size_t index) const {
 
 const gfx::Image& ProfileInfoCache::GetAvatarIconOfProfileAtIndex(
     size_t index) const {
-  int resource_id = GetDefaultAvatarIconResourceIDAtIndex(
-      GetAvatarIconIndexOfProfileAtIndex(index));
-  return ResourceBundle::GetSharedInstance().GetImageNamed(resource_id);
-}
-
-size_t ProfileInfoCache::GetAvatarIconIndexOfProfileAtIndex(size_t index)
-    const {
   std::string icon_url;
   GetInfoForProfileAtIndex(index)->GetString(kAvatarIconKey, &icon_url);
   size_t icon_index = 0;
-  if (IsDefaultAvatarIconUrl(icon_url, &icon_index))
-    return icon_index;
+  if (IsDefaultAvatarIconUrl(icon_url, &icon_index)) {
+    int resource_id = GetDefaultAvatarIconResourceIDAtIndex(icon_index);
+    return ResourceBundle::GetSharedInstance().GetImageNamed(resource_id);
+  }
 
   DLOG(WARNING) << "Unknown avatar icon: " << icon_url;
-  return GetDefaultAvatarIconResourceIDAtIndex(0);
+  return ResourceBundle::GetSharedInstance().GetImageNamed(
+      GetDefaultAvatarIconResourceIDAtIndex(0));
 }
 
 void ProfileInfoCache::SetNameOfProfileAtIndex(size_t index,
@@ -172,12 +162,6 @@ size_t ProfileInfoCache::GetDefaultAvatarIconCount() {
 int ProfileInfoCache::GetDefaultAvatarIconResourceIDAtIndex(size_t index) {
   DCHECK_LT(index, GetDefaultAvatarIconCount());
   return kDefaultAvatarIconResources[index];
-}
-
-std::string ProfileInfoCache::GetDefaultAvatarIconUrl(size_t index) {
-  int icon_index = index;
-  DCHECK_LT(icon_index, kDefaultAvatarIconsCount);
-  return StringPrintf("%s%d", kDefaultUrlPrefix, icon_index);
 }
 
 const DictionaryValue* ProfileInfoCache::GetInfoForProfileAtIndex(

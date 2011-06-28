@@ -16,7 +16,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -504,14 +503,4 @@ ProfileManager::GetSortedProfilesFromDirectoryMap() {
 
   std::sort(profiles.begin(), profiles.end(), CompareProfilePathAndName);
   return profiles;
-}
-
-ProfileInfoCache& ProfileManager::GetProfileInfoCache() {
-  if (!profile_info_cache_.get()) {
-    FilePath user_data_dir;
-    PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-    profile_info_cache_.reset(new ProfileInfoCache(
-        g_browser_process->local_state(), user_data_dir));
-  }
-  return *profile_info_cache_.get();
 }
