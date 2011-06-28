@@ -234,3 +234,6 @@ PPAPITest.Var
 
 # http://crbug.com/87766
 PPAPITest.URLLoader
+
+# http://crbug.com/87769
+BalloonControllerTest.ShowAndCloseTest
