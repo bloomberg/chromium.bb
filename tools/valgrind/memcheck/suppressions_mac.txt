@@ -518,37 +518,6 @@
    fun:-[NSView _recursiveDisplayAllDirtyWithLockFocus:visRect:]
 }
 {
-   bug_36605
-   Memcheck:Leak
-   fun:malloc
-   fun:realloc
-   fun:new_sem_from_pool
-   fun:_pthread_cond_wait
-   fun:pthread_cond_wait$UNIX2003
-   fun:_ZN4base17ConditionVariable4WaitEv
-   fun:_ZN4base13WaitableEvent9TimedWaitERKNS_9TimeDeltaE
-   fun:_ZN4base13WaitableEvent4WaitEv
-   fun:_ZN4base6Thread16StartWithOptionsERKNS0_7OptionsE
-   fun:_ZN4base6Thread5StartEv
-   fun:_ZN14HistoryService4InitERK8FilePathP15BookmarkServiceb
-   fun:_ZN14TestingProfile20CreateHistoryServiceEbb
-}
-{
-   bug_36605b
-   Memcheck:Leak
-   fun:malloc
-   fun:realloc
-   fun:new_sem_from_pool
-   fun:_pthread_cond_wait
-   fun:pthread_cond_timedwait$UNIX2003
-   fun:_ZN4base17ConditionVariable9TimedWaitERKNS_9TimeDeltaE
-   fun:_ZN4base22PosixDynamicThreadPool11WaitForTaskEv
-   fun:_ZN4base12_GLOBAL__N_112WorkerThread10ThreadMainEv
-   fun:_ZN4base12_GLOBAL__N_110ThreadFuncEPv
-   fun:_pthread_start
-   fun:thread_start
-}
-{
    bug_40429
    Memcheck:Leak
    fun:calloc
@@ -1687,21 +1656,6 @@
    fun:_NSDrawThemeBackground
 }
 {
-   bug_82679
-   Memcheck:Leak
-   fun:malloc
-   fun:realloc
-   fun:new_sem_from_pool
-   fun:_pthread_cond_wait
-   fun:pthread_cond_wait$UNIX2003
-   fun:_ZN4base17ConditionVariable4WaitEv
-   fun:_ZN4base13WaitableEvent9TimedWaitERKNS_9TimeDeltaE
-   fun:_ZN4base13WaitableEvent4WaitEv
-   fun:_ZN4base6Thread16StartWithOptionsERKNS0_7OptionsE
-   fun:_ZN4base6Thread5StartEv
-   fun:_ZN4base5debug47TraceEventTestFixture_DataCapturedOnThread_Test8TestBodyEv
-}
-{
    bug_82682
    Memcheck:Leak
    ...
@@ -1766,5 +1720,12 @@
    fun:_ZN11BrowserInit13LaunchBrowserERK11CommandLineP7ProfileRK8FilePathbPi
    fun:_ZN11BrowserInit18ProcessCmdLineImplERK11CommandLineRK8FilePathbP7ProfilePiPS_
    fun:_ZN11BrowserInit5StartERK11CommandLineRK8FilePathP7ProfilePi
+}
+{
+   bug_87629
+   Memcheck:Leak
+   fun:malloc
+   fun:realloc
+   fun:new_sem_from_pool
 }
 
