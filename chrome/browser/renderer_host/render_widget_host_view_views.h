@@ -120,6 +120,8 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   virtual bool OnKeyReleased(const views::KeyEvent& event) OVERRIDE;
   virtual bool OnMouseWheel(const views::MouseWheelEvent& event) OVERRIDE;
   virtual views::TextInputClient* GetTextInputClient() OVERRIDE;
+  virtual bool GetTooltipText(const gfx::Point& p, std::wstring* tooltip)
+      OVERRIDE;
 
   // Overridden from TextInputClient:
   virtual void SetCompositionText(
@@ -234,6 +236,8 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
 
   // Indicates if there is onging composition text.
   bool has_composition_text_;
+
+  string16 tooltip_text_;
 
 #if defined(TOUCH_UI)
   std::map<uint64, scoped_refptr<AcceleratedSurfaceContainerTouch> >

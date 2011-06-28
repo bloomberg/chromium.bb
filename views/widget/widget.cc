@@ -16,6 +16,7 @@
 #include "views/widget/default_theme_provider.h"
 #include "views/widget/root_view.h"
 #include "views/widget/native_widget_private.h"
+#include "views/widget/tooltip_manager.h"
 #include "views/widget/widget_delegate.h"
 #include "views/window/custom_frame_view.h"
 
@@ -670,6 +671,12 @@ NativeWidget* Widget::native_widget() {
 
 const Event* Widget::GetCurrentEvent() {
   return event_stack_.empty() ? NULL : event_stack_.top()->event();
+}
+
+void Widget::TooltipTextChanged(View* view) {
+  TooltipManager* manager = native_widget_private()->GetTooltipManager();
+  if (manager)
+    manager->TooltipTextChanged(view);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

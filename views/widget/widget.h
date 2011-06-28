@@ -499,6 +499,9 @@ class Widget : public internal::NativeWidgetDelegate,
   // processed.
   const Event* GetCurrentEvent();
 
+  // Invoked when the tooltip text changes for the specified views.
+  void TooltipTextChanged(View* view);
+
   // Overridden from NativeWidgetDelegate:
   virtual bool IsModal() const OVERRIDE;
   virtual bool IsDialogBox() const OVERRIDE;

@@ -14,6 +14,7 @@
 #include "base/string_number_conversions.h"
 #include "base/task.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/renderer_host/backing_store_skia.h"
 #include "content/browser/renderer_host/render_widget_host.h"
@@ -27,6 +28,7 @@
 #include "ui/gfx/canvas_skia.h"
 #include "views/events/event.h"
 #include "views/ime/input_method.h"
+#include "views/widget/tooltip_manager.h"
 #include "views/widget/widget.h"
 
 #if defined(TOUCH_UI)
@@ -293,9 +295,13 @@ void RenderWidgetHostViewViews::Destroy() {
 }
 
 void RenderWidgetHostViewViews::SetTooltipText(const std::wstring& tip) {
-  // TODO(anicolao): decide if we want tooltips for touch (none specified
-  // right now/might want a press-and-hold display)
-  // NOTIMPLEMENTED(); ... too annoying, it triggers for every mousemove
+  const int kMaxTooltipLength = 8 << 10;
+  // Clamp the tooltip length to kMaxTooltipLength so that we don't
+  // accidentally DOS the user with a mega tooltip.
+  tooltip_text_ =
+      l10n_util::TruncateString(WideToUTF16Hack(tip), kMaxTooltipLength);
+  if (GetWidget())
+    GetWidget()->TooltipTextChanged(this);
 }
 
 void RenderWidgetHostViewViews::SelectionChanged(const std::string& text,
@@ -435,6 +441,14 @@ bool RenderWidgetHostViewViews::OnMouseWheel(
 
 views::TextInputClient* RenderWidgetHostViewViews::GetTextInputClient() {
   return this;
+}
+
+bool RenderWidgetHostViewViews::GetTooltipText(const gfx::Point& p,
+                                               std::wstring* tooltip) {
+  if (tooltip_text_.length() == 0)
+    return false;
+  *tooltip = UTF16ToWide(tooltip_text_);
+  return true;
 }
 
 // TextInputClient implementation ---------------------------------------------
