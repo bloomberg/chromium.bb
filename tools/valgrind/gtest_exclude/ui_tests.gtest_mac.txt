@@ -227,18 +227,5 @@ NPAPIAutomationEnabledTest.LoadAllBlockedPlugins
 AutomatedUITestBase.RestoreTab
 AutomationProxyTest4.BooleanValueIsEchoedByDomAutomationController 
 
-# http://crbug.com/87237
-RedirectTest.ClientFragments
-SecurityTest.DisallowFileUrlUniversalAccessTest
-AutomationProxyTest.Cookies
-AutomatedUITestBase.OpenNewTab
-PPAPITest.ImageData
-OutOfProcessPPAPITest.Buffer
-WorkerFileSystemTest.FileWriterTruncateExtend
-AutomationProxyTest.GetBrowserWindowCount
-AutomationProxySnapshotTest.LargeSnapshot
-PPAPITest.VarDeprecated
-WorkerFileSystemTest.FileFromFileEntrySync
-
 # http://crbug.com/87625
 PPAPITest.Var
