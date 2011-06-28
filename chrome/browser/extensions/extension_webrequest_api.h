@@ -120,7 +120,7 @@ class ExtensionWebRequestEventRouter {
   // otherwise.
   int OnBeforeSendHeaders(ProfileId profile_id,
                           ExtensionInfoMap* extension_info_map,
-                          uint64 request_id,
+                          net::URLRequest* request,
                           net::CompletionCallback* callback,
                           net::HttpRequestHeaders* headers);
 

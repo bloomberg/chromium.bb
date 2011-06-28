@@ -378,18 +378,12 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
 int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
     ProfileId profile_id,
     ExtensionInfoMap* extension_info_map,
-    uint64 request_id,
+    net::URLRequest* request,
     net::CompletionCallback* callback,
     net::HttpRequestHeaders* headers) {
   // TODO(jochen): Figure out what to do with events from the system context.
   if (profile_id == Profile::kInvalidProfileId)
     return net::OK;
-
-  HttpRequestMap::iterator iter = http_requests_.find(request_id);
-  if (iter == http_requests_.end())
-    return net::OK;
-
-  net::URLRequest* request = iter->second;
 
   if (GetAndSetSignaled(request->identifier(), kOnBeforeSendHeaders))
     return net::OK;
@@ -940,10 +934,14 @@ void ExtensionWebRequestEventRouter::DecrementBlockCount(
       int rv = (blocked_request.chosen_response.get() &&
                 blocked_request.chosen_response->cancel) ?
                     net::ERR_EMPTY_RESPONSE : net::OK;
-      blocked_request.callback->Run(rv);
+      net::CompletionCallback* callback = blocked_request.callback;
+      // Ensure that request is removed before callback because the callback
+      // might trigger the next event.
+      blocked_requests_.erase(request_id);
+      callback->Run(rv);
+    } else {
+      blocked_requests_.erase(request_id);
     }
-
-    blocked_requests_.erase(request_id);
   }
 }
 

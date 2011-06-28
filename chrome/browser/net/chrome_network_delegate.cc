@@ -75,11 +75,11 @@ int ChromeNetworkDelegate::OnBeforeURLRequest(
 }
 
 int ChromeNetworkDelegate::OnBeforeSendHeaders(
-    uint64 request_id,
+    net::URLRequest* request,
     net::CompletionCallback* callback,
     net::HttpRequestHeaders* headers) {
   return ExtensionWebRequestEventRouter::GetInstance()->OnBeforeSendHeaders(
-      profile_id_, extension_info_map_.get(), request_id, callback, headers);
+      profile_id_, extension_info_map_.get(), request, callback, headers);
 }
 
 void ChromeNetworkDelegate::OnRequestSent(
