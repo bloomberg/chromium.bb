@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/rand_util.h"
 #include "net/base/dns_query.h"
+
+#include "base/bind.h"
+#include "base/rand_util.h"
 #include "net/base/dns_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -45,8 +47,9 @@ namespace net {
 
 TEST(DnsQueryTest, ConstructorTest) {
   std::string kHostnameDns("\003www\006google\003com", 16);
+  RandIntCallback rand_int_cb = base::Bind(&base::RandInt);
 
-  DnsQuery q1(kHostnameDns, kDNS_A, base::RandUint64);
+  DnsQuery q1(kHostnameDns, kDNS_A, rand_int_cb);
   EXPECT_EQ(kDNS_A, q1.qtype());
 
   uint8 id_hi = q1.id() >> 8, id_lo = q1.id() & 0xff;
@@ -78,8 +81,9 @@ TEST(DnsQueryTest, ConstructorTest) {
 
 TEST(DnsQueryTest, CloneTest) {
   std::string kHostnameDns("\003www\006google\003com", 16);
+  RandIntCallback rand_int_cb = base::Bind(&base::RandInt);
 
-  DnsQuery q1(kHostnameDns, kDNS_A, base::RandUint64);
+  DnsQuery q1(kHostnameDns, kDNS_A, rand_int_cb);
   scoped_ptr<DnsQuery> q2(q1.CloneWithNewId());
   EXPECT_EQ(q1.io_buffer()->size(), q2->io_buffer()->size());
   EXPECT_EQ(q1.qtype(), q2->qtype());
@@ -90,13 +94,14 @@ TEST(DnsQueryTest, CloneTest) {
 
 TEST(DnsQueryTest, RandomIdTest) {
   std::string kHostnameDns("\003www\006google\003com", 16);
+  RandIntCallback rand_int_cb = base::Bind(&base::RandInt);
 
   // Since id fields are 16-bit values, we iterate to reduce the
   // probability of collision, to avoid a flaky test.
   bool ids_are_random = false;
   for (int i = 0; i < 1000; ++i) {
-    DnsQuery q1(kHostnameDns, kDNS_A, base::RandUint64);
-    DnsQuery q2(kHostnameDns, kDNS_A, base::RandUint64);
+    DnsQuery q1(kHostnameDns, kDNS_A, rand_int_cb);
+    DnsQuery q2(kHostnameDns, kDNS_A, rand_int_cb);
     scoped_ptr<DnsQuery> q3(q1.CloneWithNewId());
     ids_are_random = q1.id () != q2.id() && q1.id() != q3->id();
     if (ids_are_random)

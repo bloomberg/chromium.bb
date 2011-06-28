@@ -4,6 +4,7 @@
 
 #include "net/base/dns_query.h"
 
+#include <limits>
 #include <string>
 
 #include "base/rand_util.h"
@@ -35,9 +36,11 @@ static const char kHeader[] = {0x00, 0x00, 0x01, 0x00, 0x00, 0x01,
                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 static const size_t kHeaderSize = arraysize(kHeader);
 
-DnsQuery::DnsQuery(const std::string& dns_name, uint16 qtype, uint64 (*prng)())
+DnsQuery::DnsQuery(const std::string& dns_name,
+                   uint16 qtype,
+                   const RandIntCallback& rand_int)
     : dns_name_size_(dns_name.size()),
-      prng_(prng) {
+      rand_int_(rand_int) {
   DCHECK(DnsResponseBuffer(reinterpret_cast<const uint8*>(dns_name.c_str()),
                            dns_name.size()).DNSName(NULL));
   DCHECK(qtype == kDNS_A || qtype == kDNS_AAAA);
@@ -58,7 +61,7 @@ DnsQuery::DnsQuery(const std::string& dns_name, uint16 qtype, uint64 (*prng)())
 
 DnsQuery::DnsQuery(const DnsQuery& rhs)
     : dns_name_size_(rhs.dns_name_size_),
-      prng_(rhs.prng_) {
+      rand_int_(rhs.rand_int_) {
   io_buffer_ = new IOBufferWithSize(rhs.io_buffer()->size());
   memcpy(io_buffer_->data(), rhs.io_buffer()->data(), rhs.io_buffer()->size());
   RandomizeId();
@@ -90,7 +93,9 @@ const char* DnsQuery::question_data() const {
 }
 
 void DnsQuery::RandomizeId() {
-  PackUint16BE(&io_buffer_->data()[0], (*prng_)() & 0xffff);
+  PackUint16BE(&io_buffer_->data()[0], rand_int_.Run(
+      std::numeric_limits<uint16>::min(),
+      std::numeric_limits<uint16>::max()));
 }
 
 }  // namespace net

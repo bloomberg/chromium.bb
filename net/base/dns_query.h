@@ -11,8 +11,9 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_api.h"
 #include "net/base/net_util.h"
+#include "net/base/rand_callback.h"
 
-namespace net{
+namespace net {
 
 // Represents on-the-wire DNS query message as an object.
 class NET_TEST DnsQuery {
@@ -23,7 +24,9 @@ class NET_TEST DnsQuery {
   // Every generated object has a random ID, hence two objects generated
   // with the same set of constructor arguments are generally not equal;
   // there is a 1/2^16 chance of them being equal due to size of |id_|.
-  DnsQuery(const std::string& dns_name, uint16 qtype, uint64 (*prng)());
+  DnsQuery(const std::string& dns_name,
+           uint16 qtype,
+           const RandIntCallback& rand_int);
   ~DnsQuery();
 
   // Clones |this| verbatim with ID field of the header regenerated.
@@ -64,7 +67,7 @@ class NET_TEST DnsQuery {
   scoped_refptr<IOBufferWithSize> io_buffer_;
 
   // PRNG function for generating IDs.
-  uint64 (*prng_)();
+  RandIntCallback rand_int_;
 };
 
 }  // namespace net
