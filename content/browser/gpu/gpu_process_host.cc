@@ -24,6 +24,7 @@
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_switches.h"
 #include "ui/gfx/gl/gl_context.h"
+#include "ui/gfx/gl/gl_implementation.h"
 #include "ui/gfx/gl/gl_switches.h"
 
 #if defined(TOOLKIT_USES_GTK)
@@ -267,6 +268,15 @@ GpuProcessHost::~GpuProcessHost() {
 bool GpuProcessHost::Init() {
   if (!CreateChannel())
     return false;
+
+#if defined(TOUCH_UI)
+  if (CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      switches::kUseGL) != gfx::kGLImplementationEGLName) {
+    LOG(ERROR) << "GPU process needs EGL_KHR_image_pixmap extension. "
+               << "Try --use-gl=egl on the command line.";
+    return false;
+  }
+#endif
 
   if (in_process_) {
     CommandLine::ForCurrentProcess()->AppendSwitch(
