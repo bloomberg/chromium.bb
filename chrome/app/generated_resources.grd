@@ -10762,8 +10762,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_USER_CERT_NONE_INSTALLED" desc="In settings Internet options, when creating a VPN or enterprise Wi-Fi connection, combobox item to display when no user certificates are installed.">
         None installed
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_LOADING" desc="In settings Internet options, when creating a VPN or enterprise Wi-Fi connection, combobox item to display when certificates are loading.">
+        Loading...
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PLEASE_INSTALL_USER_CERT" desc="In settings Internet options, when creating a VPN or enterprise Wi-Fi connection, error message to display when no user certificates are installed.">
         Please install a user certificate.
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_LOGIN_FOR_USER_CERT" desc="In settings Internet options, when creating a VPN or enterprise Wi-Fi connection, error message to display when not logged in and  user certificates are required.">
+        Login required for user certificate.
       </message>
       <message name="IDS_NETWORK_RECONNECT_TITLE" desc="In network menu, title of the reconnect button that allows user to retry connection on error.">
         Reconnect

@@ -7,8 +7,8 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/chromeos/options/wifi_config_model.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -179,15 +179,21 @@ class ComboboxWithWidth : public views::Combobox {
 
 class ServerCACertComboboxModel : public ui::ComboboxModel {
  public:
-  explicit ServerCACertComboboxModel(WifiConfigModel* wifi_config_model)
-      : wifi_config_model_(wifi_config_model) {
+  explicit ServerCACertComboboxModel(CertLibrary* cert_library)
+      : cert_library_(cert_library) {
+    DCHECK(cert_library);
   }
   virtual ~ServerCACertComboboxModel() {}
   virtual int GetItemCount() {
+    if (!cert_library_->CertificatesLoaded())
+      return 1;  // "Loading"
     // First "Default", then the certs, then "Do not check".
-    return wifi_config_model_->GetServerCaCertCount() + 2;
+    return cert_library_->GetCACertificates().Size() + 2;
   }
   virtual string16 GetItemAt(int combo_index) {
+    if (!cert_library_->CertificatesLoaded())
+      return l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_LOADING);
     if (combo_index == 0)
       return l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_SERVER_CA_DEFAULT);
@@ -195,46 +201,53 @@ class ServerCACertComboboxModel : public ui::ComboboxModel {
       return l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_SERVER_CA_DO_NOT_CHECK);
     int cert_index = combo_index - 1;
-    return wifi_config_model_->GetServerCaCertName(cert_index);
+    return cert_library_->GetCACertificates().GetDisplayStringAt(cert_index);
   }
  private:
-  WifiConfigModel* wifi_config_model_;
+  CertLibrary* cert_library_;
   DISALLOW_COPY_AND_ASSIGN(ServerCACertComboboxModel);
 };
 
-class ClientCertComboboxModel : public ui::ComboboxModel {
+class UserCertComboboxModel : public ui::ComboboxModel {
  public:
-  explicit ClientCertComboboxModel(WifiConfigModel* wifi_config_model)
-      : wifi_config_model_(wifi_config_model) {
+  explicit UserCertComboboxModel(CertLibrary* cert_library)
+      : cert_library_(cert_library) {
+    DCHECK(cert_library);
   }
-  virtual ~ClientCertComboboxModel() {}
+  virtual ~UserCertComboboxModel() {}
   virtual int GetItemCount() {
-    if (wifi_config_model_->GetUserCertCount() == 0)
-      return 1;  // "None installed" item.
-    return wifi_config_model_->GetUserCertCount();
+    if (!cert_library_->CertificatesLoaded())
+      return 1;  // "Loading"
+    int num_certs = cert_library_->GetUserCertificates().Size();
+    if (num_certs == 0)
+      return 1;  // "None installed"
+    return num_certs;
   }
   virtual string16 GetItemAt(int combo_index) {
-    if (wifi_config_model_->GetUserCertCount() == 0)
+    if (!cert_library_->CertificatesLoaded())
+      return l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_LOADING);
+    if (cert_library_->GetUserCertificates().Size() == 0)
       return l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_USER_CERT_NONE_INSTALLED);
-    return wifi_config_model_->GetUserCertName(combo_index);
+    return cert_library_->GetUserCertificates().GetDisplayStringAt(combo_index);
   }
  private:
-  WifiConfigModel* wifi_config_model_;
-  DISALLOW_COPY_AND_ASSIGN(ClientCertComboboxModel);
+  CertLibrary* cert_library_;
+  DISALLOW_COPY_AND_ASSIGN(UserCertComboboxModel);
 };
 
 }  // namespace
 
 WifiConfigView::WifiConfigView(NetworkConfigView* parent, WifiNetwork* wifi)
     : ChildNetworkConfigView(parent, wifi),
-      wifi_config_model_(new WifiConfigModel()),
+      cert_library_(NULL),
       ssid_textfield_(NULL),
       eap_method_combobox_(NULL),
       phase_2_auth_label_(NULL),
       phase_2_auth_combobox_(NULL),
-      client_cert_label_(NULL),
-      client_cert_combobox_(NULL),
+      user_cert_label_(NULL),
+      user_cert_combobox_(NULL),
       server_ca_cert_label_(NULL),
       server_ca_cert_combobox_(NULL),
       identity_label_(NULL),
@@ -252,13 +265,13 @@ WifiConfigView::WifiConfigView(NetworkConfigView* parent, WifiNetwork* wifi)
 
 WifiConfigView::WifiConfigView(NetworkConfigView* parent, bool show_8021x)
     : ChildNetworkConfigView(parent),
-      wifi_config_model_(new WifiConfigModel()),
+      cert_library_(NULL),
       ssid_textfield_(NULL),
       eap_method_combobox_(NULL),
       phase_2_auth_label_(NULL),
       phase_2_auth_combobox_(NULL),
-      client_cert_label_(NULL),
-      client_cert_combobox_(NULL),
+      user_cert_label_(NULL),
+      user_cert_combobox_(NULL),
       server_ca_cert_label_(NULL),
       server_ca_cert_combobox_(NULL),
       identity_label_(NULL),
@@ -275,6 +288,8 @@ WifiConfigView::WifiConfigView(NetworkConfigView* parent, bool show_8021x)
 }
 
 WifiConfigView::~WifiConfigView() {
+  if (cert_library_)
+    cert_library_->RemoveObserver(this);
 }
 
 string16 WifiConfigView::GetTitle() {
@@ -300,18 +315,23 @@ bool WifiConfigView::CanLogin() {
       && eap_method_combobox_->selected_item() == EAP_METHOD_INDEX_NONE)
     return false;
 
-  // Show an error and block login if certs are required but user has none.
-  if (UserCertRequired() && wifi_config_model_->GetUserCertCount() == 0)
+  // Block login if certs are required but user has none.
+  if (UserCertRequired() && cert_library_->GetUserCertificates().Size() == 0)
     return false;
 
   return true;
 }
 
-bool WifiConfigView::UserCertRequired() const {
+bool WifiConfigView::UserCertRequired() {
+  if (!cert_library_)
+    return false;  // return false until cert_library_ is initialized.
   // Only EAP-TLS requires a user certificate.
-  return eap_method_combobox_ &&
+  if (eap_method_combobox_ &&
       eap_method_combobox_->IsEnabled() &&
-      eap_method_combobox_->selected_item() == EAP_METHOD_INDEX_TLS;
+      eap_method_combobox_->selected_item() == EAP_METHOD_INDEX_TLS) {
+    return true;
+  }
+  return false;
 }
 
 void WifiConfigView::UpdateDialogButtons() {
@@ -319,6 +339,7 @@ void WifiConfigView::UpdateDialogButtons() {
 }
 
 void WifiConfigView::RefreshEapFields() {
+  DCHECK(cert_library_);
   int selected = eap_method_combobox_->selected_item();
 
   // If EAP method changes, the phase 2 auth choices may have changed also.
@@ -335,16 +356,23 @@ void WifiConfigView::RefreshEapFields() {
   if (!passphrase_textfield_->IsEnabled())
     passphrase_textfield_->SetText(string16());
 
-  // Client certs only for EAP-TLS
-  bool is_tls = selected == EAP_METHOD_INDEX_TLS;
-  client_cert_label_->SetEnabled(is_tls);
-  bool have_user_certs = wifi_config_model_->GetUserCertCount() > 0;
-  client_cert_combobox_->SetEnabled(is_tls && have_user_certs);
+  // User certs only for EAP-TLS
+  bool certs_loading = !cert_library_->CertificatesLoaded();
+  bool user_cert_enabled = (selected == EAP_METHOD_INDEX_TLS);
+  user_cert_label_->SetEnabled(user_cert_enabled);
+  bool have_user_certs =
+      !certs_loading && cert_library_->GetUserCertificates().Size() > 0;
+  user_cert_combobox_->SetEnabled(user_cert_enabled && have_user_certs);
+  user_cert_combobox_->ModelChanged();
+  user_cert_combobox_->SetSelectedItem(0);
 
   // No server CA certs for LEAP
-  server_ca_cert_combobox_->SetEnabled(selected != EAP_METHOD_INDEX_NONE &&
-                                       selected != EAP_METHOD_INDEX_LEAP);
-  server_ca_cert_label_->SetEnabled(server_ca_cert_combobox_->IsEnabled());
+  bool ca_cert_enabled =
+      (selected != EAP_METHOD_INDEX_NONE && selected != EAP_METHOD_INDEX_LEAP);
+  server_ca_cert_label_->SetEnabled(ca_cert_enabled);
+  server_ca_cert_combobox_->SetEnabled(ca_cert_enabled && !certs_loading);
+  server_ca_cert_combobox_->ModelChanged();
+  server_ca_cert_combobox_->SetSelectedItem(0);
 
   // No anonymous identity if no phase 2 auth.
   identity_anonymous_textfield_->SetEnabled(
@@ -357,9 +385,17 @@ void WifiConfigView::RefreshEapFields() {
 
 void WifiConfigView::UpdateErrorLabel() {
   std::string error_msg;
-  if (UserCertRequired() && wifi_config_model_->GetUserCertCount() == 0)
-    error_msg = l10n_util::GetStringUTF8(
-        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PLEASE_INSTALL_USER_CERT);
+  if (UserCertRequired() &&
+      cert_library_->CertificatesLoaded() &&
+      cert_library_->GetUserCertificates().Size() == 0) {
+    if (!UserManager::Get()->user_is_logged_in()) {
+      error_msg = l10n_util::GetStringUTF8(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_LOGIN_FOR_USER_CERT);
+    } else {
+      error_msg = l10n_util::GetStringUTF8(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PLEASE_INSTALL_USER_CERT);
+    }
+  }
   if (!service_path_.empty()) {
     NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
     const WifiNetwork* wifi = cros->FindWifiNetworkByPath(service_path_);
@@ -436,6 +472,11 @@ void WifiConfigView::ItemChanged(views::Combobox* combo_box,
     UpdateErrorLabel();
   }
   UpdateDialogButtons();
+}
+
+void WifiConfigView::OnCertificatesLoaded(bool initial_load) {
+  RefreshEapFields();
+  UpdateErrorLabel();
 }
 
 bool WifiConfigView::Login() {
@@ -540,6 +581,7 @@ EAPPhase2Auth WifiConfigView::GetEapPhase2Auth() const {
 
 std::string WifiConfigView::GetEapServerCaCertNssNickname() const {
   DCHECK(server_ca_cert_combobox_);
+  DCHECK(cert_library_);
   int selected = server_ca_cert_combobox_->selected_item();
   if (selected == 0) {
     // First item is "Default".
@@ -549,8 +591,9 @@ std::string WifiConfigView::GetEapServerCaCertNssNickname() const {
     // Last item is "Do not check".
     return std::string();
   } else {
+    DCHECK(cert_library_);
     int cert_index = selected - 1;
-    return wifi_config_model_->GetServerCaCertNssNickname(cert_index);
+    return cert_library_->GetCACertificates().GetNicknameAt(cert_index);
   }
 }
 
@@ -561,13 +604,14 @@ bool WifiConfigView::GetEapUseSystemCas() const {
 }
 
 std::string WifiConfigView::GetEapClientCertPkcs11Id() const {
-  DCHECK(client_cert_combobox_);
-  if (wifi_config_model_->GetUserCertCount() == 0) {
+  DCHECK(user_cert_combobox_);
+  DCHECK(cert_library_);
+  if (cert_library_->GetUserCertificates().Size() == 0) {
     return std::string();  // "None installed"
   } else {
     // Certificates are listed in the order they appear in the model.
-    int selected = client_cert_combobox_->selected_item();
-    return wifi_config_model_->GetUserCertPkcs11Id(selected);
+    int selected = user_cert_combobox_->selected_item();
+    return cert_library_->GetUserCertificates().GetPkcs11IdAt(selected);
   }
 }
 
@@ -656,9 +700,12 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
     layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   }
 
+  // Only enumerate certificates in the data model for 802.1X networks.
   if (show_8021x) {
-    // Only enumerate certificates in the data model for 802.1X networks.
-    wifi_config_model_->UpdateCertificates();
+    // Initialize cert_library_ for 802.1X netoworks.
+    cert_library_ = chromeos::CrosLibrary::Get()->GetCertLibrary();
+    cert_library_->AddObserver(this);
+    cert_library_->RequestCertificates();
 
     // EAP method
     layout->StartRow(0, column_view_set_id);
@@ -690,7 +737,7 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
             IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_SERVER_CA)));
     layout->AddView(server_ca_cert_label_);
     server_ca_cert_combobox_ = new ComboboxWithWidth(
-        new ServerCACertComboboxModel(wifi_config_model_.get()),
+        new ServerCACertComboboxModel(cert_library_),
         ChildNetworkConfigView::kPassphraseWidth);
     server_ca_cert_label_->SetEnabled(false);
     server_ca_cert_combobox_->SetEnabled(false);
@@ -698,18 +745,18 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
     layout->AddView(server_ca_cert_combobox_);
     layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
-    // Client certificate
+    // User certificate
     layout->StartRow(0, column_view_set_id);
-    client_cert_label_ = new views::Label(
+    user_cert_label_ = new views::Label(
         UTF16ToWide(l10n_util::GetStringUTF16(
             IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT)));
-    layout->AddView(client_cert_label_);
-    client_cert_combobox_ = new views::Combobox(
-        new ClientCertComboboxModel(wifi_config_model_.get()));
-    client_cert_label_->SetEnabled(false);
-    client_cert_combobox_->SetEnabled(false);
-    client_cert_combobox_->set_listener(this);
-    layout->AddView(client_cert_combobox_);
+    layout->AddView(user_cert_label_);
+    user_cert_combobox_ = new views::Combobox(
+        new UserCertComboboxModel(cert_library_));
+    user_cert_label_->SetEnabled(false);
+    user_cert_combobox_->SetEnabled(false);
+    user_cert_combobox_->set_listener(this);
+    layout->AddView(user_cert_combobox_);
     layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
     // Identity
@@ -843,7 +890,8 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
         }
       } else {
         // select the certificate if available
-        int cert_index = wifi_config_model_->GetServerCaCertIndex(nss_nickname);
+        int cert_index =
+            cert_library_->GetCACertificates().FindCertByNickname(nss_nickname);
         if (cert_index >= 0) {
           // Skip item for "Default"
           server_ca_cert_combobox_->SetSelectedItem(1 + cert_index);
@@ -851,14 +899,15 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
       }
     }
 
-    // Client certificate
-    if (client_cert_combobox_->IsEnabled()) {
+    // User certificate
+    if (user_cert_combobox_->IsEnabled()) {
       const std::string& pkcs11_id =
           (wifi ? wifi->eap_client_cert_pkcs11_id() : std::string());
       if (!pkcs11_id.empty()) {
-        int cert_index = wifi_config_model_->GetUserCertIndex(pkcs11_id);
+        int cert_index =
+            cert_library_->GetUserCertificates().FindCertByPkcs11Id(pkcs11_id);
         if (cert_index >= 0) {
-          client_cert_combobox_->SetSelectedItem(cert_index);
+          user_cert_combobox_->SetSelectedItem(cert_index);
         }
       }
     }

@@ -10,7 +10,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
-#include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/cros/cert_library.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "ui/base/models/combobox_model.h"
 #include "views/controls/button/button.h"
@@ -23,17 +23,17 @@ class Checkbox;
 class ImageButton;
 class Label;
 }
+
 class FilePath;
 
 namespace chromeos {
-
-class WifiConfigModel;
 
 // A dialog box for showing a password textfield.
 class WifiConfigView : public ChildNetworkConfigView,
                        public views::TextfieldController,
                        public views::ButtonListener,
-                       public views::Combobox::Listener {
+                       public views::Combobox::Listener,
+                       public CertLibrary::Observer {
  public:
   // Wifi login dialog for wifi network |wifi|. |wifi| must be a non NULL
   // pointer to a WifiNetwork in NetworkLibrary.
@@ -43,17 +43,21 @@ class WifiConfigView : public ChildNetworkConfigView,
   virtual ~WifiConfigView();
 
   // views::TextfieldController:
-  virtual void ContentsChanged(views::Textfield* sender,
-                               const string16& new_contents);
-  virtual bool HandleKeyEvent(views::Textfield* sender,
-                              const views::KeyEvent& key_event);
+  virtual void ContentsChanged(
+      views::Textfield* sender, const string16& new_contents) OVERRIDE;
+  virtual bool HandleKeyEvent(
+      views::Textfield* sender, const views::KeyEvent& key_event) OVERRIDE;
 
   // views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+  virtual void ButtonPressed(
+      views::Button* sender, const views::Event& event) OVERRIDE;
 
   // views::Combobox::Listener:
-  virtual void ItemChanged(views::Combobox* combo_box,
-                           int prev_index, int new_index);
+  virtual void ItemChanged(
+      views::Combobox* combo_box, int prev_index, int new_index) OVERRIDE;
+
+  // CertLibrary::Observer:
+  virtual void OnCertificatesLoaded(bool initial_load) OVERRIDE;
 
   // ChildNetworkConfigView implementation.
   virtual string16 GetTitle() OVERRIDE;
@@ -83,7 +87,7 @@ class WifiConfigView : public ChildNetworkConfigView,
   bool GetSaveCredentials() const;
 
   // Returns true if the EAP method requires a user certificate.
-  bool UserCertRequired() const;
+  bool UserCertRequired();
 
   // Updates state of the Login button.
   void UpdateDialogButtons();
@@ -94,14 +98,14 @@ class WifiConfigView : public ChildNetworkConfigView,
   // Updates the error text label.
   void UpdateErrorLabel();
 
-  scoped_ptr<WifiConfigModel> wifi_config_model_;
+  CertLibrary* cert_library_;
 
   views::Textfield* ssid_textfield_;
   views::Combobox* eap_method_combobox_;
   views::Label* phase_2_auth_label_;
   views::Combobox* phase_2_auth_combobox_;
-  views::Label* client_cert_label_;
-  views::Combobox* client_cert_combobox_;
+  views::Label* user_cert_label_;
+  views::Combobox* user_cert_combobox_;
   views::Label* server_ca_cert_label_;
   views::Combobox* server_ca_cert_combobox_;
   views::Label* identity_label_;

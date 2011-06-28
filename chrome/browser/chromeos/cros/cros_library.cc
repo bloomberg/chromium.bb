@@ -7,6 +7,7 @@
 #include "base/lazy_instance.h"
 #include "chrome/browser/chromeos/cros/brightness_library.h"
 #include "chrome/browser/chromeos/cros/burn_library.h"
+#include "chrome/browser/chromeos/cros/cert_library.h"
 #include "chrome/browser/chromeos/cros/cros_library_loader.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/input_method_library.h"
@@ -57,6 +58,7 @@ CrosLibrary* CrosLibrary::Get() {
 
 DEFINE_GET_LIBRARY_METHOD(Brightness, brightness);
 DEFINE_GET_LIBRARY_METHOD(Burn, burn);
+DEFINE_GET_LIBRARY_METHOD(Cert, cert);
 DEFINE_GET_LIBRARY_METHOD(Cryptohome, crypto);
 DEFINE_GET_LIBRARY_METHOD(InputMethod, input_method);
 DEFINE_GET_LIBRARY_METHOD(LibCrosService, libcros_service);
@@ -112,6 +114,7 @@ void CrosLibrary::TestApi::SetLibraryLoader(LibraryLoader* loader, bool own) {
 }
 
 DEFINE_SET_LIBRARY_METHOD(Brightness, brightness);
+DEFINE_SET_LIBRARY_METHOD(Cert, cert);
 DEFINE_SET_LIBRARY_METHOD(Burn, burn);
 DEFINE_SET_LIBRARY_METHOD(Cryptohome, crypto);
 DEFINE_SET_LIBRARY_METHOD(InputMethod, input_method);

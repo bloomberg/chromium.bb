@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/string16.h"
-#include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/cros/cert_library.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/ui/shell_dialogs.h"
 #include "views/controls/button/button.h"
@@ -27,24 +27,29 @@ namespace chromeos {
 class VPNConfigView : public ChildNetworkConfigView,
                       public views::TextfieldController,
                       public views::ButtonListener,
-                      public views::Combobox::Listener {
+                      public views::Combobox::Listener,
+                      public CertLibrary::Observer {
  public:
   VPNConfigView(NetworkConfigView* parent, VirtualNetwork* vpn);
   explicit VPNConfigView(NetworkConfigView* parent);
   virtual ~VPNConfigView();
 
   // views::TextfieldController methods.
-  virtual void ContentsChanged(views::Textfield* sender,
-                               const string16& new_contents);
-  virtual bool HandleKeyEvent(views::Textfield* sender,
-                              const views::KeyEvent& key_event);
+  virtual void ContentsChanged(
+      views::Textfield* sender, const string16& new_contents) OVERRIDE;
+  virtual bool HandleKeyEvent(
+      views::Textfield* sender, const views::KeyEvent& key_event) OVERRIDE;
 
   // views::ButtonListener
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+  virtual void ButtonPressed(
+      views::Button* sender, const views::Event& event) OVERRIDE;
 
   // views::Combobox::Listener
-  virtual void ItemChanged(views::Combobox* combo_box,
-                           int prev_index, int new_index);
+  virtual void ItemChanged(
+      views::Combobox* combo_box, int prev_index, int new_index) OVERRIDE;
+
+  // CertLibrary::Observer:
+  virtual void OnCertificatesLoaded(bool initial_load) OVERRIDE;
 
   // ChildNetworkConfigView implementation.
   virtual string16 GetTitle() OVERRIDE;
@@ -57,13 +62,10 @@ class VPNConfigView : public ChildNetworkConfigView,
   // Initializes data members and create UI controls.
   void Init(VirtualNetwork* vpn);
 
-  void EnableControls();
+  void Refresh();
 
   // Update state of the Login button.
   void UpdateCanLogin();
-
-  // Update the error text label.
-  void UpdateErrorLabel();
 
   // Returns true if the provider type requires a user certificate.
   bool UserCertRequired() const;
@@ -83,6 +85,8 @@ class VPNConfigView : public ChildNetworkConfigView,
   const std::string GetUserPassphrase() const;
   const std::string GetServerCACertNssNickname() const;
   const std::string GetUserCertID() const;
+
+  CertLibrary* cert_library_;
 
   std::string server_hostname_;
   string16 service_name_from_server_;

@@ -20,6 +20,7 @@ namespace chromeos {
 
 class BrightnessLibrary;
 class BurnLibrary;
+class CertLibrary;
 class CryptohomeLibrary;
 class InputMethodLibrary;
 class LibCrosServiceLibrary;
@@ -56,6 +57,7 @@ class CrosLibrary {
     // Setter for LibraryLoader.
     void SetLibraryLoader(LibraryLoader* loader, bool own);
     void SetBrightnessLibrary(BrightnessLibrary* library, bool own);
+    void SetCertLibrary(CertLibrary* library, bool own);
     void SetBurnLibrary(BurnLibrary* library, bool own);
     void SetCryptohomeLibrary(CryptohomeLibrary* library, bool own);
     void SetInputMethodLibrary(InputMethodLibrary* library, bool own);
@@ -80,6 +82,7 @@ class CrosLibrary {
 
   BrightnessLibrary* GetBrightnessLibrary();
   BurnLibrary* GetBurnLibrary();
+  CertLibrary* GetCertLibrary();
   CryptohomeLibrary* GetCryptohomeLibrary();
   InputMethodLibrary* GetInputMethodLibrary();
   LibCrosServiceLibrary* GetLibCrosServiceLibrary();
@@ -154,6 +157,7 @@ class CrosLibrary {
 
   Library<BrightnessLibrary> brightness_lib_;
   Library<BurnLibrary> burn_lib_;
+  Library<CertLibrary> cert_lib_;
   Library<CryptohomeLibrary> crypto_lib_;
   Library<InputMethodLibrary> input_method_lib_;
   Library<LibCrosServiceLibrary> libcros_service_lib_;

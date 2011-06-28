@@ -571,13 +571,18 @@ class RealTPMTokenInfoDelegate : public crypto::TPMTokenInfoDelegate {
  public:
   RealTPMTokenInfoDelegate();
   virtual ~RealTPMTokenInfoDelegate();
-  virtual bool IsTokenReady() const;
+  virtual bool IsTokenAvailable() const OVERRIDE;
+  virtual bool IsTokenReady() const OVERRIDE;
   virtual void GetTokenInfo(std::string* token_name,
-                            std::string* user_pin) const;
+                            std::string* user_pin) const OVERRIDE;
 };
 
 RealTPMTokenInfoDelegate::RealTPMTokenInfoDelegate() {}
 RealTPMTokenInfoDelegate::~RealTPMTokenInfoDelegate() {}
+
+bool RealTPMTokenInfoDelegate::IsTokenAvailable() const {
+  return CrosLibrary::Get()->GetCryptohomeLibrary()->TpmIsEnabled();
+}
 
 bool RealTPMTokenInfoDelegate::IsTokenReady() const {
   return CrosLibrary::Get()->GetCryptohomeLibrary()->Pkcs11IsTpmTokenReady();
