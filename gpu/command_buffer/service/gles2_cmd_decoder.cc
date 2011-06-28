@@ -6848,6 +6848,83 @@ error::Error GLES2DecoderImpl::HandleRequestExtensionCHROMIUM(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleGetMultipleIntegervCHROMIUM(
+    uint32 immediate_data_size, const gles2::GetMultipleIntegervCHROMIUM& c) {
+  GLuint count = c.count;
+  uint32 pnames_size;
+  if (!SafeMultiplyUint32(count, sizeof(GLenum), &pnames_size)) {
+    return error::kOutOfBounds;
+  }
+  const GLenum* pnames = GetSharedMemoryAs<const GLenum*>(
+      c.pnames_shm_id, c.pnames_shm_offset, pnames_size);
+  if (pnames == NULL) {
+    return error::kOutOfBounds;
+  }
+
+  // We have to copy them since we use them twice so the client
+  // can't change them between the time we validate them and the time we use
+  // them.
+  scoped_array<GLenum> enums(new GLenum[count]);
+  memcpy(enums.get(), pnames, pnames_size);
+
+  // Count up the space needed for the result.
+  uint32 num_results = 0;
+  for (GLuint ii = 0; ii < count; ++ii) {
+    uint32 num = util_.GLGetNumValuesReturned(enums[ii]);
+    if (num == 0) {
+      SetGLError(GL_INVALID_ENUM,
+                 "glGetMulitpleCHROMIUM: pname GL_INVALID_ENUM");
+      return error::kNoError;
+    }
+    // Num will never be more than 4.
+    DCHECK_LE(num, 4u);
+    if (!SafeAdd(num_results, num, &num_results)) {
+      return error::kOutOfBounds;
+    }
+  }
+
+  uint32 result_size = 0;
+  if (!SafeMultiplyUint32(num_results, sizeof(GLint), &result_size)) {
+    return error::kOutOfBounds;
+  }
+
+  if (result_size != static_cast<uint32>(c.size)) {
+    SetGLError(GL_INVALID_VALUE,
+               "glGetMulitpleCHROMIUM: bad size GL_INVALID_VALUE");
+    return error::kNoError;
+  }
+
+  GLint* results = GetSharedMemoryAs<GLint*>(
+      c.results_shm_id, c.results_shm_offset, result_size);
+  if (results == NULL) {
+    return error::kOutOfBounds;
+  }
+
+  // Check the results have been cleared in case the context was lost.
+  for (uint32 ii = 0; ii < num_results; ++ii) {
+    if (results[ii]) {
+      return error::kInvalidArguments;
+    }
+  }
+
+  // Get each result.
+  GLint* start = results;
+  for (GLuint ii = 0; ii < count; ++ii) {
+    GLsizei num_written = 0;
+    if (!GetHelper(enums[ii], results, &num_written)) {
+      glGetIntegerv(enums[ii], results);
+    }
+    results += num_written;
+  }
+
+  // Just to verify. Should this be a DCHECK?
+  if (static_cast<uint32>(results - start) != num_results) {
+    return error::kOutOfBounds;
+  }
+
+  return error::kNoError;
+}
+
 // Include the auto-generated part of this file. We split this because it means
 // we can easily edit the non-auto generated parts right here in this file
 // instead of having to edit some template or the code generator.

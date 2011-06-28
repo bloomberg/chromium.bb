@@ -2006,5 +2006,60 @@ void GLES2Implementation::RateLimitOffscreenContextCHROMIUM() {
   rate_limit_tokens_.push(helper_->InsertToken());
 }
 
+void GLES2Implementation::GetMultipleIntegervCHROMIUM(
+    const GLenum* pnames, GLuint count, GLint* results, GLsizeiptr size) {
+  GPU_CLIENT_LOG("[" << this << "] glGetMultipleIntegervCHROMIUM("
+                 << static_cast<const void*>(pnames) << ", "
+                 << count << ", " << results << ", " << size << ")");
+  GPU_CLIENT_LOG_CODE_BLOCK({
+    for (GLuint i = 0; i < count; ++i) {
+      GPU_CLIENT_LOG(
+          "  " << i << ": " << GLES2Util::GetStringGLState(pnames[i]));
+    }
+  });
+  int num_results = 0;
+  for (GLuint ii = 0; ii < count; ++ii) {
+    int num = util_.GLGetNumValuesReturned(pnames[ii]);
+    if (!num) {
+      SetGLError(GL_INVALID_ENUM, "glGetMultipleIntegervCHROMIUM: bad pname");
+      return;
+    }
+    num_results += num;
+  }
+  if (static_cast<size_t>(size) != num_results * sizeof(GLint)) {
+    SetGLError(GL_INVALID_VALUE, "glGetMultipleIntegervCHROMIUM: bad size");
+    return;
+  }
+  for (int ii = 0; ii < num_results; ++ii) {
+    if (results[ii] != 0) {
+      SetGLError(GL_INVALID_VALUE,
+                 "glGetMultipleIntegervCHROMIUM: results not set to zero.");
+      return;
+    }
+  }
+  uint32 size_needed =
+      count * sizeof(pnames[0]) + num_results * sizeof(results[0]);
+  void* buffer = transfer_buffer_.Alloc(size_needed);
+  GLenum* pnames_buffer = static_cast<GLenum*>(buffer);
+  void* results_buffer = pnames_buffer + count;
+  memcpy(pnames_buffer, pnames, count * sizeof(GLenum));
+  memset(results_buffer, 0, num_results * sizeof(GLint));
+  helper_->GetMultipleIntegervCHROMIUM(
+      transfer_buffer_id_, transfer_buffer_.GetOffset(pnames_buffer),
+      count,
+      transfer_buffer_id_, transfer_buffer_.GetOffset(results_buffer),
+      size);
+  WaitForCmd();
+  memcpy(results, results_buffer, size);
+  // TODO(gman): We should be able to free without a token.
+  transfer_buffer_.FreePendingToken(buffer, helper_->InsertToken());
+  GPU_CLIENT_LOG("  returned");
+  GPU_CLIENT_LOG_CODE_BLOCK({
+    for (int i = 0; i < num_results; ++i) {
+      GPU_CLIENT_LOG("  " << i << ": " << (results[i]));
+    }
+  });
+}
+
 }  // namespace gles2
 }  // namespace gpu

@@ -990,6 +990,23 @@ typedef void (GL_APIENTRYP PFNGLRATELIMITOFFSCREENCONTEXTCHROMIUM) ();
 #endif
 #endif
 
+/* GL_CHROMIUM_get_multiple */
+/*
+ * This extension provides functions for quering multiple GL state with a single
+ * call.
+ */
+#ifndef GL_CHROMIUM_get_multiple
+#define GL_CHROMIUM_get_multiple 1
+#ifdef GL_GLEXT_PROTOTYPES
+#define glGetMultipleIntegervCHROMIUM  GLES2_GET_FUN(GetMultipleIntegervCHROMIUM)
+#if !defined(GLES2_USE_CPP_BINDINGS)
+GL_APICALL void GL_APIENTRY glGetMultipleIntegervCHROMIUM (void);
+#endif
+#else
+typedef void (GL_APIENTRYP PFNGLGETMULTIPLEINTEGERVCHROMIUM) ();
+#endif
+#endif
+
 #ifdef __cplusplus
 }
 #endif
