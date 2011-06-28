@@ -118,7 +118,7 @@ void CloudPrintURLFetcher::OnURLFetchComplete(
       // reached. Try again. Set up the request headers again because the token
       // may have changed.
       SetupRequestHeaders();
-      request_->Start();
+      request_->StartWithRequestContextGetter(GetRequestContextGetter());
     }
   }
 }

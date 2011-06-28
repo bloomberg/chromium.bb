@@ -115,7 +115,10 @@ class CloudPrintURLFetcher
   scoped_ptr<URLFetcher> request_;
   Delegate* delegate_;
   int num_retries_;
+  URLFetcher::RequestType request_type_;
   std::string additional_headers_;
+  std::string post_data_mime_type_;
+  std::string post_data_;
 };
 
 typedef CloudPrintURLFetcher::Delegate CloudPrintURLFetcherDelegate;

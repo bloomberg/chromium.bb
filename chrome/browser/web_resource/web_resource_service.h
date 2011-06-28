@@ -13,7 +13,6 @@
 
 class DictionaryValue;
 class PrefService;
-class Profile;
 class ResourceDispatcherHost;
 
 // A WebResourceService fetches data from a web resource server and store
@@ -22,8 +21,7 @@ class WebResourceService : public UtilityProcessHost::Client {
  public:
   // Pass notification_type = NOTIFICATION_TYPE_COUNT if notification is not
   // required.
-  WebResourceService(Profile* profile,
-                     PrefService* prefs,
+  WebResourceService(PrefService* prefs,
                      const char* web_resource_server,
                      bool apply_locale_to_url_,
                      NotificationType::Type notification_type,
@@ -52,8 +50,6 @@ class WebResourceService : public UtilityProcessHost::Client {
   // We need to be able to load parsed resource data into preferences file,
   // and get proper install directory.
   PrefService* prefs_;
-
-  Profile* profile_;
 
  private:
   class WebResourceFetcher;

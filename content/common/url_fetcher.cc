@@ -172,7 +172,8 @@ class URLFetcher::Core
   void StartURLRequest();
   void StartURLRequestWhenAppropriate();
   void CancelURLRequest();
-  void OnCompletedURLRequest(const net::URLRequestStatus& status);
+  void OnCompletedURLRequest(const net::URLRequestStatus& status,
+                             base::TimeDelta backoff_delay);
   void InformDelegateFetchIsComplete();
   void NotifyMalformedContent();
 
@@ -257,16 +258,20 @@ class URLFetcher::Core
   // True if the URLFetcher has been cancelled.
   bool was_cancelled_;
 
-  // Since GetBackoffReleaseTime() can only be called on the IO thread, we cache
-  // its value to be used by OnCompletedURLRequest on the creating thread.
-  base::TimeTicks backoff_release_time_;
-
   // If writing results to a file, |temp_file_writer_| will manage creation,
   // writing, and destruction of that file.
   scoped_ptr<TempFileWriter> temp_file_writer_;
 
   // Where should responses be saved?
   ResponseDestinationType response_destination_;
+
+  // If |automatically_retry_on_5xx_| is false, 5xx responses will be
+  // propagated to the observer, if it is true URLFetcher will automatically
+  // re-execute the request, after the back-off delay has expired.
+  // true by default.
+  bool automatically_retry_on_5xx_;
+  // Maximum retries allowed.
+  int max_retries_;
 
   static base::LazyInstance<Registry> g_registry;
 
@@ -442,9 +447,7 @@ URLFetcher::URLFetcher(const GURL& url,
                        RequestType request_type,
                        Delegate* d)
     : ALLOW_THIS_IN_INITIALIZER_LIST(
-      core_(new Core(this, url, request_type, d))),
-      automatically_retry_on_5xx_(true),
-      max_retries_(0) {
+      core_(new Core(this, url, request_type, d))) {
 }
 
 URLFetcher::~URLFetcher() {
@@ -476,7 +479,9 @@ URLFetcher::Core::Core(URLFetcher* fetcher,
       is_chunked_upload_(false),
       num_retries_(0),
       was_cancelled_(false),
-      response_destination_(STRING) {
+      response_destination_(STRING),
+      automatically_retry_on_5xx_(true),
+      max_retries_(0) {
 }
 
 URLFetcher::Core::~Core() {
@@ -488,7 +493,12 @@ URLFetcher::Core::~Core() {
 void URLFetcher::Core::Start() {
   DCHECK(delegate_loop_proxy_);
   CHECK(request_context_getter_) << "We need an URLRequestContext!";
-  io_message_loop_proxy_ = request_context_getter_->GetIOMessageLoopProxy();
+  if (io_message_loop_proxy_) {
+    DCHECK_EQ(io_message_loop_proxy_,
+              request_context_getter_->GetIOMessageLoopProxy());
+  } else {
+    io_message_loop_proxy_ = request_context_getter_->GetIOMessageLoopProxy();
+  }
   CHECK(io_message_loop_proxy_.get()) << "We need an IO message loop proxy";
 
   switch (response_destination_) {
@@ -567,7 +577,6 @@ void URLFetcher::Core::AppendChunkToUpload(const std::string& content,
       NewRunnableMethod(this, &Core::CompleteAddingUploadDataChunk, content,
                         is_last_chunk));
 }
-
 // Return true if the write was done and reading may continue.
 // Return false if the write is pending, and the next read will
 // be done later.
@@ -614,23 +623,51 @@ void URLFetcher::Core::OnReadCompleted(net::URLRequest* request,
     }
   } while (request_->Read(buffer_, kBufferSize, &bytes_read));
 
-  if (request_->status().is_success())
+  const net::URLRequestStatus status = request_->status();
+
+  if (status.is_success())
     request_->GetResponseCookies(&cookies_);
 
   // See comments re: HEAD requests in ReadResponse().
-  if ((!request_->status().is_io_pending() && !waiting_on_write) ||
+  if ((!status.is_io_pending() && !waiting_on_write) ||
       (request_type_ == HEAD)) {
-    backoff_release_time_ = GetBackoffReleaseTime();
+    base::TimeTicks backoff_release_time = GetBackoffReleaseTime();
+    ReleaseRequest();
 
+    base::TimeDelta backoff_delay;
+    // Checks the response from server.
+    if (response_code_ >= 500 ||
+        status.os_error() == net::ERR_TEMPORARILY_THROTTLED) {
+      // When encountering a server error, we will send the request again
+      // after backoff time.
+      ++num_retries_;
+
+      // Note that backoff_delay_ may be 0 because (a) the URLRequestThrottler
+      // code does not necessarily back off on the first error, and (b) it
+      // only backs off on some of the 5xx status codes.
+      backoff_delay = backoff_release_time - base::TimeTicks::Now();
+      if (backoff_delay < base::TimeDelta())
+        backoff_delay = base::TimeDelta();
+
+      if (automatically_retry_on_5xx_ &&
+          num_retries_ <= max_retries_) {
+        StartURLRequestWhenAppropriate();
+        return;
+      }
+    } else {
+      backoff_delay = base::TimeDelta();
+    }
     bool posted = delegate_loop_proxy_->PostTask(
         FROM_HERE,
         NewRunnableMethod(this,
                           &Core::OnCompletedURLRequest,
-                          request_->status()));
+                          status,
+                          backoff_delay));
+
     // If the delegate message loop does not exist any more, then the delegate
     // should be gone too.
     DCHECK(posted || !delegate_);
-    ReleaseRequest();
+    request_context_getter_ = NULL;
   }
 }
 
@@ -749,41 +786,15 @@ void URLFetcher::Core::CancelURLRequest() {
 }
 
 void URLFetcher::Core::OnCompletedURLRequest(
-    const net::URLRequestStatus& status) {
+    const net::URLRequestStatus& status,
+    base::TimeDelta backoff_delay) {
   DCHECK(delegate_loop_proxy_->BelongsToCurrentThread());
 
-  // Save the status so that delegates can read it.
-  status_ = status;
-
-  // Checks the response from server.
-  if (response_code_ >= 500 ||
-      status.os_error() == net::ERR_TEMPORARILY_THROTTLED) {
-    // When encountering a server error, we will send the request again
-    // after backoff time.
-    ++num_retries_;
-    // Restarts the request if we still need to notify the delegate.
-    if (delegate_) {
-      // Note that backoff_delay_ may be 0 because (a) the URLRequestThrottler
-      // code does not necessarily back off on the first error, and (b) it
-      // only backs off on some of the 5xx status codes.
-      fetcher_->backoff_delay_ = backoff_release_time_ - base::TimeTicks::Now();
-      if (fetcher_->backoff_delay_ < base::TimeDelta())
-        fetcher_->backoff_delay_ = base::TimeDelta();
-
-      if (fetcher_->automatically_retry_on_5xx_ &&
-          num_retries_ <= fetcher_->max_retries()) {
-        io_message_loop_proxy_->PostTask(
-            FROM_HERE,
-            NewRunnableMethod(this, &Core::StartURLRequestWhenAppropriate));
-      } else {
-        InformDelegateFetchIsComplete();
-      }
-    }
-  } else {
-    if (delegate_) {
-      fetcher_->backoff_delay_ = base::TimeDelta();
-      InformDelegateFetchIsComplete();
-    }
+  // Save the status and backoff_delay so that delegates can read it.
+  if (delegate_) {
+    status_ = status;
+    fetcher_->backoff_delay_ = backoff_delay;
+    InformDelegateFetchIsComplete();
   }
 }
 
@@ -879,11 +890,20 @@ void URLFetcher::GetExtraRequestHeaders(net::HttpRequestHeaders* headers) {
 
 void URLFetcher::set_request_context(
     net::URLRequestContextGetter* request_context_getter) {
+  DCHECK(!core_->request_context_getter_);
   core_->request_context_getter_ = request_context_getter;
 }
 
 void URLFetcher::set_automatically_retry_on_5xx(bool retry) {
-  automatically_retry_on_5xx_ = retry;
+  core_->automatically_retry_on_5xx_ = retry;
+}
+
+int URLFetcher::max_retries() const {
+  return core_->max_retries_;
+}
+
+void URLFetcher::set_max_retries(int max_retries) {
+  core_->max_retries_ = max_retries;
 }
 
 void URLFetcher::SaveResponseToTemporaryFile(
@@ -908,6 +928,12 @@ bool URLFetcher::was_fetched_via_proxy() const {
 }
 
 void URLFetcher::Start() {
+  core_->Start();
+}
+
+void URLFetcher::StartWithRequestContextGetter(
+    net::URLRequestContextGetter* request_context_getter) {
+  set_request_context(request_context_getter);
   core_->Start();
 }
 

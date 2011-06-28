@@ -187,9 +187,9 @@ class URLFetcher {
   // after backoff_delay() elapses. URLFetcher has it set to true by default.
   void set_automatically_retry_on_5xx(bool retry);
 
-  int max_retries() const { return max_retries_; }
+  int max_retries() const;
 
-  void set_max_retries(int max_retries) { max_retries_ = max_retries; }
+  void set_max_retries(int max_retries);
 
   // Returns the back-off delay before the request will be retried,
   // when a 5xx response was received.
@@ -225,6 +225,10 @@ class URLFetcher {
   // Start the request.  After this is called, you may not change any other
   // settings.
   virtual void Start();
+
+  // Restarts the URLFetcher with a new URLRequestContextGetter.
+  void StartWithRequestContextGetter(
+      net::URLRequestContextGetter* request_context_getter);
 
   // Return the URL that this fetcher is processing.
   virtual const GURL& url() const;
@@ -302,15 +306,8 @@ class URLFetcher {
 
   static Factory* factory_;
 
-  // If |automatically_retry_on_5xx_| is false, 5xx responses will be
-  // propagated to the observer, if it is true URLFetcher will automatically
-  // re-execute the request, after the back-off delay has expired.
-  // true by default.
-  bool automatically_retry_on_5xx_;
   // Back-off time delay. 0 by default.
   base::TimeDelta backoff_delay_;
-  // Maximum retries allowed.
-  int max_retries_;
 
   static bool g_interception_enabled;
 
