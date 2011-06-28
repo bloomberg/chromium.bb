@@ -282,6 +282,7 @@ DictionaryValue* SearchEngineSpecificsToValue(
   SET_BOOL(created_by_policy);
   SET_STR(instant_url);
   SET_INT64(id);
+  SET_INT64(last_modified);
   return value;
 }
 

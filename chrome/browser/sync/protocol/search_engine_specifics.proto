@@ -34,6 +34,7 @@ message SearchEngineSpecifics {
   optional bool created_by_policy = 14;
   optional string instant_url = 15;
   optional int64 id = 16;
+  optional int64 last_modified = 17;
 }
 
 extend EntitySpecifics {
