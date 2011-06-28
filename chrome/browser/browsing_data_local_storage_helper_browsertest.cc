@@ -9,11 +9,11 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/test/thread_test_helper.h"
 #include "chrome/browser/browsing_data_helper_browsertest.h"
 #include "chrome/browser/browsing_data_local_storage_helper.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/testing_profile.h"
-#include "chrome/test/thread_test_helper.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/browser/in_process_webkit/webkit_thread.h"
@@ -116,8 +116,9 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataLocalStorageHelperTest, DeleteSingleFile) {
   CreateLocalStorageFilesForTest();
   local_storage_helper->DeleteLocalStorageFile(
       GetLocalStoragePathForTestingProfile().Append(FilePath(kTestFile0)));
-  scoped_refptr<ThreadTestHelper> wait_for_webkit_thread(
-      new ThreadTestHelper(BrowserThread::WEBKIT));
+  scoped_refptr<base::ThreadTestHelper> wait_for_webkit_thread(
+      new base::ThreadTestHelper(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::WEBKIT)));
   ASSERT_TRUE(wait_for_webkit_thread->Run());
   // Ensure the file has been deleted.
   file_util::FileEnumerator file_enumerator(

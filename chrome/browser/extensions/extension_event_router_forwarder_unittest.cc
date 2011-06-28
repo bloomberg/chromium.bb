@@ -6,10 +6,10 @@
 
 #include "base/message_loop.h"
 #include "base/system_monitor/system_monitor.h"
+#include "base/test/thread_test_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/testing_browser_process_test.h"
 #include "chrome/test/testing_profile.h"
-#include "chrome/test/thread_test_helper.h"
 #include "content/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -122,8 +122,9 @@ TEST_F(ExtensionEventRouterForwarderTest, BroadcastRendererIO) {
           std::string(kEventName), std::string(kEventArgs), url));
 
   // Wait for IO thread's message loop to be processed
-  scoped_refptr<ThreadTestHelper> helper(
-      new ThreadTestHelper(BrowserThread::IO));
+  scoped_refptr<base::ThreadTestHelper> helper(
+      new base::ThreadTestHelper(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
   ASSERT_TRUE(helper->Run());
 
   MessageLoop::current()->RunAllPending();

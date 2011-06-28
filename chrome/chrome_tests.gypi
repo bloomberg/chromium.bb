@@ -167,8 +167,6 @@
         'test/testing_profile.cc',
         'test/testing_profile.h',
         'test/thread_observer_helper.h',
-        'test/thread_test_helper.cc',
-        'test/thread_test_helper.h',
         'test/ui_test_utils.cc',
         'test/ui_test_utils.h',
         'test/ui_test_utils_linux.cc',

@@ -8,7 +8,6 @@
 #include "base/scoped_temp_dir.h"
 #include "chrome/test/testing_browser_process.h"
 #include "chrome/test/testing_browser_process_test.h"
-#include "chrome/test/thread_test_helper.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"

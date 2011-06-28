@@ -14,6 +14,7 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/test/thread_test_helper.h"
 #include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/mock_library_loader.h"
 #include "chrome/browser/chromeos/login/mock_auth_response_handler.h"
@@ -23,7 +24,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/net/gaia/gaia_auth_fetcher_unittest.h"
 #include "chrome/test/testing_profile.h"
-#include "chrome/test/thread_test_helper.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/url_fetcher.h"
 #include "googleurl/src/gurl.h"
@@ -45,12 +45,13 @@ using ::testing::SetArgumentPointee;
 using ::testing::_;
 
 namespace chromeos {
-class ResolveChecker : public ThreadTestHelper {
+class ResolveChecker : public base::ThreadTestHelper {
  public:
   ResolveChecker(TestAttemptState* state,
                  ParallelAuthenticator* auth,
                  ParallelAuthenticator::AuthState expected)
-      : ThreadTestHelper(BrowserThread::IO),
+      : base::ThreadTestHelper(
+            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)),
         state_(state),
         auth_(auth),
         expected_(expected) {

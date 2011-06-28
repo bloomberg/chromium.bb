@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/thread_test_helper.h"
+#include "base/test/thread_test_helper.h"
 
-ThreadTestHelper::ThreadTestHelper(BrowserThread::ID thread_id)
+namespace base {
+
+ThreadTestHelper::ThreadTestHelper(MessageLoopProxy* target_thread)
     : test_result_(false),
-      thread_id_(thread_id),
+      target_thread_(target_thread),
       done_event_(false, false) {
 }
 
 bool ThreadTestHelper::Run() {
-  if (!BrowserThread::PostTask(thread_id_, FROM_HERE, NewRunnableMethod(
+  if (!target_thread_->PostTask(FROM_HERE, NewRunnableMethod(
           this, &ThreadTestHelper::RunInThread))) {
     return false;
   }
@@ -27,3 +29,5 @@ void ThreadTestHelper::RunInThread() {
   RunTest();
   done_event_.Signal();
 }
+
+}  // namespace base

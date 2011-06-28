@@ -5,9 +5,9 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/scoped_temp_dir.h"
+#include "base/test/thread_test_helper.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/testing_profile.h"
-#include "chrome/test/thread_test_helper.h"
 #include "content/browser/in_process_webkit/dom_storage_context.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
 
@@ -42,8 +42,9 @@ IN_PROC_BROWSER_TEST_F(DOMStorageBrowserTest, ClearLocalState) {
     webkit_context->set_clear_local_state_on_exit(true);
   }
   // Make sure we wait until the destructor has run.
-  scoped_refptr<ThreadTestHelper> helper(
-      new ThreadTestHelper(BrowserThread::WEBKIT));
+  scoped_refptr<base::ThreadTestHelper> helper(
+      new base::ThreadTestHelper(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::WEBKIT)));
   ASSERT_TRUE(helper->Run());
 
   // Because we specified https for scheme to be skipped the second file

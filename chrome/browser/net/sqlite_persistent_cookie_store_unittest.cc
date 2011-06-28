@@ -7,10 +7,10 @@
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
 #include "base/stl_util-inl.h"
+#include "base/test/thread_test_helper.h"
 #include "base/time.h"
 #include "chrome/browser/net/sqlite_persistent_cookie_store.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/test/thread_test_helper.h"
 #include "content/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -52,8 +52,9 @@ TEST_F(SQLitePersistentCookieStoreTest, KeepOnDestruction) {
   store_->SetClearLocalStateOnExit(false);
   store_ = NULL;
   // Make sure we wait until the destructor has run.
-  scoped_refptr<ThreadTestHelper> helper(
-      new ThreadTestHelper(BrowserThread::DB));
+  scoped_refptr<base::ThreadTestHelper> helper(
+      new base::ThreadTestHelper(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB)));
   ASSERT_TRUE(helper->Run());
 
   ASSERT_TRUE(file_util::PathExists(
@@ -69,8 +70,9 @@ TEST_F(SQLitePersistentCookieStoreTest, RemoveOnDestruction) {
   // is still there.
   store_ = NULL;
   // Make sure we wait until the destructor has run.
-  scoped_refptr<ThreadTestHelper> helper(
-      new ThreadTestHelper(BrowserThread::DB));
+  scoped_refptr<base::ThreadTestHelper> helper(
+      new base::ThreadTestHelper(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB)));
   ASSERT_TRUE(helper->Run());
 
   ASSERT_FALSE(file_util::PathExists(
@@ -84,8 +86,9 @@ TEST_F(SQLitePersistentCookieStoreTest, TestPersistance) {
   // to write it's data to disk. Then we can see if after loading it again it
   // is still there.
   store_ = NULL;
-  scoped_refptr<ThreadTestHelper> helper(
-      new ThreadTestHelper(BrowserThread::DB));
+  scoped_refptr<base::ThreadTestHelper> helper(
+      new base::ThreadTestHelper(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB)));
   // Make sure we wait until the destructor has run.
   ASSERT_TRUE(helper->Run());
   store_ = new SQLitePersistentCookieStore(
@@ -138,8 +141,9 @@ TEST_F(SQLitePersistentCookieStoreTest, TestFlush) {
 
   // Call Flush() and wait until the DB thread is idle.
   store_->Flush(NULL);
-  scoped_refptr<ThreadTestHelper> helper(
-      new ThreadTestHelper(BrowserThread::DB));
+  scoped_refptr<base::ThreadTestHelper> helper(
+      new base::ThreadTestHelper(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB)));
   ASSERT_TRUE(helper->Run());
 
   // We forced a write, so now the file will be bigger.
@@ -174,8 +178,9 @@ TEST_F(SQLitePersistentCookieStoreTest, TestFlushCompletionCallback) {
 
   store_->Flush(NewRunnableMethod(counter.get(), &CallbackCounter::Callback));
 
-  scoped_refptr<ThreadTestHelper> helper(
-      new ThreadTestHelper(BrowserThread::DB));
+  scoped_refptr<base::ThreadTestHelper> helper(
+      new base::ThreadTestHelper(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB)));
   ASSERT_TRUE(helper->Run());
 
   ASSERT_EQ(1, counter->callback_count());

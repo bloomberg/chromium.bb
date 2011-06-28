@@ -17,7 +17,6 @@
 #include "chrome/browser/chromeos/login/owner_manager_unittest.h"
 #include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
-#include "chrome/test/thread_test_helper.h"
 #include "content/browser/browser_thread.h"
 #include "crypto/rsa_private_key.h"
 #include "testing/gmock/include/gmock/gmock.h"
