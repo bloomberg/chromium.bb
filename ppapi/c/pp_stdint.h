@@ -42,12 +42,11 @@ typedef __int64 int64_t;
 
 /** This value represents a guaranteed unsigned 64 bit integer. */
 typedef unsigned __int64 uint64_t;
-/**
- * @}
- */
+
 #else
 #include <stdint.h>
 #endif
-
+/**
+ * @}
+ */
 #endif  /* PPAPI_C_PP_STDINT_H_ */
-

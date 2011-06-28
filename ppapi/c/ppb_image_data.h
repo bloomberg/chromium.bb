@@ -15,8 +15,8 @@
 
 /**
  * @file
- * This file defines the PPB_ImageData struct for determining how a browser
- * handles image data.
+ * This file defines the <code>PPB_ImageData</code> struct for determining how
+ * a browser handles image data.
  */
 
 /**
@@ -25,7 +25,7 @@
  */
 
 /**
- * PP_ImageDataFormat is an enumeration of the different types of
+ * <code>PP_ImageDataFormat</code> is an enumeration of the different types of
  * image data formats.
  *
  * The third part of each enumeration value describes the memory layout from
@@ -38,17 +38,22 @@
  * data should be pre-multiplied by their alpha value. For example: starting
  * with floating point color components, here is how to convert them to 8-bit
  * premultiplied components for image data:
- *    ...components of a pixel, floats ranging from 0 to 1...
- *    float red = 1.0f;
- *    float green = 0.50f;
- *    float blue = 0.0f;
- *    float alpha = 0.75f;
- *    ...components for image data are 8-bit values ranging from 0 to 255...
- *    uint8_t image_data_red_premul = (uint8_t)(red * alpha * 255.0f);
- *    uint8_t image_data_green_premul = (uint8_t)(green * alpha * 255.0f);
- *    uint8_t image_data_blue_premul = (uint8_t)(blue * alpha * 255.0f);
- *    uint8_t image_data_alpha_premul = (uint8_t)(alpha * 255.0f);
- * Note the resulting pre-multiplied red, green and blue components should not
+ *
+ * ...components of a pixel, floats ranging from 0 to 1...
+ * <code>float red = 1.0f;</code>
+ * <code><code>float green = 0.50f;</code>
+ * <code>float blue = 0.0f;</code>
+ * <code>float alpha = 0.75f;</code>
+ * ...components for image data are 8-bit values ranging from 0 to 255...
+ * <code>uint8_t image_data_red_premul = (uint8_t)(red * alpha * 255.0f);
+ * </code>
+ * <code>uint8_t image_data_green_premul = (uint8_t)(green * alpha * 255.0f);
+ * </code>
+ * <code>uint8_t image_data_blue_premul = (uint8_t)(blue * alpha * 255.0f);
+ * </code>
+ * <code>uint8_t image_data_alpha_premul = (uint8_t)(alpha * 255.0f);</code>
+ *
+ * Note: The resulting pre-multiplied red, green and blue components should not
  * be greater than the alpha value.
  */
 typedef enum {
@@ -66,13 +71,14 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_ImageDataFormat, 4);
  */
 
 /**
- * The PP_ImageDataDesc structure represents a description of image data.
+ * The <code>PP_ImageDataDesc</code> structure represents a description of
+ * image data.
  */
 struct PP_ImageDataDesc {
 
   /**
    * This value represents one of the image data types in the
-   * PP_ImageDataFormat enum.
+   * <code>PP_ImageDataFormat</code> enum.
    */
   PP_ImageDataFormat format;
 
@@ -99,49 +105,51 @@ PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_ImageDataDesc, 16);
  */
 
 /**
- * The PPB_ImageData interface contains pointers to several functions for
- * determining the browser's treatment of image data.
+ * The <code>PPB_ImageData</code> interface contains pointers to several
+ * functions for determining the browser's treatment of image data.
  */
 struct PPB_ImageData {
   /**
-   * GetNativeImageDataFormat is a pointer to a function that returns the
-   * browser's preferred format for image data. The browser uses this format
-   * internally for painting. Other formats may require internal conversions
-   * to paint or may have additional restrictions depending on the function.
+   * GetNativeImageDataFormat() returns the browser's preferred format for
+   * image data. The browser uses this format internally for painting. Other
+   * formats may require internal conversions to paint or may have additional
+   * restrictions depending on the function.
    *
-   * @return PP_ImageDataFormat containing the preferred format.
+   * @return A <code>PP_ImageDataFormat</code> containing the preferred format.
    */
   PP_ImageDataFormat (*GetNativeImageDataFormat)();
 
   /**
-   * IsImageDataFormatSupported is a pointer to a function that determines if
-   * the given image data format is supported by the browser.
+   * IsImageDataFormatSupported() determines if the given image data format is
+   * supported by the browser.
    *
    * @param[in] format The image data format.
-   * @return PP_Bool with PP_TRUE if the given image data format is supported
-   * by the browser.
+   * @return A <code>PP_Bool</code> with <code>PP_TRUE</code> if the given
+   * image data format is supported by the browser.
    */
   PP_Bool (*IsImageDataFormatSupported)(PP_ImageDataFormat format);
 
   /**
-   * Create is a pointer to a function that allocates an image data resource
-   * with the given format and size.
+   * Create() allocates an image data resource with the given format and size.
    *
    * For security reasons, if uninitialized, the bitmap will not contain random
    * memory, but may contain data from a previous image produced by the same
-   * plugin if the bitmap was cached and re-used.
+   * module if the bitmap was cached and re-used.
    *
-   * @param[in] instance A PP_Instance indentifying one instance of a module.
+   * @param[in] instance A <code>PP_Instance</code> indentifying one instance
+   * of a module.
    * @param[in] format The desired image data format.
-   * @param[in] size A pointer to a PP_Size containing the image size.
-   * @param[in] init_to_zero A PP_Bool to determine transparency at creation.
-   * Set the init_to_zero flag if you want the bitmap initialized to
-   * transparent during the creation process. If this flag is not set, the
-   * current contents of the bitmap will be undefined, and the plugin should
+   * @param[in] size A pointer to a <code>PP_Size</code> containing the image
+   * size.
+   * @param[in] init_to_zero A <code>PP_Bool</code> to determine transparency
+   * at creation.
+   * Set the <code>init_to_zero</code> flag if you want the bitmap initialized
+   * to transparent during the creation process. If this flag is not set, the
+   * current contents of the bitmap will be undefined, and the module should
    * be sure to set all the pixels.
    *
-   * @return A PP_Resource with a nonzero ID on succes or zero on failure.
-   * Failure means the instance, image size, or format was invalid.
+   * @return A <code>PP_Resource</code> with a nonzero ID on succes or zero on
+   * failure. Failure means the instance, image size, or format was invalid.
    */
   PP_Resource (*Create)(PP_Instance instance,
                         PP_ImageDataFormat format,
@@ -149,43 +157,47 @@ struct PPB_ImageData {
                         PP_Bool init_to_zero);
 
   /**
-   * IsImageData is a pointer to a function that determiens if a given resource
-   * is image data.
+   * IsImageData() determiens if a given resource is image data.
    *
-   * @param[in] image_data A PP_Resource corresponding to image data.
-   * @return A PP_Bool with PP_TRUE if the given resrouce is an image data
-   * or PP_FALSE if the resource is invalid or some type other than image data.
+   * @param[in] image_data A <code>PP_Resource</code> corresponding to image
+   * data.
+   * @return A <code>PP_Bool</code> with <code>PP_TRUE</code> if the given
+   * resrouce is an image data or <code>PP_FALSE</code> if the resource is
+   * invalid or some type other than image data.
    */
   PP_Bool (*IsImageData)(PP_Resource image_data);
 
   /**
-   * Describe is a pointer to a function that computes the description of the
+   * Describe() computes the description of the
    * image data.
    *
-   * @param[in] image_data A PP_Resource corresponding to image data.
-   * @param[in/out] desc A pointer to a PP_ImageDataDesc containing the
-   * description.
-   * @return A PP_Bool with PP_TRUE on success or PP_FALSE
-   * if the resource is not an image data. On PP_FALSE, the |desc|
-   * structure will be filled with 0.
+   * @param[in] image_data A <code>PP_Resource</code> corresponding to image
+   * data.
+   * @param[in,out] desc A pointer to a <code>PP_ImageDataDesc</code>
+   * containing the description.
+   * @return A <code>PP_Bool</code> with <code>PP_TRUE</code> on success or
+   * <code>PP_FALSE</code> if the resource is not an image data. On
+   * <code>PP_FALSE</code>, the <code>desc</code> structure will be filled
+   * with 0.
    */
   PP_Bool (*Describe)(PP_Resource image_data,
                       struct PP_ImageDataDesc* desc);
 
   /**
-   * Map is a pointer to a function that maps an image data into the plugin
-   * address space.
+   * Map() maps an image data into the module address space.
    *
-   * @param[in] image_data A PP_Resource corresponding to image data.
+   * @param[in] image_data A <code>PP_Resource</code> corresponding to image
+   * data.
    * @return A pointer to the beginning of the data.
    */
   void* (*Map)(PP_Resource image_data);
 
   /**
-   * Unmap is a pointer to a function that unmaps an image data from the plugin
+   * Unmap is a pointer to a function that unmaps an image data from the module
    * address space.
    *
-   * @param[in] image_data A PP_Resource corresponding to image data.
+   * @param[in] image_data A <code>PP_Resource</code> corresponding to image
+   * data.
    */
   void (*Unmap)(PP_Resource image_data);
 };

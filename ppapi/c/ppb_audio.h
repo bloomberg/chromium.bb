@@ -16,10 +16,8 @@
 
 /**
  * @file
- * This file defines the PPB_Audio interface, which provides realtime stereo
- * audio streaming capabilities. Please refer to the
- * <a href="http://code.google.com/chrome/nativeclient/docs/audio.html">Pepper
- * Audio API Code Walkthrough</a> for information on using this interface.
+ * This file defines the <code>PPB_Audio</code> interface, which provides
+ * realtime stereo audio streaming capabilities.
  */
 
 /**
@@ -28,9 +26,10 @@
  */
 
 /**
- * PPB_Audio_Callback defines the type of an audio callback function used to
- * fill the audio buffer with data. Please see the Create() function in the
- * PPB_Audio interface for more details on this callback.
+ * <code>PPB_Audio_Callback</code> defines the type of an audio callback
+ * function used to fill the audio buffer with data. Please see the
+ * <code>Create()</code> function in the <code>PPB_Audio</code> interface for
+ * more details on this callback.
  */
 typedef void (*PPB_Audio_Callback)(void* sample_buffer,
                                    uint32_t buffer_size_in_bytes,
@@ -44,12 +43,15 @@ typedef void (*PPB_Audio_Callback)(void* sample_buffer,
  * @{
  */
 /**
- * The PPB_Audio interface contains pointers to several functions for handling
- * audio resources. Please see descriptions for each PPB_Audio and
- * PPB_AudioConfig function for more details.
+ * The <code>PPB_Audio</code> interface contains pointers to several functions
+ * for handling audio resources. Please refer to the
+ * <a href="/chrome/nativeclient/docs/audio.html">Pepper
+ * Audio API Code Walkthrough</a> for information on using this interface.
+ * Please see descriptions for each <code>PPB_Audio</code> and
+ * <code>PPB_AudioConfig</code> function for more details.
  *
  * A C example using PPB_Audio and PPB_AudioConfig:
- *
+ * @code
  * void audio_callback(void* sample_buffer,
  *                     uint32_t buffer_size_in_bytes,
  *                     void* user_data) {

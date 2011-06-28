@@ -47,7 +47,7 @@ struct PPP_Instance_0_5 {
 #endif
   /**
    * Creation handler that is called when a new instance is created. It is
-   * called for each instantiation on the page, corresponding to one <embed>
+   * called for each instantiation on the page, corresponding to one \<embed\>
    * tag on the page.
    *
    * Generally you would handle this call by initializing the information
@@ -69,15 +69,15 @@ struct PPP_Instance_0_5 {
    * @param[in] argc The number of arguments contained in @a argn and @a argv.
    *
    * @param[in] argn An array of argument names.  These argument names are
-   * supplied in the <embed> tag, for example:
-   * <embed id="nacl_module" dimensions="2"> will produce two argument
-   * names: "id" and "dimensions."
+   * supplied in the \<embed\> tag, for example:
+   * <code>\<embed id="nacl_module" dimensions="2"\></code> will produce two
+   * argument names: "id" and "dimensions."
    *
    * @param[in] argv An array of argument values.  These are the values of the
-   * arguments listed in the <embed> tag, for example
-   * <embed id="nacl_module" dimensions="2"> will produce two argument
-   * values: "nacl_module" and "2".  The indices of these values match the
-   * indices of the corresponding names in @a argn.
+   * arguments listed in the \<embed\> tag, for example
+   * <code>\<embed id="nacl_module" dimensions="2"\></code> will produce two
+   * argument values: "nacl_module" and "2".  The indices of these values match
+   * the indices of the corresponding names in @a argn.
    *
    * @return @a PP_TRUE on success or @a PP_FALSE on failure.
    */
@@ -216,7 +216,7 @@ struct PPP_Instance_0_5 {
    * @param[in] instance A PP_Instance indentifying the instance that should
    * do the load.
    *
-   * @param[in] url_loader A PP_Resource an open PPB_URLLoader instance.
+   * @param[in] url_loader An open PPB_URLLoader instance.
    *
    * @return PP_TRUE if the data was handled, PP_FALSE otherwise.
    */
