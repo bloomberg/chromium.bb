@@ -420,6 +420,6 @@ bool TouchFactory::GetTouchParamRange(unsigned int deviceid,
   return false;
 }
 
-#endif  // defined(HAVE_XINPUT2)
-
 }  // namespace views
+
+#endif  // defined(HAVE_XINPUT2)
