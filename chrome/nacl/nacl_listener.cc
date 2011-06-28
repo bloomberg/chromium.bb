@@ -2,13 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/nacl/nacl_launcher_thread.h"
+#include "chrome/nacl/nacl_listener.h"
 
-#include <vector>
+#include <errno.h>
 
-#include "base/atomicops.h"
+#include "base/command_line.h"
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
 #include "chrome/common/nacl_messages.h"
+#include "ipc/ipc_channel.h"
+#include "ipc/ipc_switches.h"
 #include "native_client/src/shared/imc/nacl_imc.h"
 
 #if defined(OS_LINUX)
@@ -19,6 +23,15 @@
 #include <fcntl.h>
 #include <io.h>
 #endif
+
+// This is ugly.  We need an interface header file for the exported
+// sel_ldr interfaces.
+// TODO(gregoryd,sehr): Add an interface header.
+#if defined(OS_WIN)
+typedef HANDLE NaClHandle;
+#else
+typedef int NaClHandle;
+#endif  // NaClHandle
 
 #if defined(OS_MACOSX)
 namespace {
@@ -56,43 +69,34 @@ int CreateMemoryObject(size_t size, bool executable) {
 }  // namespace
 #endif  // defined(OS_MACOSX)
 
-// This is ugly.  We need an interface header file for the exported
-// sel_ldr interfaces.
-// TODO(gregoryd,sehr): Add an interface header.
-#if defined(OS_WIN)
-typedef HANDLE NaClHandle;
-#else
-typedef int NaClHandle;
-#endif  // NaClHandle
-
-// This is currently necessary because we have a conflict between
-// NaCl's LOG_FATAL (from platform/nacl_log.h) and Chromium's
-// LOG_FATAL (from base/logging.h).
-extern "C" int NaClMainForChromium(int handle_count, const NaClHandle* handles,
+extern "C" int NaClMainForChromium(int handle_count,
+                                   const NaClHandle* handles,
                                    int debug);
 extern "C" void NaClSetIrtFileDesc(int fd);
 
-NaClLauncherThread::NaClLauncherThread(bool debug) {
-  debug_enabled_ = debug ? 1 : 0;
+NaClListener::NaClListener() {}
+
+NaClListener::~NaClListener() {}
+
+void NaClListener::Listen() {
+  std::string channel_name =
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kProcessChannelID);
+  IPC::Channel channel(channel_name, IPC::Channel::MODE_CLIENT, this);
+  CHECK(channel.Connect());
+  MessageLoop::current()->Run();
 }
 
-NaClLauncherThread::~NaClLauncherThread() {
-}
-
-NaClLauncherThread* NaClLauncherThread::current() {
-  return static_cast<NaClLauncherThread*>(ChildThread::current());
-}
-
-bool NaClLauncherThread::OnControlMessageReceived(const IPC::Message& msg) {
+bool NaClListener::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(NaClLauncherThread, msg)
-    IPC_MESSAGE_HANDLER(NaClProcessMsg_Start, OnStartSelLdr)
-    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_BEGIN_MESSAGE_MAP(NaClListener, msg)
+      IPC_MESSAGE_HANDLER(NaClProcessMsg_Start, OnStartSelLdr)
+      IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
 }
 
-void NaClLauncherThread::OnStartSelLdr(
+void NaClListener::OnStartSelLdr(
     std::vector<nacl::FileDescriptor> handles,
     bool have_irt_file) {
 #if defined(OS_LINUX)
@@ -127,5 +131,5 @@ void NaClLauncherThread::OnStartSelLdr(
     array[i] = nacl::ToNativeHandle(handles[i]);
   }
   NaClMainForChromium(static_cast<int>(handles.size()), array.get(),
-                      debug_enabled_);
+                      false /* debug */);
 }

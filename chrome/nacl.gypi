@@ -28,8 +28,8 @@
           'nacl/nacl_main_platform_delegate_linux.cc',
           'nacl/nacl_main_platform_delegate_mac.mm',
           'nacl/nacl_main_platform_delegate_win.cc',
-          'nacl/nacl_launcher_thread.cc',
-          'nacl/nacl_launcher_thread.h',
+          'nacl/nacl_listener.cc',
+          'nacl/nacl_listener.h',
         ],
         # TODO(gregoryd): consider switching NaCl to use Chrome OS defines
         'conditions': [
@@ -44,6 +44,9 @@
           ['OS=="linux"', {
             'defines': [
               '__STDC_LIMIT_MACROS=1',
+            ],
+            'sources': [
+              'nacl/nacl_fork_delegate_linux.cc',
             ],
           },],
         ],
@@ -138,6 +141,23 @@
               '<@(nacl_defines)',
             ],
           },
+        },
+      ],
+    }],
+    ['OS=="linux"', {
+      'targets': [
+        {
+          'target_name': 'nacl_helper',
+          'type': 'executable',
+          'include_dirs': [
+            '..',
+          ],
+          'dependencies': [
+            'nacl',
+          ],
+          'sources': [
+            '../chrome/nacl/nacl_helper_linux.cc',
+          ],
         },
       ],
     }],
