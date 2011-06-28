@@ -30,6 +30,27 @@
 #include "chrome/browser/renderer_host/offline_resource_handler.h"
 #endif
 
+namespace {
+
+void AddPrerenderOnUI(
+    const base::WeakPtr<prerender::PrerenderManager>&
+        prerender_manager_weak_ptr,
+    int render_process_id, int render_view_id,
+    const GURL& url, const GURL& referrer) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  prerender::PrerenderManager* prerender_manager =
+      prerender_manager_weak_ptr.get();
+  if (!prerender_manager || !prerender_manager->is_enabled())
+    return;
+
+  prerender_manager->AddPrerenderFromLinkRelPrerender(render_process_id,
+                                                      render_view_id,
+                                                      url,
+                                                      referrer);
+}
+
+}  // end namespace
+
 ChromeResourceDispatcherHostDelegate::ChromeResourceDispatcherHostDelegate(
     ResourceDispatcherHost* resource_dispatcher_host,
     prerender::PrerenderTracker* prerender_tracker)
@@ -65,7 +86,7 @@ bool ChromeResourceDispatcherHostDelegate::ShouldBeginRequest(
   if (request_data.resource_type == ResourceType::PRERENDER) {
     if (prerender::PrerenderManager::IsPrerenderingPossible()) {
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-          NewRunnableFunction(prerender::HandleTag,
+          NewRunnableFunction(AddPrerenderOnUI,
                               resource_context.prerender_manager(),
                               child_id,
                               route_id,

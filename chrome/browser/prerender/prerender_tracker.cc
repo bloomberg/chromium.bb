@@ -74,6 +74,21 @@ void HandleDelayedRequestOnUIThread(
   }
 }
 
+void DestroyPrerenderForRenderViewOnUI(
+    const base::WeakPtr<PrerenderManager>& prerender_manager_weak_ptr,
+    int render_process_id,
+    int render_view_id,
+    FinalStatus final_status) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  PrerenderManager* prerender_manager = prerender_manager_weak_ptr.get();
+  if (!prerender_manager)
+    return;
+
+  prerender_manager->DestroyPrerenderForRenderView(
+      render_process_id, render_view_id, final_status);
+}
+
+
 void AddURL(const GURL& url, URLCounter* counter) {
   DCHECK(counter);
   counter->AddURL(url);
@@ -287,7 +302,7 @@ bool PrerenderTracker::SetFinalStatus(int child_id, int route_id,
     if (desired_final_status != FINAL_STATUS_USED) {
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          NewRunnableFunction(&DestroyPrerenderForRenderView,
+          NewRunnableFunction(&DestroyPrerenderForRenderViewOnUI,
                               final_status_it->second.prerender_manager,
                               child_id,
                               route_id,

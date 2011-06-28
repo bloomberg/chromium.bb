@@ -237,8 +237,8 @@ void AutocompleteEditModel::OnChanged() {
       prerender::PrerenderManager* prerender_manager =
           tab->tab_contents()->profile()->GetPrerenderManager();
       if (prerender_manager) {
-        prerender_manager->AddPrerender(prerender::ORIGIN_OMNIBOX,
-                                        CurrentMatch().destination_url);
+        prerender_manager->AddPrerenderFromOmnibox(
+            CurrentMatch().destination_url);
       }
     }
   }

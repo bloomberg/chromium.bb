@@ -22,10 +22,9 @@ class TestPrerenderManager : public PrerenderManager {
     rate_limit_enabled_ = false;
   }
 
-  virtual void DestroyPrerenderForChildRouteIdPair(
-      const std::pair<int, int>& child_route_id_pair,
-      FinalStatus final_status) OVERRIDE {
-    cancelled_id_pairs_.insert(child_route_id_pair);
+  virtual void DestroyPrerenderForRenderView(
+      int process_id, int view_id, FinalStatus final_status) OVERRIDE {
+    cancelled_id_pairs_.insert(std::make_pair(process_id, view_id));
   }
 
   bool WasPrerenderCancelled(int child_id, int route_id) {

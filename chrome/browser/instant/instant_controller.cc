@@ -176,10 +176,8 @@ void InstantController::Update(TabContentsWrapper* tab_contents,
     // Start Prerender of this page instead.
     prerender::PrerenderManager* prerender_manager =
         tab_contents_->profile()->GetPrerenderManager();
-    if (prerender_manager) {
-      prerender_manager->AddPrerender(prerender::ORIGIN_OMNIBOX,
-                                      match.destination_url);
-    }
+    if (prerender_manager)
+      prerender_manager->AddPrerenderFromOmnibox(match.destination_url);
 
     DestroyPreviewContentsAndLeaveActive();
     return;

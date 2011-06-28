@@ -43,21 +43,6 @@ namespace prerender {
 class PrerenderHistory;
 class PrerenderTracker;
 
-// Adds either a preload or a pending preload to the PrerenderManager.
-// Must be called on the UI thread.
-void HandleTag(
-    const base::WeakPtr<PrerenderManager>& prerender_manager,
-    int render_process_id,
-    int render_view_id,
-    const GURL& url,
-    const GURL& referrer);
-
-void DestroyPrerenderForRenderView(
-    const base::WeakPtr<PrerenderManager>& prerender_manager_weak_ptr,
-    int child_id,
-    int route_id,
-    FinalStatus final_status);
-
 // PrerenderManager is responsible for initiating and keeping prerendered
 // views of webpages. All methods must be called on the UI thread unless
 // indicated otherwise.
@@ -87,30 +72,27 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   virtual ~PrerenderManager();
 
-  // Starts a prerender for |url| if valid. |child_route_id_pair| identifies the
-  // RenderViewHost that the prerender request came from and is used to
+  // Entry points for adding prerenders.
+
+  // Adds a prerender for |url| if valid. |process_id| and |route_id| identify
+  // the RenderViewHost that the prerender request came from and are used to
   // set the initial window size of the RenderViewHost used for prerendering.
   // Returns true if the URL was added, false if it was not.
-  // If |child_route_id_pair| itself is prerendering, adds the preloads as
-  // a pending preload. |origin| enumerates the source of the prerender for
-  // data-tracking purposes.
-  bool AddPrerenderFromPage(
-      Origin origin,
-      const std::pair<int, int>& child_route_id_pair,
-      const GURL& url,
-      const GURL& referrer);
+  // If the RenderViewHost source is itself prerendering, the prerender is added
+  // as a pending prerender.
+  bool AddPrerenderFromLinkRelPrerender(int process_id, int route_id,
+                                        const GURL& url, const GURL& referrer);
 
-  // Starts a prerender for |url| if valid. As the prerender request is coming
+  // Adds a prerender for |url| if valid. As the prerender request is coming
   // from a source without a RenderViewHost (ie, the omnibox) we don't have a
   // child or route id, or a referrer. This method uses sensible values for
   // those.
-  bool AddPrerender(Origin origin, const GURL& url);
+  bool AddPrerenderFromOmnibox(const GURL& url);
 
   // Destroy all prerenders for the given child route id pair and assign a final
   // status to them.
-  virtual void DestroyPrerenderForChildRouteIdPair(
-      const std::pair<int, int>& child_route_id_pair,
-      FinalStatus final_status);
+  virtual void DestroyPrerenderForRenderView(int process_id, int view_id,
+                                             FinalStatus final_status);
 
   // For a given TabContents that wants to navigate to the URL supplied,
   // determines whether a prerendered version of the URL can be used,
@@ -123,9 +105,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // Moves a PrerenderContents to the pending delete list from the list of
   // active prerenders when prerendering should be cancelled.
   void MoveEntryToPendingDelete(PrerenderContents* entry);
-
-  // Checks if the PrerenderContents has been added to the pending delete list.
-  bool IsPendingDelete(PrerenderContents* entry) const;
 
   // Retrieves the PrerenderContents object for the specified URL, if it
   // has been prerendered.  The caller will then have ownership of the
@@ -148,15 +127,9 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
       base::TimeDelta perceived_page_load_time,
       TabContents* tab_contents);
 
-  // Records the time from when a page starts prerendering to when the user
-  // navigates to it. This must be called on the UI thread.
-  void RecordTimeUntilUsed(base::TimeDelta time_until_used);
-
-  base::TimeDelta max_prerender_age() const;
   void set_max_prerender_age(base::TimeDelta max_age);
   size_t max_prerender_memory_mb() const;
   void set_max_prerender_memory_mb(size_t prerender_memory_mb);
-  unsigned int max_elements() const;
   void set_max_elements(unsigned int num);
 
   // Returns whether prerendering is currently enabled for this manager.
@@ -174,9 +147,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   static bool IsPrerenderingPossible();
   static bool IsControlGroup();
 
-  // Records that a prerender tag has been observed.
-  void RecordTagObserved();
-
   // Query the list of current prerender pages to see if the given tab contents
   // is prerendering a page.
   bool IsTabContentsPrerendering(TabContents* tab_contents) const;
@@ -190,19 +160,9 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   bool WouldTabContentsBePrerendered(TabContents* tab_contents) const;
   bool IsOldRenderViewHost(const RenderViewHost* render_view_host) const;
 
-  // Records that some visible tab navigated (or was redirected) to the
-  // provided URL.
-  void RecordNavigation(const GURL& url);
-
   // Checks whether navigation to the provided URL has occured in a visible
   // tab recently.
   bool HasRecentlyBeenNavigatedTo(const GURL& url);
-
-  // Extracts a urlencoded URL stored in a url= query parameter from a URL
-  // supplied, if available, and stores it in alias_url.  Returns whether or not
-  // the operation succeeded (i.e. a valid URL was found).
-  static bool MaybeGetQueryStringBasedAliasURL(const GURL& url,
-                                               GURL* alias_url);
 
   // Returns true if the method given is invalid for prerendering.
   static bool IsValidHttpMethod(const std::string& method);
@@ -226,6 +186,10 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   void ClearData(int clear_flags);
 
  protected:
+  // Test that needs needs access to internal functions.
+  FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, ExpireTest);
+  FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, ExtractURLInQueryStringTest);
+
   struct PendingContentsData;
 
   void SetPrerenderContentsFactory(
@@ -234,6 +198,15 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   bool rate_limit_enabled_;
 
   PendingContentsData* FindPendingEntry(const GURL& url);
+
+  // Extracts a urlencoded URL stored in a url= query parameter from a URL
+  // supplied, if available, and stores it in alias_url.  Returns whether or not
+  // the operation succeeded (i.e. a valid URL was found).
+  static bool MaybeGetQueryStringBasedAliasURL(const GURL& url,
+                                               GURL* alias_url);
+
+  base::TimeDelta max_prerender_age() const;
+  unsigned int max_elements() const;
 
  private:
   // Test that needs needs access to internal functions.
@@ -245,6 +218,15 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   struct NavigationRecord;
 
   class OnCloseTabContentsDeleter;
+
+  // Adds a prerender for |url| from referrer |referrer| initiated from the
+  // RenderViewHost specified by |child_route_id_pair|. The |origin| specifies
+  // how the prerender was added.
+  bool AddPrerender(
+      Origin origin,
+      const std::pair<int, int>& child_route_id_pair,
+      const GURL& url,
+      const GURL& referrer);
 
   // Adds a pending preload issued by the prerendering RenderView identified by
   // |child_route_id_pair|.  If and when that prerendering RenderView is used,
@@ -277,6 +259,9 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   virtual PrerenderContents* CreatePrerenderContents(const GURL& url,
                                                      const GURL& referrer,
                                                      Origin origin);
+
+  // Checks if the PrerenderContents has been added to the pending delete list.
+  bool IsPendingDelete(PrerenderContents* entry) const;
 
   // Deletes any PrerenderContents that have been added to the pending delete
   // list.
@@ -320,6 +305,10 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // Adds to the history list.
   void AddToHistory(PrerenderContents* contents);
 
+  // Records that some visible tab navigated (or was redirected) to the
+  // provided URL.
+  void RecordNavigation(const GURL& url);
+
   // Returns a new Value representing the pages currently being prerendered. The
   // caller is responsible for delete'ing the return value.
   Value* GetActivePrerendersAsValue() const;
@@ -328,6 +317,10 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // well as any swapped out TabContents queued for destruction.
   // Used both on destruction, and when clearing the browing history.
   void DestroyAllContents(FinalStatus final_status);
+
+  // Records the time from when a page starts prerendering to when the user
+  // navigates to it. This must be called on the UI thread.
+  void RecordTimeUntilUsed(base::TimeDelta time_until_used);
 
   // Specifies whether prerendering is currently enabled for this
   // manager. The value can change dynamically during the lifetime

@@ -121,7 +121,9 @@ class TestPrerenderManager : public PrerenderManager {
 
   // Shorthand to add a simple preload with a reasonable source.
   bool AddSimplePrerender(const GURL& url) {
-    return AddPrerender(ORIGIN_LINK_REL_PRERENDER, url);
+    return AddPrerenderFromLinkRelPrerender(-1, -1,
+                                            url,
+                                            GURL());
   }
 
   bool IsPendingEntry(const GURL& url) {
@@ -423,8 +425,8 @@ TEST_F(PrerenderManagerTest, PendingPrerenderTest) {
 
   GURL pending_url("http://news.google.com/");
 
-  EXPECT_TRUE(prerender_manager()->AddPrerenderFromPage(
-      ORIGIN_LINK_REL_PRERENDER, std::make_pair(child_id, route_id),
+  EXPECT_TRUE(prerender_manager()->AddPrerenderFromLinkRelPrerender(
+      child_id, route_id,
       pending_url, url));
 
   EXPECT_TRUE(prerender_manager()->IsPendingEntry(pending_url));
@@ -473,8 +475,8 @@ TEST_F(PrerenderManagerTest, SourceRenderViewClosed) {
   prerender_manager()->CreateNextPrerenderContents(
       url,
       FINAL_STATUS_MANAGER_SHUTDOWN);
-  EXPECT_FALSE(prerender_manager()->AddPrerenderFromPage(
-      ORIGIN_LINK_REL_PRERENDER, std::pair<int, int>(100, 100), url, GURL()));
+  EXPECT_FALSE(prerender_manager()->AddPrerenderFromLinkRelPrerender(
+      100, 100, url, GURL()));
 }
 
 // Tests that the prerender manager ignores fragment references when matching
