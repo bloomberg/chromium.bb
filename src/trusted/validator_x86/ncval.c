@@ -468,6 +468,9 @@ static void usage() {
       "\tModel a CPU that supports E3DNOW instructions.\n"
       "\n"
       "Options (iterator model):\n"
+      "--annotate\n"
+      "\tRun validator using annotations that will be understood\n"
+      "\tby ncval_annotate.py.\n"
       "--errors\n"
       "\tPrint out error and fatal error messages, but not\n"
       "\tinformative and warning messages\n"
@@ -576,6 +579,7 @@ static Bool GrokABoolFlag(const char *arg) {
     { "-t", &NACL_FLAGS_print_timing },
     { "--use_iter", &NACL_FLAGS_use_iter },
     { "--stats", &NACL_FLAGS_stats_print },
+    { "--annotate", &NACL_FLAGS_ncval_annotate },
   };
   int i;
   for (i = 0; i < NACL_ARRAY_SIZE(flags); ++i) {

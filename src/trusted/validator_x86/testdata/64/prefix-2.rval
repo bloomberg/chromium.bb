@@ -147,17 +147,11 @@ VALIDATOR: ERROR: REX prefix byte must appear last
 VALIDATOR: 000000000000010f: 41 f2 0f 58 04 07                            addsd %xmm0, [%r15+%rax*1]
 VALIDATOR: ERROR: REX prefix byte must appear last
 VALIDATOR: Checking jump targets: 0 to 115
-VALIDATOR: At address 2e:
-VALIDATOR: ERROR: Bad jump target
+VALIDATOR: ERROR: 2e: Bad jump target
 VALIDATOR: Checking that basic blocks are aligned
-VALIDATOR: At address 40:
-VALIDATOR: ERROR: Bad basic block alignment.
-VALIDATOR: At address 80:
-VALIDATOR: ERROR: Bad basic block alignment.
-VALIDATOR: At address c0:
-VALIDATOR: ERROR: Bad basic block alignment.
-VALIDATOR: At address e0:
-VALIDATOR: ERROR: Bad basic block alignment.
-VALIDATOR: At address 100:
-VALIDATOR: ERROR: Bad basic block alignment.
+VALIDATOR: ERROR: 40: Bad basic block alignment.
+VALIDATOR: ERROR: 80: Bad basic block alignment.
+VALIDATOR: ERROR: c0: Bad basic block alignment.
+VALIDATOR: ERROR: e0: Bad basic block alignment.
+VALIDATOR: ERROR: 100: Bad basic block alignment.
 ***MODULE IS UNSAFE***
