@@ -74,9 +74,17 @@ class LiveAutofillSyncTest : public LiveSyncTest {
   const std::vector<AutofillProfile*>& GetAllProfiles(int profile)
       WARN_UNUSED_RESULT;
 
+  // Returns the number of autofill profiles contained by sync profile
+  // |profile|.
+  int GetProfileCount(int profile);
+
   // Compares the Autofill profiles in the PersonalDataManagers of sync profiles
   // |profile_a| and |profile_b|. Returns true if they match.
   bool ProfilesMatch(int profile_a, int profile_b) WARN_UNUSED_RESULT;
+
+  // Compares the autofill profiles for all sync profiles, and returns true if
+  // they all match.
+  bool AllProfilesMatch() WARN_UNUSED_RESULT;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LiveAutofillSyncTest);

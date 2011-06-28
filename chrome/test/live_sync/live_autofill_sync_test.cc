@@ -242,6 +242,10 @@ const std::vector<AutofillProfile*>& LiveAutofillSyncTest::GetAllProfiles(
   return pdm->web_profiles();
 }
 
+int LiveAutofillSyncTest::GetProfileCount(int profile) {
+  return GetAllProfiles(profile).size();
+}
+
 bool LiveAutofillSyncTest::ProfilesMatch(int profile_a, int profile_b) {
   const std::vector<AutofillProfile*>& autofill_profiles_a =
       GetAllProfiles(profile_a);
@@ -256,23 +260,34 @@ bool LiveAutofillSyncTest::ProfilesMatch(int profile_a, int profile_b) {
   for (size_t i = 0; i < autofill_profiles_b.size(); ++i) {
     const AutofillProfile* p = autofill_profiles_b[i];
     if (!autofill_profiles_a_map.count(p->guid())) {
-      VLOG(1) << "GUID " << p->guid() << " not found in profile "
-              << profile_b << ".";
+      LOG(ERROR) << "GUID " << p->guid() << " not found in profile "
+                 << profile_b << ".";
       return false;
     }
     AutofillProfile* expected_profile = &autofill_profiles_a_map[p->guid()];
     expected_profile->set_guid(p->guid());
     if (*expected_profile != *p) {
-      VLOG(1) << "Mismatch in profile with GUID " << p->guid() << ".";
+      LOG(ERROR) << "Mismatch in profile with GUID " << p->guid() << ".";
       return false;
     }
     autofill_profiles_a_map.erase(p->guid());
   }
 
   if (autofill_profiles_a_map.size()) {
-    VLOG(1) << "Entries present in Profile " << profile_a
+    LOG(ERROR) << "Entries present in Profile " << profile_a
             << " but not in " << profile_b << ".";
     return false;
+  }
+  return true;
+}
+
+bool LiveAutofillSyncTest::AllProfilesMatch() {
+  for (int i = 1; i < num_clients(); ++i) {
+    if (!ProfilesMatch(0, i)) {
+      LOG(ERROR) << "Profile " << i << "does not contain the same autofill "
+                                       "profiles as profile 0.";
+      return false;
+    }
   }
   return true;
 }
