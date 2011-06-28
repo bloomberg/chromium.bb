@@ -668,6 +668,7 @@ base_unittests.exe!base::ToolsSanityTest_AccessesToNewMemory_Test::TestBody
 
 # We deliberately leak different kinds of Histograms to avoid data races.
 LEAK
+...
 *!operator new
 *!*::*Histogram::FactoryGet
 
