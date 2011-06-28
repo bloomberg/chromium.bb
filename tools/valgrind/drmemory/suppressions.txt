@@ -513,6 +513,19 @@ CRYPT32.dll!CertGetCRLContextProperty
 ...
 CRYPT32.dll!CertGetCertificateChain
 
+# http://code.google.com/p/drmemory/issues/detail?id=478
+LEAK
+...
+*!std::_Maklocstr<char>
+*!std::numpunct<wchar_t>::_Init
+*!std::numpunct<wchar_t>::numpunct<wchar_t>
+*!std::numpunct<wchar_t>::_Getcat
+*!std::use_facet<std::numpunct<wchar_t> >
+*!std::num_put*
+*!std::num_put*
+*!std::num_put*
+*!std::basic_ostream<wchar_t,std::char_traits<wchar_t> >::operator<<
+
 ############################
 # TODO(timurrrr): investigate these
 UNINITIALIZED READ
