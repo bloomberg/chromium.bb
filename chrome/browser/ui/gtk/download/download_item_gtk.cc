@@ -485,8 +485,9 @@ void DownloadItemGtk::UpdateStatusLabel(const std::string& status_text) {
   // vertical center of |text_stack_|. Otherwise, |name_label_| is displayed
   // on the upper half of |text_stack_| and |status_label_| is displayed
   // on the lower half of |text_stack_|.
-  if (status_text.empty() && status_label_) {
-    gtk_widget_destroy(status_label_);
+  if (status_text.empty()) {
+    if (status_label_)
+      gtk_widget_destroy(status_label_);
     return;
   }
   if (!status_label_) {
@@ -499,7 +500,7 @@ void DownloadItemGtk::UpdateStatusLabel(const std::string& status_text) {
     gtk_util::ForceFontSizePixels(status_label_, kTextSize);
 
     gtk_box_pack_start(GTK_BOX(text_stack_), status_label_, FALSE, FALSE, 0);
-    gtk_widget_show_all(hbox_.get());
+    gtk_widget_show_all(status_label_);
   }
 
   GdkColor text_color;
