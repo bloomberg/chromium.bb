@@ -201,6 +201,8 @@ WebPluginDelegateProxy::~WebPluginDelegateProxy() {
   ReleaseTransportDIB(transport_store_.get());
   DCHECK(!background_store_.get());
 #endif
+  if (npobject_)
+    WebBindings::releaseObject(npobject_);
 }
 
 void WebPluginDelegateProxy::PluginDestroyed() {
