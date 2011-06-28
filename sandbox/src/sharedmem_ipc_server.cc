@@ -129,20 +129,18 @@ bool SharedMemIPCServer::Init(void* shared_mem, size_t shared_size,
 // Releases memory allocated for IPC arguments, if needed.
 void ReleaseArgs(const IPCParams* ipc_params, void* args[kMaxIpcParams]) {
   for (size_t i = 0; i < kMaxIpcParams; i++) {
-    if (args[i]) {
-      switch (ipc_params->args[i]) {
-        case WCHAR_TYPE: {
-          delete reinterpret_cast<std::wstring*>(args[i]);
-          args[i] = NULL;
-          break;
-        }
-        case INOUTPTR_TYPE: {
-          delete reinterpret_cast<CountedBuffer*>(args[i]);
-          args[i] = NULL;
-          break;
-        }
-        default: break;
+    switch (ipc_params->args[i]) {
+      case WCHAR_TYPE: {
+        delete reinterpret_cast<std::wstring*>(args[i]);
+        args[i] = NULL;
+        break;
       }
+      case INOUTPTR_TYPE: {
+        delete reinterpret_cast<CountedBuffer*>(args[i]);
+        args[i] = NULL;
+        break;
+      }
+      default: break;
     }
   }
 }
