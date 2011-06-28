@@ -118,11 +118,13 @@ LoginPromptTest.SupplyRedundantAuths
 LoginPromptTest.TestCancelAuth
 MetricsServiceTest.CrashRenderers
 PPAPITest.Buffer
-PPAPITest.PaintAggregator
 PPAPITest.FileIO
 PPAPITest.FileRef
+PPAPITest.Graphics2SD
+PPAPITest.PaintAggregator
 PreferenceServiceTest.PreservedWindowPlacementIsLoaded
 PrintPreviewUITest.LoadPrintPreviewByURL
+RedirectTest.Server
 RedirectTest.ServerReference
 RepostFormWarningTest.TestDoubleReload
 ResourceDispatcherTest.ContentDispositionEmpty
@@ -229,3 +231,6 @@ AutomationProxyTest4.BooleanValueIsEchoedByDomAutomationController
 
 # http://crbug.com/87625
 PPAPITest.Var
+
+# http://crbug.com/87766
+PPAPITest.URLLoader
