@@ -58,7 +58,8 @@ ZygoteHost::ZygoteHost()
       init_(false),
       using_suid_sandbox_(false),
       have_read_sandbox_status_word_(false),
-      sandbox_status_(0) {}
+      sandbox_status_(0) {
+}
 
 ZygoteHost::~ZygoteHost() {
   if (init_)
@@ -109,7 +110,6 @@ void ZygoteHost::Init(const std::string& sandbox_cmd) {
     switches::kRegisterPepperPlugins,
     switches::kDisableSeccompSandbox,
     switches::kEnableSeccompSandbox,
-    switches::kNaClLinuxHelper,
   };
   cmd_line.CopySwitchesFrom(browser_command_line, kForwardSwitches,
                             arraysize(kForwardSwitches));
@@ -221,15 +221,13 @@ ssize_t ZygoteHost::ReadReply(void* buf, size_t buf_len) {
   return HANDLE_EINTR(read(control_fd_, buf, buf_len));
 }
 
-pid_t ZygoteHost::ForkRequest(
+pid_t ZygoteHost::ForkRenderer(
     const std::vector<std::string>& argv,
-    const base::GlobalDescriptors::Mapping& mapping,
-    const std::string& process_type) {
+    const base::GlobalDescriptors::Mapping& mapping) {
   DCHECK(init_);
   Pickle pickle;
 
   pickle.WriteInt(kCmdFork);
-  pickle.WriteString(process_type);
   pickle.WriteInt(argv.size());
   for (std::vector<std::string>::const_iterator
        i = argv.begin(); i != argv.end(); ++i)

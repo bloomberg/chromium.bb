@@ -47,11 +47,6 @@
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-#include "chrome/common/nacl_fork_delegate_linux.h"
-#include "content/common/zygote_fork_delegate_linux.h"
-#endif
-
 #if defined(OS_WIN)
 #include <algorithm>
 #include <malloc.h>
@@ -117,10 +112,7 @@ extern int WorkerMain(const MainFunctionParams&);
 extern int NaClMain(const MainFunctionParams&);
 extern int UtilityMain(const MainFunctionParams&);
 extern int ProfileImportMain(const MainFunctionParams&);
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-extern int ZygoteMain(const MainFunctionParams&,
-                      ZygoteForkDelegate* forkdelegate);
-#endif
+extern int ZygoteMain(const MainFunctionParams&);
 #if defined(_WIN64)
 extern int NaClBrokerMain(const MainFunctionParams&);
 #endif
@@ -458,7 +450,7 @@ int RunZygote(const MainFunctionParams& main_function_params) {
     media::InitializeMediaLibrary(media_path);
 
   // This function call can return multiple times, once per fork().
-  if (!ZygoteMain(main_function_params, new NaClForkDelegate()))
+  if (!ZygoteMain(main_function_params))
     return 1;
 
   // Zygote::HandleForkRequest may have reallocated the command

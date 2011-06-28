@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,12 +32,10 @@ class ZygoteHost {
 
   void Init(const std::string& sandbox_cmd);
 
-  // Tries to start a process of type indicated by process_type.
-  // Returns its pid on success, otherwise
+  // Tries to start a renderer process.  Returns its pid on success, otherwise
   // base::kNullProcessHandle;
-  pid_t ForkRequest(const std::vector<std::string>& command_line,
-                    const base::GlobalDescriptors::Mapping& mapping,
-                    const std::string& process_type);
+  pid_t ForkRenderer(const std::vector<std::string>& command_line,
+                     const base::GlobalDescriptors::Mapping& mapping);
   void EnsureProcessTerminated(pid_t process);
 
   // Get the termination status (and, optionally, the exit code) of

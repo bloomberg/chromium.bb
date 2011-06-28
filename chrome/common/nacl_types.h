@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,6 @@
 #define CHROME_COMMON_NACL_TYPES_H_
 #pragma once
 
-#include "base/native_library.h"  // for HANDLE and OS_POSIX
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
 #endif
@@ -20,8 +19,7 @@ namespace nacl {
   inline HANDLE ToNativeHandle(const FileDescriptor& desc) {
     return reinterpret_cast<HANDLE>(desc);
   }
-#endif
-#if defined(OS_POSIX)
+#elif defined(OS_POSIX)
   typedef base::FileDescriptor FileDescriptor;
   inline int ToNativeHandle(const FileDescriptor& desc) {
     return desc.fd;
