@@ -2570,6 +2570,7 @@ nacl_env.Append(
     'tests/ppapi_browser/manifest/nacl.scons',
     'tests/ppapi_browser/ppb_core/nacl.scons',
     'tests/ppapi_browser/ppb_graphics2d/nacl.scons',
+    'tests/ppapi_browser/ppb_scrollbar/nacl.scons',
     'tests/ppapi_browser/progress_events/nacl.scons',
     'tests/ppapi_example_2d/nacl.scons',
     'tests/ppapi_example_audio/nacl.scons',

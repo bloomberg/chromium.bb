@@ -60,8 +60,10 @@ void TestCallbackAsync() {
 }  // namespace
 
 void SetupTests() {
+  // Before.
   RegisterScriptableTest("TestSimpleSync", TestSimpleSync);
   RegisterScriptableTest("TestCallbackSync", TestCallbackSync);
+  // After.
   RegisterTest("TestSimpleAsync", TestSimpleAsync);
   RegisterTest("TestCallbackAsync", TestCallbackAsync);
 }
