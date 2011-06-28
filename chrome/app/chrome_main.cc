@@ -821,7 +821,8 @@ int ChromeMain(int argc, char** argv) {
       process_type == switches::kExtensionProcess ||
       process_type == switches::kNaClLoaderProcess ||
       process_type == switches::kGpuProcess ||
-      process_type == switches::kPpapiPluginProcess) {
+      process_type == switches::kPpapiPluginProcess ||
+      process_type == switches::kRelauncherProcess) {
     initialize_sandbox = false;
   }
 #endif
