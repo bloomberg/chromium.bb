@@ -120,6 +120,12 @@ void ConfigFile::ProcessLine(const std::vector<std::string>& line) {
   }
 }
 
+ConfigFile::ConfigFileBlock::ConfigFileBlock() {
+}
+
+ConfigFile::ConfigFileBlock::~ConfigFileBlock() {
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // StateMachine

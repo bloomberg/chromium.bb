@@ -132,6 +132,9 @@ class ConfigFile {
   //   * there are multiple hwids defined for each block.
   //   * we will retieve properties by hwid.
   struct ConfigFileBlock {
+    ConfigFileBlock();
+    ~ConfigFileBlock();
+
     PropertyMap properties;
     HwidsSet hwids;
   };
