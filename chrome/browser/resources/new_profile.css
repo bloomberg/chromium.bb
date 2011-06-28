@@ -1,0 +1,76 @@
+html {
+  font-family: segoe ui, arial, helvetica, sans-serif;
+  font-size: 13px;
+}
+
+#avatar-menu {
+  width: 337px;
+  height: 150px;
+  overflow: auto;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  background-color: rgba(255, 255, 255, 0.75);
+}
+
+.avatar-button {
+  width: 38px;
+  height: 38px;
+  padding: 4px;
+}
+
+#profile-name {
+  font-size: 125%;
+}
+
+div.page > h3 {
+  font-size: 105%;
+  font-weight: bold;
+  color: rgb(75, 75, 75);
+}
+
+div > p {
+  color: rgb(75, 75, 75);
+}
+
+.page * input[type="button"],
+.page * input[type="button"] {
+  min-height: 26px;
+  min-width: 87px;
+}
+
+.overlay {
+  -webkit-box-align: center;
+  -webkit-box-pack: center;
+  bottom: 0;
+  display: -webkit-box;
+  left: 0;
+  padding: 20px;
+  padding-bottom: 130px;
+  position: fixed;
+  right: 0;
+  top: 0;
+  background: -webkit-linear-gradient(white, rgb(235, 235, 235));
+}
+
+.overlay .page {
+  min-width: 400px;
+  position: relative;
+}
+
+#new-profile-overlay {
+  width: 500px;
+}
+
+#footer {
+  bottom: 0;
+  position: fixed;
+  width: 100%;
+}
+
+#footer-content {
+  display: -webkit-box;
+  height: 49px;
+  -webkit-box-align: center;
+}
+#footer-content > * {
+  margin: 0 9px;
+}

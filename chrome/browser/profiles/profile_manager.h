@@ -25,6 +25,7 @@
 
 class FilePath;
 class NewProfileLauncher;
+class ProfileInfoCache;
 
 class ProfileManagerObserver {
  public:
@@ -147,6 +148,10 @@ class ProfileManager : public base::NonThreadSafe,
   // Register multi-profile related preferences in Local State.
   static void RegisterPrefs(PrefService* prefs);
 
+  // Returns a ProfileInfoCache object which can be used to get information
+  // about profiles without having to load them from disk.
+  ProfileInfoCache& GetProfileInfoCache();
+
  protected:
   // Does final initial actions.
   virtual void DoFinalInit(Profile* profile);
@@ -203,6 +208,8 @@ class ProfileManager : public base::NonThreadSafe,
   // RegisterProfile() to add into this map.
   typedef std::map<FilePath, linked_ptr<ProfileInfo> > ProfilesInfoMap;
   ProfilesInfoMap profiles_info_;
+
+  scoped_ptr<ProfileInfoCache> profile_info_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileManager);
 };

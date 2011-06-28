@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "chrome/browser/ui/webui/media_internals_ui.h"
 #include "chrome/browser/ui/webui/net_internals_ui.h"
+#include "chrome/browser/ui/webui/new_profile_ui.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "chrome/browser/ui/webui/plugins_ui.h"
@@ -221,6 +222,13 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
 
   if (url.spec() == chrome::kChromeUIConstrainedHTMLTestURL)
     return &NewWebUI<ConstrainedHtmlUI>;
+
+#if !defined(OS_CHROMEOS)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kMultiProfiles)) {
+    if (url.host() == chrome::kChromeUINewProfileHost)
+      return &NewWebUI<NewProfileUI>;
+  }
+#endif
 
   return NULL;
 }

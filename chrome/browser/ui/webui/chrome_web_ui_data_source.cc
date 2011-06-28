@@ -28,6 +28,12 @@ void ChromeWebUIDataSource::AddLocalizedString(const std::string& name,
   localized_strings_.SetString(name, l10n_util::GetStringUTF16(ids));
 }
 
+void ChromeWebUIDataSource::AddLocalizedString(
+    const std::string& name,
+    const string16& localized_string) {
+  localized_strings_.SetString(name, localized_string);
+}
+
 void ChromeWebUIDataSource::SendLocalizedStringsAsJSON(int request_id) {
   std::string template_data;
   scoped_refptr<RefCountedBytes> response(new RefCountedBytes);

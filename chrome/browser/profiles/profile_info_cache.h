@@ -35,9 +35,11 @@ class ProfileInfoCache {
   void DeleteProfileFromCache(const FilePath& profile_path);
 
   size_t GetNumberOfProfiles() const;
+  size_t GetIndexOfProfileWithPath(const FilePath& profile_path) const;
   string16 GetNameOfProfileAtIndex(size_t index) const;
   FilePath GetPathOfProfileAtIndex(size_t index) const;
   const gfx::Image& GetAvatarIconOfProfileAtIndex(size_t index) const;
+  size_t GetAvatarIconIndexOfProfileAtIndex(size_t index) const;
 
   void SetNameOfProfileAtIndex(size_t index, const string16& name);
   void SetAvatarIconOfProfileAtIndex(size_t index, size_t icon_index);
@@ -46,6 +48,8 @@ class ProfileInfoCache {
   static size_t GetDefaultAvatarIconCount();
   // Gets the resource ID of the default avatar icon at |index|.
   static int GetDefaultAvatarIconResourceIDAtIndex(size_t index);
+  // Returns a URL for the default avatar icon with specified index.
+  static std::string GetDefaultAvatarIconUrl(size_t index);
 
   // Register cache related preferences in Local State.
   static void RegisterPrefs(PrefService* prefs);
