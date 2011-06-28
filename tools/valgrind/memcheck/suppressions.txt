@@ -2382,7 +2382,13 @@
    fun:_ZN14WebDataService29InitializeDatabaseIfNecessaryEv
    fun:_Z16DispatchToMethodI14WebDataServiceMS0_FvvEEvPT_T0_RK6Tuple0
 }
-
+{
+   bug_50968_c
+   Memcheck:Addr1
+   ...
+   fun:_ZN14WebDataService29InitializeDatabaseIfNecessaryEv
+   fun:_Z16DispatchToMethodI14WebDataServiceMS0_FvvEEvPT_T0_RK6Tuple0
+}
 {
    bug_56359_a
    Memcheck:Leak
