@@ -22,6 +22,7 @@
 #include "base/time.h"
 #include "base/tuple.h"
 #include "chrome/browser/extensions/apps_promo.h"
+#include "chrome/browser/extensions/extension_app_api.h"
 #include "chrome/browser/extensions/extension_icon_manager.h"
 #include "chrome/browser/extensions/extension_menu_manager.h"
 #include "chrome/browser/extensions/extension_prefs.h"
@@ -452,6 +453,10 @@ class ExtensionService
 
   ExtensionMenuManager* menu_manager() { return &menu_manager_; }
 
+  AppNotificationManager* app_notification_manager() {
+    return &app_notification_manager_;
+  }
+
   ExtensionBrowserEventRouter* browser_event_router() {
     return browser_event_router_.get();
   }
@@ -682,6 +687,9 @@ class ExtensionService
 
   // Keeps track of menu items added by extensions.
   ExtensionMenuManager menu_manager_;
+
+  // Keeps track of app notifications.
+  AppNotificationManager app_notification_manager_;
 
   // Keeps track of favicon-sized omnibox icons for extensions.
   ExtensionIconManager omnibox_icon_manager_;

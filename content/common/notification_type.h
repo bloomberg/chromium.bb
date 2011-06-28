@@ -982,6 +982,11 @@ class NotificationType {
     // (const std::string).
     EXTENSION_UPDATE_FOUND,
 
+    // An installed app changed notification state (added or removed
+    // notifications). The source is a Profile, and the details are a string
+    // with the extension id of the app.
+    APP_NOTIFICATION_STATE_CHANGED,
+
     // Desktop Notifications ---------------------------------------------------
 
     // This notification is sent when a balloon is connected to a renderer

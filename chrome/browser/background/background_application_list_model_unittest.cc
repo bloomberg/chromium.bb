@@ -134,7 +134,7 @@ TEST_F(BackgroundApplicationListModelTest, LoadExplicitExtensions) {
   ASSERT_EQ(0U, model->size());
 }
 
-typedef std::set<scoped_refptr<Extension> > ExtensionSet;
+typedef std::set<scoped_refptr<Extension> > ExtensionCollection;
 
 namespace {
 std::string GenerateUniqueExtensionName() {
@@ -160,7 +160,7 @@ TEST_F(BackgroundApplicationListModelTest, LoadRandomExtension) {
   ASSERT_EQ(0U, model->size());
 
   static const int kIterations = 500;
-  ExtensionSet extensions;
+  ExtensionCollection extensions;
   size_t count = 0;
   size_t expected = 0;
   srand(RANDOM_SEED);
@@ -183,7 +183,7 @@ TEST_F(BackgroundApplicationListModelTest, LoadRandomExtension) {
       ASSERT_EQ(count, service->extensions()->size());
       ASSERT_EQ(expected, model->size());
     } else {  // Maybe remove an extension.
-      ExtensionSet::iterator cursor = extensions.begin();
+      ExtensionCollection::iterator cursor = extensions.begin();
       if (cursor == extensions.end()) {
         // Nothing to remove.  Just verify accounting.
         ASSERT_EQ(0U, count);

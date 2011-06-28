@@ -300,6 +300,7 @@ var chrome = chrome || {};
       "cookies",
       "devtools",
       "experimental.accessibility",
+      "experimental.app",
       "experimental.bookmarkManager",
       "experimental.contentSettings",
       "experimental.debugger",

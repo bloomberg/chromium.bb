@@ -149,6 +149,10 @@ function appsPrefChangeCallback(data) {
   });
 }
 
+function appNotificationChanged(id, lastNotification) {
+  // TODO(asargent/finnur) use this when we hook up notifications into the NTP.
+}
+
 // Launches the specified app using the APP_LAUNCH_NTP_APP_RE_ENABLE histogram.
 // This should only be invoked from the AppLauncherHandler.
 function launchAppAfterEnable(appId) {

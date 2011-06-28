@@ -1952,7 +1952,7 @@ std::vector<DictionaryValue*>* GetAppInfoFromExtensions(
     // Only return information about extensions that are actually apps.
     if ((*ext)->is_app()) {
       DictionaryValue* app_info = new DictionaryValue();
-      AppLauncherHandler::CreateAppInfo(*ext, ext_prefs, app_info);
+      AppLauncherHandler::CreateAppInfo(*ext, NULL, ext_prefs, app_info);
       app_info->SetBoolean("is_component_extension",
                            (*ext)->location() == Extension::COMPONENT);
 

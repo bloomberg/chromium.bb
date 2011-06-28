@@ -73,8 +73,23 @@ AppLauncherHandler::AppLauncherHandler(ExtensionService* extension_service)
 
 AppLauncherHandler::~AppLauncherHandler() {}
 
+// Serializes |notification| into a new DictionaryValue which the caller then
+// owns.
+static DictionaryValue* SerializeNotification(
+    const AppNotification& notification) {
+  DictionaryValue* dictionary = new DictionaryValue();
+  dictionary->SetString("title", notification.title);
+  dictionary->SetString("body", notification.body);
+  if (!notification.linkUrl.is_empty()) {
+    dictionary->SetString("linkUrl", notification.linkUrl.spec());
+    dictionary->SetString("linkText", notification.linkText);
+  }
+  return dictionary;
+}
+
 // static
 void AppLauncherHandler::CreateAppInfo(const Extension* extension,
+                                       const AppNotification* notification,
                                        ExtensionPrefs* prefs,
                                        DictionaryValue* value) {
   bool enabled =
@@ -108,6 +123,9 @@ void AppLauncherHandler::CreateAppInfo(const Extension* extension,
                                      ExtensionPrefs::LAUNCH_DEFAULT));
   value->SetBoolean("is_component",
       extension->location() == Extension::COMPONENT);
+
+  if (notification)
+    value->Set("notification", SerializeNotification(*notification));
 
   int app_launch_index = prefs->GetAppLaunchIndex(extension->id());
   if (app_launch_index == -1) {
@@ -198,6 +216,17 @@ void AppLauncherHandler::Observe(NotificationType type,
     return;
 
   switch (type.value) {
+    case NotificationType::APP_NOTIFICATION_STATE_CHANGED: {
+      const std::string& id = *Details<const std::string>(details).ptr();
+      const AppNotification* notification =
+          extensions_service_->app_notification_manager()->GetLast(id);
+      ListValue args;
+      args.Append(new StringValue(id));
+      if (notification)
+        args.Append(SerializeNotification(*notification));
+      web_ui_->CallJavascriptFunction("appNotificationChanged", args);
+      break;
+    }
     case NotificationType::EXTENSION_LOADED:
     case NotificationType::EXTENSION_UNLOADED:
     case NotificationType::EXTENSION_LAUNCHER_REORDERED:
@@ -228,10 +257,16 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
   for (it = extensions->begin(); it != extensions->end(); ++it) {
     // Don't include the WebStore.
     // The WebStore launcher gets special treatment in ntp/apps.js.
-    if ((*it)->is_app() &&
-        (*it)->id() != extension_misc::kWebStoreAppId) {
+    const Extension* extension = *it;
+    if (extension->is_app() &&
+        extension->id() != extension_misc::kWebStoreAppId) {
       DictionaryValue* app_info = new DictionaryValue();
-      CreateAppInfo(*it, extensions_service_->extension_prefs(), app_info);
+      AppNotificationManager* notification_manager =
+          extensions_service_->app_notification_manager();
+      CreateAppInfo(extension,
+                    notification_manager->GetLast(extension->id()),
+                    extensions_service_->extension_prefs(),
+                    app_info);
       list->Append(app_info);
     }
   }
@@ -241,7 +276,10 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
     if ((*it)->is_app() &&
         (*it)->id() != extension_misc::kWebStoreAppId) {
       DictionaryValue* app_info = new DictionaryValue();
-      CreateAppInfo(*it, extensions_service_->extension_prefs(), app_info);
+      CreateAppInfo(*it,
+                    NULL,
+                    extensions_service_->extension_prefs(),
+                    app_info);
       list->Append(app_info);
     }
   }
@@ -316,6 +354,8 @@ void AppLauncherHandler::HandleGetApps(const ListValue* args) {
   // First time we get here we set up the observer so that we can tell update
   // the apps as they change.
   if (registrar_.IsEmpty()) {
+    registrar_.Add(this, NotificationType::APP_NOTIFICATION_STATE_CHANGED,
+        NotificationService::AllSources());
     registrar_.Add(this, NotificationType::EXTENSION_LOADED,
         NotificationService::AllSources());
     registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,

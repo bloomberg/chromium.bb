@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/extensions/extension_app_api.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
@@ -37,6 +38,7 @@ class AppLauncherHandler : public WebUIMessageHandler,
 
   // Populate a dictionary with the information from an extension.
   static void CreateAppInfo(const Extension* extension,
+                            const AppNotification* notification,
                             ExtensionPrefs* extension_prefs,
                             DictionaryValue* value);
 

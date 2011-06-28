@@ -856,6 +856,8 @@
         'browser/extensions/crx_installer.h',
         'browser/extensions/execute_code_in_tab_function.cc',
         'browser/extensions/execute_code_in_tab_function.h',
+        'browser/extensions/extension_app_api.cc',
+        'browser/extensions/extension_app_api.h',
         'browser/extensions/extension_accessibility_api.cc',
         'browser/extensions/extension_accessibility_api.h',
         'browser/extensions/extension_accessibility_api_constants.cc',
