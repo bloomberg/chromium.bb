@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_POPUP_VIEW_GTK_H_
-#define CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_POPUP_VIEW_GTK_H_
+#ifndef CHROME_BROWSER_UI_GTK_OMNIBOX_OMNIBOX_POPUP_VIEW_GTK_H_
+#define CHROME_BROWSER_UI_GTK_OMNIBOX_OMNIBOX_POPUP_VIEW_GTK_H_
 #pragma once
 
 #include <gtk/gtk.h>
@@ -28,15 +28,15 @@ class OmniboxView;
 class Profile;
 class SkBitmap;
 
-class AutocompletePopupViewGtk : public AutocompletePopupView,
-                                 public NotificationObserver {
+class OmniboxPopupViewGtk : public AutocompletePopupView,
+                             public NotificationObserver {
  public:
-  AutocompletePopupViewGtk(const gfx::Font& font,
-                           OmniboxView* omnibox_view,
-                           AutocompleteEditModel* edit_model,
-                           Profile* profile,
-                           GtkWidget* location_bar);
-  virtual ~AutocompletePopupViewGtk();
+  OmniboxPopupViewGtk(const gfx::Font& font,
+                      OmniboxView* omnibox_view,
+                      AutocompleteEditModel* edit_model,
+                      Profile* profile,
+                      GtkWidget* location_bar);
+  virtual ~OmniboxPopupViewGtk();
 
   // Overridden from AutocompletePopupView:
   virtual bool IsOpen() const;
@@ -53,7 +53,8 @@ class AutocompletePopupViewGtk : public AutocompletePopupView,
 
  private:
   // Be friendly for unit tests.
-  friend class AutocompletePopupViewGtkTest;
+  friend class OmniboxPopupViewGtkTest;
+
   static void SetupLayoutForMatch(
       PangoLayout* layout,
       const string16& text,
@@ -77,16 +78,16 @@ class AutocompletePopupViewGtk : public AutocompletePopupView,
 
   GdkPixbuf* IconForMatch(const AutocompleteMatch& match, bool selected);
 
-  CHROMEGTK_CALLBACK_1(AutocompletePopupViewGtk, gboolean, HandleMotion,
+  CHROMEGTK_CALLBACK_1(OmniboxPopupViewGtk, gboolean, HandleMotion,
                        GdkEventMotion*);
 
-  CHROMEGTK_CALLBACK_1(AutocompletePopupViewGtk, gboolean, HandleButtonPress,
+  CHROMEGTK_CALLBACK_1(OmniboxPopupViewGtk, gboolean, HandleButtonPress,
                        GdkEventButton*);
 
-  CHROMEGTK_CALLBACK_1(AutocompletePopupViewGtk, gboolean, HandleButtonRelease,
+  CHROMEGTK_CALLBACK_1(OmniboxPopupViewGtk, gboolean, HandleButtonRelease,
                        GdkEventButton*);
 
-  CHROMEGTK_CALLBACK_1(AutocompletePopupViewGtk, gboolean, HandleExpose,
+  CHROMEGTK_CALLBACK_1(OmniboxPopupViewGtk, gboolean, HandleExpose,
                        GdkEventExpose*);
 
   scoped_ptr<AutocompletePopupModel> model_;
@@ -135,7 +136,7 @@ class AutocompletePopupViewGtk : public AutocompletePopupView,
   // Whether our popup is currently open / shown, or closed / hidden.
   bool opened_;
 
-  DISALLOW_COPY_AND_ASSIGN(AutocompletePopupViewGtk);
+  DISALLOW_COPY_AND_ASSIGN(OmniboxPopupViewGtk);
 };
 
-#endif  // CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_POPUP_VIEW_GTK_H_
+#endif  // CHROME_BROWSER_UI_GTK_OMNIBOX_OMNIBOX_POPUP_VIEW_GTK_H_

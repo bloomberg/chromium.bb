@@ -46,9 +46,9 @@
 #include "views/controls/textfield/native_textfield_views.h"
 #include "views/events/event.h"
 #else
-#include "chrome/browser/autocomplete/autocomplete_popup_view_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
+#include "chrome/browser/ui/gtk/omnibox/omnibox_popup_view_gtk.h"
 #endif
 
 namespace {
@@ -206,7 +206,7 @@ OmniboxViewGtk::OmniboxViewGtk(
 #if defined(TOOLKIT_VIEWS)
       new AutocompletePopupContentsView
 #else
-      new AutocompletePopupViewGtk
+      new OmniboxPopupViewGtk
 #endif
           (GetFont(), this, model_.get(), profile, location_bar));
 }

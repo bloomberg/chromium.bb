@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/autocomplete/autocomplete_popup_view_gtk.h"
+#include "chrome/browser/ui/gtk/omnibox/omnibox_popup_view_gtk.h"
 
 #include <gtk/gtk.h>
 
@@ -173,7 +173,7 @@ GdkColor SelectedURLColor(GdkColor foreground, GdkColor background) {
 }
 }  // namespace
 
-void AutocompletePopupViewGtk::SetupLayoutForMatch(
+void OmniboxPopupViewGtk::SetupLayoutForMatch(
     PangoLayout* layout,
     const string16& text,
     const AutocompleteMatch::ACMatchClassifications& classifications,
@@ -266,12 +266,11 @@ void AutocompletePopupViewGtk::SetupLayoutForMatch(
   pango_attr_list_unref(attrs);
 }
 
-AutocompletePopupViewGtk::AutocompletePopupViewGtk(
-    const gfx::Font& font,
-    OmniboxView* omnibox_view,
-    AutocompleteEditModel* edit_model,
-    Profile* profile,
-    GtkWidget* location_bar)
+OmniboxPopupViewGtk::OmniboxPopupViewGtk(const gfx::Font& font,
+                                         OmniboxView* omnibox_view,
+                                         AutocompleteEditModel* edit_model,
+                                         Profile* profile,
+                                         GtkWidget* location_bar)
     : model_(new AutocompletePopupModel(this, edit_model, profile)),
       omnibox_view_(omnibox_view),
       location_bar_(location_bar),
@@ -329,7 +328,7 @@ AutocompletePopupViewGtk::AutocompletePopupViewGtk(
   // on. http://crbug.com/22015.
 }
 
-AutocompletePopupViewGtk::~AutocompletePopupViewGtk() {
+OmniboxPopupViewGtk::~OmniboxPopupViewGtk() {
   // Explicitly destroy our model here, before we destroy our GTK widgets.
   // This is because the model destructor can call back into us, and we need
   // to make sure everything is still valid when it does.
@@ -341,11 +340,11 @@ AutocompletePopupViewGtk::~AutocompletePopupViewGtk() {
     g_object_unref(it->second);
 }
 
-bool AutocompletePopupViewGtk::IsOpen() const {
+bool OmniboxPopupViewGtk::IsOpen() const {
   return opened_;
 }
 
-void AutocompletePopupViewGtk::InvalidateLine(size_t line) {
+void OmniboxPopupViewGtk::InvalidateLine(size_t line) {
   // TODO(deanm): Is it possible to use some constant for the width, instead
   // of having to query the width of the window?
   GdkRectangle line_rect = GetRectForLine(
@@ -353,7 +352,7 @@ void AutocompletePopupViewGtk::InvalidateLine(size_t line) {
   gdk_window_invalidate_rect(window_->window, &line_rect, FALSE);
 }
 
-void AutocompletePopupViewGtk::UpdatePopupAppearance() {
+void OmniboxPopupViewGtk::UpdatePopupAppearance() {
   const AutocompleteResult& result = model_->result();
   if (result.empty()) {
     Hide();
@@ -364,7 +363,7 @@ void AutocompletePopupViewGtk::UpdatePopupAppearance() {
   gtk_widget_queue_draw(window_);
 }
 
-gfx::Rect AutocompletePopupViewGtk::GetTargetBounds() {
+gfx::Rect OmniboxPopupViewGtk::GetTargetBounds() {
   if (!GTK_WIDGET_REALIZED(window_))
     return gfx::Rect();
 
@@ -380,18 +379,18 @@ gfx::Rect AutocompletePopupViewGtk::GetTargetBounds() {
   return retval;
 }
 
-void AutocompletePopupViewGtk::PaintUpdatesNow() {
+void OmniboxPopupViewGtk::PaintUpdatesNow() {
   // Paint our queued invalidations now, synchronously.
   gdk_window_process_updates(window_->window, FALSE);
 }
 
-void AutocompletePopupViewGtk::OnDragCanceled() {
+void OmniboxPopupViewGtk::OnDragCanceled() {
   ignore_mouse_drag_ = true;
 }
 
-void AutocompletePopupViewGtk::Observe(NotificationType type,
-                                       const NotificationSource& source,
-                                       const NotificationDetails& details) {
+void OmniboxPopupViewGtk::Observe(NotificationType type,
+                                  const NotificationSource& source,
+                                  const NotificationDetails& details) {
   DCHECK(type == NotificationType::BROWSER_THEME_CHANGED);
 
   if (theme_service_->UsingNativeTheme()) {
@@ -434,7 +433,7 @@ void AutocompletePopupViewGtk::Observe(NotificationType type,
   gtk_widget_modify_bg(window_, GTK_STATE_NORMAL, &background_color_);
 }
 
-void AutocompletePopupViewGtk::Show(size_t num_results) {
+void OmniboxPopupViewGtk::Show(size_t num_results) {
   gint origin_x, origin_y;
   gdk_window_get_origin(location_bar_->window, &origin_x, &origin_y);
   GtkAllocation allocation = location_bar_->allocation;
@@ -452,12 +451,12 @@ void AutocompletePopupViewGtk::Show(size_t num_results) {
   opened_ = true;
 }
 
-void AutocompletePopupViewGtk::Hide() {
+void OmniboxPopupViewGtk::Hide() {
   gtk_widget_hide(window_);
   opened_ = false;
 }
 
-void AutocompletePopupViewGtk::StackWindow() {
+void OmniboxPopupViewGtk::StackWindow() {
   gfx::NativeView omnibox_view = omnibox_view_->GetNativeView();
   DCHECK(GTK_IS_WIDGET(omnibox_view));
   GtkWidget* toplevel = gtk_widget_get_toplevel(omnibox_view);
@@ -465,13 +464,13 @@ void AutocompletePopupViewGtk::StackWindow() {
   ui::StackPopupWindow(window_, toplevel);
 }
 
-size_t AutocompletePopupViewGtk::LineFromY(int y) {
+size_t OmniboxPopupViewGtk::LineFromY(int y) {
   size_t line = std::max(y - kBorderThickness, 0) / kHeightPerResult;
   return std::min(line, model_->result().size() - 1);
 }
 
-void AutocompletePopupViewGtk::AcceptLine(size_t line,
-                                          WindowOpenDisposition disposition) {
+void OmniboxPopupViewGtk::AcceptLine(size_t line,
+                                     WindowOpenDisposition disposition) {
   // OpenMatch() may close the popup, which will clear the result set and, by
   // extension, |match| and its contents.  So copy the relevant match out to
   // make sure it stays alive until the call completes.
@@ -482,9 +481,8 @@ void AutocompletePopupViewGtk::AcceptLine(size_t line,
                            is_keyword_hint ? string16() : keyword);
 }
 
-GdkPixbuf* AutocompletePopupViewGtk::IconForMatch(
-    const AutocompleteMatch& match,
-    bool selected) {
+GdkPixbuf* OmniboxPopupViewGtk::IconForMatch(const AutocompleteMatch& match,
+                                             bool selected) {
   const SkBitmap* bitmap = model_->GetIconIfExtensionMatch(match);
   if (bitmap) {
     if (!ContainsKey(pixbufs_, bitmap))
@@ -521,8 +519,8 @@ GdkPixbuf* AutocompletePopupViewGtk::IconForMatch(
   return theme_service_->GetPixbufNamed(icon);
 }
 
-gboolean AutocompletePopupViewGtk::HandleMotion(GtkWidget* widget,
-                                                GdkEventMotion* event) {
+gboolean OmniboxPopupViewGtk::HandleMotion(GtkWidget* widget,
+                                           GdkEventMotion* event) {
   // TODO(deanm): Windows has a bunch of complicated logic here.
   size_t line = LineFromY(static_cast<int>(event->y));
   // There is both a hovered and selected line, hovered just means your mouse
@@ -534,8 +532,8 @@ gboolean AutocompletePopupViewGtk::HandleMotion(GtkWidget* widget,
   return TRUE;
 }
 
-gboolean AutocompletePopupViewGtk::HandleButtonPress(GtkWidget* widget,
-                                                     GdkEventButton* event) {
+gboolean OmniboxPopupViewGtk::HandleButtonPress(GtkWidget* widget,
+                                                GdkEventButton* event) {
   ignore_mouse_drag_ = false;
   // Very similar to HandleMotion.
   size_t line = LineFromY(static_cast<int>(event->y));
@@ -545,8 +543,8 @@ gboolean AutocompletePopupViewGtk::HandleButtonPress(GtkWidget* widget,
   return TRUE;
 }
 
-gboolean AutocompletePopupViewGtk::HandleButtonRelease(GtkWidget* widget,
-                                                       GdkEventButton* event) {
+gboolean OmniboxPopupViewGtk::HandleButtonRelease(GtkWidget* widget,
+                                                  GdkEventButton* event) {
   if (ignore_mouse_drag_) {
     // See header comment about this flag.
     ignore_mouse_drag_ = false;
@@ -568,8 +566,8 @@ gboolean AutocompletePopupViewGtk::HandleButtonRelease(GtkWidget* widget,
   return TRUE;
 }
 
-gboolean AutocompletePopupViewGtk::HandleExpose(GtkWidget* widget,
-                                                GdkEventExpose* event) {
+gboolean OmniboxPopupViewGtk::HandleExpose(GtkWidget* widget,
+                                           GdkEventExpose* event) {
   bool ltr = !base::i18n::IsRTL();
   const AutocompleteResult& result = model_->result();
 

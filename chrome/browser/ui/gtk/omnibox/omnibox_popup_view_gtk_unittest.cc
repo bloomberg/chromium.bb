@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/autocomplete/autocomplete_popup_view_gtk.h"
+#include "chrome/browser/ui/gtk/omnibox/omnibox_popup_view_gtk.h"
 
 #include <gtk/gtk.h>
 
@@ -14,7 +14,7 @@
 
 namespace {
 
-static const float kLargeWidth = 10000;
+const float kLargeWidth = 10000;
 
 const GdkColor kContentTextColor = GDK_COLOR_RGB(0x00, 0x00, 0x00);
 const GdkColor kDimContentTextColor = GDK_COLOR_RGB(0x80, 0x80, 0x80);
@@ -22,9 +22,9 @@ const GdkColor kURLTextColor = GDK_COLOR_RGB(0x00, 0x88, 0x00);
 
 }  // namespace
 
-class AutocompletePopupViewGtkTest : public PlatformTest {
+class OmniboxPopupViewGtkTest : public PlatformTest {
  public:
-  AutocompletePopupViewGtkTest() { }
+  OmniboxPopupViewGtkTest() {}
 
   virtual void SetUp() {
     PlatformTest::SetUp();
@@ -51,13 +51,13 @@ class AutocompletePopupViewGtkTest : public PlatformTest {
       const GdkColor* dim_color,
       const GdkColor* url_color,
       const std::string& prefix_text) {
-    AutocompletePopupViewGtk::SetupLayoutForMatch(layout_,
-                                                  text,
-                                                  classifications,
-                                                  base_color,
-                                                  dim_color,
-                                                  url_color,
-                                                  prefix_text);
+    OmniboxPopupViewGtk::SetupLayoutForMatch(layout_,
+                                             text,
+                                             classifications,
+                                             base_color,
+                                             dim_color,
+                                             url_color,
+                                             prefix_text);
   }
 
   struct RunInfo {
@@ -129,8 +129,8 @@ class AutocompletePopupViewGtkTest : public PlatformTest {
   }
 
   guint RunLengthForAttrType(guint location,
-                            guint end_location,
-                            PangoAttrType type) {
+                             guint end_location,
+                             PangoAttrType type) {
     RunInfo info = RunInfoForAttrType(location,
                                       end_location,
                                       type);
@@ -182,13 +182,13 @@ class AutocompletePopupViewGtkTest : public PlatformTest {
   PangoLayout* layout_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(AutocompletePopupViewGtkTest);
+  DISALLOW_COPY_AND_ASSIGN(OmniboxPopupViewGtkTest);
 };
 
 // Simple inputs with no matches should result in styled output who's
 // text matches the input string, with the passed-in color, and
 // nothing bolded.
-TEST_F(AutocompletePopupViewGtkTest, DecorateMatchedStringNoMatch) {
+TEST_F(OmniboxPopupViewGtkTest, DecorateMatchedStringNoMatch) {
   const string16 kContents = ASCIIToUTF16("This is a test");
 
   AutocompleteMatch::ACMatchClassifications classifications;
@@ -217,7 +217,7 @@ TEST_F(AutocompletePopupViewGtkTest, DecorateMatchedStringNoMatch) {
 
 // Identical to DecorateMatchedStringNoMatch, except test that URL
 // style gets a different color than we passed in.
-TEST_F(AutocompletePopupViewGtkTest, DecorateMatchedStringURLNoMatch) {
+TEST_F(OmniboxPopupViewGtkTest, DecorateMatchedStringURLNoMatch) {
   const string16 kContents = ASCIIToUTF16("This is a test");
   AutocompleteMatch::ACMatchClassifications classifications;
 
@@ -246,7 +246,7 @@ TEST_F(AutocompletePopupViewGtkTest, DecorateMatchedStringURLNoMatch) {
 }
 
 // Test that DIM works as expected.
-TEST_F(AutocompletePopupViewGtkTest, DecorateMatchedStringDimNoMatch) {
+TEST_F(OmniboxPopupViewGtkTest, DecorateMatchedStringDimNoMatch) {
   const string16 kContents = ASCIIToUTF16("This is a test");
   // Dim "is".
   const guint kRunLength1 = 5, kRunLength2 = 2, kRunLength3 = 7;
@@ -296,7 +296,7 @@ TEST_F(AutocompletePopupViewGtkTest, DecorateMatchedStringDimNoMatch) {
 
 // Test that the matched run gets bold-faced, but keeps the same
 // color.
-TEST_F(AutocompletePopupViewGtkTest, DecorateMatchedStringMatch) {
+TEST_F(OmniboxPopupViewGtkTest, DecorateMatchedStringMatch) {
   const string16 kContents = ASCIIToUTF16("This is a test");
   // Match "is".
   const guint kRunLength1 = 5, kRunLength2 = 2, kRunLength3 = 7;
@@ -340,7 +340,7 @@ TEST_F(AutocompletePopupViewGtkTest, DecorateMatchedStringMatch) {
 }
 
 // Just like DecorateMatchedStringURLMatch, this time with URL style.
-TEST_F(AutocompletePopupViewGtkTest, DecorateMatchedStringURLMatch) {
+TEST_F(OmniboxPopupViewGtkTest, DecorateMatchedStringURLMatch) {
   const string16 kContents = ASCIIToUTF16("http://hello.world/");
   // Match "hello".
   const guint kRunLength1 = 7, kRunLength2 = 5, kRunLength3 = 7;
