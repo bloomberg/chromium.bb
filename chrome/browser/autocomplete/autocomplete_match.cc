@@ -42,7 +42,7 @@ AutocompleteMatch::~AutocompleteMatch() {
 
 // static
 std::string AutocompleteMatch::TypeToString(Type type) {
-  const char* strings[NUM_TYPES] = {
+  const char* strings[] = {
     "url-what-you-typed",
     "history-url",
     "history-title",
@@ -55,13 +55,14 @@ std::string AutocompleteMatch::TypeToString(Type type) {
     "search-other-engine",
     "extension-app",
   };
-  DCHECK(arraysize(strings) == NUM_TYPES);
+  COMPILE_ASSERT(arraysize(strings) == NUM_TYPES,
+                 strings_array_must_match_type_enum);
   return strings[type];
 }
 
 // static
 int AutocompleteMatch::TypeToIcon(Type type) {
-  int icons[NUM_TYPES] = {
+  int icons[] = {
     IDR_OMNIBOX_HTTP,
     IDR_OMNIBOX_HTTP,
     IDR_OMNIBOX_HISTORY,
@@ -74,7 +75,8 @@ int AutocompleteMatch::TypeToIcon(Type type) {
     IDR_OMNIBOX_SEARCH,
     IDR_OMNIBOX_EXTENSION_APP,
   };
-  DCHECK(arraysize(icons) == NUM_TYPES);
+  COMPILE_ASSERT(arraysize(icons) == NUM_TYPES,
+                 icons_array_must_match_type_enum);
   return icons[type];
 }
 
