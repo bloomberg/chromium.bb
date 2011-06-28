@@ -7,7 +7,7 @@
 #pragma once
 
 namespace content {
-  class JavaScriptDialogCreator;
+class JavaScriptDialogCreator;
 }
 
 // Returns a JavaScriptDialogCreator that creates real dialogs.

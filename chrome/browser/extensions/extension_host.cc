@@ -10,6 +10,7 @@
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
@@ -47,6 +48,7 @@
 #include "content/common/notification_service.h"
 #include "content/common/view_messages.h"
 #include "grit/browser_resources.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -432,15 +434,22 @@ void ExtensionHost::RunJavaScriptMessage(const RenderViewHost* rvh,
                                          IPC::Message* reply_msg,
                                          bool* did_suppress_message) {
   bool suppress_this_message = false;
+
+  string16 title;
+  if (extension_->location() == Extension::COMPONENT)
+    title = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
+  else
+    title = UTF8ToUTF16(extension_->name());
+
   GetJavaScriptDialogCreatorInstance()->RunJavaScriptDialog(
       this,
-      frame_url,
+      content::JavaScriptDialogCreator::DIALOG_TITLE_PLAIN_STRING,
+      title,
       flags,
       message,
       default_prompt,
       reply_msg,
-      &suppress_this_message,
-      profile());
+      &suppress_this_message);
 
   if (suppress_this_message) {
     // If we are suppressing messages, just reply as if the user immediately

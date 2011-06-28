@@ -51,17 +51,22 @@ class JavaScriptDialogDelegate {
 // dialogs.
 class JavaScriptDialogCreator {
  public:
+  enum TitleType {
+    DIALOG_TITLE_NONE,
+    DIALOG_TITLE_PLAIN_STRING,
+    DIALOG_TITLE_FORMATTED_URL
+  };
+
   // Displays a JavaScript dialog. |did_suppress_message| will not be nil; if
   // |true| is returned in it, the caller will handle faking the reply.
-  // TODO(avi): Remove Profile from this call; http://crbug.com/84601
   virtual void RunJavaScriptDialog(JavaScriptDialogDelegate* delegate,
-                                   const GURL& frame_url,
+                                   TitleType title_type,
+                                   const string16& title,
                                    int dialog_flags,
                                    const string16& message_text,
                                    const string16& default_prompt_text,
                                    IPC::Message* reply_message,
-                                   bool* did_suppress_message,
-                                   Profile* profile) = 0;
+                                   bool* did_suppress_message) = 0;
 
   // Displays a dialog asking the user if they want to leave a page.
   virtual void RunBeforeUnloadDialog(JavaScriptDialogDelegate* delegate,
