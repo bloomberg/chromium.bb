@@ -111,7 +111,7 @@ HandwritingCanvas.prototype = {
     canvas.ontouchcancel = canvas.onmouseup;
 
     // Clear the canvas when an IME hides the lookup table.
-    if (chrome.experimental) {
+    if (chrome.experimental && chrome.experimental.inputUI) {
       chrome.experimental.inputUI.onUpdateLookupTable.addListener(
           function(table) {
             if (!table.visible) {
