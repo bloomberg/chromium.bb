@@ -953,7 +953,8 @@ void SyncBackendHost::Core::HandleSyncCycleCompletedOnFrontendLoop(
         found_all_added &= snapshot->initial_sync_ended.test(*it);
     }
     if (!found_all_added) {
-      NOTREACHED() << "Update didn't return updates for all types requested.";
+      DLOG(WARNING) << "Update didn't return updates for all types requested."
+                    << "Possible connection failure?";
     } else {
       state->ready_task->Run();
     }
@@ -989,12 +990,16 @@ void SyncBackendHost::HandleInitializationCompletedOnFrontendLoop() {
   if (!frontend_)
     return;
 
-  if (profile_->GetPrefs()->GetBoolean(prefs::kSyncHasSetupCompleted) ||
-      initialization_state_ == DOWNLOADING_NIGORI) {
+  bool setup_completed =
+      profile_->GetPrefs()->GetBoolean(prefs::kSyncHasSetupCompleted);
+  if (setup_completed || initialization_state_ == DOWNLOADING_NIGORI) {
     // Now that the syncapi is initialized, we can update the cryptographer
     // and can handle any ON_PASSPHRASE_REQUIRED notifications that may arise.
+    // TODO(tim): Bug 87797. We should be able to RefreshEncryption
+    // unconditionally as soon as the UI supports having this info early on.
+    if (setup_completed)
+      core_->sync_manager()->RefreshEncryption();
     initialization_state_ = INITIALIZED;
-    core_->sync_manager()->RefreshEncryption();
     frontend_->OnBackendInitialized();
     return;
   }
