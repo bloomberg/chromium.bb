@@ -11,17 +11,13 @@
 #include "remoting/host/chromoting_host.h"
 #include "ui/base/gtk/gtk_signal.h"
 
-namespace {
+namespace remoting {
 
-const char kDisconnectWindowTitle[] = "Remoting";
-const char kDisconnectWindowShareText[] = "Sharing with: ";
-const char kDisconnectWindowButtonText[] = "Disconnect";
-
-class DisconnectWindowLinux : public remoting::DisconnectWindow {
+class DisconnectWindowLinux : public DisconnectWindow {
  public:
   DisconnectWindowLinux();
 
-  virtual void Show(remoting::ChromotingHost* host,
+  virtual void Show(ChromotingHost* host,
                     const std::string& username) OVERRIDE;
   virtual void Hide() OVERRIDE;
 
@@ -33,13 +29,12 @@ class DisconnectWindowLinux : public remoting::DisconnectWindow {
 
   void CreateWindow();
 
-  remoting::ChromotingHost* host_;
+  ChromotingHost* host_;
   GtkWidget* disconnect_window_;
   GtkWidget* user_label_;
 
   DISALLOW_COPY_AND_ASSIGN(DisconnectWindowLinux);
 };
-}  // namespace
 
 DisconnectWindowLinux::DisconnectWindowLinux()
     : host_(NULL),
@@ -51,7 +46,7 @@ void DisconnectWindowLinux::CreateWindow() {
 
   disconnect_window_ = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   GtkWindow* window = GTK_WINDOW(disconnect_window_);
-  gtk_window_set_title(window, kDisconnectWindowTitle);
+  gtk_window_set_title(window, kTitle);
   gtk_window_set_resizable(window, FALSE);
   // Try to keep the window always visible.
   gtk_window_stick(window);
@@ -69,7 +64,7 @@ void DisconnectWindowLinux::CreateWindow() {
   GtkWidget* username_row = gtk_hbox_new(FALSE, 0);
   gtk_container_add(GTK_CONTAINER(main_area), username_row);
 
-  GtkWidget* share_label = gtk_label_new(kDisconnectWindowShareText);
+  GtkWidget* share_label = gtk_label_new(kSharingWith);
   gtk_container_add(GTK_CONTAINER(username_row), share_label);
 
   user_label_ = gtk_label_new(NULL);
@@ -78,8 +73,7 @@ void DisconnectWindowLinux::CreateWindow() {
   GtkWidget* disconnect_box = gtk_hbox_new(FALSE, 0);
   gtk_container_add(GTK_CONTAINER(main_area), disconnect_box);
 
-  GtkWidget* disconnect_button = gtk_button_new_with_label(
-      kDisconnectWindowButtonText);
+  GtkWidget* disconnect_button = gtk_button_new_with_label(kDisconnectButton);
   gtk_box_pack_start(GTK_BOX(disconnect_box), disconnect_button,
                      TRUE, FALSE, 0);
 
@@ -89,7 +83,7 @@ void DisconnectWindowLinux::CreateWindow() {
   gtk_widget_show_all(main_area);
 }
 
-void DisconnectWindowLinux::Show(remoting::ChromotingHost* host,
+void DisconnectWindowLinux::Show(ChromotingHost* host,
                                  const std::string& username) {
   host_ = host;
   CreateWindow();
@@ -114,6 +108,8 @@ void DisconnectWindowLinux::OnDisconnectClicked(GtkButton* sender) {
   host_->Shutdown(NULL);
 }
 
-remoting::DisconnectWindow* remoting::DisconnectWindow::Create() {
+DisconnectWindow* DisconnectWindow::Create() {
   return new DisconnectWindowLinux;
 }
+
+}  // namespace remoting
