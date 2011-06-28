@@ -190,7 +190,8 @@ void SyncSetupHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
   localized_strings->SetString(
       "passphraseRecover",
       GetStringFUTF16(IDS_SYNC_PASSPHRASE_RECOVER,
-                      ASCIIToUTF16(chrome::kSyncGoogleDashboardURL)));
+                      ASCIIToUTF16(google_util::StringAppendGoogleLocaleParam(
+                          chrome::kSyncGoogleDashboardURL))));
 
   static OptionsStringResource resources[] = {
     { "syncSetupOverlayTitle", IDS_SYNC_SETUP_TITLE },
