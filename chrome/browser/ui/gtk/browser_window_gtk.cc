@@ -143,7 +143,7 @@ const int kDebounceTimeoutMilliseconds = 100;
 typedef void (*gtk_window_set_has_resize_grip_func)(GtkWindow*, gboolean);
 gtk_window_set_has_resize_grip_func gtk_window_set_has_resize_grip_sym;
 
-void  EnsureResizeGripFunction() {
+void EnsureResizeGripFunction() {
   static bool resize_grip_looked_up = false;
   if (!resize_grip_looked_up) {
     resize_grip_looked_up = true;
@@ -269,6 +269,33 @@ GQuark GetBrowserWindowQuarkKey() {
   return quark;
 }
 
+// Set a custom WM_CLASS for a window.
+// This would normally be a simple gtk_window_set_wmclass call but we have
+// an XFCE workaround.
+void SetWindowCustomClass(GtkWindow* window, const std::string& wmclass) {
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+  if (base::nix::GetDesktopEnvironment(env.get()) ==
+      base::nix::DESKTOP_ENVIRONMENT_XFCE) {
+    // Workaround for XFCE. XFCE seems to treat the class as a user
+    // displayed title, which our app name certainly isn't. They don't have
+    // a dock or application based behaviour so do what looks good.
+    gtk_window_set_wmclass(window,
+                           wmclass.c_str(),
+                           gdk_get_program_class());
+  } else {
+    // Most everything else uses the wmclass_class to group windows
+    // together (docks, per application stuff, etc). Hopefully they won't
+    // display wmclassname to the user.
+    gtk_window_set_wmclass(window,
+                           g_get_prgname(),
+                           wmclass.c_str());
+  }
+
+  // Set WM_WINDOW_ROLE for session management purposes.
+  // See http://tronche.com/gui/x/icccm/sec-5.html .
+  gtk_window_set_role(window, wmclass.c_str());
+}
+
 }  // namespace
 
 std::map<XID, GtkWindow*> BrowserWindowGtk::xid_map_;
@@ -323,31 +350,24 @@ void BrowserWindowGtk::Init() {
   gtk_window_group_add_window(gtk_window_group_new(), window_);
   g_object_unref(gtk_window_get_group(window_));
 
+  // Set up a custom WM_CLASS for some sorts of window types.  This allows
+  // task switchers to distinguish between main browser windows and e.g
+  // app windows.
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (browser_->is_app()) {
     std::string app_name = browser_->app_name();
-    if (app_name != DevToolsWindow::kDevToolsApp) {
-      std::string wmclassname = web_app::GetWMClassFromAppName(app_name);
-
-      scoped_ptr<base::Environment> env(base::Environment::Create());
-      if (base::nix::GetDesktopEnvironment(env.get()) ==
-          base::nix::DESKTOP_ENVIRONMENT_XFCE) {
-        // Workaround for XFCE. XFCE seems to treat the class as a user
-        // displayed title, which our app name certainly isn't. They don't have
-        // a dock or application based behaviour so do what looks good.
-        gtk_window_set_wmclass(window_,
-                               wmclassname.c_str(),
-                               gdk_get_program_class());
-      } else {
-        // Most everything else uses the wmclass_class to group windows
-        // together (docks, per application stuff, etc). Hopefully they won't
-        // display wmclassname to the user.
-        gtk_window_set_wmclass(window_,
-                               g_get_prgname(),
-                               wmclassname.c_str());
-      }
-
-      gtk_window_set_role(window_, wmclassname.c_str());
-    }
+    if (app_name != DevToolsWindow::kDevToolsApp)
+      SetWindowCustomClass(window_, web_app::GetWMClassFromAppName(app_name));
+  } else if (command_line.HasSwitch(switches::kUserDataDir)) {
+    // Set the class name to e.g. "Chrome (/tmp/my-user-data)".  The
+    // class name will show up in the alt-tab list in gnome-shell if
+    // you're running a binary that doesn't have a matching .desktop
+    // file.
+    const std::string user_data_dir =
+        command_line.GetSwitchValueNative(switches::kUserDataDir);
+    SetWindowCustomClass(window_,
+                         std::string(gdk_get_program_class()) +
+                         " (" + user_data_dir + ")");
   }
 
   // For popups, we initialize widgets then set the window geometry, because
