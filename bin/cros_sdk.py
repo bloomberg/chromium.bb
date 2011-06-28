@@ -35,7 +35,7 @@ def GetLatestVersion():
   buf = sdk_file.readline().rstrip('\n').split('=')
   if buf[0] != 'SDK_LATEST_VERSION':
     raise Exception('Malformed version file')
-  return buf[1]
+  return buf[1].strip('"')
 
 def GetArchStageTarball(tarballArch, version):
   """Returns the URL for a given arch/version"""
