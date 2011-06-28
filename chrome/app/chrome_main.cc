@@ -118,7 +118,7 @@ extern int NaClMain(const MainFunctionParams&);
 extern int UtilityMain(const MainFunctionParams&);
 extern int ProfileImportMain(const MainFunctionParams&);
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-extern int ZygoteMain(const MainFunctionParams&, const ZygoteForkDelegate&);
+extern int ZygoteMain(const MainFunctionParams&, ZygoteForkDelegate&);
 #endif
 #if defined(_WIN64)
 extern int NaClBrokerMain(const MainFunctionParams&);
