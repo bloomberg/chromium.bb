@@ -854,6 +854,8 @@ FileManager.prototype = {
       }
 
       function onLeafError(err) {
+        // Set filename first so OK button will update in changeDirectoryEntry.
+        self.filenameInput_.value = leafName;
         if (err = FileError.NOT_FOUND_ERR) {
           // Leaf does not exist, it's just a suggested file name.
           self.changeDirectoryEntry(baseDirEntry, CD_NO_HISTORY);
@@ -861,16 +863,16 @@ FileManager.prototype = {
           console.log('Unexpected error resolving default leaf: ' + err);
           self.changeDirectoryEntry('/', CD_NO_HISTORY);
         }
-        self.filenameInput_.value = leafName;
       }
 
       self.resolvePath(self.defaultPath_, onLeafFound, onLeafError);
     }
 
     function onBaseError(err) {
+      // Set filename first so OK button will update in changeDirectory.
+      self.filenameInput_.value = leafName;
       console.log('Unexpected error resolving default base: ' + err);
       self.changeDirectory('/', CD_NO_HISTORY);
-      self.filenameInput_.value = leafName;
     }
 
     this.filesystem_.root.getDirectory(
@@ -1808,6 +1810,9 @@ FileManager.prototype = {
     this.rescanDirectory_(function() {
         if (event.selectedEntry)
           self.selectEntry(event.selectedEntry);
+        // For tests that open the dialog to empty directories, everything
+        // is loaded at this point.
+        chrome.test.sendMessage('directory-change-complete');
       });
   };
 
