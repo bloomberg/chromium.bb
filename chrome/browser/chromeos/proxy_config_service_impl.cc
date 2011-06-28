@@ -415,10 +415,9 @@ bool ProxyConfigServiceImpl::UISetProxyConfigBypassRules(
     const net::ProxyBypassRules& bypass_rules) {
   // Should be called from UI thread.
   CheckCurrentlyOnUIThread();
-  DCHECK(reference_config_.mode == ProxyConfig::MODE_SINGLE_PROXY ||
-         reference_config_.mode == ProxyConfig::MODE_PROXY_PER_SCHEME);
   if (reference_config_.mode != ProxyConfig::MODE_SINGLE_PROXY &&
       reference_config_.mode != ProxyConfig::MODE_PROXY_PER_SCHEME) {
+    NOTREACHED();
     VLOG(1) << "Cannot set bypass rules for proxy mode ["
              << reference_config_.mode << "]";
     return false;
@@ -535,6 +534,10 @@ void ProxyConfigServiceImpl::IOSetProxyConfig(
   // Notify observers of new proxy config.
   net::ProxyConfig net_config;
   cached_config_.ToNetProxyConfig(&net_config);
+  if (net_config.proxy_rules().type !=
+      net::ProxyConfig::ProxyRules::TYPE_NO_RULES) {
+    net_config.proxy_rules().bypass_rules.AddRuleToBypassLocal();
+  }
   FOR_EACH_OBSERVER(net::ProxyConfigService::Observer, observers_,
                     OnProxyConfigChanged(net_config, config_availability_));
 }
