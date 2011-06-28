@@ -547,32 +547,46 @@
 }
 
 {
-   bug_87062a
-   ThreadSanitizer:Race
-   fun:net::SdchManager::SdchManager
-   fun:BrowserMain
+  bug_87062a
+  ThreadSanitizer:Race
+  fun:net::SdchManager::SdchManager
+  fun:BrowserMain
 }
 
 {
-   bug_87062b
-   ThreadSanitizer:Race
-   ...
-   fun:net::SdchManager::*
-   fun:net::URLRequestHttpJob::AddExtraHeaders
-   fun:net::URLRequestHttpJob::Start
-   fun:net::URLRequest::StartJob
-   fun:net::URLRequest::Start
-   fun:URLFetcher::Core::StartURLRequest
-   fun:URLFetcher::Core::StartURLRequestWhenAppropriate
-   fun:DispatchToMethod
+  bug_87062b
+  ThreadSanitizer:Race
+  ...
+  fun:net::SdchManager::*
+  fun:net::URLRequestHttpJob::AddExtraHeaders
+  fun:net::URLRequestHttpJob::Start
+  fun:net::URLRequest::StartJob
+  fun:net::URLRequest::Start
+  fun:URLFetcher::Core::StartURLRequest
+  fun:URLFetcher::Core::StartURLRequestWhenAppropriate
+  fun:DispatchToMethod
 }
 {
-   bug_87698
-   ThreadSanitizer:Race
-   fun:webkit_glue::GetUserAgent
-   fun:ChromeURLRequestContext::GetUserAgent
+  bug_87698a
+  ThreadSanitizer:Race
+  fun:webkit_glue::GetUserAgent
+  fun:ChromeURLRequestContext::GetUserAgent
 }
- 
+{
+  bug_87698b
+  ThreadSanitizer:Race
+  fun:webkit_glue::GetUserAgent
+  fun:::AboutVersion
+}
+{
+  bug_87747
+  ThreadSanitizer:Race
+  fun:base::MessagePumpLibevent::FileDescriptorWatcher::~FileDescriptorWatcher
+  fun:ProcessSingleton::LinuxWatcher::SocketReader::~SocketReader
+  fun:ProcessSingleton::LinuxWatcher::RemoveSocketReader
+  fun:ProcessSingleton::LinuxWatcher::SocketReader::FinishWithACK
+  fun:ProcessSingleton::LinuxWatcher::HandleMessage
+}
 
 ############################
 # TSan false positives
