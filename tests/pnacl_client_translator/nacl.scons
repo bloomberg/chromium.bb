@@ -67,12 +67,12 @@ def LayoutTranslatorBinariesOnServer():
     # the arch in the basename.
     toolchain_ldscript = '%s/ldscripts/ld_script_%s_untrusted' % (toolchain_dir,
                                                                   arch)
-    toolchain_lib_dir = '%s/libs-%s-newlib/' % (toolchain_dir, arch)
+    toolchain_lib_dir = '%s/libs-%s/' % (toolchain_dir, arch)
     toolchain_native_libs = [ (toolchain_lib_dir + x)
                               for x in ['crt1.o',
                                         'libcrt_platform.a',
                                         'libgcc.a',
-                                        'libgcc_eh.a'] ]
+                                        'libehsupport.a'] ]
     toolchain_local_files = toolchain_native_libs + \
         toolchain_binaries + [toolchain_ldscript]
     # Replicate to STAGING (files can be copied from there).
