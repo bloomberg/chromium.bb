@@ -1293,6 +1293,10 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // Gets the GLError through our wrapper.
   GLenum GetGLError();
 
+  // Gets the GLError and stores it in our wrapper. Effectively
+  // this lets us peek at the error without losing it.
+  GLenum PeekGLError();
+
   // Sets our wrapper for the GLError.
   void SetGLError(GLenum error, const char* msg);
 
@@ -3647,7 +3651,7 @@ void GLES2DecoderImpl::DoFramebufferRenderbuffer(
   CopyRealGLErrorsToWrapper();
   glFramebufferRenderbufferEXT(
       target, attachment, renderbuffertarget, service_id);
-  GLenum error = glGetError();
+  GLenum error = PeekGLError();
   if (error == GL_NO_ERROR) {
     framebuffer_info->AttachRenderbuffer(attachment, info);
     if (service_id == 0 ||
@@ -3832,7 +3836,7 @@ void GLES2DecoderImpl::DoFramebufferTexture2D(
   }
   CopyRealGLErrorsToWrapper();
   glFramebufferTexture2DEXT(target, attachment, textarget, service_id, level);
-  GLenum error = glGetError();
+  GLenum error = PeekGLError();
   if (error == GL_NO_ERROR) {
     framebuffer_info->AttachTexture(attachment, info, textarget, level);
     if (service_id != 0 &&
@@ -3949,7 +3953,7 @@ void GLES2DecoderImpl::DoRenderbufferStorageMultisample(
     glRenderbufferStorageMultisampleEXT(
         target, samples, impl_format, width, height);
   }
-  GLenum error = glGetError();
+  GLenum error = PeekGLError();
   if (error == GL_NO_ERROR) {
     bound_renderbuffer_->SetInfo(samples, internalformat, width, height);
   }
@@ -3981,7 +3985,7 @@ void GLES2DecoderImpl::DoRenderbufferStorage(
 
   CopyRealGLErrorsToWrapper();
   glRenderbufferStorageEXT(target, impl_format, width, height);
-  GLenum error = glGetError();
+  GLenum error = PeekGLError();
   if (error == GL_NO_ERROR) {
     bound_renderbuffer_->SetInfo(0, internalformat, width, height);
   }
@@ -4303,6 +4307,14 @@ GLenum GLES2DecoderImpl::GetGLError() {
   if (error != GL_NO_ERROR) {
     // There was an error, clear the corresponding wrapped error.
     error_bits_ &= ~GLES2Util::GLErrorToErrorBit(error);
+  }
+  return error;
+}
+
+GLenum GLES2DecoderImpl::PeekGLError() {
+  GLenum error = glGetError();
+  if (error != GL_NO_ERROR) {
+    SetGLError(error, "");
   }
   return error;
 }
@@ -5315,7 +5327,7 @@ error::Error GLES2DecoderImpl::HandleReadPixels(
   } else {
     glReadPixels(x, y, width, height, format, type, pixels);
   }
-  GLenum error = glGetError();
+  GLenum error = PeekGLError();
   if (error == GL_NO_ERROR) {
     *result = true;
 
@@ -5366,8 +5378,6 @@ error::Error GLES2DecoderImpl::HandleReadPixels(
           break;
       }
     }
-  } else {
-    SetGLError(error, NULL);
   }
 
   return error::kNoError;
@@ -5598,10 +5608,8 @@ void GLES2DecoderImpl::DoBufferData(
 
   CopyRealGLErrorsToWrapper();
   glBufferData(target, size, data, usage);
-  GLenum error = glGetError();
-  if (error != GL_NO_ERROR) {
-    SetGLError(error, NULL);
-  } else {
+  GLenum error = PeekGLError();
+  if (error == GL_NO_ERROR) {
     buffer_manager()->SetInfo(info, size, usage);
     info->SetRange(0, size, data);
   }
@@ -5701,7 +5709,7 @@ error::Error GLES2DecoderImpl::DoCompressedTexImage2D(
   CopyRealGLErrorsToWrapper();
   glCompressedTexImage2D(
       target, level, internal_format, width, height, border, image_size, data);
-  GLenum error = glGetError();
+  GLenum error = PeekGLError();
   if (error == GL_NO_ERROR) {
     texture_manager()->SetLevelInfo(
         feature_info_,
@@ -5880,7 +5888,7 @@ error::Error GLES2DecoderImpl::DoTexImage2D(
   WrappedTexImage2D(
       target, level, internal_format, width, height, border, format, type,
       pixels);
-  GLenum error = glGetError();
+  GLenum error = PeekGLError();
   if (error == GL_NO_ERROR) {
     texture_manager()->SetLevelInfo(feature_info_, info,
         target, level, internal_format, width, height, 1, border, format, type);
@@ -6082,7 +6090,7 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
     glCopyTexImage2D(target, level, internal_format,
                      copyX, copyY, copyWidth, copyHeight, border);
   }
-  GLenum error = glGetError();
+  GLenum error = PeekGLError();
   if (error == GL_NO_ERROR) {
     texture_manager()->SetLevelInfo(
         feature_info_, info, target, level, internal_format, width, height, 1,

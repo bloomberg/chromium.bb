@@ -4013,6 +4013,208 @@ TEST_F(GLES2DecoderTest, GetMultipleIntegervCHROMIUMInvalidArgs) {
   EXPECT_EQ(kSentinel, results[num_results]);  // End of results
 }
 
+TEST_F(GLES2DecoderTest, TexImage2DGLError) {
+  GLenum target = GL_TEXTURE_2D;
+  GLint level = 0;
+  GLenum internal_format = GL_RGBA;
+  GLsizei width = 2;
+  GLsizei height = 4;
+  GLint border = 0;
+  GLenum format = GL_RGBA;
+  GLenum type = GL_UNSIGNED_BYTE;
+  DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
+  TextureManager* manager = group().texture_manager();
+  TextureManager::TextureInfo* info =
+      manager->GetTextureInfo(client_texture_id_);
+  ASSERT_TRUE(info != NULL);
+  EXPECT_FALSE(info->GetLevelSize(GL_TEXTURE_2D, level, &width, &height));
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .WillOnce(Return(GL_OUT_OF_MEMORY))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, TexImage2D(target, level, internal_format,
+                               width, height, border, format, type, _))
+      .Times(1)
+      .RetiresOnSaturation();
+  TexImage2D cmd;
+  cmd.Init(target, level, internal_format, width, height, border, format,
+           type, kSharedMemoryId, kSharedMemoryOffset);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_OUT_OF_MEMORY, GetGLError());
+  EXPECT_FALSE(info->GetLevelSize(GL_TEXTURE_2D, level, &width, &height));
+}
+
+TEST_F(GLES2DecoderTest, BufferDataGLError) {
+  GLenum target = GL_ARRAY_BUFFER;
+  GLsizeiptr size = 4;
+  DoBindBuffer(GL_ARRAY_BUFFER, client_buffer_id_, kServiceBufferId);
+  BufferManager* manager = group().buffer_manager();
+  BufferManager::BufferInfo* info =
+      manager->GetBufferInfo(client_buffer_id_);
+  ASSERT_TRUE(info != NULL);
+  EXPECT_EQ(0, info->size());
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .WillOnce(Return(GL_OUT_OF_MEMORY))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, BufferData(target, size, _, GL_STREAM_DRAW))
+      .Times(1)
+      .RetiresOnSaturation();
+  BufferData cmd;
+  cmd.Init(target, size, 0, 0, GL_STREAM_DRAW);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_OUT_OF_MEMORY, GetGLError());
+  EXPECT_EQ(0, info->size());
+}
+
+TEST_F(GLES2DecoderTest, CopyTexImage2DGLError) {
+  GLenum target = GL_TEXTURE_2D;
+  GLint level = 0;
+  GLenum internal_format = GL_RGBA;
+  GLsizei width = 2;
+  GLsizei height = 4;
+  GLint border = 0;
+  DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
+  TextureManager* manager = group().texture_manager();
+  TextureManager::TextureInfo* info =
+      manager->GetTextureInfo(client_texture_id_);
+  ASSERT_TRUE(info != NULL);
+  EXPECT_FALSE(info->GetLevelSize(GL_TEXTURE_2D, level, &width, &height));
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .WillOnce(Return(GL_OUT_OF_MEMORY))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, CopyTexImage2D(
+      target, level, internal_format, 0, 0, width, height, border))
+      .Times(1)
+      .RetiresOnSaturation();
+  CopyTexImage2D cmd;
+  cmd.Init(target, level, internal_format, 0, 0, width, height, border);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_OUT_OF_MEMORY, GetGLError());
+  EXPECT_FALSE(info->GetLevelSize(GL_TEXTURE_2D, level, &width, &height));
+}
+
+TEST_F(GLES2DecoderTest, FramebufferRenderbufferGLError) {
+  DoBindFramebuffer(GL_FRAMEBUFFER, client_framebuffer_id_,
+                    kServiceFramebufferId);
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .WillOnce(Return(GL_OUT_OF_MEMORY))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, FramebufferRenderbufferEXT(
+      GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER,
+      kServiceRenderbufferId))
+      .Times(1)
+      .RetiresOnSaturation();
+  FramebufferRenderbuffer cmd;
+  cmd.Init(
+      GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER,
+      client_renderbuffer_id_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_OUT_OF_MEMORY, GetGLError());
+}
+
+TEST_F(GLES2DecoderTest, FramebufferTexture2DGLError) {
+  const GLsizei kWidth = 5;
+  const GLsizei kHeight = 3;
+  const GLenum kFormat = GL_RGB;
+  DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
+  DoTexImage2D(GL_TEXTURE_2D, 0, kFormat, kWidth, kHeight, 0,
+               kFormat, GL_UNSIGNED_BYTE, 0, 0);
+  DoBindFramebuffer(GL_FRAMEBUFFER, client_framebuffer_id_,
+                    kServiceFramebufferId);
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .WillOnce(Return(GL_OUT_OF_MEMORY))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, FramebufferTexture2DEXT(
+      GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+      kServiceTextureId, 0))
+      .Times(1)
+      .RetiresOnSaturation();
+  FramebufferTexture2D fbtex_cmd;
+  fbtex_cmd.Init(
+      GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, client_texture_id_,
+      0);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(fbtex_cmd));
+  EXPECT_EQ(GL_OUT_OF_MEMORY, GetGLError());
+}
+
+TEST_F(GLES2DecoderTest, RenderbufferStorageGLError) {
+  DoBindRenderbuffer(GL_RENDERBUFFER, client_renderbuffer_id_,
+                    kServiceRenderbufferId);
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .WillOnce(Return(GL_OUT_OF_MEMORY))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, RenderbufferStorageEXT(
+      GL_RENDERBUFFER, GL_RGBA, 100, 50))
+      .Times(1)
+      .RetiresOnSaturation();
+  RenderbufferStorage cmd;
+  cmd.Init(GL_RENDERBUFFER, GL_RGBA4, 100, 50);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_OUT_OF_MEMORY, GetGLError());
+}
+
+TEST_F(GLES2DecoderManualInitTest, RenderbufferStorageMultisampleGLError) {
+  InitDecoder(
+      "GL_EXT_framebuffer_multisample",  // extensions
+      false,   // has alpha
+      false,   // has depth
+      false,   // has stencil
+      false,   // request alpha
+      false,   // request depth
+      false);  // request stencil
+  DoBindRenderbuffer(GL_RENDERBUFFER, client_renderbuffer_id_,
+                    kServiceRenderbufferId);
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .WillOnce(Return(GL_OUT_OF_MEMORY))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, RenderbufferStorageMultisampleEXT(
+      GL_RENDERBUFFER, 1, GL_RGBA, 100, 50))
+      .Times(1)
+      .RetiresOnSaturation();
+  RenderbufferStorageMultisampleEXT cmd;
+  cmd.Init(GL_RENDERBUFFER, 1, GL_RGBA4, 100, 50);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_OUT_OF_MEMORY, GetGLError());
+}
+
+TEST_F(GLES2DecoderTest, ReadPixelsGLError) {
+  GLenum kFormat = GL_RGBA;
+  GLint x = 0;
+  GLint y = 0;
+  GLsizei width = 2;
+  GLsizei height = 4;
+  typedef ReadPixels::Result Result;
+  Result* result = GetSharedMemoryAs<Result*>();
+  uint32 result_shm_id = kSharedMemoryId;
+  uint32 result_shm_offset = kSharedMemoryOffset;
+  uint32 pixels_shm_id = kSharedMemoryId;
+  uint32 pixels_shm_offset = kSharedMemoryOffset + sizeof(*result);
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .WillOnce(Return(GL_OUT_OF_MEMORY))
+      .RetiresOnSaturation();
+  EXPECT_CALL(
+      *gl_, ReadPixels(x, y, width, height, kFormat, GL_UNSIGNED_BYTE, _))
+      .Times(1)
+      .RetiresOnSaturation();
+  ReadPixels cmd;
+  cmd.Init(x, y, width, height, kFormat, GL_UNSIGNED_BYTE,
+           pixels_shm_id, pixels_shm_offset,
+           result_shm_id, result_shm_offset);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_OUT_OF_MEMORY, GetGLError());
+}
+
+// TODO(gman): Complete this test.
+// TEST_F(GLES2DecoderTest, CompressedTexImage2DGLError) {
+// }
+
 // TODO(gman): BufferData
 
 // TODO(gman): BufferDataImmediate

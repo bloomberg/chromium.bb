@@ -230,9 +230,11 @@ bool TextureManager::TextureInfo::GetLevelSize(
   if (!IsDeleted() && level >= 0 && face_index < level_infos_.size() &&
       static_cast<size_t>(level) < level_infos_[face_index].size()) {
     const LevelInfo& info = level_infos_[GLTargetToFaceIndex(face)][level];
-    *width = info.width;
-    *height = info.height;
-    return true;
+    if (info.valid) {
+      *width = info.width;
+      *height = info.height;
+      return true;
+    }
   }
   return false;
 }
@@ -245,9 +247,11 @@ bool TextureManager::TextureInfo::GetLevelType(
   if (!IsDeleted() && level >= 0 && face_index < level_infos_.size() &&
       static_cast<size_t>(level) < level_infos_[face_index].size()) {
     const LevelInfo& info = level_infos_[GLTargetToFaceIndex(face)][level];
-    *type = info.type;
-    *internal_format = info.internal_format;
-    return true;
+    if (info.valid) {
+      *type = info.type;
+      *internal_format = info.internal_format;
+      return true;
+    }
   }
   return false;
 }

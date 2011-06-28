@@ -502,9 +502,7 @@ TEST_F(TextureInfoTest, GetLevelSize) {
   GLsizei height = -1;
   EXPECT_FALSE(info_->GetLevelSize(GL_TEXTURE_2D, -1, &width, &height));
   EXPECT_FALSE(info_->GetLevelSize(GL_TEXTURE_2D, 1000, &width, &height));
-  EXPECT_TRUE(info_->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height));
-  EXPECT_EQ(0, width);
-  EXPECT_EQ(0, height);
+  EXPECT_FALSE(info_->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height));
   EXPECT_TRUE(info_->GetLevelSize(GL_TEXTURE_2D, 1, &width, &height));
   EXPECT_EQ(4, width);
   EXPECT_EQ(5, height);
@@ -520,9 +518,7 @@ TEST_F(TextureInfoTest, GetLevelType) {
   GLenum format = -1;
   EXPECT_FALSE(info_->GetLevelType(GL_TEXTURE_2D, -1, &type, &format));
   EXPECT_FALSE(info_->GetLevelType(GL_TEXTURE_2D, 1000, &type, &format));
-  EXPECT_TRUE(info_->GetLevelType(GL_TEXTURE_2D, 0, &type, &format));
-  EXPECT_EQ(0u, type);
-  EXPECT_EQ(0u, format);
+  EXPECT_FALSE(info_->GetLevelType(GL_TEXTURE_2D, 0, &type, &format));
   EXPECT_TRUE(info_->GetLevelType(GL_TEXTURE_2D, 1, &type, &format));
   EXPECT_EQ(static_cast<GLenum>(GL_UNSIGNED_BYTE), type);
   EXPECT_EQ(static_cast<GLenum>(GL_RGBA), format);

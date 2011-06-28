@@ -76,7 +76,7 @@ void GLES2DecoderTestBase::InitDecoder(
   TestHelper::SetupContextGroupInitExpectations(gl_.get(),
       DisallowedExtensions(), extensions);
 
-  EXPECT_TRUE(group_->Initialize(DisallowedExtensions(), extensions));
+  EXPECT_TRUE(group_->Initialize(DisallowedExtensions(), NULL));
 
   EXPECT_CALL(*gl_, EnableVertexAttribArray(0))
       .Times(1)
