@@ -38,7 +38,7 @@ class ExtensionDisabledDialogDelegate
 
   // ExtensionInstallUI::Delegate:
   virtual void InstallUIProceed();
-  virtual void InstallUIAbort();
+  virtual void InstallUIAbort(bool user_initiated);
 
   // The UI for showing the install dialog when enabling.
   scoped_ptr<ExtensionInstallUI> install_ui_;
@@ -66,9 +66,12 @@ void ExtensionDisabledDialogDelegate::InstallUIProceed() {
   Release();
 }
 
-void ExtensionDisabledDialogDelegate::InstallUIAbort() {
+void ExtensionDisabledDialogDelegate::InstallUIAbort(bool user_initiated) {
+  std::string histogram_name = user_initiated ?
+      "Extensions.Permissions_ReEnableCancel" :
+      "Extensions.Permissions_ReEnableAbort";
   ExtensionService::RecordPermissionMessagesHistogram(
-      extension_, "Extensions.Permissions_ReEnableCancel");
+      extension_, histogram_name.c_str());
 
   // Do nothing. The extension will remain disabled.
   Release();

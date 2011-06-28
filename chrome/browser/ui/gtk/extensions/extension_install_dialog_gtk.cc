@@ -44,7 +44,7 @@ void OnResponse(GtkWidget* dialog, int response_id,
   if (response_id == GTK_RESPONSE_ACCEPT) {
     delegate->InstallUIProceed();
   } else {
-    delegate->InstallUIAbort();
+    delegate->InstallUIAbort(true);
   }
 
   gtk_widget_destroy(dialog);
@@ -178,14 +178,14 @@ void ShowExtensionInstallDialog(
     ExtensionInstallUI::PromptType type) {
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
   if (!browser) {
-    delegate->InstallUIAbort();
+    delegate->InstallUIAbort(false);
     return;
   }
 
   BrowserWindowGtk* browser_window = static_cast<BrowserWindowGtk*>(
       browser->window());
   if (!browser_window) {
-    delegate->InstallUIAbort();
+    delegate->InstallUIAbort(false);
     return;
   }
 

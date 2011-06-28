@@ -646,11 +646,6 @@ void AppLauncherHandler::ExtensionDialogAccepted() {
 }
 
 void AppLauncherHandler::ExtensionDialogCanceled() {
-  const Extension* extension =
-      extensions_service_->GetExtensionById(extension_id_prompting_, true);
-  ExtensionService::RecordPermissionMessagesHistogram(
-      extension, "Extensions.Permissions_ReEnableCancel");
-
   extension_id_prompting_ = "";
 }
 
@@ -677,7 +672,17 @@ void AppLauncherHandler::InstallUIProceed() {
   extension_id_prompting_ = "";
 }
 
-void AppLauncherHandler::InstallUIAbort() {
+void AppLauncherHandler::InstallUIAbort(bool user_initiated) {
+  // We record the histograms here because ExtensionDialogCanceled is also
+  // called when the extension uninstall dialog is canceled.
+  const Extension* extension =
+      extensions_service_->GetExtensionById(extension_id_prompting_, true);
+  std::string histogram_name = user_initiated ?
+      "Extensions.Permissions_ReEnableCancel" :
+      "Extensions.Permissions_ReEnableAbort";
+  ExtensionService::RecordPermissionMessagesHistogram(
+      extension, histogram_name.c_str());
+
   ExtensionDialogCanceled();
 }
 

@@ -88,7 +88,7 @@ class MockExtensionInstallUIDelegate : public ExtensionInstallUI::Delegate {
     proceed_count_++;
   }
 
-  virtual void InstallUIAbort() {
+  virtual void InstallUIAbort(bool user_initiated) {
     abort_count_++;
   }
 

@@ -288,7 +288,7 @@ int ExtensionInstallDialogView::GetDefaultDialogButton() const {
 }
 
 bool ExtensionInstallDialogView::Cancel() {
-  delegate_->InstallUIAbort();
+  delegate_->InstallUIAbort(true);
   return true;
 }
 
@@ -324,13 +324,13 @@ void ShowExtensionInstallDialog(
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
 #endif
   if (!browser) {
-    delegate->InstallUIAbort();
+    delegate->InstallUIAbort(false);
     return;
   }
 
   BrowserWindow* browser_window = browser->window();
   if (!browser_window) {
-    delegate->InstallUIAbort();
+    delegate->InstallUIAbort(false);
     return;
   }
 

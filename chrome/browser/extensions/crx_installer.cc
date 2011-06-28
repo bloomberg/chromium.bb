@@ -429,11 +429,12 @@ void CrxInstaller::InstallUIProceed() {
   Release();  // balanced in ConfirmInstall().
 }
 
-void CrxInstaller::InstallUIAbort() {
-  // Technically, this can be called for other reasons than the user hitting
-  // cancel, but they're rare.
+void CrxInstaller::InstallUIAbort(bool user_initiated) {
+  std::string histogram_name = user_initiated ?
+      "Extensions.Permissions_InstallCancel" :
+      "Extensions.Permissions_InstallAbort";
   ExtensionService::RecordPermissionMessagesHistogram(
-      extension_, "Extensions.Permissions_InstallCancel");
+      extension_, histogram_name.c_str());
 
   // Kill the theme loading bubble.
   NotificationService* service = NotificationService::current();

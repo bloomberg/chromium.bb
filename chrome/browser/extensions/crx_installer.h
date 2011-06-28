@@ -104,7 +104,7 @@ class CrxInstaller
 
   // Overridden from ExtensionInstallUI::Delegate:
   virtual void InstallUIProceed();
-  virtual void InstallUIAbort();
+  virtual void InstallUIAbort(bool user_initiated);
 
   const GURL& original_url() const { return original_url_; }
   void set_original_url(const GURL& val) { original_url_ = val; }

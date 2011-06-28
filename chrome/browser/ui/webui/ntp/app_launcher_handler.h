@@ -112,7 +112,7 @@ class AppLauncherHandler : public WebUIMessageHandler,
 
   // ExtensionInstallUI::Delegate:
   virtual void InstallUIProceed();
-  virtual void InstallUIAbort();
+  virtual void InstallUIAbort(bool user_initiated);
 
   // Returns the ExtensionUninstallDialog object for this class, creating it if
   // needed.

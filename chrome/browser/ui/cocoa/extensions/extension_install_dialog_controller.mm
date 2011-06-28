@@ -119,7 +119,7 @@ void OffsetControlVertically(NSControl* control, CGFloat amount) {
 }
 
 - (IBAction)cancel:(id)sender {
-  delegate_->InstallUIAbort();
+  delegate_->InstallUIAbort(true);
   [NSApp endSheet:[self window]];
 }
 
@@ -201,13 +201,13 @@ void ShowExtensionInstallDialog(
     ExtensionInstallUI::PromptType type) {
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
   if (!browser) {
-    delegate->InstallUIAbort();
+    delegate->InstallUIAbort(false);
     return;
   }
 
   BrowserWindow* window = browser->window();
   if (!window) {
-    delegate->InstallUIAbort();
+    delegate->InstallUIAbort(false);
     return;
   }
 

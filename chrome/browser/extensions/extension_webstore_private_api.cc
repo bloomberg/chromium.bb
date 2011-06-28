@@ -421,7 +421,7 @@ void BeginInstallWithManifestFunction::OnParseSuccess(
     if (auto_confirm_for_tests == PROCEED)
       this->InstallUIProceed();
     else
-      this->InstallUIAbort();
+      this->InstallUIAbort(true);
     return;
   }
 
@@ -457,7 +457,7 @@ void BeginInstallWithManifestFunction::InstallUIProceed() {
   Release();
 }
 
-void BeginInstallWithManifestFunction::InstallUIAbort() {
+void BeginInstallWithManifestFunction::InstallUIAbort(bool user_initiated) {
   error_ = std::string(kUserCancelledError);
   SetResult(USER_CANCELLED);
   SendResponse(false);

@@ -187,7 +187,7 @@ class MockAbortExtensionInstallUI : public ExtensionInstallUI {
 
   // Simulate a user abort on an extension installation.
   virtual void ConfirmInstall(Delegate* delegate, const Extension* extension) {
-    delegate->InstallUIAbort();
+    delegate->InstallUIAbort(true);
     MessageLoopForUI::current()->Quit();
   }
 

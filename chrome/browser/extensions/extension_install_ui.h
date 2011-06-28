@@ -42,8 +42,9 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
     // We call this method to signal that the installation should continue.
     virtual void InstallUIProceed() = 0;
 
-    // We call this method to signal that the installation should stop.
-    virtual void InstallUIAbort() = 0;
+    // We call this method to signal that the installation should stop, with
+    // |user_initiated| true if the installation was stopped by the user.
+    virtual void InstallUIAbort(bool user_initiated) = 0;
 
    protected:
     virtual ~Delegate() {}

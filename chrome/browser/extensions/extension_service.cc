@@ -157,7 +157,7 @@ class SimpleExtensionLoadPrompt : public ExtensionInstallUI::Delegate {
 
   // ExtensionInstallUI::Delegate
   virtual void InstallUIProceed();
-  virtual void InstallUIAbort();
+  virtual void InstallUIAbort(bool user_initiated);
 
  private:
   base::WeakPtr<ExtensionService> extension_service_;
@@ -187,7 +187,7 @@ void SimpleExtensionLoadPrompt::InstallUIProceed() {
   delete this;
 }
 
-void SimpleExtensionLoadPrompt::InstallUIAbort() {
+void SimpleExtensionLoadPrompt::InstallUIAbort(bool user_initiated) {
   delete this;
 }
 

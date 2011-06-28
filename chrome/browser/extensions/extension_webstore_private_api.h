@@ -92,7 +92,7 @@ class BeginInstallWithManifestFunction : public AsyncExtensionFunction,
 
   // Implementing ExtensionInstallUI::Delegate interface.
   virtual void InstallUIProceed() OVERRIDE;
-  virtual void InstallUIAbort() OVERRIDE;
+  virtual void InstallUIAbort(bool user_initiated) OVERRIDE;
 
  protected:
   virtual ~BeginInstallWithManifestFunction();
