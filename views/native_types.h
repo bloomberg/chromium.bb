@@ -11,7 +11,7 @@
 #if defined(OS_LINUX)
 typedef union _GdkEvent GdkEvent;
 #endif
-#if defined(TOUCH_UI)
+#if defined(USE_X11)
 typedef union _XEvent XEvent;
 #endif
 
@@ -35,7 +35,7 @@ typedef MSG NativeEvent;
 #if defined(OS_LINUX)
 typedef GdkEvent* NativeEvent;
 #endif
-#if defined(TOUCH_UI)
+#if defined(USE_X11)
 typedef XEvent* NativeEvent2;
 #else
 typedef void* NativeEvent2;

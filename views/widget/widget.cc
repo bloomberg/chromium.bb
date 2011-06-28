@@ -840,12 +840,10 @@ void Widget::OnMouseCaptureLost() {
   is_mouse_button_pressed_ = false;
 }
 
-#if defined(TOUCH_UI)
 ui::TouchStatus Widget::OnTouchEvent(const TouchEvent& event) {
   ScopedEvent scoped(this, event);
   return static_cast<internal::RootView*>(GetRootView())->OnTouchEvent(event);
 }
-#endif
 
 bool Widget::ExecuteCommand(int command_id) {
   return widget_delegate_->ExecuteWindowsCommand(command_id);

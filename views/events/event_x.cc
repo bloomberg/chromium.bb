@@ -268,6 +268,21 @@ float GetTouchForceFromXEvent(XEvent* xev) {
   return force;
 }
 
+// The following two functions are copied from event_gtk.cc. These will be
+// removed when GTK dependency is removed.
+uint16 GetCharacterFromGdkKeyval(guint keyval) {
+  guint32 ch = gdk_keyval_to_unicode(keyval);
+
+  // We only support BMP characters.
+  return ch < 0xFFFE ? static_cast<uint16>(ch) : 0;
+}
+
+GdkEventKey* GetGdkEventKeyFromNative(NativeEvent native_event) {
+  DCHECK(native_event->type == GDK_KEY_PRESS ||
+         native_event->type == GDK_KEY_RELEASE);
+  return &native_event->key;
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -304,8 +319,15 @@ KeyEvent::KeyEvent(NativeEvent2 native_event_2, FromNativeEvent2 from_native)
 }
 
 uint16 KeyEvent::GetCharacter() const {
-  if (!native_event_2())
-    return GetCharacterFromKeyCode(key_code_, flags());
+  if (!native_event_2()) {
+    // This event may have been created from a Gdk event.
+    if (IsControlDown() || !native_event())
+      return GetCharacterFromKeyCode(key_code_, flags());
+
+    uint16 ch = GetCharacterFromGdkKeyval(
+        GetGdkEventKeyFromNative(native_event())->keyval);
+    return ch ? ch : GetCharacterFromKeyCode(key_code_, flags());
+  }
 
   DCHECK(native_event_2()->type == KeyPress ||
          native_event_2()->type == KeyRelease);
@@ -315,8 +337,33 @@ uint16 KeyEvent::GetCharacter() const {
 }
 
 uint16 KeyEvent::GetUnmodifiedCharacter() const {
-  if (!native_event_2())
-    return GetCharacterFromKeyCode(key_code_, flags() & ui::EF_SHIFT_DOWN);
+  if (!native_event_2()) {
+    // This event may have been created from a Gdk event.
+    if (!native_event())
+      return GetCharacterFromKeyCode(key_code_, flags() & ui::EF_SHIFT_DOWN);
+
+    GdkEventKey* key = GetGdkEventKeyFromNative(native_event());
+
+    static const guint kIgnoredModifiers =
+      GDK_CONTROL_MASK | GDK_LOCK_MASK | GDK_MOD1_MASK | GDK_MOD2_MASK |
+      GDK_MOD3_MASK | GDK_MOD4_MASK | GDK_MOD5_MASK | GDK_SUPER_MASK |
+      GDK_HYPER_MASK | GDK_META_MASK;
+
+    // We can't use things like (key->state & GDK_SHIFT_MASK), as it may mask
+    // out bits used by X11 or Gtk internally.
+    GdkModifierType modifiers =
+      static_cast<GdkModifierType>(key->state & ~kIgnoredModifiers);
+    guint keyval = 0;
+    uint16 ch = 0;
+    if (gdk_keymap_translate_keyboard_state(NULL, key->hardware_keycode,
+          modifiers, key->group, &keyval,
+          NULL, NULL, NULL)) {
+      ch = GetCharacterFromGdkKeyval(keyval);
+    }
+
+    return ch ? ch :
+      GetCharacterFromKeyCode(key_code_, flags() & ui::EF_SHIFT_DOWN);
+  }
 
   DCHECK(native_event_2()->type == KeyPress ||
          native_event_2()->type == KeyRelease);
@@ -340,42 +387,6 @@ uint16 KeyEvent::GetUnmodifiedCharacter() const {
 MouseEvent::MouseEvent(NativeEvent2 native_event_2,
                        FromNativeEvent2 from_native)
     : LocatedEvent(native_event_2, from_native) {
-}
-
-MouseEvent::MouseEvent(const TouchEvent& touch,
-                       FromNativeEvent2 from_native)
-    : LocatedEvent(touch.native_event_2(), from_native) {
-  // The location of the event is correctly extracted from the native event. But
-  // it is necessary to update the event type.
-  ui::EventType mtype = ui::ET_UNKNOWN;
-  switch (touch.type()) {
-    case ui::ET_TOUCH_RELEASED:
-      mtype = ui::ET_MOUSE_RELEASED;
-      break;
-    case ui::ET_TOUCH_PRESSED:
-      mtype = ui::ET_MOUSE_PRESSED;
-      break;
-    case ui::ET_TOUCH_MOVED:
-      mtype = ui::ET_MOUSE_MOVED;
-      break;
-    default:
-      NOTREACHED() << "Invalid mouse event.";
-  }
-  set_type(mtype);
-
-  // It may not be possible to extract the button-information necessary for a
-  // MouseEvent from the native event for a TouchEvent, so the flags are
-  // explicitly updated as well. The button is approximated from the touchpoint
-  // identity.
-  int new_flags = flags() & ~(ui::EF_LEFT_BUTTON_DOWN |
-                              ui::EF_RIGHT_BUTTON_DOWN |
-                              ui::EF_MIDDLE_BUTTON_DOWN);
-  int button = ui::EF_LEFT_BUTTON_DOWN;
-  if (touch.identity() == 1)
-    button = ui::EF_RIGHT_BUTTON_DOWN;
-  else if (touch.identity() == 2)
-    button = ui::EF_MIDDLE_BUTTON_DOWN;
-  set_flags(new_flags | button);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

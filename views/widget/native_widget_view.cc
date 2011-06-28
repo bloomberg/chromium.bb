@@ -82,11 +82,9 @@ void NativeWidgetView::OnMouseExited(const MouseEvent& event) {
   delegate()->OnMouseEvent(event);
 }
 
-#if defined(TOUCH_UI)
 ui::TouchStatus NativeWidgetView::OnTouchEvent(const TouchEvent& event) {
   return delegate()->OnTouchEvent(event);
 }
-#endif
 
 bool NativeWidgetView::OnKeyPressed(const KeyEvent& event) {
   return delegate()->OnKeyEvent(event);

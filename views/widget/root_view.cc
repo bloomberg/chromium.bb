@@ -14,11 +14,8 @@
 #include "ui/gfx/canvas_skia.h"
 #include "views/focus/view_storage.h"
 #include "views/layout/fill_layout.h"
-#include "views/widget/widget.h"
-
-#if defined(TOUCH_UI)
 #include "views/touchui/gesture_manager.h"
-#endif
+#include "views/widget/widget.h"
 
 namespace views {
 namespace internal {
@@ -40,10 +37,8 @@ RootView::RootView(Widget* widget)
       last_mouse_event_flags_(0),
       last_mouse_event_x_(-1),
       last_mouse_event_y_(-1),
-#if defined(TOUCH_UI)
       gesture_manager_(GestureManager::GetInstance()),
       touch_pressed_handler_(NULL),
-#endif
       ALLOW_THIS_IN_INITIALIZER_LIST(focus_search_(this, false, false)),
       focus_traversable_parent_(NULL),
       focus_traversable_parent_view_(NULL) {
@@ -328,7 +323,6 @@ bool RootView::OnMouseWheel(const MouseWheelEvent& event) {
   return consumed;
 }
 
-#if defined(TOUCH_UI)
 ui::TouchStatus RootView::OnTouchEvent(const TouchEvent& event) {
   TouchEvent e(event, this);
 
@@ -392,7 +386,6 @@ ui::TouchStatus RootView::OnTouchEvent(const TouchEvent& event) {
     status = ui::TOUCH_STATUS_SYNTH_MOUSE;
   return status;
 }
-#endif
 
 void RootView::SetMouseHandler(View *new_mh) {
   // If we're clearing the mouse handler, clear explicit_mouse_handler_ as well.
@@ -415,10 +408,8 @@ void RootView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
       mouse_pressed_handler_ = NULL;
     if (mouse_move_handler_ == child)
       mouse_move_handler_ = NULL;
-#if defined(TOUCH_UI)
-    if (touch_pressed_handler_)
+    if (touch_pressed_handler_ == child)
       touch_pressed_handler_ = NULL;
-#endif
   }
 }
 

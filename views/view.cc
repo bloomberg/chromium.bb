@@ -864,12 +864,10 @@ void View::OnMouseEntered(const MouseEvent& event) {
 void View::OnMouseExited(const MouseEvent& event) {
 }
 
-#if defined(TOUCH_UI)
 ui::TouchStatus View::OnTouchEvent(const TouchEvent& event) {
   DVLOG(1) << "visited the OnTouchEvent";
   return ui::TOUCH_STATUS_UNKNOWN;
 }
-#endif
 
 void View::SetMouseHandler(View *new_mouse_handler) {
   // It is valid for new_mouse_handler to be NULL
@@ -1834,13 +1832,11 @@ void View::ProcessMouseReleased(const MouseEvent& event) {
   // WARNING: we may have been deleted.
 }
 
-#if defined(TOUCH_UI)
 ui::TouchStatus View::ProcessTouchEvent(const TouchEvent& event) {
   // TODO(rjkroege): Implement a grab scheme similar to as
   // as is found in MousePressed.
   return OnTouchEvent(event);
 }
-#endif
 
 // Accelerators ----------------------------------------------------------------
 

@@ -20,13 +20,11 @@ enum EventType {
   ET_KEY_PRESSED,
   ET_KEY_RELEASED,
   ET_MOUSEWHEEL,
-#if defined(TOUCH_UI)
   ET_TOUCH_RELEASED,
   ET_TOUCH_PRESSED,
   ET_TOUCH_MOVED,
   ET_TOUCH_STATIONARY,
   ET_TOUCH_CANCELLED,
-#endif
   ET_DROP_TARGET_EVENT
 };
 
@@ -51,7 +49,6 @@ enum MouseEventFlags {
   EF_IS_NON_CLIENT      = 1 << 17
 };
 
-#if defined(TOUCH_UI)
 enum TouchStatus {
   TOUCH_STATUS_UNKNOWN = 0,  // Unknown touch status. This is used to indicate
                              // that the touch event was not handled.
@@ -65,7 +62,6 @@ enum TouchStatus {
                              // synthetic mouse event generated from the
                              // unused touch event was handled.
 };
-#endif
 
 }  // namespace ui
 

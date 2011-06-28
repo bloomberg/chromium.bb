@@ -38,9 +38,7 @@ class Layer;
 class Texture;
 class ThemeProvider;
 class Transform;
-#if defined(TOUCH_UI)
 enum TouchStatus;
-#endif
 }
 
 #if defined(OS_WIN)
@@ -569,11 +567,9 @@ class View : public AcceleratorTarget {
   // Default implementation does nothing. Override as needed.
   virtual void OnMouseExited(const MouseEvent& event);
 
-#if defined(TOUCH_UI)
   // This method is invoked for each touch event. Default implementation
   // does nothing. Override as needed.
   virtual ui::TouchStatus OnTouchEvent(const TouchEvent& event);
-#endif
 
   // Set the MouseHandler for a drag session.
   //
@@ -1243,11 +1239,9 @@ class View : public AcceleratorTarget {
   bool ProcessMouseDragged(const MouseEvent& event, DragInfo* drop_info);
   void ProcessMouseReleased(const MouseEvent& event);
 
-#if defined(TOUCH_UI)
   // RootView will invoke this with incoming TouchEvents. Returns the
   // the result of OnTouchEvent.
   ui::TouchStatus ProcessTouchEvent(const TouchEvent& event);
-#endif
 
   // Accelerators --------------------------------------------------------------
 

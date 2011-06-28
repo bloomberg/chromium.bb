@@ -27,6 +27,7 @@
 #include "views/focus/view_storage.h"
 #include "views/layer_property_setter.h"
 #include "views/test/views_test_base.h"
+#include "views/touchui/gesture_manager.h"
 #include "views/view.h"
 #include "views/views_delegate.h"
 #include "views/widget/native_widget.h"
@@ -36,9 +37,6 @@
 #if defined(OS_WIN)
 #include "views/controls/button/native_button_win.h"
 #include "views/test/test_views_delegate.h"
-#endif
-#if defined(TOUCH_UI)
-#include "views/touchui/gesture_manager.h"
 #endif
 
 using ::testing::_;
@@ -54,7 +52,7 @@ typedef ViewsTestBase ViewTest;
 ////////////////////////////////////////////////////////////////////////////////
 class TestView : public View {
  public:
-  TestView() : View() {
+  TestView() : View(), in_touch_sequence_(false) {
   }
 
   virtual ~TestView() {}
@@ -64,10 +62,8 @@ class TestView : public View {
     did_change_bounds_ = false;
     last_mouse_event_type_ = 0;
     location_.SetPoint(0, 0);
-#if defined(TOUCH_UI)
     last_touch_event_type_ = 0;
     last_touch_event_was_handled_ = false;
-#endif
     last_clip_.setEmpty();
     accelerator_count_map_.clear();
   }
@@ -76,9 +72,7 @@ class TestView : public View {
   virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;
   virtual bool OnMouseDragged(const MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const MouseEvent& event) OVERRIDE;
-#if defined(TOUCH_UI)
-  virtual ui::TouchStatus OnTouchEvent(const TouchEvent& event);
-#endif
+  virtual ui::TouchStatus OnTouchEvent(const TouchEvent& event) OVERRIDE;
   virtual void Paint(gfx::Canvas* canvas) OVERRIDE;
   virtual void SchedulePaintInternal(const gfx::Rect& rect) OVERRIDE;
   virtual bool AcceleratorPressed(const Accelerator& accelerator) OVERRIDE;
@@ -94,12 +88,10 @@ class TestView : public View {
   // Painting
   std::vector<gfx::Rect> scheduled_paint_rects_;
 
-  #if defined(TOUCH_UI)
   // TouchEvent
   int last_touch_event_type_;
   bool last_touch_event_was_handled_;
   bool in_touch_sequence_;
-#endif
 
   // Painting
   SkRect last_clip_;
@@ -108,7 +100,6 @@ class TestView : public View {
   std::map<Accelerator, int> accelerator_count_map_;
 };
 
-#if defined(TOUCH_UI)
 // Mock instance of the GestureManager for testing.
 class MockGestureManager : public GestureManager {
  public:
@@ -141,9 +132,8 @@ class TestViewIgnoreTouch : public TestView {
 
   virtual ~TestViewIgnoreTouch() {}
  private:
-  virtual ui::TouchStatus OnTouchEvent(const TouchEvent& event);
+  virtual ui::TouchStatus OnTouchEvent(const TouchEvent& event) OVERRIDE;
 };
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // OnBoundsChanged
@@ -251,7 +241,6 @@ TEST_F(ViewTest, MouseEvent) {
   widget->CloseNow();
 }
 
-#if defined(TOUCH_UI)
 ////////////////////////////////////////////////////////////////////////////////
 // TouchEvent
 ////////////////////////////////////////////////////////////////////////////////
@@ -379,6 +368,7 @@ TEST_F(ViewTest, TouchEvent) {
                      0, /* no flags */
                      0, /* first finger touch */
                      1.0, 0.0, 1.0, 0.0);
+
   root->OnTouchEvent(dragged);
   EXPECT_EQ(v2->last_touch_event_type_, ui::ET_TOUCH_MOVED);
   EXPECT_EQ(v2->location_.x(), -50);
@@ -409,7 +399,6 @@ TEST_F(ViewTest, TouchEvent) {
 
   widget->CloseNow();
 }
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // Painting
@@ -2250,7 +2239,7 @@ TEST_F(ViewTest, GetViewByID) {
 // Layers
 ////////////////////////////////////////////////////////////////////////////////
 
-#if defined(VIEWS_COMPOSITOR) || defined(TOUCH_UI)
+#if defined(VIEWS_COMPOSITOR)
 
 namespace {
 
@@ -2563,6 +2552,6 @@ TEST_F(ViewLayerTest, PaintAll) {
   EXPECT_EQ(view->GetLocalBounds(), texture->bounds_of_last_paint());
 }
 
-#endif  // VIEWS_COMPOSITOR || TOUCH_UI
+#endif  // VIEWS_COMPOSITOR
 
 }  // namespace views

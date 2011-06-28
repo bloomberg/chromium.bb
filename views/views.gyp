@@ -46,12 +46,11 @@
         ['include', '_(win)\\.cc$'],
         ['include', '/win/'],
         ['include', '/win_[^/]*\\.cc$'],
+        ['exclude', 'touchui/touch_factory.cc'],
       ]}],
       ['touchui==0', {'sources/': [
-        ['exclude', 'events/event_x.cc$'],
         ['exclude', 'native_menu_x.cc$'],
         ['exclude', 'native_menu_x.h$'],
-        ['exclude', 'touchui/'],
         ['exclude', '_(touch)\\.cc$'],
         ['exclude', 'widget/tooltip_manager_views.cc$'],
       ]}],

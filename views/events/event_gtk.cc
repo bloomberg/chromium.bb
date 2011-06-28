@@ -106,15 +106,6 @@ int GetFlagsFromGdkState(unsigned int state) {
   return flags;
 }
 
-#if !defined(TOUCH_UI)
-uint16 GetCharacterFromGdkKeyval(guint keyval) {
-  guint32 ch = gdk_keyval_to_unicode(keyval);
-
-  // We only support BMP characters.
-  return ch < 0xFFFE ? static_cast<uint16>(ch) : 0;
-}
-#endif
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -155,16 +146,6 @@ void Event::InitWithNativeEvent(NativeEvent native_event) {
   native_event_2_ = NULL;
 }
 
-#if !defined(TOUCH_UI)
-void Event::InitWithNativeEvent2(NativeEvent2 native_event_2,
-                                 FromNativeEvent2) {
-  // No one should ever call this on non-Touch Linux.
-  // TODO(beng): remove once we rid views of Gtk/Gdk.
-  NOTREACHED();
-  native_event_2_ = NULL;
-}
-#endif
-
 ////////////////////////////////////////////////////////////////////////////////
 // LocatedEvent, protected:
 
@@ -174,32 +155,12 @@ LocatedEvent::LocatedEvent(NativeEvent native_event)
       location_(GetMouseEventLocation(native_event)) {
 }
 
-#if !defined(TOUCH_UI)
-LocatedEvent::LocatedEvent(NativeEvent2 native_event_2,
-                           FromNativeEvent2 from_native)
-    : Event(native_event_2, ui::ET_UNKNOWN, 0, from_native) {
-  // No one should ever call this on Gtk-views.
-  // TODO(msw): remove once we rid views of Gtk/Gdk.
-  NOTREACHED();
-}
-#endif
-
 ////////////////////////////////////////////////////////////////////////////////
 // MouseEvent, public:
 
 MouseEvent::MouseEvent(NativeEvent native_event)
     : LocatedEvent(native_event) {
 }
-
-#if !defined(TOUCH_UI)
-MouseEvent::MouseEvent(NativeEvent2 native_event_2,
-                       FromNativeEvent2 from_native)
-    : LocatedEvent(native_event_2, from_native) {
-  // No one should ever call this on Gtk-views.
-  // TODO(msw): remove once we rid views of Gtk/Gdk.
-  NOTREACHED();
-}
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // KeyEvent, public:
@@ -211,52 +172,6 @@ KeyEvent::KeyEvent(NativeEvent native_event)
                 GetGdkEventKeyFromNative(native_event))) {
 }
 
-#if !defined(TOUCH_UI)
-KeyEvent::KeyEvent(NativeEvent2 native_event_2, FromNativeEvent2 from_native)
-    : Event(native_event_2, ui::ET_UNKNOWN, 0, from_native) {
-  // No one should ever call this on Gtk-views.
-  // TODO(beng): remove once we rid views of Gtk/Gdk.
-  NOTREACHED();
-}
-
-uint16 KeyEvent::GetCharacter() const {
-  // Gtk doesn't support control characters.
-  if (IsControlDown() || !native_event())
-    return GetCharacterFromKeyCode(key_code_, flags());
-
-  uint16 ch = GetCharacterFromGdkKeyval(
-      GetGdkEventKeyFromNative(native_event())->keyval);
-  return ch ? ch : GetCharacterFromKeyCode(key_code_, flags());
-}
-
-uint16 KeyEvent::GetUnmodifiedCharacter() const {
-  if (!native_event())
-    return GetCharacterFromKeyCode(key_code_, flags() & ui::EF_SHIFT_DOWN);
-
-  GdkEventKey* key = GetGdkEventKeyFromNative(native_event());
-
-  static const guint kIgnoredModifiers =
-      GDK_CONTROL_MASK | GDK_LOCK_MASK | GDK_MOD1_MASK | GDK_MOD2_MASK |
-      GDK_MOD3_MASK | GDK_MOD4_MASK | GDK_MOD5_MASK | GDK_SUPER_MASK |
-      GDK_HYPER_MASK | GDK_META_MASK;
-
-  // We can't use things like (key->state & GDK_SHIFT_MASK), as it may mask out
-  // bits used by X11 or Gtk internally.
-  GdkModifierType modifiers =
-      static_cast<GdkModifierType>(key->state & ~kIgnoredModifiers);
-  guint keyval = 0;
-  uint16 ch = 0;
-  if (gdk_keymap_translate_keyboard_state(NULL, key->hardware_keycode,
-                                          modifiers, key->group, &keyval,
-                                          NULL, NULL, NULL)) {
-    ch = GetCharacterFromGdkKeyval(keyval);
-  }
-
-  return ch ? ch :
-      GetCharacterFromKeyCode(key_code_, flags() & ui::EF_SHIFT_DOWN);
-}
-#endif
-
 ////////////////////////////////////////////////////////////////////////////////
 // MouseWheelEvent, public:
 
@@ -264,15 +179,5 @@ MouseWheelEvent::MouseWheelEvent(NativeEvent native_event)
     : MouseEvent(native_event),
       offset_(GetMouseWheelOffset(native_event)) {
 }
-
-#if !defined(TOUCH_UI)
-MouseWheelEvent::MouseWheelEvent(NativeEvent2 native_event_2,
-                                 FromNativeEvent2 from_native)
-    : MouseEvent(native_event_2, from_native) {
-  // No one should ever call this on Gtk-views.
-  // TODO(msw): remove once we rid views of Gtk/Gdk.
-  NOTREACHED();
-}
-#endif
 
 }  // namespace views

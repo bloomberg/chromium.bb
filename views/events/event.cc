@@ -4,6 +4,7 @@
 
 #include "views/events/event.h"
 
+#include "base/logging.h"
 #include "views/view.h"
 #include "views/widget/root_view.h"
 
@@ -176,10 +177,45 @@ MouseEvent::MouseEvent(const MouseEvent& model, View* source, View* target)
     : LocatedEvent(model, source, target) {
 }
 
+MouseEvent::MouseEvent(const TouchEvent& touch,
+                       FromNativeEvent2 from_native)
+    : LocatedEvent(touch.native_event_2(), from_native) {
+  // The location of the event is correctly extracted from the native event. But
+  // it is necessary to update the event type.
+  ui::EventType mtype = ui::ET_UNKNOWN;
+  switch (touch.type()) {
+    case ui::ET_TOUCH_RELEASED:
+      mtype = ui::ET_MOUSE_RELEASED;
+      break;
+    case ui::ET_TOUCH_PRESSED:
+      mtype = ui::ET_MOUSE_PRESSED;
+      break;
+    case ui::ET_TOUCH_MOVED:
+      mtype = ui::ET_MOUSE_MOVED;
+      break;
+    default:
+      NOTREACHED() << "Invalid mouse event.";
+  }
+  set_type(mtype);
+
+  // It may not be possible to extract the button-information necessary for a
+  // MouseEvent from the native event for a TouchEvent, so the flags are
+  // explicitly updated as well. The button is approximated from the touchpoint
+  // identity.
+  int new_flags = flags() & ~(ui::EF_LEFT_BUTTON_DOWN |
+                              ui::EF_RIGHT_BUTTON_DOWN |
+                              ui::EF_MIDDLE_BUTTON_DOWN);
+  int button = ui::EF_LEFT_BUTTON_DOWN;
+  if (touch.identity() == 1)
+    button = ui::EF_RIGHT_BUTTON_DOWN;
+  else if (touch.identity() == 2)
+    button = ui::EF_MIDDLE_BUTTON_DOWN;
+  set_flags(new_flags | button);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // TouchEvent, public:
 
-#if defined(TOUCH_UI)
 TouchEvent::TouchEvent(ui::EventType type,
                        int x,
                        int y,
@@ -217,7 +253,6 @@ TouchEvent::TouchEvent(const TouchEvent& model, View* root)
       rotation_angle_(model.rotation_angle_),
       force_(model.force_) {
 }
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // MouseWheelEvent, public:

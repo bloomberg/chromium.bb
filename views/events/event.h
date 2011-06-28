@@ -13,7 +13,7 @@
 #include "ui/gfx/point.h"
 #include "views/native_types.h"
 
-#if defined(TOUCH_UI)
+#if defined(USE_X11)
 typedef union _XEvent XEvent;
 #endif
 
@@ -79,7 +79,6 @@ class Event {
            type_ == ui::ET_MOUSEWHEEL;
   }
 
-#if defined(TOUCH_UI)
   bool IsTouchEvent() const {
     return type_ == ui::ET_TOUCH_RELEASED ||
            type_ == ui::ET_TOUCH_PRESSED ||
@@ -87,7 +86,6 @@ class Event {
            type_ == ui::ET_TOUCH_STATIONARY ||
            type_ == ui::ET_TOUCH_CANCELLED;
   }
-#endif
 
 #if defined(OS_WIN)
   // Returns the EventFlags in terms of windows flags.
@@ -165,9 +163,7 @@ class LocatedEvent : public Event {
   gfx::Point location_;
 };
 
-#if defined(TOUCH_UI)
 class TouchEvent;
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -186,14 +182,12 @@ class MouseEvent : public LocatedEvent {
   // from |source| coordinate system to |target| coordinate system.
   MouseEvent(const MouseEvent& model, View* source, View* target);
 
-#if defined(TOUCH_UI)
   // Creates a new MouseEvent from a TouchEvent. The location of the TouchEvent
   // is the same as the MouseEvent. Other attributes (e.g. type, flags) are
   // mapped from the TouchEvent to appropriate MouseEvent attributes.
   // GestureManager uses this to convert TouchEvents that are not handled by any
   // view.
   MouseEvent(const TouchEvent& touch, FromNativeEvent2 from_native);
-#endif
 
   // TODO(msw): Kill this legacy constructor when we update uses.
   // Create a new mouse event
@@ -241,7 +235,6 @@ class MouseEvent : public LocatedEvent {
   DISALLOW_COPY_AND_ASSIGN(MouseEvent);
 };
 
-#if defined(TOUCH_UI)
 ////////////////////////////////////////////////////////////////////////////////
 //
 // TouchEvent class
@@ -301,7 +294,6 @@ class TouchEvent : public LocatedEvent {
 
   DISALLOW_COPY_AND_ASSIGN(TouchEvent);
 };
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // KeyEvent class

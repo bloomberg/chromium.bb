@@ -10,11 +10,9 @@
 #include "views/widget/native_widget_delegate.h"
 #include "views/widget/native_widget_views.h"
 
-#if defined(TOUCH_UI)
 namespace ui {
 enum TouchStatus;
 }
-#endif
 
 namespace views {
 class NativeWidgetViews;
@@ -55,9 +53,7 @@ class NativeWidgetView : public View {
   virtual void OnMouseMoved(const MouseEvent& event) OVERRIDE;
   virtual void OnMouseEntered(const MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const MouseEvent& event) OVERRIDE;
-#if defined(TOUCH_UI)
   virtual ui::TouchStatus OnTouchEvent(const TouchEvent& event) OVERRIDE;
-#endif
   virtual bool OnKeyPressed(const KeyEvent& event) OVERRIDE;
   virtual bool OnKeyReleased(const KeyEvent& event) OVERRIDE;
   virtual bool OnMouseWheel(const MouseWheelEvent& event) OVERRIDE;

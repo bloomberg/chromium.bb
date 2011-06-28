@@ -89,9 +89,7 @@ class NativeWidgetDelegate {
   virtual bool OnKeyEvent(const KeyEvent& event) = 0;
   virtual bool OnMouseEvent(const MouseEvent& event) = 0;
   virtual void OnMouseCaptureLost() = 0;
-#if defined(TOUCH_UI)
   virtual ui::TouchStatus OnTouchEvent(const TouchEvent& event) = 0;
-#endif
 
   // Runs the specified native command. Returns true if the command is handled.
   virtual bool ExecuteCommand(int command_id) = 0;
