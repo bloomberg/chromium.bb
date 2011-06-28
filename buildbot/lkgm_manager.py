@@ -90,6 +90,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     lkgm_subdir:  Subdirectory within manifest repo to store candidates.
   """
   # Max timeout before assuming other builders have failed.
+  LONG_MAX_TIMEOUT_SECONDS = 1200
   MAX_TIMEOUT_SECONDS = 300
   # Polling timeout for checking git repo for other build statuses.
   SLEEP_TIMEOUT = 30
@@ -122,6 +123,22 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       self.lkgm_subdir = self.CHROME_PFQ_SUBDIR
     else:
       self.lkgm_subdir = self.LKGM_SUBDIR
+
+  def _RunLambdaWithTimeout(self, function_to_run, use_long_timeout=False):
+    """Runs function_to_run until it returns a value or timeout is reached."""
+    function_success = False
+    start_time = time.time()
+    max_timeout = self.MAX_TIMEOUT_SECONDS
+    if use_long_timeout: max_timeout = self.LONG_MAX_TIMEOUT_SECONDS
+    # Monitor the repo until all builders report in or we've waited too long.
+    while (time.time() - start_time) < max_timeout:
+      function_success = function_to_run()
+      if function_success:
+        break
+      else:
+        time.sleep(self.SLEEP_TIMEOUT)
+
+    return function_success
 
   def _LoadSpecs(self, version_info):
     """Loads the specifications from the working directory.
@@ -205,14 +222,23 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       Raises:
         GenerateBuildSpecException in case of failure to generate a buildspec
     """
-    try:
+    def _AttemptToGetLatestCandidate():
+      """Attempts to acquire latest candidate using manifest repo."""
       version_info = self._GetCurrentVersionInfo(version_file)
       self._LoadSpecs(version_info)
+      version_to_use = None
       if force_version:
-        self.current_version = force_version
+        version_to_use = force_version
+      elif self.latest_unprocessed:
+        version_to_use = self.latest_unprocessed
       else:
-        self.current_version = self.latest_unprocessed
+        logging.info('Found nothing new to build, trying again later.')
 
+      return version_to_use
+
+    try:
+      self.current_version = self._RunLambdaWithTimeout(
+          _AttemptToGetLatestCandidate)
       if self.current_version:
         logging.debug('Using build spec: %s', self.current_version)
         commit_message = 'Automatic: Start %s %s' % (self.build_name,
@@ -229,50 +255,39 @@ class LKGMManager(manifest_version.BuildSpecsManager):
 
   def GetBuildersStatus(self, builders_array):
     """Returns a build-names->status dictionary of build statuses."""
-    xml_name = self.current_version + '.xml'
-
-    # Set some default location strings.
-    dir_pfx = _LKGMCandidateInfo(self.current_version).DirPrefix()
-    specs_for_build = os.path.join(
-        self.manifests_dir, self.lkgm_subdir, 'build-name', '%(build_name)s')
-    pass_file = os.path.join(specs_for_build, 'pass', dir_pfx, xml_name)
-    fail_file = os.path.join(specs_for_build, 'fail', dir_pfx, xml_name)
-    inflight_file = os.path.join(specs_for_build, 'inflight', dir_pfx, xml_name)
-
-    start_time = time.time()
     builder_statuses = {}
-    num_complete = 0
 
-    # Monitor the repo until all builders report in or we've waited too long.
-    while (time.time() - start_time) < self.MAX_TIMEOUT_SECONDS:
+    def _CheckStatusOfBuildersArray():
+      """Helper function that iterates through current statuses."""
+      num_complete = 0
       _SyncGitRepo(self.manifests_dir)
+      version_info = _LKGMCandidateInfo(self.current_version)
       for builder in builders_array:
-        if builder_statuses.get(builder, None) not in ['pass', 'fail']:
+        if builder_statuses.get(builder) not in LKGMManager.STATUS_COMPLETED:
           logging.debug("Checking for builder %s's status" % builder)
-          builder_pass = pass_file % {'build_name': builder}
-          builder_fail = fail_file % {'build_name': builder}
-          builder_inflight = inflight_file % {'build_name': builder}
-          if os.path.lexists(builder_pass):
-            builder_statuses[builder] = 'pass'
+          builder_statuses[builder] = self.GetBuildStatus(
+              builder, self.current_version, version_info)
+          if builder_statuses[builder] == LKGMManager.STATUS_PASSED:
             num_complete += 1
             logging.info('Builder %s completed with status passed', builder)
-          elif os.path.lexists(builder_fail):
-            builder_statuses[builder] = 'fail'
+          elif builder_statuses[builder] == LKGMManager.STATUS_FAILED:
             num_complete += 1
             logging.info('Builder %s completed with status failed', builder)
-          elif os.path.lexists(builder_inflight):
-            builder_statuses[builder] = 'inflight'
-          else:
-            builder_statuses[builder] = None
+          elif not builder_statuses[builder]:
             logging.debug('No status found for builder %s.' % builder)
+        else:
+          num_complete += 1
 
       if num_complete < len(builders_array):
         logging.info('Waiting for other builds to complete')
-        time.sleep(self.SLEEP_TIMEOUT)
+        return None
       else:
-        break
+        return 'Builds completed.'
 
-    if num_complete != len(builders_array):
+    # Check for build completion until all builders report in.
+    builds_succeeded = self._RunLambdaWithTimeout(_CheckStatusOfBuildersArray,
+                                                  use_long_timeout=True)
+    if not builds_succeeded:
       logging.error('Not all builds finished before MAX_TIMEOUT reached.')
 
     return builder_statuses

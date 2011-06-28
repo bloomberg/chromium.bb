@@ -52,7 +52,10 @@ def _CloneGitRepo(working_dir, repo_url):
     repo_dir: location where it should be cloned to
   """
   if not os.path.exists(working_dir): os.makedirs(working_dir)
-  cros_lib.RunCommand(['git', 'clone', repo_url, working_dir])
+  # Git clone, hide everything as this is called often.
+  cros_lib.RunCommand(['git', 'clone', repo_url, working_dir],
+                      print_cmd=False, redirect_stderr=True,
+                      redirect_stdout=True)
 
 
 def _GitCleanDirectory(directory):
@@ -332,6 +335,11 @@ class VersionInfo(object):
 class BuildSpecsManager(object):
   """A Class to manage buildspecs and their states."""
   _TMP_MANIFEST_DIR = '/tmp/manifests'
+  # Various status builds can be in.
+  STATUS_FAILED = 'fail'
+  STATUS_PASSED = 'pass'
+  STATUS_INFLIGHT = 'inflight'
+  STATUS_COMPLETED = [STATUS_PASSED, STATUS_FAILED]
 
   def __init__(self, source_dir, checkout_repo, manifest_repo, branch,
                build_name, incr_type, clobber=False, dry_run=True):
@@ -360,6 +368,12 @@ class BuildSpecsManager(object):
     self.pass_dir = None
     self.fail_dir = None
     self.inflight_dir = None
+
+    # A list of versions this builder has successfully built.
+    self.passed = None
+
+    # Path to specs for builder.  Requires passing %(builder)s.
+    self.specs_for_builder = None
 
     # Specs.
     self.all = None
@@ -394,11 +408,16 @@ class BuildSpecsManager(object):
     working_dir = os.path.join(self.manifests_dir, relative_working_dir)
     if not os.path.exists(working_dir): os.makedirs(working_dir)
     dir_pfx = version_info.DirPrefix()
-    specs_for_build = os.path.join(working_dir, 'build-name', self.build_name)
+    self.specs_for_builder = os.path.join(working_dir, 'build-name',
+                                          '%(builder)s')
+    specs_for_build = self.specs_for_builder % {'builder': self.build_name}
     self.all_specs_dir = os.path.join(working_dir, 'buildspecs', dir_pfx)
-    self.pass_dir = os.path.join(specs_for_build, 'pass', dir_pfx)
-    self.fail_dir = os.path.join(specs_for_build, 'fail', dir_pfx)
-    self.inflight_dir = os.path.join(specs_for_build, 'inflight', dir_pfx)
+    self.pass_dir = os.path.join(specs_for_build,
+                                 BuildSpecsManager.STATUS_PASSED, dir_pfx)
+    self.fail_dir = os.path.join(specs_for_build,
+                                 BuildSpecsManager.STATUS_FAILED, dir_pfx)
+    self.inflight_dir = os.path.join(specs_for_build,
+                                     BuildSpecsManager.STATUS_INFLIGHT, dir_pfx)
 
     # Conservatively grab the latest manifest versions repository.
     _RemoveDirs(self.manifests_dir)
@@ -408,10 +427,10 @@ class BuildSpecsManager(object):
     self.all = self._GetMatchingSpecs(version_info, self.all_specs_dir)
 
     # Build list of unprocessed specs.
-    passed = self._GetMatchingSpecs(version_info, self.pass_dir)
+    self.passed = self._GetMatchingSpecs(version_info, self.pass_dir)
     failed = self._GetMatchingSpecs(version_info, self.fail_dir)
     inflight = self._GetMatchingSpecs(version_info, self.inflight_dir)
-    processed = sorted(set(passed + failed + inflight),
+    processed = sorted(set(self.passed + failed + inflight),
                             key=self.compare_versions_fn)
     self.unprocessed = sorted(set(self.all).difference(set(processed)),
                               key=self.compare_versions_fn)
@@ -420,8 +439,8 @@ class BuildSpecsManager(object):
     latest_processed = None
     if processed:
       latest_processed = processed[-1]
-      logging.debug('Last processed build for %s is %s' % (self.build_name,
-                                                           latest_processed))
+      logging.debug('Last processed build for %s is %s' % (
+          self.build_name, latest_processed))
 
       # Remove unprocessed candidates that are older than the latest processed.
       to_be_removed = []
@@ -487,6 +506,31 @@ class BuildSpecsManager(object):
                           version)
     logging.debug('Created New Build Spec %s', version)
     return version
+
+  def DidLastBuildSucceed(self):
+    """Returns True if this is our first build or the last build succeeded."""
+    return not self.latest or self.latest in self.passed
+
+  def GetBuildStatus(self, builder, version, version_info):
+    """Given a builder, version, verison_info returns the build status."""
+    xml_name = self.current_version + '.xml'
+    dir_pfx = version_info.DirPrefix()
+    specs_for_build = self.specs_for_builder % {'builder': builder}
+    pass_file = os.path.join(specs_for_build, self.STATUS_PASSED, dir_pfx,
+                             xml_name)
+    fail_file = os.path.join(specs_for_build, self.STATUS_FAILED, dir_pfx,
+                             xml_name)
+    inflight_file = os.path.join(specs_for_build, self.STATUS_INFLIGHT, dir_pfx,
+                                 xml_name)
+
+    if os.path.lexists(pass_file):
+      return BuildSpecsManager.STATUS_PASSED
+    elif os.path.lexists(fail_file):
+      return BuildSpecsManager.STATUS_FAILED
+    elif os.path.lexists(inflight_file):
+      return BuildSpecsManager.STATUS_INFLIGHT
+    else:
+      return None
 
   def GetLocalManifest(self, version):
     """Return path to local copy of manifest given by version."""
@@ -555,7 +599,7 @@ class BuildSpecsManager(object):
     self._PushSpecChanges(message)
 
   def _SetFailed(self, message):
-    """Marks the current buildspec as failed by creating a symlink in 'fail' dir
+    """Marks the current buildspec as failed by creating a symlink in fail dir
     Args:
       message: Commit message to use when pushing new status.
     """
@@ -569,7 +613,7 @@ class BuildSpecsManager(object):
     self._PushSpecChanges(message)
 
   def _SetPassed(self, message):
-    """Marks the current buildspec as passed by creating a symlink in 'pass' dir
+    """Marks the current buildspec as passed by creating a symlink in passed dir
     Args:
       message: Commit message to use when pushing new status.
     """
@@ -597,20 +641,18 @@ class BuildSpecsManager(object):
     last_error = None
     for index in range(0, retries + 1):
       try:
-        status = 'fail'
-        if success: status = 'pass'
-        logging.debug('Updating the status info for %s to %s', self.build_name,
-                      status)
-        commit_message = (
-            'Automatic checkin: status = %s build_version %s for %s' % (
-                status, self.current_version, self.build_name))
-        if status == 'pass':
-          self._SetPassed(commit_message)
-        if status == 'fail':
-          self._SetFailed(commit_message)
+        commit_message = 'Automatic checkin: status=%s build_version %s for %s'
+        if success:
+          self._SetPassed(commit_message % (BuildSpecsManager.STATUS_PASSED,
+                                            self.current_version,
+                                            self.build_name))
+        else:
+          self._SetFailed(commit_message % (BuildSpecsManager.STATUS_FAILED,
+                                            self.current_version,
+                                            self.build_name))
       except (GitCommandException, cros_lib.RunCommandError) as e:
-        last_error = ('Failed to update the status for %s to %s with the '
-                      'following error %s' % (self.build_name, status,
+        last_error = ('Failed to update the status for %s with the '
+                      'following error %s' % (self.build_name,
                                               e.message))
         logging.error(last_error)
         logging.error('Retrying to generate buildspec:  Retry %d/%d' %

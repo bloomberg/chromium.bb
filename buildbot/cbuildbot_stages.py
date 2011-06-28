@@ -517,7 +517,10 @@ class ManifestVersionedSyncStage(BuilderStage):
     next_manifest = self.GetNextManifest()
     if not next_manifest:
       print 'Manifest Revision: Nothing to build!'
-      sys.exit(0);
+      if ManifestVersionedSyncStage.manifest_manager.DidLastBuildSucceed():
+        sys.exit(0)
+      else:
+        cros_lib.Die('Last build status was non-passing.')
 
     # Log this early on for the release team to grep out before we finish.
     print
@@ -618,7 +621,7 @@ class LGKMVersionedSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     success = True
     for builder in builders:
       status = statuses[builder]
-      if status != 'pass':
+      if status != lkgm_manager.LKGMManager.STATUS_PASSED:
         cros_lib.Warning('Builder %s reported status %s' % (builder, status))
         success = False
 

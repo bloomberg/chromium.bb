@@ -87,7 +87,9 @@ class LKGMManagerTest(mox.MoxTestBase):
       self.build_name, 'binary', dry_run=True)
 
     self.manager.all_specs_dir = '/LKGM/path'
-
+    self.manager.specs_for_builder = os.path.join(self.manager.manifests_dir,
+                                                  self.manager.lkgm_subdir,
+                                                  'build-name', '%(builder)s')
     self.manager.SLEEP_TIMEOUT = 1
 
   def _CommonTestLatestCandidateByVersion(self, version, expected_candidate,
@@ -222,12 +224,12 @@ class LKGMManagerTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_LoadSpecs')
 
     my_info = manifest_version.VersionInfo('1.2.3.4')
-
     lkgm_manager.LKGMManager._GetCurrentVersionInfo(
         self.version_file).AndReturn(my_info)
     lkgm_manager.LKGMManager._LoadSpecs(my_info)
 
     self.mox.ReplayAll()
+    self.manager.MAX_TIMEOUT_SECONDS = 1 # Only run once.
     candidate = self.manager.GetLatestCandidate(self.version_file)
     self.assertEqual(candidate, None)
     self.mox.VerifyAll()
@@ -318,12 +320,12 @@ class LKGMManagerTest(mox.MoxTestBase):
                               'build-name', 'build2')
 
     self._FinishBuild(manifest, for_build1, dir_pfx, 'fail', wait=3)
-    thread = self._FinishBuild(manifest, for_build2, dir_pfx, 'pass', wait=5)
+    thread = self._FinishBuild(manifest, for_build2, dir_pfx, 'pass', wait=10)
 
     lkgm_manager._SyncGitRepo(self.manager.manifests_dir).MultipleTimes()
     self.mox.ReplayAll()
     # Let's reduce this.
-    self.manager.MAX_TIMEOUT_SECONDS = 5
+    self.manager.LONG_MAX_TIMEOUT_SECONDS = 5
     statuses = self.manager.GetBuildersStatus(['build1', 'build2'])
     self.assertEqual(statuses['build1'], 'fail')
     self.assertEqual(statuses['build2'], None)
