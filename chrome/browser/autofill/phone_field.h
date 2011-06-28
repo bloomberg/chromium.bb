@@ -44,6 +44,7 @@ class PhoneField : public FormField {
   FRIEND_TEST_ALL_PREFIXES(PhoneFieldTest, ParseOneLineFax);
   FRIEND_TEST_ALL_PREFIXES(PhoneFieldTest, ParseTwoLineFax);
   FRIEND_TEST_ALL_PREFIXES(PhoneFieldTest, ThreePartFaxNumberPrefixSuffix);
+  FRIEND_TEST_ALL_PREFIXES(PhoneFieldTest, CountryAndCityAndPhoneNumber);
 
   PhoneField();
 

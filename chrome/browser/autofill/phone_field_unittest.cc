@@ -391,3 +391,34 @@ TEST_F(PhoneFieldTest, ThreePartFaxNumberPrefixSuffix) {
       field_type_map_.find(ASCIIToUTF16("suffix1")) != field_type_map_.end());
   EXPECT_EQ(PHONE_FAX_NUMBER, field_type_map_[ASCIIToUTF16("suffix1")]);
 }
+
+TEST_F(PhoneFieldTest, CountryAndCityAndPhoneNumber) {
+  // Phone in format <country code>:3 - <city and number>:10
+  // The |maxlength| is considered, otherwise it's too broad.
+  list_.push_back(
+      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("Phone Number"),
+                                               ASCIIToUTF16("CountryCode"),
+                                               string16(),
+                                               ASCIIToUTF16("text"),
+                                               3,
+                                               false),
+                        ASCIIToUTF16("country")));
+  list_.push_back(
+      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("Phone Number"),
+                                               ASCIIToUTF16("PhoneNumber"),
+                                               string16(),
+                                               ASCIIToUTF16("text"),
+                                               10,
+                                               false),
+                        ASCIIToUTF16("phone")));
+  AutofillScanner scanner(list_.get());
+  field_.reset(Parse(&scanner, false));
+  ASSERT_NE(static_cast<PhoneField*>(NULL), field_.get());
+  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
+  ASSERT_TRUE(
+      field_type_map_.find(ASCIIToUTF16("country")) != field_type_map_.end());
+  EXPECT_EQ(PHONE_HOME_COUNTRY_CODE, field_type_map_[ASCIIToUTF16("country")]);
+  ASSERT_TRUE(
+      field_type_map_.find(ASCIIToUTF16("phone")) != field_type_map_.end());
+  EXPECT_EQ(PHONE_HOME_CITY_AND_NUMBER, field_type_map_[ASCIIToUTF16("phone")]);
+}

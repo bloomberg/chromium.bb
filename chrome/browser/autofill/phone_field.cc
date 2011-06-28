@@ -98,6 +98,10 @@ PhoneField::Parser PhoneField::phone_field_grammars_[] = {
   { PhoneField::REGEX_AREA, PhoneField::FIELD_AREA_CODE, 0 },
   { PhoneField::REGEX_PHONE, PhoneField::FIELD_PHONE, 0 },
   { PhoneField::REGEX_SEPARATOR, FIELD_NONE, 0 },
+  // Phone: <cc>:3 - <phone>:10 (Ext: <ext>)?
+  { PhoneField::REGEX_PHONE, PhoneField::FIELD_COUNTRY_CODE, 3 },
+  { PhoneField::REGEX_PHONE, PhoneField::FIELD_PHONE, 10 },
+  { PhoneField::REGEX_SEPARATOR, FIELD_NONE, 0 },
   // Phone: <phone> (Ext: <ext>)?
   { PhoneField::REGEX_PHONE, PhoneField::FIELD_PHONE, 0 },
   { PhoneField::REGEX_SEPARATOR, FIELD_NONE, 0 },
@@ -159,15 +163,21 @@ bool PhoneField::ClassifyField(FieldTypeMap* map) const {
                                    number_->GetCountryCodeType(),
                                    map);
     }
+
+    AutofillFieldType field_number_type = number_->GetNumberType();
     if (parsed_phone_fields_[FIELD_AREA_CODE] != NULL) {
       ok = ok && AddClassification(parsed_phone_fields_[FIELD_AREA_CODE],
                                    number_->GetCityCodeType(),
                                    map);
+    } else if (parsed_phone_fields_[FIELD_COUNTRY_CODE] != NULL) {
+      // Only if we can find country code without city code, it means the phone
+      // number include city code.
+      field_number_type = number_->GetCityAndNumberType();
     }
     // We tag the prefix as PHONE_HOME_NUMBER, then when filling the form
     // we fill only the prefix depending on the size of the input field.
     ok = ok && AddClassification(parsed_phone_fields_[FIELD_PHONE],
-                                 number_->GetNumberType(),
+                                 field_number_type,
                                  map);
     // We tag the suffix as PHONE_HOME_NUMBER, then when filling the form
     // we fill only the suffix depending on the size of the input field.
