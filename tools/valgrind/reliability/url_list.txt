@@ -6,3 +6,6 @@ build.chromium.org/p/chromium/waterfall
 build.chromium.org/p/chromium.memory/console
 build.chromium.org/f/chromium/perf/dashboard/overview.html
 www.slashdot.org
+www.ibanez.co.jp/japan/index.html
+www.aljazeera.net
+www.uni.edu/becker/chinese2.html
