@@ -342,6 +342,23 @@ void Automation::MouseDoubleClick(int tab_id,
   }
 }
 
+void Automation::DragAndDropFilePaths(
+    int tab_id, const gfx::Point& location,
+    const std::vector<FilePath::StringType>& paths, Error** error) {
+  int windex = 0, tab_index = 0;
+  *error = GetIndicesForTab(tab_id, &windex, &tab_index);
+  if (*error) {
+    return;
+  }
+
+  std::string error_msg;
+  if (!SendDragAndDropFilePathsJSONRequest(
+          automation(), windex, tab_index, location.x(), location.y(), paths,
+          &error_msg)) {
+    *error = new Error(kUnknownError, error_msg);
+  }
+}
+
 void Automation::SendWebKeyEvent(int tab_id,
                                  const WebKeyEvent& key_event,
                                  Error** error) {

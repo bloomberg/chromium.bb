@@ -684,6 +684,7 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
                                     OnMsgRunBeforeUnloadConfirm)
     IPC_MESSAGE_HANDLER(DragHostMsg_StartDragging, OnMsgStartDragging)
     IPC_MESSAGE_HANDLER(DragHostMsg_UpdateDragCursor, OnUpdateDragCursor)
+    IPC_MESSAGE_HANDLER(DragHostMsg_TargetDrop_ACK, OnTargetDropACK)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TakeFocus, OnTakeFocus)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AddMessageToConsole, OnAddMessageToConsole)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShouldClose_ACK, OnMsgShouldCloseACK)
@@ -1046,6 +1047,13 @@ void RenderViewHost::OnUpdateDragCursor(WebDragOperation current_op) {
   RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
   if (view)
     view->UpdateDragCursor(current_op);
+}
+
+void RenderViewHost::OnTargetDropACK() {
+  NotificationService::current()->Notify(
+      NotificationType::RENDER_VIEW_HOST_DID_RECEIVE_DRAG_TARGET_DROP_ACK,
+      Source<RenderViewHost>(this),
+      NotificationService::NoDetails());
 }
 
 void RenderViewHost::OnTakeFocus(bool reverse) {

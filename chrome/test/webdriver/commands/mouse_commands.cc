@@ -35,27 +35,13 @@ bool ElementMouseCommand::DoesPost() {
 }
 
 void ElementMouseCommand::ExecutePost(Response* response) {
-  Error* error = session_->CheckElementPreconditionsForClicking(element);
-  if (error) {
-    response->SetError(error);
-    return;
-  }
-
   gfx::Point location;
-  error = session_->GetElementLocationInView(element, &location);
+  Error* error = session_->GetClickableLocation(element, &location);
   if (error) {
     response->SetError(error);
     return;
   }
 
-  gfx::Size size;
-  error = session_->GetElementSize(session_->current_target(), element, &size);
-  if (error) {
-    response->SetError(error);
-    return;
-  }
-
-  location.Offset(size.width() / 2, size.height() / 2);
   error = Action(location);
   if (error) {
     response->SetError(error);

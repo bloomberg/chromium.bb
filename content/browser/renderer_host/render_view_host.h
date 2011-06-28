@@ -438,6 +438,7 @@ class RenderViewHost : public RenderWidgetHost {
                           const SkBitmap& image,
                           const gfx::Point& image_offset);
   void OnUpdateDragCursor(WebKit::WebDragOperation drag_operation);
+  void OnTargetDropACK();
   void OnTakeFocus(bool reverse);
   void OnAddMessageToConsole(int32 level,
                              const std::wstring& message,

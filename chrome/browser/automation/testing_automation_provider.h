@@ -1060,6 +1060,20 @@ class TestingAutomationProvider : public AutomationProvider,
   void WebkitMouseDoubleClick(DictionaryValue* args,
                               IPC::Message* message);
 
+  // Drag and drop file paths at a given coordinate.
+  // Example:
+  //   input: { "windex": 1,
+  //            "tab_index": 1,
+  //            "x": 100,
+  //            "y": 100,
+  //            "paths": [
+  //              "/tmp/file.txt"
+  //            ],
+  //          }
+  //   output: none
+  void DragAndDropFilePaths(DictionaryValue* args,
+                            IPC::Message* message);
+
   // Sends the WebKit key event with the specified properties.
   // Example:
   //   input: { "windex": 1,

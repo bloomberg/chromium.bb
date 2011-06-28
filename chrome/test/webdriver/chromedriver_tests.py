@@ -14,6 +14,7 @@ import hashlib
 import os
 import platform
 import sys
+import tempfile
 import unittest
 import urllib
 import urllib2
@@ -31,6 +32,7 @@ try:
 except ImportError:
   import json
 
+from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.remote.command import Command
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.common.keys import Keys
@@ -178,7 +180,6 @@ class WebserverTest(unittest.TestCase):
   """Tests the built-in ChromeDriver webserver."""
 
   def testShouldNotServeFilesByDefault(self):
-    launcher = ChromeDriverLauncher()
     try:
       SendRequest(launcher.GetURL(), method='GET')
       self.fail('Should have raised a urllib.HTTPError for returned 403')
@@ -290,7 +291,7 @@ class CookieTest(unittest.TestCase):
     cookie_dict = None
     cookie_dict = self._driver.get_cookie("chromedriver_cookie_test")
     cookie_dict = {}
-    cookie_dict["name"]= "chromedriver_cookie_test"
+    cookie_dict["name"] = "chromedriver_cookie_test"
     cookie_dict["value"] = "this is a test"
     self._driver.add_cookie(cookie_dict)
     cookie_dict = self._driver.get_cookie("chromedriver_cookie_test")
@@ -621,6 +622,80 @@ class AutofillTest(unittest.TestCase):
     self.assertEqual(list_entry.text,
                      creditcard_data['CREDIT_CARD_NAME'],
                      'Saved CC line item not same as what was entered.')
+
+
+class FileUploadControlTest(unittest.TestCase):
+  """Tests dealing with file upload control."""
+
+  def setUp(self):
+    self._launcher = ChromeDriverLauncher(root_path=os.path.dirname(__file__))
+    self._driver = WebDriver(self._launcher.GetURL(),
+                             DesiredCapabilities.CHROME)
+
+  def tearDown(self):
+    self._driver.quit()
+    self._launcher.Kill()
+
+  def testSetFilePathToFileUploadControl(self):
+    """Verify a file path is set to the file upload control."""
+    self._driver.get(self._launcher.GetURL() + '/upload.html')
+
+    file = tempfile.NamedTemporaryFile()
+
+    fileupload_single = self._driver.find_element_by_name('fileupload_single')
+    multiple = fileupload_single.get_attribute('multiple')
+    self.assertEqual('false', multiple)
+    fileupload_single.send_keys(file.name)
+    path = fileupload_single.value
+    self.assertTrue(path.endswith(os.path.basename(file.name)))
+
+  def testSetMultipleFilePathsToFileuploadControlWithoutMultipleWillFail(self):
+    """Verify setting file paths to the file upload control without 'multiple'
+    attribute will fail."""
+    self._driver.get(self._launcher.GetURL() + '/upload.html')
+
+    files = []
+    filepaths = []
+    for index in xrange(4):
+      file = tempfile.NamedTemporaryFile()
+      # We need to hold the file objects because the files will be deleted on
+      # GC.
+      files.append(file)
+      filepath = file.name
+      filepaths.append(filepath)
+
+    fileupload_single = self._driver.find_element_by_name('fileupload_single')
+    multiple = fileupload_single.get_attribute('multiple')
+    self.assertEqual('false', multiple)
+    self.assertRaises(WebDriverException, fileupload_single.send_keys,
+                      filepaths[0], filepaths[1], filepaths[2], filepaths[3])
+
+  def testSetMultipleFilePathsToFileUploadControl(self):
+    """Verify multiple file paths are set to the file upload control."""
+    self._driver.get(self._launcher.GetURL() + '/upload.html')
+
+    files = []
+    filepaths = []
+    filenames = set()
+    for index in xrange(4):
+      file = tempfile.NamedTemporaryFile()
+      files.append(file)
+      filepath = file.name
+      filepaths.append(filepath)
+      filenames.add(os.path.basename(filepath))
+
+    fileupload_multi = self._driver.find_element_by_name('fileupload_multi')
+    multiple = fileupload_multi.get_attribute('multiple')
+    self.assertEqual('true', multiple)
+    fileupload_multi.send_keys(filepaths[0], filepaths[1], filepaths[2],
+                               filepaths[3])
+
+    files_on_element = self._driver.execute_script(
+        'return document.getElementById("fileupload_multi").files;')
+    self.assertTrue(files_on_element)
+    self.assertEqual(4, len(files_on_element))
+    for f in files_on_element:
+      self.assertTrue(f['name'] in filenames)
 
 
 if __name__ == '__main__':

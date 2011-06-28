@@ -2573,3 +2573,28 @@ void WaitForProcessLauncherThreadToGoIdleObserver::RunOnUIThread() {
     automation_->Send(reply_message_.release());
   Release();
 }
+
+DragTargetDropAckNotificationObserver::DragTargetDropAckNotificationObserver(
+    AutomationProvider* automation,
+    IPC::Message* reply_message)
+    : automation_(automation->AsWeakPtr()),
+      reply_message_(reply_message) {
+  registrar_.Add(
+      this,
+      NotificationType::RENDER_VIEW_HOST_DID_RECEIVE_DRAG_TARGET_DROP_ACK,
+      NotificationService::AllSources());
+}
+
+DragTargetDropAckNotificationObserver::
+    ~DragTargetDropAckNotificationObserver() {}
+
+void DragTargetDropAckNotificationObserver::Observe(
+    NotificationType type,
+    const NotificationSource& source,
+    const NotificationDetails& details) {
+  if (automation_) {
+    AutomationJSONReply(automation_,
+                        reply_message_.release()).SendSuccess(NULL);
+  }
+  delete this;
+}

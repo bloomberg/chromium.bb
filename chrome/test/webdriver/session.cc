@@ -188,6 +188,20 @@ Error* Session::SendKeys(const WebElementId& element, const string16& keys) {
   return error;
 }
 
+Error* Session::DragAndDropFilePaths(
+    const gfx::Point& location,
+    const std::vector<FilePath::StringType>& paths) {
+  Error* error = NULL;
+  RunSessionTask(NewRunnableMethod(
+      automation_.get(),
+      &Automation::DragAndDropFilePaths,
+      current_target_.window_id,
+      location,
+      paths,
+      &error));
+  return error;
+}
+
 Error* Session::NavigateToURL(const std::string& url) {
   Error* error = NULL;
   RunSessionTask(NewRunnableMethod(
@@ -915,6 +929,45 @@ Error* Session::WaitForAllTabsToStopLoading() {
       &Automation::WaitForAllTabsToStopLoading,
       &error));
   return error;
+}
+
+Error* Session::GetAttribute(const WebElementId& element,
+                             const std::string& key, Value** value) {
+  std::string script = base::StringPrintf(
+      "return (%s).apply(null, arguments);", atoms::GET_ATTRIBUTE);
+
+  ListValue args;
+  args.Append(element.ToValue());
+  args.Append(Value::CreateStringValue(key));
+
+  Error* error = ExecuteScript(script, &args, value);
+  if (error) {
+    return error;
+  }
+
+  return NULL;
+}
+
+Error* Session::GetClickableLocation(const WebElementId& element,
+                                     gfx::Point* location) {
+  Error* error = CheckElementPreconditionsForClicking(element);
+  if (error) {
+    return error;
+  }
+
+  error = GetElementLocationInView(element, location);
+  if (error) {
+    return error;
+  }
+
+  gfx::Size size;
+  error = GetElementSize(current_target(), element, &size);
+  if (error) {
+    return error;
+  }
+
+  location->Offset(size.width() / 2, size.height() / 2);
+  return NULL;
 }
 
 const std::string& Session::id() const {

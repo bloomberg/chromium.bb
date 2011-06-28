@@ -575,6 +575,31 @@ bool SendNativeKeyEventJSONRequest(
   return SendAutomationJSONRequest(sender, dict, &reply_dict, error_msg);
 }
 
+bool SendDragAndDropFilePathsJSONRequest(
+    AutomationMessageSender* sender,
+    int browser_index,
+    int tab_index,
+    int x,
+    int y,
+    const std::vector<FilePath::StringType>& paths,
+    std::string* error_msg) {
+  DictionaryValue dict;
+  dict.SetString("command", "DragAndDropFilePaths");
+  dict.SetInteger("windex", browser_index);
+  dict.SetInteger("tab_index", tab_index);
+  dict.SetInteger("x", x);
+  dict.SetInteger("y", y);
+
+  ListValue* list_value = new ListValue();
+  for (size_t path_index = 0; path_index < paths.size(); ++path_index) {
+    list_value->Append(Value::CreateStringValue(paths[path_index]));
+  }
+  dict.Set("paths", list_value);
+
+  DictionaryValue reply_dict;
+  return SendAutomationJSONRequest(sender, dict, &reply_dict, error_msg);
+}
+
 bool SendGetAppModalDialogMessageJSONRequest(
     AutomationMessageSender* sender,
     std::string* message,

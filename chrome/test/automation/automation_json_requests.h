@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/file_path.h"
 #include "chrome/common/automation_constants.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
@@ -297,6 +298,17 @@ bool SendNativeKeyEventJSONRequest(
     int tab_index,
     ui::KeyboardCode key_code,
     int modifiers,
+    std::string* error_msg) WARN_UNUSED_RESULT;
+
+// Requests to drag and drop the file paths at the given coordinate in the
+// specified tab. Returns true on success.
+bool SendDragAndDropFilePathsJSONRequest(
+    AutomationMessageSender* sender,
+    int browser_index,
+    int tab_index,
+    int x,
+    int y,
+    const std::vector<FilePath::StringType>& paths,
     std::string* error_msg) WARN_UNUSED_RESULT;
 
 // Requests to get the active JavaScript modal dialog's message. Returns true

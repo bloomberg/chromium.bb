@@ -1536,4 +1536,24 @@ class WaitForProcessLauncherThreadToGoIdleObserver
   DISALLOW_COPY_AND_ASSIGN(WaitForProcessLauncherThreadToGoIdleObserver);
 };
 
+// Allows the automation provider to wait for acknowledgement that a drop
+// operation has been processed by the renderer.
+class DragTargetDropAckNotificationObserver : public NotificationObserver {
+ public:
+  DragTargetDropAckNotificationObserver(AutomationProvider* automation,
+                                        IPC::Message* reply_message);
+  virtual ~DragTargetDropAckNotificationObserver();
+
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
+ private:
+  NotificationRegistrar registrar_;
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
+
+  DISALLOW_COPY_AND_ASSIGN(DragTargetDropAckNotificationObserver);
+};
+
 #endif  // CHROME_BROWSER_AUTOMATION_AUTOMATION_PROVIDER_OBSERVERS_H_

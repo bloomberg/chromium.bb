@@ -482,6 +482,11 @@ class NotificationType {
     // initiated by window.close().
     RENDER_VIEW_HOST_WILL_CLOSE_RENDER_VIEW,
 
+    // This notifies the observer that the drag operation ack in a drag and
+    // drop operation was received. The source is the RenderViewHost.
+    // Note: Used only in testing.
+    RENDER_VIEW_HOST_DID_RECEIVE_DRAG_TARGET_DROP_ACK,
+
     // Indicates a RenderWidgetHost has been hidden or restored. The source is
     // the RWH whose visibility changed, the details is a bool set to true if
     // the new state is "visible."

@@ -4,7 +4,10 @@
 
 #include "chrome/test/webdriver/commands/webelement_commands.h"
 
+#include "base/file_util.h"
+#include "base/format_macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/third_party/icu/icu_utf.h"
 #include "base/values.h"
@@ -65,20 +68,15 @@ void ElementAttributeCommand::ExecuteGet(Response* const response) {
     return;
   }
 
-  std::string script = base::StringPrintf(
-      "return (%s).apply(null, arguments);", atoms::GET_ATTRIBUTE);
-
-  ListValue args;
-  args.Append(element.ToValue());
-  args.Append(Value::CreateStringValue(path_segments_.at(6)));
-
-  Value* result = NULL;
-  Error* error = session_->ExecuteScript(script, &args, &result);
+  const std::string key = path_segments_.at(6);
+  Value* value;
+  Error* error = session_->GetAttribute(element, key, &value);
   if (error) {
     response->SetError(error);
     return;
   }
-  response->SetValue(result);
+
+  response->SetValue(value);
 }
 
 ///////////////////// ElementClearCommand ////////////////////
@@ -498,12 +496,111 @@ void ElementValueCommand::ExecuteGet(Response* const response) {
 }
 
 void ElementValueCommand::ExecutePost(Response* const response) {
-  ListValue* key_list;
-  if (!GetListParameter("value", &key_list)) {
-    response->SetError(new Error(
-        kBadRequest, "Missing or invalid 'value' parameter"));
+  bool is_input = false;
+  Error* error = HasAttributeWithLowerCaseValueASCII("tagName", "input",
+                                                     &is_input);
+  if (error) {
+    response->SetError(error);
     return;
   }
+
+  bool is_file = false;
+  error = HasAttributeWithLowerCaseValueASCII("type", "file", &is_file);
+  if (error) {
+    response->SetError(error);
+    return;
+  }
+
+  // If the element is a file upload control, set the file paths to the element.
+  // Otherwise send the value to the element as key input.
+  if (is_input && is_file) {
+    error = DragAndDropFilePaths();
+  } else {
+    error = SendKeys();
+  }
+
+  if (error) {
+    response->SetError(error);
+    return;
+  }
+}
+
+Error* ElementValueCommand::HasAttributeWithLowerCaseValueASCII(
+    const std::string& key, const std::string& value, bool* result) const {
+  Value* unscoped_value = NULL;
+  Error* error = session_->GetAttribute(element, key, &unscoped_value);
+  scoped_ptr<Value> scoped_value(unscoped_value);
+  unscoped_value = NULL;
+
+  if (error) {
+    return error;
+  }
+
+  std::string actual_value;
+  if (!scoped_value->GetAsString(&actual_value)) {
+    return new Error(
+        kUnknownError,
+        base::StringPrintf("Attribute '%s' did not have a string value",
+                           key.c_str()));
+  }
+
+  *result = LowerCaseEqualsASCII(actual_value, value.c_str());
+  return NULL;
+}
+
+Error* ElementValueCommand::DragAndDropFilePaths() const {
+  bool multiple = false;
+  Error* error = HasAttributeWithLowerCaseValueASCII("multiple", "true",
+                                                     &multiple);
+
+  if (error) {
+    return error;
+  }
+
+  ListValue* path_list;
+  if (!GetListParameter("value", &path_list)) {
+    return new Error(kBadRequest, "Missing or invalid 'value' parameter");
+  }
+
+  if (!multiple && path_list->GetSize() > 1) {
+    return new Error(kBadRequest, "The element can not hold multiple files");
+  }
+
+  std::vector<FilePath::StringType> paths;
+  for (size_t i = 0; i < path_list->GetSize(); ++i) {
+    FilePath::StringType path;
+    if (!path_list->GetString(i, &path)) {
+      return new Error(
+          kBadRequest,
+          base::StringPrintf("'value' list item #%" PRIuS " is not a string",
+                             i + 1));
+    }
+
+    if (!file_util::PathExists(FilePath(path))) {
+      return new Error(
+          kBadRequest,
+          base::StringPrintf("'%s' does not exist on the file system",
+                             path.c_str()));
+    }
+
+    paths.push_back(path);
+  }
+
+  gfx::Point location;
+  error = session_->GetClickableLocation(element, &location);
+  if (error) {
+    return error;
+  }
+
+  return session_->DragAndDropFilePaths(location, paths);
+}
+
+Error* ElementValueCommand::SendKeys() const {
+  ListValue* key_list;
+  if (!GetListParameter("value", &key_list)) {
+    return new Error(kBadRequest, "Missing or invalid 'value' parameter");
+  }
+
   // Flatten the given array of strings into one.
   string16 keys;
   for (size_t i = 0; i < key_list->GetSize(); ++i) {
@@ -511,17 +608,14 @@ void ElementValueCommand::ExecutePost(Response* const response) {
     key_list->GetString(i, &keys_list_part);
     for (size_t j = 0; j < keys_list_part.size(); ++j) {
       if (CBU16_IS_SURROGATE(keys_list_part[j])) {
-        response->SetError(new Error(
-            kBadRequest, "ChromeDriver only supports characters in the BMP"));
-        return;
+        return new Error(kBadRequest,
+                         "ChromeDriver only supports characters in the BMP");
       }
     }
     keys.append(keys_list_part);
   }
 
-  Error* error = session_->SendKeys(element, keys);
-  if (error)
-    response->SetError(error);
+  return session_->SendKeys(element, keys);
 }
 
 ///////////////////// ElementTextCommand ////////////////////

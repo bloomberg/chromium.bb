@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/threading/thread.h"
@@ -97,6 +98,10 @@ class Session {
   // Send the given keys to the given element dictionary. This function takes
   // ownership of |element|.
   Error* SendKeys(const WebElementId& element, const string16& keys);
+
+  // Sets the file paths to the file upload control under the given location.
+  Error* DragAndDropFilePaths(const gfx::Point& location,
+                              const std::vector<FilePath::StringType>& paths);
 
   // Clicks the mouse at the given location using the given button.
   Error* MouseMoveAndClick(const gfx::Point& location,
@@ -235,6 +240,16 @@ class Session {
 
   // Waits for all tabs to stop loading. Returns true on success.
   Error* WaitForAllTabsToStopLoading();
+
+  // Gets the attribute of the given element. If there are no errors, the
+  // function sets |value| and the caller takes ownership.
+  Error* GetAttribute(const WebElementId& element, const std::string& key,
+                      Value** value);
+
+  // Gets a clickable location of the given element. It will be the center
+  // location of the element.
+  Error* GetClickableLocation(const WebElementId& element,
+                              gfx::Point* location);
 
   const std::string& id() const;
 

@@ -108,6 +108,7 @@
 #include "ui/base/events.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/message_box_flags.h"
+#include "webkit/glue/webdropdata.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 
 namespace {
@@ -1070,6 +1071,60 @@ void TestingAutomationProvider::WebkitMouseDoubleClick(
 
   mouse_event.type = WebKit::WebInputEvent::MouseUp;
   tab_contents->render_view_host()->ForwardMouseEvent(mouse_event);
+}
+
+void TestingAutomationProvider::DragAndDropFilePaths(
+    DictionaryValue* args, IPC::Message* reply_message) {
+  TabContents* tab_contents;
+  std::string error;
+  if (!GetTabFromJSONArgs(args, &tab_contents, &error)) {
+    AutomationJSONReply(this, reply_message).SendError(error);
+    return;
+  }
+
+  int x, y;
+  if (!args->GetInteger("x", &x) || !args->GetInteger("y", &y)) {
+    AutomationJSONReply(this, reply_message)
+        .SendError("(X,Y) coordinates missing or invalid");
+    return;
+  }
+
+  ListValue* paths = NULL;
+  if (!args->GetList("paths", &paths)) {
+    AutomationJSONReply(this, reply_message)
+        .SendError("'paths' missing or invalid");
+    return;
+  }
+
+  // Emulate drag and drop to set the file paths to the file upload control.
+  WebDropData drop_data;
+  for (size_t path_index = 0; path_index < paths->GetSize(); ++path_index) {
+    string16 path;
+    if (!paths->GetString(path_index, &path)) {
+      AutomationJSONReply(this, reply_message)
+          .SendError("'paths' contains a non-string type");
+      return;
+    }
+
+    drop_data.filenames.push_back(path);
+  }
+
+  const gfx::Point client(x, y);
+  // We don't set any values in screen variable because DragTarget*** ignore the
+  // screen argument.
+  const gfx::Point screen;
+
+  int operations = 0;
+  operations |= WebKit::WebDragOperationCopy;
+  operations |= WebKit::WebDragOperationLink;
+  operations |= WebKit::WebDragOperationMove;
+
+  RenderViewHost* host = tab_contents->render_view_host();
+  host->DragTargetDragEnter(
+      drop_data, client, screen,
+      static_cast<WebKit::WebDragOperationsMask>(operations));
+  new DragTargetDropAckNotificationObserver(this, reply_message);
+  host->DragTargetDrop(client, screen);
 }
 
 void TestingAutomationProvider::GetTabCount(int handle, int* tab_count) {
@@ -2116,6 +2171,8 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
       &TestingAutomationProvider::WebkitMouseButtonDown;
   handler_map["WebkitMouseDoubleClick"] =
       &TestingAutomationProvider::WebkitMouseDoubleClick;
+  handler_map["DragAndDropFilePaths"] =
+      &TestingAutomationProvider::DragAndDropFilePaths;
   handler_map["SendWebkitKeyEvent"] =
       &TestingAutomationProvider::SendWebkitKeyEvent;
   handler_map["SendOSLevelKeyEventToTab"] =

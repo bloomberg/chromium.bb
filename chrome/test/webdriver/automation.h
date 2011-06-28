@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
@@ -74,6 +75,12 @@ class Automation {
                           ui::KeyboardCode key_code,
                           int modifiers,
                           Error** error);
+
+  // Drag and drop the file paths to the given location.
+  void DragAndDropFilePaths(int tab_id,
+                            const gfx::Point& location,
+                            const std::vector<FilePath::StringType>& paths,
+                            Error** error);
 
   // Captures a snapshot of the tab to the specified path.  The  PNG will
   // contain the entire page, including what is not in the current view
