@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_WEB_UI_BROWSERTEST_H_
-#define CHROME_BROWSER_UI_WEBUI_WEB_UI_BROWSERTEST_H_
+#ifndef CONTENT_BROWSER_WEBUI_WEB_UI_BROWSERTEST_H_
+#define CONTENT_BROWSER_WEBUI_WEB_UI_BROWSERTEST_H_
 #pragma once
 
 #include <string>
@@ -60,12 +60,6 @@ class WebUIBrowserTest : public InProcessBrowserTest {
   bool RunJavascriptTest(const std::string& test_name,
                          const ConstValueVector& test_arguments);
 
-  // Preloads the javascript libraries and sets the |libraries_preloaded| flag
-  // to prevent re-loading at next javascript invocation. If
-  // |override_chrome_send| is true, then chrome.send is overridden for
-  // javascript to register handlers.
-  void PreLoadJavascriptLibraries(bool override_chrome_send);
-
  protected:
   WebUIBrowserTest();
 
@@ -74,13 +68,6 @@ class WebUIBrowserTest : public InProcessBrowserTest {
 
   // Returns a mock WebUI object under test (if any).
   virtual WebUIMessageHandler* GetMockMessageHandler();
-
-  // Skip this test with |skip_test_message|.
-  void skipTest(const std::string& skip_test_message);
-
-  // Returns a file:// GURL constructed from |path| inside the test data dir for
-  // webui tests.
-  static GURL WebUITestDataPathToURL(const FilePath::StringType& path);
 
  private:
   // Builds a string containing all added javascript libraries.
@@ -108,14 +95,7 @@ class WebUIBrowserTest : public InProcessBrowserTest {
   FilePath test_data_directory_;
 
   // User added libraries
-  std::vector<FilePath> user_libraries_;
-
-  // Indicates that the libraries have been pre-loaded and to not load them
-  // again.
-  bool libraries_preloaded_;
-
-  bool skip_test_;
-  std::string skip_test_message_;
+  std::vector<FilePath> user_libraries;
 };
 
-#endif  // CHROME_BROWSER_UI_WEBUI_WEB_UI_BROWSERTEST_H_
+#endif  // CONTENT_BROWSER_WEBUI_WEB_UI_BROWSERTEST_H_

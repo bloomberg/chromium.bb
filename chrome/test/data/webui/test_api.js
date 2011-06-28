@@ -19,22 +19,6 @@
     }
   }
 
-  var old_chrome = chrome;
-  var send_callbacks = {};
-
-  function registerMessageCallback(name, object, callback) {
-    send_callbacks[name] = [object, callback];
-  }
-
-  function send(messageName) {
-    var callback = send_callbacks[messageName];
-    var args = Array.prototype.slice.call(arguments, 1);
-    if (callback != undefined)
-      callback[1].apply(callback[0], args);
-    else
-      old_chrome.send.apply(old_chrome, args);
-  }
-
   function assertTrue(test, message) {
     assertBool(test, true, message);
   }
@@ -78,17 +62,10 @@
     return [true];
   }
 
-  function preloadJavascriptLibraries(overload_chrome_send) {
-    if (overload_chrome_send)
-      chrome = { 'send': send };
-  }
-
   // Exports.
   window.assertTrue = assertTrue;
   window.assertFalse = assertFalse;
   window.assertEquals = assertEquals;
   window.assertNotReached = assertNotReached;
-  window.registerMessageCallback = registerMessageCallback;
   window.runTest = runTest;
-  window.preloadJavascriptLibraries = preloadJavascriptLibraries;
 })();
