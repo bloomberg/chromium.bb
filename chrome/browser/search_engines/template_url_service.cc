@@ -891,7 +891,7 @@ bool TemplateURLService::LoadDefaultSearchProviderFromPrefs(
   if (!prepopulate_id.empty() && !*is_managed) {
     int value;
     base::StringToInt(prepopulate_id, &value);
-    (*default_provider)->set_prepopulate_id(value);
+    (*default_provider)->SetPrepopulateId(value);
   }
   (*default_provider)->set_show_in_default_list(true);
   return true;

@@ -360,7 +360,7 @@ struct ParamTraits<TemplateURL> {
     p->set_date_created(date_created);
     p->set_last_modified(last_modified);
     p->set_usage_count(usage_count);
-    p->set_prepopulate_id(prepopulate_id);
+    p->SetPrepopulateId(prepopulate_id);
     return true;
   }
   static void Log(const param_type& p, std::string* l) {

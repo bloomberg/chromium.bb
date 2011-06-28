@@ -43,7 +43,7 @@ class KeywordTableTest : public testing::Test {
   }
 
   static void set_prepopulate_id(TemplateURL* url, int id) {
-    url->set_prepopulate_id(id);
+    url->SetPrepopulateId(id);
   }
 
   static void set_logo_id(TemplateURL* url, int id) {

@@ -135,14 +135,17 @@ class TemplateURLRef {
   // Collects metrics whether searches through Google are sent with RLZ string.
   void CollectRLZMetrics() const;
 
+  // Sets whether this URL is pre-populated or not.
+  void set_prepopulated(bool prepopulated) { prepopulated_ = prepopulated; }
+
  private:
   friend class SearchHostToURLsMapTest;
   friend class TemplateURL;
   friend class TemplateURLServiceTestUtil;
   friend class TemplateURLTest;
+  FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, SetPrepopulatedAndParse);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, ParseParameterKnown);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, ParseParameterUnknown);
-  FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, ParseParameterReallyUnknown);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, ParseURLEmpty);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, ParseURLNoTemplateEnd);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, ParseURLNoKnownParameters);
@@ -187,8 +190,8 @@ class TemplateURLRef {
   // replacements indicating the type and range of the element. The original
   // parameter is erased from the url.
   //
-  // If the parameter is not a known parameter, it's not erased and false is
-  // returned.
+  // If the parameter is not a known parameter, false is returned. If this is a
+  // prepopulated URL, the parameter is erased, otherwise it is left alone.
   bool ParseParameter(size_t start,
                       size_t end,
                       std::string* url,
@@ -252,6 +255,9 @@ class TemplateURLRef {
   mutable std::string host_;
   mutable std::string path_;
   mutable std::string search_term_key_;
+
+  // Whether the contained URL is a pre-populated URL.
+  bool prepopulated_;
 };
 
 // Describes the relevant portions of a single OSD document.
@@ -474,7 +480,9 @@ class TemplateURL {
   TemplateURLID id() const { return id_; }
 
   // If this TemplateURL comes from prepopulated data the prepopulate_id is > 0.
-  void set_prepopulate_id(int id) { prepopulate_id_ = id; }
+  // SetPrepopulateId also sets any TemplateURLRef's prepopulated flag to true
+  // if |id| > 0 and false otherwise.
+  void SetPrepopulateId(int id);
   int prepopulate_id() const { return prepopulate_id_; }
 
   std::string GetExtensionId() const;
@@ -493,6 +501,9 @@ class TemplateURL {
 
   // Invalidates cached values on this object and its child TemplateURLRefs.
   void InvalidateCachedValues() const;
+
+  // Sets all TemplateURLRefs prepopulated flags.
+  void SetTemplateURLRefsPrepopulated(bool prepopulated);
 
   // Unique identifier, used when archived to the database.
   void set_id(TemplateURLID id) { id_ = id; }

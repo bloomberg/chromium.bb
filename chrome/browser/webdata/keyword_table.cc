@@ -175,7 +175,7 @@ bool KeywordTable::GetKeywords(std::vector<TemplateURL*>* urls) {
 
     template_url->SetSuggestionsURL(s.ColumnString(11), 0, 0);
 
-    template_url->set_prepopulate_id(s.ColumnInt(12));
+    template_url->SetPrepopulateId(s.ColumnInt(12));
 
     template_url->set_autogenerate_keyword(s.ColumnInt(13) == 1);
 

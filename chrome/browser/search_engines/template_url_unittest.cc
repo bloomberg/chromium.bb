@@ -151,6 +151,29 @@ TEST_F(TemplateURLTest, URLRefTestEncoding) {
   ASSERT_EQ("http://fooxxutf-8ya/", result.spec());
 }
 
+TEST_F(TemplateURLTest, SetPrepopulatedAndParse) {
+  TemplateURL t_url;
+  t_url.SetURL("http://foo{fhqwhgads}", 0, 0);
+  TemplateURLRef::Replacements replacements;
+  bool valid = false;
+
+  t_url.SetPrepopulateId(0);
+  EXPECT_EQ("http://foo{fhqwhgads}",
+            t_url.url()->ParseURL("http://foo{fhqwhgads}",
+            &replacements,
+            &valid));
+  EXPECT_TRUE(replacements.empty());
+  EXPECT_TRUE(valid);
+
+  t_url.SetPrepopulateId(123);
+  EXPECT_EQ("http://foo",
+            t_url.url()->ParseURL("http://foo{fhqwhgads}",
+            &replacements,
+            &valid));
+  EXPECT_TRUE(replacements.empty());
+  EXPECT_TRUE(valid);
+}
+
 TEST_F(TemplateURLTest, InputEncodingBeforeSearchTerm) {
   TemplateURL t_url;
   TemplateURLRef ref(
@@ -486,11 +509,21 @@ TEST_F(TemplateURLTest, ParseParameterKnown) {
 }
 
 TEST_F(TemplateURLTest, ParseParameterUnknown) {
-  std::string parsed_url("{}");
+  std::string parsed_url("{fhqwhgads}");
   TemplateURLRef url_ref(parsed_url, 0, 0);
   TemplateURLRef::Replacements replacements;
-  EXPECT_FALSE(url_ref.ParseParameter(0, 1, &parsed_url, &replacements));
-  EXPECT_EQ("{}", parsed_url);
+
+  // By default, TemplateURLRef should not consider itself prepopulated.
+  // Therefore we should not replace the unknown parameter.
+  EXPECT_FALSE(url_ref.ParseParameter(0, 10, &parsed_url, &replacements));
+  EXPECT_EQ("{fhqwhgads}", parsed_url);
+  EXPECT_TRUE(replacements.empty());
+
+  // If the TemplateURLRef is prepopulated, we should remove unknown parameters.
+  parsed_url = "{fhqwhgads}";
+  url_ref.set_prepopulated(true);
+  EXPECT_FALSE(url_ref.ParseParameter(0, 10, &parsed_url, &replacements));
+  EXPECT_EQ("", parsed_url);
   EXPECT_TRUE(replacements.empty());
 }
 

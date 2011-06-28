@@ -97,7 +97,7 @@ static TemplateURL* CreatePreloadedTemplateURL() {
   t_url->SetFaviconURL(favicon_url);
   t_url->set_date_created(Time::FromTimeT(100));
   t_url->set_last_modified(Time::FromTimeT(100));
-  t_url->set_prepopulate_id(999999);
+  t_url->SetPrepopulateId(999999);
   return t_url;
 }
 
@@ -336,7 +336,7 @@ TemplateURL* TemplateURLServiceTest::CreateReplaceablePreloadedTemplateURL(
   size_t prepopulated_index =
       (default_search_provider_index + index_offset_from_default) %
       prepopulated_urls.size();
-  t_url->set_prepopulate_id(
+  t_url->SetPrepopulateId(
       prepopulated_urls[prepopulated_index]->prepopulate_id());
   *prepopulated_display_url =
       prepopulated_urls[prepopulated_index]->url()->DisplayURL();

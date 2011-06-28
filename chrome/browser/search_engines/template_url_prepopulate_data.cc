@@ -3400,7 +3400,7 @@ TemplateURL* MakePrepopulatedTemplateURL(const wchar_t* name,
   new_turl->set_input_encodings(turl_encodings);
   new_turl->set_search_engine_type(search_engine_type);
   new_turl->set_logo_id(logo_id);
-  new_turl->set_prepopulate_id(id);
+  new_turl->SetPrepopulateId(id);
   return new_turl;
 }
 

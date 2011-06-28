@@ -85,7 +85,8 @@ TemplateURLRef::TemplateURLRef(const std::string& url,
       page_offset_(page_offset),
       parsed_(false),
       valid_(false),
-      supports_replacements_(false) {
+      supports_replacements_(false),
+      prepopulated_(false) {
 }
 
 void TemplateURLRef::Set(const std::string& url,
@@ -150,8 +151,11 @@ bool TemplateURLRef::ParseParameter(size_t start,
   } else if (parameter == kGoogleUnescapedSearchTermsParameter) {
     replacements->push_back(Replacement(GOOGLE_UNESCAPED_SEARCH_TERMS, start));
   } else {
-    // It can be some garbage but can also be a javascript block. Put it back.
-    url->insert(start, full_parameter);
+    // If it's a prepopulated URL, we know that it's safe to remove unknown
+    // parameters. Otherwise it could be some garbage but can also be a
+    // javascript block. Put it back.
+    if (!prepopulated_)
+      url->insert(start, full_parameter);
     return false;
   }
   return true;
@@ -685,6 +689,14 @@ GURL TemplateURL::GetFaviconURL() const {
   return GURL();
 }
 
+void TemplateURL::SetPrepopulateId(int id) {
+  prepopulate_id_ = id;
+  if (id > 0)
+    SetTemplateURLRefsPrepopulated(true);
+  else
+    SetTemplateURLRefsPrepopulated(false);
+}
+
 void TemplateURL::InvalidateCachedValues() const {
   url_.InvalidateCachedValues();
   suggestions_url_.InvalidateCachedValues();
@@ -692,6 +704,12 @@ void TemplateURL::InvalidateCachedValues() const {
     keyword_.clear();
     keyword_generated_ = false;
   }
+}
+
+void TemplateURL::SetTemplateURLRefsPrepopulated(bool prepopulated) {
+  suggestions_url_.set_prepopulated(prepopulated);
+  url_.set_prepopulated(prepopulated);
+  instant_url_.set_prepopulated(prepopulated);
 }
 
 std::string TemplateURL::GetExtensionId() const {
