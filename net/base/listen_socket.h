@@ -81,8 +81,7 @@ class NET_API ListenSocket : public base::RefCountedThreadSafe<ListenSocket>,
   enum WaitState {
     NOT_WAITING      = 0,
     WAITING_ACCEPT   = 1,
-    WAITING_READ     = 3,
-    WAITING_CLOSE    = 4
+    WAITING_READ     = 2
   };
 
   static const SOCKET kInvalidSocket;
