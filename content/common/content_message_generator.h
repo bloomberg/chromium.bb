@@ -23,6 +23,7 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/indexed_db_messages.h"
 #include "content/common/media/audio_messages.h"
+#include "content/common/media/media_stream_messages.h"
 #include "content/common/media/video_capture_messages.h"
 #include "content/common/mime_registry_messages.h"
 #include "content/common/p2p_messages.h"

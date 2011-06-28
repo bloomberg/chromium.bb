@@ -144,6 +144,7 @@
         'common/main_function_params.h',
         'common/media/audio_messages.h',
         'common/media/audio_stream_state.h',
+        'common/media/media_stream_messages.h',
         'common/media/media_stream_options.cc',
         'common/media/media_stream_options.h',
         'common/media/video_capture_messages.h',
