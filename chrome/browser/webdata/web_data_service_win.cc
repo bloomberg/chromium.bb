@@ -40,7 +40,7 @@ WebDataService::Handle WebDataService::GetIE7Login(
 
 void WebDataService::AddIE7LoginImpl(GenericRequest<IE7PasswordInfo>* request) {
   if (db_ && !request->IsCancelled()) {
-    if (db_->GetLoginsTable()->AddIE7Login(request->GetArgument()))
+    if (db_->GetLoginsTable()->AddIE7Login(request->arg()))
       ScheduleCommit();
   }
   request->RequestComplete();
@@ -49,7 +49,7 @@ void WebDataService::AddIE7LoginImpl(GenericRequest<IE7PasswordInfo>* request) {
 void WebDataService::RemoveIE7LoginImpl(
     GenericRequest<IE7PasswordInfo>* request) {
   if (db_ && !request->IsCancelled()) {
-    if (db_->GetLoginsTable()->RemoveIE7Login(request->GetArgument()))
+    if (db_->GetLoginsTable()->RemoveIE7Login(request->arg()))
       ScheduleCommit();
   }
   request->RequestComplete();
@@ -59,7 +59,7 @@ void WebDataService::GetIE7LoginImpl(
     GenericRequest<IE7PasswordInfo>* request) {
   if (db_ && !request->IsCancelled()) {
     IE7PasswordInfo result;
-    db_->GetLoginsTable()->GetIE7Login(request->GetArgument(), &result);
+    db_->GetLoginsTable()->GetIE7Login(request->arg(), &result);
     request->SetResult(
         new WDResult<IE7PasswordInfo>(PASSWORD_IE7_RESULT, result));
   }

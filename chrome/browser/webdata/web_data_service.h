@@ -229,9 +229,7 @@ class WebDataService
     virtual ~GenericRequest() {
     }
 
-    T GetArgument() {
-      return arg_;
-    }
+    const T& arg() const { return arg_; }
 
    private:
     T arg_;
@@ -252,13 +250,9 @@ class WebDataService
 
     virtual ~GenericRequest2() { }
 
-    T GetArgument1() {
-      return arg1_;
-    }
+    const T& arg1() const { return arg1_; }
 
-    U GetArgument2() {
-      return arg2_;
-    }
+    const U& arg2() const { return arg2_; }
 
    private:
     T arg1_;
