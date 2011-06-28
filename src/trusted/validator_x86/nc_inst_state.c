@@ -30,7 +30,7 @@
  * changed from NULL to non-NULL by this fuction.
  */
 void NaClDecodeInst(NaClInstIter* iter, NaClInstState* state) {
-  uint8_t opcode_length = 0;
+  uint8_t inst_length = 0;
   const NaClInst* cand_insts;
   Bool found_match = FALSE;
   /* Start by consuming the prefix bytes, and getting the possible
@@ -44,7 +44,7 @@ void NaClDecodeInst(NaClInstIter* iter, NaClInstState* state) {
     NaClInstPrefixDescriptor prefix_desc;
     Bool continue_loop = TRUE;
     NaClConsumeInstBytes(state, &prefix_desc);
-    opcode_length = state->bytes.length;
+    inst_length = state->bytes.length;
     while (continue_loop) {
       /* Try matching all possible candidates, in the order they are specified
        * (from the most specific prefix match, to the least specific prefix
@@ -53,10 +53,11 @@ void NaClDecodeInst(NaClInstIter* iter, NaClInstState* state) {
       if (prefix_desc.matched_prefix == NaClInstPrefixEnumSize) {
         continue_loop = FALSE;
       } else {
+        uint8_t cur_opcode_prefix = prefix_desc.opcode_prefix;
         cand_insts = NaClGetNextInstCandidates(state, &prefix_desc,
-                                               &opcode_length);
+                                               &inst_length);
         while (cand_insts != NULL) {
-          NaClClearInstState(state, opcode_length);
+          NaClClearInstState(state, inst_length);
           state->inst = cand_insts;
           DEBUG(NaClLog(LOG_INFO, "try opcode pattern:\n"));
           DEBUG(NaClInstPrint(NaClLogGetGio(), state->inst));
@@ -93,6 +94,8 @@ void NaClDecodeInst(NaClInstIter* iter, NaClInstState* state) {
             /* found a match, exit loop. */
             found_match = TRUE;
             continue_loop = FALSE;
+            state->opcode_prefix = cur_opcode_prefix;
+            state->num_opcode_bytes = inst_length - state->num_prefix_bytes;
             break;
           } else {
             /* match failed, try next candidate pattern. */
@@ -113,7 +116,7 @@ void NaClDecodeInst(NaClInstIter* iter, NaClInstState* state) {
     DEBUG(NaClLog(LOG_INFO, "no instruction found, converting to undefined\n"));
 
     /* Can't figure out instruction, give up. */
-    NaClClearInstState(state, opcode_length);
+    NaClClearInstState(state, inst_length);
     state->inst = &g_Undefined_Opcode;
     if (state->bytes.length == 0 && state->bytes.length < state->length_limit) {
       /* Make sure we eat at least one byte. */

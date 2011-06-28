@@ -179,7 +179,7 @@ NaClExpVector[8] = {
   { ExprConstant[0] , 0x200dec, ExprSize32 | ExprSignedHex },
 };
 0000000000000000: 0f 1f 40 00                                  nop
-  1f                          386 
+  [hard coded]                386 
     Nop
 NaClExpVector[0] = {
 };
@@ -317,7 +317,7 @@ NaClExpVector[4] = {
   { ExprRegister[0] , %rbp, ExprSet | ExprUsed | ExprSize64 },
 };
 0000000000000000: 66 66 2e 0f 1f 84 00 00 00 00 00             nop
-  1f                          386 
+  [hard coded]                386 
     Nop
 NaClExpVector[0] = {
 };
@@ -430,7 +430,7 @@ NaClExpVector[4] = {
   { ExprRegister[0] , %cl, ExprUsed | ExprSize8 },
 };
 0000000000000000: 66 66 66 66 66 2e 0f 1f 84 00 00 00 00 00    nop
-  1f                          386 
+  [hard coded]                386 
     Nop
 NaClExpVector[0] = {
 };
@@ -2712,17 +2712,17 @@ NaClExpVector[16] = {
   { ExprConstant[0] , 0x1, ExprUsed | ExprSize8 | ExprUnsignedHex },
 };
 0000000000000000: 90                                           nop
-  90                          386 
+  [hard coded]                386 
     Nop
 NaClExpVector[0] = {
 };
 0000000000000000: 66 90                                        nop
-  90                          386 
+  [hard coded]                386 
     Nop
 NaClExpVector[0] = {
 };
 0000000000000000: 66 66 90                                     nop
-  90                          386 
+  [hard coded]                386 
     Nop
 NaClExpVector[0] = {
 };
@@ -2813,67 +2813,67 @@ NaClExpVector[8] = {
   { ExprConstant[0] , 0x0, ExprSize32 | ExprSignedHex },
 };
 0000000000000000: 0f 1f 00                                     nop
-  1f                          386 
+  [hard coded]                386 
     Nop
 NaClExpVector[0] = {
 };
 0000000000000000: 0f 1f 40 00                                  nop
-  1f                          386 
+  [hard coded]                386 
     Nop
 NaClExpVector[0] = {
 };
 0000000000000000: 0f 1f 44 00 00                               nop
-  1f                          386 
+  [hard coded]                386 
     Nop
 NaClExpVector[0] = {
 };
 0000000000000000: 66 0f 1f 44 00 00                            nop
-  1f                          386 
+  [hard coded]                386 
     Nop
 NaClExpVector[0] = {
 };
 0000000000000000: 0f 1f 80 00 00 00 00                         nop
-  1f                          386 
+  [hard coded]                386 
     Nop
 NaClExpVector[0] = {
 };
 0000000000000000: 0f 1f 84 00 00 00 00 00                      nop
-  1f                          386 
+  [hard coded]                386 
     Nop
 NaClExpVector[0] = {
 };
 0000000000000000: 66 0f 1f 84 00 00 00 00 00                   nop
-  1f                          386 
+  [hard coded]                386 
     Nop
 NaClExpVector[0] = {
 };
 0000000000000000: 66 2e 0f 1f 84 00 00 00 00 00                nop
-  1f                          386 
+  [hard coded]                386 
     Nop
 NaClExpVector[0] = {
 };
 0000000000000000: 66 66 2e 0f 1f 84 00 00 00 00 00             nop
-  1f                          386 
+  [hard coded]                386 
     Nop
 NaClExpVector[0] = {
 };
 0000000000000000: 66 66 66 2e 0f 1f 84 00 00 00 00 00          nop
-  1f                          386 
+  [hard coded]                386 
     Nop
 NaClExpVector[0] = {
 };
 0000000000000000: 66 66 66 66 2e 0f 1f 84 00 00 00 00 00       nop
-  1f                          386 
+  [hard coded]                386 
     Nop
 NaClExpVector[0] = {
 };
 0000000000000000: 66 66 66 66 66 2e 0f 1f 84 00 00 00 00 00    nop
-  1f                          386 
+  [hard coded]                386 
     Nop
 NaClExpVector[0] = {
 };
 0000000000000000: 66 66 66 66 66 66 2e 0f 1f 84 00 00 00 00 00 nop
-  1f                          386 
+  [hard coded]                386 
     Nop
 NaClExpVector[0] = {
 };
@@ -2893,7 +2893,7 @@ NaClExpVector[8] = {
   { ExprConstant[0] , 0x20, ExprSize8 | ExprSignedHex },
 };
 0000000000000000: 0f 0b                                        ud2
-  0b                          386 
+  [hard coded]                386 
     Ud2
 NaClExpVector[0] = {
 };

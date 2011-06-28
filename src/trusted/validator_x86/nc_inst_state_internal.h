@@ -40,6 +40,10 @@ struct NaClInstState {
   uint8_t length_limit;
   /* Define the number of prefix bytes processed. */
   uint8_t num_prefix_bytes; /* 0..4 */
+  /* The prefix byte used to recognize the opcode, or zero if not applicable. */
+  uint8_t opcode_prefix;
+  /* Define the number of opcode bytes processed. */
+  uint8_t num_opcode_bytes;
   /* If REX prefix found, its value. Otherwise zero. */
   uint8_t rexprefix;
   /* Number of REX prefix bytes found. */
@@ -114,6 +118,8 @@ struct NaClInstIter {
  * instruction.
  */
 typedef struct {
+  /* The applicable prefix byte selector, or 0 if no prefix selector. */
+  uint8_t opcode_prefix;
   /* The (last) byte of the matched opcode. */
   uint8_t opcode_byte;
   /* The most specific prefix that the opcode bytes can match
