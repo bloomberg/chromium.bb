@@ -155,6 +155,11 @@ struct InstInfo {
   uint8_t dispbytes;
   /* The set of prefix masks defined by the prefix bytes. */
   uint32_t prefixmask;
+  /* The prefix form used to select multibyte instructions, or 0 if
+   * not used. That is, if 66, f2, or f3 is used to select the instruction,
+   * then this value is non-zero. For example SSE3 instructions.
+   */
+  uint32_t opcode_prefixmask;
   /* True if it has a rex prefix. */
   uint8_t rexprefix;
 };

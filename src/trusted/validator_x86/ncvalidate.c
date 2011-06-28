@@ -636,11 +636,85 @@ static void ValidateIndirect5(const NCDecoderInst *dinst) {
   Stats_UnsafeIndirect(vstate);
 }
 
-/* NaCl allows at most 1 prefix byte per instruction. */
-/* It appears to me that none of my favorite test programs use more */
-/* than a single prefix byte on an instruction. */
-static const size_t kMaxValidPrefixBytes = 1;
+/* Checks if the set of prefixes are allowed for the instruction.
+ * By default, we only allow prefixes if they have been allowed
+ * by the bad prefix mask generated inside ncdecode_table.c.
+ * These masks are defined by the NaClInstType of the instruction.
+ * See ncdecode_table.c for more details on how these masks are set.
+ *
+ * Currently:
+ * Only 386, 386L, 386R, 386RE instruction allow  Data 16
+ * (unless used as part of instruction selection in a multibyte instruction).
+ * Only 386, JMP8, and JMPZ allow segment registers prefixes.
+ * Only 386L and CMPXCHG8B allow the LOCK prefix.
+ * Only 386R and 386RE instructions allow the REP prefix.
+ * Only 386RE instructions allow the REPNE prefix.
+ *
+ * Note: The prefixmask does not include the prefix value (if any) used to
+ * select multiple byte instructions. Such prefixes have been moved to
+ * opcode_prefixmask, so that the selection (based on that prefix) has
+ * been recorded.
+ *
+ * In general, we do not allow multiple prefixes. Exceptions are as
+ * follows:
+ *   1 - Data 16 is allowed on lock instructions, so that 2 byte values
+ *       can be locked.
+ *   2 - Multibyte instructions that are selected
+ *       using prefix values Data 16, REP and REPNE, can only have
+ *       one of these prefixes (Combinations of these three prefixes
+ *       are not allowed for such multibyte instructions).
+ *   3 - Locks are only allowed on instructions with type 386L. The
+ *       exception is inst cmpxch8b, which also can have a lock.
+ *   4 - The only two prefix byte combination allowed is Data 16 and Lock.
+ *   5 - Long nops that are hard coded can contain more than one prefix.
+ *       See ncdecode.c for details (they don't use ValidatePrefixes).
+ */
+static Bool ValidatePrefixes(const NCDecoderInst *dinst) {
+  if (dinst->inst.prefixbytes == 0) return TRUE;
+
+  if ((dinst->inst.prefixmask &
+       BadPrefixMask[dinst->opinfo->insttype]) != 0) {
+    return FALSE;
+  }
+
+  /* If a multibyte instruction is using a selection prefix, be
+   * sure that there is no conflict with other selection prefixes.
+   */
+  if ((dinst->inst.opcode_prefixmask != 0) &&
+      ((dinst->inst.prefixmask &
+        (kPrefixDATA16 | kPrefixREPNE | kPrefixREP)) != 0)) {
+    return FALSE;
+  }
+
+  /* Only allow a lock if it is a 386L instruction, or the special
+   * cmpxchg8b instruction.
+   */
+  if (dinst->inst.prefixmask & kPrefixLOCK) {
+    if ((dinst->opinfo->insttype != NACLi_386L) &&
+        (dinst->opinfo->insttype != NACLi_CMPXCHG8B)) {
+      return FALSE;
+    }
+  }
+
+  /* Only allow more than one prefix if two prefixes, and they are
+   * data 16 and lock.
+   */
+  if ((dinst->inst.prefixbytes > 1) &&
+      !((dinst->inst.prefixbytes == 2) &&
+        (dinst->inst.prefixmask == (kPrefixLOCK | kPrefixDATA16)))) {
+    return FALSE;
+  }
+
+  return TRUE;
+}
+
 static const size_t kMaxValidInstLength = 11;
+
+/* The modrm mod field is a two-bit value. Values 00, 01, and, 10
+ * define memory references. Value 11 defines register accesses instead
+ * of memory.
+ */
+static const int kModRmModFieldDefinesRegisterRef = 0x3;
 
 static Bool ValidateInst(const NCDecoderInst *dinst) {
   CPUFeatures *cpufeatures;
@@ -655,38 +729,21 @@ static Bool ValidateInst(const NCDecoderInst *dinst) {
   OpcodeHisto(NCInstBytesByte(&dinst->inst_bytes, dinst->inst.prefixbytes),
               vstate);
   RememberIP(dinst->vpc, vstate);
+
   cpufeatures = &(vstate->cpufeatures);
-  do {
-    if (dinst->inst.prefixbytes == 0) break;
-    if (dinst->inst.prefixbytes <= kMaxValidPrefixBytes) {
-      if (dinst->inst.num_opbytes >= 2) {
-        if (dinst->inst.prefixmask & kPrefixLOCK) {
-          /* For two byte opcodes, check for use of the lock prefix.   */
-          if (dinst->opinfo->insttype == NACLi_386L) break;
-          if (dinst->opinfo->insttype == NACLi_CMPXCHG8B) break;
-        } else {
-          /* Other prefixes checks are encoded in the two-byte tables. */
-          break;
-        }
-      } else {
-        /* one byte opcode */
-        if ((dinst->inst.prefixmask &
-             BadPrefixMask[dinst->opinfo->insttype]) == 0) break;
-      }
-    } else if ((dinst->inst.prefixbytes == 2) &&
-               (dinst->inst.prefixmask == (kPrefixLOCK | kPrefixDATA16))) {
-      /* Special case of lock on short integer, if instruction allows lock. */
-      if (dinst->opinfo->insttype == NACLi_386L) break;
-    }
+
+  if (!ValidatePrefixes(dinst)) {
     BadInstructionError(dinst, "Bad prefix usage");
     Stats_BadPrefix(vstate);
-  } while (0);
+  }
+
   if ((dinst->opinfo->insttype != NACLi_NOP) &&
       ((size_t) (dinst->inst.bytes.length - dinst->inst.prefixbytes)
        > kMaxValidInstLength)) {
     BadInstructionError(dinst, "Instruction too long");
     Stats_BadInstLength(vstate);
   }
+
   switch (dinst->opinfo->insttype) {
     case NACLi_NOP:
     case NACLi_386:
@@ -710,6 +767,14 @@ static Bool ValidateInst(const NCDecoderInst *dinst) {
       squashme = ValidateSFenceClFlush(dinst);
       break;
     case NACLi_CMPXCHG8B:
+      /* Only allow if the modrm mod field accesses memory.
+       * This stops us from accepting f00f on multiple bytes.
+       * http://en.wikipedia.org/wiki/Pentium_F00F_bug
+       */
+      if (modrm_mod(dinst->inst.mrm) == kModRmModFieldDefinesRegisterRef) {
+        BadInstructionError(dinst, "Illegal instruction");
+        Stats_IllegalInst(vstate);
+      }
       squashme = (!cpufeatures->f_CX8);
       break;
     case NACLi_CMOV:
@@ -767,8 +832,14 @@ static Bool ValidateInst(const NCDecoderInst *dinst) {
       break;
     case NACLi_SSE2x:
       /* This case requires CPUID checking code */
-      /* DATA16 prefix required */
-      if (!(dinst->inst.prefixmask & kPrefixDATA16)) {
+      /* Note: DATA16 prefix required. The generated table
+       * for group 14 (which the only 2 SSE2x instructions are in),
+       * allows instructions with and without a 66 prefix. However,
+       * the SSE2x instructions psrldq and pslldq are only allowed
+       * with the 66 prefix. Hence, this code has been added to
+       * do this check.
+       */
+      if (!(dinst->inst.opcode_prefixmask & kPrefixDATA16)) {
         BadInstructionError(dinst, "Bad prefix usage");
         Stats_BadPrefix(vstate);
       }

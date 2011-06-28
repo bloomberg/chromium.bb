@@ -157,6 +157,7 @@ void InitDecoder(struct NCDecoderInst* dinst) {
   NCInstBytesInit(&dinst->inst.bytes);
   dinst->inst.prefixbytes = 0;
   dinst->inst.prefixmask = 0;
+  dinst->inst.opcode_prefixmask = 0;
   dinst->inst.num_opbytes = 1;  /* unless proven otherwise. */
   dinst->inst.hassibbyte = 0;
   dinst->inst.mrm = 0;
@@ -210,10 +211,16 @@ static const struct OpInfo* GetExtendedOpInfo(NCDecoderInst* dinst,
   if ((pm & (kPrefixDATA16 | kPrefixREPNE | kPrefixREP)) == 0) {
     return &kDecode0FXXOp[opbyte2];
   } else if (pm & kPrefixDATA16) {
+    dinst->inst.prefixmask &= ~kPrefixDATA16;
+    dinst->inst.opcode_prefixmask = kPrefixDATA16;
     return &kDecode660FXXOp[opbyte2];
   } else if (pm & kPrefixREPNE) {
+    dinst->inst.prefixmask &= ~kPrefixREPNE;
+    dinst->inst.opcode_prefixmask = kPrefixREPNE;
     return &kDecodeF20FXXOp[opbyte2];
   } else if (pm & kPrefixREP) {
+    dinst->inst.prefixmask &= ~kPrefixREP;
+    dinst->inst.opcode_prefixmask = kPrefixREP;
     return &kDecodeF30FXXOp[opbyte2];
   }
   ErrorInternal(dinst);
@@ -246,7 +253,7 @@ void ConsumeOpcodeBytes(NCDecoderInst* dinst) {
     if (dinst->opinfo->insttype == NACLi_3BYTE) {
       uint8_t opcode3 = NCInstBytesRead(&dinst->inst.bytes);
       uint32_t pm;
-      pm = dinst->inst.prefixmask;
+      pm = dinst->inst.opcode_prefixmask;
       dinst->inst.num_opbytes = 3;
 
       DEBUG( printf("NACLi_3BYTE: opcode3 = %02x, ", opcode3) );
@@ -631,7 +638,7 @@ Bool NCDecoderStateDecode(NCDecoderState* this) {
           " (read overflow of %d bytes)\n",
           newpc, vlimit, this->memory.overflow_count);
       ErrorSegmentation(dinst);
-      break;
+      return FALSE;
     }
     if (!NCDecoderStateApplyAction(this, dinst)) return FALSE;
     /* get ready for next round */

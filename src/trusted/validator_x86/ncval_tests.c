@@ -999,6 +999,22 @@ struct NCValTestCase NCValTests[] = {
     /* sawfailure= */ 1, /* illegalinst= */ 1,
     /* instructions= */ 3,
     /* vaddr= */ 0x80000000,
+    /* Note: Fixed so that this is a legal instruction,
+     * except for the prefix! (karl)
+     */
+    "2e 0f 3a 0f bb ab 00 00 00 00 \n"
+    "90 90 \n"
+    "f4 \n"                             /* hlt                             */
+  },
+  {
+    "test 87a",
+    "test 87a: bad NACLi_3BYTE instruction (not really an instruction)",
+    /* sawfailure= */ 1, /* illegalinst= */ 2,
+    /* instructions= */ 2,
+    /* vaddr= */ 0x80000000,
+    /* Note: Fixed so that this is a legal instruction,
+     * except for the prefix! (karl)
+     */
     "2e 0f 3a 7d bb ab 00 00 00 00 \n"
     "90 90 \n"
     "f4 \n"                             /* hlt                             */

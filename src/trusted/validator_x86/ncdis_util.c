@@ -151,7 +151,7 @@ static const char* DisFmt(const NCDecoderInst *dinst) {
   NCInstBytesPtr opbyte;
   uint8_t opbyte0;
   uint8_t opbyte1;
-  uint8_t pm = dinst->inst.prefixmask;
+  uint8_t pm = dinst->inst.opcode_prefixmask;
   NCInstBytesPtrInitInc(&opbyte, &dinst->inst_bytes, NCOpcodeOffset(dinst));
   opbyte0 = NCInstBytesByte(&opbyte, 0);
 
