@@ -888,18 +888,6 @@ bool NativeWidgetGtk::HasMouseCapture() const {
   return GTK_WIDGET_HAS_GRAB(window_contents_);
 }
 
-bool NativeWidgetGtk::IsMouseButtonDown() const {
-  bool button_pressed = false;
-  GdkEvent* event = gtk_get_current_event();
-  if (event) {
-    button_pressed = event->type == GDK_BUTTON_PRESS ||
-        event->type == GDK_2BUTTON_PRESS ||
-        event->type == GDK_3BUTTON_PRESS;
-    gdk_event_free(event);
-  }
-  return button_pressed;
-}
-
 InputMethod* NativeWidgetGtk::GetInputMethodNative() {
   if (!input_method_.get()) {
     // Create input method when it is requested by a child view.
@@ -2121,6 +2109,19 @@ void NativeWidgetPrivate::ReparentNativeView(gfx::NativeView native_view,
        it != widgets.end(); ++it) {
     (*it)->NotifyNativeViewHierarchyChanged(true, new_parent);
   }
+}
+
+// static
+bool NativeWidgetPrivate::IsMouseButtonDown() {
+  bool button_pressed = false;
+  GdkEvent* event = gtk_get_current_event();
+  if (event) {
+    button_pressed = event->type == GDK_BUTTON_PRESS ||
+        event->type == GDK_2BUTTON_PRESS ||
+        event->type == GDK_3BUTTON_PRESS;
+    gdk_event_free(event);
+  }
+  return button_pressed;
 }
 
 }  // namespace internal

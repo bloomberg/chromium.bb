@@ -4,7 +4,9 @@
 
 #include "views/controls/menu/menu_host_win.h"
 
+#include "views/controls/menu/menu_host_views.h"
 #include "views/controls/menu/native_menu_host_delegate.h"
+#include "views/views_delegate.h"
 
 namespace views {
 
@@ -49,6 +51,10 @@ void MenuHostWin::OnCancelMode() {
 // static
 NativeMenuHost* NativeMenuHost::CreateNativeMenuHost(
     internal::NativeMenuHostDelegate* delegate) {
+  if (Widget::IsPureViews() &&
+      ViewsDelegate::views_delegate->GetDefaultParentView()) {
+    return new MenuHostViews(delegate);
+  }
   return new MenuHostWin(delegate);
 }
 

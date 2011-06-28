@@ -122,10 +122,6 @@ bool NativeWidgetViews::HasMouseCapture() const {
   return GetParentNativeWidget()->HasMouseCapture();
 }
 
-bool NativeWidgetViews::IsMouseButtonDown() const {
-  return GetParentNativeWidget()->IsMouseButtonDown();
-}
-
 InputMethod* NativeWidgetViews::GetInputMethodNative() {
   return GetParentNativeWidget()->GetInputMethodNative();
 }

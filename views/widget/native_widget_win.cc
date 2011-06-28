@@ -603,14 +603,6 @@ bool NativeWidgetWin::HasMouseCapture() const {
   return GetCapture() == hwnd();
 }
 
-bool NativeWidgetWin::IsMouseButtonDown() const {
-  return (GetKeyState(VK_LBUTTON) & 0x80) ||
-      (GetKeyState(VK_RBUTTON) & 0x80) ||
-      (GetKeyState(VK_MBUTTON) & 0x80) ||
-      (GetKeyState(VK_XBUTTON1) & 0x80) ||
-      (GetKeyState(VK_XBUTTON2) & 0x80);
-}
-
 InputMethod* NativeWidgetWin::GetInputMethodNative() {
   return input_method_.get();
 }
@@ -2506,5 +2498,15 @@ void NativeWidgetPrivate::ReparentNativeView(gfx::NativeView native_view,
   }
 }
 
+// static
+bool NativeWidgetPrivate::IsMouseButtonDown() {
+  return (GetKeyState(VK_LBUTTON) & 0x80) ||
+    (GetKeyState(VK_RBUTTON) & 0x80) ||
+    (GetKeyState(VK_MBUTTON) & 0x80) ||
+    (GetKeyState(VK_XBUTTON1) & 0x80) ||
+    (GetKeyState(VK_XBUTTON2) & 0x80);
+}
+
 }  // namespace internal
+
 }  // namespace views

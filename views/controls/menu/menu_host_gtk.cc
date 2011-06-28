@@ -11,7 +11,9 @@
 #include <X11/extensions/XInput2.h>
 #endif
 
+#include "views/controls/menu/menu_host_views.h"
 #include "views/controls/menu/native_menu_host_delegate.h"
+#include "views/views_delegate.h"
 
 #if defined(HAVE_XINPUT2) && defined(TOUCH_UI)
 #include "views/touchui/touch_factory.h"
@@ -132,6 +134,10 @@ void MenuHostGtk::HandleGtkGrabBroke() {
 // static
 NativeMenuHost* NativeMenuHost::CreateNativeMenuHost(
     internal::NativeMenuHostDelegate* delegate) {
+  if (Widget::IsPureViews() &&
+      ViewsDelegate::views_delegate->GetDefaultParentView()) {
+    return new MenuHostViews(delegate);
+  }
   return new MenuHostGtk(delegate);
 }
 

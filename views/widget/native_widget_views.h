@@ -55,7 +55,6 @@ class NativeWidgetViews : public internal::NativeWidgetPrivate {
   virtual void SetMouseCapture() OVERRIDE;
   virtual void ReleaseMouseCapture() OVERRIDE;
   virtual bool HasMouseCapture() const OVERRIDE;
-  virtual bool IsMouseButtonDown() const OVERRIDE;
   virtual InputMethod* GetInputMethodNative() OVERRIDE;
   virtual void ReplaceInputMethod(InputMethod* input_method) OVERRIDE;
   virtual void CenterWindow(const gfx::Size& size) OVERRIDE;

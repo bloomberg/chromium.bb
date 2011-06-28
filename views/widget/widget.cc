@@ -261,8 +261,10 @@ void Widget::Init(const InitParams& params) {
       internal::NativeWidgetPrivate::CreateNativeWidget(this);
   GetRootView();
   default_theme_provider_.reset(new DefaultThemeProvider);
-  if (params.type == InitParams::TYPE_MENU)
-    is_mouse_button_pressed_ = native_widget_->IsMouseButtonDown();
+  if (params.type == InitParams::TYPE_MENU) {
+    is_mouse_button_pressed_ =
+        internal::NativeWidgetPrivate::IsMouseButtonDown();
+  }
   native_widget_->InitNativeWidget(params);
   if (params.type == InitParams::TYPE_WINDOW) {
     non_client_view_ = new NonClientView;

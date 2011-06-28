@@ -60,6 +60,9 @@ class NativeWidgetPrivate : public NativeWidget {
   static void ReparentNativeView(gfx::NativeView native_view,
                                  gfx::NativeView new_parent);
 
+  // Returns true if any mouse button is currently down.
+  static bool IsMouseButtonDown();
+
   // Initializes the NativeWidget.
   virtual void InitNativeWidget(const Widget::InitParams& params) = 0;
 
@@ -108,9 +111,6 @@ class NativeWidgetPrivate : public NativeWidget {
 
   // Returns true if this native widget is capturing all events.
   virtual bool HasMouseCapture() const = 0;
-
-  // Returns true if any mouse button is currently pressed.
-  virtual bool IsMouseButtonDown() const = 0;
 
   // Returns the InputMethod for this native widget.
   // Note that all widgets in a widget hierarchy share the same input method.
