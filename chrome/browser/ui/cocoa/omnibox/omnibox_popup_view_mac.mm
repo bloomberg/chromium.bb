@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <cmath>
+#include "chrome/browser/ui/cocoa/omnibox/omnibox_popup_view_mac.h"
 
-#include "chrome/browser/autocomplete/autocomplete_popup_view_mac.h"
+#include <cmath>
 
 #include "base/stl_util-inl.h"
 #include "base/sys_string_conversions.h"
@@ -102,7 +102,7 @@ static NSColor* URLTextColor() {
 // Helper for MatchText() to allow sharing code between the contents
 // and description cases.  Returns NSMutableAttributedString as a
 // convenience for MatchText().
-NSMutableAttributedString* AutocompletePopupViewMac::DecorateMatchedString(
+NSMutableAttributedString* OmniboxPopupViewMac::DecorateMatchedString(
     const string16 &matchString,
     const AutocompleteMatch::ACMatchClassifications &classifications,
     NSColor* textColor, NSColor* dimTextColor, gfx::Font& font) {
@@ -153,7 +153,7 @@ NSMutableAttributedString* AutocompletePopupViewMac::DecorateMatchedString(
   return as;
 }
 
-NSMutableAttributedString* AutocompletePopupViewMac::ElideString(
+NSMutableAttributedString* OmniboxPopupViewMac::ElideString(
     NSMutableAttributedString* aString,
     const string16 originalString,
     const gfx::Font& font,
@@ -191,7 +191,7 @@ NSMutableAttributedString* AutocompletePopupViewMac::ElideString(
 // Return the text to show for the match, based on the match's
 // contents and description.  Result will be in |font|, with the
 // boldfaced version used for matches.
-NSAttributedString* AutocompletePopupViewMac::MatchText(
+NSAttributedString* OmniboxPopupViewMac::MatchText(
     const AutocompleteMatch& match, gfx::Font& font, float cellWidth) {
   NSMutableAttributedString *as =
       DecorateMatchedString(match.contents,
@@ -263,16 +263,16 @@ NSAttributedString* AutocompletePopupViewMac::MatchText(
   BOOL bottomCornersRounded_;
 
   // Target for click and middle-click.
-  AutocompletePopupViewMac* popupView_;  // weak, owns us.
+  OmniboxPopupViewMac* popupView_;  // weak, owns us.
 }
 
 @property(assign, nonatomic) BOOL bottomCornersRounded;
 
 // Create a zero-size matrix initializing |popupView_|.
-- initWithPopupView:(AutocompletePopupViewMac*)popupView;
+- initWithPopupView:(OmniboxPopupViewMac*)popupView;
 
 // Set |popupView_|.
-- (void)setPopupView:(AutocompletePopupViewMac*)popupView;
+- (void)setPopupView:(OmniboxPopupViewMac*)popupView;
 
 // Return the currently highlighted row.  Returns -1 if no row is
 // highlighted.
@@ -280,11 +280,10 @@ NSAttributedString* AutocompletePopupViewMac::MatchText(
 
 @end
 
-AutocompletePopupViewMac::AutocompletePopupViewMac(
-    OmniboxViewMac* omnibox_view,
-    AutocompleteEditModel* edit_model,
-    Profile* profile,
-    NSTextField* field)
+OmniboxPopupViewMac::OmniboxPopupViewMac(OmniboxViewMac* omnibox_view,
+                                         AutocompleteEditModel* edit_model,
+                                         Profile* profile,
+                                         NSTextField* field)
     : model_(new AutocompletePopupModel(this, edit_model, profile)),
       omnibox_view_(omnibox_view),
       field_(field),
@@ -296,7 +295,7 @@ AutocompletePopupViewMac::AutocompletePopupViewMac(
   DCHECK(profile);
 }
 
-AutocompletePopupViewMac::~AutocompletePopupViewMac() {
+OmniboxPopupViewMac::~OmniboxPopupViewMac() {
   // Destroy the popup model before this object is destroyed, because
   // it can call back to us in the destructor.
   model_.reset();
@@ -308,7 +307,7 @@ AutocompletePopupViewMac::~AutocompletePopupViewMac() {
   [matrix setPopupView:NULL];
 }
 
-AutocompleteMatrix* AutocompletePopupViewMac::GetAutocompleteMatrix() {
+AutocompleteMatrix* OmniboxPopupViewMac::GetAutocompleteMatrix() {
   // The AutocompleteMatrix will always be the first subview of the popup's
   // content view.
   if (popup_ && [[[popup_ contentView] subviews] count]) {
@@ -319,11 +318,11 @@ AutocompleteMatrix* AutocompletePopupViewMac::GetAutocompleteMatrix() {
   return nil;
 }
 
-bool AutocompletePopupViewMac::IsOpen() const {
+bool OmniboxPopupViewMac::IsOpen() const {
   return popup_ != nil;
 }
 
-void AutocompletePopupViewMac::CreatePopupIfNeeded() {
+void OmniboxPopupViewMac::CreatePopupIfNeeded() {
   if (!popup_) {
     popup_.reset([[NSWindow alloc] initWithContentRect:NSZeroRect
                                              styleMask:NSBorderlessWindowMask
@@ -347,7 +346,7 @@ void AutocompletePopupViewMac::CreatePopupIfNeeded() {
   }
 }
 
-void AutocompletePopupViewMac::PositionPopup(const CGFloat matrixHeight) {
+void OmniboxPopupViewMac::PositionPopup(const CGFloat matrixHeight) {
   // Calculate the popup's position on the screen.  It should abut the
   // field's visual border vertically, and be below the bounds
   // horizontally.
@@ -414,8 +413,7 @@ void AutocompletePopupViewMac::PositionPopup(const CGFloat matrixHeight) {
     [[field_ window] addChildWindow:popup_ ordered:NSWindowAbove];
 }
 
-NSImage* AutocompletePopupViewMac::ImageForMatch(
-    const AutocompleteMatch& match) {
+NSImage* OmniboxPopupViewMac::ImageForMatch(const AutocompleteMatch& match) {
   const SkBitmap* bitmap = model_->GetIconIfExtensionMatch(match);
   if (bitmap)
     return gfx::SkBitmapToNSImage(*bitmap);
@@ -425,7 +423,7 @@ NSImage* AutocompletePopupViewMac::ImageForMatch(
   return OmniboxViewMac::ImageForResource(resource_id);
 }
 
-void AutocompletePopupViewMac::UpdatePopupAppearance() {
+void OmniboxPopupViewMac::UpdatePopupAppearance() {
   DCHECK([NSThread isMainThread]);
   const AutocompleteResult& result = model_->result();
   if (result.empty()) {
@@ -510,7 +508,7 @@ void AutocompletePopupViewMac::UpdatePopupAppearance() {
   PositionPopup(matrixHeight + instantHeight);
 }
 
-gfx::Rect AutocompletePopupViewMac::GetTargetBounds() {
+gfx::Rect OmniboxPopupViewMac::GetTargetBounds() {
   // Flip the coordinate system before returning.
   NSScreen* screen = [[NSScreen screens] objectAtIndex:0];
   NSRect monitorFrame = [screen frame];
@@ -519,18 +517,18 @@ gfx::Rect AutocompletePopupViewMac::GetTargetBounds() {
   return bounds;
 }
 
-void AutocompletePopupViewMac::SetSelectedLine(size_t line) {
+void OmniboxPopupViewMac::SetSelectedLine(size_t line) {
   model_->SetSelectedLine(line, false, false);
 }
 
 // This is only called by model in SetSelectedLine() after updating
 // everything.  Popup should already be visible.
-void AutocompletePopupViewMac::PaintUpdatesNow() {
+void OmniboxPopupViewMac::PaintUpdatesNow() {
   AutocompleteMatrix* matrix = GetAutocompleteMatrix();
   [matrix selectCellAtRow:model_->selected_line() column:0];
 }
 
-void AutocompletePopupViewMac::OpenURLForRow(int row, bool force_background) {
+void OmniboxPopupViewMac::OpenURLForRow(int row, bool force_background) {
   DCHECK_GE(row, 0);
 
   WindowOpenDisposition disposition = NEW_BACKGROUND_TAB;
@@ -550,7 +548,7 @@ void AutocompletePopupViewMac::OpenURLForRow(int row, bool force_background) {
                            is_keyword_hint ? string16() : keyword);
 }
 
-void AutocompletePopupViewMac::UserPressedOptIn(bool opt_in) {
+void OmniboxPopupViewMac::UserPressedOptIn(bool opt_in) {
   PromoCounter* counter = model_->profile()->GetInstantPromoCounter();
   DCHECK(counter);
   counter->Hide();
@@ -563,7 +561,7 @@ void AutocompletePopupViewMac::UserPressedOptIn(bool opt_in) {
   UpdatePopupAppearance();
 }
 
-bool AutocompletePopupViewMac::ShouldShowInstantOptIn() {
+bool OmniboxPopupViewMac::ShouldShowInstantOptIn() {
   PromoCounter* counter = model_->profile()->GetInstantPromoCounter();
   return (counter && counter->ShouldShow(base::Time::Now()));
 }
@@ -658,7 +656,7 @@ bool AutocompletePopupViewMac::ShouldShowInstantOptIn() {
   [super updateTrackingAreas];
 }
 
-- initWithPopupView:(AutocompletePopupViewMac*)popupView {
+- initWithPopupView:(OmniboxPopupViewMac*)popupView {
   self = [super initWithFrame:NSZeroRect];
   if (self) {
     popupView_ = popupView;
@@ -680,7 +678,7 @@ bool AutocompletePopupViewMac::ShouldShowInstantOptIn() {
   return self;
 }
 
-- (void)setPopupView:(AutocompletePopupViewMac*)popupView {
+- (void)setPopupView:(OmniboxPopupViewMac*)popupView {
   popupView_ = popupView;
 }
 

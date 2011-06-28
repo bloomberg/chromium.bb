@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/autocomplete/autocomplete_popup_view_mac.h"
+#import "chrome/browser/ui/cocoa/omnibox/omnibox_popup_view_mac.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "base/sys_string_conversions.h"
@@ -15,9 +15,9 @@ namespace {
 
 const float kLargeWidth = 10000;
 
-class AutocompletePopupViewMacTest : public PlatformTest {
+class OmniboxPopupViewMacTest : public PlatformTest {
  public:
-  AutocompletePopupViewMacTest() {}
+  OmniboxPopupViewMacTest() {}
 
   virtual void SetUp() {
     PlatformTest::SetUp();
@@ -102,12 +102,12 @@ class AutocompletePopupViewMacTest : public PlatformTest {
 // Simple inputs with no matches should result in styled output who's
 // text matches the input string, with the passed-in color, and
 // nothing bolded.
-TEST_F(AutocompletePopupViewMacTest, DecorateMatchedStringNoMatch) {
+TEST_F(OmniboxPopupViewMacTest, DecorateMatchedStringNoMatch) {
   NSString* const string = @"This is a test";
   AutocompleteMatch::ACMatchClassifications classifications;
 
   NSAttributedString* decorated =
-      AutocompletePopupViewMac::DecorateMatchedString(
+      OmniboxPopupViewMac::DecorateMatchedString(
           base::SysNSStringToUTF16(string), classifications,
           color_, dimColor_, font_);
 
@@ -129,7 +129,7 @@ TEST_F(AutocompletePopupViewMacTest, DecorateMatchedStringNoMatch) {
 
 // Identical to DecorateMatchedStringNoMatch, except test that URL
 // style gets a different color than we passed in.
-TEST_F(AutocompletePopupViewMacTest, DecorateMatchedStringURLNoMatch) {
+TEST_F(OmniboxPopupViewMacTest, DecorateMatchedStringURLNoMatch) {
   NSString* const string = @"This is a test";
   AutocompleteMatch::ACMatchClassifications classifications;
 
@@ -137,7 +137,7 @@ TEST_F(AutocompletePopupViewMacTest, DecorateMatchedStringURLNoMatch) {
       ACMatchClassification(0, ACMatchClassification::URL));
 
   NSAttributedString* decorated =
-      AutocompletePopupViewMac::DecorateMatchedString(
+      OmniboxPopupViewMac::DecorateMatchedString(
           base::SysNSStringToUTF16(string), classifications,
           color_, dimColor_, font_);
 
@@ -158,7 +158,7 @@ TEST_F(AutocompletePopupViewMacTest, DecorateMatchedStringURLNoMatch) {
 }
 
 // Test that DIM works as expected.
-TEST_F(AutocompletePopupViewMacTest, DecorateMatchedStringDimNoMatch) {
+TEST_F(OmniboxPopupViewMacTest, DecorateMatchedStringDimNoMatch) {
   NSString* const string = @"This is a test";
   // Dim "is".
   const NSUInteger runLength1 = 5, runLength2 = 2, runLength3 = 7;
@@ -176,7 +176,7 @@ TEST_F(AutocompletePopupViewMacTest, DecorateMatchedStringDimNoMatch) {
                             ACMatchClassification::NONE));
 
   NSAttributedString* decorated =
-      AutocompletePopupViewMac::DecorateMatchedString(
+      OmniboxPopupViewMac::DecorateMatchedString(
           base::SysNSStringToUTF16(string), classifications,
           color_, dimColor_, font_);
 
@@ -208,7 +208,7 @@ TEST_F(AutocompletePopupViewMacTest, DecorateMatchedStringDimNoMatch) {
 
 // Test that the matched run gets bold-faced, but keeps the same
 // color.
-TEST_F(AutocompletePopupViewMacTest, DecorateMatchedStringMatch) {
+TEST_F(OmniboxPopupViewMacTest, DecorateMatchedStringMatch) {
   NSString* const string = @"This is a test";
   // Match "is".
   const NSUInteger runLength1 = 5, runLength2 = 2, runLength3 = 7;
@@ -226,7 +226,7 @@ TEST_F(AutocompletePopupViewMacTest, DecorateMatchedStringMatch) {
                             ACMatchClassification::NONE));
 
   NSAttributedString* decorated =
-      AutocompletePopupViewMac::DecorateMatchedString(
+      OmniboxPopupViewMac::DecorateMatchedString(
           base::SysNSStringToUTF16(string), classifications,
           color_, dimColor_, font_);
 
@@ -256,7 +256,7 @@ TEST_F(AutocompletePopupViewMacTest, DecorateMatchedStringMatch) {
 }
 
 // Just like DecorateMatchedStringURLMatch, this time with URL style.
-TEST_F(AutocompletePopupViewMacTest, DecorateMatchedStringURLMatch) {
+TEST_F(OmniboxPopupViewMacTest, DecorateMatchedStringURLMatch) {
   NSString* const string = @"http://hello.world/";
   // Match "hello".
   const NSUInteger runLength1 = 7, runLength2 = 5, runLength3 = 7;
@@ -274,7 +274,7 @@ TEST_F(AutocompletePopupViewMacTest, DecorateMatchedStringURLMatch) {
                             ACMatchClassification::URL));
 
   NSAttributedString* decorated =
-      AutocompletePopupViewMac::DecorateMatchedString(
+      OmniboxPopupViewMac::DecorateMatchedString(
           base::SysNSStringToUTF16(string), classifications,
           color_, dimColor_, font_);
 
@@ -307,14 +307,14 @@ TEST_F(AutocompletePopupViewMacTest, DecorateMatchedStringURLMatch) {
 // with contents at the beginning, description at the end, and
 // something separating them.  Not being specific about the separator
 // on purpose, in case it changes.
-TEST_F(AutocompletePopupViewMacTest, MatchText) {
+TEST_F(OmniboxPopupViewMacTest, MatchText) {
   NSString* const contents = @"contents";
   NSString* const description = @"description";
   AutocompleteMatch m = MakeMatch(base::SysNSStringToUTF16(contents),
                                   base::SysNSStringToUTF16(description));
 
   NSAttributedString* decorated =
-      AutocompletePopupViewMac::MatchText(m, font_, kLargeWidth);
+      OmniboxPopupViewMac::MatchText(m, font_, kLargeWidth);
 
   // Result contains the characters of the input in the right places.
   EXPECT_GT([decorated length], [contents length] + [description length]);
@@ -339,7 +339,7 @@ TEST_F(AutocompletePopupViewMacTest, MatchText) {
 }
 
 // Check that MatchText() styles content matches as expected.
-TEST_F(AutocompletePopupViewMacTest, MatchTextContentsMatch) {
+TEST_F(OmniboxPopupViewMacTest, MatchTextContentsMatch) {
   NSString* const contents = @"This is a test";
   // Match "is".
   const NSUInteger runLength1 = 5, runLength2 = 2, runLength3 = 7;
@@ -359,7 +359,7 @@ TEST_F(AutocompletePopupViewMacTest, MatchTextContentsMatch) {
                             ACMatchClassification::NONE));
 
   NSAttributedString* decorated =
-      AutocompletePopupViewMac::MatchText(m, font_, kLargeWidth);
+      OmniboxPopupViewMac::MatchText(m, font_, kLargeWidth);
 
   // Result has same characters as the input.
   EXPECT_EQ([decorated length], [contents length]);
@@ -386,7 +386,7 @@ TEST_F(AutocompletePopupViewMacTest, MatchTextContentsMatch) {
 }
 
 // Check that MatchText() styles description matches as expected.
-TEST_F(AutocompletePopupViewMacTest, MatchTextDescriptionMatch) {
+TEST_F(OmniboxPopupViewMacTest, MatchTextDescriptionMatch) {
   NSString* const contents = @"This is a test";
   NSString* const description = @"That was a test";
   // Match "That was".
@@ -404,7 +404,7 @@ TEST_F(AutocompletePopupViewMacTest, MatchTextDescriptionMatch) {
       ACMatchClassification(runLength1, ACMatchClassification::NONE));
 
   NSAttributedString* decorated =
-      AutocompletePopupViewMac::MatchText(m, font_, kLargeWidth);
+      OmniboxPopupViewMac::MatchText(m, font_, kLargeWidth);
 
   // Result contains the characters of the input.
   EXPECT_GT([decorated length], [contents length] + [description length]);
@@ -439,7 +439,7 @@ TEST_F(AutocompletePopupViewMacTest, MatchTextDescriptionMatch) {
                                NSBoldFontMask));
 }
 
-TEST_F(AutocompletePopupViewMacTest, ElideString) {
+TEST_F(OmniboxPopupViewMacTest, ElideString) {
   NSString* const contents = @"This is a test with long contents";
   const string16 contents16(base::SysNSStringToUTF16(contents));
 
@@ -455,26 +455,26 @@ TEST_F(AutocompletePopupViewMacTest, ElideString) {
 
   // Nothing happens if the space is really wide.
   NSMutableAttributedString* ret =
-      AutocompletePopupViewMac::ElideString(as, contents16, font_, kWide);
+      OmniboxPopupViewMac::ElideString(as, contents16, font_, kWide);
   EXPECT_TRUE(ret == as);
   EXPECT_TRUE([[as string] isEqualToString:contents]);
 
   // When elided, result is the same as ElideText().
-  ret = AutocompletePopupViewMac::ElideString(as, contents16, font_, kNarrow);
+  ret = OmniboxPopupViewMac::ElideString(as, contents16, font_, kNarrow);
   string16 elided = ui::ElideText(contents16, font_, kNarrow, false);
   EXPECT_TRUE(ret == as);
   EXPECT_FALSE([[as string] isEqualToString:contents]);
   EXPECT_TRUE([[as string] isEqualToString:base::SysUTF16ToNSString(elided)]);
 
   // When elided, result is the same as ElideText().
-  ret = AutocompletePopupViewMac::ElideString(as, contents16, font_, 0.0);
+  ret = OmniboxPopupViewMac::ElideString(as, contents16, font_, 0.0);
   elided = ui::ElideText(contents16, font_, 0.0, false);
   EXPECT_TRUE(ret == as);
   EXPECT_FALSE([[as string] isEqualToString:contents]);
   EXPECT_TRUE([[as string] isEqualToString:base::SysUTF16ToNSString(elided)]);
 }
 
-TEST_F(AutocompletePopupViewMacTest, MatchTextElide) {
+TEST_F(OmniboxPopupViewMacTest, MatchTextElide) {
   NSString* const contents = @"This is a test with long contents";
   NSString* const description = @"That was a test";
   // Match "long".
@@ -505,7 +505,7 @@ TEST_F(AutocompletePopupViewMacTest, MatchTextElide) {
   float cellWidth = ceil(contentsWidth / 0.7);
 
   NSAttributedString* decorated =
-      AutocompletePopupViewMac::MatchText(m, font_, cellWidth);
+      OmniboxPopupViewMac::MatchText(m, font_, cellWidth);
 
   // Results contain a prefix of the contents and all of description.
   NSString* commonPrefix =
@@ -522,7 +522,7 @@ TEST_F(AutocompletePopupViewMacTest, MatchTextElide) {
   while([commonPrefix length] > runLength1 - 3) {
     EXPECT_GT(cellWidth, 0.0);
     cellWidth -= 1.0;
-    decorated = AutocompletePopupViewMac::MatchText(m, font_, cellWidth);
+    decorated = OmniboxPopupViewMac::MatchText(m, font_, cellWidth);
     commonPrefix =
         [[decorated string] commonPrefixWithString:contents options:0];
     ASSERT_GT([commonPrefix length], 0U);
@@ -530,16 +530,16 @@ TEST_F(AutocompletePopupViewMacTest, MatchTextElide) {
 }
 
 // TODO(shess): Test that
-// AutocompletePopupViewMac::UpdatePopupAppearance() creates/destroys
+// OmniboxPopupViewMac::UpdatePopupAppearance() creates/destroys
 // the popup according to result contents.  Test that the matrix gets
 // the right number of results.  Test the contents of the cells for
 // the right strings.  Icons?  Maybe, that seems harder to test.
 // Styling seems almost impossible.
 
-// TODO(shess): Test that AutocompletePopupViewMac::PaintUpdatesNow()
+// TODO(shess): Test that OmniboxPopupViewMac::PaintUpdatesNow()
 // updates the matrix selection.
 
-// TODO(shess): Test that AutocompletePopupViewMac::AcceptInput()
+// TODO(shess): Test that OmniboxPopupViewMac::AcceptInput()
 // updates the model's selection from the matrix before returning.
 // Could possibly test that via -select:.
 

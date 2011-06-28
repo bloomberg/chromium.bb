@@ -127,7 +127,7 @@ void FrameRectWithInset(StyledTextFieldCellRoundedFlags roundedFlags,
   StyledTextFieldCellRoundedFlags roundedFlags = [self roundedFlags];
 
   // TODO(shess): This inset is also reflected by |kFieldVisualInset|
-  // in autocomplete_popup_view_mac.mm.
+  // in omnibox_popup_view_mac.mm.
   const NSRect frame = NSInsetRect(cellFrame, 0, lineWidth);
   const CGFloat radius = [self cornerRadius];
 

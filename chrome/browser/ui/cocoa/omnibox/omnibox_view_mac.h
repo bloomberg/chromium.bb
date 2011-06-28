@@ -15,7 +15,7 @@
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 
 class AutocompleteEditController;
-class AutocompletePopupViewMac;
+class OmniboxPopupViewMac;
 class Profile;
 class ToolbarModel;
 
@@ -187,7 +187,7 @@ class OmniboxViewMac : public OmniboxView,
   bool IsCaretAtEnd() const;
 
   scoped_ptr<AutocompleteEditModel> model_;
-  scoped_ptr<AutocompletePopupViewMac> popup_view_;
+  scoped_ptr<OmniboxPopupViewMac> popup_view_;
 
   AutocompleteEditController* controller_;
   ToolbarModel* toolbar_model_;

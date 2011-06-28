@@ -12,9 +12,9 @@
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
-#include "chrome/browser/autocomplete/autocomplete_popup_view_mac.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/cocoa/event_utils.h"
+#include "chrome/browser/ui/cocoa/omnibox/omnibox_popup_view_mac.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
@@ -174,8 +174,7 @@ OmniboxViewMac::OmniboxViewMac(AutocompleteEditController* controller,
                                CommandUpdater* command_updater,
                                AutocompleteTextField* field)
     : model_(new AutocompleteEditModel(this, controller, profile)),
-      popup_view_(new AutocompletePopupViewMac(this, model_.get(), profile,
-                                               field)),
+      popup_view_(new OmniboxPopupViewMac(this, model_.get(), profile, field)),
       controller_(controller),
       toolbar_model_(toolbar_model),
       command_updater_(command_updater),

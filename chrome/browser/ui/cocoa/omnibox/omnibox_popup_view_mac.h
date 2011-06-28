@@ -20,7 +20,6 @@
 #include "ui/gfx/font.h"
 #include "webkit/glue/window_open_disposition.h"
 
-
 class AutocompleteEditModel;
 class OmniboxViewMac;
 @class AutocompleteMatrix;
@@ -35,14 +34,14 @@ class Profile;
 // TODO(rohitrao): This class is set up in a way that makes testing hard.
 // Refactor and write unittests.  http://crbug.com/9977
 
-class AutocompletePopupViewMac : public AutocompletePopupView,
-                                 public InstantOptInControllerDelegate {
+class OmniboxPopupViewMac : public AutocompletePopupView,
+                            public InstantOptInControllerDelegate {
  public:
-  AutocompletePopupViewMac(OmniboxViewMac* omnibox_view,
-                           AutocompleteEditModel* edit_model,
-                           Profile* profile,
-                           NSTextField* field);
-  virtual ~AutocompletePopupViewMac();
+  OmniboxPopupViewMac(OmniboxViewMac* omnibox_view,
+                      AutocompleteEditModel* edit_model,
+                      Profile* profile,
+                      NSTextField* field);
+  virtual ~OmniboxPopupViewMac();
 
   // Implement the InstantOptInControllerDelegate interface.
   virtual void UserPressedOptIn(bool opt_in);
@@ -92,8 +91,8 @@ class AutocompletePopupViewMac : public AutocompletePopupView,
   // contents and description.  Result will be in |font|, with the
   // boldfaced version used for matches.
   static NSAttributedString* MatchText(const AutocompleteMatch& match,
-                                gfx::Font& font,
-                                float cellWidth);
+                                       gfx::Font& font,
+                                       float cellWidth);
 
   // Helper for MatchText() to allow sharing code between the contents
   // and description cases.  Returns NSMutableAttributedString as a
@@ -145,7 +144,7 @@ class AutocompletePopupViewMac : public AutocompletePopupView,
   scoped_nsobject<InstantOptInController> opt_in_controller_;
   NSRect targetPopupFrame_;
 
-  DISALLOW_COPY_AND_ASSIGN(AutocompletePopupViewMac);
+  DISALLOW_COPY_AND_ASSIGN(OmniboxPopupViewMac);
 };
 
 #endif  // CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_POPUP_VIEW_MAC_H_
