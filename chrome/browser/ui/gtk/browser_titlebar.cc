@@ -593,19 +593,29 @@ void BrowserTitlebar::UpdateTitleAndIcon() {
   string16 title = browser_window_->browser()->GetWindowTitleForCurrentTab();
   gtk_label_set_text(GTK_LABEL(app_mode_title_), UTF16ToUTF8(title).c_str());
 
-  // Note: we want to exclude the application popup window.
-  if (browser_window_->browser()->is_app() &&
-      browser_window_->browser()->is_type_tabbed()) {
-    // Update the system app icon.  We don't need to update the icon in the top
-    // left of the custom frame, that will get updated when the throbber is
-    // updated.
-    SkBitmap icon = browser_window_->browser()->GetCurrentPageIcon();
-    if (icon.empty()) {
-      gtk_util::SetWindowIcon(window_);
-    } else {
-      GdkPixbuf* icon_pixbuf = gfx::GdkPixbufFromSkBitmap(&icon);
-      gtk_window_set_icon(window_, icon_pixbuf);
-      g_object_unref(icon_pixbuf);
+  if (browser_window_->browser()->is_app()) {
+    switch (browser_window_->browser()->type()) {
+      case Browser::TYPE_POPUP: {
+        // Update the system app icon.  We don't need to update the icon in the
+        // top left of the custom frame, that will get updated when the
+        // throbber is updated.
+        SkBitmap icon = browser_window_->browser()->GetCurrentPageIcon();
+        if (icon.empty()) {
+          gtk_util::SetWindowIcon(window_);
+        } else {
+          GdkPixbuf* icon_pixbuf = gfx::GdkPixbufFromSkBitmap(&icon);
+          gtk_window_set_icon(window_, icon_pixbuf);
+          g_object_unref(icon_pixbuf);
+        }
+        break;
+      }
+      case Browser::TYPE_TABBED: {
+        NOTREACHED() << "We should never have a tabbed app window.";
+        break;
+      }
+      case Browser::TYPE_PANEL: {
+        break;
+      }
     }
   }
 }
