@@ -265,6 +265,7 @@ class Texture {
  private:
   GLES2DecoderImpl* decoder_;
   GLuint id_;
+  GLenum format_;
   gfx::Size size_;
   DISALLOW_COPY_AND_ASSIGN(Texture);
 };
@@ -1650,7 +1651,8 @@ ScopedResolvedFrameBufferBinder::~ScopedResolvedFrameBufferBinder() {
 
 Texture::Texture(GLES2DecoderImpl* decoder)
     : decoder_(decoder),
-      id_(0) {
+      id_(0),
+      format_(0) {
 }
 
 Texture::~Texture() {
@@ -1686,6 +1688,7 @@ bool Texture::AllocateStorage(const gfx::Size& size, GLenum format) {
                NULL);
 
   size_ = size;
+  format_ = format;
 
   return glGetError() == GL_NO_ERROR;
 }
@@ -1696,7 +1699,7 @@ void Texture::Copy(const gfx::Size& size) {
   ScopedTexture2DBinder binder(decoder_, id_);
   glCopyTexImage2D(GL_TEXTURE_2D,
                    0,  // level
-                   GL_RGBA,
+                   format_,
                    0, 0,
                    size.width(),
                    size.height(),
