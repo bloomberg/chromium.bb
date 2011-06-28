@@ -5,20 +5,6 @@
 // Interface to the sync notifier, which is an object that receives
 // notifications when updates are available for a set of sync types.
 // All the observers are notified when such an event happens.
-//
-// A SyncNotifier must be destroyed on the same thread it was created on,
-// and all its methods must be called on the same thread (not necessarily
-// the one it was created on). If the methods thread is different from the
-// creation thread, then the methods thread must not exist when the SyncNotifier
-// is created and destroyed.
-//
-// In particular, the SyncNotifier will be created on the UI thread, the syncer
-// core thread will be created, the SyncNotifier will be used on that core
-// thread, the syncer core thread will be destroyed, and then the SyncNotifier
-// will be destroyed.
-//
-// TODO(akalin): Remove the code to deal with this situation once the syncer
-// core thread goes away.
 
 #ifndef CHROME_BROWSER_SYNC_NOTIFIER_SYNC_NOTIFIER_H_
 #define CHROME_BROWSER_SYNC_NOTIFIER_SYNC_NOTIFIER_H_

@@ -690,9 +690,14 @@ class SyncManagerTest : public testing::Test,
  protected:
   SyncManagerTest()
       : ui_thread_(BrowserThread::UI, &ui_loop_),
+        sync_notifier_mock_(NULL),
         sync_manager_("Test sync manager"),
         sync_notifier_observer_(NULL),
         update_enabled_types_call_count_(0) {}
+
+  virtual ~SyncManagerTest() {
+    EXPECT_FALSE(sync_notifier_mock_);
+  }
 
   // Test implementation.
   void SetUp() {
@@ -702,7 +707,7 @@ class SyncManagerTest : public testing::Test,
     credentials.email = "foo@bar.com";
     credentials.sync_token = "sometoken";
 
-    sync_notifier_mock_.reset(new StrictMock<SyncNotifierMock>());
+    sync_notifier_mock_ = new StrictMock<SyncNotifierMock>();
     EXPECT_CALL(*sync_notifier_mock_, AddObserver(_)).
         WillOnce(Invoke(this, &SyncManagerTest::SyncNotifierAddObserver));
     EXPECT_CALL(*sync_notifier_mock_, SetState(""));
@@ -717,9 +722,10 @@ class SyncManagerTest : public testing::Test,
 
     EXPECT_FALSE(sync_notifier_observer_);
 
+    // Takes ownership of |sync_notifier_mock_|.
     sync_manager_.Init(temp_dir_.path(), "bogus", 0, false,
                        new TestHttpPostProviderFactory(), this, "bogus",
-                       credentials, sync_notifier_mock_.get(), "",
+                       credentials, sync_notifier_mock_, "",
                        true /* setup_for_test_mode */);
 
     EXPECT_TRUE(sync_notifier_observer_);
@@ -743,6 +749,7 @@ class SyncManagerTest : public testing::Test,
   void TearDown() {
     sync_manager_.RemoveObserver(&observer_);
     sync_manager_.Shutdown();
+    sync_notifier_mock_ = NULL;
     EXPECT_FALSE(sync_notifier_observer_);
   }
 
@@ -827,7 +834,7 @@ class SyncManagerTest : public testing::Test,
   ScopedTempDir temp_dir_;
   // Sync Id's for the roots of the enabled datatypes.
   std::map<ModelType, int64> type_roots_;
-  scoped_ptr<StrictMock<SyncNotifierMock> > sync_notifier_mock_;
+  StrictMock<SyncNotifierMock>* sync_notifier_mock_;
 
  protected:
   SyncManager sync_manager_;

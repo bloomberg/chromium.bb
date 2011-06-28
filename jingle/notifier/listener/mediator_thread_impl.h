@@ -70,7 +70,6 @@ class MediatorThreadImpl : public MediatorThread {
   void TriggerOnConnectForTest(base::WeakPtr<talk_base::Task> base_task);
 
  private:
-  void CheckOrSetValidThread();
   // The logic of Logout without the thread check so it can be called in the
   // d'tor.
   void LogoutImpl();
@@ -78,8 +77,7 @@ class MediatorThreadImpl : public MediatorThread {
   // refcounted.
   class Core;
   scoped_refptr<Core> core_;
-  scoped_refptr<base::MessageLoopProxy> construction_message_loop_proxy_;
-  scoped_refptr<base::MessageLoopProxy> method_message_loop_proxy_;
+  scoped_refptr<base::MessageLoopProxy> parent_message_loop_proxy_;
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
   DISALLOW_COPY_AND_ASSIGN(MediatorThreadImpl);
 };

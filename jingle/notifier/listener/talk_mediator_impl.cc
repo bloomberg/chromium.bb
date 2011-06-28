@@ -16,19 +16,18 @@ TalkMediatorImpl::TalkMediatorImpl(
     : delegate_(NULL),
       mediator_thread_(mediator_thread),
       notifier_options_(notifier_options),
-      construction_message_loop_(MessageLoop::current()),
-      method_message_loop_(NULL) {
+      parent_message_loop_(MessageLoop::current()) {
   mediator_thread_->Start();
   state_.started = 1;
 }
 
 TalkMediatorImpl::~TalkMediatorImpl() {
-  DCHECK_EQ(MessageLoop::current(), construction_message_loop_);
+  DCHECK_EQ(MessageLoop::current(), parent_message_loop_);
   DCHECK(!state_.started);
 }
 
 bool TalkMediatorImpl::Login() {
-  CheckOrSetValidThread();
+  DCHECK_EQ(MessageLoop::current(), parent_message_loop_);
   // Connect to the mediator thread and start processing messages.
   mediator_thread_->AddObserver(this);
   if (state_.initialized && !state_.logging_in && !state_.logged_in) {
@@ -40,7 +39,7 @@ bool TalkMediatorImpl::Login() {
 }
 
 bool TalkMediatorImpl::Logout() {
-  CheckOrSetValidThread();
+  DCHECK_EQ(MessageLoop::current(), parent_message_loop_);
   if (state_.started) {
     state_.started = 0;
     state_.logging_in = 0;
@@ -55,19 +54,19 @@ bool TalkMediatorImpl::Logout() {
 }
 
 void TalkMediatorImpl::SendNotification(const Notification& data) {
-  CheckOrSetValidThread();
+  DCHECK_EQ(MessageLoop::current(), parent_message_loop_);
   mediator_thread_->SendNotification(data);
 }
 
 void TalkMediatorImpl::SetDelegate(TalkMediator::Delegate* delegate) {
-  DCHECK_EQ(MessageLoop::current(), construction_message_loop_);
+  DCHECK_EQ(MessageLoop::current(), parent_message_loop_);
   delegate_ = delegate;
 }
 
 void TalkMediatorImpl::SetAuthToken(const std::string& email,
                                     const std::string& token,
                                     const std::string& token_service) {
-  CheckOrSetValidThread();
+  DCHECK_EQ(MessageLoop::current(), parent_message_loop_);
   xmpp_settings_ =
       MakeXmppClientSettings(notifier_options_, email, token, token_service);
 
@@ -81,7 +80,7 @@ void TalkMediatorImpl::SetAuthToken(const std::string& email,
 }
 
 void TalkMediatorImpl::AddSubscription(const Subscription& subscription) {
-  CheckOrSetValidThread();
+  DCHECK_EQ(MessageLoop::current(), parent_message_loop_);
   subscriptions_.push_back(subscription);
   if (state_.logged_in) {
     VLOG(1) << "Resubscribing for updates, a new service got added";
@@ -91,7 +90,7 @@ void TalkMediatorImpl::AddSubscription(const Subscription& subscription) {
 
 
 void TalkMediatorImpl::OnConnectionStateChange(bool logged_in) {
-  CheckOrSetValidThread();
+  DCHECK_EQ(MessageLoop::current(), parent_message_loop_);
   // If we just lost connection, then the MediatorThread implementation will
   // try to log in again. We need to set state_.logging_in to true in that case.
   state_.logging_in = !logged_in;
@@ -110,7 +109,7 @@ void TalkMediatorImpl::OnConnectionStateChange(bool logged_in) {
 }
 
 void TalkMediatorImpl::OnSubscriptionStateChange(bool subscribed) {
-  CheckOrSetValidThread();
+  DCHECK_EQ(MessageLoop::current(), parent_message_loop_);
   VLOG(1) << "P2P: " << (subscribed ? "subscribed" : "unsubscribed");
   if (delegate_)
     delegate_->OnNotificationStateChange(subscribed);
@@ -118,26 +117,18 @@ void TalkMediatorImpl::OnSubscriptionStateChange(bool subscribed) {
 
 void TalkMediatorImpl::OnIncomingNotification(
     const Notification& notification) {
-  CheckOrSetValidThread();
+  DCHECK_EQ(MessageLoop::current(), parent_message_loop_);
   VLOG(1) << "P2P: Updates are available on the server.";
   if (delegate_)
     delegate_->OnIncomingNotification(notification);
 }
 
 void TalkMediatorImpl::OnOutgoingNotification() {
-  CheckOrSetValidThread();
+  DCHECK_EQ(MessageLoop::current(), parent_message_loop_);
   VLOG(1) << "P2P: Peers were notified that updates are available on the "
              "server.";
   if (delegate_)
     delegate_->OnOutgoingNotification();
-}
-
-void TalkMediatorImpl::CheckOrSetValidThread() {
-  if (method_message_loop_) {
-    DCHECK_EQ(MessageLoop::current(), method_message_loop_);
-  } else {
-    method_message_loop_ = MessageLoop::current();
-  }
 }
 
 }  // namespace notifier

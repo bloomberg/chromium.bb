@@ -55,7 +55,7 @@ class SyncBackendHostForProfileSyncTest
       const tracked_objects::Location&);
 
   virtual sync_api::HttpPostProviderFactory* MakeHttpBridgeFactory(
-      net::URLRequestContextGetter* getter);
+      const scoped_refptr<net::URLRequestContextGetter>& getter);
 
   virtual void InitCore(const Core::DoInitializeOptions& options);
 

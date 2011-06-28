@@ -39,10 +39,6 @@ namespace net {
 class URLRequestContextGetter;
 }
 
-namespace sync_notifier {
-class SyncNotifier;
-}  // namespace sync_notifier
-
 namespace browser_sync {
 
 namespace sessions {
@@ -135,7 +131,8 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   void Initialize(SyncFrontend* frontend,
                   const GURL& service_url,
                   const syncable::ModelTypeSet& types,
-                  net::URLRequestContextGetter* baseline_context_getter,
+                  const scoped_refptr<net::URLRequestContextGetter>&
+                      baseline_context_getter,
                   const sync_api::SyncCredentials& credentials,
                   bool delete_sync_data_folder);
 
@@ -321,7 +318,8 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     struct DoInitializeOptions {
       DoInitializeOptions(
           const GURL& service_url,
-          sync_api::HttpPostProviderFactory* http_bridge_factory,
+          const scoped_refptr<net::URLRequestContextGetter>&
+              request_context_getter,
           const sync_api::SyncCredentials& credentials,
           bool delete_sync_data_folder,
           const std::string& restored_key_for_bootstrapping,
@@ -329,17 +327,13 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
       ~DoInitializeOptions();
 
       GURL service_url;
-      sync_api::HttpPostProviderFactory* http_bridge_factory;
+      scoped_refptr<net::URLRequestContextGetter> request_context_getter;
       sync_api::SyncCredentials credentials;
       std::string lsid;
       bool delete_sync_data_folder;
       std::string restored_key_for_bootstrapping;
       bool setup_for_test_mode;
     };
-
-    // Called on |frontend_loop_|.
-    void CreateSyncNotifier(const scoped_refptr<net::URLRequestContextGetter>&
-        request_context_getter);
 
     // Note:
     //
@@ -433,14 +427,15 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     // Special form of initialization that does not try and authenticate the
     // last known user (since it will fail in test mode) and does some extra
     // setup to nudge the syncapi into a usable state.
-    void DoInitializeForTest(const std::wstring& test_user,
-                             sync_api::HttpPostProviderFactory* factory,
-                             bool delete_sync_data_folder) {
+    void DoInitializeForTest(
+        const std::wstring& test_user,
+        const scoped_refptr<net::URLRequestContextGetter>& getter,
+        bool delete_sync_data_folder) {
       // Construct dummy credentials for test.
       sync_api::SyncCredentials credentials;
       credentials.email = WideToUTF8(test_user);
       credentials.sync_token = "token";
-      DoInitialize(DoInitializeOptions(GURL(), factory, credentials,
+      DoInitialize(DoInitializeOptions(GURL(), getter, credentials,
                                        delete_sync_data_folder,
                                        "", true));
     }
@@ -524,8 +519,6 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     // The top-level syncapi entry point.  Lives on the sync thread.
     scoped_ptr<sync_api::SyncManager> sync_manager_;
 
-    scoped_ptr<sync_notifier::SyncNotifier> sync_notifier_;
-
     JsSyncManagerObserver sync_manager_observer_;
 
     JsEventRouter* parent_router_;
@@ -559,9 +552,10 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   // Allows tests to perform alternate core initialization work.
   virtual void InitCore(const Core::DoInitializeOptions& options);
 
-  // Factory method for HttpPostProviderFactories.
+  // Factory method for HttpPostProviderFactories.  Should be
+  // thread-safe.
   virtual sync_api::HttpPostProviderFactory* MakeHttpBridgeFactory(
-      net::URLRequestContextGetter* getter);
+      const scoped_refptr<net::URLRequestContextGetter>& getter);
 
   MessageLoop* sync_loop() { return sync_thread_.message_loop(); }
 

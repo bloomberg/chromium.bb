@@ -40,13 +40,11 @@ class NonBlockingInvalidationNotifier : public SyncNotifier {
   virtual void SendNotification();
 
  private:
-  void CheckOrSetValidThread();
   // The real guts of NonBlockingInvalidationNotifier, which allows this class
   // to not be refcounted.
   class Core;
   scoped_refptr<Core> core_;
-  scoped_refptr<base::MessageLoopProxy> construction_message_loop_proxy_;
-  scoped_refptr<base::MessageLoopProxy> method_message_loop_proxy_;
+  scoped_refptr<base::MessageLoopProxy> parent_message_loop_proxy_;
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
   DISALLOW_COPY_AND_ASSIGN(NonBlockingInvalidationNotifier);
 };

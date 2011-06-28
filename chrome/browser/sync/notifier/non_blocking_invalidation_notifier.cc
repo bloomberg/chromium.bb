@@ -133,7 +133,7 @@ NonBlockingInvalidationNotifier::NonBlockingInvalidationNotifier(
     const notifier::NotifierOptions& notifier_options,
     const std::string& client_info)
         : core_(new Core),
-          construction_message_loop_proxy_(
+          parent_message_loop_proxy_(
               base::MessageLoopProxy::CreateForCurrentThread()),
           io_message_loop_proxy_(notifier_options.request_context_getter->
               GetIOMessageLoopProxy()) {
@@ -147,7 +147,7 @@ NonBlockingInvalidationNotifier::NonBlockingInvalidationNotifier(
 }
 
 NonBlockingInvalidationNotifier::~NonBlockingInvalidationNotifier() {
-  DCHECK(construction_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
   if (!io_message_loop_proxy_->PostTask(
           FROM_HERE,
           NewRunnableMethod(
@@ -158,18 +158,18 @@ NonBlockingInvalidationNotifier::~NonBlockingInvalidationNotifier() {
 
 void NonBlockingInvalidationNotifier::AddObserver(
     SyncNotifierObserver* observer) {
-  CheckOrSetValidThread();
+  DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
   core_->AddObserver(observer);
 }
 
 void NonBlockingInvalidationNotifier::RemoveObserver(
     SyncNotifierObserver* observer) {
-  CheckOrSetValidThread();
+  DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
   core_->RemoveObserver(observer);
 }
 
 void NonBlockingInvalidationNotifier::SetState(const std::string& state) {
-  CheckOrSetValidThread();
+  DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
   if (!io_message_loop_proxy_->PostTask(
           FROM_HERE,
           NewRunnableMethod(
@@ -181,7 +181,7 @@ void NonBlockingInvalidationNotifier::SetState(const std::string& state) {
 
 void NonBlockingInvalidationNotifier::UpdateCredentials(
     const std::string& email, const std::string& token) {
-  CheckOrSetValidThread();
+  DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
   if (!io_message_loop_proxy_->PostTask(
           FROM_HERE,
           NewRunnableMethod(
@@ -193,7 +193,7 @@ void NonBlockingInvalidationNotifier::UpdateCredentials(
 
 void NonBlockingInvalidationNotifier::UpdateEnabledTypes(
     const syncable::ModelTypeSet& types) {
-  CheckOrSetValidThread();
+  DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
   if (!io_message_loop_proxy_->PostTask(
           FROM_HERE,
           NewRunnableMethod(
@@ -204,18 +204,9 @@ void NonBlockingInvalidationNotifier::UpdateEnabledTypes(
 }
 
 void NonBlockingInvalidationNotifier::SendNotification() {
-  CheckOrSetValidThread();
+  DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
   // InvalidationClient doesn't implement SendNotification(), so no
   // need to forward on the call.
-}
-
-void NonBlockingInvalidationNotifier::CheckOrSetValidThread() {
-  if (method_message_loop_proxy_) {
-    DCHECK(method_message_loop_proxy_->BelongsToCurrentThread());
-  } else {
-    method_message_loop_proxy_ =
-        base::MessageLoopProxy::CreateForCurrentThread();
-  }
 }
 
 }  // namespace sync_notifier

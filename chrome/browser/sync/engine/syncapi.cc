@@ -1199,7 +1199,7 @@ class SyncManager::SyncInternal
             bool use_ssl,
             HttpPostProviderFactory* post_factory,
             ModelSafeWorkerRegistrar* model_safe_worker_registrar,
-            const char* user_agent,
+            const std::string& user_agent,
             const SyncCredentials& credentials,
             sync_notifier::SyncNotifier* sync_notifier,
             const std::string& restored_key_for_bootstrapping,
@@ -1591,7 +1591,7 @@ class SyncManager::SyncInternal
   scoped_ptr<SyncScheduler> scheduler_;
 
   // The SyncNotifier which notifies us when updates need to be downloaded.
-  sync_notifier::SyncNotifier* sync_notifier_;
+  scoped_ptr<sync_notifier::SyncNotifier> sync_notifier_;
 
   // A multi-purpose status watch object that aggregates stats from various
   // sync components.
@@ -1641,12 +1641,12 @@ SyncManager::SyncManager(const std::string& name)
     : data_(new SyncInternal(name, ALLOW_THIS_IN_INITIALIZER_LIST(this))) {}
 
 bool SyncManager::Init(const FilePath& database_location,
-                       const char* sync_server_and_path,
+                       const std::string& sync_server_and_path,
                        int sync_server_port,
                        bool use_ssl,
                        HttpPostProviderFactory* post_factory,
                        ModelSafeWorkerRegistrar* registrar,
-                       const char* user_agent,
+                       const std::string& user_agent,
                        const SyncCredentials& credentials,
                        sync_notifier::SyncNotifier* sync_notifier,
                        const std::string& restored_key_for_bootstrapping,
@@ -1763,7 +1763,7 @@ bool SyncManager::SyncInternal::Init(
     bool use_ssl,
     HttpPostProviderFactory* post_factory,
     ModelSafeWorkerRegistrar* model_safe_worker_registrar,
-    const char* user_agent,
+    const std::string& user_agent,
     const SyncCredentials& credentials,
     sync_notifier::SyncNotifier* sync_notifier,
     const std::string& restored_key_for_bootstrapping,
@@ -1777,7 +1777,7 @@ bool SyncManager::SyncInternal::Init(
   registrar_ = model_safe_worker_registrar;
   setup_for_test_mode_ = setup_for_test_mode;
 
-  sync_notifier_ = sync_notifier;
+  sync_notifier_.reset(sync_notifier);
 
   share_.dir_manager.reset(new DirectoryManager(database_location));
 
@@ -2210,12 +2210,12 @@ void SyncManager::SyncInternal::Shutdown() {
   // Automatically stops the scheduler.
   scheduler_.reset();
 
-  // We NULL out sync_notifer_ so that any pending tasks do not
-  // trigger further notifications.
-  // TODO(akalin): NULL the other member variables defensively, too.
-  if (sync_notifier_) {
+  if (sync_notifier_.get()) {
     sync_notifier_->RemoveObserver(this);
   }
+  sync_notifier_.reset();
+
+  // TODO(akalin): NULL other member variables defensively, too.
 
   // |this| is about to be destroyed, so we have to ensure any
   // messages that were posted to sync_loop_ are flushed out, else
@@ -2565,7 +2565,7 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
         (event.snapshot->syncer_status.num_successful_commits > 0);
     if (is_notifiable_commit) {
       allstatus_.IncrementNotifiableCommits();
-      if (sync_notifier_) {
+      if (sync_notifier_.get()) {
         sync_notifier_->SendNotification();
       } else {
         VLOG(1) << "Not sending notification: sync_notifier_ is NULL";

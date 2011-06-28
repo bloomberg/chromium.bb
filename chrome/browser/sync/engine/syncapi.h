@@ -860,14 +860,14 @@ class SyncManager {
   // |model_safe_worker| ownership is given to the SyncManager.
   // |user_agent| is a 7-bit ASCII string suitable for use as the User-Agent
   // HTTP header. Used internally when collecting stats to classify clients.
-  // |sync_notifier| used to listen for notifications, not owned.
+  // |sync_notifier| is owned and used to listen for notifications.
   bool Init(const FilePath& database_location,
-            const char* sync_server_and_path,
+            const std::string& sync_server_and_path,
             int sync_server_port,
             bool use_ssl,
             HttpPostProviderFactory* post_factory,
             browser_sync::ModelSafeWorkerRegistrar* registrar,
-            const char* user_agent,
+            const std::string& user_agent,
             const SyncCredentials& credentials,
             sync_notifier::SyncNotifier* sync_notifier,
             const std::string& restored_key_for_bootstrapping,

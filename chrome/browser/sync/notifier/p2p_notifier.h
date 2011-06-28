@@ -55,7 +55,6 @@ class P2PNotifier
   // Call OnIncomingNotification() on observers if we have a non-empty
   // set of enabled types.
   void MaybeEmitNotification();
-  void CheckOrSetValidThread();
 
   ObserverList<SyncNotifierObserver> observer_list_;
 
@@ -68,8 +67,7 @@ class P2PNotifier
   bool notifications_enabled_;
 
   syncable::ModelTypeSet enabled_types_;
-  scoped_refptr<base::MessageLoopProxy> construction_message_loop_proxy_;
-  scoped_refptr<base::MessageLoopProxy> method_message_loop_proxy_;
+  scoped_refptr<base::MessageLoopProxy> parent_message_loop_proxy_;
 };
 
 }  // namespace sync_notifier

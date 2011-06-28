@@ -343,10 +343,13 @@ void ProfileSyncService::InitializeBackend(bool delete_sync_data_folder) {
 
   SyncCredentials credentials = GetCredentials();
 
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter(
+      profile_->GetRequestContext());
+
   backend_->Initialize(this,
                        sync_service_url_,
                        types,
-                       profile_->GetRequestContext(),
+                       request_context_getter,
                        credentials,
                        delete_sync_data_folder);
 }

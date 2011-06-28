@@ -90,7 +90,8 @@ void SyncBackendHost::Initialize(
     SyncFrontend* frontend,
     const GURL& sync_service_url,
     const syncable::ModelTypeSet& types,
-    net::URLRequestContextGetter* baseline_context_getter,
+    const scoped_refptr<net::URLRequestContextGetter>&
+        baseline_context_getter,
     const SyncCredentials& credentials,
     bool delete_sync_data_folder) {
   if (!sync_thread_.Start())
@@ -127,13 +128,9 @@ void SyncBackendHost::Initialize(
     registrar_.routing_info.erase(syncable::PASSWORDS);
   }
 
-  // TODO(akalin): Create SyncNotifier here and pass it in as part of
-  // DoInitializeOptions.
-  core_->CreateSyncNotifier(baseline_context_getter);
-
   InitCore(Core::DoInitializeOptions(
       sync_service_url,
-      MakeHttpBridgeFactory(baseline_context_getter),
+      baseline_context_getter,
       credentials,
       delete_sync_data_folder,
       RestoreEncryptionBootstrapToken(),
@@ -181,7 +178,7 @@ JsBackend* SyncBackendHost::GetJsBackend() {
 }
 
 sync_api::HttpPostProviderFactory* SyncBackendHost::MakeHttpBridgeFactory(
-    net::URLRequestContextGetter* getter) {
+    const scoped_refptr<net::URLRequestContextGetter>& getter) {
   return new HttpBridgeFactory(getter);
 }
 
@@ -627,24 +624,16 @@ void SyncBackendHost::Core::FinishConfigureDataTypesOnFrontendLoop() {
 }
 
 
-void SyncBackendHost::Core::CreateSyncNotifier(
-    const scoped_refptr<net::URLRequestContextGetter>& request_context_getter) {
-  const std::string& client_info = webkit_glue::GetUserAgent(GURL());
-  SyncNotifierFactory sync_notifier_factory(client_info);
-  sync_notifier_.reset(sync_notifier_factory.CreateSyncNotifier(
-      *CommandLine::ForCurrentProcess(),
-      request_context_getter));
-}
-
 SyncBackendHost::Core::DoInitializeOptions::DoInitializeOptions(
     const GURL& service_url,
-    sync_api::HttpPostProviderFactory* http_bridge_factory,
+    const scoped_refptr<net::URLRequestContextGetter>&
+        request_context_getter,
     const sync_api::SyncCredentials& credentials,
     bool delete_sync_data_folder,
     const std::string& restored_key_for_bootstrapping,
     bool setup_for_test_mode)
     : service_url(service_url),
-      http_bridge_factory(http_bridge_factory),
+      request_context_getter(request_context_getter),
       credentials(credentials),
       delete_sync_data_folder(delete_sync_data_folder),
       restored_key_for_bootstrapping(restored_key_for_bootstrapping),
@@ -763,16 +752,22 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
   sync_manager_.reset(new sync_api::SyncManager(name_)),
   sync_manager_->AddObserver(this);
   const FilePath& path_str = host_->sync_data_folder_path();
+  const std::string& client_info = webkit_glue::GetUserAgent(GURL());
+  SyncNotifierFactory sync_notifier_factory(client_info);
+  scoped_ptr<sync_notifier::SyncNotifier> sync_notifier(
+      sync_notifier_factory.CreateSyncNotifier(
+          *CommandLine::ForCurrentProcess(),
+          options.request_context_getter));
   success = sync_manager_->Init(
       path_str,
-      (options.service_url.host() + options.service_url.path()).c_str(),
+      options.service_url.host() + options.service_url.path(),
       options.service_url.EffectiveIntPort(),
       options.service_url.SchemeIsSecure(),
-      options.http_bridge_factory,
+      host_->MakeHttpBridgeFactory(options.request_context_getter),
       host_,  // ModelSafeWorkerRegistrar.
-      MakeUserAgentForSyncApi().c_str(),
+      MakeUserAgentForSyncApi(),
       options.credentials,
-      sync_notifier_.get(),
+      sync_notifier.release(),
       options.restored_key_for_bootstrapping,
       options.setup_for_test_mode);
   DCHECK(success) << "Syncapi initialization failed!";

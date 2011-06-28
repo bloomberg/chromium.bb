@@ -79,8 +79,6 @@ class TalkMediatorImpl
     unsigned int logged_in : 1;    // Logged in the mediator's authenticator.
   };
 
-  void CheckOrSetValidThread();
-
   // Delegate, which we don't own.  May be NULL.
   TalkMediator::Delegate* delegate_;
 
@@ -97,8 +95,7 @@ class TalkMediatorImpl
 
   SubscriptionList subscriptions_;
 
-  MessageLoop* construction_message_loop_;
-  MessageLoop* method_message_loop_;
+  MessageLoop* parent_message_loop_;
 
   FRIEND_TEST_ALL_PREFIXES(TalkMediatorImplTest, SetAuthToken);
   FRIEND_TEST_ALL_PREFIXES(TalkMediatorImplTest, SendNotification);

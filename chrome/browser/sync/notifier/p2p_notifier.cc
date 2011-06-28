@@ -26,17 +26,17 @@ P2PNotifier::P2PNotifier(
             notifier_options)),
       logged_in_(false),
       notifications_enabled_(false),
-      construction_message_loop_proxy_(
+      parent_message_loop_proxy_(
           base::MessageLoopProxy::CreateForCurrentThread()) {
   talk_mediator_->SetDelegate(this);
 }
 
 P2PNotifier::~P2PNotifier() {
-  DCHECK(construction_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
 }
 
 void P2PNotifier::AddObserver(SyncNotifierObserver* observer) {
-  CheckOrSetValidThread();
+  DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
   observer_list_.AddObserver(observer);
 }
 
@@ -45,7 +45,7 @@ void P2PNotifier::AddObserver(SyncNotifierObserver* observer) {
 // Users will need to call UpdateCredentials again to use the same object.
 // TODO(akalin): Think of a better solution to fix this.
 void P2PNotifier::RemoveObserver(SyncNotifierObserver* observer) {
-  CheckOrSetValidThread();
+  DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
   observer_list_.RemoveObserver(observer);
 
   // Logout after the last observer is removed.
@@ -55,12 +55,12 @@ void P2PNotifier::RemoveObserver(SyncNotifierObserver* observer) {
 }
 
 void P2PNotifier::SetState(const std::string& state) {
-  CheckOrSetValidThread();
+  DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
 }
 
 void P2PNotifier::UpdateCredentials(
     const std::string& email, const std::string& token) {
-  CheckOrSetValidThread();
+  DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
   // If already logged in, the new credentials will take effect on the
   // next reconnection.
   talk_mediator_->SetAuthToken(email, token, SYNC_SERVICE_NAME);
@@ -83,13 +83,13 @@ void P2PNotifier::UpdateCredentials(
 }
 
 void P2PNotifier::UpdateEnabledTypes(const syncable::ModelTypeSet& types) {
-  CheckOrSetValidThread();
+  DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
   enabled_types_ = types;
   MaybeEmitNotification();
 }
 
 void P2PNotifier::SendNotification() {
-  CheckOrSetValidThread();
+  DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
   VLOG(1) << "Sending XMPP notification...";
   notifier::Notification notification;
   notification.channel = kSyncNotificationChannel;
@@ -98,7 +98,7 @@ void P2PNotifier::SendNotification() {
 }
 
 void P2PNotifier::OnNotificationStateChange(bool notifications_enabled) {
-  CheckOrSetValidThread();
+  DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
   notifications_enabled_ = notifications_enabled;
   FOR_EACH_OBSERVER(SyncNotifierObserver, observer_list_,
       OnNotificationStateChange(notifications_enabled_));
@@ -107,7 +107,7 @@ void P2PNotifier::OnNotificationStateChange(bool notifications_enabled) {
 
 void P2PNotifier::OnIncomingNotification(
     const notifier::Notification& notification) {
-  CheckOrSetValidThread();
+  DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
   VLOG(1) << "Sync received P2P notification.";
   if (notification.channel != kSyncNotificationChannel) {
     LOG(WARNING) << "Notification from unexpected source: "
@@ -136,15 +136,6 @@ void P2PNotifier::MaybeEmitNotification() {
           syncable::ModelTypeBitSetFromSet(enabled_types_), std::string());
   FOR_EACH_OBSERVER(SyncNotifierObserver, observer_list_,
                     OnIncomingNotification(type_payloads));
-}
-
-void P2PNotifier::CheckOrSetValidThread() {
-  if (method_message_loop_proxy_) {
-    DCHECK(method_message_loop_proxy_->BelongsToCurrentThread());
-  } else {
-    method_message_loop_proxy_ =
-        base::MessageLoopProxy::CreateForCurrentThread();
-  }
 }
 
 }  // namespace sync_notifier

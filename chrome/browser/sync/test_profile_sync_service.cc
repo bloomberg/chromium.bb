@@ -72,7 +72,7 @@ void SyncBackendHostForProfileSyncTest::
 
 sync_api::HttpPostProviderFactory*
     SyncBackendHostForProfileSyncTest::MakeHttpBridgeFactory(
-        net::URLRequestContextGetter* getter) {
+        const scoped_refptr<net::URLRequestContextGetter>& getter) {
   return new browser_sync::TestHttpBridgeFactory;
 }
 
@@ -84,7 +84,7 @@ void SyncBackendHostForProfileSyncTest::InitCore(
       NewRunnableMethod(core_.get(),
                         &SyncBackendHost::Core::DoInitializeForTest,
                         user,
-                        options.http_bridge_factory,
+                        options.request_context_getter,
                         options.delete_sync_data_folder));
 
   // TODO(akalin): Figure out a better way to do this.
