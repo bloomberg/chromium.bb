@@ -8,6 +8,7 @@
 
 #include "chrome/browser/chromeos/login/login_html_dialog.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
+#include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "views/view.h"
 
 class DOMView;
@@ -24,6 +25,7 @@ class StatusAreaView;
 // DOMView.
 class WebUILoginView : public views::View,
                        public StatusAreaHost,
+                       public TabContentsDelegate,
                        public chromeos::LoginHtmlDialog::Delegate {
  public:
   WebUILoginView();
@@ -69,6 +71,27 @@ class WebUILoginView : public views::View,
  protected:
   // Creates and adds the status_area.
   void InitStatusArea();
+
+  // Overridden from TabContentsDelegate.
+  virtual void OpenURLFromTab(TabContents* source,
+                              const GURL& url,
+                              const GURL& referrer,
+                              WindowOpenDisposition disposition,
+                              PageTransition::Type transition) OVERRIDE;
+  virtual void NavigationStateChanged(const TabContents* source,
+                                      unsigned changed_flags) OVERRIDE;
+  virtual void AddNewContents(TabContents* source,
+                              TabContents* new_contents,
+                              WindowOpenDisposition disposition,
+                              const gfx::Rect& initial_pos,
+                              bool user_gesture) OVERRIDE;
+  virtual void ActivateContents(TabContents* contents) OVERRIDE;
+  virtual void DeactivateContents(TabContents* contents) OVERRIDE;
+  virtual void LoadingStateChanged(TabContents* source) OVERRIDE;
+  virtual void CloseContents(TabContents* source) OVERRIDE;
+  virtual void MoveContents(TabContents* source, const gfx::Rect& pos) OVERRIDE;
+  virtual void UpdateTargetURL(TabContents* source, const GURL& url) OVERRIDE;
+  virtual bool HandleContextMenu(const ContextMenuParams& params) OVERRIDE;
 
   Profile* profile_;
   StatusAreaView* status_area_;

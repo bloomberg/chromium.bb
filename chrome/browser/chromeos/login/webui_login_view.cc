@@ -40,6 +40,7 @@ void WebUILoginView::Init() {
   AddChildView(webui_login_);
   webui_login_->Init(profile_, NULL);
   webui_login_->SetVisible(true);
+  webui_login_->tab_contents()->set_delegate(this);
 
   InitStatusArea();
 }
@@ -146,6 +147,48 @@ void WebUILoginView::InitStatusArea() {
   status_area_ = new StatusAreaView(this);
   status_area_->Init();
   AddChildView(status_area_);
+}
+
+void WebUILoginView::OpenURLFromTab(TabContents* source,
+                                    const GURL& url,
+                                    const GURL& referrer,
+                                    WindowOpenDisposition disposition,
+                                    PageTransition::Type transition) {
+}
+
+void WebUILoginView::NavigationStateChanged(const TabContents* source,
+                                            unsigned changed_flags) {
+}
+
+void WebUILoginView::AddNewContents(TabContents* source,
+                                    TabContents* new_contents,
+                                    WindowOpenDisposition disposition,
+                                    const gfx::Rect& initial_pos,
+                                    bool user_gesture) {
+}
+
+void WebUILoginView::ActivateContents(TabContents* contents) {
+}
+
+void WebUILoginView::DeactivateContents(TabContents* contents) {
+}
+
+void WebUILoginView::LoadingStateChanged(TabContents* source) {
+}
+
+void WebUILoginView::CloseContents(TabContents* source) {
+}
+
+void WebUILoginView::MoveContents(TabContents* source,
+                                  const gfx::Rect& pos) {
+}
+
+void WebUILoginView::UpdateTargetURL(TabContents* source, const GURL& url) {
+}
+
+bool WebUILoginView::HandleContextMenu(const ContextMenuParams& params) {
+  // Do not show the context menu.
+  return true;
 }
 
 }  // namespace chromeos
