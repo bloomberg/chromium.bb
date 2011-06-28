@@ -8,9 +8,14 @@ liblouis NEWS -- history of user-visible changes.
 
 ** Bug fixes
 
+** New features
+*** New Generic Farsi Grade 1 table
+    A new table for Generic Farsi Grade 1 braille has been provided by
+    Mesar Hameed.
 ** Braille Table Improvements
    - Improvements to the French comp6 and comp8 braille tables
    - Improvements to the Romanian braille table
+   - Improvements to the Generic Arabic Grade 1 table
 
 * Noteworthy changes in release 2.3.0 (2011-05-09)
 

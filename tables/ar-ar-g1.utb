@@ -2,16 +2,12 @@
 #
 # Based on the braille contraction modules in BRLTTY
 #
-# Original copyright (C) 1995-2004 by The BRLTTY Team. 
-# All rights reserved.
+# Copyright (C) 1995-2004 by The BRLTTY Team. 
+# Copyright (C) 2004 by ViewPlus Technologies, Inc.,  www.viewplustech.com
+# Copyright (C) 2004 by Computers to Help People, Inc., www.chpi.org  
+# Copyright (C) 2011 by Mesar Hameed <mhameed@src.gnome.org>
 #
-# liblouis copyright 2004 by 
-# ViewPlus Technologies, inc.,  www.viewplustech.com
-# and
-# Computers to Help People, Inc., www.chpi.org  
-# All rights reserved.
-#
-# liblouis  comes with ABSOLUTELY NO WARRANTY.
+# liblouis comes with ABSOLUTELY NO WARRANTY.
 #
 # This is free software, placed under the terms of the
 # GNU General Public License, as published by the Free Software
@@ -23,6 +19,7 @@
 # with help and guidance from Mohammed R. Ramadan <mramadan@nattiq.com>
 
 include text_nabcc.dis All display opcodes
+include braille-patterns.cti # unicode braille.
 
 
 # ----------- define all chars --------------------------------------
@@ -120,6 +117,7 @@ sign \x00A7 4-234-3				# 167 section sign §
 
 sign \x00A9 2356-6-14-2356 			# 169 © copyright sign
 
+sign \x00AB 2356 				# LEFT-POINTING DOUBLE ANGLE QUOTATION
 sign \x00AE 16-256				# ® Registered mark
 
 punctuation \x00Ad 36				# 173 soft hyphen
@@ -129,12 +127,14 @@ sign \x00B0 356					# 176 ° degrees sign
 sign \x00B5 46-134				# 181 µ micro sign
 sign \x00B6 4-1234-345				# 182 ¶ pilcrow sign
 
+sign \x00BB 2356 				# RIGHT-POINTING DOUBLE ANGLE QUOTATION
 sign \x00BF 236					# 191 inverted question mark
 
 math \x00D7 56-236				# 215 × multiplication sign
 
 math \x00F7 56-256				# 247 ÷ division sign
 
+sign \x200C 9 					# ZERO WIDTH NON-JOINER
 punctuation \x2010 36				# 8208 hyphen
 punctuation \x2011 23478			# 8209 non-breaking hyphen
 
@@ -153,6 +153,7 @@ punctuation	\x201F 2356			# 8223	smart double high reverse quotation mark
 punctuation \x2026 3-3-3			# 8230 smart ellipsis
 
 sign \x20AC 4-15				# 8364 Euro sign
+sign \x25CF 35 					# BLACK CIRCLE
 
 #-------------------------- Arabic characters ---------------------------------
 

@@ -2,6 +2,7 @@
 # $ ls | grep -v Makefile | grep -v README | grep -v maketablelist.sh | grep -v '.*~$' | sort | sed -e 's/$/ \\/' -e 's/^/\t/' | head --bytes=-2
 table_files = \
 	ar-ar-g1.utb \
+	ar-fa.utb \
 	as.ctb \
 	awa.ctb \
 	bengali.cti \
