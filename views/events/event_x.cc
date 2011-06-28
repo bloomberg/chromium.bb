@@ -245,14 +245,14 @@ uint16 GetCharacterFromXKeyEvent(XKeyEvent* key) {
           result.length() == 1) ? result[0] : 0;
 }
 
+#if defined(HAVE_XINPUT2)
 float GetTouchParamFromXEvent(XEvent* xev,
                               TouchFactory::TouchParam tp,
                               float default_value) {
-#if defined(HAVE_XINPUT2)
   TouchFactory::GetInstance()->ExtractTouchParam(*xev, tp, &default_value);
-#endif
   return default_value;
 }
+#endif
 
 float GetTouchForceFromXEvent(XEvent* xev) {
   float force = 0.0;

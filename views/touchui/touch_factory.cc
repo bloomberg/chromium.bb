@@ -4,6 +4,8 @@
 
 #include "views/touchui/touch_factory.h"
 
+#if defined(HAVE_XINPUT2)
+
 #include <gtk/gtk.h>
 #include <gdk/gdkx.h>
 #include <X11/cursorfont.h>
@@ -417,5 +419,7 @@ bool TouchFactory::GetTouchParamRange(unsigned int deviceid,
   }
   return false;
 }
+
+#endif  // defined(HAVE_XINPUT2)
 
 }  // namespace views
