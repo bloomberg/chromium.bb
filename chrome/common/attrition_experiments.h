@@ -28,11 +28,14 @@ const wchar_t kSkype[] = L"SKPC,SKPG,SKPH,SKPI,SKPL,SKPM,SKPN";
 
 // Constants for the "infobar plugins" experiment. These strings become
 // the registry omaha |client| value. The last one is considered to be
-// the control group which reflects the current behavior.
-const wchar_t kPluginNoBlockNoOOD[] = L"PI01";
-const wchar_t kPluginNoBlockDoOOD[] = L"PI02";
-const wchar_t kPluginDoBlockNoOOD[] = L"PI04";
-const wchar_t kPluginDoBlockDoOOD[] = L"PI10";
+// the control group which reflects the current behavior. Note that
+// DoInfobarPluginsExperiment() relies on the prefix being PI, so if you
+// change the prefix you need to fix that function.
+const wchar_t kPluginNoBlockNoOOD[] =    L"PI01";
+const wchar_t kPluginNoBlockDoOOD[] =    L"PI02";
+const wchar_t kPluginDoBlockNoOOD[] =    L"PI04";
+const wchar_t kPluginDoBlockDoOOD[] =    L"PI08";
+const wchar_t kNotInPluginExperiment[] = L"PI20";
 
 }  // namespace
 

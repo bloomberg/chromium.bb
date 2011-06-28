@@ -244,12 +244,21 @@ bool LaunchSetupAsConsoleUser(const FilePath& setup_path,
 // Chrome reads this value and modifies the plugin blocking and infobar
 // behavior accordingly.
 bool DoInfobarPluginsExperiment(int dir_age_hours) {
+  std::wstring client;
+  if (!GoogleUpdateSettings::GetClient(&client))
+    return false;
+  // Make sure the user is not already in this experiment.
+  if ((client.size() > 3) && (client[0] == L'P') && (client[1] == L'I'))
+    return false;
   if (!GoogleUpdateSettings::GetCollectStatsConsent())
     return false;
   if (dir_age_hours > (24 * 14))
     return false;
-  if (base::RandInt(0, 9))
+  if (base::RandInt(0, 9)) {
+    GoogleUpdateSettings::SetClient(
+        attrition_experiments::kNotInPluginExperiment);
     return false;
+  }
 
   const wchar_t* buckets[] = {
     attrition_experiments::kPluginNoBlockNoOOD,
