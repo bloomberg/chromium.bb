@@ -12,6 +12,8 @@
 #include "chrome/browser/ui/gtk/tabs/tab_renderer_gtk.h"
 #include "ui/base/gtk/gtk_signal.h"
 
+class TabStripMenuController;
+
 namespace gfx {
 class Path;
 }
@@ -28,6 +30,9 @@ class TabGtk : public TabRendererGtk,
   // TabRenderer::Model.
   class TabDelegate {
    public:
+    // Returns true if the specified Tab is active.
+    virtual bool IsTabActive(const TabGtk* tab) const = 0;
+
     // Returns true if the specified Tab is selected.
     virtual bool IsTabSelected(const TabGtk* tab) const = 0;
 
@@ -37,8 +42,14 @@ class TabGtk : public TabRendererGtk,
     // Returns true if the specified Tab is detached.
     virtual bool IsTabDetached(const TabGtk* tab) const = 0;
 
-    // Selects the specified Tab.
-    virtual void SelectTab(TabGtk* tab) = 0;
+    // Activates the specified Tab.
+    virtual void ActivateTab(TabGtk* tab) = 0;
+
+    // Toggles selection of the specified Tab.
+    virtual void ToggleTabSelection(TabGtk* tab) = 0;
+
+    // Extends selection from the anchor to the specified Tab.
+    virtual void ExtendTabSelection(TabGtk* tab) = 0;
 
     // Closes the specified Tab.
     virtual void CloseTab(TabGtk* tab) = 0;
@@ -80,6 +91,11 @@ class TabGtk : public TabRendererGtk,
     // Returns the theme provider for icons and colors.
     virtual ui::ThemeProvider* GetThemeProvider() = 0;
 
+    // Returns a context menu controller for |tab|. Caller takes ownership of
+    // the pointed object.
+    virtual TabStripMenuController* GetTabStripMenuControllerForTab(
+        TabGtk* tab) = 0;
+
    protected:
     virtual ~TabDelegate() {}
   };
@@ -101,6 +117,7 @@ class TabGtk : public TabRendererGtk,
   bool dragging() const { return dragging_; }
 
   // TabRendererGtk overrides:
+  virtual bool IsActive() const;
   virtual bool IsSelected() const;
   virtual bool IsVisible() const;
   virtual void SetVisible(bool visible) const;
@@ -109,9 +126,7 @@ class TabGtk : public TabRendererGtk,
   virtual void SetBounds(const gfx::Rect& bounds);
 
  private:
-  class ContextMenuController;
   class TabGtkObserverHelper;
-  friend class ContextMenuController;
 
   // MessageLoop::Observer implementation:
   virtual void WillProcessEvent(GdkEvent* event);
@@ -171,7 +186,7 @@ class TabGtk : public TabRendererGtk,
   bool dragging_;
 
   // The context menu controller.
-  scoped_ptr<ContextMenuController> menu_controller_;
+  scoped_ptr<TabStripMenuController> menu_controller_;
 
   // The windowless widget used to collect input events for the tab.  We can't
   // use an OwnedWidgetGtk because of the way the dragged tab controller

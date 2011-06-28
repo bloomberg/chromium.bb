@@ -349,6 +349,10 @@ bool TabRendererGtk::is_blocked() const {
   return data_.blocked;
 }
 
+bool TabRendererGtk::IsActive() const {
+  return true;
+}
+
 bool TabRendererGtk::IsSelected() const {
   return true;
 }
@@ -390,7 +394,7 @@ void TabRendererGtk::PaintFaviconArea(GdkEventExpose* event) {
   // Paint the background behind the favicon.
   int theme_id;
   int offset_y = 0;
-  if (IsSelected()) {
+  if (IsActive()) {
     theme_id = IDR_THEME_TOOLBAR;
   } else {
     if (!data_.incognito) {
@@ -407,7 +411,7 @@ void TabRendererGtk::PaintFaviconArea(GdkEventExpose* event) {
       favicon_bounds_.x(), favicon_bounds_.y(),
       favicon_bounds_.width(), favicon_bounds_.height());
 
-  if (!IsSelected()) {
+  if (!IsActive()) {
     double throb_value = GetThrobValue();
     if (throb_value > 0) {
       SkRect bounds;
@@ -434,8 +438,8 @@ bool TabRendererGtk::ShouldShowIcon() const {
     return true;
   } else if (!data_.show_icon) {
     return false;
-  } else if (IsSelected()) {
-    // The selected tab clips favicon before close button.
+  } else if (IsActive()) {
+    // The active tab clips favicon before close button.
     return IconCapacity() >= 2;
   }
   // Non-selected tabs clip close button before favicon.
@@ -879,7 +883,7 @@ void TabRendererGtk::PaintIcon(gfx::Canvas* canvas) {
 }
 
 void TabRendererGtk::PaintTabBackground(gfx::Canvas* canvas) {
-  if (IsSelected()) {
+  if (IsActive()) {
     PaintActiveTabBackground(canvas);
   } else {
     PaintInactiveTabBackground(canvas);
@@ -904,6 +908,8 @@ void TabRendererGtk::PaintInactiveTabBackground(gfx::Canvas* canvas) {
 
   int tab_id = data_.incognito ?
       IDR_THEME_TAB_BACKGROUND_INCOGNITO : IDR_THEME_TAB_BACKGROUND;
+  if (IsSelected())
+    tab_id = IDR_THEME_TAB_BACKGROUND_V;
 
   SkBitmap* tab_bg = theme_service_->GetBitmapNamed(tab_id);
 
@@ -992,7 +998,7 @@ int TabRendererGtk::IconCapacity() const {
 
 bool TabRendererGtk::ShouldShowCloseBox() const {
   // The selected tab never clips close button.
-  return !mini() && (IsSelected() || IconCapacity() >= 3);
+  return !mini() && (IsActive() || IconCapacity() >= 3);
 }
 
 CustomDrawButton* TabRendererGtk::MakeCloseButton() {

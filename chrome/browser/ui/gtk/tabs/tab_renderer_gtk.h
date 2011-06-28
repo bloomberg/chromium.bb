@@ -132,6 +132,9 @@ class TabRendererGtk : public ui::AnimationDelegate,
   // Updates the display to reflect the contents of this TabRenderer's model.
   void UpdateFromModel();
 
+  // Returns true if the Tab is active, false otherwise.
+  virtual bool IsActive() const;
+
   // Returns true if the Tab is selected, false otherwise.
   virtual bool IsSelected() const;
 

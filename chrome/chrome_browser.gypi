@@ -2850,6 +2850,8 @@
         'browser/ui/gtk/tabs/tab_renderer_gtk.h',
         'browser/ui/gtk/tabs/tab_strip_gtk.cc',
         'browser/ui/gtk/tabs/tab_strip_gtk.h',
+        'browser/ui/gtk/tabs/tab_strip_menu_controller.cc',
+        'browser/ui/gtk/tabs/tab_strip_menu_controller.h',
         'browser/ui/gtk/task_manager_gtk.cc',
         'browser/ui/gtk/task_manager_gtk.h',
         'browser/ui/gtk/theme_install_bubble_view_gtk.cc',

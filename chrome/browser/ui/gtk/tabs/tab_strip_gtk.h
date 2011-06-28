@@ -107,13 +107,10 @@ class TabStripGtk : public TabStripModelObserver,
                              int index,
                              bool foreground);
   virtual void TabDetachedAt(TabContentsWrapper* contents, int index);
-  virtual void ActiveTabChanged(TabContentsWrapper* old_contents,
-                                TabContentsWrapper* contents,
-                                int index,
-                                bool user_gesture);
   virtual void TabMoved(TabContentsWrapper* contents,
                         int from_index,
                         int to_index);
+  virtual void TabSelectionChanged(const TabStripSelectionModel& old_model);
   virtual void TabChangedAt(TabContentsWrapper* contents, int index,
                             TabChangeType change_type);
   virtual void TabReplacedAt(TabStripModel* tab_strip_model,
@@ -125,10 +122,13 @@ class TabStripGtk : public TabStripModelObserver,
                                       int index);
 
   // TabGtk::TabDelegate implementation:
+  virtual bool IsTabActive(const TabGtk* tab) const;
   virtual bool IsTabSelected(const TabGtk* tab) const;
   virtual bool IsTabPinned(const TabGtk* tab) const;
   virtual bool IsTabDetached(const TabGtk* tab) const;
-  virtual void SelectTab(TabGtk* tab);
+  virtual void ActivateTab(TabGtk* tab);
+  virtual void ToggleTabSelection(TabGtk* tab);
+  virtual void ExtendTabSelection(TabGtk* tab);
   virtual void CloseTab(TabGtk* tab);
   virtual bool IsCommandEnabledForTab(
       TabStripModel::ContextMenuCommand command_id, const TabGtk* tab) const;
@@ -144,6 +144,7 @@ class TabStripGtk : public TabStripModelObserver,
   virtual bool EndDrag(bool canceled);
   virtual bool HasAvailableDragActions() const;
   virtual ui::ThemeProvider* GetThemeProvider();
+  virtual TabStripMenuController* GetTabStripMenuControllerForTab(TabGtk* tab);
 
   // MessageLoop::Observer implementation:
   virtual void WillProcessEvent(GdkEvent* event);

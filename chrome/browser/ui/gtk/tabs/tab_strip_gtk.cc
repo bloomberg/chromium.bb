@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/tabs/dragged_tab_controller_gtk.h"
+#include "chrome/browser/ui/gtk/tabs/tab_strip_menu_controller.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
@@ -168,7 +169,7 @@ class TabStripGtk::TabAnimation : public ui::AnimationDelegate {
     } else {
       double unselected, selected;
       tabstrip->GetCurrentTabWidths(&unselected, &selected);
-      tab_width = tab->IsSelected() ? selected : unselected;
+      tab_width = tab->IsActive() ? selected : unselected;
     }
 
     if (animation) {
@@ -302,7 +303,7 @@ class InsertTabAnimation : public TabStripGtk::TabAnimation {
     if (tabstrip_->GetTabAt(index)->mini())
       return TabGtk::GetMiniWidth();
 
-    if (tabstrip_->GetTabAt(index)->IsSelected()) {
+    if (tabstrip_->GetTabAt(index)->IsActive()) {
       double delta = end_selected_width_ - start_selected_width_;
       return start_selected_width_ + (delta * animation_.GetCurrentValue());
     }
@@ -383,7 +384,7 @@ class RemoveTabAnimation : public TabStripGtk::TabAnimation {
 
     // All other tabs are sized according to the start/end widths specified at
     // the start of the animation.
-    if (tab->IsSelected()) {
+    if (tab->IsActive()) {
       double delta = end_selected_width_ - start_selected_width_;
       return start_selected_width_ + (delta * animation_.GetCurrentValue());
     }
@@ -491,7 +492,7 @@ class ResizeLayoutAnimation : public TabStripGtk::TabAnimation {
     if (tab->mini())
       return TabGtk::GetMiniWidth();
 
-    if (tab->IsSelected()) {
+    if (tab->IsActive()) {
       return animation_.CurrentValueBetween(start_selected_width_,
                                             end_selected_width_);
     }
@@ -509,7 +510,7 @@ class ResizeLayoutAnimation : public TabStripGtk::TabAnimation {
     for (int i = 0; i < tabstrip_->GetTabCount(); ++i) {
       TabGtk* current_tab = tabstrip_->GetTabAt(i);
       if (!current_tab->mini()) {
-        if (current_tab->IsSelected()) {
+        if (current_tab->IsActive()) {
           start_selected_width_ = current_tab->width();
         } else {
           start_unselected_width_ = current_tab->width();
@@ -563,7 +564,7 @@ class MiniTabAnimation : public TabStripGtk::TabAnimation {
       return TabGtk::GetMiniWidth();
     }
 
-    if (tab->IsSelected()) {
+    if (tab->IsActive()) {
       return animation_.CurrentValueBetween(start_selected_width_,
                                             end_selected_width_);
     }
@@ -661,7 +662,7 @@ class MiniMoveAnimation : public TabStripGtk::TabAnimation {
     if (tab->mini())
       return TabGtk::GetMiniWidth();
 
-    if (tab->IsSelected()) {
+    if (tab->IsActive()) {
       return animation_.CurrentValueBetween(start_selected_width_,
                                             end_selected_width_);
     }
@@ -1014,24 +1015,49 @@ void TabStripGtk::TabDetachedAt(TabContentsWrapper* contents, int index) {
   GetTabAt(index)->set_closing(true);
 }
 
-void TabStripGtk::ActiveTabChanged(TabContentsWrapper* old_contents,
-                                   TabContentsWrapper* new_contents,
-                                   int index,
-                                   bool user_gesture) {
-  DCHECK(index >= 0 && index < static_cast<int>(GetTabCount()));
-
+void TabStripGtk::TabSelectionChanged(const TabStripSelectionModel& old_model) {
   // We have "tiny tabs" if the tabs are so tiny that the unselected ones are
   // a different size to the selected ones.
   bool tiny_tabs = current_unselected_width_ != current_selected_width_;
   if (!IsAnimating() && (!needs_resize_layout_ || tiny_tabs))
     Layout();
 
-  GetTabAt(index)->SchedulePaint();
+  if (model_->active_index() >= 0)
+    GetTabAt(model_->active_index())->SchedulePaint();
 
-  int old_index = model_->GetIndexOfTabContents(old_contents);
-  if (old_index >= 0) {
-    GetTabAt(old_index)->SchedulePaint();
-    GetTabAt(old_index)->StopMiniTabTitleAnimation();
+  if (old_model.active() >= 0) {
+    GetTabAt(old_model.active())->SchedulePaint();
+    GetTabAt(old_model.active())->StopMiniTabTitleAnimation();
+  }
+
+  std::vector<int> indices_affected;
+  std::insert_iterator<std::vector<int> > it1(indices_affected,
+                                              indices_affected.begin());
+  std::set_symmetric_difference(
+      old_model.selected_indices().begin(),
+      old_model.selected_indices().end(),
+      model_->selection_model().selected_indices().begin(),
+      model_->selection_model().selected_indices().end(),
+      it1);
+  for (std::vector<int>::iterator it = indices_affected.begin();
+       it != indices_affected.end(); ++it) {
+    // SchedulePaint() has already been called for the active tab and
+    // the previously active tab (if it still exists).
+    if (*it != model_->active_index() && *it != old_model.active())
+      GetTabAtAdjustForAnimation(*it)->SchedulePaint();
+  }
+
+  TabStripSelectionModel::SelectedIndices no_longer_selected;
+  std::insert_iterator<std::vector<int> > it2(no_longer_selected,
+                                              no_longer_selected.begin());
+  std::set_difference(old_model.selected_indices().begin(),
+                      old_model.selected_indices().end(),
+                      model_->selection_model().selected_indices().begin(),
+                      model_->selection_model().selected_indices().end(),
+                      it2);
+  for (std::vector<int>::iterator it = no_longer_selected.begin();
+       it != no_longer_selected.end(); ++it) {
+    GetTabAtAdjustForAnimation(*it)->StopMiniTabTitleAnimation();
   }
 }
 
@@ -1055,7 +1081,7 @@ void TabStripGtk::TabChangedAt(TabContentsWrapper* contents, int index,
   // case we have an animation going.
   TabGtk* tab = GetTabAtAdjustForAnimation(index);
   if (change_type == TITLE_NOT_LOADING) {
-    if (tab->mini() && !tab->IsSelected())
+    if (tab->mini() && !tab->IsActive())
       tab->StartMiniTabTitleAnimation();
     // We'll receive another notification of the change asynchronously.
     return;
@@ -1097,11 +1123,18 @@ void TabStripGtk::TabBlockedStateChanged(TabContentsWrapper* contents,
 ////////////////////////////////////////////////////////////////////////////////
 // TabStripGtk, TabGtk::TabDelegate implementation:
 
-bool TabStripGtk::IsTabSelected(const TabGtk* tab) const {
+bool TabStripGtk::IsTabActive(const TabGtk* tab) const {
   if (tab->closing())
     return false;
 
   return GetIndexOfTab(tab) == model_->active_index();
+}
+
+bool TabStripGtk::IsTabSelected(const TabGtk* tab) const {
+  if (tab->closing())
+    return false;
+
+  return model_->IsTabSelected(GetIndexOfTab(tab));
 }
 
 bool TabStripGtk::IsTabDetached(const TabGtk* tab) const {
@@ -1123,10 +1156,21 @@ bool TabStripGtk::IsTabPinned(const TabGtk* tab) const {
   return model_->IsTabPinned(GetIndexOfTab(tab));
 }
 
-void TabStripGtk::SelectTab(TabGtk* tab) {
+void TabStripGtk::ActivateTab(TabGtk* tab) {
   int index = GetIndexOfTab(tab);
   if (model_->ContainsIndex(index))
     model_->ActivateTabAt(index, true);
+}
+
+void TabStripGtk::ToggleTabSelection(TabGtk* tab) {
+  int index = GetIndexOfTab(tab);
+  model_->ToggleSelectionAt(index);
+}
+
+void TabStripGtk::ExtendTabSelection(TabGtk* tab) {
+  int index = GetIndexOfTab(tab);
+  if (model_->ContainsIndex(index))
+    model_->ExtendSelectionTo(index);
 }
 
 void TabStripGtk::CloseTab(TabGtk* tab) {
@@ -1213,6 +1257,11 @@ bool TabStripGtk::HasAvailableDragActions() const {
 
 ui::ThemeProvider* TabStripGtk::GetThemeProvider() {
   return theme_service_;
+}
+
+TabStripMenuController* TabStripGtk::GetTabStripMenuControllerForTab(
+    TabGtk* tab) {
+  return new TabStripMenuController(tab, model(), GetIndexOfTab(tab));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1347,7 +1396,7 @@ void TabStripGtk::GenerateIdealBounds() {
     double tab_width = unselected;
     if (tab->mini())
       tab_width = TabGtk::GetMiniWidth();
-    else if (tab->IsSelected())
+    else if (tab->IsActive())
       tab_width = selected;
     double end_of_tab = tab_x + tab_width;
     int rounded_tab_x = Round(tab_x);
@@ -1491,7 +1540,7 @@ bool TabStripGtk::ResizeLayoutTabs() {
   TabGtk* first_tab = GetTabAt(mini_tab_count);
   double unselected, selected;
   GetDesiredTabWidths(GetTabCount(), mini_tab_count, &unselected, &selected);
-  int w = Round(first_tab->IsSelected() ? selected : unselected);
+  int w = Round(first_tab->IsActive() ? selected : unselected);
 
   // We only want to run the animation if we're not already at the desired
   // size.
@@ -1920,7 +1969,7 @@ gboolean TabStripGtk::OnExpose(GtkWidget* widget, GdkEventExpose* event) {
     // We must ask the _Tab's_ model, not ourselves, because in some situations
     // the model will be different to this object, e.g. when a Tab is being
     // removed after its TabContents has been destroyed.
-    if (!tab->IsSelected()) {
+    if (!tab->IsActive()) {
       gtk_container_propagate_expose(GTK_CONTAINER(tabstrip_.get()),
                                      tab->widget(), event);
     } else {
