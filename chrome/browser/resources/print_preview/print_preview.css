@@ -475,7 +475,7 @@ span.hint.visible {
 }
 
 span.hint.closing {
-  -webkit-transition: margin 100ms, height 100ms, opacity 200ms;
+  -webkit-transition: margin 150ms, height 150ms, opacity 150ms;
   background: transparent;
   height: 0 !important;
   margin-bottom: 0;
@@ -507,7 +507,7 @@ span.hint.closing {
 }
 
 .option.closing {
-  -webkit-transition: margin 100ms, height 100ms, opacity 200ms;
+  -webkit-transition: margin 150ms, height 150ms, opacity 150ms;
   background: transparent;
   height: 0 !important;
   margin-bottom: 0;
