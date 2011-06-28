@@ -112,10 +112,7 @@ bool GpuDataManager::GpuAccessAllowed() {
   // We only need to block GPU process if more features are disallowed other
   // than those in the preliminary gpu feature flags because the latter work
   // through renderer commandline switches.
-  // However, if accelerated_compositing is not allowed, then we should always
-  // deny gpu access.
-  uint32 mask = (~(preliminary_gpu_feature_flags_.flags())) |
-                GpuFeatureFlags::kGpuFeatureAcceleratedCompositing;
+  uint32 mask = (~(preliminary_gpu_feature_flags_.flags()));
   return (gpu_feature_flags_.flags() & mask) == 0;
 }
 
@@ -147,19 +144,9 @@ void GpuDataManager::AppendRendererCommandLine(
   if ((flags & GpuFeatureFlags::kGpuFeatureMultisampling) &&
       !command_line->HasSwitch(switches::kDisableGLMultisampling))
     command_line->AppendSwitch(switches::kDisableGLMultisampling);
-  // If we have kGpuFeatureAcceleratedCompositing, we disable all GPU features.
-  if (flags & GpuFeatureFlags::kGpuFeatureAcceleratedCompositing) {
-    const char* switches[] = {
-        switches::kDisableAcceleratedCompositing,
-        switches::kDisableExperimentalWebGL,
-        switches::kDisableAccelerated2dCanvas
-    };
-    const int switch_count = sizeof(switches) / sizeof(char*);
-    for (int i = 0; i < switch_count; ++i) {
-      if (!command_line->HasSwitch(switches[i]))
-        command_line->AppendSwitch(switches[i]);
-    }
-  }
+  if ((flags & GpuFeatureFlags::kGpuFeatureAcceleratedCompositing) &&
+      !command_line->HasSwitch(switches::kDisableAcceleratedCompositing))
+    command_line->AppendSwitch(switches::kDisableAcceleratedCompositing);
 }
 
 void GpuDataManager::SetBuiltInGpuBlacklist(GpuBlacklist* built_in_list) {

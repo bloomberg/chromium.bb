@@ -47,7 +47,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "1.12",
+  "version": "1.13",
   "entries": [
     {
       "id": 1,
@@ -103,7 +103,7 @@
     },
     {
       "id": 8,
-      "description": "NVIDIA GeForce FX Go5200 does not support WebGL or accelerated compositing.",
+      "description": "NVIDIA GeForce FX Go5200 is assumed to be buggy.",
       "cr_bugs": [72938],
       "os": {
         "type": "any"
@@ -111,8 +111,7 @@
       "vendor_id": "0x10de",
       "device_id": ["0x0324"],
       "blacklist": [
-        "webgl",
-        "accelerated_compositing"
+        "all"
       ]
     },
     {
@@ -243,6 +242,22 @@
       "device_id": ["0x029e"],
       "blacklist": [
         "all"
+      ]
+    },
+    {
+      "id": 19,
+      "description": "Accelerated 2d canvas and accelerated compositing are not supported in Mac OSX version 10.5.",
+      "cr_bugs": [87157],
+      "os": {
+        "type": "macosx",
+        "version": {
+          "op": "=",
+          "number": "10.5"
+        }
+      },
+      "blacklist": [
+        "accelerated_2d_canvas",
+        "accelerated_compositing"
       ]
     }
   ]
