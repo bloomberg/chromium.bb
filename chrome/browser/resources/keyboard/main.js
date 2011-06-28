@@ -135,7 +135,7 @@ window.onload = function() {
     var rows = KEYBOARDS[layout]['rows'];
     for (var i = 0; i < rows.length; ++i) {
       rowsDiv.appendChild(rows[i].makeDOM(height));
-      rows[i].showMode(KEY_MODE);
+      rows[i].showMode(currentMode);
     }
     rowsDiv.hidden = true;
     mainDiv.appendChild(rowsDiv);
@@ -158,7 +158,7 @@ window.onload = function() {
   // Ref: dvcs.w3.org/hg/webperf/raw-file/tip/specs/PageVisibility/Overview.html
   document.addEventListener("webkitvisibilitychange", function() {
     if (document.webkitHidden) {
-      currentMode = KEY_MODE;
+      currentMode = SHIFT_MODE;
       setMode(currentMode);
     }
   }, false);
