@@ -54,6 +54,10 @@ void P2PNotifier::RemoveObserver(SyncNotifierObserver* observer) {
   }
 }
 
+void P2PNotifier::SetUniqueId(const std::string& unique_id) {
+  DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
+}
+
 void P2PNotifier::SetState(const std::string& state) {
   DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
 }

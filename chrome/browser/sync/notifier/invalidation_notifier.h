@@ -45,6 +45,7 @@ class InvalidationNotifier
   // SyncNotifier implementation.
   virtual void AddObserver(SyncNotifierObserver* observer) OVERRIDE;
   virtual void RemoveObserver(SyncNotifierObserver* observer) OVERRIDE;
+  virtual void SetUniqueId(const std::string& unique_id) OVERRIDE;
   virtual void SetState(const std::string& state) OVERRIDE;
   virtual void UpdateCredentials(
       const std::string& email, const std::string& token) OVERRIDE;
@@ -86,6 +87,9 @@ class InvalidationNotifier
 
   // Our observers (which must live on the same thread).
   ObserverList<SyncNotifierObserver> observers_;
+
+  // The client ID to pass to |chrome_invalidation_client_|.
+  std::string invalidation_client_id_;
 
   // The state to pass to |chrome_invalidation_client_|.
   std::string invalidation_state_;

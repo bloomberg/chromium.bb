@@ -29,6 +29,7 @@ class NonBlockingInvalidationNotifier::Core
   void Initialize(const notifier::NotifierOptions& notifier_options,
                   const std::string& client_info);
   void Teardown();
+  void SetUniqueId(const std::string& unique_id);
   void SetState(const std::string& state);
   void UpdateCredentials(const std::string& email, const std::string& token);
   void UpdateEnabledTypes(const syncable::ModelTypeSet& types);
@@ -91,6 +92,12 @@ void NonBlockingInvalidationNotifier::Core::RemoveObserver(
   observers_->RemoveObserver(observer);
 }
 
+void NonBlockingInvalidationNotifier::Core::SetUniqueId(
+    const std::string& unique_id) {
+  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  invalidation_notifier_->SetUniqueId(unique_id);
+}
+
 void NonBlockingInvalidationNotifier::Core::SetState(
     const std::string& state) {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
@@ -142,8 +149,9 @@ NonBlockingInvalidationNotifier::NonBlockingInvalidationNotifier(
           NewRunnableMethod(
               core_.get(),
               &NonBlockingInvalidationNotifier::Core::Initialize,
-              notifier_options, client_info)))
+              notifier_options, client_info))) {
     NOTREACHED();
+  }
 }
 
 NonBlockingInvalidationNotifier::~NonBlockingInvalidationNotifier() {
@@ -152,8 +160,9 @@ NonBlockingInvalidationNotifier::~NonBlockingInvalidationNotifier() {
           FROM_HERE,
           NewRunnableMethod(
               core_.get(),
-              &NonBlockingInvalidationNotifier::Core::Teardown)))
+              &NonBlockingInvalidationNotifier::Core::Teardown))) {
     NOTREACHED();
+  }
 }
 
 void NonBlockingInvalidationNotifier::AddObserver(
@@ -168,6 +177,19 @@ void NonBlockingInvalidationNotifier::RemoveObserver(
   core_->RemoveObserver(observer);
 }
 
+void NonBlockingInvalidationNotifier::SetUniqueId(
+    const std::string& unique_id) {
+  DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
+  if (!io_message_loop_proxy_->PostTask(
+          FROM_HERE,
+          NewRunnableMethod(
+              core_.get(),
+              &NonBlockingInvalidationNotifier::Core::SetUniqueId,
+              unique_id))) {
+    NOTREACHED();
+  }
+}
+
 void NonBlockingInvalidationNotifier::SetState(const std::string& state) {
   DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
   if (!io_message_loop_proxy_->PostTask(
@@ -175,8 +197,9 @@ void NonBlockingInvalidationNotifier::SetState(const std::string& state) {
           NewRunnableMethod(
               core_.get(),
               &NonBlockingInvalidationNotifier::Core::SetState,
-              state)))
+              state))) {
     NOTREACHED();
+  }
 }
 
 void NonBlockingInvalidationNotifier::UpdateCredentials(
@@ -187,8 +210,9 @@ void NonBlockingInvalidationNotifier::UpdateCredentials(
           NewRunnableMethod(
               core_.get(),
               &NonBlockingInvalidationNotifier::Core::UpdateCredentials,
-              email, token)))
+              email, token))) {
     NOTREACHED();
+  }
 }
 
 void NonBlockingInvalidationNotifier::UpdateEnabledTypes(
@@ -199,8 +223,9 @@ void NonBlockingInvalidationNotifier::UpdateEnabledTypes(
           NewRunnableMethod(
               core_.get(),
               &NonBlockingInvalidationNotifier::Core::UpdateEnabledTypes,
-              types)))
+              types))) {
     NOTREACHED();
+  }
 }
 
 void NonBlockingInvalidationNotifier::SendNotification() {

@@ -24,7 +24,13 @@ class SyncNotifier {
   virtual void AddObserver(SyncNotifierObserver* observer) = 0;
   virtual void RemoveObserver(SyncNotifierObserver* observer) = 0;
 
-  // SetState must be called once, before any call to UpdateCredentials.
+  // SetUniqueId must be called once, before any call to
+  // UpdateCredentials.  |unique_id| should be a globally unique
+  // string.
+  virtual void SetUniqueId(const std::string& unique_id) = 0;
+
+  // SetState must be called once, before any call to
+  // UpdateCredentials.
   virtual void SetState(const std::string& state) = 0;
 
   // The observers won't be notified of any notifications until

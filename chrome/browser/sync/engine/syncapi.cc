@@ -1934,17 +1934,21 @@ bool SyncManager::SyncInternal::SignIn(const SyncCredentials& credentials) {
   // Retrieve and set the sync notifier state. This should be done
   // only after OpenDirectory is called.
   syncable::ScopedDirLookup lookup(dir_manager(), username_for_share());
+  std::string unique_id;
   std::string state;
   if (lookup.good()) {
+    unique_id = lookup->cache_guid();
     state = lookup->GetAndClearNotificationState();
+    VLOG(1) << "Read notification unique ID: " << unique_id;
+    if (VLOG_IS_ON(1)) {
+      std::string encoded_state;
+      base::Base64Encode(state, &encoded_state);
+      VLOG(1) << "Read notification state: " << encoded_state;
+    }
   } else {
-    LOG(ERROR) << "Could not read notification state";
+    LOG(ERROR) << "Could not read notification unique ID/state";
   }
-  if (VLOG_IS_ON(1)) {
-    std::string encoded_state;
-    base::Base64Encode(state, &encoded_state);
-    VLOG(1) << "Read notification state: " << encoded_state;
-  }
+  sync_notifier_->SetUniqueId(unique_id);
   sync_notifier_->SetState(state);
 
   UpdateCredentials(credentials);

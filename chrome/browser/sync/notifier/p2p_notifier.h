@@ -10,6 +10,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
@@ -37,13 +38,15 @@ class P2PNotifier
   virtual ~P2PNotifier();
 
   // SyncNotifier implementation
-  virtual void AddObserver(SyncNotifierObserver* observer);
-  virtual void RemoveObserver(SyncNotifierObserver* observer);
-  virtual void SetState(const std::string& state);
+  virtual void AddObserver(SyncNotifierObserver* observer) OVERRIDE;
+  virtual void RemoveObserver(SyncNotifierObserver* observer) OVERRIDE;
+  virtual void SetUniqueId(const std::string& unique_id) OVERRIDE;
+  virtual void SetState(const std::string& state) OVERRIDE;
   virtual void UpdateCredentials(
-      const std::string& email, const std::string& token);
-  virtual void UpdateEnabledTypes(const syncable::ModelTypeSet& types);
-  virtual void SendNotification();
+      const std::string& email, const std::string& token) OVERRIDE;
+  virtual void UpdateEnabledTypes(
+      const syncable::ModelTypeSet& types) OVERRIDE;
+  virtual void SendNotification() OVERRIDE;
 
   // TalkMediator::Delegate implementation.
   virtual void OnNotificationStateChange(bool notifications_enabled);

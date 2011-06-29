@@ -47,6 +47,11 @@ void InvalidationNotifier::RemoveObserver(SyncNotifierObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+void InvalidationNotifier::SetUniqueId(const std::string& unique_id) {
+  DCHECK(non_thread_safe_.CalledOnValidThread());
+  invalidation_client_id_ = unique_id;
+}
+
 void InvalidationNotifier::SetState(const std::string& state) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   invalidation_state_ = state;
