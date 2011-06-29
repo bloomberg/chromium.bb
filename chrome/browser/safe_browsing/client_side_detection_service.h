@@ -16,6 +16,7 @@
 
 #include <map>
 #include <queue>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -47,6 +48,7 @@ class URLRequestStatus;
 
 namespace safe_browsing {
 class ClientPhishingRequest;
+class ClientSideModel;
 
 class ClientSideDetectionService : public URLFetcher::Delegate,
                                    public NotificationObserver {
@@ -98,6 +100,11 @@ class ClientSideDetectionService : public URLFetcher::Delegate,
   // address.
   virtual bool IsPrivateIPAddress(const std::string& ip_address) const;
 
+  // Returns true if the given IP address is on the list of known bad IPs.
+  // ip_address should be a dotted IPv4 address, or an unbracketed IPv6
+  // address.
+  virtual bool IsBadIpAddress(const std::string& ip_address) const;
+
   // Returns true and sets is_phishing if url is in the cache and valid.
   virtual bool GetValidCachedResult(const GURL& url, bool* is_phishing);
 
@@ -139,6 +146,8 @@ class ClientSideDetectionService : public URLFetcher::Delegate,
  private:
   friend class ClientSideDetectionServiceTest;
   FRIEND_TEST_ALL_PREFIXES(ClientSideDetectionServiceTest, FetchModelTest);
+  FRIEND_TEST_ALL_PREFIXES(ClientSideDetectionServiceTest, SetBadSubnets);
+  FRIEND_TEST_ALL_PREFIXES(ClientSideDetectionServiceTest, IsBadIpAddress);
 
   // CacheState holds all information necessary to respond to a caller without
   // actually making a HTTP request.
@@ -153,6 +162,11 @@ class ClientSideDetectionService : public URLFetcher::Delegate,
   // A tuple of (IP address block, prefix size) representing a private
   // IP address range.
   typedef std::pair<net::IPAddressNumber, size_t> AddressRange;
+
+  // Maps a IPv6 subnet mask to a set of hashed IPv6 subnets.  The IPv6
+  // subnets are in network order and hashed with sha256.
+  typedef std::map<std::string /* subnet mask */,
+                   std::set<std::string /* hashed subnet */> > BadSubnetMap;
 
   static const char kClientReportPhishingUrl[];
   static const char kClientModelUrl[];
@@ -204,13 +218,16 @@ class ClientSideDetectionService : public URLFetcher::Delegate,
   // Same as above but sends the model to all rendereres.
   void SendModelToRenderers();
 
-  std::string model_str_;
-  int model_version_;
-  scoped_ptr<URLFetcher> model_fetcher_;
+  // Reads the bad subnets from the client model and inserts them into
+  // |bad_subnets| for faster lookups.  This method is static to simplify
+  // testing.
+  static void SetBadSubnets(const ClientSideModel& model,
+                            BadSubnetMap* bad_subnets);
 
-  std::string tmp_model_str_;
-  int tmp_model_version_;
-  scoped_ptr<base::TimeDelta> tmp_model_max_age_;
+  std::string model_str_;
+  scoped_ptr<ClientSideModel> model_;
+  scoped_ptr<base::TimeDelta> model_max_age_;
+  scoped_ptr<URLFetcher> model_fetcher_;
 
   // Map of client report phishing request to the corresponding callback that
   // has to be invoked when the request is done.
@@ -240,11 +257,14 @@ class ClientSideDetectionService : public URLFetcher::Delegate,
   // The network blocks that we consider private IP address ranges.
   std::vector<AddressRange> private_networks_;
 
+  // Map of bad subnets which are copied from the client model and put into
+  // this map to speed up lookups.
+  BadSubnetMap bad_subnets_;
+
   NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientSideDetectionService);
 };
-
 }  // namepsace safe_browsing
 
 #endif  // CHROME_BROWSER_SAFE_BROWSING_CLIENT_SIDE_DETECTION_SERVICE_H_

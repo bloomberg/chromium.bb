@@ -14,6 +14,7 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "content/common/page_transition_types.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/cancelable_request.h"
@@ -35,7 +36,12 @@ const char kFirstHttpsHostVisitMoreThan24hAgo[] =
     "FirstHttpsHostVisitMoreThan24hAgo";
 const char kHasSSLReferrer[] = "HasSSLReferrer";
 const char kPageTransitionType[] = "PageTransitionType";
+const char kBadIpFetch[] = "BadIpFetch=";
 }  // namespace features
+
+BrowseInfo::BrowseInfo() {}
+
+BrowseInfo::~BrowseInfo() {}
 
 static void AddFeature(const std::string& feature_name,
                        double feature_value,
@@ -48,8 +54,11 @@ static void AddFeature(const std::string& feature_name,
   VLOG(2) << "Browser feature: " << feature->name() << " " << feature->value();
 }
 
-BrowserFeatureExtractor::BrowserFeatureExtractor(TabContents* tab)
+BrowserFeatureExtractor::BrowserFeatureExtractor(
+    TabContents* tab,
+    ClientSideDetectionService* service)
     : tab_(tab),
+      service_(service),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   DCHECK(tab);
 }
@@ -76,17 +85,30 @@ BrowserFeatureExtractor::~BrowserFeatureExtractor() {
   pending_queries_.clear();
 }
 
-void BrowserFeatureExtractor::ExtractFeatures(const BrowseInfo& info,
+void BrowserFeatureExtractor::ExtractFeatures(const BrowseInfo* info,
                                               ClientPhishingRequest* request,
                                               DoneCallback* callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(request);
+  DCHECK(info);
   DCHECK_EQ(0U, request->url().find("http:"));
   DCHECK(callback);
   if (!callback) {
     DLOG(ERROR) << "ExtractFeatures called without a callback object";
     return;
   }
+  ExtractBrowseInfoFeatures(*info, request);
+  pending_extractions_.insert(std::make_pair(request, callback));
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      method_factory_.NewRunnableMethod(
+          &BrowserFeatureExtractor::StartExtractFeatures,
+          request, callback));
+}
+
+void BrowserFeatureExtractor::ExtractBrowseInfoFeatures(
+    const BrowseInfo& info,
+    ClientPhishingRequest* request) {
   bool is_secure_referrer = info.referrer.SchemeIsSecure();
   if (!is_secure_referrer) {
     request->set_referrer_url(info.referrer.spec());
@@ -98,13 +120,14 @@ void BrowserFeatureExtractor::ExtractFeatures(const BrowseInfo& info,
              static_cast<double>(
                  PageTransition::StripQualifier(info.transition)),
              request);
-
-  pending_extractions_.insert(std::make_pair(request, callback));
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      method_factory_.NewRunnableMethod(
-          &BrowserFeatureExtractor::StartExtractFeatures,
-          request, callback));
+  if (service_) {
+    for (std::set<std::string>::const_iterator it = info.ips.begin();
+         it != info.ips.end(); ++it) {
+      if (service_->IsBadIpAddress(*it)) {
+        AddFeature(features::kBadIpFetch + *it, 1.0, request);
+      }
+    }
+  }
 }
 
 void BrowserFeatureExtractor::StartExtractFeatures(

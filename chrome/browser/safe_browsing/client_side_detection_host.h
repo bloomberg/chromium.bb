@@ -13,8 +13,12 @@
 #include "chrome/browser/safe_browsing/browser_feature_extractor.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
+#include "content/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 
+class NotificationDetails;
+class NotificationSource;
+class NotificationType;
 class TabContents;
 
 namespace safe_browsing {
@@ -26,7 +30,8 @@ class ClientSideDetectionService;
 // class relays this information to the client-side detection service
 // class which sends a ping to a server to validate the verdict.
 // TODO(noelutz): move all client-side detection IPCs to this class.
-class ClientSideDetectionHost : public TabContentsObserver {
+class ClientSideDetectionHost : public TabContentsObserver,
+                                public NotificationObserver {
  public:
   // The caller keeps ownership of the tab object and is responsible for
   // ensuring that it stays valid until TabContentsDestroyed is called.
@@ -67,6 +72,12 @@ class ClientSideDetectionHost : public TabContentsObserver {
   // the UI thread.
   void FeatureExtractionDone(bool success, ClientPhishingRequest* request);
 
+  // From NotificationObserver.  Called when a notification comes in.  This
+  // method is called in the UI thread.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
   // Used for testing.  This function does not take ownership of the service
   // class.
   void set_client_side_detection_service(ClientSideDetectionService* service);
@@ -89,6 +100,8 @@ class ClientSideDetectionHost : public TabContentsObserver {
   // every page load we can simply keep this data around as a member
   // variable.  This information will be passed on to the feature extractor.
   scoped_ptr<BrowseInfo> browse_info_;
+  // Handles registering notifications with the NotificationService.
+  NotificationRegistrar registrar_;
 
   base::ScopedCallbackFactory<ClientSideDetectionHost> cb_factory_;
 

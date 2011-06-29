@@ -14,6 +14,7 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
@@ -24,7 +25,20 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::Return;
+using ::testing::StrictMock;
+
 namespace safe_browsing {
+namespace {
+class MockClientSideDetectionService : public ClientSideDetectionService {
+ public:
+  MockClientSideDetectionService() : ClientSideDetectionService(NULL) {}
+  virtual ~MockClientSideDetectionService() {};
+
+  MOCK_CONST_METHOD1(IsBadIpAddress, bool(const std::string&));
+};
+}  // namespace
+
 class BrowserFeatureExtractorTest : public RenderViewHostTestHarness {
  protected:
   BrowserFeatureExtractorTest()
@@ -34,7 +48,8 @@ class BrowserFeatureExtractorTest : public RenderViewHostTestHarness {
   virtual void SetUp() {
     RenderViewHostTestHarness::SetUp();
     profile_->CreateHistoryService(true /* delete_file */, false /* no_db */);
-    extractor_.reset(new BrowserFeatureExtractor(contents()));
+    service_.reset(new StrictMock<MockClientSideDetectionService>());
+    extractor_.reset(new BrowserFeatureExtractor(contents(), service_.get()));
     num_pending_ = 0;
     browse_info_.reset(new BrowseInfo);
   }
@@ -61,7 +76,7 @@ class BrowserFeatureExtractorTest : public RenderViewHostTestHarness {
     success_.erase(request);
     ++num_pending_;
     extractor_->ExtractFeatures(
-        *browse_info_,
+        browse_info_.get(),
         request,
         NewCallback(this,
                     &BrowserFeatureExtractorTest::ExtractFeaturesDone));
@@ -82,6 +97,8 @@ class BrowserFeatureExtractorTest : public RenderViewHostTestHarness {
   scoped_ptr<BrowserFeatureExtractor> extractor_;
   std::map<ClientPhishingRequest*, bool> success_;
   scoped_ptr<BrowseInfo> browse_info_;
+  scoped_ptr<MockClientSideDetectionService> service_;
+
 
  private:
   void ExtractFeaturesDone(bool success, ClientPhishingRequest* request) {
@@ -215,6 +232,11 @@ TEST_F(BrowserFeatureExtractorTest, BrowseFeatures) {
   browse_info_->referrer = GURL("https://bankofamerica.com/");
   browse_info_->transition =
       PageTransition::TYPED | PageTransition::FORWARD_BACK;
+  browse_info_->ips.insert("193.5.163.8");
+  browse_info_->ips.insert("23.94.78.1");
+
+  EXPECT_CALL(*service_, IsBadIpAddress("193.5.163.8")).WillOnce(Return(true));
+  EXPECT_CALL(*service_, IsBadIpAddress("23.94.78.1")).WillOnce(Return(false));
 
   EXPECT_TRUE(ExtractFeatures(&request));
   features.clear();
@@ -223,5 +245,8 @@ TEST_F(BrowserFeatureExtractorTest, BrowseFeatures) {
   EXPECT_FALSE(request.has_referrer_url());
   EXPECT_EQ(1.0, features[features::kHasSSLReferrer]);
   EXPECT_EQ(1.0, features[features::kPageTransitionType]);
+  EXPECT_EQ(1.0, features[std::string(features::kBadIpFetch) + "193.5.163.8"]);
+  EXPECT_FALSE(features.count(std::string(features::kBadIpFetch) +
+                              "23.94.78.1"));
 }
 }  // namespace safe_browsing

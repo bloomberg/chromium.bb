@@ -110,11 +110,13 @@ class MockTestingProfile : public TestingProfile {
 
 class MockBrowserFeatureExtractor : public BrowserFeatureExtractor {
  public:
-  explicit MockBrowserFeatureExtractor(TabContents* tab)
-      : BrowserFeatureExtractor(tab) {}
+  explicit MockBrowserFeatureExtractor(
+      TabContents* tab,
+      ClientSideDetectionService* service)
+      : BrowserFeatureExtractor(tab, service) {}
   virtual ~MockBrowserFeatureExtractor() {}
 
-  MOCK_METHOD3(ExtractFeatures, void(const BrowseInfo& info,
+  MOCK_METHOD3(ExtractFeatures, void(const BrowseInfo* info,
                                      ClientPhishingRequest*,
                                      BrowserFeatureExtractor::DoneCallback*));
 };
@@ -237,7 +239,8 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteInvalidVerdict) {
   // Case 0: renderer sends an invalid verdict string that we're unable to
   // parse.
   MockBrowserFeatureExtractor* mock_extractor = new MockBrowserFeatureExtractor(
-      contents());
+      contents(),
+      csd_service_.get());
   SetFeatureExtractor(mock_extractor);  // The host class takes ownership.
   EXPECT_CALL(*mock_extractor, ExtractFeatures(_, _, _)).Times(0);
   OnDetectedPhishingSite("Invalid Protocol Buffer");

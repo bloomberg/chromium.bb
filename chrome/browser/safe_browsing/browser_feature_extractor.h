@@ -29,6 +29,7 @@ class TabContents;
 
 namespace safe_browsing {
 class ClientPhishingRequest;
+class ClientSideDetectionService;
 
 struct BrowseInfo {
   // The URL that is being classified.  This is redundant information but
@@ -41,6 +42,13 @@ struct BrowseInfo {
 
   // How did we get to the URL?
   PageTransition::Type transition;
+
+  // List of IPv4 and IPv6 addresses from which content was requested
+  // while browsing to the |url|.
+  std::set<std::string> ips;
+
+  BrowseInfo();
+  ~BrowseInfo();
 };
 
 namespace features {
@@ -81,6 +89,8 @@ extern const char kFirstHttpsHostVisitMoreThan24hAgo[];
 extern const char kHasSSLReferrer[];
 // Stores the page transition.  See: PageTransition.  We strip the qualifier.
 extern const char kPageTransitionType[];
+// Resource was fetched from a known bad IP address.
+extern const char kBadIpFetch[];
 }  // namespace features
 
 // All methods of this class must be called on the UI thread (including
@@ -93,9 +103,11 @@ class BrowserFeatureExtractor {
   // DoneCallback takes ownership of the request object.
   typedef Callback2<bool, ClientPhishingRequest*>::Type DoneCallback;
 
-  // The caller keeps ownership of the tab object and is responsible for
-  // ensuring that it stays valid for the entire lifetime of this object.
-  explicit BrowserFeatureExtractor(TabContents* tab);
+  // The caller keeps ownership of the tab and service objects and is
+  // responsible for ensuring that they stay valid for the entire
+  // lifetime of this object.
+  BrowserFeatureExtractor(TabContents* tab,
+                          ClientSideDetectionService* service);
 
   // The destructor will cancel any pending requests.
   virtual ~BrowserFeatureExtractor();
@@ -104,9 +116,9 @@ class BrowserFeatureExtractor {
   // of the request object until |callback| is called (see DoneCallback above)
   // and will write the extracted features to the feature map.  Once the
   // feature extraction is complete, |callback| is run on the UI thread.  We
-  // take ownership of the |callback| object.  This method must run on the UI
-  // thread.
-  virtual void ExtractFeatures(const BrowseInfo& info,
+  // take ownership of the |callback| object.  |info| may not be valid after
+  // ExtractFeatures returns.  This method must run on the UI thread.
+  virtual void ExtractFeatures(const BrowseInfo* info,
                                ClientPhishingRequest* request,
                                DoneCallback* callback);
 
@@ -115,6 +127,10 @@ class BrowserFeatureExtractor {
   typedef std::pair<ClientPhishingRequest*, DoneCallback*> ExtractionData;
   typedef std::map<CancelableRequestProvider::Handle,
                    ExtractionData> PendingQueriesMap;
+
+  // Synchronous browser feature extraction.
+  void ExtractBrowseInfoFeatures(const BrowseInfo& info,
+                                 ClientPhishingRequest* request);
 
   // Actually starts feature extraction (does the real work).
   void StartExtractFeatures(ClientPhishingRequest* request,
@@ -168,6 +184,7 @@ class BrowserFeatureExtractor {
   bool GetHistoryService(HistoryService** history);
 
   TabContents* tab_;
+  ClientSideDetectionService* service_;
   CancelableRequestConsumer request_consumer_;
   ScopedRunnableMethodFactory<BrowserFeatureExtractor> method_factory_;
 

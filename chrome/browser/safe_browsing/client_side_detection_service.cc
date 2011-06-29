@@ -22,6 +22,7 @@
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/common/notification_service.h"
 #include "content/common/url_fetcher.h"
+#include "crypto/sha2.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
@@ -63,9 +64,7 @@ ClientSideDetectionService::CacheState::CacheState(bool phish, base::Time time)
 
 ClientSideDetectionService::ClientSideDetectionService(
     net::URLRequestContextGetter* request_context_getter)
-    : model_version_(-1),
-      tmp_model_version_(-1),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
+    : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       request_context_getter_(request_context_getter) {
   registrar_.Add(this, NotificationType::RENDERER_PROCESS_CREATED,
                  NotificationService::AllSources());
@@ -144,6 +143,35 @@ bool ClientSideDetectionService::IsPrivateIPAddress(
   return false;
 }
 
+bool ClientSideDetectionService::IsBadIpAddress(
+    const std::string& ip_address) const {
+  net::IPAddressNumber ip_number;
+  if (!net::ParseIPLiteralToNumber(ip_address, &ip_number)) {
+    DLOG(WARNING) << "Unable to parse IP address: " << ip_address;
+    return false;
+  }
+  if (ip_number.size() == net::kIPv4AddressSize) {
+    ip_number = net::ConvertIPv4NumberToIPv6Number(ip_number);
+  }
+  if (ip_number.size() != net::kIPv6AddressSize) {
+    DLOG(WARNING) << "Unable to convert IPv4 address to IPv6: " << ip_address;
+    return false;  // better safe than sorry.
+  }
+  for (BadSubnetMap::const_iterator it = bad_subnets_.begin();
+       it != bad_subnets_.end(); ++it) {
+    const std::string& mask = it->first;
+    DCHECK_EQ(mask.size(), ip_number.size());
+    std::string subnet(net::kIPv6AddressSize, '.');
+    for (size_t i = 0; i < net::kIPv6AddressSize; ++i) {
+      subnet[i] = ip_number[i] & mask[i];
+    }
+    if (it->second.count(crypto::SHA256HashString(subnet)) > 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
 void ClientSideDetectionService::OnURLFetchComplete(
     const URLFetcher* source,
     const GURL& url,
@@ -166,7 +194,7 @@ void ClientSideDetectionService::Observe(NotificationType type,
                                          const NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(type == NotificationType::RENDERER_PROCESS_CREATED);
-  if (model_version_ < 0) {
+  if (!model_.get()) {
     // Model might not be ready or maybe there was an error.
     return;
   }
@@ -201,28 +229,21 @@ void ClientSideDetectionService::EndFetchModel(ClientModelStatus status) {
   UMA_HISTOGRAM_ENUMERATION("SBClientPhishing.ClientModelStatus",
                             status,
                             MODEL_STATUS_MAX);
-  // If there is already a valid model but we're unable to reload one
-  // we leave the old model.
   if (status == MODEL_SUCCESS) {
-    // Replace the model string and version;
-    model_str_.swap(tmp_model_str_);
-    model_version_ = tmp_model_version_;
+    SetBadSubnets(*model_, &bad_subnets_);
     SendModelToRenderers();
   }
-  tmp_model_str_.clear();
-  tmp_model_version_ = -1;
-
   int delay_ms = kClientModelFetchIntervalMs;
   // If the most recently fetched model had a valid max-age and the model was
   // valid we're scheduling the next model update for after the max-age expired.
-  if (tmp_model_max_age_.get() &&
+  if (model_max_age_.get() &&
       (status == MODEL_SUCCESS || status == MODEL_NOT_CHANGED)) {
     // We're adding 60s of additional delay to make sure we're past
     // the model's age.
-    *tmp_model_max_age_ += base::TimeDelta::FromMinutes(1);
-    delay_ms = tmp_model_max_age_->InMilliseconds();
+    *model_max_age_ += base::TimeDelta::FromMinutes(1);
+    delay_ms = model_max_age_->InMilliseconds();
   }
-  tmp_model_max_age_.reset();
+  model_max_age_.reset();
 
   // Schedule the next model reload.
   MessageLoop::current()->PostDelayedTask(
@@ -278,9 +299,9 @@ void ClientSideDetectionService::HandleModelResponse(
   if (status.is_success() && RC_REQUEST_OK == response_code &&
       source->response_headers() &&
       source->response_headers()->GetMaxAgeValue(&max_age)) {
-    tmp_model_max_age_.reset(new base::TimeDelta(max_age));
+    model_max_age_.reset(new base::TimeDelta(max_age));
   }
-  ClientSideModel model;
+  scoped_ptr<ClientSideModel> model(new ClientSideModel());
   ClientModelStatus model_status;
   if (!status.is_success() || RC_REQUEST_OK != response_code) {
     model_status = MODEL_FETCH_FAILED;
@@ -288,18 +309,19 @@ void ClientSideDetectionService::HandleModelResponse(
     model_status = MODEL_EMPTY;
   } else if (data.size() > kMaxModelSizeBytes) {
     model_status = MODEL_TOO_LARGE;
-  } else if (!model.ParseFromString(data)) {
+  } else if (!model->ParseFromString(data)) {
     model_status = MODEL_PARSE_ERROR;
-  } else if (!model.IsInitialized() || !model.has_version()) {
+  } else if (!model->IsInitialized() || !model->has_version()) {
     model_status = MODEL_MISSING_FIELDS;
-  } else if (model.version() < 0 ||
-             (model_version_ > 0 && model.version() < model_version_)) {
+  } else if (model->version() < 0 ||
+             (model_.get() && model->version() < model_->version())) {
     model_status = MODEL_INVALID_VERSION_NUMBER;
-  } else if (model.version() == model_version_) {
+  } else if (model_.get() && model->version() == model_->version()) {
     model_status = MODEL_NOT_CHANGED;
   } else {
-    tmp_model_version_ = model.version();
-    tmp_model_str_.assign(data);
+    // The model is valid => replace the existing model with the new one.
+    model_str_.assign(data);
+    model_.swap(model);
     model_status = MODEL_SUCCESS;
   }
   EndFetchModel(model_status);
@@ -420,5 +442,32 @@ bool ClientSideDetectionService::InitializePrivateNetworks() {
     }
   }
   return true;
+}
+
+/* static */
+void ClientSideDetectionService::SetBadSubnets(const ClientSideModel& model,
+                                               BadSubnetMap* bad_subnets) {
+  bad_subnets->clear();
+  for (int i = 0; i < model.bad_subnet_size(); ++i) {
+    int size = model.bad_subnet(i).size();
+    if (size < 0 || size > static_cast<int>(net::kIPv6AddressSize) * 8) {
+      DLOG(ERROR) << "Invalid bad subnet size: " << size;
+      continue;
+    }
+    if (model.bad_subnet(i).prefix().size() != crypto::SHA256_LENGTH) {
+      DLOG(ERROR) << "Invalid bad subnet prefix length: "
+                  << model.bad_subnet(i).prefix().size();
+      continue;
+    }
+    // We precompute the mask for the given subnet size to speed up lookups.
+    // Basically we need to create a 16B long string which has the highest
+    // |size| bits sets to one.
+    std::string mask(net::kIPv6AddressSize, '\x00');
+    mask.replace(0, size / 8, size / 8, '\xFF');
+    if (size % 8) {
+      mask[size / 8] = 0xFF << (8 - (size % 8));
+    }
+    (*bad_subnets)[mask].insert(model.bad_subnet(i).prefix());
+  }
 }
 }  // namespace safe_browsing

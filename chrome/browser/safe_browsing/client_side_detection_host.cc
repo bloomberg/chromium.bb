@@ -22,7 +22,9 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/browser/renderer_host/resource_request_details.h"
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
@@ -265,11 +267,16 @@ ClientSideDetectionHost* ClientSideDetectionHost::Create(
 ClientSideDetectionHost::ClientSideDetectionHost(TabContents* tab)
     : TabContentsObserver(tab),
       csd_service_(g_browser_process->safe_browsing_detection_service()),
-      feature_extractor_(new BrowserFeatureExtractor(tab)),
+      feature_extractor_(
+          new BrowserFeatureExtractor(
+              tab,
+              g_browser_process->safe_browsing_detection_service())),
       cb_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(tab);
   // Note: csd_service_ and sb_service_ might be NULL.
   sb_service_ = g_browser_process->safe_browsing_service();
+  registrar_.Add(this, NotificationType::RESOURCE_RESPONSE_STARTED,
+                 Source<RenderViewHostDelegate>(tab));
 }
 
 ClientSideDetectionHost::~ClientSideDetectionHost() {}
@@ -365,7 +372,7 @@ void ClientSideDetectionHost::OnDetectedPhishingSite(
     // Start browser-side feature extraction.  Once we're done it will send
     // the client verdict request.
     feature_extractor_->ExtractFeatures(
-        *browse_info_,
+        browse_info_.get(),
         verdict.release(),
         NewCallback(this, &ClientSideDetectionHost::FeatureExtractionDone));
   }
@@ -414,6 +421,18 @@ void ClientSideDetectionHost::FeatureExtractionDone(
       request,  // The service takes ownership of the request object.
       cb_factory_.NewCallback(
           &ClientSideDetectionHost::MaybeShowPhishingWarning));
+}
+
+void ClientSideDetectionHost::Observe(NotificationType type,
+                                      const NotificationSource& source,
+                                      const NotificationDetails& details) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_EQ(type.value, NotificationType::RESOURCE_RESPONSE_STARTED);
+  const ResourceRequestDetails* req = Details<ResourceRequestDetails>(
+      details).ptr();
+  if (req && browse_info_.get()) {
+    browse_info_->ips.insert(req->socket_address().host());
+  }
 }
 
 void ClientSideDetectionHost::set_client_side_detection_service(

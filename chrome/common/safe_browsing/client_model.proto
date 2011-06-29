@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -73,4 +73,15 @@ message ClientSideModel {
   // version number and it should always be larger than the previous model
   // version.
   optional int32 version = 6;
+
+  // List of known bad IP subnets.
+  message IPSubnet {
+    // The subnet prefix is a valid 16-byte IPv6 address (in network order) that
+    // is hashed using sha256.
+    required bytes prefix = 1;
+
+    // Network prefix size in bits.  Default is an exact-host match.
+    optional int32 size = 2 [default = 128];
+  };
+  repeated IPSubnet bad_subnet = 7;
 }

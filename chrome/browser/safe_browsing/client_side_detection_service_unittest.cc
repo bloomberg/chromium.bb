@@ -20,6 +20,7 @@
 #include "content/browser/browser_thread.h"
 #include "content/common/test_url_fetcher_factory.h"
 #include "content/common/url_fetcher.h"
+#include "crypto/sha2.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -244,8 +245,10 @@ TEST_F(ClientSideDetectionServiceTest, FetchModelTest) {
   msg_loop_.Run();  // EndFetchModel will quit the message loop.
   Mock::VerifyAndClearExpectations(&service);
 
-  // Model version number is decreasing.
-  service.model_version_ = 11;
+  // Model version number is decreasing.  Set the model version number of the
+  // model that is currently loaded in the service object to 11.
+  service.model_.reset(new ClientSideModel(model));
+  service.model_->set_version(11);
   SetModelFetchResponse(model.SerializeAsString(), true /* success */);
   EXPECT_CALL(service, EndFetchModel(
       ClientSideDetectionService::MODEL_INVALID_VERSION_NUMBER))
@@ -255,7 +258,7 @@ TEST_F(ClientSideDetectionServiceTest, FetchModelTest) {
   Mock::VerifyAndClearExpectations(&service);
 
   // Model version hasn't changed since the last reload.
-  service.model_version_ = 10;
+  service.model_->set_version(10);
   SetModelFetchResponse(model.SerializeAsString(), true /* success */);
   EXPECT_CALL(service, EndFetchModel(
       ClientSideDetectionService::MODEL_NOT_CHANGED))
@@ -377,4 +380,140 @@ TEST_F(ClientSideDetectionServiceTest, IsPrivateIPAddress) {
   EXPECT_TRUE(csd_service_->IsPrivateIPAddress("blah"));
 }
 
+TEST_F(ClientSideDetectionServiceTest, SetBadSubnets) {
+  ClientSideModel model;
+  ClientSideDetectionService::BadSubnetMap bad_subnets;
+  ClientSideDetectionService::SetBadSubnets(model, &bad_subnets);
+  EXPECT_EQ(0U, bad_subnets.size());
+
+  // Bad subnets are skipped.
+  ClientSideModel::IPSubnet* subnet = model.add_bad_subnet();
+  subnet->set_prefix(std::string(crypto::SHA256_LENGTH, '.'));
+  subnet->set_size(130);  // Invalid size.
+
+  subnet = model.add_bad_subnet();
+  subnet->set_prefix(std::string(crypto::SHA256_LENGTH, '.'));
+  subnet->set_size(-1);  // Invalid size.
+
+  subnet = model.add_bad_subnet();
+  subnet->set_prefix(std::string(16, '.'));  // Invalid len.
+  subnet->set_size(64);
+
+  ClientSideDetectionService::SetBadSubnets(model, &bad_subnets);
+  EXPECT_EQ(0U, bad_subnets.size());
+
+  subnet = model.add_bad_subnet();
+  subnet->set_prefix(std::string(crypto::SHA256_LENGTH, '.'));
+  subnet->set_size(64);
+
+  subnet = model.add_bad_subnet();
+  subnet->set_prefix(std::string(crypto::SHA256_LENGTH, ','));
+  subnet->set_size(64);
+
+  subnet = model.add_bad_subnet();
+  subnet->set_prefix(std::string(crypto::SHA256_LENGTH, '.'));
+  subnet->set_size(128);
+
+  subnet = model.add_bad_subnet();
+  subnet->set_prefix(std::string(crypto::SHA256_LENGTH, '.'));
+  subnet->set_size(100);
+
+  ClientSideDetectionService::SetBadSubnets(model, &bad_subnets);
+  EXPECT_EQ(3U, bad_subnets.size());
+  ClientSideDetectionService::BadSubnetMap::const_iterator it;
+  std::string mask = std::string(8, '\xFF') + std::string(8, '\x00');
+  EXPECT_TRUE(bad_subnets.count(mask));
+  EXPECT_TRUE(bad_subnets[mask].count(std::string(crypto::SHA256_LENGTH, '.')));
+  EXPECT_TRUE(bad_subnets[mask].count(std::string(crypto::SHA256_LENGTH, ',')));
+
+  mask = std::string(16, '\xFF');
+  EXPECT_TRUE(bad_subnets.count(mask));
+  EXPECT_TRUE(bad_subnets[mask].count(std::string(crypto::SHA256_LENGTH, '.')));
+
+  mask = std::string(12, '\xFF') + "\xF0" + std::string(3, '\x00');
+  EXPECT_TRUE(bad_subnets.count(mask));
+  EXPECT_TRUE(bad_subnets[mask].count(std::string(crypto::SHA256_LENGTH, '.')));
+}
+
+TEST_F(ClientSideDetectionServiceTest, IsBadIpAddress) {
+  ClientSideModel model;
+  // IPv6 exact match for: 2620:0:1000:3103:21a:a0ff:fe10:786e.
+  ClientSideModel::IPSubnet* subnet = model.add_bad_subnet();
+  subnet->set_prefix(crypto::SHA256HashString(std::string(
+      "\x26\x20\x00\x00\x10\x00\x31\x03\x02\x1a\xa0\xff\xfe\x10\x78\x6e", 16)));
+  subnet->set_size(128);
+
+  // IPv6 prefix match for: fe80::21a:a0ff:fe10:786e/64.
+  subnet = model.add_bad_subnet();
+  subnet->set_prefix(crypto::SHA256HashString(std::string(
+      "\xfe\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00", 16)));
+  subnet->set_size(64);
+
+  // IPv4 exact match for ::ffff:192.0.2.128.
+  subnet = model.add_bad_subnet();
+  subnet->set_prefix(crypto::SHA256HashString(std::string(
+      "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\xff\xc0\x00\x02\x80", 16)));
+  subnet->set_size(128);
+
+  // IPv4 prefix match (/8) for ::ffff:192.1.1.0.
+  subnet = model.add_bad_subnet();
+  subnet->set_prefix(crypto::SHA256HashString(std::string(
+      "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\xff\xc0\x01\x01\x00", 16)));
+  subnet->set_size(120);
+
+  // IPv4 prefix match (/9) for ::ffff:192.1.122.0.
+  subnet = model.add_bad_subnet();
+  subnet->set_prefix(crypto::SHA256HashString(std::string(
+      "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\xff\xc0\x01\x7a\x00", 16)));
+  subnet->set_size(119);
+
+  // IPv4 prefix match (/15) for ::ffff:192.1.128.0.
+  subnet = model.add_bad_subnet();
+  subnet->set_prefix(crypto::SHA256HashString(std::string(
+      "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\xff\xc0\x01\x80\x00", 16)));
+  subnet->set_size(113);
+
+  ScopedTempDir tmp_dir;
+  ASSERT_TRUE(tmp_dir.CreateUniqueTempDir());
+  csd_service_.reset(ClientSideDetectionService::Create(tmp_dir.path(), NULL));
+  ClientSideDetectionService::SetBadSubnets(
+      model, &(csd_service_->bad_subnets_));
+  EXPECT_FALSE(csd_service_->IsBadIpAddress("blabla"));
+  EXPECT_FALSE(csd_service_->IsBadIpAddress(""));
+
+  EXPECT_TRUE(csd_service_->IsBadIpAddress(
+      "2620:0:1000:3103:21a:a0ff:fe10:786e"));
+  EXPECT_FALSE(csd_service_->IsBadIpAddress(
+      "2620:0:1000:3103:21a:a0ff:fe10:786f"));
+
+  EXPECT_TRUE(csd_service_->IsBadIpAddress("fe80::21a:a0ff:fe10:786e"));
+  EXPECT_TRUE(csd_service_->IsBadIpAddress("fe80::31a:a0ff:fe10:786e"));
+  EXPECT_TRUE(csd_service_->IsBadIpAddress("fe80::21a:a0ff:fe10:786f"));
+  EXPECT_FALSE(csd_service_->IsBadIpAddress("fe81::21a:a0ff:fe10:786e"));
+
+  EXPECT_TRUE(csd_service_->IsBadIpAddress("192.0.2.128"));
+  EXPECT_TRUE(csd_service_->IsBadIpAddress("::ffff:192.0.2.128"));
+  EXPECT_FALSE(csd_service_->IsBadIpAddress("192.0.2.129"));
+
+  EXPECT_TRUE(csd_service_->IsBadIpAddress("192.1.1.0"));
+  EXPECT_TRUE(csd_service_->IsBadIpAddress("192.1.1.255"));
+  EXPECT_TRUE(csd_service_->IsBadIpAddress("192.1.1.10"));
+  EXPECT_TRUE(csd_service_->IsBadIpAddress("::ffff:192.1.1.2"));
+
+  EXPECT_FALSE(csd_service_->IsBadIpAddress("192.1.121.255"));
+  EXPECT_TRUE(csd_service_->IsBadIpAddress("192.1.122.0"));
+  EXPECT_TRUE(csd_service_->IsBadIpAddress("::ffff:192.1.122.1"));
+  EXPECT_TRUE(csd_service_->IsBadIpAddress("192.1.122.255"));
+  EXPECT_TRUE(csd_service_->IsBadIpAddress("192.1.123.0"));
+  EXPECT_TRUE(csd_service_->IsBadIpAddress("192.1.123.255"));
+  EXPECT_FALSE(csd_service_->IsBadIpAddress("192.1.124.0"));
+
+  EXPECT_FALSE(csd_service_->IsBadIpAddress("192.1.127.255"));
+  EXPECT_TRUE(csd_service_->IsBadIpAddress("192.1.128.0"));
+  EXPECT_TRUE(csd_service_->IsBadIpAddress("::ffff:192.1.128.1"));
+  EXPECT_TRUE(csd_service_->IsBadIpAddress("192.1.128.255"));
+  EXPECT_TRUE(csd_service_->IsBadIpAddress("192.1.255.0"));
+  EXPECT_TRUE(csd_service_->IsBadIpAddress("192.1.255.255"));
+  EXPECT_FALSE(csd_service_->IsBadIpAddress("192.2.0.0"));
+}
 }  // namespace safe_browsing
