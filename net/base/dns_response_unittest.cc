@@ -71,10 +71,9 @@ namespace net {
 
 // TODO(agayev): add more thorough tests.
 TEST(DnsResponseTest, ResponseWithCnameA) {
-  const std::string kHostnameDns("\012codereview\010chromium\003org", 25);
-  RandIntCallback rand_int_cb = base::Bind(&base::RandInt);
+  const std::string kQname("\012codereview\010chromium\003org", 25);
+  DnsQuery q1(kQname, kDNS_A, base::Bind(&base::RandInt));
 
-  DnsQuery q1(kHostnameDns, kDNS_A, rand_int_cb);
   uint8 id_hi = q1.id() >> 8, id_lo = q1.id() & 0xff;
 
   uint8 ip[] = {              // codereview.chromium.org resolves to

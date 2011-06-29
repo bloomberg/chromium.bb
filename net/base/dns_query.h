@@ -18,18 +18,18 @@ namespace net {
 // Represents on-the-wire DNS query message as an object.
 class NET_TEST DnsQuery {
  public:
-  // Constructs a query message from |dns_name| which *MUST* be in a valid
-  // DNS name format, and |qtype| which must be either kDNS_A or kDNS_AAA.
+  // Constructs a query message from |qname| which *MUST* be in a valid
+  // DNS name format, and |qtype| which must be either kDNS_A or kDNS_AAAA.
 
   // Every generated object has a random ID, hence two objects generated
   // with the same set of constructor arguments are generally not equal;
   // there is a 1/2^16 chance of them being equal due to size of |id_|.
-  DnsQuery(const std::string& dns_name,
+  DnsQuery(const std::string& qname,
            uint16 qtype,
-           const RandIntCallback& rand_int);
+           const RandIntCallback& rand_int_cb);
   ~DnsQuery();
 
-  // Clones |this| verbatim with ID field of the header regenerated.
+  // Clones |this| verbatim, with ID field of the header regenerated.
   DnsQuery* CloneWithNewId() const;
 
   // DnsQuery field accessors.
@@ -48,26 +48,22 @@ class NET_TEST DnsQuery {
   IOBufferWithSize* io_buffer() const { return io_buffer_; }
 
  private:
-  // Copy constructor to be used only by CloneWithNewId; it's not public
-  // since there is a semantic difference -- this does not construct an
-  // exact copy!
-  DnsQuery(const DnsQuery& rhs);
-
-  // Not implemented; just to prevent the assignment.
-  void operator=(const DnsQuery&);
+  const std::string qname() const;
 
   // Randomizes ID field of the query message.
   void RandomizeId();
 
   // Size of the DNS name (*NOT* hostname) we are trying to resolve; used
   // to calculate offsets.
-  size_t dns_name_size_;
+  size_t qname_size_;
 
   // Contains query bytes to be consumed by higher level Write() call.
   scoped_refptr<IOBufferWithSize> io_buffer_;
 
   // PRNG function for generating IDs.
-  RandIntCallback rand_int_;
+  RandIntCallback rand_int_cb_;
+
+  DISALLOW_COPY_AND_ASSIGN(DnsQuery);
 };
 
 }  // namespace net

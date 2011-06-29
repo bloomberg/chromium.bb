@@ -36,13 +36,13 @@ static const char kHeader[] = {0x00, 0x00, 0x01, 0x00, 0x00, 0x01,
                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 static const size_t kHeaderSize = arraysize(kHeader);
 
-DnsQuery::DnsQuery(const std::string& dns_name,
+DnsQuery::DnsQuery(const std::string& qname,
                    uint16 qtype,
-                   const RandIntCallback& rand_int)
-    : dns_name_size_(dns_name.size()),
-      rand_int_(rand_int) {
-  DCHECK(DnsResponseBuffer(reinterpret_cast<const uint8*>(dns_name.c_str()),
-                           dns_name.size()).DNSName(NULL));
+                   const RandIntCallback& rand_int_cb)
+    : qname_size_(qname.size()),
+      rand_int_cb_(rand_int_cb) {
+  DCHECK(DnsResponseBuffer(reinterpret_cast<const uint8*>(qname.c_str()),
+                           qname.size()).DNSName(NULL));
   DCHECK(qtype == kDNS_A || qtype == kDNS_AAAA);
 
   io_buffer_ = new IOBufferWithSize(kHeaderSize + question_size());
@@ -51,19 +51,11 @@ DnsQuery::DnsQuery(const std::string& dns_name,
   char* buffer_head = io_buffer_->data();
   memcpy(&buffer_head[byte_offset], kHeader, kHeaderSize);
   byte_offset += kHeaderSize;
-  memcpy(&buffer_head[byte_offset], &dns_name[0], dns_name_size_);
-  byte_offset += dns_name_size_;
+  memcpy(&buffer_head[byte_offset], &qname[0], qname_size_);
+  byte_offset += qname_size_;
   PackUint16BE(&buffer_head[byte_offset], qtype);
   byte_offset += sizeof(qtype);
   PackUint16BE(&buffer_head[byte_offset], kClassIN);
-  RandomizeId();
-}
-
-DnsQuery::DnsQuery(const DnsQuery& rhs)
-    : dns_name_size_(rhs.dns_name_size_),
-      rand_int_(rhs.rand_int_) {
-  io_buffer_ = new IOBufferWithSize(rhs.io_buffer()->size());
-  memcpy(io_buffer_->data(), rhs.io_buffer()->data(), rhs.io_buffer()->size());
   RandomizeId();
 }
 
@@ -75,15 +67,15 @@ uint16 DnsQuery::id() const {
 }
 
 uint16 DnsQuery::qtype() const {
-  return UnpackUint16BE(&io_buffer_->data()[kHeaderSize + dns_name_size_]);
+  return UnpackUint16BE(&io_buffer_->data()[kHeaderSize + qname_size_]);
 }
 
 DnsQuery* DnsQuery::CloneWithNewId() const {
-  return new DnsQuery(*this);
+  return new DnsQuery(qname(), qtype(), rand_int_cb_);
 }
 
 size_t DnsQuery::question_size() const {
-  return dns_name_size_       // QNAME
+  return qname_size_          // QNAME
     + sizeof(uint16)          // QTYPE
     + sizeof(uint16);         // QCLASS
 }
@@ -92,8 +84,12 @@ const char* DnsQuery::question_data() const {
   return &io_buffer_->data()[kHeaderSize];
 }
 
+const std::string DnsQuery::qname() const {
+  return std::string(question_data(), qname_size_);
+}
+
 void DnsQuery::RandomizeId() {
-  PackUint16BE(&io_buffer_->data()[0], rand_int_.Run(
+  PackUint16BE(&io_buffer_->data()[0], rand_int_cb_.Run(
       std::numeric_limits<uint16>::min(),
       std::numeric_limits<uint16>::max()));
 }
