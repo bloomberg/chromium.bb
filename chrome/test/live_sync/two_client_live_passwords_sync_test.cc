@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/test/live_sync/live_passwords_sync_test.h"
@@ -211,6 +212,14 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
   SetPassphrase(1, kValidPassphrase, false);
   ASSERT_TRUE(GetClient(1)->AwaitPassphraseAccepted());
   ASSERT_TRUE(GetClient(1)->AwaitSyncCycleCompletion("Initial sync."));
+
+  // Following ensures types are enabled and active (see bug 87572).
+  browser_sync::ModelSafeRoutingInfo routes;
+  GetClient(0)->service()->GetModelSafeRoutingInfo(&routes);
+  ASSERT_EQ(browser_sync::GROUP_PASSWORD, routes[syncable::PASSWORDS]);
+  routes.clear();
+  GetClient(1)->service()->GetModelSafeRoutingInfo(&routes);
+  ASSERT_EQ(browser_sync::GROUP_PASSWORD, routes[syncable::PASSWORDS]);
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,

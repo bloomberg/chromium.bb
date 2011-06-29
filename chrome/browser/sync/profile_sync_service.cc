@@ -122,6 +122,13 @@ void ProfileSyncService::Initialize() {
   InitSettings();
   RegisterPreferences();
 
+  // We clear this here (vs Shutdown) because we want to remember that an error
+  // happened on shutdown so we can display details (message, location) about it
+  // in about:sync.
+  unrecoverable_error_detected_ = false;
+  unrecoverable_error_message_.clear();
+  unrecoverable_error_location_.reset();
+
   // Watch the preference that indicates sync is managed so we can take
   // appropriate action.
   pref_sync_managed_.Init(prefs::kSyncManaged, profile_->GetPrefs(), this);
@@ -420,9 +427,15 @@ void ProfileSyncService::Shutdown(bool sync_disabled) {
     doomed_backend.reset();
   }
 
+  scoped_runnable_method_factory_.RevokeAll();
+
   // Clear various flags.
+  expect_sync_configuration_aborted_ = false;
   is_auth_in_progress_ = false;
   backend_initialized_ = false;
+  cached_passphrase_ = CachedPassphrase();
+  gaia_password_.clear();
+  pending_types_for_encryption_.clear();
   passphrase_required_reason_ = sync_api::REASON_PASSPHRASE_NOT_REQUIRED;
   last_attempted_user_email_.clear();
   last_auth_error_ = GoogleServiceAuthError::None();
