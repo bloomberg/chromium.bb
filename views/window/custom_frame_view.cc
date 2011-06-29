@@ -5,8 +5,8 @@
 #include "views/window/custom_frame_view.h"
 
 #include "base/utf_string_conversions.h"
-#include "grit/app_resources.h"
 #include "grit/app_strings.h"
+#include "grit/ui_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"

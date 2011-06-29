@@ -12,11 +12,11 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "googleurl/src/gurl.h"
-#include "grit/app_resources.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "grit/ui_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 

@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 {
@@ -111,7 +111,6 @@
                 # their various targets (net.gyp:net_resources, etc.),
                 # but that causes errors in other targets when
                 # resulting .res files get referenced multiple times.
-                '<(SHARED_INTERMEDIATE_DIR)/app/app_resources/app_resources.rc',
                 '<(SHARED_INTERMEDIATE_DIR)/chrome/autofill_resources.rc',
                 '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
                 '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
@@ -120,6 +119,7 @@
                 '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources_standard.rc',
                 '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
                 '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
                 '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.rc',
                 '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.rc',
 
@@ -318,8 +318,8 @@
                       '<(grit_out_dir)/renderer_resources.pak',
                       '<(grit_out_dir)/theme_resources.pak',
                       '<(grit_out_dir)/theme_resources_standard.pak',
-                      '<(SHARED_INTERMEDIATE_DIR)/app/app_resources/app_resources.pak',
                       '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.pak',
+                      '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.pak',
                       '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.pak',
                       '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.pak',
                     ],
@@ -608,9 +608,9 @@
             # their various targets (net.gyp:net_resources, etc.),
             # but that causes errors in other targets when
             # resulting .res files get referenced multiple times.
-            '<(SHARED_INTERMEDIATE_DIR)/app/app_resources/app_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/autofill_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
 
             # TODO(sgk):  left-over from pre-gyp build, figure out
             # if we still need them and/or how to update to gyp.

@@ -114,7 +114,6 @@
         'theme_resources',
         'theme_resources_standard',
         '../app/app.gyp:app_base',
-        '../app/app.gyp:app_resources',
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
         '../base/base.gyp:base_static',
@@ -131,6 +130,7 @@
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         '../third_party/sqlite/sqlite.gyp:sqlite',
         '../third_party/zlib/zlib.gyp:zlib',
+        '../ui/ui.gyp:ui_resources',
         '../webkit/support/webkit_support.gyp:glue',
       ],
       'sources': [
@@ -527,11 +527,11 @@
             'chrome_strings',
             'common_constants_win64',
             'app/policy/cloud_policy_codegen.gyp:policy_win64',
-            '../app/app.gyp:app_resources',
             '../base/base.gyp:base_nacl_win64',
             '../ipc/ipc.gyp:ipc_win64',
             '../third_party/libxml/libxml.gyp:libxml',
             '../ui/ui.gyp:ui_base_nacl_win64',
+            '../ui/ui.gyp:ui_resources',
           ],
           'include_dirs': [
             '../third_party/icu/public/i18n',

@@ -100,7 +100,7 @@ tree:focus .tree-row[selected] {
 
 .tree-label {
   -webkit-padding-start: 20px;
-  background-image: url("../../../../../app/resources/folder_closed.png");
+  background-image: url("../../../../../ui/resources/folder_closed.png");
   background-position: 0 50%;
   background-repeat: no-repeat;
   white-space: pre;
@@ -125,15 +125,15 @@ html[dir=rtl] .tree-label {
 }
 
 .tree-row[selected] > .tree-label {
-  background-image: url("../../../../../app/resources/folder_open.png");
+  background-image: url("../../../../../ui/resources/folder_open.png");
 }
 
 html[dir='rtl'] .tree-label {
-  background-image: url("../../../../../app/resources/folder_closed_rtl.png");
+  background-image: url("../../../../../ui/resources/folder_closed_rtl.png");
 }
 
 html[dir='rtl'] .tree-row[selected] > .tree-label {
-  background-image: url("../../../../../app/resources/folder_open_rtl.png");
+  background-image: url("../../../../../ui/resources/folder_open_rtl.png");
 }
 
 .tree-item[editing] input {

@@ -6,9 +6,9 @@
 
 #include "base/logging.h"
 #include "chrome/browser/themes/theme_service.h"
-#include "grit/app_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
+#include "grit/ui_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/favicon_size.h"

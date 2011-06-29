@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "base/win/win_util.h"
-#include "grit/app_resources.h"
+#include "grit/ui_resources.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
 #include "ui/base/keycodes/keyboard_codes.h"

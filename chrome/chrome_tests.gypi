@@ -558,12 +558,12 @@
             '../third_party/wtl/include',
           ],
           'dependencies': [
-            '../app/app.gyp:app_resources',
             'chrome.gyp:chrome_dll_version',
             'chrome.gyp:installer_util_strings',
             '../sandbox/sandbox.gyp:sandbox',
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
             '../third_party/isimpledom/isimpledom.gyp:isimpledom',
+            '../ui/ui.gyp:ui_resources',
           ],
           'sources': [
             '../webkit/glue/resources/aliasb.cur',
@@ -583,7 +583,6 @@
             # their various targets (net.gyp:net_resources, etc.),
             # but that causes errors in other targets when
             # resulting .res files get referenced multiple times.
-            '<(SHARED_INTERMEDIATE_DIR)/app/app_resources/app_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/autofill_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
@@ -592,6 +591,7 @@
             '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources_standard.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome_dll_version/chrome_dll_version.rc',
             '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.rc',
 
@@ -1209,7 +1209,6 @@
         'test_support_syncapi',
         'test_support_unit',
         # 3) anything tests directly depend on
-        '../app/app.gyp:app_resources',
         '../skia/skia.gyp:skia',
         '../third_party/bzip2/bzip2.gyp:bzip2',
         '../third_party/cld/cld.gyp:cld',
@@ -1218,6 +1217,7 @@
         '../third_party/libjingle/libjingle.gyp:libjingle',
         '../third_party/libxml/libxml.gyp:libxml',
         '../ui/gfx/gl/gl.gyp:gl',
+        '../ui/ui.gyp:ui_resources',
         '../v8/tools/gyp/v8.gyp:v8',
         'chrome_resources',
         'chrome_strings',
@@ -2197,7 +2197,6 @@
             # their various targets (net.gyp:net_resources, etc.),
             # but that causes errors in other targets when
             # resulting .res files get referenced multiple times.
-            '<(SHARED_INTERMEDIATE_DIR)/app/app_resources/app_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/autofill_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
@@ -2206,6 +2205,7 @@
             '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources_standard.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome_dll_version/chrome_dll_version.rc',
             '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.rc',
           ],
@@ -2596,15 +2596,15 @@
         }],
         ['OS=="win"', {
           'sources': [
-            '<(SHARED_INTERMEDIATE_DIR)/app/app_resources/app_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/autofill_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/chrome_dll_version/chrome_dll_version.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/renderer_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources_standard.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome_dll_version/chrome_dll_version.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.rc',
             # TODO(alekseys): port sidebar to linux/mac.
@@ -2730,13 +2730,13 @@
       'dependencies': [
         'chrome',
         'test_support_common',
-        '../app/app.gyp:app_resources',
         '../base/base.gyp:base',
         '../net/net.gyp:net_test_support',
         '../skia/skia.gyp:skia',
         '../testing/gtest.gyp:gtest',
         # This is the safebrowsing test server.
         '../third_party/safe_browsing/safe_browsing.gyp:safe_browsing',
+        '../ui/ui.gyp:ui_resources',
       ],
       'include_dirs': [
         '..',
@@ -2755,15 +2755,15 @@
             '../sandbox/sandbox.gyp:sandbox',
           ],
           'sources': [
-            '<(SHARED_INTERMEDIATE_DIR)/app/app_resources/app_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/autofill_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/chrome_dll_version/chrome_dll_version.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/renderer_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources_standard.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome_dll_version/chrome_dll_version.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.rc',
           ],
@@ -3434,13 +3434,13 @@
         }],
         ['OS=="win"', {
           'sources': [
-            '<(SHARED_INTERMEDIATE_DIR)/app/app_resources/app_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/autofill_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/chrome_dll_version/chrome_dll_version.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources_standard.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome_dll_version/chrome_dll_version.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
           ],
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',
@@ -3525,7 +3525,6 @@
             'app/chrome_dll.rc',
             'app/chrome_dll_resource.h',
             'app/chrome_dll_version.rc.version',
-            '<(SHARED_INTERMEDIATE_DIR)/app/app_resources/app_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/autofill_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
@@ -3534,6 +3533,7 @@
             '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources_standard.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome_dll_version/chrome_dll_version.rc',
             '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.rc',
           ],

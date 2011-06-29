@@ -144,8 +144,8 @@ if __name__ == '__main__':
       os.path.join(chrome_dir, 'browser', 'browser_resources.grd'),
       os.path.join(chrome_dir, 'common', 'common_resources.grd'),
       os.path.join(chrome_dir, 'renderer', 'renderer_resources.grd'),
-      os.path.join(src_dir, 'app', 'resources', 'app_resources.grd'),
       os.path.join(src_dir, 'ui', 'gfx', 'gfx_resources.grd'),
+      os.path.join(src_dir, 'ui', 'resources', 'ui_resources.grd'),
       os.path.join(ui_base_dir, 'app_locale_settings.grd'),
       os.path.join(ui_base_dir, 'app_strings.grd'),
     ]

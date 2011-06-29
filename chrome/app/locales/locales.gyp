@@ -4,7 +4,7 @@
     'chrome_grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/chrome',
     'webkit_grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/webkit',
 
-    'app_grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/app',
+    'app_grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/ui',
     'app_strings_out_dir': '<(app_grit_out_dir)/app_strings',
     'app_locale_out_dir': '<(app_grit_out_dir)/app_locale_settings',
 

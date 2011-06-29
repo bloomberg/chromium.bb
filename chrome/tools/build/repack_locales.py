@@ -62,12 +62,12 @@ def calc_inputs(locale):
   #e.g. '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_da.pak'
   inputs.append('%s/webkit/webkit_strings_%s.pak' % (SHARE_INT_DIR, locale))
 
-  #e.g. '<(SHARED_INTERMEDIATE_DIR)/app/app_strings_da.pak',
-  inputs.append('%s/app/app_strings/app_strings_%s.pak' % (
+  #e.g. '<(SHARED_INTERMEDIATE_DIR)/ui/app_strings_da.pak',
+  inputs.append('%s/ui/app_strings/app_strings_%s.pak' % (
       SHARE_INT_DIR, locale))
 
-  #e.g. '<(SHARED_INTERMEDIATE_DIR)/app/app_locale_settings_da.pak',
-  inputs.append('%s/app/app_locale_settings/app_locale_settings_%s.pak' % (
+  #e.g. '<(SHARED_INTERMEDIATE_DIR)/ui/app_locale_settings_da.pak',
+  inputs.append('%s/ui/app_locale_settings/app_locale_settings_%s.pak' % (
       SHARE_INT_DIR, locale))
 
   #e.g. '<(grit_out_dir)/google_chrome_strings_da.pak'

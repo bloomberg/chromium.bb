@@ -61,7 +61,6 @@
       'target_name': 'views',
       'type': 'static_library',
       'dependencies': [
-        '../app/app.gyp:app_resources',
         '../base/base.gyp:base',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../build/temp_gyp/googleurl.gyp:googleurl',
@@ -71,6 +70,7 @@
         '../ui/base/strings/ui_strings.gyp:ui_strings',
         '../ui/gfx/compositor/compositor.gyp:compositor',
         '../ui/ui.gyp:ui_base',
+        '../ui/ui.gyp:ui_resources',
       ],
       'sources': [
         # All .cc, .h under views, except unittests
@@ -471,7 +471,6 @@
       'target_name': 'views_unittests',
       'type': 'executable',
       'dependencies': [
-        '../app/app.gyp:app_resources',
         '../base/base.gyp:base',
         '../base/base.gyp:test_support_base',
         '../skia/skia.gyp:skia',
@@ -480,6 +479,7 @@
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         '../ui/base/strings/ui_strings.gyp:ui_strings',
+        '../ui/ui.gyp:ui_resources',
         'views',
       ],
       'include_dirs': [
@@ -516,7 +516,7 @@
         'widget/native_widget_unittest.cc',
         'widget/native_widget_win_unittest.cc',
 
-        '<(SHARED_INTERMEDIATE_DIR)/app/app_resources/app_resources.rc',
+        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
       ],
       'conditions': [
         ['toolkit_uses_gtk == 1', {
@@ -564,13 +564,13 @@
       'target_name': 'views_examples',
       'type': 'executable',
       'dependencies': [
-        '../app/app.gyp:app_resources',
         '../base/base.gyp:base',
         '../skia/skia.gyp:skia',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         '../ui/ui.gyp:ui_gfx',
         '../ui/ui.gyp:gfx_resources',
+        '../ui/ui.gyp:ui_resources',
         'views',
       ],
       'include_dirs': [
@@ -615,8 +615,8 @@
         'examples/widget_example.h',
         'test/test_views_delegate.cc',
         'test/test_views_delegate.h',
-        '<(SHARED_INTERMEDIATE_DIR)/app/app_resources/app_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.rc',
+        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
       ],
       'conditions': [
         ['toolkit_uses_gtk == 1', {
@@ -654,14 +654,14 @@
       'target_name': 'views_desktop_lib',
       'type': 'static_library',
       'dependencies': [
-        '../app/app.gyp:app_resources',
         '../base/base.gyp:base',
         '../skia/skia.gyp:skia',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
-        'views',
-        '../ui/ui.gyp:ui_gfx',
         '../ui/ui.gyp:gfx_resources',
+        '../ui/ui.gyp:ui_gfx',
+        '../ui/ui.gyp:ui_resources',
+        'views',
       ],
       'include_dirs': [
         '..',
@@ -700,21 +700,21 @@
             '<(DEPTH)/third_party/wtl/include',
           ],
         }],
-      ],      
+      ],
     },
     {
       'target_name': 'views_desktop',
       'type': 'executable',
       'dependencies': [
-        '../app/app.gyp:app_resources',
         '../base/base.gyp:base',
         '../skia/skia.gyp:skia',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
+        '../ui/ui.gyp:gfx_resources',
+        '../ui/ui.gyp:ui_gfx',
+        '../ui/ui.gyp:ui_resources',
         'views',
         'views_desktop_lib',
-        '../ui/ui.gyp:ui_gfx',
-        '../ui/ui.gyp:gfx_resources',
       ],
       'include_dirs': [
         '..',
@@ -723,8 +723,8 @@
         'desktop/desktop_main.cc',
         'desktop/desktop_views_delegate.cc',
         'desktop/desktop_views_delegate.h',
-        '<(SHARED_INTERMEDIATE_DIR)/app/app_resources/app_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.rc',
+        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
       ],
       'conditions': [
         ['toolkit_uses_gtk == 1', {

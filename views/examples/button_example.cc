@@ -4,7 +4,7 @@
 
 #include "views/examples/button_example.h"
 
-#include "grit/app_resources.h"
+#include "grit/ui_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "views/controls/button/checkbox.h"
 #include "views/layout/fill_layout.h"

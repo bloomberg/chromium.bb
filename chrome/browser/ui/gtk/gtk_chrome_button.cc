@@ -6,7 +6,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/ui/gtk/nine_box.h"
-#include "grit/app_resources.h"
+#include "grit/ui_resources.h"
 #include "ui/gfx/gtk_util.h"
 
 namespace {

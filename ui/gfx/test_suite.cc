@@ -44,8 +44,8 @@ void GfxTestSuite::Initialize() {
   pak_dir = pak_dir.AppendASCII("app_unittests_strings");
   PathService::Override(ui::DIR_LOCALES, pak_dir);
   PathService::Override(ui::FILE_RESOURCES_PAK,
-                        pak_dir.AppendASCII("app_resources.pak"));
-#endif  // OS_MACOSX
+                        pak_dir.AppendASCII("ui_resources.pak"));
+#endif  // defined(OS_MACOSX)
 
   // Force unittests to run using en-US so if we test against string
   // output, it'll pass regardless of the system language.

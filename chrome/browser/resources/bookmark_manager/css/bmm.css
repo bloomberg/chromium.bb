@@ -54,7 +54,7 @@ html[dir=rtl] list .label {
 }
 
 list > .folder > .label {
-  background-image: url("../../../../../app/resources/folder_closed.png");
+  background-image: url("../../../../../ui/resources/folder_closed.png");
 }
 
 /* We need to ensure that even empty labels take up space */
@@ -156,7 +156,7 @@ list [editing] .url {
 /* end editing */
 
 html[dir=rtl] list > .folder > .label {
-  background-image: url("../../../../../app/resources/folder_closed_rtl.png");
+  background-image: url("../../../../../ui/resources/folder_closed_rtl.png");
 }
 
 html[os=mac] list > .folder > .label {

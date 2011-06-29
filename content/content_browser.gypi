@@ -9,7 +9,6 @@
       'type': 'static_library',
       'dependencies': [
         'content_common',
-        '../app/app.gyp:app_resources',
         '../net/net.gyp:net',
         '../ppapi/ppapi_internal.gyp:ppapi_proxy',
         '../skia/skia.gyp:skia',
@@ -20,6 +19,7 @@
         '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
         '../third_party/zlib/zlib.gyp:zlib',
         '../ui/ui.gyp:ui_base',
+        '../ui/ui.gyp:ui_resources',
         '../webkit/support/webkit_support.gyp:webkit_resources',
         '../webkit/support/webkit_support.gyp:webkit_strings',
       ],

@@ -34,9 +34,9 @@
 #include "content/common/notification_service.h"
 #include "content/common/notification_source.h"
 #include "content/common/notification_type.h"
-#include "grit/app_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
+#include "grit/ui_resources.h"
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/gtk_util.h"
 

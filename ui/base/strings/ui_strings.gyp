@@ -1,7 +1,7 @@
 {
   'variables': {
     'chromium_code': 1,
-    'grit_base_out_dir': '<(SHARED_INTERMEDIATE_DIR)/app',
+    'grit_base_out_dir': '<(SHARED_INTERMEDIATE_DIR)/ui',
   },
   'targets': [
     {
@@ -70,7 +70,7 @@
           {
             'destination': '<(PRODUCT_DIR)/app_unittests_strings',
             'files': [
-              '<(grit_base_out_dir)/app_resources/app_resources.pak',
+              '<(grit_base_out_dir)/ui_resources/ui_resources.pak',
             ],
           },
         ],

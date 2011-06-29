@@ -19,11 +19,11 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
-#include "grit/app_resources.h"
 #include "grit/component_extension_resources.h"
 #include "grit/component_extension_resources_map.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "grit/ui_resources.h"
 #include "net/base/mime_util.h"
 #include "ui/base/resource/resource_bundle.h"
 

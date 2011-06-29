@@ -15,9 +15,9 @@
 #include "content/browser/user_metrics.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_type.h"
-#include "grit/app_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
+#include "grit/ui_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_WIN)

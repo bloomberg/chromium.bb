@@ -5,7 +5,7 @@
 #include "views/controls/menu/menu_item_view.h"
 
 #include "base/utf_string_conversions.h"
-#include "grit/app_resources.h"
+#include "grit/ui_resources.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
