@@ -44,7 +44,12 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, CustomTheme) {
 }
 
 // TCM ID - 3599303.
+// TODO(sync): Fails on Chrome OS. See http://crbug.com/84575.
+#if defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, FAILS_NativeTheme) {
+#else
 IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, NativeTheme) {
+#endif  // OS_CHROMEOS
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   UseCustomTheme(GetProfile(0), 0);
@@ -88,7 +93,12 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, DefaultTheme) {
 }
 
 // TCM ID - 7292065.
+// TODO(sync): Fails on Chrome OS. See http://crbug.com/84575.
+#if defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, FAILS_NativeDefaultRace) {
+#else
 IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, NativeDefaultRace) {
+#endif  // OS_CHROMEOS
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   UseNativeTheme(GetProfile(0));
@@ -108,7 +118,12 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, NativeDefaultRace) {
 }
 
 // TCM ID - 7294077.
+// TODO(sync): Fails on Chrome OS. See http://crbug.com/84575.
+#if defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, FAILS_CustomNativeRace) {
+#else
 IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, CustomNativeRace) {
+#endif  // OS_CHROMEOS
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   UseCustomTheme(GetProfile(0), 0);
