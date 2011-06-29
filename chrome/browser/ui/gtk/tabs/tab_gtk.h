@@ -13,13 +13,10 @@
 #include "ui/base/gtk/gtk_signal.h"
 
 class TabStripMenuController;
+class ThemeService;
 
 namespace gfx {
 class Path;
-}
-
-namespace ui {
-class ThemeProvider;
 }
 
 class TabGtk : public TabRendererGtk,
@@ -89,7 +86,7 @@ class TabGtk : public TabRendererGtk,
     virtual bool HasAvailableDragActions() const = 0;
 
     // Returns the theme provider for icons and colors.
-    virtual ui::ThemeProvider* GetThemeProvider() = 0;
+    virtual ThemeService* GetThemeProvider() = 0;
 
     // Returns a context menu controller for |tab|. Caller takes ownership of
     // the pointed object.

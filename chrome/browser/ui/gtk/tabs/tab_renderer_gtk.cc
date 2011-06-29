@@ -95,10 +95,10 @@ gfx::Rect GetWidgetBoundsRelativeToParent(GtkWidget* parent,
 }  // namespace
 
 TabRendererGtk::LoadingAnimation::Data::Data(
-    ui::ThemeProvider* theme_provider) {
+    ThemeService* theme_service) {
   // The loading animation image is a strip of states. Each state must be
   // square, so the height must divide the width evenly.
-  loading_animation_frames = theme_provider->GetBitmapNamed(IDR_THROBBER);
+  loading_animation_frames = theme_service->GetBitmapNamed(IDR_THROBBER);
   DCHECK(loading_animation_frames);
   DCHECK_EQ(loading_animation_frames->width() %
             loading_animation_frames->height(), 0);
@@ -107,7 +107,7 @@ TabRendererGtk::LoadingAnimation::Data::Data(
       loading_animation_frames->height();
 
   waiting_animation_frames =
-      theme_provider->GetBitmapNamed(IDR_THROBBER_WAITING);
+      theme_service->GetBitmapNamed(IDR_THROBBER_WAITING);
   DCHECK(waiting_animation_frames);
   DCHECK_EQ(waiting_animation_frames->width() %
             waiting_animation_frames->height(), 0);
@@ -150,14 +150,14 @@ SkColor TabRendererGtk::unselected_title_color_ = SkColorSetRGB(64, 64, 64);
 // TabRendererGtk::LoadingAnimation, public:
 //
 TabRendererGtk::LoadingAnimation::LoadingAnimation(
-    ui::ThemeProvider* theme_provider)
-    : data_(new Data(theme_provider)),
-      theme_service_(theme_provider),
+    ThemeService* theme_service)
+    : data_(new Data(theme_service)),
+      theme_service_(theme_service),
       animation_state_(ANIMATION_NONE),
       animation_frame_(0) {
   registrar_.Add(this,
                  NotificationType::BROWSER_THEME_CHANGED,
-                 NotificationService::AllSources());
+                 Source<ThemeService>(theme_service_));
 }
 
 TabRendererGtk::LoadingAnimation::LoadingAnimation(
@@ -249,14 +249,15 @@ class TabRendererGtk::FaviconCrashAnimation : public ui::LinearAnimation,
 ////////////////////////////////////////////////////////////////////////////////
 // TabRendererGtk, public:
 
-TabRendererGtk::TabRendererGtk(ui::ThemeProvider* theme_provider)
+TabRendererGtk::TabRendererGtk(ThemeService* theme_service)
     : showing_icon_(false),
       showing_close_button_(false),
       favicon_hiding_offset_(0),
       should_display_crashed_favicon_(false),
-      loading_animation_(theme_provider),
+      loading_animation_(theme_service),
       background_offset_x_(0),
       background_offset_y_(kInactiveTabBackgroundOffsetY),
+      theme_service_(theme_service),
       close_button_color_(0) {
   InitResources();
 
@@ -273,7 +274,7 @@ TabRendererGtk::TabRendererGtk(ui::ThemeProvider* theme_provider)
   hover_animation_->SetSlideDuration(kHoverDurationMs);
 
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
-                 NotificationService::AllSources());
+                 Source<ThemeService>(theme_service_));
 }
 
 TabRendererGtk::~TabRendererGtk() {
@@ -290,7 +291,6 @@ void TabRendererGtk::UpdateData(TabContents* contents,
   DCHECK(contents);
   TabContentsWrapper* wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(contents);
-  theme_service_ = GtkThemeService::GetFrom(contents->profile());
 
   if (!loading_only) {
     data_.title = contents->GetTitle();

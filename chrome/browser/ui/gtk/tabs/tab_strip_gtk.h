@@ -143,7 +143,7 @@ class TabStripGtk : public TabStripModelObserver,
   virtual void ContinueDrag(GdkDragContext* context);
   virtual bool EndDrag(bool canceled);
   virtual bool HasAvailableDragActions() const;
-  virtual ui::ThemeProvider* GetThemeProvider();
+  virtual ThemeService* GetThemeProvider();
   virtual TabStripMenuController* GetTabStripMenuControllerForTab(TabGtk* tab);
 
   // MessageLoop::Observer implementation:

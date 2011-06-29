@@ -27,12 +27,11 @@ class Size;
 }  // namespace gfx
 
 class CustomDrawButton;
-class GtkThemeService;
 class TabContents;
+class ThemeService;
 
 namespace ui {
 class SlideAnimation;
-class ThemeProvider;
 class ThrobAnimation;
 }
 
@@ -49,7 +48,7 @@ class TabRendererGtk : public ui::AnimationDelegate,
   class LoadingAnimation : public NotificationObserver {
    public:
     struct Data {
-      explicit Data(ui::ThemeProvider* theme_provider);
+      explicit Data(ThemeService* theme_service);
       Data(int loading, int waiting, int waiting_to_loading);
 
       SkBitmap* waiting_animation_frames;
@@ -59,7 +58,7 @@ class TabRendererGtk : public ui::AnimationDelegate,
       int waiting_to_loading_frame_count_ratio;
     };
 
-    explicit LoadingAnimation(ui::ThemeProvider* theme_provider);
+    explicit LoadingAnimation(ThemeService* theme_service);
 
     // Used in unit tests to inject specific data.
     explicit LoadingAnimation(const LoadingAnimation::Data& data);
@@ -93,7 +92,7 @@ class TabRendererGtk : public ui::AnimationDelegate,
     NotificationRegistrar registrar_;
 
     // Gives us our throbber images.
-    ui::ThemeProvider* theme_service_;
+    ThemeService* theme_service_;
 
     // Current state of the animation.
     AnimationState animation_state_;
@@ -104,7 +103,7 @@ class TabRendererGtk : public ui::AnimationDelegate,
     DISALLOW_COPY_AND_ASSIGN(LoadingAnimation);
   };
 
-  explicit TabRendererGtk(ui::ThemeProvider* theme_provider);
+  explicit TabRendererGtk(ThemeService* theme_service);
   virtual ~TabRendererGtk();
 
   // TabContents. If only the loading state was updated, the loading_only flag
@@ -442,7 +441,7 @@ class TabRendererGtk : public ui::AnimationDelegate,
   // alignment in the BrowserTitlebar.
   int background_offset_y_;
 
-  GtkThemeService* theme_service_;
+  ThemeService* theme_service_;
 
   // The close button.
   scoped_ptr<CustomDrawButton> close_button_;

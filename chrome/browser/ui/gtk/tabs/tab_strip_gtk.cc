@@ -1255,7 +1255,7 @@ bool TabStripGtk::HasAvailableDragActions() const {
   return model_->delegate()->GetDragActions() != 0;
 }
 
-ui::ThemeProvider* TabStripGtk::GetThemeProvider() {
+ThemeService* TabStripGtk::GetThemeProvider() {
   return theme_service_;
 }
 
