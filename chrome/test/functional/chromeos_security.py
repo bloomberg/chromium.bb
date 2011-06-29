@@ -32,14 +32,14 @@ class ChromeosSecurity(pyauto.PyUITest):
       self._component_extension_baseline.extend(
           baseline_info['OFFICIAL_COMPONENT_EXTENSIONS'])
 
-  def ExtraChromeFlagsOnChromeOS(self):
+  def ExtraChromeFlags(self):
     """Override default list of extra flags typically used with automation.
 
     See the default flags used with automation in pyauto.py.
     Chrome flags for this test should be as close to reality as possible.
     """
     return [
-       '--homepage=about:blank',
+      '--homepage=about:blank',
     ]
 
   def testCannotViewLocalFiles(self):

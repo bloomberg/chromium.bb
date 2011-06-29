@@ -249,6 +249,14 @@ class UITestBase {
   // Use Chromium binaries from the given directory.
   void SetBrowserDirectory(const FilePath& dir);
 
+  // Appends a command-line switch (no associated value) to be passed to the
+  // browser when launched.
+  void AppendBrowserLaunchSwitch(const char* name);
+
+  // Appends a command-line switch with associated value to be passed to the
+  // browser when launched.
+  void AppendBrowserLaunchSwitch(const char* name, const char* value);
+
  protected:
   // String to display when a test fails because the crash service isn't
   // running.

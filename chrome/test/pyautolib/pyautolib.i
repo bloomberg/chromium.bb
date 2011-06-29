@@ -14,7 +14,7 @@
 // and attach it to your node (class or method). This doc string will be
 // copied over in the generated python classes/methods.
 
-%module(docstring="Python interface to Automtion Proxy.") pyautolib
+%module(docstring="Python interface to Automation Proxy.") pyautolib
 %feature("autodoc", "1");
 
 %include <std_wstring.i>
@@ -184,6 +184,14 @@ class PyUITestBase {
   %feature("docstring", "Initialize the entire setup. Should be called "
            "before launching the browser. For internal use.") Initialize;
   void Initialize(const FilePath& browser_dir);
+
+  %feature("docstring", "Appends a command-line switch (with associated value "
+           "if given) to the list of switches to be passed to the browser "
+           "upon launch. Should be called before launching the browser. "
+           "For internal use only.")
+      AppendBrowserLaunchSwitch;
+  void AppendBrowserLaunchSwitch(const char* name);
+  void AppendBrowserLaunchSwitch(const char* name, const char* value);
 
   void UseNamedChannelID(const std::string& named_channel_id);
 

@@ -150,6 +150,23 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
   def __del__(self):
     pyautolib.PyUITestBase.__del__(self)
 
+  def _SetExtraChromeFlags(self):
+    """Prepares the browser to launch with the specified extra Chrome flags.
+
+    This function is called right before the browser is launched for the first
+    time.
+    """
+    for flag in self.ExtraChromeFlags():
+      if flag.startswith('--'):
+        flag = flag[2:]
+      split_pos = flag.find('=')
+      if split_pos >= 0:
+        flag_name = flag[:split_pos]
+        flag_val = flag[split_pos + 1:]
+        self.AppendBrowserLaunchSwitch(flag_name, flag_val)
+      else:
+        self.AppendBrowserLaunchSwitch(flag)
+
   def setUp(self):
     """Override this method to launch browser differently.
 
@@ -160,16 +177,20 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     instance.
     """
     named_channel_id = _OPTIONS.channel_id
-    if self.IsChromeOS():  # Enable testing interface on ChromeOS
+    if self.IsChromeOS():  # Enable testing interface on ChromeOS.
       if self.get_clear_profile():
         self.CleanupBrowserProfileOnChromeOS()
       self.EnableCrashReportingOnChromeOS()
       if not named_channel_id:
         named_channel_id = self.EnableChromeTestingOnChromeOS()
+    else:
+      self._SetExtraChromeFlags()  # Flags already previously set for ChromeOS.
     if named_channel_id:
       self._named_channel_id = named_channel_id
       self.UseNamedChannelID(named_channel_id)
-    self.SetUp()     # Fire browser
+    # Initialize automation and fire the browser (does not fire the browser
+    # on ChromeOS).
+    self.SetUp()
 
     # TODO(dtu): Remove this after crosbug.com/4558 is fixed.
     if self.IsChromeOS():
@@ -177,6 +198,23 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
 
   def tearDown(self):
     self.TearDown()  # Destroy browser
+
+  def ExtraChromeFlags(self):
+    """Return a list of extra chrome flags to use with Chrome for testing.
+
+    These are flags needed to facilitate testing.  Override this function to
+    use a custom set of Chrome flags.
+    """
+    if self.IsChromeOS():
+      return [
+        '--homepage=about:blank',
+        '--allow-file-access',
+        '--allow-file-access-from-files',
+        '--enable-file-cookies',
+        '--dom-automation',
+      ]
+    else:
+      return []
 
   def CloseChromeOnChromeOS(self):
     """Gracefully exit chrome on ChromeOS."""
@@ -231,7 +269,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
                              'enable_testing.py')
     args = [suid_python, file_path]
     # Pass extra chrome flags for testing
-    for flag in self.ExtraChromeFlagsOnChromeOS():
+    for flag in self.ExtraChromeFlags():
       args.append('--extra-chrome-flags=%s' % flag)
     assert self.WaitUntil(lambda: self._IsSessionManagerReady(0))
     proc = subprocess.Popen(args, stdout=subprocess.PIPE)
@@ -257,19 +295,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       client_id = hashlib.md5('abcdefgh').hexdigest()
       open(consent_file, 'w').write(client_id)
     assert _HasValidConsentFile(), 'Could not create %s' % consent_file
-
-  def ExtraChromeFlagsOnChromeOS(self):
-    """Return a list of extra chrome flags to use with chrome for testing.
-
-    These are flags needed to facilitate testing.
-    """
-    return [
-       '--homepage=about:blank',
-       '--allow-file-access',
-       '--allow-file-access-from-files',
-       '--enable-file-cookies',
-       '--dom-automation',
-    ]
 
   @staticmethod
   def _IsSessionManagerReady(old_pid):
@@ -2130,7 +2155,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
                  match_case=False, find_next=False,
                  tab_index=0, windex=0):
     """Find the match count for the given search string and search parameters.
-    This is equivalent to using the find box
+    This is equivalent to using the find box.
 
     Args:
       search_string: The string to find on the page.

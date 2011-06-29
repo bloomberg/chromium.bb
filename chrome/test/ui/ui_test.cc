@@ -493,6 +493,15 @@ void UITestBase::SetBrowserDirectory(const FilePath& dir) {
   browser_directory_ = dir;
 }
 
+void UITestBase::AppendBrowserLaunchSwitch(const char* name) {
+  launch_arguments_.AppendSwitch(name);
+}
+
+void UITestBase::AppendBrowserLaunchSwitch(const char* name,
+                                           const char* value) {
+  launch_arguments_.AppendSwitchASCII(name, value);
+}
+
 // UITest methods
 
 void UITest::SetUp() {
