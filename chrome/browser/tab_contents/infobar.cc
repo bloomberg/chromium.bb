@@ -63,7 +63,7 @@ void InfoBar::Show(bool animate) {
     animation_.Show();
   } else {
     animation_.Reset(1.0);
-    AnimationEnded(NULL);
+    RecalculateHeights(true);
   }
 }
 
@@ -73,7 +73,11 @@ void InfoBar::Hide(bool animate) {
     animation_.Hide();
   } else {
     animation_.Reset(0.0);
-    AnimationEnded(NULL);
+    // We want to remove ourselves from the container immediately even if we
+    // still have an owner, which MaybeDelete() won't do.
+    DCHECK(container_);
+    container_->RemoveInfoBar(this);
+    MaybeDelete();  // Necessary if the infobar was already closing.
   }
 }
 
@@ -87,11 +91,19 @@ void InfoBar::SetArrowTargetHeight(int height) {
   }
 }
 
+void InfoBar::CloseSoon() {
+  owner_ = NULL;
+  MaybeDelete();
+}
+
 void InfoBar::AnimationProgressed(const ui::Animation* animation) {
   RecalculateHeights(false);
 }
 
 void InfoBar::RemoveInfoBar() {
+  if (!delegate_)
+    return;
+  delegate_->InfoBarDismissed();
   owner_->RemoveInfoBar(delegate_);
 }
 
@@ -161,12 +173,9 @@ void InfoBar::RecalculateHeights(bool force_notify) {
 }
 
 void InfoBar::MaybeDelete() {
-  if (delegate_ && (animation_.GetCurrentValue() == 0.0)) {
+  if (!owner_ && delegate_ && (animation_.GetCurrentValue() == 0.0)) {
     if (container_)
       container_->RemoveInfoBar(this);
-    // Note that we only tell the delegate we're closed here, and not when we're
-    // simply destroyed (by virtue of a tab switch or being moved from window to
-    // window), since this action can cause the delegate to destroy itself.
     delegate_->InfoBarClosed();
     delegate_ = NULL;
   }

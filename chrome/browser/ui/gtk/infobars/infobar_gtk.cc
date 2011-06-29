@@ -187,8 +187,6 @@ void InfoBarGtk::UpdateBorderColor() {
 }
 
 void InfoBarGtk::OnCloseButton(GtkWidget* button) {
-  if (delegate())
-    delegate()->InfoBarDismissed();
   RemoveInfoBar();
 }
 

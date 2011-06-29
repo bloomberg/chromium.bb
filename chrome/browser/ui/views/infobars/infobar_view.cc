@@ -57,9 +57,7 @@ const int InfoBarView::kHorizontalPadding = 6;
 InfoBarView::InfoBarView(TabContentsWrapper* owner, InfoBarDelegate* delegate)
     : InfoBar(owner, delegate),
       icon_(NULL),
-      close_button_(NULL),
-      fill_path_(new SkPath),
-      stroke_path_(new SkPath) {
+      close_button_(NULL) {
   set_parent_owned(false);  // InfoBar deletes itself at the appropriate time.
   set_background(new InfoBarBackground(delegate->GetInfoBarType()));
 }
@@ -147,8 +145,8 @@ void InfoBarView::Layout() {
   // Calculate the fill and stroke paths.  We do this here, rather than in
   // PlatformSpecificRecalculateHeight(), because this is also reached when our
   // width is changed, which affects both paths.
-  stroke_path_->rewind();
-  fill_path_->rewind();
+  stroke_path_.rewind();
+  fill_path_.rewind();
   const InfoBarContainer::Delegate* delegate = container_delegate();
   if (delegate) {
     static_cast<InfoBarBackground*>(background())->set_separator_color(
@@ -164,27 +162,27 @@ void InfoBarView::Layout() {
       // of the separator, while the fill path is a closed path that extends up
       // through the entire height of the separator and down to the bottom of
       // the arrow where it joins the bar.
-      stroke_path_->moveTo(
+      stroke_path_.moveTo(
           SkIntToScalar(arrow_x) + SK_ScalarHalf - arrow_fill_half_width,
           SkIntToScalar(arrow_height()) - (separator_height * SK_ScalarHalf));
-      stroke_path_->rLineTo(arrow_fill_half_width, -arrow_fill_height);
-      stroke_path_->rLineTo(arrow_fill_half_width, arrow_fill_height);
+      stroke_path_.rLineTo(arrow_fill_half_width, -arrow_fill_height);
+      stroke_path_.rLineTo(arrow_fill_half_width, arrow_fill_height);
 
-      *fill_path_ = *stroke_path_;
+      fill_path_ = stroke_path_;
       // Move the top of the fill path up to the top of the separator and then
       // extend it down all the way through.
-      fill_path_->offset(0, -separator_height * SK_ScalarHalf);
+      fill_path_.offset(0, -separator_height * SK_ScalarHalf);
       // This 0.01 hack prevents the fill from filling more pixels on the right
       // edge of the arrow than on the left.
       const SkScalar epsilon = 0.01f;
-      fill_path_->rLineTo(-epsilon, 0);
-      fill_path_->rLineTo(0, separator_height);
-      fill_path_->rLineTo(epsilon - (arrow_fill_half_width * 2), 0);
-      fill_path_->close();
+      fill_path_.rLineTo(-epsilon, 0);
+      fill_path_.rLineTo(0, separator_height);
+      fill_path_.rLineTo(epsilon - (arrow_fill_half_width * 2), 0);
+      fill_path_.close();
     }
   }
   if (bar_height()) {
-    fill_path_->addRect(0.0, SkIntToScalar(arrow_height()),
+    fill_path_.addRect(0.0, SkIntToScalar(arrow_height()),
         SkIntToScalar(width()), SkIntToScalar(height() - kSeparatorLineHeight));
   }
 
@@ -204,42 +202,30 @@ void InfoBarView::Layout() {
 void InfoBarView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
   View::ViewHierarchyChanged(is_add, parent, child);
 
-  if (child == this) {
-    if (is_add) {
-      if (close_button_ == NULL) {
-        gfx::Image* image = delegate()->GetIcon();
-        if (image) {
-          icon_ = new views::ImageView;
-          icon_->SetImage(image->ToSkBitmap());
-          AddChildView(icon_);
-        }
-
-        close_button_ = new views::ImageButton(this);
-        ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-        close_button_->SetImage(views::CustomButton::BS_NORMAL,
-                                rb.GetBitmapNamed(IDR_CLOSE_BAR));
-        close_button_->SetImage(views::CustomButton::BS_HOT,
-                                rb.GetBitmapNamed(IDR_CLOSE_BAR_H));
-        close_button_->SetImage(views::CustomButton::BS_PUSHED,
-                                rb.GetBitmapNamed(IDR_CLOSE_BAR_P));
-        close_button_->SetAccessibleName(
-            l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
-        close_button_->set_focusable(true);
-        AddChildView(close_button_);
-      }
-    } else {
-      // TODO(pkasting): Move this to PlatformSpecificHide() once that's
-      // guaranteed to be called each time we're hidden.
-      views::FocusManager* focus_manager = GetFocusManager();
-      if (focus_manager)
-        focus_manager->RemoveFocusChangeListener(this);
+  if (is_add && (child == this) && (close_button_ == NULL)) {
+    gfx::Image* image = delegate()->GetIcon();
+    if (image) {
+      icon_ = new views::ImageView;
+      icon_->SetImage(image->ToSkBitmap());
+      AddChildView(icon_);
     }
-  }
 
-  // For accessibility, ensure the close button is the last child view.
-  if ((close_button_ != NULL) && (parent == this) && (child != close_button_) &&
-      (close_button_->parent() == this) &&
+    close_button_ = new views::ImageButton(this);
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    close_button_->SetImage(views::CustomButton::BS_NORMAL,
+                            rb.GetBitmapNamed(IDR_CLOSE_BAR));
+    close_button_->SetImage(views::CustomButton::BS_HOT,
+                            rb.GetBitmapNamed(IDR_CLOSE_BAR_H));
+    close_button_->SetImage(views::CustomButton::BS_PUSHED,
+                            rb.GetBitmapNamed(IDR_CLOSE_BAR_P));
+    close_button_->SetAccessibleName(
+        l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
+    close_button_->set_focusable(true);
+    AddChildView(close_button_);
+  } else if ((close_button_ != NULL) && (parent == this) &&
+      (child != close_button_) && (close_button_->parent() == this) &&
       (GetChildViewAt(child_count() - 1) != close_button_)) {
+    // For accessibility, ensure the close button is the last child view.
     RemoveChildView(close_button_);
     AddChildView(close_button_);
   }
@@ -253,7 +239,7 @@ void InfoBarView::PaintChildren(gfx::Canvas* canvas) {
   // the bar bounds.
   //
   // gfx::CanvasSkia* canvas_skia = canvas->AsCanvasSkia();
-  // canvas_skia->clipPath(*fill_path_);
+  // canvas_skia->clipPath(fill_path_);
   DCHECK_EQ(total_height(), height())
       << "Infobar piecewise heights do not match overall height";
   canvas->ClipRectInt(0, arrow_height(), width(), bar_height());
@@ -263,11 +249,8 @@ void InfoBarView::PaintChildren(gfx::Canvas* canvas) {
 
 void InfoBarView::ButtonPressed(views::Button* sender,
                                 const views::Event& event) {
-  if (sender == close_button_) {
-    if (delegate())
-      delegate()->InfoBarDismissed();
+  if (sender == close_button_)
     RemoveInfoBar();
-  }
 }
 
 int InfoBarView::ContentMinimumWidth() const {
@@ -313,6 +296,13 @@ void InfoBarView::PlatformSpecificShow(bool animate) {
 }
 
 void InfoBarView::PlatformSpecificHide(bool animate) {
+  // It's possible to be called twice (once with |animate| true and once with it
+  // false); in this case the second RemoveFocusChangeListener() call will
+  // silently no-op.
+  views::FocusManager* focus_manager = GetFocusManager();
+  if (focus_manager)
+    focus_manager->RemoveFocusChangeListener(this);
+
 #if defined(OS_WIN)
   if (!animate || !focus_tracker_.get())
     return;

@@ -57,6 +57,10 @@ class InfoBar : public ui::AnimationDelegate {
   // effect once the infobar is animating closed.
   void SetArrowTargetHeight(int height);
 
+  // Notifies the infobar that it is no longer owned and should close its
+  // delegate once it is invisible.
+  void CloseSoon();
+
   const ui::SlideAnimation& animation() const { return animation_; }
   int arrow_height() const { return arrow_height_; }
   int arrow_target_height() const { return arrow_target_height_; }

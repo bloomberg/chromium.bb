@@ -10,10 +10,9 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/tab_contents/infobar.h"
 #include "chrome/browser/tab_contents/infobar_container.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "views/controls/button/button.h"
 #include "views/focus/focus_manager.h"
-
-class SkPath;
 
 namespace views {
 class ExternalFocusTracker;
@@ -34,8 +33,8 @@ class InfoBarView : public InfoBar,
  public:
   InfoBarView(TabContentsWrapper* owner, InfoBarDelegate* delegate);
 
-  SkPath* fill_path() const { return fill_path_.get(); }
-  SkPath* stroke_path() const { return stroke_path_.get(); }
+  const SkPath& fill_path() const { return fill_path_; }
+  const SkPath& stroke_path() const { return stroke_path_; }
 
  protected:
   static const int kButtonButtonSpacing;
@@ -113,8 +112,8 @@ class InfoBarView : public InfoBar,
 
   // The paths for the InfoBarBackground to draw, sized according to the heights
   // above.
-  scoped_ptr<SkPath> fill_path_;
-  scoped_ptr<SkPath> stroke_path_;
+  SkPath fill_path_;
+  SkPath stroke_path_;
 
   DISALLOW_COPY_AND_ASSIGN(InfoBarView);
 };

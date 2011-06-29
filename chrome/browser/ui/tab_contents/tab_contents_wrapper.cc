@@ -175,16 +175,9 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
 TabContentsWrapper::~TabContentsWrapper() {
   in_destructor_ = true;
 
-  // Notify any lasting InfobarDelegates that have not yet been removed that
-  // whatever infobar they were handling in this TabContents has closed,
-  // because the TabContents is going away entirely.
-  // This must happen after the TAB_CONTENTS_DESTROYED notification as the
-  // notification may trigger infobars calls that access their delegate. (and
-  // some implementations of InfoBarDelegate do delete themselves on
-  // InfoBarClosed()).
-  for (size_t i = 0; i < infobar_count(); ++i)
-    infobar_delegates_[i]->InfoBarClosed();
-  infobar_delegates_.clear();
+  // Destroy all remaining InfoBars.  It's important to not animate here so that
+  // we guarantee that we'll delete all delegates before we do anything else.
+  RemoveAllInfoBars(false);
 }
 
 PropertyAccessor<TabContentsWrapper*>* TabContentsWrapper::property_accessor() {
@@ -369,8 +362,7 @@ void TabContentsWrapper::RenderViewCreated(RenderViewHost* render_view_host) {
 
 void TabContentsWrapper::RenderViewGone() {
   // Remove all infobars.
-  while (!infobar_delegates_.empty())
-    RemoveInfoBar(GetInfoBarDelegateAt(infobar_count() - 1));
+  RemoveAllInfoBars(true);
 
   // Tell the view that we've crashed so it can prepare the sad tab page.
   // Only do this if we're not in browser shutdown, so that TabContents
@@ -426,8 +418,8 @@ void TabContentsWrapper::Observe(NotificationType type,
       // NOTE: It is not safe to change the following code to count upwards or
       // use iterators, as the RemoveInfoBar() call synchronously modifies our
       // delegate list.
-      for (size_t i = infobar_delegates_.size(); i > 0; --i) {
-        InfoBarDelegate* delegate = infobar_delegates_[i - 1];
+      for (size_t i = infobars_.size(); i > 0; --i) {
+        InfoBarDelegate* delegate = GetInfoBarDelegateAt(i - 1);
         if (delegate->ShouldExpire(committed_details))
           RemoveInfoBar(delegate);
       }
@@ -475,17 +467,15 @@ void TabContentsWrapper::AddInfoBar(InfoBarDelegate* delegate) {
     return;
   }
 
-  // Look through the existing InfoBarDelegates we have for a match. If we've
-  // already got one that matches, then we don't add the new one.
-  for (size_t i = 0; i < infobar_delegates_.size(); ++i) {
-    if (infobar_delegates_[i]->EqualsDelegate(delegate)) {
+  for (size_t i = 0; i < infobars_.size(); ++i) {
+    if (GetInfoBarDelegateAt(i)->EqualsDelegate(delegate)) {
       // Tell the new infobar to close so that it can clean itself up.
       delegate->InfoBarClosed();
       return;
     }
   }
 
-  infobar_delegates_.push_back(delegate);
+  infobars_.push_back(delegate);
   NotificationService::current()->Notify(
       NotificationType::TAB_CONTENTS_INFOBAR_ADDED,
       Source<TabContentsWrapper>(this), Details<InfoBarDelegate>(delegate));
@@ -493,48 +483,32 @@ void TabContentsWrapper::AddInfoBar(InfoBarDelegate* delegate) {
   // Add ourselves as an observer for navigations the first time a delegate is
   // added. We use this notification to expire InfoBars that need to expire on
   // page transitions.
-  if (infobar_delegates_.size() == 1) {
+  if (infobars_.size() == 1) {
     registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
                    Source<NavigationController>(&tab_contents_->controller()));
   }
 }
 
 void TabContentsWrapper::RemoveInfoBar(InfoBarDelegate* delegate) {
-  if (!infobars_enabled_)
-    return;
-
-  std::vector<InfoBarDelegate*>::iterator it =
-      find(infobar_delegates_.begin(), infobar_delegates_.end(), delegate);
-  if (it != infobar_delegates_.end()) {
-    typedef std::pair<InfoBarDelegate*, bool> RemoveDetails;
-    RemoveDetails remove_details(*it, true);
-    NotificationService::current()->Notify(
-        NotificationType::TAB_CONTENTS_INFOBAR_REMOVED,
-        Source<TabContentsWrapper>(this),
-        Details<RemoveDetails>(&remove_details));
-
-    infobar_delegates_.erase(it);
-    // Remove ourselves as an observer if we are tracking no more InfoBars.
-    if (infobar_delegates_.empty()) {
-      registrar_.Remove(
-          this, NotificationType::NAV_ENTRY_COMMITTED,
-          Source<NavigationController>(&tab_contents_->controller()));
-    }
-  }
+  RemoveInfoBarInternal(delegate, true);
 }
 
 void TabContentsWrapper::ReplaceInfoBar(InfoBarDelegate* old_delegate,
                                         InfoBarDelegate* new_delegate) {
   if (!infobars_enabled_) {
-    new_delegate->InfoBarClosed();
+    AddInfoBar(new_delegate);  // Deletes the delegate.
     return;
   }
 
-  std::vector<InfoBarDelegate*>::iterator it =
-      find(infobar_delegates_.begin(), infobar_delegates_.end(), old_delegate);
-  DCHECK(it != infobar_delegates_.end());
+  size_t i;
+  for (i = 0; i < infobars_.size(); ++i) {
+    if (GetInfoBarDelegateAt(i) == old_delegate)
+      break;
+  }
+  DCHECK_LT(i, infobars_.size());
 
-  // Notify the container about the change of plans.
+  infobars_.insert(infobars_.begin() + i, new_delegate);
+
   typedef std::pair<InfoBarDelegate*, InfoBarDelegate*> ReplaceDetails;
   ReplaceDetails replace_details(old_delegate, new_delegate);
   NotificationService::current()->Notify(
@@ -542,10 +516,11 @@ void TabContentsWrapper::ReplaceInfoBar(InfoBarDelegate* old_delegate,
       Source<TabContentsWrapper>(this),
       Details<ReplaceDetails>(&replace_details));
 
-  DCHECK(find(infobar_delegates_.begin(),
-              infobar_delegates_.end(), new_delegate) ==
-         infobar_delegates_.end());
-  infobar_delegates_.erase(infobar_delegates_.insert(it, new_delegate) + 1);
+  infobars_.erase(infobars_.begin() + i + 1);
+}
+
+InfoBarDelegate* TabContentsWrapper::GetInfoBarDelegateAt(size_t index) {
+  return infobars_[index];
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -595,7 +570,7 @@ void TabContentsWrapper::OnPDFHasUnsupportedFeature() {
 
 void TabContentsWrapper::OnDidBlockDisplayingInsecureContent() {
   // At most one infobar and do not supersede the stronger running content bar.
-  for (size_t i = 0; i < infobar_count(); ++i) {
+  for (size_t i = 0; i < infobars_.size(); ++i) {
     if (GetInfoBarDelegateAt(i)->AsInsecureContentInfoBarDelegate())
       return;
   }
@@ -605,7 +580,7 @@ void TabContentsWrapper::OnDidBlockDisplayingInsecureContent() {
 
 void TabContentsWrapper::OnDidBlockRunningInsecureContent() {
   // At most one infobar superseding any weaker displaying content bar.
-  for (size_t i = 0; i < infobar_count(); ++i) {
+  for (size_t i = 0; i < infobars_.size(); ++i) {
     InsecureContentInfoBarDelegate* delegate =
         GetInfoBarDelegateAt(i)->AsInsecureContentInfoBarDelegate();
     if (delegate) {
@@ -651,3 +626,38 @@ void TabContentsWrapper::UpdateRendererPreferences() {
   render_view_host()->SyncRendererPrefs();
 }
 
+void TabContentsWrapper::RemoveInfoBarInternal(InfoBarDelegate* delegate,
+                                               bool animate) {
+  if (!infobars_enabled_) {
+    DCHECK(infobars_.empty());
+    return;
+  }
+
+  size_t i;
+  for (i = 0; i < infobars_.size(); ++i) {
+    if (GetInfoBarDelegateAt(i) == delegate)
+      break;
+  }
+  DCHECK_LT(i, infobars_.size());
+  InfoBarDelegate* infobar = infobars_[i];
+
+  typedef std::pair<InfoBarDelegate*, bool> RemoveDetails;
+  RemoveDetails remove_details(infobar, animate);
+  NotificationService::current()->Notify(
+      NotificationType::TAB_CONTENTS_INFOBAR_REMOVED,
+      Source<TabContentsWrapper>(this),
+      Details<RemoveDetails>(&remove_details));
+
+  infobars_.erase(infobars_.begin() + i);
+  // Remove ourselves as an observer if we are tracking no more InfoBars.
+  if (infobars_.empty()) {
+    registrar_.Remove(
+        this, NotificationType::NAV_ENTRY_COMMITTED,
+        Source<NavigationController>(&tab_contents_->controller()));
+  }
+}
+
+void TabContentsWrapper::RemoveAllInfoBars(bool animate) {
+  while (!infobars_.empty())
+    RemoveInfoBarInternal(GetInfoBarDelegateAt(infobar_count() - 1), animate);
+}

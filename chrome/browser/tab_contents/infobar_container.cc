@@ -35,11 +35,9 @@ void InfoBarContainer::ChangeTabContents(TabContentsWrapper* contents) {
 
   while (!infobars_.empty()) {
     InfoBar* infobar = infobars_.front();
-    // NULL the container pointer first so that the infobar cannot call back to
-    // OnInfoBarStateChanged() for any reason; we'll manually trigger this once
-    // for the whole set of changes below.
-    infobar->set_container(NULL);
-    RemoveInfoBar(infobar);
+    // Inform the infobar that it's hidden.  If it was already closing, this
+    // closes its delegate.
+    infobar->Hide(false);
   }
 
   tab_contents_ = contents;
@@ -95,13 +93,12 @@ void InfoBarContainer::SetMaxTopArrowHeight(int height) {
 void InfoBarContainer::OnInfoBarStateChanged(bool is_animating) {
   if (delegate_)
     delegate_->InfoBarContainerStateChanged(is_animating);
-
   UpdateInfoBarArrowTargetHeights();
-
   PlatformSpecificInfoBarStateChanged(is_animating);
 }
 
 void InfoBarContainer::RemoveInfoBar(InfoBar* infobar) {
+  infobar->set_container(NULL);
   InfoBars::iterator i(std::find(infobars_.begin(), infobars_.end(), infobar));
   DCHECK(i != infobars_.end());
   PlatformSpecificRemoveInfoBar(infobar);
@@ -162,6 +159,7 @@ size_t InfoBarContainer::RemoveInfoBar(InfoBarDelegate* delegate,
       // We merely need hide the infobar; it will call back to RemoveInfoBar()
       // itself once it's hidden.
       infobar->Hide(use_animation);
+      infobar->CloseSoon();
       UpdateInfoBarArrowTargetHeights();
       return position;
     }

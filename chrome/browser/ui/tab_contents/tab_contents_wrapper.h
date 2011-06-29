@@ -205,22 +205,33 @@ class TabContentsWrapper : public TabContentsObserver,
   // Infobars ------------------------------------------------------------------
 
   // Adds an InfoBar for the specified |delegate|.
+  //
+  // If infobars are disabled for this tab or the tab already has a delegate
+  // which returns true for InfoBarDelegate::EqualsDelegate(delegate),
+  // |delegate| is closed immediately without being added.
   void AddInfoBar(InfoBarDelegate* delegate);
 
   // Removes the InfoBar for the specified |delegate|.
+  //
+  // If infobars are disabled for this tab, this will do nothing, on the
+  // assumption that the matching AddInfoBar() call will have already closed the
+  // delegate (see above).
   void RemoveInfoBar(InfoBarDelegate* delegate);
 
   // Replaces one infobar with another, without any animation in between.
+  //
+  // If infobars are disabled for this tab, |new_delegate| is closed immediately
+  // without being added, and nothing else happens.
+  //
+  // NOTE: This does not perform any EqualsDelegate() checks like AddInfoBar().
   void ReplaceInfoBar(InfoBarDelegate* old_delegate,
                       InfoBarDelegate* new_delegate);
 
   // Enumeration and access functions.
-  size_t infobar_count() const { return infobar_delegates_.size(); }
-  void set_infobars_enabled(bool value) { infobars_enabled_ = value; }
+  size_t infobar_count() const { return infobars_.size(); }
   // WARNING: This does not sanity-check |index|!
-  InfoBarDelegate* GetInfoBarDelegateAt(size_t index) {
-    return infobar_delegates_[index];
-  }
+  InfoBarDelegate* GetInfoBarDelegateAt(size_t index);
+  void set_infobars_enabled(bool value) { infobars_enabled_ = value; }
 
  private:
   // Internal helpers ----------------------------------------------------------
@@ -248,13 +259,16 @@ class TabContentsWrapper : public TabContentsObserver,
   // Update the TabContents's RendererPreferences.
   void UpdateRendererPreferences();
 
+  void RemoveInfoBarInternal(InfoBarDelegate* delegate, bool animate);
+  void RemoveAllInfoBars(bool animate);
+
   // Data for core operation ---------------------------------------------------
 
   // Delegate for notifying our owner about stuff. Not owned by us.
   TabContentsWrapperDelegate* delegate_;
 
   // Delegates for InfoBars associated with this TabContentsWrapper.
-  std::vector<InfoBarDelegate*> infobar_delegates_;
+  std::vector<InfoBarDelegate*> infobars_;
   bool infobars_enabled_;
 
   NotificationRegistrar registrar_;

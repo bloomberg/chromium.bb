@@ -40,7 +40,7 @@ void InfoBarBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
 
   InfoBarView* infobar = static_cast<InfoBarView*>(view);
   gfx::CanvasSkia* canvas_skia = canvas->AsCanvasSkia();
-  canvas_skia->drawPath(*infobar->fill_path(), paint);
+  canvas_skia->drawPath(infobar->fill_path(), paint);
 
   paint.setShader(NULL);
   paint.setColor(SkColorSetA(separator_color_,
@@ -50,7 +50,7 @@ void InfoBarBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
   // degree angles, but don't anti-alias anything else, especially not the fill,
   // lest we get weird color bleeding problems.
   paint.setAntiAlias(true);
-  canvas_skia->drawPath(*infobar->stroke_path(), paint);
+  canvas_skia->drawPath(infobar->stroke_path(), paint);
   paint.setAntiAlias(false);
 
   // Now draw the separator at the bottom.
