@@ -54,22 +54,22 @@ void StatusAreaView::Init() {
 }
 
 gfx::Size StatusAreaView::GetPreferredSize() {
-  int result_w = kSeparation;
+  int result_w = 0;
   int result_h = 0;
-  int visible_count = 0;
+
   for (int i = 0; i < child_count(); i++) {
     views::View* cur = GetChildViewAt(i);
-    if (cur->IsVisible()) {
-      visible_count++;
-      gfx::Size cur_size = cur->GetPreferredSize();
+    gfx::Size cur_size = cur->GetPreferredSize();
+    if (cur->IsVisible() && !cur_size.IsEmpty()) {
+      if (result_w == 0)
+        result_w = kSeparation;
+
       // Add each width.
       result_w += cur_size.width() + kSeparation;
       // Use max height.
       result_h = std::max(result_h, cur_size.height());
     }
   }
-  if (visible_count > 0)
-    result_w -= kSeparation;
   return gfx::Size(result_w, result_h);
 }
 
@@ -77,8 +77,8 @@ void StatusAreaView::Layout() {
   int cur_x = kSeparation;
   for (int i = 0; i < child_count(); i++) {
     views::View* cur = GetChildViewAt(i);
-    if (cur->IsVisible()) {
-      gfx::Size cur_size = cur->GetPreferredSize();
+    gfx::Size cur_size = cur->GetPreferredSize();
+    if (cur->IsVisible() && !cur_size.IsEmpty()) {
       int cur_y = (height() - cur_size.height()) / 2;
 
       // Handle odd number of pixels.
@@ -86,9 +86,7 @@ void StatusAreaView::Layout() {
 
       // Put next in row horizontally, and center vertically.
       cur->SetBounds(cur_x, cur_y, cur_size.width(), cur_size.height());
-
-      if (cur_size.width() > 0)
-        cur_x += cur_size.width() + kSeparation;
+      cur_x += cur_size.width() + kSeparation;
     }
   }
 }
