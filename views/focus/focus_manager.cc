@@ -27,45 +27,28 @@ namespace views {
 
 void FocusManager::WidgetFocusManager::AddFocusChangeListener(
     WidgetFocusChangeListener* listener) {
-  DCHECK(std::find(focus_change_listeners_.begin(),
-                   focus_change_listeners_.end(), listener) ==
-         focus_change_listeners_.end()) <<
-             "Adding a WidgetFocusChangeListener twice.";
-  focus_change_listeners_.push_back(listener);
+  focus_change_listeners_.AddObserver(listener);
 }
 
 void FocusManager::WidgetFocusManager::RemoveFocusChangeListener(
     WidgetFocusChangeListener* listener) {
-  WidgetFocusChangeListenerList::iterator iter(std::find(
-      focus_change_listeners_.begin(),
-      focus_change_listeners_.end(),
-      listener));
-  if (iter != focus_change_listeners_.end()) {
-    focus_change_listeners_.erase(iter);
-  } else {
-    NOTREACHED() <<
-      "Attempting to remove an unregistered WidgetFocusChangeListener.";
-  }
+  focus_change_listeners_.RemoveObserver(listener);
 }
 
 void FocusManager::WidgetFocusManager::OnWidgetFocusEvent(
     gfx::NativeView focused_before,
     gfx::NativeView focused_now) {
-  if (!enabled_)
-    return;
-
-  // Perform a safe iteration over the focus listeners, as the array
-  // may change during notification.
-  WidgetFocusChangeListenerList local_listeners(focus_change_listeners_);
-  WidgetFocusChangeListenerList::iterator iter(local_listeners.begin());
-  for (;iter != local_listeners.end(); ++iter) {
-    (*iter)->NativeFocusWillChange(focused_before, focused_now);
+  if (enabled_) {
+    FOR_EACH_OBSERVER(WidgetFocusChangeListener, focus_change_listeners_,
+                      NativeFocusWillChange(focused_before, focused_now));
   }
 }
 
-FocusManager::WidgetFocusManager::WidgetFocusManager() : enabled_(true) {}
+FocusManager::WidgetFocusManager::WidgetFocusManager() : enabled_(true) {
+}
 
-FocusManager::WidgetFocusManager::~WidgetFocusManager() {}
+FocusManager::WidgetFocusManager::~WidgetFocusManager() {
+}
 
 // static
 FocusManager::WidgetFocusManager*
@@ -85,9 +68,6 @@ FocusManager::FocusManager(Widget* widget)
 }
 
 FocusManager::~FocusManager() {
-  // If there are still registered FocusChange listeners, chances are they were
-  // leaked so warn about them.
-  DCHECK(focus_change_listeners_.empty());
 }
 
 // static
@@ -289,11 +269,8 @@ void FocusManager::SetFocusedViewWithReason(
   // Update the reason for the focus change (since this is checked by
   // some listeners), then notify all listeners.
   focus_change_reason_ = reason;
-  FocusChangeListenerList::const_iterator iter;
-  for (iter = focus_change_listeners_.begin();
-       iter != focus_change_listeners_.end(); ++iter) {
-    (*iter)->FocusWillChange(focused_view_, view);
-  }
+  FOR_EACH_OBSERVER(FocusChangeListener, focus_change_listeners_,
+                    FocusWillChange(focused_view_, view));
 
   if (focused_view_)
     focused_view_->Blur();
@@ -488,21 +465,11 @@ void FocusManager::ViewRemoved(View* removed) {
 }
 
 void FocusManager::AddFocusChangeListener(FocusChangeListener* listener) {
-  DCHECK(std::find(focus_change_listeners_.begin(),
-                   focus_change_listeners_.end(), listener) ==
-      focus_change_listeners_.end()) << "Adding a listener twice.";
-  focus_change_listeners_.push_back(listener);
+  focus_change_listeners_.AddObserver(listener);
 }
 
 void FocusManager::RemoveFocusChangeListener(FocusChangeListener* listener) {
-  FocusChangeListenerList::iterator place =
-      std::find(focus_change_listeners_.begin(), focus_change_listeners_.end(),
-                listener);
-  if (place == focus_change_listeners_.end()) {
-    NOTREACHED() << "Removing a listener that isn't registered.";
-    return;
-  }
-  focus_change_listeners_.erase(place);
+  focus_change_listeners_.RemoveObserver(listener);
 }
 
 }  // namespace views
