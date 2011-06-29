@@ -31,8 +31,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
+// On Linux this is crashing intermittently http://crbug/84719
 // In some environments this test fails about 1/6 http://crbug/84850
-#if defined(TOUCH_UI)
+#if defined(OS_LINUX)
+#define MAYBE_KillExtension DISABLED_KillExtension
+#elif defined(TOUCH_UI)
 #define MAYBE_KillExtension FLAKY_KillExtension
 #else
 #define MAYBE_KillExtension KillExtension
