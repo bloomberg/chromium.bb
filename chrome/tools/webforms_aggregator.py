@@ -24,16 +24,18 @@ Options:
 import datetime
 import errno
 import logging
-from optparse import OptionParser
+import optparse
 import os
 import re
+# Needed in Linux so that PyCurl does not throw a segmentation fault.
+import signal
 import sys
 import tempfile
 import threading
 import time
-from urlparse import urlparse, urljoin
+import urlparse
 
-from httplib2 import iri2uri
+import httplib2
 from lxml import html, etree
 import pycurl
 
@@ -66,9 +68,11 @@ MAX_ALLOWED_THREADS = MAX_OPEN_FILES_NO / MAX_SAME_DOMAIN_URLS_NO + 1
 class Retriever(object):
   """Download, parse, and check if the web page contains a registration form.
 
-  If the page does not contain a registration form, the url links are retrieved,
-  each url is accessed and the HTML content is saved in a string member of the
-  Retriever object.
+  The objects of this class has a one to one relation with the web pages. For
+  each page that is downloaded and parsed an object of this class is created.
+  Each Retriever object creates a curl object. This object is added to the curl
+  multi object of the crawler object so that the corresponding pages gets
+  downloaded.
   """
   logger = logging.getLogger(__name__)
 
@@ -79,7 +83,7 @@ class Retriever(object):
       url: url to download page from.
       domain: only links with this domain will be retrieved.
       cookie_file: the name of a cookie file, needed for pages that use session
-      cookies to change their contents.
+          cookies to change their contents.
     """
     self._url = url
     self._domain = domain
@@ -104,28 +108,6 @@ class Retriever(object):
     if self._curl_object:
       self._curl_object.close()
 
-  def _GetJavaScriptRedirectionURL(self):
-    """Checks whether the page contains js redirection to another location.
-
-    Returns:
-      The js redirection URL if one exists, or the empty string otherwise.
-    """
-    try:
-      tree = html.fromstring(self._html_content, parser=html.HTMLParser())
-    except etree.XMLSyntaxError:
-      return ''
-    redirect_url = ''
-    script_elements = tree.iter('script')
-    for script_elem in script_elements:
-      str = html.tostring(
-          script_elem, method='text', encoding='UTF-8').strip()
-      if re.match(r'^window.location', str):
-        m = re.search(r'(?P<quote>[\'\"])(?P<redirect_url>.*?)\1', str)
-        if m:
-          redirect_url = urljoin(self._url, m.group('redirect_url'))
-          break
-    return redirect_url
-
   def _AddLink(self, link):
     """Adds url |link|, if not already present, to the appropriate list.
 
@@ -135,12 +117,16 @@ class Retriever(object):
     Args:
       link: the url that is inserted to the appropriate links list.
     """
-    link_parsed = urlparse(link)
+    # Handles sites with unicode URLs.
+    if isinstance(link, unicode):
+      # Encode in 'utf-8' to avoid the UnicodeEncodeError exception.
+      link = httplib2.iri2uri(link).encode('utf-8')
+    link_parsed = urlparse.urlparse(link)
     link_lists = [self._clues_secure_links, self._secure_links,
                   self._clues_general_links, self._general_links]
     # Checks that the registration page is within the domain.
-    if ((self._domain in link_parsed[1]) and
-        all(map(lambda x: link not in x, link_lists))):
+    if (self._domain in link_parsed[1] and
+        all(link not in x for x in link_lists)):
       for clue in LINK_CLUES:
         if clue in link.lower():
           if link_parsed[0].startswith('https'):
@@ -171,22 +157,24 @@ class Retriever(object):
     if not self._domain:
       self.logger.error('Error: self._domain was not set')
       sys.exit(1)
-    m = re.findall('(?P<quote>[\'\"])(?P<link>https?://.*?)\1',
-                   self._html_content)
-    for link in m:
-      self._AddLink(link[1])
+    match_list = re.findall(r'(?P<quote>[\'\"])(?P<link>(?:https?:)?//.*?)\1',
+                             self._html_content)
+    for group_list in match_list:
+      link = group_list[1]
+      if link.startswith('//'):
+        link = urlparse.urljoin(self._url, link)
+      self._AddLink(link)
     try:
       tree = html.fromstring(self._html_content, parser=html.HTMLParser())
-    except etree.XMLSyntaxError:
-      self.logger.info('\t\tSkipping: %s <<< %s',
-                       'not valid HTML code in this page', self._url)
+    except etree.LxmlError:
+      self.logger.info('\t\tSkipping: not valid HTML code in this page <<< %s',
+                       self._url)
       return False
     try:
-      body_iterator = tree.iter('body')
-      body = body_iterator.next()
+      body = tree.iter('body').next()
     except StopIteration:
-      self.logger.info('\t\tSkipping: %s <<< %s',
-                       'no "BODY" tag in this page', self._url)
+      self.logger.info('\t\tSkipping: no "BODY" tag in this page <<< %s',
+                       self._url)
       return False
 
     # Get a list of all input elements with attribute type='password'
@@ -205,14 +193,14 @@ class Retriever(object):
           # Confirms that the page contains a registration form if two passwords
           # are contained in the same form for form_elem[0].
           if not os.path.isdir(REGISTER_PAGE_DIR):
-            os.mkdir(REGISTER_PAGE_DIR)
+            os.makedirs(REGISTER_PAGE_DIR)
           # Locate the HTML tag and insert the form location comment after it.
           html_tag = tree.iter('html').next()
           comment = etree.Comment(FORM_LOCATION_COMMENT % self._url)
           html_tag.insert(0, comment)
           # Create a new file and save the HTML registration page code.
           f = open('%s/%s%s.html' % (REGISTER_PAGE_DIR, HTML_FILE_PREFIX,
-                                     self._domain), 'wb')
+                                     self._domain), 'w')
           try:
             f.write(html.tostring(tree, pretty_print=True))
           except IOError as e:
@@ -227,25 +215,12 @@ class Retriever(object):
       link = link_elem.get('href')
       if not link or '#' == link[0]:
         continue
-      link = urljoin(self._url, link)
-      link_parsed = urlparse(link)
+      link = urlparse.urljoin(self._url, link)
+      link_parsed = urlparse.urlparse(link)
       if not link_parsed[0].startswith('http'):
         continue
       self._AddLink(link)
     return False  # Registration page not found.
-
-  def _GetHeaders(self, buff):
-    """Gets the headers of a url HEAD or GET request.
-
-    The headers are stored into object variables, not returned by this function.
-
-    Args:
-      buff: each header read. It is needed in case there is a redirection of
-      the page. If one is found, self._url is changed to this redirected url.
-    """
-    if buff.lower().startswith('location:'):
-      self._redirect_url = buff[9:].strip()
-      self._url = urljoin(self._url, self._redirect_url)
 
   def InitRequestHead(self):
     """Initializes curl object for a HEAD request.
@@ -255,14 +230,10 @@ class Retriever(object):
     GET request, saving any unnecessary downloadings.
     """
     self._curl_object = pycurl.Curl()
-    # Handles sites with unicode URLs.
-    if isinstance(self._url, unicode):
-      self._url = str(iri2uri(self._url))
     self._curl_object.setopt(pycurl.URL, self._url)
     # The following line fixes the GnuTLS package error that pycurl depends
     # on for getting https pages.
     self._curl_object.setopt(pycurl.SSLVERSION, pycurl.SSLVERSION_SSLv3)
-    self._curl_object.setopt(pycurl.HEADERFUNCTION, self._GetHeaders)
     self._curl_object.setopt(pycurl.FOLLOWLOCATION, True)
     self._curl_object.setopt(pycurl.NOBODY, True)
     self._curl_object.setopt(pycurl.SSL_VERIFYPEER, False);
@@ -284,7 +255,6 @@ class Retriever(object):
     everything is downloaded.
     """
     self._curl_object.setopt(pycurl.NOBODY, False)
-    self._curl_object.setopt(pycurl.HEADERFUNCTION, lambda buff: None)
     self._curl_object.setopt(
         pycurl.WRITEFUNCTION, lambda buff: setattr(
             self, '_html_content', self._html_content + buff))
@@ -306,6 +276,8 @@ class Retriever(object):
     except pycurl.error as e:
       self.logger.error('Error: %s, url: %s', e, self._url)
       return False
+    self._url = urlparse.urljoin(
+        self._url, self._curl_object.getinfo(pycurl.EFFECTIVE_URL))
     content_type = self._curl_object.getinfo(pycurl.CONTENT_TYPE)
     if content_type and ('text/html' in content_type.lower()):
       self.InitRequestGet()
@@ -316,38 +288,23 @@ class Retriever(object):
         return False
       return True
     else:
-      self.logger.info('\tSkipping: %s <<< %s',
-                       'Not an HTML page', self._url)
+      self.logger.info('\tSkipping: Not an HTML page <<< %s', self._url)
       return False
 
   def Run(self):
-    """Called only once for the initial url when we don't have more urls.
+    """Called only once for the initial url when we do not have more urls.
 
-    Downloads the originally-specified site url, checks it for redirections,
-    parses it and gets its links.
+    Downloads the originally-specified site url, parses it and gets the links.
 
     Returns:
       True, if a registration page is found, and False otherwise.
     """
-    redirection_counter = 0
-    while True:
-      is_HTML = self.Download()
-      if not is_HTML:
-        break
-      redirect_url = self._GetJavaScriptRedirectionURL()
-      if redirect_url:
-        redirection_counter += 1
-        if redirection_counter > MAX_REDIRECTIONS:
-          return False
-        self._url = redirect_url
-      else:
-        break
-    if is_HTML:
+    if self.Download():
       if not self._domain:
-        url_parsed = urlparse(self._url)
+        url_parsed = urlparse.urlparse(self._url)
         self._domain = url_parsed[1]
-        if self._domain.startswith('www.'):
-          self._domain = self._domain[4:]
+        if self._domain.startswith('www'):
+          self._domain = '.'.join(self._domain.split('.')[1:])
       if self.ParseAndGetLinks():
         return True
     return False
@@ -362,14 +319,10 @@ class Crawler(object):
   each Retriever object. Use Run() to crawl the site.
   """
   try:
-    # Needed in Linux so that PyCurl does not throw a segmentation fault.
-    import signal
-    from signal import SIGPIPE, SIG_IGN
     signal.signal(signal.SIGPIPE, signal.SIG_IGN)
   except ImportError:
     pass
   logger = logging.getLogger(__name__)
-  log_handlers = {'StreamHandler': None}
 
   def __init__(self, url, logging_level=None):
     """Init crawler URL, links lists, logger, and creates a cookie temp file.
@@ -381,31 +334,21 @@ class Crawler(object):
       logging_level: the desired verbosity level, default is None.
     """
     if logging_level:
-      if not self.log_handlers['StreamHandler']:
-        console = logging.StreamHandler()
-        console.setLevel(logging.INFO)
-        self.log_handlers['StreamHandler'] = console
-        self.logger.addHandler(console)
       self.logger.setLevel(logging_level)
-    else:
-      if self.log_handlers['StreamHandler']:
-        self.logger.removeHandler(self.log_handlers['StreamHandler'])
-        self.log_handlers['StreamHandler'] = None
 
     self.url_error = False
-    url_parsed = urlparse(url)
+    url_parsed = urlparse.urlparse(url)
     if not url_parsed[0].startswith('http'):
       self.logger.error(
           'Error: "%s" does not begin with http:// or https://', url)
       self.url_error = True
       return
-    # Example: if url is 'http://www.ebay.com?name=john' then value [1] or
-    # network location is 'www.ebay.com'.
+    # Example: if url is 'http://www.example.com?name=john' then value [1] or
+    # network location is 'www.example.com'.
     if not url_parsed[1]:
       self.logger.error('Error: "%s" is not a valid url', url)
       self.url_error = True
       return
-    self._root_url = url
     self._url = url
     self._domain = ''
     # Http links that contain a clue from LINK_CLUES.
@@ -435,20 +378,20 @@ class Crawler(object):
 
     Args:
       curl_multi_object: a curl object that downloads multiple pages
-      concurrently.
+          concurrently. The class of this object is |pycurl.CurlMulti|.
     """
+    # Following code uses the example from section for the CurlMulti object
+    # at http://pycurl.sourceforge.net/doc/curlmultiobject.html.
     while True:
       ret, no_handles = curl_multi_object.perform()
-      # Following code uses the example from section for the CurlMulti object
-      # at http://pycurl.sourceforge.net/doc/curlmultiobject.html.
       if ret != pycurl.E_CALL_MULTI_PERFORM:
         break
-      while no_handles:
-        curl_multi_object.select(1.0)
-        while True:
-          ret, no_handles = curl_multi_object.perform()
-          if ret != pycurl.E_CALL_MULTI_PERFORM:
-            break
+    while no_handles:
+      curl_multi_object.select(1.0)
+      while True:
+        ret, no_handles = curl_multi_object.perform()
+        if ret != pycurl.E_CALL_MULTI_PERFORM:
+          break
 
   def _GetLinksPages(self, curl_multi_object):
     """Downloads many pages concurrently using a CurlMulti Object.
@@ -467,13 +410,19 @@ class Crawler(object):
       2/10 from gl results in 6 URLs
 
     Adding up the above URLs gives 30 URLs that can be downloaded concurrently.
-    If there are fewer items than the defined rules, such as if a site does not
-    contain any secure links, then csl and sl lists will have 0 length and only
-    15 pages will be downloaded concurrently from the same domain.
+    If these lists have fewer items than the defined rules, such as if a site
+    does not contain any secure links, then csl and sl lists will be of 0 length
+    and only 15 pages would be downloaded concurrently from the same domain.
+
+    Since 30 URLs can be handled concurrently, the number of links taken from
+    other lists can be increased. This means that we can take 24 links from the
+    cgl list so that 24 from gfl + 6 from gl = 30 URLs. If the cgl list has less
+    than 24 links, e.g. there are only 21 links, then only 9 links may be taken
+    from gl so ) + 21 + 0 + 9 = 30.
 
     Args:
       curl_multi_object: Each Retriever object has a curl object which is
-      added to the CurlMulti Object.
+          added to the CurlMulti Object.
     """
     self._retrievers_list = []
 
@@ -498,7 +447,6 @@ class Crawler(object):
     if spare_links > 0:
       gl_no = min(gl_no + spare_links, len(self._general_links))
 
-    m = curl_multi_object
     for no_of_links, links in [
         (csl_no, self._clues_secure_links),
         (sl_no, self._secure_links),
@@ -511,37 +459,37 @@ class Crawler(object):
         self._links_visited.append(url)
         r = Retriever(url, self._domain, self._cookie_file)
         r.InitRequestHead()
-        m.add_handle(r._curl_object)
+        curl_multi_object.add_handle(r._curl_object)
         self._retrievers_list.append(r)
 
     if self._retrievers_list:
       try:
-        self._MultiPerform(m)
+        self._MultiPerform(curl_multi_object)
       except pycurl.error as e:
         self.logger.error('Error: %s, url: %s', e, self._url)
       finally:
-        prRetrList = self._retrievers_list
-        self._retrievers_list = []
-        for r in prRetrList:
-          m.remove_handle(r._curl_object)
-      while prRetrList:
-        r = prRetrList.pop(0)
+        for r in self._retrievers_list:
+          curl_multi_object.remove_handle(r._curl_object)
+      # |_retrievers_list[:]| is a copy of |_retrievers_list| to avoid removing
+      # items from the iterated list.
+      for r in self._retrievers_list[:]:
+        r._url = urlparse.urljoin(r._url, r._curl_object.getinfo(
+            pycurl.EFFECTIVE_URL))
         content_type = r._curl_object.getinfo(pycurl.CONTENT_TYPE)
         if content_type and ('text/html' in content_type.lower()):
           r.InitRequestGet()
-          m.add_handle(r._curl_object)
-          self._retrievers_list.append(r)
+          curl_multi_object.add_handle(r._curl_object)
         else:
-          self.logger.info('\tSkipping: %s <<< %s',
-                           'Not an HTML page', r._url)
+          self._retrievers_list.remove(r)
+          self.logger.info('\tSkipping: Not an HTML page <<< %s', r._url)
       if self._retrievers_list:
         try:
-          self._MultiPerform(m)
-        except:
+          self._MultiPerform(curl_multi_object)
+        except pycurl.error as e:
           self.logger.error('Error: %s, url: %s', e, self._url)
         finally:
           for r in self._retrievers_list:
-            m.remove_handle(r._curl_object)
+            curl_multi_object.remove_handle(r._curl_object)
             self.logger.info('Downloaded: %s', r._url)
 
   def _LogRegPageFound(self, retriever):
@@ -567,7 +515,7 @@ class Crawler(object):
 
     Args:
       retriever: a temporary object that downloads a specific page, parses the
-      content and gets the page's href link.
+          content and gets the page's href link.
     """
     for link in retriever._clues_secure_links:
       if (not link in self._clues_secure_links and
@@ -620,11 +568,12 @@ class Crawler(object):
       urls_visited = 1
       while True:
         if (not (self._clues_secure_links or self._secure_links or
-                 self._clues_general_links or self._general_links or
-                 urls_visited >= MAX_TOTAL_URLS_PER_DOMAIN)):
+                self._clues_general_links or self._general_links) or
+            urls_visited >= MAX_TOTAL_URLS_PER_DOMAIN):
           break  # Registration page not found.
         m = pycurl.CurlMulti()
         self._GetLinksPages(m)
+        urls_visited += len(self._retrievers_list)
         self.logger.info('\t<----- URLs visited for domain "%s": %d ----->',
                          self._domain, urls_visited)
         for r in self._retrievers_list:
@@ -646,7 +595,7 @@ class Crawler(object):
 class WorkerThread(threading.Thread):
   """Creates a new thread of execution."""
   def __init__(self, url):
-    """Creates _url and pageFound attri to populate urls_with_no_reg_page file.
+    """Creates _url and page_found attri to populate urls_with_no_reg_page file.
 
     Used after thread's termination for the creation of a file with a list of
     the urls for which a registration page wasn't found.
@@ -656,18 +605,16 @@ class WorkerThread(threading.Thread):
     """
     threading.Thread.__init__(self)
     self._url = url
-    self.pageFound = False
+    self.page_found = False
 
   def run(self):
     """Execution of thread creates a Crawler object and runs it.
 
     Caution: this function name should not be changed to 'Run' or any other
-    name becuase it is overriding the 'run' method of the 'threading.Thread'
+    names because it is overriding the 'run' method of the 'threading.Thread'
     class. Otherwise it will never be called.
     """
-    c = Crawler(self._url)
-    if c.Run():
-      self.pageFound = True
+    self.page_found = Crawler(self._url).Run()
 
 
 class ThreadedCrawler(object):
@@ -676,35 +623,26 @@ class ThreadedCrawler(object):
   The crawler object runs concurrently, examining one site each.
   """
   logger = logging.getLogger(__name__)
-  log_handlers = {'StreamHandler': None}
 
   def __init__(self, urls_file, logging_level=None):
     """Creates threaded Crawler objects.
 
     Args:
-      urls_file: urls from a file.
+      urls_file: a text file containing a URL in each line.
       logging_level: verbosity level, default is None.
 
     Raises:
       IOError: If cannot find URLs from the list.
     """
     if logging_level:
-      if not self.log_handlers['StreamHandler']:
-        console = logging.StreamHandler()
-        console.setLevel(logging.INFO)
-        self.log_handlers['StreamHandler'] = console
-        self.logger.addHandler(console)
       self.logger.setLevel(logging_level)
-    else:
-      if self.log_handlers['StreamHandler']:
-        self.logger.removeHandler(self.log_handlers['StreamHandler'])
-        self.log_handlers['StreamHandler'] = None
+
     self._urls_list = []
     f = open(urls_file)
     try:
       for url in f.readlines():
         url = url.strip()
-        if not urlparse(url)[0].startswith('http'):
+        if not urlparse.urlparse(url)[0].startswith('http'):
           self.logger.info(
               '%s: skipping this (does not begin with "http://")', url)
           continue
@@ -715,17 +653,21 @@ class ThreadedCrawler(object):
     finally:
       f.close()
     if not self._urls_list:
-      raise IOError('no URLs were found')
+      error_msg = 'No URLs were found.'
+      self.logger.error('ERROR: %s', error_msg)
+      raise IOError(error_msg)
 
   def Run(self):
     """Runs Crawler objects using python threads.
 
     Number of concurrent threads is restricted to MAX_ALLOWED_THREADS.
 
+    Returns:
+      The number of registration pages found. -1 if no URLs are given.
+
     Raises:
       OSError: When creating the same directory that already exists.
     """
-    t0 = datetime.datetime.now()
     if self._urls_list:
       allThreads = []
       # originalNumThreads is the number of threads just before the
@@ -733,7 +675,7 @@ class ThreadedCrawler(object):
       # will be 1.
       originalNumThreads = threading.active_count()
       for url in self._urls_list:
-        self.logger.info('url fed to a crawler thread: %s', url)
+        self.logger.info('URL fed to a crawler thread: %s', url)
         t = WorkerThread(url)
         t.start()
         allThreads.append(t)
@@ -759,7 +701,7 @@ class ThreadedCrawler(object):
       try:
         for t in sorted(allThreads, key=lambda t: t._url):
           urls_no += 1
-          if not t.pageFound:
+          if not t.page_found:
             urls_not_found_no += 1
             fnot.write('%s' % t._url)
             fnot.write(os.linesep)
@@ -767,59 +709,59 @@ class ThreadedCrawler(object):
         self.logger.error('Error: %s', e)
       finally:
         fnot.close()
-      self.logger.info('Total number of urls given: %d\n', urls_no)
+      self.logger.info('Total number of URLs given: %d\n', urls_no)
       self.logger.info(
           'Registration pages found: %d\n', (urls_no - urls_not_found_no))
       self.logger.info(
           'URLs that did not return a registration page: %d\n',
           urls_not_found_no)
-      t1 = datetime.datetime.now()
-      delta_t = t1 - t0
-      self.logger.info('started at: %s\n', t0)
-      self.logger.info('ended at: %s\n', t1)
-      self.logger.info('execution time was: %s\n', delta_t)
+      return urls_no - urls_not_found_no
     else:
-      self.logger.error('Error: %s', 'no URLs were found')
-      sys.exit(1)
+      self.logger.error('Error: no URLs were found.')
+      return -1
 
 
 def main():
   # Command line options.
   usage = 'usage: %prog [options] single_url_or_urls_filename'
-  parser = OptionParser(usage)
+  parser = optparse.OptionParser(usage)
   parser.add_option(
       '-l', '--log_level', metavar='LOG_LEVEL', default='error',
       help='LOG_LEVEL: debug, info, warning or error [default: %default]')
 
   (options, args) = parser.parse_args()
-  options.log_level = getattr(logging, options.log_level.upper(),
-                              default=None)
-  if not options.log_level:
+  options.log_level = options.log_level.upper()
+  if options.log_level not in ['DEBUG', 'INFO', 'WARNING', 'ERROR']:
     print 'Wrong log_level argument.'
     parser.print_help()
     sys.exit(1)
+  options.log_level = getattr(logging, options.log_level)
 
   if len(args) != 1:
-    print 'Wrong number of arguments.'
-    parser.print_help()
-    sys.exit(1)
+    parser.error('Wrong number of arguments.')
 
-  if os.path.isfile(args[0]):
-    c = ThreadedCrawler(args[0], options.log_level)
-    c.Run()
+  logger = logging.getLogger(__name__)
+  if options.log_level:
+    console = logging.StreamHandler()
+    logger.addHandler(console)
+    logger.setLevel(options.log_level)
+
+  arg_is_a_file = os.path.isfile(args[0])
+  if arg_is_a_file:
+    CrawlerClass = ThreadedCrawler
   else:
-    t0 = datetime.datetime.now()
-    c = Crawler(args[0], options.log_level)
-    c.Run()
-    logger = logging.getLogger(__name__)
-    if c.url_error:
-      logger.error(
-          'Error: "%s" is neither a valid filename nor a valid url' % args[0])
-    t1 = datetime.datetime.now()
-    delta_t = t1 - t0
-    logger.info('started at: %s\n', t0)
-    logger.info('ended at: %s\n', t1)
-    logger.info('execution time was: %s\n', delta_t)
+    CrawlerClass = Crawler
+  t0 = datetime.datetime.now()
+  c = CrawlerClass(args[0], options.log_level)
+  c.Run()
+  if not arg_is_a_file and c.url_error:
+    logger.error(
+        'ERROR: "%s" is neither a valid filename nor a valid URL' % args[0])
+  t1 = datetime.datetime.now()
+  delta_t = t1 - t0
+  logger.info('Started at: %s\n', t0)
+  logger.info('Ended at: %s\n', t1)
+  logger.info('Total execution time: %s\n', delta_t)
 
 
 if __name__ == "__main__":
