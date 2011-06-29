@@ -82,6 +82,20 @@ BOOL DisconnectWindowWin::OnDialogMessage(HWND hwnd, UINT msg,
   switch (msg) {
     case WM_INITDIALOG:
       {
+        // Update UI string placeholders with actual strings.
+        std::wstring w_title = UTF8ToWide(kTitle);
+        SetWindowText(hwnd, w_title.c_str());
+
+        HWND hwndButton = GetDlgItem(hwnd, IDC_DISCONNECT);
+        CHECK(hwndButton);
+        std::wstring w_button = UTF8ToWide(kDisconnectButton);
+        SetWindowText(hwndButton, w_button.c_str());
+
+        HWND hwndSharingWith = GetDlgItem(hwnd, IDC_DISCONNECT_SHARINGWITH);
+        CHECK(hwndSharingWith);
+        std::wstring w_sharing = UTF8ToWide(kSharingWith);
+        SetWindowText(hwndSharingWith, w_sharing.c_str());
+
         // Update username in dialog.
         HWND hwndUsername = GetDlgItem(hwnd, IDC_DISCONNECT_USERNAME);
         CHECK(hwndUsername);
