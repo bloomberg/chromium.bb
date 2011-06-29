@@ -24,10 +24,10 @@ namespace syncable {
 class DirectoryChangeDelegate {
  public:
   virtual void HandleCalculateChangesChangeEventFromSyncApi(
-      const OriginalEntries& originals,
+      const EntryKernelMutationSet& mutations,
       BaseTransaction* trans) = 0;
   virtual void HandleCalculateChangesChangeEventFromSyncer(
-      const OriginalEntries& originals,
+      const EntryKernelMutationSet& mutations,
       BaseTransaction* trans) = 0;
   // Must return the set of all ModelTypes that were modified in the
   // transaction.

@@ -581,6 +581,9 @@ class ReadTransaction : public BaseTransaction {
 
 // Sync API's WriteTransaction is a read/write BaseTransaction.  It wraps
 // a syncable::WriteTransaction.
+//
+// NOTE: Only a single model type can be mutated for a given
+// WriteTransaction.
 class WriteTransaction : public BaseTransaction {
  public:
   // Start a new read/write transaction.
@@ -596,7 +599,8 @@ class WriteTransaction : public BaseTransaction {
   WriteTransaction() {}
 
   void SetTransaction(syncable::WriteTransaction* trans) {
-      transaction_ = trans;}
+      transaction_ = trans;
+  }
 
  private:
   void* operator new(size_t size);  // Transaction is meant for stack use only.

@@ -98,6 +98,10 @@ ModelType GetModelType(const sync_pb::SyncEntity& sync_entity);
 // prefer using GetModelType where possible.
 ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics);
 
+// If this returns false, we shouldn't bother maintaining a position
+// value (sibling ordering) for this item.
+bool ShouldMaintainPosition(ModelType model_type);
+
 // Determine a model type from the field number of its associated
 // EntitySpecifics extension.
 ModelType GetModelTypeFromExtensionFieldNumber(int field_number);

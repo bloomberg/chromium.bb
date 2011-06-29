@@ -69,7 +69,6 @@ using syncable::CREATE;
 using syncable::GET_BY_SERVER_TAG;
 using syncable::INVALID;
 using syncable::MutableEntry;
-using syncable::OriginalEntries;
 using syncable::SERVER_PARENT_ID;
 using syncable::SERVER_SPECIFICS;
 using syncable::SPECIFICS;

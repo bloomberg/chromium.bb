@@ -23,9 +23,7 @@ class TransactionObserver {
   virtual void OnTransactionMutate(
       const tracked_objects::Location& location,
       const WriterTag& writer,
-      // TODO(akalin): Have pairs of old/new entries instead of just
-      // the originals.
-      const OriginalEntries& originals,
+      const EntryKernelMutationSet& mutations,
       const ModelTypeBitSet& models_with_changes) = 0;
   virtual void OnTransactionEnd(
       const tracked_objects::Location& location,

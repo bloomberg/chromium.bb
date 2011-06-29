@@ -91,17 +91,29 @@ std::string WriterTagToString(WriterTag writer_tag) {
   return "";
 }
 
-ListValue* OriginalEntriesToValue(const OriginalEntries& original_entries) {
+#undef ENUM_CASE
+
+namespace {
+
+DictionaryValue* EntryKernelMutationToValue(
+    const EntryKernelMutation& mutation) {
+  DictionaryValue* dict = new DictionaryValue();
+  dict->Set("original", mutation.original.ToValue());
+  dict->Set("mutated", mutation.mutated.ToValue());
+  return dict;
+}
+
+}  // namespace
+
+ListValue* EntryKernelMutationSetToValue(
+    const EntryKernelMutationSet& mutations) {
   ListValue* list = new ListValue();
-  for (OriginalEntries::const_iterator it = original_entries.begin();
-       it != original_entries.end();
-       ++it) {
-    list->Append(it->ToValue());
+  for (EntryKernelMutationSet::const_iterator it = mutations.begin();
+       it != mutations.end(); ++it) {
+    list->Append(EntryKernelMutationToValue(*it));
   }
   return list;
 }
-
-#undef ENUM_CASE
 
 int64 Now() {
 #if defined(OS_WIN)
@@ -716,7 +728,7 @@ void Directory::VacuumAfterSaveChanges(const SaveChangesSnapshot& snapshot) {
   ScopedKernelLock lock(this);
   kernel_->flushed_metahandles.Push(0);  // Begin flush marker
   // Now drop everything we can out of memory.
-  for (OriginalEntries::const_iterator i = snapshot.dirty_metas.begin();
+  for (EntryKernelSet::const_iterator i = snapshot.dirty_metas.begin();
        i != snapshot.dirty_metas.end(); ++i) {
     kernel_->needle.put(META_HANDLE, i->ref(META_HANDLE));
     MetahandlesIndex::iterator found =
@@ -808,7 +820,7 @@ void Directory::HandleSaveChangesFailure(const SaveChangesSnapshot& snapshot) {
   // cause lost data, if no other changes are made to the in-memory entries
   // that would cause the dirty bit to get set again. Setting the bit ensures
   // that SaveChanges will at least try again later.
-  for (OriginalEntries::const_iterator i = snapshot.dirty_metas.begin();
+  for (EntryKernelSet::const_iterator i = snapshot.dirty_metas.begin();
        i != snapshot.dirty_metas.end(); ++i) {
     kernel_->needle.put(META_HANDLE, i->ref(META_HANDLE));
     MetahandlesIndex::iterator found =
@@ -1043,16 +1055,14 @@ class SomeIdsFilter : public IdFilter {
 };
 
 void Directory::CheckTreeInvariants(syncable::BaseTransaction* trans,
-                                    const OriginalEntries* originals) {
+                                    const EntryKernelMutationSet& mutations) {
   MetahandleSet handles;
   SomeIdsFilter filter;
-  filter.ids_.reserve(originals->size());
-  for (OriginalEntries::const_iterator i = originals->begin(),
-         end = originals->end(); i != end; ++i) {
-    Entry e(trans, GET_BY_HANDLE, i->ref(META_HANDLE));
-    CHECK(e.good());
-    filter.ids_.push_back(e.Get(ID));
-    handles.insert(i->ref(META_HANDLE));
+  filter.ids_.reserve(mutations.size());
+  for (EntryKernelMutationSet::const_iterator i = mutations.begin(),
+         end = mutations.end(); i != end; ++i) {
+    filter.ids_.push_back(i->mutated.ref(ID));
+    handles.insert(i->original.ref(META_HANDLE));
   }
   std::sort(filter.ids_.begin(), filter.ids_.end());
   CheckTreeInvariants(trans, handles, filter);
@@ -1199,6 +1209,14 @@ void BaseTransaction::Lock() {
       << elapsed.InSecondsF() << " seconds.";
 }
 
+void BaseTransaction::Unlock() {
+  dirkernel_->transaction_mutex.Release();
+  const base::TimeDelta elapsed = base::TimeTicks::Now() - time_acquired_;
+  VLOG_LOC(from_here_, 1)
+        << name_ << " transaction completed in " << elapsed.InSecondsF()
+        << " seconds.";
+}
+
 BaseTransaction::BaseTransaction(const tracked_objects::Location& from_here,
                                  const char* name,
                                  WriterTag writer,
@@ -1207,7 +1225,6 @@ BaseTransaction::BaseTransaction(const tracked_objects::Location& from_here,
       directory_(directory), dirkernel_(directory->kernel_) {
   dirkernel_->observers->Notify(
       &TransactionObserver::OnTransactionStart, from_here_, writer_);
-  Lock();
 }
 
 BaseTransaction::~BaseTransaction() {
@@ -1215,111 +1232,121 @@ BaseTransaction::~BaseTransaction() {
       &TransactionObserver::OnTransactionEnd, from_here_, writer_);
 }
 
-void BaseTransaction::UnlockAndLog(OriginalEntries* entries) {
-  // Work while transaction mutex is held
-  ModelTypeBitSet models_with_changes;
-  if (!NotifyTransactionChangingAndEnding(entries, &models_with_changes))
-    return;
-
-  // Work after mutex is relased.
-  NotifyTransactionComplete(models_with_changes);
-}
-
-bool BaseTransaction::NotifyTransactionChangingAndEnding(
-    OriginalEntries* entries,
-    ModelTypeBitSet* models_with_changes) {
-  dirkernel_->transaction_mutex.AssertAcquired();
-
-  scoped_ptr<OriginalEntries> originals(entries);
-  const base::TimeDelta elapsed = base::TimeTicks::Now() - time_acquired_;
-  VLOG_LOC(from_here_, 2)
-        << name_ << " transaction completed in " << elapsed.InSecondsF()
-        << " seconds.";
-
-  if (NULL == originals.get() || originals->empty()) {
-    dirkernel_->transaction_mutex.Release();
-    return false;
-  }
-
-  DirectoryChangeDelegate* const delegate = dirkernel_->delegate;
-  if (writer_ == syncable::SYNCAPI) {
-    delegate->HandleCalculateChangesChangeEventFromSyncApi(*originals, this);
-  } else {
-    delegate->HandleCalculateChangesChangeEventFromSyncer(*originals, this);
-  }
-
-  *models_with_changes = delegate->HandleTransactionEndingChangeEvent(this);
-
-  dirkernel_->observers->Notify(
-      &TransactionObserver::OnTransactionMutate,
-      from_here_, writer_, *originals, *models_with_changes);
-
-  // Release the transaction. Note, once the transaction is released this thread
-  // can be interrupted by another that was waiting for the transaction,
-  // resulting in this code possibly being interrupted with another thread
-  // performing following the same code path. From this point forward, only
-  // local state can be touched.
-  dirkernel_->transaction_mutex.Release();
-  return true;
-}
-
-void BaseTransaction::NotifyTransactionComplete(
-    ModelTypeBitSet models_with_changes) {
-  dirkernel_->delegate->HandleTransactionCompleteChangeEvent(
-      models_with_changes);
-}
-
-#undef VLOG_LOC
-
-#undef VLOG_LOC_STREAM
-
 ReadTransaction::ReadTransaction(const tracked_objects::Location& location,
                                  Directory* directory)
     : BaseTransaction(location, "Read", INVALID, directory) {
+  Lock();
 }
 
 ReadTransaction::ReadTransaction(const tracked_objects::Location& location,
                                  const ScopedDirLookup& scoped_dir)
     : BaseTransaction(location, "Read", INVALID, scoped_dir.operator->()) {
+  Lock();
 }
 
 ReadTransaction::~ReadTransaction() {
-  UnlockAndLog(NULL);
+  Unlock();
 }
 
 WriteTransaction::WriteTransaction(const tracked_objects::Location& location,
                                    WriterTag writer, Directory* directory)
-    : BaseTransaction(location, "Write", writer, directory),
-      originals_(new OriginalEntries) {
+    : BaseTransaction(location, "Write", writer, directory) {
+  Lock();
 }
 
 WriteTransaction::WriteTransaction(const tracked_objects::Location& location,
                                    WriterTag writer,
                                    const ScopedDirLookup& scoped_dir)
-    : BaseTransaction(location, "Write", writer, scoped_dir.operator->()),
-      originals_(new OriginalEntries) {
+    : BaseTransaction(location, "Write", writer, scoped_dir.operator->()) {
+  Lock();
 }
 
-void WriteTransaction::SaveOriginal(EntryKernel* entry) {
-  if (NULL == entry)
+void WriteTransaction::SaveOriginal(const EntryKernel* entry) {
+  if (!entry) {
     return;
-  OriginalEntries::iterator i = originals_->lower_bound(*entry);
-  if (i == originals_->end() ||
-      i->ref(META_HANDLE) != entry->ref(META_HANDLE)) {
-    originals_->insert(i, *entry);
+  }
+  // Insert only if it's not already there.
+  EntryKernelSet::iterator it = originals_.lower_bound(*entry);
+  if (it == originals_.end() ||
+      it->ref(META_HANDLE) != entry->ref(META_HANDLE)) {
+    originals_.insert(it, *entry);
   }
 }
 
+EntryKernelMutationSet WriteTransaction::RecordMutations() {
+  dirkernel_->transaction_mutex.AssertAcquired();
+  EntryKernelMutationSet mutations;
+  for (syncable::EntryKernelSet::iterator it = originals_.begin();
+       it != originals_.end(); ++it) {
+    int64 id = it->ref(syncable::META_HANDLE);
+    EntryKernel* kernel = directory()->GetEntryByHandle(id);
+    if (!kernel) {
+      NOTREACHED();
+      continue;
+    }
+    EntryKernelMutation mutation;
+    mutation.original = *it;
+    mutation.mutated = *kernel;
+    mutations.insert(mutation);
+  }
+  return mutations;
+}
+
+void WriteTransaction::UnlockAndNotify(
+    const EntryKernelMutationSet& mutations) {
+  // Work while transaction mutex is held.
+  ModelTypeBitSet models_with_changes;
+  bool has_mutations = !mutations.empty();
+  if (has_mutations) {
+    models_with_changes = NotifyTransactionChangingAndEnding(mutations);
+  }
+  Unlock();
+
+  // Work after mutex is relased.
+  if (has_mutations) {
+    NotifyTransactionComplete(models_with_changes);
+  }
+}
+
+ModelTypeBitSet WriteTransaction::NotifyTransactionChangingAndEnding(
+    const EntryKernelMutationSet& mutations) {
+  dirkernel_->transaction_mutex.AssertAcquired();
+  DCHECK(!mutations.empty());
+
+  DirectoryChangeDelegate* const delegate = dirkernel_->delegate;
+  if (writer_ == syncable::SYNCAPI) {
+    delegate->HandleCalculateChangesChangeEventFromSyncApi(mutations, this);
+  } else {
+    delegate->HandleCalculateChangesChangeEventFromSyncer(mutations, this);
+  }
+
+  ModelTypeBitSet models_with_changes =
+      delegate->HandleTransactionEndingChangeEvent(this);
+
+  dirkernel_->observers->Notify(
+      &TransactionObserver::OnTransactionMutate,
+      from_here_, writer_, mutations, models_with_changes);
+  return models_with_changes;
+}
+
+void WriteTransaction::NotifyTransactionComplete(
+    ModelTypeBitSet models_with_changes) {
+  dirkernel_->delegate->HandleTransactionCompleteChangeEvent(
+      models_with_changes);
+}
+
 WriteTransaction::~WriteTransaction() {
+  EntryKernelMutationSet mutations = RecordMutations();
+
   if (OFF != kInvariantCheckLevel) {
     const bool full_scan = (FULL_DB_VERIFICATION == kInvariantCheckLevel);
     if (full_scan)
       directory()->CheckTreeInvariants(this, full_scan);
     else
-      directory()->CheckTreeInvariants(this, originals_);
+      directory()->CheckTreeInvariants(this, mutations);
   }
 
-  UnlockAndLog(originals_);
+  UnlockAndNotify(mutations);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -1362,8 +1389,6 @@ DictionaryValue* Entry::ToValue() const {
                     ModelTypeToValue(GetServerModelTypeHelper()));
     entry_info->Set("modelType",
                     ModelTypeToValue(GetModelType()));
-    entry_info->SetBoolean("shouldMaintainPosition",
-                           ShouldMaintainPosition());
     entry_info->SetBoolean("existsOnClientBecauseNameIsNonEmpty",
                            ExistsOnClientBecauseNameIsNonEmpty());
     entry_info->SetBoolean("isRoot", IsRoot());

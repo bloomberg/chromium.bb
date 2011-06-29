@@ -311,7 +311,6 @@ TEST_F(SyncableGeneralTest, ToValue) {
     EXPECT_TRUE(value->HasKey("kernel"));
     ExpectDictStringValue("Unspecified", *value, "serverModelType");
     ExpectDictStringValue("Unspecified", *value, "modelType");
-    ExpectDictBooleanValue(false, *value, "shouldMaintainPosition");
     ExpectDictBooleanValue(true, *value, "existsOnClientBecauseNameIsNonEmpty");
     ExpectDictBooleanValue(false, *value, "isRoot");
   }
@@ -501,7 +500,7 @@ TEST_F(SyncableDirectoryTest, TakeSnapshotGetsAllDirtyHandlesTest) {
     // Make sure there's an entry for each new metahandle.  Make sure all
     // entries are marked dirty.
     ASSERT_EQ(expected_dirty_metahandles.size(), snapshot.dirty_metas.size());
-    for (OriginalEntries::const_iterator i = snapshot.dirty_metas.begin();
+    for (EntryKernelSet::const_iterator i = snapshot.dirty_metas.begin();
         i != snapshot.dirty_metas.end(); ++i) {
       ASSERT_TRUE(i->is_dirty());
     }
@@ -534,7 +533,7 @@ TEST_F(SyncableDirectoryTest, TakeSnapshotGetsAllDirtyHandlesTest) {
     // Make sure there's an entry for each new metahandle.  Make sure all
     // entries are marked dirty.
     EXPECT_EQ(expected_dirty_metahandles.size(), snapshot.dirty_metas.size());
-    for (OriginalEntries::const_iterator i = snapshot.dirty_metas.begin();
+    for (EntryKernelSet::const_iterator i = snapshot.dirty_metas.begin();
         i != snapshot.dirty_metas.end(); ++i) {
       EXPECT_TRUE(i->is_dirty());
     }
@@ -696,7 +695,7 @@ TEST_F(SyncableDirectoryTest, TakeSnapshotGetsOnlyDirtyHandlesTest) {
     // Make sure there's an entry for each changed metahandle.  Make sure all
     // entries are marked dirty.
     EXPECT_EQ(number_changed, snapshot.dirty_metas.size());
-    for (OriginalEntries::const_iterator i = snapshot.dirty_metas.begin();
+    for (EntryKernelSet::const_iterator i = snapshot.dirty_metas.begin();
         i != snapshot.dirty_metas.end(); ++i) {
       EXPECT_TRUE(i->is_dirty());
     }

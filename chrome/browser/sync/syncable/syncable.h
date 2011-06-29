@@ -18,6 +18,7 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
+#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/synchronization/lock.h"
@@ -410,12 +411,6 @@ class Entry {
   ModelType GetServerModelType() const;
   ModelType GetModelType() const;
 
-  // If this returns false, we shouldn't bother maintaining
-  // a position value (sibling ordering) for this item.
-  bool ShouldMaintainPosition() const {
-    return GetModelType() == BOOKMARKS;
-  }
-
   inline bool ExistsOnClientBecauseNameIsNonEmpty() const {
     DCHECK(kernel_);
     return !kernel_->ref(NON_UNIQUE_NAME).empty();
@@ -546,20 +541,35 @@ class MutableEntry : public Entry {
   DISALLOW_COPY_AND_ASSIGN(MutableEntry);
 };
 
-class LessParentIdAndHandle;
-template <typename FieldType, FieldType field_index>
-class LessField;
-class LessEntryMetaHandles {
+template <typename FieldType, FieldType field_index> class LessField;
+
+class EntryKernelLessByMetaHandle {
  public:
-  inline bool operator()(const syncable::EntryKernel& a,
-                         const syncable::EntryKernel& b) const {
+  inline bool operator()(const EntryKernel& a,
+                         const EntryKernel& b) const {
     return a.ref(META_HANDLE) < b.ref(META_HANDLE);
   }
 };
-typedef std::set<EntryKernel, LessEntryMetaHandles> OriginalEntries;
+typedef std::set<EntryKernel, EntryKernelLessByMetaHandle> EntryKernelSet;
+
+struct EntryKernelMutation {
+  EntryKernel original, mutated;
+};
+class EntryKernelMutationLessByMetaHandle {
+ public:
+  inline bool operator()(const EntryKernelMutation& a,
+                         const EntryKernelMutation& b) const {
+    DCHECK_EQ(a.original.ref(META_HANDLE), a.mutated.ref(META_HANDLE));
+    DCHECK_EQ(b.original.ref(META_HANDLE), b.mutated.ref(META_HANDLE));
+    return a.original.ref(META_HANDLE) < b.original.ref(META_HANDLE);
+  }
+};
+typedef std::set<EntryKernelMutation, EntryKernelMutationLessByMetaHandle>
+    EntryKernelMutationSet;
 
 // Caller owns the return value.
-ListValue* OriginalEntriesToValue(const OriginalEntries& original_entries);
+ListValue* EntryKernelMutationSetToValue(
+    const EntryKernelMutationSet& mutations);
 
 // How syncable indices & Indexers work.
 //
@@ -750,7 +760,7 @@ class Directory {
 
     KernelShareInfoStatus kernel_info_status;
     PersistedKernelInfo kernel_info;
-    OriginalEntries dirty_metas;
+    EntryKernelSet dirty_metas;
     MetahandleSet metahandles_to_purge;
   };
 
@@ -930,7 +940,7 @@ class Directory {
                            bool full_scan);
 
   void CheckTreeInvariants(syncable::BaseTransaction* trans,
-                           const OriginalEntries* originals);
+                           const EntryKernelMutationSet& mutations);
 
   void CheckTreeInvariants(syncable::BaseTransaction* trans,
                            const MetahandleSet& handles,
@@ -1137,11 +1147,8 @@ class BaseTransaction {
                   WriterTag writer,
                   Directory* directory);
 
-  void UnlockAndLog(OriginalEntries* entries);
-  virtual bool NotifyTransactionChangingAndEnding(
-      OriginalEntries* entries,
-      ModelTypeBitSet* models_with_changes);
-  virtual void NotifyTransactionComplete(ModelTypeBitSet models_with_changes);
+  void Lock();
+  void Unlock();
 
   const tracked_objects::Location from_here_;
   const char* const name_;
@@ -1151,8 +1158,6 @@ class BaseTransaction {
   base::TimeTicks time_acquired_;
 
  private:
-  void Lock();
-
   DISALLOW_COPY_AND_ASSIGN(BaseTransaction);
 };
 
@@ -1184,13 +1189,22 @@ class WriteTransaction : public BaseTransaction {
 
   virtual ~WriteTransaction();
 
-  void SaveOriginal(EntryKernel* entry);
+  void SaveOriginal(const EntryKernel* entry);
 
  protected:
-  // Before an entry gets modified, we copy the original into a list
-  // so that we can issue change notifications when the transaction
-  // is done.
-  OriginalEntries* const originals_;
+  // Overridden by tests.
+  virtual void NotifyTransactionComplete(
+      ModelTypeBitSet models_with_changes);
+
+ private:
+  EntryKernelMutationSet RecordMutations();
+
+  void UnlockAndNotify(const EntryKernelMutationSet& mutations);
+
+  ModelTypeBitSet NotifyTransactionChangingAndEnding(
+      const EntryKernelMutationSet& mutations);
+
+  EntryKernelSet originals_;
 
   DISALLOW_COPY_AND_ASSIGN(WriteTransaction);
 };

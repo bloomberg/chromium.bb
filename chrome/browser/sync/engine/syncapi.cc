@@ -95,8 +95,8 @@ using std::vector;
 using syncable::Directory;
 using syncable::DirectoryManager;
 using syncable::Entry;
+using syncable::EntryKernelMutationSet;
 using syncable::ModelTypeBitSet;
-using syncable::OriginalEntries;
 using syncable::WriterTag;
 using syncable::SPECIFICS;
 using sync_pb::AutofillProfileSpecifics;
@@ -1252,10 +1252,10 @@ class SyncManager::SyncInternal
   virtual ModelTypeBitSet HandleTransactionEndingChangeEvent(
       syncable::BaseTransaction* trans);
   virtual void HandleCalculateChangesChangeEventFromSyncApi(
-      const OriginalEntries& originals,
+      const EntryKernelMutationSet& mutations,
       syncable::BaseTransaction* trans);
   virtual void HandleCalculateChangesChangeEventFromSyncer(
-      const OriginalEntries& originals,
+      const EntryKernelMutationSet& mutations,
       syncable::BaseTransaction* trans);
 
   // Listens for notifications from the ServerConnectionManager
@@ -1446,15 +1446,18 @@ class SyncManager::SyncInternal
   // the relative order is unchanged).  To handle such cases, we rely on the
   // caller to treat a position update on any sibling as updating the positions
   // of all siblings.
-  static bool VisiblePositionsDiffer(const syncable::EntryKernel& a,
-                                     const syncable::Entry& b) {
+  static bool VisiblePositionsDiffer(
+      const syncable::EntryKernelMutation& mutation) {
+    const syncable::EntryKernel& a = mutation.original;
+    const syncable::EntryKernel& b = mutation.mutated;
     // If the datatype isn't one where the browser model cares about position,
     // don't bother notifying that data model of position-only changes.
-    if (!b.ShouldMaintainPosition())
+    if (!ShouldMaintainPosition(
+            syncable::GetModelTypeFromSpecifics(b.ref(SPECIFICS))))
       return false;
-    if (a.ref(syncable::NEXT_ID) != b.Get(syncable::NEXT_ID))
+    if (a.ref(syncable::NEXT_ID) != b.ref(syncable::NEXT_ID))
       return true;
-    if (a.ref(syncable::PARENT_ID) != b.Get(syncable::PARENT_ID))
+    if (a.ref(syncable::PARENT_ID) != b.ref(syncable::PARENT_ID))
       return true;
     return false;
   }
@@ -1462,40 +1465,44 @@ class SyncManager::SyncInternal
   // Determine if any of the fields made visible to clients of the Sync API
   // differ between the versions of an entry stored in |a| and |b|. A return
   // value of false means that it should be OK to ignore this change.
-  static bool VisiblePropertiesDiffer(const syncable::EntryKernel& a,
-                                      const syncable::Entry& b,
-                                      Cryptographer* cryptographer) {
-    syncable::ModelType model_type = b.GetModelType();
+  static bool VisiblePropertiesDiffer(
+      const syncable::EntryKernelMutation& mutation,
+      Cryptographer* cryptographer) {
+    const syncable::EntryKernel& a = mutation.original;
+    const syncable::EntryKernel& b = mutation.mutated;
+    const sync_pb::EntitySpecifics& a_specifics = a.ref(SPECIFICS);
+    const sync_pb::EntitySpecifics& b_specifics = b.ref(SPECIFICS);
+    DCHECK_EQ(syncable::GetModelTypeFromSpecifics(a_specifics),
+              syncable::GetModelTypeFromSpecifics(b_specifics));
+    syncable::ModelType model_type =
+        syncable::GetModelTypeFromSpecifics(b_specifics);
     // Suppress updates to items that aren't tracked by any browser model.
-    if (model_type == syncable::UNSPECIFIED ||
-        model_type == syncable::TOP_LEVEL_FOLDER ||
+    if (model_type < syncable::FIRST_REAL_MODEL_TYPE ||
         !a.ref(syncable::UNIQUE_SERVER_TAG).empty()) {
       return false;
     }
-
-    if (a.ref(syncable::NON_UNIQUE_NAME) != b.Get(syncable::NON_UNIQUE_NAME))
+    if (a.ref(syncable::NON_UNIQUE_NAME) != b.ref(syncable::NON_UNIQUE_NAME))
       return true;
-
-    if (a.ref(syncable::IS_DIR) != b.Get(syncable::IS_DIR))
+    if (a.ref(syncable::IS_DIR) != b.ref(syncable::IS_DIR))
       return true;
     // Check if data has changed (account for encryption).
     std::string a_str, b_str;
-    if (a.ref(SPECIFICS).has_encrypted()) {
-      const sync_pb::EncryptedData& encrypted = a.ref(SPECIFICS).encrypted();
+    if (a_specifics.has_encrypted()) {
+      const sync_pb::EncryptedData& encrypted = a_specifics.encrypted();
       a_str = cryptographer->DecryptToString(encrypted);
     } else {
-      a_str = a.ref(SPECIFICS).SerializeAsString();
+      a_str = a_specifics.SerializeAsString();
     }
-    if (b.Get(SPECIFICS).has_encrypted()) {
-      const sync_pb::EncryptedData& encrypted = b.Get(SPECIFICS).encrypted();
+    if (b_specifics.has_encrypted()) {
+      const sync_pb::EncryptedData& encrypted = b_specifics.encrypted();
       b_str = cryptographer->DecryptToString(encrypted);
     } else {
-      b_str = b.Get(SPECIFICS).SerializeAsString();
+      b_str = b_specifics.SerializeAsString();
     }
     if (a_str != b_str) {
       return true;
     }
-    if (VisiblePositionsDiffer(a, b))
+    if (VisiblePositionsDiffer(mutation))
       return true;
     return false;
   }
@@ -2342,41 +2349,47 @@ ModelTypeBitSet SyncManager::SyncInternal::HandleTransactionEndingChangeEvent(
 }
 
 void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncApi(
-    const OriginalEntries& originals,
+    const EntryKernelMutationSet& mutations,
     syncable::BaseTransaction* trans) {
+  if (!scheduler()) {
+    return;
+  }
+
   // We have been notified about a user action changing a sync model.
   LOG_IF(WARNING, !ChangeBuffersAreEmpty()) <<
       "CALCULATE_CHANGES called with unapplied old changes.";
 
-  bool exists_unsynced_items = false;
-  bool only_preference_changes = true;
-  syncable::ModelTypeBitSet model_types;
-  for (syncable::OriginalEntries::const_iterator i = originals.begin();
-       i != originals.end() && !exists_unsynced_items;
-       ++i) {
-    int64 id = i->ref(syncable::META_HANDLE);
-    syncable::Entry e(trans, syncable::GET_BY_HANDLE, id);
-    DCHECK(e.good());
+  // The mutated model type, or UNSPECIFIED if nothing was mutated.
+  syncable::ModelType mutated_model_type = syncable::UNSPECIFIED;
 
-    syncable::ModelType model_type = e.GetModelType();
+  // Find the first real mutation.  We assume that only a single model
+  // type is mutated per transaction.
+  for (syncable::EntryKernelMutationSet::const_iterator it =
+           mutations.begin(); it != mutations.end(); ++it) {
+    if (!it->mutated.ref(syncable::IS_UNSYNCED)) {
+      continue;
+    }
 
-    if (e.Get(syncable::IS_UNSYNCED)) {
-      if (model_type == syncable::TOP_LEVEL_FOLDER ||
-          model_type == syncable::UNSPECIFIED) {
-        NOTREACHED() << "Permanent or underspecified item changed via syncapi.";
-        continue;
-      }
-      // Unsynced items will cause us to nudge the the syncer.
-      exists_unsynced_items = true;
+    syncable::ModelType model_type =
+        syncable::GetModelTypeFromSpecifics(it->mutated.ref(SPECIFICS));
+    if (model_type < syncable::FIRST_REAL_MODEL_TYPE) {
+      NOTREACHED() << "Permanent or underspecified item changed via syncapi.";
+      continue;
+    }
 
-      model_types[model_type] = true;
-      if (model_type != syncable::PREFERENCES)
-        only_preference_changes = false;
+    // Found real mutation.
+    if (mutated_model_type == syncable::UNSPECIFIED) {
+      mutated_model_type = model_type;
+      break;
     }
   }
-  if (exists_unsynced_items && scheduler()) {
-    int nudge_delay = only_preference_changes ?
+
+  // Nudge if necessary.
+  if (mutated_model_type != syncable::UNSPECIFIED) {
+    int nudge_delay = (mutated_model_type == syncable::PREFERENCES) ?
         kPreferencesNudgeDelayMilliseconds : kDefaultNudgeDelayMilliseconds;
+    syncable::ModelTypeBitSet model_types;
+    model_types.set(mutated_model_type);
     sync_loop_->PostTask(FROM_HERE,
         NewRunnableMethod(this, &SyncInternal::RequestNudgeWithDataTypes,
         TimeDelta::FromMilliseconds(nudge_delay),
@@ -2417,7 +2430,7 @@ void SyncManager::SyncInternal::SetExtraChangeRecordData(int64 id,
 }
 
 void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncer(
-    const OriginalEntries& originals,
+    const EntryKernelMutationSet& mutations,
     syncable::BaseTransaction* trans) {
   // We only expect one notification per sync step, so change_buffers_ should
   // contain no pending entries.
@@ -2425,30 +2438,30 @@ void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncer(
       "CALCULATE_CHANGES called with unapplied old changes.";
 
   Cryptographer* crypto = dir_manager()->GetCryptographer(trans);
-  for (syncable::OriginalEntries::const_iterator i = originals.begin();
-       i != originals.end(); ++i) {
-    int64 id = i->ref(syncable::META_HANDLE);
-    syncable::Entry e(trans, syncable::GET_BY_HANDLE, id);
-    bool existed_before = !i->ref(syncable::IS_DEL);
-    bool exists_now = e.good() && !e.Get(syncable::IS_DEL);
-    DCHECK(e.good());
+  for (syncable::EntryKernelMutationSet::const_iterator it =
+           mutations.begin(); it != mutations.end(); ++it) {
+    bool existed_before = !it->original.ref(syncable::IS_DEL);
+    bool exists_now = !it->mutated.ref(syncable::IS_DEL);
 
     // Omit items that aren't associated with a model.
-    syncable::ModelType type = e.GetModelType();
-    if (type == syncable::TOP_LEVEL_FOLDER || type == syncable::UNSPECIFIED)
+    syncable::ModelType type =
+        syncable::GetModelTypeFromSpecifics(it->mutated.ref(SPECIFICS));
+    if (type < syncable::FIRST_REAL_MODEL_TYPE)
       continue;
 
+    int64 id = it->original.ref(syncable::META_HANDLE);
     if (exists_now && !existed_before)
       change_buffers_[type].PushAddedItem(id);
     else if (!exists_now && existed_before)
       change_buffers_[type].PushDeletedItem(id);
     else if (exists_now && existed_before &&
-             VisiblePropertiesDiffer(*i, e, crypto)) {
-      change_buffers_[type].PushUpdatedItem(id, VisiblePositionsDiffer(*i, e));
+             VisiblePropertiesDiffer(*it, crypto)) {
+      change_buffers_[type].PushUpdatedItem(
+          id, VisiblePositionsDiffer(*it));
     }
 
-    SetExtraChangeRecordData(id, type, &change_buffers_[type], crypto, *i,
-                             existed_before, exists_now);
+    SetExtraChangeRecordData(id, type, &change_buffers_[type], crypto,
+                             it->original, existed_before, exists_now);
   }
 }
 

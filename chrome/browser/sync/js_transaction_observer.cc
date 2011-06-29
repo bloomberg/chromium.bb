@@ -50,13 +50,13 @@ void JsTransactionObserver::OnTransactionStart(
 void JsTransactionObserver::OnTransactionMutate(
     const tracked_objects::Location& location,
     const syncable::WriterTag& writer,
-    const syncable::OriginalEntries& originals,
+    const syncable::EntryKernelMutationSet& mutations,
     const syncable::ModelTypeBitSet& models_with_changes) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   DictionaryValue details;
   details.SetString("location", GetLocationString(location));
   details.SetString("writer", syncable::WriterTagToString(writer));
-  details.Set("originals", syncable::OriginalEntriesToValue(originals));
+  details.Set("mutations", syncable::EntryKernelMutationSetToValue(mutations));
   details.Set("modelsWithChanges",
               syncable::ModelTypeBitSetToValue(models_with_changes));
   parent_router_->RouteJsEvent("onTransactionMutate",

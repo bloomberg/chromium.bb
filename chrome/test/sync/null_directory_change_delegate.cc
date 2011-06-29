@@ -9,11 +9,11 @@ namespace syncable {
 NullDirectoryChangeDelegate::~NullDirectoryChangeDelegate() {}
 
 void NullDirectoryChangeDelegate::HandleCalculateChangesChangeEventFromSyncApi(
-    const OriginalEntries& originals,
+    const EntryKernelMutationSet& mutations,
     BaseTransaction* trans) {}
 
 void NullDirectoryChangeDelegate::HandleCalculateChangesChangeEventFromSyncer(
-    const OriginalEntries& originals,
+    const EntryKernelMutationSet& mutations,
     BaseTransaction* trans) {}
 
 ModelTypeBitSet NullDirectoryChangeDelegate::HandleTransactionEndingChangeEvent(

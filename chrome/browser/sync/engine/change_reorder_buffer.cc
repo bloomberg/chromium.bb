@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include <utility>  // for pair<>
 #include <vector>
 
+#include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 
 using std::numeric_limits;
@@ -150,8 +151,10 @@ void ChangeReorderBuffer::GetAllChangesInTreeOrder(
         CHECK(node.InitByIdLookup(i->first));
 
         // We only care about parents of entry's with position-sensitive models.
-        if (node.GetEntry()->ShouldMaintainPosition())
+        if (syncable::ShouldMaintainPosition(
+                node.GetEntry()->GetModelType())) {
           parents_of_position_changes.insert(node.GetParentId());
+        }
       }
     }
   }

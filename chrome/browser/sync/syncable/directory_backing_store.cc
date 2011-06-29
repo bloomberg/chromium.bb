@@ -363,7 +363,7 @@ bool DirectoryBackingStore::SaveChanges(
   if (SQLITE_OK != transaction.BeginExclusive())
     return false;
 
-  for (OriginalEntries::const_iterator i = snapshot.dirty_metas.begin();
+  for (EntryKernelSet::const_iterator i = snapshot.dirty_metas.begin();
        i != snapshot.dirty_metas.end(); ++i) {
     DCHECK(i->is_dirty());
     if (!SaveEntryToDB(*i))

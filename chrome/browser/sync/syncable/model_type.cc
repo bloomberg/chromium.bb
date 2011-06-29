@@ -194,6 +194,10 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
   return UNSPECIFIED;
 }
 
+bool ShouldMaintainPosition(ModelType model_type) {
+  return model_type == BOOKMARKS;
+}
+
 std::string ModelTypeToString(ModelType model_type) {
   switch (model_type) {
     case BOOKMARKS:
