@@ -83,7 +83,17 @@ class ClientSession : public protocol::HostStub,
 
  private:
   friend class base::RefCountedThreadSafe<ClientSession>;
+  friend class ClientSessionTest_UnpressKeys_Test;
   virtual ~ClientSession();
+
+  // Keep track of keydowns and keyups so that we can clean up the keyboard
+  // state when the user disconnects.
+  void RecordKeyEvent(const protocol::KeyEvent* event);
+
+  // Synthesize KeyUp events for keys that have been pressed but not released.
+  // This should be used when the client has disconnected to clear out any
+  // pending key events.
+  void UnpressKeys();
 
   EventHandler* event_handler_;
 

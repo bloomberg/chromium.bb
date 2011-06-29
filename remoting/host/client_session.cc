@@ -84,11 +84,7 @@ void ClientSession::InjectKeyEvent(const protocol::KeyEvent* event,
                                    Task* done) {
   base::ScopedTaskRunner done_runner(done);
   if (authenticated_ && !ShouldIgnoreRemoteKeyboardInput(event)) {
-    if (event->pressed()) {
-      pressed_keys_.insert(event->keycode());
-    } else {
-      pressed_keys_.erase(event->keycode());
-    }
+    RecordKeyEvent(event);
     input_stub_->InjectKeyEvent(event, done_runner.Release());
   }
 }
@@ -120,6 +116,7 @@ void ClientSession::InjectMouseEvent(const protocol::MouseEvent* event,
 
 void ClientSession::Disconnect() {
   connection_->Disconnect();
+  UnpressKeys();
   authenticated_ = false;
 }
 
@@ -164,6 +161,25 @@ bool ClientSession::ShouldIgnoreRemoteKeyboardInput(
         (pressed_keys_.find(event->keycode()) == pressed_keys_.end());
   }
   return false;
+}
+
+void ClientSession::RecordKeyEvent(const protocol::KeyEvent* event) {
+  if (event->pressed()) {
+    pressed_keys_.insert(event->keycode());
+  } else {
+    pressed_keys_.erase(event->keycode());
+  }
+}
+
+void ClientSession::UnpressKeys() {
+  std::set<int>::iterator i;
+  for (i = pressed_keys_.begin(); i != pressed_keys_.end(); ++i) {
+    protocol::KeyEvent key;
+    key.set_keycode(*i);
+    key.set_pressed(false);
+    input_stub_->InjectKeyEvent(&key, NULL);
+  }
+  pressed_keys_.clear();
 }
 
 }  // namespace remoting

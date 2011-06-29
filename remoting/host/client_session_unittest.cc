@@ -65,9 +65,13 @@ TEST_F(ClientSessionTest, InputStubFilter) {
   key_event1.set_pressed(true);
   key_event1.set_keycode(1);
 
-  protocol::KeyEvent key_event2;
-  key_event2.set_pressed(true);
-  key_event2.set_keycode(2);
+  protocol::KeyEvent key_event2_down;
+  key_event2_down.set_pressed(true);
+  key_event2_down.set_keycode(2);
+
+  protocol::KeyEvent key_event2_up;
+  key_event2_up.set_pressed(false);
+  key_event2_up.set_keycode(2);
 
   protocol::KeyEvent key_event3;
   key_event3.set_pressed(true);
@@ -94,7 +98,8 @@ TEST_F(ClientSessionTest, InputStubFilter) {
   EXPECT_CALL(*user_authenticator_, Authenticate(_, _))
       .WillOnce(Return(true));
   EXPECT_CALL(session_event_handler_, LocalLoginSucceeded(_));
-  EXPECT_CALL(input_stub_, InjectKeyEvent(&key_event2, _));
+  EXPECT_CALL(input_stub_, InjectKeyEvent(&key_event2_down, _));
+  EXPECT_CALL(input_stub_, InjectKeyEvent(&key_event2_up, _));
   EXPECT_CALL(input_stub_, InjectMouseEvent(&mouse_event2, _));
   EXPECT_CALL(*connection_.get(), Disconnect());
 
@@ -104,7 +109,8 @@ TEST_F(ClientSessionTest, InputStubFilter) {
   client_session_->InjectMouseEvent(&mouse_event1, new DummyTask());
   client_session_->BeginSessionRequest(&credentials, new DummyTask());
   // These events should get through to the input stub.
-  client_session_->InjectKeyEvent(&key_event2, new DummyTask());
+  client_session_->InjectKeyEvent(&key_event2_down, new DummyTask());
+  client_session_->InjectKeyEvent(&key_event2_up, new DummyTask());
   client_session_->InjectMouseEvent(&mouse_event2, new DummyTask());
   client_session_->Disconnect();
   // These events should not get through to the input stub,
@@ -152,5 +158,27 @@ TEST_F(ClientSessionTest, LocalInputTest) {
   // (via dependency injection, not sleep!)
   client_session_->Disconnect();
  }
+
+MATCHER_P(IsMatchingKeyUp, k, "") {
+  return !arg->pressed() && arg->keycode() == k->keycode();
+}
+
+TEST_F(ClientSessionTest, UnpressKeys) {
+  protocol::KeyEvent key1;
+  key1.set_pressed(true);
+  key1.set_keycode(1);
+
+  protocol::KeyEvent key2;
+  key2.set_pressed(true);
+  key2.set_keycode(2);
+
+  client_session_->RecordKeyEvent(&key1);
+  client_session_->RecordKeyEvent(&key2);
+
+  EXPECT_CALL(input_stub_, InjectKeyEvent(IsMatchingKeyUp(&key1), _));
+  EXPECT_CALL(input_stub_, InjectKeyEvent(IsMatchingKeyUp(&key2), _));
+
+  client_session_->UnpressKeys();
+}
 
 }  // namespace remoting
