@@ -244,7 +244,7 @@ class Texture {
   bool AllocateStorage(const gfx::Size& size, GLenum format);
 
   // Copy the contents of the currently bound frame buffer.
-  void Copy(const gfx::Size& size);
+  void Copy(const gfx::Size& size, GLenum format);
 
   // Destroy the render texture. This must be explicitly called before
   // destroying this object.
@@ -265,7 +265,6 @@ class Texture {
  private:
   GLES2DecoderImpl* decoder_;
   GLuint id_;
-  GLenum format_;
   gfx::Size size_;
   DISALLOW_COPY_AND_ASSIGN(Texture);
 };
@@ -1651,8 +1650,7 @@ ScopedResolvedFrameBufferBinder::~ScopedResolvedFrameBufferBinder() {
 
 Texture::Texture(GLES2DecoderImpl* decoder)
     : decoder_(decoder),
-      id_(0),
-      format_(0) {
+      id_(0) {
 }
 
 Texture::~Texture() {
@@ -1666,16 +1664,17 @@ void Texture::Create() {
   ScopedGLErrorSuppressor suppressor(decoder_);
   Destroy();
   glGenTextures(1, &id_);
+  ScopedTexture2DBinder binder(decoder_, id_);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 }
 
 bool Texture::AllocateStorage(const gfx::Size& size, GLenum format) {
   DCHECK_NE(id_, 0u);
   ScopedGLErrorSuppressor suppressor(decoder_);
   ScopedTexture2DBinder binder(decoder_, id_);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
   glTexImage2D(GL_TEXTURE_2D,
                0,  // mip level
@@ -1688,18 +1687,17 @@ bool Texture::AllocateStorage(const gfx::Size& size, GLenum format) {
                NULL);
 
   size_ = size;
-  format_ = format;
 
   return glGetError() == GL_NO_ERROR;
 }
 
-void Texture::Copy(const gfx::Size& size) {
+void Texture::Copy(const gfx::Size& size, GLenum format) {
   DCHECK_NE(id_, 0u);
   ScopedGLErrorSuppressor suppressor(decoder_);
   ScopedTexture2DBinder binder(decoder_, id_);
   glCopyTexImage2D(GL_TEXTURE_2D,
                    0,  // level
-                   format_,
+                   format,
                    0, 0,
                    size.width(),
                    size.height(),
@@ -6692,7 +6690,8 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
       if (parent_) {
         // Copy the target frame buffer to the saved offscreen texture.
         offscreen_saved_color_texture_->Copy(
-            offscreen_saved_color_texture_->size());
+            offscreen_saved_color_texture_->size(),
+            offscreen_saved_color_format_);
 
         // Ensure the side effects of the copy are visible to the parent
         // context. There is no need to do this for ANGLE because it uses a
