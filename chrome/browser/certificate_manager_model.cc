@@ -112,8 +112,10 @@ string16 CertificateManagerModel::GetColumnText(
 
 int CertificateManagerModel::ImportFromPKCS12(net::CryptoModule* module,
                                               const std::string& data,
-                                              const string16& password) {
-  int result = cert_db_.ImportFromPKCS12(module, data, password);
+                                              const string16& password,
+                                              bool is_extractable) {
+  int result = cert_db_.ImportFromPKCS12(module, data, password,
+                                         is_extractable);
   if (result == net::OK)
     Refresh();
   return result;

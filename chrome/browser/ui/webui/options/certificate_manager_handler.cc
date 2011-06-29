@@ -669,8 +669,13 @@ void CertificateManagerHandler::ImportPersonalFileRead(
 }
 
 void CertificateManagerHandler::ImportPersonalSlotUnlocked() {
+  // Determine if the private key should be unextractable after the import.
+  // We do this by checking the value of |use_hardware_backed_| which is set
+  // to true if importing into a hardware module. Currently, this only happens
+  // for Chrome OS when the "Import and Bind" option is chosen.
+  bool is_extractable = !use_hardware_backed_;
   int result = certificate_manager_model_->ImportFromPKCS12(
-      module_, file_data_, password_);
+      module_, file_data_, password_, is_extractable);
   ImportExportCleanup();
   web_ui_->CallJavascriptFunction("CertificateRestoreOverlay.dismiss");
   switch (result) {
