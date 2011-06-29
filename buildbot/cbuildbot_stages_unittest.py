@@ -214,8 +214,8 @@ class ManifestVersionedSyncStageTest(AbstractStageTest):
     os.path.isdir(self.build_root + '/.repo').AndReturn(False)
     os.path.isdir(self.build_root + '/.repo').AndReturn(False)
 
-    self.manager.GetNextBuildSpec(force_version=None,
-        latest=True).AndReturn(self.next_version)
+    self.manager.GetNextBuildSpec(stages.VERSION_FILE,
+        force_version=None, latest=True).AndReturn(self.next_version)
 
     commands.ManifestCheckout(self.build_root,
                               self.TRACKING_BRANCH,

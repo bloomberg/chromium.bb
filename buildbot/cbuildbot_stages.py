@@ -4,6 +4,7 @@
 
 """Module containing the various stages that a builder runs."""
 
+import constants
 import datetime
 import math
 import os
@@ -16,7 +17,6 @@ import traceback
 
 from chromite.buildbot import cbuildbot_commands as commands
 from chromite.buildbot import cbuildbot_config
-from chromite.buildbot import constants
 from chromite.buildbot import lkgm_manager
 from chromite.buildbot import manifest_version
 from chromite.lib import cros_build_lib as cros_lib
@@ -26,6 +26,8 @@ _PORTAGE_BINHOST = 'PORTAGE_BINHOST'
 PUBLIC_OVERLAY = '%(buildroot)s/src/third_party/chromiumos-overlay'
 _CROS_ARCHIVE_URL = 'CROS_ARCHIVE_URL'
 OVERLAY_LIST_CMD = '%(buildroot)s/src/platform/dev/host/cros_overlay_list'
+VERSION_FILE = os.path.join('src/third_party/chromiumos-overlay',
+                            'chromeos/config/chromeos_version.sh')
 
 class BuildException(Exception):
   pass
@@ -505,7 +507,7 @@ class ManifestVersionedSyncStage(BuilderStage):
     assert self.manifest_manager, \
         'Must run GetStageManager before checkout out build.'
     return self.manifest_manager.GetNextBuildSpec(
-        force_version=self._options.force_version, latest=True)
+        VERSION_FILE, force_version=self._options.force_version, latest=True)
 
   def _PerformStage(self):
     if os.path.isdir(os.path.join(self._build_root, '.repo')):
@@ -562,10 +564,10 @@ class LGKMVersionedSyncStage(ManifestVersionedSyncStage):
 
     if self._build_config['master']:
       return self.manifest_manager.CreateNewCandidate(
-          force_version=self._options.force_version)
+          VERSION_FILE, force_version=self._options.force_version)
     else:
       return self.manifest_manager.GetLatestCandidate(
-          force_version=self._options.force_version)
+          VERSION_FILE, force_version=self._options.force_version)
 
 
 class ManifestVersionedSyncCompletionStage(ForgivingBuilderStage):

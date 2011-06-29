@@ -33,6 +33,3 @@ CHROME_REV_TOT = 'tot'
 CHROME_REV_LATEST = 'latest_release'
 CHROME_REV_STICKY = 'stable_release'
 VALID_CHROME_REVISIONS = [CHROME_REV_TOT, CHROME_REV_LATEST, CHROME_REV_STICKY]
-
-VERSION_FILE = os.path.join('src/third_party/chromiumos-overlay',
-                            'chromeos/config/chromeos_version.sh')
