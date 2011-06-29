@@ -11,6 +11,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache.h"
+#include "chrome/browser/ui/webui/ntp/ntp_resource_cache_factory.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
@@ -33,7 +34,7 @@ static std::string StripQueryParams(const std::string& path) {
 ThemeSource::ThemeSource(Profile* profile)
     : DataSource(chrome::kChromeUIThemePath, MessageLoop::current()),
       profile_(profile->GetOriginalProfile()) {
-  css_bytes_ = profile_->GetNTPResourceCache()->GetNewTabCSS(
+  css_bytes_ = NTPResourceCacheFactory::GetForProfile(profile)->GetNewTabCSS(
       profile->IsOffTheRecord());
 }
 

@@ -623,11 +623,6 @@ class OffTheRecordProfileImpl : public Profile,
     NOTREACHED();
   }
 
-  virtual NTPResourceCache* GetNTPResourceCache() {
-    // Just return the real profile resource cache.
-    return profile_->GetNTPResourceCache();
-  }
-
   virtual FilePath last_selected_directory() {
     const FilePath& directory = last_selected_directory_;
     if (directory.empty()) {

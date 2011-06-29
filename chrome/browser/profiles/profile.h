@@ -74,7 +74,6 @@ class GeolocationPermissionContext;
 class HistoryService;
 class HostContentSettingsMap;
 class HostZoomMap;
-class NTPResourceCache;
 class NavigationController;
 class PasswordStore;
 class PersonalDataManager;
@@ -464,9 +463,6 @@ class Profile {
   // Register URLRequestFactories for protocols registered with
   // registerProtocolHandler.
   virtual void InitRegisteredProtocolHandlers() = 0;
-
-  // Returns the new tab page resource cache.
-  virtual NTPResourceCache* GetNTPResourceCache() = 0;
 
   // Returns the last directory that was chosen for uploading or opening a file.
   virtual FilePath last_selected_directory() = 0;

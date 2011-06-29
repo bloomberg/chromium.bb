@@ -3426,6 +3426,8 @@
         'browser/ui/webui/ntp/ntp_login_handler.h',
         'browser/ui/webui/ntp/ntp_resource_cache.cc',
         'browser/ui/webui/ntp/ntp_resource_cache.h',
+        'browser/ui/webui/ntp/ntp_resource_cache_factory.cc',
+        'browser/ui/webui/ntp/ntp_resource_cache_factory.h',
         'browser/ui/webui/ntp/shown_sections_handler.cc',
         'browser/ui/webui/ntp/shown_sections_handler.h',
         'browser/ui/webui/ntp/thumbnail_source.cc',

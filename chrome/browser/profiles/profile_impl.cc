@@ -70,7 +70,6 @@
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/extension_icon_source.h"
-#include "chrome/browser/ui/webui/ntp/ntp_resource_cache.h"
 #include "chrome/browser/user_style_sheet_watcher.h"
 #include "chrome/browser/visitedlink/visitedlink_event_listener.h"
 #include "chrome/browser/visitedlink/visitedlink_master.h"
@@ -576,12 +575,6 @@ void ProfileImpl::InitRegisteredProtocolHandlers() {
   protocol_handler_registry_->Load();
 }
 
-NTPResourceCache* ProfileImpl::GetNTPResourceCache() {
-  if (!ntp_resource_cache_.get())
-    ntp_resource_cache_.reset(new NTPResourceCache(this));
-  return ntp_resource_cache_.get();
-}
-
 FilePath ProfileImpl::last_selected_directory() {
   return GetPrefs()->GetFilePath(prefs::kSelectFileLastDirectory);
 }
@@ -598,6 +591,9 @@ ProfileImpl::~ProfileImpl() {
 
   StopCreateSessionServiceTimer();
 
+  // Remove pref observers
+  pref_change_registrar_.RemoveAll();
+
   ProfileDependencyManager::GetInstance()->DestroyProfileServices(this);
 
   if (clear_local_state_on_exit_) {
@@ -613,12 +609,6 @@ ProfileImpl::~ProfileImpl() {
     download_manager_->Shutdown();
     download_manager_ = NULL;
   }
-
-  // Remove pref observers
-  pref_change_registrar_.RemoveAll();
-
-  // Delete the NTP resource cache so we can unregister pref observers.
-  ntp_resource_cache_.reset();
 
   // The sync service needs to be deleted before the services it calls.
   sync_service_.reset();

@@ -43,7 +43,6 @@
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "chrome/browser/ui/webui/ntp/ntp_resource_cache.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/bookmark_load_observer.h"
@@ -689,12 +688,6 @@ WebKitContext* TestingProfile::GetWebKitContext() {
 
 WebKitContext* TestingProfile::GetOffTheRecordWebKitContext() {
   return NULL;
-}
-
-NTPResourceCache* TestingProfile::GetNTPResourceCache() {
-  if (!ntp_resource_cache_.get())
-    ntp_resource_cache_.reset(new NTPResourceCache(this));
-  return ntp_resource_cache_.get();
 }
 
 FilePath TestingProfile::last_selected_directory() {

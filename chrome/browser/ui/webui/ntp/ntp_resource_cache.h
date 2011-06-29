@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 
@@ -17,7 +18,8 @@ class RefCountedBytes;
 
 // This class keeps a cache of NTP resources (HTML and CSS) so we don't have to
 // regenerate them all the time.
-class NTPResourceCache : public NotificationObserver {
+class NTPResourceCache : public NotificationObserver,
+                         public ProfileKeyedService {
  public:
   explicit NTPResourceCache(Profile* profile);
   virtual ~NTPResourceCache();

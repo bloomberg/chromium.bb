@@ -246,7 +246,6 @@ class TestingProfile : public Profile {
   virtual void InitExtensions(bool extensions_enabled) {}
   virtual void InitPromoResources() {}
   virtual void InitRegisteredProtocolHandlers() {}
-  virtual NTPResourceCache* GetNTPResourceCache();
 
   virtual FilePath last_selected_directory();
   virtual void set_last_selected_directory(const FilePath& path);
@@ -332,8 +331,6 @@ class TestingProfile : public Profile {
   // The TemplateURLFetcher. Only created if CreateTemplateURLFetcher is
   // invoked.
   scoped_ptr<TemplateURLFetcher> template_url_fetcher_;
-
-  scoped_ptr<NTPResourceCache> ntp_resource_cache_;
 
   // Internally, this is a TestURLRequestContextGetter that creates a dummy
   // request context. Currently, only the CookieMonster is hooked up.

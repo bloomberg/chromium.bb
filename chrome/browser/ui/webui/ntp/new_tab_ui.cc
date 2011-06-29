@@ -36,6 +36,7 @@
 #include "chrome/browser/ui/webui/ntp/new_tab_page_sync_handler.h"
 #include "chrome/browser/ui/webui/ntp/ntp_login_handler.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache.h"
+#include "chrome/browser/ui/webui/ntp/ntp_resource_cache_factory.h"
 #include "chrome/browser/ui/webui/ntp/shown_sections_handler.h"
 #include "chrome/browser/ui/webui/ntp/value_helper.h"
 #include "chrome/browser/ui/webui/theme_source.h"
@@ -662,7 +663,8 @@ void NewTabUI::NewTabHTMLSource::StartDataRequest(const std::string& path,
   }
 
   scoped_refptr<RefCountedBytes> html_bytes(
-      profile_->GetNTPResourceCache()->GetNewTabHTML(is_incognito));
+      NTPResourceCacheFactory::GetForProfile(profile_)->
+      GetNewTabHTML(is_incognito));
 
   SendResponse(request_id, html_bytes);
 }
