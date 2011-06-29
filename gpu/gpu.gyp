@@ -251,7 +251,6 @@
       'target_name': 'gpu_unittests',
       'type': 'executable',
       'dependencies': [
-        '../app/app.gyp:app_base',
         '../testing/gmock.gyp:gmock',
         '../testing/gmock.gyp:gmock_main',
         '../testing/gtest.gyp:gtest',

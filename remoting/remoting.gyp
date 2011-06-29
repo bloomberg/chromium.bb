@@ -735,7 +735,6 @@
       'conditions': [
         ['toolkit_uses_gtk == 1', {
           'dependencies': [
-            '../app/app.gyp:app_base',
             # Needed for the following #include chain:
             #   base/run_all_unittests.cc
             #   ../base/test_suite.h
