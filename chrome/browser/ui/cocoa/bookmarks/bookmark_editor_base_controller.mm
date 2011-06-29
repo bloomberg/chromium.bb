@@ -239,6 +239,8 @@ class BookmarkEditorBaseControllerBridge : public BookmarkModelObserver {
 }
 
 - (IBAction)ok:(id)sender {
+  NSWindow* window = [self window];
+  [window makeFirstResponder:window];
   // At least one of these two functions should be provided by derived classes.
   BOOL hasWillCommit = [self respondsToSelector:@selector(willCommit)];
   BOOL hasDidCommit = [self respondsToSelector:@selector(didCommit)];
@@ -257,7 +259,7 @@ class BookmarkEditorBaseControllerBridge : public BookmarkModelObserver {
       shouldContinue = [hasDidContinue boolValue];
   }
   if (shouldContinue)
-    [NSApp endSheet:[self window]];
+    [NSApp endSheet:window];
 }
 
 - (IBAction)cancel:(id)sender {
