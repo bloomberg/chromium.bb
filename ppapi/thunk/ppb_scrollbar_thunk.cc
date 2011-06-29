@@ -43,7 +43,7 @@ uint32_t GetValue(PP_Resource scrollbar) {
 void SetValue(PP_Resource scrollbar, uint32_t value) {
   EnterScrollbar enter(scrollbar, true);
   if (enter.succeeded())
-    enter.object()->GetValue();
+    enter.object()->SetValue(value);
 }
 
 void SetDocumentSize(PP_Resource scrollbar, uint32_t size) {
