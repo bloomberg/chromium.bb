@@ -461,6 +461,33 @@
       <arg name="surface" type="object" interface="wl_surface"/>
       <arg name="keys" type="array"/>
     </event>
+
+    <event name="touch_down">
+      <arg name="time" type="uint"/>
+      <arg name="id" type="int" />
+      <arg name="x" type="int" />
+      <arg name="y" type="int" />
+    </event>
+
+    <event name="touch_up">
+      <arg name="time" type="uint"/>
+      <arg name="id" type="int" />
+    </event>
+
+    <event name="touch_motion">
+      <arg name="time" type="uint"/>
+      <arg name="id" type="int" />
+      <arg name="x" type="int" />
+      <arg name="y" type="int" />
+    </event>
+
+    <!-- Indicates the end of a contact point list. -->
+    <event name="touch_frame"/>
+
+    <!-- Sent if the compositor decides the touch stream is a global
+         gesture. No further events are sent to the clients from that
+         particular gesture. -->
+    <event name="touch_cancel"/>
   </interface>
 
 
