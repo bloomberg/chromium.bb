@@ -264,8 +264,6 @@ class WaitForLoadPrerenderContentsFactory : public PrerenderContents::Factory {
   std::deque<FinalStatus> expected_final_status_queue_;
 };
 
-}  // namespace
-
 // A SafeBrowingService implementation that returns a fixed result for a given
 // URL.
 class FakeSafeBrowsingService :  public SafeBrowsingService {
@@ -332,6 +330,8 @@ class TestSafeBrowsingServiceFactory : public SafeBrowsingServiceFactory {
  private:
   FakeSafeBrowsingService* most_recent_service_;
 };
+
+}  // namespace
 
 class PrerenderBrowserTest : public InProcessBrowserTest {
  public:
