@@ -382,6 +382,7 @@
         'chrome_strings',
         '../app/app.gyp:app_base',
         '../base/base.gyp:base',
+        '../crypto/crypto.gyp:crypto',
         '../gpu/gpu.gyp:gpu_ipc',
         '../net/net.gyp:net_resources',
         '../net/net.gyp:net',
