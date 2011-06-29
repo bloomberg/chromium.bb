@@ -14,27 +14,25 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/policy/cloud_policy_identity_strategy.h"
 #include "chrome/browser/policy/user_policy_token_cache.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
-
-class Profile;
 
 namespace policy {
 
 class DeviceManagementBackend;
 
 // A token provider implementation that provides a user device token for the
-// user corresponding to a given profile.
+// user corresponding to given credentials.
 class UserPolicyIdentityStrategy : public CloudPolicyIdentityStrategy,
-                                   public NotificationObserver,
                                    public UserPolicyTokenCache::Delegate {
  public:
-  UserPolicyIdentityStrategy(Profile* profile,
+  UserPolicyIdentityStrategy(const std::string& user_name,
                              const FilePath& token_cache_file);
   virtual ~UserPolicyIdentityStrategy();
 
   // Start loading the token cache.
   void LoadTokenCache();
+
+  // Set a newly arriving auth_token and maybe trigger a fetch.
+  void SetAuthToken(const std::string& auth_token);
 
   // CloudPolicyIdentityStrategy implementation:
   virtual std::string GetDeviceToken() OVERRIDE;
@@ -59,16 +57,12 @@ class UserPolicyIdentityStrategy : public CloudPolicyIdentityStrategy,
   virtual void OnTokenCacheLoaded(const std::string& token,
                                   const std::string& device_id) OVERRIDE;
 
-  // NotificationObserver method overrides:
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
-
-  // The profile this provider is associated with.
-  Profile* profile_;
-
   // Keeps the on-disk copy of the token.
   scoped_refptr<UserPolicyTokenCache> cache_;
+
+  // false until cache_ reports being loaded for the first time, true
+  // afterwards.
+  bool cache_loaded_;
 
   // The device ID we use.
   std::string device_id_;
@@ -76,8 +70,12 @@ class UserPolicyIdentityStrategy : public CloudPolicyIdentityStrategy,
   // Current device token. Empty if not available.
   std::string device_token_;
 
-  // Registers the provider for notification of successful Gaia logins.
-  NotificationRegistrar registrar_;
+  // Current auth token. Empty if not available.
+  std::string auth_token_;
+
+  // Current user name. Empty if not available. This is set on creation and not
+  // changed afterwards.
+  std::string user_name_;
 
   // Allows to construct weak ptrs.
   base::WeakPtrFactory<UserPolicyTokenCache::Delegate> weak_ptr_factory_;

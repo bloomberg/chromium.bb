@@ -112,7 +112,6 @@ class ReadErrorHandler : public PersistentPrefStore::ReadErrorDelegate {
 // static
 PrefService* PrefService::CreatePrefService(const FilePath& pref_filename,
                                             PrefStore* extension_prefs,
-                                            Profile* profile,
                                             bool async) {
   using policy::ConfigurationPolicyPrefStore;
 
@@ -132,7 +131,7 @@ PrefService* PrefService::CreatePrefService(const FilePath& pref_filename,
   ConfigurationPolicyPrefStore* managed_platform =
       ConfigurationPolicyPrefStore::CreateManagedPlatformPolicyPrefStore();
   ConfigurationPolicyPrefStore* managed_cloud =
-      ConfigurationPolicyPrefStore::CreateManagedCloudPolicyPrefStore(profile);
+      ConfigurationPolicyPrefStore::CreateManagedCloudPolicyPrefStore();
   CommandLinePrefStore* command_line =
       new CommandLinePrefStore(CommandLine::ForCurrentProcess());
   JsonPrefStore* user = new JsonPrefStore(
@@ -141,8 +140,7 @@ PrefService* PrefService::CreatePrefService(const FilePath& pref_filename,
   ConfigurationPolicyPrefStore* recommended_platform =
       ConfigurationPolicyPrefStore::CreateRecommendedPlatformPolicyPrefStore();
   ConfigurationPolicyPrefStore* recommended_cloud =
-      ConfigurationPolicyPrefStore::CreateRecommendedCloudPolicyPrefStore(
-          profile);
+      ConfigurationPolicyPrefStore::CreateRecommendedCloudPolicyPrefStore();
   DefaultPrefStore* default_pref_store = new DefaultPrefStore();
 
   return new PrefService(

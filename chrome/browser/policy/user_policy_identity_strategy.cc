@@ -4,47 +4,21 @@
 
 #include "chrome/browser/policy/user_policy_identity_strategy.h"
 
-#include "chrome/browser/browser_signin.h"
-#include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/browser/policy/proto/device_management_constants.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/guid.h"
-#include "chrome/common/net/gaia/gaia_constants.h"
-#include "content/browser/browser_thread.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_service.h"
-#include "content/common/notification_source.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/user_manager.h"
-#endif
 
 namespace policy {
 
 namespace em = enterprise_management;
 
 UserPolicyIdentityStrategy::UserPolicyIdentityStrategy(
-    Profile* profile,
+    const std::string& user_name,
     const FilePath& cache_file)
-    : profile_(profile),
+    : cache_loaded_(false),
+      user_name_(user_name),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   cache_ = new UserPolicyTokenCache(weak_ptr_factory_.GetWeakPtr(), cache_file);
-  registrar_.Add(this,
-                 NotificationType::TOKEN_AVAILABLE,
-                 Source<TokenService>(profile->GetTokenService()));
-
-  // Register for the event of user login. The device management token won't
-  // be fetched until we know the domain of the currently logged in user.
-#if defined(OS_CHROMEOS)
-  registrar_.Add(this,
-                 NotificationType::LOGIN_USER_CHANGED,
-                 NotificationService::AllSources());
-#else
-  registrar_.Add(this,
-                 NotificationType::GOOGLE_SIGNIN_SUCCESSFUL,
-                 Source<Profile>(profile_));
-#endif
 }
 
 UserPolicyIdentityStrategy::~UserPolicyIdentityStrategy() {}
@@ -80,9 +54,8 @@ std::string UserPolicyIdentityStrategy::GetPolicyType() {
 
 bool UserPolicyIdentityStrategy::GetCredentials(std::string* username,
                                                 std::string* auth_token) {
-  *username = GetCurrentUser();
-  *auth_token = profile_->GetTokenService()->GetTokenForService(
-      GaiaConstants::kDeviceManagementService);
+  *username = user_name_;
+  *auth_token = auth_token_;
 
   return !username->empty() && !auth_token->empty() && !device_id_.empty();
 }
@@ -95,30 +68,32 @@ void UserPolicyIdentityStrategy::OnDeviceTokenAvailable(
   NotifyDeviceTokenChanged();
 }
 
-std::string UserPolicyIdentityStrategy::GetCurrentUser() {
-#if defined(OS_CHROMEOS)
-  // TODO(mnissler) On CrOS it seems impossible to figure out what user belongs
-  // to a profile. Revisit after multi-profile support landed.
-  return chromeos::UserManager::Get()->logged_in_user().email();
-#else
-  return profile_->GetBrowserSignin()->GetSignedInUsername();
-#endif
-}
-
 void UserPolicyIdentityStrategy::CheckAndTriggerFetch() {
-  if (!GetCurrentUser().empty() &&
-      profile_->GetTokenService()->HasTokenForService(
-          GaiaConstants::kDeviceManagementService)) {
+  if (!user_name_.empty() && !auth_token_.empty() && cache_loaded_) {
     // For user tokens, there is no actual identifier. We generate a random
     // identifier instead each time we ask for the token.
+    // This shouldn't be done before the cache is loaded, because there may
+    // already be a device id and matching device token stored there.
     device_id_ = guid::GenerateGUID();
     NotifyAuthChanged();
   }
 }
 
+void UserPolicyIdentityStrategy::SetAuthToken(const std::string& auth_token) {
+  auth_token_ = auth_token;
+
+  // Request a new device management server token, but only in case we
+  // don't already have it.
+  if (device_token_.empty())
+    CheckAndTriggerFetch();
+}
+
 void UserPolicyIdentityStrategy::OnTokenCacheLoaded(
     const std::string& token,
     const std::string& device_id) {
+  if (cache_loaded_)
+    return;
+  cache_loaded_ = true;
   if (!token.empty() && !device_id.empty()) {
     device_token_ = token;
     device_id_ = device_id;
@@ -128,32 +103,5 @@ void UserPolicyIdentityStrategy::OnTokenCacheLoaded(
   }
 }
 
-void UserPolicyIdentityStrategy::Observe(NotificationType type,
-                                         const NotificationSource& source,
-                                         const NotificationDetails& details) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (type == NotificationType::TOKEN_AVAILABLE) {
-    if (Source<TokenService>(source).ptr() == profile_->GetTokenService()) {
-      const TokenService::TokenAvailableDetails* token_details =
-          Details<const TokenService::TokenAvailableDetails>(details).ptr();
-      if (token_details->service() == GaiaConstants::kDeviceManagementService)
-        if (device_token_.empty()) {
-          // Request a new device management server token, but only in case we
-          // don't already have it.
-          CheckAndTriggerFetch();
-        }
-    }
-#if defined(OS_CHROMEOS)
-  } else if (type == NotificationType::LOGIN_USER_CHANGED) {
-    CheckAndTriggerFetch();
-#else
-  } else if (type == NotificationType::GOOGLE_SIGNIN_SUCCESSFUL) {
-    if (profile_ == Source<Profile>(source).ptr())
-      CheckAndTriggerFetch();
-#endif
-  } else {
-    NOTREACHED();
-  }
-}
 
 }  // namespace policy

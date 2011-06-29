@@ -6,19 +6,15 @@
 #define CHROME_BROWSER_POLICY_CLOUD_POLICY_CACHE_BASE_H_
 #pragma once
 
-#include "base/gtest_prod_util.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time.h"
 #include "chrome/browser/policy/cloud_policy_subsystem.h"
-#include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 
 namespace policy {
 
-class PolicyMap;
 class PolicyNotifier;
 
 namespace em = enterprise_management;
@@ -36,6 +32,13 @@ class CloudPolicyCacheBase : public base::NonThreadSafe {
     POLICY_LEVEL_RECOMMENDED,
   };
 
+  class Observer {
+   public:
+    virtual ~Observer() {}
+    virtual void OnCacheGoingAway(CloudPolicyCacheBase*) = 0;
+    virtual void OnCacheUpdate(CloudPolicyCacheBase*) = 0;
+  };
+
   CloudPolicyCacheBase();
   virtual ~CloudPolicyCacheBase();
 
@@ -48,9 +51,6 @@ class CloudPolicyCacheBase : public base::NonThreadSafe {
 
   // Resets the policy information.
   virtual void SetPolicy(const em::PolicyFetchResponse& policy) = 0;
-
-  ConfigurationPolicyProvider* GetManagedPolicyProvider();
-  ConfigurationPolicyProvider* GetRecommendedPolicyProvider();
 
   virtual void SetUnmanaged() = 0;
   bool is_unmanaged() const {
@@ -66,6 +66,19 @@ class CloudPolicyCacheBase : public base::NonThreadSafe {
   // Returns true if the version is available, in which case |version| is filled
   // in.
   bool GetPublicKeyVersion(int* version);
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
+  // Accessor for the underlying PolicyMaps.
+  const PolicyMap* policy(PolicyLevel level);
+
+  // true if the cache contains data that is ready to be served as policies.
+  // This should mean that this method turns true as soon as a round-trip to
+  // the local policy storage is complete. The creation of the Profile is
+  // blocked on this method, so we shouldn't wait for successful network
+  // round trips.
+  virtual bool IsReady() = 0;
 
  protected:
   // Wraps public key version and validity.
@@ -103,28 +116,23 @@ class CloudPolicyCacheBase : public base::NonThreadSafe {
   void InformNotifier(CloudPolicySubsystem::PolicySubsystemState state,
                       CloudPolicySubsystem::ErrorDetails error_details);
 
+  void set_last_policy_refresh_time(base::Time timestamp) {
+    last_policy_refresh_time_ = timestamp;
+  }
+
   // See comment for |initialization_complete_|.
   bool initialization_complete() {
     return initialization_complete_;
   }
 
-  void set_last_policy_refresh_time(base::Time timestamp) {
-    last_policy_refresh_time_ = timestamp;
-  }
-
  private:
-  class CloudPolicyProvider;
-
   friend class DevicePolicyCacheTest;
   friend class UserPolicyCacheTest;
+  friend class MockCloudPolicyCache;
 
   // Policy key-value information.
   PolicyMap mandatory_policy_;
   PolicyMap recommended_policy_;
-
-  // Policy providers.
-  scoped_ptr<ConfigurationPolicyProvider> managed_policy_provider_;
-  scoped_ptr<ConfigurationPolicyProvider> recommended_policy_provider_;
 
   PolicyNotifier* notifier_;
 
@@ -143,8 +151,8 @@ class CloudPolicyCacheBase : public base::NonThreadSafe {
   // Currently used public key version, if available.
   PublicKeyVersion public_key_version_;
 
-  // Provider observers that are registered with this cache's providers.
-  ObserverList<ConfigurationPolicyProvider::Observer, true> observer_list_;
+  // Cache observers that are registered with this cache.
+  ObserverList<Observer, true> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudPolicyCacheBase);
 };

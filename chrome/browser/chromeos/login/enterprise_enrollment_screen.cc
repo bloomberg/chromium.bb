@@ -62,7 +62,7 @@ void EnterpriseEnrollmentScreen::Authenticate(const std::string& user,
 void EnterpriseEnrollmentScreen::CancelEnrollment() {
   auth_fetcher_.reset();
   registrar_.reset();
-  g_browser_process->browser_policy_connector()->StopAutoRetry();
+  g_browser_process->browser_policy_connector()->DeviceStopAutoRetry();
   ScreenObserver* observer = delegate()->GetObserver();
   observer->OnExit(ScreenObserver::ENTERPRISE_ENROLLMENT_CANCELLED);
 }
@@ -121,7 +121,7 @@ void EnterpriseEnrollmentScreen::OnIssueAuthTokenSuccess(
 
   policy::BrowserPolicyConnector* connector =
       g_browser_process->browser_policy_connector();
-  if (!connector->cloud_policy_subsystem()) {
+  if (!connector->device_cloud_policy_subsystem()) {
     NOTREACHED() << "Cloud policy subsystem not initialized.";
     if (view())
       view()->ShowFatalEnrollmentError();
@@ -130,11 +130,11 @@ void EnterpriseEnrollmentScreen::OnIssueAuthTokenSuccess(
 
   connector->ScheduleServiceInitialization(0);
   registrar_.reset(new policy::CloudPolicySubsystem::ObserverRegistrar(
-      connector->cloud_policy_subsystem(), this));
+      connector->device_cloud_policy_subsystem(), this));
 
   // Push the credentials to the policy infrastructure. It'll start enrollment
   // and notify us of progress through CloudPolicySubsystem::Observer.
-  connector->SetCredentials(user_, auth_token);
+  connector->SetDeviceCredentials(user_, auth_token);
 }
 
 void EnterpriseEnrollmentScreen::OnIssueAuthTokenFailure(
@@ -184,7 +184,7 @@ void EnterpriseEnrollmentScreen::OnPolicyStateChanged(
 
   // Stop the policy infrastructure.
   registrar_.reset();
-  g_browser_process->browser_policy_connector()->StopAutoRetry();
+  g_browser_process->browser_policy_connector()->DeviceStopAutoRetry();
 }
 
 EnterpriseEnrollmentView* EnterpriseEnrollmentScreen::AllocateView() {
@@ -236,7 +236,7 @@ void EnterpriseEnrollmentScreen::WriteInstallAttributesData() {
       // Proceed with policy fetch.
       policy::BrowserPolicyConnector* connector =
           g_browser_process->browser_policy_connector();
-      connector->FetchPolicy();
+      connector->FetchDevicePolicy();
       return;
     }
     case policy::EnterpriseInstallAttributes::LOCK_NOT_READY: {

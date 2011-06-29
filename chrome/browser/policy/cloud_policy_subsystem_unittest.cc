@@ -19,6 +19,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_browser_process.h"
 #include "chrome/test/testing_pref_service.h"
+#include "content/browser/browser_thread.h"
 #include "content/common/url_fetcher.h"
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -243,10 +244,9 @@ class CloudPolicySubsystemTestBase : public TESTBASE {
  private:
   // Verifies for a given policy that it is provided by the subsystem.
   void VerifyPolicy(enum ConfigurationPolicyType type, Value* expected) {
-    MockConfigurationPolicyStore store;
-    EXPECT_CALL(store, Apply(_, _)).Times(AtLeast(1));
-    cache_->GetManagedPolicyProvider()->Provide(&store);
-    ASSERT_TRUE(Value::Equals(expected, store.Get(type)));
+    const PolicyMap* policy_map = cache_->policy(
+        CloudPolicyCacheBase::POLICY_LEVEL_MANDATORY);
+    ASSERT_TRUE(Value::Equals(expected, policy_map->Get(type)));
   }
 
   // Verifies that the last recorded run of the subsystem did not issue

@@ -12,7 +12,6 @@
 #include "chrome/browser/policy/cloud_policy_cache_base.h"
 #include "chrome/browser/policy/cloud_policy_controller.h"
 #include "chrome/browser/policy/cloud_policy_identity_strategy.h"
-#include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/device_management_service.h"
 #include "chrome/browser/policy/device_token_fetcher.h"
 #include "chrome/browser/policy/policy_notifier.h"
@@ -136,21 +135,6 @@ void CloudPolicySubsystem::StopAutoRetry() {
   device_token_fetcher_->StopAutoRetry();
 }
 
-ConfigurationPolicyProvider* CloudPolicySubsystem::GetManagedPolicyProvider() {
-  if (cloud_policy_cache_.get())
-    return cloud_policy_cache_->GetManagedPolicyProvider();
-
-  return NULL;
-}
-
-ConfigurationPolicyProvider*
-    CloudPolicySubsystem::GetRecommendedPolicyProvider() {
-  if (cloud_policy_cache_.get())
-    return cloud_policy_cache_->GetRecommendedPolicyProvider();
-
-  return NULL;
-}
-
 // static
 void CloudPolicySubsystem::RegisterPrefs(PrefService* pref_service) {
   pref_service->RegisterIntegerPref(prefs::kDevicePolicyRefreshRate,
@@ -176,10 +160,9 @@ void CloudPolicySubsystem::Observe(NotificationType type,
   if (type == NotificationType::PREF_CHANGED) {
     DCHECK_EQ(*(Details<std::string>(details).ptr()),
               std::string(refresh_pref_name_));
-    PrefService* pref_service = Source<PrefService>(source).ptr();
-    // Temporarily also consider the profile preference service as a valid
-    // source, since we cannot yet push user cloud policy to |local_state|.
-    UpdatePolicyRefreshRate(pref_service->GetInteger(refresh_pref_name_));
+    PrefService* local_state = g_browser_process->local_state();
+    DCHECK_EQ(Source<PrefService>(source).ptr(), local_state);
+    UpdatePolicyRefreshRate(local_state->GetInteger(refresh_pref_name_));
   } else {
     NOTREACHED();
   }

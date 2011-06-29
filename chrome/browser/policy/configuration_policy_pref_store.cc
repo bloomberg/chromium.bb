@@ -21,11 +21,8 @@
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/policy_path_parser.h"
-#include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/prefs/pref_value_map.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/pref_names.h"
@@ -404,11 +401,7 @@ bool ConfigurationPolicyPrefKeeper::ApplyProxyPolicy(
   // We only collect the values until we have sufficient information when
   // FinalizeProxyPolicySettings() is called to determine whether the presented
   // values were correct and apply them in that case.
-  if (policy == kPolicyProxyMode ||
-      policy == kPolicyProxyServerMode ||
-      policy == kPolicyProxyServer ||
-      policy == kPolicyProxyPacUrl ||
-      policy == kPolicyProxyBypassList) {
+  if (ConfigurationPolicyPrefStore::IsProxyPolicy(policy)) {
     delete proxy_policies_[policy];
     proxy_policies_[policy] = value;
     return true;
@@ -900,20 +893,9 @@ ConfigurationPolicyPrefStore::CreateManagedPlatformPolicyPrefStore() {
 
 // static
 ConfigurationPolicyPrefStore*
-ConfigurationPolicyPrefStore::CreateManagedCloudPolicyPrefStore(
-    Profile* profile) {
-  ConfigurationPolicyProvider* provider = NULL;
-  if (profile) {
-    // For user policy, return the profile's policy provider.
-    provider = policy::ProfilePolicyConnectorFactory::GetForProfile(profile)->
-        GetManagedCloudProvider();
-  } else {
-    // For device policy, return the provider of the browser process.
-    BrowserPolicyConnector* connector =
-        g_browser_process->browser_policy_connector();
-    provider = connector->GetManagedCloudProvider();
-  }
-  return new ConfigurationPolicyPrefStore(provider);
+ConfigurationPolicyPrefStore::CreateManagedCloudPolicyPrefStore() {
+  return new ConfigurationPolicyPrefStore(
+      g_browser_process->browser_policy_connector()->GetManagedCloudProvider());
 }
 
 // static
@@ -927,20 +909,10 @@ ConfigurationPolicyPrefStore::CreateRecommendedPlatformPolicyPrefStore() {
 
 // static
 ConfigurationPolicyPrefStore*
-ConfigurationPolicyPrefStore::CreateRecommendedCloudPolicyPrefStore(
-    Profile* profile) {
-  ConfigurationPolicyProvider* provider = NULL;
-  if (profile) {
-    // For user policy, return the profile's policy provider.
-    provider = policy::ProfilePolicyConnectorFactory::GetForProfile(profile)->
-        GetRecommendedCloudProvider();
-  } else {
-    // For device policy, return the provider of the browser process.
-    BrowserPolicyConnector* connector =
-        g_browser_process->browser_policy_connector();
-    provider = connector->GetRecommendedCloudProvider();
-  }
-  return new ConfigurationPolicyPrefStore(provider);
+ConfigurationPolicyPrefStore::CreateRecommendedCloudPolicyPrefStore() {
+  return new ConfigurationPolicyPrefStore(
+      g_browser_process->browser_policy_connector()->
+          GetRecommendedCloudProvider());
 }
 
 /* static */
@@ -1105,6 +1077,15 @@ ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList() {
     entries + arraysize(entries),
   };
   return &policy_list;
+}
+
+bool
+ConfigurationPolicyPrefStore::IsProxyPolicy(ConfigurationPolicyType policy) {
+  return policy == kPolicyProxyMode ||
+      policy == kPolicyProxyServerMode ||
+      policy == kPolicyProxyServer ||
+      policy == kPolicyProxyPacUrl ||
+      policy == kPolicyProxyBypassList;
 }
 
 ConfigurationPolicyPrefStore::ConfigurationPolicyPrefStore(

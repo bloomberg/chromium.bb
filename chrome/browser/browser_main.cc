@@ -57,6 +57,7 @@
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
 #include "chrome/browser/net/websocket_experiment/websocket_experiment_runner.h"
 #include "chrome/browser/plugin_updater.h"
+#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
@@ -849,7 +850,7 @@ PrefService* InitializeLocalState(const CommandLine& parsed_command_line,
     FilePath parent_profile =
         parsed_command_line.GetSwitchValuePath(switches::kParentProfile);
     scoped_ptr<PrefService> parent_local_state(
-        PrefService::CreatePrefService(parent_profile, NULL, NULL, false));
+        PrefService::CreatePrefService(parent_profile, NULL, false));
     parent_local_state->RegisterStringPref(prefs::kApplicationLocale,
                                            std::string());
     // Right now, we only inherit the locale setting from the parent profile.
@@ -1645,6 +1646,21 @@ int BrowserMain(const MainFunctionParams& parameters) {
     return ResultCodes::NORMAL_EXIT;
 
   // Post-profile init ---------------------------------------------------------
+
+#if defined(OS_CHROMEOS)
+  // Handling the user cloud policy initialization for case 2 mentioned above.
+  // We do this after the profile creation since we need the TokenService.
+  if (parsed_command_line.HasSwitch(switches::kLoginUser) &&
+      !parsed_command_line.HasSwitch(switches::kLoginPassword)) {
+    std::string username =
+        parsed_command_line.GetSwitchValueASCII(switches::kLoginUser);
+    policy::BrowserPolicyConnector* browser_policy_connector =
+        g_browser_process->browser_policy_connector();
+    browser_policy_connector->InitializeUserPolicy(username,
+                                                   profile->GetPath(),
+                                                   profile->GetTokenService());
+  }
+#endif
 
   PrefService* user_prefs = profile->GetPrefs();
   DCHECK(user_prefs);

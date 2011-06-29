@@ -37,6 +37,10 @@ class NotificationService;
 class PluginDataRemover;
 class TabCloseableStateWatcher;
 
+namespace policy{
+class BrowserPolicyConnector;
+};
+
 // Real implementation of BrowserProcess that creates and returns the services.
 class BrowserProcessImpl : public BrowserProcess,
                            public base::NonThreadSafe,

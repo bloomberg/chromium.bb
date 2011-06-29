@@ -77,9 +77,10 @@ PrefService* TestingBrowserProcess::local_state() {
 
 policy::BrowserPolicyConnector*
     TestingBrowserProcess::browser_policy_connector() {
-  if (!browser_policy_connector_.get())
+  if (!browser_policy_connector_.get()) {
     browser_policy_connector_.reset(
         policy::BrowserPolicyConnector::CreateForTests());
+  }
   return browser_policy_connector_.get();
 }
 

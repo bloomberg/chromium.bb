@@ -358,7 +358,8 @@ void BackgroundView::InitInfoLabels() {
   }
 
   policy::CloudPolicySubsystem* cloud_policy =
-      g_browser_process->browser_policy_connector()->cloud_policy_subsystem();
+      g_browser_process->browser_policy_connector()->
+          device_cloud_policy_subsystem();
   if (cloud_policy) {
     // Two-step reset because we want to construct new ObserverRegistrar after
     // destruction of old ObserverRegistrar to avoid DCHECK violation because
@@ -448,7 +449,7 @@ void BackgroundView::UpdateEnterpriseInfo() {
 
   std::string status_text;
   policy::CloudPolicySubsystem* cloud_policy_subsystem =
-      policy_connector->cloud_policy_subsystem();
+      policy_connector->device_cloud_policy_subsystem();
   if (cloud_policy_subsystem) {
     switch (cloud_policy_subsystem->state()) {
       case policy::CloudPolicySubsystem::UNENROLLED:

@@ -94,7 +94,6 @@ class CloudPolicyControllerTest : public testing::Test {
     controller_.reset();  // Unregisters observers.
   }
 
-  // Takes ownership of |backend|.
   void CreateNewController() {
     controller_.reset(new CloudPolicyController(
         &service_, cache_.get(), token_fetcher_.get(), &identity_strategy_,
@@ -102,12 +101,10 @@ class CloudPolicyControllerTest : public testing::Test {
   }
 
   void ExpectHasSpdyPolicy() {
-    MockConfigurationPolicyStore store;
-    EXPECT_CALL(store, Apply(_, _)).Times(AtLeast(1));
-    cache_->GetManagedPolicyProvider()->Provide(&store);
     FundamentalValue expected(true);
-    ASSERT_TRUE(store.Get(kPolicyDisableSpdy) != NULL);
-    EXPECT_TRUE(store.Get(kPolicyDisableSpdy)->Equals(&expected));
+    const PolicyMap* policy_map = cache_->policy(
+        CloudPolicyCacheBase::POLICY_LEVEL_MANDATORY);
+    ASSERT_TRUE(Value::Equals(&expected, policy_map->Get(kPolicyDisableSpdy)));
   }
 
   void SetupIdentityStrategy(

@@ -38,6 +38,7 @@
 #include "chrome/browser/net/preconnect.h"
 #include "chrome/browser/net/pref_proxy_config_service.h"
 #include "chrome/browser/plugin_updater.h"
+#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -240,6 +241,13 @@ void LoginUtilsImpl::PrepareProfile(
 
 void LoginUtilsImpl::OnProfileCreated(Profile* profile) {
   CHECK(profile);
+
+  // Initialize the user-policy backend.
+  policy::BrowserPolicyConnector* browser_policy_connector =
+      g_browser_process->browser_policy_connector();
+  browser_policy_connector->InitializeUserPolicy(username_,
+                                                 profile->GetPath(),
+                                                 profile->GetTokenService());
 
   BootTimesLoader* btl = BootTimesLoader::Get();
   btl->AddLoginTimeMarker("UserProfileGotten", false);

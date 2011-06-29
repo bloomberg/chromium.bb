@@ -188,9 +188,8 @@ void BaseLoginDisplayHost::StartSignInScreen() {
   ServicesCustomizationDocument::GetInstance()->StartFetching();
 
   // Initiate device policy fetching.
-  g_browser_process->browser_policy_connector()->
-      ScheduleServiceInitialization(
-          kPolicyServiceInitializationDelayMilliseconds);
+  g_browser_process->browser_policy_connector()->ScheduleServiceInitialization(
+      kPolicyServiceInitializationDelayMilliseconds);
 }
 
 // BaseLoginDisplayHost --------------------------------------------------------

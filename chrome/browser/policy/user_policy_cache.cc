@@ -10,7 +10,9 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/values.h"
-#include "chrome/browser/policy/configuration_policy_pref_store.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/policy/cloud_policy_provider.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/proto/cloud_policy.pb.h"
 #include "chrome/browser/policy/proto/device_management_local.pb.h"
@@ -26,7 +28,8 @@ void DecodePolicy(const em::CloudPolicySettings& policy,
                   PolicyMap* mandatory, PolicyMap* recommended);
 
 UserPolicyCache::UserPolicyCache(const FilePath& backing_file_path)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
+      first_load_complete_(false) {
   disk_cache_ = new UserPolicyDiskCache(weak_ptr_factory_.GetWeakPtr(),
                                         backing_file_path);
 }
@@ -67,8 +70,13 @@ void UserPolicyCache::SetUnmanaged() {
   disk_cache_->Store(cached_policy);
 }
 
+bool UserPolicyCache::IsReady() {
+  return initialization_complete() || first_load_complete_;
+}
+
 void UserPolicyCache::OnDiskCacheLoaded(
     const em::CachedCloudPolicyResponse& cached_response) {
+  first_load_complete_ = true;
   if (initialization_complete())
     return;
 
@@ -149,7 +157,8 @@ void UserPolicyCache::MaybeDecodeOldstylePolicy(
   // Hack: Let one of the providers do the transformation from DictionaryValue
   // to PolicyMap, since they have the required code anyway.
   PolicyMapProxy map_proxy(mandatory);
-  GetManagedPolicyProvider()->ApplyPolicyValueTree(&result, &map_proxy);
+  g_browser_process->browser_policy_connector()->GetManagedCloudProvider()->
+      ApplyPolicyValueTree(&result, &map_proxy);
 }
 
 Value* UserPolicyCache::DecodeIntegerValue(

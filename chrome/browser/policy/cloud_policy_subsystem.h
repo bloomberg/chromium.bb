@@ -7,7 +7,6 @@
 #pragma once
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "content/common/notification_observer.h"
 #include "net/base/network_change_notifier.h"
@@ -19,7 +18,6 @@ namespace policy {
 class CloudPolicyCacheBase;
 class CloudPolicyController;
 class CloudPolicyIdentityStrategy;
-class ConfigurationPolicyProvider;
 class DeviceManagementService;
 class DeviceTokenFetcher;
 class PolicyNotifier;
@@ -93,9 +91,6 @@ class CloudPolicySubsystem
   // Stops all auto-retrying error handling behavior inside the policy
   // subsystem.
   void StopAutoRetry();
-
-  ConfigurationPolicyProvider* GetManagedPolicyProvider();
-  ConfigurationPolicyProvider* GetRecommendedPolicyProvider();
 
   // Registers cloud policy related prefs.
   static void RegisterPrefs(PrefService* pref_service);

@@ -11,7 +11,6 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
-#include "chrome/browser/chromeos/login/signed_settings_helper.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/device_policy_identity_strategy.h"
@@ -179,6 +178,10 @@ void DevicePolicyCache::SetPolicy(const em::PolicyFetchResponse& policy) {
 void DevicePolicyCache::SetUnmanaged() {
   LOG(WARNING) << "Tried to set DevicePolicyCache to 'unmanaged'!";
   // This is not supported for DevicePolicyCache.
+}
+
+bool DevicePolicyCache::IsReady() {
+  return initialization_complete() || !starting_up_;
 }
 
 void DevicePolicyCache::OnRetrievePolicyCompleted(

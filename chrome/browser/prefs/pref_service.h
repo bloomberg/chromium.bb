@@ -125,18 +125,16 @@ class PrefService : public base::NonThreadSafe {
 
   // Factory method that creates a new instance of a PrefService with the
   // applicable PrefStores. The |pref_filename| points to the user preference
-  // file. The |profile| is the one to which these preferences apply; it may be
-  // NULL if we're dealing with the local state. This is the usual way to create
-  // a new PrefService. |extension_pref_store| is used as the source for
-  // extension-controlled preferences and may be NULL. The PrefService takes
-  // ownership of |extension_pref_store|. If |async| is true, asynchronous
-  // version is used. Notifies using PREF_INITIALIZATION_COMPLETED in the end.
-  // Details is set to the created PrefService or NULL if creation has failed.
-  // Note, it is guaranteed that in asynchronous version initialization happens
-  // after this function returned.
+  // file. This is the usual way to create a new PrefService.
+  // |extension_pref_store| is used as the source for extension-controlled
+  // preferences and may be NULL. The PrefService takes ownership of
+  // |extension_pref_store|. If |async| is true, asynchronous version is used.
+  // Notifies using PREF_INITIALIZATION_COMPLETED in the end. Details is set to
+  // the created PrefService or NULL if creation has failed. Note, it is
+  // guaranteed that in asynchronous version initialization happens after this
+  // function returned.
   static PrefService* CreatePrefService(const FilePath& pref_filename,
                                         PrefStore* extension_pref_store,
-                                        Profile* profile,
                                         bool async);
 
   // Creates an incognito copy of the pref service that shares most pref stores

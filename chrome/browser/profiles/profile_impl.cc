@@ -50,9 +50,6 @@
 #include "chrome/browser/net/ssl_config_service_manager.h"
 #include "chrome/browser/password_manager/password_store_default.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
-#include "chrome/browser/policy/configuration_policy_provider.h"
-#include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -310,7 +307,6 @@ ProfileImpl::ProfileImpl(const FilePath& path,
     prefs_.reset(PrefService::CreatePrefService(
         GetPrefFilePath(),
         new ExtensionPrefStore(GetExtensionPrefValueMap(), false),
-        GetOriginalProfile(),
         true));
     // Wait for the notifcation that prefs has been loaded (successfully or
     // not).
@@ -321,7 +317,6 @@ ProfileImpl::ProfileImpl(const FilePath& path,
     prefs_.reset(PrefService::CreatePrefService(
         GetPrefFilePath(),
         new ExtensionPrefStore(GetExtensionPrefValueMap(), false),
-        GetOriginalProfile(),
         false));
     OnPrefsLoaded(true);
   }
@@ -428,10 +423,6 @@ void ProfileImpl::DoFinalInit() {
   io_data_.Init(cookie_path, cache_path, cache_max_size,
                 media_cache_path, media_cache_max_size, extensions_cookie_path,
                 app_path);
-
-  policy::ProfilePolicyConnector* policy_connector =
-      policy::ProfilePolicyConnectorFactory::GetForProfile(this);
-  policy_connector->Initialize();
 
   // Creation has been finished.
   if (delegate_)
