@@ -1574,7 +1574,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, AutoOpen) {
   EXPECT_EQ(1, browser()->tab_count());
   CheckDownload(browser(), file, file);
   // Download shelf should close. Download panel stays open on ChromeOS.
-  CheckDownloadUI(browser(), false, true, file);
+  CheckDownloadUI(browser(), false, true, FilePath());
 }
 
 // Download an extension.  Expect a dangerous download warning.
