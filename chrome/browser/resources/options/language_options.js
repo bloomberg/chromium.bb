@@ -96,9 +96,11 @@ cr.define('options', function() {
         }
       }
 
-      // Handle spell check enable/disable.
-      Preferences.getInstance().addEventListener(this.enableSpellCheckPref,
-          this.updateEnableSpellCheck_.bind(this));
+      if(!cr.isChromeOS) {
+        // Handle spell check enable/disable.
+        Preferences.getInstance().addEventListener(this.enableSpellCheckPref,
+            this.updateEnableSpellCheck_.bind(this));
+      }
     },
 
     // The preference is a boolean that enables/disables spell checking.
