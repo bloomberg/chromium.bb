@@ -268,7 +268,15 @@ LEAK
 # http://code.google.com/p/drmemory/issues/detail?id=257
 LEAK
 ...
-*!std::use_facet<std::numpunct<char> >
+*!std::_Maklocstr<char>
+*!std::numpunct<*>::_Init
+*!std::numpunct<*>::numpunct<*>
+*!std::numpunct<*>::_Getcat
+*!std::use_facet<std::numpunct<*> >
+*!std::num_put*
+*!std::num_put*
+*!std::num_put*
+*!std::basic_ostream<*,std::char_traits<*> >::operator<<
 
 # http://code.google.com/p/drmemory/issues/detail?id=274
 POSSIBLE LEAK
@@ -372,7 +380,7 @@ RSAENH.dll!CPGenRandom
 
 UNINITIALIZED READ
 ...
-CRYPT32.dll!Crypt*
+CRYPT??.dll!Crypt*
 
 UNINITIALIZED READ
 *!replace_memcmp
@@ -512,19 +520,6 @@ CRYPT32.dll!CryptDecodeObjectEx
 CRYPT32.dll!CertGetCRLContextProperty
 ...
 CRYPT32.dll!CertGetCertificateChain
-
-# http://code.google.com/p/drmemory/issues/detail?id=478
-LEAK
-...
-*!std::_Maklocstr<char>
-*!std::numpunct<wchar_t>::_Init
-*!std::numpunct<wchar_t>::numpunct<wchar_t>
-*!std::numpunct<wchar_t>::_Getcat
-*!std::use_facet<std::numpunct<wchar_t> >
-*!std::num_put*
-*!std::num_put*
-*!std::num_put*
-*!std::basic_ostream<wchar_t,std::char_traits<wchar_t> >::operator<<
 
 ############################
 # TODO(timurrrr): investigate these
