@@ -254,6 +254,11 @@ void PrerenderContents::StartPrerendering(
       this, NotificationType::RENDER_VIEW_HOST_CREATED_FOR_TAB,
       Source<TabContents>(new_contents));
 
+  // Register to be told when the RenderView is ready, so we can hide it.
+  // It will automatically be set to visible when we resize it, otherwise.
+  notification_registrar_.Add(this, NotificationType::TAB_CONTENTS_CONNECTED,
+                              Source<TabContents>(new_contents));
+
   // Register for redirect notifications sourced from |this|.
   notification_registrar_.Add(
       this, NotificationType::RESOURCE_RECEIVED_REDIRECT,
@@ -369,16 +374,20 @@ void PrerenderContents::Observe(NotificationType type,
         new_render_view_host->Send(
             new ViewMsg_SetIsPrerendering(new_render_view_host->routing_id(),
                                           true));
-
-        // Set the new TabContents and its RenderViewHost as hidden, to reduce
-        // resource usage.  This can only be done after the first call to
-        // LoadURL, so there's an actual RenderViewHost with a
-        // RenderWidgetHostView to hide.
-        //
-        // Done here to prevent a race with loading the page.
-        prerender_contents_->tab_contents()->HideContents();
       }
       break;
+    }
+
+    case NotificationType::TAB_CONTENTS_CONNECTED: {
+      if (prerender_contents_.get()) {
+        DCHECK_EQ(Source<TabContents>(source).ptr(),
+                  prerender_contents_->tab_contents());
+        // Set the new TabContents and its RenderViewHost as hidden, to reduce
+        // resource usage.  This can only be done after the size has been sent
+        // to the RenderView, which is why it's done here.
+        prerender_contents_->tab_contents()->HideContents();
+      }
+      return;
     }
 
     case NotificationType::CREATING_NEW_WINDOW_CANCELLED: {
