@@ -191,7 +191,7 @@ bool ServiceRuntime::InitCommunication(nacl::Handle bootstrap_socket,
   // start the module.  otherwise we cannot connect for multimedia
   // subsystem since that is handled by user-level code (not secure!)
   // in libsrpc.
-  int load_status;
+  int load_status = -1;
   if (!runtime_channel_->StartModule(&load_status)) {
     error_info->SetReport(ERROR_SEL_LDR_START_MODULE,
                           "ServiceRuntime: could not start nacl module");
@@ -202,7 +202,7 @@ bool ServiceRuntime::InitCommunication(nacl::Handle bootstrap_socket,
   if (LOAD_OK != load_status) {
     error_info->SetReport(
         ERROR_SEL_LDR_START_STATUS,
-        "ServiceRuntime: loading of module failed with status " + load_status);
+        NaClErrorString(static_cast<NaClErrorCode>(load_status)));
     return false;
   }
   return true;

@@ -917,9 +917,14 @@ static void NaClLoadModuleRpc(struct NaClSrpcRpc      *rpc,
   NaClXMutexLock(&nap->mu);
 
   if (LOAD_STATUS_UNKNOWN != nap->module_load_status) {
-    NaClLog(LOG_ERROR, "Repeated LoadModule RPC?!?\n");
-    suberr = LOAD_DUP_LOAD_MODULE;
-    nap->module_load_status = suberr;
+    NaClLog(LOG_ERROR, "Repeated LoadModule RPC, or platform qual error?!?\n");
+    if (LOAD_OK == nap->module_load_status) {
+      NaClLog(LOG_ERROR, "LoadModule when module_load_status is LOAD_OK?!?\n");
+      suberr = LOAD_DUP_LOAD_MODULE;
+      nap->module_load_status = suberr;
+    } else {
+      suberr = nap->module_load_status;
+    }
     rpc->result = NACL_SRPC_RESULT_OK;
     NaClXCondVarBroadcast(&nap->cv);
     goto cleanup_status_mu;
@@ -1032,6 +1037,19 @@ static void NaClSecureChannelStartModuleRpc(struct NaClSrpcRpc     *rpc,
 
   NaClLog(4, "NaClSecureChannelStartModuleRpc: load status %d\n", status);
 
+  out_args[0]->u.ival = status;
+  rpc->result = NACL_SRPC_RESULT_OK;
+
+  NaClLog(4, "NaClSecureChannelStartModuleRpc running closure\n");
+  (*done->Run)(done);
+  /*
+   * The RPC reply is now sent.  This has to occur before we signal
+   * the main thread to possibly start, since in the case of a failure
+   * the main thread may quickly exit.  If the main thread does this
+   * before we sent the RPC reply, then the plugin will be left
+   * without an answer.
+   */
+
   NaClXMutexLock(&nap->mu);
   if (nap->module_may_start) {
     NaClLog(LOG_ERROR, "Duplicate StartModule RPC?!?\n");
@@ -1043,12 +1061,6 @@ static void NaClSecureChannelStartModuleRpc(struct NaClSrpcRpc     *rpc,
   NaClXCondVarBroadcast(&nap->cv);
   NaClXMutexUnlock(&nap->mu);
 
-  out_args[0]->u.ival = status;
-  NaClLog(4, "NaClSecureChannelStartModuleRpc finished\n");
-  rpc->result = NACL_SRPC_RESULT_OK;
-
-  NaClLog(4, "NaClSecureChannelStartModuleRpc running closure\n");
-  (*done->Run)(done);
   NaClLog(4, "NaClSecureChannelStartModuleRpc exiting\n");
 }
 

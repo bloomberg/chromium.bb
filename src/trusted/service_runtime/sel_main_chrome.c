@@ -238,16 +238,15 @@ int NaClMainForChromium(int handle_count, const NaClHandle *handles,
   NaClLog(4, "secure service = %"NACL_PRIxPTR"\n",
           (uintptr_t) nap->secure_service);
 
-  if (NULL != nap->secure_service && LOAD_OK == errcode) {
+  if (NULL != nap->secure_service) {
+    NaClErrorCode start_result;
     /*
      * wait for start_module RPC call on secure channel thread.
      */
-    errcode = NaClWaitForStartModuleCommand(nap);
-  }
-
-  /* Load the integrated runtime (IRT) library. */
-  if (LOAD_OK == errcode) {
-    NaClLoadIrt(nap);
+    start_result = NaClWaitForStartModuleCommand(nap);
+    if (LOAD_OK == errcode) {
+      errcode = start_result;
+    }
   }
 
   /*
@@ -256,6 +255,9 @@ int NaClMainForChromium(int handle_count, const NaClHandle *handles,
   if (LOAD_OK != errcode) {
     goto done;
   }
+
+  /* Load the integrated runtime (IRT) library. */
+  NaClLoadIrt(nap);
 
   /*
    * Enable debugging if requested.

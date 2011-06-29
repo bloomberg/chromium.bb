@@ -791,13 +791,17 @@ int main(int  argc,
    */
   fflush((FILE *) NULL);
 
-  if (NULL != nap->secure_service && LOAD_OK == errcode) {
+  if (NULL != nap->secure_service) {
+    NaClErrorCode start_result;
     /*
      * wait for start_module RPC call on secure channel thread.
      */
-    errcode = NaClWaitForStartModuleCommand(nap);
+    start_result = NaClWaitForStartModuleCommand(nap);
     NaClPerfCounterMark(&time_all_main, "WaitedForStartModuleCommand");
     NaClPerfCounterIntervalLast(&time_all_main);
+    if (LOAD_OK == errcode) {
+      errcode = start_result;
+    }
   }
 
   /*
