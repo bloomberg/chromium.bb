@@ -77,7 +77,9 @@ made in recent releases.
       (<b>chrome://extensions</b>).
       </li>
     <li> The <a href="windows.html#method-create">chrome.windows.create()</a>
-      method can now have take a <code>focused</code> value.
+      method can now take a <code>focused</code> value.
+      Previously, all new windows had the keyboard focus;
+      now you can create windows without interrupting the user's typing.
       </li>
     <li> If the manifest specifies "experimental" permission,
       your extension can specify "panel" as the value of
