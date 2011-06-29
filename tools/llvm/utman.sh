@@ -1262,7 +1262,7 @@ build-compiler-rt-bitcode() {
       "SRC_DIR=${src}" \
       "CC=${PNACL_GCC}" \
       "AR=${PNACL_AR}" \
-      "CFLAGS=-O3"
+      "CFLAGS=-O3 -ffunction-sections -fdata-sections"
   spopd
 
 
