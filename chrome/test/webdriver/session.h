@@ -200,10 +200,6 @@ class Session {
                       const std::string& query,
                       std::vector<WebElementId>* elements);
 
-  // Checks that the given element meets the WebDriver requirements for
-  // clicking.
-  Error* CheckElementPreconditionsForClicking(const WebElementId& element);
-
   // Scroll the element into view and get its location relative to the client's
   // viewport.
   Error* GetElementLocationInView(
@@ -238,18 +234,28 @@ class Session {
                           const WebElementId& element,
                           bool* is_enabled);
 
-  // Waits for all tabs to stop loading. Returns true on success.
-  Error* WaitForAllTabsToStopLoading();
+  // Sets the given option element as selected.
+  Error* SelectOptionElement(const FrameId& frame_id,
+                             const WebElementId& element);
+
+  // Gets the tag name of the given element.
+  Error* GetElementTagName(const FrameId& frame_id,
+                           const WebElementId& element,
+                           std::string* tag_name);
+
+  // Gets the clickable location of the given element. It will be the center
+  // location of the element. If the element is not clickable, or if the
+  // location cannot be determined, an error will be returned.
+  Error* GetClickableLocation(const WebElementId& element,
+                              gfx::Point* location);
 
   // Gets the attribute of the given element. If there are no errors, the
   // function sets |value| and the caller takes ownership.
   Error* GetAttribute(const WebElementId& element, const std::string& key,
                       Value** value);
 
-  // Gets a clickable location of the given element. It will be the center
-  // location of the element.
-  Error* GetClickableLocation(const WebElementId& element,
-                              gfx::Point* location);
+  // Waits for all tabs to stop loading. Returns true on success.
+  Error* WaitForAllTabsToStopLoading();
 
   const std::string& id() const;
 

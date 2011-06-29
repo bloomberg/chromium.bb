@@ -452,6 +452,14 @@ class MouseTest(unittest.TestCase):
              '       document.body.scrollLeft == 0'
     self.assertTrue(self._driver.execute_script(script))
 
+  # TODO(kkania): Move this test to the webdriver repo.
+  def testClickDoesSelectOption(self):
+    self._driver.get(self._launcher.GetURL() + '/test_page.html')
+    option = self._driver.find_element_by_name('option')
+    self.assertFalse(option.is_selected())
+    option.click()
+    self.assertTrue(option.is_selected())
+
 
 class UrlBaseTest(unittest.TestCase):
   """Tests that the server can be configured for a different URL base."""

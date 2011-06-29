@@ -305,18 +305,14 @@ bool ElementNameCommand::DoesGet() {
 }
 
 void ElementNameCommand::ExecuteGet(Response* const response) {
-  ListValue args;
-  args.Append(element.ToValue());
-
-  std::string script = "return arguments[0].tagName.toLocaleLowerCase();";
-
-  Value* result = NULL;
-  Error* error = session_->ExecuteScript(script, &args, &result);
+  std::string tag_name;
+  Error* error = session_->GetElementTagName(
+      session_->current_target(), element, &tag_name);
   if (error) {
     response->SetError(error);
     return;
   }
-  response->SetValue(result);
+  response->SetValue(Value::CreateStringValue(tag_name));
 }
 
 ///////////////////// ElementSelectedCommand ////////////////////
@@ -353,20 +349,12 @@ void ElementSelectedCommand::ExecuteGet(Response* const response) {
 }
 
 void ElementSelectedCommand::ExecutePost(Response* const response) {
-  ListValue args;
-  args.Append(element.ToValue());
-  args.Append(Value::CreateBooleanValue(true));
-
-  std::string script = base::StringPrintf(
-      "return (%s).apply(null, arguments);", atoms::SET_SELECTED);
-
-  Value* result = NULL;
-  Error* error = session_->ExecuteScript(script, &args, &result);
+  Error* error = session_->SelectOptionElement(
+      session_->current_target(), element);
   if (error) {
     response->SetError(error);
     return;
   }
-  response->SetValue(result);
 }
 
 ///////////////////// ElementSizeCommand ////////////////////

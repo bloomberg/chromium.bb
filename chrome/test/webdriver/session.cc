@@ -331,15 +331,7 @@ Error* Session::MouseDrag(const gfx::Point& start,
 }
 
 Error* Session::MouseClick(automation::MouseButton button) {
-  Error* error = NULL;
-  RunSessionTask(NewRunnableMethod(
-      automation_.get(),
-      &Automation::MouseClick,
-      current_target_.window_id,
-      mouse_position_,
-      button,
-      &error));
-  return error;
+  return MouseMoveAndClick(mouse_position_, button);
 }
 
 Error* Session::MouseButtonDown() {
@@ -748,17 +740,6 @@ Error* Session::FindElements(const FrameId& frame_id,
       frame_id, root_element, locator, query, false, elements);
 }
 
-Error* Session::CheckElementPreconditionsForClicking(
-    const WebElementId& element) {
-  bool is_displayed = false;
-  Error* error = IsElementDisplayed(current_target_, element, &is_displayed);
-  if (error)
-    return error;
-  if (!is_displayed)
-    return new Error(kElementNotVisible, "Element must be displayed");
-  return NULL;
-}
-
 Error* Session::GetElementLocationInView(
     const WebElementId& element, gfx::Point* location) {
   CHECK(element.is_valid());
@@ -920,15 +901,56 @@ Error* Session::IsElementEnabled(const FrameId& frame_id,
   return NULL;
 }
 
-Error* Session::WaitForAllTabsToStopLoading() {
-  if (!automation_.get())
-    return NULL;
-  Error* error = NULL;
-  RunSessionTask(NewRunnableMethod(
-      automation_.get(),
-      &Automation::WaitForAllTabsToStopLoading,
-      &error));
+Error* Session::SelectOptionElement(const FrameId& frame_id,
+                                    const WebElementId& element) {
+  ListValue args;
+  args.Append(element.ToValue());
+  args.Append(Value::CreateBooleanValue(true));
+
+  std::string script = base::StringPrintf(
+      "return (%s).apply(null, arguments);", atoms::SET_SELECTED);
+
+  Value* unscoped_result = NULL;
+  Error* error = ExecuteScript(frame_id, script, &args, &unscoped_result);
+  scoped_ptr<Value> result(unscoped_result);
   return error;
+}
+
+Error* Session::GetElementTagName(const FrameId& frame_id,
+                                  const WebElementId& element,
+                                  std::string* tag_name) {
+  ListValue args;
+  args.Append(element.ToValue());
+
+  std::string script = "return arguments[0].tagName.toLocaleLowerCase();";
+
+  Value* unscoped_result = NULL;
+  Error* error = ExecuteScript(frame_id, script, &args, &unscoped_result);
+  scoped_ptr<Value> result(unscoped_result);
+  if (error)
+    return error;
+  if (!result->GetAsString(tag_name))
+    return new Error(kUnknownError, "TagName script returned non string");
+  return NULL;
+}
+
+Error* Session::GetClickableLocation(const WebElementId& element,
+                                     gfx::Point* location) {
+  bool is_displayed = false;
+  Error* error = IsElementDisplayed(current_target_, element, &is_displayed);
+  if (error)
+    return error;
+  if (!is_displayed)
+    return new Error(kElementNotVisible, "Element must be displayed");
+  error = GetElementLocationInView(element, location);
+  if (error)
+    return error;
+  gfx::Size size;
+  error = GetElementSize(current_target_, element, &size);
+  if (error)
+    return error;
+  location->Offset(size.width() / 2, size.height() / 2);
+  return NULL;
 }
 
 Error* Session::GetAttribute(const WebElementId& element,
@@ -948,26 +970,15 @@ Error* Session::GetAttribute(const WebElementId& element,
   return NULL;
 }
 
-Error* Session::GetClickableLocation(const WebElementId& element,
-                                     gfx::Point* location) {
-  Error* error = CheckElementPreconditionsForClicking(element);
-  if (error) {
-    return error;
-  }
-
-  error = GetElementLocationInView(element, location);
-  if (error) {
-    return error;
-  }
-
-  gfx::Size size;
-  error = GetElementSize(current_target(), element, &size);
-  if (error) {
-    return error;
-  }
-
-  location->Offset(size.width() / 2, size.height() / 2);
-  return NULL;
+Error* Session::WaitForAllTabsToStopLoading() {
+  if (!automation_.get())
+    return NULL;
+  Error* error = NULL;
+  RunSessionTask(NewRunnableMethod(
+      automation_.get(),
+      &Automation::WaitForAllTabsToStopLoading,
+      &error));
+  return error;
 }
 
 const std::string& Session::id() const {
