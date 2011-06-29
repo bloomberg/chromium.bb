@@ -65,7 +65,7 @@ bool SandboxInitWrapper::InitializeSandbox(const CommandLine& command_line,
   } else {
     // Failsafe: If you hit an unreached here, is your new process type in need
     // of sandboxing?
-    NOTREACHED();
+    NOTREACHED() << "Unknown process type " << process_type;
     return true;
   }
 
