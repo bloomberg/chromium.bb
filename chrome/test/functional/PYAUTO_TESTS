@@ -155,6 +155,8 @@
       '-sync.SyncTest.testRestartBrowser',
       # crbug.com/87642
       '-sync.SyncTest.testDisableAndEnableDatatypes',
+      # crbug.com/87811
+      '-plugins.PluginsTest.testDisableEnableAllPlugins',
     ],
 
     'mac': [
