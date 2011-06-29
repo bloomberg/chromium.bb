@@ -872,7 +872,8 @@ void RenderView::OnCopy() {
   if (!webview())
     return;
 
-  webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Copy"));
+  webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Copy"),
+                                            context_menu_node_);
 }
 
 #if defined(OS_MACOSX)
