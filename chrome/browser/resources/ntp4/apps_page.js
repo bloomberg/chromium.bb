@@ -33,7 +33,7 @@ cr.define('ntp4', function() {
       var menu = new cr.ui.Menu;
       cr.ui.decorate(menu, cr.ui.Menu);
       menu.classList.add('app-context-menu');
-      this.menu = menu;
+      this.menu_ = menu;
 
       this.launch_ = this.appendMenuItem_();
       this.launch_.addEventListener('activate', this.onLaunch_.bind(this));
@@ -77,7 +77,7 @@ cr.define('ntp4', function() {
      */
     appendMenuItem_: function(textId) {
       var button = cr.doc.createElement('button');
-      this.menu.appendChild(button);
+      this.menu_.appendChild(button);
       cr.ui.decorate(button, cr.ui.MenuItem);
       if (textId)
         button.textContent = localStrings.getString(textId);
@@ -217,9 +217,9 @@ cr.define('ntp4', function() {
      * @private
      */
     onClick_: function(e) {
-      var args = [this.appId, APP_LAUNCH.NTP_APPS_MAXIMIZED];
-      args.push(e.altKey, e.ctrlKey, e.metaKey, e.shiftKey, e.button);
-      chrome.send('launchApp', args);
+      chrome.send('launchApp',
+                  [this.appId, APP_LAUNCH.NTP_APPS_MAXIMIZED,
+                   e.altKey, e.ctrlKey, e.metaKey, e.shiftKey, e.button]);
 
       // Don't allow the click to trigger a link or anything
       e.preventDefault();
