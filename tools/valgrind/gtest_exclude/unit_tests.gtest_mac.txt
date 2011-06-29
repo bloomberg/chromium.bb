@@ -33,3 +33,6 @@ MacSandboxTest.FileAccess
 # http://crbug.com/87769
 BalloonControllerTest.ShowAndCloseTest
 BalloonControllerTest.SizesTest
+
+# http://crbug.com/87839
+LinkInfoBarControllerTest.ShowAndClickLink
