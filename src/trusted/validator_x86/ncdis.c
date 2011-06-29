@@ -125,9 +125,6 @@ static void AnalyzeCodeSegments(ncfile *ncf, const char *fname) {
   }
 }
 
-/* Don't apply native client rules for elf files. */
-static Bool FLAGS_not_nc = FALSE;
-
 /* Capture a sequence of bytes defining an instruction (up to a
  * MAX_BYTES_PER_X86_INSTRUCTION). This sequence is used to run
  * a (debug) test of the disassembler.
@@ -176,20 +173,17 @@ static Bool FLAGS_self_document = FALSE;
  */
 static void ResetFlags() {
   int i;
-  static int DEFAULT_not_nc;
   static uint32_t DEFAULT_decode_pc;
   static char* DEFAULT_commands;
   static Bool DEFAULT_self_document;
   static Bool is_first_call = TRUE;
   if (is_first_call) {
-    DEFAULT_not_nc = FLAGS_not_nc;
     DEFAULT_decode_pc = FLAGS_decode_pc;
     DEFAULT_commands = FLAGS_commands;
     DEFAULT_self_document = FLAGS_self_document;
     is_first_call = FALSE;
   }
 
-  FLAGS_not_nc = DEFAULT_not_nc;
   FLAGS_decode_pc = DEFAULT_decode_pc;
   FLAGS_commands = DEFAULT_commands;
   FLAGS_self_document = DEFAULT_self_document;
@@ -235,8 +229,7 @@ int GrokFlags(int argc, const char *argv[]) {
   new_argc = 1;
   for (i = 1; i < argc; ++i) {
     const char* arg = argv[i];
-    if (GrokBoolFlag("--not_nc", arg, &FLAGS_not_nc) ||
-        GrokUint32HexFlag("--pc", arg, &FLAGS_decode_pc) ||
+    if (GrokUint32HexFlag("--pc", arg, &FLAGS_decode_pc) ||
         GrokCstringFlag("--commands", arg, &FLAGS_commands) ||
         GrokCstringFlag("--hex_text", arg, &FLAGS_hex_text) ||
         GrokBoolFlag("--self_document", arg, &FLAGS_self_document) ||
@@ -480,7 +473,7 @@ static void ProcessCommandLine(int argc, const char* argv[]) {
     const char* filename = GrokArgv(new_argc, argv);
 
     Info("processing %s", filename);
-    ncf = nc_loadfile_depending(filename, !FLAGS_not_nc, NULL);
+    ncf = nc_loadfile_depending(filename, NULL);
     if (ncf == NULL) {
       Fatal("nc_loadfile(%s): %s\n", filename, strerror(errno));
     }

@@ -29,14 +29,6 @@
 int gNaClValidateImage_foo = 0;
 void NaClValidateImage() { gNaClValidateImage_foo += 1; }
 
-static Elf_Addr NCPageTrunc(Elf_Addr v) {
-  return (v & ~(kNCFileUtilPageSize - 1));
-}
-
-static Elf_Addr NCPageRound(Elf_Addr v) {
-  return(NCPageTrunc(v + (kNCFileUtilPageSize - 1)));
-}
-
 static void NcLoadFilePrintError(const char* format, ...)
     ATTRIBUTE_FORMAT_PRINTF(1, 2);
 
@@ -90,7 +82,7 @@ static const char* GetEiClassName(unsigned char c) {
   }
 }
 
-static int nc_load(ncfile *ncf, int fd, int nc_rules) {
+static int nc_load(ncfile *ncf, int fd) {
 
   Elf_Ehdr h;
   ssize_t nread;
@@ -168,13 +160,8 @@ static int nc_load(ncfile *ncf, int fd, int nc_rules) {
       vmemhi = ncf->pheaders[i].p_vaddr + ncf->pheaders[i].p_memsz;
     }
   }
-  vmemhi = NCPageRound(vmemhi);
   ncf->size = vmemhi - vmemlo;
   ncf->vbase = vmemlo;
-  if (nc_rules && vmemlo != NCPageTrunc(vmemlo)) {
-    ncf->error_fn("nc_load(%s): vmemlo is not aligned\n", ncf->fname);
-    return -1;
-  }
   /* TODO(karl) Remove the cast to size_t, or verify size. */
   ncf->data = (uint8_t *)calloc(1, (size_t) ncf->size);
   if (NULL == ncf->data) {
@@ -189,9 +176,6 @@ static int nc_load(ncfile *ncf, int fd, int nc_rules) {
     if (p->p_type != PT_LOAD) continue;
     if (0 == (ncf->pheaders[i].p_flags & PF_X)) continue;
 
-    if (nc_rules) {
-      assert(ncf->size >= NCPageRound(p->p_vaddr - ncf->vbase + p->p_memsz));
-    }
     /* TODO(karl) Remove the cast to off_t, or verify value in range. */
     nread = readat(ncf, fd, &(ncf->data[p->p_vaddr - ncf->vbase]),
                    (off_t) p->p_filesz, (off_t) p->p_offset);
@@ -224,7 +208,7 @@ static int nc_load(ncfile *ncf, int fd, int nc_rules) {
   return 0;
 }
 
-ncfile *nc_loadfile_depending(const char *filename, int nc_rules,
+ncfile *nc_loadfile_depending(const char *filename,
                               nc_loadfile_error_fn error_fn) {
   ncfile *ncf;
   int fd;
@@ -244,7 +228,7 @@ ncfile *nc_loadfile_depending(const char *filename, int nc_rules,
     ncf->error_fn = error_fn;
   }
 
-  if (nc_load(ncf, fd, nc_rules) < 0) {
+  if (nc_load(ncf, fd) < 0) {
     close(fd);
     free(ncf);
     return NULL;
@@ -254,12 +238,12 @@ ncfile *nc_loadfile_depending(const char *filename, int nc_rules,
 }
 
 ncfile *nc_loadfile(const char *filename) {
-  return nc_loadfile_depending(filename, 1, NULL);
+  return nc_loadfile_depending(filename, NULL);
 }
 
 ncfile *nc_loadfile_with_error_fn(const char *filename,
                                   nc_loadfile_error_fn error_fn) {
-  return nc_loadfile_depending(filename, 1, error_fn);
+  return nc_loadfile_depending(filename, error_fn);
 }
 
 

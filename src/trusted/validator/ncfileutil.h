@@ -43,11 +43,10 @@ typedef struct {
   nc_loadfile_error_fn error_fn;  /* The error printing routine to use. */
 } ncfile;
 
-/* Loads the given filename into memory, and if the nc_rules is non-zero,
- * require native client rules to be applied. If error_fn is NULL, a default
+/* Loads the given filename into memory. If error_fn is NULL, a default
  * error printing routine will be used.
  */
-ncfile *nc_loadfile_depending(const char* filename, int nc_rules,
+ncfile *nc_loadfile_depending(const char* filename,
                               nc_loadfile_error_fn error_fn);
 
 /* Loads the given filename into memory, applying native client rules.
