@@ -382,6 +382,7 @@ class BuilderStage(object):
     is not an exception.
     """
     # Tell the user about the exception, and record it
+    print '@@@STEP_FAILURE@@@'
     description = traceback.format_exc()
     print >> sys.stderr, description
     return exception, description
@@ -405,7 +406,6 @@ class BuilderStage(object):
       self._PerformStage()
     except Exception as e:
       # Tell the build bot this step failed for the waterfall
-      print '@@@STEP_FAILURE@@@'
       result, description = self._HandleStageException(e)
       raise BuildException()
     finally:
@@ -427,6 +427,7 @@ class ForgivingBuilderStage(NonHaltingBuilderStage):
   """Build stage that turns a build step red but not a build."""
   def _HandleStageException(self, exception):
     """Override and don't set status to FAIL but FORGIVEN instead."""
+    print '@@@STEP_WARNINGS@@@'
     description = traceback.format_exc()
     print >> sys.stderr, description
     return Results.FORGIVEN, None

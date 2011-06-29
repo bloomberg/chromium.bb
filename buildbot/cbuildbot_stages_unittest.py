@@ -207,7 +207,6 @@ class ManifestVersionedSyncStageTest(AbstractStageTest):
 
   def testManifestVersionedSyncOnePartBranch(self):
     """Tests basic ManifestVersionedSyncStage with branch ooga_booga"""
-
     self.mox.StubOutWithMock(manifest_version.BuildSpecsManager,
                              'GetNextBuildSpec')
     self.mox.StubOutWithMock(commands, 'ManifestCheckout')
@@ -216,7 +215,7 @@ class ManifestVersionedSyncStageTest(AbstractStageTest):
     os.path.isdir(self.build_root + '/.repo').AndReturn(False)
 
     self.manager.GetNextBuildSpec(stages.VERSION_FILE,
-        latest=True).AndReturn(self.next_version)
+        force_version=None, latest=True).AndReturn(self.next_version)
 
     commands.ManifestCheckout(self.build_root,
                               self.TRACKING_BRANCH,
