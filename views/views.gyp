@@ -669,10 +669,10 @@
       'sources': [
         'desktop/desktop_background.cc',
         'desktop/desktop_background.h',
-        'desktop/desktop_window.cc',
-        'desktop/desktop_window.h',
         'desktop/desktop_window_root_view.cc',
         'desktop/desktop_window_root_view.h',
+        'desktop/desktop_window_view.cc',
+        'desktop/desktop_window_view.h',
       ],
       'conditions': [
         ['toolkit_uses_gtk == 1', {

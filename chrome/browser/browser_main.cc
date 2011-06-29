@@ -194,7 +194,7 @@
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/views/chrome_views_delegate.h"
-#include "views/desktop/desktop_window.h"
+#include "views/desktop/desktop_window_view.h"
 #include "views/focus/accelerator_handler.h"
 #include "views/widget/widget.h"
 #if defined(TOOLKIT_USES_GTK)
@@ -1441,11 +1441,11 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // Launch the views desktop shell window and register it as the default parent
   // for all unparented views widgets.
   if (parsed_command_line.HasSwitch(switches::kViewsDesktop)) {
-    views::desktop::DesktopWindow::CreateDesktopWindow();
+    views::desktop::DesktopWindowView::CreateDesktopWindow();
     ChromeViewsDelegate* chrome_views_delegate =
         static_cast<ChromeViewsDelegate*>(views::ViewsDelegate::views_delegate);
     chrome_views_delegate->default_parent_view =
-        views::desktop::DesktopWindow::desktop_window;
+        views::desktop::DesktopWindowView::desktop_window_view;
   }
 #endif
 

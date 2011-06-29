@@ -5,7 +5,7 @@
 #include "views/desktop/desktop_views_delegate.h"
 
 #include "base/logging.h"
-#include "views/desktop/desktop_window.h"
+#include "views/desktop/desktop_window_view.h"
 
 namespace views {
 namespace desktop {
@@ -29,7 +29,7 @@ ui::Clipboard* DesktopViewsDelegate::GetClipboard() const {
 }
 
 View* DesktopViewsDelegate::GetDefaultParentView() {
-  return DesktopWindow::desktop_window;
+  return DesktopWindowView::desktop_window_view;
 }
 
 void DesktopViewsDelegate::SaveWindowPlacement(const Widget* widget,

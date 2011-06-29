@@ -13,12 +13,12 @@ class NativeWidgetViews;
 
 namespace desktop {
 
-class DesktopWindow : public WidgetDelegateView {
+class DesktopWindowView : public WidgetDelegateView {
  public:
-  static DesktopWindow* desktop_window;
+  static DesktopWindowView* desktop_window_view;
 
-  DesktopWindow();
-  virtual ~DesktopWindow();
+  DesktopWindowView();
+  virtual ~DesktopWindowView();
 
   static void CreateDesktopWindow();
 
@@ -47,7 +47,7 @@ class DesktopWindow : public WidgetDelegateView {
 
   NativeWidgetViews* active_widget_;
 
-  DISALLOW_COPY_AND_ASSIGN(DesktopWindow);
+  DISALLOW_COPY_AND_ASSIGN(DesktopWindowView);
 };
 
 }  // namespace desktop

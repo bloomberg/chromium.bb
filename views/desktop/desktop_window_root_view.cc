@@ -4,7 +4,7 @@
 
 #include "views/desktop/desktop_window_root_view.h"
 
-#include "views/desktop/desktop_window.h"
+#include "views/desktop/desktop_window_view.h"
 #include "views/widget/native_widget_view.h"
 #include "views/widget/widget.h"
 
@@ -14,10 +14,11 @@ namespace desktop {
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowRootView, public:
 
-DesktopWindowRootView::DesktopWindowRootView(DesktopWindow* desktop_window,
-                                             Widget* window)
+DesktopWindowRootView::DesktopWindowRootView(
+    DesktopWindowView* desktop_window_view,
+    Widget* window)
     : internal::RootView(window),
-      desktop_window_(desktop_window) {
+      desktop_window_view_(desktop_window_view) {
 }
 
 DesktopWindowRootView::~DesktopWindowRootView() {
@@ -31,9 +32,10 @@ bool DesktopWindowRootView::OnMousePressed(const MouseEvent& event) {
   if (target->GetClassName() == internal::NativeWidgetView::kViewClassName) {
     internal::NativeWidgetView* native_widget_view =
         static_cast<internal::NativeWidgetView*>(target);
-    desktop_window_->ActivateWidget(native_widget_view->GetAssociatedWidget());
+    desktop_window_view_->ActivateWidget(
+        native_widget_view->GetAssociatedWidget());
   } else {
-    desktop_window_->ActivateWidget(NULL);
+    desktop_window_view_->ActivateWidget(NULL);
   }
   return RootView::OnMousePressed(event);
 }

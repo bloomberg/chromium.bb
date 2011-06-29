@@ -10,18 +10,18 @@
 namespace views {
 namespace desktop {
 
-class DesktopWindow;
+class DesktopWindowView;
 
 class DesktopWindowRootView : public internal::RootView {
  public:
-  DesktopWindowRootView(DesktopWindow* desktop_window, Widget* window);
+  DesktopWindowRootView(DesktopWindowView* desktop_window_view, Widget* window);
   virtual ~DesktopWindowRootView();
 
  private:
   // Overridden from RootView:
   virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;
 
-  DesktopWindow* desktop_window_;
+  DesktopWindowView* desktop_window_view_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopWindowRootView);
 };

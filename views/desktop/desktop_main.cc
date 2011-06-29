@@ -9,7 +9,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "views/desktop/desktop_views_delegate.h"
-#include "views/desktop/desktop_window.h"
+#include "views/desktop/desktop_window_view.h"
 #include "views/focus/accelerator_handler.h"
 #include "views/widget/widget.h"
 
@@ -46,10 +46,10 @@ int main(int argc, char** argv) {
   // Desktop mode only supports a pure-views configuration.
   views::Widget::SetPureViews(true);
 
-  views::desktop::DesktopWindow::CreateDesktopWindow();
-  views::desktop::DesktopWindow::desktop_window->CreateTestWindow(
+  views::desktop::DesktopWindowView::CreateDesktopWindow();
+  views::desktop::DesktopWindowView::desktop_window_view->CreateTestWindow(
       L"Sample Window 1", SK_ColorWHITE, gfx::Rect(500, 200, 400, 400), true);
-  views::desktop::DesktopWindow::desktop_window->CreateTestWindow(
+  views::desktop::DesktopWindowView::desktop_window_view->CreateTestWindow(
       L"Sample Window 2", SK_ColorRED, gfx::Rect(600, 450, 450, 300), false);
 
   views::AcceleratorHandler accelerator_handler;

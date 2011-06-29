@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/desktop/desktop_window.h"
+#include "views/desktop/desktop_window_view.h"
 
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/transform.h"
@@ -22,22 +22,24 @@
 namespace views {
 namespace desktop {
 
-// TODO(beng): resolve naming!
-class DesktopWindowWindow : public Widget {
+// The Widget that hosts the DesktopWindowView. Subclasses Widget to override
+// CreateRootView() so that the DesktopWindowRootView can be supplied instead
+// for custom event filtering.
+class DesktopWindow : public Widget {
  public:
-  explicit DesktopWindowWindow(DesktopWindow* desktop_window)
-      : desktop_window_(desktop_window) {}
-  virtual ~DesktopWindowWindow() {}
+  explicit DesktopWindow(DesktopWindowView* desktop_window_view)
+      : desktop_window_view_(desktop_window_view) {}
+  virtual ~DesktopWindow() {}
 
  private:
   // Overridden from Widget:
   virtual internal::RootView* CreateRootView() OVERRIDE {
-    return new DesktopWindowRootView(desktop_window_, this);
+    return new DesktopWindowRootView(desktop_window_view_, this);
   }
 
-  DesktopWindow* desktop_window_;
+  DesktopWindowView* desktop_window_view_;
 
-  DISALLOW_COPY_AND_ASSIGN(DesktopWindowWindow);
+  DISALLOW_COPY_AND_ASSIGN(DesktopWindow);
 };
 
 class TestWindowContentView : public WidgetDelegateView {
@@ -80,25 +82,25 @@ class TestWindowContentView : public WidgetDelegateView {
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopWindow, public:
+// DesktopWindowView, public:
 
 // static
-DesktopWindow* DesktopWindow::desktop_window = NULL;
+DesktopWindowView* DesktopWindowView::desktop_window_view = NULL;
 
-DesktopWindow::DesktopWindow() : active_widget_(NULL) {
+DesktopWindowView::DesktopWindowView() : active_widget_(NULL) {
   set_background(new DesktopBackground);
 }
 
-DesktopWindow::~DesktopWindow() {
+DesktopWindowView::~DesktopWindowView() {
 }
 
 // static
-void DesktopWindow::CreateDesktopWindow() {
-  DCHECK(!desktop_window);
-  desktop_window = new DesktopWindow;
-  views::Widget* window = new DesktopWindowWindow(desktop_window);
+void DesktopWindowView::CreateDesktopWindow() {
+  DCHECK(!desktop_window_view);
+  desktop_window_view = new DesktopWindowView;
+  views::Widget* window = new DesktopWindow(desktop_window_view);
   views::Widget::InitParams params;
-  params.delegate = desktop_window;
+  params.delegate = desktop_window_view;
   // In this environment, CreateChromeWindow will default to creating a views-
   // window, so we need to construct a NativeWidgetWin by hand.
   // TODO(beng): Replace this with NativeWindow::CreateNativeRootWindow().
@@ -112,7 +114,7 @@ void DesktopWindow::CreateDesktopWindow() {
   window->Show();
 }
 
-void DesktopWindow::ActivateWidget(Widget* widget) {
+void DesktopWindowView::ActivateWidget(Widget* widget) {
   if (widget && widget->IsActive())
     return;
 
@@ -126,10 +128,10 @@ void DesktopWindow::ActivateWidget(Widget* widget) {
 }
 
 
-void DesktopWindow::CreateTestWindow(const std::wstring& title,
-                                     SkColor color,
-                                     gfx::Rect initial_bounds,
-                                     bool rotate) {
+void DesktopWindowView::CreateTestWindow(const std::wstring& title,
+                                         SkColor color,
+                                         gfx::Rect initial_bounds,
+                                         bool rotate) {
   views::Widget* window = views::Widget::CreateWindowWithBounds(
       new TestWindowContentView(title, color),
       initial_bounds);
@@ -147,43 +149,43 @@ void DesktopWindow::CreateTestWindow(const std::wstring& title,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopWindow, View overrides:
+// DesktopWindowView, View overrides:
 
-void DesktopWindow::Layout() {
+void DesktopWindowView::Layout() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopWindow, WindowDelegate implementation:
+// DesktopWindowView, WidgetDelegate implementation:
 
-bool DesktopWindow::CanResize() const {
+bool DesktopWindowView::CanResize() const {
   return true;
 }
 
-bool DesktopWindow::CanMaximize() const {
+bool DesktopWindowView::CanMaximize() const {
   return CanResize();
 }
 
-std::wstring DesktopWindow::GetWindowTitle() const {
+std::wstring DesktopWindowView::GetWindowTitle() const {
   return L"Aura Desktop";
 }
 
-SkBitmap DesktopWindow::GetWindowAppIcon() {
+SkBitmap DesktopWindowView::GetWindowAppIcon() {
   return SkBitmap();
 }
 
-SkBitmap DesktopWindow::GetWindowIcon() {
+SkBitmap DesktopWindowView::GetWindowIcon() {
   return SkBitmap();
 }
 
-bool DesktopWindow::ShouldShowWindowIcon() const {
+bool DesktopWindowView::ShouldShowWindowIcon() const {
   return false;
 }
 
-void DesktopWindow::WindowClosing() {
+void DesktopWindowView::WindowClosing() {
   MessageLoopForUI::current()->Quit();
 }
 
-View* DesktopWindow::GetContentsView() {
+View* DesktopWindowView::GetContentsView() {
   return this;
 }
 
