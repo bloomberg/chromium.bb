@@ -33,9 +33,6 @@ X509CertificateTest.IntermediateCARequireExplicitPolicy
 SSLServerSocketTest.*
 X509CertificateTest.TestKnownRoot
 
-# Flaky, see http://crbug.com/86756
-DhcpProxyScriptFetcherWin.RealFetchWithDeferredCancel
-
 #########################################
 # These tests fail if you don't have our SSL certificate installed.
 # Please see http://dev.chromium.org/developers/testing#TOC-SSL-tests
