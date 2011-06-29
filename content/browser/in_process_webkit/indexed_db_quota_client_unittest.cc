@@ -37,6 +37,14 @@ class IndexedDBQuotaClientTest : public testing::Test {
         webkit_thread_(BrowserThread::WEBKIT, &message_loop_) {
     TestingProfile profile;
     idb_context_ = profile.GetWebKitContext()->indexed_db_context();
+    setup_temp_dir();
+  }
+  void setup_temp_dir() {
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    FilePath indexeddb_dir = temp_dir_.path().Append(
+        IndexedDBContext::kIndexedDBDirectory);
+    ASSERT_TRUE(file_util::CreateDirectory(indexeddb_dir));
+    idb_context()->set_data_path(indexeddb_dir);
   }
 
   ~IndexedDBQuotaClientTest() {
@@ -67,12 +75,18 @@ class IndexedDBQuotaClientTest : public testing::Test {
     ASSERT_EQ(size, file_util::WriteFile(path, junk.c_str(), size));
   }
 
+  void AddFakeIndexedDB(const GURL& origin, int size) {
+    FilePath file_path_origin = idb_context()->GetIndexedDBFilePath(
+        DatabaseUtil::GetOriginIdentifier(origin));
+    SetFileSizeTo(file_path_origin, size);
+  }
 
  private:
   void OnGetOriginUsageComplete(int64 usage) {
     usage_ = usage;
   }
 
+  ScopedTempDir temp_dir_;
   int64 usage_;
   scoped_refptr<IndexedDBContext> idb_context_;
   base::ScopedCallbackFactory<IndexedDBQuotaClientTest> callback_factory_;
@@ -86,26 +100,14 @@ TEST_F(IndexedDBQuotaClientTest, GetOriginUsage) {
       base::MessageLoopProxy::CreateForCurrentThread(),
       idb_context());
 
-  ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  FilePath indexeddb_dir = temp_dir.path().Append(
-      IndexedDBContext::kIndexedDBDirectory);
-  ASSERT_TRUE(file_util::CreateDirectory(indexeddb_dir));
-
-  idb_context()->set_data_path(indexeddb_dir);
-  FilePath file_path_origin_a = idb_context()->GetIndexedDBFilePath(
-      DatabaseUtil::GetOriginIdentifier(kOriginA));
-  FilePath file_path_origin_b = idb_context()->GetIndexedDBFilePath(
-      DatabaseUtil::GetOriginIdentifier(kOriginB));
-
-  SetFileSizeTo(file_path_origin_a, 6);
-  SetFileSizeTo(file_path_origin_b, 3);
+  AddFakeIndexedDB(kOriginA, 6);
+  AddFakeIndexedDB(kOriginB, 3);
   EXPECT_EQ(6, GetOriginUsage(&client, kOriginA, kTemp));
   EXPECT_EQ(0, GetOriginUsage(&client, kOriginA, kPerm));
   EXPECT_EQ(3, GetOriginUsage(&client, kOriginB, kTemp));
   EXPECT_EQ(0, GetOriginUsage(&client, kOriginB, kPerm));
 
-  SetFileSizeTo(file_path_origin_a, 1000);
+  AddFakeIndexedDB(kOriginA, 1000);
   EXPECT_EQ(1000, GetOriginUsage(&client, kOriginA, kTemp));
   EXPECT_EQ(0, GetOriginUsage(&client, kOriginA, kPerm));
   EXPECT_EQ(3, GetOriginUsage(&client, kOriginB, kTemp));
