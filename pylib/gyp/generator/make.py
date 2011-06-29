@@ -58,6 +58,9 @@ generator_default_variables = {
 # Make supports multiple toolsets
 generator_supports_multiple_toolsets = True
 
+# Request sorted dependencies in the order from dependents to dependencies.
+generator_wants_sorted_dependencies = False
+
 def ensure_directory_exists(path):
   dir = os.path.dirname(path)
   if dir and not os.path.exists(dir):
@@ -1368,6 +1371,17 @@ def CalculateVariables(default_variables, params):
   cc_target = os.environ.get('CC.target', os.environ.get('CC', 'cc'))
   default_variables['LINKER_SUPPORTS_ICF'] = \
       gyp.system_test.TestLinkerSupportsICF(cc_command=cc_target)
+
+
+def CalculateGeneratorInputInfo(params):
+  """Calculate the generator specific info that gets fed to input (called by
+  gyp)."""
+  generator_flags = params.get('generator_flags', {})
+  android_ndk_version = generator_flags.get('android_ndk_version', None)
+  # Android NDK requires a strict link order.
+  if android_ndk_version:
+    global generator_wants_sorted_dependencies
+    generator_wants_sorted_dependencies = True
 
 
 def GenerateOutput(target_list, target_dicts, data, params):

@@ -61,6 +61,11 @@ def Load(build_files, format, default_variables={},
   if getattr(generator, 'CalculateVariables', None):
     generator.CalculateVariables(default_variables, params)
 
+  # Give the generator the opportunity to set generator_input_info based on
+  # the params it will receive in the output phase.
+  if getattr(generator, 'CalculateGeneratorInputInfo', None):
+    generator.CalculateGeneratorInputInfo(params)
+
   # Fetch the generator specific info that gets fed to input, we use getattr
   # so we can default things and the generators only have to provide what
   # they need.
@@ -79,7 +84,9 @@ def Load(build_files, format, default_variables={},
         getattr(generator, 'generator_supports_multiple_toolsets', False),
     'generator_wants_static_library_dependencies_adjusted':
         getattr(generator,
-                'generator_wants_static_library_dependencies_adjusted', True)
+                'generator_wants_static_library_dependencies_adjusted', True),
+    'generator_wants_sorted_dependencies':
+        getattr(generator, 'generator_wants_sorted_dependencies', False),
   }
 
   # Process the input specific to this generator.

@@ -1492,7 +1492,8 @@ def DoDependentSettings(key, flat_list, targets, dependency_nodes):
                  build_file, dependency_build_file)
 
 
-def AdjustStaticLibraryDependencies(flat_list, targets, dependency_nodes):
+def AdjustStaticLibraryDependencies(flat_list, targets, dependency_nodes,
+                                    sort_dependencies):
   # Recompute target "dependencies" properties.  For each static library
   # target, remove "dependencies" entries referring to other static libraries,
   # unless the dependency has the "hard_dependency" attribute set.  For each
@@ -1545,6 +1546,14 @@ def AdjustStaticLibraryDependencies(flat_list, targets, dependency_nodes):
           target_dict['dependencies'] = []
         if not dependency in target_dict['dependencies']:
           target_dict['dependencies'].append(dependency)
+      # Sort the dependencies list in the order from dependents to dependencies.
+      # e.g. If A and B depend on C and C depends on D, sort them in A, B, C, D.
+      # Note: flat_list is already sorted in the order from dependencies to
+      # dependents.
+      if sort_dependencies and 'dependencies' in target_dict:
+        target_dict['dependencies'] = [dep for dep in reversed(flat_list)
+                                       if dep in target_dict['dependencies']]
+
 
 # Initialize this here to speed up MakePathRelative.
 exception_re = re.compile(r'''["']?[-/$<>]''')
@@ -2262,7 +2271,8 @@ def Load(build_files, variables, includes, depth, generator_input_info, check,
   # that they need so that their link steps will be correct.
   gii = generator_input_info
   if gii['generator_wants_static_library_dependencies_adjusted']:
-    AdjustStaticLibraryDependencies(flat_list, targets, dependency_nodes)
+    AdjustStaticLibraryDependencies(flat_list, targets, dependency_nodes,
+                                    gii['generator_wants_sorted_dependencies'])
 
   # Apply "post"/"late"/"target" variable expansions and condition evaluations.
   for target in flat_list:
