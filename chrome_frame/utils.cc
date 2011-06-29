@@ -64,10 +64,7 @@ const wchar_t kRundllProfileName[] = L"rundll32";
 
 const wchar_t kAllowUnsafeURLs[] = L"AllowUnsafeURLs";
 const wchar_t kEnableBuggyBhoIntercept[] = L"EnableBuggyBhoIntercept";
-const wchar_t kEnableFirefoxPrivilegeMode[] = L"EnableFirefoxPrivilegeMode";
 
-static const wchar_t kChromeFrameNPAPIKey[] =
-    L"Software\\MozillaPlugins\\@google.com/ChromeFrame,version=1.0";
 static const wchar_t kChromeFramePersistNPAPIReg[] = L"PersistNPAPIReg";
 
 const char kAttachExternalTabPrefix[] = "attach_external_tab";
@@ -217,53 +214,17 @@ HRESULT UtilUnRegisterTypeLib(ITypeLib* typelib,
   return hr;
 }
 
-bool UtilIsNPAPIPluginRegistered() {
-  std::wstring npapi_key_name(kChromeFrameNPAPIKey);
-  RegKey npapi_key(HKEY_LOCAL_MACHINE, npapi_key_name.c_str(), KEY_QUERY_VALUE);
-  return npapi_key.Valid();
-}
-
-bool UtilChangePersistentNPAPIMarker(bool set) {
+bool UtilRemovePersistentNPAPIMarker() {
   BrowserDistribution* cf_dist = BrowserDistribution::GetDistribution();
   std::wstring cf_state_key_path(cf_dist->GetStateKey());
+  RegKey cf_state_key;
 
-  RegKey cf_state_key(HKEY_LOCAL_MACHINE, cf_state_key_path.c_str(),
-                      KEY_READ | KEY_WRITE);
-
-  bool success = false;
-  if (cf_state_key.Valid()) {
-    if (set) {
-      success = (cf_state_key.WriteValue(kChromeFramePersistNPAPIReg, 1) ==
-          ERROR_SUCCESS);
-    } else {
-      // Unfortunately, DeleteValue returns true only if the value
-      // previously existed, so we do a separate existence check to
-      // validate success.
-      cf_state_key.DeleteValue(kChromeFramePersistNPAPIReg);
-      success = !cf_state_key.ValueExists(kChromeFramePersistNPAPIReg);
-    }
-  }
-  return success;
+  LONG result = cf_state_key.Open(HKEY_LOCAL_MACHINE, cf_state_key_path.c_str(),
+                                  KEY_SET_VALUE);
+  if (result == ERROR_SUCCESS)
+    result = cf_state_key.DeleteValue(kChromeFramePersistNPAPIReg);
+  return (result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND);
 }
-
-bool UtilIsPersistentNPAPIMarkerSet() {
-  BrowserDistribution* cf_dist = BrowserDistribution::GetDistribution();
-  std::wstring cf_state_key_path(cf_dist->GetStateKey());
-
-  RegKey cf_state_key(HKEY_LOCAL_MACHINE, cf_state_key_path.c_str(),
-                      KEY_QUERY_VALUE);
-
-  bool success = false;
-  if (cf_state_key.Valid()) {
-    DWORD val = 0;
-    if (cf_state_key.ReadValueDW(kChromeFramePersistNPAPIReg, &val) ==
-        ERROR_SUCCESS) {
-      success = (val != 0);
-    }
-  }
-  return success;
-}
-
 
 HRESULT UtilGetXUACompatContentValue(const std::wstring& html_string,
                                      std::wstring* content_value) {
@@ -371,8 +332,6 @@ bool IsChrome(RendererType renderer_type) {
 
 namespace {
 const char kIEImageName[] = "iexplore.exe";
-const char kFirefoxImageName[] = "firefox.exe";
-const char kOperaImageName[] = "opera.exe";
 }  // namespace
 
 std::wstring GetHostProcessName(bool include_extension) {
@@ -395,10 +354,6 @@ BrowserType GetBrowserType() {
       std::wstring::const_iterator end = exe.end();
       if (LowerCaseEqualsASCII(begin, end, kIEImageName)) {
         browser_type = BROWSER_IE;
-      } else if (LowerCaseEqualsASCII(begin, end, kFirefoxImageName)) {
-        browser_type = BROWSER_FIREFOX;
-      } else if (LowerCaseEqualsASCII(begin, end, kOperaImageName)) {
-        browser_type = BROWSER_OPERA;
       } else {
         browser_type = BROWSER_UNKNOWN;
       }

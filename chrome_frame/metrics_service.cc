@@ -81,8 +81,6 @@ base::LazyInstance<base::ThreadLocalPointer<MetricsService> >
 
 base::Lock MetricsService::metrics_service_lock_;
 
-extern base::LazyInstance<base::StatisticsRecorder> g_statistics_recorder_;
-
 // This class provides functionality to upload the ChromeFrame UMA data to the
 // server. An instance of this class is created whenever we have data to be
 // uploaded to the server.
@@ -269,7 +267,6 @@ void MetricsService::InitializeMetricsState() {
       CrashMetricsReporter::SESSION_ID);
 
   // Ensure that an instance of the StatisticsRecorder object is created.
-  g_statistics_recorder_.Get();
   CrashMetricsReporter::GetInstance()->set_active(true);
 }
 

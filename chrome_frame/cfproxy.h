@@ -41,9 +41,8 @@ struct SyncMessageContext {
 
 
 /*
-[npapi]         UIDelegate (UI_THREAD)
-[activex]    <---------------+
-[activedoc]                  |
+[activex]       UIDelegate (UI_THREAD)
+[activedoc]  <---------------+
                              |
                              |            ChromeProxy (UI_THREAD)
                        +----------------+ -------------->   +-------+

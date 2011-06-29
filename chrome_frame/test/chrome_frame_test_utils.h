@@ -39,10 +39,7 @@ namespace chrome_frame_test {
 
 int CloseVisibleWindowsOnAllThreads(HANDLE process);
 
-base::ProcessHandle LaunchFirefox(const std::wstring& url);
-base::ProcessHandle LaunchOpera(const std::wstring& url);
 base::ProcessHandle LaunchIE(const std::wstring& url);
-base::ProcessHandle LaunchSafari(const std::wstring& url);
 base::ProcessHandle LaunchChrome(const std::wstring& url);
 
 // Attempts to close all open IE windows.
@@ -54,9 +51,6 @@ int CloseAllIEWindows();
 
 extern const wchar_t kIEImageName[];
 extern const wchar_t kIEBrokerImageName[];
-extern const wchar_t kFirefoxImageName[];
-extern const wchar_t kOperaImageName[];
-extern const wchar_t kSafariImageName[];
 extern const char kChromeImageName[];
 extern const wchar_t kChromeLauncher[];
 extern const int kChromeFrameLongNavigationTimeoutInSeconds;

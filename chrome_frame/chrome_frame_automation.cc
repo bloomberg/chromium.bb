@@ -38,10 +38,6 @@ int64 kAutomationServerReasonableLaunchDelay = 1000;  // in milliseconds
 int64 kAutomationServerReasonableLaunchDelay = 1000 * 10;
 #endif
 
-int kDefaultSendUMADataInterval = 20000;  // in milliseconds.
-
-static const wchar_t kUmaSendIntervalValue[] = L"UmaSendInterval";
-
 class ChromeFrameAutomationProxyImpl::TabProxyNotificationMessageFilter
     : public IPC::ChannelProxy::MessageFilter {
  public:
@@ -205,8 +201,7 @@ DISABLE_RUNNABLE_METHOD_REFCOUNT(AutomationProxyCacheEntry);
 AutomationProxyCacheEntry::AutomationProxyCacheEntry(
     ChromeFrameLaunchParams* params, LaunchDelegate* delegate)
     : profile_name(params->profile_name()),
-      launch_result_(AUTOMATION_LAUNCH_RESULT_INVALID),
-      snapshots_(NULL), uma_send_interval_(1) {
+      launch_result_(AUTOMATION_LAUNCH_RESULT_INVALID) {
   DCHECK(delegate);
   thread_.reset(new base::Thread(WideToASCII(profile_name).c_str()));
   thread_->Start();
@@ -229,17 +224,6 @@ AutomationProxyCacheEntry::~AutomationProxyCacheEntry() {
   if (MessageLoop::current() == NULL) {
     proxy_.release();
   }
-}
-
-void AutomationProxyCacheEntry::StartSendUmaInterval(
-    ChromeFrameHistogramSnapshots* snapshots, int send_interval) {
-  DCHECK(snapshots);
-  DCHECK(!snapshots_);
-  snapshots_ = snapshots;
-  uma_send_interval_ = send_interval;
-  thread_->message_loop()->PostDelayedTask(FROM_HERE,
-      NewRunnableMethod(this, &AutomationProxyCacheEntry::SendUMAData),
-      send_interval);
 }
 
 void AutomationProxyCacheEntry::CreateProxy(ChromeFrameLaunchParams* params,
@@ -381,9 +365,6 @@ void AutomationProxyCacheEntry::RemoveDelegate(LaunchDelegate* delegate,
     if (launch_delegates_.size() == 1) {
       *was_last_delegate = true;
 
-      if (snapshots_)
-        SendUMAData();
-
       // Process pending notifications.
       thread_->message_loop()->RunAllPending();
 
@@ -421,38 +402,9 @@ void AutomationProxyCacheEntry::OnChannelError() {
   }
 }
 
-void AutomationProxyCacheEntry::SendUMAData() {
-  DCHECK(IsSameThread(base::PlatformThread::CurrentId()));
-  DCHECK(snapshots_);
-  // IE uses the chrome frame provided UMA data uploading scheme. NPAPI
-  // continues to use Chrome to upload UMA data.
-  if (CrashMetricsReporter::GetInstance()->active()) {
-    return;
-  }
-
-  if (!proxy_.get()) {
-    DLOG(WARNING) << __FUNCTION__ << " NULL proxy, can't send UMA data";
-  } else {
-    ChromeFrameHistogramSnapshots::HistogramPickledList histograms =
-        snapshots_->GatherAllHistograms();
-
-    if (!histograms.empty()) {
-      proxy_->Send(new AutomationMsg_RecordHistograms(histograms));
-    }
-
-    MessageLoop::current()->PostDelayedTask(FROM_HERE,
-        NewRunnableMethod(this, &AutomationProxyCacheEntry::SendUMAData),
-        uma_send_interval_);
-  }
-}
-
-
 DISABLE_RUNNABLE_METHOD_REFCOUNT(ProxyFactory);
 
-ProxyFactory::ProxyFactory()
-    : uma_send_interval_(0) {
-  uma_send_interval_ = GetConfigInt(kDefaultSendUMADataInterval,
-                                    kUmaSendIntervalValue);
+ProxyFactory::ProxyFactory() {
 }
 
 ProxyFactory::~ProxyFactory() {
@@ -483,13 +435,6 @@ void ProxyFactory::GetAutomationServer(
     DVLOG(1) << __FUNCTION__ << " creating new proxy entry";
     entry = new AutomationProxyCacheEntry(params, delegate);
     proxies_.container().push_back(entry);
-
-    // IE uses the chrome frame provided UMA data uploading scheme. NPAPI
-    // continues to use Chrome to upload UMA data.
-    if (!CrashMetricsReporter::GetInstance()->active()) {
-      entry->StartSendUmaInterval(&chrome_frame_histograms_,
-                                  uma_send_interval_);
-    }
   } else if (delegate) {
     // Notify the new delegate of the launch status from the worker thread
     // and add it to the list of delegates.
@@ -621,7 +566,7 @@ bool ChromeFrameAutomationClient::Initialize(
   // Create a window on the UI thread for marshaling messages back and forth
   // from the IPC thread. This window cannot be a message only window as the
   // external chrome tab window is created as a child of this window. This
-  // window is eventually reparented to the ActiveX/NPAPI plugin window.
+  // window is eventually reparented to the ActiveX plugin window.
   if (!Create(GetDesktopWindow(), NULL, NULL,
               WS_CHILDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
               WS_EX_TOOLWINDOW)) {
@@ -657,14 +602,6 @@ void ChromeFrameAutomationClient::Uninitialize() {
   init_state_ = UNINITIALIZING;
 
   // Called from client's FinalRelease() / destructor
-  // ChromeFrameAutomationClient may wait for the initialization (launch)
-  // to complete while Uninitialize is called.
-  // We either have to:
-  // 1) Make ReleaseAutomationServer blocking call (wait until thread exits)
-  // 2) Behave like a COM object i.e. increase module lock count.
-  // Otherwise the DLL may get unloaded while we have running threads.
-  // Unfortunately in NPAPI case we cannot increase module lock count, hence
-  // we stick with blocking/waiting
   if (url_fetcher_) {
     // Clean up any outstanding requests
     url_fetcher_->StopAllRequests();
@@ -1057,8 +994,7 @@ bool ChromeFrameAutomationClient::ProcessUrlRequestMessage(TabProxy* tab,
 }
 
 // These are invoked in channel's background thread.
-// Cannot call any method of the activex/npapi here since they are STA
-// kind of beings.
+// Cannot call any method of the activex here since it is a STA kind of being.
 // By default we marshal the IPC message to the main/GUI thread and from there
 // we safely invoke chrome_frame_delegate_->OnMessageReceived(msg).
 bool ChromeFrameAutomationClient::OnMessageReceived(TabProxy* tab,

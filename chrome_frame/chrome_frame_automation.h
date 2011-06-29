@@ -21,7 +21,6 @@
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome_frame/chrome_frame_delegate.h"
-#include "chrome_frame/chrome_frame_histograms.h"
 #include "chrome_frame/plugin_url_request.h"
 #include "chrome_frame/sync_msg_reply_dispatcher.h"
 #include "content/common/page_zoom.h"
@@ -231,9 +230,6 @@ class AutomationProxyCacheEntry
   void RemoveDelegate(LaunchDelegate* delegate, base::WaitableEvent* done,
                       bool* was_last_delegate);
 
-  void StartSendUmaInterval(ChromeFrameHistogramSnapshots* snapshots,
-                            int send_interval);
-
   DWORD WaitForThread(DWORD timeout) {  // NOLINT
     DCHECK(thread_.get());
     return ::WaitForSingleObject(thread_->thread_handle(), timeout);
@@ -266,7 +262,6 @@ class AutomationProxyCacheEntry
  protected:
   void CreateProxy(ChromeFrameLaunchParams* params,
                    LaunchDelegate* delegate);
-  void SendUMAData();
 
  protected:
   std::wstring profile_name;
@@ -278,8 +273,6 @@ class AutomationProxyCacheEntry
   // Used for UMA histogram logging to measure the time for the chrome
   // automation server to start;
   base::TimeTicks automation_server_launch_start_time_;
-  ChromeFrameHistogramSnapshots* snapshots_;
-  int uma_send_interval_;
 };
 
 // We must create and destroy automation proxy in a thread with a message loop.
@@ -304,17 +297,10 @@ class ProxyFactory {
   Vector proxies_;
   // Lock if we are going to call GetAutomationServer from more than one thread.
   base::Lock lock_;
-
-  // Gathers histograms to be sent to Chrome.
-  ChromeFrameHistogramSnapshots chrome_frame_histograms_;
-
-  // Interval for sending UMA data
-  int uma_send_interval_;
 };
 
 // Handles all automation requests initiated from the chrome frame objects.
-// These include the chrome tab/chrome frame activex/chrome frame npapi
-// plugin objects.
+// These include the chrome tab/chrome frame activex plugin objects.
 class ChromeFrameAutomationClient
     : public CWindowImpl<ChromeFrameAutomationClient>,
       public TaskMarshallerThroughWindowsMessages<ChromeFrameAutomationClient>,

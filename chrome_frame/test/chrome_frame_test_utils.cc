@@ -45,9 +45,6 @@ const int kCrashServiceStartupTimeoutMs = 500;
 
 const wchar_t kIEImageName[] = L"iexplore.exe";
 const wchar_t kIEBrokerImageName[] = L"ieuser.exe";
-const wchar_t kFirefoxImageName[] = L"firefox.exe";
-const wchar_t kOperaImageName[] = L"opera.exe";
-const wchar_t kSafariImageName[] = L"safari.exe";
 const char kChromeImageName[] = "chrome.exe";
 const wchar_t kIEProfileName[] = L"iexplore";
 const wchar_t kChromeLauncher[] = L"chrome_launcher.exe";
@@ -176,14 +173,6 @@ base::ProcessHandle LaunchExecutable(const std::wstring& executable,
   return process;
 }
 
-base::ProcessHandle LaunchFirefox(const std::wstring& url) {
-  return LaunchExecutable(kFirefoxImageName, url);
-}
-
-base::ProcessHandle LaunchSafari(const std::wstring& url) {
-  return LaunchExecutable(kSafariImageName, url);
-}
-
 base::ProcessHandle LaunchChrome(const std::wstring& url) {
   FilePath path;
   PathService::Get(base::DIR_MODULE, &path);
@@ -196,16 +185,6 @@ base::ProcessHandle LaunchChrome(const std::wstring& url) {
   base::ProcessHandle process = NULL;
   base::LaunchApp(cmd, false, false, &process);
   return process;
-}
-
-base::ProcessHandle LaunchOpera(const std::wstring& url) {
-  // NOTE: For Opera tests to work it must be configured to start up with
-  // a blank page.  There is an command line switch, -nosession, that's supposed
-  // to avoid opening up the previous session, but that switch is not working.
-  // TODO(tommi): Include a special ini file (opera6.ini) for opera and launch
-  //  with our required settings.  This file is by default stored here:
-  // "%USERPROFILE%\Application Data\Opera\Opera\profile\opera6.ini"
-  return LaunchExecutable(kOperaImageName, url);
 }
 
 base::ProcessHandle LaunchIEOnVista(const std::wstring& url) {

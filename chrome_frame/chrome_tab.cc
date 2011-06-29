@@ -485,8 +485,6 @@ enum RegistrationFlags {
   BHO_REGISTRATION    = 0x0010,
   TYPELIB             = 0x0020,
 
-  NPAPI_PLUGIN        = 0x1000,
-
   ALL                 = 0xFFFF
 };
 
@@ -571,8 +569,11 @@ STDAPI CustomRegistration(UINT reg_flags, BOOL reg, bool is_system) {
         UtilUnRegisterTypeLib(_AtlComModule.m_hInstTypeLib, NULL, !is_system);
   }
 
-  if ((hr == S_OK) && (flags & NPAPI_PLUGIN)) {
-    hr = _AtlModule.UpdateRegistryFromResourceS(IDR_CHROMEFRAME_NPAPI, reg);
+  // Unconditionally remove NPAPI registration when unregistering any component.
+  if ((hr == S_OK) && !reg) {
+    // Ignore failures.
+    _AtlModule.UpdateRegistryFromResourceS(IDR_CHROMEFRAME_NPAPI, reg);
+    UtilRemovePersistentNPAPIMarker();
   }
 
   if (hr == S_OK) {
@@ -596,10 +597,6 @@ STDAPI DllRegisterServer() {
   UINT flags =  ACTIVEX | ACTIVEDOC | TYPELIB | GCF_PROTOCOL |
                 BHO_CLSID | BHO_REGISTRATION;
 
-  if (UtilIsPersistentNPAPIMarkerSet()) {
-    flags |= NPAPI_PLUGIN;
-  }
-
   HRESULT hr = CustomRegistration(flags, TRUE, true);
   if (SUCCEEDED(hr)) {
     SetupRunOnce();
@@ -619,10 +616,6 @@ STDAPI DllRegisterUserServer() {
   UINT flags =  ACTIVEX | ACTIVEDOC | TYPELIB | GCF_PROTOCOL |
                 BHO_CLSID | BHO_REGISTRATION;
 
-  if (UtilIsPersistentNPAPIMarkerSet()) {
-    flags |= NPAPI_PLUGIN;
-  }
-
   HRESULT hr = CustomRegistration(flags, TRUE, false);
   if (SUCCEEDED(hr)) {
     SetupRunOnce();
@@ -635,42 +628,6 @@ STDAPI DllRegisterUserServer() {
 STDAPI DllUnregisterUserServer() {
   HRESULT hr = CustomRegistration(ALL, FALSE, false);
   return hr;
-}
-
-// Registers the NPAPI plugin and sets the persistent marker that tells us
-// to re-register it through updates.
-STDAPI RegisterNPAPIPlugin() {
-  HRESULT hr = _AtlModule.UpdateRegistryFromResourceS(IDR_CHROMEFRAME_NPAPI,
-                                                      TRUE);
-  if (SUCCEEDED(hr) && _AtlModule.do_system_registration_) {
-    if (!UtilChangePersistentNPAPIMarker(true)) {
-      hr = E_FAIL;
-    }
-  }
-  return hr;
-}
-
-// Unregisters the NPAPI plugin and clears the persistent marker that tells us
-// to re-register it through updates.
-STDAPI UnregisterNPAPIPlugin() {
-  HRESULT hr = _AtlModule.UpdateRegistryFromResourceS(IDR_CHROMEFRAME_NPAPI,
-                                                      FALSE);
-  if (SUCCEEDED(hr) && _AtlModule.do_system_registration_) {
-    if (!UtilChangePersistentNPAPIMarker(false)) {
-      hr = E_FAIL;
-    }
-  }
-  return hr;
-}
-
-STDAPI RegisterNPAPIUserPlugin() {
-  _AtlModule.do_system_registration_ = false;
-  return RegisterNPAPIPlugin();
-}
-
-STDAPI UnregisterNPAPIUserPlugin() {
-  _AtlModule.do_system_registration_ = false;
-  return UnregisterNPAPIPlugin();
 }
 
 class SecurityDescBackup {

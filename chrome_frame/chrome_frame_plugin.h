@@ -27,7 +27,7 @@ void ChromeFramePluginGetParamsCoordinates(
     int* y);
 
 // A class to implement common functionality for all types of
-// plugins: NPAPI. ActiveX and ActiveDoc
+// plugins: ActiveX and ActiveDoc
 template <typename T>
 class ChromeFramePlugin
     : public ChromeFrameDelegateImpl,

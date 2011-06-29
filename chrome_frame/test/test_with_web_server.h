@@ -140,7 +140,7 @@ class MockWebServer : public test_server::HTTPTestServer {
 
 // Class that:
 // 1) Starts the local webserver,
-// 2) Supports launching browsers - Internet Explorer and Firefox with local url
+// 2) Supports launching browsers - Internet Explorer with local url
 // 3) Wait the webserver to finish. It is supposed the test webpage to shutdown
 //    the server by navigating to "kill" page
 // 4) Supports read the posted results from the test webpage to the "dump"
@@ -150,7 +150,7 @@ class ChromeFrameTestWithWebServer: public testing::Test {
   ChromeFrameTestWithWebServer();
 
  protected:
-  enum BrowserKind { INVALID, IE, FIREFOX, OPERA, SAFARI, CHROME };
+  enum BrowserKind { INVALID, IE, CHROME };
 
   bool LaunchBrowser(BrowserKind browser, const wchar_t* url);
   bool WaitForTestToComplete(int milliseconds);
@@ -166,12 +166,6 @@ class ChromeFrameTestWithWebServer: public testing::Test {
   void SimpleBrowserTestExpectedResult(BrowserKind browser,
       const wchar_t* page, const char* result);
   void SimpleBrowserTest(BrowserKind browser, const wchar_t* page);
-
-  // Same as SimpleBrowserTest but if the browser isn't installed (LaunchBrowser
-  // fails), the function will print out a warning but not treat the test
-  // as failed.
-  // Currently this is how we run Opera tests.
-  void OptionalBrowserTest(BrowserKind browser, const wchar_t* page);
 
   // Test if chrome frame correctly reports its version.
   void VersionTest(BrowserKind browser, const wchar_t* page);
@@ -196,14 +190,8 @@ class ChromeFrameTestWithWebServer: public testing::Test {
     switch (kind) {
       case IE:
         return "IE";
-      case FIREFOX:
-        return "Firefox";
-      case OPERA:
-        return "Opera";
       case CHROME:
         return "Chrome";
-      case SAFARI:
-        return "Safari";
       default:
         NOTREACHED();
         break;

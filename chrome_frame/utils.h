@@ -34,7 +34,6 @@ extern const wchar_t kChromeFrameAccessibleMode[];
 extern const wchar_t kChromeFrameUnpinnedMode[];
 extern const wchar_t kAllowUnsafeURLs[];
 extern const wchar_t kEnableBuggyBhoIntercept[];
-extern const wchar_t kEnableFirefoxPrivilegeMode[];
 extern const wchar_t kChromeMimeType[];
 extern const wchar_t kChromeFrameAttachTabPattern[];
 extern const wchar_t kChromeFrameConfigKey[];
@@ -74,15 +73,9 @@ HRESULT UtilRegisterTypeLib(ITypeLib* typelib,
 HRESULT UtilUnRegisterTypeLib(ITypeLib* typelib,
                               bool for_current_user_only);
 
-// Utility function to tell if the NPAPI plugin is registered.
-bool UtilIsNPAPIPluginRegistered();
-
-// Sets or clears a marker that causes NPAPI registration to persist across
-// updates. The marker is added if set is true and is deleted otherwise.
-bool UtilChangePersistentNPAPIMarker(bool set);
-
-// Returns true if the persistent NPAPI marker is set, false otherwise.
-bool UtilIsPersistentNPAPIMarkerSet();
+// Clears a marker that causes legacy NPAPI registration to persist across
+// updates. Returns false if the marker could not be removed.
+bool UtilRemovePersistentNPAPIMarker();
 
 // Given an HTML fragment, this function looks for the
 // <meta http-equiv="X-UA-Compatible"> tag and extracts the value of the
@@ -156,8 +149,6 @@ typedef enum BrowserType {
   BROWSER_INVALID = -1,
   BROWSER_UNKNOWN,
   BROWSER_IE,
-  BROWSER_FIREFOX,
-  BROWSER_OPERA,
 };
 
 BrowserType GetBrowserType();

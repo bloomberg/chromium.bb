@@ -9,10 +9,3 @@ EXPORTS
 	DllUnregisterServer        PRIVATE
 	DllRegisterUserServer      PRIVATE
 	DllUnregisterUserServer    PRIVATE
-	NP_Initialize              PRIVATE
-	NP_GetEntryPoints          PRIVATE
-	NP_Shutdown                PRIVATE
-	RegisterNPAPIPlugin        PRIVATE
-	UnregisterNPAPIPlugin      PRIVATE
-	RegisterNPAPIUserPlugin    PRIVATE
-	UnregisterNPAPIUserPlugin  PRIVATE

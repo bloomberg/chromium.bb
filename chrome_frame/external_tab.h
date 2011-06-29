@@ -76,9 +76,8 @@ struct CreateTabParams {
 class NavigationConstraints;
 
 /////////////////////////////////////////////////////////////////////////
-//  ExternalTabProxy is a mediator between ChromeProxy (which runs mostly in
-//  background IPC-channel thread and the UI object (ActiveX, NPAPI,
-//  ActiveDocument).
+//  ExternalTabProxy is a mediator between ChromeProxy (which runs mostly in the
+//  background IPC-channel thread) and the UI object (ActiveX, ActiveDocument).
 //  The lifetime of ExternalTabProxy is determined by the UI object.
 //
 //  When ExternalTabProxy dies:
