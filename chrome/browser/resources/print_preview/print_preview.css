@@ -16,7 +16,7 @@ body {
   min-height: 100%;
 }
 
-#main:before {
+#main::before {
   content: '';
   display: block;
   height: 72px;
@@ -28,7 +28,7 @@ body #main {
   min-height: 0;
 }
 
-body #main:after {
+body #main::after {
   content: '';
   display: block;
 }
@@ -322,7 +322,7 @@ input[type='checkbox']:active {
   text-shadow: 0 1px 0 rgba(255, 255, 255, .25);
 }
 
-input[type='checkbox']:checked:before {
+input[type='checkbox']:checked::before {
   color: #808080;
   content: url('./checkmark.png');
   height: 16px;
@@ -330,7 +330,7 @@ input[type='checkbox']:checked:before {
   position: absolute;
 }
 
-html[os=mac] input[type='checkbox']:checked:before {
+html[os=mac] input[type='checkbox']:checked::before {
   top: 2px;
 }
 
@@ -370,7 +370,7 @@ input[type='radio']:active {
   text-shadow: 0 1px 0 rgba(255, 255, 255, .25);
 }
 
-input[type='radio']:checked:before {
+input[type='radio']:checked::before {
   -webkit-box-shadow: 0 1px 0 rgba(255, 255, 255, .5);
   -webkit-margin-start: 4px;
   background: #808080;
@@ -387,11 +387,11 @@ input[type='radio']:checked:before {
   width: 5px;
 }
 
-html[dir='rtl'] input[type='radio']:checked:before {
+html[dir='rtl'] input[type='radio']:checked::before {
   right: 0;
 }
 
-input[type='radio']:active:checked:before {
+input[type='radio']:active:checked::before {
   background: #606060;
 }
 
