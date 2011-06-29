@@ -429,6 +429,10 @@ class View : public AcceleratorTarget {
   // system, to convert it into the parent's coordinate system.
   gfx::Rect ConvertRectToParent(const gfx::Rect& rect) const;
 
+  // Converts a rectangle from this views coordinate system to its widget
+  // cooridnate system.
+  gfx::Rect ConvertRectToWidget(const gfx::Rect& rect) const;
+
   // Painting ------------------------------------------------------------------
 
   // Mark all or part of the View's bounds as dirty (needing repaint).

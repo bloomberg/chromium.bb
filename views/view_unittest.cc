@@ -1902,6 +1902,54 @@ TEST_F(ViewTest, ConvertPointToViewWithTransform) {
   }
 }
 
+// Tests conversion methods for rectangles.
+TEST_F(ViewTest, ConvertRectWithTransform) {
+  scoped_ptr<Widget> widget(new Widget);
+  Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.bounds = gfx::Rect(50, 50, 650, 650);
+  widget->Init(params);
+  View* root = widget->GetRootView();
+
+  TestView* v1 = new TestView;
+  TestView* v2 = new TestView;
+  root->AddChildView(v1);
+  v1->AddChildView(v2);
+
+  v1->SetBounds(10, 10, 500, 500);
+  v2->SetBounds(20, 20, 100, 200);
+
+  // |v2| now occupies (30, 30) to (130, 230) in |widget|
+  gfx::Rect rect(5, 5, 15, 40);
+  EXPECT_EQ(gfx::Rect(25, 25, 15, 40), v2->ConvertRectToParent(rect));
+  EXPECT_EQ(gfx::Rect(35, 35, 15, 40), v2->ConvertRectToWidget(rect));
+
+  // Rotate |v2|
+  ui::Transform t2;
+  t2.SetRotate(-90.0f);
+  t2.SetTranslateY(100.0f);
+  v2->SetTransform(t2);
+
+  // |v2| now occupies (30, 30) to (230, 130) in |widget|
+  EXPECT_EQ(gfx::Rect(25, 100, 40, 15), v2->ConvertRectToParent(rect));
+  EXPECT_EQ(gfx::Rect(35, 110, 40, 15), v2->ConvertRectToWidget(rect));
+
+  // Scale down |v1|
+  ui::Transform t1;
+  t1.SetScale(0.5, 0.5);
+  v1->SetTransform(t1);
+
+  // The rectangle should remain the same for |v1|.
+  EXPECT_EQ(gfx::Rect(25, 100, 40, 15), v2->ConvertRectToParent(rect));
+
+  // |v2| now occupies (20, 20) to (120, 70) in |widget|
+  // There are some rounding of floating values here. These values may change if
+  // floating operations are improved/changed.
+  EXPECT_EQ(gfx::Rect(22, 60, 20, 7), v2->ConvertRectToWidget(rect));
+
+  widget->CloseNow();
+}
+
 class ObserverView : public View {
  public:
   ObserverView();

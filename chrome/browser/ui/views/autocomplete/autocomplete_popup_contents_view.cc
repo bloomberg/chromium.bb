@@ -615,11 +615,7 @@ void AutocompletePopupContentsView::UpdateBlurRegion() {
 
   // Translate the contents rect into widget coordinates, since that's what
   // DwmEnableBlurBehindWindow expects a region in.
-  gfx::Rect contents_rect = GetContentsBounds();
-  gfx::Point origin(contents_rect.origin());
-  views::View::ConvertPointToWidget(this, &origin);
-  contents_rect.set_origin(origin);
-
+  gfx::Rect contents_rect = ConvertRectToWidget(GetContentsBounds());
   gfx::Path contents_path;
   MakeContentsPath(&contents_path, contents_rect);
   base::win::ScopedGDIObject<HRGN> popup_region;

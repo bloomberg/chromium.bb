@@ -123,11 +123,8 @@ gfx::Rect BrowserViewLayout::GetFindBarBoundingBox() const {
 
   // First determine the bounding box of the content area in Widget
   // coordinates.
-  gfx::Rect bounding_box(contents_container_->bounds());
-
-  gfx::Point topleft;
-  views::View::ConvertPointToWidget(contents_container_, &topleft);
-  bounding_box.set_origin(topleft);
+  gfx::Rect bounding_box = contents_container_->ConvertRectToWidget(
+      contents_container_->GetLocalBounds());
 
   // Adjust the position and size of the bounding box by the find bar offset
   // calculated during the last Layout.

@@ -333,7 +333,6 @@ gfx::Rect View::GetVisibleBounds() const {
                               static_cast<float>(view->y()));
 
     vis_bounds = view->ConvertRectToParent(vis_bounds);
-    vis_bounds.Offset(view->GetMirroredPosition());
     const View* ancestor = view->parent_;
     if (ancestor != NULL) {
       ancestor_bounds.SetRect(0, 0, ancestor->width(), ancestor->height());
@@ -672,10 +671,17 @@ void View::ConvertPointToScreen(const View* src, gfx::Point* p) {
 }
 
 gfx::Rect View::ConvertRectToParent(const gfx::Rect& rect) const {
-  if (!transform())
-    return rect;
   gfx::Rect x_rect = rect;
-  transform()->TransformRect(&x_rect);
+  if (transform())
+    transform()->TransformRect(&x_rect);
+  x_rect.Offset(GetMirroredPosition());
+  return x_rect;
+}
+
+gfx::Rect View::ConvertRectToWidget(const gfx::Rect& rect) const {
+  gfx::Rect x_rect = rect;
+  for (const View* v = this; v; v = v->parent_)
+    x_rect = v->ConvertRectToParent(x_rect);
   return x_rect;
 }
 
@@ -1185,9 +1191,7 @@ void View::SchedulePaintInternal(const gfx::Rect& rect) {
   if (parent_) {
     // Translate the requested paint rect to the parent's coordinate system
     // then pass this notification up to the parent.
-    gfx::Rect paint_rect = ConvertRectToParent(rect);
-    paint_rect.Offset(GetMirroredPosition());
-    parent_->SchedulePaintInternal(paint_rect);
+    parent_->SchedulePaintInternal(ConvertRectToParent(rect));
   }
 }
 

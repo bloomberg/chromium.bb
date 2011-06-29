@@ -113,11 +113,8 @@ void NativeViewHost::Layout() {
     // positioned in the coordinate system of the Widget, not the current
     // view.  Also, they should be positioned respecting the border insets
     // of the native view.
-    gfx::Insets insets = GetInsets();
-    gfx::Point top_left(insets.left(), insets.top());
-    ConvertPointToWidget(this, &top_left);
-    gfx::Rect local_bounds = GetContentsBounds();
-    native_wrapper_->ShowWidget(top_left.x(), top_left.y(),
+    gfx::Rect local_bounds = ConvertRectToWidget(GetContentsBounds());
+    native_wrapper_->ShowWidget(local_bounds.x(), local_bounds.y(),
                                 local_bounds.width(),
                                 local_bounds.height());
   } else {
