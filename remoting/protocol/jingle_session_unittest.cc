@@ -339,7 +339,7 @@ class TCPChannelTester : public ChannelTesterBase {
     EXPECT_EQ(0, write_errors_);
     EXPECT_EQ(0, read_errors_);
 
-    ASSERT_EQ(kTestDataSize + kMessageSize, input_buffer_->capacity());
+    ASSERT_EQ(kTestDataSize, input_buffer_->offset());
 
     output_buffer_->SetOffset(0);
     ASSERT_EQ(kTestDataSize, output_buffer_->size());
@@ -353,10 +353,7 @@ class TCPChannelTester : public ChannelTesterBase {
     output_buffer_ = new net::DrainableIOBuffer(
         new net::IOBuffer(kTestDataSize), kTestDataSize);
     memset(output_buffer_->data(), 123, kTestDataSize);
-
     input_buffer_ = new net::GrowableIOBuffer();
-    // Always keep kMessageSize bytes available at the end of the input buffer.
-    input_buffer_->SetCapacity(kMessageSize);
   }
 
   virtual void DoWrite() {
@@ -364,7 +361,6 @@ class TCPChannelTester : public ChannelTesterBase {
     while (result > 0) {
       if (output_buffer_->BytesRemaining() == 0)
         break;
-
       int bytes_to_write = std::min(output_buffer_->BytesRemaining(),
                                     kMessageSize);
       result = socket_1_->Write(output_buffer_, bytes_to_write, &write_cb_);
@@ -390,8 +386,7 @@ class TCPChannelTester : public ChannelTesterBase {
   virtual void DoRead() {
     int result = 1;
     while (result > 0) {
-      input_buffer_->set_offset(input_buffer_->capacity() - kMessageSize);
-
+      input_buffer_->SetCapacity(input_buffer_->offset() + kMessageSize);
       result = socket_2_->Read(input_buffer_, kMessageSize, &read_cb_);
       HandleReadResult(result);
     };
@@ -412,8 +407,8 @@ class TCPChannelTester : public ChannelTesterBase {
       }
     } else if (result > 0) {
       // Allocate memory for the next read.
-      input_buffer_->SetCapacity(input_buffer_->capacity() + result);
-      if (input_buffer_->capacity() == kTestDataSize + kMessageSize)
+      input_buffer_->set_offset(input_buffer_->offset() + result);
+      if (input_buffer_->offset() == kTestDataSize)
         done_event_.Signal();
     }
   }
