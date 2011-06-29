@@ -191,6 +191,10 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_FORM_VALIDATION_RANGE_OVERFLOW;
     case WebLocalizedString::ValidationStepMismatch:
       return IDS_FORM_VALIDATION_STEP_MISMATCH;
+    // TODO(haraken): Remove default: when we merge the next
+    // WebLocalizedString.h change in WebKit.
+    default:
+      break;
   }
   return -1;
 }

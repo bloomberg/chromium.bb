@@ -272,6 +272,9 @@ below:
       <message name="IDS_FORM_FILE_BUTTON_LABEL" desc="title for file button used in HTML forms">
         Choose File
       </message>
+      <message name="IDS_FORM_MULTIPLE_FILES_BUTTON_LABEL" desc="title for file button used in HTML5 file chooser">
+        Choose Files
+      </message>
       <message name="IDS_FORM_FILE_NO_FILE_LABEL" desc="text to display in file button used in HTML forms when no file is selected">
         No file chosen
       </message>
