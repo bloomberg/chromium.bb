@@ -236,7 +236,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
 //
 // http://crbug.com/84719
 #if defined(OS_LINUX)
-#define MAYBE_ShutdownWhileCrashed ShutdownWhileCrashed
+#define MAYBE_ShutdownWhileCrashed DISABLED_ShutdownWhileCrashed
 #else
 #define MAYBE_ShutdownWhileCrashed ShutdownWhileCrashed
 #endif  // defined(OS_LINUX)
