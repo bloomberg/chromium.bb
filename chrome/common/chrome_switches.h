@@ -139,6 +139,7 @@ extern const char kEnablePreconnect[];
 extern const char kEnableRemoting[];
 extern const char kEnableResourceContentSettings[];
 extern const char kEnableSearchProviderApiV2[];
+extern const char kEnableShortcutsProvider[];
 extern const char kEnableSmoothScrolling[];
 extern const char kEnableSSLCachedInfo[];
 extern const char kEnableSync[];

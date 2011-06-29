@@ -480,6 +480,9 @@ const char kEnablePreconnect[]              = "enable-preconnect";
 // parameter to indicate if the provider should be the default.
 const char kEnableSearchProviderApiV2[]     = "enable-search-provider-api-v2";
 
+// Enable the use of the ShortcutsProvider for autocomplete results.
+const char kEnableShortcutsProvider[]       = "enable-shortcuts-provider";
+
 // On platforms that support it, enable smooth scroll animation.
 const char kEnableSmoothScrolling[]         = "enable-smooth-scrolling";
 
