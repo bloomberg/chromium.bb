@@ -52,6 +52,11 @@ const char kGetStartedURLPattern[] =
 const char kCreateAccountURL[] =
     "https://www.google.com/accounts/NewAccount?service=mail";
 
+// ChromeVox tutorial URL.
+const char kChromeVoxTutorialURL[] =
+    "http://google-axs-chrome.googlecode.com/"
+    "svn/trunk/chromevox_tutorial/interactive_tutorial_start.html";
+
 // Landing URL when launching Guest mode to fix captive portal.
 const char kCaptivePortalLaunchURL[] = "http://www.google.com/";
 
@@ -344,8 +349,14 @@ void ExistingUserController::OnProfilePrepared(Profile* profile) {
     PrefService* prefs = g_browser_process->local_state();
     const std::string current_locale =
         StringToLowerASCII(prefs->GetString(prefs::kApplicationLocale));
-    std::string start_url =
-      base::StringPrintf(kGetStartedURLPattern, current_locale.c_str());
+    std::string start_url;
+    if (prefs->GetBoolean(prefs::kAccessibilityEnabled) &&
+        current_locale.find("en") != std::string::npos) {
+      start_url = kChromeVoxTutorialURL;
+    } else {
+      start_url = base::StringPrintf(kGetStartedURLPattern,
+                                     current_locale.c_str());
+    }
     CommandLine::ForCurrentProcess()->AppendArg(start_url);
 
     ServicesCustomizationDocument* customization =
