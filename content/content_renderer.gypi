@@ -28,7 +28,6 @@
       'sources': [
         'renderer/active_notification_tracker.cc',
         'renderer/active_notification_tracker.h',
-        'renderer/content_renderer_client.cc',
         'renderer/content_renderer_client.h',
         'renderer/device_orientation_dispatcher.cc',
         'renderer/device_orientation_dispatcher.h',

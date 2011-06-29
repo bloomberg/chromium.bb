@@ -60,57 +60,58 @@ class WebUIFactory;
 class ContentBrowserClient {
  public:
   // Notifies that a new RenderHostView has been created.
-  virtual void RenderViewHostCreated(RenderViewHost* render_view_host);
+  virtual void RenderViewHostCreated(RenderViewHost* render_view_host) = 0;
 
   // Notifies that a BrowserRenderProcessHost has been created. This is called
   // before the content layer adds its own BrowserMessageFilters, so that the
   // embedder's IPC filters have priority.
-  virtual void BrowserRenderProcessHostCreated(BrowserRenderProcessHost* host);
+  virtual void BrowserRenderProcessHostCreated(
+      BrowserRenderProcessHost* host) = 0;
 
   // Notifies that a PluginProcessHost has been created. This is called
   // before the content layer adds its own message filters, so that the
   // embedder's IPC filters have priority.
-  virtual void PluginProcessHostCreated(PluginProcessHost* host);
+  virtual void PluginProcessHostCreated(PluginProcessHost* host) = 0;
 
   // Notifies that a WorkerProcessHost has been created. This is called
   // before the content layer adds its own message filters, so that the
   // embedder's IPC filters have priority.
-  virtual void WorkerProcessHostCreated(WorkerProcessHost* host);
+  virtual void WorkerProcessHostCreated(WorkerProcessHost* host) = 0;
 
   // Gets the WebUIFactory which will be responsible for generating WebUIs.
-  virtual WebUIFactory* GetWebUIFactory();
+  virtual WebUIFactory* GetWebUIFactory() = 0;
 
   // Get the effective URL for the given actual URL, to allow an embedder to
   // group different url schemes in the same SiteInstance.
-  virtual GURL GetEffectiveURL(Profile* profile, const GURL& url);
+  virtual GURL GetEffectiveURL(Profile* profile, const GURL& url) = 0;
 
   // Returns whether a specified URL is to be considered the same as any
   // SiteInstance.
-  virtual bool IsURLSameAsAnySiteInstance(const GURL& url);
+  virtual bool IsURLSameAsAnySiteInstance(const GURL& url) = 0;
 
   // See CharacterEncoding's comment.
   virtual std::string GetCanonicalEncodingNameByAliasName(
-      const std::string& alias_name);
+      const std::string& alias_name) = 0;
 
   // Allows the embedder to pass extra command line flags.
   // switches::kProcessType will already be set at this point.
   virtual void AppendExtraCommandLineSwitches(CommandLine* command_line,
-                                              int child_process_id);
+                                              int child_process_id) = 0;
 
   // Returns the locale used by the application.
-  virtual std::string GetApplicationLocale();
+  virtual std::string GetApplicationLocale() = 0;
 
   // Returns the languages used in the Accept-Languages HTTP header.
   // (Not called GetAcceptLanguages so it doesn't clash with win32).
-  virtual std::string GetAcceptLangs(const TabContents* tab);
+  virtual std::string GetAcceptLangs(const TabContents* tab) = 0;
 
   // Returns the default favicon.  The callee doesn't own the given bitmap.
-  virtual SkBitmap* GetDefaultFavicon();
+  virtual SkBitmap* GetDefaultFavicon() = 0;
 
   // Allow the embedder to control if an AppCache can be used for the given url.
   // This is called on the IO thread.
   virtual bool AllowAppCache(const GURL& manifest_url,
-                             const content::ResourceContext& context);
+                             const content::ResourceContext& context) = 0;
 
   // Allow the embedder to control if the given cookie can be read.
   // This is called on the IO thread.
@@ -119,7 +120,7 @@ class ContentBrowserClient {
                               const net::CookieList& cookie_list,
                               const content::ResourceContext& context,
                               int render_process_id,
-                              int render_view_id);
+                              int render_view_id) = 0;
 
   // Allow the embedder to control if the given cookie can be set.
   // This is called on the IO thread.
@@ -129,13 +130,13 @@ class ContentBrowserClient {
                               const content::ResourceContext& context,
                               int render_process_id,
                               int render_view_id,
-                              net::CookieOptions* options);
+                              net::CookieOptions* options) = 0;
 
   // Create and return a new quota permission context.
-  virtual QuotaPermissionContext* CreateQuotaPermissionContext();
+  virtual QuotaPermissionContext* CreateQuotaPermissionContext() = 0;
 
   // Shows the given path using the OS file manager.
-  virtual void RevealFolderInOS(const FilePath& path);
+  virtual void RevealFolderInOS(const FilePath& path) = 0;
 
   // Informs the embedder that a certificate error has occured.  If overridable
   // is true, the user can ignore the error and continue.  If it's false, then
@@ -144,7 +145,7 @@ class ContentBrowserClient {
   virtual void AllowCertificateError(
       SSLCertErrorHandler* handler,
       bool overridable,
-      Callback2<SSLCertErrorHandler*, bool>::Type* callback);
+      Callback2<SSLCertErrorHandler*, bool>::Type* callback) = 0;
 
   // Shows the user a SSL client certificate selection dialog. When the user has
   // made a selection, the dialog will report back to |delegate|. |delegate| is
@@ -153,7 +154,7 @@ class ContentBrowserClient {
   virtual void ShowClientCertificateRequestDialog(
       int render_process_id,
       int render_view_id,
-      SSLClientAuthHandler* handler);
+      SSLClientAuthHandler* handler) = 0;
 
   // Adds a newly-generated client cert. The embedder should ensure that there's
   // a private key for the cert, displays the cert to the user, and adds it upon
@@ -162,21 +163,21 @@ class ContentBrowserClient {
       net::URLRequest* request,
       net::X509Certificate* cert,
       int render_process_id,
-      int render_view_id);
+      int render_view_id) = 0;
 
   // Asks permission to show desktop notifications.
   virtual void RequestDesktopNotificationPermission(
       const GURL& source_origin,
       int callback_context,
       int render_process_id,
-      int render_view_id);
+      int render_view_id) = 0;
 
   // Checks if the given page has permission to show desktop notifications.
   // This is called on the IO thread.
   virtual WebKit::WebNotificationPresenter::Permission
       CheckDesktopNotificationPermission(
           const GURL& source_url,
-          const content::ResourceContext& context);
+          const content::ResourceContext& context) = 0;
 
   // Show a desktop notification.  If |worker| is true, the request came from an
   // HTML5 web worker, otherwise, it came from a renderer.
@@ -184,13 +185,13 @@ class ContentBrowserClient {
       const DesktopNotificationHostMsg_Show_Params& params,
       int render_process_id,
       int render_view_id,
-      bool worker);
+      bool worker) = 0;
 
   // Cancels a displayed desktop notification.
   virtual void CancelDesktopNotification(
       int render_process_id,
       int render_view_id,
-      int notification_id);
+      int notification_id) = 0;
 
   // Returns true if the given page is allowed to open a window of the given
   // type.
@@ -198,21 +199,21 @@ class ContentBrowserClient {
   virtual bool CanCreateWindow(
       const GURL& source_url,
       WindowContainerType container_type,
-      const content::ResourceContext& context);
+      const content::ResourceContext& context) = 0;
 
   // Returns a title string to use in the task manager for a process host with
   // the given URL, or the empty string to fall back to the default logic.
   // This is called on the IO thread.
   virtual std::string GetWorkerProcessTitle(
-      const GURL& url, const content::ResourceContext& context);
+      const GURL& url, const content::ResourceContext& context) = 0;
 
   // Getters for common objects.
-  virtual ResourceDispatcherHost* GetResourceDispatcherHost();
-  virtual ui::Clipboard* GetClipboard();
+  virtual ResourceDispatcherHost* GetResourceDispatcherHost() = 0;
+  virtual ui::Clipboard* GetClipboard() = 0;
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Can return an optional fd for crash handling, otherwise returns -1.
-  virtual int GetCrashSignalFD(const std::string& process_type);
+  virtual int GetCrashSignalFD(const std::string& process_type) = 0;
 #endif
 
 #if defined(USE_NSS)
@@ -220,7 +221,7 @@ class ContentBrowserClient {
   // This is called on a worker thread.
   virtual
       crypto::CryptoModuleBlockingPasswordDelegate* GetCryptoPasswordDelegate(
-          const GURL& url);
+          const GURL& url) = 0;
 #endif
 };
 

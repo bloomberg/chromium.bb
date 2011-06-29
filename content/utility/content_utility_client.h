@@ -14,10 +14,10 @@ namespace content {
 class ContentUtilityClient {
  public:
   // Notifies us that the UtilityThread has been created.
-  virtual void UtilityThreadStarted();
+  virtual void UtilityThreadStarted() = 0;
 
   // Allows the embedder to filter messages.
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message) = 0;
 };
 
 }  // namespace content

@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/content_browser_client.h"
+#include "content/browser/mock_content_browser_client.h"
 
-#include "base/memory/singleton.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
-#include "content/browser/ssl/ssl_client_auth_handler.h"
+#include <string>
+
 #include "content/browser/webui/empty_web_ui_factory.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -14,61 +13,67 @@
 
 namespace content {
 
-void ContentBrowserClient::RenderViewHostCreated(
+MockContentBrowserClient::~MockContentBrowserClient() {
+}
+
+void MockContentBrowserClient::RenderViewHostCreated(
     RenderViewHost* render_view_host) {
 }
 
-void ContentBrowserClient::BrowserRenderProcessHostCreated(
+void MockContentBrowserClient::BrowserRenderProcessHostCreated(
     BrowserRenderProcessHost* host) {
 }
 
-void ContentBrowserClient::PluginProcessHostCreated(PluginProcessHost* host) {
+void MockContentBrowserClient::PluginProcessHostCreated(
+    PluginProcessHost* host) {
 }
 
-void ContentBrowserClient::WorkerProcessHostCreated(WorkerProcessHost* host) {
+void MockContentBrowserClient::WorkerProcessHostCreated(
+    WorkerProcessHost* host) {
 }
 
-WebUIFactory* ContentBrowserClient::GetWebUIFactory() {
+WebUIFactory* MockContentBrowserClient::GetWebUIFactory() {
   // Return an empty factory so callsites don't have to check for NULL.
   return EmptyWebUIFactory::Get();
 }
 
-GURL ContentBrowserClient::GetEffectiveURL(Profile* profile, const GURL& url) {
-  return url;
+GURL MockContentBrowserClient::GetEffectiveURL(Profile* profile,
+                                               const GURL& url) {
+  return GURL();
 }
 
-bool ContentBrowserClient::IsURLSameAsAnySiteInstance(const GURL& url) {
+bool MockContentBrowserClient::IsURLSameAsAnySiteInstance(const GURL& url) {
   return false;
 }
 
-std::string ContentBrowserClient::GetCanonicalEncodingNameByAliasName(
+std::string MockContentBrowserClient::GetCanonicalEncodingNameByAliasName(
     const std::string& alias_name) {
-  return alias_name;
+  return std::string();
 }
 
-void ContentBrowserClient::AppendExtraCommandLineSwitches(
+void MockContentBrowserClient::AppendExtraCommandLineSwitches(
     CommandLine* command_line, int child_process_id) {
 }
 
-std::string ContentBrowserClient::GetApplicationLocale() {
+std::string MockContentBrowserClient::GetApplicationLocale() {
   return std::string();
 }
 
-std::string ContentBrowserClient::GetAcceptLangs(const TabContents* tab) {
+std::string MockContentBrowserClient::GetAcceptLangs(const TabContents* tab) {
   return std::string();
 }
 
-SkBitmap* ContentBrowserClient::GetDefaultFavicon() {
+SkBitmap* MockContentBrowserClient::GetDefaultFavicon() {
   static SkBitmap empty;
   return &empty;
 }
 
-bool ContentBrowserClient::AllowAppCache(
+bool MockContentBrowserClient::AllowAppCache(
     const GURL& manifest_url, const content::ResourceContext& context) {
   return true;
 }
 
-bool ContentBrowserClient::AllowGetCookie(
+bool MockContentBrowserClient::AllowGetCookie(
     const GURL& url,
     const GURL& first_party,
     const net::CookieList& cookie_list,
@@ -78,7 +83,7 @@ bool ContentBrowserClient::AllowGetCookie(
   return true;
 }
 
-bool ContentBrowserClient::AllowSetCookie(
+bool MockContentBrowserClient::AllowSetCookie(
     const GURL& url,
     const GURL& first_party,
     const std::string& cookie_line,
@@ -89,36 +94,34 @@ bool ContentBrowserClient::AllowSetCookie(
   return true;
 }
 
-QuotaPermissionContext* ContentBrowserClient::CreateQuotaPermissionContext() {
+QuotaPermissionContext*
+    MockContentBrowserClient::CreateQuotaPermissionContext() {
   return NULL;
 }
 
-void ContentBrowserClient::RevealFolderInOS(const FilePath& path) {
+void MockContentBrowserClient::RevealFolderInOS(const FilePath& path) {
 }
 
-void ContentBrowserClient::AllowCertificateError(
+void MockContentBrowserClient::AllowCertificateError(
     SSLCertErrorHandler* handler,
     bool overridable,
     Callback2<SSLCertErrorHandler*, bool>::Type* callback) {
-  callback->Run(handler, overridable);
-  delete callback;
 }
 
-void ContentBrowserClient::ShowClientCertificateRequestDialog(
+void MockContentBrowserClient::ShowClientCertificateRequestDialog(
     int render_process_id,
     int render_view_id,
     SSLClientAuthHandler* handler) {
-  handler->CertificateSelected(NULL);
 }
 
-void ContentBrowserClient::AddNewCertificate(
+void MockContentBrowserClient::AddNewCertificate(
     net::URLRequest* request,
     net::X509Certificate* cert,
     int render_process_id,
     int render_view_id) {
 }
 
-void ContentBrowserClient::RequestDesktopNotificationPermission(
+void MockContentBrowserClient::RequestDesktopNotificationPermission(
     const GURL& source_origin,
     int callback_context,
     int render_process_id,
@@ -126,57 +129,56 @@ void ContentBrowserClient::RequestDesktopNotificationPermission(
 }
 
 WebKit::WebNotificationPresenter::Permission
-    ContentBrowserClient::CheckDesktopNotificationPermission(
+    MockContentBrowserClient::CheckDesktopNotificationPermission(
         const GURL& source_url,
         const content::ResourceContext& context) {
   return WebKit::WebNotificationPresenter::PermissionAllowed;
 }
 
-void ContentBrowserClient::ShowDesktopNotification(
+void MockContentBrowserClient::ShowDesktopNotification(
     const DesktopNotificationHostMsg_Show_Params& params,
     int render_process_id,
     int render_view_id,
     bool worker) {
 }
 
-void ContentBrowserClient::CancelDesktopNotification(
+void MockContentBrowserClient::CancelDesktopNotification(
     int render_process_id,
     int render_view_id,
     int notification_id) {
 }
 
-bool ContentBrowserClient::CanCreateWindow(
+bool MockContentBrowserClient::CanCreateWindow(
     const GURL& source_url,
     WindowContainerType container_type,
     const content::ResourceContext& context) {
   return false;
 }
 
-std::string ContentBrowserClient::GetWorkerProcessTitle(
+std::string MockContentBrowserClient::GetWorkerProcessTitle(
     const GURL& url, const content::ResourceContext& context) {
   return std::string();
 }
 
-ResourceDispatcherHost* ContentBrowserClient::GetResourceDispatcherHost() {
-  static ResourceQueue::DelegateSet temp;
-  static ResourceDispatcherHost rdh(temp);
-  return &rdh;
+ResourceDispatcherHost* MockContentBrowserClient::GetResourceDispatcherHost() {
+  return NULL;
 }
 
-ui::Clipboard* ContentBrowserClient::GetClipboard() {
+ui::Clipboard* MockContentBrowserClient::GetClipboard() {
   static ui::Clipboard clipboard;
   return &clipboard;
 }
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-int ContentBrowserClient::GetCrashSignalFD(const std::string& process_type) {
+int MockContentBrowserClient::GetCrashSignalFD(
+    const std::string& process_type) {
   return -1;
 }
 #endif
 
 #if defined(USE_NSS)
 crypto::CryptoModuleBlockingPasswordDelegate*
-    ContentBrowserClient::GetCryptoPasswordDelegate(const GURL& url) {
+    MockContentBrowserClient::GetCryptoPasswordDelegate(const GURL& url) {
   return NULL;
 }
 #endif

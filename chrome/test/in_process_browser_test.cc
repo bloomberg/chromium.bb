@@ -36,7 +36,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/main_function_params.h"
 #include "content/common/notification_type.h"
-#include "content/renderer/content_renderer_client.h"
+#include "content/renderer/mock_content_renderer_client.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/test/test_server.h"
 #include "sandbox/src/dep.h"
@@ -132,7 +132,8 @@ void InProcessBrowserTest::SetUp() {
   // and set up renderer.
   if (command_line->HasSwitch(switches::kSingleProcess)) {
     RenderProcessHost::set_run_renderer_in_process(true);
-    single_process_renderer_client_.reset(new content::ContentRendererClient);
+    single_process_renderer_client_.reset(
+        new content::MockContentRendererClient);
     content::GetContentClient()->set_renderer(
         single_process_renderer_client_.get());
   }

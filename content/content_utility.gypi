@@ -12,7 +12,6 @@
         '../base/base.gyp:base',
       ],
       'sources': [
-        'utility/content_utility_client.cc',
         'utility/content_utility_client.h',
         'utility/utility_main.cc',
         'utility/utility_thread.cc',

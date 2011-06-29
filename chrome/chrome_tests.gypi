@@ -180,6 +180,7 @@
         '../content/browser/geolocation/arbitrator_dependency_factories_for_test.h',
         '../content/browser/geolocation/mock_location_provider.cc',
         '../content/browser/geolocation/mock_location_provider.h',
+        '../content/browser/mock_content_browser_client.cc',
         '../content/browser/mock_resource_context.cc',
         '../content/browser/mock_resource_context.h',
         # TODO:  these should live here but are currently used by
@@ -202,6 +203,7 @@
         '../content/common/test_url_constants.h',
         '../content/common/test_url_fetcher_factory.cc',
         '../content/common/test_url_fetcher_factory.h',
+        '../content/renderer/mock_content_renderer_client.cc',
         '../ui/gfx/image/image_unittest_util.h',
         '../ui/gfx/image/image_unittest_util.cc',
       ],

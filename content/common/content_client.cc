@@ -25,32 +25,4 @@ ContentClient::ContentClient()
 ContentClient::~ContentClient() {
 }
 
-bool ContentClient::CanSendWhileSwappedOut(const IPC::Message* msg) {
-  return false;
-}
-
-bool ContentClient::CanHandleWhileSwappedOut(const IPC::Message& msg) {
-  return false;
-}
-
-std::string ContentClient::GetUserAgent(bool mimic_windows) const {
-  return std::string();
-}
-
-string16 ContentClient::GetLocalizedString(int message_id) const {
-  return string16();
-}
-
-// Return the contents of a resource in a StringPiece given the resource id.
-base::StringPiece ContentClient::GetDataResource(int resource_id) const {
-  return base::StringPiece();
-}
-
-#if defined(OS_WIN)
-bool ContentClient::SandboxPlugin(CommandLine* command_line,
-                                  sandbox::TargetPolicy* policy) {
-  return false;
-}
-#endif
-
 }  // namespace content

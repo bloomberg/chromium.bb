@@ -15,7 +15,7 @@ namespace content {
 class ContentPluginClient {
  public:
   // Notifies that a plugin process has started.
-  virtual void PluginProcessStarted(const string16& plugin_name) {}
+  virtual void PluginProcessStarted(const string16& plugin_name) = 0;
 };
 
 }  // namespace content

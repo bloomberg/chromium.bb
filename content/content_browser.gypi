@@ -73,7 +73,6 @@
         'browser/clipboard_dispatcher_gtk.cc',
         'browser/clipboard_dispatcher_mac.mm',
         'browser/clipboard_dispatcher_win.cc',
-        'browser/content_browser_client.cc',
         'browser/content_browser_client.h',
         'browser/cross_site_request_manager.cc',
         'browser/cross_site_request_manager.h',

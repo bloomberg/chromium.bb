@@ -9,7 +9,7 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/browsing_instance.h"
 #include "content/browser/child_process_security_policy.h"
-#include "content/browser/content_browser_client.h"
+#include "content/browser/mock_content_browser_client.h"
 #include "content/browser/renderer_host/browser_render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
@@ -36,7 +36,7 @@ class SiteInstanceTestWebUIFactory : public content::EmptyWebUIFactory {
   }
 };
 
-class SiteInstanceTestBrowserClient : public content::ContentBrowserClient {
+class SiteInstanceTestBrowserClient : public content::MockContentBrowserClient {
  public:
   virtual content::WebUIFactory* GetWebUIFactory() OVERRIDE {
     return &factory_;
@@ -45,6 +45,10 @@ class SiteInstanceTestBrowserClient : public content::ContentBrowserClient {
   virtual bool IsURLSameAsAnySiteInstance(const GURL& url) OVERRIDE {
     return url == GURL(kSameAsAnyInstanceURL) ||
            url == GURL(chrome::kAboutCrashURL);
+  }
+
+  virtual GURL GetEffectiveURL(Profile* profile, const GURL& url) OVERRIDE {
+    return url;
   }
 
  private:
