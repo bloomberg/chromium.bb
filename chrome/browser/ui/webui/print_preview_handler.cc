@@ -568,13 +568,12 @@ void PrintPreviewHandler::HandleShowSystemDialog(const ListValue* args) {
   TabContents* initiator_tab = GetInitiatorTab();
   if (!initiator_tab)
     return;
-  initiator_tab->Activate();
 
   TabContentsWrapper* wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(initiator_tab);
-  wrapper->print_view_manager()->PrintNow();
-
-  ClosePrintPreviewTab();
+  printing::PrintViewManager* manager = wrapper->print_view_manager();
+  manager->set_observer(this);
+  manager->PrintNow();
 }
 
 void PrintPreviewHandler::HandleManagePrinters(const ListValue* args) {
@@ -647,6 +646,14 @@ void PrintPreviewHandler::ClosePrintPreviewTab() {
       &preview_tab()->controller()), TabStripModel::CLOSE_NONE);
 }
 
+void PrintPreviewHandler::OnPrintDialogShown() {
+  TabContents* initiator_tab = GetInitiatorTab();
+  DCHECK(initiator_tab);
+
+  initiator_tab->Activate();
+  ClosePrintPreviewTab();
+}
+
 void PrintPreviewHandler::SelectFile(const FilePath& default_filename) {
   SelectFileDialog::FileTypeInfo file_type_info;
   file_type_info.extensions.resize(1);
@@ -675,6 +682,16 @@ void PrintPreviewHandler::SelectFile(const FilePath& default_filename) {
       preview_tab(),
       platform_util::GetTopLevel(preview_tab()->GetNativeView()),
       NULL);
+}
+
+void PrintPreviewHandler::OnNavigation() {
+  TabContents* initiator_tab = GetInitiatorTab();
+  if (!initiator_tab)
+    return;
+
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(initiator_tab);
+  wrapper->print_view_manager()->set_observer(NULL);
 }
 
 void PrintPreviewHandler::FileSelected(const FilePath& path,
@@ -714,13 +731,14 @@ void PrintPreviewHandler::HidePreviewTab() {
 
 void PrintPreviewHandler::ClearInitiatorTabDetails() {
   TabContents* initiator_tab = GetInitiatorTab();
-  if (initiator_tab) {
-    // We no longer require the intiator tab details. Remove those details
-    // associated with the preview tab to allow the initiator tab to create
-    // another preview tab.
-    printing::PrintPreviewTabController* tab_controller =
-       printing::PrintPreviewTabController::GetInstance();
-    if (tab_controller)
-      tab_controller->EraseInitiatorTabInfo(preview_tab());
-  }
+  if (!initiator_tab)
+    return;
+
+  // We no longer require the initiator tab details. Remove those details
+  // associated with the preview tab to allow the initiator tab to create
+  // another preview tab.
+  printing::PrintPreviewTabController* tab_controller =
+     printing::PrintPreviewTabController::GetInstance();
+  if (tab_controller)
+    tab_controller->EraseInitiatorTabInfo(preview_tab());
 }

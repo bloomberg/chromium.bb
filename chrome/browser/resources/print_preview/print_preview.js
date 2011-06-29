@@ -13,7 +13,7 @@ var totalPageCount;
 // requested more often than necessary.
 var previouslySelectedPages = [];
 
-// Timer id of the page range textfield. It is used to reset the timer whenever
+// Timer id of the page range text field. It is used to reset the timer whenever
 // needed.
 var timerId;
 
@@ -45,6 +45,10 @@ var hasError = false;
 // True when preview tab is hidden.
 var isTabHidden = false;
 
+// True if the user has click 'Advanced...' in order to open the system print
+// dialog.
+var showingSystemDialog = false;
+
 /**
  * Window onload handler, sets up the page and starts print preview by getting
  * the printer list.
@@ -55,14 +59,16 @@ function onLoad() {
   $('cancel-button').addEventListener('click', handleCancelButtonClick);
 
   if (!checkCompatiblePluginExists()) {
+    disableInputElementsInSidebar();
     displayErrorMessageWithButton(localStrings.getString('noPlugin'),
                                   localStrings.getString('launchNativeDialog'),
-                                  showSystemDialog);
+                                  launchNativePrintDialog);
     $('mainview').parentElement.removeChild($('dummy-viewer'));
     return;
   }
 
-  $('system-dialog-link').addEventListener('click', showSystemDialog);
+  $('print-button').focus();
+  $('system-dialog-link').addEventListener('click', onSystemDialogLinkClicked);
   $('mainview').parentElement.removeChild($('dummy-viewer'));
 
   $('printer-list').disabled = true;
@@ -166,10 +172,19 @@ function removeEventListeners() {
   $('portrait').onclick = null;
   $('printer-list').onchange = null;
 
-  // Controls that dont require preview rendering.
+  // Controls that don't require preview rendering.
   $('two-sided').onclick = null;
   $('color').onclick = null;
   $('bw').onclick = null;
+}
+
+/**
+ * Disables the input elements in the sidebar.
+ */
+function disableInputElementsInSidebar() {
+  var els = $('sidebar').querySelectorAll('input, button, select');
+  for (var i = 0; i < els.length; i++)
+    els[i].disabled = true;
 }
 
 /**
@@ -180,9 +195,24 @@ function handleCancelButtonClick() {
 }
 
 /**
- * Asks the browser to show the native print dialog for printing.
+ * Disables the controls in the sidebar, shows the throbber and instructs the
+ * backend to open the native print dialog.
  */
-function showSystemDialog() {
+function onSystemDialogLinkClicked() {
+  showingSystemDialog = true;
+  disableInputElementsInSidebar();
+  $('system-dialog-throbber').classList.remove('hidden');
+  chrome.send('showSystemDialog');
+}
+
+/**
+ * Similar to onSystemDialogLinkClicked(), but specific to the
+ * 'Launch native print dialog' UI.
+ */
+function launchNativePrintDialog() {
+  showingSystemDialog = true;
+  $('error-button').disabled = true;
+  $('native-print-dialog-throbber').classList.remove('hidden');
   chrome.send('showSystemDialog');
 }
 
@@ -192,6 +222,7 @@ function showSystemDialog() {
  * @param {string} initiatorTabURL The URL of the initiator tab.
  */
 function onInitiatorTabClosed(initiatorTabURL) {
+  disableInputElementsInSidebar();
   displayErrorMessageWithButton(
       localStrings.getString('initiatorTabClosed'),
       localStrings.getString('reopenPage'),
@@ -555,9 +586,12 @@ function displayErrorMessage(errorMessage) {
 function displayErrorMessageWithButton(
     errorMessage, buttonText, buttonListener) {
   var errorButton = $('error-button');
+  errorButton.disabled = false;
   errorButton.textContent = buttonText;
   errorButton.onclick = buttonListener;
   errorButton.classList.remove('hidden');
+  $('system-dialog-throbber').classList.add('hidden');
+  $('native-print-dialog-throbber').classList.add('hidden');
   displayErrorMessage(errorMessage);
 }
 
@@ -647,10 +681,6 @@ function updatePrintPreview(pageCount, jobTitle, modifiable, previewUid) {
  * @param {string} previewUid Preview unique identifier.
  */
 function createPDFPlugin(previewUid) {
-  // Enable the print button.
-  if (!$('printer-list').disabled)
-    $('print-button').disabled = false;
-
   var pdfViewer = $('pdf-viewer');
   if (pdfViewer) {
     // Need to call this before the reload(), where the plugin resets its
@@ -692,6 +722,9 @@ function checkCompatiblePluginExists() {
  * 2) The number of copies is valid (if applicable).
  */
 function updatePrintButtonState() {
+  if (showingSystemDialog)
+    return;
+
   if (getSelectedPrinterName() == PRINT_TO_PDF) {
     $('print-button').disabled = !isSelectedPagesValid();
   } else {

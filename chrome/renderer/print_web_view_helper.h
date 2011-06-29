@@ -62,11 +62,10 @@ class PrepareFrameAndViewForPrint {
   DISALLOW_COPY_AND_ASSIGN(PrepareFrameAndViewForPrint);
 };
 
-
 // PrintWebViewHelper handles most of the printing grunt work for RenderView.
 // We plan on making print asynchronous and that will require copying the DOM
 // of the document and creating a new WebView with the contents.
-class PrintWebViewHelper : public RenderViewObserver ,
+class PrintWebViewHelper : public RenderViewObserver,
                            public RenderViewObserverTracker<PrintWebViewHelper>,
                            public WebKit::WebViewClient,
                            public WebKit::WebFrameClient {
@@ -132,7 +131,7 @@ class PrintWebViewHelper : public RenderViewObserver ,
     FAIL_PREVIEW,
   };
 
-  // Notification when printing is done - signal teardown/free resources.
+  // Notification when printing is done - signal tear-down/free resources.
   void DidFinishPrinting(PrintingResult result);
 
   // Print Settings -----------------------------------------------------------

@@ -8,6 +8,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/printing/print_view_manager_observer.h"
 #include "chrome/browser/ui/shell_dialogs.h"
 #include "content/browser/webui/web_ui.h"
 
@@ -20,10 +21,11 @@ namespace printing {
 class PrintBackend;
 }
 
-// The handler for Javascript messages related to the "print preview" dialog.
+// The handler for Javascript messages related to the print preview dialog.
 class PrintPreviewHandler : public WebUIMessageHandler,
                             public base::SupportsWeakPtr<PrintPreviewHandler>,
-                            public SelectFileDialog::Listener {
+                            public SelectFileDialog::Listener,
+                            public printing::PrintViewManagerObserver {
  public:
   PrintPreviewHandler();
   virtual ~PrintPreviewHandler();
@@ -35,8 +37,16 @@ class PrintPreviewHandler : public WebUIMessageHandler,
   virtual void FileSelected(const FilePath& path, int index, void* params);
   virtual void FileSelectionCanceled(void* params);
 
+  // PrintViewManagerObserver implementation.
+  virtual void OnPrintDialogShown();
+
   // Displays a modal dialog, prompting the user to select a file.
   void SelectFile(const FilePath& default_path);
+
+  // Called when the print preview tab navigates. This is the last time this
+  // this object has access to the PrintViewManager in order to disconnect the
+  // observer.
+  void OnNavigation();
 
  private:
   friend class PrintSystemTaskProxy;

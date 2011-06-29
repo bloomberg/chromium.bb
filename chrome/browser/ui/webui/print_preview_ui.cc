@@ -16,9 +16,9 @@
 PrintPreviewUI::PrintPreviewUI(TabContents* contents)
     : ChromeWebUI(contents),
       initial_preview_start_time_(base::TimeTicks::Now()) {
-  // PrintPreviewUI owns |handler|.
-  PrintPreviewHandler* handler = new PrintPreviewHandler();
-  AddMessageHandler(handler->Attach(this));
+  // WebUI owns |handler_|.
+  handler_ = new PrintPreviewHandler();
+  AddMessageHandler(handler_->Attach(this));
 
   // Set up the chrome://print/ data source.
   contents->profile()->GetChromeURLDataManager()->AddDataSource(
@@ -67,6 +67,10 @@ void PrintPreviewUI::OnPreviewDataIsAvailable(int expected_pages_count,
   StringValue ui_identifier(preview_ui_addr_str_);
   CallJavascriptFunction("updatePrintPreview", pages_count, title,
                          is_preview_modifiable, ui_identifier);
+}
+
+void PrintPreviewUI::OnNavigation() {
+  handler_->OnNavigation();
 }
 
 void PrintPreviewUI::OnFileSelectionCancelled() {

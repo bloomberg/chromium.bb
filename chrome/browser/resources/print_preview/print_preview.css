@@ -35,7 +35,7 @@ body #main::after {
 
 /* Layout: Sidebar */
 
-.sidebar {
+#sidebar {
   -webkit-user-select: none;
   border: 1px solid #a0a0a0;
   background: white;
@@ -47,11 +47,11 @@ body #main::after {
   z-index: 2000;
 }
 
-.sidebar header {
+#sidebar header {
   width: 310px;
 }
 
-.sidebar header > h1 {
+#sidebar header > h1 {
   -webkit-padding-start: 16px;
 }
 
@@ -176,7 +176,11 @@ hr.invisible {
   display: none;
 }
 
-a {
+/* TODO(jhawkins): Remove this specialization once all WebUI shares the same
+ * link-button styling.
+ */
+#system-dialog-link {
+  -webkit-padding-start: 0;
   -webkit-transition: text-shadow 150ms;
   color: #4080fa;
   outline: 0;
@@ -184,21 +188,27 @@ a {
   text-shadow: 0 0 1px white;
 }
 
-a:hover {
+#system-dialog-link:hover {
   text-shadow: 0 0 1px rgba(85, 143, 250, .75);
 }
 
-a:active {
+#system-dialog-link:active {
   color: #4080fa;
   text-shadow: 0 0 1px rgba(64, 128, 250, 1);
 }
 
-a:focus {
+#system-dialog-link:focus {
   -webkit-transition: border-color 200ms;
   border-radius: 2px;
   border: 1px solid rgba(85, 143, 250, .8);
   margin: -2px -5px;
   padding: 1px 4px;
+}
+
+#system-dialog-link:disabled {
+  color: rgba(0, 0, 0, .5);
+  cursor: default;
+  text-shadow: none;
 }
 
 strong {
@@ -758,4 +768,8 @@ html[dir='rtl'] .messages {
 
 input[disabled] + label {
   color: gray;
+}
+
+#error-action-area {
+  margin-top: 10px;
 }

@@ -665,6 +665,8 @@ bool PrintWebViewHelper::GetPrintSettingsFromUser(WebKit::WebFrame* frame,
   params.expected_pages_count = expected_pages_count;
   params.use_overlays = use_browser_overlays;
 
+  Send(new PrintHostMsg_DidShowPrintDialog(routing_id()));
+
   print_pages_params_.reset();
   IPC::SyncMessage* msg =
       new PrintHostMsg_ScriptedPrint(routing_id(), params, &print_settings);

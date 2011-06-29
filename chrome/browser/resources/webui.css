@@ -41,3 +41,19 @@ html[dir='rtl'] .form {
 .footer {
   height: 24px;
 }
+
+/* TODO(jhawkins): Refactor button styling and remove !important here. This is
+ * currently necessary because individual page button element selectors have
+ * higher specificity.
+ */
+.link-button,
+.link-button:active,
+.link-button:focus,
+.link-button:hover {
+  -webkit-box-shadow: none !important;
+  background: transparent none !important;
+  border: none !important;
+  color: blue;
+  cursor: pointer;
+  text-decoration: underline;
+}

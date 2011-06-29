@@ -1728,6 +1728,7 @@
         'browser/printing/print_preview_tab_controller.h',
         'browser/printing/print_view_manager.cc',
         'browser/printing/print_view_manager.h',
+        'browser/printing/print_view_manager_delegate.h',
         'browser/printing/printer_manager_dialog.h',
         'browser/printing/printer_manager_dialog_linux.cc',
         'browser/printing/printer_manager_dialog_mac.mm',

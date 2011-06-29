@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
 
 class PrintPreviewDataService;
+class PrintPreviewHandler;
 
 class PrintPreviewUI : public ChromeWebUI {
  public:
@@ -38,6 +39,11 @@ class PrintPreviewUI : public ChromeWebUI {
                                 const string16& job_title,
                                 bool modifiable);
 
+  // Notify the Web UI that a navigation has occurred in this tab. This is the
+  // last chance to communicate with the source tab before the assocation is
+  // erased.
+  void OnNavigation();
+
   // Notify the Web UI that initiator tab is closed, so we can disable all
   // the controls that need the initiator tab for generating the preview data.
   // |initiator_tab_url| is passed in order to display a more accurate error
@@ -55,6 +61,9 @@ class PrintPreviewUI : public ChromeWebUI {
 
   // Store the PrintPreviewUI address string.
   std::string preview_ui_addr_str_;
+
+  // Weak pointer to the WebUI handler.
+  PrintPreviewHandler* handler_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewUI);
 };

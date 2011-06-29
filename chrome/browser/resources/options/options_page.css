@@ -415,18 +415,6 @@ div.disabled {
   -webkit-appearance: slider-horizontal;
 }
 
-.link-button,
-.link-button:active,
-.link-button:focus,
-.link-button:hover {
-  -webkit-box-shadow: none;
-  background: transparent none;
-  border: none;
-  color: blue;
-  cursor: pointer;
-  text-decoration: underline;
-}
-
 .text-button,
 .text-button:active,
 .text-button:focus,

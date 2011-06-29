@@ -5,6 +5,7 @@
 <title i18n-content="title"></title>
 <link rel="icon" href="../../../app/theme/print_preview_favicon.png">
 <link rel="stylesheet" href="../webui.css">
+<link rel="stylesheet" href="chrome://resources/css/throbber.css">
 <link rel="stylesheet" href="print_preview.css">
 <script src="chrome://resources/js/local_strings.js"></script>
 <script src="chrome://resources/js/cr.js"></script>
@@ -14,13 +15,13 @@
 <script src="print_preview_utils.js"></script>
 </head>
 <body>
-  <div class="sidebar">
+  <div id="sidebar">
     <header>
       <h1 i18n-content="title"></h1>
       <div id="print-header">
         <span id="print-summary"></span>
-        <button id="print-button" i18n-content="printButton" class="default"
-            autofocus></button>
+        <button id="print-button" i18n-content="printButton" class="default">
+        </button>
         <button id="cancel-button" i18n-content="cancelButton"></button>
       </div>
     </header>
@@ -105,8 +106,10 @@
       </div>
       <hr>
       <div id="system-dialog-div">
-        <a id="system-dialog-link" href="#"
-            i18n-content="systemDialogOption"></a>
+        <button id="system-dialog-link" class="link-button"
+            i18n-content="systemDialogOption"></button>
+        <!-- TODO(dpapad): Investigate whey hidden attribute does not work. -->
+        <div id="system-dialog-throbber" class="throbber hidden"></div>
       </div>
     </div>
   </div>
@@ -118,13 +121,15 @@
           <span><span>.</span><span>.</span><span>.</span></span>
         </div>
         <div id="error-text" class="hidden"></div>
-        <br>
-        <button id="error-button" class="hidden"></button>
+        <div id="error-action-area">
+          <button id="error-button" class="hidden"></button>
+          <div id="native-print-dialog-throbber" class="throbber hidden"></div>
+        </div>
       </div>
     </div>
   </div>
   <object id="dummy-viewer"
       type="application/x-google-chrome-print-preview-pdf"
-      src="chrome://print/dummy.pdf"/>
+      src="chrome://print/dummy.pdf"></object>
 </body>
 </html>

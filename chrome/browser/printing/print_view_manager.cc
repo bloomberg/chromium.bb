@@ -11,6 +11,7 @@
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/printing/printer_query.h"
+#include "chrome/browser/printing/print_view_manager_observer.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/print_preview_ui.h"
 #include "chrome/common/print_messages.h"
@@ -47,7 +48,8 @@ PrintViewManager::PrintViewManager(TabContentsWrapper* tab)
       number_pages_(0),
       printing_succeeded_(false),
       inside_inner_message_loop_(false),
-      is_title_overridden_(false) {
+      is_title_overridden_(false),
+      observer_(NULL) {
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   expecting_first_page_ = true;
 #endif
@@ -78,6 +80,11 @@ void PrintViewManager::PreviewPrintingRequestCancelled() {
     return;
   RenderViewHost* rvh = tab_contents()->render_view_host();
   rvh->Send(new PrintMsg_PreviewPrintingRequestCancelled(rvh->routing_id()));
+}
+
+void PrintViewManager::set_observer(PrintViewManagerObserver* observer) {
+  DCHECK(!observer || !observer_);
+  observer_ = observer;
 }
 
 void PrintViewManager::StopNavigation() {
@@ -121,6 +128,11 @@ void PrintViewManager::OnDidGetPrintedPagesCount(int cookie, int number_pages) {
   DCHECK_GT(number_pages, 0);
   number_pages_ = number_pages;
   OpportunisticallyCreatePrintJob(cookie);
+}
+
+void PrintViewManager::OnDidShowPrintDialog() {
+  if (observer_)
+    observer_->OnPrintDialogShown();
 }
 
 void PrintViewManager::OnDidPrintPage(
@@ -205,6 +217,7 @@ bool PrintViewManager::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(PrintViewManager, message)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidGetPrintedPagesCount,
                         OnDidGetPrintedPagesCount)
+    IPC_MESSAGE_HANDLER(PrintHostMsg_DidShowPrintDialog, OnDidShowPrintDialog)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidPrintPage, OnDidPrintPage)
     IPC_MESSAGE_HANDLER(PrintHostMsg_PrintingFailed, OnPrintingFailed)
     IPC_MESSAGE_UNHANDLED(handled = false)
