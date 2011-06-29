@@ -188,6 +188,10 @@
       '-sync',
       # crbug.com/86593
       '-prefs.PrefsTest.testSessionRestore',
+      # crbug.com/87837
+      '-plugins.PluginsTest.testBlockPluginException',
+      '-plugins.PluginsTest.testDisableEnableAllPlugins',
+      '-plugins.PluginsTest.testKillAndReloadAllPlugins',
     ],
 
     'linux': [  # linux != chromeos
