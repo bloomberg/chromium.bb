@@ -15,6 +15,7 @@
 #include "base/metrics/histogram.h"
 #include "base/stl_util-inl.h"
 #include "base/stringprintf.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_service.h"
@@ -421,6 +422,10 @@ class SessionRestoreImpl : public NotificationObserver {
         always_create_tabbed_browser_(always_create_tabbed_browser),
         urls_to_open_(urls_to_open),
         restore_started_(base::TimeTicks::Now()) {
+    // When asynchronous its possible for there to be no windows. To make sure
+    // Chrome doesn't prematurely exit AddRef the process. We'll release in the
+    // destructor when restore is done.
+    g_browser_process->AddRefModule();
   }
 
   Browser* Restore() {
@@ -491,6 +496,7 @@ class SessionRestoreImpl : public NotificationObserver {
   ~SessionRestoreImpl() {
     STLDeleteElements(&windows_);
     restoring = false;
+    g_browser_process->ReleaseModule();
   }
 
   virtual void Observe(NotificationType type,

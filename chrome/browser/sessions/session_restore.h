@@ -46,7 +46,7 @@ class SessionRestore {
   // Specifically used in the restoration of a foreign session.  This method
   // restores the given session tab to a browser.
   static void RestoreForeignSessionTab(Profile* profile,
-      const SessionTab& tab);
+                                       const SessionTab& tab);
 
   // Synchronously restores the last session. At least one tabbed browser is
   // created, even if there is an error in restoring.

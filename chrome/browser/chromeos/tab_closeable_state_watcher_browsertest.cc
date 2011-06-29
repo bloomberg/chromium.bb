@@ -247,11 +247,7 @@ IN_PROC_BROWSER_TEST_F(TabCloseableStateWatcherTest, SecondIncognitoBrowser) {
 
 // Tests closing an incognito browser - the incognito browser should close,
 // and a new normal browser opened with a NewTabPage (which is not closeable).
-// Test is flaky:
-// EXPECT_EQ(1u, BrowserList::size()) in the "Close incognito browser." block
-// currently fails in ~13% of all runs. See http://crbug.com/83861
-IN_PROC_BROWSER_TEST_F(TabCloseableStateWatcherTest,
-                       FLAKY_CloseIncognitoBrowser) {
+IN_PROC_BROWSER_TEST_F(TabCloseableStateWatcherTest, CloseIncognitoBrowser) {
   NavigateToURL(ntp_url_);
 
   // Open an incognito browser.
