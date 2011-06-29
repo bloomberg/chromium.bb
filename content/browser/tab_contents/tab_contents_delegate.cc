@@ -62,8 +62,6 @@ void TabContentsDelegate::BeforeUnloadFired(TabContents* tab,
   *proceed_to_fire_unload = true;
 }
 
-bool TabContentsDelegate::IsExternalTabContainer() const { return false; }
-
 void TabContentsDelegate::SetFocusToLocationBar(bool select_all) {}
 
 bool TabContentsDelegate::ShouldFocusPageAfterCrash() {

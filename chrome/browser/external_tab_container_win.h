@@ -137,7 +137,6 @@ class ExternalTabContainer : public TabContentsDelegate,
   virtual bool IsPopup(const TabContents* source) const;
   virtual void UpdateTargetURL(TabContents* source, const GURL& url);
   virtual void ContentsZoomChange(bool zoom_in);
-  virtual bool IsExternalTabContainer() const;
   virtual gfx::NativeWindow GetFrameNativeWindow();
 
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,

@@ -678,7 +678,6 @@ class TabContents : public PageNavigator,
   virtual void RendererResponsive(RenderViewHost* render_view_host);
   virtual void LoadStateChanged(const GURL& url, net::LoadState load_state,
                                 uint64 upload_position, uint64 upload_size);
-  virtual bool IsExternalTabContainer() const;
   virtual void WorkerCrashed();
 
   // RenderViewHostManager::Delegate -------------------------------------------

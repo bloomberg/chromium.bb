@@ -4,6 +4,7 @@
 
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 
+#include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -12,6 +13,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/print_preview_ui.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -196,7 +198,7 @@ TabContents* PrintPreviewTabController::CreatePrintPreviewTab(
   Browser* current_browser = BrowserList::FindBrowserWithID(
       tab->restore_tab_helper()->window_id().id());
   if (!current_browser) {
-    if (initiator_tab->delegate()->IsExternalTabContainer()) {
+    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kChromeFrame)) {
       current_browser = Browser::CreateForType(Browser::TYPE_POPUP,
                                                initiator_tab->profile());
       if (!current_browser) {
@@ -213,7 +215,7 @@ TabContents* PrintPreviewTabController::CreatePrintPreviewTab(
                                  GURL(chrome::kChromeUIPrintURL),
                                  PageTransition::LINK);
   params.disposition = NEW_FOREGROUND_TAB;
-  if (initiator_tab->delegate()->IsExternalTabContainer())
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kChromeFrame))
     params.disposition = NEW_POPUP;
   params.tabstrip_index = current_browser->tabstrip_model()->
       GetWrapperIndex(initiator_tab) + 1;

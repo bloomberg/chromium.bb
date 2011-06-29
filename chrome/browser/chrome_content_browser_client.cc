@@ -576,6 +576,11 @@ ui::Clipboard* ChromeContentBrowserClient::GetClipboard() {
   return g_browser_process->clipboard();
 }
 
+bool ChromeContentBrowserClient::IsFastShutdownPossible() {
+  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
+  return !browser_command_line.HasSwitch(switches::kChromeFrame);
+}
+
 #if defined(OS_LINUX)
 int ChromeContentBrowserClient::GetCrashSignalFD(
     const std::string& process_type) {

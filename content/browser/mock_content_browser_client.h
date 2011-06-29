@@ -88,6 +88,7 @@ class MockContentBrowserClient : public ContentBrowserClient {
       const GURL& url, const content::ResourceContext& context) OVERRIDE;
   virtual ResourceDispatcherHost* GetResourceDispatcherHost() OVERRIDE;
   virtual ui::Clipboard* GetClipboard() OVERRIDE;
+  virtual bool IsFastShutdownPossible() OVERRIDE;
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   virtual int GetCrashSignalFD(const std::string& process_type) OVERRIDE;

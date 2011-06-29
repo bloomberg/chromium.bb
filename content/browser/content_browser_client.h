@@ -211,6 +211,9 @@ class ContentBrowserClient {
   virtual ResourceDispatcherHost* GetResourceDispatcherHost() = 0;
   virtual ui::Clipboard* GetClipboard() = 0;
 
+  // Returns true if fast shutdown is possible.
+  virtual bool IsFastShutdownPossible() = 0;
+
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Can return an optional fd for crash handling, otherwise returns -1.
   virtual int GetCrashSignalFD(const std::string& process_type) = 0;

@@ -1727,13 +1727,6 @@ void TabContents::LoadStateChanged(const GURL& url,
     NotifyNavigationStateChanged(INVALIDATE_LOAD | INVALIDATE_TAB);
 }
 
-bool TabContents::IsExternalTabContainer() const {
-  if (!delegate())
-    return false;
-
-  return delegate()->IsExternalTabContainer();
-}
-
 void TabContents::WorkerCrashed() {
   if (delegate())
     delegate()->WorkerCrashed(this);

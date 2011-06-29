@@ -524,10 +524,6 @@ void ExternalTabContainer::UpdateTargetURL(TabContents* source,
 void ExternalTabContainer::ContentsZoomChange(bool zoom_in) {
 }
 
-bool ExternalTabContainer::IsExternalTabContainer() const {
-  return true;
-}
-
 gfx::NativeWindow ExternalTabContainer::GetFrameNativeWindow() {
   return hwnd();
 }

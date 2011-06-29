@@ -617,6 +617,9 @@ bool BrowserRenderProcessHost::FastShutdownIfPossible() {
   if (run_renderer_in_process())
     return false;  // Single process mode can't do fast shutdown.
 
+  if (!content::GetContentClient()->browser()->IsFastShutdownPossible())
+    return false;
+
   if (!child_process_launcher_.get() ||
       child_process_launcher_->IsStarting() ||
       !GetHandle())
@@ -629,24 +632,6 @@ bool BrowserRenderProcessHost::FastShutdownIfPossible() {
   // state that will be lost by not calling its unload handlers properly.
   if (!sudden_termination_allowed())
     return false;
-
-  // Check for any external tab containers, since they may still be running even
-  // though this window closed.
-  listeners_iterator iter(ListenersIterator());
-  while (!iter.IsAtEnd()) {
-    // NOTE: This is a bit dangerous.  We know that for now, listeners are
-    // always RenderWidgetHosts.  But in theory, they don't have to be.
-    const RenderWidgetHost* widget =
-        static_cast<const RenderWidgetHost*>(iter.GetCurrentValue());
-    DCHECK(widget);
-    if (widget && widget->IsRenderView()) {
-      const RenderViewHost* rvh = static_cast<const RenderViewHost*>(widget);
-      if (rvh->delegate()->IsExternalTabContainer())
-        return false;
-    }
-
-    iter.Advance();
-  }
 
   child_process_launcher_.reset();
   fast_shutdown_started_ = true;

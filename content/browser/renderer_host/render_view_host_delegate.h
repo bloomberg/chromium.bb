@@ -403,9 +403,6 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
   virtual void LoadStateChanged(const GURL& url, net::LoadState load_state,
                                 uint64 upload_position, uint64 upload_size) {}
 
-  // Returns true if this view is used to host an external tab container.
-  virtual bool IsExternalTabContainer() const;
-
   // Notification that a worker process has crashed.
   void WorkerCrashed() {}
 

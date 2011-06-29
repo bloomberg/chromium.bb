@@ -44,6 +44,3 @@ WebPreferences RenderViewHostDelegate::GetWebkitPrefs() {
   return WebPreferences();
 }
 
-bool RenderViewHostDelegate::IsExternalTabContainer() const {
-  return false;
-}

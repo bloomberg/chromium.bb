@@ -169,6 +169,10 @@ ui::Clipboard* MockContentBrowserClient::GetClipboard() {
   return &clipboard;
 }
 
+bool MockContentBrowserClient::IsFastShutdownPossible() {
+  return true;
+}
+
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 int MockContentBrowserClient::GetCrashSignalFD(
     const std::string& process_type) {

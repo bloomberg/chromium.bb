@@ -158,9 +158,6 @@ class TabContentsDelegate {
                                  bool proceed,
                                  bool* proceed_to_fire_unload);
 
-  // If the delegate is hosting tabs externally.
-  virtual bool IsExternalTabContainer() const;
-
   // Sets focus to the location bar or some other place that is appropriate.
   // This is called when the tab wants to encourage user input, like for the
   // new tab page.
