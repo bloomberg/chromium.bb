@@ -84,11 +84,11 @@ class NativeComboboxViewsTest : public ViewsTestBase {
   // ::testing::Test:
   virtual void SetUp() {
     ViewsTestBase::SetUp();
-    NativeComboboxViews::SetEnableComboboxViews(true);
+    Widget::SetPureViews(true);
   }
 
   virtual void TearDown() {
-    NativeComboboxViews::SetEnableComboboxViews(false);
+    Widget::SetPureViews(false);
     if (widget_)
       widget_->Close();
     ViewsTestBase::TearDown();

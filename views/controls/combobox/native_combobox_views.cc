@@ -28,9 +28,6 @@
 
 namespace {
 
-// A global flag to switch the Combobox wrapper to NativeComboboxViews.
-bool combobox_view_enabled = false;
-
 // Define the size of the insets.
 const int kTopInsetSize = 4;
 const int kLeftInsetSize = 4;
@@ -266,30 +263,12 @@ bool NativeComboboxViews::GetAccelerator(int id, views::Accelerator* accel) {
   return false;
 }
 
-// static
-bool NativeComboboxViews::IsComboboxViewsEnabled() {
-#if defined(TOUCH_UI)
-  return true;
-#else
-  return combobox_view_enabled || Widget::IsPureViews();
-#endif
-}
-
-// static
-void NativeComboboxViews::SetEnableComboboxViews(bool enabled) {
-  combobox_view_enabled = enabled;
-}
-
 /////////////////////////////////////////////////////////////////
 // NativeComboboxViews private methods:
 
 const gfx::Font& NativeComboboxViews::GetFont() const {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
- #if 0 // For now the width calculation is off so stick with !defined(TOUCH_UI)
-  return rb.GetFont(ResourceBundle::LargeFont);
- #else
   return rb.GetFont(ResourceBundle::BaseFont);
- #endif
 }
 
 // tip_x and tip_y are the coordinates of the tip of an arrow head which is

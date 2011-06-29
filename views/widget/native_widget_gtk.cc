@@ -893,7 +893,7 @@ InputMethod* NativeWidgetGtk::GetInputMethodNative() {
     // Create input method when it is requested by a child view.
     // TODO(suzhe): Always enable input method when we start to use
     // RenderWidgetHostViewViews in normal ChromeOS.
-    if (!child_ && NativeTextfieldViews::IsTextfieldViewsEnabled()) {
+    if (!child_ && views::Widget::IsPureViews()) {
 #if defined(HAVE_IBUS)
       input_method_.reset(InputMethodIBus::IsInputMethodIBusEnabled() ?
                           static_cast<InputMethod*>(new InputMethodIBus(this)) :

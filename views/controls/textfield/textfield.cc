@@ -404,7 +404,7 @@ void Textfield::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
     UpdateAllProperties();
 
 #if defined(OS_WIN)
-    if (!NativeTextfieldViews::IsTextfieldViewsEnabled()) {
+    if (!views::Widget::IsPureViews()) {
       // TODO(beng): remove this once NativeTextfieldWin subclasses
       // NativeControlWin. This is currently called to perform post-AddChildView
       // initialization for the wrapper. The GTK version subclasses things

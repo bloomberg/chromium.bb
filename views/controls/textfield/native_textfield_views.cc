@@ -37,9 +37,6 @@
 
 namespace {
 
-// A global flag to switch the Textfield wrapper to TextfieldViews.
-bool textfield_view_enabled = false;
-
 // Color settings for text, backgrounds and cursor.
 // These are tentative, and should be derived from theme, system
 // settings and current settings.
@@ -554,24 +551,9 @@ void NativeTextfieldViews::ClearAllTextStyles() {
   SchedulePaint();
 }
 
-// static
-bool NativeTextfieldViews::IsTextfieldViewsEnabled() {
-#if defined(TOUCH_UI)
-  return true;
-#else
-  return textfield_view_enabled || Widget::IsPureViews();
-#endif
-}
-
-// static
-void NativeTextfieldViews::SetEnableTextfieldViews(bool enabled) {
-  textfield_view_enabled = enabled;
-}
-
 void NativeTextfieldViews::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   UpdateCursorBoundsAndTextOffset(model_->cursor_pos(), insert_);
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // NativeTextfieldViews, TextInputClient implementation, private:

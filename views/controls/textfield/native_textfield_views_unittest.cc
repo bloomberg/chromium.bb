@@ -117,11 +117,11 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
 
   // ::testing::Test:
   virtual void SetUp() {
-    NativeTextfieldViews::SetEnableTextfieldViews(true);
+    Widget::SetPureViews(true);
   }
 
   virtual void TearDown() {
-    NativeTextfieldViews::SetEnableTextfieldViews(false);
+    Widget::SetPureViews(false);
     if (widget_)
       widget_->Close();
     ViewsTestBase::TearDown();

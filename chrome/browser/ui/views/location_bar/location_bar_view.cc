@@ -173,7 +173,7 @@ void LocationBarView::Init() {
   // URL edit field.
   // View container for URL edit field.
 #if defined(OS_WIN)
-  if (UseViewsOmnibox()) {
+  if (views::Widget::IsPureViews()) {
     OmniboxViewViews* omnibox_view =
         new OmniboxViewViews(this, model_, profile_,
                              browser_->command_updater(), mode_ == POPUP, this);
@@ -431,7 +431,7 @@ void LocationBarView::SetInstantSuggestion(const string16& text,
           GetColor(ToolbarModel::NONE,
                    LocationBarView::DEEMPHASIZED_TEXT));
       suggested_text_view_->SetText(UTF16ToWide(text));
-      if (UseViewsOmnibox())
+      if (views::Widget::IsPureViews())
         NOTIMPLEMENTED();
       else
         suggested_text_view_->SetFont(GetOmniboxViewWin()->GetFont());
@@ -547,7 +547,7 @@ void LocationBarView::Layout() {
 
 #if defined(OS_WIN)
   int max_edit_width = entry_width;
-  if (UseViewsOmnibox()) {
+  if (views::Widget::IsPureViews()) {
     NOTIMPLEMENTED();
   } else {
     RECT formatting_rect;
@@ -675,7 +675,7 @@ void LocationBarView::Layout() {
   // keyword hints and suggested text is minimal and we're not confident this
   // is the right approach for suggested text.
   if (suggested_text_view_) {
-    if (UseViewsOmnibox()) {
+    if (views::Widget::IsPureViews()) {
       NOTIMPLEMENTED();
     } else {
       // TODO(sky): need to layout when the user changes caret position.
@@ -801,7 +801,7 @@ void LocationBarView::OnMouseReleased(const views::MouseEvent& event) {
 }
 
 void LocationBarView::OnMouseCaptureLost() {
-  if (UseViewsOmnibox())
+  if (views::Widget::IsPureViews())
     NOTIMPLEMENTED();
   else
     GetOmniboxViewWin()->HandleExternalMsg(WM_CAPTURECHANGED, 0, CPoint());
@@ -997,7 +997,7 @@ void LocationBarView::OnMouseEvent(const views::MouseEvent& event, UINT msg) {
   UINT flags = event.GetWindowsFlags();
   gfx::Point screen_point(event.location());
   ConvertPointToScreen(this, &screen_point);
-  if (UseViewsOmnibox())
+  if (views::Widget::IsPureViews())
     NOTIMPLEMENTED();
   else
     GetOmniboxViewWin()->HandleExternalMsg(msg, flags, screen_point.ToPOINT());
@@ -1032,7 +1032,7 @@ std::string LocationBarView::GetClassName() const {
 bool LocationBarView::SkipDefaultKeyEventProcessing(
     const views::KeyEvent& event) {
 #if defined(OS_WIN)
-  bool views_omnibox = UseViewsOmnibox();
+  bool views_omnibox = views::Widget::IsPureViews();
   if (views::FocusManager::IsTabTraversalKeyEvent(event)) {
     if (HasValidSuggestText()) {
       // Return true so that the edit sees the tab and commits the suggestion.
@@ -1256,12 +1256,7 @@ bool LocationBarView::HasValidSuggestText() const {
 }
 
 OmniboxViewWin* LocationBarView::GetOmniboxViewWin() {
-  CHECK(!UseViewsOmnibox());
+  CHECK(!views::Widget::IsPureViews());
   return static_cast<OmniboxViewWin*>(location_entry_.get());
-}
-
-bool LocationBarView::UseViewsOmnibox() {
-  return views::Widget::IsPureViews() ||
-      views::NativeTextfieldViews::IsTextfieldViewsEnabled();
 }
 #endif

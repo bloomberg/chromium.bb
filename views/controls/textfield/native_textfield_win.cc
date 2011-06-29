@@ -1156,11 +1156,9 @@ void NativeTextfieldWin::BuildContextMenu() {
 // static
 NativeTextfieldWrapper* NativeTextfieldWrapper::CreateWrapper(
     Textfield* field) {
-  if (NativeTextfieldViews::IsTextfieldViewsEnabled()) {
+  if (views::Widget::IsPureViews())
     return new NativeTextfieldViews(field);
-  } else {
-    return new NativeTextfieldWin(field);
-  }
+  return new NativeTextfieldWin(field);
 }
 
 }  // namespace views

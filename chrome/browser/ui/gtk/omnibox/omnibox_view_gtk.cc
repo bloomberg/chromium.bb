@@ -881,7 +881,7 @@ OmniboxView* OmniboxViewGtk::Create(AutocompleteEditController* controller,
                                     CommandUpdater* command_updater,
                                     bool popup_window_mode,
                                     views::View* location_bar) {
-  if (views::NativeTextfieldViews::IsTextfieldViewsEnabled()) {
+  if (views::Widget::IsPureViews()) {
     OmniboxViewViews* omnibox_view = new OmniboxViewViews(controller,
                                                           toolbar_model,
                                                           profile,

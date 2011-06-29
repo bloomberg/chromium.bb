@@ -14,6 +14,7 @@
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/combobox/native_combobox_views.h"
 #include "views/views_delegate.h"
+#include "views/widget/widget.h"
 
 using ui::ComboboxModel;  // TODO(beng): remove
 
@@ -226,7 +227,7 @@ void NativeComboboxGtk::CallMenuMoveCurrent(
 // static
 NativeComboboxWrapper* NativeComboboxWrapper::CreateWrapper(
     Combobox* combobox) {
-  if (NativeComboboxViews::IsComboboxViewsEnabled())
+  if (Widget::IsPureViews())
     return new NativeComboboxViews(combobox);
   return new NativeComboboxGtk(combobox);
 }

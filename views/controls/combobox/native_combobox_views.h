@@ -62,14 +62,6 @@ class NativeComboboxViews : public views::View,
   // class name of internal
   static const char kViewClassName[];
 
-  // Returns true when
-  // 1) built with GYP_DEFINES="touchui=1"
-  // 2) enabled by SetEnableComboboxViews(true)
-  // 3) enabled by the command line flag "--use-pure-views")
-  static bool IsComboboxViewsEnabled();
-  // Enable/Disable NativeComboboxViews implementation for Combobox.
-  static void SetEnableComboboxViews(bool enabled);
-
  private:
   // Returns the Combobox's font.
   const gfx::Font& GetFont() const;

@@ -334,10 +334,6 @@ class LocationBarView : public LocationBar,
   // Returns |location_entry_| cast to OmniboxViewWin, or NULL if
   // |location_entry_| is of a different type.
   OmniboxViewWin* GetOmniboxViewWin();
-
-  // Returns true if the views-based omnibox should be used. When false,
-  // |location_entry_| can be cast to OmniboxViewWin.
-  static bool UseViewsOmnibox();
 #endif
 
   // Helper to show the first run info bubble.

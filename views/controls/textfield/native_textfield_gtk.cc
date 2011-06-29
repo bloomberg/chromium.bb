@@ -431,9 +431,8 @@ bool NativeTextfieldGtk::IsPassword() {
 // static
 NativeTextfieldWrapper* NativeTextfieldWrapper::CreateWrapper(
     Textfield* field) {
-  if (NativeTextfieldViews::IsTextfieldViewsEnabled()) {
+  if (Widget::IsPureViews())
     return new NativeTextfieldViews(field);
-  }
   return new NativeTextfieldGtk(field);
 }
 

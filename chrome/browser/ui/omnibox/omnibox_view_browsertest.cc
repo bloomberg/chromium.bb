@@ -42,6 +42,7 @@
 #if defined(TOOLKIT_VIEWS)
 #include "views/controls/textfield/native_textfield_views.h"
 #include "views/events/event.h"
+#include "views/widget/widget.h"
 #endif
 
 using base::Time;
@@ -154,7 +155,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
     ASSERT_NO_FATAL_FAILURE(SetupComponents());
     browser()->FocusLocationBar();
 #if defined(TOOLKIT_VIEWS)
-    if (views::NativeTextfieldViews::IsTextfieldViewsEnabled())
+    if (views::Widget::IsPureViews())
       return;
 #endif
     ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(),
@@ -1334,7 +1335,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, FLAKY_PasteReplacingAll) {
 class OmniboxViewViewsTest : public OmniboxViewTest {
  public:
   OmniboxViewViewsTest() {
-    views::NativeTextfieldViews::SetEnableTextfieldViews(true);
+    views::Widget::IsPureViews();
   }
 };
 

@@ -1219,8 +1219,7 @@ LRESULT NativeWidgetWin::OnCreate(CREATESTRUCT* create_struct) {
 
   // delegate_->OnNativeWidgetCreated() creates the focus manager for top-level
   // widget. Only top-level widget should have an input method.
-  if (delegate_->HasFocusManager() &&
-      NativeTextfieldViews::IsTextfieldViewsEnabled()) {
+  if (delegate_->HasFocusManager() && views::Widget::IsPureViews()) {
     input_method_.reset(new InputMethodWin(this));
     input_method_->Init(GetWidget());
     is_input_method_win_ = true;

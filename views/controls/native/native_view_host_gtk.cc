@@ -379,8 +379,7 @@ NativeViewHostWrapper* NativeViewHostWrapper::CreateWrapper(
     NativeViewHost* host) {
   if (Widget::IsPureViews())
     return new NativeViewHostViews(host);
-  else
-    return new NativeViewHostGtk(host);
+  return new NativeViewHostGtk(host);
 }
 
 }  // namespace views

@@ -131,14 +131,6 @@ class NativeTextfieldViews : public View,
   // class name of internal
   static const char kViewClassName[];
 
-  // Returns true when
-  // 1) built with GYP_DEFINES="touchui=1"
-  // 2) enabled by SetEnableTextfieldViews(true)
-  // 3) enabled by the command line flag "--enable-textfield-view".
-  static bool IsTextfieldViewsEnabled();
-  // Enable/Disable TextfieldViews implementation for Textfield.
-  static void SetEnableTextfieldViews(bool enabled);
-
  protected:
   // View override.
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;

@@ -210,7 +210,7 @@ void NativeComboboxWin::UpdateFont() {
 // static
 NativeComboboxWrapper* NativeComboboxWrapper::CreateWrapper(
     Combobox* combobox) {
-  if (NativeComboboxViews::IsComboboxViewsEnabled())
+  if (Widget::IsPureViews())
     return new NativeComboboxViews(combobox);
   return new NativeComboboxWin(combobox);
 }
