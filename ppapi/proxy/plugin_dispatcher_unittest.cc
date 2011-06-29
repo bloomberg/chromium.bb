@@ -44,6 +44,8 @@ PPB_Audio dummy_audio_interface = {
   &StopPlayback
 };
 
+PPP_Instance dummy_ppp_instance_interface = {};
+
 }  // namespace
 
 class PluginDispatcherTest : public PluginProxyTest {
@@ -57,8 +59,7 @@ class PluginDispatcherTest : public PluginProxyTest {
 
 TEST_F(PluginDispatcherTest, SupportsInterface) {
   RegisterTestInterface(PPB_AUDIO_INTERFACE, &dummy_audio_interface);
-  RegisterTestInterface(PPP_INSTANCE_INTERFACE,
-                        reinterpret_cast<void*>(0xdeadbeef));
+  RegisterTestInterface(PPP_INSTANCE_INTERFACE, &dummy_ppp_instance_interface);
 
   // Sending a request for a random interface should fail.
   EXPECT_FALSE(SupportsInterface("Random interface"));

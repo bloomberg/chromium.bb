@@ -120,7 +120,7 @@ PP_Var GetInstanceObject(PP_Instance instance) {
   return result.Return(dispatcher);
 }
 
-static const PPP_Instance instance_interface = {
+static const PPP_Instance_0_4 instance_interface_0_4 = {
   &DidCreate,
   &DidDestroy,
   &DidChangeView,
@@ -130,29 +130,48 @@ static const PPP_Instance instance_interface = {
   &GetInstanceObject
 };
 
+static const PPP_Instance_0_5 instance_interface_0_5 = {
+  &DidCreate,
+  &DidDestroy,
+  &DidChangeView,
+  &DidChangeFocus,
+  &HandleInputEvent,
+  &HandleDocumentLoad
+};
+
+template <class PPP_Instance_Type>
 InterfaceProxy* CreateInstanceProxy(Dispatcher* dispatcher,
                                     const void* target_interface) {
-  return new PPP_Instance_Proxy(dispatcher, target_interface);
+  return new PPP_Instance_Proxy(
+      dispatcher,
+      static_cast<const PPP_Instance_Type*>(target_interface));
 }
 
 }  // namespace
-
-PPP_Instance_Proxy::PPP_Instance_Proxy(Dispatcher* dispatcher,
-                                       const void* target_interface)
-    : InterfaceProxy(dispatcher, target_interface) {
-}
 
 PPP_Instance_Proxy::~PPP_Instance_Proxy() {
 }
 
 // static
-const InterfaceProxy::Info* PPP_Instance_Proxy::GetInfo() {
+const InterfaceProxy::Info* PPP_Instance_Proxy::GetInfo0_4() {
   static const Info info = {
-    &instance_interface,
-    PPP_INSTANCE_INTERFACE,
+    &instance_interface_0_4,
+    PPP_INSTANCE_INTERFACE_0_4,
     INTERFACE_ID_PPP_INSTANCE,
     false,
-    &CreateInstanceProxy,
+    &CreateInstanceProxy<PPP_Instance_0_4>
+  };
+  return &info;
+}
+
+// static
+const InterfaceProxy::Info* PPP_Instance_Proxy::GetInfo0_5() {
+  static const Info info = {
+    &instance_interface_0_5,
+    PPP_INSTANCE_INTERFACE_0_5,
+    INTERFACE_ID_PPP_INSTANCE,
+    false,
+    &CreateInstanceProxy<PPP_Instance_0_5>,
   };
   return &info;
 }
@@ -206,14 +225,14 @@ void PPP_Instance_Proxy::OnMsgDidCreate(
     argv_array[i] = argv[i].c_str();
   }
 
-  DCHECK(ppp_instance_target());
-  *result = ppp_instance_target()->DidCreate(instance,
-                                             static_cast<uint32_t>(argn.size()),
-                                             &argn_array[0], &argv_array[0]);
+  DCHECK(combined_interface_.get());
+  *result = combined_interface_->DidCreate(instance,
+                                           static_cast<uint32_t>(argn.size()),
+                                           &argn_array[0], &argv_array[0]);
 }
 
 void PPP_Instance_Proxy::OnMsgDidDestroy(PP_Instance instance) {
-  ppp_instance_target()->DidDestroy(instance);
+  combined_interface_->DidDestroy(instance);
   static_cast<PluginDispatcher*>(dispatcher())->DidDestroyInstance(instance);
 }
 
@@ -229,18 +248,18 @@ void PPP_Instance_Proxy::OnMsgDidChangeView(PP_Instance instance,
     return;
   data->position = position;
   data->fullscreen = fullscreen;
-  ppp_instance_target()->DidChangeView(instance, &position, &clip);
+  combined_interface_->DidChangeView(instance, &position, &clip);
 }
 
 void PPP_Instance_Proxy::OnMsgDidChangeFocus(PP_Instance instance,
                                              PP_Bool has_focus) {
-  ppp_instance_target()->DidChangeFocus(instance, has_focus);
+  combined_interface_->DidChangeFocus(instance, has_focus);
 }
 
 void PPP_Instance_Proxy::OnMsgHandleInputEvent(PP_Instance instance,
                                                const PP_InputEvent& event,
                                                PP_Bool* result) {
-  *result = ppp_instance_target()->HandleInputEvent(instance, &event);
+  *result = combined_interface_->HandleInputEvent(instance, &event);
 }
 
 void PPP_Instance_Proxy::OnMsgHandleDocumentLoad(PP_Instance instance,
@@ -248,8 +267,7 @@ void PPP_Instance_Proxy::OnMsgHandleDocumentLoad(PP_Instance instance,
                                                  PP_Bool* result) {
   PP_Resource plugin_loader =
       PPB_URLLoader_Proxy::TrackPluginResource(url_loader);
-  *result = ppp_instance_target()->HandleDocumentLoad(
-      instance, plugin_loader);
+  *result = combined_interface_->HandleDocumentLoad(instance, plugin_loader);
 
   // This balances the one reference that TrackPluginResource() initialized it
   // with. The plugin will normally take an additional reference which will keep
@@ -263,8 +281,12 @@ void PPP_Instance_Proxy::OnMsgHandleDocumentLoad(PP_Instance instance,
 void PPP_Instance_Proxy::OnMsgGetInstanceObject(
     PP_Instance instance,
     SerializedVarReturnValue result) {
+  // GetInstanceObject_0_4 can be null if we're talking to version 0.5 or later,
+  // however the host side of the proxy should never call this function on an
+  // 0.5 or later version.
+  DCHECK(combined_interface_->GetInstanceObject_0_4);
   result.Return(dispatcher(),
-                ppp_instance_target()->GetInstanceObject(instance));
+                combined_interface_->GetInstanceObject_0_4(instance));
 }
 
 }  // namespace proxy

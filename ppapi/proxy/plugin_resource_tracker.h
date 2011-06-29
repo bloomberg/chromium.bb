@@ -66,7 +66,7 @@ class PluginResourceTracker : public ::ppapi::TrackerBase {
  private:
   friend struct DefaultSingletonTraits<PluginResourceTracker>;
   friend class PluginResourceTrackerTest;
-  friend class PluginProxyTest;
+  friend class PluginProxyTestHarness;
 
   PluginResourceTracker();
   virtual ~PluginResourceTracker();

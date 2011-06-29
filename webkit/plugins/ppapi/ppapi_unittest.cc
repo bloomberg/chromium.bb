@@ -90,9 +90,11 @@ void PpapiUnittest::SetUp() {
   ASSERT_TRUE(module_->InitAsInternalPlugin(entry_points));
 
   // Initialize the mock instance.
-  instance_ = new PluginInstance(delegate_.get(), module(),
-      PluginInstance::new_instance_interface<PPP_Instance>(
-          GetMockInterface(PPP_INSTANCE_INTERFACE)));
+  instance_ = PluginInstance::Create0_5(
+      delegate_.get(),
+      module(),
+      GetMockInterface(PPP_INSTANCE_INTERFACE_0_5));
+
 }
 
 void PpapiUnittest::TearDown() {
@@ -101,7 +103,7 @@ void PpapiUnittest::TearDown() {
 }
 
 const void* PpapiUnittest::GetMockInterface(const char* interface_name) const {
-  if (strcmp(interface_name, PPP_INSTANCE_INTERFACE) == 0)
+  if (strcmp(interface_name, PPP_INSTANCE_INTERFACE_0_5) == 0)
     return &mock_instance_interface;
   return NULL;
 }

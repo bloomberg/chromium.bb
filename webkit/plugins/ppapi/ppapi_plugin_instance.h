@@ -24,6 +24,7 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/shared_impl/function_group_base.h"
+#include "ppapi/shared_impl/ppp_instance_combined.h"
 #include "ppapi/thunk/ppb_instance_api.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -55,6 +56,10 @@ class WebInputEvent;
 class WebPluginContainer;
 }
 
+namespace ppapi {
+struct PPP_Instance_Combined;
+}
+
 namespace webkit {
 namespace ppapi {
 
@@ -79,11 +84,17 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
                        public ::ppapi::FunctionGroupBase,
                        public ::ppapi::thunk::PPB_Instance_FunctionAPI {
  public:
-  struct PPP_Instance_Combined;
+  // Create and return a PluginInstance object which supports the
+  // PPP_Instance_0_5 interface.
+  static PluginInstance* Create0_5(PluginDelegate* delegate,
+                                   PluginModule* module,
+                                   const void* ppp_instance_if_0_5);
 
-  PluginInstance(PluginDelegate* delegate,
-                 PluginModule* module,
-                 PPP_Instance_Combined* instance_interface);
+  // Create and return a PluginInstance object which supports the
+  // PPP_Instance_0_4 interface.
+  static PluginInstance* Create0_4(PluginDelegate* delegate,
+                                   PluginModule* module,
+                                   const void* ppp_instance_if_0_4);
 
   // Delete should be called by the WebPlugin before this destructor.
   virtual ~PluginInstance();
@@ -256,21 +267,6 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
     return fullscreen_container_;
   }
 
-  // TODO(dmichael): Remove this when all plugins are ported to use scripting
-  //                 from private interfaces.
-  struct PPP_Instance_Combined : public PPP_Instance_0_5 {
-    PPP_Instance_Combined(const PPP_Instance_0_5& instance_if);
-    PPP_Instance_Combined(const PPP_Instance_0_4& instance_if);
-
-    struct PP_Var (*const GetInstanceObject_0_4)(PP_Instance instance);
-  };
-  template <class InterfaceType>
-  static PPP_Instance_Combined* new_instance_interface(
-      const void* interface_object) {
-    return new PPP_Instance_Combined(
-        *static_cast<const InterfaceType*>(interface_object));
-  }
-
   // FunctionGroupBase overrides.
   virtual ::ppapi::thunk::PPB_Instance_FunctionAPI* AsPPB_Instance_FunctionAPI()
       OVERRIDE;
@@ -290,6 +286,14 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
   virtual PP_Bool GetScreenSize(PP_Instance instance, PP_Size* size) OVERRIDE;
 
  private:
+  // See the static Create functions above for creating PluginInstance objects.
+  // This constructor is private so that we can hide the PPP_Instance_Combined
+  // details while still having 1 constructor to maintain for member
+  // initialization.
+  PluginInstance(PluginDelegate* delegate,
+                 PluginModule* module,
+                 ::ppapi::PPP_Instance_Combined* instance_interface);
+
   bool LoadFindInterface();
   bool LoadMessagingInterface();
   bool LoadPdfInterface();
@@ -343,7 +347,7 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
 
   PluginDelegate* delegate_;
   scoped_refptr<PluginModule> module_;
-  scoped_ptr<PPP_Instance_Combined> instance_interface_;
+  scoped_ptr< ::ppapi::PPP_Instance_Combined> instance_interface_;
 
   PP_Instance pp_instance_;
 

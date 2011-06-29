@@ -39,6 +39,8 @@
         'shared_impl/image_data_impl.h',
         'shared_impl/ppapi_preferences.cc',
         'shared_impl/ppapi_preferences.h',
+        'shared_impl/ppp_instance_combined.cc',
+        'shared_impl/ppp_instance_combined.h',
         'shared_impl/resource_object_base.cc',
         'shared_impl/resource_object_base.h',
         'shared_impl/tracker_base.cc',

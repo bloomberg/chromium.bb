@@ -213,20 +213,11 @@ const PPB_Testing_Dev testing_interface = {
   &GetLiveObjectsForInstance
 };
 
-// Return the part of the interface name before the ';' separator.
-// If there is no ';', just returns the whole string.
-std::string GetInterfacePrefix(const std::string& interface_string) {
-  size_t separator_pos = interface_string.find_first_of(';');
-  return interface_string.substr(0, separator_pos);
-}
-
 // GetInterface ----------------------------------------------------------------
 
 const void* GetInterface(const char* name) {
   // All interfaces should be used on the main thread.
   DCHECK(IsMainThread());
-
-  std::string name_prefix(GetInterfacePrefix(name));
 
   // Allow custom interface factories first stab at the GetInterface call.
   const void* custom_interface =
@@ -490,21 +481,14 @@ PluginModule::GetInterfaceFunc PluginModule::GetLocalGetInterfaceFunc() {
 
 PluginInstance* PluginModule::CreateInstance(PluginDelegate* delegate) {
   PluginInstance* instance(NULL);
-  const void* plugin_instance_if =
-      GetPluginInterface(PPP_INSTANCE_INTERFACE_0_5);
-  if (plugin_instance_if) {
-    instance = new PluginInstance(delegate, this,
-        PluginInstance::new_instance_interface<PPP_Instance_0_5>(
-            plugin_instance_if));
+  const void* ppp_instance = GetPluginInterface(PPP_INSTANCE_INTERFACE_0_5);
+  if (ppp_instance) {
+    instance = PluginInstance::Create0_5(delegate, this, ppp_instance);
   } else {
-    // If the current interface is not supported, try retrieving older versions.
-    const void* instance_if_0_4 =
-        GetPluginInterface(PPP_INSTANCE_INTERFACE_0_4);
-    if (instance_if_0_4) {
-      instance = new PluginInstance(delegate, this,
-          PluginInstance::new_instance_interface<PPP_Instance_0_4>(
-              instance_if_0_4));
-    }
+    // If the 0.5 interface is not supported, try retrieving 0.4.
+    ppp_instance = GetPluginInterface(PPP_INSTANCE_INTERFACE_0_4);
+    if (ppp_instance)
+      instance = PluginInstance::Create0_4(delegate, this, ppp_instance);
   }
   if (!instance) {
     LOG(WARNING) << "Plugin doesn't support instance interface, failing.";

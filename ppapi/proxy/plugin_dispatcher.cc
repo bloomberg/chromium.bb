@@ -131,7 +131,7 @@ bool PluginDispatcher::OnMessageReceived(const IPC::Message& msg) {
     return handled;
   }
 
-  if (msg.routing_id() <= 0 && msg.routing_id() >= INTERFACE_ID_COUNT) {
+  if (msg.routing_id() <= 0 || msg.routing_id() >= INTERFACE_ID_COUNT) {
     // Host is sending us garbage. Since it's supposed to be trusted, this
     // isn't supposed to happen. Crash here in all builds in case the renderer
     // is compromised.

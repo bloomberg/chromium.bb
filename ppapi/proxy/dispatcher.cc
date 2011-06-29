@@ -103,12 +103,10 @@ struct InterfaceList {
   // we're converting to the thunk system, when that is complete, we need to
   // have a better way of handling multiple interface implemented by one
   // proxy object.
-  const InterfaceProxy::Info* id_to_plugin_info_[INTERFACE_ID_COUNT];
   const InterfaceProxy::Info* id_to_browser_info_[INTERFACE_ID_COUNT];
 };
 
 InterfaceList::InterfaceList() {
-  memset(id_to_plugin_info_, 0, sizeof(id_to_plugin_info_));
   memset(id_to_browser_info_, 0, sizeof(id_to_browser_info_));
 
   // PPB (browser) interfaces.
@@ -157,18 +155,16 @@ InterfaceList::InterfaceList() {
   // PPP (plugin) interfaces.
   AddPPP(PPP_Graphics3D_Proxy::GetInfo());
   AddPPP(PPP_Instance_Private_Proxy::GetInfo());
-  AddPPP(PPP_Instance_Proxy::GetInfo());
+  AddPPP(PPP_Instance_Proxy::GetInfo0_4());
+  AddPPP(PPP_Instance_Proxy::GetInfo0_5());
 }
 
 void InterfaceList::AddPPP(const InterfaceProxy::Info* info) {
   DCHECK(name_to_plugin_info_.find(info->name) ==
          name_to_plugin_info_.end());
   DCHECK(info->id >= INTERFACE_ID_NONE && info->id < INTERFACE_ID_COUNT);
-  DCHECK(info->id == INTERFACE_ID_NONE || id_to_plugin_info_[info->id] == NULL);
 
   name_to_plugin_info_[info->name] = info;
-  if (info->id != INTERFACE_ID_NONE)
-    id_to_plugin_info_[info->id] = info;
 }
 
 void InterfaceList::AddPPB(const InterfaceProxy::Info* info) {
@@ -243,14 +239,6 @@ const InterfaceProxy::Info* Dispatcher::GetPPPInterfaceInfo(
   if (found == list->name_to_plugin_info_.end())
     return NULL;
   return found->second;
-}
-
-// static
-const InterfaceProxy::Info* Dispatcher::GetPPPInterfaceInfo(InterfaceID id) {
-  if (id <= 0 || id >= INTERFACE_ID_COUNT)
-    return NULL;
-  const InterfaceList* list = InterfaceList::GetInstance();
-  return list->id_to_plugin_info_[id];
 }
 
 void Dispatcher::SetSerializationRules(

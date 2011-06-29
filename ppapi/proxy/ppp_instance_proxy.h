@@ -8,15 +8,16 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/proxy/host_resource.h"
 #include "ppapi/proxy/interface_proxy.h"
+#include "ppapi/shared_impl/ppp_instance_combined.h"
 
 struct PP_InputEvent;
 struct PP_Rect;
-struct PPP_Instance;
 
 namespace pp {
 namespace proxy {
@@ -25,13 +26,23 @@ class SerializedVarReturnValue;
 
 class PPP_Instance_Proxy : public InterfaceProxy {
  public:
-  PPP_Instance_Proxy(Dispatcher* dispatcher, const void* target_interface);
+  template <class PPP_Instance_Type>
+  PPP_Instance_Proxy(Dispatcher* dispatcher,
+                     const PPP_Instance_Type* target_interface)
+      : InterfaceProxy(dispatcher, static_cast<const void*>(target_interface)),
+        combined_interface_(
+            new ::ppapi::PPP_Instance_Combined(*target_interface)) {
+  }
   virtual ~PPP_Instance_Proxy();
 
-  static const Info* GetInfo();
+  // Return the info for the 0.4 version of the interface.
+  static const Info* GetInfo0_4();
 
-  const PPP_Instance* ppp_instance_target() const {
-    return reinterpret_cast<const PPP_Instance*>(target_interface());
+  // Return the info for the 0.5 (latest, canonical) version of the interface.
+  static const Info* GetInfo0_5();
+
+  ::ppapi::PPP_Instance_Combined* ppp_instance_target() const {
+    return combined_interface_.get();
   }
 
   // InterfaceProxy implementation.
@@ -57,6 +68,7 @@ class PPP_Instance_Proxy : public InterfaceProxy {
                                PP_Bool* result);
   void OnMsgGetInstanceObject(PP_Instance instance,
                               SerializedVarReturnValue result);
+  scoped_ptr< ::ppapi::PPP_Instance_Combined> combined_interface_;
 };
 
 }  // namespace proxy

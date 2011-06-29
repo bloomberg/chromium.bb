@@ -93,8 +93,6 @@ class Dispatcher : public ProxyChannel {
       InterfaceID id);
   static const InterfaceProxy::Info* GetPPPInterfaceInfo(
       const std::string& name);
-  static const InterfaceProxy::Info* GetPPPInterfaceInfo(
-      InterfaceID id);
 
  protected:
   Dispatcher(base::ProcessHandle remote_process_handle,

@@ -110,12 +110,10 @@ class HostDispatcher : public Dispatcher {
 
   PP_Module pp_module_;
 
-  enum PluginInterfaceSupport {
-    INTERFACE_UNQUERIED = 0,  // Must be 0 so memset(0) will clear the list.
-    INTERFACE_SUPPORTED,
-    INTERFACE_UNSUPPORTED
-  };
-  PluginInterfaceSupport plugin_interface_support_[INTERFACE_ID_COUNT];
+  typedef std::map<std::string, bool> PluginIFSupportedMap;
+  // Maps interface name to whether that interface is supported. If an interface
+  // name is not in the map, that implies that we haven't queried for it yet.
+  std::map<std::string, bool> plugin_if_supported_;
 
   // All target proxies currently created. These are ones that receive
   // messages. They are created on demand when we receive messages.

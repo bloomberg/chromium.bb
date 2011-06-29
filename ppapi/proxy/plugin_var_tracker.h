@@ -88,7 +88,7 @@ class PluginVarTracker {
 
  private:
   friend struct DefaultSingletonTraits<PluginVarTracker>;
-  friend class PluginProxyTest;
+  friend class PluginProxyTestHarness;
 
   class RefCountedString : public base::RefCounted<RefCountedString> {
    public:

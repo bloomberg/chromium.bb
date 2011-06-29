@@ -75,9 +75,8 @@ HostDispatcher::HostDispatcher(base::ProcessHandle remote_process_handle,
           local_get_interface(PPB_VAR_DEPRECATED_INTERFACE));
   SetSerializationRules(new HostVarSerializationRules(var_interface, module));
 
-  memset(plugin_interface_support_, 0,
-         sizeof(PluginInterfaceSupport) * INTERFACE_ID_COUNT);
-
+  // TODO(brettw): It might be more testable to inject the PPB_Proxy_Private
+  // instead of requesting it from GetLocalInterface.
   ppb_proxy_ = reinterpret_cast<const PPB_Proxy_Private*>(
       GetLocalInterface(PPB_PROXY_PRIVATE_INTERFACE));
   DCHECK(ppb_proxy_) << "The proxy interface should always be supported.";
@@ -208,21 +207,17 @@ const void* HostDispatcher::GetProxiedInterface(const std::string& interface) {
   if (!info)
     return NULL;
 
-  if (plugin_interface_support_[static_cast<int>(info->id)] !=
-      INTERFACE_UNQUERIED) {
-    // Already queried the plugin if it supports this interface.
-    if (plugin_interface_support_[info->id] == INTERFACE_SUPPORTED)
-      return info->interface_ptr;
-    return NULL;
+  PluginIFSupportedMap::iterator iter(plugin_if_supported_.find(interface));
+  if (iter == plugin_if_supported_.end()) {
+    // Need to query. Cache the result so we only do this once.
+    bool supported = false;
+    Send(new PpapiMsg_SupportsInterface(interface, &supported));
+    std::pair<PluginIFSupportedMap::iterator, bool> iter_success_pair;
+    iter_success_pair = plugin_if_supported_.insert(
+        PluginIFSupportedMap::value_type(interface, supported));
+    iter = iter_success_pair.first;
   }
-
-  // Need to re-query. Cache the result so we only do this once.
-  bool supported = false;
-  Send(new PpapiMsg_SupportsInterface(interface, &supported));
-  plugin_interface_support_[static_cast<int>(info->id)] =
-      supported ? INTERFACE_SUPPORTED : INTERFACE_UNSUPPORTED;
-
-  if (supported)
+  if (iter->second)
     return info->interface_ptr;
   return NULL;
 }

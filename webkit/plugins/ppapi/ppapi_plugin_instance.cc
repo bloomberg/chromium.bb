@@ -238,9 +238,34 @@ const PPB_Zoom_Dev ppb_zoom = {
 
 }  // namespace
 
-PluginInstance::PluginInstance(PluginDelegate* delegate,
-                               PluginModule* module,
-                               PPP_Instance_Combined* instance_interface)
+// static
+PluginInstance* PluginInstance::Create0_5(PluginDelegate* delegate,
+                                          PluginModule* module,
+                                          const void* ppp_instance_if_0_5) {
+  const PPP_Instance_0_5* interface =
+      static_cast<const PPP_Instance_0_5*>(ppp_instance_if_0_5);
+  return new PluginInstance(
+      delegate,
+      module,
+      new ::ppapi::PPP_Instance_Combined(*interface));
+}
+
+// static
+PluginInstance* PluginInstance::Create0_4(PluginDelegate* delegate,
+                                          PluginModule* module,
+                                          const void* ppp_instance_if_0_4) {
+  const PPP_Instance_0_4* interface =
+      static_cast<const PPP_Instance_0_4*>(ppp_instance_if_0_4);
+  return new PluginInstance(
+      delegate,
+      module,
+      new ::ppapi::PPP_Instance_Combined(*interface));
+}
+
+PluginInstance::PluginInstance(
+    PluginDelegate* delegate,
+    PluginModule* module,
+    ::ppapi::PPP_Instance_Combined* instance_interface)
     : delegate_(delegate),
       module_(module),
       instance_interface_(instance_interface),
@@ -689,23 +714,6 @@ bool PluginInstance::LoadFindInterface() {
   }
 
   return !!plugin_find_interface_;
-}
-
-PluginInstance::PPP_Instance_Combined::PPP_Instance_Combined(
-    const PPP_Instance_0_5& instance_if)
-    : PPP_Instance_0_5(instance_if),
-      GetInstanceObject_0_4(NULL) {}
-
-PluginInstance::PPP_Instance_Combined::PPP_Instance_Combined(
-    const PPP_Instance_0_4& instance_if)
-    : PPP_Instance_0_5(),  // Zero-initialize.
-      GetInstanceObject_0_4(instance_if.GetInstanceObject) {
-  DidCreate = instance_if.DidCreate;
-  DidDestroy = instance_if.DidDestroy;
-  DidChangeView = instance_if.DidChangeView;
-  DidChangeFocus = instance_if.DidChangeFocus;
-  HandleInputEvent = instance_if.HandleInputEvent;
-  HandleDocumentLoad = instance_if.HandleDocumentLoad;
 }
 
 bool PluginInstance::LoadMessagingInterface() {

@@ -185,6 +185,7 @@
         'proxy/plugin_var_tracker_unittest.cc',
         'proxy/ppapi_proxy_test.cc',
         'proxy/ppapi_proxy_test.h',
+        'proxy/ppp_instance_proxy_test.cc',
         'proxy/serialized_var_unittest.cc',
       ],
     },
