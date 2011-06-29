@@ -22,7 +22,6 @@ class BrightnessLibrary;
 class BurnLibrary;
 class CertLibrary;
 class CryptohomeLibrary;
-class InputMethodLibrary;
 class LibCrosServiceLibrary;
 class LibraryLoader;
 class LoginLibrary;
@@ -60,7 +59,6 @@ class CrosLibrary {
     void SetCertLibrary(CertLibrary* library, bool own);
     void SetBurnLibrary(BurnLibrary* library, bool own);
     void SetCryptohomeLibrary(CryptohomeLibrary* library, bool own);
-    void SetInputMethodLibrary(InputMethodLibrary* library, bool own);
     void SetLibCrosServiceLibrary(LibCrosServiceLibrary* library, bool own);
     void SetLoginLibrary(LoginLibrary* library, bool own);
     void SetMountLibrary(MountLibrary* library, bool own);
@@ -84,7 +82,6 @@ class CrosLibrary {
   BurnLibrary* GetBurnLibrary();
   CertLibrary* GetCertLibrary();
   CryptohomeLibrary* GetCryptohomeLibrary();
-  InputMethodLibrary* GetInputMethodLibrary();
   LibCrosServiceLibrary* GetLibCrosServiceLibrary();
   LoginLibrary* GetLoginLibrary();
   MountLibrary* GetMountLibrary();
@@ -159,7 +156,6 @@ class CrosLibrary {
   Library<BurnLibrary> burn_lib_;
   Library<CertLibrary> cert_lib_;
   Library<CryptohomeLibrary> crypto_lib_;
-  Library<InputMethodLibrary> input_method_lib_;
   Library<LibCrosServiceLibrary> libcros_service_lib_;
   Library<LoginLibrary> login_lib_;
   Library<MountLibrary> mount_lib_;

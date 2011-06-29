@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/cros/input_method_library.h"
+#include "chrome/browser/chromeos/input_method/input_method_manager.h"
 
 #include <algorithm>
 
@@ -11,6 +11,7 @@
 #include "unicode/uloc.h"
 
 #include "base/basictypes.h"
+#include "base/memory/singleton.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
 #include "base/string_split.h"
@@ -57,25 +58,23 @@ bool FindAndUpdateProperty(
 }  // namespace
 
 namespace chromeos {
+namespace input_method {
 
-// The production implementation of InputMethodLibrary.
-class InputMethodLibraryImpl : public InputMethodLibrary,
+// The implementation of InputMethodManager.
+class InputMethodManagerImpl : public InputMethodManager,
                                public NotificationObserver,
                                public input_method::IBusController::Observer {
  public:
-  InputMethodLibraryImpl()
+  InputMethodManagerImpl()
       : ibus_controller_(NULL),
         should_launch_ime_(false),
         ime_connected_(false),
         defer_ime_startup_(false),
         enable_auto_ime_shutdown_(true),
-        ibus_daemon_process_handle_(base::kNullProcessHandle),
 #if !defined(TOUCH_UI)
-        initialized_successfully_(false),
-        candidate_window_controller_(NULL) {
-#else
-        initialized_successfully_(false) {
+        candidate_window_controller_(NULL),
 #endif
+        ibus_daemon_process_handle_(base::kNullProcessHandle) {
     // Observe APP_TERMINATING to stop input method daemon gracefully.
     // We should not use APP_EXITING here since logout might be canceled by
     // JavaScript after APP_EXITING is sent (crosbug.com/11055).
@@ -85,40 +84,26 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     // details.
     notification_registrar_.Add(this, NotificationType::APP_TERMINATING,
                                 NotificationService::AllSources());
-  }
-
-  // Initializes the object. On success, returns true on and sets
-  // initialized_successfully_ to true.
-  //
-  // Note that we start monitoring input method status in here in Init()
-  // to avoid a potential race. If we start the monitoring right after
-  // starting ibus-daemon, there is a higher chance of a race between
-  // Chrome and ibus-daemon to occur.
-  bool Init() {
-    DCHECK(!initialized_successfully_) << "Already initialized";
 
     ibus_controller_ = input_method::IBusController::Create();
     // The observer should be added before Connect() so we can capture the
     // initial connection change.
     ibus_controller_->AddObserver(this);
     ibus_controller_->Connect();
-
-    initialized_successfully_ = true;
-    return true;
   }
 
-  virtual ~InputMethodLibraryImpl() {
+  virtual ~InputMethodManagerImpl() {
     ibus_controller_->RemoveObserver(this);
   }
 
-  virtual void AddObserver(InputMethodLibrary::Observer* observer) {
+  virtual void AddObserver(InputMethodManager::Observer* observer) {
     if (!observers_.size()) {
       observer->FirstObserverIsAdded(this);
     }
     observers_.AddObserver(observer);
   }
 
-  virtual void RemoveObserver(InputMethodLibrary::Observer* observer) {
+  virtual void RemoveObserver(InputMethodManager::Observer* observer) {
     observers_.RemoveObserver(observer);
   }
 
@@ -162,20 +147,6 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     return input_methods->size();
   }
 
-  virtual input_method::InputMethodDescriptors* GetSupportedInputMethods() {
-    if (!initialized_successfully_) {
-      // If initialization was failed, return the fallback input method,
-      // as this function is guaranteed to return at least one descriptor.
-      input_method::InputMethodDescriptors* result =
-          new input_method::InputMethodDescriptors;
-      result->push_back(input_method::GetFallbackInputMethodDescriptor());
-      return result;
-    }
-
-    // This never returns NULL.
-    return input_method::GetSupportedInputMethodDescriptors();
-  }
-
   virtual void ChangeInputMethod(const std::string& input_method_id) {
     // Changing the input method isn't guaranteed to succeed here, but we
     // should remember the last one regardless. See comments in
@@ -204,9 +175,6 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
 
   virtual void SetImePropertyActivated(const std::string& key,
                                        bool activated) {
-    if (!initialized_successfully_)
-      return;
-
     DCHECK(!key.empty());
     ibus_controller_->SetImePropertyActivated(key, activated);
   }
@@ -274,23 +242,12 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     return current_ime_properties_;
   }
 
-  virtual std::string GetKeyboardOverlayId(const std::string& input_method_id) {
-    if (!initialized_successfully_)
-      return "";
-
-    return input_method::GetKeyboardOverlayId(input_method_id);
-  }
-
   virtual void SendHandwritingStroke(
       const input_method::HandwritingStroke& stroke) {
-    if (!initialized_successfully_)
-      return;
     ibus_controller_->SendHandwritingStroke(stroke);
   }
 
   virtual void CancelHandwritingStrokes(int stroke_count) {
-    if (!initialized_successfully_)
-      return;
     // TODO(yusukes): Rename the libcros function to CancelHandwritingStrokes.
     ibus_controller_->CancelHandwriting(stroke_count);
   }
@@ -298,14 +255,19 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
   virtual void RegisterVirtualKeyboard(const GURL& launch_url,
                                        const std::set<std::string>& layouts,
                                        bool is_system) {
-    if (!initialized_successfully_)
-      return;
     virtual_keyboard_selector_.AddVirtualKeyboard(launch_url,
                                                   layouts,
                                                   is_system);
   }
 
+  static InputMethodManagerImpl* GetInstance() {
+    return Singleton<InputMethodManagerImpl,
+        DefaultSingletonTraits<InputMethodManagerImpl> >::get();
+  }
+
  private:
+  friend struct DefaultSingletonTraits<InputMethodManagerImpl>;
+
   // Returns true if the given input method config value is a single
   // element string list that contains an input method ID of a keyboard
   // layout.
@@ -415,9 +377,6 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
   // true if the current engine is switched to |input_method_id| or the
   // first one.
   bool ChangeInputMethodViaIBus(const std::string& input_method_id) {
-    if (!initialized_successfully_)
-      return false;
-
     std::string input_method_id_to_switch = input_method_id;
 
     if (!InputMethodIsActivated(input_method_id)) {
@@ -449,9 +408,6 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
   // |pending_config_requests_| until the config backend (ibus-memconf)
   // starts.
   void FlushImeConfig() {
-    if (!initialized_successfully_)
-      return;
-
     bool active_input_methods_are_changed = false;
     InputMethodConfigRequests::iterator iter =
         pending_config_requests_.begin();
@@ -534,7 +490,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
       //    ibus-daemon, and observers are notified. See
       //    InputMethodChangedHandler() for details.
       const size_t num_active_input_methods = GetNumActiveInputMethods();
-      FOR_EACH_OBSERVER(InputMethodLibrary::Observer, observers_,
+      FOR_EACH_OBSERVER(InputMethodManager::Observer, observers_,
                         ActiveInputMethodsChanged(this,
                                                   current_input_method_,
                                                   num_active_input_methods));
@@ -623,8 +579,8 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
       // observer to do so. Otherwise, we'll end up updating preferences many
       // times when many observers are attached (ex. many windows are opened),
       // which is unnecessary and expensive.
-      ObserverListBase<InputMethodLibrary::Observer>::Iterator it(observers_);
-      InputMethodLibrary::Observer* first_observer = it.GetNext();
+      ObserverListBase<InputMethodManager::Observer>::Iterator it(observers_);
+      InputMethodManager::Observer* first_observer = it.GetNext();
       if (first_observer) {
         first_observer->PreferenceUpdateNeeded(this,
                                                previous_input_method_,
@@ -636,7 +592,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     // For now, we have to do this every time to keep indicators updated. See
     // comments near the FOR_EACH_OBSERVER call in FlushImeConfig() for details.
     const size_t num_active_input_methods = GetNumActiveInputMethods();
-    FOR_EACH_OBSERVER(InputMethodLibrary::Observer, observers_,
+    FOR_EACH_OBSERVER(InputMethodManager::Observer, observers_,
                       InputMethodChanged(this,
                                          current_input_method_,
                                          num_active_input_methods));
@@ -731,7 +687,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     current_ime_properties_ = prop_list;
 
     // Update input method menu
-    FOR_EACH_OBSERVER(InputMethodLibrary::Observer, observers_,
+    FOR_EACH_OBSERVER(InputMethodManager::Observer, observers_,
                       PropertyListChanged(this,
                                           current_ime_properties_));
   }
@@ -751,7 +707,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     }
 
     // Update input method menu
-    FOR_EACH_OBSERVER(InputMethodLibrary::Observer, observers_,
+    FOR_EACH_OBSERVER(InputMethodManager::Observer, observers_,
                       PropertyListChanged(this,
                                           current_ime_properties_));
   }
@@ -797,9 +753,6 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
   bool MaybeLaunchInputMethodDaemon() {
     // CandidateWindowController requires libcros to be loaded. Besides,
     // launching ibus-daemon without libcros loaded doesn't make sense.
-    if (!initialized_successfully_)
-      return false;
-
     if (!should_launch_ime_) {
       return false;
     }
@@ -833,7 +786,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
   // Called when the input method process is shut down.
   static void OnImeShutdown(GPid pid,
                             gint status,
-                            InputMethodLibraryImpl* library) {
+                            InputMethodManagerImpl* library) {
     if (library->ibus_daemon_process_handle_ != base::kNullProcessHandle &&
         base::GetProcId(library->ibus_daemon_process_handle_) == pid) {
       library->ibus_daemon_process_handle_ = base::kNullProcessHandle;
@@ -847,9 +800,6 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
   // called from MaybeStopInputMethodDaemon(), except one case where we
   // stop the input method daemon at Chrome shutdown in Observe().
   void StopInputMethodDaemon() {
-    if (!initialized_successfully_)
-      return;
-
     should_launch_ime_ = false;
     if (ibus_daemon_process_handle_ != base::kNullProcessHandle) {
       const base::ProcessId pid = base::GetProcId(ibus_daemon_process_handle_);
@@ -889,7 +839,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
   // A reference to the language api, to allow callbacks when the input method
   // status changes.
   input_method::IBusController* ibus_controller_;
-  ObserverList<InputMethodLibrary::Observer> observers_;
+  ObserverList<InputMethodManager::Observer> observers_;
   ObserverList<VirtualKeyboardObserver> virtual_keyboard_observers_;
 
   // The input method which was/is selected.
@@ -933,15 +883,6 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
   // TODO(yusukes): clear this variable when a user logs in.
   std::string tentative_current_input_method_id_;
 
-  // The process handle of the IBus daemon. kNullProcessHandle if it's not
-  // running.
-  base::ProcessHandle ibus_daemon_process_handle_;
-
-  // True if initialization is successfully done, meaning that libcros is
-  // loaded and input method status monitoring is started. This value
-  // should be checked where we call libcros functions.
-  bool initialized_successfully_;
-
   // The candidate window.  This will be deleted when the APP_TERMINATING
   // message is sent.
 #if !defined(TOUCH_UI)
@@ -949,342 +890,28 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
       candidate_window_controller_;
 #endif
 
+  // The process handle of the IBus daemon. kNullProcessHandle if it's not
+  // running.
+  base::ProcessHandle ibus_daemon_process_handle_;
+
   // An object which keeps a list of available virtual keyboards.
   input_method::VirtualKeyboardSelector virtual_keyboard_selector_;
 
   // The active input method ids cache.
   std::vector<std::string> active_input_method_ids_;
 
-  DISALLOW_COPY_AND_ASSIGN(InputMethodLibraryImpl);
-};
-
-// The stub implementation of InputMethodLibrary. Used for testing.
-class InputMethodLibraryStubImpl : public InputMethodLibrary {
- public:
-  InputMethodLibraryStubImpl()
-      : keyboard_overlay_map_(GetKeyboardOverlayMapForTesting()) {
-    current_input_method_ = input_method::GetFallbackInputMethodDescriptor();
-  }
-
-  virtual ~InputMethodLibraryStubImpl() {}
-  virtual void AddObserver(Observer* observer) {}
-  virtual void AddVirtualKeyboardObserver(VirtualKeyboardObserver* observer) {}
-  virtual void RemoveObserver(Observer* observer) {}
-  virtual void RemoveVirtualKeyboardObserver(
-      VirtualKeyboardObserver* observer) {}
-
-  virtual input_method::InputMethodDescriptors* GetActiveInputMethods() {
-    return GetInputMethodDescriptorsForTesting();
-  }
-
-
-  virtual size_t GetNumActiveInputMethods() {
-    scoped_ptr<input_method::InputMethodDescriptors> descriptors(
-        GetActiveInputMethods());
-    return descriptors->size();
-  }
-
-  virtual input_method::InputMethodDescriptors* GetSupportedInputMethods() {
-    return GetInputMethodDescriptorsForTesting();
-  }
-
-  virtual void ChangeInputMethod(const std::string& input_method_id) {}
-  virtual void SetImePropertyActivated(const std::string& key,
-                                       bool activated) {}
-
-  virtual bool InputMethodIsActivated(const std::string& input_method_id) {
-    return true;
-  }
-
-  virtual bool SetImeConfig(const std::string& section,
-                            const std::string& config_name,
-                            const input_method::ImeConfigValue& value) {
-    return false;
-  }
-
-  virtual input_method::InputMethodDescriptor previous_input_method() const {
-    return previous_input_method_;
-  }
-
-  virtual input_method::InputMethodDescriptor current_input_method() const {
-    return current_input_method_;
-  }
-
-  virtual const input_method::ImePropertyList& current_ime_properties() const {
-    return current_ime_properties_;
-  }
-
-  virtual bool StartInputMethodDaemon() {
-    return true;
-  }
-  virtual void StopInputMethodDaemon() {}
-  virtual void SetDeferImeStartup(bool defer) {}
-  virtual void SetEnableAutoImeShutdown(bool enable) {}
-
-  virtual std::string GetKeyboardOverlayId(const std::string& input_method_id) {
-    KeyboardOverlayMap::const_iterator iter =
-        keyboard_overlay_map_->find(input_method_id);
-    return (iter != keyboard_overlay_map_->end()) ?
-        iter->second : "";
-  }
-
-  virtual void SendHandwritingStroke(
-      const input_method::HandwritingStroke& stroke) {}
-  virtual void CancelHandwritingStrokes(int stroke_count) {}
-  virtual void RegisterVirtualKeyboard(const GURL& launch_url,
-                                       const std::set<std::string>& layouts,
-                                       bool is_system) {}
-
- private:
-  typedef std::map<std::string, std::string> KeyboardOverlayMap;
-
-  // Gets input method descriptors for testing. Shouldn't be used for
-  // production.
-  input_method::InputMethodDescriptors* GetInputMethodDescriptorsForTesting() {
-    input_method::InputMethodDescriptors* descriptions =
-        new input_method::InputMethodDescriptors;
-    // The list is created from output of gen_engines.py in libcros.
-    // % SHARE=/build/x86-generic/usr/share python gen_engines.py
-    // $SHARE/chromeos-assets/input_methods/whitelist.txt
-    // $SHARE/ibus/component/{chewing,hangul,m17n,mozc,pinyin,xkb-layouts}.xml
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:nl::nld", "nl", "nl", "nld"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:be::nld", "be", "be", "nld"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:fr::fra", "fr", "fr", "fra"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:be::fra", "be", "be", "fra"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:ca::fra", "ca", "ca", "fra"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:ch:fr:fra", "ch(fr)", "ch(fr)", "fra"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:de::ger", "de", "de", "ger"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:de:neo:ger", "de(neo)", "de(neo)", "ger"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:be::ger", "be", "be", "ger"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:ch::ger", "ch", "ch", "ger"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "mozc", "us", "us", "ja"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "mozc-jp", "jp", "jp", "ja"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "mozc-dv", "us(dvorak)", "us(dvorak)", "ja"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:jp::jpn", "jp", "jp", "jpn"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:ru::rus", "ru", "ru", "rus"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:ru:phonetic:rus", "ru(phonetic)", "ru(phonetic)", "rus"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "m17n:th:kesmanee", "us", "us", "th"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "m17n:th:pattachote", "us", "us", "th"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "m17n:th:tis820", "us", "us", "th"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "mozc-chewing", "us", "us", "zh_TW"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "m17n:zh:cangjie", "us", "us", "zh"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "m17n:zh:quick", "us", "us", "zh"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "m17n:vi:tcvn", "us", "us", "vi"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "m17n:vi:telex", "us", "us", "vi"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "m17n:vi:viqr", "us", "us", "vi"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "m17n:vi:vni", "us", "us", "vi"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:us::eng", "us", "us", "eng"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:us:intl:eng", "us(intl)", "us(intl)", "eng"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:us:altgr-intl:eng", "us(altgr-intl)", "us(altgr-intl)", "eng"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:us:dvorak:eng", "us(dvorak)", "us(dvorak)", "eng"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:us:colemak:eng", "us(colemak)", "us(colemak)", "eng"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "hangul", "kr(kr104)", "kr(kr104)", "ko"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "pinyin", "us", "us", "zh"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "pinyin-dv", "us(dvorak)", "us(dvorak)", "zh"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "m17n:ar:kbd", "us", "us", "ar"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "m17n:hi:itrans", "us", "us", "hi"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "m17n:fa:isiri", "us", "us", "fa"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:br::por", "br", "br", "por"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:bg::bul", "bg", "bg", "bul"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:bg:phonetic:bul", "bg(phonetic)", "bg(phonetic)", "bul"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:ca:eng:eng", "ca(eng)", "ca(eng)", "eng"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:cz::cze", "cz", "cz", "cze"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:ee::est", "ee", "ee", "est"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:es::spa", "es", "es", "spa"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:es:cat:cat", "es(cat)", "es(cat)", "cat"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:dk::dan", "dk", "dk", "dan"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:gr::gre", "gr", "gr", "gre"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:il::heb", "il", "il", "heb"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:kr:kr104:kor", "kr(kr104)", "kr(kr104)", "kor"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:latam::spa", "latam", "latam", "spa"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:lt::lit", "lt", "lt", "lit"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:lv:apostrophe:lav", "lv(apostrophe)", "lv(apostrophe)", "lav"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:hr::scr", "hr", "hr", "scr"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:gb:extd:eng", "gb(extd)", "gb(extd)", "eng"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:gb:dvorak:eng", "gb(dvorak)", "gb(dvorak)", "eng"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:fi::fin", "fi", "fi", "fin"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:hu::hun", "hu", "hu", "hun"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:it::ita", "it", "it", "ita"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:no::nob", "no", "no", "nob"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:pl::pol", "pl", "pl", "pol"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:pt::por", "pt", "pt", "por"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:ro::rum", "ro", "ro", "rum"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:se::swe", "se", "se", "swe"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:sk::slo", "sk", "sk", "slo"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:si::slv", "si", "si", "slv"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:rs::srp", "rs", "rs", "srp"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:tr::tur", "tr", "tr", "tur"));
-    descriptions->push_back(input_method::InputMethodDescriptor(
-        "xkb:ua::ukr", "ua", "ua", "ukr"));
-    return descriptions;
-  }
-
-  // Gets keyboard overlay map for testing. Shouldn't be used for
-  // production.
-  std::map<std::string, std::string>* GetKeyboardOverlayMapForTesting() {
-    KeyboardOverlayMap* keyboard_overlay_map =
-        new KeyboardOverlayMap;
-    (*keyboard_overlay_map)["xkb:nl::nld"] = "nl";
-    (*keyboard_overlay_map)["xkb:be::nld"] = "nl";
-    (*keyboard_overlay_map)["xkb:fr::fra"] = "fr";
-    (*keyboard_overlay_map)["xkb:be::fra"] = "fr";
-    (*keyboard_overlay_map)["xkb:ca::fra"] = "fr_CA";
-    (*keyboard_overlay_map)["xkb:ch:fr:fra"] = "fr";
-    (*keyboard_overlay_map)["xkb:de::ger"] = "de";
-    (*keyboard_overlay_map)["xkb:be::ger"] = "de";
-    (*keyboard_overlay_map)["xkb:ch::ger"] = "de";
-    (*keyboard_overlay_map)["mozc"] = "en_US";
-    (*keyboard_overlay_map)["mozc-jp"] = "ja";
-    (*keyboard_overlay_map)["mozc-dv"] = "en_US_dvorak";
-    (*keyboard_overlay_map)["xkb:jp::jpn"] = "ja";
-    (*keyboard_overlay_map)["xkb:ru::rus"] = "ru";
-    (*keyboard_overlay_map)["xkb:ru:phonetic:rus"] = "ru";
-    (*keyboard_overlay_map)["m17n:th:kesmanee"] = "th";
-    (*keyboard_overlay_map)["m17n:th:pattachote"] = "th";
-    (*keyboard_overlay_map)["m17n:th:tis820"] = "th";
-    (*keyboard_overlay_map)["mozc-chewing"] = "zh_TW";
-    (*keyboard_overlay_map)["m17n:zh:cangjie"] = "zh_TW";
-    (*keyboard_overlay_map)["m17n:zh:quick"] = "zh_TW";
-    (*keyboard_overlay_map)["m17n:vi:tcvn"] = "vi";
-    (*keyboard_overlay_map)["m17n:vi:telex"] = "vi";
-    (*keyboard_overlay_map)["m17n:vi:viqr"] = "vi";
-    (*keyboard_overlay_map)["m17n:vi:vni"] = "vi";
-    (*keyboard_overlay_map)["xkb:us::eng"] = "en_US";
-    (*keyboard_overlay_map)["xkb:us:intl:eng"] = "en_US";
-    (*keyboard_overlay_map)["xkb:us:altgr-intl:eng"] = "en_US";
-    (*keyboard_overlay_map)["xkb:us:dvorak:eng"] =
-        "en_US_dvorak";
-    (*keyboard_overlay_map)["xkb:us:colemak:eng"] =
-        "en_US";
-    (*keyboard_overlay_map)["hangul"] = "ko";
-    (*keyboard_overlay_map)["pinyin"] = "zh_CN";
-    (*keyboard_overlay_map)["m17n:ar:kbd"] = "ar";
-    (*keyboard_overlay_map)["m17n:hi:itrans"] = "hi";
-    (*keyboard_overlay_map)["m17n:fa:isiri"] = "ar";
-    (*keyboard_overlay_map)["xkb:br::por"] = "pt_BR";
-    (*keyboard_overlay_map)["xkb:bg::bul"] = "bg";
-    (*keyboard_overlay_map)["xkb:bg:phonetic:bul"] = "bg";
-    (*keyboard_overlay_map)["xkb:ca:eng:eng"] = "ca";
-    (*keyboard_overlay_map)["xkb:cz::cze"] = "cs";
-    (*keyboard_overlay_map)["xkb:ee::est"] = "et";
-    (*keyboard_overlay_map)["xkb:es::spa"] = "es";
-    (*keyboard_overlay_map)["xkb:es:cat:cat"] = "ca";
-    (*keyboard_overlay_map)["xkb:dk::dan"] = "da";
-    (*keyboard_overlay_map)["xkb:gr::gre"] = "el";
-    (*keyboard_overlay_map)["xkb:il::heb"] = "iw";
-    (*keyboard_overlay_map)["xkb:kr:kr104:kor"] = "ko";
-    (*keyboard_overlay_map)["xkb:latam::spa"] = "es_419";
-    (*keyboard_overlay_map)["xkb:lt::lit"] = "lt";
-    (*keyboard_overlay_map)["xkb:lv:apostrophe:lav"] = "lv";
-    (*keyboard_overlay_map)["xkb:hr::scr"] = "hr";
-    (*keyboard_overlay_map)["xkb:gb:extd:eng"] = "en_GB";
-    (*keyboard_overlay_map)["xkb:gb:dvorak:eng"] = "en_GB_dvorak";
-    (*keyboard_overlay_map)["xkb:fi::fin"] = "fi";
-    (*keyboard_overlay_map)["xkb:hu::hun"] = "hu";
-    (*keyboard_overlay_map)["xkb:it::ita"] = "it";
-    (*keyboard_overlay_map)["xkb:no::nob"] = "no";
-    (*keyboard_overlay_map)["xkb:pl::pol"] = "pl";
-    (*keyboard_overlay_map)["xkb:pt::por"] = "pt_PT";
-    (*keyboard_overlay_map)["xkb:ro::rum"] = "ro";
-    (*keyboard_overlay_map)["xkb:se::swe"] = "sv";
-    (*keyboard_overlay_map)["xkb:sk::slo"] = "sk";
-    (*keyboard_overlay_map)["xkb:si::slv"] = "sl";
-    (*keyboard_overlay_map)["xkb:rs::srp"] = "sr";
-    (*keyboard_overlay_map)["xkb:tr::tur"] = "tr";
-    (*keyboard_overlay_map)["xkb:ua::ukr"] = "uk";
-    return keyboard_overlay_map;
-  }
-
-  input_method::InputMethodDescriptor previous_input_method_;
-  input_method::InputMethodDescriptor current_input_method_;
-  input_method::ImePropertyList current_ime_properties_;
-  scoped_ptr<KeyboardOverlayMap> keyboard_overlay_map_;
-
-  DISALLOW_COPY_AND_ASSIGN(InputMethodLibraryStubImpl);
+  DISALLOW_COPY_AND_ASSIGN(InputMethodManagerImpl);
 };
 
 // static
-InputMethodLibrary* InputMethodLibrary::GetImpl(bool stub) {
-  if (stub) {
-    return new InputMethodLibraryStubImpl();
-  } else {
-    InputMethodLibraryImpl* impl = new InputMethodLibraryImpl();
-    if (!impl->Init()) {
-      LOG(ERROR) << "Failed to initialize InputMethodLibraryImpl";
-    }
-    return impl;
-  }
+InputMethodManager* InputMethodManager::GetInstance() {
+  return InputMethodManagerImpl::GetInstance();
 }
 
+}  // namespace input_method
 }  // namespace chromeos
 
 // Allows InvokeLater without adding refcounting. This class is a Singleton and
 // won't be deleted until it's last InvokeLater is run.
-DISABLE_RUNNABLE_METHOD_REFCOUNT(chromeos::InputMethodLibraryImpl);
+DISABLE_RUNNABLE_METHOD_REFCOUNT(
+    chromeos::input_method::InputMethodManagerImpl);

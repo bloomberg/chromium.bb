@@ -12,7 +12,6 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -126,13 +125,15 @@ std::wstring GetLanguageName(const std::string& language_code) {
 
 namespace chromeos {
 
+using input_method::InputMethodManager;
+
 ////////////////////////////////////////////////////////////////////////////////
 // InputMethodMenu
 
 InputMethodMenu::InputMethodMenu(PrefService* pref_service,
                                  StatusAreaHost::ScreenMode screen_mode,
                                  bool for_out_of_box_experience_dialog)
-    : input_method_descriptors_(CrosLibrary::Get()->GetInputMethodLibrary()->
+    : input_method_descriptors_(InputMethodManager::GetInstance()->
                                 GetActiveInputMethods()),
       model_(new ui::SimpleMenuModel(NULL)),
       ALLOW_THIS_IN_INITIALIZER_LIST(input_method_menu_delegate_(
@@ -155,8 +156,8 @@ InputMethodMenu::InputMethodMenu(PrefService* pref_service,
         prefs::kLanguageCurrentInputMethod, pref_service, this);
   }
 
-  InputMethodLibrary* library = CrosLibrary::Get()->GetInputMethodLibrary();
-  library->AddObserver(this);  // FirstObserverIsAdded() might be called back.
+  InputMethodManager* manager = InputMethodManager::GetInstance();
+  manager->AddObserver(this);  // FirstObserverIsAdded() might be called back.
 
   if (screen_mode_ == StatusAreaHost::kLoginMode) {
     // This button is for the login screen.
@@ -169,7 +170,7 @@ InputMethodMenu::InputMethodMenu(PrefService* pref_service,
 InputMethodMenu::~InputMethodMenu() {
   // RemoveObserver() is no-op if |this| object is already removed from the
   // observer list.
-  CrosLibrary::Get()->GetInputMethodLibrary()->RemoveObserver(this);
+  InputMethodManager::GetInstance()->RemoveObserver(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -197,13 +198,13 @@ bool InputMethodMenu::IsItemCheckedAt(int index) const {
   if (IndexIsInInputMethodList(index)) {
     const input_method::InputMethodDescriptor& input_method
         = input_method_descriptors_->at(index);
-    return input_method == CrosLibrary::Get()->GetInputMethodLibrary()->
+    return input_method == InputMethodManager::GetInstance()->
           current_input_method();
   }
 
   if (GetPropertyIndex(index, &index)) {
     const input_method::ImePropertyList& property_list
-        = CrosLibrary::Get()->GetInputMethodLibrary()->current_ime_properties();
+        = InputMethodManager::GetInstance()->current_ime_properties();
     return property_list.at(index).is_selection_item_checked;
   }
 
@@ -221,7 +222,7 @@ int InputMethodMenu::GetGroupIdAt(int index) const {
 
   if (GetPropertyIndex(index, &index)) {
     const input_method::ImePropertyList& property_list
-        = CrosLibrary::Get()->GetInputMethodLibrary()->current_ime_properties();
+        = InputMethodManager::GetInstance()->current_ime_properties();
     return property_list.at(index).selection_item_id;
   }
 
@@ -288,7 +289,7 @@ ui::MenuModel::ItemType InputMethodMenu::GetTypeAt(int index) const {
 
   if (GetPropertyIndex(index, &index)) {
     const input_method::ImePropertyList& property_list
-        = CrosLibrary::Get()->GetInputMethodLibrary()->current_ime_properties();
+        = InputMethodManager::GetInstance()->current_ime_properties();
     if (property_list.at(index).is_selection_item) {
       return ui::MenuModel::TYPE_RADIO;
     }
@@ -312,10 +313,10 @@ string16 InputMethodMenu::GetLabelAt(int index) const {
   if (IndexIsInInputMethodList(index)) {
     name = GetTextForMenu(input_method_descriptors_->at(index));
   } else if (GetPropertyIndex(index, &index)) {
-    InputMethodLibrary* library = CrosLibrary::Get()->GetInputMethodLibrary();
+    InputMethodManager* manager = InputMethodManager::GetInstance();
     const input_method::ImePropertyList& property_list =
-        library->current_ime_properties();
-    const std::string& input_method_id = library->current_input_method().id;
+        manager->current_ime_properties();
+    const std::string& input_method_id = manager->current_input_method().id;
     return input_method::GetStringUTF16(
         property_list.at(index).label, input_method_id);
   }
@@ -336,7 +337,7 @@ void InputMethodMenu::ActivatedAt(int index) {
     // Inter-IME switching.
     const input_method::InputMethodDescriptor& input_method
         = input_method_descriptors_->at(index);
-    CrosLibrary::Get()->GetInputMethodLibrary()->ChangeInputMethod(
+    InputMethodManager::GetInstance()->ChangeInputMethod(
         input_method.id);
     UserMetrics::RecordAction(
         UserMetricsAction("LanguageMenuButton_InputMethodChanged"));
@@ -346,7 +347,7 @@ void InputMethodMenu::ActivatedAt(int index) {
   if (GetPropertyIndex(index, &index)) {
     // Intra-IME switching (e.g. Japanese-Hiragana to Japanese-Katakana).
     const input_method::ImePropertyList& property_list
-        = CrosLibrary::Get()->GetInputMethodLibrary()->current_ime_properties();
+        = InputMethodManager::GetInstance()->current_ime_properties();
     const std::string key = property_list.at(index).key;
     if (property_list.at(index).is_selection_item) {
       // Radio button is clicked.
@@ -354,17 +355,17 @@ void InputMethodMenu::ActivatedAt(int index) {
       // First, deactivate all other properties in the same radio group.
       for (int i = 0; i < static_cast<int>(property_list.size()); ++i) {
         if (i != index && id == property_list.at(i).selection_item_id) {
-          CrosLibrary::Get()->GetInputMethodLibrary()->SetImePropertyActivated(
+          InputMethodManager::GetInstance()->SetImePropertyActivated(
               property_list.at(i).key, false);
         }
       }
       // Then, activate the property clicked.
-      CrosLibrary::Get()->GetInputMethodLibrary()->SetImePropertyActivated(
+      InputMethodManager::GetInstance()->SetImePropertyActivated(
           key, true);
     } else {
       // Command button like "Switch to half punctuation mode" is clicked.
       // We can always use "Deactivate" for command buttons.
-      CrosLibrary::Get()->GetInputMethodLibrary()->SetImePropertyActivated(
+      InputMethodManager::GetInstance()->SetImePropertyActivated(
           key, false);
     }
     return;
@@ -399,17 +400,17 @@ void InputMethodMenu::RunMenu(views::View* source, const gfx::Point& pt) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// InputMethodLibrary::Observer implementation:
+// InputMethodManager::Observer implementation:
 
 void InputMethodMenu::InputMethodChanged(
-    InputMethodLibrary* obj,
+    InputMethodManager* manager,
     const input_method::InputMethodDescriptor& current_input_method,
     size_t num_active_input_methods) {
   UpdateUIFromInputMethod(current_input_method, num_active_input_methods);
 }
 
 void InputMethodMenu::PreferenceUpdateNeeded(
-    InputMethodLibrary* obj,
+    InputMethodManager* manager,
     const input_method::InputMethodDescriptor& previous_input_method,
     const input_method::InputMethodDescriptor& current_input_method) {
   if (screen_mode_ == StatusAreaHost::kBrowserMode) {
@@ -429,7 +430,7 @@ void InputMethodMenu::PreferenceUpdateNeeded(
 }
 
 void InputMethodMenu::PropertyListChanged(
-    InputMethodLibrary* obj,
+    InputMethodManager* manager,
     const input_method::ImePropertyList& current_ime_properties) {
   // Usual order of notifications of input method change is:
   // 1. RegisterProperties(empty)
@@ -444,15 +445,14 @@ void InputMethodMenu::PropertyListChanged(
   // it is better to be avoided. Otherwise users can sometimes observe the
   // awkward clear-then-register behavior.
   if (!current_ime_properties.empty()) {
-    InputMethodLibrary* library = CrosLibrary::Get()->GetInputMethodLibrary();
     const input_method::InputMethodDescriptor& input_method =
-        library->current_input_method();
-    size_t num_active_input_methods = library->GetNumActiveInputMethods();
+        manager->current_input_method();
+    size_t num_active_input_methods = manager->GetNumActiveInputMethods();
     UpdateUIFromInputMethod(input_method, num_active_input_methods);
   }
 }
 
-void InputMethodMenu::FirstObserverIsAdded(InputMethodLibrary* obj) {
+void InputMethodMenu::FirstObserverIsAdded(InputMethodManager* manager) {
   // NOTICE: Since this function might be called from the constructor of this
   // class, it's better to avoid calling virtual functions.
 
@@ -462,16 +462,15 @@ void InputMethodMenu::FirstObserverIsAdded(InputMethodLibrary* obj) {
     // preference so that the Control+space hot-key could work fine from the
     // beginning. InputMethodChanged() will be called soon and the indicator
     // will be updated.
-    InputMethodLibrary* library = CrosLibrary::Get()->GetInputMethodLibrary();
     const std::string previous_input_method_id =
         previous_input_method_pref_.GetValue();
     if (!previous_input_method_id.empty()) {
-      library->ChangeInputMethod(previous_input_method_id);
+      manager->ChangeInputMethod(previous_input_method_id);
     }
     const std::string current_input_method_id =
         current_input_method_pref_.GetValue();
     if (!current_input_method_id.empty()) {
-      library->ChangeInputMethod(current_input_method_id);
+      manager->ChangeInputMethod(current_input_method_id);
     }
   }
 }
@@ -482,13 +481,13 @@ void InputMethodMenu::PrepareForMenuOpen() {
 }
 
 void InputMethodMenu::PrepareMenuModel() {
-  input_method_descriptors_.reset(CrosLibrary::Get()->GetInputMethodLibrary()->
+  input_method_descriptors_.reset(InputMethodManager::GetInstance()->
                                   GetActiveInputMethods());
   RebuildModel();
 }
 
 void InputMethodMenu::ActiveInputMethodsChanged(
-    InputMethodLibrary* obj,
+    InputMethodManager* manager,
     const input_method::InputMethodDescriptor& current_input_method,
     size_t num_active_input_methods) {
   // Update the icon if active input methods are changed. See also
@@ -522,7 +521,7 @@ void InputMethodMenu::RebuildModel() {
   }
 
   const input_method::ImePropertyList& property_list
-      = CrosLibrary::Get()->GetInputMethodLibrary()->current_ime_properties();
+      = InputMethodManager::GetInstance()->current_ime_properties();
   if (!property_list.empty()) {
     if (need_separator) {
       model_->AddSeparator();
@@ -572,7 +571,7 @@ bool InputMethodMenu::GetPropertyIndex(int index, int* property_index) const {
       (model_->GetCommandIdAt(index) == COMMAND_ID_IME_PROPERTIES)) {
     const int tmp_property_index = model_->GetGroupIdAt(index);
     const input_method::ImePropertyList& property_list
-        = CrosLibrary::Get()->GetInputMethodLibrary()->current_ime_properties();
+        = InputMethodManager::GetInstance()->current_ime_properties();
     if (tmp_property_index < static_cast<int>(property_list.size())) {
       *property_index = tmp_property_index;
       return true;
@@ -685,7 +684,7 @@ void InputMethodMenu::Observe(NotificationType type,
     // When a user logs in, we should remove |this| object from the observer
     // list so that PreferenceUpdateNeeded() does not update the local state
     // anymore.
-    CrosLibrary::Get()->GetInputMethodLibrary()->RemoveObserver(this);
+    InputMethodManager::GetInstance()->RemoveObserver(this);
   }
 }
 

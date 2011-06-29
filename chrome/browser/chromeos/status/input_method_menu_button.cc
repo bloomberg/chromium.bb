@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -158,14 +158,14 @@ bool InputMethodMenuButton::ShouldSupportConfigUI() {
 }
 
 void InputMethodMenuButton::UpdateUIFromCurrentInputMethod() {
-  chromeos::InputMethodLibrary* input_method_library =
-      chromeos::CrosLibrary::Get()->GetInputMethodLibrary();
+  input_method::InputMethodManager* input_method_manager =
+      input_method::InputMethodManager::GetInstance();
   const input_method::InputMethodDescriptor& input_method =
-      input_method_library->current_input_method();
+      input_method_manager->current_input_method();
   const std::wstring name = InputMethodMenu::GetTextForIndicator(input_method);
   const std::wstring tooltip = InputMethodMenu::GetTextForMenu(input_method);
   const size_t num_active_input_methods =
-      input_method_library->GetNumActiveInputMethods();
+      input_method_manager->GetNumActiveInputMethods();
   UpdateUI(input_method.id, name, tooltip, num_active_input_methods);
 }
 

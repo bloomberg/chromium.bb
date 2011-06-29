@@ -93,8 +93,7 @@
 #endif
 
 #if defined(OS_CHROMEOS) && defined(TOUCH_UI)
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/input_method_library.h"
+#include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/extensions/extension_input_ui_api.h"
 #endif
 
@@ -1352,8 +1351,8 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
     PluginService::GetInstance()->PurgePluginListCache(false);
 
 #if defined(OS_CHROMEOS) && defined(TOUCH_UI)
-  chromeos::InputMethodLibrary* input_method_library =
-      chromeos::CrosLibrary::Get()->GetInputMethodLibrary();
+  chromeos::input_method::InputMethodManager* input_method_manager =
+      chromeos::input_method::InputMethodManager::GetInstance();
   for (std::vector<Extension::InputComponentInfo>::const_iterator component =
            extension->input_components().begin();
        component != extension->input_components().end();
@@ -1362,7 +1361,7 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
         !component->layouts.empty()) {
       const bool is_system =
           !Extension::IsExternalLocation(extension->location());
-      input_method_library->RegisterVirtualKeyboard(extension->url(),
+      input_method_manager->RegisterVirtualKeyboard(extension->url(),
                                                     component->layouts,
                                                     is_system);
     }

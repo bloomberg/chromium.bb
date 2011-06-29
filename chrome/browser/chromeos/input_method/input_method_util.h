@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/string16.h"
-#include "chrome/browser/chromeos/cros/input_method_library.h"
+#include "chrome/browser/chromeos/input_method/input_method_manager.h"
 
 namespace chromeos {
 namespace input_method {
@@ -139,10 +139,7 @@ enum InputMethodType {
 // Note that the function might return false or |language_code| is unknown.
 //
 // The retured input method IDs are sorted by populalirty per
-// chromeos/platform/assets/input_methods/whitelist.txt in production.
-// For testing with the stub libcros, the list in
-// GetInputMethodDescriptorsForTesting() in input_method_library.cc will
-// be used.
+// chromeos/platform/assets/input_methods/whitelist.txt.
 bool GetInputMethodIdsFromLanguageCode(
     const std::string& language_code,
     InputMethodType type,
@@ -186,6 +183,11 @@ std::string GetHardwareInputMethodId();
 // keyboard). This function is mostly used for testing, but may be used
 // as the fallback, when there is no other choice.
 InputMethodDescriptor GetFallbackInputMethodDescriptor();
+
+// Gets all input method engines that are supported, including ones not
+// active.  Caller has to delete the returned list. This function never
+// returns NULL.
+InputMethodDescriptors* GetSupportedInputMethods();
 
 // This function should be called when Chrome's application locale is
 // changed, so that the internal maps of this library is reloaded.

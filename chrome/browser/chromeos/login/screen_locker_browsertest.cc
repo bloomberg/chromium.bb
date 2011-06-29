@@ -7,7 +7,6 @@
 #include "base/message_loop.h"
 #include "chrome/browser/automation/ui_controls.h"
 #include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
-#include "chrome/browser/chromeos/cros/mock_input_method_library.h"
 #include "chrome/browser/chromeos/cros/mock_screen_lock_library.h"
 #include "chrome/browser/chromeos/login/mock_authenticator.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
@@ -97,13 +96,11 @@ namespace chromeos {
 
 class ScreenLockerTest : public CrosInProcessBrowserTest {
  public:
-  ScreenLockerTest() : mock_screen_lock_library_(NULL),
-                       mock_input_method_library_(NULL) {
+  ScreenLockerTest() : mock_screen_lock_library_(NULL) {
   }
 
  protected:
   MockScreenLockLibrary *mock_screen_lock_library_;
-  MockInputMethodLibrary *mock_input_method_library_;
 
   // Test the no password mode with different unlock scheme given by
   // |unlock| function.
@@ -152,7 +149,6 @@ class ScreenLockerTest : public CrosInProcessBrowserTest {
     cros_mock_->InitStatusAreaMocks();
     cros_mock_->InitMockScreenLockLibrary();
     mock_screen_lock_library_ = cros_mock_->mock_screen_lock_library();
-    mock_input_method_library_ = cros_mock_->mock_input_method_library();
     EXPECT_CALL(*mock_screen_lock_library_, AddObserver(testing::_))
         .Times(1)
         .RetiresOnSaturation();
@@ -176,10 +172,6 @@ class ScreenLockerTest : public CrosInProcessBrowserTest {
 // Temporarily disabling all screen locker tests while investigating the
 // issue crbug.com/78764.
 IN_PROC_BROWSER_TEST_F(ScreenLockerTest, DISABLED_TestBasic) {
-  EXPECT_CALL(*mock_input_method_library_, GetNumActiveInputMethods())
-      .Times(1)
-      .WillRepeatedly((testing::Return(0)))
-      .RetiresOnSaturation();
   EXPECT_CALL(*mock_screen_lock_library_, NotifyScreenUnlockRequested())
       .Times(1)
       .RetiresOnSaturation();

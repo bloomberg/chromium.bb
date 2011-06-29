@@ -2322,8 +2322,6 @@
         'browser/chromeos/cros/cros_mock.cc',
         'browser/chromeos/cros/cros_mock.h',
         'browser/chromeos/cros/mock_cros_library.h',
-        'browser/chromeos/cros/mock_input_method_library.cc',
-        'browser/chromeos/cros/mock_input_method_library.h',
         'browser/chromeos/cros/mock_mount_library.cc',
         'browser/chromeos/cros/mock_mount_library.h',
         'browser/chromeos/cros/mock_power_library.cc',

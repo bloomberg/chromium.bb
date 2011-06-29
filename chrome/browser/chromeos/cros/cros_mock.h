@@ -7,14 +7,12 @@
 
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "chrome/browser/chromeos/input_method/ibus_controller.h"
 #include "chrome/test/in_process_browser_test.h"
 
 namespace chromeos {
 
 class MockCryptohomeLibrary;
 class MockKeyboardLibrary;
-class MockInputMethodLibrary;
 class MockLibraryLoader;
 class MockNetworkLibrary;
 class MockPowerLibrary;
@@ -45,7 +43,6 @@ class CrosMock {
   // Initialization of mocks.
   void InitMockCryptohomeLibrary();
   void InitMockKeyboardLibrary();
-  void InitMockInputMethodLibrary();
   void InitMockNetworkLibrary();
   void InitMockPowerLibrary();
   void InitMockScreenLockLibrary();
@@ -55,7 +52,6 @@ class CrosMock {
   // Get mocks.
   MockCryptohomeLibrary* mock_cryptohome_library();
   MockKeyboardLibrary* mock_keyboard_library();
-  MockInputMethodLibrary* mock_input_method_library();
   MockNetworkLibrary* mock_network_library();
   MockPowerLibrary* mock_power_library();
   MockScreenLockLibrary* mock_screen_lock_library();
@@ -72,7 +68,6 @@ class CrosMock {
 
   // Methods to setup minimal mocks expectations for status area.
   void SetKeyboardLibraryStatusAreaExpectations();
-  void SetInputMethodLibraryStatusAreaExpectations();
   void SetNetworkLibraryStatusAreaExpectations();
   void SetPowerLibraryStatusAreaExpectations();
   void SetPowerLibraryExpectations();
@@ -80,10 +75,6 @@ class CrosMock {
   void SetTouchpadLibraryExpectations();
 
   void TearDownMocks();
-
-  // Creates input method descriptors. This is a helper function for
-  // SetInputMethodLibraryStatusAreaExpectations().
-  static input_method::InputMethodDescriptors* CreateInputMethodDescriptors();
 
   // TestApi gives access to CrosLibrary private members.
   chromeos::CrosLibrary::TestApi* test_api();
@@ -93,16 +84,12 @@ class CrosMock {
   MockLibraryLoader* loader_;
   MockCryptohomeLibrary* mock_cryptohome_library_;
   MockKeyboardLibrary* mock_keyboard_library_;
-  MockInputMethodLibrary* mock_input_method_library_;
   MockNetworkLibrary* mock_network_library_;
   MockPowerLibrary* mock_power_library_;
   MockScreenLockLibrary* mock_screen_lock_library_;
   MockSpeechSynthesisLibrary* mock_speech_synthesis_library_;
   MockTouchpadLibrary* mock_touchpad_library_;
 
-  input_method::ImePropertyList ime_properties_;
-  input_method::InputMethodDescriptor current_input_method_;
-  input_method::InputMethodDescriptor previous_input_method_;
   WifiNetworkVector wifi_networks_;
   CellularNetworkVector cellular_networks_;
   VirtualNetworkVector virtual_networks_;

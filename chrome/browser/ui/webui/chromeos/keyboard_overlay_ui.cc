@@ -7,8 +7,7 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/input_method_library.h"
+#include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -264,12 +263,12 @@ void KeyboardOverlayHandler::RegisterMessages() {
 }
 
 void KeyboardOverlayHandler::GetKeyboardOverlayId(const ListValue* args) {
-  chromeos::InputMethodLibrary* library =
-      chromeos::CrosLibrary::Get()->GetInputMethodLibrary();
+  chromeos::input_method::InputMethodManager* manager =
+      chromeos::input_method::InputMethodManager::GetInstance();
   const chromeos::input_method::InputMethodDescriptor& descriptor =
-      library->current_input_method();
+      manager->current_input_method();
   const std::string keyboard_overlay_id =
-      library->GetKeyboardOverlayId(descriptor.id);
+      chromeos::input_method::GetKeyboardOverlayId(descriptor.id);
   StringValue param(keyboard_overlay_id);
   web_ui_->CallJavascriptFunction("initKeyboardOverlayId", param);
 }

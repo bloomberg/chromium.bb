@@ -11,8 +11,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/input_method_library.h"
+#include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/ui/webui/options/chromeos/cros_language_options_handler.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -35,15 +34,6 @@ static InputMethodDescriptors CreateInputMethodDescriptors() {
 }
 
 TEST(LanguageOptionsHandlerTest, GetInputMethodList) {
-  // Use the stub libcros. The object will take care of the cleanup.
-  chromeos::ScopedStubCrosEnabler stub_cros_enabler;
-
-  // Reset the library implementation so it will be initialized
-  // again. Otherwise, non-stub implementation can be reused, if it's
-  // already initialized elsewhere, which results in a crash.
-  chromeos::CrosLibrary::Get()->GetTestApi()->SetInputMethodLibrary(NULL,
-                                                                    false);
-
   InputMethodDescriptors descriptors = CreateInputMethodDescriptors();
   scoped_ptr<ListValue> list(
       chromeos::CrosLanguageOptionsHandler::GetInputMethodList(descriptors));

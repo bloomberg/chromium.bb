@@ -14,7 +14,7 @@
 #include "views/focus/focus_manager.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/cros/input_method_library.h"
+#include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #endif
 
 class BrowserFrame;
@@ -32,7 +32,8 @@ class TouchBrowserFrameView
       public views::FocusChangeListener,
       public TabStripModelObserver,
 #if defined(OS_CHROMEOS)
-      public chromeos::InputMethodLibrary::VirtualKeyboardObserver,
+      public
+      chromeos::input_method::InputMethodManager::VirtualKeyboardObserver,
 #endif
       public ui::AnimationDelegate {
  public:
@@ -60,9 +61,9 @@ class TouchBrowserFrameView
                                views::View* focused_now);
 
 #if defined(OS_CHROMEOS)
-  // InputMethodLibrary::VirtualKeyboardObserver implementation.
+  // input_method::InputMethodManager::VirtualKeyboardObserver implementation.
   virtual void VirtualKeyboardChanged(
-      chromeos::InputMethodLibrary* obj,
+      chromeos::input_method::InputMethodManager* manager,
       const chromeos::input_method::VirtualKeyboard& virtual_keyboard,
       const std::string& virtual_keyboard_layout);
 #endif

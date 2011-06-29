@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/background_view.h"
 #include "chrome/browser/chromeos/login/cookie_fetcher.h"
@@ -486,10 +487,11 @@ void LoginUtilsImpl::SetFirstLoginPrefs(PrefService* prefs) {
   std::string locale = g_browser_process->GetApplicationLocale();
 
   // First, we'll set kLanguagePreloadEngines.
-  InputMethodLibrary* library = CrosLibrary::Get()->GetInputMethodLibrary();
+  input_method::InputMethodManager* manager =
+      input_method::InputMethodManager::GetInstance();
   std::vector<std::string> input_method_ids;
   input_method::GetFirstLoginInputMethodIds(locale,
-                                            library->current_input_method(),
+                                            manager->current_input_method(),
                                             &input_method_ids);
   // Save the input methods in the user's preferences.
   StringPrefMember language_preload_engines;

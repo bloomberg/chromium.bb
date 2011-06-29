@@ -280,11 +280,6 @@ class IBusController {
   virtual void CancelHandwriting(int n_strokes) = 0;
 };
 
-// Gets all input method engines that are supported, including ones not
-// active.  Caller has to delete the returned list. This function never
-// returns NULL.
-InputMethodDescriptors* GetSupportedInputMethodDescriptors();
-
 //
 // FUNCTIONS BELOW ARE ONLY FOR UNIT TESTS. DO NOT USE THEM.
 //

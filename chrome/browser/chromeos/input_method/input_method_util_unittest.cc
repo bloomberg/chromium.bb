@@ -133,10 +133,9 @@ TEST_F(InputMethodUtilTest, GetInputMethodDescriptorFromId) {
   ASSERT_TRUE(NULL != descriptor);  // ASSERT_NE doesn't compile.
   EXPECT_EQ("pinyin", descriptor->id);
   EXPECT_EQ("us", descriptor->keyboard_layout);
-  // This is not zh-CN as the language code in InputMethodDescriptor is
-  // not normalized to our format. The normalization is done in
-  // GetLanguageCodeFromDescriptor().
-  EXPECT_EQ("zh", descriptor->language_code);
+  // This used to be "zh" but now we have "zh-CN" in ibus_input_methods.h,
+  // hence this should be zh-CN now.
+  EXPECT_EQ("zh-CN", descriptor->language_code);
 }
 
 TEST_F(InputMethodUtilTest, GetLanguageNativeDisplayNameFromCode) {

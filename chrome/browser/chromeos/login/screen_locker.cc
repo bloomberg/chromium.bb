@@ -20,9 +20,9 @@
 #include "base/string_util.h"
 #include "base/timer.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/chromeos/cros/input_method_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/cros/screen_lock_library.h"
+#include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
@@ -111,17 +111,16 @@ class ScreenLockObserver : public chromeos::ScreenLockLibrary::Observer,
   // able to use/switch active keyboard layouts (e.g. US qwerty, US dvorak,
   // French).
   void SetupInputMethodsForScreenLocker() {
-    if (chromeos::CrosLibrary::Get()->EnsureLoaded() &&
-        // The LockScreen function is also called when the OS is suspended, and
+    if (// The LockScreen function is also called when the OS is suspended, and
         // in that case |saved_active_input_method_list_| might be non-empty.
         saved_active_input_method_list_.empty()) {
-      chromeos::InputMethodLibrary* library =
-          chromeos::CrosLibrary::Get()->GetInputMethodLibrary();
+      chromeos::input_method::InputMethodManager* manager =
+          chromeos::input_method::InputMethodManager::GetInstance();
 
-      saved_previous_input_method_id_ = library->previous_input_method().id;
-      saved_current_input_method_id_ = library->current_input_method().id;
+      saved_previous_input_method_id_ = manager->previous_input_method().id;
+      saved_current_input_method_id_ = manager->current_input_method().id;
       scoped_ptr<chromeos::input_method::InputMethodDescriptors>
-          active_input_method_list(library->GetActiveInputMethods());
+          active_input_method_list(manager->GetActiveInputMethods());
 
       const std::string hardware_keyboard_id =
           chromeos::input_method::GetHardwareInputMethodId();
@@ -148,8 +147,8 @@ class ScreenLockObserver : public chromeos::ScreenLockLibrary::Observer,
       }
       // We don't want to shut down the IME, even if the hardware layout is the
       // only IME left.
-      library->SetEnableAutoImeShutdown(false);
-      library->SetImeConfig(
+      manager->SetEnableAutoImeShutdown(false);
+      manager->SetImeConfig(
           chromeos::language_prefs::kGeneralSectionName,
           chromeos::language_prefs::kPreloadEnginesConfigName,
           value);
@@ -157,24 +156,23 @@ class ScreenLockObserver : public chromeos::ScreenLockLibrary::Observer,
   }
 
   void RestoreInputMethods() {
-    if (chromeos::CrosLibrary::Get()->EnsureLoaded() &&
-        !saved_active_input_method_list_.empty()) {
-      chromeos::InputMethodLibrary* library =
-          chromeos::CrosLibrary::Get()->GetInputMethodLibrary();
+    if (!saved_active_input_method_list_.empty()) {
+      chromeos::input_method::InputMethodManager* manager =
+          chromeos::input_method::InputMethodManager::GetInstance();
 
       chromeos::input_method::ImeConfigValue value;
       value.type = chromeos::input_method::ImeConfigValue::kValueTypeStringList;
       value.string_list_value = saved_active_input_method_list_;
-      library->SetEnableAutoImeShutdown(true);
-      library->SetImeConfig(
+      manager->SetEnableAutoImeShutdown(true);
+      manager->SetImeConfig(
           chromeos::language_prefs::kGeneralSectionName,
           chromeos::language_prefs::kPreloadEnginesConfigName,
           value);
       // Send previous input method id first so Ctrl+space would work fine.
       if (!saved_previous_input_method_id_.empty())
-        library->ChangeInputMethod(saved_previous_input_method_id_);
+        manager->ChangeInputMethod(saved_previous_input_method_id_);
       if (!saved_current_input_method_id_.empty())
-        library->ChangeInputMethod(saved_current_input_method_id_);
+        manager->ChangeInputMethod(saved_current_input_method_id_);
 
       saved_previous_input_method_id_.clear();
       saved_current_input_method_id_.clear();
@@ -841,9 +839,9 @@ void ScreenLocker::OnLoginFailure(const LoginFailure& error) {
   if (!error_text.empty())
     msg += ASCIIToUTF16("\n") + ASCIIToUTF16(error_text);
 
-  InputMethodLibrary* input_method_library =
-      CrosLibrary::Get()->GetInputMethodLibrary();
-  if (input_method_library->GetNumActiveInputMethods() > 1)
+  input_method::InputMethodManager* input_method_manager =
+      input_method::InputMethodManager::GetInstance();
+  if (input_method_manager->GetNumActiveInputMethods() > 1)
     msg += ASCIIToUTF16("\n") +
         l10n_util::GetStringUTF16(IDS_LOGIN_ERROR_KEYBOARD_SWITCH_HINT);
 

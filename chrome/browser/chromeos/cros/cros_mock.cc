@@ -8,14 +8,12 @@
 #include "base/message_loop.h"
 #include "base/time.h"
 #include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
-#include "chrome/browser/chromeos/cros/mock_input_method_library.h"
 #include "chrome/browser/chromeos/cros/mock_library_loader.h"
 #include "chrome/browser/chromeos/cros/mock_network_library.h"
 #include "chrome/browser/chromeos/cros/mock_power_library.h"
 #include "chrome/browser/chromeos/cros/mock_screen_lock_library.h"
 #include "chrome/browser/chromeos/cros/mock_speech_synthesis_library.h"
 #include "chrome/browser/chromeos/cros/mock_touchpad_library.h"
-#include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
 #include "chrome/test/in_process_browser_test.h"
@@ -37,14 +35,11 @@ using ::testing::_;
 CrosMock::CrosMock()
     : loader_(NULL),
       mock_cryptohome_library_(NULL),
-      mock_input_method_library_(NULL),
       mock_network_library_(NULL),
       mock_power_library_(NULL),
       mock_screen_lock_library_(NULL),
       mock_speech_synthesis_library_(NULL),
       mock_touchpad_library_(NULL) {
-  current_input_method_ =
-      input_method::GetFallbackInputMethodDescriptor();
 }
 
 CrosMock::~CrosMock() {
@@ -55,7 +50,6 @@ chromeos::CrosLibrary::TestApi* CrosMock::test_api() {
 }
 
 void CrosMock::InitStatusAreaMocks() {
-  InitMockInputMethodLibrary();
   InitMockNetworkLibrary();
   InitMockPowerLibrary();
   InitMockTouchpadLibrary();
@@ -77,14 +71,6 @@ void CrosMock::InitMockCryptohomeLibrary() {
     return;
   mock_cryptohome_library_ = new StrictMock<MockCryptohomeLibrary>();
   test_api()->SetCryptohomeLibrary(mock_cryptohome_library_, true);
-}
-
-void CrosMock::InitMockInputMethodLibrary() {
-  InitMockLibraryLoader();
-  if (mock_input_method_library_)
-    return;
-  mock_input_method_library_ = new StrictMock<MockInputMethodLibrary>();
-  test_api()->SetInputMethodLibrary(mock_input_method_library_, true);
 }
 
 void CrosMock::InitMockNetworkLibrary() {
@@ -133,10 +119,6 @@ MockCryptohomeLibrary* CrosMock::mock_cryptohome_library() {
   return mock_cryptohome_library_;
 }
 
-MockInputMethodLibrary* CrosMock::mock_input_method_library() {
-  return mock_input_method_library_;
-}
-
 MockNetworkLibrary* CrosMock::mock_network_library() {
   return mock_network_library_;
 }
@@ -158,61 +140,10 @@ MockTouchpadLibrary* CrosMock::mock_touchpad_library() {
 }
 
 void CrosMock::SetStatusAreaMocksExpectations() {
-  SetInputMethodLibraryStatusAreaExpectations();
   SetNetworkLibraryStatusAreaExpectations();
   SetPowerLibraryStatusAreaExpectations();
   SetPowerLibraryExpectations();
   SetTouchpadLibraryExpectations();
-}
-
-void CrosMock::SetInputMethodLibraryStatusAreaExpectations() {
-  EXPECT_CALL(*mock_input_method_library_, AddObserver(_))
-      .Times(AnyNumber())
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_input_method_library_, GetActiveInputMethods())
-      .Times(AnyNumber())
-      .WillRepeatedly(InvokeWithoutArgs(CreateInputMethodDescriptors))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_input_method_library_, GetSupportedInputMethods())
-      .Times(AnyNumber())
-      .WillRepeatedly(InvokeWithoutArgs(CreateInputMethodDescriptors))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_input_method_library_, GetKeyboardOverlayId(_))
-      .Times(AnyNumber())
-      .WillRepeatedly((Return("en_US")))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_input_method_library_, current_input_method())
-      .Times(AnyNumber())
-      .WillRepeatedly((Return(current_input_method_)))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_input_method_library_, previous_input_method())
-      .Times(AnyNumber())
-      .WillRepeatedly((Return(previous_input_method_)))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_input_method_library_, current_ime_properties())
-      .Times(AnyNumber())
-      .WillRepeatedly((ReturnRef(ime_properties_)))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_input_method_library_, GetNumActiveInputMethods())
-      .Times(AnyNumber())
-      .WillRepeatedly((Return(1)))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_input_method_library_, SetImeConfig(_, _, _))
-      .Times(AnyNumber())
-      .WillRepeatedly((Return(true)))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_input_method_library_, RemoveObserver(_))
-      .Times(AnyNumber())
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_input_method_library_, SetDeferImeStartup(_))
-      .Times(AnyNumber())
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_input_method_library_, StopInputMethodDaemon())
-      .Times(AnyNumber())
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_input_method_library_, ChangeInputMethod(_))
-      .Times(AnyNumber())
-      .RetiresOnSaturation();
 }
 
 void CrosMock::SetNetworkLibraryStatusAreaExpectations() {
@@ -388,8 +319,6 @@ void CrosMock::TearDownMocks() {
     test_api()->SetLibraryLoader(NULL, false);
   if (mock_cryptohome_library_)
     test_api()->SetCryptohomeLibrary(NULL, false);
-  if (mock_input_method_library_)
-    test_api()->SetInputMethodLibrary(NULL, false);
   if (mock_network_library_)
     test_api()->SetNetworkLibrary(NULL, false);
   if (mock_power_library_)
@@ -400,15 +329,6 @@ void CrosMock::TearDownMocks() {
     test_api()->SetSpeechSynthesisLibrary(NULL, false);
   if (mock_touchpad_library_)
     test_api()->SetTouchpadLibrary(NULL, false);
-}
-
-input_method::InputMethodDescriptors*
-CrosMock::CreateInputMethodDescriptors() {
-  input_method::InputMethodDescriptors* descriptors =
-      new input_method::InputMethodDescriptors;
-  descriptors->push_back(
-      input_method::GetFallbackInputMethodDescriptor());
-  return descriptors;
 }
 
 }  // namespace chromeos

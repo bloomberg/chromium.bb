@@ -73,23 +73,6 @@ ImeConfigValue::ImeConfigValue()
 ImeConfigValue::~ImeConfigValue() {
 }
 
-// TODO(satorux): The function is used via
-// InputMethodLibrary::GetSupportedInputMethodDescriptors(). The
-// indirection is unnecessary once we get rid of libcros. We should
-// refactor the two functions.
-InputMethodDescriptors* GetSupportedInputMethodDescriptors() {
-  InputMethodDescriptors* input_methods = new InputMethodDescriptors;
-  for (size_t i = 0; i < arraysize(kIBusEngines); ++i) {
-    if (InputMethodIdIsWhitelisted(kIBusEngines[i].id)) {
-      input_methods->push_back(CreateInputMethodDescriptor(
-          kIBusEngines[i].id,
-          kIBusEngines[i].layout,
-          kIBusEngines[i].language));
-    }
-  }
-  return input_methods;
-}
-
 // Returns true if |input_method_id| is whitelisted.
 bool InputMethodIdIsWhitelisted(const std::string& input_method_id) {
   static std::set<std::string>* g_supported_input_methods = NULL;

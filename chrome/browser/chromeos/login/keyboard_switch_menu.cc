@@ -6,7 +6,7 @@
 
 #include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
 #include "grit/generated_resources.h"
@@ -64,9 +64,10 @@ string16 KeyboardSwitchMenu::GetCurrentKeyboardName() const {
   }
   VLOG(1) << "The input method menu is not ready yet. Show the display "
           << "name of the current input method";
-  InputMethodLibrary* library = CrosLibrary::Get()->GetInputMethodLibrary();
+  input_method::InputMethodManager* manager =
+      input_method::InputMethodManager::GetInstance();
   return UTF8ToUTF16(input_method::GetInputMethodDisplayNameFromId(
-      library->current_input_method().id));
+      manager->current_input_method().id));
 }
 
 }  // namespace chromeos

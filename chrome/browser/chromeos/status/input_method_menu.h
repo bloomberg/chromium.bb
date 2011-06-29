@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "chrome/browser/chromeos/cros/input_method_library.h"
+#include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "content/common/notification_observer.h"
@@ -38,7 +38,7 @@ namespace chromeos {
 // which shows the dropdown menu on click.
 class InputMethodMenu : public views::ViewMenuDelegate,
                         public ui::MenuModel,
-                        public InputMethodLibrary::Observer,
+                        public input_method::InputMethodManager::Observer,
                         public NotificationObserver {
  public:
   InputMethodMenu(PrefService* pref_service,
@@ -70,23 +70,23 @@ class InputMethodMenu : public views::ViewMenuDelegate,
   // to adjust the position of the menu.
   virtual void RunMenu(views::View* source, const gfx::Point& pt);
 
-  // InputMethodLibrary::Observer implementation.
+  // InputMethodManager::Observer implementation.
   virtual void InputMethodChanged(
-      InputMethodLibrary* obj,
+      input_method::InputMethodManager* manager,
       const input_method::InputMethodDescriptor& current_input_method,
       size_t num_active_input_methods);
   virtual void ActiveInputMethodsChanged(
-      InputMethodLibrary* obj,
+      input_method::InputMethodManager* manager,
       const input_method::InputMethodDescriptor& current_input_method,
       size_t num_active_input_methods);
   virtual void PreferenceUpdateNeeded(
-    InputMethodLibrary* obj,
+    input_method::InputMethodManager* manager,
     const input_method::InputMethodDescriptor& previous_input_method,
     const input_method::InputMethodDescriptor& current_input_method);
   virtual void PropertyListChanged(
-      InputMethodLibrary* obj,
+      input_method::InputMethodManager* manager,
       const input_method::ImePropertyList& current_ime_properties);
-  virtual void FirstObserverIsAdded(InputMethodLibrary* obj);
+  virtual void FirstObserverIsAdded(input_method::InputMethodManager* manager);
 
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,

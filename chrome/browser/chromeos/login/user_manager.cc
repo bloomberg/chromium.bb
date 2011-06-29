@@ -20,7 +20,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
-#include "chrome/browser/chromeos/cros/input_method_library.h"
+#include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
@@ -606,10 +606,10 @@ void UserManager::NotifyOnLogin() {
       Source<UserManager>(this),
       Details<const User>(&logged_in_user_));
 
-  chromeos::CrosLibrary::Get()->GetInputMethodLibrary()->
+  chromeos::input_method::InputMethodManager::GetInstance()->
       SetDeferImeStartup(false);
   // Shut down the IME so that it will reload the user's settings.
-  chromeos::CrosLibrary::Get()->GetInputMethodLibrary()->
+  chromeos::input_method::InputMethodManager::GetInstance()->
       StopInputMethodDaemon();
   // Let the window manager know that we're logged in now.
   WmIpc::instance()->SetLoggedInProperty(true);

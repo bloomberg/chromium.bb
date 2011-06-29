@@ -12,6 +12,7 @@
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -19,9 +20,6 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/input_method_library.h"
 
 namespace chromeos {
 
@@ -59,10 +57,8 @@ void CrosLanguageOptionsHandler::GetLocalizedValues(
           IDS_OPTIONS_SETTINGS_LANGUAGES_SIGN_OUT_BUTTON));
 
   // GetSupportedInputMethods() never return NULL.
-  InputMethodLibrary *im_library =
-      CrosLibrary::Get()->GetInputMethodLibrary();
   scoped_ptr<input_method::InputMethodDescriptors> descriptors(
-      im_library->GetSupportedInputMethods());
+      input_method::GetSupportedInputMethods());
   localized_strings->Set("languageList", GetLanguageList(*descriptors));
   localized_strings->Set("inputMethodList", GetInputMethodList(*descriptors));
 }

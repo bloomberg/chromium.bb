@@ -19,7 +19,8 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/input_method/ibus_input_methods.h"
+#include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/keyboard_overlay_map.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -53,10 +54,8 @@ struct IdMaps {
   }
 
   void ReloadMaps() {
-    InputMethodLibrary* library =
-        CrosLibrary::Get()->GetInputMethodLibrary();
     scoped_ptr<InputMethodDescriptors> supported_input_methods(
-        library->GetSupportedInputMethods());
+        GetSupportedInputMethods());
     if (supported_input_methods->size() <= 1) {
       LOG(ERROR) << "GetSupportedInputMethods returned a fallback ID";
       // TODO(yusukes): Handle this error in nicer way.
@@ -691,13 +690,13 @@ void EnableInputMethods(const std::string& language_code, InputMethodType type,
   ImeConfigValue value;
   value.type = ImeConfigValue::kValueTypeStringList;
   value.string_list_value = input_method_ids;
-  InputMethodLibrary* library = CrosLibrary::Get()->GetInputMethodLibrary();
-  library->SetImeConfig(language_prefs::kGeneralSectionName,
+  InputMethodManager* manager = InputMethodManager::GetInstance();
+  manager->SetImeConfig(language_prefs::kGeneralSectionName,
                         language_prefs::kPreloadEnginesConfigName, value);
 
   // Finaly, change to the initial input method, as needed.
   if (!initial_input_method_id.empty()) {
-    library->ChangeInputMethod(initial_input_method_id);
+    manager->ChangeInputMethod(initial_input_method_id);
   }
 }
 
@@ -730,6 +729,19 @@ std::string GetHardwareInputMethodId() {
 
 InputMethodDescriptor GetFallbackInputMethodDescriptor() {
   return InputMethodDescriptor("xkb:us::eng", "us", "us", "eng");
+}
+
+InputMethodDescriptors* GetSupportedInputMethods() {
+  InputMethodDescriptors* input_methods = new InputMethodDescriptors;
+  for (size_t i = 0; i < arraysize(kIBusEngines); ++i) {
+    if (InputMethodIdIsWhitelisted(kIBusEngines[i].id)) {
+      input_methods->push_back(CreateInputMethodDescriptor(
+          kIBusEngines[i].id,
+          kIBusEngines[i].layout,
+          kIBusEngines[i].language));
+    }
+  }
+  return input_methods;
 }
 
 void ReloadInternalMaps() {

@@ -27,7 +27,6 @@
 #include "views/focus/focus_manager.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/input_method/virtual_keyboard_selector.h"
 #endif
 
@@ -88,9 +87,9 @@ TouchBrowserFrameView::TouchBrowserFrameView(BrowserFrame* frame,
   animation_->SetSlideDuration(kKeyboardSlideDuration);
 
 #if defined(OS_CHROMEOS)
-  chromeos::InputMethodLibrary* library =
-      chromeos::CrosLibrary::Get()->GetInputMethodLibrary();
-  library->AddVirtualKeyboardObserver(this);
+  chromeos::input_method::InputMethodManager* manager =
+      chromeos::input_method::InputMethodManager::GetInstance();
+  manager->AddVirtualKeyboardObserver(this);
 #endif
 }
 
@@ -363,7 +362,7 @@ void TouchBrowserFrameView::AnimationEnded(const ui::Animation* animation) {
 
 #if defined(OS_CHROMEOS)
 void TouchBrowserFrameView::VirtualKeyboardChanged(
-    chromeos::InputMethodLibrary* obj,
+    chromeos::input_method::InputMethodManager* manager,
     const chromeos::input_method::VirtualKeyboard& virtual_keyboard,
     const std::string& virtual_keyboard_layout) {
   if (!keyboard_)

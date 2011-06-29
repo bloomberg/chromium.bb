@@ -10,9 +10,9 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/input_method_library.h"
 #include "chrome/browser/chromeos/cros/power_library.h"
 #include "chrome/browser/chromeos/cros/touchpad_library.h"
+#include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
@@ -448,7 +448,7 @@ void Preferences::SetLanguageConfigBoolean(const char* section,
   input_method::ImeConfigValue config;
   config.type = input_method::ImeConfigValue::kValueTypeBool;
   config.bool_value = value;
-  CrosLibrary::Get()->GetInputMethodLibrary()->
+  input_method::InputMethodManager::GetInstance()->
       SetImeConfig(section, name, config);
 }
 
@@ -458,7 +458,7 @@ void Preferences::SetLanguageConfigInteger(const char* section,
   input_method::ImeConfigValue config;
   config.type = input_method::ImeConfigValue::kValueTypeInt;
   config.int_value = value;
-  CrosLibrary::Get()->GetInputMethodLibrary()->
+  input_method::InputMethodManager::GetInstance()->
       SetImeConfig(section, name, config);
 }
 
@@ -468,7 +468,7 @@ void Preferences::SetLanguageConfigString(const char* section,
   input_method::ImeConfigValue config;
   config.type = input_method::ImeConfigValue::kValueTypeString;
   config.string_value = value;
-  CrosLibrary::Get()->GetInputMethodLibrary()->
+  input_method::InputMethodManager::GetInstance()->
       SetImeConfig(section, name, config);
 }
 
@@ -481,7 +481,7 @@ void Preferences::SetLanguageConfigStringList(
   for (size_t i = 0; i < values.size(); ++i)
     config.string_list_value.push_back(values[i]);
 
-  CrosLibrary::Get()->GetInputMethodLibrary()->
+  input_method::InputMethodManager::GetInstance()->
       SetImeConfig(section, name, config);
 }
 
