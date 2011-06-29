@@ -5,7 +5,7 @@
 #include "content/browser/renderer_host/sync_resource_handler.h"
 
 #include "base/logging.h"
-#include "chrome/browser/debugger/devtools_netlog_observer.h"
+#include "content/browser/debugger/devtools_netlog_observer.h"
 #include "content/browser/renderer_host/global_request_id.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_delegate.h"

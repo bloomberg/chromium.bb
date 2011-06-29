@@ -1,0 +1,37 @@
+include_rules = [
+  # Listing of the remaining #chrome includes in content/browser/debugger.
+  # We are actively working on reducing this to 0.
+  # DO NOT ADD ANY MORE TO THIS LIST!!!
+  # See https://sites.google.com/a/chromium.org/dev/developers/content-module
+  # for more information.
+
+  # http://crbug.com/84078
+  "+chrome/browser/browser_process.h",
+  "+chrome/browser/download/download_prefs.h",
+  "+chrome/browser/extensions/extension_host.h",
+  "+chrome/browser/extensions/extension_message_service.h",
+  "+chrome/browser/extensions/extension_service.h",
+  "+chrome/browser/io_thread.h",
+  "+chrome/browser/net/chrome_net_log.h",
+  "+chrome/browser/prefs/pref_service.h",
+  "+chrome/browser/prefs/scoped_user_pref_update.h",
+  "+chrome/browser/profiles/profile_manager.h",
+  "+chrome/browser/sessions/restore_tab_helper.h",
+  "+chrome/browser/sessions/session_id.h",
+  "+chrome/browser/tabs/tab_strip_model.h",
+  "+chrome/browser/themes/theme_service.h",
+  "+chrome/browser/themes/theme_service_factory.h",
+  "+chrome/browser/ui/browser_list.h",
+  "+chrome/browser/ui/browser_window.h",
+  "+chrome/browser/ui/shell_dialogs.h",
+  "+chrome/browser/ui/tab_contents/tab_contents_wrapper.h",
+  "+chrome/browser/ui/webui/devtools_ui.h",
+  "+chrome/common/chrome_paths.h",
+  "+chrome/common/extensions/extension_messages.h",
+  "+chrome/common/pref_names.h",
+  "+chrome/common/render_messages.h",
+  "+chrome/common/url_constants.h",
+  "+ui/base/resource/resource_bundle.h",
+
+  # DO NOT ADD ANY MORE TO THIS LIST!!!  SEE ABOVE COMMENT
+]

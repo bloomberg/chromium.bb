@@ -9,10 +9,6 @@ include_rules = [
 
   "+chrome/browser/browser_url_handler.h",
 
-  # http://crbug.com/84078
-  "+chrome/browser/debugger/devtools_manager.h",
-  "+chrome/browser/debugger/devtools_netlog_observer.h",
-
   # http://crbug.com/82782
   "+chrome/browser/download/download_file_manager.h",
   "+chrome/browser/download/download_manager.h",
@@ -31,6 +27,6 @@ include_rules = [
 
   # ONLY USED BY TESTS
   "+chrome/browser/ui/browser.h",
-  
+
   # DO NOT ADD ANY MORE TO THIS LIST!!!  SEE ABOVE COMMENT
 ]

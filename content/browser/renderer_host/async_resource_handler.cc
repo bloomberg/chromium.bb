@@ -10,7 +10,7 @@
 #include "base/hash_tables.h"
 #include "base/logging.h"
 #include "base/shared_memory.h"
-#include "chrome/browser/debugger/devtools_netlog_observer.h"
+#include "content/browser/debugger/devtools_netlog_observer.h"
 #include "content/browser/host_zoom_map.h"
 #include "content/browser/renderer_host/global_request_id.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"

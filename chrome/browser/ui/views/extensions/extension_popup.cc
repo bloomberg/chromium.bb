@@ -6,8 +6,6 @@
 
 #include <vector>
 
-#include "chrome/browser/debugger/devtools_manager.h"
-#include "chrome/browser/debugger/devtools_toggle_action.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -15,6 +13,8 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/extensions/extension.h"
+#include "content/browser/debugger/devtools_manager.h"
+#include "content/browser/debugger/devtools_toggle_action.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/common/notification_details.h"

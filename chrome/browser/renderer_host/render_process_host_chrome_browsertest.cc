@@ -5,11 +5,11 @@
 #include "content/browser/renderer_host/render_process_host_browsertest.h"
 
 #include "base/command_line.h"
-#include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/ui_test_utils.h"
+#include "content/browser/debugger/devtools_manager.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"

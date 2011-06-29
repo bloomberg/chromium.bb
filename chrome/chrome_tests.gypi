@@ -476,7 +476,6 @@
         'browser/browser_focus_uitest.cc',
         'browser/browser_keyevents_browsertest.cc',
         'browser/collected_cookies_uitest.cc',
-        'browser/debugger/devtools_sanity_unittest.cc',
         'browser/instant/instant_browsertest.cc',
         'browser/notifications/notifications_interactive_uitest.cc',
         'browser/ui/gtk/bookmarks/bookmark_bar_gtk_interactive_uitest.cc',
@@ -495,6 +494,7 @@
         'test/interactive_ui/view_event_test_base.h',
         'test/out_of_proc_test_runner.cc',
         'test/unit/chrome_test_suite.h',
+        '../content/browser/debugger/devtools_sanity_unittest.cc',
       ],
       'conditions': [
         ['toolkit_uses_gtk == 1', {
@@ -534,7 +534,6 @@
         ['OS=="mac"', {
           'sources!': [
             # TODO(port)
-            'browser/debugger/devtools_sanity_unittest.cc',
             'browser/ui/views/bookmarks/bookmark_bar_view_test.cc',
             'browser/ui/views/button_dropdown_test.cc',
             'browser/ui/views/find_bar_host_interactive_uitest.cc',
@@ -544,6 +543,7 @@
             'test/interactive_ui/npapi_interactive_test.cc',
             'test/interactive_ui/view_event_test_base.cc',
             'test/interactive_ui/view_event_test_base.h',
+            '../content/browser/debugger/devtools_sanity_unittest.cc',
           ],
           # See comment about the same line in chrome/chrome_tests.gypi.
           'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
@@ -1363,10 +1363,6 @@
         'browser/content_settings/tab_specific_content_settings_unittest.cc',
         'browser/cookies_tree_model_unittest.cc',
         'browser/custom_handlers/protocol_handler_registry_unittest.cc',
-        'browser/debugger/devtools_manager_unittest.cc',
-        'browser/debugger/devtools_remote_listen_socket_unittest.cc',
-        'browser/debugger/devtools_remote_listen_socket_unittest.h',
-        'browser/debugger/devtools_remote_message_unittest.cc',
         'browser/diagnostics/diagnostics_model_unittest.cc',
         'browser/download/base_file_unittest.cc',
         'browser/download/download_file_unittest.cc',
@@ -1960,6 +1956,10 @@
         '../content/browser/appcache/chrome_appcache_service_unittest.cc',
         '../content/browser/browser_thread_unittest.cc',
         '../content/browser/child_process_security_policy_unittest.cc',
+        '../content/browser/debugger/devtools_manager_unittest.cc',
+        '../content/browser/debugger/devtools_remote_listen_socket_unittest.cc',
+        '../content/browser/debugger/devtools_remote_listen_socket_unittest.h',
+        '../content/browser/debugger/devtools_remote_message_unittest.cc',
         '../content/browser/device_orientation/provider_unittest.cc',
         '../content/browser/geolocation/device_data_provider_unittest.cc',
         '../content/browser/geolocation/fake_access_token_store.cc',
