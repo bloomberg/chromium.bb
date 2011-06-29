@@ -72,7 +72,13 @@ class PrintPreviewWebUITest
   }
 };
 
-IN_PROC_BROWSER_TEST_F(PrintPreviewWebUITest, TestPrintPreview) {
+// http://crbug.com/87964
+#if defined(OS_CHROMEOS)
+#define MAYBE_TestPrintPreview FLAKY_TestPrintPreview
+#elif
+#define MAYBE_TestPrintPreview TestPrintPreview
+#endif // defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(PrintPreviewWebUITest, MAYBE_TestPrintPreview) {
   ASSERT_TRUE(RunJavascriptTest("testPrintPreview",
                                 *Value::CreateBooleanValue(HasPDFLib())));
 }
