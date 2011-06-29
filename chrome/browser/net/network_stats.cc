@@ -216,7 +216,10 @@ bool UDPStatsClient::Start(const std::string& ip_str,
   net::IPEndPoint server_address = net::IPEndPoint(ip_number, port);
 
   net::UDPClientSocket* udp_socket =
-     new net::UDPClientSocket(NULL, net::NetLog::Source());
+      new net::UDPClientSocket(net::DatagramSocket::DEFAULT_BIND,
+                               net::RandIntCallback(),
+                               NULL,
+                               net::NetLog::Source());
   DCHECK(udp_socket);
   set_socket(udp_socket);
 

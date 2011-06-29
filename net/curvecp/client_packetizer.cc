@@ -290,7 +290,10 @@ int ClientPacketizer::ConnectNextAddress() {
 
   DCHECK(addresses_.head());
 
-  socket_.reset(new UDPClientSocket(NULL, NetLog::Source()));
+  socket_.reset(new UDPClientSocket(DatagramSocket::DEFAULT_BIND,
+                                    RandIntCallback(),
+                                    NULL,
+                                    NetLog::Source()));
 
   // Rotate to next address in the list.
   if (current_address_)
