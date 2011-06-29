@@ -100,7 +100,10 @@ cr.define('options', function() {
           localStrings.getString(id + 'DeleteImpact'),
           localStrings.getString('ok'),
           localStrings.getString('cancel'),
-          function() { chrome.send('deleteCertificate', [data.id]); });
+          function() {
+            tree.selectedItem = null;
+            chrome.send('deleteCertificate', [data.id]);
+          });
     }
   }
 
