@@ -59,6 +59,7 @@
 #include "base/threading/thread.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
+#include "media/filters/chunk_demuxer_factory.h"
 #include "media/base/filters.h"
 #include "media/base/message_loop_factory.h"
 #include "media/base/pipeline.h"
@@ -201,6 +202,7 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
   // Playback controls.
   virtual void play();
   virtual void pause();
+  virtual bool addData(const unsigned char* data, unsigned length);
   virtual bool supportsFullscreen() const;
   virtual bool supportsSave() const;
   virtual void seek(float seconds);
@@ -325,6 +327,9 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
   WebKit::WebMediaPlayerClient* client_;
 
   scoped_refptr<Proxy> proxy_;
+
+  scoped_ptr<media::ChunkDemuxerFactory> chunk_demuxer_factory_;
+  scoped_ptr<media::MediaDataSink> media_data_sink_;
 
 #if WEBKIT_USING_CG
   scoped_ptr<skia::PlatformCanvas> skia_canvas_;

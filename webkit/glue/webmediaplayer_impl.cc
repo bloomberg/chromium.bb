@@ -340,6 +340,11 @@ bool WebMediaPlayerImpl::Initialize(
     data_source_factory->AddFactory(simple_data_source_factory.release());
   }
 
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableAdaptive)) {
+    chunk_demuxer_factory_.reset(new media::ChunkDemuxerFactory(
+        data_source_factory->Clone()));
+  }
+
   scoped_ptr<media::DemuxerFactory> demuxer_factory(
       new media::FFmpegDemuxerFactory(data_source_factory.release(),
                                       pipeline_message_loop));
@@ -384,6 +389,12 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url) {
     filter_collection_->AddVideoDecoder(rtc_video_decoder);
   }
 
+  if (chunk_demuxer_factory_.get() &&
+      chunk_demuxer_factory_->IsUrlSupported(url.spec())) {
+    media_data_sink_.reset(chunk_demuxer_factory_->CreateMediaDataSink());
+    filter_collection_->SetDemuxerFactory(chunk_demuxer_factory_.release());
+  }
+
   // Handle any volume changes that occured before load().
   setVolume(GetClient()->volume());
   // Get the preload value.
@@ -416,6 +427,15 @@ void WebMediaPlayerImpl::pause() {
   paused_ = true;
   pipeline_->SetPlaybackRate(0.0f);
   paused_time_ = pipeline_->GetCurrentTime();
+}
+
+bool WebMediaPlayerImpl::addData(const unsigned char* data, unsigned length) {
+  DCHECK(MessageLoop::current() == main_loop_);
+
+  if (!media_data_sink_.get())
+    return false;
+
+  return media_data_sink_->AddData(data, length);
 }
 
 bool WebMediaPlayerImpl::supportsFullscreen() const {
@@ -451,6 +471,9 @@ void WebMediaPlayerImpl::seek(float seconds) {
   }
 
   seeking_ = true;
+
+  if (media_data_sink_.get())
+    media_data_sink_->Flush();
 
   // Kick off the asynchronous seek!
   pipeline_->Seek(
@@ -567,7 +590,6 @@ float WebMediaPlayerImpl::duration() const {
 
 float WebMediaPlayerImpl::currentTime() const {
   DCHECK(MessageLoop::current() == main_loop_);
-
   if (paused_) {
     return static_cast<float>(paused_time_.InSecondsF());
   }
@@ -907,6 +929,9 @@ void WebMediaPlayerImpl::Destroy() {
   // not blocked when issuing stop commands to the other filters.
   if (proxy_)
     proxy_->AbortDataSources();
+
+  if (media_data_sink_.get())
+    media_data_sink_->Shutdown();
 
   // Make sure to kill the pipeline so there's no more media threads running.
   // Note: stopping the pipeline might block for a long time.
