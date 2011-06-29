@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_TAB_CONTENTS_TAB_CONTENTS_DELEGATE_H_
 #pragma once
 
+#include <set>
 #include <string>
 
 #include "base/basictypes.h"
@@ -41,6 +42,8 @@ class TabContents;
 // TabContents and to provide necessary functionality.
 class TabContentsDelegate {
  public:
+  TabContentsDelegate();
+
   // Opens a new URL inside the passed in TabContents (if source is 0 open
   // in the current front-most tab), unless |disposition| indicates the url
   // should be opened in a new tab or window.
@@ -293,6 +296,18 @@ class TabContentsDelegate {
 
  protected:
   virtual ~TabContentsDelegate();
+
+ private:
+  friend class TabContents;
+
+  // Called when |this| becomes the TabContentsDelegate for |source|.
+  void Attach(TabContents* source);
+
+  // Called when |this| is no longer the TabContentsDelegate for |source|.
+  void Detach(TabContents* source);
+
+  // The TabContents that this is currently a delegate for.
+  std::set<TabContents*> attached_contents_;
 };
 
 #endif  // CONTENT_BROWSER_TAB_CONTENTS_TAB_CONTENTS_DELEGATE_H_

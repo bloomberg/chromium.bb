@@ -51,6 +51,8 @@ HtmlDialogView::HtmlDialogView(Profile* profile,
 }
 
 HtmlDialogView::~HtmlDialogView() {
+  if (tab_contents_.get())
+    tab_contents_->set_delegate(NULL);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
