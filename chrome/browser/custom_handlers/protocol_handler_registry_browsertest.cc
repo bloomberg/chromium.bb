@@ -36,8 +36,7 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
 
 class RegisterProtocolHandlerBrowserTest : public InProcessBrowserTest {
  public:
-  RegisterProtocolHandlerBrowserTest() {
-  }
+  RegisterProtocolHandlerBrowserTest() { }
 
   TestRenderViewContextMenu* CreateContextMenu(GURL url) {
     ContextMenuParams params;
