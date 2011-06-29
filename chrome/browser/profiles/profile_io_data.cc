@@ -22,7 +22,6 @@
 #include "chrome/browser/net/chrome_dns_cert_provenance_checker_factory.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
-#include "chrome/browser/net/metadata_url_request.h"
 #include "chrome/browser/net/pref_proxy_config_service.h"
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
@@ -445,11 +444,6 @@ void ProfileIOData::LazyInitialize() const {
   set_protocol = job_factory_->SetProtocolHandler(
       chrome::kChromeDevToolsScheme,
       CreateDevToolsProtocolHandler(chrome_url_data_manager_backend_.get()));
-#if defined(OS_CHROMEOS)
-  set_protocol = job_factory_->SetProtocolHandler(
-      chrome::kMetadataScheme,
-      CreateMetadataProtocolHandler());
-#endif  // defined(OS_CHROMEOS)
   DCHECK(set_protocol);
   set_protocol = job_factory_->SetProtocolHandler(
       chrome::kBlobScheme,

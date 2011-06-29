@@ -1394,8 +1394,6 @@
         'browser/net/gaia/token_service.h',
         'browser/net/load_timing_observer.cc',
         'browser/net/load_timing_observer.h',
-        'browser/net/metadata_url_request.cc',
-        'browser/net/metadata_url_request.h',
         'browser/net/net_log_logger.cc',
         'browser/net/net_log_logger.h',
         'browser/net/net_pref_observer.cc',
