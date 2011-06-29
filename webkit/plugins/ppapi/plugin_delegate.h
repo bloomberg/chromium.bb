@@ -46,6 +46,7 @@ class Rect;
 
 namespace gpu {
 class CommandBuffer;
+class CommandBufferHelper;
 }
 
 namespace ppapi {
@@ -263,7 +264,8 @@ class PluginDelegate {
   // The caller will own the pointer returned from this.
   virtual PlatformVideoDecoder* CreateVideoDecoder(
       media::VideoDecodeAccelerator::Client* client,
-      int command_buffer_route_id) = 0;
+      int32 command_buffer_route_id,
+      gpu::CommandBufferHelper* cmd_buffer_helper) = 0;
 
   // The caller is responsible for calling Shutdown() on the returned pointer
   // to clean up the corresponding resources allocated during this call.

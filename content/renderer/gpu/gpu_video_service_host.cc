@@ -12,32 +12,25 @@
 GpuVideoServiceHost::GpuVideoServiceHost()
     : channel_(NULL),
       next_decoder_host_id_(0) {
+  DCHECK(RenderThread::current());
+  DCHECK_EQ(RenderThread::current()->message_loop(), MessageLoop::current());
 }
 
 GpuVideoServiceHost::~GpuVideoServiceHost() {
 }
 
-void GpuVideoServiceHost::OnFilterAdded(IPC::Channel* channel) {
-  base::Closure on_initialized;
-  {
-    base::AutoLock auto_lock(lock_);
-    DCHECK(!channel_);
-    channel_ = channel;
-    on_initialized = on_initialized_;
-  }
-  if (!on_initialized.is_null())
-    on_initialized.Run();
-}
-
-void GpuVideoServiceHost::OnFilterRemoved() {
-  // TODO(hclam): Implement.
-}
-
-void GpuVideoServiceHost::OnChannelClosing() {
-  // TODO(hclam): Implement.
+void GpuVideoServiceHost::set_channel(IPC::SyncChannel* channel) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(!channel_);
+  channel_ = channel;
+  if (!on_initialized_.is_null())
+    on_initialized_.Run();
 }
 
 bool GpuVideoServiceHost::OnMessageReceived(const IPC::Message& msg) {
+  DCHECK(CalledOnValidThread());
+  if (!channel_)
+    return false;
   switch (msg.type()) {
     case AcceleratedVideoDecoderHostMsg_BitstreamBufferProcessed::ID:
     case AcceleratedVideoDecoderHostMsg_ProvidePictureBuffers::ID:
@@ -57,25 +50,27 @@ bool GpuVideoServiceHost::OnMessageReceived(const IPC::Message& msg) {
   }
 }
 
+void GpuVideoServiceHost::OnChannelError() {
+  DCHECK(CalledOnValidThread());
+  channel_ = NULL;
+}
+
 void GpuVideoServiceHost::SetOnInitialized(
     const base::Closure& on_initialized) {
-  IPC::Channel* channel;
-  {
-    base::AutoLock auto_lock(lock_);
-    DCHECK(on_initialized_.is_null());
-    on_initialized_ = on_initialized;
-    channel = channel_;
-  }
-  if (channel)
+  DCHECK(CalledOnValidThread());
+  DCHECK(on_initialized_.is_null());
+  on_initialized_ = on_initialized;
+  if (channel_)
     on_initialized.Run();
 }
 
 GpuVideoDecodeAcceleratorHost* GpuVideoServiceHost::CreateVideoAccelerator(
     media::VideoDecodeAccelerator::Client* client,
-    int command_buffer_route_id) {
-  base::AutoLock auto_lock(lock_);
+    int32 command_buffer_route_id,
+    gpu::CommandBufferHelper* cmd_buffer_helper) {
+  DCHECK(CalledOnValidThread());
   DCHECK(channel_);
   return new GpuVideoDecodeAcceleratorHost(
       &router_, channel_, next_decoder_host_id_++,
-      command_buffer_route_id, client);
+      command_buffer_route_id, cmd_buffer_helper, client);
 }

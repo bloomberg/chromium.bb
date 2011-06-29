@@ -7,7 +7,6 @@
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/gpu/media/gpu_video_decode_accelerator.h"
-#include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
 #include "content/common/gpu/media/omx_video_decode_accelerator.h"
@@ -59,22 +58,14 @@ bool GpuVideoService::CreateVideoDecoder(
     MessageRouter* router,
     int32 decoder_host_id,
     int32 decoder_id,
-    gpu::gles2::GLES2Decoder* command_decoder,
+    GpuCommandBufferStub* stub,
     const std::vector<uint32>& configs) {
   // Create GpuVideoDecodeAccelerator and add to map.
   scoped_refptr<GpuVideoDecodeAccelerator> decoder =
-      new GpuVideoDecodeAccelerator(channel, decoder_host_id);
-
-#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
-  OmxVideoDecodeAccelerator* omx_decoder =
-      new OmxVideoDecodeAccelerator(decoder, MessageLoop::current());
-  omx_decoder->SetEglState(gfx::GLSurfaceEGL::GetDisplay(),
-                           command_decoder->GetGLContext()->GetHandle());
-  decoder->set_video_decode_accelerator(omx_decoder);
-#endif  // defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
+      new GpuVideoDecodeAccelerator(channel, decoder_host_id, decoder_id, stub);
 
   bool result = decoder_map_.insert(std::make_pair(
-      decoder_id, VideoDecoderInfo(decoder, command_decoder))).second;
+      decoder_id, VideoDecoderInfo(decoder, stub))).second;
 
   // Decoder ID is a unique ID determined by GpuVideoServiceHost.
   // We should always be adding entries here.
@@ -88,6 +79,24 @@ bool GpuVideoService::CreateVideoDecoder(
           decoder_host_id, decoder_id));
 
   return true;
+}
+
+void GpuVideoService::InitializeVideoDecoder(int32 decoder_id) {
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
+  DecoderMap::iterator it = decoder_map_.find(decoder_id);
+  DCHECK(it != decoder_map_.end());
+  GpuVideoDecodeAccelerator* decoder = it->second.video_decoder.get();
+  GpuCommandBufferStub* stub = it->second.stub;
+  DCHECK(stub->scheduler());
+  OmxVideoDecodeAccelerator* omx_decoder =
+      new OmxVideoDecodeAccelerator(decoder, MessageLoop::current());
+  omx_decoder->SetEglState(
+      gfx::GLSurfaceEGL::GetDisplay(),
+      stub->scheduler()->decoder()->GetGLContext()->GetHandle());
+  decoder->set_video_decode_accelerator(omx_decoder);
+#else
+  NOTIMPLEMENTED() << "HW video decode acceleration not available.";
+#endif  // defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
 }
 
 void GpuVideoService::DestroyVideoDecoder(
@@ -106,7 +115,9 @@ void GpuVideoService::AssignTexturesToDecoder(
   DCHECK(it != decoder_map_.end());
   DCHECK_EQ(it->first, decoder_id);
   GpuVideoDecodeAccelerator* video_decoder = it->second.video_decoder;
-  gpu::gles2::GLES2Decoder* command_decoder = it->second.command_decoder;
+  DCHECK(it->second.stub->scheduler());  // Ensure already Initialize()'d.
+  gpu::gles2::GLES2Decoder* command_decoder =
+      it->second.stub->scheduler()->decoder();
 
   std::vector<media::GLESBuffer> buffers;
   for (uint32 i = 0; i < buffer_ids.size(); ++i) {

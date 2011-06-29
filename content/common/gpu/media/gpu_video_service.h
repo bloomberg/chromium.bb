@@ -35,8 +35,9 @@ class GpuVideoService : public IPC::Channel::Listener {
                           MessageRouter* router,
                           int32 decoder_host_id,
                           int32 decoder_id,
-                          gpu::gles2::GLES2Decoder* command_decoder,
+                          GpuCommandBufferStub* stub,
                           const std::vector<uint32>& configs);
+  void InitializeVideoDecoder(int32 decoder_id);
   void DestroyVideoDecoder(MessageRouter* router,
                            int32 decoder_id);
 
@@ -49,12 +50,12 @@ class GpuVideoService : public IPC::Channel::Listener {
  private:
   struct VideoDecoderInfo {
     VideoDecoderInfo(scoped_refptr<GpuVideoDecodeAccelerator> g_v_d_a,
-                     gpu::gles2::GLES2Decoder* g_d)
+                     GpuCommandBufferStub* s)
         : video_decoder(g_v_d_a),
-          command_decoder(g_d) {}
+          stub(s) {}
     ~VideoDecoderInfo() {}
     scoped_refptr<GpuVideoDecodeAccelerator> video_decoder;
-    gpu::gles2::GLES2Decoder* command_decoder;
+    GpuCommandBufferStub* stub;
   };
   // Map of video and command buffer decoders, indexed by video decoder id.
   typedef std::map<int32, VideoDecoderInfo> DecoderMap;

@@ -610,7 +610,7 @@ void EglRenderingVDAClient::DecodeNextNALUs() {
   CHECK(shm.ShareToProcess(base::Process::Current().handle(), &dup_handle));
   media::BitstreamBuffer bitstream_buffer(
       next_bitstream_buffer_id_++, dup_handle, end_pos - start_pos);
-  CHECK(decoder_->Decode(bitstream_buffer));
+  decoder_->Decode(bitstream_buffer);
   encoded_data_next_pos_to_decode_ = end_pos;
 }
 

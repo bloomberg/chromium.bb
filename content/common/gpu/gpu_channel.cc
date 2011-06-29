@@ -238,13 +238,11 @@ bool GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
                         OnCreateOffscreenSurface)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_DestroySurface, OnDestroySurface)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_CreateVideoDecoder,
-        OnCreateVideoDecoder)
+                        OnCreateVideoDecoder)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_DestroyVideoDecoder,
         OnDestroyVideoDecoder)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_CreateTransportTexture,
         OnCreateTransportTexture)
-    IPC_MESSAGE_HANDLER(GpuChannelMsg_AssignTexturesToVideoDecoder,
-        OnAssignTexturesToVideoDecoder)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   DCHECK(handled) << msg.type();
@@ -353,15 +351,13 @@ void GpuChannel::OnCreateVideoDecoder(int32 decoder_host_id,
 
   int32 decoder_id = GenerateRouteID();
 
-  // TODO(fischman): this is a BUG.  We hand off stub->scheduler()->decoder()
-  // to be baked into the resulting GpuVideoDecodeAccelerator, but we don't own
-  // that GVDA, and we make no attempt to tear it down if/when
-  // stub->scheduler()->decoder() is destroyed.  GpuVideoService should be
-  // subsumed into this class and GpuVideoDecodeAccelerator should be owned by
-  // the GpuCommandBufferStub that owns the commandbuffer GVDA is using.
+  // TODO(fischman): this is a BUG.  We hand off stub to be baked into the
+  // resulting GpuVideoDecodeAccelerator, but we don't own that GVDA, and we
+  // make no attempt to tear it down if/when stub is destroyed.  GpuVideoService
+  // should be subsumed into this class and GpuVideoDecodeAccelerator should be
+  // owned by GpuCommandBufferStub.
   bool ret = service->CreateVideoDecoder(
-      this, &router_, decoder_host_id, decoder_id, stub->scheduler()->decoder(),
-      configs);
+      this, &router_, decoder_host_id, decoder_id, stub, configs);
   DCHECK(ret) << "Failed to create a GpuVideoDecodeAccelerator";
 }
 
@@ -391,15 +387,6 @@ void GpuChannel::OnCreateTransportTexture(int32 context_route_id,
        host_id, route_id);
    Send(msg);
  #endif
-}
-
-void GpuChannel::OnAssignTexturesToVideoDecoder(
-    int32 decoder_id,
-    const std::vector<int32>& buffer_ids,
-    const std::vector<uint32>& texture_ids,
-    const std::vector<gfx::Size>& sizes) {
-  GpuVideoService* service = GpuVideoService::GetInstance();
-  service->AssignTexturesToDecoder(decoder_id, buffer_ids, texture_ids, sizes);
 }
 
 bool GpuChannel::Init(base::MessageLoopProxy* io_message_loop,

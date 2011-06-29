@@ -158,6 +158,11 @@ class GpuScheduler : public CommandBufferEngine {
     decoder_->SetLatchCallback(callback);
   }
 
+  // Sets a callback which is called when set_token() is called, and passes the
+  // just-set token to the callback.  DCHECKs that no callback has previously
+  // been registered for this notification.
+  void SetTokenCallback(const base::Callback<void(int32)>& callback);
+
   // Get the GLES2Decoder associated with this scheduler.
   gles2::GLES2Decoder* decoder() const { return decoder_.get(); }
 
@@ -218,6 +223,7 @@ class GpuScheduler : public CommandBufferEngine {
   scoped_ptr<Callback1<gfx::Size>::Type> wrapped_resize_callback_;
   scoped_ptr<Callback0::Type> wrapped_swap_buffers_callback_;
   scoped_ptr<Callback0::Type> command_processed_callback_;
+  base::Callback<void(int32)> set_token_callback_;
 };
 
 }  // namespace gpu

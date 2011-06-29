@@ -60,14 +60,14 @@ bool GpuChannelHost::OnMessageReceived(const IPC::Message& message) {
   // This is expected, for example an asynchronous SwapBuffers notification
   // to a command buffer proxy that has since been destroyed. This function
   // fails silently in that case.
+  if (gpu_video_service_host_->OnMessageReceived(message))
+    return true;
   return router_.RouteMessage(message);
 }
 
 void GpuChannelHost::OnChannelConnected(int32 peer_pid) {
-  // When the channel is connected we create a GpuVideoServiceHost and add it
-  // as a message filter.
-  channel_->AddFilter(gpu_video_service_host_.get());
   channel_->AddFilter(transport_texture_service_.get());
+  gpu_video_service_host_->set_channel(channel_.get());
 }
 
 void GpuChannelHost::OnChannelError() {

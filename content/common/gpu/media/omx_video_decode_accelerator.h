@@ -37,14 +37,14 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   bool GetConfigs(const std::vector<uint32>& requested_configs,
                   std::vector<uint32>* matched_configs) OVERRIDE;
   bool Initialize(const std::vector<uint32>& config) OVERRIDE;
-  bool Decode(const media::BitstreamBuffer& bitstream_buffer) OVERRIDE;
+  void Decode(const media::BitstreamBuffer& bitstream_buffer) OVERRIDE;
   virtual void AssignGLESBuffers(
       const std::vector<media::GLESBuffer>& buffers) OVERRIDE;
   virtual void AssignSysmemBuffers(
       const std::vector<media::SysmemBuffer>& buffers) OVERRIDE;
   void ReusePictureBuffer(int32 picture_buffer_id) OVERRIDE;
-  bool Flush() OVERRIDE;
-  bool Abort() OVERRIDE;
+  void Flush() OVERRIDE;
+  void Abort() OVERRIDE;
 
   void SetEglState(EGLDisplay egl_display, EGLContext egl_context);
 

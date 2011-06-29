@@ -175,10 +175,11 @@ class ResourceTracker : public ::ppapi::TrackerBase {
 
   // For each PP_Resource, keep the Resource* (as refptr) and plugin use count.
   // This use count is different then Resource's RefCount, and is manipulated
-  // using this RefResource/UnrefResource. When it drops to zero, we just remove
-  // the resource from this resource tracker, but the resource object will be
-  // alive so long as some scoped_refptr still holds it's reference. This
-  // prevents plugins from forcing destruction of Resource objects.
+  // using this AddRefResource/UnrefResource. When it drops to zero, we just
+  // remove the resource from this resource tracker, but the resource object
+  // will be alive so long as some scoped_refptr still holds it's
+  // reference. This prevents plugins from forcing destruction of Resource
+  // objects.
   typedef std::pair<scoped_refptr<Resource>, size_t> ResourceAndRefCount;
   typedef base::hash_map<PP_Resource, ResourceAndRefCount> ResourceMap;
   ResourceMap live_resources_;

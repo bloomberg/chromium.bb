@@ -84,6 +84,10 @@ class PPB_VideoDecoder_Impl : public Resource,
   // Factory to produce our callbacks.
   base::ScopedCallbackFactory<PPB_VideoDecoder_Impl> callback_factory_;
 
+  // The resource ID of the underlying Context3d object being used.  Used only
+  // for reference counting to keep it alive for the lifetime of |*this|.
+  PP_Resource context3d_id_;
+
   PP_CompletionCallback initialization_callback_;
   PP_CompletionCallback abort_callback_;
   PP_CompletionCallback flush_callback_;

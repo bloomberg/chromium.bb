@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "gpu/command_buffer/client/gles2_implementation.h"
 #include "media/video/picture.h"
 #include "ppapi/c/dev/pp_video_dev.h"
 #include "ppapi/c/dev/ppb_video_decoder_dev.h"
@@ -65,6 +66,7 @@ void CopyToConfigList(
 PPB_VideoDecoder_Impl::PPB_VideoDecoder_Impl(PluginInstance* instance)
     : Resource(instance),
       callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      context3d_id_(0),
       abort_callback_(PP_BlockUntilComplete()),
       flush_callback_(PP_BlockUntilComplete()) {
   ppp_videodecoder_ =
@@ -73,6 +75,8 @@ PPB_VideoDecoder_Impl::PPB_VideoDecoder_Impl(PluginInstance* instance)
 }
 
 PPB_VideoDecoder_Impl::~PPB_VideoDecoder_Impl() {
+  if (context3d_id_)
+    ResourceTracker::Get()->UnrefResource(context3d_id_);
 }
 
 PPB_VideoDecoder_API* PPB_VideoDecoder_Impl::AsPPB_VideoDecoder_API() {
@@ -120,6 +124,8 @@ int32_t PPB_VideoDecoder_Impl::Initialize(
   PPB_Context3D_Impl* context3d =
       static_cast<PPB_Context3D_Impl*>(enter.object());
 
+  context3d_id_ = context_id;
+  ResourceTracker::Get()->AddRefResource(context3d_id_);
   int command_buffer_route_id =
       context3d->platform_context()->GetCommandBufferRouteId();
   if (command_buffer_route_id == 0)
@@ -127,7 +133,7 @@ int32_t PPB_VideoDecoder_Impl::Initialize(
 
   platform_video_decoder_.reset(
       instance()->delegate()->CreateVideoDecoder(
-          this, command_buffer_route_id));
+          this, command_buffer_route_id, context3d->gles2_impl()->helper()));
 
   if (!platform_video_decoder_.get())
     return PP_ERROR_FAILED;
@@ -160,10 +166,8 @@ int32_t PPB_VideoDecoder_Impl::Decode(
   CHECK(bitstream_buffer_callbacks_.insert(std::make_pair(
       bitstream_buffer->id, callback)).second);
 
-  if (platform_video_decoder_->Decode(decode_buffer))
-    return PP_OK_COMPLETIONPENDING;
-  else
-    return PP_ERROR_FAILED;
+  platform_video_decoder_->Decode(decode_buffer);
+  return PP_OK_COMPLETIONPENDING;
 }
 
 void PPB_VideoDecoder_Impl::AssignGLESBuffers(
@@ -223,10 +227,8 @@ int32_t PPB_VideoDecoder_Impl::Flush(PP_CompletionCallback callback) {
   // TODO(vmr): Check for current flush/abort operations.
   flush_callback_ = callback;
 
-  if (platform_video_decoder_->Flush())
-    return PP_OK_COMPLETIONPENDING;
-  else
-    return PP_ERROR_FAILED;
+  platform_video_decoder_->Flush();
+  return PP_OK_COMPLETIONPENDING;
 }
 
 int32_t PPB_VideoDecoder_Impl::Abort(PP_CompletionCallback callback) {
@@ -237,10 +239,8 @@ int32_t PPB_VideoDecoder_Impl::Abort(PP_CompletionCallback callback) {
   // TODO(vmr): Check for current flush/abort operations.
   abort_callback_ = callback;
 
-  if (platform_video_decoder_->Abort())
-    return PP_OK_COMPLETIONPENDING;
-  else
-    return PP_ERROR_FAILED;
+  platform_video_decoder_->Abort();
+  return PP_OK_COMPLETIONPENDING;
 }
 
 void PPB_VideoDecoder_Impl::ProvidePictureBuffers(

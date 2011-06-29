@@ -17,11 +17,13 @@
 using media::BitstreamBuffer;
 
 PlatformVideoDecoderImpl::PlatformVideoDecoderImpl(
-    VideoDecodeAccelerator::Client* client, uint32 command_buffer_route_id)
+    VideoDecodeAccelerator::Client* client,
+    int32 command_buffer_route_id,
+    gpu::CommandBufferHelper* cmd_buffer_helper)
     : client_(client),
       command_buffer_route_id_(command_buffer_route_id),
-      decoder_(NULL),
-      message_loop_(NULL) {
+      cmd_buffer_helper_(cmd_buffer_helper),
+      decoder_(NULL) {
   DCHECK(client);
 }
 
@@ -42,8 +44,6 @@ bool PlatformVideoDecoderImpl::Initialize(const std::vector<uint32>& config) {
 
   RenderThread* render_thread = RenderThread::current();
   DCHECK(render_thread);
-  message_loop_ = MessageLoop::current();
-  DCHECK(message_loop_);
 
   channel_ = render_thread->EstablishGpuChannelSync(
       content::CAUSE_FOR_GPU_LAUNCH_VIDEODECODEACCELERATOR_INITIALIZE);
@@ -67,26 +67,18 @@ bool PlatformVideoDecoderImpl::Initialize(const std::vector<uint32>& config) {
 
 void PlatformVideoDecoderImpl::InitializeDecoder(
     const std::vector<uint32>& configs) {
-  // Only create GpuVideoDecodeAcceleratorHost on IO thread.
-  if (ChildProcess::current()->io_message_loop() != MessageLoop::current() ) {
-    ChildProcess::current()->io_message_loop()->
-        PostTask(FROM_HERE, base::Bind(
-            &PlatformVideoDecoderImpl::InitializeDecoder,
-            base::Unretained(this),
-            configs));
-    return;
-  }
+  DCHECK_EQ(RenderThread::current()->message_loop(), MessageLoop::current());
   GpuVideoServiceHost* video_service = channel_->gpu_video_service_host();
   decoder_.reset(video_service->CreateVideoAccelerator(
-      this, command_buffer_route_id_));
+      this, command_buffer_route_id_, cmd_buffer_helper_));
 
   // Send IPC message to initialize decoder in GPU process.
   decoder_->Initialize(configs);
 }
 
-bool PlatformVideoDecoderImpl::Decode(const BitstreamBuffer& bitstream_buffer) {
+void PlatformVideoDecoderImpl::Decode(const BitstreamBuffer& bitstream_buffer) {
   DCHECK(decoder_.get());
-  return decoder_->Decode(bitstream_buffer);
+  decoder_->Decode(bitstream_buffer);
 }
 
 void PlatformVideoDecoderImpl::AssignGLESBuffers(
@@ -107,96 +99,62 @@ void PlatformVideoDecoderImpl::ReusePictureBuffer(
   decoder_->ReusePictureBuffer(picture_buffer_id);
 }
 
-bool PlatformVideoDecoderImpl::Flush() {
+void PlatformVideoDecoderImpl::Flush() {
   DCHECK(decoder_.get());
-  return decoder_->Flush();
+  decoder_->Flush();
 }
 
-bool PlatformVideoDecoderImpl::Abort() {
+void PlatformVideoDecoderImpl::Abort() {
   DCHECK(decoder_.get());
-  return decoder_->Abort();
+  decoder_->Abort();
 }
 
 void PlatformVideoDecoderImpl::NotifyEndOfStream() {
-  DCHECK(message_loop_);
-  message_loop_->
-      PostTask(FROM_HERE, base::Bind(
-          &VideoDecodeAccelerator::Client::NotifyEndOfStream,
-          base::Unretained(client_)));
+  DCHECK_EQ(RenderThread::current()->message_loop(), MessageLoop::current());
+  client_->NotifyEndOfStream();
 }
 
 void PlatformVideoDecoderImpl::NotifyError(
     VideoDecodeAccelerator::Error error) {
-  DCHECK(message_loop_);
-  message_loop_->
-      PostTask(FROM_HERE, base::Bind(
-          &VideoDecodeAccelerator::Client::NotifyError,
-          base::Unretained(client_),
-          error));
+  DCHECK_EQ(RenderThread::current()->message_loop(), MessageLoop::current());
+  client_->NotifyError(error);
 }
 
 void PlatformVideoDecoderImpl::ProvidePictureBuffers(
     uint32 requested_num_of_buffers,
     const gfx::Size& dimensions,
     media::VideoDecodeAccelerator::MemoryType type) {
-  DCHECK(message_loop_);
-  message_loop_->
-      PostTask(FROM_HERE, base::Bind(
-          &VideoDecodeAccelerator::Client::ProvidePictureBuffers,
-          base::Unretained(client_),
-          requested_num_of_buffers,
-          dimensions,
-          type));
+  DCHECK_EQ(RenderThread::current()->message_loop(), MessageLoop::current());
+  client_->ProvidePictureBuffers(requested_num_of_buffers, dimensions, type);
 }
 
 void PlatformVideoDecoderImpl::DismissPictureBuffer(int32 picture_buffer_id) {
-  DCHECK(message_loop_);
-  message_loop_->
-      PostTask(FROM_HERE, base::Bind(
-          &VideoDecodeAccelerator::Client::DismissPictureBuffer,
-          base::Unretained(client_),
-          picture_buffer_id));
+  DCHECK_EQ(RenderThread::current()->message_loop(), MessageLoop::current());
+  client_->DismissPictureBuffer(picture_buffer_id);
 }
 
 void PlatformVideoDecoderImpl::PictureReady(const media::Picture& picture) {
-  DCHECK(message_loop_);
-  message_loop_->
-      PostTask(FROM_HERE, base::Bind(
-          &VideoDecodeAccelerator::Client::PictureReady,
-          base::Unretained(client_),
-          picture));
+  DCHECK_EQ(RenderThread::current()->message_loop(), MessageLoop::current());
+  client_->PictureReady(picture);
 }
 
 void PlatformVideoDecoderImpl::NotifyInitializeDone() {
-  DCHECK(message_loop_);
-  message_loop_->
-      PostTask(FROM_HERE, base::Bind(
-          &VideoDecodeAccelerator::Client::NotifyInitializeDone,
-          base::Unretained(client_)));
+  DCHECK_EQ(RenderThread::current()->message_loop(), MessageLoop::current());
+  client_->NotifyInitializeDone();
 }
 
 void PlatformVideoDecoderImpl::NotifyEndOfBitstreamBuffer(
   int32 bitstream_buffer_id) {
-  DCHECK(message_loop_);
-  message_loop_->
-      PostTask(FROM_HERE, base::Bind(
-          &VideoDecodeAccelerator::Client::NotifyEndOfBitstreamBuffer,
-          base::Unretained(client_),
-          bitstream_buffer_id));
+  DCHECK_EQ(RenderThread::current()->message_loop(), MessageLoop::current());
+  client_->NotifyEndOfBitstreamBuffer(bitstream_buffer_id);
 }
 
 void PlatformVideoDecoderImpl::NotifyFlushDone() {
-  DCHECK(message_loop_);
-  message_loop_->
-      PostTask(FROM_HERE, base::Bind(
-          &VideoDecodeAccelerator::Client::NotifyFlushDone,
-          base::Unretained(client_)));
+  DCHECK_EQ(RenderThread::current()->message_loop(), MessageLoop::current());
+  client_->NotifyFlushDone();
 }
 
 void PlatformVideoDecoderImpl::NotifyAbortDone() {
-  DCHECK(message_loop_);
-  message_loop_->
-      PostTask(FROM_HERE, base::Bind(
-          &VideoDecodeAccelerator::Client::NotifyAbortDone,
-          base::Unretained(client_)));
+  DCHECK_EQ(RenderThread::current()->message_loop(), MessageLoop::current());
+  client_->NotifyAbortDone();
 }

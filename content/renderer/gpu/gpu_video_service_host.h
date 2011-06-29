@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_GPU_GPU_VIDEO_SERVICE_HOST_H_
 
 #include "base/memory/singleton.h"
+#include "base/threading/non_thread_safe.h"
 #include "content/renderer/gpu/gpu_channel_host.h"
 #include "ipc/ipc_channel.h"
 #include "media/base/buffers.h"
@@ -13,19 +14,26 @@
 #include "media/video/video_decode_accelerator.h"
 
 class GpuVideoDecodeAcceleratorHost;
+namespace gpu {
+class CommandBufferHelper;
+}
 
-// GpuVideoServiceHost lives on IO thread and is used to dispatch IPC messages
-// to GpuVideoDecoderHost objects.
-class GpuVideoServiceHost : public IPC::ChannelProxy::MessageFilter {
+// GpuVideoServiceHost lives on renderer thread and is used to dispatch IPC
+// messages to GpuVideoDecodeAcceleratorHost objects.
+class GpuVideoServiceHost
+    : public IPC::Channel::Listener,
+      public base::NonThreadSafe,
+      public base::RefCountedThreadSafe<GpuVideoServiceHost> {
  public:
   GpuVideoServiceHost();
   virtual ~GpuVideoServiceHost();
 
-  // IPC::ChannelProxy::MessageFilter implementations, called on IO thread.
-  virtual bool OnMessageReceived(const IPC::Message& message);
-  virtual void OnFilterAdded(IPC::Channel* channel);
-  virtual void OnFilterRemoved();
-  virtual void OnChannelClosing();
+  void set_channel(IPC::SyncChannel* channel);
+
+  // IPC::Channel::Listener implementation; called on render thread because of
+  // GpuChannelHost's use of a ChannelProxy/SyncChannel.
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void OnChannelError() OVERRIDE;
 
   // Register a callback to be notified when |*this| can be used to
   // CreateVideo{Decoder,Accelerator} below.  Called on RenderThread.
@@ -38,14 +46,12 @@ class GpuVideoServiceHost : public IPC::ChannelProxy::MessageFilter {
   // in the GPU process.
   GpuVideoDecodeAcceleratorHost* CreateVideoAccelerator(
       media::VideoDecodeAccelerator::Client* client,
-      int command_buffer_route_id);
+      int32 command_buffer_route_id,
+      gpu::CommandBufferHelper* cmd_buffer_helper);
 
  private:
-  // Guards all members other than |router_|.
-  base::Lock lock_;
-
   // Reference to the channel that the service listens to.
-  IPC::Channel* channel_;
+  IPC::SyncChannel* channel_;
 
   // Router to send messages to a GpuVideoDecoderHost.
   MessageRouter router_;

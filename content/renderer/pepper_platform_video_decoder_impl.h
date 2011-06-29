@@ -14,15 +14,19 @@
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 
 class GpuChannelHost;
+namespace gpu {
+class CommandBufferHelper;
+}
 
 class PlatformVideoDecoderImpl
     : public webkit::ppapi::PluginDelegate::PlatformVideoDecoder,
       public media::VideoDecodeAccelerator::Client,
       public base::RefCountedThreadSafe<PlatformVideoDecoderImpl> {
  public:
-  explicit PlatformVideoDecoderImpl(
+  PlatformVideoDecoderImpl(
       media::VideoDecodeAccelerator::Client* client,
-      uint32 command_buffer_route_id);
+      int32 command_buffer_route_id,
+      gpu::CommandBufferHelper* cmd_buffer_helper);
   virtual ~PlatformVideoDecoderImpl();
 
   // PlatformVideoDecoder implementation.
@@ -30,15 +34,15 @@ class PlatformVideoDecoderImpl
       const std::vector<uint32>& requested_configs,
       std::vector<uint32>* matched_configs) OVERRIDE;
   virtual bool Initialize(const std::vector<uint32>& config) OVERRIDE;
-  virtual bool Decode(
+  virtual void Decode(
       const media::BitstreamBuffer& bitstream_buffer) OVERRIDE;
   virtual void AssignGLESBuffers(
       const std::vector<media::GLESBuffer>& buffers) OVERRIDE;
   virtual void AssignSysmemBuffers(
       const std::vector<media::SysmemBuffer>& buffers) OVERRIDE;
   virtual void ReusePictureBuffer(int32 picture_buffer_id);
-  virtual bool Flush() OVERRIDE;
-  virtual bool Abort() OVERRIDE;
+  virtual void Flush() OVERRIDE;
+  virtual void Abort() OVERRIDE;
 
   // VideoDecodeAccelerator::Client implementation.
   virtual void ProvidePictureBuffers(
@@ -65,16 +69,16 @@ class PlatformVideoDecoderImpl
   media::VideoDecodeAccelerator::Client* client_;
 
   // Route ID for the command buffer associated with video decoder's context.
-  uint32 command_buffer_route_id_;
+  int32 command_buffer_route_id_;
+
+  // Helper for the command buffer associated with video decoder's context.
+  gpu::CommandBufferHelper* cmd_buffer_helper_;
 
   // Host for GpuVideoDecodeAccelerator.
   scoped_ptr<media::VideoDecodeAccelerator> decoder_;
 
   // Host for Gpu Channel.
   scoped_refptr<GpuChannelHost> channel_;
-
-  // Message loop on which plugin is initialized.
-  MessageLoop* message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformVideoDecoderImpl);
 };

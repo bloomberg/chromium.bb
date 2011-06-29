@@ -46,7 +46,8 @@ MockPluginDelegate::PlatformContext3D* MockPluginDelegate::CreateContext3D() {
 MockPluginDelegate::PlatformVideoDecoder*
 MockPluginDelegate::CreateVideoDecoder(
     media::VideoDecodeAccelerator::Client* client,
-    int command_buffer_route_id) {
+    int32 command_buffer_route_id,
+    gpu::CommandBufferHelper* cmd_buffer_helper) {
   return NULL;
 }
 

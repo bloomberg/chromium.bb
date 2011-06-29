@@ -7,6 +7,10 @@
 
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 
+namespace gpu {
+class CommandBufferHelper;
+}
+
 namespace webkit {
 namespace ppapi {
 
@@ -24,7 +28,8 @@ class MockPluginDelegate : public PluginDelegate {
   virtual PlatformContext3D* CreateContext3D();
   virtual PlatformVideoDecoder* CreateVideoDecoder(
       media::VideoDecodeAccelerator::Client* client,
-      int command_buffer_route_id);
+      int32 command_buffer_route_id,
+      gpu::CommandBufferHelper* cmd_buffer_helper);
   virtual PlatformAudio* CreateAudio(uint32_t sample_rate,
                                      uint32_t sample_count,
                                      PlatformAudio::Client* client);

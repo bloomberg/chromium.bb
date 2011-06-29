@@ -335,12 +335,12 @@ bool OmxVideoDecodeAccelerator::CreateComponent() {
   return true;
 }
 
-bool OmxVideoDecodeAccelerator::Decode(
+void OmxVideoDecodeAccelerator::Decode(
     const media::BitstreamBuffer& bitstream_buffer) {
   DCHECK(!free_input_buffers_.empty());
 
   if (!CanAcceptInput())
-    return false;
+    return;
 
   OMX_BUFFERHEADERTYPE* omx_buffer = free_input_buffers_.front();
   free_input_buffers_.pop();
@@ -350,7 +350,7 @@ bool OmxVideoDecodeAccelerator::Decode(
       new base::SharedMemory(bitstream_buffer.handle(), true));
   if (!shm->Map(bitstream_buffer.size())) {
     LOG(ERROR) << "Failed to SharedMemory::Map().";
-    return false;
+    return;
   }
   SharedMemoryAndId* input_buffer_details = new SharedMemoryAndId();
   input_buffer_details->first.reset(shm.release());
@@ -373,10 +373,9 @@ bool OmxVideoDecodeAccelerator::Decode(
   if (result != OMX_ErrorNone) {
     LOG(ERROR) << "OMX_EmptyThisBuffer() failed with result " << result;
     StopOnError();
-    return false;
+    return;
   }
   input_buffers_at_component_++;
-  return true;
 }
 
 void OmxVideoDecodeAccelerator::AssignGLESBuffers(
@@ -440,14 +439,14 @@ void OmxVideoDecodeAccelerator::ReusePictureBuffer(int32 picture_buffer_id) {
   }
 }
 
-bool OmxVideoDecodeAccelerator::Flush() {
+void OmxVideoDecodeAccelerator::Flush() {
   OMX_STATETYPE il_state;
   OMX_GetState(component_handle_, &il_state);
   DCHECK_EQ(il_state, OMX_StateExecuting);
   // Decode the pending data first. Then flush I/O ports.
   if (il_state != OMX_StateExecuting) {
     client_->NotifyFlushDone();
-    return false;
+    return;
   }
   on_buffer_flag_event_func_ = &OmxVideoDecodeAccelerator::FlushBegin;
 
@@ -464,10 +463,9 @@ bool OmxVideoDecodeAccelerator::Flush() {
   if (result != OMX_ErrorNone) {
     LOG(ERROR) << "OMX_EmptyThisBuffer() failed with result " << result;
     StopOnError();
-    return false;
+    return;
   }
   input_buffers_at_component_++;
-  return true;
 }
 
 void OmxVideoDecodeAccelerator::FlushBegin() {
@@ -525,12 +523,12 @@ void OmxVideoDecodeAccelerator::OutputPortFlushDone(int port) {
   client_->NotifyFlushDone();
 }
 
-bool OmxVideoDecodeAccelerator::Abort() {
+void OmxVideoDecodeAccelerator::Abort() {
   CHECK_EQ(message_loop_, MessageLoop::current());
   // Abort() implies immediacy but Flush() actually decodes pending data first.
   // TODO(vhiremath@nvidia.com) Fix the Abort to handle this immediacy.
   ShutDownOMXFromExecuting();
-  return true;
+  return;
 }
 
 // Event callback during initialization to handle DoneStateSet to idle

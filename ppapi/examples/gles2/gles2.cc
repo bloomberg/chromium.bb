@@ -73,14 +73,6 @@ class GLES2DemoInstance : public pp::Instance, public pp::Graphics3DClient_Dev,
     GLuint vertex_buffers[2];
   };
 
-  // Serialize PPB_Video_Decoder_Dev operations w.r.t. GPU command buffer.
-  // TODO(fischman): figure out how much of this is actually necessary.
-  // Probably any necessary serialization ought to be happening in the
-  // PPAPI implementation, not in the plugin!
-  void FinishGL() {
-    gles2_if_->Finish(context_->pp_resource());
-  }
-
   // Initialize Video Decoder.
   void InitializeDecoder();
 
@@ -272,7 +264,6 @@ void GLES2DemoInstance::ProvidePictureBuffers(
     buffers.push_back(buffer);
     assert(buffers_by_id_.insert(std::make_pair(id, buffer)).second);
   }
-  FinishGL();
   video_decoder_->AssignGLESBuffers(buffers);
 }
 
@@ -282,8 +273,6 @@ void GLES2DemoInstance::DismissPictureBuffer(
   assert(it != buffers_by_id_.end());
   DeleteTexture(it->second.texture_id);
   buffers_by_id_.erase(it);
-
-  FinishGL();
 }
 
 void GLES2DemoInstance::PictureReady(
@@ -340,18 +329,14 @@ void GLES2DemoInstance::InitGL() {
   assertNoGLError();
 
   CreateGLObjects();
-
-  FinishGL();
 }
 
 void GLES2DemoInstance::Render(const PP_GLESBuffer_Dev& buffer) {
   if (is_painting_) {
     // We are dropping frames if we don't render fast enough -
     // that is why sometimes the last frame rendered is < 249.
-    if (video_decoder_) {
-      FinishGL();
+    if (video_decoder_)
       video_decoder_->ReusePictureBuffer(buffer.info.id);
-    }
     return;
   }
   is_painting_ = true;
@@ -369,7 +354,6 @@ void GLES2DemoInstance::Render(const PP_GLESBuffer_Dev& buffer) {
 
 void GLES2DemoInstance::PaintFinished(int32_t result, int picture_buffer_id) {
   is_painting_ = false;
-  FinishGL();
   if (video_decoder_)
     video_decoder_->ReusePictureBuffer(picture_buffer_id);
 }
