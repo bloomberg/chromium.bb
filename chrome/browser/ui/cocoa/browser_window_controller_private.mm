@@ -305,7 +305,7 @@ willPositionSheet:(NSWindow*)sheet
   [tabStripController_ layoutTabs];
 
   // Now lay out incognito badge together with the tab strip.
-  if (incognitoBadge_.get()) {
+  if (avatarButton_.get()) {
     // Avoid the full-screen button.
     CGFloat extraPadding = 0;
     if ([[self window] respondsToSelector:@selector(toggleFullScreen:)]) {
@@ -315,12 +315,17 @@ willPositionSheet:(NSWindow*)sheet
         extraPadding += [fullscreenButton frame].size.width;
     }
 
+    // Set the size of the avatar to be the (height of the tabstrip) - (padding)
+    // to let large icons fit.
+    CGFloat sizeSquare = tabStripHeight - 5.0;
+    [avatarButton_ setFrameSize:NSMakeSize(sizeSquare, sizeSquare)];
+
     // Actually place the badge *above* |maxY|, by +2 to miss the divider.
-    NSPoint origin = NSMakePoint(width - NSWidth([incognitoBadge_ frame]) -
+    NSPoint origin = NSMakePoint(width - NSWidth([avatarButton_ frame]) -
                                      kIncognitoBadgeOffset - extraPadding,
                                  maxY + 2);
-    [incognitoBadge_ setFrameOrigin:origin];
-    [incognitoBadge_ setHidden:NO];  // Make sure it's shown.
+    [avatarButton_ setFrameOrigin:origin];
+    [avatarButton_ setHidden:NO];  // Make sure it's shown.
   }
 
   return maxY;

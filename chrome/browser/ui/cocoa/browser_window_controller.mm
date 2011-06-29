@@ -6,6 +6,7 @@
 
 #include <Carbon/Carbon.h>
 
+#include "base/command_line.h"
 #include "base/mac/mac_util.h"
 #import "base/memory/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
@@ -25,6 +26,7 @@
 #import "chrome/browser/ui/cocoa/background_gradient_view.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_editor_controller.h"
+#import "chrome/browser/ui/cocoa/browser/avatar_button.h"
 #import "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller_private.h"
 #import "chrome/browser/ui/cocoa/dev_tools_controller.h"
@@ -54,6 +56,7 @@
 #include "chrome/browser/ui/tabs/dock_info.h"
 #include "chrome/browser/ui/toolbar/encoding_menu_controller.h"
 #include "chrome/browser/ui/window_sizer.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -61,10 +64,7 @@
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
-#include "ui/gfx/mac/nsimage_cache.h"
 #include "ui/gfx/mac/scoped_ns_disable_screen_updates.h"
-#include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
-
 
 // ORGANIZATION: This is a big file. It is (in principle) organized as follows
 // (in order):
@@ -162,46 +162,6 @@
 
 #endif  // MAC_OS_X_VERSION_10_7
 
-// IncognitoImageView subclasses NSView to allow mouse events to pass through it
-// so you can drag the window by dragging on the spy guy.
-@interface IncognitoImageView : NSView {
- @private
-  scoped_nsobject<NSImage> image_;
-}
-
-- (void)setImage:(NSImage*)image;
-
-@end
-
-@implementation IncognitoImageView
-
-- (BOOL)mouseDownCanMoveWindow {
-  return YES;
-}
-
-- (void)drawRect:(NSRect)rect {
-  gfx::ScopedNSGraphicsContextSaveGState scopedGState;
-
-  scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
-  [shadow.get() setShadowColor:[NSColor colorWithCalibratedWhite:0.0
-                                                           alpha:0.75]];
-  [shadow.get() setShadowOffset:NSMakeSize(0, 0)];
-  [shadow.get() setShadowBlurRadius:3.0];
-  [shadow.get() set];
-
-  [image_.get() drawInRect:[self bounds]
-                  fromRect:NSZeroRect
-                 operation:NSCompositeSourceOver
-                  fraction:1.0
-              neverFlipped:YES];
-}
-
-- (void)setImage:(NSImage*)image {
-  image_.reset([image retain]);
-}
-
-@end
-
 
 @implementation BrowserWindowController
 
@@ -282,7 +242,7 @@
     windowShim_->SetBounds(windowRect);
 
     // Puts the incognito badge on the window frame, if necessary.
-    [self installIncognitoBadge];
+    [self installAvatar];
 
     // Create a sub-controller for the docked devTools and add its view to the
     // hierarchy.  This must happen before the sidebar controller is
@@ -1348,6 +1308,11 @@
   [tabStripController_ showNewTabButton:show];
 }
 
+- (BOOL)shouldShowAvatar {
+  return [self hasTabStrip] && (browser_->profile()->IsOffTheRecord() ||
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kMultiProfiles));
+}
+
 - (BOOL)isBookmarkBarVisible {
   return [bookmarkBarController_ isVisible];
 }
@@ -1643,25 +1608,25 @@
   }
 }
 
-// If the browser is in incognito mode, install the image view to decorate
-// the window at the upper right. Use the same base y coordinate as the
-// tab strip.
-- (void)installIncognitoBadge {
+// If the browser is in incognito mode or has multi-profiles, install the image
+// view to decorate the window at the upper right. Use the same base y
+// coordinate as the tab strip.
+- (void)installAvatar {
   // Only install if this browser window is OTR and has a tab strip.
-  if (!browser_->profile()->IsOffTheRecord() || ![self hasTabStrip])
+  if (![self shouldShowAvatar])
     return;
 
-  // Install the image into the badge view and size the view appropriately.
-  // Hide it for now; positioning and showing will be done by the layout code.
-  NSImage* image = gfx::GetCachedImageWithName(@"otr_icon.pdf");
-  incognitoBadge_.reset([[IncognitoImageView alloc] init]);
-  [incognitoBadge_ setImage:image];
-  [incognitoBadge_ setFrameSize:[image size]];
-  [incognitoBadge_ setAutoresizingMask:NSViewMinXMargin | NSViewMinYMargin];
-  [incognitoBadge_ setHidden:YES];
+  // Install the image into the badge view. Hide it for now; positioning,
+  // sizing, and showing will be done by the layout code. The AvatarButton will
+  // choose which image to display based on the BWC.
+  avatarButton_.reset([[AvatarButton alloc] initWithController:self]);
+  [avatarButton_ setAutoresizingMask:NSViewMinXMargin | NSViewMinYMargin];
+  [avatarButton_ setHidden:YES];
+  // The button shouldn't do anything in incognito.
+  [avatarButton_ setOpenMenuOnClick:!browser_->profile()->IsOffTheRecord()];
 
   // Install the view.
-  [[[[self window] contentView] superview] addSubview:incognitoBadge_];
+  [[[[self window] contentView] superview] addSubview:avatarButton_];
 }
 
 // Documented in 10.6+, but present starting in 10.5. Called when we get a
@@ -2012,10 +1977,10 @@ willAnimateFromState:(bookmarks::VisualState)oldState
   [destWindow setContentView:contentView];
 
   // Move the incognito badge if present.
-  if (incognitoBadge_.get()) {
-    [incognitoBadge_ removeFromSuperview];
-    [incognitoBadge_ setHidden:YES];  // Will be shown in layout.
-    [[[destWindow contentView] superview] addSubview:incognitoBadge_];
+  if (avatarButton_.get()) {
+    [avatarButton_ removeFromSuperview];
+    [avatarButton_ setHidden:YES];  // Will be shown in layout.
+    [[[destWindow contentView] superview] addSubview:avatarButton_];
   }
 
   // Add the tab strip after setting the content view and moving the incognito

@@ -2278,6 +2278,8 @@
         'browser/ui/cocoa/bookmarks/bookmark_name_folder_controller.mm',
         'browser/ui/cocoa/bookmarks/bookmark_tree_browser_cell.h',
         'browser/ui/cocoa/bookmarks/bookmark_tree_browser_cell.mm',
+        'browser/ui/cocoa/browser/avatar_button.h',
+        'browser/ui/cocoa/browser/avatar_button.mm',
         'browser/ui/cocoa/browser_command_executor.h',
         'browser/ui/cocoa/browser_frame_view.h',
         'browser/ui/cocoa/browser_frame_view.mm',

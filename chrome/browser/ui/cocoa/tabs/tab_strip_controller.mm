@@ -100,7 +100,7 @@ const CGFloat kNewTabButtonOffset = 8.0;
 
 // The amount by which to shrink the tab strip (on the right) when the
 // incognito badge is present.
-const CGFloat kIncognitoBadgeTabStripShrink = 18;
+const CGFloat kAvatarTabStripShrink = 18;
 
 // Time (in seconds) in which tabs animate to their final position.
 const NSTimeInterval kAnimationDuration = 0.125;
@@ -883,11 +883,16 @@ class NotificationBridge : public NotificationObserver {
     } else {
       availableSpace = NSWidth([tabStripView_ frame]);
 
-      // Account for the widths of the new tab button, the incognito badge, and
-      // the fullscreen button if any/all are present.
+      BrowserWindowController* controller =
+          (BrowserWindowController*)[[tabStripView_ window] windowController];
+
+      // Account for the widths of the new tab button, the avatar, and the
+      // fullscreen button if any/all are present.
       availableSpace -= NSWidth([newTabButton_ frame]) + kNewTabButtonOffset;
-      if (browser_->profile()->IsOffTheRecord())
-        availableSpace -= kIncognitoBadgeTabStripShrink;
+      if ([controller respondsToSelector:@selector(shouldShowAvatar)] &&
+          [controller shouldShowAvatar]) {
+        availableSpace -= kAvatarTabStripShrink;
+      }
       if ([[tabStripView_ window]
           respondsToSelector:@selector(toggleFullScreen:)]) {
         NSButton* fullscreenButton = [[tabStripView_ window]

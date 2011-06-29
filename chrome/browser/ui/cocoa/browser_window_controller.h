@@ -27,7 +27,7 @@
 #import "chrome/browser/ui/cocoa/view_resizer.h"
 #include "ui/gfx/rect.h"
 
-
+@class AvatarButton;
 class Browser;
 class BrowserWindow;
 class BrowserWindowCocoa;
@@ -37,7 +37,6 @@ class ConstrainedWindowMac;
 @class FindBarCocoaController;
 @class FullscreenController;
 @class GTMWindowSheetController;
-@class IncognitoImageView;
 @class InfoBarContainerController;
 class LocationBarViewMac;
 @class PreviewableContentsController;
@@ -102,9 +101,10 @@ class TabContents;
   CGFloat totalMagnifyGestureAmount_;
   NSInteger currentZoomStepDelta_;
 
-  // The view which shows the incognito badge (NULL if not an incognito window).
-  // Needed to access the view to move it to/from the fullscreen window.
-  scoped_nsobject<IncognitoImageView> incognitoBadge_;
+  // The view that shows the incognito badge or the multi-profile avatar icon.
+  // Nil if neither is present. Needed to access the view to move it to/from the
+  // fullscreen window.
+  scoped_nsobject<AvatarButton> avatarButton_;
 
   // Lazily created view which draws the background for the floating set of bars
   // in fullscreen mode (for window types having a floating bar; it remains nil
@@ -200,6 +200,10 @@ class TabContents;
 // window is currently in fullscreen mode).  The frame is returned in Cocoa
 // coordinates (origin in bottom-left).
 - (NSRect)regularWindowFrame;
+
+// Whether or not to show the avatar, which is either the incognito guy or the
+// user's profile avatar.
+- (BOOL)shouldShowAvatar;
 
 - (BOOL)isBookmarkBarVisible;
 
@@ -375,11 +379,11 @@ class TabContents;
 
 
 // Methods which are either only for testing, or only public for testing.
-@interface BrowserWindowController(TestingAPI)
+@interface BrowserWindowController (TestingAPI)
 
-// Put the incognito badge on the browser and adjust the tab strip
-// accordingly.
-- (void)installIncognitoBadge;
+// Put the incognito badge or multi-profile avatar on the browser and adjust the
+// tab strip accordingly.
+- (void)installAvatar;
 
 // Allows us to initWithBrowser withOUT taking ownership of the browser.
 - (id)initWithBrowser:(Browser*)browser takeOwnership:(BOOL)ownIt;
@@ -405,7 +409,7 @@ class TabContents;
 // |source| rect doesn't fit into |target|.
 - (NSSize)overflowFrom:(NSRect)source
                     to:(NSRect)target;
-@end  // @interface BrowserWindowController(TestingAPI)
+@end  // @interface BrowserWindowController (TestingAPI)
 
 
 #endif  // CHROME_BROWSER_UI_COCOA_BROWSER_WINDOW_CONTROLLER_H_
