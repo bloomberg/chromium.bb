@@ -40,7 +40,9 @@ class MediaTestBase(pyauto.PyUITest):
   DEFAULT_MEDIA_FILENAME = 'bear_silent.ogv'
   DEFAULT_PLAYER_HTML_URL_NICKNAME = 'local'
   DEFAULT_NUMBER_OF_RUNS = 3
-  TIMEOUT = 10000
+  # Timing out for checking if video has finished playing (in seconds).
+  # Currently, we do not have videos more than 1 minute.
+  TIMEOUT = 60
   # Instance variables that used across methods.
   number_of_runs = 0
   url = ''
