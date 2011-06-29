@@ -77,6 +77,17 @@ bool IsWebRequestEvent(const std::string& event_name) {
                    event_name) != ARRAYEND(kWebRequestEvents);
 }
 
+bool allow_extension_scheme = false;
+bool HasWebRequestScheme(const GURL& url) {
+  if (allow_extension_scheme && url.SchemeIs(chrome::kExtensionScheme))
+    return true;
+  return (url.SchemeIs(chrome::kAboutScheme) ||
+          url.SchemeIs(chrome::kFileScheme) ||
+          url.SchemeIs(chrome::kFtpScheme) ||
+          url.SchemeIs(chrome::kHttpScheme) ||
+          url.SchemeIs(chrome::kHttpsScheme));
+}
+
 const char* ResourceTypeToString(ResourceType::Type type) {
   ResourceType::Type* iter =
       std::find(kResourceTypeValues, ARRAYEND(kResourceTypeValues), type);
@@ -309,6 +320,11 @@ ExtensionWebRequestEventRouter::RequestFilter::~RequestFilter() {
 //
 
 // static
+void ExtensionWebRequestEventRouter::SetAllowChromeExtensionScheme() {
+  allow_extension_scheme = true;
+}
+
+// static
 ExtensionWebRequestEventRouter* ExtensionWebRequestEventRouter::GetInstance() {
   return Singleton<ExtensionWebRequestEventRouter>::get();
 }
@@ -327,6 +343,9 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
     GURL* new_url) {
   // TODO(jochen): Figure out what to do with events from the system context.
   if (profile_id == Profile::kInvalidProfileId)
+    return net::OK;
+
+  if (!HasWebRequestScheme(request->url()))
     return net::OK;
 
   // If this is an HTTP request, keep track of it. HTTP-specific events only
@@ -385,6 +404,9 @@ int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
   if (profile_id == Profile::kInvalidProfileId)
     return net::OK;
 
+  if (!HasWebRequestScheme(request->url()))
+    return net::OK;
+
   if (GetAndSetSignaled(request->identifier(), kOnBeforeSendHeaders))
     return net::OK;
 
@@ -426,6 +448,7 @@ void ExtensionWebRequestEventRouter::OnRequestSent(
     const net::HttpRequestHeaders& headers) {
   if (profile_id == Profile::kInvalidProfileId)
     return;
+
   base::Time time(base::Time::Now());
 
   HttpRequestMap::iterator iter = http_requests_.find(request_id);
@@ -433,6 +456,9 @@ void ExtensionWebRequestEventRouter::OnRequestSent(
     return;
 
   net::URLRequest* request = iter->second;
+
+  if (!HasWebRequestScheme(request->url()))
+    return;
 
   if (GetAndSetSignaled(request->identifier(), kOnRequestSent))
     return;
@@ -468,6 +494,10 @@ void ExtensionWebRequestEventRouter::OnBeforeRedirect(
     const GURL& new_location) {
   if (profile_id == Profile::kInvalidProfileId)
     return;
+
+  if (!HasWebRequestScheme(request->url()))
+    return;
+
   base::Time time(base::Time::Now());
 
   if (GetAndSetSignaled(request->identifier(), kOnBeforeRedirect))
@@ -510,6 +540,9 @@ void ExtensionWebRequestEventRouter::OnResponseStarted(
     ExtensionInfoMap* extension_info_map,
     net::URLRequest* request) {
   if (profile_id == Profile::kInvalidProfileId)
+    return;
+
+  if (!HasWebRequestScheme(request->url()))
     return;
 
   // OnResponseStarted is even triggered, when the request was cancelled.
@@ -555,6 +588,9 @@ void ExtensionWebRequestEventRouter::OnCompleted(
   if (profile_id == Profile::kInvalidProfileId)
     return;
 
+  if (!HasWebRequestScheme(request->url()))
+    return;
+
   DCHECK(request->status().status() == net::URLRequestStatus::SUCCESS);
 
   DCHECK(!GetAndSetSignaled(request->identifier(), kOnCompleted));
@@ -597,6 +633,9 @@ void ExtensionWebRequestEventRouter::OnErrorOccurred(
     net::URLRequest* request) {
   if (profile_id == Profile::kInvalidProfileId)
       return;
+
+  if (!HasWebRequestScheme(request->url()))
+    return;
 
   DCHECK(request->status().status() == net::URLRequestStatus::FAILED);
 

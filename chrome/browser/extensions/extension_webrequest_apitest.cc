@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/extensions/extension_webrequest_api.h"
 #include "chrome/common/chrome_switches.h"
 #include "net/base/mock_host_resolver.h"
 
@@ -11,6 +12,7 @@ class ExtensionWebRequestApiTest : public ExtensionApiTest {
  public:
   virtual void SetUpInProcessBrowserTestFixture() {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
+    ExtensionWebRequestEventRouter::SetAllowChromeExtensionScheme();
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(StartTestServer());
   }
