@@ -97,7 +97,7 @@ const AutofillProfile PerformanceLiveAutofillSyncTest::NextAutofillProfile() {
   AutofillProfile profile;
   autofill_test::SetProfileInfoWithGuid(&profile, NextGUID().c_str(),
                                         NextName().c_str(), "", "", "", "", "",
-                                        "", "" ,"" ,"" ,"" ,"", "");
+                                        "", "", "", "", "", "", "");
   return profile;
 }
 
