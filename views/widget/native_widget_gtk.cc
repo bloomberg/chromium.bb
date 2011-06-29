@@ -1228,8 +1228,9 @@ void NativeWidgetGtk::SchedulePaintInRect(const gfx::Rect& rect) {
 
 void NativeWidgetGtk::SetCursor(gfx::NativeCursor cursor) {
 #if defined(TOUCH_UI) && defined(HAVE_XINPUT2)
-  if (!TouchFactory::GetInstance()->is_cursor_visible() &&
-      !TouchFactory::GetInstance()->keep_mouse_cursor())
+  if (TouchFactory::GetInstance()->keep_mouse_cursor())
+    cursor = gfx::GetCursor(GDK_ARROW);
+  else if (!TouchFactory::GetInstance()->is_cursor_visible())
     cursor = gfx::GetCursor(GDK_BLANK_CURSOR);
 #endif
   // |window_contents_| is placed on top of |widget_|. So the cursor needs to be
