@@ -354,7 +354,8 @@ void ActiveDownloadsHandler::OnDownloadUpdated(DownloadItem* item) {
       << " not found";
   }
 
-  if (item->state() == DownloadItem::REMOVING) {
+  if (item->state() == DownloadItem::REMOVING || item->auto_opened()) {
+    // Item is going away, or item is an extension that has auto opened.
     item->RemoveObserver(this);
     downloads_.erase(it);
     DownloadList::iterator ita =
