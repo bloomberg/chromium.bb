@@ -11,3 +11,6 @@ AudioRendererHostTest.*
 # http://code.google.com/p/drmemory/issues/detail?id=330
 TemplateURLTest.Suggestions
 
+# times out on the bot
+# http://crbug.com/87887
+VideoCaptureHostTest.StartCapturePlayStop
