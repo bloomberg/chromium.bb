@@ -32,6 +32,9 @@ class DataObjectImpl : public DownloadFileObserver,
   // Accessors.
   void set_observer(Observer* observer) { observer_ = observer; }
 
+  // Number of known formats.
+  size_t size() const { return contents_.size(); }
+
   // DownloadFileObserver implementation:
   virtual void OnDownloadCompleted(const FilePath& file_path);
   virtual void OnDownloadAborted();
@@ -72,6 +75,9 @@ class DataObjectImpl : public DownloadFileObserver,
   virtual ~DataObjectImpl();
 
   void StopDownloads();
+
+  // Removes from contents_ the first data that matches |format|.
+  void RemoveData(const FORMATETC& format);
 
   // Our internal representation of stored data & type info.
   struct StoredDataInfo {

@@ -574,6 +574,23 @@ void DataObjectImpl::StopDownloads() {
   }
 }
 
+void DataObjectImpl::RemoveData(const FORMATETC& format) {
+  if (format.ptd)
+    return;  // Don't attempt to compare target devices.
+
+  for (StoredData::iterator i = contents_.begin(); i != contents_.end(); ++i) {
+    if (!(*i)->format_etc.ptd &&
+        format.cfFormat == (*i)->format_etc.cfFormat &&
+        format.dwAspect == (*i)->format_etc.dwAspect &&
+        format.lindex == (*i)->format_etc.lindex &&
+        format.tymed == (*i)->format_etc.tymed) {
+      delete *i;
+      contents_.erase(i);
+      return;
+    }
+  }
+}
+
 void DataObjectImpl::OnDownloadCompleted(const FilePath& file_path) {
   CLIPFORMAT hdrop_format = ClipboardUtil::GetCFHDropFormat()->cfFormat;
   DataObjectImpl::StoredData::iterator iter = contents_.begin();
@@ -691,6 +708,8 @@ HRESULT DataObjectImpl::GetCanonicalFormatEtc(
 
 HRESULT DataObjectImpl::SetData(
     FORMATETC* format_etc, STGMEDIUM* medium, BOOL should_release) {
+  RemoveData(*format_etc);
+
   STGMEDIUM* local_medium = new STGMEDIUM;
   if (should_release) {
     *local_medium = *medium;
@@ -702,7 +721,8 @@ HRESULT DataObjectImpl::SetData(
       new DataObjectImpl::StoredDataInfo(format_etc->cfFormat, local_medium);
   info->medium->tymed = format_etc->tymed;
   info->owns_medium = !!should_release;
-  contents_.push_back(info);
+  // Make newly added data appear first.
+  contents_.insert(contents_.begin(), info);
 
   return S_OK;
 }

@@ -98,6 +98,56 @@ TEST(OSExchangeDataTest, StringDataWritingViaCOM) {
   EXPECT_EQ(reference_url.spec(), url_from_data.spec());
 }
 
+// Verifies SetData invoked twice with the same data clobbers existing data.
+TEST(OSExchangeDataTest, RemoveData) {
+  OSExchangeData data;
+  std::wstring input = L"http://www.google.com/";
+  std::wstring input2 = L"http://www.google2.com/";
+
+  base::win::ScopedComPtr<IDataObject> com_data(
+      OSExchangeDataProviderWin::GetIDataObject(data));
+
+  // Store data in the object using the COM SetData API.
+  CLIPFORMAT cfstr_ineturl = RegisterClipboardFormat(CFSTR_INETURL);
+  FORMATETC format_etc =
+      { cfstr_ineturl, NULL, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
+  STGMEDIUM medium;
+  medium.tymed = TYMED_HGLOBAL;
+  {
+    HGLOBAL glob = GlobalAlloc(GPTR, sizeof(wchar_t) * (input.size() + 1));
+    size_t stringsz = input.size();
+    SIZE_T sz = GlobalSize(glob);
+    base::win::ScopedHGlobal<wchar_t> global_lock(glob);
+    wchar_t* buffer_handle = global_lock.get();
+    wcscpy_s(buffer_handle, input.size() + 1, input.c_str());
+    medium.hGlobal = glob;
+    medium.pUnkForRelease = NULL;
+    EXPECT_EQ(S_OK, com_data->SetData(&format_etc, &medium, TRUE));
+  }
+  // This should clobber the existing data.
+  {
+    HGLOBAL glob = GlobalAlloc(GPTR, sizeof(wchar_t) * (input2.size() + 1));
+    size_t stringsz = input2.size();
+    SIZE_T sz = GlobalSize(glob);
+    base::win::ScopedHGlobal<wchar_t> global_lock(glob);
+    wchar_t* buffer_handle = global_lock.get();
+    wcscpy_s(buffer_handle, input2.size() + 1, input2.c_str());
+    medium.hGlobal = glob;
+    medium.pUnkForRelease = NULL;
+    EXPECT_EQ(S_OK, com_data->SetData(&format_etc, &medium, TRUE));
+  }
+  EXPECT_EQ(1u, static_cast<DataObjectImpl*>(com_data.get())->size());
+
+  // Construct a new object with the old object so that we can use our access
+  // APIs.
+  OSExchangeData data2(CloneProvider(data));
+  EXPECT_TRUE(data2.HasURL());
+  GURL url_from_data;
+  std::wstring title;
+  EXPECT_TRUE(data2.GetURLAndTitle(&url_from_data, &title));
+  EXPECT_EQ(GURL(input2).spec(), url_from_data.spec());
+}
+
 TEST(OSExchangeDataTest, URLDataAccessViaCOM) {
   OSExchangeData data;
   GURL url("http://www.google.com/");
