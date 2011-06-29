@@ -84,8 +84,6 @@ class Emf : public Metafile {
     return emf_;
   }
 
-  virtual void set_draft(bool /* draft */) const {}
-
  private:
   FRIEND_TEST_ALL_PREFIXES(EmfTest, DC);
   FRIEND_TEST_ALL_PREFIXES(EmfPrintingTest, PageBreak);

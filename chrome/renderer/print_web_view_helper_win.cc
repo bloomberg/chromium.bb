@@ -125,7 +125,7 @@ void PrintWebViewHelper::PrintPageInternal(
 
 bool PrintWebViewHelper::CreatePreviewDocument(
     const PrintMsg_PrintPages_Params& params, WebKit::WebFrame* frame,
-    WebKit::WebNode* node, bool draft) {
+    WebKit::WebNode* node) {
   PrintMsg_Print_Params print_params = params.params;
   UpdatePrintableSizeInPrintParameters(frame, node, &print_params);
   PrepareFrameAndViewForPrint prep_frame_view(print_params, frame, node,
@@ -135,7 +135,6 @@ bool PrintWebViewHelper::CreatePreviewDocument(
     return false;
 
   scoped_ptr<Metafile> metafile(new printing::PreviewMetafile);
-  metafile->set_draft(draft);
   metafile->Init();
 
   // Calculate the dpi adjustment.

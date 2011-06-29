@@ -60,8 +60,6 @@ class PdfMetafileCairo : public Metafile {
   virtual bool SaveToFD(const base::FileDescriptor& fd) const;
 #endif  // if defined(OS_CHROMEOS)
 
-  virtual void set_draft(bool /* draft */) const {}
-
  private:
   // Cleans up all resources.
   void CleanUpAll();

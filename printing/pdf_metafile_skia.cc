@@ -236,7 +236,4 @@ PdfMetafileSkia::PdfMetafileSkia()
     : data_(new PdfMetafileSkiaData),
       draft_(false) {}
 
-void PdfMetafileSkia::set_draft(bool draft) const {
-  draft_ = draft;
-}
 }  // namespace printing

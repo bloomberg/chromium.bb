@@ -45,9 +45,6 @@ var hasError = false;
 // True when preview tab is hidden.
 var isTabHidden = false;
 
-// True when draft preview data is requested for preview.
-var draftDocument = true;
-
 /**
  * Window onload handler, sets up the page and starts print preview by getting
  * the printer list.
@@ -356,8 +353,7 @@ function getSettingsJSON() {
        'collate': isCollated(),
        'landscape': isLandscape(),
        'color': isColor(),
-       'printToPDF': printToPDF,
-       'draftDocument': draftDocument});
+       'printToPDF': printToPDF});
 }
 
 /**
@@ -394,12 +390,6 @@ function printFile() {
     return;
   }
 
-  if (draftDocument) {
-    hasPendingPrintFileRequest = true;
-    requestPrintPreview();
-    return;
-  }
-
   if (isTabHidden || deviceName == PRINT_TO_PDF) {
     sendPrintFileRequest();
   } else {
@@ -432,9 +422,7 @@ function requestPrintPreview() {
   hasPendingPreviewRequest = true;
   removeEventListeners();
   printSettings.save();
-  if (isTabHidden || hasPendingPrintFileRequest)
-    draftDocument = false;
-  else
+  if (!isTabHidden)
     showLoadingAnimation();
 
   chrome.send('getPreview', [getSettingsJSON()]);
@@ -445,7 +433,6 @@ function requestPrintPreview() {
  * preview tab regarding the file selection cancel event.
  */
 function fileSelectionCancelled() {
-  draftDocument = true;
   hasPendingPrintFileRequest = false;
 }
 

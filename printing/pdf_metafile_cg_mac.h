@@ -65,8 +65,6 @@ class PdfMetafileCg : public Metafile, public base::ThreadChecker {
                           bool center_horizontally,
                           bool center_vertically) const;
 
-  virtual void set_draft(bool /* draft */) const {}
-
  private:
   // Returns a CGPDFDocumentRef version of pdf_data_.
   CGPDFDocumentRef GetPDFDocument() const;

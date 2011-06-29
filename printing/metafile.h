@@ -143,11 +143,6 @@ class Metafile {
   // Returns true if writing succeeded.
   virtual bool SaveToFD(const base::FileDescriptor& fd) const = 0;
 #endif  // if defined(OS_CHROMEOS)
-
-  // Sets the flag to create a draft metafile.
-  // NOTE: Draft metafile does not include font embedding, compression, etc.
-  // This is currently used only in print preview workflow.
-  virtual void set_draft(bool draft) const = 0;
 };
 
 }  // namespace printing
