@@ -53,6 +53,7 @@ class ShortcutsProvider : public AutocompleteProvider,
              const ACMatchClassifications& description_class);
     // Required for STL, we don't use this directly.
     Shortcut();
+    ~Shortcut();
 
     string16 text;  // The user's original input string.
     GURL url;       // The corresponding destination URL.

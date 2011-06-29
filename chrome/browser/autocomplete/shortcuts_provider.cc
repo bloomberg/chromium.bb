@@ -397,3 +397,6 @@ ShortcutsProvider::Shortcut::Shortcut()
     : last_access_time(base::Time::Now()),
       number_of_hits(0) {
 }
+
+ShortcutsProvider::Shortcut::~Shortcut() {
+}
