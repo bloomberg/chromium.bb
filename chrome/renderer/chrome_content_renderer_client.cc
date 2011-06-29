@@ -174,11 +174,18 @@ void ChromeContentRendererClient::RenderThreadStarted() {
           switches::kEnableIPCFuzzing)) {
     thread->channel()->set_outgoing_message_filter(LoadExternalIPCFuzzer());
   }
-  // chrome: pages should not be accessible by normal content, and should
-  // also be unable to script anything but themselves (to help limit the damage
-  // that a corrupt chrome: page could cause).
+  // chrome:, chrome-devtools:, and chrome-internal: pages should not be
+  // accessible by normal content, and should also be unable to script
+  // anything but themselves (to help limit the damage that a corrupt
+  // page could cause).
   WebString chrome_ui_scheme(ASCIIToUTF16(chrome::kChromeUIScheme));
   WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(chrome_ui_scheme);
+
+  WebString dev_tools_scheme(ASCIIToUTF16(chrome::kChromeDevToolsScheme));
+  WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(dev_tools_scheme);
+
+  WebString internal_scheme(ASCIIToUTF16(chrome::kChromeInternalScheme));
+  WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(internal_scheme);
 
   // chrome-extension: resources shouldn't trigger insecure content warnings.
   WebString extension_scheme(ASCIIToUTF16(chrome::kExtensionScheme));

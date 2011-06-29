@@ -8,6 +8,9 @@ namespace chrome {
 
 const char kAboutScheme[] = "about";
 const char kBlobScheme[] = "blob";
+
+// Before adding new chrome schemes please check with security@chromium.org.
+// There are security implications associated with introducing new schemes.
 const char kChromeDevToolsScheme[] = "chrome-devtools";
 const char kChromeInternalScheme[] = "chrome-internal";
 const char kChromeUIScheme[] = "chrome";
