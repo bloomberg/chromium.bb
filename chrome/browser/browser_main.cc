@@ -347,17 +347,17 @@ void BrowserMainParts::SocketTimeoutFieldTrial() {
   // After June 30, 2011 builds, it will always be in default group.
   scoped_refptr<base::FieldTrial> socket_timeout_trial(
       new base::FieldTrial("IdleSktToImpact", kIdleSocketTimeoutDivisor,
-          "idle_timeout_60", 2011, 6, 30));
-  const int socket_timeout_60 = socket_timeout_trial->kDefaultGroupNumber;
+          "idle_timeout_10", 2011, 6, 30));
+  const int socket_timeout_10 = socket_timeout_trial->kDefaultGroupNumber;
 
   const int socket_timeout_5 =
       socket_timeout_trial->AppendGroup("idle_timeout_5",
                                         kSocketTimeoutProbability);
-  const int socket_timeout_10 =
-      socket_timeout_trial->AppendGroup("idle_timeout_10",
-                                        kSocketTimeoutProbability);
   const int socket_timeout_20 =
       socket_timeout_trial->AppendGroup("idle_timeout_20",
+                                        kSocketTimeoutProbability);
+  const int socket_timeout_60 =
+      socket_timeout_trial->AppendGroup("idle_timeout_60",
                                         kSocketTimeoutProbability);
 
   const int idle_to_trial_group = socket_timeout_trial->group();
