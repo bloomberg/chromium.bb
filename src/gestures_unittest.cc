@@ -24,7 +24,7 @@ TEST(GesturesTest, UstimeFromTimevalTest) {
   EXPECT_EQ(3000088, UstimeFromTimeval(&tv));
   tv.tv_sec = 2000000000;
   tv.tv_usec = 999999;
-  EXPECT_EQ(2000000000999999, UstimeFromTimeval(&tv));
+  EXPECT_EQ(2000000000999999ULL, UstimeFromTimeval(&tv));
 }
 
 
