@@ -11,27 +11,25 @@
 namespace views {
 namespace internal {
 
+namespace {
+
+NativeWidgetPrivate* CreateNativeWidgetOfType(Widget::InitParams::Type type) {
+  Widget* widget = new Widget;
+  Widget::InitParams params(type);
+  params.ownership = views::Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET;
+  params.bounds = gfx::Rect(10, 10, 200, 200);
+  widget->Init(params);
+  return widget->native_widget_private();
+}
+
+}  // namespace
+
 NativeWidgetPrivate* CreateNativeWidget() {
-  return CreateNativeWidgetWithContents(new View);
+  return CreateNativeWidgetOfType(Widget::InitParams::TYPE_POPUP);
 }
 
-NativeWidgetPrivate* CreateNativeWidgetWithContents(View* contents_view) {
-  Widget* widget = new Widget;
-  Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.bounds = gfx::Rect(10, 10, 200, 200);
-  widget->Init(params);
-  return widget->native_widget_private();
-}
-
-NativeWidgetPrivate* CreateNativeWidgetWithParent(NativeWidgetPrivate* parent) {
-  Widget* widget = new Widget;
-  Widget::InitParams params(Widget::InitParams::TYPE_CONTROL);
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.parent = parent ? parent->GetWidget()->GetNativeView() : NULL;
-  params.bounds = gfx::Rect(10, 10, 200, 200);
-  widget->Init(params);
-  return widget->native_widget_private();
+NativeWidgetPrivate* CreateNativeSubWidget() {
+  return CreateNativeWidgetOfType(Widget::InitParams::TYPE_CONTROL);
 }
 
 }  // namespace internal

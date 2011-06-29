@@ -11,10 +11,10 @@ class View;
 namespace internal {
 class NativeWidgetPrivate;
 
-// Create dummy Widgets for use in testing.
+// Create dummy widgets for use in testing.  Caller owns the returned
+// |NativeWidgetPrivate| object which, in turn, owns the associated Widget.
 NativeWidgetPrivate* CreateNativeWidget();
-NativeWidgetPrivate* CreateNativeWidgetWithContents(View* contents_view);
-NativeWidgetPrivate* CreateNativeWidgetWithParent(NativeWidgetPrivate* parent);
+NativeWidgetPrivate* CreateNativeSubWidget();
 
 }  // namespace internal
 }  // namespace views

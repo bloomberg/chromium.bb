@@ -18,16 +18,18 @@ class ScopedTestWidget {
       : native_widget_(native_widget) {
   }
   ~ScopedTestWidget() {
+    // |CloseNow| deletes both |native_widget_| and its associated
+    // |Widget|.
     native_widget_->GetWidget()->CloseNow();
   }
 
   internal::NativeWidgetPrivate* operator->() const  {
-    return native_widget_.get();
+    return native_widget_;
   }
-  internal::NativeWidgetPrivate* get() const { return native_widget_.get(); }
+  internal::NativeWidgetPrivate* get() const { return native_widget_; }
 
  private:
-  scoped_ptr<internal::NativeWidgetPrivate> native_widget_;
+  internal::NativeWidgetPrivate* native_widget_;
   DISALLOW_COPY_AND_ASSIGN(ScopedTestWidget);
 };
 
@@ -62,11 +64,15 @@ TEST_F(NativeWidgetTest, GetTopLevelNativeWidget1) {
 
 // |toplevel_widget| has the toplevel NativeWidget.
 TEST_F(NativeWidgetTest, GetTopLevelNativeWidget2) {
-  ScopedTestWidget child_widget(internal::CreateNativeWidgetWithParent(NULL));
   ScopedTestWidget toplevel_widget(internal::CreateNativeWidget());
 
+  // |toplevel_widget| owns |child_host|.
   NativeViewHost* child_host = new NativeViewHost;
   toplevel_widget->GetWidget()->SetContentsView(child_host);
+
+  // |child_host| owns |child_widget|.
+  internal::NativeWidgetPrivate* child_widget =
+      internal::CreateNativeSubWidget();
   child_host->Attach(child_widget->GetWidget()->GetNativeView());
 
   EXPECT_EQ(toplevel_widget.get(),

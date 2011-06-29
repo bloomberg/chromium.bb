@@ -272,6 +272,9 @@ class ChromeTests:
   def TestGfx(self):
     return self.SimpleTest("chrome", "gfx_unittests")
 
+  def TestViews(self):
+    return self.SimpleTest("views", "views_unittests")
+
   # Valgrind timeouts are in seconds.
   UI_VALGRIND_ARGS = ["--timeout=7200", "--trace_children", "--indirect"]
   # UI test timeouts are in milliseconds.
@@ -445,6 +448,7 @@ class ChromeTests:
     "app": TestApp,              "app_unittests": TestApp,
     "ui_unit": TestUIUnit,       "ui_unittests": TestUIUnit,
     "gfx": TestGfx,              "gfx_unittests": TestGfx,
+    "views": TestViews,          "views_unittests": TestViews,
   }
 
 def _main(_):
