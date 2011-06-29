@@ -17,7 +17,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/sync_ui_util.h"
-#include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_menu_controller_gtk.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_tree_model.h"
@@ -34,8 +33,6 @@
 #include "chrome/browser/ui/gtk/tabs/tab_strip_gtk.h"
 #include "chrome/browser/ui/gtk/tabstrip_origin_provider.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -56,15 +53,15 @@ namespace {
 // The showing height of the bar.
 const int kBookmarkBarHeight = 29;
 
-// Padding for when the bookmark bar is floating.
+// Padding for when the bookmark bar is detached.
 const int kTopBottomNTPPadding = 12;
 const int kLeftRightNTPPadding = 8;
 
-// Padding around the bar's content area when the bookmark bar is floating.
+// Padding around the bar's content area when the bookmark bar is detached.
 const int kNTPPadding = 2;
 
 // The number of pixels of rounding on the corners of the bookmark bar content
-// area when in floating mode.
+// area when in detached mode.
 const int kNTPRoundedness = 3;
 
 // The height of the bar when it is "hidden". It is usually not completely
@@ -141,10 +138,10 @@ BookmarkBarGtk::BookmarkBarGtk(BrowserWindowGtk* window,
       show_instructions_(true),
       menu_bar_helper_(this),
       slide_animation_(this),
-      floating_(false),
       last_allocation_width_(-1),
       throbbing_widget_(NULL),
-      method_factory_(this) {
+      method_factory_(this),
+      bookmark_bar_state_(BookmarkBar::DETACHED) {
   if (profile->GetProfileSyncService()) {
     // Obtain a pointer to the profile sync service and add our instance as an
     // observer.
@@ -155,8 +152,9 @@ BookmarkBarGtk::BookmarkBarGtk(BrowserWindowGtk* window,
   Init(profile);
   SetProfile(profile);
   // Force an update by simulating being in the wrong state.
-  floating_ = !ShouldBeFloating();
-  UpdateFloatingState();
+  // BrowserWindowGtk sets our true state after we're created.
+  SetBookmarkBarState(BookmarkBar::SHOW,
+                      BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
 
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                  Source<ThemeService>(theme_service_));
@@ -303,13 +301,28 @@ void BookmarkBarGtk::Init(Profile* profile) {
   gtk_widget_hide(widget());
 }
 
-void BookmarkBarGtk::Show(bool animate) {
+void BookmarkBarGtk::SetBookmarkBarState(
+    BookmarkBar::State state,
+    BookmarkBar::AnimateChangeType animate_type) {
+  if (animate_type == BookmarkBar::ANIMATE_STATE_CHANGE &&
+      (state == BookmarkBar::DETACHED ||
+       bookmark_bar_state_ == BookmarkBar::DETACHED)) {
+    // TODO(estade): animate the transition between detached and non.
+    animate_type = BookmarkBar::DONT_ANIMATE_STATE_CHANGE;
+  }
+  BookmarkBar::State old_state = bookmark_bar_state_;
+  bookmark_bar_state_ = state;
+  if (state == BookmarkBar::SHOW || state == BookmarkBar::DETACHED)
+    Show(old_state, animate_type);
+  else
+    Hide(old_state, animate_type);
+}
+
+void BookmarkBarGtk::Show(BookmarkBar::State old_state,
+                          BookmarkBar::AnimateChangeType animate_type) {
   gtk_widget_show_all(widget());
-  bool old_floating = floating_;
-  UpdateFloatingState();
-  // TODO(estade): animate the transition between floating and non.
-  animate = animate && (old_floating == floating_);
-  if (animate) {
+  UpdateDetachedState(old_state);
+  if (animate_type == BookmarkBar::ANIMATE_STATE_CHANGE) {
     slide_animation_.Show();
   } else {
     slide_animation_.Reset(1);
@@ -318,7 +331,7 @@ void BookmarkBarGtk::Show(bool animate) {
 
   // Hide out behind the findbar. This is rather fragile code, it could
   // probably be improved.
-  if (floating_) {
+  if (bookmark_bar_state_ == BookmarkBar::DETACHED) {
     if (theme_service_->UsingNativeTheme()) {
       if (GTK_WIDGET_REALIZED(event_box_->parent))
         gdk_window_lower(event_box_->parent->window);
@@ -355,15 +368,17 @@ void BookmarkBarGtk::Show(bool animate) {
   SetChevronState();
 }
 
-void BookmarkBarGtk::Hide(bool animate) {
-  UpdateFloatingState();
+void BookmarkBarGtk::Hide(BookmarkBar::State old_state,
+                          BookmarkBar::AnimateChangeType animate_type) {
+  UpdateDetachedState(old_state);
 
   // After coming out of fullscreen, the browser window sets the bookmark bar
   // to the "hidden" state, which means we need to show our minimum height.
   gtk_widget_show(widget());
   // Sometimes we get called without a matching call to open. If that happens
   // then force hide.
-  if (slide_animation_.IsShowing() && animate) {
+  if (slide_animation_.IsShowing() &&
+      animate_type == BookmarkBar::ANIMATE_STATE_CHANGE) {
     slide_animation_.Hide();
   } else {
     gtk_widget_hide(bookmark_hbox_);
@@ -384,25 +399,12 @@ void BookmarkBarGtk::ShowImportDialog() {
   browser_->OpenImportSettingsDialog();
 }
 
-void BookmarkBarGtk::EnterFullscreen() {
-  if (ShouldBeFloating())
-    Show(false);
-  else
-    gtk_widget_hide(widget());
-}
-
 int BookmarkBarGtk::GetHeight() {
   return event_box_->allocation.height - kBookmarkBarMinimumHeight;
 }
 
 bool BookmarkBarGtk::IsAnimating() {
   return slide_animation_.is_animating();
-}
-
-bool BookmarkBarGtk::OnNewTabPage() {
-  return (browser_ && browser_->GetSelectedTabContentsWrapper() &&
-          browser_->GetSelectedTabContentsWrapper()->bookmark_tab_helper()->
-          ShouldShowBookmarkBar());
 }
 
 void BookmarkBarGtk::Loaded(BookmarkModel* model) {
@@ -628,27 +630,14 @@ int BookmarkBarGtk::GetFirstHiddenBookmark(
   return rv;
 }
 
-bool BookmarkBarGtk::ShouldBeFloating() {
-  // NTP4 never floats the bookmark bar.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewTabPage4))
-    return false;
-
-  return (!IsAlwaysShown() || (window_ && window_->IsFullscreen())) &&
-      window_ && window_->GetDisplayedTab() &&
-      window_->GetDisplayedTab()->bookmark_tab_helper()->
-      ShouldShowBookmarkBar();
-}
-
-void BookmarkBarGtk::UpdateFloatingState() {
-  bool old_floating = floating_;
-  floating_ = ShouldBeFloating();
-  if (floating_ == old_floating)
+void BookmarkBarGtk::UpdateDetachedState(BookmarkBar::State old_state) {
+  bool old_detached = old_state == BookmarkBar::DETACHED;
+  bool detached = bookmark_bar_state_ == BookmarkBar::DETACHED;
+  if (detached == old_detached)
     return;
 
-  if (floating_) {
-#if !defined(OS_CHROMEOS)
+  if (detached) {
     gtk_event_box_set_visible_window(GTK_EVENT_BOX(paint_box_), TRUE);
-#endif
     GdkColor stroke_color = theme_service_->UsingNativeTheme() ?
         theme_service_->GetBorderColor() :
         theme_service_->GetGdkColor(ThemeService::COLOR_NTP_HEADER);
@@ -661,42 +650,34 @@ void BookmarkBarGtk::UpdateFloatingState() {
     gtk_container_set_border_width(GTK_CONTAINER(bookmark_hbox_), kNTPPadding);
   } else {
     gtk_util::StopActingAsRoundedWindow(paint_box_);
-#if !defined(OS_CHROMEOS)
     gtk_event_box_set_visible_window(GTK_EVENT_BOX(paint_box_), FALSE);
-#endif
     gtk_alignment_set_padding(GTK_ALIGNMENT(ntp_padding_box_), 0, 0, 0, 0);
     gtk_container_set_border_width(GTK_CONTAINER(bookmark_hbox_), 0);
   }
 
   UpdateEventBoxPaintability();
   // |window_| can be NULL during testing.
-  if (window_) {
-    window_->BookmarkBarIsFloating(floating_);
-
-    // Listen for parent size allocations.
-    if (floating_ && widget()->parent) {
-      // Only connect once.
-      if (g_signal_handler_find(widget()->parent, G_SIGNAL_MATCH_FUNC,
+  // Listen for parent size allocations. Only connect once.
+  if (window_ && detached && widget()->parent &&
+      g_signal_handler_find(widget()->parent, G_SIGNAL_MATCH_FUNC,
           0, 0, NULL, reinterpret_cast<gpointer>(OnParentSizeAllocateThunk),
           NULL) == 0) {
-        g_signal_connect(widget()->parent, "size-allocate",
-                         G_CALLBACK(OnParentSizeAllocateThunk), this);
-      }
-    }
+    g_signal_connect(widget()->parent, "size-allocate",
+                     G_CALLBACK(OnParentSizeAllocateThunk), this);
   }
 }
 
 void BookmarkBarGtk::UpdateEventBoxPaintability() {
   gtk_widget_set_app_paintable(
-      event_box_.get(), !theme_service_->UsingNativeTheme() || floating_);
+      event_box_.get(),
+      (!theme_service_->UsingNativeTheme() ||
+       bookmark_bar_state_ == BookmarkBar::DETACHED));
   // When using the GTK+ theme, we need to have the event box be visible so
   // buttons don't get a halo color from the background.  When using Chromium
   // themes, we want to let the background show through the toolbar.
 
-#if !defined(OS_CHROMEOS)
   gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_.get()),
                                    theme_service_->UsingNativeTheme());
-#endif
 }
 
 void BookmarkBarGtk::PaintEventBox() {
@@ -803,15 +784,10 @@ void BookmarkBarGtk::StartThrobbingAfterAllocation(GtkWidget* item) {
       item, "size-allocate", G_CALLBACK(OnItemAllocateThunk), this);
 }
 
-bool BookmarkBarGtk::IsAlwaysShown() {
-  return (profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar) &&
-          profile_->GetPrefs()->GetBoolean(prefs::kEnableBookmarkBar));
-}
-
 void BookmarkBarGtk::AnimationProgressed(const ui::Animation* animation) {
   DCHECK_EQ(animation, &slide_animation_);
 
-  int max_height = ShouldBeFloating() ?
+  int max_height = (bookmark_bar_state_ == BookmarkBar::DETACHED) ?
                    kBookmarkBarNTPHeight : kBookmarkBarHeight;
   gint height =
       static_cast<gint>(animation->GetCurrentValue() *
@@ -854,7 +830,7 @@ void BookmarkBarGtk::Observe(NotificationType type,
         theme_service_->GetGdkColor(ThemeService::COLOR_TOOLBAR);
     gtk_widget_modify_bg(paint_box_, GTK_STATE_NORMAL, &paint_box_color);
 
-    if (floating_) {
+    if (bookmark_bar_state_ == BookmarkBar::DETACHED) {
       GdkColor stroke_color = theme_service_->UsingNativeTheme() ?
           theme_service_->GetBorderColor() :
           theme_service_->GetGdkColor(ThemeService::COLOR_NTP_HEADER);
@@ -1354,10 +1330,11 @@ gboolean BookmarkBarGtk::OnEventBoxExpose(GtkWidget* widget,
 
   // We don't need to render the toolbar image in GTK mode, except when
   // detached.
-  if (theme_provider->UsingNativeTheme() && !floating_)
+  if (theme_provider->UsingNativeTheme() &&
+      bookmark_bar_state_ != BookmarkBar::DETACHED)
     return FALSE;
 
-  if (!floating_) {
+  if (bookmark_bar_state_ != BookmarkBar::DETACHED) {
     cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
     gdk_cairo_rectangle(cr, &event->area);
     cairo_clip(cr);
@@ -1395,12 +1372,12 @@ void BookmarkBarGtk::OnEventBoxDestroy(GtkWidget* widget) {
 
 void BookmarkBarGtk::OnParentSizeAllocate(GtkWidget* widget,
                                           GtkAllocation* allocation) {
-  // In floating mode, our layout depends on the size of the tab contents.
+  // In detached mode, our layout depends on the size of the tab contents.
   // We get the size-allocate signal before the tab contents does, hence we
   // need to post a delayed task so we will paint correctly. Note that
   // gtk_widget_queue_draw by itself does not work, despite that it claims to
   // be asynchronous.
-  if (floating_) {
+  if (bookmark_bar_state_ == BookmarkBar::DETACHED) {
     MessageLoop::current()->PostTask(FROM_HERE,
         method_factory_.NewRunnableMethod(
             &BookmarkBarGtk::PaintEventBox));

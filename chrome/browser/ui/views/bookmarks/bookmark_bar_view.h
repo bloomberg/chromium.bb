@@ -94,9 +94,6 @@ class BookmarkBarView : public DetachableToolbarView,
   void SetBookmarkBarState(BookmarkBar::State state,
                            BookmarkBar::AnimateChangeType animate_type);
 
-  // Called when fullscreen mode toggles on or off; this affects our layout.
-  void OnFullscreenToggled(bool fullscreen);
-
   // How much we want the bookmark bar to overlap the toolbar.  If |return_max|
   // is true, we return the maximum overlap rather than the current overlap.
   int GetToolbarOverlap(bool return_max) const;

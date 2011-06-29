@@ -1223,56 +1223,9 @@ void Browser::ShowSingletonTab(const GURL& url) {
   browser::Navigate(&params);
 }
 
-void Browser::UpdateCommandsForFullscreenMode(bool is_fullscreen) {
-#if !defined(OS_MACOSX)
-  const bool show_main_ui = is_type_tabbed() && !is_fullscreen;
-#else
-  const bool show_main_ui = is_type_tabbed();
-#endif
-
-  bool main_not_fullscreen = show_main_ui && !is_fullscreen;
-
-  // Navigation commands
-  command_updater_.UpdateCommandEnabled(IDC_OPEN_CURRENT_URL, show_main_ui);
-
-  // Window management commands
-  command_updater_.UpdateCommandEnabled(IDC_SHOW_AS_TAB,
-      type_ != TYPE_TABBED && !is_fullscreen);
-
-  // Focus various bits of UI
-  command_updater_.UpdateCommandEnabled(IDC_FOCUS_TOOLBAR, show_main_ui);
-  command_updater_.UpdateCommandEnabled(IDC_FOCUS_LOCATION, show_main_ui);
-  command_updater_.UpdateCommandEnabled(IDC_FOCUS_SEARCH, show_main_ui);
-  command_updater_.UpdateCommandEnabled(
-      IDC_FOCUS_MENU_BAR, main_not_fullscreen);
-  command_updater_.UpdateCommandEnabled(
-      IDC_FOCUS_NEXT_PANE, main_not_fullscreen);
-  command_updater_.UpdateCommandEnabled(
-      IDC_FOCUS_PREVIOUS_PANE, main_not_fullscreen);
-  command_updater_.UpdateCommandEnabled(
-      IDC_FOCUS_BOOKMARKS, main_not_fullscreen);
-  command_updater_.UpdateCommandEnabled(
-      IDC_FOCUS_CHROMEOS_STATUS, main_not_fullscreen);
-
-  // Show various bits of UI
-  command_updater_.UpdateCommandEnabled(IDC_DEVELOPER_MENU, show_main_ui);
-  command_updater_.UpdateCommandEnabled(IDC_FEEDBACK, show_main_ui);
-  command_updater_.UpdateCommandEnabled(IDC_SHOW_BOOKMARK_BAR,
-      browser_defaults::bookmarks_enabled && show_main_ui);
-  command_updater_.UpdateCommandEnabled(IDC_IMPORT_SETTINGS, show_main_ui);
-  command_updater_.UpdateCommandEnabled(IDC_SYNC_BOOKMARKS,
-      show_main_ui && profile_->IsSyncAccessible());
-
-  command_updater_.UpdateCommandEnabled(IDC_OPTIONS, show_main_ui);
-  command_updater_.UpdateCommandEnabled(IDC_EDIT_SEARCH_ENGINES, show_main_ui);
-  command_updater_.UpdateCommandEnabled(IDC_VIEW_PASSWORDS, show_main_ui);
-  command_updater_.UpdateCommandEnabled(IDC_ABOUT, show_main_ui);
-  command_updater_.UpdateCommandEnabled(IDC_SHOW_APP_MENU, show_main_ui);
-  command_updater_.UpdateCommandEnabled(IDC_TOGGLE_VERTICAL_TABS, show_main_ui);
-  command_updater_.UpdateCommandEnabled(IDC_COMPACT_NAVBAR, show_main_ui);
-#if defined (ENABLE_PROFILING) && !defined(NO_TCMALLOC)
-  command_updater_.UpdateCommandEnabled(IDC_PROFILING_ENABLED, show_main_ui);
-#endif
+void Browser::WindowFullscreenStateChanged() {
+  UpdateCommandsForFullscreenMode(window_->IsFullscreen());
+  UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TOGGLE_FULLSCREEN);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1611,10 +1564,16 @@ void Browser::ToggleFullscreenMode() {
 
   UserMetrics::RecordAction(UserMetricsAction("ToggleFullscreen"));
   window_->SetFullscreen(!window_->IsFullscreen());
-  // On X11, setting fullscreen mode is an async call to the X server, which
-  // may or may not support fullscreen mode.
-#if !defined(USE_X11)
-  UpdateCommandsForFullscreenMode(window_->IsFullscreen());
+
+  // Once the window has become fullscreen it'll call back to
+  // WindowFullscreenStateChanged(). We don't do this immediately as
+  // BrowserWindow::SetFullscreen() asks for bookmark_bar_state_, so we let the
+  // BrowserWindow invoke WindowFullscreenStateChanged when appropriate.
+
+  // TODO: convert mac to invoke WindowFullscreenStateChanged once it updates
+  // the necessary state of the frame.
+#if defined(OS_MACOSX)
+  WindowFullscreenStateChanged();
 #endif
 }
 
@@ -3937,6 +3896,58 @@ void Browser::InitCommandState() {
   UpdateCommandsForBookmarkEditing();
 }
 
+void Browser::UpdateCommandsForFullscreenMode(bool is_fullscreen) {
+#if !defined(OS_MACOSX)
+  const bool show_main_ui = is_type_tabbed() && !is_fullscreen;
+#else
+  const bool show_main_ui = is_type_tabbed();
+#endif
+
+  bool main_not_fullscreen = show_main_ui && !is_fullscreen;
+
+  // Navigation commands
+  command_updater_.UpdateCommandEnabled(IDC_OPEN_CURRENT_URL, show_main_ui);
+
+  // Window management commands
+  command_updater_.UpdateCommandEnabled(IDC_SHOW_AS_TAB,
+      type_ != TYPE_TABBED && !is_fullscreen);
+
+  // Focus various bits of UI
+  command_updater_.UpdateCommandEnabled(IDC_FOCUS_TOOLBAR, show_main_ui);
+  command_updater_.UpdateCommandEnabled(IDC_FOCUS_LOCATION, show_main_ui);
+  command_updater_.UpdateCommandEnabled(IDC_FOCUS_SEARCH, show_main_ui);
+  command_updater_.UpdateCommandEnabled(
+      IDC_FOCUS_MENU_BAR, main_not_fullscreen);
+  command_updater_.UpdateCommandEnabled(
+      IDC_FOCUS_NEXT_PANE, main_not_fullscreen);
+  command_updater_.UpdateCommandEnabled(
+      IDC_FOCUS_PREVIOUS_PANE, main_not_fullscreen);
+  command_updater_.UpdateCommandEnabled(
+      IDC_FOCUS_BOOKMARKS, main_not_fullscreen);
+  command_updater_.UpdateCommandEnabled(
+      IDC_FOCUS_CHROMEOS_STATUS, main_not_fullscreen);
+
+  // Show various bits of UI
+  command_updater_.UpdateCommandEnabled(IDC_DEVELOPER_MENU, show_main_ui);
+  command_updater_.UpdateCommandEnabled(IDC_FEEDBACK, show_main_ui);
+  command_updater_.UpdateCommandEnabled(IDC_SHOW_BOOKMARK_BAR,
+      browser_defaults::bookmarks_enabled && show_main_ui);
+  command_updater_.UpdateCommandEnabled(IDC_IMPORT_SETTINGS, show_main_ui);
+  command_updater_.UpdateCommandEnabled(IDC_SYNC_BOOKMARKS,
+      show_main_ui && profile_->IsSyncAccessible());
+
+  command_updater_.UpdateCommandEnabled(IDC_OPTIONS, show_main_ui);
+  command_updater_.UpdateCommandEnabled(IDC_EDIT_SEARCH_ENGINES, show_main_ui);
+  command_updater_.UpdateCommandEnabled(IDC_VIEW_PASSWORDS, show_main_ui);
+  command_updater_.UpdateCommandEnabled(IDC_ABOUT, show_main_ui);
+  command_updater_.UpdateCommandEnabled(IDC_SHOW_APP_MENU, show_main_ui);
+  command_updater_.UpdateCommandEnabled(IDC_TOGGLE_VERTICAL_TABS, show_main_ui);
+  command_updater_.UpdateCommandEnabled(IDC_COMPACT_NAVBAR, show_main_ui);
+#if defined (ENABLE_PROFILING) && !defined(NO_TCMALLOC)
+  command_updater_.UpdateCommandEnabled(IDC_PROFILING_ENABLED, show_main_ui);
+#endif
+}
+
 void Browser::UpdateCommandsForTabState() {
   TabContents* current_tab = GetSelectedTabContents();
   TabContentsWrapper* current_tab_wrapper = GetSelectedTabContentsWrapper();
@@ -4684,8 +4695,10 @@ int Browser::GetContentRestrictionsForSelectedTab() {
 
 void Browser::UpdateBookmarkBarState(BookmarkBarStateChangeReason reason) {
   BookmarkBar::State state;
-  if (profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar) &&
-      profile_->GetPrefs()->GetBoolean(prefs::kEnableBookmarkBar)) {
+  // The bookmark bar is hidden in fullscreen mode, unless on the new tab page.
+  if ((profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar) &&
+       profile_->GetPrefs()->GetBoolean(prefs::kEnableBookmarkBar)) &&
+      (!window_ || !window_->IsFullscreen())) {
     state = BookmarkBar::SHOW;
   } else {
     TabContentsWrapper* tab = GetSelectedTabContentsWrapper();

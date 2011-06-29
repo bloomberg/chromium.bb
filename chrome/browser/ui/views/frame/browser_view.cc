@@ -2279,23 +2279,13 @@ void BrowserView::ProcessFullscreen(bool fullscreen) {
       PushForceHidden();
 #endif
 
-  // Notify bookmark bar, so it can set itself to the appropriate drawing state.
-  if (bookmark_bar_view_.get())
-    bookmark_bar_view_->OnFullscreenToggled(fullscreen);
-
   // Toggle fullscreen mode.
 #if defined(OS_WIN)
   frame_->SetFullscreen(fullscreen);
 #endif  // No need to invoke SetFullscreen for linux as this code is executed
         // once we're already fullscreen on linux.
 
-#if defined(TOOLKIT_USES_GTK)
-  // Updating of commands for fullscreen mode is called from SetFullScreen on
-  // Wndows (see just above), but for ChromeOS, this method (ProcessFullScreen)
-  // is called after full screen has happened successfully (via GTK's
-  // window-state-change event), so we have to update commands here.
-  browser_->UpdateCommandsForFullscreenMode(fullscreen);
-#endif
+  browser_->WindowFullscreenStateChanged();
 
   if (fullscreen) {
     bool is_kiosk =

@@ -460,11 +460,10 @@ class Browser : public TabHandlerDelegate,
   // is created.
   void ShowSingletonTab(const GURL& url);
 
-  // Update commands whose state depends on whether the window is in fullscreen
-  // mode. This is a public function because on Linux, fullscreen mode is an
-  // async call to X. Once we get the fullscreen callback, the browser window
-  // will call this method.
-  void UpdateCommandsForFullscreenMode(bool is_fullscreen);
+  // Invoked when the fullscreen state of the window changes.
+  // BrowserWindow::SetFullscreen invokes this after the window has become
+  // fullscreen.
+  void WindowFullscreenStateChanged();
 
   // Assorted browser commands ////////////////////////////////////////////////
 
@@ -803,6 +802,9 @@ class Browser : public TabHandlerDelegate,
 
     // Change is the result of a state change in the active tab.
     BOOKMARK_BAR_STATE_CHANGE_TAB_STATE,
+
+    // Change is the result of window toggling in/out of fullscreen mode.
+    BOOKMARK_BAR_STATE_CHANGE_TOGGLE_FULLSCREEN,
   };
 
   // Overridden from TabContentsDelegate:
@@ -938,6 +940,10 @@ class Browser : public TabHandlerDelegate,
 
   // Updates commands for bookmark editing.
   void UpdateCommandsForBookmarkEditing();
+
+  // Update commands whose state depends on whether the window is in fullscreen
+  // mode.
+  void UpdateCommandsForFullscreenMode(bool is_fullscreen);
 
   // Updates the printing command state.
   void UpdatePrintingState(int content_restrictions);

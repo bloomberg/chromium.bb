@@ -200,10 +200,6 @@ class BrowserWindowGtk : public BrowserWindow,
 
   gfx::Rect bounds() const { return bounds_; }
 
-  // Make changes necessary when the floating state of the bookmark bar changes.
-  // This should only be called by the bookmark bar itself.
-  void BookmarkBarIsFloating(bool is_floating);
-
   // Returns the tab we're currently displaying in the tab contents container.
   TabContentsWrapper* GetDisplayedTab();
 
@@ -442,9 +438,6 @@ class BrowserWindowGtk : public BrowserWindow,
   // The object that manages the bookmark bar. This will be NULL if the
   // bookmark bar is not supported.
   scoped_ptr<BookmarkBarGtk> bookmark_bar_;
-
-  // Caches the hover state of the bookmark bar.
-  bool bookmark_bar_is_floating_;
 
   // The status bubble manager.  Always non-NULL.
   scoped_ptr<StatusBubbleGtk> status_bubble_;

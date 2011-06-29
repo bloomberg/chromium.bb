@@ -457,13 +457,6 @@ void BookmarkBarView::SetBookmarkBarState(
   bookmark_bar_state_ = state;
 }
 
-void BookmarkBarView::OnFullscreenToggled(bool fullscreen) {
-  if (!fullscreen)
-    size_animation_->Reset(bookmark_bar_state_ == BookmarkBar::SHOW ? 1 : 0);
-  else if (bookmark_bar_state_ == BookmarkBar::SHOW)
-    size_animation_->Reset(0);
-}
-
 int BookmarkBarView::GetToolbarOverlap(bool return_max) const {
   // When not detached, always overlap by the full amount.
   if (return_max || bookmark_bar_state_ != BookmarkBar::DETACHED)

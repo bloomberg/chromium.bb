@@ -16,6 +16,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/ui/bookmarks/bookmark_bar.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_bar_instructions_gtk.h"
 #include "chrome/browser/ui/gtk/menu_bar_helper.h"
 #include "chrome/browser/ui/gtk/owned_widget_gtk.h"
@@ -73,30 +74,15 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
   // Create the contents of the bookmark bar.
   void Init(Profile* profile);
 
-  // Whether the current page is the New Tag Page (which requires different
-  // rendering).
-  bool OnNewTabPage();
-
-  // Change the visibility of the bookmarks bar. (Starts out hidden, per GTK's
-  // default behaviour). There are three visiblity states:
-  //
-  //   Showing    - bookmark bar is fully visible.
-  //   Hidden     - bookmark bar is hidden except for a few pixels that give
-  //                extra padding to the bottom of the toolbar. Buttons are not
-  //                clickable.
-  //   Fullscreen - bookmark bar is fully hidden.
-  void Show(bool animate);
-  void Hide(bool animate);
-  void EnterFullscreen();
+  // Changes the state of the bookmark bar.
+  void SetBookmarkBarState(BookmarkBar::State state,
+                           BookmarkBar::AnimateChangeType animate_type);
 
   // Get the current height of the bookmark bar.
   int GetHeight();
 
   // Returns true if the bookmark bar is showing an animation.
   bool IsAnimating();
-
-  // Returns true if the bookmarks bar preference is set to 'always show'.
-  bool IsAlwaysShown();
 
   // ui::AnimationDelegate implementation --------------------------------------
   virtual void AnimationProgressed(const ui::Animation* animation);
@@ -120,6 +106,19 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
   FRIEND_TEST_ALL_PREFIXES(BookmarkBarGtkUnittest,
                            HidesHelpMessageWithBookmark);
   FRIEND_TEST_ALL_PREFIXES(BookmarkBarGtkUnittest, BuildsButtons);
+
+  // Change the visibility of the bookmarks bar. (Starts out hidden, per GTK's
+  // default behaviour). There are three visiblity states:
+  //
+  //   Showing    - bookmark bar is fully visible.
+  //   Hidden     - bookmark bar is hidden except for a few pixels that give
+  //                extra padding to the bottom of the toolbar. Buttons are not
+  //                clickable.
+  //   Fullscreen - bookmark bar is fully hidden.
+  void Show(BookmarkBar::State old_state,
+            BookmarkBar::AnimateChangeType animate_type);
+  void Hide(BookmarkBar::State old_state,
+            BookmarkBar::AnimateChangeType animate_type);
 
   // Helper function which generates GtkToolItems for |bookmark_toolbar_|.
   void CreateAllBookmarkButtons();
@@ -153,11 +152,8 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
   int GetFirstHiddenBookmark(int extra_space,
                              std::vector<GtkWidget*>* showing_folders);
 
-  // Returns true if the bookmark bar should be floating on the page (for
-  // NTP).
-  bool ShouldBeFloating();
-  // Update the floating state (either enable or disable it, or do nothing).
-  void UpdateFloatingState();
+  // Update the detached state (either enable or disable it, or do nothing).
+  void UpdateDetachedState(BookmarkBar::State old_state);
 
   // Turns on or off the app_paintable flag on |event_box_|, depending on our
   // state.
@@ -321,10 +317,10 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
   // background color from the toplevel application window's GDK window.
   OwnedWidgetGtk event_box_;
 
-  // Used to float the bookmark bar when on the NTP.
+  // Used to detached the bookmark bar when on the NTP.
   GtkWidget* ntp_padding_box_;
 
-  // Used to paint the background of the bookmark bar when in floating mode.
+  // Used to paint the background of the bookmark bar when in detached mode.
   GtkWidget* paint_box_;
 
   // Used to position all children.
@@ -385,11 +381,6 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
 
   ui::SlideAnimation slide_animation_;
 
-  // Whether we are currently configured as floating (detached from the
-  // toolbar). This reflects our actual state, and can be out of sync with
-  // what ShouldShowFloating() returns.
-  bool floating_;
-
   // Used to optimize out |bookmark_toolbar_| size-allocate events we don't
   // need to respond to.
   int last_allocation_width_;
@@ -412,6 +403,10 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
   BooleanPrefMember edit_bookmarks_enabled_;
 
   ScopedRunnableMethodFactory<BookmarkBarGtk> method_factory_;
+
+  BookmarkBar::State bookmark_bar_state_;
+
+  DISALLOW_COPY_AND_ASSIGN(BookmarkBarGtk);
 };
 
 #endif  // CHROME_BROWSER_UI_GTK_BOOKMARKS_BOOKMARK_BAR_GTK_H_

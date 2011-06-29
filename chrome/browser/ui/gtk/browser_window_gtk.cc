@@ -303,7 +303,6 @@ std::map<XID, GtkWindow*> BrowserWindowGtk::xid_map_;
 BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
     :  browser_(browser),
        state_(GDK_WINDOW_STATE_WITHDRAWN),
-       bookmark_bar_is_floating_(false),
        frame_cursor_(NULL),
        is_active_(!ui::ActiveWindowWatcherX::WMSupportsActivation()),
        last_click_time_(0),
@@ -756,7 +755,6 @@ void BrowserWindowGtk::UpdateTitleBar() {
 
 void BrowserWindowGtk::BookmarkBarStateChanged(
     BookmarkBar::AnimateChangeType change_type) {
-  // TODO(sky): fix other sites like on views.
   MaybeShowBookmarkBar(change_type == BookmarkBar::ANIMATE_STATE_CHANGE);
 }
 
@@ -1284,28 +1282,22 @@ void BrowserWindowGtk::MaybeShowBookmarkBar(bool animate) {
     return;
 
   TabContentsWrapper* tab = GetDisplayedTab();
-  bool show_bar = false;
 
   if (tab) {
     bookmark_bar_->SetProfile(tab->profile());
     bookmark_bar_->SetPageNavigator(tab->tab_contents());
-    show_bar = true;
   }
 
-  if (show_bar && tab && !tab->bookmark_tab_helper()->ShouldShowBookmarkBar()) {
-    PrefService* prefs = tab->profile()->GetPrefs();
-    show_bar = prefs->GetBoolean(prefs::kShowBookmarkBar) &&
-               prefs->GetBoolean(prefs::kEnableBookmarkBar) &&
-               !IsFullscreen();
-  }
+  BookmarkBar::State state = browser_->bookmark_bar_state();
+  if (contents_container_->HasPreview() && state == BookmarkBar::DETACHED)
+    state = BookmarkBar::HIDDEN;
 
-  if (show_bar) {
-    bookmark_bar_->Show(animate);
-  } else if (IsFullscreen()) {
-    bookmark_bar_->EnterFullscreen();
-  } else {
-    bookmark_bar_->Hide(animate);
-  }
+  bookmark_bar_->SetBookmarkBarState(
+      state,
+      animate ? BookmarkBar::ANIMATE_STATE_CHANGE :
+                BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
+  toolbar_->UpdateForBookmarkBarVisibility(state == BookmarkBar::DETACHED);
+  PlaceBookmarkBar(state == BookmarkBar::DETACHED);
 }
 
 void BrowserWindowGtk::UpdateDevToolsForContents(TabContents* contents) {
@@ -1422,14 +1414,11 @@ gboolean BrowserWindowGtk::OnWindowState(GtkWidget* sender,
   state_ = event->new_window_state;
 
   if (event->changed_mask & GDK_WINDOW_STATE_FULLSCREEN) {
-    bool is_fullscreen = state_ & GDK_WINDOW_STATE_FULLSCREEN;
-    browser_->UpdateCommandsForFullscreenMode(is_fullscreen);
-    if (is_fullscreen) {
+    browser_->WindowFullscreenStateChanged();
+    if (state_ & GDK_WINDOW_STATE_FULLSCREEN) {
       UpdateCustomFrame();
       toolbar_->Hide();
       tabstrip_->Hide();
-      if (IsBookmarkBarSupported())
-        bookmark_bar_->EnterFullscreen();
       bool is_kiosk =
           CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode);
       if (!is_kiosk) {
@@ -1571,15 +1560,6 @@ void BrowserWindowGtk::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kUseCustomChromeFrame,
                              custom_frame_default,
                              PrefService::SYNCABLE_PREF);
-}
-
-void BrowserWindowGtk::BookmarkBarIsFloating(bool is_floating) {
-  bookmark_bar_is_floating_ = is_floating;
-  toolbar_->UpdateForBookmarkBarVisibility(is_floating);
-
-  // This can be NULL during initialization of the bookmark bar.
-  if (bookmark_bar_.get())
-    PlaceBookmarkBar(is_floating);
 }
 
 TabContentsWrapper* BrowserWindowGtk::GetDisplayedTab() {
@@ -1920,8 +1900,10 @@ void BrowserWindowGtk::SaveWindowPosition() {
 void BrowserWindowGtk::InvalidateInfoBarBits() {
   gtk_widget_queue_draw(toolbar_border_);
   gtk_widget_queue_draw(toolbar_->widget());
-  if (bookmark_bar_.get() && !bookmark_bar_is_floating_)
+  if (bookmark_bar_.get() &&
+      browser_->bookmark_bar_state() != BookmarkBar::DETACHED) {
     gtk_widget_queue_draw(bookmark_bar_->widget());
+  }
 }
 
 int BrowserWindowGtk::GetXPositionOfLocationIcon(GtkWidget* relative_to) {
@@ -1955,7 +1937,7 @@ gboolean BrowserWindowGtk::OnExposeDrawInfobarBits(GtkWidget* sender,
 
 gboolean BrowserWindowGtk::OnBookmarkBarExpose(GtkWidget* sender,
                                                GdkEventExpose* expose) {
-  if (bookmark_bar_is_floating_)
+  if (browser_->bookmark_bar_state() == BookmarkBar::DETACHED)
     return FALSE;
 
   return OnExposeDrawInfobarBits(sender, expose);
@@ -1970,7 +1952,7 @@ void BrowserWindowGtk::OnBookmarkBarSizeAllocate(GtkWidget* sender,
 
   // Pass the new size to our infobar container.
   int arrow_size = InfoBar::kDefaultArrowTargetHeight;
-  if (!bookmark_bar_is_floating_)
+  if (browser_->bookmark_bar_state() != BookmarkBar::DETACHED)
     arrow_size += allocation->height;
   infobar_container_->SetMaxTopArrowHeight(arrow_size);
 }

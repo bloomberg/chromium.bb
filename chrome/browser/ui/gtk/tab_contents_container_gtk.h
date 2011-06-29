@@ -37,6 +37,8 @@ class TabContentsContainerGtk : public NotificationObserver,
   // Returns the TabContentsWrapper currently displayed.
   TabContentsWrapper* GetVisibleTab();
 
+  bool HasPreview() const { return preview_ != NULL; }
+
   void SetPreview(TabContentsWrapper* preview);
   void PopPreview();
 
