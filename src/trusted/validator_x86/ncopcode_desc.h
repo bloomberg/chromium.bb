@@ -114,6 +114,12 @@ typedef struct NaClInst {
   NaClIFlags flags;
   /* The instruction that this instruction implements. */
   NaClMnemonic name;
+  /* Defines opcode extentions, which encodes values for OpcodeInModRm,
+   * OpcodePlusR, and OpcodeInModRmRm. Note: to fit the possible 9
+   * bits of information in 8 bits, we assume that OpcodeInModRm
+   * and OpcodePlusR do not happen in the same instruction.
+   */
+  uint8_t opcode_ext;
   /* The number of operands modeled for this instruction. */
   uint8_t num_operands;
   /* The corresponding models of the operands. */
@@ -124,6 +130,15 @@ typedef struct NaClInst {
    */
   const struct NaClInst* next_rule;
 } NaClInst;
+
+/* Returns the OpcodeInModRm value in the opcode_ext field. */
+uint8_t NaClGetOpcodeInModRm(uint8_t opcode_ext);
+
+/* Returns the OpcodeInModRmRm value in the opcode_ext field. */
+uint8_t NaClGetOpcodeInModRmRm(uint8_t opcode_ext);
+
+/* Returns the OpcodePlusR value in the opcode_ext field. */
+uint8_t NaClGetOpcodePlusR(uint8_t opcode_ext);
 
 /* Implements trie nodes for selecting instructions that must match
  * a specific sequence of bytes. Used to handle NOP cases.

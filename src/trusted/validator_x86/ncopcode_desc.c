@@ -21,6 +21,18 @@
 #include "native_client/src/trusted/validator_x86/gen/ncopcode_operand_kind_impl.h"
 #include "native_client/src/trusted/validator_x86/gen/ncopcode_operand_flag_impl.h"
 
+uint8_t NaClGetOpcodeInModRm(uint8_t opcode_ext) {
+  return opcode_ext & 0x0F;
+}
+
+uint8_t NaClGetOpcodeInModRmRm(uint8_t opcode_ext) {
+  return (opcode_ext >> 4) & 0x0F;
+}
+
+uint8_t NaClGetOpcodePlusR(uint8_t opcode_ext) {
+  return opcode_ext & 0x0F;
+}
+
 uint8_t NaClGetInstNumberOperands(const NaClInst* inst) {
   return inst->num_operands;
 }

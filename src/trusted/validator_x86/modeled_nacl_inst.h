@@ -42,6 +42,12 @@ typedef struct NaClModeledInst {
   NaClIFlags flags;
   /* The instruction that this instruction implements. */
   NaClMnemonic name;
+  /* Defines opcode extentions, which encodes values for OpcodeInModRm,
+   * OpcodePlusR, and OpcodeInModRmRm. Note: to fit the possible 9
+   * bits of information in 8 bits, we assume that OpcodeInModRm
+   * and OpcodePlusR do not happen in the same instruction.
+   */
+  uint8_t opcode_ext;
   /* The number of operands modeled for this instruction. */
   uint8_t num_operands;
   /* The corresponding models of the operands. */
@@ -52,6 +58,15 @@ typedef struct NaClModeledInst {
    */
   struct NaClModeledInst* next_rule;
 } NaClModeledInst;
+
+/* Sets the OpcodeInModRm value in the opcode_ext field. */
+void NaClSetOpcodeInModRm(uint8_t value, uint8_t *opcode_ext);
+
+/* Sets the OpcodeInModRmRm value in th opcode_ext field. */
+void NaClSetOpcodeInModRmRm(uint8_t value, uint8_t *opcode_ext);
+
+/* Sets the OpcodePlusR value in the opcode_ext field. */
+void NaClSetOpcodePlusR(uint8_t value, uint8_t *opcode_ext);
 
 /* Implements trie nodes for selecting instructions that must match
  * a specific sequence of bytes. Used to model NOP cases.

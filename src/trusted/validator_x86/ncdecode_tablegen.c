@@ -908,7 +908,7 @@ static void NaClRemoveCurrentInstMrmFromInstMrmTable() {
    */
   int mrm_opcode = NACL_NO_MODRM_OPCODE;
   if (current_inst->flags & NACL_IFLAG(OpcodeInModRm)) {
-    mrm_opcode = current_inst->opcode[current_inst->num_opcode_bytes];
+    mrm_opcode = NaClGetOpcodeInModRm(current_inst->opcode_ext);
   }
 
   while (1) {
@@ -989,6 +989,7 @@ void NaClDefOpcodeExtension(int opcode) {
   DEBUG(NaClLog(LOG_INFO, "Defining opcode extension %d\n", opcode));
   NaClMoveCurrentToMrmIndex(byte_opcode);
   current_inst->opcode[current_inst->num_opcode_bytes] = byte_opcode;
+  NaClSetOpcodeInModRm(byte_opcode, &current_inst->opcode_ext);
 }
 
 void NaClDefineOpcodeModRmRmExtension(int value) {
@@ -1006,6 +1007,7 @@ void NaClDefineOpcodeModRmRmExtension(int value) {
   NaClAddIFlags(NACL_IFLAG(OpcodeInModRmRm));
   if (current_inst->num_opcode_bytes + 1 < NACL_MAX_ALL_OPCODE_BYTES) {
     current_inst->opcode[current_inst->num_opcode_bytes+1] = byte_opcode;
+    NaClSetOpcodeInModRmRm(byte_opcode, &current_inst->opcode_ext);
   } else {
     NaClFatalInst("No room for opcode modrm rm extension");
   }
@@ -1024,6 +1026,7 @@ void NaClDefOpcodeRegisterValue(int r) {
         "Attempted to define opcode register value when not OpcodePlusR");
   }
   current_inst->opcode[current_inst->num_opcode_bytes] = byte_r;
+  NaClSetOpcodePlusR(byte_r, &current_inst->opcode_ext);
 }
 
 /* Same as previous function, except that sanity checks
@@ -1419,6 +1422,7 @@ static void NaClDefInstInternal(
   current_inst->insttype = insttype;
   current_inst->flags = NACL_EMPTY_IFLAGS;
   current_inst->name = name;
+  current_inst->opcode_ext = 0;
   current_inst->next_rule = NULL;
 
   /* undefine all operands. */
@@ -1950,7 +1954,8 @@ static void NaClInstPrintInternal(struct Gio* f, Bool as_array_element,
   gprintf(f, "    ");
   NaClIFlagsPrintInternal(f, inst->flags);
   gprintf(f, ",\n");
-  gprintf(f, "    Inst%s,\n", NaClMnemonicName(inst->name));
+  gprintf(f, "    Inst%s, 0x%02x,\n", NaClMnemonicName(inst->name),
+          inst->opcode_ext);
   gprintf(f, "    %u, g_Operands + %"NACL_PRIuS",\n",
           inst->num_operands, NaClOpOffset(inst->operands));
   if (index < 0 || NULL == inst->next_rule) {

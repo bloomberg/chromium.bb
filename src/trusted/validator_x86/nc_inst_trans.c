@@ -669,9 +669,8 @@ static int NaClGetGenRmRegister(NaClInstState* state) {
  */
 static NaClExp* NaClAppendOpcodeBaseReg(
     NaClInstState* state, const NaClOp* operand) {
-  /* Note: Difference held as first operand (by convention). */
   int reg_index;
-  reg_index = state->inst->opcode[state->inst->num_opcode_bytes];
+  reg_index = NaClGetOpcodePlusR(state->inst->opcode_ext);
   assert(reg_index >= 0 && reg_index < 8);
   DEBUG(NaClLog(LOG_INFO, "Translate opcode base register %d\n", reg_index));
   return NaClAppendRegKind(state, NaClExtractOpRegKind(state, operand),
@@ -682,10 +681,8 @@ static NaClExp* NaClAppendOpcodeBaseReg(
  * its opcode base.
  */
 static NaClExp* NaClAppendStOpcodeBaseReg(NaClInstState* state) {
-  /* Note: Difference held as first operand (by convention). */
   int reg_index;
-  assert(state->inst->num_operands > 1);
-  reg_index = state->inst->opcode[state->inst->num_opcode_bytes];
+  reg_index = NaClGetOpcodePlusR(state->inst->opcode_ext);
   assert(reg_index >= 0 && reg_index < 8);
   DEBUG(NaClLog(LOG_INFO, "Translate opcode base register %d\n", reg_index));
   return NaClAppendReg(RegST0 + reg_index, &state->nodes);

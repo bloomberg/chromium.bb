@@ -10,6 +10,18 @@
 
 #include <string.h>
 
+void NaClSetOpcodeInModRm(uint8_t value, uint8_t *opcode_ext) {
+  *opcode_ext += value;
+}
+
+void NaClSetOpcodeInModRmRm(uint8_t value, uint8_t *opcode_ext) {
+  *opcode_ext += (value << 4);
+}
+
+void NaClSetOpcodePlusR(uint8_t value, uint8_t *opcode_ext) {
+  *opcode_ext += value;
+}
+
 void NaClModeledInstPrint(struct Gio* f, const NaClModeledInst* inst) {
   int i;
   int count = 2;
