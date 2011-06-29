@@ -470,7 +470,6 @@
 <translation id="5548207786079516019">Det här är en sekundär installation av <ph name="PRODUCT_NAME"/>. Det går inte att göra den till standardwebbläsare.</translation>
 <translation id="3984413272403535372">Ett fel uppstod när tillägget skulle signeras.</translation>
 <translation id="8807083958935897582">Med <ph name="PRODUCT_NAME"/> kan du söka på webben med adressfältet. Välj vilken sökmotor du vill använda:</translation>
-<translation id="6629104427484407292">Säkerhet: <ph name="SECURITY"/></translation>
 <translation id="9208886416788010685">Adobe Reader är inaktuellt</translation>
 <translation id="3373604799988099680">Tillägg eller program</translation>
 <translation id="318408932946428277">Ta bort cookies och andra webbplatsdata när jag stänger webbläsaren</translation>
@@ -1361,7 +1360,6 @@
 <translation id="1901769927849168791">Ett SD-kort har upptäckts</translation>
 <translation id="818454486170715660"><ph name="NAME"/> – ägare</translation>
 <translation id="1358032944105037487">Japanskt tangentbord</translation>
-<translation id="8201956630388867069">WPA</translation>
 <translation id="603890000178803545">jan^feb^mar^apr^maj^jun^jul^aug^sep^okt^nov^dec</translation>
 <translation id="8302838426652833913">Öppna
           <ph name="BEGIN_BOLD"/>
@@ -1460,6 +1458,7 @@
 <translation id="7222232353993864120">E-postadress</translation>
 <translation id="2128531968068887769">Native Client</translation>
 <translation id="7175353351958621980">Överförd från:</translation>
+<translation id="4590074117005971373">Ger ökad prestanda åt kanvas-taggar med 2D-kontext genom rendering med GPU-maskinvara (Graphics Processor Unit).</translation>
 <translation id="7186367841673660872">Sidan har översatts från<ph name="ORIGINAL_LANGUAGE"/>till<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="8448695406146523553">Bara någon med din lösenfras kan läsa dina krypterade data. Lösenfrasen skickas inte till eller lagras av Google. Om du glömmer frasen, måste du</translation>
 <translation id="6052976518993719690">SSL-certifikatauktoritet</translation>
@@ -1495,6 +1494,7 @@
 <translation id="2497284189126895209">Alla filer</translation>
 <translation id="696036063053180184">3 Set (No shift)</translation>
 <translation id="452785312504541111">Engelska - helbredd</translation>
+<translation id="945332329539165145">GPU-accelererad canvas 2D</translation>
 <translation id="9148126808321036104">Logga in igen</translation>
 <translation id="2282146716419988068">GPU-bearbetning</translation>
 <translation id="428771275901304970">Mindre än 1 MB ledigt utrymme</translation>
@@ -2882,7 +2882,6 @@ hanterare
 <translation id="2183426022964444701">Välj tilläggets rotkatalog.</translation>
 <translation id="2517143724531502372">Cookies från <ph name="DOMAIN"/> tillåts endast för den här sessionen.</translation>
 <translation id="9018524897810991865">Bekräfta synkroniseringsinställningarna</translation>
-<translation id="4719905780348837473">RSN</translation>
 <translation id="5212108862377457573">Anpassa konverteringen utifrån föregående inmatning</translation>
 <translation id="5398353896536222911">&amp;Visa stavningspanel</translation>
 <translation id="5811533512835101223">(tillbaka till den ursprungliga skärmdumpen)</translation>

@@ -463,7 +463,6 @@
 <translation id="5548207786079516019">Ово је секундарна инсталација прегледача <ph name="PRODUCT_NAME"/>, па не можете да га поставите као подразумевани.</translation>
 <translation id="3984413272403535372">Дошло је до грешке приликом потписивања додатка.</translation>
 <translation id="8807083958935897582"><ph name="PRODUCT_NAME"/> вам омогућава да претражујете Веб помоћу омнибокса. Одаберите претраживач који би омнибокс требало да користи:</translation>
-<translation id="6629104427484407292">Безбедност: <ph name="SECURITY"/></translation>
 <translation id="9208886416788010685">Adobe Reader је застарео</translation>
 <translation id="3373604799988099680">Додаци или апликације</translation>
 <translation id="318408932946428277">Обриши колачиће и остале податке о сајтовима и додатним компонентама када затворим прегледач</translation>
@@ -1350,7 +1349,6 @@
 <translation id="1901769927849168791">Регистрована је SD картица</translation>
 <translation id="818454486170715660"><ph name="NAME"/> – власник</translation>
 <translation id="1358032944105037487">Језик тастатуре: јапански</translation>
-<translation id="8201956630388867069">WPA</translation>
 <translation id="603890000178803545">јан^феб^мар^апр^мај^јун^јул^авг^сеп^окт^нов^дец</translation>
 <translation id="8302838426652833913">Идите на
           <ph name="BEGIN_BOLD"/>
@@ -1449,6 +1447,7 @@
 <translation id="7222232353993864120">Адреса е-поште</translation>
 <translation id="2128531968068887769">Native Client</translation>
 <translation id="7175353351958621980">Учитава се са:</translation>
+<translation id="4590074117005971373">Омогућава веће перформансе ознака проширеног приказа са 2D контекстом које се приказују помоћу GPU хардвера (графички процесор).</translation>
 <translation id="7186367841673660872">Ова страница је преведена са језика:<ph name="ORIGINAL_LANGUAGE"/>на<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="8448695406146523553">Само неко са вашом приступном фразом може да чита ваше шифроване податке – Google не шаље нити чува приступну фразу. Уколико заборавите приступну фразу, биће потребно да</translation>
 <translation id="6052976518993719690">Ауторитет за издавање SSL сертификата</translation>
@@ -1484,6 +1483,7 @@
 <translation id="2497284189126895209">Све датотеке</translation>
 <translation id="696036063053180184">3 Set (No shift)</translation>
 <translation id="452785312504541111">енглески у пуној ширини</translation>
+<translation id="945332329539165145">Проширени 2D приказ са GPU убрзањем</translation>
 <translation id="9148126808321036104">Пријави ме поново</translation>
 <translation id="2282146716419988068">GPU процес</translation>
 <translation id="428771275901304970">Доступно је мање од 1 MB</translation>
@@ -2872,7 +2872,6 @@
 <translation id="2183426022964444701">Изаберите основни директоријум додатка.</translation>
 <translation id="2517143724531502372">Колачићи хоста <ph name="DOMAIN"/> су дозвољени само за сесију.</translation>
 <translation id="9018524897810991865">Потврда подешавања синхронизације</translation>
-<translation id="4719905780348837473">RSN</translation>
 <translation id="5212108862377457573">Прилагодите конверзију на основу претходног уноса</translation>
 <translation id="5398353896536222911">&amp;Прикажи таблу правописа</translation>
 <translation id="5811533512835101223">(Врати на првобитни снимак екрана)</translation>

@@ -466,7 +466,6 @@
 <translation id="5548207786079516019">这是<ph name="PRODUCT_NAME"/>的辅助安装，您无法将此浏览器设置为默认浏览器。</translation>
 <translation id="3984413272403535372">为扩展程序签名时出错。</translation>
 <translation id="8807083958935897582"><ph name="PRODUCT_NAME"/>可让您使用多功能框搜索网页。请选择您要使用的搜索引擎：</translation>
-<translation id="6629104427484407292">安全：<ph name="SECURITY"/></translation>
 <translation id="9208886416788010685">Adobe Reader 已过期</translation>
 <translation id="3373604799988099680">扩展功能或应用程序</translation>
 <translation id="318408932946428277">退出浏览器时清除 Cookie 以及其他网站数据和插件数据</translation>
@@ -1367,7 +1366,6 @@
 <translation id="1901769927849168791">检测到 SD 卡</translation>
 <translation id="818454486170715660"><ph name="NAME"/> - 所有者</translation>
 <translation id="1358032944105037487">日语键盘</translation>
-<translation id="8201956630388867069">WPA</translation>
 <translation id="603890000178803545">1 月^2 月^3 月^4 月^5 月^6 月^7 月^8 月^9 月^10 月^11 月^12 月</translation>
 <translation id="8302838426652833913">转到
           <ph name="BEGIN_BOLD"/>
@@ -1466,6 +1464,7 @@
 <translation id="7222232353993864120">电子邮件地址</translation>
 <translation id="2128531968068887769">Native Client</translation>
 <translation id="7175353351958621980">载入来源：</translation>
+<translation id="4590074117005971373">使用图形处理器 (GPU) 硬件进行渲染，从而启用带有 2D 背景的、性能更高的画布标记。</translation>
 <translation id="7186367841673660872">已将此网页从<ph name="ORIGINAL_LANGUAGE"/>翻译成<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="8448695406146523553">只有知晓您密码的人才能读取您已加密的数据；该密码不会发送给 Google，也不会由 Google 进行储存。如果您忘记了自己的密码，则需要</translation>
 <translation id="6052976518993719690">SSL 证书授权中心</translation>
@@ -1501,6 +1500,7 @@
 <translation id="2497284189126895209">所有文件</translation>
 <translation id="696036063053180184">3 Set (No shift)</translation>
 <translation id="452785312504541111">全角英语</translation>
+<translation id="945332329539165145">GPU 加速画布 2D</translation>
 <translation id="9148126808321036104">重新登录</translation>
 <translation id="2282146716419988068">GPU 进程</translation>
 <translation id="428771275901304970">可用数据少于 1MB</translation>
@@ -2860,7 +2860,6 @@
 <translation id="2183426022964444701">选择扩展程序根目录。</translation>
 <translation id="2517143724531502372">来自 <ph name="DOMAIN"/> 的 Cookie 只允许用于会话。</translation>
 <translation id="9018524897810991865">确认同步偏好设置</translation>
-<translation id="4719905780348837473">RSN</translation>
 <translation id="5212108862377457573">根据之前输入的内容对转化进行调整</translation>
 <translation id="5398353896536222911">显示拼写面板(&amp;S)</translation>
 <translation id="5811533512835101223">（返回原始屏幕截图）</translation>

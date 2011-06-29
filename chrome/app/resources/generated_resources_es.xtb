@@ -471,7 +471,6 @@
 <translation id="5548207786079516019">Esta instalación de <ph name="PRODUCT_NAME"/> es secundaria, por lo que no puedes establecer el programa como tu navegador predeterminado.</translation>
 <translation id="3984413272403535372">Se ha producido un error al firmar la extensión.</translation>
 <translation id="8807083958935897582"><ph name="PRODUCT_NAME"/> permite realizar búsquedas en la Web a través de la barra de direcciones. Selecciona el motor de búsqueda que desees utilizar:</translation>
-<translation id="6629104427484407292">Seguridad: <ph name="SECURITY"/></translation>
 <translation id="9208886416788010685">Adobe Reader no está actualizado</translation>
 <translation id="3373604799988099680">Extensiones o aplicaciones</translation>
 <translation id="318408932946428277">Borrar cookies y otros datos de sitios web y de complementos al cerrar el navegador</translation>
@@ -1357,7 +1356,6 @@ donde puedes encontrar más información o inhabilitar esta función.</translati
 <translation id="1901769927849168791">Tarjeta SD detectada</translation>
 <translation id="818454486170715660"><ph name="NAME"/>: propietario/a</translation>
 <translation id="1358032944105037487">Teclado japonés</translation>
-<translation id="8201956630388867069">WPA</translation>
 <translation id="603890000178803545">Ene^Feb^Mar^Abr^May^Jun^Jul^Ago^Sep^Oct^Nov^Dic</translation>
 <translation id="8302838426652833913">Accede a
           <ph name="BEGIN_BOLD"/>
@@ -1456,6 +1454,7 @@ donde puedes encontrar más información o inhabilitar esta función.</translati
 <translation id="7222232353993864120">Dirección de correo electrónico</translation>
 <translation id="2128531968068887769">Cliente nativo</translation>
 <translation id="7175353351958621980">Cargado desde:</translation>
+<translation id="4590074117005971373">Habilita un mayor rendimiento de las etiquetas canvas con un contexto 2D mediante representación a través de un hardware de unidad de procesamiento gráfico (GPU).</translation>
 <translation id="7186367841673660872">Esta página se ha traducido del<ph name="ORIGINAL_LANGUAGE"/>al<ph name="LANGUAGE_LANGUAGE"/>.</translation>
 <translation id="8448695406146523553">Solo alguien con tu frase de contraseña puede leer tus datos encriptados (Google no envía ni almacena la frase de contraseña). Si la olvidas, deberás</translation>
 <translation id="6052976518993719690">Entidad emisora de certificados SSL</translation>
@@ -1491,6 +1490,7 @@ donde puedes encontrar más información o inhabilitar esta función.</translati
 <translation id="2497284189126895209">Todos los archivos</translation>
 <translation id="696036063053180184">Triple alternancia (sin pulsar Mayús)</translation>
 <translation id="452785312504541111">Inglés de ancho completo</translation>
+<translation id="945332329539165145">Canvas 2D acelerado por GPU</translation>
 <translation id="9148126808321036104">Volver a acceder</translation>
 <translation id="2282146716419988068">Proceso de GPU</translation>
 <translation id="428771275901304970">Menos de 1 MB disponible</translation>
@@ -2886,7 +2886,6 @@ donde puedes encontrar más información o inhabilitar esta función.</translati
 <translation id="2183426022964444701">Selecciona el directorio raíz de la extensión.</translation>
 <translation id="2517143724531502372">Se han permitido las cookies de sesión de <ph name="DOMAIN"/>.</translation>
 <translation id="9018524897810991865">Confirmar preferencias de sincronización</translation>
-<translation id="4719905780348837473">RSN</translation>
 <translation id="5212108862377457573">Ajustar conversión en función de entradas previas</translation>
 <translation id="5398353896536222911">&amp;Mostrar panel de ortografía</translation>
 <translation id="5811533512835101223">(Volver a la captura de pantalla original)</translation>

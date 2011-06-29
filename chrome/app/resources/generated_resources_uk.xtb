@@ -449,7 +449,6 @@
 <translation id="5548207786079516019">Це додаткове встановлення <ph name="PRODUCT_NAME"/>. Його не можна зробити вашим веб-переглядачем за умовчанням.</translation>
 <translation id="3984413272403535372">Помилка під час підписування розширення.</translation>
 <translation id="8807083958935897582"><ph name="PRODUCT_NAME"/> дозволяє здійснювати пошук в Інтернеті за допомогою універсального вікна пошуку. Виберіть пошукову систему, яку потрібно використовувати:</translation>
-<translation id="6629104427484407292">Безпека: <ph name="SECURITY"/></translation>
 <translation id="9208886416788010685">Версія Adobe Reader застаріла</translation>
 <translation id="3373604799988099680">Розширення або служби</translation>
 <translation id="318408932946428277">Видаляти файли cookie та інші дані із сайтів і плагінів, коли веб-переглядач закривається</translation>
@@ -1310,7 +1309,6 @@
 <translation id="1901769927849168791">Виявлено карту SD</translation>
 <translation id="818454486170715660"><ph name="NAME"/> – власник</translation>
 <translation id="1358032944105037487">Японська розкладка</translation>
-<translation id="8201956630388867069">WPA</translation>
 <translation id="603890000178803545">Січ.^Лют.^Бер.^Квіт.^Трав.^Черв.^Лип.^Серп.^Вер.^Жовт.^Лист.^Груд.</translation>
 <translation id="8302838426652833913">Перейдіть до меню <ph name="BEGIN_BOLD"/>Програми &gt; Системні налаштування &gt; Мережа &gt; Допомога (Applications &gt; System Preferences &gt; Network &gt; Assist me)<ph name="END_BOLD"/>, щоб протестувати своє з'єднання.</translation>
 <translation id="8664389313780386848">&amp;Переглянути джерело сторінки</translation>
@@ -1402,6 +1400,7 @@
 <translation id="7222232353993864120">Електронна адреса</translation>
 <translation id="2128531968068887769">Native Client</translation>
 <translation id="7175353351958621980">Завантажено з:</translation>
+<translation id="4590074117005971373">Активує кращу ефективність повноекранних тегів з 2D-контекстом за допомогою візуалізації, використовуючи апаратне забезпечення графічного процесора (Graphics Processor Unit, GPU).</translation>
 <translation id="7186367841673660872">Цю сторінку перекладено. Мова оригіналу:<ph name="ORIGINAL_LANGUAGE"/>мова перекладу:<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="8448695406146523553">Лише користувач із вашою парольною фразою може читати ваші зашифровані дані. Парольна фраза не надсилається в Google і не зберігається там. Якщо ви забули свою парольну фразу, потрібно буде</translation>
 <translation id="6052976518993719690">Центр сертифікації SSL</translation>
@@ -1437,6 +1436,7 @@
 <translation id="2497284189126895209">Усі файли</translation>
 <translation id="696036063053180184">3-рядна розкладка (без клавіші &quot;Shift&quot;)</translation>
 <translation id="452785312504541111">Англійська (повної ширини)</translation>
+<translation id="945332329539165145">GPU Accelerated Canvas 2D</translation>
 <translation id="9148126808321036104">Увійти знову</translation>
 <translation id="2282146716419988068">Процес GPU</translation>
 <translation id="428771275901304970">Доступно менше 1 Мб</translation>
@@ -2764,7 +2764,6 @@
 <translation id="2183426022964444701">Вибрати кореневий каталог розширення.</translation>
 <translation id="2517143724531502372">Файли cookie з домену <ph name="DOMAIN"/> дозволено лише для сеансу.</translation>
 <translation id="9018524897810991865">Підтвердити налаштування синхронізації</translation>
-<translation id="4719905780348837473">RSN</translation>
 <translation id="5212108862377457573">Налаштувати перетворення на основі попереднього введення</translation>
 <translation id="5398353896536222911">&amp;Показати панель правопису</translation>
 <translation id="5811533512835101223">(Повернутися до початкового знімка екрана)</translation>
@@ -2897,7 +2896,7 @@
 <translation id="2445081178310039857">Потрібен кореневий каталог розширення.</translation>
 <translation id="8251578425305135684">Ескіз видалено.</translation>
 <translation id="6163522313638838258">Розгорнути все...</translation>
-<translation id="3037605927509011580">От чорт!</translation>
+<translation id="3037605927509011580">От халепа!</translation>
 <translation id="5803531701633845775">Вибирати фрази позаду без переміщення курсора</translation>
 <translation id="1918141783557917887">&amp;Малий</translation>
 <translation id="6996550240668667907">Переглянути розкладку клавіатури</translation>

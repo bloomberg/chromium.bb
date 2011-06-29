@@ -463,7 +463,6 @@
 <translation id="5548207786079516019">Toto je sekundárna inštalácia prehliadača <ph name="PRODUCT_NAME"/> – nemôže byť nastavený ako váš predvolený prehliadač.</translation>
 <translation id="3984413272403535372">Pri podpisovaní rozšírenia sa vyskytla chyba.</translation>
 <translation id="8807083958935897582">Aplikácia <ph name="PRODUCT_NAME"/> umožňuje vyhľadávanie na webe pomocou všeobecného poľa. Vyberte vyhľadávací nástroj, ktorý chcete použiť:</translation>
-<translation id="6629104427484407292">Zabezpečenie: <ph name="SECURITY"/></translation>
 <translation id="9208886416788010685">Program Adobe Reader je zastaraný</translation>
 <translation id="3373604799988099680">Rozšírenia alebo aplikácie</translation>
 <translation id="318408932946428277">Po zatvorení prehliadača vymazať súbory cookie a ďalšie údaje webových stránok a doplnkov</translation>
@@ -1348,7 +1347,6 @@
 <translation id="1901769927849168791">Zistila sa prítomnosť karty SD</translation>
 <translation id="818454486170715660"><ph name="NAME"/> – vlastník</translation>
 <translation id="1358032944105037487">japonská klávesnica</translation>
-<translation id="8201956630388867069">WPA</translation>
 <translation id="603890000178803545">Jan^Feb^Mar^Apr^Máj^Jún^Júl^Aug^Sep^Okt^Nov^Dec</translation>
 <translation id="8302838426652833913">Prejdite na možnosť
           <ph name="BEGIN_BOLD"/>
@@ -1447,6 +1445,7 @@
 <translation id="7222232353993864120">E-mailová adresa</translation>
 <translation id="2128531968068887769">Native Client</translation>
 <translation id="7175353351958621980">Načítané z:</translation>
+<translation id="4590074117005971373">Povolí vyššiu výkonnosť značiek plátna s kontextom 2D vykresľovaním pomocou hardvérovej jednotky GPU (Graphics Processor Unit).</translation>
 <translation id="7186367841673660872">Táto stránka bola preložená z jazyka<ph name="ORIGINAL_LANGUAGE"/>do jazyka<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="8448695406146523553">Vaše šifrované údaje si môže prečítať len osoba, ktorá pozná vašu prístupovú frázu. Prístupová fráza sa spoločnosti Google neodosiela ani ju spoločnosť Google neuchováva. Ak prístupovú frázu zabudnete, budete musieť</translation>
 <translation id="6052976518993719690">Certifikačná autorita SSL</translation>
@@ -1482,6 +1481,7 @@
 <translation id="2497284189126895209">Všetky súbory</translation>
 <translation id="696036063053180184">Súprava 3 (bez klávesu Shift)</translation>
 <translation id="452785312504541111">angličtina, celá šírka</translation>
+<translation id="945332329539165145">Plátno 2D akcelerované jednotkou GPU</translation>
 <translation id="9148126808321036104">Znova sa prihlásiť</translation>
 <translation id="2282146716419988068">Proces GPU</translation>
 <translation id="428771275901304970">K dispozícii je menej ako 1 MB</translation>
@@ -2842,7 +2842,6 @@
 <translation id="2183426022964444701">Vybrať koreňový adresár rozšírenia.</translation>
 <translation id="2517143724531502372">Súbory cookie zo stránok <ph name="DOMAIN"/> sú povolené len pre reláciu.</translation>
 <translation id="9018524897810991865">Potvrdiť predvoľby synchronizácie</translation>
-<translation id="4719905780348837473">RSN</translation>
 <translation id="5212108862377457573">Upraviť konverziu na základe predchádzajúceho vstupu</translation>
 <translation id="5398353896536222911">&amp;Zobraziť panel kontroly pravopisu</translation>
 <translation id="5811533512835101223">(Späť na pôvodnú snímku obrazovky)</translation>

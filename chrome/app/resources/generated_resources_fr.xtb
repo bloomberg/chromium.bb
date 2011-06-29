@@ -465,7 +465,6 @@ cookies</translation>
 <translation id="5548207786079516019">Ceci est une installation secondaire de <ph name="PRODUCT_NAME"/> et ce dernier ne peut pas être défini comme navigateur par défaut.</translation>
 <translation id="3984413272403535372">Erreur lors de la signature de l'extension</translation>
 <translation id="8807083958935897582"><ph name="PRODUCT_NAME"/> permet d'effectuer des recherches sur Internet à l'aide du champ polyvalent. Sélectionnez le moteur de recherche à utiliser :</translation>
-<translation id="6629104427484407292">Sécurité : <ph name="SECURITY"/></translation>
 <translation id="9208886416788010685">Adobe Reader n'est pas à jour</translation>
 <translation id="3373604799988099680">Extensions ou applications</translation>
 <translation id="318408932946428277">Effacer les cookies et autres données de site et de plug-in lorsque je ferme le navigateur</translation>
@@ -1352,7 +1351,6 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="1901769927849168791">Carte SD détectée.</translation>
 <translation id="818454486170715660"><ph name="NAME"/> - Propriétaire</translation>
 <translation id="1358032944105037487">Clavier japonais</translation>
-<translation id="8201956630388867069">WPA</translation>
 <translation id="603890000178803545">janv.^févr.^mars^avr.^mai^juin^juil.^août^sept.^oct.^nov.^déc.</translation>
 <translation id="8302838426652833913">Sélectionnez
           <ph name="BEGIN_BOLD"/>
@@ -1451,6 +1449,7 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="7222232353993864120">Adresse e-mail</translation>
 <translation id="2128531968068887769">Client natif</translation>
 <translation id="7175353351958621980">Chargé depuis :</translation>
+<translation id="4590074117005971373">Active les balises canvas hautes performances dans un contexte 2D, pour effectuer le rendu via le processeur graphique.</translation>
 <translation id="7186367841673660872">Cette page en<ph name="ORIGINAL_LANGUAGE"/>a été traduite en<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="8448695406146523553">Seule une personne en possession de votre mot de passe multiterme peut lire vos données chiffrées. Google ne reçoit ni n'enregistre votre mot de passe multiterme. Si vous oubliez votre mot de passe multiterme, vous devrez</translation>
 <translation id="6052976518993719690">Autorité de certification SSL</translation>
@@ -1486,6 +1485,7 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="2497284189126895209">Tous les fichiers</translation>
 <translation id="696036063053180184">Sebeol-sik No-shift</translation>
 <translation id="452785312504541111">Anglais (pleine chasse)</translation>
+<translation id="945332329539165145">2D avec canvas et accélération matérielle</translation>
 <translation id="9148126808321036104">Nouvelle connexion</translation>
 <translation id="2282146716419988068">GPU</translation>
 <translation id="428771275901304970">Moins de 1 Mo disponible</translation>
@@ -2848,7 +2848,6 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="2183426022964444701">Sélectionnez le répertoire racine de l'extension.</translation>
 <translation id="2517143724531502372">Les cookies de <ph name="DOMAIN"/> sont autorisés uniquement pour cette session.</translation>
 <translation id="9018524897810991865">Confirmer les préférences de synchronisation</translation>
-<translation id="4719905780348837473">RSN</translation>
 <translation id="5212108862377457573">Ajuster la conversion en fonction de l'entrée précédente</translation>
 <translation id="5398353896536222911">Afficher le panneau de la &amp;vérification orthographique</translation>
 <translation id="5811533512835101223">(Revenir à la capture d'écran d'origine)</translation>

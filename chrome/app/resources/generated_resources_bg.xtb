@@ -464,7 +464,6 @@
 <translation id="5548207786079516019">Това е алтернативна инсталация на <ph name="PRODUCT_NAME"/> и не може да стане браузърът ви по подразбиране.</translation>
 <translation id="3984413272403535372">Грешка при подписването на разширението.</translation>
 <translation id="8807083958935897582"><ph name="PRODUCT_NAME"/> ви позволява да търсите в мрежата от полето за всичко. Моля, изберете коя търсеща машина искате да използва:</translation>
-<translation id="6629104427484407292">Сигурност: <ph name="SECURITY"/></translation>
 <translation id="9208886416788010685">Програмата Adobe Reader не е актуална</translation>
 <translation id="3373604799988099680">Разширения или приложения</translation>
 <translation id="318408932946428277">„Бисквитките“ и другите данни за сайтове и приставки да се изчистват, когато излизам от браузъра си</translation>
@@ -1349,7 +1348,6 @@
 <translation id="1901769927849168791">Открита е SD карта</translation>
 <translation id="818454486170715660"><ph name="NAME"/> – Собственик</translation>
 <translation id="1358032944105037487">Японска клавиатура</translation>
-<translation id="8201956630388867069">WPA</translation>
 <translation id="603890000178803545">яну^фев^мар^апр^май^юни^юли^авг^сеп^окт^ное^дек</translation>
 <translation id="8302838426652833913">Отворете
           <ph name="BEGIN_BOLD"/>
@@ -1449,6 +1447,7 @@
 <translation id="7222232353993864120">Имейл адрес</translation>
 <translation id="2128531968068887769">Клиент с директно изпълнение</translation>
 <translation id="7175353351958621980">Заредено от:</translation>
+<translation id="4590074117005971373">Активира по-висока производителност на маркерите в увеличения изглед с двуизмерен контекст, като изобразяването става чрез използване на хардуера на графичния процесор.</translation>
 <translation id="7186367841673660872">Тази страница е преведена от<ph name="ORIGINAL_LANGUAGE"/>на<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="8448695406146523553">Само някой с пропуска ви може да прочете шифрованите ви данни – той не се изпраща до Google, нито се съхранява от нас. Ако го забравите, ще трябва да</translation>
 <translation id="6052976518993719690">SSL сертифициращ орган</translation>
@@ -1484,6 +1483,7 @@
 <translation id="2497284189126895209">Всички файлове</translation>
 <translation id="696036063053180184">Набор 3 (без отместване)</translation>
 <translation id="452785312504541111">Английски с пълна ширина</translation>
+<translation id="945332329539165145">Двуизмерен увеличен изглед с графично ускорение</translation>
 <translation id="9148126808321036104">Влезте отново</translation>
 <translation id="2282146716419988068">Процес на графичния процесор</translation>
 <translation id="428771275901304970">По-малко от 1 МБ налице</translation>
@@ -2845,7 +2845,6 @@
 <translation id="2183426022964444701">Изберете основната директория на разширението.</translation>
 <translation id="2517143724531502372">„Бисквитките“ от <ph name="DOMAIN"/> са разрешени само за сесията.</translation>
 <translation id="9018524897810991865">Потвърждаване на предпочитанията за синхронизиране</translation>
-<translation id="4719905780348837473">RSN</translation>
 <translation id="5212108862377457573">Настройване на превръщането въз основа на предишни методи за въвеждане</translation>
 <translation id="5398353896536222911">&amp;Показване на панела за правопис</translation>
 <translation id="5811533512835101223">(Обратно към първоначалната екранна снимка)</translation>

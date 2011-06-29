@@ -465,7 +465,6 @@
 <translation id="5548207786079516019">Aquesta és una instal·lació secundària de <ph name="PRODUCT_NAME"/> i no pot definir-se com a navegador predeterminat.</translation>
 <translation id="3984413272403535372">S'ha produït un error en signar l'extensió.</translation>
 <translation id="8807083958935897582"><ph name="PRODUCT_NAME"/> permet fer cerques al web mitjançant el quadre multifunció. Trieu el motor de cerca que voleu utilitzar:</translation>
-<translation id="6629104427484407292">Seguretat: <ph name="SECURITY"/></translation>
 <translation id="9208886416788010685">Adobe Reader no actualitzat</translation>
 <translation id="3373604799988099680">Extensions o aplicacions</translation>
 <translation id="318408932946428277">Esborra les galetes i altres dades de llocs i de connectors quan surti del navegador</translation>
@@ -1355,7 +1354,6 @@
 <translation id="1901769927849168791">S'ha detectat una targeta SD</translation>
 <translation id="818454486170715660">Propietari: <ph name="NAME"/></translation>
 <translation id="1358032944105037487">Teclat japonès</translation>
-<translation id="8201956630388867069">WPA</translation>
 <translation id="603890000178803545">Gen^Feb^Mar^Abr^Mai^Jun^Jul^Ago^Set^Oct^Nov^Des</translation>
 <translation id="8302838426652833913">Aneu a
           <ph name="BEGIN_BOLD"/>
@@ -1454,6 +1452,7 @@
 <translation id="7222232353993864120">Adreça electrònica</translation>
 <translation id="2128531968068887769">Client nadiu</translation>
 <translation id="7175353351958621980">Carregat des de:</translation>
+<translation id="4590074117005971373">Permet un rendiment més alt de les etiquetes de llenç amb un context 2D en renderitzar mitjançant maquinari de Graphics Processor Unit (GPU).</translation>
 <translation id="7186367841673660872">Aquesta pàgina s'ha traduït de:<ph name="ORIGINAL_LANGUAGE"/>a:<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="8448695406146523553">Només una persona que tingui la vostra contrasenya pot llegir les dades encriptades: la contrasenya no s'envia ni s'emmagatzema a Google. Si oblideu la contrasenya, haureu de</translation>
 <translation id="6052976518993719690">Entitat emissora de certificats SSL</translation>
@@ -1489,6 +1488,7 @@
 <translation id="2497284189126895209">Tots els fitxers</translation>
 <translation id="696036063053180184">Configuració 3 (sense majúscules)</translation>
 <translation id="452785312504541111">Anglès amb amplada completa</translation>
+<translation id="945332329539165145">GPU Accelerated Canvas 2D</translation>
 <translation id="9148126808321036104">Torneu a iniciar la sessió</translation>
 <translation id="2282146716419988068">Procés de GPU</translation>
 <translation id="428771275901304970">Menys d'1 MB disponible</translation>
@@ -2850,7 +2850,6 @@
 <translation id="2183426022964444701">Seleccioneu el directori arrel de l'extensió.</translation>
 <translation id="2517143724531502372">Les galetes de <ph name="DOMAIN"/> només s'admeten per a la sessió.</translation>
 <translation id="9018524897810991865">Confirmeu les preferències de sincronització</translation>
-<translation id="4719905780348837473">RSN</translation>
 <translation id="5212108862377457573">Ajusta la conversió en base a l'entrada anterior</translation>
 <translation id="5398353896536222911">&amp;Mostra el tauler d'ortografia</translation>
 <translation id="5811533512835101223">(Torneu a la captura de pantalla original)</translation>

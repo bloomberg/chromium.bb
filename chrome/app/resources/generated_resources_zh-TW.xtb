@@ -458,7 +458,6 @@
 <translation id="5548207786079516019">這是您第二次安裝「<ph name="PRODUCT_NAME"/>」，您無法將它設定為預設瀏覽器。</translation>
 <translation id="3984413272403535372">簽署擴充功能時出現錯誤。</translation>
 <translation id="8807083958935897582">「<ph name="PRODUCT_NAME"/>」可讓您使用網址列來在網路上搜尋所需資訊，請選擇您要使用的搜尋引擎：</translation>
-<translation id="6629104427484407292">安全性：<ph name="SECURITY"/></translation>
 <translation id="9208886416788010685">Adobe Reader 版本過舊</translation>
 <translation id="3373604799988099680">擴充功能或應用程式</translation>
 <translation id="318408932946428277">當我離開瀏覽器時，清除 Cookie、其他網站資料和外掛程式資料</translation>
@@ -1335,7 +1334,6 @@
 <translation id="1901769927849168791">偵測到 SD 卡</translation>
 <translation id="818454486170715660"><ph name="NAME"/> - 擁有者</translation>
 <translation id="1358032944105037487">日文鍵盤</translation>
-<translation id="8201956630388867069">WPA</translation>
 <translation id="603890000178803545">1 月^2月^3 月^4 月^5 月^6 月^7 月^8 月^9 月^10 月^11 月^12 月</translation>
 <translation id="8302838426652833913">請依序前往
           
@@ -1434,6 +1432,7 @@
 <translation id="7222232353993864120">電子郵件地址</translation>
 <translation id="2128531968068887769">Native Client</translation>
 <translation id="7175353351958621980">載入來源：</translation>
+<translation id="4590074117005971373">透過繪圖處理器單元 (GPU) 硬體的轉譯，讓含有 2D 內容的畫面標記取得更高效能。</translation>
 <translation id="7186367841673660872">此網頁內容已由<ph name="ORIGINAL_LANGUAGE"/>翻譯成<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="8448695406146523553">您必須使用通關密語，才能讀取加密保護的檔案 -- 系統不會將通關密語傳送給 Google，Google 也不會儲存通關密語。如果您忘記自己的通關密語，則必須</translation>
 <translation id="6052976518993719690">SSL 憑證授權單位</translation>
@@ -1469,6 +1468,7 @@
 <translation id="2497284189126895209">所有檔案</translation>
 <translation id="696036063053180184">韓文 3 Set (No shift)</translation>
 <translation id="452785312504541111">全形英文</translation>
+<translation id="945332329539165145">GPU 2D 畫布加速</translation>
 <translation id="9148126808321036104">重新登入</translation>
 <translation id="2282146716419988068">GPU 處理程序</translation>
 <translation id="428771275901304970">可用流量不到 1 MB</translation>
@@ -2241,13 +2241,13 @@
 <translation id="4801257000660565496">建立應用程式捷徑</translation>
 <translation id="6503256918647795660">瑞士法文鍵盤</translation>
 <translation id="6175314957787328458">Microsoft 網域 GUID</translation>
-<translation id="8179976553408161302">Enter</translation>
+<translation id="8179976553408161302">進入</translation>
 <translation id="8261506727792406068">刪除</translation>
 <translation id="345693547134384690">在新分頁中開啟影像(&amp;I)</translation>
 <translation id="7422192691352527311">偏好設定...</translation>
 <translation id="354211537509721945">管理員已停用更新</translation>
 <translation id="1375198122581997741">關於版本</translation>
-<translation id="2345435964258511234">執行 GPU 轉譯時停止同步處理畫面的垂持重新整理速率，可讓畫面播放速率超過 60 赫茲。這項功能雖然便於進行標竿測量，不過也會在快速更新畫面期間造成視覺斷層。</translation>
+<translation id="2345435964258511234">在 GPU 產生畫面時，不要與顯示器的垂持重新整理速率保持同步。這可以讓畫面播放速率超過 60 赫茲。這項功能雖然適用於效能測試，不過適用於也會在快速更新畫面時造成畫面撕裂的情況。</translation>
 <translation id="7915471803647590281">請將發生的狀況告訴我們，然後再提供意見。</translation>
 <translation id="5725124651280963564">登入 <ph name="TOKEN_NAME"/> 即可產生供 <ph name="HOST_NAME"/> 使用的金鑰。</translation>
 <translation id="8418113698656761985">羅馬尼亞文鍵盤</translation>
@@ -2811,7 +2811,6 @@
 <translation id="2183426022964444701">選取擴充功能根目錄。</translation>
 <translation id="2517143724531502372">來自 <ph name="DOMAIN"/> 的 Cookie 僅允許用於本次工作階段。</translation>
 <translation id="9018524897810991865">確認同步處理偏好設定</translation>
-<translation id="4719905780348837473">RSN</translation>
 <translation id="5212108862377457573">根據之前的輸入內容調整轉換方式</translation>
 <translation id="5398353896536222911">顯示拼字面板(&amp;S)</translation>
 <translation id="5811533512835101223">(返回原始螢幕擷取畫面)</translation>
@@ -2997,7 +2996,7 @@
 <translation id="7427348830195639090">背景頁面：<ph name="BACKGROUND_PAGE_URL"/></translation>
 <translation id="5898154795085152510">伺服器傳回無效的用戶端憑證，錯誤碼：<ph name="ERROR_NUMBER"/> (<ph name="ERROR_NAME"/>)。</translation>
 <translation id="2704184184447774363">Microsoft 文件簽署</translation>
-<translation id="1071139452646369777">已使用 <ph name="HANDLER_TITLE"/> 來處理 <ph name="PROTOCOL"/>: 連結。</translation>
+<translation id="1071139452646369777">您已使用 <ph name="HANDLER_TITLE"/> 來處理 <ph name="PROTOCOL"/>: 連結。</translation>
 <translation id="5677928146339483299">已封鎖</translation>
 <translation id="1474842329983231719">管理列印設定...</translation>
 <translation id="2455981314101692989">這個網頁已停用這個表單的自動填入功能。</translation>
@@ -3078,10 +3077,10 @@
 <translation id="7339785458027436441">輸入時檢查拼字</translation>
 <translation id="8308427013383895095">網路連線發生問題，翻譯作業失敗。</translation>
 <translation id="1801298019027379214">PIN 不正確，請再試一次。您剩下 <ph name="TRIES_COUNT"/> 次嘗試的機會</translation>
-<translation id="3529020546926570314">登入即可使用雲端印表機...</translation>
+<translation id="3529020546926570314">登入後即可使用雲端印表機...</translation>
 <translation id="1384721974622518101">您知道可以透過上方的網址列直接進行搜尋嗎？</translation>
 <translation id="992543612453727859">在前面新增詞組</translation>
-<translation id="1559528461873125649">找不到這類檔案或目錄</translation>
+<translation id="1559528461873125649">找不到您所指定的檔案或目錄</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="1244147615850840081">通訊業者</translation>
 <translation id="8203365863660628138">確認安裝</translation>

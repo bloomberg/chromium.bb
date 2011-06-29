@@ -460,7 +460,6 @@
 <translation id="5548207786079516019">ಇದು <ph name="PRODUCT_NAME"/> ರ ದ್ವಿತೀಯ ಸ್ಥಾಪನೆ ಆಗಿದೆ, ಮತ್ತು ನಿಮ್ಮ ಡೀಫಾಲ್ಟ್ ಬ್ರೌಸರ್ ಆಗಿ ಮಾಡಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="3984413272403535372">ವಿಸ್ತರಣೆಗೆ ಸೈನ್ ಇನ್ ಮಾಡುವಾಗ ದೋಷ.</translation>
 <translation id="8807083958935897582">ಒಮಿನಿಬಾಕ್ಸ್ ಬಳಸಿಕೊಂಡು ವೆಬ್ ಹುಡುಕಲು <ph name="PRODUCT_NAME"/> ಅನುಮತಿಸುತ್ತದೆ. ದಯವಿಟ್ಟು ಯಾವ ಹುಡುಕಾಟ ಎಂಜಿನ್ ಅನ್ನು ನೀವು ಬಳಸಬೇಕೆಂದಿರುವಿರಿ ಎಂಬುದನ್ನು ಆರಿಸಿಕೊಳ್ಳಿ:</translation>
-<translation id="6629104427484407292">ಭದ್ರತೆ: <ph name="SECURITY"/></translation>
 <translation id="9208886416788010685">Adobe Reader ಅವಧಿ ಮುಗಿದಿದೆ</translation>
 <translation id="3373604799988099680">ವಿಸ್ತರಣೆಗಳು ಅಥವಾ ಅಪ್ಲಿಕೇಶನ್‌ಗಳು</translation>
 <translation id="318408932946428277">ನನ್ನ ಬ್ರೌಸರ್ ಅನ್ನು ಮುಚ್ಚಿದಾಗ ಕುಕೀಸ್ ಮತ್ತು ಇತರ ಸೈಟ್ ಮತ್ತು ಪ್ಲಗ್-ಇನ್ ಡೇಟಾವನ್ನು ತೆರವುಗೊಳಿಸಿ</translation>
@@ -1348,7 +1347,6 @@
 <translation id="1901769927849168791">SD ಕಾರ್ಡ್ ಪತ್ತೆಹಚ್ಚಲಾಗಿದೆ</translation>
 <translation id="818454486170715660"><ph name="NAME"/> - ಮಾಲೀಕ</translation>
 <translation id="1358032944105037487">ಜಪಾನೀಸ್ ಕೀಬೋರ್ಡ್</translation>
-<translation id="8201956630388867069">WPA</translation>
 <translation id="603890000178803545">ಜನ^ಫೆಬ್ರ^ಮಾರ್ಚ್^ಏಪ್ರಿ^ಮೇ^ಜೂನ್^ಜುಲೈ^ಆಗ^ಸೆಪ್ಟೆಂ^ಅಕ್ಟೋ^ನವೆಂ^ಡಿಸೆಂ</translation>
 <translation id="8302838426652833913">ನಿಮ್ಮ ಸಂಪರ್ಕವನ್ನು ಪರೀಕ್ಷಿಸಲು <ph name="BEGIN_BOLD"/>
           Applications &gt; System Preferences &gt; Network &gt; Assist me
@@ -1445,6 +1443,7 @@
 <translation id="7222232353993864120">ಇಮೇಲ್ ವಿಳಾಸ</translation>
 <translation id="2128531968068887769">ಸ್ಥಳೀಯ ಗ್ರಾಹಕ</translation>
 <translation id="7175353351958621980">ಇದರಿಂದ ಲೋಡ್ ಮಾಡಲಾಗಿದೆ:</translation>
+<translation id="4590074117005971373">ಗ್ರಾಫಿಕ್ಸ್‌‌ ಪ್ರಾಸೆಸರ್ ಯೂನಿಟ್ (GPU) ಹಾರ್ಡ್‌ವೇರ್ ಬಳಸುವ ಮೂಲಕ 2D ಕಾಂಟೆಕ್ಸ್ಟ್‌ನೊಂದಿಗೆ ಕ್ಯಾನ್ವಾಸ್ ಟ್ಯಾಗ್‌ಗಳ ಹೆಚ್ಚಿನ ಕಾರ್ಯಕ್ಷಮತೆಯನ್ನು ಸಕ್ರಿಯಗೊಳಿಸುತ್ತದೆ.</translation>
 <translation id="7186367841673660872">ಈ ಪುಟವನ್ನು<ph name="ORIGINAL_LANGUAGE"/>ನಿಂದ<ph name="LANGUAGE_LANGUAGE"/>ಗೆ ಭಾಷಾಂತರಿಸಲಾಗಿದೆ</translation>
 <translation id="8448695406146523553">ನಿಮ್ಮ ಎನ್‌ಕ್ರಿಪ್ಟ್ ಮಾಡಲಾದ ಡೇಟಾವನ್ನು ನಿಮ್ಮ ಪಾಸ್‌ಫ್ರೇಸ್ ಡೇಟಾದೊಂದಿಗೆ ಕೆಲವರು ಮಾತ್ರ ಓದಬಹುದು -- Google ಮೂಲಕ ಪಾಸ್‌ಫ್ರೇಸ್ ಅನ್ನು ಕಳುಹಿಸಲು ಅಥವಾ ಸಂಗ್ರಹಿಸಲು ಆಗುವುದಿಲ್ಲ. ನೀವು ನಿಮ್ಮ ಪಾಸ್‌ಫ್ರೇಸ್ ಅನ್ನು ಮರೆತಲ್ಲಿ, ನೀವು ಹೀಗೆ ಮಾಡಬೇಕಾಗಿದೆ</translation>
 <translation id="6052976518993719690">SSL ಪ್ರಮಾಣಪತ್ರ ಅಧಿಕಾರ</translation>
@@ -1480,6 +1479,7 @@
 <translation id="2497284189126895209">ಎಲ್ಲ ಫೈಲ್‌ಗಳು</translation>
 <translation id="696036063053180184">3 ಜೋಡಿ (ಶಿಪ್ಟ್ ಇಲ್ಲ)</translation>
 <translation id="452785312504541111">ಪೂರ್ಣ- ಅಗಲದ ಇಂಗ್ಲೀಷ್</translation>
+<translation id="945332329539165145">GPU Accelerated Canvas 2D</translation>
 <translation id="9148126808321036104">ಪುನಃ ಸೈನ್ ಇನ್  ಆಗಿ</translation>
 <translation id="2282146716419988068">GPU ಪ್ರಕ್ರಿಯೆ</translation>
 <translation id="428771275901304970">1 MB ಗಿಂತಲೂ ಕಡಿಮೆ ಲಭ್ಯವಿದೆ</translation>
@@ -2847,7 +2847,6 @@
 <translation id="2183426022964444701">ವಿಸ್ತರಣೆ ಮೂಲ ಡೈರೆಕ್ಟರಿಯನ್ನು ಆಯ್ಕೆಮಾಡಿ.</translation>
 <translation id="2517143724531502372">ಸೆಶನ್‍ಗಾಗಿ ಮಾತ್ರ <ph name="DOMAIN"/> ರಿಂದ ಕುಕೀಸ್ ಅನ್ನು ಅನುಮತಿಸಲಾಗಿದೆ.</translation>
 <translation id="9018524897810991865">ಸಿಂಕ್ ಪ್ರಾಶಸ್ತ್ಯಗಳನ್ನು ದೃಢೀಕರಿಸಿ</translation>
-<translation id="4719905780348837473">RSN</translation>
 <translation id="5212108862377457573">ಹಿಂದಿನ ಇನ್‌ಪುಟ್‌ ಆಧಾರದ ಮೇರೆಗೆ ಪರಿವರ್ತನೆಯನ್ನು ಸರಿಹೊಂದಿಸಿ</translation>
 <translation id="5398353896536222911">ಕಾಗುಣಿತ ಫಲಕವನ್ನು &amp;ತೋರಿಸಿ</translation>
 <translation id="5811533512835101223">(ಮೂಲ ಸ್ಕ್ರೀನ್‌ಶಾಟ್‌ಗೆ ಹಿಂದಿರುಗಿ)</translation>

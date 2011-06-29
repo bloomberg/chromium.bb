@@ -469,7 +469,6 @@
 <translation id="5548207786079516019">ఇది <ph name="PRODUCT_NAME"/> యొక్క రెండవ వ్యవస్థాపన మరియు మీ స్వయంసిద్ధ బ్రౌజర్‌ను చేయలేదు.</translation>
 <translation id="3984413272403535372">పొడిగింపుకు సంతకం చేసేటప్పుడు లోపం.</translation>
 <translation id="8807083958935897582"><ph name="PRODUCT_NAME"/> omniboxని ఉపయోగించి వెబ్‌లో శోధించడానికి మిమ్మల్ని అనుమతిస్తుంది. దయచేసి మీరు దీనికి ఉపయోగించాలనుకున్న శోధన ఇంజన్‌ను ఎంచుకోండి:</translation>
-<translation id="6629104427484407292">భద్రత: <ph name="SECURITY"/></translation>
 <translation id="9208886416788010685">Adobe Reader గడువు తేదీ ముగిసింది</translation>
 <translation id="3373604799988099680">ఎక్స్‌టెన్షన్స్‌ను లేదా అనువర్తనాలు</translation>
 <translation id="318408932946428277">నేను నా బ్రౌజర్‌ను నిష్క్రమించినప్పుడు కుక్కీలను మరియు ఇతర సైట్, ప్లగ్-ఇన్  డేటాను క్లియర్ చెయ్యి</translation>
@@ -1364,7 +1363,6 @@
 <translation id="1901769927849168791">SD కార్డ్ కనుగొనబడింది</translation>
 <translation id="818454486170715660"><ph name="NAME"/> - యజమాని</translation>
 <translation id="1358032944105037487">జపనీస్ కీబోర్డ్</translation>
-<translation id="8201956630388867069">WPA</translation>
 <translation id="603890000178803545">జన.^ఫిబ్ర.^మా.^ఏప్రి.^మే.^జూ.^జులై.^ఆగ.^సెప్టం.^అక్టొ.^నవం.^డిసెం.</translation>
 <translation id="8302838426652833913">మీ కనెక్షన్‌ని పరీక్షించడానికి
           <ph name="BEGIN_BOLD"/>
@@ -1462,6 +1460,7 @@
 <translation id="7222232353993864120">ఇమెయిల్ చిరునామా</translation>
 <translation id="2128531968068887769">దేశీయ క్లయింట్</translation>
 <translation id="7175353351958621980">దీని నుండి లోడ్ అయ్యింది:</translation>
+<translation id="4590074117005971373">గ్రాఫిక్స్ ప్రాసెసర్ యూనిట్ (GPU) హార్డ్‌వేర్‌ని ఉపయోగించి అనువాదం ద్వారా 2D సందర్భంతో విశ్లేషణ టాగ్‌ల యొక్క అధిక పనితీరుని ప్రారంభిస్తుంది.</translation>
 <translation id="7186367841673660872">ఈ పేజీ<ph name="ORIGINAL_LANGUAGE"/>నుండి<ph name="LANGUAGE_LANGUAGE"/>కు అనువదించబడింది</translation>
 <translation id="8448695406146523553">ఎవరో ఒకరు మాత్రమే మీ పాస్‌ఫ్రేజ్‌తో మీ గుప్తీకరించిన డేటాను చదువగలరు -- ఆ పాస్‌ఫ్రేజ్‌ Google ద్వారా పంపబడదు లేదా నిల్వ చెయ్యబడదు. మీరు మీ పాస్‌ఫ్రేజ్‌ను మరచిపోయినట్లయితే, మీరు ఈ విధంగా చెయ్యాలి</translation>
 <translation id="6052976518993719690">SSL ధృవీకరణ అధికారం</translation>
@@ -1497,6 +1496,7 @@
 <translation id="2497284189126895209">మొత్తం ఫైళ్లు</translation>
 <translation id="696036063053180184">3 సెట్ (మార్పు లేదు)</translation>
 <translation id="452785312504541111">ఫుల్-విడ్త్ ఇంగ్లీష్</translation>
+<translation id="945332329539165145">GPU వేగం పెంచే విశ్లేషణ 2D</translation>
 <translation id="9148126808321036104">మళ్ళీ సైన్ ఇన్ చెయ్యండి</translation>
 <translation id="2282146716419988068">GPU ప్రాసెస్</translation>
 <translation id="428771275901304970">1 MB కన్నా తక్కువ లభ్యమవుతోంది.</translation>
@@ -2891,7 +2891,6 @@
 <translation id="2183426022964444701">పొడిగింపు మూలం డైరెక్టరీని ఎంచుకోండి.</translation>
 <translation id="2517143724531502372"><ph name="DOMAIN"/> నుండి కుక్కీలు సెషన్‌ కోసం మాత్రమే అనుమతించబడతాయి.</translation>
 <translation id="9018524897810991865">సమకాలీకరణ ప్రాధాన్యతలను నిర్దారించండి</translation>
-<translation id="4719905780348837473">RSN</translation>
 <translation id="5212108862377457573">మునుపటి ఇన్‌పుట్‌పై ఆధారపడి మార్పిడిని సవరించు</translation>
 <translation id="5398353896536222911">అక్షరక్రమం ప్యానెల్‌ను &amp;చూపించు</translation>
 <translation id="5811533512835101223">(అసలు స్క్రీన్‌షాట్‌కి తిరిగి వెళ్ళండి)</translation>

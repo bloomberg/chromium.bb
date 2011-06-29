@@ -464,7 +464,6 @@
 <translation id="5548207786079516019">This is a secondary installation of <ph name="PRODUCT_NAME"/> and cannot be made your default browser.</translation>
 <translation id="3984413272403535372">Error while signing extension.</translation>
 <translation id="8807083958935897582"><ph name="PRODUCT_NAME"/> allows you to search the web using the omnibox. Please choose which search engine you would like it to use:</translation>
-<translation id="6629104427484407292">Security: <ph name="SECURITY"/></translation>
 <translation id="9208886416788010685">Adobe Reader Out Of Date</translation>
 <translation id="3373604799988099680">Extensions or apps</translation>
 <translation id="318408932946428277">Clear cookies and other site and plug-in data when I leave my browser</translation>
@@ -1356,7 +1355,6 @@
 <translation id="1901769927849168791">SD card detected</translation>
 <translation id="818454486170715660"><ph name="NAME"/> - Owner</translation>
 <translation id="1358032944105037487">Japanese keyboard</translation>
-<translation id="8201956630388867069">WPA</translation>
 <translation id="603890000178803545">Jan^Feb^Mar^Apr^May^Jun^Jul^Aug^Sep^Oct^Nov^Dec</translation>
 <translation id="8302838426652833913">Go to
           <ph name="BEGIN_BOLD"/>
@@ -1455,6 +1453,7 @@
 <translation id="7222232353993864120">Email Address</translation>
 <translation id="2128531968068887769">Native Client</translation>
 <translation id="7175353351958621980">Loaded from:</translation>
+<translation id="4590074117005971373">Enables higher performance of canvas tags with a 2D context by rendering using Graphics Processor Unit (GPU) hardware.</translation>
 <translation id="7186367841673660872">This page has been translated from<ph name="ORIGINAL_LANGUAGE"/>to<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="8448695406146523553">Only someone with your passphrase can read your encrypted data - the passphrase is not sent to or stored by Google. If you forget your passphrase, you will need to</translation>
 <translation id="6052976518993719690">SSL Certification Authority</translation>
@@ -1490,6 +1489,7 @@
 <translation id="2497284189126895209">All Files</translation>
 <translation id="696036063053180184">3 Set (No shift)</translation>
 <translation id="452785312504541111">Full-width English</translation>
+<translation id="945332329539165145">GPU Accelerated Canvas 2D</translation>
 <translation id="9148126808321036104">Sign in again</translation>
 <translation id="2282146716419988068">GPU Process</translation>
 <translation id="428771275901304970">Less than 1 MB available</translation>
@@ -2854,7 +2854,6 @@
 <translation id="2183426022964444701">Select extension root directory.</translation>
 <translation id="2517143724531502372">Cookies from <ph name="DOMAIN"/> allowed for session only.</translation>
 <translation id="9018524897810991865">Confirm sync preferences</translation>
-<translation id="4719905780348837473">RSN</translation>
 <translation id="5212108862377457573">Adjust conversion based on previous input</translation>
 <translation id="5398353896536222911">&amp;Show spelling panel</translation>
 <translation id="5811533512835101223">(Go back to original screenshot)</translation>

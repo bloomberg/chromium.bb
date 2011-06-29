@@ -464,7 +464,6 @@
 <translation id="5548207786079516019">この <ph name="PRODUCT_NAME"/> はセカンダリ インストールのため、既定のブラウザには設定できません。</translation>
 <translation id="3984413272403535372">拡張機能の署名中にエラーが発生しました。</translation>
 <translation id="8807083958935897582"><ph name="PRODUCT_NAME"/> では、アドレス バーを使ってウェブを検索できます。使用する検索エンジンを選択してください:</translation>
-<translation id="6629104427484407292">セキュリティ: <ph name="SECURITY"/></translation>
 <translation id="9208886416788010685">Adobe Reader が最新ではありません</translation>
 <translation id="3373604799988099680">拡張機能またはアプリケーション</translation>
 <translation id="318408932946428277">ブラウザの終了時に Cookie と他のサイトやプラグインのデータを削除する</translation>
@@ -1345,7 +1344,6 @@
 <translation id="1901769927849168791">SD カードが検出されました</translation>
 <translation id="818454486170715660"><ph name="NAME"/> - 所有者</translation>
 <translation id="1358032944105037487">日本語のキーボード</translation>
-<translation id="8201956630388867069">WPA</translation>
 <translation id="603890000178803545">1 月^2 月^3 月^4 月^5 月^6 月^7 月^8 月^9 月^10 月^11 月^12 月</translation>
 <translation id="8302838426652833913">以下の順にアクセスします:
           <ph name="BEGIN_BOLD"/>
@@ -1444,6 +1442,7 @@
 <translation id="7222232353993864120">メール アドレス</translation>
 <translation id="2128531968068887769">ネイティブ クライアント</translation>
 <translation id="7175353351958621980">ロード元:</translation>
+<translation id="4590074117005971373">グラフィックス プロセッサ ユニット（GPU）ハードウェアを使用してレンダリングすることで、2D コンテキストを持つキャンバス タグのパフォーマンスを向上できます。</translation>
 <translation id="7186367841673660872">このページは<ph name="ORIGINAL_LANGUAGE"/>から<ph name="LANGUAGE_LANGUAGE"/>に翻訳されました</translation>
 <translation id="8448695406146523553">パスフレーズを知っているユーザーだけが暗号化されたデータを見ることができます。パスフレーズは Google には送信されず、保存されることもありません。パスフレーズを忘れた場合は次の操作を行う必要があります。</translation>
 <translation id="6052976518993719690">SSL 認証局</translation>
@@ -1479,6 +1478,7 @@
 <translation id="2497284189126895209">すべてのファイル</translation>
 <translation id="696036063053180184">3 ボル式（Shift なし）</translation>
 <translation id="452785312504541111">全角キーボード（英語）</translation>
+<translation id="945332329539165145">GPU アクセラレート キャンバス 2D</translation>
 <translation id="9148126808321036104">もう一度ログインする</translation>
 <translation id="2282146716419988068">GPU プロセス</translation>
 <translation id="428771275901304970">残り 1 MB 未満</translation>
@@ -2840,7 +2840,6 @@
 <translation id="2183426022964444701">拡張機能のルート ディレクトリを選択します。</translation>
 <translation id="2517143724531502372"><ph name="DOMAIN"/> からの Cookie がセッションにのみ許可されました。</translation>
 <translation id="9018524897810991865">同期設定の確認</translation>
-<translation id="4719905780348837473">RSN</translation>
 <translation id="5212108862377457573">直前の入力に基づいて変換を調整</translation>
 <translation id="5398353896536222911">スペル パネルを表示(&amp;S)</translation>
 <translation id="5811533512835101223">（元のスクリーンショットに戻る）</translation>

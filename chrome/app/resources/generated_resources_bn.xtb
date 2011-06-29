@@ -469,7 +469,6 @@
 <translation id="5548207786079516019">এটি <ph name="PRODUCT_NAME"/> এর সেকেন্ডারি ইনস্টলেশন এবং আপনার ডিফল্ট ব্রাউজার হতে পারে না৷</translation>
 <translation id="3984413272403535372">এক্সটেনশন স্বাক্ষরের সময় ত্রুটি৷</translation>
 <translation id="8807083958935897582"><ph name="PRODUCT_NAME"/> আপনাকে বহুউপয়োগী ক্ষেত্র ব্যবহার করে ওয়েবে অনুসন্ধান করার মঞ্জুরি দেয়৷ ব্যবহার করার জন্য আপনি কোন অনুসন্ধান ইঞ্জিন চয়ন করতে চান দয়া করে তা চয়ন করুন:</translation>
-<translation id="6629104427484407292">নিরাপত্তা:<ph name="SECURITY"/></translation>
 <translation id="9208886416788010685">Adobe Reader পুরানো হয়েছে</translation>
 <translation id="3373604799988099680">এক্সটেনশনসমূহ  অথবা apps</translation>
 <translation id="318408932946428277">আমি যখন নিজের ব্রাউজার বন্ধ করি তখন কুকিজ ও অন্যান্য সাইট এবং প্ল্যাগ-ইন ডেটা সাফ করুন</translation>
@@ -1370,7 +1369,6 @@
 <translation id="1901769927849168791">SD কার্ড শনাক্ত হয়েছে</translation>
 <translation id="818454486170715660"><ph name="NAME"/> - মালিক</translation>
 <translation id="1358032944105037487">জাপানী কীবোর্ড</translation>
-<translation id="8201956630388867069">WPA</translation>
 <translation id="603890000178803545">জানু^ফেব্রু^মার্চ^এপ্রি^মে^জুন^জুলাই^অগাস্ট^সেপ্টে^অক্টো^নভে^ডিসে</translation>
 <translation id="8302838426652833913">আপনার সংযোগটি পরীক্ষা করতে <ph name="BEGIN_BOLD"/>
           Applications &gt; System Preferences &gt; Network &gt; Assist me
@@ -1467,6 +1465,7 @@
 <translation id="7222232353993864120">ইমেল ঠিকানা</translation>
 <translation id="2128531968068887769">নেটিভ ক্লায়েন্ট</translation>
 <translation id="7175353351958621980">এখান থেকে লোড হয়েছে:</translation>
+<translation id="4590074117005971373">গ্রাফিকস প্রসেসর ইউনিট (GPU) হার্ডওয়্যার ব্যবহার করে রেন্ডারিং করে একটি 2ডি প্রসঙ্গকে ক্যানভাগ ট্যাগগুলির উচ্চতর পারফরম্যান্স সক্ষম করে৷</translation>
 <translation id="7186367841673660872">এই পৃষ্ঠাটি<ph name="ORIGINAL_LANGUAGE"/>থেকে<ph name="LANGUAGE_LANGUAGE"/>তে অনুবাদ করা হয়েছে</translation>
 <translation id="8448695406146523553">কেবল আপনার পাসফ্রেজ সহ কেউই আপনার এনক্রিপ্ট হওয়া ডেটা পড়তে পারে -- পাসফ্রেজ Google-এ প্রেরণ বা এতে সঞ্চয় করতে পারা যায় না৷ যদি আপনি আপনার পাসফ্রেজ ভুলে গিয়ে থাকেন তবে আপনার দরকার হবে</translation>
 <translation id="6052976518993719690">SSL শংসাপত্র কর্তৃপক্ষ</translation>
@@ -1502,6 +1501,7 @@
 <translation id="2497284189126895209">সকল ফাইল</translation>
 <translation id="696036063053180184">3 Set (No shift)</translation>
 <translation id="452785312504541111">পূর্ণ- প্রস্থের ইংরাজি</translation>
+<translation id="945332329539165145">GPU অ্যাক্সিলারেটেড ক্যানভাস 2ডি</translation>
 <translation id="9148126808321036104">আবার সাইন ইন করুন</translation>
 <translation id="2282146716419988068">GPU প্রক্রিয়া</translation>
 <translation id="428771275901304970">এর চেয়ে কম 1 MB উপলভ্য</translation>
@@ -2586,7 +2586,7 @@
 <translation id="1824910108648426227">আপনি ঐচ্ছিকভাবে এই পরিষেবাগুলি অক্ষম করতে পারেন</translation>
 <translation id="3092040396860056776">যেকোন উপায়ে পৃষ্ঠাটি লোড করার চেষ্টা করুন</translation>
 <translation id="4350711002179453268">সার্ভারে কোনও সুরক্ষিত সংযোগ স্থাপনে অক্ষম৷ এটি সার্ভার নিয়ে কোনও সমস্যা হয়ে থাকতে পারে বা এটির আপনার কাছে নেই এমন কোনও ক্লায়েন্ট প্রমাণীকরণ শংসাপত্রের প্রয়োজন হতে পারে৷</translation>
-<translation id="91731790394942114">নতুন নাম যুক্ত করুন</translation>
+<translation id="91731790394942114">নতুন ‏‎‏‏‎নাম লিখুন</translation>
 <translation id="5963026469094486319">থিমগুলি পান</translation>
 <translation id="2441719842399509963">ডিফল্টে রিসেট করুন</translation>
 <translation id="1893137424981664888">কোনও প্লাগ-ইন ইনস্টল করা নেই৷</translation>
@@ -2888,7 +2888,6 @@
 <translation id="2183426022964444701">এক্সটেনশন রুট ডিরেক্টরি নির্বাচন করুন৷</translation>
 <translation id="2517143724531502372"><ph name="DOMAIN"/>-এর থেকে কুকিজ কেবল সত্রের জন্য মঞ্জুরিপ্রাপ্ত৷</translation>
 <translation id="9018524897810991865">সিঙ্ক পছন্দগুলি নিশ্চিত করুন </translation>
-<translation id="4719905780348837473">RSN</translation>
 <translation id="5212108862377457573">পূর্ববর্তী ইনপুটের ভিত্তিতে রূপান্তরকরণ সামঞ্জস্য করুন</translation>
 <translation id="5398353896536222911">বানানের প্যানেল &amp;দেখান</translation>
 <translation id="5811533512835101223">(মূল স্ক্রিনশটে ফিরে যান)</translation>

@@ -348,7 +348,7 @@
 <translation id="5829990587040054282">I-lock ang screen o i-off ang power</translation>
 <translation id="7800304661137206267">Na-encrypt ang koneksyon gamit ang <ph name="CIPHER"/>, kasama ang <ph name="MAC"/> para sa pagpapatunay ng mensahe at <ph name="KX"/> bilang mekanismo ng pangunahing pagpapalit.</translation>
 <translation id="7706319470528945664">Portuguese na keyboard</translation>
-<translation id="7552723648707145905">Compact na Nabigasyon</translation>
+<translation id="7552723648707145905">Compact na Navigation</translation>
 <translation id="5584537427775243893">Nag-i-import</translation>
 <translation id="9128870381267983090">Kumonekta sa network</translation>
 <translation id="4181841719683918333">Mga wika</translation>
@@ -464,7 +464,6 @@
 <translation id="5548207786079516019">Ito ang pangalawang pag-install ng <ph name="PRODUCT_NAME"/>, at hindi magagawang iyong default na browser.</translation>
 <translation id="3984413272403535372">Nagka-error habang linalagdaan ang extension.</translation>
 <translation id="8807083958935897582">Pinapayagan ka ng <ph name="PRODUCT_NAME"/> na hanapan ang web gamit ang omnibox. Mangyaring pumili kung aling search engine ang nais mong gamitin:</translation>
-<translation id="6629104427484407292">Seguridad: <ph name="SECURITY"/></translation>
 <translation id="9208886416788010685">Hindi na Napapanahon ang Adobe Reader</translation>
 <translation id="3373604799988099680">Mga extension o apps</translation>
 <translation id="318408932946428277">I-clear ang cookies at iba pang data ng site at plug-in kapag isinara ko ang aking browser</translation>
@@ -1353,7 +1352,6 @@
 <translation id="1901769927849168791">Nakita ang SD card</translation>
 <translation id="818454486170715660"><ph name="NAME"/> - May-ari</translation>
 <translation id="1358032944105037487">Hapon na keyboard</translation>
-<translation id="8201956630388867069">WPA</translation>
 <translation id="603890000178803545">En^Peb^Mar^Abr^May^Hun^Hul^Ago^Set^Okt^Nob^Dis</translation>
 <translation id="8302838426652833913">Pumunta sa
           <ph name="BEGIN_BOLD"/>
@@ -1452,6 +1450,7 @@
 <translation id="7222232353993864120">Email Address</translation>
 <translation id="2128531968068887769">Native Client</translation>
 <translation id="7175353351958621980">Nag-load mula sa:</translation>
+<translation id="4590074117005971373">Pinapagana ang mas mahusay na pagganap ng mga canvas tag na may 2D na konteksto sa pamamagitan ng pag-render gamit ang Graphics Processor Unit (GPU) hardware.</translation>
 <translation id="7186367841673660872">Naisalin ang pahinang ito mula sa<ph name="ORIGINAL_LANGUAGE"/>sa<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="8448695406146523553">Tanging isang tao na mayroong passphrase mo ang makakabasa ng iyong encrypted na data -- hindi ipinapadala o iniimbak ng Google ang passphrase. Kung makalimutan mo ang iyong passphrase, kailangan mong </translation>
 <translation id="6052976518993719690">SSL Certification Authority</translation>
@@ -1487,6 +1486,7 @@
 <translation id="2497284189126895209">Lahat ng Mga File</translation>
 <translation id="696036063053180184">3 Set (Walang shift)</translation>
 <translation id="452785312504541111">Full-width na Ingles</translation>
+<translation id="945332329539165145">GPU Accelerated Canvas 2D</translation>
 <translation id="9148126808321036104">Muling mag-sign in</translation>
 <translation id="2282146716419988068">Proseso ng GPU</translation>
 <translation id="428771275901304970">Mas mababa sa 1 MB ang available</translation>
@@ -2847,7 +2847,6 @@
 <translation id="2183426022964444701">Pumili ng pinagmulang direktoryo ng extension.</translation>
 <translation id="2517143724531502372">Pinapayagan lang sa session ang cookies mula sa <ph name="DOMAIN"/>.</translation>
 <translation id="9018524897810991865">I-confirm ang Mga Kagustuhan sa Pag-sync</translation>
-<translation id="4719905780348837473">RSN</translation>
 <translation id="5212108862377457573">Ayusin ang conversion batay sa nakaraang input</translation>
 <translation id="5398353896536222911">&amp;Ipakita ang panel ng spelling</translation>
 <translation id="5811533512835101223">(Bumalik sa orihinal na screenshot)</translation>
@@ -3127,7 +3126,7 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="3529020546926570314">Mag-sign in upang i-access ang mga cloud printer...</translation>
 <translation id="1384721974622518101">Alam mo ba na maaari kang maghanap nang direkta mula sa kahon sa itaas?</translation>
 <translation id="992543612453727859">Magdagdag ng mga parirala sa harap</translation>
-<translation id="1559528461873125649">Walang naturang file o direktorye</translation>
+<translation id="1559528461873125649">Walang naturang file o direktoryo</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="1244147615850840081">Carrier</translation>
 <translation id="8203365863660628138">Kumpirmahin ang Pag-install</translation>

@@ -124,7 +124,7 @@
 <translation id="1901494098092085382">وضعیت ارسال نظر</translation>
 <translation id="2861301611394761800">به روزرسانی سیستم کامل شد. لطفاً سیستم را راه اندازی مجدد کنید.</translation>
 <translation id="2231238007119540260">در صورتی که یک مجوز سرور را حذف کنید، بررسی های امنیتی معمولی را برای آن سرور بازیابی می کنید و سرور ملزم به استفاده از یک مجوز معتبر می شود.</translation>
-<translation id="9134410174832249455"><ph name="PRODUCT_NAME"/> نمی تواند صفحه وب را بارگیری کند زیرا پاسخ <ph name="HOST_NAME"/> مدت زمان زیادی طول کشید. ممکن است وب سایت کار نکند، یا اتصال اینترنتی شما مشکل داشته باشد.</translation>
+<translation id="9134410174832249455"><ph name="PRODUCT_NAME"/> نمی تواند صفحه وب را بارگیری کند زیرا پاسخ <ph name="HOST_NAME"/> مدت زمان زیادی طول کشید. ممکن است وب سایت کار نکند، یا اتصال اینترنت شما مشکل داشته باشد.</translation>
 <translation id="7624154074265342755">شبکه های بی سیم</translation>
 <translation id="3315158641124845231">عدم نمایش <ph name="PRODUCT_NAME"/></translation>
 <translation id="3496213124478423963">کوچک نمایی</translation>
@@ -466,7 +466,6 @@
 <translation id="5548207786079516019">این نصب ثانویه <ph name="PRODUCT_NAME"/> است، و نمی تواند مرورگر پیش فرض شما شود.</translation>
 <translation id="3984413272403535372">هنگام امضای برنامه افزودنی خطا رخ داد.</translation>
 <translation id="8807083958935897582"><ph name="PRODUCT_NAME"/> به شما امکان می دهد وب را با استفاده از omnibox جستجو کنید. لطفاً انتخاب کنید کدام موتور جستجو را می خواهید استفاده کنید:</translation>
-<translation id="6629104427484407292">امنیت: <ph name="SECURITY"/></translation>
 <translation id="9208886416788010685">Adobe Reader قدیمی است</translation>
 <translation id="3373604799988099680">برنامه های افزودنی یا برنامه ها</translation>
 <translation id="318408932946428277">هنگامی که از مرورگر خارج می شوم کوکی ها و دیگر داده های افزونه و سایت پاک شوند</translation>
@@ -891,7 +890,7 @@
         خاموش می شوند و درخواست های جدید شبکه انجام نمی شوند.  با
         بارگیری مجدد صفحه مشکل حل می شود.</translation>
 <translation id="2655386581175833247">گواهی کاربر:</translation>
-<translation id="8082103788701842156">ورودی &quot;عدم نمایش نوار ابزار&quot; را به منوی متنی نوار برگه ها اضافه می کند. از این برای جابجایی بین نمایش همیشگی نوار ابزار (پیش فرض) و باز کردن آن بصورت کادر بازشو فقط در صوردت نیاز استفاده کنید.</translation>
+<translation id="8082103788701842156">ورودی &quot;عدم نمایش نوار ابزار&quot; را به منوی متنی نوار برگه ها اضافه می کند. از این برای جابجایی بین نمایش همیشگی نوار ابزار (پیش فرض) و باز کردن آن بصورت کادر بازشو فقط در صورت نیاز استفاده کنید.</translation>
 <translation id="5039804452771397117">مجاز بودن</translation>
 <translation id="5435964418642993308">برای بازگشت به عقب، دکمه Enter و برای مشاهده سابقه، کلید منوی متن را فشار دهید</translation>
 <translation id="81686154743329117">ZRM</translation>
@@ -1367,7 +1366,6 @@
 <translation id="1901769927849168791">کارت SD شناسایی شد</translation>
 <translation id="818454486170715660"><ph name="NAME"/> - مالک</translation>
 <translation id="1358032944105037487">صفحه کلید ژاپنی</translation>
-<translation id="8201956630388867069">WPA</translation>
 <translation id="603890000178803545">ژانویه^فوریه^مارس^آوریل^می^ژوئن^ژوئیه^اوت^سپتامبر^اکتبر^نوامبر^دسامبر</translation>
 <translation id="8302838426652833913">به
           <ph name="BEGIN_BOLD"/>
@@ -1396,7 +1394,7 @@
 <translation id="5895187275912066135">تاریخ صدور</translation>
 <translation id="1190844492833803334">وقتی مرورگر را می بندم</translation>
 <translation id="5646376287012673985">مکان</translation>
-<translation id="7444538544936087653"><ph name="PRODUCT_NAME"/> دیگر به روز نمی شود چون سیستم عامل شما غیر قابل استفاده است.</translation>
+<translation id="7444538544936087653"><ph name="PRODUCT_NAME"/> دیگر به روز نمی شود چون سیستم عامل شما قدیمی است.</translation>
 <translation id="1110155001042129815">انتظار</translation>
 <translation id="2607101320794533334">اطلاعات کلید عمومی موضوع</translation>
 <translation id="7071586181848220801">افزونه ناشناخته</translation>
@@ -1434,7 +1432,7 @@
 <translation id="1664712100580477121">آیا مطمئن هستید که می خواهید تصویر را در دستگاه زیر رایت کنید:</translation>
 <translation id="6639554308659482635">حافظه SQLite</translation>
 <translation id="8141503649579618569"><ph name="DOWNLOAD_RECEIVED"/>/<ph name="DOWNLOAD_TOTAL"/>، <ph name="TIME_LEFT"/></translation>
-<translation id="7231224339346098802">استفاده از شماره برای نشان دادن تعداد کپی های چاپ (1 یا بیشتر)</translation>
+<translation id="7231224339346098802">استفاده از شماره برای نشان دادن تعداد کپی های چاپ (1 یا بیشتر).</translation>
 <translation id="7650701856438921772"><ph name="PRODUCT_NAME"/> به این زبان نمایش داده می شود</translation>
 <translation id="740624631517654988">پنجره های بازشو مسدود شدند</translation>
 <translation id="3738924763801731196"><ph name="OID"/>:</translation>
@@ -1466,6 +1464,7 @@
 <translation id="7222232353993864120">آدرس ایمیل</translation>
 <translation id="2128531968068887769">Native Client</translation>
 <translation id="7175353351958621980">بارگیری شده از:</translation>
+<translation id="4590074117005971373">با استفاده از سخت افزار واحد پردازشگر گرافیکی (GPU) و رندرسازی، این امکان را در اختیار شما قرار می دهد تا با بافت دو بعدی، از عملکرد پیشرفته تری از برچسب های کانواس بهره مند شوید.</translation>
 <translation id="7186367841673660872">این صفحه از <ph name="ORIGINAL_LANGUAGE"/> به <ph name="LANGUAGE_LANGUAGE"/> ترجمه شده است</translation>
 <translation id="8448695406146523553">فقط فردی با عبارت عبور شما می تواند داده رمزگذاری شده شما را بخواند -- عبارت عبور توسط Google ارسال یا ذخیره نمی شود. اگر عبارت عبور خود را فراموش می کنید، باید</translation>
 <translation id="6052976518993719690">اعتبار گواهی SSL</translation>
@@ -1501,6 +1500,7 @@
 <translation id="2497284189126895209">همه فایلها</translation>
 <translation id="696036063053180184">3 مجموعه (بدون shift)</translation>
 <translation id="452785312504541111">انگلیسی تمام عرض</translation>
+<translation id="945332329539165145">کانواس دوبعدی شتاب دار GPU</translation>
 <translation id="9148126808321036104">ورود مجدد به سیستم</translation>
 <translation id="2282146716419988068">پردازش GPU</translation>
 <translation id="428771275901304970">کمتر از 1 مگابایت موجود است</translation>
@@ -1717,7 +1717,7 @@
 <translation id="2850961597638370327">صادر شده برای: <ph name="NAME"/></translation>
 <translation id="2168039046890040389">صفحه بالا</translation>
 <translation id="1767519210550978135">Hsu</translation>
-<translation id="5508282018086013138">این برنامه افزودنی بر اساس خط مشی مدیر در لیست سیاه قرار گرفته است.</translation>
+<translation id="5508282018086013138">این برنامه افزودنی بر اساس خط مشی سرپرست در لیست سیاه قرار گرفته است.</translation>
 <translation id="2498539833203011245">کوچک کردن</translation>
 <translation id="2893168226686371498">مرورگر پیش فرض</translation>
 <translation id="2435457462613246316">نمایش رمز ورود</translation>
@@ -2038,7 +2038,7 @@
 <translation id="465365366590259328">بار دیگر که <ph name="PRODUCT_NAME"/> را راه اندازی مجدد می کنید، تغییرات شما اعمال می شوند.</translation>
 <translation id="7168109975831002660">حداقل اندازه قلم</translation>
 <translation id="7070804685954057874">ورود مستقیم</translation>
-<translation id="5175870427301879686"><ph name="URL"/> می خواهد به طور دائم داده ها را در کامپیوتر محلی شما ذخیره نماید</translation>
+<translation id="5175870427301879686"><ph name="URL"/> می خواهد به طور دائم داده ها را در کامپیوتر محلی شما ذخیره نماید.</translation>
 <translation id="3265459715026181080">بستن پنجره</translation>
 <translation id="6074871234879228294">روش ورودی ژاپنی (برای صفحه کلید ژاپنی)</translation>
 <translation id="7855296476260297092">ثبت نام موفق</translation>
@@ -2547,7 +2547,7 @@
 <translation id="8156020606310233796">نمای لیست</translation>
 <translation id="957120528631539888">نمایش پیام های تأیید اعتبار و جلوگیری از ارائه فرم غیر فعال شود.</translation>
 <translation id="146000042969587795">این قاب مسدود شد چون شامل چند محتوای ناامن است.</translation>
-<translation id="3258924582848461629">روش ورودی دست خط برای ژاپنی</translation>
+<translation id="3258924582848461629">روش ورودی نوشتن دستی برای ژاپنی</translation>
 <translation id="8112223930265703044">همه موارد</translation>
 <translation id="3968739731834770921">کانا</translation>
 <translation id="3729920814805072072">مدیریت رمزهای ورود ذخیره شده...</translation>
@@ -2862,7 +2862,6 @@
 <translation id="2183426022964444701">دایرکتوری ریشه برنامه افزودنی را انتخاب کنید.</translation>
 <translation id="2517143724531502372">کوکی های <ph name="DOMAIN"/> فقط برای جلسه مجاز هستند.</translation>
 <translation id="9018524897810991865">تایید تنظیمات برگزیده همگام سازی</translation>
-<translation id="4719905780348837473">RSN</translation>
 <translation id="5212108862377457573">تنظیم تبدیل بر اساس ورودی قبلی</translation>
 <translation id="5398353896536222911">&amp;نمایش پانل املا</translation>
 <translation id="5811533512835101223">(بازگشت به عکس از صفحه نمایش اولیه)</translation>

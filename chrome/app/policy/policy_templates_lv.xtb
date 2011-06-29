@@ -217,7 +217,7 @@
           <ph name="PROXY_HELP_URL"/>.</translation>
 <translation id="2959898425599642200">Starpniekserveru apiešanas kārtulas</translation>
 <translation id="7337941689192402544">Iestatīt <ph name="PRODUCT_NAME"/> lietotāju datu direktoriju</translation>
-<translation id="5326137997741385453">Konfigurē direktoriju, kuru produkts <ph name="PRODUCT_NAME"/> izmantos kešoto failu glabāšanai diskā. Ja iestatāt šo politiku, <ph name="PRODUCT_NAME"/> izmanto norādīto direktoriju neatkarīgi no tā, vai lietotājs ir vai nav norādījis karodziņu --disk-cache-dir.</translation>
+<translation id="5326137997741385453">Konfigurē direktoriju, kuru produkts <ph name="PRODUCT_NAME"/> izmantos kešoto failu glabāšanai diskā. Ja iestatāt šo politiku, <ph name="PRODUCT_NAME"/> izmanto norādīto direktoriju neatkarīgi no tā, vai lietotājs norādījis karodziņu --disk-cache-dir.</translation>
 <translation id="4752274243117690301">Ja šim iestatījumam ir iestatīta vērtība Patiess, produktā <ph name="PRODUCT_NAME"/> tiek atspējota trūkstošo spraudņu automātiska meklēšana un instalēšana.</translation>
 <translation id="3292147213643666827">      Ļauj <ph name="PRODUCT_NAME"/> darboties kā starpniekserverim starp <ph name="CLOUD_PRINT_NAME"/> un datoram pieslēgtiem printeriem.
 
@@ -240,7 +240,7 @@
 <translation id="9096086085182305205">Autentifikācijas serveru baltais saraksts</translation>
 <translation id="7063895219334505671">Atļauj uznirstošos logus šajās vietnēs</translation>
 <translation id="2824715612115726353">Iespējo inkognito režīmu</translation>
-<translation id="1757688868319862958">Ļauj <ph name="PRODUCT_NAME"/> palaist spraudņus, kuriem nepieciešama autorizācija. Ja šis iestatījums tiek iespējots, vienmēr tiek palaisti spraudņi, kas nav novecojuši. Ja šis iestatījums ir atspējots vai nav iestatīts, lietotājiem tiek lūgta atļauja palaist spraudņus, kuriem nepieciešama autorizācija. Šie spraudņi var apdraudēt drošību.</translation>
+<translation id="1757688868319862958">Ļauj <ph name="PRODUCT_NAME"/> palaist spraudņus, kuriem nepieciešama autorizācija. Ja šis iestatījums tiek iespējots, vienmēr tiek palaisti spraudņi, kas nav novecojuši. Ja šis iestatījums ir atspējots vai nav iestatīts, lietotājiem tiek lūgta atļauja palaist spraudņus, kuriem nepieciešama autorizācija. Šie ir spraudņi, kas var apdraudēt drošību.</translation>
 <translation id="6157537876488211233">Ar komatu atdalītu starpniekserveru apiešanas kārtulu saraksts</translation>
 <translation id="7091198954851103976">Vienmēr izpilda spraudņus, kuriem nepieciešama autorizācija</translation>
 <translation id="8870318296973696995">Sākumlapa</translation>
@@ -249,7 +249,7 @@
 <translation id="3866249974567520381">Apraksts</translation>
 <translation id="2236488539271255289">Neatļaut nevienai vietnei iestatīt lokālus datus</translation>
 <translation id="4467952432486360968">Bloķē trešo pušu sīkfailus</translation>
-<translation id="1722705282440676367">Ļauj norādīt produkta <ph name="PRODUCT_NAME"/> izmantoto starpniekserveri un neļauj lietotājiem mainīt starpniekservera iestatījumus. Ja tiek izvēlēts nekad neizmantot starpniekserveri un vienmēr izmantot tiešu savienojumu, visas pārējās opcijas tiek ignorētas. Ja tiek izvēlēts automātiski atrast starpniekserveri, visas pārējās opcijas tiek ignorētas. Lai redzētu detalizētus piemērus, apmeklējiet: <ph name="PROXY_HELP_URL"/>. Ja šis iestatījums ir iespējots, <ph name="PRODUCT_NAME"/> ignorē visas ar starpniekserveri saistītās opcijas, kas tiek norādītas komandrindā.</translation>
+<translation id="1722705282440676367">Ļauj norādīt produkta <ph name="PRODUCT_NAME"/> izmantoto starpniekserveri un neļauj lietotājiem mainīt starpniekservera iestatījumus. Ja izvēlaties nekad neizmantot starpniekserveri un vienmēr izmantot tiešu savienojumu, visas pārējās opcijas tiek ignorētas. Ja izvēlaties atrast starpniekserveri automātiski, visas pārējās opcijas tiek ignorētas. Lai redzētu detalizētus piemērus, apmeklējiet: <ph name="PROXY_HELP_URL"/>. Ja iespējojat šo iestatījumu, <ph name="PRODUCT_NAME"/> ignorē visas ar starpniekserveri saistītās opcijas, kas norādītas komandrindā.</translation>
 <translation id="8470053727907466464">Norāda, kurus rakstzīmju kodējumus atbalsta meklētājprogramma. Kodējumi ir kodu lapu nosaukumi, piemēram, UTF-8, GB2312 un ISO-8859-1. Tās tiek izmēģinātas norādītajā secībā. Noklusējuma lapa ir UTF-8.</translation>
 <translation id="2537063115727103969">Šī politika ir paredzēta, lai ignorētu satura iestatījumu opciju Notīrīt sīkfailus un citus vietņu datus, aizverot pārlūku.
 

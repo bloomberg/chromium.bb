@@ -468,7 +468,6 @@
 <translation id="5548207786079516019">Bu, <ph name="PRODUCT_NAME"/> ürününün ikincil bir yüklemesidir ve varsayılan tarayıcınız yapılamaz.</translation>
 <translation id="3984413272403535372">Uzantı imzalanırken hata oluştu.</translation>
 <translation id="8807083958935897582"><ph name="PRODUCT_NAME"/>, çok amaçlı adres çubuğunu kullanarak web üzerinde arama yapmanıza olanak tanır. Lütfen hangi arama motorunu kullanmasını istediğinizi seçin:</translation>
-<translation id="6629104427484407292">Güvenlik: <ph name="SECURITY"/></translation>
 <translation id="9208886416788010685">Adobe Reader Eski</translation>
 <translation id="3373604799988099680">Uzantılar veya uygulamalar</translation>
 <translation id="318408932946428277">Tarayıcımdan çıktığımda, çerezleri ve diğer site verileriyle eklenti verilerini temizle</translation>
@@ -880,7 +879,7 @@
 <translation id="7033648024564583278">Yazma işlemi başlatılıyor...</translation>
 <translation id="3759371141211657149">İşleyici ayarlarını yönet...</translation>
 <translation id="2246340272688122454">Kurtarma görüntüsü indirilemiyor...</translation>
-<translation id="5305688511332277257">Hiçbir sertifika yüklenmedi</translation>
+<translation id="5305688511332277257">Hiç sertifika yüklenmedi</translation>
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> dakika önce</translation>
 <translation id="2816269189405906839">Çince giriş yöntemi (cangjie)</translation>
 <translation id="7087282848513945231">Ülke</translation>
@@ -1208,7 +1207,7 @@
 <translation id="1679068421605151609">Geliştirici Araçları</translation>
 <translation id="7014051144917845222"><ph name="PRODUCT_NAME"/> uygulamasının
         <ph name="HOST_NAME"/>
-        ana makinesine bağlanma denemesi reddedildi. Web sitesi kapalı olabilir veya ağınız doğru bir şekilde yapılandırılmamıştır.</translation>
+        ana makinesine bağlanma denemesi reddedildi. Web sitesi kapalı olabilir veya ağınız doğru bir şekilde yapılandırılmamış olabilir.</translation>
 <translation id="6648524591329069940">Serif Yazı Tipi</translation>
 <translation id="6896758677409633944">Kopyala</translation>
 <translation id="5260508466980570042">Maalesef, e-posta adresiniz veya şifreniz doğrulanamadı. Lütfen tekrar deneyin.</translation>
@@ -1269,7 +1268,7 @@
 <translation id="6035087343161522833">Üçüncü taraf çerezlerini ayarlamayı engelleme seçeneği etkin olduğunda üçüncü taraf çerezlerinin okunmasını da engelle.</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME"/>: <ph name="ERROR"/></translation>
 <translation id="1567993339577891801">JavaScript Konsolu</translation>
-<translation id="1559235587769913376">Giriş Unicode karakterleri</translation>
+<translation id="1559235587769913376">Unicode karakterler girin</translation>
 <translation id="1548132948283577726">Şifreleri hiçbir zaman kaydetmeyen siteler burada görünür.</translation>
 <translation id="583281660410589416">Bilinmiyor</translation>
 <translation id="3774278775728862009">Tayca giriş yöntemi (TIS-820.2538 klavye)</translation>
@@ -1354,7 +1353,6 @@
 <translation id="1901769927849168791">SD kart algılandı</translation>
 <translation id="818454486170715660"><ph name="NAME"/> - Sahibi</translation>
 <translation id="1358032944105037487">Japonca klavye</translation>
-<translation id="8201956630388867069">WPA</translation>
 <translation id="603890000178803545">Oca^Şub^Mar^Nis^May^Haz^Tem^Ağu^Eyl^Eki^Kas^Ara</translation>
 <translation id="8302838426652833913">Bağlantınızı test etmek için
           <ph name="BEGIN_BOLD"/>
@@ -1452,6 +1450,7 @@
 <translation id="7222232353993864120">E-posta Adresi</translation>
 <translation id="2128531968068887769">Native Client</translation>
 <translation id="7175353351958621980">Yükleme kaynağı:</translation>
+<translation id="4590074117005971373">Grafik İşlemci Birimi (GPU) donanımıyla görüntüleme yaparak 2D içeriğe sahip, daha yüksek performanslı tuval etiketleri sağlar.</translation>
 <translation id="7186367841673660872">Bu sayfa,<ph name="ORIGINAL_LANGUAGE"/>dilinden<ph name="LANGUAGE_LANGUAGE"/>diline çevrilmiştir</translation>
 <translation id="8448695406146523553">Şifrelenmiş verileriniz yalnızca parolanıza sahip bir kişi tarafından okunabilir. Parola Google tarafından gönderilmez veya saklanmaz. Parolanızı unutursanız şunu yapmanız gerekir:</translation>
 <translation id="6052976518993719690">SSL Sertifika Yetkilisi</translation>
@@ -1487,6 +1486,7 @@
 <translation id="2497284189126895209">Tüm Dosyalar</translation>
 <translation id="696036063053180184">3 Grup (Üst karakter yok)</translation>
 <translation id="452785312504541111">Tam genişlikte İngilizce</translation>
+<translation id="945332329539165145">GPU ile Hızlandırılmış 2D Tuval</translation>
 <translation id="9148126808321036104">Tekrar oturum açın</translation>
 <translation id="2282146716419988068">GPU İşlemi</translation>
 <translation id="428771275901304970">1 MB'den az veri var</translation>
@@ -2864,7 +2864,6 @@
 <translation id="2183426022964444701">Uzantı kök dizinini seçin.</translation>
 <translation id="2517143724531502372"><ph name="DOMAIN"/> tarafından gönderilen çerezlere yalnızca oturum için izin verildi.</translation>
 <translation id="9018524897810991865">Senkronizasyon tercihlerini onayla</translation>
-<translation id="4719905780348837473">RSN</translation>
 <translation id="5212108862377457573">Dönüşümü önceki girişe göre ayarla</translation>
 <translation id="5398353896536222911">Yazım panelini &amp;göster</translation>
 <translation id="5811533512835101223">(Orijinal ekran görüntüsüne dön)</translation>

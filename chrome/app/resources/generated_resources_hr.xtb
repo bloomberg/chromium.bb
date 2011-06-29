@@ -459,7 +459,6 @@
 <translation id="5548207786079516019">Ovo je sekundarna instalacija programa <ph name="PRODUCT_NAME"/> i on ne može biti vaš zadani preglednik.</translation>
 <translation id="3984413272403535372">Došlo je do pogreške tijekom potpisivanja proširenja.</translation>
 <translation id="8807083958935897582"><ph name="PRODUCT_NAME"/> omogućuje da web pretražujete pomoću višenamjenskog okvira. Odaberite koju tražilicu želite koristiti:</translation>
-<translation id="6629104427484407292">Sigurnost: <ph name="SECURITY"/></translation>
 <translation id="9208886416788010685">Adobe Reader zastario</translation>
 <translation id="3373604799988099680">Proširenja ili aplikacije</translation>
 <translation id="318408932946428277">Izbriši kolačiće i ostale podatke o web-lokaciji kad zatvorim preglednik</translation>
@@ -1339,7 +1338,6 @@
 <translation id="1901769927849168791">Otkrivena je SD kartica</translation>
 <translation id="818454486170715660"><ph name="NAME"/> - vlasnik</translation>
 <translation id="1358032944105037487">Japanska tipkovnica</translation>
-<translation id="8201956630388867069">WPA</translation>
 <translation id="603890000178803545">sij^vel^ožu^tra^svi^lip^srp^kol^ruj^lis^stu^pro</translation>
 <translation id="8302838426652833913">Idite na
           <ph name="BEGIN_BOLD"/>
@@ -1438,6 +1436,7 @@
 <translation id="7222232353993864120">Adresa e-pošte</translation>
 <translation id="2128531968068887769">Lokalni klijent</translation>
 <translation id="7175353351958621980">Učitano iz:</translation>
+<translation id="4590074117005971373">Omogućuje uspješniji rad oznaka područja crtanja s 2D kontekstom automatskim dovršavanjem upotrebom hardvera Graphics Processor Unit (GPU).</translation>
 <translation id="7186367841673660872">Ova je stranica prevedena s jezika<ph name="ORIGINAL_LANGUAGE"/>na<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="8448695406146523553">Vaše šifrirane podatke može pročitati samo osoba s vašom zaporkom -- zaporka se ne šalje Googleu i ne pohranjuje se na Googleu. Ako zaboravite svoju zaporku, morat ćete</translation>
 <translation id="6052976518993719690">Tijelo za izdavanje SSL certifikata</translation>
@@ -1473,6 +1472,7 @@
 <translation id="2497284189126895209">Sve datoteke</translation>
 <translation id="696036063053180184">3 Set (No shift)</translation>
 <translation id="452785312504541111">Engleski u punoj širini</translation>
+<translation id="945332329539165145">GPU 2D područja crtanja za brži rad</translation>
 <translation id="9148126808321036104">Prijavite se ponovno</translation>
 <translation id="2282146716419988068">GPU proces</translation>
 <translation id="428771275901304970">Manje od 1 MB na raspolaganju</translation>
@@ -2822,7 +2822,6 @@
 <translation id="2183426022964444701">Odaberite korijenski direktorij proširenja.</translation>
 <translation id="2517143724531502372">Kolačići koje šalje <ph name="DOMAIN"/> dopušteni su samo za sesije.</translation>
 <translation id="9018524897810991865">Potvrdi postavke sinkronizacije</translation>
-<translation id="4719905780348837473">RSN</translation>
 <translation id="5212108862377457573">Prilagodba pretvorbe na temelju prethodnog unosa</translation>
 <translation id="5398353896536222911">&amp;Prikaži pravopisnu ploču</translation>
 <translation id="5811533512835101223">(Natrag na izvornu snimku zaslona)</translation>

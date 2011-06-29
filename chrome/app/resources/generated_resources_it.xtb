@@ -395,7 +395,7 @@ digita
 <ph name="BEGIN_BOLD"/>%windir%\\network diagnostic\\xpnetdiag.exe<ph name="END_BOLD"/><ph name="BEGIN_BOLD"/>
 e fai clic su OK<ph name="END_BOLD"/>.</translation>
 <translation id="2934952234745269935">Etichetta volume</translation>
-<translation id="6272247697534482847">Disable GPU VSync</translation>
+<translation id="6272247697534482847">Disattivazione GPU VSync</translation>
 <translation id="6431347207794742960"><ph name="PRODUCT_NAME"/> imposterà gli aggiornamenti automatici per tutti gli utenti di questo computer.</translation>
 <translation id="4973698491777102067">Cancella i seguenti elementi da:</translation>
 <translation id="6074963268421707432">Non consentire la visualizzazione di notifiche desktop da parte dei siti</translation>
@@ -447,7 +447,7 @@ e fai clic su OK<ph name="END_BOLD"/>.</translation>
 <translation id="9121814364785106365">Apri in una scheda bloccata</translation>
 <translation id="6996264303975215450">Pagina web, completa</translation>
 <translation id="3435896845095436175">Abilita</translation>
-<translation id="5849294688757445020">GPU compositing on all pages</translation>
+<translation id="5849294688757445020">Compositing tramite GPU su tutte le pagine</translation>
 <translation id="1891668193654680795">Considera attendibile questo certificato per l'identificazione dei creatori di software.</translation>
 <translation id="5078638979202084724">Aggiungi tutte le schede ai Preferiti</translation>
 <translation id="5585118885427931890">Impossibile creare la cartella Preferiti.</translation>
@@ -464,7 +464,6 @@ e fai clic su OK<ph name="END_BOLD"/>.</translation>
 <translation id="5548207786079516019">Questa è un'installazione secondaria di <ph name="PRODUCT_NAME"/> e non può essere impostata come browser predefinito.</translation>
 <translation id="3984413272403535372">Errore durante la firma dell'estensione.</translation>
 <translation id="8807083958935897582"><ph name="PRODUCT_NAME"/> ti consente di eseguire ricerche sul Web utilizzando la omnibox. Scegli quale motore di ricerca desideri utilizzare:</translation>
-<translation id="6629104427484407292">Sicurezza: <ph name="SECURITY"/></translation>
 <translation id="9208886416788010685">Adobe Reader non aggiornato</translation>
 <translation id="3373604799988099680">Estensioni o applicazioni</translation>
 <translation id="318408932946428277">Cancella cookie e altri dati di siti e plug-in quando chiudo il browser</translation>
@@ -540,7 +539,7 @@ e fai clic su OK<ph name="END_BOLD"/>.</translation>
 <translation id="9001035236599590379">Tipo MIME</translation>
 <translation id="1408167824939409937">Barra di navigazione compatta</translation>
 <translation id="5612754943696799373">Consentire il download?</translation>
-<translation id="347699201225182431">Questa estensione non è autorizzata.</translation>
+<translation id="347699201225182431">Questa estensione è nella blacklist.</translation>
 <translation id="2565875069387440417">Accedi con il tuo account Google</translation>
 <translation id="6353618411602605519">Tastiera croata</translation>
 <translation id="5515810278159179124">Non consentire ad alcun sito di monitorare la mia posizione fisica</translation>
@@ -630,7 +629,7 @@ e fai clic su OK<ph name="END_BOLD"/>.</translation>
 <translation id="2733275712367076659">Hai certificati da queste organizzazioni che ti identificano:</translation>
 <translation id="4801512016965057443">Consenti roaming dati cellulare</translation>
 <translation id="2515586267016047495">Alt</translation>
-<translation id="4839122884004914586">Override software rendering list</translation>
+<translation id="4839122884004914586">Override dell'elenco di software di rendering</translation>
 <translation id="2046040965693081040">Usa pagine correnti</translation>
 <translation id="3798449238516105146">Versione</translation>
 <translation id="5764483294734785780">Sal&amp;va audio come...</translation>
@@ -802,7 +801,7 @@ e fai clic su OK<ph name="END_BOLD"/>.</translation>
 <translation id="8887243200615092733">Ora <ph name="PRODUCT_NAME"/> può sincronizzare le tue password. Per proteggere i tuoi dati, devi confermare le informazioni del tuo account.</translation>
 <translation id="4740663705480958372">Abilita la API P2P Pepper e la API P2P JavaScript. La API è in fase di sviluppo e non funziona ancora.</translation>
 <translation id="5710435578057952990">L'identità di questo sito web non è stata verificata.</translation>
-<translation id="3452884066206827415">Carica preventivamente il motore di ricerca predefinito per Instant.</translation>
+<translation id="3452884066206827415">PreCarica il motore di ricerca predefinito per Instant.</translation>
 <translation id="1421046588786494306">Sessioni esterne</translation>
 <translation id="1661245713600520330">La pagina elenca tutti i moduli caricati nel processo principale e i moduli registrati per il caricamento in una fase successiva.</translation>
 <translation id="5451646087589576080">Visualizza &amp;informazioni frame</translation>
@@ -1009,7 +1008,7 @@ e fai clic su OK<ph name="END_BOLD"/>.</translation>
 <translation id="7443484992065838938">Anteprima rapporto</translation>
 <translation id="5714678912774000384">Attiva ultima scheda</translation>
 <translation id="3799598397265899467">Quando chiudo il browser</translation>
-<translation id="8813811964357448561">foglio di carta</translation>
+<translation id="8813811964357448561">foglio</translation>
 <translation id="2125314715136825419">Procedi senza aggiornare Adobe Reader (non consigliato)</translation>
 <translation id="1120026268649657149">Specifica una parola chiave univoca o lascia il campo vuoto</translation>
 <translation id="542318722822983047">Sposta automaticamente il cursore al carattere successivo</translation>
@@ -1017,7 +1016,7 @@ e fai clic su OK<ph name="END_BOLD"/>.</translation>
 <translation id="9027459031423301635">Apri link in un'altra &amp;scheda</translation>
 <translation id="2251809247798634662">Nuova finestra di navigazione in incognito</translation>
 <translation id="358344266898797651">Celtico</translation>
-<translation id="5106282558266057405"><ph name="SHORT_PRODUCT_NAME"/> &gt; Caratteri piccoli</translation>
+<translation id="5106282558266057405"><ph name="SHORT_PRODUCT_NAME"/> &gt; Clausole</translation>
 <translation id="3625870480639975468">Reimposta lo zoom</translation>
 <translation id="5199729219167945352">Esperimenti</translation>
 <translation id="5055518462594137986">Ricorda la mia scelta per tutti i link di questo tipo.</translation>
@@ -1127,7 +1126,7 @@ e fai clic su OK<ph name="END_BOLD"/>.</translation>
 <translation id="5586329397967040209">Imposta come pagina iniziale</translation>
 <translation id="629730747756840877">Account</translation>
 <translation id="8525306231823319788">Schermo intero</translation>
-<translation id="5892507820957994680">Sostituisce l'elenco di rendering del software integrato e attiva l'accelerazione GPU per le configurazioni di sistema non supportate.</translation>
+<translation id="5892507820957994680">Esegue l'override dell'elenco di rendering integrato e attiva l'accelerazione GPU per le configurazioni di sistema non supportate.</translation>
 <translation id="6280731100889067253">Anteprima di stampa</translation>
 <translation id="9054208318010838">Consenti a tutti i siti di monitorare la mia posizione fisica</translation>
 <translation id="3058212636943679650">Se fosse necessario ripristinare il sistema operativo del computer, avrai bisogno di una scheda SD o di una chiavetta USB di ripristino.</translation>
@@ -1307,7 +1306,7 @@ e fai clic su OK<ph name="END_BOLD"/>.</translation>
 <translation id="4870177177395420201"><ph name="PRODUCT_NAME"/> non è in grado di determinare o impostare il browser predefinito.</translation>
 <translation id="8898786835233784856">Seleziona scheda successiva</translation>
 <translation id="2674170444375937751">Eliminare le pagine dalla cronologia?</translation>
-<translation id="2932883381142163287">Segnala illecito</translation>
+<translation id="2932883381142163287">Segnala abuso</translation>
 <translation id="9111102763498581341">Sblocca</translation>
 <translation id="289695669188700754">ID chiave: <ph name="KEY_ID"/></translation>
 <translation id="3067198360141518313">Esegui questo plug-in</translation>
@@ -1325,7 +1324,7 @@ e fai clic su OK<ph name="END_BOLD"/>.</translation>
 <translation id="8886960478266132308"><ph name="PRODUCT_NAME"/> sincronizza i tuoi dati con il tuo account Google in modo sicuro.</translation>
 <translation id="8028993641010258682">Dimensioni</translation>
 <translation id="5031603669928715570">Attiva...</translation>
-<translation id="532340483382036194">Attiva l'assistenza per l'installazione delle applicazioni di Google Chrome distribuite tramite un file manifest su una pagina web, anziché tramite la creazione di un file crx contenente il file manifest e le icone.</translation>
+<translation id="532340483382036194">Attiva l'assistenza per l'installazione delle applicazioni Chrome distribuite tramite un file manifest su una pagina web, anziché tramite la creazione di un file crx contenente il file manifest e le icone.</translation>
 <translation id="1383876407941801731">Ricerca</translation>
 <translation id="8398877366907290961">Procedi comunque</translation>
 <translation id="5063180925553000800">Nuovo PIN:</translation>
@@ -1355,7 +1354,6 @@ e fai clic su OK<ph name="END_BOLD"/>.</translation>
 <translation id="1901769927849168791">Scheda SD rilevata</translation>
 <translation id="818454486170715660"><ph name="NAME"/> - Proprietario</translation>
 <translation id="1358032944105037487">Tastiera giapponese</translation>
-<translation id="8201956630388867069">WPA</translation>
 <translation id="603890000178803545">Gen^Feb^Mar^Apr^Mag^Giu^Lug^Ago^Set^Ott^Nov^Dic</translation>
 <translation id="8302838426652833913">Seleziona
           <ph name="BEGIN_BOLD"/>
@@ -1454,6 +1452,7 @@ e fai clic su OK<ph name="END_BOLD"/>.</translation>
 <translation id="7222232353993864120">Indirizzo email</translation>
 <translation id="2128531968068887769">Native Client</translation>
 <translation id="7175353351958621980">Caricamento da:</translation>
+<translation id="4590074117005971373">Consente migliori prestazioni dei tag canvas con un contesto 2D effettuando il rendering con hardware GPU (Graphics Processor Unit).</translation>
 <translation id="7186367841673660872">Questa pagina è stata tradotta da<ph name="ORIGINAL_LANGUAGE"/>a<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="8448695406146523553">Solo un utente che dispone della tua passphrase può leggere i tuoi dati crittografati: la passphrase non viene inviata a Google o memorizzata da Google. Se dimentichi la passphrase, dovrai</translation>
 <translation id="6052976518993719690">Autorità di certificazione SSL</translation>
@@ -1489,6 +1488,7 @@ e fai clic su OK<ph name="END_BOLD"/>.</translation>
 <translation id="2497284189126895209">Tutti i file</translation>
 <translation id="696036063053180184">3 set (Sebeolsik No shift)</translation>
 <translation id="452785312504541111">Inglese larghezza piena</translation>
+<translation id="945332329539165145">GPU Accelerated Canvas 2D</translation>
 <translation id="9148126808321036104">Esegui di nuovo l'accesso</translation>
 <translation id="2282146716419988068">Processo GPU</translation>
 <translation id="428771275901304970">Meno di 1 MB disponibile</translation>
@@ -1942,7 +1942,7 @@ e fai clic su OK<ph name="END_BOLD"/>.</translation>
 <translation id="8187473050234053012">Il certificato di sicurezza del server è stato revocato!</translation>
 <translation id="7444983668544353857">Disabilita <ph name="NETWORKDEVICE"/></translation>
 <translation id="6003177993629630467"><ph name="PRODUCT_NAME"/> potrebbe non essere in grado di effettuare gli aggiornamenti.</translation>
-<translation id="2374898461628345975">Consente la composizione di pagine web 3D CSS con prestazioni più elevate utilizzando hardware GPU (Graphics Processor Unit).</translation>
+<translation id="2374898461628345975">Abilita il compositing di pagine web 3D CSS con prestazioni più elevate utilizzando hardware GPU (Graphics Processor Unit).</translation>
 <translation id="421577943854572179">incorporata in qualsiasi altro sito</translation>
 <translation id="580886651983547002"><ph name="PRODUCT_NAME"/>
         non riesce ad aprire il sito web.  Questo è generalmente dovuto a problemi di rete
@@ -1950,7 +1950,7 @@ e fai clic su OK<ph name="END_BOLD"/>.</translation>
 <translation id="5445557969380904478">Informazioni sul riconoscimento vocale</translation>
 <translation id="3093473105505681231">Impostazioni di lingua e controllo ortografico...</translation>
 <translation id="152482086482215392"><ph name="NUMBER_ONE"/> sec. rimanente</translation>
-<translation id="8678698760965522072">Stato Online</translation>
+<translation id="8678698760965522072">Stato online</translation>
 <translation id="529172024324796256">Nome utente:</translation>
 <translation id="3308116878371095290">Impostazione dei cookie vietata per questa pagina.</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -2534,7 +2534,7 @@ e fai clic su OK<ph name="END_BOLD"/>.</translation>
 <translation id="8156020606310233796">Visualizzazione Elenco</translation>
 <translation id="957120528631539888">Disabilita la visualizzazione dei messaggi di convalida e il blocco dell'invio dei moduli.</translation>
 <translation id="146000042969587795">Il frame è stato bloccato poiché contiene contenuti non protetti.</translation>
-<translation id="3258924582848461629">Metodo di immissione a mano per il giapponese</translation>
+<translation id="3258924582848461629">Metodo di immissione di grafia per il giapponese</translation>
 <translation id="8112223930265703044">Tutto</translation>
 <translation id="3968739731834770921">Kana</translation>
 <translation id="3729920814805072072">Gestisci password salvate...</translation>
@@ -2585,7 +2585,7 @@ e fai clic su OK<ph name="END_BOLD"/>.</translation>
 <translation id="2024918351532495204">Il dispositivo è offline</translation>
 <translation id="6040143037577758943">Chiudi</translation>
 <translation id="5607923769356613853">Seleziona <ph name="BEGIN_BOLD"/>menu Strumenti &gt; <ph name="SETTINGS_TITLE"/> &gt; <ph name="ADVANCED_TITLE"/> &gt; <ph name="PROXIES_TITLE"/> &gt; Impostazioni LAN<ph name="END_BOLD"/> e deseleziona la casella di controllo &quot;Utilizza un server proxy per le connessioni LAN&quot;.</translation>
-<translation id="7522312030875244365">Carica preventivamente ricerca istantanea</translation>
+<translation id="7522312030875244365">Precarica la ricerca istantanea</translation>
 <translation id="5787146423283493983">Chiave concordata</translation>
 <translation id="1101671447232096497"><ph name="NUMBER_MANY"/> minuti fa</translation>
 <translation id="4265682251887479829">Non riesci a trovare quello che stai cercando?</translation>
@@ -2849,7 +2849,6 @@ e fai clic su OK<ph name="END_BOLD"/>.</translation>
 <translation id="2183426022964444701">Seleziona la directory principale dell'estensione.</translation>
 <translation id="2517143724531502372">I cookie provenienti da <ph name="DOMAIN"/> sono consentiti solo per questa sessione.</translation>
 <translation id="9018524897810991865">Conferma preferenze di sincronizzazione</translation>
-<translation id="4719905780348837473">RSN</translation>
 <translation id="5212108862377457573">Regola la conversione in base all'input precedente</translation>
 <translation id="5398353896536222911">Mo&amp;stra riquadro ortografia</translation>
 <translation id="5811533512835101223">(Ripristina screenshot originale)</translation>

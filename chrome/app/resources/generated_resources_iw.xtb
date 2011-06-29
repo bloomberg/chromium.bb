@@ -466,7 +466,6 @@
 <translation id="5548207786079516019">זוהי התקנה משנית של <ph name="PRODUCT_NAME"/> ולא ניתן להפוך אותו לדפדפן ברירת המחדל שלך.</translation>
 <translation id="3984413272403535372">שגיאה בחתימה על התוסף.</translation>
 <translation id="8807083958935897582"><ph name="PRODUCT_NAME"/> מאפשר לך לחפש באינטרנט באמצעות סרגל הכתובות. בחר באיזה מנוע חיפוש תרצה להשתמש:</translation>
-<translation id="6629104427484407292">אבטחה: <ph name="SECURITY"/></translation>
 <translation id="9208886416788010685">Adobe Reader לא מעודכן</translation>
 <translation id="3373604799988099680">תוספים או יישומים</translation>
 <translation id="318408932946428277">נקה קובצי Cookie ונתוני אתר ופלאגין אחרים כאשר אני יוצא מהדפדפן שלי</translation>
@@ -1362,7 +1361,6 @@
 <translation id="1901769927849168791">זוהה כרטיס SD</translation>
 <translation id="818454486170715660"><ph name="NAME"/> - בעלים</translation>
 <translation id="1358032944105037487">מקלדת יפנית</translation>
-<translation id="8201956630388867069">WPA</translation>
 <translation id="603890000178803545">ינו'^פב'^מרץ^אפר'^מאי^יוני^יולי^אוג'^ספט'^אוק'^נוב'^דצמ'</translation>
 <translation id="8302838426652833913">עבור אל
           <ph name="BEGIN_BOLD"/>
@@ -1461,6 +1459,7 @@
 <translation id="7222232353993864120">כתובת דוא&quot;ל</translation>
 <translation id="2128531968068887769">Native Client</translation>
 <translation id="7175353351958621980">נטען מתוך:</translation>
+<translation id="4590074117005971373">מאפשר ביצועים גבוהים יותר של תגי בד ציור עם הקשר דו-ממדי על ידי עיבוד תמונה באמצעות חומרת Graphics Processor Unit ‏(GPU)</translation>
 <translation id="7186367841673660872">דף זה תורגם מ<ph name="ORIGINAL_LANGUAGE"/>ל<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="8448695406146523553">רק מישהו עם משפט הסיסמה שלך יוכל לקרוא את הנתונים המוצפנים שלך -- משפט הסיסמה אינו נשלח אל Google או מאוחסן על ידה. אם שכחת אותו, תצטרך לבצע</translation>
 <translation id="6052976518993719690">רשות אישורי SSL </translation>
@@ -1496,6 +1495,7 @@
 <translation id="2497284189126895209">כל הקבצים</translation>
 <translation id="696036063053180184">‎3‎ Set (No shift)‎‎</translation>
 <translation id="452785312504541111">אנגלית ברוחב מלא</translation>
+<translation id="945332329539165145">GPU Accelerated Canvas 2D</translation>
 <translation id="9148126808321036104">היכנס שוב</translation>
 <translation id="2282146716419988068">תהליך GPU</translation>
 <translation id="428771275901304970">יש פחות מ-‎1 MB פנוי</translation>
@@ -2554,7 +2554,7 @@
 <translation id="7387829944233909572">תיבת הדו-שיח 'ניקוי נתוני גלישה'</translation>
 <translation id="8023801379949507775">עדכן תוספים כעת</translation>
 <translation id="6549677549082720666">הותקן יישום רקע חדש</translation>
-<translation id="1983108933174595844">שלח תצלום מסך של הדף הנוכחי</translation>
+<translation id="1983108933174595844">שלח תמונה אחרת מסך של הדף הנוכחי</translation>
 <translation id="3298789223962368867">הוזנה כתובת אתר לא חוקית.</translation>
 <translation id="2202898655984161076">היתה בעיה ברישום מדפסות. ייתכן שחלק מהמדפסות שלך לא נרשמו בהצלחה ב-<ph name="CLOUD_PRINT_NAME"/>.</translation>
 <translation id="6154697846084421647">מחובר כעת</translation>
@@ -2866,7 +2866,6 @@ Del</translation>
 <translation id="2183426022964444701">בחר ספריית בסיס להרחבה.</translation>
 <translation id="2517143724531502372">קובצי Cookie מ-<ph name="DOMAIN"/> מותרים להפעלה בלבד.</translation>
 <translation id="9018524897810991865">אשר העדפות סינכרון</translation>
-<translation id="4719905780348837473">RSN</translation>
 <translation id="5212108862377457573">התאם המרה לפי הקלט הקודם</translation>
 <translation id="5398353896536222911">&amp;הצג חלונית איות</translation>
 <translation id="5811533512835101223">(חזור לצילום המסך המקורי)</translation>

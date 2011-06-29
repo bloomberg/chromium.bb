@@ -464,7 +464,6 @@
 <translation id="5548207786079516019">Esta é uma instalação secundária do <ph name="PRODUCT_NAME"/> e ele não pode se tornar o seu navegador padrão.</translation>
 <translation id="3984413272403535372">Erro ao assinar a extensão.</translation>
 <translation id="8807083958935897582">O <ph name="PRODUCT_NAME"/> permite pesquisar na web usando a omnibox. Escolha qual mecanismo de pesquisa você gostaria que ele usasse:</translation>
-<translation id="6629104427484407292">Segurança: <ph name="SECURITY"/></translation>
 <translation id="9208886416788010685">Adobe Reader desatualizado</translation>
 <translation id="3373604799988099680">Extensões ou aplicativos</translation>
 <translation id="318408932946428277">Limpar cookies e outros dados do site e do plug-in ao sair do meu navegador</translation>
@@ -1351,7 +1350,6 @@
 <translation id="1901769927849168791">Cartão SD detectado</translation>
 <translation id="818454486170715660"><ph name="NAME"/> - Proprietário</translation>
 <translation id="1358032944105037487">Teclado japonês</translation>
-<translation id="8201956630388867069">WPA</translation>
 <translation id="603890000178803545">jan^fev^mar^abr^maio^jun^jul^ago^set^out^nov^dez</translation>
 <translation id="8302838426652833913">Vá para
           <ph name="BEGIN_BOLD"/>
@@ -1450,6 +1448,7 @@
 <translation id="7222232353993864120">Endereço de e-mail</translation>
 <translation id="2128531968068887769">Cliente nativo</translation>
 <translation id="7175353351958621980">Carregado de:</translation>
+<translation id="4590074117005971373">Permite um melhor desempenho das tags de tela com um contexto 2D ao renderizar usando o hardware da GPU (Unidade de processamento gráfico).</translation>
 <translation id="7186367841673660872">Esta página foi traduzida de<ph name="ORIGINAL_LANGUAGE"/>para<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="8448695406146523553">Apenas uma pessoa com sua senha pode ler os dados criptografados. A senha não é enviada ao Google nem armazenada por ele. Se você esquecer a senha, terá que </translation>
 <translation id="6052976518993719690">Autoridade de certificação SSL</translation>
@@ -1485,6 +1484,7 @@
 <translation id="2497284189126895209">Todos os arquivos</translation>
 <translation id="696036063053180184">3 Set (No shift)</translation>
 <translation id="452785312504541111">Português na largura total</translation>
+<translation id="945332329539165145">GPU Accelerated Canvas 2D</translation>
 <translation id="9148126808321036104">Faça login novamente</translation>
 <translation id="2282146716419988068">Processo de GPU</translation>
 <translation id="428771275901304970">Menos de 1 MB disponível</translation>
@@ -2846,7 +2846,6 @@
 <translation id="2183426022964444701">Selecionar diretório raiz da extensão.</translation>
 <translation id="2517143724531502372">Cookies de <ph name="DOMAIN"/> permitidos somente para a sessão.</translation>
 <translation id="9018524897810991865">Confirmar preferências de sincronização</translation>
-<translation id="4719905780348837473">RSN</translation>
 <translation id="5212108862377457573">Ajustar conversão com base na entrada anterior </translation>
 <translation id="5398353896536222911">&amp;Mostrar painel de ortografia</translation>
 <translation id="5811533512835101223">Voltar à captura de tela original</translation>

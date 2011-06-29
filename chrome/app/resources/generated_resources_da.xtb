@@ -464,7 +464,6 @@
 <translation id="5548207786079516019">Dette er en sekundær installation af <ph name="PRODUCT_NAME"/>, og den kan ikke gøres til din standardbrowser.</translation>
 <translation id="3984413272403535372">Fejl under signering af udvidelse.</translation>
 <translation id="8807083958935897582"><ph name="PRODUCT_NAME"/> giver dig mulighed for at søge på nettet med omnifeltet. Vælg, hvilken søgemaskine du vil bruge:</translation>
-<translation id="6629104427484407292">Sikkerhed: <ph name="SECURITY"/></translation>
 <translation id="9208886416788010685">Adobe Reader er forældet</translation>
 <translation id="3373604799988099680">Udvidelser eller programmer</translation>
 <translation id="318408932946428277">Ryd cookies og andre websteds- og plugindata, når jeg lukker browseren</translation>
@@ -1352,7 +1351,6 @@
 <translation id="1901769927849168791">SD-kortet er registreret</translation>
 <translation id="818454486170715660"><ph name="NAME"/> – Ejer</translation>
 <translation id="1358032944105037487">Japansk tastatur</translation>
-<translation id="8201956630388867069">WPA</translation>
 <translation id="603890000178803545">Jan^feb^mar^apr^may^jun^jul^aug^sep^okt^nov^dec</translation>
 <translation id="8302838426652833913">Gå til
           <ph name="BEGIN_BOLD"/>
@@ -1451,6 +1449,7 @@
 <translation id="7222232353993864120">E-mail-adresse</translation>
 <translation id="2128531968068887769">Native Client</translation>
 <translation id="7175353351958621980">Indlæst fra:</translation>
+<translation id="4590074117005971373">Aktiverer bedre kanvastags med 2D-kontekst via gengivelse ved brug af GPU-hardware (Graphics Processor Unit).</translation>
 <translation id="7186367841673660872">Denne side er oversat fra<ph name="ORIGINAL_LANGUAGE"/>til<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="8448695406146523553">Det er kun personer med din adgangssætning, der kan læse dine krypterede data. Adgangssætningen sendes ikke til eller lagres ikke af Google. Hvis du glemmer din adgangssætning, skal du</translation>
 <translation id="6052976518993719690">SSL-certificeringsautoritet</translation>
@@ -1486,6 +1485,7 @@
 <translation id="2497284189126895209">Alle filer</translation>
 <translation id="696036063053180184">3-sæt (ingen shift)</translation>
 <translation id="452785312504541111">Engelsk i fuld bredde</translation>
+<translation id="945332329539165145">GPU-accelereret kanvas i 2D</translation>
 <translation id="9148126808321036104">Log ind igen</translation>
 <translation id="2282146716419988068">GPU-proces</translation>
 <translation id="428771275901304970">Mindre end 1 MB tilgængelig</translation>
@@ -2847,7 +2847,6 @@
 <translation id="2183426022964444701">Vælg udvidelsens rodmappe.</translation>
 <translation id="2517143724531502372">Cookies fra <ph name="DOMAIN"/> er kun tilladt til sessionen.</translation>
 <translation id="9018524897810991865">Bekræft præferencer for synkronisering</translation>
-<translation id="4719905780348837473">RSN</translation>
 <translation id="5212108862377457573">Juster konvertering baseret på forrige indtastning</translation>
 <translation id="5398353896536222911">&amp;Vis stavepanel</translation>
 <translation id="5811533512835101223">(Gå tilbage til det oprindelige skærmbillede)</translation>

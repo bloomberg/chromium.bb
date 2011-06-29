@@ -465,7 +465,6 @@
 <translation id="5548207786079516019">Toto je druhá instalace aplikace <ph name="PRODUCT_NAME"/>, nelze ji nastavit jako výchozí prohlížeč.</translation>
 <translation id="3984413272403535372">Při podepisování rozšíření došlo k chybě.</translation>
 <translation id="8807083958935897582">Aplikace <ph name="PRODUCT_NAME"/> umožňuje pomocí omniboxu prohledávat web. Zvolte, který vyhledávač chcete použít:</translation>
-<translation id="6629104427484407292">Zabezpečení: <ph name="SECURITY"/></translation>
 <translation id="9208886416788010685">Program Adobe Reader je zastaralý</translation>
 <translation id="3373604799988099680">Rozšíření nebo aplikace</translation>
 <translation id="318408932946428277">Při zavření prohlížeče vymazat soubory cookie a ostatní data webů a pluginů</translation>
@@ -1348,7 +1347,6 @@
 <translation id="1901769927849168791">Byla rozpoznána karta SD</translation>
 <translation id="818454486170715660"><ph name="NAME"/> – vlastník</translation>
 <translation id="1358032944105037487">Japonská klávesnice</translation>
-<translation id="8201956630388867069">WPA</translation>
 <translation id="603890000178803545">Led^Úno^Bře^Dub^Kvě^Čvn^Čvc^Srp^Zář^Říj^Lis^Pro</translation>
 <translation id="8302838426652833913">Otestovat připojení můžete v nabídce
           <ph name="BEGIN_BOLD"/>
@@ -1446,6 +1444,7 @@
 <translation id="7222232353993864120">E-mailová adresa</translation>
 <translation id="2128531968068887769">Native Client</translation>
 <translation id="7175353351958621980">Načteno z:</translation>
+<translation id="4590074117005971373">Umožňuje rychlejší vykreslování prvků canvas s dvourozměrným kontextem pomocí využití grafického procesoru (GPU).</translation>
 <translation id="7186367841673660872">Tato stránka byla přeložena z jazyka<ph name="ORIGINAL_LANGUAGE"/>do jazyka<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="8448695406146523553">Šifrované údaje si může přečíst pouze osoba, která zná přístupové heslo. Přístupové heslo se společnosti Google neodesílá, ani jej společnost Google neuchovává. Pokud jej zapomenete, budete muset</translation>
 <translation id="6052976518993719690">Certifikační autorita SSL</translation>
@@ -1481,6 +1480,7 @@
 <translation id="2497284189126895209">Všechny soubory</translation>
 <translation id="696036063053180184">3 sady (bez klávesy Shift)</translation>
 <translation id="452785312504541111">Angličtina na celou šířku</translation>
+<translation id="945332329539165145">GPU Accelerated Canvas 2D</translation>
 <translation id="9148126808321036104">Znovu přihlásit</translation>
 <translation id="2282146716419988068">Proces GPU</translation>
 <translation id="428771275901304970">K dispozici je méně než 1 MB</translation>
@@ -2845,7 +2845,6 @@
 <translation id="2183426022964444701">Vyberte kořenový adresář rozšíření.</translation>
 <translation id="2517143724531502372">Soubory cookie z webu <ph name="DOMAIN"/> byly povoleny pouze pro relaci.</translation>
 <translation id="9018524897810991865">Potvrdit nastavení synchronizace</translation>
-<translation id="4719905780348837473">RSN</translation>
 <translation id="5212108862377457573">Upravit konverzi na základě dříve zadaného textu</translation>
 <translation id="5398353896536222911">Zobrazit panel pravopi&amp;su</translation>
 <translation id="5811533512835101223">(Přejít zpět na původní snímek obrazovky)</translation>

@@ -465,7 +465,6 @@
 <translation id="5548207786079516019">Tai antras „<ph name="PRODUCT_NAME"/>“ diegimas, todėl ji negali būti numatytąja naršykle.</translation>
 <translation id="3984413272403535372">Pasirašant plėtinį įvyko klaida.</translation>
 <translation id="8807083958935897582">„<ph name="PRODUCT_NAME"/>“ leidžia ieškoti žiniatinklyje naudojant „omnibox“. Pasirinkite paieškos variklį, kurį ji naudos:</translation>
-<translation id="6629104427484407292">Sauga: <ph name="SECURITY"/></translation>
 <translation id="9208886416788010685">„Adobe Reader“ programa pasenusi</translation>
 <translation id="3373604799988099680">Plėtiniai arba taikomosios programos</translation>
 <translation id="318408932946428277">Išvalyti slapukus ir kitus svetainės bei papildinio duomenis, kai uždarau naršyklę</translation>
@@ -1355,7 +1354,6 @@
 <translation id="1901769927849168791">Aptikta SD kortelė</translation>
 <translation id="818454486170715660"><ph name="NAME"/> – savininkas</translation>
 <translation id="1358032944105037487">Japoniška klaviatūra</translation>
-<translation id="8201956630388867069">WPA</translation>
 <translation id="603890000178803545">Saus.^Vas.^Kov.^Bal.^Geg.^Birž.^Liep.^Rugpj.^Rugs.^Spal.^Lapkr.^Gruod.</translation>
 <translation id="8302838426652833913">Eikite į
           <ph name="BEGIN_BOLD"/>
@@ -1454,6 +1452,7 @@
 <translation id="7222232353993864120">El. pašto adresas</translation>
 <translation id="2128531968068887769">Native Client</translation>
 <translation id="7175353351958621980">Įkelta iš:</translation>
+<translation id="4590074117005971373">Įgalinamos didesnio našumo matomosios tinklalapio srities žymos su 2D perdavimo kontekstu naudojant grafikos rengyklės (GPU) aparatinę įrangą.</translation>
 <translation id="7186367841673660872">Šis puslapis išverstas iš<ph name="ORIGINAL_LANGUAGE"/>į<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="8448695406146523553">Tik slaptafrazę turintis asmuo gali skaityti šifruotus duomenis. Slaptafrazė nesiunčiama ar nesaugoma „Google“. Jei pamiršite slaptafrazę, turėsite</translation>
 <translation id="6052976518993719690">SSL sertifikavimo įstaiga</translation>
@@ -1489,6 +1488,7 @@
 <translation id="2497284189126895209">Visi failai</translation>
 <translation id="696036063053180184">3 rinkinys („No shift“)</translation>
 <translation id="452785312504541111">Viso pločio anglų k.</translation>
+<translation id="945332329539165145">GPU paspartinta matomoji tinklalapio sritis 2D formatu</translation>
 <translation id="9148126808321036104">Prisijungti dar kartą</translation>
 <translation id="2282146716419988068">GPU procesas</translation>
 <translation id="428771275901304970">Pasiekiama mažiau nei 1 MB</translation>
@@ -2850,7 +2850,6 @@
 <translation id="2183426022964444701">Pasirinkite plėtinio šakninį katalogą.</translation>
 <translation id="2517143724531502372"><ph name="DOMAIN"/> slapukai leidžiami tik seansui.</translation>
 <translation id="9018524897810991865">Patvirtinti sinchronizavimo nuostatas</translation>
-<translation id="4719905780348837473">RSN</translation>
 <translation id="5212108862377457573">Konversijos koregavimas pagal ankstesnę įvestį</translation>
 <translation id="5398353896536222911">&amp;Rodyti rašybos tikrinimo skydą</translation>
 <translation id="5811533512835101223">(Grįžti į pradinę ekrano kopiją)</translation>

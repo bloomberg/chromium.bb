@@ -465,7 +465,6 @@
 <translation id="5548207786079516019">Ez a <ph name="PRODUCT_NAME"/> második telepítése, amelyet nem állíthat be az alapértelmezett böngészővé.</translation>
 <translation id="3984413272403535372">Hiba történt a bővítmények aláírása során.</translation>
 <translation id="8807083958935897582">A <ph name="PRODUCT_NAME"/> lehetővé teszi, hogy a cím- és keresősáv segítségével keressen az interneten. Kérjük, válassza ki, hogy melyik keresőmotort kívánja használni:</translation>
-<translation id="6629104427484407292">Biztonság: <ph name="SECURITY"/></translation>
 <translation id="9208886416788010685">Az Adobe Reader elavult</translation>
 <translation id="3373604799988099680">Bővítmények vagy alkalmazások</translation>
 <translation id="318408932946428277">Cookie-k, valamint egyéb plug-in- és webhelyadatok törlése, ha kilépek a böngészőből</translation>
@@ -1343,7 +1342,6 @@
 <translation id="1901769927849168791">SD-kártya észlelve</translation>
 <translation id="818454486170715660"><ph name="NAME"/> -- tulajdonos</translation>
 <translation id="1358032944105037487">Japán billentyűzet</translation>
-<translation id="8201956630388867069">WPA</translation>
 <translation id="603890000178803545">jan.^febr.^márc.^ápr.^máj.^jún.^júl.^aug.^szept.^okt.^nov.^dec.</translation>
 <translation id="8302838426652833913">Az
           <ph name="BEGIN_BOLD"/>
@@ -1442,6 +1440,7 @@
 <translation id="7222232353993864120">E-mail cím</translation>
 <translation id="2128531968068887769">Natív kliens</translation>
 <translation id="7175353351958621980">Betöltve innen:</translation>
+<translation id="4590074117005971373">Engedélyezi a 2D összefüggésben szereplő képernyőmezők nagyobb teljesítményű megjelenítését a grafikus processzor (GPU) hardver használatával.</translation>
 <translation id="7186367841673660872">Ezt az oldalt<ph name="ORIGINAL_LANGUAGE"/>nyelvről<ph name="LANGUAGE_LANGUAGE"/>nyelvre fordítottuk</translation>
 <translation id="8448695406146523553">Titkosított adatait csak olyanok tudják elolvasni, akik rendelkeznek összetett jelszavával -- az összetett jelszót a Google nem kapja meg és nem tárolja. Ha elfelejti összetett jelszavát, akkor a következőt kell tennie:</translation>
 <translation id="6052976518993719690">SSL tanúsítványkibocsátó</translation>
@@ -1477,6 +1476,7 @@
 <translation id="2497284189126895209">Minden fájl</translation>
 <translation id="696036063053180184">3 készletes (nincs shift)</translation>
 <translation id="452785312504541111">Teljes szélességű angol</translation>
+<translation id="945332329539165145">GPU gyorsított 2D képernyő</translation>
 <translation id="9148126808321036104">Jelentkezzen be újra</translation>
 <translation id="2282146716419988068">GPU-folyamat</translation>
 <translation id="428771275901304970">Kevesebb, mint 1 MB szabad</translation>
@@ -2838,7 +2838,6 @@
 <translation id="2183426022964444701">Válassza ki a bővítmény gyökérkönyvtárát.</translation>
 <translation id="2517143724531502372">A(z) <ph name="DOMAIN"/> oldalról származó cookie-k csak programfolyamatra vannak engedélyezve.</translation>
 <translation id="9018524897810991865">Szinkronizálási preferenciák megerősítése</translation>
-<translation id="4719905780348837473">RSN</translation>
 <translation id="5212108862377457573">Konverzió beállítása korábbi bevitel alapján</translation>
 <translation id="5398353896536222911">A helyesírás panel meg&amp;jelenítése</translation>
 <translation id="5811533512835101223">(Visszatérés az eredeti képernyőképhez)</translation>

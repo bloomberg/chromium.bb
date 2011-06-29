@@ -458,7 +458,6 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="5548207786079516019">Dies ist eine Zweitinstallation von <ph name="PRODUCT_NAME"/> und kann daher nicht als Standardbrowser festgelegt werden.</translation>
 <translation id="3984413272403535372">Fehler bei der Signatur der Erweiterung</translation>
 <translation id="8807083958935897582">Mit der Omnibox von <ph name="PRODUCT_NAME"/> können Sie das Web durchsuchen. Wählen Sie die gewünschte Suchmaschine:</translation>
-<translation id="6629104427484407292">Sicherheit: <ph name="SECURITY"/></translation>
 <translation id="9208886416788010685">Adobe Reader veraltet</translation>
 <translation id="3373604799988099680">Erweiterungen oder Apps</translation>
 <translation id="318408932946428277">Cookies und andere Website- und Plug-in-Daten beim Beenden des Browsers löschen</translation>
@@ -1339,7 +1338,6 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="1901769927849168791">SD-Karte gefunden</translation>
 <translation id="818454486170715660"><ph name="NAME"/> - Eigentümer</translation>
 <translation id="1358032944105037487">Japanische Tastatur </translation>
-<translation id="8201956630388867069">WPA</translation>
 <translation id="603890000178803545">Jan^Feb^Mrz^Apr^Mai^Jun^Jul^Aug^Sep^Okt^Nov^Dez</translation>
 <translation id="8302838426652833913">Gehen Sie zu
           <ph name="BEGIN_BOLD"/>
@@ -1438,6 +1436,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="7222232353993864120">E-Mail-Adresse</translation>
 <translation id="2128531968068887769">Native Client</translation>
 <translation id="7175353351958621980">Geladen von:</translation>
+<translation id="4590074117005971373">Ermöglicht eine höhere Leistung von Canvas-Tags in einem 2D-Kontext durch den Einsatz eines Grafikprozessors (GPU) für die Darstellung.</translation>
 <translation id="7186367841673660872">Diese Seite wurde von<ph name="ORIGINAL_LANGUAGE"/>in<ph name="LANGUAGE_LANGUAGE"/>übersetzt.</translation>
 <translation id="8448695406146523553">Ihre verschlüsselten Daten können nur von jemandem gelesen werden, der über Ihre Passphrase verfügt – die Passphrase wird nicht an Google gesendet oder von Google gespeichert. Wenn Sie Ihre Passphrase vergessen, müssen Sie:</translation>
 <translation id="6052976518993719690">SSL-Zertifizierungsstelle</translation>
@@ -1473,6 +1472,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="2497284189126895209">Alle Dateien</translation>
 <translation id="696036063053180184">3 Set (Keine Umschalttaste)</translation>
 <translation id="452785312504541111">Englisch in voller Breite</translation>
+<translation id="945332329539165145">GPU Accelerated Canvas 2D</translation>
 <translation id="9148126808321036104">Erneut anmelden</translation>
 <translation id="2282146716419988068">GPU-Verarbeitung</translation>
 <translation id="428771275901304970">Weniger als 1 MB verfügbar</translation>
@@ -1639,7 +1639,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="1398853756734560583">Vergrößern</translation>
 <translation id="8988255471271407508">Die Webseite wurde nicht im Cache gefunden. Bestimmte Ressourcen können nur aus dem Cache sicher geladen werden, beispielsweise Seiten, die aus gesendeten Daten generiert wurden.<ph name="LINE_BREAK"/>Dieser Fehler kann auch durch eine Beschädigung des Caches nach inkorrektem Herunterfahren hervorgerufen werden.<ph name="LINE_BREAK"/>Sollte das Problem weiterhin bestehen, versuchen Sie, den Cache zu leeren.</translation>
 <translation id="1195977189444203128">Das Plug-in <ph name="PLUGIN_NAME"/> ist veraltet.</translation>
-<translation id="3878562341724547165">Sie sind offensichtlich umgezogen. Möchten Sie <ph name="NEW_GOOGLE_URL"/> verwenden?</translation>
+<translation id="3878562341724547165">Möchten Sie <ph name="NEW_GOOGLE_URL"/> verwenden?</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="6690744523875189208"><ph name="NUMBER_TWO"/> Stunden</translation>
 <translation id="8053390638574070785">Diese Seite neu laden</translation>
@@ -2478,7 +2478,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="5457599981699367932">Als Gast nutzen</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="6294193300318171613">&amp;Lesezeichenleiste immer anzeigen</translation>
-<translation id="4088820693488683766">Suchoptionen</translation>
+<translation id="4088820693488683766">Optionen durchsuchen</translation>
 <translation id="3414952576877147120">Größe:</translation>
 <translation id="9098468523912235228">Vor <ph name="NUMBER_DEFAULT"/> Sekunden</translation>
 <translation id="7009102566764819240">Die folgende Liste führt alle gefährlichen Elemente der Seite auf. Klicken Sie auf den Diagnoselink, um weitere Informationen zum Malware-Thread eines bestimmten Elements zu erhalten. Falls Sie sicher sind, dass eine Ressource fälschlicherweise als Phishing-Ressource gemeldet wurde, klicken Sie auf den Link &quot;Einen Fehler melden&quot;.</translation>
@@ -2814,7 +2814,6 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="2183426022964444701">Stammverzeichnis der Erweiterung auswählen</translation>
 <translation id="2517143724531502372">Nur für diese Sitzung sind Cookies von <ph name="DOMAIN"/> zulässig.</translation>
 <translation id="9018524897810991865">Synchronisierungseinstellungen bestätigen</translation>
-<translation id="4719905780348837473">RSN</translation>
 <translation id="5212108862377457573">Umwandlung auf der Grundlage der vorherigen Eingaben anpassen</translation>
 <translation id="5398353896536222911">Rechtschreibung &amp;einblenden</translation>
 <translation id="5811533512835101223">(Zurück zum ursprünglichen Screenshot)</translation>

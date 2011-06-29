@@ -466,7 +466,6 @@
 <translation id="5548207786079516019">See on <ph name="PRODUCT_NAME"/>'i sekundaarne install ja seda ei saa määrata vaikebrauseriks.</translation>
 <translation id="3984413272403535372">Laienduse allkirjastamisel ilmnes viga.</translation>
 <translation id="8807083958935897582"><ph name="PRODUCT_NAME"/> laseb võrguotsinguks kasutada omnikastikest. Valige, millist otsingumootorit soovite kasutada:</translation>
-<translation id="6629104427484407292">Turvalisus: <ph name="SECURITY"/></translation>
 <translation id="9208886416788010685">Adobe Reader on aegunud</translation>
 <translation id="3373604799988099680">Laiendid või rakendused</translation>
 <translation id="318408932946428277">Eemalda brauserist lahkumisel küpsised ning muud saidi ja pistikprogrammi andmed</translation>
@@ -1352,7 +1351,6 @@ Proovige uuesti mõne muu sertifikaadiga (kui teil on teisi sertifikaate). Kui t
 <translation id="1901769927849168791">Tuvastati SD-kaart</translation>
 <translation id="818454486170715660"><ph name="NAME"/>, omanik</translation>
 <translation id="1358032944105037487">Jaapani klaviatuur</translation>
-<translation id="8201956630388867069">WPA</translation>
 <translation id="603890000178803545">jaan^veebr^märts^apr^mai^juuni^juuli^aug^sept^okt^nov^dets</translation>
 <translation id="8302838426652833913">Tehke valikud
           <ph name="BEGIN_BOLD"/>
@@ -1451,6 +1449,7 @@ Proovige uuesti mõne muu sertifikaadiga (kui teil on teisi sertifikaate). Kui t
 <translation id="7222232353993864120">E-posti aadress</translation>
 <translation id="2128531968068887769">Native Client</translation>
 <translation id="7175353351958621980">Laaditud:</translation>
+<translation id="4590074117005971373">Lubab lõuendisiltide suuremat jõudlust 2D-kontekstis graafikaprotsessori (GPU) riistvara renderdamisega.</translation>
 <translation id="7186367841673660872">See leht on tõlgitud keelest<ph name="ORIGINAL_LANGUAGE"/>keelde<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="8448695406146523553">Teie krüptitud andmeid saavad lugeda vaid isikud, kes teavad teie parooli – seda ei saadeta Google'ile ja Google ei talleta seda. Kui unustate parooli, tuleb teil</translation>
 <translation id="6052976518993719690">SSL-i sertimiskeskus</translation>
@@ -1486,6 +1485,7 @@ Proovige uuesti mõne muu sertifikaadiga (kui teil on teisi sertifikaate). Kui t
 <translation id="2497284189126895209">Kõik failid</translation>
 <translation id="696036063053180184">3. seade (tõstuklahv Shift puudub)</translation>
 <translation id="452785312504541111">Täislaiuses inglise keel</translation>
+<translation id="945332329539165145">GPU kiirendatud 2D-lõuend</translation>
 <translation id="9148126808321036104">Logige uuesti sisse</translation>
 <translation id="2282146716419988068">GPU-protsess</translation>
 <translation id="428771275901304970">Saadaval on vähem kui 1 MB</translation>
@@ -2848,7 +2848,6 @@ Proovige uuesti mõne muu sertifikaadiga (kui teil on teisi sertifikaate). Kui t
 <translation id="2183426022964444701">Valige laiendi juurkataloog.</translation>
 <translation id="2517143724531502372">Saidi <ph name="DOMAIN"/> küpsisefailid on lubatud vaid üheks seansiks.</translation>
 <translation id="9018524897810991865">Sünkroonimiseelistuste kinnitamine</translation>
-<translation id="4719905780348837473">RSN</translation>
 <translation id="5212108862377457573">Kohanda teisendamist eelmise sisestuse põhjal</translation>
 <translation id="5398353896536222911">&amp;Kuva õigekirja paneel</translation>
 <translation id="5811533512835101223">(Minge tagasi algsele kuvatõmmisele.)</translation>

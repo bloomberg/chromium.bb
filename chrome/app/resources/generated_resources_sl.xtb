@@ -464,7 +464,6 @@
 <translation id="5548207786079516019">To je sekundarna namestitev brskalnika <ph name="PRODUCT_NAME"/> in ga ni mogoče nastaviti kot privzeti brskalnik.</translation>
 <translation id="3984413272403535372">Med podpisovanjem razširitve je prišlo do napake.</translation>
 <translation id="8807083958935897582"><ph name="PRODUCT_NAME"/> omogoča iskanje v spletu z naslovno vrstico. Izberite mehanizem za iskanje, ki naj ga uporabi:</translation>
-<translation id="6629104427484407292">Varnost: <ph name="SECURITY"/></translation>
 <translation id="9208886416788010685">Adobe Reader je zastarel</translation>
 <translation id="3373604799988099680">Razširitve ali aplikacije</translation>
 <translation id="318408932946428277">Izbriši piškotke in druge podatke spletnih mest in vtičnikov, ko zaprem brskalnik</translation>
@@ -1351,7 +1350,6 @@
 <translation id="1901769927849168791">Kartica SD zaznana</translation>
 <translation id="818454486170715660"><ph name="NAME"/> – lastnik</translation>
 <translation id="1358032944105037487">Japonska tipkovnica</translation>
-<translation id="8201956630388867069">WPA</translation>
 <translation id="603890000178803545">Jan^Feb^Mar^Apr^Maj^Jun^Jul^Avg^Sep^Okt^Nov^Dec</translation>
 <translation id="8302838426652833913">Pojdite v
           <ph name="BEGIN_BOLD"/>
@@ -1450,6 +1448,7 @@
 <translation id="7222232353993864120">E-poštni naslov</translation>
 <translation id="2128531968068887769">Tehnologija Native Client</translation>
 <translation id="7175353351958621980">Naloženo iz:</translation>
+<translation id="4590074117005971373">Omogoča boljše delovanje oznak na platnu s kontekstom 2D tako, da za upodabljanje uporablja grafično strojno opremo (GPU).</translation>
 <translation id="7186367841673660872">Ta stran je bila prevedena iz jezika<ph name="ORIGINAL_LANGUAGE"/>v jezik<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="8448695406146523553">Samo nekdo, ki ima geslo, lahko bere šifrirane podatke. Google ne prejme ali hrani tega gesla. Če geslo pozabite, morate</translation>
 <translation id="6052976518993719690">Overitelj potrdil SSL</translation>
@@ -1485,6 +1484,7 @@
 <translation id="2497284189126895209">Vse datoteke</translation>
 <translation id="696036063053180184">3 Set (No shift)</translation>
 <translation id="452785312504541111">Angleščina polne širine</translation>
+<translation id="945332329539165145">Platno 2D s strojnim pospeševanjem grafike</translation>
 <translation id="9148126808321036104">Prijavite se znova</translation>
 <translation id="2282146716419988068">Proces GPU</translation>
 <translation id="428771275901304970">Na voljo je manj kot 1 MB</translation>
@@ -2844,7 +2844,6 @@
 <translation id="2183426022964444701">Izberite korenski imenik razširitve.</translation>
 <translation id="2517143724531502372">Piškotki s spletnega mesta <ph name="DOMAIN"/> so dovoljeni samo za to sejo.</translation>
 <translation id="9018524897810991865">Potrditev nastavitev sinhronizacije</translation>
-<translation id="4719905780348837473">RSN</translation>
 <translation id="5212108862377457573">Prilagodi konverzijo na podlagi prejšnjega vnosa</translation>
 <translation id="5398353896536222911">&amp;Pokaži ploščo za črkovanje</translation>
 <translation id="5811533512835101223">(Vrni se na prvotni posnetek zaslona)</translation>

@@ -310,6 +310,7 @@
 <translation id="715487527529576698">الوضع الأولي للغة الصينية هو الصينية المبسطة.</translation>
 <translation id="1674989413181946727">إعدادات SSL في الكمبيوتر:</translation>
 <translation id="8703575177326907206">الاتصال بالموقع <ph name="DOMAIN"/> غير محميّ بنظام تشفير.</translation>
+<translation id="3042282020249392540">حاول إضافة <ph name="PRODUCT_NAME"/> كبرنامج مسموح به في إعدادات الجدار الناري أو برنامج مكافحة الفيروسات. وإذا كان برنامجًا مسموحًا به فعلاً، فجرِّب حذفه من قائمة البرامج المسموح بها وإضافته مرة أخرى.</translation>
 <translation id="8472623782143987204">يستند إلى الجهاز</translation>
 <translation id="4865571580044923428">إدارة الاستثناءات...</translation>
 <translation id="2526619973349913024">التحقق من وجود تحديث</translation>
@@ -449,7 +450,6 @@
 <translation id="5548207786079516019">هذا تثبيت ثانوي من <ph name="PRODUCT_NAME"/>، ولا يمكن جعله متصفحك الافتراضي.</translation>
 <translation id="3984413272403535372">حدث خطأ أثناء التوقيع على الإضافة.</translation>
 <translation id="8807083958935897582">يتيح لك <ph name="PRODUCT_NAME"/> البحث في الويب باستخدام المربع متعدد الاستخدامات. الرجاء اختيار أي محرك بحث تريد استخدامه:</translation>
-<translation id="6629104427484407292">الأمان: <ph name="SECURITY"/></translation>
 <translation id="9208886416788010685">برنامج Adobe Reader غير محدث</translation>
 <translation id="3373604799988099680">الإضافات أو التطبيقات</translation>
 <translation id="318408932946428277">محو ملفات تعريف الارتباط وبيانات الموقع والمكونات الإضافية الأخرى عند إنهاء المتصفح</translation>
@@ -1331,7 +1331,6 @@
 <translation id="1901769927849168791">اكتشاف بطاقة SD</translation>
 <translation id="818454486170715660"><ph name="NAME"/> - المالك</translation>
 <translation id="1358032944105037487">لوحة المفاتيح اليابانية</translation>
-<translation id="8201956630388867069">WPA</translation>
 <translation id="603890000178803545">Jan^Feb^Mar^Apr^May^Jun^Jul^Aug^Sep^Oct^Nov^Dec</translation>
 <translation id="8302838426652833913">انتقال إلى
           <ph name="BEGIN_BOLD"/>
@@ -1430,6 +1429,7 @@
 <translation id="7222232353993864120">عنوان البريد الإلكتروني</translation>
 <translation id="2128531968068887769">Native Client</translation>
 <translation id="7175353351958621980">تم التحميل من:</translation>
+<translation id="4590074117005971373">تمكين الحصول على أعلى أداء لعلامات ملء الشاشة مع سياق ثنائي الأبعاد من خلال إتاحة استخدام أجهزة وحدة معالج الرسومات (GPU).</translation>
 <translation id="7186367841673660872">تمت ترجمة هذه الصفحة من اللغة<ph name="ORIGINAL_LANGUAGE"/>إلى اللغة<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="8448695406146523553">لا يمكن لأحد قراءة بياناتك المشفرة سوى من لديه عبارة المرور التي تستخدمها -- لا يتم إرسال عبارة المرور إلى شركة Google ولا تخزنها. فإذا نسيت عبارة المرور، فيجب</translation>
 <translation id="6052976518993719690">صلاحية شهادة SSL (طبقة المقابس الآمنة)</translation>
@@ -1465,6 +1465,7 @@
 <translation id="2497284189126895209">الملفّات كلّها</translation>
 <translation id="696036063053180184">المجموعة 3 (بدون مفتاح Shift)</translation>
 <translation id="452785312504541111">الإنجليزية العرض بالكامل</translation>
+<translation id="945332329539165145">ملء الشاشة ثنائي الأبعاد المسرّع من خلال GPU</translation>
 <translation id="9148126808321036104">تسجيل الدخول مرة أخرى</translation>
 <translation id="2282146716419988068">معالجة وحدة معالجة الرسومات (GPU)</translation>
 <translation id="428771275901304970">البيانات المتاحة أقل من 1 ميغابايت.</translation>
@@ -2804,7 +2805,6 @@
 <translation id="2183426022964444701">حدد الدليل الجذر للإضافة.</translation>
 <translation id="2517143724531502372">تم السماح بملفات تعريف الارتباط الواردة من <ph name="DOMAIN"/> للجلسة فقط.</translation>
 <translation id="9018524897810991865">تأكيد تفضيلات المزامنة</translation>
-<translation id="4719905780348837473">RSN</translation>
 <translation id="5212108862377457573">تعديل التحويل بناء على الإدخال السابق</translation>
 <translation id="5398353896536222911">إظهار &amp;لوحة التدقيق الإملائي</translation>
 <translation id="5811533512835101223">(الرجوع للقطة الشاشة الأصلية)</translation>
@@ -3027,7 +3027,7 @@
 <translation id="9087725134750123268">حذف ملفات تعريف الارتباط وبيانات الموقع الأخرى</translation>
 <translation id="5050255233730056751">عناوين URL التي تم تصفحها</translation>
 <translation id="3349155901412833452">استخدم مفتاحي , و . لإنشاء صفحة بقائمة المرشحين</translation>
-<translation id="3981681824736556685">في حالة استخدام خادم وكيل، تحقق من إعدادات الوكيل أو اتصل بمشرف الشبكة للتأكد من أن خادم الوكيل يعمل. إذا كنت لا تعتقد أنه عليك استخدام خادم وكيل، فاضبط إعدادات الوكيل: <ph name="PLATFORM_TEXT"/></translation>
+<translation id="3981681824736556685">في حالة استخدام خادم وكيل، تحقق من إعدادات الوكيل أو اتصل بمشرف الشبكة للتأكد من أن خادم الوكيل يعمل. إذا كنت لا تعتقد أنه يجب عليك استخدام خادم وكيل، فاضبط إعدادات الوكيل: <ph name="PLATFORM_TEXT"/></translation>
 <translation id="6872947427305732831">إزالة الذاكرة</translation>
 <translation id="2742870351467570537">إزالة العناصر المحددة</translation>
 <translation id="7561196759112975576">دومًا</translation>

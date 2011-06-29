@@ -466,7 +466,6 @@
 <translation id="5548207786079516019">Đây là cài đặt thứ cấp của <ph name="PRODUCT_NAME"/> và không thể trở thành trình duyệt mặc định của bạn.</translation>
 <translation id="3984413272403535372">Lỗi khi ký tiện ích mở rộng.</translation>
 <translation id="8807083958935897582"><ph name="PRODUCT_NAME"/> cho phép bạn tìm kiếm web sử dụng hộp omnibox. Vui lòng chọn công cụ tìm kiếm mà bạn muốn tính năng này sử dụng:</translation>
-<translation id="6629104427484407292">Bảo mật: <ph name="SECURITY"/></translation>
 <translation id="9208886416788010685">Adobe Reader đã lỗi thời</translation>
 <translation id="3373604799988099680">Tiện ích mở rộng hoặc ứng dụng</translation>
 <translation id="318408932946428277">Xóa cookie và dữ liệu trang web và trình cắm khác khi tôi thoát khỏi trình duyệt của mình</translation>
@@ -1356,7 +1355,6 @@ phải do
 <translation id="1901769927849168791">Đã phát hiện thấy thẻ SD</translation>
 <translation id="818454486170715660"><ph name="NAME"/> - Chủ sở hữu</translation>
 <translation id="1358032944105037487">Bàn phím tiếng Nhật</translation>
-<translation id="8201956630388867069">WPA</translation>
 <translation id="603890000178803545">Th1^Th2^Th3^Th4^Th5^Th6^Th7^Th8^Th9^Th10^Th11^Th12</translation>
 <translation id="8302838426652833913">Đi tới
           <ph name="BEGIN_BOLD"/>
@@ -1455,6 +1453,7 @@ phải do
 <translation id="7222232353993864120">Địa chỉ Email</translation>
 <translation id="2128531968068887769">Native Client</translation>
 <translation id="7175353351958621980">Được tải từ:</translation>
+<translation id="4590074117005971373">Nâng cao hiệu quả của các thẻ canvas có ngữ cảnh 2D bằng cách chuyển sang sử dụng phần cứng Bộ xử lý đồ họa (GPU).</translation>
 <translation id="7186367841673660872">Trang này đã được dịch từ<ph name="ORIGINAL_LANGUAGE"/>sang<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="8448695406146523553">Chỉ những người có cụm mật khẩu của bạn mới có thể đọc được dữ liệu được mã hóa của bạn -- cụm mật khẩu không được gửi tới hoặc được lưu trữ bởi Google. Nếu bạn quên cụm mật khẩu của mình, bạn cần</translation>
 <translation id="6052976518993719690">Tổ chức Cấp Chứng chỉ SSK</translation>
@@ -1490,6 +1489,7 @@ phải do
 <translation id="2497284189126895209">Tất cả Tệp tin</translation>
 <translation id="696036063053180184">Bộ 3 (Không sử dụng shift)</translation>
 <translation id="452785312504541111">Tiếng Anh viết đầy đủ</translation>
+<translation id="945332329539165145">Canvas 2D được tăng tốc với GPU</translation>
 <translation id="9148126808321036104">Đăng nhập lại</translation>
 <translation id="2282146716419988068">Quá trình GPU</translation>
 <translation id="428771275901304970">Có ít hơn 1 MB</translation>
@@ -1743,7 +1743,7 @@ phải do
 <translation id="8190193592390505034">Đang kết nối đến <ph name="PROVIDER_NAME"/></translation>
 <translation id="3222343486469566063">Chưa đăng nhập</translation>
 <translation id="6144890426075165477"><ph name="PRODUCT_NAME"/> hiện tại không phải là trình duyệt mặc định của bạn.</translation>
-<translation id="2498131838700757846">Cho phép nền LevelDB thử nghiệm cho IndexedDB.</translation>
+<translation id="2498131838700757846">Cho phép giao diện LevelDB thử nghiệm cho IndexedDB.</translation>
 <translation id="823241703361685511">Gói</translation>
 <translation id="4068506536726151626">Trang này chứa các yếu tố từ các trang web đang theo dõi vị trí của bạn sau đây:</translation>
 <translation id="4721475475128190282">Nhiều cấu hình</translation>
@@ -1933,7 +1933,7 @@ phải do
 <translation id="6897140037006041989">Tác nhân Người dùng</translation>
 <translation id="3413122095806433232">Nhà cung cấp CA: <ph name="LOCATION"/></translation>
 <translation id="4148957013307229264">Đang cài đặt...</translation>
-<translation id="1956724372173215413">Bấm alt + shift để chuyển đổi giữa các phương pháp nhập.</translation>
+<translation id="1956724372173215413">Bấm alt + shift để chuyển đổi giữa các phương thức nhập.</translation>
 <translation id="4115153316875436289"><ph name="NUMBER_TWO"/> ngày</translation>
 <translation id="701080569351381435">Xem Nguồn</translation>
 <translation id="3286538390144397061">Khởi động lại Ngay bây giờ</translation>
@@ -2120,7 +2120,7 @@ phải do
 <translation id="1199232041627643649">Giữ <ph name="KEY_EQUIVALENT"/> để thoát.</translation>
 <translation id="5428562714029661924">Ẩn trình cắm này</translation>
 <translation id="7907591526440419938">Mở Tệp</translation>
-<translation id="8074548357564495927">Cho phép plugin máy khách Từ xa. Cảnh báo: Cài đặt này hiện chỉ dành để thử nghiệm cho nhà phát triển. Trừ khi bạn thuộc nhóm nhà phát triển và nằm trong danh sách trắng, không có gì trong UI được cho phép sẽ hoạt động.</translation>
+<translation id="8074548357564495927">Cho phép plugin máy khách Từ xa. Cảnh báo: Cài đặt này hiện chỉ dành để thử nghiệm cho nhà phát triển. Trừ khi bạn thuộc nhóm nhà phát triển và nằm trong danh sách trắng, không có gì trong UI được bật sẽ hoạt động.</translation>
 <translation id="2568774940984945469">Bộ chứa Thanh thông tin</translation>
 <translation id="8971063699422889582">Chứng chỉ của máy chủ đã hết hạn.</translation>
 <translation id="8281596639154340028">Sử dụng <ph name="HANDLER_TITLE"/></translation>
@@ -2555,7 +2555,7 @@ phải do
 <translation id="8156020606310233796">Chế độ xem danh sách</translation>
 <translation id="957120528631539888">Vô hiệu hiển thị thông báo xác thực và ngăn gửi biểu mẫu.</translation>
 <translation id="146000042969587795">Khung này đã bị chặn bởi vì có chứa một số nội dung không an toàn.</translation>
-<translation id="3258924582848461629">Phương pháp nhập chữ viết tay tiếng Nhật</translation>
+<translation id="3258924582848461629">Phương thức nhập chữ viết tay tiếng Nhật</translation>
 <translation id="8112223930265703044">Tất cả</translation>
 <translation id="3968739731834770921">Kana</translation>
 <translation id="3729920814805072072">Quản lý mật khẩu đã lưu...</translation>
@@ -2681,7 +2681,7 @@ phải do
 <translation id="7074488040076962230">Không thể tải trang thanh bên '<ph name="SIDEBAR_PAGE"/>'.</translation>
 <translation id="5509519625080982753">Máy in cục bộ</translation>
 <translation id="529232389703829405">Bạn đã mua <ph name="DATA_AMOUNT"/> dữ liệu vào <ph name="DATE"/></translation>
-<translation id="7419106976560586862">Đường dẫn tiểu sử</translation>
+<translation id="7419106976560586862">Đường dẫn cấu hình</translation>
 <translation id="5271549068863921519">Lưu mật khẩu</translation>
 <translation id="4345587454538109430">Định cấu hình...</translation>
 <translation id="8148264977957212129">Phương pháp nhập Pinyin</translation>
@@ -2870,7 +2870,6 @@ phải do
 <translation id="2183426022964444701">Chọn thư mục gốc của tiện ích mở rộng.</translation>
 <translation id="2517143724531502372">Chỉ cho phép cookie từ <ph name="DOMAIN"/> cho phiên.</translation>
 <translation id="9018524897810991865">Xác nhận tùy chọn đồng bộ hóa</translation>
-<translation id="4719905780348837473">RSN</translation>
 <translation id="5212108862377457573">Điều chỉnh chuyển đổi dựa vào nhập trước</translation>
 <translation id="5398353896536222911">&amp;Hiển thị bảng chính tả</translation>
 <translation id="5811533512835101223">(Quay lại ảnh chụp màn hình ban đầu)</translation>

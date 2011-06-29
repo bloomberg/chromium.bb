@@ -52,11 +52,11 @@
 <translation id="561349411957324076">Fullført</translation>
 <translation id="4764776831041365478">Det kan hende at nettsiden på <ph name="URL"/> er midlertidig nede eller flyttet permanent til en ny nettadresse.</translation>
 <translation id="6156863943908443225">Skriptbuffer</translation>
-<translation id="3233454090437339537">Ønsker du å bruke <ph name="HANDLER_TITLE"/> <ph name="HANDLER_HOSTNAME"/> til å håndtere koblinger for <ph name="PROTOCOL"/> i stedet for <ph name="REPLACED_HANDLER_TITLE"/> fra nå av?</translation>
+<translation id="3233454090437339537">Ønsker du å bruke <ph name="HANDLER_TITLE"/> <ph name="HANDLER_HOSTNAME"/> i stedet for <ph name="REPLACED_HANDLER_TITLE"/> til å håndtere koblinger for <ph name="PROTOCOL"/> fra nå av?</translation>
 <translation id="4610656722473172270">Google-verktøylinjen</translation>
 <translation id="7845201717638045845">Data du kopierer og limer inn</translation>
 <translation id="151501797353681931">Importert fra Safari</translation>
-<translation id="7880025619322806991">Portal tilstand</translation>
+<translation id="7880025619322806991">Portaltilstand</translation>
 <translation id="6706684875496318067">Programtillegget <ph name="PLUGIN_NAME"/> er ikke tillatt.</translation>
 <translation id="586567932979200359">Du kjører <ph name="PRODUCT_NAME"/> fra diskavbildningen. Hvis du installer produktet på datamaskinen, kan du kjøre det uten diskavbildningen og sikre at det holdes oppdatert.</translation>
 <translation id="3775432569830822555">SSL-tjenersertifikat</translation>
@@ -178,7 +178,7 @@
 <translation id="8028060951694135607">Microsoft nøkkelgjenoppretting</translation>
 <translation id="6391832066170725637">Filen eller katalogen ble ikke funnet.</translation>
 <translation id="4694445829210540512">Ingen aktive dataabonnement for <ph name="NETWORK"/></translation>
-<translation id="5510072263871409308">Laster flere skrivere</translation>
+<translation id="5510072263871409308">Laster inn flere skrivere</translation>
 <translation id="577624874850706961">Søk i informasjonskapsler</translation>
 <translation id="5494920125229734069">Velg alle</translation>
 <translation id="2857834222104759979">Manifestfilen er ugyldig.</translation>
@@ -463,7 +463,6 @@
 <translation id="5548207786079516019">Dette er en sekundær installering av <ph name="PRODUCT_NAME"/>, og kan ikke brukes som standardnettleser.</translation>
 <translation id="3984413272403535372">Det oppstod en feil under signeringen av utvidelsen.</translation>
 <translation id="8807083958935897582"><ph name="PRODUCT_NAME"/> gir deg mulighet til å søke på nettet ved hjelp av søkefeltet. Velg søkemotoren du ønsker å bruke: </translation>
-<translation id="6629104427484407292">Sikkerhet: <ph name="SECURITY"/></translation>
 <translation id="9208886416788010685">Adobe Reader er utdatert</translation>
 <translation id="3373604799988099680">Utvidelser eller programtillegg</translation>
 <translation id="318408932946428277">Slett informasjonskapsler og andre nettsteddata når jeg lukker nettleseren</translation>
@@ -928,7 +927,7 @@
 <translation id="189210018541388520">Åpne fullskjerm</translation>
 <translation id="8795668016723474529">Legg til kredittkort</translation>
 <translation id="5860033963881614850">Av</translation>
-<translation id="3755825649750405623"><ph name="SHORT_PRODUCT_NAME"/> &gt; Tilkoble</translation>
+<translation id="3755825649750405623"><ph name="SHORT_PRODUCT_NAME"/> &gt; Koble til</translation>
 <translation id="3956882961292411849">Laster inn opplysninger om mobildataplan. Vent litt.</translation>
 <translation id="689050928053557380">Kjøp dataplan</translation>
 <translation id="4235618124995926194">Inkluder denne e-posten:</translation>
@@ -1015,7 +1014,7 @@
 <translation id="9027459031423301635">Åpne kobling i ny &amp;fane</translation>
 <translation id="2251809247798634662">Nytt inkognitovindu</translation>
 <translation id="358344266898797651">Keltisk</translation>
-<translation id="5106282558266057405"><ph name="SHORT_PRODUCT_NAME"/> &gt; Den lille skriften</translation>
+<translation id="5106282558266057405"><ph name="SHORT_PRODUCT_NAME"/> &gt; Det med liten skrift</translation>
 <translation id="3625870480639975468">Tilbakestill zoom</translation>
 <translation id="5199729219167945352">Eksperimenter</translation>
 <translation id="5055518462594137986">Husk dette valget for alle lignende koblinger.</translation>
@@ -1353,7 +1352,6 @@ tillate tredjeparts informasjonskapsler. Hvis dette        ikke løser problemet
 <translation id="1901769927849168791">SD-kort oppdaget</translation>
 <translation id="818454486170715660"><ph name="NAME"/> – eier</translation>
 <translation id="1358032944105037487">Japansk tastatur</translation>
-<translation id="8201956630388867069">WPA</translation>
 <translation id="603890000178803545">jan^feb^mar^apr^mai^jun^jul^aug^sep^okt^nov^des</translation>
 <translation id="8302838426652833913">Gå til
           <ph name="BEGIN_BOLD"/>
@@ -1452,6 +1450,7 @@ tillate tredjeparts informasjonskapsler. Hvis dette        ikke løser problemet
 <translation id="7222232353993864120">E-postadresse</translation>
 <translation id="2128531968068887769">Native Client</translation>
 <translation id="7175353351958621980">Lastet fra:</translation>
+<translation id="4590074117005971373">Tillater høyere ytelse for lerretetiketter med 2D-innhold ved å gjengi disse ved hjelp av GPU-maskinvare (Graphics Processor Unit).</translation>
 <translation id="7186367841673660872">Denne siden har blitt oversatt fra<ph name="ORIGINAL_LANGUAGE"/>til<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="8448695406146523553">Kun folk som har passordfrasen din kan lese dine krypterte data – passordfrasen sendes ikke til eller lagres av Google. Hvis du glemmer den, må du</translation>
 <translation id="6052976518993719690">SSL-sertifiseringsinstans</translation>
@@ -1487,6 +1486,7 @@ tillate tredjeparts informasjonskapsler. Hvis dette        ikke løser problemet
 <translation id="2497284189126895209">Alle filer</translation>
 <translation id="696036063053180184">3 sett (ikke skift)</translation>
 <translation id="452785312504541111">Engelsk med full bredde</translation>
+<translation id="945332329539165145">GPU-drevet 2D-lerret</translation>
 <translation id="9148126808321036104">Logg på igjen</translation>
 <translation id="2282146716419988068">GPU-prosess</translation>
 <translation id="428771275901304970">Mindre enn 1 MB tilgjengelig</translation>
@@ -2846,7 +2846,6 @@ tillate tredjeparts informasjonskapsler. Hvis dette        ikke løser problemet
 <translation id="2183426022964444701">Velg rotkatalog for utvidelsen.</translation>
 <translation id="2517143724531502372">Informasjonskapsler fra <ph name="DOMAIN"/> er kun tillatt for denne økten.</translation>
 <translation id="9018524897810991865">Bekreft synkroniseringsinnstillinger</translation>
-<translation id="4719905780348837473">RSN</translation>
 <translation id="5212108862377457573">Juster konvertering basert på forrige inndata</translation>
 <translation id="5398353896536222911">&amp;Vis panel for stavekontroll</translation>
 <translation id="5811533512835101223">(gå tilbake til det opprinnelige skjermbildet)</translation>

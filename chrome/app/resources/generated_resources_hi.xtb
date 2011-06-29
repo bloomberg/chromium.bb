@@ -465,7 +465,6 @@
 <translation id="5548207786079516019">यह <ph name="PRODUCT_NAME"/> की द्वितीयक स्थापना है, और इसे आपका डिफ़ॉल्ट ब्राउज़र नहीं बनाया जा सकता.</translation>
 <translation id="3984413272403535372">एक्सटेंशन हस्ताक्षरित करते समय त्रुटि आई.</translation>
 <translation id="8807083958935897582"><ph name="PRODUCT_NAME"/> आपको ऑम्निबॉक्स का उपयोग करके वेब पर खोज करने की सुविधा देता है. कृपया चुनें कि आप इससे कौन सा खोज इंजन उपयोग करवाना चाहेंगे:</translation>
-<translation id="6629104427484407292">सुरक्षा: <ph name="SECURITY"/></translation>
 <translation id="9208886416788010685">पुराना Adobe Reader</translation>
 <translation id="3373604799988099680">एक्सटेंशन या ऐप्लिकेशन</translation>
 <translation id="318408932946428277">जब मैं अपने ब्राउज़र से बाहर निकलूं, तब कुकी और अन्य साइट एवं प्लग-इन डेटा साफ़ करें</translation>
@@ -1354,7 +1353,6 @@
 <translation id="1901769927849168791">SD कार्ड का पता चला</translation>
 <translation id="818454486170715660"><ph name="NAME"/> - स्‍वामी</translation>
 <translation id="1358032944105037487">जापानी कीबोर्ड</translation>
-<translation id="8201956630388867069">WPA</translation>
 <translation id="603890000178803545">जन^फ़र^मार्च^अप्रैल^मई^जून^जुलाई^अग^सित^अक्‍टू^नव^दिस</translation>
 <translation id="8302838426652833913">अपने कनेक्शन की जांच करने के लिए
           <ph name="BEGIN_BOLD"/>
@@ -1452,6 +1450,7 @@
 <translation id="7222232353993864120">ईमेल पता</translation>
 <translation id="2128531968068887769">स्थानीय क्लाइंट</translation>
 <translation id="7175353351958621980">यहां से लोड किया गया:</translation>
+<translation id="4590074117005971373">ग्राफ़िक प्रोसेसर यूनिट (GPU) के उपयोग से रेंडर करके 2D प्रसंग वाले कैनवस टैग के उच्च प्रदर्शन को सक्षम करता है.</translation>
 <translation id="7186367841673660872">इस पृष्ठ का <ph name="ORIGINAL_LANGUAGE"/>से<ph name="LANGUAGE_LANGUAGE"/> में अनुवाद कर दिया गया है</translation>
 <translation id="8448695406146523553">केवल वही व्‍यक्‍ति आपका एन्‍क्रिप्‍ट किया गया डेटा पढ़ सकता है जिसके पास आपका पासफ़्रेज़ है -- पासफ़्रेज़ Google द्वारा भेजा या संग्रहीत नहीं किया जाता है. यदि आप अपना पासफ़्रेज़ भूल जाते हैं, तो आपको करना होगा</translation>
 <translation id="6052976518993719690">SSL सत्यापन प्रधिकरण</translation>
@@ -1487,6 +1486,7 @@
 <translation id="2497284189126895209">सभी फ़ाइलें</translation>
 <translation id="696036063053180184">3 सेट (कोई शिफ़्ट नहीं)</translation>
 <translation id="452785312504541111">पूर्ण-चौड़ाई अंग्रेज़ी</translation>
+<translation id="945332329539165145">GPU द्रुतगति कैनवस 2D</translation>
 <translation id="9148126808321036104">पुन: साइन इन करें</translation>
 <translation id="2282146716419988068">GPU प्रक्रिया</translation>
 <translation id="428771275901304970">1 MB से कम उपलब्‍ध है</translation>
@@ -2898,7 +2898,6 @@
 <translation id="2183426022964444701">विस्तार मूल निर्देशिका का चयन करें.</translation>
 <translation id="2517143724531502372"><ph name="DOMAIN"/> की कुकी को केवल सत्र के लिए अनुमति दी गई है.</translation>
 <translation id="9018524897810991865">समन्‍वयन प्राथमिकताओं की पुष्‍टि करें</translation>
-<translation id="4719905780348837473">RSN</translation>
 <translation id="5212108862377457573">पिछले इनपुट के आधार पर रूपांतरण समायोजित करें</translation>
 <translation id="5398353896536222911">वर्तनी फलक &amp;दिखाएं</translation>
 <translation id="5811533512835101223">(मूल स्क्रीनशॉट पर वापस जाएं)</translation>

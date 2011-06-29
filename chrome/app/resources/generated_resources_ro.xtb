@@ -466,7 +466,6 @@ a vă proteja confidenţialitatea.</translation>
 <translation id="5548207786079516019">Acesta este o instalare secundară a <ph name="PRODUCT_NAME"/> și acesta nu poate fi setat ca browser implicit.</translation>
 <translation id="3984413272403535372">Eroare la semnarea extensiei.</translation>
 <translation id="8807083958935897582"><ph name="PRODUCT_NAME"/> vă permite să căutați pe web utilizând caseta polivalentă. Alegeți motorul de căutare dorit:</translation>
-<translation id="6629104427484407292">Securitate: <ph name="SECURITY"/></translation>
 <translation id="9208886416788010685">Adobe Reader nu este actualizat</translation>
 <translation id="3373604799988099680">Extensii sau aplicații</translation>
 <translation id="318408932946428277">Doresc să fie şterse cookie-urile şi alte date privind site-ul şi pluginul când închid browserul</translation>
@@ -1355,7 +1354,6 @@ a vă proteja confidenţialitatea.</translation>
 <translation id="1901769927849168791">A fost detectat un card SD</translation>
 <translation id="818454486170715660"><ph name="NAME"/> – Proprietar</translation>
 <translation id="1358032944105037487">Tastatură japoneză</translation>
-<translation id="8201956630388867069">WPA</translation>
 <translation id="603890000178803545">Ian^Feb^Mar^Apr^Mai^Iun^Iul^Aug^Sep^Oct^Nov^Dec</translation>
 <translation id="8302838426652833913">Accesaţi
           <ph name="BEGIN_BOLD"/>
@@ -1454,6 +1452,7 @@ a vă proteja confidenţialitatea.</translation>
 <translation id="7222232353993864120">Adresă de e-mail</translation>
 <translation id="2128531968068887769">Client nativ</translation>
 <translation id="7175353351958621980">Încărcată de la:</translation>
+<translation id="4590074117005971373">Permite o performanţă mai mare a etichetelor de pe pagină cu un context 2D, utilizând unitatea de procesare grafică (GPU).</translation>
 <translation id="7186367841673660872">Această pagină a fost tradusă din<ph name="ORIGINAL_LANGUAGE"/>în<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="8448695406146523553">Numai un utilizator care are expresia dvs. de acces poate citi datele criptate. Expresia de acces nu este trimisă sau stocată la Google. Dacă vă uitaţi expresia de acces, va fi necesar să</translation>
 <translation id="6052976518993719690">Autoritate de certificare SSL</translation>
@@ -1489,6 +1488,7 @@ a vă proteja confidenţialitatea.</translation>
 <translation id="2497284189126895209">Toate fișierele</translation>
 <translation id="696036063053180184">3 Set (No shift)</translation>
 <translation id="452785312504541111">Engleză de lăţime completă</translation>
+<translation id="945332329539165145">GPU Accelerated Canvas 2D</translation>
 <translation id="9148126808321036104">Conectaţi-vă din nou</translation>
 <translation id="2282146716419988068">Proces GPU</translation>
 <translation id="428771275901304970">Mai puţin de 1 MO disponibil</translation>
@@ -2861,7 +2861,6 @@ a vă proteja confidenţialitatea.</translation>
 <translation id="2183426022964444701">Selectați directorul rădăcină pentru extensie.</translation>
 <translation id="2517143724531502372">Cookie-urile de la <ph name="DOMAIN"/> sunt permise numai pentru sesiune.</translation>
 <translation id="9018524897810991865">Confirmaţi preferinţele de sincronizare</translation>
-<translation id="4719905780348837473">RSN</translation>
 <translation id="5212108862377457573">Ajustați conversia pe baza introducerii anterioare</translation>
 <translation id="5398353896536222911">&amp;Afișați panoul de verificare a ortografiei</translation>
 <translation id="5811533512835101223">(Înapoi la captura de ecran iniţială)</translation>

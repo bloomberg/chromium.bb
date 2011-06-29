@@ -351,8 +351,8 @@
 <translation id="9128870381267983090">네트워크에 연결</translation>
 <translation id="4181841719683918333">언어</translation>
 <translation id="6535131196824081346">이 오류는 보안(HTTPS) 서버에 연결할 때 발생할 수 있습니다.
-        이것은 서버가 보안 연결을 설정하려고 하지만 잘못된
-        구성 때문에 보안 설정이 되지 않음을 의미합니다.
+        이것은 서버가 보안 연결하려고 하지만 잘못된
+        설정 때문에 보안 연결이 되지 않음을 의미합니다.
         <ph name="LINE_BREAK"/> 이 경우 서버를
         수정해야 합니다. 
         <ph name="PRODUCT_NAME"/>
@@ -463,7 +463,6 @@
 <translation id="5548207786079516019"><ph name="PRODUCT_NAME"/>의 보조 설치이며 기본 브라우저로 설정할 수 없습니다.</translation>
 <translation id="3984413272403535372">확장 프로그램에 서명하는 중에 오류가 발생했습니다.</translation>
 <translation id="8807083958935897582"><ph name="PRODUCT_NAME"/>에서는 검색주소창을 사용하여 웹을 검색할 수 있습니다. 사용할 검색엔진을 선택해 주세요:</translation>
-<translation id="6629104427484407292">보안: <ph name="SECURITY"/></translation>
 <translation id="9208886416788010685">Adobe Reader가 이전 버전임</translation>
 <translation id="3373604799988099680">확장 프로그램 또는 애플리케이션</translation>
 <translation id="318408932946428277">브라우저를 종료할 때 쿠키, 기타 사이트 및 플러그인 데이터 삭제</translation>
@@ -580,7 +579,7 @@
         이는 ESET 소프트웨어가 같은 컴퓨터에서 작동하고 있기 때문에
         보안 문제가 아닙니다. 그러나 ESET 제품은 
         <ph name="PRODUCT_NAME"/> 보안 연결의 특정 요소를
-        용인하지 않기 때문에 가로채기를 하지 않도록 구성되어야 합니다.
+        용인하지 않기 때문에 가로채기를 하지 않도록 설정되어야 합니다.
         자세한 내용을 보려면 '자세히 알아보기' 링크를 클릭하세요.</translation>
 <translation id="3936877246852975078">서버에 대한 요청이 일시적으로 중지되었습니다.</translation>
 <translation id="2600306978737826651">이미지 다운로드에 실패하고 굽기가 중단되었습니다.</translation>
@@ -737,7 +736,7 @@
 <translation id="8065982201906486420"><ph name="PLUGIN_NAME"/> 플러그인을 실행하려면 클릭</translation>
 <translation id="6219717821796422795">한어(Hanyu)</translation>
 <translation id="3725367690636977613">페이지</translation>
-<translation id="2688477613306174402">구성</translation>
+<translation id="2688477613306174402">설정</translation>
 <translation id="1195447618553298278">알 수 없는 오류</translation>
 <translation id="3353284378027041011"><ph name="NUMBER_FEW"/>일 전</translation>
 <translation id="8811462119186190367">설정을 동기화한 뒤 크롬의 언어가 '<ph name="FROM_LOCALE"/>'에서 '<ph name="TO_LOCALE"/>'로 변경되었습니다.</translation>
@@ -758,7 +757,7 @@
 <translation id="1741763547273950878">페이지(<ph name="SITE"/>)</translation>
 <translation id="1587275751631642843">자바스크립트 콘솔(&amp;J)</translation>
 <translation id="8460696843433742627"><ph name="URL"/> 로드 중 잘못된 응답을 받았습니다.
-        잘못된 유지보수 또는 구성 때문에 서버가 다운되었을 수 있습니다.</translation>
+        서버가 유지보수로 인해 다운되었거나 설정이 잘못되었을 수 있습니다.</translation>
 <translation id="297870353673992530">DNS 서버:</translation>
 <translation id="3222066309010235055">사전 렌더링: <ph name="PRERENDER_CONTENTS_NAME"/></translation>
 <translation id="6410063390789552572">네트워크 라이브러리에 액세스할 수 없음</translation>
@@ -1209,10 +1208,10 @@
 <translation id="1337036551624197047">체코어 키보드</translation>
 <translation id="4212108296677106246">'<ph name="CERTIFICATE_NAME"/>'을(를) 인증 기관으로 신뢰하시겠습니까?</translation>
 <translation id="2861941300086904918">기본 클라이언트 보안 관리자</translation>
-<translation id="6991443949605114807">&lt;p&gt;지원되는 데스크톱 환경에서 <ph name="PRODUCT_NAME"/>을(를) 실행하는 경우에 시스템 프록시 설정이 사용됩니다. 하지만 시스템이 지원되지 않거나 시스템 구성을 실행하는 데 문제가 있습니다.&lt;/p&gt;
+<translation id="6991443949605114807">&lt;p&gt;지원되는 데스크톱 환경에서 <ph name="PRODUCT_NAME"/>을(를) 실행하는 경우에 시스템 프록시 설정이 사용됩니다. 하지만 시스템이 지원되지 않거나 시스템 설정을 실행하는 데 문제가 있습니다.&lt;/p&gt;
 
         &lt;p&gt;이 경우 명령줄을 사용하여 구성할 수 있습니다. 플래그와 환경 변수에 대한 자세한 정보를 보려면 &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME"/>&lt;/code&gt;을(를) 참조하세요.&lt;/p&gt;</translation>
-<translation id="9071590393348537582"><ph name="URL"/>의 웹페이지에서 리디렉션이 너무 많이 발생했습니다. 이 사이트에서 쿠키를 삭제하거나 타사 쿠키를 허용하면 문제가 해결될 수 있습니다. 그래도 문제가 해결되지 않는다면 컴퓨터에 문제가 있는 것이 아니라 서버 구성과 관련된 문제일 수 있습니다.</translation>
+<translation id="9071590393348537582"><ph name="URL"/>의 웹페이지에서 리디렉션이 너무 많이 발생했습니다. 이 사이트에서 쿠키를 삭제하거나 타사 쿠키를 허용하면 문제가 해결될 수 있습니다. 그래도 문제가 해결되지 않는다면 컴퓨터에 문제가 있는 것이 아니라 서버 설정과 관련된 문제일 수 있습니다.</translation>
 <translation id="7205869271332034173">SSID:</translation>
 <translation id="7084579131203911145">요금제 이름:</translation>
 <translation id="5815645614496570556">X.400 주소</translation>
@@ -1344,7 +1343,6 @@
 <translation id="1901769927849168791">SD 카드가 발견되었습니다.</translation>
 <translation id="818454486170715660"><ph name="NAME"/> - 소유자</translation>
 <translation id="1358032944105037487">일본어 키보드</translation>
-<translation id="8201956630388867069">WPA</translation>
 <translation id="603890000178803545">1월^2월^3월^4월^5월^6월^7월^8월^9월^10월^11월^12월</translation>
 <translation id="8302838426652833913"><ph name="BEGIN_BOLD"/>애플리케이션 &gt; 시스템 환경설정 &gt; 네트워크 &gt; 도와주세요<ph name="END_BOLD"/>로 이동한 다음 연결을 테스트합니다.</translation>
 <translation id="8664389313780386848">페이지 소스 보기(&amp;V)</translation>
@@ -1415,7 +1413,7 @@
 <translation id="1847961471583915783">브라우저를 닫으면 쿠키, 기타 사이트 및 플러그인 데이터 삭제</translation>
 <translation id="8870318296973696995">홈페이지</translation>
 <translation id="6659594942844771486">탭</translation>
-<translation id="6575134580692778371">구성되지 않음</translation>
+<translation id="6575134580692778371">설정되지 않음</translation>
 <translation id="4624768044135598934">완료</translation>
 <translation id="6014776969142880350">업데이트를 마치려면 <ph name="PRODUCT_NAME"/>을(를) 다시 시작</translation>
 <translation id="5582768900447355629">모든 데이터 암호화</translation>
@@ -1439,6 +1437,7 @@
 <translation id="7222232353993864120">이메일 주소</translation>
 <translation id="2128531968068887769">기본 클라이언트</translation>
 <translation id="7175353351958621980">로드 위치:</translation>
+<translation id="4590074117005971373">GPU(그래픽 처리 장치) 하드웨어를 사용하여 렌더링함으로써 2D 컨텍스트로 캔버스 태그의 성능을 개선할 수 있습니다.</translation>
 <translation id="7186367841673660872">이 페이지는<ph name="ORIGINAL_LANGUAGE"/>에서<ph name="LANGUAGE_LANGUAGE"/>로 번역되었습니다.</translation>
 <translation id="8448695406146523553">암호를 아는 사람만 암호화된 데이터를 읽을 수 있습니다. 암호는 Google로 전송되거나 Google에 저장되지 않습니다. 암호가 기억나지 않으면 </translation>
 <translation id="6052976518993719690">SSL 인증 기관</translation>
@@ -1474,6 +1473,7 @@
 <translation id="2497284189126895209">모든 파일</translation>
 <translation id="696036063053180184">세벌식(shift 없음)</translation>
 <translation id="452785312504541111">전각 영어</translation>
+<translation id="945332329539165145">GPU Accelerated Canvas 2D</translation>
 <translation id="9148126808321036104">다시 로그인</translation>
 <translation id="2282146716419988068">GPU 프로세스</translation>
 <translation id="428771275901304970">1MB 미만 사용 가능</translation>
@@ -1510,7 +1510,7 @@
 <translation id="7886758531743562066">웹사이트(<ph name="HOST_NAME"/>)에 악성 코드를 호스팅하는 것으로 추정되는 사이트에서 유입된 요소가 포함되어 있습니다. 악성 코드는 컴퓨터에 손상을 입히거나 사용자의 동의 없이 작동하는 소프트웨어입니다. 악성 코드가 설치된 사이트에 방문하는 것만으로도 사용자의 컴퓨터가 감염될 수 있습니다.</translation>
 <translation id="7538227655922918841">여러 사이트의 쿠키를 세션에서만 사용할 수 있도록 허용합니다.</translation>
 <translation id="2385700042425247848">서비스 이름:</translation>
-<translation id="3128628928070793746"><ph name="BEGIN_BOLD"/>공구모양 메뉴 &gt; <ph name="SETTINGS_TITLE"/> &gt; <ph name="ADVANCED_TITLE"/> &gt; <ph name="PROXIES_TITLE"/> <ph name="END_BOLD"/>으로 이동하여 구성이 '프록시 없음' 또는 '직접 연결'로 지정되어 있는지 확인합니다.</translation>
+<translation id="3128628928070793746"><ph name="BEGIN_BOLD"/>공구모양 메뉴 &gt; <ph name="SETTINGS_TITLE"/> &gt; <ph name="ADVANCED_TITLE"/> &gt; <ph name="PROXIES_TITLE"/> <ph name="END_BOLD"/>으로 이동하여 '프록시 없음' 또는 '직접 연결'로 설정되어 있는지 확인합니다.</translation>
 <translation id="7751005832163144684">테스트 페이지 인쇄</translation>
 <translation id="1471300011765310414">컴퓨터가 인터넷에 연결되지 않아 
 <ph name="PRODUCT_NAME"/>에서 웹페이지를 표시할 수 없습니다.</translation>
@@ -1735,8 +1735,8 @@
 <translation id="6704875430222476107"><ph name="PRODUCT_NAME"/>에서
         NetNanny가 보안 연결을 가로채고 있음을 감지했습니다. 일반적으로
         이 문제는 NetNanny 소프트웨어가 같은 컴퓨터에서 작동하고 있기 때문에
-        보안 문제가 아닙니다. 그러나 NetNanny는 크롬 보안 연결의 특정 측면을
-        용인하지 않기 때문에 가로채기를 하지 않도록 구성되어야 합니다.
+        보안 문제가 아닙니다. 그러나 NetNanny는 Chrome 보안 연결의 특정 측면을
+        용인하지 않기 때문에 가로채기를 하지 않도록 설정되어야 합니다.
         자세한 내용을 보려면 '자세히 알아보기' 링크를 클릭하세요.</translation>
 <translation id="3388026114049080752">탭 및 탐색 활동</translation>
 <translation id="7525067979554623046">만들기</translation>
@@ -1745,7 +1745,7 @@
 <translation id="7136984461011502314"><ph name="PRODUCT_NAME"/>에 오신 것을 환영합니다.</translation>
 <translation id="1594030484168838125">선택</translation>
 <translation id="204497730941176055">Microsoft Certificate Template Name</translation>
-<translation id="6705264787989366486"><ph name="NAME"/>에 대한 IP 주소 구성</translation>
+<translation id="6705264787989366486"><ph name="NAME"/>에 대한 IP 주소 설정 중</translation>
 <translation id="8970721300630048025">본인의 사진을 찍어 계정 사진으로 설정하세요.</translation>
 <translation id="4087089424473531098">확장 프로그램(파일: <ph name="EXTENSION_FILE"/>)을 만들었습니다.</translation>
 <translation id="16620462294541761">비밀번호가 일치하지 않습니다. 다시 시도해 주세요.</translation>
@@ -1918,7 +1918,7 @@
 <translation id="5458214261780477893">드보락</translation>
 <translation id="1164369517022005061"><ph name="NUMBER_DEFAULT"/>시간 남음</translation>
 <translation id="5943260032016910017">쿠키 및 사이트 데이터 예외</translation>
-<translation id="93424266670380528">DNS 조회에 실패하여 <ph name="HOST_NAME"/>에서 서버를 찾을 수 없습니다. DNS는 웹사이트의 이름을 해당 인터넷 주소로 바꾸는 웹 서비스입니다. 이 오류는 대개 인터넷에 연결되지 않았거나 네트워크 구성이 잘못된 경우에 발생합니다. 또한 DNS 서버가 응답하지 않거나 방화벽으로 인해 <ph name="PRODUCT_NAME"/>이(가) 네트워크에 액세스하지 못하는 경우에도 발생할 수 있습니다.</translation>
+<translation id="93424266670380528">DNS 조회에 실패하여 <ph name="HOST_NAME"/>에서 서버를 찾을 수 없습니다. DNS는 웹사이트의 이름을 해당 인터넷 주소로 바꾸는 웹 서비스입니다. 이 오류는 대개 인터넷에 연결되지 않았거나 네트워크 설정이 잘못된 경우에 발생합니다. 또한 DNS 서버가 응답하지 않거나 방화벽으로 인해 <ph name="PRODUCT_NAME"/>이(가) 네트워크에 액세스하지 못하는 경우에도 발생할 수 있습니다.</translation>
 <translation id="2214283295778284209"><ph name="SITE"/>을(를) 사용할 수 없음</translation>
 <translation id="8755376271068075440">크게(&amp;L)</translation>
 <translation id="8132793192354020517"><ph name="NAME"/>에 연결됨</translation>
@@ -2152,7 +2152,7 @@
 <translation id="3707020109030358290">인증 기관이 아닙니다.</translation>
 <translation id="2115926821277323019">유효한 URL이어야 함</translation>
 <translation id="8986494364107987395">사용 통계 및 충돌 보고서를 Google에 자동으로 보내기</translation>
-<translation id="7070714457904110559">위치정보 기능에 실험실 확장 프로그램을 사용하도록 설정합니다. 여기에는 운영체제 위치 API를 사용(가능한 경우)하고 더 정확한 위치 확인을 위해 로컬 네트워크 구성 데이터를 Google 위치 서비스에 전송하는 기능이 포함됩니다.</translation>
+<translation id="7070714457904110559">위치정보 기능에 실험실 확장 프로그램을 사용하도록 설정합니다. 여기에는 운영체제 위치 API를 사용(가능한 경우)하고 더 정확한 위치 확인을 위해 로컬 네트워크 설정 데이터를 Google 위치 서비스에 전송하는 기능이 포함됩니다.</translation>
 <translation id="6701535245008341853">프로필을 가져올 수 없습니다.</translation>
 <translation id="527605982717517565"><ph name="HOST"/>에서 자바스크립트 항상 허용</translation>
 <translation id="702373420751953740">PRL 버전:</translation>
@@ -2213,7 +2213,7 @@
 <translation id="1779392088388639487">PKCS #12 가져오기 오류</translation>
 <translation id="166278006618318542">대상 공개 키 알고리즘</translation>
 <translation id="5759272020525228995"><ph name="URL"/>을(를) 가져오는 중 웹사이트에서 오류가 발생했습니다.
-        잘못된 유지보수 또는 구성 때문에 웹사이트가 다운되었을 수 있습니다.</translation>
+        웹사이트가 유지보수 중이거나 설정이 잘못되어 웹사이트가 다운되었을 수 있습니다.</translation>
 <translation id="641480858134062906"><ph name="URL"/>을(를) 로드하지 못했습니다.</translation>
 <translation id="3693415264595406141">비밀번호:</translation>
 <translation id="74568296546932365"><ph name="PAGE_TITLE"/>을(를) 기본 검색엔진으로 유지</translation>
@@ -2646,7 +2646,7 @@
 <translation id="529232389703829405"><ph name="DATE"/>에 <ph name="DATA_AMOUNT"/>의 데이터를 구입했습니다.</translation>
 <translation id="7419106976560586862">프로필 경로</translation>
 <translation id="5271549068863921519">비밀번호 저장</translation>
-<translation id="4345587454538109430">구성...</translation>
+<translation id="4345587454538109430">설정...</translation>
 <translation id="8148264977957212129">병음 입력 방법</translation>
 <translation id="5787378733537687553">왼쪽 Control 키와 왼쪽 Alt 키 전환</translation>
 <translation id="7772032839648071052">암호 확인</translation>
@@ -2833,7 +2833,6 @@
 <translation id="2183426022964444701">확장 프로그램 루트 디렉토리를 선택합니다.</translation>
 <translation id="2517143724531502372"><ph name="DOMAIN"/>의 쿠키를 세션에서만 사용할 수 있도록 허용합니다.</translation>
 <translation id="9018524897810991865">동기화 환경설정 확인</translation>
-<translation id="4719905780348837473">RSN</translation>
 <translation id="5212108862377457573">이전 입력을 기준으로 전환 조정</translation>
 <translation id="5398353896536222911">맞춤법 패널 표시(&amp;S)</translation>
 <translation id="5811533512835101223">(원본 캡쳐화면으로 돌아가기)</translation>
@@ -3065,7 +3064,7 @@
 <translation id="2766006623206032690">붙여넣어 바로가기(&amp;S)</translation>
 <translation id="4394049700291259645">사용 중지</translation>
 <translation id="969892804517981540">공식 빌드</translation>
-<translation id="445923051607553918">Wi-Fi 네트워크 가입</translation>
+<translation id="445923051607553918">Wi-Fi 다른 네트워크 연결</translation>
 <translation id="100242374795662595">알 수 없는 기기</translation>
 <translation id="9087725134750123268">쿠키 및 기타 사이트 데이터 삭제</translation>
 <translation id="5050255233730056751">입력된 URL</translation>
