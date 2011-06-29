@@ -62,6 +62,13 @@ INITIAL_ENV = {
 
   # Driver settings
   'ARCH'        : '',     # Target architecture
+  'ARCH_LOCKED' : '0',    # If 1, ARCH cannot be changed.
+                          # This is true when we've seen actual objects
+                          # of that arch in the link, or if -arch was specified.
+                          # In pnacl-gcc, if -arch was not specified, then ARCH
+                          # will default to X8632, but may be changed if we
+                          # encounter a native object of a different arch.
+
   'DRY_RUN'     : '0',
   'DEBUG'       : '0',    # Print out internal actions
   'RECURSE'     : '0',    # In a recursive driver call
@@ -173,7 +180,8 @@ DriverPatterns = [
   ( '--pnacl-driver-recurse',             "env.set('RECURSE', '1')"),
   ( '--pnacl-driver-set-([^=]+)=(.*)',    "env.set($0, $1)"),
   ( '--pnacl-driver-append-([^=]+)=(.*)', "env.append($0, $1)"),
-  ( ('-arch', '(.+)'),                 "env.set('ARCH', FixArch($0))"),
+  ( ('-arch', '(.+)'),                 "env.set('ARCH', FixArch($0))\n"
+                                       "env.set('ARCH_LOCKED', '1');"),
   ( '--pnacl-sb',                      "env.set('SANDBOXED', '1')"),
   ( '--pnacl-use-emulator',            "env.set('USE_EMULATOR', '1')"),
   ( '--dry-run',                       "env.set('DRY_RUN', '1')"),
@@ -203,6 +211,7 @@ class env(object):
   def register(cls, func):
     """ Register a function for use in the evaluator """
     cls.functions[func.__name__] = func
+    return func
 
   @classmethod
   def update(cls, extra):
@@ -767,25 +776,29 @@ def IsBitcode(filename):
     return True
   return False
 
-ELF_MAGIC = '\x7fELF'
-ELF_TYPES = { 1: 'REL',  # .o
-              2: 'EXEC', # .exe
-              3: 'DYN' } # .so
-ELF_MACHINES = {  3: '386',
-                 40: 'ARM',
-                 62: 'X86_64' }
-ELF_OSABI = { 0: 'UNIX',
-              3: 'LINUX',
-              123: 'NACL' }
-ELF_ABI_VER = { 0: 'NONE',
-                7: 'NACL' }
+class ELFHeader(object):
+  ELF_MAGIC = '\x7fELF'
+  ELF_TYPES = { 1: 'REL',  # .o
+                2: 'EXEC', # .exe
+                3: 'DYN' } # .so
+  ELF_MACHINES = {  3: '386',
+                   40: 'ARM',
+                   62: 'X86_64' }
+  ELF_OSABI = { 0: 'UNIX',
+                3: 'LINUX',
+                123: 'NACL' }
+  ELF_ABI_VER = { 0: 'NONE',
+                  7: 'NACL' }
+
+  def __init__(self, e_type, e_machine, e_osabi, e_abiver):
+    self.type = self.ELF_TYPES[e_type]
+    self.machine = self.ELF_MACHINES[e_machine]
+    self.osabi = self.ELF_OSABI[e_osabi]
+    self.abiver = self.ELF_ABI_VER[e_abiver]
+    self.arch = FixArch(self.machine)  # For convenience
 
 # If the file is not ELF, returns None.
-# Otherwise, returns:
-#   (e_type, e_machine, e_osabi, e_abi_ver)
-# Example:
-#  GetELFHeader('/bin/bash') == ('EXEC', 'X86_64', 'UNIX', 'NONE')
-#  GetELFHeader('bundle_size.o') == ('REL', '386', 'NACL', 'NACL')
+# Otherwise, returns an ELFHeader object.
 @SimpleCache
 def GetELFHeader(filename):
   fp = DriverOpen(filename, 'rb')
@@ -795,24 +808,25 @@ def GetELFHeader(filename):
 
 def DecodeELFHeader(header, filename):
   # Pull e_ident, e_type, e_machine
-  if header[0:4] != ELF_MAGIC:
+  if header[0:4] != ELFHeader.ELF_MAGIC:
     return None
+
   e_osabi = DecodeLE(header[7])
   e_abiver = DecodeLE(header[8])
   e_type = DecodeLE(header[16:18])
   e_machine = DecodeLE(header[18:20])
 
-  if e_osabi not in ELF_OSABI:
+  if e_osabi not in ELFHeader.ELF_OSABI:
     Log.Fatal('%s: ELF file has unknown OS ABI (%d)', filename, e_osabi)
-  if e_abiver not in ELF_ABI_VER:
+  if e_abiver not in ELFHeader.ELF_ABI_VER:
     Log.Fatal('%s: ELF file has unknown ABI version (%d)', filename, e_abiver)
-  if e_type not in ELF_TYPES:
+  if e_type not in ELFHeader.ELF_TYPES:
     Log.Fatal('%s: ELF file has unknown type (%d)', filename, e_type)
-  if e_machine not in ELF_MACHINES:
+  if e_machine not in ELFHeader.ELF_MACHINES:
     Log.Fatal('%s: ELF file has unknown machine type (%d)', filename, e_machine)
 
-  return (ELF_TYPES[e_type], ELF_MACHINES[e_machine],
-          ELF_OSABI[e_osabi], ELF_ABI_VER[e_abiver])
+  eh = ELFHeader(e_type, e_machine, e_osabi, e_abiver)
+  return eh
 
 def IsELF(filename):
   return GetELFHeader(filename) is not None
@@ -931,7 +945,7 @@ def GetELFType(filename):
     'REL' : 'o',
     'DYN' : 'so'
   }
-  return elf_type_map[elfheader[0]]
+  return elf_type_map[elfheader.type]
 
 @SimpleCache
 def GetBitcodeType(filename):
@@ -1186,6 +1200,11 @@ class Log(object):
     cls.LogPrint(m, *args)
     cls.ErrorPrint(m, *args)
     DriverExit(ret)
+
+  @classmethod
+  def Warning(cls, m, *args):
+    m = 'Warning: ' + m
+    cls.ErrorPrint(m, *args)
 
   @classmethod
   def Debug(cls, m, *args):
@@ -1540,6 +1559,41 @@ def GetArch(required = False):
     Log.Fatal('Missing -arch!')
 
   return arch
+
+# Read an ELF file to determine the machine type. If ARCH is already set and
+# locked, make sure the file has the same architecture. If ARCH is not locked,
+# set and lock ARCH to the file's architecture.
+#
+# Returns True if the file matches ARCH.
+#
+# Returns False if the file doesn't match ARCH. This only happens when
+# must_match is False. If must_match is True, then a fatal error is generated
+# instead.
+def ArchMerge(filename, must_match):
+  elfheader = GetELFHeader(filename)
+  if not elfheader:
+    Log.Fatal("%s: Cannot read ELF header", filename)
+
+  arch_locked = env.getbool('ARCH_LOCKED')
+  existing_arch = GetArch()
+  arch = elfheader.arch
+
+  if not arch_locked:
+    env.set('ARCH', arch)
+    env.set('ARCH_LOCKED', '1')
+    return True
+  elif arch_locked and arch != existing_arch:
+    if must_match:
+      msg = "%s: Incompatible object file (%s != %s)"
+      logfunc = Log.Fatal
+    else:
+      msg = "%s: Skipping incompatible object file (%s != %s)"
+      logfunc = Log.Warning
+    logfunc(msg, filename, arch, existing_arch)
+    return False
+  else: # archlocked and arch == existing_arch
+    return True
+
 
 class TempFileHandler(object):
   def __init__(self):

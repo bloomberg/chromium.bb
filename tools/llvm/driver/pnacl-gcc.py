@@ -96,7 +96,9 @@ EXTRA_ENV = {
   # ${LIBS_ARCH} must come before ${LIBS_BC} so that the native glibc/libnacl
   # takes precedence over bitcode libc.
   'LD_FLAGS' : '-O${OPT_LEVEL} ${STATIC ? -static} ${SHARED ? -shared} ' +
-               '${PIC ? -fPIC} ${@AddPrefix:-L:SEARCH_DIRS}',
+               '${PIC ? -fPIC} ${@AddPrefix:-L:SEARCH_DIRS} ' +
+               '${LIBMODE_GLIBC && ' +
+                 '!STATIC ? ${@AddPrefix:-rpath-link=:SEARCH_DIRS}}',
 
   'SEARCH_DIRS'      : '${SEARCH_DIRS_USER} ${PREFIXES}',
   'SEARCH_DIRS_USER' : '', # Directories specified using -L
@@ -135,31 +137,31 @@ EXTRA_ENV = {
 
   # The next three are copied verbatim from nacl-gcc
   'LD_ARGS_glibc_static':
-    '-T ${LIBS_ARCH}/${EMUL}.x.static ' +
+    '-T ${@FindLinkerScript:.x.static} ' +
     '${@FindObj:crt1.o} ${@FindObj:crti.o} ${@FindObj:crtbeginT.o} ' +
     '${ld_inputs} ${LIBSTDCPP} ' +
     '--start-group -lgcc -lgcc_eh -lehsupport -lc ' +
     '--end-group ${@FindObj:crtend.o} ${@FindObj:crtn.o}',
 
   'LD_ARGS_glibc_shared':
-    '-T ${LIBS_ARCH}/${EMUL}.xs ' +
+    '-T ${@FindLinkerScript:.xs} ' +
     '--eh-frame-hdr -shared ${@FindObj:crti.o} ${@FindObj:crtbeginS.o} ' +
     '${ld_inputs} ${LIBSTDCPP} ' +
     '-lgcc -lgcc_eh -lc -lgcc -lgcc_eh ' +
     # When shared libgcc is ready, use this instead:
     # '-lgcc --as-needed -lgcc_s --no-as-needed ' +
     # '-lc -lgcc --as-needed -lgcc_s --no-as-needed ' +
-    '${@FindObj:crtendS.o} ${@FindObj:crtn.o} -rpath-link ${LIBS_ARCH}',
+    '${@FindObj:crtendS.o} ${@FindObj:crtn.o}',
 
   'LD_ARGS_glibc_dynamic':
-    '-T ${LIBS_ARCH}/${EMUL}.x ' +
+    '-T ${@FindLinkerScript:.x} ' +
     '--eh-frame-hdr ${@FindObj:crt1.o} ${@FindObj:crti.o} ' +
     '${@FindObj:crtbegin.o} ${ld_inputs} ${LIBSTDCPP} ' +
     '-lgcc -lgcc_eh -lc -lgcc -lgcc_eh -lehsupport ' +
     # When shared libgcc is ready, use this instead:
     # '-lgcc --as-needed -lgcc_s --no-as-needed ' +
     # '-lc -lgcc --as-needed -lgcc_s --no-as-needed ' +
-    '${@FindObj:crtend.o} ${@FindObj:crtn.o} -rpath-link ${LIBS_ARCH}',
+    '${@FindObj:crtend.o} ${@FindObj:crtn.o}',
 
   'LIBSTDCPP'       : '${USE_GXX ? -lstdc++ -lm }',
 
@@ -334,7 +336,16 @@ def main(argv):
   if len(inputs) == 0:
     Log.Fatal('No input files')
 
-  arch = GetArch()
+  # Was -arch specified?
+  arch_flag_given = GetArch() is not None
+
+  if not arch_flag_given:
+    # There's an architecture bias here: ARCH needs to be set
+    # since we may have to link against native objects during
+    # bitcode linking.
+    env.set('ARCH', 'X8632')
+    env.set('ARCH_LOCKED', '0')
+
   gcc_mode = env.getone('GCC_MODE')
 
   if env.getbool('SHARED'):
@@ -345,17 +356,17 @@ def main(argv):
     link_output = 'nexe'
 
   output_type_map = {
-    ('-E', True) : 'pp',
-    ('-E', False): 'pp',
-    ('-c', True) : 'po',
-    ('-c', False): 'o',
-    ('-S', True) : 'll',
-    ('-S', False): 's',
-    ('',   True) : bclink_output,
-    ('',   False): link_output
+    ('-E', False) : 'pp',
+    ('-E', True): 'pp',
+    ('-c', False) : 'po',
+    ('-c', True): 'o',
+    ('-S', False) : 'll',
+    ('-S', True): 's',
+    ('',   False) : bclink_output,
+    ('',   True): link_output
   }
 
-  output_type = output_type_map[(gcc_mode, arch is None)]
+  output_type = output_type_map[(gcc_mode, arch_flag_given)]
   needs_linking = (gcc_mode == '')
 
   # There are multiple input files and no linking is being done.
@@ -414,9 +425,14 @@ def main(argv):
     if f.startswith('-'):
       continue
     intype = FileType(f)
-    if intype in ('o','nlib','s','S') and not env.getbool('ALLOW_NATIVE'):
+    if intype in ('o','nlib','s','S'):
+      if not env.getbool('ALLOW_NATIVE'):
         Log.Fatal('%s: Native object files not allowed in link. '
                   'Use --pnacl-allow-native to override.', f)
+      assert(intype in ('o','nlib'))
+      # ARCH must match
+      if IsELF(f):
+        ArchMerge(f, True)
     assert(intype in ('po','o','bclib','nlib','so','pso'))
 
   # Fix the user-specified linker arguments
@@ -429,17 +445,21 @@ def main(argv):
     else:
       ld_inputs.append(f)
 
-  # There's an architecture bias here, since we have to link
-  # against native objects, even for bitcode linking.
-  if GetArch() is None:
-    env.set('ARCH', 'X8632')
-
   # Invoke the linker
   env.set('ld_inputs', *ld_inputs)
+
+  # Note: The evaluation of LD_ARGS may have the side effect of
+  # changing the ARCH if it is not already locked. (See FindObj)
   ld_args = env.get('LD_ARGS')
   ld_flags = env.get('LD_FLAGS')
+
   RunDriver('pnacl-ld', ld_flags + ld_args + ['-o', output])
   return 0
+
+@env.register
+def FindLinkerScript(suffix):
+  name = env.getone('EMUL') + suffix
+  return FindObj(name)
 
 @env.register
 def FindObj(name):
@@ -450,10 +470,16 @@ def FindObj(name):
     return name
 
   prefixes = env.get('PREFIXES')
+
   for prefix in prefixes:
     guess = prefix + name
     if os.path.exists(guess):
-      return prefix + name
+      # If the file is ELF, check ARCH.
+      if IsELF(guess):
+        if not ArchMerge(guess, False):
+          continue
+      return guess
+
   Log.Fatal("Cannot find %s", name)
 
 def CompileOne(input, output_type, namegen, output = None):

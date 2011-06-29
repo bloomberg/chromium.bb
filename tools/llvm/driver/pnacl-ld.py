@@ -200,7 +200,7 @@ def main(argv):
     output = 'a.out'
 
   # If the user passed -arch, then they want native output.
-  do_translate = (GetArch() is not None)
+  arch_flag_given = GetArch() is not None
 
   # Expand all -l flags
   ExpandLibFlags(inputs)
@@ -219,11 +219,7 @@ def main(argv):
     inputs = native_left + native_right
   # END NATIVE HACK
 
-  has_native, has_bitcode, arch = AnalyzeInputs(inputs)
-
-  # If we auto-detected arch, set it.
-  if arch:
-    env.set('ARCH', arch)
+  has_native, has_bitcode = AnalyzeInputs(inputs)
 
   # There is an architecture bias here. To link the bitcode together,
   # we need to specify the native libraries to be used in the final linking,
@@ -246,7 +242,7 @@ def main(argv):
       native_type = 'nexe'
   elif has_native:
     # If there is no bitcode, then we do a native link only.
-    if not arch:
+    if not arch_flag_given:
       Log.Fatal("Native linking requires -arch")
   else:
     Log.Fatal("No input objects")
@@ -267,7 +263,7 @@ def main(argv):
       chain.add(DoOPT, 'opt.' + bitcode_type)
     elif env.getone('STRIP_MODE') != 'none':
       chain.add(DoStrip, 'stripped.' + bitcode_type)
-    if do_translate:
+    if arch_flag_given:
       # TODO(pdox): This should call pnacl-translate and nothing
       # else. However, since we still use native objects in the
       # scons and gcc builds, and special LD flags, we can't
@@ -370,7 +366,6 @@ def RemoveBitcode(inputs):
 def AnalyzeInputs(inputs):
   has_native = False
   has_bitcode = False
-  arch = GetArch()
   count = 0
 
   for f in inputs:
@@ -379,23 +374,12 @@ def AnalyzeInputs(inputs):
 
     intype = FileType(f)
 
-    if intype in ['o','so','nlib']:
+    if intype in ['o','so']:
+      ArchMerge(f, True)
       has_native |= True
-      info = GetELFHeader(f)
-      if info:
-        new_arch = FixArch(info[1])
-        if arch and new_arch != arch:
-          Log.Fatal("%s: File has wrong machine type %s, expecting %s",
-                    f, new_arch, arch)
-        arch = new_arch
-      else:
-        if intype == 'o':
-          Log.Fatal("%s: Cannot read object file ELF header", f)
-        elif intype == 'so':
-          # This .so must be a linker script, so we can't easily see
-          # what architecture it links.
-          # TODO(pdox): Get this information somehow.
-          pass
+    elif intype in ['nlib']:
+      # TODO(pdox): Pull ARCH info from inside native archives
+      has_native |= True
     elif intype in ['pso']:
       pass
     elif intype in ['bclib','po']:
@@ -407,7 +391,7 @@ def AnalyzeInputs(inputs):
   if count == 0:
     Log.Fatal("no input files")
 
-  return (has_native, has_bitcode, arch)
+  return (has_native, has_bitcode)
 
 def RunLDSRPC():
   CheckPresenceSelUniversal()
