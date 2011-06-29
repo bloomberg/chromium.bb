@@ -32,7 +32,6 @@ ppapi_example_events_files = [
     env.File('${STAGING_DIR}/' + ppapi_example_events_nexe_name),
     env.File('${STAGING_DIR}/ppapi_example_events.html'),
     env.File('${STAGING_DIR}/ppapi_example_events.nmf')]
-ppapi_file_system_files = CreateDefaultDeps('ppapi_file_system')
 ppapi_geturl_files = CreateDefaultDeps('ppapi_geturl') + [
     env.File('${STAGING_DIR}/ppapi_geturl_success.html')]
 ppapi_example_2d_files = CreateDefaultDeps('ppapi_example_2d')
@@ -77,6 +76,7 @@ ppapi_gles_book_texture_wrap_files = [
              '_%s.nexe' % platform),
     env.File('${STAGING_DIR}/ppapi_gles_book_texture_wrap.nmf')]
 ppapi_ppb_core_files = CreateDefaultDeps('ppapi_ppb_core')
+ppapi_ppb_file_system_files = CreateDefaultDeps('ppapi_ppb_file_system')
 ppapi_ppb_graphics2d_files = CreateDefaultDeps('ppapi_ppb_graphics2d')
 ppapi_progress_events_files = CreateDefaultDeps('ppapi_progress_events') + [
     env.File('${STAGING_DIR}/ppapi_progress_events.js')]
@@ -124,7 +124,6 @@ core_test_files = [env.File('${STAGING_DIR}/nacltest.js'),
                    ppapi_example_font_files +
                    ppapi_example_gles2_files +
                    ppapi_example_post_message_files +
-                   ppapi_file_system_files +
                    ppapi_geturl_files +
                    ppapi_gles_book_hello_triangle_files +
                    ppapi_gles_book_mip_map_2d_files +
@@ -134,6 +133,7 @@ core_test_files = [env.File('${STAGING_DIR}/nacltest.js'),
                    ppapi_gles_book_stencil_test_files +
                    ppapi_gles_book_texture_wrap_files +
                    ppapi_ppb_core_files +
+                   ppapi_ppb_file_system_files +
                    ppapi_ppb_graphics2d_files +
                    ppapi_progress_events_files +
                    ppapi_tests_files +

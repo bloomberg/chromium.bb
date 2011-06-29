@@ -50,12 +50,12 @@ example_nexes = [
     # PPAPI Proxy Tests
     'ppapi_ppb_core',        # ppapi_ppb_core.html
     'ppapi_ppb_graphics2d',  # ppapi_ppb_graphics2d.html
-    'ppapi_file_system',     # ppapi_file_system.html
+    'ppapi_ppb_file_system', # ppapi_ppb_file_system.html
     'ppapi_messaging',       # ppapi_messaging.html
     ]
 
 prog_suffix = env['PROGSUFFIX']
 env.Depends(html_examples,
-            [ env.Alias(nexe+prog_suffix) for nexe in example_nexes ])
+            [ env.Alias(nexe + prog_suffix) for nexe in example_nexes ])
 env.Alias('html_examples', html_examples)  # scons --mode=nacl examples_html
 env.Alias('examples_html', html_examples)  # scons --mode=nacl html_examples

@@ -142,7 +142,7 @@ class NaClTest(pyauto.PyUITest):
     self.reloader('ppapi_ppb_graphics2d.html', 'PPAPI')
 
   def testReloadPPBFileSystem(self):
-    self.reloader('ppapi_file_system.html', 'PPAPI')
+    self.reloader('ppapi_ppb_file_system.html', 'PPAPI')
 
 
 if __name__ == '__main__':
