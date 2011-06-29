@@ -32,12 +32,9 @@ var CardSlider = (function() {
    * @param {!Element} frame The bounding rectangle that cards are visible in.
    * @param {!Element} container The surrounding element that will have event
    *     listeners attached to it.
-   * @param {!Array.<!Element>} cards The individual viewable cards.
-   * @param {number} currentCard The index of the card that is currently
-   *     visible.
    * @param {number} cardWidth The width of each card should have.
    */
-  function CardSlider(frame, container, cards, currentCard, cardWidth) {
+  function CardSlider(frame, container, cardWidth) {
     /**
      * @type {!Element}
      * @private
@@ -51,16 +48,18 @@ var CardSlider = (function() {
     this.container_ = container;
 
     /**
+     * Array of card elements.
      * @type {!Array.<!Element>}
      * @private
      */
-    this.cards_ = cards;
+    this.cards_ = [];
 
     /**
+     * Index of currently shown card.
      * @type {number}
      * @private
      */
-    this.currentCard_ = currentCard;
+    this.currentCard_ = 0;
 
     /**
      * @type {number}
@@ -73,8 +72,8 @@ var CardSlider = (function() {
      * @private
      */
     this.touchHandler_ = new TouchHandler(this.container_);
-  }
 
+  }
 
   /**
    * Events fired by the slider.
@@ -125,13 +124,8 @@ var CardSlider = (function() {
           'Frame should be overflow hidden.');
       assert(view.getComputedStyle(this.container_).position == 'static',
           'Container should be position static.');
-      for (var i = 0, card; card = this.cards_[i]; i++) {
-        assert(view.getComputedStyle(card).position == 'static',
-            'Cards should be position static.');
-      }
 
       this.updateCardWidths_();
-      this.transformToCurrentCard_();
 
       this.mouseWheelScrollAmount_ = 0;
       this.scrollClearTimeout_ = null;
@@ -201,6 +195,22 @@ var CardSlider = (function() {
      */
     get currentCard() {
       return this.currentCard_;
+    },
+
+    /**
+     * Returns the number of cards.
+     * @return {number} number of cards.
+     */
+    get cardCount() {
+      return this.cards_.length;
+    },
+
+    /**
+     * Returns the current card itself.
+     * @return {!Element} the currently shown card.
+     */
+    get currentCardValue() {
+      return this.cards_[this.currentCard_];
     },
 
     /**

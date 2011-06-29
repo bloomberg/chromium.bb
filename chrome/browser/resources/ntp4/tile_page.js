@@ -373,6 +373,15 @@ cr.define('ntp4', function() {
     },
 
     /**
+     * The size of the margin (unused space) on the sides of the tile grid, in
+     * pixels.
+     * @type {number}
+     */
+    get sideMargin() {
+      return this.layoutValues_.leftMargin;
+    },
+
+    /**
      * Cleans up resources that are no longer needed after this TilePage
      * instance is removed from the DOM.
      */
@@ -444,6 +453,17 @@ cr.define('ntp4', function() {
 
       // We need to update the top margin as well.
       this.updateTopMargin_();
+      this.fireLayoutEvent_();
+    },
+
+    /**
+     * Dispatches the custom pagelayout event. Called after changes to layout so
+     * listeners may update as needed.
+     */
+    fireLayoutEvent_: function() {
+      var event = document.createEvent('Event');
+      event.initEvent('pagelayout', true, true);
+      this.dispatchEvent(event);
     },
 
     /**

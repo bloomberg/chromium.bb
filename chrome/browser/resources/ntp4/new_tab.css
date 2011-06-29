@@ -1,8 +1,6 @@
 /* Copyright (c) 2011 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
- *
- * This is the stylesheet used by the touch-enabled new tab page
  */
 
 html {
@@ -178,4 +176,34 @@ body {
   width: 9px;
   height: 9px;
   -webkit-mask-image: url('./ntp4_disclosure_triangle_mask.png');
+}
+
+/* Page switcher buttons. *****************************************************/
+
+.page-switcher {
+  background-color: transparent;
+  border: none;
+  font-size: 40px;
+  height: 100%;
+  padding: 0;
+  position: absolute;
+  max-width: 130px;
+  min-width: 13px;
+  opacity: 0.3;
+  top: 0;
+  z-index: 5;
+}
+
+.page-switcher:hover {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+#page-switcher-left {
+  /* 13px matches the width of the scrollbars. */
+  left: 13px;
+}
+
+#page-switcher-right {
+  /* 13px matches the width of the scrollbars. */
+  right: 13px;
 }

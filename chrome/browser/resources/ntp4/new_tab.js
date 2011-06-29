@@ -56,12 +56,25 @@ cr.define('ntp4', function() {
   var dots;
 
   /**
+   * The left and right paging buttons.
+   * @type {!Element|undefined}
+   */
+  var pageSwitcherLeft;
+  var pageSwitcherRight;
+
+  /**
    * The 'trash' element.  Note that technically this is unnecessary,
    * JavaScript creates the object for us based on the id.  But I don't want
    * to rely on the ID being the same, and JSCompiler doesn't know about it.
    * @type {!Element|undefined}
    */
   var trash;
+
+  /**
+   * EventTracker for managing event listeners for page events.
+   * @type {!EventTracker}
+   */
+  var eventTracker = new EventTracker;
 
   /**
    * The time in milliseconds for most transitions.  This should match what's
@@ -101,11 +114,14 @@ cr.define('ntp4', function() {
     dots = dotList.getElementsByClassName('dot');
     tilePages = pageList.getElementsByClassName('tile-page');
     appsPages = pageList.getElementsByClassName('apps-page');
+    pageSwitcherLeft = getRequiredElement('page-switcher-left');
+    pageSwitcherLeft.addEventListener('click', onPageSwitcherClicked);
+    pageSwitcherRight = getRequiredElement('page-switcher-right');
+    pageSwitcherRight.addEventListener('click', onPageSwitcherClicked);
 
     // Initialize the cardSlider without any cards at the moment
     var sliderFrame = getRequiredElement('card-slider-frame');
-    cardSlider = new CardSlider(sliderFrame, pageList, [], 0,
-                                sliderFrame.offsetWidth);
+    cardSlider = new CardSlider(sliderFrame, pageList, sliderFrame.offsetWidth);
     cardSlider.initialize();
 
     // Ensure the slider is resized appropriately with the window
@@ -123,6 +139,14 @@ cr.define('ntp4', function() {
             curDot.classList.remove('selected');
           var newPageIndex = e.cardSlider.currentCard;
           dots[newPageIndex].classList.add('selected');
+
+          pageSwitcherLeft.hidden = cardSlider.currentCard == 0;
+          pageSwitcherRight.hidden =
+              cardSlider.currentCard == cardSlider.cardCount - 1;
+
+          pageSwitcherRight.style.width =
+              pageSwitcherLeft.style.width =
+                  cardSlider.currentCardValue.sideMargin + 'px';
         });
 
     cr.ui.decorate($('recently-closed-menu-button'), ntp4.RecentMenuButton);
@@ -182,6 +206,7 @@ cr.define('ntp4', function() {
       var page = appsPages[0];
       var dot = page.navigationDot;
 
+      eventTracker.remove(page);
       page.tearDown();
       page.parentNode.removeChild(page);
       dot.parentNode.removeChild(dot);
@@ -296,6 +321,8 @@ cr.define('ntp4', function() {
 
     dotList.appendChild(newDot);
     page.navigationDot = newDot;
+
+    eventTracker.add(page, 'pagelayout', onPageLayout);
   }
 
   /**
@@ -337,6 +364,32 @@ cr.define('ntp4', function() {
     } else {
       tempPage.classList.remove('temporary');
     }
+  }
+
+  /**
+   * Callback for the 'click' event on a page switcher.
+   * @param {Event} e The event.
+   */
+  function onPageSwitcherClicked(e) {
+    cardSlider.selectCard(cardSlider.currentCard +
+        (e.currentTarget == pageSwitcherLeft ? -1 : 1),
+        true);
+  }
+
+  /**
+   * Callback for the 'pagelayout' event. Sets the size of the page
+   * switchers to take up available space (up to a maximum).
+   * @param {Event} e The event.
+   */
+  function onPageLayout(e) {
+    if (Array.prototype.indexOf.call(tilePages, e.currentTarget) !=
+        cardSlider.currentCard) {
+      return;
+    }
+
+    pageSwitcherRight.style.width =
+        pageSwitcherLeft.style.width =
+            e.currentTarget.sideMargin + 'px';
   }
 
   /**

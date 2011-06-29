@@ -61,11 +61,11 @@ var EventTracker = (function() {
     /**
      * Remove any specified event listeners added with this EventTracker.
      * @param {!Node} node The DOM node to remove a listener from.
-     * @param {string} eventType The type of event to remove.
+     * @param {?string} eventType The type of event to remove.
      */
     remove: function(node, eventType) {
       this.listeners_ = this.listeners_.filter(function(h) {
-        if (h.node == node && h.eventType == eventType) {
+        if (h.node == node && (!eventType || (h.eventType == eventType))) {
           EventTracker.removeEventListener_(h);
           return false;
         }
