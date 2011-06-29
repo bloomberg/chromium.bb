@@ -394,34 +394,31 @@ function getSettingsJSON() {
 function getSelectedPrinterName() {
   var printerList = $('printer-list')
   var selectedPrinter = printerList.selectedIndex;
-  var deviceName = '';
-  if (selectedPrinter >= 0)
-    deviceName = printerList.options[selectedPrinter].value;
-  return deviceName;
+  if (selectedPrinter < 0)
+    return '';
+  return printerList.options[selectedPrinter].value;
 }
 
 /**
  * Asks the browser to print the preview PDF based on current print settings.
+ * If the preview is still loading, printPendingFile() will get called once
+ * the preview loads.
  */
 function printFile() {
   hasPendingPrintFileRequest = hasPendingPreviewRequest;
-  var deviceName = getSelectedPrinterName();
+  var printToPDF = getSelectedPrinterName() == PRINT_TO_PDF;
 
   if (hasPendingPrintFileRequest) {
-    if (deviceName != PRINT_TO_PDF) {
+    if (printToPDF) {
+      // TODO(thestig) disable controls here.
+    } else {
       isTabHidden = true;
       chrome.send('hidePreview');
     }
     return;
   }
 
-  if ($('print-button').disabled) {
-    if (isTabHidden)
-      cancelPendingPrintRequest();
-    return;
-  }
-
-  if (isTabHidden || deviceName == PRINT_TO_PDF) {
+  if (printToPDF) {
     sendPrintFileRequest();
   } else {
     $('print-button').classList.add('loading');
@@ -430,6 +427,21 @@ function printFile() {
     removeEventListeners();
     window.setTimeout(function() { sendPrintFileRequest(); }, 1000);
   }
+}
+
+/**
+ * Asks the browser to print the pending preview PDF that just finished loading.
+ */
+function printPendingFile() {
+  hasPendingPrintFileRequest = false;
+
+  if ($('print-button').disabled) {
+    if (isTabHidden)
+      cancelPendingPrintRequest();
+    return;
+  }
+
+  sendPrintFileRequest();
 }
 
 /**
@@ -464,7 +476,7 @@ function requestPrintPreview() {
  * preview tab regarding the file selection cancel event.
  */
 function fileSelectionCancelled() {
-  hasPendingPrintFileRequest = false;
+  // TODO(thestig) re-enable controls here.
 }
 
 /**
@@ -571,7 +583,7 @@ function displayErrorMessage(errorMessage) {
   if (pdfViewer)
     $('mainview').removeChild(pdfViewer);
 
-  if (hasPendingPrintFileRequest && isTabHidden)
+  if (isTabHidden)
     cancelPendingPrintRequest();
 }
 
@@ -673,7 +685,7 @@ function updatePrintPreview(pageCount, jobTitle, modifiable, previewUid) {
   addEventListeners();
 
   if (hasPendingPrintFileRequest)
-    printFile();
+    printPendingFile();
 }
 
 /**
