@@ -102,6 +102,7 @@ void wl_client_post_error(struct wl_client *client, struct wl_object *object,
 			  uint32_t code, const char *msg, ...);
 void wl_client_post_no_memory(struct wl_client *client);
 void wl_client_post_global(struct wl_client *client, struct wl_object *object);
+void wl_client_flush(struct wl_client *client);
 
 struct wl_visual {
 	struct wl_object object;

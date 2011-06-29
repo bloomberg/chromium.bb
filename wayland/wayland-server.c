@@ -58,6 +58,7 @@ struct wl_client {
 	struct wl_display *display;
 	struct wl_list resource_list;
 	uint32_t id_count;
+	uint32_t mask;
 	struct wl_list link;
 };
 
@@ -219,12 +220,20 @@ wl_client_connection_update(struct wl_connection *connection,
 	struct wl_client *client = data;
 	uint32_t emask = 0;
 
+	client->mask = mask;
 	if (mask & WL_CONNECTION_READABLE)
 		emask |= WL_EVENT_READABLE;
 	if (mask & WL_CONNECTION_WRITABLE)
 		emask |= WL_EVENT_WRITEABLE;
 
 	return wl_event_source_fd_update(client->source, emask);
+}
+
+WL_EXPORT void
+wl_client_flush(struct wl_client *client)
+{
+	if (client->mask & WL_CONNECTION_WRITABLE)
+		wl_connection_data(client->connection, WL_CONNECTION_WRITABLE);
 }
 
 WL_EXPORT struct wl_display *
