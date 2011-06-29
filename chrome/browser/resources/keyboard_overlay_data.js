@@ -16854,8 +16854,10 @@ var keyboardOverlayData = {
   "shortcut": {
     "+<>CTRL": "keyboardOverlayZoomIn",
     "+<>CTRL<>SHIFT": "keyboardOverlayZoomIn",
+    ",<>ALT": "keyboardOverlayResizeLeft",
     "-<>CTRL": "keyboardOverlayZoomOut",
     "-<>CTRL<>SHIFT": "keyboardOverlayZoomOut",
+    ".<>ALT": "keyboardOverlayResizeRight",
     "/<>ALT<>CTRL": "keyboardOverlayViewKeyboardOverlay",
     "/<>ALT<>CTRL<>SHIFT": "keyboardOverlayViewKeyboardOverlay",
     "/<>CTRL": "keyboardOverlayHelp",

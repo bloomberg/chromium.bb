@@ -123,6 +123,8 @@ struct I18nContentToMessage {
   { "keyboardOverlayReopenLastClosedTab",
     IDS_KEYBOARD_OVERLAY_REOPEN_LAST_CLOSED_TAB },
   { "keyboardOverlayResetZoom", IDS_KEYBOARD_OVERLAY_RESET_ZOOM },
+  { "keyboardOverlayResizeLeft", IDS_KEYBOARD_OVERLAY_RESIZE_LEFT },
+  { "keyboardOverlayResizeRight", IDS_KEYBOARD_OVERLAY_RESIZE_RIGHT },
   { "keyboardOverlaySave", IDS_KEYBOARD_OVERLAY_SAVE },
   { "keyboardOverlayScrollUpOnePage",
     IDS_KEYBOARD_OVERLAY_SCROLL_UP_ONE_PAGE },
