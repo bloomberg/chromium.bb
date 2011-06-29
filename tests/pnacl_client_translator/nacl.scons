@@ -130,17 +130,24 @@ bitcode_env = StripArchFromLDCommand(env)
 # Specify the object file to prevent junk from getting left over
 # in source directory (tests/srpc_hw/). SCons will default to point "-o"
 # to the source directory if it is an absolute directory.
-pnacl_srpc_hello_world_obj = bitcode_env.ComponentObject('pnacl_srpc_hw',
-                                 '${SCONSTRUCT_DIR}/tests/srpc_hw/srpc_hw.c')
 
-pnacl_srpc_hello_world_pexe = bitcode_env.ComponentProgram('pnacl_srpc_hw.pexe',
-    [ pnacl_srpc_hello_world_obj ],
-    EXTRA_LIBS=['srpc',
-                'platform',
-                'gio',
-                'imc',
-                'imc_syscalls',
-                'pthread'])
+# TODO(mcgrathr): Disabled build of unused test pending fixing of pnacl tools.
+# cf http://codereview.chromium.org/7275037/
+if False:
+  pnacl_srpc_hello_world_obj = bitcode_env.ComponentObject(
+      'pnacl_srpc_hw', '${SCONSTRUCT_DIR}/tests/srpc_hw/srpc_hw.c')
+
+  pnacl_srpc_hello_world_pexe = bitcode_env.ComponentProgram(
+      'pnacl_srpc_hw.pexe',
+      [ pnacl_srpc_hello_world_obj ],
+      EXTRA_LIBS=['srpc',
+                  'platform',
+                  'gio',
+                  'imc',
+                  'imc_syscalls',
+                  'pthread'])
+else:
+  pnacl_srpc_hello_world_pexe = []
 
 # Page independent support assets.
 (map_files_toolchain, replicates_toolchain) = LayoutTranslatorBinariesOnServer()
