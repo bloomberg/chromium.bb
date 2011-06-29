@@ -89,9 +89,6 @@
       '-autofill.AutofillTest.testProfilesNotAggregatedWithInvalidEmail',
       '-autofill.AutofillTest.testProfilesNotAggregatedWithNoAddress',
 
-      # crbug.com/87843
-      '-content.ContentTest.testAboutVersion',
-
       # Turkish I problem. crbug.com/60638
       '-find_in_page.FindMatchTests.testLocalizationAndCaseOrder',
       # Browser crash?  crbug.com/86150

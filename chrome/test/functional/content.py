@@ -75,7 +75,7 @@ class ContentTest(pyauto.PyUITest):
     """Confirm about:version contains some expected content."""
     self.NavigateToURL('about:version')
     test_utils.StringContentCheck(self, self.GetTabContents(),
-                                  ['User Agent', 'Command Line'],
+                                  ['WebKit', 'os_version', 'js_version'],
                                   ['odmomfodfm disfnodugdzuoufgbn ifdnf fif'])
 
   def testHttpsPage(self):
