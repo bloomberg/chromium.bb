@@ -161,6 +161,14 @@ def _SetEnvForX86Sdk(env, sdk_path):
               LD=os.path.join(bin_path, '%s-ld%s' % (arch, ld_mode_flag)),
               RANLIB=os.path.join(bin_path, '%s-ranlib' % arch),
               OBJDUMP=os.path.join(bin_path, '%s-objdump' % arch),
+              STRIP=os.path.join(bin_path, '%s-strip' % arch),
+              # Strip doesn't seem to be a first-class citizen in SCons country,
+              # so we have to add these *COM, *COMSTR manually.
+              # Note: it appears we cannot add this in component_setup.py
+              # to avoid duplication =(. Thus, this is duplicated here,
+              # and in the pnacl sdk setup.
+              STRIPFLAGS=['--strip-all'],
+              STRIPCOM='${STRIP} ${STRIPFLAGS}',
               CFLAGS = ['-std=gnu99'],
               CCFLAGS=['-O3',
                        '-Werror',
@@ -211,6 +219,7 @@ def _SetEnvForPnacl(env, root):
   pnacl_sdk_cxx = '${PNACL_ROOT}/bin/pnacl-g++'
   pnacl_sdk_ld =  '${PNACL_ROOT}/bin/pnacl-ld'
   pnacl_sdk_disass = '${PNACL_ROOT}/bin/pnacl-dis'
+  pnacl_sdk_strip = '${PNACL_ROOT}/bin/pnacl-strip'
   # NOTE: XXX_flags start with space for easy concatenation
   # The flags generated here get baked into the commands (CC, CXX, LINK)
   # instead of CFLAGS etc to keep them from getting blown away by some
@@ -253,6 +262,14 @@ def _SetEnvForPnacl(env, root):
               AR=pnacl_sdk_ar,
               RANLIB=pnacl_sdk_ranlib,
               DISASS=pnacl_sdk_disass,
+              STRIP=pnacl_sdk_strip,
+              # Strip doesn't seem to be a first-class citizen in SCons country,
+              # so we have to add these *COM, *COMSTR manually.
+              # Note: it appears we cannot add this in component_setup.py
+              # to avoid duplication =( Thus, this is duplicated here,
+              # and in the nacl-gcc setup.
+              STRIPFLAGS=['--strip-all'],
+              STRIPCOM='${STRIP} ${STRIPFLAGS}',
               )
 
 

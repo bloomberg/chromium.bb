@@ -1725,6 +1725,20 @@ def FileSizeTest(env, name, envFile, max_size=None):
 
 pre_base_env.AddMethod(FileSizeTest)
 
+def StripExecutable(env, name, exe):
+  """StripExecutable returns a node representing the stripped version of |exe|.
+     The stripped version will be given the basename |name|.
+     NOTE: for now this only works with the untrusted toolchain.
+     STRIP does not appear to be a first-class citizen in SCons and
+     STRIP has only been set to point at the untrusted toolchain.
+  """
+  return env.Command(
+      target=name,
+      source=[exe],
+      action=[Action('${STRIPCOM} ${SOURCES} -o ${TARGET}')])
+
+pre_base_env.AddMethod(StripExecutable)
+
 def AutoDepsCommand(env, name, command, extra_deps=[], posix_path=False):
   """AutoDepsCommand() takes a command as an array of arguments.  Each
   argument may either be:

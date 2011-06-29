@@ -12,6 +12,8 @@ Import('env')
 # We must make a separate build though, to get a different nexe "key"
 # for the env.Publish() / env.ExtractPublishedFiles() magic.
 nexe_name = 'browser_startup_time_${TARGET_FULLARCH}'
+stripped_nexe = ('browser_startup_time_stripped_%s.nexe' %
+                 env.get('TARGET_FULLARCH'))
 
 # Build object file separately to prevent crud left in the source directory.
 browser_startup_obj = env.ComponentObject(
@@ -65,9 +67,20 @@ env.AddNodeToTestSuite(node,
                        is_broken=env.PPAPIBrowserTesterIsBroken() or
                        env.Bit('disable_dynamic_plugin_loading'))
 
+
 # Also check the size of this nexe.
 node = env.FileSizeTest('browser_startup_size.out',
                         browser_startup_nexe)
 env.AddNodeToTestSuite(node,
                        test_suites,
                        'run_browser_startup_size_test')
+
+# Check size of stripped nexe.
+browser_startup_stripped_nexe = env.StripExecutable(
+    stripped_nexe,
+    browser_startup_nexe)
+node = env.FileSizeTest('browser_startup_stripped_size.out',
+                        browser_startup_stripped_nexe)
+env.AddNodeToTestSuite(node,
+                       test_suites,
+                       'run_browser_startup_stripped_size_test')
