@@ -103,6 +103,7 @@ NetworkMenuButton::NetworkMenuButton(StatusAreaHost* host)
       NetworkMenu(),
       icon_(NULL),
       right_badge_(NULL),
+      top_left_badge_(NULL),
       left_badge_(NULL),
       mobile_data_bubble_(NULL),
       check_for_promo_(true),
