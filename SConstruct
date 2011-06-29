@@ -1910,14 +1910,19 @@ def CheckPlatformPreconditions():
           "Source tools/llvm/setup_arm_untrusted_toolchain.sh.")
 
 # ----------------------------------------------------------
+pre_base_env.Append(
+    CPPDEFINES = [
+        ['NACL_BLOCK_SHIFT', '5'],
+        ['NACL_BLOCK_SIZE', '32'],
+        ['NACL_BUILD_ARCH', '${BUILD_ARCHITECTURE}' ],
+        ['NACL_BUILD_SUBARCH', '${BUILD_SUBARCH}' ],
+        ],
+    )
+
 base_env = pre_base_env.Clone()
 base_env.Append(
   BUILD_SUBTYPE = '',
   CPPDEFINES = [
-    ['NACL_BLOCK_SHIFT', '5'],
-    ['NACL_BLOCK_SIZE', '32'],
-    ['NACL_BUILD_ARCH', '${BUILD_ARCHITECTURE}' ],
-    ['NACL_BUILD_SUBARCH', '${BUILD_SUBARCH}' ],
     ['NACL_TARGET_ARCH', '${TARGET_ARCHITECTURE}' ],
     ['NACL_TARGET_SUBARCH', '${TARGET_SUBARCH}' ],
     ],
@@ -2360,25 +2365,22 @@ pre_base_env.Append(
 # independent binaries
 # NOTE: this loads stuff from: site_scons/site_tools/naclsdk.py
 # ----------------------------------------------------------
-nacl_env = pre_base_env.Clone(
+
+nacl_common_env = pre_base_env.Clone(
     tools = ['naclsdk'],
-    BUILD_TYPE = 'nacl',
-    BUILD_TYPE_DESCRIPTION = 'NaCl module build',
     NACL_BUILD_FAMILY = 'UNTRUSTED',
+
+    ARFLAGS = 'rc',
+
+    # ${SOURCE_ROOT} for #include <ppapi/...>
+    # ${SOURCE_ROOT}/gpu for #include <GLES2/...>
+    CPPPATH = ['${SOURCE_ROOT}', '${SOURCE_ROOT}/gpu'],
 
     EXTRA_CFLAGS = [],
     EXTRA_CCFLAGS = ARGUMENTS.get('nacl_ccflags', '').split(':'),
     EXTRA_CXXFLAGS = [],
     EXTRA_LIBS = [],
     EXTRA_LINKFLAGS = ARGUMENTS.get('nacl_linkflags', '').split(':'),
-
-    # This is the address at which a user executable is expected to
-    # place its data segment in order to be compatible with the
-    # integrated runtime (IRT) library.
-    IRT_DATA_REGION_START = '0x10000000',
-    # Load addresses of the IRT's code and data segments.
-    IRT_BLOB_CODE_START = '0x08000000',
-    IRT_BLOB_DATA_START = '0x18000000',
 
     # always optimize binaries
     # Command line option nacl_ccflags=... add additional option to nacl build
@@ -2390,7 +2392,7 @@ nacl_env = pre_base_env.Clone(
                ] +
               werror_flags +
               ['${EXTRA_CCFLAGS}'] ,
-    CPPPATH = ['$SOURCE_ROOT'],
+
     CFLAGS = ['-std=gnu99',
               ] +
              ['${EXTRA_CFLAGS}'],
@@ -2398,19 +2400,83 @@ nacl_env = pre_base_env.Clone(
                 '-Wno-long-long',
                 ] +
                ['${EXTRA_CXXFLAGS}'],
-    LIBS = [],
-    LINKFLAGS = ['${EXTRA_LINKFLAGS}'],
+
+    # This is the address at which a user executable is expected to
+    # place its data segment in order to be compatible with the
+    # integrated runtime (IRT) library.
+    IRT_DATA_REGION_START = '0x10000000',
+    # Load addresses of the IRT's code and data segments.
+    IRT_BLOB_CODE_START = '0x08000000',
+    IRT_BLOB_DATA_START = '0x18000000',
+    )
+
+# These add on to those set in pre_base_env, above.
+nacl_common_env.Append(
     CPPDEFINES = [
-      # _GNU_SOURCE ensures that strtof() gets declared.
-      ['_GNU_SOURCE', 1],
-      # This ensures that PRId64 etc. get defined.
-      ['__STDC_FORMAT_MACROS', '1'],
-      # strdup, and other common stuff
-      ['_BSD_SOURCE', '1'],
-      ['_POSIX_C_SOURCE', '199506'],
-      ['_XOPEN_SOURCE', '600'],
-      ],
+        # This ensures that UINT32_MAX gets defined.
+        ['__STDC_LIMIT_MACROS', '1'],
+        # This ensures that PRId64 etc. get defined.
+        ['__STDC_FORMAT_MACROS', '1'],
+        # _GNU_SOURCE ensures that strtof() gets declared.
+        ['_GNU_SOURCE', 1],
+        # strdup, and other common stuff
+        ['_BSD_SOURCE', '1'],
+        ['_POSIX_C_SOURCE', '199506'],
+        ['_XOPEN_SOURCE', '600'],
+
+        ['DYNAMIC_ANNOTATIONS_ENABLED', '1' ],
+        ['DYNAMIC_ANNOTATIONS_PREFIX', 'NACL_' ],
+        ],
+    )
+
+def FixWindowsAssembler(env):
+  if env.Bit('host_windows'):
+    # NOTE: This is needed because Windows builds are case-insensitive.
+    # Without this we use nacl-as, which doesn't handle include directives, etc.
+    env.Replace(ASCOM='${CCCOM}')
+
+FixWindowsAssembler(nacl_common_env)
+
+# TODO(mcgrathr,pdox): llc troubles at final link time if the libraries are
+# built with optimization, remove this hack when the compiler is fixed.
+# http://code.google.com/p/nativeclient/issues/detail?id=1225
+if nacl_common_env.Bit('bitcode'):
+  optflags = ['-O0','-O1','-O2','-O3']
+  nacl_common_env.FilterOut(CCFLAGS=optflags)
+  nacl_common_env.FilterOut(LINKFLAGS=optflags)
+  nacl_common_env.FilterOut(CCFLAGS=optflags)
+  nacl_common_env.FilterOut(CXXFLAGS=optflags)
+  # TODO(pdox): Remove this as soon as build_config.h can be
+  #             changed to accept __pnacl__.
+  # pending http://codereview.chromium.org/6667035/
+  nacl_common_env.AddBiasForPNaCl()
+
+nacl_env = nacl_common_env.Clone(
+    BUILD_TYPE = 'nacl',
+    BUILD_TYPE_DESCRIPTION = 'NaCl module build',
+
+    # This magic is copied from scons-2.0.1/engine/SCons/Defaults.py
+    # where this pattern is used for _LIBDIRFLAGS, which produces -L
+    # switches.  Here we are producing a -Wl,-rpath-link,DIR for each
+    # element of LIBPATH, i.e. for each -LDIR produced.
+    RPATH_LINK_FLAGS = '$( ${_concat(RPATHLINKPREFIX, LIBPATH, RPATHLINKSUFFIX,'
+                       '__env__, RDirs, TARGET, SOURCE)} $)',
+    RPATHLINKPREFIX = '-Wl,-rpath-link,',
+    RPATHLINKSUFFIX = '',
+
+    LIBS = [],
+    LINKFLAGS = ['${EXTRA_LINKFLAGS}', '${RPATH_LINK_FLAGS}'],
 )
+
+# Look in the local include and lib directories before the toolchain's.
+nacl_env['INCLUDE_DIR'] = '${TARGET_ROOT}/include'
+# Remove the default $LIB_DIR element so that we prepend it without duplication.
+# Using PrependUnique alone would let it stay last, where we want it first.
+nacl_env.FilterOut(LIBPATH=['${LIB_DIR}'])
+nacl_env.PrependUnique(
+    CPPPATH = ['${INCLUDE_DIR}'],
+    LIBPATH = ['${LIB_DIR}'],
+    )
 
 if not nacl_env.Bit('bitcode'):
   if nacl_env.Bit('build_x86_32'):
@@ -2453,6 +2519,21 @@ if nacl_irt_env.Bit('bitcode'):
   nacl_irt_env.FilterOut(CCFLAGS=optflags)
   nacl_irt_env.FilterOut(CXXFLAGS=optflags)
 
+# This needs to happen pretty early, because it affects any concretized
+# directory names.
+def AddTargetRootSuffix(env, bit_name, suffix):
+  """Add a suffix to the subdirectory of scons-out that we use.  This
+  usually does not affect correctness, but saves us triggering a
+  rebuild whenever we add or remove a build option such as --nacl_glibc.
+  """
+  if env.Bit(bit_name):
+    pathname = '%s-%s' % (env.subst('${TARGET_ROOT}'), suffix)
+    env.Replace(TARGET_ROOT=pathname)
+
+AddTargetRootSuffix(nacl_env, 'bitcode', 'pnacl')
+AddTargetRootSuffix(nacl_env, 'nacl_pic', 'pic')
+AddTargetRootSuffix(nacl_env, 'use_sandboxed_translator', 'sbtc')
+AddTargetRootSuffix(nacl_env, 'nacl_glibc', 'glibc')
 
 if nacl_env.Bit('irt'):
   nacl_env.Replace(PPAPI_LIBS=['ppapi'])
@@ -2489,20 +2570,6 @@ if (nacl_env.Bit('nacl_glibc') and
       '-T', 'ldscripts/%s.x.static' % GetLinkerScriptBaseName(nacl_env),
       '-lc'])
 
-def AddTargetRootSuffix(env, bit_name, suffix):
-  """Add a suffix to the subdirectory of scons-out that we use.  This
-  usually does not affect correctness, but saves us triggering a
-  rebuild whenever we add or remove a build option such as --nacl_glibc.
-  """
-  if env.Bit(bit_name):
-    pathname = '%s-%s' % (env.subst('${TARGET_ROOT}'), suffix)
-    env.Replace(TARGET_ROOT=pathname)
-
-AddTargetRootSuffix(nacl_env, 'bitcode', 'pnacl')
-AddTargetRootSuffix(nacl_env, 'nacl_pic', 'pic')
-AddTargetRootSuffix(nacl_env, 'use_sandboxed_translator', 'sbtc')
-AddTargetRootSuffix(nacl_env, 'nacl_glibc', 'glibc')
-
 if nacl_env.Bit('running_on_valgrind'):
   nacl_env.Append(CCFLAGS = ['-g', '-Wno-overlength-strings',
                              '-fno-optimize-sibling-calls'],
@@ -2516,12 +2583,39 @@ if nacl_env.Bit('running_on_valgrind'):
 
 environment_list.append(nacl_env)
 
+if not nacl_env.Bit('nacl_glibc'):
+  # These are all specific to nacl-newlib so we do not include them
+  # when building against nacl-glibc.  The functionality of
+  # pthread/startup/stubs/nosys is provided by glibc.  The valgrind
+  # code currently assumes nc_threads.
+  nacl_env.Append(
+      BUILD_SCONSCRIPTS = [
+        ####  ALPHABETICALLY SORTED ####
+        'src/untrusted/pthread/nacl.scons',
+        'src/untrusted/startup/nacl.scons',
+        'src/untrusted/stubs/nacl.scons',
+        'src/untrusted/nosys/nacl.scons',
+        ####  ALPHABETICALLY SORTED ####
+        ])
+
 nacl_env.Append(
     BUILD_SCONSCRIPTS = [
     ####  ALPHABETICALLY SORTED ####
+    'src/include/nacl/nacl.scons',
+    'src/shared/gio/nacl.scons',
+    'src/shared/imc/nacl.scons',
+    'src/shared/platform/nacl.scons',
+    'src/shared/ppapi/nacl.scons',
+    'src/shared/ppapi_proxy/nacl.scons',
+    'src/shared/srpc/nacl.scons',
     'src/tools/posix_over_imc/nacl.scons',
     'src/trusted/service_runtime/nacl.scons',
     'src/trusted/validator_x86/nacl.scons',
+    'src/untrusted/ehsupport/nacl.scons',
+    'src/untrusted/irt_stub/nacl.scons',
+    'src/untrusted/nacl/nacl.scons',
+    'src/untrusted/ppapi/nacl.scons',
+    'src/untrusted/valgrind/nacl.scons',
     'tests/app_lib/nacl.scons',
     'tests/autoloader/nacl.scons',
     'tests/barebones/nacl.scons',
@@ -2573,6 +2667,7 @@ nacl_env.Append(
     'tests/plugin_async_messaging/nacl.scons',
     'tests/pnacl_abi/nacl.scons',
     'tests/pnacl_client_translator/nacl.scons',
+    'tests/ppapi/nacl.scons',
     'tests/ppapi_browser/bad/nacl.scons',
     'tests/ppapi_browser/manifest/nacl.scons',
     'tests/ppapi_browser/ppb_core/nacl.scons',
@@ -2594,7 +2689,6 @@ nacl_env.Append(
     'tests/ppapi_test_example/nacl.scons',
     'tests/ppapi_test_lib/nacl.scons',
     'tests/ppapi_tests/nacl.scons',
-    'tests/ppapi/nacl.scons',
     'tests/pyauto_nacl/nacl.scons',
     'tests/redir/nacl.scons',
     'tests/rodata_not_writable/nacl.scons',
@@ -2606,8 +2700,8 @@ nacl_env.Append(
     'tests/startup_message/nacl.scons',
     'tests/stubout_mode/nacl.scons',
     'tests/sysbasic/nacl.scons',
-    'tests/syscalls/nacl.scons',
     'tests/syscall_return_sandboxing/nacl.scons',
+    'tests/syscalls/nacl.scons',
     'tests/threads/nacl.scons',
     'tests/time/nacl.scons',
     'tests/tls/nacl.scons',
@@ -2620,7 +2714,7 @@ nacl_env.Append(
 
 nacl_env.Append(
     BUILD_SCONSCRIPTS = [
-      'tools/tests/nacl.scons',
+        'tools/tests/nacl.scons',
     ])
 
 # ----------------------------------------------------------
@@ -2675,27 +2769,9 @@ nacl_env.AddMethod(AddPrebuiltBinaryToRepository)
 # have NO access to any libraries build here but need to link them
 # from the sdk libdir
 # ----------------------------------------------------------
-nacl_extra_sdk_env = pre_base_env.Clone(
-    tools = ['naclsdk'],
+nacl_extra_sdk_env = nacl_common_env.Clone(
     BUILD_TYPE = 'nacl_extra_sdk',
     BUILD_TYPE_DESCRIPTION = 'NaCl SDK extra library build',
-    NACL_BUILD_FAMILY = 'UNTRUSTED',
-    IRT_DATA_REGION_START = nacl_env['IRT_DATA_REGION_START'],
-    # ${SOURCE_ROOT} for #include <ppapi/...>
-    # ${SOURCE_ROOT}/gpu for #include <GLES2/...>"
-    CPPPATH = ['${SOURCE_ROOT}', '${SOURCE_ROOT}/gpu'],
-    CPPDEFINES = [
-      ['NACL_BUILD_ARCH', '${BUILD_ARCHITECTURE}' ],
-      ['NACL_BUILD_SUBARCH', '${BUILD_SUBARCH}' ],
-      ['NACL_BLOCK_SHIFT', '5' ],
-      ['DYNAMIC_ANNOTATIONS_ENABLED', '1' ],
-      ['DYNAMIC_ANNOTATIONS_PREFIX', 'NACL_' ],
-      # This ensures that UINT32_MAX gets defined.
-      ['__STDC_LIMIT_MACROS', '1'],
-      # This ensures that PRId64 etc. get defined.
-      ['__STDC_FORMAT_MACROS', '1'],
-      ],
-    ARFLAGS = 'rc'
 )
 
 AddTargetRootSuffix(nacl_extra_sdk_env, 'bitcode', 'pnacl')
@@ -2731,21 +2807,6 @@ if nacl_extra_sdk_env.Bit('target_arm'):
   nacl_extra_sdk_env.FilterOut(CCFLAGS = ['-Werror'])
   nacl_extra_sdk_env.Append(CFLAGS = werror_flags)
 
-# TODO(pdox): Remove this as soon as build_config.h can be
-#             changed to accept __pnacl__.
-if nacl_extra_sdk_env.Bit('bitcode'):
-  nacl_extra_sdk_env.AddBiasForPNaCl()
-
-if nacl_extra_sdk_env.Bit('host_windows'):
-  # NOTE: This is needed because Windows builds are case-insensitive.
-  # Without this we use nacl-as, which doesn't handle include directives, etc.
-  nacl_extra_sdk_env.Replace(ASCOM = '${CCCOM}')
-
-if nacl_env.Bit('host_windows'):
-  # NOTE: This is needed because Windows builds are case-insensitive.
-  # Without this we use nacl-as, which doesn't handle include directives, etc.
-  nacl_env.Replace(ASCOM = '${CCCOM}')
-
 
 def NaClSdkLibrary(env, lib_name, *args, **kwargs):
   env.ComponentLibrary(lib_name, *args, **kwargs)
@@ -2756,6 +2817,7 @@ def NaClSdkLibrary(env, lib_name, *args, **kwargs):
     env_shared.ComponentLibrary(lib_name, *args, **kwargs)
 
 nacl_extra_sdk_env.AddMethod(NaClSdkLibrary)
+nacl_env.AddMethod(NaClSdkLibrary)
 
 
 # ---------------------------------------------------------------------
@@ -2853,8 +2915,9 @@ def AddHeaderToSdk(env, nodes, subdir = 'nacl/'):
   dir = ARGUMENTS.get('extra_sdk_include_destination')
   if not dir:
     dir = '${NACL_SDK_INCLUDE}'
-
-  n = env.Replicate(dir + '/' + subdir, nodes)
+  if subdir is not None:
+    dir += '/' + subdir
+  n = env.Replicate(dir, nodes)
   env.Alias('extra_sdk_update_header', n)
   return n
 
@@ -2920,11 +2983,10 @@ nacl_irt_env.ClearBits('nacl_pic')
 if not nacl_irt_env.Bit('target_arm'):
   nacl_irt_env.ClearBits('bitcode')
 nacl_irt_env.Tool('naclsdk')
+FixWindowsAssembler(nacl_irt_env)
 # Make it find the libraries it builds, rather than the SDK ones.
 nacl_irt_env.Replace(LIBPATH='${LIB_DIR}')
 
-AddTargetRootSuffix(nacl_irt_env, 'bitcode', 'pnacl')
-AddTargetRootSuffix(nacl_irt_env, 'nacl_pic', 'pic')
 if nacl_irt_env.Bit('bitcode'):
   nacl_irt_env.AddBiasForPNaCl()
 
@@ -2932,18 +2994,54 @@ if nacl_irt_env.Bit('bitcode'):
 # nacl_extra_sdk_env, because we doubly use these nacl.scons files
 # in nacl_irt_env.
 # TODO(mcgrathr): Remove these when nacl_extra_sdk_env is removed.
-def IrtAddLibraryToSdk(env, nodes, is_platform=False):
-  pass
-nacl_irt_env.AddMethod(IrtAddLibraryToSdk, 'AddLibraryToSdk')
-nacl_irt_env.AddMethod(IrtAddLibraryToSdk, 'AddObjectToSdk')
+def AddLibraryDummy(env, nodes, is_platform=False):
+  return [env.File('${LIB_DIR}/%s.a' % x) for x in nodes]
+nacl_env.AddMethod(AddLibraryDummy, 'AddLibraryToSdk')
+nacl_irt_env.AddMethod(AddLibraryDummy, 'AddLibraryToSdk')
+
+def AddObjectInternal(env, nodes, is_platform=False):
+  return env.Replicate('${LIB_DIR}', nodes)
+nacl_env.AddMethod(AddObjectInternal, 'AddObjectToSdk')
+nacl_irt_env.AddMethod(AddObjectInternal, 'AddObjectToSdk')
 
 def IrtNaClSdkLibrary(env, lib_name, *args, **kwargs):
   env.ComponentLibrary(lib_name, *args, **kwargs)
 nacl_irt_env.AddMethod(IrtNaClSdkLibrary, 'NaClSdkLibrary')
 
-def IrtAddHeaderToSdk(env, nodes, subdir = 'nacl/'):
-  pass
-nacl_irt_env.AddMethod(IrtAddHeaderToSdk, 'AddHeaderToSdk')
+# Populate the internal include directory when AddHeaderToSdk
+# is used inside nacl_env rather than nacl_extra_sdk_env.
+def AddHeaderInternal(env, nodes, subdir='nacl'):
+  dir = '${INCLUDE_DIR}'
+  if subdir is not None:
+    dir += '/' + subdir
+  n = env.Replicate(dir, nodes)
+  return n
+
+nacl_env.AddMethod(AddHeaderInternal, 'AddHeaderToSdk')
+nacl_irt_env.AddMethod(AddHeaderInternal, 'AddHeaderToSdk')
+
+# We want to do this for nacl_env when not under --nacl_glibc,
+# but for nacl_irt_env whether or not under --nacl_glibc, so
+# we do it separately for each after making nacl_irt_env and
+# clearing its Bit('nacl_glibc').
+def AddImplicitLibs(env):
+  if not env.Bit('nacl_glibc'):
+    # These are automatically linked in by the compiler, either directly
+    # or via the linker script that is -lc.  In the non-glibc build, we
+    # are the ones providing these files, so we need dependencies.
+    # The ComponentProgram method (site_scons/site_tools/component_builders.py)
+    # adds dependencies on env['IMPLICIT_LIBS'] if that's set.
+    implicit_libs = ['crt1.o', 'libnacl.a', 'libcrt_platform.a']
+    if env.Bit('bitcode'):
+      implicit_libs += ['libehsupport.a']
+    else:
+      implicit_libs += ['crti.o', 'crtn.o']
+    env['IMPLICIT_LIBS'] = ['${LIB_DIR}/%s' % file for file in implicit_libs]
+    # The -B<dir>/ flag is necessary to tell gcc to look for crt[1in].o there.
+    env.Prepend(LINKFLAGS=['-B${LIB_DIR}/'])
+
+AddImplicitLibs(nacl_env)
+AddImplicitLibs(nacl_irt_env)
 
 # Give the environment for building the IRT and its libraries
 # the -Ds used for building those libraries for the SDK.
@@ -2960,13 +3058,16 @@ nacl_irt_env.AppendUnique(CPPDEFINES = nacl_extra_sdk_env['CPPDEFINES'],
 # src/untrusted/nacl but only actually getting libimc_syscalls.a from there.
 nacl_irt_env.Append(
     BUILD_SCONSCRIPTS = [
+        'src/include/nacl/nacl.scons',
         'src/shared/gio/nacl.scons',
         'src/shared/platform/nacl.scons',
         'src/shared/ppapi_proxy/nacl.scons',
         'src/shared/srpc/nacl.scons',
+        'src/untrusted/ehsupport/nacl.scons',
         'src/untrusted/irt/nacl.scons',
         'src/untrusted/nacl/nacl.scons',
         'src/untrusted/pthread/nacl.scons',
+        'src/untrusted/stubs/nacl.scons',
     ])
 
 environment_list.append(nacl_irt_env)

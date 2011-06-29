@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -342,7 +342,12 @@ void TestUnlockUninitializedReturnValue() {
 
 pthread_once_t once_control = PTHREAD_ONCE_INIT;
 
-typedef int AtomicInt32;  /* Why is this needed? We included pthread already. */
+/*
+ * The nacl-newlib pthread.h declares this type, but glibc's pthread.h does not.
+ */
+#ifdef __GLIBC__
+typedef int AtomicInt32;
+#endif
 
 void pthread_once_routine() {
   static AtomicInt32 count = 0;

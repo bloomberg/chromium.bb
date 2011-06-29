@@ -133,7 +133,10 @@ def _ComponentPlatformSetup(env, builder_name, **kwargs):
   # approach allows us to use an unmodified version of SCons.
   # In general, the use of EXTRA_LIBS is discouraged.
   if 'EXTRA_LIBS' in env:
-    env['LIBS'] = env['EXTRA_LIBS'] + env['LIBS']
+    # The SubstList2 method expands and flattens so that scons will
+    # correctly know about the library dependencies in cases like
+    # EXTRA_LIBS=['${FOO_LIBS}', 'bar'].
+    env['LIBS'] = env.SubstList2('${EXTRA_LIBS}', '${LIBS}')
 
   # Call platform-specific component setup function, if any
   if env.get('COMPONENT_PLATFORM_SETUP'):
@@ -476,6 +479,12 @@ def ComponentProgram(self, prog_name, *args, **kwargs):
   # Add dependencies on includes
   env.Depends(out_nodes, env['INCLUDES'])
 
+  # Add dependencies on libraries marked as implicitly included in the link.
+  # These are libraries that are not passed on the command line, but are
+  # always linked in by the toolchain, i.e. startup files and -lc and such.
+  if 'IMPLICIT_LIBS' in env:
+    env.Depends(out_nodes, env['IMPLICIT_LIBS'])
+
   # Publish output
   env.Publish(prog_name, 'run', out_nodes[0])
   env.Publish(prog_name, 'debug', out_nodes[1:])
@@ -635,4 +644,3 @@ def generate(env):
   AddTargetGroup('run_small_tests', 'small tests can be run')
   AddTargetGroup('run_medium_tests', 'medium tests can be run')
   AddTargetGroup('run_large_tests', 'large tests can be run')
-

@@ -198,9 +198,6 @@ def _SetEnvForPnacl(env, root):
 
   arch_flag = ' -arch %s' % arch
   shlibsuffix = '.so'
-  if env['BUILD_TYPE'] == 'nacl_extra_sdk':
-    arch_flag = ''
-    shlibsuffix = '.pso'
 
   env['PNACL_ROOT'] = root
   pnacl_sdk_lib = '${PNACL_ROOT}/libs-bitcode'
@@ -303,14 +300,14 @@ def AddBiasForPNaCl(env):
   assert(env.Bit('bitcode'))
 
   if env.Bit('target_arm'):
-    env.Append(CCFLAGS=['--pnacl-arm-bias'])
-    env.Append(CXXFLAGS=['--pnacl-arm-bias'])
+    env.AppendUnique(CCFLAGS=['--pnacl-arm-bias'],
+                     CXXFLAGS=['--pnacl-arm-bias'])
   elif env.Bit('target_x86_32'):
-    env.Append(CCFLAGS=['--pnacl-i686-bias'])
-    env.Append(CXXFLAGS=['--pnacl-i686-bias'])
+    env.AppendUnique(CCFLAGS=['--pnacl-i686-bias'],
+                     CXXFLAGS=['--pnacl-i686-bias'])
   elif env.Bit('target_x86_64'):
-    env.Append(CCFLAGS=['--pnacl-x86_64-bias'])
-    env.Append(CXXFLAGS=['--pnacl-x86_64-bias'])
+    env.AppendUnique(CCFLAGS=['--pnacl-x86_64-bias'],
+                     CXXFLAGS=['--pnacl-x86_64-bias'])
   else:
     raise Exception("Unknown architecture!")
 

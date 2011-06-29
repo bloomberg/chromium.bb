@@ -13,6 +13,7 @@
 #include <cmath>
 #include <limits>
 #include <string>
+#include <nacl/nacl_inttypes.h>
 
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "ppapi/c/pp_bool.h"
@@ -25,10 +26,6 @@
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/var.h"
-
-// Due to a bug in nacl-newlib, this #include has to come last.
-// See http://code.google.com/p/nativeclient/issues/detail?id=1654
-#include <nacl/nacl_inttypes.h>
 
 
 // Most of this example is borrowed from ppapi/examples/audio/audio.cc

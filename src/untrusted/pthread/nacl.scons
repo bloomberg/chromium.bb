@@ -23,8 +23,10 @@ env.ComponentLibrary('libpthread', ['nc_thread.c',
 
 env.AddLibraryToSdk(['libpthread'])
 
-dest_dir = ARGUMENTS.get('extra_sdk_include_destination',
-                         '${NACL_SDK_INCLUDE}')
-Alias('install_libpthread',
-       # Copy the header file to the include directory.
-       [env.Replicate(dest_dir, ['pthread.h', 'semaphore.h' ])])
+# install_libpthread is a no-op under --nacl_glibc, but without it
+# installs the header files from this directory into the toolchain.
+if not env.Bit('nacl_glibc'):
+  n = env.AddHeaderToSdk(['pthread.h', 'semaphore.h'], None)
+else:
+  n = []
+env.Alias('install_libpthread', n)
