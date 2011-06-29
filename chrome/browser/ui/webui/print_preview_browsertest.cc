@@ -74,7 +74,7 @@ class PrintPreviewWebUITest
 
 // http://crbug.com/87964
 #if defined(OS_CHROMEOS)
-#define MAYBE_TestPrintPreview FLAKY_TestPrintPreview
+#define MAYBE_TestPrintPreview DISABLED_TestPrintPreview
 #else
 #define MAYBE_TestPrintPreview TestPrintPreview
 #endif // defined(OS_CHROMEOS)
