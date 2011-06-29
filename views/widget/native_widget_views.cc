@@ -43,6 +43,7 @@ void NativeWidgetViews::OnActivate(bool active) {
 
 void NativeWidgetViews::InitNativeWidget(const Widget::InitParams& params) {
   view_ = new internal::NativeWidgetView(this);
+  view_->SetBoundsRect(params.bounds);
   view_->SetPaintToLayer(true);
   View* desktop_view = ViewsDelegate::views_delegate->GetDefaultParentView();
   desktop_view->AddChildView(view_);
