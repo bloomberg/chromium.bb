@@ -13,7 +13,6 @@
 #include "remoting/host/in_memory_host_config.h"
 #include "remoting/host/test_key_pair.h"
 #include "remoting/jingle_glue/iq_request.h"
-#include "remoting/jingle_glue/jingle_client.h"
 #include "remoting/jingle_glue/mock_objects.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

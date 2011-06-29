@@ -24,7 +24,8 @@ FakeSignalStrategy::FakeSignalStrategy(const std::string& jid)
     : jid_(jid),
       peer_(NULL),
       listener_(NULL),
-      last_id_(0) {
+      last_id_(0),
+      ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)) {
 
 }
 
@@ -58,9 +59,7 @@ void FakeSignalStrategy::SendStanza(buzz::XmlElement* stanza) {
   stanza->SetAttr(buzz::QN_FROM, jid_);
 
   if (peer_) {
-    MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(&FakeSignalStrategy::OnIncomingMessage,
-                              base::Unretained(peer_), stanza));
+    peer_->OnIncomingMessage(stanza);
   } else {
     delete stanza;
   }
@@ -78,6 +77,12 @@ IqRequest* FakeSignalStrategy::CreateIqRequest() {
 }
 
 void FakeSignalStrategy::OnIncomingMessage(buzz::XmlElement* stanza) {
+   MessageLoop::current()->PostTask(
+       FROM_HERE, task_factory_.NewRunnableMethod(
+           &FakeSignalStrategy::DeliverIncomingMessage, stanza));
+}
+
+void FakeSignalStrategy::DeliverIncomingMessage(buzz::XmlElement* stanza) {
   const std::string& to_field = stanza->Attr(buzz::QN_TO);
   if (to_field != jid_) {
     LOG(WARNING) << "Dropping stanza that is addressed to " << to_field

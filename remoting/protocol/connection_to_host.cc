@@ -64,20 +64,16 @@ void ConnectionToHost::Connect(scoped_refptr<XmppProxy> xmpp_proxy,
   video_stub_ = video_stub;
   access_code_ = access_code;
 
-  // Initialize |jingle_client_|.
+  // Save jid of the host. The actual connection is created later after
+  // |signal_strategy_| is connected.
+  host_jid_ = host_jid;
+  host_public_key_ = host_public_key;
+
+  // Initialize |signal_strategy_|.
   JavascriptSignalStrategy* strategy = new JavascriptSignalStrategy(your_jid);
   strategy->AttachXmppProxy(xmpp_proxy);
   signal_strategy_.reset(strategy);
-  jingle_client_ =
-      new JingleClient(message_loop_, signal_strategy_.get(),
-                       network_manager_.release(), socket_factory_.release(),
-                       port_allocator_session_factory_.release(), this);
-  jingle_client_->Init();
-
-  // Save jid of the host. The actual connection is created later after
-  // |jingle_client_| is connected.
-  host_jid_ = host_jid;
-  host_public_key_ = host_public_key;
+  signal_strategy_->Init(this);
 }
 
 void ConnectionToHost::Disconnect(const base::Closure& shutdown_task) {
@@ -100,24 +96,24 @@ void ConnectionToHost::Disconnect(const base::Closure& shutdown_task) {
 void ConnectionToHost::InitSession() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
-  std::string jid = jingle_client_->GetFullJid();
-
   // Initialize chromotocol |session_manager_|.
   JingleSessionManager* session_manager =
-      new JingleSessionManager(message_loop_);
+      new JingleSessionManager(message_loop_, network_manager_.release(),
+                               socket_factory_.release(),
+                               port_allocator_session_factory_.release());
+
   // TODO(ajwong): Make this a command switch when we're more stable.
   session_manager->set_allow_local_ips(true);
   session_manager->Init(
-      jid, jingle_client_->session_manager(),
-      NewCallback(this, &ConnectionToHost::OnNewSession),
-      NULL, NULL);
+      local_jid_, signal_strategy_.get(),
+      NewCallback(this, &ConnectionToHost::OnNewSession), NULL, NULL);
   session_manager_ = session_manager;
 
   CandidateSessionConfig* candidate_config =
       CandidateSessionConfig::CreateDefault();
 
   std::string client_token =
-      protocol::GenerateSupportAuthToken(jid, access_code_);
+      protocol::GenerateSupportAuthToken(local_jid_, access_code_);
 
   // Initialize |session_|.
   session_ = session_manager_->Connect(
@@ -144,19 +140,10 @@ void ConnectionToHost::OnServerClosed(const base::Closure& shutdown_task) {
 
   session_manager_ = NULL;
 
-  if (jingle_client_) {
-    jingle_client_->Close(base::Bind(&ConnectionToHost::OnJingleClientClosed,
-                                     base::Unretained(this), shutdown_task));
-  } else {
-    OnJingleClientClosed(shutdown_task);
+  if (signal_strategy_.get()) {
+    signal_strategy_->Close();
+    signal_strategy_.reset();
   }
-}
-
-void ConnectionToHost::OnJingleClientClosed(
-    const base::Closure& shutdown_task) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
-
-  signal_strategy_.reset();
 
   shutdown_task.Run();
 }
@@ -165,20 +152,24 @@ const SessionConfig* ConnectionToHost::config() {
   return session_->config();
 }
 
-// JingleClient::Callback interface.
-void ConnectionToHost::OnStateChange(JingleClient* client,
-                                     JingleClient::State state) {
+
+void ConnectionToHost::OnStateChange(
+    SignalStrategy::StatusObserver::State state) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
-  DCHECK(client);
   DCHECK(event_callback_);
 
-  if (state == JingleClient::CONNECTED) {
-    VLOG(1) << "Connected as: " << client->GetFullJid();
+  if (state == SignalStrategy::StatusObserver::CONNECTED) {
+    VLOG(1) << "Connected as: " << local_jid_;
     InitSession();
-  } else if (state == JingleClient::CLOSED) {
+  } else if (state == SignalStrategy::StatusObserver::CLOSED) {
     VLOG(1) << "Connection closed.";
     event_callback_->OnConnectionClosed(this);
   }
+}
+
+void ConnectionToHost::OnJidChange(const std::string& full_jid) {
+  DCHECK_EQ(message_loop_, MessageLoop::current());
+  local_jid_ = full_jid;
 }
 
 void ConnectionToHost::OnNewSession(Session* session,

@@ -85,13 +85,13 @@ ChromotingHost::~ChromotingHost() {
 }
 
 void ChromotingHost::Start() {
-  if (MessageLoop::current() != context_->main_message_loop()) {
-    context_->main_message_loop()->PostTask(
+  if (MessageLoop::current() != context_->network_message_loop()) {
+    context_->network_message_loop()->PostTask(
         FROM_HERE, base::Bind(&ChromotingHost::Start, this));
     return;
   }
 
-  DCHECK(!jingle_client_);
+  DCHECK(!signal_strategy_.get());
   DCHECK(access_verifier_.get());
 
   // Make sure this object is not started.
@@ -117,10 +117,7 @@ void ChromotingHost::Start() {
       new XmppSignalStrategy(context_->jingle_thread(), xmpp_login,
                              xmpp_auth_token,
                              xmpp_auth_service));
-  jingle_client_ = new JingleClient(context_->network_message_loop(),
-                                    signal_strategy_.get(),
-                                    NULL, NULL, NULL, this);
-  jingle_client_->Init();
+  signal_strategy_->Init(this);
 }
 
 // This method is called when we need to destroy the host process.
@@ -165,10 +162,10 @@ void ChromotingHost::Shutdown(Task* shutdown_task) {
   // Stop chromotocol session manager.
   if (session_manager_) {
     session_manager_->Close(
-        NewRunnableMethod(this, &ChromotingHost::ShutdownJingleClient));
+        NewRunnableMethod(this, &ChromotingHost::ShutdownSignaling));
     session_manager_ = NULL;
   } else {
-    ShutdownJingleClient();
+    ShutdownSignaling();
   }
 }
 
@@ -224,19 +221,17 @@ void ChromotingHost::OnSequenceNumberUpdated(ConnectionToClient* connection,
 
 ////////////////////////////////////////////////////////////////////////////
 // JingleClient::Callback implementations
-void ChromotingHost::OnStateChange(JingleClient* jingle_client,
-                                   JingleClient::State state) {
+void ChromotingHost::OnStateChange(
+    SignalStrategy::StatusObserver::State state) {
   DCHECK_EQ(MessageLoop::current(), context_->network_message_loop());
 
-  if (state == JingleClient::CONNECTED) {
-    std::string jid = jingle_client->GetFullJid();
-
-    DCHECK_EQ(jingle_client_.get(), jingle_client);
-    VLOG(1) << "Host connected as " << jid;
+  if (state == SignalStrategy::StatusObserver::CONNECTED) {
+    VLOG(1) << "Host connected as " << local_jid_;
 
     // Create and start session manager.
     protocol::JingleSessionManager* server =
-        new protocol::JingleSessionManager(context_->network_message_loop());
+        new protocol::JingleSessionManager(context_->network_message_loop(),
+                                           NULL, NULL, NULL);
     // TODO(ajwong): Make this a command switch when we're more stable.
     server->set_allow_local_ips(true);
 
@@ -245,7 +240,7 @@ void ChromotingHost::OnStateChange(JingleClient* jingle_client,
     CHECK(key_pair.Load(config_))
         << "Failed to load server authentication data";
 
-    server->Init(jid, jingle_client->session_manager(),
+    server->Init(local_jid_, signal_strategy_.get(),
                  NewCallback(this, &ChromotingHost::OnNewClientSession),
                  key_pair.CopyPrivateKey(), key_pair.GenerateCertificate());
 
@@ -253,9 +248,9 @@ void ChromotingHost::OnStateChange(JingleClient* jingle_client,
 
     for (StatusObserverList::iterator it = status_observers_.begin();
          it != status_observers_.end(); ++it) {
-      (*it)->OnSignallingConnected(signal_strategy_.get(), jid);
+      (*it)->OnSignallingConnected(signal_strategy_.get(), local_jid_);
     }
-  } else if (state == JingleClient::CLOSED) {
+  } else if (state == SignalStrategy::StatusObserver::CLOSED) {
     VLOG(1) << "Host disconnected from talk network.";
     for (StatusObserverList::iterator it = status_observers_.begin();
          it != status_observers_.end(); ++it) {
@@ -266,6 +261,11 @@ void ChromotingHost::OnStateChange(JingleClient* jingle_client,
     // disconnected.
     Shutdown(NULL);
   }
+}
+
+void ChromotingHost::OnJidChange(const std::string& full_jid) {
+  DCHECK_EQ(MessageLoop::current(), context_->network_message_loop());
+  local_jid_ = full_jid;
 }
 
 void ChromotingHost::OnNewClientSession(
@@ -630,28 +630,16 @@ void ChromotingHost::ContinueWindowTimerFunc() {
   ShowContinueWindow(true);
 }
 
-void ChromotingHost::ShutdownJingleClient() {
-  if (MessageLoop::current() != context_->main_message_loop()) {
-    context_->main_message_loop()->PostTask(
-        FROM_HERE, base::Bind(&ChromotingHost::ShutdownJingleClient, this));
-    return;
-  }
-
-  // Disconnect from the talk network.
-  if (jingle_client_) {
-    jingle_client_->Close(base::Bind(
-        &ChromotingHost::ShutdownSignallingDisconnected, this));
-  } else {
-    ShutdownRecorder();
-  }
-}
-
-void ChromotingHost::ShutdownSignallingDisconnected() {
+void ChromotingHost::ShutdownSignaling() {
   if (MessageLoop::current() != context_->network_message_loop()) {
     context_->network_message_loop()->PostTask(
-        FROM_HERE, base::Bind(
-            &ChromotingHost::ShutdownSignallingDisconnected, this));
+        FROM_HERE, base::Bind(&ChromotingHost::ShutdownSignaling, this));
     return;
+  }
+
+  if (signal_strategy_.get()) {
+    signal_strategy_->Close();
+    signal_strategy_.reset();
   }
 
   for (StatusObserverList::iterator it = status_observers_.begin();

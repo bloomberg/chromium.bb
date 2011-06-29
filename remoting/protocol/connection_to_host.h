@@ -10,7 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
-#include "remoting/jingle_glue/jingle_client.h"
+#include "remoting/jingle_glue/signal_strategy.h"
 #include "remoting/proto/internal.pb.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/host_stub.h"
@@ -20,6 +20,11 @@
 #include "remoting/protocol/session_manager.h"
 
 class MessageLoop;
+
+namespace talk_base {
+class NetworkManager;
+class PacketSocketFactory;
+}  // namespace talk_base
 
 namespace remoting {
 
@@ -36,7 +41,7 @@ class SessionConfig;
 class VideoReader;
 class VideoStub;
 
-class ConnectionToHost : public JingleClient::Callback {
+class ConnectionToHost : public SignalStrategy::StatusObserver {
  public:
   enum State {
     STATE_EMPTY,
@@ -87,8 +92,10 @@ class ConnectionToHost : public JingleClient::Callback {
 
   virtual HostStub* host_stub();
 
-  // JingleClient::Callback interface.
-  virtual void OnStateChange(JingleClient* client, JingleClient::State state);
+  // SignalStrategy::StatusObserver interface.
+  virtual void OnStateChange(
+      SignalStrategy::StatusObserver::State state) OVERRIDE;
+  virtual void OnJidChange(const std::string& full_jid) OVERRIDE;
 
   // Callback for chromotocol SessionManager.
   void OnNewSession(
@@ -116,7 +123,6 @@ class ConnectionToHost : public JingleClient::Callback {
   // server, and then disconnect XMPP connection.
   void OnDisconnected(const base::Closure& shutdown_task);
   void OnServerClosed(const base::Closure& shutdown_task);
-  void OnJingleClientClosed(const base::Closure& shutdown_task);
 
   // Internal state of the connection.
   State state_;
@@ -128,7 +134,7 @@ class ConnectionToHost : public JingleClient::Callback {
   scoped_ptr<PortAllocatorSessionFactory> port_allocator_session_factory_;
 
   scoped_ptr<SignalStrategy> signal_strategy_;
-  scoped_refptr<JingleClient> jingle_client_;
+  std::string local_jid_;
   scoped_refptr<SessionManager> session_manager_;
   scoped_refptr<Session> session_;
 

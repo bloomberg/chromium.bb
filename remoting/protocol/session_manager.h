@@ -54,7 +54,18 @@
 
 class Task;
 
+namespace crypto {
+class RSAPrivateKey;
+}  // namespace base
+
+namespace net {
+class X509Certificate;
+}  // namespace net
+
 namespace remoting {
+
+class SignalStrategy;
+
 namespace protocol {
 
 // Generic interface for Chromoting session manager.
@@ -75,6 +86,20 @@ class SessionManager : public base::RefCountedThreadSafe<SessionManager> {
   // for the new session using Session::set_config().
   typedef Callback2<Session*, IncomingSessionResponse*>::Type
       IncomingSessionCallback;
+
+  // Initializes the session client. Doesn't accept ownership of the
+  // |signal_strategy|. Close() must be called _before_ the |session_manager|
+  // is destroyed.
+  // If this object is used in server mode, then |private_key| and
+  // |certificate| are used to establish a secured communication with the
+  // client. It will also take ownership of these objects.
+  // In case this is used in client mode, pass in NULL for both private key and
+  // certificate.
+  virtual void Init(const std::string& local_jid,
+                    SignalStrategy* signal_strategy,
+                    IncomingSessionCallback* incoming_session_callback,
+                    crypto::RSAPrivateKey* private_key,
+                    scoped_refptr<net::X509Certificate> certificate) = 0;
 
   // Tries to create a session to the host |jid|.
   //

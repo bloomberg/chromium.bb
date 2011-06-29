@@ -7,7 +7,15 @@
 #include <limits>
 
 #include "base/message_loop.h"
+#include "base/string_util.h"
 #include "remoting/base/constants.h"
+#include "remoting/jingle_glue/http_port_allocator.h"
+#include "remoting/jingle_glue/jingle_info_request.h"
+#include "remoting/jingle_glue/jingle_signaling_connector.h"
+#include "remoting/jingle_glue/signal_strategy.h"
+#include "third_party/libjingle/source/talk/base/basicpacketsocketfactory.h"
+#include "third_party/libjingle/source/talk/p2p/base/sessionmanager.h"
+#include "third_party/libjingle/source/talk/p2p/base/transport.h"
 #include "third_party/libjingle/source/talk/p2p/base/constants.h"
 #include "third_party/libjingle/source/talk/p2p/base/transport.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
@@ -17,17 +25,29 @@ using buzz::XmlElement;
 namespace remoting {
 namespace protocol {
 
-JingleSessionManager::JingleSessionManager(MessageLoop* message_loop)
+JingleSessionManager::JingleSessionManager(
+    MessageLoop* message_loop,
+    talk_base::NetworkManager* network_manager,
+    talk_base::PacketSocketFactory* socket_factory,
+    PortAllocatorSessionFactory* port_allocator_session_factory)
     : message_loop_(message_loop),
-      cricket_session_manager_(NULL),
+      network_manager_(network_manager),
+      socket_factory_(socket_factory),
+      port_allocator_session_factory_(port_allocator_session_factory),
+      signal_strategy_(NULL),
+      enable_nat_traversing_(false),
       allow_local_ips_(false),
       closed_(false) {
   DCHECK(message_loop);
 }
 
+JingleSessionManager::~JingleSessionManager() {
+  DCHECK(closed_);
+}
+
 void JingleSessionManager::Init(
     const std::string& local_jid,
-    cricket::SessionManager* cricket_session_manager,
+    SignalStrategy* signal_strategy,
     IncomingSessionCallback* incoming_session_callback,
     crypto::RSAPrivateKey* private_key,
     scoped_refptr<net::X509Certificate> certificate) {
@@ -35,24 +55,49 @@ void JingleSessionManager::Init(
     message_loop_->PostTask(
         FROM_HERE, NewRunnableMethod(
             this, &JingleSessionManager::Init,
-            local_jid, cricket_session_manager, incoming_session_callback,
+            local_jid, signal_strategy, incoming_session_callback,
             private_key, certificate));
     return;
   }
 
-  DCHECK(cricket_session_manager);
+  DCHECK(signal_strategy);
   DCHECK(incoming_session_callback);
 
   local_jid_ = local_jid;
   certificate_ = certificate;
   private_key_.reset(private_key);
   incoming_session_callback_.reset(incoming_session_callback);
-  cricket_session_manager_ = cricket_session_manager;
-  cricket_session_manager_->AddClient(kChromotingXmlNamespace, this);
-}
+  signal_strategy_ = signal_strategy;
 
-JingleSessionManager::~JingleSessionManager() {
-  DCHECK(closed_);
+  if (!network_manager_.get()) {
+    VLOG(1) << "Creating talk_base::NetworkManager.";
+    network_manager_.reset(new talk_base::NetworkManager());
+  }
+  if (!socket_factory_.get()) {
+    VLOG(1) << "Creating talk_base::BasicPacketSocketFactory.";
+    socket_factory_.reset(new talk_base::BasicPacketSocketFactory(
+        talk_base::Thread::Current()));
+  }
+
+  port_allocator_.reset(
+      new remoting::HttpPortAllocator(
+          network_manager_.get(), socket_factory_.get(),
+          port_allocator_session_factory_.get(), "transp2"));
+  if (!enable_nat_traversing_) {
+    port_allocator_->set_flags(cricket::PORTALLOCATOR_DISABLE_STUN |
+                               cricket::PORTALLOCATOR_DISABLE_RELAY);
+  }
+
+  if (enable_nat_traversing_) {
+    jingle_info_request_.reset(
+        new JingleInfoRequest(signal_strategy_->CreateIqRequest()));
+    jingle_info_request_->SetCallback(
+        NewCallback(this, &JingleSessionManager::OnJingleInfo));
+    jingle_info_request_->Run(
+        NewRunnableMethod(this, &JingleSessionManager::DoStartSessionManager));
+  } else {
+    DoStartSessionManager();
+  }
 }
 
 void JingleSessionManager::Close(Task* closed_task) {
@@ -71,6 +116,8 @@ void JingleSessionManager::Close(Task* closed_task) {
       cricket_session_manager_->DestroySession(session);
       sessions_.pop_front();
     }
+    jingle_signaling_connector_.reset();
+    cricket_session_manager_.reset();
     closed_ = true;
   }
 
@@ -224,6 +271,36 @@ bool JingleSessionManager::ParseContent(
     cricket::ParseError* error) {
   *content = ContentDescription::ParseXml(element);
   return *content != NULL;
+}
+
+void JingleSessionManager::OnJingleInfo(
+    const std::string& token,
+    const std::vector<std::string>& relay_hosts,
+    const std::vector<talk_base::SocketAddress>& stun_hosts) {
+  if (port_allocator_.get()) {
+    // TODO(ajwong): Avoid string processing if log-level is low.
+    std::string stun_servers;
+    for (size_t i = 0; i < stun_hosts.size(); ++i) {
+      stun_servers += stun_hosts[i].ToString() + "; ";
+    }
+    LOG(INFO) << "Configuring with relay token: " << token
+              << ", relays: " << JoinString(relay_hosts, ';')
+              << ", stun: " << stun_servers;
+    port_allocator_->SetRelayToken(token);
+    port_allocator_->SetStunHosts(stun_hosts);
+    port_allocator_->SetRelayHosts(relay_hosts);
+  } else {
+    LOG(INFO) << "Jingle info found but no port allocator.";
+  }
+}
+
+void JingleSessionManager::DoStartSessionManager() {
+  cricket_session_manager_.reset(
+      new cricket::SessionManager(port_allocator_.get()));
+  cricket_session_manager_->AddClient(kChromotingXmlNamespace, this);
+
+  jingle_signaling_connector_.reset(new JingleSignalingConnector(
+      signal_strategy_, cricket_session_manager_.get()));
 }
 
 bool JingleSessionManager::WriteContent(

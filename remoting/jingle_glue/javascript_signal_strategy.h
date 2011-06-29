@@ -16,7 +16,6 @@
 
 namespace remoting {
 
-class JingleSignalingConnector;
 class XmppProxy;
 
 class JavascriptSignalStrategy : public SignalStrategy,

@@ -15,8 +15,8 @@
 #include "net/socket/socket.h"
 #include "remoting/protocol/jingle_session.h"
 #include "remoting/protocol/jingle_session_manager.h"
-#include "remoting/protocol/session_manager_pair.h"
 #include "remoting/jingle_glue/jingle_thread.h"
+#include "remoting/jingle_glue/fake_signal_strategy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle/source/talk/p2p/client/basicportallocator.h"
@@ -49,6 +49,9 @@ const int kMessages = 100;
 const int kTestDataSize = kMessages * kMessageSize;
 const int kUdpWriteDelayMs = 10;
 const char kTestToken[] = "a_dummy_token";
+
+const char kHostJid[] = "host1@gmail.com/123";
+const char kClientJid[] = "host2@gmail.com/321";
 
 const char kTestHostPublicKey[] =
     "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3nk/8ILc0JBqHgOS0UCOIl4m"
@@ -91,15 +94,9 @@ class JingleSessionTest : public testing::Test {
 
   virtual void TearDown() {
     CloseSessions();
-
-    if (host_server_) {
-      host_server_->Close(NewRunnableFunction(
-          &JingleSessionTest::DoNothing));
-    }
-    if (client_server_) {
-      client_server_->Close(NewRunnableFunction(
-          &JingleSessionTest::DoNothing));
-    }
+    thread_.message_loop()->PostTask(
+        FROM_HERE, NewRunnableMethod(
+            this, &JingleSessionTest::DoCloseSessionManager));
     thread_.Stop();
   }
 
@@ -112,14 +109,9 @@ class JingleSessionTest : public testing::Test {
   }
 
   void CloseSessions() {
-    if (host_session_) {
-      host_session_->Close(NewRunnableFunction(
-          &JingleSessionTest::DoNothing));
-    }
-    if (client_session_) {
-      client_session_->Close(NewRunnableFunction(
-          &JingleSessionTest::DoNothing));
-    }
+    thread_.message_loop()->PostTask(
+        FROM_HERE, NewRunnableMethod(
+            this, &JingleSessionTest::DoCloseSessions));
     SyncWithJingleThread();
   }
 
@@ -149,26 +141,53 @@ class JingleSessionTest : public testing::Test {
     scoped_ptr<crypto::RSAPrivateKey> private_key(
         crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(key_vector));
 
-    session_manager_pair_ = new SessionManagerPair(&thread_);
-    session_manager_pair_->Init();
-    host_server_ = new JingleSessionManager(thread_.message_loop());
+    host_signal_strategy_.reset(new FakeSignalStrategy(kHostJid));
+    client_signal_strategy_.reset(new FakeSignalStrategy(kClientJid));
+    FakeSignalStrategy::Connect(host_signal_strategy_.get(),
+                                client_signal_strategy_.get());
+
+    host_server_ =
+        new JingleSessionManager(thread_.message_loop(), NULL, NULL, NULL);
     host_server_->set_allow_local_ips(true);
     host_server_->Init(
-        SessionManagerPair::kHostJid,
-        session_manager_pair_->host_session_manager(),
+        kHostJid, host_signal_strategy_.get(),
         NewCallback(&host_server_callback_,
                     &MockSessionManagerCallback::OnIncomingSession),
         private_key.release(),
         cert);
 
-    client_server_ = new JingleSessionManager(thread_.message_loop());
+    client_server_ =
+        new JingleSessionManager(thread_.message_loop(), NULL, NULL, NULL);
     client_server_->set_allow_local_ips(true);
     client_server_->Init(
-        SessionManagerPair::kClientJid,
-        session_manager_pair_->client_session_manager(),
+        kClientJid, client_signal_strategy_.get(),
         NewCallback(&client_server_callback_,
                     &MockSessionManagerCallback::OnIncomingSession),
         NULL, NULL);
+  }
+
+  void DoCloseSessions() {
+    if (host_session_) {
+      host_session_->Close(NewRunnableFunction(
+          &JingleSessionTest::DoNothing));
+    }
+    if (client_session_) {
+      client_session_->Close(NewRunnableFunction(
+          &JingleSessionTest::DoNothing));
+    }
+  }
+
+  void DoCloseSessionManager() {
+    if (host_server_) {
+      host_server_->Close(NewRunnableFunction(&JingleSessionTest::DoNothing));
+      host_server_ = NULL;
+    }
+    if (client_server_) {
+      client_server_->Close(NewRunnableFunction(&JingleSessionTest::DoNothing));
+      client_server_ = NULL;
+    }
+    host_signal_strategy_.reset();
+    client_signal_strategy_.reset();
   }
 
   bool InitiateConnection() {
@@ -178,7 +197,7 @@ class JingleSessionTest : public testing::Test {
                 this, &JingleSessionTest::SetHostSession)),
             SetArgumentPointee<1>(protocol::SessionManager::ACCEPT)));
 
-    base::WaitableEvent host_connected_event(false, false);
+    base::WaitableEvent host_connected_event(true, false);
     EXPECT_CALL(host_connection_callback_,
                 OnStateChange(Session::CONNECTING))
         .Times(1);
@@ -192,7 +211,7 @@ class JingleSessionTest : public testing::Test {
                 OnStateChange(Session::CLOSED))
         .Times(1);
 
-    base::WaitableEvent client_connected_event(false, false);
+    base::WaitableEvent client_connected_event(true, false);
     EXPECT_CALL(client_connection_callback_,
                 OnStateChange(Session::CONNECTING))
         .Times(1);
@@ -207,7 +226,7 @@ class JingleSessionTest : public testing::Test {
         .Times(1);
 
     client_session_ = client_server_->Connect(
-        SessionManagerPair::kHostJid, kTestHostPublicKey, kTestToken,
+        kHostJid, kTestHostPublicKey, kTestToken,
         CandidateSessionConfig::CreateDefault(),
         NewCallback(&client_connection_callback_,
                     &MockSessionCallback::OnStateChange));
@@ -232,7 +251,9 @@ class JingleSessionTest : public testing::Test {
   }
 
   JingleThread thread_;
-  scoped_refptr<SessionManagerPair> session_manager_pair_;
+  scoped_ptr<FakeSignalStrategy> host_signal_strategy_;
+  scoped_ptr<FakeSignalStrategy> client_signal_strategy_;
+
   scoped_refptr<JingleSessionManager> host_server_;
   MockSessionManagerCallback host_server_callback_;
   scoped_refptr<JingleSessionManager> client_server_;
@@ -567,7 +588,7 @@ TEST_F(JingleSessionTest, RejectConnection) {
   EXPECT_CALL(host_server_callback_, OnIncomingSession(_, _))
       .WillOnce(SetArgumentPointee<1>(protocol::SessionManager::DECLINE));
 
-  base::WaitableEvent done_event(false, false);
+  base::WaitableEvent done_event(true, false);
   EXPECT_CALL(client_connection_callback_,
               OnStateChange(Session::CONNECTING))
       .Times(1);
@@ -577,9 +598,7 @@ TEST_F(JingleSessionTest, RejectConnection) {
       .WillOnce(InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal));
 
   client_session_ = client_server_->Connect(
-      SessionManagerPair::kHostJid,
-      kTestHostPublicKey,
-      kTestToken,
+      kHostJid, kTestHostPublicKey, kTestToken,
       CandidateSessionConfig::CreateDefault(),
       NewCallback(&client_connection_callback_,
                   &MockSessionCallback::OnStateChange));

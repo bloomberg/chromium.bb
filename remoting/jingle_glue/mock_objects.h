@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/scoped_ptr.h"
 #include "remoting/jingle_glue/iq_request.h"
-#include "remoting/jingle_glue/jingle_client.h"
+#include "remoting/jingle_glue/signal_strategy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace remoting {

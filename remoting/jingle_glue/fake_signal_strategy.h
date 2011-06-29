@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/task.h"
 #include "base/threading/non_thread_safe.h"
 #include "remoting/jingle_glue/javascript_iq_request.h"
 #include "remoting/jingle_glue/signal_strategy.h"
@@ -33,12 +34,16 @@ class FakeSignalStrategy : public SignalStrategy,
   // Called by the |peer_|. Takes ownership of |stanza|.
   void OnIncomingMessage(buzz::XmlElement* stanza);
 
+  void DeliverIncomingMessage(buzz::XmlElement* stanza);
+
   std::string jid_;
   FakeSignalStrategy* peer_;
   Listener* listener_;
   JavascriptIqRegistry iq_registry_;
 
   int last_id_;
+
+  ScopedRunnableMethodFactory<FakeSignalStrategy> task_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSignalStrategy);
 };

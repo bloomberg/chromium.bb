@@ -16,8 +16,8 @@
 #include "remoting/host/client_session.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/host_status_observer.h"
-#include "remoting/jingle_glue/jingle_client.h"
 #include "remoting/jingle_glue/jingle_thread.h"
+#include "remoting/jingle_glue/signal_strategy.h"
 #include "remoting/protocol/session_manager.h"
 #include "remoting/protocol/connection_to_client.h"
 
@@ -66,7 +66,7 @@ class ScreenRecorder;
 class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
                        public protocol::ConnectionToClient::EventHandler,
                        public ClientSession::EventHandler,
-                       public JingleClient::Callback {
+                       public SignalStrategy::StatusObserver {
  public:
   // Factory methods that must be used to create ChromotingHost instances.
   // Default capturer and input stub are used if it is not specified.
@@ -99,7 +99,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   void AddStatusObserver(HostStatusObserver* observer);
 
   ////////////////////////////////////////////////////////////////////////////
-  // protocol::ConnectionToClient::EventHandler implementations
+  // protocol::ConnectionToClient::EventHandler implementation.
   virtual void OnConnectionOpened(protocol::ConnectionToClient* client);
   virtual void OnConnectionClosed(protocol::ConnectionToClient* client);
   virtual void OnConnectionFailed(protocol::ConnectionToClient* client);
@@ -107,11 +107,13 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
                                        int64 sequence_number);
 
   ////////////////////////////////////////////////////////////////////////////
-  // JingleClient::Callback implementations
-  virtual void OnStateChange(JingleClient* client, JingleClient::State state);
+  // SignalStrategy implementation.
+  virtual void OnStateChange(
+      SignalStrategy::StatusObserver::State state) OVERRIDE;
+  virtual void OnJidChange(const std::string& full_jid) OVERRIDE;
 
   ////////////////////////////////////////////////////////////////////////////
-  // ClientSession::EventHandler implementations
+  // ClientSession::EventHandler implementation.
   virtual void LocalLoginSucceeded(
       scoped_refptr<protocol::ConnectionToClient> client);
   virtual void LocalLoginFailed(
@@ -190,8 +192,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   void ContinueWindowTimerFunc();
 
   // The following methods are called during shutdown.
-  void ShutdownJingleClient();
-  void ShutdownSignallingDisconnected();
+  void ShutdownSignaling();
   void ShutdownRecorder();
   void ShutdownFinish();
 
@@ -204,9 +205,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
 
   scoped_ptr<SignalStrategy> signal_strategy_;
 
-  // The libjingle client. This is used to connect to the talk network to
-  // receive connection requests from chromoting client.
-  scoped_refptr<JingleClient> jingle_client_;
+  std::string local_jid_;
 
   scoped_refptr<protocol::SessionManager> session_manager_;
 
