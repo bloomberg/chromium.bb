@@ -1448,6 +1448,13 @@ void OmniboxViewWin::OnKillFocus(HWND focus_wnd) {
   // URL.  We have to do this after calling DefWindowProc() because otherwise
   // an in-progress IME composition will be completed at the new caret position,
   // resulting in the string jumping unexpectedly to the front of the edit.
+  //
+  // Crazy hack: If we just do PlaceCaretAt(0), and the beginning of the text is
+  // currently scrolled out of view, we can wind up with a blinking cursor in
+  // the toolbar at the current X coordinate of the beginning of the text.  By
+  // first doing a reverse-select-all to scroll the beginning of the text into
+  // view, we work around this CRichEditCtrl bug.
+  SelectAll(true);
   PlaceCaretAt(0);
 }
 
