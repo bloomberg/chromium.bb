@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,14 +10,15 @@
 
 #include "base/basictypes.h"
 #include "base/string16.h"
-#include "chrome/browser/chromeos/notifications/balloon_collection_impl.h"
+#include "chrome/browser/chromeos/notifications/balloon_view_host.h"  // MessageCallback
 #include "chrome/browser/notifications/notification_delegate.h"
 #include "googleurl/src/gurl.h"
 
-class MessageCallback;
 class Profile;
 
 namespace chromeos {
+
+class BalloonCollectionImpl;
 
 // The system notification object handles the display of a system notification
 
