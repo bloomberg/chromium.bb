@@ -338,8 +338,11 @@ void BrowserMainParts::ConnectionFieldTrial() {
 // A/B test for determining a value for unused socket timeout. Currently the
 // timeout defaults to 10 seconds. Having this value set too low won't allow us
 // to take advantage of idle sockets. Setting it to too high could possibly
-// result in more ERR_CONNECT_RESETs, requiring one RTT to receive the RST
-// packet and possibly another RTT to re-establish the connection.
+// result in more ERR_CONNECTION_RESETs, since some servers will kill a socket
+// before we time it out. Since these are "unused" sockets, we won't retry the
+// connection and instead show an error to the user. So we need to be
+// conservative here. We've seen that some servers will close the socket after
+// as short as 10 seconds. See http://crbug.com/84313 for more details.
 void BrowserMainParts::SocketTimeoutFieldTrial() {
   const base::FieldTrial::Probability kIdleSocketTimeoutDivisor = 100;
   // 1% probability for all experimental settings.
@@ -357,9 +360,6 @@ void BrowserMainParts::SocketTimeoutFieldTrial() {
   const int socket_timeout_20 =
       socket_timeout_trial->AppendGroup("idle_timeout_20",
                                         kSocketTimeoutProbability);
-  const int socket_timeout_60 =
-      socket_timeout_trial->AppendGroup("idle_timeout_60",
-                                        kSocketTimeoutProbability);
 
   const int idle_to_trial_group = socket_timeout_trial->group();
 
@@ -369,8 +369,6 @@ void BrowserMainParts::SocketTimeoutFieldTrial() {
     net::ClientSocketPool::set_unused_idle_socket_timeout(10);
   } else if (idle_to_trial_group == socket_timeout_20) {
     net::ClientSocketPool::set_unused_idle_socket_timeout(20);
-  } else if (idle_to_trial_group == socket_timeout_60) {
-    net::ClientSocketPool::set_unused_idle_socket_timeout(60);
   } else {
     NOTREACHED();
   }
