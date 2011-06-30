@@ -15,36 +15,44 @@
 
 namespace plugin {
 
-// These enums should be kept roughly in the order they occur during loading.
+// These error codes are reported via UMA so, if you edit them:
+// 1) make sure you understand UMA, first.
+// 2) update src/tools/histograms/histograms.xml in
+//  svn://svn.chromium.org/chrome-internal/trunk/src-internal
+// Values are explicitly specified to make sure they don't shift around when
+// edited, and also to make reading about:histograms easier.
 enum PluginErrorCode {
-  ERROR_UNKNOWN = 0,
-  ERROR_MANIFEST_RESOLVE_URL,
-  ERROR_MANIFEST_LOAD_URL,
-  ERROR_MANIFEST_STAT,
-  ERROR_MANIFEST_TOO_LARGE,
-  ERROR_MANIFEST_OPEN,
-  ERROR_MANIFEST_MEMORY_ALLOC,
-  ERROR_MANIFEST_READ,
-  ERROR_MANIFEST_PARSING,
-  ERROR_MANIFEST_SCHEMA_VALIDATE,
-  ERROR_MANIFEST_GET_NEXE_URL,
-  ERROR_NEXE_LOAD_URL,
-  ERROR_NEXE_ORIGIN_PROTOCOL,
-  ERROR_NEXE_FH_DUP,
-  ERROR_NEXE_STAT,
-  ERROR_ELF_CHECK_IO,
-  ERROR_ELF_CHECK_FAIL,
-  ERROR_SEL_LDR_INIT,
-  ERROR_SEL_LDR_CREATE_LAUNCHER,
-  ERROR_SEL_LDR_FD,
-  ERROR_SEL_LDR_LAUNCH,
-  ERROR_SEL_LDR_COMMUNICATION,
-  ERROR_SEL_LDR_SEND_NEXE,
-  ERROR_SEL_LDR_HANDLE_PASSING,
-  ERROR_SEL_LDR_START_MODULE,
-  ERROR_SEL_LDR_START_STATUS,
-  ERROR_SRPC_CONNECTION_FAIL,
-  ERROR_START_PROXY
+  ERROR_LOAD_SUCCESS = 0,
+  ERROR_LOAD_ABORTED = 1,
+  ERROR_UNKNOWN = 2,
+  ERROR_MANIFEST_RESOLVE_URL = 3,
+  ERROR_MANIFEST_LOAD_URL = 4,
+  ERROR_MANIFEST_STAT = 5,
+  ERROR_MANIFEST_TOO_LARGE = 6,
+  ERROR_MANIFEST_OPEN = 7,
+  ERROR_MANIFEST_MEMORY_ALLOC = 8,
+  ERROR_MANIFEST_READ = 9,
+  ERROR_MANIFEST_PARSING = 10,
+  ERROR_MANIFEST_SCHEMA_VALIDATE = 11,
+  ERROR_MANIFEST_GET_NEXE_URL = 12,
+  ERROR_NEXE_LOAD_URL = 13,
+  ERROR_NEXE_ORIGIN_PROTOCOL = 14,
+  ERROR_NEXE_FH_DUP = 15,
+  ERROR_NEXE_STAT = 16,
+  ERROR_ELF_CHECK_IO = 17,
+  ERROR_ELF_CHECK_FAIL = 18,
+  ERROR_SEL_LDR_INIT = 19,
+  ERROR_SEL_LDR_CREATE_LAUNCHER = 20,
+  ERROR_SEL_LDR_FD = 21,
+  ERROR_SEL_LDR_LAUNCH = 22,
+  ERROR_SEL_LDR_COMMUNICATION = 23,
+  ERROR_SEL_LDR_SEND_NEXE = 24,
+  ERROR_SEL_LDR_HANDLE_PASSING = 25,
+  ERROR_SEL_LDR_START_MODULE = 26,
+  ERROR_SEL_LDR_START_STATUS = 27,
+  ERROR_SRPC_CONNECTION_FAIL = 28,
+  ERROR_START_PROXY = 29,
+  ERROR_MAX
 };
 
 class ErrorInfo {
@@ -57,9 +65,13 @@ class ErrorInfo {
     SetReport(ERROR_UNKNOWN, "");
   }
 
-  void SetReport(const PluginErrorCode type, const std::string& message) {
-    type_ = type;
+  void SetReport(PluginErrorCode error_code, const std::string& message) {
+    error_code_ = error_code;
     message_ = message;
+  }
+
+  PluginErrorCode error_code() const {
+    return error_code_;
   }
 
   void PrependMessage(const std::string& prefix) {
@@ -71,7 +83,7 @@ class ErrorInfo {
   }
 
  private:
-  PluginErrorCode type_;
+  PluginErrorCode error_code_;
   std::string message_;
   NACL_DISALLOW_COPY_AND_ASSIGN(ErrorInfo);
 };

@@ -186,6 +186,20 @@ void HistogramEnumerateOsArch(const std::string& sandbox_isa) {
   }
 }
 
+void HistogramEnumerateLoadStatus(PluginErrorCode error_code) {
+  if (error_code < 0 || error_code >= ERROR_MAX) {
+    error_code = ERROR_UNKNOWN;
+  }
+
+  const PPB_UMA_Private* ptr = GetUMAInterface();
+  if (ptr == NULL) return;
+
+  ptr->HistogramEnumeration(
+      pp::Var("NaCl.LoadStatus").pp_var(),
+      error_code,
+      ERROR_MAX);
+}
+
 // Derive a class from pp::Find_Dev to forward PPP_Find_Dev calls to
 // the plugin.
 class FindAdapter : public pp::Find_Dev {
@@ -1207,6 +1221,9 @@ void PluginPpapi::ReportLoadSuccess(LengthComputable length_computable,
   // TODO(sehr,polina): Remove comment when experimental APIs are removed.
   EnqueueProgressEvent("load", length_computable, loaded_bytes, total_bytes);
   EnqueueProgressEvent("loadend", length_computable, loaded_bytes, total_bytes);
+
+  // UMA
+  HistogramEnumerateLoadStatus(ERROR_LOAD_SUCCESS);
 }
 
 
@@ -1231,6 +1248,9 @@ void PluginPpapi::ReportLoadError(const ErrorInfo& error_info) {
                        LENGTH_IS_NOT_COMPUTABLE,
                        kUnknownBytes,
                        kUnknownBytes);
+
+  // UMA
+  HistogramEnumerateLoadStatus(error_info.error_code());
 }
 
 
@@ -1252,6 +1272,9 @@ void PluginPpapi::ReportLoadAbort() {
                        LENGTH_IS_NOT_COMPUTABLE,
                        kUnknownBytes,
                        kUnknownBytes);
+
+  // UMA
+  HistogramEnumerateLoadStatus(ERROR_LOAD_ABORTED);
 }
 
 
