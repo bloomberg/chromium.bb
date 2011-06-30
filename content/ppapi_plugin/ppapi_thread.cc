@@ -41,7 +41,8 @@ PpapiThread::PpapiThread(bool is_broker)
       get_plugin_interface_(NULL),
       connect_instance_func_(NULL),
       local_pp_module_(
-          base::RandInt(0, std::numeric_limits<PP_Module>::max())) {
+          base::RandInt(0, std::numeric_limits<PP_Module>::max())),
+      next_plugin_dispatcher_id_(1) {
 }
 
 PpapiThread::~PpapiThread() {
@@ -70,6 +71,12 @@ bool PpapiThread::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(PpapiThread, msg)
     IPC_MESSAGE_HANDLER(PpapiMsg_LoadPlugin, OnMsgLoadPlugin)
     IPC_MESSAGE_HANDLER(PpapiMsg_CreateChannel, OnMsgCreateChannel)
+    IPC_MESSAGE_HANDLER_GENERIC(PpapiMsg_PPBFlashTCPSocket_ConnectACK,
+                                OnPluginDispatcherMessageReceived(msg))
+    IPC_MESSAGE_HANDLER_GENERIC(PpapiMsg_PPBFlashTCPSocket_ReadACK,
+                                OnPluginDispatcherMessageReceived(msg))
+    IPC_MESSAGE_HANDLER_GENERIC(PpapiMsg_PPBFlashTCPSocket_WriteACK,
+                                OnPluginDispatcherMessageReceived(msg))
   IPC_END_MESSAGE_MAP()
   return true;
 }
@@ -101,6 +108,27 @@ void PpapiThread::PostToWebKitThread(const tracked_objects::Location& from_here,
 
 bool PpapiThread::SendToBrowser(IPC::Message* msg) {
   return Send(msg);
+}
+
+uint32 PpapiThread::Register(pp::proxy::PluginDispatcher* plugin_dispatcher) {
+  if (!plugin_dispatcher ||
+      plugin_dispatchers_.size() >= std::numeric_limits<uint32>::max()) {
+    return 0;
+  }
+
+  uint32 id = 0;
+  do {
+    // Although it is unlikely, make sure that we won't cause any trouble when
+    // the counter overflows.
+    id = next_plugin_dispatcher_id_++;
+  } while (id == 0 ||
+           plugin_dispatchers_.find(id) != plugin_dispatchers_.end());
+  plugin_dispatchers_[id] = plugin_dispatcher;
+  return id;
+}
+
+void PpapiThread::Unregister(uint32 plugin_dispatcher_id) {
+  plugin_dispatchers_.erase(plugin_dispatcher_id);
 }
 
 void PpapiThread::OnMsgLoadPlugin(const FilePath& path) {
@@ -190,6 +218,20 @@ void PpapiThread::OnMsgCreateChannel(base::ProcessHandle host_process_handle,
   }
 
   Send(new PpapiHostMsg_ChannelCreated(channel_handle));
+}
+
+void PpapiThread::OnPluginDispatcherMessageReceived(const IPC::Message& msg) {
+  // The first parameter should be a plugin dispatcher ID.
+  void* iter = NULL;
+  uint32 id = 0;
+  if (!msg.ReadUInt32(&iter, &id)) {
+    NOTREACHED();
+    return;
+  }
+  std::map<uint32, pp::proxy::PluginDispatcher*>::iterator dispatcher =
+      plugin_dispatchers_.find(id);
+  if (dispatcher != plugin_dispatchers_.end())
+    dispatcher->second->OnMessageReceived(msg);
 }
 
 bool PpapiThread::SetupRendererChannel(base::ProcessHandle host_process_handle,

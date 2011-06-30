@@ -9,14 +9,9 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/private/ppb_flash_file.h"  // For |PP_FileHandle|.
+#include "ppapi/c/private/ppb_flash_tcp_socket.h"
 
 #define PPB_FLASH_NETCONNECTOR_INTERFACE "PPB_Flash_NetConnector;0.1"
-
-// This is an opaque type holding a network address.
-struct PP_Flash_NetAddress {
-  uint32_t size;
-  char data[128];
-};
 
 struct PPB_Flash_NetConnector {
   PP_Resource (*Create)(PP_Instance instance_id);

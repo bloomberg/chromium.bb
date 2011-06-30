@@ -15,6 +15,7 @@
 struct PP_FileInfo_Dev;
 struct PP_ObjectProperty;
 struct PP_Flash_Menu;
+struct PP_Flash_NetAddress;
 
 namespace pp {
 namespace proxy {
@@ -46,6 +47,14 @@ struct ParamTraits<PP_FileInfo_Dev> {
   typedef PP_FileInfo_Dev param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct ParamTraits<PP_Flash_NetAddress> {
+  typedef PP_Flash_NetAddress param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);
 };
 

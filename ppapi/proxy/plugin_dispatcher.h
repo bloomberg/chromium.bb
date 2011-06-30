@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process.h"
@@ -60,6 +61,12 @@ class PluginDispatcher : public Dispatcher {
     // Sends the given message to the browser. Identical semantics to
     // IPC::Message::Sender interface.
     virtual bool SendToBrowser(IPC::Message* msg) = 0;
+
+    // Registers the plugin dispatcher and returns an ID.
+    // Plugin dispatcher IDs will be used to dispatch messages from the browser.
+    // Each call to Register() has to be matched with a call to Unregister().
+    virtual uint32 Register(PluginDispatcher* plugin_dispatcher) = 0;
+    virtual void Unregister(uint32 plugin_dispatcher_id) = 0;
   };
 
   // Constructor for the plugin side. The init and shutdown functions will be
@@ -123,6 +130,8 @@ class PluginDispatcher : public Dispatcher {
   ppapi::FunctionGroupBase* GetFunctionAPI(
       pp::proxy::InterfaceID id);
 
+  uint32 plugin_dispatcher_id() const { return plugin_dispatcher_id_; }
+
  private:
   friend class PluginDispatcherTest;
 
@@ -153,6 +162,8 @@ class PluginDispatcher : public Dispatcher {
   // is what the received_preferences_ indicates. See OnMsgSetPreferences.
   bool received_preferences_;
   ppapi::Preferences preferences_;
+
+  uint32 plugin_dispatcher_id_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginDispatcher);
 };
