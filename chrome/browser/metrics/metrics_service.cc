@@ -1054,6 +1054,7 @@ void MetricsService::MakePendingLog() {
     case SEND_OLD_INITIAL_LOGS:
       if (!unsent_initial_logs_.empty()) {
         compressed_log_ = unsent_initial_logs_.back();
+        unsent_initial_logs_.pop_back();
         break;
       }
       state_ = SENDING_OLD_LOGS;
@@ -1062,6 +1063,7 @@ void MetricsService::MakePendingLog() {
     case SENDING_OLD_LOGS:
       if (!unsent_ongoing_logs_.empty()) {
         compressed_log_ = unsent_ongoing_logs_.back();
+        unsent_ongoing_logs_.pop_back();
         break;
       }
       state_ = SENDING_CURRENT_LOGS;
@@ -1336,14 +1338,8 @@ void MetricsService::OnURLFetchComplete(const URLFetcher* source,
         break;
 
       case SEND_OLD_INITIAL_LOGS:
-        DCHECK(!unsent_initial_logs_.empty());
-        unsent_initial_logs_.pop_back();
-        StoreUnsentLogs();
-        break;
-
       case SENDING_OLD_LOGS:
-        DCHECK(!unsent_ongoing_logs_.empty());
-        unsent_ongoing_logs_.pop_back();
+        // Store the updated list to disk now that the removed log is uploaded.
         StoreUnsentLogs();
         break;
 
