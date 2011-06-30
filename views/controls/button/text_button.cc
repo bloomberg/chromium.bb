@@ -796,6 +796,7 @@ void NativeTextButton::Init() {
   set_border(new TextButtonNativeThemeBorder(this));
   set_ignore_minimum_size(false);
   set_alignment(ALIGN_CENTER);
+  set_focusable(true);
 }
 
 gfx::Size NativeTextButton::GetMinimumSize() {
