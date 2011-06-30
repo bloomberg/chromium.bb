@@ -405,7 +405,7 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
   // variable to hold on to the pixels.
   scoped_refptr<PPB_ImageData_Impl> last_printed_page_;
 #endif  // defined(OS_MACOSX)
-#if WEBKIT_USING_SKIA
+#if defined(OS_LINUX) || defined(OS_WIN)
   // When printing to PDF (print preview, Linux) the entire document goes into
   // one metafile.  However, when users print only a subset of all the pages,
   // it is impossible to know if a call to PrintPage() is the last call.
@@ -418,7 +418,7 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
   SkRefPtr<WebKit::WebCanvas> canvas_;
   // An array of page ranges.
   std::vector<PP_PrintPageNumberRange_Dev> ranges_;
-#endif  // WEBKIT_USING_SKIA
+#endif  // OS_LINUX || OS_WIN
 
   // The plugin print interface.  This nested struct adds functions needed for
   // backwards compatibility.

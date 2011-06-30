@@ -69,8 +69,7 @@
 #include "printing/metafile_impl.h"
 #endif
 
-#if defined(OS_LINUX) || defined(OS_WIN) || \
-    (defined(OS_MACOSX) && defined(USE_SKIA))
+#if defined(USE_SKIA)
 #include "printing/metafile.h"
 #include "printing/metafile_skia_wrapper.h"
 #endif
@@ -903,10 +902,10 @@ int PluginInstance::PrintBegin(const gfx::Rect& printable_area,
   if (!num_pages)
     return 0;
   current_print_settings_ = print_settings;
-#if WEBKIT_USING_SKIA
+#if defined(OS_LINUX) || defined(OS_WIN)
   canvas_ = NULL;
   ranges_.clear();
-#endif  // WEBKIT_USING_SKIA
+#endif  // OS_LINUX || OS_WIN
   return num_pages;
 }
 
@@ -914,14 +913,14 @@ bool PluginInstance::PrintPage(int page_number, WebKit::WebCanvas* canvas) {
   DCHECK(plugin_print_interface_.get());
   PP_PrintPageNumberRange_Dev page_range;
   page_range.first_page_number = page_range.last_page_number = page_number;
-#if WEBKIT_USING_SKIA
+#if defined(OS_LINUX) || defined(OS_WIN)
   // The canvas only has a metafile on it for print preview.
   if (printing::MetafileSkiaWrapper::GetMetafileFromCanvas(canvas)) {
     ranges_.push_back(page_range);
     canvas_ = canvas;
     return true;
   } else
-#endif  // WEBKIT_USING_SKIA
+#endif  // OS_LINUX || OS_WIN
   {
     return PrintPageHelper(&page_range, 1, canvas);
   }
@@ -953,12 +952,12 @@ bool PluginInstance::PrintPageHelper(PP_PrintPageNumberRange_Dev* page_ranges,
 void PluginInstance::PrintEnd() {
   // Keep a reference on the stack. See NOTE above.
   scoped_refptr<PluginInstance> ref(this);
-#if WEBKIT_USING_SKIA
+#if defined(OS_LINUX) || defined(OS_WIN)
   if (!ranges_.empty())
     PrintPageHelper(&(ranges_.front()), ranges_.size(), canvas_.get());
   canvas_ = NULL;
   ranges_.clear();
-#endif  // WEBKIT_USING_SKIA
+#endif  // OS_LINUX || OS_WIN
 
   DCHECK(plugin_print_interface_.get());
   if (plugin_print_interface_.get())
@@ -1073,7 +1072,7 @@ bool PluginInstance::PrintPDFOutput(PP_Resource print_output,
 #endif  // defined(OS_WIN)
 
   bool ret = false;
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || (defined(OS_MACOSX) && defined(USE_SKIA))
   // On Linux we just set the final bits in the native metafile
   // (NativeMetafile and PreviewMetafile must have compatible formats,
   // i.e. both PDF for this to work).
@@ -1087,12 +1086,7 @@ bool PluginInstance::PrintPDFOutput(PP_Resource print_output,
   // Create a PDF metafile and render from there into the passed in context.
   if (metafile.InitFromData(mapper.data(), mapper.size())) {
     // Flip the transform.
-#if defined(USE_SKIA)
-    gfx::SkiaBitLocker bit_locker(canvas);
-    CGContextRef cgContext = bit_locker.cgContext();
-#else
     CGContextRef cgContext = canvas;
-#endif
     CGContextSaveGState(cgContext);
     CGContextTranslateCTM(cgContext, 0,
                           current_print_settings_.printable_area.size.height);
