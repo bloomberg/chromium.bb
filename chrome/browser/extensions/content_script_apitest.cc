@@ -16,6 +16,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentScriptAllFrames) {
   ASSERT_TRUE(RunExtensionTest("content_scripts/all_frames")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentScriptAboutBlankIframes) {
+  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(
+      RunExtensionTest("content_scripts/about_blank_iframes")) << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentScriptExtensionIframe) {
   ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest("content_scripts/extension_iframe")) << message_;

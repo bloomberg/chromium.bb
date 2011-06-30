@@ -21,10 +21,12 @@
 #include "chrome/renderer/extensions/extension_groups.h"
 #include "googleurl/src/gurl.h"
 #include "grit/renderer_resources.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityPolicy.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebVector.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -236,13 +238,21 @@ void UserScriptSlave::InsertInitExtensionCode(
 
 void UserScriptSlave::InjectScripts(WebFrame* frame,
                                     UserScript::RunLocation location) {
-  GURL document_url = GURL(frame->document().url());
-  if (document_url.is_empty())
+  // Normally we would use frame->document().url() to determine the document's
+  // URL, but to decide whether to inject a content script, we use the URL from
+  // the data source. This "quirk" helps prevents content scripts from
+  // inadvertently adding DOM elements to the compose iframe in Gmail because
+  // the compose iframe's dataSource URL is about:blank, but the document URL
+  // changes to match the parent document after Gmail document.writes into
+  // it to create the editor.
+  // http://code.google.com/p/chromium/issues/detail?id=86742
+  GURL data_source_url = GURL(frame->dataSource()->request().url());
+  if (data_source_url.is_empty())
     return;
 
   if (frame->isViewSourceModeEnabled())
-    document_url = GURL(chrome::kViewSourceScheme + std::string(":") +
-                        document_url.spec());
+    data_source_url = GURL(chrome::kViewSourceScheme + std::string(":") +
+                           data_source_url.spec());
 
   PerfTimer timer;
   int num_css = 0;
@@ -262,7 +272,7 @@ void UserScriptSlave::InjectScripts(WebFrame* frame,
     if (!extension)
       continue;
 
-    if (!extension->CanExecuteScriptOnPage(document_url, script, NULL))
+    if (!extension->CanExecuteScriptOnPage(data_source_url, script, NULL))
       continue;
 
     // We rely on WebCore for CSS injection, but it's still useful to know how
