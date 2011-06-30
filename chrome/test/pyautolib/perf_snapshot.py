@@ -24,7 +24,8 @@ To take v8 heap snapshots from another automated script (e.g., from pyauto):
 
 import perf_snapshot
 snapshotter = perf_snapshot.PerformanceSnapshotter()
-snapshot_info_list = snapshotter.HeapSnapshot()
+snapshot_info = snapshotter.HeapSnapshot()
+new_snapshot_info = snapshotter.HeapSnapshot()
 
 HeapSnapshot() returns a list of dictionaries, where each dictionary contains
 the summarized info for a single v8 heap snapshot.  See the initialization
@@ -210,8 +211,8 @@ class _DevToolsSocketRequest(object):
 class _DevToolsSocketClient(asyncore.dispatcher):
   """Client that communicates with a remote Chrome instance via sockets.
 
-  This class works in conjunction with the PerformanceSnapshotter class to
-  communicate with a remote Chrome instance following the remote debugging
+  This class works in conjunction with the _PerformanceSnapshotterThread class
+  to communicate with a remote Chrome instance following the remote debugging
   communication protocol in WebKit.  This class performs the lower-level work
   of socket communication.
 
@@ -223,9 +224,9 @@ class _DevToolsSocketClient(asyncore.dispatcher):
     handshake_done: A boolean indicating whether or not the client has completed
                     the required protocol handshake with the remote Chrome
                     instance.
-    snapshotter: An instance of the PerformanceSnapshotter class that is working
-                 together with this class to communicate with a remote Chrome
-                 instance.
+    snapshotter: An instance of the _PerformanceSnapshotterThread class that is
+                 working together with this class to communicate with a remote
+                 Chrome instance.
   """
   def __init__(self, verbose, show_socket_messages, hostname, port, path):
     """Initializes the DevToolsSocketClient.
@@ -367,7 +368,7 @@ class _DevToolsSocketClient(asyncore.dispatcher):
     asyncore.dispatcher.handle_error(self)
 
 
-class PerformanceSnapshotter(threading.Thread):
+class _PerformanceSnapshotterThread(threading.Thread):
   """Manages communication with a remote Chrome instance to take snapshots.
 
   This class works in conjunction with the _DevToolsSocketClient class to
@@ -377,18 +378,17 @@ class PerformanceSnapshotter(threading.Thread):
   the lower-level work of socket communication.
 
   Public Methods:
-    HeapSnapshot: Begins taking heap snapshots according to the initialization
-                  parameters for the current object.
-    SetInteractiveMode: Sets the current object to take snapshots in interactive
-                        mode.  Useful when running from the command line.
     NotifyReply: Notifies the current object of a reply message that has been
                  received from the remote Chrome instance (which would have been
                  sent in response to an earlier request).  Called by the
                  _DevToolsSocketClient.
     run: Starts the thread of execution for this object.  Invoked implicitly
          by calling the start() method on this object.
+
+  Public Attributes:
+    collected_heap_snapshot_data: A list of dictionaries, where each dictionary
+                                  contains the information for a taken snapshot.
   """
-  _DEFAULT_SNAPSHOT_INTERVAL = 30
   _HEAP_SNAPSHOT_MESSAGES = [
     'Page.getResourceTree',
     'Debugger.enable',
@@ -397,16 +397,14 @@ class PerformanceSnapshotter(threading.Thread):
     'Profiler.getProfile',
   ]
 
-  # TODO(dennisjeffrey): Allow a user to specify a window index too (not just a
-  # tab index), when running through PyAuto.
-  def __init__(self, tab_index=0, output_file=None,
-               interval=_DEFAULT_SNAPSHOT_INTERVAL, num_snapshots=1,
-               verbose=False, show_socket_messages=False):
-    """Initializes a PerformanceSnapshotter object.
+  def __init__(
+      self, tab_index, output_file, interval, num_snapshots, verbose,
+      show_socket_messages, interactive_mode):
+    """Initializes a _PerformanceSnapshotterThread object.
 
     Args:
       tab_index: The integer index of the tab in the remote Chrome instance to
-                 use for snapshotting.  Defaults to 0 (the first tab).
+                 use for snapshotting.
       output_file: The string name of an output file in which to write results.
                    Use None to refrain from writing results to an output file.
       interval: An integer number of seconds to wait after a snapshot is
@@ -418,6 +416,8 @@ class PerformanceSnapshotter(threading.Thread):
       show_socket_messages: A boolean indicating whether or not to show the
                             socket messages sent/received when communicating
                             with the remote Chrome instance.
+      interactive_mode: A boolean indicating whether or not to take snapshots
+                        in interactive mode.
 
     Raises:
       RuntimeError: When no proper connection can be made to a remote Chrome
@@ -425,62 +425,31 @@ class PerformanceSnapshotter(threading.Thread):
     """
     threading.Thread.__init__(self)
 
-    logging.basicConfig()
-    self._logger = logging.getLogger('PerformanceSnapshotter')
+    self._logger = logging.getLogger('_PerformanceSnapshotterThread')
     self._logger.setLevel([logging.WARNING, logging.DEBUG][verbose])
 
     self._output_file = output_file
     self._interval = interval
     self._num_snapshots = num_snapshots
+    self._interactive_mode = interactive_mode
 
-    self._interactive_mode = False
     self._next_request_id = 1
     self._requests = []
     self._current_heap_snapshot = []
     self._url = ''
-    self._collected_heap_snapshot_data = []
+    self.collected_heap_snapshot_data = []
 
     # Create a DevToolsSocket client and wait for it to complete the remote
     # debugging protocol handshake with the remote Chrome instance.
     result = self._IdentifyDevToolsSocketConnectionInfo(tab_index)
-
     self._client = _DevToolsSocketClient(
         verbose, show_socket_messages, result['host'], result['port'],
         result['path'])
     self._client.snapshotter = self
-
     while asyncore.socket_map:
       if self._client.handshake_done:
         break
       asyncore.loop(timeout=1, count=1)
-
-  def HeapSnapshot(self):
-    """Takes v8 heap snapshots until done, according to initialization params.
-
-    Returns:
-      A list of dictionaries, where each dictionary contains the summarized
-      information for a single v8 heap snapshot that was taken:
-      {
-        'url': string,  # URL of the webpage that was snapshotted.
-        'timestamp': float,  # Time when snapshot taken (seconds since epoch).
-        'total_node_count': integer,  # Total number of nodes in the v8 heap.
-        'total_heap_size': integer,  # Total heap size (number of bytes).
-      }
-    """
-    self.start()  # Invokes the run() function on a new thread of execution.
-    try:
-      self._logger.debug('Calling asyncore.loop()...')
-      while asyncore.socket_map:
-        asyncore.loop(timeout=1, count=1)
-    except KeyboardInterrupt:
-      self._client.handle_close()
-    self._logger.debug('Done.')
-
-    return self._collected_heap_snapshot_data
-
-  def SetInteractiveMode(self):
-    """Sets the current object to take snapshots in interactive mode."""
-    self._interactive_mode = True
 
   def NotifyReply(self, msg):
     """Notifies of a reply message received from the remote Chrome instance.
@@ -521,7 +490,7 @@ class PerformanceSnapshotter(threading.Thread):
         total_size_str = self._ConvertBytesToHumanReadableString(total_size)
         timestamp = time.time()
 
-        self._collected_heap_snapshot_data.append(
+        self.collected_heap_snapshot_data.append(
             {'url': self._url,
              'timestamp': timestamp,
              'total_node_count': num_nodes,
@@ -694,7 +663,7 @@ class PerformanceSnapshotter(threading.Thread):
         time.sleep(0.5)
 
   def run(self):
-    """Starts the PerformanceSnapshotter; overridden from threading.Thread."""
+    """Start _PerformanceSnapshotterThread; overridden from threading.Thread."""
     if self._interactive_mode:
       # Carry out interactive snapshotting.
       self._logger.debug('Entering interactive snapshotting mode.')
@@ -704,7 +673,7 @@ class PerformanceSnapshotter(threading.Thread):
           self._TakeHeapSnapshot()
         elif inp.lower() in ['q', 'quit']:
           self._client.close()
-          self._logger.debug('Snapshot taker thread finished.')
+          self._logger.debug('Snapshotter thread finished.')
           return
     else:
       # Carry out automatic periodic snapshotting.
@@ -726,42 +695,122 @@ class PerformanceSnapshotter(threading.Thread):
             self._logger.debug('Waiting %d seconds...',  self._interval)
             time.sleep(self._interval)
         self._client.close()
-        self._logger.debug('Snapshot taker thread finished.')
+        self._logger.debug('Snapshotter thread finished.')
+
+
+class PerformanceSnapshotter(object):
+  """Main class for taking v8 heap snapshots.
+
+  Public Methods:
+    HeapSnapshot: Begins taking heap snapshots according to the initialization
+                  parameters for the current object.
+    SetInteractiveMode: Sets the current object to take snapshots in interactive
+                        mode. Only used by the main() function in this script
+                        when the 'interactive mode' command-line flag is set.
+  """
+  DEFAULT_SNAPSHOT_INTERVAL = 30
+
+  # TODO(dennisjeffrey): Allow a user to specify a window index too (not just a
+  # tab index), when running through PyAuto.
+  def __init__(
+      self, tab_index=0, output_file=None, interval=DEFAULT_SNAPSHOT_INTERVAL,
+      num_snapshots=1, verbose=False, show_socket_messages=False):
+    """Initializes a PerformanceSnapshotter object.
+
+    Args:
+      tab_index: The integer index of the tab in the remote Chrome instance to
+                 use for snapshotting.  Defaults to 0 (the first tab).
+      output_file: The string name of an output file in which to write results.
+                   Use None to refrain from writing results to an output file.
+      interval: An integer number of seconds to wait after a snapshot is
+                completed, before starting the next snapshot.
+      num_snapshots: An integer number of snapshots to take before terminating.
+                     Use 0 to take snapshots indefinitely (you must manually
+                     kill the script in this case).
+      verbose: A boolean indicating whether or not to use verbose logging.
+      show_socket_messages: A boolean indicating whether or not to show the
+                            socket messages sent/received when communicating
+                            with the remote Chrome instance.
+    """
+    self._tab_index = tab_index
+    self._output_file = output_file
+    self._interval = interval
+    self._num_snapshots = num_snapshots
+    self._verbose = verbose
+    self._show_socket_messages = show_socket_messages
+
+    logging.basicConfig()
+    self._logger = logging.getLogger('PerformanceSnapshotter')
+    self._logger.setLevel([logging.WARNING, logging.DEBUG][verbose])
+
+    self._interactive_mode = False
+
+  def HeapSnapshot(self):
+    """Takes v8 heap snapshots until done, according to initialization params.
+
+    Returns:
+      A list of dictionaries, where each dictionary contains the summarized
+      information for a single v8 heap snapshot that was taken:
+      {
+        'url': string,  # URL of the webpage that was snapshotted.
+        'timestamp': float,  # Time when snapshot taken (seconds since epoch).
+        'total_node_count': integer,  # Total number of nodes in the v8 heap.
+        'total_heap_size': integer,  # Total heap size (number of bytes).
+      }
+    """
+    snapshotter_thread = _PerformanceSnapshotterThread(
+        self._tab_index, self._output_file, self._interval, self._num_snapshots,
+        self._verbose, self._show_socket_messages, self._interactive_mode)
+    snapshotter_thread.start()
+    try:
+      while asyncore.socket_map:
+        asyncore.loop(timeout=1, count=1)
+    except KeyboardInterrupt:
+      pass
+    self._logger.debug('Waiting for snapshotter thread to die...')
+    snapshotter_thread.join()
+    self._logger.debug('Done taking snapshots.')
+    return snapshotter_thread.collected_heap_snapshot_data
+
+  def SetInteractiveMode(self):
+    """Sets the current object to take snapshots in interactive mode."""
+    self._interactive_mode = True
 
 
 def main():
   """Main function to enable running this script from the command line."""
   # Process command-line arguments.
   parser = optparse.OptionParser()
-  parser.add_option('-t', '--tab-index', dest='tab_index', type='int',
-                    default=0,
-                    help='Index of the tab to snapshot. Defaults to 0 (first '
-                         'tab).')
-  parser.add_option('-f', '--file', dest='output_file',
-                    help='Output file name (will append). Defaults to None, '
-                         'meaning that no file output is written.')
-  parser.add_option('-g', '--gap-time', dest='interval', type='int',
-                    default=PerformanceSnapshotter._DEFAULT_SNAPSHOT_INTERVAL,
-                    help='Gap of time to wait in-between snapshots (in '
-                         'seconds). Defaults to %d seconds.' %
-                         PerformanceSnapshotter._DEFAULT_SNAPSHOT_INTERVAL)
-  parser.add_option('-n', '--num-snapshots', dest='num_snapshots', type='int',
-                    default=0,
-                    help='Number of snapshots to take before terminating.  '
-                         'Defaults to 0 (infinite): in this case, you must '
-                         'manually terminate the program.')
-  parser.add_option('-i', '--interactive-mode', dest='interactive_mode',
-                    default=False, action='store_true',
-                    help='Run in interactive mode.  This mode prompts the user '
-                         'for input. Enter "s" to take a snapshot. Enter "q" '
-                         'to end the program. When run in this mode, the "-g" '
-                         'and "-n" flags are ignored.')
-  parser.add_option('-s', '--show-socket-messages', dest='show_socket_messages',
-                    default=False, action='store_true',
-                    help='Show the socket messages sent/received when '
-                         'communicating with the remote Chrome instance.')
-  parser.add_option('-v', '--verbose', dest='verbose', default=False,
-                    action='store_true', help='Use verbose logging.')
+  parser.add_option(
+      '-t', '--tab-index', dest='tab_index', type='int', default=0,
+      help='Index of the tab to snapshot. Defaults to 0 (first tab).')
+  parser.add_option(
+      '-f', '--file', dest='output_file',
+      help='Output file name (will append). Defaults to None, meaning that no '
+           'file output is written.')
+  parser.add_option(
+      '-g', '--gap-time', dest='interval', type='int',
+      default=PerformanceSnapshotter.DEFAULT_SNAPSHOT_INTERVAL,
+      help='Gap of time to wait in-between snapshots (in seconds). Defaults '
+           'to %d seconds.' % PerformanceSnapshotter.DEFAULT_SNAPSHOT_INTERVAL)
+  parser.add_option(
+      '-n', '--num-snapshots', dest='num_snapshots', type='int', default=0,
+      help='Number of snapshots to take before terminating. Defaults to 0 '
+           '(infinite): in this case, you must manually terminate the program.')
+  parser.add_option(
+      '-i', '--interactive-mode', dest='interactive_mode', default=False,
+      action='store_true',
+      help='Run in interactive mode. This mode prompts the user for input. '
+           'Enter "s" to take a snapshot. Enter "q" to end the program. When '
+           'run in this mode, the "-g" and "-n" flags are ignored.')
+  parser.add_option(
+      '-s', '--show-socket-messages', dest='show_socket_messages',
+      default=False, action='store_true',
+      help='Show the socket messages sent/received when communicating with '
+           'the remote Chrome instance.')
+  parser.add_option(
+      '-v', '--verbose', dest='verbose', default=False, action='store_true',
+      help='Use verbose logging.')
 
   options, args = parser.parse_args()
 
