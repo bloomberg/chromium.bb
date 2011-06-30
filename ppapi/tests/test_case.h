@@ -69,6 +69,9 @@ class TestCase {
   // NULL unless InitTestingInterface is called.
   const PPB_Testing_Dev* testing_interface_;
 
+  // Force asynchronous completion of any operation taking a callback.
+  bool force_async_;
+
  private:
   // Holds the test object, if any was retrieved from CreateTestObject.
   pp::Var test_object_;
@@ -114,9 +117,21 @@ class TestCaseFactory {
 
 // Helper macro for calling functions implementing specific tests in the
 // RunTest function. This assumes the function name is TestFoo where Foo is the
-// test name,
+// test |name|.
 #define RUN_TEST(name) \
+  force_async_ = false; \
   instance_->LogTest(#name, Test##name());
+
+// Like RUN_TEST above but forces functions taking callbacks to complete
+// asynchronously on success or error.
+#define RUN_TEST_FORCEASYNC(name) \
+  force_async_ = true; \
+  instance_->LogTest(#name"ForceAsync", Test##name());
+
+#define RUN_TEST_FORCEASYNC_AND_NOT(name) \
+  RUN_TEST_FORCEASYNC(name); \
+  RUN_TEST(name);
+
 
 // Helper macros for checking values in tests, and returning a location
 // description of the test fails.

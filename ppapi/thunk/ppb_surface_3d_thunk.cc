@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/thunk/thunk.h"
+#include "ppapi/thunk/common.h"
 #include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/thunk.h"
 #include "ppapi/thunk/ppb_surface_3d_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
 
@@ -47,8 +48,9 @@ int32_t SwapBuffers(PP_Resource surface,
                     PP_CompletionCallback callback) {
   EnterResource<PPB_Surface3D_API> enter(surface, true);
   if (enter.failed())
-    return PP_ERROR_BADRESOURCE;
-  return enter.object()->SwapBuffers(callback);
+    return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
+  int32_t result = enter.object()->SwapBuffers(callback);
+  return MayForceCallback(callback, result);
 }
 
 const PPB_Surface3D_Dev g_ppb_surface_3d_thunk = {

@@ -43,15 +43,15 @@ bool TestGraphics2D::Init() {
 }
 
 void TestGraphics2D::RunTest() {
-  instance_->LogTest("InvalidResource", TestInvalidResource());
-  instance_->LogTest("InvalidSize", TestInvalidSize());
-  instance_->LogTest("Humongous", TestHumongous());
-  instance_->LogTest("InitToZero", TestInitToZero());
-  instance_->LogTest("Describe", TestDescribe());
-  instance_->LogTest("Paint", TestPaint());
-  //instance_->LogTest("Scroll", TestScroll());  // TODO(brettw) implement.
-  instance_->LogTest("Replace", TestReplace());
-  instance_->LogTest("Flush", TestFlush());
+  RUN_TEST(InvalidResource);
+  RUN_TEST(InvalidSize);
+  RUN_TEST(Humongous);
+  RUN_TEST(InitToZero);
+  RUN_TEST(Describe);
+  RUN_TEST_FORCEASYNC_AND_NOT(Paint);
+  // RUN_TEST_FORCEASYNC_AND_NOT(Scroll);  // TODO(brettw) implement.
+  RUN_TEST_FORCEASYNC_AND_NOT(Replace);
+  RUN_TEST_FORCEASYNC_AND_NOT(Flush);
 }
 
 void TestGraphics2D::QuitMessageLoop() {
@@ -79,8 +79,11 @@ bool TestGraphics2D::IsDCUniformColor(const pp::Graphics2D& dc,
 }
 
 bool TestGraphics2D::FlushAndWaitForDone(pp::Graphics2D* context) {
-  pp::CompletionCallback cc(&FlushCallbackQuitMessageLoop, this);
+  int32_t flags = (force_async_ ? 0 : PP_COMPLETIONCALLBACK_FLAG_OPTIONAL);
+  pp::CompletionCallback cc(&FlushCallbackQuitMessageLoop, this, flags);
   int32_t rv = context->Flush(cc);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return false;
   if (rv == PP_OK)
     return true;
   if (rv != PP_OK_COMPLETIONPENDING)
@@ -209,11 +212,11 @@ std::string TestGraphics2D::TestInvalidResource() {
   // Flush.
   if (graphics_2d_interface_->Flush(
           image.pp_resource(),
-          PP_MakeCompletionCallback(&FlushCallbackNOP, NULL)) == PP_OK)
+          PP_MakeOptionalCompletionCallback(&FlushCallbackNOP, NULL)) == PP_OK)
     return "Flush succeeded with a different resource";
   if (graphics_2d_interface_->Flush(
           null_context.pp_resource(),
-          PP_MakeCompletionCallback(&FlushCallbackNOP, NULL)) == PP_OK)
+          PP_MakeOptionalCompletionCallback(&FlushCallbackNOP, NULL)) == PP_OK)
     return "Flush succeeded with a NULL resource";
 
   // ReadImageData.
@@ -526,16 +529,27 @@ std::string TestGraphics2D::TestFlush() {
   if (!FlushAndWaitForDone(&dc_nopaints))
     return "Couldn't flush the nopaint device";
 
+  int32_t flags = (force_async_ ? 0 : PP_COMPLETIONCALLBACK_FLAG_OPTIONAL);
+
   // Test that multiple flushes fail if we don't get a callback in between.
-  rv = dc_nopaints.Flush(pp::CompletionCallback(&FlushCallbackNOP, NULL));
+  rv = dc_nopaints.Flush(pp::CompletionCallback(&FlushCallbackNOP, NULL,
+                                                flags));
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return "Flush must complete asynchronously.";
   if (rv != PP_OK && rv != PP_OK_COMPLETIONPENDING)
     return "Couldn't flush first time for multiple flush test.";
 
-  if (rv != PP_OK) {
-    // If the first flush would block, then a second should fail.
-    rv = dc_nopaints.Flush(pp::CompletionCallback(&FlushCallbackNOP, NULL));
-    if (rv == PP_OK || rv == PP_OK_COMPLETIONPENDING)
-      return "Second flush succeeded before callback ran.";
+  if (rv == PP_OK_COMPLETIONPENDING) {
+    // If the first flush completes asynchronously, then a second should fail.
+    rv = dc_nopaints.Flush(pp::CompletionCallback(&FlushCallbackNOP, NULL,
+                                                  flags));
+    if (force_async_) {
+      if (rv != PP_OK_COMPLETIONPENDING)
+        return "Second flush must fail asynchronously.";
+    } else {
+      if (rv == PP_OK || rv == PP_OK_COMPLETIONPENDING)
+        return "Second flush succeeded before callback ran.";
+    }
   }
 
   PASS();

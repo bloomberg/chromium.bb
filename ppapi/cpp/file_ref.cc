@@ -69,7 +69,7 @@ FileRef FileRef::GetParent() const {
 
 int32_t FileRef::MakeDirectory(const CompletionCallback& cc) {
   if (!has_interface<PPB_FileRef>())
-    return PP_ERROR_NOINTERFACE;
+    return cc.MayForce(PP_ERROR_NOINTERFACE);
   return get_interface<PPB_FileRef>()->MakeDirectory(
       pp_resource(),
       PP_FALSE,  // make_ancestors
@@ -79,7 +79,7 @@ int32_t FileRef::MakeDirectory(const CompletionCallback& cc) {
 int32_t FileRef::MakeDirectoryIncludingAncestors(
     const CompletionCallback& cc) {
   if (!has_interface<PPB_FileRef>())
-    return PP_ERROR_NOINTERFACE;
+    return cc.MayForce(PP_ERROR_NOINTERFACE);
   return get_interface<PPB_FileRef>()->MakeDirectory(
       pp_resource(),
       PP_TRUE,  // make_ancestors
@@ -90,7 +90,7 @@ int32_t FileRef::Touch(PP_Time last_access_time,
                        PP_Time last_modified_time,
                        const CompletionCallback& cc) {
   if (!has_interface<PPB_FileRef>())
-    return PP_ERROR_NOINTERFACE;
+    return cc.MayForce(PP_ERROR_NOINTERFACE);
   return get_interface<PPB_FileRef>()->Touch(
       pp_resource(), last_access_time, last_modified_time,
       cc.pp_completion_callback());
@@ -98,7 +98,7 @@ int32_t FileRef::Touch(PP_Time last_access_time,
 
 int32_t FileRef::Delete(const CompletionCallback& cc) {
   if (!has_interface<PPB_FileRef>())
-    return PP_ERROR_NOINTERFACE;
+    return cc.MayForce(PP_ERROR_NOINTERFACE);
   return get_interface<PPB_FileRef>()->Delete(
       pp_resource(), cc.pp_completion_callback());
 }
@@ -106,7 +106,7 @@ int32_t FileRef::Delete(const CompletionCallback& cc) {
 int32_t FileRef::Rename(const FileRef& new_file_ref,
                         const CompletionCallback& cc) {
   if (!has_interface<PPB_FileRef>())
-    return PP_ERROR_NOINTERFACE;
+    return cc.MayForce(PP_ERROR_NOINTERFACE);
   return get_interface<PPB_FileRef>()->Rename(
       pp_resource(), new_file_ref.pp_resource(), cc.pp_completion_callback());
 }

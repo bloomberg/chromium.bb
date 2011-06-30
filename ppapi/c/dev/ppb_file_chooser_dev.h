@@ -1,4 +1,4 @@
-/* Copyright (c) 2010 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -31,8 +31,8 @@ struct PP_FileChooserOptions_Dev {
   const char* accept_mime_types;
 };
 
-#define PPB_FILECHOOSER_DEV_INTERFACE_0_3 "PPB_FileChooser(Dev);0.3"
-#define PPB_FILECHOOSER_DEV_INTERFACE PPB_FILECHOOSER_DEV_INTERFACE_0_3
+#define PPB_FILECHOOSER_DEV_INTERFACE_0_4 "PPB_FileChooser(Dev);0.4"
+#define PPB_FILECHOOSER_DEV_INTERFACE PPB_FILECHOOSER_DEV_INTERFACE_0_4
 
 struct PPB_FileChooser_Dev {
   // Creates a file chooser dialog with the specified options.  The chooser is

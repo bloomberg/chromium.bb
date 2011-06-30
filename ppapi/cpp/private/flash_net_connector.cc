@@ -38,7 +38,7 @@ int32_t NetConnector::ConnectTcp(const char* host,
                                  PP_Flash_NetAddress* remote_addr_out,
                                  const CompletionCallback& cc) {
   if (!has_interface<PPB_Flash_NetConnector>())
-    return PP_ERROR_NOINTERFACE;
+    return cc.MayForce(PP_ERROR_NOINTERFACE);
   return get_interface<PPB_Flash_NetConnector>()->ConnectTcp(
       pp_resource(),
       host, port,
@@ -52,7 +52,7 @@ int32_t NetConnector::ConnectTcpAddress(const PP_Flash_NetAddress* addr,
                                         PP_Flash_NetAddress* remote_addr_out,
                                         const CompletionCallback& cc) {
   if (!has_interface<PPB_Flash_NetConnector>())
-    return PP_ERROR_NOINTERFACE;
+    return cc.MayForce(PP_ERROR_NOINTERFACE);
   return get_interface<PPB_Flash_NetConnector>()->ConnectTcpAddress(
       pp_resource(),
       addr,

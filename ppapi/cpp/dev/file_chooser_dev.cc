@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,7 +36,7 @@ FileChooser_Dev::FileChooser_Dev(const FileChooser_Dev& other)
 
 int32_t FileChooser_Dev::Show(const CompletionCallback& cc) {
   if (!has_interface<PPB_FileChooser_Dev>())
-    return PP_ERROR_NOINTERFACE;
+    return cc.MayForce(PP_ERROR_NOINTERFACE);
   return get_interface<PPB_FileChooser_Dev>()->Show(
       pp_resource(), cc.pp_completion_callback());
 }

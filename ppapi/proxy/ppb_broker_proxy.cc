@@ -204,7 +204,7 @@ void PPB_Broker_Proxy::OnMsgCreate(PP_Instance instance,
 }
 
 void PPB_Broker_Proxy::OnMsgConnect(const HostResource& broker) {
-  CompletionCallback callback = callback_factory_.NewCallback(
+  CompletionCallback callback = callback_factory_.NewOptionalCallback(
       &PPB_Broker_Proxy::ConnectCompleteInHost, broker);
 
   int32_t result = ppb_broker_target()->Connect(

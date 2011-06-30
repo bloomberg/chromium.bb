@@ -1,4 +1,4 @@
-/* Copyright (c) 2010 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -39,8 +39,8 @@ typedef enum {
 } PP_FileOpenFlags_Dev;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_FileOpenFlags_Dev, 4);
 
-#define PPB_FILEIO_DEV_INTERFACE_0_3 "PPB_FileIO(Dev);0.3"
-#define PPB_FILEIO_DEV_INTERFACE PPB_FILEIO_DEV_INTERFACE_0_3
+#define PPB_FILEIO_DEV_INTERFACE_0_4 "PPB_FileIO(Dev);0.4"
+#define PPB_FILEIO_DEV_INTERFACE PPB_FILEIO_DEV_INTERFACE_0_4
 
 // Use this interface to operate on a regular file (PP_FileType_Regular).
 struct PPB_FileIO_Dev {
@@ -117,4 +117,3 @@ struct PPB_FileIO_Dev {
 };
 
 #endif  /* PPAPI_C_DEV_PPB_FILE_IO_DEV_H_ */
-

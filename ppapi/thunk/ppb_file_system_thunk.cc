@@ -5,8 +5,9 @@
 #include "ppapi/c/dev/ppb_file_system_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/thunk/thunk.h"
+#include "ppapi/thunk/common.h"
 #include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/thunk.h"
 #include "ppapi/thunk/ppb_file_system_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
 
@@ -32,8 +33,9 @@ int32_t Open(PP_Resource file_system,
              PP_CompletionCallback callback) {
   EnterResource<PPB_FileSystem_API> enter(file_system, true);
   if (enter.failed())
-    return PP_ERROR_BADRESOURCE;
-  return enter.object()->Open(expected_size, callback);
+    return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
+  int32_t result = enter.object()->Open(expected_size, callback);
+  return MayForceCallback(callback, result);
 }
 
 PP_FileSystemType_Dev GetType(PP_Resource file_system) {

@@ -11,7 +11,8 @@
 
 TestCase::TestCase(TestingInstance* instance)
     : instance_(instance),
-      testing_interface_(NULL) {
+      testing_interface_(NULL),
+      force_async_(false) {
 }
 
 TestCase::~TestCase() {

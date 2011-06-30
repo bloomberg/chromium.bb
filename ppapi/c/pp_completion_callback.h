@@ -21,8 +21,15 @@
  */
 
 /**
- * PP_CompletionCallback_Func defines the signature that you implement to
- * receive callbacks on asynchronous completion.
+ * PP_CompletionCallback_Func defines the function signature that you implement
+ * to receive callbacks on asynchronous completion of an operation.
+ *
+ * |user_data| is a pointer to user-specified data associated with this
+ * function at callback creation. See PP_MakeCompletionCallback() for details.
+ *
+ * |result| is the result of the operation. Non-positive values correspond to
+ * the error codes from pp_errors.h (excluding PP_OK_COMPLETIONPENDING).
+ * Positive values indicate additional information such as bytes read.
  */
 typedef void (*PP_CompletionCallback_Func)(void* user_data, int32_t result);
 /**
@@ -30,28 +37,61 @@ typedef void (*PP_CompletionCallback_Func)(void* user_data, int32_t result);
  */
 
 /**
+ *
+ * @addtogroup Enums
+ * @{
+ */
+
+/**
+ * This enumeration contains flags used to control how non-NULL callbacks are
+ * scheduled by asynchronous methods.
+ */
+typedef enum {
+  /**
+   * This flag allows any non-NULL callback to be always invoked asynchronously,
+   * on success or error, even if the operation could complete synchronously
+   * without blocking.
+   *
+   * The method taking such callback will always return PP_OK_COMPLETIONPENDING.
+   * The callback will be invoked on the main thread of PPAPI execution.
+   *
+   * TODO(polina): make this the default once all the clients use flags.
+   */
+  PP_COMPLETIONCALLBACK_FLAG_NONE = 0 << 0,
+  /**
+   * This flag allows any method taking such callback to complete synchronously
+   * and not call the callback if the operation would not block. This is useful
+   * when performance is an issue, and the operation bandwidth should not be
+   * limited to the processing speed of the message loop.
+   *
+   * On synchronous method completion, the completion result will be returned
+   * by the method itself. Otherwise, the method will return
+   * PP_OK_COMPLETIONPENDING, and the callback will be invoked asynchronously on
+   * the main thread of PPAPI execution.
+   */
+  PP_COMPLETIONCALLBACK_FLAG_OPTIONAL = 1 << 0
+} PP_CompletionCallback_Flag;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_CompletionCallback_Flag, 4);
+
+
+/**
  * @addtogroup Structs
  * @{
  */
 
 /**
- * Any method that takes a PP_CompletionCallback has the option of completing
- * asynchronously if the operation would block.  Such a method should return
- * PP_OK_COMPLETIONPENDING to indicate that the method will complete
- * asynchronously and will always be invoked from the main thread of PPAPI
- * execution.  If the completion callback is NULL, then the operation will
- * block if necessary to complete its work.  PP_BlockUntilComplete() provides a
- * convenient way to specify blocking behavior. Refer to PP_BlockUntilComplete
- * for more information.
+ * Any method that takes a PP_CompletionCallback can complete asynchronously.
+ * Refer to PP_CompletionCallback_Flag for more information.
  *
- * The result parameter passes an int32_t that, if negative or equal to 0,
- * indicate if the call will completely asynchronously (the callback will be
- * called with a status code). A value greater than zero indicates additional
- * information such as bytes read.
+ * If PP_CompletionCallback_Func is NULL, the operation might block if necessary
+ * to complete the work. Refer to PP_BlockUntilComplete for more information.
+ *
+ * See PP_MakeCompletionCallback() for the description of each field.
  */
 struct PP_CompletionCallback {
   PP_CompletionCallback_Func func;
   void* user_data;
+  int32_t flags;
 };
 /**
  * @}
@@ -61,14 +101,20 @@ struct PP_CompletionCallback {
  * @addtogroup Functions
  * @{
  */
-
 /**
- * PP_MakeCompletionCallback() is used to create a PP_CompletionCallback.
+ * PP_MakeCompletionCallback() is used to create a PP_CompletionCallback
+ * without flags. If you want to alter the default callback behavior, set the
+ * flags to a bit field combination of PP_CompletionCallback_Flag's.
  *
- * @param[in] func A PP_CompletionCallback_Func that will be called.
- * @param[in] user_data A pointer to user data passed to your callback
- * function. This is optional and is typically used to help track state
- * when you may have multiple callbacks pending.
+ * Example:
+ *   struct PP_CompletionCallback cc = PP_MakeCompletionCallback(Foo, NULL);
+ *   cc.flags = cc.flags | PP_COMPLETIONCALLBACK_FLAG_OPTIONAL;
+ *
+ * @param[in] func A PP_CompletionCallback_Func to be called on completion.
+ * @param[in] user_data A pointer to user data passed to be passed to the
+ * callback function. This is optional and is typically used to help track state
+ * in case of multiple pending callbacks.
+ *
  * @return A PP_CompletionCallback structure.
  */
 PP_INLINE struct PP_CompletionCallback PP_MakeCompletionCallback(
@@ -77,6 +123,27 @@ PP_INLINE struct PP_CompletionCallback PP_MakeCompletionCallback(
   struct PP_CompletionCallback cc;
   cc.func = func;
   cc.user_data = user_data;
+  /* TODO(polina): switch the default to PP_COMPLETIONCALLBACK_FLAG_NONE. */
+  cc.flags = PP_COMPLETIONCALLBACK_FLAG_OPTIONAL;
+  return cc;
+}
+
+/**
+ * PP_MakeOptionalCompletionCallback() is used to create a PP_CompletionCallback
+ * with PP_COMPLETIONCALLBACK_FLAG_OPTIONAL set.
+ *
+ * @param[in] func A PP_CompletionCallback_Func to be called on completion.
+ * @param[in] user_data A pointer to user data passed to be passed to the
+ * callback function. This is optional and is typically used to help track state
+ * in case of multiple pending callbacks.
+ *
+ * @return A PP_CompletionCallback structure.
+ */
+PP_INLINE struct PP_CompletionCallback PP_MakeOptionalCompletionCallback(
+    PP_CompletionCallback_Func func,
+    void* user_data) {
+  struct PP_CompletionCallback cc = PP_MakeCompletionCallback(func, user_data);
+  cc.flags = cc.flags | PP_COMPLETIONCALLBACK_FLAG_OPTIONAL;
   return cc;
 }
 /**
@@ -89,17 +156,18 @@ PP_INLINE struct PP_CompletionCallback PP_MakeCompletionCallback(
  */
 
 /**
- * PP_RunCompletionCallback() is used to run a callback.
+ * PP_RunCompletionCallback() is used to run a callback. It invokes
+ * the callback function passing it user data specified on creation and
+ * completion |result|.
  *
  * @param[in] cc A pointer to a PP_CompletionCallback that will be run.
- * @param[in] res The result parameter that, if negative or equal to 0,
- * indicate if the call will completely asynchronously (the callback will be
- * called with a status code). A value greater than zero indicates additional
- * information such as bytes read.
+ * @param[in] result The result of the operation. Non-positive values correspond
+ * to the error codes from pp_errors.h (excluding PP_OK_COMPLETIONPENDING).
+ * Positive values indicate additional information such as bytes read.
  */
 PP_INLINE void PP_RunCompletionCallback(struct PP_CompletionCallback* cc,
-                                        int32_t res) {
-  cc->func(cc->user_data, res);
+                                        int32_t result) {
+  cc->func(cc->user_data, result);
 }
 
 /**
@@ -114,10 +182,10 @@ PP_INLINE void PP_RunCompletionCallback(struct PP_CompletionCallback* cc,
  /**
  * PP_BlockUntilComplete() is used in place of an actual completion callback
  * to request blocking behavior. If specified, the calling thread will block
- * until the function completes.  Blocking completion callbacks are only usable
+ * until the function completes. Blocking completion callbacks are only allowed
  * from background threads.
  *
- * @return A PP_CompletionCallback structure.
+ * @return A PP_CompletionCallback structure corresponding to a NULL callback.
  */
 PP_INLINE struct PP_CompletionCallback PP_BlockUntilComplete() {
   return PP_MakeCompletionCallback(NULL, NULL);

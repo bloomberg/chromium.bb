@@ -39,8 +39,8 @@ typedef enum {
 } PP_FileOpenFlags;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_FileOpenFlags, 4);
 
-#define PPB_FILEIO_INTERFACE_0_4 "PPB_FileIO;0.4"
-#define PPB_FILEIO_INTERFACE PPB_FILEIO_INTERFACE_0_4
+#define PPB_FILEIO_INTERFACE_0_5 "PPB_FileIO;0.5"
+#define PPB_FILEIO_INTERFACE PPB_FILEIO_INTERFACE_0_5
 
 // Use this interface to operate on a regular file (PP_FileType_Regular).
 struct PPB_FileIO {
@@ -117,3 +117,4 @@ struct PPB_FileIO {
 };
 
 #endif  /* PPAPI_C_PPB_FILE_IO_H_ */
+

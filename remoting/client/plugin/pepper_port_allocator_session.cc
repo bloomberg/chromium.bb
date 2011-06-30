@@ -121,7 +121,7 @@ class PepperURLFetcher {
     fetch_callback_.reset(fetch_callback);
 
     pp::CompletionCallback callback =
-        callback_factory_.NewCallback(&PepperURLFetcher::DidOpen);
+        callback_factory_.NewOptionalCallback(&PepperURLFetcher::DidOpen);
     int rv = loader_.Open(request, callback);
     if (rv != PP_OK_COMPLETIONPENDING)
       callback.Run(rv);
@@ -130,7 +130,7 @@ class PepperURLFetcher {
  private:
   void ReadMore() {
     pp::CompletionCallback callback =
-        callback_factory_.NewCallback(&PepperURLFetcher::DidRead);
+        callback_factory_.NewOptionalCallback(&PepperURLFetcher::DidRead);
     int rv = loader_.ReadResponseBody(buf_, sizeof(buf_), callback);
     if (rv != PP_OK_COMPLETIONPENDING)
       callback.Run(rv);

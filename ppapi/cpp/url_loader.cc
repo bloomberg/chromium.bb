@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,7 +49,7 @@ URLLoader::URLLoader(const URLLoader& other) : Resource(other) {
 int32_t URLLoader::Open(const URLRequestInfo& request_info,
                         const CompletionCallback& cc) {
   if (!has_interface<PPB_URLLoader>())
-    return PP_ERROR_NOINTERFACE;
+    return cc.MayForce(PP_ERROR_NOINTERFACE);
   return get_interface<PPB_URLLoader>()->Open(pp_resource(),
                                               request_info.pp_resource(),
                                               cc.pp_completion_callback());
@@ -57,7 +57,7 @@ int32_t URLLoader::Open(const URLRequestInfo& request_info,
 
 int32_t URLLoader::FollowRedirect(const CompletionCallback& cc) {
   if (!has_interface<PPB_URLLoader>())
-    return PP_ERROR_NOINTERFACE;
+    return cc.MayForce(PP_ERROR_NOINTERFACE);
   return get_interface<PPB_URLLoader>()->FollowRedirect(
       pp_resource(), cc.pp_completion_callback());
 }
@@ -92,14 +92,14 @@ int32_t URLLoader::ReadResponseBody(void* buffer,
                                     int32_t bytes_to_read,
                                     const CompletionCallback& cc) {
   if (!has_interface<PPB_URLLoader>())
-    return PP_ERROR_NOINTERFACE;
+    return cc.MayForce(PP_ERROR_NOINTERFACE);
   return get_interface<PPB_URLLoader>()->ReadResponseBody(
       pp_resource(), buffer, bytes_to_read, cc.pp_completion_callback());
 }
 
 int32_t URLLoader::FinishStreamingToFile(const CompletionCallback& cc) {
   if (!has_interface<PPB_URLLoader>())
-    return PP_ERROR_NOINTERFACE;
+    return cc.MayForce(PP_ERROR_NOINTERFACE);
   return get_interface<PPB_URLLoader>()->FinishStreamingToFile(
       pp_resource(), cc.pp_completion_callback());
 }

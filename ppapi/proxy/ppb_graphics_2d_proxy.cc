@@ -240,7 +240,7 @@ void PPB_Graphics2D_Proxy::OnMsgReplaceContents(
 }
 
 void PPB_Graphics2D_Proxy::OnMsgFlush(const HostResource& graphics_2d) {
-  CompletionCallback callback = callback_factory_.NewCallback(
+  CompletionCallback callback = callback_factory_.NewOptionalCallback(
       &PPB_Graphics2D_Proxy::SendFlushACKToPlugin, graphics_2d);
   int32_t result = ppb_graphics_2d_target()->Flush(
       graphics_2d.host_resource(), callback.pp_completion_callback());

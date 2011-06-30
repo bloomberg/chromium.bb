@@ -36,7 +36,7 @@ int32_t Menu::Show(const Point& location,
                    int32_t* selected_id,
                    const CompletionCallback& cc) {
   if (!has_interface<PPB_Flash_Menu>())
-    return PP_ERROR_NOINTERFACE;
+    return cc.MayForce(PP_ERROR_NOINTERFACE);
   return get_interface<PPB_Flash_Menu>()->Show(
       pp_resource(),
       &location.pp_point(),

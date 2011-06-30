@@ -517,7 +517,7 @@ void PPB_URLLoader_Proxy::OnMsgReadResponseBody(
   // TODO(brettw) have a way to check for out-of-memory.
   info->read_buffer.resize(bytes_to_read);
 
-  CompletionCallback callback = callback_factory_.NewCallback(
+  CompletionCallback callback = callback_factory_.NewOptionalCallback(
       &PPB_URLLoader_Proxy::OnReadCallback, info);
 
   EnterHostFromHostResource<PPB_URLLoader_API> enter(loader);

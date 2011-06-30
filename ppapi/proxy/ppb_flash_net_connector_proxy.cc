@@ -265,7 +265,7 @@ void PPB_Flash_NetConnector_Proxy::OnMsgConnectTcp(
     const std::string& host,
     uint16_t port) {
   ConnectCallbackInfo* info = new ConnectCallbackInfo(resource);
-  CompletionCallback callback = callback_factory_.NewCallback(
+  CompletionCallback callback = callback_factory_.NewOptionalCallback(
       &PPB_Flash_NetConnector_Proxy::OnCompleteCallbackInHost, info);
 
   EnterHostFromHostResource<PPB_Flash_NetConnector_API> enter(resource);
@@ -283,7 +283,7 @@ void PPB_Flash_NetConnector_Proxy::OnMsgConnectTcpAddress(
     const HostResource& resource,
     const std::string& net_address_as_string) {
   ConnectCallbackInfo* info = new ConnectCallbackInfo(resource);
-  CompletionCallback callback = callback_factory_.NewCallback(
+  CompletionCallback callback = callback_factory_.NewOptionalCallback(
       &PPB_Flash_NetConnector_Proxy::OnCompleteCallbackInHost, info);
 
   PP_Flash_NetAddress net_address;

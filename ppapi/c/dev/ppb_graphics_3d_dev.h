@@ -31,8 +31,8 @@
 // // Shutdown.
 // core->ReleaseResource(context);
 
-#define PPB_GRAPHICS_3D_DEV_INTERFACE_0_4 "PPB_Graphics3D(Dev);0.4"
-#define PPB_GRAPHICS_3D_DEV_INTERFACE PPB_GRAPHICS_3D_DEV_INTERFACE_0_4
+#define PPB_GRAPHICS_3D_DEV_INTERFACE_0_5 "PPB_Graphics3D(Dev);0.5"
+#define PPB_GRAPHICS_3D_DEV_INTERFACE PPB_GRAPHICS_3D_DEV_INTERFACE_0_5
 
 struct PPB_Graphics3D_Dev {
   // TODO(alokp): Do these functions need module argument?
@@ -226,4 +226,3 @@ struct PPB_Graphics3D_Dev {
 };
 
 #endif  /* PPAPI_C_DEV_PPB_GRAPHICS_3D_DEV_H_ */
-

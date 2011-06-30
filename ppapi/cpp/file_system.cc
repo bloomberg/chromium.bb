@@ -32,7 +32,7 @@ FileSystem::FileSystem(Instance* instance,
 int32_t FileSystem::Open(int64_t expected_size,
                          const CompletionCallback& cc) {
   if (!has_interface<PPB_FileSystem>())
-    return PP_ERROR_NOINTERFACE;
+    return cc.MayForce(PP_ERROR_NOINTERFACE);
   return get_interface<PPB_FileSystem>()->Open(
       pp_resource(), expected_size, cc.pp_completion_callback());
 }

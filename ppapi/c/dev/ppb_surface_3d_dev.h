@@ -1,4 +1,4 @@
-/* Copyright (c) 2010 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -12,8 +12,8 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 
-#define PPB_SURFACE_3D_DEV_INTERFACE_0_1 "PPB_Surface3D(Dev);0.1"
-#define PPB_SURFACE_3D_DEV_INTERFACE PPB_SURFACE_3D_DEV_INTERFACE_0_1
+#define PPB_SURFACE_3D_DEV_INTERFACE_0_2 "PPB_Surface3D(Dev);0.2"
+#define PPB_SURFACE_3D_DEV_INTERFACE PPB_SURFACE_3D_DEV_INTERFACE_0_2
 
 struct PPB_Surface3D_Dev {
   // Creates a render surface and returns a handle to it.

@@ -10,7 +10,7 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/private/ppb_flash_file.h"  // For |PP_FileHandle|.
 
-#define PPB_FLASH_NETCONNECTOR_INTERFACE "PPB_Flash_NetConnector;0.1"
+#define PPB_FLASH_NETCONNECTOR_INTERFACE "PPB_Flash_NetConnector;0.2"
 
 // This is an opaque type holding a network address.
 struct PP_Flash_NetAddress {

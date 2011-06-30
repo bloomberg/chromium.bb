@@ -12,8 +12,8 @@
 
 struct PP_CompletionCallback;
 
-#define PPB_URLLOADER_INTERFACE_0_1 "PPB_URLLoader;0.1"
-#define PPB_URLLOADER_INTERFACE PPB_URLLOADER_INTERFACE_0_1
+#define PPB_URLLOADER_INTERFACE_0_2 "PPB_URLLoader;0.2"
+#define PPB_URLLOADER_INTERFACE PPB_URLLOADER_INTERFACE_0_2
 
 /**
  * @file
@@ -216,4 +216,3 @@ struct PPB_URLLoader {
  */
 
 #endif  /* PPAPI_C_PPB_URL_LOADER_H_ */
-

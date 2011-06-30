@@ -5,6 +5,7 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_graphics_2d.h"
+#include "ppapi/thunk/common.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_graphics_2d_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
@@ -71,8 +72,9 @@ int32_t Flush(PP_Resource graphics_2d,
               PP_CompletionCallback callback) {
   EnterResource<PPB_Graphics2D_API> enter(graphics_2d, true);
   if (enter.failed())
-    return PP_ERROR_BADRESOURCE;
-  return enter.object()->Flush(callback);
+    return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
+  int32_t result = enter.object()->Flush(callback);
+  return MayForceCallback(callback, result);
 }
 
 const PPB_Graphics2D g_ppb_graphics_2d_thunk = {

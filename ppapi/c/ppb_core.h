@@ -1,4 +1,4 @@
-/* Copyright (c) 2010 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -13,8 +13,8 @@
 
 struct PP_CompletionCallback;
 
-#define PPB_CORE_INTERFACE_0_4 "PPB_Core;0.4"
-#define PPB_CORE_INTERFACE PPB_CORE_INTERFACE_0_4
+#define PPB_CORE_INTERFACE_0_5 "PPB_Core;0.5"
+#define PPB_CORE_INTERFACE PPB_CORE_INTERFACE_0_5
 
 /**
  * @file
@@ -139,4 +139,3 @@ struct PPB_Core {
 
 
 #endif  /* PPAPI_C_DEV_PPB_CORE_DEV_H_ */
-

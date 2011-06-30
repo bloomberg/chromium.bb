@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,7 +32,7 @@ FileSystem_Dev::FileSystem_Dev(Instance* instance,
 int32_t FileSystem_Dev::Open(int64_t expected_size,
                              const CompletionCallback& cc) {
   if (!has_interface<PPB_FileSystem_Dev>())
-    return PP_ERROR_NOINTERFACE;
+    return cc.MayForce(PP_ERROR_NOINTERFACE);
   return get_interface<PPB_FileSystem_Dev>()->Open(
       pp_resource(), expected_size, cc.pp_completion_callback());
 }

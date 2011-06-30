@@ -6,6 +6,7 @@
 #define PPAPI_CPP_COMPLETION_CALLBACK_H_
 
 #include "ppapi/c/pp_completion_callback.h"
+#include "ppapi/c/pp_errors.h"
 #include "ppapi/cpp/logging.h"
 #include "ppapi/cpp/non_thread_safe_ref_count.h"
 
@@ -27,6 +28,14 @@ class CompletionCallback {
     cc_ = PP_MakeCompletionCallback(func, user_data);
   }
 
+  CompletionCallback(PP_CompletionCallback_Func func, void* user_data,
+                     int32_t flags) {
+    cc_ = PP_MakeCompletionCallback(func, user_data);
+    cc_.flags = flags;
+  }
+
+  void set_flags(int32_t flags) { cc_.flags = flags; }
+
   // Call this method to explicitly run the CompletionCallback.  Normally, the
   // system runs a CompletionCallback after an asynchronous operation
   // completes, but programs may wish to run the CompletionCallback manually
@@ -36,7 +45,34 @@ class CompletionCallback {
     PP_RunCompletionCallback(&cc_, result);
   }
 
+  bool IsOptional() const {
+    return (cc_.func == NULL ||
+            (cc_.flags & PP_COMPLETIONCALLBACK_FLAG_OPTIONAL) != 0);
+  }
+
   const PP_CompletionCallback& pp_completion_callback() const { return cc_; }
+  int32_t flags() const { return cc_.flags; }
+
+  // Use this when implementing functions taking callbacks.
+  // If the callback is required and |result| indicates that it has not
+  // been scheduled, it will be forced on the main thread.
+  //
+  // EXAMPLE USAGE:
+  //
+  // int32_t OpenURL(pp::URLLoader* loader,
+  //                 pp::URLRequestInfo* url_request_info,
+  //                 const CompletionCallback& cc) {
+  //   if (loader == NULL || url_request_info == NULL)
+  //     return cc.MayForce(PP_ERROR_BADRESOURCE);
+  //   return loader->Open(*loader, *url_request_info, cc);
+  // }
+  //
+  int32_t MayForce(int32_t result) const {
+    if (result == PP_OK_COMPLETIONPENDING || IsOptional())
+      return result;
+    Module::Get()->core()->CallOnMainThread(0, *this, result);
+    return PP_OK_COMPLETIONPENDING;
+  }
 
  protected:
   PP_CompletionCallback cc_;
@@ -67,10 +103,10 @@ class CompletionCallback {
 //     }
 //
 //     void ProcessFile(const FileRef& file) {
-//       CompletionCallback cc = factory_.NewCallback(&MyHandler::DidOpen);
+//       CompletionCallback cc = factory_.NewRequiredCallback(
+//           &MyHandler::DidOpen);
 //       int32_t rv = fio_.Open(file, PP_FileOpenFlag_Read, cc);
-//       if (rv != PP_OK_COMPLETIONPENDING)
-//         cc.Run(rv);
+//       CHECK(rv == PP_OK_COMPLETIONPENDING);
 //     }
 //
 //    private:
@@ -100,7 +136,8 @@ class CompletionCallback {
 //     }
 //
 //     void ReadMore() {
-//       CompletionCallback cc = factory_.NewCallback(&MyHandler::DidRead);
+//       CompletionCallback cc =
+//           factory_.NewOptionalCallback(&MyHandler::DidRead);
 //       int32_t rv = fio_.Read(offset_, buf_, sizeof(buf_),
 //                              cc.pp_completion_callback());
 //       if (rv != PP_OK_COMPLETIONPENDING)
@@ -145,16 +182,36 @@ class CompletionCallbackFactory {
     return object_;
   }
 
-  // Allocates a new, single-use CompletionCallback.  The CompletionCallback
-  // must be run in order for the memory allocated by NewCallback to be freed.
-  // If after passing the CompletionCallback to a PPAPI method, the method does
-  // not return PP_OK_COMPLETIONPENDING, then you should manually call the
-  // CompletionCallback's Run method otherwise memory will be leaked.
+  // Methods for allocating new, single-use CompletionCallbacks.
+  // The CompletionCallback must be run in order for the memory
+  // allocated by the methods to be freed.
+  // NewRequiredCallback() creates callbacks that will always run.
+  // NewOptionalCallback() creates callbacks that might not run if the method
+  // taking them can complete synchronously. Thus, if after passing the
+  // CompletionCallback to a PPAPI method, the method does not return
+  // PP_OK_COMPLETIONPENDING, then you should manually call the
+  // CompletionCallback's Run method, or memory will be leaked.
+  // NewCallback() is equivalent to NewOptionalCallback().
+  // TODO(polina): update this comment when this is no longer true.
 
   template <typename Method>
   CompletionCallback NewCallback(Method method) {
     PP_DCHECK(object_);
     return NewCallbackHelper(Dispatcher0<Method>(method));
+  }
+
+  template <typename Method>
+  CompletionCallback NewRequiredCallback(Method method) {
+    CompletionCallback cc = NewCallback(method);
+    cc.set_flags(cc.flags() & ~PP_COMPLETIONCALLBACK_FLAG_OPTIONAL);
+    return cc;
+  }
+
+  template <typename Method>
+  CompletionCallback NewOptionalCallback(Method method) {
+    CompletionCallback cc = NewCallback(method);
+    cc.set_flags(cc.flags() | PP_COMPLETIONCALLBACK_FLAG_OPTIONAL);
+    return cc;
   }
 
   // A copy of "a" will be passed to "method" when the completion callback
@@ -169,6 +226,20 @@ class CompletionCallbackFactory {
     return NewCallbackHelper(Dispatcher1<Method, A>(method, a));
   }
 
+  template <typename Method, typename A>
+  CompletionCallback NewRequiredCallback(Method method, const A& a) {
+    CompletionCallback cc = NewCallback(method, a);
+    cc.set_flags(cc.flags() & ~PP_COMPLETIONCALLBACK_FLAG_OPTIONAL);
+    return cc;
+  }
+
+  template <typename Method, typename A>
+  CompletionCallback NewOptionalCallback(Method method, const A& a) {
+    CompletionCallback cc = NewCallback(method, a);
+    cc.set_flags(cc.flags() | PP_COMPLETIONCALLBACK_FLAG_OPTIONAL);
+    return cc;
+  }
+
   // A copy of "a" and "b" will be passed to "method" when the completion
   // callback runs.
   //
@@ -179,6 +250,22 @@ class CompletionCallbackFactory {
   CompletionCallback NewCallback(Method method, const A& a, const B& b) {
     PP_DCHECK(object_);
     return NewCallbackHelper(Dispatcher2<Method, A, B>(method, a, b));
+  }
+
+  template <typename Method, typename A, typename B>
+  CompletionCallback NewRequiredCallback(Method method, const A& a,
+                                         const B& b) {
+    CompletionCallback cc = NewCallback(method, a, b);
+    cc.set_flags(cc.flags() & ~PP_COMPLETIONCALLBACK_FLAG_OPTIONAL);
+    return cc;
+  }
+
+  template <typename Method, typename A, typename B>
+  CompletionCallback NewOptionalCallback(Method method, const A& a,
+                                         const B& b) {
+    CompletionCallback cc = NewCallback(method, a, b);
+    cc.set_flags(cc.flags() | PP_COMPLETIONCALLBACK_FLAG_OPTIONAL);
+    return cc;
   }
 
  private:

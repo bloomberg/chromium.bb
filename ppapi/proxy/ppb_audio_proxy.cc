@@ -207,7 +207,7 @@ void PPB_Audio_Proxy::OnMsgCreate(PP_Instance instance_id,
     return;
 
   // Initiate opening the audio object.
-  CompletionCallback callback = callback_factory_.NewCallback(
+  CompletionCallback callback = callback_factory_.NewOptionalCallback(
       &PPB_Audio_Proxy::AudioChannelConnected, *result);
   int32_t open_error = trusted_audio.object()->OpenTrusted(
       audio_config_res, callback.pp_completion_callback());

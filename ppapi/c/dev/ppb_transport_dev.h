@@ -13,8 +13,8 @@
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPB_TRANSPORT_DEV_INTERFACE_0_4 "PPB_Transport;0.4"
-#define PPB_TRANSPORT_DEV_INTERFACE PPB_TRANSPORT_DEV_INTERFACE_0_4
+#define PPB_TRANSPORT_DEV_INTERFACE_0_5 "PPB_Transport;0.5"
+#define PPB_TRANSPORT_DEV_INTERFACE PPB_TRANSPORT_DEV_INTERFACE_0_5
 
 struct PPB_Transport_Dev {
   // Creates a new transport object with the specified name using the

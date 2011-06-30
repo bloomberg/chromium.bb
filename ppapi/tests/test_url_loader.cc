@@ -44,27 +44,29 @@ bool TestURLLoader::Init() {
 
 void TestURLLoader::RunTest() {
   RUN_TEST(BasicGET);
-  RUN_TEST(BasicPOST);
-  RUN_TEST(CompoundBodyPOST);
-  RUN_TEST(EmptyDataPOST);
+  RUN_TEST_FORCEASYNC(BasicPOST);
+  RUN_TEST_FORCEASYNC_AND_NOT(CompoundBodyPOST);
+  RUN_TEST_FORCEASYNC(EmptyDataPOST);
   RUN_TEST(BinaryDataPOST);
-  RUN_TEST(CustomRequestHeader);
-  RUN_TEST(IgnoresBogusContentLength);
+  RUN_TEST_FORCEASYNC_AND_NOT(CustomRequestHeader);
+  RUN_TEST_FORCEASYNC(IgnoresBogusContentLength);
   RUN_TEST(SameOriginRestriction);
-  RUN_TEST(CrossOriginRequest);
-  RUN_TEST(StreamToFile);
+  RUN_TEST_FORCEASYNC(CrossOriginRequest);
+  RUN_TEST_FORCEASYNC_AND_NOT(StreamToFile);
   RUN_TEST(AuditURLRedirect);
-  RUN_TEST(AbortCalls);
+  RUN_TEST_FORCEASYNC(AbortCalls);
 }
 
 std::string TestURLLoader::ReadEntireFile(pp::FileIO_Dev* file_io,
                                           std::string* data) {
-  TestCompletionCallback callback(instance_->pp_instance());
+  TestCompletionCallback callback(instance_->pp_instance(), force_async_);
   char buf[256];
   int64_t offset = 0;
 
   for (;;) {
     int32_t rv = file_io->Read(offset, buf, sizeof(buf), callback);
+    if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+      return ReportError("FileIO::Read force_async", rv);
     if (rv == PP_OK_COMPLETIONPENDING)
       rv = callback.WaitForResult();
     if (rv < 0)
@@ -80,11 +82,13 @@ std::string TestURLLoader::ReadEntireFile(pp::FileIO_Dev* file_io,
 
 std::string TestURLLoader::ReadEntireResponseBody(pp::URLLoader* loader,
                                                   std::string* body) {
-  TestCompletionCallback callback(instance_->pp_instance());
+  TestCompletionCallback callback(instance_->pp_instance(), force_async_);
   char buf[2];  // Small so that multiple reads are needed.
 
   for (;;) {
     int32_t rv = loader->ReadResponseBody(buf, sizeof(buf), callback);
+    if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+      return ReportError("URLLoader::ReadResponseBody force_async", rv);
     if (rv == PP_OK_COMPLETIONPENDING)
       rv = callback.WaitForResult();
     if (rv < 0)
@@ -100,10 +104,12 @@ std::string TestURLLoader::ReadEntireResponseBody(pp::URLLoader* loader,
 std::string TestURLLoader::LoadAndCompareBody(
     const pp::URLRequestInfo& request,
     const std::string& expected_body) {
-  TestCompletionCallback callback(instance_->pp_instance());
+  TestCompletionCallback callback(instance_->pp_instance(), force_async_);
 
   pp::URLLoader loader(*instance_);
   int32_t rv = loader.Open(request, callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("URLLoader::Open force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
   if (rv != PP_OK)
@@ -197,10 +203,12 @@ std::string TestURLLoader::TestStreamToFile() {
   request.SetURL("test_url_loader_data/hello.txt");
   request.SetStreamToFile(true);
 
-  TestCompletionCallback callback(instance_->pp_instance());
+  TestCompletionCallback callback(instance_->pp_instance(), force_async_);
 
   pp::URLLoader loader(*instance_);
   int32_t rv = loader.Open(request, callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("URLLoader::Open force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
   if (rv != PP_OK)
@@ -218,6 +226,8 @@ std::string TestURLLoader::TestStreamToFile() {
     return "URLResponseInfo::GetBody returned null";
 
   rv = loader.FinishStreamingToFile(callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("URLLoader::FinishStreamingToFile force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
   if (rv != PP_OK)
@@ -225,6 +235,8 @@ std::string TestURLLoader::TestStreamToFile() {
 
   pp::FileIO_Dev reader(instance_);
   rv = reader.Open(body, PP_FILEOPENFLAG_READ, callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("FileIO::Open force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
   if (rv != PP_OK)
@@ -253,10 +265,12 @@ std::string TestURLLoader::TestSameOriginRestriction() {
   pp::URLRequestInfo request(instance_);
   request.SetURL("http://www.google.com/");
 
-  TestCompletionCallback callback(instance_->pp_instance());
+  TestCompletionCallback callback(instance_->pp_instance(), force_async_);
 
   pp::URLLoader loader(*instance_);
   int32_t rv = loader.Open(request, callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("URLLoader::Open force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
 
@@ -290,11 +304,13 @@ std::string TestURLLoader::TestCrossOriginRequest() {
   request.SetURL(cross_origin_url);
   request.SetAllowCrossOriginRequests(true);
 
-  TestCompletionCallback callback(instance_->pp_instance());
+  TestCompletionCallback callback(instance_->pp_instance(), force_async_);
 
   pp::URLLoader loader(*instance_);
   int32_t rv = loader.Open(request, callback);
-  if (rv == PP_ERROR_WOULDBLOCK)
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("URLLoader::Open force_async", rv);
+  if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
 
   // We expect success since we allowed a cross-origin request.
@@ -312,10 +328,12 @@ std::string TestURLLoader::TestAuditURLRedirect() {
   request.SetURL("/server-redirect?www.google.com");
   request.SetFollowRedirects(false);
 
-  TestCompletionCallback callback(instance_->pp_instance());
+  TestCompletionCallback callback(instance_->pp_instance(), force_async_);
 
   pp::URLLoader loader(*instance_);
   int32_t rv = loader.Open(request, callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("URLLoader::Open force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
   if (rv != PP_OK)
@@ -339,13 +357,15 @@ std::string TestURLLoader::TestAbortCalls() {
   pp::URLRequestInfo request(instance_);
   request.SetURL("test_url_loader_data/hello.txt");
 
-  TestCompletionCallback callback(instance_->pp_instance());
+  TestCompletionCallback callback(instance_->pp_instance(), force_async_);
   int32_t rv;
 
   // Abort |Open()|.
   {
     callback.reset_run_count();
     rv = pp::URLLoader(*instance_).Open(request, callback);
+    if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+      return ReportError("URLLoader::Open force_async", rv);
     if (callback.run_count() > 0)
       return "URLLoader::Open ran callback synchronously.";
     if (rv == PP_OK_COMPLETIONPENDING) {
@@ -363,6 +383,8 @@ std::string TestURLLoader::TestAbortCalls() {
     {
       pp::URLLoader loader(*instance_);
       rv = loader.Open(request, callback);
+      if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+        return ReportError("URLLoader::Open force_async", rv);
       if (rv == PP_OK_COMPLETIONPENDING)
         rv = callback.WaitForResult();
       if (rv != PP_OK)
@@ -370,6 +392,8 @@ std::string TestURLLoader::TestAbortCalls() {
 
       callback.reset_run_count();
       rv = loader.ReadResponseBody(buf, sizeof(buf), callback);
+      if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+        return ReportError("URLLoader::ReadResponseBody force_async", rv);
     }  // Destroy |loader|.
     if (rv == PP_OK_COMPLETIONPENDING) {
       // Save a copy and make sure |buf| doesn't get written to.

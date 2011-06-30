@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/thunk/thunk.h"
+#include "ppapi/thunk/common.h"
 #include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/thunk.h"
 #include "ppapi/thunk/ppb_video_decoder_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
 
@@ -46,8 +47,10 @@ int32_t Initialize(PP_Resource video_decoder,
                    PP_CompletionCallback callback) {
   EnterVideoDecoder enter(video_decoder, true);
   if (enter.failed())
-    return PP_ERROR_BADRESOURCE;
-  return enter.object()->Initialize(context_id, decoder_config, callback);
+    return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
+  int32_t result =
+      enter.object()->Initialize(context_id, decoder_config, callback);
+  return MayForceCallback(callback, result);
 }
 
 int32_t Decode(PP_Resource video_decoder,
@@ -55,8 +58,9 @@ int32_t Decode(PP_Resource video_decoder,
                PP_CompletionCallback callback) {
   EnterVideoDecoder enter(video_decoder, true);
   if (enter.failed())
-    return PP_ERROR_BADRESOURCE;
-  return enter.object()->Decode(bitstream_buffer, callback);
+    return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
+  int32_t result = enter.object()->Decode(bitstream_buffer, callback);
+  return MayForceCallback(callback, result);
 }
 
 void AssignGLESBuffers(PP_Resource video_decoder,
@@ -84,16 +88,18 @@ void ReusePictureBuffer(PP_Resource video_decoder, int32_t picture_buffer_id) {
 int32_t Flush(PP_Resource video_decoder, PP_CompletionCallback callback) {
   EnterVideoDecoder enter(video_decoder, true);
   if (enter.failed())
-    return PP_ERROR_BADRESOURCE;
-  return enter.object()->Flush(callback);
+    return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
+  int32_t result = enter.object()->Flush(callback);
+  return MayForceCallback(callback, result);
 }
 
 int32_t Abort(PP_Resource video_decoder,
               PP_CompletionCallback callback) {
   EnterVideoDecoder enter(video_decoder, true);
   if (enter.failed())
-    return PP_ERROR_BADRESOURCE;
-  return enter.object()->Abort(callback);
+    return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
+  int32_t result = enter.object()->Abort(callback);
+  return MayForceCallback(callback, result);
 }
 
 const PPB_VideoDecoder_Dev g_ppb_videodecoder_thunk = {

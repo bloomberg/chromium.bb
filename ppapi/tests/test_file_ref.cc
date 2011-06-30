@@ -44,14 +44,14 @@ bool TestFileRef::Init() {
 }
 
 void TestFileRef::RunTest() {
-  RUN_TEST(GetFileSystemType);
-  RUN_TEST(GetName);
-  RUN_TEST(GetPath);
-  RUN_TEST(GetParent);
-  RUN_TEST(MakeDirectory);
-  RUN_TEST(QueryAndTouchFile);
-  RUN_TEST(DeleteFileAndDirectory);
-  RUN_TEST(RenameFileAndDirectory);
+  RUN_TEST_FORCEASYNC_AND_NOT(GetFileSystemType);
+  RUN_TEST_FORCEASYNC_AND_NOT(GetName);
+  RUN_TEST_FORCEASYNC_AND_NOT(GetPath);
+  RUN_TEST_FORCEASYNC_AND_NOT(GetParent);
+  RUN_TEST_FORCEASYNC_AND_NOT(MakeDirectory);
+  RUN_TEST_FORCEASYNC_AND_NOT(QueryAndTouchFile);
+  RUN_TEST_FORCEASYNC_AND_NOT(DeleteFileAndDirectory);
+  RUN_TEST_FORCEASYNC_AND_NOT(RenameFileAndDirectory);
 }
 
 std::string TestFileRef::TestGetFileSystemType() {
@@ -72,10 +72,12 @@ std::string TestFileRef::TestGetFileSystemType() {
   request.SetURL("test_url_loader_data/hello.txt");
   request.SetStreamToFile(true);
 
-  TestCompletionCallback callback(instance_->pp_instance());
+  TestCompletionCallback callback(instance_->pp_instance(), force_async_);
 
   pp::URLLoader loader(instance_);
   int32_t rv = loader.Open(request, callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("URLLoader::Open force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
   if (rv != PP_OK)
@@ -121,10 +123,12 @@ std::string TestFileRef::TestGetName() {
   request.SetURL("test_url_loader_data/hello.txt");
   request.SetStreamToFile(true);
 
-  TestCompletionCallback callback(instance_->pp_instance());
+  TestCompletionCallback callback(instance_->pp_instance(), force_async_);
 
   pp::URLLoader loader(instance_);
   int32_t rv = loader.Open(request, callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("URLLoader::Open force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
   if (rv != PP_OK)
@@ -165,10 +169,12 @@ std::string TestFileRef::TestGetPath() {
   request.SetURL("test_url_loader_data/hello.txt");
   request.SetStreamToFile(true);
 
-  TestCompletionCallback callback(instance_->pp_instance());
+  TestCompletionCallback callback(instance_->pp_instance(), force_async_);
 
   pp::URLLoader loader(instance_);
   int32_t rv = loader.Open(request, callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("URLLoader::Open force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
   if (rv != PP_OK)
@@ -220,10 +226,12 @@ std::string TestFileRef::TestGetParent() {
   request.SetURL("test_url_loader_data/hello.txt");
   request.SetStreamToFile(true);
 
-  TestCompletionCallback callback(instance_->pp_instance());
+  TestCompletionCallback callback(instance_->pp_instance(), force_async_);
 
   pp::URLLoader loader(instance_);
   int32_t rv = loader.Open(request, callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("URLLoader::Open force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
   if (rv != PP_OK)
@@ -244,11 +252,13 @@ std::string TestFileRef::TestGetParent() {
 }
 
 std::string TestFileRef::TestMakeDirectory() {
-  TestCompletionCallback callback(instance_->pp_instance());
+  TestCompletionCallback callback(instance_->pp_instance(), force_async_);
 
   // Open.
   pp::FileSystem_Dev file_system(instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY);
   int32_t rv = file_system.Open(1024, callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("FileSystem::Open force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
   if (rv != PP_OK)
@@ -257,6 +267,8 @@ std::string TestFileRef::TestMakeDirectory() {
   // MakeDirectory.
   pp::FileRef_Dev dir_ref(file_system, "/test_dir_make_directory");
   rv = dir_ref.MakeDirectory(callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("FileSystem::MakeDirectory force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
   if (rv != PP_OK)
@@ -268,6 +280,8 @@ std::string TestFileRef::TestMakeDirectory() {
       .MakeDirectory(callback);
   if (callback.run_count() > 0)
     return "FileSystem::MakeDirectory ran callback synchronously.";
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("FileSystem::MakeDirectory force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING) {
     rv = callback.WaitForResult();
     if (rv != PP_ERROR_ABORTED)
@@ -279,6 +293,8 @@ std::string TestFileRef::TestMakeDirectory() {
   // MakeDirectoryIncludingAncestors.
   dir_ref = pp::FileRef_Dev(file_system, "/dir_make_dir_1/dir_make_dir_2");
   rv = dir_ref.MakeDirectoryIncludingAncestors(callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("FileSystem::MakeDirectory force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
   if (rv != PP_OK)
@@ -292,6 +308,9 @@ std::string TestFileRef::TestMakeDirectory() {
     return "FileSystem::MakeDirectoryIncludingAncestors "
            "ran callback synchronously.";
   }
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError(
+        "FileSystem::MakeDirectoryIncludingAncestors force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING) {
     rv = callback.WaitForResult();
     if (rv != PP_ERROR_ABORTED)
@@ -303,6 +322,8 @@ std::string TestFileRef::TestMakeDirectory() {
   // MakeDirectory with nested path.
   dir_ref = pp::FileRef_Dev(file_system, "/dir_make_dir_3/dir_make_dir_4");
   rv = dir_ref.MakeDirectory(callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("FileSystem::MakeDirectory force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
   if (rv == PP_OK) {
@@ -314,9 +335,11 @@ std::string TestFileRef::TestMakeDirectory() {
 }
 
 std::string TestFileRef::TestQueryAndTouchFile() {
-  TestCompletionCallback callback(instance_->pp_instance());
+  TestCompletionCallback callback(instance_->pp_instance(), force_async_);
   pp::FileSystem_Dev file_system(instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY);
   int32_t rv = file_system.Open(1024, callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("FileSystem::Open force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
   if (rv != PP_OK)
@@ -329,6 +352,8 @@ std::string TestFileRef::TestQueryAndTouchFile() {
                     PP_FILEOPENFLAG_TRUNCATE |
                     PP_FILEOPENFLAG_WRITE,
                     callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("FileIO::Open force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
   if (rv != PP_OK)
@@ -336,6 +361,8 @@ std::string TestFileRef::TestQueryAndTouchFile() {
 
   // Write some data to have a non-zero file size.
   rv = file_io.Write(0, "test", 4, callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("FileIO::Write force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
   if (rv != 4)
@@ -347,6 +374,8 @@ std::string TestFileRef::TestQueryAndTouchFile() {
   const PP_Time last_access_time = 123 * 24 * 3600.0;
   const PP_Time last_modified_time = 246.0;
   rv = file_ref.Touch(last_access_time, last_modified_time, callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("FileSystem::Touch force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
   if (rv != PP_OK)
@@ -358,6 +387,8 @@ std::string TestFileRef::TestQueryAndTouchFile() {
       .Touch(last_access_time, last_modified_time, callback);
   if (callback.run_count() > 0)
     return "FileSystem::Touch ran callback synchronously.";
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("FileSystem::Touch force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING) {
     rv = callback.WaitForResult();
     if (rv != PP_ERROR_ABORTED)
@@ -369,6 +400,8 @@ std::string TestFileRef::TestQueryAndTouchFile() {
   // Query.
   PP_FileInfo_Dev info;
   rv = file_io.Query(&info, callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("FileSystem::Query force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
   if (rv != PP_OK)
@@ -389,6 +422,8 @@ std::string TestFileRef::TestQueryAndTouchFile() {
       last_access_time, last_modified_time, callback);
   if (callback.run_count() > 0)
     return "FileSystem::Touch ran callback synchronously.";
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("FileSystem::Touch force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING) {
     rv = callback.WaitForResult();
     if (rv != PP_ERROR_ABORTED)
@@ -401,9 +436,11 @@ std::string TestFileRef::TestQueryAndTouchFile() {
 }
 
 std::string TestFileRef::TestDeleteFileAndDirectory() {
-  TestCompletionCallback callback(instance_->pp_instance());
+  TestCompletionCallback callback(instance_->pp_instance(), force_async_);
   pp::FileSystem_Dev file_system(instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY);
   int32_t rv = file_system.Open(1024, callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("FileSystem::Open force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
   if (rv != PP_OK)
@@ -412,57 +449,73 @@ std::string TestFileRef::TestDeleteFileAndDirectory() {
   pp::FileRef_Dev file_ref(file_system, "/file_delete");
   pp::FileIO_Dev file_io(instance_);
   rv = file_io.Open(file_ref, PP_FILEOPENFLAG_CREATE, callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("FileIO::Open force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
   if (rv != PP_OK)
     return ReportError("FileIO::Open", rv);
 
   rv = file_ref.Delete(callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("FileRef::Delete force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
   if (rv != PP_OK)
-    return ReportError("FileSystem::Delete", rv);
+    return ReportError("FileRef::Delete", rv);
 
   pp::FileRef_Dev dir_ref(file_system, "/dir_delete");
   rv = dir_ref.MakeDirectory(callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("FileRef::MakeDirectory force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
   if (rv != PP_OK)
-    return ReportError("FileSystem::MakeDirectory", rv);
+    return ReportError("FileRef::MakeDirectory", rv);
 
   rv = dir_ref.Delete(callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("FileRef::Open force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
   if (rv != PP_OK)
-    return ReportError("FileSystem::Delete", rv);
+    return ReportError("FileRef::Delete", rv);
 
   pp::FileRef_Dev nested_dir_ref(file_system, "/dir_delete_1/dir_delete_2");
   rv = nested_dir_ref.MakeDirectoryIncludingAncestors(callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("FileRef::Open force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
   if (rv != PP_OK)
-    return ReportError("FileSystem::MakeDirectoryIncludingAncestors", rv);
+    return ReportError("FileRef::MakeDirectoryIncludingAncestors", rv);
 
   // Hang on to a ref to the parent; otherwise the callback will be aborted.
   pp::FileRef_Dev parent_dir_ref = nested_dir_ref.GetParent();
   rv = parent_dir_ref.Delete(callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("FileRef::Open force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
   if (rv != PP_ERROR_FAILED)
-    return ReportError("FileSystem::Delete", rv);
+    return ReportError("FileRef::Delete", rv);
 
   pp::FileRef_Dev nonexistent_file_ref(file_system, "/nonexistent_file_delete");
   rv = nonexistent_file_ref.Delete(callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("FileRef::Open force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
   if (rv != PP_ERROR_FILENOTFOUND)
-    return ReportError("FileSystem::Delete", rv);
+    return ReportError("FileRef::Delete", rv);
 
   // Delete aborted.
   {
     pp::FileRef_Dev file_ref_abort(file_system, "/file_delete_abort");
     pp::FileIO_Dev file_io_abort(instance_);
     rv = file_io_abort.Open(file_ref_abort, PP_FILEOPENFLAG_CREATE, callback);
+    if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+      return ReportError("FileIO::Open force_async", rv);
     if (rv == PP_OK_COMPLETIONPENDING)
       rv = callback.WaitForResult();
     if (rv != PP_OK)
@@ -472,22 +525,26 @@ std::string TestFileRef::TestDeleteFileAndDirectory() {
     rv = file_ref_abort.Delete(callback);
   }
   if (callback.run_count() > 0)
-    return "FileSystem::Delete ran callback synchronously.";
+    return "FileRef::Delete ran callback synchronously.";
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("FileRef::Open force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING) {
     rv = callback.WaitForResult();
     if (rv != PP_ERROR_ABORTED)
-      return "FileSystem::Delete not aborted.";
+      return "FileRef::Delete not aborted.";
   } else if (rv != PP_OK) {
-    return ReportError("FileSystem::Delete", rv);
+    return ReportError("FileRef::Delete", rv);
   }
 
   PASS();
 }
 
 std::string TestFileRef::TestRenameFileAndDirectory() {
-  TestCompletionCallback callback(instance_->pp_instance());
+  TestCompletionCallback callback(instance_->pp_instance(), force_async_);
   pp::FileSystem_Dev file_system(instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY);
   int32_t rv = file_system.Open(1024, callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("FileSystem::Open force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
   if (rv != PP_OK)
@@ -496,6 +553,8 @@ std::string TestFileRef::TestRenameFileAndDirectory() {
   pp::FileRef_Dev file_ref(file_system, "/file_rename");
   pp::FileIO_Dev file_io(instance_);
   rv = file_io.Open(file_ref, PP_FILEOPENFLAG_CREATE, callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("FileIO::Open force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
   if (rv != PP_OK)
@@ -503,38 +562,48 @@ std::string TestFileRef::TestRenameFileAndDirectory() {
 
   pp::FileRef_Dev target_file_ref(file_system, "/target_file_rename");
   rv = file_ref.Rename(target_file_ref, callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("FileRef::Rename force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
   if (rv != PP_OK)
-    return ReportError("FileSystem::Rename", rv);
+    return ReportError("FileRef::Rename", rv);
 
   pp::FileRef_Dev dir_ref(file_system, "/dir_rename");
   rv = dir_ref.MakeDirectory(callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("FileRef::MakeDirectory force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
   if (rv != PP_OK)
-    return ReportError("FileSystem::MakeDirectory", rv);
+    return ReportError("FileRef::MakeDirectory", rv);
 
   pp::FileRef_Dev target_dir_ref(file_system, "/target_dir_rename");
   rv = dir_ref.Rename(target_dir_ref, callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("FileRef::Rename force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
   if (rv != PP_OK)
-    return ReportError("FileSystem::Rename", rv);
+    return ReportError("FileRef::Rename", rv);
 
   pp::FileRef_Dev nested_dir_ref(file_system, "/dir_rename_1/dir_rename_2");
   rv = nested_dir_ref.MakeDirectoryIncludingAncestors(callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("FileRef::MakeDirectory force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
   if (rv != PP_OK)
-    return ReportError("FileSystem::MakeDirectoryIncludingAncestors", rv);
+    return ReportError("FileRef::MakeDirectoryIncludingAncestors", rv);
 
   pp::FileRef_Dev target_nested_dir_ref(file_system, "/dir_rename_1");
   rv = nested_dir_ref.Rename(target_nested_dir_ref, callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("FileRef::Open force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
   if (rv != PP_ERROR_FAILED)
-    return ReportError("FileSystem::Rename", rv);
+    return ReportError("FileRef::Rename", rv);
 
   // Rename aborted.
   // TODO(viettrungluu): Figure out what we want to do if the target file
@@ -545,6 +614,8 @@ std::string TestFileRef::TestRenameFileAndDirectory() {
     pp::FileRef_Dev file_ref_abort(file_system, "/file_rename_abort");
     pp::FileIO_Dev file_io_abort(instance_);
     rv = file_io_abort.Open(file_ref_abort, PP_FILEOPENFLAG_CREATE, callback);
+    if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+      return ReportError("FileIO::Open force_async", rv);
     if (rv == PP_OK_COMPLETIONPENDING)
       rv = callback.WaitForResult();
     if (rv != PP_OK)
@@ -555,6 +626,8 @@ std::string TestFileRef::TestRenameFileAndDirectory() {
   }
   if (callback.run_count() > 0)
     return "FileSystem::Rename ran callback synchronously.";
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("FileSystem::Rename force_async", rv);
   if (rv == PP_OK_COMPLETIONPENDING) {
     rv = callback.WaitForResult();
     if (rv != PP_ERROR_ABORTED)

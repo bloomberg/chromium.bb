@@ -12,6 +12,7 @@
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
+#include "ppapi/thunk/common.h"
 
 namespace pp {
 
@@ -39,7 +40,7 @@ int32_t VideoDecoder_Dev::Initialize(const PP_VideoConfigElement* config,
                                      const Context3D_Dev& context,
                                      CompletionCallback callback) {
   if (!has_interface<PPB_VideoDecoder_Dev>())
-    return PP_ERROR_NOINTERFACE;
+    return callback.MayForce(PP_ERROR_NOINTERFACE);
   return get_interface<PPB_VideoDecoder_Dev>()->Initialize(
       pp_resource(), context.pp_resource(), config,
       callback.pp_completion_callback());
@@ -77,9 +78,7 @@ int32_t VideoDecoder_Dev::Decode(
     const PP_VideoBitstreamBuffer_Dev& bitstream_buffer,
     CompletionCallback callback) {
   if (!has_interface<PPB_VideoDecoder_Dev>())
-    return PP_ERROR_NOINTERFACE;
-  if (!pp_resource())
-    return PP_ERROR_BADRESOURCE;
+    return callback.MayForce(PP_ERROR_NOINTERFACE);
   return get_interface<PPB_VideoDecoder_Dev>()->Decode(
       pp_resource(), &bitstream_buffer, callback.pp_completion_callback());
 }
@@ -93,18 +92,14 @@ void VideoDecoder_Dev::ReusePictureBuffer(int32_t picture_buffer_id) {
 
 int32_t VideoDecoder_Dev::Flush(CompletionCallback callback) {
   if (!has_interface<PPB_VideoDecoder_Dev>())
-    return PP_ERROR_NOINTERFACE;
-  if (!pp_resource())
-    return PP_ERROR_BADRESOURCE;
+    return callback.MayForce(PP_ERROR_NOINTERFACE);
   return get_interface<PPB_VideoDecoder_Dev>()->Flush(
       pp_resource(), callback.pp_completion_callback());
 }
 
 int32_t VideoDecoder_Dev::Abort(CompletionCallback callback) {
   if (!has_interface<PPB_VideoDecoder_Dev>())
-    return PP_ERROR_NOINTERFACE;
-  if (!pp_resource())
-    return PP_ERROR_BADRESOURCE;
+    return callback.MayForce(PP_ERROR_NOINTERFACE);
   return get_interface<PPB_VideoDecoder_Dev>()->Abort(
       pp_resource(), callback.pp_completion_callback());
 }

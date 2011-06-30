@@ -1,4 +1,4 @@
-/* Copyright (c) 2010 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -16,8 +16,8 @@ struct PP_Point;
 struct PP_Rect;
 struct PP_Size;
 
-#define PPB_GRAPHICS_2D_INTERFACE_0_3 "PPB_Graphics2D;0.3"
-#define PPB_GRAPHICS_2D_INTERFACE PPB_GRAPHICS_2D_INTERFACE_0_3
+#define PPB_GRAPHICS_2D_INTERFACE_0_4 "PPB_Graphics2D;0.4"
+#define PPB_GRAPHICS_2D_INTERFACE PPB_GRAPHICS_2D_INTERFACE_0_4
 
 /**
  * @file
@@ -231,4 +231,3 @@ struct PPB_Graphics2D {
  * @}
  */
 #endif  /* PPAPI_C_PPB_GRAPHICS_2D_H_ */
-

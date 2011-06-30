@@ -10,8 +10,8 @@
 
 struct PP_CompletionCallback;
 
-#define PPB_FILEIOTRUSTED_INTERFACE_0_3 "PPB_FileIOTrusted;0.3"
-#define PPB_FILEIOTRUSTED_INTERFACE PPB_FILEIOTRUSTED_INTERFACE_0_3
+#define PPB_FILEIOTRUSTED_INTERFACE_0_4 "PPB_FileIOTrusted;0.4"
+#define PPB_FILEIOTRUSTED_INTERFACE PPB_FILEIOTRUSTED_INTERFACE_0_4
 
 // Available only to trusted implementations.
 struct PPB_FileIOTrusted {
@@ -45,3 +45,4 @@ struct PPB_FileIOTrusted {
 };
 
 #endif  /* PPAPI_C_PPB_FILE_IO_TRUSTED_H_ */
+

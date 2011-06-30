@@ -4,8 +4,9 @@
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/thunk/thunk.h"
+#include "ppapi/thunk/common.h"
 #include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/thunk.h"
 #include "ppapi/thunk/ppb_transport_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
 
@@ -38,16 +39,18 @@ PP_Bool IsWritable(PP_Resource transport) {
 int32_t Connect(PP_Resource transport, PP_CompletionCallback callback) {
   EnterTransport enter(transport, true);
   if (enter.failed())
-    return PP_ERROR_BADRESOURCE;
-  return enter.object()->Connect(callback);
+    return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
+  int32_t result = enter.object()->Connect(callback);
+  return MayForceCallback(callback, result);
 }
 
 int32_t GetNextAddress(PP_Resource transport, PP_Var* address,
                        PP_CompletionCallback callback) {
   EnterTransport enter(transport, true);
   if (enter.failed())
-    return PP_ERROR_BADRESOURCE;
-  return enter.object()->GetNextAddress(address, callback);
+    return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
+  int32_t result = enter.object()->GetNextAddress(address, callback);
+  return MayForceCallback(callback, result);
 }
 
 int32_t ReceiveRemoteAddress(PP_Resource transport, PP_Var address) {
@@ -61,16 +64,18 @@ int32_t Recv(PP_Resource transport, void* data, uint32_t len,
              PP_CompletionCallback callback) {
   EnterTransport enter(transport, true);
   if (enter.failed())
-    return PP_ERROR_BADRESOURCE;
-  return enter.object()->Recv(data, len, callback);
+    return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
+  int32_t result = enter.object()->Recv(data, len, callback);
+  return MayForceCallback(callback, result);
 }
 
 int32_t Send(PP_Resource transport, const void* data, uint32_t len,
              PP_CompletionCallback callback) {
   EnterTransport enter(transport, true);
   if (enter.failed())
-    return PP_ERROR_BADRESOURCE;
-  return enter.object()->Send(data, len, callback);
+    return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
+  int32_t result = enter.object()->Send(data, len, callback);
+  return MayForceCallback(callback, result);
 }
 
 int32_t Close(PP_Resource transport) {

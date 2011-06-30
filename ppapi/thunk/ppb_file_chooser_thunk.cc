@@ -5,8 +5,9 @@
 #include "ppapi/c/dev/ppb_file_chooser_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/thunk/thunk.h"
+#include "ppapi/thunk/common.h"
 #include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/thunk.h"
 #include "ppapi/thunk/ppb_file_chooser_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
 
@@ -31,8 +32,9 @@ PP_Bool IsFileChooser(PP_Resource resource) {
 int32_t Show(PP_Resource chooser, PP_CompletionCallback callback) {
   EnterResource<PPB_FileChooser_API> enter(chooser, true);
   if (enter.failed())
-    return PP_ERROR_BADRESOURCE;
-  return enter.object()->Show(callback);
+    return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
+  int32_t result = enter.object()->Show(callback);
+  return MayForceCallback(callback, result);
 }
 
 PP_Resource GetNextChosenFile(PP_Resource chooser) {

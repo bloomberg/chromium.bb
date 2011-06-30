@@ -4,8 +4,9 @@
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/thunk/thunk.h"
+#include "ppapi/thunk/common.h"
 #include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/thunk.h"
 #include "ppapi/thunk/ppb_graphics_3d_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
 
@@ -66,8 +67,9 @@ int32_t SetAttribs(PP_Resource graphics_3d, int32_t* attrib_list) {
 int32_t SwapBuffers(PP_Resource graphics_3d, PP_CompletionCallback callback) {
   EnterGraphics3D enter(graphics_3d, true);
   if (enter.failed())
-    return PP_ERROR_BADRESOURCE;
-  return enter.object()->SwapBuffers(callback);
+    return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
+  int32_t result = enter.object()->SwapBuffers(callback);
+  return MayForceCallback(callback, result);
 }
 
 const PPB_Graphics3D_Dev g_ppb_graphics_3d_thunk = {

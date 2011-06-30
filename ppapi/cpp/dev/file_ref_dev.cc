@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -69,7 +69,7 @@ FileRef_Dev FileRef_Dev::GetParent() const {
 
 int32_t FileRef_Dev::MakeDirectory(const CompletionCallback& cc) {
   if (!has_interface<PPB_FileRef_Dev>())
-    return PP_ERROR_NOINTERFACE;
+    return cc.MayForce(PP_ERROR_NOINTERFACE);
   return get_interface<PPB_FileRef_Dev>()->MakeDirectory(
       pp_resource(),
       PP_FALSE,  // make_ancestors
@@ -79,7 +79,7 @@ int32_t FileRef_Dev::MakeDirectory(const CompletionCallback& cc) {
 int32_t FileRef_Dev::MakeDirectoryIncludingAncestors(
     const CompletionCallback& cc) {
   if (!has_interface<PPB_FileRef_Dev>())
-    return PP_ERROR_NOINTERFACE;
+    return cc.MayForce(PP_ERROR_NOINTERFACE);
   return get_interface<PPB_FileRef_Dev>()->MakeDirectory(
       pp_resource(),
       PP_TRUE,  // make_ancestors
@@ -90,7 +90,7 @@ int32_t FileRef_Dev::Touch(PP_Time last_access_time,
                            PP_Time last_modified_time,
                            const CompletionCallback& cc) {
   if (!has_interface<PPB_FileRef_Dev>())
-    return PP_ERROR_NOINTERFACE;
+    return cc.MayForce(PP_ERROR_NOINTERFACE);
   return get_interface<PPB_FileRef_Dev>()->Touch(
       pp_resource(), last_access_time, last_modified_time,
       cc.pp_completion_callback());
@@ -98,7 +98,7 @@ int32_t FileRef_Dev::Touch(PP_Time last_access_time,
 
 int32_t FileRef_Dev::Delete(const CompletionCallback& cc) {
   if (!has_interface<PPB_FileRef_Dev>())
-    return PP_ERROR_NOINTERFACE;
+    return cc.MayForce(PP_ERROR_NOINTERFACE);
   return get_interface<PPB_FileRef_Dev>()->Delete(
       pp_resource(), cc.pp_completion_callback());
 }
@@ -106,7 +106,7 @@ int32_t FileRef_Dev::Delete(const CompletionCallback& cc) {
 int32_t FileRef_Dev::Rename(const FileRef_Dev& new_file_ref,
                             const CompletionCallback& cc) {
   if (!has_interface<PPB_FileRef_Dev>())
-    return PP_ERROR_NOINTERFACE;
+    return cc.MayForce(PP_ERROR_NOINTERFACE);
   return get_interface<PPB_FileRef_Dev>()->Rename(
       pp_resource(), new_file_ref.pp_resource(), cc.pp_completion_callback());
 }

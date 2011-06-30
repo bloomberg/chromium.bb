@@ -54,7 +54,7 @@ class StreamReader {
       buffer_.resize(kReadBufferSize);
       int result = transport_->Recv(
           &buffer_[0], buffer_.size(),
-          callback_factory_.NewCallback(&StreamReader::OnReadFinished));
+          callback_factory_.NewOptionalCallback(&StreamReader::OnReadFinished));
       if (result > 0)
         DidFinishRead(result);
       else
@@ -104,7 +104,7 @@ bool TestTransport::Init() {
 void TestTransport::RunTest() {
   RUN_TEST(Create);
   RUN_TEST(Connect);
-  RUN_TEST(SendDataUdp);
+  RUN_TEST_FORCEASYNC(SendDataUdp);
   RUN_TEST(SendDataTcp);
   RUN_TEST(ConnectAndCloseUdp);
   RUN_TEST(ConnectAndCloseTcp);
@@ -198,10 +198,15 @@ std::string TestTransport::TestSendDataUdp() {
     // Put packet index in the beginning.
     memcpy(&send_buffer[0], &i, sizeof(i));
 
-    TestCompletionCallback send_cb(instance_->pp_instance());
-    ASSERT_EQ(
-        transport2_->Send(&send_buffer[0], send_buffer.size(), send_cb),
-        static_cast<int>(send_buffer.size()));
+    TestCompletionCallback send_cb(instance_->pp_instance(), force_async_);
+    int32_t result = transport2_->Send(&send_buffer[0], send_buffer.size(),
+                                       send_cb);
+    if (force_async_) {
+      ASSERT_EQ(result, PP_OK_COMPLETIONPENDING);
+      ASSERT_EQ(send_cb.WaitForResult(), static_cast<int>(send_buffer.size()));
+    } else {
+      ASSERT_EQ(result, static_cast<int>(send_buffer.size()));
+    }
     sent_packets[i] = send_buffer;
   }
 
@@ -243,9 +248,11 @@ std::string TestTransport::TestSendDataTcp() {
 
   int pos = 0;
   while (pos < static_cast<int>(send_buffer.size())) {
-    TestCompletionCallback send_cb(instance_->pp_instance());
+    TestCompletionCallback send_cb(instance_->pp_instance(), force_async_);
     int result = transport2_->Send(
         &send_buffer[0] + pos, send_buffer.size() - pos, send_cb);
+    if (force_async_)
+      ASSERT_EQ(result, PP_OK_COMPLETIONPENDING);
     if (result == PP_OK_COMPLETIONPENDING)
       result = send_cb.WaitForResult();
     ASSERT_TRUE(result > 0);

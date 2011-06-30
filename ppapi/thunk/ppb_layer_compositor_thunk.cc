@@ -4,8 +4,9 @@
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/dev/ppb_layer_compositor_dev.h"
-#include "ppapi/thunk/thunk.h"
+#include "ppapi/thunk/common.h"
 #include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/thunk.h"
 #include "ppapi/thunk/ppb_layer_compositor_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
 
@@ -45,7 +46,7 @@ void MarkAsDirty(PP_Resource compositor, PP_Resource layer) {
 
 int32_t SwapBuffers(PP_Resource compositor,
                     struct PP_CompletionCallback callback) {
-  return PP_ERROR_FAILED;
+  return MayForceCallback(callback, PP_ERROR_FAILED);
 }
 
 const PPB_LayerCompositor_Dev g_ppb_layer_compositor_thunk = {

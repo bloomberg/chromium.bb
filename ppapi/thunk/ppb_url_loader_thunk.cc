@@ -4,8 +4,9 @@
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/thunk/thunk.h"
+#include "ppapi/thunk/common.h"
 #include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/thunk.h"
 #include "ppapi/thunk/ppb_url_loader_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
 
@@ -31,16 +32,18 @@ int32_t Open(PP_Resource loader,
              PP_CompletionCallback callback) {
   EnterResource<PPB_URLLoader_API> enter(loader, true);
   if (enter.failed())
-    return PP_ERROR_BADRESOURCE;
-  return enter.object()->Open(request_id, callback);
+    return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
+  int32_t result = enter.object()->Open(request_id, callback);
+  return MayForceCallback(callback, result);
 }
 
 int32_t FollowRedirect(PP_Resource loader,
                        PP_CompletionCallback callback) {
   EnterResource<PPB_URLLoader_API> enter(loader, true);
   if (enter.failed())
-    return PP_ERROR_BADRESOURCE;
-  return enter.object()->FollowRedirect(callback);
+    return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
+  int32_t result = enter.object()->FollowRedirect(callback);
+  return MayForceCallback(callback, result);
 }
 
 PP_Bool GetUploadProgress(PP_Resource loader,
@@ -82,16 +85,19 @@ int32_t ReadResponseBody(PP_Resource loader,
                          PP_CompletionCallback callback) {
   EnterResource<PPB_URLLoader_API> enter(loader, true);
   if (enter.failed())
-    return PP_ERROR_BADRESOURCE;
-  return enter.object()->ReadResponseBody(buffer, bytes_to_read, callback);
+    return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
+  int32_t result = enter.object()->ReadResponseBody(buffer, bytes_to_read,
+                                                    callback);
+  return MayForceCallback(callback, result);
 }
 
 int32_t FinishStreamingToFile(PP_Resource loader,
                               PP_CompletionCallback callback) {
   EnterResource<PPB_URLLoader_API> enter(loader, true);
   if (enter.failed())
-    return PP_ERROR_BADRESOURCE;
-  return enter.object()->FinishStreamingToFile(callback);
+    return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
+  int32_t result = enter.object()->FinishStreamingToFile(callback);
+  return MayForceCallback(callback, result);
 }
 
 void Close(PP_Resource loader) {

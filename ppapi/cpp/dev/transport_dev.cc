@@ -38,7 +38,7 @@ bool Transport_Dev::IsWritable() {
 
 int32_t Transport_Dev::Connect(const CompletionCallback& cc) {
   if (!has_interface<PPB_Transport_Dev>())
-    return PP_ERROR_NOINTERFACE;
+    return cc.MayForce(PP_ERROR_NOINTERFACE);
   return get_interface<PPB_Transport_Dev>()->Connect(
       pp_resource(), cc.pp_completion_callback());
 }
@@ -46,7 +46,7 @@ int32_t Transport_Dev::Connect(const CompletionCallback& cc) {
 int32_t Transport_Dev::GetNextAddress(Var* address,
                                       const CompletionCallback& cc) {
   if (!has_interface<PPB_Transport_Dev>())
-    return PP_ERROR_NOINTERFACE;
+    return cc.MayForce(PP_ERROR_NOINTERFACE);
   PP_Var temp_address = PP_MakeUndefined();
   int32_t ret_val = get_interface<PPB_Transport_Dev>()->GetNextAddress(
       pp_resource(), &temp_address, cc.pp_completion_callback());
@@ -64,7 +64,7 @@ int32_t Transport_Dev::ReceiveRemoteAddress(const pp::Var& address) {
 int32_t Transport_Dev::Recv(void* data, uint32_t len,
                             const CompletionCallback& cc) {
   if (!has_interface<PPB_Transport_Dev>())
-    return PP_ERROR_NOINTERFACE;
+    return cc.MayForce(PP_ERROR_NOINTERFACE);
   return get_interface<PPB_Transport_Dev>()->Recv(
       pp_resource(), data, len, cc.pp_completion_callback());
 }
@@ -72,7 +72,7 @@ int32_t Transport_Dev::Recv(void* data, uint32_t len,
 int32_t Transport_Dev::Send(const void* data, uint32_t len,
                             const CompletionCallback& cc) {
   if (!has_interface<PPB_Transport_Dev>())
-    return PP_ERROR_NOINTERFACE;
+    return cc.MayForce(PP_ERROR_NOINTERFACE);
   return get_interface<PPB_Transport_Dev>()->Send(
       pp_resource(), data, len, cc.pp_completion_callback());
 }

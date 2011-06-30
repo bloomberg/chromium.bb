@@ -50,6 +50,8 @@
         'shared_impl/webkit_forwarding.cc',
         'shared_impl/webkit_forwarding.h',
 
+        'thunk/common.h',
+        'thunk/common.cc',
         'thunk/enter.h',
         'thunk/ppb_audio_api.h',
         'thunk/ppb_audio_config_api.h',

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,6 +18,7 @@ std::string ReportError(const char* method, int32_t error);
 class TestCompletionCallback {
  public:
   TestCompletionCallback(PP_Instance instance);
+  TestCompletionCallback(PP_Instance instance, bool force_async);
 
   // Waits for the callback to be called and returns the
   // result. Returns immediately if the callback was previously called
@@ -38,6 +39,7 @@ class TestCompletionCallback {
 
   bool have_result_;
   int32_t result_;
+  bool force_async_;
   bool post_quit_task_;
   unsigned run_count_;
   PP_Instance instance_;

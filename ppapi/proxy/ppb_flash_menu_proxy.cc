@@ -162,7 +162,7 @@ void PPB_Flash_Menu_Proxy::OnMsgShow(const HostResource& menu,
                                      const PP_Point& location) {
   ShowRequest* request = new ShowRequest;
   request->menu = menu;
-  CompletionCallback callback = callback_factory_.NewCallback(
+  CompletionCallback callback = callback_factory_.NewOptionalCallback(
       &PPB_Flash_Menu_Proxy::SendShowACKToPlugin, request);
 
   EnterHostFromHostResource<PPB_Flash_Menu_API> enter(menu);

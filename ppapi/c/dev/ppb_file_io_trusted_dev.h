@@ -1,4 +1,4 @@
-/* Copyright (c) 2010 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -10,8 +10,8 @@
 
 struct PP_CompletionCallback;
 
-#define PPB_FILEIOTRUSTED_DEV_INTERFACE_0_2 "PPB_FileIOTrusted(Dev);0.2"
-#define PPB_FILEIOTRUSTED_DEV_INTERFACE PPB_FILEIOTRUSTED_DEV_INTERFACE_0_2
+#define PPB_FILEIOTRUSTED_DEV_INTERFACE_0_3 "PPB_FileIOTrusted(Dev);0.3"
+#define PPB_FILEIOTRUSTED_DEV_INTERFACE PPB_FILEIOTRUSTED_DEV_INTERFACE_0_3
 
 // Available only to trusted implementations.
 struct PPB_FileIOTrusted_Dev {
@@ -45,4 +45,3 @@ struct PPB_FileIOTrusted_Dev {
 };
 
 #endif  /* PPAPI_C_DEV_PPB_FILE_IO_TRUSTED_DEV_H_ */
-

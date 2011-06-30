@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,7 +35,7 @@ DirectoryReader_Dev::DirectoryReader_Dev(const DirectoryReader_Dev& other)
 int32_t DirectoryReader_Dev::GetNextEntry(DirectoryEntry_Dev* entry,
                                           const CompletionCallback& cc) {
   if (!has_interface<PPB_DirectoryReader_Dev>())
-    return PP_ERROR_NOINTERFACE;
+    return cc.MayForce(PP_ERROR_NOINTERFACE);
   return get_interface<PPB_DirectoryReader_Dev>()->GetNextEntry(
       pp_resource(), &entry->data_, cc.pp_completion_callback());
 }

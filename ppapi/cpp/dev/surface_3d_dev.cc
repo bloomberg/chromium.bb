@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,7 +40,7 @@ Surface3D_Dev::Surface3D_Dev(const Instance& instance,
 
 int32_t Surface3D_Dev::SwapBuffers(const CompletionCallback& cc) const {
   if (!has_interface<PPB_Surface3D_Dev>())
-    return PP_ERROR_NOINTERFACE;
+    return cc.MayForce(PP_ERROR_NOINTERFACE);
 
   return get_interface<PPB_Surface3D_Dev>()->SwapBuffers(
       pp_resource(),

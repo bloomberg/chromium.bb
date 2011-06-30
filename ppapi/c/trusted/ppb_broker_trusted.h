@@ -10,7 +10,7 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 
-#define PPB_BROKER_TRUSTED_INTERFACE "PPB_BrokerTrusted;0.1"
+#define PPB_BROKER_TRUSTED_INTERFACE "PPB_BrokerTrusted;0.2"
 
 /**
  * @file

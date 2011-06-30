@@ -177,7 +177,7 @@ void PPB_Surface3D_Proxy::OnMsgCreate(PP_Instance instance,
 }
 
 void PPB_Surface3D_Proxy::OnMsgSwapBuffers(const HostResource& surface_3d) {
-  CompletionCallback callback = callback_factory_.NewCallback(
+  CompletionCallback callback = callback_factory_.NewOptionalCallback(
       &PPB_Surface3D_Proxy::SendSwapBuffersACKToPlugin, surface_3d);
 
   EnterHostFromHostResource<PPB_Surface3D_API> enter(surface_3d);

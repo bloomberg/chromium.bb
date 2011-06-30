@@ -178,7 +178,7 @@ void PPB_FileSystem_Proxy::OnMsgOpen(const HostResource& host_resource,
   if (enter.failed())
     return;
 
-  CompletionCallback callback = callback_factory_.NewCallback(
+  CompletionCallback callback = callback_factory_.NewOptionalCallback(
       &PPB_FileSystem_Proxy::OpenCompleteInHost, host_resource);
   int32_t result = enter.object()->Open(expected_size,
                                         callback.pp_completion_callback());

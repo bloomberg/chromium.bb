@@ -23,7 +23,7 @@ def Main():
 
     # Uncomment the following line if there is skew in the PPAPI interface
     # and the tests are failing.  Comment out once the issues are resolved.
-    # return
+    return
 
   script_dir = os.path.dirname(os.path.abspath(__file__))
   test_dir = os.path.dirname(script_dir)

@@ -4,8 +4,9 @@
 
 #include "ppapi/c/trusted/ppb_broker_trusted.h"
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/thunk/thunk.h"
+#include "ppapi/thunk/common.h"
 #include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/thunk.h"
 #include "ppapi/thunk/ppb_broker_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
 
@@ -30,8 +31,9 @@ int32_t Connect(PP_Resource resource,
                 PP_CompletionCallback connect_callback) {
   EnterResource<PPB_Broker_API> enter(resource, true);
   if (enter.failed())
-    return PP_ERROR_BADRESOURCE;
-  return enter.object()->Connect(connect_callback);
+    return MayForceCallback(connect_callback, PP_ERROR_BADRESOURCE);
+  int32_t result = enter.object()->Connect(connect_callback);
+  return MayForceCallback(connect_callback, result);
 }
 
 int32_t GetHandle(PP_Resource resource, int32_t* handle) {

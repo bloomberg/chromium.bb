@@ -9,7 +9,7 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 
-#define PPB_AUDIO_TRUSTED_INTERFACE "PPB_AudioTrusted;0.5"
+#define PPB_AUDIO_TRUSTED_INTERFACE "PPB_AudioTrusted;0.6"
 
 /**
  * This interface is to be used by proxy implementations.  All
@@ -47,4 +47,3 @@ struct PPB_AudioTrusted {
 };
 
 #endif  /* PPAPI_C_PPB_AUDIO_TRUSTED_H_ */
-

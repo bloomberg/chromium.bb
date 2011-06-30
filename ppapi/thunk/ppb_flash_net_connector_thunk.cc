@@ -5,8 +5,9 @@
 #include "ppapi/c/private/ppb_flash_net_connector.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/thunk/thunk.h"
+#include "ppapi/thunk/common.h"
 #include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/thunk.h"
 #include "ppapi/thunk/ppb_flash_net_connector_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
 
@@ -36,9 +37,11 @@ int32_t ConnectTcp(PP_Resource resource,
                    PP_CompletionCallback callback) {
   EnterResource<PPB_Flash_NetConnector_API> enter(resource, true);
   if (enter.failed())
-    return PP_ERROR_BADRESOURCE;
-  return enter.object()->ConnectTcp(host, port, socket_out, local_addr_out,
-                                    remote_addr_out, callback);
+    return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
+  int32_t result =
+      enter.object()->ConnectTcp(host, port, socket_out, local_addr_out,
+                                 remote_addr_out, callback);
+  return MayForceCallback(callback, result);
 }
 
 int32_t ConnectTcpAddress(PP_Resource resource,
@@ -49,9 +52,11 @@ int32_t ConnectTcpAddress(PP_Resource resource,
                           PP_CompletionCallback callback) {
   EnterResource<PPB_Flash_NetConnector_API> enter(resource, true);
   if (enter.failed())
-    return PP_ERROR_BADRESOURCE;
-  return enter.object()->ConnectTcpAddress(addr, socket_out, local_addr_out,
+    return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
+  int32_t result =
+      enter.object()->ConnectTcpAddress(addr, socket_out, local_addr_out,
                                            remote_addr_out, callback);
+  return MayForceCallback(callback, result);
 }
 
 const PPB_Flash_NetConnector g_ppb_flash_net_connector_thunk = {
@@ -69,4 +74,3 @@ const PPB_Flash_NetConnector* GetPPB_Flash_NetConnector_Thunk() {
 
 }  // namespace thunk
 }  // namespace ppapi
-

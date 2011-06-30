@@ -194,7 +194,7 @@ void PPB_FileChooser_Proxy::OnMsgCreate(PP_Instance instance,
 }
 
 void PPB_FileChooser_Proxy::OnMsgShow(const HostResource& chooser) {
-  CompletionCallback callback = callback_factory_.NewCallback(
+  CompletionCallback callback = callback_factory_.NewOptionalCallback(
       &PPB_FileChooser_Proxy::OnShowCallback, chooser);
 
   int32_t result = ppb_file_chooser_target()->Show(

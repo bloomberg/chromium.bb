@@ -29,6 +29,17 @@ std::string ReportError(const char* method, int32_t error) {
 TestCompletionCallback::TestCompletionCallback(PP_Instance instance)
     : have_result_(false),
       result_(PP_OK_COMPLETIONPENDING),
+      force_async_(false),
+      post_quit_task_(false),
+      run_count_(0),
+      instance_(instance) {
+}
+
+TestCompletionCallback::TestCompletionCallback(PP_Instance instance,
+                                               bool force_async)
+    : have_result_(false),
+      result_(PP_OK_COMPLETIONPENDING),
+      force_async_(force_async),
       post_quit_task_(false),
       run_count_(0),
       instance_(instance) {
@@ -45,8 +56,10 @@ int32_t TestCompletionCallback::WaitForResult() {
 }
 
 TestCompletionCallback::operator pp::CompletionCallback() const {
+  int32_t flags = (force_async_ ? 0 : PP_COMPLETIONCALLBACK_FLAG_OPTIONAL);
   return pp::CompletionCallback(&TestCompletionCallback::Handler,
-                                const_cast<TestCompletionCallback*>(this));
+                                const_cast<TestCompletionCallback*>(this),
+                                flags);
 }
 
 // static

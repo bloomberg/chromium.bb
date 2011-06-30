@@ -1,4 +1,4 @@
-/* Copyright (c) 2010 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -19,8 +19,8 @@ struct PP_DirectoryEntry_Dev {
 };
 PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_DirectoryEntry_Dev, 8);
 
-#define PPB_DIRECTORYREADER_DEV_INTERFACE_0_4 "PPB_DirectoryReader(Dev);0.4"
-#define PPB_DIRECTORYREADER_DEV_INTERFACE PPB_DIRECTORYREADER_DEV_INTERFACE_0_4
+#define PPB_DIRECTORYREADER_DEV_INTERFACE_0_5 "PPB_DirectoryReader(Dev);0.5"
+#define PPB_DIRECTORYREADER_DEV_INTERFACE PPB_DIRECTORYREADER_DEV_INTERFACE_0_5
 
 struct PPB_DirectoryReader_Dev {
   // Creates a DirectoryReader for the given directory.  Upon success, the
@@ -56,4 +56,3 @@ struct PPB_DirectoryReader_Dev {
 };
 
 #endif  /* PPAPI_C_DEV_PPB_DIRECTORY_READER_DEV_H_ */
-

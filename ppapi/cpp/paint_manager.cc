@@ -153,7 +153,7 @@ void PaintManager::DoPaint() {
   if (client_->OnPaint(graphics_, update.paint_rects, update.paint_bounds)) {
     // Something was painted, schedule a flush.
     int32_t result = graphics_.Flush(
-        callback_factory_.NewCallback(&PaintManager::OnFlushComplete));
+        callback_factory_.NewOptionalCallback(&PaintManager::OnFlushComplete));
 
     // If you trigger this assertion, then your plugin has called Flush()
     // manually. When using the PaintManager, you should not call Flush, it

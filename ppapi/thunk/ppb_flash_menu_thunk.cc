@@ -5,8 +5,9 @@
 #include "ppapi/c/private/ppb_flash_menu.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/thunk/thunk.h"
+#include "ppapi/thunk/common.h"
 #include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/thunk.h"
 #include "ppapi/thunk/ppb_flash_menu_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
 
@@ -33,8 +34,9 @@ int32_t Show(PP_Resource resource,
              PP_CompletionCallback callback) {
   EnterResource<PPB_Flash_Menu_API> enter(resource, true);
   if (enter.failed())
-    return PP_ERROR_BADRESOURCE;
-  return enter.object()->Show(location, selected_id, callback);
+    return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
+  int32_t result = enter.object()->Show(location, selected_id, callback);
+  return MayForceCallback(callback, result);
 }
 
 const PPB_Flash_Menu g_ppb_flash_menu_thunk = {
@@ -51,4 +53,3 @@ const PPB_Flash_Menu* GetPPB_Flash_Menu_Thunk() {
 
 }  // namespace thunk
 }  // namespace ppapi
-
