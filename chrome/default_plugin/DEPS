@@ -1,5 +1,4 @@
 include_rules = [
-  "+app",
   "+grit",  # For generated headers
   "+libxml",
   "+webkit/glue",

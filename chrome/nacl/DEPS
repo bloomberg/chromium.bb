@@ -1,5 +1,4 @@
 include_rules = [
-  "+app",
   # TODO(mseaborn): Remove chrome/renderer from this list.  This is
   # here because we need chrome/renderer/renderer_sandbox_support_linux.h
   # for creating shared memory segments.  We should probably move this
