@@ -235,3 +235,5 @@ PPAPITest.Var
 # http://crbug.com/87766
 PPAPITest.URLLoader
 
+# http://crbug.com/87992
+PrintPreviewUITest.PrintCommandDisabled
