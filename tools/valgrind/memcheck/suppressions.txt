@@ -4837,6 +4837,12 @@
    fun:_ZN33GeolocationInfoBarQueueController20CreateInfoBarRequestEiiiRK4GURLS2_
    fun:_ZN34ChromeGeolocationPermissionContext28RequestGeolocationPermissionEiiiRK4GURL
 }
+{
+   bug_88094
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN25ChromeWebUIDataSourceTest5SetUpEv
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
