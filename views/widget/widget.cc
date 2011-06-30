@@ -196,9 +196,11 @@ void Widget::SetPureViews(bool pure) {
 
 // static
 bool Widget::IsPureViews() {
-// TODO(saintlou): we would like #if defined(TOUCH_UI) => return true.
-// However at the moment another bug is preventing us from doing that.
+#if defined(TOUCH_UI)
+  return true;
+#else
   return use_pure_views;
+#endif
 }
 
 // static
