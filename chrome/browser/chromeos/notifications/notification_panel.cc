@@ -113,6 +113,11 @@ class ViewportWidget : public views::Widget {
   }
 
   void OnMouseExited(const views::MouseEvent& event) {
+    // Filter gtk's fake mouse leave events that are issued when
+    // window activation changes.
+    if (event.location().x() == 0 && event.location().y() == 0)
+      return;
+
     // Leave notify can happen if the mouse moves into the child gdk window.
     // Make sure the mouse is outside of the panel.
     gfx::Rect bounds = GetWindowScreenBounds();

@@ -1427,7 +1427,12 @@ gboolean NativeWidgetGtk::OnLeaveNotify(GtkWidget* widget,
   GetWidget()->ResetLastMouseMoveFlag();
 
   if (!HasMouseCapture() && !GetWidget()->is_mouse_button_pressed_) {
-    MouseEvent mouse_event(TransformEvent(event));
+    // Don't convert if the event is synthetic and has 0x0 coordinates.
+    if (event->x_root || event->y_root || event->x || event->y ||
+        !event->send_event) {
+      TransformEvent(event);
+    }
+    MouseEvent mouse_event(reinterpret_cast<GdkEvent*>(event));
     delegate_->OnMouseEvent(mouse_event);
   }
   return false;
