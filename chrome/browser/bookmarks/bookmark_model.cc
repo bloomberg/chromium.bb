@@ -33,7 +33,7 @@ static BookmarkNode* AsMutable(const BookmarkNode* node) {
   return const_cast<BookmarkNode*>(node);
 }
 
-}  // anonymous namespace
+}  // namespace
 
 // BookmarkNode ---------------------------------------------------------------
 
@@ -726,39 +726,20 @@ bool BookmarkModel::IsValidIndex(const BookmarkNode* parent,
                           (allow_end && index == parent->child_count()))));
 }
 
-BookmarkNode* BookmarkModel::CreateBookmarkNode() {
-  history::StarredEntry entry;
-  entry.type = history::StarredEntry::BOOKMARK_BAR;
-  return CreateRootNodeFromStarredEntry(entry);
-}
-
-BookmarkNode* BookmarkModel::CreateOtherBookmarksNode() {
-  history::StarredEntry entry;
-  entry.type = history::StarredEntry::OTHER;
-  return CreateRootNodeFromStarredEntry(entry);
-}
-
-BookmarkNode* BookmarkModel::CreateSyncedBookmarksNode() {
-  history::StarredEntry entry;
-  entry.type = history::StarredEntry::SYNCED;
-  return CreateRootNodeFromStarredEntry(entry);
-}
-
-BookmarkNode* BookmarkModel::CreateRootNodeFromStarredEntry(
-    const history::StarredEntry& entry) {
-  DCHECK(entry.type == history::StarredEntry::BOOKMARK_BAR ||
-         entry.type == history::StarredEntry::OTHER ||
-         entry.type == history::StarredEntry::SYNCED);
+BookmarkNode* BookmarkModel::CreatePermanentNode(BookmarkNode::Type type) {
+  DCHECK(type == BookmarkNode::BOOKMARK_BAR ||
+         type == BookmarkNode::OTHER_NODE ||
+         type == BookmarkNode::SYNCED);
   BookmarkNode* node = new BookmarkNode(generate_next_node_id(), GURL());
-  node->Reset(entry);
-  if (entry.type == history::StarredEntry::BOOKMARK_BAR) {
+  node->set_type(type);
+  if (type == BookmarkNode::BOOKMARK_BAR) {
     node->set_title(l10n_util::GetStringUTF16(IDS_BOOMARK_BAR_FOLDER_NAME));
-  } else if (entry.type == history::StarredEntry::SYNCED) {
-    node->set_title(l10n_util::GetStringUTF16(
-        IDS_BOOMARK_BAR_SYNCED_FOLDER_NAME));
-  } else {
+  } else if (type == BookmarkNode::OTHER_NODE) {
     node->set_title(
         l10n_util::GetStringUTF16(IDS_BOOMARK_BAR_OTHER_FOLDER_NAME));
+  } else {
+    node->set_title(
+        l10n_util::GetStringUTF16(IDS_BOOMARK_BAR_SYNCED_FOLDER_NAME));
   }
   return node;
 }
@@ -853,10 +834,9 @@ void BookmarkModel::SetFileChanged() {
 }
 
 BookmarkLoadDetails* BookmarkModel::CreateLoadDetails() {
-  BookmarkNode* bb_node = CreateBookmarkNode();
-  BookmarkNode* other_folder_node = CreateOtherBookmarksNode();
-  BookmarkNode* synced_folder_node = CreateSyncedBookmarksNode();
-  return new BookmarkLoadDetails(
-      bb_node, other_folder_node, synced_folder_node,
-      new BookmarkIndex(profile()), next_node_id_);
+  BookmarkNode* bb_node = CreatePermanentNode(BookmarkNode::BOOKMARK_BAR);
+  BookmarkNode* other_node = CreatePermanentNode(BookmarkNode::OTHER_NODE);
+  BookmarkNode* synced_node = CreatePermanentNode(BookmarkNode::SYNCED);
+  return new BookmarkLoadDetails(bb_node, other_node, synced_node,
+                                 new BookmarkIndex(profile()), next_node_id_);
 }

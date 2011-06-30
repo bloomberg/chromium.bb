@@ -397,16 +397,9 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
   // Returns true if the parent and index are valid.
   bool IsValidIndex(const BookmarkNode* parent, int index, bool allow_end);
 
-  // Creates the bookmark bar/synced/other nodes. These call into
-  // CreateRootNodeFromStarredEntry.
-  BookmarkNode* CreateBookmarkNode();
-  BookmarkNode* CreateOtherBookmarksNode();
-  BookmarkNode* CreateSyncedBookmarksNode();
-
-  // Creates a root node (either the bookmark bar node or other node) from the
-  // specified starred entry.
-  BookmarkNode* CreateRootNodeFromStarredEntry(
-      const history::StarredEntry& entry);
+  // Creates one of the possible permanent nodes (bookmark bar node, other node
+  // and synced node) from |type|.
+  BookmarkNode* CreatePermanentNode(BookmarkNode::Type type);
 
   // Notification that a favicon has finished loading. If we can decode the
   // favicon, FaviconLoaded is invoked.
