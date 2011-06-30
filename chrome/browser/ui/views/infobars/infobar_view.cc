@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/infobars/infobar_view.h"
 
 #include "base/utf_string_conversions.h"
+#include "base/scoped_ptr.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/ui/views/infobars/infobar_background.h"
 #include "chrome/browser/ui/views/infobars/infobar_button_border.h"
@@ -132,10 +133,15 @@ views::TextButton* InfoBarView::CreateTextButton(
                                                        SHSTOCKICONINFO*);
     GetStockIconInfo func = reinterpret_cast<GetStockIconInfo>(
         GetProcAddress(GetModuleHandle(L"shell32.dll"), "SHGetStockIconInfo"));
-    (*func)(SIID_SHIELD, SHGSI_ICON | SHGSI_SMALLICON, &icon_info);
-    text_button->SetIcon(*IconUtil::CreateSkBitmapFromHICON(icon_info.hIcon,
-        gfx::Size(GetSystemMetrics(SM_CXSMICON),
-                  GetSystemMetrics(SM_CYSMICON))));
+    if (SUCCEEDED((*func)(SIID_SHIELD, SHGSI_ICON | SHGSI_SMALLICON,
+                          &icon_info))) {
+      scoped_ptr<SkBitmap> icon(IconUtil::CreateSkBitmapFromHICON(
+          icon_info.hIcon, gfx::Size(GetSystemMetrics(SM_CXSMICON),
+                                     GetSystemMetrics(SM_CYSMICON))));
+      if (icon.get())
+        text_button->SetIcon(*icon);
+      DestroyIcon(icon_info.hIcon);
+    }
   }
 #endif
   return text_button;
