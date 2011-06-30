@@ -45,6 +45,10 @@ const char kVideoRtcpChannelName[] = "videortcp";
 const int kMasterKeyLength = 16;
 const int kChannelKeyLength = 16;
 
+// Value is choosen to balance the extra latency against the reduced
+// load due to ACK traffic.
+const int kTcpAckDelayMilliseconds = 10;
+
 // Helper method to create a SSL client socket.
 net::SSLClientSocket* CreateSSLClientSocket(
     net::StreamSocket* socket, scoped_refptr<net::X509Certificate> cert,
@@ -451,7 +455,12 @@ void JingleSession::OnInitiate() {
 bool JingleSession::EstablishPseudoTcp(
     net::Socket* channel,
     scoped_ptr<net::StreamSocket>* stream) {
-  stream->reset(new jingle_glue::PseudoTcpAdapter(channel));
+  jingle_glue::PseudoTcpAdapter* adapter =
+      new jingle_glue::PseudoTcpAdapter(channel);
+  adapter->SetAckDelay(kTcpAckDelayMilliseconds);
+  adapter->SetNoDelay(true);
+
+  stream->reset(adapter);
   int result = (*stream)->Connect(&connect_callback_);
   return (result == net::OK) || (result == net::ERR_IO_PENDING);
 }

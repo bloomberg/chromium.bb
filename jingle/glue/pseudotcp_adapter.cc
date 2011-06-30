@@ -46,6 +46,10 @@ class PseudoTcpAdapter::Core : public cricket::IPseudoTcpNotify,
   // This is triggered by NotifyClock, NotifyPacket, Recv and Send.
   virtual WriteResult TcpWritePacket(cricket::PseudoTcp* tcp,
                                      const char* buffer, size_t len) OVERRIDE;
+
+  void SetAckDelay(int delay_ms);
+  void SetNoDelay(bool no_delay);
+
  private:
   // These are invoked by the underlying Socket, and may trigger callbacks.
   // They hold a reference to |this| while running, to protect from deletion.
@@ -269,6 +273,14 @@ void PseudoTcpAdapter::Core::OnTcpClosed(PseudoTcp* tcp, uint32 error) {
   }
 }
 
+void PseudoTcpAdapter::Core::SetAckDelay(int delay_ms) {
+  pseudo_tcp_.SetOption(cricket::PseudoTcp::OPT_ACKDELAY, delay_ms);
+}
+
+void PseudoTcpAdapter::Core::SetNoDelay(bool no_delay) {
+  pseudo_tcp_.SetOption(cricket::PseudoTcp::OPT_NODELAY, no_delay ? 1 : 0);
+}
+
 cricket::IPseudoTcpNotify::WriteResult PseudoTcpAdapter::Core::TcpWritePacket(
     PseudoTcp* tcp,
     const char* buffer,
@@ -471,6 +483,16 @@ int64 PseudoTcpAdapter::NumBytesRead() const {
 base::TimeDelta PseudoTcpAdapter::GetConnectTimeMicros() const {
   DCHECK(CalledOnValidThread());
   return base::TimeDelta::FromMicroseconds(-1);
+}
+
+void PseudoTcpAdapter::SetAckDelay(int delay_ms) {
+  DCHECK(CalledOnValidThread());
+  core_->SetAckDelay(delay_ms);
+}
+
+void PseudoTcpAdapter::SetNoDelay(bool no_delay) {
+  DCHECK(CalledOnValidThread());
+  core_->SetNoDelay(no_delay);
 }
 
 }  // namespace jingle_glue

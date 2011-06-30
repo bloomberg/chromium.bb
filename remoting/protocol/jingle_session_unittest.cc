@@ -344,14 +344,18 @@ class TCPChannelTester : public ChannelTesterBase {
  public:
   TCPChannelTester(MessageLoop* message_loop,
                    Session* host_session,
-                   Session* client_session)
+                   Session* client_session,
+                   int message_size, int message_count)
       : ChannelTesterBase(message_loop, host_session, client_session),
         ALLOW_THIS_IN_INITIALIZER_LIST(
             write_cb_(this, &TCPChannelTester::OnWritten)),
         ALLOW_THIS_IN_INITIALIZER_LIST(
             read_cb_(this, &TCPChannelTester::OnRead)),
         write_errors_(0),
-        read_errors_(0) {
+        read_errors_(0),
+        message_size_(message_size),
+        message_count_(message_count),
+        test_data_size_(message_size * message_count) {
   }
 
   virtual ~TCPChannelTester() { }
@@ -360,20 +364,21 @@ class TCPChannelTester : public ChannelTesterBase {
     EXPECT_EQ(0, write_errors_);
     EXPECT_EQ(0, read_errors_);
 
-    ASSERT_EQ(kTestDataSize, input_buffer_->offset());
+    ASSERT_EQ(test_data_size_, input_buffer_->offset());
 
     output_buffer_->SetOffset(0);
-    ASSERT_EQ(kTestDataSize, output_buffer_->size());
+    ASSERT_EQ(test_data_size_, output_buffer_->size());
 
     EXPECT_EQ(0, memcmp(output_buffer_->data(),
-                        input_buffer_->StartOfBuffer(), kTestDataSize));
+                        input_buffer_->StartOfBuffer(), test_data_size_));
   }
 
  protected:
   virtual void InitBuffers() {
     output_buffer_ = new net::DrainableIOBuffer(
-        new net::IOBuffer(kTestDataSize), kTestDataSize);
-    memset(output_buffer_->data(), 123, kTestDataSize);
+        new net::IOBuffer(test_data_size_), test_data_size_);
+    memset(output_buffer_->data(), 123, test_data_size_);
+
     input_buffer_ = new net::GrowableIOBuffer();
   }
 
@@ -383,7 +388,7 @@ class TCPChannelTester : public ChannelTesterBase {
       if (output_buffer_->BytesRemaining() == 0)
         break;
       int bytes_to_write = std::min(output_buffer_->BytesRemaining(),
-                                    kMessageSize);
+                                    message_size_);
       result = socket_1_->Write(output_buffer_, bytes_to_write, &write_cb_);
       HandleWriteResult(result);
     };
@@ -407,8 +412,8 @@ class TCPChannelTester : public ChannelTesterBase {
   virtual void DoRead() {
     int result = 1;
     while (result > 0) {
-      input_buffer_->SetCapacity(input_buffer_->offset() + kMessageSize);
-      result = socket_2_->Read(input_buffer_, kMessageSize, &read_cb_);
+      input_buffer_->SetCapacity(input_buffer_->offset() + message_size_);
+      result = socket_2_->Read(input_buffer_, message_size_, &read_cb_);
       HandleReadResult(result);
     };
   }
@@ -429,12 +434,11 @@ class TCPChannelTester : public ChannelTesterBase {
     } else if (result > 0) {
       // Allocate memory for the next read.
       input_buffer_->set_offset(input_buffer_->offset() + result);
-      if (input_buffer_->offset() == kTestDataSize)
+      if (input_buffer_->offset() == test_data_size_)
         done_event_.Signal();
     }
   }
 
- private:
   scoped_refptr<net::DrainableIOBuffer> output_buffer_;
   scoped_refptr<net::GrowableIOBuffer> input_buffer_;
 
@@ -442,6 +446,39 @@ class TCPChannelTester : public ChannelTesterBase {
   net::CompletionCallbackImpl<TCPChannelTester> read_cb_;
   int write_errors_;
   int read_errors_;
+  int message_size_;
+  int message_count_;
+  int test_data_size_;
+};
+
+class ChannelSpeedTester : public TCPChannelTester {
+ public:
+  ChannelSpeedTester(MessageLoop* message_loop,
+                       Session* host_session,
+                       Session* client_session,
+                       int message_size)
+      : TCPChannelTester(message_loop, host_session,
+                         client_session, message_size, 1) {
+    CHECK(message_size >= 8);
+  }
+
+  virtual ~ChannelSpeedTester() { }
+
+  virtual void CheckResults() {
+  }
+
+  base::TimeDelta GetElapsedTime() {
+    return base::Time::Now() - start_time_;
+  }
+
+ protected:
+  virtual void InitBuffers() {
+    TCPChannelTester::InitBuffers();
+
+    start_time_ = base::Time::Now();
+  }
+
+  base::Time start_time_;
 };
 
 class UDPChannelTester : public ChannelTesterBase {
@@ -620,7 +657,7 @@ TEST_F(JingleSessionTest, DISABLED_TestControlChannel) {
   ASSERT_TRUE(InitiateConnection());
   scoped_refptr<TCPChannelTester> tester(
       new TCPChannelTester(thread_.message_loop(), host_session_,
-                           client_session_));
+                           client_session_, kMessageSize, kMessages));
   tester->Start(ChannelTesterBase::CONTROL);
   ASSERT_TRUE(tester->WaitFinished());
   tester->CheckResults();
@@ -635,7 +672,7 @@ TEST_F(JingleSessionTest, DISABLED_TestVideoChannel) {
   ASSERT_TRUE(InitiateConnection());
   scoped_refptr<TCPChannelTester> tester(
       new TCPChannelTester(thread_.message_loop(), host_session_,
-                           client_session_));
+                           client_session_, kMessageSize, kMessageSize));
   tester->Start(ChannelTesterBase::VIDEO);
   ASSERT_TRUE(tester->WaitFinished());
   tester->CheckResults();
@@ -650,7 +687,7 @@ TEST_F(JingleSessionTest, DISABLED_TestEventChannel) {
   ASSERT_TRUE(InitiateConnection());
   scoped_refptr<TCPChannelTester> tester(
       new TCPChannelTester(thread_.message_loop(), host_session_,
-                           client_session_));
+                           client_session_, kMessageSize, kMessageSize));
   tester->Start(ChannelTesterBase::EVENT);
   ASSERT_TRUE(tester->WaitFinished());
   tester->CheckResults();
@@ -669,6 +706,45 @@ TEST_F(JingleSessionTest, DISABLED_TestVideoRtpChannel) {
   tester->Start(ChannelTesterBase::VIDEO_RTP);
   ASSERT_TRUE(tester->WaitFinished());
   tester->CheckResults();
+
+  // Connections must be closed while |tester| still exists.
+  CloseSessions();
+}
+
+// Send packets of different size to get the latency for sending data
+// using sockets from JingleSession.
+TEST_F(JingleSessionTest, DISABLED_TestSpeed) {
+  CreateServerPair();
+  ASSERT_TRUE(InitiateConnection());
+  scoped_refptr<ChannelSpeedTester> tester;
+
+  tester = new ChannelSpeedTester(thread_.message_loop(), host_session_,
+                                  client_session_, 512);
+  tester->Start(ChannelTesterBase::VIDEO);
+  ASSERT_TRUE(tester->WaitFinished());
+  LOG(INFO) << "Time for 512 bytes "
+            << tester->GetElapsedTime().InMilliseconds() << " ms.";
+
+  tester = new ChannelSpeedTester(thread_.message_loop(), host_session_,
+                                  client_session_, 1024);
+  tester->Start(ChannelTesterBase::VIDEO);
+  ASSERT_TRUE(tester->WaitFinished());
+  LOG(INFO) << "Time for 1024 bytes "
+            << tester->GetElapsedTime().InMilliseconds() << " ms.";
+
+  tester = new ChannelSpeedTester(thread_.message_loop(), host_session_,
+                                  client_session_, 51200);
+  tester->Start(ChannelTesterBase::VIDEO);
+  ASSERT_TRUE(tester->WaitFinished());
+  LOG(INFO) << "Time for 50k bytes "
+            << tester->GetElapsedTime().InMilliseconds() << " ms.";
+
+  tester = new ChannelSpeedTester(thread_.message_loop(), host_session_,
+                                  client_session_, 512000);
+  tester->Start(ChannelTesterBase::VIDEO);
+  ASSERT_TRUE(tester->WaitFinished());
+  LOG(INFO) << "Time for 500k bytes "
+            << tester->GetElapsedTime().InMilliseconds() << " ms.";
 
   // Connections must be closed while |tester| still exists.
   CloseSessions();
