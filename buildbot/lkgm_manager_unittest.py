@@ -27,8 +27,16 @@ from chromite.buildbot import patch
 from chromite.lib import cros_build_lib as cros_lib
 
 
-FAKE_VERSION_STRING = '1.2.3.4-rc3'
-FAKE_VERSION_STRING_NEXT = '1.2.3.4-rc4'
+FAKE_VERSION_STRING = '1.2.4-rc3'
+FAKE_VERSION_STRING_NEXT = '1.2.4-rc4'
+CHROME_BRANCH = '13'
+
+FAKE_VERSION = """
+CHROMEOS_BUILD=1
+CHROMEOS_BRANCH=2
+CHROMEOS_PATCH=4
+CHROME_BRANCH=13
+"""
 
 
 class LKGMCandidateInfoTest(mox.MoxTestBase):
@@ -38,14 +46,25 @@ class LKGMCandidateInfoTest(mox.MoxTestBase):
     mox.MoxTestBase.setUp(self)
     self.tmpdir = tempfile.mkdtemp()
 
+  @classmethod
+  def CreateFakeVersionFile(cls, tmpdir):
+    """Helper method to create a version file from FAKE_VERSION."""
+    if not os.path.exists(tmpdir): os.makedirs(tmpdir)
+    (version_file_fh, version_file) = tempfile.mkstemp(dir=tmpdir)
+    os.write(version_file_fh, FAKE_VERSION)
+    os.close(version_file_fh)
+    return version_file
+
   def testLoadFromString(self):
     """Tests whether we can load from a string."""
-    info = lkgm_manager._LKGMCandidateInfo(version_string=FAKE_VERSION_STRING)
+    info = lkgm_manager._LKGMCandidateInfo(version_string=FAKE_VERSION_STRING,
+                                           chrome_branch=CHROME_BRANCH)
     self.assertEqual(info.VersionString(), FAKE_VERSION_STRING)
 
   def testIncrementVersionPatch(self):
     """Tests whether we can increment a lkgm info."""
-    info = lkgm_manager._LKGMCandidateInfo(version_string=FAKE_VERSION_STRING)
+    info = lkgm_manager._LKGMCandidateInfo(version_string=FAKE_VERSION_STRING,
+                                           chrome_branch=CHROME_BRANCH)
     info.IncrementVersion()
     self.assertEqual(info.VersionString(), FAKE_VERSION_STRING_NEXT)
 
@@ -107,12 +126,12 @@ class LKGMManagerTest(mox.MoxTestBase):
       expected_candidate: What we expect to come back.
     """
     if not no_all:
-      self.manager.all = ['1.2.3.4-rc1',
-                          '1.2.3.4-rc2',
-                          '1.2.3.4-rc9',
-                          '1.2.3.5-rc1',
-                          '1.2.3.6-rc2',
-                          '1.2.4.3-rc1',
+      self.manager.all = ['1.2.4-rc1',
+                          '1.2.4-rc2',
+                          '1.2.4-rc9',
+                          '1.2.5-rc1',
+                          '1.2.6-rc2',
+                          '1.3.4-rc1',
                           ]
 
     info_for_test = manifest_version.VersionInfo(version)
@@ -125,19 +144,19 @@ class LKGMManagerTest(mox.MoxTestBase):
     This test tests whether or not we get the right candidate when we have
     many of the same candidate version around but with different rc's.
     """
-    self._CommonTestLatestCandidateByVersion('1.2.3.4', '1.2.3.4-rc9')
+    self._CommonTestLatestCandidateByVersion('1.2.4', '1.2.4-rc9')
 
   def testGetLatestCandidateByVersionOnlyOne(self):
     """Tests whether we can get the latest candidate with only one rc."""
-    self._CommonTestLatestCandidateByVersion('1.2.3.6', '1.2.3.6-rc2')
+    self._CommonTestLatestCandidateByVersion('1.2.6', '1.2.6-rc2')
 
   def testGetLatestCandidateByVersionNone(self):
     """Tests whether we can get the latest candidate with no rc's."""
-    self._CommonTestLatestCandidateByVersion('1.2.5.7', '1.2.5.7-rc1')
+    self._CommonTestLatestCandidateByVersion('1.2.7', '1.2.7-rc1')
 
   def testGetLatestCandidateByVersionNoneNoAll(self):
     """Tests whether we can get the latest candidate with no rc's at all."""
-    self._CommonTestLatestCandidateByVersion('10.0.1.5', '10.0.1.5-rc1', True)
+    self._CommonTestLatestCandidateByVersion('10.0.1', '10.0.1-rc1', True)
 
   def _GetPathToManifest(self, info):
     return os.path.join(self.manager.all_specs_dir, '%s.xml' %
@@ -237,8 +256,9 @@ class LKGMManagerTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_PrepSpecChanges')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_PushSpecChanges')
 
-    my_info = manifest_version.VersionInfo('1.2.3.4')
-    most_recent_candidate = lkgm_manager._LKGMCandidateInfo('1.2.3.4-rc12')
+    my_info = manifest_version.VersionInfo('1.2.4')
+    most_recent_candidate = lkgm_manager._LKGMCandidateInfo('1.2.4-rc12',
+                                                            CHROME_BRANCH)
 
     lkgm_manager.LKGMManager._GetCurrentVersionInfo().AndReturn(my_info)
     lkgm_manager.LKGMManager._LoadSpecs(my_info)
@@ -254,7 +274,7 @@ class LKGMManagerTest(mox.MoxTestBase):
         mox.StrContains(most_recent_candidate.VersionString()))
 
     self.mox.ReplayAll()
-    self.manager.latest_unprocessed = '1.2.3.4-rc12'
+    self.manager.latest_unprocessed = '1.2.4-rc12'
     candidate = self.manager.GetLatestCandidate()
     self.assertEqual(candidate, self._GetPathToManifest(most_recent_candidate))
     self.mox.VerifyAll()
@@ -276,11 +296,11 @@ class LKGMManagerTest(mox.MoxTestBase):
 
   def _CreateManifest(self):
     """Returns a created test manifest in tmpdir with its dir_pfx."""
-    self.manager.current_version = '1.2.3.4-rc21'
-    dir_pfx = '1.2'
+    self.manager.current_version = '1.2.4-rc21'
+    dir_pfx = CHROME_BRANCH
     manifest = os.path.join(self.manager._TMP_MANIFEST_DIR,
                             self.manager.lkgm_subdir, 'buildspecs',
-                            dir_pfx, '1.2.3.4-rc21.xml')
+                            dir_pfx, '1.2.4-rc21.xml')
     manifest_version_unittest.TouchFile(manifest)
     return manifest, dir_pfx
 
@@ -304,9 +324,11 @@ class LKGMManagerTest(mox.MoxTestBase):
 
   def testGetBuildersStatusBothFinished(self):
     """Tests GetBuilderStatus where both builds have finished."""
+    fake_version_file = LKGMCandidateInfoTest.CreateFakeVersionFile(self.tmpdir)
     self.mox.StubOutWithMock(lkgm_manager, '_SyncGitRepo')
 
     manifest, dir_pfx = self._CreateManifest()
+    print manifest, dir_pfx
     for_build1 = os.path.join(self.manager._TMP_MANIFEST_DIR,
                               self.manager.lkgm_subdir,
                               'build-name', 'build1')
@@ -319,13 +341,15 @@ class LKGMManagerTest(mox.MoxTestBase):
 
     lkgm_manager._SyncGitRepo(self.manager._TMP_MANIFEST_DIR)
     self.mox.ReplayAll()
-    statuses = self.manager.GetBuildersStatus(['build1', 'build2'])
+    statuses = self.manager.GetBuildersStatus(['build1', 'build2'],
+                                              fake_version_file)
     self.assertEqual(statuses['build1'], 'fail')
     self.assertEqual(statuses['build2'], 'pass')
     self.mox.VerifyAll()
 
   def testGetBuildersStatusWaitForOne(self):
     """Tests GetBuilderStatus where both builds have finished with one delay."""
+    fake_version_file = LKGMCandidateInfoTest.CreateFakeVersionFile(self.tmpdir)
     self.mox.StubOutWithMock(lkgm_manager, '_SyncGitRepo')
 
     manifest, dir_pfx = self._CreateManifest()
@@ -342,13 +366,15 @@ class LKGMManagerTest(mox.MoxTestBase):
     lkgm_manager._SyncGitRepo(self.manager._TMP_MANIFEST_DIR).MultipleTimes()
     self.mox.ReplayAll()
 
-    statuses = self.manager.GetBuildersStatus(['build1', 'build2'])
+    statuses = self.manager.GetBuildersStatus(['build1', 'build2'],
+                                              fake_version_file)
     self.assertEqual(statuses['build1'], 'fail')
     self.assertEqual(statuses['build2'], 'pass')
     self.mox.VerifyAll()
 
   def testGetBuildersStatusReachTimeout(self):
     """Tests GetBuilderStatus where one build finishes and one never does."""
+    fake_version_file = LKGMCandidateInfoTest.CreateFakeVersionFile(self.tmpdir)
     self.mox.StubOutWithMock(lkgm_manager, '_SyncGitRepo')
 
     manifest, dir_pfx = self._CreateManifest()
@@ -366,7 +392,8 @@ class LKGMManagerTest(mox.MoxTestBase):
     self.mox.ReplayAll()
     # Let's reduce this.
     self.manager.LONG_MAX_TIMEOUT_SECONDS = 5
-    statuses = self.manager.GetBuildersStatus(['build1', 'build2'])
+    statuses = self.manager.GetBuildersStatus(['build1', 'build2'],
+                                              fake_version_file)
     self.assertEqual(statuses['build1'], 'fail')
     self.assertEqual(statuses['build2'], None)
     thread.join()

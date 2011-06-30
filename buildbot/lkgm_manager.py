@@ -53,47 +53,53 @@ class _LKGMCandidateInfo(manifest_version.VersionInfo):
   2) just passing in the 4 version components (major, minor, sp, patch and
     revision number),
   Args:
-    version_string: Optional version string to parse rather than from a file
-    ver_maj: major version
-    ver_min: minor version
-    ver_sp:  sp version
-    ver_patch: patch version
-    ver_revision: version revision
+      You can instantiate this class in two ways.
+  1)using a version file, specifically chromeos_version.sh,
+  which contains the version information.
+  2) passing in a string with the 3 version components + revision e.g. 41.0.0-r1
+  Args:
+    version_string: Optional 3 component version string to parse.  Contains:
+        build_number: release build number.
+        branch_build_number: current build number on a branch.
+        patch_number: patch number.
+        revision_number: version revision
+    chrome_branch: If version_string specified, specify chrome_branch i.e. 13.
     version_file: version file location.
   """
-  LKGM_RE = '(\d+\.\d+\.\d+\.\d+)(?:-rc(\d+))?'
+  LKGM_RE = '(\d+\.\d+\.\d+)(?:-rc(\d+))?'
 
-  def __init__(self, version_string=None, version_file=None):
-    self.ver_revision = None
+  def __init__(self, version_string=None, chrome_branch=None,
+               version_file=None):
+    self.revision_number = None
     if version_string:
       match = re.search(self.LKGM_RE, version_string)
       assert match, 'LKGM did not re %s' % self.LKGM_RE
-      super(_LKGMCandidateInfo, self).__init__(match.group(1),
+      super(_LKGMCandidateInfo, self).__init__(match.group(1), chrome_branch,
                                                incr_type='branch')
       if match.group(2):
-        self.ver_revision = int(match.group(2))
+        self.revision_number = int(match.group(2))
 
     else:
       super(_LKGMCandidateInfo, self).__init__(version_file=version_file,
                                                incr_type='branch')
-    if not self.ver_revision:
-      self.ver_revision = 1
+    if not self.revision_number:
+      self.revision_number = 1
 
   def VersionString(self):
     """returns the full version string of the lkgm candidate"""
-    return '%s.%s.%s.%s-rc%s' % (self.ver_maj, self.ver_min, self.ver_sp,
-                                 self.ver_patch, self.ver_revision)
+    return '%s.%s.%s-rc%s' % (self.build_number, self.branch_build_number,
+                              self.patch_number, self.revision_number)
 
   @classmethod
   def VersionCompare(cls, version_string):
     """Useful method to return a comparable version of a LKGM string."""
     lkgm = cls(version_string)
-    return map(int, [lkgm.ver_maj, lkgm.ver_min, lkgm.ver_sp, lkgm.ver_patch,
-                     lkgm.ver_revision])
+    return map(int, [lkgm.build_number, lkgm.branch_build_number,
+                     lkgm.patch_number, lkgm.revision_number])
 
   def IncrementVersion(self, message=None, dry_run=False):
     """Increments the version by incrementing the revision #."""
-    self.ver_revision += 1
+    self.revision_number += 1
     return self.VersionString()
 
 
@@ -300,7 +306,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
 
     return self.GetLocalManifest(self.current_version)
 
-  def GetBuildersStatus(self, builders_array):
+  def GetBuildersStatus(self, builders_array, version_file):
     """Returns a build-names->status dictionary of build statuses."""
     builder_statuses = {}
 
@@ -308,7 +314,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       """Helper function that iterates through current statuses."""
       num_complete = 0
       _SyncGitRepo(self._TMP_MANIFEST_DIR)
-      version_info = _LKGMCandidateInfo(self.current_version)
+      version_info = _LKGMCandidateInfo(version_file=version_file)
       for builder in builders_array:
         if builder_statuses.get(builder) not in LKGMManager.STATUS_COMPLETED:
           logging.debug("Checking for builder %s's status" % builder)

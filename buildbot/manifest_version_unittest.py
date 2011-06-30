@@ -22,14 +22,15 @@ from chromite.buildbot import repository
 from chromite.lib import cros_build_lib as cros_lib
 
 FAKE_VERSION = """
-CHROMEOS_VERSION_MAJOR=1
-CHROMEOS_VERSION_MINOR=2
-CHROMEOS_VERSION_BRANCH=3
-CHROMEOS_VERSION_PATCH=4
+CHROMEOS_BUILD=1
+CHROMEOS_BRANCH=2
+CHROMEOS_PATCH=3
+CHROME_BRANCH=13
 """
 
-FAKE_VERSION_STRING = '1.2.3.4'
-FAKE_VERSION_STRING_NEXT = '1.2.3.5'
+FAKE_VERSION_STRING = '1.2.3'
+FAKE_VERSION_STRING_NEXT = '1.2.4'
+CHROME_BRANCH = '13'
 
 # Dir to use to sync repo for git testing.
 GIT_DIR = '/tmp/repo_for_manifest_version_unittest'
@@ -80,7 +81,7 @@ class HelperMethodsTest(unittest.TestCase):
     if not os.path.exists(GIT_DIR): os.makedirs(GIT_DIR)
     cros_lib.RunCommand(
         ('repo init -u http://git.chromium.org/chromiumos/manifest.git '
-         '-m minilayout.xml -q').split(), cwd=GIT_DIR, input='\n\ny\n')
+         '-m minilayout.xml').split(), cwd=GIT_DIR, input='\n\ny\n')
     cros_lib.RunCommand(('repo sync --jobs 8').split(), cwd=GIT_DIR)
     git_dir = os.path.join(GIT_DIR, GIT_TEST_PATH)
     cros_lib.RunCommand(
@@ -157,11 +158,11 @@ class VersionInfoTest(mox.MoxTestBase):
 
   def testLoadFromString(self):
     """Tests whether we can load from a string."""
-    info = manifest_version.VersionInfo(version_string=FAKE_VERSION_STRING)
+    info = manifest_version.VersionInfo(FAKE_VERSION_STRING, CHROME_BRANCH)
     self.assertEqual(info.VersionString(), FAKE_VERSION_STRING)
 
-  def testIncrementVersionPatch(self):
-    """Tests whether we can increment a version file."""
+  def CommonTestIncrementVersion(self, incr_type):
+    """Common test increment.  Returns path to new incremented file."""
     message = 'Incrementing cuz I sed so'
     self.mox.StubOutWithMock(manifest_version, '_PrepForChanges')
     self.mox.StubOutWithMock(manifest_version, '_PushGitChanges')
@@ -174,12 +175,31 @@ class VersionInfoTest(mox.MoxTestBase):
 
     self.mox.ReplayAll()
     info = manifest_version.VersionInfo(version_file=version_file,
-                                        incr_type='patch')
+                                        incr_type=incr_type)
     info.IncrementVersion(message, dry_run=False)
-    new_info = manifest_version.VersionInfo(version_file=version_file,
-                                             incr_type='patch')
-    self.assertEqual(new_info.VersionString(), FAKE_VERSION_STRING_NEXT)
     self.mox.VerifyAll()
+    return version_file
+
+  def testIncrementVersionPatch(self):
+    """Tests whether we can increment a version file by patch number."""
+    version_file = self.CommonTestIncrementVersion('patch')
+    new_info = manifest_version.VersionInfo(version_file=version_file,
+                                            incr_type='patch')
+    self.assertEqual(new_info.VersionString(), FAKE_VERSION_STRING_NEXT)
+
+  def testIncrementVersionBranch(self):
+    """Tests whether we can increment a version file by branch number."""
+    version_file = self.CommonTestIncrementVersion('branch')
+    new_info = manifest_version.VersionInfo(version_file=version_file,
+                                            incr_type='branch')
+    self.assertEqual(new_info.VersionString(), '1.3.0')
+
+  def testIncrementVersionBuild(self):
+    """Tests whether we can increment a version file by build number."""
+    version_file = self.CommonTestIncrementVersion('build')
+    new_info = manifest_version.VersionInfo(version_file=version_file,
+                                            incr_type='build')
+    self.assertEqual(new_info.VersionString(), '2.0.0')
 
   def tearDown(self):
     shutil.rmtree(self.tmpdir)
@@ -212,17 +232,16 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
     """Tests whether we can load specs correctly."""
     self.mox.StubOutWithMock(manifest_version, '_RemoveDirs')
     self.mox.StubOutWithMock(repository, 'CloneGitRepo')
-    info = manifest_version.VersionInfo(version_string=FAKE_VERSION_STRING,
-                                        incr_type='patch')
-    dir_pfx = '1.2'
-    m1 = os.path.join(self.manager._TMP_MANIFEST_DIR, 'buildspecs', dir_pfx,
-                      '1.2.3.2.xml')
-    m2 = os.path.join(self.manager._TMP_MANIFEST_DIR, 'buildspecs', dir_pfx,
-                      '1.2.3.3.xml')
-    m3 = os.path.join(self.manager._TMP_MANIFEST_DIR, 'buildspecs', dir_pfx,
-                      '1.2.3.4.xml')
-    m4 = os.path.join(self.manager._TMP_MANIFEST_DIR, 'buildspecs', dir_pfx,
-                      '1.2.3.5.xml')
+    info = manifest_version.VersionInfo(
+        FAKE_VERSION_STRING, CHROME_BRANCH, incr_type='patch')
+    m1 = os.path.join(self.manager._TMP_MANIFEST_DIR, 'buildspecs',
+                      CHROME_BRANCH, '1.2.2.xml')
+    m2 = os.path.join(self.manager._TMP_MANIFEST_DIR, 'buildspecs',
+                      CHROME_BRANCH, '1.2.3.xml')
+    m3 = os.path.join(self.manager._TMP_MANIFEST_DIR, 'buildspecs',
+                      CHROME_BRANCH, '1.2.4.xml')
+    m4 = os.path.join(self.manager._TMP_MANIFEST_DIR, 'buildspecs',
+                      CHROME_BRANCH, '1.2.5.xml')
     for_build = os.path.join(self.manager._TMP_MANIFEST_DIR, 'build-name',
                              self.build_name)
 
@@ -233,31 +252,31 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
     TouchFile(m4)
 
     # Fail 1, pass 2, leave 3,4 unprocessed.
-    manifest_version.CreateSymlink(m1, os.path.join(for_build, 'fail', dir_pfx,
-                                                     os.path.basename(m1)))
-    manifest_version.CreateSymlink(m1, os.path.join(for_build, 'pass', dir_pfx,
-                                                     os.path.basename(m2)))
+    manifest_version.CreateSymlink(m1, os.path.join(
+        for_build, 'fail', CHROME_BRANCH, os.path.basename(m1)))
+    manifest_version.CreateSymlink(m1, os.path.join(
+        for_build, 'pass', CHROME_BRANCH, os.path.basename(m2)))
     manifest_version._RemoveDirs(self.manager._TMP_MANIFEST_DIR)
     repository.CloneGitRepo(self.manager._TMP_MANIFEST_DIR,
                             self.manifest_repo)
     self.mox.ReplayAll()
     self.manager._LoadSpecs(info)
     self.mox.VerifyAll()
-    self.assertEqual(self.manager.latest_unprocessed, '1.2.3.5')
+    self.assertEqual(self.manager.latest_unprocessed, '1.2.5')
 
   def testGetMatchingSpecs(self):
     """Tests whether we can get sorted specs correctly from a directory."""
     self.mox.StubOutWithMock(manifest_version, '_RemoveDirs')
     self.mox.StubOutWithMock(repository, 'CloneGitRepo')
-    info = manifest_version.VersionInfo(version_string=FAKE_VERSION_STRING,
-                                        incr_type='branch')
-    dir_pfx = '1.2'
+    info = manifest_version.VersionInfo(
+        '99.1.2', CHROME_BRANCH, incr_type='branch')
+
     specs_dir = os.path.join(self.manager._TMP_MANIFEST_DIR, 'buildspecs',
-                             dir_pfx)
-    m1 = os.path.join(specs_dir, '1.2.3.5.xml')
-    m2 = os.path.join(specs_dir, '1.2.3.10.xml')
-    m3 = os.path.join(specs_dir, '1.2.555.6.xml')
-    m4 = os.path.join(specs_dir, '1.2.3.4.xml')
+                             CHROME_BRANCH)
+    m1 = os.path.join(specs_dir, '100.0.0.xml')
+    m2 = os.path.join(specs_dir, '99.3.3.xml')
+    m3 = os.path.join(specs_dir, '99.1.10.xml')
+    m4 = os.path.join(specs_dir, '99.1.5.xml')
 
     # Create fake buildspecs.
     TouchFile(m1)
@@ -268,8 +287,8 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
     self.mox.ReplayAll()
     specs = self.manager._GetMatchingSpecs(info, specs_dir)
     self.mox.VerifyAll()
-    # Should be the latest on the 1.2.3 branch.
-    self.assertEqual(specs[-1], '1.2.555.6')
+    # Should be the latest on the 99.1 branch
+    self.assertEqual(specs[-1], '99.3.3')
 
   def testCreateNewBuildSpecNoCopy(self):
     """Tests whether we can create a new build spec correctly.
@@ -277,8 +296,11 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
     Tests without pre-existing version file in manifest dir.
     """
     self.mox.StubOutWithMock(repository.RepoRepository, 'ExportManifest')
-    info = manifest_version.VersionInfo(version_string=FAKE_VERSION_STRING,
-                                        incr_type='patch')
+    self.mox.StubOutWithMock(manifest_version, '_PrepForChanges')
+    self.mox.StubOutWithMock(manifest_version, '_PushGitChanges')
+    info = manifest_version.VersionInfo(
+        FAKE_VERSION_STRING, CHROME_BRANCH, incr_type='patch')
+
     self.manager.all_specs_dir = os.path.join(self.manager._TMP_MANIFEST_DIR,
                                               'buildspecs', '1.2')
 

@@ -22,8 +22,6 @@ date_format = '%Y/%m/%d %H:%M:%S'
 logging.basicConfig(level=logging.DEBUG, format=logging_format,
                     datefmt=date_format)
 
-# Pattern for matching build name format. E.g, 12.3.4.5,1.0.25.3
-VER_PATTERN = '(\d+).(\d+).(\d+).(\d+)'
 _PUSH_BRANCH = 'temp_auto_checkin_branch'
 
 class VersionUpdateException(Exception):
@@ -180,31 +178,38 @@ def CreateSymlink(src_file, dest_file, remove_file=None):
 
 
 class VersionInfo(object):
-  """Class to encapsualte the chrome os version info
+  """Class to encapsulate the Chrome OS version info scheme.
 
   You can instantiate this class in two ways.
   1)using a version file, specifically chromeos_version.sh,
   which contains the version information.
-  2) just passing in the 4 version components (major, minor, sp and patch)
+  2) passing in a string with the 3 version components ()
   Args:
-    version_string: Optional version string to parse rather than from a file
-    ver_maj: major version
-    ver_min: minor version
-    ver_sp:  sp version
-    ver_patch: patch version
+    version_string: Optional 3 component version string to parse.  Contains:
+        build_number: release build number.
+        branch_build_number: current build number on a branch.
+        patch_number: patch number.
+    chrome_branch: If version_string specified, specify chrome_branch i.e. 13.
+    incr_type: How we should increment this version - build|branch|patch
     version_file: version file location.
   """
-  def __init__(self, version_string=None, incr_type=None, version_file=None):
+  # Pattern for matching build name format.  Includes chrome branch hack.
+  VER_PATTERN = '(\d+).(\d+).(\d+)(?:-R(\d+))*'
+
+  def __init__(self, version_string=None, chrome_branch=None,
+               incr_type='build', version_file=None):
+    # TODO(sosa): Remove default.
+    self.chrome_branch = '14'
     if version_file:
       self.version_file = version_file
       logging.debug('Using VERSION _FILE = %s', version_file)
       self._LoadFromFile()
     else:
-      match = re.search(VER_PATTERN, version_string)
-      self.ver_maj = match.group(1)
-      self.ver_min = match.group(2)
-      self.ver_sp = match.group(3)
-      self.ver_patch = match.group(4)
+      match = re.search(self.VER_PATTERN, version_string)
+      self.build_number = match.group(1)
+      self.branch_build_number = match.group(2)
+      self.patch_number = match.group(3)
+      self.chrome_branch = chrome_branch
       self.version_file = None
 
     self.incr_type = incr_type
@@ -216,29 +221,32 @@ class VersionInfo(object):
         if not line.strip():
           continue
 
-        match = self.FindValue('CHROMEOS_VERSION_MAJOR', line)
+        match = self.FindValue('CHROME_BRANCH', line)
         if match:
-          self.ver_maj = match
-          logging.debug('Set the major version to:%s', self.ver_maj)
+          self.chrome_branch = match
+          logging.debug('Set the Chrome branch number to:%s',
+                        self.chrome_branch)
           continue
 
-        match = self.FindValue('CHROMEOS_VERSION_MINOR', line)
+        match = self.FindValue('CHROMEOS_BUILD', line)
         if match:
-          self.ver_min = match
-          logging.debug('Set the minor version to:%s', self.ver_min)
+          self.build_number = match
+          logging.debug('Set the build version to:%s', self.build_number)
           continue
 
-        match = self.FindValue('CHROMEOS_VERSION_BRANCH', line)
+        match = self.FindValue('CHROMEOS_BRANCH', line)
         if match:
-          self.ver_sp = match
-          logging.debug('Set the sp version to:%s', self.ver_sp)
+          self.branch_build_number = match
+          logging.debug('Set the branch version to:%s',
+                        self.branch_build_number)
           continue
 
-        match = self.FindValue('CHROMEOS_VERSION_PATCH', line)
+        match = self.FindValue('CHROMEOS_PATCH', line)
         if match:
-          self.ver_patch = match
-          logging.debug('Set the patch version to:%s', self.ver_patch)
+          self.patch_number = match
+          logging.debug('Set the patch version to:%s', self.patch_number)
           continue
+
     logging.debug(self.VersionString())
 
   def FindValue(self, key, line):
@@ -263,6 +271,15 @@ class VersionInfo(object):
       message:  Commit message to use when incrementing the version.
       dry_run: Git dry_run.
     """
+    def IncrementOldValue(line, key, new_value):
+      """Change key to new_value if found on line.  Returns True if changed."""
+      old_value = self.FindValue(key, line)
+      if old_value:
+        temp_fh.write(line.replace(old_value, new_value, 1))
+        return True
+      else:
+        return False
+
     if not self.version_file:
       raise VersionUpdateException('Cannot call IncrementVersion without '
                                    'an associated version_file')
@@ -270,30 +287,35 @@ class VersionInfo(object):
       raise VersionUpdateException('Need to specify the part of the version to'
                                    ' increment')
 
+    if self.incr_type == 'build':
+      self.build_number = str(int(self.build_number) + 1)
+      self.branch_build_number = '0'
+      self.patch_number = '0'
+
     if self.incr_type == 'branch':
-      self.ver_sp = str(int(self.ver_sp) + 1)
-      self.ver_patch = '0'
+      self.branch_build_number = str(int(self.branch_build_number) + 1)
+      self.patch_number = '0'
 
     if self.incr_type == 'patch':
-      self.ver_patch = str(int(self.ver_patch) + 1)
+      self.patch_number = str(int(self.patch_number) + 1)
 
     temp_file = tempfile.mkstemp(suffix='mvp', prefix='tmp', dir=None,
                                  text=True)[1]
     with open(self.version_file, 'r') as source_version_fh:
       with open(temp_file, 'w') as temp_fh:
         for line in source_version_fh:
-          old_patch = self.FindValue('CHROMEOS_VERSION_PATCH', line)
-          if old_patch:
-            temp_fh.write(line.replace(old_patch, self.ver_patch, 1))
-            continue
+          if IncrementOldValue(line, 'CHROMEOS_BUILD', self.build_number):
+            pass
+          elif IncrementOldValue(line, 'CHROMEOS_BRANCH',
+                                 self.branch_build_number):
+            pass
+          elif IncrementOldValue(line, 'CHROMEOS_PATCH', self.patch_number):
+            pass
+          else:
+            temp_fh.write(line)
 
-          old_sp = self.FindValue('CHROMEOS_VERSION_BRANCH', line)
-          if old_sp:
-            temp_fh.write(line.replace(old_sp, self.ver_sp, 1))
-            continue
-
-          temp_fh.write(line)
         temp_fh.close()
+
       source_version_fh.close()
 
     repo_dir = os.path.dirname(self.version_file)
@@ -309,28 +331,30 @@ class VersionInfo(object):
 
   def VersionString(self):
     """returns the version string"""
-    return '%s.%s.%s.%s' % (self.ver_maj, self.ver_min, self.ver_sp,
-                            self.ver_patch)
+    return '%s.%s.%s' % (self.build_number, self.branch_build_number,
+                         self.patch_number)
 
   @classmethod
   def VersionCompare(cls, version_string):
     """Useful method to return a comparable version of a LKGM string."""
     info = cls(version_string)
-    return map(int, [info.ver_maj, info.ver_min, info.ver_sp, info.ver_patch])
+    return map(int, [info.build_number, info.branch_build_number,
+                     info.patch_number])
 
   def DirPrefix(self):
-    """returns the sub directory suffix in manifest-versions"""
-    return '%s.%s' % (self.ver_maj, self.ver_min)
+    """Returns the sub directory suffix in manifest-versions"""
+    return self.chrome_branch
 
   def BuildPrefix(self):
-    """returns the build prefix to match the buildspecs in  manifest-versions"""
+    """Returns the build prefix to match the buildspecs in  manifest-versions"""
     if self.incr_type == 'patch':
-      return '%s.%s.%s' % (self.ver_maj, self.ver_min, self.ver_sp)
+      return '%s.%s' % (self.build_number, self.branch_build_number)
 
     if self.incr_type == 'branch':
-      return '%s.%s' % (self.ver_maj, self.ver_min)
+      return self.build_number
 
-    return None
+    # Default to build incr_type.
+    return ''
 
 
 class BuildSpecsManager(object):
