@@ -298,7 +298,7 @@ class RenderViewHostTestHarness : public testing::Test {
 
   // Sets the current tab contents for tests that want to alter it. Takes
   // ownership of the TestTabContents passed.
-  void SetContents(TestTabContents* contents);
+  virtual void SetContents(TestTabContents* contents);
 
   // Creates a new TestTabContents. Ownership passes to the caller.
   TestTabContents* CreateTestTabContents();
