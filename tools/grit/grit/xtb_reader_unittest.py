@@ -1,5 +1,5 @@
 #!/usr/bin/python2.4
-# Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -74,11 +74,10 @@ and another after a blank line.</translation>
   def testParseLargeFile(self):
     def Callback(id, structure):
       pass
-    xtb = file(util.PathFromRoot('grit/test/data/fr.xtb'))
+    xtb = file(util.PathFromRoot('grit/testdata/generated_resources_fr.xtb'))
     xtb_reader.Parse(xtb, Callback)
     xtb.close()
 
 
 if __name__ == '__main__':
   unittest.main()
-

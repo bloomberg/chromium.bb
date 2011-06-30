@@ -1,5 +1,5 @@
 #!/usr/bin/python2.4
-# Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -24,14 +24,14 @@ class GritNodeUnittest(unittest.TestCase):
   def testUniqueNameAttribute(self):
     try:
       restree = grd_reader.Parse(
-        util.PathFromRoot('grit/test/data/duplicate-name-input.xml'))
+        util.PathFromRoot('grit/testdata/duplicate-name-input.xml'))
       self.fail('Expected parsing exception because of duplicate names.')
     except grit.exception.Parsing:
       pass  # Expected case
 
   def testReadFirstIdsFromFile(self):
-    test_resource_ids = os.path.join(os.path.dirname(__file__), '..', 'test',
-        'data', 'resource_ids')
+    test_resource_ids = os.path.join(os.path.dirname(__file__), '..',
+                                     'testdata', 'resource_ids')
     id_dict = misc._ReadFirstIdsFromFile(
         test_resource_ids,
         {
@@ -175,7 +175,7 @@ class ReleaseNodeUnittest(unittest.TestCase):
             <structure type="menu" name="IDC_KLONKMENU" encoding="utf-16" file="klonk.rc" />
           </structures>
         </release>
-      </grit>'''), util.PathFromRoot('grit/test/data'))
+      </grit>'''), util.PathFromRoot('grit/testdata'))
     grd.RunGatherers(recursive=True)
 
     hello = grd.GetNodeById('IDS_HELLO')
@@ -207,4 +207,3 @@ class ReleaseNodeUnittest(unittest.TestCase):
 
 if __name__ == '__main__':
   unittest.main()
-

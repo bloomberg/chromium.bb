@@ -1,5 +1,5 @@
 #!/usr/bin/python2.4
-# Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -49,11 +49,11 @@ class AdmGathererUnittest(unittest.TestCase):
                       gatherer.Parse)
 
   _TRANSLATABLES_FROM_FILE = (
-    'Google', 'Google Desktop Search', 'Preferences',
-    'Controls Google Deskop Search preferences',
+    'Google', 'Google Desktop', 'Preferences',
+    'Controls Google Desktop preferences',
     'Indexing and Capture Control',
-    'Controls what files, web pages, and other content will be indexed by Google Desktop Search.',
-    'Prevent indexing of e-mail',
+    'Controls what files, web pages, and other content will be indexed by Google Desktop.',
+    'Prevent indexing of email',
     # there are lots more but we don't check any further
   )
 
@@ -64,7 +64,7 @@ class AdmGathererUnittest(unittest.TestCase):
       self.failUnless(text == self._TRANSLATABLES_FROM_FILE[ix])
 
   def testFromFile(self):
-    fname = util.PathFromRoot('grit/test/data/GoogleDesktopSearch.adm')
+    fname = util.PathFromRoot('grit/testdata/GoogleDesktop.adm')
     gatherer = admin_template.AdmGatherer.FromFile(fname)
     gatherer.Parse()
     cliques = gatherer.GetCliques()
@@ -76,7 +76,7 @@ class AdmGathererUnittest(unittest.TestCase):
         <release seq="3">
           <structures>
             <structure type="admin_template" name="IDAT_GOOGLE_DESKTOP_SEARCH"
-              file="GoogleDesktopSearch.adm" exclude_from_rc="true" />
+              file="GoogleDesktop.adm" exclude_from_rc="true" />
             <structure type="txt" name="BINGOBONGO"
               file="README.txt" exclude_from_rc="true" />
           </structures>
@@ -84,7 +84,7 @@ class AdmGathererUnittest(unittest.TestCase):
         <outputs>
           <output filename="de_res.rc" type="rc_all" lang="de" />
         </outputs>
-      </grit>'''), util.PathFromRoot('grit/test/data'))
+      </grit>'''), util.PathFromRoot('grit/testdata'))
     grd.RunGatherers(recursive=True)
     return grd
 
@@ -104,7 +104,7 @@ class AdmGathererUnittest(unittest.TestCase):
       tool.Process()
 
       self.failUnless(os.path.isfile(
-        os.path.join(dirname, 'de_GoogleDesktopSearch.adm')))
+        os.path.join(dirname, 'de_GoogleDesktop.adm')))
       self.failUnless(os.path.isfile(
         os.path.join(dirname, 'de_README.txt')))
     finally:
@@ -114,4 +114,3 @@ class AdmGathererUnittest(unittest.TestCase):
 
 if __name__ == '__main__':
   unittest.main()
-

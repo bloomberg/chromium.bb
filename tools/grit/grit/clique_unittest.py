@@ -1,5 +1,5 @@
 #!/usr/bin/python2.4
-# Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -98,8 +98,8 @@ class MessageCliqueUnittest(unittest.TestCase):
       </message>
     </messages>
     <structures>
-      <structure type="dialog" name="IDD_ABOUTBOX" encoding="utf-16" file="grit/test/data/klonk.rc" />
-      <structure type="tr_html" name="ID_HTML" file="grit/test/data/simple.html" />
+      <structure type="dialog" name="IDD_ABOUTBOX" encoding="utf-16" file="grit/testdata/klonk.rc" />
+      <structure type="tr_html" name="ID_HTML" file="grit/testdata/simple.html" />
     </structures>
   </release>
 </grit>''')), util.PathFromRoot('.'))
@@ -119,7 +119,7 @@ class MessageCliqueUnittest(unittest.TestCase):
 <grit latest_public_release="2" source_lang_id="en-US" current_release="3" base_dir=".">
   <release seq="3">
     <structures>
-      <structure type="dialog" name="IDD_ABOUTBOX" file="grit/test/data/klonk.rc" />
+      <structure type="dialog" name="IDD_ABOUTBOX" file="grit/testdata/klonk.rc" />
     </structures>
   </release>
 </grit>''')), util.PathFromRoot('.'))

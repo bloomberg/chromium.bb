@@ -1,5 +1,5 @@
 #!/usr/bin/python2.4
-# Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -241,7 +241,7 @@ bla
 
   def testRegressionInToolbarAbout(self):
     html = tr_html.TrHtml.FromFile(
-      util.PathFromRoot(r'grit/test/data/toolbar_about.html'))
+      util.PathFromRoot(r'grit/testdata/toolbar_about.html'))
     html.Parse()
     cliques = html.GetCliques()
     for cl in cliques:
@@ -267,7 +267,7 @@ bla
 
   def testPrivacyHtml(self):
     html = self.HtmlFromFileWithManualCheck(
-      util.PathFromRoot(r'grit/test/data/privacy.html'))
+      util.PathFromRoot(r'grit/testdata/privacy.html'))
 
     self.failUnless(html.skeleton_[1].GetMessage().GetRealContent() ==
                     'Privacy and Google Desktop Search')
@@ -277,7 +277,7 @@ bla
 
   def testPreferencesHtml(self):
     html = self.HtmlFromFileWithManualCheck(
-      util.PathFromRoot(r'grit/test/data/preferences.html'))
+      util.PathFromRoot(r'grit/testdata/preferences.html'))
 
     # Verify that we don't get '[STATUS-MESSAGE]' as the original content of
     # one of the MessageClique objects (it would be a placeholder-only message
@@ -300,7 +300,7 @@ bla
       num: 3
     '''
     for f in files:
-      f = util.PathFromRoot(r'grit/test/data/%s' % f)
+      f = util.PathFromRoot(r'grit/testdata/%s' % f)
       html = self.HtmlFromFileWithManualCheck(f)
       self.failUnless(len(html.GetCliques()) == num)
 
@@ -325,7 +325,7 @@ bla
     ]
     for f in files:
       self.HtmlFromFileWithManualCheck(
-        util.PathFromRoot(r'grit/test/data/%s' % f))
+        util.PathFromRoot(r'grit/testdata/%s' % f))
 
   def testTranslate(self):
     # Note that the English translation of documents that use character
@@ -399,7 +399,7 @@ bla
     # match never to return.  (culprit is the _ELEMENT regexp(
     if False:
       html = self.HtmlFromFileWithManualCheck(util.PathFromRoot(
-        r'grit/test/data/ko_oem_enable_bug.html'))
+        r'grit/testdata/ko_oem_enable_bug.html'))
       self.failUnless(True)
 
   def testRegressionCpuHang(self):
@@ -410,4 +410,3 @@ bla
 
 if __name__ == '__main__':
   unittest.main()
-
