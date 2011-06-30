@@ -12,10 +12,12 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PLUGIN_H_
 
 #include <stdio.h>
+#include <vector>
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/trusted/plugin/api_defines.h"
+#include "native_client/src/trusted/plugin/nacl_subprocess.h"
 #include "native_client/src/trusted/plugin/service_runtime.h"
 #include "native_client/src/trusted/plugin/portable_handle.h"
 #include "native_client/src/trusted/plugin/utility.h"
@@ -42,6 +44,13 @@ class Plugin : public PortableHandle {
   // NaCl module can be loaded given a DescWrapper.
   // Updates nacl_module_origin() and nacl_module_url().
   bool LoadNaClModule(nacl::DescWrapper* wrapper, ErrorInfo* error_info);
+
+  // Load support.
+  // A helper SRPC NaCl module can be loaded given a DescWrapper.
+  // Does not update nacl_module_origin().
+  // Returns kInvalidNaClSubprocessId or the ID of the new helper NaCl module.
+  NaClSubprocessId LoadHelperNaClModule(nacl::DescWrapper* wrapper,
+                                        ErrorInfo* error_info);
 
   // Returns the argument value for the specified key, or NULL if not found.
   // The callee retains ownership of the result.
@@ -134,6 +143,17 @@ class Plugin : public PortableHandle {
     nacl_ready_state_ = nacl_ready_state;
   }
 
+  // Get the NaCl module subprocess that was assigned the ID |id|.
+  NaClSubprocess* nacl_subprocess(NaClSubprocessId id) const {
+    if (kInvalidNaClSubprocessId == id) {
+      return NULL;
+    }
+    return nacl_subprocesses_[id];
+  }
+  NaClSubprocessId next_nacl_subprocess_id() const {
+    return static_cast<NaClSubprocessId>(nacl_subprocesses_.size());
+  }
+
   nacl::DescWrapperFactory* wrapper_factory() const { return wrapper_factory_; }
 
   // Requesting a nacl manifest from a specified url.
@@ -160,18 +180,19 @@ class Plugin : public PortableHandle {
             char* argn[],
             char* argv[]);
   void LoadMethods();
-  // Shuts down socket connection, service runtime, multimedia and
-  // receive thread, in this order.
-  void ShutDownSubprocess();
-
-  static void UnrefScriptableHandle(ScriptableHandle** handle);
+  // Shuts down socket connection, service runtime, and receive thread,
+  // in this order, for all spun up NaCl module subprocesses.
+  void ShutDownSubprocesses();
 
   ScriptableHandle* scriptable_handle() const { return scriptable_handle_; }
   void set_scriptable_handle(ScriptableHandle* scriptable_handle) {
     scriptable_handle_ = scriptable_handle;
   }
 
-  ServiceRuntime* service_runtime_;
+  // Access the service runtime for the main NaCl subprocess.
+  ServiceRuntime* main_service_runtime() const {
+    return main_subprocess_.service_runtime();
+  }
 
   bool receive_thread_running_;
   struct NaClThread receive_thread_;
@@ -187,8 +208,9 @@ class Plugin : public PortableHandle {
   char** argn_;
   char** argv_;
 
-  // Taken over from service_runtime_ on load.
-  ScriptableHandle* socket_;
+  // Keep track of the NaCl module subprocesses that were spun up in the plugin.
+  NaClSubprocess main_subprocess_;
+  std::vector<NaClSubprocess*> nacl_subprocesses_;
 
   nacl::string origin_;
   bool origin_valid_;
@@ -205,7 +227,15 @@ class Plugin : public PortableHandle {
                                nacl::DescWrapper** fds, int fds_count);
   static bool SendAsyncMessage0(void* obj, SrpcParams* params);
   static bool SendAsyncMessage1(void* obj, SrpcParams* params);
-  bool StartSrpcServices(ErrorInfo* error_info);
+  // Help load a nacl module, from the file specified in wrapper.
+  // This will fully initialize the |subprocess| if the load was successful.
+  bool LoadNaClModuleCommon(nacl::DescWrapper* wrapper,
+                            NaClSubprocess* subprocess,
+                            ErrorInfo* error_info);
+  bool StartSrpcServices(NaClSubprocess* subprocess, ErrorInfo* error_info);
+  bool StartSrpcServicesCommon(NaClSubprocess* subprocess,
+                               ErrorInfo* error_info);
+  bool StartJSObjectProxy(NaClSubprocess* subprocess, ErrorInfo* error_info);
   static bool StartSrpcServicesWrapper(void* obj, SrpcParams* params);
 };
 

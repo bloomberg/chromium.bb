@@ -32,6 +32,7 @@
 #include "native_client/src/trusted/plugin/browser_interface.h"
 #include "native_client/src/trusted/plugin/connected_socket.h"
 #include "native_client/src/trusted/plugin/plugin_error.h"
+#include "native_client/src/trusted/plugin/nacl_subprocess.h"
 #include "native_client/src/trusted/plugin/nexe_arch.h"
 #include "native_client/src/trusted/plugin/scriptable_handle.h"
 #include "native_client/src/trusted/plugin/service_runtime.h"
@@ -100,7 +101,7 @@ bool LaunchExecutableFromFd(void* obj, SrpcParams* params) {
 bool Plugin::SendAsyncMessage(void* obj, SrpcParams* params,
                               nacl::DescWrapper** fds, int fds_count) {
   Plugin* plugin = reinterpret_cast<Plugin*>(obj);
-  if (plugin->service_runtime_ == NULL) {
+  if (plugin->main_service_runtime() == NULL) {
     params->set_exception_string("No subprocess running");
     return false;
   }
@@ -123,7 +124,8 @@ bool Plugin::SendAsyncMessage(void* obj, SrpcParams* params,
   message.ndescv = fds;
   message.ndescv_length = fds_count;
   message.flags = 0;
-  nacl::DescWrapper* socket = plugin->service_runtime_->async_send_desc();
+  nacl::DescWrapper* socket =
+      plugin->main_service_runtime()->async_send_desc();
   ssize_t sent = socket->SendMsg(&message, 0);
   free(data);
   if (sent < 0) {
@@ -155,7 +157,7 @@ bool Plugin::SendAsyncMessage1(void* obj, SrpcParams* params) {
 bool Plugin::StartSrpcServicesWrapper(void* obj, SrpcParams* params) {
   Plugin* plugin = reinterpret_cast<Plugin*>(obj);
   ErrorInfo error_info;
-  if (!plugin->StartSrpcServices(&error_info)) {
+  if (!plugin->StartSrpcServices(&plugin->main_subprocess_, &error_info)) {
     params->set_exception_string(error_info.message().c_str());
     return false;
   }
@@ -187,37 +189,28 @@ void Plugin::LoadMethods() {
 }
 
 bool Plugin::HasMethodEx(uintptr_t method_id, CallType call_type) {
-  if (NULL == socket_) {
-    return false;
-  }
   if (!ExperimentalJavaScriptApisAreEnabled()) {
     return false;
   }
-  return socket_->handle()->HasMethod(method_id, call_type);
+  return main_subprocess_.HasMethod(method_id, call_type);
 }
 
 bool Plugin::InvokeEx(uintptr_t method_id,
                       CallType call_type,
                       SrpcParams* params) {
-  if (NULL == socket_) {
-    return false;
-  }
   if (!ExperimentalJavaScriptApisAreEnabled()) {
     return false;
   }
-  return socket_->handle()->Invoke(method_id, call_type, params);
+  return main_subprocess_.Invoke(method_id, call_type, params);
 }
 
 bool Plugin::InitParamsEx(uintptr_t method_id,
                           CallType call_type,
                           SrpcParams* params) {
-  if (NULL == socket_) {
-    return false;
-  }
   if (!ExperimentalJavaScriptApisAreEnabled()) {
     return false;
   }
-  return socket_->handle()->InitParams(method_id, call_type, params);
+  return main_subprocess_.InitParams(method_id, call_type, params);
 }
 
 bool Plugin::Init(BrowserInterface* browser_interface,
@@ -276,14 +269,13 @@ bool Plugin::Init(BrowserInterface* browser_interface,
 }
 
 Plugin::Plugin()
-  : service_runtime_(NULL),
-    receive_thread_running_(false),
+  : receive_thread_running_(false),
     browser_interface_(NULL),
     scriptable_handle_(NULL),
     argc_(-1),
     argn_(NULL),
     argv_(NULL),
-    socket_(NULL),
+    main_subprocess_(kMainSubprocessId, NULL, NULL),
     origin_valid_(false),
     nacl_ready_state_(UNSENT),
     wrapper_factory_(NULL) {
@@ -293,38 +285,35 @@ Plugin::Plugin()
 // TODO(polina): move this to PluginNpapi.
 void Plugin::Invalidate() {
   PLUGIN_PRINTF(("Plugin::Invalidate (this=%p)\n", static_cast<void*>(this)));
-  socket_ = NULL;
+  main_subprocess_.set_socket(NULL);
+  // Other subprocesses (helper subprocesses) are not Invalidate()'ed.
 }
 
-void Plugin::ShutDownSubprocess() {
-  PLUGIN_PRINTF(("Plugin::ShutDownSubprocess (this=%p)\n",
+void Plugin::ShutDownSubprocesses() {
+  PLUGIN_PRINTF(("Plugin::ShutDownSubprocesses (this=%p)\n",
                  static_cast<void*>(this)));
-  PLUGIN_PRINTF(("Plugin::ShutDownSubprocess (socket=%p)\n",
-                 static_cast<void*>(socket_)));
-  UnrefScriptableHandle(&socket_);
-  PLUGIN_PRINTF(("Plugin::ShutDownSubprocess (service_runtime=%p)\n",
-                 static_cast<void*>(service_runtime_)));
+  PLUGIN_PRINTF(("Plugin::ShutDownSubprocesses %s\n",
+                 main_subprocess_.description().c_str()));
+
   // Shutdown service runtime. This must be done before all other calls so
   // they don't block forever when waiting for the upcall thread to exit.
-  if (service_runtime_ != NULL) {
-    service_runtime_->Shutdown();
-    delete service_runtime_;
-    service_runtime_ = NULL;
+  main_subprocess_.Shutdown();
+  for (size_t i = 0; i < nacl_subprocesses_.size(); ++i) {
+    PLUGIN_PRINTF(("Plugin::ShutDownSubprocesses %s\n",
+                   nacl_subprocesses_[i]->description().c_str()));
+    delete nacl_subprocesses_[i];
   }
+  nacl_subprocesses_.clear();
+
   if (receive_thread_running_) {
     NaClThreadJoin(&receive_thread_);
     receive_thread_running_ = false;
   }
+
   PLUGIN_PRINTF(("Plugin::ShutDownSubprocess (this=%p, return)\n",
                  static_cast<void*>(this)));
 }
 
-void Plugin::UnrefScriptableHandle(ScriptableHandle** handle) {
-  if (*handle != NULL) {
-    (*handle)->Unref();
-    *handle = NULL;
-  }
-}
 
 Plugin::~Plugin() {
   PLUGIN_PRINTF(("Plugin::~Plugin (this=%p)\n", static_cast<void*>(this)));
@@ -333,10 +322,10 @@ Plugin::~Plugin() {
   // so we shut down here what we can and prevent attempts to shut down
   // other linked structures in Deallocate.
 
-  // We should not need to call ShutDownSubprocess() here.  In the
+  // We should not need to call ShutDownSubprocesses() here.  In the
   // NPAPI plugin, it should have already been called in
   // NPP_Destroy().
-  ShutDownSubprocess();
+  ShutDownSubprocesses();
 
   delete wrapper_factory_;
   delete browser_interface_;
@@ -377,55 +366,71 @@ bool Plugin::IsValidNexeOrigin(nacl::string full_url,
   return true;
 }
 
-bool Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
-                            ErrorInfo* error_info) {
+bool Plugin::LoadNaClModuleCommon(nacl::DescWrapper* wrapper,
+                                  NaClSubprocess* subprocess,
+                                  ErrorInfo* error_info) {
   // Check ELF magic and ABI version compatibility.
   bool might_be_elf_exe =
       browser_interface_->MightBeElfExecutable(wrapper, error_info);
-  PLUGIN_PRINTF(("Plugin::LoadNaClModule (might_be_elf_exe=%d)\n",
-                 might_be_elf_exe));
+  PLUGIN_PRINTF(("Plugin::LoadNaClModuleCommon "
+                 "(might_be_elf_exe=%d, error='%s')\n",
+                 might_be_elf_exe, error_info->message().c_str()));
   if (!might_be_elf_exe) {
     return false;
   }
 
-  // Before forking a new sel_ldr process, ensure that we do not leak
-  // the ServiceRuntime object for an existing suprocess, and that any
-  // associated listener threads do not go unjoined because if they
-  // outlive the Plugin object, they will not be memory safe.
-  ShutDownSubprocess();
-  service_runtime_ =
-      new(std::nothrow) ServiceRuntime(this);
-  PLUGIN_PRINTF(("Plugin::LoadNaClModule (service_runtime=%p)\n",
-                 static_cast<void*>(service_runtime_)));
-  if (NULL == service_runtime_) {
-    error_info->SetReport(ERROR_SEL_LDR_INIT, "sel_ldr init failure.");
+  ServiceRuntime* new_service_runtime = new(std::nothrow) ServiceRuntime(this);
+  subprocess->set_service_runtime(new_service_runtime);
+  PLUGIN_PRINTF(("Plugin::LoadNaClModuleCommon (service_runtime=%p)\n",
+                 static_cast<void*>(new_service_runtime)));
+  if (NULL == new_service_runtime) {
+    error_info->SetReport(ERROR_SEL_LDR_INIT,
+                          "sel_ldr init failure " + subprocess->description());
     return false;
   }
 
   bool service_runtime_started =
-      service_runtime_->Start(wrapper, error_info);
-  PLUGIN_PRINTF(("Plugin::LoadNaClModule (service_runtime_started=%d)\n",
+      new_service_runtime->Start(wrapper, error_info);
+  PLUGIN_PRINTF(("Plugin::LoadNaClModuleCommon (service_runtime_started=%d)\n",
                  service_runtime_started));
   if (!service_runtime_started) {
     return false;
   }
-  if (!StartSrpcServices(error_info)) {  // sets socket_
-    return false;
-  }
-  PLUGIN_PRINTF(("Plugin::LoadNaClModule (socket=%p)\n",
-                 static_cast<void*>(socket_)));
   return true;
 }
 
-bool Plugin::StartSrpcServices(ErrorInfo* error_info) {
-  UnrefScriptableHandle(&socket_);
-  socket_ = service_runtime_->SetupAppChannel();
-  if (socket_ == NULL) {
+bool Plugin::StartSrpcServicesCommon(NaClSubprocess* subprocess,
+                                     ErrorInfo* error_info) {
+  if (!subprocess->StartSrpcServices()) {
     error_info->SetReport(ERROR_SRPC_CONNECTION_FAIL,
-                          "SRPC connection failure.");
+                          "SRPC connection failure for " +
+                          subprocess->description());
     return false;
   }
-  if (!socket_->handle()->StartJSObjectProxy(this, error_info)) {
+  PLUGIN_PRINTF(("Plugin::StartSrpcServicesCommon (established socket %p)\n",
+                 static_cast<void*>(subprocess->socket())));
+  return true;
+}
+
+bool Plugin::StartSrpcServices(NaClSubprocess* subprocess,
+                               ErrorInfo* error_info) {
+  if (!StartSrpcServicesCommon(subprocess, error_info)) {
+    return false;
+  }
+  // TODO(jvoung): This next bit is likely not needed...
+  // If StartSrpcServices is only in the JS API that is just for SRPC nexes
+  // (namely __startSrpcServices), then attempts to start the JS proxy
+  // will fail anyway?
+  // If that is the case, by removing the following line,
+  // the StartSrpcServices == StartSrpcServicesCommon.
+  // We still need this function though, to launch helper SRPC nexes within
+  // the plugin.
+  return StartJSObjectProxy(subprocess, error_info);
+}
+
+bool Plugin::StartJSObjectProxy(NaClSubprocess* subprocess,
+                                ErrorInfo* error_info) {
+  if (!subprocess->StartJSObjectProxy(this, error_info)) {
     // TODO(sehr,polina): rename the below to ExperimentalSRPCApisAreEnabled.
     if (ExperimentalJavaScriptApisAreEnabled()) {
       // It is not an error for the proxy to fail to start if experimental
@@ -435,9 +440,47 @@ bool Plugin::StartSrpcServices(ErrorInfo* error_info) {
       return false;
     }
   }
-  PLUGIN_PRINTF(("Plugin::Load (established socket %p)\n",
-                 static_cast<void*>(socket_)));
   return true;
+}
+
+bool Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
+                            ErrorInfo* error_info) {
+  // Before forking a new sel_ldr process, ensure that we do not leak
+  // the ServiceRuntime object for an existing subprocess, and that any
+  // associated listener threads do not go unjoined because if they
+  // outlive the Plugin object, they will not be memory safe.
+  ShutDownSubprocesses();
+  if (!(LoadNaClModuleCommon(wrapper, &main_subprocess_, error_info)
+        && StartSrpcServicesCommon(&main_subprocess_, error_info)
+        && StartJSObjectProxy(&main_subprocess_, error_info))) {
+    return false;
+  }
+  PLUGIN_PRINTF(("Plugin::LoadNaClModule finished %s\n",
+                 main_subprocess_.description().c_str()));
+  return true;
+}
+
+NaClSubprocessId Plugin::LoadHelperNaClModule(nacl::DescWrapper* wrapper,
+                                              ErrorInfo* error_info) {
+  NaClSubprocessId next_id = next_nacl_subprocess_id();
+  nacl::scoped_ptr<NaClSubprocess> nacl_subprocess(
+      new(std::nothrow) NaClSubprocess(next_id, NULL, NULL));
+  if (NULL == nacl_subprocess.get()) {
+    error_info->SetReport(ERROR_SEL_LDR_INIT,
+                          "unable to allocate helper subprocess.");
+    return kInvalidNaClSubprocessId;
+  }
+
+  if (!(LoadNaClModuleCommon(wrapper, nacl_subprocess.get(), error_info)
+        && StartSrpcServicesCommon(nacl_subprocess.get(), error_info))) {
+    return kInvalidNaClSubprocessId;
+  }
+
+  PLUGIN_PRINTF(("Plugin::LoadHelperNaClModule finished %s\n",
+                 nacl_subprocess.get()->description().c_str()));
+
+  nacl_subprocesses_.push_back(nacl_subprocess.release());
+  return next_id;
 }
 
 char* Plugin::LookupArgument(const char* key) {

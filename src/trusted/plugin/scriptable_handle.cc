@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright 2011 (c) The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 
@@ -79,6 +79,13 @@ bool ScriptableHandle::is_valid(const ScriptableHandle* handle) {
                  static_cast<void*>(const_cast<ScriptableHandle*>(handle)),
                  count));
   return 0 != count;
+}
+
+void ScriptableHandle::Unref(ScriptableHandle** handle) {
+  if (*handle != NULL) {
+    (*handle)->Unref();
+    *handle = NULL;
+  }
 }
 
 }  // namespace plugin

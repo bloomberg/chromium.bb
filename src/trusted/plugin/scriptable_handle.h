@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright 2011 (c) The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 
@@ -33,6 +33,7 @@ class ScriptableHandle {
  public:
   // Check that a pointer is to a validly created ScriptableHandle.
   static bool is_valid(const ScriptableHandle* handle);
+  static void Unref(ScriptableHandle** handle);
 
   // Get the contained object.
   PortableHandle* handle() const { return handle_; }

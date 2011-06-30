@@ -18,6 +18,7 @@
       'connected_socket.cc',
       'desc_based_handle.cc',
       'method_map.cc',
+      'nacl_subprocess.cc',
       'nexe_arch.cc',
       'plugin.cc',
       'portable_handle.cc',

@@ -437,7 +437,7 @@ bool PluginPpapi::IsForeignMIMEType() const {
 bool PluginPpapi::SetAsyncCallback(void* obj, SrpcParams* params) {
   PluginPpapi* plugin =
       static_cast<PluginPpapi*>(reinterpret_cast<Plugin*>(obj));
-  if (plugin->service_runtime_ == NULL) {
+  if (plugin->main_service_runtime() == NULL) {
     params->set_exception_string("No subprocess running");
     return false;
   }
@@ -451,7 +451,8 @@ bool PluginPpapi::SetAsyncCallback(void* obj, SrpcParams* params) {
     return false;
   }
   args->callback = *reinterpret_cast<pp::Var*>(params->ins()[0]->arrays.oval);
-  nacl::DescWrapper* socket = plugin->service_runtime_->async_receive_desc();
+  nacl::DescWrapper* socket =
+      plugin->main_service_runtime()->async_receive_desc();
   NaClDescRef(socket->desc());
   // The MakeGeneric() call is necessary because the new DescWrapper
   // has a separate lifetime from the one returned by
@@ -602,7 +603,7 @@ PluginPpapi::~PluginPpapi() {
 
   ShutdownProxy();
   ScriptableHandle* scriptable_handle_ = scriptable_handle();
-  UnrefScriptableHandle(&scriptable_handle_);
+  ScriptableHandle::Unref(&scriptable_handle_);
   NaClSrpcModuleFini();
 }
 
