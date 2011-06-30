@@ -2569,6 +2569,7 @@
         }, { #else: OS == "chromeos"
           'sources!': [
             'browser/service/service_process_control_browsertest.cc',
+            'browser/ui/webui/print_preview_browsertest.cc',
           ],
         }],
         ['file_manager_extension==0', {
