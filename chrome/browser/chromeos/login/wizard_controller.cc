@@ -378,11 +378,6 @@ void WizardController::OnEulaAccepted() {
   MarkEulaAccepted();
   chromeos::MetricsCrosSettingsProvider::SetMetricsStatus(
       usage_statistics_reporting_);
-  if (chromeos::CrosLibrary::Get()->EnsureLoaded()) {
-    // TPM password could be seen on EULA screen, now it's safe to clear it.
-    chromeos::CrosLibrary::Get()->
-        GetCryptohomeLibrary()->TpmClearStoredPassword();
-  }
   InitiateOOBEUpdate();
 }
 
