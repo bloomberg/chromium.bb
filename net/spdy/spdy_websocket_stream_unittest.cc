@@ -588,18 +588,20 @@ TEST_F(SpdyWebSocketStreamTest, IOPending) {
       ConstructSpdySettings(spdy_settings_to_send_));
   MockWrite writes[] = {
     // Setting throttling make SpdySession send settings frame automatically.
-    CreateMockWrite(*settings_frame),
-    CreateMockWrite(*request_frame_.get(), 2),
-    CreateMockWrite(*message_frame_.get(), 4),
-    CreateMockWrite(*closing_frame_.get(), 6)
+    CreateMockWrite(*settings_frame.get(), 1),
+    CreateMockWrite(*request_frame_.get(), 3),
+    CreateMockWrite(*message_frame_.get(), 6),
+    CreateMockWrite(*closing_frame_.get(), 9)
   };
 
   MockRead reads[] = {
-    CreateMockRead(*response_frame_.get(), 3),
-    CreateMockRead(*message_frame_.get(), 5),
-    // Skip sequence 7 to notify closing has been sent.
-    CreateMockRead(*closing_frame_.get(), 8),
-    MockRead(false, 0, 9)  // EOF cause OnCloseSpdyStream event.
+    CreateMockRead(*settings_frame.get(), 2),
+    CreateMockRead(*response_frame_.get(), 4),
+    // Skip sequence 5 (I/O Pending)
+    CreateMockRead(*message_frame_.get(), 7),
+    // Skip sequence 8 (I/O Pending)
+    CreateMockRead(*closing_frame_.get(), 10),
+    MockRead(false, 0, 11)  // EOF cause OnCloseSpdyStream event.
   };
 
   EXPECT_EQ(OK, InitSession(reads, arraysize(reads),

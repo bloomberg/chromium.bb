@@ -10,9 +10,5 @@ X509CertificateTest.*
 # Too many uninits and too slow. TODO(timurrrr): investigate uninits
 ProxyResolverV8Test.*
 
-# Fails under Dr. Memory (looks like the test is broken)
-# http://crbug.com/87620
-SpdyWebSocketStreamTest.IOPending
-
 # Slow
 CookieMonsterTest.GarbageCollectionTriggers
