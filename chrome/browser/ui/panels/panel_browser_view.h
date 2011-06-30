@@ -49,8 +49,8 @@ class PanelBrowserView : public BrowserView,
   // Overridden from BrowserView:
   virtual void Init() OVERRIDE;
   virtual void Close() OVERRIDE;
-  virtual bool CanResize() const OVERRIDE { return false; }
-  virtual bool CanMaximize() const OVERRIDE { return false; }
+  virtual bool CanResize() const OVERRIDE;
+  virtual bool CanMaximize() const OVERRIDE;
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
   virtual void UpdateTitleBar() OVERRIDE;
   virtual bool GetSavedWindowBounds(gfx::Rect* bounds) const OVERRIDE;

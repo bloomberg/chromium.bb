@@ -69,6 +69,14 @@ void PanelBrowserView::Close() {
 #endif
 }
 
+bool PanelBrowserView::CanResize() const {
+  return false;
+}
+
+bool PanelBrowserView::CanMaximize() const {
+  return false;
+}
+
 void PanelBrowserView::SetBounds(const gfx::Rect& bounds) {
   bounds_ = bounds;
 
