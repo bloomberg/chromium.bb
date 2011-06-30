@@ -92,8 +92,7 @@ def _RepoSync(buildroot, retries=_DEFAULT_RETRIES):
 
   repository.FixExternalRepoPushUrls(buildroot)
 
-  # repo manifest uses PAGER, but we want it to be non-interactive
-  os.environ['PAGER'] = 'cat'
+  repository.DisableInteractiveRepoManifestCommand()
   cros_lib.OldRunCommand(['repo', 'manifest', '-r', '-o', '/dev/stderr'],
                          cwd=buildroot)
 

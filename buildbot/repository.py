@@ -48,6 +48,11 @@ def CloneGitRepo(working_dir, repo_url):
   cros_lib.RunCommand(['git', 'clone', repo_url, working_dir])
 
 
+def DisableInteractiveRepoManifestCommand():
+  """Set the PAGER repo manifest uses to be non-interactive."""
+  os.environ['PAGER'] = 'cat'
+
+
 class RepoRepository(object):
   """ A Class that encapsulates a repo repository.
   Args:
@@ -132,9 +137,9 @@ class RepoRepository(object):
     Args:
       output_file: Self explanatory.
     """
+    DisableInteractiveRepoManifestCommand()
     cros_lib.RunCommand(['repo', 'manifest', '-r', '-o', output_file],
                         cwd=self.directory, print_cmd=True)
-
 
   def IsManifestDifferent(self, other_manifest):
     """Checks whether this manifest is different than another.
