@@ -4412,31 +4412,6 @@
    fun:_ZN11TabContents15NavigateToEntryERK15NavigationEntryN20NavigationController10ReloadTypeE
 }
 {
-   bug_82770a
-   Memcheck:Addr4
-   ...
-   fun:*N8chromeos12OwnerManager*
-}
-{
-   bug_82770b
-   Memcheck:Free
-   ...
-   fun:_ZN8chromeos12OwnerManagerD0Ev
-   fun:_ZN4base20RefCountedThreadSafeIN8chromeos12OwnerManagerENS_33DefaultRefCountedThreadSafeTraitsIS2_EEE14DeleteInternalEPKS2_
-   fun:_ZN4base33DefaultRefCountedThreadSafeTraitsIN8chromeos12OwnerManagerEE8DestructEPKS2_
-   fun:_ZNK4base20RefCountedThreadSafeIN8chromeos12OwnerManagerENS_33DefaultRefCountedThreadSafeTraitsIS2_EEE7ReleaseEv
-}
-{
-   bug_82680
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base16MessageLoopProxy22CreateForCurrentThreadEv
-   ...
-   fun:_ZN3IPC12ChannelProxy7ContextC1EPNS_7Channel8ListenerEPN4base16MessageLoopProxyE
-   ...
-   fun:_ZN3IPC12ChannelProxyC1ERKNS_13ChannelHandleENS_7Channel4ModeEPNS4_8ListenerEPN4base16MessageLoopProxyE
-}
-{
    bug_83343
    Memcheck:Leak
    fun:_Znw*
