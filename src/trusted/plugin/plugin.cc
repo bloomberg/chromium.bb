@@ -35,8 +35,6 @@
 #include "native_client/src/trusted/plugin/nexe_arch.h"
 #include "native_client/src/trusted/plugin/scriptable_handle.h"
 #include "native_client/src/trusted/plugin/service_runtime.h"
-#include "native_client/src/trusted/plugin/socket_address.h"
-#include "native_client/src/trusted/plugin/stream_shm_buffer.h"
 #include "native_client/src/trusted/plugin/string_encoding.h"
 #include "native_client/src/trusted/plugin/utility.h"
 
@@ -222,16 +220,6 @@ bool Plugin::InitParamsEx(uintptr_t method_id,
   return socket_->handle()->InitParams(method_id, call_type, params);
 }
 
-void Plugin::SetSrcPropertyImpl(const nacl::string& url) {
-  PLUGIN_PRINTF(("Plugin::SetSrcPropertyImpl (unloading previous)\n"));
-  // We do not actually need to shut down the process here when
-  // initiating the (asynchronous) download.  It is more important to
-  // shut down the old process when the download completes and a new
-  // process is launched.
-  ShutDownSubprocess();
-  RequestNaClManifest(url);
-}
-
 bool Plugin::Init(BrowserInterface* browser_interface,
                   InstanceIdentifier instance_id,
                   int argc,
@@ -295,7 +283,6 @@ Plugin::Plugin()
     argc_(-1),
     argn_(NULL),
     argv_(NULL),
-    socket_address_(NULL),
     socket_(NULL),
     origin_valid_(false),
     nacl_ready_state_(UNSENT),
@@ -306,18 +293,14 @@ Plugin::Plugin()
 // TODO(polina): move this to PluginNpapi.
 void Plugin::Invalidate() {
   PLUGIN_PRINTF(("Plugin::Invalidate (this=%p)\n", static_cast<void*>(this)));
-  socket_address_ = NULL;
   socket_ = NULL;
 }
 
 void Plugin::ShutDownSubprocess() {
   PLUGIN_PRINTF(("Plugin::ShutDownSubprocess (this=%p)\n",
                  static_cast<void*>(this)));
-  PLUGIN_PRINTF(("Plugin::ShutDownSubprocess "
-                 "(socket_address=%p, socket=%p)\n",
-                 static_cast<void*>(socket_address_),
+  PLUGIN_PRINTF(("Plugin::ShutDownSubprocess (socket=%p)\n",
                  static_cast<void*>(socket_)));
-  UnrefScriptableHandle(&socket_address_);
   UnrefScriptableHandle(&socket_);
   PLUGIN_PRINTF(("Plugin::ShutDownSubprocess (service_runtime=%p)\n",
                  static_cast<void*>(service_runtime_)));
@@ -423,27 +406,20 @@ bool Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
       service_runtime_->Start(wrapper, error_info);
   PLUGIN_PRINTF(("Plugin::LoadNaClModule (service_runtime_started=%d)\n",
                  service_runtime_started));
-
-  // Plugin takes ownership of socket_address_ from service_runtime_ and will
-  // Unref it at deletion. This must be done here because service_runtime_
-  // start-up might fail after default_socket_address() was already created.
-  socket_address_ = service_runtime_->default_socket_address();
   if (!service_runtime_started) {
     return false;
   }
-  CHECK(NULL != socket_address_);
   if (!StartSrpcServices(error_info)) {  // sets socket_
     return false;
   }
-  PLUGIN_PRINTF(("Plugin::LoadNaClModule (socket_address=%p, socket=%p)\n",
-                 static_cast<void*>(socket_address_),
+  PLUGIN_PRINTF(("Plugin::LoadNaClModule (socket=%p)\n",
                  static_cast<void*>(socket_)));
   return true;
 }
 
 bool Plugin::StartSrpcServices(ErrorInfo* error_info) {
   UnrefScriptableHandle(&socket_);
-  socket_ = socket_address_->handle()->Connect();
+  socket_ = service_runtime_->SetupAppChannel();
   if (socket_ == NULL) {
     error_info->SetReport(ERROR_SRPC_CONNECTION_FAIL,
                           "SRPC connection failure.");

@@ -309,4 +309,52 @@ DescWrapper* SelLdrLauncher::WrapCleanup(NaClDesc* raw_desc) {
   return factory_->MakeGenericCleanup(raw_desc);
 }
 
+#if defined(NACL_STANDALONE)
+bool SelLdrLauncher::Start(int socket_count, Handle* result_sockets) {
+  // Temporary: this interface is highly tailored to use by the browser
+  // plugin, which currently wants to have exactly three sockets.
+  // 0 -- the "bootstrap" socket.
+  // 1 -- the "async receive" socket.
+  // 2 -- the "async send" socket.
+  // TODO(sehr): Change this API to return only the bootstrap socket when
+  // the async support is removed.
+  if (socket_count != 3) {
+    return false;
+  }
+  // The arguments we want to pass to the service runtime are
+  // "-X 5" causes the service runtime to create a bound socket and socket
+  //      address at descriptors 3 and 4 in the untrusted code for the nexe
+  //      or IRT to use.  The argument to "-X", 5, is the host-OS descriptor
+  //      over which the internal representation of the sock addr is sent in
+  //      order to bootstrap communications with the untrusted NaCl module.
+  //      (NB: 5 is in a completely different namespace from the 3,4.)
+  const char* kSelLdrArgs[] = { "-X", "5" };
+  const int kSelLdrArgLength = NACL_ARRAY_SIZE(kSelLdrArgs);
+  vector<nacl::string> args_for_sel_ldr(kSelLdrArgs,
+                                        kSelLdrArgs + kSelLdrArgLength);
+  vector<nacl::string> args_for_nexe;
+  const char* irt_library_path = getenv("NACL_IRT_LIBRARY");
+  if (NULL != irt_library_path) {
+    args_for_sel_ldr.push_back("-B");
+    args_for_sel_ldr.push_back(irt_library_path);
+  }
+  // This "5" matches the "-X 5" argument above.
+  InitCommandLine(5, args_for_sel_ldr, args_for_nexe);
+
+  result_sockets[1] = ExportImcFD(6);
+  if (result_sockets[1] == nacl::kInvalidHandle) {
+    return false;
+  }
+  result_sockets[2] = ExportImcFD(7);
+  if (result_sockets[2] == nacl::kInvalidHandle) {
+    return false;
+  }
+  if (!LaunchFromCommandLine()) {
+    return false;
+  }
+  result_sockets[0] = channel_;
+  return true;
+}
+#endif  // defined(NACL_STANDALONE)
+
 }  // namespace nacl

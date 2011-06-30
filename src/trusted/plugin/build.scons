@@ -79,10 +79,7 @@ common_inputs = [
     'portable_handle.cc',
     'scriptable_handle.cc',
     'service_runtime.cc',
-    'socket_address.cc',
     'srpc_client.cc',
-    'srt_socket.cc',
-    'stream_shm_buffer.cc',
     'string_encoding.cc',
     'utility.cc',
 ]

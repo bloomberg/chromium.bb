@@ -134,16 +134,7 @@ class Plugin : public PortableHandle {
     nacl_ready_state_ = nacl_ready_state;
   }
 
-  // Each nexe has a canonical socket address that it will respond to
-  // Connect requests on.
-  ScriptableHandle* socket_address() const { return socket_address_; }
-  // TODO(sehr): document this.
-  ScriptableHandle* socket() const { return socket_; }
-
   nacl::DescWrapperFactory* wrapper_factory() const { return wrapper_factory_; }
-
-  // Complex method to set member data.
-  void SetSrcPropertyImpl(const nacl::string &url);
 
   // Requesting a nacl manifest from a specified url.
   virtual void RequestNaClManifest(const nacl::string& url) = 0;
@@ -196,8 +187,7 @@ class Plugin : public PortableHandle {
   char** argn_;
   char** argv_;
 
-  // These will be taken over from service_runtime_ on load.
-  ScriptableHandle* socket_address_;
+  // Taken over from service_runtime_ on load.
   ScriptableHandle* socket_;
 
   nacl::string origin_;

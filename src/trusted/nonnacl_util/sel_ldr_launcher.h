@@ -76,7 +76,7 @@ struct SelLdrLauncher {
   Handle child_process() const { return child_process_; }
 
   /////////////////////////////////////////////////////////////////////////////
-  // Command line start-up:
+  // Command line start-up: (Only used by sel_universal.)
   //
   // The command line must include a file path for the nexe application or an
   // indicator that a reference will be supplied after the launch over RPC.
@@ -135,14 +135,11 @@ struct SelLdrLauncher {
   DescWrapper* WrapCleanup(NaClDesc* raw_desc);
 
   /////////////////////////////////////////////////////////////////////////////
-  // Browser-based start-up (Chrome only):
-  //
-  // A message is sent to the browser process to launch the sel_ldr process.
-  // No nexe information is passed at this point. It will be supplied over
-  // RPC after start-up.
+  // Start the sel_ldr process.  No nexe information is passed at this point.
+  // It will be supplied over RPC after start-up.
   /////////////////////////////////////////////////////////////////////////////
 
-  bool StartFromBrowser(int socket_count, Handle* result_sockets);
+  bool Start(int socket_count, Handle* result_sockets);
 
  private:
   // OpenSrpcChannels is essentially the following sequence of

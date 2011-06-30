@@ -14,6 +14,7 @@
 #include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/shared/imc/nacl_imc.h"
+#include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/trusted/reverse_service/reverse_service.h"
 #include "native_client/src/trusted/plugin/utility.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
@@ -67,10 +68,11 @@ class ServiceRuntime {
   // describing the error.
   bool Start(nacl::DescWrapper* nacl_file_desc, ErrorInfo* error_info);
 
+  // Starts the application channel to the nexe.
+  ScriptableHandle* SetupAppChannel();
+
   bool Kill();
   bool Log(int severity, nacl::string msg);
-  ScriptableHandle* default_socket_address() const;
-  ScriptableHandle* GetSocketAddress(Plugin* plugin, nacl::Handle channel);
   Plugin* plugin() const { return plugin_; }
   void Shutdown();
 
@@ -79,14 +81,11 @@ class ServiceRuntime {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(ServiceRuntime);
-  bool InitCommunication(nacl::Handle bootstrap_socket,
-                         nacl::DescWrapper* shm,
-                         ErrorInfo* error_info);
+  bool InitCommunication(nacl::DescWrapper* shm, ErrorInfo* error_info);
 
-  ScriptableHandle* default_socket_address_;  // creates, but does not own
+  NaClSrpcChannel command_channel_;
   Plugin* plugin_;
   BrowserInterface* browser_interface_;
-  nacl::scoped_ptr<SrtSocket> runtime_channel_;
   nacl::ReverseService* reverse_service_;
   nacl::scoped_ptr<nacl::SelLdrLauncher> subprocess_;
 

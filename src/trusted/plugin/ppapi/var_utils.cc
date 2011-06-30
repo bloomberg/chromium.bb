@@ -11,9 +11,9 @@
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
+#include "native_client/src/trusted/plugin/desc_based_handle.h"
 #include "native_client/src/trusted/plugin/ppapi/array_ppapi.h"
 #include "native_client/src/trusted/plugin/ppapi/scriptable_handle_ppapi.h"
-#include "native_client/src/trusted/plugin/socket_address.h"
 #include "native_client/src/trusted/plugin/utility.h"
 
 #include "ppapi/cpp/dev/scriptable_object_deprecated.h"

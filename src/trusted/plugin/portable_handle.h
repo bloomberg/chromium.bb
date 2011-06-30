@@ -77,19 +77,8 @@ class PortableHandle {
   virtual nacl::DescWrapper* wrapper() const { return NULL; }
   virtual NaClDesc* desc() const { return NULL; }
 
-  // SharedMemory objects are mapped in at a non-NULL address and have a
-  // non-zero size.
-  virtual void* shm_addr() const { return NULL; }
-  virtual size_t shm_size() const { return 0; }
-
-  // SocketAddress objects can be connected to, returning a ConnectedSocket.
-  virtual ScriptableHandle* Connect() {
-    return NULL;
-  }
-  // This is only virtual because although Connect() always returns a
-  // ConnectedSocket, it cannot be declared as doing so, because of
-  // the PortableHandle/ScriptableHandle split.  It can only be validly invoked
-  // for ConnectedSocket, so it reports an error if this binding is invoked.
+  // This is only implemented for ConnectedSocket, to avoid an unchecked
+  // downcast.  It reports an error if this binding is invoked.
   virtual bool StartJSObjectProxy(Plugin* plugin, ErrorInfo* error_info) {
     UNREFERENCED_PARAMETER(plugin);
     UNREFERENCED_PARAMETER(error_info);

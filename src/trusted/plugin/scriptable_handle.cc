@@ -18,7 +18,6 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/trusted/plugin/browser_interface.h"
-#include "native_client/src/trusted/plugin/socket_address.h"
 #include "native_client/src/trusted/plugin/utility.h"
 
 

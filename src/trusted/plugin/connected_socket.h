@@ -23,8 +23,7 @@ class ServiceRuntime;
 class SrpcClient;
 
 // ConnectedSocket represents a connected socket that results from loading
-// a NativeClient module or doing a connect on a received descriptor
-// (SocketAddress).
+// a NativeClient module or doing a connect on a received descriptor.
 class ConnectedSocket : public DescBasedHandle {
  public:
   static ConnectedSocket* New(Plugin* plugin, nacl::DescWrapper* desc);

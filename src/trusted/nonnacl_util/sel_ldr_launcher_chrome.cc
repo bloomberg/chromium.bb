@@ -9,9 +9,9 @@
 
 LaunchNaClProcessFunc launch_nacl_process = NULL;
 
+#if !defined(NACL_STANDALONE)
 namespace nacl {
-  bool SelLdrLauncher::StartFromBrowser(int socket_count,
-                                        Handle* result_sockets) {
+  bool SelLdrLauncher::Start(int socket_count, Handle* result_sockets) {
     // send a synchronous message to the browser process
     Handle nacl_proc_handle;
     int nacl_proc_id;
@@ -24,7 +24,7 @@ namespace nacl {
       return false;
     }
 
-#if NACL_WINDOWS && !defined(NACL_STANDALONE)
+#if NACL_WINDOWS
     NaClHandlePassBrowserRememberHandle(nacl_proc_id, nacl_proc_handle);
 #endif
 
@@ -34,3 +34,4 @@ namespace nacl {
     return true;
   }
 }
+#endif  // !defined(NACL_STANDALONE)
