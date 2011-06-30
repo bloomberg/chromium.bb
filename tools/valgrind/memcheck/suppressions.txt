@@ -4818,6 +4818,20 @@
    fun:ChromeMain
    fun:main
 }
+{
+   bug_87997
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN8chromeos12input_method14IBusController6CreateEv
+   fun:_ZN8chromeos12input_method22InputMethodManagerImplC1Ev
+   fun:_ZN22DefaultSingletonTraitsIN8chromeos12input_method22InputMethodManagerImplEE3NewEv
+   fun:_ZN9SingletonIN8chromeos12input_method22InputMethodManagerImplE22DefaultSingletonTraitsIS2_ES2_E3getEv
+   fun:_ZN8chromeos12input_method22InputMethodManagerImpl11GetInstanceEv
+   fun:_ZN8chromeos12input_method18InputMethodManager11GetInstanceEv
+   fun:_ZN8chromeos15InputMethodMenuC2EP11PrefServiceNS_14StatusAreaHost10ScreenModeEb
+   fun:_ZN12_GLOBAL__N_18MenuImplC1EPN8chromeos21InputMethodMenuButtonEP11PrefServiceNS1_14StatusAreaHost10ScreenModeE
+   fun:_ZN8chromeos21InputMethodMenuButtonC1EPNS_14StatusAreaHostE
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
@@ -4848,3 +4862,4 @@
    obj:/lib/libselinux.so.1
    obj:/lib/libselinux.so.1
 }
+
