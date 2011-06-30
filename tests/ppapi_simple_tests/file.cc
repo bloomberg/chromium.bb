@@ -38,6 +38,7 @@ class MyInstance : public pp::Instance {
   bool stream_to_file_;
   uint32_t chunk_size_;
   bool debug_;
+  bool pdebug_;
 
   void ParseArgs(uint32_t argc, const char* argn[], const char* argv[]) {
      for (uint32_t i = 0; i < argc; ++i) {
@@ -46,6 +47,7 @@ class MyInstance : public pp::Instance {
        if (tag == "url") url_ = argv[i];
        if (tag == "to_file") stream_to_file_ = strtol(argv[i], 0, 0);
        if (tag == "debug") debug_ = strtol(argv[i], 0, 0);
+       if (tag == "pdebug") pdebug_ = strtol(argv[i], 0, 0);
        // ignore other tags
      }
   }
@@ -61,7 +63,10 @@ class MyInstance : public pp::Instance {
 
   void Debug(const string& s) {
     if (debug_) {
-      std::cout << s;
+      std::cout << "DEBUG: " << s;
+    }
+    if (pdebug_) {
+      Message("DEBUG: " + s);
     }
   }
 
@@ -69,7 +74,9 @@ class MyInstance : public pp::Instance {
     : pp::Instance(instance),
       url_("no_url_given.html"),
       stream_to_file_(true),
-      chunk_size_(kDefaultChunkSize) {
+      chunk_size_(kDefaultChunkSize),
+      debug_(false),
+      pdebug_(false) {
   }
 
   virtual ~MyInstance() {}
@@ -216,8 +223,7 @@ class ReaderStreamAsFile {
     file_io_(0),
     instance_(instance),
     loader_(instance) {
-
-    OpenURL(url);
+      OpenURL(url);
     }
 };
 
@@ -262,7 +268,9 @@ class ReaderResponseBody {
 
   static void LoadCompleteCallback(void* thiz, int32_t result) {
     ReaderResponseBody* reader = static_cast<ReaderResponseBody*>(thiz);
-
+    ostringstream stream;
+    stream << "LoadCompleteCallback: " << result;
+    reader->Debug(stream.str());
     pp::URLResponseInfo response_info(reader->loader_.GetResponseInfo());
     CHECK(!response_info.is_null());
     int32_t status_code = response_info.GetStatusCode();
@@ -282,7 +290,6 @@ class ReaderResponseBody {
     buffer_(new char[chunk_size]),
     instance_(instance),
     loader_(instance) {
-
     pp::URLRequestInfo request(instance_);
     request.SetURL(url);
     request.SetStreamToFile(false);

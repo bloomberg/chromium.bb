@@ -24,13 +24,20 @@ void RecordPPAPIEvents(std::string filename);
 void ReplayPPAPIEvents(std::string filename);
 
 
-// initialize multimedia (SDL) subsystem
+// Specify a string that will terminate the session when sent via
+// PostMessage (this is for testing).
+bool HandlerPepperEmuSetQuitMessage(NaClCommandLoop* ncl,
+                                    const std::vector<std::string>& args);
+
+// Initialize multimedia (SDL) subsystem.
 bool HandlerPepperEmuInitialize(NaClCommandLoop* ncl,
                                 const std::vector<std::string>& args);
 
-// start multimedia event loop
+// Start multimedia event loop.
 bool HandlerPepperEmuEventLoop(NaClCommandLoop* ncl,
                                const std::vector<std::string>& args);
 
+
+void RegisterFileAliasForUrl(std::string url, std::string filename);
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_SEL_UNIVERASAL_MULTIMEDIA_HANDLER_H_ */

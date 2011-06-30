@@ -10,10 +10,20 @@
 // NOTE: this is for experimentation and testing. We are not concerned
 //       about descriptor and memory leaks
 
+#include <stdio.h>
 #include <string>
+#include <map>
+
+#include "ppapi/c/pp_errors.h"
+#include "ppapi/c/ppb_url_request_info.h"
+#include "ppapi/c/ppb_url_response_info.h"
+
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
+#include "native_client/src/trusted/sel_universal/pepper_emu_helper.h"
 #include "native_client/src/trusted/sel_universal/pepper_emu.h"
+#include "native_client/src/trusted/sel_universal/primitives.h"
 #include "native_client/src/trusted/sel_universal/rpc_universal.h"
 #include "native_client/src/trusted/sel_universal/srpc_helper.h"
 
@@ -22,26 +32,203 @@ namespace {
 // This will be used to invoke the call backs
 IMultimedia* GlobalMultiMediaInterface = 0;
 
-UNIMPLEMENTED(PPB_URLLoader_Create)
+const int kFirstLoader = 1000;
+const int kFirstRequestInfoHandle = 1100;
+const int kFirstResponseInfoHandle = 1200;
+
+using std::map;
+using std::string;
+
+struct DataLoader {
+  int dummy;
+  FILE* fp;
+};
+
+struct DataRequestInfo {
+  string url;
+  string method;
+  int stream_to_file;
+};
+
+struct DataResponseInfo {
+  int dummy;
+};
+
+Resource<DataLoader> GlobalLoaderResources(
+  kFirstLoader, "loader");
+Resource<DataResponseInfo> GlobalResponseInfoResources(
+  kFirstResponseInfoHandle, "response_info");
+Resource<DataRequestInfo> GlobalRequestInfoResources(
+  kFirstRequestInfoHandle, "request_info");
+
+
+map<string, string> GlobalUrlToFilenameMap;
+
+
+static void PPB_URLRequestInfo_Create(SRPC_PARAMS) {
+  int instance = ins[0]->u.ival;
+  NaClLog(1, "PPB_URLRequestInfo_Create(%d)\n", instance);
+
+  outs[0]->u.ival = GlobalRequestInfoResources.Alloc();
+  if (outs[0]->u.ival < 0) {
+    NaClLog(LOG_FATAL, "PPB_URLRequestInfo_Create: failed\n");
+  }
+  NaClLog(1, "PPB_URLRequestInfo_Create -> %d\n", outs[0]->u.ival);
+  rpc->result = NACL_SRPC_RESULT_OK;
+  done->Run(done);
+}
+
+
+static void PPB_URLLoader_Create(SRPC_PARAMS) {
+  int instance = ins[0]->u.ival;
+  NaClLog(1, "PPB_URLLoader_Create(%d)\n", instance);
+
+  outs[0]->u.ival = GlobalLoaderResources.Alloc();
+  if (outs[0]->u.ival < 0) {
+    NaClLog(LOG_FATAL, "PPB_URLLoader_Create: failed\n");
+  }
+  NaClLog(1, "PPB_URLLoader_Create -> %d\n", outs[0]->u.ival);
+  rpc->result = NACL_SRPC_RESULT_OK;
+  done->Run(done);
+}
+
+
+static void PPB_URLLoader_GetResponseInfo(SRPC_PARAMS) {
+  int handle = ins[0]->u.ival;
+  NaClLog(1, "PPB_URLLoader_GetResponseInfo(%d)\n", handle);
+
+  outs[0]->u.ival = GlobalResponseInfoResources.Alloc();
+  if (outs[0]->u.ival < 0) {
+    NaClLog(LOG_FATAL, "PPB_URLLoader_GetResponseInfo: failed\n");
+  }
+  NaClLog(1, "PPB_URLLoader_GetResponseInfo -> %d\n", outs[0]->u.ival);
+  rpc->result = NACL_SRPC_RESULT_OK;
+  done->Run(done);
+}
+
+
+static void PPB_URLRequestInfo_SetProperty(SRPC_PARAMS) {
+  int handle = ins[0]->u.ival;
+  int property = ins[1]->u.ival;
+  NaClLog(1, "PPB_URLRequestInfo_SetProperty(%d, %d)\n", handle, property);
+  DataRequestInfo* request_info =
+    GlobalRequestInfoResources.GetDataForHandle(handle);
+  if (request_info == NULL) {
+    NaClLog(LOG_FATAL, "PPB_URLRequestInfo_SetProperty: unknown resource\n");
+  }
+  switch (property) {
+    default:
+      NaClLog(LOG_FATAL, "PPB_URLRequestInfo_SetProperty: unknown property\n");
+      break;
+    case PP_URLREQUESTPROPERTY_URL:
+      request_info->url = GetMarshalledJSString(ins[2]);
+      break;
+    case PP_URLREQUESTPROPERTY_METHOD:
+      request_info->method = GetMarshalledJSString(ins[2]);
+      break;
+    case PP_URLREQUESTPROPERTY_STREAMTOFILE:
+      request_info->stream_to_file = GetMarshalledJSBool(ins[2]);
+      break;
+  }
+
+  outs[0]->u.ival = 1;
+  rpc->result = NACL_SRPC_RESULT_OK;
+  done->Run(done);
+}
+
+
+static void PPB_URLLoader_Open(SRPC_PARAMS) {
+  int handle_loader = ins[0]->u.ival;
+  int request_info_handle = ins[1]->u.ival;
+  int callback = ins[2]->u.ival;
+  NaClLog(1, "PPB_URLLoader_Open(%d, %d, %d)\n",
+          handle_loader, request_info_handle, callback);
+  DataRequestInfo* request_info =
+    GlobalRequestInfoResources.GetDataForHandle(request_info_handle);
+  DataLoader* loader = GlobalLoaderResources.GetDataForHandle(handle_loader);
+  string filename = request_info->url;
+  NaClLog(1, "PPB_URLLoader_Open opening url: [%s]\n", filename.c_str());
+  if (GlobalUrlToFilenameMap.find(filename) != GlobalUrlToFilenameMap.end()) {
+    filename = GlobalUrlToFilenameMap[filename];
+    NaClLog(1, "Using Alias: [%s]\n", filename.c_str());
+  }
+  loader->fp = fopen(filename.c_str(), "rb");
+  if (!loader->fp) {
+    NaClLog(1, "PPB_URLLoader_Open could not open file\n");
+  }
+  int result = loader->fp ? PP_OK : PP_ERROR_FAILED;
+  PP_InputEvent event;
+  MakeUserEvent(&event, CUSTOM_EVENT_OPEN_CALLBACK, callback, result, 0, 0);
+  GlobalMultiMediaInterface->PushUserEvent(&event);
+
+  outs[0]->u.ival = PP_OK_COMPLETIONPENDING;
+  NaClLog(1, "PPB_URLLoader_Open -> %d\n", outs[0]->u.ival);
+  rpc->result = NACL_SRPC_RESULT_OK;
+  done->Run(done);
+}
+
+static void PPB_URLResponseInfo_GetProperty(SRPC_PARAMS) {
+  int handle = ins[0]->u.ival;
+  int property = ins[1]->u.ival;
+  NaClLog(1, "PPB_URLResponseInfo_GetProperty(%d, %d)\n", handle, property);
+
+  switch (property) {
+    default:
+      NaClLog(LOG_FATAL, "PPB_URLResponseInfo_GetProperty: unknown property\n");
+      break;
+    case PP_URLRESPONSEPROPERTY_STATUSCODE:
+      // we are rather optimistic
+      SetMarshalledJSInt(outs[0], 200);
+      break;
+  }
+
+  rpc->result = NACL_SRPC_RESULT_OK;
+  done->Run(done);
+}
+
+
+static void PPB_URLLoader_ReadResponseBody(SRPC_PARAMS) {
+  int handle_loader = ins[0]->u.ival;
+  int size = ins[1]->u.ival;
+  int callback = ins[2]->u.ival;
+  NaClLog(1, "PPB_URLLoader_ReadResponseBody(%d, %d, %d)\n",
+          handle_loader, size, callback);
+  DataLoader* loader = GlobalLoaderResources.GetDataForHandle(handle_loader);
+  char* buffer = static_cast<char*>(malloc(size));
+  const int n = (int) fread(buffer, 1, size, loader->fp);
+  PP_InputEvent event;
+  MakeUserEvent(&event, CUSTOM_EVENT_READ_CALLBACK, callback, n, buffer, n);
+  NaClLog(1, "PPB_URLLoader_ReadResponseBody: push event\n");
+  GlobalMultiMediaInterface->PushUserEvent(&event);
+  outs[0]->u.count = 0;
+  outs[1]->u.ival = PP_OK_COMPLETIONPENDING;
+  rpc->result = NACL_SRPC_RESULT_OK;
+  NaClLog(1, "PPB_URLLoader_ReadResponseBody: push event\n");
+  done->Run(done);
+}
+
 UNIMPLEMENTED(PPB_URLLoader_IsURLLoader)
-UNIMPLEMENTED(PPB_URLLoader_Open)
+
 UNIMPLEMENTED(PPB_URLLoader_FollowRedirect)
 UNIMPLEMENTED(PPB_URLLoader_GetUploadProgress)
 UNIMPLEMENTED(PPB_URLLoader_GetDownloadProgress)
-UNIMPLEMENTED(PPB_URLLoader_GetResponseInfo)
-UNIMPLEMENTED(PPB_URLLoader_ReadResponseBody)
 UNIMPLEMENTED(PPB_URLLoader_FinishStreamingToFile)
 UNIMPLEMENTED(PPB_URLLoader_Close)
-UNIMPLEMENTED(PPB_URLRequestInfo_Create)
+
 UNIMPLEMENTED(PPB_URLRequestInfo_IsURLRequestInfo)
-UNIMPLEMENTED(PPB_URLRequestInfo_SetProperty)
 UNIMPLEMENTED(PPB_URLRequestInfo_AppendDataToBody)
 UNIMPLEMENTED(PPB_URLRequestInfo_AppendFileToBody)
+
 UNIMPLEMENTED(PPB_URLResponseInfo_IsURLResponseInfo)
-UNIMPLEMENTED(PPB_URLResponseInfo_GetProperty)
 UNIMPLEMENTED(PPB_URLResponseInfo_GetBodyAsFileRef)
 
 }  // end namespace
+
+void RegisterFileAliasForUrl(string url, string filename) {
+  CHECK(GlobalUrlToFilenameMap.find(url) == GlobalUrlToFilenameMap.end());
+  GlobalUrlToFilenameMap[url] = filename;
+}
+
 
 #define TUPLE(a, b) #a #b, a
 void PepperEmuInitFileIO(NaClCommandLoop* ncl, IMultimedia* im) {

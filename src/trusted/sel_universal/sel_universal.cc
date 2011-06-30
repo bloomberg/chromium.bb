@@ -43,6 +43,7 @@ using std::string;
 using std::vector;
 using nacl::DescWrapper;
 
+// TODO(robertm): add explanation for flags
 static const char* kUsage =
     "Usage:\n"
     "\n"
@@ -62,7 +63,14 @@ static const char* kUsage =
     "  --silence_nexe\n"
     "  --command_prefix <prefix>\n"
     "  --command_file <file>\n"
-    "  --rpc_services\n";
+    "  --var <tag> <value>\n"
+    "  --url_alias <url> <filename>\n"
+    "  --rpc_services\n"
+    "\n"
+    "The following sel_ldr arguments might be useful:\n"
+    "  -v                    increase verbosity\n"
+    "  -E NACL_SRPC_DEBUG=1  even more verbosity for srpc debugging\n";
+
 
 // NOTE: this used to be stack allocated inside main which cause
 // problems on ARM (probably a tool chain bug).
@@ -137,6 +145,12 @@ static nacl::string ProcessArguments(int argc,
       f.close();
       NaClLog(LOG_INFO, "total commands now: %d\n",
               static_cast<int>(initial_commands.size()));
+    } else if (flag == "--url_alias") {
+      if (argc <= i + 2) {
+        NaClLog(LOG_FATAL, "not enough args for --url_alias option\n");
+      }
+      RegisterFileAliasForUrl(argv[i + 1], argv[i + 2]);
+      i += 2;
     } else if (flag == "--var") {
       if (argc <= i + 2) {
         NaClLog(LOG_FATAL, "not enough args for --var option\n");
@@ -294,6 +308,8 @@ int raii_main(int argc, char* argv[]) {
   // new names
   loop.AddHandler("pepper_emu_initialize", HandlerPepperEmuInitialize);
   loop.AddHandler("pepper_emu_event_loop", HandlerPepperEmuEventLoop);
+  loop.AddHandler("pepper_emu_set_quit_message",
+                  HandlerPepperEmuSetQuitMessage);
 
   NaClLog(1, "populating initial vars\n");
   for (map<string, string>::iterator it = initial_vars.begin();

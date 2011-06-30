@@ -1,0 +1,41 @@
+
+"*** INITIALIZE PEPPER EMULATION"
+
+
+"*** CREATE UPCALL SERVICE"
+
+"*** INIT MODULE"
+rpc call intiated PPP_InitializeModule:iihs:ii
+input 0:  i(0)
+input 1:  i(4444)
+input 2:  h(pepper_desc)
+input 3:  @LENGTHY_SERVICE_STRING
+rpc call complete PPP_InitializeModule:iihs:ii
+
+
+"*** CHECK INSTANCE CREATION"
+rpc call intiated PPP_Instance_DidCreate:iiCC:i
+input 0:  i(5555)
+input 1:  i(4)
+input 2:  C(30,url\x00to_file\x00chunk_size\x00pdebug\x00)
+input 3:  C(18,test.txt\x000\x001024\x001\x00)
+rpc call complete PPP_Instance_DidCreate:iiCC:i
+output 0:  i(1)
+
+
+"*** TRIGGER REPAINT"
+rpc call intiated PPP_Instance_DidChangeView:iII:
+input 0:  i(5555)
+input 1:  I(4,8,79,1000,700)
+input 2:  I(4,0,0,1000,700)
+rpc call complete PPP_Instance_DidChangeView:iII:
+
+
+"REGISTER TERMINATION MESSAGE"
+
+"*** ENTER EVENT LOOP"
+POST_MESSAGE: [5555: DEBUG: LoadCompleteCallback: 0]
+POST_MESSAGE: [5555: DEBUG: ReadCompleteCallback Bytes Read: 1024]
+POST_MESSAGE: [5555: DEBUG: ReadCompleteCallback Bytes Read: 980]
+POST_MESSAGE: [5555: DEBUG: ReadCompleteCallback Bytes Read: 0]
+POST_MESSAGE: [5555: COMPLETE]

@@ -8,6 +8,10 @@ Import('env')
 
 env.Prepend(CPPDEFINES=['XP_UNIX'])
 
+
+######################################################################
+# REPLAY TESTS
+######################################################################
 TESTS = [('audio', ('audio',)),
          ('graphics2d',('graphics2d',)),
          ('event', ('event',)),
@@ -43,3 +47,26 @@ for test_exe, test_inputs in TESTS:
     env.AddNodeToTestSuite(node,
                            ['small_tests', 'sel_ldr_tests'],
                            'run_ppapi_simple_' + test  + '_test')
+
+######################################################################
+# EMULATOR TESTS
+######################################################################
+
+node = env.SelUniversalTest(
+    'ppapi_emu_file.out',
+    env.File('ppapi_simple_file${PROGSUFFIX}'),
+    sel_universal_flags=[
+        '--silence_nexe',
+        '--command_file',
+        env.File('ppapi_emu_file.stdin'),
+        '--url_alias',
+        'test.txt',    # c.f. ppapi_emu_file.stdin
+        env.File('test.txt'),
+        ],
+    uses_ppapi=True,
+    stdout_golden=env.File('ppapi_emu_file.stdout'),
+    )
+
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'sel_ldr_tests'],
+                       'run_ppapi_emu_file_test')
