@@ -11,6 +11,7 @@
 #include "views/controls/native/native_view_host.h"
 #include "views/controls/native/native_view_host_views.h"
 #include "views/focus/focus_manager.h"
+#include "views/views_delegate.h"
 #include "views/widget/gtk_views_fixed.h"
 #include "views/widget/native_widget_gtk.h"
 #include "views/widget/widget.h"
@@ -377,7 +378,8 @@ gboolean NativeViewHostGtk::CallFocusIn(GtkWidget* widget,
 // static
 NativeViewHostWrapper* NativeViewHostWrapper::CreateWrapper(
     NativeViewHost* host) {
-  if (Widget::IsPureViews())
+  if (Widget::IsPureViews() &&
+      views::ViewsDelegate::views_delegate->GetDefaultParentView())
     return new NativeViewHostViews(host);
   return new NativeViewHostGtk(host);
 }

@@ -130,7 +130,6 @@ class AccessibilityEventRouterViewsTest
   AccessibilityWindowDelegate* window_delegate_;
 };
 
-#if !defined(TOUCH_UI)
 TEST_F(AccessibilityEventRouterViewsTest, TestFocusNotification) {
   const char kButton1ASCII[] = "Button1";
   const char kButton2ASCII[] = "Button2";
@@ -191,6 +190,5 @@ TEST_F(AccessibilityEventRouterViewsTest, TestFocusNotification) {
   EXPECT_EQ(3, focus_event_count_);
   EXPECT_EQ(kButton1ASCII, last_control_name_);
 }
-#endif
 
 #endif  // defined(TOOLKIT_VIEWS)
