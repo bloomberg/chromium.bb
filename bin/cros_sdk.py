@@ -17,8 +17,7 @@ sys.path.insert(0, os.path.abspath(__file__ + '/../..'))
 import lib.cros_build_lib as cros_build_lib
 import buildbot.constants as constants
 
-#TODO(zbehan): Rename back to chroot.
-DEFAULT_CHROOT_DIR = 'sdk-chroot'
+DEFAULT_CHROOT_DIR = 'chroot'
 DEFAULT_URL = 'http://commondatastorage.googleapis.com/chromiumos-sdk/'
 SDK_DIR = os.path.join(constants.SOURCE_ROOT, 'sdks')
 SDK_VERSION_FILE = os.path.join(constants.SOURCE_ROOT,
@@ -93,7 +92,6 @@ def CreateChroot(sdk_path, sdk_url, chroot_path, replace):
   cros_build_lib.RunCommand(cmd)
 
 
-# TODO(zbehan): support passthrough commands (eg. --enter -- /usr/bin/foo)
 def EnterChroot(chroot_path, additional_args):
   """Enters an existing SDK chroot"""
 
