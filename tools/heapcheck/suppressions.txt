@@ -1608,3 +1608,30 @@
    ...
    fun:content_settings::PrefProviderTest_MigrateSinglePatternSettings_Test::TestBody
 }
+{
+   bug_87998_a
+   Heapcheck:Leak
+   ...
+   fun:bool ::InitCanonical
+   fun:GURL::GURL
+   fun:GeolocationPermissionContextTests*::TestBody
+}
+{
+   bug_87998_b
+   Heapcheck:Leak
+   ...
+   fun:GeolocationInfoBarQueueController::CreateInfoBarRequest
+   fun:ChromeGeolocationPermissionContext::RequestGeolocationPermission
+   fun:GeolocationPermissionContextTests*::TestBody
+}
+{
+   bug_87998_c
+   Heapcheck:Leak
+   ...
+   fun:TestingProfile::GetPrefs
+   fun:AutocompleteHistoryManager::AutocompleteHistoryManager
+   fun:TabContentsWrapper::TabContentsWrapper
+   fun:TabContentsWrapperTestHarness::SetContents
+   fun:TabContentsWrapperTestHarness::SetUp
+   fun:GeolocationPermissionContextTests::SetUp
+}
