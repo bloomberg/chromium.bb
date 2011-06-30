@@ -49,6 +49,7 @@ class RunBuildStagesTest(mox.MoxTestBase):
     self.options.archive = False
     self.options.remote_test_status = False
     self.options.patches = None
+    self.options.prebuilts = False
 
   def testChromeosOfficialSet(self):
     """Verify that CHROMEOS_OFFICIAL is set correctly."""

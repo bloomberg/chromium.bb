@@ -153,6 +153,7 @@ def RunBuildStages(bot_id, options, build_config):
 
   build_success = False
   build_and_test_success = False
+  already_uploaded_prebuilts = False
 
   try:
     if options.sync:
@@ -164,10 +165,11 @@ def RunBuildStages(bot_id, options, build_config):
 
     if options.build:
       stages.BuildBoardStage(bot_id, options, build_config).Run()
-      if build_config['build_type'] == 'chroot':
-        stages.UploadPrebuiltsStage(bot_id, options, build_config).Run()
-        stages.Results.Report(sys.stdout)
-        return stages.Results.Success()
+
+    if build_config['build_type'] == 'chroot':
+      stages.UploadPrebuiltsStage(bot_id, options, build_config).Run()
+      stages.Results.Report(sys.stdout)
+      return stages.Results.Success()
 
     if options.uprev:
       stages.UprevStage(bot_id, options, build_config).Run()
@@ -175,8 +177,9 @@ def RunBuildStages(bot_id, options, build_config):
     if options.build:
       stages.BuildTargetStage(bot_id, options, build_config).Run()
 
-    if build_config['build_type'] == 'full':
+    if options.prebuilts and build_config['build_type'] == 'full':
       stages.UploadPrebuiltsStage(bot_id, options, build_config).Run()
+      already_uploaded_prebuilts = True
 
     build_success = True
 
@@ -187,25 +190,24 @@ def RunBuildStages(bot_id, options, build_config):
       stages.RemoteTestStatusStage(bot_id, options, build_config).Run()
 
     build_and_test_success = True
+
+    if options.prebuilts and not already_uploaded_prebuilts:
+      stages.UploadPrebuiltsStage(bot_id, options, build_config).Run()
   except stages.BuildException:
     # We skipped out of this build block early, all we need to do.
     pass
 
-  if options.sync:
-    completion_stage = None
-    if (completion_stage_class and
-        stages.ManifestVersionedSyncStage.manifest_manager):
-      completion_stage = completion_stage_class(bot_id, options, build_config,
-                                                success=build_and_test_success)
-      completion_stage.Run()
+  completion_stage = None
+  if (options.sync and completion_stage_class and
+      stages.ManifestVersionedSyncStage.manifest_manager):
+    completion_stage = completion_stage_class(bot_id, options, build_config,
+                                              success=build_and_test_success)
+    completion_stage.Run()
 
-    if build_and_test_success and (
-        not completion_stage or
-        stages.Results.WasStageSuccessfulOrSkipped(completion_stage.name)):
-      if build_config['build_type'] not in ('chroot', 'full'):
-        stages.UploadPrebuiltsStage(bot_id, options, build_config).Run()
-      if build_config['master']:
-        stages.PublishUprevChangesStage(bot_id, options, build_config).Run()
+  if build_config['master'] and build_and_test_success and (
+      not completion_stage or
+      stages.Results.WasStageSuccessfulOrSkipped(completion_stage.name)):
+    stages.PublishUprevChangesStage(bot_id, options, build_config).Run()
 
   if build_success and options.archive:
     stages.ArchiveStage(bot_id, options, build_config).Run()
