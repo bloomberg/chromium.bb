@@ -8,15 +8,18 @@
 
 #if defined(BASE_DLL)
 #if defined(WIN32)
+
 #if defined(BASE_IMPLEMENTATION)
 #define BASE_API __declspec(dllexport)
 #else
 #define BASE_API __declspec(dllimport)
 #endif  // defined(BASE_IMPLEMENTATION)
-#else
+
+#else  // defined(WIN32)
 #define BASE_API __attribute__((visibility("default")))
-#endif  // defined(WIN32)
-#else
+#endif
+
+#else  // defined(BASE_DLL)
 #define BASE_API
 #endif
 

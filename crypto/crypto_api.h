@@ -8,15 +8,18 @@
 
 #if defined(CRYPTO_DLL)
 #if defined(WIN32)
+
 #if defined(CRYPTO_IMPLEMENTATION)
 #define CRYPTO_API __declspec(dllexport)
 #else
 #define CRYPTO_API __declspec(dllimport)
 #endif  // defined(CRYPTO_IMPLEMENTATION)
-#else
+
+#else  // defined(WIN32)
 #define CRYPTO_API __attribute__((visibility("default")))
-#endif  // defined(WIN32)
-#else
+#endif
+
+#else  // defined(CRYPTO_DLL)
 #define CRYPTO_API
 #endif
 
