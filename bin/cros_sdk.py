@@ -94,16 +94,19 @@ def CreateChroot(sdk_path, sdk_url, chroot_path, replace):
 
 
 # TODO(zbehan): support passthrough commands (eg. --enter -- /usr/bin/foo)
-def EnterChroot(chroot_path):
+def EnterChroot(chroot_path, additional_args):
   """Enters an existing SDK chroot"""
 
   cmd = [os.path.join(constants.SOURCE_ROOT, 'src/scripts/enter_chroot.sh'),
          '--chroot', chroot_path]
+  if len(additional_args) > 0:
+    cmd.append('--')
+    cmd.extend(additional_args)
   cros_build_lib.RunCommand(cmd)
 
 
 if __name__ == '__main__':
-  usage="""usage: %prog [options]
+  usage="""usage: %prog [options] [--enter -- <args>]
 
 This script downloads and installs a CrOS SDK. If an SDK already
 exists, it will do nothing at all, and every call will be a noop.
@@ -130,6 +133,11 @@ To replace, use --replace."""
                     help=('Use this sdk version [%s]' % sdk_latest_version))
   (options, remaining_arguments) = parser.parse_args()
 
+  if len(remaining_arguments) > 0 and not options.enter:
+    print "Additional arguments not permitted, unless running with --enter"
+    parser.print_help()
+    sys.exit(1)
+
   chroot_path = os.path.join(constants.SOURCE_ROOT, options.chroot)
 
   if not os.path.exists(chroot_path) or options.replace:
@@ -137,5 +145,5 @@ To replace, use --replace."""
                  chroot_path, options.replace)
 
   if options.enter:
-    EnterChroot(chroot_path)
+    EnterChroot(chroot_path, remaining_arguments)
 
