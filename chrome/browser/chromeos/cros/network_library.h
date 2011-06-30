@@ -1099,8 +1099,8 @@ class NetworkLibrary {
   // Request a scan for new wifi networks.
   virtual void RequestNetworkScan() = 0;
 
-  // Return true if more than one Profile exists.
-  virtual bool HasMultipleProfiles() = 0;
+  // Return true if a profile matching |type| is loaded.
+  virtual bool HasProfileType(NetworkProfileType type) const = 0;
 
   // Reads out the results of the last wifi scan. These results are not
   // pre-cached in the library, so the call may block whilst the results are
@@ -1111,6 +1111,10 @@ class NetworkLibrary {
   virtual bool GetWifiAccessPoints(WifiAccessPointVector* result) = 0;
 
   // TODO(joth): Add GetCellTowers to retrieve a CellTowerVector.
+
+  // Returns false if there is no way to connect to this network, even with
+  // user input (e.g. it requires a user profile but none is available).
+  virtual bool CanConnectToNetwork(const Network* network) const = 0;
 
   // Connect to the specified wireless network.
   virtual void ConnectToWifiNetwork(WifiNetwork* network) = 0;

@@ -2837,8 +2837,13 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     }
   }
 
-  virtual bool HasMultipleProfiles() {
-    return profile_list_.size() > 1;
+  virtual bool HasProfileType(NetworkProfileType type) const {
+    for (NetworkProfileList::const_iterator iter = profile_list_.begin();
+         iter != profile_list_.end(); ++iter) {
+      if ((*iter).type == type)
+        return true;
+    }
+    return false;
   }
 
   virtual bool GetWifiAccessPoints(WifiAccessPointVector* result) {
@@ -2941,6 +2946,12 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     }
     RequestNetworkServiceConnect(network->service_path().c_str(),
                                  NetworkConnectCallback, this);
+  }
+
+  virtual bool CanConnectToNetwork(const Network* network) const {
+    if (!HasProfileType(PROFILE_USER) && network->RequiresUserProfile())
+      return false;
+    return true;
   }
 
   virtual void ConnectToWifiNetwork(WifiNetwork* wifi) {
@@ -5077,11 +5088,14 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
   virtual void SetCellularDataRoamingAllowed(bool new_value) {}
 
   virtual void RequestNetworkScan() {}
-  virtual bool HasMultipleProfiles() { return false; }
+  virtual bool HasProfileType(NetworkProfileType type) const { return false; }
   virtual bool GetWifiAccessPoints(WifiAccessPointVector* result) {
     return false;
   }
 
+  virtual bool CanConnectToNetwork(const Network* network) const {
+    return false;
+  }
   virtual void ConnectToWifiNetwork(WifiNetwork* network) {}
   virtual void ConnectToWifiNetwork(const std::string& service_path) {}
   virtual void ConnectToWifiNetwork(const std::string& ssid,

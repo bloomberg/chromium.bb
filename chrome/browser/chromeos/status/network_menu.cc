@@ -670,9 +670,9 @@ void MainMenuModel::InitMenuItems(bool is_browser_mode,
       const SkBitmap* badge = wifi_networks[i]->encrypted() ?
           rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_SECURE) : NULL;
       int flag = FLAG_WIFI;
-      // If a network is not connectable from login/oobe, we disable it.
-      // We do not allow configuring a network (e.g. 802.1x) from login/oobe.
-      if (!owner_->IsBrowserMode() && !wifi_networks[i]->connectable())
+      // If a network is not connectable (e.g. it requires certificates and
+      // the user is not logged in), we disable it.
+      if (!cros->CanConnectToNetwork(wifi_networks[i]))
         flag |= FLAG_DISABLED;
       if (active_wifi
           && wifi_networks[i]->service_path() == active_wifi->service_path())
@@ -1026,7 +1026,7 @@ void VPNMenuModel::InitMenuItems(bool is_browser_mode,
     }
 
     int flag = FLAG_VPN;
-    if (!vpn->connectable())
+    if (!cros->CanConnectToNetwork(vpn))
       flag |= FLAG_DISABLED;
     if (active_vpn && vpn->service_path() == active_vpn->service_path())
       flag |= FLAG_ASSOCIATED;

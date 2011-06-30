@@ -600,7 +600,7 @@ void InternetOptionsHandler::SetSharedCallback(const ListValue* args) {
   if (!network)
     return;
 
-  if (cros_->HasMultipleProfiles()) {
+  if (cros_->HasProfileType(chromeos::PROFILE_USER)) {
     bool shared = shared_str == "true";
     if (network->profile_type() == chromeos::PROFILE_SHARED && !shared)
       cros_->SetNetworkProfile(service_path, chromeos::PROFILE_USER);
@@ -722,7 +722,8 @@ void InternetOptionsHandler::PopulateWifiDetails(
   bool shared = wifi->profile_type() == chromeos::PROFILE_SHARED;
   dictionary->SetBoolean("shared", shared);
   bool shareable =
-      cros_->HasMultipleProfiles() && !wifi->RequiresUserProfile();
+      cros_->HasProfileType(chromeos::PROFILE_USER) &&
+      !wifi->RequiresUserProfile();
   dictionary->SetBoolean("shareable", shareable);
 }
 
@@ -1157,7 +1158,6 @@ ListValue* InternetOptionsHandler::GetRememberedList() {
 
     // Set in_active_profile.
     bool shared =
-        cros_->HasMultipleProfiles() &&
         remembered->profile_type() == chromeos::PROFILE_SHARED;
     list->Append(GetNetwork(
         remembered->service_path(),
@@ -1182,7 +1182,6 @@ ListValue* InternetOptionsHandler::GetRememberedList() {
 
     // Set in_active_profile.
     bool shared =
-        cros_->HasMultipleProfiles() &&
         remembered->profile_type() == chromeos::PROFILE_SHARED;
     list->Append(GetNetwork(
         remembered->service_path(),

@@ -92,8 +92,9 @@ class MockNetworkLibrary : public NetworkLibrary {
   MOCK_METHOD1(SetCellularDataRoamingAllowed, void(bool));
 
   MOCK_METHOD0(RequestNetworkScan, void(void));
-  MOCK_METHOD0(HasMultipleProfiles, bool(void));
+  MOCK_CONST_METHOD1(HasProfileType, bool(NetworkProfileType));
   MOCK_METHOD1(GetWifiAccessPoints, bool(WifiAccessPointVector*));
+  MOCK_CONST_METHOD1(CanConnectToNetwork, bool(const Network*));
   MOCK_METHOD1(ConnectToWifiNetwork, void(WifiNetwork*));
   MOCK_METHOD1(ConnectToWifiNetwork, void(const std::string&));
   MOCK_METHOD3(ConnectToWifiNetwork, void(const std::string&,
