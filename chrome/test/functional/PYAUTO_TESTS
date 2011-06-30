@@ -116,6 +116,8 @@
       '-cookies.CookiesTest.testBlockCookiesUsingExceptions',
       # crbug.com/86524
       '-plugins.PluginsTest.testAllowPluginException',
+      # crbug.com/87811
+      '-plugins.PluginsTest.testDisableEnableAllPlugins',
       # crbug.com/86525
       '-popups.PopupsTest.testAllowPopupsFromExternalSite',
       '-popups.PopupsTest.testPopupsLaunchWhenTabIsClosed',
@@ -155,8 +157,6 @@
       '-sync.SyncTest.testRestartBrowser',
       # crbug.com/87642
       '-sync.SyncTest.testDisableAndEnableDatatypes',
-      # crbug.com/87811
-      '-plugins.PluginsTest.testDisableEnableAllPlugins',
     ],
 
     'mac': [
