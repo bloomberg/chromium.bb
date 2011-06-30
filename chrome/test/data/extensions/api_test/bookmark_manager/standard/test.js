@@ -1,3 +1,7 @@
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 // Bookmark Manager API test for Chrome.
 // browser_tests.exe --gtest_filter=ExtensionApiTest.BookmarkManager
 
@@ -261,6 +265,12 @@ var tests = [
       assertEq(emptyFolder2.title, emptyFolder.title);
       assertEq(emptyFolder2.url, emptyFolder.url);
       assertEq(emptyFolder2.parentId, emptyFolder.parentId);
+    }));
+  },
+
+  function canEdit() {
+    bookmarkManager.canEdit(pass(function(result) {
+      assertTrue(result, 'Should be able to edit bookmarks');
     }));
   }
 ];

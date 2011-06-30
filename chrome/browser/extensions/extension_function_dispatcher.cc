@@ -188,6 +188,7 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<StartDragBookmarkManagerFunction>();
   RegisterFunction<DropBookmarkManagerFunction>();
   RegisterFunction<GetSubtreeBookmarkManagerFunction>();
+  RegisterFunction<CanEditBookmarkManagerFunction>();
 
   // History
   RegisterFunction<AddUrlHistoryFunction>();

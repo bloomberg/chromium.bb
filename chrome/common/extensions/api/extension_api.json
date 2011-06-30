@@ -2832,6 +2832,17 @@
             ]
           }
         ]
+      },
+      {
+        "name": "canEdit",
+        "type": "function",
+        "description": "Whether bookmarks can be modified",
+        "nodoc": "true",
+        "parameters": [
+          {"type": "function", "name": "callback", "parameters": [
+            {"type": "boolean"}
+          ]}
+        ]
       }
     ],
     "events": [

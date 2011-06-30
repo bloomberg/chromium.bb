@@ -910,6 +910,11 @@ for (var i = 0, command; command = commands[i]; i++) {
   }
 }
 
+var canEdit = true;
+chrome.experimental.bookmarkManager.canEdit(function(result) {
+  canEdit = result;
+});
+
 /**
  * Helper function that updates the canExecute and labels for the open like
  * commands.
@@ -986,14 +991,14 @@ function updatePasteCommand(opt_f) {
   }
 }
 
-// We can always execute the import-menu and export-menu commands.
+// We can always execute the export-menu command.
 document.addEventListener('canExecute', function(e) {
   var command = e.command;
   var commandId = command.id;
-  if (commandId == 'import-menu-command' ||
-      commandId == 'export-menu-command') {
+  if (commandId == 'import-menu-command')
+    e.canExecute = canEdit;
+  if (commandId == 'export-menu-command')
     e.canExecute = true;
-  }
 });
 
 /**
@@ -1002,7 +1007,7 @@ document.addEventListener('canExecute', function(e) {
  * @param {boolean} isRecentOrSearch Whether the user is trying to do a command
  *     on recent or search.
  */
-function canExcuteShared(e, isRecentOrSearch) {
+function canExecuteShared(e, isRecentOrSearch) {
   var command = e.command;
   var commandId = command.id;
   switch (commandId) {
@@ -1014,20 +1019,22 @@ function canExcuteShared(e, isRecentOrSearch) {
       if (isRecentOrSearch) {
         e.canExecute = false;
       } else {
-        e.canExecute = list.dataModel.length > 0;
+        e.canExecute = list.dataModel.length > 0 && canEdit;
 
         // The list might be loading so listen to the load event.
-        var f = function() {
-          list.removeEventListener('load', f);
-          command.disabled = list.dataModel.length == 0;
-        };
-        list.addEventListener('load', f);
+        if (canEdit) {
+          var f = function() {
+            list.removeEventListener('load', f);
+            command.disabled = list.dataModel.length == 0 || !canEdit;
+          };
+          list.addEventListener('load', f);
+        }
       }
       break;
 
     case 'add-new-bookmark-command':
     case 'new-folder-command':
-      e.canExecute = !isRecentOrSearch;
+      e.canExecute = !isRecentOrSearch && canEdit;
       break;
 
     case 'open-in-new-tab-command':
@@ -1067,7 +1074,7 @@ list.addEventListener('canExecute', function(e) {
         command.hidden = true;
       } else {
         var isFolder = bmm.isFolder(items[0]);
-        e.canExecute = isFolder;
+        e.canExecute = isFolder && canEdit;
         command.hidden = !isFolder;
       }
       break;
@@ -1080,7 +1087,7 @@ list.addEventListener('canExecute', function(e) {
         command.hidden = false;
       } else {
         var isFolder = bmm.isFolder(items[0]);
-        e.canExecute = !isFolder;
+        e.canExecute = !isFolder && canEdit;
         command.hidden = isFolder;
       }
       break;
@@ -1091,6 +1098,9 @@ list.addEventListener('canExecute', function(e) {
 
     case 'delete-command':
     case 'cut-command':
+      e.canExecute = hasSelected() && canEdit;
+      break;
+
     case 'copy-command':
       e.canExecute = hasSelected();
       break;
@@ -1100,7 +1110,7 @@ list.addEventListener('canExecute', function(e) {
       break;
 
     default:
-      canExcuteShared(e, isRecentOrSearch());
+      canExecuteShared(e, isRecentOrSearch());
   }
 });
 
@@ -1127,7 +1137,7 @@ tree.addEventListener('canExecute', function(e) {
   switch (commandId) {
     case 'rename-folder-command':
       command.hidden = false;
-      e.canExecute = hasSelected() && !isTopLevelItem();
+      e.canExecute = hasSelected() && !isTopLevelItem() && canEdit;
       break;
 
     case 'edit-command':
@@ -1137,12 +1147,15 @@ tree.addEventListener('canExecute', function(e) {
 
     case 'delete-command':
     case 'cut-command':
+      e.canExecute = hasSelected() && !isTopLevelItem() && canEdit;
+      break;
+
     case 'copy-command':
       e.canExecute = hasSelected() && !isTopLevelItem();
       break;
 
     default:
-      canExcuteShared(e, isRecentOrSearch());
+      canExecuteShared(e, isRecentOrSearch());
   }
 });
 
@@ -1169,6 +1182,25 @@ function updateCommandsBasedOnSelection(e) {
 
 list.addEventListener('change', updateCommandsBasedOnSelection);
 tree.addEventListener('change', updateCommandsBasedOnSelection);
+
+function updateEditingCommands() {
+  var editingCommands = ['cut', 'delete', 'rename-folder', 'edit',
+      'add-new-bookmark', 'new-folder', 'sort', 'paste'];
+
+  chrome.experimental.bookmarkManager.canEdit(function(result) {
+    if (result != canEdit) {
+      canEdit = result;
+      editingCommands.forEach(function(baseId) {
+        $(baseId + '-command').canExecuteChange();
+      });
+    }
+  });
+}
+
+var organizeButton = document.querySelector('.summary > button');
+organizeButton.addEventListener('click', updateEditingCommands);
+list.addEventListener('contextmenu', updateEditingCommands);
+tree.addEventListener('contextmenu', updateEditingCommands);
 
 document.addEventListener('command', function(e) {
   var command = e.command;

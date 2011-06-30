@@ -17,8 +17,10 @@
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "chrome/common/pref_names.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
@@ -468,5 +470,11 @@ bool GetSubtreeBookmarkManagerFunction::RunImpl() {
     extension_bookmark_helpers::AddNode(node, json.get(), true);
   }
   result_.reset(json.release());
+  return true;
+}
+
+bool CanEditBookmarkManagerFunction::RunImpl() {
+  result_.reset(Value::CreateBooleanValue(
+      profile_->GetPrefs()->GetBoolean(prefs::kEditBookmarksEnabled)));
   return true;
 }
