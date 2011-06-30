@@ -52,7 +52,7 @@ env.Publish(nexe, 'run',
 node = env.PPAPIBrowserTester('ppapi_geturl_browser_test.out',
                               url='ppapi_geturl.html',
                               files=env.ExtractPublishedFiles(nexe),
-                              args=['--allow_404', '--enable_experimental_js'],
+                              args=['--allow_404'],
                               )
 
 env.AddNodeToTestSuite(node,

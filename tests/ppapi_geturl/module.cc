@@ -29,6 +29,7 @@ int32_t LoadUrl(PP_Instance /*instance*/, const char* /*url*/,
 #endif
 
 namespace {
+
 // These constants need to match their corresponding JavaScript values in
 // ppapi_geturl.html.  The JavaScript variables are all upper-case; for example
 // kTrueStringValue corresponds to TRUE_STRING_VALUE.
@@ -125,62 +126,59 @@ PP_Bool Instance_HandleDocumentLoad(PP_Instance /*pp_instance*/,
 }
 
 void Messaging_HandleMessage(PP_Instance instance, struct PP_Var var_message) {
-  if (var_message.type != PP_VARTYPE_STRING) {
-    /* Only handle string messages */
+  if (var_message.type != PP_VARTYPE_STRING)
     return;
-  }
-  char* message_cstr = Module::Get()->VarToCStr(var_message);
-  if (message_cstr == NULL)
-    return;
-  std::string message(message_cstr);
-  free(message_cstr);
+  std::string message = Module::Get()->VarToStr(var_message);
   printf("--- Messaging_HandleMessage(%s)\n", message.c_str());
-  if (message.find(kLoadUrlMethodId) == 0) {
-    // The argument to getUrl is everything after the first '|' and up to an
-    // optional second '|'.
-    size_t arg0_pos = message.find_first_of(kArgumentSeparator);
-    if (arg0_pos != std::string::npos) {
-      size_t arg1_pos = message.find_first_of(kArgumentSeparator,
-                                              arg0_pos + 1);
-      size_t arg0_length = std::string::npos;
-      bool stream_as_file = false;
-      if (arg1_pos != std::string::npos) {
-        arg0_length = arg1_pos - arg0_pos;
-        if (arg0_length == 0)
-          return;
-        // If the second optional argument is a '1', assume it means
-        // |stream_as_file| is true.  Anything else means |stream_as_file| is
-        // false.
-        if (arg1_pos + 1 < message.length()) {
-          char stream_as_file_arg = message.at(arg1_pos + 1);
-          stream_as_file = stream_as_file_arg == '1';
-        }
-      }
+  // Look for the "loadUrl" message.  The expected string format looks like:
+  //     loadUrl|<url>|<stream_as_file>
+  // loadUrl is a string literal
+  // <url> is the URL used to make the GET request in UrlLoader
+  // <stream_as_file> represent Boolean true if it's a '1' or false if it's
+  // anything else.
+  if (message.find(kLoadUrlMethodId) != 0)
+    return;
 
-      std::string url = message.substr(arg0_pos + 1, arg0_length - 1);
-      printf("--- Messaging_HandleMessage(method='%s', "
-                                          "url='%s', "
-                                          "stream_as_file='%s')\n",
-             message.c_str(),
-             url.c_str(),
-             stream_as_file ? "true" : "false");
-      fflush(stdout);
+  size_t url_pos = message.find_first_of(kArgumentSeparator);
+  if (url_pos == std::string::npos || url_pos + 1 >= message.length())
+    return;
 
-      UrlLoadRequest* url_load_request = new UrlLoadRequest(instance);
-      if (NULL == url_load_request) {
-        Module::Get()->ReportResult(instance,
-                                    url.c_str(),
-                                    stream_as_file,
-                                    "LoadUrl: memory allocation failed",
-                                    false);
-        return;
-      }
-      // On success or failure url_load_request will call ReportResult().
-      // This is the time to clean it up.
-      url_load_request->set_delete_this_after_report();
-      url_load_request->Load(stream_as_file, url);
-    }
+  size_t as_file_pos = message.find_first_of(kArgumentSeparator, url_pos + 1);
+  if (as_file_pos == std::string::npos || as_file_pos + 1 >= message.length())
+    return;
+
+  size_t url_length = as_file_pos - url_pos;
+  if (url_length == 0)
+    return;
+  std::string url = message.substr(url_pos + 1, url_length - 1);
+
+  // If the second argument is a '1', assume it means |stream_as_file| is
+  // true.  Anything else means |stream_as_file| is false.
+  bool stream_as_file = message.compare(as_file_pos + 1,
+                                        1,
+                                        kTrueStringValue) == 0;
+
+  printf("--- Messaging_HandleMessage(method='%s', "
+                                      "url='%s', "
+                                      "stream_as_file='%s')\n",
+         message.c_str(),
+         url.c_str(),
+         stream_as_file ? "true" : "false");
+  fflush(stdout);
+
+  UrlLoadRequest* url_load_request = new UrlLoadRequest(instance);
+  if (NULL == url_load_request) {
+    Module::Get()->ReportResult(instance,
+                                url.c_str(),
+                                stream_as_file,
+                                "LoadUrl: memory allocation failed",
+                                false);
+    return;
   }
+  // On success or failure url_load_request will call ReportResult().
+  // This is the time to clean it up.
+  url_load_request->set_delete_this_after_report();
+  url_load_request->Load(stream_as_file, url);
 }
 
 Module* Module::Create(PP_Module module_id,
