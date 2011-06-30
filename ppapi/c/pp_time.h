@@ -1,4 +1,4 @@
-/* Copyright (c) 2010 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -17,9 +17,9 @@
  * @{
  */
 /**
- * The PP_Time type represents the "wall clock time" according to the browser
- * and is defined as the number of seconds since the Epoch (00:00:00 UTC,
- * January 1, 1970).
+ * The <code>PP_Time</code> type represents the "wall clock time" according
+ * to the browser and is defined as the number of seconds since the Epoch
+ * (00:00:00 UTC, January 1, 1970).
  */
 typedef double PP_Time;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_Time, 8);
@@ -32,11 +32,11 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_Time, 8);
  * @{
  */
 /**
- * A PP_TimeTicks value represents time ticks which are measured in seconds
- * and are used for indicating the time that certain messages were received.
- * In contrast to PP_Time, PP_TimeTicks does not correspond to any actual
- * wall clock time and will not change discontinuously if the user changes
- * their computer clock.
+ * A <code>PP_TimeTicks</code> value represents time ticks which are measured
+ * in seconds and are used for indicating the time that certain messages were
+ * received. In contrast to <code>PP_Time</code>, <code>PP_TimeTicks</code>
+ * does not correspond to any actual wall clock time and will not change
+ * discontinuously if the user changes their computer clock.
  *
  * The units are in seconds, but are not measured relative to any particular
  * epoch, so the most you can do is compare two values.

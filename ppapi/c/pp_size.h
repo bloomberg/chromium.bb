@@ -7,7 +7,7 @@
 
 /**
  * @file
- * This file defines the width and height of a 2 dimensional rectangle.
+ * This file defines the width and height of a 2D rectangle.
  */
 
 #include "ppapi/c/pp_macros.h"
@@ -19,7 +19,7 @@
  */
 
 /**
- * The PP_Size struct contains the size of a 2D rectangle.
+ * The <code>PP_Size</code> struct contains the size of a 2D rectangle.
  */
 struct PP_Size {
   /** This value represents the width of the rectangle. */
@@ -38,10 +38,13 @@ PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_Size, 8);
  */
 
 /**
- * PP_MakeSize() creates a PP_Size given a width and height as int32_t values.
+ * PP_MakeSize() creates a <code>PP_Size</code> given a width and height as
+ * int32_t values.
+ *
  * @param[in] w An int32_t value representing a width.
  * @param[in] h An int32_t value representing a height.
- * @return A PP_Size structure.
+ *
+ * @return A <code>PP_Size</code> structure.
  */
 PP_INLINE struct PP_Size PP_MakeSize(int32_t w, int32_t h) {
   struct PP_Size ret;

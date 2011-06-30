@@ -1,4 +1,4 @@
-/* Copyright (c) 2010 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -21,7 +21,8 @@
  */
 
 /**
- * The PP_Rect struct contains the size and location of a 2D rectangle.
+ * The <code>PP_Rect</code> struct contains the size and location of a 2D
+ * rectangle.
  */
 struct PP_Rect {
 
@@ -45,15 +46,17 @@ PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_Rect, 16);
  */
 
 /**
- * PP_MakeRectFromXYWH() creates a PP_Rect given x and y coordinates and width
- * and height dimensions as int32_t values.
+ * PP_MakeRectFromXYWH() creates a <code>PP_Rect</code> given x and y
+ * coordinates and width and height dimensions as int32_t values.
+ *
  * @param[in] x An int32_t value representing a horizontal coordinate of a
  * point, starting with 0 as the left-most coordinate.
  * @param[in] y An int32_t value representing a vertical coordinate of a point,
  * starting with 0 as the top-most coordinate.
  * @param[in] w An int32_t value representing a width.
  * @param[in] h An int32_t value representing a height.
- * @return A PP_Rect structure.
+ *
+ * @return A <code>PP_Rect</code> structure.
  */
 PP_INLINE struct PP_Rect PP_MakeRectFromXYWH(int32_t x, int32_t y,
                                              int32_t w, int32_t h) {

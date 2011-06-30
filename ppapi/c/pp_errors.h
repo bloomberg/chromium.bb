@@ -29,7 +29,7 @@ enum {
 
   /**
    * This value is returned by a function that accepts a PP_CompletionCallback
-   * and cannot complete synchronously.  This code indicates that the given
+   * and cannot complete synchronously. This code indicates that the given
    * callback will be asynchronously notified of the final result once it is
    * available.
    */

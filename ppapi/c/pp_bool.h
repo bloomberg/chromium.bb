@@ -1,4 +1,4 @@
-/* Copyright (c) 2010 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -9,7 +9,8 @@
 
 /**
  * @file
- * This file defines the PP_Bool enumeration for use in PPAPI C headers.
+ * This file defines the <code>PP_Bool</code> enumeration for use in PPAPI C
+ * headers.
  */
 
 /**
@@ -19,8 +20,8 @@
  */
 
 /**
- * The PP_Bool enum is a boolean value for use in PPAPI C headers.  The
- * standard bool type is not available to pre-C99 compilers, and is not
+ * The <code>PP_Bool</code> enum is a boolean value for use in PPAPI C headers.
+ * The standard bool type is not available to pre-C99 compilers, and is not
  * guaranteed to be compatible between C and C++, whereas the PPAPI C
  * headers can be included from C or C++ code.
  */

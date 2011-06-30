@@ -94,7 +94,8 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_InputEvent_Modifier, 4);
  */
 
 /**
- * The PP_InputEvent_Key struct represents a key up or key down event.
+ * The <code>PP_InputEvent_Key</code> struct represents a key up or key down
+ * event.
  *
  * Key up and key down events correspond to physical keys on the keyboard. The
  * actual character that the user typed (if any) will be delivered in a
@@ -114,7 +115,7 @@ struct PP_InputEvent_Key {
   uint32_t modifier;
 
   /**
-   * |key_code| reflects the DOM KeyboardEvent |keyCode| field.
+   * This value reflects the DOM KeyboardEvent <code>keyCode</code> field.
    * Chrome populates this with the Windows-style Virtual Key code of the key.
    */
 
@@ -131,7 +132,8 @@ PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_InputEvent_Key, 8);
  */
 
 /**
- * The PP_InputEvent_Character struct represents a typed character event.
+ * The <code>PP_InputEvent_Character</code> struct represents a typed character
+ * event.
  *
  * Normally, the program will receive a key down event, followed by a character
  * event, followed by a key up event. The character event will have any
@@ -151,7 +153,7 @@ PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_InputEvent_Key, 8);
  * isn't lost"), 'R' character event, 'R' key up.
  */
 struct PP_InputEvent_Character {
-  /** A combination of the EVENT_MODIFIER flags. */
+  /** A combination of the <code>PP_InputEvent_Modifier</code> flags. */
   uint32_t modifier;
 
   /**
@@ -173,17 +175,20 @@ PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_InputEvent_Character, 12);
  */
 
 /**
- * The PP_InputEvent_Mouse struct represents all mouse events except
- * mouse wheel events.
+ * The <code>PP_InputEvent_Mouse</code> struct represents all mouse events
+ * except mouse wheel events.
  */
 struct PP_InputEvent_Mouse {
-  /** This value is a bit field combination of the EVENT_MODIFIER flags. */
+  /**
+   * This value is a bit field combination of the
+   * <code>PP_InputEvent_Modifier</code> flags.
+   */
   uint32_t modifier;
 
   /**
    * This value represents the button that changed for mouse down or up events.
-   * This value will be PP_EVENT_MOUSEBUTTON_NONE for mouse move, enter, and
-   * leave events.
+   * This value will be <code>PP_EVENT_MOUSEBUTTON_NONE</code> for mouse move,
+   * enter, and leave events.
    */
   PP_InputEvent_MouseButton button;
 
@@ -222,10 +227,14 @@ PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_InputEvent_Mouse, 20);
  */
 
 /**
- * The PP_InputEvent_Wheel struct represents all mouse wheel events.
+ * The <code>PP_InputEvent_Wheel</code> struct represents all mouse wheel
+ * events.
  */
 struct PP_InputEvent_Wheel {
-  /** This value represents a combination of the EVENT_MODIFIER flags. */
+  /**
+   * This value represents a combination of the <code>EVENT_MODIFIER</code>
+   * flags.
+   */
   uint32_t modifier;
 
   /**
@@ -258,7 +267,7 @@ struct PP_InputEvent_Wheel {
    * The number of "clicks" of the scroll wheel that have produced the
    * event. The value may have system-specific acceleration applied to it,
    * depending on the device. The positive and negative meanings are the same
-   * as for |delta|.
+   * as for <code>delta_x</code> and <code>delta_y</code>.
    *
    * If you are scrolling, you probably want to use the delta values above.
    * These tick events can be useful if you aren't doing actual scrolling and
@@ -278,8 +287,9 @@ struct PP_InputEvent_Wheel {
   float wheel_ticks_y;
 
   /**
-   * Indicates if the scroll delta_x/delta_y indicates pages or lines to
-   * scroll by. When true, the user is requesting to scroll by pages.
+   * Indicates if the scroll <code>delta_x</code>/<code>delta_y</code>
+   * indicates pages or lines to scroll by. When true, the user is requesting
+   * to scroll by pages.
    */
   PP_Bool scroll_by_page;
 };

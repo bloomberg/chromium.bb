@@ -1,4 +1,4 @@
-/* Copyright (c) 2010 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -10,8 +10,8 @@
 
 /**
  * @file
- * This file defines the PP_Resource type which represents data associated with
- * the module.
+ * This file defines the <code>PP_Resource</code> type which represents data
+ * associated with the module.
  */
 
 /**
@@ -29,9 +29,10 @@
  * the DOM, a resource has no meaning or visibility outside of the module
  * interface.
  *
- * Resources are reference counted. Use AddRefResource and ReleaseResource in
- * ppb_core.h to manage the reference count of a resource. The data will be
- * automatically destroyed when the internal reference count reaches 0.
+ * Resources are reference counted. Use <code>AddRefResource()</code>
+ * and <code>ReleaseResource()</code> in <code>ppb_core.h</code> to manage the
+ * reference count of a resource. The data will be automatically destroyed when
+ * the internal reference count reaches 0.
  */
 typedef int32_t PP_Resource;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_Resource, 4);
