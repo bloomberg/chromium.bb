@@ -28,7 +28,12 @@
       <include name="IDR_CONTENT_BOTTOM_RIGHT_CORNER" file="content_bottom_right_corner.png" type="BINDATA" />
       <include name="IDR_CONTENT_LEFT_SIDE" file="content_left_side.png" type="BINDATA" />
       <include name="IDR_CONTENT_RIGHT_SIDE" file="content_right_side.png" type="BINDATA" />
-      <include name="IDR_DEFAULT_FAVICON" file="default_favicon.png" type="BINDATA" />
+      <if expr="not pp_ifdef('touchui')">
+        <include name="IDR_DEFAULT_FAVICON" file="default_favicon.png" type="BINDATA" />
+      </if>
+      <if expr="pp_ifdef('touchui')">
+        <include name="IDR_DEFAULT_FAVICON" file="default_large_favicon.png" type="BINDATA" />
+      </if>
       <include name="IDR_FOLDER_CLOSED" file="folder_closed.png" type="BINDATA" />
       <include name="IDR_FOLDER_CLOSED_RTL" file="folder_closed_rtl.png" type="BINDATA" />
       <include name="IDR_FOLDER_OPEN" file="folder_open.png" type="BINDATA" />
