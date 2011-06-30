@@ -277,7 +277,7 @@ ui::TouchStatus TestViewIgnoreTouch::OnTouchEvent(const TouchEvent& event) {
 }
 
 TEST_F(ViewTest, TouchEvent) {
-  MockGestureManager* gm = new MockGestureManager();
+  MockGestureManager gm;
 
   TestView* v1 = new TestView();
   v1->SetBounds(0, 0, 300, 300);
@@ -296,7 +296,7 @@ TEST_F(ViewTest, TouchEvent) {
   View* root = widget->GetRootView();
 
   root->AddChildView(v1);
-  static_cast<internal::RootView*>(root)->SetGestureManager(gm);
+  static_cast<internal::RootView*>(root)->SetGestureManager(&gm);
   v1->AddChildView(v2);
   v2->AddChildView(v3);
 
@@ -307,7 +307,7 @@ TEST_F(ViewTest, TouchEvent) {
   // does.
   v1->Reset();
   v2->Reset();
-  gm->Reset();
+  gm.Reset();
 
   TouchEvent unhandled(ui::ET_TOUCH_MOVED,
                        400,
@@ -320,15 +320,15 @@ TEST_F(ViewTest, TouchEvent) {
   EXPECT_EQ(v1->last_touch_event_type_, 0);
   EXPECT_EQ(v2->last_touch_event_type_, 0);
 
-  EXPECT_EQ(gm->previously_handled_flag_, false);
-  EXPECT_EQ(gm->last_touch_event_, ui::ET_TOUCH_MOVED);
-  EXPECT_EQ(gm->last_view_, root);
-  EXPECT_EQ(gm->dispatched_synthetic_event_, true);
+  EXPECT_EQ(gm.previously_handled_flag_, false);
+  EXPECT_EQ(gm.last_touch_event_, ui::ET_TOUCH_MOVED);
+  EXPECT_EQ(gm.last_view_, root);
+  EXPECT_EQ(gm.dispatched_synthetic_event_, true);
 
   // Test press, drag, release touch sequence.
   v1->Reset();
   v2->Reset();
-  gm->Reset();
+  gm.Reset();
 
   TouchEvent pressed(ui::ET_TOUCH_PRESSED,
                      110,
@@ -346,9 +346,9 @@ TEST_F(ViewTest, TouchEvent) {
   EXPECT_EQ(v1->last_touch_event_type_, 0);
 
   // Since v2 handled the touch-event, the gesture manager should not handle it.
-  EXPECT_EQ(gm->last_touch_event_, 0);
-  EXPECT_EQ(NULL, gm->last_view_);
-  EXPECT_EQ(gm->previously_handled_flag_, false);
+  EXPECT_EQ(gm.last_touch_event_, 0);
+  EXPECT_EQ(NULL, gm.last_view_);
+  EXPECT_EQ(gm.previously_handled_flag_, false);
 
   // Drag event out of bounds. Should still go to v2
   v1->Reset();
@@ -367,9 +367,9 @@ TEST_F(ViewTest, TouchEvent) {
   // Make sure v1 did not receive the event
   EXPECT_EQ(v1->last_touch_event_type_, 0);
 
-  EXPECT_EQ(gm->last_touch_event_, 0);
-  EXPECT_EQ(NULL, gm->last_view_);
-  EXPECT_EQ(gm->previously_handled_flag_, false);
+  EXPECT_EQ(gm.last_touch_event_, 0);
+  EXPECT_EQ(NULL, gm.last_view_);
+  EXPECT_EQ(gm.previously_handled_flag_, false);
 
   // Released event out of bounds. Should still go to v2
   v1->Reset();
@@ -384,9 +384,9 @@ TEST_F(ViewTest, TouchEvent) {
   // Make sure v1 did not receive the event
   EXPECT_EQ(v1->last_touch_event_type_, 0);
 
-  EXPECT_EQ(gm->last_touch_event_, 0);
-  EXPECT_EQ(NULL, gm->last_view_);
-  EXPECT_EQ(gm->previously_handled_flag_, false);
+  EXPECT_EQ(gm.last_touch_event_, 0);
+  EXPECT_EQ(NULL, gm.last_view_);
+  EXPECT_EQ(gm.previously_handled_flag_, false);
 
   widget->CloseNow();
 }
@@ -1780,22 +1780,22 @@ TEST_F(ViewTest, OnVisibleBoundsChanged) {
 // BoundsChanged()
 
 TEST_F(ViewTest, SetBoundsPaint) {
-  TestView* top_view = new TestView;
+  TestView top_view;
   TestView* child_view = new TestView;
 
-  top_view->SetBounds(0, 0, 100, 100);
-  top_view->scheduled_paint_rects_.clear();
+  top_view.SetBounds(0, 0, 100, 100);
+  top_view.scheduled_paint_rects_.clear();
   child_view->SetBounds(10, 10, 20, 20);
-  top_view->AddChildView(child_view);
+  top_view.AddChildView(child_view);
 
-  top_view->scheduled_paint_rects_.clear();
+  top_view.scheduled_paint_rects_.clear();
   child_view->SetBounds(30, 30, 20, 20);
-  EXPECT_EQ(2U, top_view->scheduled_paint_rects_.size());
+  EXPECT_EQ(2U, top_view.scheduled_paint_rects_.size());
 
   // There should be 2 rects, spanning from (10, 10) to (50, 50).
   gfx::Rect paint_rect =
-      top_view->scheduled_paint_rects_[0].Union(
-          top_view->scheduled_paint_rects_[1]);
+      top_view.scheduled_paint_rects_[0].Union(
+          top_view.scheduled_paint_rects_[1]);
   EXPECT_EQ(gfx::Rect(10, 10, 40, 40), paint_rect);
 }
 

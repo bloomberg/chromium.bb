@@ -324,8 +324,10 @@ bool CheckInvariant(const TextStyleRanges* style_ranges) {
 void InsertStyle(TextStyleRanges* style_ranges,
                  TextStyleRange* text_style_range) {
   const ui::Range& range = text_style_range->range;
-  if (range.is_empty() || !range.IsValid())
+  if (range.is_empty() || !range.IsValid()) {
+    delete text_style_range;
     return;
+  }
   CHECK(!range.is_reversed());
 
   // Invariant condition: all items in the range has no overlaps.
