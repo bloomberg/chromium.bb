@@ -37,6 +37,7 @@ JingleSessionManager::JingleSessionManager(
       signal_strategy_(NULL),
       enable_nat_traversing_(false),
       allow_local_ips_(false),
+      http_port_allocator_(NULL),
       closed_(false) {
   DCHECK(message_loop);
 }
@@ -79,16 +80,12 @@ void JingleSessionManager::Init(
         talk_base::Thread::Current()));
   }
 
-  port_allocator_.reset(
-      new remoting::HttpPortAllocator(
-          network_manager_.get(), socket_factory_.get(),
-          port_allocator_session_factory_.get(), "transp2"));
-  if (!enable_nat_traversing_) {
-    port_allocator_->set_flags(cricket::PORTALLOCATOR_DISABLE_STUN |
-                               cricket::PORTALLOCATOR_DISABLE_RELAY);
-  }
-
   if (enable_nat_traversing_) {
+    http_port_allocator_ = new remoting::HttpPortAllocator(
+        network_manager_.get(), socket_factory_.get(),
+        port_allocator_session_factory_.get(), "transp2");
+    port_allocator_.reset(http_port_allocator_);
+
     jingle_info_request_.reset(
         new JingleInfoRequest(signal_strategy_->CreateIqRequest()));
     jingle_info_request_->SetCallback(
@@ -96,6 +93,11 @@ void JingleSessionManager::Init(
     jingle_info_request_->Run(
         NewRunnableMethod(this, &JingleSessionManager::DoStartSessionManager));
   } else {
+    port_allocator_.reset(
+        new cricket::BasicPortAllocator(
+            network_manager_.get(), socket_factory_.get()));
+    port_allocator_->set_flags(cricket::PORTALLOCATOR_DISABLE_STUN |
+                               cricket::PORTALLOCATOR_DISABLE_RELAY);
     DoStartSessionManager();
   }
 }
@@ -286,9 +288,9 @@ void JingleSessionManager::OnJingleInfo(
     LOG(INFO) << "Configuring with relay token: " << token
               << ", relays: " << JoinString(relay_hosts, ';')
               << ", stun: " << stun_servers;
-    port_allocator_->SetRelayToken(token);
-    port_allocator_->SetStunHosts(stun_hosts);
-    port_allocator_->SetRelayHosts(relay_hosts);
+    http_port_allocator_->SetRelayToken(token);
+    http_port_allocator_->SetStunHosts(stun_hosts);
+    http_port_allocator_->SetRelayHosts(relay_hosts);
   } else {
     LOG(INFO) << "Jingle info found but no port allocator.";
   }

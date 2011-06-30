@@ -612,13 +612,13 @@ class UDPChannelTester : public ChannelTesterBase {
 #if defined(USE_NSS) || defined(OS_WIN)
 
 // Verify that we can create and destory server objects without a connection.
-TEST_F(JingleSessionTest, DISABLED_CreateAndDestoy) {
+TEST_F(JingleSessionTest, CreateAndDestoy) {
   CreateServerPair();
 }
 
 // Verify that incoming session can be rejected, and that the status
 // of the connection is set to CLOSED in this case.
-TEST_F(JingleSessionTest, DISABLED_RejectConnection) {
+TEST_F(JingleSessionTest, RejectConnection) {
   CreateServerPair();
 
   // Reject incoming session.
@@ -646,13 +646,13 @@ TEST_F(JingleSessionTest, DISABLED_RejectConnection) {
 }
 
 // Verify that we can connect two endpoints.
-TEST_F(JingleSessionTest, DISABLED_Connect) {
+TEST_F(JingleSessionTest, Connect) {
   CreateServerPair();
   ASSERT_TRUE(InitiateConnection());
 }
 
 // Verify that data can be transmitted over the event channel.
-TEST_F(JingleSessionTest, DISABLED_TestControlChannel) {
+TEST_F(JingleSessionTest, TestControlChannel) {
   CreateServerPair();
   ASSERT_TRUE(InitiateConnection());
   scoped_refptr<TCPChannelTester> tester(
@@ -667,7 +667,7 @@ TEST_F(JingleSessionTest, DISABLED_TestControlChannel) {
 }
 
 // Verify that data can be transmitted over the video channel.
-TEST_F(JingleSessionTest, DISABLED_TestVideoChannel) {
+TEST_F(JingleSessionTest, TestVideoChannel) {
   CreateServerPair();
   ASSERT_TRUE(InitiateConnection());
   scoped_refptr<TCPChannelTester> tester(
@@ -682,7 +682,7 @@ TEST_F(JingleSessionTest, DISABLED_TestVideoChannel) {
 }
 
 // Verify that data can be transmitted over the event channel.
-TEST_F(JingleSessionTest, DISABLED_TestEventChannel) {
+TEST_F(JingleSessionTest, TestEventChannel) {
   CreateServerPair();
   ASSERT_TRUE(InitiateConnection());
   scoped_refptr<TCPChannelTester> tester(
@@ -697,7 +697,7 @@ TEST_F(JingleSessionTest, DISABLED_TestEventChannel) {
 }
 
 // Verify that data can be transmitted over the video RTP channel.
-TEST_F(JingleSessionTest, DISABLED_TestVideoRtpChannel) {
+TEST_F(JingleSessionTest, TestVideoRtpChannel) {
   CreateServerPair();
   ASSERT_TRUE(InitiateConnection());
   scoped_refptr<UDPChannelTester> tester(

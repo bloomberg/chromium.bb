@@ -19,12 +19,13 @@
 class MessageLoop;
 
 namespace cricket {
-class HttpPortAllocator;
+class PortAllocator;
 class SessionManager;
 }  // namespace cricket
 
 namespace remoting {
 
+class HttpPortAllocator;
 class JingleInfoRequest;
 class JingleSignalingConnector;
 class PortAllocatorSessionFactory;
@@ -131,7 +132,8 @@ class JingleSessionManager
   bool enable_nat_traversing_;
   bool allow_local_ips_;
 
-  scoped_ptr<cricket::HttpPortAllocator> port_allocator_;
+  scoped_ptr<cricket::PortAllocator> port_allocator_;
+  remoting::HttpPortAllocator* http_port_allocator_;
   scoped_ptr<cricket::SessionManager> cricket_session_manager_;
   scoped_ptr<JingleInfoRequest> jingle_info_request_;
   scoped_ptr<JingleSignalingConnector> jingle_signaling_connector_;
