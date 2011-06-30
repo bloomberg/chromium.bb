@@ -13,12 +13,6 @@
 
 namespace remoting {
 
-const char kContinueWindowTitle[] = "Remoting";
-const char kContinueWindowText[] =
-    "You are currently sharing this machine with another user. "
-    "Please confirm that you want to continue sharing.";
-const char kContinueWindowButtonText[] = "Yes, continue sharing";
-
 class ContinueWindowLinux : public remoting::ContinueWindow {
  public:
   ContinueWindowLinux();
@@ -51,7 +45,7 @@ void ContinueWindowLinux::CreateWindow() {
 
   continue_window_ = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   GtkWindow* window = GTK_WINDOW(continue_window_);
-  gtk_window_set_title(window, kContinueWindowTitle);
+  gtk_window_set_title(window, kTitle);
   gtk_window_set_resizable(window, FALSE);
 
   g_signal_connect(window, "delete-event",
@@ -63,14 +57,15 @@ void ContinueWindowLinux::CreateWindow() {
   GtkWidget* text_row = gtk_hbox_new(FALSE, 0);
   gtk_container_add(GTK_CONTAINER(main_area), text_row);
 
-  GtkWidget* text_label = gtk_label_new(kContinueWindowText);
+  GtkWidget* text_label = gtk_label_new(kMessage);
   gtk_label_set_line_wrap(GTK_LABEL(text_label), TRUE);
   gtk_container_add(GTK_CONTAINER(text_row), text_label);
 
   GtkWidget* button_box = gtk_hbox_new(FALSE, 0);
   gtk_container_add(GTK_CONTAINER(main_area), button_box);
 
-  GtkWidget* ok_button = gtk_button_new_with_label(kContinueWindowButtonText);
+  GtkWidget* ok_button =
+      gtk_button_new_with_label(kDefaultButtonText);
   gtk_box_pack_start(GTK_BOX(button_box), ok_button,
                      TRUE, FALSE, 0);
 

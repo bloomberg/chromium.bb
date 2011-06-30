@@ -33,11 +33,11 @@
       }],
     ],
     'remoting_it2me_files': [
+      'resources/chromoting128.png',
       'webapp/me2mom/background.html',
       'webapp/me2mom/background.js',
       'webapp/me2mom/choice.css',
       'webapp/me2mom/choice.html',
-      'webapp/me2mom/chromoting128.png',
       'webapp/me2mom/cs_oauth2_trampoline.js',
       'webapp/me2mom/debug_log.css',
       'webapp/me2mom/debug_log.js',
@@ -162,6 +162,7 @@
           'mac_bundle_resources': [
             'host/disconnect_window.xib',
             'host/plugin/host_plugin-Info.plist',
+            'resources/chromoting128.png',
           ],
           'mac_bundle_resources!': [
             'host/plugin/host_plugin-Info.plist',
@@ -328,6 +329,7 @@
         'host/chromoting_host_context.h',
         'host/client_session.cc',
         'host/client_session.h',
+        'host/continue_window.cc',
         'host/continue_window.h',
         'host/continue_window_mac.mm',
         'host/continue_window_linux.cc',
@@ -451,6 +453,7 @@
         'host/capturer_fake_ascii.cc',
         'host/capturer_fake_ascii.h',
         'host/continue_window.h',
+        'host/continue_window.cc',
         'host/continue_window_mac.mm',
         'host/continue_window_linux.cc',
         'host/continue_window_win.cc',
