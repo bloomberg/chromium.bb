@@ -10,6 +10,7 @@
 #include <vector>
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/ui/panels/panel.h"
 #include "ui/gfx/rect.h"
 
 class Browser;
@@ -31,17 +32,9 @@ class PanelManager {
   Panel* CreatePanel(Browser* browser);
 
   // Removes the given panel. Both active and pending panel lists are checked.
-  // If an active panel is removed, pending panels could put on display if we
-  // have spaces.
+  // If an active panel is removed, pending panels could be displayed if space
+  // allows.
   void Remove(Panel* panel);
-
-  // Minimizes all panels. This only applies to active panels since only them
-  // are visible.
-  void MinimizeAll();
-
-  // Restores all panels. This only applies to active panels since only them
-  // are visible.
-  void RestoreAll();
 
   // Removes all active panels. Pending panels will be processed for display.
   void RemoveAllActive();
@@ -50,6 +43,13 @@ class PanelManager {
   void StartDragging(Panel* panel);
   void Drag(int delta_x);
   void EndDragging(bool cancelled);
+
+  // Should we bring up the titlebar, given the current mouse point?
+  bool ShouldBringUpTitleBarForAllMinimizedPanels(int mouse_x,
+                                                  int mouse_y) const;
+
+  // Brings up or down the title-bar for all minimized panels.
+  void BringUpOrDownTitleBarForAllMinimizedPanels(bool bring_up);
 
   // Returns the number of active panels.
   int active_count() const { return active_panels_.size(); }

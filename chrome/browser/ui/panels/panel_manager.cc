@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/window_sizer.h"
 
 namespace {
@@ -270,6 +269,29 @@ void PanelManager::EndDragging(bool cancelled) {
   DelayedRemove();
 }
 
+bool PanelManager::ShouldBringUpTitleBarForAllMinimizedPanels(
+    int mouse_x, int mouse_y) const {
+  for (ActivePanels::const_iterator iter = active_panels_.begin();
+       iter != active_panels_.end(); ++iter) {
+    if ((*iter)->ShouldBringUpTitleBar(mouse_x, mouse_y))
+      return true;
+  }
+  return false;
+}
+
+void PanelManager::BringUpOrDownTitleBarForAllMinimizedPanels(bool bring_up) {
+  for (ActivePanels::const_iterator iter = active_panels_.begin();
+       iter != active_panels_.end(); ++iter) {
+    if (bring_up) {
+      if ((*iter)->expansion_state() == Panel::MINIMIZED)
+        (*iter)->SetExpansionState(Panel::TITLE_ONLY);
+    } else {
+      if ((*iter)->expansion_state() == Panel::TITLE_ONLY)
+        (*iter)->SetExpansionState(Panel::MINIMIZED);
+    }
+  }
+}
+
 void PanelManager::Rearrange(ActivePanels::iterator iter_to_start) {
   if (iter_to_start == active_panels_.end())
     return;
@@ -316,20 +338,6 @@ bool PanelManager::ComputeBoundsForNextPanel(gfx::Rect* bounds,
 
   bounds->SetRect(x, y, width, height);
   return true;
-}
-
-void PanelManager::MinimizeAll() {
-  for (ActivePanels::const_iterator iter = active_panels_.begin();
-       iter != active_panels_.end(); ++iter) {
-    (*iter)->Minimize();
-  }
-}
-
-void PanelManager::RestoreAll() {
-  for (ActivePanels::const_iterator iter = active_panels_.begin();
-       iter != active_panels_.end(); ++iter) {
-    (*iter)->Restore();
-  }
 }
 
 void PanelManager::RemoveAllActive() {

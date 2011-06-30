@@ -39,8 +39,10 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   virtual void ShowPanelInactive() OVERRIDE;
   virtual gfx::Rect GetPanelBounds() const OVERRIDE;
   virtual void SetPanelBounds(const gfx::Rect& bounds) OVERRIDE;
-  virtual void MinimizePanel() OVERRIDE;
-  virtual void RestorePanel() OVERRIDE;
+  virtual void OnPanelExpansionStateChanged(
+      Panel::ExpansionState expansion_state) OVERRIDE;
+  virtual bool ShouldBringUpPanelTitleBar(int mouse_x,
+                                          int mouse_y) const OVERRIDE;
   virtual void ClosePanel() OVERRIDE;
   virtual void ActivatePanel() OVERRIDE;
   virtual void DeactivatePanel() OVERRIDE;

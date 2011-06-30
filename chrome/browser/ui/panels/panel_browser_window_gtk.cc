@@ -91,12 +91,15 @@ void PanelBrowserWindowGtk::SetPanelBounds(const gfx::Rect& bounds) {
   SetBounds(bounds);
 }
 
-void PanelBrowserWindowGtk::MinimizePanel() {
+void PanelBrowserWindowGtk::OnPanelExpansionStateChanged(
+    Panel::ExpansionState expansion_state) {
   NOTIMPLEMENTED();
 }
 
-void PanelBrowserWindowGtk::RestorePanel() {
+bool PanelBrowserWindowGtk::ShouldBringUpPanelTitleBar(int mouse_x,
+                                                       int mouse_y) const {
   NOTIMPLEMENTED();
+  return false;
 }
 
 void PanelBrowserWindowGtk::ClosePanel() {

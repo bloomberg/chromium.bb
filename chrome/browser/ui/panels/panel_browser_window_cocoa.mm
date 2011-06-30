@@ -84,12 +84,15 @@ void PanelBrowserWindowCocoa::SetPanelBounds(const gfx::Rect& bounds) {
   [[controller_ window] setFrame:frame display:YES animate:YES];
 }
 
-void PanelBrowserWindowCocoa::MinimizePanel() {
+void PanelBrowserWindowCocoa::OnPanelExpansionStateChanged(
+    Panel::ExpansionState expansion_state) {
   NOTIMPLEMENTED();
 }
 
-void PanelBrowserWindowCocoa::RestorePanel() {
+bool PanelBrowserWindowCocoa::ShouldBringUpPanelTitleBar(int mouse_x,
+                                                         int mouse_y) const {
   NOTIMPLEMENTED();
+  return false;
 }
 
 void PanelBrowserWindowCocoa::ClosePanel() {

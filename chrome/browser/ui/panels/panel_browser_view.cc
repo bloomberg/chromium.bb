@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_browser_frame_view.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
+#include "chrome/browser/ui/panels/panel_mouse_watcher_win.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "grit/chromium_strings.h"
 #include "ui/base/animation/slide_animation.h"
@@ -17,6 +18,9 @@
 namespace {
 // This value is experimental and subjective.
 const int kSetBoundsAnimationMs = 200;
+
+// The panel can be fully minimized to 3-pixel lines.
+const int kFullyMinimizedHeight = 3;
 }
 
 NativePanel* Panel::CreateNativePanel(Browser* browser, Panel* panel,
@@ -32,7 +36,6 @@ PanelBrowserView::PanelBrowserView(Browser* browser, Panel* panel,
     panel_(panel),
     bounds_(bounds),
     original_height_(bounds.height()),
-    minimized_(false),
     closed_(false),
     focused_(false),
     mouse_pressed_(false),
@@ -58,6 +61,10 @@ void PanelBrowserView::Close() {
     bounds_animator_.reset();
 
   ::BrowserView::Close();
+
+  // Stop the global mouse watcher only if we do not have any panels up.
+  if (panel_->manager()->active_count() == 1)
+    StopMouseWatcher();
 }
 
 void PanelBrowserView::SetBounds(const gfx::Rect& bounds) {
@@ -156,27 +163,36 @@ void PanelBrowserView::SetPanelBounds(const gfx::Rect& bounds) {
   SetBounds(bounds);
 }
 
-void PanelBrowserView::MinimizePanel() {
-  if (minimized_)
-    return;
+void PanelBrowserView::OnPanelExpansionStateChanged(
+    Panel::ExpansionState expansion_state) {
+  int height;
+  switch (expansion_state) {
+    case Panel::EXPANDED:
+      height = original_height_;
+      break;
+    case Panel::TITLE_ONLY:
+      height = GetFrameView()->NonClientTopBorderHeight();
+      break;
+    case Panel::MINIMIZED:
+      height = kFullyMinimizedHeight;
+      EnsureMouseWatcherStarted();
+      break;
+    default:
+      NOTREACHED();
+      height = original_height_;
+      break;
+  }
 
-  minimized_ = true;
-  gfx::Rect bounds = GetPanelBounds();
-  original_height_ = bounds.height();
-  bounds.set_height(GetFrameView()->NonClientTopBorderHeight());
-  bounds.set_y(bounds.y() + original_height_ - bounds.height());
-  SetPanelBounds(bounds);
+  gfx::Rect bounds = bounds_;
+  bounds.set_y(bounds.y() + bounds.height() - height);
+  bounds.set_height(height);
+  SetBounds(bounds);
 }
 
-void PanelBrowserView::RestorePanel() {
-  if (!minimized_)
-    return;
-
-  minimized_ = false;
-  gfx::Rect bounds = GetPanelBounds();
-  bounds.set_y(bounds.y() - original_height_ + bounds.height());
-  bounds.set_height(original_height_);
-  SetPanelBounds(bounds);
+bool PanelBrowserView::ShouldBringUpPanelTitleBar(int mouse_x,
+                                                  int mouse_y) const {
+  return bounds_.x() <= mouse_x && mouse_x <= bounds_.right() &&
+         mouse_y >= bounds_.y();
 }
 
 void PanelBrowserView::ClosePanel() {
@@ -251,7 +267,10 @@ bool PanelBrowserView::OnTitleBarMouseReleased(const views::MouseEvent& event) {
   if (mouse_dragging_)
     return EndDragging(false);
 
-  MinimizeOrRestore();
+  Panel::ExpansionState new_expansion_state =
+    (panel_->expansion_state() != Panel::EXPANDED) ? Panel::EXPANDED
+                                                   : Panel::MINIMIZED;
+  panel_->SetExpansionState(new_expansion_state);
   return true;
 }
 
@@ -270,11 +289,4 @@ bool PanelBrowserView::EndDragging(bool cancelled) {
   mouse_dragging_ = false;
   panel_->manager()->EndDragging(cancelled);
   return true;
-}
-
-void PanelBrowserView::MinimizeOrRestore() {
-  if (minimized_)
-    panel_->Restore();
-  else
-    panel_->Minimize();
 }

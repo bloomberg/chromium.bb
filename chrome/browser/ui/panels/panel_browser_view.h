@@ -31,6 +31,8 @@ class PanelBrowserView : public BrowserView,
   bool closed() const { return closed_; }
   bool focused() const { return focused_; }
 
+  PanelBrowserFrameView* GetFrameView() const;
+
   // Called from frame view when title bar receives a mouse event.
   // Return true if the event is handled.
   bool OnTitleBarMousePressed(const views::MouseEvent& event);
@@ -47,6 +49,8 @@ class PanelBrowserView : public BrowserView,
   // Overridden from BrowserView:
   virtual void Init() OVERRIDE;
   virtual void Close() OVERRIDE;
+  virtual bool CanResize() const OVERRIDE { return false; }
+  virtual bool CanMaximize() const OVERRIDE { return false; }
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
   virtual void UpdateTitleBar() OVERRIDE;
   virtual bool GetSavedWindowBounds(gfx::Rect* bounds) const OVERRIDE;
@@ -64,8 +68,10 @@ class PanelBrowserView : public BrowserView,
   virtual void ShowPanelInactive() OVERRIDE;
   virtual gfx::Rect GetPanelBounds() const OVERRIDE;
   virtual void SetPanelBounds(const gfx::Rect& bounds) OVERRIDE;
-  virtual void MinimizePanel() OVERRIDE;
-  virtual void RestorePanel() OVERRIDE;
+  virtual void OnPanelExpansionStateChanged(
+      Panel::ExpansionState expansion_state) OVERRIDE;
+  virtual bool ShouldBringUpPanelTitleBar(int mouse_x,
+                                          int mouse_y) const OVERRIDE;
   virtual void ClosePanel() OVERRIDE;
   virtual void ActivatePanel() OVERRIDE;
   virtual void DeactivatePanel() OVERRIDE;
@@ -80,9 +86,7 @@ class PanelBrowserView : public BrowserView,
   // Overridden from AnimationDelegate:
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
 
-  PanelBrowserFrameView* GetFrameView() const;
   bool EndDragging(bool cancelled);
-  void MinimizeOrRestore();
 
   scoped_ptr<Panel> panel_;
   gfx::Rect bounds_;
@@ -90,7 +94,6 @@ class PanelBrowserView : public BrowserView,
   // Stores the original height of the panel so we can restore it after it's
   // been minimized.
   int original_height_;
-  bool minimized_;
 
   // Is the panel being closed? Do not use it when it is closed.
   bool closed_;

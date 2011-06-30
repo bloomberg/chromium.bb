@@ -26,13 +26,23 @@ class PanelManager;
 //   other Panels.  For example deleting a panel would rearrange other panels.
 class Panel : public BrowserWindow {
  public:
+  enum ExpansionState {
+   // The panel is fully expanded with both title-bar and the client-area.
+   EXPANDED,
+   // The panel is shown with the title-bar only.
+   TITLE_ONLY,
+   // The panel is shown with 3-pxiel line.
+   MINIMIZED
+  };
+
   virtual ~Panel();
 
   // Returns the PanelManager associated with this panel.
   PanelManager* manager() const;
 
-  void Minimize();
-  void Restore();
+  void SetExpansionState(ExpansionState new_expansion_state);
+
+  bool ShouldBringUpTitleBar(int mouse_x, int mouse_y) const;
 
   // BrowserWindow overrides.
   virtual void Show() OVERRIDE;
@@ -144,6 +154,8 @@ class Panel : public BrowserWindow {
   NativePanel* native_panel() { return native_panel_; }
 #endif
 
+  ExpansionState expansion_state() const { return expansion_state_; }
+
  protected:
   virtual void DestroyBrowser() OVERRIDE;
 
@@ -162,6 +174,8 @@ class Panel : public BrowserWindow {
   // Platform specifc implementation for panels.  It'd be one of
   // PanelBrowserWindowGtk/PanelBrowserView/PanelBrowserWindowCocoa.
   NativePanel* native_panel_;  // Weak, owns us.
+
+  ExpansionState expansion_state_;
 
   DISALLOW_COPY_AND_ASSIGN(Panel);
 };

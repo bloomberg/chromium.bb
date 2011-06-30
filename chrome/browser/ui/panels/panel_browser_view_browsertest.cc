@@ -11,6 +11,8 @@
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_browser_frame_view.h"
 #include "chrome/browser/ui/panels/panel_browser_view.h"
+#include "chrome/browser/ui/panels/panel_manager.h"
+#include "chrome/browser/ui/panels/panel_mouse_watcher_win.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -276,6 +278,89 @@ class PanelBrowserViewTest : public InProcessBrowserTest {
 
     browser_view1->panel()->Close();
     browser_view2->panel()->Close();
+  }
+
+  // We put all the testing logic in this class instead of the test so that
+  // we do not need to declare each new test as a friend of PanelBrowserView
+  // for the purpose of accessing its private members.
+  void TestMinimizeAndRestore() {
+    PanelBrowserView* browser_view1 = CreatePanelBrowserView("PanelTest1",
+                                                             SHOW_AS_ACTIVE);
+    Panel* panel1 = browser_view1->panel_.get();
+
+    // Test minimizing/restoring an individual panel.
+    EXPECT_EQ(Panel::EXPANDED, panel1->expansion_state());
+    int initial_height = panel1->GetBounds().height();
+    int titlebar_height =
+        browser_view1->GetFrameView()->NonClientTopBorderHeight();
+
+    panel1->SetExpansionState(Panel::MINIMIZED);
+    EXPECT_EQ(Panel::MINIMIZED, panel1->expansion_state());
+    EXPECT_LT(panel1->GetBounds().height(), titlebar_height);
+    EXPECT_GT(panel1->GetBounds().height(), 0);
+    EXPECT_TRUE(IsMouseWatcherStarted());
+
+    panel1->SetExpansionState(Panel::TITLE_ONLY);
+    EXPECT_EQ(Panel::TITLE_ONLY, panel1->expansion_state());
+    EXPECT_EQ(titlebar_height, panel1->GetBounds().height());
+
+    panel1->SetExpansionState(Panel::EXPANDED);
+    EXPECT_EQ(Panel::EXPANDED, panel1->expansion_state());
+    EXPECT_EQ(initial_height, panel1->GetBounds().height());
+
+    panel1->SetExpansionState(Panel::TITLE_ONLY);
+    EXPECT_EQ(Panel::TITLE_ONLY, panel1->expansion_state());
+    EXPECT_EQ(titlebar_height, panel1->GetBounds().height());
+
+    panel1->SetExpansionState(Panel::MINIMIZED);
+    EXPECT_EQ(Panel::MINIMIZED, panel1->expansion_state());
+    EXPECT_LT(panel1->GetBounds().height(), titlebar_height);
+    EXPECT_GT(panel1->GetBounds().height(), 0);
+
+    // Create 2 more panels for more testing.
+    PanelBrowserView* browser_view2 = CreatePanelBrowserView("PanelTest2",
+                                                             SHOW_AS_ACTIVE);
+    Panel* panel2 = browser_view2->panel_.get();
+
+    PanelBrowserView* browser_view3 = CreatePanelBrowserView("PanelTest3",
+                                                             SHOW_AS_ACTIVE);
+    Panel* panel3 = browser_view3->panel_.get();
+
+    // Test bringing up or down the title-bar of all minimized panels.
+    EXPECT_EQ(Panel::EXPANDED, panel2->expansion_state());
+    panel3->SetExpansionState(Panel::MINIMIZED);
+    EXPECT_EQ(Panel::MINIMIZED, panel3->expansion_state());
+
+    PanelManager* panel_manager = PanelManager::GetInstance();
+
+    panel_manager->BringUpOrDownTitleBarForAllMinimizedPanels(true);
+    EXPECT_EQ(Panel::TITLE_ONLY, panel1->expansion_state());
+    EXPECT_EQ(Panel::EXPANDED, panel2->expansion_state());
+    EXPECT_EQ(Panel::TITLE_ONLY, panel3->expansion_state());
+
+    panel_manager->BringUpOrDownTitleBarForAllMinimizedPanels(false);
+    EXPECT_EQ(Panel::MINIMIZED, panel1->expansion_state());
+    EXPECT_EQ(Panel::EXPANDED, panel2->expansion_state());
+    EXPECT_EQ(Panel::MINIMIZED, panel3->expansion_state());
+
+    // Test if it is OK to bring up title-bar given the mouse position.
+    EXPECT_TRUE(panel_manager->ShouldBringUpTitleBarForAllMinimizedPanels(
+        panel1->GetBounds().x(), panel1->GetBounds().y()));
+    EXPECT_FALSE(panel_manager->ShouldBringUpTitleBarForAllMinimizedPanels(
+        panel2->GetBounds().x(), panel2->GetBounds().y()));
+    EXPECT_TRUE(panel_manager->ShouldBringUpTitleBarForAllMinimizedPanels(
+        panel3->GetBounds().right() - 1, panel3->GetBounds().bottom() - 1));
+    EXPECT_TRUE(panel_manager->ShouldBringUpTitleBarForAllMinimizedPanels(
+        panel3->GetBounds().right() - 1, panel3->GetBounds().bottom() + 10));
+    EXPECT_FALSE(panel_manager->ShouldBringUpTitleBarForAllMinimizedPanels(
+        0, 0));
+
+    panel1->Close();
+    EXPECT_TRUE(IsMouseWatcherStarted());
+    panel2->Close();
+    EXPECT_TRUE(IsMouseWatcherStarted());
+    panel3->Close();
+    EXPECT_FALSE(IsMouseWatcherStarted());
   }
 };
 
@@ -586,5 +671,9 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, CreateSettingsMenu) {
   TestCreateSettingsMenuForExtension(
       FILE_PATH_LITERAL("extension2"), Extension::INVALID,
       "http://home", "options.html");
+}
+
+IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, MinimizeAndRestore) {
+  TestMinimizeAndRestore();
 }
 #endif

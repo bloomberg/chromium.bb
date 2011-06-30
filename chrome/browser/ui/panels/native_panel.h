@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_PANELS_NATIVE_PANEL_H_
 #pragma once
 
+#include "chrome/browser/ui/panels/panel.h"
 #include "ui/gfx/native_widget_types.h"
 
 class Panel;
@@ -34,8 +35,19 @@ class NativePanel {
   virtual void ShowPanelInactive() = 0;
   virtual gfx::Rect GetPanelBounds() const = 0;
   virtual void SetPanelBounds(const gfx::Rect& bounds) = 0;
-  virtual void MinimizePanel() = 0;
-  virtual void RestorePanel() = 0;
+
+  // The native panel needs to update the bounds. In addition, it needs to watch
+  // for the mouse movement so that it knows when to bring up or down all the
+  // minimized panels. To do this, when the mouse moves, the native panel needs
+  // to call PanelManager::ShouldBringUpTitleBarForAllMinimizedPanels to check.
+  virtual void OnPanelExpansionStateChanged(
+      Panel::ExpansionState expansion_state) = 0;
+
+  // When the mouse is at (mouse_x, mouse_y) in screen coordinate system, finds
+  // out if the title-bar needs to pop up for the minimized panel that is only
+  // shown as 3-pixel lines.
+  virtual bool ShouldBringUpPanelTitleBar(int mouse_x, int mouse_y) const = 0;
+
   virtual void ClosePanel() = 0;
   virtual void ActivatePanel() = 0;
   virtual void DeactivatePanel() = 0;

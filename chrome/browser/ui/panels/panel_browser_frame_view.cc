@@ -326,6 +326,13 @@ void PanelBrowserFrameView::OnThemeChanged() {
   LoadImageResources();
 }
 
+gfx::Size PanelBrowserFrameView::GetMinimumSize() {
+  // This makes the panel be able to shrink to very small, like 3-pixel lines.
+  // Since the panel cannot be resized by the user, we do not need to enforce
+  // the minimum size.
+  return gfx::Size();
+}
+
 void PanelBrowserFrameView::Layout() {
   // Layout the close button.
   gfx::Size close_button_size = close_button_->GetPreferredSize();

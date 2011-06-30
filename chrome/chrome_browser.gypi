@@ -2905,6 +2905,8 @@
         'browser/ui/panels/panel_browser_view.h',
         'browser/ui/panels/panel_manager.cc',
         'browser/ui/panels/panel_manager.h',
+        'browser/ui/panels/panel_mouse_watcher_win.cc',
+        'browser/ui/panels/panel_mouse_watcher_win.h',
         'browser/ui/panels/panel_titlebar_view_cocoa.h',
         'browser/ui/panels/panel_titlebar_view_cocoa.mm',
         'browser/ui/panels/panel_window_controller_cocoa.h',

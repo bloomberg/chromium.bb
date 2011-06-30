@@ -25,7 +25,9 @@ const Extension* Panel::GetExtension(Browser* browser) {
       web_app::GetExtensionIdFromApplicationName(browser->app_name()), false);
 }
 
-Panel::Panel(Browser* browser, const gfx::Rect& bounds) {
+Panel::Panel(Browser* browser, const gfx::Rect& bounds)
+    : native_panel_(NULL),
+      expansion_state_(EXPANDED) {
   native_panel_ = CreateNativePanel(browser, this, bounds);
 }
 
@@ -41,12 +43,21 @@ void Panel::SetPanelBounds(const gfx::Rect& bounds) {
   native_panel_->SetPanelBounds(bounds);
 }
 
-void Panel::Minimize() {
-  native_panel_->MinimizePanel();
+void Panel::SetExpansionState(ExpansionState new_expansion_state) {
+  if (expansion_state_ == new_expansion_state)
+    return;
+  expansion_state_ = new_expansion_state;
+
+  native_panel_->OnPanelExpansionStateChanged(expansion_state_);
 }
 
-void Panel::Restore() {
-  native_panel_->RestorePanel();
+bool Panel::ShouldBringUpTitleBar(int mouse_x, int mouse_y) const {
+  // Skip the expanded panel.
+  if (expansion_state_ == Panel::EXPANDED)
+    return false;
+
+  // Let the native panel decide.
+  return native_panel_->ShouldBringUpPanelTitleBar(mouse_x, mouse_y);
 }
 
 void Panel::Show() {
