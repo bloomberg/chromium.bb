@@ -2450,11 +2450,14 @@ extrasdk() {
 
   local headerdir
   local extra_flag=""
+  local neutral_platform
   if ${LIBMODE_NEWLIB}; then
     headerdir="${NEWLIB_INSTALL_DIR}/${CROSS_TARGET_ARM}/include"
+    neutral_platform=arm
   else
     extra_flag="--nacl_glibc"
     headerdir="${GLIBC_INSTALL_DIR}/include"
+    neutral_platform=x86-32
   fi
 
   StepBanner "EXTRASDK" "Make/Install headers"
@@ -2464,7 +2467,7 @@ extrasdk() {
       extra_sdk_include_destination="${headerdir}" \
       bitcode=1 \
       ${extra_flag} \
-      platform=arm \
+      platform=${neutral_platform} \
       sdl=none \
       naclsdk_validate=0 \
       extra_sdk_update_header
@@ -2477,7 +2480,7 @@ extrasdk() {
         extra_sdk_include_destination="${headerdir}" \
         bitcode=1 \
         ${extra_flag} \
-        platform=arm \
+        platform=${neutral_platform} \
         sdl=none \
         naclsdk_validate=0 \
         install_libpthread
@@ -2491,7 +2494,7 @@ extrasdk() {
       disable_nosys_linker_warnings=1 \
       bitcode=1 \
       ${extra_flag} \
-      platform=arm \
+      platform=${neutral_platform} \
       sdl=none \
       naclsdk_validate=0 \
       --verbose \

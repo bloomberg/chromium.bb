@@ -205,7 +205,6 @@ def _SetEnvForPnacl(env, root):
   assert arch in ['arm', 'x86-32', 'x86-64']
 
   arch_flag = ' -arch %s' % arch
-  shlibsuffix = '.so'
 
   env['PNACL_ROOT'] = root
   pnacl_sdk_lib = '${PNACL_ROOT}/libs-bitcode'
@@ -227,8 +226,7 @@ def _SetEnvForPnacl(env, root):
   pnacl_sdk_cxx_flags = ''
   pnacl_sdk_cc_flags = ' -std=gnu99'
   pnacl_sdk_cc_native_flags = ' -std=gnu99' + arch_flag
-  pnacl_sdk_ld_flags = arch_flag
-  pnacl_sdk_ld_flags += ' '.join(env['PNACL_BCLDFLAGS'])
+  pnacl_sdk_ld_flags = ' ' + ' '.join(env['PNACL_BCLDFLAGS'])
 
   if env.Bit('nacl_pic'):
     pnacl_sdk_cc_flags += ' -fPIC'
@@ -252,12 +250,17 @@ def _SetEnvForPnacl(env, root):
               CXX=pnacl_sdk_cxx + pnacl_sdk_cxx_flags,
               LIBPREFIX="lib",
               SHLIBPREFIX="lib",
-              SHLIBSUFFIX=shlibsuffix,
+              SHLIBSUFFIX=".pso",
               OBJSUFFIX=".bc",
-              LINK=pnacl_sdk_cxx + pnacl_sdk_ld_flags,
+              LINK=pnacl_sdk_cxx + arch_flag + pnacl_sdk_ld_flags,
+              # Although we are currently forced to produce native output
+              # for LINK, we are free to produce bitcode for SHLINK
+              # (SharedLibrary linking) because scons doesn't do anything
+              # with shared libraries except use them with the toolchain.
+              SHLINK=pnacl_sdk_cxx + pnacl_sdk_ld_flags,
               # C_ONLY_LINK is needed when building libehsupport,
               # because libstdc++ is not yet available.
-              C_ONLY_LINK=pnacl_sdk_cc + pnacl_sdk_ld_flags,
+              C_ONLY_LINK=pnacl_sdk_cc + arch_flag + pnacl_sdk_ld_flags,
               LD=pnacl_sdk_ld,
               AR=pnacl_sdk_ar,
               RANLIB=pnacl_sdk_ranlib,
@@ -296,6 +299,7 @@ def PNaClForceNative(env):
   env.Append(CCFLAGS=['-arch', '${TARGET_FULLARCH}',
                             '--pnacl-allow-translate'])
   env.Append(LINKFLAGS=['--pnacl-allow-native'])
+  env['SHLINK'] = '${LINK}'
 
 # Get an environment for nacl-gcc when in PNaCl mode.
 def PNaClGetNNaClEnv(env):
