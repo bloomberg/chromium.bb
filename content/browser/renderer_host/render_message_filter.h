@@ -82,11 +82,12 @@ class RenderMessageFilter : public BrowserMessageFilter {
                                  bool* message_was_ok);
   virtual void OnDestruct() const;
 
+  bool OffTheRecord() const;
+
   int render_process_id() const { return render_process_id_; }
   ResourceDispatcherHost* resource_dispatcher_host() {
     return resource_dispatcher_host_;
   }
-  bool incognito() { return incognito_; }
 
   // Returns either the extension net::URLRequestContext or regular
   // net::URLRequestContext depending on whether |url| is an extension URL.

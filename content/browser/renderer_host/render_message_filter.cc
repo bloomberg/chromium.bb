@@ -125,7 +125,7 @@ class OpenChannelToNpapiPluginCallback : public RenderMessageCompletionCallback,
   }
 
   virtual bool OffTheRecord() {
-    return filter()->incognito();
+    return filter()->OffTheRecord();
   }
 
   virtual void SetPluginInfo(const webkit::npapi::WebPluginInfo& info) {
@@ -376,6 +376,12 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
 
 void RenderMessageFilter::OnDestruct() const {
   BrowserThread::DeleteOnIOThread::Destruct(this);
+}
+
+bool RenderMessageFilter::OffTheRecord() const {
+  return incognito_ ||
+         !content::GetContentClient()->browser()->AllowSaveLocalState(
+             resource_context_);
 }
 
 void RenderMessageFilter::OnMsgCreateWindow(

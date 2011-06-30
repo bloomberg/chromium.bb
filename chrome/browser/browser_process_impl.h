@@ -296,7 +296,6 @@ class BrowserProcessImpl : public BrowserProcess,
       resource_dispatcher_host_delegate_;
 
   NotificationRegistrar notification_registrar_;
-  scoped_refptr<PluginDataRemover> plugin_data_remover_;
 
   scoped_refptr<MHTMLGenerationManager> mhtml_generation_manager_;
 

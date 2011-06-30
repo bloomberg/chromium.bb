@@ -45,6 +45,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                               int render_process_id,
                               int render_view_id,
                               net::CookieOptions* options) OVERRIDE;
+  virtual bool AllowSaveLocalState(
+      const content::ResourceContext& context) OVERRIDE;
   virtual QuotaPermissionContext* CreateQuotaPermissionContext() OVERRIDE;
   virtual void RevealFolderInOS(const FilePath& path) OVERRIDE;
   virtual void AllowCertificateError(

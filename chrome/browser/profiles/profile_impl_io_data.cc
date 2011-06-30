@@ -144,6 +144,9 @@ void ProfileImplIOData::Handle::LazyInitialize() const {
     io_data_->InitializeProfileParams(profile_);
     ChromeNetworkDelegate::InitializeReferrersEnabled(
         io_data_->enable_referrers(), profile_->GetPrefs());
+    io_data_->clear_local_state_on_exit()->Init(
+        prefs::kClearSiteDataOnExit, profile_->GetPrefs(), NULL);
+    io_data_->clear_local_state_on_exit()->MoveToThread(BrowserThread::IO);
     initialized_ = true;
   }
 }

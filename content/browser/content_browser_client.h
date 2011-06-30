@@ -132,6 +132,10 @@ class ContentBrowserClient {
                               int render_view_id,
                               net::CookieOptions* options) = 0;
 
+  // This is called on the IO thread.
+  virtual bool AllowSaveLocalState(
+      const content::ResourceContext& context) = 0;
+
   // Create and return a new quota permission context.
   virtual QuotaPermissionContext* CreateQuotaPermissionContext() = 0;
 

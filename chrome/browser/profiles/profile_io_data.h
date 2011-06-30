@@ -96,6 +96,10 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
   HostContentSettingsMap* GetHostContentSettingsMap() const;
   DesktopNotificationService* GetNotificationService() const;
 
+  BooleanPrefMember* clear_local_state_on_exit()  const {
+    return &clear_local_state_on_exit_;
+  }
+
  protected:
   friend class base::RefCountedThreadSafe<ProfileIOData>;
 
@@ -238,6 +242,7 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
 
   // Member variables which are pointed to by the various context objects.
   mutable BooleanPrefMember enable_referrers_;
+  mutable BooleanPrefMember clear_local_state_on_exit_;
 
   // Pointed to by URLRequestContext.
   mutable scoped_ptr<ChromeURLDataManagerBackend>

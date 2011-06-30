@@ -37,7 +37,6 @@
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
-#include "chrome/browser/plugin_data_remover.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -139,10 +138,6 @@ BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
   clipboard_.reset(new ui::Clipboard);
   main_notification_service_.reset(new NotificationService);
 
-  notification_registrar_.Add(this,
-                              NotificationType::APP_TERMINATING,
-                              NotificationService::AllSources());
-
   // Must be created after the NotificationService.
   print_job_manager_.reset(new printing::PrintJobManager);
 
@@ -223,9 +218,6 @@ BrowserProcessImpl::~BrowserProcessImpl() {
   // The policy providers managed by |browser_policy_connector_| need to shut
   // down while the IO and FILE threads are still alive.
   browser_policy_connector_.reset();
-
-  // Wait for removing plugin data to finish before shutting down the IO thread.
-  WaitForPluginDataRemoverToFinish();
 
   // Destroying the GpuProcessHostUIShims on the UI thread posts a task to
   // delete related objects on the GPU thread. This must be done before
@@ -639,19 +631,7 @@ bool BrowserProcessImpl::plugin_finder_disabled() const {
 void BrowserProcessImpl::Observe(NotificationType type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {
-  if (type == NotificationType::APP_TERMINATING) {
-    Profile* profile = ProfileManager::GetDefaultProfile();
-    if (profile) {
-      PrefService* prefs = profile->GetPrefs();
-      if (prefs->GetBoolean(prefs::kClearSiteDataOnExit) &&
-          local_state()->GetBoolean(prefs::kClearPluginLSODataEnabled)) {
-        plugin_data_remover_ = new PluginDataRemover();
-        if (!plugin_data_remover_mime_type().empty())
-          plugin_data_remover_->set_mime_type(plugin_data_remover_mime_type());
-        plugin_data_remover_->StartRemoving(base::Time());
-      }
-    }
-  } else if (type == NotificationType::PREF_CHANGED) {
+  if (type == NotificationType::PREF_CHANGED) {
     std::string* pref = Details<std::string>(details).ptr();
     if (*pref == prefs::kDefaultBrowserSettingEnabled) {
       if (local_state_->GetBoolean(prefs::kDefaultBrowserSettingEnabled))
@@ -664,11 +644,6 @@ void BrowserProcessImpl::Observe(NotificationType type,
   } else {
     NOTREACHED();
   }
-}
-
-void BrowserProcessImpl::WaitForPluginDataRemoverToFinish() {
-  if (plugin_data_remover_.get())
-    plugin_data_remover_->Wait();
 }
 
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)

@@ -94,6 +94,11 @@ bool MockContentBrowserClient::AllowSetCookie(
   return true;
 }
 
+bool MockContentBrowserClient::AllowSaveLocalState(
+    const content::ResourceContext& context) {
+  return true;
+}
+
 QuotaPermissionContext*
     MockContentBrowserClient::CreateQuotaPermissionContext() {
   return NULL;
