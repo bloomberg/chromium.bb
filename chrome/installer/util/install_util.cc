@@ -75,6 +75,42 @@ const wchar_t* const kStages[] = {
 COMPILE_ASSERT(installer::NUM_STAGES == arraysize(kStages),
                kStages_disagrees_with_Stage_comma_they_must_match_bang);
 
+// Creates a zero-sized non-decorated foreground window that doesn't appear
+// in the taskbar. This is used as a parent window for calls to ShellExecuteEx
+// in order for the UAC dialog to appear in the foreground and for focus
+// to be returned to this process once the UAC task is dismissed. Returns
+// NULL on failure, a handle to the UAC window on success.
+HWND CreateUACForegroundWindow() {
+  HWND foreground_window = ::CreateWindowEx(WS_EX_TOOLWINDOW,
+                                            L"STATIC",
+                                            NULL,
+                                            WS_POPUP | WS_VISIBLE,
+                                            0, 0, 0, 0,
+                                            NULL, NULL,
+                                            ::GetModuleHandle(NULL),
+                                            NULL);
+  if (foreground_window) {
+    HMONITOR monitor = ::MonitorFromWindow(foreground_window,
+                                           MONITOR_DEFAULTTONEAREST);
+    if (monitor) {
+      MONITORINFO mi = {0};
+      mi.cbSize = sizeof(mi);
+      ::GetMonitorInfo(monitor, &mi);
+      RECT screen_rect = mi.rcWork;
+      int x_offset = (screen_rect.right - screen_rect.left) / 2;
+      int y_offset = (screen_rect.bottom - screen_rect.top) / 2;
+      ::MoveWindow(foreground_window,
+                   screen_rect.left + x_offset,
+                   screen_rect.top + y_offset,
+                   0, 0, FALSE);
+    } else {
+      NOTREACHED() << "Unable to get default monitor";
+    }
+    ::SetForegroundWindow(foreground_window);
+  }
+  return foreground_window;
+}
+
 }  // namespace
 
 bool InstallUtil::ExecuteExeAsAdmin(const CommandLine& cmd, DWORD* exit_code) {
@@ -94,24 +130,33 @@ bool InstallUtil::ExecuteExeAsAdmin(const CommandLine& cmd, DWORD* exit_code) {
 
   TrimWhitespace(params, TRIM_ALL, &params);
 
+  HWND uac_foreground_window = CreateUACForegroundWindow();
+
   SHELLEXECUTEINFO info = {0};
   info.cbSize = sizeof(SHELLEXECUTEINFO);
   info.fMask = SEE_MASK_NOCLOSEPROCESS;
+  info.hwnd = uac_foreground_window;
   info.lpVerb = L"runas";
   info.lpFile = program.c_str();
   info.lpParameters = params.c_str();
   info.nShow = SW_SHOW;
-  if (::ShellExecuteEx(&info) == FALSE)
-    return false;
 
-  ::WaitForSingleObject(info.hProcess, INFINITE);
-  DWORD ret_val = 0;
-  if (!::GetExitCodeProcess(info.hProcess, &ret_val))
-    return false;
+  bool success = false;
+  if (::ShellExecuteEx(&info) == TRUE) {
+    ::WaitForSingleObject(info.hProcess, INFINITE);
+    DWORD ret_val = 0;
+    if (::GetExitCodeProcess(info.hProcess, &ret_val)) {
+      success = true;
+      if (exit_code)
+        *exit_code = ret_val;
+    }
+  }
 
-  if (exit_code)
-    *exit_code = ret_val;
-  return true;
+  if (uac_foreground_window) {
+    DestroyWindow(uac_foreground_window);
+  }
+
+  return success;
 }
 
 CommandLine InstallUtil::GetChromeUninstallCmd(
