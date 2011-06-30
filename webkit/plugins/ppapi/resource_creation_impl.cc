@@ -154,12 +154,6 @@ PP_Resource ResourceCreationImpl::CreateFlashNetConnector(
   return ReturnResource(new PPB_Flash_NetConnector_Impl(instance_));
 }
 
-PP_Resource ResourceCreationImpl::CreateFlashTCPSocket(
-    PP_Instance instance) {
-  // Creating TCP socket resource at the renderer side is not supported.
-  return 0;
-}
-
 PP_Resource ResourceCreationImpl::CreateFontObject(
     PP_Instance pp_instance,
     const PP_FontDescription_Dev* description) {

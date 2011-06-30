@@ -23,7 +23,6 @@
   F(PPB_Find_API) \
   F(PPB_Flash_Menu_API) \
   F(PPB_Flash_NetConnector_API) \
-  F(PPB_Flash_TCPSocket_API) \
   F(PPB_Font_API) \
   F(PPB_Graphics2D_API) \
   F(PPB_Graphics3D_API) \

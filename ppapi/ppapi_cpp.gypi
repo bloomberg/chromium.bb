@@ -92,7 +92,6 @@
         'c/private/ppb_flash_file.h',
         'c/private/ppb_flash_menu.h',
         'c/private/ppb_flash_net_connector.h',
-        'c/private/ppb_flash_tcp_socket.h',
         'c/private/ppb_instance_private.h',
         'c/private/ppb_nacl_private.h',
         'c/private/ppb_pdf.h',

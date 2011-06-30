@@ -24,7 +24,6 @@ struct PPB_FileSystem_Dev;
 struct PPB_Find_Dev;
 struct PPB_Flash_Menu;
 struct PPB_Flash_NetConnector;
-struct PPB_Flash_TCPSocket;
 struct PPB_Font_Dev;
 struct PPB_Fullscreen_Dev;
 struct PPB_GLESChromiumTextureMapping_Dev;
@@ -76,7 +75,6 @@ const PPB_FileSystem_Dev* GetPPB_FileSystem_Thunk();
 const PPB_Find_Dev* GetPPB_Find_Thunk();
 const PPB_Flash_Menu* GetPPB_Flash_Menu_Thunk();
 const PPB_Flash_NetConnector* GetPPB_Flash_NetConnector_Thunk();
-const PPB_Flash_TCPSocket* GetPPB_Flash_TCPSocket_Thunk();
 const PPB_Font_Dev* GetPPB_Font_Thunk();
 const PPB_Fullscreen_Dev* GetPPB_Fullscreen_Thunk();
 const PPB_GLESChromiumTextureMapping_Dev*

@@ -26,7 +26,6 @@
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_size.h"
-#include "ppapi/c/private/ppb_flash_tcp_socket.h"
 #include "ppapi/proxy/ppapi_param_traits.h"
 #include "ppapi/proxy/serialized_flash_menu.h"
 #include "ppapi/proxy/serialized_structs.h"
@@ -149,24 +148,6 @@ IPC_MESSAGE_ROUTED5(PpapiMsg_PPBFlashNetConnector_ConnectACK,
                     IPC::PlatformFileForTransit /* handle */,
                     std::string /* local_addr_as_string */,
                     std::string /* remote_addr_as_string */)
-
-// PPB_Flash_TCPSocket.
-IPC_MESSAGE_ROUTED5(PpapiMsg_PPBFlashTCPSocket_ConnectACK,
-                    uint32 /* plugin_dispatcher_id */,
-                    uint32 /* socket_id */,
-                    bool /* succeeded */,
-                    PP_Flash_NetAddress /* local_addr */,
-                    PP_Flash_NetAddress /* remote_addr */)
-IPC_MESSAGE_ROUTED4(PpapiMsg_PPBFlashTCPSocket_ReadACK,
-                    uint32 /* plugin_dispatcher_id */,
-                    uint32 /* socket_id */,
-                    bool /* succeeded */,
-                    std::string /* data */)
-IPC_MESSAGE_ROUTED4(PpapiMsg_PPBFlashTCPSocket_WriteACK,
-                    uint32 /* plugin_dispatcher_id */,
-                    uint32 /* socket_id */,
-                    bool /* succeeded */,
-                    int32_t /* bytes_written */)
 
 // PPB_Graphics2D.
 IPC_MESSAGE_ROUTED2(PpapiMsg_PPBGraphics2D_FlushACK,
@@ -554,27 +535,6 @@ IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBFlashNetConnector_ConnectTcp,
 IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBFlashNetConnector_ConnectTcpAddress,
                     pp::proxy::HostResource /* connector */,
                     std::string /* net_address_as_string */)
-
-// PPB_Flash_TCPSocket.
-IPC_SYNC_MESSAGE_CONTROL2_1(PpapiHostMsg_PPBFlashTCPSocket_Create,
-                            int32 /* routing_id */,
-                            uint32 /* plugin_dispatcher_id */,
-                            uint32 /* socket_id */)
-IPC_MESSAGE_CONTROL3(PpapiHostMsg_PPBFlashTCPSocket_Connect,
-                     uint32 /* socket_id */,
-                     std::string /* host */,
-                     uint16_t /* port */)
-IPC_MESSAGE_CONTROL2(PpapiHostMsg_PPBFlashTCPSocket_ConnectWithNetAddress,
-                     uint32 /* socket_id */,
-                     PP_Flash_NetAddress /* net_addr */)
-IPC_MESSAGE_CONTROL2(PpapiHostMsg_PPBFlashTCPSocket_Read,
-                     uint32 /* socket_id */,
-                     int32_t /* bytes_to_read */)
-IPC_MESSAGE_CONTROL2(PpapiHostMsg_PPBFlashTCPSocket_Write,
-                     uint32 /* socket_id */,
-                     std::string /* data */)
-IPC_MESSAGE_CONTROL1(PpapiHostMsg_PPBFlashTCPSocket_Disconnect,
-                     uint32 /* socket_id */)
 
 // PPB_Font.
 IPC_SYNC_MESSAGE_CONTROL0_1(PpapiHostMsg_PPBFont_GetFontFamilies,

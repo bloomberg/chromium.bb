@@ -6,8 +6,6 @@
 #define CONTENT_PPAPI_PLUGIN_PPAPI_THREAD_H_
 #pragma once
 
-#include <map>
-
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
@@ -44,15 +42,11 @@ class PpapiThread : public ChildThread,
   virtual void PostToWebKitThread(const tracked_objects::Location& from_here,
                                   const base::Closure& task) OVERRIDE;
   virtual bool SendToBrowser(IPC::Message* msg) OVERRIDE;
-  virtual uint32 Register(
-      pp::proxy::PluginDispatcher* plugin_dispatcher) OVERRIDE;
-  virtual void Unregister(uint32 plugin_dispatcher_id) OVERRIDE;
 
   // Message handlers.
   void OnMsgLoadPlugin(const FilePath& path);
   void OnMsgCreateChannel(base::ProcessHandle host_process_handle,
                           int renderer_id);
-  void OnPluginDispatcherMessageReceived(const IPC::Message& msg);
 
   // Sets up the channel to the given renderer. On success, returns true and
   // fills the given ChannelHandle with the information from the new channel.
@@ -86,10 +80,6 @@ class PpapiThread : public ChildThread,
   scoped_ptr<ppapi::WebKitForwarding> webkit_forwarding_;
 
   scoped_ptr<PpapiWebKitThread> webkit_thread_;
-
-  // The PluginDispatcher instances contained in the map are not owned by it.
-  std::map<uint32, pp::proxy::PluginDispatcher*> plugin_dispatchers_;
-  uint32 next_plugin_dispatcher_id_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(PpapiThread);
 };

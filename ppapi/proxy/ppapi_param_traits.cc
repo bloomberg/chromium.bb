@@ -8,7 +8,6 @@
 
 #include "ppapi/c/dev/pp_file_info_dev.h"
 #include "ppapi/c/pp_resource.h"
-#include "ppapi/c/private/ppb_flash_tcp_socket.h"
 #include "ppapi/proxy/host_resource.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/ppapi_messages.h"
@@ -135,40 +134,6 @@ bool ParamTraits<PP_FileInfo_Dev>::Read(const Message* m, void** iter,
 
 // static
 void ParamTraits<PP_FileInfo_Dev>::Log(const param_type& p, std::string* l) {
-}
-
-// PP_Flash_NetAddress ---------------------------------------------------------
-
-// static
-void ParamTraits<PP_Flash_NetAddress>::Write(Message* m, const param_type& p) {
-  WriteParam(m, p.size);
-  m->WriteBytes(p.data, static_cast<int>(p.size));
-}
-
-// static
-bool ParamTraits<PP_Flash_NetAddress>::Read(const Message* m,
-                                            void** iter,
-                                            param_type* p) {
-  uint16 size;
-  if (!ReadParam(m, iter, &size))
-    return false;
-  if (size > sizeof(p->data))
-    return false;
-  p->size = size;
-
-  const char* data;
-  if (!m->ReadBytes(iter, &data, size))
-    return false;
-  memcpy(p->data, data, size);
-  return true;
-}
-
-// static
-void ParamTraits<PP_Flash_NetAddress>::Log(const param_type& p,
-                                           std::string* l) {
-  l->append("<PP_Flash_NetAddress (");
-  LogParam(p.size, l);
-  l->append(" bytes)>");
 }
 
 // PP_InputEvent ---------------------------------------------------------------

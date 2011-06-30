@@ -40,7 +40,6 @@
 #include "ppapi/c/private/ppb_flash_file.h"
 #include "ppapi/c/private/ppb_flash_menu.h"
 #include "ppapi/c/private/ppb_flash_net_connector.h"
-#include "ppapi/c/private/ppb_flash_tcp_socket.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 #include "ppapi/proxy/ppapi_messages.h"
@@ -62,7 +61,6 @@
 #include "ppapi/proxy/ppb_flash_proxy.h"
 #include "ppapi/proxy/ppb_flash_menu_proxy.h"
 #include "ppapi/proxy/ppb_flash_net_connector_proxy.h"
-#include "ppapi/proxy/ppb_flash_tcp_socket_proxy.h"
 #include "ppapi/proxy/ppb_font_proxy.h"
 #include "ppapi/proxy/ppb_graphics_2d_proxy.h"
 #include "ppapi/proxy/ppb_image_data_proxy.h"
@@ -131,7 +129,6 @@ InterfaceList::InterfaceList() {
   AddPPB(PPB_Flash_File_ModuleLocal_Proxy::GetInfo());
   AddPPB(PPB_Flash_Proxy::GetInfo());
   AddPPB(PPB_Flash_Menu_Proxy::GetInfo());
-  AddPPB(PPB_Flash_TCPSocket_Proxy::GetInfo());
   AddPPB(PPB_Font_Proxy::GetInfo());
   AddPPB(PPB_Graphics2D_Proxy::GetInfo());
   AddPPB(PPB_ImageData_Proxy::GetInfo());
