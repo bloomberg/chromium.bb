@@ -87,6 +87,10 @@ class MediaTestBase(pyauto.PyUITest):
     track_file = os.getenv(MediaTestEnvNames.TRACK_FILE_ENV_NAME)
     if track_file:
       query_dictionary['track'] = track_file
+    query_dictionary['num_extra'] = (
+      os.getenv(MediaTestEnvNames.N_EXTRA_PLAYERS_ENV_NAME, 0))
+    if os.getenv(MediaTestEnvNames.JERKY_TEST_ENV_NAME):
+      query_dictionary['jerky'] = 'True'
     query_str = '&'.join(
         [k + '=' + str(v) for (k, v) in query_dictionary.items()])
     if player_html_url_nickname == self.DEFAULT_PLAYER_HTML_URL_NICKNAME:

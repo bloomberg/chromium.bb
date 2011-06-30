@@ -63,3 +63,9 @@ class MediaTestEnvNames:
 
   # Define track(caption) file.
   TRACK_FILE_ENV_NAME = 'TRACK_FILE'
+
+  # Define the number of additional players shown for stress testing.
+  N_EXTRA_PLAYERS_ENV_NAME = 'N_EXTRA_PLAYERS'
+
+  # Define this if this is jerky test.
+  JERKY_TEST_ENV_NAME = 'JERKY_TEST'

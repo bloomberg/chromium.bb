@@ -133,7 +133,10 @@ def main():
                           ' and put into reference_build_dir).'))
   parser.add_option('-y', '--track-file_dir', dest='track_file_dir',
                     help=('A directory that contains vtt format files.'))
-
+  parser.add_option('-d', '--num-extra-players',
+                    dest='number_of_extra_players',
+                    help=('The number of extra players for '
+                          'stress testing using the same media file.'))
   options, args = parser.parse_args()
   if args:
     parser.print_help()
@@ -243,6 +246,9 @@ def main():
               options.reference_build_dir)
         if track_file:
           envs[MediaTestEnvNames.TRACK_FILE_ENV_NAME] = track_file
+        if options.number_of_extra_players:
+          envs[MediaTestEnvNames.N_EXTRA_PLAYERS_ENV_NAME] = (
+              options.number_of_extra_players)
         envs.update(parent_envs)
         if options.suite is None and options.test_prog_name is not None:
           # Suite is not used - run test program directly.
