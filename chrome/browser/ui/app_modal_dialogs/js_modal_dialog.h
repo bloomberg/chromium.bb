@@ -8,16 +8,15 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
 #include "content/browser/javascript_dialogs.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
 
-class ExtensionHost;
-class NativeAppModalDialog;
-class TabContents;
+namespace content {
+class JavaScriptDialogDelegate;
+}
 
 namespace IPC {
 class Message;
@@ -37,8 +36,7 @@ class ChromeJavaScriptDialogExtraData {
 
 // A controller + model class for JavaScript alert, confirm, prompt, and
 // onbeforeunload dialog boxes.
-class JavaScriptAppModalDialog : public AppModalDialog,
-                                 public NotificationObserver {
+class JavaScriptAppModalDialog : public AppModalDialog {
  public:
   JavaScriptAppModalDialog(content::JavaScriptDialogDelegate* delegate,
                            ChromeJavaScriptDialogExtraData* extra_data,
@@ -52,10 +50,10 @@ class JavaScriptAppModalDialog : public AppModalDialog,
   virtual ~JavaScriptAppModalDialog();
 
   // Overridden from AppModalDialog:
-  virtual NativeAppModalDialog* CreateNativeDialog();
-  virtual bool IsJavaScriptModalDialog();
-
-  content::JavaScriptDialogDelegate* delegate() const { return delegate_; }
+  virtual NativeAppModalDialog* CreateNativeDialog() OVERRIDE;
+  virtual bool IsJavaScriptModalDialog() OVERRIDE;
+  virtual void Invalidate() OVERRIDE;
+  virtual content::JavaScriptDialogDelegate* delegate() const OVERRIDE;
 
   // Callbacks from NativeDialog when the user accepts or cancels the dialog.
   void OnCancel(bool suppress_js_messages);
@@ -77,23 +75,9 @@ class JavaScriptAppModalDialog : public AppModalDialog,
   bool is_before_unload_dialog() const { return is_before_unload_dialog_; }
 
  private:
-  // Overridden from NotificationObserver:
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
-
-  // Initializes for notifications to listen.
-  void InitNotifications();
-
   // Notifies the delegate with the result of the dialog.
   void NotifyDelegate(bool success, const string16& prompt_text,
                       bool suppress_js_messages);
-
-  NotificationRegistrar registrar_;
-
-  // An implementation of the client interface to provide supporting methods
-  // and receive results.
-  content::JavaScriptDialogDelegate* delegate_;
 
   // The extra Chrome-only data associated with the delegate_.
   ChromeJavaScriptDialogExtraData* extra_data_;

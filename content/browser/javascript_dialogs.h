@@ -20,32 +20,30 @@ class Message;
 
 namespace content {
 
+class DialogDelegate {
+ public:
+  // Returns the root native window with which to associate the dialog.
+  virtual gfx::NativeWindow GetDialogRootWindow() = 0;
+
+  // Called right before the dialog is shown.
+  virtual void OnDialogShown() {}
+
+ protected:
+  virtual ~DialogDelegate() {}
+};
+
 // A class that invokes a JavaScript dialog must implement this interface to
 // allow the dialog implementation to get needed information and return results.
-class JavaScriptDialogDelegate {
+class JavaScriptDialogDelegate : public DialogDelegate {
  public:
   // This callback is invoked when the dialog is closed.
   virtual void OnDialogClosed(IPC::Message* reply_msg,
                               bool success,
                               const string16& user_input) = 0;
 
-  // Returns the root native window with which to associate the dialog.
-  virtual gfx::NativeWindow GetDialogRootWindow() = 0;
-
-  // Returns the TabContents implementing this delegate, or NULL if there is
-  // none. TODO(avi): This breaks encapsulation and in general sucks; figure out
-  // a better way of doing this.
-  virtual TabContents* AsTabContents() = 0;
-
-  // Returns the ExtensionHost implementing this delegate, or NULL if there is
-  // none. TODO(avi): This is even suckier than AsTabContents above as it breaks
-  // layering; figure out a better way of doing this. http://crbug.com/84604
-  virtual ExtensionHost* AsExtensionHost() = 0;
-
  protected:
   virtual ~JavaScriptDialogDelegate() {}
 };
-
 
 // An interface consisting of methods that can be called to produce JavaScript
 // dialogs.
@@ -73,7 +71,8 @@ class JavaScriptDialogCreator {
                                      const string16& message_text,
                                      IPC::Message* reply_message) = 0;
 
-  // Resets any saved JavaScript dialog state for the delegate.
+  // Cancels all pending dialogs and resets any saved JavaScript dialog state
+  // for the delegate.
   virtual void ResetJavaScriptState(JavaScriptDialogDelegate* delegate) = 0;
 
  protected:

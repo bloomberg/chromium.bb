@@ -6,14 +6,15 @@
 
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
 #include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
+#include "content/browser/javascript_dialogs.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_type.h"
 
-AppModalDialog::AppModalDialog(TabContents* tab_contents,
+AppModalDialog::AppModalDialog(content::DialogDelegate* delegate,
                                const string16& title)
-    : skip_this_dialog_(false),
-      tab_contents_(tab_contents),
+    : valid_(true),
+      delegate_(delegate),
       native_dialog_(NULL),
       title_(title) {
 }
@@ -22,8 +23,8 @@ AppModalDialog::~AppModalDialog() {
 }
 
 void AppModalDialog::ShowModalDialog() {
-  if (tab_contents_)
-    tab_contents_->Activate();
+  if (delegate_)
+    delegate_->OnDialogShown();
 
   CreateAndShowDialog();
 
@@ -39,11 +40,19 @@ void AppModalDialog::CreateAndShowDialog() {
 }
 
 bool AppModalDialog::IsValid() {
-  return !skip_this_dialog_;
+  return valid_;
+}
+
+void AppModalDialog::Invalidate() {
+  valid_ = false;
 }
 
 bool AppModalDialog::IsJavaScriptModalDialog() {
   return false;
+}
+
+content::DialogDelegate* AppModalDialog::delegate() const {
+  return delegate_;
 }
 
 void AppModalDialog::ActivateModalDialog() {

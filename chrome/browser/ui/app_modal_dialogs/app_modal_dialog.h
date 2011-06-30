@@ -13,7 +13,10 @@
 #include "build/build_config.h"
 
 class NativeAppModalDialog;
-class TabContents;
+
+namespace content {
+class DialogDelegate;
+}
 
 // A controller+model base class for modal dialogs.
 class AppModalDialog {
@@ -21,7 +24,7 @@ class AppModalDialog {
   // A union of data necessary to determine the type of message box to
   // show. |tab_contents| parameter is optional, if provided that tab will be
   // activated before the modal dialog is displayed.
-  AppModalDialog(TabContents* tab_contents, const string16& title);
+  AppModalDialog(content::DialogDelegate* delegate, const string16& title);
   virtual ~AppModalDialog();
 
   // Called by the AppModalDialogQueue to show this dialog.
@@ -42,35 +45,41 @@ class AppModalDialog {
 
   NativeAppModalDialog* native_dialog() const { return native_dialog_; }
 
-  // Methods overridable by AppModalDialog subclasses:
-
   // Creates an implementation of NativeAppModalDialog and shows it.
   // When the native dialog is closed, the implementation of
   // NativeAppModalDialog should call OnAccept or OnCancel to notify the
   // renderer of the user's action. The NativeAppModalDialog is also
   // expected to delete the AppModalDialog associated with it.
-  virtual void CreateAndShowDialog();
+  void CreateAndShowDialog();
 
   // Returns true if the dialog is still valid. As dialogs are created they are
   // added to the AppModalDialogQueue. When the current modal dialog finishes
   // and it's time to show the next dialog in the queue IsValid is invoked.
   // If IsValid returns false the dialog is deleted and not shown.
-  virtual bool IsValid();
+  bool IsValid();
+
+  // Methods overridable by AppModalDialog subclasses:
+
+  // Invalidates the dialog, therefore causing it to not be shown when its turn
+  // to be shown comes around.
+  virtual void Invalidate();
 
   // Used only for testing. Returns whether the dialog is a JavaScript modal
   // dialog.
   virtual bool IsJavaScriptModalDialog();
 
+  virtual content::DialogDelegate* delegate() const;
+
  protected:
   // Overridden by subclasses to create the feature-specific native dialog box.
   virtual NativeAppModalDialog* CreateNativeDialog() = 0;
 
-  // True if the dialog should no longer be shown, e.g. because the underlying
+  // False if the dialog should no longer be shown, e.g. because the underlying
   // tab navigated away while the dialog was queued.
-  bool skip_this_dialog_;
+  bool valid_;
 
-  // Parent tab contents.
-  TabContents* tab_contents_;
+  // The owner of this dialog.
+  content::DialogDelegate* delegate_;
 
   // The toolkit-specific implementation of the app modal dialog box.
   NativeAppModalDialog* native_dialog_;

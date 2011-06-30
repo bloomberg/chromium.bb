@@ -129,8 +129,6 @@ class BackgroundContents : public RenderViewHostDelegate,
                               bool success,
                               const string16& user_input) OVERRIDE;
   virtual gfx::NativeWindow GetDialogRootWindow() OVERRIDE;
-  virtual TabContents* AsTabContents() OVERRIDE;
-  virtual ExtensionHost* AsExtensionHost() OVERRIDE;
 
   virtual void UpdateInspectorSetting(const std::string& key,
                                       const std::string& value);

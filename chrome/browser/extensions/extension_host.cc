@@ -478,14 +478,6 @@ gfx::NativeWindow ExtensionHost::GetDialogRootWindow() {
   return NULL;
 }
 
-TabContents* ExtensionHost::AsTabContents() {
-  return NULL;
-}
-
-ExtensionHost* ExtensionHost::AsExtensionHost() {
-  return this;
-}
-
 void ExtensionHost::OnDialogClosed(IPC::Message* reply_msg,
                                    bool success,
                                    const string16& user_input) {

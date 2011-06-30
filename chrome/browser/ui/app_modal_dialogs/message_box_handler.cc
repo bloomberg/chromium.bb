@@ -49,6 +49,8 @@ class ChromeJavaScriptDialogCreator : public content::JavaScriptDialogCreator {
                     const string16& title,
                     bool is_alert);
 
+  void CancelPendingDialogs(content::DialogDelegate* delegate);
+
   // Mapping between the JavaScriptDialogDelegates and their extra data. The key
   // is a void* because the pointer is just a cookie and is never dereferenced.
   typedef std::map<void*, ChromeJavaScriptDialogExtraData>
@@ -138,6 +140,7 @@ void ChromeJavaScriptDialogCreator::RunBeforeUnloadDialog(
 
 void ChromeJavaScriptDialogCreator::ResetJavaScriptState(
     content::JavaScriptDialogDelegate* delegate) {
+  CancelPendingDialogs(delegate);
   javascript_dialog_extra_data_.erase(delegate);
 }
 
@@ -166,6 +169,16 @@ string16 ChromeJavaScriptDialogCreator::GetTitle(TitleType title_type,
   }
   NOTREACHED();
   return string16();
+}
+
+void ChromeJavaScriptDialogCreator::CancelPendingDialogs(
+    content::DialogDelegate* delegate) {
+  AppModalDialogQueue* queue = AppModalDialogQueue::GetInstance();
+  for (AppModalDialogQueue::iterator i = queue->begin();
+       i != queue->end(); ++i) {
+    if ((*i)->delegate() == delegate)
+      (*i)->Invalidate();
+  }
 }
 
 //------------------------------------------------------------------------------

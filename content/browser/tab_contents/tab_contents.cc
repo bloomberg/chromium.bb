@@ -1834,12 +1834,8 @@ gfx::NativeWindow TabContents::GetDialogRootWindow() {
   return view_->GetTopLevelNativeWindow();
 }
 
-TabContents* TabContents::AsTabContents() {
-  return this;
-}
-
-ExtensionHost* TabContents::AsExtensionHost() {
-  return NULL;
+void TabContents::OnDialogShown() {
+  Activate();
 }
 
 void TabContents::set_encoding(const std::string& encoding) {

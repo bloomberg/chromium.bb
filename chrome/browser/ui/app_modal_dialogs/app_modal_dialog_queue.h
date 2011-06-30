@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_APP_MODAL_DIALOGS_APP_MODAL_DIALOG_QUEUE_H_
 #pragma once
 
-#include <queue>
+#include <deque>
 
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
 
@@ -56,6 +56,16 @@ class AppModalDialogQueue {
     return active_dialog_;
   }
 
+  // Iterators to walk the queue.
+  typedef std::deque<AppModalDialog*>::iterator iterator;
+  iterator begin() {
+    return app_modal_dialog_queue_.begin();
+  }
+
+  iterator end() {
+    return app_modal_dialog_queue_.end();
+  }
+
  private:
   friend struct DefaultSingletonTraits<AppModalDialogQueue>;
 
@@ -73,7 +83,7 @@ class AppModalDialogQueue {
 
   // Contains all app modal dialogs which are waiting to be shown, with the
   // currently modal dialog at the front of the queue.
-  std::queue<AppModalDialog*> app_modal_dialog_queue_;
+  std::deque<AppModalDialog*> app_modal_dialog_queue_;
 
   // The currently active app-modal dialog box's delegate. NULL if there is no
   // active app-modal dialog box.

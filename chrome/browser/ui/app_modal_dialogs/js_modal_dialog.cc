@@ -4,14 +4,8 @@
 
 #include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
 
-#include "base/string_util.h"
-#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_shutdown.h"
-#include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
-#include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 #include "ui/base/text/text_elider.h"
 
 namespace {
@@ -62,10 +56,8 @@ JavaScriptAppModalDialog::JavaScriptAppModalDialog(
     bool display_suppress_checkbox,
     bool is_before_unload_dialog,
     IPC::Message* reply_msg)
-    : AppModalDialog(delegate->AsTabContents(), title),
-      delegate_(delegate),
+    : AppModalDialog(delegate, title),
       extra_data_(extra_data),
-      extension_host_(delegate->AsExtensionHost()),
       dialog_flags_(dialog_flags),
       display_suppress_checkbox_(display_suppress_checkbox),
       is_before_unload_dialog_(is_before_unload_dialog),
@@ -73,9 +65,6 @@ JavaScriptAppModalDialog::JavaScriptAppModalDialog(
       use_override_prompt_text_(false) {
   EnforceMaxTextSize(message_text, &message_text_);
   EnforceMaxPromptSize(default_prompt_text, &default_prompt_text_);
-
-  DCHECK((tab_contents_ != NULL) != (extension_host_ != NULL));
-  InitNotifications();
 }
 
 JavaScriptAppModalDialog::~JavaScriptAppModalDialog() {
@@ -91,42 +80,18 @@ bool JavaScriptAppModalDialog::IsJavaScriptModalDialog() {
   return true;
 }
 
-void JavaScriptAppModalDialog::Observe(NotificationType type,
-                                       const NotificationSource& source,
-                                       const NotificationDetails& details) {
-  if (skip_this_dialog_)
+void JavaScriptAppModalDialog::Invalidate() {
+  if (!valid_)
     return;
 
-  if (NotificationType::EXTENSION_HOST_DESTROYED == type &&
-      Details<ExtensionHost>(extension_host_) != details)
-    return;
-
-  // If we reach here, we know the notification is relevant to us, either
-  // because we're only observing applicable sources or because we passed the
-  // check above. Both of those indicate that we should ignore this dialog.
-  // Also clear the delegate, since it's now invalid.
-  skip_this_dialog_ = true;
+  valid_ = false;
   delegate_ = NULL;
   if (native_dialog_)
     CloseModalDialog();
 }
 
-void JavaScriptAppModalDialog::InitNotifications() {
-  // Make sure we get relevant navigation notifications so we know when our
-  // parent contents will disappear or navigate to a different page.
-  if (tab_contents_) {
-    registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
-                   Source<NavigationController>(&tab_contents_->controller()));
-    registrar_.Add(this, NotificationType::TAB_CONTENTS_DESTROYED,
-                   Source<TabContents>(tab_contents_));
-  } else if (extension_host_) {
-    // EXTENSION_HOST_DESTROYED uses the Profile as its source, but we care
-    // about the ExtensionHost (which is passed in the details).
-    registrar_.Add(this, NotificationType::EXTENSION_HOST_DESTROYED,
-                   NotificationService::AllSources());
-  } else {
-    NOTREACHED();
-  }
+content::JavaScriptDialogDelegate* JavaScriptAppModalDialog::delegate() const {
+  return static_cast<content::JavaScriptDialogDelegate*>(delegate_);
 }
 
 void JavaScriptAppModalDialog::OnCancel(bool suppress_js_messages) {
@@ -170,15 +135,15 @@ void JavaScriptAppModalDialog::SetOverridePromptText(
 void JavaScriptAppModalDialog::NotifyDelegate(bool success,
                                               const string16& user_input,
                                               bool suppress_js_messages) {
-  if (skip_this_dialog_)
+  if (!valid_)
     return;
 
-  delegate_->OnDialogClosed(reply_msg_, success, user_input);
+  delegate()->OnDialogClosed(reply_msg_, success, user_input);
 
   extra_data_->last_javascript_message_dismissal_ = base::TimeTicks::Now();
   extra_data_->suppress_javascript_messages_ = suppress_js_messages;
 
   // On Views, we can end up coming through this code path twice :(.
   // See crbug.com/63732.
-  skip_this_dialog_ = true;
+  valid_ = false;
 }
