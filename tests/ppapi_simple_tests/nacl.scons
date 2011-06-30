@@ -67,8 +67,7 @@ node = env.SelUniversalTest(
     )
 
 # TODO(robertm): fix this ASAP
-is_broken = (env.IsRunningUnderValgrind() or env.Bit('windows'))
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
                        'run_ppapi_emu_file_test',
-                       is_broken=is_broken)
+                       is_broken=True)
