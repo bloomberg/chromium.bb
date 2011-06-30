@@ -5,6 +5,7 @@
 #ifndef REMOTING_PROTOCOL_PROTOBUF_VIDEO_WRITER_H_
 #define REMOTING_PROTOCOL_PROTOBUF_VIDEO_WRITER_H_
 
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "remoting/protocol/video_writer.h"
 
@@ -20,11 +21,13 @@ class ProtobufVideoWriter : public VideoWriter {
   virtual ~ProtobufVideoWriter();
 
   // VideoWriter interface.
-  virtual void Init(protocol::Session* session);
+  virtual void Init(protocol::Session* session) OVERRIDE;
+  virtual void Close() OVERRIDE;
 
   // VideoStub interface.
-  virtual void ProcessVideoPacket(const VideoPacket* packet, Task* done);
-  virtual int GetPendingPackets();
+  virtual void ProcessVideoPacket(const VideoPacket* packet,
+                                  Task* done) OVERRIDE;
+  virtual int GetPendingPackets() OVERRIDE;
 
  private:
   scoped_refptr<BufferedSocketWriter> buffered_writer_;

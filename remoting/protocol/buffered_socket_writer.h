@@ -55,7 +55,8 @@ class BufferedSocketWriterBase
   // to be written. Can be called on any thread.
   int GetBufferChunks();
 
-  // Stops writing and drops current buffers.
+  // Stops writing and drops current buffers. Must be called on the
+  // network thread.
   void Close();
 
  protected:

@@ -56,11 +56,11 @@ void BufferedSocketWriterBase::Init(net::Socket* socket,
 
 bool BufferedSocketWriterBase::Write(
     scoped_refptr<net::IOBufferWithSize> data, Task* done_task) {
-  base::AutoLock auto_lock(lock_);
-  if (!socket_)
-    return false;
-  queue_.push_back(new PendingPacket(data, done_task));
-  buffer_size_ += data->size();
+  {
+    base::AutoLock auto_lock(lock_);
+    queue_.push_back(new PendingPacket(data, done_task));
+    buffer_size_ += data->size();
+  }
   message_loop_->PostTask(
       FROM_HERE, NewRunnableMethod(this, &BufferedSocketWriterBase::DoWrite));
   return true;
@@ -75,11 +75,8 @@ void BufferedSocketWriterBase::DoWrite() {
     return;
 
   // Don't write after Close().
-  {
-    base::AutoLock auto_lock(lock_);
-    if (closed_)
-      return;
-  }
+  if (closed_)
+    return;
 
   while (true) {
     net::IOBuffer* current_packet;
@@ -133,8 +130,11 @@ void BufferedSocketWriterBase::OnWritten(int result) {
 }
 
 void BufferedSocketWriterBase::HandleError(int result) {
-  base::AutoLock auto_lock(lock_);
+  DCHECK_EQ(message_loop_, MessageLoop::current());
+
   closed_ = true;
+
+  base::AutoLock auto_lock(lock_);
   STLDeleteElements(&queue_);
 
   // Notify subclass that an error is received.
@@ -152,7 +152,7 @@ int BufferedSocketWriterBase::GetBufferChunks() {
 }
 
 void BufferedSocketWriterBase::Close() {
-  base::AutoLock auto_lock(lock_);
+  DCHECK_EQ(message_loop_, MessageLoop::current());
   closed_ = true;
 }
 

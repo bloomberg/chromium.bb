@@ -107,10 +107,11 @@ class RtpVideoWriterTest : public testing::Test {
     EXPECT_EQ(pos, static_cast<int>(data_.size()));
   }
 
+  MessageLoop message_loop_;
+
   scoped_refptr<FakeSession> session_;
   RtpVideoWriter writer_;
 
-  MessageLoop message_loop_;
   vector<char> data_;
   VideoPacket* packet_;
 };

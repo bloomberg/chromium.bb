@@ -23,6 +23,10 @@ void ProtobufVideoWriter::Init(protocol::Session* session) {
   buffered_writer_->Init(session->video_channel(), NULL);
 }
 
+void ProtobufVideoWriter::Close() {
+  buffered_writer_->Close();
+}
+
 void ProtobufVideoWriter::ProcessVideoPacket(const VideoPacket* packet,
                                              Task* done) {
   buffered_writer_->Write(SerializeAndFrameMessage(*packet), done);

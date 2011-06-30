@@ -13,8 +13,6 @@
 #include "remoting/jingle_glue/signal_strategy.h"
 #include "remoting/proto/internal.pb.h"
 #include "remoting/protocol/connection_to_host.h"
-#include "remoting/protocol/host_stub.h"
-#include "remoting/protocol/input_stub.h"
 #include "remoting/protocol/message_reader.h"
 #include "remoting/protocol/session.h"
 #include "remoting/protocol/session_manager.h"
@@ -36,7 +34,12 @@ class VideoPacket;
 namespace protocol {
 
 class ClientMessageDispatcher;
+class ClientControlSender;
 class ClientStub;
+class HostControlSender;
+class HostStub;
+class InputSender;
+class InputStub;
 class SessionConfig;
 class VideoReader;
 class VideoStub;
@@ -119,6 +122,9 @@ class ConnectionToHost : public SignalStrategy::StatusObserver {
   // Callback for |video_reader_|.
   void OnVideoPacket(VideoPacket* packet);
 
+  // Stops writing in the channels.
+  void CloseChannels();
+
   // Used by Disconnect() to disconnect chromoting connection, stop chromoting
   // server, and then disconnect XMPP connection.
   void OnDisconnected(const base::Closure& shutdown_task);
@@ -152,13 +158,13 @@ class ConnectionToHost : public SignalStrategy::StatusObserver {
   // User input event channel interface
 
   // Stub for sending input event messages to the host.
-  scoped_ptr<InputStub> input_stub_;
+  scoped_ptr<InputSender> input_sender_;
 
   ////////////////////////////////////////////////////////////////////////////
   // Protocol control channel interface
 
   // Stub for sending control messages to the host.
-  scoped_ptr<HostStub> host_stub_;
+  scoped_ptr<HostControlSender> host_control_sender_;
 
   // Stub for receiving control messages from the host.
   ClientStub* client_stub_;

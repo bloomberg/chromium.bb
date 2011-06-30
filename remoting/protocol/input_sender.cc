@@ -40,5 +40,9 @@ void InputSender::InjectMouseEvent(const MouseEvent* event, Task* done) {
   buffered_writer_->Write(SerializeAndFrameMessage(message), done);
 }
 
+void InputSender::Close() {
+  buffered_writer_->Close();
+}
+
 }  // namespace protocol
 }  // namespace remoting

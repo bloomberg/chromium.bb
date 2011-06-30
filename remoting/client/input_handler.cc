@@ -7,6 +7,7 @@
 #include "remoting/client/chromoting_view.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/connection_to_host.h"
+#include "remoting/protocol/input_stub.h"
 
 namespace remoting {
 

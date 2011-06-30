@@ -38,6 +38,7 @@
 #include "remoting/jingle_glue/jingle_thread.h"
 #include "remoting/proto/auth.pb.h"
 #include "remoting/protocol/connection_to_host.h"
+#include "remoting/protocol/host_stub.h"
 // TODO(sergeyu): This is a hack: plugin should not depend on webkit
 // glue. It is used here to get P2PPacketDispatcher corresponding to
 // the current RenderView. Use P2P Pepper API for connection and

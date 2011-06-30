@@ -55,6 +55,8 @@ TEST_F(ConnectionToClientTest, SendUpdateStream) {
   viewer_->video_stub()->ProcessVideoPacket(
       packet, new DeleteTask<VideoPacket>(packet));
 
+  message_loop_.RunAllPending();
+
   // And then close the connection to ConnectionToClient.
   viewer_->Disconnect();
 
@@ -63,6 +65,21 @@ TEST_F(ConnectionToClientTest, SendUpdateStream) {
   // Verify that something has been written.
   // TODO(sergeyu): Verify that the correct data has been written.
   EXPECT_GT(session_->video_channel()->written_data().size(), 0u);
+}
+
+TEST_F(ConnectionToClientTest, NoWriteAfterDisconnect) {
+  // Then send the actual data.
+  VideoPacket* packet = new VideoPacket();
+  viewer_->video_stub()->ProcessVideoPacket(
+      packet, new DeleteTask<VideoPacket>(packet));
+
+  // And then close the connection to ConnectionToClient.
+  viewer_->Disconnect();
+
+  message_loop_.RunAllPending();
+
+  // Nothing should be written because connection has been closed.
+  EXPECT_EQ(session_->video_channel()->written_data().size(), 0u);
 }
 
 TEST_F(ConnectionToClientTest, StateChange) {

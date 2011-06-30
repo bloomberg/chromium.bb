@@ -44,11 +44,11 @@ ConnectionToHost::~ConnectionToHost() {
 }
 
 InputStub* ConnectionToHost::input_stub() {
-  return input_stub_.get();
+  return input_sender_.get();
 }
 
 HostStub* ConnectionToHost::host_stub() {
-  return host_stub_.get();
+  return host_control_sender_.get();
 }
 
 void ConnectionToHost::Connect(scoped_refptr<XmppProxy> xmpp_proxy,
@@ -83,6 +83,8 @@ void ConnectionToHost::Disconnect(const base::Closure& shutdown_task) {
                               base::Unretained(this), shutdown_task));
     return;
   }
+
+  CloseChannels();
 
   if (session_) {
     session_->Close(
@@ -187,11 +189,13 @@ void ConnectionToHost::OnSessionStateChange(
   switch (state) {
     case Session::FAILED:
       state_ = STATE_FAILED;
+      CloseChannels();
       event_callback_->OnConnectionFailed(this);
       break;
 
     case Session::CLOSED:
       state_ = STATE_CLOSED;
+      CloseChannels();
       event_callback_->OnConnectionClosed(this);
       break;
 
@@ -200,7 +204,8 @@ void ConnectionToHost::OnSessionStateChange(
       // Initialize reader and writer.
       video_reader_.reset(VideoReader::Create(session_->config()));
       video_reader_->Init(session_, video_stub_);
-      host_stub_.reset(new HostControlSender(session_->control_channel()));
+      host_control_sender_.reset(
+          new HostControlSender(session_->control_channel()));
       dispatcher_->Initialize(session_.get(), client_stub_);
       event_callback_->OnConnectionOpened(this);
       break;
@@ -211,13 +216,21 @@ void ConnectionToHost::OnSessionStateChange(
   }
 }
 
+void ConnectionToHost::CloseChannels() {
+  if (input_sender_.get())
+    input_sender_->Close();
+
+  if (host_control_sender_.get())
+    host_control_sender_->Close();
+}
+
 void ConnectionToHost::OnClientAuthenticated() {
   // TODO(hclam): Don't send anything except authentication request if it is
   // not authenticated.
   state_ = STATE_AUTHENTICATED;
 
   // Create and enable the input stub now that we're authenticated.
-  input_stub_.reset(new InputSender(session_->event_channel()));
+  input_sender_.reset(new InputSender(session_->event_channel()));
 }
 
 ConnectionToHost::State ConnectionToHost::state() const {

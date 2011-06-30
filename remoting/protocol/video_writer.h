@@ -19,7 +19,6 @@ namespace protocol {
 class Session;
 class SessionConfig;
 
-// TODO(sergeyu): VideoWriter should implement VideoStub interface.
 class VideoWriter : public VideoStub {
  public:
   virtual ~VideoWriter();
@@ -28,6 +27,10 @@ class VideoWriter : public VideoStub {
 
   // Initializes the writer.
   virtual void Init(Session* session) = 0;
+
+  // Stops writing. Must be called on the network thread before this
+  // object is destroyed.
+  virtual void Close() = 0;
 
  protected:
   VideoWriter() { }

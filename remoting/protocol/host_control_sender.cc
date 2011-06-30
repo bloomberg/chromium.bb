@@ -39,5 +39,9 @@ void HostControlSender::BeginSessionRequest(const LocalLoginCredentials* msg,
   buffered_writer_->Write(SerializeAndFrameMessage(message), done);
 }
 
+void HostControlSender::Close() {
+  buffered_writer_->Close();
+}
+
 }  // namespace protocol
 }  // namespace remoting

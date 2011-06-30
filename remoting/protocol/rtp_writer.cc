@@ -29,6 +29,10 @@ void RtpWriter::Init(net::Socket* rtp_socket) {
   buffered_rtp_writer_->Init(rtp_socket, NULL);
 }
 
+void RtpWriter::Close() {
+  buffered_rtp_writer_->Close();
+}
+
 void RtpWriter::SendPacket(uint32 timestamp, bool marker,
                            const Vp8Descriptor& vp8_descriptor,
                            const CompoundBuffer& payload) {

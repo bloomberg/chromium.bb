@@ -39,5 +39,9 @@ void ClientControlSender::BeginSessionResponse(const LocalLoginStatus* msg,
   buffered_writer_->Write(SerializeAndFrameMessage(message), done);
 }
 
+void ClientControlSender::Close() {
+  buffered_writer_->Close();
+}
+
 }  // namespace protocol
 }  // namespace remoting

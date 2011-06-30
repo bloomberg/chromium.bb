@@ -20,10 +20,16 @@ const int kMtu = 1200;
 
 RtpVideoWriter::RtpVideoWriter() { }
 
-RtpVideoWriter::~RtpVideoWriter() { }
+RtpVideoWriter::~RtpVideoWriter() {
+  Close();
+}
 
 void RtpVideoWriter::Init(protocol::Session* session) {
   rtp_writer_.Init(session->video_rtp_channel());
+}
+
+void RtpVideoWriter::Close() {
+  rtp_writer_.Close();
 }
 
 void RtpVideoWriter::ProcessVideoPacket(const VideoPacket* packet, Task* done) {

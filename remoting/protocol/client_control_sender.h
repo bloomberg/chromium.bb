@@ -27,9 +27,11 @@ namespace protocol {
 
 class BufferedSocketWriter;
 
+// Implementation of ClientStub that sends commands on a socket. Must
+// be created and closed on the network thread, but can be used on any
+// other thread.
 class ClientControlSender : public ClientStub {
  public:
-  // Create a stub using a socket.
   explicit ClientControlSender(net::Socket* socket);
   virtual ~ClientControlSender();
 
@@ -37,6 +39,10 @@ class ClientControlSender : public ClientStub {
                                 Task* done);
   virtual void BeginSessionResponse(const LocalLoginStatus* msg,
                                     Task* done);
+
+  // Stop writing. Must be called on the network thread when the
+  // underlying socket is being destroyed.
+  void Close();
 
  private:
   // Buffered socket writer holds the serialized message and send it on the

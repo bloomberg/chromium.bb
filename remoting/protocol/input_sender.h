@@ -28,6 +28,9 @@ namespace protocol {
 
 class BufferedSocketWriter;
 
+// Implementation of InputStub that sends messages on a socket. Must
+// be created and closed on the network thread, but can be used on any
+// other thread.
 class InputSender : public InputStub {
  public:
   // Create a stub using a socket.
@@ -37,6 +40,10 @@ class InputSender : public InputStub {
   // InputStub implementation.
   virtual void InjectKeyEvent(const KeyEvent* event, Task* done);
   virtual void InjectMouseEvent(const MouseEvent* event, Task* done);
+
+  // Stop writing. Must be called on the network thread when the
+  // underlying socket is being destroyed.
+  void Close();
 
  private:
   // Helper method to run the task and delete it afterwards.

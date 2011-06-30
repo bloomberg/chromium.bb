@@ -19,11 +19,13 @@ class RtpVideoWriter : public VideoWriter {
   virtual ~RtpVideoWriter();
 
   // VideoWriter interface.
-  virtual void Init(protocol::Session* session);
+  virtual void Init(protocol::Session* session) OVERRIDE;
+  virtual void Close() OVERRIDE;
 
   // VideoStub interface.
-  virtual void ProcessVideoPacket(const VideoPacket* packet, Task* done);
-  virtual int GetPendingPackets();
+  virtual void ProcessVideoPacket(const VideoPacket* packet,
+                                  Task* done) OVERRIDE;
+  virtual int GetPendingPackets() OVERRIDE;
 
  private:
   RtpWriter rtp_writer_;

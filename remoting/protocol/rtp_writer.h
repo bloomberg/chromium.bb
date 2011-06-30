@@ -23,6 +23,7 @@ class RtpWriter {
   // Initializes the writer. Must be called on the thread the socket
   // belongs to.
   void Init(net::Socket* socket);
+  void Close();
 
   // Sends next packet. The packet is mutated by
   void SendPacket(uint32 timestamp, bool marker,

@@ -127,10 +127,11 @@ class RtpVideoReaderTest : public testing::Test,
     }
   }
 
+  MessageLoop message_loop_;
+
   scoped_refptr<FakeSession> session_;
   scoped_ptr<RtpVideoReader> reader_;
 
-  MessageLoop message_loop_;
   vector<char> data_;
   vector<VideoPacket> received_packets_;
 };

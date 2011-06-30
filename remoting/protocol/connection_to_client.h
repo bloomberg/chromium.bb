@@ -18,6 +18,7 @@
 namespace remoting {
 namespace protocol {
 
+class ClientControlSender;
 class ClientStub;
 class HostStub;
 class InputStub;
@@ -89,8 +90,8 @@ class ConnectionToClient :
   // Callback for protocol Session.
   void OnSessionStateChange(Session::State state);
 
-  // Process a libjingle state change event on the |loop_|.
-  void StateChangeTask(Session::State state);
+  // Stops writing in the channels.
+  void CloseChannels();
 
   void OnClosed();
 
@@ -100,7 +101,7 @@ class ConnectionToClient :
   scoped_ptr<VideoWriter> video_writer_;
 
   // ClientStub for sending messages to the client.
-  scoped_ptr<ClientStub> client_stub_;
+  scoped_ptr<ClientControlSender> client_control_sender_;
 
   // The message loop that this object runs on.
   MessageLoop* loop_;

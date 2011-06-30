@@ -16,7 +16,12 @@ namespace protocol {
 RtcpWriter::RtcpWriter() {
 }
 
-RtcpWriter::~RtcpWriter() { }
+RtcpWriter::~RtcpWriter() {
+}
+
+void RtcpWriter::Close() {
+  buffered_rtcp_writer_->Close();
+}
 
 // Initializes the writer. Must be called on the thread the sockets
 // belong to.
