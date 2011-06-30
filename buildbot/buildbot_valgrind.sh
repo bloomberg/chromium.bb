@@ -36,10 +36,6 @@ echo @@@BUILD_STEP clobber@@@
 rm -rf scons-out toolchain compiler hg ../xcodebuild ../sconsbuild ../out \
     src/third_party/nacl_sdk/arm-newlib
 
-echo @@@BUILD_STEP partial_sdk@@@
-./scons --verbose --mode=nacl_extra_sdk platform=x86-64 --download \
-${GLIBCOPTS} extra_sdk_update_header ${SDKHDRINSTALL} extra_sdk_update
-
 echo @@@BUILD_STEP gyp_compile@@@
 make -C .. -k -j12 V=1 BUILDTYPE=Debug
 

@@ -32,10 +32,6 @@ rm -rf /tmp/* /tmp/.[!.]* || true
 echo @@@BUILD_STEP gclient_runhooks@@@
 gclient runhooks --force
 
-echo @@@BUILD_STEP partial_sdk@@@
-./scons --verbose --mode=nacl_extra_sdk platform=x86-${BITS} --download \
-extra_sdk_update_header install_libpthread extra_sdk_update
-
 echo @@@BUILD_STEP scons_compile@@@
 ./scons -j 8 -k --verbose --mode=coverage-linux,nacl platform=x86-${BITS}
 

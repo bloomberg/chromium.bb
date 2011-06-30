@@ -40,11 +40,6 @@ echo @@@BUILD_STEP gclient_runhooks@@@
 cmd /c gclient runhooks
 if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
 
-echo @@@BUILD_STEP partial_sdk@@@
-call scons.bat --verbose --mode=nacl_extra_sdk platform=x86-%BITS% ^
- --download extra_sdk_update_header install_libpthread extra_sdk_update
-if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
-
 echo on
 echo @@@BUILD_STEP scons_compile@@@
 call vcvarsall.bat %VCBITS%
