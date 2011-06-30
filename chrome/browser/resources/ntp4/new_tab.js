@@ -116,8 +116,10 @@ cr.define('ntp4', function() {
     appsPages = pageList.getElementsByClassName('apps-page');
     pageSwitcherLeft = getRequiredElement('page-switcher-left');
     pageSwitcherLeft.addEventListener('click', onPageSwitcherClicked);
+    pageSwitcherLeft.addEventListener('mousewheel', onPageSwitcherScrolled);
     pageSwitcherRight = getRequiredElement('page-switcher-right');
     pageSwitcherRight.addEventListener('click', onPageSwitcherClicked);
+    pageSwitcherRight.addEventListener('mousewheel', onPageSwitcherScrolled);
 
     // Initialize the cardSlider without any cards at the moment
     var sliderFrame = getRequiredElement('card-slider-frame');
@@ -140,13 +142,7 @@ cr.define('ntp4', function() {
           var newPageIndex = e.cardSlider.currentCard;
           dots[newPageIndex].classList.add('selected');
 
-          pageSwitcherLeft.hidden = cardSlider.currentCard == 0;
-          pageSwitcherRight.hidden =
-              cardSlider.currentCard == cardSlider.cardCount - 1;
-
-          pageSwitcherRight.style.width =
-              pageSwitcherLeft.style.width =
-                  cardSlider.currentCardValue.sideMargin + 'px';
+          updatePageSwitchers();
         });
 
     cr.ui.decorate($('recently-closed-menu-button'), ntp4.RecentMenuButton);
@@ -377,8 +373,16 @@ cr.define('ntp4', function() {
   }
 
   /**
-   * Callback for the 'pagelayout' event. Sets the size of the page
-   * switchers to take up available space (up to a maximum).
+   * Handler for the mousewheel event on a pager. We pass through the scroll
+   * to the page.
+   * @param {Event} e The mousewheel event.
+   */
+  function onPageSwitcherScrolled(e) {
+    cardSlider.currentCardValue.scrollBy(-e.wheelDeltaY);
+  };
+
+  /**
+   * Callback for the 'pagelayout' event.
    * @param {Event} e The event.
    */
   function onPageLayout(e) {
@@ -387,9 +391,28 @@ cr.define('ntp4', function() {
       return;
     }
 
+    updatePageSwitchers();
+  }
+
+  /**
+   * Adjusts the size and position of the page switchers according to the
+   * layout of the current card.
+   */
+  function updatePageSwitchers() {
+    var page = cardSlider.currentCardValue;
+
+    pageSwitcherLeft.hidden = page && (cardSlider.currentCard == 0);
+    pageSwitcherRight.hidden = page &&
+        (cardSlider.currentCard == cardSlider.cardCount - 1);
+
+    if (!page)
+      return;
+    var scrollbarWidth = page.scrollbarWidth;
+    pageSwitcherLeft.style.width =
+        (page.sideMargin + 13) + 'px';
     pageSwitcherRight.style.width =
-        pageSwitcherLeft.style.width =
-            e.currentTarget.sideMargin + 'px';
+        (page.sideMargin - scrollbarWidth + 13) + 'px';
+    pageSwitcherRight.style.right = scrollbarWidth + 'px';
   }
 
   /**

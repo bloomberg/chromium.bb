@@ -4,6 +4,23 @@
  */
 
 .tile-page {
+  height: 100%;
+  position: relative;
+  width: 100%;
+}
+
+.tile-page-scrollbar {
+  margin: 0 4px;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  width: 5px;
+  z-index: 5;
+  -webkit-box-sizing: border-box;
+}
+
+.tile-page-content {
+  height: 100%;
   overflow-y: scroll;
   padding-top: 100px;
   position: relative;
@@ -73,14 +90,10 @@
 
 /** Scrollbars ****************************************************************/
 
-.tile-page::-webkit-scrollbar {
+.tile-page-content::-webkit-scrollbar {
   width: 13px;
 }
 
-.tile-page::-webkit-scrollbar-button {
+.tile-page-content::-webkit-scrollbar-button {
   display: none;
-}
-
-.tile-page::-webkit-scrollbar-thumb:not(:disabled) {
-  border-radius: 5px;
 }

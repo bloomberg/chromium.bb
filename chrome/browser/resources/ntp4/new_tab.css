@@ -188,22 +188,13 @@ body {
   padding: 0;
   position: absolute;
   max-width: 130px;
-  min-width: 13px;
+  min-width: 26px;
   opacity: 0.3;
   top: 0;
   z-index: 5;
+  -webkit-transition: width 150ms, right 150ms;
 }
 
 .page-switcher:hover {
   background-color: rgba(0, 0, 0, 0.2);
-}
-
-#page-switcher-left {
-  /* 13px matches the width of the scrollbars. */
-  left: 13px;
-}
-
-#page-switcher-right {
-  /* 13px matches the width of the scrollbars. */
-  right: 13px;
 }

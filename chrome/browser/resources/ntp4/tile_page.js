@@ -326,20 +326,36 @@ cr.define('ntp4', function() {
     initialize: function() {
       this.className = 'tile-page';
 
+      // Div that acts as a custom scrollbar. The scrollbar has to live
+      // outside the content div so it doesn't flicker when scrolling (due to
+      // repainting after the scroll, then repainting again when moved in the
+      // onScroll handler). |scrollbar_| is only aesthetic, and it only
+      // represents the thumb. Actual events are still handled by the invisible
+      // native scrollbars. This div gives us more flexibility with the visuals.
+      this.scrollbar_ = this.ownerDocument.createElement('div');
+      this.scrollbar_.className = 'tile-page-scrollbar';
+      this.scrollbar_.hidden = true;
+      this.appendChild(this.scrollbar_);
+
+      // This contains everything but the scrollbar.
+      this.content_ = this.ownerDocument.createElement('div');
+      this.content_.className = 'tile-page-content';
+      this.appendChild(this.content_);
+
       var title = this.ownerDocument.createElement('span');
       title.textContent = this.pageName;
       title.className = 'tile-page-title';
-      this.appendChild(title);
+      this.content_.appendChild(title);
 
       // Div that sets the vertical position of the tile grid.
       this.topMargin_ = this.ownerDocument.createElement('div');
       this.topMargin_.className = 'top-margin';
-      this.appendChild(this.topMargin_);
+      this.content_.appendChild(this.topMargin_);
 
       // Div that holds the tiles.
       this.tileGrid_ = this.ownerDocument.createElement('div');
       this.tileGrid_.className = 'tile-grid';
-      this.appendChild(this.tileGrid_);
+      this.content_.appendChild(this.tileGrid_);
 
       // Ordered list of our tiles.
       this.tileElements_ = this.tileGrid_.getElementsByClassName('tile real');
@@ -353,6 +369,7 @@ cr.define('ntp4', function() {
 
       this.addEventListener('DOMNodeInsertedIntoDocument',
                             this.onNodeInsertedIntoDocument_);
+      this.content_.addEventListener('scroll', this.onScroll_.bind(this));
 
       this.tileGrid_.addEventListener('dragenter',
                                       this.onDragEnter_.bind(this));
@@ -379,6 +396,15 @@ cr.define('ntp4', function() {
      */
     get sideMargin() {
       return this.layoutValues_.leftMargin;
+    },
+
+    /**
+     * Returns the width of the scrollbar, in pixels, if it is active, or 0
+     * otherwise.
+     * @type {number}
+     */
+    get scrollbarWidth() {
+      return this.scrollbar_.hidden ? 0 : 13;
     },
 
     /**
@@ -516,8 +542,10 @@ cr.define('ntp4', function() {
         tile.clearDoppleganger();
       }
 
-      if (index == this.tileElements_.length - 1)
+      if (index == this.tileElements_.length - 1) {
         this.tileGrid_.style.height = (realY + layout.rowHeight) + 'px';
+        this.queueUpdateScrollbars_();
+      }
     },
 
     /**
@@ -648,6 +676,66 @@ cr.define('ntp4', function() {
       // bug where repositioning tiles will cause the scroll position to reset.
       this.tileGrid_.style.minHeight = (this.clientHeight -
           this.tileGrid_.offsetTop) + 'px';
+    },
+
+    /**
+     * Scrolls the page by the given amount, vertically.
+     * @param {number} y The scroll amount, in pixels, where positive is down
+     *     and negative is up.
+     */
+    scrollBy: function(y) {
+      this.content_.scrollTop += y;
+    },
+
+    /**
+     * Handler for the 'scroll' event on |content_|.
+     * @param {Event} e The scroll event.
+     */
+    onScroll_: function(e) {
+      this.queueUpdateScrollbars_();
+    },
+
+    /**
+     * ID of scrollbar update timer. If 0, there's no scrollbar re-calc queued.
+     */
+    scrollbarUpdate_: 0,
+
+    /**
+     * Queues an update on the custom scrollbar. Used for two reasons: first,
+     * coalescing of multiple updates, and second, because action like
+     * repositioning a tile can require a delay before they affect values
+     * like clientHeight.
+     */
+    queueUpdateScrollbars_: function() {
+      if (this.scrollbarUpdate_)
+        return;
+
+      this.scrollbarUpdate_ = window.setTimeout(
+          this.doUpdateScrollbars_.bind(this), 0);
+    },
+
+    /**
+     * Does the work of calculating the visibility, height and position of the
+     * scrollbar thumb (there is no track or buttons).
+     */
+    doUpdateScrollbars_: function() {
+      this.scrollbarUpdate_ = 0;
+
+      var content = this.content_;
+      if (content.scrollHeight == content.clientHeight) {
+        this.scrollbar_.hidden = true;
+        return;
+      } else {
+        this.scrollbar_.hidden = false;
+      }
+
+      var thumbTop = content.scrollTop / content.scrollHeight *
+          this.clientHeight;
+      var thumbHeight = content.clientHeight / content.scrollHeight *
+          this.clientHeight;
+
+      this.scrollbar_.style.top = thumbTop + 'px';
+      this.scrollbar_.style.height = thumbHeight + 'px';
     },
 
     /**
