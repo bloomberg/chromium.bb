@@ -126,7 +126,7 @@ bool PyUITestBase::RunCommand(int browser_command, int window_index) {
 bool PyUITestBase::ActivateTab(int tab_index, int window_index) {
   scoped_refptr<BrowserProxy> browser_proxy =
       automation()->GetBrowserWindow(window_index);
-  return browser_proxy->ActivateTab(tab_index);
+  return browser_proxy->BringToFront() && browser_proxy->ActivateTab(tab_index);
 }
 
 void PyUITestBase::SetDownloadShelfVisible(bool is_visible, int window_index) {

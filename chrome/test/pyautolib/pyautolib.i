@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -338,7 +338,8 @@ class PyUITestBase {
            "first window. Indexes are zero-based.") GetActiveTabIndex;
   int GetActiveTabIndex(int window_index=0);
   %feature("docstring", "Activate the tab at the given zero-based index in "
-           "the given or first window. Returns True on success.") ActivateTab;
+           "the given or first window.  Also brings the window to the front. "
+           "Returns True on success.") ActivateTab;
   bool ActivateTab(int tab_index, int window_index=0);
 
   %feature("docstring", "Get the title of the active tab for the given or "

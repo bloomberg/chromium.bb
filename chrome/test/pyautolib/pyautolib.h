@@ -84,7 +84,7 @@ class PyUITestBase : public UITestBase {
   bool AppendTab(const GURL& tab_url, int window_index = 0);
 
   // Activate the tab at the given zero-based index in the given or first
-  // browser window.
+  // browser window.  Also brings the window to front.
   bool ActivateTab(int tab_index, int window_index = 0);
 
   // Apply the accelerator with given id (IDC_BACK, IDC_NEWTAB ...) to the
