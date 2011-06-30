@@ -36,7 +36,13 @@ class PrintPreviewUITest : public UITest {
 
 // TODO(thestig) Remove this test in the future if loading
 // chrome::kChromeUIPrintURL directly does not make sense.
-TEST_F(PrintPreviewUITest, LoadPrintPreviewByURL) {
+// http://crbug.com/88055
+#if defined(OS_WIN)
+#define MAYBE_LoadPrintPreviewByURL FAILS_LoadPrintPreviewByURL
+#else
+#define MAYBE_LoadPrintPreviewByURL LoadPrintPreviewByURL
+#endif // defined (OS_WIN)
+TEST_F(PrintPreviewUITest, MAYBE_LoadPrintPreviewByURL) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
 
