@@ -4832,6 +4832,14 @@
    fun:_ZN12_GLOBAL__N_18MenuImplC1EPN8chromeos21InputMethodMenuButtonEP11PrefServiceNS1_14StatusAreaHost10ScreenModeE
    fun:_ZN8chromeos21InputMethodMenuButtonC1EPNS_14StatusAreaHostE
 }
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN33GeolocationInfoBarQueueController17ShowQueuedInfoBarEii
+   fun:_ZN33GeolocationInfoBarQueueController20CreateInfoBarRequestEiiiRK4GURLS2_
+   fun:_ZN34ChromeGeolocationPermissionContext28RequestGeolocationPermissionEiiiRK4GURL
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
