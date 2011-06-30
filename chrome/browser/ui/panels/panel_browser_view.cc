@@ -63,8 +63,10 @@ void PanelBrowserView::Close() {
   ::BrowserView::Close();
 
   // Stop the global mouse watcher only if we do not have any panels up.
+#if defined(OS_WIN)
   if (panel_->manager()->active_count() == 1)
     StopMouseWatcher();
+#endif
 }
 
 void PanelBrowserView::SetBounds(const gfx::Rect& bounds) {
@@ -175,7 +177,9 @@ void PanelBrowserView::OnPanelExpansionStateChanged(
       break;
     case Panel::MINIMIZED:
       height = kFullyMinimizedHeight;
+#if defined(OS_WIN)
       EnsureMouseWatcherStarted();
+#endif
       break;
     default:
       NOTREACHED();
