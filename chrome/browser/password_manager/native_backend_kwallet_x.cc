@@ -127,7 +127,21 @@ bool NativeBackendKWallet::AddLogin(const PasswordForm& form) {
   PasswordFormList forms;
   GetLoginsList(&forms, form.signon_realm, wallet_handle);
 
-  forms.push_back(new PasswordForm(form));
+  // We search for a login to update, rather than unconditionally appending the
+  // login, because in some cases (especially involving sync) we can be asked to
+  // add a login that already exists. In these cases we want to just update.
+  bool updated = false;
+  for (size_t i = 0; i < forms.size(); ++i) {
+    // Use the more restrictive removal comparison, so that we never have
+    // duplicate logins that would all be removed together by RemoveLogin().
+    if (CompareForms(form, *forms[i], false)) {
+      *forms[i] = form;
+      updated = true;
+    }
+  }
+  if (!updated)
+    forms.push_back(new PasswordForm(form));
+
   bool ok = SetLoginsList(forms, form.signon_realm, wallet_handle);
 
   STLDeleteElements(&forms);
