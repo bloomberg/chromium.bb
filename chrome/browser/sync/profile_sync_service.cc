@@ -141,10 +141,16 @@ void ProfileSyncService::Initialize() {
 
   RegisterAuthNotifications();
 
+  if (!HasSyncSetupCompleted())
+    DisableForUser();  // Clean up in case of previous crash / setup abort.
+
   // In Chrome, we integrate a SigninManager which works with the sync
   // setup wizard to kick off the TokenService. CrOS does its own plumbing
-  // for the TokenService.
-  if (cros_user_.empty()) {
+  // for the TokenService in login and does not normally rely on signin_,
+  // so only intiailize this if the token service has not been initialized
+  // (e.g. the browser crashed or is being debugged).
+  if (cros_user_.empty() ||
+      !profile_->GetTokenService()->Initialized()) {
     // Will load tokens from DB and broadcast Token events after.
     // Note: We rely on signin_ != NULL unless !cros_user_.empty().
     signin_.reset(new SigninManager());
@@ -152,8 +158,6 @@ void ProfileSyncService::Initialize() {
   }
 
   if (!HasSyncSetupCompleted()) {
-    DisableForUser();  // Clean up in case of previous crash / setup abort.
-
     // Under ChromeOS, just autostart it anyway if creds are here and start
     // is not being suppressed by preferences.
     if (!cros_user_.empty() &&

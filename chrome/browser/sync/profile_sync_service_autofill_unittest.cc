@@ -311,6 +311,9 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
         WillOnce(ReturnNewDataTypeManager());
 
     EXPECT_CALL(profile_, GetWebDataService(_)).
+        // TokenService::Initialize
+        WillOnce(Return(web_data_service_.get())).
+        // AutofillDataTypeController::StartModels()
         WillOnce(Return(web_data_service_.get()));
 
     EXPECT_CALL(profile_, GetPersonalDataManager()).

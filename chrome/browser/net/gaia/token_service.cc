@@ -101,18 +101,21 @@ void TokenService::UpdateCredentials(
 
 void TokenService::LoadTokensFromDB() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  token_loading_query_ = web_data_service_->GetAllTokens(this);
+  if (web_data_service_.get())
+    token_loading_query_ = web_data_service_->GetAllTokens(this);
 }
 
 void TokenService::SaveAuthTokenToDB(const std::string& service,
                                      const std::string& auth_token) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  web_data_service_->SetTokenForService(service, auth_token);
+  if (web_data_service_.get())
+    web_data_service_->SetTokenForService(service, auth_token);
 }
 
 void TokenService::EraseTokensFromDB() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  web_data_service_->RemoveAllTokens();
+  if (web_data_service_.get())
+    web_data_service_->RemoveAllTokens();
 }
 
 bool TokenService::AreCredentialsValid() const {

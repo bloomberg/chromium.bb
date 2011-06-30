@@ -95,6 +95,9 @@ class TokenService : public GaiaAuthConsumer,
   // Typically you'd then update the credentials.
   void Initialize(const char* const source, Profile* profile);
 
+  // Used to determine whether Initialize() has been called.
+  bool Initialized() const { return !source_.empty(); }
+
   // Update the credentials in the token service.
   // Afterwards you can StartFetchingTokens.
   void UpdateCredentials(

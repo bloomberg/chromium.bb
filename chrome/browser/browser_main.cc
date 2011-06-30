@@ -1118,7 +1118,8 @@ class StubLogin : public chromeos::LoginStatusConsumer,
   scoped_refptr<chromeos::Authenticator> authenticator_;
 };
 
-void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line) {
+void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line,
+                                       Profile* profile) {
   if (parsed_command_line.HasSwitch(switches::kLoginManager)) {
     std::string first_screen =
         parsed_command_line.GetSwitchValueASCII(switches::kLoginScreen);
@@ -1145,12 +1146,18 @@ void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line) {
     new StubLogin(
         parsed_command_line.GetSwitchValueASCII(switches::kLoginUser),
         parsed_command_line.GetSwitchValueASCII(switches::kLoginPassword));
+  } else {
+    // We did not log in (we crashed or are debugging), so we need to
+    // set the user name for sync.
+    profile->GetProfileSyncService(
+        chromeos::UserManager::Get()->logged_in_user().email());
   }
 }
 
 #else
 
-void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line) {
+void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line,
+                                       Profile* profile) {
   // Dummy empty function for non-ChromeOS builds to avoid extra ifdefs below.
 }
 
@@ -1666,7 +1673,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // Tests should be able to tune login manager before showing it.
   // Thus only show login manager in normal (non-testing) mode.
   if (!parameters.ui_task) {
-    OptionallyRunChromeOSLoginManager(parsed_command_line);
+    OptionallyRunChromeOSLoginManager(parsed_command_line, profile);
   }
 
 #if !defined(OS_MACOSX)
