@@ -81,6 +81,8 @@
         'gfx/image/image_util.h',
         'gfx/insets.cc',
         'gfx/insets.h',
+        'gfx/interpolated_transform.h',
+        'gfx/interpolated_transform.cc',
         'gfx/mac/nsimage_cache.h',
         'gfx/mac/nsimage_cache.mm',
         'gfx/mac/scoped_ns_disable_screen_updates.h',

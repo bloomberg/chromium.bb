@@ -46,6 +46,7 @@
         'gfx/image/image_unittest_util.h',
         'gfx/image/image_unittest_util.cc',
         'gfx/insets_unittest.cc',
+        'gfx/interpolated_transform_unittest.cc',
         'gfx/rect_unittest.cc',
         'gfx/run_all_unittests.cc',
         'gfx/skbitmap_operations_unittest.cc',
