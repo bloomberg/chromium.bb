@@ -123,6 +123,7 @@ body {
   bottom: 0;
   position: fixed;
   width: 100%;
+  z-index: 5;
 }
 
 /* TODO(estade): remove this border hack and replace with a webkit-gradient

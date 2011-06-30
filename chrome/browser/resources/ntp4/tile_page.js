@@ -101,7 +101,7 @@ cr.define('ntp4', function() {
       // image masks.
       this.dragClone = this.cloneNode(true);
       this.dragClone.classList.add('drag-representation');
-      this.ownerDocument.body.appendChild(this.dragClone);
+      $('card-slider-frame').appendChild(this.dragClone);
       this.eventTracker.add(this.dragClone, 'webkitTransitionEnd',
                             this.onDragCloneTransitionEnd_.bind(this));
 

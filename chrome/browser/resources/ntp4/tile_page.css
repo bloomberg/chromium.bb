@@ -49,7 +49,6 @@
   overflow: hidden;
   position: relative;
   width: 100%;
-  z-index: 100;
 }
 
 .tile {
@@ -58,6 +57,13 @@
   /* Don't offer the context menu on long-press. */
   -webkit-touch-callout: none;
   -webkit-user-drag: element;
+}
+
+/* I don't know why this is necessary. -webkit-user-drag: element on .tile
+ * should be enough. If we don't do this, we get 2 drag representations for
+ * the image. */
+.tile img {
+  -webkit-user-drag: none;
 }
 
 .doppleganger {
@@ -72,7 +78,7 @@
 .tile.drag-representation {
   pointer-events: none;
   position: fixed;
-  z-index: 10;
+  z-index: 3;
 }
 
 .tile.drag-representation.placing > * {

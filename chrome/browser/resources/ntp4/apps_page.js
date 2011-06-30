@@ -33,7 +33,7 @@ cr.define('ntp4', function() {
       var menu = new cr.ui.Menu;
       cr.ui.decorate(menu, cr.ui.Menu);
       menu.classList.add('app-context-menu');
-      this.menu_ = menu;
+      this.menu = menu;
 
       this.launch_ = this.appendMenuItem_();
       this.launch_.addEventListener('activate', this.onLaunch_.bind(this));
@@ -71,13 +71,13 @@ cr.define('ntp4', function() {
     },
 
     /**
-     * Appends a menu item to |this.menu_|.
+     * Appends a menu item to |this.menu|.
      * @param {?String} textId If non-null, the ID for the localized string
      *     that acts as the item's label.
      */
     appendMenuItem_: function(textId) {
       var button = cr.doc.createElement('button');
-      this.menu_.appendChild(button);
+      this.menu.appendChild(button);
       cr.ui.decorate(button, cr.ui.MenuItem);
       if (textId)
         button.textContent = localStrings.getString(textId);
