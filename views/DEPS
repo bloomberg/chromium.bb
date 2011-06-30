@@ -1,5 +1,4 @@
 include_rules = [
-  "+app",
   "+grit/app_strings.h",
   "+grit/ui_resources.h",
   "+skia/ext",
