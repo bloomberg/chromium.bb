@@ -937,11 +937,11 @@ class IBusControllerImpl : public IBusController {
     }
 
     InputMethodDescriptor current_input_method =
-        CreateInputMethodDescriptor(engine_info->id,
-                                    engine_info->layout,
-                                    engine_info->language);
+        CreateInputMethodDescriptor(engine_info->input_method_id,
+                                    engine_info->xkb_layout_id,
+                                    engine_info->language_code);
 
-    VLOG(1) << "Updating the UI. ID:" << current_input_method.input_method_id
+    VLOG(1) << "Updating the UI. ID:" << current_input_method.id
             << ", keyboard_layout:" << current_input_method.keyboard_layout;
 
     // Notify the change to update UI.
