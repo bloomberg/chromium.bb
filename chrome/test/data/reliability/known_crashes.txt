@@ -186,3 +186,6 @@ PREFIX: `anonymous namespace'::establishchannelcallback::send___`anonymous names
 
 # 87593
 PREFIX: webcore::cachedresource::stoploading___webcore::cachedresourcerequest::didfail___webcore::subresourceloader::didfail___webcore::resourceloader::didfail___webcore::resourcehandleinternal::didfail___webkit_glue::weburlloaderimpl::context::oncompletedrequest___resourcedispatcher::onrequestcomplete
+
+# 88061
+PREFIX: `anonymous namespace'::invalidparameter____purecall___windowdragresponsetask::run___`anonymous namespace'::taskclosureadapter::run___messageloop::runtask
