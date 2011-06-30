@@ -3676,7 +3676,10 @@
           ],
         }],
         ['chromeos==1', {
-          'dependencies': ['../third_party/libevent/libevent.gyp:libevent'],
+          'dependencies': [
+            '../third_party/libevent/libevent.gyp:libevent',
+            'browser/chromeos/input_method/input_method.gyp:gencode',
+          ],
           'sources!': [
             'browser/background_mode_manager_linux.cc',
             'browser/first_run/upgrade_util.cc',

@@ -21,7 +21,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/input_method/ibus_input_methods.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
-#include "chrome/browser/chromeos/input_method/keyboard_overlay_map.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
@@ -499,9 +498,9 @@ std::string GetKeyboardLayoutName(const std::string& input_method_id) {
 }
 
 std::string GetKeyboardOverlayId(const std::string& input_method_id) {
-  for (size_t i = 0; i < arraysize(kKeyboardOverlayMap); ++i) {
-    if (kKeyboardOverlayMap[i].input_method_id == input_method_id) {
-      return kKeyboardOverlayMap[i].keyboard_overlay_id;
+  for (size_t i = 0; i < arraysize(kIBusEngines); ++i) {
+    if (kIBusEngines[i].input_method_id == input_method_id) {
+      return kIBusEngines[i].keyboard_overlay_id;
     }
   }
   return "";
@@ -734,11 +733,11 @@ InputMethodDescriptor GetFallbackInputMethodDescriptor() {
 InputMethodDescriptors* GetSupportedInputMethods() {
   InputMethodDescriptors* input_methods = new InputMethodDescriptors;
   for (size_t i = 0; i < arraysize(kIBusEngines); ++i) {
-    if (InputMethodIdIsWhitelisted(kIBusEngines[i].id)) {
+    if (InputMethodIdIsWhitelisted(kIBusEngines[i].input_method_id)) {
       input_methods->push_back(CreateInputMethodDescriptor(
-          kIBusEngines[i].id,
-          kIBusEngines[i].layout,
-          kIBusEngines[i].language));
+          kIBusEngines[i].input_method_id,
+          kIBusEngines[i].xkb_layout_id,
+          kIBusEngines[i].language_code));
     }
   }
   return input_methods;

@@ -79,7 +79,7 @@ bool InputMethodIdIsWhitelisted(const std::string& input_method_id) {
   if (!g_supported_input_methods) {
     g_supported_input_methods = new std::set<std::string>;
     for (size_t i = 0; i < arraysize(kIBusEngines); ++i) {
-      g_supported_input_methods->insert(kIBusEngines[i].id);
+      g_supported_input_methods->insert(kIBusEngines[i].input_method_id);
     }
   }
   return (g_supported_input_methods->count(input_method_id) > 0);
@@ -91,7 +91,7 @@ bool XkbLayoutIsSupported(const std::string& xkb_layout) {
   if (!g_supported_layouts) {
     g_supported_layouts = new std::set<std::string>;
     for (size_t i = 0; i < arraysize(kIBusEngines); ++i) {
-      g_supported_layouts->insert(kIBusEngines[i].layout);
+      g_supported_layouts->insert(kIBusEngines[i].xkb_layout_id);
     }
   }
   return (g_supported_layouts->count(xkb_layout) > 0);
@@ -923,7 +923,8 @@ class IBusControllerImpl : public IBusController {
 
     const IBusEngineInfo* engine_info = NULL;
     for (size_t i = 0; i < arraysize(kIBusEngines); ++i) {
-      if (kIBusEngines[i].id == std::string(current_global_engine_id)) {
+      if (kIBusEngines[i].input_method_id ==
+          std::string(current_global_engine_id)) {
         engine_info = &kIBusEngines[i];
         break;
       }
@@ -940,7 +941,7 @@ class IBusControllerImpl : public IBusController {
                                     engine_info->layout,
                                     engine_info->language);
 
-    VLOG(1) << "Updating the UI. ID:" << current_input_method.id
+    VLOG(1) << "Updating the UI. ID:" << current_input_method.input_method_id
             << ", keyboard_layout:" << current_input_method.keyboard_layout;
 
     // Notify the change to update UI.

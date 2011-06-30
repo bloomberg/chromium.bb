@@ -1,0 +1,141 @@
+# The list of input methods that we support. The input methods metadata is
+# also defined here. We use this data for the following purposes.
+#
+# 1. Exclude unnecessary input methods. For example, we don't need
+#    "ja:anthy", and "zh:pinyin" engines in ibus-m17n since we have better
+#    alternatives outside of ibus-m17n. Excluding these input methods from
+#    the IBus engine XML files, such as /usr/share/ibus/component/m17n.xml,
+#    makes the startup time of the IBus daemon faster. This filtering is
+#    done using a python script at build time of ibus-xkb-layouts and
+#    ibus-m17n. See crosbug.com/4161 for details.
+#
+# 2. Provide the input methods metadata to Chrome at build time. Chrome
+#    needs to know about the supported input methods for the input method
+#    features, such as the input method switching and the options page,
+#    to work. Note that we can retrieve the same metadata from the IBus
+#    daemon, but Chrome needs be able to get the metadata without talking
+#    to the IBus daemon. This requirement comes from the fact that the
+#    IBus daemon should not run if the user is just using a single
+#    keyboard layout such as US keyboard. The metadata generation is done
+#    using a python script at build time of Chrome. See crosbug.com/16961
+#    for details.
+#
+# The order of the list is important. In Chrome's "Languages and Input" options
+# page, we list input methods in this order, when more than one input methods
+# are available for a language (ex. French).
+#
+# Each non-comment line contains the following tab-separated columns.
+#
+# 1) The input method ID used by IBus. (ex. "xkb:ca::fra")
+# 2) The keyboard layout ID used by XKB. (ex. "ca")
+# 3) The keyboard overlay ID. (ex. "fra_CA") *1
+# 4) The language code (ex. "fra")
+#
+# Notes:
+# *1 For some complicated reason, we use different IDs for 2) and 3). Ask
+#    mazda for why.
+
+# Dutch
+xkb:nl::nld	nl	nl	nld
+xkb:be::nld	be	nl	nld
+
+# French
+xkb:fr::fra	fr	fr	fra
+xkb:be::fra	be	fr	fra
+xkb:ca::fra	ca	fr_CA	fra
+xkb:ch:fr:fra	ch(fr)	fr	fra
+
+# German
+xkb:de::ger	de	de	ger
+xkb:de:neo:ger	de(neo)	de_neo	ger
+xkb:be::ger	be	de	ger
+xkb:ch::ger	ch	de	ger
+
+# Japanese
+mozc	us	en_US	ja
+mozc-jp	jp	ja	ja
+mozc-dv	us(dvorak)	en_US_dvorak	ja
+xkb:jp::jpn	jp	ja	jpn
+
+# Russian
+xkb:ru::rus	ru	ru	rus
+xkb:ru:phonetic:rus	ru(phonetic)	ru	rus
+
+# Thai
+m17n:th:kesmanee	us	th	th
+m17n:th:pattachote	us	th	th
+m17n:th:tis820	us	th	th
+
+# Simplified Chinese
+pinyin	us	zh_CN	zh-CN
+pinyin-dv	us(dvorak)	en_US_dvorak	zh-CN
+# TODO(yusukes): Define zh_CN_dvorak if it's *really* necessary.
+
+# Traditional Chinese
+mozc-chewing	us	zh_TW	zh_TW
+m17n:zh:cangjie	us	zh_TW	zh
+m17n:zh:quick	us	zh_TW	zh
+# TODO(suzhe): Add CantonHK and Stroke5 if (it's really) necessary.
+
+# Vietnamese
+m17n:vi:tcvn	us	vi	vi
+m17n:vi:telex	us	vi	vi
+m17n:vi:viqr	us	vi	vi
+m17n:vi:vni	us	vi	vi
+# Note: Since ibus-m17n does not support "get-surrounding-text" feature yet,
+# Vietnames input methods, except 4 input methods above, in m17n-db should
+# not work fine. The 4 input methods in m17n-db (>= 1.6.0) don't require the
+# feature.
+
+# U.S. English
+xkb:us::eng	us	en_US	eng
+xkb:us:intl:eng	us(intl)	en_US_intl	eng
+xkb:us:altgr-intl:eng	us(altgr-intl)	en_US_altgr_intl	eng
+xkb:us:dvorak:eng	us(dvorak)	en_US_dvorak	eng
+xkb:us:colemak:eng	us(colemak)	en_US_colemak	eng
+
+# Other languages
+hangul	kr(kr104)	ko	ko
+
+# ibus-m17n input methods.
+m17n:ar:kbd	us	ar	ar
+m17n:hi:itrans	us	hi	hi
+# Note: the m17n-contrib package has some more Hindi definitions.
+m17n:fa:isiri	us	ar	fa
+# TODO(yusukes,jshin): Check if we can use ibux-xkb-layouts for these languages.
+
+# ibux-xkb-layouts input methods (keyboard layouts).
+xkb:br::por	br	pt_BR	por
+xkb:bg::bul	bg	bg	bul
+xkb:bg:phonetic:bul	bg(phonetic)	bg	bul
+xkb:ca:eng:eng	ca(eng)	ca	eng
+xkb:cz::cze	cz	cs	cze
+xkb:ee::est	ee	et	est
+xkb:es::spa	es	es	spa
+xkb:es:cat:cat	es(cat)	ca	cat
+xkb:dk::dan	dk	da	dan
+xkb:gr::gre	gr	el	gre
+xkb:il::heb	il	iw	heb
+xkb:kr:kr104:kor	kr(kr104)	ko	kor
+xkb:latam::spa	latam	es_419	spa
+xkb:lt::lit	lt	lt	lit
+xkb:lv:apostrophe:lav	lv(apostrophe)	lv	lav
+xkb:hr::scr	hr	hr	scr
+xkb:gb:extd:eng	gb(extd)	en_GB	eng
+xkb:gb:dvorak:eng	gb(dvorak)	en_GB_dvorak	eng
+xkb:fi::fin	fi	fi	fin
+xkb:hu::hun	hu	hu	hun
+xkb:it::ita	it	it	ita
+xkb:no::nob	no	no	nob
+xkb:pl::pol	pl	pl	pol
+xkb:pt::por	pt	pt_PT	por
+xkb:ro::rum	ro	ro	rum
+xkb:se::swe	se	sv	swe
+xkb:sk::slo	sk	sk	slo
+xkb:si::slv	si	sl	slv
+xkb:rs::srp	rs	sr	srp
+xkb:tr::tur	tr	tr	tur
+xkb:ua::ukr	ua	uk	ukr
+
+# TODO(yusukes): Support xkb:latam:deadtilde:spa and/or xkb:latam:nodeadkeys:spa
+# if necessary.
