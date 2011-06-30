@@ -58,6 +58,9 @@ class EnterpriseEnrollmentView : public views::View,
   virtual void OnConfirmationClosed() OVERRIDE;
   virtual bool GetInitialUser(std::string* user) OVERRIDE;
 
+  // Overriden from views::View:
+  virtual void RequestFocus() OVERRIDE;
+
  private:
   // Updates the gaia login box.
   void UpdateGaiaLogin(const DictionaryValue& args);

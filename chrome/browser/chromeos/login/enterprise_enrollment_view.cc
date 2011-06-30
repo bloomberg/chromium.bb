@@ -187,6 +187,10 @@ void EnterpriseEnrollmentView::Layout() {
   enrollment_page_view_->SetBoundsRect(GetContentsBounds());
 }
 
+void EnterpriseEnrollmentView::RequestFocus() {
+  enrollment_page_view_->RequestFocus();
+}
+
 void EnterpriseEnrollmentView::set_editable_user(bool editable) {
   editable_user_ = editable;
 }

@@ -51,6 +51,9 @@ class EnterpriseEnrollmentScreen
   explicit EnterpriseEnrollmentScreen(ViewScreenDelegate* delegate);
   virtual ~EnterpriseEnrollmentScreen();
 
+  // Override from ViewScreen:
+  virtual void Show() OVERRIDE;
+
   // EnterpriseEnrollmentController implementation:
   virtual void Authenticate(const std::string& user,
                             const std::string& password,

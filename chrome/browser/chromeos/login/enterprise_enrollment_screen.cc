@@ -265,4 +265,11 @@ void EnterpriseEnrollmentScreen::WriteInstallAttributesData() {
   NOTREACHED();
 }
 
+void EnterpriseEnrollmentScreen::Show() {
+  ViewScreen<EnterpriseEnrollmentView>::Show();
+  // Make the focus go initially to the DOMView, so that the email input field
+  // receives the focus.
+  view()->RequestFocus();
+}
+
 }  // namespace chromeos
