@@ -105,6 +105,7 @@ class TestPrerenderContents : public PrerenderContents {
         new_render_view_host_(NULL),
         was_hidden_(false),
         was_shown_(false),
+        should_be_shown_(expected_final_status == FINAL_STATUS_USED),
         quit_message_loop_on_destruction_(true) {
   }
 
@@ -124,12 +125,10 @@ class TestPrerenderContents : public PrerenderContents {
     // A used PrerenderContents will only be destroyed when we swap out
     // TabContents, at the end of a navigation caused by a call to
     // NavigateToURLImpl().
-    if (final_status() == FINAL_STATUS_USED) {
+    if (final_status() == FINAL_STATUS_USED)
       EXPECT_TRUE(new_render_view_host_);
-      EXPECT_TRUE(was_shown_);
-    } else {
-      EXPECT_FALSE(was_shown_);
-    }
+
+    EXPECT_EQ(should_be_shown_, was_shown_);
 
     // When the PrerenderContents is destroyed, quit the UI message loop.
     // This happens on navigation to used prerendered pages, and soon
@@ -165,6 +164,11 @@ class TestPrerenderContents : public PrerenderContents {
       MessageLoopForUI::current()->Quit();
     }
   }
+
+  // For tests that open the prerender in a new background tab, the RenderView
+  // will not have been made visible when the PrerenderContents is destroyed
+  // even though it is used.
+  void set_should_be_shown(bool value) { should_be_shown_ = value; }
 
   // Some of the ui_test_utils calls that we use assume that no one will quit
   // the message loop that they run internally. So we dont quit the message
@@ -220,6 +224,10 @@ class TestPrerenderContents : public PrerenderContents {
   // Set to true when the prerendering RenderWidget is shown, after having been
   // hidden.
   bool was_shown_;
+  // Expected final value of was_shown_.  Defaults to true for
+  // FINAL_STATUS_USED, and false otherwise.
+  bool should_be_shown_;
+
   bool quit_message_loop_on_destruction_;
 };
 
@@ -401,7 +409,13 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
   }
 
   void NavigateToDestURL() const {
-    NavigateToURLImpl(dest_url_);
+    NavigateToDestURLWithDisposition(CURRENT_TAB);
+  }
+
+  // Opens the url in a new tab, with no opener.
+  void NavigateToDestURLWithDisposition(
+      WindowOpenDisposition disposition) const {
+    NavigateToURLImpl(dest_url_, disposition);
   }
 
   void OpenDestUrlInNewWindowViaJs() const {
@@ -447,7 +461,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
   // Should be const but test_server()->GetURL(...) is not const.
   void NavigateToURL(const std::string& dest_html_file) {
     GURL dest_url = test_server()->GetURL(dest_html_file);
-    NavigateToURLImpl(dest_url);
+    NavigateToURLImpl(dest_url, CURRENT_TAB);
   }
 
   bool UrlIsInPrerenderManager(const std::string& html_file) {
@@ -576,9 +590,15 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     }
   }
 
-  void NavigateToURLImpl(const GURL& dest_url) const {
+  void NavigateToURLImpl(const GURL& dest_url,
+                         WindowOpenDisposition disposition) const {
     // Make sure in navigating we have a URL to use in the PrerenderManager.
-    EXPECT_TRUE(GetPrerenderContents() != NULL);
+    ASSERT_TRUE(GetPrerenderContents() != NULL);
+
+    // If opening the page in a background tab, it won't be shown when swapped
+    // in.
+    if (disposition == NEW_BACKGROUND_TAB)
+      GetPrerenderContents()->set_should_be_shown(false);
 
     // ui_test_utils::NavigateToURL waits until DidStopLoading is called on
     // the current tab.  As that tab is going to end up deleted, and may never
@@ -588,7 +608,8 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     // As PrerenderTestURL waits until the prerendered page has completely
     // loaded, there is no race between loading |dest_url| and swapping the
     // prerendered TabContents into the tab.
-    browser()->OpenURL(dest_url, GURL(), CURRENT_TAB, PageTransition::TYPED);
+    ui_test_utils::NavigateToURLWithDisposition(
+        browser(), dest_url, disposition, ui_test_utils::BROWSER_TEST_NONE);
     ui_test_utils::RunMessageLoop();
 
     // Make sure the PrerenderContents found earlier was used or removed.
@@ -596,9 +617,26 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
 
     if (call_javascript_) {
       // Check if page behaved as expected when actually displayed.
+
+      // Locate the navigated TabContents.
+      TabContents* tab_contents = NULL;
+      switch (disposition) {
+        case CURRENT_TAB:
+        case NEW_FOREGROUND_TAB:
+          tab_contents = browser()->GetSelectedTabContents();
+          break;
+        case NEW_BACKGROUND_TAB:
+          tab_contents =
+              browser()->GetTabContentsAt(browser()->active_index() + 1);
+          break;
+        default:
+          ASSERT_TRUE(false) << "Unsupported creation disposition";
+      }
+      ASSERT_TRUE(tab_contents);
+
       bool display_test_result = false;
       ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-          browser()->GetSelectedTabContents()->render_view_host(), L"",
+          tab_contents->render_view_host(), L"",
           L"window.domAutomationController.send(DidDisplayPass())",
           &display_test_result));
       EXPECT_TRUE(display_test_result);
@@ -619,6 +657,32 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPage) {
   PrerenderTestURL("files/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
   NavigateToDestURL();
+}
+
+// Checks that the visibility API works.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderVisibility) {
+  PrerenderTestURL("files/prerender/prerender_visibility.html",
+                   FINAL_STATUS_USED,
+                   1);
+  NavigateToDestURL();
+}
+
+// Checks that the visibility API works when opening a page in a new hidden
+// tab.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderVisibilityBackgroundTab) {
+  PrerenderTestURL("files/prerender/prerender_visibility_hidden.html",
+                   FINAL_STATUS_USED,
+                   1);
+  NavigateToDestURLWithDisposition(NEW_BACKGROUND_TAB);
+}
+
+// Checks that the visibility API works when opening a page in a new foreground
+// tab.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderVisibilityForegroundTab) {
+  PrerenderTestURL("files/prerender/prerender_visibility.html",
+                   FINAL_STATUS_USED,
+                   1);
+  NavigateToDestURLWithDisposition(NEW_FOREGROUND_TAB);
 }
 
 // Checks that the prerendering of a page is canceled correctly when a

@@ -49,6 +49,10 @@ class PrerenderHelper : public RenderViewObserver,
   // for the prerender have been recorded.
   bool HasUnrecordedData() const;
 
+  // Updates the visibility state of the RenderView.  Must be called whenever
+  // prerendering starts or finishes.
+  void UpdateVisibilityState();
+
   // Tracks whether or not observed RenderView is currently prerendering.
   bool is_prerendering_;
 

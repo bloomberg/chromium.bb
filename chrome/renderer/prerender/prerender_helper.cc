@@ -10,6 +10,7 @@
 #include "content/renderer/navigation_state.h"
 #include "content/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
 // Helper macro for histograms.
 #define RECORD_PLT(tag, perceived_page_load_time) { \
@@ -29,6 +30,7 @@ PrerenderHelper::PrerenderHelper(RenderView* render_view)
       RenderViewObserverTracker<PrerenderHelper>(render_view),
       is_prerendering_(true),
       has_unrecorded_data_(false) {
+  UpdateVisibilityState();
 }
 
 PrerenderHelper::~PrerenderHelper() {
@@ -155,10 +157,19 @@ void PrerenderHelper::OnSetIsPrerendering(bool is_prerendering) {
 
   is_prerendering_ = false;
   prerender_display_time_ = base::Time::Now();
+  UpdateVisibilityState();
 }
 
 bool PrerenderHelper::HasUnrecordedData() const {
   return !prerender_display_time_.is_null();
+}
+
+void PrerenderHelper::UpdateVisibilityState() {
+  if (render_view()->webview()) {
+    render_view()->webview()->setVisibilityState(
+        render_view()->visibilityState(),
+        false);
+  }
 }
 
 }  // namespace prerender
