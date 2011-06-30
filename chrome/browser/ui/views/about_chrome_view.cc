@@ -33,6 +33,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "views/controls/button/text_button.h"
 #include "views/controls/link.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/controls/throbber.h"
@@ -401,16 +402,26 @@ void AboutChromeView::Layout() {
   timeout_indicator_.SetBounds(throbber_topleft_x, throbber_topleft_y,
                                sz.width(), sz.height());
 
-  // The update label should be at the bottom of the screen, to the right of
-  // the throbber. We specify width to the end of the dialog because it contains
-  // variable length messages.
+  // The update label should be at the bottom of the screen, to the right of the
+  // throbber. It vertically lines up with the ok button, so we make sure it
+  // doesn't extend into the ok button.
   sz = update_label_.GetPreferredSize();
   int update_label_x = throbber_->x() + throbber_->width() +
                        views::kRelatedControlHorizontalSpacing;
+  views::DialogClientView* dialog_client_view = GetDialogClientView();
+  int max_x = parent_bounds.width();
+  if (dialog_client_view->ok_button() &&
+      dialog_client_view->ok_button()->IsVisible()) {
+    max_x = std::min(dialog_client_view->ok_button()->x(), max_x);
+  }
+  if (dialog_client_view->cancel_button() &&
+      dialog_client_view->cancel_button()->IsVisible()) {
+    max_x = std::min(dialog_client_view->cancel_button()->x(), max_x);
+  }
   update_label_.SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   update_label_.SetBounds(update_label_x,
                           throbber_topleft_y + 1,
-                          parent_bounds.width() - update_label_x,
+                          std::min(max_x - update_label_x, sz.width()),
                           sz.height());
 }
 
