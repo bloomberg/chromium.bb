@@ -65,8 +65,8 @@ chrome.test.runTests([
   function setDefaultContentSettings() {
     default_content_settings.forEach(function(type, setting) {
       cs[type].set({
-        'topLevelPattern': '<all_urls>',
-        'embeddedPattern': '<all_urls>',
+        'primaryPattern': '<all_urls>',
+        'secondaryPattern': '<all_urls>',
         'setting': setting
       }, chrome.test.callbackPass());
     });
@@ -74,8 +74,8 @@ chrome.test.runTests([
   function setContentSettings() {
     settings.forEach(function(type, setting) {
       cs[type].set({
-        'topLevelPattern': 'http://*.google.com/*',
-        'embeddedPattern': 'http://*.google.com/*',
+        'primaryPattern': 'http://*.google.com/*',
+        'secondaryPattern': 'http://*.google.com/*',
         'setting': setting
       }, chrome.test.callbackPass());
     });
@@ -84,24 +84,23 @@ chrome.test.runTests([
     settings.forEach(function(type, setting) {
       var message = "Setting for " + type + " should be " + setting;
       cs[type].get({
-        'topLevelUrl': 'http://www.google.com',
-        'embeddedUrl': 'http://www.google.com'
+        'primaryUrl': 'http://www.google.com',
+        'secondaryUrl': 'http://www.google.com'
       }, expect({'setting':setting}, message));
     });
   },
   function invalidSettings() {
     cs.cookies.get({
-      'topLevelUrl': '',
-      'embeddedUrl': 'moo'
+      'primaryUrl': 'moo',
     }, chrome.test.callbackFail("The URL \"moo\" is invalid."));
     cs.plugins.set({
-      'topLevelPattern': 'http://example.com/*',
-      'embeddedPattern': 'http://example.com/path',
+      'primaryPattern': 'http://example.com/*',
+      'secondaryPattern': 'http://example.com/path',
       'setting': 'block'
     }, chrome.test.callbackFail("Specific paths are not allowed."));
     cs.javascript.set({
-      'topLevelPattern': 'http://example.com/*',
-      'embeddedPattern': 'file:///home/hansmoleman/*',
+      'primaryPattern': 'http://example.com/*',
+      'secondaryPattern': 'file:///home/hansmoleman/*',
       'setting': 'allow'
     }, chrome.test.callbackFail("Path wildcards in file URL patterns are not allowed."));
   }

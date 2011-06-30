@@ -5862,13 +5862,14 @@
                 "name": "details",
                 "type": "object",
                 "properties": {
-                  "embeddedUrl": {
+                  "primaryUrl": {
                     "type": "string",
-                    "description": "The URL of the frame or object for which the content settings should be retrieved."
+                    "description": "The primary URL for which the content setting should be retrieved. Note that the meaning of a primary URL depends on the content type."
                   },
-                  "topLevelUrl": {
+                  "secondaryUrl": {
                     "type": "string",
-                    "description": "The URL of the top-level frame."
+                    "description": "The secondary URL for which the content setting should be retrieved. Defaults to the primary URL. Note that the meaning of a secondary URL depends on the content type, and not all content types use secondary URLs.",
+                    "optional": true
                   },
                   "resourceIdentifier": {
                     "$ref": "ResourceIdentifier",
@@ -5909,13 +5910,14 @@
                 "name": "details",
                 "type": "object",
                 "properties": {
-                  "topLevelPattern": {
+                  "primaryPattern": {
                     "type": "string",
-                    "description": "The pattern for the top-level frame URL. For details on the format of a pattern, see <a href='match_patterns.html'>Match Patterns</a>."
+                    "description": "The pattern for the primary URL. For details on the format of a pattern, see <a href='match_patterns.html'>Match Patterns</a>."
                   },
-                  "embeddedPattern": {
+                  "secondaryPattern": {
                     "type": "string",
-                    "description": "The pattern for the frame or object URL. For details on the format of a pattern, see <a href='match_patterns.html'>Match Patterns</a>."
+                    "description": "The pattern for the secondary URL. Defaults to matching all URLs. For details on the format of a pattern, see <a href='match_patterns.html'>Match Patterns</a>.",
+                    "optional": true
                   },
                   "resourceIdentifier": {
                     "$ref": "ResourceIdentifier",
@@ -5990,7 +5992,7 @@
       },
       "cookies": {
         "$ref": "ContentSetting",
-        "description": "Whether to allow cookies and other local data to be set by websites. One of<br><var>allow</var>: Accept cookies,<br><var>block</var>: Block cookies,<br><var>session_only</var>: Accept cookies only for the current session. Default is <var>allow</var>.",
+        "description": "Whether to allow cookies and other local data to be set by websites. One of<br><var>allow</var>: Accept cookies,<br><var>block</var>: Block cookies,<br><var>session_only</var>: Accept cookies only for the current session. Default is <var>allow</var>.<br>The primary URL is the URL representing the cookie origin. The secondary URL is the URL of the top-level frame.",
         "value": [
           "cookies",
           {"type":"string", "enum": ["allow", "block", "session_only"]}
@@ -5998,7 +6000,7 @@
       },
       "images": {
         "$ref": "ContentSetting",
-        "description": "Whether to show images. One of<br><var>allow</var>: Show images,<br><var>block</var>: Don't show images. Default is <var>allow</var>.",
+        "description": "Whether to show images. One of<br><var>allow</var>: Show images,<br><var>block</var>: Don't show images. Default is <var>allow</var>.<br>The primary URL is the main-frame URL. The secondary URL is not used.",
         "value": [
           "images",
           {"type":"string", "enum": ["allow", "block"]}
@@ -6006,7 +6008,7 @@
       },
       "javascript": {
         "$ref": "ContentSetting",
-        "description": "Whether to run Javascript. One of<br><var>allow</var>: Run Javascript,<br><var>block</var>: Don't run Javascript. Default is <var>allow</var>.",
+        "description": "Whether to run Javascript. One of<br><var>allow</var>: Run Javascript,<br><var>block</var>: Don't run Javascript. Default is <var>allow</var>.<br>The primary URL is the main-frame URL. The secondary URL is not used.",
         "value": [
           "javascript",
           {"type":"string", "enum": ["allow", "block"]}
@@ -6014,7 +6016,7 @@
       },
       "plugins": {
         "$ref": "ContentSetting",
-        "description": "Whether to run plug-ins. One of<br><var>allow</var>: Run plug-ins automatically,<br><var>block</var>: Don't run plug-ins automatically. Default is <var>allow</var>.",
+        "description": "Whether to run plug-ins. One of<br><var>allow</var>: Run plug-ins automatically,<br><var>block</var>: Don't run plug-ins automatically. Default is <var>allow</var>.<br>The primary URL is the main-frame URL. The secondary URL is not used.",
         "value": [
           "plugins",
           {"type":"string", "enum": ["allow", "block"]}
@@ -6022,7 +6024,7 @@
       },
       "popups": {
         "$ref": "ContentSetting",
-        "description": "Whether to allow sites to show pop-ups. One of<br><var>allow</var>: Allow sites to show pop-ups,<br><var>block</var>: Don't allow sites to show pop-ups. Default is <var>block</var>.",
+        "description": "Whether to allow sites to show pop-ups. One of<br><var>allow</var>: Allow sites to show pop-ups,<br><var>block</var>: Don't allow sites to show pop-ups. Default is <var>block</var>.<br>The primary URL is the main-frame URL. The secondary URL is not used.",
         "value": [
           "popups",
           {"type":"string", "enum": ["allow", "block"]}
@@ -6030,7 +6032,7 @@
       },
       "notifications": {
         "$ref": "ContentSetting",
-        "description": "Whether to allow sites to show desktop notifications. One of<br><var>allow</var>: Allow sites to show desktop notifications,<br><var>block</var>: Don't allow sites to show desktop notifications,<br><var>ask</var>: Ask when a site wants to show desktop notifications. Default is <var>ask</var>.",
+        "description": "Whether to allow sites to show desktop notifications. One of<br><var>allow</var>: Allow sites to show desktop notifications,<br><var>block</var>: Don't allow sites to show desktop notifications,<br><var>ask</var>: Ask when a site wants to show desktop notifications. Default is <var>ask</var>.<br>The primary URL is the main-frame URL. The secondary URL is not used.",
         "value": [
           "notifications",
           {"type":"string", "enum": ["allow", "block", "ask"]}

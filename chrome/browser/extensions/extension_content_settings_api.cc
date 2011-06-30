@@ -85,24 +85,25 @@ bool GetContentSettingFunction::RunImpl() {
   DictionaryValue* details = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &details));
 
-  std::string embedded_url_spec;
+  std::string primary_url_spec;
   EXTENSION_FUNCTION_VALIDATE(
-      details->GetString(keys::kEmbeddedUrlKey, &embedded_url_spec));
-  GURL embedded_url(embedded_url_spec);
-  if (!embedded_url.is_valid()) {
+      details->GetString(keys::kPrimaryUrlKey, &primary_url_spec));
+  GURL primary_url(primary_url_spec);
+  if (!primary_url.is_valid()) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(keys::kInvalidUrlError,
-                                                     embedded_url_spec);
+                                                     primary_url_spec);
     return false;
   }
 
-  std::string top_level_url_spec;
-  EXTENSION_FUNCTION_VALIDATE(
-      details->GetString(keys::kTopLevelUrlKey, &top_level_url_spec));
-  GURL top_level_url(top_level_url_spec);
-  if (!top_level_url.is_valid()) {
-    error_ = ExtensionErrorUtils::FormatErrorMessage(keys::kInvalidUrlError,
-                                                     top_level_url_spec);
-    return false;
+  GURL secondary_url(primary_url);
+  std::string secondary_url_spec;
+  if (details->GetString(keys::kSecondaryUrlKey, &secondary_url_spec)) {
+    secondary_url = GURL(secondary_url_spec);
+    if (!secondary_url.is_valid()) {
+      error_ = ExtensionErrorUtils::FormatErrorMessage(keys::kInvalidUrlError,
+                                                       secondary_url_spec);
+      return false;
+    }
   }
 
   std::string resource_identifier;
@@ -143,10 +144,10 @@ bool GetContentSettingFunction::RunImpl() {
   if (content_type == CONTENT_SETTINGS_TYPE_COOKIES) {
     // TODO(jochen): Do we return the value for setting or for reading cookies?
     bool setting_cookie = false;
-    setting = map->GetCookieContentSetting(embedded_url, top_level_url,
+    setting = map->GetCookieContentSetting(primary_url, secondary_url,
                                            setting_cookie);
   } else {
-    setting = map->GetContentSetting(embedded_url, top_level_url, content_type,
+    setting = map->GetContentSetting(primary_url, secondary_url, content_type,
                                      resource_identifier);
   }
 
@@ -169,26 +170,27 @@ bool SetContentSettingFunction::RunImpl() {
   DictionaryValue* details = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &details));
 
-  std::string top_level_pattern_str;
-  std::string top_level_error;
+  std::string primary_pattern_str;
   EXTENSION_FUNCTION_VALIDATE(
-      details->GetString(keys::kTopLevelPatternKey, &top_level_pattern_str));
-  ContentSettingsPattern top_level_pattern =
-      helpers::ParseExtensionPattern(top_level_pattern_str, &top_level_error);
-  if (!top_level_pattern.IsValid()) {
-    error_ = top_level_error;
+      details->GetString(keys::kPrimaryPatternKey, &primary_pattern_str));
+  std::string primary_error;
+  ContentSettingsPattern primary_pattern =
+      helpers::ParseExtensionPattern(primary_pattern_str, &primary_error);
+  if (!primary_pattern.IsValid()) {
+    error_ = primary_error;
     return false;
   }
 
-  std::string embedded_pattern_str;
-  std::string embedded_error;
-  EXTENSION_FUNCTION_VALIDATE(
-      details->GetString(keys::kEmbeddedPatternKey, &embedded_pattern_str));
-  ContentSettingsPattern embedded_pattern =
-      helpers::ParseExtensionPattern(embedded_pattern_str, &embedded_error);
-  if (!embedded_pattern.IsValid()) {
-    error_ = embedded_error;
-    return false;
+  ContentSettingsPattern secondary_pattern = ContentSettingsPattern::Wildcard();
+  std::string secondary_pattern_str;
+  if (details->GetString(keys::kSecondaryPatternKey, &secondary_pattern_str)) {
+    std::string secondary_error;
+    secondary_pattern =
+        helpers::ParseExtensionPattern(secondary_pattern_str, &secondary_error);
+    if (!secondary_pattern.IsValid()) {
+      error_ = secondary_error;
+      return false;
+    }
   }
 
   std::string resource_identifier;
@@ -247,8 +249,8 @@ bool SetContentSettingFunction::RunImpl() {
 
   ExtensionContentSettingsStore* store =
       profile_->GetExtensionService()->GetExtensionContentSettingsStore();
-  store->SetExtensionContentSetting(extension_id(), top_level_pattern,
-                                    embedded_pattern, content_type,
+  store->SetExtensionContentSetting(extension_id(), primary_pattern,
+                                    secondary_pattern, content_type,
                                     resource_identifier, setting, scope);
   return true;
 }

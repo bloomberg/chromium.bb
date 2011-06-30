@@ -13,8 +13,7 @@ function init() {
                  "notifications"];
     types.forEach(function(type) {
       chrome.experimental.contentSettings[type].get({
-            'topLevelUrl': url,
-            'embeddedUrl': url,
+            'primaryUrl': url,
             'incognito': incognito
           },
           function(details) {
@@ -30,8 +29,7 @@ function settingChanged(element) {
   var pattern = /^file:/.test(url) ? url : url.replace(/\/[^\/]*?$/, '/*');
   console.log(type+" setting for "+pattern+": "+setting);
   chrome.experimental.contentSettings[type].set({
-        'topLevelPattern': pattern,
-        'embeddedPattern': pattern,
+        'primaryPattern': pattern,
         'setting': setting,
         'scope': (incognito ? 'incognito_session_only' : 'regular')
       });

@@ -16,6 +16,24 @@
 namespace helpers = extension_content_settings_helpers;
 namespace keys = extension_content_settings_api_constants;
 
+namespace {
+
+bool ComparePatternPairs(const ContentSettingsPattern& first_primary,
+                         const ContentSettingsPattern& first_secondary,
+                         const ContentSettingsPattern& second_primary,
+                         const ContentSettingsPattern& second_secondary) {
+  ContentSettingsPattern::Relation relation =
+      first_primary.Compare(second_primary);
+  if (relation == ContentSettingsPattern::SUCCESSOR)
+    return true;
+  if (relation == ContentSettingsPattern::PREDECESSOR)
+    return false;
+  return (first_secondary.Compare(second_secondary) ==
+      ContentSettingsPattern::SUCCESSOR);
+}
+
+}  // namespace
+
 using content_settings::ResourceIdentifier;
 
 struct ExtensionContentSettingsStore::ExtensionEntry {
@@ -43,8 +61,8 @@ ExtensionContentSettingsStore::~ExtensionContentSettingsStore() {
 
 void ExtensionContentSettingsStore::SetExtensionContentSetting(
     const std::string& ext_id,
-    const ContentSettingsPattern& embedded_pattern,
-    const ContentSettingsPattern& top_level_pattern,
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType type,
     const content_settings::ResourceIdentifier& identifier,
     ContentSetting setting,
@@ -57,8 +75,8 @@ void ExtensionContentSettingsStore::SetExtensionContentSetting(
     // Find |ContentSettingSpec|.
     ContentSettingSpecList::iterator setting_spec = setting_spec_list->begin();
     while (setting_spec != setting_spec_list->end()) {
-      if (setting_spec->embedded_pattern == embedded_pattern &&
-          setting_spec->top_level_pattern == top_level_pattern &&
+      if (setting_spec->primary_pattern == primary_pattern &&
+          setting_spec->secondary_pattern == secondary_pattern &&
           setting_spec->content_type == type &&
           setting_spec->resource_identifier == identifier) {
         break;
@@ -66,8 +84,8 @@ void ExtensionContentSettingsStore::SetExtensionContentSetting(
       ++setting_spec;
     }
     if (setting_spec == setting_spec_list->end()) {
-      setting_spec_list->push_back(ContentSettingSpec(embedded_pattern,
-                                                      top_level_pattern,
+      setting_spec_list->push_back(ContentSettingSpec(primary_pattern,
+                                                      secondary_pattern,
                                                       type,
                                                       identifier,
                                                       setting));
@@ -181,8 +199,8 @@ const ExtensionContentSettingsStore::ContentSettingSpecList*
 }
 
 ContentSetting ExtensionContentSettingsStore::GetContentSettingFromSpecList(
-    const GURL& embedded_url,
-    const GURL& top_level_url,
+    const GURL& primary_url,
+    const GURL& secondary_url,
     ContentSettingsType type,
     const content_settings::ResourceIdentifier& identifier,
     const ContentSettingSpecList& setting_spec_list) const {
@@ -190,17 +208,18 @@ ContentSetting ExtensionContentSettingsStore::GetContentSettingFromSpecList(
 
   for (ContentSettingSpecList::const_iterator spec = setting_spec_list.begin();
        spec != setting_spec_list.end(); ++spec) {
-    if (!spec->embedded_pattern.Matches(embedded_url) ||
-        !spec->top_level_pattern.Matches(top_level_url) ||
+    if (!spec->primary_pattern.Matches(primary_url) ||
+        !spec->secondary_pattern.Matches(secondary_url) ||
         spec->content_type != type ||
         spec->resource_identifier != identifier) {
       continue;
     }
 
-    // TODO(markusheintz): Compare embedded patterns as well?
     if (winner_spec == setting_spec_list.end() ||
-        winner_spec->top_level_pattern.Compare(spec->top_level_pattern) ==
-            ContentSettingsPattern::SUCCESSOR) {
+        ComparePatternPairs(winner_spec->primary_pattern,
+                            winner_spec->secondary_pattern,
+                            spec->primary_pattern,
+                            spec->secondary_pattern)) {
       winner_spec = spec;
     }
   }
@@ -284,7 +303,7 @@ void ExtensionContentSettingsStore::AddRules(
   for (it = setting_spec_list->begin(); it != setting_spec_list->end(); ++it) {
     if (it->content_type == type && it->resource_identifier == identifier) {
       rules->push_back(content_settings::ProviderInterface::Rule(
-          it->embedded_pattern, it->top_level_pattern, it->setting));
+          it->primary_pattern, it->secondary_pattern, it->setting));
     }
   }
 }
@@ -328,10 +347,10 @@ ListValue* ExtensionContentSettingsStore::GetSettingsForExtension(
   ContentSettingSpecList::const_iterator it;
   for (it = setting_spec_list->begin(); it != setting_spec_list->end(); ++it) {
     DictionaryValue* setting_dict = new DictionaryValue();
-    setting_dict->SetString(keys::kEmbeddedPatternKey,
-                            it->embedded_pattern.ToString());
-    setting_dict->SetString(keys::kTopLevelPatternKey,
-                            it->top_level_pattern.ToString());
+    setting_dict->SetString(keys::kPrimaryPatternKey,
+                            it->primary_pattern.ToString());
+    setting_dict->SetString(keys::kSecondaryPatternKey,
+                            it->secondary_pattern.ToString());
     setting_dict->SetString(
         keys::kContentSettingsTypeKey,
         helpers::ContentSettingsTypeToString(it->content_type));
@@ -354,17 +373,17 @@ void ExtensionContentSettingsStore::SetExtensionContentSettingsFromList(
       continue;
     }
     DictionaryValue* dict = static_cast<DictionaryValue*>(*it);
-    std::string pattern_str;
-    dict->GetString(keys::kTopLevelPatternKey, &pattern_str);
-    ContentSettingsPattern pattern =
-        ContentSettingsPattern::LegacyFromString(pattern_str);
-    DCHECK(pattern.IsValid());
+    std::string primary_pattern_str;
+    dict->GetString(keys::kPrimaryPatternKey, &primary_pattern_str);
+    ContentSettingsPattern primary_pattern =
+        ContentSettingsPattern::LegacyFromString(primary_pattern_str);
+    DCHECK(primary_pattern.IsValid());
 
-    std::string embedded_pattern_str;
-    dict->GetString(keys::kEmbeddedPatternKey, &embedded_pattern_str);
-    ContentSettingsPattern embedded_pattern =
-        ContentSettingsPattern::LegacyFromString(embedded_pattern_str);
-    DCHECK(embedded_pattern.IsValid());
+    std::string secondary_pattern_str;
+    dict->GetString(keys::kSecondaryPatternKey, &secondary_pattern_str);
+    ContentSettingsPattern secondary_pattern =
+        ContentSettingsPattern::LegacyFromString(secondary_pattern_str);
+    DCHECK(secondary_pattern.IsValid());
 
     std::string content_settings_type_str;
     dict->GetString(keys::kContentSettingsTypeKey, &content_settings_type_str);
@@ -383,8 +402,8 @@ void ExtensionContentSettingsStore::SetExtensionContentSettingsFromList(
     DCHECK(result);
 
     SetExtensionContentSetting(extension_id,
-                               pattern,
-                               embedded_pattern,
+                               primary_pattern,
+                               secondary_pattern,
                                content_settings_type,
                                resource_identifier,
                                setting,
@@ -403,13 +422,13 @@ void ExtensionContentSettingsStore::RemoveObserver(Observer* observer) {
 }
 
 ExtensionContentSettingsStore::ContentSettingSpec::ContentSettingSpec(
-    const ContentSettingsPattern& embedded_pattern,
-    const ContentSettingsPattern& top_level_pattern,
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType type,
     const content_settings::ResourceIdentifier& identifier,
     ContentSetting setting)
-    : embedded_pattern(embedded_pattern),
-      top_level_pattern(top_level_pattern),
+    : primary_pattern(primary_pattern),
+      secondary_pattern(secondary_pattern),
       content_type(type),
       resource_identifier(identifier),
       setting(setting) {

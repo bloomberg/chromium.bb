@@ -118,14 +118,14 @@ class ExtensionContentSettingsStore {
  private:
   struct ExtensionEntry;
   struct ContentSettingSpec {
-    ContentSettingSpec(const ContentSettingsPattern& pattern,
-                       const ContentSettingsPattern& embedder_pattern,
+    ContentSettingSpec(const ContentSettingsPattern& primary_pattern,
+                       const ContentSettingsPattern& secondary_pattern,
                        ContentSettingsType type,
                        const content_settings::ResourceIdentifier& identifier,
                        ContentSetting setting);
 
-    ContentSettingsPattern embedded_pattern;
-    ContentSettingsPattern top_level_pattern;
+    ContentSettingsPattern primary_pattern;
+    ContentSettingsPattern secondary_pattern;
     ContentSettingsType content_type;
     content_settings::ResourceIdentifier resource_identifier;
     ContentSetting setting;

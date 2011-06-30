@@ -563,7 +563,7 @@
         "manifest.json",
         "popup.html"
       ],
-      "source_hash": "1bd5e6d89bc8090a55837c26d0ba3911fd63b362",
+      "source_hash": "aab21662d31c6d61f2304eacce32a3b6ca8bb207",
       "zip_path": "examples\/api\/contentSettings.zip"
     },
     {

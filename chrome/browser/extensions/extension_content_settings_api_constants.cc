@@ -10,14 +10,14 @@ namespace extension_content_settings_api_constants {
 const char kContentSettingKey[] = "setting";
 const char kContentSettingsTypeKey[] = "type";
 const char kDescriptionKey[] = "description";
-const char kEmbeddedPatternKey[] = "embeddedPattern";
-const char kEmbeddedUrlKey[] = "embeddedUrl";
 const char kIdKey[] = "id";
 const char kPatternKey[] = "pattern";
+const char kPrimaryPatternKey[] = "primaryPattern";
+const char kPrimaryUrlKey[] = "primaryUrl";
 const char kResourceIdentifierKey[] = "resourceIdentifier";
 const char kRuleKey[] = "rule";
-const char kTopLevelPatternKey[] = "topLevelPattern";
-const char kTopLevelUrlKey[] = "topLevelUrl";
+const char kSecondaryPatternKey[] = "secondaryPattern";
+const char kSecondaryUrlKey[] = "secondaryUrl";
 
 // Errors.
 const char kIncognitoContextError[] =
