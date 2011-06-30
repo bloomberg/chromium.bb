@@ -254,7 +254,7 @@
         "parameters": [
           {
             "name": "url",
-            "type": "stirng",
+            "type": "string",
             "description": "URL of the new page."
           }
         ]
