@@ -12,7 +12,6 @@ import shutil
 import sys
 import tempfile
 import unittest
-import urllib
 
 import constants
 sys.path.append(constants.CROSUTILS_LIB_DIR)

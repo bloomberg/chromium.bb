@@ -7,11 +7,9 @@ import copy
 import mox
 import os
 import multiprocessing
-import shutil
 import sys
 import tempfile
 import unittest
-import urllib
 
 import constants
 sys.path.append(constants.SOURCE_ROOT)
@@ -26,12 +24,12 @@ PRIVATE_PACKAGES = [{'CPV': 'private', 'SHA1': '3', 'MTIME': '3'}]
 
 
 def SimplePackageIndex(header=True, packages=True):
-   pkgindex = binpkg.PackageIndex()
-   if header:
-     pkgindex.header['URI'] = 'http://www.example.com'
-   if packages:
-     pkgindex.packages = copy.deepcopy(PUBLIC_PACKAGES + PRIVATE_PACKAGES)
-   return pkgindex
+  pkgindex = binpkg.PackageIndex()
+  if header:
+    pkgindex.header['URI'] = 'http://www.example.com'
+  if packages:
+    pkgindex.packages = copy.deepcopy(PUBLIC_PACKAGES + PRIVATE_PACKAGES)
+  return pkgindex
 
 
 class TestUpdateFile(unittest.TestCase):
@@ -82,7 +80,7 @@ class TestUpdateFile(unittest.TestCase):
     value = '1234567'
     prebuilt.UpdateLocalFile(self.version_file, value)
     print self.version_file
-    current_version_str = self._read_version_file()
+    self._read_version_file()
     self._verify_key_pair(key, value)
     print self.version_file
 
@@ -295,11 +293,10 @@ class TestResolveDuplicateUploads(unittest.TestCase):
     expected_pkgindex = SimplePackageIndex()
     for pkg in expected_pkgindex.packages:
       pkg.setdefault('PATH', pkg['CPV'] + '.tbz2')
-    uploads = pkgindex.ResolveDuplicateUploads([dup_pkgindex])
+    pkgindex.ResolveDuplicateUploads([dup_pkgindex])
     self.assertEqual(pkgindex.packages, expected_pkgindex.packages)
 
   def testMissingSHA1(self):
-    db = {}
     pkgindex = SimplePackageIndex()
     dup_pkgindex = SimplePackageIndex()
     expected_pkgindex = SimplePackageIndex()
@@ -307,7 +304,7 @@ class TestResolveDuplicateUploads(unittest.TestCase):
     del expected_pkgindex.packages[0]['SHA1']
     for pkg in expected_pkgindex.packages[1:]:
       pkg.setdefault('PATH', pkg['CPV'] + '.tbz2')
-    uploads = pkgindex.ResolveDuplicateUploads([dup_pkgindex])
+    pkgindex.ResolveDuplicateUploads([dup_pkgindex])
     self.assertNotEqual(pkgindex.packages[0]['MTIME'],
                         expected_pkgindex.packages[0]['MTIME'])
     del pkgindex.packages[0]['MTIME']
@@ -436,7 +433,6 @@ class TestSyncPrebuilts(unittest.TestCase):
     url_suffix = prebuilt._REL_BOARD_PATH % {'version': self.version,
         'board': board }
     packages_url_suffix = '%s/packages' % url_suffix.rstrip('/')
-    process = None
     self.mox.StubOutWithMock(multiprocessing.Process, '__init__')
     self.mox.StubOutWithMock(multiprocessing.Process, 'exitcode')
     self.mox.StubOutWithMock(multiprocessing.Process, 'start')
@@ -498,7 +494,7 @@ class TestMain(unittest.TestCase):
     self.mox.StubOutWithMock(prebuilt.PrebuiltUploader, '__init__')
     self.mox.StubOutWithMock(prebuilt, 'GetBoardPathFromCrosOverlayList')
     fake_overlay_path = '/fake_path'
-    acl_path = prebuilt.GetBoardPathFromCrosOverlayList(
+    prebuilt.GetBoardPathFromCrosOverlayList(
         options.build_path, options.board).AndReturn(fake_overlay_path)
     expected_gs_acl_path = os.path.join(fake_overlay_path,
                                         prebuilt._GOOGLESTORAGE_ACL_FILE)

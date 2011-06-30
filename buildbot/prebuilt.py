@@ -10,7 +10,6 @@ import os
 import re
 import sys
 import tempfile
-import time
 
 if __name__ == '__main__':
   import constants
@@ -184,10 +183,9 @@ def _RetryRun(cmd, print_cmd=True, cwd=None):
 
   # TODO(scottz): port to use _Run or similar when it is available in
   # cros_build_lib.
-  for attempt in range(_RETRIES):
+  for unused_attempt in range(_RETRIES):
     try:
-      output = cros_build_lib.RunCommand(cmd, print_cmd=print_cmd,
-                                         cwd=cwd)
+      cros_build_lib.RunCommand(cmd, print_cmd=print_cmd, cwd=cwd)
       return True
     except cros_build_lib.RunCommandError:
       print 'Failed to run %r' % cmd
