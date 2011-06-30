@@ -33,58 +33,19 @@
 #include "base/win/windows_version.h"
 #endif
 
-static const char kAboutFlashJsFile[] = "about_flash.js";
-static const char kStringsJsFile[] = "strings.js";
-
-////////////////////////////////////////////////////////////////////////////////
-//
-// FlashUIHTMLSource
-//
-////////////////////////////////////////////////////////////////////////////////
-
-class FlashUIHTMLSource : public ChromeWebUIDataSource {
- public:
-  FlashUIHTMLSource();
-
-  // Called when the network layer has requested a resource underneath
-  // the path we registered.
-  virtual void StartDataRequest(const std::string& path,
-                                bool is_incognito,
-                                int request_id);
-
-  virtual std::string GetMimeType(const std::string&) const;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FlashUIHTMLSource);
-};
-
-FlashUIHTMLSource::FlashUIHTMLSource()
-    : ChromeWebUIDataSource(chrome::kChromeUIFlashHost) {
-  AddLocalizedString("loadingMessage", IDS_FLASH_LOADING_MESSAGE);
-  AddLocalizedString("flashLongTitle", IDS_FLASH_TITLE_MESSAGE);
-}
-
-void FlashUIHTMLSource::StartDataRequest(const std::string& path,
-                                         bool is_incognito,
-                                         int request_id) {
-  if (path == kStringsJsFile) {
-    SendLocalizedStringsAsJSON(request_id);
-  } else {
-    int id = (path == kAboutFlashJsFile ?
-              IDR_ABOUT_FLASH_JS :
-              IDR_ABOUT_FLASH_HTML);
-    SendFromResourceBundle(request_id, id);
-  }
-}
-
-std::string FlashUIHTMLSource::GetMimeType(const std::string& path) const {
-  if (path == kAboutFlashJsFile || path == kStringsJsFile)
-    return "application/javascript";
-
-  return "text/html";
-}
-
 namespace {
+
+ChromeWebUIDataSource* CreateFlashUIHTMLSource() {
+  ChromeWebUIDataSource* source =
+      new ChromeWebUIDataSource(chrome::kChromeUIFlashHost);
+
+  source->AddLocalizedString("loadingMessage", IDS_FLASH_LOADING_MESSAGE);
+  source->AddLocalizedString("flashLongTitle", IDS_FLASH_TITLE_MESSAGE);
+  source->set_json_path("strings.js");
+  source->add_resource_path("about_flash.js", IDR_ABOUT_FLASH_JS);
+  source->set_default_resource(IDR_ABOUT_FLASH_HTML);
+  return source;
+}
 
 const int kTimeout = 8 * 1000;  // 8 seconds.
 
@@ -369,10 +330,9 @@ FlashUI::FlashUI(TabContents* contents) : ChromeWebUI(contents) {
 
   AddMessageHandler((new FlashDOMHandler())->Attach(this));
 
-  FlashUIHTMLSource* html_source = new FlashUIHTMLSource();
-
   // Set up the about:flash source.
-  contents->profile()->GetChromeURLDataManager()->AddDataSource(html_source);
+  contents->profile()->GetChromeURLDataManager()->AddDataSource(
+      CreateFlashUIHTMLSource());
 }
 
 // static

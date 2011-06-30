@@ -34,82 +34,46 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 
-static const char kStringsJsFile[] = "strings.js";
-static const char kPluginsJsFile[] = "plugins.js";
-
 namespace {
 
-///////////////////////////////////////////////////////////////////////////////
-//
-// PluginsUIHTMLSource
-//
-///////////////////////////////////////////////////////////////////////////////
+ChromeWebUIDataSource* CreatePluginsUIHTMLSource() {
+  ChromeWebUIDataSource* source =
+      new ChromeWebUIDataSource(chrome::kChromeUIPluginsHost);
 
-class PluginsUIHTMLSource : public ChromeWebUIDataSource {
- public:
-  PluginsUIHTMLSource();
+  source->AddLocalizedString("pluginsTitle", IDS_PLUGINS_TITLE);
+  source->AddLocalizedString("pluginsDetailsModeLink",
+                             IDS_PLUGINS_DETAILS_MODE_LINK);
+  source->AddLocalizedString("pluginsNoneInstalled",
+                             IDS_PLUGINS_NONE_INSTALLED);
+  source->AddLocalizedString("pluginDisabled", IDS_PLUGINS_DISABLED_PLUGIN);
+  source->AddLocalizedString("pluginDisabledByPolicy",
+                             IDS_PLUGINS_DISABLED_BY_POLICY_PLUGIN);
+  source->AddLocalizedString("pluginCannotBeEnabledDueToPolicy",
+                             IDS_PLUGINS_CANNOT_ENABLE_DUE_TO_POLICY);
+  source->AddLocalizedString("pluginEnabledByPolicy",
+                             IDS_PLUGINS_ENABLED_BY_POLICY_PLUGIN);
+  source->AddLocalizedString("pluginCannotBeDisabledDueToPolicy",
+                             IDS_PLUGINS_CANNOT_DISABLE_DUE_TO_POLICY);
+  source->AddLocalizedString("pluginDownload", IDS_PLUGINS_DOWNLOAD);
+  source->AddLocalizedString("pluginName", IDS_PLUGINS_NAME);
+  source->AddLocalizedString("pluginVersion", IDS_PLUGINS_VERSION);
+  source->AddLocalizedString("pluginDescription", IDS_PLUGINS_DESCRIPTION);
+  source->AddLocalizedString("pluginPath", IDS_PLUGINS_PATH);
+  source->AddLocalizedString("pluginMimeTypes", IDS_PLUGINS_MIME_TYPES);
+  source->AddLocalizedString("pluginMimeTypesMimeType",
+                             IDS_PLUGINS_MIME_TYPES_MIME_TYPE);
+  source->AddLocalizedString("pluginMimeTypesDescription",
+                             IDS_PLUGINS_MIME_TYPES_DESCRIPTION);
+  source->AddLocalizedString("pluginMimeTypesFileExtensions",
+                             IDS_PLUGINS_MIME_TYPES_FILE_EXTENSIONS);
+  source->AddLocalizedString("disable", IDS_PLUGINS_DISABLE);
+  source->AddLocalizedString("enable", IDS_PLUGINS_ENABLE);
+  source->AddLocalizedString("noPlugins", IDS_PLUGINS_NO_PLUGINS);
 
-  // Called when the network layer has requested a resource underneath
-  // the path we registered.
-  virtual void StartDataRequest(const std::string& path,
-                                bool is_incognito,
-                                int request_id);
-  virtual std::string GetMimeType(const std::string&) const;
-
- private:
-  ~PluginsUIHTMLSource() {}
-
-  DISALLOW_COPY_AND_ASSIGN(PluginsUIHTMLSource);
-};
-
-PluginsUIHTMLSource::PluginsUIHTMLSource()
-    : ChromeWebUIDataSource(chrome::kChromeUIPluginsHost) {
-  AddLocalizedString("pluginsTitle", IDS_PLUGINS_TITLE);
-  AddLocalizedString("pluginsDetailsModeLink",
-                     IDS_PLUGINS_DETAILS_MODE_LINK);
-  AddLocalizedString("pluginsNoneInstalled", IDS_PLUGINS_NONE_INSTALLED);
-  AddLocalizedString("pluginDisabled", IDS_PLUGINS_DISABLED_PLUGIN);
-  AddLocalizedString("pluginDisabledByPolicy",
-                     IDS_PLUGINS_DISABLED_BY_POLICY_PLUGIN);
-  AddLocalizedString("pluginCannotBeEnabledDueToPolicy",
-                     IDS_PLUGINS_CANNOT_ENABLE_DUE_TO_POLICY);
-  AddLocalizedString("pluginEnabledByPolicy",
-                     IDS_PLUGINS_ENABLED_BY_POLICY_PLUGIN);
-  AddLocalizedString("pluginCannotBeDisabledDueToPolicy",
-                     IDS_PLUGINS_CANNOT_DISABLE_DUE_TO_POLICY);
-  AddLocalizedString("pluginDownload", IDS_PLUGINS_DOWNLOAD);
-  AddLocalizedString("pluginName", IDS_PLUGINS_NAME);
-  AddLocalizedString("pluginVersion", IDS_PLUGINS_VERSION);
-  AddLocalizedString("pluginDescription", IDS_PLUGINS_DESCRIPTION);
-  AddLocalizedString("pluginPath", IDS_PLUGINS_PATH);
-  AddLocalizedString("pluginMimeTypes", IDS_PLUGINS_MIME_TYPES);
-  AddLocalizedString("pluginMimeTypesMimeType",
-                     IDS_PLUGINS_MIME_TYPES_MIME_TYPE);
-  AddLocalizedString("pluginMimeTypesDescription",
-                     IDS_PLUGINS_MIME_TYPES_DESCRIPTION);
-  AddLocalizedString("pluginMimeTypesFileExtensions",
-                     IDS_PLUGINS_MIME_TYPES_FILE_EXTENSIONS);
-  AddLocalizedString("disable", IDS_PLUGINS_DISABLE);
-  AddLocalizedString("enable", IDS_PLUGINS_ENABLE);
-  AddLocalizedString("noPlugins", IDS_PLUGINS_NO_PLUGINS);
-}
-
-void PluginsUIHTMLSource::StartDataRequest(const std::string& path,
-                                           bool is_incognito,
-                                           int request_id) {
-  if (path == kStringsJsFile) {
-    SendLocalizedStringsAsJSON(request_id);
-  } else {
-    int idr = (path == kPluginsJsFile) ? IDR_PLUGINS_JS : IDR_PLUGINS_HTML;
-    SendFromResourceBundle(request_id, idr);
-  }
-}
-
-std::string PluginsUIHTMLSource::GetMimeType(const std::string& path) const {
-  if (path == kStringsJsFile || path == kPluginsJsFile)
-    return "application/javascript";
-
-  return "text/html";
+  source->set_json_path("strings.js");
+  source->add_resource_path("plugins.js", IDR_PLUGINS_JS);
+  source->set_default_resource(IDR_PLUGINS_HTML);
+  return source;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -339,10 +303,9 @@ void PluginsDOMHandler::PluginsLoaded(ListWrapper* wrapper) {
 PluginsUI::PluginsUI(TabContents* contents) : ChromeWebUI(contents) {
   AddMessageHandler((new PluginsDOMHandler())->Attach(this));
 
-  PluginsUIHTMLSource* html_source = new PluginsUIHTMLSource();
-
   // Set up the chrome://plugins/ source.
-  contents->profile()->GetChromeURLDataManager()->AddDataSource(html_source);
+  contents->profile()->GetChromeURLDataManager()->AddDataSource(
+      CreatePluginsUIHTMLSource());
 }
 
 

@@ -1855,6 +1855,7 @@
         'browser/ui/views/tabs/fake_base_tab_strip_controller.h',
         'browser/ui/views/tabs/side_tab_strip_unittest.cc',
         'browser/ui/views/tabs/tab_strip_unittest.cc',
+        'browser/ui/webui/chrome_web_ui_data_source_unittest.cc',
         'browser/ui/webui/chromeos/enterprise_enrollment_ui_unittest.cc',
         'browser/ui/webui/chromeos/imageburner/imageburner_utils_unittest.cc',
         'browser/ui/webui/html_dialog_tab_contents_delegate_unittest.cc',

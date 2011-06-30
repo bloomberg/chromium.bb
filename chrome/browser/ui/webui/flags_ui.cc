@@ -32,86 +32,46 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #endif
 
-static const char kFlagsJs[] = "flags.js";
-static const char kStringsJs[] = "strings.js";
+namespace {
 
-///////////////////////////////////////////////////////////////////////////////
-//
-// FlagsUIHTMLSource
-//
-///////////////////////////////////////////////////////////////////////////////
+ChromeWebUIDataSource* CreateFlagsUIHTMLSource() {
+  ChromeWebUIDataSource* source =
+      new ChromeWebUIDataSource(chrome::kChromeUIFlagsHost);
 
-class FlagsUIHTMLSource : public ChromeWebUIDataSource {
- public:
-  FlagsUIHTMLSource();
-
-  // Called when the network layer has requested a resource underneath
-  // the path we registered.
-  virtual void StartDataRequest(const std::string& path,
-                                bool is_incognito,
-                                int request_id);
-  virtual std::string GetMimeType(const std::string&) const;
-
- private:
-  ~FlagsUIHTMLSource() {}
-  DISALLOW_COPY_AND_ASSIGN(FlagsUIHTMLSource);
-};
-
-FlagsUIHTMLSource::FlagsUIHTMLSource()
-    : ChromeWebUIDataSource(chrome::kChromeUIFlagsHost) {
-  AddLocalizedString("flagsLongTitle", IDS_FLAGS_LONG_TITLE);
-  AddLocalizedString("flagsTableTitle", IDS_FLAGS_TABLE_TITLE);
-  AddLocalizedString("flagsNoExperimentsAvailable",
-                     IDS_FLAGS_NO_EXPERIMENTS_AVAILABLE);
-  AddLocalizedString("flagsWarningHeader", IDS_FLAGS_WARNING_HEADER);
-  AddLocalizedString("flagsBlurb", IDS_FLAGS_WARNING_TEXT);
+  source->AddLocalizedString("flagsLongTitle", IDS_FLAGS_LONG_TITLE);
+  source->AddLocalizedString("flagsTableTitle", IDS_FLAGS_TABLE_TITLE);
+  source->AddLocalizedString("flagsNoExperimentsAvailable",
+                             IDS_FLAGS_NO_EXPERIMENTS_AVAILABLE);
+  source->AddLocalizedString("flagsWarningHeader", IDS_FLAGS_WARNING_HEADER);
+  source->AddLocalizedString("flagsBlurb", IDS_FLAGS_WARNING_TEXT);
 #if defined(OS_CHROMEOS)
   int ids = IDS_PRODUCT_OS_NAME;
 #else
   int ids = IDS_PRODUCT_NAME;
 #endif
-  AddString("flagsRestartNotice",
-            l10n_util::GetStringFUTF16(IDS_FLAGS_RELAUNCH_NOTICE,
-                                       l10n_util::GetStringUTF16(ids)));
-  AddLocalizedString("flagsRestartButton", IDS_FLAGS_RELAUNCH_BUTTON);
-  AddLocalizedString("disable", IDS_FLAGS_DISABLE);
-  AddLocalizedString("enable", IDS_FLAGS_ENABLE);
+  source->AddString("flagsRestartNotice", l10n_util::GetStringFUTF16(
+      IDS_FLAGS_RELAUNCH_NOTICE, l10n_util::GetStringUTF16(ids)));
+  source->AddLocalizedString("flagsRestartButton", IDS_FLAGS_RELAUNCH_BUTTON);
+  source->AddLocalizedString("disable", IDS_FLAGS_DISABLE);
+  source->AddLocalizedString("enable", IDS_FLAGS_ENABLE);
 #if defined(OS_CHROMEOS)
   // Set the strings to show which user can actually change the flags
-  AddLocalizedString("ownerOnly", IDS_OPTIONS_ACCOUNTS_OWNER_ONLY);
-  AddString("ownerUserId",
-            UTF8ToUTF16(chromeos::UserCrosSettingsProvider::cached_owner()));
+  source->AddLocalizedString("ownerOnly", IDS_OPTIONS_ACCOUNTS_OWNER_ONLY);
+  source->AddString("ownerUserId", UTF8ToUTF16(
+      chromeos::UserCrosSettingsProvider::cached_owner()));
 #endif
-}
 
-void FlagsUIHTMLSource::StartDataRequest(const std::string& path,
-                                        bool is_incognito,
-                                        int request_id) {
-  if (path == kStringsJs) {
-    SendLocalizedStringsAsJSON(request_id);
-  } else {
-    int idr;
-    if (path == kFlagsJs)
-      idr = IDR_FLAGS_JS;
+  source->set_json_path("strings.js");
+  source->add_resource_path("flags.js", IDR_FLAGS_JS);
+
+  int idr = IDR_FLAGS_HTML;
 #if defined (OS_CHROMEOS)
-    else if (!chromeos::UserManager::Get()->current_user_is_owner())
-      idr = IDR_FLAGS_HTML_WARNING;
+  if (!chromeos::UserManager::Get()->current_user_is_owner())
+    idr = IDR_FLAGS_HTML_WARNING;
 #endif
-    else
-      idr = IDR_FLAGS_HTML;
-
-    SendFromResourceBundle(request_id, idr);
-  }
+  source->set_default_resource(idr);
+  return source;
 }
-
-std::string FlagsUIHTMLSource::GetMimeType(const std::string& path) const {
-  if (path == kStringsJs || path == kFlagsJs)
-    return "application/javascript";
-
-  return "text/html";
-}
-
-namespace {
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -193,10 +153,9 @@ void FlagsDOMHandler::HandleRestartBrowser(const ListValue* args) {
 FlagsUI::FlagsUI(TabContents* contents) : ChromeWebUI(contents) {
   AddMessageHandler((new FlagsDOMHandler())->Attach(this));
 
-  FlagsUIHTMLSource* html_source = new FlagsUIHTMLSource();
-
   // Set up the about:flags source.
-  contents->profile()->GetChromeURLDataManager()->AddDataSource(html_source);
+  contents->profile()->GetChromeURLDataManager()->AddDataSource(
+      CreateFlagsUIHTMLSource());
 }
 
 // static
