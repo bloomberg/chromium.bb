@@ -4,8 +4,8 @@
 
 // A part of browser-side server debugger exposed to DebuggerWrapper.
 
-#ifndef CHROME_BROWSER_DEBUGGER_DEBUGGER_HOST_H_
-#define CHROME_BROWSER_DEBUGGER_DEBUGGER_HOST_H_
+#ifndef CONTENT_BROWSER_DEBUGGER_DEBUGGER_HOST_H_
+#define CONTENT_BROWSER_DEBUGGER_DEBUGGER_HOST_H_
 #pragma once
 
 #include <string>
@@ -46,4 +46,4 @@ class DebuggerHost : public base::RefCountedThreadSafe<DebuggerHost> {
   DISALLOW_COPY_AND_ASSIGN(DebuggerHost);
 };
 
-#endif  // CHROME_BROWSER_DEBUGGER_DEBUGGER_HOST_H_
+#endif  // CONTENT_BROWSER_DEBUGGER_DEBUGGER_HOST_H_

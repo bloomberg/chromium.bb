@@ -5,8 +5,8 @@
 // This file declares the DebuggerRemoteServiceCommand struct and the
 // DebuggerRemoteService class which handles commands directed to the
 // "V8Debugger" tool.
-#ifndef CHROME_BROWSER_DEBUGGER_DEBUGGER_REMOTE_SERVICE_H_
-#define CHROME_BROWSER_DEBUGGER_DEBUGGER_REMOTE_SERVICE_H_
+#ifndef CONTENT_BROWSER_DEBUGGER_DEBUGGER_REMOTE_SERVICE_H_
+#define CONTENT_BROWSER_DEBUGGER_DEBUGGER_REMOTE_SERVICE_H_
 #pragma once
 
 #include <string>
@@ -121,4 +121,4 @@ class DebuggerRemoteService : public DevToolsRemoteListener {
   DISALLOW_COPY_AND_ASSIGN(DebuggerRemoteService);
 };
 
-#endif  // CHROME_BROWSER_DEBUGGER_DEBUGGER_REMOTE_SERVICE_H_
+#endif  // CONTENT_BROWSER_DEBUGGER_DEBUGGER_REMOTE_SERVICE_H_
