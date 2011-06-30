@@ -4,6 +4,7 @@
 
 #include "chrome/common/extensions/url_pattern.h"
 
+#include "base/string_number_conversions.h"
 #include "base/string_piece.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
@@ -48,6 +49,8 @@ const char* kParseErrorInvalidHostWildcard = "Invalid host wildcard.";
 const char* kParseErrorEmptyPath = "Empty path.";
 const char* kParseErrorHasColon =
     "Ports are not supported in URL patterns. ':' may not be used in a host.";
+const char* kParseErrorInvalidPort =
+    "Invalid port.";
 
 // Message explaining each URLPattern::ParseResult.
 const char* kParseResultMessages[] = {
@@ -58,7 +61,8 @@ const char* kParseResultMessages[] = {
   kParseErrorEmptyHost,
   kParseErrorInvalidHostWildcard,
   kParseErrorEmptyPath,
-  kParseErrorHasColon
+  kParseErrorHasColon,
+  kParseErrorInvalidPort,
 };
 
 COMPILE_ASSERT(URLPattern::NUM_PARSE_RESULTS == arraysize(kParseResultMessages),
@@ -75,24 +79,45 @@ bool IsStandardScheme(const std::string& scheme) {
       url_parse::Component(0, static_cast<int>(scheme.length())));
 }
 
+bool IsValidPortForScheme(const std::string scheme, const std::string& port) {
+  if (port == "*")
+    return true;
+
+  // Only accept non-wildcard ports if the scheme uses ports.
+  if (url_canon::DefaultPortForScheme(scheme.c_str(), scheme.length()) ==
+      url_parse::PORT_UNSPECIFIED) {
+    return false;
+  }
+
+  int parsed_port = url_parse::PORT_UNSPECIFIED;
+  if (!base::StringToInt(port, &parsed_port))
+    return false;
+  return (parsed_port >= 0) && (parsed_port < 65536);
+}
+
 }  // namespace
 
 URLPattern::URLPattern()
     : valid_schemes_(SCHEME_NONE),
       match_all_urls_(false),
-      match_subdomains_(false) {}
+      match_subdomains_(false),
+      port_("*") {}
 
 URLPattern::URLPattern(int valid_schemes)
-    : valid_schemes_(valid_schemes), match_all_urls_(false),
-      match_subdomains_(false) {}
+    : valid_schemes_(valid_schemes),
+      match_all_urls_(false),
+      match_subdomains_(false),
+      port_("*") {}
 
 URLPattern::URLPattern(int valid_schemes, const std::string& pattern)
-    : valid_schemes_(valid_schemes), match_all_urls_(false),
-      match_subdomains_(false) {
+    : valid_schemes_(valid_schemes),
+      match_all_urls_(false),
+      match_subdomains_(false),
+      port_("*") {
 
   // Strict error checking is used, because this constructor is only
   // appropriate when we know |pattern| is valid.
-  if (PARSE_SUCCESS != Parse(pattern, PARSE_STRICT))
+  if (PARSE_SUCCESS != Parse(pattern, ERROR_ON_PORTS))
     NOTREACHED() << "URLPattern is invalid: " << pattern;
 }
 
@@ -101,9 +126,6 @@ URLPattern::~URLPattern() {
 
 URLPattern::ParseResult URLPattern::Parse(const std::string& pattern,
                                           ParseOption strictness) {
-  CHECK(strictness == PARSE_LENIENT ||
-        strictness == PARSE_STRICT);
-
   // Special case pattern to match every valid URL.
   if (pattern == kAllUrlsPattern) {
     match_all_urls_ = true;
@@ -180,19 +202,34 @@ URLPattern::ParseResult URLPattern::Parse(const std::string& pattern,
     }
     host_ = JoinString(host_components, '.');
 
-    // No other '*' can occur in the host, though. This isn't necessary, but is
-    // done as a convenience to developers who might otherwise be confused and
-    // think '*' works as a glob in the host.
-    if (host_.find('*') != std::string::npos)
-      return PARSE_ERROR_INVALID_HOST_WILDCARD;
-
     path_start_pos = host_end_pos;
   }
 
   SetPath(pattern.substr(path_start_pos));
 
-  if (strictness == PARSE_STRICT && host_.find(':') != std::string::npos)
-    return PARSE_ERROR_HAS_COLON;
+  size_t port_pos = host_.find(':');
+  if (port_pos != std::string::npos) {
+    switch (strictness) {
+      case USE_PORTS: {
+        if (!SetPort(host_.substr(port_pos + 1)))
+          return PARSE_ERROR_INVALID_PORT;
+        host_ = host_.substr(0, port_pos);
+        break;
+      }
+      case ERROR_ON_PORTS: {
+        return PARSE_ERROR_HAS_COLON;
+      }
+      case IGNORE_PORTS: {
+        // Do nothing, i.e. leave the colon in the host.
+      }
+    }
+  }
+
+  // No other '*' can occur in the host, though. This isn't necessary, but is
+  // done as a convenience to developers who might otherwise be confused and
+  // think '*' works as a glob in the host.
+  if (host_.find('*') != std::string::npos)
+    return PARSE_ERROR_INVALID_HOST_WILDCARD;
 
   return PARSE_SUCCESS;
 }
@@ -226,6 +263,14 @@ void URLPattern::SetPath(const std::string& path) {
   ReplaceSubstringsAfterOffset(&path_escaped_, 0, "?", "\\?");
 }
 
+bool URLPattern::SetPort(const std::string& port) {
+  if (IsValidPortForScheme(scheme_, port)) {
+    port_ = port;
+    return true;
+  }
+  return false;
+}
+
 bool URLPattern::MatchesURL(const GURL &test) const {
   if (!MatchesScheme(test.scheme()))
     return false;
@@ -238,6 +283,9 @@ bool URLPattern::MatchesURL(const GURL &test) const {
     return false;
 
   if (!MatchesPath(test.PathForRequest()))
+    return false;
+
+  if (!MatchesPort(test.EffectiveIntPort()))
     return false;
 
   return true;
@@ -296,6 +344,13 @@ bool URLPattern::MatchesPath(const std::string& test) const {
   return true;
 }
 
+bool URLPattern::MatchesPort(int port) const {
+  if (port == url_parse::PORT_INVALID)
+    return false;
+
+  return port_ == "*" || port_ == base::IntToString(port);
+}
+
 std::string URLPattern::GetAsString() const {
   if (match_all_urls_)
     return kAllUrlsPattern;
@@ -314,6 +369,11 @@ std::string URLPattern::GetAsString() const {
 
     if (!host_.empty())
       spec += host_;
+
+    if (port_ != "*") {
+      spec += ":";
+      spec += port_;
+    }
   }
 
   if (!path_.empty())
@@ -329,6 +389,9 @@ bool URLPattern::OverlapsWith(const URLPattern& other) const {
   }
 
   if (!MatchesHost(other.host()) && !other.MatchesHost(host_))
+    return false;
+
+  if (port_ != "*" && other.port() != "*" && port_ != other.port())
     return false;
 
   // We currently only use OverlapsWith() for the patterns inside

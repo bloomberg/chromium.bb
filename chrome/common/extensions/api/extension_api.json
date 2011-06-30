@@ -5802,26 +5802,16 @@
         "description": "Currently, no content types use resource identifiers."
       },
       {
-        "id": "Pattern",
-        "type": "object",
-        "properties": {
-          "pattern": {
-            "type": "string",
-            "description": "The pattern string. The pattern should never be constructed directly, but should always be derived from an URL using the methods in the <var>contentSettings.patterns</var> module."
-          }
-        }
-      },
-      {
         "id": "ContentSettingRule",
         "type": "object",
         "properties": {
           "topLevelPattern": {
-            "$ref": "Pattern",
-            "description": "The pattern for the top-level frame URL."
+            "type": "string",
+            "description": "The pattern for the top-level frame URL. For details on the format of a pattern, see <a href='match_patterns.html'>Match Patterns</a>."
           },
           "embeddedPattern": {
-            "$ref": "Pattern",
-            "description": "The pattern for the frame or object URL."
+            "type": "string",
+            "description": "The pattern for the frame or object URL. For details on the format of a pattern, see <a href='match_patterns.html'>Match Patterns</a>."
           },
           "resourceIdentifier": {
             "$ref": "ResourceIdentifier",
@@ -5920,12 +5910,12 @@
                 "type": "object",
                 "properties": {
                   "topLevelPattern": {
-                    "$ref": "Pattern",
-                    "description": "The pattern for the top-level frame URL."
+                    "type": "string",
+                    "description": "The pattern for the top-level frame URL. For details on the format of a pattern, see <a href='match_patterns.html'>Match Patterns</a>."
                   },
                   "embeddedPattern": {
-                    "$ref": "Pattern",
-                    "description": "The pattern for the frame or object URL."
+                    "type": "string",
+                    "description": "The pattern for the frame or object URL. For details on the format of a pattern, see <a href='match_patterns.html'>Match Patterns</a>."
                   },
                   "resourceIdentifier": {
                     "$ref": "ResourceIdentifier",

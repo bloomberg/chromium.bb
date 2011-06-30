@@ -2,16 +2,6 @@
 <html>
 <head>
 <script>
-var settings = {
-  "cookies": ["allow", "session_only", "block"],
-  "images": ["allow", "block"],
-  "javascript": ["allow", "block"],
-  "plugins": ["allow", "block"],
-  "popups": ["allow", "block"],
-  // "location": ["allow", "ask", "block"],
-  "notifications": ["allow", "ask", "block"],
-};
-
 var incognito;
 var url;
 
@@ -37,9 +27,7 @@ function init() {
 function settingChanged(element) {
   var type = element.id;
   var setting = element.value;
-  var pattern = {
-    'pattern': url
-  };
+  var pattern = /^file:/.test(url) ? url : url.replace(/\/[^\/]*?$/, '/*');
   console.log(type+" setting for "+pattern+": "+setting);
   chrome.experimental.contentSettings[type].set({
         'topLevelPattern': pattern,
@@ -73,7 +61,6 @@ function settingChanged(element) {
 <dt><label for="plugins">Plug-ins: </label></dt>
 <dd><select id="plugins" onchange="settingChanged(this);">
     <option value="allow">Allow</option>
-    <option value="ask">Click-to-play</option>
     <option value="block">Block</option>
   </select></dd>
 <dt><label for="popups">Pop-ups: </label></dt>

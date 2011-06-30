@@ -6,8 +6,16 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/scoped_ptr.h"
+#include "chrome/common/extensions/url_pattern.h"
+#include "content/common/url_constants.h"
 
 namespace {
+
+const char kNoPathWildcardsError[] =
+    "Path wildcards in file URL patterns are not allowed.";
+const char kNoPathsError[] = "Specific paths are not allowed.";
+const char kInvalidPatternError[] = "The pattern \"*\" is invalid.";
 
 const char* const kContentSettingsTypeNames[] = {
   "cookies",
@@ -33,9 +41,76 @@ COMPILE_ASSERT(arraysize(kContentSettingNames) <=
                CONTENT_SETTING_NUM_SETTINGS,
                content_setting_names_size_invalid);
 
+// TODO(bauerb): Move this someplace where it can be reused.
+std::string GetDefaultPort(const std::string& scheme) {
+  if (scheme == chrome::kHttpScheme)
+    return "80";
+  if (scheme == chrome::kHttpsScheme)
+    return "443";
+  NOTREACHED();
+  return "";
+}
+
 }  // namespace
 
 namespace extension_content_settings_helpers {
+
+ContentSettingsPattern ParseExtensionPattern(const std::string& pattern_str,
+                                             std::string* error) {
+  URLPattern url_pattern(URLPattern::SCHEME_HTTP |
+                         URLPattern::SCHEME_HTTPS |
+                         URLPattern::SCHEME_FILE);
+  URLPattern::ParseResult result =
+      url_pattern.Parse(pattern_str, URLPattern::USE_PORTS);
+  if (result != URLPattern::PARSE_SUCCESS) {
+    *error = URLPattern::GetParseResultString(result);
+    return ContentSettingsPattern();
+  } else {
+    scoped_ptr<ContentSettingsPattern::BuilderInterface> builder(
+        ContentSettingsPattern::CreateBuilder(false));
+    builder->WithHost(url_pattern.host());
+    if (url_pattern.match_subdomains())
+      builder->WithDomainWildcard();
+
+    std::string scheme = url_pattern.scheme();
+    if (scheme == "*")
+      builder->WithSchemeWildcard();
+    else
+      builder->WithScheme(scheme);
+
+    std::string port = url_pattern.port();
+    if (port.empty() && scheme != "file") {
+      if (scheme == "*")
+        port = "*";
+      else
+        port = GetDefaultPort(scheme);
+    }
+    if (port == "*")
+      builder->WithPortWildcard();
+    else
+      builder->WithPort(port);
+
+    std::string path = url_pattern.path();
+    if (scheme == "file") {
+      // For file URLs we allow only exact path matches.
+      if (path.find_first_of("*?") != std::string::npos) {
+        *error = kNoPathWildcardsError;
+        return ContentSettingsPattern();
+      } else {
+        builder->WithPath(path);
+      }
+    } else if (path != "/*") {
+      // For other URLs we allow only paths which match everything.
+      *error = kNoPathsError;
+      return ContentSettingsPattern();
+    }
+
+    ContentSettingsPattern pattern = builder->Build();
+    if (!pattern.IsValid())
+      *error = kInvalidPatternError;
+    return pattern;
+  }
+}
 
 ContentSettingsType StringToContentSettingsType(
     const std::string& content_type) {

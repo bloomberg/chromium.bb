@@ -73,7 +73,7 @@ TEST(ExtensionUserScriptTest, Glob_StringAnywhere) {
 TEST(ExtensionUserScriptTest, UrlPattern) {
   URLPattern pattern(kAllSchemes);
   ASSERT_EQ(URLPattern::PARSE_SUCCESS,
-            pattern.Parse("http://*/foo*", URLPattern::PARSE_STRICT));
+            pattern.Parse("http://*/foo*", URLPattern::ERROR_ON_PORTS));
 
   UserScript script;
   script.add_url_pattern(pattern);
@@ -88,12 +88,12 @@ TEST(ExtensionUserScriptTest, ExcludeUrlPattern) {
 
   URLPattern pattern(kAllSchemes);
   ASSERT_EQ(URLPattern::PARSE_SUCCESS,
-            pattern.Parse("http://*.nytimes.com/*", URLPattern::PARSE_STRICT));
+            pattern.Parse("http://*.nytimes.com/*", URLPattern::ERROR_ON_PORTS));
   script.add_url_pattern(pattern);
 
   URLPattern exclude(kAllSchemes);
   ASSERT_EQ(URLPattern::PARSE_SUCCESS,
-            exclude.Parse("*://*/*business*", URLPattern::PARSE_STRICT));
+            exclude.Parse("*://*/*business*", URLPattern::ERROR_ON_PORTS));
   script.add_exclude_url_pattern(exclude);
 
   EXPECT_TRUE(script.MatchesURL(GURL("http://www.nytimes.com/health")));
@@ -106,7 +106,7 @@ TEST(ExtensionUserScriptTest, UrlPatternAndIncludeGlobs) {
 
   URLPattern pattern(kAllSchemes);
   ASSERT_EQ(URLPattern::PARSE_SUCCESS,
-            pattern.Parse("http://*.nytimes.com/*", URLPattern::PARSE_STRICT));
+            pattern.Parse("http://*.nytimes.com/*", URLPattern::ERROR_ON_PORTS));
   script.add_url_pattern(pattern);
 
   script.add_glob("*nytimes.com/???s/*");
@@ -121,7 +121,7 @@ TEST(ExtensionUserScriptTest, UrlPatternAndExcludeGlobs) {
 
   URLPattern pattern(kAllSchemes);
   ASSERT_EQ(URLPattern::PARSE_SUCCESS,
-            pattern.Parse("http://*.nytimes.com/*", URLPattern::PARSE_STRICT));
+            pattern.Parse("http://*.nytimes.com/*", URLPattern::ERROR_ON_PORTS));
   script.add_url_pattern(pattern);
 
   script.add_exclude_glob("*science*");
@@ -138,7 +138,7 @@ TEST(ExtensionUserScriptTest, UrlPatternGlobInteraction) {
   URLPattern pattern(kAllSchemes);
   ASSERT_EQ(URLPattern::PARSE_SUCCESS,
             pattern.Parse("http://www.google.com/*",
-                          URLPattern::PARSE_STRICT));
+                          URLPattern::ERROR_ON_PORTS));
   script.add_url_pattern(pattern);
 
   script.add_glob("*bar*");
@@ -167,9 +167,9 @@ TEST(ExtensionUserScriptTest, Pickle) {
   URLPattern pattern1(kAllSchemes);
   URLPattern pattern2(kAllSchemes);
   ASSERT_EQ(URLPattern::PARSE_SUCCESS,
-            pattern1.Parse("http://*/foo*", URLPattern::PARSE_STRICT));
+            pattern1.Parse("http://*/foo*", URLPattern::ERROR_ON_PORTS));
   ASSERT_EQ(URLPattern::PARSE_SUCCESS,
-            pattern2.Parse("http://bar/baz*", URLPattern::PARSE_STRICT));
+            pattern2.Parse("http://bar/baz*", URLPattern::ERROR_ON_PORTS));
 
   UserScript script1;
   script1.js_scripts().push_back(UserScript::File(

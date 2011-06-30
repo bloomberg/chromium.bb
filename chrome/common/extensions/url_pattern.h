@@ -14,12 +14,19 @@ class GURL;
 // A pattern that can be used to match URLs. A URLPattern is a very restricted
 // subset of URL syntax:
 //
-// <url-pattern> := <scheme>://<host><path> | '<all_urls>'
+// <url-pattern> := <scheme>://<host><port><path> | '<all_urls>'
 // <scheme> := '*' | 'http' | 'https' | 'file' | 'ftp' | 'chrome'
 // <host> := '*' | '*.' <anychar except '/' and '*'>+
+// <port> := [':' ('*' | <port number between 0 and 65535>)]
 // <path> := '/' <any chars>
 //
 // * Host is not used when the scheme is 'file'.
+// * The port is only used if the pattern is parsed with the USE_PORTS option.
+//   If the patterns is parsed with the ERROR_ON_PORTS option, the port is not
+//   allowed, and the resulting pattern matches any port. If it is parsed with
+//   the IGNORE_PORTS option, the port (including colon) is kept as part of the
+//   host to maintain backwards compatibility with previous versions, which
+//   makes the pattern effectively never match any URL.
 // * The path can have embedded '*' characters which act as glob wildcards.
 // * '<all_urls>' is a special pattern that matches any URL that contains a
 //   valid scheme (as specified by valid_schemes_).
@@ -94,8 +101,9 @@ class URLPattern {
 
   // Options for URLPattern::Parse().
   enum ParseOption {
-    PARSE_LENIENT,
-    PARSE_STRICT
+    ERROR_ON_PORTS,
+    IGNORE_PORTS,
+    USE_PORTS,
   };
 
   // Error codes returned from Parse().
@@ -107,7 +115,8 @@ class URLPattern {
     PARSE_ERROR_EMPTY_HOST,
     PARSE_ERROR_INVALID_HOST_WILDCARD,
     PARSE_ERROR_EMPTY_PATH,
-    PARSE_ERROR_HAS_COLON,  // Only checked when strict checks are enabled.
+    PARSE_ERROR_HAS_COLON,     // Only checked when parsing with ERROR_ON_PORTS.
+    PARSE_ERROR_INVALID_PORT,  // Only checked when parsing with USE_PORTS.
     NUM_PARSE_RESULTS
   };
 
@@ -194,6 +203,13 @@ class URLPattern {
   // Returns true if |test| matches our path.
   bool MatchesPath(const std::string& test) const;
 
+  // Returns true if |port| matches our port.
+  bool MatchesPort(int port) const;
+
+  // Sets the port. Returns false if the port is invalid.
+  bool SetPort(const std::string& port);
+  const std::string& port() const { return port_; }
+
   // Returns a string representing this instance.
   std::string GetAsString() const;
 
@@ -259,6 +275,10 @@ class URLPattern {
   // Whether we should match subdomains of the host. This is true if the first
   // component of the pattern's host was "*".
   bool match_subdomains_;
+
+  // The port. URL patterns only support specific ports if they are parsed with
+  // the |USE_PORTS| option.
+  std::string port_;
 
   // The path to match. This is everything after the host of the URL, or
   // everything after the scheme in the case of file:// URLs.

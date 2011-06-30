@@ -374,8 +374,8 @@ bool Extension::LoadUserScriptHelper(const DictionaryValue* content_script,
                                      UserScript* result) {
   // When strict error checks are enabled, make URL pattern parsing strict.
   URLPattern::ParseOption parse_strictness =
-      (flags & STRICT_ERROR_CHECKS ? URLPattern::PARSE_STRICT
-                                   : URLPattern::PARSE_LENIENT);
+      (flags & STRICT_ERROR_CHECKS ? URLPattern::ERROR_ON_PORTS
+                                   : URLPattern::IGNORE_PORTS);
 
   // run_at
   if (content_script->HasKey(keys::kRunAt)) {
@@ -785,8 +785,8 @@ FileBrowserHandler* Extension::LoadFileBrowserHandler(
       return NULL;
     }
     URLPattern pattern(URLPattern::SCHEME_FILESYSTEM);
-    if (URLPattern::PARSE_SUCCESS != pattern.Parse(filter,
-                                                   URLPattern::PARSE_STRICT)) {
+    if (pattern.Parse(filter, URLPattern::ERROR_ON_PORTS) !=
+        URLPattern::PARSE_SUCCESS) {
       *error = ExtensionErrorUtils::FormatErrorMessage(
           errors::kInvalidURLPatternError, filter);
       return NULL;
@@ -1035,7 +1035,7 @@ bool Extension::LoadLaunchURL(const DictionaryValue* manifest,
         launch_web_url_ = gallery_url.spec();
 
         URLPattern pattern(kValidWebExtentSchemes);
-        pattern.Parse(gallery_url.spec(), URLPattern::PARSE_STRICT);
+        pattern.Parse(gallery_url.spec(), URLPattern::ERROR_ON_PORTS);
         pattern.SetPath(pattern.path() + '*');
         extent_.AddPattern(pattern);
       }
@@ -1323,8 +1323,8 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
                               std::string* error) {
   // When strict error checks are enabled, make URL pattern parsing strict.
   URLPattern::ParseOption parse_strictness =
-      (flags & STRICT_ERROR_CHECKS ? URLPattern::PARSE_STRICT
-                                   : URLPattern::PARSE_LENIENT);
+      (flags & STRICT_ERROR_CHECKS ? URLPattern::ERROR_ON_PORTS
+                                   : URLPattern::IGNORE_PORTS);
 
   // Initialize permissions with an empty, default permission set.
   permission_set_.reset(new ExtensionPermissionSet());

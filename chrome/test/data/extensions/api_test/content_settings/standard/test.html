@@ -65,8 +65,8 @@ chrome.test.runTests([
   function setDefaultContentSettings() {
     default_content_settings.forEach(function(type, setting) {
       cs[type].set({
-        'topLevelPattern': {'pattern': '*'},
-        'embeddedPattern': {'pattern': '*'},
+        'topLevelPattern': '<all_urls>',
+        'embeddedPattern': '<all_urls>',
         'setting': setting
       }, chrome.test.callbackPass());
     });
@@ -74,8 +74,8 @@ chrome.test.runTests([
   function setContentSettings() {
     settings.forEach(function(type, setting) {
       cs[type].set({
-        'topLevelPattern': {'pattern': '[*.]google.com'},
-        'embeddedPattern': {'pattern': '[*.]google.com'},
+        'topLevelPattern': 'http://*.google.com/*',
+        'embeddedPattern': 'http://*.google.com/*',
         'setting': setting
       }, chrome.test.callbackPass());
     });
@@ -94,6 +94,16 @@ chrome.test.runTests([
       'topLevelUrl': '',
       'embeddedUrl': 'moo'
     }, chrome.test.callbackFail("The URL \"moo\" is invalid."));
+    cs.plugins.set({
+      'topLevelPattern': 'http://example.com/*',
+      'embeddedPattern': 'http://example.com/path',
+      'setting': 'block'
+    }, chrome.test.callbackFail("Specific paths are not allowed."));
+    cs.javascript.set({
+      'topLevelPattern': 'http://example.com/*',
+      'embeddedPattern': 'file:///home/hansmoleman/*',
+      'setting': 'allow'
+    }, chrome.test.callbackFail("Path wildcards in file URL patterns are not allowed."));
   }
 ]);
 </script>

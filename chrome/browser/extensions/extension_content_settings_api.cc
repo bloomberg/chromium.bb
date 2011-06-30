@@ -169,29 +169,27 @@ bool SetContentSettingFunction::RunImpl() {
   DictionaryValue* details = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &details));
 
-  DictionaryValue* top_level_pattern_dict = NULL;
-  EXTENSION_FUNCTION_VALIDATE(
-      details->GetDictionary(keys::kTopLevelPatternKey,
-                             &top_level_pattern_dict));
   std::string top_level_pattern_str;
+  std::string top_level_error;
   EXTENSION_FUNCTION_VALIDATE(
-      top_level_pattern_dict->GetString(keys::kPatternKey,
-                                        &top_level_pattern_str));
+      details->GetString(keys::kTopLevelPatternKey, &top_level_pattern_str));
   ContentSettingsPattern top_level_pattern =
-      ContentSettingsPattern::FromString(top_level_pattern_str);
-  EXTENSION_FUNCTION_VALIDATE(top_level_pattern.IsValid());
+      helpers::ParseExtensionPattern(top_level_pattern_str, &top_level_error);
+  if (!top_level_pattern.IsValid()) {
+    error_ = top_level_error;
+    return false;
+  }
 
-  DictionaryValue* embedded_pattern_dict = NULL;
-  EXTENSION_FUNCTION_VALIDATE(
-      details->GetDictionary(keys::kEmbeddedPatternKey,
-                             &embedded_pattern_dict));
   std::string embedded_pattern_str;
+  std::string embedded_error;
   EXTENSION_FUNCTION_VALIDATE(
-      embedded_pattern_dict->GetString(keys::kPatternKey,
-                                       &embedded_pattern_str));
+      details->GetString(keys::kEmbeddedPatternKey, &embedded_pattern_str));
   ContentSettingsPattern embedded_pattern =
-      ContentSettingsPattern::FromString(embedded_pattern_str);
-  EXTENSION_FUNCTION_VALIDATE(embedded_pattern.IsValid());
+      helpers::ParseExtensionPattern(embedded_pattern_str, &embedded_error);
+  if (!embedded_pattern.IsValid()) {
+    error_ = embedded_error;
+    return false;
+  }
 
   std::string resource_identifier;
   if (details->HasKey(keys::kResourceIdentifierKey)) {

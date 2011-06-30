@@ -100,7 +100,7 @@ bool ParamTraits<URLPattern>::Read(const Message* m, void** iter,
     return false;
 
   p->set_valid_schemes(valid_schemes);
-  return URLPattern::PARSE_SUCCESS == p->Parse(spec, URLPattern::PARSE_LENIENT);
+  return URLPattern::PARSE_SUCCESS == p->Parse(spec, URLPattern::IGNORE_PORTS);
 }
 
 void ParamTraits<URLPattern>::Log(const param_type& p, std::string* l) {

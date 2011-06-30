@@ -238,7 +238,7 @@ bool ExtensionWebRequestEventRouter::RequestFilter::InitFromValue(
         std::string url;
         URLPattern pattern(URLPattern::SCHEME_ALL);
         if (!urls_value->GetString(i, &url) ||
-            pattern.Parse(url, URLPattern::PARSE_STRICT) !=
+            pattern.Parse(url, URLPattern::ERROR_ON_PORTS) !=
                 URLPattern::PARSE_SUCCESS) {
           *error = ExtensionErrorUtils::FormatErrorMessage(
               keys::kInvalidRequestFilterUrl, url);

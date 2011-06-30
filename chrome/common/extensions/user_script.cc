@@ -193,7 +193,7 @@ void UserScript::Unpickle(const ::Pickle& pickle, void** iter) {
     if (!had_file_scheme)
       pattern.set_valid_schemes(valid_schemes | URLPattern::SCHEME_FILE);
     CHECK(URLPattern::PARSE_SUCCESS ==
-          pattern.Parse(pattern_str, URLPattern::PARSE_LENIENT));
+          pattern.Parse(pattern_str, URLPattern::IGNORE_PORTS));
     if (!had_file_scheme)
       pattern.set_valid_schemes(valid_schemes);
 

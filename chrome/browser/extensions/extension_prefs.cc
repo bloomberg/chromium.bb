@@ -451,7 +451,7 @@ bool ExtensionPrefs::ReadExtensionPrefURLPatternSet(
     if (!value->GetString(i, &item))
       return false;
     URLPattern pattern(valid_schemes);
-    if (pattern.Parse(item, URLPattern::PARSE_LENIENT) !=
+    if (pattern.Parse(item, URLPattern::IGNORE_PORTS) !=
         URLPattern::PARSE_SUCCESS) {
       NOTREACHED();
       return false;
