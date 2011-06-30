@@ -214,7 +214,7 @@ TEST(LabelTest, MultiLineSizing) {
   label.SizeToFit(required_width - 1);
   int constrained_width = label.GetLocalBounds().width();
 #if defined(OS_WIN)
-  // Canvas::SizeStringInt (in app/gfx/canvas_linux.cc)
+  // Canvas::SizeStringInt (in ui/gfx/canvas_skia_linux.cc)
   // has to be fixed to return the size that fits to given width/height.
   EXPECT_LT(constrained_width, required_width);
 #endif
@@ -229,7 +229,7 @@ TEST(LabelTest, MultiLineSizing) {
   EXPECT_GT(required_height, kMinTextDimension);
   int height_for_constrained_width = label.GetHeightForWidth(constrained_width);
 #if defined(OS_WIN)
-  // Canvas::SizeStringInt (in app/gfx/canvas_linux.cc)
+  // Canvas::SizeStringInt (in ui/gfx/canvas_skia_linux.cc)
   // has to be fixed to return the size that fits to given width/height.
   EXPECT_GT(height_for_constrained_width, required_height);
 #endif
@@ -261,7 +261,7 @@ TEST(LabelTest, MultiLineSizing) {
   // is shrunk.
   int height1 = label.GetHeightForWidth(required_width_with_border - 1);
 #if defined(OS_WIN)
-  // Canvas::SizeStringInt (in app/gfx/canvas_linux.cc)
+  // Canvas::SizeStringInt (in ui/gfx/canvas_skia_linux.cc)
   // has to be fixed to return the size that fits to given width/height.
   EXPECT_GT(height1, required_height_with_border);
 #endif
