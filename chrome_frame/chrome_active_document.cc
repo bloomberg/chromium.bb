@@ -930,6 +930,43 @@ void ChromeActiveDocument::OnUnload(const GUID* cmd_group_guid,
                                     VARIANT* in_args,
                                     VARIANT* out_args) {
   if (IsValid() && out_args) {
+    // If the navigation is attempted to the url loaded in CF, with the only
+    // difference being the addition of an anchor, IE will attempt to unload
+    // the currently loaded document which basically would end up running
+    // unload handlers on the currently loaded document thus rendering it non
+    // functional. We handle this as below:-
+    // The BHO receives the new url in the BeforeNavigate event.
+    // We compare the non anchor portions of the url in the BHO with the loaded
+    // url and if they match, we initiate a Chrome navigation to the url with
+    // the anchor which works nicely.
+    // We don't want to continue processing the unload in this case.
+    // Note:-
+    // IE handles these navigations by querying the loaded document for
+    // IHTMLDocument which then handles the new navigation. That won't work for
+    // us as we don't implement IHTMLDocument.
+    NavigationManager* mgr = NavigationManager::GetThreadInstance();
+    DLOG_IF(ERROR, !mgr) << "Couldn't get instance of NavigationManager";
+    if (mgr) {
+      ChromeFrameUrl url;
+      url.Parse(mgr->url());
+      if (url.gurl().has_ref()) {
+        url_canon::Replacements<char> replacements;
+        replacements.ClearRef();
+
+        if (url.gurl().ReplaceComponents(replacements) ==
+            GURL(static_cast<BSTR>(url_))) {
+          // We want to reuse the existing automation client and channel for
+          // initiating the new navigation. Setting the
+          // is_automation_client_reused_ flag to true before calling the
+          // LaunchUrl function achieves that.
+          is_automation_client_reused_ = true;
+          LaunchUrl(url, mgr->referrer());
+          out_args->vt = VT_BOOL;
+          out_args->boolVal = VARIANT_FALSE;
+          return;
+        }
+      }
+    }
     bool should_unload = true;
     automation_client_->OnUnload(&should_unload);
     out_args->vt = VT_BOOL;
