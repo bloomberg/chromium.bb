@@ -2665,10 +2665,6 @@
    fun:_ZN13SigninManager10InitializeEP7Profile
    fun:_ZN18ProfileSyncService10InitializeEv
    fun:_ZN11ProfileImpl15InitSyncServiceERKSs
-   fun:_ZN11ProfileImpl21GetProfileSyncServiceERKSs
-   fun:_ZN11ProfileImpl21GetProfileSyncServiceEv
-   ...
-   fun:_ZN7BrowserC1ENS_4TypeEP7Profile
 }
 {
    bug_56090b
