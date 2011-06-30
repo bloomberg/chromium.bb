@@ -104,7 +104,7 @@ class WebCursor {
   void InitFromNSCursor(NSCursor* cursor);
 
   // TODO(shess): Temporary accessor for debugging http://crbug.com/73356 .
-  int type() const { return type_; }
+  const gfx::Size& custom_size() const { return custom_size_; }
 #endif
 
  private:

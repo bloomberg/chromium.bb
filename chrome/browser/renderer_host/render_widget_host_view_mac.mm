@@ -43,6 +43,7 @@
 #import "third_party/mozilla/ComplexTextInputPanel.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/mac/WebInputEventFactory.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/surface/io_surface_support_mac.h"
@@ -482,10 +483,14 @@ void RenderWidgetHostViewMac::UpdateCursorIfNecessary() {
 
   // TODO(shess): Store additional information in breakpad dumps for
   // debugging http://crbug.com/73356 .
-  NSString* kCrashKey = @"cursor-type";
-  NSString* crashValue =
-      [NSString stringWithFormat:@"%d", current_cursor_.type()];
-  ScopedCrashKey key(kCrashKey, crashValue);
+  scoped_ptr<ScopedCrashKey> key;
+  if (current_cursor_.IsCustom()) {
+    NSString* kCrashKey = @"custom-cursor-size";
+    const gfx::Size size = current_cursor_.custom_size();
+    NSString* crashValue =
+        [NSString stringWithFormat:@"{%d, %d}", size.width(), size.height()];
+    key.reset(new ScopedCrashKey(kCrashKey, crashValue));
+  }
 
   NSCursor* ns_cursor = current_cursor_.GetCursor();
   [ns_cursor set];
