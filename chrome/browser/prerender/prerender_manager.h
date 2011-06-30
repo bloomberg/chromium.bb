@@ -18,6 +18,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/time.h"
 #include "base/timer.h"
+#include "chrome/browser/prerender/prerender_config.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_origin.h"
 #include "googleurl/src/gurl.h"
@@ -127,11 +128,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
       base::TimeDelta perceived_page_load_time,
       TabContents* tab_contents);
 
-  void set_max_prerender_age(base::TimeDelta max_age);
-  size_t max_prerender_memory_mb() const;
-  void set_max_prerender_memory_mb(size_t prerender_memory_mb);
-  void set_max_elements(unsigned int num);
-
   // Returns whether prerendering is currently enabled for this manager.
   // Must be called on the UI thread.
   bool is_enabled() const;
@@ -185,6 +181,9 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // Intended to be used when clearing the cache or history.
   void ClearData(int clear_flags);
 
+  const Config& config() const { return config_; }
+  Config& mutable_config() { return config_; }
+
  protected:
   // Test that needs needs access to internal functions.
   FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, ExpireTest);
@@ -195,8 +194,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   void SetPrerenderContentsFactory(
       PrerenderContents::Factory* prerender_contents_factory);
 
-  bool rate_limit_enabled_;
-
   PendingContentsData* FindPendingEntry(const GURL& url);
 
   // Extracts a urlencoded URL stored in a url= query parameter from a URL
@@ -204,9 +201,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // the operation succeeded (i.e. a valid URL was found).
   static bool MaybeGetQueryStringBasedAliasURL(const GURL& url,
                                                GURL* alias_url);
-
-  base::TimeDelta max_prerender_age() const;
-  unsigned int max_elements() const;
 
  private:
   // Test that needs needs access to internal functions.
@@ -322,20 +316,18 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // navigates to it. This must be called on the UI thread.
   void RecordTimeUntilUsed(base::TimeDelta time_until_used);
 
+  // The configuration.
+  Config config_;
+
   // Specifies whether prerendering is currently enabled for this
   // manager. The value can change dynamically during the lifetime
   // of the PrerenderManager.
   bool enabled_;
 
+  // The profile that owns this PrerenderManager.
   Profile* profile_;
 
   PrerenderTracker* prerender_tracker_;
-
-  base::TimeDelta max_prerender_age_;
-  // Maximum amount of memory, in megabytes, that a single PrerenderContents
-  // can use before it's cancelled.
-  size_t max_prerender_memory_mb_;
-  unsigned int max_elements_;
 
   // List of prerendered elements.
   std::list<PrerenderContentsData> prerender_list_;

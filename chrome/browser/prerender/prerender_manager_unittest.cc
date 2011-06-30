@@ -66,7 +66,7 @@ class TestPrerenderManager : public PrerenderManager {
         time_ticks_(base::TimeTicks::Now()),
         next_prerender_contents_(NULL),
         prerender_tracker_(prerender_tracker) {
-    rate_limit_enabled_ = false;
+    set_rate_limit_enabled(false);
   }
 
   virtual ~TestPrerenderManager() {
@@ -130,7 +130,9 @@ class TestPrerenderManager : public PrerenderManager {
     return (PrerenderManager::FindPendingEntry(url) != NULL);
   }
 
-  void set_rate_limit_enabled(bool enabled) { rate_limit_enabled_ = true; }
+  void set_rate_limit_enabled(bool enabled) {
+    mutable_config().rate_limit_enabled = enabled;
+  }
 
   PrerenderContents* next_prerender_contents() {
     return next_prerender_contents_.get();
@@ -257,8 +259,8 @@ TEST_F(PrerenderManagerTest, ExpireTest) {
   EXPECT_TRUE(prerender_manager()->AddSimplePrerender(url));
   EXPECT_EQ(null, prerender_manager()->next_prerender_contents());
   EXPECT_TRUE(prerender_contents->has_started());
-  prerender_manager()->AdvanceTime(prerender_manager()->max_prerender_age()
-                                  + base::TimeDelta::FromSeconds(1));
+  prerender_manager()->AdvanceTime(prerender_manager()->config().max_age
+                                   + base::TimeDelta::FromSeconds(1));
   ASSERT_EQ(null, prerender_manager()->GetEntry(url));
 }
 
@@ -291,7 +293,7 @@ TEST_F(PrerenderManagerTest, DropOldestRequestTest) {
 // Two element prerender test.  Ensure that the LRU operates correctly if we
 // permit 2 elements to be kept prerendered.
 TEST_F(PrerenderManagerTest, TwoElementPrerenderTest) {
-  prerender_manager()->set_max_elements(2);
+  prerender_manager()->mutable_config().max_elements = 2;
   GURL url("http://www.google.com/");
   DummyPrerenderContents* prerender_contents =
       prerender_manager()->CreateNextPrerenderContents(

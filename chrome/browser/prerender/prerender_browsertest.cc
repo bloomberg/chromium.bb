@@ -537,7 +537,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     // This is needed to exit the event loop once the prerendered page has
     // stopped loading or was cancelled.
     ASSERT_TRUE(prerender_manager());
-    prerender_manager()->rate_limit_enabled_ = false;
+    prerender_manager()->mutable_config().rate_limit_enabled = false;
     ASSERT_TRUE(prerender_contents_factory_ == NULL);
     prerender_contents_factory_ =
         new WaitForLoadPrerenderContentsFactory(total_navigations,
@@ -893,7 +893,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPopup) {
 // Checks that renderers using excessive memory will be terminated.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderExcessiveMemory) {
   ASSERT_TRUE(prerender_manager());
-  prerender_manager()->set_max_prerender_memory_mb(30);
+  prerender_manager()->mutable_config().max_bytes = 30 * 1024 * 1024;
   PrerenderTestURL("files/prerender/prerender_excessive_memory.html",
                    FINAL_STATUS_MEMORY_LIMIT_EXCEEDED,
                    1);

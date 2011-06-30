@@ -569,11 +569,9 @@ void PrerenderContents::DestroyWhenUsingTooManyResources() {
     return;
 
   size_t private_bytes, shared_bytes;
-  if (metrics->GetMemoryBytes(&private_bytes, &shared_bytes)) {
-    if (private_bytes >
-        prerender_manager_->max_prerender_memory_mb() * 1024 * 1024) {
+  if (metrics->GetMemoryBytes(&private_bytes, &shared_bytes) &&
+      private_bytes > prerender_manager_->config().max_bytes) {
       Destroy(FINAL_STATUS_MEMORY_LIMIT_EXCEEDED);
-    }
   }
 }
 

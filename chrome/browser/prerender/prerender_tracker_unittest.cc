@@ -19,7 +19,7 @@ class TestPrerenderManager : public PrerenderManager {
  public:
   explicit TestPrerenderManager(PrerenderTracker* prerender_tracker) :
       PrerenderManager(NULL, prerender_tracker) {
-    rate_limit_enabled_ = false;
+    mutable_config().rate_limit_enabled = false;
   }
 
   virtual void DestroyPrerenderForRenderView(

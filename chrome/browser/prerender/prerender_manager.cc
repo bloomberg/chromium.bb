@@ -41,16 +41,6 @@ namespace prerender {
 
 namespace {
 
-// Default maximum permitted elements to prerender.
-const unsigned int kDefaultMaxPrerenderElements = 1;
-
-// Default maximum amount of private memory that may be used per
-// PrerenderContents, in MB.
-const unsigned int kDefaultMaxPrerenderMemoryMB = 100;
-
-// Default maximum age a prerendered element may have, in seconds.
-const int kDefaultMaxPrerenderAgeSeconds = 30;
-
 // Time window for which we will record windowed PLT's from the last
 // observed link rel=prefetch tag.
 const int kWindowDurationSeconds = 30;
@@ -217,17 +207,11 @@ struct PrerenderManager::PendingContentsData {
   Origin origin_;
 };
 
-
 PrerenderManager::PrerenderManager(Profile* profile,
                                    PrerenderTracker* prerender_tracker)
-    : rate_limit_enabled_(true),
-      enabled_(true),
+    : enabled_(true),
       profile_(profile),
       prerender_tracker_(prerender_tracker),
-      max_prerender_age_(base::TimeDelta::FromSeconds(
-          kDefaultMaxPrerenderAgeSeconds)),
-      max_prerender_memory_mb_(kDefaultMaxPrerenderMemoryMB),
-      max_elements_(kDefaultMaxPrerenderElements),
       prerender_contents_factory_(PrerenderContents::CreateFactory()),
       last_prerender_start_time_(GetCurrentTimeTicks() -
           base::TimeDelta::FromMilliseconds(kMinTimeBetweenPrerendersMs)),
@@ -354,7 +338,7 @@ bool PrerenderManager::AddPrerender(
     last_prerender_start_time_ = GetCurrentTimeTicks();
     data.contents_->StartPrerendering(source_render_view_host);
   }
-  while (prerender_list_.size() > max_elements_) {
+  while (prerender_list_.size() > config_.max_elements) {
     data = prerender_list_.front();
     prerender_list_.pop_front();
     data.contents_->Destroy(FINAL_STATUS_EVICTED);
@@ -614,7 +598,7 @@ base::TimeTicks PrerenderManager::GetCurrentTimeTicks() const {
 bool PrerenderManager::IsPrerenderElementFresh(const base::Time start) const {
   DCHECK(CalledOnValidThread());
   base::Time now = GetCurrentTime();
-  return (now - start < max_prerender_age_);
+  return (now - start < config_.max_age);
 }
 
 PrerenderContents* PrerenderManager::CreatePrerenderContents(
@@ -684,36 +668,6 @@ void PrerenderManager::RecordPerceivedPageLoadTime(
     if (within_window)
       RECORD_PLT("PerceivedPLTWindowNotMatched", perceived_page_load_time);
   }
-}
-
-base::TimeDelta PrerenderManager::max_prerender_age() const {
-  DCHECK(CalledOnValidThread());
-  return max_prerender_age_;
-}
-
-void PrerenderManager::set_max_prerender_age(base::TimeDelta max_age) {
-  DCHECK(CalledOnValidThread());
-  max_prerender_age_ = max_age;
-}
-
-size_t PrerenderManager::max_prerender_memory_mb() const {
-  DCHECK(CalledOnValidThread());
-  return max_prerender_memory_mb_;
-}
-
-void PrerenderManager::set_max_prerender_memory_mb(size_t max_memory_mb) {
-  DCHECK(CalledOnValidThread());
-  max_prerender_memory_mb_ = max_memory_mb;
-}
-
-unsigned int PrerenderManager::max_elements() const {
-  DCHECK(CalledOnValidThread());
-  return max_elements_;
-}
-
-void PrerenderManager::set_max_elements(unsigned int max_elements) {
-  DCHECK(CalledOnValidThread());
-  max_elements_ = max_elements;
 }
 
 bool PrerenderManager::is_enabled() const {
@@ -787,7 +741,7 @@ bool PrerenderManager::DoesRateLimitAllowPrerender() const {
       GetCurrentTimeTicks() - last_prerender_start_time_;
   UMA_HISTOGRAM_TIMES("Prerender.TimeBetweenPrerenderRequests",
                       elapsed_time);
-  if (!rate_limit_enabled_)
+  if (!config_.rate_limit_enabled)
     return true;
   return elapsed_time >
       base::TimeDelta::FromMilliseconds(kMinTimeBetweenPrerendersMs);
@@ -1030,7 +984,7 @@ void PrerenderManager::RecordTimeUntilUsed(base::TimeDelta time_until_used) {
       "Prerender.TimeUntilUsed",
       time_until_used,
       base::TimeDelta::FromMilliseconds(10),
-      base::TimeDelta::FromSeconds(kDefaultMaxPrerenderAgeSeconds),
+      config_.max_age,
       50);
 }
 

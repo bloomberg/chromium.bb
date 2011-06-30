@@ -1680,6 +1680,8 @@
         'browser/prefs/session_startup_pref.h',
         'browser/prefs/value_map_pref_store.cc',
         'browser/prefs/value_map_pref_store.h',
+        'browser/prerender/prerender_config.cc',
+        'browser/prerender/prerender_config.h',
         'browser/prerender/prerender_contents.cc',
         'browser/prerender/prerender_contents.h',
         'browser/prerender/prerender_field_trial.cc',
