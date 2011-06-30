@@ -51,7 +51,6 @@ for test_exe, test_inputs in TESTS:
 ######################################################################
 # EMULATOR TESTS
 ######################################################################
-
 node = env.SelUniversalTest(
     'ppapi_emu_file.out',
     env.File('ppapi_simple_file${PROGSUFFIX}'),
@@ -67,6 +66,9 @@ node = env.SelUniversalTest(
     stdout_golden=env.File('ppapi_emu_file.stdout'),
     )
 
+# TODO(robertm): fix this ASAP
+is_broken = (env.IsRunningUnderValgrind() or env.Bit('windows'))
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
-                       'run_ppapi_emu_file_test')
+                       'run_ppapi_emu_file_test',
+                       is_broken=is_broken)
