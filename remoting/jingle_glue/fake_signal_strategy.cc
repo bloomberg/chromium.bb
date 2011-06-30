@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/stl_util-inl.h"
 #include "base/string_number_conversions.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 #include "third_party/libjingle/source/talk/xmpp/constants.h"
@@ -30,6 +31,10 @@ FakeSignalStrategy::FakeSignalStrategy(const std::string& jid)
 }
 
 FakeSignalStrategy::~FakeSignalStrategy() {
+  while (!pending_messages_.empty()) {
+    delete pending_messages_.front();
+    pending_messages_.pop();
+  }
 }
 
 void FakeSignalStrategy::Init(StatusObserver* observer) {
@@ -77,25 +82,30 @@ IqRequest* FakeSignalStrategy::CreateIqRequest() {
 }
 
 void FakeSignalStrategy::OnIncomingMessage(buzz::XmlElement* stanza) {
-   MessageLoop::current()->PostTask(
-       FROM_HERE, task_factory_.NewRunnableMethod(
-           &FakeSignalStrategy::DeliverIncomingMessage, stanza));
+  pending_messages_.push(stanza);
+  MessageLoop::current()->PostTask(
+      FROM_HERE, task_factory_.NewRunnableMethod(
+          &FakeSignalStrategy::DeliverIncomingMessages));
 }
 
-void FakeSignalStrategy::DeliverIncomingMessage(buzz::XmlElement* stanza) {
-  const std::string& to_field = stanza->Attr(buzz::QN_TO);
-  if (to_field != jid_) {
-    LOG(WARNING) << "Dropping stanza that is addressed to " << to_field
-                 << ". Local jid: " << jid_
-                 << ". Message content: " << stanza->Str();
-    return;
+void FakeSignalStrategy::DeliverIncomingMessages() {
+  while (!pending_messages_.empty()) {
+    buzz::XmlElement* stanza = pending_messages_.front();
+    const std::string& to_field = stanza->Attr(buzz::QN_TO);
+    if (to_field != jid_) {
+      LOG(WARNING) << "Dropping stanza that is addressed to " << to_field
+                   << ". Local jid: " << jid_
+                   << ". Message content: " << stanza->Str();
+      return;
+    }
+
+    if (listener_)
+      listener_->OnIncomingStanza(stanza);
+    iq_registry_.OnIncomingStanza(stanza);
+
+    pending_messages_.pop();
+    delete stanza;
   }
-
-  if (listener_)
-    listener_->OnIncomingStanza(stanza);
-  iq_registry_.OnIncomingStanza(stanza);
-
-  delete stanza;
 }
 
 }  // namespace remoting

@@ -5,6 +5,7 @@
 #ifndef REMOTING_JINGLE_GLUE_FAKE_SIGNAL_STRATEGY_H_
 #define REMOTING_JINGLE_GLUE_FAKE_SIGNAL_STRATEGY_H_
 
+#include <queue>
 #include <string>
 
 #include "base/task.h"
@@ -34,7 +35,7 @@ class FakeSignalStrategy : public SignalStrategy,
   // Called by the |peer_|. Takes ownership of |stanza|.
   void OnIncomingMessage(buzz::XmlElement* stanza);
 
-  void DeliverIncomingMessage(buzz::XmlElement* stanza);
+  void DeliverIncomingMessages();
 
   std::string jid_;
   FakeSignalStrategy* peer_;
@@ -42,6 +43,8 @@ class FakeSignalStrategy : public SignalStrategy,
   JavascriptIqRegistry iq_registry_;
 
   int last_id_;
+
+  std::queue<buzz::XmlElement*> pending_messages_;
 
   ScopedRunnableMethodFactory<FakeSignalStrategy> task_factory_;
 
