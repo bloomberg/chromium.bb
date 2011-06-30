@@ -123,7 +123,11 @@ TEST(InputMethodMenuTest, GetTextForMenuTest) {
   }
   {
     InputMethodDescriptor desc("mozc", "us", "us", "ja");
+#if !defined(GOOGLE_CHROME_BUILD)
     EXPECT_EQ(L"Japanese input method (for US keyboard)",
+#else
+    EXPECT_EQ(L"Google Japanese Input (for US keyboard)",
+#endif  // defined(GOOGLE_CHROME_BUILD)
               InputMethodMenu::GetTextForMenu(desc));
   }
   {
