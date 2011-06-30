@@ -348,6 +348,8 @@
         '../app/app.gyp:app_base',
         '../base/base.gyp:base',
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
+        'safe_browsing_csd_proto',
+        'safe_browsing_proto',
       ],
     },
     {
