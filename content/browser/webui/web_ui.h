@@ -26,7 +26,7 @@ class TabContents;
 class Value;
 
 // A WebUI sets up the datasources and message handlers for a given HTML-based
-// UI. It is contained by a WebUIManager.
+// UI.
 //
 // NOTE: If you're creating a new WebUI for Chrome code, make sure you extend
 // ChromeWebUI.

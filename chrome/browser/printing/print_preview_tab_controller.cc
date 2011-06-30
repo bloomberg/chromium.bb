@@ -144,7 +144,7 @@ void PrintPreviewTabController::Observe(NotificationType type,
     // chooses to re-open the initiator tab after closing it, as |source_tab|
     // has navigated to the URL of the initiator tab at this point. Make sure to
     // verify that |source_tab| really is a print preview tab.
-    if (IsPrintPreviewTab(source_tab)) {
+    if (IsPrintPreviewTab(source_tab) && source_tab->web_ui()) {
       PrintPreviewUI* print_preview_ui =
           static_cast<PrintPreviewUI*>(source_tab->web_ui());
       print_preview_ui->OnNavigation();
