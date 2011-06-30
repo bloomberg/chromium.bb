@@ -413,8 +413,8 @@ void ChromotingHost::OnClientDisconnected(ConnectionToClient* connection) {
     }
   }
 
-  // Enable the "curtain", if at least one client is actually authenticated.
-  if (AuthenticatedClientsCount() > 0) {
+  // Disable the "curtain" if there are no more active clients.
+  if (AuthenticatedClientsCount() == 0) {
     EnableCurtainMode(false);
     if (is_it2me_) {
       MonitorLocalInputs(false);
