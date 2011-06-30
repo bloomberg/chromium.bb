@@ -14,7 +14,11 @@ import constants
 import optparse
 import os
 import pprint
+import subprocess
 import sys
+import time
+
+from multiprocessing import Process
 
 if __name__ == '__main__':
   sys.path.append(constants.SOURCE_ROOT)
@@ -114,6 +118,28 @@ def _IsIncrementalBuild(buildroot, clobber):
   return not clobber and os.path.isdir(repo_dir)
 
 
+def _RunSudoNoOp():
+  """Run sudo with a noop, to reset the sudo timestamp."""
+  proc = subprocess.Popen(['sudo', 'echo'], stdout=subprocess.PIPE, shell=False)
+  proc.communicate()
+
+
+def _RunSudoPeriodically():
+  """Runs inside of a separate process.  Periodically runs sudo."""
+  SUDO_INTERVAL_MINUTES = 5
+  while True:
+    print ('Trybot background sudo keep-alive process is running.  Run '
+           "'kill -9 %s' to terminate." % str(os.getpid()))
+    _RunSudoNoOp()
+    time.sleep(SUDO_INTERVAL_MINUTES * 60)
+
+
+def _LaunchSudoKeepAliveProcess():
+  """"Start the background process that avoids the 15 min sudo timeout."""
+  p = Process(target=_RunSudoPeriodically)
+  p.start()
+
+
 def RunBuildStages(bot_id, options, build_config):
   """Run the requested build stages."""
   completed_stages_file = os.path.join(options.buildroot, '.completed_stages')
@@ -146,6 +172,12 @@ def RunBuildStages(bot_id, options, build_config):
   gerrit_patches, local_patches = _PreProcessPatches(options.gerrit_patches,
                                                      options.local_patches,
                                                      tracking_branch)
+
+  # For trybots, after most of the preprocessing is done, run sudo to set the
+  # timestamp and kick off the sudo keep-alive process.
+  if not options.buildbot:
+    _RunSudoNoOp()
+    _LaunchSudoKeepAliveProcess()
 
   if _IsIncrementalBuild(options.buildroot, options.clobber):
     _CheckBuildRootBranch(options.buildroot, tracking_branch)

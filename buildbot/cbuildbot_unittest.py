@@ -40,7 +40,8 @@ class RunBuildStagesTest(mox.MoxTestBase):
 
     # Use the cbuildbot parser to create properties and populate default values.
     self.parser = cbuildbot._CreateParser()
-    (self.options, _) = self.parser.parse_args(['-r', '.'])
+    (self.options, _) = self.parser.parse_args(['-r', '.', '--buildbot',
+                                                '--debug'])
     self.options.resume = False
     self.options.sync = False
     self.options.build = False
@@ -51,12 +52,14 @@ class RunBuildStagesTest(mox.MoxTestBase):
     self.options.patches = None
     self.options.prebuilts = False
 
+    self.mox.StubOutWithMock(cbuildbot, '_GetChromiteTrackingBranch')
+    cbuildbot._GetChromiteTrackingBranch().AndReturn('master')
+
   def testChromeosOfficialSet(self):
     """Verify that CHROMEOS_OFFICIAL is set correctly."""
 
     self.build_config['chromeos_official'] = True
-    self.mox.StubOutWithMock(cbuildbot, '_GetChromiteTrackingBranch')
-    cbuildbot._GetChromiteTrackingBranch().AndReturn('master')
+
 
     # Clean up before
     if 'CHROMEOS_OFFICIAL' in os.environ:
@@ -82,8 +85,6 @@ class RunBuildStagesTest(mox.MoxTestBase):
     """Verify that CHROMEOS_OFFICIAL is not always set."""
 
     self.build_config['chromeos_official'] = False
-    self.mox.StubOutWithMock(cbuildbot, '_GetChromiteTrackingBranch')
-    cbuildbot._GetChromiteTrackingBranch().AndReturn('master')
 
     # Clean up before
     if 'CHROMEOS_OFFICIAL' in os.environ:
