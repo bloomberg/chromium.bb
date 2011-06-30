@@ -66,19 +66,24 @@ void BackgroundPrintingManager::Observe(NotificationType type,
                                         const NotificationDetails& details) {
   switch (type.value) {
     case NotificationType::PRINT_JOB_RELEASED: {
+      TabContentsWrapper* tab = Source<TabContentsWrapper>(source).ptr();
+      registrar_.Remove(this, NotificationType::PRINT_JOB_RELEASED,
+                        Source<TabContentsWrapper>(tab));
+
       // This might be happening in the middle of a RenderViewGone() loop.
       // Deleting |contents| later so the RenderViewGone() loop can finish.
-      MessageLoop::current()->DeleteSoon(
-          FROM_HERE,
-          Source<TabContentsWrapper>(source).ptr());
+      MessageLoop::current()->DeleteSoon(FROM_HERE, tab);
       break;
     }
     case NotificationType::TAB_CONTENTS_DESTROYED: {
       TabContentsWrapper* tab =
           TabContentsWrapper::GetCurrentWrapperForContents(
               Source<TabContents>(source).ptr());
-      registrar_.Remove(this, NotificationType::PRINT_JOB_RELEASED,
-                        Source<TabContentsWrapper>(tab));
+      if (registrar_.IsRegistered(this, NotificationType::PRINT_JOB_RELEASED,
+                                  Source<TabContentsWrapper>(tab))) {
+        registrar_.Remove(this, NotificationType::PRINT_JOB_RELEASED,
+                          Source<TabContentsWrapper>(tab));
+      }
       registrar_.Remove(this, NotificationType::TAB_CONTENTS_DESTROYED,
                         Source<TabContents>(tab->tab_contents()));
       printing_contents_.erase(tab);
