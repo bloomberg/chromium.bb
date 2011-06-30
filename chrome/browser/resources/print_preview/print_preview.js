@@ -45,6 +45,9 @@ var hasError = false;
 // True when preview tab is hidden.
 var isTabHidden = false;
 
+// Object holding all the copies related settings.
+var copiesSettings;
+
 // True if the user has click 'Advanced...' in order to open the system print
 // dialog.
 var showingSystemDialog = false;
@@ -73,6 +76,8 @@ function onLoad() {
 
   $('printer-list').disabled = true;
   $('print-button').onclick = printFile;
+
+  copiesSettings = print_preview.CopiesSettings.getInstance();
 
   setDefaultHandlersForPagesAndCopiesControls();
   showLoadingAnimation();
@@ -114,11 +119,9 @@ function setDefaultHandlersForPagesAndCopiesControls() {
     allPages.onclick = updatePrintButtonState;
     printPages.onclick = handleIndividualPagesCheckbox;
     individualPages.onblur = onPageRangesFieldBlur;
+    copiesSettings.addEventListeners();
   }
 
-  $('copies').oninput = copiesFieldChanged;
-  $('increment').onclick = function() { onCopiesButtonsClicked(1); };
-  $('decrement').onclick = function() { onCopiesButtonsClicked(-1); };
 }
 
 /**
@@ -140,24 +143,8 @@ function addEventListeners() {
   $('printer-list').onchange = updateControlsWithSelectedPrinterCapabilities;
 
   // Controls that dont require preview rendering.
-  $('copies').oninput = function() {
-    copiesFieldChanged();
-    updatePrintButtonState();
-    updatePrintSummary();
-  };
-  $('two-sided').onclick = handleTwoSidedClick;
   $('color').onclick = function() { setColor(true); };
   $('bw').onclick = function() { setColor(false); };
-  $('increment').onclick = function() {
-    onCopiesButtonsClicked(1);
-    updatePrintButtonState();
-    updatePrintSummary();
-  };
-  $('decrement').onclick = function() {
-    onCopiesButtonsClicked(-1);
-    updatePrintButtonState();
-    updatePrintSummary();
-  };
 }
 
 /**
@@ -173,7 +160,6 @@ function removeEventListeners() {
   $('printer-list').onchange = null;
 
   // Controls that don't require preview rendering.
-  $('two-sided').onclick = null;
   $('color').onclick = null;
   $('bw').onclick = null;
 }
@@ -290,18 +276,7 @@ function updateWithPrinterCapabilities(settingInfo) {
     color.checked = setColorAsDefault;
     bw.checked = !setColorAsDefault;
   }
-  $('two-sided').checked = setDuplexAsDefault;
-}
-
-/**
- * Validates the copies text field value.
- * NOTE: An empty copies field text is considered valid because the blur event
- * listener of this field will set it back to a default value.
- * @return {boolean} true if the number of copies is valid else returns false.
- */
-function isNumberOfCopiesValid() {
-  var copiesFieldText = $('copies').value;
-  return copiesFieldText == '' ? true : isPositiveInteger(copiesFieldText);
+  copiesSettings.twoSidedCheckbox.checked = setDuplexAsDefault;
 }
 
 /**
@@ -328,30 +303,7 @@ function isColor() {
  * @return {boolean} true if collate setting is enabled and checked.
  */
 function isCollated() {
-  return !$('collate-option').hidden && $('collate').checked;
-}
-
-/**
- * Returns the number of copies currently indicated in the copies textfield. If
- * the contents of the textfield can not be converted to a number or if <1 it
- * returns 1.
- *
- * @return {number} number of copies.
- */
-function getCopies() {
-  var copies = parseInt($('copies').value, 10);
-  if (!copies || copies <= 1)
-    copies = 1;
-  return copies;
-}
-
-/**
- * Checks whether the preview two-sided checkbox is checked.
- *
- * @return {boolean} true if two-sided is checked.
- */
-function isTwoSided() {
-  return $('two-sided').checked;
+  return !copiesSettings.collateOption.hidden && $('collate').checked;
 }
 
 /**
@@ -362,7 +314,7 @@ function getDuplexMode() {
   // Constants values matches printing::DuplexMode enum.
   const SIMPLEX = 0;
   const LONG_EDGE = 1;
-  return !isTwoSided() ? SIMPLEX : LONG_EDGE;
+  return !copiesSettings.twoSidedCheckbox.checked ? SIMPLEX : LONG_EDGE;
 }
 
 /**
@@ -380,7 +332,7 @@ function getSettingsJSON() {
        'pageRange': pageSetToPageRanges(getSelectedPagesSet()),
        'printAll': printAll,
        'duplex': getDuplexMode(),
-       'copies': getCopies(),
+       'copies': copiesSettings.numberOfCopies,
        'collate': isCollated(),
        'landscape': isLandscape(),
        'color': isColor(),
@@ -631,7 +583,7 @@ function onPDFLoad() {
   if (!previewModifiable)
     fadeOutElement($('landscape-option'));
 
-  updateCopiesButtonsState();
+  cr.dispatchSimpleEvent(document, 'PDFLoaded');
 }
 
 /**
@@ -740,21 +692,12 @@ function updatePrintButtonState() {
   if (getSelectedPrinterName() == PRINT_TO_PDF) {
     $('print-button').disabled = !isSelectedPagesValid();
   } else {
-    $('print-button').disabled = (!isNumberOfCopiesValid() ||
+    $('print-button').disabled = (!copiesSettings.isValid() ||
                                   !isSelectedPagesValid());
   }
 }
 
 window.addEventListener('DOMContentLoaded', onLoad);
-
-/**
- * Listener function that executes whenever a change occurs in the 'copies'
- * field.
- */
-function copiesFieldChanged() {
-  updateCopiesButtonsState();
-  $('collate-option').hidden = getCopies() <= 1;
-}
 
 /**
  * Validates the page ranges text and updates the hint accordingly.
@@ -794,35 +737,15 @@ function pageRangesFieldChanged() {
 }
 
 /**
- * Updates the state of the increment/decrement buttons based on the current
- * 'copies' value.
- */
-function updateCopiesButtonsState() {
-  var copiesField = $('copies');
-  if (!isNumberOfCopiesValid()) {
-    copiesField.classList.add('invalid');
-    $('increment').disabled = false;
-    $('decrement').disabled = false;
-    fadeInElement($('copies-hint'));
-  }
-  else {
-    copiesField.classList.remove('invalid');
-    $('increment').disabled = (getCopies() == copiesField.max) ? true : false;
-    $('decrement').disabled = (getCopies() == copiesField.min) ? true : false;
-    fadeOutElement($('copies-hint'));
-  }
-}
-
-/**
  * Updates the print summary based on the currently selected user options.
  *
  */
 function updatePrintSummary() {
   var printToPDF = getSelectedPrinterName() == PRINT_TO_PDF;
-  var copies = printToPDF ? 1 : getCopies();
+  var copies = printToPDF ? 1 : copiesSettings.numberOfCopies;
   var printSummary = $('print-summary');
 
-  if (!printToPDF && !isNumberOfCopiesValid()) {
+  if (!printToPDF && !copiesSettings.isValid()) {
     printSummary.innerHTML = localStrings.getString('invalidNumberOfCopies');
     return;
   }
@@ -841,7 +764,7 @@ function updatePrintSummary() {
   if (printToPDF)
     summaryLabel = localStrings.getString('printPreviewPageLabelSingular');
 
-  if (!printToPDF && isTwoSided())
+  if (!printToPDF && copiesSettings.twoSidedCheckbox.checked)
     numOfSheets = Math.ceil(numOfSheets / 2);
   numOfSheets *= copies;
 
@@ -867,13 +790,6 @@ function updatePrintSummary() {
   // Removing extra spaces from within the string.
   html = html.replace(/\s{2,}/g, ' ');
   printSummary.innerHTML = html;
-}
-
-/**
- * Handles a click event on the two-sided option.
- */
-function handleTwoSidedClick() {
-  updatePrintSummary();
 }
 
 /**
@@ -978,22 +894,6 @@ function onPageSelectionMayHaveChanged() {
 
   previouslySelectedPages = currentlySelectedPages;
   requestPrintPreview();
-}
-
-/**
- * Executed when the 'increment' or 'decrement' button is clicked.
- */
-function onCopiesButtonsClicked(sign) {
-  var copiesField = $('copies');
-  if (!isNumberOfCopiesValid())
-    copiesField.value = 1;
-  else {
-    var newValue = getCopies() + sign * 1;
-    if (newValue < copiesField.min || newValue > copiesField.max)
-      return;
-    copiesField.value = newValue;
-  }
-  copiesFieldChanged();
 }
 
 /**

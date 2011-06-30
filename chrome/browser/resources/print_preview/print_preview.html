@@ -13,6 +13,7 @@
 <script src="print_preview.js"></script>
 <script src="print_preview_animations.js"></script>
 <script src="print_preview_utils.js"></script>
+<script src="copies_settings.js"></script>
 </head>
 <body>
   <div id="sidebar">
@@ -52,29 +53,7 @@
         </div>
       </div>
       <hr id="hr-before-copies" class="invisible">
-      <div id="copies-option" class="two-column option visible">
-        <h1 i18n-content="copiesLabel"></h1>
-        <div>
-          <div>
-            <input id="copies" type="text" value="1" min="1"
-                max="999" maxlength="3" class="number small"/>
-            <button id="increment"
-                i18n-values="title:incrementTitle;">+</button>
-            <button id="decrement"
-                i18n-values="title:decrementTitle;">–</button>
-            <span id="collate-option" hidden>
-              <input id="collate" type="checkbox"/>
-              <label for="collate" i18n-content="optionCollate"></label>
-            </span>
-          </div>
-          <span id="copies-hint" class="hint"
-              i18n-content="copiesInstruction"></span>
-          <div id="two-sided-div">
-            <input id="two-sided" type="checkbox"/>
-            <label for="two-sided" i18n-content="optionTwoSided"></label>
-          </div>
-        </div>
-      </div>
+      <include src="copies_settings.html"></include>
       <hr>
       <div id="landscape-option" class="two-column option visible">
         <h1 i18n-content="layoutLabel"></h1>
