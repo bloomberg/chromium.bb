@@ -7,10 +7,12 @@
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/download/download_item.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/download/download_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/webui/active_downloads_ui.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/in_process_browser_test.h"
@@ -47,6 +49,30 @@ class SavePageBrowserTest : public InProcessBrowserTest {
     return *Details<GURL>(observer.details()).ptr();
   }
 
+  void CheckDownloadUI(const FilePath& download_path) {
+#if defined(OS_CHROMEOS)
+    Browser* popup = ActiveDownloadsUI::GetPopup();
+    EXPECT_TRUE(popup);
+    ActiveDownloadsUI* downloads_ui = static_cast<ActiveDownloadsUI*>(
+        popup->GetSelectedTabContents()->web_ui());
+    ASSERT_TRUE(downloads_ui);
+    const ActiveDownloadsUI::DownloadList& downloads =
+        downloads_ui->GetDownloads();
+    EXPECT_EQ(downloads.size(), 1U);
+
+    bool found = false;
+    for (size_t i = 0; i < downloads.size(); ++i) {
+      if (downloads[i]->full_path() == download_path) {
+        found = true;
+        break;
+      }
+    }
+    EXPECT_TRUE(found);
+#else
+    EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
+#endif
+  }
+
   // Path to directory containing test data.
   FilePath test_dir_;
 
@@ -70,8 +96,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveHTMLOnly) {
 
   EXPECT_EQ(url, WaitForSavePackageToFinish());
 
-  if (browser()->SupportsWindowFeature(Browser::FEATURE_DOWNLOADSHELF))
-    EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
+  CheckDownloadUI(full_file_name);
 
   EXPECT_TRUE(file_util::PathExists(full_file_name));
   EXPECT_FALSE(file_util::PathExists(dir));
@@ -99,8 +124,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveViewSourceHTMLOnly) {
 
   EXPECT_EQ(actual_page_url, WaitForSavePackageToFinish());
 
-  if (browser()->SupportsWindowFeature(Browser::FEATURE_DOWNLOADSHELF))
-    EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
+  CheckDownloadUI(full_file_name);
 
   EXPECT_TRUE(file_util::PathExists(full_file_name));
   EXPECT_FALSE(file_util::PathExists(dir));
@@ -125,8 +149,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveCompleteHTML) {
 
   EXPECT_EQ(url, WaitForSavePackageToFinish());
 
-  if (browser()->SupportsWindowFeature(Browser::FEATURE_DOWNLOADSHELF))
-    EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
+  CheckDownloadUI(full_file_name);
 
   EXPECT_TRUE(file_util::PathExists(full_file_name));
   EXPECT_TRUE(file_util::PathExists(dir));
@@ -167,8 +190,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, FileNameFromPageTitle) {
 
   EXPECT_EQ(url, WaitForSavePackageToFinish());
 
-  if (browser()->SupportsWindowFeature(Browser::FEATURE_DOWNLOADSHELF))
-    EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
+  CheckDownloadUI(full_file_name);
 
   EXPECT_TRUE(file_util::PathExists(full_file_name));
   EXPECT_TRUE(file_util::PathExists(dir));

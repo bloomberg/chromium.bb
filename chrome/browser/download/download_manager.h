@@ -36,6 +36,7 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
+#include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -350,6 +351,9 @@ class DownloadManager
   // Debugging routine to confirm relationship between below
   // containers; no-op if NDEBUG.
   void AssertContainersConsistent() const;
+
+  // Add a DownloadItem to history_downloads_.
+  void AddDownloadItemToHistory(DownloadItem* item, int64 db_handle);
 
   // |downloads_| is the owning set for all downloads known to the
   // DownloadManager.  This includes downloads started by the user in

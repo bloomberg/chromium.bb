@@ -524,7 +524,7 @@ void DownloadManager::OnPathExistenceAvailable(
     SelectFileDialog::FileTypeInfo file_type_info;
     FilePath::StringType extension = suggested_path.Extension();
     if (!extension.empty()) {
-      extension.erase(extension.begin()); // drop the .
+      extension.erase(extension.begin());  // drop the .
       file_type_info.extensions.resize(1);
       file_type_info.extensions[0].push_back(extension);
     }
@@ -970,11 +970,14 @@ int DownloadManager::RemoveAllDownloads() {
   return RemoveDownloadsBetween(base::Time(), base::Time());
 }
 
-void DownloadManager::SavePageAsDownloadStarted(DownloadItem* download_item) {
+void DownloadManager::SavePageAsDownloadStarted(DownloadItem* download) {
 #if !defined(NDEBUG)
-  save_page_as_downloads_.insert(download_item);
+  save_page_as_downloads_.insert(download);
 #endif
-  downloads_.insert(download_item);
+  downloads_.insert(download);
+  // Add to history and notify observers.
+  AddDownloadItemToHistory(download, DownloadHistory::kUninitializedHandle);
+  NotifyModelChanged();
 }
 
 // Initiate a download of a specific URL. We send the request to the
@@ -1158,19 +1161,9 @@ void DownloadManager::OnQueryDownloadEntriesComplete(
   CheckForHistoryFilesRemoval();
 }
 
-// Once the new DownloadItem's creation info has been committed to the history
-// service, we associate the DownloadItem with the db handle, update our
-// 'history_downloads_' map and inform observers.
-void DownloadManager::OnCreateDownloadEntryComplete(int32 download_id,
-                                                    int64 db_handle) {
+void DownloadManager::AddDownloadItemToHistory(DownloadItem* download,
+                                               int64 db_handle) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DownloadItem* download = GetActiveDownloadItem(download_id);
-  if (!download)
-    return;
-
-  VLOG(20) << __FUNCTION__ << "()" << " db_handle = " << db_handle
-           << " download_id = " << download_id
-           << " download = " << download->DebugString(true);
 
   // It's not immediately obvious, but HistoryBackend::CreateDownload() can
   // call this function with an invalid |db_handle|. For instance, this can
@@ -1189,6 +1182,23 @@ void DownloadManager::OnCreateDownloadEntryComplete(int32 download_id,
 
   DCHECK(!ContainsKey(history_downloads_, download->db_handle()));
   history_downloads_[download->db_handle()] = download;
+}
+
+// Once the new DownloadItem's creation info has been committed to the history
+// service, we associate the DownloadItem with the db handle, update our
+// 'history_downloads_' map and inform observers.
+void DownloadManager::OnCreateDownloadEntryComplete(int32 download_id,
+                                                    int64 db_handle) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DownloadItem* download = GetActiveDownloadItem(download_id);
+  if (!download)
+    return;
+
+  VLOG(20) << __FUNCTION__ << "()" << " db_handle = " << db_handle
+           << " download_id = " << download_id
+           << " download = " << download->DebugString(true);
+
+  AddDownloadItemToHistory(download, db_handle);
 
   // Show in the appropriate browser UI.
   // This includes buttons to save or cancel, for a dangerous download.
@@ -1217,7 +1227,6 @@ void DownloadManager::OnCreateDownloadEntryComplete(int32 download_id,
 }
 
 void DownloadManager::ShowDownloadInBrowser(DownloadItem* download) {
-
   // The 'contents' may no longer exist if the user closed the tab before we
   // get this start completion event. If it does, tell the origin TabContents
   // to display its download shelf.
