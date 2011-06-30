@@ -632,12 +632,7 @@ void DownloadManager::OnResponseCompleted(int32 download_id,
                                           int os_error,
                                           const std::string& hash) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // ERR_CONNECTION_CLOSED is allowed since a number of servers in the wild
-  // advertise a larger Content-Length than the amount of bytes in the message
-  // body, and then close the connection. Other browsers - IE8, Firefox 4.0.1,
-  // and Safari 5.0.4 - treat the download as complete in this case, so we
-  // follow their lead.
-  if (os_error == 0 || os_error == net::ERR_CONNECTION_CLOSED) {
+  if (os_error == 0) {
     OnAllDataSaved(download_id, size, hash);
   } else {
     OnDownloadError(download_id, size, os_error);
