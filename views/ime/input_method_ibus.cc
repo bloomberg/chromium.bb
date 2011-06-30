@@ -337,8 +337,6 @@ void InputMethodIBus::OnBlur() {
 }
 
 void InputMethodIBus::Init(Widget* widget) {
-  InputMethodBase::Init(widget);
-
   // Initializes the connection to ibus daemon. It may happen asynchronously,
   // and as soon as the connection is established, the |context_| will be
   // created automatically.
@@ -354,6 +352,8 @@ void InputMethodIBus::Init(Widget* widget) {
   // case, we will not get "connected" signal.
   if (ibus_bus_is_connected(bus))
     CreateContext();
+
+  InputMethodBase::Init(widget);
 }
 
 void InputMethodIBus::DispatchKeyEvent(const KeyEvent& key) {
