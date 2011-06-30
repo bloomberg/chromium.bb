@@ -19,7 +19,7 @@ class FilePath;
 class RefCountedMemory;
 class SkBitmap;
 
-namespace app {
+namespace sql {
 class Connection;
 }
 
