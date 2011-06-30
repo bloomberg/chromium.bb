@@ -1,5 +1,5 @@
 #!/usr/bin/python2.4
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -20,7 +20,7 @@ from grit import util
 
 class RcUnittest(unittest.TestCase):
 
-  part_we_want = '''IDC_KLONKACC ACCELERATORS
+  part_we_want = '''IDC_KLONKACC ACCELERATORS 
 BEGIN
     "?",            IDM_ABOUT,              ASCII,  ALT
     "/",            IDM_ABOUT,              ASCII,  ALT
@@ -45,13 +45,10 @@ END
     out = rc.Section.FromFile(f, 'IDC_KLONKACC')
     self.failUnless(out.GetText() == self.part_we_want)
 
-    out = rc.Section.FromFile(util.PathFromRoot(r'grit/testdata/klonk.rc'),
+    out = rc.Section.FromFile(util.PathFromRoot(r'grit/test/data/klonk.rc'),
                               'IDC_KLONKACC',
                               encoding='utf-16')
-    out_text = out.GetText().replace('\t', '')
-    out_text = out_text.replace(' ', '')
-    self.part_we_want = self.part_we_want.replace(' ', '')
-    self.failUnless(out_text.strip() == self.part_we_want.strip())
+    self.failUnless(out.GetText() == self.part_we_want)
 
 
   def testDialog(self):
@@ -366,3 +363,4 @@ END''')
 
 if __name__ == '__main__':
   unittest.main()
+

@@ -1,5 +1,5 @@
 #!/usr/bin/python2.4
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -49,7 +49,7 @@ how are you?
 '''.strip())
 
   def testExtractTranslations(self):
-    path = util.PathFromRoot('grit/testdata')
+    path = util.PathFromRoot('grit/test/data')
     current_grd = grd_reader.Parse(StringIO.StringIO('''<?xml version="1.0" encoding="UTF-8"?>
       <grit latest_public_release="2" source_lang_id="en-US" current_release="3" base_dir=".">
         <release seq="3">
@@ -86,9 +86,9 @@ how are you?
       </grit>'''), path)
     current_grd.RunGatherers(recursive=True)
 
-    source_rc_path = util.PathFromRoot('grit/testdata/source.rc')
+    source_rc_path = util.PathFromRoot('grit/test/data/source.rc')
     source_rc = file(source_rc_path).read()
-    transl_rc_path = util.PathFromRoot('grit/testdata/transl.rc')
+    transl_rc_path = util.PathFromRoot('grit/test/data/transl.rc')
     transl_rc = file(transl_rc_path).read()
 
     tool = transl2tc.TranslationToTc()

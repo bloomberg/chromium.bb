@@ -68,9 +68,9 @@ END'''.strip())
   def testRcSection(self):
     root = grd_reader.Parse(StringIO.StringIO('''
       <structures>
-          <structure type="menu" name="IDC_KLONKMENU" file="grit\\testdata\klonk.rc" encoding="utf-16" />
-          <structure type="dialog" name="IDD_ABOUTBOX" file="grit\\testdata\klonk.rc" encoding="utf-16" />
-          <structure type="version" name="VS_VERSION_INFO" file="grit\\testdata\klonk.rc" encoding="utf-16" />
+          <structure type="menu" name="IDC_KLONKMENU" file="grit\\test\data\klonk.rc" encoding="utf-16" />
+          <structure type="dialog" name="IDD_ABOUTBOX" file="grit\\test\data\klonk.rc" encoding="utf-16" />
+          <structure type="version" name="VS_VERSION_INFO" file="grit\\test\data\klonk.rc" encoding="utf-16" />
       </structures>'''), flexible_root = True)
     util.FixRootForUnittest(root)
     root.RunGatherers(recursive = True)
@@ -184,7 +184,7 @@ END'''.strip()
     self.failUnless(output.strip() == expected)
 
   def testRcIncludeFlattenedHtmlFile(self):
-    input_file = util.PathFromRoot('grit/testdata/include_test.html')
+    input_file = util.PathFromRoot('grit/test/data/include_test.html')
     output_file = '%s/HTML_FILE1_include_test.html' % tempfile.gettempdir()
     root = grd_reader.Parse(StringIO.StringIO('''
       <includes>
@@ -223,7 +223,7 @@ END'''.strip()
 
 
   def testStructureNodeOutputfile(self):
-    input_file = util.PathFromRoot('grit/testdata/simple.html')
+    input_file = util.PathFromRoot('grit/test/data/simple.html')
     root = grd_reader.Parse(StringIO.StringIO(
       '<structure type="tr_html" name="IDR_HTML" file="%s" />' %input_file),
       flexible_root = True)
@@ -251,7 +251,7 @@ END'''.strip()
       <grit latest_public_release="2" source_lang_id="en-US" current_release="3" base_dir=".">
         <release seq="1" allow_pseudo="False">
           <structures fallback_to_english="True">
-            <structure type="dialog" name="IDD_ABOUTBOX" file="grit\\testdata\klonk.rc" encoding="utf-16" />
+            <structure type="dialog" name="IDD_ABOUTBOX" file="grit\\test\data\klonk.rc" encoding="utf-16" />
           </structures>
         </release>
       </grit>'''), util.PathFromRoot('.'))

@@ -1,5 +1,5 @@
 #!/usr/bin/python2.4
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -45,7 +45,7 @@ class FileNodeUnittest(unittest.TestCase):
     grd = grd_reader.Parse(StringIO.StringIO('''<?xml version="1.0" encoding="UTF-8"?>
       <grit latest_public_release="2" source_lang_id="en-US" current_release="3" base_dir=".">
         <translations>
-          <file path="generated_resources_fr.xtb" lang="fr" />
+          <file path="fr.xtb" lang="fr" />
         </translations>
         <release seq="3">
           <messages>
@@ -53,7 +53,7 @@ class FileNodeUnittest(unittest.TestCase):
             <message name="ID_HELLO_USER">Hello <ph name="USERNAME">%s<ex>Joi</ex></ph></message>
           </messages>
         </release>
-      </grit>'''), util.PathFromRoot('grit/testdata'))
+      </grit>'''), util.PathFromRoot('grit/test/data'))
     grd.RunGatherers(recursive=True)
     self.failUnless(True)
 
@@ -62,7 +62,7 @@ class FileNodeUnittest(unittest.TestCase):
       <grit latest_public_release="2" source_lang_id="en-US" current_release="3" base_dir=".">
         <translations>
           <if expr="lang == 'fr'">
-            <file path="generated_resources_fr.xtb" lang="fr" />
+            <file path="fr.xtb" lang="fr" />
           </if>
         </translations>
         <release seq="3">
@@ -71,7 +71,7 @@ class FileNodeUnittest(unittest.TestCase):
             <message name="ID_HELLO_USER">Hello <ph name="USERNAME">%s<ex>Joi</ex></ph></message>
           </messages>
         </release>
-      </grit>'''), util.PathFromRoot('grit/testdata'))
+      </grit>'''), util.PathFromRoot('grit/test/data'))
     grd.SetOutputContext('en', {})
     grd.RunGatherers(recursive=True)
 
