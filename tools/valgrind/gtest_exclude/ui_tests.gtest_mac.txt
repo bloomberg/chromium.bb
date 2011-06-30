@@ -237,3 +237,6 @@ PPAPITest.URLLoader
 
 # http://crbug.com/87992
 PrintPreviewUITest.PrintCommandDisabled
+
+# http://crbug.com/88068
+LocaleTestsHe.TestStart
