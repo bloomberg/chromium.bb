@@ -40,10 +40,6 @@ class NaClTest(pyauto.PyUITest):
   def testSurfAwaySRPCResourceDescriptor(self):
     self.surfAway('srpc_nrd_xfer.html', 'SRPC')
 
-  # TODO(nfullagar): enable this test once srpc_hw_fd.html works on trybots
-  def disabledTestSurfAwaySRPCHelloWorldFileDescriptor(self):
-    self.surfAway('srpc_hw_fd.html', 'SRPC')
-
   def testSurfAwaySRPCURLContentAsNaclResourceDescriptor(self):
     self.surfAway('srpc_url_as_nacl_desc.html', 'SRPC')
 

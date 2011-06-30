@@ -72,9 +72,6 @@ class NaClTest(pyauto.PyUITest):
   def testReloadSRPCResourceDescriptor(self):
     self.reloader('srpc_nrd_xfer.html', 'SRPC')
 
-  def testReloadSRPCHelloWorldFileDescriptor(self):
-    self.reloader('srpc_hw_fd.html', 'SRPC')
-
   def testReloadSRPCURLContentAsNaclResourceDescriptor(self):
     self.reloader('srpc_url_as_nacl_desc.html', 'SRPC')
 
