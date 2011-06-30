@@ -165,6 +165,7 @@ def RunBuildStages(bot_id, options, build_config):
     if options.build:
       stages.BuildBoardStage(bot_id, options, build_config).Run()
       if build_config['build_type'] == 'chroot':
+        stages.UploadPrebuiltsStage(bot_id, options, build_config).Run()
         stages.Results.Report(sys.stdout)
         return stages.Results.Success()
 
@@ -173,6 +174,9 @@ def RunBuildStages(bot_id, options, build_config):
 
     if options.build:
       stages.BuildTargetStage(bot_id, options, build_config).Run()
+
+    if build_config['build_type'] == 'full':
+      stages.UploadPrebuiltsStage(bot_id, options, build_config).Run()
 
     build_success = True
 
@@ -195,10 +199,13 @@ def RunBuildStages(bot_id, options, build_config):
                                                 success=build_and_test_success)
       completion_stage.Run()
 
-    if build_config['master'] and build_and_test_success and (
-        not completion_stage or stages.Results.WasStageSuccessfulOrSkipped(
-        completion_stage.name)):
-      stages.PushChangesStage(bot_id, options, build_config).Run()
+    if build_and_test_success and (
+        not completion_stage or
+        stages.Results.WasStageSuccessfulOrSkipped(completion_stage.name)):
+      if build_config['build_type'] not in ('chroot', 'full'):
+        stages.UploadPrebuiltsStage(bot_id, options, build_config).Run()
+      if build_config['master']:
+        stages.PublishUprevChangesStage(bot_id, options, build_config).Run()
 
   if build_success and options.archive:
     stages.ArchiveStage(bot_id, options, build_config).Run()

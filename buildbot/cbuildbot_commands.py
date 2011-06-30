@@ -407,8 +407,8 @@ def UprevPush(buildroot, board, overlays, dryrun):
   cros_lib.OldRunCommand(cmd, cwd=cwd)
 
 
-def UploadPrebuilts(buildroot, board, overlay_config, binhosts, category,
-                    chrome_rev, buildnumber):
+def UploadPrebuilts(buildroot, board, overlay_config, category,
+                    chrome_rev, buildnumber, extra_args=[]):
   """Upload prebuilts.
 
   Args:
@@ -418,26 +418,17 @@ def UploadPrebuilts(buildroot, board, overlay_config, binhosts, category,
                     'private': Just the private overlay.
                     'public': Just the public overlay.
                     'both': Both the public and private overlays.
-    binhosts: The URLs of the current binhosts. Binaries that are already
-              present will not be uploaded twice. Empty URLs will be ignored.
     category: Build type. Can be [binary|full|chrome].
     chrome_rev: Chrome_rev of type constants.VALID_CHROME_REVISIONS.
     buildnumber:  self explanatory.
+    extra_args: Extra args to send to prebuilt.py.
   """
   cwd = os.path.dirname(__file__)
   cmd = ['./prebuilt.py',
          '--build-path', buildroot,
          '--prepend-version', category]
-  for binhost in binhosts:
-    if binhost:
-      cmd.extend(['--previous-binhost-url', binhost])
   if overlay_config == 'public':
     cmd.extend(['--upload', 'gs://chromeos-prebuilt'])
-    # Only one bot should upload preflight host prebuilts. We've arbitrarily
-    # designated the x86-generic preflight bot as the bots that does that.
-    # Note: This only works with public-only prebuilts.
-    if board == 'x86-generic' and category == 'binary':
-      cmd.append('--sync-host')
   else:
     assert overlay_config in ('private', 'both')
     upload_bucket = 'chromeos-%s' % board
@@ -456,17 +447,16 @@ def UploadPrebuilts(buildroot, board, overlay_config, binhosts, category,
   if category == 'chrome':
     assert chrome_rev
     key = '%s_%s' % (chrome_rev, _CHROME_BINHOST)
-    cmd.extend(['--sync-binhost-conf',
-                '--packages=chromeos-chrome',
+    cmd.extend(['--packages=chromeos-chrome',
                 '--key', key.upper()])
   elif category == 'binary':
-    cmd.extend(['--sync-binhost-conf',
-                '--key', _PREFLIGHT_BINHOST])
+    cmd.extend(['--key', _PREFLIGHT_BINHOST])
   else:
     assert category in ('full', 'chroot')
     # Commit new binhost directly to overlay.
     cmd.extend(['--git-sync',
                 '--key', _FULL_BINHOST])
+  cmd.extend(extra_args)
 
   cros_lib.OldRunCommand(cmd, cwd=cwd)
 

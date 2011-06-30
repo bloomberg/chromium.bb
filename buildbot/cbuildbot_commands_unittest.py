@@ -96,42 +96,41 @@ class CBuildBotTest(mox.MoxTestBase):
   def testUploadPublicPrebuilts(self):
     """Test _UploadPrebuilts with a public location."""
     binhost = 'http://www.example.com'
-    binhosts = [binhost, None]
     buildnumber = 4
-    check = mox.And(mox.IsA(list), mox.In(binhost), mox.Not(mox.In(None)),
-                    mox.In('gs://chromeos-prebuilt'), mox.In('binary'))
+    check = mox.And(mox.IsA(list),
+                    mox.In('gs://chromeos-prebuilt'),
+                    mox.In('binary'))
     cros_lib.OldRunCommand(check, cwd=os.path.dirname(commands.__file__))
     self.mox.ReplayAll()
     commands.UploadPrebuilts(self._buildroot, self._test_board, 'public',
-                             binhosts, 'binary', None, buildnumber)
+                             'binary', None, buildnumber)
     self.mox.VerifyAll()
 
   def testUploadPrivatePrebuilts(self):
     """Test _UploadPrebuilts with a private location."""
     binhost = 'http://www.example.com'
-    binhosts = [binhost, None]
     buildnumber = 4
-    check = mox.And(mox.IsA(list), mox.In(binhost), mox.Not(mox.In(None)),
+    check = mox.And(mox.IsA(list),
                     mox.In('gs://chromeos-%s/%s/%d/prebuilts/' %
                            (self._test_board, 'full', buildnumber)),
                     mox.In('full'))
     cros_lib.OldRunCommand(check, cwd=os.path.dirname(commands.__file__))
     self.mox.ReplayAll()
     commands.UploadPrebuilts(self._buildroot, self._test_board, 'private',
-                             binhosts, 'full', None, buildnumber)
+                             'full', None, buildnumber)
     self.mox.VerifyAll()
 
   def testChromePrebuilts(self):
     """Test _UploadPrebuilts for Chrome prebuilts."""
     binhost = 'http://www.example.com'
-    binhosts = [binhost, None]
     buildnumber = 4
-    check = mox.And(mox.IsA(list), mox.In(binhost), mox.Not(mox.In(None)),
-                    mox.In('gs://chromeos-prebuilt'), mox.In('chrome'))
+    check = mox.And(mox.IsA(list),
+                    mox.In('gs://chromeos-prebuilt'),
+                    mox.In('chrome'))
     cros_lib.OldRunCommand(check, cwd=os.path.dirname(commands.__file__))
     self.mox.ReplayAll()
     commands.UploadPrebuilts(self._buildroot, self._test_board, 'public',
-                             binhosts, 'chrome', 'tot', buildnumber)
+                             'chrome', 'tot', buildnumber)
     self.mox.VerifyAll()
 
   def testRepoSyncRetriesFail(self):

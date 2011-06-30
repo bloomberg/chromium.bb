@@ -120,7 +120,7 @@ def UpdateLocalFile(filename, value, key='PORTAGE_BINHOST'):
   new_file_fh.close()
 
 
-def RevGitFile(filename, value, retries=5, key='PORTAGE_BINHOST'):
+def RevGitFile(filename, value, retries=5, key='PORTAGE_BINHOST', dryrun=False):
   """Update and push the git file.
 
     Args:
@@ -157,7 +157,7 @@ def RevGitFile(filename, value, retries=5, key='PORTAGE_BINHOST'):
                               cwd=cwd)
     cros_build_lib.RunCommand(['git', 'add', filename], cwd=cwd)
     cros_build_lib.RunCommand(['git', 'commit', '-m', description], cwd=cwd)
-    cros_build_lib.GitPushWithRetry(prebuilt_branch, cwd=cwd)
+    cros_build_lib.GitPushWithRetry(prebuilt_branch, cwd=cwd, dryrun=dryrun)
   finally:
     cros_build_lib.RunCommand(['git', 'checkout', commit], cwd=cwd)
     cros_build_lib.RunCommand(['repo', 'abandon', 'prebuilt_branch', '.'],
@@ -381,7 +381,7 @@ class PrebuiltUploader(object):
   """Synchronize host and board prebuilts."""
 
   def __init__(self, upload_location, acl, binhost_base_url,
-               pkg_indexes, build_path, packages, skip_upload):
+               pkg_indexes, build_path, packages, skip_upload, debug):
     """Constructor for prebuilt uploader object.
 
     This object can upload host or prebuilt files to Google Storage.
@@ -405,6 +405,7 @@ class PrebuiltUploader(object):
     self._build_path = build_path
     self._packages = set(packages)
     self._skip_upload = skip_upload
+    self._debug = debug
 
   def _ShouldFilterPackage(self, pkg):
     if not self._packages:
@@ -519,7 +520,7 @@ class PrebuiltUploader(object):
     url_suffix = _REL_HOST_PATH % {'version': version, 'target': _HOST_TARGET}
     packages_url_suffix = '%s/packages' % url_suffix.rstrip('/')
 
-    if not self._skip_upload:
+    if not self._skip_upload and not self._debug:
       self._UploadPrebuilt(package_path, packages_url_suffix)
 
     # Record URL where prebuilts were uploaded.
@@ -528,7 +529,7 @@ class PrebuiltUploader(object):
     if git_sync:
       git_file = os.path.join(self._build_path,
           _PREBUILT_MAKE_CONF[_HOST_TARGET])
-      RevGitFile(git_file, url_value, key=key)
+      RevGitFile(git_file, url_value, key=key, dryrun=self._debug)
     if sync_binhost_conf:
       binhost_conf = os.path.join(self._build_path, _BINHOST_CONF_DIR,
           'host', '%s-%s.conf' % (_HOST_TARGET, key))
@@ -554,7 +555,7 @@ class PrebuiltUploader(object):
     url_suffix = _REL_BOARD_PATH % {'board': board, 'version': version}
     packages_url_suffix = '%s/packages' % url_suffix.rstrip('/')
 
-    if not self._skip_upload:
+    if not self._skip_upload and not self._debug:
       # Upload board tarballs in the background.
       if upload_board_tarball:
         tar_process = multiprocessing.Process(target=self._UploadBoardTarball,
@@ -574,14 +575,14 @@ class PrebuiltUploader(object):
           sdk_conf = os.path.join(self._build_path, _BINHOST_CONF_DIR,
                                   'host/sdk_version.conf')
           RevGitFile(sdk_conf, version.strip('chroot-'),
-                     key='SDK_LATEST_VERSION')
+                     key='SDK_LATEST_VERSION', dryrun=self._debug)
 
     # Record URL where prebuilts were uploaded.
     url_value = '%s/%s/' % (self._binhost_base_url.rstrip('/'),
                             packages_url_suffix.rstrip('/'))
     if git_sync:
       git_file = DeterminePrebuiltConfFile(self._build_path, board)
-      RevGitFile(git_file, url_value, key=key)
+      RevGitFile(git_file, url_value, key=key, dryrun=self._debug)
     if sync_binhost_conf:
       binhost_conf = os.path.join(self._build_path, _BINHOST_CONF_DIR,
           'target', '%s-%s.conf' % (board, key))
@@ -642,6 +643,9 @@ def ParseOptions():
   parser.add_option('', '--upload-board-tarball', dest='upload_board_tarball',
                     action='store_true', default=False,
                     help='Upload board tarball to Google Storage.')
+  parser.add_option('', '--debug', dest='debug',
+                    action='store_true', default=False,
+                    help='Don\'t push or upload prebuilts.')
 
   options, args = parser.parse_args()
   if not options.build_path:
@@ -676,6 +680,7 @@ def ParseOptions():
     if options.binhost_base_url != _BINHOST_BASE_URL:
         usage(parser, 'Error: when using --private the --binhost-base-url '
                       'is automatically derived.')
+
   return options
 
 def main():
@@ -708,7 +713,8 @@ def main():
 
   uploader = PrebuiltUploader(options.upload, acl, binhost_base_url,
                               pkg_indexes, options.build_path,
-                              options.packages, options.skip_upload)
+                              options.packages, options.skip_upload,
+                              options.debug)
 
   if options.sync_host:
     uploader._SyncHostPrebuilts(version, options.key, options.git_sync,

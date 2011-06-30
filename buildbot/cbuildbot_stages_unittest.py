@@ -313,21 +313,25 @@ class LKGMCandidateSyncCompletionStage(AbstractStageTest):
     test_config['test1'] = {
         'manifest_version': self.manifest_version_url,
         'build_type': 'binary',
+        'overlays': 'public',
         'important': True,
     }
     test_config['test2'] = {
         'manifest_version': self.manifest_version_url,
         'build_type': 'binary',
+        'overlays': 'public',
         'important': True,
     }
     test_config['test3'] = {
         'manifest_version': self.manifest_version_url,
         'build_type': 'binary',
+        'overlays': 'public',
         'important': False,
     }
     test_config['test4'] = {
         'manifest_version': 'some_other_url',
         'build_type': 'binary',
+        'overlays': 'public',
         'important': True,
     }
     os.path.isdir(self.build_root + '/.repo').AndReturn(True)
@@ -691,11 +695,6 @@ class BuildTargetStageTest(AbstractStageTest):
                    skip_toolchain_update=False,
                    extra_env=proper_env)
 
-    commands.UploadPrebuilts(
-        self.build_root, self.build_config['board'],
-        self.build_config['overlays'], [],
-        self.build_config['build_type'], None, self.options.buildnumber)
-
     commands.BuildImage(self.build_root, self.build_config['board'],
                         extra_env=proper_env)
     commands.BuildVMImageForTesting(self.build_root, self.build_config['board'],
@@ -790,7 +789,77 @@ class ArchiveStageTest(AbstractStageTest):
     self.mox.VerifyAll()
 
 
-class PushChangesStageTest(AbstractStageTest):
+class UploadPrebuiltsStageTest(AbstractStageTest):
+  def setUp(self):
+    mox.MoxTestBase.setUp(self)
+    AbstractStageTest.setUp(self)
+    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
+    self.options.chrome_rev = 'tot'
+    self.options.prebuilts = True
+    self.mox.StubOutWithMock(stages.UploadPrebuiltsStage, '_GetPortageEnvVar')
+    self.mox.StubOutWithMock(commands, 'UploadPrebuilts')
+
+  def RunStage(self):
+    """Creates and runs an instance of the stage to be tested.
+    Requires ConstructStage() to be implemented.
+
+    Raises:
+      NotImplementedError: ConstructStage() was not implemented.
+    """
+
+    # Stage construction is usually done as late as possible because the tests
+    # set up the build configuration and options used in constructing the stage.
+
+    stage = self.ConstructStage()
+    stage._PerformStage()
+
+  def ConstructStage(self):
+    return stages.UploadPrebuiltsStage(self.bot_id,
+                                       self.options,
+                                       self.build_config)
+
+  def ConstructBinhosts(self):
+    for board in (self.build_config['board'], None):
+      binhost = 'http://binhost/?board=' + str(board)
+      stages.UploadPrebuiltsStage._GetPortageEnvVar(stages._PORTAGE_BINHOST,
+          board).AndReturn(binhost)
+
+  def testChromeUpload(self):
+    """Test uploading of prebuilts for chrome build."""
+    self.build_config['build_type'] = 'chrome'
+
+    self.ConstructBinhosts()
+    commands.UploadPrebuilts(
+        self.build_root, self.build_config['board'],
+        self.build_config['overlays'],
+        self.build_config['build_type'],
+        self.options.chrome_rev,
+        self.options.buildnumber,
+        mox.IgnoreArg()).MultipleTimes(mox.IgnoreArg())
+
+    self.mox.ReplayAll()
+    self.RunStage()
+    self.mox.VerifyAll()
+
+  def testPreflightUpload(self):
+    """Test uploading of prebuilts for preflight build."""
+    self.build_config['build_type'] = 'binary'
+
+    self.ConstructBinhosts()
+    commands.UploadPrebuilts(
+        self.build_root, self.build_config['board'],
+        self.build_config['overlays'],
+        self.build_config['build_type'],
+        self.options.chrome_rev,
+        self.options.buildnumber,
+        mox.IgnoreArg()).MultipleTimes(mox.IgnoreArg())
+
+    self.mox.ReplayAll()
+    self.RunStage()
+    self.mox.VerifyAll()
+
+
+class PublishUprevChangesStageTest(AbstractStageTest):
 
   def setUp(self):
     mox.MoxTestBase.setUp(self)
@@ -802,72 +871,18 @@ class PushChangesStageTest(AbstractStageTest):
     self.build_config['build_type'] = 'full'
     self.options.chrome_rev = 'tot'
     self.options.prebuilts = True
-    self.mox.StubOutWithMock(stages.PushChangesStage, '_GetPortageEnvVar')
+    self.mox.StubOutWithMock(stages.PublishUprevChangesStage,
+                             '_GetPortageEnvVar')
     self.mox.StubOutWithMock(commands, 'UploadPrebuilts')
     self.mox.StubOutWithMock(commands, 'UprevPush')
 
   def ConstructStage(self):
-    return stages.PushChangesStage(self.bot_id,
-                                   self.options,
-                                   self.build_config)
+    return stages.PublishUprevChangesStage(self.bot_id,
+                                           self.options,
+                                           self.build_config)
 
-  def ConstructBinhosts(self):
-    binhosts = []
-    for board in (self.build_config['board'], None):
-      binhost = 'http://binhost/?board=' + str(board)
-      stages.PushChangesStage._GetPortageEnvVar(stages._PORTAGE_BINHOST,
-          board).AndReturn(binhost)
-      binhosts.append(binhost)
-    return binhosts
-
-  def testChromePush(self):
-    """Test uploading of prebuilts for chrome build."""
-    self.build_config['build_type'] = 'chrome'
-
-    binhosts = self.ConstructBinhosts()
-    commands.UploadPrebuilts(
-        self.build_root, self.build_config['board'],
-        self.build_config['overlays'], binhosts,
-        self.build_config['build_type'],
-        self.options.chrome_rev,
-        self.options.buildnumber)
-
-    commands.UprevPush(
-        self.build_root,
-        self.build_config['board'],
-        [self.overlay],
-        self.options.debug)
-
-    self.mox.ReplayAll()
-    self.RunStage()
-    self.mox.VerifyAll()
-
-  def testPreflightPush(self):
-    """Test uploading of prebuilts for preflight build."""
-    self.build_config['build_type'] = 'binary'
-
-    binhosts = self.ConstructBinhosts()
-    commands.UploadPrebuilts(
-        self.build_root, self.build_config['board'],
-        self.build_config['overlays'], binhosts,
-        self.build_config['build_type'],
-        self.options.chrome_rev,
-        self.options.buildnumber)
-
-    commands.UprevPush(
-        self.build_root,
-        self.build_config['board'],
-        [self.overlay],
-        self.options.debug)
-
-    self.mox.ReplayAll()
-    self.RunStage()
-    self.mox.VerifyAll()
-
-  def testFullPush(self):
-    """Shouldn't upload prebuilts for a full build."""
-    self.build_config['build_type'] = 'full'
-
+  def testPush(self):
+    """Test values for PublishUprevChanges."""
     commands.UprevPush(
         self.build_root,
         self.build_config['board'],

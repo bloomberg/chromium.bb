@@ -278,21 +278,13 @@ add_config('arm-generic-chrome-pre-flight-queue', [arm, {
   'manifest_version': _MANIFEST_VERSIONS_URL,
 }])
 
-add_config('x86-agz-bin', [{
-  'board' : 'x86-agz',
-
-  'uprev' : True,
-  'overlays': 'both',
-  'push_overlays': None,
-  'manifest_version': _MANIFEST_VERSIONS_URL,
-}])
-
 add_config('x86-pineview-bin', [{
   'board' : 'x86-pineview',
 
   'uprev' : True,
   'overlays': 'public',
   'push_overlays': None,
+  'important': True,
   'manifest_version': _MANIFEST_VERSIONS_URL,
 }])
 
@@ -302,6 +294,7 @@ add_config('arm-tegra2-bin', [arm, {
   'uprev' : True,
   'overlays': 'public',
   'push_overlays': None,
+  'important': True,
   'manifest_version': _MANIFEST_VERSIONS_URL,
 }])
 

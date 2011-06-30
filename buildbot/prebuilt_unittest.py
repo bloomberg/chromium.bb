@@ -367,7 +367,7 @@ class TestUploadPrebuilt(unittest.TestCase):
     self.mox.ReplayAll()
     uri = self.pkgindex.header['URI']
     uploader = prebuilt.PrebuiltUploader('chromeos-prebuilt:/dir',
-        'public-read', uri, [], '/', [], False)
+        'public-read', uri, [], '/', [], False, False)
     uploader._UploadPrebuilt('/packages', suffix)
 
   def testSuccessfulGsUpload(self):
@@ -382,7 +382,7 @@ class TestUploadPrebuilt(unittest.TestCase):
     self.mox.ReplayAll()
     uri = self.pkgindex.header['URI']
     uploader = prebuilt.PrebuiltUploader('gs://foo', acl, uri, [], '/', [],
-                                         False)
+                                         False, False)
     uploader._UploadPrebuilt('/packages', 'suffix')
 
   def testSuccessfulRsyncUploadWithNoTrailingSlash(self):
@@ -420,12 +420,12 @@ class TestSyncPrebuilts(unittest.TestCase):
         packages_url_suffix).AndReturn(True)
     url_value = '%s/%s/' % (self.binhost.rstrip('/'),
                             packages_url_suffix.rstrip('/'))
-    prebuilt.RevGitFile(mox.IgnoreArg(), url_value, key=self.key)
+    prebuilt.RevGitFile(mox.IgnoreArg(), url_value, key=self.key, dryrun=False)
     prebuilt.UpdateBinhostConfFile(mox.IgnoreArg(), self.key, url_value)
     self.mox.ReplayAll()
     uploader = prebuilt.PrebuiltUploader(
         self.upload_location, 'public-read', self.binhost, [],
-        self.build_path, [], False)
+        self.build_path, [], False, False)
     uploader._SyncHostPrebuilts(self.version, self.key, True, True)
 
   def testSyncBoardPrebuilts(self):
@@ -451,12 +451,12 @@ class TestSyncPrebuilts(unittest.TestCase):
     url_value = '%s/%s/' % (self.binhost.rstrip('/'),
                             packages_url_suffix.rstrip('/'))
     prebuilt.DeterminePrebuiltConfFile(self.build_path, board).AndReturn('foo')
-    prebuilt.RevGitFile('foo', url_value, key=self.key)
+    prebuilt.RevGitFile('foo', url_value, key=self.key, dryrun=False)
     prebuilt.UpdateBinhostConfFile(mox.IgnoreArg(), self.key, url_value)
     self.mox.ReplayAll()
     uploader = prebuilt.PrebuiltUploader(
         self.upload_location, 'public-read', self.binhost, [],
-        self.build_path, [], False)
+        self.build_path, [], False, False)
     uploader._SyncBoardPrebuilts(board, self.version, self.key, True,
         True, True)
 
@@ -477,6 +477,7 @@ class TestMain(unittest.TestCase):
     options.previous_binhost_url = [old_binhost]
     options.board = 'x86-generic'
     options.build_path = '/trunk'
+    options.debug = False
     options.private = True
     options.packages = []
     options.sync_host = True
@@ -504,7 +505,7 @@ class TestMain(unittest.TestCase):
     prebuilt.PrebuiltUploader.__init__(options.upload, expected_gs_acl_path,
                                        options.upload, mox.IgnoreArg(),
                                        options.build_path, options.packages,
-                                       False)
+                                       False, False)
     self.mox.StubOutWithMock(prebuilt.PrebuiltUploader, '_SyncHostPrebuilts')
     prebuilt.PrebuiltUploader._SyncHostPrebuilts(mox.IgnoreArg(), options.key,
         options.git_sync, options.sync_binhost_conf)
