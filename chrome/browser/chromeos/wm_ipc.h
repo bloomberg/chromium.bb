@@ -21,6 +21,9 @@ typedef unsigned long XID;
 namespace base {
 template <typename T> struct DefaultLazyInstanceTraits;
 }
+namespace gfx {
+class Rect;
+}
 
 namespace chromeos {
 
@@ -32,6 +35,7 @@ class WmIpc {
     ATOM_CHROME_STATE,
     ATOM_CHROME_STATE_COLLAPSED_PANEL,
     ATOM_CHROME_STATE_STATUS_HIDDEN,
+    ATOM_CHROME_STATUS_BOUNDS,
     ATOM_CHROME_WINDOW_TYPE,
     ATOM_CHROME_WM_MESSAGE,
     ATOM_MANAGER,
@@ -131,6 +135,10 @@ class WmIpc {
   // Sets a _CHROME_LOGGED_IN property on the root window describing whether
   // the user is currently logged in or not.
   void SetLoggedInProperty(bool logged_in);
+
+  // Sets a _CHROME_STATUS_BOUNDS property on toplevel window |widget|
+  // describing the status area's bounds within the window.
+  void SetStatusBoundsProperty(GtkWidget* widget, const gfx::Rect& bounds);
 
   // Sends a message to the window manager notifying it that we're signing out.
   void NotifyAboutSignout();

@@ -6,6 +6,7 @@
 
 #include <gdk/gdkx.h>
 extern "C" {
+#include <X11/Xatom.h>
 #include <X11/Xlib.h>
 }
 
@@ -14,6 +15,7 @@ extern "C" {
 #include "base/memory/scoped_ptr.h"
 #include "content/common/notification_service.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/gfx/rect.h"
 
 using std::map;
 using std::string;
@@ -36,6 +38,7 @@ static const AtomInfo kAtomInfos[] = {
   { WmIpc::ATOM_CHROME_STATE,                 "_CHROME_STATE" },
   { WmIpc::ATOM_CHROME_STATE_COLLAPSED_PANEL, "_CHROME_STATE_COLLAPSED_PANEL" },
   { WmIpc::ATOM_CHROME_STATE_STATUS_HIDDEN,   "_CHROME_STATE_STATUS_HIDDEN" },
+  { WmIpc::ATOM_CHROME_STATUS_BOUNDS,         "_CHROME_STATUS_BOUNDS" },
   { WmIpc::ATOM_CHROME_WINDOW_TYPE,           "_CHROME_WINDOW_TYPE" },
   { WmIpc::ATOM_CHROME_WM_MESSAGE,            "_CHROME_WM_MESSAGE" },
   { WmIpc::ATOM_MANAGER,                      "MANAGER" },
@@ -44,7 +47,10 @@ static const AtomInfo kAtomInfos[] = {
   { WmIpc::ATOM_WM_S0,                        "WM_S0" },
 };
 
-bool SetIntProperty(XID xid, Atom xatom, const std::vector<int>& values) {
+bool SetIntArrayProperty(XID xid,
+                         Atom property,
+                         Atom property_type,
+                         const std::vector<int>& values) {
   DCHECK(!values.empty());
 
   // XChangeProperty expects values of type 32 to be longs.
@@ -55,8 +61,8 @@ bool SetIntProperty(XID xid, Atom xatom, const std::vector<int>& values) {
   // TODO: Trap errors and return false on failure.
   XChangeProperty(ui::GetXDisplay(),
                   xid,
-                  xatom,
-                  xatom,
+                  property,
+                  property_type,
                   32,  // size in bits of items in 'value'
                   PropModeReplace,
                   reinterpret_cast<const unsigned char*>(data.get()),
@@ -97,8 +103,9 @@ bool WmIpc::SetWindowType(GtkWidget* widget,
   values.push_back(type);
   if (params)
     values.insert(values.end(), params->begin(), params->end());
-  return SetIntProperty(ui::GetX11WindowFromGtkWidget(widget),
-                        type_to_atom_[ATOM_CHROME_WINDOW_TYPE], values);
+  const Atom atom = type_to_atom_[ATOM_CHROME_WINDOW_TYPE];
+  return SetIntArrayProperty(ui::GetX11WindowFromGtkWidget(widget),
+                             atom, atom, values);
 }
 
 WmIpcWindowType WmIpc::GetWindowType(GtkWidget* widget,
@@ -213,9 +220,21 @@ void WmIpc::HandleRootWindowPropertyEvent(const GdkEventProperty& event) {
 void WmIpc::SetLoggedInProperty(bool logged_in) {
   std::vector<int> values;
   values.push_back(static_cast<int>(logged_in));
-  SetIntProperty(gdk_x11_get_default_root_xwindow(),
-                 type_to_atom_[ATOM_CHROME_LOGGED_IN],
-                 values);
+  const Atom atom = type_to_atom_[ATOM_CHROME_LOGGED_IN];
+  SetIntArrayProperty(gdk_x11_get_default_root_xwindow(), atom, atom, values);
+}
+
+void WmIpc::SetStatusBoundsProperty(GtkWidget* widget,
+                                    const gfx::Rect& bounds) {
+  std::vector<int> values;
+  values.push_back(bounds.x());
+  values.push_back(bounds.y());
+  values.push_back(bounds.width());
+  values.push_back(bounds.height());
+  SetIntArrayProperty(ui::GetX11WindowFromGtkWidget(widget),
+                      type_to_atom_[ATOM_CHROME_STATUS_BOUNDS],
+                      XA_CARDINAL,
+                      values);
 }
 
 void WmIpc::NotifyAboutSignout() {

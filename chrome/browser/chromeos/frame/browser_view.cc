@@ -152,6 +152,7 @@ class BrowserViewLayout : public ::BrowserViewLayout {
   virtual int LayoutTabStripRegion() OVERRIDE {
     if (browser_view_->IsFullscreen() || !browser_view_->IsTabStripVisible()) {
       status_area_->SetVisible(false);
+      UpdateStatusAreaBoundsProperty();
       tabstrip_->SetVisible(false);
       tabstrip_->SetBounds(0, 0, 0, 0);
       layout_mode_button_->SetVisible(false);
@@ -236,6 +237,7 @@ class BrowserViewLayout : public ::BrowserViewLayout {
     // Layout the status area.
     status_area_->SetBounds(status_x, bounds.bottom() - status_height,
                             status_size.width(), status_height);
+    UpdateStatusAreaBoundsProperty();
 
     // The tabstrip's width is the bigger of its preferred width and the width
     // the status area.
@@ -298,14 +300,46 @@ class BrowserViewLayout : public ::BrowserViewLayout {
         bounds.y() + kStatusAreaVerticalAdjustment,
         status_size.width(),
         status_size.height());
+    UpdateStatusAreaBoundsProperty();
     tabstrip_->SetBounds(bounds.x(), bounds.y(),
         std::max(0, status_area_->bounds().x() - bounds.x()),
         bounds.height());
     return bounds.bottom();
   }
 
+  // Updates |status_area_bounds_for_property_| based on the current bounds and
+  // calls WmIpc::SetStatusBoundsProperty() if it changed.
+  void UpdateStatusAreaBoundsProperty() {
+    gfx::Rect current_bounds;
+    if (status_area_->IsVisible()) {
+      gfx::Rect translated_bounds =
+          status_area_->parent()->ConvertRectToWidget(status_area_->bounds());
+      // To avoid a dead zone across the top of the screen,
+      // StatusAreaButton::HitTest() accepts clicks in the area between the top
+      // of its own bounds and the top of its parent view.  Make the bounds that
+      // we report match.
+      current_bounds.SetRect(
+          translated_bounds.x(),
+          translated_bounds.y() - status_area_->bounds().y(),
+          translated_bounds.width(),
+          translated_bounds.height() + status_area_->bounds().y());
+    }
+
+    if (status_area_bounds_for_property_ != current_bounds) {
+      status_area_bounds_for_property_ = current_bounds;
+      WmIpc::instance()->SetStatusBoundsProperty(
+          GTK_WIDGET(chromeos_browser_view()->frame()->GetNativeWindow()),
+          status_area_bounds_for_property_);
+    }
+  }
+
   chromeos::StatusAreaView* status_area_;
   chromeos::LayoutModeButton* layout_mode_button_;
+
+  // Most-recently-set bounds for the _CHROME_STATUS_BOUNDS property.
+  // Empty if |status_area_| isn't visible.  Tracked here so we don't update the
+  // property needlessly on no-op relayouts.
+  gfx::Rect status_area_bounds_for_property_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserViewLayout);
 };
