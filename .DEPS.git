@@ -49,7 +49,7 @@ deps = {
     'src/third_party/leveldb':
         Var('git_url') + '/external/leveldb.git@6635e49a8999ab5e411d5227146a3db17fac2944',
     'src/third_party/libjingle/source':
-        Var('git_url') + '/external/libjingle.git@9780f2546522b56adbdd7b8f4169492c3ae5b95f',
+        Var('git_url') + '/external/libjingle.git@f906e067f876cb3fc2eafbbf6002c72386b0b613',
     'src/third_party/libjpeg_turbo':
         Var('git_url') + '/chromium/deps/libjpeg_turbo.git@6eb4f2096c80f5f3286f63bb76b671eb5eb97d78',
     'src/third_party/libvpx':
