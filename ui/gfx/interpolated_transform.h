@@ -6,9 +6,10 @@
 #define UI_GFX_INTERPOLATED_TRANSFORM_H_
 #pragma once
 
-#include "ui/gfx/transform.h"
+#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/point.h"
+#include "ui/gfx/transform.h"
 
 namespace ui {
 
