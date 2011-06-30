@@ -258,11 +258,16 @@ void FindBarView::OnPaint(gfx::Canvas* canvas) {
 }
 
 void FindBarView::Layout() {
-  gfx::Size panel_size = GetPreferredSize();
+  int panel_width = GetPreferredSize().width();
+
+  // Stay within view bounds.
+  int view_width = width();
+  if (view_width && view_width < panel_width)
+    panel_width = view_width;
 
   // First we draw the close button on the far right.
   gfx::Size sz = close_button_->GetPreferredSize();
-  close_button_->SetBounds(panel_size.width() - sz.width() -
+  close_button_->SetBounds(panel_width - sz.width() -
                                kMarginRightOfCloseButton,
                            (height() - sz.height()) / 2,
                            sz.width(),
@@ -310,8 +315,9 @@ void FindBarView::Layout() {
 
   // And whatever space is left in between, gets filled up by the find edit box.
   sz = find_text_->GetPreferredSize();
-  sz.set_width(match_count_x - kMarginLeftOfFindTextfield);
-  find_text_->SetBounds(match_count_x - sz.width(),
+  sz.set_width(std::max(0, match_count_x - kMarginLeftOfFindTextfield));
+  int find_text_x = std::max(0, match_count_x - sz.width());
+  find_text_->SetBounds(find_text_x,
                         (height() - sz.height()) / 2 + 1,
                         sz.width(),
                         sz.height());

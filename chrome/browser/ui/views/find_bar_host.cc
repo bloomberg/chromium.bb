@@ -125,6 +125,7 @@ void FindBarHost::MoveWindowIfNecessary(const gfx::Rect& selection_rect,
   SetDialogPosition(new_pos, no_redraw);
 
   // May need to redraw our frame to accommodate bookmark bar styles.
+  view()->Layout();  // Bounds may have changed.
   view()->SchedulePaint();
 }
 
@@ -230,8 +231,7 @@ string16 FindBarHost::GetMatchCountText() {
 }
 
 int FindBarHost::GetWidth() {
-  NOTIMPLEMENTED();
-  return 0;
+  return view()->width();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -246,6 +246,10 @@ gfx::Rect FindBarHost::GetDialogPosition(gfx::Rect avoid_overlapping_rect) {
 
   // Ask the view how large an area it needs to draw on.
   gfx::Size prefsize = view()->GetPreferredSize();
+
+  // Limit width to the available area.
+  if (widget_bounds.width() < prefsize.width())
+    prefsize.set_width(widget_bounds.width());
 
   // Place the view in the top right corner of the widget boundaries (top left
   // for RTL languages).

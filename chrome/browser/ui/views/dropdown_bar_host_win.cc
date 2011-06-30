@@ -23,10 +23,7 @@ NativeWebKeyboardEvent DropdownBarHost::GetKeyboardEvent(
 
 void DropdownBarHost::SetWidgetPositionNative(const gfx::Rect& new_pos,
                                               bool no_redraw) {
-  gfx::Rect window_rect = host_->GetWindowScreenBounds();
   DWORD swp_flags = SWP_NOOWNERZORDER;
-  if (!window_rect.IsEmpty())
-    swp_flags |= SWP_NOSIZE;
   if (no_redraw)
     swp_flags |= SWP_NOREDRAW;
   if (!host_->IsVisible())
