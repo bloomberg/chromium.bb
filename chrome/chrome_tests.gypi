@@ -2684,7 +2684,7 @@
             'browser/extensions/browser_action_test_util_mac.mm',
           ],
         }],
-        ['os_posix == 0', {
+        ['os_posix == 0 or chromeos == 1', {
           'sources!': [
             'common/time_format_browsertest.cc',
           ],
