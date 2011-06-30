@@ -443,13 +443,13 @@ add_config('arm-tegra2_seaboard-toolchain', [arm, internal, full, official, {
 
 add_config('arm-tegra2_seaboard-tangent-private-full', [internal, arm, full, {
   'board' : 'tegra2_seaboard',
-  'profile' : 'tangent',
+  'profile' : 'cosine',
 }])
 
 add_config('arm-tegra2_seaboard-tangent-private-bin',
   [internal, arm, binary, {
     'board' : 'tegra2_seaboard',
-    'profile' : 'tangent',
+    'profile' : 'cosine',
 }])
 
 add_config('x86-mario-release', [internal, full, official, release, {
