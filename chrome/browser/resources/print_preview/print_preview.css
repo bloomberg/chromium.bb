@@ -664,7 +664,7 @@ body,
 button,
 input[type='text'],
 select {
-  font-family: 'Open Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
 }
 
 #mainview {
