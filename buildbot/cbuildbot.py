@@ -202,15 +202,22 @@ def RunBuildStages(bot_id, options, build_config):
       stages.ManifestVersionedSyncStage.manifest_manager):
     completion_stage = completion_stage_class(bot_id, options, build_config,
                                               success=build_and_test_success)
+
+  if not build_config['master'] and completion_stage:
+    # Report success or failure to the master.
+    completion_stage.Run()
+
+  if build_success and options.archive:
+    stages.ArchiveStage(bot_id, options, build_config).Run()
+
+  if build_config['master'] and completion_stage:
+    # Wait for slave builds to complete.
     completion_stage.Run()
 
   if build_config['master'] and build_and_test_success and (
       not completion_stage or
       stages.Results.WasStageSuccessfulOrSkipped(completion_stage.name)):
     stages.PublishUprevChangesStage(bot_id, options, build_config).Run()
-
-  if build_success and options.archive:
-    stages.ArchiveStage(bot_id, options, build_config).Run()
 
   if os.path.exists(options.buildroot):
     with open(completed_stages_file, 'w+') as save_file:
