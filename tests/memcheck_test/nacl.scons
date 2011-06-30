@@ -25,8 +25,8 @@ node = env.CommandSelLdrTestNacl(
     filter_group_only='true',
     filter_regex=(
       "'(Invalid [a-z]+ of size .+)|"
-      "( at )0x[01-9A-Fa-f]+: ([_a-zA-Z][_a-zA-Z01-9]+) [^ ]+:[01-9]+|"
-      "( by )0x[01-9A-Fa-f]+: ([_a-zA-Z][_a-zA-Z01-9]+) [^ ]+:[01-9]+|"
+      "( at )0x[01-9A-Fa-f]+: ([_a-zA-Z][_a-zA-Z01-9]+) \([^(]*\)|"
+      "( by )0x[01-9A-Fa-f]+: ([_a-zA-Z][_a-zA-Z01-9]+) \([^(]*\)|"
       "( Address) 0x[01-9A-Fa-f]+( is.+)|"
       "( Conditional jump or move depends.+)|"
       "(VG_USERREQ__CLIENT_CALL.+)|"
