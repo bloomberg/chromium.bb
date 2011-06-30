@@ -20,12 +20,12 @@
  */
 
 /**
- * The PP_Instance value uniquely identifies one instance of a module
- * (.nexe/PP_Module). There will be one module instance for every
+ * The <code>PP_Instance</code> value uniquely identifies one instance of a
+ * module (.nexe/PP_Module). There will be one module instance for every
  * \<embed> tag on a page.
  *
- * This identifier is an opaque handle assigned by the browser to the module. It
- * is guaranteed never to be 0, so a module can initialize it to 0 to
+ * This identifier is an opaque handle assigned by the browser to the module.
+ * It is guaranteed never to be 0, so a module can initialize it to 0 to
  * indicate a "NULL handle."
  */
 typedef int32_t PP_Instance;

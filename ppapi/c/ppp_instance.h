@@ -24,8 +24,8 @@ struct PP_Var;
 
 /**
  * @file
- * This file defines the PPP_Instance structure - a series of pointers to
- * methods that you must implement in your module.
+ * This file defines the <code>PPP_Instance</code> structure - a series of
+ * pointers to methods that you must implement in your module.
  */
 
 /** @addtogroup Interfaces
@@ -33,9 +33,9 @@ struct PP_Var;
  */
 
 /**
- * The PPP_Instance interface contains pointers to a series of functions that
- * you must implement in your module. These functions can be trivial (simply
- * return the default return value) unless you want your module
+ * The <code>PPP_Instance</code> interface contains pointers to a series of
+ * functions that you must implement in your module. These functions can be
+ * trivial (simply return the default return value) unless you want your module
  * to handle events such as change of focus or input events (keyboard/mouse)
  * events.
  */
@@ -46,27 +46,29 @@ struct PPP_Instance {
 struct PPP_Instance_0_5 {
 #endif
   /**
-   * Creation handler that is called when a new instance is created. It is
-   * called for each instantiation on the page, corresponding to one \<embed\>
-   * tag on the page.
+   * DidCreate() is a creation handler that is called when a new instance is
+   * created. This function is called for each instantiation on the page,
+   * corresponding to one \<embed\> tag on the page.
    *
    * Generally you would handle this call by initializing the information
    * your module associates with an instance and creating a mapping from the
-   * given PP_Instance handle to this data. The PP_Instance handle will be used
-   * in subsequent calls to identify which instance the call pertains to.
+   * given <code>PP_Instance</code> handle to this data. The
+   * <code>PP_Instance</code> handle will be used in subsequent calls to
+   * identify which instance the call pertains to.
    *
    * It's possible for more than one instance to be created in a single module.
-   * This means that you may get more than one OnCreate without an OnDestroy
-   * in between, and should be prepared to maintain multiple states associated
-   * with each instance.
+   * This means that you may get more than one <code>OnCreate</code> without an
+   * <code>OnDestroy</code> in between, and should be prepared to maintain
+   * multiple states associated with each instance.
    *
-   * If this function reports a failure (by returning @a PP_FALSE), the
-   * instance will be deleted.
+   * If this function reports a failure (by returning <code>PP_FALSE</code>),
+   * the instance will be deleted.
    *
-   * @param[in] instance A new PP_Instance indentifying one instance of a
-   * module. This is an opaque handle.
+   * @param[in] instance A new <code>PP_Instance</code> indentifying one
+   * instance of a module. This is an opaque handle.
    *
-   * @param[in] argc The number of arguments contained in @a argn and @a argv.
+   * @param[in] argc The number of arguments contained in <code>argn</code>
+   * and <code>argv</code>.
    *
    * @param[in] argn An array of argument names.  These argument names are
    * supplied in the \<embed\> tag, for example:
@@ -77,9 +79,10 @@ struct PPP_Instance_0_5 {
    * arguments listed in the \<embed\> tag, for example
    * <code>\<embed id="nacl_module" dimensions="2"\></code> will produce two
    * argument values: "nacl_module" and "2".  The indices of these values match
-   * the indices of the corresponding names in @a argn.
+   * the indices of the corresponding names in <code>argn</code>.
    *
-   * @return @a PP_TRUE on success or @a PP_FALSE on failure.
+   * @return <code>PP_TRUE</code> on success or <code>PP_FALSE</code> on
+   * failure.
    */
   PP_Bool (*DidCreate)(PP_Instance instance,
                        uint32_t argc,
@@ -87,45 +90,46 @@ struct PPP_Instance_0_5 {
                        const char* argv[]);
 
   /**
-   * A pointer to a instance destruction handler. This is called in many cases
-   * (see below) when a plugin instance is destroyed. It will be called even if
-   * DidCreate returned failure.
+   * DidDestroy() is an instance destruction handler. This function is called
+   * in many cases (see below) when a module instance is destroyed. It will be
+   * called even if DidCreate() returned failure.
    *
    * Generally you will handle this call by deallocating the tracking
-   * information and the PP_Instance mapping you created in the DidCreate call.
-   * You can also free resources associated with this instance but this isn't
-   * required; all resources associated with the deleted instance will be
-   * automatically freed when this function returns.
+   * information and the <code>PP_Instance</code> mapping you created in the
+   * DidCreate() call. You can also free resources associated with this
+   * instance but this isn't required; all resources associated with the deleted
+   * instance will be automatically freed when this function returns.
    *
-   * The instance identifier will still be valid during this call so the plugin
+   * The instance identifier will still be valid during this call so the module
    * can perform cleanup-related tasks. Once this function returns, the
-   * PP_Instance handle will be invalid. This means that you can't do any
-   * asynchronous operations like network requests or file writes from this
-   * function since they will be immediately canceled.
+   * <code>PP_Instance</code> handle will be invalid. This means that you can't
+   * do any asynchronous operations like network requests or file writes from
+   * this function since they will be immediately canceled.
    *
-   * <strong>Important note:</strong> This function may be skipped in certain
+   * <strong>Note:</strong> This function may be skipped in certain
    * circumstances when Chrome does "fast shutdown". Fast shutdown will happen
-   * in some cases when all plugin instances are being deleted, and no cleanup
+   * in some cases when all module instances are being deleted, and no cleanup
    * functions will be called. The module will just be unloaded and the process
    * terminated.
    *
-   * @param[in] instance A PP_Instance indentifying one instance of a module.
+   * @param[in] instance A <code>PP_Instance</code> indentifying one instance
+   * of a module.
    */
   void (*DidDestroy)(PP_Instance instance);
 
   /**
-   * A pointer to a function that is called when the position, the size, or
-   * the clip rectangle of the element in the browser that corresponds to this
+   * DidChangeView() is called when the position, the size, of the clip
+   * rectangle of the element in the browser that corresponds to this
    * instance has changed.
    *
-   * A typical implementation will check the size of the @a position argument
-   * and reallocate the graphics context when a different size is received.
-   * Note that this function will be called for scroll events where the size
-   * doesn't change, so you should always check that the size is actually
-   * different before doing any reallocations.
+   * A typical implementation will check the size of the <code>position</code>
+   * argument and reallocate the graphics context when a different size is
+   * received. Note that this function will be called for scroll events where
+   * the size doesn't change, so you should always check that the size is
+   * actually different before doing any reallocations.
    *
-   * @param[in] instance A PP_Instance indentifying the instance that has
-   * changed.
+   * @param[in] instance A <code>PP_Instance</code> indentifying the instance
+   * that has changed.
    *
    * @param[in] position The location on the page of the instance. This is
    * relative to the top left corner of the viewport, which changes as the
@@ -134,8 +138,8 @@ struct PPP_Instance_0_5 {
    * to the instance so the absolute position isn't useful in most cases).
    *
    * @param[in] clip The visible region of the instance. This is relative to
-   * the top left of the plugin's coordinate system (not the page).  If the
-   * plugin is invisible, @a clip will be (0, 0, 0, 0).
+   * the top left of the module's coordinate system (not the page).  If the
+   * module is invisible, <code>clip</code> will be (0, 0, 0, 0).
    *
    * It's recommended to check for invisible instances and to stop
    * generating graphics updates in this case to save system resources. It's
@@ -151,28 +155,28 @@ struct PPP_Instance_0_5 {
                         const struct PP_Rect* clip);
 
   /**
-   * A pointer to a function that is called when an instance has gained or
-   * lost focus. Having focus means that keyboard events will be
-   * sent to the instance. An instance's default condition is that it will
-   * not have focus.
+   * DidChangeFocus() is called when an instance has gained or lost focus.
+   * Having focus means that keyboard events will be sent to the instance.
+   * An instance's default condition is that it will not have focus.
    *
-   * Note: clicks on instances will give focus only if you handle the
-   * click event. Return @a true from HandleInputEvent to signal that the click
-   * event was handled. Otherwise the browser will bubble the event and give
-   * focus to the element on the page that actually did end up consuming it.
-   * If you're not getting focus, check to make sure you're returning true from
-   * the mouse click in HandleInputEvent.
+   * <strong>Note:</strong>Clicks on instances will give focus only if you
+   * handle the click event. Return <code>true</code> from HandleInputEvent to
+   * signal that the click event was handled. Otherwise the browser will bubble
+   * the event and give focus to the element on the page that actually did end
+   * up consuming it. If you're not getting focus, check to make sure you're
+   * returning true from the mouse click in <code>HandleInputEvent</code>.
    *
-   * @param[in] instance A PP_Instance indentifying the instance receiving the
-   * input event.
+   * @param[in] instance A <code>PP_Instance</code> indentifying the instance
+   * receiving the input event.
    *
    * @param[in] has_focus Indicates the new focused state of the instance.
    */
   void (*DidChangeFocus)(PP_Instance instance, PP_Bool has_focus);
 
   /**
-   * A pointer to a function to handle input events.  Returns PP_TRUE if the
-   * event was handled or PP_FALSE if it was not.
+   * HandleInputEvent() handles input events, such as keyboard events. This
+   * function returns <code>PP_TRUE</code> if the event was handled or
+   * <code>PP_FALSE</code> if it was not.
    *
    * If the event was handled, it will not be forwarded to the web page or
    * browser. If it was not handled, it will bubble according to the normal
@@ -186,39 +190,43 @@ struct PPP_Instance_0_5 {
    * transparent, where clicks on the transparent areas will behave like clicks
    * to the underlying page.
    *
-   * @param[in] instance A PP_Instance indentifying one instance of a module.
+   * @param[in] instance A <code>PP_Instance</code> indentifying one instance
+   * of a module.
    *
    * @param[in] event The input event.
    *
-   * @return PP_TRUE if @a event was handled, PP_FALSE otherwise.
+   * @return <code>PP_TRUE</code> if <code>event</code> was handled,
+   * <code>PP_FALSE</code> otherwise.
    */
   PP_Bool (*HandleInputEvent)(PP_Instance instance,
                               const struct PP_InputEvent* event);
 
   /**
-   * A pointer to a function that is called after initialize for a full-frame
-   * plugin that was instantiated based on the MIME type of a DOMWindow
-   * navigation. This only applies to modules that are pre-registered to handle
-   * certain MIME types. If you haven't specifically registered to handle a
-   * MIME type or aren't positive this applies to you, your implementation of
-   * this function can just return PP_FALSE.
+   * HandleDocumentLoad() is called after initialize for a full-frame
+   * module that was instantiated based on the MIME type of a DOMWindow
+   * navigation. This situation only applies to modules that are pre-registered
+   * to handle certain MIME types. If you haven't specifically registered to
+   * handle a MIME type or aren't positive this applies to you, your
+   * implementation of this function can just return <code>PP_FALSE</code>.
    *
-   * The given url_loader corresponds to a PPB_URLLoader instance that is
-   * already opened. Its response headers may be queried using
-   * PPB_URLLoader::GetResponseInfo. The url loader is not addrefed on behalf
-   * of the module, if you're going to keep a reference to it, you need to
-   * addref it yourself.
+   * The given <code>url_loader</code> corresponds to a
+   * <code>PPB_URLLoader</code> instance that is already opened. Its response
+   * headers may be queried using <code>PPB_URLLoader::GetResponseInfo</code>.
+   * The reference count for the URL loader is not incremented automatically on
+   * behalf of the module. You need to increment the reference count yourself
+   * if you are going to keep a reference to it.
    *
-   * This method returns PP_FALSE if the module cannot handle the data. In
-   * response to this method, the module should call ReadResponseBody to read
-   * the incoming data.
+   * This method returns <code>PP_FALSE</code> if the module cannot handle the
+   * data. In response to this method, the module should call
+   * ReadResponseBody() to read the incoming data.
    *
-   * @param[in] instance A PP_Instance indentifying the instance that should
-   * do the load.
+   * @param[in] instance A <code>PP_Instance</code> indentifying the instance
+   * that should do the load.
    *
-   * @param[in] url_loader An open PPB_URLLoader instance.
+   * @param[in] url_loader An open <code>PPB_URLLoader</code> instance.
    *
-   * @return PP_TRUE if the data was handled, PP_FALSE otherwise.
+   * @return <code>PP_TRUE</code> if the data was handled,
+   * <code>PP_FALSE</code> otherwise.
    */
   PP_Bool (*HandleDocumentLoad)(PP_Instance instance, PP_Resource url_loader);
 };
