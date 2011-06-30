@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "ui/gfx/font.h"
+#include "views/views_delegate.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 #include "views/window/hit_test.h"
@@ -91,7 +92,8 @@ gboolean BrowserFrameGtk::OnConfigureEvent(GtkWidget* widget,
 NativeBrowserFrame* NativeBrowserFrame::CreateNativeBrowserFrame(
     BrowserFrame* browser_frame,
     BrowserView* browser_view) {
-  if (views::Widget::IsPureViews())
+  if (views::Widget::IsPureViews() &&
+      views::ViewsDelegate::views_delegate->GetDefaultParentView())
     return new BrowserFrameViews(browser_frame, browser_view);
   return new BrowserFrameGtk(browser_frame, browser_view);
 }
