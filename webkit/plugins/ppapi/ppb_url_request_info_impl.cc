@@ -206,6 +206,9 @@ WebURLRequest PPB_URLRequestInfo_Impl::ToWebURLRequest(WebFrame* frame) const {
   if (!method_.empty())
     web_request.setHTTPMethod(WebString::fromUTF8(method_));
 
+  web_request.setFirstPartyForCookies(
+      frame->document().firstPartyForCookies());
+
   if (!headers_.empty()) {
     net::HttpUtil::HeadersIterator it(headers_.begin(), headers_.end(), "\n");
     while (it.GetNext()) {
