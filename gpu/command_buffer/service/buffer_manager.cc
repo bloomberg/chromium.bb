@@ -173,8 +173,7 @@ bool BufferManager::BufferInfo::GetMaxValueForRange(
       NOTREACHED();  // should never get here by validation.
       break;
   }
-  std::pair<RangeToMaxValueMap::iterator, bool> result =
-      range_set_.insert(std::make_pair(range, max_v));
+  range_set_.insert(std::make_pair(range, max_v));
   *max_value = max_v;
   return true;
 }

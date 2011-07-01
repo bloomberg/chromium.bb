@@ -232,8 +232,6 @@ void NPObjectStub::OnSetProperty(const NPIdentifier_Param& name,
                                  const NPVariant_Param& property,
                                  IPC::Message* reply_msg) {
   bool result = false;
-  NPVariant result_var;
-  VOID_TO_NPVARIANT(result_var);
   NPIdentifier id = CreateNPIdentifier(name);
   NPVariant property_var;
   if (!CreateNPVariant(

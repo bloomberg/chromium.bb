@@ -120,9 +120,8 @@ bool GpuScheduler::InitializeCommon(
 }
 
 void GpuScheduler::DestroyCommon() {
-  bool have_context = false;
   if (decoder_.get()) {
-    have_context = decoder_->MakeCurrent();
+    decoder_->MakeCurrent();
     decoder_->Destroy();
     decoder_.reset();
   }

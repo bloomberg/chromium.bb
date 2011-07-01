@@ -1870,6 +1870,7 @@ void* GLES2Implementation::MapBufferSubDataCHROMIUM(
          mem,
          MappedBuffer(
              access, shm_id, mem, shm_offset, target, offset, size)));
+  GPU_DCHECK(result.second);
   GPU_CLIENT_LOG("  returned " << mem);
   return mem;
 }
@@ -1938,6 +1939,7 @@ void* GLES2Implementation::MapTexSubImage2DCHROMIUM(
          MappedTexture(
              access, shm_id, mem, shm_offset,
              target, level, xoffset, yoffset, width, height, format, type)));
+  GPU_DCHECK(result.second);
   GPU_CLIENT_LOG("  returned " << mem);
   return mem;
 }
