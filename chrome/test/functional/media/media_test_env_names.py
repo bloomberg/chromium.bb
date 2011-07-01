@@ -69,3 +69,6 @@ class MediaTestEnvNames:
 
   # Define this if this is jerky test.
   JERKY_TEST_ENV_NAME = 'JERKY_TEST'
+
+  # Define location of jerky tool binary.
+  JERKY_TOOL_BINARY_LOCATION_ENV_NAME = 'JERKY_TOOL_LOC'

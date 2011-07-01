@@ -7,10 +7,10 @@
 
 This PyAuto powered script plays media (video or audio) files using the HTML5
 tag embedded in an HTML file (specified in the GetPlayerHTMLFileName() method)
-for a test that uses a jerky tool that is being developed. The tool will measure
-display Frame-per-second (FPS) (instead of decode FPS, which is measured in
-media_fps.py). The tool requires predefined pattern to show before video plays
-to determine the area to be measured (it is done in
+for a test that uses a jerky tool that is being developed. The tool will
+measure display Frame-per-second (FPS) (instead of decode FPS, which is
+measured in media_fps.py). The tool requires predefined pattern to show before
+video plays to determine the area to be measured (it is done in
 data/media/html/media_jerky.html).
 
 The parameters needed to run this test are passed in the form of environment
@@ -18,6 +18,7 @@ variables (such as the number of runs). Media_perf_runner.py is used for
 generating these variables (PyAuto does not support direct parameters).
 """
 import os
+import subprocess
 import time
 
 from media_test_base import MediaTestBase
@@ -40,6 +41,18 @@ class MediaPlaybackTimeTest(MediaTestBase):
   def GetPlayerHTMLFileName(self):
     """A method to get the player HTML file name."""
     return 'media_jerky.html'
+
+  def PreEachRunProcess(self, unused_run_counter):
+    """Starts the jerky tool.  Executes before each test run.
+
+    Args:
+      unused_run_counter: counter for each run.
+    """
+    jerky_tool_binary_loc = os.getenv(
+        MediaTestEnvNames.JERKY_TOOL_BINARY_LOCATION_ENV_NAME, '')
+    if jerky_tool_binary_loc:
+      proc = subprocess.Popen(jerky_tool_binary_loc, shell=True)
+      proc.communicate()
 
 
 if __name__ == '__main__':
