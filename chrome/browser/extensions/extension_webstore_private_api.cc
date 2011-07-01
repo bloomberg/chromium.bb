@@ -401,11 +401,12 @@ void BeginInstallWithManifestFunction::OnParseSuccess(
   // Create a dummy extension and show the extension install confirmation
   // dialog.
   std::string init_errors;
-  dummy_extension_ = Extension::Create(
+  dummy_extension_ = Extension::CreateWithId(
       FilePath(),
       Extension::INTERNAL,
       localized_manifest.get() ? *localized_manifest.get() : *parsed_manifest,
       Extension::NO_FLAGS,
+      id_,
       &init_errors);
   if (!dummy_extension_.get()) {
     OnParseFailure(MANIFEST_ERROR, std::string(kInvalidManifestError));

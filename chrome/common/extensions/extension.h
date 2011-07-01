@@ -175,6 +175,15 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
                                          int flags,
                                          std::string* error);
 
+  // In a few special circumstances, we want to create an Extension and give it
+  // an explicit id. Most consumers should just use the plain Create() method.
+  static scoped_refptr<Extension> CreateWithId(const FilePath& path,
+                                               Location location,
+                                               const DictionaryValue& value,
+                                               int flags,
+                                               const std::string& explicit_id,
+                                               std::string* error);
+
   // Return the update url used by gallery/webstore extensions.
   static GURL GalleryUpdateUrl(bool secure);
 
@@ -541,6 +550,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // regardless of the order of the patterns.
   static std::vector<std::string> GetDistinctHosts(
       const URLPatternList& host_patterns, bool include_rcd);
+
+  // Returns true if this extension id is from a trusted provider.
+  static bool IsTrustedId(const std::string& id);
 
   Extension(const FilePath& path, Location location);
   ~Extension();

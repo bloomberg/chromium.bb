@@ -237,6 +237,19 @@ scoped_refptr<Extension> Extension::Create(const FilePath& path,
   return extension;
 }
 
+scoped_refptr<Extension> Extension::CreateWithId(const FilePath& path,
+                                                 Location location,
+                                                 const DictionaryValue& value,
+                                                 int flags,
+                                                 const std::string& explicit_id,
+                                                 std::string* error) {
+  scoped_refptr<Extension> extension = Create(
+      path, location, value, flags, error);
+  if (extension.get())
+    extension->id_ = explicit_id;
+  return extension;
+}
+
 namespace {
 const char* kGalleryUpdateHttpUrl =
     "http://clients2.google.com/service/update2/crx";
@@ -271,11 +284,17 @@ Extension::Location Extension::GetHigherPriorityLocation(
 }
 
 ExtensionPermissionMessages Extension::GetPermissionMessages() const {
-  return permission_set_->GetPermissionMessages();
+  if (IsTrustedId(id_))
+    return ExtensionPermissionMessages();
+  else
+    return permission_set_->GetPermissionMessages();
 }
 
 std::vector<string16> Extension::GetPermissionMessageStrings() const {
-  return permission_set_->GetWarningMessages();
+  if (IsTrustedId(id_))
+    return std::vector<string16>();
+  else
+    return permission_set_->GetWarningMessages();
 }
 
 FilePath Extension::MaybeNormalizePath(const FilePath& path) {
@@ -1154,6 +1173,12 @@ bool Extension::EnsureNotHybridApp(const DictionaryValue* manifest,
   }
 
   return true;
+}
+
+// static
+bool Extension::IsTrustedId(const std::string& id) {
+  // See http://b/4946060 for more details.
+  return id == std::string("nckgahadagoaajjgafhacjanaoiihapd");
 }
 
 Extension::Extension(const FilePath& path, Location location)
