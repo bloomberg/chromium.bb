@@ -425,6 +425,8 @@
         'browser/chromeos/input_method/candidate_window.h',
         'browser/chromeos/input_method/ibus_controller.cc',
         'browser/chromeos/input_method/ibus_controller.h',
+        'browser/chromeos/input_method/ibus_engine_controller.cc',
+        'browser/chromeos/input_method/ibus_engine_controller.h',
         'browser/chromeos/input_method/ibus_ui_controller.cc',
         'browser/chromeos/input_method/ibus_ui_controller.h',
         'browser/chromeos/input_method/input_method_manager.cc',
