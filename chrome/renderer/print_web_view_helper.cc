@@ -630,6 +630,8 @@ bool PrintWebViewHelper::InitPrintSettings(WebKit::WebFrame* frame,
   UpdatePrintableSizeInPrintParameters(frame, node, &settings.params);
   settings.pages.clear();
   print_pages_params_.reset(new PrintMsg_PrintPages_Params(settings));
+  Send(new PrintHostMsg_DidGetDocumentCookie(routing_id(),
+                                             settings.params.document_cookie));
   return true;
 }
 
@@ -639,10 +641,12 @@ bool PrintWebViewHelper::UpdatePrintSettings(
   Send(new PrintHostMsg_UpdatePrintSettings(routing_id(),
       print_pages_params_->params.document_cookie, job_settings, &settings));
 
-  if (!settings.params.dpi)
+  if (!settings.params.dpi || !settings.params.document_cookie)
     return false;
 
   print_pages_params_.reset(new PrintMsg_PrintPages_Params(settings));
+  Send(new PrintHostMsg_DidGetDocumentCookie(routing_id(),
+                                             settings.params.document_cookie));
   return true;
 }
 

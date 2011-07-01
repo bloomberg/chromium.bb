@@ -77,6 +77,7 @@ class PrintViewManager : public NotificationObserver,
  private:
   // IPC Message handlers.
   void OnDidGetPrintedPagesCount(int cookie, int number_pages);
+  void OnDidGetDocumentCookie(int cookie);
   void OnDidShowPrintDialog();
   void OnDidPrintPage(const PrintHostMsg_DidPrintPage_Params& params);
   void OnPrintingFailed(int cookie);
@@ -85,7 +86,7 @@ class PrintViewManager : public NotificationObserver,
   void OnNotifyPrintJobEvent(const JobEventDetails& event_details);
 
   // Requests the RenderView to render all the missing pages for the print job.
-  // Noop if no print job is pending. Returns true if at least one page has been
+  // No-op if no print job is pending. Returns true if at least one page has been
   // requested to the renderer.
   bool RenderAllMissingPagesNow();
 
@@ -109,12 +110,12 @@ class PrintViewManager : public NotificationObserver,
   // Notify that the printing is done.
   void PrintingDone(bool success);
 
-  // Terminates the print job. Noop if no print job has been created. If
+  // Terminates the print job. No-op if no print job has been created. If
   // |cancel| is true, cancel it instead of waiting for the job to finish. Will
   // call ReleasePrintJob().
   void TerminatePrintJob(bool cancel);
 
-  // Releases print_job_. Correctly deregisters from notifications. Noop if
+  // Releases print_job_. Correctly deregisters from notifications. No-op if
   // no print job has been created.
   void ReleasePrintJob();
 
@@ -160,6 +161,9 @@ class PrintViewManager : public NotificationObserver,
   // Weak pointer to an observer that is notified when the print dialog is
   // shown.
   PrintViewManagerObserver* observer_;
+
+  // The document cookie of the current PrinterQuery.
+  int cookie_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintViewManager);
 };

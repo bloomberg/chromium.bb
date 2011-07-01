@@ -182,6 +182,10 @@ IPC_MESSAGE_ROUTED2(PrintHostMsg_DidGetPrintedPagesCount,
                     int /* rendered document cookie */,
                     int /* number of rendered pages */)
 
+// Sends the document cookie of the current printer query to the browser.
+IPC_MESSAGE_ROUTED1(PrintHostMsg_DidGetDocumentCookie,
+                    int /* rendered document cookie */)
+
 // Tells the browser that the print dialog has been shown.
 IPC_MESSAGE_ROUTED0(PrintHostMsg_DidShowPrintDialog)
 

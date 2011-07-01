@@ -801,7 +801,7 @@ class NotificationType {
 
     // Printing ----------------------------------------------------------------
 
-    // Notification from PrintJob that an event occured. It can be that a page
+    // Notification from PrintJob that an event occurred. It can be that a page
     // finished printing or that the print job failed. Details is
     // PrintJob::EventDetails. Source is a PrintJob.
     PRINT_JOB_EVENT,

@@ -38,6 +38,24 @@ string16 GenerateRenderSourceName(TabContents* tab_contents) {
   return name;
 }
 
+// Release the PrinterQuery identified by |cookie|.
+void ReleasePrinterQuery(int cookie) {
+  printing::PrintJobManager* print_job_manager =
+      g_browser_process->print_job_manager();
+  // May be NULL in tests.
+  if (!print_job_manager)
+    return;
+
+  scoped_refptr<printing::PrinterQuery> printer_query;
+  print_job_manager->PopPrinterQuery(cookie, &printer_query);
+  if (printer_query.get()) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        NewRunnableMethod(printer_query.get(),
+                          &printing::PrinterQuery::StopWorker));
+  }
+}
+
 }  // namespace
 
 namespace printing {
@@ -49,13 +67,15 @@ PrintViewManager::PrintViewManager(TabContentsWrapper* tab)
       printing_succeeded_(false),
       inside_inner_message_loop_(false),
       is_title_overridden_(false),
-      observer_(NULL) {
+      observer_(NULL),
+      cookie_(0) {
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   expecting_first_page_ = true;
 #endif
 }
 
 PrintViewManager::~PrintViewManager() {
+  ReleasePrinterQuery(cookie_);
   DisconnectFromCurrentPrintJob();
 }
 
@@ -130,6 +150,10 @@ void PrintViewManager::OnDidGetPrintedPagesCount(int cookie, int number_pages) {
   OpportunisticallyCreatePrintJob(cookie);
 }
 
+void PrintViewManager::OnDidGetDocumentCookie(int cookie) {
+  cookie_ = cookie;
+}
+
 void PrintViewManager::OnDidShowPrintDialog() {
   if (observer_)
     observer_->OnPrintDialogShown();
@@ -196,15 +220,7 @@ void PrintViewManager::OnDidPrintPage(
 }
 
 void PrintViewManager::OnPrintingFailed(int cookie) {
-  scoped_refptr<PrinterQuery> printer_query;
-  g_browser_process->print_job_manager()->PopPrinterQuery(cookie,
-                                                          &printer_query);
-  if (printer_query.get()) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(printer_query.get(),
-                          &printing::PrinterQuery::StopWorker));
-  }
+  ReleasePrinterQuery(cookie);
 
   NotificationService::current()->Notify(
       NotificationType::PRINT_JOB_RELEASED,
@@ -217,6 +233,8 @@ bool PrintViewManager::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(PrintViewManager, message)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidGetPrintedPagesCount,
                         OnDidGetPrintedPagesCount)
+    IPC_MESSAGE_HANDLER(PrintHostMsg_DidGetDocumentCookie,
+                        OnDidGetDocumentCookie)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidShowPrintDialog, OnDidShowPrintDialog)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidPrintPage, OnDidPrintPage)
     IPC_MESSAGE_HANDLER(PrintHostMsg_PrintingFailed, OnPrintingFailed)
@@ -429,14 +447,14 @@ void PrintViewManager::ReleasePrintJob() {
 bool PrintViewManager::RunInnerMessageLoop() {
   // This value may actually be too low:
   //
-  // - If we're looping because of printer settings initializaton, the premise
-  // here is that some poor users have their print server away on a VPN over
-  // dialup. In this situation, the simple fact of opening the printer can be
-  // dead slow. On the other side, we don't want to die infinitely for a real
-  // network error. Give the printer 60 seconds to comply.
+  // - If we're looping because of printer settings initialization, the premise
+  // here is that some poor users have their print server away on a VPN over a
+  // slow connection. In this situation, the simple fact of opening the printer
+  // can be dead slow. On the other side, we don't want to die infinitely for a
+  // real network error. Give the printer 60 seconds to comply.
   //
   // - If we're looping because of renderer page generation, the renderer could
-  // be cpu bound, the page overly complex/large or the system just
+  // be CPU bound, the page overly complex/large or the system just
   // memory-bound.
   static const int kPrinterSettingsTimeout = 60000;
   base::OneShotTimer<MessageLoop> quit_timer;
