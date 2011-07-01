@@ -389,6 +389,22 @@ bool CrashHandlerHostLinux::IsShuttingDown() const {
   return shutting_down_;
 }
 
+ExtensionCrashHandlerHostLinux::ExtensionCrashHandlerHostLinux() {
+  InitCrashUploaderThread();
+}
+
+ExtensionCrashHandlerHostLinux::~ExtensionCrashHandlerHostLinux() {
+}
+
+void ExtensionCrashHandlerHostLinux::SetProcessType() {
+  process_type_ = "extension";
+}
+
+// static
+ExtensionCrashHandlerHostLinux* ExtensionCrashHandlerHostLinux::GetInstance() {
+  return Singleton<ExtensionCrashHandlerHostLinux>::get();
+}
+
 GpuCrashHandlerHostLinux::GpuCrashHandlerHostLinux() {
   InitCrashUploaderThread();
 }
@@ -421,22 +437,6 @@ PluginCrashHandlerHostLinux* PluginCrashHandlerHostLinux::GetInstance() {
   return Singleton<PluginCrashHandlerHostLinux>::get();
 }
 
-RendererCrashHandlerHostLinux::RendererCrashHandlerHostLinux() {
-  InitCrashUploaderThread();
-}
-
-RendererCrashHandlerHostLinux::~RendererCrashHandlerHostLinux() {
-}
-
-void RendererCrashHandlerHostLinux::SetProcessType() {
-  process_type_ = "renderer";
-}
-
-// static
-RendererCrashHandlerHostLinux* RendererCrashHandlerHostLinux::GetInstance() {
-  return Singleton<RendererCrashHandlerHostLinux>::get();
-}
-
 PpapiCrashHandlerHostLinux::PpapiCrashHandlerHostLinux() {
   InitCrashUploaderThread();
 }
@@ -451,4 +451,20 @@ void PpapiCrashHandlerHostLinux::SetProcessType() {
 // static
 PpapiCrashHandlerHostLinux* PpapiCrashHandlerHostLinux::GetInstance() {
   return Singleton<PpapiCrashHandlerHostLinux>::get();
+}
+
+RendererCrashHandlerHostLinux::RendererCrashHandlerHostLinux() {
+  InitCrashUploaderThread();
+}
+
+RendererCrashHandlerHostLinux::~RendererCrashHandlerHostLinux() {
+}
+
+void RendererCrashHandlerHostLinux::SetProcessType() {
+  process_type_ = "renderer";
+}
+
+// static
+RendererCrashHandlerHostLinux* RendererCrashHandlerHostLinux::GetInstance() {
+  return Singleton<RendererCrashHandlerHostLinux>::get();
 }

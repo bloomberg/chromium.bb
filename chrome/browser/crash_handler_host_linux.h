@@ -95,6 +95,23 @@ class CrashHandlerHostLinux : public MessageLoopForIO::Watcher,
   DISALLOW_COPY_AND_ASSIGN(CrashHandlerHostLinux);
 };
 
+class ExtensionCrashHandlerHostLinux : public CrashHandlerHostLinux {
+ public:
+  // Returns the singleton instance.
+  static ExtensionCrashHandlerHostLinux* GetInstance();
+
+ private:
+  friend struct DefaultSingletonTraits<ExtensionCrashHandlerHostLinux>;
+  ExtensionCrashHandlerHostLinux();
+  virtual ~ExtensionCrashHandlerHostLinux();
+
+#if defined(USE_LINUX_BREAKPAD)
+  virtual void SetProcessType();
+#endif
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionCrashHandlerHostLinux);
+};
+
 class GpuCrashHandlerHostLinux : public CrashHandlerHostLinux {
  public:
   // Returns the singleton instance.
@@ -129,23 +146,6 @@ class PluginCrashHandlerHostLinux : public CrashHandlerHostLinux {
   DISALLOW_COPY_AND_ASSIGN(PluginCrashHandlerHostLinux);
 };
 
-class RendererCrashHandlerHostLinux : public CrashHandlerHostLinux {
- public:
-  // Returns the singleton instance.
-  static RendererCrashHandlerHostLinux* GetInstance();
-
- private:
-  friend struct DefaultSingletonTraits<RendererCrashHandlerHostLinux>;
-  RendererCrashHandlerHostLinux();
-  virtual ~RendererCrashHandlerHostLinux();
-
-#if defined(USE_LINUX_BREAKPAD)
-  virtual void SetProcessType();
-#endif
-
-  DISALLOW_COPY_AND_ASSIGN(RendererCrashHandlerHostLinux);
-};
-
 class PpapiCrashHandlerHostLinux : public CrashHandlerHostLinux {
  public:
   // Returns the singleton instance.
@@ -161,6 +161,23 @@ class PpapiCrashHandlerHostLinux : public CrashHandlerHostLinux {
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(PpapiCrashHandlerHostLinux);
+};
+
+class RendererCrashHandlerHostLinux : public CrashHandlerHostLinux {
+ public:
+  // Returns the singleton instance.
+  static RendererCrashHandlerHostLinux* GetInstance();
+
+ private:
+  friend struct DefaultSingletonTraits<RendererCrashHandlerHostLinux>;
+  RendererCrashHandlerHostLinux();
+  virtual ~RendererCrashHandlerHostLinux();
+
+#if defined(USE_LINUX_BREAKPAD)
+  virtual void SetProcessType();
+#endif
+
+  DISALLOW_COPY_AND_ASSIGN(RendererCrashHandlerHostLinux);
 };
 
 #endif  // CHROME_BROWSER_CRASH_HANDLER_HOST_LINUX_H_

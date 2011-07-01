@@ -686,7 +686,7 @@ void EnableCrashDumping(const bool unattended) {
   }
 }
 
-// Currently Non-Browser = Renderer, Plugins and Gpu
+// Non-Browser = Extension, Gpu, Plugins, Ppapi and Renderer
 static bool
 NonBrowserCrashHandler(const void* crash_context, size_t crash_context_size,
                        void* context) {
@@ -786,6 +786,7 @@ void InitCrashReporter() {
   if (process_type.empty()) {
     EnableCrashDumping(getenv(env_vars::kHeadless) != NULL);
   } else if (process_type == switches::kRendererProcess ||
+             process_type == switches::kExtensionProcess ||
              process_type == switches::kPluginProcess ||
              process_type == switches::kPpapiPluginProcess ||
              process_type == switches::kZygoteProcess ||

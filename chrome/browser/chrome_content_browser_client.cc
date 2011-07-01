@@ -131,7 +131,7 @@ void InitRenderViewHostForExtensions(RenderViewHost* render_view_host) {
   }
 }
 
-}
+}  // namespace
 
 namespace chrome {
 
@@ -595,6 +595,12 @@ int ChromeContentBrowserClient::GetCrashSignalFD(
   if (process_type == switches::kRendererProcess)
     return RendererCrashHandlerHostLinux::GetInstance()->GetDeathSignalSocket();
 
+  if (process_type == switches::kExtensionProcess) {
+    ExtensionCrashHandlerHostLinux* crash_handler =
+        ExtensionCrashHandlerHostLinux::GetInstance();
+    return crash_handler->GetDeathSignalSocket();
+  }
+
   if (process_type == switches::kPluginProcess)
     return PluginCrashHandlerHostLinux::GetInstance()->GetDeathSignalSocket();
 
@@ -606,7 +612,7 @@ int ChromeContentBrowserClient::GetCrashSignalFD(
 
   return -1;
 }
-#endif
+#endif  // defined(OS_LINUX)
 
 #if defined(USE_NSS)
 crypto::CryptoModuleBlockingPasswordDelegate*

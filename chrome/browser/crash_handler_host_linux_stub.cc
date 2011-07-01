@@ -26,6 +26,17 @@ void CrashHandlerHostLinux::OnFileCanWriteWithoutBlocking(int fd) {
 void CrashHandlerHostLinux::WillDestroyCurrentMessageLoop() {
 }
 
+ExtensionCrashHandlerHostLinux::ExtensionCrashHandlerHostLinux() {
+}
+
+ExtensionCrashHandlerHostLinux::~ExtensionCrashHandlerHostLinux() {
+}
+
+// static
+ExtensionCrashHandlerHostLinux* ExtensionCrashHandlerHostLinux::GetInstance() {
+  return Singleton<ExtensionCrashHandlerHostLinux>::get();
+}
+
 GpuCrashHandlerHostLinux::GpuCrashHandlerHostLinux() {
 }
 
@@ -48,17 +59,6 @@ PluginCrashHandlerHostLinux* PluginCrashHandlerHostLinux::GetInstance() {
   return Singleton<PluginCrashHandlerHostLinux>::get();
 }
 
-RendererCrashHandlerHostLinux::RendererCrashHandlerHostLinux() {
-}
-
-RendererCrashHandlerHostLinux::~RendererCrashHandlerHostLinux() {
-}
-
-// static
-RendererCrashHandlerHostLinux* RendererCrashHandlerHostLinux::GetInstance() {
-  return Singleton<RendererCrashHandlerHostLinux>::get();
-}
-
 PpapiCrashHandlerHostLinux::PpapiCrashHandlerHostLinux() {
 }
 
@@ -68,4 +68,15 @@ PpapiCrashHandlerHostLinux::~PpapiCrashHandlerHostLinux() {
 // static
 PpapiCrashHandlerHostLinux* PpapiCrashHandlerHostLinux::GetInstance() {
   return Singleton<PpapiCrashHandlerHostLinux>::get();
+}
+
+RendererCrashHandlerHostLinux::RendererCrashHandlerHostLinux() {
+}
+
+RendererCrashHandlerHostLinux::~RendererCrashHandlerHostLinux() {
+}
+
+// static
+RendererCrashHandlerHostLinux* RendererCrashHandlerHostLinux::GetInstance() {
+  return Singleton<RendererCrashHandlerHostLinux>::get();
 }
