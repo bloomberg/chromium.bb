@@ -807,4 +807,10 @@ std::string NativeTextButton::GetClassName() const {
   return kViewClassName;
 }
 
+void NativeTextButton::GetExtraParams(
+    gfx::NativeTheme::ExtraParams* params) const {
+  TextButton::GetExtraParams(params);
+  params->button.has_border = true;
+}
+
 }  // namespace views

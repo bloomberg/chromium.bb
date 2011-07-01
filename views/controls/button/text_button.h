@@ -423,6 +423,10 @@ class NativeTextButton : public TextButton {
  private:
   void Init();
 
+  // Overridden from TextButton:
+  virtual void GetExtraParams(
+      gfx::NativeTheme::ExtraParams* params) const OVERRIDE;
+
   DISALLOW_COPY_AND_ASSIGN(NativeTextButton);
 };
 
