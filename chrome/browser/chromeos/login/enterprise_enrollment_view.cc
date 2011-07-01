@@ -33,7 +33,6 @@ class EnrollmentDomView : public WebPageDomView,
  public:
   EnrollmentDomView() {}
   virtual ~EnrollmentDomView() {
-    SetTabContentsDelegate(NULL);
   }
 
  protected:

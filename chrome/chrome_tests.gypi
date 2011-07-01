@@ -1997,6 +1997,7 @@
         '../content/browser/tab_contents/navigation_controller_unittest.cc',
         '../content/browser/tab_contents/navigation_entry_unittest.cc',
         '../content/browser/tab_contents/render_view_host_manager_unittest.cc',
+        '../content/browser/tab_contents/tab_contents_delegate_unittest.cc',
         '../content/browser/trace_subscriber_stdio_unittest.cc',
         '../content/common/font_descriptor_mac_unittest.mm',
         '../content/common/gpu/gpu_feature_flags_unittest.cc',

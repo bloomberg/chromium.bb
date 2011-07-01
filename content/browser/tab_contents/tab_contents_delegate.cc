@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "content/browser/javascript_dialogs.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/url_constants.h"
 #include "ui/gfx/rect.h"
 
@@ -271,15 +272,19 @@ TabContentsDelegate::GetJavaScriptDialogCreator() {
 }
 
 TabContentsDelegate::~TabContentsDelegate() {
-  CHECK(attached_contents_.empty());
+  while (!attached_contents_.empty()) {
+    TabContents* tab_contents = *attached_contents_.begin();
+    tab_contents->set_delegate(NULL);
+  }
+  DCHECK(attached_contents_.empty());
 }
 
 void TabContentsDelegate::Attach(TabContents* tab_contents) {
-  CHECK(attached_contents_.find(tab_contents) == attached_contents_.end());
+  DCHECK(attached_contents_.find(tab_contents) == attached_contents_.end());
   attached_contents_.insert(tab_contents);
 }
 
 void TabContentsDelegate::Detach(TabContents* tab_contents) {
-  CHECK(attached_contents_.find(tab_contents) != attached_contents_.end());
+  DCHECK(attached_contents_.find(tab_contents) != attached_contents_.end());
   attached_contents_.erase(tab_contents);
 }
