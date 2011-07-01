@@ -74,34 +74,6 @@ bool BookmarkNode::IsVisible() const {
   return false;
 }
 
-void BookmarkNode::Reset(const history::StarredEntry& entry) {
-  DCHECK(entry.type != history::StarredEntry::URL || entry.url == url_);
-
-  favicon_ = SkBitmap();
-  switch (entry.type) {
-    case history::StarredEntry::URL:
-      type_ = BookmarkNode::URL;
-      break;
-    case history::StarredEntry::USER_FOLDER:
-      type_ = BookmarkNode::FOLDER;
-      break;
-    case history::StarredEntry::BOOKMARK_BAR:
-      type_ = BookmarkNode::BOOKMARK_BAR;
-      break;
-    case history::StarredEntry::SYNCED:
-        type_ = BookmarkNode::SYNCED;
-        break;
-    case history::StarredEntry::OTHER:
-      type_ = BookmarkNode::OTHER_NODE;
-      break;
-    default:
-      NOTREACHED();
-  }
-  date_added_ = entry.date_added;
-  date_folder_modified_ = entry.date_folder_modified;
-  set_title(entry.title);
-}
-
 // BookmarkModel --------------------------------------------------------------
 
 namespace {

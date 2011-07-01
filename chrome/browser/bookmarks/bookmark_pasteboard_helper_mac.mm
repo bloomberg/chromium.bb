@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,8 +8,8 @@
 
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/ui/cocoa/bookmarks/bookmark_drag_source.h"
 #include "chrome/browser/tab_contents/tab_contents_view_mac.h"
+#include "chrome/browser/ui/cocoa/bookmarks/bookmark_drag_source.h"
 
 NSString* const kBookmarkDictionaryListPboardType =
     @"BookmarkDictionaryListPboardType";
@@ -51,7 +51,7 @@ void ConvertPlistToElements(NSArray* input,
   NSUInteger len = [input count];
   for (NSUInteger i = 0; i < len; ++i) {
     NSDictionary* pboardBookmark = [input objectAtIndex:i];
-    scoped_ptr<BookmarkNode> new_node(new BookmarkNode(0, GURL()));
+    scoped_ptr<BookmarkNode> new_node(new BookmarkNode(GURL()));
     int64 node_id =
         [[pboardBookmark objectForKey:kChromiumBookmarkId] longLongValue];
     new_node->set_id(node_id);

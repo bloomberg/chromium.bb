@@ -19,7 +19,6 @@
 #include "chrome/browser/bookmarks/bookmark_service.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/history/history.h"
-#include "chrome/browser/history/history_types.h"
 #include "content/browser/cancelable_request.h"
 #include "content/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
@@ -70,8 +69,8 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
   void set_id(int64 id) { id_ = id; }
 
   // Returns the type of this node.
-  BookmarkNode::Type type() const { return type_; }
-  void set_type(BookmarkNode::Type type) { type_ = type; }
+  Type type() const { return type_; }
+  void set_type(Type type) { type_ = type; }
 
   // Returns the time the bookmark/folder was added.
   const base::Time& date_added() const { return date_added_; }
@@ -126,10 +125,6 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
 
   // Called when the favicon becomes invalid.
   void InvalidateFavicon();
-
-  // Resets the properties of the node from the supplied entry.
-  // This is used by the bookmark model and not really useful outside of it.
-  void Reset(const history::StarredEntry& entry);
 
   // TODO(sky): Consider adding last visit time here, it'll greatly simplify
   // HistoryContentsProvider.
