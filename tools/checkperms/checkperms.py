@@ -59,7 +59,6 @@ WHITELIST_FILES = [
     '/o3d/build/gyp_o3d',
     '/o3d/gypbuild',
     '/o3d/installer/linux/debian.in/rules',
-    '/third_party/ffmpeg/patched-ffmpeg/tools',
     '/third_party/icu/source/runconfigureicu',
     '/third_party/lcov/bin/gendesc',
     '/third_party/lcov/bin/genhtml',
@@ -92,6 +91,7 @@ WHITELIST_REGEX = [
     re.compile('/third_party/sqlite/'),
     re.compile('/third_party/xdg-utils/'),
     re.compile('/third_party/yasm/source/patched-yasm/config'),
+    re.compile('/third_party/ffmpeg/patched-ffmpeg/tools'),
 ]
 
 #### USER EDITABLE SECTION ENDS HERE ####
