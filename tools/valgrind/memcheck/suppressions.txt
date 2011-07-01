@@ -4801,13 +4801,6 @@
    fun:_ZN8chromeos12input_method18InputMethodManager11GetInstanceEv
 }
 {
-   bug_87998
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN33GeolocationInfoBarQueueController17ShowQueuedInfoBarEii
-   fun:_ZN33GeolocationInfoBarQueueController20CreateInfoBarRequestEiiiRK4GURLS2_
-   fun:_ZN34ChromeGeolocationPermissionContext28RequestGeolocationPermissionEiiiRK4GURL
-}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations

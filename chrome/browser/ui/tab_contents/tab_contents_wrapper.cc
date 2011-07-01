@@ -177,6 +177,10 @@ TabContentsWrapper::~TabContentsWrapper() {
 
   // Destroy all remaining InfoBars.  It's important to not animate here so that
   // we guarantee that we'll delete all delegates before we do anything else.
+  //
+  // TODO(pkasting): If there is no InfoBarContainer, this leaks all the
+  // InfoBarDelegates.  This will be fixed once we call CloseSoon() directly on
+  // Infobars.
   RemoveAllInfoBars(false);
 }
 
@@ -361,7 +365,6 @@ void TabContentsWrapper::RenderViewCreated(RenderViewHost* render_view_host) {
 }
 
 void TabContentsWrapper::RenderViewGone() {
-  // Remove all infobars.
   RemoveAllInfoBars(true);
 
   // Tell the view that we've crashed so it can prepare the sad tab page.
@@ -469,7 +472,6 @@ void TabContentsWrapper::AddInfoBar(InfoBarDelegate* delegate) {
 
   for (size_t i = 0; i < infobars_.size(); ++i) {
     if (GetInfoBarDelegateAt(i)->EqualsDelegate(delegate)) {
-      // Tell the new infobar to close so that it can clean itself up.
       delegate->InfoBarClosed();
       return;
     }
@@ -651,8 +653,7 @@ void TabContentsWrapper::RemoveInfoBarInternal(InfoBarDelegate* delegate,
   infobars_.erase(infobars_.begin() + i);
   // Remove ourselves as an observer if we are tracking no more InfoBars.
   if (infobars_.empty()) {
-    registrar_.Remove(
-        this, NotificationType::NAV_ENTRY_COMMITTED,
+    registrar_.Remove(this, NotificationType::NAV_ENTRY_COMMITTED,
         Source<NavigationController>(&tab_contents_->controller()));
   }
 }

@@ -72,13 +72,15 @@ void MockTabDownloadState::Accept() {
 
 TEST(DownloadRequestInfobarDelegate, AcceptTest) {
   MockTabDownloadState state;
-  state.infobar()->Accept();
+  if (state.infobar()->Accept())
+    state.close_infobar();
   EXPECT_TRUE(state.accepted());
 }
 
 TEST(DownloadRequestInfobarDelegate, CancelTest) {
   MockTabDownloadState state;
-  state.infobar()->Cancel();
+  if (state.infobar()->Cancel())
+    state.close_infobar();
   EXPECT_FALSE(state.accepted());
 }
 

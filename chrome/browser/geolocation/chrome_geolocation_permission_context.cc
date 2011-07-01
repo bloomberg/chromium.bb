@@ -590,8 +590,8 @@ void ChromeGeolocationPermissionContext::NotifyPermissionSet(
                                                  allowed);
   }
 
-  GeolocationPermissionContext::SetGeolocationPermissionResponse(
-      render_process_id, render_view_id, bridge_id, allowed);
+  SetGeolocationPermissionResponse(render_process_id, render_view_id, bridge_id,
+                                   allowed);
 
   if (allowed) {
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, NewRunnableMethod(
