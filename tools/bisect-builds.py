@@ -53,13 +53,13 @@ class PathContext(object):
     #   _listing_platform_dir = Directory that holds revisions. Ends with a '/'.
     #   _archive_extract_dir = Uncompressed directory in the archive_name file.
     #   _binary_name = The name of the executable to run.
-    if self.platform == 'linux' or self.platform == 'linux-64':
+    if self.platform == 'linux' or self.platform == 'linux64':
       self._listing_platform_dir = 'Linux/'
       self.archive_name = 'chrome-linux.zip'
       self._archive_extract_dir = 'chrome-linux'
       self._binary_name = 'chrome'
       # Linux and x64 share all the same path data except for the archive dir.
-      if self.platform == 'linux-64':
+      if self.platform == 'linux64':
         self._listing_platform_dir = 'Linux_x64/'
     elif self.platform == 'mac':
       self._listing_platform_dir = 'Mac/'
