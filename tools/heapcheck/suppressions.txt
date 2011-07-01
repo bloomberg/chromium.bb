@@ -944,77 +944,12 @@
    fun:::MessageLoopRelay::ProcessOnTargetThread
 }
 {
-   bug_57799
-   Heapcheck:Leak
-   fun:cricket::Transport::OnRemoteCandidate
-   fun:cricket::Transport::OnRemoteCandidates
-   ...
-   fun:cricket::Session::OnTransportInfoMessage
-   fun:cricket::Session::OnIncomingMessage
-   fun:cricket::SessionManager::OnIncomingMessage
-   fun:remoting::SessionManagerPair::DeliverMessage
-   fun:remoting::SessionManagerPair::DoProcessMessage
-}
-{
    bug_57910
    Heapcheck:Leak
    fun:inflateInit2_
    fun:remoting::DecompressorZlib::InitStream
    fun:remoting::DecompressorZlib::Reset
    fun:~DecompressorZlib
-}
-{
-   bug_57966a
-   Heapcheck:Leak
-   ...
-   fun:cricket::AllocationSequence::CreateUDPPorts
-   fun:cricket::AllocationSequence::OnMessage
-   fun:AllocationSequence
-   fun:cricket::BasicPortAllocatorSession::OnAllocate
-   fun:cricket::BasicPortAllocatorSession::OnMessage
-}
-{
-   bug_57966b
-   Heapcheck:Leak
-   ...
-   fun:talk_base::NetworkManager::CreateNetworks
-   fun:talk_base::NetworkManager::EnumNetworks
-   fun:talk_base::NetworkManager::GetNetworks
-   fun:cricket::BasicPortAllocatorSession::OnAllocate
-   fun:cricket::BasicPortAllocatorSession::OnMessage
-}
-{
-   bug_57966c
-   Heapcheck:Leak
-   ...
-   fun:remoting::protocol::JingleSession::OnInitiate
-   fun:remoting::protocol::JingleSession::OnSessionState
-}
-{
-   bug_58094
-   Heapcheck:Leak
-   fun:__gnu_cxx::new_allocator::allocate
-   fun:std::string::_Rep::_S_create
-   fun:std::string::_S_construct
-   fun:std::string::_S_construct_aux
-   fun:std::string::_S_construct
-   fun:*basic_string*
-   fun:std::basic_stringbuf::str
-   fun:std::basic_ostringstream::str
-   fun:talk_base::SocketAddress::IPToString
-   fun:talk_base::SocketAddress::IPAsString
-   fun:cricket::P2PTransportParser::WriteCandidate
-   fun:cricket::P2PTransportParser::WriteCandidates
-   fun:cricket::WriteCandidates
-   fun:cricket::WriteJingleTransportInfo
-   fun:cricket::WriteJingleTransportInfos
-   fun:cricket::WriteTransportInfos
-   fun:cricket::Session::WriteSessionAction
-   fun:cricket::Session::WriteActionMessage
-   fun:cricket::Session::WriteActionMessage
-   fun:cricket::Session::SendMessage
-   fun:cricket::Session::SendTransportInfoMessage
-   fun:cricket::Session::OnTransportCandidatesReady
 }
 {
    bug_58474_a
