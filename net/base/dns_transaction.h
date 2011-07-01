@@ -18,6 +18,7 @@
 #include "net/base/dns_response.h"
 #include "net/base/dns_transaction.h"
 #include "net/base/ip_endpoint.h"
+#include "net/base/net_api.h"
 #include "net/base/net_errors.h"
 
 namespace net {
@@ -28,7 +29,7 @@ class DatagramClientSocket;
 // Performs (with fixed retries) a single asynchronous DNS transaction,
 // which consists of sending out a DNS query, waiting for response, and
 // parsing and returning the IP addresses that it matches.
-class DnsTransaction : public base::NonThreadSafe {
+class NET_TEST DnsTransaction : NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
   // |dns_server| is the address of the DNS server, |dns_name| is the
   // hostname (in DNS format) to be resolved, |query_type| is the type of
