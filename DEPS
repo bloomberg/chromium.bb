@@ -237,8 +237,8 @@ deps = {
 
 deps_os = {
   "win": {
-    "src/chrome/tools/test/reference_build/chrome":
-      "/trunk/deps/reference_builds/chrome@70122",
+    "src/chrome/tools/test/reference_build/chrome_win":
+      "/trunk/deps/reference_builds/chrome_win@89574",
 
     "src/third_party/cygwin":
       "/trunk/deps/third_party/cygwin@66844",
@@ -258,8 +258,8 @@ deps_os = {
     # Chrome Frame related deps
     "src/third_party/xulrunner-sdk":
       "/trunk/deps/third_party/xulrunner-sdk@71609",
-    "src/chrome_frame/tools/test/reference_build/chrome":
-      "/trunk/deps/reference_builds/chrome@70122",
+    "src/chrome_frame/tools/test/reference_build/chrome_win":
+      "/trunk/deps/reference_builds/chrome_win@89574",
 
     # Parses Windows PE/COFF executable format.
     "src/third_party/pefile":
@@ -285,7 +285,7 @@ deps_os = {
   },
   "mac": {
     "src/chrome/tools/test/reference_build/chrome_mac":
-      "/trunk/deps/reference_builds/chrome_mac@71120",
+      "/trunk/deps/reference_builds/chrome_mac@89574",
 
     "src/third_party/GTM":
       (Var("googlecode_url") % "google-toolbox-for-mac") + "/trunk@440",
@@ -310,7 +310,7 @@ deps_os = {
   "unix": {
     # Linux, really.
     "src/chrome/tools/test/reference_build/chrome_linux":
-      "/trunk/deps/reference_builds/chrome_linux@70120",
+      "/trunk/deps/reference_builds/chrome_linux@89574",
 
     "src/third_party/xdg-utils":
       "/trunk/deps/third_party/xdg-utils@84895",

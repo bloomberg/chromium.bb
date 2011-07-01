@@ -327,7 +327,7 @@ void UIPerfTest::UseReferenceBuild() {
   PathService::Get(chrome::DIR_TEST_TOOLS, &dir);
   dir = dir.AppendASCII("reference_build");
 #if defined(OS_WIN)
-  dir = dir.AppendASCII("chrome");
+  dir = dir.AppendASCII("chrome_win");
 #elif defined(OS_LINUX)
   dir = dir.AppendASCII("chrome_linux");
 #elif defined(OS_MACOSX)
