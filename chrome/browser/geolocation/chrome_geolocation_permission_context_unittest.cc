@@ -9,6 +9,7 @@
 #include "chrome/browser/geolocation/chrome_geolocation_permission_context.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
+#include "chrome/browser/tab_contents/infobar.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
 #include "chrome/test/testing_profile.h"
@@ -64,7 +65,7 @@ void ClosedDelegateTracker::Observe(NotificationType type,
                                     const NotificationDetails& details) {
   DCHECK(type.value == NotificationType::TAB_CONTENTS_INFOBAR_REMOVED);
   removed_infobar_delegates_.insert(
-      Details<std::pair<InfoBarDelegate*, bool> >(details)->first);
+      Details<InfoBarRemovedDetails>(details)->first);
 }
 
 bool ClosedDelegateTracker::Contains(InfoBarDelegate* delegate) const {

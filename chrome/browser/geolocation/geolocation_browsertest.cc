@@ -12,6 +12,7 @@
 #include "chrome/browser/geolocation/geolocation_settings_state.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
+#include "chrome/browser/tab_contents/infobar.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -150,7 +151,7 @@ class GeolocationNotificationObserver : public NotificationObserver {
                        const NotificationSource& source,
                        const NotificationDetails& details) {
     if (type.value == NotificationType::TAB_CONTENTS_INFOBAR_ADDED) {
-      infobar_ = Details<InfoBarDelegate>(details).ptr();
+      infobar_ = Details<InfoBarAddedDetails>(details).ptr();
       ASSERT_TRUE(infobar_->GetIcon());
       ASSERT_TRUE(infobar_->AsConfirmInfoBarDelegate());
     } else if (type == NotificationType::DOM_OPERATION_RESPONSE) {

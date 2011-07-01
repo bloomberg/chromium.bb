@@ -11,6 +11,7 @@
 #include "chrome/browser/ssl/ssl_add_cert_handler.h"
 #include "chrome/browser/ssl_client_certificate_selector.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
+#include "chrome/browser/tab_contents/infobar.h"
 #include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
@@ -157,12 +158,10 @@ void TabContentsSSLHelper::SSLAddCertData::Observe(
     const NotificationDetails& details) {
   DCHECK(type.value == NotificationType::TAB_CONTENTS_INFOBAR_REMOVED ||
          type.value == NotificationType::TAB_CONTENTS_INFOBAR_REPLACED);
-  typedef std::pair<InfoBarDelegate*, bool> RemoveDetails;
-  typedef std::pair<InfoBarDelegate*, InfoBarDelegate*> ReplaceDetails;
   if (infobar_delegate_ ==
       ((type.value == NotificationType::TAB_CONTENTS_INFOBAR_REMOVED) ?
-          Details<RemoveDetails>(details)->first :
-          Details<ReplaceDetails>(details)->first))
+          Details<InfoBarRemovedDetails>(details)->first :
+          Details<InfoBarReplacedDetails>(details)->first))
     infobar_delegate_ = NULL;
 }
 

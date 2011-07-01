@@ -5,8 +5,8 @@
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
+#include "chrome/browser/tab_contents/infobar.h"
 #import "chrome/browser/ui/cocoa/animatable_view.h"
-#include "chrome/browser/ui/cocoa/infobars/infobar.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_controller.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
@@ -31,27 +31,26 @@ class InfoBarNotificationObserver : public NotificationObserver {
     TabContentsWrapper* tab_contents = Source<TabContentsWrapper>(source).ptr();
     switch (type.value) {
       case NotificationType::TAB_CONTENTS_INFOBAR_ADDED:
-        [controller_ addInfoBar:Details<InfoBarDelegate>(details)->
+        [controller_ addInfoBar:Details<InfoBarAddedDetails>(details)->
                                     CreateInfoBar(tab_contents)
                         animate:YES];
         break;
 
       case NotificationType::TAB_CONTENTS_INFOBAR_REMOVED: {
-        typedef std::pair<InfoBarDelegate*, bool> RemoveDetails;
-        RemoveDetails* remove_details = Details<RemoveDetails>(details).ptr();
+        InfoBarRemovedDetails* removed_details =
+            Details<InfoBarRemovedDetails>(details).ptr();
         [controller_
-            closeInfoBarsForDelegate:remove_details->first
-                             animate:(remove_details->second ? YES : NO)];
+            closeInfoBarsForDelegate:removed_details->first
+                             animate:(removed_details->second ? YES : NO)];
         break;
       }
 
       case NotificationType::TAB_CONTENTS_INFOBAR_REPLACED: {
-        typedef std::pair<InfoBarDelegate*, InfoBarDelegate*> ReplaceDetails;
-        ReplaceDetails* replace_details =
-            Details<ReplaceDetails>(details).ptr();
-        [controller_ closeInfoBarsForDelegate:replace_details->first
+        InfoBarReplacedDetails* replaced_details =
+            Details<InfoBarReplacedDetails>(details).ptr();
+        [controller_ closeInfoBarsForDelegate:replaced_details->first
                                       animate:NO];
-        [controller_ addInfoBar:replace_details->second->
+        [controller_ addInfoBar:replaced_details->second->
                                     CreateInfoBar(tab_contents)
                         animate:NO];
         break;

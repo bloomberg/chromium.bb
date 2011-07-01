@@ -6,10 +6,11 @@
 #define CHROME_BROWSER_TAB_CONTENTS_INFOBAR_H_
 #pragma once
 
-#include "build/build_config.h"
+#include <utility>
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/animation/animation_delegate.h"
@@ -20,6 +21,11 @@
 // below once all platforms use that class.
 SkColor GetInfoBarTopColor(InfoBarDelegate::Type infobar_type);
 SkColor GetInfoBarBottomColor(InfoBarDelegate::Type infobar_type);
+
+// TODO(pkasting): Same with these notification-related typedefs.
+typedef InfoBarDelegate InfoBarAddedDetails;
+typedef std::pair<InfoBarDelegate*, bool> InfoBarRemovedDetails;
+typedef std::pair<InfoBarDelegate*, InfoBarDelegate*> InfoBarReplacedDetails;
 
 // TODO(pkasting): Port Mac to use this.
 #if defined(TOOLKIT_VIEWS) || defined(TOOLKIT_GTK)

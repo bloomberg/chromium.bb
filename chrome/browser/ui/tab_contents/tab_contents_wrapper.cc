@@ -34,6 +34,7 @@
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/safe_browsing/client_side_detection_host.h"
+#include "chrome/browser/tab_contents/infobar.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/insecure_content_infobar_delegate.h"
 #include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
@@ -480,7 +481,7 @@ void TabContentsWrapper::AddInfoBar(InfoBarDelegate* delegate) {
   infobars_.push_back(delegate);
   NotificationService::current()->Notify(
       NotificationType::TAB_CONTENTS_INFOBAR_ADDED,
-      Source<TabContentsWrapper>(this), Details<InfoBarDelegate>(delegate));
+      Source<TabContentsWrapper>(this), Details<InfoBarAddedDetails>(delegate));
 
   // Add ourselves as an observer for navigations the first time a delegate is
   // added. We use this notification to expire InfoBars that need to expire on
@@ -511,12 +512,11 @@ void TabContentsWrapper::ReplaceInfoBar(InfoBarDelegate* old_delegate,
 
   infobars_.insert(infobars_.begin() + i, new_delegate);
 
-  typedef std::pair<InfoBarDelegate*, InfoBarDelegate*> ReplaceDetails;
-  ReplaceDetails replace_details(old_delegate, new_delegate);
+  InfoBarReplacedDetails replaced_details(old_delegate, new_delegate);
   NotificationService::current()->Notify(
       NotificationType::TAB_CONTENTS_INFOBAR_REPLACED,
       Source<TabContentsWrapper>(this),
-      Details<ReplaceDetails>(&replace_details));
+      Details<InfoBarReplacedDetails>(&replaced_details));
 
   infobars_.erase(infobars_.begin() + i + 1);
 }
@@ -643,12 +643,11 @@ void TabContentsWrapper::RemoveInfoBarInternal(InfoBarDelegate* delegate,
   DCHECK_LT(i, infobars_.size());
   InfoBarDelegate* infobar = infobars_[i];
 
-  typedef std::pair<InfoBarDelegate*, bool> RemoveDetails;
-  RemoveDetails remove_details(infobar, animate);
+  InfoBarRemovedDetails removed_details(infobar, animate);
   NotificationService::current()->Notify(
       NotificationType::TAB_CONTENTS_INFOBAR_REMOVED,
       Source<TabContentsWrapper>(this),
-      Details<RemoveDetails>(&remove_details));
+      Details<InfoBarRemovedDetails>(&removed_details));
 
   infobars_.erase(infobars_.begin() + i);
   // Remove ourselves as an observer if we are tracking no more InfoBars.

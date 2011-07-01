@@ -126,22 +126,22 @@ void InfoBarContainer::Observe(NotificationType type,
   switch (type.value) {
     case NotificationType::TAB_CONTENTS_INFOBAR_ADDED:
       AddInfoBar(
-          Details<InfoBarDelegate>(details)->CreateInfoBar(tab_contents_),
+          Details<InfoBarAddedDetails>(details)->CreateInfoBar(tab_contents_),
           infobars_.size(), true, WANT_CALLBACK);
       break;
 
     case NotificationType::TAB_CONTENTS_INFOBAR_REMOVED: {
-      typedef std::pair<InfoBarDelegate*, bool> RemoveDetails;
-      RemoveDetails* remove_details = Details<RemoveDetails>(details).ptr();
-      RemoveInfoBar(remove_details->first, remove_details->second);
+      InfoBarRemovedDetails* removed_details =
+          Details<InfoBarRemovedDetails>(details).ptr();
+      RemoveInfoBar(removed_details->first, removed_details->second);
       break;
     }
 
     case NotificationType::TAB_CONTENTS_INFOBAR_REPLACED: {
-      typedef std::pair<InfoBarDelegate*, InfoBarDelegate*> ReplaceDetails;
-      ReplaceDetails* replace_details = Details<ReplaceDetails>(details).ptr();
-      AddInfoBar(replace_details->second->CreateInfoBar(tab_contents_),
-          RemoveInfoBar(replace_details->first, false), false, WANT_CALLBACK);
+      InfoBarReplacedDetails* replaced_details =
+          Details<InfoBarReplacedDetails>(details).ptr();
+      AddInfoBar(replaced_details->second->CreateInfoBar(tab_contents_),
+          RemoveInfoBar(replaced_details->first, false), false, WANT_CALLBACK);
       break;
     }
 

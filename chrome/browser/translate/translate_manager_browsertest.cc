@@ -12,6 +12,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/tab_contents/infobar.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/translate/translate_manager.h"
@@ -141,8 +142,7 @@ class TranslateManagerTest : public TabContentsWrapperTestHarness,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
     DCHECK_EQ(NotificationType::TAB_CONTENTS_INFOBAR_REMOVED, type.value);
-    removed_infobars_.insert(
-        Details<std::pair<InfoBarDelegate*, bool> >(details)->first);
+    removed_infobars_.insert(Details<InfoBarRemovedDetails>(details)->first);
   }
 
  protected:
