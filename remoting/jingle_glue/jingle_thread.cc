@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,16 +15,33 @@ namespace remoting {
 const uint32 kRunTasksMessageId = 1;
 const uint32 kStopMessageId = 2;
 
-class JingleThread::JingleMessagePump : public base::MessagePump,
-                                        public talk_base::MessageHandler {
- public:
-  JingleMessagePump(JingleThread* thread) : thread_(thread) { }
+namespace {
 
-  virtual void Run(Delegate* delegate) { NOTIMPLEMENTED(); }
-  virtual void Quit() { NOTIMPLEMENTED(); }
+class JingleMessagePump : public base::MessagePump,
+                          public talk_base::MessageHandler {
+ public:
+  JingleMessagePump(talk_base::Thread* thread)
+      : thread_(thread), delegate_(NULL) {
+  }
+
+  virtual void Run(Delegate* delegate) {
+    delegate_ = delegate;
+
+    talk_base::Thread::Current()->Thread::Run();
+    // Call Restart() so that we can run again.
+    talk_base::Thread::Current()->Restart();
+
+    delegate_ = NULL;
+  }
+
+  virtual void Quit() {
+    talk_base::Thread::Current()->Quit();
+  }
+
   virtual void ScheduleWork() {
     thread_->Post(this, kRunTasksMessageId);
   }
+
   virtual void ScheduleDelayedWork(const base::TimeTicks& time) {
     delayed_work_time_ = time;
     ScheduleNextDelayedTask();
@@ -32,21 +49,19 @@ class JingleThread::JingleMessagePump : public base::MessagePump,
 
   void OnMessage(talk_base::Message* msg) {
     DCHECK(msg->message_id == kRunTasksMessageId);
+    DCHECK(delegate_);
 
     // Clear currently pending messages in case there were delayed tasks.
     // Will schedule it again from ScheduleNextDelayedTask() if neccessary.
     thread_->Clear(this, kRunTasksMessageId);
 
-    // This code is executed whenever we get new message in |message_loop_|.
-    // JingleMessagePump posts new tasks in the jingle thread.
-    // TODO(sergeyu): Remove it when JingleThread moved on Chromium's
-    // base::Thread.
-    base::MessagePump::Delegate* delegate = thread_->message_loop();
     // Process all pending tasks.
     while (true) {
-      if (delegate->DoWork())
+      if (delegate_->DoWork())
         continue;
-      if (delegate->DoDelayedWork(&delayed_work_time_))
+      if (delegate_->DoDelayedWork(&delayed_work_time_))
+        continue;
+      if (delegate_->DoIdleWork())
         continue;
       break;
     }
@@ -56,8 +71,6 @@ class JingleThread::JingleMessagePump : public base::MessagePump,
 
  private:
   void ScheduleNextDelayedTask() {
-    DCHECK_EQ(thread_->message_loop(), MessageLoop::current());
-
     if (!delayed_work_time_.is_null()) {
       base::TimeTicks now = base::TimeTicks::Now();
       int delay = static_cast<int>((delayed_work_time_ - now).InMilliseconds());
@@ -69,27 +82,20 @@ class JingleThread::JingleMessagePump : public base::MessagePump,
     }
   }
 
-  JingleThread* thread_;
+  talk_base::Thread* thread_;
+  Delegate* delegate_;
   base::TimeTicks delayed_work_time_;
 };
 
-class JingleThread::JingleMessageLoop : public MessageLoop {
- public:
-  JingleMessageLoop(JingleThread* thread)
-      : MessageLoop(MessageLoop::TYPE_IO) {
-    pump_ = new JingleMessagePump(thread);
-  }
+}  // namespace
 
-  void Initialize() {
-    jingle_message_loop_state_.reset(new AutoRunState(this));
-  }
+JingleThreadMessageLoop::JingleThreadMessageLoop(talk_base::Thread* thread)
+    : MessageLoop(MessageLoop::TYPE_IO) {
+  pump_ = new JingleMessagePump(thread);
+}
 
- private:
-  // AutoRunState sets |state_| for this message loop. It needs to be
-  // created here because we never call Run() or RunAllPending() for
-  // the thread.
-  scoped_ptr<AutoRunState> jingle_message_loop_state_;
-};
+JingleThreadMessageLoop::~JingleThreadMessageLoop() {
+}
 
 TaskPump::TaskPump() {
 }
@@ -121,8 +127,7 @@ void JingleThread::Start() {
 }
 
 void JingleThread::Run() {
-  JingleMessageLoop message_loop(this);
-  message_loop.Initialize();
+  JingleThreadMessageLoop message_loop(this);
   message_loop_ = &message_loop;
 
   TaskPump task_pump;
@@ -131,7 +136,7 @@ void JingleThread::Run() {
   // Signal after we've initialized |message_loop_| and |task_pump_|.
   started_event_.Signal();
 
-  Thread::Run();
+  message_loop.Run();
 
   stopped_event_.Signal();
 
@@ -153,7 +158,6 @@ MessageLoop* JingleThread::message_loop() {
   return message_loop_;
 }
 
-  // Returns task pump if the thread is running, otherwise NULL is returned.
 TaskPump* JingleThread::task_pump() {
   return task_pump_;
 }

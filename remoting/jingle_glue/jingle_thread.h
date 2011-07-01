@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,6 +31,15 @@ class TaskPump : public talk_base::MessageHandler,
   virtual void OnMessage(talk_base::Message* pmsg);
 };
 
+class JingleThreadMessageLoop : public MessageLoop {
+ public:
+  JingleThreadMessageLoop(talk_base::Thread* thread);
+  virtual ~JingleThreadMessageLoop();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(JingleThreadMessageLoop);
+};
+
 // TODO(sergeyu): This class should be changed to inherit from Chromiums
 // base::Thread instead of libjingle's thread.
 class JingleThread : public talk_base::Thread,
@@ -56,9 +65,6 @@ class JingleThread : public talk_base::Thread,
   TaskPump* task_pump();
 
  private:
-  class JingleMessageLoop;
-  class JingleMessagePump;
-
   virtual void OnMessage(talk_base::Message* msg);
 
   TaskPump* task_pump_;
