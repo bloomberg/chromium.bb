@@ -10,7 +10,8 @@ if [[ "$(uname -s)" = Darwin ]] || [[ "$(uname -o)" != "Cygwin" ]] ; then
 else
   SVN="svn.bat"
 fi
-for i in glibc_revision.sh REVISIONS Makefile ; do
+# glibc_revision.sh Makefile
+for i in REVISIONS ; do
   NREV="$("$SVN" log "$i" 2>/dev/null | head -n 2 | tail -n 1 |
                                                 sed -e s'+r\([0-9]*\) .*+\1+')"
   if [[ "$NREV" -gt "$REVISION" ]]; then
