@@ -4,15 +4,16 @@
 
 #include "crypto/openpgp_symmetric_encryption.h"
 
-#include <vector>
 #include <stdlib.h>
 
-#include <openssl/evp.h>
-#include <openssl/aes.h>
-#include <openssl/sha.h>
+#include <sechash.h>
+#include <cryptohi.h>
 
-#include "base/rand_util.h"
+#include <vector>
+
 #include "base/logging.h"
+#include "base/rand_util.h"
+#include "crypto/scoped_nss_types.h"
 
 namespace crypto {
 
@@ -47,7 +48,7 @@ class Reader {
 
   // Prefix sets |*out| to the first |n| bytes of the StringPiece and advances
   // the StringPiece by |n|.
-  bool Prefix(uint32 n, base::StringPiece *out) {
+  bool Prefix(size_t n, base::StringPiece *out) {
     if (data_.size() < n)
       return false;
     *out = base::StringPiece(data_.data(), n);
@@ -73,7 +74,7 @@ class Reader {
     data_ = p;
   }
 
-  bool Skip(uint32 n) {
+  bool Skip(size_t n) {
     if (data_.size() < n)
       return false;
     data_.remove_prefix(n);
@@ -94,59 +95,86 @@ class Reader {
 
 // SaltedIteratedS2K implements the salted and iterated string-to-key
 // convertion. See RFC 4880, section 3.7.1.3.
-void SaltedIteratedS2K(uint32 cipher_key_length,
-                       const EVP_MD *hash_function,
+void SaltedIteratedS2K(unsigned cipher_key_length,
+                       HASH_HashType hash_function,
                        base::StringPiece passphrase,
                        base::StringPiece salt,
-                       uint32 count,
+                       unsigned count,
                        uint8 *out_key) {
   const std::string combined = salt.as_string() + passphrase.as_string();
   const size_t combined_len = combined.size();
 
-  uint32 done = 0;
+  unsigned done = 0;
   uint8 zero[1] = {0};
 
-  EVP_MD_CTX ctx;
-  EVP_MD_CTX_init(&context);
+  HASHContext* hash_context = HASH_Create(hash_function);
 
-  for (uint32 i = 0; done < cipher_key_length; i++) {
-    CHECK_EQ(EVP_DigestInit_ex(&ctx, hash_function, NULL), 1);
+  for (unsigned i = 0; done < cipher_key_length; i++) {
+    HASH_Begin(hash_context);
 
-    for (uint32 j = 0; j < i; j++)
-      EVP_DigestUpdate(&ctx, zero, sizeof(zero));
+    for (unsigned j = 0; j < i; j++)
+      HASH_Update(hash_context, zero, sizeof(zero));
 
-    uint32 written = 0;
+    unsigned written = 0;
     while (written < count) {
       if (written + combined_len > count) {
-        uint32 todo = count - written;
-        EVP_DigestUpdate(&ctx, combined.data(), todo);
+        unsigned todo = count - written;
+        HASH_Update(hash_context,
+                     reinterpret_cast<const uint8*>(combined.data()),
+                     todo);
         written = count;
       } else {
-        EVP_DigestUpdate(&ctx, combined.data(), combined_len);
+        HASH_Update(hash_context,
+                     reinterpret_cast<const uint8*>(combined.data()),
+                     combined_len);
         written += combined_len;
       }
     }
 
-    uint32 num_hash_bytes;
-    uint8 hash[EVP_MAX_MD_SIZE];
-    CHECK_EQ(EVP_DigestFinal_ex(&ctx, hash, &num_hash_bytes), 1);
+    unsigned num_hash_bytes;
+    uint8 digest[HASH_LENGTH_MAX];
+    HASH_End(hash_context, digest, &num_hash_bytes, sizeof(digest));
 
-    uint32 todo = cipher_key_length - done;
+    unsigned todo = cipher_key_length - done;
     if (todo > num_hash_bytes)
       todo = num_hash_bytes;
-    memcpy(out_key + done, hash, todo);
+    memcpy(out_key + done, digest, todo);
     done += todo;
   }
 
-  EVP_MD_CTX_cleanup(&context);
+  HASH_Destroy(hash_context);
 }
+
+// CreateAESContext sets up |out_key| to be an AES context, with the given key,
+// in ECB mode and with no IV.
+bool CreateAESContext(const uint8* key, unsigned key_len,
+                      ScopedPK11Context* out_decryption_context) {
+  ScopedPK11Slot slot(PK11_GetBestSlot(CKM_AES_ECB, NULL));
+  if (!slot.get())
+    return false;
+  SECItem key_item;
+  key_item.type = siBuffer;
+  key_item.data = const_cast<uint8*>(key);
+  key_item.len = key_len;
+  ScopedPK11SymKey pk11_key(PK11_ImportSymKey(
+      slot.get(), CKM_AES_ECB, PK11_OriginUnwrap, CKA_ENCRYPT, &key_item,
+      NULL));
+  if (!pk11_key.get())
+    return false;
+  ScopedSECItem iv_param(PK11_ParamFromIV(CKM_AES_ECB, NULL));
+  out_decryption_context->reset(
+      PK11_CreateContextBySymKey(CKM_AES_ECB, CKA_ENCRYPT, pk11_key.get(),
+                                 iv_param.get()));
+  return out_decryption_context->get() != NULL;
+}
+
 
 // These constants are the tag numbers for the various packet types that we
 // use.
-static const uint32 kSymmetricKeyEncryptedTag = 3;
-static const uint32 kSymmetricallyEncryptedTag = 18;
-static const uint32 kCompressedTag = 8;
-static const uint32 kLiteralDataTag = 11;
+static const unsigned kSymmetricKeyEncryptedTag = 3;
+static const unsigned kSymmetricallyEncryptedTag = 18;
+static const unsigned kCompressedTag = 8;
+static const unsigned kLiteralDataTag = 11;
 
 class Decrypter {
  public:
@@ -162,9 +190,9 @@ class Decrypter {
                                             base::StringPiece passphrase,
                                             base::StringPiece *out_contents) {
     Reader reader(in);
-    uint32 tag;
+    unsigned tag;
     base::StringPiece contents;
-    AES_KEY key;
+    ScopedPK11Context decryption_context;
 
     if (!ParsePacket(&reader, &tag, &contents))
       return OpenPGPSymmetricEncrytion::PARSE_ERROR;
@@ -172,7 +200,7 @@ class Decrypter {
       return OpenPGPSymmetricEncrytion::NOT_SYMMETRICALLY_ENCRYPTED;
     Reader inner(contents);
     OpenPGPSymmetricEncrytion::Result result =
-      ParseSymmetricKeyEncrypted(&inner, passphrase, &key);
+      ParseSymmetricKeyEncrypted(&inner, passphrase, &decryption_context);
     if (result != OpenPGPSymmetricEncrytion::OK)
       return result;
 
@@ -183,7 +211,7 @@ class Decrypter {
     if (!reader.empty())
       return OpenPGPSymmetricEncrytion::PARSE_ERROR;
     inner = Reader(contents);
-    if (!ParseSymmetricallyEncrypted(&inner, &key, &contents))
+    if (!ParseSymmetricallyEncrypted(&inner, &decryption_context, &contents))
       return OpenPGPSymmetricEncrytion::PARSE_ERROR;
 
     reader = Reader(contents);
@@ -204,7 +232,7 @@ class Decrypter {
   // ParsePacket parses an OpenPGP packet from reader. See RFC 4880, section
   // 4.2.2.
   bool ParsePacket(Reader *reader,
-                   uint32 *out_tag,
+                   unsigned *out_tag,
                    base::StringPiece *out_contents) {
     uint8 header;
     if (!reader->U8(&header))
@@ -224,9 +252,9 @@ class Decrypter {
         return true;
       }
 
-      const uint32 length_bytes = 1 << length_type;
-      uint32 length = 0;
-      for (uint32 i = 0; i < length_bytes; i++) {
+      const unsigned length_bytes = 1 << length_type;
+      size_t length = 0;
+      for (unsigned i = 0; i < length_bytes; i++) {
         uint8 length_byte;
         if (!reader->U8(&length_byte))
           return false;
@@ -239,7 +267,7 @@ class Decrypter {
 
     // New format packet.
     *out_tag = header & 0x3f;
-    uint32 length;
+    size_t length;
     bool is_partial;
     if (!ParseLength(reader, &length, &is_partial))
       return false;
@@ -251,17 +279,17 @@ class Decrypter {
   // ParseStreamContents parses all the chunks of a partial length stream from
   // reader. See http://tools.ietf.org/html/rfc4880#section-4.2.2.4
   bool ParseStreamContents(Reader *reader,
-                           uint32 length,
+                           size_t length,
                            base::StringPiece *out_contents) {
     const Reader::Position beginning_of_stream = reader->tell();
-    const uint32 first_chunk_length = length;
+    const size_t first_chunk_length = length;
 
     // First we parse the stream to find its length.
     if (!reader->Skip(length))
       return false;
 
     for (;;) {
-      uint32 chunk_length;
+      size_t chunk_length;
       bool is_partial;
 
       if (!ParseLength(reader, &chunk_length, &is_partial))
@@ -278,7 +306,7 @@ class Decrypter {
     // Now we have the length of the whole stream in |length|.
     char* buf = reinterpret_cast<char*>(malloc(length));
     arena_.push_back(buf);
-    uint32 j = 0;
+    size_t j = 0;
     reader->Seek(beginning_of_stream);
 
     base::StringPiece first_chunk;
@@ -289,7 +317,7 @@ class Decrypter {
 
     // Now we parse the stream again, this time copying into |buf|
     for (;;) {
-      uint32 chunk_length;
+      size_t chunk_length;
       bool is_partial;
 
       if (!ParseLength(reader, &chunk_length, &is_partial))
@@ -309,7 +337,7 @@ class Decrypter {
 
   // ParseLength parses an OpenPGP length from reader. See RFC 4880, section
   // 4.2.2.
-  bool ParseLength(Reader *reader, uint32 *out_length, bool *out_is_prefix) {
+  bool ParseLength(Reader *reader, size_t *out_length, bool *out_is_prefix) {
     uint8 length_spec;
     if (!reader->U8(&length_spec))
       return false;
@@ -331,7 +359,11 @@ class Decrypter {
       *out_is_prefix = true;
       return true;
     } else {
-      return reader->U32(out_length);
+      uint32 length32;
+      if (!reader->U32(&length32))
+        return false;
+      *out_length = length32;
+      return true;
     }
   }
 
@@ -340,7 +372,7 @@ class Decrypter {
   OpenPGPSymmetricEncrytion::Result ParseSymmetricKeyEncrypted(
       Reader *reader,
       base::StringPiece passphrase,
-      AES_KEY *out_key) {
+      ScopedPK11Context *decryption_context) {
     uint8 version, cipher, s2k_type, hash_func_id;
     if (!reader->U8(&version) || version != 4)
       return OpenPGPSymmetricEncrytion::PARSE_ERROR;
@@ -355,18 +387,19 @@ class Decrypter {
     if (cipher_key_length == 0)
       return OpenPGPSymmetricEncrytion::UNKNOWN_CIPHER;
 
-    const EVP_MD *hash_function;
+    HASH_HashType hash_function;
     switch (hash_func_id) {
     case 2:  // SHA-1
-      hash_function = EVP_sha1();
+      hash_function = HASH_AlgSHA1;
       break;
     case 8:  // SHA-256
-      hash_function = EVP_sha256();
+      hash_function = HASH_AlgSHA256;
       break;
     default:
       return OpenPGPSymmetricEncrytion::UNKNOWN_HASH;
     }
 
+    // This chunk of code parses the S2K specifier. See RFC 4880, section 3.7.1.
     base::StringPiece salt;
     uint8 key[32];
     uint8 count_spec;
@@ -374,6 +407,7 @@ class Decrypter {
     case 1:
       if (!reader->Prefix(8, &salt))
         return OpenPGPSymmetricEncrytion::PARSE_ERROR;
+      // Fall through.
     case 0:
       SaltedIteratedS2K(cipher_key_length, hash_function, passphrase, salt,
                         passphrase.size() + salt.size(), key);
@@ -385,14 +419,14 @@ class Decrypter {
       }
       SaltedIteratedS2K(
           cipher_key_length, hash_function, passphrase, salt,
-          static_cast<uint32>(
+          static_cast<unsigned>(
             16 + (count_spec&15)) << ((count_spec >> 4) + 6), key);
       break;
     default:
       return OpenPGPSymmetricEncrytion::PARSE_ERROR;
     }
 
-    if (AES_set_encrypt_key(key, 8 * cipher_key_length, out_key))
+    if (!CreateAESContext(key, cipher_key_length, decryption_context))
       return OpenPGPSymmetricEncrytion::INTERNAL_ERROR;
 
     if (reader->empty()) {
@@ -409,30 +443,50 @@ class Decrypter {
         malloc(encrypted_key.size()));
     arena_.push_back(plaintext_key);
 
-    int num = 0;
-    uint8 iv[16] = {0};
-
-    AES_cfb128_encrypt(reinterpret_cast<const uint8*>(encrypted_key.data()),
-                       plaintext_key,
-                       encrypted_key.size(),
-                       out_key,
-                       iv,
-                       &num,
-                       AES_DECRYPT);
+    CFBDecrypt(encrypted_key, decryption_context, plaintext_key);
 
     cipher_key_length = OpenPGPCipherIdToKeyLength(plaintext_key[0]);
     if (cipher_key_length == 0)
       return OpenPGPSymmetricEncrytion::UNKNOWN_CIPHER;
     if (encrypted_key.size() != 1u + cipher_key_length)
       return OpenPGPSymmetricEncrytion::PARSE_ERROR;
-    if (AES_set_encrypt_key(plaintext_key + 1, 8 * cipher_key_length,
-                            out_key)) {
+    if (!CreateAESContext(plaintext_key + 1, cipher_key_length,
+                          decryption_context)) {
       return OpenPGPSymmetricEncrytion::INTERNAL_ERROR;
     }
     return OpenPGPSymmetricEncrytion::OK;
   }
 
-  uint32 OpenPGPCipherIdToKeyLength(uint8 cipher) {
+  // CFBDecrypt decrypts the cipher-feedback encrypted data in |in| to |out|
+  // using |decryption_context| and assumes an IV of all zeros.
+  void CFBDecrypt(base::StringPiece in, ScopedPK11Context* decryption_context,
+                  uint8* out) {
+    // We need this for PK11_CipherOp to write to, but we never check it as we
+    // work in ECB mode, one block at a time.
+    int out_len;
+
+    uint8 mask[AES_BLOCK_SIZE];
+    memset(mask, 0, sizeof(mask));
+
+    unsigned used = AES_BLOCK_SIZE;
+
+    for (size_t i = 0; i < in.size(); i++) {
+      if (used == AES_BLOCK_SIZE) {
+        PK11_CipherOp(decryption_context->get(), mask, &out_len, sizeof(mask),
+                      mask, AES_BLOCK_SIZE);
+        used = 0;
+      }
+
+      uint8 t = in[i];
+      out[i] = t ^ mask[used];
+      mask[used] = t;
+      used++;
+    }
+  }
+
+  // OpenPGPCipherIdToKeyLength converts an OpenPGP cipher id (see RFC 4880,
+  // section 9.2) to the key length of that cipher. It returns 0 on error.
+  unsigned OpenPGPCipherIdToKeyLength(uint8 cipher) {
     switch (cipher) {
     case 7:  // AES-128
       return 16;
@@ -448,8 +502,12 @@ class Decrypter {
   // ParseSymmetricallyEncrypted parses a Symmetrically Encrypted packet. See
   // RFC 4880, sections 5.7 and 5.13.
   bool ParseSymmetricallyEncrypted(Reader *reader,
-                                   AES_KEY *key,
+                                   ScopedPK11Context *decryption_context,
                                    base::StringPiece *out_plaintext) {
+    // We need this for PK11_CipherOp to write to, but we never check it as we
+    // work in ECB mode, one block at a time.
+    int out_len;
+
     uint8 version;
     if (!reader->U8(&version) || version != 1)
       return false;
@@ -464,10 +522,12 @@ class Decrypter {
     uint8 fre[AES_BLOCK_SIZE];
 
     memset(prefix_copy, 0, AES_BLOCK_SIZE);
-    AES_ecb_encrypt(prefix_copy, fre, key, AES_ENCRYPT);
-    for (uint32 i = 0; i < AES_BLOCK_SIZE; i++)
+    PK11_CipherOp(decryption_context->get(), fre, &out_len, sizeof(fre),
+                  prefix_copy, AES_BLOCK_SIZE);
+    for (unsigned i = 0; i < AES_BLOCK_SIZE; i++)
       prefix_copy[i] = fre[i] ^ prefix[i];
-    AES_ecb_encrypt(prefix, fre, key, AES_ENCRYPT);
+    PK11_CipherOp(decryption_context->get(), fre, &out_len, sizeof(fre), prefix,
+                  AES_BLOCK_SIZE);
     prefix_copy[AES_BLOCK_SIZE] = prefix[AES_BLOCK_SIZE] ^ fre[0];
     prefix_copy[AES_BLOCK_SIZE + 1] = prefix[AES_BLOCK_SIZE + 1] ^ fre[1];
 
@@ -479,10 +539,10 @@ class Decrypter {
     fre[0] = prefix[AES_BLOCK_SIZE];
     fre[1] = prefix[AES_BLOCK_SIZE + 1];
 
-    uint32 out_used = 2;
+    unsigned out_used = 2;
 
-    const uint32 plaintext_size = reader->size();
-    if (plaintext_size < SHA_DIGEST_LENGTH + 2) {
+    const size_t plaintext_size = reader->size();
+    if (plaintext_size < SHA1_LENGTH + 2) {
       // Too small to contain an MDC trailer.
       return false;
     }
@@ -490,12 +550,13 @@ class Decrypter {
     uint8* plaintext = reinterpret_cast<uint8*>(malloc(plaintext_size));
     arena_.push_back(plaintext);
 
-    for (uint32 i = 0; i < plaintext_size; i++) {
+    for (size_t i = 0; i < plaintext_size; i++) {
       uint8 b;
       if (!reader->U8(&b))
         return false;
       if (out_used == AES_BLOCK_SIZE) {
-        AES_ecb_encrypt(fre, fre, key, AES_ENCRYPT);
+        PK11_CipherOp(decryption_context->get(), fre, &out_len, sizeof(fre),
+                      fre, AES_BLOCK_SIZE);
         out_used = 0;
       }
 
@@ -506,25 +567,27 @@ class Decrypter {
     // The plaintext should be followed by a Modification Detection Code
     // packet. This packet is specified such that the header is always
     // serialized as exactly these two bytes:
-    if (plaintext[plaintext_size - SHA_DIGEST_LENGTH - 2] != 0xd3 ||
-        plaintext[plaintext_size - SHA_DIGEST_LENGTH - 1] != 0x14) {
+    if (plaintext[plaintext_size - SHA1_LENGTH - 2] != 0xd3 ||
+        plaintext[plaintext_size - SHA1_LENGTH - 1] != 0x14) {
       return false;
     }
 
-    SHA_CTX sha1;
-    SHA1_Init(&sha1);
-    SHA1_Update(&sha1, prefix_copy, sizeof(prefix_copy));
-    SHA1_Update(&sha1, plaintext, plaintext_size - SHA_DIGEST_LENGTH);
-    uint8 digest[SHA_DIGEST_LENGTH];
-    SHA1_Final(digest, &sha1);
+    HASHContext* hash_context = HASH_Create(HASH_AlgSHA1);
+    HASH_Begin(hash_context);
+    HASH_Update(hash_context, prefix_copy, sizeof(prefix_copy));
+    HASH_Update(hash_context, plaintext, plaintext_size - SHA1_LENGTH);
+    uint8 digest[SHA1_LENGTH];
+    unsigned num_hash_bytes;
+    HASH_End(hash_context, digest, &num_hash_bytes, sizeof(digest));
+    HASH_Destroy(hash_context);
 
-    if (memcmp(digest, &plaintext[plaintext_size - SHA_DIGEST_LENGTH],
-               SHA_DIGEST_LENGTH) != 0) {
+    if (memcmp(digest, &plaintext[plaintext_size - SHA1_LENGTH],
+               SHA1_LENGTH) != 0) {
       return false;
     }
 
     *out_plaintext = base::StringPiece(reinterpret_cast<char*>(plaintext),
-                                       plaintext_size - SHA_DIGEST_LENGTH);
+                                       plaintext_size - SHA1_LENGTH);
     return true;
   }
 
@@ -564,7 +627,9 @@ class Encrypter {
   }
 
  private:
-  static ByteString MakePacket(uint32 tag, const ByteString& contents) {
+  // MakePacket returns an OpenPGP packet tagged as type |tag|. It always uses
+  // new-format headers. See RFC 4880, section 4.2.
+  static ByteString MakePacket(unsigned tag, const ByteString& contents) {
     ByteString header;
     header.push_back(0x80 | 0x40 | tag);
 
@@ -587,6 +652,9 @@ class Encrypter {
     return header + contents;
   }
 
+  // SerializeLiteralData returns a Literal Data packet containing |contents|
+  // as binary data with no filename nor mtime specified. See RFC 4880, section
+  // 5.9.
   static ByteString SerializeLiteralData(base::StringPiece contents) {
     ByteString literal_data;
     literal_data.push_back(0x74);  // text mode
@@ -600,6 +668,9 @@ class Encrypter {
     return MakePacket(kLiteralDataTag, literal_data);
   }
 
+  // SerializeSymmetricKeyEncrypted generates a random AES-128 key from
+  // |passphrase|, sets |out_key| to it and returns a Symmetric Key Encrypted
+  // packet. See RFC 4880, section 5.3.
   static ByteString SerializeSymmetricKeyEncrypted(base::StringPiece passphrase,
                                                    ByteString *out_key) {
     ByteString ske;
@@ -617,30 +688,39 @@ class Encrypter {
 
     uint8 key[16];
     SaltedIteratedS2K(
-        sizeof(key), EVP_sha1(), passphrase,
+        sizeof(key), HASH_AlgSHA1, passphrase,
         base::StringPiece(reinterpret_cast<char*>(&salt64), sizeof(salt64)),
         65536, key);
     *out_key = ByteString(key, sizeof(key));
     return MakePacket(kSymmetricKeyEncryptedTag, ske);
   }
 
+  // SerializeSymmetricallyEncrypted encrypts |plaintext| with |key| and
+  // returns a Symmetrically Encrypted packet containing the ciphertext. See
+  // RFC 4880, section 5.7.
   static ByteString SerializeSymmetricallyEncrypted(ByteString plaintext,
                                                     const ByteString& key) {
+    // We need this for PK11_CipherOp to write to, but we never check it as we
+    // work in ECB mode, one block at a time.
+    int out_len;
+
     ByteString packet;
     packet.push_back(1);  // version 1
-    static const uint32 kBlockSize = 16;  // AES block size
+    static const unsigned kBlockSize = 16;  // AES block size
 
     uint8 prefix[kBlockSize + 2], fre[kBlockSize], iv[kBlockSize];
     base::RandBytes(iv, kBlockSize);
     memset(fre, 0, sizeof(fre));
 
-    AES_KEY aes_key;
-    AES_set_encrypt_key(key.data(), 8 * key.size(), &aes_key);
+    ScopedPK11Context aes_context;
+    CHECK(CreateAESContext(key.data(), key.size(), &aes_context));
 
-    AES_ecb_encrypt(fre, fre, &aes_key, AES_ENCRYPT);
-    for (uint32 i = 0; i < 16; i++)
+    PK11_CipherOp(aes_context.get(), fre, &out_len, sizeof(fre), fre,
+                  AES_BLOCK_SIZE);
+    for (unsigned i = 0; i < 16; i++)
       prefix[i] = iv[i] ^ fre[i];
-    AES_ecb_encrypt(prefix, fre, &aes_key, AES_ENCRYPT);
+    PK11_CipherOp(aes_context.get(), fre, &out_len, sizeof(fre), prefix,
+                  AES_BLOCK_SIZE);
     prefix[kBlockSize] = iv[kBlockSize - 2] ^ fre[0];
     prefix[kBlockSize + 1] = iv[kBlockSize - 1] ^ fre[1];
 
@@ -650,23 +730,26 @@ class Encrypter {
     plaintext_copy.push_back(0xd3);  // MDC packet
     plaintext_copy.push_back(20);  // packet length (20 bytes)
 
-    SHA_CTX sha1;
-    SHA1_Init(&sha1);
-    SHA1_Update(&sha1, iv, sizeof(iv));
-    SHA1_Update(&sha1, iv + kBlockSize - 2, 2);
-    SHA1_Update(&sha1, plaintext_copy.data(), plaintext_copy.size());
-    uint8 digest[SHA_DIGEST_LENGTH];
-    SHA1_Final(digest, &sha1);
+    HASHContext* hash_context = HASH_Create(HASH_AlgSHA1);
+    HASH_Begin(hash_context);
+    HASH_Update(hash_context, iv, sizeof(iv));
+    HASH_Update(hash_context, iv + kBlockSize - 2, 2);
+    HASH_Update(hash_context, plaintext_copy.data(), plaintext_copy.size());
+    uint8 digest[SHA1_LENGTH];
+    unsigned num_hash_bytes;
+    HASH_End(hash_context, digest, &num_hash_bytes, sizeof(digest));
+    HASH_Destroy(hash_context);
 
     plaintext_copy += ByteString(digest, sizeof(digest));
 
     fre[0] = prefix[kBlockSize];
     fre[1] = prefix[kBlockSize+1];
-    uint32 out_used = 2;
+    unsigned out_used = 2;
 
     for (size_t i = 0; i < plaintext_copy.size(); i++) {
       if (out_used == kBlockSize) {
-        AES_ecb_encrypt(fre, fre, &aes_key, AES_ENCRYPT);
+        PK11_CipherOp(aes_context.get(), fre, &out_len, sizeof(fre), fre,
+                      AES_BLOCK_SIZE);
         out_used = 0;
       }
 
