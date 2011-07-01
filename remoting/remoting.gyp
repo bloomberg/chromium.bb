@@ -232,6 +232,7 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
+        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../ui/ui.gyp:ui_gfx',
         '../net/net.gyp:net',
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
@@ -246,6 +247,7 @@
       ],
       'export_dependent_settings': [
         '../base/base.gyp:base',
+        '../net/net.gyp:net',
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         'proto/chromotocol.gyp:chromotocol_proto_lib',
       ],
