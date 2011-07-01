@@ -8,6 +8,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -37,17 +38,27 @@ class LiveSyncExtensionHelper {
   // Uninstalls the extension with the given name from |profile|.
   void UninstallExtension(Profile* profile, const std::string& name);
 
+  // Returns a vector containing the names of all currently installed extensions
+  // on |profile|.
+  std::vector<std::string> GetInstalledExtensionNames(Profile* profile) const;
+
   // Enables the extension with the given name on |profile|.
   void EnableExtension(Profile* profile, const std::string& name);
 
   // Disables the extension with the given name on |profile|.
   void DisableExtension(Profile* profile, const std::string& name);
 
+  // Returns true if the extension with the given name is enabled on |profile|.
+  bool IsExtensionEnabled(Profile* profile, const std::string& name) const;
+
   // Enables the extension with the given name to run in incognito mode
   void IncognitoEnableExtension(Profile* profile, const std::string& name);
 
   // Disables the extension with the given name from running in incognito mode
   void IncognitoDisableExtension(Profile* profile, const std::string& name);
+
+  // Returns true iff the extension is enabled in incognito mode on |profile|.
+  bool IsIncognitoEnabled(Profile* profile, const std::string& name) const;
 
   // Returns true iff the extension with the given id is pending
   // install in |profile|.

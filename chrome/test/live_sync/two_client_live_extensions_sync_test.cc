@@ -6,17 +6,6 @@
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/test/live_sync/live_extensions_sync_test.h"
 
-class TwoClientLiveExtensionsSyncTest : public LiveExtensionsSyncTest {
- public:
-  TwoClientLiveExtensionsSyncTest()
-      : LiveExtensionsSyncTest(TWO_CLIENT) {}
-
-  virtual ~TwoClientLiveExtensionsSyncTest() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TwoClientLiveExtensionsSyncTest);
-};
-
 IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest,
                        StartWithNoExtensions) {
   ASSERT_TRUE(SetupSync());

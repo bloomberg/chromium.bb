@@ -59,6 +59,34 @@ void LiveSyncExtensionHelper::UninstallExtension(
                                              NameToId(name));
 }
 
+std::vector<std::string> LiveSyncExtensionHelper::GetInstalledExtensionNames(
+    Profile* profile) const {
+  std::vector<std::string> names;
+  ExtensionService* extension_service = profile->GetExtensionService();
+
+  const ExtensionList* extensions = extension_service->extensions();
+  for (ExtensionList::const_iterator it = extensions->begin();
+       it != extensions->end(); ++it) {
+    names.push_back((*it)->name());
+  }
+
+  const ExtensionList* disabled_extensions =
+      extension_service->disabled_extensions();
+  for (ExtensionList::const_iterator it = disabled_extensions->begin();
+       it != disabled_extensions->end(); ++it) {
+    names.push_back((*it)->name());
+  }
+
+  const ExtensionList* terminated_extensions =
+      extension_service->terminated_extensions();
+  for (ExtensionList::const_iterator it = terminated_extensions->begin();
+       it != terminated_extensions->end(); ++it) {
+    names.push_back((*it)->name());
+  }
+
+  return names;
+}
+
 void LiveSyncExtensionHelper::EnableExtension(Profile* profile,
                                               const std::string& name) {
   profile->GetExtensionService()->EnableExtension(NameToId(name));
@@ -67,6 +95,11 @@ void LiveSyncExtensionHelper::EnableExtension(Profile* profile,
 void LiveSyncExtensionHelper::DisableExtension(Profile* profile,
                                                const std::string& name) {
   profile->GetExtensionService()->DisableExtension(NameToId(name));
+}
+
+bool LiveSyncExtensionHelper::IsExtensionEnabled(
+    Profile* profile, const std::string& name) const {
+  return profile->GetExtensionService()->IsExtensionEnabled(NameToId(name));
 }
 
 void LiveSyncExtensionHelper::IncognitoEnableExtension(
@@ -78,6 +111,12 @@ void LiveSyncExtensionHelper::IncognitoDisableExtension(
     Profile* profile, const std::string& name) {
   profile->GetExtensionService()->SetIsIncognitoEnabled(NameToId(name), false);
 }
+
+bool LiveSyncExtensionHelper::IsIncognitoEnabled(
+    Profile* profile, const std::string& name) const {
+  return profile->GetExtensionService()->IsIncognitoEnabled(NameToId(name));
+}
+
 
 bool LiveSyncExtensionHelper::IsExtensionPendingInstallForSync(
     Profile* profile, const std::string& id) const {
