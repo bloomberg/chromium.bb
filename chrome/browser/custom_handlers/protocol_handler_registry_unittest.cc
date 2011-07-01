@@ -7,9 +7,6 @@
 #include <set>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
-#include "base/scoped_ptr.h"
-#include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/custom_handlers/protocol_handler.h"
 #include "chrome/test/testing_browser_process.h"
@@ -21,7 +18,6 @@
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_service.h"
-#include "net/url_request/url_request.h"
 
 class FakeDelegate : public ProtocolHandlerRegistry::Delegate {
  public:
@@ -114,16 +110,12 @@ class QueryProtocolHandlerOnChange : public NotificationObserver {
   NotificationRegistrar notification_registrar_;
 };
 
-static void DeleteRegistry(ProtocolHandlerRegistry* registry) {
-  registry = NULL;
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          new MessageLoop::QuitTask());
-}
 
-class ProtocolHandlerRegistryTest : public testing::Test {
+class ProtocolHandlerRegistryTest : public RenderViewHostTestHarness {
  protected:
   ProtocolHandlerRegistryTest()
-      : test_protocol_handler_(CreateProtocolHandler("test", "test")) {}
+      : ui_thread_(BrowserThread::UI, MessageLoop::current()),
+        test_protocol_handler_(CreateProtocolHandler("test", "test")) {}
 
   FakeDelegate* delegate() const { return delegate_; }
   TestingProfile* profile() const { return profile_.get(); }
@@ -149,20 +141,11 @@ class ProtocolHandlerRegistryTest : public testing::Test {
   void ReloadProtocolHandlerRegistry() {
     delegate_ = new FakeDelegate();
     registry_->Finalize();
-    DeleteRegistryOnIOThread();
     registry_ = new ProtocolHandlerRegistry(profile(), delegate());
     registry_->Load();
   }
 
   virtual void SetUp() {
-    ui_message_loop_.reset(new MessageLoopForUI());
-    ui_thread_.reset(new BrowserThread(BrowserThread::UI,
-                                       MessageLoop::current()));
-    io_thread_.reset(new BrowserThread(BrowserThread::IO));
-    base::Thread::Options options;
-    options.message_loop_type = MessageLoop::TYPE_IO;
-    io_thread_->StartWithOptions(options);
-
     profile_.reset(new TestingProfile());
     profile_->SetPrefService(new TestingPrefService());
     delegate_ = new FakeDelegate();
@@ -176,30 +159,9 @@ class ProtocolHandlerRegistryTest : public testing::Test {
 
   virtual void TearDown() {
     registry_->Finalize();
-    DeleteRegistryOnIOThread();
-    io_thread_->Stop();
-    io_thread_.reset(NULL);
-    ui_thread_.reset(NULL);
-    ui_message_loop_.reset(NULL);
   }
 
-  void DeleteRegistryOnIOThread() {
-    Task* delete_registry_task =
-        NewRunnableFunction(DeleteRegistry, registry_);
-    registry_ = NULL;
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            delete_registry_task);
-    MessageLoop::current()->Run();
-  }
-
-  bool enabled_io() {
-    return registry()->enabled_io_;
-  }
-
-  scoped_ptr<MessageLoopForUI> ui_message_loop_;
-  scoped_ptr<BrowserThread> ui_thread_;
-  scoped_ptr<BrowserThread> io_thread_;
-
+  BrowserThread ui_thread_;
   FakeDelegate* delegate_;
   scoped_ptr<TestingProfile> profile_;
   scoped_refptr<ProtocolHandlerRegistry> registry_;
@@ -340,7 +302,6 @@ TEST_F(ProtocolHandlerRegistryTest, TestDefaultSaveLoad) {
   registry()->Disable();
 
   ReloadProtocolHandlerRegistry();
-
   ASSERT_FALSE(registry()->enabled());
   registry()->Enable();
   ASSERT_FALSE(registry()->IsDefault(ph1));
@@ -478,66 +439,4 @@ TEST_F(ProtocolHandlerRegistryTest, TestOSRegistration) {
 
   registry()->OnDenyRegisterProtocolHandler(ph_dont);
   ASSERT_FALSE(delegate()->IsRegisteredWithOS("dont"));
-}
-
-static void MakeRequest(const GURL& url, ProtocolHandlerRegistry* registry) {
-  net::URLRequest request(url, NULL);
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          new MessageLoop::QuitTask());
-  ASSERT_TRUE(registry->MaybeCreateJob(&request) != NULL);
-}
-
-TEST_F(ProtocolHandlerRegistryTest, TestMaybeCreateTaskWorksFromIOThread) {
-  ProtocolHandler ph1 = CreateProtocolHandler("mailto", "test1");
-  registry()->OnAcceptRegisterProtocolHandler(ph1);
-  GURL url("mailto:someone@something.com");
-  scoped_refptr<ProtocolHandlerRegistry> r(registry());
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          NewRunnableFunction(MakeRequest, url, r));
-  MessageLoop::current()->Run();
-}
-
-static void CheckIsHandled(const std::string& scheme, bool expected,
-    ProtocolHandlerRegistry* registry) {
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          new MessageLoop::QuitTask());
-  ASSERT_EQ(expected, registry->IsHandledProtocolIO(scheme));
-}
-
-TEST_F(ProtocolHandlerRegistryTest, TestIsHandledProtocolWorksOnIOThread) {
-  std::string scheme("mailto");
-  ProtocolHandler ph1 = CreateProtocolHandler(scheme, "test1");
-  registry()->OnAcceptRegisterProtocolHandler(ph1);
-  scoped_refptr<ProtocolHandlerRegistry> r(registry());
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      NewRunnableFunction(CheckIsHandled, scheme, true, r));
-}
-
-TEST_F(ProtocolHandlerRegistryTest, TestClearDefaultGetsPropagatedToIO) {
-  std::string scheme("mailto");
-  ProtocolHandler ph1 = CreateProtocolHandler(scheme, "test1");
-  registry()->OnAcceptRegisterProtocolHandler(ph1);
-  registry()->ClearDefault(scheme);
-  scoped_refptr<ProtocolHandlerRegistry> r(registry());
-
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      NewRunnableFunction(CheckIsHandled, scheme, false, r));
-}
-
-static void QuitUILoop() {
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          new MessageLoop::QuitTask());
-}
-
-TEST_F(ProtocolHandlerRegistryTest, TestLoadEnabledGetsPropogatedToIO) {
-  registry()->Disable();
-  ReloadProtocolHandlerRegistry();
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          NewRunnableFunction(QuitUILoop));
-  MessageLoop::current()->Run();
-  ASSERT_FALSE(enabled_io());
 }
