@@ -66,6 +66,7 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
           this, &BrowsingDataRemover::OnClearedDatabases)),
       ALLOW_THIS_IN_INITIALIZER_LIST(cache_callback_(
           this, &BrowsingDataRemover::DoClearCache)),
+      appcache_service_(profile->GetAppCacheService()),
       ALLOW_THIS_IN_INITIALIZER_LIST(appcache_got_info_callback_(
           this, &BrowsingDataRemover::OnGotAppCacheInfo)),
       ALLOW_THIS_IN_INITIALIZER_LIST(appcache_deleted_callback_(
@@ -526,8 +527,8 @@ void BrowsingDataRemover::ClearAppCacheOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(waiting_for_clear_appcache_);
   appcache_info_ = new appcache::AppCacheInfoCollection;
-  if (GetAppCacheService()) {
-    GetAppCacheService()->GetAllAppCacheInfo(
+  if (appcache_service_) {
+    appcache_service_->GetAllAppCacheInfo(
         appcache_info_, &appcache_got_info_callback_);
     // continues in OnGotAppCacheInfo
   } else {
@@ -549,7 +550,7 @@ void BrowsingDataRemover::OnGotAppCacheInfo(int rv) {
          info != origin->second.end(); ++info) {
       if (info->creation_time > delete_begin_) {
         ++appcaches_to_be_deleted_count_;
-        GetAppCacheService()->DeleteAppCacheGroup(
+        appcache_service_->DeleteAppCacheGroup(
             info->manifest_url, &appcache_deleted_callback_);
       }
     }
@@ -564,16 +565,6 @@ void BrowsingDataRemover::OnAppCacheDeleted(int rv) {
   --appcaches_to_be_deleted_count_;
   if (!appcaches_to_be_deleted_count_)
     OnClearedAppCache();
-}
-
-ChromeAppCacheService* BrowsingDataRemover::GetAppCacheService() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  ChromeURLRequestContext* request_context = NULL;
-  if (main_context_getter_)
-    request_context = reinterpret_cast<ChromeURLRequestContext*>(
-        main_context_getter_->GetURLRequestContext());
-  return request_context ? request_context->appcache_service()
-                         : NULL;
 }
 
 void BrowsingDataRemover::ClearFileSystemsOnFILEThread() {

@@ -167,7 +167,6 @@ class BrowsingDataRemover : public NotificationObserver,
   // Lower level helpers.
   void OnGotAppCacheInfo(int rv);
   void OnAppCacheDeleted(int rv);
-  ChromeAppCacheService* GetAppCacheService();
 
   // Callback when Gears data has been deleted. Invokes NotifyAndDeleteIfDone.
   void OnClearedGearsData();
@@ -212,6 +211,7 @@ class BrowsingDataRemover : public NotificationObserver,
   net::CompletionCallbackImpl<BrowsingDataRemover> cache_callback_;
 
   // Used to clear the appcache.
+  scoped_refptr<ChromeAppCacheService> appcache_service_;
   net::CompletionCallbackImpl<BrowsingDataRemover> appcache_got_info_callback_;
   net::CompletionCallbackImpl<BrowsingDataRemover> appcache_deleted_callback_;
   scoped_refptr<appcache::AppCacheInfoCollection> appcache_info_;
