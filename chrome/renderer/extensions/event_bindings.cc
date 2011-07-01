@@ -199,12 +199,12 @@ static bool HasSufficientPermissions(ContextInfo* context,
     return true;
 
   RenderView* renderview = bindings_utils::GetRenderViewForCurrentContext();
+  if (!renderview)
+    return false;
+
   WebDocument document = renderview->webview()->mainFrame()->document();
-  bool url_permissions_ok = (!event_url.is_valid() ||
-      (renderview &&
-       GURL(document.url()).SchemeIs(chrome::kExtensionScheme) &&
-       document.securityOrigin().canRequest(event_url)));
-  return url_permissions_ok;
+  return GURL(document.url()).SchemeIs(chrome::kExtensionScheme) &&
+       document.securityOrigin().canRequest(event_url);
 }
 
 }  // namespace
