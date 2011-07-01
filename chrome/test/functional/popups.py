@@ -107,7 +107,7 @@ class PopupsTest(pyauto.PyUITest):
   def _SetPopupsException(self):
     """Set an exception to allow popups from www.popuptest.com."""
     value = {'[*.]www.popuptest.com': {'popups': 1}}
-    return self.SetPrefs(pyauto.kContentSettingsPatternPairs, value)
+    return self.SetPrefs(pyauto.kContentSettingsPatterns, value)
 
   def testAllowPopupsFromExternalSite(self):
     """Verify that popups are allowed from an external website."""
