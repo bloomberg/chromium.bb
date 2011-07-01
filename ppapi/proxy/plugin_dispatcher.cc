@@ -44,7 +44,8 @@ PluginDispatcher::PluginDispatcher(base::ProcessHandle remote_process_handle,
                                    GetInterfaceFunc get_interface)
     : Dispatcher(remote_process_handle, get_interface),
       plugin_delegate_(NULL),
-      received_preferences_(false) {
+      received_preferences_(false),
+      plugin_dispatcher_id_(0) {
   SetSerializationRules(new PluginVarSerializationRules);
 
   // As a plugin, we always support the PPP_Class interface. There's no
@@ -56,6 +57,8 @@ PluginDispatcher::PluginDispatcher(base::ProcessHandle remote_process_handle,
 }
 
 PluginDispatcher::~PluginDispatcher() {
+  if (plugin_delegate_)
+    plugin_delegate_->Unregister(plugin_dispatcher_id_);
 }
 
 // static
@@ -86,6 +89,7 @@ bool PluginDispatcher::InitPluginWithChannel(
   if (!Dispatcher::InitWithChannel(delegate, channel_handle, is_client))
     return false;
   plugin_delegate_ = delegate;
+  plugin_dispatcher_id_ = plugin_delegate_->Register(this);
 
   // The message filter will intercept and process certain messages directly
   // on the I/O thread.

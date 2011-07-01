@@ -216,7 +216,14 @@ bool PluginProxyTestHarness::PluginDelegateMock::SendToBrowser(
   return false;
 }
 
+uint32 PluginProxyTestHarness::PluginDelegateMock::Register(
+    PluginDispatcher* plugin_dispatcher) {
+  return 0;
+}
 
+void PluginProxyTestHarness::PluginDelegateMock::Unregister(
+    uint32 plugin_dispatcher_id) {
+}
 // PluginProxyTest -------------------------------------------------------------
 
 PluginProxyTest::PluginProxyTest() {

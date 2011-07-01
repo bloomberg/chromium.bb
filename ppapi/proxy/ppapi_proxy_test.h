@@ -111,6 +111,8 @@ class PluginProxyTestHarness : public ProxyTestHarnessBase {
     virtual void PostToWebKitThread(const tracked_objects::Location& from_here,
                                     const base::Closure& task);
     virtual bool SendToBrowser(IPC::Message* msg);
+    virtual uint32 Register(PluginDispatcher* plugin_dispatcher);
+    virtual void Unregister(uint32 plugin_dispatcher_id);
 
    private:
     base::MessageLoopProxy* ipc_message_loop_;  // Weak

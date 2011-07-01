@@ -61,6 +61,7 @@
 #include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/c/private/ppb_flash_clipboard.h"
 #include "ppapi/c/private/ppb_flash_file.h"
+#include "ppapi/c/private/ppb_flash_tcp_socket.h"
 #include "ppapi/c/private/ppb_instance_private.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/c/private/ppb_proxy_private.h"
@@ -273,6 +274,8 @@ const void* GetInterface(const char* name) {
     return PPB_Flash_File_ModuleLocal_Impl::GetInterface();
   if (strcmp(name, PPB_FLASH_MENU_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_Flash_Menu_Thunk();
+  if (strcmp(name, PPB_FLASH_TCPSOCKET_INTERFACE) == 0)
+    return ::ppapi::thunk::GetPPB_Flash_TCPSocket_Thunk();
   if (strcmp(name, PPB_FONT_DEV_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_Font_Thunk();
   if (strcmp(name, PPB_FULLSCREEN_DEV_INTERFACE) == 0)

@@ -41,6 +41,9 @@ class PepperMessageFilter : public BrowserMessageFilter {
                                  bool* message_was_ok);
 
  private:
+  class FlashTCPSocket;
+  class FlashTCPSocketManager;
+
 #if defined(ENABLE_FLAPPER_HACKS)
   // Message handlers.
   void OnConnectTcp(int routing_id,
@@ -90,6 +93,8 @@ class PepperMessageFilter : public BrowserMessageFilter {
   // When non-NULL, this should be used instead of the resource_context_. Use
   // GetHostResolver instead of accessing directly.
   net::HostResolver* host_resolver_;
+
+  scoped_ptr<FlashTCPSocketManager> socket_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperMessageFilter);
 };
