@@ -42,8 +42,11 @@ cr.define('options', function() {
       var languageOptions = options.LanguageOptions.getInstance();
       this.deletable = languageOptions.languageIsDeletable(languageCode);
       this.languageCode = languageCode;
-      this.contentElement.textContent =
+      this.languageName = cr.doc.createElement('div');
+      this.languageName.className = 'language-name';
+      this.languageName.textContent =
           LanguageList.getDisplayNameFromLanguageCode(languageCode);
+      this.contentElement.appendChild(this.languageName);
       this.title =
           LanguageList.getNativeDisplayNameFromLanguageCode(languageCode);
       this.draggable = true;

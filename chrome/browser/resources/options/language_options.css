@@ -36,7 +36,7 @@
   -webkit-box-orient: vertical;
   display: -webkit-box;
   background-color: #ebeff9;
-  min-width: 200px;
+  width: 300px;
 }
 
 .language-options-lower-left {
@@ -82,6 +82,13 @@
   -webkit-box-flex: 1;
   padding: 1px 0 0;
   width: 100%;
+}
+
+#language-options-list .language-name {
+  -webkit-box-flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 #language-options-list li {
