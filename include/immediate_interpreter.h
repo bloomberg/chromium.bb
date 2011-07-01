@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <gtest/gtest.h>  // for FRIEND_TEST
+
 #include "gestures/include/gestures.h"
 #include "gestures/include/interpreter.h"
 
@@ -17,6 +19,7 @@ namespace gestures {
 // Currently it simply does very basic pointer movement.
 
 class ImmediateInterpreter : public Interpreter {
+  FRIEND_TEST(ImmediateInterpreterTest, SameFingersTest);
  public:
   ImmediateInterpreter();
   virtual ~ImmediateInterpreter();
@@ -26,6 +29,9 @@ class ImmediateInterpreter : public Interpreter {
   void SetHardwareProperties(const HardwareProperties& hw_props);
 
  private:
+  // Returns true iff the fingers in hwstate are the same ones in prev_state_
+  bool SameFingers(const HardwareState& hwstate) const;
+
   // Does a deep copy of hwstate into prev_state_
   void SetPrevState(const HardwareState& hwstate);
 

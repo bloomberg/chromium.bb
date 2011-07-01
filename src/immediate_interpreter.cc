@@ -51,6 +51,17 @@ Gesture* ImmediateInterpreter::SyncInterpret(HardwareState* hwstate) {
   return have_gesture ? &result_ : NULL;
 }
 
+// For now, require fingers to be in the same slots
+bool ImmediateInterpreter::SameFingers(const HardwareState& hwstate) const {
+  if (hwstate.finger_cnt != prev_state_.finger_cnt)
+    return false;
+  for (int i = 0; i < hwstate.finger_cnt; ++i) {
+    if (hwstate.fingers[i].tracking_id != prev_state_.fingers[i].tracking_id)
+      return false;
+  }
+  return true;
+}
+
 void ImmediateInterpreter::SetPrevState(const HardwareState& hwstate) {
   prev_state_.timestamp = hwstate.timestamp;
   prev_state_.finger_cnt = min(hwstate.finger_cnt, hw_props_.max_finger_cnt);

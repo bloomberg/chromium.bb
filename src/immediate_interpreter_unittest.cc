@@ -103,12 +103,55 @@ TEST(ImmediateInterpreterTest, SetHardwarePropertiesTwiceTest) {
     {0, 0, 0, 0, 0, 0, 0, 0, 5}
   };
   HardwareState hardware_state = {
-    // time, finger count, finger states pointer
+    // time, buttons, finger count, finger states pointer
     200000, 0, 5, &finger_states[0]
   };
   // This used to cause a crash:
   Gesture* gs = ii.SyncInterpret(&hardware_state);
   EXPECT_EQ(reinterpret_cast<Gesture*>(NULL), gs);
+}
+
+TEST(ImmediateInterpreterTest, SameFingersTest) {
+  ImmediateInterpreter ii;
+  HardwareProperties hwprops = {
+    0,  // left edge
+    0,  // top edge
+    1000,  // right edge
+    1000,  // bottom edge
+    500,  // x pixels/TP width
+    500,  // y pixels/TP height
+    96,  // x screen DPI
+    96,  // y screen DPI
+    2,  // max fingers
+    0,  // t5r2
+    0,  // semi-mt
+    1  // is button pad
+  };
+  ii.SetHardwareProperties(hwprops);
+
+  FingerState finger_states[] = {
+    // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
+    {0, 0, 0, 0, 1, 0, 0, 0, 1},
+    {0, 0, 0, 0, 1, 0, 0, 0, 1},
+    {0, 0, 0, 0, 1, 0, 0, 0, 2},
+    {0, 0, 0, 0, 1, 0, 0, 0, 3},
+    {0, 0, 0, 0, 1, 0, 0, 0, 4},
+    {0, 0, 0, 0, 1, 0, 0, 0, 5}
+  };
+  HardwareState hardware_state[] = {
+    // time, buttons, finger count, finger states pointer
+    { 200000, 0, 1, &finger_states[0] },
+    { 200001, 0, 1, &finger_states[1] },
+    { 200001, 0, 2, &finger_states[1] },
+    { 200001, 0, 2, &finger_states[2] },
+  };
+
+  ii.SetPrevState(hardware_state[0]);
+  EXPECT_TRUE(ii.SameFingers(hardware_state[1]));
+  EXPECT_FALSE(ii.SameFingers(hardware_state[2]));
+  ii.SetPrevState(hardware_state[2]);
+  EXPECT_TRUE(ii.SameFingers(hardware_state[2]));
+  EXPECT_FALSE(ii.SameFingers(hardware_state[3]));
 }
 
 }  // namespace gestures
