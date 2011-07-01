@@ -400,3 +400,21 @@ TEST_F(CreditCardFieldTest, ParseExpMonthYear2) {
   EXPECT_EQ(CREDIT_CARD_EXP_4_DIGIT_YEAR,
       field_type_map_[ASCIIToUTF16("year")]);
 }
+
+TEST_F(CreditCardFieldTest, ParseCreditCardHolderNameWithCCFullName) {
+  list_.push_back(
+      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("Name"),
+                                               ASCIIToUTF16("ccfullname"),
+                                               string16(),
+                                               ASCIIToUTF16("text"),
+                                               0,
+                                               false),
+                        ASCIIToUTF16("name1")));
+  AutofillScanner scanner(list_.get());
+  field_.reset(Parse(&scanner, false));
+  ASSERT_NE(static_cast<CreditCardField*>(NULL), field_.get());
+  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
+  ASSERT_TRUE(
+      field_type_map_.find(ASCIIToUTF16("name1")) != field_type_map_.end());
+  EXPECT_EQ(CREDIT_CARD_NAME, field_type_map_[ASCIIToUTF16("name1")]);
+}

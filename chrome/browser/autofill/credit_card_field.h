@@ -32,6 +32,8 @@ class CreditCardField : public FormField {
   FRIEND_TEST_ALL_PREFIXES(CreditCardFieldTest, ParseFullCreditCardEcml);
   FRIEND_TEST_ALL_PREFIXES(CreditCardFieldTest, ParseExpMonthYear);
   FRIEND_TEST_ALL_PREFIXES(CreditCardFieldTest, ParseExpMonthYear2);
+  FRIEND_TEST_ALL_PREFIXES(CreditCardFieldTest,
+                           ParseCreditCardHolderNameWithCCFullName);
 
   CreditCardField();
 
