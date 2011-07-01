@@ -48,6 +48,9 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
                        public BookmarkBarInstructionsGtk::Delegate,
                        public BookmarkContextMenuControllerDelegate {
  public:
+  // The NTP needs to have access to this.
+  static const int kBookmarkBarNTPHeight;
+
   BookmarkBarGtk(BrowserWindowGtk* window,
                  Profile* profile,
                  Browser* browser,
@@ -92,9 +95,6 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
   virtual void PopupForButton(GtkWidget* button);
   virtual void PopupForButtonNextTo(GtkWidget* button,
                                     GtkMenuDirectionType dir);
-
-  // The NTP needs to have access to this.
-  static const int kBookmarkBarNTPHeight;
 
   // BookmarkContextMenuController::Delegate implementation --------------------
   virtual void CloseMenu();
