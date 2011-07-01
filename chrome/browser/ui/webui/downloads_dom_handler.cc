@@ -210,10 +210,11 @@ void DownloadsDOMHandler::HandlePause(const ListValue* args) {
 
 void DownloadsDOMHandler::HandleRemove(const ListValue* args) {
   DownloadItem* file = GetDownloadByValue(args);
-  // TODO(rdsmith): Change to DCHECK when http://crbug.com/84508 is fixed.
-  CHECK_NE(DownloadHistory::kUninitializedHandle, file->db_handle());
-  if (file)
+  if (file) {
+    // TODO(rdsmith): Change to DCHECK when http://crbug.com/84508 is fixed.
+    CHECK_NE(DownloadHistory::kUninitializedHandle, file->db_handle());
     file->Remove();
+  }
 }
 
 void DownloadsDOMHandler::HandleCancel(const ListValue* args) {
