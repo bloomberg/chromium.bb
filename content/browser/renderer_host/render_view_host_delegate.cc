@@ -19,11 +19,6 @@ RenderViewHostDelegate::GetRendererManagementDelegate() {
   return NULL;
 }
 
-RenderViewHostDelegate::BookmarkDrag*
-RenderViewHostDelegate::GetBookmarkDragDelegate() {
-  return NULL;
-}
-
 bool RenderViewHostDelegate::OnMessageReceived(const IPC::Message& message) {
   return false;
 }

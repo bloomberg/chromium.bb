@@ -446,16 +446,6 @@ class TabContents : public PageNavigator,
   virtual gfx::NativeWindow GetDialogRootWindow() OVERRIDE;
   virtual void OnDialogShown() OVERRIDE;
 
-  // The BookmarkDragDelegate is used to forward bookmark drag and drop events
-  // to extensions.
-  virtual RenderViewHostDelegate::BookmarkDrag* GetBookmarkDragDelegate();
-
-  // It is up to callers to call SetBookmarkDragDelegate(NULL) when
-  // |bookmark_drag| is deleted since this class does not take ownership of
-  // |bookmark_drag|.
-  virtual void SetBookmarkDragDelegate(
-      RenderViewHostDelegate::BookmarkDrag* bookmark_drag);
-
   // Gets the zoom level for this tab.
   double GetZoomLevel() const;
 
@@ -743,9 +733,6 @@ class TabContents : public PageNavigator,
 
   // Registers and unregisters us for notifications.
   NotificationRegistrar registrar_;
-
-  // Handles drag and drop event forwarding to extensions.
-  BookmarkDrag* bookmark_drag_;
 
   // Data for loading state ----------------------------------------------------
 

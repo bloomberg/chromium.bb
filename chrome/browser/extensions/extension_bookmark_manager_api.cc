@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -145,15 +146,15 @@ void BookmarkNodeDataToJSON(Profile* profile, const BookmarkNodeData& data,
 }  // namespace
 
 ExtensionBookmarkManagerEventRouter::ExtensionBookmarkManagerEventRouter(
-    Profile* profile, TabContents* tab_contents)
+    Profile* profile, TabContentsWrapper* tab)
     : profile_(profile),
-    tab_contents_(tab_contents) {
-  tab_contents_->SetBookmarkDragDelegate(this);
+    tab_(tab) {
+  tab_->bookmark_tab_helper()->SetBookmarkDragDelegate(this);
 }
 
 ExtensionBookmarkManagerEventRouter::~ExtensionBookmarkManagerEventRouter() {
-  if (tab_contents_->GetBookmarkDragDelegate() == this)
-    tab_contents_->SetBookmarkDragDelegate(NULL);
+  if (tab_->bookmark_tab_helper()->GetBookmarkDragDelegate() == this)
+    tab_->bookmark_tab_helper()->SetBookmarkDragDelegate(NULL);
 }
 
 void ExtensionBookmarkManagerEventRouter::DispatchEvent(const char* event_name,

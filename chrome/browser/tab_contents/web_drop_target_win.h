@@ -13,7 +13,7 @@
 class InterstitialDropTarget;
 class RenderViewHost;
 class TabContents;
-
+class TabContentsWrapper;
 // A helper object that provides drop capabilities to a TabContents. The
 // DropTarget handles drags that enter the region of the TabContents by
 // passing on the events to the renderer.
@@ -49,6 +49,9 @@ class WebDropTarget : public ui::DropTarget {
  private:
   // Our associated TabContents.
   TabContents* tab_contents_;
+  // The TabContentsWrapper for the TabContents member defined above.
+  // Weak reference.
+  TabContentsWrapper* tab_;
 
   // We keep track of the render view host we're dragging over.  If it changes
   // during a drag, we need to re-send the DragEnter message.  WARNING:

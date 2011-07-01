@@ -167,7 +167,6 @@ TabContents::TabContents(Profile* profile,
       ALLOW_THIS_IN_INITIALIZER_LIST(view_(
           TabContentsView::Create(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(render_manager_(this, this)),
-      bookmark_drag_(NULL),
       is_loading_(false),
       crashed_status_(base::TERMINATION_STATUS_STILL_RUNNING),
       crashed_error_code_(0),
@@ -1240,15 +1239,6 @@ RenderViewHostDelegate::View* TabContents::GetViewDelegate() {
 RenderViewHostDelegate::RendererManagement*
 TabContents::GetRendererManagementDelegate() {
   return &render_manager_;
-}
-
-RenderViewHostDelegate::BookmarkDrag* TabContents::GetBookmarkDragDelegate() {
-  return bookmark_drag_;
-}
-
-void TabContents::SetBookmarkDragDelegate(
-    RenderViewHostDelegate::BookmarkDrag* bookmark_drag) {
-  bookmark_drag_ = bookmark_drag;
 }
 
 RendererPreferences TabContents::GetRendererPrefs(Profile* profile) const {

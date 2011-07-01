@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -21,7 +22,8 @@ BookmarkTabHelper::BookmarkTabHelper(TabContentsWrapper* tab_contents)
     : TabContentsObserver(tab_contents->tab_contents()),
       is_starred_(false),
       tab_contents_wrapper_(tab_contents),
-      delegate_(NULL) {
+      delegate_(NULL),
+      bookmark_drag_(NULL) {
   // Register for notifications about URL starredness changing on any profile.
   registrar_.Add(this, NotificationType::URLS_STARRED,
                  NotificationService::AllSources());
@@ -80,6 +82,16 @@ void BookmarkTabHelper::Observe(NotificationType type,
     default:
       NOTREACHED();
   }
+}
+
+void BookmarkTabHelper::SetBookmarkDragDelegate(
+    BookmarkTabHelper::BookmarkDrag* bookmark_drag) {
+  bookmark_drag_ = bookmark_drag;
+}
+
+BookmarkTabHelper::BookmarkDrag*
+    BookmarkTabHelper::GetBookmarkDragDelegate() {
+  return bookmark_drag_;
 }
 
 void BookmarkTabHelper::UpdateStarredStateForCurrentURL() {

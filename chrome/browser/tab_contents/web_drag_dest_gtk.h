@@ -16,6 +16,7 @@
 #include "webkit/glue/webdropdata.h"
 
 class TabContents;
+class TabContentsWrapper;
 
 // A helper class that handles DnD for drops in the renderer. In GTK parlance,
 // this handles destination-side DnD, but not source-side DnD.
@@ -57,6 +58,9 @@ class WebDragDestGtk {
                        gint, gint, guint);
 
   TabContents* tab_contents_;
+  // The TabContentsWrapper for the TabContents member defined above.
+  // Weak reference.
+  TabContentsWrapper* tab_;
   // The render view.
   GtkWidget* widget_;
   // The current drag context for system drags over our render view, or NULL if

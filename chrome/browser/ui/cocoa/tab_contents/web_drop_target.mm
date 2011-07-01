@@ -7,7 +7,9 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/bookmarks/bookmark_pasteboard_helper_mac.h"
+#include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/cocoa/drag_util.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
@@ -81,9 +83,13 @@ using WebKit::WebDragOperationsMask;
     return NSDragOperationNone;
   }
 
+  if (!tab_) {
+    tab_ = TabContentsWrapper::GetCurrentWrapperForContents(tabContents_);
+    DCHECK(tab_);
+  }
   // If the tab is showing the bookmark manager, send BookmarkDrag events
-  RenderViewHostDelegate::BookmarkDrag* dragDelegate =
-      tabContents_->GetBookmarkDragDelegate();
+  BookmarkTabHelper::BookmarkDrag* dragDelegate =
+      tab_->bookmark_tab_helper()->GetBookmarkDragDelegate();
   BookmarkNodeData dragData;
   if(dragDelegate && dragData.ReadFromDragClipboard())
     dragDelegate->OnDragEnter(dragData);
@@ -142,9 +148,10 @@ using WebKit::WebDragOperationsMask;
       gfx::Point(screenPoint.x, screenPoint.y),
       static_cast<WebDragOperationsMask>(mask));
 
+  DCHECK(tab_);
   // If the tab is showing the bookmark manager, send BookmarkDrag events
-  RenderViewHostDelegate::BookmarkDrag* dragDelegate =
-      tabContents_->GetBookmarkDragDelegate();
+  BookmarkTabHelper::BookmarkDrag* dragDelegate =
+      tab_->bookmark_tab_helper()->GetBookmarkDragDelegate();
   BookmarkNodeData dragData;
   if(dragDelegate && dragData.ReadFromDragClipboard())
     dragDelegate->OnDragOver(dragData);
@@ -169,9 +176,10 @@ using WebKit::WebDragOperationsMask;
     return NO;
   }
 
+  DCHECK(tab_);
   // If the tab is showing the bookmark manager, send BookmarkDrag events
-  RenderViewHostDelegate::BookmarkDrag* dragDelegate =
-      tabContents_->GetBookmarkDragDelegate();
+  BookmarkTabHelper::BookmarkDrag* dragDelegate =
+      tab_->bookmark_tab_helper()->GetBookmarkDragDelegate();
   BookmarkNodeData dragData;
   if(dragDelegate && dragData.ReadFromDragClipboard())
     dragDelegate->OnDrop(dragData);

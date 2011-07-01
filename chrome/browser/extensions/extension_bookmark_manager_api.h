@@ -9,19 +9,19 @@
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/extensions/extension_bookmarks_module.h"
 #include "chrome/browser/extensions/extension_function.h"
-#include "content/browser/renderer_host/render_view_host_delegate.h"
+#include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 
 struct BookmarkNodeData;
 class ListValue;
 class Profile;
-class TabContents;
+class TabContentsWrapper;
 
 // Class that handles the chrome.experimental.bookmarkManager events.
 class ExtensionBookmarkManagerEventRouter
-    : public RenderViewHostDelegate::BookmarkDrag {
+    : public BookmarkTabHelper::BookmarkDrag {
  public:
   ExtensionBookmarkManagerEventRouter(Profile* profile,
-                                      TabContents* tab_contents);
+                                      TabContentsWrapper* tab);
   virtual ~ExtensionBookmarkManagerEventRouter();
 
   // RenderViewHostDelegate::BookmarkDrag interface
@@ -44,7 +44,7 @@ class ExtensionBookmarkManagerEventRouter
   void DispatchDragEvent(const BookmarkNodeData& data, const char* event_name);
 
   Profile* profile_;
-  TabContents* tab_contents_;
+  TabContentsWrapper* tab_;
   BookmarkNodeData bookmark_drag_data_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionBookmarkManagerEventRouter);

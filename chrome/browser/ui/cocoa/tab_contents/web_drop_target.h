@@ -9,6 +9,7 @@
 class GURL;
 class RenderViewHost;
 class TabContents;
+class TabContentsWrapper;
 struct WebDropData;
 
 // A typedef for a RenderViewHost used for comparison purposes only.
@@ -22,6 +23,9 @@ typedef RenderViewHost* RenderViewHostIdentifier;
  @private
   // Our associated TabContents. Weak reference.
   TabContents* tabContents_;
+
+  // The TabContentsWrapper for the TabContents member above. Weak reference.
+  TabContentsWrapper* tab_;
 
   // Updated asynchronously during a drag to tell us whether or not we should
   // allow the drop.

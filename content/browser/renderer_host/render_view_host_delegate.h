@@ -235,28 +235,12 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
     virtual ~RendererManagement() {}
   };
 
-  // BookmarkDrag --------------------------------------------------------------
-  // Interface for forwarding bookmark drag and drop to extenstions.
-
-  class BookmarkDrag {
-   public:
-    virtual void OnDragEnter(const BookmarkNodeData& data) = 0;
-    virtual void OnDragOver(const BookmarkNodeData& data) = 0;
-    virtual void OnDragLeave(const BookmarkNodeData& data) = 0;
-    virtual void OnDrop(const BookmarkNodeData& data) = 0;
-
-   protected:
-    virtual ~BookmarkDrag() {}
-  };
-
   // ---------------------------------------------------------------------------
 
   // Returns the current delegate associated with a feature. May return NULL if
   // there is no corresponding delegate.
   virtual View* GetViewDelegate();
   virtual RendererManagement* GetRendererManagementDelegate();
-
-  virtual BookmarkDrag* GetBookmarkDragDelegate();
 
   // IPC::Channel::Listener implementation.
   // This is used to give the delegate a chance to filter IPC messages.
