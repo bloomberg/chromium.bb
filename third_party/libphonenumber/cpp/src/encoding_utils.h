@@ -12,38 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Author: Philippe Liard
+#ifndef I18N_PHONENUMBERS_ENCODING_UTILS_H_
+#define I18N_PHONENUMBERS_ENCODING_UTILS_H_
 
-#include <iostream>
-
-#include "default_logger.h"
+#include "base/basictypes.h"
+#include "utf/utf.h"
 
 namespace i18n {
 namespace phonenumbers {
 
-using std::cout;
-using std::string;
-
-void StdoutLogger::WriteMessage(const string& msg) {
-  cout << " " << msg;
-}
-
-void StdoutLogger::WriteLevel() {
-  LogLevel log_level = level();
-  cout << "[";
-
-  switch (log_level) {
-    case LOG_FATAL:   cout << "FATAL"; break;
-#ifdef ERROR  // In case ERROR is defined by MSVC (i.e not set to LOG_ERROR).
-    case ERROR:
-#endif
-    case LOG_ERROR:   cout << "ERROR"; break;
-    case LOG_WARNING: cout << "WARNING"; break;
-    case LOG_INFO:    cout << "INFO"; break;
-    case LOG_DEBUG:   cout << "DEBUG"; break;
+class EncodingUtils {
+ public:
+  // Decodes one Unicode code-point value from a UTF-8 array. Returns the number
+  // of bytes read from the array. If the array does not contain valid UTF-8,
+  // the function stores 0xFFFD in the output variable and returns 1.
+  static inline int DecodeUTF8Char(const char* in, char32* out) {
+    Rune r;
+    int len = chartorune(&r, in);
+    *out = r;
+    return len;
   }
-  cout << "]";
-}
+};
 
 }  // namespace phonenumbers
 }  // namespace i18n
+
+#endif  // I18N_PHONENUMBERS_ENCODING_UTILS_H_

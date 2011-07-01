@@ -18,25 +18,33 @@
 #include "phonenumberutil.h"
 
 #include <algorithm>
+#include <cctype>
+#include <cstddef>
 #include <fstream>
 #include <iostream>
+#include <iterator>
 #include <map>
 #include <sstream>
+#include <utility>
 #include <vector>
 
 #include <google/protobuf/message_lite.h>
-#include <unicode/errorcode.h>
-#include <unicode/translit.h>
+#include <unicode/uchar.h>
+#include <unicode/utf8.h>
 
 #include "base/logging.h"
-#include "base/singleton.h"
+#include "base/memory/singleton.h"
 #include "default_logger.h"
-#include "logger_adapter.h"
+#include "encoding_utils.h"
 #include "metadata.h"
+#include "normalize_utf8.h"
 #include "phonemetadata.pb.h"
 #include "phonenumber.h"
 #include "phonenumber.pb.h"
 #include "regexp_adapter.h"
+#include "regexp_cache.h"
+#include "region_code.h"
+#include "stl_util.h"
 #include "stringutil.h"
 #include "utf/unicodetext.h"
 #include "utf/utf.h"
@@ -53,17 +61,30 @@ using std::stringstream;
 
 using google::protobuf::RepeatedPtrField;
 
+// static
+const char PhoneNumberUtil::kPlusChars[] = "+\xEF\xBC\x8B";
+// To find out the unicode code-point of the characters below in vim, highlight
+// the character and type 'ga'. Note that the - is used to express ranges of
+// full-width punctuation below, as well as being present in the expression
+// itself. In emacs, you can use M-x unicode-what to query information about the
+// unicode character.
+// static
+const char PhoneNumberUtil::kValidPunctuation[] =
+    "-x\xE2\x80\x90-\xE2\x80\x95\xE2\x88\x92\xE3\x83\xBC\xEF\xBC\x8D-\xEF\xBC\x8F \xC2\xA0\xE2\x80\x8B\xE2\x81\xA0\xE3\x80\x80()\xEF\xBC\x88\xEF\xBC\x89\xEF\xBC\xBB\xEF\xBC\xBD.\\[\\]/~\xE2\x81\x93\xE2\x88\xBC";
+
 namespace {
 
-scoped_ptr<LoggerAdapter> logger;
+scoped_ptr<Logger> logger_;
+scoped_ptr<RegExpCache> regexp_cache;
 
 // These objects are created in the function InitializeStaticMapsAndSets.
 
 // These mappings map a character (key) to a specific digit that should replace
 // it for normalization purposes.
 scoped_ptr<map<char32, char> > alpha_mappings;
-// For performance reasons, amalgamate both into one map.
-scoped_ptr<map<char32, char> > all_normalization_mappings;
+// For performance reasons, store a map of combining alpha_mappings with ASCII
+// digits.
+scoped_ptr<map<char32, char> > alpha_phone_mappings;
 // Separate map of all symbols that we wish to retain when formatting alpha
 // numbers. This includes digits, ascii letters and number grouping symbols such
 // as "-" and " ".
@@ -72,8 +93,7 @@ scoped_ptr<map<char32, char> > all_plus_number_grouping_symbols;
 // The kPlusSign signifies the international prefix.
 const char kPlusSign[] = "+";
 
-const char kPlusChars[] = "+\xEF\xBC\x8B";
-scoped_ptr<const reg_exp::RegularExpression> plus_chars_pattern;
+scoped_ptr<const RegExp> plus_chars_pattern;
 
 const char kRfc3966ExtnPrefix[] = ";ext=";
 
@@ -84,16 +104,15 @@ const char kRfc3966ExtnPrefix[] = ";ext=";
 // prefixes in a region, they will be represented as a regex string that always
 // contains character(s) other than ASCII digits.
 // Note this regex also includes tilde, which signals waiting for the tone.
-scoped_ptr<const reg_exp::RegularExpression> unique_international_prefix;
+scoped_ptr<const RegExp> unique_international_prefix;
 
-// Digits accepted in phone numbers.
-// Both Arabic-Indic and Eastern Arabic-Indic are supported.
-const char kValidDigits[] = "0-9\xEF\xBC\x90-\xEF\xBC\x99\xD9\xA0-\xD9\xA9\xDB\xB0-\xDB\xB9";
+const char kDigits[] = "\\p{Nd}";
+scoped_ptr<const RegExp> digits_pattern;
 // We accept alpha characters in phone numbers, ASCII only. We store lower-case
 // here only since our regular expressions are case-insensitive.
 const char kValidAlpha[] = "a-z";
-scoped_ptr<const reg_exp::RegularExpression> capturing_digit_pattern;
-scoped_ptr<const reg_exp::RegularExpression> capturing_ascii_digits_pattern;
+scoped_ptr<const RegExp> capturing_digit_pattern;
+scoped_ptr<const RegExp> capturing_ascii_digits_pattern;
 
 // Regular expression of acceptable characters that may start a phone number
 // for the purposes of parsing. This allows us to strip away meaningless
@@ -105,7 +124,7 @@ scoped_ptr<const reg_exp::RegularExpression> capturing_ascii_digits_pattern;
 // a number. The string starting with this valid character is captured.
 // This corresponds to VALID_START_CHAR in the java version.
 scoped_ptr<const string> valid_start_char;
-scoped_ptr<const reg_exp::RegularExpression> valid_start_char_pattern;
+scoped_ptr<const RegExp> valid_start_char_pattern;
 
 // Regular expression of characters typically used to start a second phone
 // number for the purposes of parsing. This allows us to strip off parts of
@@ -116,8 +135,7 @@ scoped_ptr<const reg_exp::RegularExpression> valid_start_char_pattern;
 // preceding this is captured.
 // This corresponds to SECOND_NUMBER_START in the java version.
 const char kCaptureUpToSecondNumberStart[] = "(.*)[\\\\/] *x";
-scoped_ptr<const reg_exp::RegularExpression>
-    capture_up_to_second_number_start_pattern;
+scoped_ptr<const RegExp> capture_up_to_second_number_start_pattern;
 
 // Regular expression of trailing characters that we want to remove. We remove
 // all characters that are not alpha or numerical characters. The hash
@@ -126,21 +144,10 @@ scoped_ptr<const reg_exp::RegularExpression>
 // number if this was a match.
 // This corresponds to UNWANTED_END_CHARS in the java version.
 const char kUnwantedEndChar[] = "[^\\p{N}\\p{L}#]";
-scoped_ptr<const reg_exp::RegularExpression> unwanted_end_char_pattern;
+scoped_ptr<const RegExp> unwanted_end_char_pattern;
 
-// Regular expression of acceptable punctuation found in phone numbers. This
-// excludes punctuation found as a leading character only.  This consists of
-// dash characters, white space characters, full stops, slashes, square
-// brackets, parentheses and tildes. It also includes the letter 'x' as that is
-// found as a placeholder for carrier information in some phone numbers.
-// Full-width variants are also present.
-// To find out the unicode code-point of the characters below in vim, highlight
-// the character and type 'ga'. Note that the - is used to express ranges of
-// full-width punctuation below, as well as being present in the expression
-// itself. In emacs, you can use M-x unicode-what to query information about the
-// unicode character.
-const char kValidPunctuation[] =
-    "-x\xE2\x80\x90-\xE2\x80\x95\xE2\x88\x92\xE3\x83\xBC\xEF\xBC\x8D-\xEF\xBC\x8F \xC2\xA0\xE2\x80\x8B\xE2\x81\xA0\xE3\x80\x80()\xEF\xBC\x88\xEF\xBC\x89\xEF\xBC\xBB\xEF\xBC\xBD.\\[\\]/~\xE2\x81\x93\xE2\x88\xBC\xEF\xBD\x9E";
+// Regular expression of groups of valid punctuation characters.
+scoped_ptr<const RegExp> separator_pattern;
 
 // Regular expression of viable phone numbers. This is location independent.
 // Checks we have at least three leading digits, and only valid punctuation,
@@ -173,24 +180,27 @@ const char kDefaultExtnPrefix[] = " ext. ";
 scoped_ptr<const string> known_extn_patterns;
 // Regexp of all known extension prefixes used by different regions followed
 // by 1 or more valid digits, for use when parsing.
-scoped_ptr<const reg_exp::RegularExpression> extn_pattern;
+scoped_ptr<const RegExp> extn_pattern;
 
 // We append optionally the extension pattern to the end here, as a valid phone
 // number may have an extension prefix appended, followed by 1 or more digits.
-scoped_ptr<const reg_exp::RegularExpression> valid_phone_number_pattern;
+scoped_ptr<const RegExp> valid_phone_number_pattern;
 
 // We use this pattern to check if the phone number has at least three letters
 // in it - if so, then we treat it as a number where some phone-number digits
 // are represented by letters.
-scoped_ptr<const reg_exp::RegularExpression> valid_alpha_phone_pattern;
+scoped_ptr<const RegExp> valid_alpha_phone_pattern;
 
-scoped_ptr<const reg_exp::RegularExpression> first_group_capturing_pattern;
+scoped_ptr<const RegExp> first_group_capturing_pattern;
 
-scoped_ptr<const reg_exp::RegularExpression> carrier_code_pattern;
+scoped_ptr<const RegExp> carrier_code_pattern;
 
-void TransformRegularExpressionToRE2Syntax(string* regex) {
-  DCHECK(regex);
-  StripString(regex, "$", '\\');
+bool LoadCompiledInMetadata(PhoneMetadataCollection* metadata) {
+  if (!metadata->ParseFromArray(metadata_get(), metadata_size())) {
+    cerr << "Could not parse binary data." << endl;
+    return false;
+  }
+  return true;
 }
 
 // Returns a pointer to the description inside the metadata of the appropriate
@@ -276,19 +286,17 @@ void FormatAccordingToFormatsWithCarrier(
        it = available_formats.begin(); it != available_formats.end(); ++it) {
     int size = it->leading_digits_pattern_size();
     if (size > 0) {
-      scoped_ptr<reg_exp::RegularExpressionInput>
-          number_copy(reg_exp::CreateRegularExpressionInput(
-              number_for_leading_digits_match.c_str()));
+      const scoped_ptr<RegExpInput> number_copy(
+          RegExpInput::Create(number_for_leading_digits_match));
       // We always use the last leading_digits_pattern, as it is the most
       // detailed.
-      if (!number_copy->ConsumeRegExp(it->leading_digits_pattern(size - 1),
-                                      true, NULL, NULL)) {
+      if (!regexp_cache->GetRegExp(it->leading_digits_pattern(size - 1))
+              .Consume(number_copy.get())) {
         continue;
       }
     }
-    scoped_ptr<reg_exp::RegularExpression> pattern_to_match(
-        reg_exp::CreateRegularExpression(it->pattern().c_str()));
-    if (pattern_to_match->Match(national_number.c_str(), true, NULL)) {
+    const RegExp& pattern_to_match(regexp_cache->GetRegExp(it->pattern()));
+    if (pattern_to_match.FullMatch(national_number)) {
       string formatting_pattern(it->format());
       if (number_format == PhoneNumberUtil::NATIONAL &&
           carrier_code.length() > 0 &&
@@ -297,11 +305,9 @@ void FormatAccordingToFormatsWithCarrier(
         string carrier_code_formatting_rule =
             it->domestic_carrier_code_formatting_rule();
         carrier_code_pattern->Replace(&carrier_code_formatting_rule,
-                                      false, carrier_code.c_str());
-        TransformRegularExpressionToRE2Syntax(&carrier_code_formatting_rule);
+                                      carrier_code);
         first_group_capturing_pattern->Replace(&formatting_pattern,
-            false,
-            carrier_code_formatting_rule.c_str());
+                                               carrier_code_formatting_rule);
       } else {
         // Use the national prefix formatting rule instead.
         string national_prefix_formatting_rule =
@@ -311,17 +317,12 @@ void FormatAccordingToFormatsWithCarrier(
           // Apply the national_prefix_formatting_rule as the formatting_pattern
           // contains only information on how the national significant number
           // should be formatted at this point.
-          TransformRegularExpressionToRE2Syntax(
-              &national_prefix_formatting_rule);
-          first_group_capturing_pattern->Replace(&formatting_pattern,
-              false,
-              national_prefix_formatting_rule.c_str());
+          first_group_capturing_pattern->Replace(
+              &formatting_pattern, national_prefix_formatting_rule);
         }
       }
-      TransformRegularExpressionToRE2Syntax(&formatting_pattern);
       formatted_number->assign(national_number);
-      pattern_to_match->Replace(formatted_number, true,
-                                formatting_pattern.c_str());
+      pattern_to_match.GlobalReplace(formatted_number, formatting_pattern);
       return;
     }
   }
@@ -348,9 +349,9 @@ void FormatAccordingToFormats(
 bool IsNationalNumberSuffixOfTheOther(const PhoneNumber& first_number,
                                       const PhoneNumber& second_number) {
   const string& first_number_national_number =
-      SimpleItoa(first_number.national_number());
+    SimpleItoa(static_cast<uint64>(first_number.national_number()));
   const string& second_number_national_number =
-      SimpleItoa(second_number.national_number());
+    SimpleItoa(static_cast<uint64>(second_number.national_number()));
   // Note that HasSuffixString returns true if the numbers are equal.
   return HasSuffixString(first_number_national_number,
                          second_number_national_number) ||
@@ -360,14 +361,10 @@ bool IsNationalNumberSuffixOfTheOther(const PhoneNumber& first_number,
 
 bool IsNumberMatchingDesc(const string& national_number,
                           const PhoneNumberDesc& number_desc) {
-  scoped_ptr<const reg_exp::RegularExpression>
-       possible_pattern(reg_exp::CreateRegularExpression(
-           number_desc.possible_number_pattern().c_str()));
-  scoped_ptr<const reg_exp::RegularExpression>
-       national_pattern(reg_exp::CreateRegularExpression(
-           number_desc.national_number_pattern().c_str()));
-  return (possible_pattern->Match(national_number.c_str(), true, NULL) &&
-          national_pattern->Match(national_number.c_str(), true, NULL));
+  return regexp_cache->GetRegExp(number_desc.possible_number_pattern())
+             .FullMatch(national_number) &&
+         regexp_cache->GetRegExp(number_desc.national_number_pattern())
+             .FullMatch(national_number);
 }
 
 PhoneNumberUtil::PhoneNumberType GetNumberTypeHelper(
@@ -375,36 +372,36 @@ PhoneNumberUtil::PhoneNumberType GetNumberTypeHelper(
   const PhoneNumberDesc& general_desc = metadata.general_desc();
   if (!general_desc.has_national_number_pattern() ||
       !IsNumberMatchingDesc(national_number, general_desc)) {
-    logger->Debug("Number type unknown - "
-        "doesn't match general national number pattern.");
+    VLOG(4) << "Number type unknown - doesn't match general national number"
+            << " pattern.";
     return PhoneNumberUtil::UNKNOWN;
   }
   if (IsNumberMatchingDesc(national_number, metadata.premium_rate())) {
-    logger->Debug("Number is a premium number.");
+    VLOG(4) << "Number is a premium number.";
     return PhoneNumberUtil::PREMIUM_RATE;
   }
   if (IsNumberMatchingDesc(national_number, metadata.toll_free())) {
-    logger->Debug("Number is a toll-free number.");
+    VLOG(4) << "Number is a toll-free number.";
     return PhoneNumberUtil::TOLL_FREE;
   }
   if (IsNumberMatchingDesc(national_number, metadata.shared_cost())) {
-    logger->Debug("Number is a shared cost number.");
+    VLOG(4) << "Number is a shared cost number.";
     return PhoneNumberUtil::SHARED_COST;
   }
   if (IsNumberMatchingDesc(national_number, metadata.voip())) {
-    logger->Debug("Number is a VOIP (Voice over IP) number.");
+    VLOG(4) << "Number is a VOIP (Voice over IP) number.";
     return PhoneNumberUtil::VOIP;
   }
   if (IsNumberMatchingDesc(national_number, metadata.personal_number())) {
-    logger->Debug("Number is a personal number.");
+    VLOG(4) << "Number is a personal number.";
     return PhoneNumberUtil::PERSONAL_NUMBER;
   }
   if (IsNumberMatchingDesc(national_number, metadata.pager())) {
-    logger->Debug("Number is a pager number.");
+    VLOG(4) << "Number is a pager number.";
     return PhoneNumberUtil::PAGER;
   }
   if (IsNumberMatchingDesc(national_number, metadata.uan())) {
-    logger->Debug("Number is a UAN.");
+    VLOG(4) << "Number is a UAN.";
     return PhoneNumberUtil::UAN;
   }
 
@@ -412,97 +409,41 @@ PhoneNumberUtil::PhoneNumberType GetNumberTypeHelper(
       IsNumberMatchingDesc(national_number, metadata.fixed_line());
   if (is_fixed_line) {
     if (metadata.same_mobile_and_fixed_line_pattern()) {
-      logger->Debug("Fixed-line and mobile patterns equal, "
-          "number is fixed-line or mobile");
+      VLOG(4) << "Fixed-line and mobile patterns equal, number is fixed-line"
+              << " or mobile";
       return PhoneNumberUtil::FIXED_LINE_OR_MOBILE;
     } else if (IsNumberMatchingDesc(national_number, metadata.mobile())) {
-      logger->Debug("Fixed-line and mobile patterns differ, but number is "
-          "still fixed-line or mobile");
+      VLOG(4) << "Fixed-line and mobile patterns differ, but number is "
+              << "still fixed-line or mobile";
       return PhoneNumberUtil::FIXED_LINE_OR_MOBILE;
     }
-    logger->Debug("Number is a fixed line number.");
+    VLOG(4) << "Number is a fixed line number.";
     return PhoneNumberUtil::FIXED_LINE;
   }
   // Otherwise, test to see if the number is mobile. Only do this if certain
   // that the patterns for mobile and fixed line aren't the same.
   if (!metadata.same_mobile_and_fixed_line_pattern() &&
       IsNumberMatchingDesc(national_number, metadata.mobile())) {
-    logger->Debug("Number is a mobile number.");
+    VLOG(4) << "Number is a mobile number.";
     return PhoneNumberUtil::MOBILE;
   }
-  logger->Debug("Number type unknown - doesn't match any specific number type"
-      " pattern.");
+  VLOG(4) << "Number type unknown - doesn\'t match any specific number type"
+          << " pattern.";
   return PhoneNumberUtil::UNKNOWN;
-}
-
-int DecodeUTF8Char(const char* in, char32* out) {
-  Rune r;
-  int len = chartorune(&r, in);
-  *out = r;
-
-  return len;
 }
 
 char32 ToUnicodeCodepoint(const char* unicode_char) {
   char32 codepoint;
-  DecodeUTF8Char(unicode_char, &codepoint);
-
+  EncodingUtils::DecodeUTF8Char(unicode_char, &codepoint);
   return codepoint;
-}
-
-// Initialisation helper function used to populate the regular expressions in a
-// defined order.
-void CreateRegularExpressions() {
-  unique_international_prefix.reset(
-      reg_exp::CreateRegularExpression("[\\d]+(?:[~\xE2\x81\x93\xE2\x88\xBC\xEF\xBD\x9E][\\d]+)?"));
-  first_group_capturing_pattern.reset(
-      reg_exp::CreateRegularExpression("(\\$1)"));
-  carrier_code_pattern.reset(
-      reg_exp::CreateRegularExpression("\\$CC"));
-  capturing_digit_pattern.reset(
-      reg_exp::CreateRegularExpression(
-         StrCat("([", kValidDigits, "])").c_str()));
-  capturing_ascii_digits_pattern.reset(
-      reg_exp::CreateRegularExpression("(\\d+)"));
-  valid_start_char.reset(new string(StrCat(
-      "[", kPlusChars, kValidDigits, "]")));
-  valid_start_char_pattern.reset(
-      reg_exp::CreateRegularExpression(valid_start_char->c_str()));
-  capture_up_to_second_number_start_pattern.reset(
-      reg_exp::CreateRegularExpression(kCaptureUpToSecondNumberStart));
-  unwanted_end_char_pattern.reset(
-      reg_exp::CreateRegularExpression(kUnwantedEndChar));
-  valid_phone_number.reset(new string(
-      StrCat("[", kPlusChars, "]*(?:[", kValidPunctuation, "]*[", kValidDigits,
-             "]){3,}[", kValidAlpha, kValidPunctuation, kValidDigits, "]*")));
-  // Canonical-equivalence doesn't seem to be an option with RE2, so we allow
-  // two options for representing the \xC3\xB3 - the character itself, and one in the
-  // unicode decomposed form with the combining acute accent. Note that there
-  // are currently three capturing groups for the extension itself - if this
-  // number is changed, MaybeStripExtension needs to be updated.
-  const string capturing_extn_digits = StrCat("([", kValidDigits, "]{1,7})");
-  known_extn_patterns.reset(new string(
-      StrCat(kRfc3966ExtnPrefix, capturing_extn_digits, "|"
-             "[ \xC2\xA0\\t,]*(?:ext(?:ensi(?:o\xCC\x81?|\xC3\xB3))?n?|\xEF\xBD\x85\xEF\xBD\x98\xEF\xBD\x94\xEF\xBD\x8E?|[,x\xEF\xBD\x98#\xEF\xBC\x83~\xEF\xBD\x9E]|"
-             "int|\xEF\xBD\x89\xEF\xBD\x8E\xEF\xBD\x94|anexo)"
-             "[:\\.\xEF\xBC\x8E]?[ \xC2\xA0\\t,-]*", capturing_extn_digits, "#?|"
-             "[- ]+([", kValidDigits, "]{1,5})#")));
-  extn_pattern.reset(reg_exp::CreateRegularExpression(
-      StrCat("(?i)(?:", *known_extn_patterns, ")$").c_str()));
-  valid_phone_number_pattern.reset(reg_exp::CreateRegularExpression(
-      StrCat("(?i)", *valid_phone_number, "(?:", *known_extn_patterns,
-             ")?").c_str()));
-  valid_alpha_phone_pattern.reset(reg_exp::CreateRegularExpression(
-      StrCat("(?i)(?:.*?[", kValidAlpha, "]){3}").c_str()));
-  plus_chars_pattern.reset(reg_exp::CreateRegularExpression(
-      StrCat("[", kPlusChars, "]+").c_str()));
 }
 
 void InitializeStaticMapsAndSets() {
   // Create global objects.
+  regexp_cache.reset(new RegExpCache(128));
   all_plus_number_grouping_symbols.reset(new map<char32, char>);
   alpha_mappings.reset(new map<char32, char>);
-  all_normalization_mappings.reset(new map<char32, char>);
+  alpha_phone_mappings.reset(new map<char32, char>);
 
   // Punctuation that we wish to respect in alpha numbers, as they show number
   // groupings are mapped here.
@@ -588,16 +529,15 @@ void InitializeStaticMapsAndSets() {
   // pulling in all of ICU, which we don't want to do if we don't have to.
   alpha_mappings->insert(lower_case_mappings.begin(),
                          lower_case_mappings.end());
-  all_normalization_mappings->insert(alpha_mappings->begin(),
-                                     alpha_mappings->end());
+  alpha_phone_mappings->insert(alpha_mappings->begin(),
+                               alpha_mappings->end());
   all_plus_number_grouping_symbols->insert(alpha_letters.begin(),
                                            alpha_letters.end());
   // Add the ASCII digits so that they don't get deleted by NormalizeHelper().
   for (char c = '0'; c <= '9'; ++c) {
-    all_normalization_mappings->insert(make_pair(c, c));
+    alpha_phone_mappings->insert(make_pair(c, c));
     all_plus_number_grouping_symbols->insert(make_pair(c, c));
   }
-  CreateRegularExpressions();
 }
 
 // Normalizes a string of characters representing a phone number by replacing
@@ -618,6 +558,7 @@ void NormalizeHelper(const map<char32, char>& normalization_replacements,
   UnicodeText number_as_unicode;
   number_as_unicode.PointToUTF8(number->data(), number->size());
   string normalized_number;
+  char unicode_char[5];
   for (UnicodeText::const_iterator it = number_as_unicode.begin();
        it != number_as_unicode.end();
        ++it) {
@@ -626,7 +567,9 @@ void NormalizeHelper(const map<char32, char>& normalization_replacements,
     if (found_glyph_pair != normalization_replacements.end()) {
       normalized_number.push_back(found_glyph_pair->second);
     } else if (!remove_non_matches) {
-      normalized_number.append(it.utf8_data());
+      // Find out how long this unicode char is so we can append it all.
+      int char_len = it.get_utf8(unicode_char);
+      normalized_number.append(unicode_char, char_len);
     }
     // If neither of the above are true, we remove this character.
   }
@@ -635,19 +578,17 @@ void NormalizeHelper(const map<char32, char>& normalization_replacements,
 
 // Strips the IDD from the start of the number if present. Helper function used
 // by MaybeStripInternationalPrefixAndNormalize.
-bool ParsePrefixAsIdd(const reg_exp::RegularExpression* idd_pattern,
-                      string* number) {
+bool ParsePrefixAsIdd(const RegExp& idd_pattern, string* number) {
   DCHECK(number);
-  scoped_ptr<reg_exp::RegularExpressionInput> number_copy(
-      reg_exp::CreateRegularExpressionInput(number->c_str()));
+  const scoped_ptr<RegExpInput> number_copy(RegExpInput::Create(*number));
   // First attempt to strip the idd_pattern at the start, if present. We make a
   // copy so that we can revert to the original string if necessary.
-  if (idd_pattern->Consume(number_copy.get(), true, NULL, NULL)) {
+  if (idd_pattern.Consume(number_copy.get())) {
     // Only strip this if the first digit after the match is not a 0, since
     // country calling codes cannot begin with 0.
     string extracted_digit;
-    if (capturing_digit_pattern->Match(number_copy->ToString().c_str(), false,
-                                       &extracted_digit)) {
+    if (capturing_digit_pattern->PartialMatch(number_copy->ToString(),
+                                              &extracted_digit)) {
       PhoneNumberUtil::NormalizeDigitsOnly(&extracted_digit);
       if (extracted_digit == "0") {
         return false;
@@ -660,12 +601,12 @@ bool ParsePrefixAsIdd(const reg_exp::RegularExpression* idd_pattern,
 }
 
 PhoneNumberUtil::ValidationResult TestNumberLengthAgainstPattern(
-    const reg_exp::RegularExpression* number_pattern, const string& number) {
+    const RegExp& number_pattern, const string& number) {
   string extracted_number;
-  if (number_pattern->Match(number.c_str(), true, &extracted_number)) {
+  if (number_pattern.FullMatch(number, &extracted_number)) {
     return PhoneNumberUtil::IS_POSSIBLE;
   }
-  if (number_pattern->Match(number.c_str(), false, &extracted_number)) {
+  if (number_pattern.PartialMatch(number, &extracted_number)) {
     return PhoneNumberUtil::TOO_LONG;
   } else {
     return PhoneNumberUtil::TOO_SHORT;
@@ -674,50 +615,20 @@ PhoneNumberUtil::ValidationResult TestNumberLengthAgainstPattern(
 
 }  // namespace
 
-// Fetch the metadata which are actually already available in the address space
-// (embedded).
-class DefaultMetadataProvider : public PhoneNumberUtil::MetadataProvider {
- public:
-  virtual ~DefaultMetadataProvider() {}
-
-  virtual pair<const void*, unsigned> operator()() {
-    return make_pair(metadata_get(), metadata_size());
-  }
-};
-
-bool PhoneNumberUtil::LoadMetadata(PhoneMetadataCollection* metadata,
-    MetadataProvider& provider) {
-
-  pair<const void*, unsigned> p = provider();
-  const void* metadata_start = p.first;
-  unsigned size = p.second;
-
-  if (!metadata->ParseFromArray(metadata_start, size)) {
-    cerr << "Could not parse binary data." << endl;
-    return false;
-  }
-  return true;
-}
-
-void PhoneNumberUtil::SetLoggerAdapter(LoggerAdapter* logger_adapter) {
-  logger.reset(logger_adapter);
+void PhoneNumberUtil::SetLogger(Logger* logger) {
+  Logger::set_logger_impl(logger);
 }
 
 // Private constructor. Also takes care of initialisation.
-PhoneNumberUtil::PhoneNumberUtil(MetadataProvider* provider)
+PhoneNumberUtil::PhoneNumberUtil()
     : country_calling_code_to_region_code_map_(new vector<IntRegionsPair>()),
       nanpa_regions_(new set<string>()),
       region_to_metadata_map_(new map<string, PhoneMetadata>()) {
-
-  if (logger == NULL) {
-    SetLoggerAdapter(new DefaultLogger());
-  }
+  logger_.reset(new StdoutLogger());
+  Logger::set_logger_impl(logger_.get());
   PhoneMetadataCollection metadata_collection;
-  DefaultMetadataProvider default_provider;
-
-  if (!LoadMetadata(&metadata_collection, provider ? *provider
-                                                   : default_provider)) {
-    logger->Fatal("Could not load metadata");
+  if (!LoadCompiledInMetadata(&metadata_collection)) {
+    LOG(DFATAL) << "Could not parse compiled-in metadata.";
     return;
   }
   // Storing data in a temporary map to make it easier to find other regions
@@ -758,18 +669,16 @@ PhoneNumberUtil::PhoneNumberUtil(MetadataProvider* provider)
   // Sort all the pairs in ascending order according to country calling code.
   sort(country_calling_code_to_region_code_map_->begin(),
        country_calling_code_to_region_code_map_->end(),
-       CompareFirst());
+       OrderByFirst());
 
   InitializeStaticMapsAndSets();
+  CreateRegularExpressions();
 }
 
 PhoneNumberUtil::~PhoneNumberUtil() {
-  for (vector<IntRegionsPair>::const_iterator it =
-           country_calling_code_to_region_code_map_->begin();
-       it != country_calling_code_to_region_code_map_->end();
-       ++it) {
-    delete it->second;
-  }
+  STLDeleteContainerPairSecondPointers(
+      country_calling_code_to_region_code_map_->begin(),
+      country_calling_code_to_region_code_map_->end());
 }
 
 // Public wrapper function to get a PhoneNumberUtil instance with the default
@@ -777,6 +686,72 @@ PhoneNumberUtil::~PhoneNumberUtil() {
 // static
 PhoneNumberUtil* PhoneNumberUtil::GetInstance() {
   return Singleton<PhoneNumberUtil>::get();
+}
+
+void PhoneNumberUtil::CreateRegularExpressions() const {
+  unique_international_prefix.reset(RegExp::Create(
+      "[\\d]+(?:[~\xE2\x81\x93\xE2\x88\xBC\xEF\xBD\x9E][\\d]+)?"));
+  // The first_group_capturing_pattern was originally set to $1 but there are
+  // some countries for which the first group is not used in the national
+  // pattern (e.g. Argentina) so the $1 group does not match correctly.
+  // Therefore, we use \d, so that the first group actually used in the pattern
+  // will be matched.
+  first_group_capturing_pattern.reset(RegExp::Create("(\\$\\d)"));
+  carrier_code_pattern.reset(RegExp::Create("\\$CC"));
+  digits_pattern.reset(RegExp::Create(StrCat("[", kDigits, "]*")));
+  capturing_digit_pattern.reset(RegExp::Create(StrCat("([", kDigits, "])")));
+  capturing_ascii_digits_pattern.reset(RegExp::Create("(\\d+)"));
+  valid_start_char.reset(new string(StrCat("[", kPlusChars, kDigits, "]")));
+  valid_start_char_pattern.reset(RegExp::Create(*valid_start_char));
+  capture_up_to_second_number_start_pattern.reset(RegExp::Create(
+      kCaptureUpToSecondNumberStart));
+  unwanted_end_char_pattern.reset(RegExp::Create(kUnwantedEndChar));
+  separator_pattern.reset(RegExp::Create(StrCat("[", kValidPunctuation, "]+")));
+  valid_phone_number.reset(new string(
+      StrCat("[", kPlusChars, "]*(?:[", kValidPunctuation, "]*[", kDigits,
+             "]){3,}[", kValidAlpha, kValidPunctuation, kDigits, "]*")));
+  // Canonical-equivalence doesn't seem to be an option with RE2, so we allow
+  // two options for representing the \xC3\xB3 - the character itself, and one in the
+  // unicode decomposed form with the combining acute accent. Note that there
+  // are currently three capturing groups for the extension itself - if this
+  // number is changed, MaybeStripExtension needs to be updated.
+  const string capturing_extn_digits = StrCat("([", kDigits, "]{1,7})");
+  known_extn_patterns.reset(new string(
+      StrCat(kRfc3966ExtnPrefix, capturing_extn_digits, "|"
+             "[ \xC2\xA0\\t,]*(?:ext(?:ensi(?:o\xCC\x81?|\xC3\xB3))?n?|\xEF\xBD\x85\xEF\xBD\x98\xEF\xBD\x94\xEF\xBD\x8E?|[,x\xEF\xBD\x98#\xEF\xBC\x83~\xEF\xBD\x9E]|"
+             "int|\xEF\xBD\x89\xEF\xBD\x8E\xEF\xBD\x94|anexo)"
+             "[:\\.\xEF\xBC\x8E]?[ \xC2\xA0\\t,-]*", capturing_extn_digits, "#?|"
+             "[- ]+([", kDigits, "]{1,5})#")));
+  extn_pattern.reset(RegExp::Create(
+      StrCat("(?i)(?:", *known_extn_patterns, ")$")));
+  valid_phone_number_pattern.reset(RegExp::Create(
+      StrCat("(?i)", *valid_phone_number, "(?:", *known_extn_patterns, ")?")));
+  valid_alpha_phone_pattern.reset(RegExp::Create(
+      StrCat("(?i)(?:.*?[", kValidAlpha, "]){3}")));
+  plus_chars_pattern.reset(RegExp::Create(StrCat("[", kPlusChars, "]+")));
+}
+
+const string& PhoneNumberUtil::GetExtnPatterns() const {
+  return *(known_extn_patterns.get());
+}
+
+void PhoneNumberUtil::TrimUnwantedEndChars(string* number) const {
+  DCHECK(number);
+  UnicodeText number_as_unicode;
+  number_as_unicode.PointToUTF8(number->data(), number->size());
+  char current_char[5];
+  int len;
+  UnicodeText::const_reverse_iterator reverse_it(number_as_unicode.end());
+  for (; reverse_it.base() != number_as_unicode.begin(); ++reverse_it) {
+    len = reverse_it.get_utf8(current_char);
+    current_char[len] = '\0';
+    if (!unwanted_end_char_pattern->FullMatch(current_char)) {
+      break;
+    }
+  }
+
+  number->assign(UnicodeText::UTF8Substring(number_as_unicode.begin(),
+                                            reverse_it.base()));
 }
 
 void PhoneNumberUtil::GetSupportedRegions(set<string>* regions) const {
@@ -793,7 +768,7 @@ void PhoneNumberUtil::GetNddPrefixForRegion(const string& region_code,
                                             string* national_prefix) const {
   DCHECK(national_prefix);
   if (!IsValidRegionCode(region_code)) {
-    logger->Error("Invalid region code provided.");
+    LOG(ERROR) << "Invalid region code provided.";
     return;
   }
   const PhoneMetadata* metadata = GetMetadataForRegion(region_code);
@@ -811,11 +786,13 @@ bool PhoneNumberUtil::IsValidRegionCode(const string& region_code) const {
 }
 
 bool PhoneNumberUtil::HasValidRegionCode(const string& region_code,
-                                         int country_code,
+                                         int country_calling_code,
                                          const string& number) const {
   if (!IsValidRegionCode(region_code)) {
-    logger->Info(string("Number ") + number +
-            " has invalid or missing country code (" + country_code + ")");
+    VLOG(1) << "Number " << number
+            << " has invalid or missing country calling code ("
+            << country_calling_code
+            << ")";
     return false;
   }
   return true;
@@ -873,10 +850,6 @@ void PhoneNumberUtil::FormatByPattern(
     PhoneNumberFormat number_format,
     const RepeatedPtrField<NumberFormat>& user_defined_formats,
     string* formatted_number) const {
-  static scoped_ptr<const reg_exp::RegularExpression>
-      national_prefix_pattern(reg_exp::CreateRegularExpression("\\$NP"));
-  static scoped_ptr<const reg_exp::RegularExpression>
-      first_group_pattern(reg_exp::CreateRegularExpression("\\$FG"));
   DCHECK(formatted_number);
   int country_calling_code = number.country_code();
   // Note GetRegionCodeForCountryCode() is used because formatting information
@@ -906,12 +879,10 @@ void PhoneNumberUtil::FormatByPattern(
       num_format_copy->MergeFrom(*it);
       if (!national_prefix.empty()) {
         // Replace $NP with national prefix and $FG with the first group ($1).
-        national_prefix_pattern->Replace(&national_prefix_formatting_rule,
-                                         false,
-                                         national_prefix.c_str());
-        first_group_pattern->Replace(&national_prefix_formatting_rule,
-                                     false,
-                                     "$1");
+        GlobalReplaceSubstring("$NP", national_prefix,
+                               &national_prefix_formatting_rule);
+        GlobalReplaceSubstring("$FG", "$1",
+                               &national_prefix_formatting_rule);
         num_format_copy->set_national_prefix_formatting_rule(
             national_prefix_formatting_rule);
       } else {
@@ -923,7 +894,6 @@ void PhoneNumberUtil::FormatByPattern(
       user_defined_formats_copy.Add()->MergeFrom(*it);
     }
   }
-
   string formatted_number_without_extension;
   FormatAccordingToFormats(national_significant_number,
                            user_defined_formats_copy,
@@ -984,8 +954,8 @@ void PhoneNumberUtil::FormatOutOfCountryCallingNumber(
     string* formatted_number) const {
   DCHECK(formatted_number);
   if (!IsValidRegionCode(calling_from)) {
-    logger->Info("Trying to format number from invalid region. International"
-        " formatting applied.");
+    VLOG(1) << "Trying to format number from invalid region. International"
+            << " formatting applied.";
     Format(number, INTERNATIONAL, formatted_number);
     return;
   }
@@ -1035,9 +1005,8 @@ void PhoneNumberUtil::FormatOutOfCountryCallingNumber(
   // For regions that have multiple international prefixes, the international
   // format of the number is returned, unless there is a preferred international
   // prefix.
-  string international_prefix_for_formatting(
-      unique_international_prefix->Match(international_prefix.c_str(),
-                                         true, NULL)
+  const string international_prefix_for_formatting(
+      unique_international_prefix->FullMatch(international_prefix)
       ? international_prefix
       : metadata->preferred_international_prefix());
   if (!international_prefix_for_formatting.empty()) {
@@ -1122,7 +1091,8 @@ void PhoneNumberUtil::FormatOutOfCountryKeepingAlphaChars(
   } else if (number.country_code() == GetCountryCodeForRegion(calling_from)) {
     // Here we copy the formatting rules so we can modify the pattern we expect
     // to match against.
-    RepeatedPtrField<NumberFormat> available_formats = metadata->number_format();
+    RepeatedPtrField<NumberFormat> available_formats =
+        metadata->number_format();
     for (RepeatedPtrField<NumberFormat>::iterator
          it = available_formats.begin(); it != available_formats.end(); ++it) {
       // The first group is the first group of digits that the user determined.
@@ -1148,9 +1118,8 @@ void PhoneNumberUtil::FormatOutOfCountryKeepingAlphaChars(
   // For regions that have multiple international prefixes, the international
   // format of the number is returned, unless there is a preferred international
   // prefix.
-  string international_prefix_for_formatting(
-      unique_international_prefix->Match(international_prefix.c_str(),
-                                         true, NULL)
+  const string international_prefix_for_formatting(
+      unique_international_prefix->FullMatch(international_prefix)
       ? international_prefix
       : metadata->preferred_international_prefix());
   if (!international_prefix_for_formatting.empty()) {
@@ -1196,10 +1165,7 @@ void PhoneNumberUtil::FormatNationalNumberWithCarrier(
                                       number, carrier_code, formatted_number);
   if (number_format == RFC3966) {
     // Replace all separators with a "-".
-    scoped_ptr<const reg_exp::RegularExpression> separator_pattern(
-        reg_exp::CreateRegularExpression(
-            StrCat("[", kValidPunctuation, "]+").c_str()));
-    separator_pattern->Replace(formatted_number, true, "-");
+    separator_pattern->GlobalReplace(formatted_number, "-");
   }
 }
 
@@ -1256,7 +1222,7 @@ void PhoneNumberUtil::GetRegionCodesForCountryCallingCode(
   pair<ConstIterator, ConstIterator> range = equal_range(
       country_calling_code_to_region_code_map_->begin(),
       country_calling_code_to_region_code_map_->end(),
-      target_pair, CompareFirst());
+      target_pair, OrderByFirst());
   if (range.first != range.second) {
     region_codes->insert(region_codes->begin(),
                          range.first->second->begin(),
@@ -1273,7 +1239,8 @@ void PhoneNumberUtil::GetRegionCodeForCountryCode(
   list<string> region_codes;
 
   GetRegionCodesForCountryCallingCode(country_calling_code, &region_codes);
-  *region_code = region_codes.size() != 0 ? region_codes.front() : "ZZ";
+  *region_code = (region_codes.size() > 0)
+      ? region_codes.front() : RegionCode::GetUnknown();
 }
 
 void PhoneNumberUtil::GetRegionCodeForNumber(const PhoneNumber& number,
@@ -1285,9 +1252,10 @@ void PhoneNumberUtil::GetRegionCodeForNumber(const PhoneNumber& number,
   if (region_codes.size() == 0) {
     string number_string;
     GetNationalSignificantNumber(number, &number_string);
-    logger->Warning(string("Missing/invalid country code (") +
-        SimpleItoa(country_calling_code) + ") for number " + number_string);
-    *region_code = "ZZ";
+    LOG(WARNING) << "Missing/invalid country calling code ("
+                 << country_calling_code
+                 << ") for number " << number_string;
+    *region_code = RegionCode::GetUnknown();
     return;
   }
   if (region_codes.size() == 1) {
@@ -1307,9 +1275,10 @@ void PhoneNumberUtil::GetRegionCodeForNumberFromRegionList(
        it != region_codes.end(); ++it) {
     const PhoneMetadata* metadata = GetMetadataForRegion(*it);
     if (metadata->has_leading_digits()) {
-      scoped_ptr<reg_exp::RegularExpressionInput> number(
-          reg_exp::CreateRegularExpressionInput(national_number.c_str()));
-      if (number->ConsumeRegExp(metadata->leading_digits(), true, NULL, NULL)) {
+      const scoped_ptr<RegExpInput> number(
+          RegExpInput::Create(national_number));
+      if (regexp_cache->GetRegExp(metadata->leading_digits()).Consume(
+          number.get())) {
         *region_code = *it;
         return;
       }
@@ -1318,19 +1287,15 @@ void PhoneNumberUtil::GetRegionCodeForNumberFromRegionList(
       return;
     }
   }
-  *region_code = "ZZ";
+  *region_code = RegionCode::GetUnknown();
 }
 
 int PhoneNumberUtil::GetCountryCodeForRegion(const string& region_code) const {
   if (!IsValidRegionCode(region_code)) {
-    logger->Info("Invalid or unknown country code provided.");
+    LOG(ERROR) << "Invalid or unknown region code provided.";
     return 0;
   }
   const PhoneMetadata* metadata = GetMetadataForRegion(region_code);
-  if (!metadata) {
-    logger->Error("Unsupported country code provided.");
-    return 0;
-  }
   return metadata->country_code();
 }
 
@@ -1351,6 +1316,10 @@ bool PhoneNumberUtil::GetExampleNumberForType(
     PhoneNumberUtil::PhoneNumberType type,
     PhoneNumber* number) const {
   DCHECK(number);
+  if (!IsValidRegionCode(region_code)) {
+    LOG(WARNING) << "Invalid or unknown region code provided.";
+    return false;
+  }
   const PhoneMetadata* region_metadata = GetMetadataForRegion(region_code);
   const PhoneNumberDesc* description =
       GetNumberDescByType(*region_metadata, type);
@@ -1385,10 +1354,8 @@ bool PhoneNumberUtil::CheckRegionForParsing(
     const string& number_to_parse,
     const string& default_region) const {
   if (!IsValidRegionCode(default_region) && !number_to_parse.empty()) {
-    scoped_ptr<reg_exp::RegularExpressionInput> number_as_string_piece(
-        reg_exp::CreateRegularExpressionInput(number_to_parse.c_str()));
-    if (!plus_chars_pattern->Consume(number_as_string_piece.get(),
-                                     true, NULL, NULL)) {
+    const scoped_ptr<RegExpInput> number(RegExpInput::Create(number_to_parse));
+    if (!plus_chars_pattern->Consume(number.get())) {
       return false;
     }
   }
@@ -1407,13 +1374,13 @@ PhoneNumberUtil::ErrorType PhoneNumberUtil::ParseHelper(
   string national_number;
   ExtractPossibleNumber(number_to_parse, &national_number);
   if (!IsViablePhoneNumber(national_number)) {
-    logger->Debug("The string supplied did not seem to be a phone number.");
+    VLOG(2) << "The string supplied did not seem to be a phone number.";
     return NOT_A_NUMBER;
   }
 
   if (check_region &&
       !CheckRegionForParsing(national_number, default_region)) {
-    logger->Info("Missing or invalid default country.");
+    VLOG(1) << "Missing or invalid default country.";
     return INVALID_COUNTRY_CODE_ERROR;
   }
   PhoneNumber temp_number;
@@ -1451,7 +1418,7 @@ PhoneNumberUtil::ErrorType PhoneNumberUtil::ParseHelper(
     country_code = country_metadata->country_code();
   }
   if (normalized_national_number.length() < kMinLengthForNsn) {
-    logger->Debug("The string supplied is too short to be a phone number.");
+    VLOG(2) << "The string supplied is too short to be a phone number.";
     return TOO_SHORT_NSN;
   }
   if (country_metadata) {
@@ -1464,11 +1431,11 @@ PhoneNumberUtil::ErrorType PhoneNumberUtil::ParseHelper(
   size_t normalized_national_number_length =
       normalized_national_number.length();
   if (normalized_national_number_length < kMinLengthForNsn) {
-    logger->Debug("The string supplied is too short to be a phone number.");
+    VLOG(2) << "The string supplied is too short to be a phone number.";
     return TOO_SHORT_NSN;
   }
   if (normalized_national_number_length > kMaxLengthForNsn) {
-    logger->Debug("The string supplied is too long to be a phone number.");
+    VLOG(2) << "The string supplied is too long to be a phone number.";
     return TOO_LONG_NSN;
   }
   temp_number.set_country_code(country_code);
@@ -1494,9 +1461,8 @@ PhoneNumberUtil::ErrorType PhoneNumberUtil::ParseHelper(
 // second extension here makes this actually two phone numbers, (530) 583-6985
 // x302 and (530) 583-6985 x2303. We remove the second extension so that the
 // first number is parsed correctly.
-// static
 void PhoneNumberUtil::ExtractPossibleNumber(const string& number,
-                                            string* extracted_number) {
+                                            string* extracted_number) const {
   DCHECK(extracted_number);
 
   UnicodeText number_as_unicode;
@@ -1507,7 +1473,7 @@ void PhoneNumberUtil::ExtractPossibleNumber(const string& number,
   for (it = number_as_unicode.begin(); it != number_as_unicode.end(); ++it) {
     len = it.get_utf8(current_char);
     current_char[len] = '\0';
-    if (valid_start_char_pattern->Match(current_char, true, NULL)) {
+    if (valid_start_char_pattern->FullMatch(current_char)) {
       break;
     }
   }
@@ -1519,29 +1485,19 @@ void PhoneNumberUtil::ExtractPossibleNumber(const string& number,
     return;
   }
 
-  UnicodeText::const_reverse_iterator reverse_it(number_as_unicode.end());
-  for (; reverse_it.base() != it; ++reverse_it) {
-    len = reverse_it.get_utf8(current_char);
-    current_char[len] = '\0';
-    if (!unwanted_end_char_pattern->Match(current_char, true, NULL)) {
-      break;
-    }
-  }
-
-  if (reverse_it.base() == it) {
-    extracted_number->assign("");
+  extracted_number->assign(
+      UnicodeText::UTF8Substring(it, number_as_unicode.end()));
+  TrimUnwantedEndChars(extracted_number);
+  if (extracted_number->length() == 0) {
     return;
   }
 
-  extracted_number->assign(UnicodeText::UTF8Substring(it, reverse_it.base()));
-
-  logger->Debug("After stripping starting and trailing characters,"
-      " left with: " + *extracted_number);
+  VLOG(3) << "After stripping starting and trailing characters, left with: "
+          << *extracted_number;
 
   // Now remove any extra numbers at the end.
-  capture_up_to_second_number_start_pattern->Match(extracted_number->c_str(),
-                                                   false,
-                                                   extracted_number);
+  capture_up_to_second_number_start_pattern->PartialMatch(*extracted_number,
+                                                          extracted_number);
 }
 
 bool PhoneNumberUtil::IsPossibleNumber(const PhoneNumber& number) const {
@@ -1587,10 +1543,9 @@ PhoneNumberUtil::ValidationResult PhoneNumberUtil::IsPossibleNumberWithReason(
       return IS_POSSIBLE;
     }
   }
-  scoped_ptr<reg_exp::RegularExpression> possible_number_pattern(
-      reg_exp::CreateRegularExpression(
-      StrCat("(", general_num_desc.possible_number_pattern(), ")").c_str()));
-  return TestNumberLengthAgainstPattern(possible_number_pattern.get(),
+  const RegExp& possible_number_pattern = regexp_cache->GetRegExp(
+      StrCat("(", general_num_desc.possible_number_pattern(), ")"));
+  return TestNumberLengthAgainstPattern(possible_number_pattern,
                                         national_number);
 }
 
@@ -1647,7 +1602,7 @@ bool PhoneNumberUtil::IsValidNumberForRegion(const PhoneNumber& number,
   // is between the minimum and maximum lengths defined by ITU for a national
   // significant number.
   if (!general_desc.has_national_number_pattern()) {
-    logger->Info("Validating number with incomplete metadata.");
+    VLOG(3) << "Validating number with incomplete metadata.";
     size_t number_length = national_number.length();
     return number_length > kMinLengthForNsn &&
         number_length <= kMaxLengthForNsn;
@@ -1720,16 +1675,14 @@ int PhoneNumberUtil::GetLengthOfNationalDestinationCode(
 
   string formatted_number;
   Format(copied_proto, INTERNATIONAL, &formatted_number);
-  scoped_ptr<reg_exp::RegularExpressionInput> i18n_number(
-      reg_exp::CreateRegularExpressionInput(formatted_number.c_str()));
+  const scoped_ptr<RegExpInput> i18n_number(
+      RegExpInput::Create(formatted_number));
   string digit_group;
   string ndc;
   string third_group;
   for (int i = 0; i < 3; ++i) {
-    if (!capturing_ascii_digits_pattern->Consume(i18n_number.get(),
-                                                 false,
-                                                 &digit_group,
-                                                 NULL)) {
+    if (!capturing_ascii_digits_pattern->FindAndConsume(i18n_number.get(),
+                                                        &digit_group)) {
       // We should find at least three groups.
       return 0;
     }
@@ -1755,44 +1708,12 @@ int PhoneNumberUtil::GetLengthOfNationalDestinationCode(
 // static
 void PhoneNumberUtil::NormalizeDigitsOnly(string* number) {
   DCHECK(number);
+  static const scoped_ptr<const RegExp> non_digits_pattern(RegExp::Create(
+      StrCat("[^", kDigits, "]")));
   // Delete everything that isn't valid digits.
-  static scoped_ptr<reg_exp::RegularExpression> invalid_digits_pattern(
-      reg_exp::CreateRegularExpression(StrCat("[^", kValidDigits,
-                                              "]").c_str()));
-  static const char *empty = "";
-  invalid_digits_pattern->Replace(number, true, empty);
+  non_digits_pattern->GlobalReplace(number, "");
   // Normalize all decimal digits to ASCII digits.
-  UParseError error;
-  icu::ErrorCode status;
-
-  if (!GetInstance()->transliterator_.get()) {
-    GetInstance()->transliterator_.reset(
-      icu::Transliterator::createFromRules(
-        "NormalizeDecimalDigits",
-        "[[:nv=0:]-[0]-[:^nt=de:]]>0;"
-        "[[:nv=1:]-[1]-[:^nt=de:]]>1;"
-        "[[:nv=2:]-[2]-[:^nt=de:]]>2;"
-        "[[:nv=3:]-[3]-[:^nt=de:]]>3;"
-        "[[:nv=4:]-[4]-[:^nt=de:]]>4;"
-        "[[:nv=5:]-[5]-[:^nt=de:]]>5;"
-        "[[:nv=6:]-[6]-[:^nt=de:]]>6;"
-        "[[:nv=7:]-[7]-[:^nt=de:]]>7;"
-        "[[:nv=8:]-[8]-[:^nt=de:]]>8;"
-        "[[:nv=9:]-[9]-[:^nt=de:]]>9;",
-        UTRANS_FORWARD,
-        error,
-        status
-      )
-    );
-  }
-  if (!status.isSuccess()) {
-    logger->Error("Error creating ICU Transliterator");
-    return;
-  }
-  icu::UnicodeString utf16(icu::UnicodeString::fromUTF8(number->c_str()));
-  GetInstance()->transliterator_->transliterate(utf16);
-  number->clear();
-  utf16.toUTF8String(*number);
+  number->assign(NormalizeUTF8::NormalizeDecimalDigits(*number));
 }
 
 bool PhoneNumberUtil::IsAlphaNumber(const string& number) const {
@@ -1804,28 +1725,30 @@ bool PhoneNumberUtil::IsAlphaNumber(const string& number) const {
   string number_copy(number);
   string extension;
   MaybeStripExtension(&number_copy, &extension);
-  return valid_alpha_phone_pattern->Match(number_copy.c_str(), true, NULL);
+  return valid_alpha_phone_pattern->FullMatch(number_copy);
 }
 
 void PhoneNumberUtil::ConvertAlphaCharactersInNumber(string* number) const {
   DCHECK(number);
-  NormalizeHelper(*all_normalization_mappings, false, number);
+  NormalizeHelper(*alpha_phone_mappings, false, number);
 }
 
 // Normalizes a string of characters representing a phone number. This performs
 // the following conversions:
-//   - Wide-ascii digits are converted to normal ASCII (European) digits.
+//   - Punctuation is stripped.
+//   For ALPHA/VANITY numbers:
 //   - Letters are converted to their numeric representation on a telephone
 //     keypad. The keypad used here is the one defined in ITU Recommendation
 //     E.161. This is only done if there are 3 or more letters in the number, to
-//     lessen the risk that such letters are typos - otherwise alpha characters
-//     are stripped.
-//   - Punctuation is stripped.
+//     lessen the risk that such letters are typos.
+//   For other numbers:
+//   - Wide-ascii digits are converted to normal ASCII (European) digits.
 //   - Arabic-Indic numerals are converted to European numerals.
+//   - Spurious alpha characters are stripped.
 void PhoneNumberUtil::Normalize(string* number) const {
   DCHECK(number);
-  if (valid_alpha_phone_pattern->Match(number->c_str(), false, NULL)) {
-    NormalizeHelper(*all_normalization_mappings, true, number);
+  if (valid_alpha_phone_pattern->PartialMatch(*number)) {
+    NormalizeHelper(*alpha_phone_mappings, true, number);
   }
   NormalizeDigitsOnly(number);
 }
@@ -1836,13 +1759,12 @@ void PhoneNumberUtil::Normalize(string* number) const {
 // method does not require the number to be normalized in advance - but does
 // assume that leading non-number symbols have been removed, such as by the
 // method ExtractPossibleNumber.
-// static
-bool PhoneNumberUtil::IsViablePhoneNumber(const string& number) {
+bool PhoneNumberUtil::IsViablePhoneNumber(const string& number) const {
   if (number.length() < kMinLengthForNsn) {
-    logger->Debug("Number too short to be viable:" + number);
+    VLOG(2) << "Number too short to be viable:" << number;
     return false;
   }
-  return valid_phone_number_pattern->Match(number.c_str(), true, NULL);
+  return valid_phone_number_pattern->FullMatch(number);
 }
 
 // Strips any international prefix (such as +, 00, 011) present in the number
@@ -1862,10 +1784,9 @@ PhoneNumberUtil::MaybeStripInternationalPrefixAndNormalize(
   if (number->empty()) {
     return PhoneNumber::FROM_DEFAULT_COUNTRY;
   }
-  scoped_ptr<reg_exp::RegularExpressionInput> number_string_piece(
-      reg_exp::CreateRegularExpressionInput(number->c_str()));
-  if (plus_chars_pattern->Consume(number_string_piece.get(), true,
-                                  NULL, NULL)) {
+  const scoped_ptr<RegExpInput> number_string_piece(
+      RegExpInput::Create(*number));
+  if (plus_chars_pattern->Consume(number_string_piece.get())) {
     number->assign(number_string_piece->ToString());
     // Can now normalize the rest of the number since we've consumed the "+"
     // sign at the start.
@@ -1873,9 +1794,8 @@ PhoneNumberUtil::MaybeStripInternationalPrefixAndNormalize(
     return PhoneNumber::FROM_NUMBER_WITH_PLUS_SIGN;
   }
   // Attempt to parse the first digits as an international prefix.
-  scoped_ptr<reg_exp::RegularExpression> idd_pattern(
-      reg_exp::CreateRegularExpression(possible_idd_prefix.c_str()));
-  if (ParsePrefixAsIdd(idd_pattern.get(), number)) {
+  const RegExp& idd_pattern = regexp_cache->GetRegExp(possible_idd_prefix);
+  if (ParsePrefixAsIdd(idd_pattern, number)) {
     Normalize(number);
     return PhoneNumber::FROM_NUMBER_WITH_IDD;
   }
@@ -1883,7 +1803,7 @@ PhoneNumberUtil::MaybeStripInternationalPrefixAndNormalize(
   // This shouldn't be done before, since non-numeric characters (+ and ~) may
   // legally be in the international prefix.
   Normalize(number);
-  return ParsePrefixAsIdd(idd_pattern.get(), number)
+  return ParsePrefixAsIdd(idd_pattern, number)
       ? PhoneNumber::FROM_NUMBER_WITH_IDD
       : PhoneNumber::FROM_DEFAULT_COUNTRY;
 }
@@ -1892,11 +1812,10 @@ PhoneNumberUtil::MaybeStripInternationalPrefixAndNormalize(
 // The number passed in should be the normalized telephone number that we wish
 // to strip any national dialing prefix from. The metadata should be for the
 // region that we think this number is from.
-// static
 void PhoneNumberUtil::MaybeStripNationalPrefixAndCarrierCode(
     const PhoneMetadata& metadata,
     string* number,
-    string* carrier_code) {
+    string* carrier_code) const {
   DCHECK(number);
   string carrier_code_temp;
   const string& possible_national_prefix =
@@ -1908,67 +1827,62 @@ void PhoneNumberUtil::MaybeStripNationalPrefixAndCarrierCode(
   }
   // We use two copies here since Consume modifies the phone number, and if the
   // first if-clause fails the number will already be changed.
-  scoped_ptr<reg_exp::RegularExpressionInput> number_copy(
-      reg_exp::CreateRegularExpressionInput(number->c_str()));
-  scoped_ptr<reg_exp::RegularExpressionInput> number_copy_without_transform(
-      reg_exp::CreateRegularExpressionInput(number->c_str()));
-
+  const scoped_ptr<RegExpInput> number_copy(RegExpInput::Create(*number));
+  const scoped_ptr<RegExpInput> number_copy_without_transform(
+      RegExpInput::Create(*number));
   string number_string_copy(*number);
   string captured_part_of_prefix;
-  scoped_ptr<reg_exp::RegularExpression> national_number_rule(
-      reg_exp::CreateRegularExpression(
-      metadata.general_desc().national_number_pattern().c_str()));
+  const RegExp& national_number_rule = regexp_cache->GetRegExp(
+      metadata.general_desc().national_number_pattern());
   // Attempt to parse the first digits as a national prefix. We make a
   // copy so that we can revert to the original string if necessary.
   const string& transform_rule = metadata.national_prefix_transform_rule();
+  const RegExp& possible_national_prefix_pattern =
+      regexp_cache->GetRegExp(possible_national_prefix);
   if (!transform_rule.empty() &&
-      (number_copy->ConsumeRegExp(possible_national_prefix, true,
-                                  &carrier_code_temp,
-                                  &captured_part_of_prefix) ||
-       number_copy->ConsumeRegExp(possible_national_prefix, true,
-                                  &captured_part_of_prefix, NULL)) &&
+      (possible_national_prefix_pattern.Consume(
+          number_copy.get(), &carrier_code_temp, &captured_part_of_prefix) ||
+       possible_national_prefix_pattern.Consume(
+           number_copy.get(), &captured_part_of_prefix)) &&
       !captured_part_of_prefix.empty()) {
-    string re2_transform_rule(transform_rule);
-    TransformRegularExpressionToRE2Syntax(&re2_transform_rule);
     // If this succeeded, then we must have had a transform rule and there must
     // have been some part of the prefix that we captured.
     // We make the transformation and check that the resultant number is viable.
     // If so, replace the number and return.
-    scoped_ptr<reg_exp::RegularExpression> possible_national_prefix_rule(
-        reg_exp::CreateRegularExpression(possible_national_prefix.c_str()));
-    possible_national_prefix_rule->Replace(&number_string_copy, false,
-                                           re2_transform_rule.c_str());
-    if (national_number_rule->Match(number_string_copy.c_str(), true, NULL)) {
+    possible_national_prefix_pattern.Replace(&number_string_copy,
+                                             transform_rule);
+    if (national_number_rule.FullMatch(number_string_copy)) {
       number->assign(number_string_copy);
       if (carrier_code) {
         carrier_code->assign(carrier_code_temp);
       }
     }
-  } else if (number_copy_without_transform->ConsumeRegExp(
-                 possible_national_prefix, true, &carrier_code_temp, NULL) ||
-             number_copy_without_transform->ConsumeRegExp(
-                 possible_national_prefix, true, NULL, NULL)) {
-    logger->Debug("Parsed the first digits as a national prefix.");
-    string unconsumed_part(number_copy_without_transform->ToString());
+  } else if (possible_national_prefix_pattern.Consume(
+                 number_copy_without_transform.get(), &carrier_code_temp) ||
+             possible_national_prefix_pattern.Consume(
+                 number_copy_without_transform.get())) {
+    VLOG(4) << "Parsed the first digits as a national prefix.";
     // If captured_part_of_prefix is empty, this implies nothing was captured by
     // the capturing groups in possible_national_prefix; therefore, no
     // transformation is necessary, and we just remove the national prefix.
-    if (national_number_rule->Match(unconsumed_part.c_str(), true, NULL)) {
-      number->assign(unconsumed_part);
+    const string number_copy_as_string =
+        number_copy_without_transform->ToString();
+    if (national_number_rule.FullMatch(number_copy_as_string)) {
+      number->assign(number_copy_as_string);
       if (carrier_code) {
         carrier_code->assign(carrier_code_temp);
       }
     }
   } else {
-    logger->Debug("The first digits did not match the national prefix.");
+    VLOG(4) << "The first digits did not match the national prefix.";
   }
 }
 
 // Strips any extension (as in, the part of the number dialled after the call is
 // connected, usually indicated with extn, ext, x or similar) from the end of
 // the number, and returns it. The number passed in should be non-normalized.
-// static
-bool PhoneNumberUtil::MaybeStripExtension(string* number, string* extension) {
+bool PhoneNumberUtil::MaybeStripExtension(string* number, string* extension)
+    const {
   DCHECK(number);
   DCHECK(extension);
   // There are three extension capturing groups in the regular expression.
@@ -1976,17 +1890,20 @@ bool PhoneNumberUtil::MaybeStripExtension(string* number, string* extension) {
   string possible_extension_two;
   string possible_extension_three;
   string number_copy(*number);
-  scoped_ptr<reg_exp::RegularExpressionInput> number_copy_regex_input(
-      reg_exp::CreateRegularExpressionInput(number_copy.c_str()));
- if (extn_pattern->Consume(number_copy_regex_input.get(), false,
-                           &possible_extension_one, &possible_extension_two,
-                           &possible_extension_three)) {
+  const scoped_ptr<RegExpInput> number_copy_as_regexp_input(
+      RegExpInput::Create(number_copy));
+  if (extn_pattern->Consume(number_copy_as_regexp_input.get(),
+                            false,
+                            &possible_extension_one,
+                            &possible_extension_two,
+                            &possible_extension_three)) {
     // Replace the extensions in the original string here.
-    extn_pattern->Replace(&number_copy, false, "");
-    logger->Debug("Found an extension. Possible extension one: "
-            + possible_extension_one
-            + ". Possible extension two: " + possible_extension_two
-            + ". Remaining number: " + number_copy);
+    extn_pattern->Replace(&number_copy, "");
+    VLOG(4) << "Found an extension. Possible extension one: "
+            << possible_extension_one
+            << ". Possible extension two: " << possible_extension_two
+            << ". Possible extension three: " << possible_extension_three
+            << ". Remaining number: " << number_copy;
     // If we find a potential extension, and the number preceding this is a
     // viable number, we assume it is an extension.
     if ((!possible_extension_one.empty() || !possible_extension_two.empty() ||
@@ -2013,11 +1930,11 @@ bool PhoneNumberUtil::MaybeStripExtension(string* number, string* extension) {
 // characters long.
 int PhoneNumberUtil::ExtractCountryCode(string* national_number) const {
   int potential_country_code;
-  for (int i = 1; i <= 3; ++i) {
+  for (size_t i = 1; i <= kMaxLengthCountryCode; ++i) {
     safe_strto32(national_number->substr(0, i), &potential_country_code);
     string region_code;
     GetRegionCodeForCountryCode(potential_country_code, &region_code);
-    if (region_code != "ZZ") {
+    if (region_code != RegionCode::GetUnknown()) {
       national_number->erase(0, i);
       return potential_country_code;
     }
@@ -2065,8 +1982,8 @@ PhoneNumberUtil::ErrorType PhoneNumberUtil::MaybeExtractCountryCode(
   }
   if (country_code_source != PhoneNumber::FROM_DEFAULT_COUNTRY) {
     if (national_number->length() < kMinLengthForNsn) {
-      logger->Debug("Phone number had an IDD, but after this was not "
-          "long enough to be a viable phone number.");
+      VLOG(2) << "Phone number had an IDD, but after this was not "
+              << "long enough to be a viable phone number.";
       return TOO_SHORT_AFTER_IDD;
     }
     int potential_country_code = ExtractCountryCode(national_number);
@@ -2083,37 +2000,29 @@ PhoneNumberUtil::ErrorType PhoneNumberUtil::MaybeExtractCountryCode(
     // checks on the validity of the number before and after.
     int default_country_code = default_region_metadata->country_code();
     string default_country_code_string(SimpleItoa(default_country_code));
-    logger->Debug("Possible country code: " + default_country_code_string);
+    VLOG(4) << "Possible country calling code: " << default_country_code_string;
     string potential_national_number;
     if (TryStripPrefixString(*national_number,
                              default_country_code_string,
                              &potential_national_number)) {
       const PhoneNumberDesc& general_num_desc =
           default_region_metadata->general_desc();
-      scoped_ptr<reg_exp::RegularExpression> valid_number_pattern(
-          reg_exp::CreateRegularExpression(
-          general_num_desc.national_number_pattern().c_str()));
-
+      const RegExp& valid_number_pattern =
+          regexp_cache->GetRegExp(general_num_desc.national_number_pattern());
       MaybeStripNationalPrefixAndCarrierCode(*default_region_metadata,
                                              &potential_national_number,
                                              NULL);
-      logger->Debug("Number without country code prefix: "
-              + potential_national_number);
-      string extracted_number;
-      scoped_ptr<reg_exp::RegularExpression> possible_number_pattern(
-          reg_exp::CreateRegularExpression(
-          StrCat("(", general_num_desc.possible_number_pattern(),
-                 ")").c_str()));
+      VLOG(4) << "Number without country calling code prefix: "
+              << potential_national_number;
+      const RegExp& possible_number_pattern = regexp_cache->GetRegExp(
+          StrCat("(", general_num_desc.possible_number_pattern(), ")"));
       // If the number was not valid before but is valid now, or if it was too
       // long before, we consider the number with the country code stripped to
       // be a better result and keep that instead.
-      if ((!valid_number_pattern->Match(national_number->c_str(),
-                                       true, NULL) &&
-           valid_number_pattern->Match(potential_national_number.c_str(),
-                                        true, NULL)) ||
-          TestNumberLengthAgainstPattern(possible_number_pattern.get(),
-                                         *national_number)
-                == TOO_LONG) {
+      if ((!valid_number_pattern.FullMatch(*national_number) &&
+           valid_number_pattern.FullMatch(potential_national_number)) ||
+           TestNumberLengthAgainstPattern(possible_number_pattern,
+                                          *national_number) == TOO_LONG) {
         national_number->assign(potential_national_number);
         if (keep_raw_input) {
           phone_number->set_country_code_source(
@@ -2192,23 +2101,23 @@ PhoneNumberUtil::MatchType PhoneNumberUtil::IsNumberMatchWithTwoStrings(
     const string& second_number) const {
   PhoneNumber first_number_as_proto;
   ErrorType error_type =
-      Parse(first_number, "ZZ", &first_number_as_proto);
+      Parse(first_number, RegionCode::GetUnknown(), &first_number_as_proto);
   if (error_type == NO_PARSING_ERROR) {
     return IsNumberMatchWithOneString(first_number_as_proto, second_number);
   }
   if (error_type == INVALID_COUNTRY_CODE_ERROR) {
     PhoneNumber second_number_as_proto;
-    ErrorType error_type = Parse(second_number, "ZZ",
+    ErrorType error_type = Parse(second_number, RegionCode::GetUnknown(),
                                  &second_number_as_proto);
     if (error_type == NO_PARSING_ERROR) {
       return IsNumberMatchWithOneString(second_number_as_proto, first_number);
     }
     if (error_type == INVALID_COUNTRY_CODE_ERROR) {
-      error_type  = ParseHelper(first_number, "ZZ", false, false,
-                                &first_number_as_proto);
+      error_type  = ParseHelper(first_number, RegionCode::GetUnknown(), false,
+                                false, &first_number_as_proto);
       if (error_type == NO_PARSING_ERROR) {
-        error_type = ParseHelper(second_number, "ZZ", false, false,
-                                 &second_number_as_proto);
+        error_type = ParseHelper(second_number, RegionCode::GetUnknown(), false,
+                                 false, &second_number_as_proto);
         if (error_type == NO_PARSING_ERROR) {
           return IsNumberMatch(first_number_as_proto, second_number_as_proto);
         }
@@ -2227,7 +2136,7 @@ PhoneNumberUtil::MatchType PhoneNumberUtil::IsNumberMatchWithOneString(
   // attempting to parse it.
   PhoneNumber second_number_as_proto;
   ErrorType error_type =
-      Parse(second_number, "ZZ", &second_number_as_proto);
+      Parse(second_number, RegionCode::GetUnknown(), &second_number_as_proto);
   if (error_type == NO_PARSING_ERROR) {
     return IsNumberMatch(first_number, second_number_as_proto);
   }
@@ -2239,7 +2148,7 @@ PhoneNumberUtil::MatchType PhoneNumberUtil::IsNumberMatchWithOneString(
     string first_number_region;
     GetRegionCodeForCountryCode(first_number.country_code(),
                                 &first_number_region);
-    if (first_number_region != "ZZ") {
+    if (first_number_region != RegionCode::GetUnknown()) {
       PhoneNumber second_number_with_first_number_region;
       Parse(second_number, first_number_region,
             &second_number_with_first_number_region);
@@ -2252,8 +2161,8 @@ PhoneNumberUtil::MatchType PhoneNumberUtil::IsNumberMatchWithOneString(
     } else {
       // If the first number didn't have a valid country calling code, then we
       // parse the second number without one as well.
-      error_type = ParseHelper(second_number, "ZZ", false, false,
-                               &second_number_as_proto);
+      error_type = ParseHelper(second_number, RegionCode::GetUnknown(), false,
+                               false, &second_number_as_proto);
       if (error_type == NO_PARSING_ERROR) {
         return IsNumberMatch(first_number, second_number_as_proto);
       }

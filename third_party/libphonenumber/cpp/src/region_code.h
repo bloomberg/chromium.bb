@@ -12,14 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Author: Philippe Liard
+#ifndef I18N_PHONENUMBERS_REGION_CODE_H_
+#define I18N_PHONENUMBERS_REGION_CODE_H_
 
-# include "logger_adapter.h"
+#include <string>
 
 namespace i18n {
 namespace phonenumbers {
 
-LoggerAdapter::~LoggerAdapter() {}
+using std::string;
+
+class RegionCode {
+ public:
+  // Returns a region code string representing the "unknown" region.
+  static const string& GetUnknown() {
+    static const string s = "ZZ";
+    return s;
+  }
+};
 
 }  // namespace phonenumbers
 }  // namespace i18n
+
+#endif  // I18N_PHONENUMBERS_REGION_CODE_H_

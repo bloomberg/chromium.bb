@@ -14,36 +14,14 @@
 
 // Author: Philippe Liard
 
-#include <iostream>
+#include "logger.h"
 
-#include "default_logger.h"
+#include <cstddef>
 
 namespace i18n {
 namespace phonenumbers {
 
-using std::cout;
-using std::string;
-
-void StdoutLogger::WriteMessage(const string& msg) {
-  cout << " " << msg;
-}
-
-void StdoutLogger::WriteLevel() {
-  LogLevel log_level = level();
-  cout << "[";
-
-  switch (log_level) {
-    case LOG_FATAL:   cout << "FATAL"; break;
-#ifdef ERROR  // In case ERROR is defined by MSVC (i.e not set to LOG_ERROR).
-    case ERROR:
-#endif
-    case LOG_ERROR:   cout << "ERROR"; break;
-    case LOG_WARNING: cout << "WARNING"; break;
-    case LOG_INFO:    cout << "INFO"; break;
-    case LOG_DEBUG:   cout << "DEBUG"; break;
-  }
-  cout << "]";
-}
+Logger* Logger::impl_ = NULL;
 
 }  // namespace phonenumbers
 }  // namespace i18n

@@ -14,6 +14,10 @@
       'cpp/src',
       '<(protoc_out_dir)',
     ],
+    'defines': [
+      'USE_HASH_MAP=1',
+      'USE_GOOGLE_BASE=1',
+    ],
   },
   'targets': [{
     'target_name': 'libphonenumber',
@@ -27,12 +31,14 @@
       'phonenumber_proto',
     ],
     'sources': [
-      'chrome/regexp_adapter_icuregexp.cc',
+      # 'chrome/regexp_adapter_icuregexp.cc',
       'cpp/src/default_logger.cc',
-      'cpp/src/logger_adapter.cc',
-      'cpp/src/metadata.cc',
+      'cpp/src/lite_metadata.cc',
+      'cpp/src/logger.cc',
       'cpp/src/phonenumber.cc',
       'cpp/src/phonenumberutil.cc',
+      'cpp/src/regexp_adapter_icu.cc',
+      'cpp/src/regexp_cache.cc',
       'cpp/src/stringutil.cc',
       'cpp/src/utf/rune.c',
       'cpp/src/utf/unicodetext.cc',
@@ -100,7 +106,7 @@
     'sources': [
       '../../base/test/run_all_unittests.cc',
       'cpp/src/phonenumberutil_test.cc',
-      'cpp/src/regexp_adapter_unittest.cc',
+      'cpp/src/regexp_adapter_test.cc',
       'cpp/src/stringutil_test.cc',
       'cpp/src/test_metadata.cc',
     ],

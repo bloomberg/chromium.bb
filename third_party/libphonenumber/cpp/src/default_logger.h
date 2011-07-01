@@ -17,40 +17,81 @@
 #ifndef I18N_PHONENUMBERS_DEFAULT_LOGGER_H_
 #define I18N_PHONENUMBERS_DEFAULT_LOGGER_H_
 
-#include "logger_adapter.h"
+#include <string>
+
+#include "logger.h"
+
+using std::string;
+
+// Make the logging functions private (not declared in logger.h) as the client
+// should not have any reason to use them.
+namespace {
+
+using i18n::phonenumbers::Logger;
+
+// Class template used to inline the right implementation for the T -> string
+// conversion.
+template <typename T>
+struct ConvertToString;
+
+template <typename T>
+struct ConvertToString {
+  static inline string DoWork(const T& s) {
+    return string(s);
+  }
+};
+
+template <>
+struct ConvertToString<int> {
+  static inline string DoWork(const int& n) {
+    char buffer[16];
+#if defined(OS_WIN)
+    _itoa_s(n, buffer, sizeof(buffer), 10);
+#else
+    std::snprintf(buffer, sizeof(buffer), "%d", n);
+#endif
+    return string(buffer);
+  }
+};
+
+class LoggerHandler {
+ public:
+  LoggerHandler(Logger* impl) : impl_(impl) {}
+
+  ~LoggerHandler() {
+    if (impl_) {
+      impl_->WriteMessage("\n");
+    }
+  }
+
+  template <typename T>
+  LoggerHandler& operator<<(const T& value) {
+    if (impl_) {
+      impl_->WriteMessage(ConvertToString<T>::DoWork(value));
+    }
+    return *this;
+  }
+
+ private:
+  Logger* const impl_;
+};
+
+}  // namespace
 
 namespace i18n {
 namespace phonenumbers {
 
-enum LogLevel {
-  LOG_FATAL,
-  LOG_ERROR,
-  LOG_WARNING,
-  LOG_INFO,
-  LOG_DEBUG,
-};
-
-class DefaultLogger : public LoggerAdapter {
+// Default logger implementation used by PhoneNumberUtil class. It outputs the
+// messages to the standard output.
+class StdoutLogger : public Logger {
  public:
-  virtual ~DefaultLogger();
+  virtual ~StdoutLogger() {}
 
-  DefaultLogger(LogLevel level = LOG_WARNING);
-
-  virtual void Fatal(const string& msg) const;
-
-  virtual void Error(const string& msg) const;
-
-  virtual void Warning(const string& msg) const;
-
-  virtual void Info(const string& msg) const;
-
-  virtual void Debug(const string& msg) const;
-
- private:
-  LogLevel level_;
+  virtual void WriteLevel();
+  virtual void WriteMessage(const string& msg);
 };
 
 }  // namespace phonenumbers
 }  // namespace i18n
 
-# endif   // I18N_PHONENUMBERS_DEFAULT_LOGGER_H_
+#endif  // I18N_PHONENUMBERS_DEFAULT_LOGGER_H_

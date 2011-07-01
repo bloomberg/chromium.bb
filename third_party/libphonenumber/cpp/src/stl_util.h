@@ -12,37 +12,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Author: Philippe Liard
-
-#ifndef I18N_PHONENUMBERS_LOGGER_ADAPTER_H_
-#define I18N_PHONENUMBERS_LOGGER_ADAPTER_H_
-
-#include <string>
-
-using std::string;
+#ifndef I18N_PHONENUMBERS_STL_UTIL_H_
+#define I18N_PHONENUMBERS_STL_UTIL_H_
 
 namespace i18n {
 namespace phonenumbers {
 
-// Implement this 'interface' to override the way logging is handled
-// in the library.
-class LoggerAdapter {
- public:
-  virtual ~LoggerAdapter();
-
-  // Logging methods
-  virtual void Fatal(const string& msg) const = 0;
-
-  virtual void Error(const string& msg) const = 0;
-
-  virtual void Warning(const string& msg) const = 0;
-
-  virtual void Info(const string& msg) const = 0;
-
-  virtual void Debug(const string& msg) const = 0;
+// Compares the first attribute of two pairs.
+struct OrderByFirst {
+  template <typename T>
+  bool operator()(const T& p1, const T& p2) const {
+    return p1.first < p2.first;
+  }
 };
+
+// Deletes the second attribute (pointer type expected) of the pairs contained
+// in the provided range.
+template <typename ForwardIterator>
+void STLDeleteContainerPairSecondPointers(const ForwardIterator& begin,
+                                          const ForwardIterator& end) {
+  for (ForwardIterator it = begin; it != end; ++it) {
+    delete it->second;
+  }
+}
 
 }  // namespace phonenumbers
 }  // namespace i18n
 
-#endif  // I18N_PHONENUMBERS_LOGGER_ADAPTER_H_
+#endif  // I18N_PHONENUMBERS_STL_UTIL_H_

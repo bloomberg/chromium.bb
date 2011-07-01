@@ -1,0 +1,1416 @@
+Index: src/regexp_cache.cc
+===================================================================
+--- src/regexp_cache.cc	(revision 277)
++++ src/regexp_cache.cc	(working copy)
+@@ -26,35 +26,17 @@
+ 
+ using std::string;
+ 
+-#ifdef USE_HASH_MAP
+-
+-// A basic text book string hash function implementation, this one taken from
+-// The Practice of Programming (Kernighan and Pike 1999). It could be a good
+-// idea in the future to evaluate how well it actually performs and possibly
+-// switch to another hash function better suited to this particular use case.
+-namespace __gnu_cxx {
+-template<> struct hash<string> {
+-  enum { MULTIPLIER = 31 };
+-  size_t operator()(const string& key) const {
+-    size_t h = 0;
+-    for (const char* p = key.c_str(); *p != '\0'; ++p) {
+-      h *= MULTIPLIER;
+-      h += *p;
+-    }
+-    return h;
+-  }
+-};
+-}  // namespace __gnu_cxx
+-
+-#endif
+-
+ namespace i18n {
+ namespace phonenumbers {
+ 
+ using base::AutoLock;
+ 
+ RegExpCache::RegExpCache(size_t min_items)
++#ifdef USE_TR1_UNORDERED_MAP
+     : cache_impl_(new CacheImpl(min_items)) {}
++#else  // USE_TR1_UNORDERED_MAP
++    : cache_impl_(new CacheImpl()) {}
++#endif  // USE_TR1_UNORDERED_MAP
+ 
+ RegExpCache::~RegExpCache() {
+   AutoLock l(lock_);
+Index: src/phonenumberutil_test.cc
+===================================================================
+--- src/phonenumberutil_test.cc	(revision 277)
++++ src/phonenumberutil_test.cc	(working copy)
+@@ -1145,11 +1145,11 @@
+   ExtractPossibleNumber("Tel:+800-345-600", &extracted_number);
+   EXPECT_EQ("+800-345-600", extracted_number);
+   // Should recognise wide digits as possible start values.
+-  ExtractPossibleNumber("０２３", &extracted_number);
+-  EXPECT_EQ("０２３", extracted_number);
++  ExtractPossibleNumber("\xEF\xBC\x90\xEF\xBC\x92\xEF\xBC\x93", &extracted_number);
++  EXPECT_EQ("\xEF\xBC\x90\xEF\xBC\x92\xEF\xBC\x93", extracted_number);
+   // Dashes are not possible start values and should be removed.
+-  ExtractPossibleNumber("Num-１２３", &extracted_number);
+-  EXPECT_EQ("１２３", extracted_number);
++  ExtractPossibleNumber("Num-\xEF\xBC\x91\xEF\xBC\x92\xEF\xBC\x93", &extracted_number);
++  EXPECT_EQ("\xEF\xBC\x91\xEF\xBC\x92\xEF\xBC\x93", extracted_number);
+   // If not possible number present, return empty string.
+   ExtractPossibleNumber("Num-....", &extracted_number);
+   EXPECT_EQ("", extracted_number);
+@@ -1163,7 +1163,7 @@
+   ExtractPossibleNumber("(650) 253-0000.", &extracted_number);
+   EXPECT_EQ("650) 253-0000", extracted_number);
+   // This case has a trailing RTL char.
+-  ExtractPossibleNumber("(650) 253-0000‏", &extracted_number);
++  ExtractPossibleNumber("(650) 253-0000\xE2\x80\x8F", &extracted_number);
+   EXPECT_EQ("650) 253-0000", extracted_number);
+ }
+ 
+@@ -1207,7 +1207,7 @@
+   // This number is no longer valid.
+   EXPECT_FALSE(phone_util_.IsValidNumber(bs_number));
+ 
+-  // La Mayotte and Réunion use 'leadingDigits' to differentiate them.
++  // La Mayotte and R\xC3\xA9union use 'leadingDigits' to differentiate them.
+   PhoneNumber re_number;
+   re_number.set_country_code(262);
+   re_number.set_national_number(262123456ULL);
+@@ -1675,13 +1675,13 @@
+   EXPECT_TRUE(IsViablePhoneNumber("0800-4-PIZZA"));
+   // Only one or two digits before possible punctuation followed by more digits.
+   // The punctuation used here is the unicode character u+3000.
+-  EXPECT_TRUE(IsViablePhoneNumber("1　34"));
+-  EXPECT_FALSE(IsViablePhoneNumber("1　3+4"));
++  EXPECT_TRUE(IsViablePhoneNumber("1\xE3\x80\x80" "34"));
++  EXPECT_FALSE(IsViablePhoneNumber("1\xE3\x80\x80" "3+4"));
+   // Unicode variants of possible starting character and other allowed
+   // punctuation/digits.
+-  EXPECT_TRUE(IsViablePhoneNumber("（1）　3456789"));
++  EXPECT_TRUE(IsViablePhoneNumber("\xEF\xBC\x88" "1\xEF\xBC\x89\xE3\x80\x80" "3456789"));
+   // Testing a leading + is okay.
+-  EXPECT_TRUE(IsViablePhoneNumber("+1）　3456789"));
++  EXPECT_TRUE(IsViablePhoneNumber("+1\xEF\xBC\x89\xE3\x80\x80" "3456789"));
+ }
+ 
+ TEST_F(PhoneNumberUtilTest, ConvertAlphaCharactersInNumber) {
+@@ -1692,8 +1692,8 @@
+   EXPECT_EQ(kExpectedOutput, input);
+ 
+   // Try with some non-ASCII characters.
+-  input.assign("1　（800) ABC-DEF");
+-  static const string kExpectedFullwidthOutput = "1　（800) 222-333";
++  input.assign("1\xE3\x80\x80\xEF\xBC\x88" "800) ABC-DEF");
++  static const string kExpectedFullwidthOutput = "1\xE3\x80\x80\xEF\xBC\x88" "800) 222-333";
+   phone_util_.ConvertAlphaCharactersInNumber(&input);
+   EXPECT_EQ(kExpectedFullwidthOutput, input);
+ }
+@@ -1717,13 +1717,13 @@
+ TEST_F(PhoneNumberUtilTest, NormaliseOtherDigits) {
+   // The first digit is a full-width 2, the last digit is an Arabic-indic digit
+   // 5.
+-  string input_number("２5٥");
++  string input_number("\xEF\xBC\x92" "5\xD9\xA5");
+   Normalize(&input_number);
+   static const string kExpectedOutput("255");
+   EXPECT_EQ(kExpectedOutput, input_number)
+       << "Conversion did not correctly replace non-latin digits";
+   // The first digit is an Eastern-Arabic 5, the latter an Eastern-Arabic 0.
+-  string eastern_arabic_input_number("۵2۰");
++  string eastern_arabic_input_number("\xDB\xB5" "2\xDB\xB0");
+   Normalize(&eastern_arabic_input_number);
+   static const string kExpectedOutput2("520");
+   EXPECT_EQ(kExpectedOutput2, eastern_arabic_input_number)
+@@ -2379,21 +2379,21 @@
+   // Using a full-width plus sign.
+   test_number.Clear();
+   EXPECT_EQ(PhoneNumberUtil::NO_PARSING_ERROR,
+-            phone_util_.Parse("＋1 (650) 333-6000",
++            phone_util_.Parse("\xEF\xBC\x8B" "1 (650) 333-6000",
+                               RegionCode::SG(), &test_number));
+   EXPECT_EQ(us_number, test_number);
+   // The whole number, including punctuation, is here represented in full-width
+   // form.
+   test_number.Clear();
+   EXPECT_EQ(PhoneNumberUtil::NO_PARSING_ERROR,
+-            phone_util_.Parse("＋１　（６５０）　３３３－６０００",
++            phone_util_.Parse("\xEF\xBC\x8B\xEF\xBC\x91\xE3\x80\x80\xEF\xBC\x88\xEF\xBC\x96\xEF\xBC\x95\xEF\xBC\x90\xEF\xBC\x89\xE3\x80\x80\xEF\xBC\x93\xEF\xBC\x93\xEF\xBC\x93\xEF\xBC\x8D\xEF\xBC\x96\xEF\xBC\x90\xEF\xBC\x90\xEF\xBC\x90",
+                               RegionCode::SG(), &test_number));
+   EXPECT_EQ(us_number, test_number);
+ 
+   // Using the U+30FC dash.
+   test_number.Clear();
+   EXPECT_EQ(PhoneNumberUtil::NO_PARSING_ERROR,
+-            phone_util_.Parse("＋１　（６５０）　３３３ー６０００",
++            phone_util_.Parse("\xEF\xBC\x8B\xEF\xBC\x91\xE3\x80\x80\xEF\xBC\x88\xEF\xBC\x96\xEF\xBC\x95\xEF\xBC\x90\xEF\xBC\x89\xE3\x80\x80\xEF\xBC\x93\xEF\xBC\x93\xEF\xBC\x93\xE3\x83\xBC\xEF\xBC\x96\xEF\xBC\x90\xEF\xBC\x90\xEF\xBC\x90",
+                               RegionCode::SG(), &test_number));
+   EXPECT_EQ(us_number, test_number);
+ }
+@@ -2633,7 +2633,7 @@
+   // Test with full-width plus.
+   result_proto.Clear();
+   EXPECT_EQ(PhoneNumberUtil::NO_PARSING_ERROR,
+-            phone_util_.Parse("＋64 3 331 6005", RegionCode::GetUnknown(),
++            phone_util_.Parse("\xEF\xBC\x8B" "64 3 331 6005", RegionCode::GetUnknown(),
+                               &result_proto));
+   EXPECT_EQ(nz_number, result_proto);
+   // Test with normal plus but leading characters that need to be stripped.
+@@ -2792,7 +2792,7 @@
+   EXPECT_EQ(us_with_extension, test_number);
+   test_number.Clear();
+   EXPECT_EQ(PhoneNumberUtil::NO_PARSING_ERROR,
+-            phone_util_.Parse("(800) 901-3355 ,extensión 7246433",
++            phone_util_.Parse("(800) 901-3355 ,extensi\xC3\xB3n 7246433",
+                               RegionCode::US(),
+                               &test_number));
+   EXPECT_EQ(us_with_extension, test_number);
+@@ -2800,7 +2800,7 @@
+   // Repeat with the small letter o with acute accent created by combining
+   // characters.
+   EXPECT_EQ(PhoneNumberUtil::NO_PARSING_ERROR,
+-            phone_util_.Parse("(800) 901-3355 ,extensión 7246433",
++            phone_util_.Parse("(800) 901-3355 ,extensio\xCC\x81n 7246433",
+                               RegionCode::US(),
+                               &test_number));
+   EXPECT_EQ(us_with_extension, test_number);
+Index: src/regexp_cache.h
+===================================================================
+--- src/regexp_cache.h	(revision 277)
++++ src/regexp_cache.h	(working copy)
+@@ -37,10 +37,7 @@
+ #ifdef USE_TR1_UNORDERED_MAP
+ #  include <tr1/unordered_map>
+ #elif defined(USE_HASH_MAP)
+-#  ifndef __DEPRECATED
+-#    define __DEPRECATED
+-#  endif
+-#  include <hash_map>
++#  include "base/hash_tables.h"
+ #else
+ #  error STL map type unsupported on this platform!
+ #endif
+@@ -57,7 +54,7 @@
+ #ifdef USE_TR1_UNORDERED_MAP
+   typedef std::tr1::unordered_map<string, const RegExp*> CacheImpl;
+ #elif defined(USE_HASH_MAP)
+-  typedef std::hash_map<string, const RegExp*> CacheImpl;
++  typedef base::hash_map<string, const RegExp*> CacheImpl;
+ #endif
+ 
+  public:
+Index: src/phonenumberutil.cc
+===================================================================
+--- src/phonenumberutil.cc	(revision 277)
++++ src/phonenumberutil.cc	(working copy)
+@@ -33,7 +33,7 @@
+ #include <unicode/utf8.h>
+ 
+ #include "base/logging.h"
+-#include "base/singleton.h"
++#include "base/memory/singleton.h"
+ #include "default_logger.h"
+ #include "encoding_utils.h"
+ #include "metadata.h"
+@@ -62,7 +62,7 @@
+ using google::protobuf::RepeatedPtrField;
+ 
+ // static
+-const char PhoneNumberUtil::kPlusChars[] = "+＋";
++const char PhoneNumberUtil::kPlusChars[] = "+\xEF\xBC\x8B";
+ // To find out the unicode code-point of the characters below in vim, highlight
+ // the character and type 'ga'. Note that the - is used to express ranges of
+ // full-width punctuation below, as well as being present in the expression
+@@ -70,7 +70,7 @@
+ // unicode character.
+ // static
+ const char PhoneNumberUtil::kValidPunctuation[] =
+-    "-x‐-―−ー－-／  ​⁠　()（）［］.\\[\\]/~⁓∼";
++    "-x\xE2\x80\x90-\xE2\x80\x95\xE2\x88\x92\xE3\x83\xBC\xEF\xBC\x8D-\xEF\xBC\x8F \xC2\xA0\xE2\x80\x8B\xE2\x81\xA0\xE3\x80\x80()\xEF\xBC\x88\xEF\xBC\x89\xEF\xBC\xBB\xEF\xBC\xBD.\\[\\]/~\xE2\x81\x93\xE2\x88\xBC";
+ 
+ namespace {
+ 
+@@ -450,35 +450,35 @@
+   all_plus_number_grouping_symbols->insert(
+       make_pair(ToUnicodeCodepoint("-"), '-'));
+   all_plus_number_grouping_symbols->insert(
+-      make_pair(ToUnicodeCodepoint("－"), '-'));
++      make_pair(ToUnicodeCodepoint("\xEF\xBC\x8D"), '-'));
+   all_plus_number_grouping_symbols->insert(
+-      make_pair(ToUnicodeCodepoint("‐"), '-'));
++      make_pair(ToUnicodeCodepoint("\xE2\x80\x90"), '-'));
+   all_plus_number_grouping_symbols->insert(
+-      make_pair(ToUnicodeCodepoint("‑"), '-'));
++      make_pair(ToUnicodeCodepoint("\xE2\x80\x91"), '-'));
+   all_plus_number_grouping_symbols->insert(
+-      make_pair(ToUnicodeCodepoint("‒"), '-'));
++      make_pair(ToUnicodeCodepoint("\xE2\x80\x92"), '-'));
+   all_plus_number_grouping_symbols->insert(
+-      make_pair(ToUnicodeCodepoint("–"), '-'));
++      make_pair(ToUnicodeCodepoint("\xE2\x80\x93"), '-'));
+   all_plus_number_grouping_symbols->insert(
+-      make_pair(ToUnicodeCodepoint("—"), '-'));
++      make_pair(ToUnicodeCodepoint("\xE2\x80\x94"), '-'));
+   all_plus_number_grouping_symbols->insert(
+-      make_pair(ToUnicodeCodepoint("―"), '-'));
++      make_pair(ToUnicodeCodepoint("\xE2\x80\x95"), '-'));
+   all_plus_number_grouping_symbols->insert(
+-      make_pair(ToUnicodeCodepoint("−"), '-'));
++      make_pair(ToUnicodeCodepoint("\xE2\x88\x92"), '-'));
+   all_plus_number_grouping_symbols->insert(
+       make_pair(ToUnicodeCodepoint("/"), '/'));
+   all_plus_number_grouping_symbols->insert(
+-      make_pair(ToUnicodeCodepoint("／"), '/'));
++      make_pair(ToUnicodeCodepoint("\xEF\xBC\x8F"), '/'));
+   all_plus_number_grouping_symbols->insert(
+       make_pair(ToUnicodeCodepoint(" "), ' '));
+   all_plus_number_grouping_symbols->insert(
+-      make_pair(ToUnicodeCodepoint("　"), ' '));
++      make_pair(ToUnicodeCodepoint("\xE3\x80\x80"), ' '));
+   all_plus_number_grouping_symbols->insert(
+-      make_pair(ToUnicodeCodepoint("⁠"), ' '));
++      make_pair(ToUnicodeCodepoint("\xE2\x81\xA0"), ' '));
+   all_plus_number_grouping_symbols->insert(
+       make_pair(ToUnicodeCodepoint("."), '.'));
+   all_plus_number_grouping_symbols->insert(
+-      make_pair(ToUnicodeCodepoint("．"), '.'));
++      make_pair(ToUnicodeCodepoint("\xEF\xBC\x8E"), '.'));
+   // Only the upper-case letters are added here - the lower-case versions are
+   // added programmatically.
+   alpha_mappings->insert(make_pair(ToUnicodeCodepoint("A"), '2'));
+@@ -684,15 +684,13 @@
+ // Public wrapper function to get a PhoneNumberUtil instance with the default
+ // metadata file.
+ // static
+-#ifdef USE_GOOGLE_BASE
+ PhoneNumberUtil* PhoneNumberUtil::GetInstance() {
+   return Singleton<PhoneNumberUtil>::get();
+ }
+-#endif
+ 
+ void PhoneNumberUtil::CreateRegularExpressions() const {
+   unique_international_prefix.reset(RegExp::Create(
+-      "[\\d]+(?:[~⁓∼～][\\d]+)?"));
++      "[\\d]+(?:[~\xE2\x81\x93\xE2\x88\xBC\xEF\xBD\x9E][\\d]+)?"));
+   // The first_group_capturing_pattern was originally set to $1 but there are
+   // some countries for which the first group is not used in the national
+   // pattern (e.g. Argentina) so the $1 group does not match correctly.
+@@ -713,16 +711,16 @@
+       StrCat("[", kPlusChars, "]*(?:[", kValidPunctuation, "]*[", kDigits,
+              "]){3,}[", kValidAlpha, kValidPunctuation, kDigits, "]*")));
+   // Canonical-equivalence doesn't seem to be an option with RE2, so we allow
+-  // two options for representing the ó - the character itself, and one in the
++  // two options for representing the \xC3\xB3 - the character itself, and one in the
+   // unicode decomposed form with the combining acute accent. Note that there
+   // are currently three capturing groups for the extension itself - if this
+   // number is changed, MaybeStripExtension needs to be updated.
+   const string capturing_extn_digits = StrCat("([", kDigits, "]{1,7})");
+   known_extn_patterns.reset(new string(
+       StrCat(kRfc3966ExtnPrefix, capturing_extn_digits, "|"
+-             "[  \\t,]*(?:ext(?:ensi(?:ó?|ó))?n?|ｅｘｔｎ?|[,xｘ#＃~～]|"
+-             "int|ｉｎｔ|anexo)"
+-             "[:\\.．]?[  \\t,-]*", capturing_extn_digits, "#?|"
++             "[ \xC2\xA0\\t,]*(?:ext(?:ensi(?:o\xCC\x81?|\xC3\xB3))?n?|\xEF\xBD\x85\xEF\xBD\x98\xEF\xBD\x94\xEF\xBD\x8E?|[,x\xEF\xBD\x98#\xEF\xBC\x83~\xEF\xBD\x9E]|"
++             "int|\xEF\xBD\x89\xEF\xBD\x8E\xEF\xBD\x94|anexo)"
++             "[:\\.\xEF\xBC\x8E]?[ \xC2\xA0\\t,-]*", capturing_extn_digits, "#?|"
+              "[- ]+([", kDigits, "]{1,5})#")));
+   extn_pattern.reset(RegExp::Create(
+       StrCat("(?i)(?:", *known_extn_patterns, ")$")));
+@@ -828,7 +826,7 @@
+   // Note here that all NANPA formatting rules are contained by US, so we use
+   // that to format NANPA numbers. The same applies to Russian Fed regions -
+   // rules are contained by Russia. French Indian Ocean country rules are
+-  // contained by Réunion.
++  // contained by R\xC3\xA9union.
+   string region_code;
+   GetRegionCodeForCountryCode(country_calling_code, &region_code);
+   if (!HasValidRegionCode(region_code, country_calling_code,
+@@ -987,7 +985,7 @@
+     // For regions that share a country calling code, the country calling code
+     // need not be dialled. This also applies when dialling within a region, so
+     // this if clause covers both these cases.
+-    // Technically this is the case for dialling from la Réunion to other
++    // Technically this is the case for dialling from la R\xC3\xA9union to other
+     // overseas departments of France (French Guiana, Martinique, Guadeloupe),
+     // but not vice versa - so we don't cover this edge case for now and for
+     // those cases return the version including country calling code.
+Index: src/logger.h
+===================================================================
+--- src/logger.h	(revision 277)
++++ src/logger.h	(working copy)
+@@ -20,7 +20,7 @@
+ #include <cstdio>
+ #include <string>
+ 
+-#include <base/scoped_ptr.h>
++#include "base/scoped_ptr.h"
+ 
+ namespace i18n {
+ namespace phonenumbers {
+Index: src/regexp_adapter_test.cc
+===================================================================
+--- src/regexp_adapter_test.cc	(revision 277)
++++ src/regexp_adapter_test.cc	(working copy)
+@@ -186,12 +186,12 @@
+ }
+ 
+ TEST(RegExpAdapter, TestUtf8) {
+-  const scoped_ptr<const RegExp> reg_exp(RegExp::Create("℡⊏([α-ω]*)⊐"));
++  const scoped_ptr<const RegExp> reg_exp(RegExp::Create("\xE2\x84\xA1\xE2\x8A\x8F([\xCE\xB1-\xCF\x89]*)\xE2\x8A\x90"));
+   string matched;
+ 
+-  EXPECT_FALSE(reg_exp->Match("℡⊏123⊐", true, &matched));
+-  EXPECT_TRUE(reg_exp->Match("℡⊏αβ⊐", true, &matched));
+-  EXPECT_EQ("αβ", matched);
++  EXPECT_FALSE(reg_exp->Match("\xE2\x84\xA1\xE2\x8A\x8F" "123\xE2\x8A\x90", true, &matched));
++  EXPECT_TRUE(reg_exp->Match("\xE2\x84\xA1\xE2\x8A\x8F\xCE\xB1\xCE\xB2\xE2\x8A\x90", true, &matched));
++  EXPECT_EQ("\xCE\xB1\xCE\xB2", matched);
+ }
+ 
+ }  // namespace phonenumbers
+Index: src/phonenumberutil.h
+===================================================================
+--- src/phonenumberutil.h	(revision 277)
++++ src/phonenumberutil.h	(working copy)
+@@ -29,7 +29,7 @@
+ 
+ #include "base/basictypes.h"
+ #include "base/scoped_ptr.h"
+-#include "base/singleton.h"
++#include "base/memory/singleton.h"
+ #include "phonenumber.pb.h"
+ 
+ class TelephoneNumber;
+@@ -57,20 +57,15 @@
+ // codes can be found here:
+ // http://www.iso.org/iso/english_country_names_and_code_elements
+ 
+-#ifdef USE_GOOGLE_BASE
+ class PhoneNumberUtil {
+   friend struct DefaultSingletonTraits<PhoneNumberUtil>;
+-#else
+-class PhoneNumberUtil : public Singleton<PhoneNumberUtil> {
+-  friend class Singleton<PhoneNumberUtil>;
+-#endif
+   friend class PhoneNumberUtilTest;
+  public:
+   ~PhoneNumberUtil();
+ 
+   // INTERNATIONAL and NATIONAL formats are consistent with the definition
+   // in ITU-T Recommendation E. 123. For example, the number of the Google
+-  // Zürich office will be written as "+41 44 668 1800" in INTERNATIONAL
++  // Zurich office will be written as "+41 44 668 1800" in INTERNATIONAL
+   // format, and as "044 668 1800" in NATIONAL format. E164 format is as per
+   // INTERNATIONAL format but with no formatting applied e.g. +41446681800.
+   // RFC3966 is as per INTERNATIONAL format, but with all spaces and other
+@@ -147,9 +142,7 @@
+   //
+   // The PhoneNumberUtil is implemented as a singleton. Therefore, calling
+   // getInstance multiple times will only result in one instance being created.
+-#ifdef USE_GOOGLE_BASE
+   static PhoneNumberUtil* GetInstance();
+-#endif
+ 
+   // Initialisation helper function used to populate the regular expressions in
+   // a defined order.
+Index: src/default_logger.h
+===================================================================
+--- src/default_logger.h	(revision 277)
++++ src/default_logger.h	(working copy)
+@@ -45,7 +45,11 @@
+ struct ConvertToString<int> {
+   static inline string DoWork(const int& n) {
+     char buffer[16];
++#if defined(OS_WIN)
++    _itoa_s(n, buffer, sizeof(buffer), 10);
++#else
+     std::snprintf(buffer, sizeof(buffer), "%d", n);
++#endif
+     return string(buffer);
+   }
+ };
+@@ -77,19 +81,6 @@
+ namespace i18n {
+ namespace phonenumbers {
+ 
+-inline LoggerHandler VLOG(int n) {
+-  Logger* const logger_impl = Logger::mutable_logger_impl();
+-  if (logger_impl->level() < n) {
+-    return LoggerHandler(NULL);
+-  }
+-  logger_impl->WriteLevel();
+-  return LoggerHandler(logger_impl);
+-}
+-
+-inline LoggerHandler LOG(int n) {
+-  return VLOG(n);
+-}
+-
+ // Default logger implementation used by PhoneNumberUtil class. It outputs the
+ // messages to the standard output.
+ class StdoutLogger : public Logger {
+Index: src/base/string_piece.cc
+===================================================================
+--- src/base/string_piece.cc	(revision 277)
++++ src/base/string_piece.cc	(working copy)
+@@ -1,219 +0,0 @@
+-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+-// Use of this source code is governed by a BSD-style license that can be
+-// found in the LICENSE file.
+-// Copied from strings/stringpiece.cc with modifications
+-
+-#include <algorithm>
+-#include <ostream>
+-
+-#include "base/string_piece.h"
+-
+-namespace base {
+-
+-typedef StringPiece::size_type size_type;
+-
+-std::ostream& operator<<(std::ostream& o, const StringPiece& piece) {
+-  o.write(piece.data(), static_cast<std::streamsize>(piece.size()));
+-  return o;
+-}
+-
+-bool operator==(const StringPiece& x, const StringPiece& y) {
+-  if (x.size() != y.size())
+-    return false;
+-
+-  return StringPiece::wordmemcmp(x.data(), y.data(), x.size()) == 0;
+-}
+-
+-void StringPiece::CopyToString(std::string* target) const {
+-  target->assign(!empty() ? data() : "", size());
+-}
+-
+-void StringPiece::AppendToString(std::string* target) const {
+-  if (!empty())
+-    target->append(data(), size());
+-}
+-
+-size_type StringPiece::copy(char* buf, size_type n, size_type pos) const {
+-  size_type ret = std::min(length_ - pos, n);
+-  memcpy(buf, ptr_ + pos, ret);
+-  return ret;
+-}
+-
+-size_type StringPiece::find(const StringPiece& s, size_type pos) const {
+-  if (pos > length_)
+-    return npos;
+-
+-  const char* result = std::search(ptr_ + pos, ptr_ + length_,
+-                                   s.ptr_, s.ptr_ + s.length_);
+-  const size_type xpos = result - ptr_;
+-  return xpos + s.length_ <= length_ ? xpos : npos;
+-}
+-
+-size_type StringPiece::find(char c, size_type pos) const {
+-  if (pos >= length_)
+-    return npos;
+-
+-  const char* result = std::find(ptr_ + pos, ptr_ + length_, c);
+-  return result != ptr_ + length_ ? static_cast<size_t>(result - ptr_) : npos;
+-}
+-
+-size_type StringPiece::rfind(const StringPiece& s, size_type pos) const {
+-  if (length_ < s.length_)
+-    return npos;
+-
+-  if (s.empty())
+-    return std::min(length_, pos);
+-
+-  const char* last = ptr_ + std::min(length_ - s.length_, pos) + s.length_;
+-  const char* result = std::find_end(ptr_, last, s.ptr_, s.ptr_ + s.length_);
+-  return result != last ? static_cast<size_t>(result - ptr_) : npos;
+-}
+-
+-size_type StringPiece::rfind(char c, size_type pos) const {
+-  if (length_ == 0)
+-    return npos;
+-
+-  for (size_type i = std::min(pos, length_ - 1); ; --i) {
+-    if (ptr_[i] == c)
+-      return i;
+-    if (i == 0)
+-      break;
+-  }
+-  return npos;
+-}
+-
+-// For each character in characters_wanted, sets the index corresponding
+-// to the ASCII code of that character to 1 in table.  This is used by
+-// the find_.*_of methods below to tell whether or not a character is in
+-// the lookup table in constant time.
+-// The argument `table' must be an array that is large enough to hold all
+-// the possible values of an unsigned char.  Thus it should be be declared
+-// as follows:
+-//   bool table[UCHAR_MAX + 1]
+-static inline void BuildLookupTable(const StringPiece& characters_wanted,
+-                                    bool* table) {
+-  const size_type length = characters_wanted.length();
+-  const char* const data = characters_wanted.data();
+-  for (size_type i = 0; i < length; ++i) {
+-    table[static_cast<unsigned char>(data[i])] = true;
+-  }
+-}
+-
+-size_type StringPiece::find_first_of(const StringPiece& s,
+-                                     size_type pos) const {
+-  if (length_ == 0 || s.length_ == 0)
+-    return npos;
+-
+-  // Avoid the cost of BuildLookupTable() for a single-character search.
+-  if (s.length_ == 1)
+-    return find_first_of(s.ptr_[0], pos);
+-
+-  bool lookup[UCHAR_MAX + 1] = { false };
+-  BuildLookupTable(s, lookup);
+-  for (size_type i = pos; i < length_; ++i) {
+-    if (lookup[static_cast<unsigned char>(ptr_[i])]) {
+-      return i;
+-    }
+-  }
+-  return npos;
+-}
+-
+-size_type StringPiece::find_first_not_of(const StringPiece& s,
+-                                         size_type pos) const {
+-  if (length_ == 0)
+-    return npos;
+-
+-  if (s.length_ == 0)
+-    return 0;
+-
+-  // Avoid the cost of BuildLookupTable() for a single-character search.
+-  if (s.length_ == 1)
+-    return find_first_not_of(s.ptr_[0], pos);
+-
+-  bool lookup[UCHAR_MAX + 1] = { false };
+-  BuildLookupTable(s, lookup);
+-  for (size_type i = pos; i < length_; ++i) {
+-    if (!lookup[static_cast<unsigned char>(ptr_[i])]) {
+-      return i;
+-    }
+-  }
+-  return npos;
+-}
+-
+-size_type StringPiece::find_first_not_of(char c, size_type pos) const {
+-  if (length_ == 0)
+-    return npos;
+-
+-  for (; pos < length_; ++pos) {
+-    if (ptr_[pos] != c) {
+-      return pos;
+-    }
+-  }
+-  return npos;
+-}
+-
+-size_type StringPiece::find_last_of(const StringPiece& s, size_type pos) const {
+-  if (length_ == 0 || s.length_ == 0)
+-    return npos;
+-
+-  // Avoid the cost of BuildLookupTable() for a single-character search.
+-  if (s.length_ == 1)
+-    return find_last_of(s.ptr_[0], pos);
+-
+-  bool lookup[UCHAR_MAX + 1] = { false };
+-  BuildLookupTable(s, lookup);
+-  for (size_type i = std::min(pos, length_ - 1); ; --i) {
+-    if (lookup[static_cast<unsigned char>(ptr_[i])])
+-      return i;
+-    if (i == 0)
+-      break;
+-  }
+-  return npos;
+-}
+-
+-size_type StringPiece::find_last_not_of(const StringPiece& s,
+-                                        size_type pos) const {
+-  if (length_ == 0)
+-    return npos;
+-
+-  size_type i = std::min(pos, length_ - 1);
+-  if (s.length_ == 0)
+-    return i;
+-
+-  // Avoid the cost of BuildLookupTable() for a single-character search.
+-  if (s.length_ == 1)
+-    return find_last_not_of(s.ptr_[0], pos);
+-
+-  bool lookup[UCHAR_MAX + 1] = { false };
+-  BuildLookupTable(s, lookup);
+-  for (; ; --i) {
+-    if (!lookup[static_cast<unsigned char>(ptr_[i])])
+-      return i;
+-    if (i == 0)
+-      break;
+-  }
+-  return npos;
+-}
+-
+-size_type StringPiece::find_last_not_of(char c, size_type pos) const {
+-  if (length_ == 0)
+-    return npos;
+-
+-  for (size_type i = std::min(pos, length_ - 1); ; --i) {
+-    if (ptr_[i] != c)
+-      return i;
+-    if (i == 0)
+-      break;
+-  }
+-  return npos;
+-}
+-
+-StringPiece StringPiece::substr(size_type pos, size_type n) const {
+-  if (pos > length_) pos = length_;
+-  if (n > length_ - pos) n = length_ - pos;
+-  return StringPiece(ptr_ + pos, n);
+-}
+-
+-const StringPiece::size_type StringPiece::npos = size_type(-1);
+-
+-}  // namespace base
+Index: src/base/synchronization/lock.h
+===================================================================
+--- src/base/synchronization/lock.h	(revision 277)
++++ src/base/synchronization/lock.h	(working copy)
+@@ -1,27 +0,0 @@
+-// Copyright (C) 2011 Google Inc.
+-//
+-// Licensed under the Apache License, Version 2.0 (the "License");
+-// you may not use this file except in compliance with the License.
+-// You may obtain a copy of the License at
+-//
+-// http://www.apache.org/licenses/LICENSE-2.0
+-//
+-// Unless required by applicable law or agreed to in writing, software
+-// distributed under the License is distributed on an "AS IS" BASIS,
+-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-// See the License for the specific language governing permissions and
+-// limitations under the License.
+-
+-// Author: Philippe Liard
+-
+-#ifndef I18N_PHONENUMBERS_BASE_SYNCHRONIZATION_LOCK_H_
+-#define I18N_PHONENUMBERS_BASE_SYNCHRONIZATION_LOCK_H_
+-
+-#include <boost/thread/mutex.hpp>
+-
+-namespace base {
+-  typedef boost::mutex Lock;
+-  typedef boost::mutex::scoped_lock AutoLock;
+-}
+-
+-#endif  // I18N_PHONENUMBERS_BASE_SYNCHRONIZATION_LOCK_H_
+Index: src/base/string_piece.h
+===================================================================
+--- src/base/string_piece.h	(revision 277)
++++ src/base/string_piece.h	(working copy)
+@@ -1,192 +0,0 @@
+-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+-// Use of this source code is governed by a BSD-style license that can be
+-// found in the LICENSE file.
+-// Copied from strings/stringpiece.h with modifications
+-//
+-// A string-like object that points to a sized piece of memory.
+-//
+-// Functions or methods may use const StringPiece& parameters to accept either
+-// a "const char*" or a "string" value that will be implicitly converted to
+-// a StringPiece.  The implicit conversion means that it is often appropriate
+-// to include this .h file in other files rather than forward-declaring
+-// StringPiece as would be appropriate for most other Google classes.
+-//
+-// Systematic usage of StringPiece is encouraged as it will reduce unnecessary
+-// conversions from "const char*" to "string" and back again.
+-//
+-
+-#ifndef BASE_STRING_PIECE_H_
+-#define BASE_STRING_PIECE_H_
+-#pragma once
+-
+-#include <string>
+-
+-#include "base/basictypes.h"
+-
+-namespace base {
+-
+-class StringPiece {
+- public:
+-  // standard STL container boilerplate
+-  typedef size_t size_type;
+-  typedef char value_type;
+-  typedef const char* pointer;
+-  typedef const char& reference;
+-  typedef const char& const_reference;
+-  typedef ptrdiff_t difference_type;
+-  typedef const char* const_iterator;
+-  typedef const char* iterator;
+-  typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
+-  typedef std::reverse_iterator<iterator> reverse_iterator;
+-
+-  static const size_type npos;
+-
+- public:
+-  // We provide non-explicit singleton constructors so users can pass
+-  // in a "const char*" or a "string" wherever a "StringPiece" is
+-  // expected.
+-  StringPiece() : ptr_(NULL), length_(0) { }
+-  StringPiece(const char* str)
+-    : ptr_(str), length_((str == NULL) ? 0 : strlen(str)) { }
+-  StringPiece(const std::string& str)
+-    : ptr_(str.data()), length_(str.size()) { }
+-  StringPiece(const char* offset, size_type len)
+-    : ptr_(offset), length_(len) { }
+-
+-  // data() may return a pointer to a buffer with embedded NULs, and the
+-  // returned buffer may or may not be null terminated.  Therefore it is
+-  // typically a mistake to pass data() to a routine that expects a NUL
+-  // terminated string.
+-  const char* data() const { return ptr_; }
+-  size_type size() const { return length_; }
+-  size_type length() const { return length_; }
+-  bool empty() const { return length_ == 0; }
+-
+-  void clear() {
+-    ptr_ = NULL;
+-    length_ = 0;
+-  }
+-  void set(const char* data, size_type len) {
+-    ptr_ = data;
+-    length_ = len;
+-  }
+-  void set(const char* str) {
+-    ptr_ = str;
+-    length_ = str ? strlen(str) : 0;
+-  }
+-  void set(const void* data, size_type len) {
+-    ptr_ = reinterpret_cast<const char*>(data);
+-    length_ = len;
+-  }
+-
+-  char operator[](size_type i) const { return ptr_[i]; }
+-
+-  void remove_prefix(size_type n) {
+-    ptr_ += n;
+-    length_ -= n;
+-  }
+-
+-  void remove_suffix(size_type n) {
+-    length_ -= n;
+-  }
+-
+-  int compare(const StringPiece& x) const {
+-    int r = wordmemcmp(
+-        ptr_, x.ptr_, (length_ < x.length_ ? length_ : x.length_));
+-    if (r == 0) {
+-      if (length_ < x.length_) r = -1;
+-      else if (length_ > x.length_) r = +1;
+-    }
+-    return r;
+-  }
+-
+-  std::string as_string() const {
+-    // std::string doesn't like to take a NULL pointer even with a 0 size.
+-    return std::string(!empty() ? data() : "", size());
+-  }
+-
+-  void CopyToString(std::string* target) const;
+-  void AppendToString(std::string* target) const;
+-
+-  // Does "this" start with "x"
+-  bool starts_with(const StringPiece& x) const {
+-    return ((length_ >= x.length_) &&
+-            (wordmemcmp(ptr_, x.ptr_, x.length_) == 0));
+-  }
+-
+-  // Does "this" end with "x"
+-  bool ends_with(const StringPiece& x) const {
+-    return ((length_ >= x.length_) &&
+-            (wordmemcmp(ptr_ + (length_-x.length_), x.ptr_, x.length_) == 0));
+-  }
+-
+-  iterator begin() const { return ptr_; }
+-  iterator end() const { return ptr_ + length_; }
+-  const_reverse_iterator rbegin() const {
+-    return const_reverse_iterator(ptr_ + length_);
+-  }
+-  const_reverse_iterator rend() const {
+-    return const_reverse_iterator(ptr_);
+-  }
+-
+-  size_type max_size() const { return length_; }
+-  size_type capacity() const { return length_; }
+-
+-  size_type copy(char* buf, size_type n, size_type pos = 0) const;
+-
+-  size_type find(const StringPiece& s, size_type pos = 0) const;
+-  size_type find(char c, size_type pos = 0) const;
+-  size_type rfind(const StringPiece& s, size_type pos = npos) const;
+-  size_type rfind(char c, size_type pos = npos) const;
+-
+-  size_type find_first_of(const StringPiece& s, size_type pos = 0) const;
+-  size_type find_first_of(char c, size_type pos = 0) const {
+-    return find(c, pos);
+-  }
+-  size_type find_first_not_of(const StringPiece& s, size_type pos = 0) const;
+-  size_type find_first_not_of(char c, size_type pos = 0) const;
+-  size_type find_last_of(const StringPiece& s, size_type pos = npos) const;
+-  size_type find_last_of(char c, size_type pos = npos) const {
+-    return rfind(c, pos);
+-  }
+-  size_type find_last_not_of(const StringPiece& s, size_type pos = npos) const;
+-  size_type find_last_not_of(char c, size_type pos = npos) const;
+-
+-  StringPiece substr(size_type pos, size_type n = npos) const;
+-
+-  static int wordmemcmp(const char* p, const char* p2, size_type N) {
+-    return memcmp(p, p2, N);
+-  }
+-
+- private:
+-  const char*   ptr_;
+-  size_type     length_;
+-};
+-
+-bool operator==(const StringPiece& x, const StringPiece& y);
+-
+-inline bool operator!=(const StringPiece& x, const StringPiece& y) {
+-  return !(x == y);
+-}
+-
+-inline bool operator<(const StringPiece& x, const StringPiece& y) {
+-  const int r = StringPiece::wordmemcmp(
+-      x.data(), y.data(), (x.size() < y.size() ? x.size() : y.size()));
+-  return ((r < 0) || ((r == 0) && (x.size() < y.size())));
+-}
+-
+-inline bool operator>(const StringPiece& x, const StringPiece& y) {
+-  return y < x;
+-}
+-
+-inline bool operator<=(const StringPiece& x, const StringPiece& y) {
+-  return !(x > y);
+-}
+-
+-inline bool operator>=(const StringPiece& x, const StringPiece& y) {
+-  return !(x < y);
+-}
+-
+-}  // namespace base
+-
+-#endif  // BASE_STRING_PIECE_H_
+Index: src/base/scoped_ptr.h
+===================================================================
+--- src/base/scoped_ptr.h	(revision 277)
++++ src/base/scoped_ptr.h	(working copy)
+@@ -1,24 +0,0 @@
+-// Copyright (C) 2011 Google Inc.
+-//
+-// Licensed under the Apache License, Version 2.0 (the "License");
+-// you may not use this file except in compliance with the License.
+-// You may obtain a copy of the License at
+-//
+-// http://www.apache.org/licenses/LICENSE-2.0
+-//
+-// Unless required by applicable law or agreed to in writing, software
+-// distributed under the License is distributed on an "AS IS" BASIS,
+-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-// See the License for the specific language governing permissions and
+-// limitations under the License.
+-
+-// Author: Philippe Liard
+-
+-#ifndef I18N_PHONENUMBERS_BASE_SCOPED_PTR_H_
+-#define I18N_PHONENUMBERS_BASE_SCOPED_PTR_H_
+-
+-#include <boost/scoped_ptr.hpp>
+-
+-using boost::scoped_ptr;
+-
+-#endif  // I18N_PHONENUMBERS_BASE_SCOPED_PTR_H_
+Index: src/base/singleton.h
+===================================================================
+--- src/base/singleton.h	(revision 277)
++++ src/base/singleton.h	(working copy)
+@@ -1,52 +0,0 @@
+-// Copyright (C) 2011 Google Inc.
+-//
+-// Licensed under the Apache License, Version 2.0 (the "License");
+-// you may not use this file except in compliance with the License.
+-// You may obtain a copy of the License at
+-//
+-// http://www.apache.org/licenses/LICENSE-2.0
+-//
+-// Unless required by applicable law or agreed to in writing, software
+-// distributed under the License is distributed on an "AS IS" BASIS,
+-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-// See the License for the specific language governing permissions and
+-// limitations under the License.
+-
+-// Author: Philippe Liard
+-
+-#ifndef I18N_PHONENUMBERS_BASE_SINGLETON_H_
+-#define I18N_PHONENUMBERS_BASE_SINGLETON_H_
+-
+-#include <boost/scoped_ptr.hpp>
+-#include <boost/thread/once.hpp>
+-#include <boost/utility.hpp>
+-
+-namespace i18n {
+-namespace phonenumbers {
+-
+-template <class T>
+-class Singleton : private boost::noncopyable {
+- public:
+-  virtual ~Singleton() {}
+-
+-  static T* GetInstance() {
+-    boost::call_once(Init, flag);
+-    return instance.get();
+-  }
+-
+- private:
+-  static void Init() {
+-    instance.reset(new T());
+-  }
+-
+-  static boost::scoped_ptr<T> instance;
+-  static boost::once_flag flag;
+-};
+-
+-template <class T> boost::scoped_ptr<T> Singleton<T>::instance;
+-template <class T> boost::once_flag Singleton<T>::flag = BOOST_ONCE_INIT;
+-
+-}  // namespace phonenumbers
+-}  // namespace i18n
+-
+-#endif // I18N_PHONENUMBERS_BASE_SINGLETON_H_
+Index: src/base/basictypes.h
+===================================================================
+--- src/base/basictypes.h	(revision 277)
++++ src/base/basictypes.h	(working copy)
+@@ -1,380 +0,0 @@
+-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+-// Use of this source code is governed by a BSD-style license that can be
+-// found in the LICENSE file.
+-
+-#ifndef BASE_BASICTYPES_H_
+-#define BASE_BASICTYPES_H_
+-#pragma once
+-
+-#include <limits.h>         // So we can set the bounds of our types
+-#include <stddef.h>         // For size_t
+-#include <string.h>         // for memcpy
+-
+-#ifndef COMPILER_MSVC
+-// stdint.h is part of C99 but MSVC doesn't have it.
+-#include <stdint.h>         // For intptr_t.
+-#endif
+-
+-#ifdef INT64_MAX
+-
+-// INT64_MAX is defined if C99 stdint.h is included; use the
+-// native types if available.
+-typedef int8_t int8;
+-typedef int16_t int16;
+-typedef int32_t int32;
+-typedef int64_t int64;
+-typedef uint8_t uint8;
+-typedef uint16_t uint16;
+-typedef uint32_t uint32;
+-typedef uint64_t uint64;
+-
+-const uint8  kuint8max  = UINT8_MAX;
+-const uint16 kuint16max = UINT16_MAX;
+-const uint32 kuint32max = UINT32_MAX;
+-const uint64 kuint64max = UINT64_MAX;
+-const  int8  kint8min   = INT8_MIN;
+-const  int8  kint8max   = INT8_MAX;
+-const  int16 kint16min  = INT16_MIN;
+-const  int16 kint16max  = INT16_MAX;
+-const  int32 kint32min  = INT32_MIN;
+-const  int32 kint32max  = INT32_MAX;
+-const  int64 kint64min  = INT64_MIN;
+-const  int64 kint64max  = INT64_MAX;
+-
+-#else // !INT64_MAX
+-
+-typedef signed char         int8;
+-typedef short               int16;
+-// TODO: Remove these type guards.  These are to avoid conflicts with
+-// obsolete/protypes.h in the Gecko SDK.
+-#ifndef _INT32
+-#define _INT32
+-typedef int                 int32;
+-#endif
+-
+-// The NSPR system headers define 64-bit as |long| when possible.  In order to
+-// not have typedef mismatches, we do the same on LP64.
+-#if __LP64__
+-typedef long                int64;
+-#else
+-typedef long long           int64;
+-#endif
+-
+-// NOTE: unsigned types are DANGEROUS in loops and other arithmetical
+-// places.  Use the signed types unless your variable represents a bit
+-// pattern (eg a hash value) or you really need the extra bit.  Do NOT
+-// use 'unsigned' to express "this value should always be positive";
+-// use assertions for this.
+-
+-typedef unsigned char      uint8;
+-typedef unsigned short     uint16;
+-// TODO: Remove these type guards.  These are to avoid conflicts with
+-// obsolete/protypes.h in the Gecko SDK.
+-#ifndef _UINT32
+-#define _UINT32
+-typedef unsigned int       uint32;
+-#endif
+-
+-// See the comment above about NSPR and 64-bit.
+-#if __LP64__
+-typedef unsigned long uint64;
+-#else
+-typedef unsigned long long uint64;
+-#endif
+-
+-#endif // !INT64_MAX
+-
+-typedef signed char         schar;
+-
+-// A type to represent a Unicode code-point value. As of Unicode 4.0,
+-// such values require up to 21 bits.
+-// (For type-checking on pointers, make this explicitly signed,
+-// and it should always be the signed version of whatever int32 is.)
+-typedef signed int         char32;
+-
+-// A macro to disallow the copy constructor and operator= functions
+-// This should be used in the private: declarations for a class
+-#define DISALLOW_COPY_AND_ASSIGN(TypeName) \
+-  TypeName(const TypeName&);               \
+-  void operator=(const TypeName&)
+-
+-// An older, deprecated, politically incorrect name for the above.
+-// NOTE: The usage of this macro was baned from our code base, but some
+-// third_party libraries are yet using it.
+-// TODO(tfarina): Figure out how to fix the usage of this macro in the
+-// third_party libraries and get rid of it.
+-#define DISALLOW_EVIL_CONSTRUCTORS(TypeName) DISALLOW_COPY_AND_ASSIGN(TypeName)
+-
+-// A macro to disallow all the implicit constructors, namely the
+-// default constructor, copy constructor and operator= functions.
+-//
+-// This should be used in the private: declarations for a class
+-// that wants to prevent anyone from instantiating it. This is
+-// especially useful for classes containing only static methods.
+-#define DISALLOW_IMPLICIT_CONSTRUCTORS(TypeName) \
+-  TypeName();                                    \
+-  DISALLOW_COPY_AND_ASSIGN(TypeName)
+-
+-// The arraysize(arr) macro returns the # of elements in an array arr.
+-// The expression is a compile-time constant, and therefore can be
+-// used in defining new arrays, for example.  If you use arraysize on
+-// a pointer by mistake, you will get a compile-time error.
+-//
+-// One caveat is that arraysize() doesn't accept any array of an
+-// anonymous type or a type defined inside a function.  In these rare
+-// cases, you have to use the unsafe ARRAYSIZE_UNSAFE() macro below.  This is
+-// due to a limitation in C++'s template system.  The limitation might
+-// eventually be removed, but it hasn't happened yet.
+-
+-// This template function declaration is used in defining arraysize.
+-// Note that the function doesn't need an implementation, as we only
+-// use its type.
+-template <typename T, size_t N>
+-char (&ArraySizeHelper(T (&array)[N]))[N];
+-
+-// That gcc wants both of these prototypes seems mysterious. VC, for
+-// its part, can't decide which to use (another mystery). Matching of
+-// template overloads: the final frontier.
+-#ifndef _MSC_VER
+-template <typename T, size_t N>
+-char (&ArraySizeHelper(const T (&array)[N]))[N];
+-#endif
+-
+-#define arraysize(array) (sizeof(ArraySizeHelper(array)))
+-
+-// ARRAYSIZE_UNSAFE performs essentially the same calculation as arraysize,
+-// but can be used on anonymous types or types defined inside
+-// functions.  It's less safe than arraysize as it accepts some
+-// (although not all) pointers.  Therefore, you should use arraysize
+-// whenever possible.
+-//
+-// The expression ARRAYSIZE_UNSAFE(a) is a compile-time constant of type
+-// size_t.
+-//
+-// ARRAYSIZE_UNSAFE catches a few type errors.  If you see a compiler error
+-//
+-//   "warning: division by zero in ..."
+-//
+-// when using ARRAYSIZE_UNSAFE, you are (wrongfully) giving it a pointer.
+-// You should only use ARRAYSIZE_UNSAFE on statically allocated arrays.
+-//
+-// The following comments are on the implementation details, and can
+-// be ignored by the users.
+-//
+-// ARRAYSIZE_UNSAFE(arr) works by inspecting sizeof(arr) (the # of bytes in
+-// the array) and sizeof(*(arr)) (the # of bytes in one array
+-// element).  If the former is divisible by the latter, perhaps arr is
+-// indeed an array, in which case the division result is the # of
+-// elements in the array.  Otherwise, arr cannot possibly be an array,
+-// and we generate a compiler error to prevent the code from
+-// compiling.
+-//
+-// Since the size of bool is implementation-defined, we need to cast
+-// !(sizeof(a) & sizeof(*(a))) to size_t in order to ensure the final
+-// result has type size_t.
+-//
+-// This macro is not perfect as it wrongfully accepts certain
+-// pointers, namely where the pointer size is divisible by the pointee
+-// size.  Since all our code has to go through a 32-bit compiler,
+-// where a pointer is 4 bytes, this means all pointers to a type whose
+-// size is 3 or greater than 4 will be (righteously) rejected.
+-
+-#define ARRAYSIZE_UNSAFE(a) \
+-  ((sizeof(a) / sizeof(*(a))) / \
+-   static_cast<size_t>(!(sizeof(a) % sizeof(*(a)))))
+-
+-
+-// Use implicit_cast as a safe version of static_cast or const_cast
+-// for upcasting in the type hierarchy (i.e. casting a pointer to Foo
+-// to a pointer to SuperclassOfFoo or casting a pointer to Foo to
+-// a const pointer to Foo).
+-// When you use implicit_cast, the compiler checks that the cast is safe.
+-// Such explicit implicit_casts are necessary in surprisingly many
+-// situations where C++ demands an exact type match instead of an
+-// argument type convertable to a target type.
+-//
+-// The From type can be inferred, so the preferred syntax for using
+-// implicit_cast is the same as for static_cast etc.:
+-//
+-//   implicit_cast<ToType>(expr)
+-//
+-// implicit_cast would have been part of the C++ standard library,
+-// but the proposal was submitted too late.  It will probably make
+-// its way into the language in the future.
+-template<typename To, typename From>
+-inline To implicit_cast(From const &f) {
+-  return f;
+-}
+-
+-// The COMPILE_ASSERT macro can be used to verify that a compile time
+-// expression is true. For example, you could use it to verify the
+-// size of a static array:
+-//
+-//   COMPILE_ASSERT(ARRAYSIZE_UNSAFE(content_type_names) == CONTENT_NUM_TYPES,
+-//                  content_type_names_incorrect_size);
+-//
+-// or to make sure a struct is smaller than a certain size:
+-//
+-//   COMPILE_ASSERT(sizeof(foo) < 128, foo_too_large);
+-//
+-// The second argument to the macro is the name of the variable. If
+-// the expression is false, most compilers will issue a warning/error
+-// containing the name of the variable.
+-
+-template <bool>
+-struct CompileAssert {
+-};
+-
+-#undef COMPILE_ASSERT
+-#define COMPILE_ASSERT(expr, msg) \
+-  typedef CompileAssert<(bool(expr))> msg[bool(expr) ? 1 : -1]
+-
+-// Implementation details of COMPILE_ASSERT:
+-//
+-// - COMPILE_ASSERT works by defining an array type that has -1
+-//   elements (and thus is invalid) when the expression is false.
+-//
+-// - The simpler definition
+-//
+-//     #define COMPILE_ASSERT(expr, msg) typedef char msg[(expr) ? 1 : -1]
+-//
+-//   does not work, as gcc supports variable-length arrays whose sizes
+-//   are determined at run-time (this is gcc's extension and not part
+-//   of the C++ standard).  As a result, gcc fails to reject the
+-//   following code with the simple definition:
+-//
+-//     int foo;
+-//     COMPILE_ASSERT(foo, msg); // not supposed to compile as foo is
+-//                               // not a compile-time constant.
+-//
+-// - By using the type CompileAssert<(bool(expr))>, we ensures that
+-//   expr is a compile-time constant.  (Template arguments must be
+-//   determined at compile-time.)
+-//
+-// - The outter parentheses in CompileAssert<(bool(expr))> are necessary
+-//   to work around a bug in gcc 3.4.4 and 4.0.1.  If we had written
+-//
+-//     CompileAssert<bool(expr)>
+-//
+-//   instead, these compilers will refuse to compile
+-//
+-//     COMPILE_ASSERT(5 > 0, some_message);
+-//
+-//   (They seem to think the ">" in "5 > 0" marks the end of the
+-//   template argument list.)
+-//
+-// - The array size is (bool(expr) ? 1 : -1), instead of simply
+-//
+-//     ((expr) ? 1 : -1).
+-//
+-//   This is to avoid running into a bug in MS VC 7.1, which
+-//   causes ((0.0) ? 1 : -1) to incorrectly evaluate to 1.
+-
+-
+-// MetatagId refers to metatag-id that we assign to
+-// each metatag <name, value> pair..
+-typedef uint32 MetatagId;
+-
+-// Argument type used in interfaces that can optionally take ownership
+-// of a passed in argument.  If TAKE_OWNERSHIP is passed, the called
+-// object takes ownership of the argument.  Otherwise it does not.
+-enum Ownership {
+-  DO_NOT_TAKE_OWNERSHIP,
+-  TAKE_OWNERSHIP
+-};
+-
+-// bit_cast<Dest,Source> is a template function that implements the
+-// equivalent of "*reinterpret_cast<Dest*>(&source)".  We need this in
+-// very low-level functions like the protobuf library and fast math
+-// support.
+-//
+-//   float f = 3.14159265358979;
+-//   int i = bit_cast<int32>(f);
+-//   // i = 0x40490fdb
+-//
+-// The classical address-casting method is:
+-//
+-//   // WRONG
+-//   float f = 3.14159265358979;            // WRONG
+-//   int i = * reinterpret_cast<int*>(&f);  // WRONG
+-//
+-// The address-casting method actually produces undefined behavior
+-// according to ISO C++ specification section 3.10 -15 -.  Roughly, this
+-// section says: if an object in memory has one type, and a program
+-// accesses it with a different type, then the result is undefined
+-// behavior for most values of "different type".
+-//
+-// This is true for any cast syntax, either *(int*)&f or
+-// *reinterpret_cast<int*>(&f).  And it is particularly true for
+-// conversions betweeen integral lvalues and floating-point lvalues.
+-//
+-// The purpose of 3.10 -15- is to allow optimizing compilers to assume
+-// that expressions with different types refer to different memory.  gcc
+-// 4.0.1 has an optimizer that takes advantage of this.  So a
+-// non-conforming program quietly produces wildly incorrect output.
+-//
+-// The problem is not the use of reinterpret_cast.  The problem is type
+-// punning: holding an object in memory of one type and reading its bits
+-// back using a different type.
+-//
+-// The C++ standard is more subtle and complex than this, but that
+-// is the basic idea.
+-//
+-// Anyways ...
+-//
+-// bit_cast<> calls memcpy() which is blessed by the standard,
+-// especially by the example in section 3.9 .  Also, of course,
+-// bit_cast<> wraps up the nasty logic in one place.
+-//
+-// Fortunately memcpy() is very fast.  In optimized mode, with a
+-// constant size, gcc 2.95.3, gcc 4.0.1, and msvc 7.1 produce inline
+-// code with the minimal amount of data movement.  On a 32-bit system,
+-// memcpy(d,s,4) compiles to one load and one store, and memcpy(d,s,8)
+-// compiles to two loads and two stores.
+-//
+-// I tested this code with gcc 2.95.3, gcc 4.0.1, icc 8.1, and msvc 7.1.
+-//
+-// WARNING: if Dest or Source is a non-POD type, the result of the memcpy
+-// is likely to surprise you.
+-
+-template <class Dest, class Source>
+-inline Dest bit_cast(const Source& source) {
+-  // Compile time assertion: sizeof(Dest) == sizeof(Source)
+-  // A compile error here means your Dest and Source have different sizes.
+-  typedef char VerifySizesAreEqual [sizeof(Dest) == sizeof(Source) ? 1 : -1];
+-
+-  Dest dest;
+-  memcpy(&dest, &source, sizeof(dest));
+-  return dest;
+-}
+-
+-// Used to explicitly mark the return value of a function as unused. If you are
+-// really sure you don't want to do anything with the return value of a function
+-// that has been marked WARN_UNUSED_RESULT, wrap it with this. Example:
+-//
+-//   scoped_ptr<MyType> my_var = ...;
+-//   if (TakeOwnership(my_var.get()) == SUCCESS)
+-//     ignore_result(my_var.release());
+-//
+-template<typename T>
+-inline void ignore_result(const T& ignored) {
+-}
+-
+-// The following enum should be used only as a constructor argument to indicate
+-// that the variable has static storage class, and that the constructor should
+-// do nothing to its state.  It indicates to the reader that it is legal to
+-// declare a static instance of the class, provided the constructor is given
+-// the base::LINKER_INITIALIZED argument.  Normally, it is unsafe to declare a
+-// static variable that has a constructor or a destructor because invocation
+-// order is undefined.  However, IF the type can be initialized by filling with
+-// zeroes (which the loader does for static variables), AND the destructor also
+-// does nothing to the storage, AND there are no virtual methods, then a
+-// constructor declared as
+-//       explicit MyClass(base::LinkerInitialized x) {}
+-// and invoked as
+-//       static MyClass my_variable_name(base::LINKER_INITIALIZED);
+-namespace base {
+-enum LinkerInitialized { LINKER_INITIALIZED };
+-}  // base
+-
+-#endif  // BASE_BASICTYPES_H_
+Index: src/base/logging.h
+===================================================================
+--- src/base/logging.h	(revision 277)
++++ src/base/logging.h	(working copy)
+@@ -1,33 +0,0 @@
+-// Copyright (C) 2011 Google Inc.
+-//
+-// Licensed under the Apache License, Version 2.0 (the "License");
+-// you may not use this file except in compliance with the License.
+-// You may obtain a copy of the License at
+-//
+-// http://www.apache.org/licenses/LICENSE-2.0
+-//
+-// Unless required by applicable law or agreed to in writing, software
+-// distributed under the License is distributed on an "AS IS" BASIS,
+-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-// See the License for the specific language governing permissions and
+-// limitations under the License.
+-
+-// Author: Philippe Liard
+-
+-// This file does not come from Chromium.
+-// It provides a minimalist implementation of common macros.
+-
+-#ifndef BASE_LOGGING_H_
+-# define BASE_LOGGING_H_
+-
+-# include <cassert>
+-# include <iostream>
+-
+-# define CHECK_EQ(X, Y) assert((X) == (Y))
+-
+-# define DCHECK(X) assert(X)
+-# define DCHECK_EQ(X, Y) CHECK_EQ((X), (Y))
+-
+-# define NOTREACHED() std::cerr
+-
+-#endif
