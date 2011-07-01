@@ -1264,6 +1264,74 @@ ui::Compositor* View::GetCompositor() {
   return parent_ ? parent_->GetCompositor() : NULL;
 }
 
+void View::MarkLayerDirty() {
+  if (!use_acceleration_when_possible)
+    return;
+
+  if (ShouldPaintToLayer()) {
+    if (!layer_helper_->layer_updated_externally())
+      layer_helper_->set_bitmap_needs_updating(true);
+    return;
+  }
+  if (parent_)
+    parent_->MarkLayerDirty();
+}
+
+void View::CalculateOffsetToAncestorWithLayer(gfx::Point* offset,
+                                              View** ancestor) {
+  if (layer()) {
+    if (ancestor)
+      *ancestor = this;
+    return;
+  }
+  if (!parent_)
+    return;
+
+  offset->Offset(x(), y());
+  parent_->CalculateOffsetToAncestorWithLayer(offset, ancestor);
+}
+
+void View::CreateLayerIfNecessary() {
+  if (ShouldPaintToLayer())
+    CreateLayer();
+
+  for (int i = 0, count = child_count(); i < count; ++i)
+    GetChildViewAt(i)->CreateLayerIfNecessary();
+}
+
+void View::MoveLayerToParent(ui::Layer* parent_layer,
+                             const gfx::Point& point) {
+  gfx::Point local_point(point);
+  if (parent_layer != layer())
+    local_point.Offset(x(), y());
+  if (layer() && parent_layer != layer()) {
+    parent_layer->Add(layer());
+    layer()->set_bounds(
+        gfx::Rect(local_point.x(), local_point.y(), width(), height()));
+  } else {
+    for (int i = 0, count = child_count(); i < count; ++i)
+      GetChildViewAt(i)->MoveLayerToParent(parent_layer, local_point);
+  }
+}
+
+void View::DestroyLayerRecurse() {
+  for (int i = child_count() - 1; i >= 0; --i)
+    GetChildViewAt(i)->DestroyLayerRecurse();
+  DestroyLayer();
+}
+
+void View::UpdateLayerBounds(const gfx::Point& offset) {
+  if (layer()) {
+    layer_helper_->property_setter()->SetBounds(
+        layer(),
+        gfx::Rect(offset.x() + x(), offset.y() + y(), width(), height()));
+  } else {
+    gfx::Point new_offset(offset.x() + x(), offset.y() + y());
+    for (int i = 0, count = child_count(); i < count; ++i)
+      GetChildViewAt(i)->UpdateLayerBounds(new_offset);
+  }
+}
+
 // Input -----------------------------------------------------------------------
 
 bool View::HasHitTestMask() const {
@@ -1491,7 +1559,8 @@ void View::BoundsChanged(const gfx::Rect& previous_bounds) {
     if (use_acceleration_when_possible) {
       if (layer()) {
         if (parent_) {
-          gfx::Point offset(parent_->CalculateOffsetToAncestorWithLayer(NULL));
+          gfx::Point offset;
+          parent_->CalculateOffsetToAncestorWithLayer(&offset, NULL);
           offset.Offset(x(), y());
           layer_helper_->property_setter()->SetBounds(
               layer(), gfx::Rect(offset, size()));
@@ -1507,7 +1576,8 @@ void View::BoundsChanged(const gfx::Rect& previous_bounds) {
       } else if (GetCompositor()) {
         // If our bounds have changed, then any descendant layer bounds may
         // have changed. Update them accordingly.
-        gfx::Point offset(CalculateOffsetToAncestorWithLayer(NULL));
+        gfx::Point offset;
+        CalculateOffsetToAncestorWithLayer(&offset, NULL);
         // CalculateOffsetToAncestorWithLayer includes our location as does
         // UpdateLayerBounds.
         offset.Offset(-x(), -y());
@@ -1660,24 +1730,6 @@ bool View::ShouldPaintToLayer() const {
       layer_helper_.get() && layer_helper_->ShouldPaintToLayer();
 }
 
-void View::MarkLayerDirty() {
-  View* owner = this;
-  while (!owner->ShouldPaintToLayer() && owner->parent_)
-    owner = owner->parent_;
-  if (owner->layer_helper_.get() &&
-      !owner->layer_helper_->layer_updated_externally()) {
-    owner->layer_helper_->set_bitmap_needs_updating(true);
-  }
-}
-
-void View::CreateLayerIfNecessary() {
-  if (ShouldPaintToLayer())
-    CreateLayer();
-
-  for (int i = 0, count = child_count(); i < count; ++i)
-    GetChildViewAt(i)->CreateLayerIfNecessary();
-}
-
 void View::CreateLayer() {
   if (!ShouldPaintToLayer() || layer())
     return;
@@ -1689,7 +1741,8 @@ void View::CreateLayer() {
   DCHECK(layer_helper_.get());
 
   View* ancestor_with_layer = NULL;
-  gfx::Point offset(CalculateOffsetToAncestorWithLayer(&ancestor_with_layer));
+  gfx::Point offset;
+  CalculateOffsetToAncestorWithLayer(&offset, &ancestor_with_layer);
 
   DCHECK(ancestor_with_layer || parent_ == NULL);
 
@@ -1700,14 +1753,7 @@ void View::CreateLayer() {
   layer_helper_->set_bitmap_needs_updating(true);
   layer_helper_->set_needs_paint_all(true);
 
-  for (int i = 0, count = child_count(); i < count; ++i)
-    GetChildViewAt(i)->MoveLayerToParent(layer(), gfx::Point());
-}
-
-void View::DestroyLayerRecurse() {
-  for (int i = child_count() - 1; i >= 0; --i)
-    GetChildViewAt(i)->DestroyLayerRecurse();
-  DestroyLayer();
+  MoveLayerToParent(layer(), gfx::Point());
 }
 
 void View::DestroyLayerAndReparent() {
@@ -1721,9 +1767,10 @@ void View::DestroyLayerAndReparent() {
 
   DestroyLayer();
 
-  gfx::Point offset(CalculateOffsetToAncestorWithLayer(NULL));
-  for (int i = 0, count = child_count(); i < count; ++i)
-    GetChildViewAt(i)->UpdateLayerBounds(offset);
+  gfx::Point offset;
+  CalculateOffsetToAncestorWithLayer(&offset, NULL);
+  offset.Offset(-x(), -y());
+  UpdateLayerBounds(offset);
 }
 
 void View::DestroyLayer() {
@@ -1734,46 +1781,6 @@ void View::DestroyLayer() {
     layer_helper_.reset();
   else
     layer_helper_->SetLayer(NULL);
-}
-
-void View::MoveLayerToParent(ui::Layer* parent_layer,
-                               const gfx::Point& point) {
-  gfx::Point local_point(point.x() + x(), point.y() + y());
-  if (layer()) {
-    parent_layer->Add(layer());
-    layer()->set_bounds(
-        gfx::Rect(local_point.x(), local_point.y(), width(), height()));
-  } else {
-    for (int i = 0, count = child_count(); i < count; ++i)
-      GetChildViewAt(i)->MoveLayerToParent(parent_layer, local_point);
-  }
-}
-
-void View::UpdateLayerBounds(const gfx::Point& offset) {
-  if (layer()) {
-    layer_helper_->property_setter()->SetBounds(
-        layer(),
-        gfx::Rect(offset.x() + x(), offset.y() + y(), width(), height()));
-  } else {
-    gfx::Point new_offset(offset.x() + x(), offset.y() + y());
-    for (int i = 0, count = child_count(); i < count; ++i)
-      GetChildViewAt(i)->UpdateLayerBounds(new_offset);
-  }
-}
-
-gfx::Point View::CalculateOffsetToAncestorWithLayer(
-    View** ancestor) {
-  gfx::Point offset;
-  // TODO: if we want to share compositors among widgets then this code needs to
-  // ascend widget boundaries.
-  View* ancestor_with_layer = this;
-  while (ancestor_with_layer && !ancestor_with_layer->layer()) {
-    offset.Offset(ancestor_with_layer->x(), ancestor_with_layer->y());
-    ancestor_with_layer = ancestor_with_layer->parent();
-  }
-  if (ancestor)
-    *ancestor = ancestor_with_layer;
-  return offset;
 }
 
 // Input -----------------------------------------------------------------------

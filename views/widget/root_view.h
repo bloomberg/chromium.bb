@@ -123,10 +123,11 @@ class RootView : public View,
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual const ui::Compositor* GetCompositor() const OVERRIDE;
   virtual ui::Compositor* GetCompositor() OVERRIDE;
+  virtual void MarkLayerDirty() OVERRIDE;
+  virtual void CalculateOffsetToAncestorWithLayer(gfx::Point* offset,
+                                                  View** ancestor) OVERRIDE;
 
-  View* touch_pressed_handler() const {
-    return touch_pressed_handler_;
-  }
+  View* touch_pressed_handler() const { return touch_pressed_handler_; }
 
  private:
   friend class View;

@@ -8,7 +8,6 @@
 
 #include <stack>
 
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/gfx/native_widget_types.h"
@@ -465,12 +464,19 @@ class Widget : public internal::NativeWidgetDelegate,
 
 #if defined(UNIT_TEST)
   static void set_compositor_factory(ui::Compositor*(*factory)()) {
-    factory_ = factory;
+    compositor_factory_ = factory;
   }
 #endif
+  static ui::Compositor* (*compositor_factory())() {
+    return compositor_factory_;
+  }
 
-  const ui::Compositor* compositor() const { return compositor_.get(); }
-  ui::Compositor* compositor() { return compositor_.get(); }
+  const ui::Compositor* GetCompositor() const;
+  ui::Compositor* GetCompositor();
+
+  // Invokes method of same name on the NativeWidget.
+  void MarkLayerDirty();
+  void CalculateOffsetToAncestorWithLayer(gfx::Point* offset, View** ancestor);
 
   // Notifies assistive technology that an accessibility event has
   // occurred on |view|, such as when the view is focused or when its
@@ -569,9 +575,6 @@ class Widget : public internal::NativeWidgetDelegate,
  private:
   friend class ScopedEvent;
 
-  // Try to create a compositor if one hasn't been created yet.
-  void EnsureCompositor();
-
   // Returns whether capture should be released on mouse release.
   virtual bool ShouldReleaseCaptureOnMouseReleased() const;
 
@@ -615,9 +618,6 @@ class Widget : public internal::NativeWidgetDelegate,
   // The event stack.
   std::stack<ScopedEvent*> event_stack_;
 
-  // The compositor for accelerated drawing.
-  scoped_refptr<ui::Compositor> compositor_;
-
   // See class documentation for Widget above for a note about ownership.
   InitParams::Ownership ownership_;
 
@@ -643,7 +643,7 @@ class Widget : public internal::NativeWidgetDelegate,
   gfx::Size minimum_size_;
 
   // Factory used to create Compositors. Settable by tests.
-  static ui::Compositor*(*factory_)();
+  static ui::Compositor*(*compositor_factory_)();
 
   DISALLOW_COPY_AND_ASSIGN(Widget);
 };

@@ -6,10 +6,12 @@
 
 #include "base/logging.h"
 
-TestViewsDelegate::TestViewsDelegate() {
+TestViewsDelegate::TestViewsDelegate()
+    : default_parent_view_(NULL) {
   DCHECK(!views::ViewsDelegate::views_delegate);
   views::ViewsDelegate::views_delegate = this;
 }
+
 TestViewsDelegate::~TestViewsDelegate() {
   views::ViewsDelegate::views_delegate = NULL;
 }
@@ -23,7 +25,7 @@ ui::Clipboard* TestViewsDelegate::GetClipboard() const {
 }
 
 views::View* TestViewsDelegate::GetDefaultParentView() {
-  return NULL;
+  return default_parent_view_;
 }
 
 bool TestViewsDelegate::GetSavedWindowBounds(const views::Widget* window,

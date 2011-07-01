@@ -44,6 +44,11 @@ class NativeWidgetViews : public internal::NativeWidgetPrivate {
   virtual const Widget* GetWidget() const OVERRIDE;
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
   virtual gfx::NativeWindow GetNativeWindow() const OVERRIDE;
+  virtual const ui::Compositor* GetCompositor() const OVERRIDE;
+  virtual ui::Compositor* GetCompositor() OVERRIDE;
+  virtual void MarkLayerDirty() OVERRIDE;
+  virtual void CalculateOffsetToAncestorWithLayer(gfx::Point* offset,
+                                                  View** ancestor) OVERRIDE;
   virtual void ViewRemoved(View* view) OVERRIDE;
   virtual void SetNativeWindowProperty(const char* name, void* value) OVERRIDE;
   virtual void* GetNativeWindowProperty(const char* name) const OVERRIDE;
@@ -66,7 +71,6 @@ class NativeWidgetViews : public internal::NativeWidgetPrivate {
   virtual void SetAccessibleName(const std::wstring& name) OVERRIDE;
   virtual void SetAccessibleRole(ui::AccessibilityTypes::Role role) OVERRIDE;
   virtual void SetAccessibleState(ui::AccessibilityTypes::State state) OVERRIDE;
-  virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
   virtual void BecomeModal() OVERRIDE;
   virtual gfx::Rect GetWindowScreenBounds() const OVERRIDE;
   virtual gfx::Rect GetClientAreaScreenBounds() const OVERRIDE;
@@ -124,6 +128,8 @@ class NativeWidgetViews : public internal::NativeWidgetPrivate {
 
   gfx::Rect restored_bounds_;
   ui::Transform restored_transform_;
+
+  Widget* hosting_widget_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetViews);
 };

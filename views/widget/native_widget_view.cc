@@ -16,7 +16,8 @@ namespace internal {
 const char NativeWidgetView::kViewClassName[] = "views/NativeWidgetView";
 
 NativeWidgetView::NativeWidgetView(NativeWidgetViews* native_widget)
-    : native_widget_(native_widget) {
+    : native_widget_(native_widget),
+      sent_create_(false) {
 }
 
 NativeWidgetView::~NativeWidgetView() {
@@ -33,10 +34,22 @@ void NativeWidgetView::SchedulePaintInternal(const gfx::Rect& r) {
   View::SchedulePaintInternal(r);
 }
 
-void NativeWidgetView::ViewHierarchyChanged(bool is_add, View* parent,
+void NativeWidgetView::MarkLayerDirty() {
+  View::MarkLayerDirty();
+}
+
+void NativeWidgetView::CalculateOffsetToAncestorWithLayer(gfx::Point* offset,
+                                                          View** ancestor) {
+  View::CalculateOffsetToAncestorWithLayer(offset, ancestor);
+}
+
+void NativeWidgetView::ViewHierarchyChanged(bool is_add,
+                                            View* parent,
                                             View* child) {
-  if (is_add && child == this)
+  if (is_add && child == this && !sent_create_) {
+    sent_create_ = true;
     delegate()->OnNativeWidgetCreated();
+  }
 }
 
 void NativeWidgetView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
@@ -113,6 +126,48 @@ std::string NativeWidgetView::GetClassName() const {
   return kViewClassName;
 }
 
+void NativeWidgetView::MoveLayerToParent(ui::Layer* parent_layer,
+                                         const gfx::Point& point) {
+  View::MoveLayerToParent(parent_layer, point);
+  if (!layer() || parent_layer == layer()) {
+    gfx::Point new_offset(point);
+    if (layer() != parent_layer)
+      new_offset.Offset(x(), y());
+    GetAssociatedWidget()->GetRootView()->MoveLayerToParent(
+        parent_layer, new_offset);
+  }
+}
+
+void NativeWidgetView::DestroyLayerRecurse() {
+  GetAssociatedWidget()->GetRootView()->DestroyLayerRecurse();
+  View::DestroyLayerRecurse();
+}
+
+void NativeWidgetView::UpdateLayerBounds(const gfx::Point& offset) {
+  View::UpdateLayerBounds(offset);
+  if (!layer()) {
+    gfx::Point new_offset(offset.x() + x(), offset.y() + y());
+    GetAssociatedWidget()->GetRootView()->UpdateLayerBounds(new_offset);
+  }
+}
+
+void NativeWidgetView::PaintToLayer(const gfx::Rect& dirty_rect) {
+  View::PaintToLayer(dirty_rect);
+
+  View* root = GetAssociatedWidget()->GetRootView();
+  gfx::Rect root_dirty_rect = dirty_rect;
+  root->GetTransform().TransformRectReverse(&root_dirty_rect);
+  root_dirty_rect =
+      gfx::Rect(gfx::Point(), root->size()).Intersect(root_dirty_rect);
+
+  if (!root_dirty_rect.IsEmpty())
+    root->PaintToLayer(root_dirty_rect);
+}
+
+void NativeWidgetView::PaintComposite() {
+  View::PaintComposite();
+  GetAssociatedWidget()->GetRootView()->PaintComposite();
+}
 
 }  // namespace internal
 }  // namespace views

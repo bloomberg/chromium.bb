@@ -413,17 +413,29 @@ void RootView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
   }
 }
 
-
 void RootView::OnPaint(gfx::Canvas* canvas) {
   canvas->AsCanvasSkia()->drawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
 }
 
 const ui::Compositor* RootView::GetCompositor() const {
-  return widget_->compositor();
+  return widget_->GetCompositor();
 }
 
 ui::Compositor* RootView::GetCompositor() {
-  return widget_->compositor();
+  return widget_->GetCompositor();
+}
+
+void RootView::MarkLayerDirty() {
+  View::MarkLayerDirty();
+  if (!layer())
+    widget_->MarkLayerDirty();
+}
+
+void RootView::CalculateOffsetToAncestorWithLayer(gfx::Point* offset,
+                                                  View** ancestor) {
+  View::CalculateOffsetToAncestorWithLayer(offset, ancestor);
+  if (!layer())
+    widget_->CalculateOffsetToAncestorWithLayer(offset, ancestor);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

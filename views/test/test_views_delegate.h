@@ -21,6 +21,10 @@ class TestViewsDelegate : public views::ViewsDelegate {
   TestViewsDelegate();
   virtual ~TestViewsDelegate();
 
+  void set_default_parent_view(views::View* view) {
+    default_parent_view_ = view;
+  }
+
   // Overridden from views::ViewsDelegate:
   virtual ui::Clipboard* GetClipboard() const OVERRIDE;
   virtual views::View* GetDefaultParentView() OVERRIDE;
@@ -57,6 +61,7 @@ class TestViewsDelegate : public views::ViewsDelegate {
   virtual int GetDispositionForEvent(int event_flags) OVERRIDE;
 
  private:
+  views::View* default_parent_view_;
   mutable scoped_ptr<ui::Clipboard> clipboard_;
 
   DISALLOW_COPY_AND_ASSIGN(TestViewsDelegate);

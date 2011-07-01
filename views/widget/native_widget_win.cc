@@ -23,6 +23,7 @@
 #include "ui/base/win/hwnd_util.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/canvas_skia_paint.h"
+#include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/icon_util.h"
 #include "ui/gfx/native_theme_win.h"
 #include "ui/gfx/path.h"
@@ -543,6 +544,21 @@ gfx::NativeView NativeWidgetWin::GetNativeView() const {
 
 gfx::NativeWindow NativeWidgetWin::GetNativeWindow() const {
   return WindowImpl::hwnd();
+}
+
+const ui::Compositor* NativeWidgetWin::GetCompositor() const {
+  return compositor_.get();
+}
+
+ui::Compositor* NativeWidgetWin::GetCompositor() {
+  return compositor_.get();
+}
+
+void NativeWidgetWin::MarkLayerDirty() {
+}
+
+void NativeWidgetWin::CalculateOffsetToAncestorWithLayer(gfx::Point* offset,
+                                                         View** ancestor) {
 }
 
 void NativeWidgetWin::ViewRemoved(View* view) {
@@ -1214,6 +1230,15 @@ LRESULT NativeWidgetWin::OnCreate(CREATESTRUCT* create_struct) {
   // receive a size notification when its initial bounds are specified at window
   // creation time.
   ClientAreaSizeChanged();
+
+#if defined(VIEWS_COMPOSITOR)
+  if (View::get_use_acceleration_when_possible()) {
+    compositor_ = Widget::compositor_factory() ?
+        (*Widget::compositor_factory())() : ui::Compositor::Create(hwnd());
+    if (compositor_.get())
+      delegate_->AsWidget()->GetRootView()->SetPaintToLayer(true);
+  }
+#endif
 
   delegate_->OnNativeWidgetCreated();
 
@@ -2326,14 +2351,6 @@ LRESULT NativeWidgetWin::CallDefaultNCActivateHandler(BOOL active) {
   return DefWindowProc(GetNativeView(), WM_NCACTIVATE, active, 0);
 }
 
-gfx::AcceleratedWidget NativeWidgetWin::GetAcceleratedWidget() {
-#if defined(VIEWS_COMPOSITOR)
-  return hwnd();
-#else
-  return gfx::kNullAcceleratedWidget;
-#endif
-}
-
 void NativeWidgetWin::RestoreEnabledIfNecessary() {
   if (delegate_->IsModal() && !restored_enabled_) {
     restored_enabled_ = true;
@@ -2346,7 +2363,6 @@ void NativeWidgetWin::RestoreEnabledIfNecessary() {
     }
   }
 }
-
 
 void NativeWidgetWin::DispatchKeyEventPostIME(const KeyEvent& key) {
   SetMsgHandled(delegate_->OnKeyEvent(key));

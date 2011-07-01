@@ -8,6 +8,7 @@
 #include "views/view.h"
 #include "views/views_delegate.h"
 #include "views/widget/native_widget_view.h"
+#include "views/widget/root_view.h"
 
 namespace views {
 
@@ -19,7 +20,8 @@ NativeWidgetViews::NativeWidgetViews(internal::NativeWidgetDelegate* delegate)
       view_(NULL),
       active_(false),
       minimized_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(close_widget_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(close_widget_factory_(this)),
+      hosting_widget_(NULL) {
 }
 
 NativeWidgetViews::~NativeWidgetViews() {
@@ -42,10 +44,11 @@ void NativeWidgetViews::OnActivate(bool active) {
 // NativeWidgetViews, NativeWidget implementation:
 
 void NativeWidgetViews::InitNativeWidget(const Widget::InitParams& params) {
+  View* desktop_view = ViewsDelegate::views_delegate->GetDefaultParentView();
+  hosting_widget_ = desktop_view->GetWidget();
   view_ = new internal::NativeWidgetView(this);
   view_->SetBoundsRect(params.bounds);
   view_->SetPaintToLayer(true);
-  View* desktop_view = ViewsDelegate::views_delegate->GetDefaultParentView();
   desktop_view->AddChildView(view_);
 
   // TODO(beng): handle parenting.
@@ -81,6 +84,23 @@ gfx::NativeView NativeWidgetViews::GetNativeView() const {
 
 gfx::NativeWindow NativeWidgetViews::GetNativeWindow() const {
   return GetParentNativeWidget()->GetNativeWindow();
+}
+
+const ui::Compositor* NativeWidgetViews::GetCompositor() const {
+  return hosting_widget_->GetCompositor();
+}
+
+ui::Compositor* NativeWidgetViews::GetCompositor() {
+  return hosting_widget_->GetCompositor();
+}
+
+void NativeWidgetViews::MarkLayerDirty() {
+  view_->MarkLayerDirty();
+}
+
+void NativeWidgetViews::CalculateOffsetToAncestorWithLayer(gfx::Point* offset,
+                                                           View** ancestor) {
+  view_->CalculateOffsetToAncestorWithLayer(offset, ancestor);
 }
 
 void NativeWidgetViews::ViewRemoved(View* view) {
@@ -162,11 +182,6 @@ void NativeWidgetViews::SetAccessibleState(
 
 void NativeWidgetViews::BecomeModal() {
   NOTIMPLEMENTED();
-}
-
-gfx::AcceleratedWidget NativeWidgetViews::GetAcceleratedWidget() {
-  // TODO(sky):
-  return gfx::kNullAcceleratedWidget;
 }
 
 gfx::Rect NativeWidgetViews::GetWindowScreenBounds() const {

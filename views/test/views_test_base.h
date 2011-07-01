@@ -27,6 +27,9 @@ class ViewsTestBase : public testing::Test {
     message_loop_.RunAllPending();
   }
 
+ protected:
+  TestViewsDelegate& views_delegate() { return views_delegate_; }
+
  private:
   MessageLoopForUI message_loop_;
   TestViewsDelegate views_delegate_;

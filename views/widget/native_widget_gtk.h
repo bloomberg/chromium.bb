@@ -8,6 +8,7 @@
 
 #include <gtk/gtk.h>
 
+#include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/x/active_window_watcher_x.h"
@@ -163,6 +164,11 @@ class NativeWidgetGtk : public internal::NativeWidgetPrivate,
   virtual const Widget* GetWidget() const OVERRIDE;
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
   virtual gfx::NativeWindow GetNativeWindow() const OVERRIDE;
+  virtual const ui::Compositor* GetCompositor() const OVERRIDE;
+  virtual ui::Compositor* GetCompositor() OVERRIDE;
+  virtual void MarkLayerDirty() OVERRIDE;
+  virtual void CalculateOffsetToAncestorWithLayer(gfx::Point* offset,
+                                                  View** ancestor) OVERRIDE;
   virtual void ViewRemoved(View* view) OVERRIDE;
   virtual void SetNativeWindowProperty(const char* name, void* value) OVERRIDE;
   virtual void* GetNativeWindowProperty(const char* name) const OVERRIDE;
@@ -302,9 +308,6 @@ class NativeWidgetGtk : public internal::NativeWidgetPrivate,
  private:
   class DropObserver;
   friend class DropObserver;
-
-  // Overridden from NativeWidget
-  virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
 
   // Overridden from internal::InputMethodDelegate
   virtual void DispatchKeyEventPostIME(const KeyEvent& key) OVERRIDE;
@@ -446,6 +449,9 @@ class NativeWidgetGtk : public internal::NativeWidgetPrivate,
   bool painted_;
 
   scoped_ptr<InputMethod> input_method_;
+
+  // The compositor for accelerated drawing.
+  scoped_refptr<ui::Compositor> compositor_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetGtk);
 };

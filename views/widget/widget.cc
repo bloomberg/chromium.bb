@@ -653,6 +653,23 @@ void Widget::FrameTypeChanged() {
   native_widget_->FrameTypeChanged();
 }
 
+const ui::Compositor* Widget::GetCompositor() const {
+  return native_widget_->GetCompositor();
+}
+
+ui::Compositor* Widget::GetCompositor() {
+  return native_widget_->GetCompositor();
+}
+
+void Widget::MarkLayerDirty() {
+  native_widget_->MarkLayerDirty();
+}
+
+void Widget::CalculateOffsetToAncestorWithLayer(gfx::Point* offset,
+                                                View** ancestor) {
+  native_widget_->CalculateOffsetToAncestorWithLayer(offset, ancestor);
+}
+
 void Widget::NotifyAccessibilityEvent(
     View* view,
     ui::AccessibilityTypes::Event event_type,
@@ -734,7 +751,6 @@ void Widget::OnNativeWidgetCreated() {
     // manager.
     focus_manager_.reset(new FocusManager(this));
   }
-  EnsureCompositor();
 
   native_widget_->SetAccessibleRole(
       widget_delegate_->GetAccessibleWindowRole());
@@ -777,13 +793,14 @@ bool Widget::HasFocusManager() const {
 }
 
 bool Widget::OnNativeWidgetPaintAccelerated(const gfx::Rect& dirty_region) {
-  if (!compositor_.get())
+  ui::Compositor* compositor = GetCompositor();
+  if (!compositor)
     return false;
 
-  compositor_->NotifyStart();
+  compositor->NotifyStart();
   GetRootView()->PaintToLayer(dirty_region);
   GetRootView()->PaintComposite();
-  compositor_->NotifyEnd();
+  compositor->NotifyEnd();
   return true;
 }
 
@@ -921,21 +938,7 @@ void Widget::ReplaceFocusManager(FocusManager* focus_manager) {
 // Widget, private:
 
 // static
-ui::Compositor*(*Widget::factory_)() = NULL;
-
-void Widget::EnsureCompositor() {
-  DCHECK(!compositor_.get());
-
-  // TODO(sad): If there is a parent Widget, then use the same compositor
-  //            instead of creating a new one here.
-  gfx::AcceleratedWidget widget = native_widget_->GetAcceleratedWidget();
-  if (widget != gfx::kNullAcceleratedWidget &&
-      View::get_use_acceleration_when_possible()) {
-    compositor_ = factory_ ? (*factory_)() : ui::Compositor::Create(widget);
-    if (compositor_.get())
-      GetRootView()->SetPaintToLayer(true);
-  }
-}
+ui::Compositor*(*Widget::compositor_factory_)() = NULL;
 
 bool Widget::ShouldReleaseCaptureOnMouseReleased() const {
   return true;

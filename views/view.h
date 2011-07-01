@@ -61,6 +61,7 @@ class TextInputClient;
 class Widget;
 
 namespace internal {
+class NativeWidgetView;
 class RootView;
 }
 
@@ -959,13 +960,13 @@ class View : public AcceleratorTarget {
   // in case any children needed their layers updated.
   //
   // This is invoked internally by Widget and painting code.
-  void PaintToLayer(const gfx::Rect& dirty_rect);
+  virtual void PaintToLayer(const gfx::Rect& dirty_rect);
 
   // Instructs the compositor to show our layer and all children layers.
   // Invokes OnWillCompositeLayer() for any views that have layers.
   //
   // This is invoked internally by Widget and painting code.
-  void PaintComposite();
+  virtual void PaintComposite();
 
   // Invoked from |PaintComposite| if this view has a layer and before the
   // layer is rendered by the compositor.
@@ -983,6 +984,33 @@ class View : public AcceleratorTarget {
   // Returns the Compositor.
   virtual const ui::Compositor* GetCompositor() const;
   virtual ui::Compositor* GetCompositor();
+
+  // Marks the layer this view draws into as dirty.
+  virtual void MarkLayerDirty();
+
+  // Returns the offset from this view to the neareset ancestor with a layer.
+  // If |ancestor| is non-NULL it is set to the nearset ancestor with a layer.
+  virtual void CalculateOffsetToAncestorWithLayer(gfx::Point* offset,
+                                                  View** ancestor);
+
+  // Creates a layer for this and recurses through all descendants.
+  virtual void CreateLayerIfNecessary();
+
+  // If this view has a layer, the layer is reparented to |parent_layer| and its
+  // bounds is set based on |point|. If this view does not have a layer, then
+  // recurses through all children. This is used when adding a layer to an
+  // existing view to make sure all descendants that have layers are parented to
+  // the right layer.
+  virtual void MoveLayerToParent(ui::Layer* parent_layer,
+                                 const gfx::Point& point);
+
+  // Destroys the layer on this view and all descendants. Intended for when a
+  // view is being removed or made invisible.
+  virtual void DestroyLayerRecurse();
+
+  // Resets the bounds of the layer associated with this view and all
+  // descendants.
+  virtual void UpdateLayerBounds(const gfx::Point& offset);
 
   // Input ---------------------------------------------------------------------
 
@@ -1059,6 +1087,7 @@ class View : public AcceleratorTarget {
   static int GetVerticalDragThreshold();
 
  private:
+  friend class internal::NativeWidgetView;
   friend class internal::RootView;
   friend class FocusManager;
   friend class ViewStorage;
@@ -1191,18 +1220,8 @@ class View : public AcceleratorTarget {
   // Returns true if this view should paint to layer.
   bool ShouldPaintToLayer() const;
 
-  // Marks the layer this view draws into as dirty.
-  void MarkLayerDirty();
-
-  // Creates a layer for this and recurses through all descendants.
-  void CreateLayerIfNecessary();
-
   // Creates the layer and related fields for this view.
   void CreateLayer();
-
-  // Destroys the layer on this view and all descendants. Intended for when a
-  // view is being removed or made invisible.
-  void DestroyLayerRecurse();
 
   // Reparents any descendant layer to our current layer parent and destroys
   // this views layer.
@@ -1212,21 +1231,6 @@ class View : public AcceleratorTarget {
   // use from one of the other destroy methods, normally you shouldn't invoke
   // this directly.
   void DestroyLayer();
-
-  // If this view has a layer, the layer is reparented to |parent_layer| and its
-  // bounds is set based on |point|. If this view does not have a layer, then
-  // recurses through all children. This is used when adding a layer to an
-  // existing view to make sure all descendants that have layers are parented to
-  // the right layer.
-  void MoveLayerToParent(ui::Layer* parent_layer, const gfx::Point& point);
-
-  // Resets the bounds of the layer associated with this view and all
-  // descendants.
-  void UpdateLayerBounds(const gfx::Point& offset);
-
-  // Returns the offset from this view to the neareset ancestor with a layer.
-  // If |ancestor| is non-NULL it is set to the nearset ancestor with a layer.
-  gfx::Point CalculateOffsetToAncestorWithLayer(View** ancestor);
 
   // Returns the transform, or NULL if no transform has been set or the identity
   // transform was set. Be careful in using this as it may return NULL. Use

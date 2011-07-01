@@ -38,6 +38,9 @@ class NativeWidgetView : public View {
 
   // Overridden from View:
   virtual void SchedulePaintInternal(const gfx::Rect& r) OVERRIDE;
+  virtual void MarkLayerDirty() OVERRIDE;
+  virtual void CalculateOffsetToAncestorWithLayer(gfx::Point* offset,
+                                                  View** ancestor) OVERRIDE;
 
  private:
   // Overridden from View:
@@ -60,12 +63,21 @@ class NativeWidgetView : public View {
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
+  virtual void MoveLayerToParent(ui::Layer* parent_layer,
+                                 const gfx::Point& point) OVERRIDE;
+  virtual void DestroyLayerRecurse() OVERRIDE;
+  virtual void UpdateLayerBounds(const gfx::Point& offset) OVERRIDE;
+  virtual void PaintToLayer(const gfx::Rect& dirty_rect) OVERRIDE;
+  virtual void PaintComposite() OVERRIDE;
 
   internal::NativeWidgetDelegate* delegate() {
     return native_widget_->delegate();
   }
 
   NativeWidgetViews* native_widget_;
+
+  // Have we sent OnNativeWidgetCreated?
+  bool sent_create_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetView);
 };

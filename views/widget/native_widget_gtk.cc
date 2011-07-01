@@ -25,6 +25,7 @@
 #include "ui/base/gtk/scoped_handle_gtk.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/canvas_skia_paint.h"
+#include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/path.h"
 #include "views/controls/textfield/native_textfield_views.h"
@@ -683,6 +684,15 @@ void NativeWidgetGtk::InitNativeWidget(const Widget::InitParams& params) {
 
   // Make container here.
   CreateGtkWidget(modified_params);
+
+  if (View::get_use_acceleration_when_possible()) {
+    compositor_ = Widget::compositor_factory() ?
+        (*Widget::compositor_factory())() :
+        ui::Compositor::Create(GDK_WINDOW_XID(window_contents_->window));
+    if (compositor_.get())
+      delegate_->AsWidget()->GetRootView()->SetPaintToLayer(true);
+  }
+
   delegate_->OnNativeWidgetCreated();
 
   if (opacity_ != 255)
@@ -842,6 +852,21 @@ gfx::NativeView NativeWidgetGtk::GetNativeView() const {
 
 gfx::NativeWindow NativeWidgetGtk::GetNativeWindow() const {
   return child_ ? NULL : GTK_WINDOW(widget_);
+}
+
+const ui::Compositor* NativeWidgetGtk::GetCompositor() const {
+  return compositor_.get();
+}
+
+ui::Compositor* NativeWidgetGtk::GetCompositor() {
+  return compositor_.get();
+}
+
+void NativeWidgetGtk::MarkLayerDirty() {
+}
+
+void NativeWidgetGtk::CalculateOffsetToAncestorWithLayer(gfx::Point* offset,
+                                                         View** ancestor) {
 }
 
 void NativeWidgetGtk::ViewRemoved(View* view) {
@@ -1679,11 +1704,6 @@ void NativeWidgetGtk::HandleGtkGrabBroke() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetGtk, private:
-
-gfx::AcceleratedWidget NativeWidgetGtk::GetAcceleratedWidget() {
-  DCHECK(window_contents_ && window_contents_->window);
-  return GDK_WINDOW_XID(window_contents_->window);
-}
 
 void NativeWidgetGtk::DispatchKeyEventPostIME(const KeyEvent& key) {
   // Always reset |should_handle_menu_key_release_| unless we are handling a

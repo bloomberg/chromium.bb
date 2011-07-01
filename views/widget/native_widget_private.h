@@ -83,6 +83,16 @@ class NativeWidgetPrivate : public NativeWidget {
   virtual gfx::NativeView GetNativeView() const = 0;
   virtual gfx::NativeWindow GetNativeWindow() const = 0;
 
+  // Returns the Compositor, or NULL if there isn't one associated with this
+  // NativeWidget.
+  virtual const ui::Compositor* GetCompositor() const = 0;
+  virtual ui::Compositor* GetCompositor() = 0;
+
+  // See description in View for details.
+  virtual void MarkLayerDirty() = 0;
+  virtual void CalculateOffsetToAncestorWithLayer(gfx::Point* offset,
+                                                  View** ancestor) = 0;
+
   // Notifies the NativeWidget that a view was removed from the Widget's view
   // hierarchy.
   virtual void ViewRemoved(View* view) = 0;
@@ -150,10 +160,6 @@ class NativeWidgetPrivate : public NativeWidget {
     SHOW_MAXIMIZED,
     SHOW_INACTIVE
   };
-
-  // Returns a handle for the underlying native widget that can be used for
-  // accelerated drawing.
-  virtual gfx::AcceleratedWidget GetAcceleratedWidget() = 0;
 
   // Makes the NativeWindow modal.
   virtual void BecomeModal() = 0;
