@@ -1,8 +1,7 @@
 # -*- python -*-
-# Copyright 2008 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
-
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 Import('env')
 
@@ -119,7 +118,7 @@ node = env.CommandSelLdrTestNacl(
     cond_wait_test_nexe,
     size='small',
     )
-env.AddNodeToTestSuite(node, ['small_tests'], 'cond_wait_test',
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_cond_wait_test',
                        is_broken=is_broken)
 
 thread_stack_test_nexe = env.ComponentProgram('thread_stack_test',
