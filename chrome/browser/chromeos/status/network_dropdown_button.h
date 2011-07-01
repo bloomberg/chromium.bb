@@ -19,10 +19,11 @@ namespace chromeos {
 // at top level and populating the menu.
 // See NetworkMenu for more details.
 class NetworkDropdownButton : public DropDownButton,
-                              public NetworkMenu,
+                              public views::ViewMenuDelegate,
+                              public NetworkMenu::Delegate,
                               public NetworkLibrary::NetworkManagerObserver {
  public:
-  NetworkDropdownButton(bool browser_mode, gfx::NativeWindow parent_window);
+  NetworkDropdownButton(bool is_browser_mode, gfx::NativeWindow parent_window);
   virtual ~NetworkDropdownButton();
 
   // ui::AnimationDelegate implementation.
@@ -31,25 +32,28 @@ class NetworkDropdownButton : public DropDownButton,
   // NetworkLibrary::NetworkManagerObserver implementation.
   virtual void OnNetworkManagerChanged(NetworkLibrary* obj);
 
+  void SetFirstLevelMenuWidth(int width);
+
+  void CancelMenu();
+
   // Refreshes button state. Used when language has been changed.
   void Refresh();
 
- protected:
-  // NetworkMenu implementation:
-  virtual bool IsBrowserMode() const;
+  // NetworkMenu::Delegate implementation:
   virtual views::MenuButton* GetMenuButton();
   virtual gfx::NativeWindow GetNativeWindow() const;
-  virtual void OpenButtonOptions() {}
+  virtual void OpenButtonOptions();
   virtual bool ShouldOpenButtonOptions() const;
 
+  // views::ViewMenuDelegate implementation.
+  void RunMenu(views::View* source, const gfx::Point& pt);
+
  private:
-  bool browser_mode_;
+  // The Network menu.
+  scoped_ptr<NetworkMenu> network_menu_;
 
   // The throb animation that does the wifi connecting animation.
   ui::ThrobAnimation animation_connecting_;
-
-  // The duration of the icon throbbing in milliseconds.
-  static const int kThrobDuration;
 
   gfx::NativeWindow parent_window_;
 

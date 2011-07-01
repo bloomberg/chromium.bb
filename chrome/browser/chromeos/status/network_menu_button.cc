@@ -39,6 +39,8 @@ const int kPromoShowDelayMs = 10000;
 
 const int kNotificationCountPrefDefault = -1;
 
+const int kThrobDuration = 750;
+
 bool GetBooleanPref(const char* pref_name) {
   Browser* browser = BrowserList::GetLastActive();
   // Default to safe value which is false (not to show bubble).
@@ -95,22 +97,21 @@ namespace chromeos {
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkMenuButton
 
-// static
-const int NetworkMenuButton::kThrobDuration = 750;
-
 NetworkMenuButton::NetworkMenuButton(StatusAreaHost* host)
     : StatusAreaButton(host, this),
-      NetworkMenu(),
       icon_(NULL),
       right_badge_(NULL),
       top_left_badge_(NULL),
       left_badge_(NULL),
       mobile_data_bubble_(NULL),
+      is_browser_mode_(false),
       check_for_promo_(true),
       was_sim_locked_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(animation_connecting_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       last_network_type_(TYPE_WIFI) {
+  is_browser_mode_ = (host->GetScreenMode() == StatusAreaHost::kBrowserMode);
+  network_menu_.reset(new NetworkMenu(this, is_browser_mode_));
   animation_connecting_.SetThrobDuration(kThrobDuration);
   animation_connecting_.SetTweenType(ui::Tween::LINEAR);
   NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
@@ -147,7 +148,7 @@ void NetworkMenuButton::RegisterPrefs(PrefService* local_state) {
 
 void NetworkMenuButton::AnimationProgressed(const ui::Animation* animation) {
   if (animation == &animation_connecting_) {
-    SetIconOnly(IconForNetworkConnecting(
+    SetIconOnly(NetworkMenu::IconForNetworkConnecting(
         animation_connecting_.GetCurrentValue(), last_network_type_));
     // No need to set the badge here, because it should already be set.
     SchedulePaint();
@@ -195,7 +196,7 @@ void NetworkMenuButton::OnNetworkChanged(NetworkLibrary* cros,
   RefreshNetworkObserver(cros);
   RefreshNetworkDeviceObserver(cros);
   SchedulePaint();
-  UpdateMenu();
+  network_menu_->UpdateMenu();
 }
 
 void NetworkMenuButton::OnCellularDataPlanChanged(NetworkLibrary* cros) {
@@ -205,10 +206,6 @@ void NetworkMenuButton::OnCellularDataPlanChanged(NetworkLibrary* cros) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkMenuButton, NetworkMenu implementation:
-
-bool NetworkMenuButton::IsBrowserMode() const {
-  return host_->GetScreenMode() == StatusAreaHost::kBrowserMode;
-}
 
 views::MenuButton* NetworkMenuButton::GetMenuButton() {
   return this;
@@ -232,6 +229,12 @@ bool NetworkMenuButton::ShouldOpenButtonOptions() const {
 void NetworkMenuButton::OnLocaleChanged() {
   NetworkLibrary* lib = CrosLibrary::Get()->GetNetworkLibrary();
   SetNetworkIcon(lib, lib->active_network());
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NetworkMenuButton, views::ViewMenuDelegate implementation:
+void NetworkMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
+  network_menu_->RunMenu(source);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -268,7 +271,7 @@ void NetworkMenuButton::OnLinkActivated(size_t index) {
           CrosLibrary::Get()->GetNetworkLibrary()->cellular_network();
       if (!cellular)
         return;
-      ShowTabbedNetworkSettings(cellular);
+      network_menu_->ShowTabbedNetworkSettings(cellular);
       return;
     }
   } else if (index == 1) {
@@ -324,12 +327,14 @@ void NetworkMenuButton::SetIconAndBadges(const SkBitmap* icon,
   right_badge_ = right_badge;
   top_left_badge_ = top_left_badge;
   left_badge_ = left_badge;
-  SetIcon(IconForDisplay(icon_, right_badge_, top_left_badge_, left_badge_));
+  SetIcon(NetworkMenu::IconForDisplay(
+      icon_, right_badge_, top_left_badge_, left_badge_));
 }
 
 void NetworkMenuButton::SetIconOnly(const SkBitmap* icon) {
   icon_ = icon;
-  SetIcon(IconForDisplay(icon_, right_badge_, top_left_badge_, left_badge_));
+  SetIcon(NetworkMenu::IconForDisplay(
+      icon_, right_badge_, top_left_badge_, left_badge_));
 }
 
 void NetworkMenuButton::SetBadgesOnly(const SkBitmap* right_badge,
@@ -338,7 +343,8 @@ void NetworkMenuButton::SetBadgesOnly(const SkBitmap* right_badge,
   right_badge_ = right_badge;
   top_left_badge_ = top_left_badge;
   left_badge_ = left_badge;
-  SetIcon(IconForDisplay(icon_, right_badge_, top_left_badge_, left_badge_));
+  SetIcon(NetworkMenu::IconForDisplay(
+      icon_, right_badge_, top_left_badge_, left_badge_));
 }
 
 void NetworkMenuButton::SetNetworkIcon(NetworkLibrary* cros,
@@ -378,7 +384,7 @@ void NetworkMenuButton::SetNetworkIcon(NetworkLibrary* cros,
     if (!animation_connecting_.is_animating()) {
       animation_connecting_.Reset();
       animation_connecting_.StartThrobbing(-1);
-      SetIconOnly(IconForNetworkConnecting(0, last_network_type_));
+      SetIconOnly(NetworkMenu::IconForNetworkConnecting(0, last_network_type_));
     }
     const WirelessNetwork* wireless = NULL;
     if (cros->wifi_connecting()) {
@@ -386,9 +392,10 @@ void NetworkMenuButton::SetNetworkIcon(NetworkLibrary* cros,
       SetBadgesOnly(NULL, NULL, NULL);
     } else {  // cellular_connecting
       wireless = cros->cellular_network();
-      SetBadgesOnly(BadgeForNetworkTechnology(cros->cellular_network()),
-                    BadgeForRoamingStatus(cros->cellular_network()),
-                    NULL);
+      SetBadgesOnly(
+          NetworkMenu::BadgeForNetworkTechnology(cros->cellular_network()),
+          NetworkMenu::BadgeForRoamingStatus(cros->cellular_network()),
+          NULL);
     }
     SetTooltipAndAccessibleName(l10n_util::GetStringFUTF16(
         wireless->configuring() ? IDS_STATUSBAR_NETWORK_CONFIGURING_TOOLTIP
@@ -413,7 +420,7 @@ void NetworkMenuButton::SetNetworkIcon(NetworkLibrary* cros,
                 IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET)));
       } else if (network->type() == TYPE_WIFI) {
         const WifiNetwork* wifi = static_cast<const WifiNetwork*>(network);
-        SetIconAndBadges(IconForNetworkStrength(wifi),
+        SetIconAndBadges(NetworkMenu::IconForNetworkStrength(wifi),
                          right_badge, top_left_badge, left_badge);
         SetTooltipAndAccessibleName(l10n_util::GetStringFUTF16(
             IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP,
@@ -421,9 +428,9 @@ void NetworkMenuButton::SetNetworkIcon(NetworkLibrary* cros,
       } else if (network->type() == TYPE_CELLULAR) {
         const CellularNetwork* cellular =
             static_cast<const CellularNetwork*>(network);
-        right_badge = BadgeForNetworkTechnology(cellular);
-        top_left_badge = BadgeForRoamingStatus(cellular);
-        SetIconAndBadges(IconForNetworkStrength(cellular),
+        right_badge = NetworkMenu::BadgeForNetworkTechnology(cellular);
+        top_left_badge = NetworkMenu::BadgeForRoamingStatus(cellular);
+        SetIconAndBadges(NetworkMenu::IconForNetworkStrength(cellular),
                          right_badge, top_left_badge, left_badge);
         SetTooltipAndAccessibleName(l10n_util::GetStringFUTF16(
             IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP,
@@ -468,7 +475,7 @@ void NetworkMenuButton::ShowOptionalMobileDataPromoNotification(
   // Display one-time notification for non-Guest users on first use
   // of Mobile Data connection or if there's a carrier deal defined
   // show that even if user has already seen generic promo.
-  if (IsBrowserMode() && !UserManager::Get()->IsLoggedInAsGuest() &&
+  if (is_browser_mode_ && !UserManager::Get()->IsLoggedInAsGuest() &&
       check_for_promo_ && BrowserList::GetLastActive() &&
       cros->cellular_connected() && !cros->ethernet_connected() &&
       !cros->wifi_connected()) {

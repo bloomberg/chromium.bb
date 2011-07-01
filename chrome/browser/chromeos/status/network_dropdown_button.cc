@@ -14,25 +14,28 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
 
+namespace {
+
+const int kThrobDuration = 750;
+
+}  // namespace
+
 namespace chromeos {
 
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkDropdownButton
 
-// static
-const int NetworkDropdownButton::kThrobDuration = 750;
-
-NetworkDropdownButton::NetworkDropdownButton(bool browser_mode,
+NetworkDropdownButton::NetworkDropdownButton(bool is_browser_mode,
                                              gfx::NativeWindow parent_window)
     : DropDownButton(NULL,
                      UTF16ToWide(l10n_util::GetStringUTF16(
                          IDS_STATUSBAR_NO_NETWORKS_MESSAGE)),
                      this,
                      true),
-      browser_mode_(browser_mode),
       ALLOW_THIS_IN_INITIALIZER_LIST(animation_connecting_(this)),
       parent_window_(parent_window),
       last_network_type_(TYPE_WIFI) {
+  network_menu_.reset(new NetworkMenu(this, is_browser_mode));
   animation_connecting_.SetThrobDuration(kThrobDuration);
   animation_connecting_.SetTweenType(ui::Tween::LINEAR);
   CrosLibrary::Get()->GetNetworkLibrary()->AddNetworkManagerObserver(this);
@@ -45,13 +48,13 @@ NetworkDropdownButton::~NetworkDropdownButton() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NetworkMenuButton, ui::AnimationDelegate implementation:
+// NetworkDropdownButton, ui::AnimationDelegate implementation:
 
 void NetworkDropdownButton::AnimationProgressed(
     const ui::Animation* animation) {
   if (animation == &animation_connecting_) {
-    SetIcon(*IconForNetworkConnecting(animation_connecting_.GetCurrentValue(),
-                                      last_network_type_));
+    SetIcon(*NetworkMenu::IconForNetworkConnecting(
+        animation_connecting_.GetCurrentValue(), last_network_type_));
     SchedulePaint();
   } else {
     MenuButton::AnimationProgressed(animation);
@@ -62,19 +65,37 @@ void NetworkDropdownButton::Refresh() {
   OnNetworkManagerChanged(CrosLibrary::Get()->GetNetworkLibrary());
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// NetworkDropdownButton, NetworkMenu implementation:
+void NetworkDropdownButton::SetFirstLevelMenuWidth(int width) {
+  network_menu_->set_min_width(width);
+}
 
-bool NetworkDropdownButton::IsBrowserMode() const {
-  return browser_mode_;
+void NetworkDropdownButton::CancelMenu() {
+  network_menu_->CancelMenu();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NetworkDropdownButton, NetworkMenu::Delegate implementation:
+
+views::MenuButton* NetworkDropdownButton::GetMenuButton() {
+  return this;
 }
 
 gfx::NativeWindow NetworkDropdownButton::GetNativeWindow() const {
   return parent_window_;
 }
 
+void NetworkDropdownButton::OpenButtonOptions() {
+}
+
 bool NetworkDropdownButton::ShouldOpenButtonOptions() const {
   return false;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NetworkDropdownButton, views::ViewMenuDelegate implementation:
+
+void NetworkDropdownButton::RunMenu(views::View* source, const gfx::Point& pt) {
+  network_menu_->RunMenu(source);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -102,12 +123,12 @@ void NetworkDropdownButton::OnNetworkManagerChanged(NetworkLibrary* cros) {
       } else if (active_network->type() == TYPE_WIFI) {
         const WifiNetwork* wifi =
             static_cast<const WifiNetwork*>(active_network);
-        SetIcon(*IconForNetworkStrength(wifi));
+        SetIcon(*NetworkMenu::IconForNetworkStrength(wifi));
         SetText(UTF8ToWide(wifi->name()));
       } else if (active_network->type() == TYPE_CELLULAR) {
         const CellularNetwork* cellular =
             static_cast<const CellularNetwork*>(active_network);
-        SetIcon(*IconForNetworkStrength(cellular));
+        SetIcon(*NetworkMenu::IconForNetworkStrength(cellular));
         SetText(UTF8ToWide(cellular->name()));
       } else {
         NOTREACHED();
@@ -116,7 +137,7 @@ void NetworkDropdownButton::OnNetworkManagerChanged(NetworkLibrary* cros) {
       if (!animation_connecting_.is_animating()) {
         animation_connecting_.Reset();
         animation_connecting_.StartThrobbing(-1);
-        SetIcon(*IconForNetworkConnecting(0, last_network_type_));
+        SetIcon(*NetworkMenu::IconForNetworkConnecting(0, last_network_type_));
       }
       if (cros->wifi_connecting())
         SetText(UTF8ToWide(cros->wifi_network()->name()));
@@ -138,11 +159,7 @@ void NetworkDropdownButton::OnNetworkManagerChanged(NetworkLibrary* cros) {
   }
 
   SchedulePaint();
-  UpdateMenu();
-}
-
-views::MenuButton* NetworkDropdownButton::GetMenuButton() {
-  return this;
+  network_menu_->UpdateMenu();
 }
 
 }  // namespace chromeos

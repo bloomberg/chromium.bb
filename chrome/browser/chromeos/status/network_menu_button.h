@@ -52,7 +52,8 @@ class StatusAreaHost;
 // <icon> will show the strength of the wifi/cellular networks.
 // The label will be BOLD if the network is currently connected.
 class NetworkMenuButton : public StatusAreaButton,
-                          public NetworkMenu,
+                          public views::ViewMenuDelegate,
+                          public NetworkMenu::Delegate,
                           public NetworkLibrary::NetworkDeviceObserver,
                           public NetworkLibrary::NetworkManagerObserver,
                           public NetworkLibrary::NetworkObserver,
@@ -77,11 +78,7 @@ class NetworkMenuButton : public StatusAreaButton,
   // NetworkLibrary::CellularDataPlanObserver implementation.
   virtual void OnCellularDataPlanChanged(NetworkLibrary* cros);
 
-  // NetworkMenu implementation:
-  virtual bool IsBrowserMode() const;
-
- protected:
-  // NetworkMenu implementation:
+  // NetworkMenu::Delegate implementation:
   virtual views::MenuButton* GetMenuButton();
   virtual gfx::NativeWindow GetNativeWindow() const;
   virtual void OpenButtonOptions();
@@ -89,6 +86,9 @@ class NetworkMenuButton : public StatusAreaButton,
 
   // views::View
   virtual void OnLocaleChanged() OVERRIDE;
+
+  // views::ViewMenuDelegate implementation.
+  void RunMenu(views::View* source, const gfx::Point& pt);
 
   // MessageBubbleDelegate implementation:
   virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape);
@@ -130,6 +130,9 @@ class NetworkMenuButton : public StatusAreaButton,
 
   void SetTooltipAndAccessibleName(const string16& label);
 
+  // The Network menu.
+  scoped_ptr<NetworkMenu> network_menu_;
+
   // Path of the Cellular device that we monitor property updates from.
   std::string cellular_device_path_;
 
@@ -145,6 +148,9 @@ class NetworkMenuButton : public StatusAreaButton,
   // Notification bubble for 3G promo.
   MessageBubble* mobile_data_bubble_;
 
+  // Set to true if the browser is visible (i.e. not login/oobe).
+  bool is_browser_mode_;
+
   // True if check for promo needs to be done,
   // otherwise just ignore it for current session.
   bool check_for_promo_;
@@ -154,9 +160,6 @@ class NetworkMenuButton : public StatusAreaButton,
 
   // The throb animation that does the wifi connecting animation.
   ui::ThrobAnimation animation_connecting_;
-
-  // The duration of the icon throbbing in milliseconds.
-  static const int kThrobDuration;
 
   // If any network is currently active, this is the service path of the one
   // whose status is displayed in the network menu button.

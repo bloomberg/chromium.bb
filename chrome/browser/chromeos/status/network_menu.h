@@ -50,7 +50,8 @@ class NetworkMenuModel;
 // <icon>  Cellular Network A
 // <icon>  Cellular Network B
 // <icon>  Cellular Network C
-// <icon>  Other...
+// <icon>  Other Wi-Fi network...
+// --------------------------------
 // <icon>  Private networks ->
 //         <icon>  Virtual Network A
 //         <icon>  Virtual Network B
@@ -66,17 +67,38 @@ class NetworkMenuModel;
 //
 // <icon> will show the strength of the wifi/cellular networks.
 // The label will be BOLD if the network is currently connected.
-class NetworkMenu : public views::ViewMenuDelegate {
- public:
-  NetworkMenu();
-  virtual ~NetworkMenu();
 
-  void SetFirstLevelMenuWidth(int width);
+class NetworkMenu {
+ public:
+  class Delegate {
+   public:
+    virtual views::MenuButton* GetMenuButton() = 0;
+    virtual gfx::NativeWindow GetNativeWindow() const = 0;
+    virtual void OpenButtonOptions() = 0;
+    virtual bool ShouldOpenButtonOptions() const = 0;
+  };
+
+  NetworkMenu(Delegate* delegate, bool is_browser_mode);
+  virtual ~NetworkMenu();
 
   // Cancels the active menu.
   void CancelMenu();
 
-  virtual bool IsBrowserMode() const = 0;
+  // Update the menu (e.g. when the network list or status has changed).
+  void UpdateMenu();
+
+  // Run the menu.
+  void RunMenu(views::View* source);
+
+  // Shows network details in Web UI options window.
+  void ShowTabbedNetworkSettings(const Network* network) const;
+
+  // Getters.
+  Delegate* delegate() const { return delegate_; }
+  bool is_browser_mode() const { return is_browser_mode_; }
+
+  // Setters.
+  void set_min_width(int min_width) { min_width_ = min_width; }
 
   // The following methods returns pointer to a shared instance of the SkBitmap.
   // This shared bitmap is owned by the resource bundle and should not be freed.
@@ -136,37 +158,25 @@ class NetworkMenu : public views::ViewMenuDelegate {
   // NULL, TYPE_WIFI will be returned.
   static ConnectionType TypeForNetwork(const Network* network);
 
- protected:
-  virtual views::MenuButton* GetMenuButton() = 0;
-  virtual gfx::NativeWindow GetNativeWindow() const = 0;
-  virtual void OpenButtonOptions() = 0;
-  virtual bool ShouldOpenButtonOptions() const = 0;
-
-  // Shows network details in Web UI options window.
-  void ShowTabbedNetworkSettings(const Network* network) const;
-
-  // Update the menu (e.g. when the network list or status has changed).
-  void UpdateMenu();
-
  private:
   friend class NetworkMenuModel;
 
-  // views::ViewMenuDelegate implementation.
-  virtual void RunMenu(views::View* source, const gfx::Point& pt);
+  // Weak ptr to delegate.
+  Delegate* delegate_;
+
+  // True if the browser is visible (i.e. not login/OOBE).
+  bool is_browser_mode_;
 
   // Set to true if we are currently refreshing the menu.
   bool refreshing_menu_;
 
   // The network menu.
-  scoped_ptr<views::MenuItemView> network_menu_;
+  scoped_ptr<views::MenuItemView> menu_item_view_;
 
   scoped_ptr<NetworkMenuModel> main_menu_model_;
 
   // Holds minimum width of the menu.
   int min_width_;
-
-  // If true, call into the settings UI for network configuration dialogs.
-  bool use_settings_ui_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkMenu);
 };
