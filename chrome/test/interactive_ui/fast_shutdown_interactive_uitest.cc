@@ -23,7 +23,9 @@ class FastShutdown : public UITest {
 // SimulateOSClick is broken on the Mac: http://crbug.com/45162
 #define MAYBE_SlowTermination DISABLED_SlowTermination
 #else
-#define MAYBE_SlowTermination SlowTermination
+// http://trac.webkit.org/changeset/90164/ changed onuload() behaviour.
+// http://crbug.com/88141
+#define MAYBE_SlowTermination FLAKY_SlowTermination
 #endif
 
 // This tests for a previous error where uninstalling an onbeforeunload
