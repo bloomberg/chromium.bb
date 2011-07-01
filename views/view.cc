@@ -1748,6 +1748,7 @@ void View::CreateLayer() {
 
   layer_helper_->SetLayer(new ui::Layer(compositor));
   layer()->set_bounds(gfx::Rect(offset.x(), offset.y(), width(), height()));
+  layer()->set_transform(GetTransform());
   if (ancestor_with_layer)
     ancestor_with_layer->layer()->Add(layer());
   layer_helper_->set_bitmap_needs_updating(true);

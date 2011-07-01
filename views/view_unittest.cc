@@ -2579,6 +2579,26 @@ TEST_F(ViewLayerTest, ToggleVisibilityWithTransform) {
   EXPECT_EQ(2.0f, view->GetTransform().matrix()[0]);
 }
 
+// Verifies a transform persists after removing/adding a view with a transform.
+TEST_F(ViewLayerTest, ResetTransformOnLayerAfterAdd) {
+  View* view = new View;
+  ui::Transform transform;
+  transform.SetScale(2.0f, 2.0f);
+  view->SetTransform(transform);
+  widget()->SetContentsView(view);
+  EXPECT_EQ(2.0f, view->GetTransform().matrix()[0]);
+  ASSERT_TRUE(view->layer() != NULL);
+  EXPECT_EQ(2.0f, view->layer()->transform().matrix()[0]);
+
+  View* parent = view->parent();
+  parent->RemoveChildView(view);
+  parent->AddChildView(view);
+
+  EXPECT_EQ(2.0f, view->GetTransform().matrix()[0]);
+  ASSERT_TRUE(view->layer() != NULL);
+  EXPECT_EQ(2.0f, view->layer()->transform().matrix()[0]);
+}
+
 // Verifies that the complete bounds of a texture are updated if the texture
 // needs to be refreshed and paint with a clip is invoked.
 TEST_F(ViewLayerTest, PaintAll) {
