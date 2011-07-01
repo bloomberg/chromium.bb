@@ -562,13 +562,14 @@ BUILD/stamp-glibc32: BUILD/stamp-$(CROSSARCH)-pregcc-standalone \
 	    CFLAGS="-pipe -fno-strict-aliasing -mno-tls-direct-seg-refs -march=i486 $(GLIBC_CFLAGS)" \
 	    libc_cv_forced_unwind=yes \
 	    libc_cv_c_cleanup=yes \
-	    libc_cv_slibdir=/nacl64/lib32 \
-	    --prefix=/nacl \
+	    libc_cv_slibdir=/lib32 \
+	    --prefix= \
+	    --libdir=/lib32 \
 	    --host=i486-linux-gnu \
 	    --with-headers=$(LINUX_HEADERS) \
 	    --enable-kernel=2.2.0
 	$(MAKE) -C BUILD/build-glibc32
-	$(MAKE) -C BUILD/build-glibc32 install_root=$(DESTDIR)$(PREFIX) install
+	$(MAKE) -C BUILD/build-glibc32 install_root=$(DESTDIR)$(PREFIX)/$(CROSSARCH) install
 	touch $@
 
 BUILD/stamp-glibc64: BUILD/stamp-$(CROSSARCH)-pregcc-standalone \
@@ -581,13 +582,14 @@ BUILD/stamp-glibc64: BUILD/stamp-$(CROSSARCH)-pregcc-standalone \
 	    CFLAGS="-pipe -fno-strict-aliasing -mno-tls-direct-seg-refs $(GLIBC_CFLAGS)" \
 	    libc_cv_forced_unwind=yes \
 	    libc_cv_c_cleanup=yes \
-	    libc_cv_slibdir=/nacl64/lib \
-	    --prefix=/nacl64 \
+	    libc_cv_slibdir=/lib \
+	    --prefix= \
+	    --libdir=/lib \
 	    --host=x86_64-linux-gnu \
 	    --with-headers=$(LINUX_HEADERS) \
 	    --enable-kernel=2.2.0
 	$(MAKE) -C BUILD/build-glibc64
-	$(MAKE) -C BUILD/build-glibc64 install_root=$(DESTDIR)$(PREFIX) install
+	$(MAKE) -C BUILD/build-glibc64 install_root=$(DESTDIR)$(PREFIX)/$(CROSSARCH) install
 	touch $@
 
 # Can be used to make a glibc archive separately from the main install tree.
@@ -600,9 +602,9 @@ install-glibc: BUILD/stamp-glibc32 BUILD/stamp-glibc64
 	$(MAKE) -f $(THISMAKEFILE) sdkdirs \
 	  DESTDIR="" SDKROOT="$(INST_GLIBC_PREFIX)/glibc"
 	$(MAKE) -f $(THISMAKEFILE) -C BUILD/build-glibc32 \
-	  install_root="$(INST_GLIBC_PREFIX)/glibc" install
+	  install_root="$(INST_GLIBC_PREFIX)/glibc/$(CROSSARCH)" install
 	$(MAKE) -f $(THISMAKEFILE) -C BUILD/build-glibc64 \
-	  install_root="$(INST_GLIBC_PREFIX)/glibc" install
+	  install_root="$(INST_GLIBC_PREFIX)/glibc/$(CROSSARCH)" install
 
 .PHONY: export-headers
 export-headers:

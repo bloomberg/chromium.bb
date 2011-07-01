@@ -241,3 +241,8 @@ elf/tst-tls12
 nptl/tst-exit2
 nptl/tst-exit3
 nptl/tst-stdio1
+
+###########################################################################
+# http://code.google.com/p/nativeclient/issues/detail?id=1969
+###########################################################################
+check-local-headers
