@@ -513,7 +513,7 @@ void BaseTab::ButtonPressed(views::Button* sender, const views::Event& event) {
 void BaseTab::ShowContextMenuForView(views::View* source,
                                      const gfx::Point& p,
                                      bool is_mouse_gesture) {
-  if (controller())
+  if (controller() && !closing())
     controller()->ShowContextMenuForTab(this, p);
 }
 
