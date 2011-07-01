@@ -2,9 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-
-# This file was split off from ppapi.gyp to prevent PPAPI users from
-# needing to DEPS in ~10K files due to mesa.
 {
   'includes': [
     '../third_party/mesa/mesa.gypi',

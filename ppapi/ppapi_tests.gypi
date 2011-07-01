@@ -319,7 +319,7 @@
             'ppapi_example_skeleton',
             'ppapi.gyp:ppapi_cpp',
             'ppapi.gyp:ppapi_gles2',
-            'lib/gl/gl.gyp:ppapi_egl',
+            'ppapi.gyp:ppapi_egl',
           ],
           'include_dirs': [
             'lib/gl/include',
