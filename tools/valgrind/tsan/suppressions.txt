@@ -567,18 +567,6 @@
   fun:DispatchToMethod
 }
 {
-  bug_87698a
-  ThreadSanitizer:Race
-  fun:webkit_glue::GetUserAgent
-  fun:ChromeURLRequestContext::GetUserAgent
-}
-{
-  bug_87698b
-  ThreadSanitizer:Race
-  fun:webkit_glue::GetUserAgent
-  fun:::AboutVersion
-}
-{
   bug_87747
   ThreadSanitizer:Race
   fun:base::MessagePumpLibevent::FileDescriptorWatcher::~FileDescriptorWatcher

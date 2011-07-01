@@ -19,6 +19,7 @@
 #include "base/string_tokenizer.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/synchronization/lock.h"
 #include "base/sys_info.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -337,56 +338,62 @@ WebKit::WebFileError PlatformFileErrorToWebFileError(
 
 namespace {
 
-struct UserAgentState {
-  UserAgentState()
-      : user_agent_requested(false),
-        user_agent_is_overridden(false) {
-  }
+class UserAgentState {
+ public:
+  UserAgentState();
+  ~UserAgentState();
 
-  std::string user_agent;
+  void Set(const std::string& user_agent);
+  const std::string& Get(const GURL& url) const;
 
+ private:
+  mutable std::string user_agent_;
   // The UA string when we're pretending to be Windows Chrome.
-  std::string mimic_windows_user_agent;
+  mutable std::string mimic_windows_user_agent_;
   // The UA string when we're pretending to be Mac Safari.
   std::string mimic_mac_safari_user_agent;
 
-  bool user_agent_requested;
-  bool user_agent_is_overridden;
+  mutable bool user_agent_requested_;
+  bool user_agent_is_overridden_;
+
+  // This object can be accessed from multiple threads, so use a lock around
+  // accesses to the data members.
+  mutable base::Lock lock_;
 };
 
-static base::LazyInstance<UserAgentState> g_user_agent(
-    base::LINKER_INITIALIZED);
-
-void SetUserAgentToDefault() {
-  g_user_agent.Get().user_agent = BuildUserAgent(false);
+UserAgentState::UserAgentState()
+    : user_agent_requested_(false),
+      user_agent_is_overridden_(false) {
 }
 
-}  // namespace
+UserAgentState::~UserAgentState() {
+}
 
-void SetUserAgent(const std::string& new_user_agent) {
-  // If you combine this with the previous line, the function only works the
-  // first time.
-  DCHECK(!g_user_agent.Get().user_agent_requested) <<
-      "Setting the user agent after someone has "
+void UserAgentState::Set(const std::string& user_agent) {
+  base::AutoLock auto_lock(lock_);
+  DCHECK(!user_agent_requested_) << "Setting the user agent after someone has "
       "already requested it can result in unexpected behavior.";
-  g_user_agent.Get().user_agent_is_overridden = true;
-  g_user_agent.Get().user_agent = new_user_agent;
+  user_agent_is_overridden_ = true;
+  user_agent_ = user_agent;
 }
 
-const std::string& GetUserAgent(const GURL& url) {
-  if (g_user_agent.Get().user_agent.empty())
-    SetUserAgentToDefault();
-  g_user_agent.Get().user_agent_requested = true;
-  if (!g_user_agent.Get().user_agent_is_overridden) {
-    // Workarounds for sites that use misguided UA sniffing.
+const std::string& UserAgentState::Get(const GURL& url) const {
+  base::AutoLock auto_lock(lock_);
+  user_agent_requested_ = true;
+
+  if (user_agent_.empty())
+    user_agent_ = BuildUserAgent(false);
+
+  // Workarounds for sites that use misguided UA sniffing.
+  if (!user_agent_is_overridden_) {
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
     if (MatchPattern(url.host(), "*.mail.yahoo.com")) {
       // mail.yahoo.com is ok with Windows Chrome but not Linux Chrome.
       // http://bugs.chromium.org/11136
       // TODO(evanm): remove this if Yahoo fixes their sniffing.
-      if (g_user_agent.Get().mimic_windows_user_agent.empty())
-        g_user_agent.Get().mimic_windows_user_agent = BuildUserAgent(true);
-      return g_user_agent.Get().mimic_windows_user_agent;
+      if (mimic_windows_user_agent_.empty())
+        mimic_windows_user_agent_ = BuildUserAgent(true);
+      return mimic_windows_user_agent_;
     }
 #endif
 #if defined(OS_MACOSX)
@@ -404,7 +411,20 @@ const std::string& GetUserAgent(const GURL& url) {
     }
 #endif
   }
-  return g_user_agent.Get().user_agent;
+
+  return user_agent_;
+}
+
+base::LazyInstance<UserAgentState> g_user_agent(base::LINKER_INITIALIZED);
+
+}  // namespace
+
+void SetUserAgent(const std::string& new_user_agent) {
+  g_user_agent.Get().Set(new_user_agent);
+}
+
+const std::string& GetUserAgent(const GURL& url) {
+  return g_user_agent.Get().Get(url);
 }
 
 void SetForcefullyTerminatePluginProcess(bool value) {
