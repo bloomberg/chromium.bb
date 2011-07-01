@@ -298,7 +298,8 @@ void FlashTCPSocket::OnReadCompleted(bool succeeded, const std::string& data) {
 
   PP_RunAndClearCompletionCallback(
       &read_callback_,
-      succeeded ? data.size() : static_cast<int32_t>(PP_ERROR_FAILED));
+      succeeded ? static_cast<int32_t>(data.size()) :
+                  static_cast<int32_t>(PP_ERROR_FAILED));
 }
 
 void FlashTCPSocket::OnWriteCompleted(bool succeeded, int32_t bytes_written) {
