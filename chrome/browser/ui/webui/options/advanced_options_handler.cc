@@ -42,19 +42,12 @@
 #endif
 
 AdvancedOptionsHandler::AdvancedOptionsHandler() {
-
-#if defined(OS_CHROMEOS)
-  // Proxy never enabled on Chrome OS.
-  cloud_print_proxy_ui_enabled_ = false;
-#elif(!defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN))
-  // On Windows, we need the PDF plugin which is only guaranteed to exist on
-  // Google Chrome builds. Use a command-line switch for Windows non-Google
-  //  Chrome builds.
-  cloud_print_proxy_ui_enabled_ = CommandLine::ForCurrentProcess()->HasSwitch(
-         switches::kEnableCloudPrintProxy);
-#else
-  // Always enabled for Mac, Linux and Google Chrome Windows builds.
+#if (defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN)) || defined(OS_MACOSX)
   cloud_print_proxy_ui_enabled_ = true;
+#elif !defined(OS_CHROMEOS)
+  cloud_print_proxy_ui_enabled_ =
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableCloudPrintProxy);
 #endif
 }
 
