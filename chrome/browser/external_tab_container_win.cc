@@ -614,6 +614,7 @@ bool ExternalTabContainer::HandleContextMenu(const ContextMenuParams& params) {
       params.unfiltered_link_url,
       params.src_url,
       params.page_url,
+      params.keyword_url,
       params.frame_url);
 
   bool rtl = base::i18n::IsRTL();

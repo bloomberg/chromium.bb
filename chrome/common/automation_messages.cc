@@ -134,6 +134,7 @@ MiniContextMenuParams::MiniContextMenuParams(int in_screen_x,
                                              const GURL& in_unfiltered_link_url,
                                              const GURL& in_src_url,
                                              const GURL& in_page_url,
+                                             const GURL& in_keyword_url,
                                              const GURL& in_frame_url)
     : screen_x(in_screen_x),
       screen_y(in_screen_y),
@@ -141,6 +142,7 @@ MiniContextMenuParams::MiniContextMenuParams(int in_screen_x,
       unfiltered_link_url(in_unfiltered_link_url),
       src_url(in_src_url),
       page_url(in_page_url),
+      keyword_url(in_keyword_url),
       frame_url(in_frame_url) {
 }
 
@@ -601,6 +603,7 @@ void ParamTraits<MiniContextMenuParams>::Write(Message* m,
   WriteParam(m, p.unfiltered_link_url);
   WriteParam(m, p.src_url);
   WriteParam(m, p.page_url);
+  WriteParam(m, p.keyword_url);
   WriteParam(m, p.frame_url);
 }
 
@@ -614,6 +617,7 @@ bool ParamTraits<MiniContextMenuParams>::Read(const Message* m,
       ReadParam(m, iter, &p->unfiltered_link_url) &&
       ReadParam(m, iter, &p->src_url) &&
       ReadParam(m, iter, &p->page_url) &&
+      ReadParam(m, iter, &p->keyword_url) &&
       ReadParam(m, iter, &p->frame_url);
 }
 
@@ -632,6 +636,8 @@ void ParamTraits<MiniContextMenuParams>::Log(const param_type& p,
   LogParam(p.src_url, l);
   l->append(", ");
   LogParam(p.page_url, l);
+  l->append(", ");
+  LogParam(p.keyword_url, l);
   l->append(", ");
   LogParam(p.frame_url, l);
   l->append(")");

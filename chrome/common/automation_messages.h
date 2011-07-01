@@ -118,6 +118,7 @@ struct MiniContextMenuParams {
                         const GURL& unfiltered_link_url,
                         const GURL& src_url,
                         const GURL& page_url,
+                        const GURL& keyword_url,
                         const GURL& frame_url);
   ~MiniContextMenuParams();
 
@@ -143,6 +144,10 @@ struct MiniContextMenuParams {
   // This is the URL of the top level page that the context menu was invoked
   // on.
   GURL page_url;
+
+  // This is the absolute keyword search URL including the %s search tag when
+  // the "Add as search engine..." option is clicked (left empty if not used).
+  GURL keyword_url;
 
   // This is the URL of the subframe that the context menu was invoked on.
   GURL frame_url;

@@ -37,6 +37,7 @@ ContextMenuParams::ContextMenuParams(const WebKit::WebContextMenuData& data)
       src_url(data.srcURL),
       is_image_blocked(data.isImageBlocked),
       page_url(data.pageURL),
+      keyword_url(data.keywordURL),
       frame_url(data.frameURL),
       media_flags(data.mediaFlags),
       selection_text(data.selectedText),

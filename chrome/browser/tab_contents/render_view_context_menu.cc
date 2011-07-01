@@ -40,7 +40,9 @@
 #include "chrome/browser/translate/translate_manager.h"
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/download/download_tab_helper.h"
+#include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -785,6 +787,12 @@ void RenderViewContextMenu::AppendEditableItems() {
                                   IDS_CONTENT_CONTEXT_DELETE);
   menu_model_.AddSeparator();
 
+  if (!params_.keyword_url.is_empty()) {
+    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_ADDSEARCHENGINE,
+                                    IDS_CONTENT_CONTEXT_ADDSEARCHENGINE);
+    menu_model_.AddSeparator();
+  }
+
   AppendSpellcheckOptionsSubMenu();
 
 #if defined(OS_MACOSX)
@@ -1176,6 +1184,9 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDC_INPUT_METHODS_MENU:
       return true;
 #endif
+
+    case IDC_CONTENT_CONTEXT_ADDSEARCHENGINE:
+      return !params_.keyword_url.is_empty();
 
     case IDC_SPELLCHECK_MENU:
       return true;
@@ -1619,6 +1630,36 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
       std::string url = std::string(chrome::kChromeUISettingsURL) +
           chrome::kHandlerSettingsSubPage;
       OpenURL(GURL(url), GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+      break;
+    }
+
+    case IDC_CONTENT_CONTEXT_ADDSEARCHENGINE: {
+      // Make sure the model is loaded.
+      TemplateURLService* model =
+          TemplateURLServiceFactory::GetForProfile(profile_);
+      if (!model)
+        return;
+      model->Load();
+
+      scoped_ptr<TemplateURL> template_url(new TemplateURL);
+      string16 keyword =
+          net::StripWWW(UTF8ToUTF16((params_.page_url.host())));
+      template_url->set_short_name(keyword);
+      template_url->set_keyword(keyword);
+      template_url->SetURL(params_.keyword_url.spec(), 0, 0);
+      template_url->SetFaviconURL(TemplateURL::GenerateFaviconURL(
+          params_.page_url.GetOrigin()));
+
+      TabContentsWrapper* tab_contents_wrapper =
+          TabContentsWrapper::GetCurrentWrapperForContents(
+              source_tab_contents_);
+      if (tab_contents_wrapper &&
+          tab_contents_wrapper->search_engine_tab_helper() &&
+          tab_contents_wrapper->search_engine_tab_helper()->delegate()) {
+        // Takes ownership of |template_url|.
+        tab_contents_wrapper->search_engine_tab_helper()->delegate()->
+            ConfirmAddSearchProvider(template_url.release(), profile_);
+      }
       break;
     }
 
