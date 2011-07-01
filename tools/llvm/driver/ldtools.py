@@ -65,6 +65,9 @@ def ParseLinkerScript(filename):
       elif token == 'OUTPUT_FORMAT':
         expect = '('
         stack.append(token)
+      elif token == 'EXTERN':
+        expect = '('
+        stack.append(token)
       elif token == ';':
         pass
       else:
@@ -83,6 +86,8 @@ def ParseLinkerScript(filename):
       elif stack[-1] == 'OUTPUT_FORMAT':
         # Ignore stuff inside OUTPUT_FORMAT
         pass
+      elif stack[-1] == 'EXTERN':
+        ret.append('--undefined=' + token)
       else:
         ret.append('-l:' + token)
 

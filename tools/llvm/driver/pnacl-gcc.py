@@ -433,7 +433,7 @@ def main(argv):
       # ARCH must match
       if IsELF(f):
         ArchMerge(f, True)
-    assert(intype in ('po','o','bclib','nlib','so','pso'))
+    assert(intype in ('po','o','bclib','nlib','so','pso','ldscript'))
 
   # Fix the user-specified linker arguments
   ld_inputs = []

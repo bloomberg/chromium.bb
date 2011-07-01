@@ -909,28 +909,25 @@ def FileType(filename):
   # Auto-detect bitcode files, since we can't rely on extensions
   ext = filename.split('.')[-1]
 
-  # Auto-detect linker scripts
-  if ext in ('a','so','pso') and ldtools.IsLinkerScript(filename):
-    return 'ldscript'
-
-  if ext == 'a':
+  # TODO(pdox): We open and read the the first few bytes of each file
+  #             up to 4 times, when we only need to do it once. The
+  #             OS cache prevents us from hitting the disk, but this
+  #             is still slower than it needs to be.
+  if artools.IsArchive(filename):
     return artools.GetArchiveType(filename)
 
-  could_be_bitcode = ext in ('o','os','so','bc','po','pso','pexe')
-  if could_be_bitcode and IsBitcode(filename):
-    return GetBitcodeType(filename)
-
-  # Use the file extension if it is recognized
-  if ext in ExtensionMap:
-    return ExtensionMap[ext]
-
-  # We might have a strangely named file, like "ld-linux.so.3".
-  # Auto-detect if it is bitcode or object.
   if IsELF(filename):
     return GetELFType(filename)
 
   if IsBitcode(filename):
     return GetBitcodeType(filename)
+
+  if ext in ('o','so','a','po','pso','pa') and ldtools.IsLinkerScript(filename):
+    return 'ldscript'
+
+  # Use the file extension if it is recognized
+  if ext in ExtensionMap:
+    return ExtensionMap[ext]
 
   Log.Fatal('%s: Unrecognized file type', filename)
 

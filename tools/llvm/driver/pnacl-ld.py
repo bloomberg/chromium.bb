@@ -286,6 +286,9 @@ def IsLib(arg):
 def IsFlag(arg):
   return arg.startswith('-') and not IsLib(arg)
 
+def IsUndefMarker(arg):
+  return arg.startswith('--undefined=')
+
 def ExpandLibFlags(inputs):
   for i in xrange(len(inputs)):
     f = inputs[i]
@@ -317,7 +320,15 @@ def ExpandLinkerScripts(inputs):
     ExpandLibFlags(new_inputs)
     inputs = inputs[:i] + new_inputs + inputs[i+1:]
 
-  return inputs
+  # Handle --undefined=sym
+  ret = []
+  for f in inputs:
+    if IsUndefMarker(f):
+      env.append('LD_FLAGS', f)
+    else:
+      ret.append(f)
+
+  return ret
 
 def ForceSegmentGap(inputs):
   # Heuristic to detect when the nexe needs a segment gap (e.g., to be

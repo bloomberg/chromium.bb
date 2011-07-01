@@ -14,14 +14,20 @@
 # TODO(pdox): Refactor driver_tools so that there is no circular dependency.
 import driver_tools
 
+AR_MAGIC = '!<arch>\n'
+
+def IsArchive(filename):
+  fp = driver_tools.DriverOpen(filename, "rb")
+  magic = fp.read(8)
+  fp.close()
+  return magic == AR_MAGIC
+
 def GetArchiveType(filename):
   fp = driver_tools.DriverOpen(filename, "rb")
 
-  # Read the archive header
-  header = fp.read(8)
-
-  if header != '!<arch>\n':
-    driver_tools.Log.Fatal("%s: File is not a valid archive", filename)
+  # Read the archive magic header
+  magic = fp.read(8)
+  assert(magic == AR_MAGIC)
 
   # Find a regular file or symbol table
   found_type = ''
