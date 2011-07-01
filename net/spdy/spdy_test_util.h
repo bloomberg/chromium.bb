@@ -369,7 +369,27 @@ class SpdyURLRequestContext : public URLRequestContext {
   net::URLRequestContextStorage storage_;
 };
 
-const SpdyHeaderInfo make_spdy_header(spdy::SpdyControlType type);
+const SpdyHeaderInfo MakeSpdyHeader(spdy::SpdyControlType type);
+
+class SpdySessionPoolPeer {
+ public:
+  explicit SpdySessionPoolPeer(SpdySessionPool* pool)
+      : pool_(pool) {}
+
+  void RemoveSpdySession(const scoped_refptr<SpdySession>& session) {
+    pool_->Remove(session);
+  }
+
+  void DisableDomainAuthenticationVerification() {
+    pool_->verify_domain_authentication_ = false;
+  }
+
+ private:
+  SpdySessionPool* const pool_;
+
+  DISALLOW_COPY_AND_ASSIGN(SpdySessionPoolPeer);
+};
+
 }  // namespace net
 
 #endif  // NET_SPDY_SPDY_TEST_UTIL_H_

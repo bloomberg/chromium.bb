@@ -969,7 +969,7 @@ SpdyURLRequestContext::SpdyURLRequestContext()
 SpdyURLRequestContext::~SpdyURLRequestContext() {
 }
 
-const SpdyHeaderInfo make_spdy_header(spdy::SpdyControlType type) {
+const SpdyHeaderInfo MakeSpdyHeader(spdy::SpdyControlType type) {
   const SpdyHeaderInfo kHeader = {
     type,                         // Kind = Syn
     1,                            // Stream ID
