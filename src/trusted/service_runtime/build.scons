@@ -309,6 +309,8 @@ if ((not env.Bit('coverage_enabled') or not env.Bit('windows')) and
                                      ])
   env.Requires(SEL_LDR_NODE, crt)
 
+env.SDKInstallTrusted('sel_ldr', SEL_LDR_NODE)
+
 env.EnsureRequiredBuildWarnings()
 
 # ----------------------------------------------------------

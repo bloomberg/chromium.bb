@@ -1,7 +1,7 @@
 # -*- python -*-
-# Copyright 2009 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 import os
 Import('env')
@@ -46,6 +46,8 @@ if env.Bit('linux'):
                                       LIBS=['arm_validator_core',
                                             'ncfileutils',
                                             '${OPTIONAL_COVERAGE_LIBS}'])
+
+  env.SDKInstallTrusted('ncval', ncval, target='arm')
 
   env.ComponentProgram('address_set_test_binary',
                        ['address_set_test.cc'],

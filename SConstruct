@@ -140,6 +140,8 @@ ACCEPTABLE_ARGUMENTS = set([
     'includedir',
     # Where to install libraries for public consumption.
     'libdir',
+    # Where to install trusted-code binaries for public (SDK) consumption.
+    'bindir',
   ])
 
 
@@ -1919,6 +1921,19 @@ def CheckPlatformPreconditions():
           "NACL_SDK_CC undefined. "
           "Source tools/llvm/setup_arm_untrusted_toolchain.sh.")
 
+
+# ----------------------------------------------------------
+def GetAbsDirArg(env, argument, target):
+  """"Fetch the named command-line argument and turn it into an absolute
+directory name.  If the argument is missing, raise a UserError saying
+that the given target requires that argument be given."""
+  dir = ARGUMENTS.get(argument)
+  if not dir:
+    raise UserError('%s must be set when invoking %s' % (argument, target))
+  return os.path.join(env.Dir('$MAIN_DIR').abspath, dir)
+
+pre_base_env.AddMethod(GetAbsDirArg)
+
 # ----------------------------------------------------------
 pre_base_env.Append(
     CPPDEFINES = [
@@ -2060,6 +2075,17 @@ extra_sdk_update_header \
 install_libpthread \
 extra_sdk_update
 
+Targets to build trusted code destined for the SDK:
+* build trusted-code tools:     scons build_bin
+* install trusted-code tools:   scons install_bin bindir=...
+* These default to opt build, or add --mode=dbg-host for debug build.
+
+Targets to build untrusted code destined for the SDK:
+* build just libraries:         scons build_lib
+* install just headers:         scons install_headers includedir=...
+* install just libraries:       scons install_lib libdir=...
+* install headers and libraries:scons install includedir=... libdir=...
+
 * dump system info:   scons --mode=nacl,opt-linux dummy
 
 Options:
@@ -2117,6 +2143,20 @@ def GenerateOptimizationLevels(env):
 
   return (debug_env, opt_env)
 
+# ----------------------------------------------------------
+def SDKInstallTrusted(env, name, node, target=None):
+  """Add the given node to the build_bin and install_bin targets.
+It will be installed under the given name with the build target appended.
+The optional target argument overrides the setting of what that target is."""
+  env.Alias('build_bin', node)
+  if 'install_bin' in COMMAND_LINE_TARGETS:
+    dir = env.GetAbsDirArg('bindir', 'install_bin')
+    if target is None:
+      target = env['TARGET_FULLARCH'].replace('-', '_')
+    install_node = env.InstallAs(os.path.join(dir, name + '_' + target), node)
+    env.Alias('install_bin', install_node)
+
+base_env.AddMethod(SDKInstallTrusted)
 
 # ----------------------------------------------------------
 windows_env = base_env.Clone(
@@ -3022,14 +3062,8 @@ def AddHeaderInternal(env, nodes, subdir='nacl'):
 
 nacl_irt_env.AddMethod(AddHeaderInternal, 'AddHeaderToSdk')
 
-def GetAbsDirArg(env, argument, target):
-  dir = ARGUMENTS.get(argument)
-  if not dir:
-    raise UserError('%s must be set when invoking %s' % (argument, target))
-  return os.path.join(env.Dir('$MAIN_DIR').abspath, dir)
-
 def PublishHeader(env, nodes, subdir):
-  dir = GetAbsDirArg(env, 'includedir', 'install_headers')
+  dir = env.GetAbsDirArg('includedir', 'install_headers')
   if subdir is not None:
     dir += '/' + subdir
   n = env.Install(dir, nodes)
@@ -3037,7 +3071,7 @@ def PublishHeader(env, nodes, subdir):
   return n
 
 def PublishLibrary(env, nodes):
-  dir = GetAbsDirArg(env, 'libdir', 'install_lib')
+  dir = env.GetAbsDirArg('libdir', 'install_lib')
   n = env.Install(dir, nodes)
   env.Alias('install', env.Alias('install_lib', n))
   return n
