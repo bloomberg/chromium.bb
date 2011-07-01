@@ -47,8 +47,6 @@ TEST(HandleTable, FindHandle) {
                              FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
                              OPEN_EXISTING, FILE_FLAG_DELETE_ON_CLOSE, NULL);
   EXPECT_NE(INVALID_HANDLE_VALUE, file);
-  string16 handle_name;
-  ASSERT_EQ(sandbox::GetHandleName(file, &handle_name), true);
 
   // Look for the handle in our process
   bool handle_found = false;
@@ -56,7 +54,7 @@ TEST(HandleTable, FindHandle) {
   for (HandleTable::Iterator it =
       handles.HandlesForProcess(::GetCurrentProcessId());
       it != handles.end(); ++it) {
-    if (it->IsType(HandleTable::kTypeFile) && it->Name() == handle_name) {
+    if (it->IsType(HandleTable::kTypeFile) && it->Name().compare(my_file)) {
       handle_found = true;
       break;
     }
