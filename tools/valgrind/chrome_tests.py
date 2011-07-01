@@ -247,16 +247,6 @@ class ChromeTests:
   def TestNet(self):
     return self.SimpleTest("net", "net_unittests")
 
-  def TestStartup(self):
-    # We don't need the performance results, we're just looking for pointer
-    # errors, so set number of iterations down to the minimum.
-    os.putenv("STARTUP_TESTS_NUMCYCLES", "1")
-    logging.info("export STARTUP_TESTS_NUMCYCLES=1");
-    return self.SimpleTest("chrome", "startup_tests",
-                           valgrind_test_args=[
-                            "--trace_children",
-                            "--indirect"])
-
   def TestTestShell(self):
     return self.SimpleTest("webkit", "test_shell_tests")
 
@@ -438,7 +428,6 @@ class ChromeTests:
     "reliability": TestReliability, "reliability_tests": TestReliability,
     "remoting": TestRemoting,    "remoting_unittests": TestRemoting,
     "safe_browsing": TestSafeBrowsing, "safe_browsing_tests": TestSafeBrowsing,
-    "startup": TestStartup,      "startup_tests": TestStartup,
     "sync": TestSync,            "sync_unit_tests": TestSync,
     "sync_integration_tests": TestSyncIntegration,
     "sync_integration": TestSyncIntegration,

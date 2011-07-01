@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -59,20 +59,18 @@ COMMANDS = {'ipc':               ['ipc_tests.exe'],
             'ui':                ['ui_tests.exe', '%(page_heap)s'],
             'ui-single':         ['ui_tests.exe', '--single-process'],
             'test_shell':        ['test_shell_tests.exe'],
-            'page-cycler-moz':   ['page_cycler_tests.exe',
+            'page-cycler-moz':   ['performance_ui_tests.exe',
                                   '--gtest_filter=PageCycler*.MozFile'],
-            'page-cycler-moz-http': ['page_cycler_tests.exe',
+            'page-cycler-moz-http': ['performance_ui_tests.exe',
                                      '--gtest_filter=PageCycler*.MozHttp'],
-            'page-cycler-intl1': ['page_cycler_tests.exe',
+            'page-cycler-intl1': ['performance_ui_tests.exe',
                                   '--gtest_filter=PageCycler*.Intl1File'],
-            'page-cycler-intl2': ['page_cycler_tests.exe',
+            'page-cycler-intl2': ['performance_ui_tests.exe',
                                   '--gtest_filter=PageCycler*.Intl2File'],
-            'page-cycler-bloat-http': ['page_cycler_tests.exe',
+            'page-cycler-bloat-http': ['performance_ui_tests.exe',
                                        '--gtest_filter=PageCycler*.BloatHttp'],
-            'startup':           ['startup_tests.exe',
+            'startup':           ['performance_ui_tests.exe',
                                   '--gtest_filter=Startup*.*'],
-            'dest-startup':      ['startup_tests.exe',
-                                  '--gtest_filter=DestinationsStartupTest.*'],
             'selenium':          ['selenium_tests.exe'],
             'plugin':            ['plugin_tests.exe'],
             'installer':         ['installer_util_unittests.exe'],
