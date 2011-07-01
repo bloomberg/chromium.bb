@@ -17,6 +17,8 @@ bool CompareHandleEntries(const SYSTEM_HANDLE_INFORMATION& a,
   return a.ProcessId < b.ProcessId;
 }
 
+static NtQueryObject QueryObject = NULL;
+
 }  // namespace
 
 namespace sandbox {
@@ -84,7 +86,6 @@ HandleTable::HandleEntry::HandleEntry(
 }
 
 void HandleTable::HandleEntry::UpdateInfo(UpdateType flag) {
-  static NtQueryObject QueryObject = NULL;
   if (!QueryObject)
     ResolveNTFunctionPtr("NtQueryObject", &QueryObject);
 
@@ -119,18 +120,8 @@ void HandleTable::HandleEntry::UpdateInfo(UpdateType flag) {
   switch (flag) {
     case UPDATE_INFO_AND_NAME:
       if (type_info_buffer_.size() && handle_name_.empty()) {
-        ULONG size = MAX_PATH;
-        scoped_ptr<UNICODE_STRING> name;
-        do {
-          name.reset(reinterpret_cast<UNICODE_STRING*>(new BYTE[size]));
-          result = QueryObject(reinterpret_cast<HANDLE>(
-              handle_entry_->Handle), ObjectNameInformation, name.get(),
-              size, &size);
-        } while (result == STATUS_INFO_LENGTH_MISMATCH);
-
-        if (NT_SUCCESS(result)) {
-          handle_name_.assign(name->Buffer, name->Length / sizeof(wchar_t));
-        }
+        GetHandleName(reinterpret_cast<HANDLE>(handle_entry_->Handle),
+            &handle_name_);
       }
       break;
 
@@ -142,6 +133,27 @@ void HandleTable::HandleEntry::UpdateInfo(UpdateType flag) {
       }
       break;
   }
+}
+
+// Returns the object manager's name associated with a handle
+bool GetHandleName(HANDLE handle, string16* handle_name) {
+  if (!QueryObject)
+    ResolveNTFunctionPtr("NtQueryObject", &QueryObject);
+
+  ULONG size = MAX_PATH;
+  scoped_ptr<UNICODE_STRING> name;
+  NTSTATUS result;
+
+  do {
+    name.reset(reinterpret_cast<UNICODE_STRING*>(new BYTE[size]));
+    result = QueryObject(handle, ObjectNameInformation, name.get(),
+                         size, &size);
+  } while (result == STATUS_INFO_LENGTH_MISMATCH);
+
+  if (NT_SUCCESS(result))
+    handle_name->assign(name->Buffer, name->Length / sizeof(wchar_t));
+
+  return NT_SUCCESS(result);
 }
 
 const OBJECT_TYPE_INFORMATION* HandleTable::HandleEntry::TypeInfo() {
