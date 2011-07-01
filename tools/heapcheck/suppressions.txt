@@ -1629,11 +1629,4 @@
    fun:TabContentsWrapperTestHarness::SetUp
    fun:GeolocationPermissionContextTests::SetUp
 }
-{
-   bug_88094
-   Heapcheck:Leak
-   ...
-   fun:ChromeWebUIDataSourceTest*
-}
-
 

@@ -19,7 +19,6 @@ class MockChromeWebUIDataSource : public ChromeWebUIDataSource {
   }
 
   virtual ~MockChromeWebUIDataSource() {
-    result_data_ = NULL;
   }
 
   // Subvert protected methods.
@@ -45,17 +44,18 @@ class MockChromeWebUIDataSource : public ChromeWebUIDataSource {
 class ChromeWebUIDataSourceTest : public testing::Test {
  public:
   ChromeWebUIDataSourceTest() {}
-  MockChromeWebUIDataSource* source() { return source_; }
+  virtual ~ChromeWebUIDataSourceTest() {}
+  MockChromeWebUIDataSource* source() { return source_.get(); }
 
  private:
   virtual void SetUp() {
-    source_ = new MockChromeWebUIDataSource();
+    source_ = make_scoped_refptr(new MockChromeWebUIDataSource());
   }
 
   virtual void TearDown() {
   }
 
-  MockChromeWebUIDataSource* source_;
+  scoped_refptr<MockChromeWebUIDataSource> source_;
 };
 
 TEST_F(ChromeWebUIDataSourceTest, EmptyStrings) {

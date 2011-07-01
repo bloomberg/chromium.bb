@@ -4808,38 +4808,6 @@
    fun:_ZN33GeolocationInfoBarQueueController20CreateInfoBarRequestEiiiRK4GURLS2_
    fun:_ZN34ChromeGeolocationPermissionContext28RequestGeolocationPermissionEiiiRK4GURL
 }
-{
-   bug_88094_a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN25ChromeWebUIDataSourceTest5SetUpEv
-}
-{
-   bug_88094_b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorISt13_Rb_tree_nodeISt4pairIKSsP5ValueEEE8allocateEmPKv
-   fun:_ZNSt8_Rb_treeISsSt4pairIKSsP5ValueESt10_Select1stIS4_ESt4lessISsESaIS4_EE11_M_get_nodeEv
-   ...
-   fun:_ZN20ChromeURLDataManager10DataSource23SetFontAndTextDirectionEP15DictionaryValue
-   fun:_ZN21ChromeWebUIDataSource26SendLocalizedStringsAsJSONEi
-   fun:_ZN21ChromeWebUIDataSource16StartDataRequestERKSsbi
-}
-{
-   bug_88094_c
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorISt13_Rb_tree_nodeISt4pairIKSsP5ValueEEE8allocateEjPKv
-   fun:_ZNSt8_Rb_treeISsSt4pairIKSsP5ValueESt10_Select1stIS4_ESt4lessISsESaIS4_EE11_M_get_nodeEv
-   ...
-   fun:_ZN15DictionaryValue23SetWithoutPathExpansionERKSsP5Value
-   fun:_ZN15DictionaryValue3SetERKSsP5Value
-   fun:_ZN15DictionaryValue9SetStringERKSsRKSbItN4base20string16_char_traitsESaItEE
-   fun:_ZN20ChromeURLDataManager10DataSource23SetFontAndTextDirectionEP15DictionaryValue
-   fun:_ZN21ChromeWebUIDataSource26SendLocalizedStringsAsJSONEi
-   fun:_ZN21ChromeWebUIDataSource16StartDataRequestERKSsbi
-   fun:_ZN25MockChromeWebUIDataSource16StartDataRequestERKSsbi
-}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
