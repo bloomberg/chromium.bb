@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,10 +33,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, BookmarkManagerEditDisabled) {
   ui_test_utils::WaitForBookmarkModelToLoad(model);
   const BookmarkNode* bar = model->GetBookmarkBarNode();
   const BookmarkNode* folder = model->AddFolder(bar, 0, ASCIIToUTF16("Folder"));
-  const BookmarkNode* node = model->AddURL(bar, 1, ASCIIToUTF16("AAA"),
-                                           GURL("http://aaa.example.com"));
-  node = model->AddURL(folder, 0, ASCIIToUTF16("BBB"),
-                                  GURL("http://bbb.example.com"));
+  model->AddURL(bar, 1, ASCIIToUTF16("AAA"), GURL("http://aaa.example.com"));
+  model->AddURL(folder, 0, ASCIIToUTF16("BBB"), GURL("http://bbb.example.com"));
 
   profile->GetPrefs()->SetBoolean(prefs::kEditBookmarksEnabled, false);
 

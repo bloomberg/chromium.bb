@@ -144,8 +144,9 @@ class IDBKeyPathHelper : public UtilityProcessHost::Client {
 
   // UtilityProcessHost::Client
   bool OnMessageReceived(const IPC::Message& message) {
+    bool msg_is_ok = true;
     bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(IDBKeyPathHelper, message)
+    IPC_BEGIN_MESSAGE_MAP_EX(IDBKeyPathHelper, message, msg_is_ok)
       IPC_MESSAGE_HANDLER(UtilityHostMsg_IDBKeysFromValuesAndKeyPath_Succeeded,
                           OnIDBKeysFromValuesAndKeyPathSucceeded)
       IPC_MESSAGE_HANDLER(UtilityHostMsg_IDBKeysFromValuesAndKeyPath_Failed,

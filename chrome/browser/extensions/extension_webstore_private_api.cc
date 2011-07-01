@@ -198,7 +198,7 @@ class SafeBeginInstallHelper : public UtilityProcessHost::Client {
                           OnJSONParseSucceeded)
       IPC_MESSAGE_HANDLER(UtilityHostMsg_ParseJSON_Failed, OnJSONParseFailed)
       IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP_EX()
+    IPC_END_MESSAGE_MAP()
     return handled;
   }
 

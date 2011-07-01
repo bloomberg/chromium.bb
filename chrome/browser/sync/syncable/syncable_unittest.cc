@@ -888,7 +888,7 @@ TEST_F(SyncableDirectoryTest, TestGetUnappliedUpdates) {
 TEST_F(SyncableDirectoryTest, DeleteBug_531383) {
   // Try to evoke a check failure...
   TestIdFactory id_factory;
-  int64 grandchild_handle, twin_handle;
+  int64 grandchild_handle;
   {
     WriteTransaction wtrans(FROM_HERE, UNITTEST, dir_.get());
     MutableEntry parent(&wtrans, CREATE, id_factory.root(), "Bob");
@@ -912,7 +912,6 @@ TEST_F(SyncableDirectoryTest, DeleteBug_531383) {
     ASSERT_TRUE(grandchild.Put(IS_DEL, false));
 
     grandchild_handle = grandchild.Get(META_HANDLE);
-    twin_handle = twin.Get(META_HANDLE);
   }
   dir_->SaveChanges();
   {

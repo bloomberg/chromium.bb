@@ -311,9 +311,7 @@ bool ProfileManager::AddProfile(Profile* profile) {
 ProfileManager::ProfileInfo* ProfileManager::RegisterProfile(Profile* profile,
                                                              bool created) {
   ProfileInfo* info = new ProfileInfo(profile, created);
-  ProfilesInfoMap::iterator new_elem =
-      (profiles_info_.insert(std::make_pair(profile->GetPath(), info))).first;
-
+  profiles_info_.insert(std::make_pair(profile->GetPath(), info));
   return info;
 }
 

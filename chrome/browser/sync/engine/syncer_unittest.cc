@@ -1113,7 +1113,7 @@ TEST_F(SyncerTest, TestCommitListOrderingAndNewParentAndChild) {
     parent.Put(syncable::BASE_VERSION, 1);
   }
 
-  int64 meta_handle_a, meta_handle_b;
+  int64 meta_handle_b;
   const Id parent2_local_id = ids_.NewLocalId();
   const Id child_local_id = ids_.NewLocalId();
   {
@@ -1125,7 +1125,6 @@ TEST_F(SyncerTest, TestCommitListOrderingAndNewParentAndChild) {
     parent2.Put(syncable::SPECIFICS, DefaultBookmarkSpecifics());
 
     parent2.Put(syncable::ID, parent2_local_id);
-    meta_handle_a = parent2.Get(syncable::META_HANDLE);
     MutableEntry child(&wtrans, syncable::CREATE, parent2_local_id, child_name);
     ASSERT_TRUE(child.good());
     child.Put(syncable::IS_UNSYNCED, true);

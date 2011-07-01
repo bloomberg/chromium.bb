@@ -77,8 +77,9 @@ void ProfileImportProcessClient::OnKeywordsImportReady(
 
 bool ProfileImportProcessClient::OnMessageReceived(
     const IPC::Message& message) {
+  bool msg_is_ok = true;
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(ProfileImportProcessClient, message)
+  IPC_BEGIN_MESSAGE_MAP_EX(ProfileImportProcessClient, message, msg_is_ok)
     // Notification messages about the state of the import process.
     IPC_MESSAGE_HANDLER(ProfileImportProcessHostMsg_Import_Started,
                         OnImportStart)

@@ -239,7 +239,7 @@ bool SandboxedExtensionUnpacker::OnMessageReceived(
     IPC_MESSAGE_HANDLER(UtilityHostMsg_UnpackExtension_Failed,
                         OnUnpackExtensionFailed)
     IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP_EX()
+  IPC_END_MESSAGE_MAP()
   return handled;
 }
 

@@ -598,24 +598,20 @@ void ExtensionReadyNotificationObserver::Observe(
     return;
   }
 
-  bool success = false;
   switch (type.value) {
     case NotificationType::EXTENSION_HOST_DID_STOP_LOADING:
       // Only continue on with this method if our extension has been loaded
       // and all the extension hosts have stopped loading.
       if (!extension_ || !DidExtensionHostsStopLoading(manager_))
         return;
-      success = true;
       break;
     case NotificationType::EXTENSION_LOADED:
       extension_ = Details<const Extension>(details).ptr();
       if (!DidExtensionHostsStopLoading(manager_))
         return;
-      success = true;
       break;
     case NotificationType::EXTENSION_INSTALL_ERROR:
     case NotificationType::EXTENSION_UPDATE_DISABLED:
-      success = false;
       break;
     default:
       NOTREACHED();

@@ -151,8 +151,10 @@ class WebResourceService::UnpackerClient : public UtilityProcessHost::Client {
 
   // UtilityProcessHost::Client
   virtual bool OnMessageReceived(const IPC::Message& message) {
+    bool msg_is_ok = true;
     bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(WebResourceService::UnpackerClient, message)
+    IPC_BEGIN_MESSAGE_MAP_EX(WebResourceService::UnpackerClient, message,
+                             msg_is_ok)
       IPC_MESSAGE_HANDLER(UtilityHostMsg_UnpackWebResource_Succeeded,
                           OnUnpackWebResourceSucceeded)
       IPC_MESSAGE_HANDLER(UtilityHostMsg_UnpackWebResource_Failed,

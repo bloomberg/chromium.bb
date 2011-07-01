@@ -656,8 +656,6 @@ bool SendKeyPressSync(const Browser* browser,
                       bool shift,
                       bool alt,
                       bool command) {
-  base::TimeTicks start_time = base::TimeTicks::Now();
-
   gfx::NativeWindow window = NULL;
   if (!GetNativeWindow(browser, &window))
     return false;

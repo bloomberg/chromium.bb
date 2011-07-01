@@ -673,7 +673,7 @@ class SafeManifestParser : public UtilityProcessHost::Client {
       IPC_MESSAGE_HANDLER(UtilityHostMsg_ParseUpdateManifest_Failed,
                           OnParseUpdateManifestFailed)
       IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP_EX()
+    IPC_END_MESSAGE_MAP()
     return handled;
   }
 

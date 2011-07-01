@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -79,7 +79,7 @@ void AddAllPages(TextDatabaseManager& manager, VisitDatabase* visit_db,
   visit_row.transition = 0;
   visit_row.segment_id = 0;
   visit_row.is_indexed = false;
-  VisitID visit_id = visit_db->AddVisit(&visit_row, SOURCE_BROWSED);
+  visit_db->AddVisit(&visit_row, SOURCE_BROWSED);
 
   times->push_back(visit_row.visit_time);
   manager.AddPageData(GURL(kURL1), visit_row.url_id, visit_row.visit_id,
@@ -89,7 +89,7 @@ void AddAllPages(TextDatabaseManager& manager, VisitDatabase* visit_db,
   exploded.day_of_month++;
   visit_row.url_id = 2;
   visit_row.visit_time = Time::FromUTCExploded(exploded);
-  visit_id = visit_db->AddVisit(&visit_row, SOURCE_BROWSED);
+  visit_db->AddVisit(&visit_row, SOURCE_BROWSED);
   times->push_back(visit_row.visit_time);
   manager.AddPageData(GURL(kURL2), visit_row.url_id, visit_row.visit_id,
                       visit_row.visit_time, UTF8ToUTF16(kTitle2),
@@ -98,7 +98,7 @@ void AddAllPages(TextDatabaseManager& manager, VisitDatabase* visit_db,
   exploded.day_of_month++;
   visit_row.url_id = 2;
   visit_row.visit_time = Time::FromUTCExploded(exploded);
-  visit_id = visit_db->AddVisit(&visit_row, SOURCE_BROWSED);
+  visit_db->AddVisit(&visit_row, SOURCE_BROWSED);
   times->push_back(visit_row.visit_time);
   manager.AddPageData(GURL(kURL3), visit_row.url_id, visit_row.visit_id,
                       visit_row.visit_time, UTF8ToUTF16(kTitle3),
@@ -108,7 +108,7 @@ void AddAllPages(TextDatabaseManager& manager, VisitDatabase* visit_db,
   exploded.month++;
   visit_row.url_id = 2;
   visit_row.visit_time = Time::FromUTCExploded(exploded);
-  visit_id = visit_db->AddVisit(&visit_row, SOURCE_BROWSED);
+  visit_db->AddVisit(&visit_row, SOURCE_BROWSED);
   times->push_back(visit_row.visit_time);
   manager.AddPageData(GURL(kURL4), visit_row.url_id, visit_row.visit_id,
                       visit_row.visit_time, UTF8ToUTF16(kTitle4),
@@ -117,7 +117,7 @@ void AddAllPages(TextDatabaseManager& manager, VisitDatabase* visit_db,
   exploded.day_of_month++;
   visit_row.url_id = 2;
   visit_row.visit_time = Time::FromUTCExploded(exploded);
-  visit_id = visit_db->AddVisit(&visit_row, SOURCE_BROWSED);
+  visit_db->AddVisit(&visit_row, SOURCE_BROWSED);
   times->push_back(visit_row.visit_time);
   manager.AddPageData(GURL(kURL5), visit_row.url_id, visit_row.visit_id,
                       visit_row.visit_time, UTF8ToUTF16(kTitle5),
@@ -127,7 +127,7 @@ void AddAllPages(TextDatabaseManager& manager, VisitDatabase* visit_db,
   exploded.day_of_month++;
   visit_row.url_id = 2;
   visit_row.visit_time = Time::FromUTCExploded(exploded);
-  visit_id = visit_db->AddVisit(&visit_row, SOURCE_BROWSED);
+  visit_db->AddVisit(&visit_row, SOURCE_BROWSED);
   times->push_back(visit_row.visit_time);
   manager.AddPageData(GURL(kURL1), visit_row.url_id, visit_row.visit_id,
                       visit_row.visit_time, UTF8ToUTF16(kTitle1),

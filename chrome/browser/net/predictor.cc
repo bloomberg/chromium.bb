@@ -339,23 +339,18 @@ struct RightToLeftStringSorter {
       if (!left_already_matched) return true;
       if (!right_already_matched) return false;
 
-      size_t left_length, right_length;
       size_t left_start = left_host.find_last_of('.', left_already_matched - 1);
       if (std::string::npos == left_start) {
-        left_length = left_already_matched;
         left_already_matched = left_start = 0;
       } else {
-        left_length = left_already_matched - left_start;
         left_already_matched = left_start;
         ++left_start;  // Don't compare the dot.
       }
       size_t right_start = right_host.find_last_of('.',
                                                    right_already_matched - 1);
       if (std::string::npos == right_start) {
-        right_length = right_already_matched;
         right_already_matched = right_start = 0;
       } else {
-        right_length = right_already_matched - right_start;
         right_already_matched = right_start;
         ++right_start;  // Don't compare the dot.
       }
