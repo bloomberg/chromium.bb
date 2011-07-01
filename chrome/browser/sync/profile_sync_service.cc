@@ -1123,8 +1123,10 @@ void ProfileSyncService::ConfigureDataTypeManager() {
       passphrase_required_reason_ = sync_api::REASON_PASSPHRASE_NOT_REQUIRED;
     }
   }
-  data_type_manager_->Configure(
-      types, sync_api::CONFIGURE_REASON_RECONFIGURATION);
+
+  data_type_manager_->Configure(types,
+      HasSyncSetupCompleted() ? sync_api::CONFIGURE_REASON_RECONFIGURATION :
+                                sync_api::CONFIGURE_REASON_NEW_CLIENT);
 }
 
 sync_api::UserShare* ProfileSyncService::GetUserShare() const {
