@@ -739,10 +739,8 @@ void OmxVideoDecodeAccelerator::FreeOutputBuffers() {
   pictures_.clear();
 }
 
-void OmxVideoDecodeAccelerator::OnPortSettingsChangedRun(
-        int port, OMX_INDEXTYPE index) {
+void OmxVideoDecodeAccelerator::OnIndexParamPortDefinitionChanged(int port) {
   DCHECK_EQ(port, output_port_);
-  DCHECK_EQ(index, OMX_IndexParamPortDefinition);
   DCHECK(!on_port_disable_event_func_);
   on_port_disable_event_func_ =
       &OmxVideoDecodeAccelerator::PortDisabledForSettingsChange;
@@ -914,14 +912,14 @@ void OmxVideoDecodeAccelerator::EventHandlerCompleteTask(OMX_EVENTTYPE event,
         StopOnError();
       break;
     case OMX_EventPortSettingsChanged:
-      // TODO(vhiremath@nvidia.com) remove this hack
-      // when all vendors observe same spec.
-      if (data1 < OMX_IndexComponentStartUnused) {
-        OnPortSettingsChangedRun(static_cast<int>(data1),
-                                 static_cast<OMX_INDEXTYPE>(data2));
+      if (data2 == OMX_IndexParamPortDefinition) {
+          OnIndexParamPortDefinitionChanged(static_cast<int>(data1));
+      } else if (data1 == static_cast<OMX_U32>(output_port_) &&
+                 data2 == OMX_IndexConfigCommonOutputCrop) {
+          // TODO(vjain): Handle video crop rect.
       } else {
-        OnPortSettingsChangedRun(static_cast<int>(data2),
-                                 static_cast<OMX_INDEXTYPE>(data1));
+          LOG(ERROR) << "Unexpected EventPortSettingsChanged [data1:"
+                     << data1 << " data2:" << data2 << "]";
       }
       break;
     case OMX_EventBufferFlag:
@@ -932,7 +930,7 @@ void OmxVideoDecodeAccelerator::EventHandlerCompleteTask(OMX_EVENTTYPE event,
       }
       break;
     default:
-      LOG(ERROR) << "Warning - Unknown event received\n";
+      LOG(ERROR) << "Event: " << event << "unhandled";
       break;
   }
 }

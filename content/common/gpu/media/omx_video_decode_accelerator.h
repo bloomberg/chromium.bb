@@ -92,7 +92,7 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   // to the decoder based on the current state and port state.
   bool CanEmptyBuffer();
   bool CanFillBuffer();
-  void OnPortSettingsChangedRun(int port, OMX_INDEXTYPE index);
+  void OnIndexParamPortDefinitionChanged(int port);
   // Whenever port settings change, the first thing we must do is disable the
   // port (see Figure 3-18 of the OpenMAX IL spec linked to above).  When the
   // port is disabled, the component will call us back here.  We then re-enable
