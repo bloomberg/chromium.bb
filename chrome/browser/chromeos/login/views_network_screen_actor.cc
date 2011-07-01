@@ -21,7 +21,6 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "views/controls/menu/menu_2.h"
 
 namespace {
 

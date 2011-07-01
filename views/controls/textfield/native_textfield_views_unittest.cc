@@ -15,7 +15,6 @@
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/keycodes/keyboard_codes.h"
-#include "views/controls/menu/menu_2.h"
 #include "views/controls/textfield/native_textfield_views.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/controls/textfield/textfield_controller.h"
