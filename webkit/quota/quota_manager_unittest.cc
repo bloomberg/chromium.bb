@@ -153,7 +153,7 @@ class QuotaManagerTest : public testing::Test {
     quota_status_ = kQuotaStatusUnknown;
     client->DeleteOriginData(origin, type,
         callback_factory_.NewCallback(
-            &QuotaManagerTest::DidDeleteClientOriginData));
+            &QuotaManagerTest::StatusCallback));
   }
 
   void EvictOriginData(const GURL& origin,
@@ -161,7 +161,15 @@ class QuotaManagerTest : public testing::Test {
     quota_status_ = kQuotaStatusUnknown;
     quota_manager_->EvictOriginData(origin, type,
         callback_factory_.NewCallback(
-            &QuotaManagerTest::DidEvictOriginData));
+            &QuotaManagerTest::StatusCallback));
+  }
+
+  void DeleteOriginData(const GURL& origin,
+                        StorageType type) {
+    quota_status_ = kQuotaStatusUnknown;
+    quota_manager_->DeleteOriginData(origin, type,
+        callback_factory_.NewCallback(
+            &QuotaManagerTest::StatusCallback));
   }
 
   void GetAvailableSpace() {
@@ -273,11 +281,8 @@ class QuotaManagerTest : public testing::Test {
     usage_ = usage;
   }
 
-  void DidDeleteClientOriginData(QuotaStatusCode status) {
-    quota_status_ = status;
-  }
-
-  void DidEvictOriginData(QuotaStatusCode status) {
+  void StatusCallback(QuotaStatusCode status) {
+    ++status_callback_count_;
     quota_status_ = status;
   }
 
@@ -333,6 +338,8 @@ class QuotaManagerTest : public testing::Test {
     return last_access_time_table_;
   }
   FilePath profile_path() const { return data_dir_.path(); }
+  int status_callback_count() const { return status_callback_count_; }
+  void reset_status_callback_count() { status_callback_count_ = 0; }
 
  private:
   base::Time GetCurrentMockTime() {
@@ -356,6 +363,7 @@ class QuotaManagerTest : public testing::Test {
   GURL lru_origin_;
   QuotaTableEntries quota_table_;
   LastAccessTimeTableEntries last_access_time_table_;
+  int status_callback_count_;
 
   int additional_callback_count_;
 
@@ -630,6 +638,9 @@ TEST_F(QuotaManagerTest, GetTemporaryUsageAndQuota_NukeManager) {
                                  kTemp);
   RunAdditionalUsageAndQuotaTask(GURL("http://bar.com/"),
                                  kTemp);
+
+  DeleteOriginData(GURL("http://foo.com/"), kTemp);
+  DeleteOriginData(GURL("http://bar.com/"), kTemp);
 
   // Nuke before waiting for callbacks.
   set_quota_manager(NULL);
@@ -1170,6 +1181,97 @@ TEST_F(QuotaManagerTest, GetUsageAndQuotaForEviction) {
   EXPECT_EQ(4000, unlimited_usage());
   EXPECT_EQ(10000000, quota());
   EXPECT_LE(0, available_space());
+}
+
+// Single-run DeleteOriginData cases must be well covered by
+// EvictOriginData tests.
+TEST_F(QuotaManagerTest, DeleteOriginDataMultiple) {
+  static const MockOriginData kData1[] = {
+    { "http://foo.com/",   kTemp,     1 },
+    { "http://foo.com:1/", kTemp,    20 },
+    { "http://foo.com/",   kPerm,   300 },
+    { "http://bar.com/",   kTemp,  4000 },
+  };
+  static const MockOriginData kData2[] = {
+    { "http://foo.com/",   kTemp, 50000 },
+    { "http://foo.com:1/", kTemp,  6000 },
+    { "http://foo.com/",   kPerm,   700 },
+    { "https://foo.com/",  kTemp,    80 },
+    { "http://bar.com/",   kTemp,     9 },
+  };
+  MockStorageClient* client1 = CreateClient(kData1, ARRAYSIZE_UNSAFE(kData1));
+  MockStorageClient* client2 = CreateClient(kData2, ARRAYSIZE_UNSAFE(kData2));
+  RegisterClient(client1);
+  RegisterClient(client2);
+
+  GetGlobalUsage(kTemp);
+  MessageLoop::current()->RunAllPending();
+  const int64 predelete_global_tmp = usage();
+
+  GetHostUsage("foo.com", kTemp);
+  MessageLoop::current()->RunAllPending();
+  const int64 predelete_foo_tmp = usage();
+
+  GetHostUsage("bar.com", kTemp);
+  MessageLoop::current()->RunAllPending();
+  const int64 predelete_bar_tmp = usage();
+
+  GetHostUsage("foo.com", kPerm);
+  MessageLoop::current()->RunAllPending();
+  const int64 predelete_foo_pers = usage();
+
+  GetHostUsage("bar.com", kPerm);
+  MessageLoop::current()->RunAllPending();
+  const int64 predelete_bar_pers = usage();
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kData1); ++i)
+    quota_manager()->NotifyStorageAccessed(QuotaClient::kMockStart,
+        GURL(kData1[i].origin), kData1[i].type);
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kData2); ++i)
+    quota_manager()->NotifyStorageAccessed(QuotaClient::kMockStart,
+        GURL(kData2[i].origin), kData2[i].type);
+  MessageLoop::current()->RunAllPending();
+
+  reset_status_callback_count();
+  DeleteOriginData(GURL("http://foo.com/"), kTemp);
+  DeleteOriginData(GURL("http://bar.com/"), kTemp);
+  DeleteOriginData(GURL("http://foo.com/"), kTemp);
+  MessageLoop::current()->RunAllPending();
+
+  EXPECT_EQ(3, status_callback_count());
+
+  DumpLastAccessTimeTable();
+  MessageLoop::current()->RunAllPending();
+
+  typedef LastAccessTimeTableEntries::const_iterator iterator;
+  for (iterator itr(last_access_time_table().begin()),
+                end(last_access_time_table().end());
+       itr != end; ++itr) {
+    if (itr->type == kTemp) {
+      EXPECT_NE(std::string("http://foo.com/"), itr->origin.spec());
+      EXPECT_NE(std::string("http://bar.com/"), itr->origin.spec());
+    }
+  }
+
+  GetGlobalUsage(kTemp);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(predelete_global_tmp - (1 + 4000 + 50000 + 9), usage());
+
+  GetHostUsage("foo.com", kTemp);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(predelete_foo_tmp - (1 + 50000), usage());
+
+  GetHostUsage("bar.com", kTemp);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(predelete_bar_tmp - (4000 + 9), usage());
+
+  GetHostUsage("foo.com", kPerm);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(predelete_foo_pers, usage());
+
+  GetHostUsage("bar.com", kPerm);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(predelete_bar_pers, usage());
 }
 
 TEST_F(QuotaManagerTest, GetCachedOrigins) {

@@ -345,9 +345,73 @@ QuotaManager::UsageAndQuotaDispatcherTask::Create(
   return NULL;
 }
 
+class QuotaManager::OriginDataDeleter : public QuotaTask {
+ public:
+  OriginDataDeleter(QuotaManager* manager,
+                    const GURL& origin,
+                    StorageType type,
+                    StatusCallback* callback)
+      : QuotaTask(manager),
+        origin_(origin),
+        type_(type),
+        error_count_(0),
+        remaining_clients_(-1),
+        callback_(callback),
+        callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
+
+ protected:
+  virtual void Run() OVERRIDE {
+    error_count_ = 0;
+    remaining_clients_ = manager()->clients_.size();
+    for (QuotaClientList::iterator iter = manager()->clients_.begin();
+         iter != manager()->clients_.end(); ++iter) {
+      (*iter)->DeleteOriginData(origin_, type_, callback_factory_.NewCallback(
+          &OriginDataDeleter::DidDeleteOriginData));
+    }
+  }
+
+  virtual void Completed() OVERRIDE {
+    if (error_count_ == 0) {
+      manager()->DeleteOriginFromDatabase(origin_, type_);
+      callback_->Run(kQuotaStatusOk);
+    } else {
+      callback_->Run(kQuotaErrorInvalidModification);
+    }
+    DeleteSoon();
+  }
+
+  virtual void Aborted() OVERRIDE {
+    callback_->Run(kQuotaErrorAbort);
+    DeleteSoon();
+  }
+
+  void DidDeleteOriginData(QuotaStatusCode status) {
+    DCHECK_GT(remaining_clients_, 0);
+
+    if (status != kQuotaStatusOk)
+      ++error_count_;
+
+    if (--remaining_clients_ == 0)
+      CallCompleted();
+  }
+
+  QuotaManager* manager() const {
+    return static_cast<QuotaManager*>(observer());
+  }
+
+  GURL origin_;
+  StorageType type_;
+  int error_count_;
+  int remaining_clients_;
+  scoped_ptr<StatusCallback> callback_;
+
+  ScopedCallbackFactory<OriginDataDeleter> callback_factory_;
+  DISALLOW_COPY_AND_ASSIGN(OriginDataDeleter);
+};
+
 class QuotaManager::DatabaseTaskBase : public QuotaThreadTask {
  public:
-  DatabaseTaskBase(QuotaManager* manager)
+  explicit DatabaseTaskBase(QuotaManager* manager)
       : QuotaThreadTask(manager, manager->db_thread_),
         manager_(manager),
         database_(manager->database_.get()),
@@ -994,6 +1058,21 @@ void QuotaManager::NotifyOriginNoLongerInUse(const GURL& origin) {
     origins_in_use_.erase(origin);
 }
 
+void QuotaManager::DeleteOriginData(
+    const GURL& origin, StorageType type, StatusCallback* callback) {
+  LazyInitialize();
+
+  if (origin.is_empty() || clients_.empty()) {
+    callback->Run(kQuotaStatusOk);
+    delete callback;
+    return;
+  }
+
+  OriginDataDeleter* deleter =
+      new OriginDataDeleter(this, origin, type, callback);
+  deleter->Start();
+}
+
 UsageTracker* QuotaManager::GetUsageTracker(StorageType type) const {
   switch (type) {
     case kStorageTypeTemporary:
@@ -1085,28 +1164,15 @@ void QuotaManager::DidOriginDataEvicted(
     QuotaStatusCode status) {
   DCHECK(io_thread_->BelongsToCurrentThread());
 
+  // We only try evict origins that are not in use, so basically
+  // deletion attempt for eviction should not fail.  Let's record
+  // the origin if we get error and exclude it from future eviction
+  // if the error happens consistently (> kThresholdOfErrorsToBeBlacklisted).
   if (status != kQuotaStatusOk)
-    ++eviction_context_.num_eviction_error;
+    origins_in_error_[eviction_context_.evicted_origin]++;
 
-  ++eviction_context_.num_evicted_clients;
-  DCHECK(eviction_context_.num_evicted_clients <=
-      eviction_context_.num_eviction_requested_clients);
-  if (eviction_context_.num_evicted_clients ==
-      eviction_context_.num_eviction_requested_clients) {
-    eviction_context_.num_eviction_requested_clients = 0;
-    eviction_context_.num_evicted_clients = 0;
-
-    if (eviction_context_.num_eviction_error == 0) {
-      DeleteOriginFromDatabase(eviction_context_.evicted_origin,
-                               eviction_context_.evicted_type);
-      eviction_context_.evict_origin_data_callback->Run(kQuotaStatusOk);
-    } else {
-      origins_in_error_[eviction_context_.evicted_origin]++;
-      eviction_context_.evict_origin_data_callback->Run(
-          kQuotaErrorInvalidModification);
-    }
-    eviction_context_.evict_origin_data_callback.reset();
-  }
+  eviction_context_.evict_origin_data_callback->Run(status);
+  eviction_context_.evict_origin_data_callback.reset();
 }
 
 void QuotaManager::EvictOriginData(
@@ -1114,31 +1180,14 @@ void QuotaManager::EvictOriginData(
     StorageType type,
     EvictOriginDataCallback* callback) {
   DCHECK(io_thread_->BelongsToCurrentThread());
-  DCHECK(database_.get());
-  DCHECK_EQ(eviction_context_.num_eviction_requested_clients, 0);
   DCHECK_EQ(type, kStorageTypeTemporary);
-
-  int num_clients = clients_.size();
-
-  if (origin.is_empty() || num_clients == 0) {
-    callback->Run(kQuotaStatusOk);
-    delete callback;
-    return;
-  }
-
-  eviction_context_.num_eviction_requested_clients = num_clients;
-  eviction_context_.num_evicted_clients = 0;
-  eviction_context_.num_eviction_error = 0;
 
   eviction_context_.evicted_origin = origin;
   eviction_context_.evicted_type = type;
   eviction_context_.evict_origin_data_callback.reset(callback);
-  for (QuotaClientList::iterator p = clients_.begin();
-       p != clients_.end();
-       ++p) {
-    (*p)->DeleteOriginData(origin, type, callback_factory_.
-        NewCallback(&QuotaManager::DidOriginDataEvicted));
-  }
+
+  DeleteOriginData(origin, type, callback_factory_.NewCallback(
+      &QuotaManager::DidOriginDataEvicted));
 }
 
 void QuotaManager::DidGetAvailableSpaceForEviction(

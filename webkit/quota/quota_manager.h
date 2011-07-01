@@ -45,7 +45,7 @@ class QuotaEvictionHandler {
   virtual ~QuotaEvictionHandler() {}
 
   typedef Callback1<const GURL&>::Type GetLRUOriginCallback;
-  typedef Callback1<QuotaStatusCode>::Type EvictOriginDataCallback;
+  typedef StatusCallback EvictOriginDataCallback;
   typedef Callback5<QuotaStatusCode,
                     int64 /* usage */,
                     int64 /* unlimited_usage */,
@@ -121,6 +121,11 @@ class QuotaManager : public QuotaTaskObserver,
     return origins_in_use_.find(origin) != origins_in_use_.end();
   }
 
+  // Called by UI.
+  void DeleteOriginData(const GURL& origin,
+                        StorageType type,
+                        StatusCallback* callback);
+
   // Called by UI and internal modules.
   void GetAvailableSpace(AvailableSpaceCallback* callback);
   void GetTemporaryGlobalQuota(QuotaCallback* callback);
@@ -171,6 +176,8 @@ class QuotaManager : public QuotaTaskObserver,
   class UsageAndQuotaDispatcherTaskForTemporary;
   class UsageAndQuotaDispatcherTaskForPersistent;
 
+  class OriginDataDeleter;
+
   class AvailableSpaceQueryTask;
   class DumpQuotaTableTask;
   class DumpLastAccessTimeTableTask;
@@ -187,9 +194,6 @@ class QuotaManager : public QuotaTaskObserver,
   struct EvictionContext {
     EvictionContext()
         : evicted_type(kStorageTypeUnknown),
-          num_eviction_requested_clients(0),
-          num_evicted_clients(0),
-          num_eviction_error(0),
           usage(0),
           unlimited_usage(0),
           quota(0) {}
@@ -199,9 +203,6 @@ class QuotaManager : public QuotaTaskObserver,
     StorageType evicted_type;
 
     scoped_ptr<EvictOriginDataCallback> evict_origin_data_callback;
-    int num_eviction_requested_clients;
-    int num_evicted_clients;
-    int num_eviction_error;
 
     scoped_ptr<GetUsageAndQuotaForEvictionCallback>
         get_usage_and_quota_callback;

@@ -49,6 +49,7 @@ typedef Callback4<QuotaStatusCode,
                   int64>::Type HostQuotaCallback;
 typedef Callback2<QuotaStatusCode,
                   int64>::Type AvailableSpaceCallback;
+typedef Callback1<QuotaStatusCode>::Type StatusCallback;
 
 // Simple template wrapper for a callback queue.
 template <typename CallbackType>
