@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,6 +31,8 @@ namespace nacl {
     CloseHandlesAfterLaunch();
     // TODO(gregoryd): the handle is currently returned on Windows only.
     child_process_ = nacl_proc_handle;
+    // channel_ conveys the bootstrap channel.
+    channel_ = result_sockets[0];
     return true;
   }
 }

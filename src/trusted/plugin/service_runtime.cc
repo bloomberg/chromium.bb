@@ -137,7 +137,7 @@ bool ServiceRuntime::InitCommunication(nacl::DescWrapper* nacl_desc,
 
   if (!DuplicateHandle(GetCurrentProcess(),
                        my_handle,
-                       sel_ldr_handle,
+                       subprocess_->child_process(),
                        &my_handle_in_selldr,
                        PROCESS_DUP_HANDLE,
                        FALSE,
