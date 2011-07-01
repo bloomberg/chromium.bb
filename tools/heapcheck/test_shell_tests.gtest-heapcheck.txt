@@ -1,6 +1,0 @@
-# Missing bmp_decoder and ico_decoder directory.
-# http://crbug.com/75655
-ICOImageDecoderTest.Decoding
-ICOImageDecoderTest.ImageNonZeroFrameIndex
-BMPImageDecoderTest.DecodingFast
-BMPImageDecoderTest.DecodingSlow
