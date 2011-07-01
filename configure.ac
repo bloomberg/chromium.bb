@@ -30,6 +30,16 @@ PKG_CHECK_MODULES(COMPOSITOR,
 AC_CHECK_PROG(RSVG_CONVERT, rsvg-convert, rsvg-convert)
 AM_CONDITIONAL(HAVE_RSVG_CONVERT, test -n "$RSVG_CONVERT")
 
+
+AC_ARG_ENABLE(xserver-launcher, [  --enable-xserver-launcher],,
+	      enable_xserver_launcher=yes)
+AM_CONDITIONAL(ENABLE_XSERVER_LAUNCHER, test x$enable_xserver_launcher == xyes)
+if test x$enable_xserver_launcher == xyes; then
+  PKG_CHECK_MODULES([XSERVER_LAUNCHER], xcb)
+  AC_DEFINE([BUILD_XSERVER_LAUNCHER], [1], [Build the X server launcher])
+fi
+
+
 AC_ARG_ENABLE(x11-compositor, [  --enable-x11-compositor],,
 	      enable_x11_compositor=yes)
 AM_CONDITIONAL(ENABLE_X11_COMPOSITOR, test x$enable_x11_compositor == xyes)

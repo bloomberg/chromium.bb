@@ -6,8 +6,9 @@ AM_CPPFLAGS =					\
 	$(COMPOSITOR_CFLAGS)
 
 wayland_compositor_LDFLAGS = -export-dynamic
-wayland_compositor_LDADD = $(COMPOSITOR_LIBS) $(DLOPEN_LIBS)
 wayland_compositor_CFLAGS = $(GCC_CFLAGS)
+wayland_compositor_LDADD = \
+	$(COMPOSITOR_LIBS) $(DLOPEN_LIBS) $(XSERVER_LAUNCHER_LIBS)
 
 wayland_compositor_SOURCES =			\
 	compositor.c				\
@@ -16,7 +17,14 @@ wayland_compositor_SOURCES =			\
 	screenshooter.c				\
 	screenshooter-protocol.c		\
 	screenshooter-server-protocol.h		\
-	x11-integration.c
+	$(xserver_launcher_sources)
+
+if ENABLE_XSERVER_LAUNCHER
+xserver_launcher_sources =			\
+	xserver-launcher.c			\
+	xserver-protocol.c			\
+	xserver-server-protocol.h
+endif
 
 udevrulesddir = $(sysconfdir)/udev/rules.d
 
@@ -90,7 +98,9 @@ BUILT_SOURCES =					\
 	screenshooter-server-protocol.h		\
 	screenshooter-protocol.c		\
 	meego-tablet-protocol.c			\
-	meego-tablet-server-protocol.h
+	meego-tablet-server-protocol.h		\
+	xserver-protocol.c			\
+	xserver-server-protocol.h
 
 CLEANFILES = $(BUILT_SOURCES)
 
