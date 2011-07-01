@@ -17,6 +17,7 @@
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/font.h"
 #include "views/screen.h"
+#include "views/views_delegate.h"
 #include "views/widget/native_widget_win.h"
 #include "views/widget/widget.h"
 #include "views/window/non_client_view.h"
@@ -217,7 +218,8 @@ const gfx::Font& BrowserFrame::GetTitleFont() {
 NativeBrowserFrame* NativeBrowserFrame::CreateNativeBrowserFrame(
     BrowserFrame* browser_frame,
     BrowserView* browser_view) {
-  if (views::Widget::IsPureViews())
+  if (views::Widget::IsPureViews() &&
+      views::ViewsDelegate::views_delegate->GetDefaultParentView())
     return new BrowserFrameViews(browser_frame, browser_view);
   return new BrowserFrameWin(browser_frame, browser_view);
 }
