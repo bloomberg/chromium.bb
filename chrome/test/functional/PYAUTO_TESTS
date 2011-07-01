@@ -167,6 +167,9 @@
       # ==================================================
       # Keychain popups make autofill/password tests difficult: crbug.com/49378
       '-autofill',
+      # Browser crash when clearing browsing history and downloads together.
+      # crbug.com/88128
+      '-browsing_data.BrowsingDataTest.testClearHistoryAndDownloads',
       # codesign tests should run *after* signing. crbug.com/50481
       '-codesign',
       '-crash_reporter.CrashReporterTest.testRendererCrash',  # crbug.com/69464
