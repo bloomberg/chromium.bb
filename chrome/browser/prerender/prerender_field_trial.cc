@@ -65,7 +65,7 @@ void ConfigurePrefetchAndPrerender(const CommandLine& command_line) {
 
       scoped_refptr<base::FieldTrial> trial(
           new base::FieldTrial("Prefetch", kPrefetchDivisor,
-                               "ContentPrefetchDisabled", 2011, 6, 30));
+                               "ContentPrefetchDisabled", 2012, 6, 30));
 
       const int kNoPrefetchGroup = trial->kDefaultGroupNumber;
       const int kYesPrefetchGroup =
