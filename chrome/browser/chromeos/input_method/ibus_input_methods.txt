@@ -36,8 +36,8 @@
 #    mazda for why.
 
 # Dutch
-xkb:nl::nld	nl	nl	nld
 xkb:be::nld	be	nl	nld
+# We don't support xkb:nl::nld. See b/4430951.
 
 # French
 xkb:fr::fra	fr	fr	fra
