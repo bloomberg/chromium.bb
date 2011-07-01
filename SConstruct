@@ -2748,13 +2748,6 @@ if nacl_env.GetOption('download'):
   nacl_sync_env.Execute('gclient runhooks --force')
 
 # ----------------------------------------------------------
-# Sanity check whether we are ready to build nacl modules
-# ----------------------------------------------------------
-# NOTE: this uses stuff from: site_scons/site_tools/naclsdk.py
-if nacl_env.Bit('naclsdk_validate'):
-  nacl_env.ValidateSdk()
-
-# ----------------------------------------------------------
 # Update prebuilt nexes
 # ----------------------------------------------------------
 # Contains all binaries that have to be checked in
@@ -3334,6 +3327,14 @@ BuildEnvironments(selected_envs)
 
 # Change default to build everything, but not run tests.
 Default(['all_programs', 'all_bundles', 'all_test_programs', 'all_libraries'])
+
+# ----------------------------------------------------------
+# Sanity check whether we are ready to build nacl modules
+# ----------------------------------------------------------
+# NOTE: this uses stuff from: site_scons/site_tools/naclsdk.py
+if nacl_env.Bit('naclsdk_validate') and (nacl_env in selected_envs or
+                                         nacl_irt_env in selected_envs):
+  nacl_env.ValidateSdk()
 
 if BROKEN_TEST_COUNT > 0:
   msg = "There are %d broken tests." % BROKEN_TEST_COUNT
