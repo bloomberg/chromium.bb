@@ -243,3 +243,7 @@ LocaleTestsHe.TestStart
 
 # http://crbug.com/88238
 NewTabUITest.ChromeHangInNTP
+
+# http://crbug.com/88244
+NoStartupWindowTest.NoStartupWindowBasicTest
+RunInBackgroundTest.RunInBackgroundBasicTest 
