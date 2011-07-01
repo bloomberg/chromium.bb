@@ -561,8 +561,19 @@ def WrapLL(infile, outfile):
       if line.startswith('declare') and '__real_' in line:
         line = ''
 
-      # Relabel the wrapper to the original name
+      # Relabel the wrapper to the original name.
       line = line.replace('@__wrap_' + s + '(', '@' + s + '(')
+      # Do the same renaming when the function appears in debug metadata.
+      # Case: !123 = metadata !{i32 456, ... metadata !"__wrap_FOO", ..., \
+      #              i32 (i32)* @__wrap_FOO} ; [ DW_TAG_subprogram ]
+      line = line.replace('@__wrap_' + s + '}',
+                          '@' + s + '}')
+      line = line.replace('metadata !"__wrap_' + s + '"',
+                          'metadata !"' + s + '"')
+      # Case: !llvm.dbg.lv.__wrap_FOO = !{!789}
+      line = line.replace('llvm.dbg.lv.__wrap_' + s + ' ',
+                          'llvm.dbg.lv.' + s + ' ')
+
     fpout.write(line)
   fpin.close()
   fpout.close()
@@ -596,8 +607,8 @@ def TranslatePSO(arch, path):
   assert(arch)
   if not os.path.exists(path):
     Log.Fatal("Couldn't open %s", path)
-  dir = os.path.dirname(path)
-  cache_dir = os.path.join(dir, 'pnacl_cache')
+  path_dir = os.path.dirname(path)
+  cache_dir = os.path.join(path_dir, 'pnacl_cache')
   try:
     os.mkdir(cache_dir)
   except OSError:
