@@ -10,6 +10,7 @@ import optparse
 import os
 import parallel_emerge
 import portage
+import re
 import shutil
 import sys
 import tempfile
@@ -17,6 +18,9 @@ import tempfile
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 import chromite.lib.cros_build_lib as cros_lib
 import chromite.lib.table as table
+
+# TODO(mtennant): I see comments next to cros_build_lib.Info,Warning,Die that
+# they are deprecated and to be replaced by those in operation module.
 
 class UpgradeTable(table.Table):
   """Class to represent upgrade data in memory, can be written to csv/html."""
@@ -135,18 +139,24 @@ class UpgradeTable(table.Table):
 class Upgrader(object):
   """A class to perform various tasks related to updating Portage packages."""
 
+  UPSTREAM_OVERLAY_NAME = 'portage'
+  STABLE_OVERLAY_NAME = 'portage-stable'
+  CROS_OVERLAY_NAME = 'chromiumos-overlay'
+
   def __init__(self, options=None, args=None):
     # TODO(mtennant): Don't save options object, but instead grab option
     # values that are needed now.  This makes mocking easier.
     # For example: self._board = options.board
     self._options = options
     self._args = args
-    self._stable_repo = os.path.join(self._options.srcroot,
-                                     'third_party', 'portage-stable')
+    self._stable_repo = os.path.join(self._options.srcroot, 'third_party',
+                                     self.STABLE_OVERLAY_NAME)
     self._upstream_repo = self._options.upstream
     if not self._upstream_repo:
-      self._upstream_repo = os.path.join(self._options.srcroot,
-                                         'third_party', 'portage')
+      self._upstream_repo = os.path.join(self._options.srcroot, 'third_party',
+                                         self.UPSTREAM_OVERLAY_NAME)
+    self._cros_overlay = os.path.join(self._options.srcroot, 'third_party',
+                                      self.CROS_OVERLAY_NAME)
 
     self._arch = Upgrader._FindBoardArch(self._options.board)
     self._table = UpgradeTable(self._arch)
@@ -154,6 +164,40 @@ class Upgrader(object):
     self._porttree = None
     self._emptydir = None
     self._deps_graph = None
+
+  def _GetPkgKeywordsFile(self):
+    """Return the path to the package.keywords file in chromiumos-overlay."""
+    return '%s/profiles/targets/chromeos/package.keywords' % self._cros_overlay
+
+  def _CheckStableRepoOnBranch(self):
+    """Raise exception if stable repo is not on a branch now."""
+    result = self._RunGit(self._stable_repo, 'branch', redirect_stdout=True)
+    if result.returncode == 0:
+      for line in result.output.split('\n'):
+        match = re.search(r'^\*\s+(.+)$', line)
+        if match:
+          # Found current branch, see if it is a real branch.
+          branch = match.group(1)
+          if branch != '(no branch)':
+            return
+          raise RuntimeError("To perform upgrade, %s must be on a branch." %
+                             self._stable_repo)
+
+    raise RuntimeError("Unable to determine whether %s is on a branch." %
+                       self._stable_repo)
+
+  def _PkgUpgradeRequested(self, info):
+    """Return True if upgrade of pkg in |info| hash was requested by user."""
+    if self._options.upgrade_deep:
+      return True
+
+    if self._options.upgrade:
+      # See if this package was directly requested at command line.
+      for pkg in self._args:
+        if pkg == info['package'] or pkg == info['package_name']:
+          return True
+
+    return False
 
   @staticmethod
   def _FindBoardArch(board):
@@ -211,10 +255,22 @@ class Upgrader(object):
     (cat, pn, version, rev) = portage.versions.catpkgsplit(cpv)
     return '%s/%s' % (cat, pn)
 
-  def _RunGit(self, repo, command):
-    """Runs |command| in the git |repo|."""
-    cros_lib.RunCommand(['/bin/sh', '-c', 'cd %s && git %s' % (repo, command)],
-                        print_cmd=self._options.verbose)
+  def _RunGit(self, repo, command, redirect_stdout=False):
+    """Runs |command| in the git |repo|.
+
+    This leverages the cros_build_lib.RunCommand function.  The
+    |redirect_stdout| argument is passed to that function.
+
+    Returns a Result object as documented by cros_build_lib.RunCommand.
+    Most usefully, the result object has a .output attribute containing
+    the output from the command (if |redirect_stdout| was True).
+    """
+    cmdline = ['/bin/sh', '-c', 'cd %s && git -c core.pager=" " %s' %
+               (repo, command)]
+    result = cros_lib.RunCommand(cmdline, exit_code=True,
+                                 print_cmd=self._options.verbose,
+                                 redirect_stdout=redirect_stdout)
+    return result
 
   def _SplitEBuildPath(self, ebuild_path):
     """Split a full ebuild path into (overlay, cat, pn, pv)."""
@@ -224,6 +280,30 @@ class Upgrader(object):
     (ebuild_path, cat) = os.path.split(ebuild_path)
     (ebuild_path, overlay) = os.path.split(ebuild_path)
     return (overlay, cat, pn, pv)
+
+  def _GenPortageEnvvars(self, arch, unstable_ok, portdir=None,
+                         portage_configroot=None):
+    """Returns dictionary of envvars for running portage tools.
+
+    If |arch| is set, then ACCEPT_KEYWORDS will be included and set
+    according to |unstable_ok|.
+
+    PORTDIR is set to |portdir| value, if not None.
+    PORTAGE_CONFIGROOT is set to |portage_configroot| value, if not None.
+    """
+    envvars = {}
+    if arch:
+      if unstable_ok:
+        envvars['ACCEPT_KEYWORDS'] =  arch + ' ~' + arch
+      else:
+        envvars['ACCEPT_KEYWORDS'] =  arch
+
+    if portdir is not None:
+      envvars['PORTDIR'] = portdir
+    if portage_configroot is not None:
+      envvars['PORTAGE_CONFIGROOT'] = portage_configroot
+
+    return envvars
 
   def _FindUpstreamCPV(self, pkg, arch, unstable_ok=False):
     """Returns latest cpv in |_upstream_repo| that matches |pkg|.
@@ -240,14 +320,9 @@ class Upgrader(object):
 
     Returns upstream cpv, if found.
     """
-    envvars = {'PORTDIR': self._upstream_repo,
-               'PORTAGE_CONFIGROOT': self._emptydir,
-               }
-    if arch:
-      if unstable_ok:
-        envvars['ACCEPT_KEYWORDS'] =  arch + ' ~' + arch
-      else:
-        envvars['ACCEPT_KEYWORDS'] =  arch
+    envvars = self._GenPortageEnvvars(arch, unstable_ok,
+                                      portdir=self._upstream_repo,
+                                      portage_configroot=self._emptydir)
 
     # Point equery to the upstream source to get latest version for keywords.
     equery = ['equery', 'which', pkg ]
@@ -263,6 +338,63 @@ class Upgrader(object):
       return os.path.join(cat, pv)
     else:
       return None
+
+  def _IsEmergeable(self, cpv, stable_only):
+    """Indicate whether |cpv| can be emerged on current board.
+
+    This essentially runs emerge with the --pretend option to verify
+    that all dependencies for this package version are satisfied.
+
+    The |stable_only| argument determines whether an unstable version
+    is acceptable.
+
+    Return tuple with two elements:
+    [0] True if |cpv| can be emerged.
+    [1] Output from the emerge command.
+    """
+    envvars = self._GenPortageEnvvars(self._arch, not stable_only)
+
+    emerge = 'emerge'
+    if self._options.board != 'amd64-host':
+      emerge = 'emerge-%s' % self._options.board
+
+    cmd = [emerge, '-p', '=' + cpv]
+    result = cros_lib.RunCommand(cmd, exit_code=True, error_ok=True,
+                                 extra_env=envvars, print_cmd=False,
+                                 redirect_stdout=True,
+                                 combine_stdout_stderr=True,
+                                 )
+
+    return (result.returncode == 0, result.output)
+
+  def _VerifyEbuildOverlay(self, cpv, overlay, stable_only):
+    """Raises exception if ebuild for |cpv| is not from |overlay|.
+
+    Essentially, this verifies that the upgraded ebuild in portage-stable
+    is indeed the one being picked up, rather than some other ebuild with
+    the same version in another overlay.
+    """
+    # Further explanation: this check should always pass, but might not
+    # if the copy/upgrade from upstream did not work and
+    # src/third-party/portage is being used as temporary upstream copy via
+    # 'git checkout cros/gentoo'.  This is just a sanity check.
+    envvars = self._GenPortageEnvvars(self._arch, not stable_only)
+
+    equery = 'equery'
+    if self._options.board != 'amd64-host':
+      equery = 'equery-%s' % self._options.board
+
+    cmd = [equery, 'which', cpv]
+    result = cros_lib.RunCommand(cmd, exit_code=True, error_ok=True,
+                                 extra_env=envvars, print_cmd=False,
+                                 redirect_stdout=True,
+                                 combine_stdout_stderr=True,
+                                 )
+    ebuild_path = result.output.strip()
+    (ovrly, cat, pn, pv) = self._SplitEBuildPath(ebuild_path)
+    if ovrly != overlay:
+      raise RuntimeError('Somehow ebuild for %s is not coming from %s:\n %s' %
+                         (cpv, overlay, ebuild_path))
 
   def _CopyUpstreamPackage(self, upstream_cpv):
     """Upgrades package in |upstream_cpv| to the version in |upstream_cpv|.
@@ -299,8 +431,14 @@ class Upgrader(object):
     cpv = info['cpv']
     cpv_exists_upstream = bool(self._FindUpstreamCPV(cpv, self._arch,
                                                      unstable_ok=True))
+
     # Convention is that anything not in portage overlay has been altered.
-    locally_patched = info['overlay'] != 'portage'
+    # TODO(mtennant): Distinguish between 'portage' and 'portage-stable'
+    # overlays in status reports.  Use something like:
+    # locally_pinned = overlay == self.STABLE_OVERLAY_NAME
+    overlay = info['overlay']
+    locally_patched = (overlay != self.UPSTREAM_OVERLAY_NAME and
+                       overlay != self.STABLE_OVERLAY_NAME)
     locally_duplicated = locally_patched and cpv_exists_upstream
 
     # Gather status details for this package
@@ -326,7 +464,10 @@ class Upgrader(object):
     """Print a brief one-line report of package status."""
     upstream_cpv = info['upstream_cpv']
     if info['upgraded_cpv']:
-      action_stat = ' (UPGRADED)'
+      if info['emerge_ok']:
+        action_stat = ' (UPGRADED, EMERGE WORKS)'
+      else:
+        action_stat = ' (UPGRADED, BUT EMERGE FAILS)'
     else:
       action_stat = ''
     up_stat = {UpgradeTable.STATE_UNKNOWN: ' no package found upstream!',
@@ -352,7 +493,10 @@ class Upgrader(object):
     # Prepare defaults for columns without values for this row.
     action_taken = ''
     if upgraded_cpv:
-      action_taken = 'upgraded to %s' % upstream_ver
+      if info['emerge_ok']:
+        action_taken = 'upgraded to %s' % upstream_ver
+      else:
+        action_taken = 'upgraded to %s (but emerge fails)' % upstream_ver
     depslist = sorted(self._deps_graph[cpv]['needs'].keys()) # dependencies
     stable_up_ver = Upgrader._GetVerRevFromCpv(info['stable_upstream_cpv'])
     if not stable_up_ver:
@@ -405,9 +549,26 @@ class Upgrader(object):
       # cpv_cmp_upstream values: 0 = current, >0 = outdated, <0 = futuristic!
       cpv_cmp_upstream = Upgrader._CmpCpv(upstream_cpv, cpv)
 
-      if (self._options.upgrade and info['overlay'].startswith('portage') and
-          cpv_cmp_upstream > 0):
+      # Determine whether upgrade of this package is requested.
+      if cpv_cmp_upstream > 0 and self._PkgUpgradeRequested(info):
         info['upgraded_cpv'] = self._CopyUpstreamPackage(upstream_cpv)
+
+        # Verify that upgraded package can be emerged and save results.
+        # Prefer stable if possible, otherwise remember that a keyword
+        # change will be needed.
+        (em_ok_stable, em_out_stable) = self._IsEmergeable(upstream_cpv, True)
+        (em_ok_all, em_out_all) = self._IsEmergeable(upstream_cpv, False)
+        if em_ok_stable or not em_ok_all:
+          info['emerge_ok'] = em_ok_stable
+          info['emerge_output'] = em_out_stable
+          info['emerge_stable'] = True
+        else:
+          info['emerge_ok'] = em_ok_all
+          info['emerge_output'] = em_out_all
+          info['emerge_stable'] = False
+        if info['emerge_ok']:
+          self._VerifyEbuildOverlay(upstream_cpv, self.STABLE_OVERLAY_NAME,
+                                    info['emerge_stable'])
 
     info['state'] = self._GetPackageUpgradeState(info, cpv_cmp_upstream)
 
@@ -438,7 +599,7 @@ class Upgrader(object):
       if filehandle:
         print "Writing package status as csv to %s" % csv
         hiddencols = None
-        if not self._options.upgrade:
+        if not self._options.upgrade_deep and not self._options.upgrade:
           hiddencols = set([self._table.COL_ACTION_TAKEN])
         self._table.WriteCSV(filehandle, hiddencols)
         filehandle.close()
@@ -448,6 +609,42 @@ class Upgrader(object):
         print "Writing package status as html to %s" % html
         self._table.WriteHTML(filehandle)
         filehandle.close()
+
+  def _CreateCommitMessage(self, upgrade_lines):
+    """Create appropriate git commit message for upgrades in |upgrade_lines|."""
+    message = ''
+    upgrade_count = len(upgrade_lines)
+    upgrade_str = '\n'.join(upgrade_lines)
+    if upgrade_count == 1:
+      message = 'Upgrade the following Portage package\n\n%s\n' % upgrade_str
+    else:
+      message = ('Upgrade the following %d Portage packages\n\n%s\n' %
+                 (upgrade_count, upgrade_str))
+
+    # The space before <fill-in> (at least for TEST=) fails pre-submit check,
+    # which is the intention here.
+    message += '\nBUG= <fill-in>'
+    message += '\nTEST= <fill-in>'
+
+    return message
+
+  def _AmendCommitMessage(self, upgrade_lines):
+    """Create git commit message combining |upgrade_lines| with last commit."""
+    # First get the body of the last commit message.
+    git_cmd = 'show --pretty=format:"__BEGIN BODY__%n%b%n__END BODY__"'
+    result = self._RunGit(self._stable_repo, git_cmd, redirect_stdout=True)
+    match = re.search(r'__BEGIN BODY__\n(.+)__END BODY__',
+                      result.output, re.DOTALL)
+    if match:
+      # Extract the upgrade_lines of last commit.
+      body = match.group(1)
+      for line in body.split('\n'):
+        if line:
+          upgrade_lines.append(line)
+        else:
+          break
+
+    return self._CreateCommitMessage(upgrade_lines)
 
   def _UpgradePackages(self, infolist):
     """Given a list of cpv info maps, adds the upstream cpv to the infos."""
@@ -464,20 +661,68 @@ class Upgrader(object):
       # can also fuse this loop into the caller and avoid generating a separate
       # list.
       if not self._options.upstream:
+        cros_lib.Info('Checking out cros/gentoo at %s as upstream reference.' %
+                      self._upstream_repo)
         self._RunGit(self._upstream_repo, 'checkout %s cros/gentoo' % dash_q)
-      message = ''
+      upgrade_lines = []
       for info in infolist:
         self._UpgradePackage(info)
         if info['upgraded_cpv']:
-          message += 'Upgrade %s to %s\n' % (info['cpv'], info['upgraded_cpv'])
-      if message:
-        message = 'Upgrade Portage packages\n\n' + message
-        message += '\nBUG=<fill-in>'
-        message += '\nTEST=<fill-in>'
-        self._RunGit(self._stable_repo, "commit -am '%s'" % message)
-        cros_lib.Info('Use "git commit --amend" to update the commit message.')
+          upgrade_lines.append('Upgrade %s to %s' %
+                               (info['cpv'], info['upgraded_cpv']))
+
+      # Give warnings for those that cannot be emerged after upgrade.
+      emerge_ok = True
+      pkg_keywords_needed = []
+      for info in infolist:
+        if info['upgraded_cpv']:
+          if info['emerge_ok']:
+            cros_lib.Info('Confirmed that %s can be emerged after upgrade.' %
+                          info['upgraded_cpv'])
+            if not info['emerge_stable']:
+              pkg_keywords_needed.append('=%s %s' %
+                                         (info['upgraded_cpv'], self._arch))
+          else:
+            emerge_ok = False
+            cros_lib.Warning('Unable to emerge %s after upgrade.\n'
+                             'The emerge output follows:\n' %
+                             info['upgraded_cpv'])
+            print info['emerge_output']
+
+      if not emerge_ok:
+        cros_lib.Die('Failed to complete upgrades (see above).  Suggest'
+                     ' adding additional packages to upgrade as needed.\n'
+                     'For now, you probably want to reset your changes:\n'
+                     ' cd %s; git reset --hard; cd -' %
+                     self._stable_repo)
+        # TODO(mtennant): On second thought, it's probably cleaner to reset the
+        # changes automatically.  Will do this in another changelist.
+      elif upgrade_lines:
+        if self._options.amend:
+          message = self._AmendCommitMessage(upgrade_lines)
+          self._RunGit(self._stable_repo, "commit --amend -am '%s'" % message)
+        else:
+          message = self._CreateCommitMessage(upgrade_lines)
+          self._RunGit(self._stable_repo, "commit -am '%s'" % message)
+
+        cros_lib.Info('Upgrade changes committed (see above),'
+                      ' but message needs edit:\n'
+                      ' cd %s; git commit --amend; cd -' %
+                      self._stable_repo)
+        if pkg_keywords_needed:
+          cros_lib.Info('However, note that line(s) like the following'
+                        ' must be added to\n %s:\n%s\n'
+                        'You should push this change first.' %
+                        (self._GetPkgKeywordsFile(),
+                         '\n'.join(pkg_keywords_needed)))
+        cros_lib.Info('If you wish to undo these changes instead:\n'
+                      ' cd %s; git reset --hard HEAD^; cd -' %
+                      self._stable_repo)
+
     finally:
       if not self._options.upstream:
+        cros_lib.Info('Undoing checkout of cros/gentoo at %s.' %
+                      self._upstream_repo)
         self._RunGit(self._upstream_repo, 'checkout %s cros/master' % dash_q)
       os.rmdir(self._emptydir)
 
@@ -510,7 +755,7 @@ class Upgrader(object):
     """Returns a list of cpvs of the current package dependencies.
 
     The returned list is ordered such that the dependencies of any mentioned
-    cpv occur later in the list."""
+    cpv occur earlier in the list."""
     argv = self._GenParallelEmergeArgv()
 
     deps = parallel_emerge.DepGraphGenerator()
@@ -521,7 +766,9 @@ class Upgrader(object):
     self._SetPortTree(deps.emerge.settings, deps.emerge.trees)
 
     self._deps_graph = deps.GenDependencyGraph(deps_tree, deps_info)
-    return Upgrader._GetPreOrderDepGraph(self._deps_graph)
+    cpv_list = Upgrader._GetPreOrderDepGraph(self._deps_graph)
+    cpv_list.reverse()
+    return cpv_list
 
   def _GetInfoListWithOverlays(self, cpvlist):
     """Returns a list of cpv/overlay info maps corresponding to |cpvlist|."""
@@ -547,16 +794,62 @@ class Upgrader(object):
 
     Currently just lists all package dependencies in pre-order along with
     potential upgrades."""
+    # Upfront check(s) if upgrade is requested.
+    if self._options.upgrade or self._options.upgrade_deep:
+      # Stable source must be on branch.
+      self._CheckStableRepoOnBranch()
+
     cpvlist = self._GetCurrentVersions()
     infolist = self._GetInfoListWithOverlays(cpvlist)
     self._UpgradePackages(infolist)
     self._WriteTableFiles(csv=self._options.csv_file,
                           html=self._options.html_file)
 
+def _BoardIsSetUp(board):
+  """Return true if |board| has been setup."""
+  return os.path.isdir('/build/%s' % board)
+
 def main():
   """Main function."""
   usage = 'Usage: %prog [options] packages...'
-  parser = optparse.OptionParser(usage=usage)
+  epilog = ('\n'
+            'There are essentially two "modes": status report mode and '
+            'upgrade mode.\nStatus report mode is the default; upgrade '
+            'mode is enabled by either --upgrade or --upgrade-deep.\n'
+            '\n'
+            'Status report mode will report on the status of the specified '
+            'packages relative to upstream,\nwithout making any changes.'
+            'In this mode, the specified packages are often high-level\n'
+            'targets such as "chromeos" or "chromeos-dev". '
+            'The --to-csv option is often used in this mode.\n'
+            'The --stable-only option in this mode will make '
+            'the upstream comparison consider only stable versions.\n'
+            '\n'
+            'Upgrade mode will attempt to upgrade the specified '
+            'packages to the latest upstream version.\nUnlike with --upgrade, '
+            'if --upgrade-deep is specified, then the package dependencies\n'
+            'will also be upgraded.\n'
+            '\n'
+            'Status report mode examples:\n'
+            '> cros_portage_upgrade --stable-only --board=tegra2_aebl '
+            '--to-csv=cros-aebl.csv chromeos\n'
+            '> cros_portage_upgrade --board=x86-mario --to-csv=cros_test-mario '
+            'chromeos chromeos-dev chromeos-test\n'
+            'Upgrade mode examples:\n'
+            '> cros_portage_upgrade --stable-only --board=tegra2_aebl '
+            '--upgrade dbus\n'
+            '> cros_portage_upgrade --board=x86-mario --upgrade-deep gdata\n'
+            )
+
+  class MyOptParser(optparse.OptionParser):
+    """Override default epilog formatter, which strips newlines."""
+    def format_epilog(self, formatter):
+      return self.epilog
+
+  parser = MyOptParser(usage=usage, epilog=epilog)
+  parser.add_option('--amend', dest='amend', action='store_true',
+                    default=False,
+                    help="Amend existing commit when doing upgrade.")
   parser.add_option('--board', dest='board', type='string', action='store',
                     default=None, help="Target board [default: '%default']")
   parser.add_option('--rdeps', dest='rdeps', action='store_true',
@@ -573,9 +866,12 @@ def main():
   parser.add_option('--to-html', dest='html_file',
                     type='string', action='store', default=None,
                     help="File to write html-formatted results to")
-  parser.add_option('--upgrade', dest='upgrade', action='store_true',
+  parser.add_option('--upgrade', dest='upgrade',
+                    action='store_true', default=False,
+                    help="Upgrade target package(s) only.")
+  parser.add_option('--upgrade-deep', dest='upgrade_deep', action='store_true',
                     default=False,
-                    help="Perform package upgrade")
+                    help="Upgrade target package(s) and all dependencies")
   parser.add_option('--upstream', dest='upstream', type='string',
                     action='store', default=None,
                     help="Latest upstream repo location [default: '%default']")
@@ -596,10 +892,21 @@ def main():
     parser.print_help()
     cros_lib.Die('no packages provided')
 
+  # The --upgrade and --upgrade-deep options are mutually exclusive.
+  if options.upgrade_deep and options.upgrade:
+    parser.print_help()
+    cros_lib.Die('The --upgrade and --upgrade-deep options ' +
+                 'are mutually exclusive.')
+
   # If upstream portage is provided, verify that it is a valid directory.
   if options.upstream and not os.path.isdir(options.upstream):
     parser.print_help()
     cros_lib.Die('argument to --upstream must be a valid directory')
+
+  # If a board is given, verify that the board is already set up.
+  if options.board and not _BoardIsSetUp(options.board):
+    parser.print_help()
+    cros_lib.Die('You must setup the %s board first.' % options.board)
 
   upgrader = Upgrader(options, args)
   upgrader.Run()

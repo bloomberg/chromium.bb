@@ -155,7 +155,7 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
   # TODO(sosa): is it possible not to use the catch-all Exception here?
   except OSError, e:
     if not error_ok:
-      raise RunCommandError(str(e), cmd)
+      raise RunCommandError(str(e), cmd, None)
     else:
       Warning(str(e))
   except Exception, e:

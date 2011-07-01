@@ -145,10 +145,10 @@ GOLDEN_DEP_GRAPHS = {
   "dev-libs/D-2" : { "needs" : { } },
   "dev-libs/E-3" : { "needs" : { } },
   "chromeos-base/libcros-1" : { "needs" : {
-    "dev-libs/B-2" : "buildtime",
-    "dev-libs/C-2" : "buildtime",
+    "dev-libs/B-2" : "runtime/buildtime",
+    "dev-libs/C-2" : "runtime/buildtime",
     "chromeos-base/libchrome-57098-r4" : "buildtime",
-    "chromeos-base/flimflam-0.0.1-r228" : "buildtime"
+    "chromeos-base/flimflam-0.0.1-r228" : "runtime/buildtime"
     } },
   "chromeos-base/flimflam-0.0.1-r228" : { "needs" : {
     "dev-libs/D-2" : "runtime"
@@ -166,11 +166,11 @@ GOLDEN_DEP_LISTS = {
   "virtual/libusb" : ['virtual/libusb-1', 'dev-libs/libusb-1.0.5'],
   "chromeos-base/libcros" : ['chromeos-base/libcros-1',
                              'dev-libs/B-2',
-                             'chromeos-base/flimflam-0.0.1-r228',
-                             'dev-libs/D-2',
                              'dev-libs/C-2',
                              'chromeos-base/libchrome-57098-r4',
                              'dev-libs/E-3',
+                             'chromeos-base/flimflam-0.0.1-r228',
+                             'dev-libs/D-2',
                              ],
   }
 
@@ -571,8 +571,10 @@ class MainTest(mox.MoxTestBase):
 
   def testUpgraderRun(self):
     """Verify that running main method launches Upgrader.Run"""
+    self.mox.StubOutWithMock(cpu, '_BoardIsSetUp')
     self.mox.StubOutWithMock(cpu.Upgrader, '_FindBoardArch')
     self.mox.StubOutWithMock(cpu.Upgrader, 'Run')
+    cpu._BoardIsSetUp('any-board').AndReturn(True)
     cpu.Upgrader._FindBoardArch(mox.IgnoreArg()).AndReturn('x86')
     cpu.Upgrader.Run()
     self.mox.ReplayAll()
