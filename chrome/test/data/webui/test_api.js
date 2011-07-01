@@ -59,20 +59,32 @@
     throw new Error(message);
   }
 
-  function runTest(testFunction, testArguments) {
-    try {
-      // Avoid eval() if at all possible, since it will not work on pages
-      // that have enabled content-security-policy.
-      currentTest = this[testFunction];    // global object -- not a method.
-      if (typeof currentTest === "undefined") {
-        currentTest = eval(testFunction);
+  var errors = [];
+
+  function createExpect(assertFunc) {
+    return function() {
+      try {
+        assertFunc.apply(null, arguments);
+      } catch (e) {
+        console.log('Failed: ' + currentTest.name + '\n' + e.stack);
+        errors.push(e);
       }
-      console.log('Running test ' + currentTest.name);
-      currentTest.apply(null, testArguments);
-    } catch (e) {
-      console.log(
-          'Failed: ' + currentTest.name + '\nwith exception: ' + e.message);
-      return [false, e.message] ;
+    };
+  }
+
+  function runTest(testFunction, testArguments) {
+    errors = [];
+    // Avoid eval() if at all possible, since it will not work on pages
+    // that have enabled content-security-policy.
+    currentTest = this[testFunction];    // global object -- not a method.
+    if (typeof currentTest === "undefined") {
+      currentTest = eval(testFunction);
+    }
+    console.log('Running test ' + currentTest.name);
+    createExpect(currentTest).apply(null, testArguments);
+
+    if (errors.length) {
+      return [false, errors.join('\n')];
     }
 
     return [true];
@@ -88,6 +100,10 @@
   window.assertFalse = assertFalse;
   window.assertEquals = assertEquals;
   window.assertNotReached = assertNotReached;
+  window.expectTrue = createExpect(assertTrue);
+  window.expectFalse = createExpect(assertFalse);
+  window.expectEquals = createExpect(assertEquals);
+  window.expectNotReached = createExpect(assertNotReached);
   window.registerMessageCallback = registerMessageCallback;
   window.runTest = runTest;
   window.preloadJavascriptLibraries = preloadJavascriptLibraries;

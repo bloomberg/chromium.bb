@@ -84,10 +84,11 @@
 function testPrintPreview(printEnabled) {
   internal.verifyBasicPrintPreviewButtons(printEnabled);
   var printer_list = $('printer-list');
-  assertTrue(printEnabled);
-  assertTrue(printer_list.options.length >= 2);
-  assertEquals('FooName', printer_list.options[0].text);
-  assertEquals('FooDevice', printer_list.options[0].value);
-  assertEquals('BarName', printer_list.options[1].text);
-  assertEquals('BarDevice', printer_list.options[1].value);
+  assertTrue(printEnabled, 'printEnabled');
+  assertTrue(!!printer_list, 'printer_list');
+  assertTrue(printer_list.options.length >= 2, 'printer-list has at least 2');
+  expectEquals('FooName', printer_list.options[0].text);
+  expectEquals('FooDevice', printer_list.options[0].value);
+  expectEquals('BarName', printer_list.options[1].text);
+  expectEquals('BarDevice', printer_list.options[1].value);
 }
