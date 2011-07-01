@@ -247,3 +247,6 @@ NewTabUITest.ChromeHangInNTP
 # http://crbug.com/88244
 NoStartupWindowTest.NoStartupWindowBasicTest
 RunInBackgroundTest.RunInBackgroundBasicTest 
+
+# http://crbug.com/88254
+PPAPITest.CursorControl
