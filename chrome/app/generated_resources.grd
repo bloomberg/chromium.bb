@@ -6369,6 +6369,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ERRORPAGES_HEADING_ESET_ANTI_VIRUS_SSL_INTERCEPTION" desc="Heading of the error page when we detect that ESET anti-virus is running and intercepting our HTTPS connections. 'ESET' is a product name and may be best left untranslated.">
         Cannot make secure connection because of ESET anti-virus
       </message>
+      <message name="IDS_ERRORPAGES_HEADING_KASPERSKY_ANTI_VIRUS_SSL_INTERCEPTION" desc="Heading of the error page when we detect that Kaspersky anti-virus is running and intercepting our HTTPS connections. 'Kaspersky' is a product name and may be best left untranslated.">
+        Cannot make secure connection because of Kaspersky anti-virus
+      </message>
       <message name="IDS_ERRORPAGES_SUMMARY_NOT_AVAILABLE" desc="Summary in the error page when we can't connect to a site.">
         The webpage at <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;</ph> might be temporarily down or it may have moved permanently to a new web address.
       </message>
@@ -6532,6 +6535,19 @@ Keep your key file in a safe place. You will need it to create new versions of y
         secure connections, ESET products have to be configured to not
         perform this interception. Click the 'Learn more' link for
         instructions.
+      </message>
+
+      <message name="IDS_ERRORPAGES_SUMMARY_KASPERSKY_ANTI_VIRUS_SSL_INTERCEPTION" desc="Summary in the error page when we detect that Kaspersky anti-virus is running and intercepting our HTTPS connections. 'Kaspersky' is a product name and may be best left untranslated. 'Learn more' should be the contents of IDS_LEARN_MORE.">
+        <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
+        has detected that a Kaspersky product is intercepting secure connections.
+        This is typically not a security issue as the Kaspersky software is
+        usually running on the same computer. However, due to an intolerance
+        to specific aspects of
+        <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>'s
+        secure connections, Kaspersky products have to be configured to not
+        perform this interception. Click the 'Learn more' link for
+        instructions which guide you to the configuration option that should be
+        disabled.
       </message>
 
       <message name="IDS_ERRORPAGES_SUMMARY_NETNANNY_SSL_INTERCEPTION" desc="Summary in the error page when we detect that NetNanny is running and intercepting our HTTPS connections. 'NetNanny' is a product name and may be best left untranslated. 'Learn more' should be the contents of IDS_LEARN_MORE.">
