@@ -170,7 +170,6 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
   DCHECK(expected_loop_ == MessageLoop::current());
   if (!running())
     return;
-  StopObserving();
 
   sync_api::ReadNode typed_url_root(trans);
   if (!typed_url_root.InitByTagLookup(kTypedUrlTag)) {
@@ -179,11 +178,9 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
     return;
   }
 
-  TypedUrlModelAssociator::TypedUrlTitleVector titles;
-  TypedUrlModelAssociator::TypedUrlVector new_urls;
-  TypedUrlModelAssociator::TypedUrlVisitVector new_visits;
-  history::VisitVector deleted_visits;
-  TypedUrlModelAssociator::TypedUrlUpdateVector updated_urls;
+  DCHECK(pending_titles_.empty() && pending_new_urls_.empty() &&
+         pending_new_visits_.empty() && pending_deleted_visits_.empty() &&
+         pending_updated_urls_.empty() && pending_deleted_urls_.empty());
 
   for (int i = 0; i < change_count; ++i) {
     if (sync_api::SyncManager::ChangeRecord::ACTION_DELETE ==
@@ -191,7 +188,10 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
       DCHECK(changes[i].specifics.HasExtension(sync_pb::typed_url)) <<
           "Typed URL delete change does not have necessary specifics.";
       GURL url(changes[i].specifics.GetExtension(sync_pb::typed_url).url());
-      history_backend_->DeleteURL(url);
+      pending_deleted_urls_.push_back(url);
+      // It's OK to disassociate here (before the items are actually deleted)
+      // as we're guaranteed to either get a CommitChanges call or we'll hit
+      // an unrecoverable error which will blow away the model associator.
       model_associator_->Disassociate(changes[i].id);
       continue;
     }
@@ -222,7 +222,7 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
           typed_url, &new_url);
 
       model_associator_->Associate(&new_url.url().spec(), changes[i].id);
-      new_urls.push_back(new_url);
+      pending_new_urls_.push_back(new_url);
 
       std::vector<history::VisitInfo> added_visits;
       for (int c = 0; c < typed_url.visits_size(); ++c) {
@@ -232,8 +232,9 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
             typed_url.visit_transitions(c)));
       }
 
-      new_visits.push_back(std::pair<GURL, std::vector<history::VisitInfo> >(
-          url, added_visits));
+      pending_new_visits_.push_back(
+          std::pair<GURL, std::vector<history::VisitInfo> >(
+              url, added_visits));
     } else {
       DCHECK_EQ(sync_api::SyncManager::ChangeRecord::ACTION_UPDATE,
                 changes[i].action);
@@ -255,12 +256,12 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
       TypedUrlModelAssociator::UpdateURLRowFromTypedUrlSpecifics(
           typed_url, &new_url);
 
-      updated_urls.push_back(
+      pending_updated_urls_.push_back(
         std::pair<history::URLID, history::URLRow>(old_url.id(), new_url));
 
       if (old_url.title().compare(new_url.title()) != 0) {
-        titles.push_back(std::pair<GURL, string16>(new_url.url(),
-                                                   new_url.title()));
+        pending_titles_.push_back(
+            std::pair<GURL, string16>(new_url.url(), new_url.title()));
       }
 
       std::vector<history::VisitInfo> added_visits;
@@ -268,22 +269,43 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
       TypedUrlModelAssociator::DiffVisits(visits, typed_url,
                                           &added_visits, &removed_visits);
       if (added_visits.size()) {
-        new_visits.push_back(std::pair<GURL, std::vector<history::VisitInfo> >(
+        pending_new_visits_.push_back(
+            std::pair<GURL, std::vector<history::VisitInfo> >(
                 url, added_visits));
       }
       if (removed_visits.size()) {
-        deleted_visits.insert(deleted_visits.end(), removed_visits.begin(),
-                              removed_visits.end());
+        pending_deleted_visits_.insert(pending_deleted_visits_.end(),
+                                       removed_visits.begin(),
+                                       removed_visits.end());
       }
     }
   }
-  if (!model_associator_->WriteToHistoryBackend(&titles, &new_urls,
-                                                &updated_urls,
-                                                &new_visits, &deleted_visits)) {
+}
+
+void TypedUrlChangeProcessor::CommitChangesFromSyncModel() {
+  DCHECK(expected_loop_ == MessageLoop::current());
+  if (!running())
+    return;
+
+  StopObserving();
+  if (!pending_deleted_urls_.empty())
+    history_backend_->DeleteURLs(pending_deleted_urls_);
+
+  if (!model_associator_->WriteToHistoryBackend(&pending_titles_,
+                                                &pending_new_urls_,
+                                                &pending_updated_urls_,
+                                                &pending_new_visits_,
+                                                &pending_deleted_visits_)) {
     error_handler()->OnUnrecoverableError(FROM_HERE,
         "Could not write to the history backend.");
     return;
   }
+
+  pending_titles_.clear();
+  pending_new_urls_.clear();
+  pending_updated_urls_.clear();
+  pending_new_visits_.clear();
+  pending_deleted_visits_.clear();
 
   StartObserving();
 }
