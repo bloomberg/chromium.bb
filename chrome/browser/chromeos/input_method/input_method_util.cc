@@ -207,7 +207,7 @@ const struct EnglishToResouceId {
   { "xkb:rs::srp", IDS_STATUSBAR_LAYOUT_SERBIA },
   { "xkb:cz::cze", IDS_STATUSBAR_LAYOUT_CZECHIA },
   { "xkb:us:dvorak:eng", IDS_STATUSBAR_LAYOUT_USA_DVORAK },
-  { "xkb:us:colemak:eng ", IDS_STATUSBAR_LAYOUT_USA_COLEMAK },
+  { "xkb:us:colemak:eng", IDS_STATUSBAR_LAYOUT_USA_COLEMAK },
   { "xkb:ro::rum", IDS_STATUSBAR_LAYOUT_ROMANIA },
   { "xkb:us::eng", IDS_STATUSBAR_LAYOUT_USA },
   { "xkb:us:altgr-intl:eng", IDS_STATUSBAR_LAYOUT_USA_EXTENDED },
