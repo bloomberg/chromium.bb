@@ -20,6 +20,7 @@
       ],
       # Export these dependencies since text_elider.h includes ICU headers.
       'export_dependent_settings': [
+        '../net/net.gyp:net',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
       ],

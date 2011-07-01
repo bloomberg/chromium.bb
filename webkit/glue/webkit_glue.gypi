@@ -104,8 +104,8 @@
       'target_name': 'glue',
       'type': 'static_library',
       'dependencies': [
-        '<(DEPTH)/app/app.gyp:app_base',
         '<(DEPTH)/base/base.gyp:base_i18n',
+	'<(DEPTH)/base/base.gyp:base_static',
         '<(DEPTH)/gpu/gpu.gyp:gles2_implementation',
         '<(DEPTH)/net/net.gyp:net',
         '<(DEPTH)/ppapi/ppapi.gyp:ppapi_c',
