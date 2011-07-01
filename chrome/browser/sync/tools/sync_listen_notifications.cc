@@ -59,12 +59,6 @@ class NotificationPrinter : public sync_notifier::SyncNotifierObserver {
 
 int main(int argc, char* argv[]) {
   base::AtExitManager exit_manager;
-  scoped_refptr<TestURLRequestContextGetter> request_context_getter(
-      new TestURLRequestContextGetter);
-  BrowserThread io_thread(BrowserThread::IO);
-  base::Thread::Options options;
-  options.message_loop_type = MessageLoop::TYPE_IO;
-  io_thread.StartWithOptions(options);
   CommandLine::Init(argc, argv);
   logging::InitLogging(
       NULL,
@@ -72,6 +66,14 @@ int main(int argc, char* argv[]) {
       logging::LOCK_LOG_FILE,
       logging::DELETE_OLD_LOG_FILE,
       logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
+
+  MessageLoop ui_loop;
+  BrowserThread ui_thread(BrowserThread::UI, &ui_loop);
+
+  BrowserThread io_thread(BrowserThread::IO);
+  base::Thread::Options options;
+  options.message_loop_type = MessageLoop::TYPE_IO;
+  io_thread.StartWithOptions(options);
 
   // Parse command line.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
@@ -90,12 +92,11 @@ int main(int argc, char* argv[]) {
     return -1;
   }
 
-  // Needed by the SyncNotifier implementations.
-  MessageLoop main_loop;
-
   const char kClientInfo[] = "sync_listen_notifications";
+  scoped_refptr<TestURLRequestContextGetter> request_context_getter(
+      new TestURLRequestContextGetter());
   sync_notifier::SyncNotifierFactory sync_notifier_factory(
-      kClientInfo, request_context_getter.get(), command_line);
+      kClientInfo, request_context_getter, command_line);
   scoped_ptr<sync_notifier::SyncNotifier> sync_notifier(
       sync_notifier_factory.CreateSyncNotifier());
   NotificationPrinter notification_printer;
@@ -112,7 +113,7 @@ int main(int argc, char* argv[]) {
     sync_notifier->UpdateEnabledTypes(types);
   }
 
-  main_loop.Run();
+  ui_loop.Run();
 
   sync_notifier->RemoveObserver(&notification_printer);
   io_thread.Stop();
