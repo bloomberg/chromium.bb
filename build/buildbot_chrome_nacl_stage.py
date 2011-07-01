@@ -138,14 +138,6 @@ def BuildAndTest(options):
     env['VS90COMNTOOLS'] = 'c:\\Program Files\\Microsoft Visual Studio 9.0\\Common7\\Tools\\'
     env['VS80COMNTOOLS'] = 'c:\\Program Files\\Microsoft Visual Studio 8.0\\Common7\\Tools\\'
 
-  if options.partial_sdk:
-    # Build the partial sdk
-    cmd = scons + ['platform=x86-%d' % bits, '--mode=nacl_extra_sdk',
-                   'extra_sdk_update_header', 'install_libpthread',
-                   'extra_sdk_update',
-    ]
-    subprocess.check_call(cmd, shell=shell, cwd=nacl_dir, env=env)
-
   # Run nacl/chrome integration tests.
   cmd = scons + ['-k', 'platform=x86-%d' % bits,
       'browser_headless=1',
@@ -161,8 +153,6 @@ def MakeCommandLineParser():
   parser = optparse.OptionParser()
   parser.add_option('-m', '--mode', dest='mode', default='Debug',
                     help='Debug/Release mode')
-  parser.add_option('--partial_sdk', dest='partial_sdk', default=True,
-                    action='store_true', help='Build partial SDK')
   parser.add_option('-j', dest='jobs', default=1, type='int',
                     help='Number of parallel jobs')
 
