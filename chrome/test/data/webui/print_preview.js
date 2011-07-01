@@ -72,7 +72,8 @@
      assertTrue(cancelButton != null);
    };
 
-   registerCallbacks();
+   if ('window' in this && 'registerCallbacks' in window)
+     registerCallbacks();
 
    internal = {
      'verifyBasicPrintPreviewButtons': verifyBasicPrintPreviewButtons,

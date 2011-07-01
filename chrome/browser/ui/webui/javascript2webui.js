@@ -1,20 +1,24 @@
 // Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-if (arguments.length < 4) {
+if (arguments.length < 3) {
   print('usage: ' +
-        arguments[0] + ' test_fixture path-to-testfile.js testfile.js');
+        arguments[0] + ' path-to-testfile.js testfile.js [output.cc]');
   quit();
 }
-var test_fixture = arguments[1];
-var js_file = arguments[2];
-var js_file_base = arguments[3];
+var js_file = arguments[1];
+var js_file_base = arguments[2];
+var outputfile = arguments[3];
 var prevfuncs = {};
 for (var func in this) {
   if (this[func] instanceof Function)
     prevfuncs[func] = func;
 }
 var js = load(js_file);
+if (!('test_fixture' in this)) {
+  print(js_file + ' did not define test_fixture.');
+  quit(-1);
+}
 print('// GENERATED FILE');
 print('// ' + arguments.join(' '));
 print('// PLEASE DO NOT HAND EDIT!');

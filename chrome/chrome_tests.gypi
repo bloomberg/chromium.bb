@@ -2274,6 +2274,12 @@
       # Executable that runs each browser test in a new process.
       'target_name': 'browser_tests',
       'type': 'executable',
+      'variables': {
+        'gypv8sh': '../tools/gypv8sh.py',
+        'js2webui': 'browser/ui/webui/javascript2webui.js',
+        'js2webui_out_dir': '<(SHARED_INTERMEDIATE_DIR)/js2webui',
+        'rule_input_relpath': 'test/data/webui',
+      },
       'dependencies': [
         'browser',
         'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
@@ -2535,6 +2541,7 @@
         'renderer/safe_browsing/render_view_fake_resources_test.h',
         'renderer/translate_helper_browsertest.cc',
         'test/automation/dom_automation_browsertest.cc',
+        'test/data/webui/sample_pass.js',
         'test/gpu/gpu_browsertest.cc',
         'test/in_process_browser_test_browsertest.cc',
         'test/out_of_proc_test_runner.cc',
@@ -2718,7 +2725,30 @@
           ],
         }],
         ['target_arch!="arm"', {
+          'rules': [
+            {
+              'rule_name': 'js2webui',
+              'extension': 'js',
+              'inputs': [
+                '<(gypv8sh)',
+                '<(PRODUCT_DIR)/v8_shell<(EXECUTABLE_SUFFIX)',
+                '<(js2webui)',
+              ],
+              'outputs': [
+                '<(js2webui_out_dir)/chrome/<(rule_input_relpath)/<(RULE_INPUT_ROOT)-inl.h',
+              ],
+              'process_outputs_as_sources': 1,
+              'action': [
+                'python', '<@(_inputs)', '<(RULE_INPUT_PATH)', '<@(_outputs)',
+              ],
+            },
+          ],
+          'include_dirs': [
+            '<(js2webui_out_dir)',
+          ],
           'dependencies': [
+            # build time dependency.
+            '../v8/tools/gyp/v8.gyp:v8_shell#host',
             # run time dependency
             '../webkit/webkit.gyp:copy_npapi_test_plugin',
           ],
