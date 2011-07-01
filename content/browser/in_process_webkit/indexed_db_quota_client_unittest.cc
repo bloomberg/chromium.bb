@@ -78,6 +78,11 @@ class IndexedDBQuotaClientTest : public testing::Test {
   void AddFakeIndexedDB(const GURL& origin, int size) {
     FilePath file_path_origin = idb_context()->GetIndexedDBFilePath(
         DatabaseUtil::GetOriginIdentifier(origin));
+    if (!file_util::CreateDirectory(file_path_origin)) {
+      LOG(ERROR) << "failed to file_util::CreateDirectory "
+                 << file_path_origin.value();
+    }
+    file_path_origin = file_path_origin.Append(FILE_PATH_LITERAL("fake_file"));
     SetFileSizeTo(file_path_origin, size);
   }
 

@@ -105,7 +105,7 @@ void BrowsingDataIndexedDBHelperImpl::FetchIndexedDBInfoInWebKitThread() {
   file_util::FileEnumerator file_enumerator(
       profile_->GetWebKitContext()->data_path().Append(
           IndexedDBContext::kIndexedDBDirectory),
-      false, file_util::FileEnumerator::FILES);
+      false, file_util::FileEnumerator::DIRECTORIES);
   for (FilePath file_path = file_enumerator.Next(); !file_path.empty();
        file_path = file_enumerator.Next()) {
     if (file_path.Extension() == IndexedDBContext::kIndexedDBExtension) {

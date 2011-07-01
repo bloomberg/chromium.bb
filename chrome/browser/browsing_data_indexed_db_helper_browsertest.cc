@@ -30,9 +30,9 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataIndexedDBHelperTest, CannedAddIndexedDB) {
   const GURL origin2("http://host2:1/");
   const string16 description(ASCIIToUTF16("description"));
   const FilePath::CharType file1[] =
-      FILE_PATH_LITERAL("http_host1_1.indexeddb");
+      FILE_PATH_LITERAL("http_host1_1.indexeddb.leveldb");
   const FilePath::CharType file2[] =
-      FILE_PATH_LITERAL("http_host2_1.indexeddb");
+      FILE_PATH_LITERAL("http_host2_1.indexeddb.leveldb");
 
   scoped_refptr<CannedBrowsingDataIndexedDBHelper> helper(
       new CannedBrowsingDataIndexedDBHelper(&testing_profile_));
@@ -55,7 +55,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataIndexedDBHelperTest, CannedUnique) {
   const GURL origin("http://host1:1/");
   const string16 description(ASCIIToUTF16("description"));
   const FilePath::CharType file[] =
-      FILE_PATH_LITERAL("http_host1_1.indexeddb");
+      FILE_PATH_LITERAL("http_host1_1.indexeddb.leveldb");
 
   scoped_refptr<CannedBrowsingDataIndexedDBHelper> helper(
       new CannedBrowsingDataIndexedDBHelper(&testing_profile_));

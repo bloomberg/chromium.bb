@@ -214,13 +214,8 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
       quota = 1024 * 1024 * 1024; // 1GB. More or less "unlimited".
   }
 
-  WebKit::WebIDBFactory::BackingStoreType backingStoreType
-      = WebKit::WebIDBFactory::DefaultBackingStore;
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kLevelDBIndexedDatabase)) {
-    backingStoreType = WebKit::WebIDBFactory::LevelDBBackingStore;
-  }
+  WebKit::WebIDBFactory::BackingStoreType backingStoreType =
+      WebKit::WebIDBFactory::LevelDBBackingStore;
 
 
   Context()->GetIDBFactory()->open(

@@ -54,7 +54,7 @@ const FilePath::CharType IndexedDBContext::kIndexedDBDirectory[] =
     FILE_PATH_LITERAL("IndexedDB");
 
 const FilePath::CharType IndexedDBContext::kIndexedDBExtension[] =
-    FILE_PATH_LITERAL(".indexeddb");
+    FILE_PATH_LITERAL(".leveldb");
 
 IndexedDBContext::IndexedDBContext(
     WebKitContext* webkit_context,
@@ -93,7 +93,9 @@ WebIDBFactory* IndexedDBContext::GetIDBFactory() {
 
 FilePath IndexedDBContext::GetIndexedDBFilePath(
     const string16& origin_id) const {
-  FilePath::StringType id = webkit_glue::WebStringToFilePathString(origin_id);
+  FilePath::StringType id =
+      webkit_glue::WebStringToFilePathString(origin_id).append(
+          FILE_PATH_LITERAL(".indexeddb"));
   return data_path_.Append(id.append(kIndexedDBExtension));
 }
 

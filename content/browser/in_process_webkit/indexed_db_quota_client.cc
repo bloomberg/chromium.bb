@@ -13,6 +13,7 @@
 #include "webkit/database/database_util.h"
 
 using quota::QuotaClient;
+using webkit_database::DatabaseUtil;
 
 
 // Helper tasks ---------------------------------------------------------------
@@ -42,13 +43,10 @@ class IndexedDBQuotaClient::GetOriginUsageTask : public HelperTask {
 
  private:
   virtual void RunOnTargetThread() OVERRIDE {
-    string16 origin_id =
-        webkit_database::DatabaseUtil::GetOriginIdentifier(origin_url_);
+    string16 origin_id = DatabaseUtil::GetOriginIdentifier(origin_url_);
     FilePath file_path = indexed_db_context_->GetIndexedDBFilePath(origin_id);
     usage_ = 0;
-    if (!file_util::GetFileSize(file_path, &usage_)) {
-      LOG(ERROR) << "Failed to get file size for " << file_path.value();
-    }
+    usage_ = file_util::ComputeDirectorySize(file_path);
   }
   virtual void Completed() OVERRIDE {
     client_->DidGetOriginUsage(origin_url_, usage_);
