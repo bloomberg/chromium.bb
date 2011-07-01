@@ -30,6 +30,7 @@ from chromite.buildbot import patch as cros_patch
 from chromite.lib import cros_build_lib as cros_lib
 
 
+_BUILDBOT_LOG_FILE = 'cbuildbot.log'
 _DEFAULT_EXT_BUILDROOT = 'trybot'
 _DEFAULT_INT_BUILDROOT = 'trybot-internal'
 
@@ -263,6 +264,16 @@ def RunBuildStages(bot_id, options, build_config):
   stages.Results.Report(sys.stdout)
 
   return stages.Results.Success()
+
+
+def _SetupRedirectOutputToFile():
+  """Create a tee subprocess and redirect stdout and stderr to it."""
+  cros_lib.Info('Saving output to %s file' % _BUILDBOT_LOG_FILE)
+  sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
+
+  tee = subprocess.Popen(['tee', _BUILDBOT_LOG_FILE], stdin=subprocess.PIPE)
+  os.dup2(tee.stdin.fileno(), sys.stdout.fileno())
+  os.dup2(tee.stdin.fileno(), sys.stderr.fileno())
 
 
 # Input validation functions
@@ -537,6 +548,8 @@ def main(argv=None):
 
   if options.clobber:
     _ValidateClobber(options.buildroot, options.buildbot)
+
+  _SetupRedirectOutputToFile()
 
   if not RunBuildStages(bot_id, options, build_config):
     sys.exit(1)
