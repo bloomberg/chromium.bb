@@ -301,8 +301,16 @@ void SetWindowCustomClass(GtkWindow* window, const std::string& wmclass) {
 std::map<XID, GtkWindow*> BrowserWindowGtk::xid_map_;
 
 BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
-    :  browser_(browser),
+    :  window_(NULL),
+       window_container_(NULL),
+       window_vbox_(NULL),
+       render_area_vbox_(NULL),
+       render_area_floating_container_(NULL),
+       render_area_event_box_(NULL),
+       toolbar_border_(NULL),
+       browser_(browser),
        state_(GDK_WINDOW_STATE_WITHDRAWN),
+       contents_split_(NULL),
        frame_cursor_(NULL),
        is_active_(!ui::ActiveWindowWatcherX::WMSupportsActivation()),
        last_click_time_(0),

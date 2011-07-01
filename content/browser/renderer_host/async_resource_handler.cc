@@ -83,6 +83,7 @@ AsyncResourceHandler::AsyncResourceHandler(
     ResourceDispatcherHost* resource_dispatcher_host)
     : filter_(filter),
       routing_id_(routing_id),
+      host_zoom_map_(NULL),
       rdh_(resource_dispatcher_host),
       next_buffer_size_(kInitialReadBufSize) {
 }
