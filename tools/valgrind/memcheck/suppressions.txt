@@ -4332,8 +4332,9 @@
    ...
    fun:_ZN6icu_4612RegexMatcher12MatchChunkAtEiaR10UErrorCode
    fun:_ZN6icu_4612RegexMatcher7matchesExR10UErrorCode
-   fun:_ZNK20IcuRegularExpression5MatchEPKcbPSs
-   fun:_ZN4i18n12phonenumbers15PhoneNumberUtil19IsViablePhoneNumberERKSs
+   fun:_ZNK4i18n12phonenumbers9IcuRegExp5MatchERKSsbPSs
+   fun:_ZNK4i18n12phonenumbers6RegExp9FullMatchERKSs
+   fun:_ZNK4i18n12phonenumbers15PhoneNumberUtil19IsViablePhoneNumberERKSs
 }
 {
    bug_81753b
@@ -4341,8 +4342,9 @@
    ...
    fun:_ZN6icu_4612RegexMatcher12MatchChunkAtEiaR10UErrorCode
    fun:_ZN6icu_4612RegexMatcher7matchesExR10UErrorCode
-   fun:_ZNK20IcuRegularExpression5MatchEPKcbPSs
-   fun:_ZN4i18n12phonenumbers15PhoneNumberUtil19IsViablePhoneNumberERKSs
+   fun:_ZNK4i18n12phonenumbers9IcuRegExp5MatchERKSsbPSs
+   fun:_ZNK4i18n12phonenumbers6RegExp9FullMatchERKSs
+   fun:_ZNK4i18n12phonenumbers15PhoneNumberUtil19IsViablePhoneNumberERKSs
 }
 {
    bug_81753c
