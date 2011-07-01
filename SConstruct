@@ -136,6 +136,10 @@ ACCEPTABLE_ARGUMENTS = set([
     'targetplatform',
     # activates buildbot-specific presets
     'buildbot',
+    # Where to install header files for public consumption.
+    'includedir',
+    # Where to install libraries for public consumption.
+    'libdir',
   ])
 
 
@@ -2815,12 +2819,13 @@ if nacl_extra_sdk_env.Bit('target_arm'):
 
 
 def NaClSdkLibrary(env, lib_name, *args, **kwargs):
-  env.ComponentLibrary(lib_name, *args, **kwargs)
+  n = [env.ComponentLibrary(lib_name, *args, **kwargs)]
   if not env.Bit('nacl_disable_shared'):
     env_shared = env.Clone(COMPONENT_STATIC=False)
     soname = SCons.Util.adjustixes(lib_name, 'lib', '.so')
     env_shared.AppendUnique(SHLINKFLAGS=['-Wl,-soname,%s' % (soname)])
-    env_shared.ComponentLibrary(lib_name, *args, **kwargs)
+    n.append(env_shared.ComponentLibrary(lib_name, *args, **kwargs))
+  return n
 
 nacl_extra_sdk_env.AddMethod(NaClSdkLibrary)
 nacl_env.AddMethod(NaClSdkLibrary)
@@ -2922,7 +2927,7 @@ def AddHeaderToSdk(env, nodes, subdir = 'nacl/'):
   if not dir:
     dir = '${NACL_SDK_INCLUDE}'
   if subdir is not None:
-    dir += '/' + subdir
+    dir = os.path.join(dir, subdir)
   n = env.Replicate(dir, nodes)
   env.Alias('extra_sdk_update_header', n)
   return n
@@ -3002,7 +3007,6 @@ if nacl_irt_env.Bit('bitcode'):
 # TODO(mcgrathr): Remove these when nacl_extra_sdk_env is removed.
 def AddLibraryDummy(env, nodes, is_platform=False):
   return [env.File('${LIB_DIR}/%s.a' % x) for x in nodes]
-nacl_env.AddMethod(AddLibraryDummy, 'AddLibraryToSdk')
 nacl_irt_env.AddMethod(AddLibraryDummy, 'AddLibraryToSdk')
 
 def AddObjectInternal(env, nodes, is_platform=False):
@@ -3023,8 +3027,59 @@ def AddHeaderInternal(env, nodes, subdir='nacl'):
   n = env.Replicate(dir, nodes)
   return n
 
-nacl_env.AddMethod(AddHeaderInternal, 'AddHeaderToSdk')
 nacl_irt_env.AddMethod(AddHeaderInternal, 'AddHeaderToSdk')
+
+def GetAbsDirArg(env, argument, target):
+  dir = ARGUMENTS.get(argument)
+  if not dir:
+    raise UserError('%s must be set when invoking %s' % (argument, target))
+  return os.path.join(env.Dir('$MAIN_DIR').abspath, dir)
+
+def PublishHeader(env, nodes, subdir):
+  dir = GetAbsDirArg(env, 'includedir', 'install_headers')
+  if subdir is not None:
+    dir += '/' + subdir
+  n = env.Install(dir, nodes)
+  env.Alias('install', env.Alias('install_headers', n))
+  return n
+
+def PublishLibrary(env, nodes):
+  dir = GetAbsDirArg(env, 'libdir', 'install_lib')
+  n = env.Install(dir, nodes)
+  env.Alias('install', env.Alias('install_lib', n))
+  return n
+
+def NaClAddHeader(env, nodes, subdir='nacl'):
+  n = AddHeaderInternal(env, nodes, subdir)
+  if ('install' in COMMAND_LINE_TARGETS or
+      'install_headers' in COMMAND_LINE_TARGETS):
+    PublishHeader(env, n, subdir)
+  return n
+nacl_env.AddMethod(NaClAddHeader, 'AddHeaderToSdk')
+
+def NaClAddLibrary(env, nodes, is_platform=False):
+  # TODO(mcgrathr): remove this and make callers consistent wrt lib prefix.
+  def libname(name):
+    if not name.startswith('lib'):
+      name = 'lib' + name
+    return name + '.a'
+  lib_nodes = [env.File(os.path.join('${LIB_DIR}', libname(lib)))
+               for lib in nodes]
+  env.Alias('build_lib', lib_nodes)
+  if ('install' in COMMAND_LINE_TARGETS or
+      'install_lib' in COMMAND_LINE_TARGETS):
+    PublishLibrary(env, lib_nodes)
+  return lib_nodes
+nacl_env.AddMethod(NaClAddLibrary, 'AddLibraryToSdk')
+
+def NaClAddObject(env, nodes, is_platform=False):
+  lib_nodes = env.Replicate('${LIB_DIR}', nodes)
+  env.Alias('build_lib', lib_nodes)
+  if ('install' in COMMAND_LINE_TARGETS or
+      'install_lib' in COMMAND_LINE_TARGETS):
+    PublishLibrary(env, lib_nodes)
+  return n
+nacl_env.AddMethod(NaClAddObject, 'AddObjectToSdk')
 
 # We want to do this for nacl_env when not under --nacl_glibc,
 # but for nacl_irt_env whether or not under --nacl_glibc, so
