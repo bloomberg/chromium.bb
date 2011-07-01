@@ -154,6 +154,7 @@ def RunBuildStages(bot_id, options, build_config):
   build_success = False
   build_and_test_success = False
   already_uploaded_prebuilts = False
+  prebuilts = options.prebuilts and build_config['prebuilts']
 
   try:
     if options.sync:
@@ -177,7 +178,7 @@ def RunBuildStages(bot_id, options, build_config):
     if options.build:
       stages.BuildTargetStage(bot_id, options, build_config).Run()
 
-    if options.prebuilts and build_config['build_type'] == 'full':
+    if prebuilts and build_config['build_type'] == 'full':
       stages.UploadPrebuiltsStage(bot_id, options, build_config).Run()
       already_uploaded_prebuilts = True
 
@@ -191,7 +192,7 @@ def RunBuildStages(bot_id, options, build_config):
 
     build_and_test_success = True
 
-    if options.prebuilts and not already_uploaded_prebuilts:
+    if prebuilts and not already_uploaded_prebuilts:
       stages.UploadPrebuiltsStage(bot_id, options, build_config).Run()
   except stages.BuildException:
     # We skipped out of this build block early, all we need to do.
