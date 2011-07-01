@@ -84,6 +84,10 @@ pre b {
   background:yellow
 }
 
+.linenumber {
+  color: #999999;
+}
+
 code,pre {
   font-family:monospace;
   color:#007000

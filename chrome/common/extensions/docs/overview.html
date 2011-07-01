@@ -287,6 +287,17 @@
                 </li>
               </ol>
             </li><li>
+              <a href="#apis"> Using the chrome.* APIs </a>
+              <ol>
+                <li>
+                  <a href="#sync"> Asynchronous vs. synchronous methods </a>
+                </li><li>
+                  <a href="#sync-example"> Example: Using a callback </a>
+                </li><li>
+                  <a href="#chrome-more"> More details </a>
+                </li>
+              </ol>
+            </li><li>
               <a href="#pageComm">Communication between pages </a>
               <ol>
                 <li style="display: none; ">
@@ -650,7 +661,7 @@ Here are some examples of extensions that usually
     An extension with a content script
     that doesn't use cross-origin XMLHttpRequests or localStorage,
     and that doesn't need to use
-    <a href="api_index.html">extension APIs</a>.
+    <a href="#apis">extension APIs</a>.
   </li>
   <li>
     An extension that has no UI except for an options page.
@@ -672,7 +683,7 @@ Any extension can have an options page,
 which lets users customize how the extension works.
 Another type of special page is the override page.
 And finally, you can
-use <a href="tabs.html#method-create"><code>chrome.tabs.create()</code></a>
+use <a href="tabs.html#method-create">chrome.tabs.create()</a>
 or <code>window.open()</code>
 to display any other HTML files that are in the extension.
 </p>
@@ -764,6 +775,138 @@ For more information,
 see <a href="content_scripts.html">Content Scripts</a>.
 </p>
 
+
+<h2 id="apis"> Using the chrome.* APIs </h2>
+
+<p>
+In addition to having access to all the APIs that web pages and apps can use,
+extensions can also use Chrome-only APIs
+(often called <em>chrome.* APIs</em>)
+that allow tight integration with the browser.
+For example, any extension or web app can use the
+standard <code>window.open()</code> method to open a URL.
+But if you want to specify which window that URL should be displayed in,
+your extension can use the Chrome-only 
+<a href="tabs.html#method-create">chrome.tabs.create()</a>
+method instead.
+</p>
+
+<h3 id="sync"> Asynchronous vs. synchronous methods </h3>
+<p>
+Most methods in the chrome.* APIs are <b>asynchronous</b>:
+they return immediately, without waiting for the operation to finish.
+If you need to know the outcome of that operation,
+then you pass a callback function into the method.
+That callback is executed later (potentially <em>much</em> later),
+sometime after the method returns.
+Here's an example of the signature for an asynchronous method:
+</p>
+
+<p>
+<code>
+chrome.tabs.create(object <em>createProperties</em>, function <em>callback</em>)
+</code>
+</p>
+
+<p>
+Other chrome.* methods are <b>synchronous</b>.
+Synchronous methods never have a callback
+because they don't return until they've completed all their work.
+Often, synchronous methods have a return type.
+Consider the
+<a href="extension.html#method-getBackgroundPage">chrome.extensions.getBackgroundPage()</a> method:
+</p>
+
+<p>
+<code>
+DOMWindow chrome.extension.getBackgroundPage()
+</code>
+</p>
+
+<p>
+This method has no callback and a return type of <code>DOMWindow</code>
+because it synchronously returns the background page
+and performs no other, asynchronous work.
+</p>
+
+
+<h3 id="sync-example"> Example: Using a callback </h3>
+
+<p>
+Say you want to navigate
+the user's currently selected tab to a new URL.
+To do this, you need to get the current tab's ID
+(using <a href="tabs.html#method-getSelected">chrome.tabs.getSelected()</a>)
+and then make that tab go to the new URL
+(using <a href="tabs.html#method-update">chrome.tabs.update()</a>).
+</p>
+
+<p>
+If <code>getSelected()</code> were synchronous,
+you might write code like this:
+</p>
+
+<pre>   <b>//THIS CODE DOESN'T WORK</b>
+<span class="linenumber">1: </span>var tab = chrome.tabs.getSelected(null); <b>//WRONG!!!</b>
+<span class="linenumber">2: </span>chrome.tabs.update(tab.id, {url:newUrl});
+<span class="linenumber">3: </span>someOtherFunction();
+</pre>
+
+<p>
+That approach fails
+because <code>getSelected()</code> is asynchronous.
+It returns without waiting for its work to complete,
+and it doesn't even return a value
+(although some asynchronous methods do).
+You can tell that <code>getSelected()</code> is asynchronous
+by the <em>callback</em> parameter in its signature:
+
+</p><p>
+<code>
+chrome.tabs.getSelected(integer <em>windowId</em>, function <em>callback</em>)
+</code>
+</p>
+
+<p>
+To fix the preceding code,
+you must use that callback parameter.
+The following code shows
+how to define a callback function
+that gets the results from <code>getSelected()</code>
+(as a parameter named <code>tab</code>)
+and calls <code>update()</code>.
+</p>
+
+<pre>   <b>//THIS CODE WORKS</b>
+<span class="linenumber">1: </span>chrome.tabs.getSelected(null, <b>function(tab) {</b>
+<span class="linenumber">2: </span>  chrome.tabs.update(tab.id, {url:newUrl});
+<span class="linenumber">3: </span><b>}</b>);
+<span class="linenumber">4: </span>someOtherFunction();
+</pre>
+
+<p>
+In this example, the lines are executed in the following order: 1, 4, 2.
+The callback function specified to <code>getSelected</code> is called
+(and line 2 executed)
+only after information about the currently selected tab is available,
+which is sometime after <code>getSelected()</code> returns.
+Although <code>update()</code> is asynchronous,
+this example doesn't use its callback parameter,
+since we don't do anything about the results of the update.
+</p>
+
+
+<h3 id="chrome-more"> More details </h3>
+
+<p>
+For more information, see the
+<a href="api_index.html">chrome.* API docs</a>
+and watch this video:
+</p>
+
+<p>
+<iframe title="YouTube video player" width="640" height="390" src="http://www.youtube.com/embed/bmxr75CV36A?rel=0" frameborder="0" allowfullscreen=""></iframe>
+</p>
 
 <h2 id="pageComm">Communication between pages </h2>
 
