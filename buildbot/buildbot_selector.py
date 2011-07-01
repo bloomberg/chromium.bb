@@ -71,37 +71,33 @@ BOT_ASSIGNMENT = {
         python + ' buildbot/buildbot_standard.py opt 64 newlib',
     'lucid-64-bare-glibc-opt':
         python + ' buildbot/buildbot_standard.py opt 64 glibc',
-     # pnacl bots.
 
-    'pnacl-arm-dbg':
+    # PNaCl.
+    'lucid_64-newlib-arm_qemu-pnacl-dbg':
         'bash buildbot/buildbot_pnacl1.sh mode-buildbot-arm-dbg',
-    'pnacl-arm-opt':
+    'lucid_64-newlib-arm_qemu-pnacl-opt':
         'bash buildbot/buildbot_pnacl1.sh mode-buildbot-arm-opt',
-    'pnacl-arm-hw-dbg':
+    'jaunty_32-newlib-arm_hw-pnacl-dbg':
         'bash buildbot/buildbot_pnacl1.sh mode-buildbot-arm-hw-dbg',
-    'pnacl-arm-hw-opt':
+    'jaunty_32-newlib-arm_hw-pnacl-opt':
         'bash buildbot/buildbot_pnacl1.sh mode-buildbot-arm-hw-opt',
-    'pnacl-x8632':
+    'lucid_64-newlib-x86_32-pnacl':
         'bash buildbot/buildbot_pnacl1.sh mode-buildbot-x8632',
-    'pnacl-x8664':
+    'lucid_64-newlib-x86_64-pnacl':
         'bash buildbot/buildbot_pnacl1.sh mode-buildbot-x8664',
-    # Pnacl spec2k bots (obsolete)
-    'lucid64-spec-arm': # obsolete
+    # PNaCl Spec
+    'lucid_64-newlib-arm_qemu-pnacl-spec':
         'bash buildbot/buildbot_pnacl2.sh mode-spec-pnacl-arm',
-    'lucid64-spec-x86': # obsolete
-        'bash tests/spec2k/bot_spec.sh 2 ~/cpu2000-redhat64-ia32',
-    'lucid64-pnacl-translator': # obsolete
-        'bash tests/spec2k/bot_spec.sh 3 ~/cpu2000-redhat64-ia32',
-    # Pnacl spec2k bots (obsolete)
-    'spec-pnacl-arm':
-        'bash buildbot/buildbot_pnacl2.sh mode-spec-pnacl-arm',
-    'spec-pnacl-x8632':
+    'lucid_64-newlib-x86_32-pnacl-spec':
       'bash buildbot/buildbot_pnacl2.sh mode-spec-pnacl-x8632',
-    'spec-pnacl-x8664':
+    'lucid_64-newlib-x86_64-pnacl-spec':
       'bash buildbot/buildbot_pnacl2.sh mode-spec-pnacl-x8664',
-    # NaCl spec2k bot
-    'spec-nacl':
-      'bash buildbot/buildbot_pnacl2.sh mode-spec-nacl',
+    # NaCl Spec
+    'lucid_64-newlib-x86_32-spec':
+      'bash buildbot/buildbot_pnacl2.sh mode-spec-nacl-x8632',
+    'lucid_64-newlib-x86_64-spec':
+      'bash buildbot/buildbot_pnacl2.sh mode-spec-nacl-x8664',
+
     # Valgrind bots.
     'lucid-64-newlib-dbg-valgrind': 'bash buildbot/buildbot_valgrind.sh newlib',
     'lucid-64-glibc-dbg-valgrind': 'bash buildbot/buildbot_valgrind.sh glibc',
