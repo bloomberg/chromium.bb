@@ -38,6 +38,7 @@ for ((i=1;i<=retry_count;i+=i)); do
       "$glibc_url_prefix$glibc_revision"/glibc_x86.tar.gz -o "$1/.glibc.tar" &&
   $tar xSvpf "$1/.glibc.tar" -C "$1" &&
   ( rm "$1/.glibc.tar" || ( sleep 30 && rm "$1/.glibc.tar" ) ) &&
+  echo "Got glibc from revision $glibc_revision" &&
   exit 0
   for ((j=glibc_revision+1;j<glibc_revision+revisions_count;j++)); do
     echo "Check if revision \"$j\" is available..."
