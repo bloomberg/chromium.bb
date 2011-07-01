@@ -22,3 +22,6 @@ DirectoryListerTest.BigDirRecursiveTest
 
 # Crashes silently, see http://crbug.com/76911
 URLRequestTest.FileTest
+
+# http://crbug.com/88228
+SSLClientSocketTest.Connect
