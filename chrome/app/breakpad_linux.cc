@@ -353,46 +353,46 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
   IGNORE_RET(sys_close(ufd));
 
   // The MIME block looks like this:
-  //   BOUNDARY \r\n (0, 1)
-  //   Content-Disposition: form-data; name="prod" \r\n \r\n (2..6)
-  //   Chrome_Linux \r\n (7, 8)
-  //   BOUNDARY \r\n (9, 10)
-  //   Content-Disposition: form-data; name="ver" \r\n \r\n (11..15)
-  //   1.2.3.4 \r\n (16, 17)
-  //   BOUNDARY \r\n (18, 19)
-  //   Content-Disposition: form-data; name="guid" \r\n \r\n (20..24)
-  //   1.2.3.4 \r\n (25, 26)
-  //   BOUNDARY \r\n (27, 28)
+  //   BOUNDARY \r\n
+  //   Content-Disposition: form-data; name="prod" \r\n \r\n
+  //   Chrome_Linux \r\n
+  //   BOUNDARY \r\n
+  //   Content-Disposition: form-data; name="ver" \r\n \r\n
+  //   1.2.3.4 \r\n
+  //   BOUNDARY \r\n
+  //   Content-Disposition: form-data; name="guid" \r\n \r\n
+  //   1.2.3.4 \r\n
+  //   BOUNDARY \r\n
   //
   //   zero or one:
-  //   Content-Disposition: form-data; name="ptime" \r\n \r\n (0..4)
-  //   abcdef \r\n (5, 6)
-  //   BOUNDARY \r\n (7, 8)
+  //   Content-Disposition: form-data; name="ptime" \r\n \r\n
+  //   abcdef \r\n
+  //   BOUNDARY \r\n
   //
   //   zero or one:
-  //   Content-Disposition: form-data; name="ptype" \r\n \r\n (0..4)
-  //   abcdef \r\n (5, 6)
-  //   BOUNDARY \r\n (7, 8)
-  //
-  //   zero or one:
-  //   Content-Disposition: form-data; name="lsb-release" \r\n \r\n (0..4)
-  //   abcdef \r\n (5, 6)
-  //   BOUNDARY \r\n (7, 8)
+  //   Content-Disposition: form-data; name="ptype" \r\n \r\n
+  //   abcdef \r\n
+  //   BOUNDARY \r\n
   //
   //   zero or more gpu entries:
-  //   Content-Disposition: form-data; name="gpu-xxxxx" \r\n \r\n (0..4)
-  //   <gpu-xxxxx> \r\n (5, 6)
-  //   BOUNDARY \r\n (7, 8)
+  //   Content-Disposition: form-data; name="gpu-xxxxx" \r\n \r\n
+  //   <gpu-xxxxx> \r\n
+  //   BOUNDARY \r\n
+  //
+  //   zero or one:
+  //   Content-Disposition: form-data; name="lsb-release" \r\n \r\n
+  //   abcdef \r\n
+  //   BOUNDARY \r\n
   //
   //   zero or more:
-  //   Content-Disposition: form-data; name="url-chunk-1" \r\n \r\n (0..5)
-  //   abcdef \r\n (6, 7)
-  //   BOUNDARY \r\n (8, 9)
+  //   Content-Disposition: form-data; name="url-chunk-1" \r\n \r\n
+  //   abcdef \r\n
+  //   BOUNDARY \r\n
   //
-  //   Content-Disposition: form-data; name="dump"; filename="dump" \r\n (0,1,2)
-  //   Content-Type: application/octet-stream \r\n \r\n (3,4,5)
-  //   <dump contents> (6)
-  //   \r\n BOUNDARY -- \r\n (7,8,9,10)
+  //   Content-Disposition: form-data; name="dump"; filename="dump" \r\n
+  //   Content-Type: application/octet-stream \r\n \r\n
+  //   <dump contents>
+  //   \r\n BOUNDARY -- \r\n
 
   #if defined(OS_CHROMEOS)
   static const char chrome_product_msg[] = "Chrome_ChromeOS";
