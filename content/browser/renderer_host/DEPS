@@ -1,6 +1,5 @@
 include_rules = [
   "+content/renderer",  # For single-process mode.
-  "+chrome/common/extensions",
   "+media/base",  # For media command line switches.
   "+third_party/zlib",
 ]

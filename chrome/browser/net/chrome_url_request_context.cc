@@ -4,6 +4,7 @@
 
 #include "chrome/browser/net/chrome_url_request_context.h"
 
+#include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/synchronization/waitable_event.h"
@@ -352,7 +353,8 @@ void ChromeURLRequestContextGetter::GetCookieStoreAsyncHelper(
 // ----------------------------------------------------------------------------
 
 ChromeURLRequestContext::ChromeURLRequestContext()
-    : is_incognito_(false) {
+    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
+      is_incognito_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 }
 

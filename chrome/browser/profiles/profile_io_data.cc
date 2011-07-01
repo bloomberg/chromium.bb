@@ -400,6 +400,7 @@ void ProfileIOData::LazyInitialize() const {
   // Create the common request contexts.
   main_request_context_ = new RequestContext;
   extensions_request_context_ = new RequestContext;
+  weak_extensions_request_context_ = extensions_request_context_->GetWeakPtr();
 
   profile_params_->appcache_service->set_request_context(main_request_context_);
 

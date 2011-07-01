@@ -27,7 +27,6 @@
 #include "ui/gfx/surface/transport_dib.h"
 
 struct FontDescriptor;
-class ExtensionInfoMap;
 class HostContentSettingsMap;
 class Profile;
 class RenderWidgetHelper;
@@ -89,8 +88,8 @@ class RenderMessageFilter : public BrowserMessageFilter {
     return resource_dispatcher_host_;
   }
 
-  // Returns either the extension net::URLRequestContext or regular
-  // net::URLRequestContext depending on whether |url| is an extension URL.
+  // Returns the correct net::URLRequestContext depending on what type of url is
+  // given.
   // Only call on the IO thread.
   net::URLRequestContext* GetRequestContextForURL(const GURL& url);
 
@@ -223,18 +222,11 @@ class RenderMessageFilter : public BrowserMessageFilter {
   // accessed on the UI thread!
   Profile* profile_;
 
-  // The extension info map. Stored separately from the profile so we can
-  // access it on other threads.
-  ExtensionInfoMap* extension_info_map_;
-
   // Contextual information to be used for requests created here.
   scoped_refptr<net::URLRequestContextGetter> request_context_;
 
   // The ResourceContext which is to be used on the IO thread.
   const content::ResourceContext& resource_context_;
-
-  // A request context that holds a cookie store for chrome-extension URLs.
-  scoped_refptr<net::URLRequestContextGetter> extensions_request_context_;
 
   scoped_refptr<RenderWidgetHelper> render_widget_helper_;
 

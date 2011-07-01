@@ -49,6 +49,10 @@ class ChromeURLRequestContext : public net::URLRequestContext {
   // Copies the state from |other| into this context.
   void CopyFrom(ChromeURLRequestContext* other);
 
+  base::WeakPtr<ChromeURLRequestContext> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
   // Gets the appcache service to be used for requests in this context.
   // May be NULL if requests for this context aren't subject to appcaching.
   ChromeAppCacheService* appcache_service() const {
@@ -107,6 +111,8 @@ class ChromeURLRequestContext : public net::URLRequestContext {
   virtual ~ChromeURLRequestContext();
 
  private:
+  base::WeakPtrFactory<ChromeURLRequestContext> weak_ptr_factory_;
+
   // ---------------------------------------------------------------------------
   // Important: When adding any new members below, consider whether they need to
   // be added to CopyFrom.

@@ -37,6 +37,7 @@ namespace net {
 class CookieList;
 class CookieOptions;
 class URLRequest;
+class URLRequestContext;
 class X509Certificate;
 }
 
@@ -135,6 +136,13 @@ class ContentBrowserClient {
   // This is called on the IO thread.
   virtual bool AllowSaveLocalState(
       const content::ResourceContext& context) = 0;
+
+  // Allows the embedder to override the request context based on the URL for
+  // certain operations, like cookie access. Returns NULL to indicate the
+  // regular request context should be used.
+  // This is called on the IO thread.
+  virtual net::URLRequestContext* OverrideRequestContextForURL(
+      const GURL& url, const content::ResourceContext& context) = 0;
 
   // Create and return a new quota permission context.
   virtual QuotaPermissionContext* CreateQuotaPermissionContext() = 0;

@@ -104,6 +104,11 @@ QuotaPermissionContext*
   return NULL;
 }
 
+net::URLRequestContext* MockContentBrowserClient::OverrideRequestContextForURL(
+    const GURL& url, const content::ResourceContext& context) {
+  return NULL;
+}
+
 void MockContentBrowserClient::RevealFolderInOS(const FilePath& path) {
 }
 

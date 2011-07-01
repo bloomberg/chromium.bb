@@ -100,6 +100,10 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
     return &clear_local_state_on_exit_;
   }
 
+  ChromeURLRequestContext* extensions_request_context() const {
+    return weak_extensions_request_context_.get();
+  }
+
  protected:
   friend class base::RefCountedThreadSafe<ProfileIOData>;
 
@@ -194,10 +198,6 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
     return main_request_context_;
   }
 
-  ChromeURLRequestContext* extensions_request_context() const {
-    return extensions_request_context_;
-  }
-
  private:
   class ResourceContext : public content::ResourceContext {
    public:
@@ -272,6 +272,12 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
   // called.
   mutable scoped_refptr<RequestContext> main_request_context_;
   mutable scoped_refptr<RequestContext> extensions_request_context_;
+
+  // Weak pointers to the request contexts. Only valid after LazyInitialize.
+  // These are weak so that they don't hold a reference to the RequestContext,
+  // because that holds a reference back to ProfileIOData.
+  mutable base::WeakPtr<ChromeURLRequestContext>
+      weak_extensions_request_context_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileIOData);
 };

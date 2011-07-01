@@ -15,7 +15,6 @@
 #include "chrome/browser/download/download_types.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/extensions/extension.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/content_browser_client.h"
@@ -275,10 +274,8 @@ RenderMessageFilter::RenderMessageFilter(
           content::GetContentClient()->browser()->GetResourceDispatcherHost()),
       plugin_service_(plugin_service),
       profile_(profile),
-      extension_info_map_(profile->GetExtensionInfoMap()),
       request_context_(request_context),
       resource_context_(profile->GetResourceContext()),
-      extensions_request_context_(profile->GetRequestContextForExtensions()),
       render_widget_helper_(render_widget_helper),
       incognito_(profile->IsOffTheRecord()),
       webkit_context_(profile->GetWebKitContext()),
@@ -627,10 +624,14 @@ void RenderMessageFilter::OnAllocateSharedMemoryBuffer(
 net::URLRequestContext* RenderMessageFilter::GetRequestContextForURL(
     const GURL& url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  net::URLRequestContextGetter* context_getter =
-      url.SchemeIs(chrome::kExtensionScheme) ?
-          extensions_request_context_ : request_context_;
-  return context_getter->GetURLRequestContext();
+
+  net::URLRequestContext* context =
+      content::GetContentClient()->browser()->OverrideRequestContextForURL(
+          url, resource_context_);
+  if (!context)
+    context = request_context_->GetURLRequestContext();
+
+  return context;
 }
 
 #if defined(OS_MACOSX)
