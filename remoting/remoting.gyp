@@ -731,8 +731,6 @@
         'protocol/rtp_video_reader_unittest.cc',
         'protocol/rtp_video_writer_unittest.cc',
         'protocol/secure_p2p_socket_unittest.cc',
-        'protocol/session_manager_pair.cc',
-        'protocol/session_manager_pair.h',
         'run_all_unittests.cc',
       ],
       'conditions': [

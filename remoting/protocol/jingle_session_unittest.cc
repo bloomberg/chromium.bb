@@ -101,7 +101,7 @@ class JingleSessionTest : public testing::Test {
   }
 
   void CreateServerPair() {
-    // SessionManagerPair must be initialized on the jingle thread.
+    // Sessions must be initialized on the jingle thread.
     thread_.message_loop()->PostTask(
         FROM_HERE, NewRunnableMethod(
             this, &JingleSessionTest::DoCreateServerPair));
