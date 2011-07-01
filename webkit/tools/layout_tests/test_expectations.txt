@@ -15,6 +15,3 @@ BUGCR86570 MAC : platform/gtk/fonts/custom-font-missing-glyphs.html = IMAGE+TEXT
 BUGCR86570 MAC : platform/gtk/fonts/font-face-with-complex-text.html = IMAGE+TEXT CRASH
 BUGCR86570 MAC : platform/mac/fast/text/myanmar-shaping.html = CRASH
 BUGCR86570 MAC : platform/mac/fast/text/thai-combining-mark-positioning.html = CRASH
-
-// Rebaseline landed in WK r90199, should be cleared next DEPS roll.
-BUGCR87831 GPU : media/video-currentTime-set.html = TEXT FAIL
