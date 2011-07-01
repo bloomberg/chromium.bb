@@ -25,7 +25,7 @@ class FastShutdown : public UITest {
 #else
 // http://trac.webkit.org/changeset/90164/ changed onuload() behaviour.
 // http://crbug.com/88141
-#define MAYBE_SlowTermination FLAKY_SlowTermination
+#define MAYBE_SlowTermination DISABLED_SlowTermination
 #endif
 
 // This tests for a previous error where uninstalling an onbeforeunload
