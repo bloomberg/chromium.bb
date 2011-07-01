@@ -115,7 +115,7 @@ void InfoBarContainer::RemoveAllInfoBarsForDestruction() {
 
   // TODO(pkasting): Remove this once TabContentsWrapper calls CloseSoon().
   for (size_t i = infobars_.size(); i > 0; --i)
-    infobars_[i]->CloseSoon();
+    infobars_[i - 1]->CloseSoon();
 
   ChangeTabContents(NULL);
 }
