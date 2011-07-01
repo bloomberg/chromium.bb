@@ -68,11 +68,17 @@ class PdfMetafileSkia : public Metafile {
   virtual bool SaveToFD(const base::FileDescriptor& fd) const;
 #endif  // if defined(OS_CHROMEOS)
 
+  // Return a new metafile containing just the current page in draft mode.
+  PdfMetafileSkia* GetMetafileForCurrentPage();
+
  private:
   scoped_ptr<PdfMetafileSkiaData> data_;
 
   // True when a draft version of metafile is requested.
   mutable bool draft_;
+
+  // True when finish page is outstanding for current page.
+  bool page_outstanding_;
 
   DISALLOW_COPY_AND_ASSIGN(PdfMetafileSkia);
 };

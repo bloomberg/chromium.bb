@@ -51,7 +51,8 @@ bool PdfMetafileSkia::InitFromData(const void* src_buffer,
 SkDevice* PdfMetafileSkia::StartPageForVectorCanvas(
     const gfx::Size& page_size, const gfx::Rect& content_area,
     const float& scale_factor) {
-  DCHECK(data_->current_page_.get() == NULL);
+  DCHECK (!page_outstanding_);
+  page_outstanding_ = true;
 
   // Adjust for the margins and apply the scale factor.
   SkMatrix transform;
@@ -84,7 +85,7 @@ bool PdfMetafileSkia::FinishPage() {
   DCHECK(data_->current_page_.get());
 
   data_->pdf_doc_.appendPage(data_->current_page_);
-  data_->current_page_ = NULL;
+  page_outstanding_ = false;
   return true;
 }
 
@@ -93,9 +94,10 @@ bool PdfMetafileSkia::FinishDocument() {
   if (data_->pdf_stream_.getOffset())
     return true;
 
-  if (data_->current_page_.get())
+  if (page_outstanding_)
     FinishPage();
 
+  data_->current_page_ = NULL;
   base::hash_set<SkFontID> font_set;
 
   const SkTDArray<SkPDFPage*>& pages = data_->pdf_doc_.getPages();
@@ -234,6 +236,25 @@ bool PdfMetafileSkia::SaveToFD(const base::FileDescriptor& fd) const {
 
 PdfMetafileSkia::PdfMetafileSkia()
     : data_(new PdfMetafileSkiaData),
-      draft_(false) {}
+      draft_(false),
+      page_outstanding_(false) {}
+
+PdfMetafileSkia* PdfMetafileSkia::GetMetafileForCurrentPage() {
+  SkPDFDocument pdf_doc;
+  SkDynamicMemoryWStream pdf_stream;
+  if (!pdf_doc.appendPage(data_->current_page_))
+    return NULL;
+
+  if (!pdf_doc.emitPDF(&pdf_stream))
+    return NULL;
+
+  SkAutoDataUnref data(pdf_stream.copyToData());
+  if (data.size() == 0)
+    return NULL;
+
+  PdfMetafileSkia* metafile = new printing::PdfMetafileSkia;
+  metafile->InitFromData(data.bytes(), data.size());
+  return metafile;
+}
 
 }  // namespace printing
