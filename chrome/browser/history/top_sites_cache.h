@@ -41,7 +41,8 @@ class TopSitesCache {
   Images* GetImage(const GURL& url);
 
   // Fetches the thumbnail for the specified url. Returns true if there is a
-  // thumbnail for the specified url.
+  // thumbnail for the specified url. It is possible for a URL to be in TopSites
+  // but not have an thumbnail.
   bool GetPageThumbnail(const GURL& url,
                         scoped_refptr<RefCountedBytes>* bytes);
 

@@ -41,8 +41,11 @@ bool TopSitesCache::GetPageThumbnail(const GURL& url,
   std::map<GURL, Images>::const_iterator found =
       images_.find(GetCanonicalURL(url));
   if (found != images_.end()) {
-    *bytes = found->second.thumbnail.get();
-    return true;
+    RefCountedBytes* data = found->second.thumbnail.get();
+    if (data) {
+      *bytes = data;
+      return true;
+    }
   }
   return false;
 }

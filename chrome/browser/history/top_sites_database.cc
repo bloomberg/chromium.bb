@@ -142,7 +142,8 @@ void TopSitesDatabase::GetPageThumbnails(MostVisitedURLList* urls,
     std::vector<unsigned char> data;
     statement.ColumnBlobAsVector(3, &data);
     Images thumbnail;
-    thumbnail.thumbnail = RefCountedBytes::TakeVector(&data);
+    if (!data.empty())
+      thumbnail.thumbnail = RefCountedBytes::TakeVector(&data);
     thumbnail.thumbnail_score.boring_score = statement.ColumnDouble(5);
     thumbnail.thumbnail_score.good_clipping = statement.ColumnBool(6);
     thumbnail.thumbnail_score.at_top = statement.ColumnBool(7);
