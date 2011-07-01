@@ -8,8 +8,8 @@
       'target_name': 'database',
       'type': 'static_library',
       'dependencies': [
-        '<(DEPTH)/app/app.gyp:app_base',
         '<(DEPTH)/base/base.gyp:base',
+        '<(DEPTH)/sql/sql.gyp:sql',
         '<(DEPTH)/third_party/sqlite/sqlite.gyp:sqlite',
         '<(DEPTH)/webkit/support/webkit_support.gyp:quota',
       ],

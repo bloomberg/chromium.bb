@@ -61,7 +61,6 @@
       'target_name': 'webkit_user_agent',
       'type': 'static_library',
       'dependencies': [
-        '<(DEPTH)/app/app.gyp:app_base',
         '<(DEPTH)/base/base.gyp:base_i18n',
       ],
       'actions': [
@@ -104,7 +103,6 @@
       'target_name': 'glue',
       'type': 'static_library',
       'dependencies': [
-        '<(DEPTH)/app/app.gyp:app_base',
         '<(DEPTH)/base/base.gyp:base_i18n',
         '<(DEPTH)/gpu/gpu.gyp:gles2_implementation',
         '<(DEPTH)/net/net.gyp:net',
