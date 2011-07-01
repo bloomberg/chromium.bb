@@ -1315,7 +1315,7 @@ const PrepopulatedEngine mail_ru = {
   "http://img.go.mail.ru/favicon.ico",
   L"http://go.mail.ru/search?q={searchTerms}",
   "windows-1251",
-  NULL,
+  L"http://suggests.go.mail.ru/chrome?q={searchTerms}",
   NULL,
   SEARCH_ENGINE_MAILRU,
   IDR_SEARCH_ENGINE_LOGO_MAILRU,
@@ -3358,7 +3358,7 @@ void RegisterUserPrefs(PrefService* prefs) {
 int GetDataVersion(PrefService* prefs) {
   // Increment this if you change the above data in ways that mean users with
   // existing data should get a new version.
-  const int kCurrentDataVersion = 33;
+  const int kCurrentDataVersion = 34;
   if (!prefs)
     return kCurrentDataVersion;
   // If a version number exist in the preferences file, it overrides the
