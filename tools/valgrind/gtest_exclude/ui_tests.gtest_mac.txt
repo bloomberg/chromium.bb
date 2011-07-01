@@ -240,3 +240,6 @@ PrintPreviewUITest.PrintCommandDisabled
 
 # http://crbug.com/88068
 LocaleTestsHe.TestStart
+
+# http://crbug.com/88238
+NewTabUITest.ChromeHangInNTP
