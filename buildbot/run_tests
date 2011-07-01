@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# Copyright (c) 2010 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This is a very lazy way to get all the unittests running at once, but
+# also very quick to write.
+
+cd $(readlink -f $(dirname $0))
+
+IN_CHROOT=../../src/scripts/enter_chroot.sh
+CHROOT_BUILDBOT=../../chromite/buildbot
+
+set -e
+set -o verbose
+
+./cbuildbot_unittest.py
+./cbuildbot_config_unittest.py
+./cbuildbot_commands_unittest.py
+./cbuildbot_stages_unittest.py
+./manifest_version_unittest.py
+./lkgm_manager_unittest.py
+${IN_CHROOT} -- ${CHROOT_BUILDBOT}/cros_mark_as_stable_unittest.py
+${IN_CHROOT} -- ${CHROOT_BUILDBOT}/cros_mark_chrome_as_stable_unittest.py
+./patch_unittest.py
+./prebuilt_unittest.py
