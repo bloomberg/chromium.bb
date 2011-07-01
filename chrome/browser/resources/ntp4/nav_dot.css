@@ -28,10 +28,11 @@
   text-align: left;
   width: 80px;
   -webkit-padding-start: 2px;
-  -webkit-transition: border-color 0.2s, width 0.25ms;
+  -webkit-transition: border-color 0.2s, width 0.25s, margin-right 0.25s;
 }
 
 .dot.small {
+  margin-right: 0;
   width: 0;
 }
 
