@@ -160,7 +160,7 @@ class ProtocolHandlerRegistryInterceptor
   }
 
   virtual bool WillHandleProtocol(const std::string& protocol) const {
-    return protocol_handler_registry_->IsHandledProtocol(protocol);
+    return protocol_handler_registry_->IsHandledProtocolIO(protocol);
   }
 
   virtual net::URLRequestJob* MaybeInterceptRedirect(
