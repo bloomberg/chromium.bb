@@ -10,15 +10,7 @@
 #include "chrome/installer/mini_installer/decompress.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class MiniDecompressTest : public testing::Test {
- protected:
-  virtual void SetUp() {
-  }
-  virtual void TearDown() {
-  }
-};
-
-TEST_F(MiniDecompressTest, ExpandTest) {
+TEST(MiniDecompressTest, ExpandTest) {
   FilePath source_path;
   PathService::Get(base::DIR_SOURCE_ROOT, &source_path);
   source_path = source_path.Append(FILE_PATH_LITERAL("chrome"))
