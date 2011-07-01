@@ -1193,11 +1193,14 @@ void ScreenLocker::ShowErrorBubble(const std::wstring& message,
 void ScreenLocker::StopScreenSaver() {
   if (background_view_->IsScreenSaverVisible()) {
     VLOG(1) << "StopScreenSaver";
-    background_view_->HideScreenSaver();
     if (screen_lock_view_) {
       screen_lock_view_->SetVisible(true);
+      // Place the screen_lock_view_ to the center of the screen.
+      // Must be called when the view is visible: crosbug.com/15213.
+      background_view_->Layout();
       screen_lock_view_->RequestFocus();
     }
+    background_view_->HideScreenSaver();
     EnableInput();
   }
 }

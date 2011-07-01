@@ -208,7 +208,6 @@ gfx::Rect ScreenLockView::GetPasswordBoundsRelativeTo(const views::View* view) {
   return gfx::Rect(p, size());
 }
 
-
 void ScreenLockView::SetEnabled(bool enabled) {
   views::View::SetEnabled(enabled);
 

@@ -101,9 +101,11 @@ class BackgroundView : public views::View,
   // Tells if screen saver is enabled.
   bool ScreenSaverEnabled();
 
- protected:
   // Overridden from views::View:
   virtual void Layout() OVERRIDE;
+
+ protected:
+  // Overridden from views::View:
   virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
   virtual void OnLocaleChanged() OVERRIDE;
 
