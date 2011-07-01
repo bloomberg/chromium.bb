@@ -62,24 +62,12 @@ class BlockedContentContainer : public BlockedContentTabHelperDelegate,
                               WindowOpenDisposition disposition,
                               PageTransition::Type transition);
 
-  // Ignored; BlockedContentContainer doesn't display a throbber.
-  virtual void NavigationStateChanged(const TabContents* source,
-                                      unsigned changed_flags) {}
-
   // Forwards AddNewContents to our |owner_|.
   virtual void AddNewContents(TabContents* source,
                               TabContents* new_contents,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_position,
                               bool user_gesture);
-
-  // Ignore activation/deactivation requests from the TabContents we're
-  // blocking.
-  virtual void ActivateContents(TabContents* contents) {}
-  virtual void DeactivateContents(TabContents* contents) {}
-
-  // Ignored; BlockedContentContainer doesn't display a throbber.
-  virtual void LoadingStateChanged(TabContents* source) {}
 
   // Removes |source| from our internal list of blocked contents.
   virtual void CloseContents(TabContents* source);
@@ -89,9 +77,6 @@ class BlockedContentContainer : public BlockedContentTabHelperDelegate,
 
   // Always returns true.
   virtual bool IsPopup(const TabContents* source) const;
-
-  // Ignored; BlockedContentContainer doesn't display a URL bar.
-  virtual void UpdateTargetURL(TabContents* source, const GURL& url) {}
 
   // Always returns true.
   virtual bool ShouldSuppressDialogs();

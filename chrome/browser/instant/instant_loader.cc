@@ -181,28 +181,11 @@ class InstantLoader::TabContentsDelegateImpl
                        const NotificationDetails& details) OVERRIDE;
 
   // TabContentsDelegate:
-  virtual void OpenURLFromTab(TabContents* source,
-                              const GURL& url, const GURL& referrer,
-                              WindowOpenDisposition disposition,
-                              PageTransition::Type transition) OVERRIDE;
   virtual void NavigationStateChanged(const TabContents* source,
                                       unsigned changed_flags) OVERRIDE;
   virtual std::string GetNavigationHeaders(const GURL& url) OVERRIDE;
-  virtual void AddNewContents(TabContents* source,
-                              TabContents* new_contents,
-                              WindowOpenDisposition disposition,
-                              const gfx::Rect& initial_pos,
-                              bool user_gesture) OVERRIDE;
-  virtual void ActivateContents(TabContents* contents) OVERRIDE;
-  virtual void DeactivateContents(TabContents* contents) OVERRIDE;
-  virtual void LoadingStateChanged(TabContents* source) OVERRIDE;
-  virtual void CloseContents(TabContents* source) OVERRIDE;
-  virtual void MoveContents(TabContents* source,
-                            const gfx::Rect& pos) OVERRIDE;
   virtual bool ShouldFocusConstrainedWindow() OVERRIDE;
   virtual void WillShowConstrainedWindow(TabContents* source) OVERRIDE;
-  virtual void UpdateTargetURL(TabContents* source,
-                               const GURL& url) OVERRIDE;
   virtual bool ShouldSuppressDialogs() OVERRIDE;
   virtual void BeforeUnloadFired(TabContents* tab,
                                  bool proceed,
@@ -417,13 +400,6 @@ void InstantLoader::TabContentsDelegateImpl::Observe(
   }
 }
 
-void InstantLoader::TabContentsDelegateImpl::OpenURLFromTab(
-    TabContents* source,
-    const GURL& url, const GURL& referrer,
-    WindowOpenDisposition disposition,
-    PageTransition::Type transition) {
-}
-
 void InstantLoader::TabContentsDelegateImpl::NavigationStateChanged(
     const TabContents* source,
     unsigned changed_flags) {
@@ -450,35 +426,6 @@ std::string InstantLoader::TabContentsDelegateImpl::GetNavigationHeaders(
   return header;
 }
 
-void InstantLoader::TabContentsDelegateImpl::AddNewContents(
-    TabContents* source,
-    TabContents* new_contents,
-    WindowOpenDisposition disposition,
-    const gfx::Rect& initial_pos,
-    bool user_gesture) {
-}
-
-void InstantLoader::TabContentsDelegateImpl::ActivateContents(
-    TabContents* contents) {
-}
-
-void InstantLoader::TabContentsDelegateImpl::DeactivateContents(
-    TabContents* contents) {
-}
-
-void InstantLoader::TabContentsDelegateImpl::LoadingStateChanged(
-    TabContents* source) {
-}
-
-void InstantLoader::TabContentsDelegateImpl::CloseContents(
-    TabContents* source) {
-}
-
-void InstantLoader::TabContentsDelegateImpl::MoveContents(
-    TabContents* source,
-    const gfx::Rect& pos) {
-}
-
 bool InstantLoader::TabContentsDelegateImpl::ShouldFocusConstrainedWindow() {
   // Return false so that constrained windows are not initially focused. If
   // we did otherwise the preview would prematurely get committed when focus
@@ -494,10 +441,6 @@ void InstantLoader::TabContentsDelegateImpl::WillShowConstrainedWindow(
     UnregisterForPaintNotifications();
     loader_->ShowPreview();
   }
-}
-
-void InstantLoader::TabContentsDelegateImpl::UpdateTargetURL(
-    TabContents* source, const GURL& url) {
 }
 
 bool InstantLoader::TabContentsDelegateImpl::ShouldSuppressDialogs() {

@@ -60,28 +60,11 @@ class TestTabContentsDelegate : public TabContentsDelegate {
     return navigation_state_change_count_;
   }
 
-  virtual void OpenURLFromTab(TabContents* source,
-                              const GURL& url, const GURL& referrer,
-                              WindowOpenDisposition disposition,
-                              PageTransition::Type transition) {}
-
   // Keep track of whether the tab has notified us of a navigation state change.
   virtual void NavigationStateChanged(const TabContents* source,
                                       unsigned changed_flags) {
     navigation_state_change_count_++;
   }
-
-  virtual void AddNewContents(TabContents* source,
-                              TabContents* new_contents,
-                              WindowOpenDisposition disposition,
-                              const gfx::Rect& initial_pos,
-                              bool user_gesture) {}
-  virtual void ActivateContents(TabContents* contents) {}
-  virtual void DeactivateContents(TabContents* contents) {}
-  virtual void LoadingStateChanged(TabContents* source) {}
-  virtual void CloseContents(TabContents* source) {}
-  virtual void MoveContents(TabContents* source, const gfx::Rect& pos) {}
-  virtual void UpdateTargetURL(TabContents* source, const GURL& url) {}
 
  private:
   // The number of times NavigationStateChanged has been called.

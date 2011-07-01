@@ -43,7 +43,6 @@ class ConstrainedHtmlDelegateWin : public TabContentsContainer,
   }
 
   // HtmlDialogTabContentsDelegate interface.
-  void MoveContents(TabContents* source, const gfx::Rect& pos) OVERRIDE {}
   void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) OVERRIDE {}
 
   // Overridden from TabContentsContainer.

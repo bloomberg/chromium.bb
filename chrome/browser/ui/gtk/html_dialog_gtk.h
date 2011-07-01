@@ -47,7 +47,6 @@ class HtmlDialogGtk : public HtmlDialogTabContentsDelegate,
   virtual bool ShouldShowDialogTitle() const;
 
   // Overridden from TabContentsDelegate:
-  virtual void MoveContents(TabContents* source, const gfx::Rect& pos);
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
 
  private:

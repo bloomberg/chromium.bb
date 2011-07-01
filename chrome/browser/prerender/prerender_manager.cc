@@ -86,19 +86,6 @@ class PrerenderManager::OnCloseTabContentsDeleter : public TabContentsDelegate {
     return true;
   }
 
-  // TabContentsDelegate implementation (pure virtual methods). Since we are
-  // waiting for the tab to close, none of this matters.
-  virtual void OpenURLFromTab(TabContents*, const GURL&, const GURL&,
-      WindowOpenDisposition, PageTransition::Type) OVERRIDE {}
-  virtual void NavigationStateChanged(const TabContents*, unsigned) OVERRIDE {}
-  virtual void AddNewContents(TabContents*, TabContents*, WindowOpenDisposition,
-      const gfx::Rect&, bool) OVERRIDE {}
-  virtual void ActivateContents(TabContents*) OVERRIDE {}
-  virtual void DeactivateContents(TabContents*) OVERRIDE {}
-  virtual void LoadingStateChanged(TabContents*) OVERRIDE {}
-  virtual void MoveContents(TabContents*, const gfx::Rect&) OVERRIDE {}
-  virtual void UpdateTargetURL(TabContents*, const GURL&) OVERRIDE {}
-
  private:
   PrerenderManager* manager_;
   scoped_ptr<TabContentsWrapper> tab_;

@@ -76,20 +76,13 @@ class DevToolsWindow
                               const GURL& referrer,
                               WindowOpenDisposition disposition,
                               PageTransition::Type transition);
-  virtual void NavigationStateChanged(const TabContents* source,
-                                      unsigned changed_flags) {}
   virtual void AddNewContents(TabContents* source,
                               TabContents* new_contents,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_pos,
                               bool user_gesture);
-  virtual void ActivateContents(TabContents* contents) {}
-  virtual void DeactivateContents(TabContents* contents) {}
-  virtual void LoadingStateChanged(TabContents* source) {}
   virtual void CloseContents(TabContents* source) {}
-  virtual void MoveContents(TabContents* source, const gfx::Rect& pos) {}
   virtual bool CanReloadContents(TabContents* source) const;
-  virtual void UpdateTargetURL(TabContents* source, const GURL& url) {}
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
                                       bool* is_keyboard_shortcut);
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);

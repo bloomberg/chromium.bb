@@ -449,36 +449,11 @@ void DraggedTabController::AddNewContents(TabContents* source,
   }
 }
 
-void DraggedTabController::ActivateContents(TabContents* contents) {
-  // Ignored.
-}
-
-void DraggedTabController::DeactivateContents(TabContents* contents) {
-  // Ignored.
-}
-
 void DraggedTabController::LoadingStateChanged(TabContents* source) {
   // It would be nice to respond to this message by changing the
   // screen shot in the dragged tab.
   if (view_.get())
     view_->Update();
-}
-
-void DraggedTabController::CloseContents(TabContents* source) {
-  // Theoretically could be called by a window. Should be ignored
-  // because window.close() is ignored (usually, even though this
-  // method gets called.)
-}
-
-void DraggedTabController::MoveContents(TabContents* source,
-                                        const gfx::Rect& pos) {
-  // Theoretically could be called by a web page trying to move its
-  // own window. Should be ignored since we're moving the window...
-}
-
-void DraggedTabController::UpdateTargetURL(TabContents* source,
-                                           const GURL& url) {
-  // Ignored.
 }
 
 bool DraggedTabController::ShouldSuppressDialogs() {

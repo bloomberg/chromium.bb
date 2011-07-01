@@ -31,8 +31,6 @@ class TestTabContentsDelegate : public HtmlDialogTabContentsDelegate {
   virtual ~TestTabContentsDelegate() {
   }
 
-  virtual void MoveContents(TabContents* source, const gfx::Rect& pos) {}
-
  private:
   DISALLOW_COPY_AND_ASSIGN(TestTabContentsDelegate);
 };

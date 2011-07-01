@@ -31,27 +31,18 @@ class HtmlDialogTabContentsDelegate : public TabContentsDelegate {
   // calls to profile() return NULL.
   void Detach();
 
-  // TabContentsDelegate declarations.  Subclasses of this still need to
-  // override:
-  //   virtual void MoveContents(TabContents* source, const gfx::Rect& pos);
+  // TabContentsDelegate declarations.
 
   virtual void OpenURLFromTab(TabContents* source,
                               const GURL& url, const GURL& referrer,
                               WindowOpenDisposition disposition,
                               PageTransition::Type transition);
-  virtual void NavigationStateChanged(const TabContents* source,
-                                      unsigned changed_flags);
   virtual void AddNewContents(TabContents* source,
                               TabContents* new_contents,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_pos,
                               bool user_gesture);
-  virtual void ActivateContents(TabContents* contents);
-  virtual void DeactivateContents(TabContents* contents);
-  virtual void LoadingStateChanged(TabContents* source);
-  virtual void CloseContents(TabContents* source);
   virtual bool IsPopup(const TabContents* source) const;
-  virtual void UpdateTargetURL(TabContents* source, const GURL& url);
   virtual bool ShouldAddNavigationToHistory(
       const history::HistoryAddPageArgs& add_page_args,
       NavigationType::Type navigation_type);

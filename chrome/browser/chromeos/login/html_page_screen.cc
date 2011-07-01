@@ -84,10 +84,6 @@ void HTMLPageScreen::LoadingStateChanged(TabContents* source) {
   }
 }
 
-void HTMLPageScreen::NavigationStateChanged(const TabContents* source,
-                                            unsigned changed_flags) {
-}
-
 void HTMLPageScreen::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
   HandleWebKeyboardEvent(view()->GetWidget(), event);
 }

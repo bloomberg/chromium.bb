@@ -145,14 +145,6 @@ void DraggedTabControllerGtk::AddNewContents(TabContents* source,
   }
 }
 
-void DraggedTabControllerGtk::ActivateContents(TabContents* contents) {
-  // Ignored.
-}
-
-void DraggedTabControllerGtk::DeactivateContents(TabContents* contents) {
-  // Ignored.
-}
-
 void DraggedTabControllerGtk::LoadingStateChanged(TabContents* source) {
   // TODO(jhawkins): It would be nice to respond to this message by changing the
   // screen shot in the dragged tab.
@@ -160,25 +152,8 @@ void DraggedTabControllerGtk::LoadingStateChanged(TabContents* source) {
     dragged_tab_->Update();
 }
 
-void DraggedTabControllerGtk::CloseContents(TabContents* source) {
-  // Theoretically could be called by a window. Should be ignored
-  // because window.close() is ignored (usually, even though this
-  // method gets called.)
-}
-
-void DraggedTabControllerGtk::MoveContents(TabContents* source,
-                                        const gfx::Rect& pos) {
-  // Theoretically could be called by a web page trying to move its
-  // own window. Should be ignored since we're moving the window...
-}
-
 bool DraggedTabControllerGtk::IsPopup(const TabContents* source) const {
   return false;
-}
-
-void DraggedTabControllerGtk::UpdateTargetURL(TabContents* source,
-                                              const GURL& url) {
-  // Ignored.
 }
 
 content::JavaScriptDialogCreator*

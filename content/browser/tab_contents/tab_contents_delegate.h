@@ -51,16 +51,17 @@ class TabContentsDelegate {
   // A NULL source indicates the current tab (callers should probably use
   // OpenURL() for these cases which does it for you).
   virtual void OpenURLFromTab(TabContents* source,
-                              const GURL& url, const GURL& referrer,
+                              const GURL& url,
+                              const GURL& referrer,
                               WindowOpenDisposition disposition,
-                              PageTransition::Type transition) = 0;
+                              PageTransition::Type transition);
 
   // Called to inform the delegate that the tab content's navigation state
   // changed. The |changed_flags| indicates the parts of the navigation state
   // that have been updated, and is any combination of the
   // |TabContents::InvalidateTypes| bits.
   virtual void NavigationStateChanged(const TabContents* source,
-                                      unsigned changed_flags) = 0;
+                                      unsigned changed_flags);
 
   // Returns the set of headers to add to the navigation request. Use
   // net::HttpUtil::AppendHeaderIfMissing to build the set of headers.
@@ -74,19 +75,19 @@ class TabContentsDelegate {
                               TabContents* new_contents,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_pos,
-                              bool user_gesture) = 0;
+                              bool user_gesture);
 
   // Selects the specified contents, bringing its container to the front.
-  virtual void ActivateContents(TabContents* contents) = 0;
+  virtual void ActivateContents(TabContents* contents);
 
   // Deactivates the specified contents by deactivating its container and
   // potentialy moving it to the back of the Z order.
-  virtual void DeactivateContents(TabContents* contents) = 0;
+  virtual void DeactivateContents(TabContents* contents);
 
   // Notifies the delegate that this contents is starting or is done loading
   // some resource. The delegate should use this notification to represent
   // loading feedback. See TabContents::is_loading()
-  virtual void LoadingStateChanged(TabContents* source) = 0;
+  virtual void LoadingStateChanged(TabContents* source);
 
   // Notifies the delegate that the page has made some progress loading.
   // |progress| is a value between 0.0 (nothing loaded) to 1.0 (page fully
@@ -97,11 +98,11 @@ class TabContentsDelegate {
 
   // Request the delegate to close this tab contents, and do whatever cleanup
   // it needs to do.
-  virtual void CloseContents(TabContents* source) = 0;
+  virtual void CloseContents(TabContents* source);
 
   // Request the delegate to move this tab contents to the specified position
   // in screen coordinates.
-  virtual void MoveContents(TabContents* source, const gfx::Rect& pos) = 0;
+  virtual void MoveContents(TabContents* source, const gfx::Rect& pos);
 
   // Causes the delegate to detach |source| and clean up any internal data
   // pointing to it.  After this call ownership of |source| passes to the
@@ -119,7 +120,7 @@ class TabContentsDelegate {
   virtual void WillShowConstrainedWindow(TabContents* source);
 
   // Notification that the target URL has changed.
-  virtual void UpdateTargetURL(TabContents* source, const GURL& url) = 0;
+  virtual void UpdateTargetURL(TabContents* source, const GURL& url);
 
   // Notification that there was a mouse event, along with the absolute
   // coordinates of the mouse pointer and whether it was a normal motion event

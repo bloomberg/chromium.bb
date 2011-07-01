@@ -140,16 +140,10 @@ class DraggedTabController : public TabContentsDelegate,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_pos,
                               bool user_gesture) OVERRIDE;
-  virtual void ActivateContents(TabContents* contents) OVERRIDE;
-  virtual void DeactivateContents(TabContents* contents) OVERRIDE;
   virtual void LoadingStateChanged(TabContents* source) OVERRIDE;
-  virtual void CloseContents(TabContents* source) OVERRIDE;
-  virtual void MoveContents(TabContents* source,
-                            const gfx::Rect& pos) OVERRIDE;
-  virtual void UpdateTargetURL(TabContents* source, const GURL& url) OVERRIDE;
   virtual bool ShouldSuppressDialogs() OVERRIDE;
-  virtual content::JavaScriptDialogCreator* GetJavaScriptDialogCreator()
-      OVERRIDE;
+  virtual content::JavaScriptDialogCreator*
+      GetJavaScriptDialogCreator() OVERRIDE;
 
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,

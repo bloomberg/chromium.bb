@@ -39,7 +39,6 @@ class ConstrainedHtmlDelegateMac :
   virtual void OnDialogClose();
 
   // HtmlDialogTabContentsDelegate ---------------------------------------------
-  void MoveContents(TabContents* source, const gfx::Rect& pos) {}
   void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {}
 
   void set_window(ConstrainedWindow* window) {

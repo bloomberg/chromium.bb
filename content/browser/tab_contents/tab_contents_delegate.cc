@@ -14,11 +14,45 @@
 TabContentsDelegate::TabContentsDelegate() {
 }
 
+void TabContentsDelegate::OpenURLFromTab(TabContents* source,
+                                         const GURL& url,
+                                         const GURL& referrer,
+                                         WindowOpenDisposition disposition,
+                                         PageTransition::Type transition) {
+}
+
+void TabContentsDelegate::NavigationStateChanged(const TabContents* source,
+                                                 unsigned changed_flags) {
+}
+
 std::string TabContentsDelegate::GetNavigationHeaders(const GURL& url) {
   return std::string();
 }
 
+void TabContentsDelegate::AddNewContents(TabContents* source,
+                                         TabContents* new_contents,
+                                         WindowOpenDisposition disposition,
+                                         const gfx::Rect& initial_pos,
+                                         bool user_gesture) {
+}
+
+void TabContentsDelegate::ActivateContents(TabContents* contents) {
+}
+
+void TabContentsDelegate::DeactivateContents(TabContents* contents) {
+}
+
+void TabContentsDelegate::LoadingStateChanged(TabContents* source) {
+}
+
 void TabContentsDelegate::LoadProgressChanged(double progress) {
+}
+
+void TabContentsDelegate::CloseContents(TabContents* source) {
+}
+
+void TabContentsDelegate::MoveContents(TabContents* source,
+                                       const gfx::Rect& pos) {
 }
 
 void TabContentsDelegate::DetachContents(TabContents* source) {
@@ -33,6 +67,10 @@ bool TabContentsDelegate::ShouldFocusConstrainedWindow() {
 }
 
 void TabContentsDelegate::WillShowConstrainedWindow(TabContents* source) {
+}
+
+void TabContentsDelegate::UpdateTargetURL(TabContents* source,
+                                          const GURL& url) {
 }
 
 void TabContentsDelegate::ContentsMouseEvent(

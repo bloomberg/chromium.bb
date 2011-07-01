@@ -73,24 +73,6 @@ class WebUILoginView : public views::View,
   void InitStatusArea();
 
   // Overridden from TabContentsDelegate.
-  virtual void OpenURLFromTab(TabContents* source,
-                              const GURL& url,
-                              const GURL& referrer,
-                              WindowOpenDisposition disposition,
-                              PageTransition::Type transition) OVERRIDE;
-  virtual void NavigationStateChanged(const TabContents* source,
-                                      unsigned changed_flags) OVERRIDE;
-  virtual void AddNewContents(TabContents* source,
-                              TabContents* new_contents,
-                              WindowOpenDisposition disposition,
-                              const gfx::Rect& initial_pos,
-                              bool user_gesture) OVERRIDE;
-  virtual void ActivateContents(TabContents* contents) OVERRIDE;
-  virtual void DeactivateContents(TabContents* contents) OVERRIDE;
-  virtual void LoadingStateChanged(TabContents* source) OVERRIDE;
-  virtual void CloseContents(TabContents* source) OVERRIDE;
-  virtual void MoveContents(TabContents* source, const gfx::Rect& pos) OVERRIDE;
-  virtual void UpdateTargetURL(TabContents* source, const GURL& url) OVERRIDE;
   virtual bool HandleContextMenu(const ContextMenuParams& params) OVERRIDE;
 
   Profile* profile_;

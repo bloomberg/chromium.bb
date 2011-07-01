@@ -49,12 +49,6 @@ void HtmlDialogTabContentsDelegate::OpenURLFromTab(
   }
 }
 
-void HtmlDialogTabContentsDelegate::NavigationStateChanged(
-    const TabContents* source, unsigned changed_flags) {
-  // We shouldn't receive any NavigationStateChanged except the first
-  // one, which we ignore because we're a dialog box.
-}
-
 void HtmlDialogTabContentsDelegate::AddNewContents(
     TabContents* source, TabContents* new_contents,
     WindowOpenDisposition disposition, const gfx::Rect& initial_pos,
@@ -77,34 +71,10 @@ void HtmlDialogTabContentsDelegate::AddNewContents(
   }
 }
 
-void HtmlDialogTabContentsDelegate::ActivateContents(TabContents* contents) {
-  // We don't do anything here because there's only one TabContents in
-  // this frame and we don't have a TabStripModel.
-}
-
-void HtmlDialogTabContentsDelegate::DeactivateContents(TabContents* contents) {
-  // We don't care about this notification (called when a user gesture triggers
-  // a call to window.blur()).
-}
-
-void HtmlDialogTabContentsDelegate::LoadingStateChanged(TabContents* source) {
-  // We don't care about this notification.
-}
-
-void HtmlDialogTabContentsDelegate::CloseContents(TabContents* source) {
-  // We receive this message but don't handle it because we really do the
-  // cleanup somewhere else (namely, HtmlDialogUIDelegate::OnDialogClosed()).
-}
-
 bool HtmlDialogTabContentsDelegate::IsPopup(const TabContents* source) const {
   // This needs to return true so that we are allowed to be resized by our
   // contents.
   return true;
-}
-
-void HtmlDialogTabContentsDelegate::UpdateTargetURL(TabContents* source,
-                                                    const GURL& url) {
-  // Ignored.
 }
 
 bool HtmlDialogTabContentsDelegate::ShouldAddNavigationToHistory(

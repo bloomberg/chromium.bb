@@ -103,11 +103,6 @@ bool HtmlDialogGtk::ShouldShowDialogTitle() const {
 ////////////////////////////////////////////////////////////////////////////////
 // TabContentsDelegate implementation:
 
-void HtmlDialogGtk::MoveContents(TabContents* source, const gfx::Rect& pos) {
-  // The contained web page wishes to resize itself. We let it do this because
-  // if it's a dialog we know about, we trust it not to be mean to the user.
-}
-
 // A simplified version of BrowserWindowGtk::HandleKeyboardEvent().
 // We don't handle global keyboard shortcuts here, but that's fine since
 // they're all browser-specific. (This may change in the future.)

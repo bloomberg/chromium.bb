@@ -474,15 +474,6 @@ void ExternalTabContainer::TabContentsCreated(TabContents* new_contents) {
   RegisterRenderViewHostForAutomation(rvh, true);
 }
 
-void ExternalTabContainer::ActivateContents(TabContents* contents) {
-}
-
-void ExternalTabContainer::DeactivateContents(TabContents* contents) {
-}
-
-void ExternalTabContainer::LoadingStateChanged(TabContents* source) {
-}
-
 void ExternalTabContainer::CloseContents(TabContents* source) {
   if (!automation_)
     return;
