@@ -7,7 +7,7 @@
 #include <assert.h>
 #include <errno.h>
 
-#include <sys/nacl_syscalls.h>
+#include <nacl/nacl_dyncode.h>
 #include "native_client/tests/dynamic_code_loading/dynamic_segment.h"
 
 

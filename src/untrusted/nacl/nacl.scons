@@ -83,6 +83,7 @@ env.Requires('libnacl', header_install)
 
 env.NaClSdkLibrary('libnacl_dyncode', ['dyncode.c'], LIBS=['nacl'])
 env.AddLibraryToSdk(['libnacl_dyncode'])
+env.AddHeaderToSdk(['nacl_dyncode.h'])
 
 imc_syscalls = [
     'imc_accept.c',

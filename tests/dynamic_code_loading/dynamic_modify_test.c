@@ -12,7 +12,7 @@
 #include <string.h>
 #include <sys/mman.h>
 
-#include <sys/nacl_syscalls.h>
+#include <nacl/nacl_dyncode.h>
 
 #include "native_client/tests/dynamic_code_loading/dynamic_segment.h"
 #include "native_client/tests/dynamic_code_loading/templates.h"

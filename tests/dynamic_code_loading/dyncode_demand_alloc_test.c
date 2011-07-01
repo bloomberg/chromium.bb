@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/nacl_syscalls.h>
+#include <nacl/nacl_dyncode.h>
 
 #include "native_client/tests/dynamic_code_loading/dynamic_segment.h"
 
