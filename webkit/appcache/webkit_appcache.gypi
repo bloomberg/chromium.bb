@@ -8,8 +8,8 @@
       'target_name': 'appcache',
       'type': 'static_library',
       'dependencies': [
+        '<(DEPTH)/app/app.gyp:app_base',
         '<(DEPTH)/net/net.gyp:net',
-        '<(DEPTH)/sql/sql.gyp:sql',
       ],
       'sources': [
         # This list contains all .h and .cc in appcache except for test code.

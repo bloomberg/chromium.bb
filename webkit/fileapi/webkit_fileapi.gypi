@@ -8,6 +8,7 @@
       'target_name': 'fileapi',
       'type': 'static_library',
       'dependencies': [
+        '<(DEPTH)/app/app.gyp:app_base',
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/net/net.gyp:net',
         '<(DEPTH)/third_party/leveldb/leveldb.gyp:leveldb',
