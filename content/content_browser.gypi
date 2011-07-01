@@ -200,6 +200,8 @@
         'browser/mach_broker_mac.h',
         'browser/mime_registry_message_filter.cc',
         'browser/mime_registry_message_filter.h',
+        'browser/net/browser_online_state_observer.cc',
+        'browser/net/browser_online_state_observer.h',
         # TODO:  These should be moved to test_support (see below), but
         # are currently used by production code in automation_provider.cc.
         'browser/net/url_request_failed_dns_job.cc',

@@ -78,6 +78,7 @@
 #include "ipc/ipc_platform_file.h"
 #include "ipc/ipc_switches.h"
 #include "media/base/media_switches.h"
+#include "net/base/network_change_notifier.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/gl/gl_switches.h"
@@ -886,6 +887,11 @@ void BrowserRenderProcessHost::OnProcessLaunched() {
 
   if (max_page_id_ != -1)
     Send(new ViewMsg_SetNextPageID(max_page_id_ + 1));
+
+  // WebKit's network state (window.navigator.onLine) defaults to true,
+  // so if we're offline we need to notify the renderer at startup.
+  if (net::NetworkChangeNotifier::IsOffline())
+    Send(new ViewMsg_NetworkStateChanged(false));
 
   // NOTE: This needs to be before sending queued messages because
   // ExtensionService uses this notification to initialize the renderer process
