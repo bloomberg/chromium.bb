@@ -153,7 +153,7 @@ FileManager.prototype = {
     'image': /\.(bmp|gif|jpe?g|ico|png|webp)$/i,
     'pdf' : /\.(pdf)$/i,
     'text': /\.(pod|rst|txt|log)$/i,
-    'video': /\.(mov|mp4|m4v|mpe?g4?|ogm|ogv|ogx|webm)$/i
+    'video': /\.(avi|mov|mp4|m4v|mpe?g4?|ogm|ogv|ogx|webm)$/i
   };
 
   const previewArt = {

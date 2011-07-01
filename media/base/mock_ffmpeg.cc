@@ -112,10 +112,6 @@ int avcodec_close(AVCodecContext* avctx) {
   return MockFFmpeg::get()->AVCodecClose(avctx);
 }
 
-int avcodec_thread_init(AVCodecContext* avctx, int threads) {
-  return MockFFmpeg::get()->AVCodecThreadInit(avctx, threads);
-}
-
 void avcodec_flush_buffers(AVCodecContext* avctx) {
   return MockFFmpeg::get()->AVCodecFlushBuffers(avctx);
 }

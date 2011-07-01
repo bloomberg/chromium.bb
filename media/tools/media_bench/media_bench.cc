@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -132,15 +132,15 @@ int main(int argc, const char** argv) {
   FilePath out_path;
   if (filenames.size() > 1)
     out_path = FilePath(filenames[1]);
-  CodecType target_codec = CODEC_TYPE_UNKNOWN;
+  AVMediaType target_codec = AVMEDIA_TYPE_UNKNOWN;
 
   // Determine whether to benchmark audio or video decoding.
   std::string stream(cmd_line->GetSwitchValueASCII(switches::kStream));
   if (!stream.empty()) {
     if (stream.compare("audio") == 0) {
-      target_codec = CODEC_TYPE_AUDIO;
+      target_codec = AVMEDIA_TYPE_AUDIO;
     } else if (stream.compare("video") == 0) {
-      target_codec = CODEC_TYPE_VIDEO;
+      target_codec = AVMEDIA_TYPE_VIDEO;
     } else {
       std::cerr << "Unknown --stream option " << stream << std::endl;
       return 1;
@@ -239,7 +239,7 @@ int main(int argc, const char** argv) {
                                   NULL, 0, NULL);
   if (result < 0) {
     switch (result) {
-      case AVERROR_NOFMT:
+      case AVERROR(EINVAL):
         std::cerr << "Error: File format not supported "
                   << in_path.value() << std::endl;
         break;
@@ -293,7 +293,7 @@ int main(int argc, const char** argv) {
       *log_out << "  ";
     }
 
-    if (!codec || (codec_context->codec_type == CODEC_TYPE_UNKNOWN)) {
+    if (!codec || (codec_context->codec_type == AVMEDIA_TYPE_UNKNOWN)) {
       *log_out << "Stream #" << i << ": Unknown" << std::endl;
     } else {
       // Print out stream information
@@ -339,11 +339,8 @@ int main(int argc, const char** argv) {
   }
 
   // Initialize threaded decode.
-  if (target_codec == CODEC_TYPE_VIDEO && video_threads > 0) {
-    if (avcodec_thread_init(codec_context, video_threads) < 0) {
-      std::cerr << "Warning: Could not initialize threading!\n"
-                << "Did you build with pthread/w32thread support?" << std::endl;
-    }
+  if (target_codec == AVMEDIA_TYPE_VIDEO && video_threads > 0) {
+    codec_context->thread_count = video_threads;
   }
 
   // Initialize our codec.
@@ -402,7 +399,7 @@ int main(int argc, const char** argv) {
     // Only decode packets from our target stream.
     if (packet.stream_index == target_stream) {
       int result = -1;
-      if (target_codec == CODEC_TYPE_AUDIO) {
+      if (target_codec == AVMEDIA_TYPE_AUDIO) {
         int size_out = AVCODEC_MAX_AUDIO_FRAME_SIZE;
 
         base::TimeTicks decode_start = base::TimeTicks::HighResNow();
@@ -434,7 +431,7 @@ int main(int argc, const char** argv) {
             MD5Update(&ctx, u8_samples, size_out);
           }
         }
-      } else if (target_codec == CODEC_TYPE_VIDEO) {
+      } else if (target_codec == AVMEDIA_TYPE_VIDEO) {
         int got_picture = 0;
 
         base::TimeTicks decode_start = base::TimeTicks::HighResNow();

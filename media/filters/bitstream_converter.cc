@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,7 +52,7 @@ bool FFmpegBitstreamConverter::ConvertPacket(AVPacket* packet) {
   if (av_bitstream_filter_filter(stream_filter_, stream_context_, NULL,
                                  &converted_data, &converted_size,
                                  packet->data, packet->size,
-                                 packet->flags & PKT_FLAG_KEY) < 0) {
+                                 packet->flags & AV_PKT_FLAG_KEY) < 0) {
     return false;
   }
 

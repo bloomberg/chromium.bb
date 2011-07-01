@@ -91,7 +91,7 @@ TEST_F(BitstreamConverterTest, ConvertPacket_FailedFilter) {
               AVBitstreamFilterFilter(&test_filter_, &test_stream_context_,
                                       NULL, _, _,
                                       test_packet_.data, test_packet_.size, _))
-      .WillOnce(Return(AVERROR_UNKNOWN));
+      .WillOnce(Return(AVERROR(EINVAL)));
 
   EXPECT_FALSE(converter.ConvertPacket(&test_packet_));
 

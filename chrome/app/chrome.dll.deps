@@ -31,9 +31,9 @@ delay_loaded = [
   'dbghelp.dll',
   'COMDLG32.dll',
   'urlmon.dll',
-  'avcodec-52.dll',
-  'avformat-52.dll',
-  'avutil-50.dll',
+  'avcodec-53.dll',
+  'avformat-53.dll',
+  'avutil-51.dll',
   'pthreads.dll',
   'IPHLPAPI.dll',
 ]

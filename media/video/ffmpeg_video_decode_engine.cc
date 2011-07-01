@@ -127,9 +127,8 @@ void FFmpegVideoDecodeEngine::Initialize(
     }
     frame_queue_available_.push_back(video_frame);
   }
-
+  codec_context_->thread_count = decode_threads;
   if (codec &&
-      avcodec_thread_init(codec_context_, decode_threads) >= 0 &&
       avcodec_open(codec_context_, codec) >= 0 &&
       av_frame_.get() &&
       buffer_allocated) {

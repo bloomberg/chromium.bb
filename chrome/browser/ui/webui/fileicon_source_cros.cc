@@ -133,6 +133,7 @@ const ExtensionIconSizeMap::value_type kExtensionIdrBySizeData[] = {
   std::make_pair(".pod", kTextIdrs),
   std::make_pair(".rst", kTextIdrs),
   std::make_pair(".txt", kTextIdrs),
+  std::make_pair(".avi", kVideoIdrs),
   std::make_pair(".m4v", kVideoIdrs),
   std::make_pair(".mov", kVideoIdrs),
   std::make_pair(".mp4", kVideoIdrs),

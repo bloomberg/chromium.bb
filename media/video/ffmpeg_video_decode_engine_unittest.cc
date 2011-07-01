@@ -86,8 +86,6 @@ class FFmpegVideoDecodeEngineTest : public testing::Test,
         .WillOnce(Return(&codec_));
     EXPECT_CALL(mock_ffmpeg_, AVCodecAllocFrame())
         .WillOnce(Return(&yuv_frame_));
-    EXPECT_CALL(mock_ffmpeg_, AVCodecThreadInit(&codec_context_, 2))
-        .WillOnce(Return(0));
     EXPECT_CALL(mock_ffmpeg_, AVCodecOpen(&codec_context_, &codec_))
         .WillOnce(Return(0));
     EXPECT_CALL(mock_ffmpeg_, AVCodecClose(&codec_context_))
@@ -189,30 +187,6 @@ TEST_F(FFmpegVideoDecodeEngineTest, Initialize_FindDecoderFails) {
   EXPECT_FALSE(info_.success);
 }
 
-// Note There are 2 threads for FFmpeg-mt.
-TEST_F(FFmpegVideoDecodeEngineTest, Initialize_InitThreadFails) {
-  // Test avcodec_thread_init() failing.
-  EXPECT_CALL(mock_ffmpeg_, AVCodecAllocContext())
-      .WillOnce(Return(&codec_context_));
-  EXPECT_CALL(mock_ffmpeg_, AVCodecFindDecoder(CODEC_ID_H264))
-      .WillOnce(Return(&codec_));
-  EXPECT_CALL(mock_ffmpeg_, AVCodecAllocFrame())
-      .WillOnce(Return(&yuv_frame_));
-  EXPECT_CALL(mock_ffmpeg_, AVCodecThreadInit(&codec_context_, 2))
-      .WillOnce(Return(-1));
-  EXPECT_CALL(mock_ffmpeg_, AVCodecClose(&codec_context_))
-      .WillOnce(Return(0));
-  EXPECT_CALL(mock_ffmpeg_, AVFree(&yuv_frame_))
-      .Times(1);
-  EXPECT_CALL(mock_ffmpeg_, AVFree(&codec_context_))
-      .Times(1);
-
-  EXPECT_CALL(*this, OnInitializeComplete(_))
-     .WillOnce(SaveInitializeResult(this));
-  test_engine_->Initialize(MessageLoop::current(), this, NULL, config_);
-  EXPECT_FALSE(info_.success);
-}
-
 TEST_F(FFmpegVideoDecodeEngineTest, Initialize_OpenDecoderFails) {
   // Test avcodec_open() failing.
   EXPECT_CALL(mock_ffmpeg_, AVCodecAllocContext())
@@ -221,8 +195,6 @@ TEST_F(FFmpegVideoDecodeEngineTest, Initialize_OpenDecoderFails) {
       .WillOnce(Return(&codec_));
   EXPECT_CALL(mock_ffmpeg_, AVCodecAllocFrame())
       .WillOnce(Return(&yuv_frame_));
-  EXPECT_CALL(mock_ffmpeg_, AVCodecThreadInit(&codec_context_, 2))
-      .WillOnce(Return(0));
   EXPECT_CALL(mock_ffmpeg_, AVCodecOpen(&codec_context_, &codec_))
       .WillOnce(Return(-1));
   EXPECT_CALL(mock_ffmpeg_, AVCodecClose(&codec_context_))

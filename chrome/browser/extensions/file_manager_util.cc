@@ -38,7 +38,7 @@ const char* kBrowserSupportedExtensions[] = {
 };
 // List of file extension that can be handled with the media player.
 const char* kAVExtensions[] = {
-    ".webm", ".mp4", ".m4v", ".mov", ".ogm", ".ogv", ".ogx",
+    ".avi", ".webm", ".mp4", ".m4v", ".mov", ".ogm", ".ogv", ".ogx",
     ".mp3", ".m4a", ".ogg", ".oga", ".wav",
 /* TODO(zelidrag): Add unsupported ones as we enable them:
     ".3gp", ".mkv", ".avi", ".divx", ".xvid", ".wmv", ".asf", ".mpeg", ".mpg",
