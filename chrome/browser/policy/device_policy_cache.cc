@@ -9,6 +9,8 @@
 #include "base/logging.h"
 #include "base/task.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/update_library.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
@@ -301,6 +303,16 @@ void DevicePolicyCache::DecodeDevicePolicy(
       recommended->Set(kPolicyProxyBypassList,
                        Value::CreateStringValue(container.proxy_bypass_list()));
     }
+  }
+
+  if (policy.has_release_channel() &&
+      policy.release_channel().has_release_channel()) {
+    std::string channel = policy.release_channel().release_channel();
+    mandatory->Set(
+        kPolicyChromeOsReleaseChannel, Value::CreateStringValue(channel));
+    // TODO: We should probably set the release track somewhere else, but this
+    // policy is a work-in-progress (http://crosbug.com/15382).
+    chromeos::CrosLibrary::Get()->GetUpdateLibrary()->SetReleaseTrack(channel);
   }
 }
 

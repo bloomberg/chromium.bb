@@ -27,4 +27,6 @@ const char kDeviceOwner[] = "cros.device.owner";
 
 const char kStatsReportingPref[] = "cros.metrics.reportingEnabled";
 
+const char kReleaseChannel[] = "cros.system.releaseChannel";
+
 }  // namespace chromeos

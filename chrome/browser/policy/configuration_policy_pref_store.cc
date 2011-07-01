@@ -1069,6 +1069,8 @@ ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList() {
 #if defined(OS_CHROMEOS)
     { kPolicyChromeOsLockOnIdleSuspend, Value::TYPE_BOOLEAN,
       key::kChromeOsLockOnIdleSuspend },
+    { kPolicyChromeOsReleaseChannel, Value::TYPE_STRING,
+      key::kChromeOsReleaseChannel },
 #endif
   };
 

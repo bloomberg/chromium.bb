@@ -752,6 +752,12 @@ std::string RetrievePropertyOp::LookUpInPolicy(const std::string& prop) {
       return "";           // Default to invalid proxy config (will be ignored).
     return serialized;
 
+  } else if (prop == kReleaseChannel) {
+    if (!pol.has_release_channel() ||
+        !pol.release_channel().has_release_channel())
+      return "";           // Default: don't change the release channel
+    return pol.release_channel().release_channel();
+
   }
   return std::string();
 }

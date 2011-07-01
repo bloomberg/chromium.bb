@@ -44,7 +44,8 @@ const char* kBooleanSettings[] = {
 };
 
 const char* kStringSettings[] = {
-  kDeviceOwner
+  kDeviceOwner,
+  kReleaseChannel
 };
 
 const char* kListSettings[] = {

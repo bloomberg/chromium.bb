@@ -25,6 +25,8 @@ extern const char kDeviceOwner[];
 
 extern const char kStatsReportingPref[];
 
+extern const char kReleaseChannel[];
+
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_CROS_SETTINGS_NAMES_H_

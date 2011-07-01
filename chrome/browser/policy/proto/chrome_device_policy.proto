@@ -75,6 +75,11 @@ message MetricsEnabledProto {
   optional bool metrics_enabled = 1;
 }
 
+message ReleaseChannelProto {
+  // One of "stable-channel", "beta-channel", or "dev-channel"
+  optional string release_channel = 1;
+}
+
 message ChromeDeviceSettingsProto {
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
   optional UserWhitelistProto user_whitelist = 2;
@@ -85,4 +90,5 @@ message ChromeDeviceSettingsProto {
   optional DataRoamingEnabledProto data_roaming_enabled = 7;
   optional AllowNewUsersProto allow_new_users = 8;
   optional MetricsEnabledProto metrics_enabled = 9;
+  optional ReleaseChannelProto release_channel = 10;
 }
