@@ -88,7 +88,7 @@ class NetworkMenuButton : public StatusAreaButton,
   virtual void OnLocaleChanged() OVERRIDE;
 
   // views::ViewMenuDelegate implementation.
-  void RunMenu(views::View* source, const gfx::Point& pt);
+  virtual void RunMenu(views::View* source, const gfx::Point& pt);
 
   // MessageBubbleDelegate implementation:
   virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape);

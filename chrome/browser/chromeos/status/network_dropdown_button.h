@@ -46,7 +46,7 @@ class NetworkDropdownButton : public DropDownButton,
   virtual bool ShouldOpenButtonOptions() const;
 
   // views::ViewMenuDelegate implementation.
-  void RunMenu(views::View* source, const gfx::Point& pt);
+  virtual void RunMenu(views::View* source, const gfx::Point& pt);
 
  private:
   // The Network menu.
