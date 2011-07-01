@@ -1,0 +1,29 @@
+# Test legacy instructions.
+# aaa
+37
+# aad
+D5 0A
+# aam
+D4 0A
+# aas
+3F
+# bound %eax, (%eax)
+62 00
+# daa
+27
+# das
+2F
+# xlat (%ebx,%al)
+D7
+
+# Some undocumented instructions
+# icebp
+F1
+# salc
+D6
+
+# Flags operations
+# lahf
+9F
+# sahf
+9E
