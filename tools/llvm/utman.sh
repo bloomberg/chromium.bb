@@ -1975,6 +1975,8 @@ binutils-sb-setup() {
     AS="${PNACL_AS}" \
     CC="${PNACL_GCC} ${flags}" \
     CXX="${PNACL_GPP} ${flags}" \
+    CC_FOR_BUILD="${CC}" \
+    CXX_FOR_BUILD="${CXX}" \
     LD="${PNACL_LD} ${flags}" \
     NM="${PNACL_NM}" \
     RANLIB="${PNACL_RANLIB}" \
