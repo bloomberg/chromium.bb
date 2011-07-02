@@ -384,7 +384,7 @@ class BuildBoardTest(AbstractStageTest):
 
   def testFullBuildWithProfile(self):
     """Tests whether full builds add profile flag when requested."""
-    self.bot_id = 'arm-tegra2_seaboard-tangent-private-full'
+    self.bot_id = 'arm-tegra2_seaboard-tangent-private-release'
     self.build_config = config.config[self.bot_id]
     self.mox.StubOutWithMock(commands, 'MakeChroot')
     self.mox.StubOutWithMock(commands, 'SetupBoard')
@@ -412,7 +412,7 @@ class BuildBoardTest(AbstractStageTest):
 
   def testFullBuildWithOverriddenProfile(self):
     """Tests whether full builds add profile flag when requested."""
-    self.bot_id = 'arm-tegra2_seaboard-tangent-private-full'
+    self.bot_id = 'arm-tegra2_seaboard-tangent-private-release'
     self.options.profile = 'smock'
     self.build_config = config.config[self.bot_id]
     self.mox.StubOutWithMock(commands, 'MakeChroot')

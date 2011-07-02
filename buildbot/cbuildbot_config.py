@@ -441,10 +441,11 @@ add_config('arm-tegra2_seaboard-toolchain', [arm, internal, full, official, {
   'useflags' : ['chrome_internal'],
 }])
 
-add_config('arm-tegra2_seaboard-tangent-private-full', [internal, arm, full, {
-  'board' : 'tegra2_seaboard',
-  'profile' : 'cosine',
-  'prebuilts' : False,
+add_config('arm-tegra2_seaboard-tangent-private-release',
+  [internal, arm, full, {
+    'board' : 'tegra2_seaboard',
+    'profile' : 'cosine',
+    'prebuilts' : False,
 }])
 
 add_config('arm-tegra2_seaboard-tangent-private-bin',
