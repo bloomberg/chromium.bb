@@ -812,13 +812,13 @@ wlsc_output_set_cursor(struct wlsc_output *output,
 out:
 	pixman_region32_fini(&cursor_region);
 }
- 
+
 static void
 wlsc_output_repaint(struct wlsc_output *output)
 {
 	struct wlsc_compositor *ec = output->compositor;
 	struct wlsc_surface *es;
-	pixman_region32_t clip, new_damage, total_damage;
+	pixman_region32_t opaque, new_damage, total_damage, repaint;
 
 	output->prepare_render(output);
 
@@ -833,22 +833,24 @@ wlsc_output_repaint(struct wlsc_output *output)
 			       !(ec->focus && ec->fade.spring.current < 0.001));
 
 	pixman_region32_init(&new_damage);
-	pixman_region32_intersect(&new_damage, &ec->damage, &output->region);
-	pixman_region32_init(&clip);
-	pixman_region32_copy(&clip, &output->region);
+	pixman_region32_copy(&new_damage, &ec->damage);
+	pixman_region32_init(&opaque);
+				
 	wl_list_for_each(es, &ec->surface_list, link) {
-		pixman_region32_intersect(&es->damage, &es->damage, &clip);
+		pixman_region32_subtract(&es->damage, &es->damage, &opaque);
 		pixman_region32_union(&new_damage, &new_damage, &es->damage);
-		pixman_region32_subtract(&clip, &clip, &es->opaque);
+		pixman_region32_union(&opaque, &opaque, &es->opaque);
 	}
 
 	pixman_region32_subtract(&ec->damage, &ec->damage, &output->region);
+
 	pixman_region32_init(&total_damage);
 	pixman_region32_union(&total_damage, &new_damage,
 			      &output->previous_damage);
-	pixman_region32_copy(&output->previous_damage, &new_damage);
+	pixman_region32_intersect(&output->previous_damage,
+				  &new_damage, &output->region);
 
-	pixman_region32_fini(&clip);
+	pixman_region32_fini(&opaque);
 	pixman_region32_fini(&new_damage);
 
 	es = container_of(ec->surface_list.next, struct wlsc_surface, link);
@@ -881,9 +883,12 @@ wlsc_output_repaint(struct wlsc_output *output)
 		}
 
 		wl_list_for_each_reverse(es, &ec->surface_list, link) {
-			wlsc_surface_draw(es, output, &es->damage);
-			pixman_region32_fini(&es->damage);
-			pixman_region32_init(&es->damage);
+			pixman_region32_init(&repaint);
+			pixman_region32_intersect(&repaint, &output->region,
+						  &es->damage);
+			wlsc_surface_draw(es, output, &repaint);
+			pixman_region32_subtract(&es->damage,
+						 &es->damage, &output->region);
 		}
 	}
 
@@ -1029,6 +1034,7 @@ surface_attach(struct wl_client *client,
 	if (es->visual == NULL)
 		wl_list_insert(&es->compositor->surface_list, &es->link);
 
+	es->visual = buffer->visual;
 	wlsc_surface_configure(es, es->x + x, es->y + y,
 			       buffer->width, buffer->height);
 
