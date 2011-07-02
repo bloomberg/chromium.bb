@@ -51,7 +51,6 @@ void WebUILoginDisplay::Init(const std::vector<UserManager::User>& users,
                              bool show_new_user) {
   // Testing that the delegate has been set.
   DCHECK(delegate_);
-
   users_ = users;
 }
 

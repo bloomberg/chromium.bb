@@ -59,13 +59,35 @@ cr.define('cr.ui', function() {
       // Adjust inner container height based on new step's height.
       $('inner-container').style.height = newStep.offsetHeight;
 
-      oldStep.addEventListener('webkitTransitionEnd', function f(e) {
-        oldStep.removeEventListener('webkitTransitionEnd', f);
-        oldStep.classList.add('hidden');
-      });
+      if (this.currentStep_ != nextStepIndex) {
+        oldStep.addEventListener('webkitTransitionEnd', function f(e) {
+          oldStep.removeEventListener('webkitTransitionEnd', f);
+          oldStep.classList.add('hidden');
+          if (nextStepIndex == 0)
+            Oobe.refreshNetworkControl();
+        });
+      } else if (nextStepIndex == 0) {
+        Oobe.refreshNetworkControl();
+      }
       this.currentStep_ = nextStepIndex;
       $('oobe').className = nextStepId;
     },
+  };
+
+  /**
+   * Returns offset (top, left) of the element.
+   * @param {!Element} element HTML element
+   * @return {!Object} The offset (top, left).
+   */
+  Oobe.getOffset = function(element) {
+    var x = 0;
+    var y = 0;
+    while(element && !isNaN(element.offsetLeft) && !isNaN(element.offsetTop)) {
+      x += element.offsetLeft - element.scrollLeft;
+      y += element.offsetTop - element.scrollTop;
+      element = element.offsetParent;
+    }
+    return { top: y, left: x };
   };
 
   /**
@@ -110,6 +132,15 @@ cr.define('cr.ui', function() {
    */
   Oobe.enableContinueButton = function(enable) {
     $('continue-button').disabled = !enable;
+  };
+
+  /**
+   * Refreshes position of the network control (on connect screen).
+   */
+  Oobe.refreshNetworkControl = function() {
+    var controlOffset = Oobe.getOffset($('network-control'));
+    chrome.send('networkControlPosition',
+                [controlOffset.left, controlOffset.top]);
   };
 
   /**

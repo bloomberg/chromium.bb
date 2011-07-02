@@ -77,7 +77,6 @@ void WebUILoginDisplayHost::StartWizard(const std::string& first_screen_name,
 
 void WebUILoginDisplayHost::StartSignInScreen() {
   LoadURL(GURL(kLoginURL));
-  WebUILoginDisplay::GetInstance()->set_login_window(login_window_);
   BaseLoginDisplayHost::StartSignInScreen();
 }
 
@@ -100,6 +99,7 @@ void WebUILoginDisplayHost::LoadURL(const GURL& url) {
     login_view_->UpdateWindowType();
 
     login_window_->Show();
+    WebUILoginDisplay::GetInstance()->set_login_window(login_window_);
   }
   login_view_->LoadURL(url);
 }

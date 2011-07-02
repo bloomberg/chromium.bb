@@ -9,8 +9,13 @@
 #include "chrome/browser/chromeos/login/network_screen_actor.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "content/browser/webui/web_ui.h"
+#include "ui/gfx/point.h"
 
 class ListValue;
+
+namespace views {
+class Widget;
+}
 
 namespace chromeos {
 
@@ -41,8 +46,22 @@ class NetworkScreenHandler : public NetworkScreenActor,
   virtual void RegisterMessages();
 
  private:
+  // Handles change of the network control position.
+  void HandleNetworkControlPosition(const ListValue* args);
+
   // Handles moving off the screen.
-  void OnExit(const ListValue* args);
+  void HandleOnExit(const ListValue* args);
+
+  // Creates network window or updates it's bounds.
+  void CreateOrUpdateNetworkWindow();
+
+  // Closes network window.
+  void CloseNetworkWindow();
+
+  // Window that contains network dropdown button.
+  // TODO(nkostylev): Temporary solution till we have
+  // RenderWidgetHostViewViews working.
+  views::Widget* network_window_;
 
   NetworkScreenActor::Delegate* screen_;
 
@@ -50,6 +69,9 @@ class NetworkScreenHandler : public NetworkScreenActor,
 
   // Keeps whether screen should be shown right after initialization.
   bool show_on_init_;
+
+  // Position of the network control.
+  gfx::Point network_control_pos_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkScreenHandler);
 };

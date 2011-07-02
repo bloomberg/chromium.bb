@@ -6,19 +6,60 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/login/webui_login_display.h"
+#include "chrome/browser/chromeos/status/network_dropdown_button.h"
+#include "chrome/browser/chromeos/wm_ipc.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "views/layout/fill_layout.h"
+#include "views/widget/widget.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/rect.h"
+
+namespace {
+
+// JS API callbacks names.
+const char kJsApiNetworkOnExit[] = "networkOnExit";
+const char kJsApiNetworkControlPosition[] = "networkControlPosition";
+
+// Width/height of the network control window.
+const int kNetworkControlWidth = 150;
+const int kNetworkControlHeight = 25;
+
+// Offsets for the network dropdown control menu.
+const int kMenuHorizontalOffset = -3;
+const int kMenuVerticalOffset = -1;
+
+// Initializes menu button default properties.
+static void InitMenuButtonProperties(views::MenuButton* menu_button) {
+  menu_button->set_focusable(true);
+  menu_button->SetEnabledColor(SK_ColorBLACK);
+  menu_button->SetHighlightColor(SK_ColorBLACK);
+  menu_button->SetHoverColor(SK_ColorBLACK);
+  menu_button->set_animate_on_state_change(false);
+  // Menu is positioned by bottom right corner of the MenuButton.
+  menu_button->set_menu_offset(kMenuHorizontalOffset, kMenuVerticalOffset);
+}
+
+}  // namespace
 
 namespace chromeos {
 
+// NetworkScreenHandler, public: -----------------------------------------------
+
 NetworkScreenHandler::NetworkScreenHandler()
-    : screen_(NULL), is_continue_enabled_(false), show_on_init_(false) {
+    : network_window_(NULL),
+      screen_(NULL),
+      is_continue_enabled_(false),
+      show_on_init_(false) {
 }
 
 NetworkScreenHandler::~NetworkScreenHandler() {
   ClearErrors();
+  CloseNetworkWindow();
 }
+
+// NetworkScreenHandler, NetworkScreenActor implementation: --------------------
 
 void NetworkScreenHandler::SetDelegate(NetworkScreenActor::Delegate* screen) {
   screen_ = screen;
@@ -37,6 +78,7 @@ void NetworkScreenHandler::Show() {
 }
 
 void NetworkScreenHandler::Hide() {
+  CloseNetworkWindow();
 }
 
 void NetworkScreenHandler::ShowError(const string16& message) {
@@ -74,6 +116,8 @@ void NetworkScreenHandler::EnableContinue(bool enabled) {
                                   *enabled_value);
 }
 
+// NetworkScreenHandler, OobeMessageHandler implementation: --------------------
+
 void NetworkScreenHandler::GetLocalizedStrings(
     DictionaryValue* localized_strings) {
   localized_strings->SetString("networkScreenTitle",
@@ -98,14 +142,68 @@ void NetworkScreenHandler::Initialize() {
   }
 }
 
+// NetworkScreenHandler, WebUIMessageHandler implementation: -------------------
+
 void NetworkScreenHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("networkOnExit",
-      NewCallback(this, &NetworkScreenHandler::OnExit));
+  web_ui_->RegisterMessageCallback(kJsApiNetworkControlPosition,
+      NewCallback(this, &NetworkScreenHandler::HandleNetworkControlPosition));
+  web_ui_->RegisterMessageCallback(kJsApiNetworkOnExit,
+      NewCallback(this, &NetworkScreenHandler::HandleOnExit));
 }
 
-void NetworkScreenHandler::OnExit(const ListValue* args) {
+// NetworkScreenHandler, private: ----------------------------------------------
+
+void NetworkScreenHandler::HandleNetworkControlPosition(const ListValue* args) {
+  const size_t kParamCount = 2;
+  double x, y;
+  if (args->GetSize() != kParamCount ||
+      !args->GetDouble(0, &x) ||
+      !args->GetDouble(1, &y)) {
+    NOTREACHED();
+    return;
+  }
+  network_control_pos_.SetPoint(static_cast<int>(x), static_cast<int>(y));
+  CreateOrUpdateNetworkWindow();
+}
+
+void NetworkScreenHandler::HandleOnExit(const ListValue* args) {
   ClearErrors();
   screen_->OnContinuePressed();
+}
+
+void NetworkScreenHandler::CreateOrUpdateNetworkWindow() {
+  views::Widget* login_window = WebUILoginDisplay::GetLoginWindow();
+  gfx::Rect login_bounds = login_window->GetWindowScreenBounds();
+  gfx::Rect bounds(login_bounds.x() + network_control_pos_.x(),
+                   login_bounds.y() + network_control_pos_.y(),
+                   kNetworkControlWidth, kNetworkControlHeight);
+  if (!network_window_) {
+    views::Widget::InitParams widget_params(
+        views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+    widget_params.bounds = bounds;
+    widget_params.double_buffer = true;
+    widget_params.parent = login_window->GetNativeView();
+    network_window_ = new views::Widget;
+    network_window_->Init(widget_params);
+    std::vector<int> params;
+    chromeos::WmIpc::instance()->SetWindowType(
+        network_window_->GetNativeView(),
+        chromeos::WM_IPC_WINDOW_CHROME_INFO_BUBBLE,
+        &params);
+    NetworkDropdownButton* button =
+        new NetworkDropdownButton(false, login_window->GetNativeWindow());
+    InitMenuButtonProperties(button);
+    network_window_->SetContentsView(button);
+    network_window_->Show();
+  } else {
+    network_window_->SetBounds(bounds);
+  }
+}
+
+void NetworkScreenHandler::CloseNetworkWindow() {
+  if (network_window_)
+    network_window_->Close();
+  network_window_ = NULL;
 }
 
 }  // namespace chromeos
