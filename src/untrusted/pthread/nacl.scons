@@ -27,6 +27,21 @@ env.AddLibraryToSdk(['libpthread'])
 # installs the header files from this directory into the toolchain.
 if not env.Bit('nacl_glibc'):
   n = env.AddHeaderToSdk(['pthread.h', 'semaphore.h'], None)
+  # We need these header files to be in place before we compile anything
+  # that uses them.  In the simple case, scons figures out the dependencies
+  # itself from scanning the #include directives.  However, <pthread.h> is
+  # used by "system" headers (i.e. from libc or libstdc++ in the toolchain),
+  # and scons does not know to scan those, so it will fail to notice those
+  # dependencies.  Courtesy of the IMPLICIT_COMMAND_DEPENDENCIES feature,
+  # scons makes all compiler outputs depend on the compilers themselves.
+  # Hence, by telling it that the compilers depend on these headers being
+  # installed, we ensure that they are in place before they're used.
+  for compiler in ['${CC}', '${CXX}']:
+    # TODO(mcgrathr): This can't be the best way!  Ideally we'd just use
+    # '${CC}' directly in env.Depends and that should be fine for scons.
+    # But sometimes '${CC}' is not just '.../gcc', it's '.../gcc -m32'.
+    compiler = env.subst(compiler).split()[0]
+    env.Depends(compiler, n)
 else:
   n = []
 env.Alias('install_libpthread', n)

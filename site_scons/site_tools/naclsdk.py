@@ -398,11 +398,6 @@ def generate(env):
       COMPONENT_LIBRARY_LINK_SUFFIXES=['.pso', '.so', '.a'],
       _RPATH='',
       COMPONENT_LIBRARY_DEBUG_SUFFIXES=[],
-
-      # TODO: This is needed for now to work around unc paths.  Take this out
-      # when unc paths are fixed.
-      IMPLICIT_COMMAND_DEPENDENCIES=False,
-
       PROGSUFFIX='.nexe'
   )
 
