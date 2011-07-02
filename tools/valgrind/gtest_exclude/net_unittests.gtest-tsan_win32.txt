@@ -36,12 +36,3 @@ X509CertificateTest.TestKnownRoot
 # CHECK failure. http://crbug.com/88225
 DnsTransactionTest.FirstTimeoutTest
 
-#########################################
-# These tests fail if you don't have our SSL certificate installed.
-# Please see http://dev.chromium.org/developers/testing#TOC-SSL-tests
-# if you think you want to un-comment one of the following lines.
-#SSLClientSocketTest.*
-#URLRequestTest*
-#HTTPSRequestTest.*
-#X509CertificateTest.*
-#ProxyScriptFetcherTest.*
