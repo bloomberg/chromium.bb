@@ -65,30 +65,24 @@
      }
    };
 
-   function verifyBasicPrintPreviewButtons(printEnabled) {
-     var printButton = $('print-button');
-     assertTrue(printButton != null);
-     var cancelButton = $('cancel-button');
-     assertTrue(cancelButton != null);
-   };
-
-   if ('window' in this && 'registerCallbacks' in window)
+   if ('window' in this && 'registerMessageCallback' in window)
      registerCallbacks();
-
-   internal = {
-     'verifyBasicPrintPreviewButtons': verifyBasicPrintPreviewButtons,
-   };
  })();
 
 // Tests.
 function testPrintPreview(printEnabled) {
-  internal.verifyBasicPrintPreviewButtons(printEnabled);
+  var printButton = $('print-button');
+  assertTrue(printButton != null, 'printButton != null');
+  var cancelButton = $('cancel-button');
+  assertTrue(cancelButton != null, 'cancelButton != null');
   var printer_list = $('printer-list');
   assertTrue(printEnabled, 'printEnabled');
   assertTrue(!!printer_list, 'printer_list');
   assertTrue(printer_list.options.length >= 2, 'printer-list has at least 2');
-  expectEquals('FooName', printer_list.options[0].text);
-  expectEquals('FooDevice', printer_list.options[0].value);
-  expectEquals('BarName', printer_list.options[1].text);
-  expectEquals('BarDevice', printer_list.options[1].value);
+  expectEquals('FooName', printer_list.options[0].text, '0 text is FooName');
+  expectEquals('FooDevice', printer_list.options[0].value,
+               '0 value is FooDevice');
+  expectEquals('BarName', printer_list.options[1].text, '1 text is BarName');
+  expectEquals('BarDevice', printer_list.options[1].value,
+               '1 value is BarDevice');
 }
