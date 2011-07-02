@@ -281,8 +281,8 @@ void BrowserList::AttemptExitInternal() {
 // static
 void BrowserList::NotifyAndTerminate(bool fast_path) {
 #if defined(OS_CHROMEOS)
-  if (!signout) return;
-  NotifyWindowManagerAboutSignout();
+  if (!signout)
+    return;
 #endif
 
   if (fast_path) {
@@ -292,6 +292,7 @@ void BrowserList::NotifyAndTerminate(bool fast_path) {
   }
 
 #if defined(OS_CHROMEOS)
+  NotifyWindowManagerAboutSignout();
   chromeos::CrosLibrary* cros_library = chromeos::CrosLibrary::Get();
   if (cros_library->EnsureLoaded()) {
     // If update has been installed, reboot, otherwise, sign out.
@@ -436,12 +437,11 @@ void BrowserList::AttemptUserExit() {
         state->GetString(prefs::kApplicationLocale) != owner_locale &&
         !state->IsManagedPreference(prefs::kApplicationLocale)) {
       state->SetString(prefs::kApplicationLocale, owner_locale);
-      state->ScheduleSavePersistentPrefs();
+      state->SavePersistentPrefs();
     }
   }
-  if (FastShutdown()) {
+  if (FastShutdown())
     return;
-  }
 #else
   // Reset the restart bit that might have been set in cancelled restart
   // request.
@@ -481,7 +481,7 @@ void BrowserList::AttemptExit() {
 // static
 void BrowserList::ExitCleanly() {
   // We always mark exit cleanly.
-  MarkAsCleanShutdown();
+  g_browser_process->EndSession();
   AttemptExitInternal();
 }
 #endif
