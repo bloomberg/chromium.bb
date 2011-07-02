@@ -7,7 +7,8 @@
 #include "base/base64.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
-#include "google/cacheinvalidation/invalidation-client.h"
+#include "google/cacheinvalidation/callback.h"
+#include "google/cacheinvalidation/v2/system-resources.h"
 #include "jingle/notifier/base/fake_base_task.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -19,21 +20,13 @@ namespace sync_notifier {
 using ::testing::_;
 using ::testing::Return;
 
-class MockNetworkEndpoint : public invalidation::NetworkEndpoint {
+class MockMessageCallback {
  public:
-  MOCK_METHOD1(RegisterOutboundListener,
-               void(invalidation::NetworkCallback*));
-  MOCK_METHOD1(HandleInboundMessage, void(const invalidation::string&));
-  MOCK_METHOD1(TakeOutboundMessage, void(invalidation::string*));
-  MOCK_METHOD1(AdviseNetworkStatus, void(bool));
-};
+  void StoreMessage(const std::string& message) {
+    last_message = message;
+  }
 
-class MockInvalidationClient : public invalidation::InvalidationClient {
- public:
-  MOCK_METHOD1(Start, void(const std::string& str));
-  MOCK_METHOD1(Register, void(const invalidation::ObjectId&));
-  MOCK_METHOD1(Unregister, void(const invalidation::ObjectId&));
-  MOCK_METHOD0(network_endpoint, invalidation::NetworkEndpoint*());
+  std::string last_message;
 };
 
 class CacheInvalidationPacketHandlerTest : public testing::Test {
@@ -46,20 +39,17 @@ TEST_F(CacheInvalidationPacketHandlerTest, Basic) {
 
   notifier::FakeBaseTask fake_base_task;
 
-  MockNetworkEndpoint mock_network_endpoint;
-  MockInvalidationClient mock_invalidation_client;
-
-  EXPECT_CALL(mock_invalidation_client, network_endpoint()).
-      WillRepeatedly(Return(&mock_network_endpoint));
+  std::string last_message;
+  MockMessageCallback callback;
+  invalidation::MessageCallback* mock_message_callback =
+      invalidation::NewPermanentCallback(
+          &callback, &MockMessageCallback::StoreMessage);
 
   const char kInboundMessage[] = "non-bogus";
-  EXPECT_CALL(mock_network_endpoint,
-              HandleInboundMessage(kInboundMessage)).Times(1);
-  EXPECT_CALL(mock_network_endpoint, TakeOutboundMessage(_)).Times(1);
-
   {
-    CacheInvalidationPacketHandler handler(
-        fake_base_task.AsWeakPtr(), &mock_invalidation_client);
+    CacheInvalidationPacketHandler handler(fake_base_task.AsWeakPtr());
+    handler.SetMessageReceiver(mock_message_callback);
+
     // Take care of any tasks posted by the constructor.
     message_loop.RunAllPending();
 
@@ -71,9 +61,10 @@ TEST_F(CacheInvalidationPacketHandlerTest, Basic) {
       handler.HandleInboundPacket(inbound_message_encoded);
     }
 
-    handler.HandleOutboundPacket(&mock_network_endpoint);
     // Take care of any tasks posted by HandleOutboundPacket().
     message_loop.RunAllPending();
+
+    EXPECT_EQ(callback.last_message, kInboundMessage);
   }
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -179,6 +179,29 @@ class ThreeArgCallbackRunner : public CallbackRunner<Tuple0> {
   typename internal::remove_reference<Arg3>::type arg3_;
 };
 
+template <class T, typename Arg1, typename Arg2, typename Arg3, typename Arg4>
+class FourArgCallbackRunner : public CallbackRunner<Tuple0> {
+ public:
+  FourArgCallbackRunner(T* obj, void (T::*meth)(Arg1, Arg2, Arg3, Arg4),
+                         Arg1 arg1, Arg2 arg2, Arg3 arg3, Arg4 arg4)
+      : obj_(obj), meth_(meth), arg1_(arg1), arg2_(arg2), arg3_(arg3),
+        arg4_(arg4) {}
+
+  virtual ~FourArgCallbackRunner() {}
+
+  virtual void RunWithParams(const Tuple0& params) {
+    (obj_->*meth_)(arg1_, arg2_, arg3_, arg4_);
+  }
+
+ private:
+  T* obj_;
+  void (T::*meth_)(Arg1, Arg2, Arg3, Arg4);
+  typename internal::remove_reference<Arg1>::type arg1_;
+  typename internal::remove_reference<Arg2>::type arg2_;
+  typename internal::remove_reference<Arg3>::type arg3_;
+  typename internal::remove_reference<Arg4>::type arg4_;
+};
+
 // Then route the appropriate overloads of NewPermanentCallback() to
 // use the above.
 
@@ -235,6 +258,19 @@ typename Callback0::Type* NewPermanentCallback(
     typename internal::Identity<Arg3>::type arg3) {
   return new ThreeArgCallbackRunner<T1, Arg1, Arg2, Arg3>
       (object, method, arg1, arg2, arg3);
+}
+
+template <class T1, class T2, typename Arg1, typename Arg2, typename Arg3,
+          typename Arg4>
+typename Callback0::Type* NewPermanentCallback(
+    T1* object,
+    void (T2::*method)(Arg1, Arg2, Arg3, Arg4),
+    typename internal::Identity<Arg1>::type arg1,
+    typename internal::Identity<Arg2>::type arg2,
+    typename internal::Identity<Arg3>::type arg3,
+    typename internal::Identity<Arg4>::type arg4) {
+  return new FourArgCallbackRunner<T1, Arg1, Arg2, Arg3, Arg4>
+      (object, method, arg1, arg2, arg3, arg4);
 }
 
 }  // namespace invalidation

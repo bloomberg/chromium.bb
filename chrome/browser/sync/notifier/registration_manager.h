@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -16,10 +16,12 @@
 #include "base/timer.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/sync/syncable/model_type.h"
-// For invalidation::RegistrationState.
-#include "google/cacheinvalidation/invalidation-client.h"
+// For invalidation::InvalidationListener::RegistrationState.
+#include "google/cacheinvalidation/v2/invalidation-listener.h"
 
 namespace sync_notifier {
+
+using ::invalidation::InvalidationListener;
 
 // Manages the details of registering types for invalidation.
 // Implements exponential backoff for repeated registration attempts
@@ -114,7 +116,7 @@ class RegistrationManager {
     RegistrationManager* registration_manager;
 
     // The current registration state.
-    invalidation::RegistrationState state;
+    InvalidationListener::RegistrationState state;
     // When we last sent a registration request.
     base::Time last_registration_request;
     // When we last tried to register.

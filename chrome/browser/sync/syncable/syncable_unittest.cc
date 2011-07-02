@@ -1081,8 +1081,7 @@ TEST_F(SyncableDirectoryTest, TestShareInfo) {
     EXPECT_TRUE(dir_->initial_sync_ended_for_type(AUTOFILL));
     EXPECT_FALSE(dir_->initial_sync_ended_for_type(BOOKMARKS));
     EXPECT_EQ("Jan 31st", dir_->store_birthday());
-    EXPECT_EQ("notification_state", dir_->GetAndClearNotificationState());
-    EXPECT_EQ("", dir_->GetAndClearNotificationState());
+    EXPECT_EQ("notification_state", dir_->GetNotificationState());
   }
   dir_->set_store_birthday("April 10th");
   dir_->SetNotificationState("notification_state2");
@@ -1092,8 +1091,7 @@ TEST_F(SyncableDirectoryTest, TestShareInfo) {
     EXPECT_TRUE(dir_->initial_sync_ended_for_type(AUTOFILL));
     EXPECT_FALSE(dir_->initial_sync_ended_for_type(BOOKMARKS));
     EXPECT_EQ("April 10th", dir_->store_birthday());
-    EXPECT_EQ("notification_state2", dir_->GetAndClearNotificationState());
-    EXPECT_EQ("", dir_->GetAndClearNotificationState());
+    EXPECT_EQ("notification_state2", dir_->GetNotificationState());
   }
   dir_->SetNotificationState("notification_state2");
   // Restore the directory from disk.  Make sure that nothing's changed.
@@ -1103,8 +1101,7 @@ TEST_F(SyncableDirectoryTest, TestShareInfo) {
     EXPECT_TRUE(dir_->initial_sync_ended_for_type(AUTOFILL));
     EXPECT_FALSE(dir_->initial_sync_ended_for_type(BOOKMARKS));
     EXPECT_EQ("April 10th", dir_->store_birthday());
-    EXPECT_EQ("notification_state2", dir_->GetAndClearNotificationState());
-    EXPECT_EQ("", dir_->GetAndClearNotificationState());
+    EXPECT_EQ("notification_state2", dir_->GetNotificationState());
   }
 }
 

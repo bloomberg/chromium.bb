@@ -12,15 +12,12 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/scoped_ptr.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_callback_factory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
-
-namespace invalidation {
-class InvalidationClient;
-class NetworkEndpoint;
-}  // namespace invalidation
+#include "google/cacheinvalidation/v2/system-resources.h"
 
 namespace talk_base {
 class Task;
@@ -35,17 +32,18 @@ class CacheInvalidationPacketHandler {
   // |invalidation_client| must not already be routing packets through
   // something.  Does not take ownership of |invalidation_client|.
   CacheInvalidationPacketHandler(
-      base::WeakPtr<talk_base::Task> base_task,
-      invalidation::InvalidationClient* invalidation_client);
+      base::WeakPtr<talk_base::Task> base_task);
 
   // Makes the invalidation client passed into the constructor not
   // route packets through the XMPP client passed into the constructor
   // anymore.
-  ~CacheInvalidationPacketHandler();
+  virtual ~CacheInvalidationPacketHandler();
 
-  // If |base_task| is non-NULL, sends any existing pending outbound
-  // packets.
-  void HandleOutboundPacket(invalidation::NetworkEndpoint* network_endpoint);
+  // If |base_task| is non-NULL, sends the outgoing message.
+  virtual void SendMessage(const std::string& outgoing_message);
+
+  virtual void SetMessageReceiver(
+      invalidation::MessageCallback* incoming_receiver);
 
  private:
   FRIEND_TEST(CacheInvalidationPacketHandlerTest, Basic);
@@ -57,7 +55,8 @@ class CacheInvalidationPacketHandler {
       scoped_callback_factory_;
 
   base::WeakPtr<talk_base::Task> base_task_;
-  invalidation::InvalidationClient* invalidation_client_;
+
+  scoped_ptr<invalidation::MessageCallback> incoming_receiver_;
 
   // Parameters for sent messages.
 
@@ -65,6 +64,8 @@ class CacheInvalidationPacketHandler {
   int seq_;
   // Unique session token.
   const std::string sid_;
+  // Channel context.
+  std::string channel_context_;
 
   DISALLOW_COPY_AND_ASSIGN(CacheInvalidationPacketHandler);
 };

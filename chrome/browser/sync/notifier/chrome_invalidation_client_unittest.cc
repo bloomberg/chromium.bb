@@ -9,6 +9,9 @@
 #include "chrome/browser/sync/notifier/state_writer.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/model_type_payload_map.h"
+#include "google/cacheinvalidation/v2/invalidation-client.h"
+#include "google/cacheinvalidation/v2/types.h"
+#include "google/cacheinvalidation/v2/types.pb.h"
 #include "jingle/notifier/base/fake_base_task.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,8 +28,16 @@ const char kClientId[] = "client_id";
 const char kClientInfo[] = "client_info";
 const char kState[] = "state";
 
-static const int64 kUnknownVersion =
-    invalidation::InvalidationListener::UNKNOWN_OBJECT_VERSION;
+class MockInvalidationClient : public invalidation::InvalidationClient {
+ public:
+  MOCK_METHOD0(Start, void());
+  MOCK_METHOD0(Stop, void());
+  MOCK_METHOD1(Register, void(const invalidation::ObjectId&));
+  MOCK_METHOD1(Register, void(const std::vector<invalidation::ObjectId>&));
+  MOCK_METHOD1(Unregister, void(const invalidation::ObjectId&));
+  MOCK_METHOD1(Unregister, void(const std::vector<invalidation::ObjectId>&));
+  MOCK_METHOD1(Acknowledge, void(const invalidation::AckHandle&));
+};
 
 class MockListener : public ChromeInvalidationClient::Listener {
  public:
@@ -63,42 +74,44 @@ class ChromeInvalidationClientTest : public testing::Test {
     message_loop_.RunAllPending();
   }
 
-  // Simulates DoInformOutboundListener() from network-manager.cc.
-  void SimulateInformOutboundListener() {
-    // Explicitness hack here to work around broken callback
-    // implementations.
-    void (invalidation::NetworkCallback::*run_function)(
-        invalidation::NetworkEndpoint* const&) =
-        &invalidation::NetworkCallback::Run;
-
-    client_.chrome_system_resources_.ScheduleOnListenerThread(
-        invalidation::NewPermanentCallback(
-            client_.handle_outbound_packet_callback_.get(), run_function,
-            client_.invalidation_client_->network_endpoint()));
-  }
-
   // |payload| can be NULL, but not |type_name|.
   void FireInvalidate(const char* type_name,
                       int64 version, const char* payload) {
     const invalidation::ObjectId object_id(
-        invalidation::ObjectSource::CHROME_SYNC, type_name);
+        ipc::invalidation::ObjectSource::CHROME_SYNC, type_name);
     std::string payload_tmp = payload ? payload : "";
-    const invalidation::Invalidation invalidation(
-        object_id, version, payload ? &payload_tmp : NULL, NULL);
-    MockCallback mock_callback;
-    EXPECT_CALL(mock_callback, Run());
-    client_.Invalidate(invalidation, mock_callback.MakeClosure());
+    invalidation::Invalidation inv;
+    if (payload) {
+      inv = invalidation::Invalidation(object_id, version, payload);
+    } else {
+      inv = invalidation::Invalidation(object_id, version);
+    }
+    invalidation::AckHandle ack_handle("fakedata");
+    EXPECT_CALL(mock_invalidation_client_, Acknowledge(ack_handle));
+    client_.Invalidate(&mock_invalidation_client_, inv, ack_handle);
+  }
+
+  // |payload| can be NULL, but not |type_name|.
+  void FireInvalidateUnknownVersion(const char* type_name) {
+    const invalidation::ObjectId object_id(
+        ipc::invalidation::ObjectSource::CHROME_SYNC, type_name);
+
+    invalidation::AckHandle ack_handle("fakedata");
+    EXPECT_CALL(mock_invalidation_client_, Acknowledge(ack_handle));
+    client_.InvalidateUnknownVersion(&mock_invalidation_client_, object_id,
+                                     ack_handle);
   }
 
   void FireInvalidateAll() {
-    MockCallback mock_callback;
-    EXPECT_CALL(mock_callback, Run());
-    client_.InvalidateAll(mock_callback.MakeClosure());
+    invalidation::AckHandle ack_handle("fakedata");
+    EXPECT_CALL(mock_invalidation_client_, Acknowledge(ack_handle));
+    client_.InvalidateAll(&mock_invalidation_client_, ack_handle);
   }
 
   MessageLoop message_loop_;
   StrictMock<MockListener> mock_listener_;
   StrictMock<MockStateWriter> mock_state_writer_;
+  StrictMock<MockInvalidationClient> mock_invalidation_client_;
   notifier::FakeBaseTask fake_base_task_;
   ChromeInvalidationClient client_;
 };
@@ -131,6 +144,7 @@ TEST_F(ChromeInvalidationClientTest, InvalidateBadObjectId) {
   client_.RegisterTypes(types);
   EXPECT_CALL(mock_listener_, OnInvalidate(MakeMapFromSet(types, "")));
   FireInvalidate("bad", 1, NULL);
+  message_loop_.RunAllPending();
 }
 
 TEST_F(ChromeInvalidationClientTest, InvalidateNoPayload) {
@@ -166,8 +180,8 @@ TEST_F(ChromeInvalidationClientTest, InvalidateUnknownVersion) {
       .Times(2);
 
   // Should trigger twice.
-  FireInvalidate("EXTENSION", kUnknownVersion, NULL);
-  FireInvalidate("EXTENSION", kUnknownVersion, NULL);
+  FireInvalidateUnknownVersion("EXTENSION");
+  FireInvalidateUnknownVersion("EXTENSION");
 }
 
 TEST_F(ChromeInvalidationClientTest, InvalidateVersionMultipleTypes) {
@@ -233,24 +247,6 @@ TEST_F(ChromeInvalidationClientTest, RegisterTypes) {
   SetUp();
   EXPECT_CALL(mock_listener_, OnInvalidate(MakeMapFromSet(types, "")));
   FireInvalidateAll();
-}
-
-// Outbound packet sending should be resilient to
-// changing/disappearing base tasks.
-TEST_F(ChromeInvalidationClientTest, OutboundPackets) {
-  SimulateInformOutboundListener();
-
-  notifier::FakeBaseTask fake_base_task;
-  client_.ChangeBaseTask(fake_base_task.AsWeakPtr());
-
-  SimulateInformOutboundListener();
-
-  {
-    notifier::FakeBaseTask fake_base_task2;
-    client_.ChangeBaseTask(fake_base_task2.AsWeakPtr());
-  }
-
-  SimulateInformOutboundListener();
 }
 
 // TODO(akalin): Flesh out unit tests.

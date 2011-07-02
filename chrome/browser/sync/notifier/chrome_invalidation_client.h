@@ -22,7 +22,7 @@
 #include "chrome/browser/sync/notifier/state_writer.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/model_type_payload_map.h"
-#include "google/cacheinvalidation/invalidation-client.h"
+#include "google/cacheinvalidation/v2/invalidation-listener.h"
 
 // TODO(akalin): Move invalidation::InvalidationListener into its own
 // file and include that instead of invalidation-client.h (which
@@ -34,11 +34,13 @@ class Task;
 
 namespace sync_notifier {
 
+using invalidation::InvalidationListener;
+
 class CacheInvalidationPacketHandler;
 class RegistrationManager;
 
 class ChromeInvalidationClient
-    : public invalidation::InvalidationListener,
+    : public InvalidationListener,
       public StateWriter {
  public:
   class Listener {
@@ -74,26 +76,42 @@ class ChromeInvalidationClient
   // notifications for.  May be called at any time.
   void RegisterTypes(const syncable::ModelTypeSet& types);
 
-  // invalidation::InvalidationListener implementation.
-  virtual void Invalidate(const invalidation::Invalidation& invalidation,
-                          invalidation::Closure* callback) OVERRIDE;
-  virtual void InvalidateAll(invalidation::Closure* callback) OVERRIDE;
-  virtual void RegistrationStateChanged(
-      const invalidation::ObjectId& object_id,
-      invalidation::RegistrationState new_state,
-      const invalidation::UnknownHint& unknown_hint) OVERRIDE;
-  virtual void AllRegistrationsLost(invalidation::Closure* callback) OVERRIDE;
-  virtual void SessionStatusChanged(bool has_session) OVERRIDE;
+  virtual void WriteState(const std::string& state);
 
-  // StateWriter implementation.
-  virtual void WriteState(const std::string& state) OVERRIDE;
+  // invalidation::InvalidationListener implementation.
+  virtual void Ready(
+      invalidation::InvalidationClient* client) OVERRIDE;
+  virtual void Invalidate(
+      invalidation::InvalidationClient* client,
+      const invalidation::Invalidation& invalidation,
+      const invalidation::AckHandle& ack_handle) OVERRIDE;
+  virtual void InvalidateUnknownVersion(
+      invalidation::InvalidationClient* client,
+      const invalidation::ObjectId& object_id,
+      const invalidation::AckHandle& ack_handle) OVERRIDE;
+  virtual void InvalidateAll(
+      invalidation::InvalidationClient* client,
+      const invalidation::AckHandle& ack_handle) OVERRIDE;
+  virtual void InformRegistrationStatus(
+      invalidation::InvalidationClient* client,
+      const invalidation::ObjectId& object_id,
+      InvalidationListener::RegistrationState reg_state) OVERRIDE;
+  virtual void InformRegistrationFailure(
+      invalidation::InvalidationClient* client,
+      const invalidation::ObjectId& object_id,
+      bool is_transient,
+      const std::string& error_message) OVERRIDE;
+  virtual void ReissueRegistrations(
+      invalidation::InvalidationClient* client,
+      const std::string& prefix,
+      int prefix_length) OVERRIDE;
+  virtual void InformError(
+      invalidation::InvalidationClient* client,
+      const invalidation::ErrorInfo& error_info) OVERRIDE;
 
  private:
   friend class ChromeInvalidationClientTest;
 
-  // Should only be called between calls to Start() and Stop().
-  void HandleOutboundPacket(
-      invalidation::NetworkEndpoint* const& network_endpoint);
   void EmitInvalidation(
       const syncable::ModelTypeSet& types, const std::string& payload);
 
@@ -101,7 +119,6 @@ class ChromeInvalidationClient
   ChromeSystemResources chrome_system_resources_;
   base::ScopedCallbackFactory<ChromeInvalidationClient>
       scoped_callback_factory_;
-  scoped_ptr<invalidation::NetworkCallback> handle_outbound_packet_callback_;
   Listener* listener_;
   StateWriter* state_writer_;
   scoped_ptr<invalidation::InvalidationClient> invalidation_client_;
@@ -111,6 +128,7 @@ class ChromeInvalidationClient
   std::map<syncable::ModelType, int64> max_invalidation_versions_;
   // Stored to pass to |registration_manager_| on start.
   syncable::ModelTypeSet registered_types_;
+  bool ticl_ready_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeInvalidationClient);
 };

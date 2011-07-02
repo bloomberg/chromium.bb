@@ -818,7 +818,7 @@ class Directory {
   std::string store_birthday() const;
   void set_store_birthday(const std::string& store_birthday);
 
-  std::string GetAndClearNotificationState();
+  std::string GetNotificationState() const;
   void SetNotificationState(const std::string& notification_state);
 
   // Unique to each account / client pair.

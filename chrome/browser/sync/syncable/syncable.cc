@@ -971,10 +971,9 @@ void Directory::set_store_birthday(const string& store_birthday) {
   kernel_->info_status = KERNEL_SHARE_INFO_DIRTY;
 }
 
-std::string Directory::GetAndClearNotificationState() {
+std::string Directory::GetNotificationState() const {
   ScopedKernelLock lock(this);
   std::string notification_state = kernel_->persisted_info.notification_state;
-  SetNotificationStateUnsafe(std::string());
   return notification_state;
 }
 

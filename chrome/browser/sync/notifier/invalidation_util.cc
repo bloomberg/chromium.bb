@@ -1,8 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/sync/notifier/invalidation_util.h"
+#include "google/cacheinvalidation/v2/types.h"
 
 #include <sstream>
 
@@ -20,7 +21,8 @@ bool RealModelTypeToObjectId(syncable::ModelType model_type,
           model_type, &notification_type)) {
     return false;
   }
-  object_id->Init(invalidation::ObjectSource::CHROME_SYNC, notification_type);
+  object_id->Init(ipc::invalidation::ObjectSource::CHROME_SYNC,
+                  notification_type);
   return true;
 }
 
@@ -41,53 +43,12 @@ std::string ObjectIdToString(
   return ss.str();
 }
 
-std::string ObjectIdPToString(
-    const invalidation::ObjectIdP& object_id) {
-  return ObjectIdToString(
-      invalidation::ObjectId(
-          (invalidation::ObjectSource_Type) object_id.source(),
-          object_id.name().string_value()));
-}
-
-std::string StatusToString(
-    const invalidation::Status& status) {
-  std::stringstream ss;
-  ss << "{ ";
-  ss << "code: " << status.code() << ", ";
-  ss << "description: " << status.description();
-  ss << " }";
-  return ss.str();
-}
-
 std::string InvalidationToString(
     const invalidation::Invalidation& invalidation) {
   std::stringstream ss;
   ss << "{ ";
   ss << "object_id: " << ObjectIdToString(invalidation.object_id()) << ", ";
   ss << "version: " << invalidation.version();
-  ss << " }";
-  return ss.str();
-}
-
-std::string RegistrationUpdateToString(
-    const invalidation::RegistrationUpdate& update) {
-  std::stringstream ss;
-  ss << "{ ";
-  ss << "type: " << update.type() << ", ";
-  ss << "object_id: " << ObjectIdPToString(update.object_id()) << ", ";
-  ss << "version: " << update.version() << ", ";
-  ss << "sequence_number: " << update.sequence_number();
-  ss << " }";
-  return ss.str();
-}
-
-std::string RegistrationUpdateResultToString(
-    const invalidation::RegistrationUpdateResult& update_result) {
-  std::stringstream ss;
-  ss << "{ ";
-  ss << "operation: "
-     << RegistrationUpdateToString(update_result.operation()) << ", ";
-  ss << "status: " << StatusToString(update_result.status());
   ss << " }";
   return ss.str();
 }

@@ -1938,7 +1938,7 @@ bool SyncManager::SyncInternal::SignIn(const SyncCredentials& credentials) {
   std::string state;
   if (lookup.good()) {
     unique_id = lookup->cache_guid();
-    state = lookup->GetAndClearNotificationState();
+    state = lookup->GetNotificationState();
     VLOG(1) << "Read notification unique ID: " << unique_id;
     if (VLOG_IS_ON(1)) {
       std::string encoded_state;

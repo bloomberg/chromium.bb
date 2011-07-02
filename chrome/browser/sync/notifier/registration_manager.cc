@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,7 @@ RegistrationManager::PendingRegistrationInfo::PendingRegistrationInfo() {}
 RegistrationManager::RegistrationStatus::RegistrationStatus()
     : model_type(syncable::UNSPECIFIED),
       registration_manager(NULL),
-      state(invalidation::RegistrationState_UNREGISTERED) {}
+      state(invalidation::InvalidationListener::UNREGISTERED) {}
 
 RegistrationManager::RegistrationStatus::~RegistrationStatus() {}
 
@@ -82,7 +82,7 @@ void RegistrationManager::MarkRegistrationLost(
     syncable::ModelType model_type) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   registration_statuses_[model_type].state =
-      invalidation::RegistrationState_UNREGISTERED;
+      invalidation::InvalidationListener::UNREGISTERED;
   TryRegisterType(model_type, true /* is_retry */);
 }
 
@@ -223,7 +223,7 @@ void RegistrationManager::DoRegisterType(syncable::ModelType model_type) {
   }
   invalidation_client_->Register(object_id);
   RegistrationStatus* status = &registration_statuses_[model_type];
-  status->state = invalidation::RegistrationState_REGISTERED;
+  status->state = invalidation::InvalidationListener::REGISTERED;
   status->last_registration_request = base::Time::Now();
 }
 
@@ -236,14 +236,14 @@ void RegistrationManager::UnregisterType(syncable::ModelType model_type) {
   }
   invalidation_client_->Unregister(object_id);
   RegistrationStatus* status = &registration_statuses_[model_type];
-  status->state = invalidation::RegistrationState_UNREGISTERED;
+  status->state = invalidation::InvalidationListener::UNREGISTERED;
 }
 
 bool RegistrationManager::IsTypeRegistered(
     syncable::ModelType model_type) const {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   return registration_statuses_[model_type].state ==
-      invalidation::RegistrationState_REGISTERED;
+      invalidation::InvalidationListener::REGISTERED;
 }
 
 }  // namespace sync_notifier
