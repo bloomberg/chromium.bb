@@ -5737,10 +5737,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <!-- Print Preview -->
       <message name="IDS_PRINT_PREVIEW_TITLE" desc="Fallback title for print preview page.">
-        Print preview
+        Print
       </message>
       <message name="IDS_PRINT_PREVIEW_TITLE_FORMAT" desc="The format for the print preview page title.">
-        Print preview - <ph name="PREVIEW_TAB_TITLE">$1<ex>Google Search</ex></ph>
+        Print - <ph name="PREVIEW_TAB_TITLE">$1<ex>Google Search</ex></ph>
       </message>
       <message name="IDS_PRINT_PREVIEW_LOADING_PRINTERS" desc="Message to display while the print preview is still loading the printer list.">
         Loading additional printers
@@ -5752,7 +5752,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Print preview failed.
       </message>
       <message name="IDS_PRINT_PREVIEW_INITIATOR_TAB_CLOSED" desc="Error message displayed when print preview fails because the user closed the tab that initiated the print preview.">
-        Print preview failed because the page you were trying to print has been closed.
+        Print is unavailable because the page you were trying to print has been closed.
       </message>
       <message name="IDS_PRINT_PREVIEW_REOPEN_PAGE" desc="Text for button displayed when print preview fails because the user closed the tab that initiated the print preview. Clicking the button reopens the page that was closed.">
         Reopen the page
