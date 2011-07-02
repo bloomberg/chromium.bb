@@ -150,13 +150,86 @@ function appsPrefChangeCallback(data) {
 }
 
 function appNotificationChanged(id, lastNotification) {
-  // TODO(asargent/finnur) use this when we hook up notifications into the NTP.
+  // TODO(asargent/finnur): Don't update all apps at once, do it in a more
+  // fine grained way.
+  chrome.send('getApps');
 }
 
 // Launches the specified app using the APP_LAUNCH_NTP_APP_RE_ENABLE histogram.
 // This should only be invoked from the AppLauncherHandler.
 function launchAppAfterEnable(appId) {
   chrome.send('launchApp', [appId, APP_LAUNCH.NTP_APP_RE_ENABLE]);
+}
+
+// Shows the notification bubble for a given app (the one clicked on).
+function showNotificationBubble(event) {
+  var item = findAncestorByClass(event.target, 'app-anchor');
+  var title = item.getAttribute('notification-title');
+  var message = item.getAttribute('notification-message');
+  var link = item.getAttribute('notification-link');
+  var link_message = item.getAttribute('notification-link-message');
+
+  if (!title || !message)
+    return;
+
+  // Set the content to the right text.
+  $('app-notification-title').textContent = title;
+  $('app-notification-message').textContent = message;
+  $('app-notification-link').href = link;
+  $('app-notification-link').textContent = link_message;
+
+  var target = event.target;
+  while (target.parentElement && target.tagName != "A") {
+    target = target.parentElement;
+  }
+
+  // Move the bubble to the right location.
+  var bubble = $('app-notification-bubble');
+  var x = target.parentElement.offsetLeft +
+          target.parentElement.offsetWidth - 20;
+  var y = target.parentElement.offsetTop + 20;
+  bubble.style.left = x + "px";
+  bubble.style.top = y + "px";
+
+  // Move the arrow and shadow to the right location.
+  var arrow = $('arrow-contents');
+  var border = $('arrow-border');
+  var shadow = $('arrow-shadow');
+  y += 26;
+  x -= arrow.style.width + 23;
+  arrow.style.left = x + "px";
+  arrow.style.top = y + "px";
+  x -= 1;
+  border.style.left = x + "px";
+  border.style.top = y + "px";
+  x -= 1;
+  shadow.style.left = x + "px";
+  shadow.style.top = y + "px";
+
+  // Animate the bubble into view.
+  bubble.classList.add("notification-bubble-opened");
+  bubble.classList.remove("notification-bubble-closed");
+  arrow.classList.add("notification-bubble-opened");
+  arrow.classList.remove("notification-bubble-closed");
+  border.classList.add("notification-bubble-opened");
+  border.classList.remove("notification-bubble-closed");
+  shadow.classList.add("notification-bubble-opened");
+  shadow.classList.remove("notification-bubble-closed");
+
+  bubble.focus();
+}
+
+// Hide the notification bubble.
+function hideNotificationBubble(event) {
+  // This will fade the bubble out of existence.
+  $('app-notification-bubble').classList.add("notification-bubble-closed");
+  $('app-notification-bubble').classList.remove("notification-bubble-opened");
+  $('arrow-border').classList.add("notification-bubble-closed");
+  $('arrow-border').classList.remove("notification-bubble-opened");
+  $('arrow-shadow').classList.add("notification-bubble-closed");
+  $('arrow-shadow').classList.remove("notification-bubble-opened");
+  $('arrow-contents').classList.add("notification-bubble-closed");
+  $('arrow-contents').classList.remove("notification-bubble-opened");
 }
 
 var apps = (function() {
@@ -166,11 +239,36 @@ var apps = (function() {
     div.className = 'app';
 
     var a = div.appendChild(document.createElement('a'));
+    a.className = 'app-anchor';
     a.setAttribute('app-id', app['id']);
     a.setAttribute('launch-type', app['launch_type']);
+    if (typeof(app['notification']) != "undefined") {
+      a.setAttribute('notification-title', app['notification']['title']);
+      a.setAttribute('notification-message', app['notification']['body']);
+      if (typeof(app['notification']['linkUrl']) != "undefined" &&
+          typeof(app['notification']['linkText']) != "undefined") {
+        a.setAttribute('notification-link', app['notification']['linkUrl']);
+        a.setAttribute('notification-link-message',
+                       app['notification']['linkText']);
+      }
+    }
     a.draggable = false;
-    a.xtitle = a.textContent = app['name'];
     a.href = app['launch_url'];
+
+    var span = a.appendChild(document.createElement('span'));
+    span.textContent = app['name'];
+
+    span = a.appendChild(document.createElement('span'));
+    span.className = "app_notification";
+    span.textContent =
+        typeof(app['notification']) != "undefined" &&
+        typeof(app['notification']['title']) != "undefined" ?
+            app['notification']['title'] : "";
+    span.onclick = handleClick;
+
+    $("app-notification-close").onclick = hideNotificationBubble;
+    $("app-notification-bubble").setAttribute("tabIndex", 0);
+    $("app-notification-bubble").onblur = hideNotificationBubble;
 
     return div;
   }
@@ -219,6 +317,12 @@ var apps = (function() {
    */
   function handleClick(e) {
     var appId = e.currentTarget.getAttribute('app-id');
+    if (appId == null) {
+      showNotificationBubble(e);
+      e.stopPropagation();
+      return false;
+    }
+
     if (!appDragAndDrop.isDragging())
       launchApp(appId, e);
     return false;
@@ -321,7 +425,7 @@ var apps = (function() {
         e.canExecute = true;
         break;
       case 'apps-uninstall-command':
-        e.canExecute = !currentApp['can_uninstall'];
+        e.canExecute = currentApp && !currentApp['can_uninstall'];
         break;
     }
   });
@@ -684,7 +788,9 @@ var apps = (function() {
     },
 
     createElement: function(app) {
+      var container = document.createElement('div');
       var div = createElement(app);
+      container.appendChild(div);
       var a = div.firstChild;
 
       a.onclick = handleClick;
@@ -719,7 +825,31 @@ var apps = (function() {
         addContextMenu(div, app);
       }
 
-      return div;
+      if (app.notifications && app.notifications.length > 0) {
+        // Create the notification div below the app icon that is used to
+        // trigger the hidden notification bubble to appear.
+        var notification = document.createElement('div')
+        container.appendChild(notification);
+        var title = document.createElement('span');
+        title.innerText = app.notifications[0].title;
+        notification.appendChild(title);
+        notification.appendChild(document.createElement('br'));
+
+        var body = document.createElement('span');
+        container.appendChild(body);
+        body.innerText = app.notifications[0].body;
+        notification.appendChild(body);
+        if (app.notifications[0].linkUrl) {
+          notification.appendChild(document.createElement('br'));
+          var link = document.createElement('a');
+          link.href = app.notifications[0].linkUrl;
+          link.innerText = app.notifications[0].linkText ?
+              app.notifications[0].linkText : "link";
+          notification.appendChild(link);
+        }
+      }
+
+      return container;
     },
 
     createMiniviewElement: function(app) {
