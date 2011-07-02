@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -185,7 +185,6 @@ int SpdySM::SpdyHandleNewStream(const SpdyControlFrame* frame,
   else
     uri = std::string(url->second);
   if (acceptor_->flip_handler_type_ == FLIP_HANDLER_SPDY_SERVER) {
-    SpdyHeaderBlock::iterator referer = headers.find("referer");
     std::string host = UrlUtilities::GetUrlHost(url->second);
     VLOG(1) << ACCEPTOR_CLIENT_IDENT << "Request: " << method->second
             << " " << uri;
@@ -259,6 +258,9 @@ void SpdySM::OnControl(const SpdyControlFrame* frame) {
 
     case SYN_REPLY:
       parsed_headers = spdy_framer_->ParseHeaderBlock(frame, &headers);
+      DCHECK(parsed_headers);
+      // TODO(willchan): if there is an error parsing headers, we
+      // should send a RST_STREAM.
       VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: OnSynReply(" <<
         reinterpret_cast<const SpdySynReplyControlFrame*>(frame)->stream_id()
         << ")";

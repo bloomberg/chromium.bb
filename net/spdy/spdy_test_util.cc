@@ -764,7 +764,6 @@ int ConstructSpdyReplyString(const char* const extra_headers[],
                              char* buffer,
                              int buffer_length) {
   int packet_size = 0;
-  int header_count = 0;
   char* buffer_write = buffer;
   int buffer_left = buffer_length;
   spdy::SpdyHeaderBlock headers;
@@ -772,7 +771,6 @@ int ConstructSpdyReplyString(const char* const extra_headers[],
     return 0;
   // Copy in the extra headers.
   AppendHeadersToSpdyFrame(extra_headers, extra_header_count, &headers);
-  header_count = headers.size();
   // The iterator gets us the list of header/value pairs in sorted order.
   spdy::SpdyHeaderBlock::iterator next = headers.begin();
   spdy::SpdyHeaderBlock::iterator last = headers.end();
