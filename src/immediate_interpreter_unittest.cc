@@ -154,4 +154,74 @@ TEST(ImmediateInterpreterTest, SameFingersTest) {
   EXPECT_FALSE(ii.SameFingers(hardware_state[3]));
 }
 
+TEST(ImmediateInterpreterTest, PalmTest) {
+  ImmediateInterpreter ii;
+  HardwareProperties hwprops = {
+    0,  // left edge
+    0,  // top edge
+    1000,  // right edge
+    1000,  // bottom edge
+    500,  // x pixels/TP width
+    500,  // y pixels/TP height
+    96,  // x screen DPI
+    96,  // y screen DPI
+    2,  // max fingers
+    0,  // t5r2
+    0,  // semi-mt
+    1  // is button pad
+  };
+  ii.SetHardwareProperties(hwprops);
+
+  const int kBig = 100;  // palm pressure
+  const int kSml = 1;  // small, low pressure
+
+  FingerState finger_states[] = {
+    // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
+    {0, 0, 0, 0, kSml, 0, 600, 500, 1},
+    {0, 0, 0, 0, kSml, 0, 500, 500, 2},
+
+    {0, 0, 0, 0, kSml, 0, 600, 500, 1},
+    {0, 0, 0, 0, kBig, 0, 500, 500, 2},
+
+    {0, 0, 0, 0, kSml, 0, 600, 500, 1},
+    {0, 0, 0, 0, kSml, 0, 500, 500, 2}
+  };
+  HardwareState hardware_state[] = {
+    // time, buttons, finger count, finger states pointer
+    { 200000, 0, 2, &finger_states[0] },
+    { 200001, 0, 2, &finger_states[2] },
+    { 200002, 0, 2, &finger_states[4] },
+  };
+
+
+  ii.UpdatePalmState(hardware_state[0]);
+  EXPECT_TRUE(ii.pointing_.end() != ii.pointing_.find(1));
+  EXPECT_TRUE(ii.pending_palm_.end() == ii.pending_palm_.find(1));
+  EXPECT_TRUE(ii.palm_.end() == ii.palm_.find(1));
+  EXPECT_TRUE(ii.pointing_.end() != ii.pointing_.find(2));
+  EXPECT_TRUE(ii.pending_palm_.end() == ii.pending_palm_.find(2));
+  EXPECT_TRUE(ii.palm_.end() == ii.palm_.find(2));
+
+  ii.UpdatePalmState(hardware_state[1]);
+  EXPECT_TRUE(ii.pointing_.end() != ii.pointing_.find(1));
+  EXPECT_TRUE(ii.pending_palm_.end() == ii.pending_palm_.find(1));
+  EXPECT_TRUE(ii.palm_.end() == ii.palm_.find(1));
+  EXPECT_TRUE(ii.pointing_.end() == ii.pointing_.find(2));
+  EXPECT_TRUE(ii.pending_palm_.end() == ii.pending_palm_.find(2));
+  EXPECT_TRUE(ii.palm_.end() != ii.palm_.find(2));
+
+  ii.UpdatePalmState(hardware_state[2]);
+  EXPECT_TRUE(ii.pointing_.end() != ii.pointing_.find(1));
+  EXPECT_TRUE(ii.pending_palm_.end() == ii.pending_palm_.find(1));
+  EXPECT_TRUE(ii.palm_.end() == ii.palm_.find(1));
+  EXPECT_TRUE(ii.pointing_.end() == ii.pointing_.find(2));
+  EXPECT_TRUE(ii.pending_palm_.end() == ii.pending_palm_.find(2));
+  EXPECT_TRUE(ii.palm_.end() != ii.palm_.find(2));
+
+  ii.ResetSameFingersState();
+  EXPECT_TRUE(ii.pointing_.empty());
+  EXPECT_TRUE(ii.pending_palm_.empty());
+  EXPECT_TRUE(ii.palm_.empty());
+}
+
 }  // namespace gestures

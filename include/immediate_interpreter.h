@@ -6,6 +6,7 @@
 
 #include "gestures/include/gestures.h"
 #include "gestures/include/interpreter.h"
+#include "gestures/include/set.h"
 
 #ifndef GESTURES_IMMEDIATE_INTERPRETER_H_
 #define GESTURES_IMMEDIATE_INTERPRETER_H_
@@ -18,8 +19,12 @@ namespace gestures {
 
 // Currently it simply does very basic pointer movement.
 
+static const int kMaxFingers = 5;
+static const int kMaxGesturingFingers = 5;
+
 class ImmediateInterpreter : public Interpreter {
   FRIEND_TEST(ImmediateInterpreterTest, SameFingersTest);
+  FRIEND_TEST(ImmediateInterpreterTest, PalmTest);
  public:
   ImmediateInterpreter();
   virtual ~ImmediateInterpreter();
@@ -32,12 +37,25 @@ class ImmediateInterpreter : public Interpreter {
   // Returns true iff the fingers in hwstate are the same ones in prev_state_
   bool SameFingers(const HardwareState& hwstate) const;
 
+  // Reset the member variables corresponding to same-finger state.
+  void ResetSameFingersState();
+
+  // Updates *palm_, pointing_ below.
+  void UpdatePalmState(const HardwareState& hwstate);
+
   // Does a deep copy of hwstate into prev_state_
   void SetPrevState(const HardwareState& hwstate);
 
   HardwareState prev_state_;
   HardwareProperties hw_props_;
   Gesture result_;
+
+  // Same fingers state. This state is accumulated as fingers remain the same
+  // and it's reset when fingers change.
+  set<short, kMaxFingers> palm_;  // tracking ids of known palms
+  set<short, kMaxFingers> pending_palm_;  // tracking ids of potential palms
+  // tracking ids of known non-palms
+  set<short, kMaxGesturingFingers> pointing_;
 };
 
 }  // namespace gestures

@@ -13,6 +13,13 @@ using std::min;
 
 namespace gestures {
 
+namespace {
+
+// TODO(adlr): make these configurable:
+const int kPalmPressure = 100;
+
+}  // namespace {}
+
 ImmediateInterpreter::ImmediateInterpreter() {
   prev_state_.fingers = NULL;
 }
@@ -59,6 +66,36 @@ bool ImmediateInterpreter::SameFingers(const HardwareState& hwstate) const {
       return false;
   }
   return true;
+}
+
+void ImmediateInterpreter::ResetSameFingersState() {
+  palm_.clear();
+  pending_palm_.clear();
+  pointing_.clear();
+}
+
+void ImmediateInterpreter::UpdatePalmState(const HardwareState& hwstate) {
+  for (short i = 0; i < hwstate.finger_cnt; i++) {
+    const FingerState& fs = hwstate.fingers[i];
+    bool prev_palm = palm_.find(fs.tracking_id) != palm_.end();
+    bool prev_pointing = pointing_.find(fs.tracking_id) != pointing_.end();
+
+    // Lock onto palm permanently.
+    if (prev_palm)
+      continue;
+
+    // TODO(adlr): handle low-pressure palms at edge of pad by inserting them
+    // into pending_palm_
+    if (fs.pressure >= kPalmPressure) {
+      palm_.insert(fs.tracking_id);
+      pointing_.erase(fs.tracking_id);
+      pending_palm_.erase(fs.tracking_id);
+      continue;
+    }
+    if (prev_pointing)
+      continue;
+    pointing_.insert(fs.tracking_id);
+  }
 }
 
 void ImmediateInterpreter::SetPrevState(const HardwareState& hwstate) {
