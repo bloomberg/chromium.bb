@@ -141,7 +141,7 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kIgnoreGpuBlacklist)
   },
   {
-    "force-compositing-mode",
+    "force-compositing-mode-2",
     IDS_FLAGS_FORCE_COMPOSITING_MODE_NAME,
     IDS_FLAGS_FORCE_COMPOSITING_MODE_DESCRIPTION,
     kOsAll,
