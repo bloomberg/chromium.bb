@@ -159,6 +159,8 @@
       '-sync.SyncTest.testRestartBrowser',
       # crbug.com/87642
       '-sync.SyncTest.testDisableAndEnableDatatypes',
+      # crbug.com/88190
+      '-passwords.PasswordTest.testClearFetchedCredForNewUserName',
     ],
 
     'mac': [
