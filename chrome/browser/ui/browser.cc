@@ -1872,7 +1872,7 @@ void Browser::OpenTaskManager(bool highlight_background_resources) {
 
 void Browser::OpenBugReportDialog() {
   UserMetrics::RecordAction(UserMetricsAction("ReportBug"));
-  browser::ShowHtmlBugReportView(this);
+  browser::ShowHtmlBugReportView(this, std::string(), 0);
 }
 
 void Browser::ToggleBookmarkBar() {

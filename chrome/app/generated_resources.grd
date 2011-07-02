@@ -4359,16 +4359,22 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Annotates web forms with Autofill field type predictions as placeholder text.
       </message>
       <message name="IDS_FLAGS_SYNC_TYPED_URLS_NAME" desc="Title for the flag to enable syncing the TypedUrl datatype">
-        Enable syncing typed URLs.
+        Enable syncing typed URLs
       </message>
       <message name="IDS_FLAGS_SYNC_TYPED_URLS_DESCRIPTION" desc="Description for the flag to enable syncing the TypedURL datatype">
         Enable typed URLs in the sync options. This allows syncing your typed URL history to other clients to assist in omnibox auto-completion.
       </message>
       <message name="IDS_FLAGS_PRERENDER_FROM_OMNIBOX_NAME" desc="Title for the flag to prerender from the omnibox">
-        Prerender from omnibox.
+        Prerender from omnibox
       </message>
       <message name="IDS_FLAGS_PRERENDER_FROM_OMNIBOX_DESCRIPTION" desc="Description for the flag to prerender from the omnibox">
         Prerender suggestions given in the omnibox.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_ADDITIONAL_AUTOFILL_FEEDBACK_NAME" desc="Title for the flag to enable prompts for Autofill feedback">
+        Send additional Autofill feedback
+      </message>
+      <message name="IDS_FLAGS_ENABLE_ADDITIONAL_AUTOFILL_FEEDBACK_DESCRIPTION" desc="Description for the flag to enable prompts for Autofill feedback">
+        Help improve Autofill.  With this enabled, Chrome will occasionally prompt you to send additional feedback to the Autofill team.
       </message>
 
       <!-- Crashes -->
@@ -5246,6 +5252,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_BUGREPORT_OTHER" desc="In sentence case: Report a bug/problem type: Other">
           Other
         </message>
+        <message name="IDS_BUGREPORT_AUTOFILL" desc="In sentence case: Report a bug/problem type: Autofill">
+          Autofill
+        </message>
         <message name="IDS_BUGREPORT_GENERAL" desc="In sentence case: Report a bug/problem type: General feedback/other">
           General feedback/other
         </message>
@@ -5286,6 +5295,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
         <message name="IDS_BUGREPORT_OTHER" desc="In Title Case: Report a bug/problem type: Other">
           Other
+        </message>
+        <message name="IDS_BUGREPORT_AUTOFILL" desc="In Title Case: Report a bug/problem type: Autofill">
+          Autofill
         </message>
       </if>
 
@@ -7668,6 +7680,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
       
       <message name="IDS_AUTOFILL_SHOW_PREDICTIONS_TITLE" desc="The title for form elements when annotated with Autofill predictions.">
         heuristic type: <ph name="HEURISTIC_TYPE">$1<ex>NAME_FIRST</ex></ph>\nserver type: <ph name="SERVER_TYPE">$2<ex>NAME_FIRST</ex></ph>\nfield signature: <ph name="FIELD_SIGNATURE">$3<ex>12345678</ex></ph>\nform signature: <ph name="FORM_SIGNATURE">$4<ex>1234567812345678</ex></ph>\nexperiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
+      </message>
+
+      <message name="IDS_AUTOFILL_FEEDBACK_INFOBAR_TEXT" desc="Description text for the Autofill feedback infobar.">
+        Help make Autofill better.
+      </message>
+
+      <message name="IDS_AUTOFILL_FEEDBACK_INFOBAR_LINK_TEXT" desc="Link text for the Autofill feedback infobar.">
+        Send feedback to Google.
+      </message>
+
+      <message name="IDS_AUTOFILL_FEEDBACK_POPULAR_FORM_MESSAGE" desc="Feedback message template for when a popular Autofill form is found.">
+        The form signature <ph name="FORM_SIGNATURE">$1<ex>15146752457155269744</ex></ph> is for <ph name="FORM_URL">$2<ex>http://www.facebook.com</ex></ph>.
       </message>
 
       <if expr="not pp_ifdef('use_titlecase')">

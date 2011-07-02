@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/webui/bug_report_ui.h"
 
 #include <algorithm>
-#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -34,6 +33,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/rect.h"
@@ -142,13 +142,15 @@ void RefreshLastScreenshot(Browser* browser) {
   screen_size = browser::GrabWindowSnapshot(native_window, last_screenshot_png);
 }
 
-void ShowHtmlBugReportView(Browser* browser) {
+void ShowHtmlBugReportView(Browser* browser,
+                           const std::string& description_template,
+                           size_t issue_type) {
   // First check if we're already open (we cannot depend on ShowSingletonTab
   // for this functionality since we need to make *sure* we never get
   // instantiated again while we are open - with singleton tabs, that can
   // happen)
   int feedback_tab_index = GetIndexOfFeedbackTab(browser);
-  if (feedback_tab_index >=0) {
+  if (feedback_tab_index >= 0) {
     // Do not refresh screenshot, do not create a new tab
     browser->ActivateTabAt(feedback_tab_index, true);
     return;
@@ -156,7 +158,9 @@ void ShowHtmlBugReportView(Browser* browser) {
 
   RefreshLastScreenshot(browser);
   std::string bug_report_url = std::string(chrome::kChromeUIBugReportURL) +
-      "#" + base::IntToString(browser->active_index());
+      "#" + base::IntToString(browser->active_index()) +
+      "?description=" + EscapeUrlEncodedData(description_template, false) +
+      "&issueType=" + base::IntToString(issue_type);
   browser->ShowSingletonTab(GURL(bug_report_url));
 }
 
@@ -315,6 +319,7 @@ void BugReportUIHTMLSource::StartDataRequest(const std::string& path,
   // Standby or Resume
   // Phishing Page
   // General Feedback/Other
+  // Autofill (hidden by default)
 
   localized_strings.SetString(std::string("issue-connectivity"),
       l10n_util::GetStringUTF8(IDS_BUGREPORT_CONNECTIVITY));
@@ -332,6 +337,8 @@ void BugReportUIHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetStringUTF8(IDS_BUGREPORT_PHISHING_PAGE));
   localized_strings.SetString(std::string("issue-other"),
       l10n_util::GetStringUTF8(IDS_BUGREPORT_GENERAL));
+  localized_strings.SetString(std::string("issue-autofill"),
+      l10n_util::GetStringUTF8(IDS_BUGREPORT_AUTOFILL));
 #else
   // Dropdown for Chrome:
   //
@@ -344,6 +351,7 @@ void BugReportUIHTMLSource::StartDataRequest(const std::string& path,
   // Extensions or apps
   // Phishing
   // Other
+  // Autofill (hidden by default)
 
   localized_strings.SetString(std::string("issue-page-formatting"),
       l10n_util::GetStringUTF8(IDS_BUGREPORT_PAGE_FORMATTING));
@@ -363,6 +371,9 @@ void BugReportUIHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetStringUTF8(IDS_BUGREPORT_PHISHING_PAGE));
   localized_strings.SetString(std::string("issue-other"),
       l10n_util::GetStringUTF8(IDS_BUGREPORT_OTHER));
+  localized_strings.SetString(std::string("issue-autofill"),
+      l10n_util::GetStringUTF8(IDS_BUGREPORT_AUTOFILL));
+
 #endif
 
   SetFontAndTextDirection(&localized_strings);
@@ -488,6 +499,10 @@ base::StringPiece BugReportHandler::Init() {
   // Erase the # - the first character.
   if (params.length())
     params.erase(params.begin(), params.begin() + 1);
+
+  size_t additional_params_pos = params.find('?');
+  if (additional_params_pos != std::string::npos)
+    params.erase(params.begin() + additional_params_pos, params.end());
 
   int index = 0;
   if (!base::StringToInt(params, &index)) {

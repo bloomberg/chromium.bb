@@ -18,6 +18,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete_history_manager.h"
 #include "chrome/browser/autofill/autofill_cc_infobar_delegate.h"
+#include "chrome/browser/autofill/autofill_feedback_infobar_delegate.h"
 #include "chrome/browser/autofill/autofill_field.h"
 #include "chrome/browser/autofill/autofill_metrics.h"
 #include "chrome/browser/autofill/autofill_profile.h"
@@ -50,6 +51,7 @@
 #include "webkit/glue/form_data_predictions.h"
 #include "webkit/glue/form_field.h"
 
+using switches::kEnableAutofillFeedback;
 using webkit_glue::FormData;
 using webkit_glue::FormDataPredictions;
 using webkit_glue::FormField;
@@ -246,6 +248,107 @@ void NormalizePhoneMultiInfo(AutofillFieldType type,
                                                                     locale);
     if (!normalized_phone.empty())
       *it = normalized_phone;
+  }
+}
+
+// Check for unidentified forms among those with the most query or upload
+// requests.  If found, present an infobar prompting the user to send Google
+// Feedback identifying these forms.  Only executes if the appropriate flag is
+// set in about:flags.
+const char* popular_form_signatures[] = {
+  "2887233945494216129",
+  "2368290381054225403",
+  "17406559024985371065",
+  "4278250680491119235",
+  "15477334228399307501",
+  "1730681123057140977",
+  "11358154263115534026",
+  "3374679607741012095",
+  "10772399879829539695",
+  "17594653376812824016",
+  "10135289994685082173",
+  "7883844738557049416",
+  "14651966297402649464",
+  "10868631850007054248",
+  "17177862793067325164",
+  "15222964025577790589",
+  "6231789373382218038",
+  "14138834153984647462",
+  "1522221299769735301",
+  "17228141197258302808",
+  "8722310903411994150",
+  "8604254969743383026",
+  "12530431737672869498",
+  "4663864548547328069",
+  "7014315606253854806",
+  "8788404433597645123",
+  "1080809576396139601",
+  "10157228556492868550",
+  "7112098130084740023",
+  "10591138561307360539",
+  "3483444043750493124",
+  "15866891023153601650",
+  "3764098888295731941",
+  "17067523981498700065",
+  "957190629194980629",
+  "11314948061179499915",
+  "2226179674176240706",
+  "9886974103926218264",
+  "18252201326824295378",
+  "16089161644523512553",
+  "1366685796842051613",
+  "3683416168214161370",
+  "17395441333004474813",
+  "7131540066857838464",
+  "1799736626243038725",
+  "4314535457620699296",
+  "16597101416150066076",
+  "11571064402466920341",
+  "17529644200058912705",
+  "17442663271235869548",
+  "4252400202111788540",
+  "10423886468225016833",
+  "8205718441232482003",
+  "12566467866837059201",
+  "14998753650075003914",
+  "8463873542596795823",
+  "3341181348270175432",
+  "11676285881900848058",
+  "12047213380448477438",
+  "7626117232464424739",
+  "6755316823149690927",
+  "17343480863386343671",
+  "4345267765838738360"
+};
+
+void CheckForPopularForms(const std::vector<FormStructure*>& forms,
+                          TabContentsWrapper* tab_contents_wrapper,
+                          TabContents* tab_contents) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(kEnableAutofillFeedback))
+    return;
+
+  for (std::vector<FormStructure*>::const_iterator it = forms.begin();
+       it != forms.end();
+       ++it) {
+    std::string form_signature = (*it)->FormSignature();
+    for (size_t i = 0; i < arraysize(popular_form_signatures); ++i) {
+      if (form_signature != popular_form_signatures[i])
+        continue;
+
+      string16 text =
+          l10n_util::GetStringUTF16(IDS_AUTOFILL_FEEDBACK_INFOBAR_TEXT);
+      string16 link =
+          l10n_util::GetStringUTF16(IDS_AUTOFILL_FEEDBACK_INFOBAR_LINK_TEXT);
+      std::string message =
+          l10n_util::GetStringFUTF8(IDS_AUTOFILL_FEEDBACK_POPULAR_FORM_MESSAGE,
+                                    ASCIIToUTF16(form_signature),
+                                    UTF8ToUTF16((*it)->source_url().spec()));
+
+      tab_contents_wrapper->AddInfoBar(
+          new AutofillFeedbackInfoBarDelegate(tab_contents, text, link,
+                                              message));
+      break;
+    }
   }
 }
 
@@ -1038,6 +1141,9 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
        iter != non_queryable_forms.end(); ++iter) {
     form_structures_.push_back(*iter);
   }
+
+  CheckForPopularForms(form_structures_.get(), tab_contents_wrapper_,
+                       tab_contents());
 }
 
 int AutofillManager::GUIDToID(const GUIDPair& guid) {

@@ -26,15 +26,33 @@ function load() {
       chrome.send('openSystemTab');
     };
   }
-  
+
   var menuOffPattern = /(^\?|&)menu=off($|&)/;
   var menuDisabled = menuOffPattern.test(window.location.search);
   document.documentElement.setAttribute('hide-menu', menuDisabled);
-  
 
-  // textContent on description-text textarea seems to default
-  // to several spaces, this resets it to empty.
-  $('description-text').textContent = '';
+  // Set default values for the possible parameters, and then parse the actual
+  // values from the URL hash.
+  var parameters = {
+    'description': '',
+    'issueType': 0,
+  };
+  var queryPos = window.location.hash.indexOf('?');
+  if (queryPos !== -1) {
+    // Get an array of parameters in 'name=value' form.
+    var query = window.location.hash.substring(queryPos + 1).split('&');
+    for (var i = 0; i < query.length; i++) {
+      // Decode and store each parameter value.
+      parameter = query[i].split('=');
+      parameters[parameter[0]] = decodeURIComponent(parameter[1]);
+    }
+
+    // For a clean URL, trim the parameters from the hash.
+    window.location.hash = window.location.hash.substring(0, queryPos);
+  }
+
+  // Set the initial description text.
+  $('description-text').textContent = parameters['description'];
 
   // Get a list of issues that we allow the user to select from.
   // Note, the order and the issues types themselves are different
@@ -52,6 +70,8 @@ function load() {
   issueTypeText[7] = localStrings.getString('issue-extensions');
   issueTypeText[8] = localStrings.getString('issue-phishing');
   issueTypeText[9] = localStrings.getString('issue-other');
+  var numDefaultIssues = issueTypeText.length;
+  issueTypeText[10] = localStrings.getString('issue-autofill');
 </if>
 <if expr="pp_ifdef('chromeos')">
   issueTypeText[1] = localStrings.getString('issue-connectivity');
@@ -62,13 +82,19 @@ function load() {
   issueTypeText[6] = localStrings.getString('issue-standby');
   issueTypeText[7] = localStrings.getString('issue-phishing');
   issueTypeText[8] = localStrings.getString('issue-other');
+  var numDefaultIssues = issueTypeText.length;
+  issueTypeText[9] = localStrings.getString('issue-autofill');
 </if>
   // Add all the issues to the selection box.
   for (var i = 0; i < issueTypeText.length; i++) {
     var option = document.createElement('option');
     option.className = 'bug-report-text';
     option.textContent = issueTypeText[i];
-    $('issue-with-combo').add(option);
+    if (('' + i) === parameters['issueType'])
+      option.selected = true;
+
+    if (i < numDefaultIssues || option.selected)
+      $('issue-with-combo').add(option);
   }
 
   chrome.send('getDialogDefaults', []);

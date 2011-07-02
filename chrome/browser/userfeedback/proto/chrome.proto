@@ -1,4 +1,4 @@
-// Copyright 2010 Google Inc. All Rights Reserved.
+// Copyright 2011 Google Inc. All Rights Reserved.
 // Author: marcinm@google.com (Marcin Mikosik)
 
 syntax = "proto2";
@@ -33,6 +33,7 @@ message ChromeOsData {
     STANDBY_OR_RESUME = 6;
     PHISHING_PAGE = 7;
     OTHER = 8;
+    AUTOFILL = 9;
   }
 
   optional ChromeOsCategory category = 1 [default = OTHER];
@@ -50,6 +51,7 @@ message ChromeBrowserData{
     EXTENSIONS_OR_APPS = 7;
     PHISHING_PAGE = 8;
     OTHER = 9;
+    AUTOFILL = 10;
   }
 
   optional ChromeBrowserCategory category = 1 [default = OTHER];

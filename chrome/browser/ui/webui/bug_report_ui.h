@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_BUG_REPORT_UI_H_
 #define CHROME_BROWSER_UI_WEBUI_BUG_REPORT_UI_H_
 
+#include <string>
+
 #include "chrome/browser/ui/views/window.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 
@@ -17,7 +19,9 @@ class NSWindow;
 class TabContents;
 
 namespace browser {
-void ShowHtmlBugReportView(Browser* browser);
+void ShowHtmlBugReportView(Browser* browser,
+                           const std::string& description_template,
+                           size_t issue_type);
 }  // namespace browser
 
 class BugReportUI : public HtmlDialogUI {

@@ -196,6 +196,10 @@ const char kDiagnostics[]                   = "diagnostics";
 const char kDisableAuthNegotiateCnameLookup[] =
     "disable-auth-negotiate-cname-lookup";
 
+// Disable both pre- and auto-login for services attached to a GAIA account
+// even when the GAIA credentials are available through sync.
+const char kDisableAutoLogin[]              = "disable-auto-login";
+
 // Disable background mode (background apps will not keep chrome running in the
 // background).
 const char kDisableBackgroundMode[] = "disable-background-mode";
@@ -374,9 +378,11 @@ const char kEnableAeroPeekTabs[]            = "enable-aero-peek-tabs";
 // for more background.
 const char kEnableAuthNegotiatePort[]       = "enable-auth-negotiate-port";
 
-// Disable both pre- and auto-login for services attached to a GAIA account
-// even when the GAIA credentials are available through sync.
-const char kDisableAutoLogin[]              = "disable-auto-login";
+// With this flag set, Chrome will occasionally prompt the user to volunteer
+// Autofill usage data beyond what is collected by default.  This is data that
+// we expect to be helpful for debugging, but that we do not want to send up
+// automatically due to privacy concerns.
+const char kEnableAutofillFeedback[]        = "enable-autofill-feedback";
 
 // This flag enables UI for clearing server data.  Temporarily in place
 // until there's a server endpoint deployed.
