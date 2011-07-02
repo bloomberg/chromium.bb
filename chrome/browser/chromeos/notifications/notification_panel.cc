@@ -656,6 +656,10 @@ void NotificationPanel::OnMouseLeave() {
 void NotificationPanel::OnMouseMotion(const gfx::Point& point) {
   SetActiveView(balloon_container_->FindBalloonView(point));
   SET_STATE(KEEP_SIZE);
+  // We need to set the focus to scroll view to get mouse wheel
+  // working. Setting focus when mouse moves on the panel
+  // because focus may be taken by other view.
+  scroll_view_->RequestFocus();
 }
 
 NotificationPanelTester* NotificationPanel::GetTester() {
@@ -675,6 +679,7 @@ void NotificationPanel::Init() {
       views::Background::CreateSolidBackground(ResourceBundle::frame_color));
 
   scroll_view_.reset(new views::ScrollView());
+  scroll_view_->set_focusable(true);
   scroll_view_->set_parent_owned(false);
   scroll_view_->set_background(
       views::Background::CreateSolidBackground(SK_ColorWHITE));
