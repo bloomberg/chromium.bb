@@ -72,7 +72,7 @@ class PrintPreviewWebUITest
   }
 };
 
-IN_PROC_BROWSER_TEST_F(PrintPreviewWebUITest, TestPrintPreview) {
+IN_PROC_BROWSER_TEST_F(PrintPreviewWebUITest, FLAKY_TestPrintPreview) {
   ASSERT_TRUE(RunJavascriptTest("testPrintPreview",
                                 *Value::CreateBooleanValue(HasPDFLib())));
 }
