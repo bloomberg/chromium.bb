@@ -4,52 +4,90 @@
  * found in the LICENSE file.
  */
 
+#include <assert.h>
 #include <unistd.h>
 
 #include "native_client/src/include/elf32.h"
 #include "native_client/src/include/elf_auxv.h"
-#include "native_client/src/untrusted/irt/irt_elf_utils.h"
 #include "native_client/src/untrusted/irt/irt_interfaces.h"
+#include "native_client/src/untrusted/nacl/nacl_irt.h"
+#include "native_client/src/untrusted/nacl/nacl_startup.h"
 
+void __libc_init_array(void) __attribute__((weak));
+void _init(void) __attribute__((weak));
 
-void jump_to_elf_start(void *initial_stack_pointer,
-                       uintptr_t entry_point,
-                       uintptr_t atexit_func);
+void __pthread_initialize(void);
+void __pthread_shutdown(void);
 
 /*
- * We have a typedef for the size of argc on the stack because this
- * varies between NaCl platforms.
- * See http://code.google.com/p/nativeclient/issues/detail?id=1226
- * TODO(mseaborn): Unify the ABIs.
+ * This is the true entry point for untrusted code.
+ * See nacl_startup.h for the layout at the argument pointer.
  */
-#if defined(__x86_64__)
-typedef int64_t argc_type;
-#else
-typedef int32_t argc_type;
-#endif
+void _start(uint32_t *info) {
+  void (*fini)(void) = nacl_startup_fini(info);
+  char **envp = nacl_startup_envp(info);
+  Elf32_auxv_t *auxv = nacl_startup_auxv(info);
 
-int main(int argc, char **argv) {
-  struct auxv_entry *auxv = __find_auxv(argc, argv);
-  struct auxv_entry *entry = __find_auxv_entry(auxv, AT_ENTRY);
+  environ = envp;
+
+  /*
+   * TODO(mcgrathr): This ought to use IRT-private tables explicitly.
+   */
+  __libnacl_irt_init(auxv);
+
+  /*
+   * We are the true entry point, never called by a dynamic linker.
+   * So the finalizer function pointer is always NULL.
+   * We don't bother registering anything with atexit anyway,
+   * since we do not expect our own exit function ever to be called.
+   * Any cleanup we might need done must happen in nacl_irt_exit (irt_basic.c).
+   */
+  assert(fini == NULL);
+
+  __pthread_initialize();
+
+  if (&__libc_init_array)
+    __libc_init_array();
+  else
+    _init();
+
+  Elf32_auxv_t *entry = NULL;
+  for (Elf32_auxv_t *av = auxv; av->a_type != AT_NULL; ++av) {
+    if (av->a_type == AT_ENTRY) {
+      entry = av;
+      break;
+    }
+  }
   if (entry == NULL) {
     static const char fatal_msg[] =
         "irt_entry: No AT_ENTRY item found in auxv.  "
         "Is there no user executable loaded?\n";
     write(2, fatal_msg, sizeof(fatal_msg) - 1);
-    _exit(127);
+    _exit(-1);
   }
-  uintptr_t entry_point = entry->a_val;
+  void (*user_start)(uint32_t *) = (void (*)(uint32_t *)) entry->a_un.a_val;
 
   /*
    * The user application does not need to see the AT_ENTRY item.
    * Reuse the auxv slot and overwrite it with the IRT query function.
    */
   entry->a_type = AT_SYSINFO;
-  entry->a_val = (uintptr_t) nacl_irt_interface;
+  entry->a_un.a_val = (uintptr_t) nacl_irt_interface;
 
-  void *stack_pointer = (char *) argv - sizeof(argc_type);
-  jump_to_elf_start(stack_pointer, entry_point, 0);
+  /*
+   * Call the user entry point function.  It should not return.
+   */
+  (*user_start)(info);
 
-  /* This should never be reached. */
-  return 0;
+  /*
+   * But just in case it does...
+   */
+  _exit(0);
+}
+
+/*
+ * This is never actually called, but there is an artificial undefined
+ * reference to it.
+ */
+int main(void) {
 }

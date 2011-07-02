@@ -67,35 +67,35 @@ class TestStartupMessage(unittest.TestCase):
     self.assertIn(expected_line, output_lines)
 
   def test_error_on_eof(self):
-    self._TryStartupMessage(None, "Error receiving startup message")
+    self._TryStartupMessage(None, "Error receiving startup message (5)")
 
   def test_error_on_missing_tag(self):
     self._TryStartupMessage(
-        "", "Startup message does not have the expected tag")
+        "", "Startup message (0 bytes) lacks the expected tag")
 
   def test_error_on_missing_body(self):
-    self._TryStartupMessage("ARGS", "Startup message too small")
+    self._TryStartupMessage("ARGS", "Startup message too small (4 bytes)")
 
   def test_error_on_truncated_body(self):
     data = nacl_launcher.PackArgsMessage(["a", "b", "c"], [])
     self._TryStartupMessage(
-        data[:-1], "Missing null terminator in argv list")
+        data[:-1], "Unterminated argument string in startup message")
     data = nacl_launcher.PackArgsMessage(["a", "b", "c"], ["e", "f"])
     self._TryStartupMessage(
-        data[:-1], "Missing null terminator in env list")
+        data[:-1], "Unterminated environment string in startup message")
 
   def test_error_on_excess_data(self):
     data = nacl_launcher.PackArgsMessage(["a", "b"], ["c", "d"])
     self._TryStartupMessage(
-        data + "x", "Excess data in message body")
+        data + "x", "Excess data (1 bytes) in startup message body")
 
   def test_error_on_overly_large_array_sizes(self):
     self._TryStartupMessage(
         struct.pack("4sII", "ARGS", 0x20000, 0),
-        "argv/env too large")
+        "Unterminated argument string in startup message")
     self._TryStartupMessage(
         struct.pack("4sII", "ARGS", 0x20000, -0x18000 & 0xffffffff),
-        "argv/env too large")
+        "Unterminated argument string in startup message")
 
 
 if __name__ == "__main__":

@@ -3120,11 +3120,15 @@ def AddImplicitLibs(env):
     # The ComponentProgram method (site_scons/site_tools/component_builders.py)
     # adds dependencies on env['IMPLICIT_LIBS'] if that's set.
     implicit_libs = ['crt1.o', 'libnacl.a', 'libcrt_platform.a']
+    # TODO(mcgrathr): multilib nonsense defeats -B!  figure out a better way.
+    if GetPlatform('targetplatform') == 'x86-32':
+      implicit_libs.append(os.path.join('32', 'crt1.o'))
     if env.Bit('bitcode'):
       implicit_libs += ['libehsupport.a']
     else:
       implicit_libs += ['crti.o', 'crtn.o']
-    env['IMPLICIT_LIBS'] = ['${LIB_DIR}/%s' % file for file in implicit_libs]
+    env['IMPLICIT_LIBS'] = [env.File(os.path.join('${LIB_DIR}', file))
+                            for file in implicit_libs]
     # The -B<dir>/ flag is necessary to tell gcc to look for crt[1in].o there.
     env.Prepend(LINKFLAGS=['-B${LIB_DIR}/'])
 

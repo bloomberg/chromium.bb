@@ -36,6 +36,7 @@ sources_for_standard_interfaces = [
     'sbrk.c',
     'sched_yield.c',
     'stacktrace.c',
+    'start.c',
     'stat.c',
     'sysconf.c',
     'tls.c',
@@ -78,7 +79,7 @@ irt_interface_sources = ['irt_basic.c',
 env.NaClSdkLibrary('libnacl', sources + irt_interface_sources)
 
 env.AddLibraryToSdk(['libnacl'])
-header_install = env.AddHeaderToSdk(['nacl_thread.h'])
+header_install = env.AddHeaderToSdk(['nacl_startup.h', 'nacl_thread.h'])
 env.Requires('libnacl', header_install)
 
 env.NaClSdkLibrary('libnacl_dyncode', ['dyncode.c'], LIBS=['nacl'])

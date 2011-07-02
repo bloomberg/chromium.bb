@@ -655,7 +655,7 @@ int NaClCreateMainThread(struct NaClApp     *nap,
   int                   auxv_entries;
   size_t                ptr_tbl_size;
   int                   i;
-  char                  *p;
+  uint32_t              *p;
   char                  *strp;
   size_t                *argv_len;
   size_t                *envv_len;
@@ -720,7 +720,6 @@ int NaClCreateMainThread(struct NaClApp     *nap,
    * NaCl modules are ILP32, so the argv, envv pointers, as well as
    * the terminating NULL pointers at the end of the argv/envv tables,
    * are 32-bit values.  We also have the auxv to take into account.
-   * Note that on nacl64, argc is popped, and is an 8-byte value!
    *
    * The argv and envv pointer tables came from trusted code and is
    * part of memory.  Thus, by the same argument above, adding in
@@ -739,8 +738,9 @@ int NaClCreateMainThread(struct NaClApp     *nap,
   if (0 != nap->user_entry_pt) {
     auxv_entries++;
   }
-  ptr_tbl_size = (argc + envc + 2 + auxv_entries * 2) * sizeof(uint32_t)
-                 + sizeof(nacl_reg_t);
+  ptr_tbl_size = (((NACL_STACK_GETS_ARG ? 1 : 0) +
+                   (3 + argc + 1 + envc + 1 + auxv_entries * 2)) *
+                  sizeof(uint32_t));
 
   if (SIZE_T_MAX - size < ptr_tbl_size) {
     NaClLog(LOG_WARNING,
@@ -766,41 +766,50 @@ int NaClCreateMainThread(struct NaClApp     *nap,
   VCHECK(0 == (stack_ptr & NACL_STACK_ALIGN_MASK),
          ("stack_ptr not aligned: %016"NACL_PRIxPTR"\n", stack_ptr));
 
-  p = (char *) stack_ptr;
-  strp = p + ptr_tbl_size;
+  p = (uint32_t *) stack_ptr;
+  strp = (char *) stack_ptr + ptr_tbl_size;
 
-#define BLAT(t, v) do { \
-    *(t *) p = (t) v; p += sizeof(t);           \
-  } while (0);
+  /*
+   * For x86-32, we push an initial argument that is the address of
+   * the main argument block.  For other machines, this is passed
+   * in a register and that's set in NaClStartThreadInApp.
+   */
+  if (NACL_STACK_GETS_ARG) {
+    uint32_t *argloc = p++;
+    *argloc = (uint32_t) NaClSysToUser(nap, (uintptr_t) p);
+  }
 
-  BLAT(nacl_reg_t, argc);
+  *p++ = 0;  /* Cleanup function pointer, always NULL.  */
+  *p++ = envc;
+  *p++ = argc;
 
   for (i = 0; i < argc; ++i) {
-    BLAT(uint32_t, NaClSysToUser(nap, (uintptr_t) strp));
+    *p++ = (uint32_t) NaClSysToUser(nap, (uintptr_t) strp);
     NaClLog(2, "copying arg %d  %p -> %p\n",
             i, argv[i], strp);
     strcpy(strp, argv[i]);
     strp += argv_len[i];
   }
-  BLAT(uint32_t, 0);
+  *p++ = 0;  /* argv[argc] is NULL.  */
 
   for (i = 0; i < envc; ++i) {
-    BLAT(uint32_t, NaClSysToUser(nap, (uintptr_t) strp));
+    *p++ = (uint32_t) NaClSysToUser(nap, (uintptr_t) strp);
     NaClLog(2, "copying env %d  %p -> %p\n",
             i, envv[i], strp);
     strcpy(strp, envv[i]);
     strp += envv_len[i];
   }
-  BLAT(uint32_t, 0);
+  *p++ = 0;  /* envp[envc] is NULL.  */
+
   /* Push an auxv */
   if (0 != nap->user_entry_pt) {
-    BLAT(uint32_t, AT_ENTRY);
-    BLAT(uint32_t, nap->user_entry_pt);
+    *p++ = AT_ENTRY;
+    *p++ = (uint32_t) nap->user_entry_pt;
   }
-  BLAT(uint32_t, AT_NULL);
-  BLAT(uint32_t, 0);
-#undef BLAT
-  CHECK(p == (char *) stack_ptr + ptr_tbl_size);
+  *p++ = AT_NULL;
+  *p++ = 0;
+
+  CHECK((char *) p == (char *) stack_ptr + ptr_tbl_size);
 
   /* now actually spawn the thread */
   natp = malloc(sizeof *natp);
@@ -819,6 +828,13 @@ int NaClCreateMainThread(struct NaClApp     *nap,
   NaClXMutexUnlock(&nap->mu);
 
   NaClVmHoleWaitToStartThread(nap);
+
+  /*
+   * For x86, we adjust the stack pointer down to push a dummy return
+   * address.  This happens after the stack pointer alignment.
+   */
+  stack_ptr -= NACL_STACK_PAD_BELOW_ALIGN;
+  memset((void *) stack_ptr, 0, NACL_STACK_PAD_BELOW_ALIGN);
 
   NaClLog(2, "system stack ptr : %016"NACL_PRIxPTR"\n", stack_ptr);
   NaClLog(2, "  user stack ptr : %016"NACL_PRIxPTR"\n",

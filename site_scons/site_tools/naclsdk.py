@@ -294,11 +294,11 @@ def _SetEnvForSdkManually(env):
 
 def PNaClForceNative(env):
   assert(env.Bit('bitcode'))
-  env.Replace(OBJSUFFIX='.o')
-  env.Replace(SHLIBSUFFIX='.so')
-  env.Append(CCFLAGS=['-arch', '${TARGET_FULLARCH}',
-                            '--pnacl-allow-translate'])
-  env.Append(LINKFLAGS=['--pnacl-allow-native'])
+  env.Replace(OBJSUFFIX='.o',
+              SHLIBSUFFIX='.so')
+  env.Append(ASFLAGS=['-arch', '${TARGET_FULLARCH}'],
+             CCFLAGS=['-arch', '${TARGET_FULLARCH}', '--pnacl-allow-translate'],
+             LINKFLAGS=['--pnacl-allow-native'])
   env['SHLINK'] = '${LINK}'
 
 # Get an environment for nacl-gcc when in PNaCl mode.

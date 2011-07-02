@@ -26,23 +26,6 @@ struct nacl_irt_blockhook __libnacl_irt_blockhook;
 TYPE_nacl_irt_query __nacl_irt_query;
 
 /*
- * TODO(mcgrathr): This extremely stupid function should not exist.
- * If the startup calling sequence were sane, this would be done
- * someplace that has the initial pointer locally rather than stealing
- * it from environ.
- * See http://code.google.com/p/nativeclient/issues/detail?id=651
- */
-static Elf32_auxv_t *find_auxv(void) {
-  /*
-   * This presumes environ has its startup-time value on the stack.
-   */
-  char **ep = environ;
-  while (*ep != NULL)
-    ++ep;
-  return (void *) (ep + 1);
-}
-
-/*
  * Scan the auxv for AT_SYSINFO, which is the pointer to the IRT query function.
  * Stash that for later use.
  */
@@ -72,8 +55,8 @@ static void do_irt_query(const char *interface_ident,
  * Initialize all our IRT function tables using the query function.
  * The query function's address is passed via AT_SYSINFO in auxv.
  */
-void __libnacl_irt_init(void) {
-  grok_auxv(find_auxv());
+void __libnacl_irt_init(Elf32_auxv_t *auxv) {
+  grok_auxv(auxv);
 
   DO_QUERY(NACL_IRT_BASIC_v0_1, basic);
   DO_QUERY(NACL_IRT_FILE_v0_1, file);

@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 
 Import('env')
+import os
 
 # This directory contains untrusted C and ASM source for low-level
 # CPU-specific libraries implicitly supplied by the compiler driver.
@@ -18,42 +19,36 @@ def GetPlatformSuffix(env):
 
 platform = GetPlatformSuffix(env)
 
+native_env = env.Clone()
+if native_env.Bit('bitcode'):
+  native_env.PNaClForceNative()
 
-if env.Bit('bitcode'):
-  # NOTE: we make sure everything in this directory gets compiled
-  #       all the way down into native code.
-  #       This is tricky in the pnacl case where a .c file would
-  #       normally compiled into a bitcode file.
-  env.Replace(OBJSUFFIX='.o')
-  env.Append(ASFLAGS=['-arch', '${TARGET_FULLARCH}'])
-  env.Append(CCFLAGS=['-arch', '${TARGET_FULLARCH}',
-                      '--pnacl-allow-translate'])
+# This is a dummy linker script (a source file), not an actual object file.
+# Note that even for the bitcode case we call it crt1.o rather than crt1.bc,
+# just because of the tradition of using that exact name in linking rules.
+crt1 = env.InstallAs('crt1.o', 'crt1.x')
+env.AddObjectToSdk([crt1])
 
-
-# the nacl-gcc toolchain does not want to switch to using
-# src/untrusted/startup/nacl_startup.c
-# c.f. http://code.google.com/p/nativeclient/issues/detail?id=651
-if env.Bit('bitcode'):
-  crt1 = env.ComponentObject('crt1', ['crt1_%s.S' % platform])
-else:
-  crt1 = env.ComponentObject('crt1', ['crt1_x86.S'])
-
-if env.Bit('bitcode'):
-  bookends = []
-else:
-  bookends = [env.ComponentObject('crti', ['crti_%s.S' % platform]),
-              env.ComponentObject('crtn', ['crtn_%s.S' % platform])]
+# TODO(mcgrathr): The multilib in the gcc driver logic defeats -Bx/ under -m32.
+# Figure out a way to make -B really override everything else.
+if platform == 'x86_32':
+  env.Install(os.path.join('${LIB_DIR}', '32'), crt1)
 
 # NOTE: we only provide setjmp/longjmp for pnacl, nacl-gcc obtains
 # them from newlib, while pnacl's newlib is arch neutral
 platform_objs = []
 
 if env.Bit('bitcode'):
-  platform_objs.append(env.StaticObject('setjmp.o', ['setjmp_%s.S' % platform]))
+  bookends = []
+  platform_objs.append(native_env.StaticObject('setjmp.o',
+                                               ['setjmp_%s.S' % platform]))
+else:
+  bookends = [native_env.ComponentObject('crti', ['crti_%s.S' % platform]),
+              native_env.ComponentObject('crtn', ['crtn_%s.S' % platform])]
 
 if env.Bit('target_arm'):
   platform_objs.append('aeabi_read_tp.S')
 
-crt_platform = env.StaticLibrary('crt_platform', platform_objs)
+crt_platform = native_env.StaticLibrary('crt_platform', platform_objs)
 
-env.AddObjectToSdk([crt1, crt_platform] + bookends, is_platform=True)
+native_env.AddObjectToSdk([crt_platform] + bookends, is_platform=True)

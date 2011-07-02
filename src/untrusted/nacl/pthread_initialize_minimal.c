@@ -15,14 +15,6 @@
  * It must make it safe for vanilla newlib code to run.
  */
 int __pthread_initialize_minimal(size_t tdb_size) {
-  /*
-   * TODO(mcgrathr): This ought to be called by the startup code before
-   * this.  But there are too many variants of that code that would
-   * all need to be changed.
-   * See http://code.google.com/p/nativeclient/issues/detail?id=651
-   */
-  __libnacl_irt_init();
-
   /* Adapt size for sbrk. */
   /* TODO(robertm): this is somewhat arbitrary - re-examine). */
   size_t combined_size = (__nacl_tls_combined_size(tdb_size) + 15) & ~15;

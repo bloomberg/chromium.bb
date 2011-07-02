@@ -121,7 +121,9 @@ ENVIRONMENTS_TO_TRY = [ ('noopt_frame', MakeEnv(False, True)),
 
 for tag, e in ENVIRONMENTS_TO_TRY:
   for src in ['unwind_trace.cc',
-              'stack_frame.cc',
+              # TODO(mcgrathr): This test has bad assumptions and needs
+              # to be rewritten.  Disabling it for now.
+              # 'stack_frame.cc',
               'eh_virtual_dtor.cc',
               'eh_loop_single.cc',
               'eh_loop_many.cc',

@@ -162,6 +162,8 @@
  * must do so here as well.
  */
 #  define NACL_STACK_ALIGN_MASK   (0xf)
+#  define NACL_STACK_GETS_ARG     (1)
+#  define NACL_STACK_PAD_BELOW_ALIGN (4)
 
 # elif NACL_BUILD_SUBARCH == 64
 #  define NACL_USERRET_FIX        (0x8)
@@ -173,6 +175,8 @@
  * 3.2.2 discusses stack alignment.
  */
 #  define NACL_STACK_ALIGN_MASK   (0xf)
+#  define NACL_STACK_GETS_ARG     (0)
+#  define NACL_STACK_PAD_BELOW_ALIGN (8)
 # else /* NACL_BUILD_SUBARCH */
 #  error Unknown platform!
 # endif /* NACL_BUILD_SUBARCH */
@@ -194,6 +198,8 @@
  * -- the "public" stack alignment is required to be 8 bytes,
  */
 # define NACL_STACK_ALIGN_MASK    (0x7)
+# define NACL_STACK_GETS_ARG      (0)
+# define NACL_STACK_PAD_BELOW_ALIGN (0)
 
 /* TODO(robertm): unify this with NACL_BLOCK_SHIFT */
 /* 16 byte bundles */

@@ -38,14 +38,6 @@ if blob_env.Bit('bitcode'):
 else:
   blob_env.Append(LINKFLAGS='-Wl,-Ttext-segment=${IRT_BLOB_CODE_START}')
 
-asm_env = blob_env.Clone()
-if asm_env.Bit('bitcode'):
-  asm_env.Replace(OBJSUFFIX='.o')
-  asm_env.Append(ASFLAGS=['-arch', '${TARGET_FULLARCH}'])
-
-asm_helper = asm_env.ComponentObject(
-    'elf_restart_%s.S' % env['TARGET_FULLARCH'].replace('-', '_'))
-
 irt_support_sources = [
     'irt_entry.c',
     'irt_malloc.c',
@@ -67,8 +59,8 @@ if not env.Bit('bitcode'):
 irt_common_interfaces = []
 
 # These are the objects and libraries that go into every IRT image.
-irt_support_objs = asm_helper + [blob_env.ComponentObject(x) for x in
-                                 (irt_support_sources + irt_common_interfaces)]
+irt_support_objs = [blob_env.ComponentObject(x) for x in
+                    (irt_support_sources + irt_common_interfaces)]
 irt_support_libs = ['pthread']
 
 # These go into only one image or the other.
