@@ -456,6 +456,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalPolicyRefresh) {
   ASSERT_TRUE(service->disabled_extensions()->empty());
 
   PrefService* prefs = browser()->profile()->GetPrefs();
+  const ListValue* forcelist =
+      prefs->GetList(prefs::kExtensionInstallForceList);
+  ASSERT_TRUE(forcelist->empty())
+      << "A policy may already be controlling the list of force-installed "
+      << "extensions. Please remove all policy settings from your computer "
+      << "before running tests. E.g. from /etc/chromium/policies Linux or "
+      << "from the registry on Windows, etc.";
+
   {
     // Set the policy as a user preference and fire notification observers.
     ListPrefUpdate pref_update(prefs, prefs::kExtensionInstallForceList);
