@@ -444,14 +444,6 @@ class MouseTest(unittest.TestCase):
     self._driver.find_element_by_name('far_away').click()
     self.assertTrue(self._driver.execute_script('return window.success'))
 
-  def testDoNotScrollUnnecessarilyToClick(self):
-    self._driver.get(self._launcher.GetURL() + '/test_page.html')
-    self._driver.find_element_by_name('near_top').click()
-    self.assertTrue(self._driver.execute_script('return window.success'))
-    script = 'return document.body.scrollTop == 0 && ' \
-             '       document.body.scrollLeft == 0'
-    self.assertTrue(self._driver.execute_script(script))
-
   # TODO(kkania): Move this test to the webdriver repo.
   def testClickDoesSelectOption(self):
     self._driver.get(self._launcher.GetURL() + '/test_page.html')
@@ -459,6 +451,11 @@ class MouseTest(unittest.TestCase):
     self.assertFalse(option.is_selected())
     option.click()
     self.assertTrue(option.is_selected())
+
+  def testClickDoesUseFirstClientRect(self):
+    self._driver.get(self._launcher.GetURL() + '/test_page.html')
+    self._driver.find_element_by_name('wrapped').click()
+    self.assertTrue(self._driver.execute_script('return window.success'))
 
 
 class UrlBaseTest(unittest.TestCase):

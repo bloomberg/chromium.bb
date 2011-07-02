@@ -200,16 +200,32 @@ class Session {
                       const std::string& query,
                       std::vector<WebElementId>* elements);
 
-  // Scroll the element into view and get its location relative to the client's
-  // viewport.
+  // Scroll the element into view and get its location relative to
+  // the client's viewport.
   Error* GetElementLocationInView(
-      const WebElementId& element, gfx::Point* location);
+      const WebElementId& element,
+      gfx::Point* location);
+
+  // Scroll the element's region into view and get its location relative to
+  // the client's viewport. If |center| is true, the element will be centered
+  // if it is too big to fit in view.
+  Error* GetElementRegionInView(
+      const WebElementId& element,
+      const gfx::Rect& region,
+      bool center,
+      gfx::Point* location);
 
   // Gets the size of the element from the given window and frame, even if
   // its display is none.
   Error* GetElementSize(const FrameId& frame_id,
                         const WebElementId& element,
                         gfx::Size* size);
+
+  // Gets the size of the element's first client rect. If the element has
+  // no client rects, this will return an error.
+  Error* GetElementFirstClientRect(const FrameId& frame_id,
+                                   const WebElementId& element,
+                                   gfx::Rect* rect);
 
   // Gets the element's effective style for the given property.
   Error* GetElementEffectiveStyle(
@@ -302,10 +318,12 @@ class Session {
                             const std::string& query,
                             bool find_one,
                             std::vector<WebElementId>* elements);
-  Error* GetLocationInViewHelper(const FrameId& frame_id,
-                                 const WebElementId& element,
-                                 const gfx::Rect& region,
-                                 gfx::Point* location);
+  Error* GetElementRegionInViewHelper(
+      const FrameId& frame_id,
+      const WebElementId& element,
+      const gfx::Rect& region,
+      bool center,
+      gfx::Point* location);
 
   const std::string id_;
   FrameId current_target_;

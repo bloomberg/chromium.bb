@@ -254,7 +254,8 @@ Error* Session::GetURL(std::string* url) {
   if (error)
     return error;
   if (!value->GetAsString(url))
-    return new Error(kUnknownError, "GetURL Script returned non-string");
+    return new Error(kUnknownError, "GetURL Script returned non-string: " +
+                         JsonStringify(value.get()));
   return NULL;
 }
 
@@ -283,7 +284,8 @@ Error* Session::GetTitle(std::string* tab_title) {
   if (error)
     return error;
   if (!value->GetAsString(tab_title))
-    return new Error(kUnknownError, "GetTitle script returned non-string");
+    return new Error(kUnknownError, "GetTitle script returned non-string: " +
+                         JsonStringify(value.get()));
   return NULL;
 }
 
@@ -741,18 +743,28 @@ Error* Session::FindElements(const FrameId& frame_id,
 }
 
 Error* Session::GetElementLocationInView(
-    const WebElementId& element, gfx::Point* location) {
-  CHECK(element.is_valid());
-
-  gfx::Size elem_size;
-  Error* error = GetElementSize(current_target_, element, &elem_size);
+    const WebElementId& element,
+    gfx::Point* location) {
+  gfx::Size size;
+  Error* error = GetElementSize(current_target_, element, &size);
   if (error)
     return error;
+  return GetElementRegionInView(
+      element, gfx::Rect(gfx::Point(0, 0), size),
+      false /* center */, location);
+}
 
-  gfx::Point elem_offset(0, 0);
-  error = GetLocationInViewHelper(
-      current_target_, element,
-      gfx::Rect(elem_offset, elem_size), &elem_offset);
+Error* Session::GetElementRegionInView(
+    const WebElementId& element,
+    const gfx::Rect& region,
+    bool center,
+    gfx::Point* location) {
+  CHECK(element.is_valid());
+
+  gfx::Point region_offset = region.origin();
+  gfx::Size region_size = region.size();
+  Error* error = GetElementRegionInViewHelper(
+      current_target_, element, region, center, &region_offset);
   if (error)
     return error;
 
@@ -773,21 +785,21 @@ Error* Session::GetElementLocationInView(
       error->AddDetails(context);
       return error;
     }
-    // Modify |elem_offset| by the frame's border.
+    // Modify |region_offset| by the frame's border.
     int border_left, border_top;
     error = GetElementBorder(
         frame_id, frame_element, &border_left, &border_top);
     if (error)
       return error;
-    elem_offset.Offset(border_left, border_top);
+    region_offset.Offset(border_left, border_top);
 
-    error = GetLocationInViewHelper(
-        frame_id, frame_element,
-        gfx::Rect(elem_offset, elem_size), &elem_offset);
+    error = GetElementRegionInViewHelper(
+        frame_id, frame_element, gfx::Rect(region_offset, region_size),
+        center, &region_offset);
     if (error)
       return error;
   }
-  *location = elem_offset;
+  *location = region_offset;
   return NULL;
 }
 
@@ -805,15 +817,51 @@ Error* Session::GetElementSize(const FrameId& frame_id,
   if (error)
     return error;
   if (!result->IsType(Value::TYPE_DICTIONARY)) {
-    return new Error(kUnknownError, "GetSize atom returned non-dict type");
+    return new Error(kUnknownError, "GetSize atom returned non-dict type: " +
+                         JsonStringify(result.get()));
   }
   DictionaryValue* dict = static_cast<DictionaryValue*>(result.get());
   int width, height;
   if (!dict->GetInteger("width", &width) ||
       !dict->GetInteger("height", &height)) {
-    return new Error(kUnknownError, "GetSize atom returned invalid dict");
+    return new Error(kUnknownError, "GetSize atom returned invalid dict: " +
+                         JsonStringify(dict));
   }
   *size = gfx::Size(width, height);
+  return NULL;
+}
+
+Error* Session::GetElementFirstClientRect(const FrameId& frame_id,
+                                          const WebElementId& element,
+                                          gfx::Rect* rect) {
+  std::string script = base::StringPrintf(
+      "return (%s).apply(null, arguments);", atoms::GET_FIRST_CLIENT_RECT);
+  ListValue args;
+  args.Append(element.ToValue());
+
+  Value* unscoped_result = NULL;
+  Error* error = ExecuteScript(frame_id, script, &args, &unscoped_result);
+  scoped_ptr<Value> result(unscoped_result);
+  if (error)
+    return error;
+  if (!result->IsType(Value::TYPE_DICTIONARY)) {
+    return new Error(
+        kUnknownError,
+        "GetFirstClientRect atom returned non-dict type: " +
+            JsonStringify(result.get()));
+  }
+  DictionaryValue* dict = static_cast<DictionaryValue*>(result.get());
+  int left, top, width, height;
+  if (!dict->GetInteger("left", &left) ||
+      !dict->GetInteger("top", &top) ||
+      !dict->GetInteger("width", &width) ||
+      !dict->GetInteger("height", &height)) {
+    return new Error(
+        kUnknownError,
+        "GetFirstClientRect atom returned invalid dict: " +
+            JsonStringify(dict));
+  }
+  *rect = gfx::Rect(left, top, width, height);
   return NULL;
 }
 
@@ -839,8 +887,8 @@ Error* Session::GetElementEffectiveStyle(
 
   if (!result->GetAsString(value)) {
     std::string context = base::StringPrintf(
-        "GetEffectiveStyle atom returned non-string type for property (%s)",
-        prop.c_str());
+        "GetEffectiveStyle atom returned non-string for property (%s): %s",
+        prop.c_str(), JsonStringify(result.get()).c_str());
     return new Error(kUnknownError, context);
   }
   return NULL;
@@ -879,7 +927,8 @@ Error* Session::IsElementDisplayed(const FrameId& frame_id,
   if (error)
     return error;
   if (!result->GetAsBoolean(is_displayed))
-    return new Error(kUnknownError, "IsDisplayed atom returned non boolean");
+    return new Error(kUnknownError, "IsDisplayed atom returned non-boolean: " +
+                         JsonStringify(result.get()));
   return NULL;
 }
 
@@ -897,7 +946,8 @@ Error* Session::IsElementEnabled(const FrameId& frame_id,
   if (error)
     return error;
   if (!result->GetAsBoolean(is_enabled))
-    return new Error(kUnknownError, "IsEnabled atom returned non boolean");
+    return new Error(kUnknownError, "IsEnabled atom returned non-boolean: " +
+                         JsonStringify(result.get()));
   return NULL;
 }
 
@@ -930,7 +980,8 @@ Error* Session::GetElementTagName(const FrameId& frame_id,
   if (error)
     return error;
   if (!result->GetAsString(tag_name))
-    return new Error(kUnknownError, "TagName script returned non string");
+    return new Error(kUnknownError, "TagName script returned non-string: " +
+                         JsonStringify(result.get()));
   return NULL;
 }
 
@@ -941,15 +992,17 @@ Error* Session::GetClickableLocation(const WebElementId& element,
   if (error)
     return error;
   if (!is_displayed)
-    return new Error(kElementNotVisible, "Element must be displayed");
-  error = GetElementLocationInView(element, location);
+    return new Error(kElementNotVisible, "Element must be displayed to click");
+
+  gfx::Rect rect;
+  error = GetElementFirstClientRect(current_target_, element, &rect);
   if (error)
     return error;
-  gfx::Size size;
-  error = GetElementSize(current_target_, element, &size);
+
+  error = GetElementRegionInView(element, rect, true /* center */, location);
   if (error)
     return error;
-  location->Offset(size.width() / 2, size.height() / 2);
+  location->Offset(rect.width() / 2, rect.height() / 2);
   return NULL;
 }
 
@@ -1091,12 +1144,14 @@ Error* Session::ExecuteScriptAndParseResponse(const FrameId& frame_id,
   if (!value.get())
     return new Error(kUnknownError, "Failed to parse script result");
   if (value->GetType() != Value::TYPE_DICTIONARY)
-    return new Error(kUnknownError, "Execute script did not return dictionary");
+    return new Error(kUnknownError, "Execute script returned non-dict: " +
+                         JsonStringify(value.get()));
   DictionaryValue* result_dict = static_cast<DictionaryValue*>(value.get());
 
   int status;
   if (!result_dict->GetInteger("status", &status))
-    return new Error(kUnknownError, "Execute script did not return status");
+    return new Error(kUnknownError, "Execute script did not return status: " +
+                         JsonStringify(result_dict));
   ErrorCode code = static_cast<ErrorCode>(status);
   if (code != kSuccess) {
     DictionaryValue* error_dict;
@@ -1173,13 +1228,17 @@ Error* Session::SwitchToFrameWithJavaScriptLocatedFrame(
   std::string xpath;
   if (!frame_and_xpath_list->GetDictionary(0, &element_dict) ||
       !frame_and_xpath_list->GetString(1, &xpath)) {
-    return new Error(kUnknownError,
-                     "Frame finding script did not return correct type");
+    return new Error(
+        kUnknownError,
+        "Frame finding script did not return correct type: " +
+            JsonStringify(frame_and_xpath_list));
   }
   WebElementId new_frame_element(element_dict);
   if (!new_frame_element.is_valid()) {
-    return new Error(kUnknownError,
-                     "Frame finding script did not return a frame element");
+    return new Error(
+        kUnknownError,
+        "Frame finding script did not return a frame element: " +
+            JsonStringify(element_dict));
   }
 
   frame_elements_.push_back(new_frame_element);
@@ -1245,16 +1304,19 @@ Error* Session::FindElementsHelper(const FrameId& frame_id,
   }
 
   // Parse the results.
-  const char* kInvalidElementDictionaryMessage =
-      "Find element script returned invalid element dictionary";
+  const std::string kInvalidElementDictionaryMessage =
+      "Find element script returned invalid element dictionary: " +
+          JsonStringify(value.get());
   if (!error.get()) {
     if (value->IsType(Value::TYPE_LIST)) {
       ListValue* element_list = static_cast<ListValue*>(value.get());
       for (size_t i = 0; i < element_list->GetSize(); ++i) {
         DictionaryValue* element_dict = NULL;
         if (!element_list->GetDictionary(i, &element_dict)) {
-          return new Error(kUnknownError,
-                           "Find element script returned non-dictionary");
+          return new Error(
+              kUnknownError,
+              "Find element script returned non-dictionary: " +
+                  JsonStringify(element_list));
         }
 
         WebElementId element(element_dict);
@@ -1272,21 +1334,26 @@ Error* Session::FindElementsHelper(const FrameId& frame_id,
       }
       elements->push_back(element);
     } else {
-      return new Error(kUnknownError,
-                       "Find element script returned unsupported type");
+      return new Error(
+          kUnknownError,
+          "Find element script returned unsupported type: " +
+              JsonStringify(value.get()));
     }
   }
   return error.release();
 }
 
-Error* Session::GetLocationInViewHelper(const FrameId& frame_id,
-                                        const WebElementId& element,
-                                        const gfx::Rect& region,
-                                        gfx::Point* location) {
+Error* Session::GetElementRegionInViewHelper(
+    const FrameId& frame_id,
+    const WebElementId& element,
+    const gfx::Rect& region,
+    bool center,
+    gfx::Point* location) {
   std::string jscript = base::StringPrintf(
       "return (%s).apply(null, arguments);", atoms::GET_LOCATION_IN_VIEW);
   ListValue jscript_args;
   jscript_args.Append(element.ToValue());
+  jscript_args.Append(Value::CreateBooleanValue(center));
   DictionaryValue* elem_offset_dict = new DictionaryValue();
   elem_offset_dict->SetInteger("left", region.x());
   elem_offset_dict->SetInteger("top", region.y());
@@ -1300,15 +1367,19 @@ Error* Session::GetLocationInViewHelper(const FrameId& frame_id,
   if (error)
     return error;
   if (!value->IsType(Value::TYPE_DICTIONARY)) {
-    return new Error(kUnknownError,
-                     "Location atom returned non-dictionary type");
+    return new Error(
+        kUnknownError,
+        "Location atom returned non-dictionary type: " +
+            JsonStringify(value.get()));
   }
   DictionaryValue* loc_dict = static_cast<DictionaryValue*>(value.get());
   int x = 0, y = 0;
   if (!loc_dict->GetInteger("x", &x) ||
       !loc_dict->GetInteger("y", &y)) {
-    return new Error(kUnknownError,
-                     "Location atom returned bad coordinate dictionary");
+    return new Error(
+        kUnknownError,
+        "Location atom returned bad coordinate dictionary: " +
+            JsonStringify(loc_dict));
   }
   *location = gfx::Point(x, y);
   return NULL;

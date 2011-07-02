@@ -7,10 +7,15 @@
 
 #include <string>
 
+class Value;
+
 namespace webdriver {
 
 // Generates a random, 32-character hexidecimal ID.
 std::string GenerateRandomID();
+
+// Returns the equivalent JSON string for the given value.
+std::string JsonStringify(const Value* value);
 
 }  // namespace webdriver
 
