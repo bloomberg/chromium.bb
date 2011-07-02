@@ -351,7 +351,7 @@ class UserAgentState {
   // The UA string when we're pretending to be Windows Chrome.
   mutable std::string mimic_windows_user_agent_;
   // The UA string when we're pretending to be Mac Safari.
-  std::string mimic_mac_safari_user_agent;
+  mutable std::string mimic_mac_safari_user_agent_;
 
   mutable bool user_agent_requested_;
   bool user_agent_is_overridden_;
@@ -403,11 +403,11 @@ const std::string& UserAgentState::Get(const GURL& url) const {
       // in browsers that Silverlight doesn't officially support; spoof as
       // Safari to reduce the chance that users won't complete updates.
       // Should be removed if the sniffing is removed: http://crbug.com/88211
-      if (g_user_agent.Get().mimic_mac_safari_user_agent.empty()) {
-        g_user_agent.Get().mimic_mac_safari_user_agent =
+      if (mimic_mac_safari_user_agent_.empty()) {
+        mimic_mac_safari_user_agent_ =
             BuildUserAgentHelper(false, "Version/5.0.4 Safari/533.20.27");
       }
-      return g_user_agent.Get().mimic_mac_safari_user_agent;
+      return mimic_mac_safari_user_agent_;
     }
 #endif
   }
