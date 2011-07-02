@@ -28,9 +28,9 @@ class AppCacheUITest : public UILayoutTest {
   virtual ~AppCacheUITest() {}
 };
 
-// Flaky: http://crbug.com/54717
+// Flaky and slow, hence disabled: http://crbug.com/54717
 // The tests that don't depend on PHP should be less flaky.
-TEST_F(AppCacheUITest, FLAKY_AppCacheLayoutTests_NoPHP) {
+TEST_F(AppCacheUITest, DISABLED_AppCacheLayoutTests_NoPHP) {
   static const char* kNoPHPTests[] = {
       "404-manifest.html",
       "404-resource.html",
