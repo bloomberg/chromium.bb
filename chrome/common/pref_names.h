@@ -183,12 +183,6 @@ extern const char kEnableAutoSpellCorrect[];
 extern const char kSavingBrowserHistoryDisabled[];
 extern const char kDeleteTimePeriod[];
 extern const char kPrintingEnabled[];
-extern const char kPrintingPageHeaderLeft[];
-extern const char kPrintingPageHeaderCenter[];
-extern const char kPrintingPageHeaderRight[];
-extern const char kPrintingPageFooterLeft[];
-extern const char kPrintingPageFooterCenter[];
-extern const char kPrintingPageFooterRight[];
 #if defined(TOOLKIT_USES_GTK)
 extern const char kUsesSystemTheme[];
 #endif

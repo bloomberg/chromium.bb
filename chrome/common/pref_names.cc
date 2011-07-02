@@ -522,13 +522,6 @@ const char kSavingBrowserHistoryDisabled[] = "history.saving_disabled";
 // Boolean controlling whether printing is enabled.
 const char kPrintingEnabled[] = "printing.enabled";
 
-// String pref to define the default values for print overlays.
-const char kPrintingPageHeaderLeft[] = "printing.page.header.left";
-const char kPrintingPageHeaderCenter[] = "printing.page.header.center";
-const char kPrintingPageHeaderRight[] = "printing.page.header.right";
-const char kPrintingPageFooterLeft[] = "printing.page.footer.left";
-const char kPrintingPageFooterCenter[] = "printing.page.footer.center";
-const char kPrintingPageFooterRight[] = "printing.page.footer.right";
 #if defined(TOOLKIT_USES_GTK)
 // GTK specific preference on whether we should match the system GTK theme.
 const char kUsesSystemTheme[] = "extensions.theme.use_system";
