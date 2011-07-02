@@ -6,6 +6,8 @@
 #define VIEWS_CONTROLS_LABEL_H_
 #pragma once
 
+#include <string>
+
 #include "base/gtest_prod_util.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -163,6 +165,7 @@ class Label : public View {
   // Sets the enabled state. Setting the enabled state resets the color.
   virtual void OnEnabledChanged() OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
+  virtual bool HitTest(const gfx::Point& l) const OVERRIDE;
   // Mouse enter/exit are overridden to render mouse over background color.
   // These invoke SetContainsMouse as necessary.
   virtual void OnMouseMoved(const MouseEvent& event) OVERRIDE;
