@@ -20,8 +20,8 @@ enum {
 
 /* OK Enum(Es3) */
 enum Es3 {
-  E5 = 5,
-  E6 = 6
+  E5 = 1 << 1,
+  E6 = 3 << 2
 };
 
 /* FAIL Unexpected empty block. */
@@ -47,4 +47,18 @@ enum Es6 {
 enum Es7 {
   /* OK EnumItem(E11) */
   E11 = 11
+};
+
+
+/* OK Enum(Es8) */
+enum Es8 {
+  /* OK EnumItem(E12) */
+  E12 = 12,
+  /* OK EnumItem(E13) */
+  E13 = 13.0,
+  /* FAIL Unexpected string "hello" after "=". */
+  /* OK EnumItem(E14) */
+  E14 = "hello",
+  /* OK EnumItem(E15) */
+  E15 = 0x400
 };

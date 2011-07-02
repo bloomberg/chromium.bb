@@ -3,6 +3,8 @@
  * found in the LICENSE file.
  */
 
+/* File Comment */
+
 /* PPAPI Structure */
 struct PP_Size {
   /* This value represents the width of the rectangle. */

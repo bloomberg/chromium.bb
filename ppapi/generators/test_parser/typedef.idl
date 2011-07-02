@@ -7,7 +7,7 @@
 /* OK Typedef(T1) */
 typedef int32_t T1;
 
-/* FAIL Unexpected comment "/*" after symbol T2. */
+/* FAIL Unexpected comment after symbol T2. */
 typedef int32_t T2
 
 /* OK Typedef(T3) */
@@ -16,28 +16,28 @@ typedef int32_t[] T3;
 /* OK Typedef(T4) */
 typedef int32_t[][4] T4;
 
-/* OK Typedef(T5) */
-typedef int32_t[][4] T5();
+/* FAIL Unexpected "(" after symbol T5. */
+typedef int32_t[4] T5();
 
 /* OK Typedef(T6) */
-typedef int32_t[][4] T6(int x);
+typedef int32_t T6([in] int32_t x);
 
 /* OK Typedef(T7) */
-typedef int32_t[][4] T7(
+typedef int32_t T7(
   /* OK Param(x) */
-  int x,
+  [in] int32_t x,
   /* OK Param(y) */
-  int y);
+  [in] int32_t y);
 
 /* OK Typedef(T8) */
-typedef int32_t[][4][5] T8(
+typedef T3 T8(
   /* OK Param(x) */
-  int x,
+  [in] int x,
   /* OK Param(y) */
-  int y,
+  [in] int y,
   /* OK Param(z) */
   /* FAIL Missing argument. */
-  int z,);
+  [in] int z,);
 
 /* FAIL Unexpected keyword "enum" after symbol int32_t. */
 typedef int32_t enum;

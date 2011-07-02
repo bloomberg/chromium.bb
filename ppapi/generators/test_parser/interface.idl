@@ -5,21 +5,21 @@
 
 /* Tests for interface */
 
-/* OK Interface(Interface_0_1) */
-interface Interface_0_1 {
-  /* OK Function(OneParam) */
+/* OK Interface(Interface1) */
+interface Interface1 {
+  /* OK Member(OneParam) */
   PP_Bool OneParam(
       /* OK Param(resource) */
       [in] PP_Resource resource);
 
-  /* OK Function(TwoParam) */
+  /* OK Member(TwoParam) */
   PP_Resource TwoParam(
       /* OK Param(instance) */
       [in] PP_Instance instance,
       /* OK Param(size) */
       [in] PP_Size size);
 
-  /* OK Function(ThreeParam) */
+  /* OK Member(ThreeParam) */
   PP_Bool ThreeParam(
       /* OK Param(graphics_2d) */
       [in] PP_Resource graphics_2d,
@@ -30,14 +30,14 @@ interface Interface_0_1 {
 };
 
 
-/* OK Interface(Interface_0_2) */
-interface Interface_0_2 {
-  /* OK Function(OneParam) */
+/* OK Interface(Interface2) */
+interface Interface2 {
+  /* OK Member(OneParam) */
   PP_Bool OneParam(
       /* OK Param(resource) */
       [in] PP_Resource resource);
 
-  /* OK Function(TwoParam) */
+  /* OK Member(TwoParam) */
   PP_Resource TwoParam(
       /* OK Param(instance) */
       [in] PP_Instance instance,
@@ -45,7 +45,7 @@ interface Interface_0_2 {
       /* FAIL Missing argument. */
       [in] PP_Size size, );
 
-  /* OK Function(ThreeParam) */
+  /* OK Member(ThreeParam) */
   PP_Bool ThreeParam(
       /* OK Param(graphics_2d) */
       [in] PP_Resource graphics_2d,

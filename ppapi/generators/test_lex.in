@@ -1,19 +1,27 @@
 INT 1 INT 123 INT 12345
 SYMBOL A123 SYMBOL A_A
-COMMENT //abc
-COMMENT // abc
-COMMENT //  abc
-COMMENT //abc def
 
-COMMENT // abc def
-COMMENT //  abc def
+COMMENT /*XXXX*/
+COMMENT //XXXX
 
+COMMENT /*MULTI LINE*/
 
-COMMENT /*abc*/ COMMENT /* abc */ COMMENT /* abc
- */
-COMMENT /* abc def */ COMMENT /* abc def 
-*/ COMMENT //  abc def
-
+[ [
+] ]
+* *
+. .
+( (
+) )
+{ {
+} }
+[ [
+] ]
+, ,
+; ;
+: :
+= =
++ +
+- -
 
 FLOAT 1.1
 FLOAT 1e1
@@ -36,4 +44,15 @@ HEX 0x1ab2cd
 OCT 00
 OCT 01
 OCT 0123
+
+INLINE #inline C
+This is an inline block.
+
+Contains /* Comments */
+Contains // Comments
+Contains /* Multi-line
+            Comment */
+
+#endinl 
+SYMBOL blah
 

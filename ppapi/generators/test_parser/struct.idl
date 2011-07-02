@@ -13,7 +13,7 @@ struct S1 {
   PP_Resource Mem2;
 };
 
-typedef int[] func(int x, int y);
+typedef int func([in] int x, [in] int y);
 
 /* OK Struct(S2) */
 struct S2 {
@@ -22,7 +22,7 @@ struct S2 {
   /* OK Member(Mem2) */
   PP_Resource Mem2;
   /* OK Member(Mem3) */
-  [ATTRIBUTE] PP_Resource Mem3;
+  [attr1, attr2] PP_Resource Mem3;
   /* OK Member(foo) */
   FuncFoo foo;
 };

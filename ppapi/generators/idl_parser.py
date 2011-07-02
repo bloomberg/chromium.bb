@@ -29,9 +29,10 @@ import os.path
 import re
 import sys
 
+from idl_ast import IDLAst
 from idl_log import ErrOut, InfoOut, WarnOut
 from idl_lexer import IDLLexer
-from idl_node import IDLAttribute, IDLAst, IDLNode
+from idl_node import IDLAttribute, IDLFile, IDLNode
 from idl_option import GetOption, Option, ParseOptions
 
 from ply import lex
@@ -41,8 +42,9 @@ Option('build_debug', 'Debug tree building.')
 Option('parse_debug', 'Debug parse reduction steps.')
 Option('token_debug', 'Debug token generation.')
 Option('dump_tree', 'Dump the tree.')
-Option('srcdir', 'Working directory', default='.')
-
+Option('srcroot', 'Working directory.', default='')
+Option('wcomment', 'Disable warning for missing comment.')
+Option('wenum', 'Disable warning for missing enum value.')
 
 #
 # ERROR_REMAP
@@ -54,7 +56,7 @@ ERROR_REMAP = {
   'Unexpected ")" after ",".' : 'Missing argument.',
   'Unexpected "}" after ",".' : 'Trailing comma in block.',
   'Unexpected "}" after "{".' : 'Unexpected empty block.',
-  'Unexpected comment "/*" after "}".' : 'Unexpected trailing comment.',
+  'Unexpected comment after "}".' : 'Unexpected trailing comment.',
   'Unexpected "{" after keyword "enum".' : 'Enum missing name.',
   'Unexpected "{" after keyword "struct".' : 'Struct missing name.',
   'Unexpected "{" after keyword "interface".' : 'Interface missing name.',
@@ -67,6 +69,7 @@ ERROR_REMAP = {
 def DumpReduction(cls, p):
   if p[0] is None:
     InfoOut.Log("OBJ: %s(%d) - None\n" % (cls, len(p)))
+    InfoOut.Log("  [%s]\n" % [str(x) for x in p[1:]])
   else:
     out = ""
     for index in range(len(p) - 1):
@@ -110,20 +113,9 @@ def TokenTypeName(t):
   if t.type in ['HEX', 'INT', 'OCT', 'FLOAT']:
     return 'value %s' % t.value
   if t.type == 'STRING' : return 'string "%s"' % t.value
-  if t.type == 'COMMENT' : return 'comment "%s"' % t.value[:2]
+  if t.type == 'COMMENT' : return 'comment'
   if t.type == t.value: return '"%s"' % t.value
   return 'keyword "%s"' % t.value
-
-
-# StageResult
-#
-# The result object stores the result of parsing stage.
-#
-class StageResult(object):
-  def __init__(self, name, out, errs):
-    self.name = name
-    self.out = out
-    self.errs = errs
 
 
 #
@@ -199,8 +191,11 @@ class IDLParser(IDLLexer):
 #     describe_block
 #       describe_list
 #     enum_block
-#       enum_type
+#       enum_item
 #     interface_block
+#       member
+#     label_block
+#       label_item
 #     struct_block
 #       member
 #     typedef_decl
@@ -220,8 +215,8 @@ class IDLParser(IDLLexer):
   def p_top(self, p):
     """top : COMMENT COMMENT ext_attr_block top_list"""
 
-    Copyright = self.BuildProduction('Copyright', p, 1, None)
-    Filedoc = self.BuildProduction('Comment', p, 2, None)
+    Copyright = self.BuildComment('Copyright', p, 1)
+    Filedoc = self.BuildComment('Comment', p, 2)
 
     p[0] = ListFromConcat(Copyright, Filedoc, p[3], p[4])
     if self.parse_debug: DumpReduction('top', p)
@@ -230,9 +225,11 @@ class IDLParser(IDLLexer):
   def p_top_list(self, p):
     """top_list : describe_block top_list
                 | enum_block top_list
+                | inline top_list
                 | interface_block top_list
+                | label_block top_list
                 | struct_block top_list
-                | typedef_def top_list
+                | typedef_decl top_list
                 | """
     if len(p) > 2:
       p[0] = ListFromConcat(p[1], p[2])
@@ -262,13 +259,32 @@ class IDLParser(IDLLexer):
     """comments : COMMENT comments
                 | """
     if len(p) > 1:
-      child = self.BuildProduction('Comment', p, 1, None)
+      child = self.BuildComment('Comment', p, 1)
       p[0] = ListFromConcat(child, p[2])
       if self.parse_debug: DumpReduction('comments', p)
     else:
       if self.parse_debug: DumpReduction('no comments', p)
 
+
 #
+# Inline
+#
+# Inline blocks define option code to be emitted based on language tag,
+# in the form of:
+# #inline <LANGUAGE>
+# <CODE>
+# #endinl
+#
+  def p_inline(self, p):
+    """inline : modifiers INLINE"""
+    words = p[2].split()
+    name = self.BuildAttribute('NAME', words[1])
+    lines = p[2].split('\n')
+    value = self.BuildAttribute('VALUE', '\n'.join(lines[1:-1]) + '\n')
+    children = ListFromConcat(name, value, p[1])
+    p[0] = self.BuildProduction('Inline', p, 2, children)
+    if self.parse_debug: DumpReduction('inline', p)
+
 # Extended Attributes
 #
 # Extended Attributes denote properties which will be applied to a node in the
@@ -295,15 +311,22 @@ class IDLParser(IDLLexer):
       if self.parse_debug: DumpReduction('no ext_attr_block', p)
 
   def p_ext_attr_list(self, p):
-    """ext_attr_list : SYMBOL '=' value ext_attr_cont
-                     | SYMBOL '(' attr_arg_list ')' ext_attr_cont
-                     | SYMBOL ext_attr_cont """
-    if len(p) == 3:
-      p[0] = ListFromConcat(self.BuildExtAttribute(p[1], 'True'), p[2])
+    """ext_attr_list : SYMBOL '=' SYMBOL ext_attr_cont
+                     | SYMBOL '=' value ext_attr_cont
+                     | SYMBOL '=' SYMBOL param_list ext_attr_cont
+                     | SYMBOL ext_attr_cont"""
+    # If there are 4 tokens plus a return slot, this must be in the form
+    # SYMBOL = SYMBOL|value ext_attr_cont
     if len(p) == 5:
-      p[0] = ListFromConcat(self.BuildExtAttribute(p[1], p[3]), p[4])
-    if len(p) == 6:
-      p[0] = ListFromConcat(self.BuildExtAttribute(p[1], p[3]), p[5])
+      p[0] = ListFromConcat(self.BuildAttribute(p[1], p[3]), p[4])
+    # If there are 5 tokens plus a return slot, this must be in the form
+    # SYMBOL = SYMBOL (param_list) ext_attr_cont
+    elif len(p) == 6:
+      member = self.BuildNamed('Member', p, 3, [p[4]])
+      p[0] = ListFromConcat(self.BuildAttribute(p[1], member), p[5])
+    # Otherwise, this must be: SYMBOL ext_attr_cont
+    else:
+      p[0] = ListFromConcat(self.BuildAttribute(p[1], 'True'), p[2])
     if self.parse_debug: DumpReduction('ext_attribute_list', p)
 
   def p_ext_attr_cont(self, p):
@@ -312,17 +335,21 @@ class IDLParser(IDLLexer):
     if len(p) > 1: p[0] = p[2]
     if self.parse_debug: DumpReduction('ext_attribute_cont', p)
 
-  def p_attr_arg_list(self, p):
+  def p_ext_attr_func(self, p):
+    """ext_attr_list : SYMBOL '(' attr_arg_list ')' ext_attr_cont"""
+    p[0] = ListFromConcat(self.BuildAttribute(p[1] + '()', p[3]), p[5])
+    if self.parse_debug: DumpReduction('attr_arg_func', p)
+
+  def p_ext_attr_arg_list(self, p):
     """attr_arg_list : SYMBOL attr_arg_cont
-                     | value attr_arg_cont """
-    p[0] = ','.join(ListFromConcat(p[1], p[2]))
-    if self.parse_debug: DumpReduction('attr_arg_list', p)
+                     | value attr_arg_cont"""
+    p[0] = ListFromConcat(p[1], p[2])
 
   def p_attr_arg_cont(self, p):
     """attr_arg_cont : ',' attr_arg_list
                      | """
-    if len(p) > 1: p[0] = p[2]
     if self.parse_debug: DumpReduction('attr_arg_cont', p)
+    if len(p) > 1: p[0] = p[2]
 
   def p_attr_arg_error(self, p):
     """attr_arg_cont : error attr_arg_cont"""
@@ -375,7 +402,7 @@ class IDLParser(IDLLexer):
 
   def p_value_lshift(self, p):
     """value : integer LSHIFT INT"""
-    p[0] = "(%s << %s)" % (p[1], p[3])
+    p[0] = "%s << %s" % (p[1], p[3])
     if self.parse_debug: DumpReduction('value', p)
 
 # Integers are numbers which may not be floats used in cases like array sizes.
@@ -384,6 +411,43 @@ class IDLParser(IDLLexer):
                | INT
                | OCT"""
     p[0] = p[1]
+    if self.parse_debug: DumpReduction('integer', p)
+
+# Numbers are integers or floats.
+  def p_number(self, p):
+    """number : FLOAT
+              | HEX
+              | INT
+              | OCT"""
+    p[0] = p[1]
+    if self.parse_debug: DumpReduction('number', p)
+
+  def p_number_lshift(self, p):
+    """number : integer LSHIFT INT"""
+    p[0] = "%s << %s" % (p[1], p[3])
+    if self.parse_debug: DumpReduction('number_lshift', p)
+
+#
+# Array List
+#
+# Defined a list of array sizes (if any).
+#
+  def p_arrays(self, p):
+    """arrays : '[' ']' arrays
+              | '[' integer ']' arrays
+              | """
+    # If there are 3 tokens plus a return slot it is an unsized array
+    if len(p) == 4:
+      array = self.BuildProduction('Array', p, 1)
+      p[0] = ListFromConcat(array, p[3])
+    # If there are 4 tokens plus a return slot it is a fixed array
+    elif len(p) == 5:
+      count = self.BuildAttribute('FIXED', p[2])
+      array = self.BuildProduction('Array', p, 2, [count])
+      p[0] = ListFromConcat(array, p[4])
+    # If there is only a return slot, do not fill it for this terminator.
+    elif len(p) == 1: return
+    if self.parse_debug: DumpReduction('arrays', p)
 
 #
 # Parameter List
@@ -392,62 +456,33 @@ class IDLParser(IDLLexer):
 # function.
 #
   def p_param_list(self, p):
-    """param_list : param_item param_cont
-                  | """
-    if len(p) > 1:
-      args = ListFromConcat(p[1], p[2])
+    """param_list : '(' param_item param_cont ')'
+                  | '(' ')' """
+    if len(p) > 3:
+      args = ListFromConcat(p[2], p[3])
     else:
       args = []
-    p[0] = self.BuildProduction('Callspec', p, -1, args)
+    p[0] = self.BuildProduction('Callspec', p, 1, args)
     if self.parse_debug: DumpReduction('param_list', p)
 
   def p_param_item(self, p):
-    """param_item : modifiers typeref SYMBOL param_cont"""
-    children = ListFromConcat(p[1], p[2])
-    param = self.BuildProduction('Param', p, 3, children)
-    p[0] = ListFromConcat(param, p[4])
+    """param_item : modifiers SYMBOL arrays SYMBOL"""
+    typeref = self.BuildAttribute('TYPEREF', p[2])
+    children = ListFromConcat(p[1],typeref, p[3])
+    p[0] = self.BuildNamed('Param', p, 4, children)
     if self.parse_debug: DumpReduction('param_item', p)
 
   def p_param_cont(self, p):
     """param_cont : ',' param_item param_cont
                   | """
     if len(p) > 1:
-      p[0] = p[2]
+      p[0] = ListFromConcat(p[2], p[3])
       if self.parse_debug: DumpReduction('param_cont', p)
 
   def p_param_error(self, p):
     """param_cont : error param_cont"""
     p[0] = p[2]
 
-#
-# Typeref
-#
-# A typeref is a reference to a type definition.  The type definition may
-# be a built in such as int32_t or a defined type such as an enum, or
-# struct, or typedef.  Part of the reference to the type is how it is
-# used, such as directly, a fixed size array, or unsized (pointer).  The
-# reference is reduced and becomes a property of the parent Node.
-#
-  def p_typeref_data(self, p):
-    """typeref : SYMBOL typeref_arrays"""
-
-    Type = self.BuildExtAttribute('TYPEREF', p[1])
-    p[0] = ListFromConcat(Type, p[2])
-    if self.parse_debug: DumpReduction('typeref', p)
-
-  def p_typeref_arrays(self, p):
-    """typeref_arrays : '[' ']' typeref_arrays
-                           | '[' integer ']' typeref_arrays
-                           | """
-    if len(p) == 1: return
-    if len(p) == 5:
-      count = self.BuildExtAttribute('FIXED', p[2])
-      array = self.BuildProduction('Array', p, 2, ListFromConcat(p[4], count))
-    else:
-      array = self.BuildProduction('Array', p, 1, p[3])
-
-    p[0] = [array]
-    if self.parse_debug: DumpReduction('arrays', p)
 
 #
 # Typedef
@@ -456,14 +491,24 @@ class IDLParser(IDLLexer):
 # definition as well as a function declaration.
 #
   def p_typedef_data(self, p):
-    """typedef_def : modifiers TYPEDEF typeref SYMBOL ';' """
-    p[0] = self.BuildProduction('Typedef', p, 4, ListFromConcat(p[1], p[3]))
+    """typedef_decl : modifiers TYPEDEF SYMBOL SYMBOL ';' """
+    typeref = self.BuildAttribute('TYPEREF', p[3])
+    children = ListFromConcat(p[1], typeref)
+    p[0] = self.BuildNamed('Typedef', p, 4, children)
     if self.parse_debug: DumpReduction('typedef_data', p)
 
+  def p_typedef_array(self, p):
+    """typedef_decl : modifiers TYPEDEF SYMBOL arrays SYMBOL ';' """
+    typeref = self.BuildAttribute('TYPEREF', p[3])
+    children = ListFromConcat(p[1], typeref, p[4])
+    p[0] = self.BuildNamed('Typedef', p, 5, children)
+    if self.parse_debug: DumpReduction('typedef_array', p)
+
   def p_typedef_func(self, p):
-    """typedef_def : modifiers TYPEDEF typeref SYMBOL '(' param_list ')' ';'"""
-    children = ListFromConcat(p[1], p[3], p[6])
-    p[0] = self.BuildProduction('Typedef', p, 4, children)
+    """typedef_decl : modifiers TYPEDEF SYMBOL SYMBOL param_list ';' """
+    typeref = self.BuildAttribute('TYPEREF', p[3])
+    children = ListFromConcat(p[1], typeref, p[5])
+    p[0] = self.BuildNamed('Typedef', p, 4, children)
     if self.parse_debug: DumpReduction('typedef_func', p)
 
 #
@@ -474,15 +519,19 @@ class IDLParser(IDLLexer):
 #
   def p_enum_block(self, p):
     """enum_block : modifiers ENUM SYMBOL '{' enum_list '}' ';'"""
-    Type = self.BuildExtAttribute('TYPEREF', 'enum')
-    p[0] = self.BuildProduction('Enum', p, 3, ListFromConcat(Type, p[1], p[5]))
+    p[0] = self.BuildNamed('Enum', p, 3, ListFromConcat(p[1], p[5]))
     if self.parse_debug: DumpReduction('enum_block', p)
 
   def p_enum_list(self, p):
-    """enum_list : comments SYMBOL '=' value enum_cont"""
-    val  = self.BuildExtAttribute('VALUE', p[4])
-    enum = self.BuildProduction('EnumItem', p, 2, ListFromConcat(val, p[1]))
-    p[0] = ListFromConcat(enum, p[5])
+    """enum_list : modifiers SYMBOL '=' number enum_cont
+                 | modifiers SYMBOL enum_cont"""
+    if len(p) > 4:
+      val  = self.BuildAttribute('VALUE', p[4])
+      enum = self.BuildNamed('EnumItem', p, 2, ListFromConcat(val, p[1]))
+      p[0] = ListFromConcat(enum, p[5])
+    else:
+      enum = self.BuildNamed('EnumItem', p, 2, p[1])
+      p[0] = ListFromConcat(enum, p[3])
     if self.parse_debug: DumpReduction('enum_list', p)
 
   def p_enum_cont(self, p):
@@ -498,30 +547,80 @@ class IDLParser(IDLLexer):
 
 
 #
+# Label
+#
+# A label is a special kind of enumeration which allows us to go from a
+# set of labels
+#
+  def p_label_block(self, p):
+    """label_block : modifiers LABEL SYMBOL '{' label_list '}' ';'"""
+    p[0] = self.BuildNamed('Label', p, 3, ListFromConcat(p[1], p[5]))
+    if self.parse_debug: DumpReduction('label_block', p)
+
+  def p_label_list(self, p):
+    """label_list : modifiers SYMBOL '=' FLOAT label_cont"""
+    val  = self.BuildAttribute('VALUE', p[4])
+    label = self.BuildNamed('LabelItem', p, 2, ListFromConcat(val, p[1]))
+    p[0] = ListFromConcat(label, p[5])
+    if self.parse_debug: DumpReduction('label_list', p)
+
+  def p_label_cont(self, p):
+    """label_cont : ',' label_list
+                 |"""
+    if len(p) > 1: p[0] = p[2]
+    if self.parse_debug: DumpReduction('label_cont', p)
+
+  def p_label_cont_error(self, p):
+    """label_cont : error label_cont"""
+    p[0] = p[2]
+    if self.parse_debug: DumpReduction('label_error', p)
+
+
+#
+# Members
+#
+# A member attribute or function of a struct or interface.
+#
+  def p_member_attribute(self, p):
+    """member_attribute : modifiers SYMBOL SYMBOL """
+    typeref = self.BuildAttribute('TYPEREF', p[2])
+    children = ListFromConcat(p[1], typeref)
+    p[0] = self.BuildNamed('Member', p, 3, children)
+    if self.parse_debug: DumpReduction('attribute', p)
+
+  def p_member_attribute_array(self, p):
+    """member_attribute : modifiers SYMBOL arrays SYMBOL """
+    typeref = self.BuildAttribute('TYPEREF', p[2])
+    children = ListFromConcat(p[1], typeref, p[3])
+    p[0] = self.BuildNamed('Member', p, 4, children)
+    if self.parse_debug: DumpReduction('attribute', p)
+
+  def p_member_function(self, p):
+    """member_function : modifiers SYMBOL SYMBOL param_list"""
+    typeref = self.BuildAttribute('TYPEREF', p[2])
+    children = ListFromConcat(p[1], typeref, p[4])
+    p[0] = self.BuildNamed('Member', p, 3, children)
+    if self.parse_debug: DumpReduction('function', p)
+
+#
 # Interface
 #
 # An interface is a named collection of functions.
 #
   def p_interface_block(self, p):
-    """interface_block : modifiers INTERFACE SYMBOL '{' member_list '}' ';'"""
-    p[0] = self.BuildProduction('Interface', p, 3, ListFromConcat(p[1], p[5]))
+    """interface_block : modifiers INTERFACE SYMBOL '{' interface_list '}' ';'"""
+    p[0] = self.BuildNamed('Interface', p, 3, ListFromConcat(p[1], p[5]))
     if self.parse_debug: DumpReduction('interface_block', p)
 
-  def p_member_list(self, p):
-    """member_list : member_function member_list
-                   | """
+  def p_interface_list(self, p):
+    """interface_list : member_function ';' interface_list
+                      | """
     if len(p) > 1 :
-      p[0] = ListFromConcat(p[1], p[2])
-      if self.parse_debug: DumpReduction('member_list', p)
+      p[0] = ListFromConcat(p[1], p[3])
+      if self.parse_debug: DumpReduction('interface_list', p)
 
-  def p_member_function(self, p):
-    """member_function : modifiers typeref SYMBOL '(' param_list ')' ';'"""
-    children = ListFromConcat(p[1], p[2], p[5])
-    p[0] = self.BuildProduction('Function', p, 3, children)
-    if self.parse_debug: DumpReduction('member_function', p)
-
-  def p_member_error(self, p):
-    """member_list : error member_list"""
+  def p_interface_error(self, p):
+    """interface_list : error interface_list"""
     p[0] = p[2]
 
 #
@@ -532,21 +631,19 @@ class IDLParser(IDLLexer):
 #
   def p_struct_block(self, p):
     """struct_block : modifiers STRUCT SYMBOL '{' struct_list '}' ';'"""
-    Type = self.BuildExtAttribute('TYPEREF', 'struct')
-    children = ListFromConcat(Type, p[1], p[5])
-    p[0] = self.BuildProduction('Struct', p, 3, children)
+    children = ListFromConcat(p[1], p[5])
+    p[0] = self.BuildNamed('Struct', p, 3, children)
     if self.parse_debug: DumpReduction('struct_block', p)
 
   def p_struct_list(self, p):
-    """struct_list : modifiers typeref SYMBOL ';' struct_list
-                   | """
-    if len(p) > 1:
-      member = self.BuildProduction('Member', p, 3, ListFromConcat(p[1], p[2]))
-      p[0] = ListFromConcat(member, p[5])
-    if self.parse_debug: DumpReduction('struct_list', p)
+    """struct_list : member_attribute ';' struct_list
+                   | member_function ';' struct_list
+                   |"""
+    if len(p) > 1: p[0] = ListFromConcat(p[1], p[3])
 
-
-
+  def p_struct_error(self, p):
+    """struct_list : error struct_list"""
+    p[0] = p[2]
 
 #
 # Parser Errors
@@ -581,7 +678,6 @@ class IDLParser(IDLLexer):
 
     # Log the error
     ErrOut.LogLine(filename, lineno, pos, msg)
-    self.parse_errors += 1
 
   def Warn(self, node, msg):
     WarnOut.LogLine(node.filename, node.lineno, node.pos, msg)
@@ -619,9 +715,13 @@ class IDLParser(IDLLexer):
 #
   def VerifyProduction(self, node):
     comment = node.GetOneOf('Comment')
-    if node.cls in ['Interface', 'Struct', 'Function'] and not comment:
-      self.Warn(node, 'Missing comment for %s.' % node)
-    if node.cls in ['Param']:
+    if node.cls in ['Interface', 'Struct', 'Member'] and not comment:
+      if not GetOption('wcomment') and not node.GetProperty('wcomment'):
+        self.Warn(node, 'Missing comment for %s.' % node)
+    elif node.cls in ['EnumItem'] and not node.GetProperty('VALUE'):
+      if not GetOption('wenum'):
+        self.Warn(node, 'Missing value for enumeration %s.' % node)
+    elif node.cls in ['Param']:
       found = False;
       for form in ['in', 'inout', 'out']:
         if node.GetProperty(form): found = True
@@ -638,29 +738,59 @@ class IDLParser(IDLLexer):
 # index - Index into the production of the name for the item being produced.
 # cls - The type of item being producted
 # childlist - The children of the new item
-  def BuildProduction(self, cls, p, index, childlist):
-    name = p[index]
+  def BuildProduction(self, cls, p, index, childlist=None):
+    if not childlist: childlist = []
     filename = self.lexobj.filename
     lineno = p.lineno(index)
     pos = p.lexpos(index)
+    out = IDLNode(cls, filename, lineno, pos, childlist)
     if self.build_debug:
-      InfoOut.Log("Building %s(%s)" % (cls, name))
-    out = IDLNode(cls, name, filename, lineno, pos, childlist)
+      InfoOut.Log("Building %s" % out)
     self.VerifyProduction(out)
     return out
 
+  def BuildNamed(self, cls, p, index, childlist=None):
+    if not childlist: childlist = []
+    childlist.append(self.BuildAttribute('NAME', p[index]))
+    return self.BuildProduction(cls, p, index, childlist)
+
+  def BuildComment(self, cls, p, index):
+    name = p[index]
+
+    # Remove comment markers
+    if name[:2] == '//':
+      # For C++ style, remove the preceding '//'
+      form = 'cc'
+      name = name[2:].rstrip()
+    else:
+      # For C style, remove ending '*/''
+      form = 'c'
+      lines = []
+      for line in name[:-2].split('\n'):
+        # Remove characters until start marker for this line '*' if found
+        # otherwise it should be blank.
+        offs = line.find('*')
+        if offs >= 0:
+          line = line[offs + 1:].rstrip()
+        else:
+          line = ''
+        lines.append(line)
+      name = '\n'.join(lines)
+
+    childlist = [self.BuildAttribute('NAME', name),
+                 self.BuildAttribute('FORM', form)]
+    return self.BuildProduction(cls, p, index, childlist)
+
 #
-# BuildExtAttribute
+# BuildAttribute
 #
 # An ExtendedAttribute is a special production that results in a property
 # which is applied to the adjacent item.  Attributes have no children and
 # instead represent key/value pairs.
 #
-  def BuildExtAttribute(self, name, value):
-    if self.build_debug:
-      InfoOut.Log("Adding ExtAttribute %s = %s" % (name, str(value)))
-    out = IDLAttribute(name, value)
-    return out
+  def BuildAttribute(self, key, val):
+    return IDLAttribute(key, val)
+
 
 #
 # ParseData
@@ -684,19 +814,22 @@ class IDLParser(IDLLexer):
 # Loads a new file into the lexer and attemps to parse it.
 #
   def ParseFile(self, filename):
-    loadname = os.path.join(GetOption('srcdir'), filename)
-    data = open(loadname).read()
+    data = open(filename).read()
     if self.verbose:
       InfoOut.Log("Parsing %s" % filename)
     try:
       out = self.ParseData(data, filename)
-      return StageResult(filename, out, self.parse_errors)
+
+      # If we have a src root specified, remove it from the path
+      srcroot = GetOption('srcroot')
+      if srcroot and filename.find(srcroot) == 0:
+        filename = filename[len(srcroot) + 1:]
+      return IDLFile(filename, out, self.parse_errors)
 
     except Exception as e:
       ErrOut.LogLine(filename, self.last.lineno, self.last.lexpos,
                      'Internal parsing error - %s.' % str(e))
       raise
-      return StageResult(filename, [], self.parse_errors)
 
 
 
@@ -708,19 +841,20 @@ class IDLParser(IDLLexer):
 def FlattenTree(node):
   add_self = False
   out = []
-  for cls in node.children.keys():
-    if cls == 'Comment':
+  for child in node.children:
+    if child.IsA('Comment'):
       add_self = True
     else:
-      for c in node.children[cls]:
-        out.extend(FlattenTree(c))
+      out.extend(FlattenTree(child))
 
   if add_self:
     out = [str(node)] + out
   return out
 
 
-def TestErrors(filename, nodelist):
+def TestErrors(filename, filenode):
+  nodelist = filenode.GetChildren()
+
   lexer = IDLLexer()
   data = open(filename).read()
   lexer.SetData(filename, data)
@@ -731,12 +865,12 @@ def TestErrors(filename, nodelist):
     tok = lexer.lexobj.token()
     if tok == None: break
     if tok.type == 'COMMENT':
-      args = tok.value.split()
-      if args[1] == 'OK':
-        pass_comments.append((tok.lineno, ' '.join(args[2:-1])))
+      args = tok.value[3:-3].split()
+      if args[0] == 'OK':
+        pass_comments.append((tok.lineno, ' '.join(args[1:])))
       else:
-        if args[1] == 'FAIL':
-          fail_comments.append((tok.lineno, ' '.join(args[2:-1])))
+        if args[0] == 'FAIL':
+          fail_comments.append((tok.lineno, ' '.join(args[1:])))
   obj_list = []
   for node in nodelist:
     obj_list.extend(FlattenTree(node))
@@ -797,23 +931,24 @@ def TestFile(parser, filename):
   ErrOut.SetConsole(False)
   ErrOut.SetCapture(True)
 
-  result = parser.ParseFile(filename)
+  filenode = parser.ParseFile(filename)
 
   # Renable output
   ErrOut.SetConsole(True)
   ErrOut.SetCapture(False)
 
   # Compare captured errors
-  return TestErrors(filename, result.out)
+  return TestErrors(filename, filenode)
 
 
-def TestErrorFiles():
+def TestErrorFiles(filter):
   idldir = os.path.split(sys.argv[0])[0]
   idldir = os.path.join(idldir, 'test_parser', '*.idl')
   filenames = glob.glob(idldir)
   parser = IDLParser()
   total_errs = 0
   for filename in filenames:
+    if filter and filename not in filter: continue
     errs = TestFile(parser, filename)
     if errs:
       ErrOut.Log("%s test failed with %d error(s)." % (filename, errs))
@@ -825,20 +960,31 @@ def TestErrorFiles():
     InfoOut.Log("Passed parsing test.")
   return total_errs
 
-def TestNamespaceFiles():
+def TestNamespaceFiles(filter):
   idldir = os.path.split(sys.argv[0])[0]
   idldir = os.path.join(idldir, 'test_namespace', '*.idl')
   filenames = glob.glob(idldir)
+  testnames = []
+
+  for filename in filenames:
+    if filter and filename not in filter: continue
+    testnames.append(filename)
+
+  # If we have no files to test, then skip this test
+  if not testnames:
+    InfoOut.Log('No files to test for namespace.')
+    return 0
 
   InfoOut.SetConsole(False)
-  result = ParseFiles(filenames)
+  ast = ParseFiles(testnames)
   InfoOut.SetConsole(True)
 
-  if result.errs:
+  errs = ast.GetProperty('ERRORS')
+  if errs:
     ErrOut.Log("Failed namespace test.")
   else:
     InfoOut.Log("Passed namespace test.")
-  return result.errs
+  return errs
 
 
 def ParseFiles(filenames):
@@ -847,25 +993,14 @@ def ParseFiles(filenames):
   errors = 0
 
   for filename in filenames:
-    result = parser.ParseFile(filename)
-    if result.errs:
-      ErrOut.Log("%d error(s) parsing %s." % (result.errs, filename))
-      errors += result.errs
-    else:
-      InfoOut.Log("Parsed %s." % filename)
-    filenode = IDLNode('File', filename, filename, 1, 0, result.out)
+    filenode = parser.ParseFile(filename)
     filenodes.append(filenode)
+    if GetOption('verbose'):
+      InfoOut.Log("Parsed %s." % filename)
 
   ast = IDLAst(filenodes)
-
-  # Build the links
-  ast.BuildTree(None)
-
-  # Resolve type references
-  errors += ast.Resolve()
-
-  ast.Resolve()
-  return StageResult('Parsing', ast, errors)
+  if GetOption('dump_tree'): ast.Dump(0)
+  return ast
 
 
 def Main(args):
@@ -873,21 +1008,20 @@ def Main(args):
 
   # If testing...
   if GetOption('test'):
-    errs = TestErrorFiles()
-    errs = TestNamespaceFiles()
+    errs = TestErrorFiles(filenames)
+    errs = TestNamespaceFiles(filenames)
     if errs:
       ErrOut.Log("Parser failed with %d errors." % errs)
       return  -1
     return 0
 
   # Otherwise, build the AST
-  result = ParseFiles(filenames)
-  if GetOption('dump_tree'):
-    result.out.Dump(0)
-  if result.errs:
-    ErrOut.Log('Found %d error(s).' % result.errors);
+  ast = ParseFiles(filenames)
+  errs = ast.GetProperty('ERRORS')
+  if errs:
+    ErrOut.Log('Found %d error(s).' % errs);
   InfoOut.Log("%d files processed." % len(filenames))
-  return result.errs
+  return errs
 
 if __name__ == '__main__':
   sys.exit(Main(sys.argv[1:]))

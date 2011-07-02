@@ -13,8 +13,8 @@ struct ist {
 
 /* struct iface1 { 
   int8_t (*mem1)(int16_t x, int32_t y);
-  int32_t (*mem2)(const ist* a);
-  int32_t (*mem3)(ist* b);
+  int32_t (*mem2)(const struct ist* a);
+  int32_t (*mem3)(struct ist* b);
    
 }; */
 interface iface1 {
