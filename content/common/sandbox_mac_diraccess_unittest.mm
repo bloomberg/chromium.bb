@@ -35,6 +35,10 @@ class MacDirAccessSandboxTest : public base::MultiProcessTest {
     setenv(kSandboxAccessPathKey, directory_to_try.c_str(), 1);
     base::ProcessHandle child_process = SpawnChild("mac_sandbox_path_access",
                                                    false);
+    if (child_process == base::kNullProcessHandle) {
+      LOG(WARNING) << "SpawnChild failed";
+      return false;
+    }
     int code = -1;
     if (!base::WaitForExitCode(child_process, &code)) {
       LOG(WARNING) << "base::WaitForExitCode failed";

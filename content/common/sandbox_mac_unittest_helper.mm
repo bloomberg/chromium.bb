@@ -81,6 +81,10 @@ bool MacSandboxTest::RunTestInSandbox(Sandbox::SandboxProcessType sandbox_type,
 
   base::ProcessHandle child_process = SpawnChild("mac_sandbox_test_runner",
                                                  false);
+  if (child_process == base::kNullProcessHandle) {
+    LOG(WARNING) << "SpawnChild failed";
+    return false;
+  }
   int code = -1;
   if (!base::WaitForExitCode(child_process, &code)) {
     LOG(WARNING) << "base::WaitForExitCode failed";
