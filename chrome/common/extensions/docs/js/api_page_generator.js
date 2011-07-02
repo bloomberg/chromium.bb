@@ -503,6 +503,10 @@ function getPropertyListFromObject(object) {
   var propertyList = [];
   for (var p in object.properties) {
     var prop = object.properties[p];
+    // Do not render properties marked as "nodoc": true.
+    if (prop.nodoc) {
+      continue;
+    }
     prop.name = p;
     propertyList.push(prop);
   }
