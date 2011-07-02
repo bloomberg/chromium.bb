@@ -123,6 +123,8 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_FORM_RESET_LABEL;
     case WebLocalizedString::FileButtonChooseFileLabel:
       return IDS_FORM_FILE_BUTTON_LABEL;
+    case WebLocalizedString::FileButtonChooseMultipleFilesLabel:
+      return IDS_FORM_MULTIPLE_FILES_BUTTON_LABEL;
     case WebLocalizedString::FileButtonNoFileSelectedLabel:
       return IDS_FORM_FILE_NO_FILE_LABEL;
     case WebLocalizedString::MultipleFileUploadText:
@@ -191,8 +193,10 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_FORM_VALIDATION_RANGE_OVERFLOW;
     case WebLocalizedString::ValidationStepMismatch:
       return IDS_FORM_VALIDATION_STEP_MISMATCH;
-    // TODO(haraken): Remove default: when we merge the next
-    // WebLocalizedString.h change in WebKit.
+    // This "default:" line exists to avoid compile warnings about enum
+    // coverage when we add a new symbol to WebLocalizedString.h in WebKit.
+    // After a planned WebKit patch is landed, we need to add a case statement
+    // for the added symbol here.
     default:
       break;
   }

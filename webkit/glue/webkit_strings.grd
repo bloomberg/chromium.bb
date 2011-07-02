@@ -269,10 +269,10 @@ below:
       <message name="IDS_FORM_RESET_LABEL" desc="default label for Reset buttons in forms on web pages">
         Reset
       </message>
-      <message name="IDS_FORM_FILE_BUTTON_LABEL" desc="title for file button used in HTML forms">
+      <message name="IDS_FORM_FILE_BUTTON_LABEL" desc="title for a single file chooser button used in HTML forms">
         Choose File
       </message>
-      <message name="IDS_FORM_MULTIPLE_FILES_BUTTON_LABEL" desc="title for file button used in HTML5 file chooser">
+      <message name="IDS_FORM_MULTIPLE_FILES_BUTTON_LABEL" desc="title for a multiple file chooser button used in HTML forms. This title should be as short as possible.">
         Choose Files
       </message>
       <message name="IDS_FORM_FILE_NO_FILE_LABEL" desc="text to display in file button used in HTML forms when no file is selected">
