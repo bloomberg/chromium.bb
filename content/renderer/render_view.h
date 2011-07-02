@@ -779,6 +779,7 @@ class RenderView : public RenderWidget,
                              const WebKit::WebMediaPlayerAction& action);
   void OnMoveOrResizeStarted();
   void OnNavigate(const ViewMsg_Navigate_Params& params);
+  void OnNetworkStateChanged(bool online);
   void OnPaste();
 #if defined(OS_MACOSX)
   void OnPluginImeCompositionCompleted(const string16& text, int plugin_id);

@@ -1148,8 +1148,8 @@ IPC_MESSAGE_ROUTED3(ViewMsg_AsyncOpenFile_ACK,
 
 // Tells the renderer that the network state has changed and that
 // window.navigator.onLine should be updated for all WebViews.
-IPC_MESSAGE_CONTROL1(ViewMsg_NetworkStateChanged,
-                     bool /* online */)
+IPC_MESSAGE_ROUTED1(ViewMsg_NetworkStateChanged,
+                    bool /* online */)
 
 // Enable accessibility in the renderer process.
 IPC_MESSAGE_ROUTED0(ViewMsg_EnableAccessibility)

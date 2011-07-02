@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/lazy_instance.h"
-#include "base/message_loop.h"
 #include "chrome/browser/speech/speech_input_bubble.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"

@@ -56,7 +56,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebNetworkStateNotifier.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRuntimeFeatures.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptController.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageEventDispatcher.h"
@@ -86,7 +85,6 @@
 
 using WebKit::WebDocument;
 using WebKit::WebFrame;
-using WebKit::WebNetworkStateNotifier;
 using WebKit::WebRuntimeFeatures;
 using WebKit::WebScriptController;
 using WebKit::WebString;
@@ -399,7 +397,6 @@ bool RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
     // is there a new non-windows message I should add here?
     IPC_MESSAGE_HANDLER(ViewMsg_New, OnCreateNewView)
     IPC_MESSAGE_HANDLER(ViewMsg_PurgePluginListCache, OnPurgePluginListCache)
-    IPC_MESSAGE_HANDLER(ViewMsg_NetworkStateChanged, OnNetworkStateChanged)
     IPC_MESSAGE_HANDLER(DOMStorageMsg_Event, OnDOMStorageEvent)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -673,11 +670,6 @@ void RenderThread::OnPurgePluginListCache(bool reload_pages) {
   plugin_refresh_allowed_ = false;
   WebKit::resetPluginCache(reload_pages);
   plugin_refresh_allowed_ = true;
-}
-
-void RenderThread::OnNetworkStateChanged(bool online) {
-  EnsureWebKitInitialized();
-  WebNetworkStateNotifier::setOnLine(online);
 }
 
 scoped_refptr<base::MessageLoopProxy>
