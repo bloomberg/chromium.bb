@@ -392,7 +392,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, TargetURLs) {
 }
 
 // Tests adding of context menus in incognito mode.
-IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, IncognitoSplit) {
+#if defined(OS_LINUX)
+#define MAYBE_IncognitoSplit DISABLED_IncognitoSplit
+#else
+#define MAYBE_IncognitoSplit IncognitoSplit
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, MAYBE_IncognitoSplit) {
   ExtensionTestMessageListener created("created item regular", false);
   ExtensionTestMessageListener created_incognito("created item incognito",
                                                  false);
