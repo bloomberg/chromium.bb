@@ -61,7 +61,15 @@ static void NavigateTabHelper(TabContents* contents, const GURL& url) {
   EXPECT_EQ(url, contents->controller().GetLastCommittedEntry()->url());
 }
 
-IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcess) {
+#if defined(OS_WIN)
+// AppProcess sometimes hangs on Windows
+// http://crbug.com/88316
+#define MAYBE_AppProcess DISABLED_AppProcess
+#else
+#define MAYBE_AppProcess AppProcess
+#endif
+
+IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_AppProcess) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisablePopupBlocking);
 
