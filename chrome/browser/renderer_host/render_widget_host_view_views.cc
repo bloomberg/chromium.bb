@@ -316,10 +316,6 @@ void RenderWidgetHostViewViews::ShowingContextMenu(bool showing) {
 
 BackingStore* RenderWidgetHostViewViews::AllocBackingStore(
     const gfx::Size& size) {
-  gfx::NativeView nview = GetInnerNativeView();
-  if (!nview)
-    return NULL;
-
   return new BackingStoreSkia(host_, size);
 }
 

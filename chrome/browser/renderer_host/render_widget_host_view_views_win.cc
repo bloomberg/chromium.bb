@@ -22,12 +22,6 @@ gfx::PluginWindowHandle RenderWidgetHostViewViews::GetCompositingSurface() {
   return NULL;
 }
 
-gfx::NativeView RenderWidgetHostViewViews::GetInnerNativeView() const {
-  NOTIMPLEMENTED();
-  // TODO(beng): Figure out what to do here for Windows/v.o.v.
-  return NULL;
-}
-
 void RenderWidgetHostViewViews::ShowCurrentCursor() {
   NOTIMPLEMENTED();
 }

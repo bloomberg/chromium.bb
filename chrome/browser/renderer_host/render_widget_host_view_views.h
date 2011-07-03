@@ -99,11 +99,6 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
 #endif
   virtual gfx::PluginWindowHandle GetCompositingSurface() OVERRIDE;
 
-  // On some systems, there can be two native views, where an outer native view
-  // contains the inner native view (e.g. when using GTK+). This returns the
-  // inner view. This can return NULL when it's not attached to a view.
-  gfx::NativeView GetInnerNativeView() const;
-
   // Overridden from views::View.
   virtual std::string GetClassName() const OVERRIDE;
   virtual gfx::NativeCursor GetCursor(const views::MouseEvent& event) OVERRIDE;
@@ -182,6 +177,13 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   // Confirm existing composition text in the webpage and ask the input method
   // to cancel its ongoing composition sesstion.
   void FinishImeCompositionSession();
+
+#if defined(TOOLKIT_USES_GTK)
+  // On some systems, there can be two native views, where an outer native view
+  // contains the inner native view (e.g. when using GTK+). This returns the
+  // inner view. This can return NULL when it's not attached to a view.
+  gfx::NativeView GetInnerNativeView() const;
+#endif
 
   // The model object.
   RenderWidgetHost* host_;
