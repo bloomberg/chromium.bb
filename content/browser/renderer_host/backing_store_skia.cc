@@ -60,8 +60,9 @@ void BackingStoreSkia::PaintToBackingStore(
   if (!dib)
     return;
 
-  scoped_ptr<skia::PlatformCanvas> p_canvas(
-      dib->GetPlatformCanvas(width, height));
+  SkBitmap sk_bitmap;
+  sk_bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
+  sk_bitmap.setPixels(dib->memory());
   for (size_t i = 0; i < copy_rects.size(); i++) {
     const gfx::Rect& copy_rect = copy_rects[i];
     int x = copy_rect.x() - bitmap_rect.x();
@@ -72,8 +73,7 @@ void BackingStoreSkia::PaintToBackingStore(
     SkRect dstrect = SkRect::MakeXYWH(
         SkIntToScalar(copy_rect.x()), SkIntToScalar(copy_rect.y()),
         SkIntToScalar(w), SkIntToScalar(h));
-    SkBitmap b = skia::GetTopDevice(*p_canvas)->accessBitmap(false);
-    canvas_.get()->drawBitmapRect(b, &srcrect, dstrect);
+    canvas_.get()->drawBitmapRect(sk_bitmap, &srcrect, dstrect);
   }
 }
 
