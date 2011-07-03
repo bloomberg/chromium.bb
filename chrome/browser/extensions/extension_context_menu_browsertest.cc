@@ -393,6 +393,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, TargetURLs) {
 
 // Tests adding of context menus in incognito mode.
 #if defined(OS_LINUX)
+// Flakily hangs on Linux/CrOS - http://crbug.com/88317
 #define MAYBE_IncognitoSplit DISABLED_IncognitoSplit
 #else
 #define MAYBE_IncognitoSplit IncognitoSplit

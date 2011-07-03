@@ -29,7 +29,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionHistoryApiTest, TimedSearch) {
   ASSERT_TRUE(RunExtensionSubtest("history", "timed_search.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionHistoryApiTest, Delete) {
+#if defined(OS_WIN)
+// Flakily times out on Win - See http://crbug.com/88318
+#define MAYBE_Delete FLAKY_Delete
+#else
+#define MAYBE_Delete Delete
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionHistoryApiTest, MAYBE_Delete) {
   ASSERT_TRUE(RunExtensionSubtest("history", "delete.html")) << message_;
 }
 
