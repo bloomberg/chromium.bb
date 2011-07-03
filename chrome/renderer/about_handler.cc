@@ -43,7 +43,14 @@ bool AboutHandler::MaybeHandle(const GURL& url) {
 
 // static
 void AboutHandler::AboutCrash() {
-  CHECK(false);
+  // NOTE(shess): Crash directly rather than using NOTREACHED() so
+  // that the signature is easier to triage in crash reports.
+  volatile int* zero = NULL;
+  *zero = 0;
+
+  // Just in case the compiler decides the above is undefined and
+  // optimizes it away.
+  NOTREACHED();
 }
 
 // static
