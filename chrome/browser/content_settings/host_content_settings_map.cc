@@ -4,6 +4,8 @@
 
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 
+#include <list>
+
 #include "base/command_line.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -57,6 +59,12 @@ typedef content_settings::ProviderInterface::Rules::iterator
     rules_iterator;
 typedef content_settings::ProviderInterface::Rules::const_iterator
     const_rules_iterator;
+
+const char* kProviderNames[] = {
+  "policy",
+  "extension",
+  "preference"
+};
 
 }  // namespace
 
@@ -290,41 +298,35 @@ void HostContentSettingsMap::GetSettingsForOneType(
   DCHECK_NE(content_settings::RequiresResourceIdentifier(content_type),
             resource_identifier.empty());
   DCHECK(settings);
-  // Collect content_settings::Rules for the given content_type and
-  // resource_identifier from the content settings providers.
-  std::map<std::string, PatternSettingPair>
-      pattern_str_pattern_setting_pair_map;
-  for (ConstProviderIterator provider = content_settings_providers_.begin();
-     provider != content_settings_providers_.end();
-     ++provider) {
+
+  settings->clear();
+  for (size_t i = 0; i < content_settings_providers_.size(); ++i) {
+    // Get rules from the content settings provider.
     Rules rules;
-    (*provider)->GetAllContentSettingsRules(
+    content_settings_providers_[i]->GetAllContentSettingsRules(
         content_type, resource_identifier, &rules);
-    // TODO(markusheintz): Only the rules that are applied should be collected.
+
+    // Sort rules according to their primary pattern string using a map.
+    std::map<std::string, PatternSettingSourceTriple> settings_map;
     for (Rules::iterator rule = rules.begin();
          rule != rules.end();
          ++rule) {
-      // As long as we don't support pattern pairs in the UI we display the
+      // We do not support pattern pairs in the UI, so we only display the
       // primary pattern.
-      ContentSettingsPattern pattern = rule->primary_pattern;
-      std::string key = pattern.ToString();
-      // Only add a rule if no provider with a higher priority has a rule with
-      // an identical primary pattern.
-      if (pattern_str_pattern_setting_pair_map.find(key) ==
-          pattern_str_pattern_setting_pair_map.end()) {
-        pattern_str_pattern_setting_pair_map[key] =
-            PatternSettingPair(pattern, rule->content_setting);
-      }
+      std::string sort_key = rule->primary_pattern.ToString();
+      settings_map[sort_key] = PatternSettingSourceTriple(
+          rule->primary_pattern,
+          rule->content_setting,
+          kProviderNames[i]);
     }
-  }
 
-  settings->clear();
-  // Rely on the maps iterator to sort the rules.
-  for (std::map<std::string, PatternSettingPair>::iterator i(
-           pattern_str_pattern_setting_pair_map.begin());
-       i != pattern_str_pattern_setting_pair_map.end();
-       ++i) {
-    settings->push_back(i->second);
+    // TODO(markusheintz): Only the rules that are applied should be added.
+    for (std::map<std::string, PatternSettingSourceTriple>::iterator i(
+             settings_map.begin());
+         i != settings_map.end();
+         ++i) {
+      settings->push_back(i->second);
+    }
   }
 }
 

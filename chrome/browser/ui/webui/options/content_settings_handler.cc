@@ -42,6 +42,7 @@ struct ContentSettingsTypeNameEntry {
 const char* kDisplayPattern = "displayPattern";
 const char* kSetting = "setting";
 const char* kOrigin = "origin";
+const char* kSource = "source";
 const char* kEmbeddingOrigin = "embeddingOrigin";
 
 const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
@@ -124,7 +125,8 @@ std::string GeolocationExceptionToString(const GURL& origin,
 // Ownership of the pointer is passed to the caller.
 DictionaryValue* GetExceptionForPage(
     const ContentSettingsPattern& pattern,
-    ContentSetting setting) {
+    ContentSetting setting,
+    std::string provider_name) {
   DictionaryValue* exception = new DictionaryValue();
   exception->Set(
       kDisplayPattern,
@@ -132,6 +134,9 @@ DictionaryValue* GetExceptionForPage(
   exception->Set(
       kSetting,
       new StringValue(ContentSettingToString(setting)));
+  exception->Set(
+      kSource,
+      new StringValue(provider_name));
   return exception;
 }
 
@@ -402,7 +407,7 @@ void ContentSettingsHandler::UpdateHandlersEnabledRadios() {
 
   web_ui_->CallJavascriptFunction("ContentSettings.updateHandlersEnabledRadios",
       handlers_enabled);
-#endif // defined(ENABLE_REGISTER_PROTOCOL_HANDLER)
+#endif  // defined(ENABLE_REGISTER_PROTOCOL_HANDLER)
 }
 
 void ContentSettingsHandler::UpdateAllExceptionsViewsFromModel() {
@@ -524,7 +529,8 @@ void ContentSettingsHandler::UpdateExceptionsViewFromHostContentSettingsMap(
 
   ListValue exceptions;
   for (size_t i = 0; i < entries.size(); ++i) {
-    exceptions.Append(GetExceptionForPage(entries[i].first, entries[i].second));
+    exceptions.Append(
+        GetExceptionForPage(entries[i].a, entries[i].b, entries[i].c));
   }
 
   StringValue type_string(ContentSettingsTypeToGroupName(type));
@@ -549,8 +555,9 @@ void ContentSettingsHandler::UpdateExceptionsViewFromOTRHostContentSettingsMap(
 
   ListValue otr_exceptions;
   for (size_t i = 0; i < otr_entries.size(); ++i) {
-    otr_exceptions.Append(GetExceptionForPage(otr_entries[i].first,
-                                              otr_entries[i].second));
+    otr_exceptions.Append(GetExceptionForPage(otr_entries[i].a,
+                                              otr_entries[i].b,
+                                              otr_entries[i].c));
   }
 
   StringValue type_string(ContentSettingsTypeToGroupName(type));

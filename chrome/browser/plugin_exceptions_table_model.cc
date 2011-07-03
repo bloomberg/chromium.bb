@@ -162,9 +162,9 @@ void PluginExceptionsTableModel::LoadSettings() {
              settings.begin();
          setting_it != settings.end(); ++setting_it) {
       SettingsEntry entry = {
-        setting_it->first,
+        setting_it->a,
         group_id,
-        setting_it->second,
+        setting_it->b,
         false
       };
       settings_.push_back(entry);
@@ -173,9 +173,9 @@ void PluginExceptionsTableModel::LoadSettings() {
              otr_settings.begin();
          setting_it != otr_settings.end(); ++setting_it) {
       SettingsEntry entry = {
-        setting_it->first,
+        setting_it->a,
         group_id,
-        setting_it->second,
+        setting_it->b,
         true
       };
       settings_.push_back(entry);

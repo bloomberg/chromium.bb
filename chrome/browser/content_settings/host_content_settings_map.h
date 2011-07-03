@@ -41,8 +41,9 @@ class HostContentSettingsMap
       public base::RefCountedThreadSafe<HostContentSettingsMap,
                                         BrowserThread::DeleteOnUIThread> {
  public:
-  typedef std::pair<ContentSettingsPattern, ContentSetting> PatternSettingPair;
-  typedef std::vector<PatternSettingPair> SettingsForOneType;
+  typedef Tuple3<ContentSettingsPattern, ContentSetting, std::string>
+      PatternSettingSourceTriple;
+  typedef std::vector<PatternSettingSourceTriple> SettingsForOneType;
 
   explicit HostContentSettingsMap(Profile* profile);
 

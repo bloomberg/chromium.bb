@@ -4,6 +4,7 @@
 
 #include "chrome/browser/content_settings/content_settings_pref_provider.h"
 
+#include <list>
 #include <string>
 #include <utility>
 #include <vector>

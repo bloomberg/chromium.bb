@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_EXTENSION_PROVIDER_H_
 #define CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_EXTENSION_PROVIDER_H_
 
+#include <string>
+
 #include "chrome/browser/content_settings/content_settings_provider.h"
 #include "chrome/browser/extensions/extension_content_settings_store.h"
 
@@ -37,8 +39,6 @@ class ExtensionProvider : public ProviderInterface,
       const ResourceIdentifier& resource_identifier,
       ContentSetting content_setting) {}
 
-  // TODO(markusheintz): The UI needs a way to discover that these rules are
-  // managed by an extension.
   virtual void GetAllContentSettingsRules(
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
