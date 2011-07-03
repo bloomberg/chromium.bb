@@ -17,6 +17,8 @@
 #ifndef I18N_PHONENUMBERS_DEFAULT_LOGGER_H_
 #define I18N_PHONENUMBERS_DEFAULT_LOGGER_H_
 
+#include <stdio.h>
+
 #include <string>
 
 #include "logger.h"
@@ -48,7 +50,7 @@ struct ConvertToString<int> {
 #if defined(OS_WIN)
     _itoa_s(n, buffer, sizeof(buffer), 10);
 #else
-    std::snprintf(buffer, sizeof(buffer), "%d", n);
+    snprintf(buffer, sizeof(buffer), "%d", n);
 #endif
     return string(buffer);
   }

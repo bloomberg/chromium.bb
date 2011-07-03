@@ -18,8 +18,8 @@ Additional files, not in the original library:
   libphonenumber.gyp
   README.chromium
 
-Until the changes are upstreamed library is included directly, with a patch
-in patches/version277.patch applied.
+Until the changes are upstreamed library is included directly, with patches
+in patches/version277.patch and patches/version277a.patch applied.
 
 The folders included in our repository for now are
   cpp/
