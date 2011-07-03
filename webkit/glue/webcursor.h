@@ -102,9 +102,6 @@ class WebCursor {
 
   // Initialize this from the given Cocoa NSCursor.
   void InitFromNSCursor(NSCursor* cursor);
-
-  // TODO(shess): Temporary accessor for debugging http://crbug.com/73356 .
-  const gfx::Size& custom_size() const { return custom_size_; }
 #endif
 
  private:

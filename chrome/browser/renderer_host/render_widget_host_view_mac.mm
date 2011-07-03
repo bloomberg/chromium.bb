@@ -15,7 +15,6 @@
 #include "base/string_util.h"
 #include "base/sys_info.h"
 #include "base/sys_string_conversions.h"
-#import "chrome/app/breakpad_mac.h"
 #include "chrome/browser/browser_trial.h"
 #import "chrome/browser/renderer_host/accelerated_plugin_view_mac.h"
 #import "chrome/browser/renderer_host/text_input_client_mac.h"
@@ -43,7 +42,6 @@
 #import "third_party/mozilla/ComplexTextInputPanel.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/mac/WebInputEventFactory.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/surface/io_surface_support_mac.h"
@@ -480,17 +478,6 @@ void RenderWidgetHostViewMac::UpdateCursorIfNecessary() {
   NSEvent* event = [[cocoa_view_ window] currentEvent];
   if ([event window] != [cocoa_view_ window])
     return;
-
-  // TODO(shess): Store additional information in breakpad dumps for
-  // debugging http://crbug.com/73356 .
-  scoped_ptr<ScopedCrashKey> key;
-  if (current_cursor_.IsCustom()) {
-    NSString* kCrashKey = @"custom-cursor-size";
-    const gfx::Size size = current_cursor_.custom_size();
-    NSString* crashValue =
-        [NSString stringWithFormat:@"{%d, %d}", size.width(), size.height()];
-    key.reset(new ScopedCrashKey(kCrashKey, crashValue));
-  }
 
   NSCursor* ns_cursor = current_cursor_.GetCursor();
   [ns_cursor set];

@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/memory/scoped_nsobject.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebImage.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
@@ -37,17 +38,28 @@ NSCursor* LoadCursor(const char* name, int x, int y) {
 
 CGImageRef CreateCGImageFromCustomData(const std::vector<char>& custom_data,
                                        const gfx::Size& custom_size) {
+  // This is safe since we're not going to draw into the context we're creating.
+  // The settings here match SetCustomData() below; keep in sync.
+  // If the data is missing, leave the backing transparent.
+  void* data = NULL;
+  if (!custom_data.empty())
+    data = const_cast<char*>(&custom_data[0]);
+
+  // If the size is empty, use a 1x1 transparent image.
+  gfx::Size size = custom_size;
+  if (size.IsEmpty()) {
+    size.SetSize(1, 1);
+    data = NULL;
+  }
+
   base::mac::ScopedCFTypeRef<CGColorSpaceRef> cg_color(
       CGColorSpaceCreateDeviceRGB());
-  // This is safe since we're not going to draw into the context we're creating.
-  void* data = const_cast<char*>(&custom_data[0]);
-  // The settings here match SetCustomData() below; keep in sync.
   base::mac::ScopedCFTypeRef<CGContextRef> context(
       CGBitmapContextCreate(data,
-                            custom_size.width(),
-                            custom_size.height(),
+                            size.width(),
+                            size.height(),
                             8,
-                            custom_size.width()*4,
+                            size.width()*4,
                             cg_color.get(),
                             kCGImageAlphaPremultipliedLast |
                             kCGBitmapByteOrder32Big));
@@ -57,19 +69,14 @@ CGImageRef CreateCGImageFromCustomData(const std::vector<char>& custom_data,
 NSCursor* CreateCustomCursor(const std::vector<char>& custom_data,
                              const gfx::Size& custom_size,
                              const gfx::Point& hotspot) {
-  // CG throws a cocoa exception if we try to create an empty image, which
-  // results in an infinite loop.  This CHECK ensures that we crash instead.
-  CHECK(!custom_data.empty());
-
   base::mac::ScopedCFTypeRef<CGImageRef> cg_image(
       CreateCGImageFromCustomData(custom_data, custom_size));
 
-  NSBitmapImageRep* ns_bitmap =
-      [[NSBitmapImageRep alloc] initWithCGImage:cg_image.get()];
+  scoped_nsobject<NSBitmapImageRep> ns_bitmap(
+      [[NSBitmapImageRep alloc] initWithCGImage:cg_image.get()]);
   NSImage* cursor_image = [[NSImage alloc] init];
   DCHECK(cursor_image);
   [cursor_image addRepresentation:ns_bitmap];
-  [ns_bitmap release];
 
   NSCursor* cursor = [[NSCursor alloc] initWithImage:cursor_image
                                              hotSpot:NSMakePoint(hotspot.x(),
