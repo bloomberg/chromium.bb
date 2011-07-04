@@ -448,6 +448,9 @@ add_config('arm-tegra2_seaboard-tangent-private-release',
     'prebuilts' : False,
 }])
 
+add_config('arm-tegra2_seaboard-tangent-release',
+  [config['arm-tegra2_seaboard-tangent-private-release']])
+
 add_config('arm-tegra2_seaboard-tangent-private-bin',
   [internal, arm, binary, {
     'board' : 'tegra2_seaboard',
