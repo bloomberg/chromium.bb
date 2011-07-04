@@ -9,11 +9,16 @@
 #include "chrome/browser/chromeos/login/webui_login_view.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
+#include "ui/base/animation/animation_delegate.h"
 #include "views/focus/focus_manager.h"
 
 class KeyboardContainerView;
 class NotificationDetails;
 class NotificationSource;
+
+namespace ui {
+class SlideAnimation;
+}
 
 namespace chromeos {
 
@@ -22,7 +27,8 @@ namespace chromeos {
 // focus. This is only build in TOUCH_UI enabled builds.
 class TouchLoginView : public WebUILoginView,
                        public views::FocusChangeListener,
-                       public NotificationObserver {
+                       public NotificationObserver,
+                       public ui::AnimationDelegate {
  public:
   enum VirtualKeyboardType {
     NONE,
@@ -57,10 +63,17 @@ class TouchLoginView : public WebUILoginView,
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
 
+  // Overridden from ui::AnimationDelegate:
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
+
   bool keyboard_showing_;
+  int keyboard_height_;
   bool focus_listener_added_;
   KeyboardContainerView* keyboard_;
   NotificationRegistrar registrar_;
+
+  scoped_ptr<ui::SlideAnimation> animation_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchLoginView);
 };

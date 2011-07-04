@@ -10,14 +10,16 @@
 #include "chrome/browser/ui/views/dom_view.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
+#include "ui/base/animation/slide_animation.h"
+#include "ui/gfx/transform.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/widget/widget.h"
 
 namespace {
 
 const char kViewClassName[] = "browser/chromeos/login/TouchLoginView";
-const int kKeyboardHeight = 360;
-const int kKeyboardSlideDuration = 500;  // In milliseconds
+const int kDefaultKeyboardHeight = 300;
+const int kKeyboardSlideDuration = 300;  // In milliseconds
 
 PropertyAccessor<bool>* GetFocusedStateAccessor() {
   static PropertyAccessor<bool> state;
@@ -38,6 +40,7 @@ namespace chromeos {
 TouchLoginView::TouchLoginView()
     : WebUILoginView(),
       keyboard_showing_(false),
+      keyboard_height_(kDefaultKeyboardHeight),
       focus_listener_added_(false),
       keyboard_(NULL) {
 }
@@ -78,23 +81,18 @@ void TouchLoginView::Layout() {
   if (!keyboard_)
     return;
 
-  // We need to change the layout of the login screen DOMView, so that the page
-  // isn't occluded by the keyboard
-  if (keyboard_showing_) {
-    gfx::Rect webui_login_bounds = bounds();
-    webui_login_bounds.set_height(webui_login_bounds.height()
-                                  - kKeyboardHeight);
-    webui_login_->SetBoundsRect(webui_login_bounds);
-  }
+  // We are not resizing the DOMView here, so the keyboard is going to occlude
+  // the login screen partially. It is the responsibility of the UX layer to
+  // handle this.
 
   // Lastly layout the keyboard
-  keyboard_->SetVisible(keyboard_showing_);
-  if (keyboard_showing_) {
-    gfx::Rect keyboard_bounds = bounds();
-    keyboard_bounds.set_y(keyboard_bounds.height() - kKeyboardHeight);
-    keyboard_bounds.set_height(kKeyboardHeight);
-    keyboard_->SetBoundsRect(keyboard_bounds);
-  }
+  bool display_keyboard = (keyboard_showing_ || animation_->is_animating());
+  keyboard_->SetVisible(display_keyboard);
+  gfx::Rect keyboard_bounds = bounds();
+  int keyboard_height = display_keyboard ? keyboard_height_ : 0;
+  keyboard_bounds.set_y(keyboard_bounds.height() - keyboard_height);
+  keyboard_bounds.set_height(keyboard_height);
+  keyboard_->SetBoundsRect(keyboard_bounds);
 }
 
 // TouchLoginView private: -----------------------------------------------------
@@ -103,6 +101,10 @@ void TouchLoginView::InitVirtualKeyboard() {
   keyboard_ = new KeyboardContainerView(profile_, NULL);
   keyboard_->SetVisible(false);
   AddChildView(keyboard_);
+
+  animation_.reset(new ui::SlideAnimation(this));
+  animation_->SetTweenType(ui::Tween::LINEAR);
+  animation_->SetSlideDuration(kKeyboardSlideDuration);
 }
 
 void TouchLoginView::UpdateKeyboardAndLayout(bool should_show_keyboard) {
@@ -110,7 +112,18 @@ void TouchLoginView::UpdateKeyboardAndLayout(bool should_show_keyboard) {
   if (should_show_keyboard == keyboard_showing_)
     return;
   keyboard_showing_ = should_show_keyboard;
-  Layout();
+  if (keyboard_showing_) {
+    ui::Transform transform;
+    transform.SetTranslateY(-keyboard_height_);
+    keyboard_->SetTransform(transform);
+    Layout();
+    animation_->Show();
+  } else {
+    ui::Transform transform;
+    keyboard_->SetTransform(transform);
+    animation_->Hide();
+    Layout();
+  }
 }
 
 TouchLoginView::VirtualKeyboardType
@@ -151,6 +164,24 @@ void TouchLoginView::Observe(NotificationType type,
   } else if (type == NotificationType::TAB_CONTENTS_DESTROYED) {
     GetFocusedStateAccessor()->DeleteProperty(
         Source<TabContents>(source).ptr()->property_bag());
+  }
+}
+
+// ui::AnimationDelegate implementation ----------------------------------------
+
+void TouchLoginView::AnimationProgressed(const ui::Animation* anim) {
+  ui::Transform transform;
+  transform.SetTranslateY(
+      ui::Tween::ValueBetween(anim->GetCurrentValue(), keyboard_height_, 0));
+  keyboard_->SetTransform(transform);
+}
+
+void TouchLoginView::AnimationEnded(const ui::Animation* animation) {
+  if (keyboard_showing_) {
+    Layout();
+  } else {
+    // Notify the keyboard that it is hidden now.
+    keyboard_->SetVisible(false);
   }
 }
 
