@@ -179,7 +179,6 @@ class WebSocketJobTest : public PlatformTest {
     socket_ = new MockSocketStream(url, websocket_.get());
     websocket_->InitSocketStream(socket_.get());
     websocket_->set_context(context_.get());
-    websocket_->state_ = WebSocketJob::CONNECTING;
     struct addrinfo addr;
     memset(&addr, 0, sizeof(struct addrinfo));
     addr.ai_family = AF_INET;
@@ -190,6 +189,9 @@ class WebSocketJobTest : public PlatformTest {
     addr.ai_addr = reinterpret_cast<sockaddr*>(&sa_in);
     addr.ai_next = NULL;
     websocket_->addresses_ = AddressList::CreateByCopying(&addr);
+  }
+  void SkipToConnecting() {
+    websocket_->state_ = WebSocketJob::CONNECTING;
     WebSocketThrottle::GetInstance()->PutInQueue(websocket_);
   }
   WebSocketJob::State GetWebSocketJobState() {
@@ -207,6 +209,12 @@ class WebSocketJobTest : public PlatformTest {
   SocketStream* GetSocket(SocketStreamJob* job) {
     return job->socket_.get();
   }
+  void TestSimpleHandshake();
+  void TestSlowHandshake();
+  void TestHandshakeWithCookie();
+  void TestHandshakeWithCookieButNotAllowed();
+  void TestHSTSUpgrade();
+  void TestInvalidSendData();
 
   scoped_refptr<MockCookieStore> cookie_store_;
   scoped_refptr<MockURLRequestContext> context_;
@@ -295,13 +303,11 @@ const size_t WebSocketJobTest::kHandshakeResponseWithoutCookieLength =
 const size_t WebSocketJobTest::kHandshakeResponseWithCookieLength =
     arraysize(kHandshakeResponseWithCookie) - 1;
 
-TEST_F(WebSocketJobTest, SimpleHandshake) {
-  // TODO(toyoshim): We need to consider both spdy-enabled and spdy-disabled
-  // configuration.
-  WebSocketJob::set_websocket_over_spdy_enabled(true);
+void WebSocketJobTest::TestSimpleHandshake() {
   GURL url("ws://example.com/demo");
   MockSocketStreamDelegate delegate;
   InitWebSocketJob(url, &delegate);
+  SkipToConnecting();
 
   bool sent = websocket_->SendData(kHandshakeRequestWithoutCookie,
                                    kHandshakeRequestWithoutCookieLength);
@@ -322,11 +328,11 @@ TEST_F(WebSocketJobTest, SimpleHandshake) {
   CloseWebSocketJob();
 }
 
-TEST_F(WebSocketJobTest, SlowHandshake) {
-  WebSocketJob::set_websocket_over_spdy_enabled(true);
+void WebSocketJobTest::TestSlowHandshake() {
   GURL url("ws://example.com/demo");
   MockSocketStreamDelegate delegate;
   InitWebSocketJob(url, &delegate);
+  SkipToConnecting();
 
   bool sent = websocket_->SendData(kHandshakeRequestWithoutCookie,
                                    kHandshakeRequestWithoutCookieLength);
@@ -362,8 +368,7 @@ TEST_F(WebSocketJobTest, SlowHandshake) {
   CloseWebSocketJob();
 }
 
-TEST_F(WebSocketJobTest, HandshakeWithCookie) {
-  WebSocketJob::set_websocket_over_spdy_enabled(true);
+void WebSocketJobTest::TestHandshakeWithCookie() {
   GURL url("ws://example.com/demo");
   GURL cookieUrl("http://example.com/demo");
   CookieOptions cookie_options;
@@ -375,6 +380,7 @@ TEST_F(WebSocketJobTest, HandshakeWithCookie) {
 
   MockSocketStreamDelegate delegate;
   InitWebSocketJob(url, &delegate);
+  SkipToConnecting();
 
   bool sent = websocket_->SendData(kHandshakeRequestWithCookie,
                                    kHandshakeRequestWithCookieLength);
@@ -405,8 +411,7 @@ TEST_F(WebSocketJobTest, HandshakeWithCookie) {
   CloseWebSocketJob();
 }
 
-TEST_F(WebSocketJobTest, HandshakeWithCookieButNotAllowed) {
-  WebSocketJob::set_websocket_over_spdy_enabled(true);
+void WebSocketJobTest::TestHandshakeWithCookieButNotAllowed() {
   GURL url("ws://example.com/demo");
   GURL cookieUrl("http://example.com/demo");
   CookieOptions cookie_options;
@@ -419,6 +424,7 @@ TEST_F(WebSocketJobTest, HandshakeWithCookieButNotAllowed) {
   MockSocketStreamDelegate delegate;
   delegate.set_allow_all_cookies(false);
   InitWebSocketJob(url, &delegate);
+  SkipToConnecting();
 
   bool sent = websocket_->SendData(kHandshakeRequestWithCookie,
                                    kHandshakeRequestWithCookieLength);
@@ -446,13 +452,13 @@ TEST_F(WebSocketJobTest, HandshakeWithCookieButNotAllowed) {
   CloseWebSocketJob();
 }
 
-TEST_F(WebSocketJobTest, HSTSUpgrade) {
-  WebSocketJob::set_websocket_over_spdy_enabled(true);
+void WebSocketJobTest::TestHSTSUpgrade() {
   GURL url("ws://upgrademe.com/");
   MockSocketStreamDelegate delegate;
-  scoped_refptr<SocketStreamJob> job = SocketStreamJob::CreateSocketStreamJob(
-      url, &delegate, context_->transport_security_state(),
-      context_->ssl_config_service());
+  scoped_refptr<SocketStreamJob> job =
+      SocketStreamJob::CreateSocketStreamJob(
+          url, &delegate, context_->transport_security_state(),
+          context_->ssl_config_service());
   EXPECT_TRUE(GetSocket(job.get())->is_secure());
   job->DetachDelegate();
 
@@ -464,10 +470,11 @@ TEST_F(WebSocketJobTest, HSTSUpgrade) {
   job->DetachDelegate();
 }
 
-TEST_F(WebSocketJobTest, InvalidSendData) {
+void WebSocketJobTest::TestInvalidSendData() {
   GURL url("ws://example.com/demo");
   MockSocketStreamDelegate delegate;
   InitWebSocketJob(url, &delegate);
+  SkipToConnecting();
 
   bool sent = websocket_->SendData(kHandshakeRequestWithoutCookie,
                                    kHandshakeRequestWithoutCookieLength);
@@ -487,6 +494,66 @@ TEST_F(WebSocketJobTest, InvalidSendData) {
   EXPECT_FALSE(sent);
   EXPECT_EQ(WebSocketJob::CONNECTING, GetWebSocketJobState());
   CloseWebSocketJob();
+}
+
+TEST_F(WebSocketJobTest, SimpleHandshake) {
+  WebSocketJob::set_websocket_over_spdy_enabled(false);
+  TestSimpleHandshake();
+}
+
+TEST_F(WebSocketJobTest, SlowHandshake) {
+  WebSocketJob::set_websocket_over_spdy_enabled(false);
+  TestSlowHandshake();
+}
+
+TEST_F(WebSocketJobTest, HandshakeWithCookie) {
+  WebSocketJob::set_websocket_over_spdy_enabled(false);
+  TestHandshakeWithCookie();
+}
+
+TEST_F(WebSocketJobTest, HandshakeWithCookieButNotAllowed) {
+  WebSocketJob::set_websocket_over_spdy_enabled(false);
+  TestHandshakeWithCookieButNotAllowed();
+}
+
+TEST_F(WebSocketJobTest, HSTSUpgrade) {
+  WebSocketJob::set_websocket_over_spdy_enabled(false);
+  TestHSTSUpgrade();
+}
+
+TEST_F(WebSocketJobTest, InvalidSendData) {
+  WebSocketJob::set_websocket_over_spdy_enabled(false);
+  TestInvalidSendData();
+}
+
+TEST_F(WebSocketJobTest, SimpleHandshakeSpdyEnabled) {
+  WebSocketJob::set_websocket_over_spdy_enabled(true);
+  TestSimpleHandshake();
+}
+
+TEST_F(WebSocketJobTest, SlowHandshakeSpdyEnabled) {
+  WebSocketJob::set_websocket_over_spdy_enabled(true);
+  TestSlowHandshake();
+}
+
+TEST_F(WebSocketJobTest, HandshakeWithCookieSpdyEnabled) {
+  WebSocketJob::set_websocket_over_spdy_enabled(true);
+  TestHandshakeWithCookie();
+}
+
+TEST_F(WebSocketJobTest, HandshakeWithCookieButNotAllowedSpdyEnabled) {
+  WebSocketJob::set_websocket_over_spdy_enabled(true);
+  TestHandshakeWithCookieButNotAllowed();
+}
+
+TEST_F(WebSocketJobTest, HSTSUpgradeSpdyEnabled) {
+  WebSocketJob::set_websocket_over_spdy_enabled(true);
+  TestHSTSUpgrade();
+}
+
+TEST_F(WebSocketJobTest, InvalidSendDataSpdyEnabled) {
+  WebSocketJob::set_websocket_over_spdy_enabled(true);
+  TestInvalidSendData();
 }
 
 }  // namespace net
