@@ -108,6 +108,12 @@ gfx::NativeCursor Link::GetCursor(const MouseEvent& event) {
 #endif
 }
 
+bool Link::HitTest(const gfx::Point& l) const {
+  // We need to allow clicks on the link. So we override the implementation in
+  // Label and use the default implementation of View.
+  return View::HitTest(l);
+}
+
 bool Link::OnMousePressed(const MouseEvent& event) {
   if (!IsEnabled() ||
       (!event.IsLeftMouseButton() && !event.IsMiddleMouseButton()))

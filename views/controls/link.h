@@ -35,6 +35,7 @@ class Link : public Label {
   virtual void OnEnabledChanged() OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
   virtual gfx::NativeCursor GetCursor(const MouseEvent& event) OVERRIDE;
+  virtual bool HitTest(const gfx::Point& l) const OVERRIDE;
   virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;
   virtual bool OnMouseDragged(const MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const MouseEvent& event) OVERRIDE;
