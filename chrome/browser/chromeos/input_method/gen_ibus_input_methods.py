@@ -63,6 +63,7 @@ struct IBusEngineInfo {
 const IBusEngineInfo kIBusEngines[] = {
 """
 
+CPP_FORMAT = '#if %s\n'
 ENGINE_FORMAT = ('  {"%(input_method_id)s", "%(language_code)s", ' +
                  '"%(xkb_layout_id)s", "%(keyboard_overlay_id)s"},\n')
 
@@ -86,7 +87,11 @@ def CreateEngineHeader(engines):
   output = []
   output.append(OUTPUT_HEADER)
   for engine in engines:
+    if engine.has_key('if'):
+      output.append(CPP_FORMAT % engine['if'])
     output.append(ENGINE_FORMAT % engine)
+    if engine.has_key('if'):
+      output.append('#endif\n')
   output.append(OUTPUT_FOOTER)
 
   return "".join(output)
@@ -102,12 +107,14 @@ def main(argv):
     if not line or re.match(r'#', line):
       continue
     columns = line.split()
-    assert len(columns) == 4
+    assert len(columns) == 4 or len(columns) == 5, "Invalid format: " + line
     engine = {}
     engine['input_method_id'] = columns[0]
     engine['xkb_layout_id'] = columns[1]
     engine['keyboard_overlay_id'] = columns[2]
     engine['language_code'] = columns[3]
+    if len(columns) == 5:
+      engine['if'] = columns[4]
     engines.append(engine)
 
   output = CreateEngineHeader(engines)

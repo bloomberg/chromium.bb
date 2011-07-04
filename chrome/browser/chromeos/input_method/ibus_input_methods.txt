@@ -27,9 +27,11 @@
 # Each non-comment line contains the following tab-separated columns.
 #
 # 1) The input method ID used by IBus. (ex. "xkb:ca::fra")
-# 2) The keyboard layout ID used by XKB. (ex. "ca")
+# 2) The keyboard layout ID used by XKB. (ex. "ca", "handwriting-vk,jp")
 # 3) The keyboard overlay ID. (ex. "fra_CA") *1
 # 4) The language code (ex. "fra")
+# 5) [optional] The #if condition for the input method.
+#    (ex. "defined(A)", "!defined(A)||defined(B)")
 #
 # Notes:
 # *1 For some complicated reason, we use different IDs for 2) and 3). Ask
@@ -56,6 +58,7 @@ mozc	us	en_US	ja
 mozc-jp	jp	ja	ja
 mozc-dv	us(dvorak)	en_US_dvorak	ja
 xkb:jp::jpn	jp	ja	jpn
+zinnia-japanese	handwriting-vk,jp	ja	ja	defined(TOUCH_UI)
 
 # Russian
 xkb:ru::rus	ru	ru	rus
