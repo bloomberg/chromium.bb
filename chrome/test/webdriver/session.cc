@@ -165,16 +165,24 @@ Error* Session::SendKeys(const WebElementId& element, const string16& keys) {
 
   ListValue args;
   args.Append(element.ToValue());
-  // This method will first check if the element we want to send the keys to is
-  // already focused, if not it will try to focus on it first.
+  // Focus the element if not focused already. If it is an editable element,
+  // focus the editing host element instead. Descendants of an editing host
+  // element cannot be focused in chrome.
+  // See http://www.w3.org/TR/html5/editing.html#attr-contenteditable.
   // TODO(jleyba): Update this to use the correct atom.
-  std::string script = "if(document.activeElement != arguments[0]) {"
-                       "  if(document.activeElement)"
-                       "    document.activeElement.blur();"
-                       "  arguments[0].focus();"
-                       "}";
+  const char* kFocusScript =
+      "var elem = arguments[0];"
+      "if (elem.isContentEditable) {"
+      "  while (elem.parentNode && elem.parentNode.isContentEditable)"
+      "    elem = elem.parentNode;"
+      "}"
+      "if (elem != document.activeElement) {"
+      "  if(document.activeElement)"
+      "    document.activeElement.blur();"
+      "  elem.focus();"
+      "}";
   Value* unscoped_result = NULL;
-  error = ExecuteScript(script, &args, &unscoped_result);
+  error = ExecuteScript(kFocusScript, &args, &unscoped_result);
   if (error) {
     error->AddDetails("Failed to focus element before sending keys");
     return error;

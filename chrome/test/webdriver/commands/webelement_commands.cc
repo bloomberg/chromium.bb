@@ -518,21 +518,16 @@ Error* ElementValueCommand::HasAttributeWithLowerCaseValueASCII(
   Value* unscoped_value = NULL;
   Error* error = session_->GetAttribute(element, key, &unscoped_value);
   scoped_ptr<Value> scoped_value(unscoped_value);
-  unscoped_value = NULL;
-
-  if (error) {
+  if (error)
     return error;
-  }
 
   std::string actual_value;
-  if (!scoped_value->GetAsString(&actual_value)) {
-    return new Error(
-        kUnknownError,
-        base::StringPrintf("Attribute '%s' did not have a string value",
-                           key.c_str()));
+  if (scoped_value->GetAsString(&actual_value)) {
+    *result = LowerCaseEqualsASCII(actual_value, value.c_str());
+  } else {
+    // Note we do not handle converting a number to a string.
+    *result = false;
   }
-
-  *result = LowerCaseEqualsASCII(actual_value, value.c_str());
   return NULL;
 }
 

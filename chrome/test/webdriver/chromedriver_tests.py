@@ -458,6 +458,24 @@ class MouseTest(unittest.TestCase):
     self.assertTrue(self._driver.execute_script('return window.success'))
 
 
+class TypingTest(unittest.TestCase):
+
+  def setUp(self):
+    self._launcher = ChromeDriverLauncher(root_path=os.path.dirname(__file__))
+    self._driver = WebDriver(self._launcher.GetURL(), {})
+    self._driver.get(self._launcher.GetURL() + '/test_page.html')
+
+  def tearDown(self):
+    self._driver.quit()
+    self._launcher.Kill()
+
+  # See http://crbug.com/85243.
+  def testCanSendKeysToDescendantOfEditingHost(self):
+    self._driver.find_element_by_name('editable_child').send_keys('moo')
+    text = self._driver.find_element_by_name('editable').text
+    self.assertEquals('mooeditable', text)
+
+
 class UrlBaseTest(unittest.TestCase):
   """Tests that the server can be configured for a different URL base."""
 
