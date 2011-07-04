@@ -57,13 +57,13 @@ class TreeNodeModelTest : public testing::Test, public TreeModelObserver {
   DISALLOW_COPY_AND_ASSIGN(TreeNodeModelTest);
 };
 
-// Verify if the model is properly adding a new node in the tree and
+// Verifies if the model is properly adding a new node in the tree and
 // notifying the observers.
 // The tree looks like this:
 // root
-// |-- child1
-// |   |-- foo1
-// |   |-- foo2
+// +-- child1
+//     +-- foo1
+//     +-- foo2
 // +-- child2
 TEST_F(TreeNodeModelTest, AddNode) {
   TreeNodeWithValue<int>* root = new TreeNodeWithValue<int>();
@@ -89,25 +89,19 @@ TEST_F(TreeNodeModelTest, AddNode) {
   EXPECT_EQ(0, child2->child_count());
 }
 
-// Verify if the model is properly removing a node from the tree
+// Verifies if the model is properly removing a node from the tree
 // and notifying the observers.
 TEST_F(TreeNodeModelTest, RemoveNode) {
-  TreeNodeWithValue<int>* root =
-      new TreeNodeWithValue<int>(ASCIIToUTF16("root"), 0);
+  TreeNodeWithValue<int>* root = new TreeNodeWithValue<int>();
   TreeNodeModel<TreeNodeWithValue<int> > model(root);
   model.AddObserver(this);
-  ClearCounts();
 
-  // Create the first child node.
-  TreeNodeWithValue<int>* child1 =
-      new TreeNodeWithValue<int>(ASCIIToUTF16("child 1"), 1);
-
-  // And add it to the root node.
+  TreeNodeWithValue<int>* child1 = new TreeNodeWithValue<int>();
   root->Add(child1, 0);
 
   EXPECT_EQ(1, model.GetChildCount(root));
 
-  // Now remove the |child1| from root and release the memory.
+  // Now remove |child1| from |root| and release the memory.
   delete model.Remove(root, child1);
 
   AssertObserverCount(0, 1, 0);
@@ -115,17 +109,17 @@ TEST_F(TreeNodeModelTest, RemoveNode) {
   EXPECT_EQ(0, model.GetChildCount(root));
 }
 
-// Verify if the nodes added under the root are all deleted when calling
+// Verifies if the nodes added under the root are all deleted when calling
 // RemoveAll. Note that is responsability of the caller to free the memory
 // of the nodes removed after RemoveAll is called.
 // The tree looks like this:
 // root
-// |-- child1
-// |   |-- foo
-// |       |-- bar0
-// |       |-- bar1
-// |       |-- bar2
-// |-- child2
+// +-- child1
+//     +-- foo
+//         +-- bar0
+//         +-- bar1
+//         +-- bar2
+// +-- child2
 // +-- child3
 TEST_F(TreeNodeModelTest, RemoveAllNodes) {
   TreeNodeWithValue<int> root;
@@ -159,11 +153,11 @@ TEST_F(TreeNodeModelTest, RemoveAllNodes) {
   EXPECT_EQ(3, foo->child_count());
 }
 
-// Verify if the model returns correct indexes for the specified nodes.
+// Verifies if GetIndexOf() returns the correct index for the specified node.
 // The tree looks like this:
 // root
-// |-- child1
-// |   |-- foo1
+// +-- child1
+//     +-- foo1
 // +-- child2
 TEST_F(TreeNodeModelTest, GetIndexOf) {
   TreeNodeWithValue<int> root;
@@ -193,11 +187,11 @@ TEST_F(TreeNodeModelTest, GetIndexOf) {
   EXPECT_EQ(-1, child2->GetIndexOf(foo1));
 }
 
-// Verify whether a specified node has or not an ancestor.
+// Verifies whether a specified node has or not an ancestor.
 // The tree looks like this:
 // root
-// |-- child1
-// |   |-- foo1
+// +-- child1
+//     +-- foo1
 // +-- child2
 TEST_F(TreeNodeModelTest, HasAncestor) {
   TreeNodeWithValue<int> root;
@@ -231,17 +225,17 @@ TEST_F(TreeNodeModelTest, HasAncestor) {
   EXPECT_FALSE(foo1->HasAncestor(child2));
 }
 
-// Verify if GetTotalNodeCount returns the correct number of nodes from the node
-// specifed. The count should include the node itself.
+// Verifies if GetTotalNodeCount returns the correct number of nodes from the
+// node specifed. The count should include the node itself.
 // The tree looks like this:
 // root
-// |-- child1
-// |   |-- child2
-// |       |-- child3
-// |-- foo1
-// |   |-- foo2
-// |       |-- foo3
-// |   |-- foo4
+// +-- child1
+//     +-- child2
+//         +-- child3
+// +-- foo1
+//     +-- foo2
+//         +-- foo3
+//     +-- foo4
 // +-- bar1
 //
 // The TotalNodeCount of root is:            9
