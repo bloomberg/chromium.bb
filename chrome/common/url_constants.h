@@ -164,6 +164,7 @@ extern const char kChromeUITextfieldsHost[];
 extern const char kChromeUITermsHost[];
 extern const char kChromeUITouchIconHost[];
 extern const char kChromeUIVersionHost[];
+extern const char kChromeUIWorkersHost[];
 
 extern const char kChromeUIScreenshotPath[];
 extern const char kChromeUIThemePath[];

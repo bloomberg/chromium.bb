@@ -35,6 +35,7 @@
 #include "chrome/browser/ui/webui/sync_internals_ui.h"
 #include "chrome/browser/ui/webui/test_chrome_web_ui_factory.h"
 #include "chrome/browser/ui/webui/textfields_ui.h"
+#include "chrome/browser/ui/webui/workers_ui.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/url_constants.h"
@@ -182,6 +183,8 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
     return &NewWebUI<OptionsUI>;
   if (url.host() == chrome::kChromeUIQuotaInternalsHost)
     return &NewWebUI<QuotaInternalsUI>;
+  if (url.host() == chrome::kChromeUIWorkersHost)
+    return &NewWebUI<WorkersUI>;
 
 #if defined(OS_CHROMEOS)
   if (url.host() == chrome::kChromeUIChooseMobileNetworkHost)

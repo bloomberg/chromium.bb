@@ -173,6 +173,7 @@ const char kChromeUITextfieldsHost[] = "textfields";
 const char kChromeUITermsHost[] = "terms";
 const char kChromeUITouchIconHost[] = "touch-icon";
 const char kChromeUIVersionHost[] = "version";
+const char kChromeUIWorkersHost[] = "workers";
 
 const char kChromeUIScreenshotPath[] = "screenshots";
 const char kChromeUIThemePath[] = "theme";

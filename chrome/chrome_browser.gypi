@@ -3563,6 +3563,8 @@
         'browser/ui/webui/theme_source.h',
         'browser/ui/webui/web_ui_util.cc',
         'browser/ui/webui/web_ui_util.h',
+        'browser/ui/webui/workers_ui.cc',
+        'browser/ui/webui/workers_ui.h',
         'browser/ui/window_sizer.cc',
         'browser/ui/window_sizer.h',
         'browser/ui/window_sizer_linux.cc',

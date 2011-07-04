@@ -336,6 +336,13 @@
           'includes': [ '../build/grit_action.gypi' ],
         },
         {
+          'action_name': 'workers_resources',
+          'variables': {
+            'grit_grd_file': 'browser/resources/workers_resources.grd',
+          },
+          'includes': [ '../build/grit_action.gypi' ],
+        },
+        {
           'action_name': 'devtools_resources',
           # This can't use ../build/grit_action.gypi because the grd file
           # is generated a build time, so the trick of using grit_info to get
@@ -1258,6 +1265,7 @@
                   '<(grit_out_dir)/quota_internals_resources.pak',
                   '<(grit_out_dir)/shared_resources.pak',
                   '<(grit_out_dir)/sync_internals_resources.pak',
+                  '<(grit_out_dir)/workers_resources.pak',
                 ],
               },
               'inputs': [
