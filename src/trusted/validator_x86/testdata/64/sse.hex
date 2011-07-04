@@ -1,0 +1,146 @@
+# Test SSE instructions
+# SSE
+# addps %xmm0,%xmm1
+0f 58 c8
+# subss %xmm0,%xmm1
+f3 0f 5c c8
+# pmaxsw %xmm0,%xmm1
+66 0f ee c8
+# pminub %xmm0,%xmm1
+66 0f da c8
+# pinsrw $0x1,%eax,%xmm0
+66 0f c4 c0 01
+# pmovmskb %xmm0,%eax
+66 0f d7 c0
+# pmulhuw %xmm0,%xmm1
+66 0f e4 c8
+# comiss %xmm0,%xmm1
+0f 2f c8
+# cvtps2pi %xmm1,%mm0
+0f 2d c1
+# ldmxcsr (%rsp)
+0f ae 14 24
+# stmxcsr (%rsp)
+0f ae 1c 24
+# movaps %xmm0,%xmm1
+0f 28 c8
+# movmskps %xmm1,%eax
+0f 50 c1
+# movntps %xmm0,(%rsp)
+0f 2b 04 24
+# shufps $0x1,%xmm0,%xmm1
+0f c6 c8 01
+# unpcklps %xmm0,%xmm1
+0f 14 c8
+# sfence
+0f ae f8
+# prefetcht2 (%rsp)
+0f 18 1c 24
+
+# SSE2
+# addpd %xmm0,%xmm1
+66 0f 58 c8
+# maxsd %xmm0,%xmm1
+f2 0f 5f c8
+# cmpeqpd %xmm0,%xmm1
+66 0f c2 c8 00
+# comisd %xmm0,%xmm1
+66 0f 2f c8
+# cvtpd2dq %xmm0,%xmm1
+f2 0f e6 c8
+# movapd %xmm0,%xmm1
+66 0f 28 c8
+# movmskpd %xmm0,%eax
+66 0f 50 c0
+# shufpd $0x1,%xmm0,%xmm1
+66 0f c6 c8 01
+# unpckhpd %xmm0,%xmm1
+66 0f 15 c8
+# movdq2q %xmm0,%mm1
+f2 0f d6 c8
+# movdqa %xmm0,%xmm1
+66 0f 6f c8
+# paddq %xmm0,%xmm1
+66 0f d4 c8
+# psrldq $0x1,%xmm0
+66 0f 73 d8 01
+# pshufd $0x1,%xmm0,%xmm1
+66 0f 70 c8 01
+# punpcklqdq %xmm0,%xmm1
+66 0f 6c c8
+
+# SSE 3
+# addsubpd %xmm0,%xmm1
+66 0f d0 c8
+# haddps %xmm0,%xmm1
+f2 0f 7c c8
+# movshdup %xmm0,%xmm1
+f3 0f 16 c8
+
+# SSSE3
+# psignb %xmm0,%xmm1
+66 0f 38 08 c8
+# pshufb %xmm0,%xmm1
+66 0f 38 00 c8
+# pmaddubsw %xmm0,%xmm1
+66 0f 38 04 c8
+# phaddd %xmm0,%xmm1
+66 0f 38 02 c8
+# palignr $0x1,%xmm0,%xmm1
+66 0f 3a 0f c8 01
+
+# SSE41
+# mpsadbw $0x1,%xmm0,%xmm1
+66 0f 3a 42 c8 01
+# phminposuw %xmm0,%xmm1
+66 0f 38 41 c8
+# dppd $0x1,%xmm0,%xmm1
+66 0f 3a 41 c8 01
+# blendvpd %xmm0,%xmm0,%xmm1
+66 0f 38 15 c8
+# pmaxuw %xmm0,%xmm1
+66 0f 38 3e c8
+# insertps $0x1,%xmm0,%xmm1
+66 0f 3a 21 c8 01
+# pmovsxwq %xmm0,%xmm1
+66 0f 38 24 c8
+# ptest %xmm0,%xmm1
+66 0f 38 17 c8
+# packusdw %xmm0,%xmm1
+66 0f 38 2b c8
+# movntdqa (%rsp),%xmm0
+66 0f 38 2a 04 24
+
+# SSE4a
+# popcnt %rax,%rax
+f3 48 0f b8 c0
+# lzcnt %rax,%rax
+f3 48 0f bd c0
+# extrq $0x1,$0x2,%xmm0
+66 0f 78 c0 02 01
+# movntss %xmm0,(%rsp)
+f3 0f 2b 04 24
+
+# SSE42
+# crc32b %al,%rax
+f2 48 0f 38 f0 c0
+# pcmpistri $0x1,%xmm0,%xmm1
+66 0f 3a 63 c8 01
+# pcmpgtq %xmm0,%xmm1
+66 0f 38 37 c8
+
+# AVX FMA
+# vfmaddpd %xmm0,%xmm1,%xmm2,%xmm3
+c4 e3 f1 69 d8 20
+90 90 90
+
+# AES
+# aesenc %xmm0,%xmm1
+66 0f 38 dc c8
+90 90 90
+# aeskeygenassist $0x1,%xmm0,%xmm1
+66 0f 3a df c8 01
+90 90
+# aesimc %xmm0,%xmm1
+66 0f 38 db c8
+90 90 90

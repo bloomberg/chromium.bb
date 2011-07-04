@@ -1,0 +1,67 @@
+0000000000000000: 0f 58 c8                                     addps %xmm1, %xmm0
+0000000000000003: f3 0f 5c c8                                  subss %xmm1, %xmm0
+0000000000000007: 66 0f ee c8                                  pmaxsw %xmm1, %xmm0
+000000000000000b: 66 0f da c8                                  pminub %xmm1, %xmm0
+000000000000000f: 66 0f c4 c0 01                               pinsrw %xmm0, %eax, 0x1
+0000000000000014: 66 0f d7 c0                                  pmovmskb %eax, %xmm0
+0000000000000018: 66 0f e4 c8                                  pmulhuw %xmm1, %xmm0
+000000000000001c: 0f 2f c8                                     comiss %xmm1, %xmm0
+000000000000001f: 0f 2d c1                                     cvtps2pi %mmx0, %xmm1
+0000000000000022: 0f ae 14 24                                  ldmxcsr [%rsp]
+0000000000000026: 0f ae 1c 24                                  stmxcsr [%rsp]
+000000000000002a: 0f 28 c8                                     movaps %xmm1, %xmm0
+000000000000002d: 0f 50 c1                                     movmskps %eax, %xmm1
+0000000000000030: 0f 2b 04 24                                  movntps [%rsp], %xmm0
+0000000000000034: 0f c6 c8 01                                  shufps %xmm1, %xmm0, 0x1
+0000000000000038: 0f 14 c8                                     unpcklps %xmm1, %xmm0
+000000000000003b: 0f ae f8                                     sfence
+000000000000003e: 0f 18 1c 24                                  prefetcht2 [%rsp]
+0000000000000042: 66 0f 58 c8                                  addpd %xmm1, %xmm0
+0000000000000046: f2 0f 5f c8                                  maxsd %xmm1, %xmm0
+000000000000004a: 66 0f c2 c8 00                               cmppd %xmm1, %xmm0, 0x0
+000000000000004f: 66 0f 2f c8                                  comisd %xmm1, %xmm0
+0000000000000053: f2 0f e6 c8                                  cvtpd2dq %xmm1, %xmm0
+0000000000000057: 66 0f 28 c8                                  movapd %xmm1, %xmm0
+000000000000005b: 66 0f 50 c0                                  movmskpd %eax, %xmm0
+000000000000005f: 66 0f c6 c8 01                               shufpd %xmm1, %xmm0, 0x1
+0000000000000064: 66 0f 15 c8                                  unpckhpd %xmm1, %xmm0
+0000000000000068: f2 0f d6 c8                                  movdq2q %mmx1, %xmm0
+000000000000006c: 66 0f 6f c8                                  movdqa %xmm1, %xmm0
+0000000000000070: 66 0f d4 c8                                  paddq %xmm1, %xmm0
+0000000000000074: 66 0f 73 d8 01                               psrldq %xmm0, 0x1
+0000000000000079: 66 0f 70 c8 01                               pshufd %xmm1, %xmm0, 0x1
+000000000000007e: 66 0f 6c c8                                  punpcklqdq %xmm1, %xmm0
+0000000000000082: 66 0f d0 c8                                  addsubpd %xmm1, %xmm0
+0000000000000086: f2 0f 7c c8                                  haddps %xmm1, %xmm0
+000000000000008a: f3 0f 16 c8                                  movshdup %xmm1, %xmm0
+000000000000008e: 66 0f 38 08 c8                               psignb %xmm1, %xmm0
+0000000000000093: 66 0f 38 00 c8                               pshufb %xmm1, %xmm0
+0000000000000098: 66 0f 38 04 c8                               pmaddubsw %xmm1, %xmm0
+000000000000009d: 66 0f 38 02 c8                               phaddd %xmm1, %xmm0
+00000000000000a2: 66 0f 3a 0f c8 01                            palignr %xmm1, %xmm0, 0x1
+00000000000000a8: 66 0f 3a 42 c8 01                            mpsadbw %xmm1, %xmm0, 0x1
+00000000000000ae: 66 0f 38 41 c8                               phminposuw %xmm1, %xmm0
+00000000000000b3: 66 0f 3a 41 c8 01                            dppd %xmm1, %xmm0, 0x1
+00000000000000b9: 66 0f 38 15 c8                               blendvpd %xmm1, %xmm0, %xmm0
+00000000000000be: 66 0f 38 3e c8                               pmaxuw %xmm1, %xmm0
+00000000000000c3: 66 0f 3a 21 c8 01                            insertps %xmm1, %xmm0, 0x1
+00000000000000c9: 66 0f 38 24 c8                               pmovsxwq %xmm1, %xmm0
+00000000000000ce: 66 0f 38 17 c8                               ptest %xmm1, %xmm0
+00000000000000d3: 66 0f 38 2b c8                               packusdw %xmm1, %xmm0
+00000000000000d8: 66 0f 38 2a 04 24                            movntdqa %xmm0, [%rsp]
+00000000000000de: f3 48 0f b8 c0                               popcnt %rax, %rax
+00000000000000e3: f3 48 0f bd c0                               lzcnt %rax, %rax
+00000000000000e8: 66 0f 78 c0 02 01                            extrq %xmm0, 0x2, 0x1
+00000000000000ee: f3 0f 2b 04 24                               movntss [%rsp], %xmm0
+00000000000000f3: f2 48 0f 38 f0 c0                            crc32 %eax, %al
+00000000000000f9: 66 0f 3a 63 c8 01                            pcmpistri %xmm1, %xmm0, 0x1
+00000000000000ff: 66 0f 38 37 c8                               pcmpgtq %xmm1, %xmm0
+0000000000000104: c4                                           invalid
+0000000000000105: e3 f1                                        jrcxz 0xf8
+0000000000000107: 69 d8 20 90 90 90                            imul %ebx, %eax, 0x90909020
+000000000000010d: 66 0f 38 dc                                  invalid
+0000000000000111: c8 90 90 90                                  enter 0x9090, 0x90
+0000000000000115: 66 0f 3a df                                  invalid
+0000000000000119: c8 01 90 90                                  enter 0x9001, 0x90
+000000000000011d: 66 0f 38 db                                  invalid
+0000000000000121: c8 90 90 90                                  enter 0x9090, 0x90
