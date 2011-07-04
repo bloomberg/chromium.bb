@@ -1303,44 +1303,45 @@ Error* Session::FindElementsHelper(const FrameId& frame_id,
       base::PlatformThread::Sleep(50);  // Prevent a busy loop.
   }
 
+  if (error.get())
+    return error.release();
+
   // Parse the results.
   const std::string kInvalidElementDictionaryMessage =
       "Find element script returned invalid element dictionary: " +
           JsonStringify(value.get());
-  if (!error.get()) {
-    if (value->IsType(Value::TYPE_LIST)) {
-      ListValue* element_list = static_cast<ListValue*>(value.get());
-      for (size_t i = 0; i < element_list->GetSize(); ++i) {
-        DictionaryValue* element_dict = NULL;
-        if (!element_list->GetDictionary(i, &element_dict)) {
-          return new Error(
-              kUnknownError,
-              "Find element script returned non-dictionary: " +
-                  JsonStringify(element_list));
-        }
-
-        WebElementId element(element_dict);
-        if (!element.is_valid()) {
-          return new Error(kUnknownError, kInvalidElementDictionaryMessage);
-        }
-        elements->push_back(element);
+  if (value->IsType(Value::TYPE_LIST)) {
+    ListValue* element_list = static_cast<ListValue*>(value.get());
+    for (size_t i = 0; i < element_list->GetSize(); ++i) {
+      DictionaryValue* element_dict = NULL;
+      if (!element_list->GetDictionary(i, &element_dict)) {
+        return new Error(
+            kUnknownError,
+            "Find element script returned non-dictionary: " +
+                JsonStringify(element_list));
       }
-    } else if (value->IsType(Value::TYPE_DICTIONARY)) {
-      DictionaryValue* element_dict =
-          static_cast<DictionaryValue*>(value.get());
+
       WebElementId element(element_dict);
       if (!element.is_valid()) {
         return new Error(kUnknownError, kInvalidElementDictionaryMessage);
       }
       elements->push_back(element);
-    } else {
-      return new Error(
-          kUnknownError,
-          "Find element script returned unsupported type: " +
-              JsonStringify(value.get()));
     }
+  } else if (value->IsType(Value::TYPE_DICTIONARY)) {
+    DictionaryValue* element_dict =
+        static_cast<DictionaryValue*>(value.get());
+    WebElementId element(element_dict);
+    if (!element.is_valid()) {
+      return new Error(kUnknownError, kInvalidElementDictionaryMessage);
+    }
+    elements->push_back(element);
+  } else {
+    return new Error(
+        kUnknownError,
+        "Find element script returned unsupported type: " +
+            JsonStringify(value.get()));
   }
-  return error.release();
+  return NULL;
 }
 
 Error* Session::GetElementRegionInViewHelper(
