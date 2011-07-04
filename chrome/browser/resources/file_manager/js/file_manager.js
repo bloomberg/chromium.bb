@@ -2051,7 +2051,19 @@ FileManager.prototype = {
                         util.getFileErrorMnemonic(err.code)));
     }
 
-    entry.moveTo(this.currentDirEntry_, newName, onSuccess, onError);
+    function resolveCallback(victim) {
+      if (victim instanceof FileError) {
+        entry.moveTo(self.currentDirEntry_, newName, onSuccess, onError);
+      } else {
+        var message = victim.isFile ?
+            'FILE_ALREADY_EXISTS':
+            'DIRECTORY_ALREADY_EXISTS';
+        window.alert(strf(message, newName));
+      }
+    }
+
+    this.resolvePath(this.currentDirEntry_.fullPath + '/' + newName,
+        resolveCallback, resolveCallback);
   };
 
   FileManager.prototype.cancelRename_ = function(event) {
@@ -2218,10 +2230,26 @@ FileManager.prototype = {
       if (!this.validateFileName_(filename, false))
         return;
 
-      // Closes the window and does not return.
-      chrome.fileBrowserPrivate.selectFile(
-          currentDirUrl + encodeURIComponent(filename),
-          this.getSelectedFilterIndex_(filename));
+      var self = this;
+      function resolveCallback(victim) {
+        if (!(victim instanceof FileError)) {
+          if (victim.isDirectory) {
+            // Do not allow to overwrite directory.
+            window.alert(strf('DIRECTORY_ALREADY_EXISTS', filename));
+            return;
+          }
+          if (!window.confirm(strf('CONFIRM_OVERWRITE_FILE', filename)))
+            return;
+        }
+
+        // Closes the window and does not return.
+        chrome.fileBrowserPrivate.selectFile(
+            currentDirUrl + encodeURIComponent(filename),
+            self.getSelectedFilterIndex_(filename));
+      }
+
+      this.resolvePath(this.currentDirEntry_.fullPath + '/' + filename,
+          resolveCallback, resolveCallback);
       return;
     }
 

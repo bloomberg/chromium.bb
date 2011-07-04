@@ -8749,6 +8749,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Read Only
       </message>
 
+      <message name="IDS_FILE_BROWSER_CONFIRM_OVERWRITE_FILE" desc="Asks the user if they are sure they want to overwrite an existing file with another one.">
+        A file named "$1" already exists. Do you want to replace it?
+      </message>
+      <message name="IDS_FILE_BROWSER_FILE_ALREADY_EXISTS" desc="Error message displayed when user tries to create a file with an existing name.">
+        The file named "$1" already exists. Please choose a different name.
+      </message>
+      <message name="IDS_FILE_BROWSER_DIRECTORY_ALREADY_EXISTS" desc="Error message displayed when user tries to create a directory with an existing name.">
+        The directory named "$1" already exists. Please choose a different name.
+      </message>
       <message name="IDS_FILE_BROWSER_ERROR_RENAMING" desc="Error message.">
         Unable to rename "$1": $2
       </message>

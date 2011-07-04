@@ -138,6 +138,9 @@ chrome.fileBrowserPrivate = {
       VOLUME_LABEL: 'Volume Label',
       READ_ONLY: 'Read Only',
 
+      CONFIRM_OVERWRITE_FILE: 'A file named "$1" already exists. Do you want to replace it?',
+      FILE_ALREADY_EXISTS: 'The file named "$1" already exists. Please choose a different name.',
+      DIRECTORY_ALREADY_EXISTS: 'The directory named "$1" already exists. Please choose a different name.',
       ERROR_RENAMING: 'Unable to rename "$1": $2',
       RENAME_PROMPT: 'Enter a new name',
       RENAME_BUTTON_LABEL: 'Rename',
