@@ -153,7 +153,12 @@ class TabStripModelTest : public RenderViewHostTestHarness {
  public:
   TabStripModelTest()
       : RenderViewHostTestHarness(),
-        browser_thread_(BrowserThread::UI, &message_loop_) {}
+        browser_thread_(BrowserThread::UI, &message_loop_) {
+#if defined(OS_MACOSX)
+    base::SystemMonitor::AllocateSystemIOPorts();
+#endif
+    system_monitor.reset(new base::SystemMonitor);
+  }
 
   TabContentsWrapper* CreateTabContents() {
     return Browser::TabContentsFactory(profile(), NULL, 0, NULL, NULL);
@@ -270,7 +275,7 @@ class TabStripModelTest : public RenderViewHostTestHarness {
   std::map<TabContents*, int> foo_;
 
   // ProfileManager requires a base::SystemMonitor.
-  base::SystemMonitor system_monitor;
+  scoped_ptr<base::SystemMonitor> system_monitor;
 
   ProfileManager pm_;
 };

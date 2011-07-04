@@ -37,6 +37,10 @@ class ExtensionEventRouterForwarderTest : public TestingBrowserProcessTest {
   ExtensionEventRouterForwarderTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
         io_thread_(BrowserThread::IO) {
+#if defined(OS_MACOSX)
+    base::SystemMonitor::AllocateSystemIOPorts();
+#endif
+    dummy.reset(new base::SystemMonitor);
   }
 
   ~ExtensionEventRouterForwarderTest() {
@@ -66,7 +70,7 @@ class ExtensionEventRouterForwarderTest : public TestingBrowserProcessTest {
   MessageLoopForUI message_loop_;
   BrowserThread ui_thread_;
   BrowserThread io_thread_;
-  base::SystemMonitor dummy;
+  scoped_ptr<base::SystemMonitor> dummy;
   // Profiles are weak pointers, owned by ProfileManager in |browser_process_|.
   TestingProfile* profile1_;
   TestingProfile* profile2_;

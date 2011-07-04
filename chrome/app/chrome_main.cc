@@ -60,6 +60,7 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/os_crash_dumps.h"
 #include "base/mach_ipc_mac.h"
+#include "base/system_monitor/system_monitor.h"
 #include "chrome/app/breakpad_mac.h"
 #include "chrome/browser/mac/relauncher.h"
 #include "chrome/common/chrome_paths_internal.h"
@@ -568,6 +569,10 @@ int ChromeMain(int argc, char** argv) {
 
 #if defined(OS_MACOSX)
   chrome_main::SetUpBundleOverrides();
+
+  // We need to allocate the IO Ports before the Sandbox is initialized or
+  // the first instance of SystemMonitor is created.
+  base::SystemMonitor::AllocateSystemIOPorts();
 #endif
 
   CommandLine::Init(argc, argv);

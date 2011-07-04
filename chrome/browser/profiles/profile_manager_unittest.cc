@@ -38,6 +38,10 @@ class ProfileManagerTest : public TestingBrowserProcessTest {
         file_thread_(BrowserThread::FILE, &message_loop_),
         profile_manager_(new ProfileManagerWithoutInit),
         local_state_(testing_browser_process_.get()) {
+#if defined(OS_MACOSX)
+    base::SystemMonitor::AllocateSystemIOPorts();
+#endif
+    system_monitor_dummy_.reset(new base::SystemMonitor);
   }
 
   virtual void SetUp() {
@@ -61,7 +65,7 @@ class ProfileManagerTest : public TestingBrowserProcessTest {
   BrowserThread ui_thread_;
   BrowserThread file_thread_;
 
-  base::SystemMonitor system_monitor_dummy_;
+  scoped_ptr<base::SystemMonitor> system_monitor_dummy_;
 
   // Also will test profile deletion.
   scoped_ptr<ProfileManager> profile_manager_;

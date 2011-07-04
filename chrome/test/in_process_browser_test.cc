@@ -43,6 +43,7 @@
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
+#include "base/system_monitor/system_monitor.h"
 #endif
 
 #if defined(OS_WIN)
@@ -82,6 +83,7 @@ InProcessBrowserTest::InProcessBrowserTest()
       tab_closeable_state_watcher_enabled_(false) {
 #if defined(OS_MACOSX)
   base::mac::SetOverrideAmIBundled(true);
+  base::SystemMonitor::AllocateSystemIOPorts();
 #endif
 
   // Before we run the browser, we have to hack the path to the exe to match
