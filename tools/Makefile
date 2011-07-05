@@ -267,33 +267,37 @@ BUILD:
 ##################################################################
 # Create the SDK output directories.
 ##################################################################
-SDKDIRS=\
-    $(DESTDIR)$(SDKROOT)/bin \
-    $(DESTDIR)$(SDKROOT)/lib \
-    $(DESTDIR)$(SDKROOT)/libexec \
-    $(DESTDIR)$(SDKROOT)/nacl/bin \
-    $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/bin \
-    $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include \
-    $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib \
-    $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib32
 
-.PHONY: sdkdirs
+# Create directory structure for the toolchain.
+# On win, non-cygwin binaries do not follow cygwin symlinks. In case when we
+# need multiple names for the directory, the name that might be used by win
+# tools goes to the real directory and other names go to symlinks.
+# Installers create real directories when they do not find an existing one
+# to use. To prevent installers from creating a real directory instead of what
+# should be a symlink we create everything in advance.
 sdkdirs:
 	echo "Creating the SDK tree at $(DESTDIR)$(SDKROOT)"
-	@for d in $(SDKDIRS); do \
-	  if [ ! -d $$d ]; then \
-	    echo install -m 755 -d $$d; \
-	    install -m 755 -d $$d; \
-	  fi; \
-	done
-	# Make sure there is a single install location for all header files.
-	ln -sfn ../nacl64/include $(DESTDIR)$(SDKROOT)/nacl/include
-	# libgcc_s.so is installed to lib64
-	ln -sfn lib $(DESTDIR)$(SDKROOT)/nacl64/lib64
-	# GCC searches for 32bit libraries in nacl64/lib/32 and in nacl64/lib32
-	# at different times.
-	ln -sfn ../lib32 $(DESTDIR)$(SDKROOT)/nacl64/lib/32
-	ln -sfn ../nacl64/lib32 $(DESTDIR)$(SDKROOT)/nacl/lib
+	# Create installation directory for 64-bit libraries
+	# See http://code.google.com/p/nativeclient/issues/detail?id=1975
+	install -m 755 -d "$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib"
+	# Create alias for libgcc_s.so
+	# TODO: fix MULTILIB_OSDIRNAMES in gcc/config/i386/t-nacl64
+	#       and get rid of this!
+	ln -sfn lib $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib64
+	# Create installation directory for 32-bit libraries
+	install -m 755 -d "$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib32"
+	# Create alias for newlib
+	# Newlib uses "gcc -print-multi-lib" to determine multilib subdirectory
+	# names and installs under $prefix accordingly. This seems confusing,
+	# as "-print-multi-lib" uses MULTILIB_DIRNAMES, which is for libgcc,
+	# while for newlib it looks better to use MULTILIB_OSDIRNAMES, which is
+	# for system libraries. In our case these are "/lib" and "/lib/32" vs.
+	# "/lib" and "/lib32" respectively. As a result, 32-bit newlib is
+	# installed under "/lib/32" but searched under "/lib32".
+	# We fix this by making "/lib/32" an alias for "/lib32".
+	# TODO: sounds odd - probably my understanding is wrong?
+	#       Go ask someone smart...
+	ln -sfn ../lib32 $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib/32
 
 ##################################################################
 # binutils:
@@ -311,8 +315,8 @@ BUILD/stamp-$(CROSSARCH)-binutils: | SRC/binutils BUILD
 	  LDFLAGS="-s $(LDFLAGS)" \
 	  ../../SRC/binutils/configure \
 	    --prefix=$(SDKROOT) \
-	    --target=${CROSSARCH} \
-	    --with-sysroot=$(SDKROOT)/${CROSSARCH} \
+	    --target=$(CROSSARCH) \
+	    --with-sysroot=$(SDKROOT)/$(CROSSARCH) \
 	    --disable-werror
 	$(MAKE) -C BUILD/build-binutils-$(CROSSARCH) all
 	$(MAKE) -C BUILD/build-binutils-$(CROSSARCH) DESTDIR=$(DESTDIR) install
@@ -544,14 +548,15 @@ GLIBC_CC=$(PREGCC_PREFIX)/bin/$(CROSSARCH)-gcc
 # CFLAGS for building glibc.
 GLIBC_CFLAGS=-O2 -g $(CFLAGS)
 
+ARCH_DEST=$(DESTDIR)$(SDKROOT)/$(CROSSARCH)
+ARCH_DEST_INC_NATIVE=$(SDKLOC_NATIVE)/$(CROSSARCH)/include
+
 # LIB_BITS is used with different values to execute targets in this Makefile for
 # different architectures (32, 64) when building libraries (glibc and nacl).
 # CROSSARCH and BITSPLATFORM could be used for this, but we better avoid
 # redefining variables with recursive $(MAKE) calls.
 LIB_BITS?=64
-ARCH_DEST=$(DESTDIR)$(SDKROOT)/$(if $(filter 32,$(LIB_BITS)),nacl,nacl64)
-ARCH_DEST_INC_NATIVE=$(SDKLOC_NATIVE)/$(CROSSARCH)/include
-ARCH_DEST_LIB_NATIVE=$(SDKLOC_NATIVE)/$(if $(filter 32,$(LIB_BITS)),nacl64/lib32,nacl64/lib)
+ARCH_DEST_LIB_NATIVE=$(SDKLOC_NATIVE)/$(CROSSARCH)/$(if $(filter 32,$(LIB_BITS)),lib32,lib)
 
 BUILD/stamp-glibc32: BUILD/stamp-$(CROSSARCH)-pregcc-standalone \
   | SRC/glibc SRC/linux-headers-for-nacl
@@ -628,15 +633,6 @@ glibc-adhoc-files: | SRC/glibc SRC/linux-headers-for-nacl
 	cp -f $(NACL_MACHINE_HEADERS) $(ARCH_DEST)/include/machine
 	cp ../src/untrusted/include/machine/_default_types.h \
 	    $(ARCH_DEST)/include/machine/_default_types.h
-	# These libraries are in link lines because newlib needs them.
-	# Since glibc doesn't need them, we just stub them out as empty
-	# linker scripts.  For -lfoo the linker looks for libfoo.so first
-	# and then libfoo.a, but only the latter under -static, so install
-	# under .a names to cover both cases.
-	for lib in nacl crt_platform nosys; do \
-	  echo '/* Intentionally empty */' > \
-	      $(ARCH_DEST)/lib/lib$${lib}.a; \
-	done
 	for f in catchsegv gencat getconf getent iconv ldd locale \
 	    localedef mtrace pcprofiledump rpcgen sprof tzselect xtrace; do \
 	    rm -f $(ARCH_DEST)/bin/$$f ; \
@@ -657,6 +653,15 @@ BUILD_EXTRA_SDK=BUILD/opt-$(PLATFORM)-x86-$(LIB_BITS)
 
 .PHONY: scons-libs-glibc
 scons-libs-glibc: glibc-adhoc-files
+	# These libraries are in link lines because newlib needs them.
+	# Since glibc doesn't need them, we just stub them out as empty
+	# linker scripts.  For -lfoo the linker looks for libfoo.so first
+	# and then libfoo.a, but only the latter under -static, so install
+	# under .a names to cover both cases.
+	for lib in nacl crt_platform nosys; do \
+	  echo '/* Intentionally empty */' > \
+	      $(ARCH_DEST_LIB_NATIVE)/lib$${lib}.a; \
+	done
 	rm -rf $(BUILD_EXTRA_SDK)
 	mkdir $(BUILD_EXTRA_SDK)
 	cd .. && \
@@ -803,8 +808,8 @@ nacl_libraries:
 	  (./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE) \
 	    --mode=nacl_extra_sdk extra_sdk_update \
 	    targetplatform=x86-64 --verbose ) ;
-	chmod a-x "$(DESTDIR)$(SDKROOT)/"{nacl,"$(CROSSARCH)"}/lib/*.a
-	rm -f "$(DESTDIR)$(SDKROOT)/"{nacl,"$(CROSSARCH)"}/lib/*.la
+	chmod a-x "$(DESTDIR)$(SDKROOT)/$(CROSSARCH)"/lib{,32}/*.a
+	rm -f "$(DESTDIR)$(SDKROOT)/$(CROSSARCH)"/lib{,32}/*.la
 
 .PHONY: sdk_minimal_test
 sdk_minimal_test:
@@ -839,13 +844,12 @@ else
 	$(INST_GLIBC_PROGRAM) "$(DESTDIR)$(SDKROOT)"
 endif
 	$(MAKE) -f $(THISMAKEFILE) export-headers
-	$(MAKE) -f $(THISMAKEFILE) glibc-adhoc-files LIB_BITS=32
-	$(MAKE) -f $(THISMAKEFILE) glibc-adhoc-files LIB_BITS=64
+	$(MAKE) -f $(THISMAKEFILE) glibc-adhoc-files
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-full-gcc
 	$(CREATE_REDIRECTORS) "$(DESTDIR)$(SDKROOT)"
 	$(MAKE) -f $(THISMAKEFILE) scons-libs-glibc LIB_BITS=32
 	$(MAKE) -f $(THISMAKEFILE) scons-libs-glibc LIB_BITS=64
-	rm -rf "$(DESTDIR)$(SDKROOT)"/{include,lib/*.a*,nacl64/lib{,32}/*.la}
+	rm -rf "$(DESTDIR)$(SDKROOT)"/{include,lib/*.a*,$(CROSSARCH)/lib{,32}/*.la}
 	rm -rf "$(DESTDIR)$(SDKROOT)"/{lib/{*/*/*/*{,/*}.la,*.so*},lib{32,64}}
 
 .PHONY: build-with-newlib

@@ -32,15 +32,3 @@ nacl64/bin/objcopy     ../../bin/nacl64-objcopy
 nacl64/bin/objdump     ../../bin/nacl64-objdump
 nacl64/bin/ranlib      ../../bin/nacl64-ranlib
 nacl64/bin/strip       ../../bin/nacl64-strip
-nacl/bin/ar            ../../bin/nacl64-ar
-nacl/bin/as            ../../bin/nacl64-as         --32
-nacl/bin/c++           ../../bin/nacl64-c++        -m32
-nacl/bin/g++           ../../bin/nacl64-g++        -m32
-nacl/bin/gcc           ../../bin/nacl64-gcc        -m32
-nacl/bin/gfortran      ../../bin/nacl64-gfortran   -m32
-nacl/bin/ld            ../../bin/nacl64-ld         -melf_nacl
-nacl/bin/nm            ../../bin/nacl64-nm
-nacl/bin/objcopy       ../../bin/nacl64-objcopy
-nacl/bin/objdump       ../../bin/nacl64-objdump
-nacl/bin/ranlib        ../../bin/nacl64-ranlib
-nacl/bin/strip         ../../bin/nacl64-strip
