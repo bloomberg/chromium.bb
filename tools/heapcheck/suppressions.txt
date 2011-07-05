@@ -1543,4 +1543,11 @@
    fun:TestingProfile::CreateRequestContext
    fun:ProfileSyncService*Test::SetUp
 }
-
+{
+   bug_88438
+   Heapcheck:Leak
+   fun:invalidation::NewPermanentCallback
+   fun:invalidation::InvalidationClientImpl::ScheduleStartAfterReadingStateBlob
+   fun:invalidation::InvalidationClientImpl::Start
+   fun:sync_notifier::ChromeInvalidationClient::Start
+}
