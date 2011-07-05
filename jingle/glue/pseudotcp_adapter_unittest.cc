@@ -276,8 +276,15 @@ TEST_F(PseudoTcpAdapterTest, DataTransfer) {
   TestCompletionCallback host_connect_cb;
   TestCompletionCallback client_connect_cb;
 
-  host_pseudotcp_->Connect(&host_connect_cb);
-  client_pseudotcp_->Connect(&client_connect_cb);
+  int rv1 = host_pseudotcp_->Connect(&host_connect_cb);
+  int rv2 = client_pseudotcp_->Connect(&client_connect_cb);
+
+  if (rv1 == net::ERR_IO_PENDING)
+    rv1 = host_connect_cb.WaitForResult();
+  if (rv2 == net::ERR_IO_PENDING)
+    rv2 = client_connect_cb.WaitForResult();
+  ASSERT_EQ(net::OK, rv1);
+  ASSERT_EQ(net::OK, rv2);
 
   scoped_refptr<TCPChannelTester> tester =
       new TCPChannelTester(&message_loop_, host_pseudotcp_.get(),
@@ -295,8 +302,15 @@ TEST_F(PseudoTcpAdapterTest, LossyChannel) {
   TestCompletionCallback host_connect_cb;
   TestCompletionCallback client_connect_cb;
 
-  host_pseudotcp_->Connect(&host_connect_cb);
-  client_pseudotcp_->Connect(&client_connect_cb);
+  int rv1 = host_pseudotcp_->Connect(&host_connect_cb);
+  int rv2 = client_pseudotcp_->Connect(&client_connect_cb);
+
+  if (rv1 == net::ERR_IO_PENDING)
+    rv1 = host_connect_cb.WaitForResult();
+  if (rv2 == net::ERR_IO_PENDING)
+    rv2 = client_connect_cb.WaitForResult();
+  ASSERT_EQ(net::OK, rv1);
+  ASSERT_EQ(net::OK, rv2);
 
   scoped_refptr<TCPChannelTester> tester =
       new TCPChannelTester(&message_loop_, host_pseudotcp_.get(),
