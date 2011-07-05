@@ -407,6 +407,10 @@ void LoginUtilsImpl::CompleteOffTheRecordLogin(const GURL& start_url) {
   UserManager::Get()->OffTheRecordUserLoggedIn();
 
   if (CrosLibrary::Get()->EnsureLoaded()) {
+    // Session Manager may kill the chrome anytime after this point.
+    // Write exit_cleanly and other stuff to the disk here.
+    g_browser_process->EndSession();
+
     // For guest session we ask session manager to restart Chrome with --bwsi
     // flag. We keep only some of the arguments of this process.
     const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
