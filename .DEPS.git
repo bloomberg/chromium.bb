@@ -6,7 +6,7 @@ vars = {
     'git_url':
          'http://git.chromium.org',
     'webkit_rev':
-         '@9755203d2db3804af59004f46a8859e99a425ae3'
+         '@5a46796ef1502916fabdf3af07870541f4df722a'
 }
 
 deps = {
@@ -35,7 +35,7 @@ deps = {
     'src/third_party/bidichecker':
         Var('git_url') + '/external/bidichecker/lib.git@97f2aa645b74c28c57eca56992235c79850fa9e0',
     'src/third_party/cacheinvalidation/files/src/google':
-        Var('git_url') + '/external/google-cache-invalidation-api/src/google.git@5e99c8e5554555fe5fe55c93d8695fcf0da744f7',
+        Var('git_url') + '/external/google-cache-invalidation-api/src/google.git@1239fcbafcc84b0125ae8d499773288cf803fa94',
     'src/third_party/ffmpeg':
         Var('git_url') + '/chromium/deps/ffmpeg/source.git@aa05a9dea8c1202c3849cd37fca428e2b11f7e0e',
     'src/third_party/flac':
@@ -49,7 +49,7 @@ deps = {
     'src/third_party/leveldb':
         Var('git_url') + '/external/leveldb.git@6635e49a8999ab5e411d5227146a3db17fac2944',
     'src/third_party/libjingle/source':
-        Var('git_url') + '/external/libjingle.git@9780f2546522b56adbdd7b8f4169492c3ae5b95f',
+        Var('git_url') + '/external/libjingle.git@b36f39bc325e6b0c1635f5277c85422426c38aae',
     'src/third_party/libjpeg_turbo':
         Var('git_url') + '/chromium/deps/libjpeg_turbo.git@6eb4f2096c80f5f3286f63bb76b671eb5eb97d78',
     'src/third_party/libvpx':
@@ -96,7 +96,7 @@ deps_os = {
         'src/chrome/installer/mac/third_party/xz/xz':
             Var('git_url') + '/chromium/deps/xz.git@604fa85cc4e214aa0f418a2596ea865c0eed7a54',
         'src/chrome/tools/test/reference_build/chrome_mac':
-            Var('git_url') + '/chromium/reference_builds/chrome_mac.git@c91b0c25fb8097d21181fc8ddee7ed3b6b2a14b0',
+            Var('git_url') + '/chromium/reference_builds/chrome_mac.git@dde16d147a5b8d0229f8adf8eee6d180fb9f4684',
         'src/third_party/GTM':
             Var('git_url') + '/external/google-toolbox-for-mac.git@b570575a4f27004d9209821dbf2056e3d12590dc',
         'src/third_party/lighttpd':
@@ -111,7 +111,7 @@ deps_os = {
     'unix':
     {
         'src/chrome/tools/test/reference_build/chrome_linux':
-            Var('git_url') + '/chromium/reference_builds/chrome_linux.git@1cc7a3d9278a22ff8a50e038160ee45e7f5b3883',
+            Var('git_url') + '/chromium/reference_builds/chrome_linux.git@30e720f6bfd2be52c37307114b6fca8817a90562',
         'src/third_party/lss':
             Var('git_url') + '/external/linux-syscall-support/lss.git@d4ba6b8d8c6ab24825d11d4e5b69920c41b36880',
         'src/third_party/openssl':
@@ -123,6 +123,10 @@ deps_os = {
     },
     'win':
     {
+        'src/chrome/tools/test/reference_build/chrome_win':
+            Var('git_url') + '/chromium/reference_builds/chrome_win.git@b9f52667918a74977cb85eefd4e967150f852fbc',
+        'src/chrome_frame/tools/test/reference_build/chrome_win':
+            Var('git_url') + '/chromium/reference_builds/chrome_win.git@b9f52667918a74977cb85eefd4e967150f852fbc',
         'src/rlz':
             Var('git_url') + '/external/rlz.git@7a81d763b9078abeb33f5ca7c2f66ab25fb17b9d',
         'src/third_party/cygwin':
