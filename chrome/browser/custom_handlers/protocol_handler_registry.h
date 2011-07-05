@@ -12,11 +12,11 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "base/synchronization/lock.h"
 #include "base/values.h"
 #include "chrome/browser/custom_handlers/protocol_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/shell_integration.h"
+#include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
@@ -28,7 +28,8 @@
 // instances of this class.
 
 class ProtocolHandlerRegistry
-    : public base::RefCountedThreadSafe<ProtocolHandlerRegistry> {
+    : public base::RefCountedThreadSafe<ProtocolHandlerRegistry,
+                                        BrowserThread::DeleteOnIOThread> {
  public:
   // TODO(koz): Refactor this to eliminate the unnecessary virtuals. All that
   // should be needed is a way to ensure that the list of websafe protocols is
@@ -121,6 +122,10 @@ class ProtocolHandlerRegistry
   // Returns true if the protocol has a registered protocol handler.
   bool IsHandledProtocol(const std::string& scheme) const;
 
+  // Returns true if the protocol has a registered protocol handler.
+  // Should be called only from the IO thread.
+  bool IsHandledProtocolIO(const std::string& scheme) const;
+
   // Removes the given protocol handler from the registry.
   void RemoveHandler(const ProtocolHandler& handler);
 
@@ -155,25 +160,21 @@ class ProtocolHandlerRegistry
  private:
   friend class base::RefCountedThreadSafe<ProtocolHandlerRegistry>;
 
-  // Returns true if the protocol has a registered protocol handler.
-  bool IsHandledProtocolInternal(const std::string& scheme) const;
+  // Clears the default for the provided protocol.
+  // Should be called only from the IO thread.
+  void ClearDefaultIO(const std::string& scheme);
 
-  // Returns true if this handler is the default handler for its protocol.
-  bool IsDefaultInternal(const ProtocolHandler& handler) const;
+  // Makes this ProtocolHandler the default handler for its protocol.
+  // Should be called only from the IO thread.
+  void SetDefaultIO(const ProtocolHandler& handler);
 
-  // Returns true if we allow websites to register handlers for the given
-  // scheme.
-  bool CanSchemeBeOverriddenInternal(const std::string& scheme) const;
+  // Indicate that the registry has been enabled in the IO thread's copy of the
+  // data.
+  void EnableIO() { enabled_io_ = true; }
 
-  // Returns true if an identical protocol handler has already been registered.
-  bool IsRegisteredInternal(const ProtocolHandler& handler) const;
-
-  // Returns the default handler for this protocol, or an empty handler if none
-  // exists.
-  const ProtocolHandler& GetHandlerForInternal(const std::string& scheme) const;
-
-  // Removes the given protocol handler from the registry.
-  void RemoveHandlerInternal(const ProtocolHandler& handler);
+  // Indicate that the registry has been disabled in the IO thread's copy of
+  // the data.
+  void DisableIO() { enabled_io_ = false; }
 
   // Saves a user's registered protocol handlers.
   void Save();
@@ -232,16 +233,16 @@ class ProtocolHandlerRegistry
   // requests.
   bool enabled_;
 
+  // Copy of enabled_ that is only accessed on the IO thread.
+  bool enabled_io_;
+
   // Whether or not we are loading.
   bool is_loading_;
 
-  // This lock ensures that only a single thread is accessing this object at a
-  // time, that is, it covers the entire class. This is to prevent race
-  // conditions from concurrent access from the IO and UI threads.
-  // TODO(koz): Remove the necessity of this lock by using message passing.
-  mutable base::Lock lock_;
-
   DefaultClientObserverList default_client_observers_;
+
+  // Copy of default_handlers_ that is only accessed on the IO thread.
+  ProtocolHandlerMap default_handlers_io_;
 
   friend class ProtocolHandlerRegistryTest;
 
