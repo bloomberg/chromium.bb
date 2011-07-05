@@ -11,6 +11,13 @@
 
 namespace skia {
 
+class BitmapPlatformDeviceFactory : public SkDeviceFactory {
+ public:
+  virtual SkDevice* newDevice(SkCanvas* ignored, SkBitmap::Config config,
+                              int width, int height,
+                              bool isOpaque, bool isForLayer);
+};
+
 // A device is basically a wrapper around SkBitmap that provides a surface for
 // SkCanvas to draw into. Our device provides a surface Windows can also write
 // to. BitmapPlatformDevice creates a bitmap using CreateDIBSection() in a
@@ -68,9 +75,8 @@ class SK_API BitmapPlatformDevice : public PlatformDevice {
   // starts accessing pixel data.
   virtual void onAccessBitmap(SkBitmap* bitmap);
 
-  virtual SkDevice* onCreateCompatibleDevice(SkBitmap::Config, int width,
-                                             int height, bool isOpaque,
-                                             Usage usage);
+  // Override SkDevice.
+  virtual SkDeviceFactory* onNewDeviceFactory();
 
  private:
   // Reference counted data that can be shared between multiple devices. This

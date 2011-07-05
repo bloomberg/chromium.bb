@@ -389,7 +389,7 @@ class VectorCanvasTest : public ImageTest {
     size_ = size;
     context_ = new Context();
     bitmap_ = new Bitmap(*context_, size_, size_);
-    vcanvas_ = new VectorCanvas(VectorPlatformDeviceEmf::CreateDevice(
+    vcanvas_ = new VectorCanvas(VectorPlatformDeviceEmfFactory::CreateDevice(
         size_, size_, true, context_->context()));
     pcanvas_ = new PlatformCanvas(size_, size_, false);
 
@@ -456,7 +456,7 @@ TEST_F(VectorCanvasTest, Uninitialized) {
 
   context_ = new Context();
   bitmap_ = new Bitmap(*context_, size_, size_);
-  vcanvas_ = new VectorCanvas(VectorPlatformDeviceEmf::CreateDevice(
+  vcanvas_ = new VectorCanvas(VectorPlatformDeviceEmfFactory::CreateDevice(
       size_, size_, true, context_->context()));
   pcanvas_ = new PlatformCanvas(size_, size_, false);
 

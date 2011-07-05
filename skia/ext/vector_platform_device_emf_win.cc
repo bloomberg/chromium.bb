@@ -12,10 +12,18 @@
 
 namespace skia {
 
+SkDevice* VectorPlatformDeviceEmfFactory::newDevice(SkCanvas* unused,
+                                                    SkBitmap::Config config,
+                                                    int width, int height,
+                                                    bool isOpaque,
+                                                    bool isForLayer) {
+  SkASSERT(config == SkBitmap::kARGB_8888_Config);
+  return CreateDevice(width, height, isOpaque, NULL);
+}
+
 //static
-PlatformDevice* VectorPlatformDeviceEmf::CreateDevice(int width, int height,
-                                                      bool is_opaque,
-                                                      HANDLE shared_section) {
+PlatformDevice* VectorPlatformDeviceEmfFactory::CreateDevice(
+        int width, int height, bool is_opaque, HANDLE shared_section) {
   if (!is_opaque) {
     // TODO(maruel):  http://crbug.com/18382 When restoring a semi-transparent
     // layer, i.e. merging it, we need to rasterize it because GDI doesn't
@@ -105,6 +113,10 @@ VectorPlatformDeviceEmf::VectorPlatformDeviceEmf(HDC dc, const SkBitmap& bitmap)
 VectorPlatformDeviceEmf::~VectorPlatformDeviceEmf() {
   SkASSERT(previous_brush_ == NULL);
   SkASSERT(previous_pen_ == NULL);
+}
+
+SkDeviceFactory* VectorPlatformDeviceEmf::onNewDeviceFactory() {
+  return SkNEW(VectorPlatformDeviceEmfFactory);
 }
 
 HDC VectorPlatformDeviceEmf::BeginPlatformPaint() {
@@ -436,13 +448,6 @@ void VectorPlatformDeviceEmf::LoadClipRegion() {
   SkMatrix t;
   t.reset();
   LoadClippingRegionToDC(hdc_, clip_region_, t);
-}
-
-SkDevice* VectorPlatformDeviceEmf::onCreateCompatibleDevice(
-    SkBitmap::Config config, int width, int height, bool isOpaque,
-    Usage /*usage*/) {
-  SkASSERT(config == SkBitmap::kARGB_8888_Config);
-  return VectorPlatformDeviceEmf::CreateDevice(width, height, isOpaque, NULL);
 }
 
 bool VectorPlatformDeviceEmf::CreateBrush(bool use_brush, COLORREF color) {

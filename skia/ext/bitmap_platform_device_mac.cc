@@ -50,6 +50,15 @@ static CGContextRef CGContextForData(void* data, int width, int height) {
 
 }  // namespace
 
+SkDevice* BitmapPlatformDeviceFactory::newDevice(SkCanvas* ignored,
+                                                 SkBitmap::Config config,
+                                                 int width, int height,
+                                                 bool isOpaque,
+                                                 bool isForLayer) {
+  SkASSERT(config == SkBitmap::kARGB_8888_Config);
+  return BitmapPlatformDevice::Create(NULL, width, height, isOpaque);
+}
+
 BitmapPlatformDevice::BitmapPlatformDeviceData::BitmapPlatformDeviceData(
     CGContextRef bitmap)
     : bitmap_context_(bitmap),
@@ -234,11 +243,8 @@ void BitmapPlatformDevice::onAccessBitmap(SkBitmap*) {
   // Not needed in CoreGraphics
 }
 
-SkDevice* BitmapPlatformDevice::onCreateCompatibleDevice(
-    SkBitmap::Config config, int width, int height, bool isOpaque,
-    Usage /*usage*/) {
-  SkASSERT(config == SkBitmap::kARGB_8888_Config);
-  return BitmapPlatformDevice::Create(NULL, width, height, isOpaque);
+SkDeviceFactory* BitmapPlatformDevice::onNewDeviceFactory() {
+  return SkNEW(BitmapPlatformDeviceFactory);
 }
 
 }  // namespace skia

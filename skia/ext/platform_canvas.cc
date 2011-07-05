@@ -9,7 +9,12 @@
 
 namespace skia {
 
-PlatformCanvas::PlatformCanvas() {}
+PlatformCanvas::PlatformCanvas() {
+  setDeviceFactory(SkNEW(BitmapPlatformDeviceFactory))->unref();
+}
+
+PlatformCanvas::PlatformCanvas(SkDeviceFactory* factory) : SkCanvas(factory) {
+}
 
 SkDevice* PlatformCanvas::setBitmapDevice(const SkBitmap&) {
   SkASSERT(false);  // Should not be called.

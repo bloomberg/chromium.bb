@@ -7,7 +7,8 @@
 
 namespace skia {
 
-VectorCanvas::VectorCanvas(SkDevice* device) {
+VectorCanvas::VectorCanvas(SkDevice* device)
+    : PlatformCanvas(device->getDeviceFactory()) {
   setDevice(device)->unref(); // Created with refcount 1, and setDevice refs.
 }
 

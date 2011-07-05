@@ -77,6 +77,7 @@ void CrashIfInvalidSection(HANDLE shared_section) {
 #pragma optimize("", on)
 
 PlatformCanvas::PlatformCanvas(int width, int height, bool is_opaque) {
+  setDeviceFactory(SkNEW(BitmapPlatformDeviceFactory))->unref();
   bool initialized = initialize(width, height, is_opaque, NULL);
   if (!initialized)
     CrashForBitmapAllocationFailure(width, height);
@@ -86,6 +87,7 @@ PlatformCanvas::PlatformCanvas(int width,
                                int height,
                                bool is_opaque,
                                HANDLE shared_section) {
+  setDeviceFactory(SkNEW(BitmapPlatformDeviceFactory))->unref();
   bool initialized = initialize(width, height, is_opaque, shared_section);
   if (!initialized) {
     CrashIfInvalidSection(shared_section);

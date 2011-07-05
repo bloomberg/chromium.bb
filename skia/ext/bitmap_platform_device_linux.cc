@@ -37,6 +37,15 @@ void LoadClipToContext(cairo_t* context, const SkRegion& clip) {
 
 }  // namespace
 
+SkDevice* BitmapPlatformDeviceFactory::newDevice(SkCanvas* ignored,
+                                                 SkBitmap::Config config,
+                                                 int width, int height,
+                                                 bool isOpaque,
+                                                 bool isForLayer) {
+  SkASSERT(config == SkBitmap::kARGB_8888_Config);
+  return BitmapPlatformDevice::Create(width, height, isOpaque);
+}
+
 BitmapPlatformDevice::BitmapPlatformDeviceData::BitmapPlatformDeviceData(
     cairo_surface_t* surface)
     : surface_(surface),
@@ -127,11 +136,8 @@ BitmapPlatformDevice::BitmapPlatformDevice(
 BitmapPlatformDevice::~BitmapPlatformDevice() {
 }
 
-SkDevice* BitmapPlatformDevice::onCreateCompatibleDevice(
-    SkBitmap::Config config, int width, int height, bool isOpaque,
-    Usage /*usage*/) {
-  SkASSERT(config == SkBitmap::kARGB_8888_Config);
-  return BitmapPlatformDevice::Create(width, height, isOpaque);
+SkDeviceFactory* BitmapPlatformDevice::onNewDeviceFactory() {
+  return SkNEW(BitmapPlatformDeviceFactory);
 }
 
 cairo_t* BitmapPlatformDevice::BeginPlatformPaint() {

@@ -14,15 +14,21 @@
 
 namespace skia {
 
+class SK_API VectorPlatformDeviceEmfFactory : public SkDeviceFactory {
+ public:
+  virtual SkDevice* newDevice(SkCanvas* ignored, SkBitmap::Config config,
+                              int width, int height,
+                              bool isOpaque, bool isForLayer) OVERRIDE;
+  static PlatformDevice* CreateDevice(int width, int height, bool isOpaque,
+                                      HANDLE shared_section);
+};
+
 // A device is basically a wrapper around SkBitmap that provides a surface for
 // SkCanvas to draw into. This specific device is not not backed by a surface
 // and is thus unreadable. This is because the backend is completely vectorial.
 // This device is a simple wrapper over a Windows device context (HDC) handle.
 class VectorPlatformDeviceEmf : public PlatformDevice {
  public:
-  static PlatformDevice* CreateDevice(int width, int height, bool isOpaque,
-                                      HANDLE shared_section);
-
   // Factory function. The DC is kept as the output context.
   static VectorPlatformDeviceEmf* create(HDC dc, int width, int height);
 
@@ -75,9 +81,8 @@ class VectorPlatformDeviceEmf : public PlatformDevice {
   bool alpha_blend_used() const { return alpha_blend_used_; }
 
  protected:
-  virtual SkDevice* onCreateCompatibleDevice(SkBitmap::Config, int width,
-                                             int height, bool isOpaque,
-                                             Usage usage);
+  // Override from SkDevice (through PlatformDevice).
+  virtual SkDeviceFactory* onNewDeviceFactory();
 
  private:
   // Applies the SkPaint's painting properties in the current GDI context, if
