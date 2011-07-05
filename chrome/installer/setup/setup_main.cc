@@ -674,17 +674,18 @@ installer::InstallStatus InstallProductsHelper(
             installer_state.FindProduct(BrowserDistribution::CHROME_BROWSER) :
             NULL;
 
-        bool value = false;
+        bool do_not_register_for_update_launch = false;
         if (chrome_install) {
           prefs.GetBool(
               installer::master_preferences::kDoNotRegisterForUpdateLaunch,
-              &value);
+              &do_not_register_for_update_launch);
         } else {
-          value = true;  // Never register.
+          do_not_register_for_update_launch = true;  // Never register.
         }
 
-        bool write_chrome_launch_string = (!value) &&
-            (install_status != installer::IN_USE_UPDATED);
+        bool write_chrome_launch_string =
+            (!do_not_register_for_update_launch &&
+             install_status != installer::IN_USE_UPDATED);
 
         installer_state.WriteInstallerResult(install_status, install_msg_base,
             write_chrome_launch_string ? &chrome_exe : NULL);
@@ -824,11 +825,7 @@ installer::InstallStatus ShowEULADialog(const std::wstring& inner_frame) {
   }
   // Newer versions of the caller pass an inner frame parameter that must
   // be given to the html page being launched.
-  if (!inner_frame.empty()) {
-    eula_path += L"?innerframe=";
-    eula_path += inner_frame;
-  }
-  installer::EulaHTMLDialog dlg(eula_path);
+  installer::EulaHTMLDialog dlg(eula_path, inner_frame);
   installer::EulaHTMLDialog::Outcome outcome = dlg.ShowModal();
   if (installer::EulaHTMLDialog::REJECTED == outcome) {
     LOG(ERROR) << "EULA rejected or EULA failure";

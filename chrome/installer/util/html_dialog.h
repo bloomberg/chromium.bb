@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -70,7 +70,9 @@ HTMLDialog* CreateNativeHTMLDialog(const std::wstring& url);
 class EulaHTMLDialog {
  public:
   // |file| points to an html file on disk or to a resource via res:// spec.
-  explicit EulaHTMLDialog(const std::wstring& file);
+  // |param| is a string that will be passed to the dialog as a parameter via
+  //         the window.dialogArguments property.
+  EulaHTMLDialog(const std::wstring& file, const std::wstring& param);
   ~EulaHTMLDialog();
 
   enum Outcome {

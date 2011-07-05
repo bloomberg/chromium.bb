@@ -1,8 +1,8 @@
 function setInnerFrame() {
-  var regex = new RegExp("\\?innerframe=\"?([^&#\"]*)\"?");
-  var results = regex.exec(window.location.href);
-  if(results && results[1])
-    document.getElementById('ifr').src = results[1];
+  var inner_frame = window.dialogArguments;
+  if (inner_frame) {
+    document.getElementById('ifr').src = inner_frame;
+  }
 }
 
 function checkAccept(f) {
