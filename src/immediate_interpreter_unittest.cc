@@ -51,7 +51,7 @@ TEST(ImmediateInterpreterTest, MoveDownTest) {
   EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[0]));
 
   Gesture* gs = ii.SyncInterpret(&hardware_states[1]);
-  EXPECT_NE(reinterpret_cast<Gesture*>(NULL), gs);
+  ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
   EXPECT_EQ(kGestureTypeMove, gs->type);
   EXPECT_EQ(0, gs->details.move.dx);
   EXPECT_EQ(10, gs->details.move.dy);
@@ -103,8 +103,8 @@ TEST(ImmediateInterpreterTest, ScrollUpTest) {
   HardwareState hardware_states[] = {
     // time, buttons down, finger count, finger states pointer
     { 0.200000, 0, 2, &finger_states[0] },
-    { 0.210000, 0, 2, &finger_states[2] },
-    { 0.220000, 0, 2, &finger_states[4] }
+    { 0.250000, 0, 2, &finger_states[2] },
+    { 0.300000, 0, 2, &finger_states[4] }
   };
 
   ii.SetHardwareProperties(hwprops);
@@ -114,18 +114,18 @@ TEST(ImmediateInterpreterTest, ScrollUpTest) {
   Gesture* gs = ii.SyncInterpret(&hardware_states[1]);
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
   EXPECT_EQ(kGestureTypeScroll, gs->type);
-  EXPECT_EQ(0, gs->details.move.dx);
-  EXPECT_EQ(-100, gs->details.move.dy);
-  EXPECT_EQ(0.200000, gs->start_time);
-  EXPECT_EQ(0.210000, gs->end_time);
+  EXPECT_FLOAT_EQ(0, gs->details.move.dx);
+  EXPECT_FLOAT_EQ(-100, gs->details.move.dy);
+  EXPECT_DOUBLE_EQ(0.200000, gs->start_time);
+  EXPECT_DOUBLE_EQ(0.250000, gs->end_time);
 
   gs = ii.SyncInterpret(&hardware_states[2]);
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
   EXPECT_EQ(kGestureTypeScroll, gs->type);
-  EXPECT_EQ(0, gs->details.move.dx);
-  EXPECT_EQ(-100, gs->details.move.dy);
-  EXPECT_EQ(0.210000, gs->start_time);
-  EXPECT_EQ(0.220000, gs->end_time);
+  EXPECT_FLOAT_EQ(0, gs->details.move.dx);
+  EXPECT_FLOAT_EQ(-100, gs->details.move.dy);
+  EXPECT_DOUBLE_EQ(0.250000, gs->start_time);
+  EXPECT_DOUBLE_EQ(0.300000, gs->end_time);
 }
 
 TEST(ImmediateInterpreterTest, SetHardwarePropertiesTwiceTest) {

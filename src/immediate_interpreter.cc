@@ -174,6 +174,10 @@ set<short, kMaxGesturingFingers> ImmediateInterpreter::GetGesturingFingers(
 void ImmediateInterpreter::UpdateCurrentGestureType(
     const HardwareState& hwstate,
     const set<short, kMaxGesturingFingers>& gs_fingers) {
+  if (hwstate.timestamp < changed_time_ + kChangeTimeout) {
+    current_gesture_type_ = kGestureTypeNull;
+    return;
+  }
   if (sent_button_down_) {
     current_gesture_type_ = kGestureTypeMove;
     return;
