@@ -107,7 +107,7 @@ void SaltedIteratedS2K(uint32 cipher_key_length,
   uint8 zero[1] = {0};
 
   EVP_MD_CTX ctx;
-  EVP_MD_CTX_init(&context);
+  EVP_MD_CTX_init(&ctx);
 
   for (uint32 i = 0; done < cipher_key_length; i++) {
     CHECK_EQ(EVP_DigestInit_ex(&ctx, hash_function, NULL), 1);
@@ -138,7 +138,7 @@ void SaltedIteratedS2K(uint32 cipher_key_length,
     done += todo;
   }
 
-  EVP_MD_CTX_cleanup(&context);
+  EVP_MD_CTX_cleanup(&ctx);
 }
 
 // These constants are the tag numbers for the various packet types that we
