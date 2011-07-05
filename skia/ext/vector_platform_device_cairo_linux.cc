@@ -68,20 +68,10 @@ bool IsContextValid(cairo_t* context) {
 
 namespace skia {
 
-SkDevice* VectorPlatformDeviceCairoFactory::newDevice(SkCanvas* ignored,
-                                                      SkBitmap::Config config,
-                                                      int width, int height,
-                                                      bool isOpaque,
-                                                      bool isForLayer) {
-  SkASSERT(config == SkBitmap::kARGB_8888_Config);
-  return CreateDevice(NULL, width, height, isOpaque);
-}
-
 // static
-PlatformDevice* VectorPlatformDeviceCairoFactory::CreateDevice(cairo_t* context,
-                                                               int width,
-                                                               int height,
-                                                               bool isOpaque) {
+PlatformDevice* VectorPlatformDeviceCairo::CreateDevice(cairo_t* context,
+                                                        int width, int height,
+                                                        bool isOpaque) {
   // TODO(myhuang): Here we might also have similar issues as those on Windows
   // (vector_canvas_win.cc, http://crbug.com/18382 & http://crbug.com/18383).
   // Please note that is_opaque is true when we use this class for printing.
@@ -90,22 +80,10 @@ PlatformDevice* VectorPlatformDeviceCairoFactory::CreateDevice(cairo_t* context,
     return BitmapPlatformDevice::Create(width, height, isOpaque);
   }
 
-  PlatformDevice* device =
-    VectorPlatformDeviceCairo::create(context, width, height);
-  return device;
-}
-
-VectorPlatformDeviceCairo* VectorPlatformDeviceCairo::create(
-    PlatformSurface context,
-    int width,
-    int height) {
   SkASSERT(cairo_status(context) == CAIRO_STATUS_SUCCESS);
   SkASSERT(width > 0);
   SkASSERT(height > 0);
 
-  // TODO(myhuang): Can we get rid of the bitmap? In this vectorial device,
-  // the content of this bitmap might be meaningless. However, it does occupy
-  // lots of memory space.
   SkBitmap bitmap;
   bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
 
@@ -129,13 +107,17 @@ VectorPlatformDeviceCairo::~VectorPlatformDeviceCairo() {
   cairo_destroy(context_);
 }
 
-SkDeviceFactory* VectorPlatformDeviceCairo::onNewDeviceFactory() {
-  return SkNEW(VectorPlatformDeviceCairoFactory);
-}
-
 PlatformDevice::PlatformSurface
 VectorPlatformDeviceCairo::BeginPlatformPaint() {
   return context_;
+}
+
+SkDevice* VectorPlatformDeviceCairo::onCreateCompatibleDevice(
+                                                        SkBitmap::Config config,
+                                                        int width, int height,
+                                                         bool isOpaque, Usage) {
+  SkASSERT(config == SkBitmap::kARGB_8888_Config);
+  return CreateDevice(NULL, width, height, isOpaque);
 }
 
 uint32_t VectorPlatformDeviceCairo::getDeviceCapabilities() {

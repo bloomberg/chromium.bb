@@ -14,17 +14,6 @@
 
 namespace skia {
 
-class SK_API VectorPlatformDeviceCairoFactory : public SkDeviceFactory {
- public:
-  static PlatformDevice* CreateDevice(cairo_t* context, int width, int height,
-                                      bool isOpaque);
-
-  // Overridden from SkDeviceFactory:
-  virtual SkDevice* newDevice(SkCanvas* ignored, SkBitmap::Config config,
-                              int width, int height,
-                              bool isOpaque, bool isForLayer);
-};
-
 // This device is basically a wrapper that provides a surface for SkCanvas
 // to draw into. It is basically an adaptor which converts skia APIs into
 // cooresponding Cairo APIs and outputs to a Cairo surface. Please NOTE that
@@ -34,9 +23,8 @@ class SK_API VectorPlatformDeviceCairo : public PlatformDevice {
  public:
   virtual ~VectorPlatformDeviceCairo();
 
-  // Factory function. Ownership of |context| is not transferred.
-  static VectorPlatformDeviceCairo* create(PlatformSurface context,
-                                           int width, int height);
+  static PlatformDevice* CreateDevice(cairo_t* context, int width, int height,
+                                      bool isOpaque);
 
   // Clean up cached fonts. It is an error to call this while some
   // VectorPlatformDeviceCairo callee is still using fonts created for it by
@@ -88,8 +76,9 @@ class SK_API VectorPlatformDeviceCairo : public PlatformDevice {
   explicit VectorPlatformDeviceCairo(PlatformSurface context,
                                      const SkBitmap& bitmap);
 
-  // Override from SkDevice (through PlatformDevice).
-  virtual SkDeviceFactory* onNewDeviceFactory();
+  virtual SkDevice* onCreateCompatibleDevice(SkBitmap::Config, int width,
+                                             int height, bool isOpaque,
+                                             Usage usage);
 
  private:
   // Apply paint's color in the context.

@@ -13,19 +13,6 @@
 
 namespace skia {
 
-SkDevice* VectorPlatformDeviceSkiaFactory::newDevice(SkCanvas* canvas,
-                                                     SkBitmap::Config config,
-                                                     int width, int height,
-                                                     bool isOpaque,
-                                                     bool isForLayer) {
-  SkASSERT(config == SkBitmap::kARGB_8888_Config);
-  SkRefPtr<SkDevice> device = factory_.newDevice(canvas, config, width, height,
-                                                 isOpaque, isForLayer);
-  device->unref();  // SkRefPtr and new both took a reference.
-  SkPDFDevice* pdf_device = static_cast<SkPDFDevice*>(device.get());
-  return new VectorPlatformDeviceSkia(pdf_device);
-}
-
 static inline SkBitmap makeABitmap(int width, int height) {
   SkBitmap bitmap;
   bitmap.setConfig(SkBitmap::kNo_Config, width, height);
@@ -224,8 +211,13 @@ CGContextRef VectorPlatformDeviceSkia::GetBitmapContext() {
 
 #endif
 
-SkDeviceFactory* VectorPlatformDeviceSkia::onNewDeviceFactory() {
-  return SkNEW(VectorPlatformDeviceSkiaFactory);
+SkDevice* VectorPlatformDeviceSkia::onCreateCompatibleDevice(
+    SkBitmap::Config config, int width, int height, bool isOpaque, 
+    Usage /*usage*/) {
+  SkAutoTUnref<SkDevice> dev(pdf_device_->createCompatibleDevice(config, width,
+                                                                 height,
+                                                                 isOpaque));
+  return new VectorPlatformDeviceSkia(static_cast<SkPDFDevice*>(dev.get()));
 }
 
 }  // namespace skia
