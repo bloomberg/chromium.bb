@@ -77,7 +77,7 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   void OnStateChangeExecutingToIdle(OMX_STATETYPE state);
   void OnStateChangeIdleToLoaded(OMX_STATETYPE state);
   // Stop the components when error is detected.
-  void StopOnError();
+  void StopOnError(media::VideoDecodeAccelerator::Error error);
   // Methods for shutdown
   void PauseFromExecuting(OMX_STATETYPE ignored);
   void FlushIOPorts();
