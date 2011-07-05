@@ -4,7 +4,9 @@
 
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
+#include "chrome/browser/policy/cloud_policy_provider.h"
 #include "chrome/browser/policy/cloud_policy_subsystem.h"
+#include "chrome/browser/policy/user_policy_identity_strategy.h"
 
 // Policies are optionally built, hence the following stubs.
 
@@ -21,6 +23,11 @@ BrowserPolicyConnector* BrowserPolicyConnector::CreateForTests() {
 }
 
 BrowserPolicyConnector::~BrowserPolicyConnector() {
+}
+
+void BrowserPolicyConnector::Observe(NotificationType type,
+                                     const NotificationSource& source,
+                                     const NotificationDetails& details) {
 }
 
 // static
@@ -43,8 +50,7 @@ ConfigurationPolicyPrefStore::CreateManagedPlatformPolicyPrefStore() {
 
 // static
 ConfigurationPolicyPrefStore*
-ConfigurationPolicyPrefStore::CreateManagedCloudPolicyPrefStore(
-    Profile* profile) {
+ConfigurationPolicyPrefStore::CreateManagedCloudPolicyPrefStore() {
   return NULL;
 }
 
@@ -56,8 +62,7 @@ ConfigurationPolicyPrefStore::CreateRecommendedPlatformPolicyPrefStore() {
 
 // static
 ConfigurationPolicyPrefStore*
-ConfigurationPolicyPrefStore::CreateRecommendedCloudPolicyPrefStore(
-    Profile* profile) {
+ConfigurationPolicyPrefStore::CreateRecommendedCloudPolicyPrefStore() {
   return NULL;
 }
 
