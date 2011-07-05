@@ -409,9 +409,9 @@ SkDevice* Emf::StartPageForVectorCanvas(
   if (!StartPage(page_size, content_area, scale_factor))
     return NULL;
 
-  return skia::VectorPlatformDeviceEmfFactory::CreateDevice(page_size.width(),
-                                                            page_size.height(),
-                                                            true, hdc_);
+  return skia::VectorPlatformDeviceEmf::CreateDevice(page_size.width(),
+                                                     page_size.height(),
+                                                     true, hdc_);
 }
 
 bool Emf::StartPage(const gfx::Size& /*page_size*/,

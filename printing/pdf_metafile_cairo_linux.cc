@@ -124,7 +124,7 @@ SkDevice* PdfMetafileCairo::StartPageForVectorCanvas(
   if (!StartPage(page_size, content_area, scale_factor))
     return NULL;
 
-  return skia::VectorPlatformDeviceCairoFactory::CreateDevice(
+  return skia::VectorPlatformDeviceCairo::CreateDevice(
       context_, page_size.width(), page_size.height(), true);
 }
 

@@ -15,15 +15,6 @@
 
 namespace skia {
 
-SkDevice* BitmapPlatformDeviceFactory::newDevice(SkCanvas* ignored,
-                                                 SkBitmap::Config config,
-                                                 int width, int height,
-                                                 bool isOpaque,
-                                                 bool isForLayer) {
-  SkASSERT(config == SkBitmap::kARGB_8888_Config);
-  return BitmapPlatformDevice::create(width, height, isOpaque, NULL);
-}
-
 BitmapPlatformDevice::BitmapPlatformDeviceData::BitmapPlatformDeviceData(
     HBITMAP hbitmap)
     : bitmap_context_(hbitmap),
@@ -263,8 +254,11 @@ void BitmapPlatformDevice::onAccessBitmap(SkBitmap* bitmap) {
     GdiFlush();
 }
 
-SkDeviceFactory* BitmapPlatformDevice::onNewDeviceFactory() {
-  return SkNEW(BitmapPlatformDeviceFactory);
+SkDevice* BitmapPlatformDevice::onCreateCompatibleDevice(
+    SkBitmap::Config config, int width, int height, bool isOpaque,
+    Usage /*usage*/) {
+  SkASSERT(config == SkBitmap::kARGB_8888_Config);
+  return BitmapPlatformDevice::create(width, height, isOpaque, NULL);
 }
 
 }  // namespace skia

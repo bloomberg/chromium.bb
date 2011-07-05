@@ -20,7 +20,6 @@ class SK_API PlatformCanvas : public SkCanvas {
  public:
   // If you use the version with no arguments, you MUST call initialize()
   PlatformCanvas();
-  explicit PlatformCanvas(SkDeviceFactory* factory);
   // Set is_opaque if you are going to erase the bitmap and not use
   // transparency: this will enable some optimizations.
   PlatformCanvas(int width, int height, bool is_opaque);
