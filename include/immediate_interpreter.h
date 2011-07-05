@@ -80,6 +80,11 @@ class ImmediateInterpreter : public Interpreter {
   // Called when fingers have changed to fill start_positions_.
   void FillStartPositions(const HardwareState& hwstate);
 
+  // Precondition: current_mode_ is set to the mode based on |hwstate|.
+  // Computes the resulting gesture, storing it in result_.
+  void FillResultGesture(const HardwareState& hwstate,
+                         const set<short, kMaxGesturingFingers>& fingers);
+
   HardwareState prev_state_;
   HardwareProperties hw_props_;
   Gesture result_;

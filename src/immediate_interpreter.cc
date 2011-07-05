@@ -291,6 +291,81 @@ void ImmediateInterpreter::FillStartPositions(const HardwareState& hwstate) {
     start_positions_[hwstate.fingers[i].tracking_id] =
         make_pair(hwstate.fingers[i].position_x, hwstate.fingers[i].position_y);
 }
+
+void ImmediateInterpreter::FillResultGesture(
+    const HardwareState& hwstate,
+    const set<short, kMaxGesturingFingers>& fingers) {
+  switch (current_gesture_type_) {
+    case kGestureTypeMove: {
+      if (fingers.empty()) {
+        Log("No gesturing fingers!");
+        return;
+      }
+      // Use highest finger (the one closes to the keyboard), excluding
+      // palms, to compute motion. First, need to find out which finger that is.
+      const FingerState* current = NULL;
+      for (set<short, kMaxGesturingFingers>::const_iterator it =
+               fingers.begin(), e = fingers.end(); it != e; ++it) {
+        const FingerState* fs = hwstate.GetFingerState(*it);
+        if (!current || fs->position_y < current->position_y)
+          current = fs;
+      }
+      // Find corresponding finger id in previous state
+      const FingerState* prev =
+          prev_state_.GetFingerState(current->tracking_id);
+      if (!prev) {
+        Log("No previous state!");
+        return;
+      }
+      result_ = Gesture(kGestureMove,
+                        prev_state_.timestamp,
+                        hwstate.timestamp,
+                        current->position_x -
+                        prev->position_x,
+                        current->position_y -
+                        prev->position_y);
+      break;
+    }
+    case kGestureTypeScroll: {
+      // For now, we take the movement of the biggest moving finger.
+      float max_mag_sq = 0.0;  // square of max mag
+      float dx = 0.0;
+      float dy = 0.0;
+      for (set<short, kMaxGesturingFingers>::const_iterator it =
+               fingers.begin(), e = fingers.end(); it != e; ++it) {
+        const FingerState* fs = hwstate.GetFingerState(*it);
+        const FingerState* prev = prev_state_.GetFingerState(*it);
+        float local_dx = fs->position_x - prev->position_x;
+        float local_dy = fs->position_y - prev->position_y;
+        float local_max_mag_sq = local_dx * local_dx + local_dy * local_dy;
+        if (local_max_mag_sq > max_mag_sq) {
+          max_mag_sq = local_max_mag_sq;
+          dx = local_dx;
+          dy = local_dy;
+        }
+      }
+
+      // For now, only do horizontal or vertical scroll
+      if (fabsf(dx) > fabsf(dy))
+        dy = 0.0;
+      else
+        dx = 0.0;
+
+      if (max_mag_sq > 0) {
+        result_ = Gesture(kGestureScroll,
+                          prev_state_.timestamp,
+                          hwstate.timestamp,
+                          dx,
+                          dy);
+      }
+
+      break;
+    }
+    default:
+      result_.type = kGestureTypeNull;
+  }
+}
+
 void ImmediateInterpreter::SetHardwareProperties(
     const HardwareProperties& hw_props) {
   hw_props_ = hw_props;
