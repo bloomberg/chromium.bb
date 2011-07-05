@@ -187,6 +187,10 @@ TEST_F(PPAPITest, PostMessage) {
   RunTest("PostMessage");
 }
 
+TEST_F(PPAPITest, Memory) {
+  RunTest("Memory");
+}
+
 // http://crbug.com/83443
 TEST_F(PPAPITest, FAILS_FileIO) {
   RunTestViaHTTP("FileIO");

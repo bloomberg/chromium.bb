@@ -31,6 +31,7 @@
 #include "ppapi/c/dev/ppb_gles_chromium_texture_mapping_dev.h"
 #include "ppapi/c/dev/ppb_graphics_3d_dev.h"
 #include "ppapi/c/dev/ppb_layer_compositor_dev.h"
+#include "ppapi/c/dev/ppb_memory_dev.h"
 #include "ppapi/c/dev/ppb_opengles_dev.h"
 #include "ppapi/c/dev/ppb_scrollbar_dev.h"
 #include "ppapi/c/dev/ppb_surface_3d_dev.h"
@@ -89,6 +90,7 @@
 #include "webkit/plugins/ppapi/ppb_graphics_2d_impl.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
 #include "webkit/plugins/ppapi/ppb_layer_compositor_impl.h"
+#include "webkit/plugins/ppapi/ppb_memory_impl.h"
 #include "webkit/plugins/ppapi/ppb_opengles_impl.h"
 #include "webkit/plugins/ppapi/ppb_proxy_impl.h"
 #include "webkit/plugins/ppapi/ppb_scrollbar_impl.h"
@@ -292,6 +294,8 @@ const void* GetInterface(const char* name) {
     return ::ppapi::thunk::GetPPB_Instance_0_5_Thunk();
   if (strcmp(name, PPB_INSTANCE_PRIVATE_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_Instance_Private_Thunk();
+  if (strcmp(name, PPB_MEMORY_DEV_INTERFACE) == 0)
+    return PPB_Memory_Impl::GetInterface();
   if (strcmp(name, PPB_MESSAGING_INTERFACE) == 0)
     return PluginInstance::GetMessagingInterface();
   if (strcmp(name, PPB_PROXY_PRIVATE_INTERFACE) == 0)

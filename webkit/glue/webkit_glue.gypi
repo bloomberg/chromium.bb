@@ -275,6 +275,8 @@
         '../plugins/ppapi/ppb_image_data_impl.h',
         '../plugins/ppapi/ppb_layer_compositor_impl.cc',
         '../plugins/ppapi/ppb_layer_compositor_impl.h',
+        '../plugins/ppapi/ppb_memory_impl.cc',
+        '../plugins/ppapi/ppb_memory_impl.h',
         '../plugins/ppapi/ppb_opengles_impl.cc',
         '../plugins/ppapi/ppb_opengles_impl.h',
         '../plugins/ppapi/ppb_proxy_impl.cc',

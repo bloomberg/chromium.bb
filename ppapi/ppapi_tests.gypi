@@ -94,6 +94,8 @@
         'tests/test_graphics_2d.h',
         'tests/test_image_data.cc',
         'tests/test_image_data.h',
+        'tests/test_memory.cc',
+        'tests/test_memory.h',
         'tests/test_paint_aggregator.cc',
         'tests/test_paint_aggregator.h',
         'tests/test_post_message.cc',
