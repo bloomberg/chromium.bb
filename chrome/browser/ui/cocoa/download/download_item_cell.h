@@ -43,8 +43,7 @@ enum DownloadItemMousePosition {
   BOOL isStatusTextVisible_;
   CGFloat titleY_;
   CGFloat statusAlpha_;
-  scoped_nsobject<NSAnimation> showStatusAnimation_;
-  scoped_nsobject<NSAnimation> hideStatusAnimation_;
+  scoped_nsobject<NSAnimation> toggleStatusVisibilityAnimation_;
 
   scoped_ptr<ui::ThemeProvider> themeProvider_;
 }
@@ -57,6 +56,14 @@ enum DownloadItemMousePosition {
 // Returns if the mouse is over the button part of the cell.
 - (BOOL)isMouseOverButtonPart;
 
+@end
+
+@interface DownloadItemCell(TestingAPI)
+- (BOOL)isStatusTextVisible;
+- (CGFloat)statusTextAlpha;
+- (void)skipVisibilityAnimation;
+- (void)showSecondaryTitle;
+- (void)hideSecondaryTitle;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_DOWNLOAD_DOWNLOAD_ITEM_CELL_H_

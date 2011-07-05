@@ -88,6 +88,7 @@ const int kInterruptedAnimationDuration = 2.5;
 
 @interface DownloadItemCell(Private)
 - (void)updateTrackingAreas:(id)sender;
+- (void)setupToggleStatusVisibilityAnimation;
 - (void)showSecondaryTitle;
 - (void)hideSecondaryTitle;
 - (void)animation:(NSAnimation*)animation
@@ -109,7 +110,7 @@ const int kInterruptedAnimationDuration = 2.5;
 - (void)setInitialState {
   isStatusTextVisible_ = NO;
   titleY_ = kPrimaryTextPosTop;
-  statusAlpha_ = 1.0;
+  statusAlpha_ = 0.0;
 
   [self setFont:[NSFont systemFontOfSize:
       [NSFont systemFontSizeForControlSize:NSSmallControlSize]]];
@@ -144,10 +145,8 @@ const int kInterruptedAnimationDuration = 2.5;
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   if ([completionAnimation_ isAnimating])
     [completionAnimation_ stopAnimation];
-  if ([showStatusAnimation_ isAnimating])
-    [showStatusAnimation_ stopAnimation];
-  if ([hideStatusAnimation_ isAnimating])
-    [hideStatusAnimation_ stopAnimation];
+  if ([toggleStatusVisibilityAnimation_ isAnimating])
+    [toggleStatusVisibilityAnimation_ stopAnimation];
   if (trackingAreaButton_) {
     [[self controlView] removeTrackingArea:trackingAreaButton_];
     trackingAreaButton_.reset();
@@ -169,13 +168,11 @@ const int kInterruptedAnimationDuration = 2.5;
   if (statusText.empty()) {
     // Remove the status text label.
     [self hideSecondaryTitle];
-    isStatusTextVisible_ = NO;
   } else {
     // Set status text.
     NSString* statusString = base::SysUTF16ToNSString(statusText);
     [self setSecondaryTitle:statusString];
     [self showSecondaryTitle];
-    isStatusTextVisible_ = YES;
   }
 
   switch (downloadModel->download()->state()) {
@@ -598,48 +595,50 @@ const int kInterruptedAnimationDuration = 2.5;
                     kImageHeight);
 }
 
-- (void)showSecondaryTitle {
-  if (!isStatusTextVisible_) {
-    // No core animation -- text in CA layers is not subpixel antialiased :-/
-    showStatusAnimation_.reset([[DownloadItemCellAnimation alloc]
+- (void)setupToggleStatusVisibilityAnimation {
+  if (toggleStatusVisibilityAnimation_ &&
+      [toggleStatusVisibilityAnimation_ isAnimating]) {
+    // If the animation is running, cancel the animation and show/hide the
+    // status text immediately.
+    [toggleStatusVisibilityAnimation_ stopAnimation];
+    [self animation:toggleStatusVisibilityAnimation_ progressed:1.0];
+    toggleStatusVisibilityAnimation_.reset();
+  } else {
+    // Don't use core animation -- text in CA layers is not subpixel antialiased
+    toggleStatusVisibilityAnimation_.reset([[DownloadItemCellAnimation alloc]
         initWithDownloadItemCell:self
                         duration:kShowStatusDuration
                   animationCurve:NSAnimationEaseIn]);
-    [showStatusAnimation_.get() setDelegate:self];
-    [showStatusAnimation_.get() startAnimation];
-  } else {
-    // If the status line continues to be visible, don't show an animation
-    [self animation:nil progressed:0.0];
+    [toggleStatusVisibilityAnimation_.get() setDelegate:self];
+    [toggleStatusVisibilityAnimation_.get() startAnimation];
   }
+}
+
+- (void)showSecondaryTitle {
+  if (isStatusTextVisible_)
+    return;
+  isStatusTextVisible_ = YES;
+  [self setupToggleStatusVisibilityAnimation];
 }
 
 - (void)hideSecondaryTitle {
-  if (isStatusTextVisible_) {
-    // No core animation -- text in CA layers is not subpixel antialiased :-/
-    hideStatusAnimation_.reset([[DownloadItemCellAnimation alloc]
-        initWithDownloadItemCell:self
-                        duration:kHideStatusDuration
-                  animationCurve:NSAnimationEaseIn]);
-    [hideStatusAnimation_.get() setDelegate:self];
-    [hideStatusAnimation_.get() startAnimation];
-  } else {
-    // If the download is done so quickly that the status line is never visible,
-    // don't show an animation
-    [self animation:nil progressed:1.0];
-  }
+  if (!isStatusTextVisible_)
+    return;
+  isStatusTextVisible_ = NO;
+  [self setupToggleStatusVisibilityAnimation];
 }
 
 - (void)animation:(NSAnimation*)animation
-      progressed:(NSAnimationProgress)progress {
-  if (animation == showStatusAnimation_) {
-    titleY_ = (1 - progress)*kPrimaryTextOnlyPosTop +
-      kPrimaryTextPosTop;
-    statusAlpha_ = progress;
-    [[self controlView] setNeedsDisplay:YES];
-  } else if (animation == hideStatusAnimation_ || animation == nil) {
-    titleY_ = progress*kPrimaryTextOnlyPosTop +
-        (1 - progress)*kPrimaryTextPosTop;
-    statusAlpha_ = 1 - progress;
+   progressed:(NSAnimationProgress)progress {
+  if (animation == toggleStatusVisibilityAnimation_) {
+    if (isStatusTextVisible_) {
+      titleY_ = (1 - progress)*kPrimaryTextOnlyPosTop + kPrimaryTextPosTop;
+      statusAlpha_ = progress;
+    } else {
+      titleY_ = progress*kPrimaryTextOnlyPosTop +
+          (1 - progress)*kPrimaryTextPosTop;
+      statusAlpha_ = 1 - progress;
+    }
     [[self controlView] setNeedsDisplay:YES];
   } else if (animation == completionAnimation_) {
     [[self controlView] setNeedsDisplay:YES];
@@ -647,12 +646,22 @@ const int kInterruptedAnimationDuration = 2.5;
 }
 
 - (void)animationDidEnd:(NSAnimation *)animation {
-  if (animation == showStatusAnimation_)
-    showStatusAnimation_.reset();
-  else if (animation == hideStatusAnimation_)
-    hideStatusAnimation_.reset();
+  if (animation == toggleStatusVisibilityAnimation_)
+    toggleStatusVisibilityAnimation_.reset();
   else if (animation == completionAnimation_)
     completionAnimation_.reset();
+}
+
+- (BOOL)isStatusTextVisible {
+  return isStatusTextVisible_;
+}
+
+- (CGFloat)statusTextAlpha {
+  return statusAlpha_;
+}
+
+- (void)skipVisibilityAnimation {
+  [toggleStatusVisibilityAnimation_ setCurrentProgress:1.0];
 }
 
 @end
