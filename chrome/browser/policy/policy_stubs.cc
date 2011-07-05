@@ -5,8 +5,6 @@
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/cloud_policy_subsystem.h"
-#include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 
 // Policies are optionally built, hence the following stubs.
 
@@ -66,16 +64,6 @@ ConfigurationPolicyPrefStore::CreateRecommendedCloudPolicyPrefStore(
 // static
 void CloudPolicySubsystem::RegisterPrefs(PrefService* local_state) {
   // don't need prefs for things we don't use.
-}
-
-// static
-void ProfilePolicyConnector::Initialize() {
-}
-
-// static
-ProfilePolicyConnector*
-ProfilePolicyConnectorFactory::GetForProfile(Profile* profile) {
-  return NULL;
 }
 
 }  // namespace policy
