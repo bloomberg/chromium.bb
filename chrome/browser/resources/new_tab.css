@@ -162,6 +162,10 @@ html[anim=false] *,
   -webkit-padding-start: 20px;
 }
 
+#notification .link > * {
+  outline: none;
+}
+
 #notification .link-color {
   color: rgb(0, 102, 204);
 }
