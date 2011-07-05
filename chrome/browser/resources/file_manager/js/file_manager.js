@@ -2324,6 +2324,10 @@ FileManager.prototype = {
       window.alert(strf(msgId, testResult[0]));
       return false;
     }
+    if (/^\s*$/i.test(name)) {
+      window.alert(str('ERROR_WHITESPACE_NAME'));
+      return false;
+    }
     if (/^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])$/i.test(name)) {
       window.alert(str('ERROR_RESERVED_NAME'));
       return false;
