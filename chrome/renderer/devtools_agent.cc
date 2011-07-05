@@ -8,6 +8,8 @@
 
 #include "base/command_line.h"
 #include "base/message_loop.h"
+#include "base/process.h"
+#include "base/string_number_conversions.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/renderer/devtools_agent_filter.h"
 #include "chrome/renderer/devtools_client.h"
@@ -62,6 +64,8 @@ DevToolsAgent::DevToolsAgent(RenderView* render_view)
   expose_v8_debugger_protocol_ = cmd->HasSwitch(switches::kRemoteShellPort);
 
   render_view->webview()->setDevToolsAgentClient(this);
+  render_view->webview()->devToolsAgent()->setAgentIdentifierPrefix(
+      WebString::fromUTF8(base::Int64ToString(base::Process::Current().pid())));
 }
 
 DevToolsAgent::~DevToolsAgent() {
