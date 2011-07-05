@@ -67,7 +67,7 @@ string16 KeyboardSwitchMenu::GetCurrentKeyboardName() const {
   input_method::InputMethodManager* manager =
       input_method::InputMethodManager::GetInstance();
   return UTF8ToUTF16(input_method::GetInputMethodDisplayNameFromId(
-      manager->current_input_method().id));
+      manager->current_input_method().id()));
 }
 
 }  // namespace chromeos

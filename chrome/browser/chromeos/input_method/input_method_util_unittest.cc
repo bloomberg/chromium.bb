@@ -15,6 +15,15 @@
 namespace chromeos {
 namespace input_method {
 
+namespace {
+InputMethodDescriptor GetDesc(const std::string& id,
+                              const std::string& raw_layout,
+                              const std::string& language_code) {
+  return InputMethodDescriptor::CreateInputMethodDescriptor(
+      id, raw_layout, language_code);
+}
+}  // namespace
+
 class InputMethodUtilTest : public testing::Test {
  public:
   static void SetUpTestCase() {
@@ -80,19 +89,19 @@ TEST_F(InputMethodUtilTest, IsKeyboardLayout) {
 
 TEST_F(InputMethodUtilTest, GetLanguageCodeFromDescriptor) {
   EXPECT_EQ("ja", GetLanguageCodeFromDescriptor(
-      InputMethodDescriptor("mozc", "us", "us", "ja")));
+      GetDesc("mozc", "us", "ja")));
   EXPECT_EQ("zh-TW", GetLanguageCodeFromDescriptor(
-      InputMethodDescriptor("mozc-chewing", "us", "us", "zh")));
+      GetDesc("mozc-chewing", "us", "zh")));
   EXPECT_EQ("zh-TW", GetLanguageCodeFromDescriptor(
-      InputMethodDescriptor("m17n:zh:cangjie", "us", "us", "zh")));
+      GetDesc("m17n:zh:cangjie", "us", "zh")));
   EXPECT_EQ("zh-TW", GetLanguageCodeFromDescriptor(
-      InputMethodDescriptor("m17n:zh:quick", "us", "us", "zh")));
+      GetDesc("m17n:zh:quick", "us", "zh")));
   EXPECT_EQ("zh-CN", GetLanguageCodeFromDescriptor(
-      InputMethodDescriptor("pinyin", "us", "us", "zh")));
+      GetDesc("pinyin", "us", "zh")));
   EXPECT_EQ("en-US", GetLanguageCodeFromDescriptor(
-      InputMethodDescriptor("xkb:us::eng", "us", "us", "eng")));
+      GetDesc("xkb:us::eng", "us", "eng")));
   EXPECT_EQ("en-UK", GetLanguageCodeFromDescriptor(
-      InputMethodDescriptor("xkb:uk::eng", "us", "us", "eng")));
+      GetDesc("xkb:uk::eng", "us", "eng")));
 }
 
 TEST_F(InputMethodUtilTest, GetKeyboardLayoutName) {
@@ -131,11 +140,11 @@ TEST_F(InputMethodUtilTest, GetInputMethodDescriptorFromId) {
   const InputMethodDescriptor* descriptor =
       GetInputMethodDescriptorFromId("pinyin");
   ASSERT_TRUE(NULL != descriptor);  // ASSERT_NE doesn't compile.
-  EXPECT_EQ("pinyin", descriptor->id);
-  EXPECT_EQ("us", descriptor->keyboard_layout);
+  EXPECT_EQ("pinyin", descriptor->id());
+  EXPECT_EQ("us", descriptor->keyboard_layout());
   // This used to be "zh" but now we have "zh-CN" in ibus_input_methods.h,
   // hence this should be zh-CN now.
-  EXPECT_EQ("zh-CN", descriptor->language_code);
+  EXPECT_EQ("zh-CN", descriptor->language_code());
 }
 
 TEST_F(InputMethodUtilTest, GetLanguageNativeDisplayNameFromCode) {

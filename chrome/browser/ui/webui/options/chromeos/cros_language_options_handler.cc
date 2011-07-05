@@ -89,10 +89,10 @@ ListValue* CrosLanguageOptionsHandler::GetInputMethodList(
     const std::string language_code =
         input_method::GetLanguageCodeFromDescriptor(descriptor);
     const std::string display_name =
-        input_method::GetInputMethodDisplayNameFromId(descriptor.id);
+        input_method::GetInputMethodDisplayNameFromId(descriptor.id());
 
     DictionaryValue* dictionary = new DictionaryValue();
-    dictionary->SetString("id", descriptor.id);
+    dictionary->SetString("id", descriptor.id());
     dictionary->SetString("displayName", display_name);
 
     // One input method can be associated with multiple languages, hence
@@ -107,7 +107,7 @@ ListValue* CrosLanguageOptionsHandler::GetInputMethodList(
           input_method::kExtraLanguages[j].input_method_id;
       const std::string extra_language_code =
           input_method::kExtraLanguages[j].language_code;
-      if (extra_input_method_id == descriptor.id) {
+      if (extra_input_method_id == descriptor.id()) {
         language_codes->SetBoolean(extra_language_code, true);
       }
     }

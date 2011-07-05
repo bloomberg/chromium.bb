@@ -72,12 +72,12 @@ struct IdMaps {
       const std::string language_code =
           GetLanguageCodeFromDescriptor(input_method);
       language_code_to_ids->insert(
-          std::make_pair(language_code, input_method.id));
+          std::make_pair(language_code, input_method.id()));
       // Remember the pairs.
       id_to_language_code->insert(
-          std::make_pair(input_method.id, language_code));
+          std::make_pair(input_method.id(), language_code));
       id_to_descriptor->insert(
-          std::make_pair(input_method.id, input_method));
+          std::make_pair(input_method.id(), input_method));
     }
 
     // Go through the languages listed in kExtraLanguages.
@@ -91,7 +91,7 @@ struct IdMaps {
       if (iter != id_to_descriptor->end()) {
         const InputMethodDescriptor& input_method = iter->second;
         language_code_to_ids->insert(
-            std::make_pair(language_code, input_method.id));
+            std::make_pair(language_code, input_method.id()));
       }
     }
   }
@@ -445,30 +445,30 @@ std::string GetLanguageCodeFromDescriptor(
     const InputMethodDescriptor& descriptor) {
   // Handle some Chinese input methods as zh-CN/zh-TW, rather than zh.
   // TODO: we should fix this issue in engines rather than here.
-  if (descriptor.language_code == "zh") {
-    if (descriptor.id == "pinyin" || descriptor.id == "pinyin-dv") {
+  if (descriptor.language_code() == "zh") {
+    if (descriptor.id() == "pinyin" || descriptor.id() == "pinyin-dv") {
       return "zh-CN";
-    } else if (descriptor.id == "mozc-chewing" ||
-               descriptor.id == "m17n:zh:cangjie" ||
-               descriptor.id == "m17n:zh:quick") {
+    } else if (descriptor.id() == "mozc-chewing" ||
+               descriptor.id() == "m17n:zh:cangjie" ||
+               descriptor.id() == "m17n:zh:quick") {
       return "zh-TW";
     }
-    LOG(ERROR) << "Unhandled Chinese engine: " << descriptor.id;
+    LOG(ERROR) << "Unhandled Chinese engine: " << descriptor.id();
   }
 
-  std::string language_code = NormalizeLanguageCode(descriptor.language_code);
+  std::string language_code = NormalizeLanguageCode(descriptor.language_code());
 
   // Add country codes to language codes of some XKB input methods to make
   // these compatible with Chrome's application locale codes like "en-US".
   // TODO(satorux): Maybe we need to handle "es" for "es-419".
   // TODO: We should not rely on the format of the engine name. Should we add
   //       |country_code| in InputMethodDescriptor?
-  if (IsKeyboardLayout(descriptor.id) &&
+  if (IsKeyboardLayout(descriptor.id()) &&
       (language_code == "en" ||
        language_code == "zh" ||
        language_code == "pt")) {
     std::vector<std::string> portions;
-    base::SplitString(descriptor.id, ':', &portions);
+    base::SplitString(descriptor.id(), ':', &portions);
     if (portions.size() >= 2 && !portions[1].empty()) {
       language_code.append("-");
       language_code.append(StringToUpperASCII(portions[1]));
@@ -494,7 +494,7 @@ std::string GetKeyboardLayoutName(const std::string& input_method_id) {
   InputMethodIdToDescriptorMap::const_iterator iter
       = IdMaps::GetInstance()->id_to_descriptor->find(input_method_id);
   return (iter == IdMaps::GetInstance()->id_to_descriptor->end()) ?
-      "" : iter->second.keyboard_layout;
+      "" : iter->second.keyboard_layout();
 }
 
 std::string GetKeyboardOverlayId(const std::string& input_method_id) {
@@ -594,7 +594,7 @@ void GetFirstLoginInputMethodIds(
   out_input_method_ids->clear();
 
   // First, add the current keyboard layout (one used on the login screen).
-  out_input_method_ids->push_back(current_input_method.id);
+  out_input_method_ids->push_back(current_input_method.id());
 
   // Second, find the most popular input method associated with the
   // current UI language. The input method IDs returned from
@@ -620,15 +620,16 @@ void GetFirstLoginInputMethodIds(
     const InputMethodDescriptor* descriptor =
         GetInputMethodDescriptorFromId(input_method_id);
     if (descriptor &&
-        descriptor->id != current_input_method.id &&
-        descriptor->keyboard_layout == current_input_method.keyboard_layout) {
+        descriptor->id() != current_input_method.id() &&
+        descriptor->keyboard_layout() ==
+        current_input_method.keyboard_layout()) {
       most_popular_id = input_method_id;
       break;
     }
   }
   // Add the most popular input method ID, if it's different from the
   // current input method.
-  if (most_popular_id != current_input_method.id) {
+  if (most_popular_id != current_input_method.id()) {
     out_input_method_ids->push_back(most_popular_id);
   }
 }
@@ -703,7 +704,7 @@ std::string GetHardwareInputMethodId() {
   if (!(g_browser_process && g_browser_process->local_state())) {
     // This shouldn't happen but just in case.
     LOG(ERROR) << "Local state is not yet ready";
-    return GetFallbackInputMethodDescriptor().id;
+    return GetFallbackInputMethodDescriptor().id();
   }
 
   PrefService* local_state = g_browser_process->local_state();
@@ -712,7 +713,7 @@ std::string GetHardwareInputMethodId() {
     // BrowserMain::InitializeLocalState and that method is not called during
     // unittests.
     LOG(ERROR) << prefs::kHardwareKeyboardLayout << " is not registered";
-    return GetFallbackInputMethodDescriptor().id;
+    return GetFallbackInputMethodDescriptor().id();
   }
 
   const std::string input_method_id =
@@ -721,23 +722,25 @@ std::string GetHardwareInputMethodId() {
     // This is totally fine if it's empty. The hardware keyboard layout is
     // not stored if startup_manifest.json (OEM customization data) is not
     // present (ex. Cr48 doen't have that file).
-    return GetFallbackInputMethodDescriptor().id;
+    return GetFallbackInputMethodDescriptor().id();
   }
   return input_method_id;
 }
 
 InputMethodDescriptor GetFallbackInputMethodDescriptor() {
-  return InputMethodDescriptor("xkb:us::eng", "us", "us", "eng");
+  return InputMethodDescriptor::CreateInputMethodDescriptor(
+      "xkb:us::eng", "us", "eng");
 }
 
 InputMethodDescriptors* GetSupportedInputMethods() {
   InputMethodDescriptors* input_methods = new InputMethodDescriptors;
   for (size_t i = 0; i < arraysize(kIBusEngines); ++i) {
     if (InputMethodIdIsWhitelisted(kIBusEngines[i].input_method_id)) {
-      input_methods->push_back(CreateInputMethodDescriptor(
-          kIBusEngines[i].input_method_id,
-          kIBusEngines[i].xkb_layout_id,
-          kIBusEngines[i].language_code));
+      input_methods->push_back(
+          InputMethodDescriptor::CreateInputMethodDescriptor(
+              kIBusEngines[i].input_method_id,
+              kIBusEngines[i].xkb_layout_id,
+              kIBusEngines[i].language_code));
     }
   }
   return input_methods;

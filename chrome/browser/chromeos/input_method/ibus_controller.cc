@@ -32,11 +32,12 @@ InputMethodDescriptor::InputMethodDescriptor(
     const std::string& in_keyboard_layout,
     const std::string& in_virtual_keyboard_layouts,
     const std::string& in_language_code)
-    : virtual_keyboard_layouts_(in_virtual_keyboard_layouts),
-      id(in_id),
-      keyboard_layout(in_keyboard_layout),
-      language_code(in_language_code) {
-  DCHECK(keyboard_layout.find(",") == std::string::npos);
+    : id_(in_id),
+      keyboard_layout_(in_keyboard_layout),
+      language_code_(in_language_code) {
+  DCHECK(keyboard_layout_.find(",") == std::string::npos);
+  base::SplitString(
+      in_virtual_keyboard_layouts, ',', &virtual_keyboard_layouts_);
 }
 
 InputMethodDescriptor::~InputMethodDescriptor() {
@@ -100,7 +101,7 @@ bool XkbLayoutIsSupported(const std::string& xkb_layout) {
 // Creates an InputMethodDescriptor object. |raw_layout| is a comma-separated
 // list of XKB and virtual keyboard layouts.
 // (e.g. "special-us-virtual-keyboard-for-the-input-method,us")
-InputMethodDescriptor CreateInputMethodDescriptor(
+InputMethodDescriptor InputMethodDescriptor::CreateInputMethodDescriptor(
     const std::string& id,
     const std::string& raw_layout,
     const std::string& language_code) {
@@ -194,9 +195,8 @@ void AddInputMethodNames(const GList* engines, InputMethodDescriptors* out) {
     const gchar* layout = ibus_engine_desc_get_layout(engine_desc);
     const gchar* language = ibus_engine_desc_get_language(engine_desc);
     if (InputMethodIdIsWhitelisted(name)) {
-      out->push_back(CreateInputMethodDescriptor(name,
-                                                 layout,
-                                                 language));
+      out->push_back(InputMethodDescriptor::CreateInputMethodDescriptor(
+          name, layout, language));
       VLOG(1) << name << " (preloaded)";
     }
   }
@@ -937,12 +937,13 @@ class IBusControllerImpl : public IBusController {
     }
 
     InputMethodDescriptor current_input_method =
-        CreateInputMethodDescriptor(engine_info->input_method_id,
-                                    engine_info->xkb_layout_id,
-                                    engine_info->language_code);
+        InputMethodDescriptor::CreateInputMethodDescriptor(
+            engine_info->input_method_id,
+            engine_info->xkb_layout_id,
+            engine_info->language_code);
 
-    VLOG(1) << "Updating the UI. ID:" << current_input_method.id
-            << ", keyboard_layout:" << current_input_method.keyboard_layout;
+    VLOG(1) << "Updating the UI. ID:" << current_input_method.id()
+            << ", keyboard_layout:" << current_input_method.keyboard_layout();
 
     // Notify the change to update UI.
     FOR_EACH_OBSERVER(Observer, observers_,

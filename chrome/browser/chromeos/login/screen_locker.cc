@@ -117,8 +117,8 @@ class ScreenLockObserver : public chromeos::ScreenLockLibrary::Observer,
       chromeos::input_method::InputMethodManager* manager =
           chromeos::input_method::InputMethodManager::GetInstance();
 
-      saved_previous_input_method_id_ = manager->previous_input_method().id;
-      saved_current_input_method_id_ = manager->current_input_method().id;
+      saved_previous_input_method_id_ = manager->previous_input_method().id();
+      saved_current_input_method_id_ = manager->current_input_method().id();
       scoped_ptr<chromeos::input_method::InputMethodDescriptors>
           active_input_method_list(manager->GetActiveInputMethods());
 
@@ -132,7 +132,8 @@ class ScreenLockObserver : public chromeos::ScreenLockLibrary::Observer,
       chromeos::input_method::ImeConfigValue value;
       value.type = chromeos::input_method::ImeConfigValue::kValueTypeStringList;
       for (size_t i = 0; i < active_input_method_list->size(); ++i) {
-        const std::string& input_method_id = active_input_method_list->at(i).id;
+        const std::string& input_method_id =
+            active_input_method_list->at(i).id();
         saved_active_input_method_list_.push_back(input_method_id);
         // Skip if it's not a keyboard layout.
         if (!chromeos::input_method::IsKeyboardLayout(input_method_id))

@@ -20,16 +20,19 @@
 using chromeos::input_method::InputMethodDescriptor;
 using chromeos::input_method::InputMethodDescriptors;
 
+static InputMethodDescriptor GetDesc(const std::string& id,
+                                     const std::string& raw_layout,
+                                     const std::string& language_code) {
+  return InputMethodDescriptor::CreateInputMethodDescriptor(
+      id, raw_layout, language_code);
+}
+
 static InputMethodDescriptors CreateInputMethodDescriptors() {
   InputMethodDescriptors descriptors;
-  descriptors.push_back(
-      InputMethodDescriptor("xkb:us::eng", "us", "us", "eng"));
-  descriptors.push_back(
-      InputMethodDescriptor("xkb:fr::fra", "fr", "fr", "fra"));
-  descriptors.push_back(
-      InputMethodDescriptor("xkb:be::fra", "be", "be", "fr"));
-  descriptors.push_back(
-      InputMethodDescriptor("mozc", "us", "us", "ja"));
+  descriptors.push_back(GetDesc("xkb:us::eng", "us", "eng"));
+  descriptors.push_back(GetDesc("xkb:fr::fra", "fr", "fra"));
+  descriptors.push_back(GetDesc("xkb:be::fra", "be", "fr"));
+  descriptors.push_back(GetDesc("mozc", "us", "ja"));
   return descriptors;
 }
 

@@ -166,7 +166,7 @@ void InputMethodMenuButton::UpdateUIFromCurrentInputMethod() {
   const std::wstring tooltip = InputMethodMenu::GetTextForMenu(input_method);
   const size_t num_active_input_methods =
       input_method_manager->GetNumActiveInputMethods();
-  UpdateUI(input_method.id, name, tooltip, num_active_input_methods);
+  UpdateUI(input_method.id(), name, tooltip, num_active_input_methods);
 }
 
 }  // namespace chromeos

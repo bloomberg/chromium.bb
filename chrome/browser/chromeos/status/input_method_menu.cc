@@ -316,7 +316,7 @@ string16 InputMethodMenu::GetLabelAt(int index) const {
     InputMethodManager* manager = InputMethodManager::GetInstance();
     const input_method::ImePropertyList& property_list =
         manager->current_ime_properties();
-    const std::string& input_method_id = manager->current_input_method().id;
+    const std::string& input_method_id = manager->current_input_method().id();
     return input_method::GetStringUTF16(
         property_list.at(index).label, input_method_id);
   }
@@ -338,7 +338,7 @@ void InputMethodMenu::ActivatedAt(int index) {
     const input_method::InputMethodDescriptor& input_method
         = input_method_descriptors_->at(index);
     InputMethodManager::GetInstance()->ChangeInputMethod(
-        input_method.id);
+        input_method.id());
     UserMetrics::RecordAction(
         UserMetricsAction("LanguageMenuButton_InputMethodChanged"));
     return;
@@ -415,15 +415,15 @@ void InputMethodMenu::PreferenceUpdateNeeded(
     const input_method::InputMethodDescriptor& current_input_method) {
   if (screen_mode_ == StatusAreaHost::kBrowserMode) {
     if (pref_service_) {  // make sure we're not in unit tests.
-      // Sometimes (e.g. initial boot) |previous_input_method.id| is empty.
-      previous_input_method_pref_.SetValue(previous_input_method.id);
-      current_input_method_pref_.SetValue(current_input_method.id);
+      // Sometimes (e.g. initial boot) |previous_input_method.id()| is empty.
+      previous_input_method_pref_.SetValue(previous_input_method.id());
+      current_input_method_pref_.SetValue(current_input_method.id());
       pref_service_->ScheduleSavePersistentPrefs();
     }
   } else if (screen_mode_ == StatusAreaHost::kLoginMode) {
     if (g_browser_process && g_browser_process->local_state()) {
       g_browser_process->local_state()->SetString(
-          language_prefs::kPreferredKeyboardLayout, current_input_method.id);
+          language_prefs::kPreferredKeyboardLayout, current_input_method.id());
       g_browser_process->local_state()->SavePersistentPrefs();
     }
   }
@@ -500,7 +500,7 @@ void InputMethodMenu::UpdateUIFromInputMethod(
     size_t num_active_input_methods) {
   const std::wstring name = GetTextForIndicator(input_method);
   const std::wstring tooltip = GetTextForMenu(input_method);
-  UpdateUI(input_method.id, name, tooltip, num_active_input_methods);
+  UpdateUI(input_method.id(), name, tooltip, num_active_input_methods);
 }
 
 void InputMethodMenu::RebuildModel() {
@@ -599,17 +599,17 @@ std::wstring InputMethodMenu::GetTextForIndicator(
 
   // Check special cases first.
   for (size_t i = 0; i < kMappingFromIdToIndicatorTextLen; ++i) {
-    if (kMappingFromIdToIndicatorText[i].input_method_id == input_method.id) {
+    if (kMappingFromIdToIndicatorText[i].input_method_id == input_method.id()) {
       text = UTF8ToWide(kMappingFromIdToIndicatorText[i].indicator_text);
       break;
     }
   }
 
   // Display the keyboard layout name when using a keyboard layout.
-  if (text.empty() && input_method::IsKeyboardLayout(input_method.id)) {
+  if (text.empty() && input_method::IsKeyboardLayout(input_method.id())) {
     const size_t kMaxKeyboardLayoutNameLen = 2;
     const std::wstring keyboard_layout = UTF8ToWide(
-        input_method::GetKeyboardLayoutName(input_method.id));
+        input_method::GetKeyboardLayoutName(input_method.id()));
     text = StringToUpperASCII(keyboard_layout).substr(
         0, kMaxKeyboardLayoutNameLen);
   }
@@ -661,7 +661,7 @@ std::wstring InputMethodMenu::GetTextForMenu(
       language_code == "de") {
     text = GetLanguageName(language_code) + L" - ";
   }
-  text += input_method::GetString(input_method.id, input_method.id);
+  text += input_method::GetString(input_method.id(), input_method.id());
 
   DCHECK(!text.empty());
   return text;

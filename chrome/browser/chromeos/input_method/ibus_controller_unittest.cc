@@ -12,7 +12,7 @@ namespace input_method {
 
 namespace {
 InputMethodDescriptor GetDesc(const std::string& raw_layout) {
-  return CreateInputMethodDescriptor(
+  return InputMethodDescriptor::CreateInputMethodDescriptor(
       "id", raw_layout, "language_code");
 }
 }  // namespace
@@ -40,21 +40,21 @@ TEST(IBusControllerTest, XkbLayoutIsSupported) {
 }
 
 TEST(IBusControllerTest, CreateInputMethodDescriptor) {
-  EXPECT_EQ("us", GetDesc("us").keyboard_layout);
-  EXPECT_EQ("us", GetDesc("us,us(dvorak)").keyboard_layout);
-  EXPECT_EQ("us(dvorak)", GetDesc("us(dvorak),us").keyboard_layout);
+  EXPECT_EQ("us", GetDesc("us").keyboard_layout());
+  EXPECT_EQ("us", GetDesc("us,us(dvorak)").keyboard_layout());
+  EXPECT_EQ("us(dvorak)", GetDesc("us(dvorak),us").keyboard_layout());
 
-  EXPECT_EQ("fr", GetDesc("fr").keyboard_layout);
-  EXPECT_EQ("fr", GetDesc("fr,us(dvorak)").keyboard_layout);
-  EXPECT_EQ("us(dvorak)", GetDesc("us(dvorak),fr").keyboard_layout);
+  EXPECT_EQ("fr", GetDesc("fr").keyboard_layout());
+  EXPECT_EQ("fr", GetDesc("fr,us(dvorak)").keyboard_layout());
+  EXPECT_EQ("us(dvorak)", GetDesc("us(dvorak),fr").keyboard_layout());
 
-  EXPECT_EQ("fr", GetDesc("not-supported,fr").keyboard_layout);
-  EXPECT_EQ("fr", GetDesc("fr,not-supported").keyboard_layout);
+  EXPECT_EQ("fr", GetDesc("not-supported,fr").keyboard_layout());
+  EXPECT_EQ("fr", GetDesc("fr,not-supported").keyboard_layout());
 
   static const char kFallbackLayout[] = "us";
-  EXPECT_EQ(kFallbackLayout, GetDesc("not-supported").keyboard_layout);
-  EXPECT_EQ(kFallbackLayout, GetDesc(",").keyboard_layout);
-  EXPECT_EQ(kFallbackLayout, GetDesc("").keyboard_layout);
+  EXPECT_EQ(kFallbackLayout, GetDesc("not-supported").keyboard_layout());
+  EXPECT_EQ(kFallbackLayout, GetDesc(",").keyboard_layout());
+  EXPECT_EQ(kFallbackLayout, GetDesc("").keyboard_layout());
 
   // TODO(yusukes): Add tests for |virtual_keyboard_layout| member.
 }

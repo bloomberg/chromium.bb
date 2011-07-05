@@ -184,7 +184,7 @@ class InputMethodManagerImpl : public InputMethodManager,
         active_input_method_descriptors(
             GetActiveInputMethods());
     for (size_t i = 0; i < active_input_method_descriptors->size(); ++i) {
-      if (active_input_method_descriptors->at(i).id == input_method_id) {
+      if (active_input_method_descriptors->at(i).id() == input_method_id) {
         return true;
       }
     }
@@ -225,14 +225,14 @@ class InputMethodManagerImpl : public InputMethodManager,
   }
 
   virtual input_method::InputMethodDescriptor previous_input_method() const {
-    if (previous_input_method_.id.empty()) {
+    if (previous_input_method_.id().empty()) {
       return input_method::GetFallbackInputMethodDescriptor();
     }
     return previous_input_method_;
   }
 
   virtual input_method::InputMethodDescriptor current_input_method() const {
-    if (current_input_method_.id.empty()) {
+    if (current_input_method_.id().empty()) {
       return input_method::GetFallbackInputMethodDescriptor();
     }
     return current_input_method_;
@@ -319,7 +319,7 @@ class InputMethodManagerImpl : public InputMethodManager,
         //    on top of the preloaded engine list.
         // 4. Therefore, we have to change the current engine to "xkb:jp::jpn"
         //    explicitly to avoid unexpected engine switch.
-        tentative_current_input_method_id_ = current_input_method_.id;
+        tentative_current_input_method_id_ = current_input_method_.id();
       }
 
       if (std::find(value.string_list_value.begin(),
@@ -388,7 +388,7 @@ class InputMethodManagerImpl : public InputMethodManager,
           GetActiveInputMethods());
       DCHECK(!input_methods->empty());
       if (!input_methods->empty()) {
-        input_method_id_to_switch = input_methods->at(0).id;
+        input_method_id_to_switch = input_methods->at(0).id();
         LOG(INFO) << "Can't change the current input method to "
                   << input_method_id << " since the engine is not preloaded. "
                   << "Switch to " << input_method_id_to_switch << " instead.";
@@ -552,8 +552,8 @@ class InputMethodManagerImpl : public InputMethodManager,
           current_config_values_.end());
       FlushImeConfig();
 
-      ChangeInputMethod(previous_input_method().id);
-      ChangeInputMethod(current_input_method().id);
+      ChangeInputMethod(previous_input_method().id());
+      ChangeInputMethod(current_input_method().id());
     }
   }
 
@@ -564,15 +564,15 @@ class InputMethodManagerImpl : public InputMethodManager,
   // just need to change the current keyboard layout.
   void ChangeCurrentInputMethod(const input_method::InputMethodDescriptor&
                                 new_input_method) {
-    if (current_input_method_.id != new_input_method.id) {
+    if (current_input_method_.id() != new_input_method.id()) {
       previous_input_method_ = current_input_method_;
       current_input_method_ = new_input_method;
 
       // Change the keyboard layout to a preferred layout for the input method.
       if (!input_method::SetCurrentKeyboardLayoutByName(
-              current_input_method_.keyboard_layout)) {
+              current_input_method_.keyboard_layout())) {
         LOG(ERROR) << "Failed to change keyboard layout to "
-                   << current_input_method_.keyboard_layout;
+                   << current_input_method_.keyboard_layout();
       }
 
       // Ask the first observer to update preferences. We should not ask every
@@ -619,7 +619,7 @@ class InputMethodManagerImpl : public InputMethodManager,
       // a third-party input method engine uses a wrong virtual keyboard
       // layout name? Fallback to the default layout.
       LOG(ERROR) << "Could not find a virtual keyboard for "
-                 << current_input_method_.id;
+                 << current_input_method_.id();
 
       // If the hardware is for US, show US Qwerty virtual keyboard.
       // If it's for France, show Azerty one.
@@ -651,7 +651,7 @@ class InputMethodManagerImpl : public InputMethodManager,
       static const char kFallbackVirtualKeyboardLayout[] = "us";
 
       LOG(ERROR) << "Could not find a FALLBACK virtual keyboard for "
-                 << current_input_method_.id
+                 << current_input_method_.id()
                  << ". Use '" << kFallbackVirtualKeyboardLayout
                  << "' virtual keyboard";
       virtual_keyboard = virtual_keyboard_selector_.SelectVirtualKeyboard(

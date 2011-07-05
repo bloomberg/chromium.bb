@@ -12,90 +12,97 @@ namespace chromeos {
 
 using input_method::InputMethodDescriptor;
 
+namespace {
+InputMethodDescriptor GetDesc(const std::string& id,
+                              const std::string& raw_layout,
+                              const std::string& language_code) {
+  return InputMethodDescriptor::CreateInputMethodDescriptor(
+      id, raw_layout, language_code);
+}
+}  // namespace
+
 TEST(InputMethodMenuTest, GetTextForIndicatorTest) {
   ScopedStubCrosEnabler enabler;
   // Test normal cases. Two-letter language code should be returned.
   {
-    InputMethodDescriptor desc("m17n:fa:isiri",  // input method engine id
-                               "us",  // keyboard layout name
-                               "us",  // virtual keyboard layout name
-                               "fa");  // language name
+    InputMethodDescriptor desc = GetDesc("m17n:fa:isiri",  // input method id
+                                         "us",  // keyboard layout name
+                                         "fa");  // language name
     EXPECT_EQ(L"FA", InputMethodMenu::GetTextForIndicator(desc));
   }
   {
-    InputMethodDescriptor desc("mozc-hangul", "us", "us", "ko");
+    InputMethodDescriptor desc = GetDesc("mozc-hangul", "us", "ko");
     EXPECT_EQ(UTF8ToWide("\xed\x95\x9c"),
               InputMethodMenu::GetTextForIndicator(desc));
   }
   {
-    InputMethodDescriptor desc("invalid-id", "us", "us", "xx");
+    InputMethodDescriptor desc = GetDesc("invalid-id", "us", "xx");
     // Upper-case string of the unknown language code, "xx", should be returned.
     EXPECT_EQ(L"XX", InputMethodMenu::GetTextForIndicator(desc));
   }
 
   // Test special cases.
   {
-    InputMethodDescriptor desc("xkb:us:dvorak:eng", "us", "us", "eng");
+    InputMethodDescriptor desc = GetDesc("xkb:us:dvorak:eng", "us", "eng");
     EXPECT_EQ(L"DV", InputMethodMenu::GetTextForIndicator(desc));
   }
   {
-    InputMethodDescriptor desc("xkb:us:colemak:eng", "us", "us", "eng");
+    InputMethodDescriptor desc = GetDesc("xkb:us:colemak:eng", "us", "eng");
     EXPECT_EQ(L"CO", InputMethodMenu::GetTextForIndicator(desc));
   }
   {
-    InputMethodDescriptor desc("xkb:us:altgr-intl:eng", "us", "us", "eng");
+    InputMethodDescriptor desc = GetDesc("xkb:us:altgr-intl:eng", "us", "eng");
     EXPECT_EQ(L"EXTD", InputMethodMenu::GetTextForIndicator(desc));
   }
   {
-    InputMethodDescriptor desc("xkb:us:intl:eng", "us", "us", "eng");
+    InputMethodDescriptor desc = GetDesc("xkb:us:intl:eng", "us", "eng");
     EXPECT_EQ(L"INTL", InputMethodMenu::GetTextForIndicator(desc));
   }
   {
-    InputMethodDescriptor desc("xkb:de:neo:ger", "de(neo)", "de(neo)", "ger");
+    InputMethodDescriptor desc = GetDesc("xkb:de:neo:ger", "de(neo)", "ger");
     EXPECT_EQ(L"NEO", InputMethodMenu::GetTextForIndicator(desc));
   }
   {
-    InputMethodDescriptor desc("xkb:es:cat:cat", "es(cat)", "es(cat)", "cat");
+    InputMethodDescriptor desc = GetDesc("xkb:es:cat:cat", "es(cat)", "cat");
     EXPECT_EQ(L"CAS", InputMethodMenu::GetTextForIndicator(desc));
   }
   {
-    InputMethodDescriptor desc("mozc", "us", "us", "ja");
+    InputMethodDescriptor desc = GetDesc("mozc", "us", "ja");
     EXPECT_EQ(UTF8ToWide("\xe3\x81\x82"),
               InputMethodMenu::GetTextForIndicator(desc));
   }
   {
-    InputMethodDescriptor desc("mozc-jp", "jp", "jp", "ja");
+    InputMethodDescriptor desc = GetDesc("mozc-jp", "jp", "ja");
     EXPECT_EQ(UTF8ToWide("\xe3\x81\x82"),
               InputMethodMenu::GetTextForIndicator(desc));
   }
   {
-    InputMethodDescriptor desc("zinnia-japanese", "us", "us", "ja");
+    InputMethodDescriptor desc = GetDesc("zinnia-japanese", "us", "ja");
     EXPECT_EQ(UTF8ToWide("\xe6\x89\x8b"),
               InputMethodMenu::GetTextForIndicator(desc));
   }
   {
-    InputMethodDescriptor desc("pinyin", "us", "us", "zh-CN");
+    InputMethodDescriptor desc = GetDesc("pinyin", "us", "zh-CN");
     EXPECT_EQ(UTF8ToWide("\xe6\x8b\xbc"),
               InputMethodMenu::GetTextForIndicator(desc));
   }
   {
-    InputMethodDescriptor desc(
-        "pinyin-dv", "us(dvorak)", "us(dvorak)", "zh-CN");
+    InputMethodDescriptor desc = GetDesc("pinyin-dv", "us(dvorak)", "zh-CN");
     EXPECT_EQ(UTF8ToWide("\xe6\x8b\xbc"),
               InputMethodMenu::GetTextForIndicator(desc));
   }
   {
-    InputMethodDescriptor desc("mozc-chewing", "us", "us", "zh-TW");
+    InputMethodDescriptor desc = GetDesc("mozc-chewing", "us", "zh-TW");
     EXPECT_EQ(UTF8ToWide("\xe9\x85\xb7"),
               InputMethodMenu::GetTextForIndicator(desc));
   }
   {
-    InputMethodDescriptor desc("m17n:zh:cangjie", "us", "us", "zh-TW");
+    InputMethodDescriptor desc = GetDesc("m17n:zh:cangjie", "us", "zh-TW");
     EXPECT_EQ(UTF8ToWide("\xe5\x80\x89"),
               InputMethodMenu::GetTextForIndicator(desc));
   }
   {
-    InputMethodDescriptor desc("m17n:zh:quick", "us", "us", "zh-TW");
+    InputMethodDescriptor desc = GetDesc("m17n:zh:quick", "us", "zh-TW");
     EXPECT_EQ(UTF8ToWide("\xe9\x80\x9f"),
               InputMethodMenu::GetTextForIndicator(desc));
   }
@@ -107,22 +114,22 @@ TEST(InputMethodMenuTest, GetTextForMenuTest) {
   // For most languages input method or keyboard layout name is returned.
   // See below for exceptions.
   {
-    InputMethodDescriptor desc("m17n:fa:isiri", "us", "us", "fa");
+    InputMethodDescriptor desc = GetDesc("m17n:fa:isiri", "us", "fa");
     EXPECT_EQ(L"Persian input method (ISIRI 2901 layout)",
               InputMethodMenu::GetTextForMenu(desc));
   }
   {
-    InputMethodDescriptor desc("hangul", "us", "us", "ko");
+    InputMethodDescriptor desc = GetDesc("hangul", "us", "ko");
     EXPECT_EQ(L"Korean input method",
               InputMethodMenu::GetTextForMenu(desc));
   }
   {
-    InputMethodDescriptor desc("m17n:vi:tcvn", "us", "us", "vi");
+    InputMethodDescriptor desc = GetDesc("m17n:vi:tcvn", "us", "vi");
     EXPECT_EQ(L"Vietnamese input method (TCVN6064)",
               InputMethodMenu::GetTextForMenu(desc));
   }
   {
-    InputMethodDescriptor desc("mozc", "us", "us", "ja");
+    InputMethodDescriptor desc = GetDesc("mozc", "us", "ja");
 #if !defined(GOOGLE_CHROME_BUILD)
     EXPECT_EQ(L"Japanese input method (for US keyboard)",
 #else
@@ -131,19 +138,19 @@ TEST(InputMethodMenuTest, GetTextForMenuTest) {
               InputMethodMenu::GetTextForMenu(desc));
   }
   {
-    InputMethodDescriptor desc("xkb:jp::jpn", "jp", "jp", "jpn");
+    InputMethodDescriptor desc = GetDesc("xkb:jp::jpn", "jp", "jpn");
     EXPECT_EQ(L"Japanese keyboard",
               InputMethodMenu::GetTextForMenu(desc));
   }
   {
-    InputMethodDescriptor desc(
-        "xkb:us:dvorak:eng", "us(dvorak)", "us(dvorak)", "eng");
+    InputMethodDescriptor desc =
+        GetDesc("xkb:us:dvorak:eng", "us(dvorak)", "eng");
     EXPECT_EQ(L"US Dvorak keyboard",
               InputMethodMenu::GetTextForMenu(desc));
   }
   {
-    InputMethodDescriptor desc(
-        "xkb:gb:dvorak:eng", "gb(dvorak)", "gb(dvorak)", "eng");
+    InputMethodDescriptor desc =
+        GetDesc("xkb:gb:dvorak:eng", "gb(dvorak)", "eng");
     EXPECT_EQ(L"UK Dvorak keyboard",
               InputMethodMenu::GetTextForMenu(desc));
   }
@@ -151,48 +158,48 @@ TEST(InputMethodMenuTest, GetTextForMenuTest) {
   // For Arabic, Dutch, French, German and Hindi,
   // "language - keyboard layout" pair is returned.
   {
-    InputMethodDescriptor desc("m17n:ar:kbd", "us", "us", "ar");
+    InputMethodDescriptor desc = GetDesc("m17n:ar:kbd", "us", "ar");
     EXPECT_EQ(L"Arabic - Standard input method",
               InputMethodMenu::GetTextForMenu(desc));
   }
   {
-    InputMethodDescriptor desc("xkb:nl::nld", "nl", "nl", "nld");
+    InputMethodDescriptor desc = GetDesc("xkb:nl::nld", "nl", "nld");
     EXPECT_EQ(L"Dutch - Dutch keyboard",
               InputMethodMenu::GetTextForMenu(desc));
   }
   {
-    InputMethodDescriptor desc("xkb:be::nld", "be", "be", "nld");
+    InputMethodDescriptor desc = GetDesc("xkb:be::nld", "be", "nld");
     EXPECT_EQ(L"Dutch - Belgian keyboard",
               InputMethodMenu::GetTextForMenu(desc));
   }
   {
-    InputMethodDescriptor desc("xkb:fr::fra", "fr", "fr", "fra");
+    InputMethodDescriptor desc = GetDesc("xkb:fr::fra", "fr", "fra");
     EXPECT_EQ(L"French - French keyboard",
               InputMethodMenu::GetTextForMenu(desc));
   }
   {
-    InputMethodDescriptor desc("xkb:be::fra", "be", "be", "fra");
+    InputMethodDescriptor desc = GetDesc("xkb:be::fra", "be", "fra");
     EXPECT_EQ(L"French - Belgian keyboard",
               InputMethodMenu::GetTextForMenu(desc));
   }
   {
-    InputMethodDescriptor desc("xkb:de::ger", "de", "de", "ger");
+    InputMethodDescriptor desc = GetDesc("xkb:de::ger", "de", "ger");
     EXPECT_EQ(L"German - German keyboard",
               InputMethodMenu::GetTextForMenu(desc));
   }
   {
-    InputMethodDescriptor desc("xkb:be::ger", "be", "be", "ger");
+    InputMethodDescriptor desc = GetDesc("xkb:be::ger", "be", "ger");
     EXPECT_EQ(L"German - Belgian keyboard",
               InputMethodMenu::GetTextForMenu(desc));
   }
   {
-    InputMethodDescriptor desc("m17n:hi:itrans", "us", "us", "hi");
+    InputMethodDescriptor desc = GetDesc("m17n:hi:itrans", "us", "hi");
     EXPECT_EQ(L"Hindi - Standard input method",
               InputMethodMenu::GetTextForMenu(desc));
   }
 
   {
-    InputMethodDescriptor desc("invalid-id", "us", "us", "xx");
+    InputMethodDescriptor desc = GetDesc("invalid-id", "us", "xx");
     // You can safely ignore the "Resouce ID is not found for: invalid-id"
     // error.
     EXPECT_EQ(L"invalid-id",
