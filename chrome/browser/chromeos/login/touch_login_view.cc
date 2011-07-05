@@ -58,6 +58,12 @@ void TouchLoginView::Init() {
   registrar_.Add(this,
                  NotificationType::TAB_CONTENTS_DESTROYED,
                  NotificationService::AllSources());
+  registrar_.Add(this,
+                 NotificationType::HIDE_KEYBOARD_INVOKED,
+                 NotificationService::AllSources());
+  registrar_.Add(this,
+                 NotificationType::SET_KEYBOARD_HEIGHT_INVOKED,
+                 NotificationService::AllSources());
 }
 
 std::string TouchLoginView::GetClassName() const {
@@ -164,6 +170,19 @@ void TouchLoginView::Observe(NotificationType type,
   } else if (type == NotificationType::TAB_CONTENTS_DESTROYED) {
     GetFocusedStateAccessor()->DeleteProperty(
         Source<TabContents>(source).ptr()->property_bag());
+  } else if (type == NotificationType::HIDE_KEYBOARD_INVOKED) {
+    UpdateKeyboardAndLayout(false);
+  } else if (type == NotificationType::SET_KEYBOARD_HEIGHT_INVOKED) {
+    // TODO(penghuang) Allow extension conrtol the virtual keyboard directly
+    // instead of using Notification.
+    int height = *(Details<int>(details).ptr());
+    if (height != keyboard_height_) {
+      DCHECK_GE(height, 0) << "Height of the keyboard is less than 0.";
+      DCHECK_LE(height, View::height()) << "Height of the keyboard is greater "
+          "than the height of containing view.";
+      keyboard_height_ = height;
+      Layout();
+    }
   }
 }
 
