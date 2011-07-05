@@ -136,11 +136,11 @@
 
 .most-visited .favicon {
   background: no-repeat 5px 50%;
-  background-size: 16px;
+  background-size: 32px;
   bottom: 7px;
   box-sizing: border-box;
   display: block;
-  height: 16px;
+  height: 32px;
   position: absolute;
   width: 100%;
 }

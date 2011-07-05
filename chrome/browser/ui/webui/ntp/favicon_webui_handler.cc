@@ -28,9 +28,9 @@ void FaviconWebUIHandler::RegisterMessages() {
 void FaviconWebUIHandler::HandleGetFaviconDominantColor(const ListValue* args) {
   std::string path;
   CHECK(args->GetString(0, &path));
-  DCHECK(StartsWithASCII(path, "chrome://favicon/", false)) << "path is "
-                                                            << path;
-  path = path.substr(arraysize("chrome://favicon/") - 1);
+  DCHECK(StartsWithASCII(path, "chrome://favicon/size/32/", false)) <<
+      "path is " << path;
+  path = path.substr(arraysize("chrome://favicon/size/32/") - 1);
 
   double id;
   CHECK(args->GetDouble(1, &id));
@@ -54,11 +54,11 @@ void FaviconWebUIHandler::OnFaviconDataAvailable(
   FaviconService* favicon_service =
       web_ui_->GetProfile()->GetFaviconService(Profile::EXPLICIT_ACCESS);
   int id = consumer_.GetClientData(favicon_service, request_handle);
+  FundamentalValue id_value(id);
+  scoped_ptr<StringValue> color_value;
 
   if (favicon.is_valid()) {
     // TODO(estade): cache the response
-    FundamentalValue id_value(id);
-
     color_utils::GridSampler sampler;
     SkColor color =
         color_utils::CalculateKMeanColorOfPNG(favicon.image_data, 100, 665,
@@ -67,8 +67,11 @@ void FaviconWebUIHandler::OnFaviconDataAvailable(
                                                SkColorGetR(color),
                                                SkColorGetG(color),
                                                SkColorGetB(color));
-    StringValue color_value(css_color);
-    web_ui_->CallJavascriptFunction("ntp4.setFaviconDominantColor",
-                                    id_value, color_value);
+    color_value.reset(new StringValue(css_color));
+  } else {
+    color_value.reset(new StringValue("#919191"));
   }
+
+  web_ui_->CallJavascriptFunction("ntp4.setFaviconDominantColor",
+                                  id_value, *color_value);
 }

@@ -46,7 +46,8 @@ class FaviconService : public CancelableRequestProvider,
   typedef CancelableRequest<FaviconDataCallback> GetFaviconRequest;
 
   // Requests the |icon_type| of favicon. |consumer| is notified when the bits
-  // have been fetched.
+  // have been fetched. |icon_url| is the URL of the icon itself, e.g.
+  // <http://www.google.com/favicon.ico>.
   Handle GetFavicon(const GURL& icon_url,
                     history::IconType icon_type,
                     CancelableRequestConsumerBase* consumer,

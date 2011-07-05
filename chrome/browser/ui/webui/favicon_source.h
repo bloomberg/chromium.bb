@@ -54,9 +54,16 @@ class FaviconSource : public ChromeURLDataManager::DataSource {
   Profile* profile_;
   CancelableRequestConsumerT<int, 0> cancelable_consumer_;
 
+  // Map from request ID to size requested (in pixels). TODO(estade): Get rid of
+  // this map when we properly support multiple favicon sizes.
+  std::map<int, int> request_size_map_;
+
   // Raw PNG representation of the favicon to show when the favicon
   // database doesn't have a favicon for a webpage.
+  // 16x16
   scoped_refptr<RefCountedMemory> default_favicon_;
+  // 32x32
+  scoped_refptr<RefCountedMemory> default_favicon_large_;
 
   // The history::IconTypes of icon that this FaviconSource handles.
   const int icon_types_;

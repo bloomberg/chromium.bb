@@ -29,12 +29,12 @@ void FaviconSource::StartDataRequest(const std::string& path,
   FaviconService* favicon_service =
       profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
   if (favicon_service) {
-    FaviconService::Handle handle;
     if (path.empty()) {
       SendDefaultResponse(request_id);
       return;
     }
 
+    FaviconService::Handle handle;
     if (path.size() > 8 && path.substr(0, 8) == "iconurl/") {
       // TODO : Change GetFavicon to support combination of IconType.
       handle = favicon_service->GetFavicon(
@@ -43,8 +43,24 @@ void FaviconSource::StartDataRequest(const std::string& path,
           &cancelable_consumer_,
           NewCallback(this, &FaviconSource::OnFaviconDataAvailable));
     } else {
+      GURL url;
+
+      if (path.size() > 5 && path.substr(0, 5) == "size/") {
+        size_t slash = path.find("/", 5);
+        std::string size = path.substr(5, slash - 5);
+        int pixel_size = atoi(size.c_str());
+        CHECK(pixel_size == 32 || pixel_size == 16) <<
+            "only 32x32 and 16x16 icons are supported";
+        request_size_map_[request_id] = pixel_size;
+        url = GURL(path.substr(slash + 1));
+      } else {
+        request_size_map_[request_id] = 16;
+        url = GURL(path);
+      }
+
+      // TODO(estade): fetch the requested size.
       handle = favicon_service->GetFaviconForURL(
-          GURL(path),
+          url,
           icon_types_,
           &cancelable_consumer_,
           NewCallback(this, &FaviconSource::OnFaviconDataAvailable));
@@ -85,11 +101,23 @@ void FaviconSource::OnFaviconDataAvailable(
 }
 
 void FaviconSource::SendDefaultResponse(int request_id) {
-  if (!default_favicon_.get()) {
-    default_favicon_ =
-        ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
-            IDR_DEFAULT_FAVICON);
+  RefCountedMemory* bytes = NULL;
+  if (request_size_map_[request_id] == 32) {
+    if (!default_favicon_large_.get()) {
+      default_favicon_large_ =
+          ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
+              IDR_DEFAULT_LARGE_FAVICON);
+    }
+    bytes = default_favicon_large_;
+  } else {
+    if (!default_favicon_.get()) {
+      default_favicon_ =
+          ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
+              IDR_DEFAULT_FAVICON);
+    }
+    bytes = default_favicon_;
   }
+  request_size_map_.erase(request_id);
 
-  SendResponse(request_id, default_favicon_);
+  SendResponse(request_id, bytes);
 }

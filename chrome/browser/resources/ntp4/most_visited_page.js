@@ -89,7 +89,8 @@ cr.define('ntp4', function() {
       this.classList.remove('filler');
 
       var faviconDiv = this.querySelector('.favicon');
-      var faviconUrl = data.faviconUrl || 'chrome://favicon/' + data.url;
+      var faviconUrl = data.faviconUrl ||
+          'chrome://favicon/size/32/' + data.url;
       faviconDiv.style.backgroundImage = url(faviconUrl);
       faviconDiv.dir = data.direction;
       if (data.faviconDominantColor)
