@@ -153,6 +153,25 @@ ProtocolHandlerRegistry::GetHandlersFromPref(const char* pref_name) const {
   return result;
 }
 
+namespace {
+
+// If true default protocol handlers will be removed if the OS level
+// registration for a protocol is no longer Chrome.
+bool ShouldRemoveHandlersNotInOS() {
+#if defined(OS_LINUX)
+  // We don't do this on Linux as the OS registration there is not reliable,
+  // and Chrome OS doesn't have any notion of OS registration.
+  // TODO(benwells): When Linux support is more reliable remove this
+  // difference (http://crbug.com/88255).
+  return false;
+#else
+  const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
+  return !cmd_line.HasSwitch(switches::kDisableCustomProtocolOSCheck);
+#endif
+}
+
+} // namespace
+
 void ProtocolHandlerRegistry::Load() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::AutoLock auto_lock(lock_);
@@ -184,11 +203,7 @@ void ProtocolHandlerRegistry::Load() {
 
   // For each default protocol handler, check that we are still registered
   // with the OS as the default application.
-  bool check_os_registration = true;
-  const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
-  if (cmd_line.HasSwitch(switches::kDisableCustomProtocolOSCheck))
-    check_os_registration = false;
-  if (check_os_registration) {
+  if (ShouldRemoveHandlersNotInOS()) {
     for (ProtocolHandlerMap::const_iterator p = default_handlers_.begin();
          p != default_handlers_.end(); ++p) {
       ProtocolHandler handler = p->second;
