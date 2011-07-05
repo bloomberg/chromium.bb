@@ -41,9 +41,6 @@ echo "WARNING: hang can occur on FAT, use NTFS"
 #   nacl64/
 #     bin/
 #       bar => ../../libexec/nacl64-bar
-#   nacl/
-#     bin/
-#       bar => ../../libexec/nacl64-bar
 #
 # Symbolic links vs. hard links:
 #   On windows/cygwin, hard links are needed to run linked programs outside of
@@ -67,11 +64,10 @@ for exe in "$prefix/libexec/nacl64-"*.exe; do
 done
 
 
-# For each "/nacl64/bin/bar" create "/nacl64/bin/bar" and "/nacl/bin/bar"
+# For each "/nacl64/bin/bar" create "/nacl64/bin/bar"
 for exe in "$prefix/nacl64/bin/"*.exe; do
   name="$(basename "$exe")"
   ln -fn ./redirector.exe "$prefix/nacl64/bin/$name"
-  ln -fn ./redirector.exe "$prefix/nacl/bin/$name"
 done
 
 
