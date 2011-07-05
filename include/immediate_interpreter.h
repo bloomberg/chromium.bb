@@ -6,6 +6,7 @@
 
 #include "gestures/include/gestures.h"
 #include "gestures/include/interpreter.h"
+#include "gestures/include/map.h"
 #include "gestures/include/set.h"
 
 #ifndef GESTURES_IMMEDIATE_INTERPRETER_H_
@@ -52,8 +53,32 @@ class ImmediateInterpreter : public Interpreter {
   set<short, kMaxGesturingFingers> GetGesturingFingers(
       const HardwareState& hwstate) const;
 
+  // Updates current_gesture_type_ based on passed-in hwstate and
+  // considering the passed in fingers as gesturing.
+  void UpdateCurrentGestureType(
+      const HardwareState& hwstate,
+      const set<short, kMaxGesturingFingers>& gs_fingers);
+
+  // If the fingers are near each other in location and pressure and might
+  // to be part of a 2-finger action, returns true.
+  bool TwoFingersGesturing(const FingerState& finger1,
+                           const FingerState& finger2) const;
+
+  // Given that TwoFingersGesturing returns true for 2 fingers,
+  // This will further look to see if it's really 2 finger scroll or not.
+  // Returns the current state (move or scroll) or kGestureTypeNull if
+  // unknown.
+  GestureType GetTwoFingerGestureType(const FingerState& finger1,
+                                      const FingerState& finger2);
+
   // Does a deep copy of hwstate into prev_state_
   void SetPrevState(const HardwareState& hwstate);
+
+  // Returns true iff finger is in the bottom, dampened zone of the pad
+  bool FingerInDampenedZone(const FingerState& finger) const;
+
+  // Called when fingers have changed to fill start_positions_.
+  void FillStartPositions(const HardwareState& hwstate);
 
   HardwareState prev_state_;
   HardwareProperties hw_props_;
@@ -62,12 +87,19 @@ class ImmediateInterpreter : public Interpreter {
   // When fingers change, we record the time
   stime_t changed_time_;
 
+  // When fingers change, we keep track of where they started.
+  // Map: Finger ID -> (x, y) coordinate
+  map<short, std::pair<int, int>, kMaxFingers> start_positions_;
+
   // Same fingers state. This state is accumulated as fingers remain the same
   // and it's reset when fingers change.
   set<short, kMaxFingers> palm_;  // tracking ids of known palms
   set<short, kMaxFingers> pending_palm_;  // tracking ids of potential palms
   // tracking ids of known non-palms
   set<short, kMaxGesturingFingers> pointing_;
+
+  // If we are currently pointing, scrolling, etc.
+  GestureType current_gesture_type_;
 };
 
 }  // namespace gestures
