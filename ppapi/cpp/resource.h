@@ -8,7 +8,7 @@
 #include "ppapi/c/pp_resource.h"
 
 /// @file
-/// This file defines a Resource type representing data associated
+/// This file defines a <code>Resource</code> type representing data associated
 /// with the module.
 namespace pp {
 
@@ -21,13 +21,14 @@ class Resource {
 
   /// A constructor for copying a resource.
   ///
-  /// @param[in] other A Resource.
+  /// @param[in] other A <code>Resource</code>.
   Resource(const Resource& other);
 
   /// Destructor.
   virtual ~Resource();
 
-  /// This function assigns one Resource to another Resource.
+  /// This function assigns one <code>Resource</code> to another
+  /// <code>Resource</code>.
   ///
   /// @param[in] other A Resource.
   /// @return A Resource containing the assigned Resource.
@@ -47,25 +48,27 @@ class Resource {
   /// Note that the reference count on the resource is unchanged and the caller
   /// needs to release the resource.
   ///
-  /// @return The detached PP_Resource.
+  /// @return The detached <code>PP_Resource</code>.
   PP_Resource detach();
 
  protected:
-  /// A constructor used when a PP_Resource is provided as a return value
-  /// whose reference count we need to increment.
+  /// A constructor used when a <code>PP_Resource</code> is provided as a
+  /// return value whose reference count we need to increment.
   ///
-  /// @param[in] resource A PP_Resource.
+  /// @param[in] resource A <code>PP_Resource</code>.
   explicit Resource(PP_Resource resource);
 
-  /// This function is called by derived class' constructors to initialize this
-  /// Resource with a PP_Resource that has already had its reference count
-  /// incremented by Core::AddRefResource. It also assumes this object has no
+  /// PassRefFromConstructor is called by derived class' constructors to
+  /// initialize this <code>Resource</code> with a <code>PP_Resource</code>
+  /// that has already had its reference count incremented by
+  /// <code>Core::AddRefResource</code>. It also assumes this object has no
   /// current resource.
   ///
-  /// The intended usage is that the derived class constructor will call the
-  /// default Resource constructor, then make a call to create a resource. It
-  /// then wants to assign the new resource (which, since it was returned by the
-  /// browser, is already AddRef'ed).
+  /// The intended usage of this function that the derived class constructor
+  /// will call the default <code>Resource</code> constructor, then make a call
+  /// to create a resource. It then wants to assign the new resource (which,
+  /// since it was returned by the browser, already had its reference count
+  /// increased).
   ///
   /// @param[in] resource A PP_Resource.
   void PassRefFromConstructor(PP_Resource resource);

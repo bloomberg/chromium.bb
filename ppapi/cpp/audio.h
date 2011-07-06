@@ -29,39 +29,44 @@ class Audio : public Resource {
   /// A constructor that creates an Audio resource. No sound will be heard
   /// until StartPlayback() is called. The callback is called with the buffer
   /// address and given user data whenever the buffer needs to be filled.
-  /// From within the callback, you should not call PPB_Audio functions.
-  /// The callback will be called on a different thread than the one which
-  /// created the interface. For performance-critical applications (i.e.
-  /// low-latency audio), the callback should avoid blocking or calling
+  /// From within the callback, you should not call <code>PPB_Audio</code>
+  /// functions. The callback will be called on a different thread than the one
+  /// which created the interface. For performance-critical applications (such
+  /// as low-latency audio), the callback should avoid blocking or calling
   /// functions that can obtain locks, such as malloc. The layout and the size
   /// of the buffer passed to the audio callback will be determined by
-  /// the device configuration and is specified in the AudioConfig
+  /// the device configuration and is specified in the <code>AudioConfig</code>
   /// documentation.
   ///
-  /// @param[in] instance A pointer to an Instance indentifying one instance of
-  /// a module.
-  /// @param[in] config An AudioConfig containing the audio config resource.
-  /// @param[in] callback A PPB_Audio_Callback callback function that the
-  /// browser calls when it needs more samples to play.
+  /// @param[in] instance A pointer to an <code>Instance</code> indentifying one
+  /// instance of a module.
+  /// @param[in] config An <code>AudioConfig</code> containing the audio config
+  /// resource.
+  /// @param[in] callback A <code>PPB_Audio_Callback</code> callback function
+  /// that the browser calls when it needs more samples to play.
   /// @param[in] user_data A pointer to user data used in the callback function.
   Audio(Instance* instance,
         const AudioConfig& config,
         PPB_Audio_Callback callback,
         void* user_data);
 
-
-  /// Getter function for returning the internal PPB_AudioConfig struct
+  /// Getter function for returning the internal <code>PPB_AudioConfig</code>
+  /// struct.
+  ///
   /// @return A mutable reference to the PPB_AudioConfig struct.
   AudioConfig& config() { return config_; }
 
-  /// Getter function for returning the internal PPB_AudioConfig struct.
-  /// @return A const reference to the internal PPB_AudioConfig struct.
+  /// Getter function for returning the internal <code>PPB_AudioConfig</code>
+  /// struct.
+  ///
+  /// @return A const reference to the internal <code>PPB_AudioConfig</code>
+  /// struct.
   const AudioConfig& config() const { return config_; }
 
-  /// A function to start playback of audio.
+  /// StartPlayback() starts playback of audio.
   bool StartPlayback();
 
-  /// A function to stop playback of audio.
+  /// StopPlayback stops playback of audio.
   bool StopPlayback();
 
  private:

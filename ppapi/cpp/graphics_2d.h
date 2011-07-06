@@ -22,15 +22,15 @@ class Rect;
 
 class Graphics2D : public Resource {
  public:
-  /// Default constructor for creating an is_null() Graphics2D object.
+  /// Default constructor for creating an is_null() <code>Graphics2D</code>
+  /// object.
   Graphics2D();
 
-  /// A constructor accepting a reference to a Graphics2D graphics context
-  /// and converting it to a reference counted Graphics2D context. The
-  /// underlying 2D context is not copied; this constructor creates another
-  /// reference to the original 2D context.
+  /// The copy constructor for Graphics2D. The underlying 2D context is not
+  /// copied; this constructor creates another reference to the original 2D
+  /// context.
   ///
-  /// @param[in] other A pointer to a Graphics2D context.
+  /// @param[in] other A pointer to a <code>Graphics2D</code> context.
   Graphics2D(const Graphics2D& other);
 
   /// A constructor allocating a new 2D graphics context with the given size
@@ -40,26 +40,26 @@ class Graphics2D : public Resource {
   /// @param[in] instance The module instance.
   /// @param[in] size The size of the 2D graphics context in the browser,
   /// measured in device pixels.
-  /// @param[in] is_always_opaque Set the is_always_opaque flag if you know
-  /// that you will be painting only opaque data to this context. This will
-  /// disable blending when compositing the plugin with the web page, which
-  /// might give higher performance on some computers.
-  /// If you set is_always_opaque, your alpha channel should always be set to
-  /// 0xFF or there may be painting artifacts. The alpha values overwrite
-  /// the destination alpha values without blending when
+  /// @param[in] is_always_opaque Set the <code>is_always_opaque</code> flag
+  /// to true if you know that you will be painting only opaque data to this
+  /// context. This option will disable blending when compositing the module
+  /// with the web page, which might give higher performance on some computers.
+  ///
+  /// If you set <code>is_always_opaque</code>, your alpha channel should
+  /// always be set to 0xFF or there may be painting artifacts. The alpha values
+  /// overwrite the destination alpha values without blending when
   /// <code>is_always_opaque</code> is true.
   Graphics2D(Instance* instance, const Size& size, bool is_always_opaque);
 
-  /// A destructor that decrements the reference count of a Graphics2D object
-  /// made using the previous copy constructor. It is possible that the
-  /// destructor does not toally destroy the underlying 2D context if there
-  /// are outstanding references to it.
+  /// A destructor that decrements the reference count of a
+  /// <code>Graphics2D</code> object made using the previous copy constructor.
+  /// It is possible that the destructor does not toally destroy the underlying
+  /// 2D context if there are outstanding references to it.
   virtual ~Graphics2D();
 
-
-  /// Assigns one 2D graphics context to this 2D graphics context. This
-  /// function increases the reference count of the 2D resource of
-  /// the other 2D graphics context while decrementing the reference counter
+  /// This function assigns one 2D graphics context to this 2D graphics
+  /// context. This function increases the reference count of the 2D resource
+  /// of the other 2D graphics context while decrementing the reference counter
   /// of this 2D graphics context.
   ///
   /// @param[in] other An other 2D graphics context.
@@ -71,7 +71,7 @@ class Graphics2D : public Resource {
   /// @return The size of the 2D graphics context measured in device pixels.
   const Size& size() const { return size_; }
 
-  /// This function enqueues a paint command of the given image into
+  /// PaintImageData() enqueues a paint command of the given image into
   /// the context. This command has no effect until you call Flush(). As a
   /// result, what counts is the contents of the bitmap when you call Flush,
   /// not when you call this function.
@@ -86,21 +86,22 @@ class Graphics2D : public Resource {
   /// error.
   ///
   /// There are two methods most modules will use for painting. The first
-  /// method is to generate a new ImageData and then paint it. In this case,
-  /// you'll set the location of your painting to <code>top_left</code> and
-  /// set <code>src_rect</code> to NULL. The second is that you're generating
-  /// small invalid regions out of a larger bitmap representing your entire
-  /// module's image.
+  /// method is to generate a new <code>ImageData</code> and then paint it.
+  /// In this case, you'll set the location of your painting to
+  /// <code>top_left</code> and set <code>src_rect</code> to <code>NULL</code>.
+  /// The second is that you're generating small invalid regions out of a larger
+  /// bitmap representing your entire module's image.
   ///
-  /// @param[in] image The ImageData to be painted.
-  /// @param[in] top_left A Point representing the top_left location where the
-  /// ImageData will be painted.
+  /// @param[in] image The <code>ImageData</code> to be painted.
+  /// @param[in] top_left A <code>Point</code> representing the
+  /// <code>top_left</code> location where the <code>ImageData</code> will be
+  /// painted.
   void PaintImageData(const ImageData& image,
                       const Point& top_left);
 
-  /// This function enqueues a paint command of the given image into
+  /// PaintImageData() enqueues a paint command of the given image into
   /// the context. This command has no effect until you call Flush(). As a
-  /// result, what counts is the contents of the bitmap when you call Flush,
+  /// result, what counts is the contents of the bitmap when you call Flush(),
   /// not when you call this function.
   ///
   /// The provided image will be placed at <code>top_left</code> from the top
@@ -116,28 +117,29 @@ class Graphics2D : public Resource {
   /// The painted area of the source bitmap must fall entirely within the
   /// context. Attempting to paint outside of the context will result in an
   /// error. However, the source bitmap may fall outside the context, as long
-  /// as the src_rect subset of it falls entirely within the context.
+  /// as the <code>src_rect</code> subset of it falls entirely within the
+  /// context.
   ///
   /// There are two methods most modules will use for painting. The first
-  /// method is to generate a new ImageData and then paint it. In this case,
-  /// you'll set the location of your painting to top_left and set src_rect to
-  /// NULL. The second is that you're generating small invalid regions out of
-  /// a larger bitmap representing your entire module's image. The
-  /// second is that you're generating small invalid regions out of a larger
+  /// method is to generate a new <code>ImageData</code> and then paint it. In
+  /// this case, you'll set the location of your painting to
+  /// <code>top_left</code> and set <code>src_rect</code> to <code>NULL</code>.
+  /// The second is that you're generating small invalid regions out of a larger
   /// bitmap representing your entire module. In this case, you would set the
   /// location of your image to (0,0) and then set <code>src_rect</code> to the
   /// pixels you changed.
   ///
-  /// @param[in] image The ImageData to be painted.
-  /// @param[in] top_left A Point representing the <code>top_left</code>
-  /// location where the ImageData will be painted.
-  /// @param[in] src_rect The rectangular area where the ImageData will
-  /// be painted.
+  /// @param[in] image The <code>ImageData</code> to be painted.
+  /// @param[in] top_left A <code>Point</code> representing the
+  /// <code>top_left</code> location where the <code>ImageData</code> will be
+  /// painted.
+  /// @param[in] src_rect The rectangular area where the <code>ImageData</code>
+  /// will be painted.
   void PaintImageData(const ImageData& image,
                       const Point& top_left,
                       const Rect& src_rect);
 
-  /// This function enqueues a scroll of the context's backing store. This
+  /// Scroll() enqueues a scroll of the context's backing store. This
   /// function has no effect until you call Flush(). The data within the
   /// provided clipping rectangle will be shifted by (dx, dy) pixels.
   ///
@@ -154,11 +156,11 @@ class Graphics2D : public Resource {
   /// shifted.
   void Scroll(const Rect& clip, const Point& amount);
 
-  /// This function provides a slightly more efficient way to paint the entire
-  /// module's image. Normally, calling PaintImageData() requires that the
-  /// browser copy the pixels out of the image and into the graphics context's
-  /// backing store. This function replaces the graphics context's backing
-  /// store with the given image, avoiding the copy.
+  /// ReplaceContents() provides a slightly more efficient way to paint the
+  /// entire module's image. Normally, calling PaintImageData() requires that
+  /// the browser copy the pixels out of the image and into the graphics
+  /// context's backing store. This function replaces the graphics context's
+  /// backing store with the given image, avoiding the copy.
   ///
   /// The new image must be the exact same size as this graphics context. If
   /// the new image uses a different image format than the browser's native
@@ -166,10 +168,11 @@ class Graphics2D : public Resource {
   /// format), then a conversion will be done inside the browser which may slow
   /// the performance a little bit.
   ///
-  /// The new image will not be painted until you call Flush().
+  /// <strong>Note:</strong> The new image will not be painted until you call
+  /// Flush().
   ///
-  /// Release your references to the image after a call to this function.
-  /// If you paint to the image after ReplaceContents(), there is the
+  /// After this call, you should take care to release your references to the
+  /// image. If you paint to the image after ReplaceContents(), there is the
   /// possibility of significant painting artifacts because the page might use
   /// partially-rendered data when copying out of the backing store.
   ///
@@ -181,20 +184,19 @@ class Graphics2D : public Resource {
   /// allocated during the animation, and the backing store and "front buffer"
   /// (which the module is painting into) are just being swapped back and forth.
   ///
-  /// @param[in] image The ImageData to be painted.
+  /// @param[in] image The <code>ImageData</code> to be painted.
   void ReplaceContents(ImageData* image);
 
-
-  /// This function flushes any enqueued paint, scroll, and replace commands
-  /// for the backing store. This actually executes the updates, and causes a
+  /// Flush() flushes any enqueued paint, scroll, and replace commands
+  /// to the backing store. This actually executes the updates, and causes a
   /// repaint of the webpage, assuming this graphics context is bound to a
   /// module instance.
   ///
   /// Flush() runs in asynchronous mode. Specify a callback function and
   /// the argument for that callback function. The callback function will be
   /// executed on the calling thread when the image has been painted to the
-  /// screen. While you are waiting for a Flush callback, additional calls to
-  /// Flush() will fail.
+  /// screen. While you are waiting for a <code>Flush</code> callback,
+  /// additional calls to Flush() will fail.
   ///
   /// Because the callback is executed (or thread unblocked) only when the
   /// module's image is actually on the screen, this function provides
@@ -231,20 +233,25 @@ class Graphics2D : public Resource {
   /// released your reference to.
   ///
   /// <strong>Shutdown</strong>
-  /// If a plugin instance is removed when a Flush is pending, the
+  /// If a module instance is removed when a Flush is pending, the
   /// callback will not be executed.
   ///
-  /// @param[in] cc A CompletionCallback to be called when the image has
-  /// been painted on the screen.
-  /// @return Returns PP_OK on succes or PP_Error_BadResource the graphics
-  /// context is invalid, PP_Error_BadArgument if the callback is null and
+  /// @param[in] cc A <code>CompletionCallback</code> to be called when the
+  /// image has been painted on the screen.
+  ///
+  /// @return Returns <code>PP_OK</code> on success or
+  /// <code>PP_Error_BadResource</code> if the graphics context is invalid,
+  /// <code>PP_Error_BadArgument</code> if the callback is null and
   /// flush is being called from the main thread of the module, or
-  /// PP_Error_InProgress if a flush is already pending that has not issued
-  /// its callback yet.  In the failure case, nothing will be updated and
-  /// no callback will be scheduled.
+  /// <code>PP_Error_InProgress</code> if a flush is already pending that has
+  /// not issued its callback yet.  In the failure case, nothing will be
+  /// updated and no callback will be scheduled.
 
-  /// TODO(darin): We should ensure that the completion callback always runs, so
-  /// that it is easier for consumers to manage memory referenced by a callback.
+  // TODO(darin): We should ensure that the completion callback always runs, so
+  // that it is easier for consumers to manage memory referenced by a callback.
+
+  // TODO(): Add back in the synchronous mode description once we have support
+  // for it.
   int32_t Flush(const CompletionCallback& cc);
 
  private:

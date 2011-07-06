@@ -27,15 +27,16 @@ class Instance;
 ///
 /// Buffer layout for a stereo int16 configuration:
 ///
-/// int16_t *buffer16;
-/// buffer16[0] is the first left channel sample.
-/// buffer16[1] is the first right channel sample.
-/// buffer16[2] is the second left channel sample.
-/// buffer16[3] is the second right channel sample.
-/// ...
-/// buffer16[2 * (sample_frame_count - 1)] is the last left channel sample.
-/// buffer16[2 * (sample_frame_count - 1) + 1] is the last right channel
-/// sample.
+/// <code>int16_t *buffer16;</code>
+/// <code>buffer16[0]</code> is the first left channel sample.
+/// <code>buffer16[1]</code> is the first right channel sample.
+/// <code>buffer16[2]</code> is the second left channel sample.
+/// <code>buffer16[3]</code> is the second right channel sample.
+/// <code>...</code>
+/// <code>buffer16[2 * (sample_frame_count - 1)]</code> is the last left
+/// channel sample.
+/// <code>buffer16[2 * (sample_frame_count - 1) + 1]</code> is the last right
+/// channel sample.
 /// Data will always be in the native endian format of the platform.
 ///
 /// <strong>Example:</strong>
@@ -54,7 +55,7 @@ class Instance;
 /// @endcode
 class AudioConfig : public Resource {
  public:
-  /// An empty constructor for an AudioConfig resource.
+  /// An empty constructor for an <code>AudioConfig</code> resource.
   AudioConfig();
 
   /// A constructor that creates an audio config based on the given sample rate
@@ -62,30 +63,34 @@ class AudioConfig : public Resource {
   /// resulting resource will be is_null(). You can pass the result of
   /// RecommendSampleFrameCount() as the sample frame count.
   ///
-  /// @param[in] instance A pointer to an Instance indentifying one instance of
-  /// a module.
-  /// @param[in] sample_rate A PP_AudioSampleRate which is either
-  /// PP_AUDIOSAMPLERATE_44100 or PP_AUDIOSAMPLERATE_48000.
+  /// @param[in] instance A pointer to an <code>Instance</code> indentifying
+  /// one instance of a module.
+  /// @param[in] sample_rate A <code>PP_AudioSampleRate</code> which is either
+  /// <code>PP_AUDIOSAMPLERATE_44100</code> or
+  /// <code>PP_AUDIOSAMPLERATE_48000</code>.
   /// @param[in] sample_frame_count A uint32_t frame count returned from the
-  /// RecommendSampleFrameCount function.
+  /// <code>RecommendSampleFrameCount</code> function.
   AudioConfig(Instance* instance,
               PP_AudioSampleRate sample_rate,
               uint32_t sample_frame_count);
 
-  /// This function returns a supported frame count closest to the requested
-  /// count. The sample frame count determines the overall latency of audio.
-  /// Smaller frame counts will yield lower latency, but higher CPU
-  /// utilization. Supported sample frame counts will vary by hardware and
-  /// system (consider that the local system might be anywhere from a cell
-  /// phone or a high-end audio workstation). Sample counts less than
-  /// PP_AUDIOMINSAMPLEFRAMECOUNT and greater than PP_AUDIOMAXSAMPLEFRAMECOUNT
-  /// are never supported on any system, but values in between aren't
-  /// necessarily valid. This function will return a supported count closest to
-  /// the requested value for use in the constructor.
+  /// RecommendSampleFrameCount() returns a supported frame count closest to
+  /// the requested count. The sample frame count determines the overall
+  /// latency of audio. Smaller frame counts will yield lower latency, but
+  /// higher CPU utilization. Supported sample frame counts will vary by
+  /// hardware and system (consider that the local system might be anywhere
+  /// from a cell phone or a high-end audio workstation). Sample counts less
+  /// than <code>PP_AUDIOMINSAMPLEFRAMECOUNT</code> and greater than
+  /// <code>PP_AUDIOMAXSAMPLEFRAMECOUNT</code> are never supported on any
+  /// system, but values in between aren't necessarily valid. This function
+  /// will return a supported count closest to the requested value for use in
+  /// the constructor.
   ///
-  /// @param[in] sample_rate A PP_AudioSampleRate which is either
-  /// PP_AUDIOSAMPLERATE_44100 or PP_AUDIOSAMPLERATE_48000.
+ /// @param[in] sample_rate A <code>PP_AudioSampleRate</code> which is either
+  /// <code>PP_AUDIOSAMPLERATE_44100</code> or
+  /// <code>PP_AUDIOSAMPLERATE_48000</code>.
   /// @param[in] requested_sample_frame_count A uint_32t requested frame count.
+  ///
   /// @return A uint32_t containing the recommended sample frame count if
   /// successful. If the sample frame count or bit rate is not supported,
   /// this function will fail and return 0.
@@ -93,11 +98,14 @@ class AudioConfig : public Resource {
       PP_AudioSampleRate sample_rate,
       uint32_t requested_sample_frame_count);
 
-  /// Getter function for returning the internal PP_AudioSampleRate enum.
-  /// @return The PP_AudioSampleRate enum.
+  /// Getter function for returning the internal
+  /// <code>PP_AudioSampleRate</code> enum.
+  ///
+  /// @return The <code>PP_AudioSampleRate</code> enum.
   PP_AudioSampleRate sample_rate() const { return sample_rate_; }
 
   /// Getter function for returning the internal sample frame count.
+  ///
   /// @return A uint32_t containing the sample frame count.
   uint32_t sample_frame_count() { return sample_frame_count_; }
 

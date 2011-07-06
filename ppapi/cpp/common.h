@@ -7,24 +7,29 @@
 
 
 /// @file
-/// Defines the API to convert PP_Bool to and from their C++ equivalent.
+/// Defines the API to convert <code>PP_Bool</code> to and from their C++
+/// equivalent.
 
 #include "ppapi/c/pp_bool.h"
 
 namespace pp {
 
-/// This function is used to convert a C++ bool to the appropriate PP_Bool
-/// value.
+/// BoolToPPBool() is used to convert a C++ bool to the appropriate
+/// <code>PP_Bool</code> value.
+///
 /// @param[in] value A C++ boolean value.
-/// @return A PP_Bool equivalent of the C++ boolean value.
+///
+/// @return A <code>PP_Bool</code> equivalent of the C++ boolean value.
 inline PP_Bool BoolToPPBool(bool value) {
   return value ? PP_TRUE : PP_FALSE;
 }
 
-/// This function is used to convert a PP_Bool to a C++ boolean value.
-/// value.
-/// @param[in] value A PP_Bool boolean value.
-/// @return A C++ equivalent of the PP_Bool boolean value.
+/// PPBoolToBool() is used to convert a <code>PP_Bool</code> to a C++
+/// boolean value.
+///
+/// @param[in] value A <code>PP_Bool</code> boolean value.
+///
+/// @return A C++ equivalent of the <code>PP_Bool</code> boolean value.
 inline bool PPBoolToBool(PP_Bool value) {
   return !!value;
 }

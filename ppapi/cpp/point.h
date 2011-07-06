@@ -15,32 +15,32 @@ namespace pp {
 /// A 2 dimensional point with 0,0 being the upper-left starting coordinate.
 class Point {
  public:
-    /// A constructor for a point at 0,0.
-    Point() {
+  /// The default constructor for a point at 0,0.
+  Point() {
     point_.x = 0;
     point_.y = 0;
   }
 
-    /// A constructor accepting two int32_t values for x and y and converting
-    /// them to a Point.
-    /// @param[in] in_x An int32_t value representing a horizontal coordinate
-    /// of a point, starting with 0 as the left-most coordinate.
-    /// @param[in] in_y An int32_t value representing a vertical coordinate
-    /// of a point, starting with 0 as the top-most coordinate.
-    Point(int32_t in_x, int32_t in_y) {
+  /// A constructor accepting two int32_t values for x and y and converting
+  /// them to a Point.
+  /// @param[in] in_x An int32_t value representing a horizontal coordinate
+  /// of a point, starting with 0 as the left-most coordinate.
+  /// @param[in] in_y An int32_t value representing a vertical coordinate
+  /// of a point, starting with 0 as the top-most coordinate.
+  Point(int32_t in_x, int32_t in_y) {
     point_.x = in_x;
     point_.y = in_y;
   }
 
-    /// A constructor accepting a pointer to a PP_Point and converting the
-    /// PP_Point to a Point. This is an implicit conversion constructor.
-    /// @param[in] point A pointer to a PP_Point.
-    Point(const PP_Point& point) {  // Implicit.
+  /// A constructor accepting a pointer to a PP_Point and converting the
+  /// PP_Point to a Point. This is an implicit conversion constructor.
+  /// @param[in] point A pointer to a PP_Point.
+  Point(const PP_Point& point) {  // Implicit.
     point_.x = point.x;
     point_.y = point.y;
   }
-    /// Destructor.
-    ~Point() {
+  /// Destructor.
+  ~Point() {
   }
 
   /// A function allowing implicit conversion of a Point to a PP_Point.
