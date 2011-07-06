@@ -69,6 +69,7 @@ function testIsPageRangeTextValid2() {
   assertFalse(isPageRangeTextValid("1,2,0,56", totalPageCount));
   assertFalse(isPageRangeTextValid("-1,1,2,,56", totalPageCount));
   assertFalse(isPageRangeTextValid("1,2,56-40", totalPageCount));
+  assertFalse(isPageRangeTextValid("101-110", totalPageCount));
 }
 
 function testPageRangeTextToPageList() {

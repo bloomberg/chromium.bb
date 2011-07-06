@@ -95,7 +95,7 @@ function isPageRangeTextValid(pageRangeText, totalPageCount) {
       var from = parseInt(match[1], 10);
       var to = isPositiveInteger(match[2]) ? parseInt(match[2], 10) :
           totalPageCount;
-      if (from > to)
+      if (from > to || from > totalPageCount)
         return false;
     } else if (!isPositiveInteger(parts[i]) || (totalPageCount != -1 &&
           parseInt(parts[i], 10) > totalPageCount)) {
