@@ -56,6 +56,8 @@
 #include "chrome/browser/ui/webui/chromeos/sim_unlock_ui.h"
 #include "chrome/browser/ui/webui/chromeos/system_info_ui.h"
 #include "chrome/browser/ui/webui/active_downloads_ui.h"
+#else
+#include "chrome/browser/ui/webui/new_profile_ui.h"
 #endif
 
 #if defined(TOUCH_UI)
@@ -224,6 +226,13 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
 
   if (url.spec() == chrome::kChromeUIConstrainedHTMLTestURL)
     return &NewWebUI<ConstrainedHtmlUI>;
+
+#if !defined(OS_CHROMEOS)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kMultiProfiles)) {
+    if (url.host() == chrome::kChromeUINewProfileHost)
+      return &NewWebUI<NewProfileUI>;
+  }
+#endif
 
   return NULL;
 }
