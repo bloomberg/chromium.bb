@@ -61,7 +61,7 @@ const int kHostBlacklistStatusCode = 403;
 
 // Header and value set for all loads.
 const char kPreviewHeader[] = "X-Purpose";
-const char kPreviewHeaderValue[] = "preview";
+const char kPreviewHeaderValue[] = "instant";
 
 }  // namespace
 
