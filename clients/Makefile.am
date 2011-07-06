@@ -9,6 +9,7 @@ noinst_PROGRAMS =				\
 	smoke					\
 	resizor					\
 	simple-client				\
+	simple-shm				\
 	eventdemo
 
 noinst_LIBRARIES = libtoytoolkit.a
@@ -56,6 +57,9 @@ resizor_LDADD = $(toolkit_libs)
 
 simple_client_SOURCES = simple-client.c
 simple_client_LDADD = $(SIMPLE_CLIENT_LIBS) -lm
+
+simple_shm_SOURCES = simple-shm.c
+simple_shm_LDADD = $(CLIENT_LIBS) -lrt -lm
 
 eventdemo_SOURCES = eventdemo.c
 eventdemo_LDADD = $(toolkit_libs)
