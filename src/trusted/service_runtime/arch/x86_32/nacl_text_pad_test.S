@@ -6,6 +6,10 @@
 #include "native_client/src/trusted/service_runtime/include/bits/nacl_syscalls.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
+#if defined(PNACL_AS)
+#define call naclcall
+#endif
+
         .text
 start_of_text:
 
@@ -200,8 +204,19 @@ ro_sane:
 
         pushl %edi
         call NACL_SYSCALL_ADDR(NACL_sys_exit)
-
+        /*
+         * Pad code section to TEXT_EXTEND with 0xf4.
+         * This little dance is necessary because llvm mc does not support
+         * arbitrary expressions in the first argument of .space".
+         * nacl-as on the other hand gets confused by ".align"
+         */
+#if defined(PNACL_AS)
+#define POW2_BIGGER_THAN_DOT 16384
+        .align POW2_BIGGER_THAN_DOT, 0xf4
+        .space TEXT_EXTEND - POW2_BIGGER_THAN_DOT, 0xf4
+#else
         .skip TEXT_EXTEND - (. - start_of_text), 0xf4
+#endif
 end_of_text:
 
 #if EXPECTED_RODATA != 0

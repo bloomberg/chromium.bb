@@ -45,8 +45,9 @@ def NewAsmEnv(env, defines, rodata_address, rwdata_address):
   if asm_env.Bit('bitcode'):
     asm_env.Replace(OBJSUFFIX='.o')
     asm_env.Append(ASFLAGS=['-arch', '${TARGET_FULLARCH}'])
-    # NOTE: MC_ASM has issues with skip directive
-    asm_env.Append(ASFLAGS='--pnacl-driver-set-USE_MC_ASM=0')
+    # NOTE: "PNACL_AS" controls small code adaptions needed for  the
+    # pnacl assembler
+    asm_env.Append(ASFLAGS='-DPNACL_AS=1')
   link_cmd = ('${LD} -e _start ${TEXT_START} ${RO_START} ${RW_START}' +
                 ' -o ${TARGET} ${SOURCES}')
 
