@@ -29,7 +29,6 @@ bool GLSurfaceCGL::InitializeOneOff() {
     (CGLPixelFormatAttribute) kCGLPFAPBuffer,
     (CGLPixelFormatAttribute) 0
   };
-  CGLPixelFormatObj pixel_format;
   GLint num_pixel_formats;
   if (CGLChoosePixelFormat(attribs,
                            &g_pixel_format,

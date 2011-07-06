@@ -33,13 +33,13 @@ bool IsCompositingWindowManagerActive(Display* display) {
   // The X macro "None" has been undefined by gl_bindings.h.
   const int kNone = 0;
   static Atom net_wm_cm_s0 = kNone;
-  if (net_wm_cm_s0 == kNone) {
+  if (net_wm_cm_s0 == static_cast<Atom>(kNone)) {
     net_wm_cm_s0 = XInternAtom(display, "_NET_WM_CM_S0", True);
   }
-  if (net_wm_cm_s0 == kNone) {
+  if (net_wm_cm_s0 == static_cast<Atom>(kNone)) {
     return false;
   }
-  return XGetSelectionOwner(display, net_wm_cm_s0) != kNone;
+  return XGetSelectionOwner(display, net_wm_cm_s0) != static_cast<Atom>(kNone);
 }
 
 }  // namespace anonymous
@@ -123,8 +123,6 @@ bool GLContextGLX::MakeCurrent(GLSurface* surface) {
   DCHECK(context_);
   if (IsCurrent(surface))
     return true;
-
-  GLSurfaceGLX* surface_glx = static_cast<GLSurfaceGLX*>(surface);
 
   if (!glXMakeCurrent(
       GLSurfaceGLX::GetDisplay(),

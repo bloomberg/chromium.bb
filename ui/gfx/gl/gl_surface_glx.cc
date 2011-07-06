@@ -111,8 +111,8 @@ void* NativeViewGLSurfaceGLX::GetConfig() {
 
 PbufferGLSurfaceGLX::PbufferGLSurfaceGLX(const gfx::Size& size)
   : size_(size),
-    pbuffer_(0),
-    config_(NULL) {
+    config_(NULL),
+    pbuffer_(0) {
 }
 
 PbufferGLSurfaceGLX::~PbufferGLSurfaceGLX() {
