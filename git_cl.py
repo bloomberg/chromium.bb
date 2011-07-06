@@ -510,8 +510,7 @@ or verify this branch is set up to track another (via the --track argument to
       self.SetPatchset(0)
     self.has_issue = False
 
-  def RunHook(self, committing, upstream_branch, tbr, may_prompt, verbose,
-      author):
+  def RunHook(self, committing, upstream_branch, may_prompt, verbose, author):
     """Calls sys.exit() if the hook fails; returns a HookResults otherwise."""
     root = RunCommand(['git', 'rev-parse', '--show-cdup']).strip() or '.'
     absroot = os.path.abspath(root)
@@ -552,7 +551,7 @@ or verify this branch is set up to track another (via the --track argument to
     try:
       output = presubmit_support.DoPresubmitChecks(change, committing,
           verbose=verbose, output_stream=sys.stdout, input_stream=sys.stdin,
-          default_presubmit=None, may_prompt=may_prompt, tbr=tbr,
+          default_presubmit=None, may_prompt=may_prompt,
           rietveld_obj=self.RpcServer())
     except presubmit_support.PresubmitFailure, e:
       DieWithError(
@@ -897,7 +896,7 @@ def CMDpresubmit(parser, args):
     base_branch = cl.GetUpstreamBranch()
 
   cl.RunHook(committing=not options.upload, upstream_branch=base_branch,
-             tbr=False, may_prompt=False, verbose=options.verbose,
+             may_prompt=False, verbose=options.verbose,
              author=None)
   return 0
 
@@ -943,7 +942,7 @@ def CMDupload(parser, args):
 
   if not options.bypass_hooks and not options.force:
     hook_results = cl.RunHook(committing=False, upstream_branch=base_branch,
-                              tbr=False, may_prompt=True,
+                              may_prompt=True,
                               verbose=options.verbose,
                               author=None)
     if not options.reviewers and hook_results.reviewers:
@@ -1058,9 +1057,6 @@ def SendUpstream(parser, args, cmd):
                     help="external contributor for patch (appended to " +
                          "description and used as author for git). Should be " +
                          "formatted as 'First Last <email@example.com>'")
-  parser.add_option('--tbr', action='store_true', dest='tbr',
-                    help="short for 'to be reviewed', commit branch " +
-                         "even without uploading for review")
   (options, args) = parser.parse_args(args)
   cl = Changelist()
 
@@ -1100,7 +1096,7 @@ def SendUpstream(parser, args, cmd):
 
   if not options.bypass_hooks and not options.force:
     cl.RunHook(committing=True, upstream_branch=base_branch,
-               tbr=options.tbr, may_prompt=True, verbose=options.verbose,
+               may_prompt=True, verbose=options.verbose,
                author=options.contributor)
 
     if cmd == 'dcommit':
@@ -1115,45 +1111,16 @@ def SendUpstream(parser, args, cmd):
                'use "git cl dcommit -f" to commit on a closed tree.')
 
   description = options.message
-  if not options.tbr:
-    # It is important to have these checks early.  Not only for user
-    # convenience, but also because the cl object then caches the correct values
-    # of these fields even as we're juggling branches for setting up the commit.
-    if not cl.GetIssue():
-      print 'Current issue unknown -- has this branch been uploaded?'
-      print 'Use --tbr to commit without review.'
-      return 1
+  if not description and cl.GetIssue():
+    description = cl.GetDescription()
 
-    if not description:
-      description = cl.GetDescription()
+  if not description:
+    print 'No description set.'
+    print 'Visit %s/edit to set it.' % (cl.GetIssueURL())
+    return 1
 
-    if not description:
-      print 'No description set.'
-      print 'Visit %s/edit to set it.' % (cl.GetIssueURL())
-      return 1
-
+  if cl.GetIssue():
     description += "\n\nReview URL: %s" % cl.GetIssueURL()
-  else:
-    if not description:
-      # Submitting TBR.  See if there's already a description in Rietveld, else
-      # create a template description. Eitherway, give the user a chance to edit
-      # it to fill in the TBR= field.
-      if cl.GetIssue():
-        description = cl.GetDescription()
-
-      # TODO(dpranke): Update to use ChangeDescription object.
-      if not description:
-        description = """# Enter a description of the change.
-# This will be used as the change log for the commit.
-
-"""
-        description += CreateDescriptionFromLog(args)
-
-      description = UserEditedLog(description + '\nTBR=')
-
-    if not description:
-      print "Description empty; aborting."
-      return 1
 
   if options.contributor:
     if not re.match('^.*\s<\S+@\S+>$', options.contributor):

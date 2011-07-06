@@ -1234,7 +1234,6 @@ def DoPresubmitChecks(change_info, committing, may_prompt):
       input_stream=sys.stdin,
       default_presubmit=root_presubmit,
       may_prompt=may_prompt,
-      tbr=False,
       rietveld_obj=change_info.RpcServer())
   if not output.should_continue() and may_prompt:
     # TODO(dpranke): move into DoPresubmitChecks(), unify cmd line args.

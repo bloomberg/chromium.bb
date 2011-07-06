@@ -63,6 +63,16 @@ def CheckChangeHasDescription(input_api, output_api):
       return [output_api.PresubmitNotifyResult('Add a description.')]
   return []
 
+
+def CheckChangeWasUploaded(input_api, output_api):
+  """Checks that the issue was uploaded before committing."""
+  if (input_api.is_committing and
+      (not input_api.change.issue or not input_api.change.patchset)):
+    return [output_api.PresubmitError(
+      'Issue wasn\'t uploaded. Please upload first.')]
+  return []
+
+
 ### Content checks
 
 def CheckDoNotSubmitInFiles(input_api, output_api):
@@ -929,5 +939,8 @@ def PanProjectChecks(input_api, output_api,
     snapshot("checking license")
     results.extend(input_api.canned_checks.CheckLicense(
         input_api, output_api, license_header, source_file_filter=sources))
+    snapshot("checking was uploaded")
+    results.extend(input_api.canned_checks.CheckChangeWasUploaded(
+        input_api, output_api))
   snapshot("done")
   return results

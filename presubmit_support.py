@@ -217,7 +217,7 @@ class InputApi(object):
       r"(|.*[\\\/])\.svn[\\\/].*",
   )
 
-  def __init__(self, change, presubmit_path, is_committing, tbr,
+  def __init__(self, change, presubmit_path, is_committing,
       rietveld_obj, verbose):
     """Builds an InputApi object.
 
@@ -225,14 +225,12 @@ class InputApi(object):
       change: A presubmit.Change object.
       presubmit_path: The path to the presubmit script being processed.
       is_committing: True if the change is about to be committed.
-      tbr: True if '--tbr' was passed to skip any reviewer/owner checks
       rietveld_obj: rietveld.Rietveld client object
     """
     # Version number of the presubmit_support script.
     self.version = [int(x) for x in __version__.split('.')]
     self.change = change
     self.is_committing = is_committing
-    self.tbr = tbr
     self.rietveld = rietveld_obj
     # TBD
     self.host_url = 'http://codereview.chromium.org'
@@ -416,6 +414,11 @@ class InputApi(object):
     if not file_item.startswith(self.change.RepositoryRoot()):
       raise IOError('Access outside the repository root is denied.')
     return gclient_utils.FileRead(file_item, mode)
+
+  @property
+  def tbr(self):
+    """Returns if a change is TBR'ed."""
+    return 'TBR' in self.change.tags
 
 
 class AffectedFile(object):
@@ -957,17 +960,15 @@ def DoGetTrySlaves(changed_files,
 
 
 class PresubmitExecuter(object):
-  def __init__(self, change, committing, tbr, rietveld_obj, verbose):
+  def __init__(self, change, committing, rietveld_obj, verbose):
     """
     Args:
       change: The Change object.
       committing: True if 'gcl commit' is running, False if 'gcl upload' is.
-      tbr: True if '--tbr' was passed to skip any reviewer/owner checks
       rietveld_obj: rietveld.Rietveld client object.
     """
     self.change = change
     self.committing = committing
-    self.tbr = tbr
     self.rietveld = rietveld_obj
     self.verbose = verbose
 
@@ -989,7 +990,7 @@ class PresubmitExecuter(object):
 
     # Load the presubmit script into context.
     input_api = InputApi(self.change, presubmit_path, self.committing,
-                         self.tbr, self.rietveld, self.verbose)
+                         self.rietveld, self.verbose)
     context = {}
     try:
       exec script_text in context
@@ -1031,7 +1032,6 @@ def DoPresubmitChecks(change,
                       input_stream,
                       default_presubmit,
                       may_prompt,
-                      tbr,
                       rietveld_obj):
   """Runs all presubmit checks that apply to the files in the change.
 
@@ -1050,7 +1050,6 @@ def DoPresubmitChecks(change,
     input_stream: A stream to read input from the user.
     default_presubmit: A default presubmit script to execute in any case.
     may_prompt: Enable (y/n) questions on warning or error.
-    tbr: was --tbr specified to skip any reviewer/owner checks?
     rietveld_obj: rietveld.Rietveld object.
 
   Warning:
@@ -1078,7 +1077,7 @@ def DoPresubmitChecks(change,
     if not presubmit_files and verbose:
       output.write("Warning, no presubmit.py found.\n")
     results = []
-    executer = PresubmitExecuter(change, committing, tbr, rietveld_obj, verbose)
+    executer = PresubmitExecuter(change, committing, rietveld_obj, verbose)
     if default_presubmit:
       if verbose:
         output.write("Running default presubmit script.\n")
@@ -1242,7 +1241,6 @@ def Main(argv):
         sys.stdin,
         options.default_presubmit,
         options.may_prompt,
-        False,
         rietveld_obj)
     return not results.should_continue()
   except PresubmitFailure, e:

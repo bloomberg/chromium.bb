@@ -20,10 +20,11 @@ _EOF
   git config rietveld.server localhost:1
   git checkout -q --track -b work
   echo "some work done" >> test
-  git add test; git commit -q -m "work"
+  git add test; git commit -q -m "work \
+TBR=foo"
 
   test_expect_success "dcommitted code" \
-      "$GIT_CL dcommit -f --tbr --bypass-hooks -m 'dcommit'"
+      "$GIT_CL dcommit -f --bypass-hooks -m 'dcommit'"
 
   test_expect_success "post-cl-dcommit hook executed" \
       "git symbolic-ref HEAD | grep -q COMMITTED"
