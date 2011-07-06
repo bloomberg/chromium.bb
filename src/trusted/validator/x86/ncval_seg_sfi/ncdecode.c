@@ -29,27 +29,23 @@
  * to completely resolve the operands of all instructions.
  */
 
-/* To turn on debugging of instruction decoding, change value of
- * DEBUGGING to 1.
- */
-#define DEBUGGING 0
-
-#include "native_client/src/shared/utils/debugging.h"
-
-/* Turn this flag on, so that we can print out human readable
- * names for type NaClInsttype.
- */
-#define NEEDSNACLINSTTYPESTRING
+#include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncdecode.h"
 
 #include <stdio.h>
 #include <assert.h>
-#include "native_client/src/trusted/validator_x86/ncdecode.h"
 
 #if NACL_TARGET_SUBARCH == 64
 # include "native_client/src/trusted/validator_x86/gen/ncdecodetab_64.h"
 #else
 # include "native_client/src/trusted/validator_x86/gen/ncdecodetab_32.h"
 #endif
+
+/* To turn on debugging of instruction decoding, change value of
+ * DEBUGGING to 1.
+ */
+#define DEBUGGING 0
+
+#include "native_client/src/shared/utils/debugging.h"
 
 /* Generates a print name for the given NCDecodeImmediateType. */
 static const char* NCDecodeImmediateTypeName(NCDecodeImmediateType type) {

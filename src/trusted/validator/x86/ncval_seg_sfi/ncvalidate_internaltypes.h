@@ -4,15 +4,16 @@
  * found in the LICENSE file.
  */
 
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVALIDATE_INTERNALTYPES_H_
-#define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVALIDATE_INTERNALTYPES_H_
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_SEG_SFI_NCVALIDATE_INTERNALTYPES_H__
+#define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_SEG_SFI_NCVALIDATE_INTERNALTYPES_H__
+
 /*
  * ncvalidate_internaltypes.h
  * Type declarations intimate to ncvalidate.h, exposed for testing.
  *
  */
 #include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
-#include "native_client/src/trusted/validator_x86/ncdecode.h"
+#include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncdecode.h"
 
 /* statistics */
 typedef struct SummaryStats {
@@ -65,4 +66,4 @@ typedef struct NCValidatorState {
   int num_diagnostics; /* How many error messages to print. */
 } NCValidatorState;
 
-#endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVALIDATE_INTERNALTYPES_H_*/
+#endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_SEG_SFI_NCVALIDATE_INTERNALTYPES_H__ */

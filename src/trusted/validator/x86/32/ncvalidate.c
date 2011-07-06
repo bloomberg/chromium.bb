@@ -7,7 +7,7 @@
 /* Implement the ApplyValidator API for the x86-32 architecture. */
 
 #include "native_client/src/trusted/validator/ncvalidate.h"
-#include "native_client/src/trusted/validator_x86/ncvalidate.h"
+#include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncvalidate.h"
 
 /* Be sure the correct compile flags are defined for this. */
 #if NACL_ARCH(NACL_TARGET_ARCH) != NACL_x86

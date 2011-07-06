@@ -28,8 +28,8 @@
 
 #if NACL_ARCH(NACL_TARGET_ARCH) == NACL_x86
 # if NACL_TARGET_SUBARCH == 32
-#  include "native_client/src/trusted/validator_x86/ncdecode.h"
-#  include "native_client/src/trusted/validator_x86/ncvalidate.h"
+#  include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncdecode.h"
+#  include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncvalidate.h"
 # elif NACL_TARGET_SUBARCH == 64
 #  include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
 #  include "native_client/src/trusted/validator_x86/nc_inst_iter.h"

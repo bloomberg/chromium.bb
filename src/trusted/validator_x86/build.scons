@@ -246,16 +246,6 @@ ncdecode_table = env_decode_table.ComponentProgram(
 
 env.Requires(ncdecode_table, crt)
 
-
-
-# Segment register validator library
-NCVALIDATE_SOURCES = ['ncdecode.c',
-                      'ncvalidate.c',
-                      ]
-
-env.ComponentLibrary(TargetLib(env, 'ncval_seg_sfi'),
-                     NCVALIDATE_SOURCES)
-
 # SFI validator library.
 # Note: When loading this library, follow it with ncvalidate, since
 # it contains many routines and constants needed by this library.

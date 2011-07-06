@@ -10,8 +10,8 @@
  * This header file contains type declarations and constants
  * used by the decoder input table
  */
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCDECODE_H_
-#define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCDECODE_H_
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_SEG_SFI_NCDECODE_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_SEG_SFI_NCDECODE_H_
 
 #include "native_client/src/shared/utils/types.h"
 #include "native_client/src/trusted/validator/x86/error_reporter.h"
@@ -395,4 +395,4 @@ extern void NCDecoderStatePairDestruct(NCDecoderStatePair* tthis);
 
 EXTERN_C_END
 
-#endif /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCDECODE_H_ */
+#endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_SEG_SFI_NCDECODE_H_ */

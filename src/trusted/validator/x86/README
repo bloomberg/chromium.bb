@@ -1,0 +1,16 @@
+Code in this directory implements utilities used by x86-32 and x86-64 validators.
+
+In addition, there are the following subdirectories:
+
+32
+    The implementation of the ncvalidate_x86_32 library, which implements
+    the public API to the x86-32 validator used in sel_ldr.
+
+64
+    The implementation of the ncvalidate_x86_64 library, which implements
+    the public API to the x86-64 validator used in sel_ldr.
+
+ncval_seg_sfi
+    The implementation of the validator libraries that use segment registers
+    to do data software fault isolation.
+

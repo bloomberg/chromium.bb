@@ -31,8 +31,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
-#define NEEDSNACLINSTTYPESTRING
-#include "native_client/src/trusted/validator_x86/ncdecode.h"
+#include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncdecode.h"
 
 typedef uint8_t bool;   /* zero or non-zero */
 #define TRUE 1

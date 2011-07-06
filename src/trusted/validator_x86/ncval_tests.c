@@ -20,9 +20,9 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/gio/gio.h"
 #include "native_client/src/shared/platform/nacl_log.h"
-#include "native_client/src/trusted/validator_x86/ncvalidate.h"
+#include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncvalidate.h"
+#include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncvalidate_internaltypes.h"
 #include "native_client/src/trusted/validator_x86/ncdis_util.h"
-#include "native_client/src/trusted/validator_x86/ncvalidate_internaltypes.h"
 
 #if !defined(ARRAYSIZE)
 #define ARRAYSIZE(a) sizeof(a)/sizeof(a[0])

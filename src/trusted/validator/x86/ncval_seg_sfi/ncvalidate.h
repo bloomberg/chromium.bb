@@ -4,8 +4,8 @@
  * found in the LICENSE file.
  */
 
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVALIDATE_H_
-#define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVALIDATE_H_
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_SEG_SFI_NCVALIDATE_H__
+#define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_SEG_SFI_NCVALIDATE_H__
 
 #include <stdio.h>
 #include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
@@ -148,4 +148,4 @@ int NCValidatorGetMaxDiagnostics();
  */
 void NCValidatorSetMaxDiagnostics(int new_value);
 
-#endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVALIDATE_H_ */
+#endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_SEG_SFI_NCVALIDATE_H__ */

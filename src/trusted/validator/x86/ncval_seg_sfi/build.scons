@@ -1,0 +1,47 @@
+# -*- python -*-
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+
+import os
+import sys
+Import('env')
+
+#
+#
+# Build x86 only pieces
+#
+#
+if not env.Bit('target_x86'): Return()
+
+# Make a copy of debug CRT for now.
+# TODO(bradnelson): there should be a better way to generalize this requirement.
+# NOTE: debug builds on windows break without this
+crt = []
+if env.AllBits('windows', 'debug'):
+  for i in ['.', '$STAGING_DIR']:
+    crt += env.Replicate(i, '$VC80_DIR/vc/redist/Debug_NonRedist/'
+                         'x86/Microsoft.VC80.DebugCRT')
+    crt += env.Replicate(i, '$VC80_DIR/vc/redist/x86/Microsoft.VC80.CRT')
+
+# TODO(bradchen): eliminate need for the following line
+env.FilterOut(CCFLAGS=['-Wextra', '-Wswitch-enum', '-Wsign-compare'])
+
+# Convert a library name into a target specific libary name
+def TargetLib(env, name):
+  return name + '_' + env['TARGET_FULLARCH'].replace('-', '_')
+
+# Create environment for command-line tools and testing, rather than
+# part of the TCB. Then define compile-time flag that communicates
+# that we are compiling in the test environment (rather than for the TCB).
+test_env = env.Clone();
+test_env.Append(CCFLAGS=['-DNACL_TRUSTED_BUT_NOT_TCB'])
+
+# Segment register validator library
+NCVALIDATE_SOURCES = ['ncdecode.c',
+                      'ncvalidate.c',
+                      ]
+
+env.ComponentLibrary(TargetLib(env, 'ncval_seg_sfi'),
+                     NCVALIDATE_SOURCES)

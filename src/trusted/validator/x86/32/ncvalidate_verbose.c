@@ -10,8 +10,8 @@
 
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/validator_x86/ncdis_util.h"
-#include "native_client/src/trusted/validator_x86/ncvalidate.h"
 #include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
+#include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncvalidate.h"
 #include "native_client/src/trusted/validator/x86/32/ncvalidate.h"
 
 /* Be sure the correct compile flags are defined for this. */

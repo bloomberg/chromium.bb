@@ -1995,6 +1995,7 @@ base_env.Append(
     'src/trusted/validator/build.scons',
     'src/trusted/validator/x86/build.scons',
     'src/trusted/validator_x86/build.scons',
+    'src/trusted/validator/x86/ncval_seg_sfi',
     'src/trusted/validator/x86/32/build.scons',
     'src/trusted/validator/x86/64/build.scons',
     'src/trusted/weak_ref/build.scons',

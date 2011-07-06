@@ -1,0 +1,7 @@
+This directory contains the code for the native client verifier (ncv)
+which checks whether binaries adhere to certain control flow
+and instruction set restrictions. It assumes that segment registers
+are used to control memory accesses.
+
+Note: Although the current builds generate 64-bit versions, they do not
+make any sense, since segment registers have little effect in x86-64.

@@ -15,7 +15,7 @@
 #include <stdio.h>
 #include "native_client/src/shared/gio/gio.h"
 #include "native_client/src/shared/platform/nacl_log.h"
-#include "native_client/src/trusted/validator_x86/ncdecode.h"
+#include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncdecode.h"
 #include "native_client/src/trusted/validator_x86/ncdis_util.h"
 
 struct NCDecodeTestCase {
