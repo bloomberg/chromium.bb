@@ -256,6 +256,34 @@ cr.define('ntp4', function() {
   }
 
   /**
+   * Called by chrome when a new app has been added to chrome.
+   * @param {Object} app A data structure full of relevant information for the
+   *     app.
+   */
+  function appAdded(app) {
+    var pageIndex = app.page_index || 0;
+    assert(pageIndex == 0, 'pageIndex != 0 not implemented');
+
+    var page = appsPages[pageIndex];
+    cardSlider.selectCardByValue(page);
+    page.appendApp(app, true);
+  }
+
+  /**
+   * Called by chrome when an existing app has been removed/uninstalled from
+   * chrome.
+   * @param {Object} appData A data structure full of relevant information for
+   *     the app.
+   */
+  function appRemoved(appData) {
+    var app = $(appData.id);
+    assert(app, 'trying to remove an app that doesn\'t exist');
+
+    var tile = findAncestorByClass(app, 'tile');
+    tile.doRemove();
+  }
+
+  /**
    * Given a theme resource name, construct a URL for it.
    * @param {string} resourceName The name of the resource.
    * @return {string} A url which can be used to load the resource.
@@ -514,6 +542,8 @@ cr.define('ntp4', function() {
   // Return an object with all the exports
   return {
     assert: assert,
+    appAdded: appAdded,
+    appRemoved: appRemoved,
     appsPrefChangeCallback: appsPrefChangeCallback,
     enterRearrangeMode: enterRearrangeMode,
     getAppsCallback: getAppsCallback,

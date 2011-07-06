@@ -57,6 +57,11 @@ class AppLauncherHandler : public WebUIMessageHandler,
   // Populate the given dictionary with all installed app info.
   void FillAppDictionary(DictionaryValue* value);
 
+  // Create a dictionary value for the given extension. May return NULL, e.g. if
+  // the given extension is not an app. If non-NULL, the caller assumes
+  // ownership of the pointer.
+  DictionaryValue* GetAppInfo(const Extension* extension);
+
   // Populate the given dictionary with the web store promo content.
   void FillPromoDictionary(DictionaryValue* value);
 

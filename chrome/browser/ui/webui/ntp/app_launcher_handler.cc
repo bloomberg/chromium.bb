@@ -228,7 +228,26 @@ void AppLauncherHandler::Observe(NotificationType type,
       break;
     }
     case NotificationType::EXTENSION_LOADED:
-    case NotificationType::EXTENSION_UNLOADED:
+    case NotificationType::EXTENSION_UNLOADED: {
+      const Extension* extension =
+          type == NotificationType::EXTENSION_LOADED ?
+              Details<const Extension>(details).ptr() :
+              Details<UnloadedExtensionInfo>(details)->extension;
+      if (!extension->is_app())
+        break;
+
+      if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewTabPage4)) {
+        scoped_ptr<DictionaryValue> app_info(GetAppInfo(extension));
+        std::string function =
+            type.value == NotificationType::EXTENSION_LOADED ?
+                "ntp4.appAdded" : "ntp4.appRemoved";
+        web_ui_->CallJavascriptFunction(function, *app_info);
+      } else if (web_ui_->tab_contents()) {
+        HandleGetApps(NULL);
+      }
+
+      break;
+    }
     case NotificationType::EXTENSION_LAUNCHER_REORDERED:
     // The promo may not load until a couple seconds after the first NTP view,
     // so we listen for the load notification and notify the NTP when ready.
@@ -258,17 +277,9 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
     // Don't include the WebStore.
     // The WebStore launcher gets special treatment in ntp/apps.js.
     const Extension* extension = *it;
-    if (extension->is_app() &&
-        extension->id() != extension_misc::kWebStoreAppId) {
-      DictionaryValue* app_info = new DictionaryValue();
-      AppNotificationManager* notification_manager =
-          extensions_service_->app_notification_manager();
-      CreateAppInfo(extension,
-                    notification_manager->GetLast(extension->id()),
-                    extensions_service_->extension_prefs(),
-                    app_info);
+    DictionaryValue* app_info = GetAppInfo(extension);
+    if (app_info)
       list->Append(app_info);
-    }
   }
 
   extensions = extensions_service_->disabled_extensions();
@@ -304,6 +315,22 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
       "showLauncher",
       extensions_service_->apps_promo()->ShouldShowAppLauncher(
           extensions_service_->GetAppIds()));
+}
+
+DictionaryValue* AppLauncherHandler::GetAppInfo(const Extension* extension) {
+  if (!extension->is_app() ||
+      extension->id() == extension_misc::kWebStoreAppId) {
+    return NULL;
+  }
+
+  DictionaryValue* app_info = new DictionaryValue();
+  AppNotificationManager* notification_manager =
+      extensions_service_->app_notification_manager();
+  CreateAppInfo(extension,
+                notification_manager->GetLast(extension->id()),
+                extensions_service_->extension_prefs(),
+                app_info);
+  return app_info;
 }
 
 void AppLauncherHandler::FillPromoDictionary(DictionaryValue* dictionary) {

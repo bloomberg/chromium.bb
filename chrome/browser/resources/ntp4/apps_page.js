@@ -173,6 +173,7 @@ cr.define('ntp4', function() {
 
     initialize: function() {
       assert(this.appData_.id, 'Got an app without an ID');
+      this.id = this.appData_.id;
 
       this.className = 'app';
 
@@ -286,7 +287,6 @@ cr.define('ntp4', function() {
      * @param {number} size The total size of |this|.
      * @param {number} x The x-position.
      * @param {number} y The y-position.
-     *     animate.
      */
     setBounds: function(size, x, y) {
       this.style.width = this.style.height = size + 'px';
@@ -338,9 +338,10 @@ cr.define('ntp4', function() {
      * Creates an app DOM element and places it at the last position on the
      * page.
      * @param {Object} appData The data object that describes the app.
+     * @param {?boolean} animate If true, the app tile plays an animation.
      */
-    appendApp: function(appData) {
-      this.appendTile(new App(appData));
+    appendApp: function(appData, animate) {
+      this.appendTile(new App(appData), animate);
     },
 
     /** @inheritDoc */

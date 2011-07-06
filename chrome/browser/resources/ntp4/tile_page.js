@@ -46,6 +46,9 @@ cr.define('ntp4', function() {
       this.addEventListener('drag', this.onDragMove_);
       this.addEventListener('dragend', this.onDragEnd_);
 
+      this.firstChild.addEventListener(
+          'webkitAnimationEnd', this.onContentsAnimationEnd_.bind(this));
+
       this.eventTracker = new EventTracker();
     },
 
@@ -237,6 +240,25 @@ cr.define('ntp4', function() {
         this.finalizeDrag_();
       }
     },
+
+    /**
+     * Called when an app is removed from Chrome. Animates its disappearance.
+     */
+    doRemove: function() {
+      var contents = this.firstChild;
+      this.firstChild.classList.add('removing-tile-contents');
+    },
+
+    /**
+     * Callback for the webkitAnimationEnd event on the tile's contents.
+     * @param {Event} e The event object.
+     */
+    onContentsAnimationEnd_: function(e) {
+      if (this.firstChild.classList.contains('new-tile-contents'))
+        this.firstChild.classList.remove('new-tile-contents');
+      else if (this.firstChild.classList.contains('removing-tile-contents'))
+        this.parentNode.removeChild(this);
+    },
   };
 
   /**
@@ -416,19 +438,26 @@ cr.define('ntp4', function() {
     },
 
     /**
+     * Appends a tile to the end of the tile grid.
+     * @param {HTMLElement} tileElement The contents of the tile.
+     * @param {?boolean} animate If true, the append will be animated.
      * @protected
      */
-    appendTile: function(tileElement) {
-      this.addTileAt(tileElement, this.tileElements_.length);
+    appendTile: function(tileElement, animate) {
+      this.addTileAt(tileElement, this.tileElements_.length, animate);
     },
 
     /**
      * Adds the given element to the tile grid.
      * @param {Node} tileElement The tile object/node to insert.
      * @param {number} index The location in the tile grid to insert it at.
+     * @param {?boolean} animate If true, the add will be animated.
      * @protected
      */
-    addTileAt: function(tileElement, index) {
+    addTileAt: function(tileElement, index, animate) {
+      this.classList.remove('animating-tile-page');
+      if (animate)
+        tileElement.classList.add('new-tile-contents');
       var wrapperDiv = new Tile(tileElement);
       if (index == this.tileElements_.length) {
         this.tileGrid_.appendChild(wrapperDiv);
@@ -439,7 +468,6 @@ cr.define('ntp4', function() {
       this.calculateLayoutValues_();
 
       this.positionTile_(index);
-      this.classList.remove('animating-tile-page');
     },
 
     /**
