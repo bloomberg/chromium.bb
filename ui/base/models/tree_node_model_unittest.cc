@@ -57,6 +57,8 @@ class TreeNodeModelTest : public testing::Test, public TreeModelObserver {
   DISALLOW_COPY_AND_ASSIGN(TreeNodeModelTest);
 };
 
+typedef TreeNodeWithValue<int> TestNode;
+
 // Verifies if the model is properly adding a new node in the tree and
 // notifying the observers.
 // The tree looks like this:
@@ -66,20 +68,20 @@ class TreeNodeModelTest : public testing::Test, public TreeModelObserver {
 //     +-- foo2
 // +-- child2
 TEST_F(TreeNodeModelTest, AddNode) {
-  TreeNodeWithValue<int>* root = new TreeNodeWithValue<int>();
-  TreeNodeModel<TreeNodeWithValue<int> > model(root);
+  TestNode* root = new TestNode;
+  TreeNodeModel<TestNode > model(root);
   model.AddObserver(this);
   ClearCounts();
 
-  TreeNodeWithValue<int>* child1 = new TreeNodeWithValue<int>();
+  TestNode* child1 = new TestNode;
   model.Add(root, child1, 0);
 
   AssertObserverCount(1, 0, 0);
 
   for (int i = 0; i < 2; ++i)
-    child1->Add(new TreeNodeWithValue<int>(), i);
+    child1->Add(new TestNode, i);
 
-  TreeNodeWithValue<int>* child2 = new TreeNodeWithValue<int>();
+  TestNode* child2 = new TestNode;
   model.Add(root, child2, 1);
 
   AssertObserverCount(2, 0, 0);
@@ -92,11 +94,11 @@ TEST_F(TreeNodeModelTest, AddNode) {
 // Verifies if the model is properly removing a node from the tree
 // and notifying the observers.
 TEST_F(TreeNodeModelTest, RemoveNode) {
-  TreeNodeWithValue<int>* root = new TreeNodeWithValue<int>();
-  TreeNodeModel<TreeNodeWithValue<int> > model(root);
+  TestNode* root = new TestNode;
+  TreeNodeModel<TestNode > model(root);
   model.AddObserver(this);
 
-  TreeNodeWithValue<int>* child1 = new TreeNodeWithValue<int>();
+  TestNode* child1 = new TestNode;
   root->Add(child1, 0);
 
   EXPECT_EQ(1, model.GetChildCount(root));
@@ -122,22 +124,22 @@ TEST_F(TreeNodeModelTest, RemoveNode) {
 // +-- child2
 // +-- child3
 TEST_F(TreeNodeModelTest, RemoveAllNodes) {
-  TreeNodeWithValue<int> root;
+  TestNode root;
 
-  TreeNodeWithValue<int> child1;
-  TreeNodeWithValue<int> child2;
-  TreeNodeWithValue<int> child3;
+  TestNode child1;
+  TestNode child2;
+  TestNode child3;
 
   root.Add(&child1, 0);
   root.Add(&child2, 1);
   root.Add(&child3, 2);
 
-  TreeNodeWithValue<int>* foo = new TreeNodeWithValue<int>(2);
+  TestNode* foo = new TestNode;
   child1.Add(foo, 0);
 
   // Add some nodes to |foo|.
   for (int i = 0; i < 3; ++i)
-    foo->Add(new TreeNodeWithValue<int>(i), i);
+    foo->Add(new TestNode, i);
 
   EXPECT_EQ(3, root.child_count());
   EXPECT_EQ(1, child1.child_count());
@@ -160,15 +162,15 @@ TEST_F(TreeNodeModelTest, RemoveAllNodes) {
 //     +-- foo1
 // +-- child2
 TEST_F(TreeNodeModelTest, GetIndexOf) {
-  TreeNodeWithValue<int> root;
+  TestNode root;
 
-  TreeNodeWithValue<int>* child1 = new TreeNodeWithValue<int>(1);
+  TestNode* child1 = new TestNode;
   root.Add(child1, 0);
 
-  TreeNodeWithValue<int>* child2 = new TreeNodeWithValue<int>(2);
+  TestNode* child2 = new TestNode;
   root.Add(child2, 1);
 
-  TreeNodeWithValue<int>* foo1 = new TreeNodeWithValue<int>(0);
+  TestNode* foo1 = new TestNode;
   child1->Add(foo1, 0);
 
   EXPECT_EQ(-1, root.GetIndexOf(&root));
@@ -194,14 +196,14 @@ TEST_F(TreeNodeModelTest, GetIndexOf) {
 //     +-- foo1
 // +-- child2
 TEST_F(TreeNodeModelTest, HasAncestor) {
-  TreeNodeWithValue<int> root;
-  TreeNodeWithValue<int>* child1 = new TreeNodeWithValue<int>(0);
-  TreeNodeWithValue<int>* child2 = new TreeNodeWithValue<int>(0);
+  TestNode root;
+  TestNode* child1 = new TestNode;
+  TestNode* child2 = new TestNode;
 
   root.Add(child1, 0);
   root.Add(child2, 1);
 
-  TreeNodeWithValue<int>* foo1 = new TreeNodeWithValue<int>(0);
+  TestNode* foo1 = new TestNode;
   child1->Add(foo1, 0);
 
   EXPECT_TRUE(root.HasAncestor(&root));
@@ -244,27 +246,27 @@ TEST_F(TreeNodeModelTest, HasAncestor) {
 // The TotalNodeCount of bar1 is:            1
 // And so on...
 TEST_F(TreeNodeModelTest, GetTotalNodeCount) {
-  TreeNodeWithValue<int> root;
+  TestNode root;
 
-  TreeNodeWithValue<int>* child1 = new TreeNodeWithValue<int>();
-  TreeNodeWithValue<int>* child2 = new TreeNodeWithValue<int>();
-  TreeNodeWithValue<int>* child3 = new TreeNodeWithValue<int>();
+  TestNode* child1 = new TestNode;
+  TestNode* child2 = new TestNode;
+  TestNode* child3 = new TestNode;
 
   root.Add(child1, 0);
   child1->Add(child2, 0);
   child2->Add(child3, 0);
 
-  TreeNodeWithValue<int>* foo1 = new TreeNodeWithValue<int>();
-  TreeNodeWithValue<int>* foo2 = new TreeNodeWithValue<int>();
-  TreeNodeWithValue<int>* foo3 = new TreeNodeWithValue<int>();
-  TreeNodeWithValue<int>* foo4 = new TreeNodeWithValue<int>();
+  TestNode* foo1 = new TestNode;
+  TestNode* foo2 = new TestNode;
+  TestNode* foo3 = new TestNode;
+  TestNode* foo4 = new TestNode;
 
   root.Add(foo1, 1);
   foo1->Add(foo2, 0);
   foo2->Add(foo3, 0);
   foo1->Add(foo4, 1);
 
-  TreeNodeWithValue<int>* bar1 = new TreeNodeWithValue<int>();
+  TestNode* bar1 = new TestNode;
 
   root.Add(bar1, 2);
 
@@ -278,9 +280,8 @@ TEST_F(TreeNodeModelTest, GetTotalNodeCount) {
 // Makes sure that we are notified when the node is renamed,
 // also makes sure the node is properly renamed.
 TEST_F(TreeNodeModelTest, SetTitle) {
-  TreeNodeWithValue<int>* root =
-      new TreeNodeWithValue<int>(ASCIIToUTF16("root"), 0);
-  TreeNodeModel<TreeNodeWithValue<int> > model(root);
+  TestNode* root = new TestNode(ASCIIToUTF16("root"), 0);
+  TreeNodeModel<TestNode > model(root);
   model.AddObserver(this);
   ClearCounts();
 
@@ -291,32 +292,32 @@ TEST_F(TreeNodeModelTest, SetTitle) {
 }
 
 TEST_F(TreeNodeModelTest, BasicOperations) {
-  TreeNodeWithValue<int> root;
+  TestNode root;
   EXPECT_EQ(0, root.child_count());
 
-  TreeNodeWithValue<int>* child1 = new TreeNodeWithValue<int>();
+  TestNode* child1 = new TestNode;
   root.Add(child1, root.child_count());
   EXPECT_EQ(1, root.child_count());
   EXPECT_EQ(&root, child1->parent());
 
-  TreeNodeWithValue<int>* child2 = new TreeNodeWithValue<int>();
+  TestNode* child2 = new TestNode;
   root.Add(child2, root.child_count());
   EXPECT_EQ(2, root.child_count());
   EXPECT_EQ(child1->parent(), child2->parent());
 
-  scoped_ptr<TreeNodeWithValue<int> > c2(root.Remove(child2));
+  scoped_ptr<TestNode > c2(root.Remove(child2));
   EXPECT_EQ(1, root.child_count());
   EXPECT_EQ(NULL, child2->parent());
 
-  scoped_ptr<TreeNodeWithValue<int> > c1(root.Remove(child1));
+  scoped_ptr<TestNode > c1(root.Remove(child1));
   EXPECT_EQ(0, root.child_count());
 }
 
 TEST_F(TreeNodeModelTest, IsRoot) {
-  TreeNodeWithValue<int> root;
+  TestNode root;
   EXPECT_TRUE(root.is_root());
 
-  TreeNodeWithValue<int>* child1 = new TreeNodeWithValue<int>(1);
+  TestNode* child1 = new TestNode;
   root.Add(child1, root.child_count());
   EXPECT_FALSE(child1->is_root());
 }
