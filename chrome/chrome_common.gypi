@@ -113,7 +113,6 @@
         'safe_browsing_proto',
         'theme_resources',
         'theme_resources_standard',
-        '../app/app.gyp:app_base',
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
         '../base/base.gyp:base_static',
@@ -345,7 +344,6 @@
         }],
       ],
       'export_dependent_settings': [
-        '../app/app.gyp:app_base',
         '../base/base.gyp:base',
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         'safe_browsing_csd_proto',
@@ -382,7 +380,6 @@
       'dependencies': [
         'chrome_resources',
         'chrome_strings',
-        '../app/app.gyp:app_base',
         '../base/base.gyp:base',
         '../crypto/crypto.gyp:crypto',
         '../gpu/gpu.gyp:gpu_ipc',

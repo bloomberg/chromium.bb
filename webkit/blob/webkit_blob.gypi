@@ -8,7 +8,6 @@
       'target_name': 'blob',
       'type': 'static_library',
       'dependencies': [
-        '<(DEPTH)/app/app.gyp:app_base',
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/net/net.gyp:net',
       ],
