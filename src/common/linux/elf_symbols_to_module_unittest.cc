@@ -39,84 +39,21 @@
 
 #include "breakpad_googletest_includes.h"
 #include "common/linux/elf_symbols_to_module.h"
+#include "common/linux/synth_elf.h"
 #include "common/module.h"
 #include "common/test_assembler.h"
 
 using google_breakpad::Module;
+using google_breakpad::synth_elf::StringTable;
 using google_breakpad::test_assembler::Endianness;
 using google_breakpad::test_assembler::kBigEndian;
 using google_breakpad::test_assembler::kLittleEndian;
-using google_breakpad::test_assembler::kUnsetEndian;
 using google_breakpad::test_assembler::Label;
 using google_breakpad::test_assembler::Section;
 using ::testing::Test;
 using ::testing::TestWithParam;
 using std::string;
 using std::vector;
-
-// String Tables are used in ELF headers, add a class
-// for convenience.
-class StringTable : public Section {
-public:
-  StringTable(Endianness endianness = kUnsetEndian)
-  : Section(endianness) {
-    start() = 0;
-    empty_string = Add("");
-  }
-
-  // Add the string s to the string table, and return
-  // a label containing the offset into the string table
-  // at which it was added.
-  Label Add(const string& s) {
-    Label string_label(Here());
-    AppendCString(s);
-    return string_label;
-  }
-
-  // All StringTables contain an empty string as their first
-  // entry.
-  Label empty_string;
-};
-
-class StringTableTest : public Test {
-public:
-  StringTableTest() : table(kLittleEndian) {}
-
-  StringTable table;
-};
-
-TEST_F(StringTableTest, Empty) {
-  string contents;
-  ASSERT_TRUE(table.GetContents(&contents));
-  const string kExpectedContents = "\0";
-  EXPECT_EQ(0,
-            memcmp(kExpectedContents.c_str(), contents.c_str(), table.Size()));
-  ASSERT_TRUE(table.empty_string.IsKnownConstant());
-  EXPECT_EQ(0, table.empty_string.Value());
-}
-
-TEST_F(StringTableTest, Basic) {
-  const string s1("table fills with strings");
-  const string s2("offsets preserved as labels");
-  const string s3("verified with tests");
-  const string kExpectedContents = 
-    "\0table fills with strings\0"
-    "offsets preserved as labels\0"
-    "verified with tests\0";
-  Label l1(table.Add(s1));
-  Label l2(table.Add(s2));
-  Label l3(table.Add(s3));
-  string contents;
-  ASSERT_TRUE(table.GetContents(&contents));
-  EXPECT_EQ(0,
-            memcmp(kExpectedContents.c_str(), contents.c_str(), table.Size()));
-  // empty_string is at zero, other strings start at 1.
-  ASSERT_TRUE(l1.IsKnownConstant());
-  EXPECT_EQ(1, l1.Value());
-  // Each string has an extra byte for a trailing null.
-  EXPECT_EQ(1 + s1.length() + 1, l2.Value());
-  EXPECT_EQ(1 + s1.length() + 1 + s2.length() + 1, l3.Value());
-}
 
 class ELFSymbolsToModuleTestFixture {
 public:

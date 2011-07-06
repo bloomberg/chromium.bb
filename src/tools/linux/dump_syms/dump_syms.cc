@@ -27,6 +27,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include <iostream>
 #include <stdio.h>
 #include <string>
 
@@ -46,7 +47,7 @@ int main(int argc, char **argv) {
   if (argc == 3)
     debug_dir = argv[2];
 
-  if (!WriteSymbolFile(binary, debug_dir, stdout)) {
+  if (!WriteSymbolFile(binary, debug_dir, std::cout)) {
     fprintf(stderr, "Failed to write symbol file.\n");
     return 1;
   }

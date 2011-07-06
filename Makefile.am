@@ -381,8 +381,11 @@ src_common_dumper_unittest_SOURCES = \
 	src/common/dwarf/dwarf2reader.cc \
 	src/common/dwarf/dwarf2reader_cfi_unittest.cc \
 	src/common/linux/dump_symbols.cc \
+	src/common/linux/dump_symbols_unittest.cc \
 	src/common/linux/elf_symbols_to_module.cc \
 	src/common/linux/elf_symbols_to_module_unittest.cc \
+	src/common/linux/synth_elf.cc \
+	src/common/linux/synth_elf_unittest.cc \
 	src/common/linux/file_id.cc \
 	src/common/linux/file_id_unittest.cc \
 	src/testing/gtest/src/gtest-all.cc \

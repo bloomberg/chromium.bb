@@ -46,6 +46,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include <iostream>
 #include <set>
 #include <string>
 #include <utility>
@@ -721,25 +722,32 @@ std::string BaseFileName(const std::string &filename) {
 
 namespace google_breakpad {
 
-bool WriteSymbolFile(const std::string &obj_file,
-                     const std::string &debug_dir, FILE *sym_file) {
-  MmapWrapper map_wrapper;
-  ElfW(Ehdr) *elf_header = NULL;
-  if (!LoadELF(obj_file, &map_wrapper, &elf_header))
+// Not explicitly exported, but not static so it can be used in unit tests.
+// Ideally obj_file would be const, but internally this code does write
+// to some ELF header fields to make its work simpler.
+bool WriteSymbolFileInternal(uint8_t* obj_file,
+                             const std::string &obj_filename,
+                             const std::string &debug_dir,
+                             std::ostream &sym_stream) {
+  ElfW(Ehdr) *elf_header = reinterpret_cast<ElfW(Ehdr) *>(obj_file);
+
+  if (!IsValidElf(elf_header)) {
+    fprintf(stderr, "Not a valid ELF file: %s\n", obj_filename.c_str());
     return false;
+  }
 
   unsigned char identifier[16];
-  google_breakpad::FileID file_id(obj_file.c_str());
-  if (!file_id.ElfFileIdentifierFromMappedFile(elf_header, identifier)) {
+  if (!google_breakpad::FileID::ElfFileIdentifierFromMappedFile(elf_header,
+                                                                identifier)) {
     fprintf(stderr, "%s: unable to generate file identifier\n",
-            obj_file.c_str());
+            obj_filename.c_str());
     return false;
   }
 
   const char *architecture = ElfArchitecture(elf_header);
   if (!architecture) {
     fprintf(stderr, "%s: unrecognized ELF machine architecture: %d\n",
-            obj_file.c_str(), elf_header->e_machine);
+            obj_filename.c_str(), elf_header->e_machine);
     return false;
   }
 
@@ -748,13 +756,13 @@ bool WriteSymbolFile(const std::string &obj_file,
   if (!ElfEndianness(elf_header, &big_endian))
     return false;
 
-  std::string name = BaseFileName(obj_file);
+  std::string name = BaseFileName(obj_filename);
   std::string os = "Linux";
   std::string id = FormatIdentifier(identifier);
 
   LoadSymbolsInfo info(debug_dir);
   Module module(name, os, architecture, id);
-  if (!LoadSymbols(obj_file, big_endian, elf_header, !debug_dir.empty(),
+  if (!LoadSymbols(obj_filename, big_endian, elf_header, !debug_dir.empty(),
                    &info, &module)) {
     const std::string debuglink_file = info.debuglink_file();
     if (debuglink_file.empty())
@@ -777,7 +785,7 @@ bool WriteSymbolFile(const std::string &obj_file,
       fprintf(stderr, "%s with ELF machine architecture %s does not match "
               "%s with ELF architecture %s\n",
               debuglink_file.c_str(), debug_architecture,
-              obj_file.c_str(), architecture);
+              obj_filename.c_str(), architecture);
       return false;
     }
 
@@ -786,7 +794,7 @@ bool WriteSymbolFile(const std::string &obj_file,
       return false;
     if (debug_big_endian != big_endian) {
       fprintf(stderr, "%s and %s does not match in endianness\n",
-              obj_file.c_str(), debuglink_file.c_str());
+              obj_filename.c_str(), debuglink_file.c_str());
       return false;
     }
 
@@ -795,10 +803,22 @@ bool WriteSymbolFile(const std::string &obj_file,
       return false;
     }
   }
-  if (!module.Write(sym_file))
+  if (!module.Write(sym_stream))
     return false;
 
   return true;
+}
+
+bool WriteSymbolFile(const std::string &obj_file,
+                     const std::string &debug_dir,
+                     std::ostream &sym_stream) {
+  MmapWrapper map_wrapper;
+  ElfW(Ehdr) *elf_header = NULL;
+  if (!LoadELF(obj_file, &map_wrapper, &elf_header))
+    return false;
+
+  return WriteSymbolFileInternal(reinterpret_cast<uint8_t*>(elf_header),
+                                 obj_file, debug_dir, sym_stream);
 }
 
 }  // namespace google_breakpad

@@ -35,9 +35,17 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <stdio.h>
 #include <string.h>
 
+#include <iostream>
+
 namespace google_breakpad {
+
+using std::dec;
+using std::endl;
+using std::hex;
+
 
 Module::Module(const string &name, const string &os,
                const string &architecture, const string &id) :
@@ -182,22 +190,20 @@ bool Module::ReportError() {
   return false;
 }
 
-bool Module::WriteRuleMap(const RuleMap &rule_map, FILE *stream) {
+bool Module::WriteRuleMap(const RuleMap &rule_map, std::ostream &stream) {
   for (RuleMap::const_iterator it = rule_map.begin();
        it != rule_map.end(); it++) {
-    if (it != rule_map.begin() &&
-        0 > putc(' ', stream))
-      return false;
-    if (0 > fprintf(stream, "%s: %s", it->first.c_str(), it->second.c_str()))
-      return false;
+    if (it != rule_map.begin())
+      stream << ' ';
+    stream << it->first << ": " << it->second;
   }
-  return true;
+  return stream.good();
 }
 
-bool Module::Write(FILE *stream) {
-  if (0 > fprintf(stream, "MODULE %s %s %s %s\n",
-                  os_.c_str(), architecture_.c_str(), id_.c_str(),
-                  name_.c_str()))
+bool Module::Write(std::ostream &stream) {
+  stream << "MODULE " << os_ << " " << architecture_ << " "
+         << id_ << " " << name_ << endl;
+  if (!stream.good())
     return ReportError();
 
   AssignSourceIds();
@@ -207,8 +213,8 @@ bool Module::Write(FILE *stream) {
        file_it != files_.end(); file_it++) {
     File *file = file_it->second;
     if (file->source_id >= 0) {
-      if (0 > fprintf(stream, "FILE %d %s\n",
-                      file->source_id, file->name.c_str()))
+      stream << "FILE " << file->source_id << " " <<  file->name << endl;
+      if (!stream.good())
         return ReportError();
     }
   }
@@ -217,29 +223,35 @@ bool Module::Write(FILE *stream) {
   for (FunctionSet::const_iterator func_it = functions_.begin();
        func_it != functions_.end(); func_it++) {
     Function *func = *func_it;
-    if (0 > fprintf(stream, "FUNC %llx %llx %llx %s\n",
-                    (unsigned long long) (func->address - load_address_),
-                    (unsigned long long) func->size,
-                    (unsigned long long) func->parameter_size,
-                    func->name.c_str()))
+    stream << "FUNC " << hex
+           << (func->address - load_address_) << " "
+           << func->size << " "
+           << func->parameter_size << " "
+           << func->name << dec << endl;
+      
+    if (!stream.good())
       return ReportError();
     for (vector<Line>::iterator line_it = func->lines.begin();
-         line_it != func->lines.end(); line_it++)
-      if (0 > fprintf(stream, "%llx %llx %d %d\n",
-                      (unsigned long long) (line_it->address - load_address_),
-                      (unsigned long long) line_it->size,
-                      line_it->number,
-                      line_it->file->source_id))
+         line_it != func->lines.end(); line_it++) {
+      stream << hex
+             << (line_it->address - load_address_) << " "
+             << line_it->size << " "
+             << dec
+             << line_it->number << " "
+             << line_it->file->source_id << endl;
+      if (!stream.good())
         return ReportError();
+    }
   }
 
   // Write out 'PUBLIC' records.
   for (ExternSet::const_iterator extern_it = externs_.begin();
        extern_it != externs_.end(); extern_it++) {
     Extern *ext = *extern_it;
-    if (0 > fprintf(stream, "PUBLIC %llx 0 %s\n",
-                    (unsigned long long) (ext->address - load_address_),
-                    ext->name.c_str()))
+    stream << "PUBLIC " << hex
+           << (ext->address - load_address_) << " 0 "
+           << ext->name << dec << endl;
+    if (!stream.good())
       return ReportError();
   }
 
@@ -248,21 +260,25 @@ bool Module::Write(FILE *stream) {
   for (frame_it = stack_frame_entries_.begin();
        frame_it != stack_frame_entries_.end(); frame_it++) {
     StackFrameEntry *entry = *frame_it;
-    if (0 > fprintf(stream, "STACK CFI INIT %llx %llx ",
-                    (unsigned long long) entry->address - load_address_,
-                    (unsigned long long) entry->size)
-        || !WriteRuleMap(entry->initial_rules, stream)
-        || 0 > putc('\n', stream))
+    stream << "STACK CFI INIT " << hex
+           << (entry->address - load_address_) << " "
+           << entry->size << " " << dec;
+    if (!stream.good()
+        || !WriteRuleMap(entry->initial_rules, stream))
       return ReportError();
+
+    stream << endl;
 
     // Write out this entry's delta rules as 'STACK CFI' records.
     for (RuleChangeMap::const_iterator delta_it = entry->rule_changes.begin();
          delta_it != entry->rule_changes.end(); delta_it++) {
-      if (0 > fprintf(stream, "STACK CFI %llx ",
-                      (unsigned long long) delta_it->first - load_address_)
-          || !WriteRuleMap(delta_it->second, stream)
-          || 0 > putc('\n', stream))
+      stream << "STACK CFI " << hex
+             << (delta_it->first - load_address_) << " " << dec;
+      if (!stream.good()
+          || !WriteRuleMap(delta_it->second, stream))
         return ReportError();
+
+      stream << endl;
     }
   }
 

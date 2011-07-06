@@ -38,8 +38,7 @@
 #ifndef COMMON_LINUX_MODULE_H__
 #define COMMON_LINUX_MODULE_H__
 
-#include <stdio.h>
-
+#include <iostream>
 #include <map>
 #include <set>
 #include <string>
@@ -264,7 +263,7 @@ class Module {
   // - the functions added via AddFunctions, each with its lines.
   // Addresses in the output are all relative to the load address
   // established by SetLoadAddress.
-  bool Write(FILE *stream);
+  bool Write(std::ostream &stream);
 
  private:
 
@@ -275,7 +274,7 @@ class Module {
   // Write RULE_MAP to STREAM, in the form appropriate for 'STACK CFI'
   // records, without a final newline. Return true if all goes well;
   // if an error occurs, return false, and leave errno set.
-  static bool WriteRuleMap(const RuleMap &rule_map, FILE *stream);
+  static bool WriteRuleMap(const RuleMap &rule_map, std::ostream &stream);
 
   // Module header entries.
   string name_, os_, architecture_, id_;

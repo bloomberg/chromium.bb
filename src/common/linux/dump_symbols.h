@@ -35,19 +35,19 @@
 #ifndef COMMON_LINUX_DUMP_SYMBOLS_H__
 #define COMMON_LINUX_DUMP_SYMBOLS_H__
 
-#include <stdio.h>
-
+#include <iostream>
 #include <string>
 
 namespace google_breakpad {
 
 // Find all the debugging information in OBJ_FILE, an ELF executable
-// or shared library, and write it to SYM_FILE in the Breakpad symbol
+// or shared library, and write it to SYM_STREAM in the Breakpad symbol
 // file format.
 // If OBJ_FILE has been stripped but contains a .gnu_debuglink section,
 // then look for the debug file in DEBUG_DIR.
 bool WriteSymbolFile(const std::string &obj_file,
-                     const std::string &debug_dir, FILE *sym_file);
+                     const std::string &debug_dir,
+                     std::ostream &sym_stream);
 
 }  // namespace google_breakpad
 

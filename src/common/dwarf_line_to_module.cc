@@ -34,6 +34,8 @@
 
 #include "common/dwarf_line_to_module.h"
 
+#include <stdio.h>
+
 // Trying to support Windows paths in a reasonable way adds a lot of
 // variations to test; it would be better to just put off dealing with
 // it until we actually have to deal with DWARF on Windows.
