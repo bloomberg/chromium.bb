@@ -1066,9 +1066,6 @@ class Browser : public TabHandlerDelegate,
   // Shared code between Reload() and ReloadIgnoringCache().
   void ReloadInternal(WindowOpenDisposition disposition, bool ignore_cache);
 
-  // Return true if the window dispositions means opening a new tab.
-  bool ShouldOpenNewTabForWindowDisposition(WindowOpenDisposition disposition);
-
   // Depending on the disposition, return the current tab or a clone of the
   // current tab.
   TabContents* GetOrCloneTabForDisposition(WindowOpenDisposition disposition);
