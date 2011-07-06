@@ -85,23 +85,6 @@ function onLoad() {
 }
 
 /**
- * Handles the individual pages input event.
- */
-function handleIndividualPagesInputEvent() {
-  $('print-pages').checked = true;
-  resetPageRangeFieldTimer();
-}
-
-/**
- * Handles the individual pages blur event.
- */
-function onPageRangesFieldBlur() {
-  $('print-pages').checked = true;
-  validatePageRangesField();
-  updatePrintButtonState();
-}
-
-/**
  * Sets the default event handlers for pages and copies controls.
  */
 function setDefaultHandlersForPagesAndCopiesControls() {
@@ -118,10 +101,10 @@ function setDefaultHandlersForPagesAndCopiesControls() {
   if (!hasError) {
     allPages.onclick = updatePrintButtonState;
     printPages.onclick = handleIndividualPagesCheckbox;
-    individualPages.onblur = onPageRangesFieldBlur;
+    individualPages.onblur = onIndividualPagesBlur;
+    individualPages.oninput = onIndividualPagesInput;
     copiesSettings.addEventListeners();
   }
-
 }
 
 /**
@@ -132,19 +115,48 @@ function addEventListeners() {
   $('all-pages').onclick = onPageSelectionMayHaveChanged;
   $('print-pages').onclick = handleIndividualPagesCheckbox;
   var individualPages = $('individual-pages');
-  individualPages.onblur = function() {
-      clearTimeout(timerId);
-      onPageSelectionMayHaveChanged();
-  };
-  individualPages.onfocus = addTimerToPageRangeField;
-  individualPages.oninput = handleIndividualPagesInputEvent;
+  individualPages.onblur = onIndividualPagesBlur;
+  individualPages.onfocus = onIndividualPagesFocus;
+  individualPages.oninput = onIndividualPagesInput;
   $('landscape').onclick = onLayoutModeToggle;
   $('portrait').onclick = onLayoutModeToggle;
   $('printer-list').onchange = updateControlsWithSelectedPrinterCapabilities;
 
-  // Controls that dont require preview rendering.
+  // Controls that do not require preview rendering.
   $('color').onclick = function() { setColor(true); };
   $('bw').onclick = function() { setColor(false); };
+}
+
+/**
+ * Handles the blur event for the |individual-pages| element. Un-checks the
+ * associated radio control if the input field is empty.
+ */
+function onIndividualPagesBlur() {
+  if (!$('individual-pages').value.length)
+    $('all-pages').checked = true;
+
+  if (!hasPendingPreviewRequest) {
+    clearTimeout(timerId);
+    onPageSelectionMayHaveChanged();
+  }
+}
+
+/**
+ * Handles the focus event for the |individual-pages| element.
+ */
+function onIndividualPagesFocus() {
+  addTimerToPageRangeField();
+}
+
+/**
+ * Handles the input event for the |individual-pages| element. Ensures the input
+ * field is non-empty before checking the associated radio control.
+ */
+function onIndividualPagesInput() {
+  if (!$('print-pages').checked && $('individual-pages').value.length)
+    $('print-pages').checked = true;
+
+  resetPageRangeFieldTimer();
 }
 
 /**
@@ -730,7 +742,6 @@ function validatePageRangesField() {
  */
 function pageRangesFieldChanged() {
   validatePageRangesField();
-
   resetPageRangeFieldTimer();
   updatePrintButtonState();
   updatePrintSummary();
