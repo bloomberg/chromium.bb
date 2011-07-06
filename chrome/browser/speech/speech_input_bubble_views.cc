@@ -8,8 +8,10 @@
 
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/bubble/bubble.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/toolbar_view.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "grit/generated_resources.h"
@@ -32,6 +34,8 @@ namespace {
 const int kBubbleHorizMargin = 6;
 const int kBubbleVertMargin = 4;
 const int kBubbleHeadingVertMargin = 6;
+const int kIconHorizontalOffset = 27;
+const int kIconVerticalOffset = -7;
 
 // This is the content view which is placed inside a SpeechInputBubble.
 class ContentView
@@ -307,9 +311,8 @@ gfx::Rect SpeechInputBubbleImpl::GetInfoBubbleTarget(
   gfx::Rect container_rect;
   tab_contents()->GetContainerBounds(&container_rect);
   return gfx::Rect(
-      container_rect.x() + element_rect.x() + element_rect.width() -
-          kBubbleTargetOffsetX,
-      container_rect.y() + element_rect.y() + element_rect.height(), 1, 1);
+      container_rect.x() + element_rect.right() - kBubbleTargetOffsetX,
+      container_rect.y() + element_rect.bottom(), 1, 1);
 }
 
 void SpeechInputBubbleImpl::BubbleClosing(Bubble* bubble,
@@ -339,11 +342,32 @@ void SpeechInputBubbleImpl::Show() {
       views::Widget::GetTopLevelWidgetForNativeView(
           tab_contents()->view()->GetNativeView());
   if (toplevel_widget) {
+    gfx::Rect container_rect;
+    tab_contents()->GetContainerBounds(&container_rect);
+    gfx::Rect target_rect = GetInfoBubbleTarget(element_rect_);
+    if (!container_rect.Contains(target_rect.x(), target_rect.y())) {
+      // Target is not in screen view, so point to page icon in omnibox.
+      Browser* browser =
+          Browser::GetOrCreateTabbedBrowser(tab_contents()->profile());
+      BrowserView* browser_view =
+          BrowserView::GetBrowserViewForNativeWindow(
+              browser->window()->GetNativeHandle());
+      gfx::Point point;
+      if (base::i18n::IsRTL()) {
+        int width = browser_view->toolbar()->location_bar()->width();
+        point = gfx::Point(width - kIconHorizontalOffset, 0);
+      }
+      point.Offset(0, kIconVerticalOffset);
+      views::View::ConvertPointToScreen(browser_view->toolbar()->location_bar(),
+                                        &point);
+      target_rect =  browser_view->toolbar()->location_bar()->bounds();
+      target_rect.set_origin(point);
+      target_rect.set_width(kIconHorizontalOffset);
+    }
     bubble_ = Bubble::Show(toplevel_widget,
-                           GetInfoBubbleTarget(element_rect_),
+                           target_rect,
                            BubbleBorder::TOP_LEFT, bubble_content_,
                            this);
-
     // We don't want fade outs when closing because it makes speech recognition
     // appear slower than it is. Also setting it to false allows |Close| to
     // destroy the bubble immediately instead of waiting for the fade animation

@@ -7,6 +7,10 @@
 #include "chrome/browser/speech/speech_input_bubble.h"
 
 #import "base/memory/scoped_nsobject.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/cocoa/browser_window_cocoa.h"
+#include "chrome/browser/ui/cocoa/browser_window_controller.h"
+#include "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/speech_input_window_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
@@ -60,19 +64,30 @@ void SpeechInputBubbleImpl::Show() {
 
   // Find the screen coordinates for the given tab and position the bubble's
   // arrow anchor point inside that to point at the bottom-left of the html
-  // input element rect.
+  // input element rect if the position is valid, otherwise point it towards
+  // the page icon in the omnibox.
   gfx::NativeView view = tab_contents()->view()->GetNativeView();
+  NSWindow* parentWindow = tab_contents()->view()->GetTopLevelNativeWindow();
   NSRect tab_bounds = [view bounds];
   int anchor_x = tab_bounds.origin.x + element_rect_.x() +
                  element_rect_.width() - kBubbleTargetOffsetX;
   int anchor_y = tab_bounds.origin.y + tab_bounds.size.height -
                  element_rect_.y() - element_rect_.height();
-  NSPoint anchor = NSMakePoint(anchor_x, anchor_y);
+  NSPoint anchor = NSZeroPoint;
+  if (anchor_x < 0 || anchor_y < 0 ||
+      anchor_x > NSWidth([parentWindow frame]) ||
+      anchor_y > NSHeight([parentWindow frame])) {
+    LocationBarViewMac* locationBar =
+        [[parentWindow windowController] locationBarBridge];
+    anchor = locationBar->GetPageInfoBubblePoint();
+  } else {
+    anchor = NSMakePoint(anchor_x, anchor_y);
+  }
   anchor = [view convertPoint:anchor toView:nil];
   anchor = [[view window] convertBaseToScreen:anchor];
 
   window_.reset([[SpeechInputWindowController alloc]
-      initWithParentWindow:tab_contents()->view()->GetTopLevelNativeWindow()
+      initWithParentWindow:parentWindow
                   delegate:delegate_
                 anchoredAt:anchor]);
 

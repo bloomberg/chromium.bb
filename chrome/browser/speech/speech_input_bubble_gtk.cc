@@ -5,10 +5,14 @@
 #include "chrome/browser/speech/speech_input_bubble.h"
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/gtk/browser_toolbar_gtk.h"
+#include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
 #include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
@@ -159,15 +163,31 @@ void SpeechInputBubbleGtk::Show() {
 
   GtkThemeService* theme_provider = GtkThemeService::GetFrom(
       tab_contents()->profile());
-  gfx::Rect rect(
-      element_rect_.x() + element_rect_.width() - kBubbleTargetOffsetX,
-      element_rect_.y() + element_rect_.height(), 1, 1);
-  bubble_ = BubbleGtk::Show(tab_contents()->GetNativeView(),
-                            &rect,
+  GtkWidget* reference_widget = tab_contents()->GetNativeView();
+  gfx::Rect container_rect;
+  tab_contents()->GetContainerBounds(&container_rect);
+  gfx::Rect target_rect(element_rect_.right() - kBubbleTargetOffsetX,
+      element_rect_.bottom(), 1, 1);
+
+  if (target_rect.x() < 0 || target_rect.y() < 0 ||
+      target_rect.x() > container_rect.width() ||
+      target_rect.y() > container_rect.height()) {
+    // Target is not in screen view, so point to wrench.
+    Browser* browser =
+        Browser::GetOrCreateTabbedBrowser(tab_contents()->profile());
+    BrowserWindowGtk* browser_window =
+        BrowserWindowGtk::GetBrowserWindowForNativeWindow(
+            browser->window()->GetNativeHandle());
+    reference_widget = browser_window->GetToolbar()->GetLocationBarView()
+        ->location_icon_widget();
+    target_rect = gtk_util::WidgetBounds(reference_widget);
+  }
+  bubble_ = BubbleGtk::Show(reference_widget,
+                            &target_rect,
                             content,
                             BubbleGtk::ARROW_LOCATION_TOP_LEFT,
-                            false,  // match_system_theme
-                            true,  // grab_input
+                            false, // match_system_theme
+                            true, // grab_input
                             theme_provider,
                             this);
 

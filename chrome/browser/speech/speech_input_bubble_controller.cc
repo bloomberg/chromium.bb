@@ -43,8 +43,17 @@ void SpeechInputBubbleController::CreateBubble(int caller_id,
   DCHECK_EQ(0u, bubbles_.count(caller_id));
   SpeechInputBubble* bubble = SpeechInputBubble::Create(tab_contents, this,
                                                         element_rect);
-  if (!bubble)  // could be null if tab or display rect were invalid.
+  if (!bubble) {
+    // Could be null if tab or display rect were invalid.
+    // Simulate the cancel button being clicked to inform the delegate.
+    BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          NewRunnableMethod(
+              this,
+              &SpeechInputBubbleController::InvokeDelegateButtonClicked,
+              caller_id, SpeechInputBubble::BUTTON_CANCEL));
     return;
+  }
 
   bubbles_[caller_id] = bubble;
 
