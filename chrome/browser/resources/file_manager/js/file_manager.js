@@ -1608,18 +1608,23 @@ FileManager.prototype = {
    * Update the selection summary UI when the selection summarization completes.
    */
   FileManager.prototype.onSelectionSummarized_ = function() {
-    if (this.selection.totalCount == 0) {
-      this.previewSummary_.textContent = str('NOTHING_SELECTED');
-
-    } else if (this.selection.totalCount == 1) {
-      this.previewSummary_.textContent =
-        strf('ONE_FILE_SELECTED', util.bytesToSi(this.selection.bytes));
-
+    var selection = this.selection;
+    var bytes = util.bytesToSi(selection.bytes);
+    var text = '';
+    if (selection.totalCount == 0) {
+      text = str('NOTHING_SELECTED');
+    } else if (selection.fileCount == 1 && selection.directoryCount == 0) {
+      text = strf('ONE_FILE_SELECTED', bytes);
+    } else if (selection.fileCount == 0 && selection.directoryCount == 1) {
+      text = str('ONE_DIRECTORY_SELECTED');
+    } else if (selection.directoryCount == 0) {
+      text = strf('MANY_FILES_SELECTED', selection.fileCount, bytes);
+    } else if (selection.fileCount == 0) {
+      text = strf('MANY_DIRECTORIES_SELECTED', selection.directoryCount);
     } else {
-      this.previewSummary_.textContent =
-        strf('MANY_FILES_SELECTED', this.selection.totalCount,
-             util.bytesToSi(this.selection.bytes));
+      text = strf('MANY_ENTRIES_SELECTED', selection.totalCount, bytes);
     }
+    this.previewSummary_.textContent = text;
   };
 
   /**

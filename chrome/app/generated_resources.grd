@@ -8845,8 +8845,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FILE_BROWSER_ONE_FILE_SELECTED" desc="One file selected.">
         One file selected, $1
       </message>
+      <message name="IDS_FILE_BROWSER_ONE_DIRECTORY_SELECTED" desc="One directory selected.">
+        One directory selected
+      </message>
       <message name="IDS_FILE_BROWSER_MANY_FILES_SELECTED" desc="Many files selected.">
         $1 files selected, $2
+      </message>
+      <message name="IDS_FILE_BROWSER_MANY_DIRECTORIES_SELECTED" desc="Many directories selected.">
+        $1 directories selected
+      </message>
+      <message name="IDS_FILE_BROWSER_MANY_ENTRIES_SELECTED" desc="Many items (both files and directories) selected.">
+        $1 items selected, $2
       </message>
       <message name="IDS_FILE_BROWSER_PLAYBACK_ERROR" desc="Error playing back.">
         Error playing back

@@ -175,7 +175,10 @@ chrome.fileBrowserPrivate = {
       COMPUTING_SELECTION: 'Computing selection...',
       NOTHING_SELECTED: 'No files selected',
       ONE_FILE_SELECTED: 'One file selected, $1',
+      ONE_DIRECTORY_SELECTED: 'One directory selected',
       MANY_FILES_SELECTED: '$1 files selected, $2',
+      MANY_DIRECTORIES_SELECTED: '$1 directories selected',
+      MANY_ENTRIES_SELECTED: '$1 items selected, $2',
 
       CONFIRM_DELETE: 'Are you sure?',
     });
