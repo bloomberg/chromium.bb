@@ -661,6 +661,9 @@ ProfileImpl::~ProfileImpl() {
   if (protocol_handler_registry_)
     protocol_handler_registry_->Finalize();
 
+  if (host_content_settings_map_)
+    host_content_settings_map_->ShutdownOnUIThread();
+
   // This causes the Preferences file to be written to disk.
   MarkAsCleanShutdown();
 }

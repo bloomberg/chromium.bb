@@ -54,8 +54,6 @@ ExtensionContentSettingsStore::ExtensionContentSettingsStore() {
 }
 
 ExtensionContentSettingsStore::~ExtensionContentSettingsStore() {
-  DCHECK(OnCorrectThread());
-  NotifyOfDestruction();
   STLDeleteValues(&entries_);
 }
 
@@ -432,12 +430,6 @@ ExtensionContentSettingsStore::ContentSettingSpec::ContentSettingSpec(
       content_type(type),
       resource_identifier(identifier),
       setting(setting) {
-}
-
-void ExtensionContentSettingsStore::NotifyOfDestruction() {
-  FOR_EACH_OBSERVER(ExtensionContentSettingsStore::Observer,
-                    observers_,
-                    OnDestruction());
 }
 
 void ExtensionContentSettingsStore::NotifyOfContentSettingChanged(

@@ -187,6 +187,12 @@ class HostContentSettingsMap
   // Returns true if the default setting for the |content_type| is managed.
   bool IsDefaultContentSettingManaged(ContentSettingsType content_type) const;
 
+  // Detaches the HostContentSettingsMap from all Profile-related objects like
+  // PrefService. This methods needs to be called before destroying the Profile.
+  // Afterwards, none of the methods above that should only be called on the UI
+  // thread should be called anymore.
+  void ShutdownOnUIThread();
+
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,

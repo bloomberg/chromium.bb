@@ -274,6 +274,9 @@ class OffTheRecordProfileImpl : public Profile,
 
     BrowserList::RemoveObserver(this);
 
+    if (host_content_settings_map_)
+      host_content_settings_map_->ShutdownOnUIThread();
+
     if (pref_proxy_config_tracker_)
       pref_proxy_config_tracker_->DetachFromPrefService();
 

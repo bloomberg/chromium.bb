@@ -81,7 +81,8 @@ class ProviderInterface {
   // require a resource identifier to be specified, the |resource_identifier|
   // must be non-empty.
   //
-  // This should only be called on the UI thread.
+  // This should only be called on the UI thread, and not after
+  // ShutdownOnUIThread has been called.
   virtual void SetContentSetting(
       const ContentSettingsPattern& primary_pattern,
       const ContentSettingsPattern& secondary_pattern,
@@ -108,14 +109,22 @@ class ProviderInterface {
   // identifier all content settings for any resource identifieres of the given
   // |content_type| will be reset to CONTENT_SETTING_DEFAULT.
   //
-  // This should only be called on the UI thread.
+  // This should only be called on the UI thread, and not after
+  // ShutdownOnUIThread has been called.
   virtual void ClearAllContentSettingsRules(
       ContentSettingsType content_type) = 0;
 
   // Resets all content settings to CONTENT_SETTINGS_DEFAULT.
   //
-  // This should only be called on the UI thread.
+  // This should only be called on the UI thread, and not after
+  // ShutdownOnUIThread has been called.
   virtual void ResetToDefaults() = 0;
+
+  // Detaches the Provider from all Profile-related objects like PrefService.
+  // This methods needs to be called before destroying the Profile.
+  // Afterwards, none of the methods above that should only be called on the UI
+  // thread should be called anymore.
+  virtual void ShutdownOnUIThread() {}
 };
 
 }  // namespace content_settings

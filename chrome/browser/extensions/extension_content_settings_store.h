@@ -27,7 +27,8 @@ class ListValue;
 // by the content_settings::ExtensionProvider to integrate its settings into the
 // HostContentSettingsMap and by the content settings extension API to provide
 // extensions with access to content settings.
-class ExtensionContentSettingsStore {
+class ExtensionContentSettingsStore
+    : public base::RefCountedThreadSafe<ExtensionContentSettingsStore> {
  public:
   class Observer {
    public:
@@ -38,14 +39,9 @@ class ExtensionContentSettingsStore {
     virtual void OnContentSettingChanged(
         const std::string& extension_id,
         bool incognito) = 0;
-
-    // Called when the ExtensionContentSettingsStore is being destroyed, so
-    // observers can invalidate their weak references.
-    virtual void OnDestruction() = 0;
   };
 
   ExtensionContentSettingsStore();
-  virtual ~ExtensionContentSettingsStore();
 
   // //////////////////////////////////////////////////////////////////////////
 
@@ -116,6 +112,8 @@ class ExtensionContentSettingsStore {
   void RemoveObserver(Observer* observer);
 
  private:
+  friend class base::RefCountedThreadSafe<ExtensionContentSettingsStore>;
+
   struct ExtensionEntry;
   struct ContentSettingSpec {
     ContentSettingSpec(const ContentSettingsPattern& primary_pattern,
@@ -134,6 +132,8 @@ class ExtensionContentSettingsStore {
   typedef std::map<std::string, ExtensionEntry*> ExtensionEntryMap;
 
   typedef std::list<ContentSettingSpec> ContentSettingSpecList;
+
+  virtual ~ExtensionContentSettingsStore();
 
   ContentSetting GetContentSettingFromSpecList(
       const GURL& embedded_url,
@@ -159,8 +159,6 @@ class ExtensionContentSettingsStore {
 
   void NotifyOfContentSettingChanged(const std::string& extension_id,
                                      bool incognito);
-
-  void NotifyOfDestruction();
 
   bool OnCorrectThread();
 

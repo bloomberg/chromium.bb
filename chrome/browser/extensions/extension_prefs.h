@@ -346,8 +346,6 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
       const std::string& extension_id,
       bool incognito) OVERRIDE;
 
-  virtual void OnDestruction() OVERRIDE {}
-
   // Converts absolute paths in the pref to paths relative to the
   // install_directory_.
   void MakePathsRelative();
@@ -443,7 +441,7 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
   // Weak pointer, owned by Profile.
   ExtensionPrefValueMap* extension_pref_value_map_;
 
-  scoped_ptr<ExtensionContentSettingsStore> content_settings_store_;
+  scoped_refptr<ExtensionContentSettingsStore> content_settings_store_;
 
   // The URLs of all of the toolstrips.
   URLList shelf_order_;

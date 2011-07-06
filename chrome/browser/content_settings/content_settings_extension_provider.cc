@@ -14,19 +14,17 @@
 namespace content_settings {
 
 ExtensionProvider::ExtensionProvider(
-    Profile* profile,
+    HostContentSettingsMap* map,
     ExtensionContentSettingsStore* extensions_settings,
     bool incognito)
-    : profile_(profile),
+    : map_(map),
       incognito_(incognito),
       extensions_settings_(extensions_settings) {
-  DCHECK(extensions_settings);
   extensions_settings_->AddObserver(this);
 }
 
 ExtensionProvider::~ExtensionProvider() {
-  if (extensions_settings_)
-    extensions_settings_->RemoveObserver(this);
+  DCHECK(!map_);
 }
 
 ContentSetting ExtensionProvider::GetContentSetting(
@@ -49,18 +47,21 @@ void ExtensionProvider::GetAllContentSettingsRules(
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
     Rules* content_setting_rules) const {
-  DCHECK(extensions_settings_);
   return extensions_settings_->GetContentSettingsForContentType(
       content_type, resource_identifier, incognito_, content_setting_rules);
 }
 
+void ExtensionProvider::ShutdownOnUIThread() {
+  extensions_settings_->RemoveObserver(this);
+  map_ = NULL;
+}
+
 void ExtensionProvider::NotifyObservers(
     const ContentSettingsDetails& details) {
-  if (profile_ == NULL)
-    return;
+  DCHECK(map_);
   NotificationService::current()->Notify(
       NotificationType::CONTENT_SETTINGS_CHANGED,
-      Source<HostContentSettingsMap>(profile_->GetHostContentSettingsMap()),
+      Source<HostContentSettingsMap>(map_),
       Details<const ContentSettingsDetails>(&details));
 }
 
@@ -75,11 +76,6 @@ void ExtensionProvider::OnContentSettingChanged(
                                  CONTENT_SETTINGS_TYPE_DEFAULT,
                                  std::string());
   NotifyObservers(details);
-}
-
-void ExtensionProvider::OnDestruction() {
-  DCHECK(extensions_settings_);
-  extensions_settings_ = NULL;
 }
 
 }  // namespace content_settings

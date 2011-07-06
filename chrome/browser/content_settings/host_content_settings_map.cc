@@ -114,7 +114,7 @@ HostContentSettingsMap::HostContentSettingsMap(Profile* profile)
     // |extension_service| can be NULL in unit tests.
     content_settings_providers_.push_back(make_linked_ptr(
         new content_settings::ExtensionProvider(
-            profile,
+            this,
             extension_service->GetExtensionContentSettingsStore(),
             is_off_the_record_)));
   }
@@ -522,6 +522,14 @@ bool HostContentSettingsMap::IsDefaultContentSettingManaged(
       return true;
   }
   return false;
+}
+
+void HostContentSettingsMap::ShutdownOnUIThread() {
+  for (ProviderIterator it = content_settings_providers_.begin();
+       it != content_settings_providers_.end();
+       ++it) {
+    (*it)->ShutdownOnUIThread();
+  }
 }
 
 void HostContentSettingsMap::UnregisterObservers() {

@@ -11,15 +11,16 @@
 #include "chrome/browser/extensions/extension_content_settings_store.h"
 
 class ContentSettingsDetails;
+class HostContentSettingsMap;
 class Profile;
 
 namespace content_settings {
 
-// A content settings provider which uses settings defined by extensions.
+// A content settings provider which manages settings defined by extensions.
 class ExtensionProvider : public ProviderInterface,
                           public ExtensionContentSettingsStore::Observer {
  public:
-  ExtensionProvider(Profile* profile,
+  ExtensionProvider(HostContentSettingsMap* map,
                     ExtensionContentSettingsStore* extensions_settings,
                     bool incognito);
 
@@ -48,24 +49,27 @@ class ExtensionProvider : public ProviderInterface,
 
   virtual void ResetToDefaults() {}
 
+  virtual void ShutdownOnUIThread();
+
   // ExtensionContentSettingsStore::Observer methods:
   virtual void OnContentSettingChanged(const std::string& extension_id,
                                        bool incognito);
 
-  virtual void OnDestruction();
-
  private:
   void NotifyObservers(const ContentSettingsDetails& details);
 
-  // TODO(markusheintz): That's only needed to send Notifications about changed
-  // ContentSettings. This will be changed for all ContentSettingsProviders.
-  // The HCSM will become an Observer of the ContentSettings Provider and send
-  // out the Notifications itself.
-  Profile* profile_;
+  // The HostContentSettingsMap this provider belongs to. It is only
+  // used as the source for notifications.
+  // TODO(markusheintz): Make the HCSM an Observer of the
+  // ContentSettingsProvider and send out the Notifications itself.
+  HostContentSettingsMap* map_;
 
+  // Specifies whether this provider manages settings for incognito or regular
+  // sessions.
   bool incognito_;
 
-  ExtensionContentSettingsStore* extensions_settings_;  // Weak Pointer
+  // The backend storing content setting rules defined by extensions.
+  scoped_refptr<ExtensionContentSettingsStore> extensions_settings_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionProvider);
 };
