@@ -387,10 +387,14 @@ void View::SetVisible(bool visible) {
     // If the tab is currently visible, schedule paint to refresh parent.
     if (visible_)
       SchedulePaint();
-    else
-      DestroyLayerRecurse();
 
     visible_ = visible;
+
+    if (visible_)
+      CreateLayerIfNecessary();
+    else
+      // Destroy layer if tab is invisible as invisible tabs never paint
+      DestroyLayerRecurse();
 
     // This notifies all sub-views recursively.
     PropagateVisibilityNotifications(this, visible_);

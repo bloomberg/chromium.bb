@@ -2599,6 +2599,25 @@ TEST_F(ViewLayerTest, ResetTransformOnLayerAfterAdd) {
   EXPECT_EQ(2.0f, view->layer()->transform().matrix()[0]);
 }
 
+// Makes sure that layer persists after toggling the visibility
+TEST_F(ViewLayerTest, ToggleVisibilityWithLayer) {
+  View* content_view = new View;
+  widget()->SetContentsView(content_view);
+
+  View* v1 = new View;
+  content_view->AddChildView(v1);
+  v1->SetPaintToLayer(true);
+
+  v1->SetVisible(true);
+  EXPECT_TRUE(v1->layer());
+
+  v1->SetVisible(false);
+  EXPECT_TRUE(v1->layer() == NULL);
+
+  v1->SetVisible(true);
+  EXPECT_TRUE(v1->layer());
+}
+
 // Verifies that the complete bounds of a texture are updated if the texture
 // needs to be refreshed and paint with a clip is invoked.
 TEST_F(ViewLayerTest, PaintAll) {
