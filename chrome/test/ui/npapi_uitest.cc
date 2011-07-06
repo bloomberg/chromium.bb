@@ -5,14 +5,12 @@
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
-// windows headers
 #include <comutil.h>
 #include <shellapi.h>
 #include <shlobj.h>
 #include <windows.h>
 #endif
 
-// runtime headers
 #include <memory.h>
 #include <stdlib.h>
 #include <string.h>
@@ -271,10 +269,16 @@ TEST_F(NPAPIVisiblePluginTester, SelfDeleteCreatePluginInNPNEvaluate) {
 
 #endif
 
-// FLAKY. See bug http://crbug.com/17645. This bug report indicates that this
-// test is crashy. I could not repro the crash on my local setup. Leaving this
-// marked as FLAKY for now while we watch this on the builders.
-TEST_F(NPAPIVisiblePluginTester, FLAKY_OpenPopupWindowWithPlugin) {
+// http://crbug.com/17645
+// As of 6 July 2011, this test always fails on OS X and is flaky on
+// Windows (perhaps due to timing out).
+#if defined(OS_MACOSX)
+#define MAYBE_OpenPopupWindowWithPlugin DISABLED_OpenPopupWindowWithPlugin
+#else
+#define MAYBE_OpenPopupWindowWithPlugin FLAKY_OpenPopupWindowWithPlugin
+#endif
+
+TEST_F(NPAPIVisiblePluginTester, MAYBE_OpenPopupWindowWithPlugin) {
   if (ProxyLauncher::in_process_renderer())
     return;
 
