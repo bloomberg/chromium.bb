@@ -7698,10 +7698,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_THEMES_GROUP_NAME" desc="In sentence case: The title of the themes group">
           Themes
         </message>
+        <message name="IDS_THEMES_RESET_BUTTON" desc="The button to reset your theme">
+          Reset to default theme
+        </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_THEMES_GROUP_NAME" desc="In Title Case: The title of the themes group">
           Themes
+        </message>
+        <message name="IDS_THEMES_RESET_BUTTON" desc="In title case: The button to reset your theme">
+          Reset To Default Theme
         </message>
       </if>
 
@@ -7722,9 +7728,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Hide system title bar and use compact borders
         </message>
       </if>
-      <message name="IDS_THEMES_RESET_BUTTON" desc="The button to reset your theme">
-        Reset to default theme
-      </message>
       <message name="IDS_THEMES_GALLERY_BUTTON" desc="The button to get more themes">
         Get themes
       </message>
@@ -7777,10 +7780,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_OPTIONS_BROWSING_DATA_GROUP_NAME" desc="The title of the 'Browsing data' group.">
           Browsing data
         </message>
+        <message name="IDS_OPTIONS_IMPORT_DATA_BUTTON" desc="In sentence case: Label for the import data button.">
+          Import data from another browser...
+        </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_OPTIONS_BROWSING_DATA_GROUP_NAME" desc="In Title Case: The title of the 'Browsing data' group.">
           Browsing Data
+        </message>
+        <message name="IDS_OPTIONS_IMPORT_DATA_BUTTON" desc="In Title Case: Label for the import data button.">
+          Import Data from Another Browser...
         </message>
       </if>
 
@@ -7797,17 +7806,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <if expr="os == 'win32'">
         <message name="IDS_OPTIONS_MANAGED_PREFS" desc="Windows banner displayed in case there are managed options the user won't be able to change.">
           Some options have been disabled by your IT administrator.
-        </message>
-      </if>
-
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_OPTIONS_IMPORT_DATA_BUTTON" desc="In sentence case: Label for the import data button.">
-          Import data from another browser...
-        </message>
-      </if>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_OPTIONS_IMPORT_DATA_BUTTON" desc="In Title Case: Label for the import data button.">
-          Import Data from Another Browser...
         </message>
       </if>
 
