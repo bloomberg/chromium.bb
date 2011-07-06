@@ -6,6 +6,7 @@
 
 #include <gdk/gdkx.h>
 #include <X11/XF86keysym.h>
+#include <X11/XKBlib.h>
 
 #include "chrome/browser/chromeos/audio_handler.h"
 #include "chrome/browser/chromeos/brightness_bubble.h"
@@ -52,6 +53,12 @@ SystemKeyEventListener::SystemKeyEventListener()
   GrabKey(key_f9_, 0);
   GrabKey(key_f10_, 0);
 
+  if (!XkbSelectEvents(GDK_DISPLAY(), XkbUseCoreKbd,
+                       XkbIndicatorStateNotifyMask,
+                       XkbIndicatorStateNotifyMask)) {
+    LOG(WARNING) << "Could not install Xkb Indicator observer";
+  }
+
 #if defined(TOUCH_UI)
   MessageLoopForUI::current()->AddObserver(this);
 #else
@@ -74,6 +81,15 @@ void SystemKeyEventListener::Stop() {
 #endif
   audio_handler_->Disconnect();
   stopped_ = true;
+}
+
+void SystemKeyEventListener::AddCapslockObserver(CapslockObserver* observer) {
+  capslock_observers_.AddObserver(observer);
+}
+
+void SystemKeyEventListener::RemoveCapslockObserver(
+    CapslockObserver* observer) {
+  capslock_observers_.RemoveObserver(observer);
 }
 
 
@@ -167,7 +183,16 @@ void SystemKeyEventListener::OnVolumeUp() {
   BrightnessBubble::GetInstance()->HideBubble();
 }
 
+void SystemKeyEventListener::OnCapslock() {
+  FOR_EACH_OBSERVER(CapslockObserver, capslock_observers_, OnCapslockChange());
+}
+
 bool SystemKeyEventListener::ProcessedXEvent(XEvent* xevent) {
+  XkbEvent* xkey_event = reinterpret_cast<XkbEvent*>(xevent);
+  if (xkey_event->any.xkb_type == XkbIndicatorStateNotify) {
+    OnCapslock();
+    return true;
+  }
   if (xevent->type == KeyPress) {
     int32 keycode = xevent->xkey.keycode;
     if (keycode) {

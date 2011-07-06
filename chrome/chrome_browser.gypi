@@ -685,6 +685,8 @@
         'browser/chromeos/sim_dialog_delegate.h',
         'browser/chromeos/sms_observer.cc',
         'browser/chromeos/sms_observer.h',
+        'browser/chromeos/status/capslock_menu_button.cc',
+        'browser/chromeos/status/capslock_menu_button.h',
         'browser/chromeos/status/clock_menu_button.cc',
         'browser/chromeos/status/clock_menu_button.h',
         'browser/chromeos/status/input_method_menu.cc',

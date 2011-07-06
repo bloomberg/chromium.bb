@@ -28,6 +28,10 @@ class AudioHandler;
 class SystemKeyEventListener : public WmMessageListener::Observer,
                                public MessageLoopForUI::Observer {
  public:
+  class CapslockObserver {
+   public:
+    virtual void OnCapslockChange() = 0;
+  };
   static SystemKeyEventListener* GetInstance();
 
   // WmMessageListener::Observer:
@@ -35,6 +39,9 @@ class SystemKeyEventListener : public WmMessageListener::Observer,
                                 GdkWindow* window);
 
   void Stop();
+
+  void AddCapslockObserver(CapslockObserver* observer);
+  void RemoveCapslockObserver(CapslockObserver* observer);
 
  private:
   // Defines the delete on exit Singleton traits we like.  Best to have this
@@ -67,6 +74,7 @@ class SystemKeyEventListener : public WmMessageListener::Observer,
   void OnVolumeMute();
   void OnVolumeDown();
   void OnVolumeUp();
+  void OnCapslock();
 
   // Returns true if the event was processed, false otherwise.
   virtual bool ProcessedXEvent(XEvent* xevent);
@@ -80,6 +88,8 @@ class SystemKeyEventListener : public WmMessageListener::Observer,
 
   bool stopped_;
 
+  ObserverList<CapslockObserver> capslock_observers_;
+
   // AudioHandler is a Singleton class we are just caching a pointer to here,
   // and we do not own the pointer.
   AudioHandler* const audio_handler_;
@@ -90,4 +100,3 @@ class SystemKeyEventListener : public WmMessageListener::Observer,
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_SYSTEM_KEY_EVENT_LISTENER_H_
-

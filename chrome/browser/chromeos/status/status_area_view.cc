@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "chrome/browser/chromeos/status/capslock_menu_button.h"
 #include "chrome/browser/chromeos/status/clock_menu_button.h"
 #include "chrome/browser/chromeos/status/input_method_menu_button.h"
 #include "chrome/browser/chromeos/status/network_menu_button.h"
@@ -28,6 +29,7 @@ const int kSeparation = 5;
 
 StatusAreaView::StatusAreaView(StatusAreaHost* host)
     : host_(host),
+      capslock_view_(NULL),
       clock_view_(NULL),
       input_method_view_(NULL),
       network_view_(NULL),
@@ -35,6 +37,11 @@ StatusAreaView::StatusAreaView(StatusAreaHost* host)
 }
 
 void StatusAreaView::Init() {
+  // Capslock.
+  capslock_view_ = new CapslockMenuButton(host_);
+  capslock_view_->set_border(views::Border::CreateEmptyBorder(0, 1, 0, 0));
+  AddChildView(capslock_view_);
+
   // Clock.
   clock_view_ = new ClockMenuButton(host_);
   clock_view_->set_border(views::Border::CreateEmptyBorder(0, 1, 0, 0));
