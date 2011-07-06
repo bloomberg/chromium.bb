@@ -37,7 +37,9 @@ class ScriptableHandlePpapi : public pp::deprecated::ScriptableObject,
   // If this scriptable handle corresponds to the NaCl plugin itself and the
   // plugin has successfully loaded the NaCl module and started proxied
   // execution, scripting should be redirected via this proxy.
-  void set_scriptable_proxy(pp::VarPrivate proxy) { scriptable_proxy_ = proxy; }
+  void set_scriptable_proxy(const pp::VarPrivate& proxy) {
+    scriptable_proxy_ = proxy;
+  }
 #endif
 
   // ------ Methods inherited from pp::deprecated::ScriptableObject:
