@@ -760,12 +760,17 @@ void PepperMessageFilter::OnGetLocalTimeZoneOffset(base::Time t,
   // The reason for this processing being in the browser process is that on
   // Linux, the localtime calls require filesystem access prohibited by the
   // sandbox.
-  base::Time::Exploded exploded;
+  base::Time::Exploded exploded = { 0 };
+  base::Time::Exploded utc_exploded = { 0 };
   t.LocalExplode(&exploded);
-  base::Time adj_time = base::Time::FromUTCExploded(exploded);
-  t.UTCExplode(&exploded);
-  base::Time cur = base::Time::FromUTCExploded(exploded);
-  *result = (adj_time - cur).InSecondsF();
+  t.UTCExplode(&utc_exploded);
+  if (exploded.HasValidValues() && utc_exploded.HasValidValues()) {
+    base::Time adj_time = base::Time::FromUTCExploded(exploded);
+    base::Time cur = base::Time::FromUTCExploded(utc_exploded);
+    *result = (adj_time - cur).InSecondsF();
+  } else {
+    *result = 0.0;
+  }
 }
 
 void PepperMessageFilter::OnGetFontFamilies(IPC::Message* reply_msg) {
