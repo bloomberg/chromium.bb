@@ -31,6 +31,7 @@ namespace {
 // JS API callbacks names.
 const char kJsApiCancel[] = "cancel";
 const char kJsApiConnect[] = "connect";
+const char kJsApiPageReady[] = "pageReady";
 
 // Page JS API function names.
 const char kJsApiShowNetworks[] = "mobile.ChooseNetwork.showNetworks";
@@ -58,7 +59,6 @@ class ChooseMobileNetworkHTMLSource
  private:
   virtual ~ChooseMobileNetworkHTMLSource() {}
 
-  std::string service_path_;
   DISALLOW_COPY_AND_ASSIGN(ChooseMobileNetworkHTMLSource);
 };
 
@@ -80,8 +80,12 @@ class ChooseMobileNetworkHandler
   // Handlers for JS WebUI messages.
   void HandleCancel(const ListValue* args);
   void HandleConnect(const ListValue* args);
+  void HandlePageReady(const ListValue* args);
 
   std::string device_path_;
+  ListValue networks_list_;
+  bool is_page_ready_;
+  bool has_pending_results_;
 
   DISALLOW_COPY_AND_ASSIGN(ChooseMobileNetworkHandler);
 };
@@ -130,16 +134,17 @@ void ChooseMobileNetworkHTMLSource::StartDataRequest(const std::string& path,
 
 // ChooseMobileNetworkHandler implementation.
 
-ChooseMobileNetworkHandler::ChooseMobileNetworkHandler() {
+ChooseMobileNetworkHandler::ChooseMobileNetworkHandler()
+    : is_page_ready_(false), has_pending_results_(false) {
   if (!CrosLibrary::Get()->EnsureLoaded())
     return;
 
   NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
-  cros->RequestCellularScan();
   if (const NetworkDevice* cellular = cros->FindCellularDevice()) {
     device_path_ = cellular->device_path();
     cros->AddNetworkDeviceObserver(device_path_, this);
   }
+  cros->RequestCellularScan();
 }
 
 ChooseMobileNetworkHandler::~ChooseMobileNetworkHandler() {
@@ -156,13 +161,15 @@ void ChooseMobileNetworkHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback(
       kJsApiConnect,
       NewCallback(this, &ChooseMobileNetworkHandler::HandleConnect));
+  web_ui_->RegisterMessageCallback(
+      kJsApiPageReady,
+      NewCallback(this, &ChooseMobileNetworkHandler::HandlePageReady));
 }
 
 void ChooseMobileNetworkHandler::OnNetworkDeviceChanged(
     NetworkLibrary* cros,
     const NetworkDevice* device) {
-
-  ListValue networks_list;
+  networks_list_.Clear();
   std::set<std::string> network_ids;
   const CellularNetworkList& found_networks = device->found_cellular_networks();
   for (CellularNetworkList::const_iterator it = found_networks.begin();
@@ -182,10 +189,16 @@ void ChooseMobileNetworkHandler::OnNetworkDeviceChanged(
         network->SetString(kOperatorNameProperty, it->network_id);
       network->SetString(kStatusProperty, it->status);
       network->SetString(kTechnologyProperty, it->technology);
-      networks_list.Append(network);
+      networks_list_.Append(network);
     }
   }
-  web_ui_->CallJavascriptFunction(kJsApiShowNetworks, networks_list);
+  if (is_page_ready_) {
+    web_ui_->CallJavascriptFunction(kJsApiShowNetworks, networks_list_);
+    networks_list_.Clear();
+    has_pending_results_ = false;
+  } else {
+    has_pending_results_ = true;
+  }
 }
 
 void ChooseMobileNetworkHandler::HandleCancel(const ListValue* args) {
@@ -217,6 +230,21 @@ void ChooseMobileNetworkHandler::HandleConnect(const ListValue* args) {
 
   NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
   cros->RequestCellularRegister(network_id);
+}
+
+void ChooseMobileNetworkHandler::HandlePageReady(const ListValue* args) {
+  const size_t kConnectParamCount = 0;
+  if (args->GetSize() != kConnectParamCount) {
+    NOTREACHED();
+    return;
+  }
+
+  if (has_pending_results_) {
+    web_ui_->CallJavascriptFunction(kJsApiShowNetworks, networks_list_);
+    networks_list_.Clear();
+    has_pending_results_ = false;
+  }
+  is_page_ready_ = true;
 }
 
 }  // namespace
