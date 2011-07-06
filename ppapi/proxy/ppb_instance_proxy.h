@@ -51,6 +51,11 @@ class PPB_Instance_Proxy : public InterfaceProxy,
   virtual PP_Bool SetFullscreen(PP_Instance instance,
                                 PP_Bool fullscreen) OVERRIDE;
   virtual PP_Bool GetScreenSize(PP_Instance instance, PP_Size* size) OVERRIDE;
+  virtual void ZoomChanged(PP_Instance instance, double factor) OVERRIDE;
+  virtual void ZoomLimitsChanged(PP_Instance instance,
+                                 double minimum_factor,
+                                 double maximium_factor) OVERRIDE;
+  virtual void PostMessage(PP_Instance instance, PP_Var message) OVERRIDE;
 
  private:
   // Message handlers.
@@ -72,6 +77,8 @@ class PPB_Instance_Proxy : public InterfaceProxy,
   void OnMsgGetScreenSize(PP_Instance instance,
                           PP_Bool* result,
                           PP_Size* size);
+  void OnMsgPostMessage(PP_Instance instance,
+                        SerializedVarReceiveInput message);
 };
 
 }  // namespace proxy

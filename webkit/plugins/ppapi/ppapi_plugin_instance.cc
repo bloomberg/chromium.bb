@@ -22,7 +22,6 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppb_instance.h"
-#include "ppapi/c/ppb_messaging.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/ppp_messaging.h"
 #include "ppapi/c/private/ppb_instance_private.h"
@@ -182,59 +181,6 @@ void RectToPPRect(const gfx::Rect& input, PP_Rect* output) {
                                 input.width(), input.height());
 }
 
-void PostMessage(PP_Instance instance_id, PP_Var message) {
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
-  if (!instance)
-    return;
-  instance->PostMessage(message);
-}
-
-const PPB_Messaging ppb_messaging = {
-  &PostMessage
-};
-
-void ZoomChanged(PP_Instance instance_id, double factor) {
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
-  if (!instance)
-    return;
-
-  // We only want to tell the page to change its zoom if the whole page is the
-  // plugin.  If we're in an iframe, then don't do anything.
-  if (!instance->IsFullPagePlugin())
-    return;
-
-  double zoom_level = WebView::zoomFactorToZoomLevel(factor);
-  // The conversino from zoom level to factor, and back, can introduce rounding
-  // errors.  i.e. WebKit originally tells us 3.0, but by the time we tell the
-  // plugin and it tells us back, the level becomes 3.000000000004.  Need to
-  // round or else otherwise if the user zooms out, it will go to 3.0 instead of
-  // 2.0.
-  int rounded =
-      static_cast<int>(zoom_level + (zoom_level > 0 ? 0.001 : -0.001));
-  if (abs(rounded - zoom_level) < 0.001)
-    zoom_level = rounded;
-  instance->container()->zoomLevelChanged(zoom_level);
-}
-
-void ZoomLimitsChanged(PP_Instance instance_id,
-                       double minimum_factor,
-                       double maximium_factor) {
-  if (minimum_factor > maximium_factor) {
-    NOTREACHED();
-    return;
-  }
-
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
-  if (!instance)
-    return;
-  instance->delegate()->ZoomLimitsChanged(minimum_factor, maximium_factor);
-}
-
-const PPB_Zoom_Dev ppb_zoom = {
-  &ZoomChanged,
-  &ZoomLimitsChanged
-};
-
 }  // namespace
 
 // static
@@ -313,16 +259,6 @@ PluginInstance::~PluginInstance() {
   module_->InstanceDeleted(this);
 
   ResourceTracker::Get()->InstanceDeleted(pp_instance_);
-}
-
-// static
-const PPB_Messaging* PluginInstance::GetMessagingInterface() {
-  return &ppb_messaging;
-}
-
-// static
-const PPB_Zoom_Dev* PluginInstance::GetZoomInterface() {
-  return &ppb_zoom;
 }
 
 // NOTE: Any of these methods that calls into the plugin needs to take into
@@ -464,10 +400,6 @@ bool PluginInstance::SetCursor(PP_CursorType_Dev type,
 
   cursor_.reset(custom_cursor.release());
   return true;
-}
-
-void PluginInstance::PostMessage(PP_Var message) {
-  message_channel_->PostMessageToJavaScript(message);
 }
 
 bool PluginInstance::Initialize(WebPluginContainer* container,
@@ -1506,6 +1438,39 @@ PP_Bool PluginInstance::GetScreenSize(PP_Instance instance, PP_Size* size) {
   gfx::Size screen_size = delegate()->GetScreenSize();
   *size = PP_MakeSize(screen_size.width(), screen_size.height());
   return PP_TRUE;
+}
+
+void PluginInstance::ZoomChanged(PP_Instance instance, double factor) {
+  // We only want to tell the page to change its zoom if the whole page is the
+  // plugin.  If we're in an iframe, then don't do anything.
+  if (!IsFullPagePlugin())
+    return;
+
+  double zoom_level = WebView::zoomFactorToZoomLevel(factor);
+  // The conversino from zoom level to factor, and back, can introduce rounding
+  // errors.  i.e. WebKit originally tells us 3.0, but by the time we tell the
+  // plugin and it tells us back, the level becomes 3.000000000004.  Need to
+  // round or else otherwise if the user zooms out, it will go to 3.0 instead of
+  // 2.0.
+  int rounded =
+      static_cast<int>(zoom_level + (zoom_level > 0 ? 0.001 : -0.001));
+  if (abs(rounded - zoom_level) < 0.001)
+    zoom_level = rounded;
+  container()->zoomLevelChanged(zoom_level);
+}
+
+void PluginInstance::ZoomLimitsChanged(PP_Instance instance,
+                                       double minimum_factor,
+                                       double maximium_factor) {
+  if (minimum_factor > maximium_factor) {
+    NOTREACHED();
+    return;
+  }
+  delegate()->ZoomLimitsChanged(minimum_factor, maximium_factor);
+}
+
+void PluginInstance::PostMessage(PP_Instance instance, PP_Var message) {
+  message_channel_->PostMessageToJavaScript(message);
 }
 
 }  // namespace ppapi

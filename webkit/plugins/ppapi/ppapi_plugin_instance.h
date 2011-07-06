@@ -34,8 +34,6 @@
 
 typedef struct NPObject NPObject;
 struct PP_Var;
-struct PPB_Messaging;
-struct PPB_Zoom_Dev;
 struct PPP_Find_Dev;
 struct PPP_Instance_Private;
 struct PPP_Messaging;
@@ -98,11 +96,6 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
 
   // Delete should be called by the WebPlugin before this destructor.
   virtual ~PluginInstance();
-
-  // Returns a pointer to the interface implementing PPB_Find that is
-  // exposed to the plugin.
-  static const PPB_Messaging* GetMessagingInterface();
-  static const PPB_Zoom_Dev* GetZoomInterface();
 
   PluginDelegate* delegate() const { return delegate_; }
   PluginModule* module() const { return module_.get(); }
@@ -241,8 +234,7 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
                    const char* target,
                    bool from_user_action);
 
-  // Implementation of PPB_Messaging and PPP_Messaging.
-  void PostMessage(PP_Var message);
+  // Implementation of PPP_Messaging.
   void HandleMessage(PP_Var message);
 
   PluginDelegate::PlatformContext3D* CreateContext3D();
@@ -284,6 +276,11 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
   virtual PP_Bool SetFullscreen(PP_Instance instance,
                                 PP_Bool fullscreen) OVERRIDE;
   virtual PP_Bool GetScreenSize(PP_Instance instance, PP_Size* size) OVERRIDE;
+  virtual void ZoomChanged(PP_Instance instance, double factor) OVERRIDE;
+  virtual void ZoomLimitsChanged(PP_Instance instance,
+                                 double minimum_factor,
+                                 double maximium_factor) OVERRIDE;
+  virtual void PostMessage(PP_Instance instance, PP_Var message) OVERRIDE;
 
  private:
   // See the static Create functions above for creating PluginInstance objects.

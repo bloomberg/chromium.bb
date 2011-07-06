@@ -33,6 +33,15 @@ class PPB_Instance_FunctionAPI {
   virtual PP_Bool SetFullscreen(PP_Instance instance, PP_Bool fullscreen) = 0;
   virtual PP_Bool GetScreenSize(PP_Instance instance, PP_Size* size) = 0;
 
+  // Messaging.
+  virtual void PostMessage(PP_Instance instance, PP_Var message) = 0;
+
+  // Zoom
+  virtual void ZoomChanged(PP_Instance instance, double factor) = 0;
+  virtual void ZoomLimitsChanged(PP_Instance instance,
+                                 double minimum_factor,
+                                 double maximium_factor) = 0;
+
   static const ::pp::proxy::InterfaceID interface_id =
       ::pp::proxy::INTERFACE_ID_PPB_INSTANCE;
 };

@@ -297,7 +297,7 @@ const void* GetInterface(const char* name) {
   if (strcmp(name, PPB_MEMORY_DEV_INTERFACE) == 0)
     return PPB_Memory_Impl::GetInterface();
   if (strcmp(name, PPB_MESSAGING_INTERFACE) == 0)
-    return PluginInstance::GetMessagingInterface();
+    return ::ppapi::thunk::GetPPB_Messaging_Thunk();
   if (strcmp(name, PPB_PROXY_PRIVATE_INTERFACE) == 0)
     return PPB_Proxy_Impl::GetInterface();
   if (strcmp(name, PPB_SCROLLBAR_DEV_INTERFACE_0_4) == 0)
@@ -327,7 +327,7 @@ const void* GetInterface(const char* name) {
   if (strcmp(name, PPB_WIDGET_DEV_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_Widget_Thunk();
   if (strcmp(name, PPB_ZOOM_DEV_INTERFACE) == 0)
-    return PluginInstance::GetZoomInterface();
+    return ::ppapi::thunk::GetPPB_Zoom_Thunk();
 
 #ifdef ENABLE_GPU
   // This should really refer to switches::kDisable3DAPIs.

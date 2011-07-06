@@ -625,6 +625,9 @@ IPC_SYNC_MESSAGE_ROUTED1_2(PpapiHostMsg_PPBInstance_GetScreenSize,
                            PP_Instance /* instance */,
                            PP_Bool /* result */,
                            PP_Size /* size */)
+IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBInstance_PostMessage,
+                    PP_Instance /* instance */,
+                    pp::proxy::SerializedVar /* message */)
 
 IPC_SYNC_MESSAGE_ROUTED3_1(
     PpapiHostMsg_PPBPDF_GetFontFileWithFallback,

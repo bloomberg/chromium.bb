@@ -35,6 +35,7 @@ struct PPB_ImageDataTrusted;
 struct PPB_Instance;
 struct PPB_Instance_Private;
 struct PPB_LayerCompositor_Dev;
+struct PPB_Messaging;
 struct PPB_Scrollbar_0_4_Dev;
 struct PPB_Surface3D_Dev;
 struct PPB_Transport_Dev;
@@ -45,6 +46,7 @@ struct PPB_URLResponseInfo;
 struct PPB_VideoDecoder_Dev;
 struct PPB_VideoLayer_Dev;
 struct PPB_Widget_Dev;
+struct PPB_Zoom_Dev;
 
 #ifdef PPAPI_INSTANCE_REMOVE_SCRIPTING
 struct PPB_Instance_0_4;
@@ -89,6 +91,7 @@ const PPB_Instance_0_4* GetPPB_Instance_0_4_Thunk();
 const PPB_Instance_0_5* GetPPB_Instance_0_5_Thunk();
 const PPB_Instance_Private* GetPPB_Instance_Private_Thunk();
 const PPB_LayerCompositor_Dev* GetPPB_LayerCompositor_Thunk();
+const PPB_Messaging* GetPPB_Messaging_Thunk();
 const PPB_Scrollbar_0_4_Dev* GetPPB_Scrollbar_Thunk();
 const PPB_Surface3D_Dev* GetPPB_Surface3D_Thunk();
 const PPB_Transport_Dev* GetPPB_Transport_Thunk();
@@ -99,6 +102,7 @@ const PPB_URLResponseInfo* GetPPB_URLResponseInfo_Thunk();
 const PPB_VideoDecoder_Dev* GetPPB_VideoDecoder_Thunk();
 const PPB_VideoLayer_Dev* GetPPB_VideoLayer_Thunk();
 const PPB_Widget_Dev* GetPPB_Widget_Thunk();
+const PPB_Zoom_Dev* GetPPB_Zoom_Thunk();
 
 }  // namespace thunk
 }  // namespace ppapi

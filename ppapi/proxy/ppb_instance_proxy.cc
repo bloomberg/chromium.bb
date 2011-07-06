@@ -16,6 +16,11 @@
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
 
+// Windows headers interfere with this file.
+#ifdef PostMessage
+#undef PostMessage
+#endif
+
 using ppapi::thunk::EnterFunctionNoLock;
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_Instance_FunctionAPI;
@@ -193,6 +198,26 @@ PP_Bool PPB_Instance_Proxy::GetScreenSize(PP_Instance instance,
   return result;
 }
 
+void PPB_Instance_Proxy::ZoomChanged(PP_Instance instance,
+                                     double factor) {
+  // Not proxied yet.
+  NOTIMPLEMENTED();
+}
+
+void PPB_Instance_Proxy::ZoomLimitsChanged(PP_Instance instance,
+                                           double minimum_factor,
+                                           double maximium_factor) {
+  // Not proxied yet.
+  NOTIMPLEMENTED();
+}
+
+void PPB_Instance_Proxy::PostMessage(PP_Instance instance,
+                                     PP_Var message) {
+  dispatcher()->Send(new PpapiHostMsg_PPBInstance_PostMessage(
+      INTERFACE_ID_PPB_INSTANCE,
+      instance, SerializedVarSendInput(dispatcher(), message)));
+}
+
 void PPB_Instance_Proxy::OnMsgGetWindowObject(
     PP_Instance instance,
     SerializedVarReturnValue result) {
@@ -262,6 +287,13 @@ void PPB_Instance_Proxy::OnMsgGetScreenSize(PP_Instance instance,
   EnterFunctionNoLock<PPB_Instance_FunctionAPI> enter(instance, false);
   if (enter.succeeded())
     *result = enter.functions()->GetScreenSize(instance, size);
+}
+
+void PPB_Instance_Proxy::OnMsgPostMessage(PP_Instance instance,
+                                          SerializedVarReceiveInput message) {
+  EnterFunctionNoLock<PPB_Instance_FunctionAPI> enter(instance, false);
+  if (enter.succeeded())
+    enter.functions()->PostMessage(instance, message.Get(dispatcher()));
 }
 
 }  // namespace proxy
