@@ -1229,7 +1229,6 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   }
 }
 
-
 - (BookmarkButton*)buttonForNode:(const BookmarkNode*)node
                          xOffset:(int*)xOffset {
   BookmarkButtonCell* cell = [self cellForBookmarkNode:node];
@@ -1265,6 +1264,13 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     [button setTarget:self];
     [button setAction:@selector(openBookmarkFolderFromButton:)];
     [button setActsOnMouseDown:YES];
+    // If it has a title, and it will be truncated, show full title in
+    // tooltip.
+    NSString* title = base::SysUTF16ToNSString(node->GetTitle());
+    if ([title length] &&
+        [[button cell] cellSize].width > bookmarks::kDefaultBookmarkWidth) {
+      [button setToolTip:title];
+    }
   } else {
     // Make the button do something
     [button setTarget:self];
