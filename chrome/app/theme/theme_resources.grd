@@ -29,7 +29,6 @@
       <include name="IDR_APP_DROPARROW" file="app_droparrow.png" type="BINDATA" />
       <include name="IDR_BALLOON_CLOSE" file="balloon_close.png" type="BINDATA" />
       <include name="IDR_BALLOON_CLOSE_HOVER" file="balloon_close_hover.png" type="BINDATA" />
-      <include name="IDR_BOOKMARKS_FAVICON" file="bookmarks_favicon.png" type="BINDATA" />
       <include name="IDR_BOOKMARK_BAR_CHEVRONS" file="chevron.png" type="BINDATA" />
       <if expr="os != 'darwin'">
         <include name="IDR_BOOKMARK_BAR_FOLDER" file="bookmark_bar_folder.png" type="BINDATA" />
@@ -47,7 +46,6 @@
       <if expr="os.find('win') != -1">
         <include name="IDR_CONFLICT_BADGE" file="conflict_badge.png" type="BINDATA" />
         <include name="IDR_CONFLICT_MENU" file="conflict_menu.png" type="BINDATA" />
-        <include name="IDR_CONFLICT_FAVICON" file="about_conflicts_favicon.png" type="BINDATA" />
       </if>
       <include name="IDR_CONSTRAINED_BOTTOM_CENTER_V" file="constrained_bottom_center_v.png" type="BINDATA" />
       <include name="IDR_CONSTRAINED_BOTTOM_LEFT_CORNER_V" file="constrained_bottom_left_corner_v.png" type="BINDATA" />
@@ -69,7 +67,6 @@
       <include name="IDR_DOCK_HIGH" file="dock_tab_high.png" type="BINDATA" />
       <include name="IDR_DOCK_MAX" file="dock_tab_max.png" type="BINDATA" />
       <include name="IDR_DOCK_WIDE" file="dock_tab_wide.png" type="BINDATA" />
-      <include name="IDR_DOWNLOADS_FAVICON" file="downloads_favicon.png" type="BINDATA" />
       <include name="IDR_DOWNLOAD_ANIMATION_BEGIN" file="download_animation_begin.png" type="BINDATA" />
       <include name="IDR_DOWNLOAD_BUTTON_CENTER_BOTTOM" file="download_button_center_bottom.png" type="BINDATA" />
       <include name="IDR_DOWNLOAD_BUTTON_CENTER_BOTTOM_H" file="download_button_center_bottom_h.png" type="BINDATA" />
@@ -130,13 +127,10 @@
       <include name="IDR_FIND_DLG_LEFT_BACKGROUND" file="find_dlg_left_bg.png" type="BINDATA" />
       <include name="IDR_FIND_DLG_MIDDLE_BACKGROUND" file="find_dlg_middle_bg.png" type="BINDATA" />
       <include name="IDR_FIND_DLG_RIGHT_BACKGROUND" file="find_dlg_right_bg.png" type="BINDATA" />
-      <include name="IDR_FLAGS" file="flags.png" type="BINDATA" />
       <include name="IDR_FROZEN_TAB_ICON" file="frozen_tab.png" type="BINDATA" />
       <include name="IDR_FULLSCREEN_MENU_BUTTON" file="fullscreen_menu_button.png" type="BINDATA" />
       <include name="IDR_GEOLOCATION_ALLOWED_LOCATIONBAR_ICON" file="geolocation_allowed_locationbar_icon.png" type="BINDATA" />
       <include name="IDR_GEOLOCATION_DENIED_LOCATIONBAR_ICON" file="geolocation_denied_locationbar_icon.png" type="BINDATA" />
-      <include name="IDR_GEOLOCATION_INFOBAR_ICON" file="geolocation_infobar_icon.png" type="BINDATA" />
-      <include name="IDR_HISTORY_FAVICON" file="history_favicon.png" type="BINDATA" />
       <if expr="os.find('win') != -1">
         <include name="IDR_INCOMPATIBILITY_DOT_ACTIVE" file="incompatibility_dot_active.png" type="BINDATA" />
         <include name="IDR_INCOMPATIBILITY_DOT_INACTIVE" file="incompatibility_dot_inactive.png" type="BINDATA" />
@@ -222,7 +216,6 @@
       <include name="IDR_PROFILE_AVATAR_2" file="avatar_bee.png" type="BINDATA" />
       <include name="IDR_PROFILE_AVATAR_3" file="avatar_briefcase.png" type="BINDATA" />
       <include name="IDR_RESTORE_BUTTON_MASK" file="restore_button_mask.png" type="BINDATA" />
-      <include name="IDR_SAD_FAVICON" file="sadfavicon.png" type="BINDATA" />
       <include name="IDR_SAD_TAB" file="sadtab.png" type="BINDATA" />
       <include name="IDR_SAFEBROWSING_WARNING" file="safebrowsing_warning.png" type="BINDATA" />
       <include name="IDR_SEARCH_ENGINE_DIALOG_TOP" file="search_engine_top.png" type="BINDATA" />
@@ -295,7 +288,6 @@
         <include name="IDR_SEARCH_ENGINE_LOGO_YANDEX" file="notused.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_ZOZNAM" file="notused.png" type="BINDATA" />
       </if>
-      <include name="IDR_SETTINGS_FAVICON" file="settings_favicon.png" type="BINDATA" />
       <include name="IDR_SIDETABS_NEW_TAB" file="sidetabs_new_tab.png" type="BINDATA" />
       <include name="IDR_SPEECH_INPUT_MIC_EMPTY" file="speech_input_mic_empty.png" type="BINDATA" />
       <include name="IDR_SPEECH_INPUT_MIC_NOISE" file="speech_input_mic_noise.png" type="BINDATA" />

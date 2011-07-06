@@ -50,6 +50,7 @@
 #include "grit/locale_settings.h"
 #include "grit/options_resources.h"
 #include "grit/theme_resources.h"
+#include "grit/theme_resources_standard.h"
 #include "net/base/escape.h"
 #include "ui/base/resource/resource_bundle.h"
 

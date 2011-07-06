@@ -26,6 +26,7 @@
       <include name="IDR_BLOCKED_JAVASCRIPT" file="large_blocked_script.png" type="BINDATA" />
       <include name="IDR_BLOCKED_PLUGINS" file="large_blocked_plugins.png" type="BINDATA" />
       <include name="IDR_BLOCKED_POPUPS" file="large_blocked_popups.png" type="BINDATA" />
+      <include name="IDR_BOOKMARKS_FAVICON" file="large_bookmarks_favicon.png" type="BINDATA" />
       <include name="IDR_BROWSER_ACTION" file="large_browser_action.png" type="BINDATA" />
       <include name="IDR_BROWSER_ACTION_H" file="large_browser_action_h.png" type="BINDATA" />
       <include name="IDR_BROWSER_ACTION_P" file="large_browser_action_p.png" type="BINDATA" />
@@ -55,18 +56,25 @@
       <include name="IDR_CLOSE_BAR_H" file="large_close_bar_h.png" type="BINDATA" />
       <include name="IDR_CLOSE_BAR_MASK" file="large_close_bar_mask.png" type="BINDATA" />
       <include name="IDR_CLOSE_BAR_P" file="large_close_bar_p.png" type="BINDATA" />
+      <if expr="os.find('win') != -1">
+        <include name="IDR_CONFLICT_FAVICON" file="large_about_conflicts_favicon.png" type="BINDATA" />
+      </if>
       <include name="IDR_CONTENT_TOP_CENTER" file="large_content_top_center.png" type="BINDATA" />
       <include name="IDR_CONTENT_TOP_LEFT_CORNER" file="large_content_top_left_corner.png" type="BINDATA" />
       <include name="IDR_CONTENT_TOP_LEFT_CORNER_MASK" file="large_content_top_left_corner_mask.png" type="BINDATA" />
       <include name="IDR_CONTENT_TOP_RIGHT_CORNER" file="large_content_top_right_corner.png" type="BINDATA" />
       <include name="IDR_CONTENT_TOP_RIGHT_CORNER_MASK" file="large_content_top_right_corner_mask.png" type="BINDATA" />
+      <include name="IDR_DOWNLOADS_FAVICON" file="large_downloads_favicon.png" type="BINDATA" />
       <include name="IDR_FEEDBACK" file="large_feedback.png" type="BINDATA" />
       <include name="IDR_FEEDBACK_H" file="large_feedback_h.png" type="BINDATA" />
       <include name="IDR_FEEDBACK_P" file="large_feedback_p.png" type="BINDATA" />
+      <include name="IDR_FLAGS" file="large_flags.png" type="BINDATA" />
       <include name="IDR_FORWARD" file="large_forward.png" type="BINDATA" />
       <include name="IDR_FORWARD_D" file="large_forward_d.png" type="BINDATA" />
       <include name="IDR_FORWARD_H" file="large_forward_h.png" type="BINDATA" />
       <include name="IDR_FORWARD_P" file="large_forward_p.png" type="BINDATA" />
+      <include name="IDR_GEOLOCATION_INFOBAR_ICON" file="large_geolocation_infobar_icon.png" type="BINDATA" />
+      <include name="IDR_HISTORY_FAVICON" file="large_history_favicon.png" type="BINDATA" />
       <include name="IDR_HOME" file="large_home.png" type="BINDATA" />
       <include name="IDR_HOME_H" file="large_home_h.png" type="BINDATA" />
       <include name="IDR_HOME_P" file="large_home_p.png" type="BINDATA" />
@@ -90,12 +98,14 @@
       <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_L" file="large_keyword_search_bubble_l.png" type="BINDATA" />
       <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_R" file="large_keyword_search_bubble_r.png" type="BINDATA" />
       <include name="IDR_NEWTAB_BUTTON" file="large_newtab.png" type="BINDATA" />
+      <include name="IDR_SETTINGS_FAVICON" file="large_settings_favicon.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_C" file="large_ev_bubble_c.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_L" file="large_ev_bubble_l.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_R" file="large_ev_bubble_r.png" type="BINDATA" />
       <include name="IDR_RELOAD" file="large_reload.png" type="BINDATA" />
       <include name="IDR_RELOAD_H" file="large_reload_h.png" type="BINDATA" />
       <include name="IDR_RELOAD_P" file="large_reload_p.png" type="BINDATA" />
+      <include name="IDR_SAD_FAVICON" file="large_sadfavicon.png" type="BINDATA" />
       <include name="IDR_STAR" file="large_star.png" type="BINDATA" />
       <include name="IDR_STAR_LIT" file="large_star_lit.png" type="BINDATA" />
       <include name="IDR_STOP" file="large_stop.png" type="BINDATA" />
