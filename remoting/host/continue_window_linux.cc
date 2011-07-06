@@ -22,7 +22,7 @@ class ContinueWindowLinux : public remoting::ContinueWindow {
   virtual void Hide() OVERRIDE;
 
  private:
-  CHROMEG_CALLBACK_0(ContinueWindowLinux, void, OnOkClicked, GtkButton*);
+  CHROMEGTK_CALLBACK_1(ContinueWindowLinux, void, OnResponse, int);
 
   void CreateWindow();
 
@@ -43,54 +43,56 @@ ContinueWindowLinux::~ContinueWindowLinux() {
 void ContinueWindowLinux::CreateWindow() {
   if (continue_window_) return;
 
-  continue_window_ = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-  GtkWindow* window = GTK_WINDOW(continue_window_);
-  gtk_window_set_title(window, kTitle);
-  gtk_window_set_resizable(window, FALSE);
+  continue_window_ = gtk_dialog_new_with_buttons(
+      kTitle,
+      NULL,
+      static_cast<GtkDialogFlags>(GTK_DIALOG_MODAL | GTK_DIALOG_NO_SEPARATOR),
+      kCancelButtonText, GTK_RESPONSE_CANCEL,
+      kDefaultButtonText, GTK_RESPONSE_OK,
+      NULL);
 
-  g_signal_connect(window, "delete-event",
-                   G_CALLBACK(gtk_widget_hide_on_delete), NULL);
+  gtk_dialog_set_default_response(GTK_DIALOG(continue_window_),
+                                  GTK_RESPONSE_OK);
+  gtk_window_set_resizable(GTK_WINDOW(continue_window_), FALSE);
 
-  GtkWidget* main_area = gtk_vbox_new(FALSE, 0);
-  gtk_container_add(GTK_CONTAINER(continue_window_), main_area);
+  // Set always-on-top, otherwise this window tends to be obscured by the
+  // DisconnectWindow.
+  gtk_window_set_keep_above(GTK_WINDOW(continue_window_), TRUE);
 
-  GtkWidget* text_row = gtk_hbox_new(FALSE, 0);
-  gtk_container_add(GTK_CONTAINER(main_area), text_row);
+  g_signal_connect(continue_window_, "response",
+                   G_CALLBACK(OnResponseThunk), this);
+
+  GtkWidget* content_area = GTK_DIALOG(continue_window_)->vbox;
 
   GtkWidget* text_label = gtk_label_new(kMessage);
   gtk_label_set_line_wrap(GTK_LABEL(text_label), TRUE);
-  gtk_container_add(GTK_CONTAINER(text_row), text_label);
+  // TODO(lambroslambrou): Fix magic numbers, as in disconnect_window_linux.cc.
+  gtk_misc_set_padding(GTK_MISC(text_label), 12, 12);
+  gtk_container_add(GTK_CONTAINER(content_area), text_label);
 
-  GtkWidget* button_box = gtk_hbox_new(FALSE, 0);
-  gtk_container_add(GTK_CONTAINER(main_area), button_box);
-
-  GtkWidget* ok_button =
-      gtk_button_new_with_label(kDefaultButtonText);
-  gtk_box_pack_start(GTK_BOX(button_box), ok_button,
-                     TRUE, FALSE, 0);
-
-  g_signal_connect(ok_button, "clicked",
-                   G_CALLBACK(OnOkClickedThunk), this);
-
-  gtk_widget_show_all(main_area);
+  gtk_widget_show_all(content_area);
 }
 
 void ContinueWindowLinux::Show(remoting::ChromotingHost* host) {
   host_ = host;
   CreateWindow();
+  gtk_window_set_urgency_hint(GTK_WINDOW(continue_window_), TRUE);
   gtk_window_present(GTK_WINDOW(continue_window_));
 }
 
 void ContinueWindowLinux::Hide() {
-  CHECK(continue_window_);
-
-  gtk_widget_hide(continue_window_);
+  if (continue_window_) {
+    gtk_widget_destroy(continue_window_);
+    continue_window_ = NULL;
+  }
 }
 
-void ContinueWindowLinux::OnOkClicked(GtkButton* sender) {
-  CHECK(host_);
-
-  host_->PauseSession(false);
+void ContinueWindowLinux::OnResponse(GtkWidget* dialog, int response_id) {
+  if (response_id == GTK_RESPONSE_OK) {
+    host_->PauseSession(false);
+  } else {
+    host_->Shutdown(NULL);
+  }
   Hide();
 }
 

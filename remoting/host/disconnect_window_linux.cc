@@ -16,16 +16,14 @@ namespace remoting {
 class DisconnectWindowLinux : public DisconnectWindow {
  public:
   DisconnectWindowLinux();
+  virtual ~DisconnectWindowLinux();
 
   virtual void Show(ChromotingHost* host,
                     const std::string& username) OVERRIDE;
   virtual void Hide() OVERRIDE;
 
  private:
-  CHROMEGTK_CALLBACK_1(DisconnectWindowLinux, gboolean, OnWindowDelete,
-                       GdkEvent*);
-  CHROMEG_CALLBACK_0(DisconnectWindowLinux, void, OnDisconnectClicked,
-                     GtkButton*);
+  CHROMEGTK_CALLBACK_1(DisconnectWindowLinux, void, OnResponse, int);
 
   void CreateWindow();
 
@@ -41,12 +39,20 @@ DisconnectWindowLinux::DisconnectWindowLinux()
       disconnect_window_(NULL) {
 }
 
+DisconnectWindowLinux::~DisconnectWindowLinux() {
+}
+
 void DisconnectWindowLinux::CreateWindow() {
   if (disconnect_window_) return;
 
-  disconnect_window_ = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+  disconnect_window_ = gtk_dialog_new_with_buttons(
+      kTitle,
+      NULL,
+      GTK_DIALOG_NO_SEPARATOR,
+      kDisconnectButton, GTK_RESPONSE_OK,
+      NULL);
+
   GtkWindow* window = GTK_WINDOW(disconnect_window_);
-  gtk_window_set_title(window, kTitle);
   gtk_window_set_resizable(window, FALSE);
   // Try to keep the window always visible.
   gtk_window_stick(window);
@@ -55,14 +61,17 @@ void DisconnectWindowLinux::CreateWindow() {
   gtk_window_set_type_hint(window, GDK_WINDOW_TYPE_HINT_UTILITY);
   gtk_window_set_deletable(window, FALSE);
 
-  g_signal_connect(disconnect_window_, "delete-event",
-                   G_CALLBACK(OnWindowDeleteThunk), this);
+  g_signal_connect(disconnect_window_, "response",
+                   G_CALLBACK(OnResponseThunk), this);
 
-  GtkWidget* main_area = gtk_vbox_new(FALSE, 0);
-  gtk_container_add(GTK_CONTAINER(disconnect_window_), main_area);
+  GtkWidget* content_area = GTK_DIALOG(disconnect_window_)->vbox;
 
   GtkWidget* username_row = gtk_hbox_new(FALSE, 0);
-  gtk_container_add(GTK_CONTAINER(main_area), username_row);
+  // TODO(lambroslambrou): Replace the magic number with an appropriate
+  // constant from a header file (such as chrome/browser/ui/gtk/gtk_util.h
+  // but check_deps disallows its #inclusion here).
+  gtk_container_set_border_width(GTK_CONTAINER(username_row), 12);
+  gtk_container_add(GTK_CONTAINER(content_area), username_row);
 
   GtkWidget* share_label = gtk_label_new(kSharingWith);
   gtk_container_add(GTK_CONTAINER(username_row), share_label);
@@ -70,17 +79,7 @@ void DisconnectWindowLinux::CreateWindow() {
   user_label_ = gtk_label_new(NULL);
   gtk_container_add(GTK_CONTAINER(username_row), user_label_);
 
-  GtkWidget* disconnect_box = gtk_hbox_new(FALSE, 0);
-  gtk_container_add(GTK_CONTAINER(main_area), disconnect_box);
-
-  GtkWidget* disconnect_button = gtk_button_new_with_label(kDisconnectButton);
-  gtk_box_pack_start(GTK_BOX(disconnect_box), disconnect_button,
-                     TRUE, FALSE, 0);
-
-  g_signal_connect(disconnect_button, "clicked",
-                   G_CALLBACK(OnDisconnectClickedThunk), this);
-
-  gtk_widget_show_all(main_area);
+  gtk_widget_show_all(content_area);
 }
 
 void DisconnectWindowLinux::Show(ChromotingHost* host,
@@ -92,20 +91,20 @@ void DisconnectWindowLinux::Show(ChromotingHost* host,
 }
 
 void DisconnectWindowLinux::Hide() {
-  DCHECK(disconnect_window_);
-
-  gtk_widget_hide(disconnect_window_);
+  if (disconnect_window_) {
+    gtk_widget_destroy(disconnect_window_);
+    disconnect_window_ = NULL;
+  }
 }
 
-gboolean DisconnectWindowLinux::OnWindowDelete(GtkWidget* widget,
-                                               GdkEvent* event) {
-  // Don't allow the window to be closed.
-  return TRUE;
-}
+void DisconnectWindowLinux::OnResponse(GtkWidget* dialog, int response_id) {
+  // |response_id| is ignored, because there is only one button, and pressing
+  // it should have the same effect as closing the window (if the window Close
+  // button were visible).
+  CHECK(host_);
 
-void DisconnectWindowLinux::OnDisconnectClicked(GtkButton* sender) {
-  DCHECK(host_);
   host_->Shutdown(NULL);
+  Hide();
 }
 
 DisconnectWindow* DisconnectWindow::Create() {
