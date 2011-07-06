@@ -43,7 +43,6 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/download/download_prefs.h"
-#include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/download/save_package.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -85,7 +84,6 @@
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/ui/webui/active_downloads_ui.h"
 #include "chrome/browser/ui/webui/ntp/shown_sections_handler.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome/common/chrome_constants.h"
@@ -110,6 +108,12 @@
 #include "ui/base/message_box_flags.h"
 #include "webkit/glue/webdropdata.h"
 #include "webkit/plugins/npapi/plugin_list.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/webui/active_downloads_ui.h"
+#else
+#include "chrome/browser/download/download_shelf.h"
+#endif
 
 namespace {
 

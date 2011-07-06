@@ -51,7 +51,6 @@
 #include "chrome/browser/ui/views/compact_nav/compact_options_bar.h"
 #include "chrome/browser/ui/views/default_search_view.h"
 #include "chrome/browser/ui/views/download/download_in_progress_dialog_view.h"
-#include "chrome/browser/ui/views/download/download_shelf_view.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
 #include "chrome/browser/ui/views/frame/contents_container.h"
 #include "chrome/browser/ui/views/fullscreen_exit_bubble.h"
@@ -119,6 +118,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/views/keyboard_overlay_dialog_view.h"
+#else
+#include "chrome/browser/ui/views/download/download_shelf_view.h"
 #endif
 
 using base::TimeDelta;
@@ -351,11 +352,13 @@ BrowserView::~BrowserView() {
   ticker_.UnregisterTickHandler(&hung_window_detector_);
 #endif
 
+#if !defined(OS_CHROMEOS)
   // We destroy the download shelf before |browser_| to remove its child
   // download views from the set of download observers (since the observed
   // downloads can be destroyed along with |browser_| and the observer
   // notifications will call back into deleted objects).
   download_shelf_.reset();
+#endif
 
   // The TabStrip attaches a listener to the model. Make sure we shut down the
   // TabStrip first so that it can cleanly remove the listener.
@@ -1073,15 +1076,24 @@ void BrowserView::SetDownloadShelfVisible(bool visible) {
 }
 
 bool BrowserView::IsDownloadShelfVisible() const {
+#if defined(OS_CHROMEOS)
+  return false;
+#else
   return download_shelf_.get() && download_shelf_->IsShowing();
+#endif
 }
 
 DownloadShelf* BrowserView::GetDownloadShelf() {
+#if defined(OS_CHROMEOS)
+  NOTREACHED();
+  return NULL;
+#else
   if (!download_shelf_.get()) {
     download_shelf_.reset(new DownloadShelfView(browser_.get(), this));
     download_shelf_->set_parent_owned(false);
   }
   return download_shelf_.get();
+#endif
 }
 
 void BrowserView::ShowRepostFormWarningDialog(TabContents* tab_contents) {
@@ -1755,8 +1767,10 @@ void BrowserView::GetAccessiblePanes(
     panes->push_back(bookmark_bar_view_.get());
   if (infobar_container_)
     panes->push_back(infobar_container_);
+#if !defined(OS_CHROMEOS)
   if (download_shelf_.get())
     panes->push_back(download_shelf_.get());
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////

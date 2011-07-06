@@ -34,7 +34,6 @@
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
-#include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/download/download_started_animation.h"
 #include "chrome/browser/download/save_package.h"
 #include "chrome/browser/extensions/crx_installer.h"
@@ -94,7 +93,6 @@
 #include "chrome/browser/ui/tabs/dock_info.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
-#include "chrome/browser/ui/webui/active_downloads_ui.h"
 #include "chrome/browser/ui/webui/bug_report_ui.h"
 #include "chrome/browser/ui/webui/options/content_settings_handler.h"
 #include "chrome/browser/ui/window_sizer.h"
@@ -154,6 +152,9 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/extensions/file_manager_util.h"
+#include "chrome/browser/ui/webui/active_downloads_ui.h"
+#else
+#include "chrome/browser/download/download_shelf.h"
 #endif
 
 using base::TimeDelta;
@@ -1910,11 +1911,14 @@ void Browser::ShowHistoryTab() {
 
 void Browser::ShowDownloadsTab() {
   UserMetrics::RecordAction(UserMetricsAction("ShowDownloads"));
+#if !defined(OS_CHROMEOS)
+  // ChromiumOS uses ActiveDownloadsUI instead of of DownloadShelf.
   if (window()) {
     DownloadShelf* shelf = window()->GetDownloadShelf();
     if (shelf->IsShowing())
       shelf->Close();
   }
+#endif
   ShowSingletonTab(GURL(chrome::kChromeUIDownloadsURL));
 }
 
