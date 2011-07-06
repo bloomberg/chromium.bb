@@ -1570,17 +1570,17 @@
       'type': 'string-enum',
       'items': [
         {
-          'name': 'Stable',
+          'name': 'StableChannel',
           'value': 'stable-channel',
           'caption': '''Stable channel'''
         },
         {
-          'name': 'Beta',
+          'name': 'BetaChannel',
           'value': 'beta-channel',
           'caption': '''Beta channel'''
         },
         {
-          'name': 'Dev - Unstable',
+          'name': 'DevChannel',
           'value': 'dev-channel',
           'caption': '''Dev channel (may be unstable)'''
         }

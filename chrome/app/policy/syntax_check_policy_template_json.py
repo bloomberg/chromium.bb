@@ -16,6 +16,8 @@ import sys
 
 LEADING_WHITESPACE = re.compile('^([ \t]*)')
 TRAILING_WHITESPACE = re.compile('.*?([ \t]+)$')
+# Matches all non-empty strings that contain no whitespaces.
+NO_WHITESPACE = re.compile('[^\s]+$')
 
 
 class PolicyTemplateChecker(object):
@@ -43,9 +45,12 @@ class PolicyTemplateChecker(object):
                      parent_element='policy',
                      container_name=None,
                      identifier=None,
-                     offending='__CONTAINER__'):
+                     offending='__CONTAINER__',
+                     regexp_check=None):
     '''
     Checks |container| for presence of |key| with value of type |value_type|.
+    If |value_type| is string and |regexp_check| is specified, then an error is
+    reported when the value does not match the regular expression object.
 
     The other parameters are needed to generate, if applicable, an appropriate
     human-readable error message of the following form:
@@ -79,6 +84,10 @@ class PolicyTemplateChecker(object):
       self._Error('Value of "%s" must be a %s.' %
                   (key, value_type.__name__),
                   container_name, identifier, value)
+    if value_type == str and regexp_check and not regexp_check.match(value):
+      self._Error('Value of "%s" must match "%s".' %
+                  (key, regexp_check.pattern),
+                  container_name, identifier, value)
     return value
 
   def _AddPolicyID(self, id, policy_ids, policy):
@@ -110,15 +119,16 @@ class PolicyTemplateChecker(object):
 
     # There should not be any unknown keys in |policy|.
     for key in policy:
-      if key not in ('name', 'type', 'caption', 'desc', 'supported_on',
-                     'label', 'policies', 'items', 'example_value', 'features',
-                     'deprecated', 'future', 'id'):
+      if key not in ('name', 'type', 'caption', 'desc', 'device_only',
+                     'supported_on', 'label', 'policies', 'items',
+                     'example_value', 'features', 'deprecated', 'future',
+                     'id'):
         self.warning_count += 1
         print ('In policy %s: Warning: Unknown key: %s' %
                (policy.get('name'), key))
 
     # Each policy must have a name.
-    self._CheckContains(policy, 'name', str)
+    self._CheckContains(policy, 'name', str, regexp_check=NO_WHITESPACE)
 
     # Each policy must have a type.
     policy_type = self._CheckContains(policy, 'type', str)
@@ -207,13 +217,13 @@ class PolicyTemplateChecker(object):
         if len(items) < 1:
           self._Error('"items" must not be empty.', 'policy', policy, items)
         for item in items:
-
           # Each item must have a name.
           # Note: |policy.get('name')| is used instead of |policy['name']|
           # because it returns None rather than failing when no key called
           # 'name' exists.
           self._CheckContains(item, 'name', str, container_name='item',
-                              identifier=policy.get('name'))
+                              identifier=policy.get('name'),
+                              regexp_check=NO_WHITESPACE)
 
           # Each item must have a value of the correct type.
           self._CheckContains(item, 'value', value_type, container_name='item',
