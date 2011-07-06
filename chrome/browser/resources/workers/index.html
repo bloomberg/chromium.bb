@@ -25,10 +25,15 @@ function addColumn(row, value) {
   row.appendChild(column);
 }
 
+function openDevTools(workerProcessHostId, workerRouteId) {
+  chrome.send("openDevTools",
+              [String(workerProcessHostId), String(workerRouteId)]);
+}
+
 function populateWorkerList() {
   var data = requestData();
 
-  var worker_properties = ["id", "url", "name", "pid"];
+  var worker_properties = ["workerRouteId", "url", "name", "pid"];
 
   var list = document.getElementById("workers-table");
   for (var i = 0; i < data.length; i++) {
@@ -39,8 +44,14 @@ function populateWorkerList() {
 
     var column = document.createElement("td");
     var link = document.createElement("a");
-    link.setAttribute("href", workerData.url);
+    link.setAttribute("href", "#");
     link.textContent = "inspect";
+    link.addEventListener(
+        "click",
+        openDevTools.bind(this,
+                          workerData.workerProcessHostId,
+                          workerData.workerRouteId),
+        true);
     column.appendChild(link);
     row.appendChild(column);
 

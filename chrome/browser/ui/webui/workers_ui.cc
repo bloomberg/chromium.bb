@@ -6,6 +6,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
@@ -14,12 +15,20 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/worker_host/worker_process_host.h"
+#include "content/common/devtools_messages.h"
 #include "grit/generated_resources.h"
 #include "grit/workers_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
 static const char kWorkersDataFile[] = "workers_data.json";
-static const char kIndexHtmlFile[]  = "index.html";
+
+static const char kOpenDevToolsCommand[]  = "openDevTools";
+
+static const char kWorkerProcessHostIdField[]  = "workerProcessHostId";
+static const char kWorkerRouteIdField[]  = "workerRouteId";
+static const char kUrlField[]  = "url";
+static const char kNameField[]  = "name";
+static const char kPidField[]  = "pid";
 
 namespace {
 
@@ -79,10 +88,11 @@ void WorkersUIHTMLSource::SendSharedWorkersData(int request_id) {
         if (!i->shared())
           continue;
         DictionaryValue* worker_data = new DictionaryValue();
-        worker_data->SetInteger("id", i->worker_route_id());
-        worker_data->SetString("url", i->url().spec());
-        worker_data->SetString("name", i->name());
-        worker_data->SetInteger("pid", worker->pid());
+        worker_data->SetInteger(kWorkerProcessHostIdField, worker->id());
+        worker_data->SetInteger(kWorkerRouteIdField, i->worker_route_id());
+        worker_data->SetString(kUrlField, i->url().spec());
+        worker_data->SetString(kNameField, i->name());
+        worker_data->SetInteger(kPidField, worker->pid());
         workers_list.Append(worker_data);
       }
     }
@@ -97,9 +107,54 @@ void WorkersUIHTMLSource::SendSharedWorkersData(int request_id) {
     SendResponse(request_id, json_bytes);
 }
 
+class WorkersDOMHandler : public WebUIMessageHandler {
+ public:
+  WorkersDOMHandler() {}
+  virtual ~WorkersDOMHandler() {}
+
+ private:
+  // WebUIMessageHandler implementation.
+  virtual void RegisterMessages();
+
+  // Callback for "openDevTools" message.
+  void HandleOpenDevTools(const ListValue* args);
+
+  DISALLOW_COPY_AND_ASSIGN(WorkersDOMHandler);
+};
+
+void WorkersDOMHandler::RegisterMessages() {
+  web_ui_->RegisterMessageCallback(kOpenDevToolsCommand,
+      NewCallback(this, &WorkersDOMHandler::HandleOpenDevTools));
+}
+
+static void OpenDevToolsOnIOThread(int worker_process_host_id,
+                                   int worker_route_id) {
+  // TODO(yurys): implement.
+  NOTIMPLEMENTED();
+}
+
+void WorkersDOMHandler::HandleOpenDevTools(const ListValue* args) {
+  std::string worker_process_host_id_str;
+  std::string worker_route_id_str;
+  int worker_process_host_id;
+  int worker_route_id;
+  CHECK(args->GetSize() == 2);
+  CHECK(args->GetString(0, &worker_process_host_id_str));
+  CHECK(args->GetString(1, &worker_route_id_str));
+  CHECK(base::StringToInt(worker_process_host_id_str,
+                          &worker_process_host_id));
+  CHECK(base::StringToInt(worker_route_id_str, &worker_route_id));
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, NewRunnableFunction(
+      &OpenDevToolsOnIOThread, worker_process_host_id, worker_route_id));
+}
+
 }  // namespace
 
 WorkersUI::WorkersUI(TabContents* contents) : ChromeWebUI(contents) {
+  WorkersDOMHandler* handler = new WorkersDOMHandler();
+  AddMessageHandler(handler);
+  handler->Attach(this);
+
   WorkersUIHTMLSource* html_source = new WorkersUIHTMLSource();
 
   // Set up the chrome://workers/ source.
