@@ -109,21 +109,12 @@ class CustomHandlerWebcalStartupTest : public CustomHandlerTest {
   }
 };
 
-#if defined(OS_LINUX)
-// See http://crbug.com/83557
-#define MAYBE_CustomHandlerMailStartup FAILS_CustomHandlerMailStartup
-#define MAYBE_CustomHandlerWebcalStartup FAILS_CustomHandlerWebcalStartup
-#else
-#define MAYBE_CustomHandlerMailStartup CustomHandlerMailStartup
-#define MAYBE_CustomHandlerWebcalStartup CustomHandlerWebcalStartup
-#endif
-
-TEST_F(CustomHandlerMailStartupTest, MAYBE_CustomHandlerMailStartup) {
+TEST_F(CustomHandlerMailStartupTest, CustomHandlerMailStartup) {
   ASSERT_EQ(test_server_.GetURL("files/custom_handler_mailto.html"),
             GetTabURL());
 }
 
-TEST_F(CustomHandlerWebcalStartupTest, MAYBE_CustomHandlerWebcalStartup) {
+TEST_F(CustomHandlerWebcalStartupTest, CustomHandlerWebcalStartup) {
   ASSERT_EQ(test_server_.GetURL("files/custom_handler_webcal.html"),
             GetTabURL());
 }
