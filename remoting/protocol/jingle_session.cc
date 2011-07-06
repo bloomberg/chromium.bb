@@ -302,7 +302,10 @@ scoped_refptr<net::X509Certificate> JingleSession::local_certificate() const {
 }
 
 const SessionConfig* JingleSession::config() {
-  DCHECK(CalledOnValidThread());
+  // TODO(sergeyu): Fix ChromotingHost so that it doesn't call this
+  // method on invalid thread and uncomment this DCHECK.
+  // See crbug.com/88600 .
+  // DCHECK(CalledOnValidThread());
   DCHECK(config_.get());
   return config_.get();
 }
