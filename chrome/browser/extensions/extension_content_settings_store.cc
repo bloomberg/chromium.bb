@@ -376,13 +376,13 @@ void ExtensionContentSettingsStore::SetExtensionContentSettingsFromList(
     std::string primary_pattern_str;
     dict->GetString(keys::kPrimaryPatternKey, &primary_pattern_str);
     ContentSettingsPattern primary_pattern =
-        ContentSettingsPattern::LegacyFromString(primary_pattern_str);
+        ContentSettingsPattern::FromString(primary_pattern_str);
     DCHECK(primary_pattern.IsValid());
 
     std::string secondary_pattern_str;
     dict->GetString(keys::kSecondaryPatternKey, &secondary_pattern_str);
     ContentSettingsPattern secondary_pattern =
-        ContentSettingsPattern::LegacyFromString(secondary_pattern_str);
+        ContentSettingsPattern::FromString(secondary_pattern_str);
     DCHECK(secondary_pattern.IsValid());
 
     std::string content_settings_type_str;
