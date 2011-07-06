@@ -449,7 +449,9 @@ TEST_F(WorkerTest, DISABLED_WorkerHttpLayoutTests) {
   ASSERT_TRUE(http_server.Stop());
 }
 
-TEST_F(WorkerTest, WorkerWebSocketLayoutTests) {
+// Disabled temporarily because WebSocket tests are moving in WebKit.
+// See http://crbug.com/88445.
+TEST_F(WorkerTest, DISABLED_WorkerWebSocketLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     "close-in-onmessage-crash.html",
     "close-in-shared-worker.html",
