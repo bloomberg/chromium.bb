@@ -76,21 +76,6 @@
 }
 
 {
-  bug_66994a
-  ThreadSanitizer:Race
-  fun:HistoryURLProvider::Stop*
-  ...
-  fun:AutocompleteController::St*
-}
-
-{
-  bug_66994b
-  ThreadSanitizer:Race
-  ...
-  fun:HistoryURLProvider::ExecuteWithDB*
-}
-
-{
   bug_67957
   ThreadSanitizer:Race
   fun:Replace_memcpy

@@ -111,7 +111,6 @@ HistoryURLProviderParams::HistoryURLProviderParams(
       input(input),
       prevent_inline_autocomplete(input.prevent_inline_autocomplete()),
       trim_http(trim_http),
-      cancel(false),
       failed(false),
       languages(languages),
       dont_suggest_exact_input(false) {
@@ -147,7 +146,7 @@ void HistoryURLProvider::Stop() {
   done_ = true;
 
   if (params_)
-    params_->cancel = true;
+    params_->cancel_flag.Set();
 }
 
 // Called on the history thread.
@@ -158,7 +157,7 @@ void HistoryURLProvider::ExecuteWithDB(history::HistoryBackend* backend,
   // initialized.
   if (!db) {
     params->failed = true;
-  } else if (!params->cancel) {
+  } else if (!params->cancel_flag.IsSet()) {
     TimeTicks beginning_time = TimeTicks::Now();
 
     DoAutocomplete(backend, db, params);
@@ -203,7 +202,7 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
 
   for (Prefixes::const_iterator i(prefixes_.begin()); i != prefixes_.end();
        ++i) {
-    if (params->cancel)
+    if (params->cancel_flag.IsSet())
       return;  // Canceled in the middle of a query, give up.
     // We only need kMaxMatches results in the end, but before we get there we
     // need to promote lower-quality matches that are prefixes of
@@ -286,7 +285,7 @@ void HistoryURLProvider::QueryComplete(
     params_ = NULL;
 
   // Don't send responses for queries that have been canceled.
-  if (params->cancel)
+  if (params->cancel_flag.IsSet())
     return;  // Already set done_ when we canceled, no need to set it again.
 
   // Don't modify |matches_| if the query failed, since it might have a default

@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/synchronization/cancellation_flag.h"
 #include "chrome/browser/autocomplete/history_provider.h"
 #include "chrome/browser/autocomplete/history_provider_util.h"
 
@@ -103,12 +104,11 @@ struct HistoryURLProviderParams {
   // Set when "http://" should be trimmed from the beginning of the URLs.
   bool trim_http;
 
-  // Set by the main thread to cancel this request. READ ONLY when running in
-  // ExecuteWithDB() on the history thread to prevent deadlock. If this flag is
-  // set when the query runs, the query will be abandoned. This allows us to
-  // avoid running queries that are no longer needed. Since we don't care if
-  // we run the extra queries, the lack of signaling is not a problem.
-  bool cancel;
+  // Set by the main thread to cancel this request.  If this flag is set when
+  // the query runs, the query will be abandoned.  This allows us to avoid
+  // running queries that are no longer needed.  Since we don't care if we run
+  // the extra queries, the lack of signaling is not a problem.
+  base::CancellationFlag cancel_flag;
 
   // Set by ExecuteWithDB() on the history thread when the query could not be
   // performed because the history system failed to properly init the database.
