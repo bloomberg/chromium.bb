@@ -38,6 +38,7 @@ class MediaTestBase(pyauto.PyUITest):
   # Default values used for default case.
   DEFAULT_MEDIA_TAG_NAME = 'video'
   DEFAULT_MEDIA_FILENAME = 'bear_silent.ogv'
+  DEFAULT_MEDIA_FILENAME_NICKNAME = 'bear_silent.ogv'
   DEFAULT_PLAYER_HTML_URL_NICKNAME = 'local'
   DEFAULT_NUMBER_OF_RUNS = 3
   # Timing out for checking if video has finished playing (in seconds).
@@ -162,6 +163,9 @@ class MediaTestBase(pyauto.PyUITest):
     """
     self.media_filename = os.getenv(MediaTestEnvNames.MEDIA_FILENAME_ENV_NAME,
                                     self.DEFAULT_MEDIA_FILENAME)
+    self.media_filename_nickname = os.getenv(
+        MediaTestEnvNames.MEDIA_FILENAME_NICKNAME_ENV_NAME,
+        self.DEFAULT_MEDIA_FILENAME_NICKNAME)
     self.remove_first_result = os.getenv(
         MediaTestEnvNames.REMOVE_FIRST_RESULT_ENV_NAME)
     self.number_of_runs = int(os.getenv(MediaTestEnvNames.N_RUNS_ENV_NAME,

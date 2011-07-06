@@ -140,6 +140,12 @@ def main():
   parser.add_option('-l', '--jerky-tool-location',
                     dest='jerky_tool_location',
                     help='The location of the jerky tool binary.')
+  parser.add_option('--jo', '--jerky-tool-output-directory',
+                    dest='jerky_tool_output_directory',
+                    help='The output directory of the jerky tool.')
+  parser.add_option('--jb', '--jerky-tool-baseline-directory',
+                    dest='jerky_tool_baseline_directory',
+                    help='The baseline directory of the jerky tool.')
   options, args = parser.parse_args()
   if args:
     parser.print_help()
@@ -255,6 +261,12 @@ def main():
         if options.jerky_tool_location:
           envs[MediaTestEnvNames.JERKY_TOOL_BINARY_LOCATION_ENV_NAME] = (
               options.jerky_tool_location)
+        if options.jerky_tool_output_directory:
+          envs[MediaTestEnvNames.JERKY_TOOL_OUTPUT_DIR_ENV_NAME] = (
+              options.jerky_tool_output_directory)
+        if options.jerky_tool_baseline_directory:
+          envs[MediaTestEnvNames.JERKY_TOOL_BASELINE_DIR_ENV_NAME] = (
+              options.jerky_tool_baseline_directory)
         envs.update(parent_envs)
         if options.suite is None and options.test_prog_name is not None:
           # Suite is not used - run test program directly.
