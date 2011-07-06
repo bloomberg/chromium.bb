@@ -114,16 +114,19 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar(TabContentsWrapper* owner) {
   switch (type_) {
     case BEFORE_TRANSLATE:
       infobar_controller =
-          [[BeforeTranslateInfobarController alloc] initWithDelegate:this];
+          [[BeforeTranslateInfobarController alloc] initWithDelegate:this
+                                                               owner:owner];
       break;
     case AFTER_TRANSLATE:
       infobar_controller =
-          [[AfterTranslateInfobarController alloc] initWithDelegate:this];
+          [[AfterTranslateInfobarController alloc] initWithDelegate:this
+                                                              owner:owner];
       break;
     case TRANSLATING:
     case TRANSLATION_ERROR:
       infobar_controller =
-          [[TranslateMessageInfobarController alloc] initWithDelegate:this];
+          [[TranslateMessageInfobarController alloc] initWithDelegate:this
+                                                                owner:owner];
       break;
     default:
       NOTREACHED();
@@ -176,8 +179,9 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar(TabContentsWrapper* owner) {
 
 @implementation TranslateInfoBarControllerBase
 
-- (id)initWithDelegate:(InfoBarDelegate*)delegate {
-  if ((self = [super initWithDelegate:delegate])) {
+- (id)initWithDelegate:(InfoBarDelegate*)delegate
+                 owner:(TabContentsWrapper*)owner {
+  if ((self = [super initWithDelegate:delegate owner:owner])) {
       originalLanguageMenuModel_.reset(
           new LanguagesMenuModel([self delegate],
                                  LanguagesMenuModel::ORIGINAL));

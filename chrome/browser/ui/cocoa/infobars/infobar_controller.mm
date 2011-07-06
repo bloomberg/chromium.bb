@@ -9,6 +9,7 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/tab_contents/link_infobar_delegate.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #import "chrome/browser/ui/cocoa/animatable_view.h"
 #include "chrome/browser/ui/cocoa/event_utils.h"
 #include "chrome/browser/ui/cocoa/infobars/infobar.h"
@@ -100,11 +101,13 @@ const float kAnimateCloseDuration = 0.12;
 @synthesize containerController = containerController_;
 @synthesize delegate = delegate_;
 
-- (id)initWithDelegate:(InfoBarDelegate*)delegate {
+- (id)initWithDelegate:(InfoBarDelegate*)delegate
+                 owner:(TabContentsWrapper*)owner {
   DCHECK(delegate);
   if ((self = [super initWithNibName:@"InfoBar"
                               bundle:base::mac::MainAppBundle()])) {
     delegate_ = delegate;
+    owner_ = owner;
   }
   return self;
 }
@@ -261,7 +264,9 @@ const float kAnimateCloseDuration = 0.12;
   // been removed and |delegate_| is NULL.  Is there a way to rewrite the code
   // so that inner event loops don't cause us to try and remove the infobar
   // twice?  http://crbug.com/54253
-  [containerController_ removeDelegate:delegate_];
+  if (owner_)
+    owner_->RemoveInfoBar(delegate_);
+  owner_ = NULL;
 }
 
 - (void)cleanUpAfterAnimation:(BOOL)finished {
@@ -521,12 +526,12 @@ const float kAnimateCloseDuration = 0.12;
 
 InfoBar* LinkInfoBarDelegate::CreateInfoBar(TabContentsWrapper* owner) {
   LinkInfoBarController* controller =
-      [[LinkInfoBarController alloc] initWithDelegate:this];
+      [[LinkInfoBarController alloc] initWithDelegate:this owner:owner];
   return new InfoBar(controller, this);
 }
 
 InfoBar* ConfirmInfoBarDelegate::CreateInfoBar(TabContentsWrapper* owner) {
   ConfirmInfoBarController* controller =
-      [[ConfirmInfoBarController alloc] initWithDelegate:this];
+      [[ConfirmInfoBarController alloc] initWithDelegate:this owner:owner];
   return new InfoBar(controller, this);
 }

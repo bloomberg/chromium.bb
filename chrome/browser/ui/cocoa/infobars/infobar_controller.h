@@ -12,6 +12,7 @@
 @protocol InfoBarContainer;
 class InfoBarDelegate;
 @class InfoBarGradientView;
+class TabContentsWrapper;
 
 // A controller for an infobar in the browser window.  There is one
 // controller per infobar view.  The base InfoBarController is able to
@@ -20,6 +21,7 @@ class InfoBarDelegate;
 @interface InfoBarController : NSViewController<NSTextViewDelegate> {
  @private
   id<InfoBarContainer> containerController_;  // weak, owns us
+  TabContentsWrapper* owner_;  // weak
   BOOL infoBarClosing_;
 
  @protected
@@ -43,7 +45,8 @@ class InfoBarDelegate;
 };
 
 // Initializes a new InfoBarController.
-- (id)initWithDelegate:(InfoBarDelegate*)delegate;
+- (id)initWithDelegate:(InfoBarDelegate*)delegate
+                 owner:(TabContentsWrapper*)owner;
 
 // Called when someone clicks on the OK or Cancel buttons.  Subclasses
 // must override if they do not hide the buttons.

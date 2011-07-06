@@ -106,11 +106,6 @@ class InfoBarNotificationObserver : public NotificationObserver {
   view_id_util::SetID([self view], VIEW_ID_INFO_BAR_CONTAINER);
 }
 
-- (void)removeDelegate:(InfoBarDelegate*)delegate {
-  DCHECK(currentTabContents_);
-  currentTabContents_->RemoveInfoBar(delegate);
-}
-
 - (void)willRemoveController:(InfoBarController*)controller {
   [closingInfoBars_ addObject:controller];
 }

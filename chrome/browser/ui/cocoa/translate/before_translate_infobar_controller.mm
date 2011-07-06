@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,8 +26,9 @@ NSButton* CreateNSButtonWithResourceIDAndParameter(
 
 @implementation BeforeTranslateInfobarController
 
-- (id) initWithDelegate:(InfoBarDelegate *)delegate {
-  if ((self = [super initWithDelegate:delegate])) {
+- (id) initWithDelegate:(InfoBarDelegate *)delegate
+                  owner:(TabContentsWrapper*)owner {
+  if ((self = [super initWithDelegate:delegate owner:owner])) {
     [self initializeExtraControls];
   }
   return self;

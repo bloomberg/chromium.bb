@@ -23,7 +23,6 @@ class TabStripModel;
 // Protocol for basic container methods, as needed by an InfoBarController.
 // This protocol exists to make mocking easier in unittests.
 @protocol InfoBarContainer
-- (void)removeDelegate:(InfoBarDelegate*)delegate;
 - (void)willRemoveController:(InfoBarController*)controller;
 - (void)removeController:(InfoBarController*)controller;
 @end
@@ -65,13 +64,6 @@ const CGFloat kBaseHeight = 36.0;
 }
 
 - (id)initWithResizeDelegate:(id<ViewResizer>)resizeDelegate;
-
-// Informs the selected TabContents that the infobars for the given
-// |delegate| need to be removed.  Does not remove any infobar views
-// directly, as they will be removed when handling the subsequent
-// INFOBAR_REMOVED notification.  Does not notify |delegate| that the
-// infobar was closed.
-- (void)removeDelegate:(InfoBarDelegate*)delegate;
 
 // Informs the container that the |controller| is going to close. It adds the
 // controller to |closingInfoBars_|. Once the animation is complete, the

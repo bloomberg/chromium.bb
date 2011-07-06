@@ -135,8 +135,9 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver,
 @implementation ExtensionInfoBarController
 
 - (id)initWithDelegate:(InfoBarDelegate*)delegate
+                 owner:(TabContentsWrapper*)owner
                 window:(NSWindow*)window {
-  if ((self = [super initWithDelegate:delegate])) {
+  if ((self = [super initWithDelegate:delegate owner:owner])) {
     window_ = window;
     dropdownButton_.reset([[MenuButton alloc] init]);
     [dropdownButton_ setOpenMenuOnClick:YES];
@@ -263,6 +264,7 @@ InfoBar* ExtensionInfoBarDelegate::CreateInfoBar(TabContentsWrapper* owner) {
   NSWindow* window = [(NSView*)tab_contents_->GetContentNativeView() window];
   ExtensionInfoBarController* controller =
       [[ExtensionInfoBarController alloc] initWithDelegate:this
+                                                     owner:owner
                                                     window:window];
   return new InfoBar(controller, this);
 }

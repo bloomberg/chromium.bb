@@ -31,15 +31,10 @@
 @end
 
 
-// Calls to removeDelegate: normally start an animation, which removes the
-// infobar completely when finished.  For unittesting purposes, we create a mock
-// container which calls close: immediately, rather than kicking off an
-// animation.
 @interface InfoBarContainerTest : NSObject<InfoBarContainer> {
   InfoBarController* controller_;
 }
 - (id)initWithController:(InfoBarController*)controller;
-- (void)removeDelegate:(InfoBarDelegate*)delegate;
 - (void)willRemoveController:(InfoBarController*)controller;
 - (void)removeController:(InfoBarController*)controller;
 @end
@@ -52,16 +47,35 @@
   return self;
 }
 
-- (void)removeDelegate:(InfoBarDelegate*)delegate {
-  [controller_ close];
-}
-
 - (void)willRemoveController:(InfoBarController*)controller {
 }
 
 - (void)removeController:(InfoBarController*)controller {
   DCHECK(controller_ == controller);
   controller_ = nil;
+}
+@end
+
+// Calls to removeInfoBar normally start an animation, which removes the infobar
+// completely when finished.  For testing purposes, we create a mock controller
+// which calls close: immediately, rather than kicking off an animation.
+@interface TestLinkInfoBarController : LinkInfoBarController
+- (void)removeInfoBar;
+@end
+
+@implementation TestLinkInfoBarController
+- (void)removeInfoBar {
+  [self close];
+}
+@end
+
+@interface TestConfirmInfoBarController : ConfirmInfoBarController
+- (void)removeInfoBar;
+@end
+
+@implementation TestConfirmInfoBarController
+- (void)removeInfoBar {
+  [self close];
 }
 @end
 
@@ -78,7 +92,8 @@ class LinkInfoBarControllerTest : public CocoaTest,
 
     delegate_ = new MockLinkInfoBarDelegate(this);
     controller_.reset(
-        [[LinkInfoBarController alloc] initWithDelegate:delegate_]);
+        [[TestLinkInfoBarController alloc] initWithDelegate:delegate_
+                                                      owner:NULL]);
     container_.reset(
         [[InfoBarContainerTest alloc] initWithController:controller_]);
     [controller_ setContainerController:container_];
@@ -116,7 +131,8 @@ class ConfirmInfoBarControllerTest : public CocoaTest,
 
     delegate_ = new MockConfirmInfoBarDelegate(this);
     controller_.reset(
-        [[ConfirmInfoBarController alloc] initWithDelegate:delegate_]);
+        [[TestConfirmInfoBarController alloc] initWithDelegate:delegate_
+                                                         owner:NULL]);
     container_.reset(
         [[InfoBarContainerTest alloc] initWithController:controller_]);
     [controller_ setContainerController:container_];
