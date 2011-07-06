@@ -37,7 +37,7 @@ def EmitHeaderTest(target=None, source=None, env=None):
   return 0
 
 
-env.Append(CPPPATH=['${SOURCE_ROOT}/gpu'])
+env.Append(CPPPATH=['${SOURCE_ROOT}/ppapi/lib/gl/include'])
 cpp_header_test_cc = env.Command(
     '$OBJ_ROOT/gen/native_client/test/ppapi/cpp_header_test.cc',
     [], Action(EmitHeaderTest, varlist=['TEST_HEADERS']),

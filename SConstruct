@@ -2424,8 +2424,7 @@ nacl_common_env = pre_base_env.Clone(
     ARFLAGS = 'rc',
 
     # ${SOURCE_ROOT} for #include <ppapi/...>
-    # ${SOURCE_ROOT}/gpu for #include <GLES2/...>
-    CPPPATH = ['${SOURCE_ROOT}', '${SOURCE_ROOT}/gpu'],
+    CPPPATH = ['${SOURCE_ROOT}'],
 
     EXTRA_CFLAGS = [],
     EXTRA_CCFLAGS = ARGUMENTS.get('nacl_ccflags', '').split(':'),

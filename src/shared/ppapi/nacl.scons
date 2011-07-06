@@ -31,7 +31,9 @@ env.NaClSdkLibrary('ppapi_cpp', cpp_sources, LIBS=['nacl'])
 env.AddLibraryToSdk(['ppapi_cpp'])
 
 env.Append(CPPPATH=[
-    '$SOURCE_ROOT/ppapi/lib/gl/gles2'])
+    '$SOURCE_ROOT/ppapi/lib/gl/gles2',
+    '$SOURCE_ROOT/ppapi/lib/gl/include',
+    ])
 
 # Load ppapi_gl.gypi
 ppapi_gl_gypi = gyp_extract.LoadGypFile(
