@@ -3100,7 +3100,7 @@ def NaClAddObject(env, nodes, is_platform=False):
   if ('install' in COMMAND_LINE_TARGETS or
       'install_lib' in COMMAND_LINE_TARGETS):
     PublishLibrary(env, lib_nodes)
-  return n
+  return lib_nodes
 nacl_env.AddMethod(NaClAddObject, 'AddObjectToSdk')
 
 # We want to do this for nacl_env when not under --nacl_glibc,
