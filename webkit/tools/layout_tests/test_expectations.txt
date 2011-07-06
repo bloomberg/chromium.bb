@@ -15,3 +15,8 @@ BUGCR86570 MAC : platform/gtk/fonts/custom-font-missing-glyphs.html = IMAGE+TEXT
 BUGCR86570 MAC : platform/gtk/fonts/font-face-with-complex-text.html = IMAGE+TEXT CRASH
 BUGCR86570 MAC : platform/mac/fast/text/myanmar-shaping.html = CRASH
 BUGCR86570 MAC : platform/mac/fast/text/thai-combining-mark-positioning.html = CRASH
+
+// Started failing in skia roll r1788:r1799
+BUGCR88577 WIN LINUX GPU : canvas/philip/tests/2d.pattern.repeat.empty.html = TEXT
+BUGCR88577 WIN LINUX GPU : canvas/philip/tests/2d.pattern.repeat.null.html = TEXT
+BUGCR88577 WIN LINUX GPU : fast/canvas/canvas-pattern-behaviour.html = TEXT
