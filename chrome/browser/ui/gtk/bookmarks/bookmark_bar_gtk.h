@@ -130,6 +130,10 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
   // Sets the visibility of the overflow chevron.
   void SetChevronState();
 
+  // Shows or hides the other bookmarks button depending on whether there are
+  // bookmarks in it.
+  void UpdateOtherBookmarksVisibility();
+
   // Helper function which destroys all the bookmark buttons in the GtkToolbar.
   void RemoveAllBookmarkButtons();
 
@@ -340,6 +344,10 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
   // The button that shows extra bookmarks that don't fit on the bookmark
   // bar.
   GtkWidget* overflow_button_;
+
+  // A separator between the main bookmark bar area and
+  // |other_bookmarks_button_|.
+  GtkWidget* other_bookmarks_separator_;
 
   // The other bookmarks button.
   GtkWidget* other_bookmarks_button_;

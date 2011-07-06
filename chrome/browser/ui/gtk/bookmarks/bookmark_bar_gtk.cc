@@ -264,8 +264,8 @@ void BookmarkBarGtk::Init(Profile* profile) {
   g_signal_connect(bookmark_toolbar_.get(), "drag-data-received",
                    G_CALLBACK(&OnDragReceivedThunk), this);
 
-  GtkWidget* vseparator = theme_service_->CreateToolbarSeparator();
-  gtk_box_pack_start(GTK_BOX(bookmark_hbox_), vseparator,
+  other_bookmarks_separator_ = theme_service_->CreateToolbarSeparator();
+  gtk_box_pack_start(GTK_BOX(bookmark_hbox_), other_bookmarks_separator_,
                      FALSE, FALSE, 0);
 
   // We pack the button manually (rather than using gtk_button_set_*) so that
@@ -537,6 +537,15 @@ void BookmarkBarGtk::SetChevronState() {
     gtk_widget_hide(overflow_button_);
   else
     gtk_widget_show_all(overflow_button_);
+}
+
+void BookmarkBarGtk::UpdateOtherBookmarksVisibility() {
+  bool has_other_children = !model_->other_node()->empty();
+  if (has_other_children == gtk_widget_get_visible(other_bookmarks_button_))
+    return;
+
+  gtk_widget_set_visible(other_bookmarks_button_, has_other_children);
+  gtk_widget_set_visible(other_bookmarks_separator_, has_other_children);
 }
 
 void BookmarkBarGtk::RemoveAllBookmarkButtons() {
@@ -828,6 +837,7 @@ void BookmarkBarGtk::Loaded(BookmarkModel* model) {
   if (!instructions_)
     return;
 
+  UpdateOtherBookmarksVisibility();
   RemoveAllBookmarkButtons();
   CreateAllBookmarkButtons();
 }
@@ -869,6 +879,7 @@ void BookmarkBarGtk::BookmarkNodeAdded(BookmarkModel* model,
   if (node->is_folder())
     menu_bar_helper_.Add(gtk_bin_get_child(GTK_BIN(item)));
 
+  UpdateOtherBookmarksVisibility();
   SetInstructionState();
   SetChevronState();
 
@@ -892,6 +903,7 @@ void BookmarkBarGtk::BookmarkNodeRemoved(BookmarkModel* model,
   gtk_container_remove(GTK_CONTAINER(bookmark_toolbar_.get()),
                        to_remove);
 
+  UpdateOtherBookmarksVisibility();
   SetInstructionState();
   SetChevronState();
 }
