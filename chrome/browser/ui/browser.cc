@@ -748,7 +748,7 @@ void Browser::OpenDownloadsWindow(Profile* profile) {
 // static
 void Browser::OpenHelpWindow(Profile* profile) {
   Browser* browser = Browser::Create(profile);
-  browser->OpenHelpTab();
+  browser->ShowHelpTab();
   browser->window()->Show();
 }
 
@@ -1994,10 +1994,10 @@ void Browser::OpenUpdateChromeDialog() {
   window_->ShowUpdateChromeDialog();
 }
 
-void Browser::OpenHelpTab() {
+void Browser::ShowHelpTab() {
   GURL help_url(kHelpContentUrl);
   GURL localized_help_url = google_util::AppendGoogleLocaleParam(help_url);
-  AddSelectedTabWithURL(localized_help_url, PageTransition::AUTO_BOOKMARK);
+  ShowSingletonTab(localized_help_url);
 }
 
 void Browser::OpenThemeGalleryTabAndActivate() {
@@ -2424,7 +2424,7 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_ABOUT:                 OpenAboutChromeDialog();          break;
     case IDC_UPGRADE_DIALOG:        OpenUpdateChromeDialog();         break;
     case IDC_VIEW_INCOMPATIBILITIES: ShowAboutConflictsTab();         break;
-    case IDC_HELP_PAGE:             OpenHelpTab();                    break;
+    case IDC_HELP_PAGE:             ShowHelpTab();                    break;
 #if defined(OS_CHROMEOS)
     case IDC_FILE_MANAGER:          OpenFileManager();                break;
     case IDC_SYSTEM_OPTIONS:        OpenSystemOptionsDialog();        break;

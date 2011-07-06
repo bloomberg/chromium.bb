@@ -824,7 +824,7 @@ void RecordLastRunAppBundlePath() {
       break;
     case IDC_HELP_PAGE:
       if (Browser* browser = ActivateBrowser(lastProfile))
-        browser->OpenHelpTab();
+        browser->ShowHelpTab();
       else
         Browser::OpenHelpWindow(lastProfile);
       break;
