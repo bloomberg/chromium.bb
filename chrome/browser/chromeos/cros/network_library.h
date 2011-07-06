@@ -75,6 +75,7 @@ enum NetworkTechnology {
   NETWORK_TECHNOLOGY_HSPA_PLUS    = 7,
   NETWORK_TECHNOLOGY_LTE          = 8,
   NETWORK_TECHNOLOGY_LTE_ADVANCED = 9,
+  NETWORK_TECHNOLOGY_GSM          = 10,
 };
 
 enum ActivationState {

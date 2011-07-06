@@ -1414,6 +1414,9 @@ const SkBitmap* NetworkMenu::BadgeForNetworkTechnology(
     case NETWORK_TECHNOLOGY_LTE_ADVANCED:
       id = IDR_STATUSBAR_NETWORK_LTE_ADVANCED;
       break;
+    case NETWORK_TECHNOLOGY_GSM:
+      id = IDR_STATUSBAR_NETWORK_GPRS;
+      break;
     case NETWORK_TECHNOLOGY_UNKNOWN:
       break;
   }
