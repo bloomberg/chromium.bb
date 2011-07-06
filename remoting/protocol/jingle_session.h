@@ -6,6 +6,7 @@
 #define REMOTING_PROTOCOL_JINGLE_SESSION_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/task.h"
 #include "crypto/rsa_private_key.h"
 #include "net/base/completion_callback.h"
 #include "remoting/protocol/session.h"
@@ -52,7 +53,6 @@ class JingleSession : public protocol::Session,
   virtual net::Socket* video_rtcp_channel();
 
   virtual const std::string& jid();
-  virtual MessageLoop* message_loop();
 
   virtual const CandidateSessionConfig* candidate_config();
 
@@ -64,7 +64,7 @@ class JingleSession : public protocol::Session,
   virtual const std::string& receiver_token();
   virtual void set_receiver_token(const std::string& receiver_token);
 
-  virtual void Close(Task* closed_task);
+  virtual void Close();
 
  private:
   friend class JingleSessionManager;
@@ -138,8 +138,9 @@ class JingleSession : public protocol::Session,
 
   void SetState(State new_state);
 
-  // JingleSessionManager that created this session.
-  scoped_refptr<JingleSessionManager> jingle_session_manager_;
+  // JingleSessionManager that created this session. Guaranteed to
+  // exist throughout the lifetime of the session.
+  JingleSessionManager* jingle_session_manager_;
 
   // Certificates used for connection. Currently only receiving side
   // has a certificate.
@@ -218,6 +219,8 @@ class JingleSession : public protocol::Session,
   // Callback called by the SSL layer.
   net::CompletionCallbackImpl<JingleSession> connect_callback_;
   net::CompletionCallbackImpl<JingleSession> ssl_connect_callback_;
+
+  ScopedRunnableMethodFactory<JingleSession> task_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(JingleSession);
 };

@@ -126,7 +126,7 @@ class MockSession : public Session {
   MOCK_METHOD1(set_initiator_token, void(const std::string& initiator_token));
   MOCK_METHOD0(receiver_token, const std::string&());
   MOCK_METHOD1(set_receiver_token, void(const std::string& receiver_token));
-  MOCK_METHOD1(Close, void(Task* closed_task));
+  MOCK_METHOD0(Close, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSession);

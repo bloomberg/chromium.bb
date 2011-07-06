@@ -192,7 +192,6 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   void ContinueWindowTimerFunc();
 
   // The following methods are called during shutdown.
-  void ShutdownSignaling();
   void ShutdownRecorder();
   void ShutdownFinish();
 
@@ -207,7 +206,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
 
   std::string local_jid_;
 
-  scoped_refptr<protocol::SessionManager> session_manager_;
+  scoped_ptr<protocol::SessionManager> session_manager_;
 
   StatusObserverList status_observers_;
 

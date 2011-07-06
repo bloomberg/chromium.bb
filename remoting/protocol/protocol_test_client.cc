@@ -49,8 +49,7 @@ class ProtocolTestConnection
             write_cb_(this, &ProtocolTestConnection::OnWritten)),
         pending_write_(false),
         ALLOW_THIS_IN_INITIALIZER_LIST(
-            read_cb_(this, &ProtocolTestConnection::OnRead)),
-        closed_event_(true, false) {
+            read_cb_(this, &ProtocolTestConnection::OnRead)) {
   }
 
   virtual ~ProtocolTestConnection() {}
@@ -71,24 +70,20 @@ class ProtocolTestConnection
   void OnWritten(int result);
   void OnRead(int result);
 
-  void OnFinishedClosing();
-
   ProtocolTestClient* client_;
   MessageLoop* message_loop_;
-  scoped_refptr<Session> session_;
+  scoped_ptr<Session> session_;
   net::CompletionCallbackImpl<ProtocolTestConnection> write_cb_;
   bool pending_write_;
   net::CompletionCallbackImpl<ProtocolTestConnection> read_cb_;
   scoped_refptr<net::IOBuffer> read_buffer_;
-  base::WaitableEvent closed_event_;
 };
 
 class ProtocolTestClient
     : public SignalStrategy::StatusObserver,
       public base::RefCountedThreadSafe<ProtocolTestClient> {
  public:
-  ProtocolTestClient()
-      : closed_event_(true, false) {
+  ProtocolTestClient() {
   }
 
   virtual ~ProtocolTestClient() {}
@@ -111,20 +106,17 @@ class ProtocolTestClient
  private:
   typedef std::list<scoped_refptr<ProtocolTestConnection> > ConnectionsList;
 
-  void OnFinishedClosing();
-
   std::string host_jid_;
   scoped_ptr<SignalStrategy> signal_strategy_;
   std::string local_jid_;
-  scoped_refptr<JingleSessionManager> session_manager_;
+  scoped_ptr<JingleSessionManager> session_manager_;
   ConnectionsList connections_;
   base::Lock connections_lock_;
-  base::WaitableEvent closed_event_;
 };
 
 
 void ProtocolTestConnection::Init(Session* session) {
-  session_ = session;
+  session_.reset(session);
 }
 
 void ProtocolTestConnection::Write(const std::string& str) {
@@ -181,13 +173,7 @@ void ProtocolTestConnection::DoRead() {
 }
 
 void ProtocolTestConnection::Close() {
-  session_->Close(
-      NewRunnableMethod(this, &ProtocolTestConnection::OnFinishedClosing));
-  closed_event_.Wait();
-}
-
-void ProtocolTestConnection::OnFinishedClosing() {
-  closed_event_.Signal();
+  session_->Close();
 }
 
 void ProtocolTestConnection::OnStateChange(Session::State state) {
@@ -234,8 +220,7 @@ void ProtocolTestClient::Run(const std::string& username,
       new XmppSignalStrategy(&jingle_thread, username, auth_token,
                              auth_service));
   signal_strategy_->Init(this);
-  session_manager_ = new JingleSessionManager(jingle_thread.message_loop(),
-                                              NULL, NULL, NULL);
+  session_manager_.reset(new JingleSessionManager(NULL, NULL, NULL));
 
   host_jid_ = host_jid;
 
@@ -262,10 +247,9 @@ void ProtocolTestClient::Run(const std::string& username,
     connections_.pop_front();
   }
 
-  if (session_manager_) {
-    session_manager_->Close(
-        NewRunnableMethod(this, &ProtocolTestClient::OnFinishedClosing));
-    closed_event_.Wait();
+  if (session_manager_.get()) {
+    session_manager_->Close();
+    session_manager_.reset();
   }
 
   signal_strategy_->Close();
@@ -326,10 +310,6 @@ void ProtocolTestClient::OnNewSession(
   test_connection->Init(session);
   base::AutoLock auto_lock(connections_lock_);
   connections_.push_back(make_scoped_refptr(test_connection));
-}
-
-void ProtocolTestClient::OnFinishedClosing() {
-  closed_event_.Signal();
 }
 
 }  // namespace protocol

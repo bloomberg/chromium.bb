@@ -8,10 +8,10 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/threading/non_thread_safe.h"
 #include "remoting/protocol/buffered_socket_writer.h"
 #include "remoting/protocol/session_config.h"
 
-class MessageLoop;
 class Task;
 
 namespace net {
@@ -25,7 +25,7 @@ namespace protocol {
 // Provides access to the connection channels, but doesn't depend on the
 // protocol used for each channel.
 // TODO(sergeyu): Remove refcounting?
-class Session : public base::RefCountedThreadSafe<Session> {
+class Session : public base::NonThreadSafe {
  public:
   enum State {
     INITIALIZING,
@@ -36,6 +36,9 @@ class Session : public base::RefCountedThreadSafe<Session> {
   };
 
   typedef Callback1<State>::Type StateChangeCallback;
+
+  Session() { }
+  virtual ~Session() { }
 
   // Set callback that is called when state of the connection is changed.
   // Must be called on the jingle thread only.
@@ -57,9 +60,6 @@ class Session : public base::RefCountedThreadSafe<Session> {
 
   // JID of the other side.
   virtual const std::string& jid() = 0;
-
-  // Message loop that must be used to access the channels of this connection.
-  virtual MessageLoop* message_loop() = 0;
 
   // Configuration of the protocol that was sent or received in the
   // session-initiate jingle message. Returned pointer is valid until
@@ -83,15 +83,9 @@ class Session : public base::RefCountedThreadSafe<Session> {
   virtual void set_receiver_token(const std::string& receiver_token) = 0;
 
   // Closes connection. Callbacks are guaranteed not to be called
-  // after |closed_task| is executed. Must be called before the object
-  // is destroyed, unless the state is set to FAILED or CLOSED.
-  virtual void Close(Task* closed_task) = 0;
-
- protected:
-  friend class base::RefCountedThreadSafe<Session>;
-
-  Session() { }
-  virtual ~Session() { }
+  // after this method returns. Must be called before the object is
+  // destroyed, unless the state is set to FAILED or CLOSED.
+  virtual void Close() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Session);

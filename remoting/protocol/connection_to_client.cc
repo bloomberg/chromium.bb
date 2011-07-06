@@ -37,15 +37,14 @@ ConnectionToClient::~ConnectionToClient() {
 }
 
 void ConnectionToClient::Init(protocol::Session* session) {
-  DCHECK_EQ(session->message_loop(), MessageLoop::current());
-
-  session_ = session;
+  DCHECK_EQ(loop_, MessageLoop::current());
+  session_.reset(session);
   session_->SetStateChangeCallback(
       NewCallback(this, &ConnectionToClient::OnSessionStateChange));
 }
 
 protocol::Session* ConnectionToClient::session() {
-  return session_;
+  return session_.get();
 }
 
 void ConnectionToClient::Disconnect() {
@@ -60,9 +59,9 @@ void ConnectionToClient::Disconnect() {
   CloseChannels();
 
   // If there is a channel then close it and release the reference.
-  if (session_) {
-    session_->Close(NewRunnableMethod(this, &ConnectionToClient::OnClosed));
-    session_ = NULL;
+  if (session_.get()) {
+    session_->Close();
+    session_.reset();
   }
 }
 
@@ -99,7 +98,7 @@ void ConnectionToClient::OnSessionStateChange(protocol::Session::State state) {
       client_control_sender_.reset(
           new ClientControlSender(session_->control_channel()));
       video_writer_.reset(VideoWriter::Create(session_->config()));
-      video_writer_->Init(session_);
+      video_writer_->Init(session_.get());
 
       dispatcher_.reset(new HostMessageDispatcher());
       dispatcher_->Initialize(this, host_stub_, input_stub_);
@@ -125,10 +124,6 @@ void ConnectionToClient::CloseChannels() {
     video_writer_->Close();
   if (client_control_sender_.get())
     client_control_sender_->Close();
-}
-
-// OnClosed() is used as a callback for protocol::Session::Close().
-void ConnectionToClient::OnClosed() {
 }
 
 }  // namespace protocol

@@ -112,8 +112,8 @@ class ChromotingHostTest : public testing::Test {
         &message_loop_, &handler_, &host_stub_, event_executor_);
     connection2_ = new MockConnectionToClient(
         &message_loop_, &handler_, &host_stub2_, &event_executor2_);
-    session_ = new MockSession();
-    session2_ = new MockSession();
+    session_.reset(new MockSession());
+    session2_.reset(new MockSession());
     session_config_.reset(SessionConfig::CreateDefault());
     session_config2_.reset(SessionConfig::CreateDefault());
 
@@ -128,13 +128,13 @@ class ChromotingHostTest : public testing::Test {
     ON_CALL(*connection_.get(), client_stub())
         .WillByDefault(Return(&client_stub_));
     ON_CALL(*connection_.get(), session())
-        .WillByDefault(Return(session_));
+        .WillByDefault(Return(session_.get()));
     ON_CALL(*connection2_.get(), video_stub())
         .WillByDefault(Return(&video_stub2_));
     ON_CALL(*connection2_.get(), client_stub())
         .WillByDefault(Return(&client_stub2_));
     ON_CALL(*connection2_.get(), session())
-        .WillByDefault(Return(session2_));
+        .WillByDefault(Return(session2_.get()));
     ON_CALL(*session_.get(), config())
         .WillByDefault(Return(session_config_.get()));
     ON_CALL(*session2_.get(), config())
@@ -212,13 +212,13 @@ class ChromotingHostTest : public testing::Test {
   MockChromotingHostContext context_;
   protocol::LocalLoginCredentials credentials_;
   scoped_refptr<MockConnectionToClient> connection_;
-  scoped_refptr<MockSession> session_;
+  scoped_ptr<MockSession> session_;
   scoped_ptr<SessionConfig> session_config_;
   MockVideoStub video_stub_;
   MockClientStub client_stub_;
   MockHostStub host_stub_;
   scoped_refptr<MockConnectionToClient> connection2_;
-  scoped_refptr<MockSession> session2_;
+  scoped_ptr<MockSession> session2_;
   scoped_ptr<SessionConfig> session_config2_;
   MockVideoStub video_stub2_;
   MockClientStub client_stub2_;

@@ -63,9 +63,9 @@ class RtpVideoReaderTest : public testing::Test,
   }
 
   void Reset() {
-    session_ = new FakeSession();
+    session_.reset(new FakeSession());
     reader_.reset(new RtpVideoReader());
-    reader_->Init(session_, this);
+    reader_->Init(session_.get(), this);
     received_packets_.clear();
   }
 
@@ -129,7 +129,7 @@ class RtpVideoReaderTest : public testing::Test,
 
   MessageLoop message_loop_;
 
-  scoped_refptr<FakeSession> session_;
+  scoped_ptr<FakeSession> session_;
   scoped_ptr<RtpVideoReader> reader_;
 
   vector<char> data_;

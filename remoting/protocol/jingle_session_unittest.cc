@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/time.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
 #include "crypto/nss_util.h"
 #include "net/base/completion_callback.h"
@@ -22,6 +22,7 @@
 #include "third_party/libjingle/source/talk/p2p/client/basicportallocator.h"
 
 using testing::_;
+using testing::DeleteArg;
 using testing::DoAll;
 using testing::Invoke;
 using testing::InvokeWithoutArgs;
@@ -42,6 +43,7 @@ namespace remoting {
 namespace protocol {
 
 namespace {
+
 // Send 100 messages 1024 bytes each. UDP messages are sent with 10ms delay
 // between messages (about 1 second for 100 messages).
 const int kMessageSize = 1024;
@@ -60,7 +62,30 @@ const char kTestHostPublicKey[] =
     "iAvjrvkNDlfiEk7tiY7YzD9zTi3146GX6KLz5GQAd/3I8I5QW3ftF1s/m93AHuc383GZ"
     "A78Oi+IbcJf/jJUZO119VNnRKGiPsf5GZIoHyXX8O5OUQk5soKdQPeK1FwWkeZu6fuXl"
     "QoU12I6podD6xMFa/PA/xefMwcpmuWTRhcso9bp10zVFGQIDAQAB";
-}  // namespace
+
+void QuitCurrentThread() {
+  MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+}
+
+void OnTimeoutTerminateThread(bool* timeout) {
+  *timeout = true;
+  QuitCurrentThread();
+}
+
+bool RunMessageLoopWithTimeout(int timeout_ms) {
+  bool timeout = false;
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE, base::Bind(OnTimeoutTerminateThread, &timeout), timeout_ms);
+  MessageLoop::current()->Run();
+  return !timeout;
+}
+
+ACTION_P(QuitThreadOnCounter, counter) {
+  (*counter)--;
+  EXPECT_GE(*counter, 0);
+  if (*counter == 0)
+    QuitCurrentThread();
+}
 
 class MockSessionManagerCallback {
  public:
@@ -74,12 +99,18 @@ class MockSessionCallback {
   MOCK_METHOD1(OnStateChange, void(Session::State));
 };
 
+}  // namespace
+
 class JingleSessionTest : public testing::Test {
  public:
+  JingleSessionTest()
+      : message_loop_(talk_base::Thread::Current()) {
+  }
+
   // Helper method to copy to set value of client_connection_.
   void SetHostSession(Session* session) {
     DCHECK(session);
-    host_session_ = session;
+    host_session_.reset(session);
     host_session_->SetStateChangeCallback(
         NewCallback(&host_connection_callback_,
                     &MockSessionCallback::OnStateChange));
@@ -89,30 +120,27 @@ class JingleSessionTest : public testing::Test {
 
  protected:
   virtual void SetUp() {
-    thread_.Start();
   }
 
   virtual void TearDown() {
     CloseSessions();
-    thread_.message_loop()->PostTask(
-        FROM_HERE, NewRunnableMethod(
-            this, &JingleSessionTest::DoCloseSessionManager));
-    thread_.Stop();
+    CloseSessionManager();
   }
 
   void CreateServerPair() {
     // Sessions must be initialized on the jingle thread.
-    thread_.message_loop()->PostTask(
-        FROM_HERE, NewRunnableMethod(
-            this, &JingleSessionTest::DoCreateServerPair));
-    SyncWithJingleThread();
+    DoCreateServerPair();
   }
 
   void CloseSessions() {
-    thread_.message_loop()->PostTask(
-        FROM_HERE, NewRunnableMethod(
-            this, &JingleSessionTest::DoCloseSessions));
-    SyncWithJingleThread();
+    if (host_session_.get()) {
+      host_session_->Close();
+      host_session_.reset();
+    }
+    if (client_session_.get()) {
+      client_session_->Close();
+      client_session_.reset();
+    }
   }
 
   void DoCreateServerPair() {
@@ -146,8 +174,7 @@ class JingleSessionTest : public testing::Test {
     FakeSignalStrategy::Connect(host_signal_strategy_.get(),
                                 client_signal_strategy_.get());
 
-    host_server_ =
-        new JingleSessionManager(thread_.message_loop(), NULL, NULL, NULL);
+    host_server_.reset(new JingleSessionManager(NULL, NULL, NULL));
     host_server_->set_allow_local_ips(true);
     host_server_->Init(
         kHostJid, host_signal_strategy_.get(),
@@ -156,8 +183,7 @@ class JingleSessionTest : public testing::Test {
         private_key.release(),
         cert);
 
-    client_server_ =
-        new JingleSessionManager(thread_.message_loop(), NULL, NULL, NULL);
+    client_server_.reset(new JingleSessionManager(NULL, NULL, NULL));
     client_server_->set_allow_local_ips(true);
     client_server_->Init(
         kClientJid, client_signal_strategy_.get(),
@@ -166,31 +192,22 @@ class JingleSessionTest : public testing::Test {
         NULL, NULL);
   }
 
-  void DoCloseSessions() {
-    if (host_session_) {
-      host_session_->Close(NewRunnableFunction(
-          &JingleSessionTest::DoNothing));
+  void CloseSessionManager() {
+    if (host_server_.get()) {
+      host_server_->Close();
+      host_server_.reset();
     }
-    if (client_session_) {
-      client_session_->Close(NewRunnableFunction(
-          &JingleSessionTest::DoNothing));
-    }
-  }
-
-  void DoCloseSessionManager() {
-    if (host_server_) {
-      host_server_->Close(NewRunnableFunction(&JingleSessionTest::DoNothing));
-      host_server_ = NULL;
-    }
-    if (client_server_) {
-      client_server_->Close(NewRunnableFunction(&JingleSessionTest::DoNothing));
-      client_server_ = NULL;
+    if (client_server_.get()) {
+      client_server_->Close();
+      client_server_.reset();
     }
     host_signal_strategy_.reset();
     client_signal_strategy_.reset();
   }
 
   bool InitiateConnection() {
+    int not_connected_peers = 2;
+
     EXPECT_CALL(host_server_callback_, OnIncomingSession(_, _))
         .WillOnce(DoAll(
             WithArg<0>(Invoke(
@@ -204,8 +221,7 @@ class JingleSessionTest : public testing::Test {
     EXPECT_CALL(host_connection_callback_,
                 OnStateChange(Session::CONNECTED))
         .Times(1)
-        .WillOnce(InvokeWithoutArgs(&host_connected_event,
-                                    &base::WaitableEvent::Signal));
+        .WillOnce(QuitThreadOnCounter(&not_connected_peers));
     // Expect that the connection will be closed eventually.
     EXPECT_CALL(host_connection_callback_,
                 OnStateChange(Session::CLOSED))
@@ -218,50 +234,36 @@ class JingleSessionTest : public testing::Test {
     EXPECT_CALL(client_connection_callback_,
                 OnStateChange(Session::CONNECTED))
         .Times(1)
-        .WillOnce(InvokeWithoutArgs(&client_connected_event,
-                                    &base::WaitableEvent::Signal));
+        .WillOnce(QuitThreadOnCounter(&not_connected_peers));
     // Expect that the connection will be closed eventually.
     EXPECT_CALL(client_connection_callback_,
                 OnStateChange(Session::CLOSED))
         .Times(1);
 
-    client_session_ = client_server_->Connect(
+    client_session_.reset(client_server_->Connect(
         kHostJid, kTestHostPublicKey, kTestToken,
         CandidateSessionConfig::CreateDefault(),
         NewCallback(&client_connection_callback_,
-                    &MockSessionCallback::OnStateChange));
+                    &MockSessionCallback::OnStateChange)));
 
-    return host_connected_event.TimedWait(base::TimeDelta::FromMilliseconds(
-            TestTimeouts::action_max_timeout_ms())) &&
-        client_connected_event.TimedWait(base::TimeDelta::FromMilliseconds(
-            TestTimeouts::action_max_timeout_ms()));
-  }
-
-  static void SignalEvent(base::WaitableEvent* event) {
-    event->Signal();
+    return RunMessageLoopWithTimeout(TestTimeouts::action_max_timeout_ms());
   }
 
   static void DoNothing() { }
 
-  void SyncWithJingleThread() {
-    base::WaitableEvent event(true, false);
-    thread_.message_loop()->PostTask(
-        FROM_HERE, NewRunnableFunction(&SignalEvent, &event));
-    event.Wait();
-  }
+  JingleThreadMessageLoop message_loop_;
 
-  JingleThread thread_;
   scoped_ptr<FakeSignalStrategy> host_signal_strategy_;
   scoped_ptr<FakeSignalStrategy> client_signal_strategy_;
 
-  scoped_refptr<JingleSessionManager> host_server_;
+  scoped_ptr<JingleSessionManager> host_server_;
   MockSessionManagerCallback host_server_callback_;
-  scoped_refptr<JingleSessionManager> client_server_;
+  scoped_ptr<JingleSessionManager> client_server_;
   MockSessionManagerCallback client_server_callback_;
 
-  scoped_refptr<Session> host_session_;
+  scoped_ptr<Session> host_session_;
   MockSessionCallback host_connection_callback_;
-  scoped_refptr<Session> client_session_;
+  scoped_ptr<Session> client_session_;
   MockSessionCallback client_connection_callback_;
 };
 
@@ -275,38 +277,40 @@ class ChannelTesterBase : public base::RefCountedThreadSafe<ChannelTesterBase> {
     VIDEO_RTCP,
   };
 
-  ChannelTesterBase(MessageLoop* message_loop,
-                    Session* host_session,
+  ChannelTesterBase(Session* host_session,
                     Session* client_session)
-      : message_loop_(message_loop),
-        host_session_(host_session),
+      : host_session_(host_session),
         client_session_(client_session),
-        done_event_(true, false) {
+        done_(false) {
   }
 
   virtual ~ChannelTesterBase() { }
 
   void Start(ChannelType channel) {
-    message_loop_->PostTask(
+    MessageLoop::current()->PostTask(
         FROM_HERE, NewRunnableMethod(this, &ChannelTesterBase::DoStart,
                                      channel));
   }
 
   bool WaitFinished() {
-    return done_event_.TimedWait(base::TimeDelta::FromMilliseconds(
-        TestTimeouts::action_max_timeout_ms()));
+    return RunMessageLoopWithTimeout(TestTimeouts::action_max_timeout_ms());
   }
 
   virtual void CheckResults() = 0;
 
  protected:
-  void DoStart(ChannelType channel)  {
+  void DoStart(ChannelType channel) {
     socket_1_ = SelectChannel(host_session_, channel);
     socket_2_ = SelectChannel(client_session_, channel);
 
     InitBuffers();
     DoRead();
     DoWrite();
+  }
+
+  void Done() {
+    done_ = true;
+    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(&QuitCurrentThread));
   }
 
   virtual void InitBuffers() = 0;
@@ -332,21 +336,20 @@ class ChannelTesterBase : public base::RefCountedThreadSafe<ChannelTesterBase> {
     }
   }
 
-  MessageLoop* message_loop_;
-  scoped_refptr<Session> host_session_;
-  scoped_refptr<Session> client_session_;
+  Session* host_session_;
+  Session* client_session_;
   net::Socket* socket_1_;
   net::Socket* socket_2_;
-  base::WaitableEvent done_event_;
+  bool done_;
 };
 
 class TCPChannelTester : public ChannelTesterBase {
  public:
-  TCPChannelTester(MessageLoop* message_loop,
-                   Session* host_session,
+  TCPChannelTester(Session* host_session,
                    Session* client_session,
-                   int message_size, int message_count)
-      : ChannelTesterBase(message_loop, host_session, client_session),
+                   int message_size,
+                   int message_count)
+      : ChannelTesterBase(host_session, client_session),
         ALLOW_THIS_IN_INITIALIZER_LIST(
             write_cb_(this, &TCPChannelTester::OnWritten)),
         ALLOW_THIS_IN_INITIALIZER_LIST(
@@ -403,7 +406,7 @@ class TCPChannelTester : public ChannelTesterBase {
     if (result <= 0 && result != net::ERR_IO_PENDING) {
       LOG(ERROR) << "Received error " << result << " when trying to write";
       write_errors_++;
-      done_event_.Signal();
+      Done();
     } else if (result > 0) {
       output_buffer_->DidConsume(result);
     }
@@ -420,22 +423,22 @@ class TCPChannelTester : public ChannelTesterBase {
 
   void OnRead(int result) {
     HandleReadResult(result);
-    if (!done_event_.IsSignaled())
+    if (!done_)
       DoRead();  // Don't try to read again when we are done reading.
   }
 
   void HandleReadResult(int result) {
     if (result <= 0 && result != net::ERR_IO_PENDING) {
-      if (!done_event_.IsSignaled()) {
+      if (!done_) {
         LOG(ERROR) << "Received error " << result << " when trying to read";
         read_errors_++;
-        done_event_.Signal();
+        Done();
       }
     } else if (result > 0) {
       // Allocate memory for the next read.
       input_buffer_->set_offset(input_buffer_->offset() + result);
       if (input_buffer_->offset() == test_data_size_)
-        done_event_.Signal();
+        Done();
     }
   }
 
@@ -453,12 +456,10 @@ class TCPChannelTester : public ChannelTesterBase {
 
 class ChannelSpeedTester : public TCPChannelTester {
  public:
-  ChannelSpeedTester(MessageLoop* message_loop,
-                       Session* host_session,
-                       Session* client_session,
-                       int message_size)
-      : TCPChannelTester(message_loop, host_session,
-                         client_session, message_size, 1) {
+  ChannelSpeedTester(Session* host_session,
+                     Session* client_session,
+                     int message_size)
+      : TCPChannelTester(host_session, client_session, message_size, 1) {
     CHECK(message_size >= 8);
   }
 
@@ -483,10 +484,9 @@ class ChannelSpeedTester : public TCPChannelTester {
 
 class UDPChannelTester : public ChannelTesterBase {
  public:
-  UDPChannelTester(MessageLoop* message_loop,
-                   Session* host_session,
+  UDPChannelTester(Session* host_session,
                    Session* client_session)
-      : ChannelTesterBase(message_loop, host_session, client_session),
+      : ChannelTesterBase(host_session, client_session),
         ALLOW_THIS_IN_INITIALIZER_LIST(
             write_cb_(this, &UDPChannelTester::OnWritten)),
         ALLOW_THIS_IN_INITIALIZER_LIST(
@@ -518,7 +518,7 @@ class UDPChannelTester : public ChannelTesterBase {
 
   virtual void DoWrite() {
     if (packets_sent_ >= kMessages) {
-      done_event_.Signal();
+      Done();
       return;
     }
 
@@ -540,11 +540,11 @@ class UDPChannelTester : public ChannelTesterBase {
     if (result <= 0 && result != net::ERR_IO_PENDING) {
       LOG(ERROR) << "Received error " << result << " when trying to write";
       write_errors_++;
-      done_event_.Signal();
+      Done();
     } else if (result > 0) {
       EXPECT_EQ(kMessageSize, result);
       packets_sent_++;
-      message_loop_->PostDelayedTask(
+      MessageLoop::current()->PostDelayedTask(
           FROM_HERE, NewRunnableMethod(this, &UDPChannelTester::DoWrite),
           kUdpWriteDelayMs);
     }
@@ -569,10 +569,10 @@ class UDPChannelTester : public ChannelTesterBase {
   void HandleReadResult(int result) {
     if (result <= 0 && result != net::ERR_IO_PENDING) {
       // Error will be received after the socket is closed.
-      if (!done_event_.IsSignaled()) {
+      if (!done_) {
         LOG(ERROR) << "Received error " << result << " when trying to read";
         read_errors_++;
-        done_event_.Signal();
+        Done();
       }
     } else if (result > 0) {
       packets_received_++;
@@ -625,24 +625,21 @@ TEST_F(JingleSessionTest, RejectConnection) {
   EXPECT_CALL(host_server_callback_, OnIncomingSession(_, _))
       .WillOnce(SetArgumentPointee<1>(protocol::SessionManager::DECLINE));
 
-  base::WaitableEvent done_event(true, false);
   EXPECT_CALL(client_connection_callback_,
               OnStateChange(Session::CONNECTING))
       .Times(1);
   EXPECT_CALL(client_connection_callback_,
               OnStateChange(Session::CLOSED))
       .Times(1)
-      .WillOnce(InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal));
+      .WillOnce(InvokeWithoutArgs(&QuitCurrentThread));
 
-  client_session_ = client_server_->Connect(
+  client_session_.reset(client_server_->Connect(
       kHostJid, kTestHostPublicKey, kTestToken,
       CandidateSessionConfig::CreateDefault(),
       NewCallback(&client_connection_callback_,
-                  &MockSessionCallback::OnStateChange));
+                  &MockSessionCallback::OnStateChange)));
 
-  ASSERT_TRUE(
-      done_event.TimedWait(base::TimeDelta::FromMilliseconds(
-          TestTimeouts::action_max_timeout_ms())));
+  ASSERT_TRUE(RunMessageLoopWithTimeout(TestTimeouts::action_max_timeout_ms()));
 }
 
 // Verify that we can connect two endpoints.
@@ -656,8 +653,8 @@ TEST_F(JingleSessionTest, TestControlChannel) {
   CreateServerPair();
   ASSERT_TRUE(InitiateConnection());
   scoped_refptr<TCPChannelTester> tester(
-      new TCPChannelTester(thread_.message_loop(), host_session_,
-                           client_session_, kMessageSize, kMessages));
+      new TCPChannelTester(host_session_.get(), client_session_.get(),
+                           kMessageSize, kMessages));
   tester->Start(ChannelTesterBase::CONTROL);
   ASSERT_TRUE(tester->WaitFinished());
   tester->CheckResults();
@@ -671,8 +668,8 @@ TEST_F(JingleSessionTest, TestVideoChannel) {
   CreateServerPair();
   ASSERT_TRUE(InitiateConnection());
   scoped_refptr<TCPChannelTester> tester(
-      new TCPChannelTester(thread_.message_loop(), host_session_,
-                           client_session_, kMessageSize, kMessageSize));
+      new TCPChannelTester(host_session_.get(), client_session_.get(),
+                           kMessageSize, kMessageSize));
   tester->Start(ChannelTesterBase::VIDEO);
   ASSERT_TRUE(tester->WaitFinished());
   tester->CheckResults();
@@ -686,8 +683,8 @@ TEST_F(JingleSessionTest, TestEventChannel) {
   CreateServerPair();
   ASSERT_TRUE(InitiateConnection());
   scoped_refptr<TCPChannelTester> tester(
-      new TCPChannelTester(thread_.message_loop(), host_session_,
-                           client_session_, kMessageSize, kMessageSize));
+      new TCPChannelTester(host_session_.get(), client_session_.get(),
+                           kMessageSize, kMessageSize));
   tester->Start(ChannelTesterBase::EVENT);
   ASSERT_TRUE(tester->WaitFinished());
   tester->CheckResults();
@@ -701,8 +698,7 @@ TEST_F(JingleSessionTest, TestVideoRtpChannel) {
   CreateServerPair();
   ASSERT_TRUE(InitiateConnection());
   scoped_refptr<UDPChannelTester> tester(
-      new UDPChannelTester(thread_.message_loop(), host_session_,
-                           client_session_));
+      new UDPChannelTester(host_session_.get(), client_session_.get()));
   tester->Start(ChannelTesterBase::VIDEO_RTP);
   ASSERT_TRUE(tester->WaitFinished());
   tester->CheckResults();
@@ -718,29 +714,29 @@ TEST_F(JingleSessionTest, DISABLED_TestSpeed) {
   ASSERT_TRUE(InitiateConnection());
   scoped_refptr<ChannelSpeedTester> tester;
 
-  tester = new ChannelSpeedTester(thread_.message_loop(), host_session_,
-                                  client_session_, 512);
+  tester = new ChannelSpeedTester(host_session_.get(),
+                                  client_session_.get(), 512);
   tester->Start(ChannelTesterBase::VIDEO);
   ASSERT_TRUE(tester->WaitFinished());
   LOG(INFO) << "Time for 512 bytes "
             << tester->GetElapsedTime().InMilliseconds() << " ms.";
 
-  tester = new ChannelSpeedTester(thread_.message_loop(), host_session_,
-                                  client_session_, 1024);
+  tester = new ChannelSpeedTester(host_session_.get(),
+                                  client_session_.get(), 1024);
   tester->Start(ChannelTesterBase::VIDEO);
   ASSERT_TRUE(tester->WaitFinished());
   LOG(INFO) << "Time for 1024 bytes "
             << tester->GetElapsedTime().InMilliseconds() << " ms.";
 
-  tester = new ChannelSpeedTester(thread_.message_loop(), host_session_,
-                                  client_session_, 51200);
+  tester = new ChannelSpeedTester(host_session_.get(),
+                                  client_session_.get(), 51200);
   tester->Start(ChannelTesterBase::VIDEO);
   ASSERT_TRUE(tester->WaitFinished());
   LOG(INFO) << "Time for 50k bytes "
             << tester->GetElapsedTime().InMilliseconds() << " ms.";
 
-  tester = new ChannelSpeedTester(thread_.message_loop(), host_session_,
-                                  client_session_, 512000);
+  tester = new ChannelSpeedTester(host_session_.get(),
+                                  client_session_.get(), 512000);
   tester->Start(ChannelTesterBase::VIDEO);
   ASSERT_TRUE(tester->WaitFinished());
   LOG(INFO) << "Time for 500k bytes "

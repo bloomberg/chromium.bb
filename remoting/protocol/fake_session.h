@@ -114,7 +114,6 @@ class FakeSession : public Session {
 
   virtual const std::string& jid();
 
-  virtual MessageLoop* message_loop();
   virtual const CandidateSessionConfig* candidate_config();
   virtual const SessionConfig* config();
   virtual void set_config(const SessionConfig* config);
@@ -124,7 +123,7 @@ class FakeSession : public Session {
   virtual const std::string& receiver_token();
   virtual void set_receiver_token(const std::string& receiver_token);
 
-  virtual void Close(Task* closed_task);
+  virtual void Close();
 
  public:
   scoped_ptr<StateChangeCallback> callback_;

@@ -164,10 +164,6 @@ const std::string& FakeSession::jid() {
   return jid_;
 }
 
-MessageLoop* FakeSession::message_loop() {
-  return message_loop_;
-}
-
 const CandidateSessionConfig* FakeSession::candidate_config() {
   return candidate_config_.get();
 }
@@ -197,10 +193,8 @@ void FakeSession::set_receiver_token(const std::string& receiver_token) {
   receiver_token_ = receiver_token;
 }
 
-void FakeSession::Close(Task* closed_task) {
+void FakeSession::Close() {
   closed_ = true;
-  closed_task->Run();
-  delete closed_task;
 }
 
 }  // namespace protocol

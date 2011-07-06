@@ -93,10 +93,8 @@ class ConnectionToClient :
   // Stops writing in the channels.
   void CloseChannels();
 
-  void OnClosed();
-
   // The libjingle channel used to send and receive data from the remote client.
-  scoped_refptr<Session> session_;
+  scoped_ptr<Session> session_;
 
   scoped_ptr<VideoWriter> video_writer_;
 

@@ -8,6 +8,7 @@
 
 #include "base/message_loop.h"
 #include "base/string_util.h"
+#include "base/task.h"
 #include "remoting/base/constants.h"
 #include "remoting/jingle_glue/http_port_allocator.h"
 #include "remoting/jingle_glue/jingle_info_request.h"
@@ -26,20 +27,18 @@ namespace remoting {
 namespace protocol {
 
 JingleSessionManager::JingleSessionManager(
-    MessageLoop* message_loop,
     talk_base::NetworkManager* network_manager,
     talk_base::PacketSocketFactory* socket_factory,
     PortAllocatorSessionFactory* port_allocator_session_factory)
-    : message_loop_(message_loop),
-      network_manager_(network_manager),
+    : network_manager_(network_manager),
       socket_factory_(socket_factory),
       port_allocator_session_factory_(port_allocator_session_factory),
       signal_strategy_(NULL),
       enable_nat_traversing_(false),
       allow_local_ips_(false),
       http_port_allocator_(NULL),
-      closed_(false) {
-  DCHECK(message_loop);
+      closed_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)) {
 }
 
 JingleSessionManager::~JingleSessionManager() {
@@ -52,14 +51,7 @@ void JingleSessionManager::Init(
     IncomingSessionCallback* incoming_session_callback,
     crypto::RSAPrivateKey* private_key,
     scoped_refptr<net::X509Certificate> certificate) {
-  if (MessageLoop::current() != message_loop_) {
-    message_loop_->PostTask(
-        FROM_HERE, NewRunnableMethod(
-            this, &JingleSessionManager::Init,
-            local_jid, signal_strategy, incoming_session_callback,
-            private_key, certificate));
-    return;
-  }
+  DCHECK(CalledOnValidThread());
 
   DCHECK(signal_strategy);
   DCHECK(incoming_session_callback);
@@ -91,7 +83,8 @@ void JingleSessionManager::Init(
     jingle_info_request_->SetCallback(
         NewCallback(this, &JingleSessionManager::OnJingleInfo));
     jingle_info_request_->Run(
-        NewRunnableMethod(this, &JingleSessionManager::DoStartSessionManager));
+        task_factory_.NewRunnableMethod(
+            &JingleSessionManager::DoStartSessionManager));
   } else {
     port_allocator_.reset(
         new cricket::BasicPortAllocator(
@@ -102,62 +95,53 @@ void JingleSessionManager::Init(
   }
 }
 
-void JingleSessionManager::Close(Task* closed_task) {
-  if (MessageLoop::current() != message_loop_) {
-    message_loop_->PostTask(
-        FROM_HERE, NewRunnableMethod(this, &JingleSessionManager::Close,
-                                     closed_task));
-    return;
-  }
+void JingleSessionManager::Close() {
+  DCHECK(CalledOnValidThread());
+
+  // Close() can be called only after all sessions are destroyed.
+  DCHECK(sessions_.empty());
 
   if (!closed_) {
-    // Close all connections.
     cricket_session_manager_->RemoveClient(kChromotingXmlNamespace);
-    while (!sessions_.empty()) {
-      cricket::Session* session = sessions_.front()->ReleaseSession();
-      cricket_session_manager_->DestroySession(session);
-      sessions_.pop_front();
-    }
     jingle_signaling_connector_.reset();
     cricket_session_manager_.reset();
     closed_ = true;
   }
-
-  closed_task->Run();
-  delete closed_task;
 }
 
 void JingleSessionManager::set_allow_local_ips(bool allow_local_ips) {
   allow_local_ips_ = allow_local_ips;
 }
 
-scoped_refptr<protocol::Session> JingleSessionManager::Connect(
+Session* JingleSessionManager::Connect(
     const std::string& host_jid,
     const std::string& host_public_key,
     const std::string& receiver_token,
     CandidateSessionConfig* candidate_config,
-    protocol::Session::StateChangeCallback* state_change_callback) {
+    Session::StateChangeCallback* state_change_callback) {
+  DCHECK(CalledOnValidThread());
+
   // Can be called from any thread.
-  scoped_refptr<JingleSession> jingle_session(
-      JingleSession::CreateClientSession(this, host_public_key));
+  JingleSession* jingle_session =
+      JingleSession::CreateClientSession(this, host_public_key);
   jingle_session->set_candidate_config(candidate_config);
   jingle_session->set_receiver_token(receiver_token);
 
-  message_loop_->PostTask(
-      FROM_HERE, NewRunnableMethod(this, &JingleSessionManager::DoConnect,
-                                   jingle_session, host_jid,
-                                   host_public_key, receiver_token,
-                                   state_change_callback));
+  // TODO(sergeyu): Does this need to be asynchronous?
+  MessageLoop::current()->PostTask(FROM_HERE, task_factory_.NewRunnableMethod(
+      &JingleSessionManager::DoConnect, jingle_session, host_jid,
+      host_public_key, receiver_token, state_change_callback));
   return jingle_session;
 }
 
 void JingleSessionManager::DoConnect(
-    scoped_refptr<JingleSession> jingle_session,
+    JingleSession* jingle_session,
     const std::string& host_jid,
     const std::string& host_public_key,
     const std::string& receiver_token,
-    protocol::Session::StateChangeCallback* state_change_callback) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+    Session::StateChangeCallback* state_change_callback) {
+  DCHECK(CalledOnValidThread());
+
   cricket::Session* cricket_session = cricket_session_manager_->CreateSession(
       local_jid_, kChromotingXmlNamespace);
 
@@ -171,13 +155,9 @@ void JingleSessionManager::DoConnect(
       jingle_session->GetEncryptedMasterKey()));
 }
 
-MessageLoop* JingleSessionManager::message_loop() {
-  return message_loop_;
-}
-
 void JingleSessionManager::OnSessionCreate(
     cricket::Session* cricket_session, bool incoming) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK(CalledOnValidThread());
 
   // Allow local connections if neccessary.
   cricket_session->set_allow_local_ips(allow_local_ips_);
@@ -189,19 +169,18 @@ void JingleSessionManager::OnSessionCreate(
 
     JingleSession* jingle_session = JingleSession::CreateServerSession(
         this, certificate_, private_key_.get());
-    sessions_.push_back(make_scoped_refptr(jingle_session));
+    sessions_.push_back(jingle_session);
     jingle_session->Init(cricket_session);
   }
 }
 
 void JingleSessionManager::OnSessionDestroy(cricket::Session* cricket_session) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK(CalledOnValidThread());
 
-  std::list<scoped_refptr<JingleSession> >::iterator it;
+  std::list<JingleSession*>::iterator it;
   for (it = sessions_.begin(); it != sessions_.end(); ++it) {
     if ((*it)->HasSession(cricket_session)) {
       (*it)->ReleaseSession();
-      sessions_.erase(it);
       return;
     }
   }
@@ -210,7 +189,7 @@ void JingleSessionManager::OnSessionDestroy(cricket::Session* cricket_session) {
 void JingleSessionManager::AcceptConnection(
     JingleSession* jingle_session,
     cricket::Session* cricket_session) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK(CalledOnValidThread());
 
   // Reject connection if we are closed.
   if (closed_) {
@@ -251,11 +230,17 @@ void JingleSessionManager::AcceptConnection(
 
     case protocol::SessionManager::INCOMPATIBLE: {
       cricket_session->Reject(cricket::STR_TERMINATE_INCOMPATIBLE_PARAMETERS);
+      jingle_session->ReleaseSession();
+      jingle_session->Close();
+      delete jingle_session;
       break;
     }
 
     case protocol::SessionManager::DECLINE: {
       cricket_session->Reject(cricket::STR_TERMINATE_DECLINE);
+      jingle_session->ReleaseSession();
+      jingle_session->Close();
+      delete jingle_session;
       break;
     }
 
@@ -265,20 +250,21 @@ void JingleSessionManager::AcceptConnection(
   }
 }
 
-// Parse content description generated by WriteContent().
-bool JingleSessionManager::ParseContent(
-    cricket::SignalingProtocol protocol,
-    const XmlElement* element,
-    const cricket::ContentDescription** content,
-    cricket::ParseError* error) {
-  *content = ContentDescription::ParseXml(element);
-  return *content != NULL;
+void JingleSessionManager::SessionDestroyed(JingleSession* jingle_session) {
+  std::list<JingleSession*>::iterator it =
+      std::find(sessions_.begin(), sessions_.end(), jingle_session);
+  CHECK(it != sessions_.end());
+  cricket::Session* cricket_session = jingle_session->ReleaseSession();
+  cricket_session_manager_->DestroySession(cricket_session);
+  sessions_.erase(it);
 }
 
 void JingleSessionManager::OnJingleInfo(
     const std::string& token,
     const std::vector<std::string>& relay_hosts,
     const std::vector<talk_base::SocketAddress>& stun_hosts) {
+  DCHECK(CalledOnValidThread());
+
   if (port_allocator_.get()) {
     // TODO(ajwong): Avoid string processing if log-level is low.
     std::string stun_servers;
@@ -297,12 +283,24 @@ void JingleSessionManager::OnJingleInfo(
 }
 
 void JingleSessionManager::DoStartSessionManager() {
+  DCHECK(CalledOnValidThread());
+
   cricket_session_manager_.reset(
       new cricket::SessionManager(port_allocator_.get()));
   cricket_session_manager_->AddClient(kChromotingXmlNamespace, this);
 
   jingle_signaling_connector_.reset(new JingleSignalingConnector(
       signal_strategy_, cricket_session_manager_.get()));
+}
+
+// Parse content description generated by WriteContent().
+bool JingleSessionManager::ParseContent(
+    cricket::SignalingProtocol protocol,
+    const XmlElement* element,
+    const cricket::ContentDescription** content,
+    cricket::ParseError* error) {
+  *content = ContentDescription::ParseXml(element);
+  return *content != NULL;
 }
 
 bool JingleSessionManager::WriteContent(
@@ -317,6 +315,7 @@ bool JingleSessionManager::WriteContent(
   return true;
 }
 
+// static
 cricket::SessionDescription*
 JingleSessionManager::CreateClientSessionDescription(
     const CandidateSessionConfig* config,
@@ -329,6 +328,7 @@ JingleSessionManager::CreateClientSessionDescription(
   return desc;
 }
 
+// static
 cricket::SessionDescription* JingleSessionManager::CreateHostSessionDescription(
     const CandidateSessionConfig* config,
     scoped_refptr<net::X509Certificate> certificate) {

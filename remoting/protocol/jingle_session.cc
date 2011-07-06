@@ -146,7 +146,8 @@ JingleSession::JingleSession(
       ALLOW_THIS_IN_INITIALIZER_LIST(connect_callback_(
           this, &JingleSession::OnConnect)),
       ALLOW_THIS_IN_INITIALIZER_LIST(ssl_connect_callback_(
-          this, &JingleSession::OnSSLConnect)) {
+          this, &JingleSession::OnSSLConnect)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)) {
   // TODO(hclam): Need a better way to clone a key.
   if (local_private_key) {
     std::vector<uint8> key_bytes;
@@ -159,10 +160,11 @@ JingleSession::JingleSession(
 
 JingleSession::~JingleSession() {
   DCHECK(closed_);
+  jingle_session_manager_->SessionDestroyed(this);
 }
 
 void JingleSession::Init(cricket::Session* cricket_session) {
-  DCHECK_EQ(jingle_session_manager_->message_loop(), MessageLoop::current());
+  DCHECK(CalledOnValidThread());
 
   cricket_session_ = cricket_session;
   jid_ = cricket_session_->remote_name();
@@ -174,11 +176,12 @@ void JingleSession::Init(cricket::Session* cricket_session) {
 }
 
 std::string JingleSession::GetEncryptedMasterKey() const {
+  DCHECK(CalledOnValidThread());
   return EncryptMasterKey(peer_public_key_, master_key_);
 }
 
 void JingleSession::CloseInternal(int result, bool failed) {
-  DCHECK_EQ(jingle_session_manager_->message_loop(), MessageLoop::current());
+  DCHECK(CalledOnValidThread());
 
   if (!closed_ && !closing_) {
     closing_ = true;
@@ -223,11 +226,12 @@ void JingleSession::CloseInternal(int result, bool failed) {
 }
 
 bool JingleSession::HasSession(cricket::Session* cricket_session) {
+  DCHECK(CalledOnValidThread());
   return cricket_session_ == cricket_session;
 }
 
 cricket::Session* JingleSession::ReleaseSession() {
-  DCHECK_EQ(jingle_session_manager_->message_loop(), MessageLoop::current());
+  DCHECK(CalledOnValidThread());
 
   // Session may be destroyed only after it is closed.
   DCHECK(closed_);
@@ -240,107 +244,105 @@ cricket::Session* JingleSession::ReleaseSession() {
 }
 
 void JingleSession::SetStateChangeCallback(StateChangeCallback* callback) {
-  DCHECK_EQ(jingle_session_manager_->message_loop(), MessageLoop::current());
+  DCHECK(CalledOnValidThread());
   DCHECK(callback);
   state_change_callback_.reset(callback);
 }
 
 net::Socket* JingleSession::control_channel() {
-  DCHECK_EQ(jingle_session_manager_->message_loop(), MessageLoop::current());
+  DCHECK(CalledOnValidThread());
   return control_socket_wrapper_.get();
 }
 
 net::Socket* JingleSession::event_channel() {
-  DCHECK_EQ(jingle_session_manager_->message_loop(), MessageLoop::current());
+  DCHECK(CalledOnValidThread());
   return event_socket_wrapper_.get();
 }
 
 // TODO(sergeyu): Remove this method after we switch to RTP.
 net::Socket* JingleSession::video_channel() {
-  DCHECK_EQ(jingle_session_manager_->message_loop(), MessageLoop::current());
+  DCHECK(CalledOnValidThread());
   return video_socket_wrapper_.get();
 }
 
 net::Socket* JingleSession::video_rtp_channel() {
-  DCHECK_EQ(jingle_session_manager_->message_loop(), MessageLoop::current());
+  DCHECK(CalledOnValidThread());
   return video_rtp_channel_.get();
 }
 
 net::Socket* JingleSession::video_rtcp_channel() {
-  DCHECK_EQ(jingle_session_manager_->message_loop(), MessageLoop::current());
+  DCHECK(CalledOnValidThread());
   return video_rtcp_channel_.get();
 }
 
 const std::string& JingleSession::jid() {
+  DCHECK(CalledOnValidThread());
   // No synchronization is needed because jid_ is not changed
   // after new connection is passed to JingleChromotocolServer callback.
   return jid_;
 }
 
-MessageLoop* JingleSession::message_loop() {
-  return jingle_session_manager_->message_loop();
-}
-
 const CandidateSessionConfig* JingleSession::candidate_config() {
+  DCHECK(CalledOnValidThread());
   DCHECK(candidate_config_.get());
   return candidate_config_.get();
 }
 
 void JingleSession::set_candidate_config(
     const CandidateSessionConfig* candidate_config) {
+  DCHECK(CalledOnValidThread());
   DCHECK(!candidate_config_.get());
   DCHECK(candidate_config);
   candidate_config_.reset(candidate_config);
 }
 
 scoped_refptr<net::X509Certificate> JingleSession::local_certificate() const {
+  DCHECK(CalledOnValidThread());
   return local_cert_;
 }
 
 const SessionConfig* JingleSession::config() {
+  DCHECK(CalledOnValidThread());
   DCHECK(config_.get());
   return config_.get();
 }
 
 void JingleSession::set_config(const SessionConfig* config) {
+  DCHECK(CalledOnValidThread());
   DCHECK(!config_.get());
   DCHECK(config);
   config_.reset(config);
 }
 
 const std::string& JingleSession::initiator_token() {
+  DCHECK(CalledOnValidThread());
   return initiator_token_;
 }
 
 void JingleSession::set_initiator_token(const std::string& initiator_token) {
+  DCHECK(CalledOnValidThread());
   initiator_token_ = initiator_token;
 }
 
 const std::string& JingleSession::receiver_token() {
+  DCHECK(CalledOnValidThread());
   return receiver_token_;
 }
 
 void JingleSession::set_receiver_token(const std::string& receiver_token) {
+  DCHECK(CalledOnValidThread());
   receiver_token_ = receiver_token;
 }
 
-void JingleSession::Close(Task* closed_task) {
-  if (MessageLoop::current() != jingle_session_manager_->message_loop()) {
-    jingle_session_manager_->message_loop()->PostTask(
-        FROM_HERE, NewRunnableMethod(this, &JingleSession::Close, closed_task));
-    return;
-  }
+void JingleSession::Close() {
+  DCHECK(CalledOnValidThread());
 
   CloseInternal(net::ERR_CONNECTION_CLOSED, false);
-
-  if (closed_task) {
-    closed_task->Run();
-    delete closed_task;
-  }
 }
 
 void JingleSession::OnSessionState(
     BaseSession* session, BaseSession::State state) {
+  DCHECK(CalledOnValidThread());
   DCHECK_EQ(cricket_session_, session);
 
   if (closed_) {
@@ -379,6 +381,7 @@ void JingleSession::OnSessionState(
 
 void JingleSession::OnSessionError(
     BaseSession* session, BaseSession::Error error) {
+  DCHECK(CalledOnValidThread());
   DCHECK_EQ(cricket_session_, session);
 
   if (error != cricket::Session::ERROR_NONE) {
@@ -387,6 +390,7 @@ void JingleSession::OnSessionError(
 }
 
 void JingleSession::OnInitiate() {
+  DCHECK(CalledOnValidThread());
   jid_ = cricket_session_->remote_name();
 
   const cricket::SessionDescription* session_description;
@@ -561,6 +565,8 @@ void JingleSession::InitializeChannels() {
 }
 
 void JingleSession::OnAccept() {
+  DCHECK(CalledOnValidThread());
+
   // If we initiated the session, store the candidate configuration that the
   // host responded with, to refer to later.
   if (cricket_session_->initiator()) {
@@ -578,15 +584,18 @@ void JingleSession::OnAccept() {
   // P2P channel). By posting a task here we can call it at the right
   // moment. This problem will go away when we switch to Pepper P2P
   // API.
-  jingle_session_manager_->message_loop()->PostTask(
-    FROM_HERE, NewRunnableMethod(this, &JingleSession::InitializeChannels));
+  MessageLoop::current()->PostTask(FROM_HERE, task_factory_.NewRunnableMethod(
+      &JingleSession::InitializeChannels));
 }
 
 void JingleSession::OnTerminate() {
+  DCHECK(CalledOnValidThread());
   CloseInternal(net::ERR_CONNECTION_ABORTED, false);
 }
 
 void JingleSession::OnConnect(int result) {
+  DCHECK(CalledOnValidThread());
+
   if (result != net::OK) {
     LOG(ERROR) << "PseudoTCP connection failed: " << result;
     CloseInternal(result, true);
@@ -620,6 +629,8 @@ void JingleSession::OnConnect(int result) {
 }
 
 void JingleSession::OnSSLConnect(int result) {
+  DCHECK(CalledOnValidThread());
+
   DCHECK(!closed_);
   if (result != net::OK) {
     LOG(ERROR) << "Error during SSL connection: " << result;
@@ -648,6 +659,8 @@ void JingleSession::OnSSLConnect(int result) {
 }
 
 void JingleSession::SetState(State new_state) {
+  DCHECK(CalledOnValidThread());
+
   if (new_state != state_) {
     DCHECK_NE(state_, CLOSED);
     DCHECK_NE(state_, FAILED);

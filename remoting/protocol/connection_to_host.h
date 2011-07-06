@@ -125,11 +125,6 @@ class ConnectionToHost : public SignalStrategy::StatusObserver {
   // Stops writing in the channels.
   void CloseChannels();
 
-  // Used by Disconnect() to disconnect chromoting connection, stop chromoting
-  // server, and then disconnect XMPP connection.
-  void OnDisconnected(const base::Closure& shutdown_task);
-  void OnServerClosed(const base::Closure& shutdown_task);
-
   // Internal state of the connection.
   State state_;
 
@@ -141,8 +136,8 @@ class ConnectionToHost : public SignalStrategy::StatusObserver {
 
   scoped_ptr<SignalStrategy> signal_strategy_;
   std::string local_jid_;
-  scoped_refptr<SessionManager> session_manager_;
-  scoped_refptr<Session> session_;
+  scoped_ptr<SessionManager> session_manager_;
+  scoped_ptr<Session> session_;
 
   scoped_ptr<VideoReader> video_reader_;
 

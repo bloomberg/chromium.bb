@@ -43,7 +43,8 @@ class ConnectionToClientTest : public testing::Test {
   MockInputStub input_stub_;
   scoped_refptr<ConnectionToClient> viewer_;
 
-  scoped_refptr<protocol::FakeSession> session_;
+  // Owned by |viewer_|.
+  protocol::FakeSession* session_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ConnectionToClientTest);
@@ -57,14 +58,14 @@ TEST_F(ConnectionToClientTest, SendUpdateStream) {
 
   message_loop_.RunAllPending();
 
+  // Verify that something has been written.
+  // TODO(sergeyu): Verify that the correct data has been written.
+  EXPECT_GT(session_->video_channel()->written_data().size(), 0u);
+
   // And then close the connection to ConnectionToClient.
   viewer_->Disconnect();
 
   message_loop_.RunAllPending();
-
-  // Verify that something has been written.
-  // TODO(sergeyu): Verify that the correct data has been written.
-  EXPECT_GT(session_->video_channel()->written_data().size(), 0u);
 }
 
 TEST_F(ConnectionToClientTest, NoWriteAfterDisconnect) {
@@ -76,10 +77,10 @@ TEST_F(ConnectionToClientTest, NoWriteAfterDisconnect) {
   // And then close the connection to ConnectionToClient.
   viewer_->Disconnect();
 
+  // The test will crash if data writer tries to write data to the
+  // channel socket.
+  // TODO(sergeyu): Use MockSession to verify that no data is written?
   message_loop_.RunAllPending();
-
-  // Nothing should be written because connection has been closed.
-  EXPECT_EQ(session_->video_channel()->written_data().size(), 0u);
 }
 
 TEST_F(ConnectionToClientTest, StateChange) {

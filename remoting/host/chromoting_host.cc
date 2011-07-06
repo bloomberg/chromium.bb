@@ -160,13 +160,23 @@ void ChromotingHost::Shutdown(Task* shutdown_task) {
   clients_.clear();
 
   // Stop chromotocol session manager.
-  if (session_manager_) {
-    session_manager_->Close(
-        NewRunnableMethod(this, &ChromotingHost::ShutdownSignaling));
-    session_manager_ = NULL;
-  } else {
-    ShutdownSignaling();
+  if (session_manager_.get()) {
+    session_manager_->Close();
+    session_manager_.reset();
   }
+
+  // Stop XMPP connection.
+  if (signal_strategy_.get()) {
+    signal_strategy_->Close();
+    signal_strategy_.reset();
+
+    for (StatusObserverList::iterator it = status_observers_.begin();
+         it != status_observers_.end(); ++it) {
+      (*it)->OnSignallingDisconnected();
+    }
+  }
+
+  ShutdownRecorder();
 }
 
 void ChromotingHost::AddStatusObserver(HostStatusObserver* observer) {
@@ -230,8 +240,7 @@ void ChromotingHost::OnStateChange(
 
     // Create and start session manager.
     protocol::JingleSessionManager* server =
-        new protocol::JingleSessionManager(context_->network_message_loop(),
-                                           NULL, NULL, NULL);
+        new protocol::JingleSessionManager(NULL, NULL, NULL);
     // TODO(ajwong): Make this a command switch when we're more stable.
     server->set_allow_local_ips(true);
 
@@ -244,7 +253,7 @@ void ChromotingHost::OnStateChange(
                  NewCallback(this, &ChromotingHost::OnNewClientSession),
                  key_pair.CopyPrivateKey(), key_pair.GenerateCertificate());
 
-    session_manager_ = server;
+    session_manager_.reset(server);
 
     for (StatusObserverList::iterator it = status_observers_.begin();
          it != status_observers_.end(); ++it) {
@@ -628,25 +637,6 @@ void ChromotingHost::StartContinueWindowTimer(bool start) {
 void ChromotingHost::ContinueWindowTimerFunc() {
   PauseSession(true);
   ShowContinueWindow(true);
-}
-
-void ChromotingHost::ShutdownSignaling() {
-  if (MessageLoop::current() != context_->network_message_loop()) {
-    context_->network_message_loop()->PostTask(
-        FROM_HERE, base::Bind(&ChromotingHost::ShutdownSignaling, this));
-    return;
-  }
-
-  if (signal_strategy_.get()) {
-    signal_strategy_->Close();
-    signal_strategy_.reset();
-  }
-
-  for (StatusObserverList::iterator it = status_observers_.begin();
-       it != status_observers_.end(); ++it) {
-    (*it)->OnSignallingDisconnected();
-  }
-  ShutdownRecorder();
 }
 
 void ChromotingHost::ShutdownRecorder() {

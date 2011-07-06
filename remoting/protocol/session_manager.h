@@ -50,6 +50,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/threading/non_thread_safe.h"
 #include "remoting/protocol/session.h"
 
 class Task;
@@ -69,21 +70,25 @@ class SignalStrategy;
 namespace protocol {
 
 // Generic interface for Chromoting session manager.
-class SessionManager : public base::RefCountedThreadSafe<SessionManager> {
+class SessionManager : public base::NonThreadSafe {
  public:
+  SessionManager() { }
+  virtual ~SessionManager() { }
+
   enum IncomingSessionResponse {
     ACCEPT,
     INCOMPATIBLE,
     DECLINE,
   };
 
-  // IncomingSessionCallback is called when a new session is received. If
-  // the callback decides to accept the session it should set the second
-  // argument to ACCEPT. Otherwise it should set it to DECLINE, or
-  // INCOMPATIBLE. INCOMPATIBLE indicates that the session has incompatible
-  // configuration, and cannot be accepted.
-  // If the callback accepts session then it must also set configuration
-  // for the new session using Session::set_config().
+  // IncomingSessionCallback is called when a new session is
+  // received. If the callback decides to accept the session it should
+  // set the second argument to ACCEPT. Otherwise it should set it to
+  // DECLINE, or INCOMPATIBLE. INCOMPATIBLE indicates that the session
+  // has incompatible configuration, and cannot be accepted.  If the
+  // callback accepts session then it must also set configuration for
+  // the new session using Session::set_config(). The callback must
+  // take ownership of the session if it accepts connection.
   typedef Callback2<Session*, IncomingSessionResponse*>::Type
       IncomingSessionCallback;
 
@@ -113,23 +118,16 @@ class SessionManager : public base::RefCountedThreadSafe<SessionManager> {
   // is invoked on the network thread.
   //
   // Ownership of the |config| is passed to the new session.
-  virtual scoped_refptr<Session> Connect(
+  virtual Session* Connect(
       const std::string& host_jid,
       const std::string& host_public_key,
       const std::string& client_token,
       CandidateSessionConfig* config,
       Session::StateChangeCallback* state_change_callback) = 0;
 
-  // Close session manager and all current sessions. |close_task| is executed
-  // after the session client is actually closed. No callbacks are called after
-  // |closed_task| is executed.
-  virtual void Close(Task* closed_task) = 0;
-
- protected:
-  friend class base::RefCountedThreadSafe<SessionManager>;
-
-  SessionManager() { }
-  virtual ~SessionManager() { }
+  // Close session manager and all current sessions. No callbacks are
+  // called after this method returns.
+  virtual void Close() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SessionManager);

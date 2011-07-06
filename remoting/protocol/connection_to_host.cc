@@ -86,61 +86,15 @@ void ConnectionToHost::Disconnect(const base::Closure& shutdown_task) {
 
   CloseChannels();
 
-  if (session_) {
-    session_->Close(
-        NewRunnableMethod(this, &ConnectionToHost::OnDisconnected,
-                          shutdown_task));
-  } else {
-    OnDisconnected(shutdown_task);
+  if (session_.get()) {
+    session_->Close();
+    session_.reset();
   }
-}
 
-void ConnectionToHost::InitSession() {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
-
-  // Initialize chromotocol |session_manager_|.
-  JingleSessionManager* session_manager =
-      new JingleSessionManager(message_loop_, network_manager_.release(),
-                               socket_factory_.release(),
-                               port_allocator_session_factory_.release());
-
-  // TODO(ajwong): Make this a command switch when we're more stable.
-  session_manager->set_allow_local_ips(true);
-  session_manager->Init(
-      local_jid_, signal_strategy_.get(),
-      NewCallback(this, &ConnectionToHost::OnNewSession), NULL, NULL);
-  session_manager_ = session_manager;
-
-  CandidateSessionConfig* candidate_config =
-      CandidateSessionConfig::CreateDefault();
-
-  std::string client_token =
-      protocol::GenerateSupportAuthToken(local_jid_, access_code_);
-
-  // Initialize |session_|.
-  session_ = session_manager_->Connect(
-      host_jid_, host_public_key_, client_token, candidate_config,
-      NewCallback(this, &ConnectionToHost::OnSessionStateChange));
-}
-
-void ConnectionToHost::OnDisconnected(const base::Closure& shutdown_task) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
-
-  session_ = NULL;
-
-  if (session_manager_) {
-    session_manager_->Close(
-        NewRunnableMethod(this, &ConnectionToHost::OnServerClosed,
-                          shutdown_task));
-  } else {
-    OnServerClosed(shutdown_task);
+  if (session_manager_.get()) {
+    session_manager_->Close();
+    session_manager_.reset();
   }
-}
-
-void ConnectionToHost::OnServerClosed(const base::Closure& shutdown_task) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
-
-  session_manager_ = NULL;
 
   if (signal_strategy_.get()) {
     signal_strategy_->Close();
@@ -150,10 +104,37 @@ void ConnectionToHost::OnServerClosed(const base::Closure& shutdown_task) {
   shutdown_task.Run();
 }
 
+void ConnectionToHost::InitSession() {
+  DCHECK_EQ(message_loop_, MessageLoop::current());
+
+  // Initialize chromotocol |session_manager_|.
+  JingleSessionManager* session_manager =
+      new JingleSessionManager(network_manager_.release(),
+                               socket_factory_.release(),
+                               port_allocator_session_factory_.release());
+
+  // TODO(ajwong): Make this a command switch when we're more stable.
+  session_manager->set_allow_local_ips(true);
+  session_manager->Init(
+      local_jid_, signal_strategy_.get(),
+      NewCallback(this, &ConnectionToHost::OnNewSession), NULL, NULL);
+  session_manager_.reset(session_manager);
+
+  CandidateSessionConfig* candidate_config =
+      CandidateSessionConfig::CreateDefault();
+
+  std::string client_token =
+      protocol::GenerateSupportAuthToken(local_jid_, access_code_);
+
+  // Initialize |session_|.
+  session_.reset(session_manager_->Connect(
+      host_jid_, host_public_key_, client_token, candidate_config,
+      NewCallback(this, &ConnectionToHost::OnSessionStateChange)));
+}
+
 const SessionConfig* ConnectionToHost::config() {
   return session_->config();
 }
-
 
 void ConnectionToHost::OnStateChange(
     SignalStrategy::StatusObserver::State state) {
@@ -203,7 +184,7 @@ void ConnectionToHost::OnSessionStateChange(
       state_ = STATE_CONNECTED;
       // Initialize reader and writer.
       video_reader_.reset(VideoReader::Create(session_->config()));
-      video_reader_->Init(session_, video_stub_);
+      video_reader_->Init(session_.get(), video_stub_);
       host_control_sender_.reset(
           new HostControlSender(session_->control_channel()));
       dispatcher_->Initialize(session_.get(), client_stub_);
