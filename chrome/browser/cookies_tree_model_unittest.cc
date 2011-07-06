@@ -885,4 +885,25 @@ TEST_F(CookiesTreeModelTest, ContentSettings) {
       content_settings->GetCookieContentSetting(host, host, true));
 }
 
+TEST_F(CookiesTreeModelTest, FileSystemFilter) {
+  scoped_ptr<CookiesTreeModel> cookies_model(
+      CreateCookiesTreeModelWithInitialSample());
+
+  cookies_model->UpdateSearchResults(std::wstring(L"fshost1"));
+  EXPECT_EQ("http://fshost1:1/",
+            GetDisplayedFileSystems(cookies_model.get()));
+
+  cookies_model->UpdateSearchResults(std::wstring(L"fshost2"));
+  EXPECT_EQ("http://fshost2:2/",
+            GetDisplayedFileSystems(cookies_model.get()));
+
+  cookies_model->UpdateSearchResults(std::wstring(L"fshost3"));
+  EXPECT_EQ("http://fshost3:3/",
+            GetDisplayedFileSystems(cookies_model.get()));
+
+  cookies_model->UpdateSearchResults(std::wstring());
+  EXPECT_EQ("http://fshost1:1/,http://fshost2:2/,http://fshost3:3/",
+            GetDisplayedFileSystems(cookies_model.get()));
+}
+
 }  // namespace
