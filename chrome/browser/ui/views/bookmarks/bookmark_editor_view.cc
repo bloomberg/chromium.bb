@@ -455,11 +455,9 @@ void BookmarkEditorView::NewFolder() {
 
 BookmarkEditorView::EditorNode* BookmarkEditorView::AddNewFolder(
     EditorNode* parent) {
-  EditorNode* new_node = new EditorNode();
-  new_node->set_title(
-      l10n_util::GetStringUTF16(IDS_BOOMARK_EDITOR_NEW_FOLDER_NAME));
-  new_node->value = 0;
-  // new_node is now owned by parent.
+  EditorNode* new_node = new EditorNode(
+      l10n_util::GetStringUTF16(IDS_BOOMARK_EDITOR_NEW_FOLDER_NAME), 0);
+  // |new_node| is now owned by |parent|.
   tree_model_->Add(parent, new_node, parent->child_count());
   return new_node;
 }
@@ -480,7 +478,7 @@ void BookmarkEditorView::ExpandAndSelect() {
 }
 
 BookmarkEditorView::EditorNode* BookmarkEditorView::CreateRootNode() {
-  EditorNode* root_node = new EditorNode(std::wstring(), 0);
+  EditorNode* root_node = new EditorNode(string16(), 0);
   const BookmarkNode* bb_root_node = bb_model_->root_node();
   CreateNodes(bb_root_node, root_node);
   DCHECK(root_node->child_count() >= 2 && root_node->child_count() <= 3);
@@ -497,9 +495,8 @@ void BookmarkEditorView::CreateNodes(const BookmarkNode* bb_node,
   for (int i = 0; i < bb_node->child_count(); ++i) {
     const BookmarkNode* child_bb_node = bb_node->GetChild(i);
     if (child_bb_node->IsVisible() && child_bb_node->is_folder()) {
-      EditorNode* new_b_node =
-          new EditorNode(WideToUTF16(child_bb_node->GetTitle()),
-                                     child_bb_node->id());
+      EditorNode* new_b_node = new EditorNode(child_bb_node->GetTitle(),
+                                              child_bb_node->id());
       b_node->Add(new_b_node, b_node->child_count());
       CreateNodes(child_bb_node, new_b_node);
     }
