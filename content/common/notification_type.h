@@ -1351,6 +1351,9 @@ class NotificationType {
     // Sent when a ProtocolHandlerRegistry is changed.
     PROTOCOL_HANDLER_REGISTRY_CHANGED,
 
+    // Sent when the cached profile info has changed.
+    PROFILE_CACHED_INFO_CHANGED,
+
     // Count (must be last) ----------------------------------------------------
     // Used to determine the number of notification types.  Not valid as
     // a type parameter when registering for or posting notifications.

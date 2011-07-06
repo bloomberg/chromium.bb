@@ -7,8 +7,11 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/profile_menu_model.h"
 #include "chrome/browser/ui/views/avatar_menu_button.h"
@@ -31,6 +34,7 @@
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/path.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/image_view.h"
@@ -203,22 +207,11 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(BrowserFrame* frame,
     // AvatarMenuButton takes ownership of |menu_model|.
     avatar_button_.reset(new AvatarMenuButton(std::wstring(), menu_model));
     AddChildView(avatar_button_.get());
-
-    if (browser_view_->IsOffTheRecord()) {
-      avatar_button_->SetIcon(browser_view_->GetOTRAvatarIcon());
-    } else {
-      // TODO(sail) Get the avatar icon assigned to this profile.
-      ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-      avatar_button_->SetIcon(*rb.GetBitmapNamed(IDR_PROFILE_AVATAR_1));
-      // TODO(sail) Also need to call SetHoverIcon() and SetPushedIcon().
+    UpdateAvatarInfo();
+    if (!browser_view_->IsOffTheRecord()) {
+      registrar_.Add(this, NotificationType::PROFILE_CACHED_INFO_CHANGED,
+                     NotificationService::AllSources());
     }
-  }
-
-  // If multi-profile is enabled set up login notifications.
-  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
-  if (browser_command_line.HasSwitch(switches::kMultiProfiles) &&
-      !browser_view->IsOffTheRecord()) {
-    RegisterLoginNotifications();
   }
 }
 
@@ -520,10 +513,15 @@ SkBitmap OpaqueBrowserFrameView::GetFaviconForTabIconView() {
 void OpaqueBrowserFrameView::Observe(NotificationType type,
                                      const NotificationSource& source,
                                      const NotificationDetails& details) {
-  DCHECK_EQ(NotificationType::PREF_CHANGED, type.value);
-  std::string* name = Details<std::string>(details).ptr();
-  if (prefs::kGoogleServicesUsername == *name)
-    LayoutAvatar();
+  switch (type.value) {
+    case NotificationType::PROFILE_CACHED_INFO_CHANGED:
+      UpdateAvatarInfo();
+      LayoutAvatar();
+      break;
+    default:
+      NOTREACHED() << "Got a notification we didn't register for!";
+      break;
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1156,8 +1154,18 @@ gfx::Rect OpaqueBrowserFrameView::CalculateClientAreaBounds(int width,
                        top_height - border_thickness));
 }
 
-void OpaqueBrowserFrameView::RegisterLoginNotifications() {
-  PrefService* pref_service = browser_view_->browser()->profile()->GetPrefs();
-  DCHECK(pref_service);
-  username_pref_.Init(prefs::kGoogleServicesUsername, pref_service, this);
+void OpaqueBrowserFrameView::UpdateAvatarInfo() {
+  if (browser_view_->IsOffTheRecord()) {
+    avatar_button_->SetIcon(browser_view_->GetOTRAvatarIcon());
+  } else {
+    ProfileInfoCache& cache =
+        g_browser_process->profile_manager()->GetProfileInfoCache();
+    Profile* profile = browser_view_->browser()->profile();
+    size_t index = cache.GetIndexOfProfileWithPath(profile->GetPath());
+    if (index != std::string::npos) {
+      avatar_button_->SetIcon(cache.GetAvatarIconOfProfileAtIndex(index));
+      avatar_button_->SetText(UTF16ToWideHack(
+          cache.GetNameOfProfileAtIndex(index)));
+    }
+  }
 }

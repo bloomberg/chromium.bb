@@ -197,6 +197,9 @@ class ProfileManager : public base::NonThreadSafe,
       const ProfileManager::ProfilePathAndName& pair1,
       const ProfileManager::ProfilePathAndName& pair2);
 
+  // Adds |profile| to the profile info cache if it's not already there.
+  void AddProfileToCache(Profile* profile);
+
   NotificationRegistrar registrar_;
 
   // Indicates that a user has logged in and that the profile specified

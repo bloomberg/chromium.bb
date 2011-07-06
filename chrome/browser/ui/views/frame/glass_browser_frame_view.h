@@ -7,9 +7,10 @@
 #pragma once
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/ui/views/frame/browser_frame_win.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
 #include "views/controls/button/button.h"
 #include "views/window/non_client_view.h"
 
@@ -85,8 +86,8 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
 
-  // Receive notifications when the user's Google services user name changes.
-  void RegisterLoginNotifications();
+  // Updates the title and icon of the avatar button.
+  void UpdateAvatarInfo();
 
   // The layout rect of the avatar icon, if visible.
   gfx::Rect avatar_bounds_;
@@ -110,8 +111,7 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   // The index of the current frame of the throbber animation.
   int throbber_frame_;
 
-  // The Google services user name associated with this BrowserView's profile.
-  StringPrefMember username_pref_;
+  NotificationRegistrar registrar_;
 
   static const int kThrobberIconCount = 24;
   static HICON throbber_icons_[kThrobberIconCount];

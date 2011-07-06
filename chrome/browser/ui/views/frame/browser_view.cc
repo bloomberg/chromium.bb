@@ -29,6 +29,8 @@
 #include "chrome/browser/page_info_window.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/sidebar/sidebar_container.h"
@@ -469,9 +471,19 @@ bool BrowserView::IsOffTheRecord() const {
 }
 
 bool BrowserView::ShouldShowAvatar() const {
-  return IsBrowserTypeNormal() &&
-      (IsOffTheRecord() ||
-       CommandLine::ForCurrentProcess()->HasSwitch(switches::kMultiProfiles));
+  if (!IsBrowserTypeNormal())
+    return false;
+  if (IsOffTheRecord())
+    return true;
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kMultiProfiles)) {
+    ProfileInfoCache& cache =
+        g_browser_process->profile_manager()->GetProfileInfoCache();
+    if (cache.GetNumberOfProfiles() > 1)
+      return true;
+  }
+
+  return false;
 }
 
 bool BrowserView::AcceleratorPressed(const views::Accelerator& accelerator) {

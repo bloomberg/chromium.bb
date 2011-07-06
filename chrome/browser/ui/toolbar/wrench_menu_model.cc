@@ -18,6 +18,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_ui_util.h"
@@ -227,11 +228,12 @@ ProfilesSubMenuModel::ProfilesSubMenuModel(
 }
 
 void ProfilesSubMenuModel::Build() {
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  size_t count = profile_manager->GetNumberOfProfiles();
+  ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  size_t count = cache.GetNumberOfProfiles();
   for (size_t i = 0; i < count; ++i) {
     AddCheckItem(COMMAND_SWITCH_TO_PROFILE + i,
-                 profile_manager->GetNameOfProfileAtIndex(i));
+                 cache.GetNameOfProfileAtIndex(i));
   }
 
   AddSeparator();
@@ -257,39 +259,38 @@ class ProfileSwitchObserver : public ProfileManagerObserver {
 };
 
 void ProfilesSubMenuModel::ExecuteCommand(int command_id) {
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
   size_t index = command_id;
-  if (index < profile_manager->GetNumberOfProfiles()) {
-    FilePath userDataFolder;
-    PathService::Get(chrome::DIR_USER_DATA, &userDataFolder);
-    FilePath profile_path =
-        profile_manager->GetFilePathOfProfileAtIndex(index, userDataFolder);
-
+  if (index < cache.GetNumberOfProfiles()) {
+    FilePath profile_path = cache.GetPathOfProfileAtIndex(index);
     ProfileSwitchObserver* observer = new ProfileSwitchObserver;
     // The observer is deleted by the manager when profile creation is finished.
-    profile_manager->CreateProfileAsync(profile_path, observer);
+    g_browser_process->profile_manager()->CreateProfileAsync(
+        profile_path, observer);
   } else {
     delegate_->ExecuteCommand(command_id);
   }
 }
 
 bool ProfilesSubMenuModel::IsCommandIdChecked(int command_id) const {
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
   size_t index = command_id;
-  if (index < profile_manager->GetNumberOfProfiles()) {
+  if (index < cache.GetNumberOfProfiles()) {
     FilePath userDataFolder;
     PathService::Get(chrome::DIR_USER_DATA, &userDataFolder);
-    FilePath profile_path =
-        profile_manager->GetFilePathOfProfileAtIndex(index, userDataFolder);
+    FilePath profile_path = cache.GetPathOfProfileAtIndex(index);
     return browser_->GetProfile()->GetPath() == profile_path;
   }
   return delegate_->IsCommandIdChecked(command_id);
 }
 
 bool ProfilesSubMenuModel::IsCommandIdEnabled(int command_id) const {
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
   size_t index = command_id;
-  if (index < profile_manager->GetNumberOfProfiles())
+  if (index < cache.GetNumberOfProfiles())
     return true;
   return delegate_->IsCommandIdEnabled(command_id);
 }
@@ -297,9 +298,10 @@ bool ProfilesSubMenuModel::IsCommandIdEnabled(int command_id) const {
 bool ProfilesSubMenuModel::GetAcceleratorForCommandId(
     int command_id,
     ui::Accelerator* accelerator) {
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
   size_t index = command_id;
-  if (index < profile_manager->GetNumberOfProfiles())
+  if (index < cache.GetNumberOfProfiles())
     return false;
   return delegate_->GetAcceleratorForCommandId(command_id, accelerator);
 }
@@ -571,7 +573,9 @@ void WrenchMenuModel::Build() {
       l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
   if (browser_command_line.HasSwitch(switches::kMultiProfiles)) {
-    if (g_browser_process->profile_manager()->GetNumberOfProfiles() > 1) {
+    ProfileInfoCache& cache =
+        g_browser_process->profile_manager()->GetProfileInfoCache();
+    if (cache.GetNumberOfProfiles() > 1) {
       profiles_sub_menu_model_.reset(new ProfilesSubMenuModel(this, browser_));
       AddSubMenu(IDC_PROFILE_MENU, l10n_util::GetStringFUTF16(
           IDS_PROFILES_MENU, short_product_name),

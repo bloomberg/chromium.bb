@@ -4,8 +4,10 @@
 
 #include "chrome/browser/profiles/profile_info_cache.h"
 
+#include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/rand_util.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
@@ -13,7 +15,10 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/pref_names.h"
+#include "content/common/notification_service.h"
+#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace {
@@ -107,7 +112,7 @@ size_t ProfileInfoCache::GetIndexOfProfileWithPath(
     const FilePath& profile_path) const {
   if (profile_path.DirName() != user_data_dir_)
     return std::string::npos;
-  std::string search_key = profile_path.BaseName().MaybeAsASCII();
+  std::string search_key = CacheKeyFromProfilePath(profile_path);
   for (size_t i = 0; i < sorted_keys_.size(); ++i) {
     if (sorted_keys_[i] == search_key)
       return i;
@@ -166,6 +171,48 @@ void ProfileInfoCache::SetAvatarIconOfProfileAtIndex(size_t index,
   SetInfoForProfileAtIndex(index, info.release());
 }
 
+string16 ProfileInfoCache::ChooseNameForNewProfile() {
+  for (int name_index = 1; ; ++name_index) {
+    string16 name = l10n_util::GetStringFUTF16Int(
+        IDS_NUMBERED_PROFILE_NAME, name_index);
+    bool name_found = false;
+    for (size_t i = 0; i < GetNumberOfProfiles(); ++i) {
+      if (GetNameOfProfileAtIndex(i) == name) {
+        name_found = true;
+        break;
+      }
+    }
+    if (!name_found)
+      return name;
+  }
+}
+
+int ProfileInfoCache::ChooseAvatarIconIndexForNewProfile() {
+  // Start with a random icon to introduce variety.
+  size_t rand_start_index = base::RandInt(0, GetDefaultAvatarIconCount() - 1);
+  for (size_t icon_index = 0; icon_index < GetDefaultAvatarIconCount();
+       ++icon_index) {
+    size_t rand_icon_index =
+        (icon_index + rand_start_index) % GetDefaultAvatarIconCount();
+    bool icon_found = false;
+    for (size_t i = 0; i < GetNumberOfProfiles(); ++i) {
+      if (GetAvatarIconIndexOfProfileAtIndex(i) == rand_icon_index) {
+        icon_found = true;
+        break;
+      }
+    }
+    if (!icon_found)
+      return rand_icon_index;
+  }
+
+  // If there's no unique icon then just use the random one.
+  return rand_start_index;
+}
+
+const FilePath& ProfileInfoCache::GetUserDataDir() const {
+  return user_data_dir_;
+}
+
 size_t ProfileInfoCache::GetDefaultAvatarIconCount() {
   return kDefaultAvatarIconsCount;
 }
@@ -177,7 +224,7 @@ int ProfileInfoCache::GetDefaultAvatarIconResourceIDAtIndex(size_t index) {
 
 std::string ProfileInfoCache::GetDefaultAvatarIconUrl(size_t index) {
   DCHECK_LT(index, kDefaultAvatarIconsCount);
-  return StringPrintf("%s%zu", kDefaultUrlPrefix, index);
+  return StringPrintf("%s%" PRIuS, kDefaultUrlPrefix, index);
 }
 
 const DictionaryValue* ProfileInfoCache::GetInfoForProfileAtIndex(
@@ -195,6 +242,11 @@ void ProfileInfoCache::SetInfoForProfileAtIndex(size_t index,
   DictionaryPrefUpdate update(prefs_, prefs::kProfileInfoCache);
   DictionaryValue* cache = update.Get();
   cache->Set(sorted_keys_[index], info);
+
+  NotificationService::current()->Notify(
+    NotificationType::PROFILE_CACHED_INFO_CHANGED,
+    NotificationService::AllSources(),
+    NotificationService::NoDetails());
 }
 
 std::string ProfileInfoCache::CacheKeyFromProfilePath(

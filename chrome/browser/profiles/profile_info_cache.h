@@ -44,6 +44,16 @@ class ProfileInfoCache {
   void SetNameOfProfileAtIndex(size_t index, const string16& name);
   void SetAvatarIconOfProfileAtIndex(size_t index, size_t icon_index);
 
+  // Returns unique name that can be assigned to a newly created profile.
+  string16 ChooseNameForNewProfile();
+
+  // Returns an avatar icon index that can be assigned to a newly created
+  // profile. Note that the icon may not be unique since there are a limited
+  // set of default icons.
+  int ChooseAvatarIconIndexForNewProfile();
+
+  const FilePath& GetUserDataDir() const;
+
   // Gets the number of default avatar icons that exist.
   static size_t GetDefaultAvatarIconCount();
   // Gets the resource ID of the default avatar icon at |index|.

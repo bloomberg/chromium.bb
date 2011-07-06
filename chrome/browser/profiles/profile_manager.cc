@@ -25,6 +25,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_type.h"
@@ -51,11 +52,10 @@ bool ProfileManagerObserver::DeleteAfterCreation() {
 class NewProfileLauncher : public ProfileManagerObserver {
  public:
   virtual void OnProfileCreated(Profile* profile) {
-    Browser::NewWindowWithProfile(profile);
-    ProfileSyncService* service = profile->GetProfileSyncService();
-    DCHECK(service);
-    service->ShowLoginDialog();
-    ProfileSyncService::SyncEvent(ProfileSyncService::START_FROM_PROFILE_MENU);
+    Browser* browser = Browser::Create(profile);
+    browser->AddSelectedTabWithURL(GURL(chrome::kChromeUINewProfile),
+                                   PageTransition::LINK);
+    browser->window()->Show();
   }
 
   virtual bool DeleteAfterCreation() OVERRIDE { return true; }
@@ -369,6 +369,8 @@ void ProfileManager::DoFinalInit(Profile* profile) {
 
   if (!command_line.HasSwitch(switches::kDisableWebResources))
     profile->InitPromoResources();
+
+  AddProfileToCache(profile);
 }
 
 void ProfileManager::OnProfileCreated(Profile* profile, bool success) {
@@ -512,4 +514,24 @@ ProfileInfoCache& ProfileManager::GetProfileInfoCache() {
         g_browser_process->local_state(), user_data_dir));
   }
   return *profile_info_cache_.get();
+}
+
+void ProfileManager::AddProfileToCache(Profile* profile) {
+  ProfileInfoCache& cache = GetProfileInfoCache();
+  if (profile->GetPath().DirName() != cache.GetUserDataDir())
+    return;
+
+  if (cache.GetIndexOfProfileWithPath(profile->GetPath()) != std::string::npos)
+    return;
+
+  if (profile->GetPath() == GetDefaultProfileDir(cache.GetUserDataDir())) {
+    cache.AddProfileToCache(
+        profile->GetPath(),
+        l10n_util::GetStringUTF16(IDS_DEFAULT_PROFILE_NAME), 0);
+  } else {
+    cache.AddProfileToCache(
+        profile->GetPath(),
+        cache.ChooseNameForNewProfile(),
+        cache.ChooseAvatarIconIndexForNewProfile());
+  }
 }
