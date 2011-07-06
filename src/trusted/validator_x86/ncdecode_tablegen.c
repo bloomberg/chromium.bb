@@ -1942,15 +1942,8 @@ size_t NaClOpOffset(const NaClOp* op) {
 static void NaClInstPrintInternal(struct Gio* f, Bool as_array_element,
                                   int index, const NaClModeledInst* inst,
                                   int lookahead) {
-  int i;
   gprintf(f, "  /* %d */\n", index);
-  gprintf(f, "  { %s,", NaClInstPrefixName(inst->prefix));
-  gprintf(f, " %"NACL_PRIu8", {", inst->num_opcode_bytes);
-  for (i = 0; i < NACL_MAX_ALL_OPCODE_BYTES; ++i) {
-    if (i > 0) gprintf(f, ",");
-    gprintf(f," 0x%02x", inst->opcode[i]);
-  }
-  gprintf(f, " }, %s,\n", NaClInstTypeString(inst->insttype));
+  gprintf(f, "  { %s,\n", NaClInstTypeString(inst->insttype));
   gprintf(f, "    ");
   NaClIFlagsPrintInternal(f, inst->flags);
   gprintf(f, ",\n");

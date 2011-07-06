@@ -56,9 +56,8 @@ static void NaClInstPrintOpcodeSeq(struct Gio* gout,
       gprintf(gout, " / %d", modrm_opcode(state->modrm));
       count += 4;
     } else if (state->inst->flags & NACL_IFLAG(OpcodePlusR)) {
-      /* TODO(karl): remove this. */
       gprintf(gout, " - r%d",
-              state->inst->opcode[state->inst->num_opcode_bytes]);
+              NaClGetOpcodePlusR(state->inst->opcode_ext));
       count += 5;
     }
     if (state->inst->flags & NACL_IFLAG(OpcodeInModRmRm)) {

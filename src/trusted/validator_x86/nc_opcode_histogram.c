@@ -15,6 +15,7 @@
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/validator_x86/nc_inst_state.h"
+#include "native_client/src/trusted/validator_x86/nc_inst_state_internal.h"
 #include "native_client/src/trusted/validator_x86/ncvalidate_iter.h"
 #include "native_client/src/trusted/validator_x86/ncvalidate_iter_internal.h"
 
@@ -49,9 +50,12 @@ void NaClOpcodeHistogramMemoryDestroy(NaClValidatorState* state,
 void NaClOpcodeHistogramRecord(NaClValidatorState* state,
                                NaClInstIter* iter,
                                NaClOpcodeHistogram* histogram) {
+  NaClInstState* inst_state = state->cur_inst_state;
   const NaClInst* inst = state->cur_inst;
-  if (inst->name != InstInvalid) {
-    histogram->opcode_histogram[inst->opcode[inst->num_opcode_bytes - 1]]++;
+  if ((inst->name != InstInvalid) &&
+      (inst_state->num_opcode_bytes > 0)) {
+    histogram->opcode_histogram[
+        inst_state->bytes.byte[inst_state->num_prefix_bytes]]++;
   }
 }
 

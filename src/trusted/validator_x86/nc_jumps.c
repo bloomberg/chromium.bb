@@ -15,6 +15,7 @@
 
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
+#include "native_client/src/trusted/validator_x86/nc_inst_state_internal.h"
 #include "native_client/src/trusted/validator_x86/nc_inst_trans.h"
 #include "native_client/src/trusted/validator_x86/ncop_exps.h"
 #include "native_client/src/trusted/validator_x86/ncvalidate_iter.h"
@@ -327,7 +328,9 @@ static void NaClAddRegisterJumpIndirect64(NaClValidatorState* state,
     DEBUG(NaClLog(LOG_INFO, "and?: ");
           NaClInstStateInstPrint(NaClLogGetGio(), and_state));
     and_inst = NaClInstStateInst(and_state);
-    if (0x83 != and_inst->opcode[0] || InstAnd != and_inst->name) break;
+    if (((and_state->num_opcode_bytes == 0) ||
+         (0x83 != and_state->bytes.byte[and_state->num_prefix_bytes])) ||
+        InstAnd != and_inst->name) break;
     DEBUG(NaClLog(LOG_INFO, "and instruction\n"));
 
     /* Extract the values of the two operands for the and. */
@@ -452,7 +455,9 @@ static void NaClAddRegisterJumpIndirect32(NaClValidatorState* state,
     if (!NaClInstIterHasLookbackState(iter, 1)) break;
     and_state = NaClInstIterGetLookbackState(iter, 1);
     and_inst = NaClInstStateInst(and_state);
-    if (0x83 != and_inst->opcode[0] || InstAnd  != and_inst->name) break;
+    if (((and_state->num_opcode_bytes == 0) ||
+         (0x83 != and_state->bytes.byte[and_state->num_prefix_bytes])) ||
+        InstAnd != and_inst->name) break;
 
     /* Extract the values of the two operands for the and. */
     if (!NaClExtractBinaryOperandIndices(and_state, &op_1, &op_2)) break;
