@@ -218,6 +218,8 @@ def RunBuildStages(bot_id, options, build_config):
 
     if options.tests:
       stages.TestStage(bot_id, options, build_config).Run()
+      if options.remote_ip:
+        stages.TestHWStage(bot_id, options, build_config).Run()
 
     if options.remote_test_status:
       stages.RemoteTestStatusStage(bot_id, options, build_config).Run()
@@ -466,6 +468,8 @@ def _CreateParser():
   group.add_option('--nouprev', action='store_false', dest='uprev',
                     default=True,
                     help='Override values from buildconfig and never uprev.')
+  group.add_option('--remoteip', dest='remote_ip', default=None,
+                   help='IP of the remote machine where tests are run.')
   group.add_option('--remoteteststatus', dest='remote_test_status',
                     default=None, help='List of remote jobs to check status')
   group.add_option('--resume', action='store_true',

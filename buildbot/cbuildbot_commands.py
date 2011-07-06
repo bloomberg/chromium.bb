@@ -234,12 +234,15 @@ def Build(buildroot, board, build_autotest, fast, usepkg, skip_toolchain_update,
   cros_lib.RunCommand(cmd, cwd=cwd, enter_chroot=True, extra_env=env)
 
 
-def BuildImage(buildroot, board, extra_env=None):
+def BuildImage(buildroot, board, mod_for_test, extra_env=None):
   _WipeOldOutput(buildroot)
 
   cwd = os.path.join(buildroot, 'src', 'scripts')
-  cros_lib.RunCommand(['./build_image', '--board=%s' % board, '--replace'],
-                      cwd=cwd, enter_chroot=True, extra_env=extra_env)
+  cmd = ['./build_image', '--board=%s' % board, '--replace']
+  if mod_for_test:
+    cmd.append('--test')
+
+  cros_lib.RunCommand(cmd, cwd=cwd, enter_chroot=True, extra_env=extra_env)
 
 
 def BuildVMImageForTesting(buildroot, board, extra_env=None):
@@ -319,6 +322,34 @@ def RunTestSuite(buildroot, board, results_dir, full=True):
            '--test_results_root=%s' % results_dir_in_chroot, ]
 
   cros_lib.OldRunCommand(cmd, cwd=cwd, error_ok=False)
+
+
+def UpdateRemoteHW(buildroot, board, remote_ip):
+  """Reimage the remote machine using the image modified for test."""
+
+  cwd = os.path.join(buildroot, 'src', 'scripts')
+  test_image_path = os.path.join(buildroot, 'src', 'build', 'images', board,
+                                 'latest', 'chromiumos_test_image.bin')
+  cmd = ['./image_to_live.sh',
+         '--remote=%s' % remote_ip,
+         '--image=%s' % test_image_path, ]
+
+  cros_lib.OldRunCommand(cmd, cwd=cwd, enter_chroot=False, error_ok=False,
+                         print_cmd=True)
+
+
+def RemoteRunPyAuto(buildroot, board, remote_ip):
+  """Runs the pyauto tests on actual hardware."""
+
+  cwd = os.path.join(buildroot, 'src', 'scripts')
+  test_suite = 'client/site_tests/desktopui_PyAutoFunctionalTests/control'
+  cmd = ['./run_remote_tests.sh',
+         '--board=%s' % board,
+         '--remote=%s' % remote_ip,
+         test_suite, ]
+
+  cros_lib.OldRunCommand(cmd, cwd=cwd, enter_chroot=True, error_ok=False,
+                         print_cmd=True)
 
 
 def ArchiveTestResults(buildroot, test_results_dir):

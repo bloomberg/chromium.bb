@@ -740,7 +740,15 @@ class BuildTargetStage(BuilderStage):
                    usepkg=self._build_config['usepkg_build_packages'],
                    extra_env=env)
 
-    commands.BuildImage(self._build_root, self._build_config['board'],
+    if self._options.tests and (self._build_config['vm_tests'] or
+                                self._options.remote_ip):
+      mod_for_test = True
+    else:
+      mod_for_test = False
+
+    commands.BuildImage(self._build_root,
+                        self._build_config['board'],
+                        mod_for_test,
                         extra_env=env)
 
     if self._build_config['vm_tests']:
@@ -788,6 +796,17 @@ class TestStage(BuilderStage):
       finally:
         BuilderStage.test_tarball = commands.ArchiveTestResults(
             self._build_root, test_results_dir)
+
+
+class TestHWStage(BuilderStage):
+  """Stage that performs testing on actual HW."""
+  def _PerformStage(self):
+      commands.UpdateRemoteHW(self._build_root,
+                              self._build_config['board'],
+                              self._options.remote_ip)
+      commands.RemoteRunPyAuto(self._build_root,
+                              self._build_config['board'],
+                              self._options.remote_ip)
 
 
 class RemoteTestStatusStage(BuilderStage):

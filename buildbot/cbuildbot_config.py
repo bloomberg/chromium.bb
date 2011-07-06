@@ -130,7 +130,6 @@ default = {
   'build_tests' : True,
   'vm_tests' : True,
   'quick_vm' : True,
-
   'gs_path': GS_PATH_DEFAULT,
 
   'build_type': 'binary',
