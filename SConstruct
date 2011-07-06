@@ -2762,11 +2762,6 @@ nacl_env.Append(
     ####  ALPHABETICALLY SORTED ####
     ])
 
-nacl_env.Append(
-    BUILD_SCONSCRIPTS = [
-        'tools/tests/nacl.scons',
-    ])
-
 # ----------------------------------------------------------
 # Possibly install an sdk by downloading it
 # ----------------------------------------------------------
