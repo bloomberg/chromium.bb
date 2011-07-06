@@ -179,11 +179,6 @@ class HostContentSettingsMap
   // This should only be called on the UI thread.
   void SetBlockThirdPartyCookies(bool block);
 
-  // Resets all settings levels.
-  //
-  // This should only be called on the UI thread.
-  void ResetToDefaults();
-
   // Returns true if the default setting for the |content_type| is managed.
   bool IsDefaultContentSettingManaged(ContentSettingsType content_type) const;
 

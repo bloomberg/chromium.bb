@@ -52,9 +52,6 @@ TEST_F(PrefDefaultProviderTest, DefaultValues) {
                                 CONTENT_SETTING_BLOCK);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             provider.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES));
-  provider.ResetToDefaults();
-  EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            provider.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES));
 }
 
 TEST_F(PrefDefaultProviderTest, Observer) {

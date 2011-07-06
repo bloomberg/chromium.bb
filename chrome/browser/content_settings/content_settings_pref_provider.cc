@@ -233,20 +233,6 @@ bool PrefDefaultProvider::DefaultSettingIsManaged(
   return false;
 }
 
-void PrefDefaultProvider::ResetToDefaults() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  base::AutoLock lock(lock_);
-  default_content_settings_ = ContentSettings();
-  ForceDefaultsToBeExplicit();
-
-  if (!is_incognito_) {
-    PrefService* prefs = profile_->GetPrefs();
-    updating_preferences_ = true;
-    prefs->ClearPref(prefs::kDefaultContentSettings);
-    updating_preferences_ = false;
-  }
-}
-
 void PrefDefaultProvider::Observe(NotificationType type,
                                   const NotificationSource& source,
                                   const NotificationDetails& details) {
@@ -551,24 +537,6 @@ void PrefProvider::SetContentSetting(
   ContentSettingsDetails details(
       primary_pattern, secondary_pattern, content_type, std::string());
   NotifyObservers(details);
-}
-
-void PrefProvider::ResetToDefaults() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  {
-    base::AutoLock auto_lock(lock_);
-    value_map_.clear();
-    incognito_value_map_.clear();
-  }
-
-  if (!is_incognito_) {
-    PrefService* prefs = profile_->GetPrefs();
-    updating_preferences_ = true;
-    prefs->ClearPref(prefs::kContentSettingsPatternPairs);
-    prefs->ClearPref(prefs::kContentSettingsPatterns);
-    updating_preferences_ = false;
-  }
 }
 
 void PrefProvider::ClearAllContentSettingsRules(

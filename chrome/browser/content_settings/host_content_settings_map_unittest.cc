@@ -80,10 +80,12 @@ TEST_F(HostContentSettingsMapTest, DefaultValues) {
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetDefaultContentSetting(
                 CONTENT_SETTINGS_TYPE_POPUPS));
-  host_content_settings_map->ResetToDefaults();
-  EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            host_content_settings_map->GetDefaultContentSetting(
-                CONTENT_SETTINGS_TYPE_PLUGINS));
+}
+
+TEST_F(HostContentSettingsMapTest, IndividualSettings) {
+  TestingProfile profile;
+  HostContentSettingsMap* host_content_settings_map =
+      profile.GetHostContentSettingsMap();
 
   // Check returning individual settings.
   GURL host("http://example.com/");
@@ -179,40 +181,45 @@ TEST_F(HostContentSettingsMapTest, DefaultValues) {
                                                    "",
                                                    &host_settings);
   EXPECT_EQ(0U, host_settings.size());
-  host_content_settings_map->ResetToDefaults();
-  host_content_settings_map->GetSettingsForOneType(
-      CONTENT_SETTINGS_TYPE_PLUGINS, "", &host_settings);
-  EXPECT_EQ(0U, host_settings.size());
+}
+
+TEST_F(HostContentSettingsMapTest, Clear) {
+  TestingProfile profile;
+  HostContentSettingsMap* host_content_settings_map =
+      profile.GetHostContentSettingsMap();
 
   // Check clearing one type.
-  ContentSettingsPattern pattern3 =
+  ContentSettingsPattern pattern =
+       ContentSettingsPattern::FromString("[*.]example.org");
+  ContentSettingsPattern pattern2 =
       ContentSettingsPattern::FromString("[*.]example.net");
   host_content_settings_map->SetContentSetting(
-      pattern3,
-      ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTINGS_TYPE_IMAGES,
-      std::string(),
-      CONTENT_SETTING_BLOCK);
-  host_content_settings_map->SetContentSetting(
       pattern2,
       ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_IMAGES,
       std::string(),
       CONTENT_SETTING_BLOCK);
   host_content_settings_map->SetContentSetting(
-      pattern2,
+      pattern,
+      ContentSettingsPattern::Wildcard(),
+      CONTENT_SETTINGS_TYPE_IMAGES,
+      std::string(),
+      CONTENT_SETTING_BLOCK);
+  host_content_settings_map->SetContentSetting(
+      pattern,
       ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_PLUGINS,
       std::string(),
       CONTENT_SETTING_BLOCK);
   host_content_settings_map->SetContentSetting(
-      pattern3,
+      pattern2,
       ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_IMAGES,
       std::string(),
       CONTENT_SETTING_BLOCK);
   host_content_settings_map->ClearSettingsForOneType(
       CONTENT_SETTINGS_TYPE_IMAGES);
+  HostContentSettingsMap::SettingsForOneType host_settings;
   host_content_settings_map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_IMAGES,
                                                    "",
                                                    &host_settings);
@@ -1061,34 +1068,6 @@ TEST_F(HostContentSettingsMapTest, SettingDefaultContentSettingsWhenManaged) {
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetDefaultContentSetting(
                 CONTENT_SETTINGS_TYPE_PLUGINS));
-}
-
-TEST_F(HostContentSettingsMapTest, ResetToDefaultsWhenManaged) {
-  TestingProfile profile;
-  HostContentSettingsMap* host_content_settings_map =
-      profile.GetHostContentSettingsMap();
-  TestingPrefService* prefs = profile.GetTestingPrefService();
-
-  prefs->SetManagedPref(prefs::kBlockThirdPartyCookies,
-                        Value::CreateBooleanValue(true));
-  prefs->SetUserPref(prefs::kBlockThirdPartyCookies,
-                     Value::CreateBooleanValue(true));
-
-  EXPECT_TRUE(host_content_settings_map->IsBlockThirdPartyCookiesManaged());
-  EXPECT_TRUE(host_content_settings_map->BlockThirdPartyCookies());
-
-  // Reset to the default value (false).
-  host_content_settings_map->ResetToDefaults();
-  // Since the preference BlockThirdPartyCookies is managed the
-  // HostContentSettingsMap should still return the managed value which is true.
-  EXPECT_TRUE(host_content_settings_map->IsBlockThirdPartyCookiesManaged());
-  EXPECT_TRUE(host_content_settings_map->BlockThirdPartyCookies());
-
-  // After unsetting the managed value for the preference BlockThirdPartyCookies
-  // the default value should be returned now.
-  prefs->RemoveManagedPref(prefs::kBlockThirdPartyCookies);
-  EXPECT_FALSE(host_content_settings_map->IsBlockThirdPartyCookiesManaged());
-  EXPECT_FALSE(host_content_settings_map->BlockThirdPartyCookies());
 }
 
 // Tests for cookie content settings.

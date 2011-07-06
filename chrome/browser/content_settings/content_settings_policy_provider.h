@@ -37,7 +37,6 @@ class PolicyDefaultProvider : public DefaultProviderInterface,
       ContentSettingsType content_type) const;
   virtual void UpdateDefaultSetting(ContentSettingsType content_type,
                                     ContentSetting setting);
-  virtual void ResetToDefaults();
   virtual bool DefaultSettingIsManaged(ContentSettingsType content_type) const;
 
   static void RegisterUserPrefs(PrefService* prefs);
@@ -112,8 +111,6 @@ class PolicyProvider : public ProviderInterface,
 
   virtual void ClearAllContentSettingsRules(
       ContentSettingsType content_type);
-
-  virtual void ResetToDefaults();
 
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,

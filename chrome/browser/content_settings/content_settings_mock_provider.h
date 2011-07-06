@@ -28,7 +28,6 @@ class MockDefaultProvider : public DefaultProviderInterface {
       ContentSettingsType content_type) const;
   virtual void UpdateDefaultSetting(ContentSettingsType content_type,
                                     ContentSetting setting);
-  virtual void ResetToDefaults();
   virtual bool DefaultSettingIsManaged(ContentSettingsType content_type) const;
 
  private:
@@ -76,8 +75,6 @@ class MockProvider : public ProviderInterface {
 
   virtual void ClearAllContentSettingsRules(
       ContentSettingsType content_type) {}
-
-  virtual void ResetToDefaults() {}
 
   // Accessors
   void set_requesting_url_pattern(ContentSettingsPattern pattern) {

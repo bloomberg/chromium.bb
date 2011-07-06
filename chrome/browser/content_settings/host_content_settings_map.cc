@@ -446,39 +446,6 @@ void HostContentSettingsMap::SetBlockThirdPartyCookies(bool block) {
   profile_->GetPrefs()->SetBoolean(prefs::kBlockThirdPartyCookies, block);
 }
 
-void HostContentSettingsMap::ResetToDefaults() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  {
-    base::AutoLock auto_lock(lock_);
-    for (DefaultProviderIterator provider =
-             default_content_settings_providers_.begin();
-         provider != default_content_settings_providers_.end(); ++provider) {
-      (*provider)->ResetToDefaults();
-    }
-
-    for (ProviderIterator provider = content_settings_providers_.begin();
-         provider != content_settings_providers_.end();
-         ++provider) {
-      (*provider)->ResetToDefaults();
-    }
-
-    // Don't reset block third party cookies if they are managed.
-    if (!IsBlockThirdPartyCookiesManaged())
-      block_third_party_cookies_ = false;
-  }
-
-  if (!is_off_the_record_) {
-    PrefService* prefs = profile_->GetPrefs();
-    updating_preferences_ = true;
-    // If the block third party cookies preference is managed we still must
-    // clear it in order to restore the default value for later when the
-    // preference is not managed anymore.
-    prefs->ClearPref(prefs::kBlockThirdPartyCookies);
-    updating_preferences_ = false;
-  }
-}
-
 void HostContentSettingsMap::Observe(NotificationType type,
                                      const NotificationSource& source,
                                      const NotificationDetails& details) {

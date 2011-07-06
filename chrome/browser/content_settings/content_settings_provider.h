@@ -38,9 +38,6 @@ class DefaultProviderInterface {
   virtual void UpdateDefaultSetting(ContentSettingsType content_type,
                                     ContentSetting setting) = 0;
 
-  // Resets the state of the provider to the default.
-  virtual void ResetToDefaults() = 0;
-
   // True if the default setting for the |content_type| is policy managed, i.e.,
   // there shouldn't be any UI shown to modify this setting.
   virtual bool DefaultSettingIsManaged(
@@ -113,12 +110,6 @@ class ProviderInterface {
   // ShutdownOnUIThread has been called.
   virtual void ClearAllContentSettingsRules(
       ContentSettingsType content_type) = 0;
-
-  // Resets all content settings to CONTENT_SETTINGS_DEFAULT.
-  //
-  // This should only be called on the UI thread, and not after
-  // ShutdownOnUIThread has been called.
-  virtual void ResetToDefaults() = 0;
 
   // Detaches the Provider from all Profile-related objects like PrefService.
   // This methods needs to be called before destroying the Profile.

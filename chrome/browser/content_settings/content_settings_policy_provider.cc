@@ -152,9 +152,6 @@ bool PolicyDefaultProvider::DefaultSettingIsManaged(
   }
 }
 
-void PolicyDefaultProvider::ResetToDefaults() {
-}
-
 void PolicyDefaultProvider::Observe(NotificationType type,
                                     const NotificationSource& source,
                                     const NotificationDetails& details) {
@@ -443,9 +440,6 @@ void PolicyProvider::GetAllContentSettingsRules(
 
 void PolicyProvider::ClearAllContentSettingsRules(
     ContentSettingsType content_type) {
-}
-
-void PolicyProvider::ResetToDefaults() {
 }
 
 void PolicyProvider::UnregisterObservers() {

@@ -156,10 +156,6 @@ void NotificationProvider::ClearAllContentSettingsRules(
     ResetAllOrigins();
 }
 
-void NotificationProvider::ResetToDefaults() {
-  ResetAllOrigins();
-}
-
 void NotificationProvider::Observe(NotificationType type,
                                    const NotificationSource& source,
                                    const NotificationDetails& details) {
