@@ -187,9 +187,28 @@ class GLES2ImplementationTest : public testing::Test {
   static const int32 kTransferBufferId =
       GLES2MockCommandBufferHelper::kTransferBufferId;
   static const uint8 kInitialValue = 0xBD;
+  static const GLint kMaxCombinedTextureImageUnits = 8;
+  static const GLint kMaxCubeMapTextureSize = 64;
+  static const GLint kMaxFragmentUniformVectors = 16;
+  static const GLint kMaxRenderbufferSize = 64;
+  static const GLint kMaxTextureImageUnits = 8;
+  static const GLint kMaxTextureSize = 128;
+  static const GLint kMaxVaryingVectors = 8;
   static const GLint kMaxVertexAttribs = 8;
+  static const GLint kMaxVertexTextureImageUnits = 0;
+  static const GLint kMaxVertexUniformVectors = 128;
+  static const GLint kNumCompressedTextureFormats = 0;
+  static const GLint kNumShaderBinaryFormats = 0;
+
+  GLES2ImplementationTest()
+      : commands_(NULL),
+        token_(0),
+        offset_(0) {
+  }
 
   virtual void SetUp() {
+    offset_ = GLES2Implementation::kStartingOffset;
+
     command_buffer_.reset(new MockGLES2CommandBuffer());
     command_buffer_->Initialize(kCommandBufferSizeBytes);
 
@@ -201,11 +220,30 @@ class GLES2ImplementationTest : public testing::Test {
     helper_.reset(new GLES2CmdHelper(command_buffer_.get()));
     helper_->Initialize(kCommandBufferSizeBytes);
 
-    #if defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
-      EXPECT_CALL(*command_buffer_, OnFlush(_))
-          .WillOnce(SetMemory(SizedResultHelper<GLint>(kMaxVertexAttribs)))
-          .RetiresOnSaturation();
-    #endif
+    GLES2Implementation::GLState state;
+    state.max_combined_texture_image_units = kMaxCombinedTextureImageUnits;
+    state.max_cube_map_texture_size = kMaxCubeMapTextureSize;
+    state.max_fragment_uniform_vectors = kMaxFragmentUniformVectors;
+    state.max_renderbuffer_size = kMaxRenderbufferSize;
+    state.max_texture_image_units = kMaxTextureImageUnits;
+    state.max_texture_size = kMaxTextureSize;
+    state.max_varying_vectors = kMaxVaryingVectors;
+    state.max_vertex_attribs = kMaxVertexAttribs;
+    state.max_vertex_texture_image_units = kMaxVertexTextureImageUnits;
+    state.max_vertex_uniform_vectors = kMaxVertexUniformVectors;
+    state.num_compressed_texture_formats = kNumCompressedTextureFormats;
+    state.num_shader_binary_formats = kNumShaderBinaryFormats;
+
+    // This just happens to work for now because GLState has 1 GLint per
+    // state. If GLState gets more complicated this code will need to get
+    // more complicated.
+    AllocateTransferBuffer(sizeof(state));  // in
+    uint32 offset = AllocateTransferBuffer(sizeof(state));  // out
+
+    EXPECT_CALL(*command_buffer_, OnFlush(_))
+        .WillOnce(SetMemoryAtOffset(offset, state))
+        .RetiresOnSaturation();
+    GetNextToken();  // eat the token that starting up will use.
 
     gl_.reset(new GLES2Implementation(
         helper_.get(),
@@ -244,12 +282,27 @@ class GLES2ImplementationTest : public testing::Test {
            ~(GLES2Implementation::kAlignment - 1);
   }
 
+  int GetNextToken() {
+    return ++token_;
+  }
+
+  uint32 AllocateTransferBuffer(size_t size) {
+    if (offset_ + size > kTransferBufferSize) {
+      offset_ = GLES2Implementation::kStartingOffset;
+    }
+    uint32 offset = offset_;
+    offset_ += RoundToAlignment(size);
+    return offset;
+  }
+
   Buffer transfer_buffer_;
   CommandBufferEntry* commands_;
   scoped_ptr<MockGLES2CommandBuffer> command_buffer_;
   scoped_ptr<GLES2CmdHelper> helper_;
   Sequence sequence_;
   scoped_ptr<GLES2Implementation> gl_;
+  int token_;
+  uint32 offset_;
 };
 
 // GCC requires these declarations, but MSVC requires they not be present
@@ -269,6 +322,7 @@ TEST_F(GLES2ImplementationTest, ShaderSource) {
   const size_t kSourceSize = kString1Size + kString2Size + kString3Size;
   const size_t kPaddedString1Size = RoundToAlignment(kString1Size);
   const size_t kPaddedString2Size = RoundToAlignment(kString2Size);
+  const size_t kPaddedString3Size = RoundToAlignment(kString3Size);
   struct Cmds {
     cmd::SetBucketSize set_bucket_size;
     cmd::SetBucketData set_bucket_data1;
@@ -280,22 +334,21 @@ TEST_F(GLES2ImplementationTest, ShaderSource) {
     ShaderSourceBucket shader_source_bucket;
     cmd::SetBucketSize clear_bucket_size;
   };
-  int32 token = 1;
-  uint32 offset = GLES2Implementation::kStartingOffset;
   Cmds expected;
   expected.set_bucket_size.Init(kBucketId, kSourceSize);
   expected.set_bucket_data1.Init(
-      kBucketId, 0, kString1Size, kTransferBufferId, offset);
-  expected.set_token1.Init(token++);
+      kBucketId, 0, kString1Size, kTransferBufferId,
+      AllocateTransferBuffer(kPaddedString1Size));
+  expected.set_token1.Init(GetNextToken());
   expected.set_bucket_data2.Init(
       kBucketId, kString1Size, kString2Size, kTransferBufferId,
-      offset + kPaddedString1Size);
-  expected.set_token2.Init(token++);
+      AllocateTransferBuffer(kPaddedString2Size));
+  expected.set_token2.Init(GetNextToken());
   expected.set_bucket_data3.Init(
       kBucketId, kString1Size + kString2Size,
       kString3Size, kTransferBufferId,
-      offset + kPaddedString1Size + kPaddedString2Size);
-  expected.set_token3.Init(token++);
+      AllocateTransferBuffer(kPaddedString3Size));
+  expected.set_token3.Init(GetNextToken());
   expected.shader_source_bucket.Init(kShaderId, kBucketId);
   expected.clear_bucket_size.Init(kBucketId, 0);
   const char* strings[] = {
@@ -319,15 +372,14 @@ TEST_F(GLES2ImplementationTest, GetShaderSource) {
     cmd::SetToken set_token1;
     cmd::SetBucketSize set_bucket_size2;
   };
-  int32 token = 1;
-  uint32 offset = GLES2Implementation::kStartingOffset;
+  uint32 offset = AllocateTransferBuffer(sizeof(kString));
   Cmds expected;
   expected.set_bucket_size1.Init(kBucketId, 0);
   expected.get_shader_source.Init(kShaderId, kBucketId);
   expected.get_bucket_size.Init(kBucketId, kTransferBufferId, 0);
   expected.get_bucket_data.Init(
       kBucketId, 0, sizeof(kString), kTransferBufferId, offset);
-  expected.set_token1.Init(token++);
+  expected.set_token1.Init(GetNextToken());
   expected.set_bucket_size2.Init(kBucketId, 0);
   char buf[sizeof(kString) + 1];
   memset(buf, kBad, sizeof(buf));
@@ -382,21 +434,21 @@ TEST_F(GLES2ImplementationTest, DrawArraysClientSideBuffers) {
   const GLsizei kEmuOffset2 = kSize1;
 
   const GLsizei kTotalSize = kSize1 + kSize2;
-  int32 token = 1;
-  uint32 offset = GLES2Implementation::kStartingOffset;
   Cmds expected;
   expected.enable1.Init(kAttribIndex1);
   expected.enable2.Init(kAttribIndex2);
   expected.bind_to_emu.Init(GL_ARRAY_BUFFER, kEmuBufferId);
   expected.set_size.Init(GL_ARRAY_BUFFER, kTotalSize, 0, 0, GL_DYNAMIC_DRAW);
   expected.copy_data1.Init(
-      GL_ARRAY_BUFFER, kEmuOffset1, kSize1, kTransferBufferId, offset);
-  expected.set_token1.Init(token++);
+      GL_ARRAY_BUFFER, kEmuOffset1, kSize1, kTransferBufferId,
+      AllocateTransferBuffer(kSize1));
+  expected.set_token1.Init(GetNextToken());
   expected.set_pointer1.Init(kAttribIndex1, kNumComponents1,
                              GL_FLOAT, GL_FALSE, 0, kEmuOffset1);
   expected.copy_data2.Init(
-      GL_ARRAY_BUFFER, kEmuOffset2, kSize2, kTransferBufferId, offset + kSize1);
-  expected.set_token2.Init(token++);
+      GL_ARRAY_BUFFER, kEmuOffset2, kSize2, kTransferBufferId,
+      AllocateTransferBuffer(kSize2));
+  expected.set_token2.Init(GetNextToken());
   expected.set_pointer2.Init(kAttribIndex2, kNumComponents2,
                              GL_FLOAT, GL_FALSE, 0, kEmuOffset2);
   expected.draw.Init(GL_POINTS, kFirst, kCount);
@@ -457,8 +509,6 @@ TEST_F(GLES2ImplementationTest, DrawElementsClientSideBuffers) {
   const GLsizei kEmuOffset2 = kSize1;
 
   const GLsizei kTotalSize = kSize1 + kSize2;
-  int32 token = 1;
-  uint32 offset = GLES2Implementation::kStartingOffset;
   Cmds expected;
   expected.enable1.Init(kAttribIndex1);
   expected.enable2.Init(kAttribIndex2);
@@ -466,20 +516,21 @@ TEST_F(GLES2ImplementationTest, DrawElementsClientSideBuffers) {
   expected.set_index_size.Init(
       GL_ELEMENT_ARRAY_BUFFER, kIndexSize, 0, 0, GL_DYNAMIC_DRAW);
   expected.copy_data0.Init(
-      GL_ELEMENT_ARRAY_BUFFER, 0, kIndexSize, kTransferBufferId, offset);
-  offset += kIndexSize;
-  expected.set_token0.Init(token++);
+      GL_ELEMENT_ARRAY_BUFFER, 0, kIndexSize, kTransferBufferId,
+      AllocateTransferBuffer(kIndexSize));
+  expected.set_token0.Init(GetNextToken());
   expected.bind_to_emu.Init(GL_ARRAY_BUFFER, kEmuBufferId);
   expected.set_size.Init(GL_ARRAY_BUFFER, kTotalSize, 0, 0, GL_DYNAMIC_DRAW);
   expected.copy_data1.Init(
-      GL_ARRAY_BUFFER, kEmuOffset1, kSize1, kTransferBufferId, offset);
-  offset += kSize1;
-  expected.set_token1.Init(token++);
+      GL_ARRAY_BUFFER, kEmuOffset1, kSize1, kTransferBufferId,
+      AllocateTransferBuffer(kSize1));
+  expected.set_token1.Init(GetNextToken());
   expected.set_pointer1.Init(kAttribIndex1, kNumComponents1,
                              GL_FLOAT, GL_FALSE, 0, kEmuOffset1);
   expected.copy_data2.Init(
-      GL_ARRAY_BUFFER, kEmuOffset2, kSize2, kTransferBufferId, offset);
-  expected.set_token2.Init(token++);
+      GL_ARRAY_BUFFER, kEmuOffset2, kSize2, kTransferBufferId,
+      AllocateTransferBuffer(kSize2));
+  expected.set_token2.Init(GetNextToken());
   expected.set_pointer2.Init(kAttribIndex2, kNumComponents2,
                              GL_FLOAT, GL_FALSE, 0, kEmuOffset2);
   expected.draw.Init(GL_POINTS, kCount, GL_UNSIGNED_SHORT, 0);
@@ -536,8 +587,6 @@ TEST_F(GLES2ImplementationTest,
   const GLsizei kEmuOffset2 = kSize1;
 
   const GLsizei kTotalSize = kSize1 + kSize2;
-  int32 token = 1;
-  uint32 offset = GLES2Implementation::kStartingOffset;
   Cmds expected;
   expected.enable1.Init(kAttribIndex1);
   expected.enable2.Init(kAttribIndex2);
@@ -547,14 +596,15 @@ TEST_F(GLES2ImplementationTest,
   expected.bind_to_emu.Init(GL_ARRAY_BUFFER, kEmuBufferId);
   expected.set_size.Init(GL_ARRAY_BUFFER, kTotalSize, 0, 0, GL_DYNAMIC_DRAW);
   expected.copy_data1.Init(
-      GL_ARRAY_BUFFER, kEmuOffset1, kSize1, kTransferBufferId, offset);
-  offset += kSize1;
-  expected.set_token1.Init(token++);
+      GL_ARRAY_BUFFER, kEmuOffset1, kSize1, kTransferBufferId,
+      AllocateTransferBuffer(kSize1));
+  expected.set_token1.Init(GetNextToken());
   expected.set_pointer1.Init(kAttribIndex1, kNumComponents1,
                              GL_FLOAT, GL_FALSE, 0, kEmuOffset1);
   expected.copy_data2.Init(
-      GL_ARRAY_BUFFER, kEmuOffset2, kSize2, kTransferBufferId, offset);
-  expected.set_token2.Init(token++);
+      GL_ARRAY_BUFFER, kEmuOffset2, kSize2, kTransferBufferId,
+      AllocateTransferBuffer(kSize2));
+  expected.set_token2.Init(GetNextToken());
   expected.set_pointer2.Init(kAttribIndex2, kNumComponents2,
                              GL_FLOAT, GL_FALSE, 0, kEmuOffset2);
   expected.draw.Init(GL_POINTS, kCount, GL_UNSIGNED_SHORT, kIndexOffset);
@@ -757,17 +807,19 @@ TEST_F(GLES2ImplementationTest, ReadPixels2Reads) {
   const GLenum kFormat = GL_RGBA;
   const GLenum kType = GL_UNSIGNED_BYTE;
 
-  int32 token = 1;
-  uint32 offset = GLES2Implementation::kStartingOffset;
   Cmds expected;
-  expected.read1.Init(0, 0, kWidth, kHeight / 2, kFormat, kType,
-                      kTransferBufferId, offset,
-                      kTransferBufferId, 0);
-  expected.set_token1.Init(token++);
-  expected.read2.Init(0, kHeight / 2, kWidth, kHeight / 2, kFormat, kType,
-                      kTransferBufferId, offset,
-                      kTransferBufferId, 0);
-  expected.set_token2.Init(token++);
+  expected.read1.Init(
+      0, 0, kWidth, kHeight / 2, kFormat, kType,
+      kTransferBufferId,
+      AllocateTransferBuffer(kWidth * kHeight / 2 * kBytesPerPixel),
+      kTransferBufferId, 0);
+  expected.set_token1.Init(GetNextToken());
+  expected.read2.Init(
+      0, kHeight / 2, kWidth, kHeight / 2, kFormat, kType,
+      kTransferBufferId,
+      AllocateTransferBuffer(kWidth * kHeight / 2 * kBytesPerPixel),
+      kTransferBufferId, 0);
+  expected.set_token2.Init(GetNextToken());
   scoped_array<int8> buffer(new int8[kWidth * kHeight * kBytesPerPixel]);
 
   EXPECT_CALL(*command_buffer_, OnFlush(_))
@@ -790,13 +842,13 @@ TEST_F(GLES2ImplementationTest, ReadPixelsBadFormatType) {
   const GLenum kFormat = 0;
   const GLenum kType = 0;
 
-  int32 token = 1;
-  uint32 offset = GLES2Implementation::kStartingOffset;
   Cmds expected;
-  expected.read.Init(0, 0, kWidth, kHeight / 2, kFormat, kType,
-                     kTransferBufferId, offset,
-                     kTransferBufferId, 0);
-  expected.set_token.Init(token++);
+  expected.read.Init(
+      0, 0, kWidth, kHeight / 2, kFormat, kType,
+      kTransferBufferId,
+      AllocateTransferBuffer(kWidth * kHeight * kBytesPerPixel),
+      kTransferBufferId, 0);
+  expected.set_token.Init(GetNextToken());
   scoped_array<int8> buffer(new int8[kWidth * kHeight * kBytesPerPixel]);
 
   EXPECT_CALL(*command_buffer_, OnFlush(_))
@@ -815,12 +867,11 @@ TEST_F(GLES2ImplementationTest, MapUnmapBufferSubDataCHROMIUM) {
   const GLintptr kOffset = 15;
   const GLsizeiptr kSize = 16;
 
-  int32 token = 1;
   uint32 offset = 0;
   Cmds expected;
   expected.buf.Init(
     kTarget, kOffset, kSize, kTransferBufferId, offset);
-  expected.set_token.Init(token++);
+  expected.set_token.Init(GetNextToken());
 
   void* mem = gl_->MapBufferSubDataCHROMIUM(
       kTarget, kOffset, kSize, GL_WRITE_ONLY);
@@ -870,13 +921,12 @@ TEST_F(GLES2ImplementationTest, MapUnmapTexSubImage2DCHROMIUM) {
   const GLenum kFormat = GL_RGBA;
   const GLenum kType = GL_UNSIGNED_BYTE;
 
-  int32 token = 1;
   uint32 offset = 0;
   Cmds expected;
   expected.tex.Init(
       GL_TEXTURE_2D, kLevel, kXOffset, kYOffset, kWidth, kHeight, kFormat,
       kType, kTransferBufferId, offset, GL_FALSE);
-  expected.set_token.Init(token++);
+  expected.set_token.Init(GetNextToken());
 
   void* mem = gl_->MapTexSubImage2DCHROMIUM(
       GL_TEXTURE_2D,
@@ -1005,14 +1055,14 @@ TEST_F(GLES2ImplementationTest, GetMultipleIntegervCHROMIUMValidArgs) {
   };
   const GLsizei kNumPnames = arraysize(pnames);
   const GLsizeiptr kResultsSize = num_results * sizeof(results[0]);
-  const uint32 kPnamesOffset = GLES2Implementation::kStartingOffset;
-  const uint32 kResultsOffset = kPnamesOffset + kNumPnames * sizeof(pnames[0]);
-  int32 token = 1;
+  const uint32 kPnamesOffset =
+      AllocateTransferBuffer(kNumPnames * sizeof(pnames[0]));
+  const uint32 kResultsOffset = AllocateTransferBuffer(kResultsSize);
   Cmds expected;
   expected.get_multiple.Init(
       kTransferBufferId, kPnamesOffset, kNumPnames,
       kTransferBufferId, kResultsOffset, kResultsSize);
-  expected.set_token.Init(token++);
+  expected.set_token.Init(GetNextToken());
 
   const GLint kSentinel = 0x12345678;
   memset(results, 0, sizeof(results));

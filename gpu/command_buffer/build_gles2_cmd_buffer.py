@@ -1097,7 +1097,10 @@ _ENUM_LISTS = {
 #               when they can not be automatically determined.
 
 _FUNCTION_INFO = {
-  'ActiveTexture': {'decoder_func': 'DoActiveTexture', 'unit_test': False},
+  'ActiveTexture': {
+    'decoder_func': 'DoActiveTexture',
+    'unit_test': False,
+  },
   'AttachShader': {'decoder_func': 'DoAttachShader'},
   'BindAttribLocation': {'type': 'GLchar', 'bucket': True, 'needs_size': True},
   'BindBuffer': {
@@ -3039,7 +3042,8 @@ class DeleteHandler(TypeHandler):
     self.WriteClientGLCallLog(func, file)
     for arg in func.GetOriginalArgs():
       arg.WriteClientSideValidationCode(file, func)
-    file.Write("  GPU_DCHECK(%s != 0);\n" % func.GetOriginalArgs()[-1].name)
+    file.Write(
+        "  GPU_CLIENT_DCHECK(%s != 0);\n" % func.GetOriginalArgs()[-1].name)
     file.Write("  program_and_shader_id_handler_->FreeIds(1, &%s);\n" %
                func.GetOriginalArgs()[-1].name)
     file.Write("  helper_->%s(%s);\n" %
@@ -3343,7 +3347,12 @@ class GETnHandler(TypeHandler):
       all_but_last_args = func.GetOriginalArgs()[:-1]
       arg_string = (
           ", ".join(["%s" % arg.name for arg in all_but_last_args]))
-      code = """  typedef %(func_name)s::Result Result;
+      all_arg_string = (
+          ", ".join(["%s" % arg.name for arg in func.GetOriginalArgs()]))
+      code = """  if (%(func_name)sHelper(%(all_arg_string)s)) {
+    return;
+  }
+  typedef %(func_name)s::Result Result;
   Result* result = GetResultAs<Result*>();
   result->SetNumResults(0);
   helper_->%(func_name)s(%(arg_string)s,
@@ -3360,6 +3369,7 @@ class GETnHandler(TypeHandler):
       file.Write(code % {
           'func_name': func.name,
           'arg_string': arg_string,
+          'all_arg_string': all_arg_string,
         })
 
   def WriteServiceUnitTest(self, func, file):
@@ -4368,7 +4378,7 @@ class Argument(object):
     if len(parts) > 1:
       return
     if parts[0] in self.need_validation_:
-      file.Write("  GL_CLIENT_VALIDATE_DESTINATION_INITALIZATION(%s, %s);\n" %
+      file.Write("  GPU_CLIENT_VALIDATE_DESTINATION_INITALIZATION(%s, %s);\n" %
           (self.type[:-1], self.name))
 
 

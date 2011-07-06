@@ -219,7 +219,7 @@ void DeleteFramebuffers(GLsizei n, const GLuint* framebuffers) {
 
 void DeleteProgram(GLuint program) {
   GPU_CLIENT_LOG("[" << this << "] glDeleteProgram(" << program << ")");
-  GPU_DCHECK(program != 0);
+  GPU_CLIENT_DCHECK(program != 0);
   program_and_shader_id_handler_->FreeIds(1, &program);
   helper_->DeleteProgram(program);
 }
@@ -246,7 +246,7 @@ void DeleteRenderbuffers(GLsizei n, const GLuint* renderbuffers) {
 
 void DeleteShader(GLuint shader) {
   GPU_CLIENT_LOG("[" << this << "] glDeleteShader(" << shader << ")");
-  GPU_DCHECK(shader != 0);
+  GPU_CLIENT_DCHECK(shader != 0);
   program_and_shader_id_handler_->FreeIds(1, &shader);
   helper_->DeleteShader(shader);
 }
@@ -409,8 +409,11 @@ void GetAttachedShaders(
 GLint GetAttribLocation(GLuint program, const char* name);
 
 void GetBooleanv(GLenum pname, GLboolean* params) {
-  GL_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLboolean, params);
+  GPU_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLboolean, params);
   GPU_CLIENT_LOG("[" << this << "] glGetBooleanv(" << GLES2Util::GetStringGLState(pname) << ", " << static_cast<const void*>(params) << ")");  // NOLINT
+  if (GetBooleanvHelper(pname, params)) {
+    return;
+  }
   typedef GetBooleanv::Result Result;
   Result* result = GetResultAs<Result*>();
   result->SetNumResults(0);
@@ -425,8 +428,11 @@ void GetBooleanv(GLenum pname, GLboolean* params) {
   });
 }
 void GetBufferParameteriv(GLenum target, GLenum pname, GLint* params) {
-  GL_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLint, params);
+  GPU_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLint, params);
   GPU_CLIENT_LOG("[" << this << "] glGetBufferParameteriv(" << GLES2Util::GetStringBufferTarget(target) << ", " << GLES2Util::GetStringBufferParameter(pname) << ", " << static_cast<const void*>(params) << ")");  // NOLINT
+  if (GetBufferParameterivHelper(target, pname, params)) {
+    return;
+  }
   typedef GetBufferParameteriv::Result Result;
   Result* result = GetResultAs<Result*>();
   result->SetNumResults(0);
@@ -445,6 +451,9 @@ GLenum GetError();
 void GetFloatv(GLenum pname, GLfloat* params) {
   GPU_CLIENT_LOG("[" << this << "] glGetFloatv(" << GLES2Util::GetStringGLState(
       pname) << ", " << static_cast<const void*>(params) << ")");
+  if (GetFloatvHelper(pname, params)) {
+    return;
+  }
   typedef GetFloatv::Result Result;
   Result* result = GetResultAs<Result*>();
   result->SetNumResults(0);
@@ -460,8 +469,12 @@ void GetFloatv(GLenum pname, GLfloat* params) {
 }
 void GetFramebufferAttachmentParameteriv(
     GLenum target, GLenum attachment, GLenum pname, GLint* params) {
-  GL_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLint, params);
+  GPU_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLint, params);
   GPU_CLIENT_LOG("[" << this << "] glGetFramebufferAttachmentParameteriv(" << GLES2Util::GetStringFrameBufferTarget(target) << ", " << GLES2Util::GetStringAttachment(attachment) << ", " << GLES2Util::GetStringFrameBufferParameter(pname) << ", " << static_cast<const void*>(params) << ")");  // NOLINT
+  if (GetFramebufferAttachmentParameterivHelper(
+      target, attachment, pname, params)) {
+    return;
+  }
   typedef GetFramebufferAttachmentParameteriv::Result Result;
   Result* result = GetResultAs<Result*>();
   result->SetNumResults(0);
@@ -476,8 +489,11 @@ void GetFramebufferAttachmentParameteriv(
   });
 }
 void GetIntegerv(GLenum pname, GLint* params) {
-  GL_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLint, params);
+  GPU_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLint, params);
   GPU_CLIENT_LOG("[" << this << "] glGetIntegerv(" << GLES2Util::GetStringGLState(pname) << ", " << static_cast<const void*>(params) << ")");  // NOLINT
+  if (GetIntegervHelper(pname, params)) {
+    return;
+  }
   typedef GetIntegerv::Result Result;
   Result* result = GetResultAs<Result*>();
   result->SetNumResults(0);
@@ -492,8 +508,11 @@ void GetIntegerv(GLenum pname, GLint* params) {
   });
 }
 void GetProgramiv(GLuint program, GLenum pname, GLint* params) {
-  GL_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLint, params);
+  GPU_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLint, params);
   GPU_CLIENT_LOG("[" << this << "] glGetProgramiv(" << program << ", " << GLES2Util::GetStringProgramParameter(pname) << ", " << static_cast<const void*>(params) << ")");  // NOLINT
+  if (GetProgramivHelper(program, pname, params)) {
+    return;
+  }
   typedef GetProgramiv::Result Result;
   Result* result = GetResultAs<Result*>();
   result->SetNumResults(0);
@@ -509,7 +528,7 @@ void GetProgramiv(GLuint program, GLenum pname, GLint* params) {
 }
 void GetProgramInfoLog(
     GLuint program, GLsizei bufsize, GLsizei* length, char* infolog) {
-  GL_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLsizei, length);
+  GPU_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLsizei, length);
   GPU_CLIENT_LOG("[" << this << "] glGetProgramInfoLog" << "("
       << program << ", "
       << bufsize << ", "
@@ -532,8 +551,11 @@ void GetProgramInfoLog(
   }
 }
 void GetRenderbufferParameteriv(GLenum target, GLenum pname, GLint* params) {
-  GL_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLint, params);
+  GPU_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLint, params);
   GPU_CLIENT_LOG("[" << this << "] glGetRenderbufferParameteriv(" << GLES2Util::GetStringRenderBufferTarget(target) << ", " << GLES2Util::GetStringRenderBufferParameter(pname) << ", " << static_cast<const void*>(params) << ")");  // NOLINT
+  if (GetRenderbufferParameterivHelper(target, pname, params)) {
+    return;
+  }
   typedef GetRenderbufferParameteriv::Result Result;
   Result* result = GetResultAs<Result*>();
   result->SetNumResults(0);
@@ -548,8 +570,11 @@ void GetRenderbufferParameteriv(GLenum target, GLenum pname, GLint* params) {
   });
 }
 void GetShaderiv(GLuint shader, GLenum pname, GLint* params) {
-  GL_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLint, params);
+  GPU_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLint, params);
   GPU_CLIENT_LOG("[" << this << "] glGetShaderiv(" << shader << ", " << GLES2Util::GetStringShaderParameter(pname) << ", " << static_cast<const void*>(params) << ")");  // NOLINT
+  if (GetShaderivHelper(shader, pname, params)) {
+    return;
+  }
   typedef GetShaderiv::Result Result;
   Result* result = GetResultAs<Result*>();
   result->SetNumResults(0);
@@ -565,7 +590,7 @@ void GetShaderiv(GLuint shader, GLenum pname, GLint* params) {
 }
 void GetShaderInfoLog(
     GLuint shader, GLsizei bufsize, GLsizei* length, char* infolog) {
-  GL_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLsizei, length);
+  GPU_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLsizei, length);
   GPU_CLIENT_LOG("[" << this << "] glGetShaderInfoLog" << "("
       << shader << ", "
       << bufsize << ", "
@@ -592,7 +617,7 @@ void GetShaderPrecisionFormat(
 
 void GetShaderSource(
     GLuint shader, GLsizei bufsize, GLsizei* length, char* source) {
-  GL_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLsizei, length);
+  GPU_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLsizei, length);
   GPU_CLIENT_LOG("[" << this << "] glGetShaderSource" << "("
       << shader << ", "
       << bufsize << ", "
@@ -618,6 +643,9 @@ const GLubyte* GetString(GLenum name);
 
 void GetTexParameterfv(GLenum target, GLenum pname, GLfloat* params) {
   GPU_CLIENT_LOG("[" << this << "] glGetTexParameterfv(" << GLES2Util::GetStringTextureTarget(target) << ", " << GLES2Util::GetStringTextureParameter(pname) << ", " << static_cast<const void*>(params) << ")");  // NOLINT
+  if (GetTexParameterfvHelper(target, pname, params)) {
+    return;
+  }
   typedef GetTexParameterfv::Result Result;
   Result* result = GetResultAs<Result*>();
   result->SetNumResults(0);
@@ -632,8 +660,11 @@ void GetTexParameterfv(GLenum target, GLenum pname, GLfloat* params) {
   });
 }
 void GetTexParameteriv(GLenum target, GLenum pname, GLint* params) {
-  GL_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLint, params);
+  GPU_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLint, params);
   GPU_CLIENT_LOG("[" << this << "] glGetTexParameteriv(" << GLES2Util::GetStringTextureTarget(target) << ", " << GLES2Util::GetStringTextureParameter(pname) << ", " << static_cast<const void*>(params) << ")");  // NOLINT
+  if (GetTexParameterivHelper(target, pname, params)) {
+    return;
+  }
   typedef GetTexParameteriv::Result Result;
   Result* result = GetResultAs<Result*>();
   result->SetNumResults(0);

@@ -51,21 +51,21 @@
 // If it was up to us we'd just always write to the destination but the OpenGL
 // spec defines the behavior of OpenGL functions, not us. :-(
 #if defined(__native_client__) || defined(GLES2_CONFORMANCE_TESTS)
-  #define GL_CLIENT_VALIDATE_DESTINATION_INITALIZATION_ASSERT(v)
-  #define GL_CLIENT_DCHECK(v)
+  #define GPU_CLIENT_VALIDATE_DESTINATION_INITALIZATION_ASSERT(v)
+  #define GPU_CLIENT_DCHECK(v)
 #elif defined(GPU_DCHECK)
-  #define GL_CLIENT_VALIDATE_DESTINATION_INITALIZATION_ASSERT(v) GPU_DCHECK(v)
-  #define GL_CLIENT_DCHECK(v) GPU_DCHECK(v)
+  #define GPU_CLIENT_VALIDATE_DESTINATION_INITALIZATION_ASSERT(v) GPU_DCHECK(v)
+  #define GPU_CLIENT_DCHECK(v) GPU_DCHECK(v)
 #elif defined(DCHECK)
-  #define GL_CLIENT_VALIDATE_DESTINATION_INITALIZATION_ASSERT(v) DCHECK(v)
-  #define GL_CLIENT_DCHECK(v) DCHECK(v)
+  #define GPU_CLIENT_VALIDATE_DESTINATION_INITALIZATION_ASSERT(v) DCHECK(v)
+  #define GPU_CLIENT_DCHECK(v) DCHECK(v)
 #else
-  #define GL_CLIENT_VALIDATE_DESTINATION_INITALIZATION_ASSERT(v) ASSERT(v)
-  #define GL_CLIENT_DCHECK(v) ASSERT(v)
+  #define GPU_CLIENT_VALIDATE_DESTINATION_INITALIZATION_ASSERT(v) ASSERT(v)
+  #define GPU_CLIENT_DCHECK(v) ASSERT(v)
 #endif
 
-#define GL_CLIENT_VALIDATE_DESTINATION_INITALIZATION(type, ptr) \
-    GL_CLIENT_VALIDATE_DESTINATION_INITALIZATION_ASSERT(ptr && \
+#define GPU_CLIENT_VALIDATE_DESTINATION_INITALIZATION(type, ptr) \
+    GPU_CLIENT_VALIDATE_DESTINATION_INITALIZATION_ASSERT(ptr && \
         (ptr[0] == static_cast<type>(0) || ptr[0] == static_cast<type>(-1)));
 
 namespace gpu {
@@ -100,6 +100,37 @@ class IdHandlerInterface {
 // shared memory and synchronization issues.
 class GLES2Implementation {
  public:
+  // Stores client side cached GL state.
+  struct GLState {
+    GLState()
+        : max_combined_texture_image_units(0),
+          max_cube_map_texture_size(0),
+          max_fragment_uniform_vectors(0),
+          max_renderbuffer_size(0),
+          max_texture_image_units(0),
+          max_texture_size(0),
+          max_varying_vectors(0),
+          max_vertex_attribs(0),
+          max_vertex_texture_image_units(0),
+          max_vertex_uniform_vectors(0),
+          num_compressed_texture_formats(0),
+          num_shader_binary_formats(0) {
+    }
+
+    GLint max_combined_texture_image_units;
+    GLint max_cube_map_texture_size;
+    GLint max_fragment_uniform_vectors;
+    GLint max_renderbuffer_size;
+    GLint max_texture_image_units;
+    GLint max_texture_size;
+    GLint max_varying_vectors;
+    GLint max_vertex_attribs;
+    GLint max_vertex_texture_image_units;
+    GLint max_vertex_uniform_vectors;
+    GLint num_compressed_texture_formats;
+    GLint num_shader_binary_formats;
+  };
+
   // The maxiumum result size from simple GL get commands.
   static const size_t kMaxSizeOfSimpleResult = 16 * sizeof(uint32);  // NOLINT.
 
@@ -332,6 +363,21 @@ class GLES2Implementation {
       GLsizei height, GLenum format, GLenum type, const void* pixels,
       GLboolean internal);
 
+  // Helpers for query functions.
+  bool GetHelper(GLenum pname, GLint* params);
+  bool GetBooleanvHelper(GLenum pname, GLboolean* params);
+  bool GetBufferParameterivHelper(GLenum target, GLenum pname, GLint* params);
+  bool GetFloatvHelper(GLenum pname, GLfloat* params);
+  bool GetFramebufferAttachmentParameterivHelper(
+      GLenum target, GLenum attachment, GLenum pname, GLint* params);
+  bool GetIntegervHelper(GLenum pname, GLint* params);
+  bool GetProgramivHelper(GLuint program, GLenum pname, GLint* params);
+  bool GetRenderbufferParameterivHelper(
+      GLenum target, GLenum pname, GLint* params);
+  bool GetShaderivHelper(GLuint shader, GLenum pname, GLint* params);
+  bool GetTexParameterfvHelper(GLenum target, GLenum pname, GLfloat* params);
+  bool GetTexParameterivHelper(GLenum target, GLenum pname, GLint* params);
+
   GLES2Util util_;
   GLES2CmdHelper* helper_;
   scoped_ptr<IdHandlerInterface> buffer_id_handler_;
@@ -347,6 +393,8 @@ class GLES2Implementation {
 
   std::queue<int32> swap_buffers_tokens_;
   std::queue<int32> rate_limit_tokens_;
+
+  GLState gl_state_;
 
   // pack alignment as last set by glPixelStorei
   GLint pack_alignment_;
@@ -395,6 +443,44 @@ class GLES2Implementation {
 
   DISALLOW_COPY_AND_ASSIGN(GLES2Implementation);
 };
+
+inline bool GLES2Implementation::GetBufferParameterivHelper(
+    GLenum /* target */, GLenum /* pname */, GLint* /* params */) {
+  return false;
+}
+
+inline bool GLES2Implementation::GetFramebufferAttachmentParameterivHelper(
+    GLenum /* target */,
+    GLenum /* attachment */,
+    GLenum /* pname */,
+    GLint* /* params */) {
+  return false;
+}
+
+inline bool GLES2Implementation::GetProgramivHelper(
+    GLuint /* program */, GLenum /* pname */, GLint* /* params */) {
+  return false;
+}
+
+inline bool GLES2Implementation::GetRenderbufferParameterivHelper(
+    GLenum /* target */, GLenum /* pname */, GLint* /* params */) {
+  return false;
+}
+
+inline bool GLES2Implementation::GetShaderivHelper(
+    GLuint /* shader */, GLenum /* pname */, GLint* /* params */) {
+  return false;
+}
+
+inline bool GLES2Implementation::GetTexParameterfvHelper(
+    GLenum /* target */, GLenum /* pname */, GLfloat* /* params */) {
+  return false;
+}
+
+inline bool GLES2Implementation::GetTexParameterivHelper(
+    GLenum /* target */, GLenum /* pname */, GLint* /* params */) {
+  return false;
+}
 
 }  // namespace gles2
 }  // namespace gpu

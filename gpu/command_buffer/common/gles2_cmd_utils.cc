@@ -124,6 +124,8 @@ int GLES2Util::GLGetNumValuesReturned(int id) const {
       return 2;
     case GL_NUM_COMPRESSED_TEXTURE_FORMATS:
       return 1;
+    case GL_NUM_SHADER_BINARY_FORMATS:
+      return 1;
     case GL_PACK_ALIGNMENT:
       return 1;
     case GL_POLYGON_OFFSET_FACTOR:

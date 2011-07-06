@@ -481,15 +481,31 @@ GLES2Implementation::GLES2Implementation(
     texture_id_handler_.reset(new NonSharedIdHandler());
   }
 
-#if defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
-  GLint max_vertex_attribs = 0;
-  GetIntegerv(GL_MAX_VERTEX_ATTRIBS, &max_vertex_attribs);
+  static const GLenum pnames[] = {
+    GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS,
+    GL_MAX_CUBE_MAP_TEXTURE_SIZE,
+    GL_MAX_FRAGMENT_UNIFORM_VECTORS,
+    GL_MAX_RENDERBUFFER_SIZE,
+    GL_MAX_TEXTURE_IMAGE_UNITS,
+    GL_MAX_TEXTURE_SIZE,
+    GL_MAX_VARYING_VECTORS,
+    GL_MAX_VERTEX_ATTRIBS,
+    GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS,
+    GL_MAX_VERTEX_UNIFORM_VECTORS,
+    GL_NUM_COMPRESSED_TEXTURE_FORMATS,
+    GL_NUM_SHADER_BINARY_FORMATS,
+  };
 
+  GetMultipleIntegervCHROMIUM(
+      pnames, arraysize(pnames), &gl_state_.max_combined_texture_image_units,
+      sizeof(gl_state_));
+
+#if defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
   buffer_id_handler_->MakeIds(
       kClientSideArrayId, arraysize(reserved_ids_), &reserved_ids_[0]);
 
   client_side_buffer_helper_.reset(new ClientSideBufferHelper(
-      max_vertex_attribs,
+      gl_state_.max_vertex_attribs,
       reserved_ids_[0],
       reserved_ids_[1]));
 #endif
@@ -631,6 +647,73 @@ void GLES2Implementation::SetBucketAsString(
   // NOTE: strings are passed NULL terminated. That means the empty
   // string will have a size of 1 and no-string will have a size of 0
   SetBucketContents(bucket_id, str.c_str(), str.size() + 1);
+}
+
+bool GLES2Implementation::GetHelper(GLenum pname, GLint* params) {
+  switch (pname) {
+    case GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS:
+      *params = gl_state_.max_combined_texture_image_units;
+      return true;
+    case GL_MAX_CUBE_MAP_TEXTURE_SIZE:
+      *params = gl_state_.max_cube_map_texture_size;
+      return true;
+    case GL_MAX_FRAGMENT_UNIFORM_VECTORS:
+      *params = gl_state_.max_fragment_uniform_vectors;
+      return true;
+    case GL_MAX_RENDERBUFFER_SIZE:
+      *params = gl_state_.max_renderbuffer_size;
+      return true;
+    case GL_MAX_TEXTURE_IMAGE_UNITS:
+      *params = gl_state_.max_texture_image_units;
+      return true;
+    case GL_MAX_TEXTURE_SIZE:
+      *params = gl_state_.max_texture_size;
+      return true;
+    case GL_MAX_VARYING_VECTORS:
+      *params = gl_state_.max_varying_vectors;
+      return true;
+    case GL_MAX_VERTEX_ATTRIBS:
+      *params = gl_state_.max_vertex_attribs;
+      return true;
+    case GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS:
+      *params = gl_state_.max_vertex_texture_image_units;
+      return true;
+    case GL_MAX_VERTEX_UNIFORM_VECTORS:
+      *params = gl_state_.max_vertex_uniform_vectors;
+      return true;
+    case GL_NUM_COMPRESSED_TEXTURE_FORMATS:
+      *params = gl_state_.num_compressed_texture_formats;
+      return true;
+    case GL_NUM_SHADER_BINARY_FORMATS:
+      *params = gl_state_.num_shader_binary_formats;
+      return true;
+    default:
+      return false;
+  }
+}
+
+bool GLES2Implementation::GetBooleanvHelper(GLenum pname, GLboolean* params) {
+  // TODO(gman): Make this handle pnames that return more than 1 value.
+  GLint value;
+  if (!GetHelper(pname, &value)) {
+    return false;
+  }
+  *params = static_cast<GLboolean>(value);
+  return true;
+}
+
+bool GLES2Implementation::GetFloatvHelper(GLenum pname, GLfloat* params) {
+  // TODO(gman): Make this handle pnames that return more than 1 value.
+  GLint value;
+  if (!GetHelper(pname, &value)) {
+    return false;
+  }
+  *params = static_cast<GLfloat>(value);
+  return true;
+}
+
+bool GLES2Implementation::GetIntegervHelper(GLenum pname, GLint* params) {
+  return GetHelper(pname, params);
 }
 
 void GLES2Implementation::DrawElements(

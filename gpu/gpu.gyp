@@ -100,7 +100,8 @@
       'target_name': 'gles2_implementation_client_side_arrays',
       'type': 'static_library',
       'defines': [
-        'GLES2_SUPPORT_CLIENT_SIDE_ARRAYS=1'
+        'GLES2_SUPPORT_CLIENT_SIDE_ARRAYS=1',
+        'GLES2_CONFORMANCE_TESTS=1',
       ],
       'dependencies': [
         '../base/base.gyp:base',
