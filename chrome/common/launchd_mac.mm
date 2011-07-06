@@ -129,12 +129,10 @@ bool Launchd::RestartJob(Domain domain,
       [ns_session_type UTF8String], file_path,
       [ns_session_type UTF8String], file_path);
   argv.push_back(command);
-  base::ProcessHandle handle;
-  return base::LaunchAppInNewProcessGroup(argv,
-                                          base::environment_vector(),
-                                          base::file_handle_mapping_vector(),
-                                          NO,
-                                          &handle);
+
+  base::LaunchOptions options;
+  options.new_process_group = true;
+  return base::LaunchProcess(argv, options);
 }
 
 CFMutableDictionaryRef Launchd::CreatePlistFromFile(Domain domain,

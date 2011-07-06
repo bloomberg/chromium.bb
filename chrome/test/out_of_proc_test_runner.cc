@@ -353,6 +353,9 @@ int RunTest(const std::string& test_name, int default_timeout_ms) {
   new_cmd_line.AppendSwitch(switches::kAllowFileAccess);
 
   base::ProcessHandle process_handle;
+  base::LaunchOptions options;
+  options.process_handle = &process_handle;
+
 #if defined(OS_POSIX)
   const char* browser_wrapper = getenv("BROWSER_WRAPPER");
   if (browser_wrapper) {
@@ -365,15 +368,11 @@ int RunTest(const std::string& test_name, int default_timeout_ms) {
   // its pid. Any child processes that the test may create will inherit the
   // same pgid. This way, if the test is abruptly terminated, we can clean up
   // any orphaned child processes it may have left behind.
-  base::environment_vector no_env;
-  base::file_handle_mapping_vector no_files;
-  if (!base::LaunchAppInNewProcessGroup(new_cmd_line.argv(), no_env, no_files,
-                                        false, &process_handle))
-    return false;
-#else
-  if (!base::LaunchApp(new_cmd_line, false, false, &process_handle))
-    return false;
+  options.new_process_group = true;
 #endif
+
+  if (!base::LaunchProcess(new_cmd_line, options))
+    return false;
 
   int timeout_ms =
       test_launcher_utils::GetTestTerminationTimeout(test_name,
