@@ -51,6 +51,8 @@ class FileSystemMountPointProvider {
   // provider. This list is used to set appropriate child process file access
   // permissions.
   virtual std::vector<FilePath> GetRootDirectories() const = 0;
+
+  virtual FileSystemFileUtil* GetFileSystemFileUtil() = 0;
 };
 
 // An interface to control external file system access permissions.
@@ -80,4 +82,3 @@ class ExternalFileSystemMountPointProvider
 }  // namespace fileapi
 
 #endif  // WEBKIT_FILEAPI_FILE_SYSTEM_MOUNT_POINT_PROVIDER_H_
-

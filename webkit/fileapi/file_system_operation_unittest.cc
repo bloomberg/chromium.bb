@@ -154,7 +154,9 @@ FilePath ASCIIToFilePath(const std::string& str) {
 class FileSystemOperationTest : public testing::Test {
  public:
   FileSystemOperationTest()
-      : status_(kFileOperationStatusNotSet) {
+      : status_(kFileOperationStatusNotSet),
+        local_file_util_(
+            new LocalFileSystemFileUtil(QuotaFileUtil::GetInstance())) {
     EXPECT_TRUE(base_.CreateUniqueTempDir());
   }
 
@@ -248,6 +250,7 @@ class FileSystemOperationTest : public testing::Test {
   std::vector<base::FileUtilProxy::Entry> entries_;
 
  private:
+  scoped_ptr<LocalFileSystemFileUtil> local_file_util_;
   scoped_refptr<QuotaManager> quota_manager_;
   scoped_refptr<QuotaManagerProxy> quota_manager_proxy_;
   DISALLOW_COPY_AND_ASSIGN(FileSystemOperationTest);
@@ -304,7 +307,7 @@ void FileSystemOperationTest::SetUp() {
                      false /* incognito */,
                      false /* unlimited quota */,
                      quota_manager_proxy_.get(),
-                     LocalFileSystemFileUtil::GetInstance());
+                     local_file_util_.get());
 }
 
 void FileSystemOperationTest::TearDown() {

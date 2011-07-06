@@ -20,7 +20,6 @@
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/file_system_util.h"
-#include "webkit/fileapi/quota_file_util.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
 
 // TODO(ericu): Make deleting an origin [or a type under the origin, if it's the
@@ -54,8 +53,10 @@ using base::PlatformFile;
 using base::PlatformFileError;
 
 ObfuscatedFileSystemFileUtil::ObfuscatedFileSystemFileUtil(
-    const FilePath& file_system_directory)
-    : file_system_directory_(file_system_directory) {
+    const FilePath& file_system_directory,
+    FileSystemFileUtil* underlying_file_util)
+    : file_system_directory_(file_system_directory),
+      underlying_file_util_(underlying_file_util) {
 }
 
 ObfuscatedFileSystemFileUtil::~ObfuscatedFileSystemFileUtil() {
@@ -103,7 +104,7 @@ PlatformFileError ObfuscatedFileSystemFileUtil::CreateOrOpen(
     return base::PLATFORM_FILE_ERROR_NOT_A_FILE;
   FilePath data_path = DataPathToLocalPath(context->src_origin_url(),
     context->src_type(), file_info.data_path);
-  return QuotaFileUtil::GetInstance()->CreateOrOpen(
+  return underlying_file_util_->CreateOrOpen(
       context, data_path, file_flags, file_handle, created);
 }
 
@@ -184,7 +185,7 @@ PlatformFileError ObfuscatedFileSystemFileUtil::GetFileInfo(
     return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
   FilePath data_path = DataPathToLocalPath(context->src_origin_url(),
     context->src_type(), local_info.data_path);
-  return QuotaFileUtil::GetInstance()->GetFileInfo(
+  return underlying_file_util_->GetFileInfo(
       context, data_path, file_info, platform_file_path);
 }
 
@@ -327,7 +328,7 @@ PlatformFileError ObfuscatedFileSystemFileUtil::CopyOrMoveFile(
     if (overwrite) {
       FilePath dest_data_path = DataPathToLocalPath(context->src_origin_url(),
         context->src_type(), dest_file_info.data_path);
-      return QuotaFileUtil::GetInstance()->CopyOrMoveFile(context,
+      return underlying_file_util_->CopyOrMoveFile(context,
           src_data_path, dest_data_path, copy);
     } else {
       FileId dest_parent_id;
@@ -348,7 +349,7 @@ PlatformFileError ObfuscatedFileSystemFileUtil::CopyOrMoveFile(
       FilePath dest_data_path = DataPathToLocalPath(context->src_origin_url(),
         context->src_type(), dest_file_info.data_path);
       if (base::PLATFORM_FILE_OK !=
-          QuotaFileUtil::GetInstance()->DeleteFile(context, dest_data_path))
+          underlying_file_util_->DeleteFile(context, dest_data_path))
         LOG(WARNING) << "Leaked a backing file.";
       return base::PLATFORM_FILE_OK;
     } else {
@@ -387,7 +388,7 @@ PlatformFileError ObfuscatedFileSystemFileUtil::CopyInForeignFile(
     }
     FilePath dest_data_path = DataPathToLocalPath(context->dest_origin_url(),
       context->dest_type(), dest_file_info.data_path);
-    return QuotaFileUtil::GetInstance()->CopyOrMoveFile(context,
+    return underlying_file_util_->CopyOrMoveFile(context,
         src_file_path, dest_data_path, true /* copy */);
   } else {
     FileId dest_parent_id;
@@ -425,7 +426,7 @@ PlatformFileError ObfuscatedFileSystemFileUtil::DeleteFile(
   FilePath data_path = DataPathToLocalPath(context->src_origin_url(),
     context->src_type(), file_info.data_path);
   if (base::PLATFORM_FILE_OK !=
-      QuotaFileUtil::GetInstance()->DeleteFile(context, data_path))
+      underlying_file_util_->DeleteFile(context, data_path))
     LOG(WARNING) << "Leaked a backing file.";
   return base::PLATFORM_FILE_OK;
 }
@@ -474,7 +475,7 @@ PlatformFileError ObfuscatedFileSystemFileUtil::Touch(
     }
     FilePath data_path = DataPathToLocalPath(context->src_origin_url(),
       context->src_type(), file_info.data_path);
-    return QuotaFileUtil::GetInstance()->Touch(
+    return underlying_file_util_->Touch(
         context, data_path, last_access_time, last_modified_time);
   }
   FileId parent_id;
@@ -492,7 +493,7 @@ PlatformFileError ObfuscatedFileSystemFileUtil::Touch(
 
   FilePath data_path = DataPathToLocalPath(context->src_origin_url(),
     context->src_type(), file_info.data_path);
-  return QuotaFileUtil::GetInstance()->Touch(context, data_path,
+  return underlying_file_util_->Touch(context, data_path,
     last_access_time, last_modified_time);
 }
 
@@ -505,7 +506,7 @@ PlatformFileError ObfuscatedFileSystemFileUtil::Truncate(
           virtual_path);
   if (local_path.empty())
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
-  return QuotaFileUtil::GetInstance()->Truncate(
+  return underlying_file_util_->Truncate(
       context, local_path, length);
 }
 
@@ -718,7 +719,7 @@ PlatformFileError ObfuscatedFileSystemFileUtil::CreateFile(
 
   path = path.AppendASCII(StringPrintf("%02" PRIu64, directory_number));
   PlatformFileError error;
-  error = QuotaFileUtil::GetInstance()->CreateDirectory(
+  error = underlying_file_util_->CreateDirectory(
       context, path, false /* exclusive */, false /* recursive */);
   if (base::PLATFORM_FILE_OK != error)
     return error;
@@ -730,17 +731,17 @@ PlatformFileError ObfuscatedFileSystemFileUtil::CreateFile(
   if (!source_path.empty()) {
     DCHECK(!file_flags);
     DCHECK(!handle);
-    error = QuotaFileUtil::GetInstance()->CopyOrMoveFile(
+    error = underlying_file_util_->CopyOrMoveFile(
       context, source_path, path, true /* copy */);
     created = true;
   } else {
     if (handle) {
-      error = QuotaFileUtil::GetInstance()->CreateOrOpen(
+      error = underlying_file_util_->CreateOrOpen(
         context, path, file_flags, handle, &created);
       // If this succeeds, we must close handle on any subsequent error.
     } else {
       DCHECK(!file_flags);  // file_flags is only used by CreateOrOpen.
-      error = QuotaFileUtil::GetInstance()->EnsureFileExists(
+      error = underlying_file_util_->EnsureFileExists(
           context, path, &created);
     }
   }
@@ -752,7 +753,7 @@ PlatformFileError ObfuscatedFileSystemFileUtil::CreateFile(
     if (handle) {
       DCHECK_NE(base::kInvalidPlatformFileValue, *handle);
       base::ClosePlatformFile(*handle);
-      QuotaFileUtil::GetInstance()->DeleteFile(context, path);
+      underlying_file_util_->DeleteFile(context, path);
     }
     return base::PLATFORM_FILE_ERROR_FAILED;
   }
@@ -763,7 +764,7 @@ PlatformFileError ObfuscatedFileSystemFileUtil::CreateFile(
       DCHECK_NE(base::kInvalidPlatformFileValue, *handle);
       base::ClosePlatformFile(*handle);
     }
-    QuotaFileUtil::GetInstance()->DeleteFile(context, path);
+    underlying_file_util_->DeleteFile(context, path);
     return base::PLATFORM_FILE_ERROR_FAILED;
   }
 

@@ -21,6 +21,7 @@
 #include "webkit/fileapi/file_system_usage_cache.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/local_file_system_file_util.h"
+#include "webkit/fileapi/quota_file_util.h"
 #include "webkit/quota/quota_manager.h"
 
 namespace fileapi {
@@ -30,7 +31,9 @@ const int kFileOperationStatusNotSet = 1;
 class FileSystemQuotaTest : public testing::Test {
  public:
   FileSystemQuotaTest()
-      : callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      : local_file_util_(
+            new LocalFileSystemFileUtil(QuotaFileUtil::GetInstance())),
+        callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
         status_(kFileOperationStatusNotSet),
         quota_status_(quota::kQuotaStatusUnknown),
         usage_(-1),
@@ -118,6 +121,7 @@ class FileSystemQuotaTest : public testing::Test {
 
   ScopedTempDir work_dir_;
   scoped_refptr<quota::QuotaManager> quota_manager_;
+  scoped_ptr<LocalFileSystemFileUtil> local_file_util_;
 
   base::ScopedCallbackFactory<FileSystemQuotaTest> callback_factory_;
 
@@ -190,7 +194,7 @@ void FileSystemQuotaTest::SetUp() {
                      false /* incognito */,
                      false /* unlimited quota */,
                      quota_manager_->proxy(),
-                     LocalFileSystemFileUtil::GetInstance());
+                     local_file_util_.get());
 }
 
 void FileSystemQuotaTest::TearDown() {

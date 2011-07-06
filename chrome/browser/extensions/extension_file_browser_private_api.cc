@@ -47,7 +47,6 @@
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/file_system_file_util.h"
-#include "webkit/fileapi/local_file_system_file_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #ifdef OS_CHROMEOS
@@ -651,23 +650,23 @@ class ExecuteTasksFileSystemCallbackDispatcher
           false);     // create
     FilePath final_file_path = root_path.Append(virtual_path);
 
+    fileapi::ExternalFileSystemMountPointProvider* external_provider =
+        path_manager->external_provider();
+    if (!external_provider)
+      return false;
+
     // Check if this file system entry exists first.
     base::PlatformFileInfo file_info;
     FilePath platform_path;
     fileapi::FileSystemOperationContext file_system_operation_context(
         profile_->GetFileSystemContext(),
-        fileapi::LocalFileSystemFileUtil::GetInstance());
+        external_provider->GetFileSystemFileUtil());
     if (base::PLATFORM_FILE_OK !=
             fileapi::FileSystemFileUtil::GetInstance()->GetFileInfo(
                 &file_system_operation_context, final_file_path, &file_info,
                 &platform_path)) {
       return false;
     }
-
-    fileapi::ExternalFileSystemMountPointProvider* external_provider =
-        path_manager->external_provider();
-    if (!external_provider)
-      return false;
 
     // TODO(zelidrag): Let's just prevent all symlinks for now. We don't want a
     // USB drive content to point to something in the rest of the file system.

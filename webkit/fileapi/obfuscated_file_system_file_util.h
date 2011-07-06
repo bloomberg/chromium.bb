@@ -47,8 +47,11 @@ class FileSystemOperationContext;
 class ObfuscatedFileSystemFileUtil : public FileSystemFileUtil,
     public base::RefCountedThreadSafe<ObfuscatedFileSystemFileUtil> {
  public:
-
-  ObfuscatedFileSystemFileUtil(const FilePath& file_system_directory);
+  // |underlying_file_util| is not owned by the instance.  It will need to be
+  // a singleton or to be deleted by someone else.
+  ObfuscatedFileSystemFileUtil(
+      const FilePath& file_system_directory,
+      FileSystemFileUtil* underlying_file_util);
   virtual ~ObfuscatedFileSystemFileUtil();
 
   virtual base::PlatformFileError CreateOrOpen(
@@ -224,6 +227,7 @@ class ObfuscatedFileSystemFileUtil : public FileSystemFileUtil,
   scoped_ptr<FileSystemOriginDatabase> origin_database_;
   FilePath file_system_directory_;
   base::OneShotTimer<ObfuscatedFileSystemFileUtil> timer_;
+  FileSystemFileUtil* underlying_file_util_;
 
   DISALLOW_COPY_AND_ASSIGN(ObfuscatedFileSystemFileUtil);
 };

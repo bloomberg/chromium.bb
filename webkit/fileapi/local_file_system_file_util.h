@@ -12,10 +12,7 @@
 #include "base/file_util.h"
 #include "base/file_util_proxy.h"
 #include "base/logging.h"
-#include "base/memory/ref_counted.h"
-#include "base/memory/singleton.h"
 #include "base/platform_file.h"
-#include "base/tracked_objects.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_types.h"
 
@@ -34,9 +31,12 @@ using base::PlatformFileError;
 
 class FileSystemOperationContext;
 
+// An instance of this class is created and owned by *MountPointProvider.
 class LocalFileSystemFileUtil : public FileSystemFileUtil {
  public:
-  static LocalFileSystemFileUtil* GetInstance();
+  // |underlying_file_util| is not owned by the instance.  It will need to be
+  // a singleton or to be deleted by someone else.
+  explicit LocalFileSystemFileUtil(FileSystemFileUtil* underlying_file_util);
 
   virtual PlatformFileError CreateOrOpen(
       FileSystemOperationContext* context,
@@ -117,12 +117,6 @@ class LocalFileSystemFileUtil : public FileSystemFileUtil {
       FileSystemOperationContext* context,
       const FilePath& root_path);
 
- protected:
-  LocalFileSystemFileUtil() { }
-
-  friend struct DefaultSingletonTraits<LocalFileSystemFileUtil>;
-  DISALLOW_COPY_AND_ASSIGN(LocalFileSystemFileUtil);
-
  private:
   // Given the filesystem's root URL and a virtual path, produces a real, full
   // local path.
@@ -131,6 +125,10 @@ class LocalFileSystemFileUtil : public FileSystemFileUtil {
       const GURL& origin_url,
       FileSystemType type,
       const FilePath& virtual_path);
+
+  FileSystemFileUtil* underlying_file_util_;
+
+  DISALLOW_COPY_AND_ASSIGN(LocalFileSystemFileUtil);
 };
 
 }  // namespace fileapi

@@ -11,12 +11,12 @@
 #include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_util.h"
-#include "webkit/fileapi/quota_file_util.h"
 
 namespace fileapi {
 
-LocalFileSystemFileUtil* LocalFileSystemFileUtil::GetInstance() {
-  return Singleton<LocalFileSystemFileUtil>::get();
+LocalFileSystemFileUtil::LocalFileSystemFileUtil(
+    FileSystemFileUtil* underlying_file_util)
+    : underlying_file_util_(underlying_file_util) {
 }
 
 PlatformFileError LocalFileSystemFileUtil::CreateOrOpen(
@@ -28,7 +28,7 @@ PlatformFileError LocalFileSystemFileUtil::CreateOrOpen(
           file_path);
   if (local_path.empty())
     return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
-  return QuotaFileUtil::GetInstance()->CreateOrOpen(
+  return underlying_file_util_->CreateOrOpen(
       context, local_path, file_flags, file_handle, created);
 }
 
@@ -41,7 +41,7 @@ PlatformFileError LocalFileSystemFileUtil::EnsureFileExists(
           file_path);
   if (local_path.empty())
     return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
-  return QuotaFileUtil::GetInstance()->EnsureFileExists(
+  return underlying_file_util_->EnsureFileExists(
       context, local_path, created);
 }
 
@@ -69,7 +69,7 @@ PlatformFileError LocalFileSystemFileUtil::GetFileInfo(
           file_path);
   if (local_path.empty())
     return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
-  return QuotaFileUtil::GetInstance()->GetFileInfo(
+  return underlying_file_util_->GetFileInfo(
       context, local_path, file_info, platform_file_path);
 }
 
@@ -83,7 +83,7 @@ PlatformFileError LocalFileSystemFileUtil::ReadDirectory(
           file_path);
   if (local_path.empty())
     return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
-  return QuotaFileUtil::GetInstance()->ReadDirectory(
+  return underlying_file_util_->ReadDirectory(
       context, local_path, entries);
 }
 
@@ -97,7 +97,7 @@ PlatformFileError LocalFileSystemFileUtil::CreateDirectory(
           file_path);
   if (local_path.empty())
     return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
-  return QuotaFileUtil::GetInstance()->CreateDirectory(
+  return underlying_file_util_->CreateDirectory(
       context, local_path, exclusive, recursive);
 }
 
@@ -117,7 +117,7 @@ PlatformFileError LocalFileSystemFileUtil::CopyOrMoveFile(
           dest_file_path);
   if (local_dest_path.empty())
     return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
-  return QuotaFileUtil::GetInstance()->CopyOrMoveFile(
+  return underlying_file_util_->CopyOrMoveFile(
       context, local_src_path, local_dest_path, copy);
 }
 
@@ -132,7 +132,7 @@ PlatformFileError LocalFileSystemFileUtil::CopyInForeignFile(
           dest_file_path);
   if (local_dest_path.empty())
     return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
-  return QuotaFileUtil::GetInstance()->CopyOrMoveFile(
+  return underlying_file_util_->CopyOrMoveFile(
       context, src_file_path, local_dest_path, true);
 }
 
@@ -144,7 +144,7 @@ PlatformFileError LocalFileSystemFileUtil::DeleteFile(
           file_path);
   if (local_path.empty())
     return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
-  return QuotaFileUtil::GetInstance()->DeleteFile(
+  return underlying_file_util_->DeleteFile(
       context, local_path);
 }
 
@@ -156,7 +156,7 @@ PlatformFileError LocalFileSystemFileUtil::DeleteSingleDirectory(
           file_path);
   if (local_path.empty())
     return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
-  return QuotaFileUtil::GetInstance()->DeleteSingleDirectory(
+  return underlying_file_util_->DeleteSingleDirectory(
       context, local_path);
 }
 
@@ -170,7 +170,7 @@ PlatformFileError LocalFileSystemFileUtil::Touch(
           file_path);
   if (local_path.empty())
     return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
-  return QuotaFileUtil::GetInstance()->Touch(
+  return underlying_file_util_->Touch(
       context, local_path, last_access_time, last_modified_time);
 }
 
@@ -183,7 +183,7 @@ PlatformFileError LocalFileSystemFileUtil::Truncate(
           file_path);
   if (local_path.empty())
     return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
-  return QuotaFileUtil::GetInstance()->Truncate(
+  return underlying_file_util_->Truncate(
       context, local_path, length);
 }
 
@@ -195,7 +195,7 @@ bool LocalFileSystemFileUtil::PathExists(
           file_path);
   if (local_path.empty())
     return false;
-  return QuotaFileUtil::GetInstance()->PathExists(
+  return underlying_file_util_->PathExists(
       context, local_path);
 }
 
@@ -207,7 +207,7 @@ bool LocalFileSystemFileUtil::DirectoryExists(
           file_path);
   if (local_path.empty())
     return false;
-  return QuotaFileUtil::GetInstance()->DirectoryExists(
+  return underlying_file_util_->DirectoryExists(
       context, local_path);
 }
 
@@ -219,7 +219,7 @@ bool LocalFileSystemFileUtil::IsDirectoryEmpty(
           file_path);
   if (local_path.empty())
     return true;
-  return QuotaFileUtil::GetInstance()->IsDirectoryEmpty(
+  return underlying_file_util_->IsDirectoryEmpty(
       context, local_path);
 }
 

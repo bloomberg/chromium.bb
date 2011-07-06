@@ -19,8 +19,6 @@
 #include "webkit/fileapi/file_system_test_helper.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/local_file_system_file_util.h"
-#include "webkit/fileapi/quota_file_util.h"
-#include "webkit/quota/quota_manager.h"
 
 namespace fileapi {
 
@@ -28,7 +26,9 @@ namespace fileapi {
 class LocalFileSystemFileUtilTest : public testing::Test {
  public:
   LocalFileSystemFileUtilTest()
-      : callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      : local_file_util_(
+            new LocalFileSystemFileUtil(FileSystemFileUtil::GetInstance())),
+        callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   }
 
   void SetUp() {
@@ -43,12 +43,11 @@ class LocalFileSystemFileUtilTest : public testing::Test {
  protected:
   FileSystemOperationContext* NewContext() {
     FileSystemOperationContext* context = test_helper_.NewOperationContext();
-    context->set_allowed_bytes_growth(QuotaFileUtil::kNoLimit);
     return context;
   }
 
   LocalFileSystemFileUtil* FileUtil() {
-    return LocalFileSystemFileUtil::GetInstance();
+    return local_file_util_.get();
   }
 
   static FilePath Path(const std::string& file_name) {
@@ -95,6 +94,7 @@ class LocalFileSystemFileUtilTest : public testing::Test {
   }
 
  private:
+  scoped_ptr<LocalFileSystemFileUtil> local_file_util_;
   ScopedTempDir data_dir_;
   FileSystemTestOriginHelper test_helper_;
 

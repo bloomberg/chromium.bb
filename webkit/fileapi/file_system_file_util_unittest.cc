@@ -11,7 +11,6 @@
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_test_helper.h"
-#include "webkit/fileapi/local_file_system_file_util.h"
 #include "webkit/fileapi/obfuscated_file_system_file_util.h"
 
 using namespace fileapi;
@@ -65,7 +64,6 @@ class FileSystemFileUtilTest : public testing::Test {
 
   FileSystemOperationContext* NewContext(FileSystemTestOriginHelper* helper) {
     FileSystemOperationContext* context = helper->NewOperationContext();
-    context->set_allowed_bytes_growth(1024 * 1024);
     return context;
   }
 
@@ -76,7 +74,8 @@ class FileSystemFileUtilTest : public testing::Test {
     ScopedTempDir base_dir;
     ASSERT_TRUE(base_dir.CreateUniqueTempDir());
     scoped_refptr<ObfuscatedFileSystemFileUtil> file_util(
-        new ObfuscatedFileSystemFileUtil(base_dir.path()));
+        new ObfuscatedFileSystemFileUtil(base_dir.path(),
+                                         FileSystemFileUtil::GetInstance()));
     FileSystemTestOriginHelper src_helper(src_origin, src_type);
     src_helper.SetUp(base_dir.path(),
                      false,  // incognito
@@ -118,7 +117,6 @@ class FileSystemFileUtilTest : public testing::Test {
     copy_context->set_dest_origin_url(dest_helper.origin());
     copy_context->set_src_type(src_helper.type());
     copy_context->set_dest_type(dest_helper.type());
-    copy_context->set_allowed_bytes_growth(1024 * 1024);
 
     if (copy)
       ASSERT_EQ(base::PLATFORM_FILE_OK,

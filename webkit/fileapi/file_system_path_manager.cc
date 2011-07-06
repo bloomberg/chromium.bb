@@ -16,7 +16,6 @@
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystem.h"
 #include "webkit/fileapi/file_system_util.h"
-#include "webkit/fileapi/local_file_system_file_util.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/glue/webkit_glue.h"
 
@@ -169,7 +168,12 @@ FileSystemFileUtil* FileSystemPathManager::GetFileSystemFileUtil(
     case kFileSystemTypePersistent:
       return sandbox_provider_->GetFileSystemFileUtil();
     case kFileSystemTypeExternal:
-      return LocalFileSystemFileUtil::GetInstance();
+      if (external_provider_.get()) {
+        return external_provider_->GetFileSystemFileUtil();
+      } else {
+        NOTREACHED();
+        return NULL;
+      }
     case kFileSystemTypeUnknown:
     default:
       NOTREACHED();

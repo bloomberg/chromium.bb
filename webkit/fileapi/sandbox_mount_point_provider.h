@@ -115,7 +115,7 @@ class SandboxMountPointProvider
       FileSystemType type,
       bool create) const;
 
-  FileSystemFileUtil* GetFileSystemFileUtil();
+  virtual FileSystemFileUtil* GetFileSystemFileUtil();
 
   // Deletes the data on the origin and reports the amount of deleted data
   // to the quota manager via |proxy|.

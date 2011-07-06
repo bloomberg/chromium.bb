@@ -133,7 +133,8 @@ class ObfuscatedFileSystemFileUtilTest : public testing::Test {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
 
     obfuscated_file_system_file_util_ =
-        new ObfuscatedFileSystemFileUtil(data_dir_.path());
+        new ObfuscatedFileSystemFileUtil(data_dir_.path(),
+                                         FileSystemFileUtil::GetInstance());
     test_helper_.SetUp(data_dir_.path(),
                        false, // incognito
                        false, // unlimited quota
@@ -143,7 +144,6 @@ class ObfuscatedFileSystemFileUtilTest : public testing::Test {
 
   FileSystemOperationContext* NewContext() {
     FileSystemOperationContext* context = test_helper_.NewOperationContext();
-    context->set_allowed_bytes_growth(1024 * 1024);
     return context;
   }
 

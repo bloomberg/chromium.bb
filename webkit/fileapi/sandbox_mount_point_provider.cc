@@ -21,6 +21,7 @@
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/local_file_system_file_util.h"
 #include "webkit/fileapi/obfuscated_file_system_file_util.h"
+#include "webkit/fileapi/quota_file_util.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/quota/quota_manager.h"
@@ -279,7 +280,8 @@ SandboxMountPointProvider::SandboxMountPointProvider(
       profile_path_(profile_path),
       sandbox_file_util_(
           new ObfuscatedFileSystemFileUtil(
-              profile_path.Append(kNewFileSystemDirectory))) {
+              profile_path.Append(kNewFileSystemDirectory),
+              QuotaFileUtil::GetInstance())) {
 }
 
 SandboxMountPointProvider::~SandboxMountPointProvider() {
