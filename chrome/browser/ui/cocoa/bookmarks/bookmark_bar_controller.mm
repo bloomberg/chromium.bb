@@ -1803,7 +1803,6 @@ void RecordAppLaunch(Profile* profile, GURL url) {
       }
       break;
     case NSKeyDown: {
-      bool result = NO;
       // Event hooks often see the same keydown event twice due to the way key
       // events get dispatched and redispatched, so ignore if this keydown
       // event has the EXACT same timestamp as the previous keydown.
@@ -1811,11 +1810,12 @@ void RecordAppLaunch(Profile* profile, GURL url) {
       NSTimeInterval thisTime = [event timestamp];
       if (lastKeyDownEventTime != thisTime) {
         lastKeyDownEventTime = thisTime;
-        if (folderController_) {
-          result = [folderController_ handleInputText:[event characters]];
-        }
+        if ([event modifierFlags] & NSCommandKeyMask)
+          return YES;
+        else if (folderController_)
+          return [folderController_ handleInputText:[event characters]];
       }
-      return result;
+      return NO;
     }
     case NSKeyUp:
       return NO;
