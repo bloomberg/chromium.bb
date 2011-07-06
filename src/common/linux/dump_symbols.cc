@@ -56,6 +56,7 @@
 #include "common/dwarf_cfi_to_module.h"
 #include "common/dwarf_cu_to_module.h"
 #include "common/dwarf_line_to_module.h"
+#include "common/linux/elf_symbols_to_module.h"
 #include "common/linux/file_id.h"
 #include "common/module.h"
 #include "common/stabs_reader.h"
@@ -531,6 +532,7 @@ static bool LoadSymbols(const std::string &obj_file,
       reinterpret_cast<ElfW(Shdr) *>(elf_header->e_shoff);
   const ElfW(Shdr) *section_names = sections + elf_header->e_shstrndx;
   bool found_debug_info_section = false;
+  bool found_usable_info = false;
 
   // Look for STABS debugging information, and load it if present.
   const ElfW(Shdr) *stab_section
@@ -540,6 +542,7 @@ static bool LoadSymbols(const std::string &obj_file,
     const ElfW(Shdr) *stabstr_section = stab_section->sh_link + sections;
     if (stabstr_section) {
       found_debug_info_section = true;
+      found_usable_info = true;
       info->LoadedSection(".stab");
       if (!LoadStabs(elf_header, stab_section, stabstr_section, big_endian,
                      module)) {
@@ -555,6 +558,7 @@ static bool LoadSymbols(const std::string &obj_file,
                           elf_header->e_shnum);
   if (dwarf_section) {
     found_debug_info_section = true;
+    found_usable_info = true;
     info->LoadedSection(".debug_info");
     if (!LoadDwarf(obj_file, elf_header, big_endian, module))
       fprintf(stderr, "%s: \".debug_info\" section found, but failed to load "
@@ -571,8 +575,10 @@ static bool LoadSymbols(const std::string &obj_file,
     // information, the other debugging information could be perfectly
     // useful.
     info->LoadedSection(".debug_frame");
-    LoadDwarfCFI(obj_file, elf_header, ".debug_frame",
-                 dwarf_cfi_section, false, 0, 0, big_endian, module);
+    bool result =
+      LoadDwarfCFI(obj_file, elf_header, ".debug_frame",
+                   dwarf_cfi_section, false, 0, 0, big_endian, module);
+    found_usable_info = found_usable_info || result;
   }
 
   // Linux C++ exception handling information can also provide
@@ -590,8 +596,10 @@ static bool LoadSymbols(const std::string &obj_file,
                         elf_header->e_shnum);
     info->LoadedSection(".eh_frame");
     // As above, ignore the return value of this function.
-    LoadDwarfCFI(obj_file, elf_header, ".eh_frame", eh_frame_section, true,
-                 got_section, text_section, big_endian, module);
+    bool result =
+      LoadDwarfCFI(obj_file, elf_header, ".eh_frame", eh_frame_section, true,
+                   got_section, text_section, big_endian, module);
+    found_usable_info = found_usable_info || result;
   }
 
   if (!found_debug_info_section) {
@@ -617,7 +625,44 @@ static bool LoadSymbols(const std::string &obj_file,
         fprintf(stderr, "%s does not contain a .gnu_debuglink section.\n",
                 obj_file.c_str());
       }
+    } else {
+      // The caller doesn't want to consult .gnu_debuglink.
+      // See if there are export symbols available.
+      const ElfW(Shdr) *dynsym_section =
+        FindSectionByName(".dynsym", sections, section_names,
+                          elf_header->e_shnum);
+      const ElfW(Shdr) *dynstr_section =
+        FindSectionByName(".dynstr", sections, section_names,
+                          elf_header->e_shnum);
+      if (dynsym_section && dynstr_section) {
+        info->LoadedSection(".dynsym");
+        fprintf(stderr, "Have .dynsym + .dynstr\n");
+
+        uint8_t* dynsyms =
+          reinterpret_cast<uint8_t*>(dynsym_section->sh_offset);
+        uint8_t* dynstrs =
+          reinterpret_cast<uint8_t*>(dynstr_section->sh_offset);
+        bool result =
+          ELFSymbolsToModule(dynsyms,
+                             dynsym_section->sh_size,
+                             dynstrs,
+                             dynstr_section->sh_size,
+                             big_endian,
+                             // This could change to something more useful
+                             // when support for dumping cross-architecture
+                             // symbols is finished.
+                             sizeof(ElfW(Addr)),
+                             module);
+        found_usable_info = found_usable_info || result;
+      }
+
+      // Return true if some usable information was found, since
+      // the caller doesn't want to use .gnu_debuglink.
+      return found_usable_info;
     }
+
+    // No debug info was found, let the user try again with .gnu_debuglink
+    // if present.
     return false;
   }
 
@@ -709,7 +754,8 @@ bool WriteSymbolFile(const std::string &obj_file,
 
   LoadSymbolsInfo info(debug_dir);
   Module module(name, os, architecture, id);
-  if (!LoadSymbols(obj_file, big_endian, elf_header, true, &info, &module)) {
+  if (!LoadSymbols(obj_file, big_endian, elf_header, !debug_dir.empty(),
+                   &info, &module)) {
     const std::string debuglink_file = info.debuglink_file();
     if (debuglink_file.empty())
       return false;

@@ -340,6 +340,7 @@ src_tools_linux_dump_syms_dump_syms_SOURCES = \
 	src/common/dwarf/dwarf2diehandler.cc \
 	src/common/dwarf/dwarf2reader.cc \
 	src/common/linux/dump_symbols.cc \
+	src/common/linux/elf_symbols_to_module.cc \
 	src/common/linux/file_id.cc \
 	src/tools/linux/dump_syms/dump_syms.cc
 
@@ -380,6 +381,8 @@ src_common_dumper_unittest_SOURCES = \
 	src/common/dwarf/dwarf2reader.cc \
 	src/common/dwarf/dwarf2reader_cfi_unittest.cc \
 	src/common/linux/dump_symbols.cc \
+	src/common/linux/elf_symbols_to_module.cc \
+	src/common/linux/elf_symbols_to_module_unittest.cc \
 	src/common/linux/file_id.cc \
 	src/common/linux/file_id_unittest.cc \
 	src/testing/gtest/src/gtest-all.cc \
@@ -945,6 +948,8 @@ EXTRA_DIST = \
 	src/common/convert_UTF.h \
 	src/common/linux/dump_symbols.cc \
 	src/common/linux/dump_symbols.h \
+	src/common/linux/elf_symbols_to_module.cc \
+	src/common/linux/elf_symbols_to_module.h \
 	src/common/linux/file_id.cc \
 	src/common/linux/file_id.h \
 	src/common/linux/guid_creator.cc \
