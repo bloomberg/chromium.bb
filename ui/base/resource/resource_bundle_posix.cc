@@ -4,7 +4,6 @@
 
 #include "ui/base/resource/resource_bundle.h"
 
-#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/logging.h"
@@ -14,6 +13,7 @@
 #include "base/synchronization/lock.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/data_pack.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/font.h"
 
 namespace ui {

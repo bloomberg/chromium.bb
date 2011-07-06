@@ -11,6 +11,7 @@
 namespace switches {
 
 extern const char kLang[];
+extern const char kLocalePak[];
 
 }  // namespace switches
 
