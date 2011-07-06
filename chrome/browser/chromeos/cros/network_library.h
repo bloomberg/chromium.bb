@@ -617,7 +617,8 @@ class CellularNetwork : public WirelessNetwork {
     return state_ == STATE_PORTAL;
   }
   bool needs_new_plan() const {
-    return restricted_pool() && connected() && activated();
+    return SupportsDataPlan() && restricted_pool()
+        && connected() && activated();
   }
   const std::string& operator_name() const { return operator_name_; }
   const std::string& operator_code() const { return operator_code_; }
