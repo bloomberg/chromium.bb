@@ -217,6 +217,10 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
   WebKit::WebIDBFactory::BackingStoreType backingStoreType =
       WebKit::WebIDBFactory::LevelDBBackingStore;
 
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kSQLiteIndexedDatabase)) {
+    backingStoreType = WebKit::WebIDBFactory::SQLiteBackingStore;
+  }
 
   Context()->GetIDBFactory()->open(
       params.name,

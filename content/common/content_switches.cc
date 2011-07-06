@@ -257,9 +257,6 @@ const char kInProcessWebGL[]                = "in-process-webgl";
 // Specifies the flags passed to JS engine
 const char kJavaScriptFlags[]               = "js-flags";
 
-// Use LevelDB as back-end for Indexed Database API.
-const char kLevelDBIndexedDatabase[]        = "indexeddb-use-leveldb";
-
 // Load an NPAPI plugin from the specified path.
 const char kLoadPlugin[]                    = "load-plugin";
 
@@ -395,6 +392,10 @@ const char kSimpleDataSource[]              = "simple-data-source";
 
 // Runs the renderer and plugins in the same process as the browser
 const char kSingleProcess[]                 = "single-process";
+
+// Use SQLite as back-end for Indexed Database API.
+// Used for debugging differences between the LevelDB and SQLite back-end.
+const char kSQLiteIndexedDatabase[]         = "indexeddb-use-sqlite";
 
 // Runs the security test for the renderer sandbox.
 const char kTestSandbox[]                   = "test-sandbox";
