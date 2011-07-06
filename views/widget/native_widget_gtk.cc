@@ -686,9 +686,15 @@ void NativeWidgetGtk::InitNativeWidget(const Widget::InitParams& params) {
   CreateGtkWidget(modified_params);
 
   if (View::get_use_acceleration_when_possible()) {
-    compositor_ = Widget::compositor_factory() ?
-        (*Widget::compositor_factory())() :
-        ui::Compositor::Create(GDK_WINDOW_XID(window_contents_->window));
+    if (Widget::compositor_factory()) {
+      compositor_ = (*Widget::compositor_factory())();
+    } else {
+      gint width, height;
+      gdk_drawable_get_size(window_contents_->window, &width, &height);
+      compositor_ = ui::Compositor::Create(
+          GDK_WINDOW_XID(window_contents_->window),
+          gfx::Size(width, height));
+    }
     if (compositor_.get())
       delegate_->AsWidget()->GetRootView()->SetPaintToLayer(true);
   }
@@ -1290,6 +1296,8 @@ void NativeWidgetGtk::OnSizeAllocate(GtkWidget* widget,
   if (new_size == size_)
     return;
   size_ = new_size;
+  if (compositor_.get())
+    compositor_->OnWidgetSizeChanged(size_);
   delegate_->OnNativeWidgetSizeChanged(size_);
 
   if (GetWidget()->non_client_view()) {

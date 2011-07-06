@@ -53,7 +53,8 @@ class Texture : public base::RefCounted<Texture> {
 class Compositor : public base::RefCounted<Compositor> {
  public:
   // Create a compositor from the provided handle.
-  static Compositor* Create(gfx::AcceleratedWidget widget);
+  static Compositor* Create(gfx::AcceleratedWidget widget,
+                            const gfx::Size& size);
 
   // Creates a new texture. The caller owns the returned object.
   virtual Texture* CreateTexture() = 0;
@@ -69,6 +70,10 @@ class Compositor : public base::RefCounted<Compositor> {
 
   // Schedules a paint on the widget this Compositor was created for.
   virtual void SchedulePaint() = 0;
+
+  // Notifies the compositor that the size of the widget that it is
+  // drawing to has changed.
+  virtual void OnWidgetSizeChanged(const gfx::Size& size) = 0;
 
  protected:
   virtual ~Compositor() {}

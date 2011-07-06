@@ -315,8 +315,10 @@ void TextureGL::DrawInternal(const ui::TextureProgramGL& program,
   glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
-CompositorGL::CompositorGL(gfx::AcceleratedWidget widget)
-    : started_(false) {
+CompositorGL::CompositorGL(gfx::AcceleratedWidget widget,
+                           const gfx::Size& size)
+    : started_(false),
+      size_(size) {
   gl_surface_ = gfx::GLSurface::CreateViewGLSurface(widget);
   gl_context_ = gfx::GLContext::CreateGLContext(NULL, gl_surface_.get());
   gl_context_->MakeCurrent(gl_surface_.get());
@@ -336,7 +338,7 @@ void CompositorGL::MakeCurrent() {
 }
 
 gfx::Size CompositorGL::GetSize() {
-  return gl_surface_->GetSize();
+  return size_;
 }
 
 TextureProgramGL* CompositorGL::program_no_swizzle() {
@@ -355,8 +357,7 @@ Texture* CompositorGL::CreateTexture() {
 void CompositorGL::NotifyStart() {
   started_ = true;
   gl_context_->MakeCurrent(gl_surface_.get());
-  glViewport(0, 0,
-             gl_surface_->GetSize().width(), gl_surface_->GetSize().height());
+  glViewport(0, 0, size_.width(), size_.height());
 
 #if defined(DEBUG)
   // Clear to 'psychedelic' purple to make it easy to spot un-rendered regions.
@@ -386,6 +387,10 @@ void CompositorGL::SchedulePaint() {
   NOTIMPLEMENTED();
 }
 
+void CompositorGL::OnWidgetSizeChanged(const gfx::Size& size) {
+  size_ = size;
+}
+
 bool CompositorGL::InitShaders() {
   scoped_ptr<TextureProgramGL> temp_program(new TextureProgramNoSwizzleGL());
   if (!temp_program->Initialize())
@@ -403,14 +408,15 @@ bool CompositorGL::InitShaders() {
 }
 
 // static
-Compositor* Compositor::Create(gfx::AcceleratedWidget widget) {
+Compositor* Compositor::Create(gfx::AcceleratedWidget widget,
+                               const gfx::Size& size) {
   // The following line of code exists soley to disable IO restrictions
   // on this thread long enough to perform the GL bindings.
   // TODO(wjmaclean) Remove this when GL initialisation cleaned up.
   base::ThreadRestrictions::ScopedAllowIO allow_io;
   if (gfx::GLSurface::InitializeOneOff() &&
       gfx::GetGLImplementation() != gfx::kGLImplementationNone)
-    return new CompositorGL(widget);
+    return new CompositorGL(widget, size);
   return NULL;
 }
 

@@ -50,7 +50,7 @@ class TextureGL : public Texture {
 
 class CompositorGL : public Compositor {
  public:
-  explicit CompositorGL(gfx::AcceleratedWidget widget);
+  CompositorGL(gfx::AcceleratedWidget widget, const gfx::Size& size);
   virtual ~CompositorGL();
 
   void MakeCurrent();
@@ -66,6 +66,7 @@ class CompositorGL : public Compositor {
   virtual void NotifyEnd() OVERRIDE;
   virtual void Blur(const gfx::Rect& bounds) OVERRIDE;
   virtual void SchedulePaint() OVERRIDE;
+  virtual void OnWidgetSizeChanged(const gfx::Size& size) OVERRIDE;
 
   // Specific to CompositorGL.
   bool InitShaders();

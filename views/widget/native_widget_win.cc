@@ -1233,8 +1233,15 @@ LRESULT NativeWidgetWin::OnCreate(CREATESTRUCT* create_struct) {
 
 #if defined(VIEWS_COMPOSITOR)
   if (View::get_use_acceleration_when_possible()) {
-    compositor_ = Widget::compositor_factory() ?
-        (*Widget::compositor_factory())() : ui::Compositor::Create(hwnd());
+    if (Widget::compositor_factory()) {
+      compositor_ = (*Widget::compositor_factory())();
+    } else {
+      CRect window_rect;
+      GetClientRect(&window_rect);
+      compositor_ = ui::Compositor::Create(
+          hwnd(),
+          gfx::Size(window_rect.Width(), window_rect.Height()));
+    }
     if (compositor_.get())
       delegate_->AsWidget()->GetRootView()->SetPaintToLayer(true);
   }
@@ -2293,6 +2300,8 @@ void NativeWidgetWin::ClientAreaSizeChanged() {
     GetWindowRect(&r);
   gfx::Size s(std::max(0, static_cast<int>(r.right - r.left)),
               std::max(0, static_cast<int>(r.bottom - r.top)));
+  if (compositor_.get())
+    compositor_->OnWidgetSizeChanged(s);
   delegate_->OnNativeWidgetSizeChanged(s);
   if (use_layered_buffer_) {
     layered_window_contents_.reset(

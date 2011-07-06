@@ -84,7 +84,8 @@ class ViewTexture : public Texture {
 // D3D 10 Compositor implementation.
 class CompositorWin : public Compositor {
  public:
-  explicit CompositorWin(gfx::AcceleratedWidget widget);
+  CompositorWin(gfx::AcceleratedWidget widget,
+                const gfx::Size& size);
 
   void Init();
 
@@ -105,6 +106,7 @@ class CompositorWin : public Compositor {
   virtual void NotifyEnd() OVERRIDE;
   virtual void Blur(const gfx::Rect& bounds) OVERRIDE;
   virtual void SchedulePaint() OVERRIDE;
+  virtual void OnWidgetSizeChanged(const gfx::Size& size) OVERRIDE;
 
  private:
   enum Direction {
@@ -116,16 +118,13 @@ class CompositorWin : public Compositor {
 
   void Errored(HRESULT error_code);
 
-  // Returns the bounds of the hosting window.
-  gfx::Rect HostBounds();
-
   void CreateDevice();
 
   void LoadEffects();
 
   void InitVertexLayout();
 
-  void Resize(const gfx::Rect& bounds);
+  void Resize(const gfx::Size& size);
 
   // Updates the kernel used for blurring. Size is the size of the texture
   // being drawn to along the appropriate axis.
@@ -149,8 +148,8 @@ class CompositorWin : public Compositor {
 
   gfx::AcceleratedWidget host_;
 
-  // Bounds the device was last created at.
-  gfx::Rect last_bounds_;
+  // Size the device was last created at.
+  gfx::Size last_size_;
 
   ScopedComPtr<ID3D10Device> device_;
   ScopedComPtr<IDXGISwapChain> swap_chain_;
@@ -322,15 +321,17 @@ void ViewTexture::CreateVertexBuffer(const gfx::Size& size) {
                                          vertex_buffer_.Receive()));
 }
 
-CompositorWin::CompositorWin(gfx::AcceleratedWidget widget)
+CompositorWin::CompositorWin(gfx::AcceleratedWidget widget,
+                             const gfx::Size& size)
     : host_(widget),
-      technique_(NULL) {
+      technique_(NULL),
+      last_size_(size) {
 }
 
 void CompositorWin::Init() {
   CreateDevice();
   LoadEffects();
-  Resize(last_bounds_);
+  Resize(last_size_);
   InitVertexLayout();
   CreateVertexBuffer();
   CreateIndexBuffer();
@@ -358,8 +359,8 @@ void CompositorWin::UpdatePerspective(const ui::Transform& transform,
   D3DXMATRIX scale_matrix;
   D3DXMatrixScaling(
       &scale_matrix,
-      2.0f / static_cast<float>(last_bounds_.width()),
-      2.0f / static_cast<float>(last_bounds_.height()),
+      2.0f / static_cast<float>(last_size_.width()),
+      2.0f / static_cast<float>(last_size_.height()),
       1.0f);
 
   // Translate so x and y are from -1,-1 to 1,1.
@@ -383,7 +384,7 @@ void CompositorWin::UpdatePerspective(const ui::Transform& transform,
 }
 
 const gfx::Size& CompositorWin::GetHostSize() {
-  return last_bounds_.size();
+  return last_size_;
 }
 
 ID3D10Buffer* CompositorWin::GetTextureIndexBuffer() {
@@ -395,10 +396,6 @@ Texture* CompositorWin::CreateTexture() {
 }
 
 void CompositorWin::NotifyStart() {
-  gfx::Rect bounds = HostBounds();
-  if (bounds != last_bounds_)
-    Resize(bounds);
-
   ID3D10RenderTargetView* target_view = main_render_target_view_.get();
   device_->OMSetRenderTargets(1, &target_view, depth_stencil_view_.get());
 
@@ -468,7 +465,7 @@ void CompositorWin::Blur(const gfx::Rect& bounds) {
   D3DXMatrixIdentity(&identity_matrix);
 
   // Horizontal blur from the main texture to blur texture.
-  UpdateBlurKernel(HORIZONTAL, last_bounds_.width());
+  UpdateBlurKernel(HORIZONTAL, last_size_.width());
   ID3D10RenderTargetView* target_view = blur_render_target_view_.get();
   device_->OMSetRenderTargets(1, &target_view, NULL);
   RETURN_IF_FAILED(
@@ -494,7 +491,7 @@ void CompositorWin::Blur(const gfx::Rect& bounds) {
   RETURN_IF_FAILED(
       blur_fx_->GetVariableByName("textureMap")->AsShaderResource()->
       SetResource(blur_texture_shader_view_.get()));
-  UpdateBlurKernel(VERTICAL, last_bounds_.height());
+  UpdateBlurKernel(VERTICAL, last_size_.height());
   target_view = main_render_target_view_.get();
   device_->OMSetRenderTargets(1, &target_view, NULL);
   for(UINT p = 0; p < tech_desc.Passes; ++p)
@@ -517,6 +514,10 @@ void CompositorWin::SchedulePaint() {
   InvalidateRect(host_, &bounds, FALSE);
 }
 
+void CompositorWin::OnWidgetSizeChanged(const gfx::Size& size) {
+  Resize(size);
+}
+
 CompositorWin::~CompositorWin() {
 }
 
@@ -525,18 +526,10 @@ void CompositorWin::Errored(HRESULT error_code) {
   DCHECK(false);
 }
 
-gfx::Rect CompositorWin::HostBounds() {
-  RECT client_rect;
-  GetClientRect(host_, &client_rect);
-  return gfx::Rect(client_rect);
-}
-
 void CompositorWin::CreateDevice() {
-  last_bounds_ = HostBounds();
-
   DXGI_SWAP_CHAIN_DESC sd;
-  sd.BufferDesc.Width = last_bounds_.width();
-  sd.BufferDesc.Height = last_bounds_.height();
+  sd.BufferDesc.Width = last_size_.width();
+  sd.BufferDesc.Height = last_size_.height();
   sd.BufferDesc.RefreshRate.Numerator = 60;
   sd.BufferDesc.RefreshRate.Denominator = 1;
   sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -619,8 +612,8 @@ void CompositorWin::InitVertexLayout() {
                                  vertex_layout_.Receive()));
 }
 
-void CompositorWin::Resize(const gfx::Rect& bounds) {
-  last_bounds_ = bounds;
+void CompositorWin::Resize(const gfx::Size& size) {
+  last_size_ = size;
 
   dest_render_target_view_ = NULL;
   depth_stencil_buffer_ = NULL;
@@ -634,17 +627,17 @@ void CompositorWin::Resize(const gfx::Rect& bounds) {
   blur_texture_ = NULL;
   blur_texture_shader_view_ = NULL;
 
-  CreateTexture(bounds.size(), main_texture_.Receive(),
+  CreateTexture(size, main_texture_.Receive(),
                 main_render_target_view_.Receive(),
                 main_texture_shader_view_.Receive());
 
-  CreateTexture(bounds.size(), blur_texture_.Receive(),
+  CreateTexture(size, blur_texture_.Receive(),
                 blur_render_target_view_.Receive(),
                 blur_texture_shader_view_.Receive());
 
   // Resize the swap chain and recreate the render target view.
   RETURN_IF_FAILED(swap_chain_->ResizeBuffers(
-      1, bounds.width(), bounds.height(), DXGI_FORMAT_R8G8B8A8_UNORM, 0));
+      1, size.width(), size.height(), DXGI_FORMAT_R8G8B8A8_UNORM, 0));
   ScopedComPtr<ID3D10Texture2D> back_buffer;
   RETURN_IF_FAILED(swap_chain_->GetBuffer(
                        0, __uuidof(ID3D10Texture2D),
@@ -655,8 +648,8 @@ void CompositorWin::Resize(const gfx::Rect& bounds) {
 
   // Create the depth/stencil buffer and view.
   D3D10_TEXTURE2D_DESC depth_stencil_desc;
-  depth_stencil_desc.Width     = bounds.width();
-  depth_stencil_desc.Height    = bounds.height();
+  depth_stencil_desc.Width     = size.width();
+  depth_stencil_desc.Height    = size.height();
   depth_stencil_desc.MipLevels = 1;
   depth_stencil_desc.ArraySize = 1;
   depth_stencil_desc.Format    = DXGI_FORMAT_D24_UNORM_S8_UINT;
@@ -676,10 +669,10 @@ void CompositorWin::Resize(const gfx::Rect& bounds) {
 
   // Set the viewport transform.
   D3D10_VIEWPORT vp;
-  vp.TopLeftX = bounds.x();
-  vp.TopLeftY = bounds.y();
-  vp.Width    = bounds.width();
-  vp.Height   = bounds.height();
+  vp.TopLeftX = 0;
+  vp.TopLeftY = 0;
+  vp.Width    = size.width();
+  vp.Height   = size.height();
   vp.MinDepth = 0.0f;
   vp.MaxDepth = 1.0f;
 
@@ -776,14 +769,14 @@ void CompositorWin::CreateIndexBuffer() {
 ID3D10Buffer* CompositorWin::CreateVertexBufferForRegion(
     const gfx::Rect& bounds) {
   float x = static_cast<float>(bounds.x()) /
-      static_cast<float>(last_bounds_.width()) * 2.0f - 1.0f;
+      static_cast<float>(last_size_.width()) * 2.0f - 1.0f;
   float max_x =
-      x + bounds.width() / static_cast<float>(last_bounds_.width()) * 2.0f;
+      x + bounds.width() / static_cast<float>(last_size_.width()) * 2.0f;
   float y =
-      static_cast<float>(last_bounds_.height() - bounds.y() - bounds.height()) /
-      static_cast<float>(last_bounds_.height()) * 2.0f - 1.0f;
+      static_cast<float>(last_size_.height() - bounds.y() - bounds.height()) /
+      static_cast<float>(last_size_.height()) * 2.0f - 1.0f;
   float max_y =
-      y + bounds.height() / static_cast<float>(last_bounds_.height()) * 2.0f;
+      y + bounds.height() / static_cast<float>(last_size_.height()) * 2.0f;
   float tex_x = x / 2.0f + .5f;
   float max_tex_x = max_x / 2.0f + .5f;
   float tex_y = 1.0f - (max_y + 1.0f) / 2.0f;
@@ -818,8 +811,9 @@ ID3D10Buffer* CompositorWin::CreateVertexBufferForRegion(
 }  // namespace
 
 // static
-Compositor* Compositor::Create(gfx::AcceleratedWidget widget) {
-  CompositorWin* compositor = new CompositorWin(widget);
+Compositor* Compositor::Create(gfx::AcceleratedWidget widget,
+                               const gfx::Size& size) {
+  CompositorWin* compositor = new CompositorWin(widget, size);
   compositor->Init();
   return compositor;
 }
