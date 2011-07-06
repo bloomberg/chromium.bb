@@ -3,10 +3,34 @@
 # found in the LICENSE file.
 
 {
-  'variables': {
-    'chromium_code': 1,
+  'target_defaults': {
+    'sources/': [
+      ['exclude', '/(cocoa|gtk|win)/'],
+      ['exclude', '_(cocoa|gtk|linux|mac|posix|win|x)\\.(cc|mm?)$'],
+      ['exclude', '/(gtk|win|x11)_[^/]*\\.cc$'],
+    ],
+    'conditions': [
+      ['toolkit_uses_gtk == 1', {'sources/': [
+        ['include', '/gtk/'],
+        ['include', '_(gtk|linux|posix|skia|x)\\.cc$'],
+        ['include', '/(gtk|x11)_[^/]*\\.cc$'],
+      ]}],
+      ['OS=="mac"', {'sources/': [
+        ['include', '/cocoa/'],
+        ['include', '_(cocoa|mac|posix)\\.(cc|mm?)$'],
+      ]}, { # else: OS != "mac"
+        'sources/': [
+          ['exclude', '\\.mm?$'],
+        ],
+      }],
+      ['OS=="win"',
+        {'sources/': [
+          ['include', '_(win)\\.cc$'],
+          ['include', '/win/'],
+          ['include', '/win_[^/]*\\.cc$'],
+      ]}],
+    ],
   },
-
   'targets': [
     {
       'target_name': 'gl',
