@@ -190,6 +190,9 @@ TEST_F(PPAPITest, PostMessage) {
 TEST_F(PPAPITest, Memory) {
   RunTest("Memory");
 }
+TEST_F(OutOfProcessPPAPITest, Memory) {
+  RunTest("Memory");
+}
 
 // http://crbug.com/83443
 TEST_F(PPAPITest, FAILS_FileIO) {

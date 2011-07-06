@@ -30,20 +30,12 @@ void TestMemory::RunTest() {
 }
 
 std::string TestMemory::TestMemAlloc() {
-  uint32_t before_object = testing_interface_->GetLiveObjectsForInstance(
-      instance_->pp_instance());
-  {
-    char* buffer = static_cast<char*>(
-        memory_dev_interface_->MemAlloc(kTestBufferSize));
-    // Touch a couple of locations.  Failure will crash the test.
-    buffer[0] = '1';
-    buffer[kTestBufferSize - 1] = '1';
-    memory_dev_interface_->MemFree(buffer);
-  }
-
-  // Make sure nothing leaked.
-  ASSERT_TRUE(testing_interface_->GetLiveObjectsForInstance(
-      instance_->pp_instance()) == before_object);
+  char* buffer = static_cast<char*>(
+      memory_dev_interface_->MemAlloc(kTestBufferSize));
+  // Touch a couple of locations.  Failure will crash the test.
+  buffer[0] = '1';
+  buffer[kTestBufferSize - 1] = '1';
+  memory_dev_interface_->MemFree(buffer);
 
   PASS();
 }

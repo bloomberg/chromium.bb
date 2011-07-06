@@ -67,6 +67,7 @@
 #include "ppapi/proxy/ppb_graphics_2d_proxy.h"
 #include "ppapi/proxy/ppb_image_data_proxy.h"
 #include "ppapi/proxy/ppb_instance_proxy.h"
+#include "ppapi/proxy/ppb_memory_proxy.h"
 #include "ppapi/proxy/ppb_opengles2_proxy.h"
 #include "ppapi/proxy/ppb_pdf_proxy.h"
 #include "ppapi/proxy/ppb_surface_3d_proxy.h"
@@ -139,6 +140,7 @@ InterfaceList::InterfaceList() {
   AddPPB(PPB_Instance_Proxy::GetInfo0_4());
   AddPPB(PPB_Instance_Proxy::GetInfo0_5());
   AddPPB(PPB_Instance_Proxy::GetInfoFullscreen());
+  AddPPB(PPB_Memory_Proxy::GetInfo());
   AddPPB(PPB_OpenGLES2_Proxy::GetInfo());
   AddPPB(PPB_PDF_Proxy::GetInfo());
   AddPPB(PPB_Surface3D_Proxy::GetInfo());

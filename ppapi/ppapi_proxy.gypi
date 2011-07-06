@@ -100,6 +100,8 @@
         'proxy/ppb_image_data_proxy.h',
         'proxy/ppb_instance_proxy.cc',
         'proxy/ppb_instance_proxy.h',
+        'proxy/ppb_memory_proxy.cc',
+        'proxy/ppb_memory_proxy.h',
         'proxy/ppb_opengles2_proxy.cc',
         'proxy/ppb_opengles2_proxy.h',
         'proxy/ppb_pdf_proxy.cc',
