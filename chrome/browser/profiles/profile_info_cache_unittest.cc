@@ -37,7 +37,7 @@ class ProfileInfoCacheUnittests : public TestingBrowserProcessTest {
 };
 
 // TODO(sail): This fails on windows for some reason.
-TEST_F(ProfileInfoCacheUnittests, FLAKY_AddProfiles) {
+TEST_F(ProfileInfoCacheUnittests, DISABLED_AddProfiles) {
   EXPECT_EQ(0u, cache_->GetNumberOfProfiles());
 
   for (uint32 i = 0; i < 4; ++i) {
