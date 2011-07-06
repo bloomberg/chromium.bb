@@ -13,6 +13,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/pref_names.h"
@@ -31,66 +32,25 @@
 
 namespace {
 
-///////////////////////////////////////////////////////////////////////////////
-//
-// CrashesUIHTMLSource
-//
-///////////////////////////////////////////////////////////////////////////////
+ChromeWebUIDataSource* CreateCrashesUIHTMLSource() {
+  ChromeWebUIDataSource* source =
+      new ChromeWebUIDataSource(chrome::kChromeUICrashesHost);
 
-class CrashesUIHTMLSource : public ChromeURLDataManager::DataSource {
- public:
-  CrashesUIHTMLSource()
-      : DataSource(chrome::kChromeUICrashesHost, MessageLoop::current()) {}
-
-  // Called when the network layer has requested a resource underneath
-  // the path we registered.
-  virtual void StartDataRequest(const std::string& path,
-                                bool is_incognito,
-                                int request_id);
-  virtual std::string GetMimeType(const std::string&) const {
-    return "text/html";
-  }
-
- private:
-  ~CrashesUIHTMLSource() {}
-
-  DISALLOW_COPY_AND_ASSIGN(CrashesUIHTMLSource);
-};
-
-void CrashesUIHTMLSource::StartDataRequest(const std::string& path,
-                                           bool is_incognito,
-                                           int request_id) {
-  DictionaryValue localized_strings;
-  localized_strings.SetString("crashesTitle",
-      l10n_util::GetStringUTF16(IDS_CRASHES_TITLE));
-  localized_strings.SetString("crashCountFormat",
-      l10n_util::GetStringUTF16(IDS_CRASHES_CRASH_COUNT_BANNER_FORMAT));
-  localized_strings.SetString("crashHeaderFormat",
-      l10n_util::GetStringUTF16(IDS_CRASHES_CRASH_HEADER_FORMAT));
-  localized_strings.SetString("crashTimeFormat",
-      l10n_util::GetStringUTF16(IDS_CRASHES_CRASH_TIME_FORMAT));
-  localized_strings.SetString("bugLinkText",
-      l10n_util::GetStringUTF16(IDS_CRASHES_BUG_LINK_LABEL));
-  localized_strings.SetString("noCrashesMessage",
-      l10n_util::GetStringUTF16(IDS_CRASHES_NO_CRASHES_MESSAGE));
-  localized_strings.SetString("disabledHeader",
-      l10n_util::GetStringUTF16(IDS_CRASHES_DISABLED_HEADER));
-  localized_strings.SetString("disabledMessage",
-      l10n_util::GetStringUTF16(IDS_CRASHES_DISABLED_MESSAGE));
-
-  ChromeURLDataManager::DataSource::SetFontAndTextDirection(&localized_strings);
-
-  static const base::StringPiece crashes_html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(IDR_CRASHES_HTML));
-  std::string full_html =
-      jstemplate_builder::GetI18nTemplateHtml(crashes_html, &localized_strings);
-  jstemplate_builder::AppendJsTemplateSourceHtml(&full_html);
-
-  scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
-  html_bytes->data.resize(full_html.size());
-  std::copy(full_html.begin(), full_html.end(), html_bytes->data.begin());
-
-  SendResponse(request_id, html_bytes);
+  source->AddLocalizedString("crashesTitle", IDS_CRASHES_TITLE);
+  source->AddLocalizedString("crashCountFormat",
+                             IDS_CRASHES_CRASH_COUNT_BANNER_FORMAT);
+  source->AddLocalizedString("crashHeaderFormat",
+                             IDS_CRASHES_CRASH_HEADER_FORMAT);
+  source->AddLocalizedString("crashTimeFormat", IDS_CRASHES_CRASH_TIME_FORMAT);
+  source->AddLocalizedString("bugLinkText", IDS_CRASHES_BUG_LINK_LABEL);
+  source->AddLocalizedString("noCrashesMessage",
+                             IDS_CRASHES_NO_CRASHES_MESSAGE);
+  source->AddLocalizedString("disabledHeader", IDS_CRASHES_DISABLED_HEADER);
+  source->AddLocalizedString("disabledMessage", IDS_CRASHES_DISABLED_MESSAGE);
+  source->set_json_path("strings.js");
+  source->add_resource_path("crashes.js", IDR_CRASHES_JS);
+  source->set_default_resource(IDR_CRASHES_HTML);
+  return source;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -197,10 +157,9 @@ void CrashesDOMHandler::UpdateUI() {
 CrashesUI::CrashesUI(TabContents* contents) : ChromeWebUI(contents) {
   AddMessageHandler((new CrashesDOMHandler())->Attach(this));
 
-  CrashesUIHTMLSource* html_source = new CrashesUIHTMLSource();
-
   // Set up the chrome://crashes/ source.
-  contents->profile()->GetChromeURLDataManager()->AddDataSource(html_source);
+  contents->profile()->GetChromeURLDataManager()->AddDataSource(
+      CreateCrashesUIHTMLSource());
 }
 
 // static

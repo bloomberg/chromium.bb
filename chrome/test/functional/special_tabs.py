@@ -46,7 +46,7 @@ class SpecialTabsTest(pyauto.PyUITest):
       'CSP': False
     },
     'chrome://chrome-urls': { 'title': 'Chrome URLs' },
-    'chrome://crashes': { 'title': 'Crashes', 'CSP': False },
+    'chrome://crashes': { 'title': 'Crashes' },
     'chrome://credits': { 'title': 'Credits', 'CSP': False },
     'chrome://downloads': { 'title': 'Downloads' },
     'chrome://extensions': { 'title': 'Extensions', 'CSP': False },

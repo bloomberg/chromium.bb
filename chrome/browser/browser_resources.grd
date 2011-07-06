@@ -29,7 +29,8 @@
       <include name="IDR_ABOUT_VERSION_HTML" file="resources\about_version.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_ABOUT_VERSION_JS" file="resources\about_version.js" type="BINDATA" />
       <include name="IDR_BOOKMARKS_MANIFEST" file="resources\bookmark_manager\manifest.json" type="BINDATA" />
-      <include name="IDR_CRASHES_HTML" file="resources\crashes.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_CRASHES_HTML" file="resources\crashes.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+      <include name="IDR_CRASHES_JS" file="resources\crashes.js" type="BINDATA" />
       <include name="IDR_CREDITS_HTML" file="resources\about_credits.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_CREDITS_JS" file="resources\about_credits.js" type="BINDATA" />
       <include name="IDR_DOWNLOADS_JS" file="resources\downloads.js" type="BINDATA" />
