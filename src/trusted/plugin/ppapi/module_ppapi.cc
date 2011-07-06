@@ -21,13 +21,15 @@ class ModulePpapi : public pp::Module {
  public:
   // TODO(polina): factor out the code below as it is identical to
   // NPP_Initialize and NPP_Shutdown
-  ModulePpapi() : pp::Module() {
+  ModulePpapi() : pp::Module(), init_was_successful_(false) {
     PLUGIN_PRINTF(("ModulePpapi::ModulePpapi (this=%p)\n",
                    static_cast<void*>(this)));
   }
 
   virtual ~ModulePpapi() {
-    NaClNrdAllModulesFini();
+    if (init_was_successful_) {
+      NaClNrdAllModulesFini();
+    }
     PLUGIN_PRINTF(("ModulePpapi::~ModulePpapi (this=%p)\n",
                    static_cast<void*>(this)));
   }
@@ -37,7 +39,11 @@ class ModulePpapi : public pp::Module {
     const PPB_NaCl_Private* ptr = reinterpret_cast<const PPB_NaCl_Private*>(
         GetBrowserInterface(PPB_NACL_PRIVATE_INTERFACE));
 
-    if (NULL == ptr) return false;
+    if (NULL == ptr) {
+      PLUGIN_PRINTF(("ModulePpapi::Init failed: "
+                     "GetBrowserInterface returned NULL\n"));
+      return false;
+    }
 
     launch_nacl_process = reinterpret_cast<LaunchNaClProcessFunc>(
         ptr->LaunchSelLdr);
@@ -50,6 +56,7 @@ class ModulePpapi : public pp::Module {
 #if NACL_WINDOWS && !defined(NACL_STANDALONE)
     NaClHandlePassBrowserInit();
 #endif
+    init_was_successful_ = true;
     return true;
   }
 
@@ -61,6 +68,9 @@ class ModulePpapi : public pp::Module {
                    static_cast<void* >(plugin)));
     return plugin;
   }
+
+ private:
+  bool init_was_successful_;
 };
 
 }  // namespace plugin
