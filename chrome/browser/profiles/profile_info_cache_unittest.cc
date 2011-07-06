@@ -59,7 +59,7 @@ TEST_F(ProfileInfoCacheUnittests, DISABLED_AddProfiles) {
   }
 }
 
-TEST_F(ProfileInfoCacheUnittests, DeleteProfile) {
+TEST_F(ProfileInfoCacheUnittests, DISABLED_DeleteProfile) {
   EXPECT_EQ(0u, cache_->GetNumberOfProfiles());
 
   FilePath path_1 = GetUserDataDir().Append(StringToFilePath("path_1"));
@@ -80,7 +80,7 @@ TEST_F(ProfileInfoCacheUnittests, DeleteProfile) {
   EXPECT_EQ(0u, cache_->GetNumberOfProfiles());
 }
 
-TEST_F(ProfileInfoCacheUnittests, MutateProfile) {
+TEST_F(ProfileInfoCacheUnittests, DISABLED_MutateProfile) {
   cache_->AddProfileToCache(GetUserDataDir().Append(StringToFilePath("path_1")),
                            ASCIIToUTF16("name_1"), 0);
   cache_->AddProfileToCache(GetUserDataDir().Append(StringToFilePath("path_2")),
