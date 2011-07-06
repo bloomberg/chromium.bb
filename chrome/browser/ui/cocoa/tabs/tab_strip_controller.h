@@ -18,7 +18,6 @@
 
 @class CrTrackingArea;
 @class NewTabButton;
-@class ProfileMenuButton;
 @class TabContentsController;
 @class TabView;
 @class TabStripDragController;
@@ -30,10 +29,6 @@ class TabStripModelObserverBridge;
 class TabStripModel;
 class TabContents;
 class ToolbarModel;
-
-namespace TabStripControllerInternal {
-class NotificationBridge;
-} // namespace TabStripControllerInternal
 
 // The interface for the tab strip controller's delegate.
 // Delegating TabStripModelObserverBridge's events (in lieu of directly
@@ -78,8 +73,6 @@ class NotificationBridge;
   NSView* switchView_;  // weak
   scoped_nsobject<NSView> dragBlockingView_;  // avoid bad window server drags
   NewTabButton* newTabButton_;  // weak, obtained from the nib.
-  ProfileMenuButton* profileMenuButton_;  // weak, obtained from the nib.
-  BOOL hasUpdatedProfileMenuButtonXOffset_;
 
   // The controller that manages all the interactions of dragging tabs.
   scoped_nsobject<TabStripDragController> dragController_;
@@ -156,10 +149,6 @@ class NotificationBridge;
 
   // Is the mouse currently inside the strip;
   BOOL mouseInside_;
-
-  // Used for monitoring the profile name pref.
-  scoped_ptr<TabStripControllerInternal::NotificationBridge>
-      notificationBridge_;
 
   // Helper for performing tab selection as a result of dragging over a tab.
   scoped_ptr<HoverTabSelector> hoverTabSelector_;

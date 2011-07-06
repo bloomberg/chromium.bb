@@ -32,7 +32,6 @@
 #import "chrome/browser/ui/cocoa/constrained_window_mac.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
 #import "chrome/browser/ui/cocoa/new_tab_button.h"
-#import "chrome/browser/ui/cocoa/profile_menu_button.h"
 #import "chrome/browser/ui/cocoa/tab_contents/favicon_util.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_drag_controller.h"
@@ -272,39 +271,6 @@ private:
 
 @end
 
-namespace TabStripControllerInternal {
-
-// Bridges C++ notifications back to the TabStripController.
-class NotificationBridge : public NotificationObserver {
- public:
-  explicit NotificationBridge(TabStripController* controller,
-                              PrefService* prefService)
-      : controller_(controller) {
-    DCHECK(prefService);
-    usernamePref_.Init(prefs::kGoogleServicesUsername, prefService, this);
-  }
-
-  // Overridden from NotificationObserver:
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
-    DCHECK_EQ(NotificationType::PREF_CHANGED, type.value);
-    std::string* name = Details<std::string>(details).ptr();
-    if (prefs::kGoogleServicesUsername == *name) {
-      [controller_ updateProfileMenuButton];
-      [controller_ layoutTabsWithAnimation:NO regenerateSubviews:NO];
-    }
-  }
-
- private:
-  TabStripController* controller_;  // weak, owns us
-
-  // The Google services user name associated with this BrowserView's profile.
-  StringPrefMember usernamePref_;
-};
-
-} // namespace TabStripControllerInternal
-
 #pragma mark -
 
 // In general, there is a one-to-one correspondence between TabControllers,
@@ -383,14 +349,6 @@ class NotificationBridge : public NotificationObserver {
     [newTabButton_ setTarget:nil];
     [newTabButton_ setAction:@selector(commandDispatch:)];
     [newTabButton_ setTag:IDC_NEW_TAB];
-
-    profileMenuButton_ = [view profileMenuButton];
-    [self addSubviewToPermanentList:profileMenuButton_];
-    [self updateProfileMenuButton];
-    // Register pref observers for profile name.
-    notificationBridge_.reset(
-        new TabStripControllerInternal::NotificationBridge(
-            self, browser_->profile()->GetPrefs()));
 
     // Set the images from code because Cocoa fails to find them in our sub
     // bundle during tests.
@@ -1079,49 +1037,6 @@ class NotificationBridge : public NotificationObserver {
         newTabTargetFrame_ = newTabNewFrame;
       }
     }
-  }
-
-  if (profileMenuButton_ && ![profileMenuButton_ isHidden]) {
-    CGFloat maxX;
-    if ([newTabButton_ isHidden]) {
-      maxX = std::max(offset, NSMaxX(placeholderFrame_) - kTabOverlap);
-    } else {
-      maxX = NSMaxX(newTabTargetFrame_);
-    }
-    NSRect profileMenuButtonFrame = [profileMenuButton_ frame];
-    NSSize minSize = [profileMenuButton_ minControlSize];
-
-    // Make room for the full screen button if necessary.
-    if (!hasUpdatedProfileMenuButtonXOffset_) {
-      hasUpdatedProfileMenuButtonXOffset_ = YES;
-      if ([[profileMenuButton_ window]
-          respondsToSelector:@selector(toggleFullScreen:)]) {
-        NSButton* fullscreenButton = [[profileMenuButton_ window]
-            standardWindowButton:NSWindowFullScreenButton];
-        if (fullscreenButton) {
-          profileMenuButtonFrame.origin.x = NSMinX([fullscreenButton frame]) -
-              NSWidth(profileMenuButtonFrame) - kProfileMenuButtonOffset;
-        }
-      }
-    }
-
-    // TODO(sail): Animate this.
-    CGFloat availableWidth = NSMaxX(profileMenuButtonFrame) - maxX -
-                             kProfileMenuButtonOffset;
-    if (availableWidth > minSize.width) {
-      [profileMenuButton_ setShouldShowProfileDisplayName:YES];
-    } else {
-      [profileMenuButton_ setShouldShowProfileDisplayName:NO];
-    }
-
-    NSSize desiredSize = [profileMenuButton_ desiredControlSize];
-    NSRect rect;
-    rect.size.width = std::min(desiredSize.width,
-                               std::max(availableWidth, minSize.width));
-    rect.size.height = desiredSize.height;
-    rect.origin.y = NSMaxY(profileMenuButtonFrame) - rect.size.height;
-    rect.origin.x = NSMaxX(profileMenuButtonFrame) - rect.size.width;
-    [profileMenuButton_ setFrame:rect];
   }
 
   [dragBlockingView_ setFrame:enclosingRect];
@@ -2123,28 +2038,6 @@ class NotificationBridge : public NotificationObserver {
   if (index >= 0) {
     [controller setTab:[self viewAtIndex:index] isDraggable:YES];
   }
-}
-
-- (BOOL)shouldShowProfileMenuButton {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kMultiProfiles))
-    return NO;
-  if (browser_->profile()->IsOffTheRecord())
-    return NO;
-  return (!browser_->profile()->GetPrefs()->GetString(
-        prefs::kGoogleServicesUsername).empty());
-}
-
-- (void)updateProfileMenuButton {
-  if (![self shouldShowProfileMenuButton]) {
-    [profileMenuButton_ setHidden:YES];
-    return;
-  }
-
-  std::string profileName = browser_->profile()->GetPrefs()->GetString(
-      prefs::kGoogleServicesUsername);
-  [profileMenuButton_ setProfileDisplayName:
-      [NSString stringWithUTF8String:profileName.c_str()]];
-  [profileMenuButton_ setHidden:NO];
 }
 
 @end
