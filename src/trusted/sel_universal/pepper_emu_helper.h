@@ -66,6 +66,10 @@ template<class Data> class Resource {
 
 
 struct NaClSrpcArg;
+// When the a nexe needs to make ppapi calls via srpc,
+// argument of type "struct PP_Var" are "srpc serialized".
+// So the underlying value is wrapped twice.
+// The helper functions below help with extracting and setting the actual value.
 std::string GetMarshalledJSString(NaClSrpcArg* arg);
 int GetMarshalledJSInt(NaClSrpcArg* arg);
 bool GetMarshalledJSBool(NaClSrpcArg* arg);

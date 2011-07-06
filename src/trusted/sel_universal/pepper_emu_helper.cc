@@ -44,8 +44,10 @@ bool GetMarshalledJSBool(NaClSrpcArg* arg) {
 }
 
 void SetMarshalledJSInt(NaClSrpcArg* arg, int val) {
-  arg->arrays.carr = static_cast<char*>(malloc(sizeof(JSData)));
-  JSData* data = reinterpret_cast<JSData*>(arg->arrays.carr);
+  JSData* data = reinterpret_cast<JSData*>(malloc(sizeof *data));
   data->js_type = PP_VARTYPE_INT32;
   data->val = val;
+
+  arg->arrays.carr = reinterpret_cast<char*>(data);
+  arg->u.count = sizeof *data;
 }

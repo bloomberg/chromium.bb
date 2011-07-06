@@ -68,8 +68,6 @@ node = env.SelUniversalTest(
     stdout_golden=env.File('ppapi_emu_file.stdout'),
     )
 
-# TODO(robertm): fix this ASAP
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
-                       'run_ppapi_emu_file_test',
-                       is_broken=True)
+                       'run_ppapi_emu_file_test')
