@@ -52,6 +52,20 @@ class NetworkScreenHandler : public NetworkScreenActor,
   // Handles moving off the screen.
   void HandleOnExit(const ListValue* args);
 
+  // Handles change of the language.
+  void HandleOnLanguageChanged(const ListValue* args);
+
+  // Handles change of the input method.
+  void HandleOnInputMethodChanged(const ListValue* args);
+
+  // Returns available languages. Caller gets the ownership. Note, it does
+  // depend on the current locale.
+  static ListValue* GetLanguageList();
+
+  // Returns available input methods. Caller gets the ownership. Note, it does
+  // depend on the current locale.
+  static ListValue* GetInputMethods();
+
   // Creates network window or updates it's bounds.
   void CreateOrUpdateNetworkWindow();
 

@@ -60,12 +60,14 @@ class OobeUI : public OobeDisplay,
   virtual ViewScreenDelegate* GetRegistrationScreenActor();
   virtual ViewScreenDelegate* GetHTMLPageScreenActor();
 
+  // Collects localized strings from the owned handlers.
+  void GetLocalizedStrings(DictionaryValue* localized_strings);
+
   // Initializes the handlers.
   void InitializeHandlers();
 
  private:
-  void AddOobeMessageHandler(OobeMessageHandler* handler,
-                             DictionaryValue* localized_strings);
+  void AddOobeMessageHandler(OobeMessageHandler* handler);
 
   // Screens actors. Note, OobeUI owns them via |handlers_|, not directly here.
   UpdateScreenActor* update_screen_actor_;

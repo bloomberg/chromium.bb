@@ -146,24 +146,25 @@ OobeUI::OobeUI(TabContents* contents)
       update_screen_actor_(NULL),
       network_screen_actor_(NULL),
       eula_screen_actor_(NULL) {
-  scoped_ptr<DictionaryValue> localized_strings(new DictionaryValue);
-
-  AddOobeMessageHandler(new CoreOobeHandler(this), localized_strings.get());
+  AddOobeMessageHandler(new CoreOobeHandler(this));
 
   NetworkScreenHandler* network_screen_handler = new NetworkScreenHandler;
   network_screen_actor_ = network_screen_handler;
-  AddOobeMessageHandler(network_screen_handler, localized_strings.get());
+  AddOobeMessageHandler(network_screen_handler);
 
   EulaScreenHandler* eula_screen_handler = new EulaScreenHandler;
   eula_screen_actor_ = eula_screen_handler;
-  AddOobeMessageHandler(eula_screen_handler, localized_strings.get());
+  AddOobeMessageHandler(eula_screen_handler);
 
   UpdateScreenHandler* update_screen_handler = new UpdateScreenHandler;
   update_screen_actor_ = update_screen_handler;
-  AddOobeMessageHandler(update_screen_handler, localized_strings.get());
+  AddOobeMessageHandler(update_screen_handler);
 
+  DictionaryValue* localized_strings = new DictionaryValue;
+  GetLocalizedStrings(localized_strings);
   OobeUIHTMLSource* html_source =
-      new OobeUIHTMLSource(localized_strings.release());
+      new OobeUIHTMLSource(localized_strings);
+
   // Set up the chrome://oobe/ source.
   contents->profile()->GetChromeURLDataManager()->AddDataSource(html_source);
 }
@@ -208,10 +209,16 @@ ViewScreenDelegate* OobeUI::GetHTMLPageScreenActor() {
   return NULL;
 }
 
-void OobeUI::AddOobeMessageHandler(OobeMessageHandler* handler,
-                                   DictionaryValue* localized_strings) {
+void OobeUI::GetLocalizedStrings(DictionaryValue* localized_strings) {
+  // Note, handlers_[0] is a GenericHandler used by the WebUI.
+  for (size_t i = 1; i < handlers_.size(); ++i) {
+    static_cast<OobeMessageHandler*>(handlers_[i])->
+        GetLocalizedStrings(localized_strings);
+  }
+}
+
+void OobeUI::AddOobeMessageHandler(OobeMessageHandler* handler) {
   AddMessageHandler(handler->Attach(this));
-  handler->GetLocalizedStrings(localized_strings);
 }
 
 void OobeUI::InitializeHandlers() {

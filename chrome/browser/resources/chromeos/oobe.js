@@ -75,6 +75,25 @@ cr.define('cr.ui', function() {
   };
 
   /**
+   * Setups given "select" element using the list and adds callback.
+   * @param {!Element} select Select object to be updated.
+   * @param {!Object} list List of the options to be added.
+   * @param {string} callback Callback name which should be send to Chrome.
+   */
+  Oobe.setupSelect = function(select, list, callback) {
+    select.options.length = 0;
+    for (var i = 0; i < list.length; ++i) {
+      var item = list[i];
+      var option =
+          new Option(item.title, item.value, item.selected, item.selected);
+      select.appendChild(option);
+    }
+    select.addEventListener('change', function(event) {
+      chrome.send(callback, [select.options[select.selectedIndex].value]);
+    });
+  }
+
+  /**
    * Returns offset (top, left) of the element.
    * @param {!Element} element HTML element
    * @return {!Object} The offset (top, left).
@@ -97,6 +116,14 @@ cr.define('cr.ui', function() {
   Oobe.initialize = function() {
     // Adjust inner container height based on first step's height
     $('inner-container').style.height = $(steps[0]).offsetHeight;
+
+    Oobe.setupSelect($('language-select'),
+                     templateData.languageList,
+                     'networkOnLanguageChanged');
+
+    Oobe.setupSelect($('keyboard-select'),
+                     templateData.inputMethodsList,
+                     'networkOnInputMethodChanged');
 
     $('continue-button').addEventListener('click', function(event) {
       chrome.send('networkOnExit', []);
@@ -128,7 +155,7 @@ cr.define('cr.ui', function() {
 
   /**
    * Enables/disables continue button.
-   * @param {bool} whether button should be enabled.
+   * @param {bool} enable Should the button be enabled?
    */
   Oobe.enableContinueButton = function(enable) {
     $('continue-button').disabled = !enable;
@@ -145,7 +172,7 @@ cr.define('cr.ui', function() {
 
   /**
    * Sets usage statistics checkbox.
-   * @param {bool} whether the checkbox is checked.
+   * @param {bool} checked Is the checkbox checked?
    */
   Oobe.setUsageStats = function(checked) {
     $('usage-stats').checked = checked;
@@ -153,11 +180,11 @@ cr.define('cr.ui', function() {
 
   /**
    * Set OEM EULA URL.
-   * @param {text} OEM EULA URL.
+   * @param {text} oemEulaUrl OEM EULA URL.
    */
-  Oobe.setOemEulaUrl = function(oem_eula_url) {
-    if (oem_eula_url) {
-      $('oem-eula-frame').src = oem_eula_url;
+  Oobe.setOemEulaUrl = function(oemEulaUrl) {
+    if (oemEulaUrl) {
+      $('oem-eula-frame').src = oemEulaUrl;
       $('eulas').classList.remove('one-column');
     } else {
       $('eulas').classList.add('one-column');
@@ -166,7 +193,7 @@ cr.define('cr.ui', function() {
 
   /**
    * Sets update's progress bar value.
-   * @param {number} percentage of the progress.
+   * @param {number} progress Percentage of the progress bar.
    */
   Oobe.setUpdateProgress = function(progress) {
     $('update-progress-bar').value = progress;
@@ -174,7 +201,7 @@ cr.define('cr.ui', function() {
 
   /**
    * Sets update message, which is shown above the progress bar.
-   * @param {text} message to be shown by the label.
+   * @param {text} message Message which is shown by the label.
    */
   Oobe.setUpdateMessage = function(message) {
     $('update-upper-label').innerText = message;
@@ -182,7 +209,7 @@ cr.define('cr.ui', function() {
 
   /**
    * Shows or hides update curtain.
-   * @param {bool} whether curtain should be shown.
+   * @param {bool} enable Are curtains shown?
    */
   Oobe.showUpdateCurtain = function(enable) {
     $('update-screen-curtain').hidden = !enable;
@@ -191,12 +218,28 @@ cr.define('cr.ui', function() {
 
   /**
    * Sets TPM password.
-   * @param {text} TPM password to be shown.
+   * @param {text} password TPM password to be shown.
    */
   Oobe.setTpmPassword = function(password) {
     $('tpm-busy').hidden = true;
     $('tpm-password').innerText = password;
     $('tpm-password').hidden = false;
+  }
+
+  /**
+   * Reloads content of the page (localized strings, options of the select
+   * controls).
+   * @param {!Object} data New dictionary with i18n values.
+   */
+  Oobe.reloadContent = function(data) {
+    i18nTemplate.process(document, data);
+    // Also update language and input methods lists.
+    Oobe.setupSelect($('language-select'),
+                     data.languageList,
+                     'networkOnLanguageChanged');
+    Oobe.setupSelect($('keyboard-select'),
+                     data.inputMethodsList,
+                     'networkOnInputMethodChanged');
   }
 
   // Export
