@@ -242,7 +242,7 @@ bool CheckCharacterComposeTable(const std::vector<unsigned int>& sequence,
 
   // Check main compose table
   const ComposeCheckerWithCompactTable kMainComposeChecker(
-      gtk_compose_seqs_compact, 5, 24, 6);
+      gtk_compose_seqs_compact, 5, 26, 6);
   if (kMainComposeChecker.CheckSequence(sequence, composed_character))
     return true;
 

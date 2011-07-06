@@ -284,7 +284,7 @@ def process_gdkkeysymsh():
 	""" Patch up the keysymdb with some of our own stuff """
 
 	""" This is for a missing keysym from the currently upstream file """
-	keysymdb['dead_stroke'] = 0x338
+	#keysymdb['dead_stroke'] = 0x338
 
 	""" This is for a missing keysym from the currently upstream file """
 	###keysymdb['dead_belowring'] = 0x323
