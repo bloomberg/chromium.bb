@@ -103,13 +103,14 @@ BEGIN
 END
 
 IDD_CONTINUE DIALOGEX 0, 0, 221, 58
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION
 EXSTYLE WS_EX_TOPMOST
-CAPTION "Continue Sharing"
+CAPTION "kTitle"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "Yes, continue sharing",IDC_CONTINUE,61,38,90,14
-    LTEXT           "You are currently sharing this machine with another user.  Please confirm that you want to continue sharing.",IDC_CONTINUE_TEXT,7,7,201,30
+    DEFPUSHBUTTON   "kDefault",IDC_CONTINUE_DEFAULT,117,38,69,14
+    LTEXT           "kMessage",IDC_CONTINUE_MESSAGE,7,7,207,30
+    PUSHBUTTON      "kCancel",IDC_CONTINUE_CANCEL,33,38,69,14
 END
 
 

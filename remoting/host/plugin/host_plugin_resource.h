@@ -7,8 +7,9 @@
 #define IDC_DISCONNECT                  1001
 #define IDC_DISCONNECT_SHARINGWITH      1002
 #define IDC_DISCONNECT_USERNAME         1003
-#define IDC_CONTINUE_TEXT               1004
-#define IDC_CONTINUE                    1005
+#define IDC_CONTINUE_MESSAGE            1004
+#define IDC_CONTINUE_DEFAULT            1005
+#define IDC_CONTINUE_CANCEL             1007
 
 // Next default values for new objects
 // 

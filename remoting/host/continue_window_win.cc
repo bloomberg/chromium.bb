@@ -8,6 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/utf_string_conversions.h"
 #include "remoting/host/chromoting_host.h"
 // TODO(wez): The DisconnectWindow isn't plugin-specific, so shouldn't have
 // a dependency on the plugin's resource header.
@@ -77,6 +78,26 @@ BOOL ContinueWindowWin::OnDialogMessage(HWND hwnd, UINT msg,
                                         WPARAM wParam, LPARAM lParam) {
   switch (msg) {
     case WM_INITDIALOG:
+      {
+        // Update UI string placeholders with actual strings.
+        std::wstring w_title = UTF8ToWide(kTitle);
+        SetWindowText(hwnd, w_title.c_str());
+
+        HWND hwndMessage = GetDlgItem(hwnd, IDC_CONTINUE_MESSAGE);
+        CHECK(hwndMessage);
+        std::wstring w_message = UTF8ToWide(kMessage);
+        SetWindowText(hwndMessage, w_message.c_str());
+
+        HWND hwndDefault = GetDlgItem(hwnd, IDC_CONTINUE_DEFAULT);
+        CHECK(hwndDefault);
+        std::wstring w_default = UTF8ToWide(kDefaultButtonText);
+        SetWindowText(hwndDefault, w_default.c_str());
+
+        HWND hwndCancel = GetDlgItem(hwnd, IDC_CONTINUE_CANCEL);
+        CHECK(hwndCancel);
+        std::wstring w_cancel = UTF8ToWide(kCancelButtonText);
+        SetWindowText(hwndCancel, w_cancel.c_str());
+      }
       return TRUE;
     case WM_CLOSE:
       // Ignore close messages.
@@ -87,10 +108,18 @@ BOOL ContinueWindowWin::OnDialogMessage(HWND hwnd, UINT msg,
       return TRUE;
     case WM_COMMAND:
       switch (LOWORD(wParam)) {
-        case IDC_CONTINUE:
+        case IDC_CONTINUE_DEFAULT:
           {
             CHECK(host_);
             host_->PauseSession(false);
+            ::EndDialog(hwnd, LOWORD(wParam));
+            hwnd_ = NULL;
+          }
+          return TRUE;
+        case IDC_CONTINUE_CANCEL:
+          {
+            CHECK(host_);
+            host_->Shutdown(NULL);
             ::EndDialog(hwnd, LOWORD(wParam));
             hwnd_ = NULL;
           }
