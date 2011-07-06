@@ -541,6 +541,25 @@
       "zip_path": "examples\/api\/i18n\/cld.zip"
     },
     {
+      "api_calls": [],
+      "description": "Demonstrates making cross domain requests from a content script by putting Twitter trends on Google News.",
+      "features": [],
+      "icon": "sample-128.png",
+      "id": "6871d09f4a96bf9d4b6cc724d00e909cee0f3902",
+      "name": "Content Script Cross-Domain XMLHttpRequest Example",
+      "path": "examples\/howto\/contentscript_xhr\/",
+      "protocols": [
+        "https:\/\/"
+      ],
+      "search_string": "CONTENT SCRIPT CROSS-DOMAIN XMLHTTPREQUEST EXAMPLE DEMONSTRATES MAKING CROSS DOMAIN REQUESTS FROM A CONTENT SCRIPT BY PUTTING TWITTER TRENDS ON GOOGLE NEWS.",
+      "source_files": [
+        "contentscript.js",
+        "manifest.json"
+      ],
+      "source_hash": "749314ae399dfc5f6759358b384bc55997fed455",
+      "zip_path": "examples\/howto\/contentscript_xhr.zip"
+    },
+    {
       "api_calls": [
         "chrome.tabs.get",
         "chrome.tabs.getSelected"
@@ -625,31 +644,6 @@
       ],
       "source_hash": "d0741a5ff0ce9ac38a1be3e6abc46065d74cb498",
       "zip_path": "examples\/api\/cookies.zip"
-    },
-    {
-      "api_calls": [
-        "chrome.extension.onRequest",
-        "chrome.extension.sendRequest"
-      ],
-      "description": "Demonstrates a method to make a cross-domain XMLHttpRequest fetch from a content script.  This extension fetches the current trending topics from Twitter and inserts them in an overlay at the top of Google News.  Visit http:\/\/news.google.com to test this extension.",
-      "features": [
-        "background_page"
-      ],
-      "icon": "sample-128.png",
-      "id": "6871d09f4a96bf9d4b6cc724d00e909cee0f3902",
-      "name": "Cross-domain XMLHttpRequest from a content script",
-      "path": "examples\/howto\/contentscript_xhr\/",
-      "protocols": [
-        "http:\/\/"
-      ],
-      "search_string": "CROSS-DOMAIN XMLHTTPREQUEST FROM A CONTENT SCRIPT DEMONSTRATES A METHOD TO MAKE A CROSS-DOMAIN XMLHTTPREQUEST FETCH FROM A CONTENT SCRIPT.  THIS EXTENSION FETCHES THE CURRENT TRENDING TOPICS FROM TWITTER AND INSERTS THEM IN AN OVERLAY AT THE TOP OF GOOGLE NEWS.  VISIT HTTP:\/\/NEWS.GOOGLE.COM TO TEST THIS EXTENSION. BACKGROUND_PAGE CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST",
-      "source_files": [
-        "background.html",
-        "contentscript.js",
-        "manifest.json"
-      ],
-      "source_hash": "d77b68c4839500a5974d4775033f2ee94bb611f7",
-      "zip_path": "examples\/howto\/contentscript_xhr.zip"
     },
     {
       "api_calls": [
