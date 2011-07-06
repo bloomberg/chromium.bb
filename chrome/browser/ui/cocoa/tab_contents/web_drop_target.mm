@@ -8,6 +8,8 @@
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/bookmarks/bookmark_pasteboard_helper_mac.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/cocoa/drag_util.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -194,6 +196,12 @@ using WebKit::WebDragOperationsMask;
   tabContents_->render_view_host()->DragTargetDrop(
       gfx::Point(viewPoint.x, viewPoint.y),
       gfx::Point(screenPoint.x, screenPoint.y));
+
+  // Focus the target browser.
+  Browser* browser = Browser::GetBrowserForController(
+      &tabContents_->controller(), NULL);
+  if (browser)
+    browser->window()->Show();
 
   return YES;
 }

@@ -10,6 +10,8 @@
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/tab_contents/web_drag_utils_win.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -228,6 +230,12 @@ DWORD WebDropTarget::OnDrop(IDataObject* data_object,
   }
 
   current_rvh_ = NULL;
+
+  // Focus the target browser.
+  Browser* browser = Browser::GetBrowserForController(
+      &tab_contents_->controller(), NULL);
+  if (browser)
+    browser->window()->Show();
 
   // This isn't always correct, but at least it's a close approximation.
   // For now, we always map a move to a copy to prevent potential data loss.

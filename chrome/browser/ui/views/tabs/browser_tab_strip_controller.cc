@@ -295,7 +295,7 @@ void BrowserTabStripController::PerformDrop(bool drop_before,
     params.disposition = CURRENT_TAB;
     params.source_contents = model_->GetTabContentsAt(index);
   }
-
+  params.window_action = browser::NavigateParams::SHOW_WINDOW;
   browser::Navigate(&params);
 }
 

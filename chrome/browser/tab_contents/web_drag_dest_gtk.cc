@@ -10,6 +10,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_utils_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -285,9 +287,16 @@ gboolean WebDragDestGtk::OnDragDrop(GtkWidget* sender, GdkDragContext* context,
     tab_->bookmark_tab_helper()->GetBookmarkDragDelegate()->OnDrop(
         bookmark_drag_data_);
 
+  // Focus the target browser.
+  Browser* browser = Browser::GetBrowserForController(
+      &tab_contents_->controller(), NULL);
+  if (browser)
+    browser->window()->Show();
+
   // The second parameter is just an educated guess as to whether or not the
   // drag succeeded, but at least we will get the drag-end animation right
   // sometimes.
   gtk_drag_finish(context, is_drop_target_, FALSE, time);
+
   return TRUE;
 }
