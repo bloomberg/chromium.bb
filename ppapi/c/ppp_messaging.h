@@ -24,27 +24,29 @@ struct PP_Var;
  */
 
 /**
- * The PPP_Messaging interface contains pointers to functions that you must
- * implement to handle postMessage events on the associated DOM element.
+ * The <code>PPP_Messaging</code> interface contains pointers to functions
+ * that you must implement to handle postMessage events on the associated
+ * DOM element.
  */
 struct PPP_Messaging {
   /**
-   * HandleMessage is a pointer to a function that the browser calls when
-   * PostMessage() is invoked on the DOM element for the module instance in
-   * JavaScript. Note that PostMessage() in the JavaScript interface is
-   * asynchronous, meaning JavaScript execution will not be blocked while
-   * HandleMessage() is processing the message.
+   * HandleMessage() is a function that the browser calls when PostMessage()
+   * is invoked on the DOM element for the module instance in JavaScript. Note
+   * that PostMessage() in the JavaScript interface is asynchronous, meaning
+   * JavaScript execution will not be blocked while HandleMessage() is
+   * processing the message.
    *
-   * @param[in] instance A PP_Instance indentifying one instance of a module.
-   * @param[in] message A PP_Var containing the data to be sent to JavaScript.
-   * Message can have an int32_t, double, bool, or string value (objects
-   * are not supported).
+   * @param[in] instance A <code>PP_Instance</code> indentifying one instance
+   * of a module.
+   * @param[in] message A <code>PP_Var</code> containing the data to be sent
+   * to JavaScript. Message can have an int32_t, double, bool, or string value
+   * (objects are not supported).
    *
    * <strong>Example:</strong>
    *
-   * The following JavaScript code invokes HandleMessage, passing the module
-   * instance on which it was invoked, with <code>message</code> being a
-   * string PP_Var containing "Hello world!"
+   * The following JavaScript code invokes <code>HandleMessage</code>, passing
+   * the module instance on which it was invoked, with <code>message</code>
+   * being a string <code>PP_Var</code> containing "Hello world!"
    *
    * @code
    *

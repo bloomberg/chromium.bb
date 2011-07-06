@@ -106,6 +106,7 @@ struct PPB_AudioConfig {
    * <code>PP_AUDIOSAMPLERATE_48000</code>.
    * @param[in] sample_frame_count A <code>uint32_t</code> frame count returned
    * from the <code>RecommendSampleFrameCount</code> function.
+   *
    * @return A <code>PP_Resource</code> containing the
    * <code>PPB_Audio_Config</code> if successful or a null resource if the
    * sample frame count or bit rate are not supported.
@@ -133,6 +134,7 @@ struct PPB_AudioConfig {
    * <code>PP_AUDIOSAMPLERATE_48000.</code>
    * @param[in] requested_sample_frame_count A <code>uint_32t</code> requested
    * frame count.
+   *
    * @return A <code>uint32_t</code> containing the recommended sample frame
    * count if successful.
    */
@@ -145,6 +147,7 @@ struct PPB_AudioConfig {
    *
    * @param[in] resource A <code>PP_Resource</code> containing the audio config
    * resource.
+   *
    * @return A <code>PP_BOOL</code> containing <code>PP_TRUE</code> if the given
    * resource is an <code>AudioConfig</code> resource, otherwise
    * <code>PP_FALSE</code>.
@@ -157,6 +160,7 @@ struct PPB_AudioConfig {
    *
    * @param[in] config A <code>PP_Resource</code> containing the
    * <code>PPB_Audio_Config</code>.
+   *
    * @return A <code>PP_AudioSampleRate</code> containing sample rate or
    * <code>PP_AUDIOSAMPLERATE_NONE</code> if the resource is invalid.
    */
@@ -168,6 +172,7 @@ struct PPB_AudioConfig {
    *
    * @param[in] config A <code>PP_Resource</code> containing the audio config
    * resource.
+   *
    * @return A <code>uint32_t</code> containing sample frame count or
    * 0 if the resource is invalid. See <code>RecommendSampleFrameCount</code>
    * for more on sample frame counts.

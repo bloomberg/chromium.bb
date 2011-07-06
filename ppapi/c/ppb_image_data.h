@@ -53,8 +53,8 @@
  * </code>
  * <code>uint8_t image_data_alpha_premul = (uint8_t)(alpha * 255.0f);</code>
  *
- * Note: The resulting pre-multiplied red, green and blue components should not
- * be greater than the alpha value.
+ * <strong>Note:</strong> The resulting pre-multiplied red, green and blue
+ * components should not be greater than the alpha value.
  */
 typedef enum {
   PP_IMAGEDATAFORMAT_BGRA_PREMUL,
@@ -124,6 +124,7 @@ struct PPB_ImageData {
    * supported by the browser.
    *
    * @param[in] format The image data format.
+   *
    * @return A <code>PP_Bool</code> with <code>PP_TRUE</code> if the given
    * image data format is supported by the browser.
    */
@@ -161,6 +162,7 @@ struct PPB_ImageData {
    *
    * @param[in] image_data A <code>PP_Resource</code> corresponding to image
    * data.
+   *
    * @return A <code>PP_Bool</code> with <code>PP_TRUE</code> if the given
    * resrouce is an image data or <code>PP_FALSE</code> if the resource is
    * invalid or some type other than image data.
@@ -175,6 +177,7 @@ struct PPB_ImageData {
    * data.
    * @param[in,out] desc A pointer to a <code>PP_ImageDataDesc</code>
    * containing the description.
+   *
    * @return A <code>PP_Bool</code> with <code>PP_TRUE</code> on success or
    * <code>PP_FALSE</code> if the resource is not an image data. On
    * <code>PP_FALSE</code>, the <code>desc</code> structure will be filled
@@ -188,6 +191,7 @@ struct PPB_ImageData {
    *
    * @param[in] image_data A <code>PP_Resource</code> corresponding to image
    * data.
+   *
    * @return A pointer to the beginning of the data.
    */
   void* (*Map)(PP_Resource image_data);

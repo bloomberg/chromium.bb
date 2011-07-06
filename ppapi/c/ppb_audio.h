@@ -89,6 +89,7 @@ struct PPB_Audio {
   * @param[in] audio_callback A PPB_Audio_Callback callback function that the
   * browser calls when it needs more samples to play.
   * @param[in] user_data A pointer to user data used in the callback function.
+  *
   * @return A PP_Resource containing the audio resource if successful or
   * 0 if the configuration cannot be honored or the callback is null.
   */
@@ -99,6 +100,7 @@ struct PPB_Audio {
    * resource is an audio resource.
    *
    * @param[in] resource A PP_Resource containing a resource.
+   *
    * @return A PP_BOOL containing containing PP_TRUE if the given resource is
    * an Audio resource, otherwise PP_FALSE.
    */
@@ -109,6 +111,7 @@ struct PPB_Audio {
    * resource for the given audio resource.
    *
    * @param[in] config A PP_Resource containing the audio resource.
+   *
    * @return A PP_Resource containing the audio config resource if successful.
    */
   PP_Resource (*GetCurrentConfig)(PP_Resource audio);
@@ -118,6 +121,7 @@ struct PPB_Audio {
    * the audio resource and begins periodically calling the callback.
    *
    * @param[in] config A PP_Resource containing the audio resource.
+   *
    * @return A PP_BOOL containing PP_TRUE if successful, otherwise PP_FALSE.
    * Also returns PP_TRUE (and be a no-op) if called while playback is already
    * in progress.
@@ -129,6 +133,7 @@ struct PPB_Audio {
    * the audio resource.
    *
    * @param[in] config A PP_Resource containing the audio resource.
+   *
    * @return A PP_BOOL containing PP_TRUE if successful, otherwise PP_FALSE.
    * Also returns PP_TRUE (and is a no-op) if called while playback is already
    * stopped. If a callback is in progress, StopPlayback will block until the

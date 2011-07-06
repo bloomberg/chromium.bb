@@ -13,41 +13,42 @@
 
 /**
  * @file
- * This file defines the PPB_Messaging interface implemented by the browser
- * related to sending messages to DOM elements associated with a specific
- * module instance.
+ * This file defines the <code>PPB_Messaging</code> interface implemented
+ * by the browser for sending messages to DOM elements associated with a
+ * specific module instance.
  *
  * @addtogroup Interfaces
  * @{
  */
 
 /**
- * The PPB_Messaging interface contains a pointer to a function related to
- * sending messages to JavaScript message event listeners on the DOM element
- * associated with a specific module instance.
+ * The <code>PPB_Messaging</code> interface is implemented by the browser
+ * and is related to sending messages to JavaScript message event listeners on
+ * the DOM element associated with specific module instance.
  */
 struct PPB_Messaging {
   /**
-   * PostMessage is a pointer to a function that asynchronously invokes any
-   * listeners for message events on the DOM element for the given module
-   * instance. A call to PostMessage() will not block while the message is
-   * processed.
+   * PostMessage() asynchronously invokes any listeners for message events on
+   * the DOM element for the given module instance. A call to PostMessage()
+   * will not block while the message is processed.
    *
-   * @param[in] instance A PP_Instance indentifying one instance of a module.
-   * @param[in] message A PP_Var containing the data to be sent to JavaScript.
+   * @param[in] instance A <code>PP_Instance</code> indentifying one instance
+   * of a module.
+   * @param[in] message A <code>PP_Var</code> containing the data to be sent to
+   * JavaScript.
    * Message can have a numeric, boolean, or string value; arrays and
    * dictionaries are not yet supported. Ref-counted var types are copied, and
    * are therefore not shared between the module instance and the browser.
    *
    * Listeners for message events in JavaScript code will receive an object
-   * conforming to the HTML 5 MessageEvent interface. Specifically, the value of
-   * message will be contained as a property called data in the received
-   * MessageEvent.
+   * conforming to the HTML 5 <code>MessageEvent</code> interface.
+   * Specifically, the value of message will be contained as a property called
+   *  data in the received <code>MessageEvent</code>.
    *
    * This messaging system is similar to the system used for listening for
    * messages from Web Workers. Refer to
-   * http://www.whatwg.org/specs/web-workers/current-work/ for further
-   * information.
+   * <code>http://www.whatwg.org/specs/web-workers/current-work/</code> for
+   * further information.
    *
    * <strong>Example:</strong>
    *

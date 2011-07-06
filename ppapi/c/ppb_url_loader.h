@@ -54,6 +54,7 @@ struct PPB_URLLoader {
    *
    * @param[in] instance A <code>PP_Instance</code> indentifying one instance
    * of a module.
+   *
    * @return A <code>PP_Resource</code> corresponding to a URLLoader if
    * successful, 0 if the instance is invalid.
    */
@@ -64,6 +65,7 @@ struct PPB_URLLoader {
    *
    * @param[in] resource A <code>PP_Resource</code> corresponding to a
    * <code>URLLoader</code>.
+   *
    * @return <code>PP_TRUE</code> if the resource is a <code>URLLoader</code>, 
    * <code>PP_FALSE</code> if the resource is invalid or some type other
    * than <code>URLLoader</code>.
@@ -83,6 +85,8 @@ struct PPB_URLLoader {
    * asynchronous completion of Open(). This callback will run when response
    * headers for the url are received or error occured. This callback
    * will only run if Open() returns <code>PP_OK_COMPLETIONPENDING</code>.
+   *
+   * @return An int32_t containing an error code from <code>pp_errors.h</code>.
    */
   int32_t (*Open)(PP_Resource loader,
                   PP_Resource request_info,
@@ -99,6 +103,7 @@ struct PPB_URLLoader {
    * response headers for the redirect url are received or error occured. This
    * callback will only run if FollowRedirect() returns
    * <code>PP_OK_COMPLETIONPENDING</code>.
+   *
    * @return An int32_t containing an error code from <code>pp_errors.h</code>.
    */
   int32_t (*FollowRedirect)(PP_Resource loader,
@@ -117,6 +122,7 @@ struct PPB_URLLoader {
    * <code>URLLoader</code>.
    * @param[in] bytes_sent The number of bytes sent thus far.
    * @param[in] total_bytes_to_be_sent The total number of bytes to be sent.
+   *
    * @return <code>PP_TRUE</code> if the upload progress is available, 
    * <code>PP_FALSE</code> if it is not available.
    */
@@ -139,6 +145,7 @@ struct PPB_URLLoader {
    * @param[in] total_bytes_to_be_received The total number of bytes to be
    * received. The total bytes to be received may be unknown, in which case
    * <code>total_bytes_to_be_received</code> will be set to -1.
+   *
    * @return <code>PP_TRUE</code> if the download progress is available,
    * <code>PP_FALSE</code> if it is not available.
    */
@@ -151,6 +158,7 @@ struct PPB_URLLoader {
    *
    * @param[in] instance A <code>PP_Resource</code> corresponding to a
    * <code>URLLoader</code>.
+   *
    * @return A <code>PP_Resource</code> corresponding to the
    * <code>URLResponseInfo</code> if successful, 0 if the loader is not a valid
    * resource or if Open() has not been called.
@@ -170,6 +178,7 @@ struct PPB_URLLoader {
    * asynchronous completion. The callback will run if the bytes (full or
    * partial) are read or an error occurs asynchronously. This callback will
    * run only if this function returns <code>PP_OK_COMPLETIONPENDING</code>.
+   *
    * @return An int32_t containing the number of bytes read or an error code
    * from <code>pp_errors.h</code>.
    */
@@ -190,6 +199,7 @@ struct PPB_URLLoader {
    * asynchronous completion. This callback will run when body is downloaded
    * or an error occurs after FinishStreamingToFile() returns
    * <code>PP_OK_COMPLETIONPENDING</code>.
+   *
    * @return An int32_t containing the number of bytes read or an error code
    * from <code>pp_errors.h</code>.
    */
@@ -202,9 +212,9 @@ struct PPB_URLLoader {
    * reporting <code>PP_ERROR_ABORTED</code> if pending IO was interrupted.
    * It is NOT valid to call Open() again after a call to this function.
    *
-   * Note: If the <code>URLLoader</code> object is destroyed while it is still
-   * open, then it will be implicitly closed so you are not required to call
-   * Close().
+   * <strong>Note:</strong> If the <code>URLLoader</code> object is destroyed
+   * while it is still open, then it will be implicitly closed so you are not
+   * required to call Close().
    *
    * @param[in] loader A <code>PP_Resource</code> corresponding to a
    * <code>URLLoader</code>.
