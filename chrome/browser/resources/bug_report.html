@@ -112,7 +112,7 @@ function setupSavedScreenshots(screenshots) {
 
     // Make sure we make the display the message
     $('saved-screenshots').style.display = 'block';
-    
+
     // In case the user tries to send now; fail safe, do not send a screenshot
     // at all versus sending the current screenshot. 
     selectedThumbnailDivId = '';
@@ -120,7 +120,7 @@ function setupSavedScreenshots(screenshots) {
   } else {
     for (i = 0; i < screenshots.length; ++i)
       addScreenshot('saved-screenshots', screenshots[i]);
-  
+
     // Now that we have our screenshots, try selecting the saved screenshots
     // again.
     savedSelected();
@@ -141,7 +141,7 @@ function setupDialogDefaults(defaults) {
         // if we didn't get an e-mail address from cros,
         // disable the user email display totally
         $('user-email-table').style.display = 'none';
-        
+
         // this also means we are in privacy mode, so no saved screenshots
         $('screenshot-link-tosaved').style.display = 'none';
       }
