@@ -14,6 +14,8 @@
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "views/controls/button/button.h"
+#include "views/controls/menu/menu_item_view.h"
+#include "views/controls/menu/menu_model_adapter.h"
 #include "views/controls/menu/view_menu_delegate.h"
 
 class Extension;
@@ -21,7 +23,6 @@ class PanelBrowserView;
 namespace views {
 class ImageButton;
 class Label;
-class Menu2;
 class MenuButton;
 }
 
@@ -180,8 +181,9 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
   views::Label* title_label_;
   gfx::Rect client_view_bounds_;
   scoped_ptr<MouseWatcher> mouse_watcher_;
-  scoped_ptr<views::Menu2> settings_menu_;
-  scoped_ptr<ui::SimpleMenuModel> settings_menu_contents_;
+  ui::SimpleMenuModel settings_menu_contents_;
+  views::MenuModelAdapter settings_menu_adapter_;
+  views::MenuItemView settings_menu_;
   scoped_ptr<ExtensionUninstallDialog> extension_uninstall_dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelBrowserFrameView);

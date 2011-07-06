@@ -26,7 +26,6 @@
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
 #include "views/controls/link.h"
-#include "views/controls/menu/menu_2.h"
 #include "views/controls/textfield/textfield.h"
 
 class PanelBrowserViewTest : public InProcessBrowserTest {
@@ -233,8 +232,6 @@ class PanelBrowserViewTest : public InProcessBrowserTest {
     PanelBrowserFrameView* frame_view = browser_view->GetFrameView();
 
     frame_view->EnsureSettingsMenuCreated();
-    ASSERT_TRUE(frame_view->settings_menu_.get());
-    ASSERT_TRUE(frame_view->settings_menu_contents_.get());
 
     // Validates the settings menu items.
     MenuItem expected_panel_menu_items[] = {
@@ -254,7 +251,7 @@ class PanelBrowserViewTest : public InProcessBrowserTest {
       expected_panel_menu_items[3].enabled = true;
       expected_panel_menu_items[4].enabled = true;
     }
-    ValidateSettingsMenuItems(frame_view->settings_menu_contents_.get(),
+    ValidateSettingsMenuItems(&frame_view->settings_menu_contents_,
                               arraysize(expected_panel_menu_items),
                               expected_panel_menu_items);
 

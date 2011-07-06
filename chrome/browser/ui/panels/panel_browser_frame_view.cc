@@ -25,7 +25,6 @@
 #include "views/controls/button/image_button.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/label.h"
-#include "views/controls/menu/menu_2.h"
 #include "views/painter.h"
 #include "views/screen.h"
 #include "views/widget/widget_delegate.h"
@@ -198,7 +197,10 @@ PanelBrowserFrameView::PanelBrowserFrameView(BrowserFrame* frame,
       settings_button_(NULL),
       close_button_(NULL),
       title_icon_(NULL),
-      title_label_(NULL) {
+      title_label_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(settings_menu_contents_(this)),
+      settings_menu_adapter_(&settings_menu_contents_),
+      settings_menu_(&settings_menu_adapter_) {
   EnsureResourcesInitialized();
   frame_->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);
 
@@ -414,7 +416,13 @@ void PanelBrowserFrameView::ButtonPressed(views::Button* sender,
 
 void PanelBrowserFrameView::RunMenu(View* source, const gfx::Point& pt) {
   EnsureSettingsMenuCreated();
-  settings_menu_->RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
+
+  DCHECK_EQ(settings_button_, source);
+  gfx::Point screen_point;
+  views::View::ConvertPointToScreen(source, &screen_point);
+  settings_menu_.RunMenuAt(source->GetWidget()->GetNativeWindow(),
+      settings_button_, gfx::Rect(screen_point, source->size()),
+      views::MenuItemView::TOPRIGHT, true);
 }
 
 bool PanelBrowserFrameView::IsCommandIdChecked(int command_id) const {
@@ -660,27 +668,25 @@ const Extension* PanelBrowserFrameView::GetExtension() const {
 }
 
 void PanelBrowserFrameView::EnsureSettingsMenuCreated() {
-  if (settings_menu_.get())
+  if (settings_menu_contents_.GetItemCount())
     return;
 
   const Extension* extension = GetExtension();
   if (!extension)
     return;
 
-  settings_menu_contents_.reset(new ui::SimpleMenuModel(this));
-
-  settings_menu_contents_->AddItem(
+  settings_menu_contents_.AddItem(
       COMMAND_NAME, UTF8ToUTF16(extension->name()));
-  settings_menu_contents_->AddSeparator();
-  settings_menu_contents_->AddItem(
+  settings_menu_contents_.AddSeparator();
+  settings_menu_contents_.AddItem(
       COMMAND_CONFIGURE, l10n_util::GetStringUTF16(IDS_EXTENSIONS_OPTIONS));
-  settings_menu_contents_->AddItem(
+  settings_menu_contents_.AddItem(
       COMMAND_DISABLE, l10n_util::GetStringUTF16(IDS_EXTENSIONS_DISABLE));
-  settings_menu_contents_->AddItem(
+  settings_menu_contents_.AddItem(
       COMMAND_UNINSTALL, l10n_util::GetStringUTF16(IDS_EXTENSIONS_UNINSTALL));
-  settings_menu_contents_->AddSeparator();
-  settings_menu_contents_->AddItem(
+  settings_menu_contents_.AddSeparator();
+  settings_menu_contents_.AddItem(
       COMMAND_MANAGE, l10n_util::GetStringUTF16(IDS_MANAGE_EXTENSIONS));
 
-  settings_menu_.reset(new views::Menu2(settings_menu_contents_.get()));
+  settings_menu_adapter_.BuildMenu(&settings_menu_);
 }
