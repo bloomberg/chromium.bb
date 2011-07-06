@@ -148,8 +148,8 @@ cr.define('ntp4', function() {
     cr.ui.decorate($('recently-closed-menu-button'), ntp4.RecentMenuButton);
     chrome.send('getRecentlyClosedTabs');
 
-    mostVisitedPage = new ntp4.MostVisitedPage('Most Visited');
-    appendTilePage(mostVisitedPage);
+    mostVisitedPage = new ntp4.MostVisitedPage();
+    appendTilePage(mostVisitedPage, 'Most Visited');
     chrome.send('getMostVisited');
   }
 
@@ -211,6 +211,9 @@ cr.define('ntp4', function() {
     // Get the array of apps and add any special synthesized entries
     var apps = data.apps;
 
+    // Get a list of page names
+    var pageNames = data.appPageNames;
+
     // Sort by launch index
     apps.sort(function(a, b) {
       return a.app_launch_index - b.app_launch_index;
@@ -221,8 +224,12 @@ cr.define('ntp4', function() {
       var app = apps[i];
       var pageIndex = (app.page_index || 0);
       while (pageIndex >= appsPages.length) {
+        var pageName = '';
+        if (pageNames && appsPages.length < pageNames.length)
+          pageName = pageNames[appsPages.length];
+
         var origPageCount = appsPages.length;
-        appendTilePage(new ntp4.AppsPage('Apps'));
+        appendTilePage(new ntp4.AppsPage(), pageName);
         // Confirm that appsPages is a live object, updated when a new page is
         // added (otherwise we'd have an infinite loop)
         assert(appsPages.length == origPageCount + 1, 'expected new page');
@@ -333,15 +340,14 @@ cr.define('ntp4', function() {
    * Appends a tile page (for apps or most visited).
    *
    * @param {TilePage} page The page element.
-   * @param {boolean=} opt_animate If true, add the class 'new' to the created
-   *        dot.
+   * @param {string} title The title of the tile page.
    */
-  function appendTilePage(page) {
+  function appendTilePage(page, title) {
     pageList.appendChild(page);
 
     // Make a deep copy of the dot template to add a new one.
     var animate = page.classList.contains('temporary');
-    var newDot = new ntp4.NavDot(page, animate);
+    var newDot = new ntp4.NavDot(page, title, animate);
 
     dotList.appendChild(newDot);
     page.navigationDot = newDot;
@@ -369,9 +375,9 @@ cr.define('ntp4', function() {
    * @param {Grabber.Event} e The Grabber Grab event.
    */
   function enterRearrangeMode(e) {
-    var tempPage = new ntp4.AppsPage('');
+    var tempPage = new ntp4.AppsPage();
     tempPage.classList.add('temporary');
-    appendTilePage(tempPage);
+    appendTilePage(tempPage, '');
     updateSliderCards();
   }
 
@@ -387,6 +393,7 @@ cr.define('ntp4', function() {
       tempPage.parentNode.removeChild(tempPage);
     } else {
       tempPage.classList.remove('temporary');
+      saveAppPageName(tempPage, '');
     }
   }
 
@@ -539,6 +546,18 @@ cr.define('ntp4', function() {
     mostVisitedPage.data = data;
   }
 
+  /*
+   * Save the name of an app page.
+   * Store the app page name into the preferences store.
+   * @param {AppsPage} appPage The app page for which we wish to save.
+   * @param {string} name The name of the page.
+   */
+  function saveAppPageName(appPage, name) {
+    var index = getAppsPageIndex(appPage);
+    assert(index != -1);
+    chrome.send('saveAppPageName', [name, index]);
+  }
+
   // Return an object with all the exports
   return {
     assert: assert,
@@ -555,6 +574,7 @@ cr.define('ntp4', function() {
     setRecentlyClosedTabs: setRecentlyClosedTabs,
     setMostVisitedPages: setMostVisitedPages,
     showNotification: showNotification,
+    saveAppPageName: saveAppPageName
   };
 });
 

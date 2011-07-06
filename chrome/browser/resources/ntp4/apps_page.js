@@ -315,12 +315,11 @@ cr.define('ntp4', function() {
 
   /**
    * Creates a new AppsPage object.
-   * @param {string} name The display name for the page.
    * @constructor
    * @extends {TilePage}
    */
-  function AppsPage(name) {
-    var el = new TilePage(name, appsPageGridValues);
+  function AppsPage() {
+    var el = new TilePage(appsPageGridValues);
     el.__proto__ = AppsPage.prototype;
     el.initialize();
 

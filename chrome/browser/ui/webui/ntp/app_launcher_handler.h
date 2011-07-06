@@ -21,6 +21,7 @@ class ExtensionPrefs;
 class ExtensionService;
 class NotificationRegistrar;
 class PrefChangeRegistrar;
+class PrefsService;
 class Profile;
 
 namespace gfx {
@@ -91,6 +92,12 @@ class AppLauncherHandler : public WebUIMessageHandler,
 
   // Callback for the "promoSeen" message.
   void HandlePromoSeen(const ListValue* args);
+
+  // Callback for the "saveAppPageName" message.
+  void HandleSaveAppPageName(const ListValue* args);
+
+  // Register app launcher preferences.
+  static void RegisterUserPrefs(PrefService* pref_service);
 
  private:
   // Records a web store launch in the appropriate histograms. |promo_active|
