@@ -163,6 +163,14 @@ class PrefProviderTest : public TestingBrowserProcessTest {
 
 TEST_F(PrefProviderTest, Observer) {
   TestingProfile profile;
+  // Get the |HostContentSettingsMap| one time in order to initialize it.
+  // Otherwise we end up in a dead lock when the |PrefProvider| tries to notify
+  // content settings change observers. The |PrefProvider| set's the
+  // |HostContentSettingsMap| as notification source and would trigger in
+  // infinite recursive instantiation loop.
+  // TODO(markusheintz): Let the HostContentSettingsMap sent out notifications.
+  // Providers and HostContentSettingsMap should communicate via a observer
+  // pattern.
   profile.GetHostContentSettingsMap();
   Profile* p = &profile;
   PrefProvider pref_content_settings_provider(p);
@@ -170,7 +178,12 @@ TEST_F(PrefProviderTest, Observer) {
   ContentSettingsPattern pattern =
       ContentSettingsPattern::FromString("[*.]example.com");
 
-  // Expect 2 calls: One from the update and one from canonicalization.
+  // There are two PrefProvider instances, one in the host content settings map
+  // and one instance that is created here. Setting a content setting will fire
+  // one notification. This will change the underlying preferences which will
+  // cause the second PrefProvider instance to reload these and to
+  // sync the obsolete prefences. Hence we get two more notifications which we
+  // will not get in the real world.
   EXPECT_CALL(observer,
               OnContentSettingsChanged(profile.GetHostContentSettingsMap(),
                                        CONTENT_SETTINGS_TYPE_IMAGES,
@@ -181,7 +194,7 @@ TEST_F(PrefProviderTest, Observer) {
   EXPECT_CALL(observer,
               OnContentSettingsChanged(profile.GetHostContentSettingsMap(),
                                        CONTENT_SETTINGS_TYPE_DEFAULT, true,
-                                       _, _, true));
+                                       _, _, true)).Times(2);
   pref_content_settings_provider.SetContentSetting(
       pattern,
       ContentSettingsPattern::Wildcard(),

@@ -140,13 +140,50 @@ class PrefProvider : public ProviderInterface,
  private:
   void Init();
 
-  void ReadExceptions(bool overwrite);
+  // Reads all content settings exceptions from the preference and load them
+  // into the |value_map_|. The |value_map_| is cleared first if |overwrite| is
+  // true.
+  void ReadContentSettingsFromPref(bool overwrite);
+
+  // Update the preference that stores content settings exceptions and syncs the
+  // value to the obsolete preference.
+  void UpdatePref(
+      const ContentSettingsPattern& primary_pattern,
+      const ContentSettingsPattern& secondary_pattern,
+      ContentSettingsType content_type,
+      const ResourceIdentifier& resource_identifier,
+      ContentSetting setting);
+
+  // Update the preference prefs::kContentSettingsPatternPairs, which is used to
+  // persist content settigns exceptions and supposed to replace the preferences
+  // prefs::kContentSettingsPatterns.
+  void UpdatePatternPairsPref(
+      const ContentSettingsPattern& primary_pattern,
+      const ContentSettingsPattern& secondary_pattern,
+      ContentSettingsType content_type,
+      const ResourceIdentifier& resource_identifier,
+      ContentSetting setting);
+
+  // Updates the preferences prefs::kContentSettingsPatterns. This preferences
+  // is obsolete and only used for compatibility reasons.
+  void UpdatePatternsPref(
+      const ContentSettingsPattern& primary_pattern,
+      const ContentSettingsPattern& secondary_pattern,
+      ContentSettingsType content_type,
+      const ResourceIdentifier& resource_identifier,
+      ContentSetting setting);
 
   // Various migration methods (old cookie, popup and per-host data gets
   // migrated to the new format).
   void MigrateObsoletePerhostPref(PrefService* prefs);
   void MigrateObsoletePopupsPref(PrefService* prefs);
   void MigrateObsoleteContentSettingsPatternPref(PrefService* prefs);
+
+  // Copies the value of the preference that stores the content settings
+  // exceptions to the obsolete preference for content settings exceptions. This
+  // is necessary to allow content settings exceptions beeing synced to older
+  // versions of chrome that only use the obsolete.
+  void SyncObsoletePref(PrefService* pref);
 
   void CanonicalizeContentSettingsExceptions(
       DictionaryValue* all_settings_dictionary);
