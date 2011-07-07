@@ -61,7 +61,8 @@ class PrerenderContents : public NotificationObserver,
         Profile* profile,
         const GURL& url,
         const GURL& referrer,
-        Origin origin) = 0;
+        Origin origin,
+        uint8 experiment_id) = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Factory);
@@ -171,7 +172,8 @@ class PrerenderContents : public NotificationObserver,
                     Profile* profile,
                     const GURL& url,
                     const GURL& referrer,
-                    Origin origin);
+                    Origin origin,
+                    uint8 experiment_id);
 
   NotificationRegistrar& notification_registrar() {
     return notification_registrar_;
@@ -276,6 +278,9 @@ class PrerenderContents : public NotificationObserver,
 
   // Origin for this prerender.
   Origin origin_;
+
+  // Experiment during which this prerender is performed.
+  uint8 experiment_id_;
 
   // Offset by which to offset prerendered pages
   static const int32 kPrerenderPageIdOffset = 10;

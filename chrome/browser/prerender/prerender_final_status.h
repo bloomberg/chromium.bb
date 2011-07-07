@@ -47,8 +47,6 @@ enum FinalStatus {
   FINAL_STATUS_MAX,
 };
 
-void RecordFinalStatus(Origin origin, FinalStatus final_status);
-
 // Return a human-readable name for |final_status|. |final_status|
 // is expected to be a valid value.
 const char* NameFromFinalStatus(FinalStatus final_status);

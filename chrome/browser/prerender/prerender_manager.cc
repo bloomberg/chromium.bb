@@ -20,6 +20,7 @@
 #include "chrome/browser/prerender/prerender_history.h"
 #include "chrome/browser/prerender/prerender_observer.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
+#include "chrome/browser/prerender/prerender_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper_delegate.h"
@@ -33,9 +34,6 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/common/notification_service.h"
-#include "googleurl/src/url_canon.h"
-#include "googleurl/src/url_parse.h"
-#include "googleurl/src/url_util.h"
 
 namespace prerender {
 
@@ -67,6 +65,37 @@ const char* const kValidHttpMethods[] = {
 const int kHistoryLength = 100;
 
 }  // namespace
+
+// Helper macros for experiment-based and origin-based histogram reporting.
+#define PREFIXED_HISTOGRAM(histogram) \
+  PREFIXED_HISTOGRAM_INTERNAL(GetCurrentOrigin(), GetCurrentExperimentId(), \
+                              IsOriginExperimentWash(), histogram)
+
+#define PREFIXED_HISTOGRAM_PRERENDER_MANAGER(pm, histogram) \
+  PREFIXED_HISTOGRAM_INTERNAL(pm->GetCurrentOrigin(), \
+                              pm->GetCurrentExperimentId(), \
+                              pm->IsOriginExperimentWash(), histogram)
+
+#define PREFIXED_HISTOGRAM_ORIGIN_EXPERIMENT(origin, experiment, histogram) \
+  PREFIXED_HISTOGRAM_INTERNAL(origin, experiment, false, histogram)
+
+#define PREFIXED_HISTOGRAM_INTERNAL(origin, experiment, wash, histogram) { \
+  static uint8 recording_experiment = kNoExperiment; \
+  if (recording_experiment == kNoExperiment && experiment != kNoExperiment) \
+    recording_experiment = experiment; \
+  if (wash) { \
+    histogram; \
+  } else if (experiment != kNoExperiment && \
+             (origin != ORIGIN_LINK_REL_PRERENDER || \
+              experiment != recording_experiment)) { \
+  } else if (experiment != kNoExperiment) { \
+    histogram; \
+  } else if (origin == ORIGIN_OMNIBOX) { \
+    histogram; \
+  } else { \
+    histogram; \
+  } \
+}
 
 class PrerenderManager::OnCloseTabContentsDeleter : public TabContentsDelegate {
  public:
@@ -124,35 +153,6 @@ bool PrerenderManager::IsControlGroup() {
 }
 
 // static
-bool PrerenderManager::MaybeGetQueryStringBasedAliasURL(
-    const GURL& url, GURL* alias_url) {
-  DCHECK(alias_url);
-  url_parse::Parsed parsed;
-  url_parse::ParseStandardURL(url.spec().c_str(), url.spec().length(),
-                              &parsed);
-  url_parse::Component query = parsed.query;
-  url_parse::Component key, value;
-  while (url_parse::ExtractQueryKeyValue(url.spec().c_str(), &query, &key,
-                                         &value)) {
-    if (key.len != 3 || strncmp(url.spec().c_str() + key.begin, "url", key.len))
-      continue;
-    // We found a url= query string component.
-    if (value.len < 1)
-      continue;
-    url_canon::RawCanonOutputW<1024> decoded_url;
-    url_util::DecodeURLEscapeSequences(url.spec().c_str() + value.begin,
-                                       value.len, &decoded_url);
-    GURL new_url(string16(decoded_url.data(), decoded_url.length()));
-    if (!new_url.is_empty() && new_url.is_valid()) {
-      *alias_url = new_url;
-      return true;
-    }
-    return false;
-  }
-  return false;
-}
-
-// static
 bool PrerenderManager::IsValidHttpMethod(const std::string& method) {
   // method has been canonicalized to upper case at this point so we can just
   // compare them.
@@ -200,6 +200,9 @@ PrerenderManager::PrerenderManager(Profile* profile,
       profile_(profile),
       prerender_tracker_(prerender_tracker),
       prerender_contents_factory_(PrerenderContents::CreateFactory()),
+      last_experiment_id_(kNoExperiment),
+      last_origin_(ORIGIN_LINK_REL_PRERENDER),
+      origin_experiment_wash_(false),
       last_prerender_start_time_(GetCurrentTimeTicks() -
           base::TimeDelta::FromMilliseconds(kMinTimeBetweenPrerendersMs)),
       runnable_method_factory_(this),
@@ -246,6 +249,26 @@ bool PrerenderManager::AddPrerender(
     const GURL& referrer) {
   DCHECK(CalledOnValidThread());
 
+  // Check if we are doing an experiment.
+  uint8 experiment = GetQueryStringBasedExperiment(url_arg);
+
+  // We need to update last_experiment_id_, last_origin_, and
+  // origin_experiment_wash_.
+  if (!WithinWindow()) {
+    // If we are outside a window, this is a fresh start and we are fine,
+    // and there is no mix.
+    origin_experiment_wash_ = false;
+  } else {
+    // If we are inside the last window, there is a mish mash of origins
+    // and experiments if either there was a mish mash before, or the current
+    // experiment/origin does not match the previous one.
+    if (experiment != last_experiment_id_ || origin != last_origin_)
+      origin_experiment_wash_ = true;
+  }
+
+  last_origin_ = origin;
+  last_experiment_id_ = experiment;
+
   // If we observe multiple tags within the 30 second window, we will still
   // reset the window to begin at the most recent occurrence, so that we will
   // always be in a window in the 30 seconds from each occurrence.
@@ -263,9 +286,7 @@ bool PrerenderManager::AddPrerender(
 
   GURL url = url_arg;
   GURL alias_url;
-  if (IsControlGroup() &&
-      PrerenderManager::MaybeGetQueryStringBasedAliasURL(
-          url, &alias_url)) {
+  if (IsControlGroup() && MaybeGetQueryStringBasedAliasURL(url, &alias_url)) {
     url = alias_url;
   }
 
@@ -282,7 +303,7 @@ bool PrerenderManager::AddPrerender(
   // case, when a new tab is added to a process used for prerendering.
   if (RenderProcessHost::ShouldTryToUseExistingProcessHost() &&
       !RenderProcessHost::run_renderer_in_process()) {
-    RecordFinalStatus(origin, FINAL_STATUS_TOO_MANY_PROCESSES);
+    RecordFinalStatus(origin, experiment, FINAL_STATUS_TOO_MANY_PROCESSES);
     return false;
   }
 
@@ -291,7 +312,7 @@ bool PrerenderManager::AddPrerender(
     // Cancel the prerender. We could add it to the pending prerender list but
     // this doesn't make sense as the next prerender request will be triggered
     // by a navigation and is unlikely to be the same site.
-    RecordFinalStatus(origin, FINAL_STATUS_RATE_LIMIT_EXCEEDED);
+    RecordFinalStatus(origin, experiment, FINAL_STATUS_RATE_LIMIT_EXCEEDED);
     return false;
   }
 
@@ -304,13 +325,14 @@ bool PrerenderManager::AddPrerender(
     // Don't prerender page if parent RenderViewHost no longer exists, or it has
     // no view.  The latter should only happen when the RenderView has closed.
     if (!source_render_view_host || !source_render_view_host->view()) {
-      RecordFinalStatus(origin, FINAL_STATUS_SOURCE_RENDER_VIEW_CLOSED);
+      RecordFinalStatus(origin, experiment,
+                        FINAL_STATUS_SOURCE_RENDER_VIEW_CLOSED);
       return false;
     }
   }
 
   PrerenderContents* prerender_contents =
-      CreatePrerenderContents(url, referrer, origin);
+      CreatePrerenderContents(url, referrer, origin, experiment);
   if (!prerender_contents || !prerender_contents->Init())
     return false;
 
@@ -480,8 +502,9 @@ bool PrerenderManager::MaybeUsePrerenderedPage(TabContents* tab_contents,
     RecordTimeUntilUsed(GetCurrentTimeTicks() -
                         prerender_contents->load_start_time());
 
-  UMA_HISTOGRAM_COUNTS("Prerender.PrerendersPerSessionCount",
-                       ++prerenders_per_session_count_);
+  PREFIXED_HISTOGRAM(UMA_HISTOGRAM_COUNTS(
+      GetDefaultHistogramName("PrerendersPerSessionCount"),
+      ++prerenders_per_session_count_));
   prerender_contents->set_final_status(FINAL_STATUS_USED);
 
   RenderViewHost* render_view_host =
@@ -591,10 +614,11 @@ bool PrerenderManager::IsPrerenderElementFresh(const base::Time start) const {
 PrerenderContents* PrerenderManager::CreatePrerenderContents(
     const GURL& url,
     const GURL& referrer,
-    Origin origin) {
+    Origin origin,
+    uint8 experiment_id) {
   DCHECK(CalledOnValidThread());
   return prerender_contents_factory_->CreatePrerenderContents(
-      this, prerender_tracker_, profile_, url, referrer, origin);
+      this, prerender_tracker_, profile_, url, referrer, origin, experiment_id);
 }
 
 bool PrerenderManager::IsPendingDelete(PrerenderContents* entry) const {
@@ -621,14 +645,15 @@ void PrerenderManager::DeletePendingDeleteEntries() {
 
 // Helper macro for histograms.
 #define RECORD_PLT(tag, perceived_page_load_time) { \
+  PREFIXED_HISTOGRAM_PRERENDER_MANAGER(prerender_manager, \
     UMA_HISTOGRAM_CUSTOM_TIMES( \
-        base::FieldTrial::MakeName(std::string("Prerender.") + tag, \
-                                   "Prefetch"), \
+        base::FieldTrial::MakeName( \
+            prerender_manager->GetDefaultHistogramName(tag), "Prefetch"), \
         perceived_page_load_time, \
         base::TimeDelta::FromMilliseconds(10), \
         base::TimeDelta::FromSeconds(60), \
-        100); \
-  }
+        100)); \
+}
 
 // static
 void PrerenderManager::RecordPerceivedPageLoadTime(
@@ -726,8 +751,10 @@ bool PrerenderManager::DoesRateLimitAllowPrerender() const {
   DCHECK(CalledOnValidThread());
   base::TimeDelta elapsed_time =
       GetCurrentTimeTicks() - last_prerender_start_time_;
-  UMA_HISTOGRAM_TIMES("Prerender.TimeBetweenPrerenderRequests",
-                      elapsed_time);
+  PREFIXED_HISTOGRAM(
+      UMA_HISTOGRAM_TIMES(
+          GetDefaultHistogramName("TimeBetweenPrerenderRequests"),
+          elapsed_time));
   if (!config_.rate_limit_enabled)
     return true;
   return elapsed_time >
@@ -967,12 +994,87 @@ void PrerenderManager::DestroyAllContents(FinalStatus final_status) {
 
 void PrerenderManager::RecordTimeUntilUsed(base::TimeDelta time_until_used) {
   DCHECK(CalledOnValidThread());
-  UMA_HISTOGRAM_CUSTOM_TIMES(
-      "Prerender.TimeUntilUsed",
+  PREFIXED_HISTOGRAM(UMA_HISTOGRAM_CUSTOM_TIMES(
+      GetDefaultHistogramName("TimeUntilUsed"),
       time_until_used,
       base::TimeDelta::FromMilliseconds(10),
       config_.max_age,
-      50);
+      50));
+}
+
+void PrerenderManager::RecordFinalStatus(Origin origin,
+                                         uint8 experiment_id,
+                                         FinalStatus final_status) const {
+  DCHECK(final_status != FINAL_STATUS_MAX);
+  // FINAL_STATUS_CONTROL_GROUP indicates that the PrerenderContents
+  // was created only to measure "would-have-been-prerendered" for
+  // control group measurements. Don't pollute data with it.
+  if (PrerenderManager::IsControlGroup() ||
+      final_status == FINAL_STATUS_CONTROL_GROUP)
+    return;
+  PREFIXED_HISTOGRAM_ORIGIN_EXPERIMENT(origin, experiment_id,
+                     UMA_HISTOGRAM_ENUMERATION(
+                         GetHistogramName(origin, experiment_id, "FinalStatus"),
+                         final_status,
+                         FINAL_STATUS_MAX));
+}
+
+std::string PrerenderManager::ComposeHistogramName(
+    const std::string& prefix_type,
+    const std::string& name) const {
+  if (prefix_type.empty())
+    return std::string("Prerender.") + name;
+  return std::string("Prerender.") + prefix_type + std::string("_") + name;
+}
+
+std::string PrerenderManager::GetHistogramName(Origin origin,
+                                               uint8 experiment_id,
+                                               const std::string& name) const {
+  switch (origin) {
+    case ORIGIN_OMNIBOX:
+      if (experiment_id != kNoExperiment)
+        return ComposeHistogramName("wash", name);
+      return ComposeHistogramName("omnibox", name);
+    case ORIGIN_LINK_REL_PRERENDER:
+      if (experiment_id == kNoExperiment)
+        return ComposeHistogramName("", name);
+      return ComposeHistogramName("exp" + std::string(1, experiment_id + '0'),
+                                  name);
+    default:
+      NOTREACHED();
+      break;
+  };
+
+  // Dummy return value to make the compiler happy.
+  NOTREACHED();
+  return ComposeHistogramName("wash", name);
+}
+
+std::string PrerenderManager::GetDefaultHistogramName(
+    const std::string& name) const {
+  if (!WithinWindow())
+    return ComposeHistogramName("", name);
+  if (origin_experiment_wash_)
+    return ComposeHistogramName("wash", name);
+  return GetHistogramName(last_origin_, last_experiment_id_, name);
+}
+
+uint8 PrerenderManager::GetCurrentExperimentId() const {
+  if (!WithinWindow())
+    return kNoExperiment;
+  return last_experiment_id_;
+}
+
+Origin PrerenderManager::GetCurrentOrigin() const {
+  if (!WithinWindow())
+    return ORIGIN_LINK_REL_PRERENDER;
+  return last_origin_;
+}
+
+bool PrerenderManager::IsOriginExperimentWash() const {
+  if (!WithinWindow())
+    return false;
+  return origin_experiment_wash_;
 }
 
 }  // namespace prerender

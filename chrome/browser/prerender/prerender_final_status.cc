@@ -4,7 +4,6 @@
 
 #include "chrome/browser/prerender/prerender_final_status.h"
 
-#include "base/metrics/histogram.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 
 namespace prerender {
@@ -49,34 +48,6 @@ const char* kFinalStatusNames[] = {
 COMPILE_ASSERT(arraysize(kFinalStatusNames) == FINAL_STATUS_MAX + 1,
                PrerenderFinalStatus_name_count_mismatch);
 
-}
-
-void RecordFinalStatus(Origin origin, FinalStatus final_status) {
-  DCHECK(final_status != FINAL_STATUS_MAX);
-  // FINAL_STATUS_CONTROL_GROUP indicates that the PrerenderContents
-  // was created only to measure "would-have-been-prerendered" for
-  // control group measurements. Don't pollute data with it.
-  if (PrerenderManager::IsControlGroup() ||
-      final_status == FINAL_STATUS_CONTROL_GROUP)
-    return;
-  UMA_HISTOGRAM_ENUMERATION("Prerender.FinalStatus",
-                            final_status,
-                            FINAL_STATUS_MAX);
-  switch (origin) {
-    case ORIGIN_LINK_REL_PRERENDER:
-      UMA_HISTOGRAM_ENUMERATION("Prerender.FinalStatus_LinkRelPrerender",
-                                final_status,
-                                FINAL_STATUS_MAX);
-      break;
-    case ORIGIN_OMNIBOX:
-      UMA_HISTOGRAM_ENUMERATION("Prerender.FinalStatus_Omnibox",
-                                final_status,
-                                FINAL_STATUS_MAX);
-      break;
-    default:
-      NOTREACHED();
-      break;
-  };
 }
 
 const char* NameFromFinalStatus(FinalStatus final_status) {

@@ -63,9 +63,9 @@ class PrerenderContentsFactoryImpl : public PrerenderContents::Factory {
   virtual PrerenderContents* CreatePrerenderContents(
       PrerenderManager* prerender_manager, PrerenderTracker* prerender_tracker,
       Profile* profile, const GURL& url, const GURL& referrer,
-      Origin origin) OVERRIDE {
+      Origin origin, uint8 experiment_id) OVERRIDE {
     return new PrerenderContents(prerender_manager, prerender_tracker, profile,
-                                 url, referrer, origin);
+                                 url, referrer, origin, experiment_id);
   }
 };
 
@@ -109,7 +109,8 @@ PrerenderContents::PrerenderContents(PrerenderManager* prerender_manager,
                                      Profile* profile,
                                      const GURL& url,
                                      const GURL& referrer,
-                                     Origin origin)
+                                     Origin origin,
+                                     uint8 experiment_id)
     : prerender_manager_(prerender_manager),
       prerender_tracker_(prerender_tracker),
       prerender_url_(url),
@@ -123,7 +124,8 @@ PrerenderContents::PrerenderContents(PrerenderManager* prerender_manager,
       child_id_(-1),
       route_id_(-1),
       starting_page_id_(-1),
-      origin_(origin) {
+      origin_(origin),
+      experiment_id_(experiment_id) {
   DCHECK(prerender_manager != NULL);
 }
 
@@ -294,7 +296,8 @@ PrerenderContents::~PrerenderContents() {
   // If we haven't even started prerendering, we were just in the control
   // group, which means we do not want to record the status.
   if (prerendering_has_started())
-    RecordFinalStatus(origin_, final_status_);
+    prerender_manager_->RecordFinalStatus(origin_, experiment_id_,
+                                          final_status_);
 
   if (child_id_ != -1 && route_id_ != -1)
     prerender_tracker_->OnPrerenderingFinished(child_id_, route_id_);

@@ -1544,6 +1544,7 @@
         'browser/prerender/prerender_history_unittest.cc',
         'browser/prerender/prerender_manager_unittest.cc',
         'browser/prerender/prerender_tracker_unittest.cc',
+        'browser/prerender/prerender_util_unittest.cc',
         'browser/printing/cloud_print/cloud_print_setup_source_unittest.cc',
         'browser/printing/print_dialog_cloud_unittest.cc',
         'browser/printing/print_job_unittest.cc',

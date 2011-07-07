@@ -25,7 +25,8 @@ class DummyPrerenderContents : public PrerenderContents {
                          const GURL& url,
                          FinalStatus expected_final_status)
       : PrerenderContents(prerender_manager, prerender_tracker, NULL, url,
-                          GURL(), ORIGIN_LINK_REL_PRERENDER),
+                          GURL(), ORIGIN_LINK_REL_PRERENDER,
+                          PrerenderManager::kNoExperiment),
         has_started_(false),
         expected_final_status_(expected_final_status) {
   }
@@ -157,7 +158,8 @@ class TestPrerenderManager : public PrerenderManager {
   virtual PrerenderContents* CreatePrerenderContents(
       const GURL& url,
       const GURL& referrer,
-      Origin origin) OVERRIDE {
+      Origin origin,
+      uint8 experiment_id) OVERRIDE {
     DCHECK(next_prerender_contents_.get());
     return next_prerender_contents_.release();
   }
@@ -434,24 +436,6 @@ TEST_F(PrerenderManagerTest, PendingPrerenderTest) {
   EXPECT_TRUE(prerender_manager()->IsPendingEntry(pending_url));
   EXPECT_TRUE(prerender_contents->has_started());
   ASSERT_EQ(prerender_contents, prerender_manager()->GetEntry(url));
-}
-
-// Ensure that extracting a urlencoded URL in the url= query string component
-// works.
-TEST_F(PrerenderManagerTest, ExtractURLInQueryStringTest) {
-  GURL result;
-  EXPECT_TRUE(PrerenderManager::MaybeGetQueryStringBasedAliasURL(
-      GURL("http://www.google.com/url?sa=t&source=web&cd=1&ved=0CBcQFjAA&url=http%3A%2F%2Fwww.abercrombie.com%2Fwebapp%2Fwcs%2Fstores%2Fservlet%2FStoreLocator%3FcatalogId%3D%26storeId%3D10051%26langId%3D-1&rct=j&q=allinurl%3A%26&ei=KLyUTYGSEdTWiAKUmLCdCQ&usg=AFQjCNF8nJ2MpBFfr1ijO39_f22bcKyccw&sig2=2ymyGpO0unJwU1d4kdCUjQ"),
-      &result));
-  ASSERT_EQ(GURL("http://www.abercrombie.com/webapp/wcs/stores/servlet/StoreLocator?catalogId=&storeId=10051&langId=-1").spec(), result.spec());
-  EXPECT_FALSE(PrerenderManager::MaybeGetQueryStringBasedAliasURL(
-      GURL("http://www.google.com/url?sadf=test&blah=blahblahblah"), &result));
-  EXPECT_FALSE(PrerenderManager::MaybeGetQueryStringBasedAliasURL(
-      GURL("http://www.google.com/?url=INVALIDurlsAREsoMUCHfun.com"), &result));
-  EXPECT_TRUE(PrerenderManager::MaybeGetQueryStringBasedAliasURL(
-      GURL("http://www.google.com/?url=http://validURLSareGREAT.com"),
-      &result));
-  ASSERT_EQ(GURL("http://validURLSareGREAT.com").spec(), result.spec());
 }
 
 // Tests that a PrerenderManager created for a browser session in the control

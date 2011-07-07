@@ -98,7 +98,8 @@ class TestPrerenderContents : public PrerenderContents {
       int number_of_loads,
       FinalStatus expected_final_status)
       : PrerenderContents(prerender_manager, prerender_tracker, profile,
-                          url, referrer, ORIGIN_LINK_REL_PRERENDER),
+                          url, referrer, ORIGIN_LINK_REL_PRERENDER,
+                          PrerenderManager::kNoExperiment),
         number_of_loads_(0),
         expected_number_of_loads_(number_of_loads),
         expected_final_status_(expected_final_status),
@@ -252,7 +253,8 @@ class WaitForLoadPrerenderContentsFactory : public PrerenderContents::Factory {
       Profile* profile,
       const GURL& url,
       const GURL& referrer,
-      Origin origin) OVERRIDE {
+      Origin origin,
+      uint8 experiment_id) OVERRIDE {
     CHECK(!expected_final_status_queue_.empty()) <<
           "Creating prerender contents for " << url.path() <<
           " with no expected final status";

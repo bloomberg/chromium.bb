@@ -68,6 +68,9 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
     CLEAR_MAX = 0x1 << 2
   };
 
+  // ID indicating that no experiment is active.
+  static const uint8 kNoExperiment = 0;
+
   // Owned by a Profile object for the lifetime of the profile.
   PrerenderManager(Profile* profile, PrerenderTracker* prerender_tracker);
 
@@ -181,6 +184,11 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // Intended to be used when clearing the cache or history.
   void ClearData(int clear_flags);
 
+  // Record a final status of a prerendered page in a histogram.
+  void RecordFinalStatus(Origin origin,
+                         uint8 experiment_id,
+                         FinalStatus final_status) const;
+
   const Config& config() const { return config_; }
   Config& mutable_config() { return config_; }
 
@@ -195,12 +203,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
       PrerenderContents::Factory* prerender_contents_factory);
 
   PendingContentsData* FindPendingEntry(const GURL& url);
-
-  // Extracts a urlencoded URL stored in a url= query parameter from a URL
-  // supplied, if available, and stores it in alias_url.  Returns whether or not
-  // the operation succeeded (i.e. a valid URL was found).
-  static bool MaybeGetQueryStringBasedAliasURL(const GURL& url,
-                                               GURL* alias_url);
 
  private:
   // Test that needs needs access to internal functions.
@@ -252,7 +254,8 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   virtual base::TimeTicks GetCurrentTimeTicks() const;
   virtual PrerenderContents* CreatePrerenderContents(const GURL& url,
                                                      const GURL& referrer,
-                                                     Origin origin);
+                                                     Origin origin,
+                                                     uint8 experiment_id);
 
   // Checks if the PrerenderContents has been added to the pending delete list.
   bool IsPendingDelete(PrerenderContents* entry) const;
@@ -316,6 +319,22 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // navigates to it. This must be called on the UI thread.
   void RecordTimeUntilUsed(base::TimeDelta time_until_used);
 
+  // Composes a histogram name based on a histogram type.
+  std::string ComposeHistogramName(const std::string& prefix_type,
+                                   const std::string& name) const;
+
+  // Returns the histogram name for a given origin and experiment.
+  std::string GetHistogramName(Origin origin, uint8 experiment_id,
+                               const std::string& name) const;
+  // Returns the histogram name for the current window.
+  std::string GetDefaultHistogramName(const std::string& name) const;
+  // Returns the current experiment.
+  uint8 GetCurrentExperimentId() const;
+  // Returns the current origin.
+  Origin GetCurrentOrigin() const;
+  // Returns whether or not there is currently an origin/experiment wash.
+  bool IsOriginExperimentWash() const;
+
   // The configuration.
   Config config_;
 
@@ -354,6 +373,18 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   scoped_ptr<PrerenderContents::Factory> prerender_contents_factory_;
 
   static PrerenderManagerMode mode_;
+
+  // An integer indicating a Prerendering Experiment being currently conducted.
+  // (The last experiment ID seen).
+  uint8 last_experiment_id_;
+
+  // Origin of the last prerender seen.
+  Origin last_origin_;
+
+  // A boolean indicating that we have recently encountered a combination of
+  // different experiments and origins, making an attribution of PPLT's to
+  // experiments / origins impossible.
+  bool origin_experiment_wash_;
 
   // The time when we last saw a prerender request coming from a renderer.
   // This is used to record perceived PLT's for a certain amount of time
