@@ -1108,7 +1108,7 @@ void TabStripGtk::TabMiniStateChanged(TabContentsWrapper* contents, int index) {
   // Don't animate if the window isn't visible yet. The window won't be visible
   // when dragging a mini-tab to a new window.
   if (window_ && window_->window() &&
-      GTK_WIDGET_VISIBLE(GTK_WIDGET(window_->window()))) {
+      gtk_widget_get_visible(GTK_WIDGET(window_->window()))) {
     StartMiniTabAnimation(index);
   } else {
     Layout();
@@ -2127,7 +2127,7 @@ CustomDrawButton* TabStripGtk::MakeNewTabButton() {
   gtk_util::SetButtonTriggersNavigation(button->widget());
   g_signal_connect(button->widget(), "clicked",
                    G_CALLBACK(OnNewTabClickedThunk), this);
-  GTK_WIDGET_UNSET_FLAGS(button->widget(), GTK_CAN_FOCUS);
+  gtk_widget_set_can_focus(button->widget(), FALSE);
   gtk_fixed_put(GTK_FIXED(tabstrip_.get()), button->widget(), 0, 0);
 
   return button;

@@ -358,7 +358,7 @@ bool TabRendererGtk::IsSelected() const {
 }
 
 bool TabRendererGtk::IsVisible() const {
-  return GTK_WIDGET_FLAGS(tab_.get()) & GTK_VISIBLE;
+  return gtk_widget_get_visible(tab_.get());
 }
 
 void TabRendererGtk::SetVisible(bool visible) const {
@@ -1016,7 +1016,7 @@ CustomDrawButton* TabRendererGtk::MakeCloseButton() {
                    G_CALLBACK(OnEnterNotifyEventThunk), this);
   g_signal_connect(button->widget(), "leave-notify-event",
                    G_CALLBACK(OnLeaveNotifyEventThunk), this);
-  GTK_WIDGET_UNSET_FLAGS(button->widget(), GTK_CAN_FOCUS);
+  gtk_widget_set_can_focus(button->widget(), FALSE);
   gtk_fixed_put(GTK_FIXED(tab_.get()), button->widget(), 0, 0);
 
   return button;

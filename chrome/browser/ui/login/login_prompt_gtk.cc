@@ -176,7 +176,7 @@ void LoginHandlerGtk::OnPromptHierarchyChanged(GtkWidget* sender,
 
   // Now that we have attached ourself to the window, we can make our OK
   // button the default action and mess with the focus.
-  GTK_WIDGET_SET_FLAGS(ok_, GTK_CAN_DEFAULT);
+  gtk_widget_set_can_default(ok_, TRUE);
   gtk_widget_grab_default(ok_);
 }
 

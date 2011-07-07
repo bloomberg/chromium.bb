@@ -116,7 +116,7 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
                    G_CALLBACK(OnClickThunk), this);
   g_signal_connect(body_.get(), "button-press-event",
                    G_CALLBACK(OnButtonPressThunk), this);
-  GTK_WIDGET_UNSET_FLAGS(body_.get(), GTK_CAN_FOCUS);
+  gtk_widget_set_can_focus(body_.get(), FALSE);
   // Remove internal padding on the button.
   GtkRcStyle* no_padding_style = gtk_rc_style_new();
   no_padding_style->xthickness = 0;
@@ -156,7 +156,7 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
 
   menu_button_ = gtk_button_new();
   gtk_widget_set_app_paintable(menu_button_, TRUE);
-  GTK_WIDGET_UNSET_FLAGS(menu_button_, GTK_CAN_FOCUS);
+  gtk_widget_set_can_focus(menu_button_, FALSE);
   g_signal_connect(menu_button_, "expose-event",
                    G_CALLBACK(OnExposeThunk), this);
   g_signal_connect(menu_button_, "button-press-event",
@@ -716,7 +716,7 @@ gboolean DownloadItemGtk::OnHboxExpose(GtkWidget* widget, GdkEventExpose* e) {
       GtkShadowType body_shadow =
           GTK_BUTTON(body_.get())->depressed ? GTK_SHADOW_IN : GTK_SHADOW_OUT;
       gtk_paint_box(style, widget->window,
-                    static_cast<GtkStateType>(GTK_WIDGET_STATE(body_.get())),
+                    gtk_widget_get_state(body_.get()),
                     body_shadow,
                     &left_clip, widget, "button",
                     x, y, width, height);
@@ -724,7 +724,7 @@ gboolean DownloadItemGtk::OnHboxExpose(GtkWidget* widget, GdkEventExpose* e) {
       GtkShadowType menu_shadow =
           GTK_BUTTON(menu_button_)->depressed ? GTK_SHADOW_IN : GTK_SHADOW_OUT;
       gtk_paint_box(style, widget->window,
-                    static_cast<GtkStateType>(GTK_WIDGET_STATE(menu_button_)),
+                    gtk_widget_get_state(menu_button_),
                     menu_shadow,
                     &right_clip, widget, "button",
                     x, y, width, height);
@@ -735,7 +735,7 @@ gboolean DownloadItemGtk::OnHboxExpose(GtkWidget* widget, GdkEventExpose* e) {
       // the conservative side).
       GtkAllocation arrow_allocation = arrow_->allocation;
       gtk_paint_vline(style, widget->window,
-                      static_cast<GtkStateType>(GTK_WIDGET_STATE(widget)),
+                      gtk_widget_get_state(widget),
                       &e->area, widget, "button",
                       arrow_allocation.y,
                       arrow_allocation.y + arrow_allocation.height,
@@ -751,9 +751,9 @@ gboolean DownloadItemGtk::OnExpose(GtkWidget* widget, GdkEventExpose* e) {
 
     NineBox* nine_box = NULL;
     // If true, this widget is |body_|, otherwise it is |menu_button_|.
-    if (GTK_WIDGET_STATE(widget) == GTK_STATE_PRELIGHT)
+    if (gtk_widget_get_state(widget) == GTK_STATE_PRELIGHT)
       nine_box = is_body ? body_nine_box_prelight_ : menu_nine_box_prelight_;
-    else if (GTK_WIDGET_STATE(widget) == GTK_STATE_ACTIVE)
+    else if (gtk_widget_get_state(widget) == GTK_STATE_ACTIVE)
       nine_box = is_body ? body_nine_box_active_ : menu_nine_box_active_;
     else
       nine_box = is_body ? body_nine_box_normal_ : menu_nine_box_normal_;

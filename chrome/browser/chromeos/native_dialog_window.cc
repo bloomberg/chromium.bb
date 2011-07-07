@@ -33,7 +33,7 @@ GtkWidget* GetDialogDefaultWidget(GtkDialog* dialog) {
   GList* current = children;
   while (current) {
     GtkWidget* widget = reinterpret_cast<GtkWidget*>(current->data);
-    if (GTK_WIDGET_HAS_DEFAULT(widget)) {
+    if (gtk_widget_has_default(widget)) {
       default_widget = widget;
       break;
     }

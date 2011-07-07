@@ -85,14 +85,14 @@ static void gtk_chrome_button_init(GtkChromeButton* button) {
   priv->use_gtk_rendering = FALSE;
   priv->hover_state = -1.0;
 
-  GTK_WIDGET_UNSET_FLAGS(button, GTK_CAN_FOCUS);
+  gtk_widget_set_can_focus(GTK_WIDGET(button), FALSE);
 }
 
 static gboolean gtk_chrome_button_expose(GtkWidget* widget,
                                          GdkEventExpose* event) {
   GtkChromeButtonPrivate *priv = GTK_CHROME_BUTTON_GET_PRIVATE(widget);
   int paint_state = priv->paint_state < 0 ?
-                    GTK_WIDGET_STATE(widget) : priv->paint_state;
+                    gtk_widget_get_state(widget) : priv->paint_state;
 
   if (priv->use_gtk_rendering) {
     // We have the superclass handle this expose when we aren't using custom

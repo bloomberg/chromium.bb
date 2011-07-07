@@ -229,7 +229,7 @@ class LockWindow : public views::NativeWidgetGtk {
   // Sets the widget to move the focus to when clearning the native
   // widget's focus.
   void set_toplevel_focus_widget(GtkWidget* widget) {
-    GTK_WIDGET_SET_FLAGS(widget, GTK_CAN_FOCUS);
+    gtk_widget_set_can_focus(widget, TRUE);
     toplevel_focus_widget_ = widget;
   }
 

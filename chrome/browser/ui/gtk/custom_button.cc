@@ -71,7 +71,7 @@ gboolean CustomDrawButtonBase::OnExpose(GtkWidget* widget,
                                         GdkEventExpose* e,
                                         gdouble hover_state) {
   int paint_state = paint_override_ >= 0 ?
-                    paint_override_ : GTK_WIDGET_STATE(widget);
+                    paint_override_ : gtk_widget_get_state(widget);
 
   // If the paint state is PRELIGHT then set it to NORMAL (we will paint the
   // hover state according to |hover_state_|).
@@ -273,7 +273,7 @@ CustomDrawButton::~CustomDrawButton() {
 
 void CustomDrawButton::Init() {
   widget_.Own(gtk_chrome_button_new());
-  GTK_WIDGET_UNSET_FLAGS(widget(), GTK_CAN_FOCUS);
+  gtk_widget_set_can_focus(widget(), FALSE);
   g_signal_connect(widget(), "expose-event",
                    G_CALLBACK(OnCustomExposeThunk), this);
   hover_controller_.Init(widget());

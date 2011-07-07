@@ -18,7 +18,7 @@ void BrowserList::AllBrowsersClosedAndAppExiting() {
     // window or the toplevel associated with drop down windows crashes.
     // We further filter to only close dialogs, as blindly closing all windows
     // causes problems with things like status icons.
-    if (GTK_WIDGET_VISIBLE(GTK_WIDGET(window)) &&
+    if (gtk_widget_get_visible(GTK_WIDGET(window)) &&
         (GTK_IS_DIALOG(GTK_WIDGET(window))))
       gtk_widget_destroy(GTK_WIDGET(window));
   }

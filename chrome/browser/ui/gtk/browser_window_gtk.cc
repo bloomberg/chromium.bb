@@ -2075,7 +2075,7 @@ gboolean BrowserWindowGtk::OnButtonPressEvent(GtkWidget* widget,
 
   // Ignore clicks that are in/below the browser toolbar.
   GtkWidget* toolbar = toolbar_->widget();
-  if (!GTK_WIDGET_VISIBLE(toolbar)) {
+  if (!gtk_widget_get_visible(toolbar)) {
     // If the toolbar is not showing, use the location of web contents as the
     // boundary of where to ignore clicks.
     toolbar = render_area_vbox_;

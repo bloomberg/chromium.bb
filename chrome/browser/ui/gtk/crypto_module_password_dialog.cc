@@ -122,7 +122,7 @@ CryptoModulePasswordDialog::CryptoModulePasswordDialog(
           IDS_CRYPTO_MODULE_AUTH_DIALOG_OK_BUTTON_LABEL).c_str(),
       GTK_STOCK_OK,
       GTK_RESPONSE_ACCEPT);
-  GTK_WIDGET_SET_FLAGS(ok_button, GTK_CAN_DEFAULT);
+  gtk_widget_set_can_default(ok_button, TRUE);
   gtk_dialog_set_default_response(GTK_DIALOG(dialog_), GTK_RESPONSE_ACCEPT);
 
   // Select an appropriate text for the reason.

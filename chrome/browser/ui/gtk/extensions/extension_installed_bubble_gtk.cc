@@ -144,8 +144,8 @@ void ExtensionInstalledBubbleGtk::ShowInternal() {
     // If the widget is not visible then browser_window could be incognito
     // with this extension disabled. Try showing it on the chevron.
     // If that fails, fall back to default position.
-    if (reference_widget && !GTK_WIDGET_VISIBLE(reference_widget)) {
-      reference_widget = GTK_WIDGET_VISIBLE(toolbar->chevron()) ?
+    if (reference_widget && !gtk_widget_get_visible(reference_widget)) {
+      reference_widget = gtk_widget_get_visible(toolbar->chevron()) ?
           toolbar->chevron() : NULL;
     }
   } else if (type_ == PAGE_ACTION) {

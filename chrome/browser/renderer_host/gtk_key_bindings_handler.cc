@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,7 +54,7 @@ GtkWidget* GtkKeyBindingsHandler::CreateNewHandler() {
   // Prevents it from handling any events by itself.
   gtk_widget_set_sensitive(GTK_WIDGET(handler), FALSE);
   gtk_widget_set_events(GTK_WIDGET(handler), 0);
-  GTK_WIDGET_UNSET_FLAGS(GTK_WIDGET(handler), GTK_CAN_FOCUS);
+  gtk_widget_set_can_focus(GTK_WIDGET(handler), TRUE);
 
 #if !GTK_CHECK_VERSION(2, 14, 0)
   // "move-focus", "move-viewport", "select-all" and "toggle-cursor-visible"
