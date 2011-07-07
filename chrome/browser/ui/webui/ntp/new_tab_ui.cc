@@ -507,7 +507,6 @@ void NewTabUI::RegisterUserPrefs(PrefService* prefs) {
                              0,
                              PrefService::UNSYNCABLE_PREF);
 
-  AppLauncherHandler::RegisterUserPrefs(prefs);
   MostVisitedHandler::RegisterUserPrefs(prefs);
   ShownSectionsHandler::RegisterUserPrefs(prefs);
 

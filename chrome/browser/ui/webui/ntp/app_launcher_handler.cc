@@ -19,8 +19,6 @@
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/platform_util.h"
-#include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -32,7 +30,6 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_resource.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/disposition_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -210,8 +207,6 @@ void AppLauncherHandler::RegisterMessages() {
       NewCallback(this, &AppLauncherHandler::HandleSetPageIndex));
   web_ui_->RegisterMessageCallback("promoSeen",
       NewCallback(this, &AppLauncherHandler::HandlePromoSeen));
-  web_ui_->RegisterMessageCallback("saveAppPageName",
-      NewCallback(this, &AppLauncherHandler::HandleSaveAppPageName));
 }
 
 void AppLauncherHandler::Observe(NotificationType type,
@@ -263,16 +258,10 @@ void AppLauncherHandler::Observe(NotificationType type,
     case NotificationType::PREF_CHANGED: {
       if (!web_ui_->tab_contents())
         break;
-      // Handle app page renames.
-      std::string* pref_name = Details<std::string>(details).ptr();
-      if (*pref_name == prefs::kNTPAppPageNames) {
-        HandleGetApps(NULL);
-      } else {
-        // Default prefs change handling.
-        DictionaryValue dictionary;
-        FillAppDictionary(&dictionary);
-        web_ui_->CallJavascriptFunction("appsPrefChangeCallback", dictionary);
-      }
+
+      DictionaryValue dictionary;
+      FillAppDictionary(&dictionary);
+      web_ui_->CallJavascriptFunction("appsPrefChangeCallback", dictionary);
       break;
     }
     default:
@@ -326,13 +315,6 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
       "showLauncher",
       extensions_service_->apps_promo()->ShouldShowAppLauncher(
           extensions_service_->GetAppIds()));
-
-  PrefService* prefs = web_ui_->GetProfile()->GetPrefs();
-  const ListValue* app_page_names = prefs->GetList(prefs::kNTPAppPageNames);
-  if (app_page_names && app_page_names->GetSize()) {
-    dictionary->Set("appPageNames",
-                    static_cast<ListValue*>(app_page_names->DeepCopy()));
-  }
 }
 
 DictionaryValue* AppLauncherHandler::GetAppInfo(const Extension* extension) {
@@ -414,7 +396,6 @@ void AppLauncherHandler::HandleGetApps(const ListValue* args) {
     pref_change_registrar_.Init(
         extensions_service_->extension_prefs()->pref_service());
     pref_change_registrar_.Add(ExtensionPrefs::kExtensionsPref, this);
-    pref_change_registrar_.Add(prefs::kNTPAppPageNames, this);
   }
 }
 
@@ -605,25 +586,6 @@ void AppLauncherHandler::HandlePromoSeen(const ListValue* args) {
   UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppsPromoHistogram,
                             extension_misc::PROMO_SEEN,
                             extension_misc::PROMO_BUCKET_BOUNDARY);
-}
-
-void AppLauncherHandler::HandleSaveAppPageName(const ListValue* args) {
-  string16 name;
-  CHECK(args->GetString(0, &name));
-
-  double page_index;
-  CHECK(args->GetDouble(1, &page_index));
-
-  AutoReset<bool> auto_reset(&ignore_changes_, true);
-  PrefService* prefs = web_ui_->GetProfile()->GetPrefs();
-  ListPrefUpdate update(prefs, prefs::kNTPAppPageNames);
-  ListValue* list = update.Get();
-  list->Set(static_cast<size_t>(page_index), Value::CreateStringValue(name));
-}
-
-// static
-void AppLauncherHandler::RegisterUserPrefs(PrefService* pref_service) {
-  pref_service->RegisterListPref(prefs::kNTPAppPageNames);
 }
 
 // static

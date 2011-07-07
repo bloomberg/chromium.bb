@@ -38,6 +38,13 @@
   -webkit-mask-clip: content-box;
 }
 
+.tile-page-title {
+  /* TODO(estade): title is hidden for now. We may remove it later. */
+  display: none;
+  font-size: 25px;
+  height: 50px;
+}
+
 .tile-grid {
   overflow: hidden;
   position: relative;
