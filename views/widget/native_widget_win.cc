@@ -392,6 +392,8 @@ NativeWidgetWin::~NativeWidgetWin() {
   input_method_.reset();
   if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)
     delete delegate_;
+  else
+    CloseNow();
 }
 
 // static

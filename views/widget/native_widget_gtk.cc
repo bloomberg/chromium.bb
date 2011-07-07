@@ -393,12 +393,15 @@ NativeWidgetGtk::NativeWidgetGtk(internal::NativeWidgetDelegate* delegate)
 }
 
 NativeWidgetGtk::~NativeWidgetGtk() {
-  DCHECK(widget_ == NULL);
   // We need to delete the input method before calling DestroyRootView(),
   // because it'll set focus_manager_ to NULL.
   input_method_.reset();
-  if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)
+  if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET) {
+    DCHECK(widget_ == NULL);
     delete delegate_;
+  } else {
+    CloseNow();
+  }
 }
 
 GtkWindow* NativeWidgetGtk::GetTransientParent() const {

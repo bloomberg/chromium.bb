@@ -75,7 +75,6 @@ NativeTabContentsViewGtk::NativeTabContentsViewGtk(
 
 NativeTabContentsViewGtk::~NativeTabContentsViewGtk() {
   delegate_ = NULL;
-  CloseNow();
 }
 
 void NativeTabContentsViewGtk::AttachConstrainedWindow(

@@ -82,7 +82,6 @@ NativeTabContentsViewWin::NativeTabContentsViewWin(
 }
 
 NativeTabContentsViewWin::~NativeTabContentsViewWin() {
-  CloseNow();
 }
 
 TabContents* NativeTabContentsViewWin::GetTabContents() const {

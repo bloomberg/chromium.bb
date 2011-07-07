@@ -22,7 +22,6 @@ NativeTabContentsViewViews::NativeTabContentsViewViews(
 }
 
 NativeTabContentsViewViews::~NativeTabContentsViewViews() {
-  CloseNow();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

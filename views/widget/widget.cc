@@ -153,10 +153,8 @@ Widget::~Widget() {
 
   DestroyRootView();
 
-  if (ownership_ == InitParams::WIDGET_OWNS_NATIVE_WIDGET) {
-    CloseNow();
+  if (ownership_ == InitParams::WIDGET_OWNS_NATIVE_WIDGET)
     delete native_widget_;
-  }
 }
 
 // static
