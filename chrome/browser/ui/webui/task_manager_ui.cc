@@ -62,6 +62,14 @@ void TaskManagerUIHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetStringUTF16(IDS_CLOSE));
   localized_strings.SetString("kill_process",
       l10n_util::GetStringUTF16(IDS_TASK_MANAGER_KILL));
+  localized_strings.SetString("page_column",
+      l10n_util::GetStringUTF16(IDS_TASK_MANAGER_PAGE_COLUMN));
+  localized_strings.SetString("network_column",
+      l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NET_COLUMN));
+  localized_strings.SetString("cpu_column",
+      l10n_util::GetStringUTF16(IDS_TASK_MANAGER_CPU_COLUMN));
+  localized_strings.SetString("private_memory_column",
+      l10n_util::GetStringUTF16(IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN));
 
   SetFontAndTextDirection(&localized_strings);
 

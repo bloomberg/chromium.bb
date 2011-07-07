@@ -11,10 +11,12 @@ cr.addSingletonGetter(TaskManager);
  * Default columns (column_id, label, width)
  * @const
  */
-var DEFAULT_COLUMNS = [['title', 'Title', 300],
-                       ['networkUsage', 'Network', 85],
-                       ['cpuUsage', 'CPU', 80],
-                       ['privateMemory', 'Memory', 80]];
+var DEFAULT_COLUMNS = [['title', 'page_column', 300],
+                       ['networkUsage', 'network_column', 85],
+                       ['cpuUsage', 'cpu_column', 80],
+                       ['privateMemory', 'private_memory_column', 80]];
+
+var localStrings = new LocalStrings();
 
 TaskManager.prototype = {
   /**
@@ -117,8 +119,9 @@ TaskManager.prototype = {
   initColumnModel_: function () {
     var table_columns = new Array();
     for (var i = 0; i < DEFAULT_COLUMNS.length; i++) {
+      var localized_label = localStrings.getString(DEFAULT_COLUMNS[i][1]);
       table_columns.push(new cr.ui.table.TableColumn(DEFAULT_COLUMNS[i][0],
-                                                     DEFAULT_COLUMNS[i][1],
+                                                     localized_label,
                                                      DEFAULT_COLUMNS[i][2]));
     }
 
