@@ -192,6 +192,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   void ContinueWindowTimerFunc();
 
   // The following methods are called during shutdown.
+  void ShutdownNetwork();
   void ShutdownRecorder();
   void ShutdownFinish();
 

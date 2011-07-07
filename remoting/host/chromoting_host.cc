@@ -159,24 +159,7 @@ void ChromotingHost::Shutdown(Task* shutdown_task) {
   }
   clients_.clear();
 
-  // Stop chromotocol session manager.
-  if (session_manager_.get()) {
-    session_manager_->Close();
-    session_manager_.reset();
-  }
-
-  // Stop XMPP connection.
-  if (signal_strategy_.get()) {
-    signal_strategy_->Close();
-    signal_strategy_.reset();
-
-    for (StatusObserverList::iterator it = status_observers_.begin();
-         it != status_observers_.end(); ++it) {
-      (*it)->OnSignallingDisconnected();
-    }
-  }
-
-  ShutdownRecorder();
+  ShutdownNetwork();
 }
 
 void ChromotingHost::AddStatusObserver(HostStatusObserver* observer) {
@@ -637,6 +620,33 @@ void ChromotingHost::StartContinueWindowTimer(bool start) {
 void ChromotingHost::ContinueWindowTimerFunc() {
   PauseSession(true);
   ShowContinueWindow(true);
+}
+
+void ChromotingHost::ShutdownNetwork() {
+  if (MessageLoop::current() != context_->network_message_loop()) {
+    context_->network_message_loop()->PostTask(
+        FROM_HERE, base::Bind(&ChromotingHost::ShutdownNetwork, this));
+    return;
+  }
+
+  // Stop chromotocol session manager.
+  if (session_manager_.get()) {
+    session_manager_->Close();
+    session_manager_.reset();
+  }
+
+  // Stop XMPP connection.
+  if (signal_strategy_.get()) {
+    signal_strategy_->Close();
+    signal_strategy_.reset();
+
+    for (StatusObserverList::iterator it = status_observers_.begin();
+         it != status_observers_.end(); ++it) {
+      (*it)->OnSignallingDisconnected();
+    }
+  }
+
+  ShutdownRecorder();
 }
 
 void ChromotingHost::ShutdownRecorder() {
