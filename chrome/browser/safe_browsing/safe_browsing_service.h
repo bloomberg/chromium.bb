@@ -21,6 +21,8 @@
 #include "base/task.h"
 #include "base/time.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 
 class MalwareDetails;
@@ -39,7 +41,8 @@ class URLRequestContextGetter;
 
 // Construction needs to happen on the main thread.
 class SafeBrowsingService
-    : public base::RefCountedThreadSafe<SafeBrowsingService> {
+    : public base::RefCountedThreadSafe<SafeBrowsingService>,
+      public NotificationObserver {
  public:
   class Client;
   // Users of this service implement this interface to be notified
@@ -236,14 +239,6 @@ class SafeBrowsingService
   // Preference handling.
   static void RegisterPrefs(PrefService* prefs);
 
-  // Called on the IO thread to try to close the database, freeing the memory
-  // associated with it.  The database will be automatically reopened as needed.
-  //
-  // NOTE: Actual database closure is asynchronous, and until it happens, the IO
-  // thread is not allowed to access it; may not actually trigger a close if one
-  // is already pending or doing so would cause problems.
-  void CloseDatabase();
-
   // Called on the IO thread to reset the database.
   void ResetDatabase();
 
@@ -310,6 +305,14 @@ class SafeBrowsingService
   // Note that this is only needed outside the db thread, since functions on the
   // db thread can call GetDatabase() directly.
   bool MakeDatabaseAvailable();
+
+  // Called on the IO thread to try to close the database, freeing the memory
+  // associated with it.  The database will be automatically reopened as needed.
+  //
+  // NOTE: Actual database closure is asynchronous, and until it happens, the IO
+  // thread is not allowed to access it; may not actually trigger a close if one
+  // is already pending or doing so would cause problems.
+  void CloseDatabase();
 
   // Should only be called on db thread as SafeBrowsingDatabase is not
   // threadsafe.
@@ -410,6 +413,11 @@ class SafeBrowsingService
   // Adds the given entry to the whitelist.  Called on the UI thread.
   void UpdateWhitelist(const UnsafeResource& resource);
 
+  // NotificationObserver override
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) OVERRIDE;
+
   // The factory used to instanciate a SafeBrowsingService object.
   // Useful for tests, so they can provide their own implementation of
   // SafeBrowsingService.
@@ -471,6 +479,8 @@ class SafeBrowsingService
 
   // Similar to |download_urlcheck_timeout_ms_|, but for download hash checks.
   int64 download_hashcheck_timeout_ms_;
+
+  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingService);
 };

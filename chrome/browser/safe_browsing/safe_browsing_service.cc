@@ -27,6 +27,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/notification_service.h"
 #include "net/base/registry_controlled_domain.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -468,37 +469,6 @@ void SafeBrowsingService::RegisterPrefs(PrefService* prefs) {
   prefs->RegisterStringPref(prefs::kSafeBrowsingWrappedKey, "");
 }
 
-void SafeBrowsingService::CloseDatabase() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  // Cases to avoid:
-  //  * If |closing_database_| is true, continuing will queue up a second
-  //    request, |closing_database_| will be reset after handling the first
-  //    request, and if any functions on the db thread recreate the database, we
-  //    could start using it on the IO thread and then have the second request
-  //    handler delete it out from under us.
-  //  * If |database_| is NULL, then either no creation request is in flight, in
-  //    which case we don't need to do anything, or one is in flight, in which
-  //    case the database will be recreated before our deletion request is
-  //    handled, and could be used on the IO thread in that time period, leading
-  //    to the same problem as above.
-  //  * If |queued_checks_| is non-empty and |database_| is non-NULL, we're
-  //    about to be called back (in DatabaseLoadComplete()).  This will call
-  //    CheckUrl(), which will want the database.  Closing the database here
-  //    would lead to an infinite loop in DatabaseLoadComplete(), and even if it
-  //    didn't, it would be pointless since we'd just want to recreate.
-  //
-  // The first two cases above are handled by checking DatabaseAvailable().
-  if (!DatabaseAvailable() || !queued_checks_.empty())
-    return;
-
-  closing_database_ = true;
-  if (safe_browsing_thread_.get()) {
-    safe_browsing_thread_->message_loop()->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &SafeBrowsingService::OnCloseDatabase));
-  }
-}
-
 void SafeBrowsingService::ResetDatabase() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(enabled_);
@@ -522,6 +492,9 @@ void SafeBrowsingService::OnIOInitialize(
     net::URLRequestContextGetter* request_context_getter) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   enabled_ = true;
+
+  registrar_.Add(this, NotificationType::PURGE_MEMORY,
+                 NotificationService::AllSources());
 
   MakeDatabaseAvailable();
 
@@ -571,6 +544,8 @@ void SafeBrowsingService::OnIOShutdown() {
     return;
 
   enabled_ = false;
+
+  registrar_.RemoveAll();
 
   // This cancels all in-flight GetHash requests.
   delete protocol_manager_;
@@ -640,6 +615,37 @@ bool SafeBrowsingService::MakeDatabaseAvailable() {
   safe_browsing_thread_->message_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(this, &SafeBrowsingService::GetDatabase));
   return false;
+}
+
+void SafeBrowsingService::CloseDatabase() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  // Cases to avoid:
+  //  * If |closing_database_| is true, continuing will queue up a second
+  //    request, |closing_database_| will be reset after handling the first
+  //    request, and if any functions on the db thread recreate the database, we
+  //    could start using it on the IO thread and then have the second request
+  //    handler delete it out from under us.
+  //  * If |database_| is NULL, then either no creation request is in flight, in
+  //    which case we don't need to do anything, or one is in flight, in which
+  //    case the database will be recreated before our deletion request is
+  //    handled, and could be used on the IO thread in that time period, leading
+  //    to the same problem as above.
+  //  * If |queued_checks_| is non-empty and |database_| is non-NULL, we're
+  //    about to be called back (in DatabaseLoadComplete()).  This will call
+  //    CheckUrl(), which will want the database.  Closing the database here
+  //    would lead to an infinite loop in DatabaseLoadComplete(), and even if it
+  //    didn't, it would be pointless since we'd just want to recreate.
+  //
+  // The first two cases above are handled by checking DatabaseAvailable().
+  if (!DatabaseAvailable() || !queued_checks_.empty())
+    return;
+
+  closing_database_ = true;
+  if (safe_browsing_thread_.get()) {
+    safe_browsing_thread_->message_loop()->PostTask(FROM_HERE,
+        NewRunnableMethod(this, &SafeBrowsingService::OnCloseDatabase));
+  }
 }
 
 SafeBrowsingDatabase* SafeBrowsingService::GetDatabase() {
@@ -1200,6 +1206,14 @@ void SafeBrowsingService::UpdateWhitelist(const UnsafeResource& resource) {
       resource.url);
   entry.result = resource.threat_type;
   white_listed_entries_.push_back(entry);
+}
+
+void SafeBrowsingService::Observe(NotificationType type,
+                                  const NotificationSource& source,
+                                  const NotificationDetails& details) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(type == NotificationType::PURGE_MEMORY);
+  CloseDatabase();
 }
 
 bool SafeBrowsingService::IsWhitelisted(const UnsafeResource& resource) {

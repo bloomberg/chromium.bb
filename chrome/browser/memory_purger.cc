@@ -10,7 +10,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/render_messages.h"
@@ -34,8 +33,7 @@
 class PurgeMemoryIOHelper
     : public base::RefCountedThreadSafe<PurgeMemoryIOHelper> {
  public:
-  explicit PurgeMemoryIOHelper(SafeBrowsingService* safe_browsing_service)
-      : safe_browsing_service_(safe_browsing_service) {
+  PurgeMemoryIOHelper() {
   }
 
   void AddRequestContextGetter(
@@ -48,7 +46,6 @@ class PurgeMemoryIOHelper
   typedef std::set<RequestContextGetter> RequestContextGetters;
 
   RequestContextGetters request_context_getters_;
-  scoped_refptr<SafeBrowsingService> safe_browsing_service_;
 
   DISALLOW_COPY_AND_ASSIGN(PurgeMemoryIOHelper);
 };
@@ -66,11 +63,7 @@ void PurgeMemoryIOHelper::PurgeMemoryOnIOThread() {
        i != request_context_getters_.end(); ++i)
     (*i)->GetURLRequestContext()->proxy_service()->PurgeMemory();
 
-  // Close the Safe Browsing database, freeing memory used to cache sqlite as
-  // well as a number of in-memory structures.
-  safe_browsing_service_->CloseDatabase();
-
-  // The appcache service listens for this notification.
+  // The appcache and safe browsing services listen for this notification.
   NotificationService::current()->Notify(
       NotificationType::PURGE_MEMORY,
       Source<void>(NULL),
@@ -96,7 +89,7 @@ void MemoryPurger::PurgeBrowser() {
 
   // Per-profile cleanup.
   scoped_refptr<PurgeMemoryIOHelper> purge_memory_io_helper(
-      new PurgeMemoryIOHelper(g_browser_process->safe_browsing_service()));
+      new PurgeMemoryIOHelper());
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   std::vector<Profile*> profiles(profile_manager->GetLoadedProfiles());
   for (size_t i = 0; i < profiles.size(); ++i) {
