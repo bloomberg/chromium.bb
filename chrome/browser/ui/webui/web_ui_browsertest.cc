@@ -11,12 +11,12 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/webui/chrome_web_ui.h"
 #include "chrome/browser/ui/webui/test_chrome_web_ui_factory.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/webui/web_ui.h"
 #include "testing/gtest/include/gtest/gtest-spi.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -293,7 +293,7 @@ class WebUIBrowserTestPass
   // TestChromeWebUIFactory::WebUIProvider:
   virtual WebUI* NewWebUI(TabContents* tab_contents,
                           const GURL& url) OVERRIDE {
-    return new WebUI(tab_contents);
+    return new ChromeWebUI(tab_contents);
   }
 
   // InProcessBrowserTest:
