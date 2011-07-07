@@ -157,16 +157,24 @@ def IncrementalCheckout(buildroot, retries=_DEFAULT_RETRIES):
 
 def MakeChroot(buildroot, replace, fast, usepkg):
   """Wrapper around make_chroot."""
-  cwd = os.path.join(buildroot, 'src', 'scripts')
-  cmd = ['./make_chroot']
-
-  if not usepkg:
-    cmd.append('--nousepkg')
-
-  if fast:
-    cmd.append('--fast')
+  # TODO(zbehan): Remove this hack. crosbug.com/17474
+  if os.environ.get('USE_CROS_SDK') == '1':
+    # We assume these two are on for cros_sdk. Fail out if they aren't.
+    assert usepkg
+    assert fast
+    cwd = os.path.join(buildroot, 'chromite', 'bin')
+    cmd = ['./cros_sdk']
   else:
-    cmd.append('--nofast')
+    cwd = os.path.join(buildroot, 'src', 'scripts')
+    cmd = ['./make_chroot']
+
+    if not usepkg:
+      cmd.append('--nousepkg')
+
+    if fast:
+      cmd.append('--fast')
+    else:
+      cmd.append('--nofast')
 
   if replace:
     cmd.append('--replace')

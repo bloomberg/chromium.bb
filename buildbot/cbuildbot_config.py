@@ -145,6 +145,8 @@ default = {
   'git_url' : MANIFEST_URL,
   'manifest_version' : None,
   'prebuilts' : True,
+
+  'use_sdk' : False,
 }
 
 arm = {

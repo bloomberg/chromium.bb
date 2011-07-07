@@ -152,6 +152,9 @@ def RunBuildStages(bot_id, options, build_config):
   # TODO, Remove here and in config after bug chromium-os:14649 is fixed.
   if build_config['chromeos_official']: os.environ['CHROMEOS_OFFICIAL'] = '1'
 
+  # TODO(zbehan): Remove this hack. crosbug.com/17474
+  if build_config['use_sdk']: os.environ['USE_CROS_SDK'] = '1'
+
   # Determine the stages to use for syncing and completion.
   sync_stage_class = stages.SyncStage
   completion_stage_class = None
