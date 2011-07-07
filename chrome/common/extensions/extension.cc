@@ -220,6 +220,9 @@ Extension::InputComponentInfo::InputComponentInfo()
 
 Extension::InputComponentInfo::~InputComponentInfo() {}
 
+Extension::TtsVoice::TtsVoice() {}
+Extension::TtsVoice::~TtsVoice() {}
+
 //
 // Extension
 //

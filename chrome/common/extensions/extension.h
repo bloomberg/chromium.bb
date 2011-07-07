@@ -138,6 +138,10 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   };
 
   struct TtsVoice {
+    // Define out of line constructor/destructor to please Clang.
+    TtsVoice();
+    ~TtsVoice();
+
     std::string voice_name;
     std::string lang;
     std::string gender;
