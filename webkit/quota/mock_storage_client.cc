@@ -47,7 +47,6 @@ MockStorageClient::MockStorageClient(
     const MockOriginData* mock_data, size_t mock_data_size)
     : quota_manager_proxy_(quota_manager_proxy),
       id_(MockStorageClientIDSequencer::GetInstance()->NextMockID()),
-      mock_time_counter_(0),
       runnable_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   for (size_t i = 0; i < mock_data_size; ++i) {
     origin_data_[make_pair(GURL(mock_data[i].origin), mock_data[i].type)] =
@@ -68,8 +67,7 @@ void MockStorageClient::AddOriginAndNotify(
   DCHECK(origin_data_.find(make_pair(origin_url, type)) == origin_data_.end());
   DCHECK_GE(size, 0);
   origin_data_[make_pair(origin_url, type)] = size;
-  quota_manager_proxy_->quota_manager()->NotifyStorageModifiedInternal(
-      id(), origin_url, type, size, IncrementMockTime());
+  quota_manager_proxy_->NotifyStorageModified(id(), origin_url, type, size);
 }
 
 void MockStorageClient::ModifyOriginAndNotify(
@@ -80,18 +78,12 @@ void MockStorageClient::ModifyOriginAndNotify(
   DCHECK_GE(find->second, 0);
 
   // TODO(tzik): Check quota to prevent usage exceed
-  quota_manager_proxy_->quota_manager()->NotifyStorageModifiedInternal(
-      id(), origin_url, type, delta, IncrementMockTime());
+  quota_manager_proxy_->NotifyStorageModified(id(), origin_url, type, delta);
 }
 
 void MockStorageClient::AddOriginToErrorSet(
     const GURL& origin_url, StorageType type) {
   error_origins_.insert(make_pair(origin_url, type));
-}
-
-base::Time MockStorageClient::IncrementMockTime() {
-  ++mock_time_counter_;
-  return base::Time::FromDoubleT(mock_time_counter_ * 10.0);
 }
 
 QuotaClient::ID MockStorageClient::id() const {

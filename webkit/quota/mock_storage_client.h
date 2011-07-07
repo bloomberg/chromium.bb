@@ -11,7 +11,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/task.h"
-#include "base/time.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/quota/quota_client.h"
 
@@ -39,8 +38,6 @@ class MockStorageClient : public QuotaClient {
       const GURL& origin_url, StorageType type, int64 delta);
 
   void AddOriginToErrorSet(const GURL& origin_url, StorageType type);
-
-  base::Time IncrementMockTime();
 
   // QuotaClient methods.
   virtual QuotaClient::ID id() const OVERRIDE;
@@ -80,8 +77,6 @@ class MockStorageClient : public QuotaClient {
   std::set<GetUsageCallback*> usage_callbacks_;
   std::set<GetOriginsCallback*> origins_callbacks_;
   std::set<DeletionCallback*> deletion_callbacks_;
-
-  int mock_time_counter_;
 
   ScopedRunnableMethodFactory<MockStorageClient> runnable_factory_;
 

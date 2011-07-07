@@ -12,24 +12,59 @@
 #include "app/sql/statement.h"
 #include "app/sql/transaction.h"
 #include "base/auto_reset.h"
-#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/quota/special_storage_policy.h"
 
-namespace quota {
 namespace {
 
 // Definitions for database schema.
 
-const int kCurrentVersion = 3;
+const int kCurrentVersion = 2;
 const int kCompatibleVersion = 2;
 
+const char kOriginsTable[] = "Origins";
 const char kHostQuotaTable[] = "HostQuotaTable";
-const char kOriginInfoTable[] = "OriginInfoTable";
+const char kOriginLastAccessTable[] = "OriginLastAccessTable";
 const char kGlobalQuotaKeyPrefix[] = "GlobalQuota-";
 const char kIsOriginTableBootstrapped[] = "IsOriginTableBootstrapped";
+
+const struct {
+  const char* table_name;
+  const char* columns;
+} kTables[] = {
+  { kHostQuotaTable,
+    "(host TEXT NOT NULL,"
+    " type INTEGER NOT NULL,"
+    " quota INTEGER,"
+    " UNIQUE(host, type))" },
+  { kOriginLastAccessTable,
+    "(origin TEXT NOT NULL,"
+    " type INTEGER NOT NULL,"
+    " used_count INTEGER,"
+    " last_access_time INTEGER,"
+    " UNIQUE(origin, type))" },
+};
+
+const struct {
+  const char* index_name;
+  const char* table_name;
+  const char* columns;
+  bool unique;
+} kIndexes[] = {
+  { "HostIndex",
+    kHostQuotaTable,
+    "(host)",
+    false },
+  { "OriginLastAccessIndex",
+    kOriginLastAccessTable,
+    "(origin, last_access_time)",
+    false },
+};
+
+const int kTableCount = ARRAYSIZE_UNSAFE(kTables);
+const int kIndexCount = ARRAYSIZE_UNSAFE(kIndexes);
 
 class HistogramUniquifier {
  public:
@@ -61,49 +96,7 @@ const int kCommitIntervalMs = 30000;
 
 }  // anonymous namespace
 
-// static
-const QuotaDatabase::TableSchema QuotaDatabase::kTables[] = {
-  { kHostQuotaTable,
-    "(host TEXT NOT NULL,"
-    " type INTEGER NOT NULL,"
-    " quota INTEGER DEFAULT 0,"
-    " UNIQUE(host, type))" },
-  { kOriginInfoTable,
-    "(origin TEXT NOT NULL,"
-    " type INTEGER NOT NULL,"
-    " used_count INTEGER DEFAULT 0,"
-    " last_access_time INTEGER DEFAULT 0,"
-    " last_modified_time INTEGER DEFAULT 0,"
-    " UNIQUE(origin, type))" },
-};
-
-// static
-const QuotaDatabase::IndexSchema QuotaDatabase::kIndexes[] = {
-  { "HostIndex",
-    kHostQuotaTable,
-    "(host)",
-    false },
-  { "OriginInfoIndex",
-    kOriginInfoTable,
-    "(origin)",
-    false },
-  { "OriginLastAccessTimeIndex",
-    kOriginInfoTable,
-    "(last_access_time)",
-    false },
-  { "OriginLastModifiedTimeIndex",
-    kOriginInfoTable,
-    "(last_modified_time)",
-    false },
-};
-
-struct QuotaDatabase::QuotaTableImporter {
-  bool Append(const QuotaTableEntry& entry) {
-    entries.push_back(entry);
-    return true;
-  }
-  std::vector<QuotaTableEntry> entries;
-};
+namespace quota {
 
 QuotaDatabase::QuotaDatabase(const FilePath& path)
     : db_file_path_(path),
@@ -153,12 +146,23 @@ bool QuotaDatabase::SetHostQuota(
     return false;
 
   sql::Statement statement;
-  const char* kSql =
-      "INSERT OR REPLACE INTO HostQuotaTable"
-      " (quota, host, type)"
-      " VALUES (?, ?, ?)";
-  if (!PrepareCachedStatement(db_.get(), SQL_FROM_HERE, kSql, &statement))
-    return false;
+
+  int64 dummy;
+  if (GetHostQuota(host, type, &dummy)) {
+    const char* kSql =
+        "UPDATE HostQuotaTable"
+        " SET quota = ?"
+        " WHERE host = ? AND type = ?";
+    if (!PrepareCachedStatement(db_.get(), SQL_FROM_HERE, kSql, &statement))
+      return false;
+  } else {
+    const char* kSql =
+        "INSERT INTO HostQuotaTable"
+        " (quota, host, type)"
+        " VALUES (?, ?, ?)";
+    if (!PrepareCachedStatement(db_.get(), SQL_FROM_HERE, kSql, &statement))
+      return false;
+  }
 
   statement.BindInt64(0, quota);
   statement.BindString(1, host);
@@ -181,14 +185,14 @@ bool QuotaDatabase::SetOriginLastAccessTime(
   if (FindOriginUsedCount(origin, type, &used_count)) {
     ++used_count;
     const char* kSql =
-        "UPDATE OriginInfoTable"
+        "UPDATE OriginLastAccessTable"
         " SET used_count = ?, last_access_time = ?"
         " WHERE origin = ? AND type = ?";
     if (!PrepareCachedStatement(db_.get(), SQL_FROM_HERE, kSql, &statement))
       return false;
   } else  {
     const char* kSql =
-        "INSERT INTO OriginInfoTable"
+        "INSERT INTO OriginLastAccessTable"
         " (used_count, last_access_time, origin, type)"
         " VALUES (?, ?, ?, ?)";
     if (!PrepareCachedStatement(db_.get(), SQL_FROM_HERE, kSql, &statement))
@@ -206,41 +210,9 @@ bool QuotaDatabase::SetOriginLastAccessTime(
   return true;
 }
 
-bool QuotaDatabase::SetOriginLastModifiedTime(
-    const GURL& origin, StorageType type, base::Time last_modified_time) {
-  if (!LazyOpen(true))
-    return false;
-
-  sql::Statement statement;
-
-  int dummy;
-  if (FindOriginUsedCount(origin, type, &dummy)) {
-    const char* kSql =
-        "UPDATE OriginInfoTable"
-        " SET last_modified_time = ?"
-        " WHERE origin = ? AND type = ?";
-    if (!PrepareCachedStatement(db_.get(), SQL_FROM_HERE, kSql, &statement))
-      return false;
-  } else {
-    const char* kSql =
-        "INSERT INTO OriginInfoTable"
-        " (last_modified_time, origin, type)  VALUES (?, ?, ?)";
-    if (!PrepareCachedStatement(db_.get(), SQL_FROM_HERE, kSql, &statement))
-      return false;
-  }
-
-  statement.BindInt64(0, last_modified_time.ToInternalValue());
-  statement.BindString(1, origin.spec());
-  statement.BindInt(2, static_cast<int>(type));
-  if (!statement.Run())
-    return false;
-
-  ScheduleCommit();
-  return true;
-}
-
-bool QuotaDatabase::RegisterInitialOriginInfo(
-    const std::set<GURL>& origins, StorageType type) {
+bool QuotaDatabase::RegisterOrigins(const std::set<GURL>& origins,
+                                    StorageType type,
+                                    base::Time last_access_time) {
   if (!LazyOpen(true))
     return false;
 
@@ -248,14 +220,17 @@ bool QuotaDatabase::RegisterInitialOriginInfo(
   for (itr_type itr = origins.begin(), end = origins.end();
        itr != end; ++itr) {
     const char* kSql =
-        "INSERT OR IGNORE INTO OriginInfoTable"
-        " (origin, type) VALUES (?, ?)";
+        "INSERT OR IGNORE INTO OriginLastAccessTable"
+        " (used_count, last_access_time, origin, type)"
+        " VALUES (?, ?, ?, ?)";
     sql::Statement statement;
     if (!PrepareCachedStatement(db_.get(), SQL_FROM_HERE, kSql, &statement))
       return false;
 
-    statement.BindString(0, itr->spec());
-    statement.BindInt(1, static_cast<int>(type));
+    statement.BindInt(0, 0);  // used_count
+    statement.BindInt64(1, last_access_time.ToInternalValue());
+    statement.BindString(2, itr->spec());
+    statement.BindInt(3, static_cast<int>(type));
     if (!statement.Run())
       return false;
   }
@@ -286,13 +261,13 @@ bool QuotaDatabase::DeleteHostQuota(
   return true;
 }
 
-bool QuotaDatabase::DeleteOriginInfo(
+bool QuotaDatabase::DeleteOriginLastAccessTime(
     const GURL& origin, StorageType type) {
   if (!LazyOpen(false))
     return false;
 
   const char* kSql =
-      "DELETE FROM OriginInfoTable"
+      "DELETE FROM OriginLastAccessTable"
       " WHERE origin = ? AND type = ?";
 
   sql::Statement statement;
@@ -329,7 +304,7 @@ bool QuotaDatabase::GetLRUOrigin(
   if (!LazyOpen(false))
     return false;
 
-  const char* kSql = "SELECT origin FROM OriginInfoTable"
+  const char* kSql = "SELECT origin FROM OriginLastAccessTable"
                      " WHERE type = ?"
                      " ORDER BY last_access_time ASC";
 
@@ -353,28 +328,6 @@ bool QuotaDatabase::GetLRUOrigin(
   return statement.Succeeded();
 }
 
-bool QuotaDatabase::GetOriginsModifiedSince(
-    StorageType type, std::set<GURL>* origins, base::Time modified_since) {
-  DCHECK(origins);
-  if (!LazyOpen(false))
-    return false;
-
-  const char* kSql = "SELECT origin FROM OriginInfoTable"
-                     " WHERE type = ? AND last_modified_time > ?";
-
-  sql::Statement statement;
-  if (!PrepareCachedStatement(db_.get(), SQL_FROM_HERE, kSql, &statement))
-    return false;
-  statement.BindInt(0, static_cast<int>(type));
-  statement.BindInt64(1, modified_since.ToInternalValue());
-
-  origins->clear();
-  while (statement.Step())
-    origins->insert(GURL(statement.ColumnString(0)));
-
-  return statement.Succeeded();
-}
-
 bool QuotaDatabase::IsOriginDatabaseBootstrapped() {
   if (!LazyOpen(true))
     return false;
@@ -394,8 +347,9 @@ void QuotaDatabase::Commit() {
   if (!db_.get())
     return;
 
-  if (timer_.IsRunning())
-    timer_.Stop();
+  // Note: for now this will be called only by ScheduleCommit, but when it
+  // becomes untrue we should call timer_.Stop() here.
+  DCHECK(!timer_.IsRunning());
 
   db_->CommitTransaction();
   db_->BeginTransaction();
@@ -415,7 +369,7 @@ bool QuotaDatabase::FindOriginUsedCount(
     return false;
 
   const char* kSql =
-      "SELECT used_count FROM OriginInfoTable"
+      "SELECT used_count FROM OriginLastAccessTable"
       " WHERE origin = ? AND type = ?";
 
   sql::Statement statement;
@@ -475,13 +429,8 @@ bool QuotaDatabase::LazyOpen(bool create_if_needed) {
 }
 
 bool QuotaDatabase::EnsureDatabaseVersion() {
-  static const size_t kTableCount = ARRAYSIZE_UNSAFE(kTables);
-  static const size_t kIndexCount = ARRAYSIZE_UNSAFE(kIndexes);
   if (!sql::MetaTable::DoesTableExist(db_.get()))
-    return CreateSchema(db_.get(), meta_table_.get(),
-                        kCurrentVersion, kCompatibleVersion,
-                        kTables, kTableCount,
-                        kIndexes, kIndexCount);
+    return CreateSchema();
 
   if (!meta_table_->Init(db_.get(), kCurrentVersion, kCompatibleVersion))
     return false;
@@ -492,13 +441,13 @@ bool QuotaDatabase::EnsureDatabaseVersion() {
   }
 
   if (meta_table_->GetVersionNumber() < kCurrentVersion) {
-    if (!UpgradeSchema(meta_table_->GetVersionNumber()))
-      return ResetSchema();
+    // TODO(kinuko): Support schema upgrade.
+    return ResetSchema();
   }
 
 #ifndef NDEBUG
   DCHECK(sql::MetaTable::DoesTableExist(db_.get()));
-  for (size_t i = 0; i < kTableCount; ++i) {
+  for (int i = 0; i < kTableCount; ++i) {
     DCHECK(db_->DoesTableExist(kTables[i].table_name));
   }
 #endif
@@ -506,42 +455,36 @@ bool QuotaDatabase::EnsureDatabaseVersion() {
   return true;
 }
 
-// static
-bool QuotaDatabase::CreateSchema(
-    sql::Connection* database,
-    sql::MetaTable* meta_table,
-    int schema_version, int compatible_version,
-    const TableSchema* tables, size_t tables_size,
-    const IndexSchema* indexes, size_t indexes_size) {
+bool QuotaDatabase::CreateSchema() {
   // TODO(kinuko): Factor out the common code to create databases.
-  sql::Transaction transaction(database);
+  sql::Transaction transaction(db_.get());
   if (!transaction.Begin())
     return false;
 
-  if (!meta_table->Init(database, schema_version, compatible_version))
+  if (!meta_table_->Init(db_.get(), kCurrentVersion, kCompatibleVersion))
     return false;
 
-  for (size_t i = 0; i < tables_size; ++i) {
+  for (int i = 0; i < kTableCount; ++i) {
     std::string sql("CREATE TABLE ");
-    sql += tables[i].table_name;
-    sql += tables[i].columns;
-    if (!database->Execute(sql.c_str())) {
+    sql += kTables[i].table_name;
+    sql += kTables[i].columns;
+    if (!db_->Execute(sql.c_str())) {
       VLOG(1) << "Failed to execute " << sql;
       return false;
     }
   }
 
-  for (size_t i = 0; i < indexes_size; ++i) {
+  for (int i = 0; i < kIndexCount; ++i) {
     std::string sql;
-    if (indexes[i].unique)
+    if (kIndexes[i].unique)
       sql += "CREATE UNIQUE INDEX ";
     else
       sql += "CREATE INDEX ";
-    sql += indexes[i].index_name;
+    sql += kIndexes[i].index_name;
     sql += " ON ";
-    sql += indexes[i].table_name;
-    sql += indexes[i].columns;
-    if (!database->Execute(sql.c_str())) {
+    sql += kIndexes[i].table_name;
+    sql += kIndexes[i].columns;
+    if (!db_->Execute(sql.c_str())) {
       VLOG(1) << "Failed to execute " << sql;
       return false;
     }
@@ -573,25 +516,6 @@ bool QuotaDatabase::ResetSchema() {
   return LazyOpen(true);
 }
 
-bool QuotaDatabase::UpgradeSchema(int current_version) {
-  if (current_version == 2) {
-    QuotaTableImporter importer;
-    typedef std::vector<QuotaTableEntry> QuotaTableEntries;
-    if (!DumpQuotaTable(new QuotaTableCallback(base::Bind(
-        &QuotaTableImporter::Append, base::Unretained(&importer)))))
-      return false;
-    ResetSchema();
-    for (QuotaTableEntries::const_iterator iter = importer.entries.begin();
-         iter != importer.entries.end(); ++iter) {
-      if (!SetHostQuota(iter->host, iter->type, iter->quota))
-        return false;
-    }
-    Commit();
-    return true;
-  }
-  return false;
-}
-
 bool QuotaDatabase::DumpQuotaTable(QuotaTableCallback* callback) {
   scoped_ptr<QuotaTableCallback> callback_deleter(callback);
   if (!LazyOpen(true))
@@ -616,25 +540,24 @@ bool QuotaDatabase::DumpQuotaTable(QuotaTableCallback* callback) {
   return statement.Succeeded();
 }
 
-bool QuotaDatabase::DumpOriginInfoTable(
-    OriginInfoTableCallback* callback) {
-  scoped_ptr<OriginInfoTableCallback> callback_deleter(callback);
+bool QuotaDatabase::DumpLastAccessTimeTable(
+    LastAccessTimeTableCallback* callback) {
+  scoped_ptr<LastAccessTimeTableCallback> callback_deleter(callback);
 
   if (!LazyOpen(true))
     return false;
 
-  const char* kSql = "SELECT * FROM OriginInfoTable";
+  const char* kSql = "SELECT * FROM OriginLastAccessTable";
   sql::Statement statement;
   if (!PrepareCachedStatement(db_.get(), SQL_FROM_HERE, kSql, &statement))
     return false;
 
   while (statement.Step()) {
-    OriginInfoTableEntry entry = {
+    LastAccessTimeTableEntry entry = {
       GURL(statement.ColumnString(0)),
       static_cast<StorageType>(statement.ColumnInt(1)),
       statement.ColumnInt(2),
-      base::Time::FromInternalValue(statement.ColumnInt64(3)),
-      base::Time::FromInternalValue(statement.ColumnInt64(4))
+      base::Time::FromInternalValue(statement.ColumnInt64(3))
     };
 
     if (!callback->Run(entry))
@@ -653,8 +576,8 @@ bool operator<(const QuotaDatabase::QuotaTableEntry& lhs,
   return lhs.quota < rhs.quota;
 }
 
-bool operator<(const QuotaDatabase::OriginInfoTableEntry& lhs,
-               const QuotaDatabase::OriginInfoTableEntry& rhs) {
+bool operator<(const QuotaDatabase::LastAccessTimeTableEntry& lhs,
+               const QuotaDatabase::LastAccessTimeTableEntry& rhs) {
   if (lhs.origin < rhs.origin) return true;
   if (rhs.origin < lhs.origin) return false;
   if (lhs.type < rhs.type) return true;
@@ -663,5 +586,4 @@ bool operator<(const QuotaDatabase::OriginInfoTableEntry& lhs,
   if (rhs.used_count < lhs.used_count) return false;
   return lhs.last_access_time < rhs.last_access_time;
 }
-
 }  // quota namespace

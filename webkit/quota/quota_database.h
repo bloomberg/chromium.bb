@@ -41,23 +41,18 @@ class QuotaDatabase {
 
   bool GetHostQuota(const std::string& host, StorageType type, int64* quota);
   bool SetHostQuota(const std::string& host, StorageType type, int64 quota);
-  bool DeleteHostQuota(const std::string& host, StorageType type);
 
-  bool SetOriginLastAccessTime(const GURL& origin,
-                               StorageType type,
+  bool SetOriginLastAccessTime(const GURL& origin, StorageType type,
                                base::Time last_access_time);
 
-  bool SetOriginLastModifiedTime(const GURL& origin,
-                                 StorageType type,
-                                 base::Time last_modified_time);
+  // Register |origins| to Database with |used_count| = 0 and
+  // specified |last_access_time|.
+  bool RegisterOrigins(const std::set<GURL>& origins,
+                       StorageType type,
+                       base::Time last_access_time);
 
-  // Register initial |origins| info |type| to the database.
-  // This method is assumed to be called only after the installation or
-  // the database schema reset.
-  bool RegisterInitialOriginInfo(
-      const std::set<GURL>& origins, StorageType type);
-
-  bool DeleteOriginInfo(const GURL& origin, StorageType type);
+  bool DeleteHostQuota(const std::string& host, StorageType type);
+  bool DeleteOriginLastAccessTime(const GURL& origin, StorageType type);
 
   bool GetGlobalQuota(StorageType type, int64* quota);
   bool SetGlobalQuota(StorageType type, int64 quota);
@@ -70,12 +65,6 @@ class QuotaDatabase {
                     const std::set<GURL>& exceptions,
                     SpecialStoragePolicy* special_storage_policy,
                     GURL* origin);
-
-  // Populates |origins| with the ones that have been modified since
-  // the |modified_since|.
-  bool GetOriginsModifiedSince(StorageType type,
-                               std::set<GURL>* origins,
-                               base::Time modified_since);
 
   // Returns false if SetOriginDatabaseBootstrapped has never
   // been called before, which means existing origins may not have been
@@ -92,33 +81,18 @@ class QuotaDatabase {
   friend bool operator <(const QuotaTableEntry& lhs,
                          const QuotaTableEntry& rhs);
 
-  struct OriginInfoTableEntry {
+  struct LastAccessTimeTableEntry {
     GURL origin;
     StorageType type;
     int used_count;
     base::Time last_access_time;
-    base::Time last_modified_time;
   };
-  friend bool operator <(const OriginInfoTableEntry& lhs,
-                         const OriginInfoTableEntry& rhs);
-
-  // Structures used for CreateSchema.
-  struct TableSchema {
-    const char* table_name;
-    const char* columns;
-  };
-  struct IndexSchema {
-    const char* index_name;
-    const char* table_name;
-    const char* columns;
-    bool unique;
-  };
+  friend bool operator <(const LastAccessTimeTableEntry& lhs,
+                         const LastAccessTimeTableEntry& rhs);
 
   typedef base::Callback<bool (const QuotaTableEntry&)> QuotaTableCallback;
-  typedef base::Callback<bool (const OriginInfoTableEntry&)>
-      OriginInfoTableCallback;
-
-  struct QuotaTableImporter;
+  typedef base::Callback<bool (const LastAccessTimeTableEntry&)>
+      LastAccessTimeTableCallback;
 
   // For long-running transactions support.  We always keep a transaction open
   // so that multiple transactions can be batched.  They are flushed
@@ -133,19 +107,13 @@ class QuotaDatabase {
 
   bool LazyOpen(bool create_if_needed);
   bool EnsureDatabaseVersion();
+  bool CreateSchema();
   bool ResetSchema();
-  bool UpgradeSchema(int current_version);
 
-  static bool CreateSchema(
-      sql::Connection* database,
-      sql::MetaTable* meta_table,
-      int schema_version, int compatible_version,
-      const TableSchema* tables, size_t tables_size,
-      const IndexSchema* indexes, size_t indexes_size);
-
-  // |callback| may return false to stop reading data.
+  // |callback| may return false to stop reading data
   bool DumpQuotaTable(QuotaTableCallback* callback);
-  bool DumpOriginInfoTable(OriginInfoTableCallback* callback);
+  bool DumpLastAccessTimeTable(LastAccessTimeTableCallback* callback);
+
 
   FilePath db_file_path_;
 
@@ -158,9 +126,6 @@ class QuotaDatabase {
 
   friend class QuotaDatabaseTest;
   friend class QuotaManager;
-
-  static const TableSchema kTables[];
-  static const IndexSchema kIndexes[];
 
   DISALLOW_COPY_AND_ASSIGN(QuotaDatabase);
 };
