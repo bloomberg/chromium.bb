@@ -1154,8 +1154,8 @@ pre_base_env['CHROME_DOWNLOAD_DIR'] = \
 
 def ChromeBinaryArch(env):
   arch = env['BUILD_FULLARCH']
-  if env.Bit('host_windows') and arch == 'x86-64':
-    # Currently there are no 64-bit Chrome binaries for windows.
+  # Currently there are no 64-bit Chrome binaries for Windows or Mac OS X.
+  if (env.Bit('host_windows') or env.Bit('host_mac')) and arch == 'x86-64':
     arch = 'x86-32'
   return arch
 
@@ -1182,21 +1182,25 @@ def DownloadedChromeBinary(env):
 pre_base_env.AddMethod(DownloadedChromeBinary)
 
 
-def GetPPAPIPluginPath(env, redirect_windows=True):
+def GetPPAPIPluginPath(env, allow_64bit_redirect=True):
   if 'force_ppapi_plugin' in ARGUMENTS:
     return env.SConstructAbsPath(ARGUMENTS['force_ppapi_plugin'])
   if env.Bit('mac'):
-    return env.File('${STAGING_DIR}/ppNaClPlugin')
+    fn = env.File('${STAGING_DIR}/ppNaClPlugin')
   else:
     fn = env.File('${STAGING_DIR}/${SHLIBPREFIX}ppNaClPlugin${SHLIBSUFFIX}')
-    if env.Bit('windows') and env.Bit('target_x86_64') and redirect_windows:
-      # On win64, we need the 32-bit plugin because the browser is 32 bit.
-      # Unfortunately it is tricky to build the 32-bit plugin (and all the
-      # libraries it needs) in a 64-bit build... so we'll assume it has already
-      # been built in a previous invocation.
-      # TODO(ncbray) better 32/64 builds.
+  if allow_64bit_redirect and env.Bit('target_x86_64'):
+    # On 64-bit Windows and on Mac, we need the 32-bit plugin because
+    # the browser is 32-bit.
+    # Unfortunately it is tricky to build the 32-bit plugin (and all the
+    # libraries it needs) in a 64-bit build... so we'll assume it has already
+    # been built in a previous invocation.
+    # TODO(ncbray) better 32/64 builds.
+    if env.Bit('windows'):
       fn = env.subst(fn).abspath.replace('-win-x86-64', '-win-x86-32')
-    return fn
+    elif env.Bit('mac'):
+      fn = env.subst(fn).abspath.replace('-mac-x86-64', '-mac-x86-32')
+  return fn
 
 pre_base_env.AddMethod(GetPPAPIPluginPath)
 
