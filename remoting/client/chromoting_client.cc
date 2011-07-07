@@ -6,10 +6,10 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
+#include "remoting/base/logger.h"
 #include "remoting/base/tracer.h"
 #include "remoting/client/chromoting_view.h"
 #include "remoting/client/client_context.h"
-#include "remoting/client/client_logger.h"
 #include "remoting/client/input_handler.h"
 #include "remoting/client/rectangle_update_decoder.h"
 #include "remoting/protocol/connection_to_host.h"
@@ -23,7 +23,7 @@ ChromotingClient::ChromotingClient(const ClientConfig& config,
                                    ChromotingView* view,
                                    RectangleUpdateDecoder* rectangle_decoder,
                                    InputHandler* input_handler,
-                                   ClientLogger* logger,
+                                   Logger* logger,
                                    Task* client_done)
     : config_(config),
       context_(context),

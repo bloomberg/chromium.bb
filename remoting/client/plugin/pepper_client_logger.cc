@@ -21,10 +21,6 @@ PepperClientLogger::PepperClientLogger(ChromotingInstance* instance)
 PepperClientLogger::~PepperClientLogger() {
 }
 
-// Copied from base/logging.cc.
-const char* const log_severity_names[logging::LOG_NUM_SEVERITIES] = {
-  "INFO", "WARNING", "ERROR", "ERROR_REPORT", "FATAL" };
-
 void PepperClientLogger::va_Log(logging::LogSeverity severity,
                                 const char* format, va_list ap) {
   DCHECK(severity >= 0 && severity <= logging::LOG_NUM_SEVERITIES);

@@ -16,6 +16,7 @@
 #include "base/threading/platform_thread.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/host_status_observer.h"
+#include "remoting/host/plugin/host_plugin_logger.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npfunctions.h"
 #include "third_party/npapi/bindings/npruntime.h"
@@ -59,6 +60,9 @@ class HostNPScriptObject : public HostStatusObserver {
   bool RemoveProperty(const std::string& property_name);
   bool Enumerate(std::vector<std::string>* values);
 
+  // Call LogDebugInfo handler if there is one.
+  void LogDebugInfo(const std::string& message);
+
   // remoting::HostStatusObserver implementation.
   virtual void OnSignallingConnected(remoting::SignalStrategy* signal_strategy,
                                      const std::string& full_jid) OVERRIDE;
@@ -84,9 +88,6 @@ class HostNPScriptObject : public HostStatusObserver {
 
   // Disconnect. No arguments or result.
   bool Disconnect(const NPVariant* args, uint32_t argCount, NPVariant* result);
-
-  // Call LogDebugInfo handler if there is one.
-  void LogDebugInfo(const std::string& message);
 
   // Call OnStateChanged handler if there is one.
   void OnStateChanged(State state);
@@ -129,6 +130,8 @@ class HostNPScriptObject : public HostStatusObserver {
   NPObject* log_debug_info_func_;
   NPObject* on_state_changed_func_;
   base::PlatformThreadId np_thread_id_;
+
+  scoped_ptr<HostPluginLogger> logger_;
 
   scoped_ptr<RegisterSupportHostRequest> register_request_;
   scoped_refptr<ChromotingHost> host_;

@@ -36,6 +36,7 @@ class Capturer;
 class ChromotingHostContext;
 class DesktopEnvironment;
 class Encoder;
+class Logger;
 class MutableHostConfig;
 class ScreenRecorder;
 
@@ -73,11 +74,13 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // and adds a reference to |config|. It does NOT take ownership of |context|.
   static ChromotingHost* Create(ChromotingHostContext* context,
                                 MutableHostConfig* config,
-                                AccessVerifier* access_verifier);
+                                AccessVerifier* access_verifier,
+                                Logger* logger);
   static ChromotingHost* Create(ChromotingHostContext* context,
                                 MutableHostConfig* config,
                                 DesktopEnvironment* environment,
-                                AccessVerifier* access_verifier);
+                                AccessVerifier* access_verifier,
+                                Logger* logger);
 
   // Asynchronously start the host process.
   //
@@ -118,6 +121,8 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   virtual void LocalLoginFailed(
       scoped_refptr<protocol::ConnectionToClient> client);
 
+  Logger* logger() { return logger_; }
+
   // Callback for ChromotingServer.
   void OnNewClientSession(
       protocol::Session* session,
@@ -152,7 +157,8 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   ChromotingHost(ChromotingHostContext* context,
                  MutableHostConfig* config,
                  DesktopEnvironment* environment,
-                 AccessVerifier* access_verifier);
+                 AccessVerifier* access_verifier,
+                 Logger* logger);
   virtual ~ChromotingHost();
 
   enum State {
@@ -198,6 +204,9 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   StatusObserverList status_observers_;
 
   scoped_ptr<AccessVerifier> access_verifier_;
+
+  // Logger (owned by the HostNPScriptObject).
+  Logger* logger_;
 
   // The connections to remote clients.
   ClientList clients_;

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_CLIENT_PLUGIN_PEPPER_CLIENT_LOGGER_H_
-#define REMOTING_CLIENT_PLUGIN_PEPPER_CLIENT_LOGGER_H_
+#ifndef REMOTING_HOST_PLUGIN_HOST_PLUGIN_LOGGER_H_
+#define REMOTING_HOST_PLUGIN_HOST_PLUGIN_LOGGER_H_
 
 #include "remoting/base/logger.h"
 
@@ -13,28 +13,28 @@ class MessageLoop;
 
 namespace remoting {
 
-class ChromotingInstance;
+class HostNPScriptObject;
 
-class PepperClientLogger : public Logger {
+class HostPluginLogger : public Logger {
  public:
-  explicit PepperClientLogger(ChromotingInstance* instance);
-  virtual ~PepperClientLogger();
+  explicit HostPluginLogger(HostNPScriptObject* scriptable);
+  virtual ~HostPluginLogger();
 
   virtual void va_Log(logging::LogSeverity severity, const char* format,
                       va_list ap);
   virtual void va_VLog(int verboselevel, const char* format, va_list ap);
 
  private:
-  void LogToClientUI(const std::string& message);
+  void LogToHostUI(const std::string& message);
 
-  ChromotingInstance* instance_;
+  HostNPScriptObject* scriptable_object_;
   MessageLoop* message_loop_;
 
-  DISALLOW_COPY_AND_ASSIGN(PepperClientLogger);
+  DISALLOW_COPY_AND_ASSIGN(HostPluginLogger);
 };
 
 }  // namespace remoting
 
-DISABLE_RUNNABLE_METHOD_REFCOUNT(remoting::PepperClientLogger);
+DISABLE_RUNNABLE_METHOD_REFCOUNT(remoting::HostPluginLogger);
 
-#endif  // REMOTING_CLIENT_PLUGIN_PEPPER_CLIENT_LOGGER_H_
+#endif  // REMOTING_HOST_PLUGIN_HOST_PLUGIN_LOGGER_H_

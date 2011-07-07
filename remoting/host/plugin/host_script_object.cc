@@ -71,7 +71,8 @@ HostNPScriptObject::HostNPScriptObject(NPP plugin, NPObject* parent)
       np_thread_id_(base::PlatformThread::CurrentId()),
       failed_login_attempts_(0),
       disconnected_event_(true, false) {
-  VLOG(2) << "HostNPScriptObject";
+  logger_.reset(new HostPluginLogger(this));
+  logger_->VLog(2, "HostNPScriptObject");
   host_context_.SetUITaskPostFunction(base::Bind(
       &HostNPScriptObject::PostTaskToNPThread, base::Unretained(this)));
 }
@@ -98,14 +99,14 @@ HostNPScriptObject::~HostNPScriptObject() {
 }
 
 bool HostNPScriptObject::Init() {
-  VLOG(2) << "Init";
+  logger_->VLog(2, "Init");
   // TODO(wez): This starts a bunch of threads, which might fail.
   host_context_.Start();
   return true;
 }
 
 bool HostNPScriptObject::HasMethod(const std::string& method_name) {
-  VLOG(2) << "HasMethod " << method_name;
+  logger_->VLog(2, "HasMethod %s", method_name.c_str());
   CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
   return (method_name == kFuncNameConnect ||
           method_name == kFuncNameDisconnect);
@@ -114,7 +115,7 @@ bool HostNPScriptObject::HasMethod(const std::string& method_name) {
 bool HostNPScriptObject::InvokeDefault(const NPVariant* args,
                                        uint32_t argCount,
                                        NPVariant* result) {
-  VLOG(2) << "InvokeDefault";
+  logger_->VLog(2, "InvokeDefault");
   CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
   SetException("exception during default invocation");
   return false;
@@ -124,7 +125,7 @@ bool HostNPScriptObject::Invoke(const std::string& method_name,
                                 const NPVariant* args,
                                 uint32_t argCount,
                                 NPVariant* result) {
-  VLOG(2) << "Invoke " << method_name;
+  logger_->VLog(2, "Invoke %s", method_name.c_str());
   CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
   if (method_name == kFuncNameConnect) {
     return Connect(args, argCount, result);
@@ -137,7 +138,7 @@ bool HostNPScriptObject::Invoke(const std::string& method_name,
 }
 
 bool HostNPScriptObject::HasProperty(const std::string& property_name) {
-  VLOG(2) << "HasProperty " << property_name;
+  logger_->VLog(2, "HasProperty %s", property_name.c_str());
   CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
   return (property_name == kAttrNameAccessCode ||
           property_name == kAttrNameState ||
@@ -153,7 +154,7 @@ bool HostNPScriptObject::HasProperty(const std::string& property_name) {
 
 bool HostNPScriptObject::GetProperty(const std::string& property_name,
                                      NPVariant* result) {
-  VLOG(2) << "GetProperty " << property_name;
+  logger_->VLog(2, "GetProperty %s", property_name.c_str());
   CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
   if (!result) {
     SetException("GetProperty: NULL result");
@@ -198,7 +199,7 @@ bool HostNPScriptObject::GetProperty(const std::string& property_name,
 
 bool HostNPScriptObject::SetProperty(const std::string& property_name,
                                      const NPVariant* value) {
-  VLOG(2) << "SetProperty " << property_name;
+  logger_->VLog(2, "SetProperty %s", property_name.c_str());
   CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
 
   if (property_name == kAttrNameOnStateChanged) {
@@ -239,13 +240,13 @@ bool HostNPScriptObject::SetProperty(const std::string& property_name,
 }
 
 bool HostNPScriptObject::RemoveProperty(const std::string& property_name) {
-  VLOG(2) << "RemoveProperty " << property_name;
+  logger_->VLog(2, "RemoveProperty %s", property_name.c_str());
   CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
   return false;
 }
 
 bool HostNPScriptObject::Enumerate(std::vector<std::string>* values) {
-  VLOG(2) << "Enumerate";
+  logger_->VLog(2, "Enumerate");
   CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
   const char* entries[] = {
     kAttrNameAccessCode,
@@ -369,7 +370,7 @@ void HostNPScriptObject::ConnectInternal(
   // Create the Host.
   scoped_refptr<ChromotingHost> host =
       ChromotingHost::Create(&host_context_, host_config,
-                             access_verifier.release());
+                             access_verifier.release(), logger_.get());
   host->AddStatusObserver(this);
   host->AddStatusObserver(register_request.get());
   host->set_it2me(true);
@@ -462,7 +463,7 @@ void HostNPScriptObject::OnStateChanged(State state) {
   }
   state_ = state;
   if (on_state_changed_func_) {
-    VLOG(2) << "Calling state changed " << state;
+    logger_->VLog(2, "Calling state changed %s", state);
     bool is_good = InvokeAndIgnoreResult(on_state_changed_func_, NULL, 0);
     LOG_IF(ERROR, !is_good) << "OnStateChanged failed";
   }
@@ -477,7 +478,6 @@ void HostNPScriptObject::LogDebugInfo(const std::string& message) {
   }
   if (log_debug_info_func_) {
     NPVariant* arg = new NPVariant();
-    LOG(INFO) << "Logging: " << message;
     STRINGZ_TO_NPVARIANT(message.c_str(), *arg);
     bool is_good = InvokeAndIgnoreResult(log_debug_info_func_, arg, 1);
     LOG_IF(ERROR, !is_good) << "LogDebugInfo failed";

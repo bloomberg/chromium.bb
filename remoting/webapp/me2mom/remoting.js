@@ -269,7 +269,7 @@ function tryShare() {
   plugin.setAttribute('id', remoting.HOST_PLUGIN_ID);
   div.appendChild(plugin);
   plugin.onStateChanged = onStateChanged_;
-  plugin.logDebugInfoCallback = debugInfoCallback_;
+  plugin.logDebugInfo = debugInfoCallback_;
   plugin.connect(getEmail(),
                  'oauth2:' + remoting.oauth2.getAccessToken());
 }

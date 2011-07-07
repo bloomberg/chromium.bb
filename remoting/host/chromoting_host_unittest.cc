@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
+#include "remoting/base/logger.h"
 #include "remoting/host/capturer_fake.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
@@ -86,6 +87,8 @@ class ChromotingHostTest : public testing::Test {
     EXPECT_CALL(context_, ui_message_loop())
         .Times(AnyNumber());
 
+    logger_.reset(new Logger());
+
     context_.SetUITaskPostFunction(base::Bind(
         static_cast<void(MessageLoop::*)(
             const tracked_objects::Location&, Task*)>(&MessageLoop::PostTask),
@@ -104,7 +107,7 @@ class ChromotingHostTest : public testing::Test {
     MockAccessVerifier* access_verifier = new MockAccessVerifier();
 
     host_ = ChromotingHost::Create(&context_, config_,
-                                   desktop, access_verifier);
+                                   desktop, access_verifier, logger_.get());
     credentials_.set_type(protocol::PASSWORD);
     credentials_.set_username("user");
     credentials_.set_credential("password");
@@ -205,6 +208,7 @@ class ChromotingHostTest : public testing::Test {
   }
 
  protected:
+  scoped_ptr<Logger> logger_;
   MessageLoop message_loop_;
   MockConnectionToClientEventHandler handler_;
   scoped_refptr<ChromotingHost> host_;
@@ -229,7 +233,7 @@ class ChromotingHostTest : public testing::Test {
   MockEventExecutor* event_executor_;
   MockCurtain* curtain_;
   MockDisconnectWindow* disconnect_window_;
-  ContinueWindow* continue_window_;
+  MockContinueWindow* continue_window_;
   MockLocalInputMonitor* local_input_monitor_;
 };
 
