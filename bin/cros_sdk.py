@@ -135,6 +135,10 @@ To replace, use --replace."""
                     help=('Use this sdk version [%s]' % sdk_latest_version))
   (options, remaining_arguments) = parser.parse_args()
 
+  if cros_build_lib.IsInsideChroot():
+    print "This needs to be ran outside the chroot"
+    sys.exit(1)
+
   if len(remaining_arguments) > 0 and not options.enter:
     print "Additional arguments not permitted, unless running with --enter"
     parser.print_help()
