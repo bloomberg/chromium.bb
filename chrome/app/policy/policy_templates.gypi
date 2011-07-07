@@ -135,14 +135,18 @@
                 # Directory to collect the Localizable.strings files before
                 # they are copied to the bundle.
                 'output_path': '<(INTERMEDIATE_DIR)/app_manifest',
+                # The reason we are not enumerating all the locales is that
+                # the translations would eat up 20MB disk space in the
+                # application bundle:
+                'available_locales': 'en',
               },
               'inputs': [
                 # TODO: remove this helper when we have loops in GYP
-                '>!@(<(apply_locales_cmd) -d \'<(input_path)/ZZLOCALE.lproj/Localizable.strings\' <(locales))',
+                '>!@(<(apply_locales_cmd) -d \'<(input_path)/ZZLOCALE.lproj/Localizable.strings\' <(available_locales))',
               ],
               'outputs': [
                 # TODO: remove this helper when we have loops in GYP
-                '>!@(<(apply_locales_cmd) -d \'<(output_path)/ZZLOCALE.lproj/Localizable.strings\' <(locales))',
+                '>!@(<(apply_locales_cmd) -d \'<(output_path)/ZZLOCALE.lproj/Localizable.strings\' <(available_locales))',
               ],
               'action': [
                 'cp', '-R',
