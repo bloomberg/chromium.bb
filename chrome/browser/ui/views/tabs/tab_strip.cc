@@ -968,8 +968,12 @@ void TabStrip::StartMouseInitiatedRemoveTabAnimation(int model_index) {
   DCHECK(tab_data_index != tab_count());
   BaseTab* tab_closing = base_tab_at_tab_index(tab_data_index);
   int delta = tab_closing->width() + kTabHOffset;
-  if (tab_closing->data().mini && model_index + 1 < GetModelCount() &&
-      !GetBaseTabAtModelIndex(model_index + 1)->data().mini) {
+  // If the tab being closed is a mini-tab next to a non-mini-tab, be sure to
+  // add the extra padding.
+  int next_tab_data_index = ModelIndexToTabIndex(model_index + 1);
+  DCHECK_NE(next_tab_data_index, tab_count());
+  if (tab_closing->data().mini && next_tab_data_index < tab_count() &&
+      !base_tab_at_tab_index(next_tab_data_index)->data().mini) {
     delta += mini_to_non_mini_gap_;
   }
 
