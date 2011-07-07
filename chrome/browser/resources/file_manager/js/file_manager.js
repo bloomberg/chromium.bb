@@ -644,6 +644,7 @@ FileManager.prototype = {
       return;
 
     if (type == FileManager.ListType.DETAIL) {
+      var selectedIndexes = this.grid_.selectionModel.selectedIndexes;
       this.table_.dataModel = this.dataModel_;
       this.table_.style.display = '';
       this.grid_.style.display = 'none';
@@ -651,7 +652,9 @@ FileManager.prototype = {
       this.currentList_ = this.table_;
       this.dialogDom_.querySelector('button.detail-view').disabled = true;
       this.dialogDom_.querySelector('button.thumbnail-view').disabled = false;
+      this.table_.selectionModel.selectedIndexes = selectedIndexes;
     } else if (type == FileManager.ListType.THUMBNAIL) {
+      var selectedIndexes = this.table_.selectionModel.selectedIndexes;
       this.grid_.dataModel = this.dataModel_;
       this.grid_.style.display = '';
       this.table_.style.display = 'none';
@@ -659,6 +662,7 @@ FileManager.prototype = {
       this.currentList_ = this.grid_;
       this.dialogDom_.querySelector('button.thumbnail-view').disabled = true;
       this.dialogDom_.querySelector('button.detail-view').disabled = false;
+      this.grid_.selectionModel.selectedIndexes = selectedIndexes;
     } else {
       throw new Error('Unknown list type: ' + type);
     }
