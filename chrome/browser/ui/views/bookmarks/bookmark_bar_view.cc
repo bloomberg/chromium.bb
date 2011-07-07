@@ -146,8 +146,7 @@ class BookmarkButton : public views::TextButton {
     }
   }
 
-  virtual bool GetTooltipText(const gfx::Point& p,
-                              std::wstring* tooltip) OVERRIDE {
+  bool GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
     gfx::Point location(p);
     ConvertPointToScreen(this, &location);
     *tooltip = BookmarkBarView::CreateToolTipForURLAndTitle(location, url_,
@@ -194,13 +193,6 @@ class BookmarkFolderButton : public views::MenuButton {
     } else {
       show_animation_->Show();
     }
-  }
-
-  virtual bool GetTooltipText(const gfx::Point& p,
-                              std::wstring* tooltip) OVERRIDE {
-    if (text_size_.width() > GetTextBounds().width())
-      *tooltip = text_;
-    return !tooltip->empty();
   }
 
   virtual bool IsTriggerableEvent(const views::MouseEvent& e) OVERRIDE {

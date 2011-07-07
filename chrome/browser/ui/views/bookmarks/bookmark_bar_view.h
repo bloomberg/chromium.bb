@@ -298,7 +298,7 @@ class BookmarkBarView : public DetachableToolbarView,
   // Creates the button for rendering the specified bookmark node.
   views::View* CreateBookmarkButton(const BookmarkNode* node);
 
-  // Configures the button from the specified node. This sets the text,
+  // COnfigures the button from the specified node. This sets the text,
   // and icon.
   void ConfigureButton(const BookmarkNode* node, views::TextButton* button);
 
