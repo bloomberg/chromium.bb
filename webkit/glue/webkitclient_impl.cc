@@ -346,56 +346,62 @@ WebData loadAudioSpatializationResource(const char* name) {
   return WebData();
 }
 
+struct DataResource {
+  const char* name;
+  int id;
+};
+
+const DataResource kDataResources[] = {
+  { "missingImage", IDR_BROKENIMAGE },
+  { "mediaPause", IDR_MEDIA_PAUSE_BUTTON },
+  { "mediaPlay", IDR_MEDIA_PLAY_BUTTON },
+  { "mediaPlayDisabled", IDR_MEDIA_PLAY_BUTTON_DISABLED },
+  { "mediaSoundDisabled", IDR_MEDIA_SOUND_DISABLED },
+  { "mediaSoundFull", IDR_MEDIA_SOUND_FULL_BUTTON },
+  { "mediaSoundNone", IDR_MEDIA_SOUND_NONE_BUTTON },
+  { "mediaSliderThumb", IDR_MEDIA_SLIDER_THUMB },
+  { "mediaVolumeSliderThumb", IDR_MEDIA_VOLUME_SLIDER_THUMB },
+  { "panIcon", IDR_PAN_SCROLL_ICON },
+  { "searchCancel", IDR_SEARCH_CANCEL },
+  { "searchCancelPressed", IDR_SEARCH_CANCEL_PRESSED },
+  { "searchMagnifier", IDR_SEARCH_MAGNIFIER },
+  { "searchMagnifierResults", IDR_SEARCH_MAGNIFIER_RESULTS },
+  { "textAreaResizeCorner", IDR_TEXTAREA_RESIZER },
+  { "tickmarkDash", IDR_TICKMARK_DASH },
+  { "inputSpeech", IDR_INPUT_SPEECH },
+  { "inputSpeechRecording", IDR_INPUT_SPEECH_RECORDING },
+  { "inputSpeechWaiting", IDR_INPUT_SPEECH_WAITING },
+  { "americanExpressCC", IDR_AUTOFILL_CC_AMEX },
+  { "dinersCC", IDR_AUTOFILL_CC_DINERS },
+  { "discoverCC", IDR_AUTOFILL_CC_DISCOVER },
+  { "genericCC", IDR_AUTOFILL_CC_GENERIC },
+  { "jcbCC", IDR_AUTOFILL_CC_JCB },
+  { "masterCardCC", IDR_AUTOFILL_CC_MASTERCARD },
+  { "soloCC", IDR_AUTOFILL_CC_SOLO },
+  { "visaCC", IDR_AUTOFILL_CC_VISA },
+};
+
 }  // namespace
 
 WebData WebKitClientImpl::loadResource(const char* name) {
-  struct {
-    const char* name;
-    int id;
-  } resources[] = {
-    { "missingImage", IDR_BROKENIMAGE },
-    { "mediaPause", IDR_MEDIA_PAUSE_BUTTON },
-    { "mediaPlay", IDR_MEDIA_PLAY_BUTTON },
-    { "mediaPlayDisabled", IDR_MEDIA_PLAY_BUTTON_DISABLED },
-    { "mediaSoundDisabled", IDR_MEDIA_SOUND_DISABLED },
-    { "mediaSoundFull", IDR_MEDIA_SOUND_FULL_BUTTON },
-    { "mediaSoundNone", IDR_MEDIA_SOUND_NONE_BUTTON },
-    { "mediaSliderThumb", IDR_MEDIA_SLIDER_THUMB },
-    { "mediaVolumeSliderThumb", IDR_MEDIA_VOLUME_SLIDER_THUMB },
-    { "panIcon", IDR_PAN_SCROLL_ICON },
-    { "searchCancel", IDR_SEARCH_CANCEL },
-    { "searchCancelPressed", IDR_SEARCH_CANCEL_PRESSED },
-    { "searchMagnifier", IDR_SEARCH_MAGNIFIER },
-    { "searchMagnifierResults", IDR_SEARCH_MAGNIFIER_RESULTS },
-    { "textAreaResizeCorner", IDR_TEXTAREA_RESIZER },
-    { "tickmarkDash", IDR_TICKMARK_DASH },
-    { "inputSpeech", IDR_INPUT_SPEECH },
-    { "inputSpeechRecording", IDR_INPUT_SPEECH_RECORDING },
-    { "inputSpeechWaiting", IDR_INPUT_SPEECH_WAITING },
-    { "americanExpressCC", IDR_AUTOFILL_CC_AMEX },
-    { "dinersCC", IDR_AUTOFILL_CC_DINERS },
-    { "discoverCC", IDR_AUTOFILL_CC_DISCOVER },
-    { "genericCC", IDR_AUTOFILL_CC_GENERIC },
-    { "jcbCC", IDR_AUTOFILL_CC_JCB },
-    { "masterCardCC", IDR_AUTOFILL_CC_MASTERCARD },
-    { "soloCC", IDR_AUTOFILL_CC_SOLO },
-    { "visaCC", IDR_AUTOFILL_CC_VISA },
-  };
+  // Some clients will call into this method with an empty |name| when they have
+  // optional resources.  For example, the PopupMenuChromium code can have icons
+  // for some Autofill items but not for others.
+  if (!strlen(name))
+    return WebData();
 
   // Check the name prefix to see if it's an audio resource.
-  if (StartsWithASCII(name, "IRC_Composite", true)) {
+  if (StartsWithASCII(name, "IRC_Composite", true))
     return loadAudioSpatializationResource(name);
-  } else {
-    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(resources); ++i) {
-      if (!strcmp(name, resources[i].name)) {
-        base::StringPiece resource = GetDataResource(resources[i].id);
-        return WebData(resource.data(), resource.size());
-      }
+
+  for (size_t i = 0; i < arraysize(kDataResources); ++i) {
+    if (!strcmp(name, kDataResources[i].name)) {
+      base::StringPiece resource = GetDataResource(kDataResources[i].id);
+      return WebData(resource.data(), resource.size());
     }
   }
-  // TODO(jhawkins): Restore this NOTREACHED once WK stops sending in empty
-  // strings. http://crbug.com/50675.
-  //NOTREACHED() << "Unknown image resource " << name;
+
+  NOTREACHED() << "Unknown image resource " << name;
   return WebData();
 }
 
