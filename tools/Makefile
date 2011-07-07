@@ -811,12 +811,6 @@ nacl_libraries:
 	chmod a-x "$(DESTDIR)$(SDKROOT)/$(CROSSARCH)"/lib{,32}/*.a
 	rm -f "$(DESTDIR)$(SDKROOT)/$(CROSSARCH)"/lib{,32}/*.la
 
-.PHONY: sdk_minimal_test
-sdk_minimal_test:
-	cd .. && \
-	   ./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE) \
-	     --mode=nacl sdk_minimal_test platform=x86-32 --verbose;
-
 .PHONY: gdb_minimal_test
 gdb_minimal_test: BUILD/stamp-$(CROSSARCH)-gdb
 	cd .. && \
@@ -869,7 +863,6 @@ build-with-newlib:
 	esac
 	$(CREATE_REDIRECTORS) "$(DESTDIR)$(SDKROOT)"
 	$(MAKE) -f $(THISMAKEFILE) nacl_libraries
-	$(MAKE) -f $(THISMAKEFILE) sdk_minimal_test
 	rm -rf "$(DESTDIR)$(SDKROOT)"/{include,lib/*.a*,lib/*.so*,lib32,lib64}
 
 # Newlib toolchain for buildbot.
