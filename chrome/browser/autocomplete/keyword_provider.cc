@@ -461,8 +461,10 @@ void KeywordProvider::Observe(NotificationType type,
   switch (type.value) {
     case NotificationType::EXTENSION_OMNIBOX_INPUT_ENTERED:
       // Input has been accepted, so we're done with this input session. Ensure
-      // we don't send the OnInputCancelled event.
+      // we don't send the OnInputCancelled event, or handle any more stray
+      // suggestions_ready events.
       current_keyword_extension_id_.clear();
+      current_input_id_ = 0;
       return;
 
     case NotificationType::EXTENSION_OMNIBOX_DEFAULT_SUGGESTION_CHANGED: {

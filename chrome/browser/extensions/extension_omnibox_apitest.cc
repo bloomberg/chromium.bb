@@ -200,3 +200,49 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, MAYBE_Basic) {
     EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
   }
 }
+
+// Tests that the autocomplete popup doesn't reopen after accepting input for
+// a given query.
+// http://crbug.com/88552
+IN_PROC_BROWSER_TEST_F(OmniboxApiTest, PopupStaysClosed) {
+#if defined(TOOLKIT_GTK)
+  // Disable the timer because, on Lucid at least, it triggers resize/move
+  // behavior in the browser window, which dismisses the autocomplete popup
+  // before the results can be read.
+  static_cast<BrowserWindowGtk*>(
+    browser()->window())->DisableDebounceTimerForTests(true);
+#endif
+
+  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(RunExtensionTest("omnibox")) << message_;
+
+  // The results depend on the TemplateURLService being loaded. Make sure it is
+  // loaded so that the autocomplete results are consistent.
+  WaitForTemplateURLServiceToLoad();
+
+  LocationBar* location_bar = GetLocationBar();
+  AutocompleteController* autocomplete_controller = GetAutocompleteController();
+  AutocompletePopupModel* popup_model =
+      GetLocationBar()->location_entry()->model()->popup_model();
+
+  // Input a keyword query and wait for suggestions from the extension.
+  autocomplete_controller->Start(
+      ASCIIToUTF16("keyword comman"), string16(), true, false, true,
+      AutocompleteInput::ALL_MATCHES);
+  WaitForAutocompleteDone(autocomplete_controller);
+  EXPECT_TRUE(autocomplete_controller->done());
+  EXPECT_TRUE(popup_model->IsOpen());
+
+  // Quickly type another query and accept it before getting suggestions back
+  // for the query. The popup will close after accepting input - ensure that it
+  // does not reopen when the extension returns its suggestions.
+  ResultCatcher catcher;
+  autocomplete_controller->Start(
+      ASCIIToUTF16("keyword command"), string16(), true, false, true,
+      AutocompleteInput::ALL_MATCHES);
+  location_bar->AcceptInput();
+  WaitForAutocompleteDone(autocomplete_controller);
+  EXPECT_TRUE(autocomplete_controller->done());
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+  EXPECT_FALSE(popup_model->IsOpen());
+}
