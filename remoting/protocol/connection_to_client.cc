@@ -58,11 +58,9 @@ void ConnectionToClient::Disconnect() {
 
   CloseChannels();
 
-  // If there is a channel then close it and release the reference.
-  if (session_.get()) {
-    session_->Close();
+  // If there is a session then release it, causing it to close.
+  if (session_.get())
     session_.reset();
-  }
 }
 
 void ConnectionToClient::UpdateSequenceNumber(int64 sequence_number) {

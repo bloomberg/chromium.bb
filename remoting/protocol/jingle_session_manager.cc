@@ -26,6 +26,20 @@ using buzz::XmlElement;
 namespace remoting {
 namespace protocol {
 
+// static
+JingleSessionManager* JingleSessionManager::CreateNotSandboxed() {
+  return new JingleSessionManager(NULL, NULL, NULL);
+}
+
+// static
+JingleSessionManager* JingleSessionManager::CreateSandboxed(
+    talk_base::NetworkManager* network_manager,
+    talk_base::PacketSocketFactory* socket_factory,
+    PortAllocatorSessionFactory* port_allocator_session_factory) {
+  return new JingleSessionManager(network_manager, socket_factory,
+                                  port_allocator_session_factory);
+}
+
 JingleSessionManager::JingleSessionManager(
     talk_base::NetworkManager* network_manager,
     talk_base::PacketSocketFactory* socket_factory,
@@ -42,7 +56,7 @@ JingleSessionManager::JingleSessionManager(
 }
 
 JingleSessionManager::~JingleSessionManager() {
-  DCHECK(closed_);
+  Close();
 }
 
 void JingleSessionManager::Init(
@@ -127,21 +141,6 @@ Session* JingleSessionManager::Connect(
   jingle_session->set_candidate_config(candidate_config);
   jingle_session->set_receiver_token(receiver_token);
 
-  // TODO(sergeyu): Does this need to be asynchronous?
-  MessageLoop::current()->PostTask(FROM_HERE, task_factory_.NewRunnableMethod(
-      &JingleSessionManager::DoConnect, jingle_session, host_jid,
-      host_public_key, receiver_token, state_change_callback));
-  return jingle_session;
-}
-
-void JingleSessionManager::DoConnect(
-    JingleSession* jingle_session,
-    const std::string& host_jid,
-    const std::string& host_public_key,
-    const std::string& receiver_token,
-    Session::StateChangeCallback* state_change_callback) {
-  DCHECK(CalledOnValidThread());
-
   cricket::Session* cricket_session = cricket_session_manager_->CreateSession(
       local_jid_, kChromotingXmlNamespace);
 
@@ -153,6 +152,8 @@ void JingleSessionManager::DoConnect(
   cricket_session->Initiate(host_jid, CreateClientSessionDescription(
       jingle_session->candidate_config()->Clone(), receiver_token,
       jingle_session->GetEncryptedMasterKey()));
+
+  return jingle_session;
 }
 
 void JingleSessionManager::OnSessionCreate(
@@ -261,7 +262,7 @@ void JingleSessionManager::OnJingleInfo(
     const std::vector<talk_base::SocketAddress>& stun_hosts) {
   DCHECK(CalledOnValidThread());
 
-  if (port_allocator_.get()) {
+  if (http_port_allocator_) {
     // TODO(ajwong): Avoid string processing if log-level is low.
     std::string stun_servers;
     for (size_t i = 0; i < stun_hosts.size(); ++i) {

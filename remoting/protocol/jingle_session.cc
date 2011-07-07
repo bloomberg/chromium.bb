@@ -159,7 +159,9 @@ JingleSession::JingleSession(
 }
 
 JingleSession::~JingleSession() {
-  DCHECK(closed_);
+  // Reset the callback so that it's not called from Close().
+  state_change_callback_.reset();
+  Close();
   jingle_session_manager_->SessionDestroyed(this);
 }
 
@@ -212,8 +214,10 @@ void JingleSession::CloseInternal(int result, bool failed) {
     if (video_rtcp_channel_.get())
       video_rtcp_channel_->Close(result);
 
-    if (cricket_session_)
+    if (cricket_session_) {
       cricket_session_->Terminate();
+      cricket_session_->SignalState.disconnect(this);
+    }
 
     if (failed)
       SetState(FAILED);

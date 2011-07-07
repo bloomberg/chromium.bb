@@ -29,10 +29,8 @@ XmppSignalStrategy::XmppSignalStrategy(JingleThread* jingle_thread,
 }
 
 XmppSignalStrategy::~XmppSignalStrategy() {
-  if (xmpp_client_)
-    xmpp_client_->engine()->RemoveStanzaHandler(this);
-
   DCHECK(listener_ == NULL);
+  Close();
 }
 
 void XmppSignalStrategy::Init(StatusObserver* observer) {

@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// The purprose of SessionManager is to facilitate creation of chromotocol
+// The purpose of SessionManager is to facilitate creation of chromotocol
 // sessions. Both host and client use it to establish chromotocol
 // sessions. JingleChromotocolServer implements this inteface using
 // libjingle.
 //
 // OUTGOING SESSIONS
 // Connect() must be used to create new session to a remote host. The
-// returned sessionion is initially in INITIALIZING state. Later state is
-// changed to CONNECTED if the session is accepted by the host or CLOSED
-// if the session is rejected.
+// returned session is initially in INITIALIZING state. Later state is
+// changed to CONNECTED if the session is accepted by the host or
+// CLOSED if the session is rejected.
 //
 // INCOMING SESSIONS
 // The IncomingSessionCallback is called when a client attempts to connect.
@@ -19,12 +19,11 @@
 // rejected.
 //
 // SESSION OWNERSHIP AND SHUTDOWN
-// SessionManager owns all Chromotocol Session it creates. The server
-// must not be closed while sessions created by the server are still in use.
-// When shutting down the Close() method for the sessionion and the server
-// objects must be called in the following order: Session,
-// SessionManager, JingleClient. The same order must be followed in the case
-// of rejected and failed sessions.
+// SessionManager owns all Sessions it creates. The manager must not
+// be closed or destroyed before all sessions created by that
+// SessionManager are destroyed. Caller owns Sessions created by a
+// SessionManager (except rejected sessions). Sessions must outlive
+// SessionManager, and SignalStrategy must outlive SessionManager.
 //
 // PROTOCOL VERSION NEGOTIATION
 // When client connects to a host it sends a session-initiate stanza with list
@@ -70,6 +69,9 @@ class SignalStrategy;
 namespace protocol {
 
 // Generic interface for Chromoting session manager.
+//
+// TODO(sergeyu): Split this into two separate interfaces: one for the
+// client side and one for the host side.
 class SessionManager : public base::NonThreadSafe {
  public:
   SessionManager() { }
@@ -88,18 +90,16 @@ class SessionManager : public base::NonThreadSafe {
   // has incompatible configuration, and cannot be accepted.  If the
   // callback accepts session then it must also set configuration for
   // the new session using Session::set_config(). The callback must
-  // take ownership of the session if it accepts connection.
+  // take ownership of the session if it ACCEPTs it.
   typedef Callback2<Session*, IncomingSessionResponse*>::Type
       IncomingSessionCallback;
 
-  // Initializes the session client. Doesn't accept ownership of the
-  // |signal_strategy|. Close() must be called _before_ the |session_manager|
-  // is destroyed.
-  // If this object is used in server mode, then |private_key| and
-  // |certificate| are used to establish a secured communication with the
-  // client. It will also take ownership of these objects.
-  // In case this is used in client mode, pass in NULL for both private key and
-  // certificate.
+  // Initializes the session client. Caller retains ownership of the
+  // |signal_strategy|. If this object is used in server mode, then
+  // |private_key| and |certificate| are used to establish a secured
+  // communication with the client. It will also take ownership of
+  // these objects. In case this is used in client mode, pass in NULL
+  // for both private key and certificate.
   virtual void Init(const std::string& local_jid,
                     SignalStrategy* signal_strategy,
                     IncomingSessionCallback* incoming_session_callback,
@@ -114,9 +114,6 @@ class SessionManager : public base::NonThreadSafe {
   // |config| contains the session configurations that the client supports.
   // |state_change_callback| is called when the connection state changes.
   //
-  // This function may be called from any thread. The |state_change_callback|
-  // is invoked on the network thread.
-  //
   // Ownership of the |config| is passed to the new session.
   virtual Session* Connect(
       const std::string& host_jid,
@@ -125,8 +122,9 @@ class SessionManager : public base::NonThreadSafe {
       CandidateSessionConfig* config,
       Session::StateChangeCallback* state_change_callback) = 0;
 
-  // Close session manager and all current sessions. No callbacks are
-  // called after this method returns.
+  // Close session manager. Can be called only after all corresponding
+  // sessions are destroyed. No callbacks are called after this method
+  // returns.
   virtual void Close() = 0;
 
  private:

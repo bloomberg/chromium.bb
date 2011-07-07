@@ -220,7 +220,7 @@ void ProtocolTestClient::Run(const std::string& username,
       new XmppSignalStrategy(&jingle_thread, username, auth_token,
                              auth_service));
   signal_strategy_->Init(this);
-  session_manager_.reset(new JingleSessionManager(NULL, NULL, NULL));
+  session_manager_.reset(JingleSessionManager::CreateNotSandboxed());
 
   host_jid_ = host_jid;
 

@@ -22,6 +22,7 @@ JavascriptSignalStrategy::JavascriptSignalStrategy(const std::string& your_jid)
 
 JavascriptSignalStrategy::~JavascriptSignalStrategy() {
   DCHECK(listener_ == NULL);
+  Close();
 }
 
 void JavascriptSignalStrategy::AttachXmppProxy(

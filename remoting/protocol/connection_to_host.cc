@@ -86,20 +86,14 @@ void ConnectionToHost::Disconnect(const base::Closure& shutdown_task) {
 
   CloseChannels();
 
-  if (session_.get()) {
-    session_->Close();
+  if (session_.get())
     session_.reset();
-  }
 
-  if (session_manager_.get()) {
-    session_manager_->Close();
+  if (session_manager_.get())
     session_manager_.reset();
-  }
 
-  if (signal_strategy_.get()) {
-    signal_strategy_->Close();
+  if (signal_strategy_.get())
     signal_strategy_.reset();
-  }
 
   shutdown_task.Run();
 }
@@ -109,9 +103,9 @@ void ConnectionToHost::InitSession() {
 
   // Initialize chromotocol |session_manager_|.
   JingleSessionManager* session_manager =
-      new JingleSessionManager(network_manager_.release(),
-                               socket_factory_.release(),
-                               port_allocator_session_factory_.release());
+      JingleSessionManager::CreateSandboxed(
+          network_manager_.release(), socket_factory_.release(),
+          port_allocator_session_factory_.release());
 
   // TODO(ajwong): Make this a command switch when we're more stable.
   session_manager->set_allow_local_ips(true);

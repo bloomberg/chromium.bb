@@ -37,11 +37,13 @@ class JingleSessionManager
     : public SessionManager,
       public cricket::SessionClient {
  public:
-  JingleSessionManager(
+  virtual ~JingleSessionManager();
+
+  static JingleSessionManager* CreateNotSandboxed();
+  static JingleSessionManager* CreateSandboxed(
       talk_base::NetworkManager* network_manager,
       talk_base::PacketSocketFactory* socket_factory,
       PortAllocatorSessionFactory* port_allocator_session_factory);
-  virtual ~JingleSessionManager();
 
   // SessionManager interface.
   virtual void Init(const std::string& local_jid,
@@ -76,6 +78,11 @@ class JingleSessionManager
  private:
   friend class JingleSession;
 
+  JingleSessionManager(
+      talk_base::NetworkManager* network_manager,
+      talk_base::PacketSocketFactory* socket_factory,
+      PortAllocatorSessionFactory* port_allocator_session_factory);
+
   // Called by JingleSession when a new connection is
   // initiated. Returns true if session is accepted.
   bool AcceptConnection(JingleSession* jingle_session,
@@ -83,13 +90,6 @@ class JingleSessionManager
 
   // Called by JingleSession when it is being destroyed.
   void SessionDestroyed(JingleSession* jingle_session);
-
-  void DoConnect(
-      JingleSession* jingle_session,
-      const std::string& host_jid,
-      const std::string& host_public_key,
-      const std::string& client_token,
-      Session::StateChangeCallback* state_change_callback);
 
   // Callback for JingleInfoRequest.
   void OnJingleInfo(

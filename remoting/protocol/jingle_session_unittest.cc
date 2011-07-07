@@ -174,7 +174,7 @@ class JingleSessionTest : public testing::Test {
     FakeSignalStrategy::Connect(host_signal_strategy_.get(),
                                 client_signal_strategy_.get());
 
-    host_server_.reset(new JingleSessionManager(NULL, NULL, NULL));
+    host_server_.reset(JingleSessionManager::CreateNotSandboxed());
     host_server_->set_allow_local_ips(true);
     host_server_->Init(
         kHostJid, host_signal_strategy_.get(),
@@ -183,7 +183,7 @@ class JingleSessionTest : public testing::Test {
         private_key.release(),
         cert);
 
-    client_server_.reset(new JingleSessionManager(NULL, NULL, NULL));
+    client_server_.reset(JingleSessionManager::CreateNotSandboxed());
     client_server_->set_allow_local_ips(true);
     client_server_->Init(
         kClientJid, client_signal_strategy_.get(),
