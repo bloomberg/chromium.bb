@@ -85,6 +85,18 @@ def SetupMacEnvironment(context):
   pass
 
 
+def PartialSDK(context, platform):
+  args = ['--download', 'extra_sdk_update_header', 'extra_sdk_update']
+  if not context['use_glibc']:
+    args.append('install_libpthread')
+  SCons(
+      context,
+      mode=['nacl_extra_sdk'],
+      platform=platform,
+      parallel=True,
+      args=args)
+
+
 def BuildScript(status, context):
   inside_toolchain = context['inside_toolchain']
   do_integration_tests = not context['use_glibc'] and not inside_toolchain
@@ -132,8 +144,8 @@ def BuildScript(status, context):
     print 'Cleaning up the contents of %s...' % tmp_dir
     TryToCleanContents(tmp_dir)
 
-  # Skip over hooks when run inside the toolchain build because
-  # download_toolchains would overwrite the toolchain build.
+  # Skip over hooks and partial_sdk when run inside the toolchain
+  # build because partial_sdk would overwrite the toolchain build.
   if inside_toolchain:
     with Step('gyp_generate_only', status):
       Command(
@@ -151,6 +163,15 @@ def BuildScript(status, context):
       else:
         gclient = 'gclient'
       Command(context, cmd=[gclient, 'runhooks', '--force'])
+
+    # On windows 64 we build a 32-bit plugin for integration tests.
+    # In this case, we'll also need to run a 32-bit partial SDK.
+    if context['bits'] == '32' or need_plugin_32:
+      with Step('partial_sdk_32', status):
+        PartialSDK(context, platform='x86-32')
+    if context['bits'] == '64':
+      with Step('partial_sdk_64', status):
+        PartialSDK(context, platform='x86-64')
 
   # Make sure out Gyp build is working.
   with Step('gyp_compile', status):
