@@ -41,8 +41,20 @@
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #endif
 
+namespace {
+
+void DeleteProfileDirectories(std::vector<FilePath> paths) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  for (std::vector<FilePath>::iterator it = paths.begin();
+       it != paths.end(); ++it) {
+    file_util::Delete(*it, true);
+  }
+}
+
+} // namespace
+
 bool ProfileManagerObserver::DeleteAfterCreation() {
-    return false;
+  return false;
 }
 
 // The NewProfileLauncher class is created when to wait for a multi-profile
@@ -99,6 +111,14 @@ ProfileManager::ProfileManager() : logged_in_(false) {
 
 ProfileManager::~ProfileManager() {
   BrowserList::RemoveObserver(this);
+
+  // TODO(sail): fix http://crbug.com/88586
+  if (profiles_to_delete_.size()) {
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        NewRunnableFunction(&DeleteProfileDirectories, profiles_to_delete_));
+    profiles_to_delete_.clear();
+  }
 }
 
 FilePath ProfileManager::GetDefaultProfileDir(
@@ -534,4 +554,15 @@ void ProfileManager::AddProfileToCache(Profile* profile) {
         cache.ChooseNameForNewProfile(),
         cache.ChooseAvatarIconIndexForNewProfile());
   }
+}
+
+void ProfileManager::ScheduleProfileForDeletion(const FilePath& profile_dir) {
+  // TODO(sail): Due to bug 88586 we don't delete the profile instance. Once we
+  // start deleting the profile instance we need to close background apps too.
+  Profile* profile = GetProfileByPath(profile_dir);
+  if (profile)
+    BrowserList::CloseAllBrowsersWithProfile(profile);
+  profiles_to_delete_.push_back(profile_dir);
+  ProfileInfoCache& cache = GetProfileInfoCache();
+  cache.DeleteProfileFromCache(profile_dir);
 }

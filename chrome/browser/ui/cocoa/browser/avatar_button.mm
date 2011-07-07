@@ -28,7 +28,7 @@
     // TODO(rsesek): Eventually the PMM will require a Browser so the BWC
     // is plumbed here for that reason. SAIL WILL DO THIS!!1!!1
     controller_ = bwc;
-    model_.reset(new ProfileMenuModel());
+    model_.reset(new ProfileMenuModel([controller_ profile]));
     menuController_.reset(
         [[MenuController alloc] initWithModel:model_.get()
                        useWithPopUpButtonCell:NO]);

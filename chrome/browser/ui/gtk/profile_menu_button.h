@@ -19,11 +19,11 @@ class ProfileMenuModel;
 // Shows the button for the multiprofile menu.
 class ProfileMenuButton {
  public:
-  ProfileMenuButton();
+  explicit ProfileMenuButton(Profile* profile);
 
   virtual ~ProfileMenuButton();
 
-  virtual void UpdateText(Profile* profile);
+  virtual void UpdateText();
 
   GtkWidget* widget() const { return widget_.get(); }
 
@@ -34,6 +34,7 @@ class ProfileMenuButton {
   scoped_ptr<MenuGtk> menu_;
   scoped_ptr<ProfileMenuModel> profile_menu_model_;
   OwnedWidgetGtk widget_;
+  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileMenuButton);
 };

@@ -421,6 +421,20 @@ void BrowserList::CloseAllBrowsers() {
   }
 }
 
+void BrowserList::CloseAllBrowsersWithProfile(Profile* profile) {
+  BrowserVector browsers_to_close;
+  for (BrowserList::const_iterator i = BrowserList::begin();
+       i != BrowserList::end(); ++i) {
+    if ((*i)->profile() == profile)
+      browsers_to_close.push_back(*i);
+  }
+
+  for (BrowserVector::const_iterator i = browsers_to_close.begin();
+       i != browsers_to_close.end(); ++i) {
+    (*i)->window()->Close();
+  }
+}
+
 // static
 void BrowserList::AttemptUserExit() {
 #if defined(OS_CHROMEOS)

@@ -8,6 +8,8 @@
 
 #include "ui/base/models/simple_menu_model.h"
 
+class Profile;
+
 // ProfileMenuModel
 //
 // Menu for the multi-profile button displayed on the browser frame when the
@@ -16,7 +18,7 @@
 class ProfileMenuModel : public ui::SimpleMenuModel,
                          public ui::SimpleMenuModel::Delegate {
  public:
-  explicit ProfileMenuModel();
+  explicit ProfileMenuModel(Profile* profile);
   virtual ~ProfileMenuModel();
 
   // ui::SimpleMenuModel::Delegate implementation
@@ -29,7 +31,10 @@ class ProfileMenuModel : public ui::SimpleMenuModel,
  private:
   enum {
     COMMAND_CREATE_NEW_PROFILE,
+    COMMAND_DELETE_PROFILE,
   };
+
+  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileMenuModel);
 };

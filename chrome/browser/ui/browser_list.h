@@ -141,6 +141,9 @@ class BrowserList {
   // message.
   static void CloseAllBrowsers();
 
+  // Closes all browsers for |profile|.
+  static void CloseAllBrowsersWithProfile(Profile* profile);
+
   // Begins shutdown of the application when the desktop session is ending.
   static void SessionEnding();
 

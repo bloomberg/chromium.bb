@@ -152,6 +152,9 @@ class ProfileManager : public base::NonThreadSafe,
   // about profiles without having to load them from disk.
   ProfileInfoCache& GetProfileInfoCache();
 
+  // Schedules the profile at the given path to be deleted on shutdown.
+  void ScheduleProfileForDeletion(const FilePath& profile_dir);
+
  protected:
   // Does final initial actions.
   virtual void DoFinalInit(Profile* profile);
@@ -214,6 +217,9 @@ class ProfileManager : public base::NonThreadSafe,
 
   // Object to cache various information about profiles.
   scoped_ptr<ProfileInfoCache> profile_info_cache_;
+
+  // Profiles that should be deleted on shutdown.
+  std::vector<FilePath> profiles_to_delete_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileManager);
 };

@@ -320,10 +320,11 @@ void BrowserTitlebar::Init() {
                        FALSE, FALSE, 0);
     gtk_widget_show_all(titlebar_profile_vbox_);
 
-    profile_button_.reset(new ProfileMenuButton());
+    profile_button_.reset(new ProfileMenuButton(
+        browser_window_->browser()->profile()));
     gtk_box_pack_start(GTK_BOX(titlebar_profile_vbox_),
                        profile_button_->widget(), FALSE, FALSE, 0);
-    profile_button_->UpdateText(browser_window_->browser()->profile());
+    profile_button_->UpdateText();
   }
 
   if (browser_window_->browser()->profile()->IsOffTheRecord() &&
@@ -952,7 +953,7 @@ void BrowserTitlebar::Observe(NotificationType type,
     case NotificationType::PREF_CHANGED: {
       std::string* name = Details<std::string>(details).ptr();
       if (prefs::kGoogleServicesUsername == *name)
-        profile_button_->UpdateText(browser_window_->browser()->profile());
+        profile_button_->UpdateText();
       break;
     }
 

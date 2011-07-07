@@ -15,8 +15,8 @@
 // Maximum width for name string in pixels.
 const int kMaxTextWidth = 200;
 
-ProfileMenuButton::ProfileMenuButton() {
-  profile_menu_model_.reset(new ProfileMenuModel);
+ProfileMenuButton::ProfileMenuButton(Profile* profile) : profile_(profile) {
+  profile_menu_model_.reset(new ProfileMenuModel(profile_));
   menu_.reset(new MenuGtk(NULL, profile_menu_model_.get()));
 
   widget_.Own(gtk_button_new());
@@ -28,9 +28,9 @@ ProfileMenuButton::ProfileMenuButton() {
 
 ProfileMenuButton::~ProfileMenuButton() {}
 
-void ProfileMenuButton::UpdateText(Profile* profile) {
+void ProfileMenuButton::UpdateText() {
   string16 text = UTF8ToUTF16(
-      profile->GetPrefs()->GetString(prefs::kGoogleServicesUsername));
+      profile_->GetPrefs()->GetString(prefs::kGoogleServicesUsername));
   string16 elided_text = ui::ElideText(text, gfx::Font(), kMaxTextWidth, false);
   gtk_button_set_label(
       GTK_BUTTON(widget_.get()), UTF16ToUTF8(elided_text).c_str());
