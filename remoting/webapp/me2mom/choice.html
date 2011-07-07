@@ -14,53 +14,64 @@ found in the LICENSE file.
     <link rel="stylesheet" href="debug_log.css" />
     <link rel="stylesheet" href="main.css" />
     <link rel="stylesheet" href="choice.css" />
+    <script src="client_session.js"></script>
     <script src="debug_log.js"></script>
     <script src="oauth2.js"></script>
     <script src="plugin_settings.js"></script>
     <script src="remoting.js"></script>
+    <script src="xhr.js"></script>
     <title>Chromoting</title>
   </head>
 
-  <body>
-    <div id="auth-panel">
-      <span id="email-status" class="display-inline">
+  <body onLoad="remoting.init();">
+    <nav id="control-panel">
+      <span id="email-status">
         <span class="auth-status-label">Email:</span>
-        <span id="current-email" class="display-inline"></span>
+        <span id="current-email"></span>
       </span> <!-- email-status -->
 
-      <span id="oauth2-entry">
+      <span id="oauth2-entry" class="client-element host-element">
         <form>
           <span class="auth-status-label">OAuth2 Token:</span>
-          <input id="oauth2-token-button" class="display-inline" type="button"
-                 onclick="remoting.oauth2.openOAuth2Window(); return false;"
+          <input id="oauth2-token-button" type="button"
+                 onclick="remoting.oauth2.doAuthRedirect();"
                  value="Get OAuth2 Token&hellip;" />
-          <input id="oauth2-clear-button" class="display-inline" type="button"
-                 onclick="clearOAuth2(); return false;" value="Revoke" />
+          <input id="oauth2-clear-button" type="button"
+                 onclick="remoting.clearOAuth2();"
+                 value="Revoke" />
         </form>
       </span> <!-- oauth2-entry -->
 
+      <span id="session-controls" class="in-session-element">
+        <form id="session-buttons">
+          <input id="scale-to-fit-toggle" type="button"
+                 value="Scale to fit" onclick="remoting.toggleScaleToFit();"/>
+        </form>
+        <span id="session-status-message">Initializing...</span>
+      </span> <!-- session-controls -->
+
       <span id="debug-enable">
         <form>
-          <input id="debug-log-toggle" class="display-inline" type="button"
-                 value="Debug Log" onclick="toggleDebugLog(); return false;"/>
+          <input id="debug-log-toggle" type="button" value="Debug Log"
+                 onclick="remoting.toggleDebugLog();"/>
         </form>
       </span> <!-- debug-enable -->
 
-    </div> <!-- auth-panel -->
+    </nav> <!-- control-panel -->
 
-    <div id="main-panel" class="hidden">
-      <header>
+    <section id="choice-mode" class="mode hidden host-element client-element">
+      <header class="choice-header">
         <img id="icon" src="chromoting128.png">
-        <h1 class="icon-label host-element display-inline">
+        <h1 class="icon-label host-element">
           Chromoting&nbsp;&rsaquo;&nbsp;Share
         </h1>
-        <h1 class="icon-label client-element display-inline">
+        <h1 class="icon-label client-element">
           Chromoting&nbsp;&rsaquo;&nbsp;Connect
         </h1>
         <img id="divider-top" src="dividertop.png">
       </header>
 
-      <section id="host-section" class="host-element">
+      <div id="host-panel" class="host-element">
         <div id="unshared" class="mode">
           <div class="description">
             With Chromoting you can easily let another Chrome user see and
@@ -68,7 +79,7 @@ found in the LICENSE file.
           </div>
           <div class="centered-button">
             <button id="share-button" class="auth-status-control"
-                    type="button" onclick="tryShare(); return false;">
+                    type="button" onclick="remoting.tryShare();">
               Share this computer
             </button>
           </div>
@@ -97,7 +108,7 @@ found in the LICENSE file.
             Your desktop is currently being shared.
           </div>
           <div class="centered-button">
-            <button type="button" onclick="cancelShare(); return false;">
+            <button type="button" onclick="remoting.cancelShare();">
               Stop sharing
             </button>
           </div>
@@ -109,14 +120,14 @@ found in the LICENSE file.
           </div>
           <div class="centered-button">
             <button type="button" class="auth-status-control"
-                    onclick="setHostMode('unshared'); return false;">
+                    onclick="remoting.setHostMode('unshared');">
               OK
             </button>
           </div>
         </div> <!-- share-failed -->
-      </section> <!-- host-section -->
+      </div> <!-- host-panel -->
 
-      <section id="client-section" class="client-element">
+      <div id="client-panel" class="client-element">
         <div id="unconnected"  class="mode">
           <div class="description">
             Have the user whose computer you wish to access click
@@ -124,7 +135,7 @@ found in the LICENSE file.
             their access code to you.
           </div>
           <div id="access-code-entry-row">
-            <form action="" onsubmit="tryConnect();  return false;">
+            <form action="" onsubmit="remoting.tryConnect(); return false;">
               <label class="auth-status-control" for="access-code-entry">
                 Access code
               </label>
@@ -159,50 +170,53 @@ found in the LICENSE file.
           </div>
           <div class="centered-button">
             <button type="button" class="auth-status-control"
-                    onclick="setClientMode('unconnected'); return false;">
+                    onclick="remoting.setClientMode('unconnected');">
               OK
             </button>
           </div>
         </div> <!-- connect-failed -->
-      </section> <!-- client-section -->
+      </div> <!-- client-panel -->
 
-      <footer>
+      <footer class="choice-footer">
         <img id="divider-bottom" src="dividerbottom.png">
-        <div id="client-footer" class="client-element">
+        <div id="client-footer-text" class="client-element">
           Click here to
           <a class="switch-mode"
              href="#"
-             onclick="setGlobalModePersistent(remoting.HOST_MODE);
-                      return false;">share this computer</a>
+             onclick="remoting.setAppMode(remoting.AppMode.HOST);">
+            share this computer</a>
           with another user.
-        </div> <!-- client-footer -->
+        </div> <!-- client-footer-text -->
 
-        <div id="host-footer" class="host-element">
+        <div id="host-footer-text" class="host-element">
           Click here to <a class="switch-mode"
              href="#"
-             onclick="setGlobalModePersistent(remoting.CLIENT_MODE);
-                      return false;">
+             onclick="remoting.setAppMode(remoting.AppMode.CLIENT);">
             access a shared computer</a>.
-        </div> <!-- host-footer -->
+        </div> <!-- host-footer-text -->
 
         <div id="waiting-footer">
           <img src="spinner.gif">
           <span class="waiting icon-label">waiting for connection&hellip;</span>
           <button id="cancel-button"
-                  onclick="cancelPendingOperation();">
+                  onclick="remoting.cancelPendingOperation();">
             Cancel
           </button>
         </div> <!-- waiting-footer -->
       </footer>
-    </div> <!-- main-panel -->
+    </section> <!-- choice-mode -->
 
-    <div id="loading-panel">
+    <section id="session-mode" class="mode in-session-element hidden">
+    </section> <!-- session-mode -->
+
+
+    <section id="loading-mode">
       <em>Loading&hellip;</em>
-    </div>
+    </section>
 
-    <div id="plugin-wrapper">
+    <div id="host-plugin-container" class="hidden">
     </div>
-    <div id="debug-log">
+    <div id="debug-log" class="hidden">
     </div>
   </body>
 </html>

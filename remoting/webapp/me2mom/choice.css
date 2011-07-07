@@ -9,7 +9,6 @@ a {
   text-decoration: none;
 }
 
-
 body {
   background: -webkit-gradient(radial, center center, 0, center center, 400,
                                from(rgb(254, 254, 254)),
@@ -50,11 +49,7 @@ button[disabled], .button[disabled]:hover {
   -webkit-box-shadow: none;
 }
 
-footer {
-  font-size: 14px;
-}
-
-header h1 {
+h1 {
   font-size: 24px;
   font-weight: normal;
   margin-left: 10px;
@@ -63,11 +58,6 @@ header h1 {
 label {
   color: black;
   font-weight: bold;
-}
-
-section {
-  margin-top: 17px;
-  padding-bottom: 20px;
 }
 
 /* Classes */
@@ -101,6 +91,21 @@ section {
   text-align: center;
 }
 
+.choice-header {
+  font-size: 24px;
+  font-weight: normal;
+  margin-left: 10px;
+}
+
+.choice-footer {
+  font-size: 14px;
+}
+
+.choice-panel {
+  margin-top: 17px;
+  padding-bottom: 20px;
+}
+
 .client-element {
   /* Class used to denote client UI elements. */
 }
@@ -115,6 +120,11 @@ section {
     opposed to block.
   */
 }
+
+.hidden {
+  display: none;
+}
+
 
 .host-element {
   /* Class used to denote host UI elements. */
@@ -136,16 +146,12 @@ section {
   */
 }
 
-.hidden {
-  display: none;
-}
-
 .waiting {
   color: rgb(180, 180, 180);
 }
 
 /* Ids */
-#auth-panel {
+#control-panel {
   border-bottom: 2px solid gray;
   padding: 5px 10px;
 }
@@ -172,7 +178,7 @@ section {
   text-align: center;
 }
 
-#main-panel {
+#choice-mode {
   color: rgb(115, 115, 115);
   font-size: 16px;
   margin: 100px auto 0 auto;
@@ -184,8 +190,8 @@ section {
   float: right;
 }
 
-#email-status {
-  margin-right: 0.5ex;
+#client-footer-text, #host-footer-text {
+  text-align: center;
 }
 
 #current-email {
@@ -200,18 +206,36 @@ section {
   margin: 25px 0 10px 0;
 }
 
+#email-status {
+  margin-right: 0.5ex;
+}
+
 #icon {
   height: 64px;
   width: 64px;
 }
+
 #oauth2-entry {
   width: 400px;
 }
 
-#server-response {
-  font-weight: bolder;
+#session-mode {
+  overflow: auto;
+  width: 100%;
+  -webkit-user-select: none;
 }
 
-#client-footer, #host-footer {
-  text-align: center;
+#session-status-msg {
+  /*
+    clear: both; forces the session-controls div to size appropriately for
+    session-buttons.
+  */
+  clear: both;
+  font-family: monospace;
+  font-size: small;
+  margin: 5px;
+}
+
+#server-response {
+  font-weight: bolder;
 }

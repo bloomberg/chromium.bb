@@ -6,5 +6,6 @@
 // Keeping all that cenetralized here allows us to use symlinks for the other
 // files making for a faster compile/run cycle when only modifying HTML/JS.
 
-var remoting = chrome.extension.getBackgroundPage().remoting;
+var remoting = remoting || {};
+
 remoting.PLUGIN_MIMETYPE='HOST_PLUGIN_MIMETYPE';

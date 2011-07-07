@@ -2,20 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(jamiewalch): strict mode causes the page to crash so it's disabled for
-// now. Reinstate this when the associated bug is fixed.
-// http://code.google.com/p/v8/issues/detail?id=1423
-//"use strict";
+var remoting = remoting || {};
 
-// TODO(ajwong): This seems like a bad idea to share the exact same object
-// with the background page.  Why are we doing it like this?
-var remoting = chrome.extension.getBackgroundPage().remoting;
-remoting.CLIENT_MODE = 'client';
-remoting.HOST_MODE = 'host';
+(function() {
+"use strict";
+
+/** @enum {string} */
+remoting.AppMode = {
+  CLIENT: 'client',
+  HOST: 'host',
+  IN_SESSION: 'in-session'
+};
+
 remoting.EMAIL = 'email';
 remoting.HOST_PLUGIN_ID = 'host-plugin-id';
 
-window.addEventListener('load', init_, false);
+/**
+ * Whether or not the plugin should scale itself.
+ * @type {boolean}
+ */
+remoting.scaleToFit = false;
+
+// Constants representing keys used for storing persistent application state.
+var KEY_APP_MODE_ = 'remoting-app-mode';
+var KEY_EMAIL_ = 'remoting-email';
 
 // Some constants for pretty-printing the access code.
 var kSupportIdLen = 7;
@@ -28,11 +38,11 @@ function hasClass(element, cls) {
 }
 
 function retrieveEmail_(access_token) {
-  var xhr = new XMLHttpRequest();
-  xhr.onreadystatechange = function() {
-    if (xhr.readyState != 4) {
-      return;
-    }
+  var headers = {
+    'Authorization': 'OAuth ' + remoting.oauth2.getAccessToken()
+  };
+
+  var onResponse = function(xhr) {
     if (xhr.status != 200) {
       // TODO(ajwong): Have a better way of showing an error.
       window.alert("Unable to get e-mail");
@@ -43,13 +53,13 @@ function retrieveEmail_(access_token) {
     setEmail(xhr.responseText.split('&')[0].split('=')[1]);
   };
 
-  xhr.open('GET', 'https://www.googleapis.com/userinfo/email', true);
-  xhr.setRequestHeader('Authorization', 'OAuth ' + access_token);
-  xhr.send(null);
+  // TODO(ajwong): Update to new v2 API.
+  remoting.xhr.get('https://www.googleapis.com/userinfo/email',
+                   onResponse, '', headers);
 }
 
 function refreshEmail_() {
-  if (!remoting.getItem(remoting.EMAIL) && remoting.oauth2.isAuthenticated()) {
+  if (!getEmail() && remoting.oauth2.isAuthenticated()) {
     remoting.oauth2.callWithToken(retrieveEmail_);
   }
 }
@@ -66,13 +76,10 @@ function removeClass(element, cls) {
 
 function showElement(element, visible) {
   if (visible) {
-    if (hasClass(element, 'display-inline')) {
-      element.style.display = 'inline-block';
-    } else {
-      element.style.display = 'block';
-    }
+    // Reset to default visibility.
+    removeClass(element, 'hidden');
   } else {
-    element.style.display = 'none';
+    addClass(element, 'hidden');
   }
 }
 
@@ -96,31 +103,33 @@ function updateAuthStatus_() {
   showElementById('oauth2-token-button', !oauthValid);
   showElementById('oauth2-clear-button', oauthValid);
 
-  var loginName = remoting.getItem(remoting.EMAIL);
+  var loginName = getEmail();
   if (loginName) {
     document.getElementById('current-email').innerText = loginName;
   }
 
   var disableControls = !(loginName && oauthValid);
-  var authPanel = document.getElementById('auth-panel');
+  var controlPanel = document.getElementById('control-panel');
+  // TODO(ajwong): Do this via a style, or remove if the new auth flow is
+  // implemented.
   if (disableControls) {
-    authPanel.style.backgroundColor = 'rgba(204, 0, 0, 0.15)';
+    controlPanel.style.backgroundColor = 'rgba(204, 0, 0, 0.15)';
   } else {
-    authPanel.style.backgroundColor = 'rgba(0, 204, 102, 0.15)';
+    controlPanel.style.backgroundColor = 'rgba(0, 204, 102, 0.15)';
   }
   updateControls_(disableControls);
 }
 
-function initBackgroundFuncs_() {
-  remoting.getItem = chrome.extension.getBackgroundPage().getItem;
-  remoting.setItem = chrome.extension.getBackgroundPage().setItem;
-  remoting.removeItem = chrome.extension.getBackgroundPage().removeItem;
-  remoting.oauth2 = new OAuth2();
+function setEmail(value) {
+  window.localStorage.setItem(KEY_EMAIL_, value);
+  updateAuthStatus_();
 }
 
-function setEmail(value) {
-  remoting.setItem(remoting.EMAIL, value);
-  updateAuthStatus_();
+/**
+ * @return {string}
+ */
+function getEmail() {
+  return window.localStorage.getItem(KEY_EMAIL_);
 }
 
 function exchangedCodeForToken_() {
@@ -133,7 +142,7 @@ function exchangedCodeForToken_() {
   });
 }
 
-function clearOAuth2() {
+remoting.clearOAuth2 = function() {
   remoting.oauth2.clear();
   updateAuthStatus_();
 }
@@ -145,34 +154,60 @@ function setMode_(mode, modes) {
   }
 }
 
-function init_() {
-  initBackgroundFuncs_();
+remoting.toggleDebugLog = function() {
+  var debugLog = document.getElementById('debug-log');
+  var toggleButton = document.getElementById('debug-log-toggle');
+
+  if (!debugLog.style.display || debugLog.style.display == 'none') {
+    debugLog.style.display = 'block';
+    toggleButton.value = 'Hide Debug Log';
+  } else {
+    debugLog.style.display = 'none';
+    toggleButton.value = 'Show Debug Log';
+  }
+}
+
+remoting.init = function() {
+  // Create global objects.
+  remoting.oauth2 = new remoting.OAuth2();
+  remoting.debug = new remoting.DebugLog(document.getElementById('debug-log'));
+
   updateAuthStatus_();
   refreshEmail_();
   setHostMode('unshared');
   setClientMode('unconnected');
-  setGlobalMode(remoting.getItem('startup-mode', remoting.HOST_MODE));
-  addClass(document.getElementById('loading-panel'), 'hidden');
-  removeClass(document.getElementById('main-panel'), 'hidden');
+  setGlobalMode(getAppStartupMode());
+  addClass(document.getElementById('loading-mode'), 'hidden');
+  removeClass(document.getElementById('choice-mode'), 'hidden');
 }
 
 function setGlobalMode(mode) {
   var elementsToShow = [];
   var elementsToHide = [];
   var hostElements = document.getElementsByClassName('host-element');
+  hostElements = Array.prototype.slice.apply(hostElements);
   var clientElements = document.getElementsByClassName('client-element');
-  if (mode == remoting.HOST_MODE) {
-    elementsToShow = hostElements;
-    elementsToHide = clientElements;
-  } else {
-    elementsToShow = clientElements;
-    elementsToHide = hostElements;
+  clientElements = Array.prototype.slice.apply(clientElements);
+  var inSessionElements =
+      document.getElementsByClassName('in-session-element');
+  inSessionElements = Array.prototype.slice.apply(inSessionElements);
+  if (mode == remoting.AppMode.HOST) {
+    elementsToShow = elementsToShow.concat(hostElements);
+    elementsToHide = elementsToHide.concat(clientElements, inSessionElements);
+  } else if (mode == remoting.AppMode.CLIENT) {
+    elementsToShow = elementsToShow.concat(clientElements);
+    elementsToHide = elementsToHide.concat(hostElements, inSessionElements);
+  } else if (mode == remoting.AppMode.IN_SESSION) {
+    elementsToShow = elementsToShow.concat(inSessionElements);
+    elementsToHide = elementsToHide.concat(hostElements, clientElements);
+  }
+
+  // Hide first and then show since an element may be in both lists.
+  for (var i = 0; i < elementsToHide.length; ++i) {
+    showElement(elementsToHide[i], false);
   }
   for (var i = 0; i < elementsToShow.length; ++i) {
     showElement(elementsToShow[i], true);
-  }
-  for (var i = 0; i < elementsToHide.length; ++i) {
-    showElement(elementsToHide[i], false);
   }
   showElement(document.getElementById('waiting-footer', false));
   remoting.currentMode = mode;
@@ -180,20 +215,26 @@ function setGlobalMode(mode) {
 
 function setGlobalModePersistent(mode) {
   setGlobalMode(mode);
-  remoting.setItem('startup-mode', mode);
+  // TODO(ajwong): Does it make sense for "in_session" to be a peer to "host"
+  // or "client mode"?  I don't think so, but not sure how to restructure UI.
+  if (mode != remoting.AppMode.IN_SESSION) {
+    remoting.storage.setStartupMode(mode);
+  } else {
+    remoting.storage.setStartupMode(remoting.AppMode.CLIENT);
+  }
 }
 
 function setHostMode(mode) {
-  var section = document.getElementById('host-section');
+  var section = document.getElementById('host-panel');
   var modes = section.getElementsByClassName('mode');
-  addToDebugLog('Host mode: ' + mode);
+  remoting.debug.log('Host mode: ' + mode);
   setMode_(mode, modes);
 }
 
 function setClientMode(mode) {
-  var section = document.getElementById('client-section');
+  var section = document.getElementById('client-panel');
   var modes = section.getElementsByClassName('mode');
-  addToDebugLog('Client mode: ' + mode);
+  remoting.debug.log('Client mode: ' + mode);
   setMode_(mode, modes);
 }
 
@@ -205,9 +246,9 @@ function showWaiting_() {
 }
 
 function tryShare() {
-  addToDebugLog('Attempting to share...');
+  remoting.debug.log('Attempting to share...');
   if (remoting.oauth2.needsNewAccessToken()) {
-    addToDebugLog('Refreshing token...');
+    remoting.debug.log('Refreshing token...');
     remoting.oauth2.refreshAccessToken(function() {
       if (remoting.oauth2.needsNewAccessToken()) {
         // If we still need it, we're going to infinite loop.
@@ -221,7 +262,7 @@ function tryShare() {
 
   showWaiting_();
 
-  var div = document.getElementById('plugin-wrapper');
+  var div = document.getElementById('host-plugin-container');
   var plugin = document.createElement('embed');
   plugin.setAttribute('type', remoting.PLUGIN_MIMETYPE);
   plugin.setAttribute('hidden', 'true');
@@ -229,9 +270,10 @@ function tryShare() {
   div.appendChild(plugin);
   plugin.onStateChanged = onStateChanged_;
   plugin.logDebugInfoCallback = debugInfoCallback_;
-  plugin.connect(remoting.getItem(remoting.EMAIL),
+  plugin.connect(getEmail(),
                  'oauth2:' + remoting.oauth2.getAccessToken());
 }
+remoting.tryShare = tryShare;
 
 function onStateChanged_() {
   var plugin = document.getElementById(remoting.HOST_PLUGIN_ID);
@@ -253,11 +295,11 @@ function onStateChanged_() {
   } else if (state == plugin.CONNECTED) {
     setHostMode('shared');
   } else if (state == plugin.DISCONNECTED) {
-    setGlobalMode(remoting.HOST_MODE);
+    setGlobalMode(remoting.AppMode.HOST);
     setHostMode('unshared');
     plugin.parentNode.removeChild(plugin);
   } else {
-    addToDebugLog('Unknown state -> ' + state);
+    remoting.debug.log('Unknown state -> ' + state);
   }
 }
 
@@ -266,26 +308,102 @@ function onStateChanged_() {
 * is additional debug log info to display.
 */
 function debugInfoCallback_(msg) {
-  addToDebugLog('plugin: ' + msg);
+  remoting.debug.log('plugin: ' + msg);
 }
 
 function showShareError_(errorCode) {
   var errorDiv = document.getElementById(errorCode);
   errorDiv.style.display = 'block';
-  addToDebugLog("Sharing error: " + errorCode);
+  remoting.debug.log("Sharing error: " + errorCode);
   setHostMode('share-failed');
 }
 
 function cancelShare() {
-  addToDebugLog('Canceling share...');
+  remoting.debug.log('Canceling share...');
   var plugin = document.getElementById(remoting.HOST_PLUGIN_ID);
   plugin.disconnect();
 }
+remoting.cancelShare = cancelShare;
+
+/**
+ * Show a client message that stays on the screeen until the state changes.
+ *
+ * @param {string} message The message to display.
+ */
+function setClientStateMessage(message) {
+  var msg = document.getElementById('session-status-message');
+  msg.innerText = message;
+}
+
+function updateStatusBarStats() {
+  if (remoting.session.state != remoting.ClientSession.State.CONNECTED)
+    return;
+  var stats = remoting.session.stats();
+
+  var units = '';
+  var videoBandwidth = stats['video_bandwidth'];
+  if (videoBandwidth < 1024) {
+    units = 'Bps';
+  } else if (videoBandwidth < 1048576) {
+    units = 'KiBps';
+    videoBandwidth = videoBandwidth / 1024;
+  } else if (videoBandwidth < 1073741824) {
+    units = 'MiBps';
+    videoBandwidth = videoBandwidth / 1048576;
+  } else {
+    units = 'GiBps';
+    videoBandwidth = videoBandwidth / 1073741824;
+  }
+
+  setClientStateMessage(
+      'Bandwidth: ' + videoBandwidth.toFixed(2) + units +
+      ', Capture: ' + stats['capture_latency'].toFixed(2) + 'ms' +
+      ', Encode: ' + stats['encode_latency'].toFixed(2) + 'ms' +
+      ', Decode: ' + stats['decode_latency'].toFixed(2) + 'ms' +
+      ', Render: ' + stats['render_latency'].toFixed(2) + 'ms' +
+      ', Latency: ' + stats['roundtrip_latency'].toFixed(2) + 'ms');
+
+  // Update the stats once per second.
+  window.setTimeout(updateStatusBarStats, 1000);
+}
+
+function onClientStateChange_(state) {
+  if (state == remoting.ClientSession.State.UNKNOWN) {
+    setClientStateMessage('Unknown');
+  } else if (state == remoting.ClientSession.State.CREATED) {
+    setClientStateMessage('Created');
+  } else if (state == remoting.ClientSession.State.BAD_PLUGIN_VERSION) {
+    setClientStateMessage('Incompatible Plugin Version');
+  } else if (state == remoting.ClientSession.State.UNKNOWN_PLUGIN_ERROR) {
+    setClientStateMessage('Unknown error with plugin.');
+  } else if (state == remoting.ClientSession.State.CONNECTING) {
+    setClientStateMessage('Connecting as ' + remoting.username);
+  } else if (state == remoting.ClientSession.State.INITIALIZING) {
+    setClientStateMessage('Initializing connection');
+  } else if (state == remoting.ClientSession.State.CONNECTED) {
+    updateStatusBarStats();
+  } else if (state == remoting.ClientSession.State.CLOSED) {
+    setClientStateMessage('Closed');
+  } else if (state == remoting.ClientSession.State.CONNECTION_FAILED) {
+    setClientStateMessage('Failed');
+  } else {
+    setClientStateMessage('Bad State!!');
+  }
+}
 
 function startSession_() {
-  addToDebugLog('Starting session...');
-  remoting.username = remoting.getItem(remoting.EMAIL);
-  document.location = 'remoting_session.html';
+  remoting.debug.log('Starting session...');
+  remoting.username = getEmail();
+  setGlobalMode(remoting.AppMode.IN_SESSION);
+  remoting.session =
+      new remoting.ClientSession(remoting.hostJid, remoting.hostPublicKey,
+                                 remoting.accessCode, getEmail(),
+                                 onClientStateChange_);
+  remoting.oauth2.callWithToken(function(token) {
+    remoting.session.createPluginAndConnect(
+        document.getElementById('session-mode'),
+        token);
+  });
 }
 
 function showConnectError_(responseCode, responseString) {
@@ -324,21 +442,16 @@ function normalizeAccessCode_(accessCode) {
 }
 
 function resolveSupportId(supportId) {
-    var xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function() {
-      if (xhr.readyState != 4) {
-        return;
-      }
-      parseServerResponse_(xhr);
-    };
+  var headers = {
+    'Authorization': 'OAuth ' + remoting.oauth2.getAccessToken()
+  };
 
-    xhr.open('GET',
-             'https://www.googleapis.com/chromoting/v1/support-hosts/' +
-                 encodeURIComponent(supportId),
-             true);
-    xhr.setRequestHeader('Authorization',
-                         'OAuth ' + remoting.oauth2.getAccessToken());
-    xhr.send(null);
+  remoting.xhr.get(
+      'https://www.googleapis.com/chromoting/v1/support-hosts/' +
+          encodeURIComponent(supportId),
+      parseServerResponse_,
+      '',
+      headers);
 }
 
 function tryConnect() {
@@ -364,10 +477,44 @@ function tryConnect() {
     resolveSupportId(supportId);
   }
 }
+remoting.tryConnect = tryConnect;
 
 function cancelPendingOperation() {
   document.getElementById('cancel-button').disabled = true;
-  if (remoting.currentMode == remoting.HOST_MODE) {
+  if (remoting.currentMode == remoting.AppMode.HOST) {
     cancelShare();
   }
 }
+
+/**
+ * Changes the major-mode of the application (Eg., client or host).
+ *
+ * @param {remoting.AppMode} mode The mode to shift the application into.
+ * @return {void}
+ */
+remoting.setAppMode = function(mode) {
+  setGlobalMode(mode);
+  window.localStorage.setItem(KEY_APP_MODE_, mode);
+}
+
+/**
+ * Gets the major-mode that this application should start up in.
+ *
+ * @return {remoting.AppMode}
+ */
+function getAppStartupMode() {
+  var mode = window.localStorage.getItem(KEY_APP_MODE_);
+  if (!mode) {
+    mode = remoting.AppMode.HOST;
+  }
+  return mode;
+}
+
+remoting.toggleScaleToFit = function() {
+  remoting.scaleToFit = !remoting.scaleToFit;
+  document.getElementById('scale-to-fit-toggle').value =
+      remoting.scaleToFit ? 'No scaling' : 'Scale to fit';
+  remoting.session.toggleScaleToFit(remoting.scaleToFit);
+}
+
+}());

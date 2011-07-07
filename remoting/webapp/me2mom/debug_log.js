@@ -2,41 +2,43 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * @fileoverview
+ * Module to support logging debug messages.
+ */
+
+"use strict";
+var remoting = remoting || {};
+
+(function() {
+
+/** @constructor */
+remoting.DebugLog = function(logElement) {
+  this.debugLog = logElement;
+}
+
 // Maximum numer of lines to record in the debug log.
 // Only the most recent <n> lines are displayed.
 var MAX_DEBUG_LOG_SIZE = 1000;
-
-function toggleDebugLog() {
-  debugLog = document.getElementById('debug-log');
-  toggleButton = document.getElementById('debug-log-toggle');
-
-  if (!debugLog.style.display || debugLog.style.display == 'none') {
-    debugLog.style.display = 'block';
-    toggleButton.value = 'Hide Debug Log';
-  } else {
-    debugLog.style.display = 'none';
-    toggleButton.value = 'Show Debug Log';
-  }
-}
 
 /**
  * Add the given message to the debug log.
  *
  * @param {string} message The debug info to add to the log.
  */
-function addToDebugLog(message) {
-  var debugLog = document.getElementById('debug-log');
-
+remoting.DebugLog.prototype.log = function(message) {
   // Remove lines from top if we've hit our max log size.
-  if (debugLog.childNodes.length == MAX_DEBUG_LOG_SIZE) {
-    debugLog.removeChild(debugLog.firstChild);
+  if (this.debugLog.childNodes.length == MAX_DEBUG_LOG_SIZE) {
+    this.debugLog.removeChild(this.debugLog.firstChild);
   }
 
   // Add the new <p> to the end of the debug log.
   var p = document.createElement('p');
   p.appendChild(document.createTextNode(message));
-  debugLog.appendChild(p);
+  this.debugLog.appendChild(p);
 
   // Scroll to bottom of div
-  debugLog.scrollTop = debugLog.scrollHeight;
+  this.debugLog.scrollTop = this.debugLog.scrollHeight;
 }
+
+}());

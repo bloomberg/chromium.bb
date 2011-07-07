@@ -34,8 +34,6 @@
     ],
     'remoting_it2me_files': [
       'resources/chromoting128.png',
-      'webapp/me2mom/background.html',
-      'webapp/me2mom/background.js',
       'webapp/me2mom/choice.css',
       'webapp/me2mom/choice.html',
       'webapp/me2mom/cs_oauth2_trampoline.js',
@@ -49,11 +47,9 @@
       'webapp/me2mom/oauth2_callback.html',
       'webapp/me2mom/plugin_settings.js',
       'webapp/me2mom/remoting.js',
-      'webapp/me2mom/remoting_session.css',
-      'webapp/me2mom/remoting_session.html',
-      'webapp/me2mom/remoting_session.js',
+      'webapp/me2mom/client_session.js',
       'webapp/me2mom/spinner.gif',
-      'webapp/me2mom/storage.js',
+      'webapp/me2mom/xhr.js',
     ],
   },
 
