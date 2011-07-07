@@ -103,6 +103,10 @@ def EnterChroot(chroot_path, additional_args):
   cros_build_lib.RunCommand(cmd)
 
 
+def RefreshSudoCredentials():
+  cros_build_lib.RunCommand(['sudo', 'true'])
+
+
 if __name__ == '__main__':
   usage="""usage: %prog [options] [--enter -- <args>]
 
@@ -137,6 +141,10 @@ To replace, use --replace."""
     sys.exit(1)
 
   chroot_path = os.path.join(constants.SOURCE_ROOT, options.chroot)
+
+  # Request sudo credentials before we do anything else, to not ask for them
+  # inside of a lengthy process.
+  RefreshSudoCredentials()
 
   if not os.path.exists(chroot_path) or options.replace:
     CreateChroot(options.sdk_path, options.sdk_url,
