@@ -65,7 +65,6 @@ class GpuVideoDecodeAcceleratorHost
   void OnProvidePictureBuffer(
     uint32 num_requested_buffers, const gfx::Size& buffer_size, int32 mem_type);
   void OnDismissPictureBuffer(int32 picture_buffer_id);
-  void OnCreateDone(int32 decoder_id);
   void OnInitializeDone();
   void OnPictureReady(int32 picture_buffer_id,
                       int32 bitstream_buffer_id,
@@ -102,9 +101,6 @@ class GpuVideoDecodeAcceleratorHost
   // dedicated message such as WaitForToken, which will serialize subsequent
   // message processing behind it.
   gpu::CommandBufferHelper* cmd_buffer_helper_;
-
-  // Temporarily store configs here in between Create and Initialize phase.
-  std::vector<uint32> configs_;
 
   // Reference to the client that will receive callbacks from the decoder.
   media::VideoDecodeAccelerator::Client* client_;

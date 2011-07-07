@@ -311,21 +311,6 @@ IPC_SYNC_MESSAGE_CONTROL1_1(GpuChannelMsg_CreateOffscreenSurface,
 IPC_MESSAGE_CONTROL1(GpuChannelMsg_DestroySurface,
                      int /* route_id */)
 
-// Create a hardware video decoder; the new route ID is returned through
-// AcceleratedVideoDecoderHostMsg_CreateDone.
-// We need this to be control message because we had to map the GpuChannel and
-// |decoder_id|.
-IPC_MESSAGE_CONTROL3(GpuChannelMsg_CreateVideoDecoder,
-                     int32, /* decoder_host_id */
-                     uint32, /* command buffer route id*/
-                     std::vector<uint32>) /* configs */
-
-// Release all resource of the hardware video decoder which was assocaited
-// with the input |decoder_id|.
-// TODO(hclam): This message needs to be asynchronous.
-IPC_SYNC_MESSAGE_CONTROL1_0(GpuChannelMsg_DestroyVideoDecoder,
-                            int32 /* decoder_id */)
-
 // Create a TransportTexture corresponding to |host_id|.
 IPC_MESSAGE_CONTROL2(GpuChannelMsg_CreateTransportTexture,
                      int32, /* context_route_id */
@@ -404,6 +389,15 @@ IPC_SYNC_MESSAGE_ROUTED1_2(GpuCommandBufferMsg_GetTransferBuffer,
                            base::SharedMemoryHandle /* transfer_buffer */,
                            uint32 /* size */)
 
+// Create and initialize a hardware video decoder.
+IPC_MESSAGE_ROUTED2(GpuCommandBufferMsg_CreateVideoDecoder,
+                    int32, /* decoder_host_id */
+                    std::vector<uint32>) /* configs */
+
+// Release all resources held by the hardware video decoder associated with this
+// stub.
+IPC_MESSAGE_ROUTED0(GpuCommandBufferMsg_DestroyVideoDecoder);
+
 // Send from command buffer stub to proxy when window is invalid and must be
 // repainted.
 IPC_MESSAGE_ROUTED0(GpuCommandBufferMsg_NotifyRepaint)
@@ -475,11 +469,6 @@ IPC_SYNC_MESSAGE_CONTROL2_1(AcceleratedVideoDecoderMsg_GetConfigs,
                             std::vector<uint32>, /* Proto config */
                             std::vector<uint32>) /* Matching configs */
 
-// Message to initialize the accelerated video decoder.
-IPC_MESSAGE_ROUTED2(AcceleratedVideoDecoderMsg_Initialize,
-                    gpu::ReadWriteTokens, /* tokens */
-                    std::vector<uint32>) /* Config */
-
 // Send input buffer for decoding.
 IPC_MESSAGE_ROUTED4(AcceleratedVideoDecoderMsg_Decode,
                     gpu::ReadWriteTokens, /* tokens */
@@ -490,7 +479,7 @@ IPC_MESSAGE_ROUTED4(AcceleratedVideoDecoderMsg_Decode,
 // Sent from Renderer process to the GPU process to give the texture IDs for
 // the textures the decoder will use for output.  Delays evaluation until
 // |token.second| is seen.
-IPC_MESSAGE_ROUTED4(AcceleratedVideoDecoderMsg_AssignTextures,
+IPC_MESSAGE_ROUTED4(AcceleratedVideoDecoderMsg_AssignGLESBuffers,
                     gpu::ReadWriteTokens, /* tokens */
                     std::vector<int32>, /* Picture buffer ID */
                     std::vector<uint32>, /* Texture ID */
@@ -541,10 +530,6 @@ IPC_MESSAGE_ROUTED3(AcceleratedVideoDecoderHostMsg_ProvidePictureBuffers,
                     int32,  /* Number of video frames to generate */
                     gfx::Size, /* Requested size of buffer */
                     int32) /* Type of buffer */
-
-// Decoder has been created and is ready for initialization.
-IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderHostMsg_CreateDone,
-                    int32) /* Decoder ID */
 
 // Notify client that decoder has been initialized.
 IPC_MESSAGE_ROUTED0(AcceleratedVideoDecoderHostMsg_InitializeDone)

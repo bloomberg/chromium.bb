@@ -15,25 +15,29 @@
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "content/common/gpu/gpu_messages.h"
-#include "content/common/gpu/media/gpu_video_service.h"
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
+#include "content/common/gpu/media/omx_video_decode_accelerator.h"
+#include "ui/gfx/gl/gl_surface_egl.h"
+#endif
 #include "ui/gfx/size.h"
 
 GpuVideoDecodeAccelerator::GpuVideoDecodeAccelerator(
     IPC::Message::Sender* sender,
     int32 host_route_id,
-    int32 decoder_route_id,
     GpuCommandBufferStub* stub)
     : sender_(sender),
       host_route_id_(host_route_id),
-      decoder_route_id_(decoder_route_id),
       stub_(stub),
       video_decode_accelerator_(NULL) {
+  // stub_ owns and will always outlive this object.
   stub_->AddSetTokenCallback(base::Bind(
-      &GpuVideoDecodeAccelerator::OnSetToken, this));
+      &GpuVideoDecodeAccelerator::OnSetToken, base::Unretained(this)));
 }
 
 GpuVideoDecodeAccelerator::~GpuVideoDecodeAccelerator() {
   STLDeleteElements(&deferred_messages_);
+  // TODO(fischman/vrk): We need to synchronously wait for the OMX decoder
+  // to finish shutting down.
 }
 
 void GpuVideoDecodeAccelerator::OnSetToken(int32 token) {
@@ -52,9 +56,8 @@ bool GpuVideoDecodeAccelerator::DeferMessageIfNeeded(
   // Only consider deferring for message types that need it.
   switch (msg.type()) {
     case AcceleratedVideoDecoderMsg_GetConfigs::ID:
-    case AcceleratedVideoDecoderMsg_Initialize::ID:
     case AcceleratedVideoDecoderMsg_Decode::ID:
-    case AcceleratedVideoDecoderMsg_AssignTextures::ID:
+    case AcceleratedVideoDecoderMsg_AssignGLESBuffers::ID:
     case AcceleratedVideoDecoderMsg_AssignSysmemBuffers::ID:
     case AcceleratedVideoDecoderMsg_ReusePictureBuffer::ID:
     case AcceleratedVideoDecoderMsg_Flush::ID:
@@ -87,10 +90,9 @@ bool GpuVideoDecodeAccelerator::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(GpuVideoDecodeAccelerator, msg)
     IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderMsg_GetConfigs, OnGetConfigs)
-    IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderMsg_Initialize, OnInitialize)
     IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderMsg_Decode, OnDecode)
-    IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderMsg_AssignTextures,
-                        OnAssignTextures)
+    IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderMsg_AssignGLESBuffers,
+                        OnAssignGLESBuffers)
     IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderMsg_AssignSysmemBuffers,
                         OnAssignSysmemBuffers)
     IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderMsg_ReusePictureBuffer,
@@ -166,13 +168,19 @@ void GpuVideoDecodeAccelerator::OnGetConfigs(
   video_decode_accelerator_->GetConfigs(requested, matched);
 }
 
-void GpuVideoDecodeAccelerator::OnInitialize(
-    const gpu::ReadWriteTokens& /* tokens */,
-    const std::vector<uint32>& configs) {
+void GpuVideoDecodeAccelerator::Initialize(const std::vector<uint32>& configs) {
   DCHECK(!video_decode_accelerator_.get());
-  GpuVideoService::GetInstance()->InitializeVideoDecoder(decoder_route_id_);
-  DCHECK(video_decode_accelerator_.get());
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
+  DCHECK(stub_ && stub_->scheduler());
+  OmxVideoDecodeAccelerator* omx_decoder = new OmxVideoDecodeAccelerator(this);
+  omx_decoder->SetEglState(
+      gfx::GLSurfaceEGL::GetDisplay(),
+      stub_->scheduler()->decoder()->GetGLContext()->GetHandle());
+  video_decode_accelerator_.reset(omx_decoder);
   video_decode_accelerator_->Initialize(configs);
+#else
+  NOTIMPLEMENTED() << "HW video decode acceleration not available.";
+#endif  // defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
 }
 
 void GpuVideoDecodeAccelerator::OnDecode(
@@ -182,24 +190,27 @@ void GpuVideoDecodeAccelerator::OnDecode(
   video_decode_accelerator_->Decode(media::BitstreamBuffer(id, handle, size));
 }
 
-void GpuVideoDecodeAccelerator::AssignGLESBuffers(
-    const std::vector<media::GLESBuffer>& buffers) {
-  // TODO(fischman,vrk): it's wonky that we handle the AssignTextures message by
-  // handing its contents to GpuVideoService which then turns around and calls
-  // this (public) method.  Instead we should make GpuVideoService vend the
-  // translation method we need and use it directly.
-  DCHECK(video_decode_accelerator_.get());
-  video_decode_accelerator_->AssignGLESBuffers(buffers);
-}
+void GpuVideoDecodeAccelerator::OnAssignGLESBuffers(
+      const gpu::ReadWriteTokens& /* tokens */,
+      const std::vector<int32>& buffer_ids,
+      const std::vector<uint32>& texture_ids,
+      const std::vector<gfx::Size>& sizes) {
+  DCHECK(stub_ && stub_->scheduler());  // Ensure already Initialize()'d.
+  gpu::gles2::GLES2Decoder* command_decoder = stub_->scheduler()->decoder();
 
-void GpuVideoDecodeAccelerator::OnAssignTextures(
-    const gpu::ReadWriteTokens& /* tokens */,
-    const std::vector<int32>& buffer_ids,
-    const std::vector<uint32>& texture_ids,
-    const std::vector<gfx::Size>& sizes) {
-  GpuVideoService* service = GpuVideoService::GetInstance();
-  service->AssignTexturesToDecoder(
-      decoder_route_id_, buffer_ids, texture_ids, sizes);
+  std::vector<media::GLESBuffer> buffers;
+  for (uint32 i = 0; i < buffer_ids.size(); ++i) {
+    uint32 service_texture_id;
+    if (!command_decoder->GetServiceTextureId(
+            texture_ids[i], &service_texture_id)) {
+      // TODO(vrk): Send an error for invalid GLES buffers.
+      LOG(DFATAL) << "Failed to translate texture!";
+      return;
+    }
+    buffers.push_back(media::GLESBuffer(
+        buffer_ids[i], sizes[i], service_texture_id));
+  }
+  video_decode_accelerator_->AssignGLESBuffers(buffers);
 }
 
 void GpuVideoDecodeAccelerator::OnAssignSysmemBuffers(

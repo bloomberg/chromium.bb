@@ -20,14 +20,12 @@ class ReadWriteTokens;
 class GpuCommandBufferStub;
 
 class GpuVideoDecodeAccelerator
-    : public base::RefCountedThreadSafe<GpuVideoDecodeAccelerator>,
-      public IPC::Channel::Listener,
+    : public IPC::Channel::Listener,
       public IPC::Message::Sender,
       public media::VideoDecodeAccelerator::Client {
  public:
   GpuVideoDecodeAccelerator(IPC::Message::Sender* sender,
                             int32 host_route_id,
-                            int32 decoder_route_id,
                             GpuCommandBufferStub* stub);
   virtual ~GpuVideoDecodeAccelerator();
 
@@ -53,16 +51,11 @@ class GpuVideoDecodeAccelerator
   // Function to delegate sending to actual sender.
   virtual bool Send(IPC::Message* message);
 
-  void set_video_decode_accelerator(
-      media::VideoDecodeAccelerator* accelerator) {
-    DCHECK(!video_decode_accelerator_.get());
-    video_decode_accelerator_.reset(accelerator);
-  }
-
-  void AssignGLESBuffers(const std::vector<media::GLESBuffer>& buffers);
-
   // Callback to be fired when the underlying stub receives a new token.
   void OnSetToken(int32 token);
+
+  // Initialize the accelerator with the given configuration.
+  void Initialize(const std::vector<uint32>& configs);
 
  private:
   // Defers |msg| for later processing if it specifies a write token that hasn't
@@ -75,13 +68,10 @@ class GpuVideoDecodeAccelerator
       const gpu::ReadWriteTokens& /* tokens */,
       const std::vector<uint32>& config,
       std::vector<uint32>* configs);
-  void OnInitialize(
-      const gpu::ReadWriteTokens& /* tokens */,
-      const std::vector<uint32>& configs);
   void OnDecode(
       const gpu::ReadWriteTokens& /* tokens */,
       base::SharedMemoryHandle handle, int32 id, int32 size);
-  void OnAssignTextures(
+  void OnAssignGLESBuffers(
       const gpu::ReadWriteTokens& /* tokens */,
       const std::vector<int32>& buffer_ids,
       const std::vector<uint32>& texture_ids,
@@ -102,9 +92,6 @@ class GpuVideoDecodeAccelerator
 
   // Route ID to communicate with the host.
   int32 host_route_id_;
-
-  // Route ID of the decoder.
-  int32 decoder_route_id_;
 
   // Messages deferred for later processing when their tokens have come to pass.
   std::vector<IPC::Message*> deferred_messages_;

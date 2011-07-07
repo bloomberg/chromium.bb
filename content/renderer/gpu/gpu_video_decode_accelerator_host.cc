@@ -30,7 +30,6 @@ GpuVideoDecodeAcceleratorHost::GpuVideoDecodeAcceleratorHost(
     : router_(router),
       ipc_sender_(ipc_sender),
       decoder_host_id_(decoder_host_id),
-      decoder_id_(-1),
       command_buffer_route_id_(command_buffer_route_id),
       cmd_buffer_helper_(cmd_buffer_helper),
       client_(client) {
@@ -55,8 +54,6 @@ bool GpuVideoDecodeAcceleratorHost::OnMessageReceived(const IPC::Message& msg) {
                         OnBitstreamBufferProcessed)
     IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderHostMsg_ProvidePictureBuffers,
                         OnProvidePictureBuffer)
-    IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderHostMsg_CreateDone,
-                        OnCreateDone)
     IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderHostMsg_InitializeDone,
                         OnInitializeDone)
     IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderHostMsg_PictureReady,
@@ -98,11 +95,9 @@ bool GpuVideoDecodeAcceleratorHost::Initialize(
   DCHECK(CalledOnValidThread());
   router_->AddRoute(decoder_host_id_, this);
 
-  // Temporarily save configs for after create is done and we're
-  // ready to initialize.
-  configs_ = configs;
-  if (!ipc_sender_->Send(new GpuChannelMsg_CreateVideoDecoder(
-          decoder_host_id_, command_buffer_route_id_, configs))) {
+  // Tell GPU Channel to create and initialize a video decoder.
+  if (!ipc_sender_->Send(new GpuCommandBufferMsg_CreateVideoDecoder(
+      command_buffer_route_id_, decoder_host_id_, configs))) {
     LOG(ERROR) << "Send(GpuChannelMsg_CreateVideoDecoder) failed";
     return false;
   }
@@ -113,7 +108,7 @@ void GpuVideoDecodeAcceleratorHost::Decode(
     const media::BitstreamBuffer& bitstream_buffer) {
   DCHECK(CalledOnValidThread());
   if (!ipc_sender_->Send(new AcceleratedVideoDecoderMsg_Decode(
-          decoder_id_, SyncTokens(), bitstream_buffer.handle(),
+          command_buffer_route_id_, SyncTokens(), bitstream_buffer.handle(),
           bitstream_buffer.id(), bitstream_buffer.size()))) {
     DLOG(ERROR) << "Send(AcceleratedVideoDecoderMsg_Decode) failed";
     // TODO(fischman/vrk): signal error to client.
@@ -134,8 +129,9 @@ void GpuVideoDecodeAcceleratorHost::AssignGLESBuffers(
     buffer_ids.push_back(buffer.id());
     sizes.push_back(buffer.size());
   }
-  if (!ipc_sender_->Send(new AcceleratedVideoDecoderMsg_AssignTextures(
-          decoder_id_, SyncTokens(), buffer_ids, texture_ids, sizes))) {
+  if (!ipc_sender_->Send(new AcceleratedVideoDecoderMsg_AssignGLESBuffers(
+          command_buffer_route_id_, SyncTokens(), buffer_ids, texture_ids,
+          sizes))) {
     LOG(ERROR) << "Send(AcceleratedVideoDecoderMsg_AssignGLESBuffers) failed";
   }
 }
@@ -151,7 +147,7 @@ void GpuVideoDecodeAcceleratorHost::ReusePictureBuffer(
     int32 picture_buffer_id) {
   DCHECK(CalledOnValidThread());
   if (!ipc_sender_->Send(new AcceleratedVideoDecoderMsg_ReusePictureBuffer(
-          decoder_id_, SyncTokens(), picture_buffer_id))) {
+          command_buffer_route_id_, SyncTokens(), picture_buffer_id))) {
     LOG(ERROR) << "Send(AcceleratedVideoDecoderMsg_ReusePictureBuffer) failed";
   }
 }
@@ -159,7 +155,7 @@ void GpuVideoDecodeAcceleratorHost::ReusePictureBuffer(
 void GpuVideoDecodeAcceleratorHost::Flush() {
   DCHECK(CalledOnValidThread());
   if (!ipc_sender_->Send(new AcceleratedVideoDecoderMsg_Flush(
-          decoder_id_, SyncTokens()))) {
+          command_buffer_route_id_, SyncTokens()))) {
     LOG(ERROR) << "Send(AcceleratedVideoDecoderMsg_Flush) failed";
     // TODO(fischman/vrk): signal error to client.
     return;
@@ -169,7 +165,7 @@ void GpuVideoDecodeAcceleratorHost::Flush() {
 void GpuVideoDecodeAcceleratorHost::Abort() {
   DCHECK(CalledOnValidThread());
   if (!ipc_sender_->Send(new AcceleratedVideoDecoderMsg_Abort(
-          decoder_id_, SyncTokens()))) {
+          command_buffer_route_id_, SyncTokens()))) {
     LOG(ERROR) << "Send(AcceleratedVideoDecoderMsg_Abort) failed";
     // TODO(fischman/vrk): signal error to client.
     return;
@@ -197,15 +193,6 @@ void GpuVideoDecodeAcceleratorHost::OnDismissPictureBuffer(
     int32 picture_buffer_id) {
   DCHECK(CalledOnValidThread());
   client_->DismissPictureBuffer(picture_buffer_id);
-}
-
-void GpuVideoDecodeAcceleratorHost::OnCreateDone(int32 decoder_id) {
-  DCHECK(CalledOnValidThread());
-  decoder_id_ = decoder_id;
-  if (!ipc_sender_->Send(new AcceleratedVideoDecoderMsg_Initialize(
-          decoder_id_, SyncTokens(), configs_))) {
-    LOG(ERROR) << "Send(AcceleratedVideoDecoderMsg_Initialize) failed";
-  }
 }
 
 void GpuVideoDecodeAcceleratorHost::OnInitializeDone() {

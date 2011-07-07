@@ -17,7 +17,6 @@
 #include "content/common/content_switches.h"
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_messages.h"
-#include "content/common/gpu/media/gpu_video_service.h"
 #include "content/common/gpu/transport_texture.h"
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_surface.h"
@@ -237,10 +236,6 @@ bool GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(GpuChannelMsg_CreateOffscreenSurface,
                         OnCreateOffscreenSurface)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_DestroySurface, OnDestroySurface)
-    IPC_MESSAGE_HANDLER(GpuChannelMsg_CreateVideoDecoder,
-                        OnCreateVideoDecoder)
-    IPC_MESSAGE_HANDLER(GpuChannelMsg_DestroyVideoDecoder,
-        OnDestroyVideoDecoder)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_CreateTransportTexture,
         OnCreateTransportTexture)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -332,42 +327,6 @@ void GpuChannel::OnDestroySurface(int route_id) {
     router_.RemoveRoute(route_id);
     surfaces_.Remove(route_id);
   }
-#endif
-}
-
-void GpuChannel::OnCreateVideoDecoder(int32 decoder_host_id,
-                                      uint32 command_buffer_route_id,
-                                      const std::vector<uint32>& configs) {
-  GpuVideoService* service = GpuVideoService::GetInstance();
-  if (service == NULL) {
-    // TODO(hclam): Need to send a failure message.
-    return;
-  }
-
-  GpuCommandBufferStub* stub = stubs_.Lookup(command_buffer_route_id);
-  // TODO(vrk): Need to notify renderer that given route is invalid.
-  if (!stub)
-    return;
-
-  int32 decoder_id = GenerateRouteID();
-
-  // TODO(fischman): this is a BUG.  We hand off stub to be baked into the
-  // resulting GpuVideoDecodeAccelerator, but we don't own that GVDA, and we
-  // make no attempt to tear it down if/when stub is destroyed.  GpuVideoService
-  // should be subsumed into this class and GpuVideoDecodeAccelerator should be
-  // owned by GpuCommandBufferStub.
-  bool ret = service->CreateVideoDecoder(
-      this, &router_, decoder_host_id, decoder_id, stub, configs);
-  DCHECK(ret) << "Failed to create a GpuVideoDecodeAccelerator";
-}
-
-void GpuChannel::OnDestroyVideoDecoder(int32 decoder_id) {
-#if defined(ENABLE_GPU)
-  LOG(ERROR) << "GpuChannel::OnDestroyVideoDecoder";
-  GpuVideoService* service = GpuVideoService::GetInstance();
-  if (service == NULL)
-    return;
-  service->DestroyVideoDecoder(&router_, decoder_id);
 #endif
 }
 

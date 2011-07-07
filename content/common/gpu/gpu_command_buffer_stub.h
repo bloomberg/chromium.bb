@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/process.h"
 #include "base/task.h"
+#include "content/common/gpu/media/gpu_video_decode_accelerator.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "ipc/ipc_channel.h"
@@ -120,6 +121,10 @@ class GpuCommandBufferStub
   void OnGetTransferBuffer(int32 id, IPC::Message* reply_message);
   void OnResizeOffscreenFrameBuffer(const gfx::Size& size);
 
+  void OnCreateVideoDecoder(int32 decoder_host_id,
+                            const std::vector<uint32>& configs);
+  void OnDestroyVideoDecoder();
+
   void OnSwapBuffers();
   void OnCommandProcessed();
   void HandleDeferredMessages();
@@ -170,6 +175,9 @@ class GpuCommandBufferStub
 
   GpuWatchdog* watchdog_;
   ScopedRunnableMethodFactory<GpuCommandBufferStub> task_factory_;
+
+  // The video decoder associated with this stub, if any.
+  scoped_ptr<GpuVideoDecodeAccelerator> video_decoder_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuCommandBufferStub);
 };

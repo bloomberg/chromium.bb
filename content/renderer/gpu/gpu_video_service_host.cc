@@ -34,7 +34,6 @@ bool GpuVideoServiceHost::OnMessageReceived(const IPC::Message& msg) {
   switch (msg.type()) {
     case AcceleratedVideoDecoderHostMsg_BitstreamBufferProcessed::ID:
     case AcceleratedVideoDecoderHostMsg_ProvidePictureBuffers::ID:
-    case AcceleratedVideoDecoderHostMsg_CreateDone::ID:
     case AcceleratedVideoDecoderHostMsg_InitializeDone::ID:
     case AcceleratedVideoDecoderHostMsg_DismissPictureBuffer::ID:
     case AcceleratedVideoDecoderHostMsg_PictureReady::ID:

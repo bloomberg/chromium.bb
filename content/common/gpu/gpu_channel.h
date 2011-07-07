@@ -145,10 +145,6 @@ class GpuChannel : public IPC::Channel::Listener,
                                 int* route_id);
   void OnDestroySurface(int route_id);
 
-  void OnCreateVideoDecoder(int32 decoder_host_id,
-                            uint32 command_buffer_route_id,
-                            const std::vector<uint32>& configs);
-  void OnDestroyVideoDecoder(int32 decoder_id);
   void OnCreateTransportTexture(int32 context_route_id, int32 host_id);
 
   // The lifetime of objects of this class is managed by a GpuChannelManager.

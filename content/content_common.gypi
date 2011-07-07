@@ -127,8 +127,6 @@
         'common/gpu/gpu_watchdog.h',
         'common/gpu/media/gpu_video_decode_accelerator.cc',
         'common/gpu/media/gpu_video_decode_accelerator.h',
-        'common/gpu/media/gpu_video_service.cc',
-        'common/gpu/media/gpu_video_service.h',
         'common/gpu/transport_texture.cc',
         'common/gpu/transport_texture.h',
         'common/hi_res_timer_manager_posix.cc',

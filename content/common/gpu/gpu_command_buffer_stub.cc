@@ -93,6 +93,10 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
                                     OnDestroyTransferBuffer);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_GetTransferBuffer,
                                     OnGetTransferBuffer);
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_CreateVideoDecoder,
+                        OnCreateVideoDecoder)
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_DestroyVideoDecoder,
+                        OnDestroyVideoDecoder)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_ResizeOffscreenFrameBuffer,
                         OnResizeOffscreenFrameBuffer);
 #if defined(OS_MACOSX)
@@ -100,6 +104,12 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
 #endif  // defined(OS_MACOSX)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+
+  // If this message isn't intended for the stub, try to route it to the video
+  // decoder.
+  if (!handled && video_decoder_.get())
+    handled = video_decoder_->OnMessageReceived(message);
+
   DCHECK(handled);
   return handled;
 }
@@ -571,6 +581,18 @@ void GpuCommandBufferStub::ReportState() {
     msg->set_unblock(true);
     Send(msg);
   }
+}
+
+void GpuCommandBufferStub::OnCreateVideoDecoder(
+    int32 decoder_host_id, const std::vector<uint32>& configs) {
+  video_decoder_.reset(
+      new GpuVideoDecodeAccelerator(this, decoder_host_id, this));
+  video_decoder_->Initialize(configs);
+}
+
+void GpuCommandBufferStub::OnDestroyVideoDecoder() {
+  LOG(ERROR) << "GpuCommandBufferStub::OnDestroyVideoDecoder";
+  video_decoder_.reset();
 }
 
 #endif  // defined(ENABLE_GPU)
