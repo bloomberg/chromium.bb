@@ -398,7 +398,11 @@ void PrintWebViewHelper::DidFinishPrinting(PrintingResult result) {
     }
   } else if (result == FAIL_PREVIEW) {
     int cookie = print_pages_params_->params.document_cookie;
-    Send(new PrintHostMsg_PrintPreviewFailed(routing_id(), cookie));
+    if (notify_browser_of_print_failure_) {
+      Send(new PrintHostMsg_PrintPreviewFailed(routing_id(), cookie));
+    } else {
+      Send(new PrintHostMsg_PrintPreviewCancelled(routing_id(), cookie));
+    }
   }
 
   if (print_web_view_) {
@@ -449,12 +453,11 @@ bool PrintWebViewHelper::PrintPages(const PrintMsg_PrintPages_Params& params,
                                               node,
                                               frame->view());
   int page_count = prep_frame_view.GetExpectedPageCount();
-
+  if (!page_count)
+    return false;
   Send(new PrintHostMsg_DidGetPrintedPagesCount(routing_id(),
                                                 printParams.document_cookie,
                                                 page_count));
-  if (!page_count)
-    return false;
 
   const gfx::Size& canvas_size = prep_frame_view.GetPrintCanvasSize();
   PrintMsg_PrintPage_Params page_params;
@@ -803,4 +806,12 @@ void PrintWebViewHelper::DisplayPrintJobError() {
 void PrintWebViewHelper::RequestPrintPreview() {
   old_print_pages_params_.reset();
   Send(new PrintHostMsg_RequestPrintPreview(routing_id()));
+}
+
+bool PrintWebViewHelper::PreviewPageRendered(int page_number) {
+  bool cancel = false;
+  Send(new PrintHostMsg_DidPreviewPage(routing_id(), page_number, &cancel));
+  if (cancel)
+    notify_browser_of_print_failure_ = false;
+  return !cancel;
 }

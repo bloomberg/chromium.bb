@@ -5,9 +5,9 @@
 #include "chrome/renderer/print_web_view_helper.h"
 
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/process_util.h"
-#include "base/scoped_ptr.h"
 #include "chrome/common/print_messages.h"
 #include "printing/metafile.h"
 #include "printing/metafile_impl.h"
@@ -126,13 +126,21 @@ void PrintWebViewHelper::PrintPageInternal(
 bool PrintWebViewHelper::CreatePreviewDocument(
     const PrintMsg_PrintPages_Params& params, WebKit::WebFrame* frame,
     WebKit::WebNode* node) {
+  if (!PreviewPageRendered(-1))
+    return false;
+
   PrintMsg_Print_Params print_params = params.params;
   UpdatePrintableSizeInPrintParameters(frame, node, &print_params);
   PrepareFrameAndViewForPrint prep_frame_view(print_params, frame, node,
                                               frame->view());
+  if (!PreviewPageRendered(-1))
+    return false;
+
   preview_page_count_ = prep_frame_view.GetExpectedPageCount();
   if (!preview_page_count_)
     return false;
+  Send(new PrintHostMsg_DidGetPreviewPageCount(routing_id(),
+                                               preview_page_count_));
 
   scoped_ptr<Metafile> metafile(new printing::PreviewMetafile);
   metafile->Init();
@@ -149,15 +157,19 @@ bool PrintWebViewHelper::CreatePreviewDocument(
       float scale_factor = shrink;
       RenderPage(print_params, &scale_factor, i, true, frame, &metafile);
       page_begin_time = ReportPreviewPageRenderTime(page_begin_time);
+      if (!PreviewPageRendered(i))
+        return false;
     }
   } else {
     for (size_t i = 0; i < params.pages.size(); ++i) {
       if (params.pages[i] >= preview_page_count_)
         break;
       float scale_factor = shrink;
-      RenderPage(print_params, &scale_factor,
-                 static_cast<int>(params.pages[i]), true, frame, &metafile);
+      RenderPage(print_params, &scale_factor, params.pages[i], true, frame,
+                 &metafile);
       page_begin_time = ReportPreviewPageRenderTime(page_begin_time);
+      if (!PreviewPageRendered(params.pages[i]))
+        return false;
     }
   }
 

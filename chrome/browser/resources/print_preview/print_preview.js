@@ -599,48 +599,44 @@ function onPDFLoad() {
 }
 
 /**
+ * Update the page count and check the page range.
+ * Called from PrintPreviewUI::OnDidGetPreviewPageCount().
+ * @param {number} pageCount The number of pages.
+ */
+function onDidGetPreviewPageCount(pageCount) {
+  totalPageCount = pageCount;
+
+  if (!isSelectedPagesValid())
+    pageRangesFieldChanged();
+}
+
+/**
+ * Notification that a print preview page has been rendered.
+ * Check if the settings have changed and request a regeneration if needed.
+ * Called from PrintPreviewUI::OnDidPreviewPage().
+ * @param {number} pageNumber The page number, 0-based.
+ */
+function onDidPreviewPage(pageNumber) {
+  if (checkIfSettingsChangedAndRegeneratePreview())
+    return;
+  // TODO(thestig) Make use of |pageNumber| for pipelined preview generation.
+}
+
+/**
  * Update the print preview when new preview data is available.
  * Create the PDF plugin as needed.
  * Called from PrintPreviewUI::PreviewDataIsAvailable().
- * @param {number} pageCount The expected total pages count.
  * @param {string} jobTitle The print job title.
  * @param {boolean} modifiable If the preview is modifiable.
  * @param {string} previewUid Preview unique identifier.
  */
-function updatePrintPreview(pageCount, jobTitle, modifiable, previewUid) {
-  var tempPrintSettings = new PrintSettings();
-  tempPrintSettings.save();
-
-  previewModifiable = modifiable;
-
+function updatePrintPreview(jobTitle, modifiable, previewUid) {
   hasPendingPreviewRequest = false;
 
-  if (!totalPageCount)
-    totalPageCount = pageCount;
-
-  if (previouslySelectedPages.length == 0)
-    for (var i = 0; i < totalPageCount; i++)
-      previouslySelectedPages.push(i+1);
-
-  if (printSettings.deviceName != tempPrintSettings.deviceName) {
-    updateControlsWithSelectedPrinterCapabilities();
+  if (checkIfSettingsChangedAndRegeneratePreview())
     return;
-  } else if (printSettings.isLandscape != tempPrintSettings.isLandscape) {
-    setDefaultValuesAndRegeneratePreview();
-    return;
-  } else if (isSelectedPagesValid()) {
-    var currentlySelectedPages = getSelectedPagesSet();
-    if (!areArraysEqual(previouslySelectedPages, currentlySelectedPages)) {
-      previouslySelectedPages = currentlySelectedPages;
-      requestPrintPreview();
-      return;
-    }
-  }
 
-  if (!isSelectedPagesValid())
-    pageRangesFieldChanged();
-
-  // Update the current tab title.
+  previewModifiable = modifiable;
   document.title = localStrings.getStringF('printPreviewTitleFormat', jobTitle);
 
   createPDFPlugin(previewUid);
@@ -650,6 +646,40 @@ function updatePrintPreview(pageCount, jobTitle, modifiable, previewUid) {
 
   if (hasPendingPrintFileRequest)
     printPendingFile();
+}
+
+/**
+ * Check if any print settings changed and regenerate the preview if needed.
+ * @return {boolean} true if a new preview is required.
+ */
+function checkIfSettingsChangedAndRegeneratePreview() {
+  var tempPrintSettings = new PrintSettings();
+  tempPrintSettings.save();
+
+  if (previouslySelectedPages.length == 0) {
+    for (var i = 0; i < totalPageCount; i++) {
+      previouslySelectedPages.push(i+1);
+    }
+  }
+
+  if (printSettings.deviceName != tempPrintSettings.deviceName) {
+    updateControlsWithSelectedPrinterCapabilities();
+    return true;
+  } else if (printSettings.isLandscape != tempPrintSettings.isLandscape) {
+    setDefaultValuesAndRegeneratePreview();
+    return true;
+  } else if (isSelectedPagesValid()) {
+    var currentlySelectedPages = getSelectedPagesSet();
+    if (!areArraysEqual(previouslySelectedPages, currentlySelectedPages)) {
+      previouslySelectedPages = currentlySelectedPages;
+      requestPrintPreview();
+      return true;
+    }
+  }
+
+  if (!isSelectedPagesValid())
+    pageRangesFieldChanged();
+  return false;
 }
 
 /**

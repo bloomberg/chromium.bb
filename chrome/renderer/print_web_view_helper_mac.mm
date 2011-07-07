@@ -62,15 +62,22 @@ void PrintWebViewHelper::PrintPageInternal(
 bool PrintWebViewHelper::CreatePreviewDocument(
     const PrintMsg_PrintPages_Params& params, WebKit::WebFrame* frame,
     WebKit::WebNode* node) {
+  if (!PreviewPageRendered(-1))
+    return false;
+
   PrintMsg_Print_Params printParams = params.params;
   UpdatePrintableSizeInPrintParameters(frame, node, &printParams);
 
   PrepareFrameAndViewForPrint prep_frame_view(printParams,
                                               frame, node, frame->view());
-  preview_page_count_ = prep_frame_view.GetExpectedPageCount();
+  if (!PreviewPageRendered(-1))
+    return false;
 
+  preview_page_count_ = prep_frame_view.GetExpectedPageCount();
   if (!preview_page_count_)
     return false;
+  Send(new PrintHostMsg_DidGetPreviewPageCount(routing_id(),
+                                               preview_page_count_));
 
   printing::PreviewMetafile metafile;
   if (!metafile.Init())
@@ -89,14 +96,18 @@ bool PrintWebViewHelper::CreatePreviewDocument(
       RenderPage(printParams.page_size, content_area, scale_factor, i, frame,
                  &metafile);
       page_begin_time = ReportPreviewPageRenderTime(page_begin_time);
+      if (!PreviewPageRendered(i))
+        return false;
     }
   } else {
     for (size_t i = 0; i < params.pages.size(); ++i) {
       if (params.pages[i] >= preview_page_count_)
         break;
       RenderPage(printParams.page_size, content_area, scale_factor,
-                 static_cast<int>(params.pages[i]), frame, &metafile);
+                 params.pages[i], frame, &metafile);
       page_begin_time = ReportPreviewPageRenderTime(page_begin_time);
+      if (!PreviewPageRendered(params.pages[i]))
+        return false;
     }
   }
 

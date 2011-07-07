@@ -82,6 +82,7 @@ class PrintWebViewHelper : public RenderViewObserver,
                            BlockScriptInitiatedPrinting);
   FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperTest, OnPrintPages);
   FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperPreviewTest, OnPrintPreview);
+  FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperPreviewTest, OnPrintPreviewCancel);
   FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperPreviewTest, OnPrintPreviewFail);
   FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperPreviewTest,
                            OnPrintForPrintPreview);
@@ -197,7 +198,6 @@ class PrintWebViewHelper : public RenderViewObserver,
   bool RenderPages(const PrintMsg_PrintPages_Params& params,
                    WebKit::WebFrame* frame,
                    WebKit::WebNode* node,
-                   bool send_expected_page_count,
                    int* page_count,
                    printing::Metafile* metafile,
                    bool is_preview);
@@ -254,6 +254,12 @@ class PrintWebViewHelper : public RenderViewObserver,
   void DisplayPrintJobError();
 
   void RequestPrintPreview();
+
+  // Called every time print preview renders a page. Notify the browser of the
+  // event and check if print preview should be cancelled. Returns false if
+  // print preview has been cancelled. |page_number| is 0-based, or negative to
+  // indicate its a cancel check only.
+  bool PreviewPageRendered(int page_number);
 
   WebKit::WebView* print_web_view_;
 

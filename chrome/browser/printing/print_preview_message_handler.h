@@ -30,9 +30,13 @@ class PrintPreviewMessageHandler : public TabContentsObserver {
 
   // Message handlers.
   void OnRequestPrintPreview();
+  void OnDidGetPreviewPageCount(int page_count);
+  // |page_number| is 0-based.
+  void OnDidPreviewPage(int page_number, bool* cancel);
   void OnPagesReadyForPreview(
       const PrintHostMsg_DidPreviewDocument_Params& params);
   void OnPrintPreviewFailed(int document_cookie);
+  void OnPrintPreviewCancelled(int document_cookie);
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewMessageHandler);
 };

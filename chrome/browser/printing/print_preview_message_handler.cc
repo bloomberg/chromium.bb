@@ -4,6 +4,8 @@
 
 #include "chrome/browser/printing/print_preview_message_handler.h"
 
+#include <vector>
+
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/printing/background_printing_manager.h"
@@ -59,6 +61,35 @@ TabContents* PrintPreviewMessageHandler::GetPrintPreviewTab() {
 
 void PrintPreviewMessageHandler::OnRequestPrintPreview() {
   PrintPreviewTabController::PrintPreview(tab_contents());
+}
+
+void PrintPreviewMessageHandler::OnDidGetPreviewPageCount(int page_count) {
+  if (page_count <= 0)
+    return;
+  TabContents* print_preview_tab = GetPrintPreviewTab();
+  if (!print_preview_tab)
+    return;
+
+  PrintPreviewUI* print_preview_ui =
+      static_cast<PrintPreviewUI*>(print_preview_tab->web_ui());
+  print_preview_ui->OnDidGetPreviewPageCount(page_count);
+}
+
+void PrintPreviewMessageHandler::OnDidPreviewPage(int page_number,
+                                                  bool* cancel) {
+  TabContents* print_preview_tab = GetPrintPreviewTab();
+  if (!print_preview_tab) {
+    // Can't find print preview tab means we should cancel.
+    *cancel = true;
+    return;
+  }
+
+  PrintPreviewUI* print_preview_ui =
+      static_cast<PrintPreviewUI*>(print_preview_tab->web_ui());
+  bool has_pending = print_preview_ui->HasPendingRequests();
+  if (!has_pending && page_number >= 0)
+    print_preview_ui->OnDidPreviewPage(page_number);
+  *cancel = has_pending;
 }
 
 void PrintPreviewMessageHandler::OnPagesReadyForPreview(
@@ -135,8 +166,21 @@ void PrintPreviewMessageHandler::OnPrintPreviewFailed(int document_cookie) {
   } else {
     PrintPreviewUI* print_preview_ui =
       static_cast<PrintPreviewUI*>(print_preview_tab->web_ui());
-    print_preview_ui->CallJavascriptFunction("printPreviewFailed");
+    print_preview_ui->OnPrintPreviewFailed();
   }
+}
+
+void PrintPreviewMessageHandler::OnPrintPreviewCancelled(int document_cookie) {
+  // Always need to stop the worker.
+  StopWorker(document_cookie);
+
+  TabContents* print_preview_tab = GetPrintPreviewTab();
+  if (!print_preview_tab)
+    return;
+
+  PrintPreviewUI* print_preview_ui =
+      static_cast<PrintPreviewUI*>(print_preview_tab->web_ui());
+  print_preview_ui->OnPrintPreviewCancelled();
 }
 
 bool PrintPreviewMessageHandler::OnMessageReceived(
@@ -145,10 +189,16 @@ bool PrintPreviewMessageHandler::OnMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(PrintPreviewMessageHandler, message)
     IPC_MESSAGE_HANDLER(PrintHostMsg_RequestPrintPreview,
                         OnRequestPrintPreview)
+    IPC_MESSAGE_HANDLER(PrintHostMsg_DidGetPreviewPageCount,
+                        OnDidGetPreviewPageCount)
+    IPC_MESSAGE_HANDLER(PrintHostMsg_DidPreviewPage,
+                        OnDidPreviewPage)
     IPC_MESSAGE_HANDLER(PrintHostMsg_PagesReadyForPreview,
                         OnPagesReadyForPreview)
     IPC_MESSAGE_HANDLER(PrintHostMsg_PrintPreviewFailed,
                         OnPrintPreviewFailed)
+    IPC_MESSAGE_HANDLER(PrintHostMsg_PrintPreviewCancelled,
+                        OnPrintPreviewCancelled)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;

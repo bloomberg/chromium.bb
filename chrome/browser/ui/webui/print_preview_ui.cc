@@ -15,7 +15,8 @@
 
 PrintPreviewUI::PrintPreviewUI(TabContents* contents)
     : ChromeWebUI(contents),
-      initial_preview_start_time_(base::TimeTicks::Now()) {
+      initial_preview_start_time_(base::TimeTicks::Now()),
+      request_count_(0U) {
   // WebUI owns |handler_|.
   handler_ = new PrintPreviewHandler();
   AddMessageHandler(handler_->Attach(this));
@@ -49,11 +50,29 @@ void PrintPreviewUI::OnInitiatorTabClosed(
   CallJavascriptFunction("onInitiatorTabClosed", initiator_tab_url);
 }
 
+void PrintPreviewUI::OnPrintPreviewRequest() {
+  request_count_++;
+}
+
+void PrintPreviewUI::OnDidGetPreviewPageCount(int page_count) {
+  DCHECK_GT(page_count, 0);
+  FundamentalValue count(page_count);
+  CallJavascriptFunction("onDidGetPreviewPageCount", count);
+}
+
+void PrintPreviewUI::OnDidPreviewPage(int page_number) {
+  DCHECK_GE(page_number, 0);
+  FundamentalValue number(page_number);
+  CallJavascriptFunction("onDidPreviewPage", number);
+}
+
 void PrintPreviewUI::OnPreviewDataIsAvailable(int expected_pages_count,
                                               const string16& job_title,
                                               bool modifiable) {
   VLOG(1) << "Print preview request finished with "
           << expected_pages_count << " pages";
+  DecrementRequestCount();
+
   if (!initial_preview_start_time_.is_null()) {
     UMA_HISTOGRAM_TIMES("PrintPreview.InitalDisplayTime",
                         base::TimeTicks::Now() - initial_preview_start_time_);
@@ -65,8 +84,8 @@ void PrintPreviewUI::OnPreviewDataIsAvailable(int expected_pages_count,
   StringValue title(job_title);
   FundamentalValue is_preview_modifiable(modifiable);
   StringValue ui_identifier(preview_ui_addr_str_);
-  CallJavascriptFunction("updatePrintPreview", pages_count, title,
-                         is_preview_modifiable, ui_identifier);
+  CallJavascriptFunction("updatePrintPreview", title, is_preview_modifiable,
+                         ui_identifier);
 }
 
 void PrintPreviewUI::OnNavigation() {
@@ -77,6 +96,25 @@ void PrintPreviewUI::OnFileSelectionCancelled() {
   CallJavascriptFunction("fileSelectionCancelled");
 }
 
+void PrintPreviewUI::OnPrintPreviewFailed() {
+  DecrementRequestCount();
+  CallJavascriptFunction("printPreviewFailed");
+}
+
+void PrintPreviewUI::OnPrintPreviewCancelled() {
+  DecrementRequestCount();
+}
+
+bool PrintPreviewUI::HasPendingRequests() {
+  return request_count_ > 1;
+}
+
 PrintPreviewDataService* PrintPreviewUI::print_preview_data_service() {
   return PrintPreviewDataService::GetInstance();
+}
+
+void PrintPreviewUI::DecrementRequestCount() {
+  DCHECK_GT(request_count_, 0U);
+  if (request_count_ > 0)
+    request_count_--;
 }

@@ -83,6 +83,9 @@ class MockRenderThread : public RenderThreadBase {
   // False if the user decides to cancel.
   void set_print_dialog_user_response(bool response);
 
+  // Set to true to simulate canceling of a print preview.
+  void set_cancel_print_preview(bool cancel);
+
  private:
   // This function operates as a regular IPC listener.
   bool OnMessageReceived(const IPC::Message& msg);
@@ -121,6 +124,7 @@ class MockRenderThread : public RenderThreadBase {
 
   void OnDidGetPrintedPagesCount(int cookie, int number_pages);
   void OnDidPrintPage(const PrintHostMsg_DidPrintPage_Params& params);
+  void OnDidPreviewPage(int page_number, bool* cancel);
 
   // For print preview, PrintWebViewHelper will update settings.
   void OnUpdatePrintSettings(int document_cookie,
@@ -147,6 +151,9 @@ class MockRenderThread : public RenderThreadBase {
 
   // True to simulate user clicking print. False to cancel.
   bool print_dialog_user_response_;
+
+  // True to simulate cancelling a print preview.
+  bool cancel_print_preview_;
 };
 
 #endif  // CHROME_RENDERER_MOCK_RENDER_THREAD_H_

@@ -430,8 +430,15 @@ void PrintPreviewHandler::HandleGetPrinters(const ListValue*) {
 }
 
 void PrintPreviewHandler::HandleGetPreview(const ListValue* args) {
+  scoped_ptr<DictionaryValue> settings(GetSettingsDictionary(args));
+  if (!settings.get())
+    return;
+
   // Increment request count.
   ++regenerate_preview_request_count_;
+
+  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui_);
+  print_preview_ui->OnPrintPreviewRequest();
 
   TabContents* initiator_tab = GetInitiatorTab();
   if (!initiator_tab) {
@@ -439,13 +446,9 @@ void PrintPreviewHandler::HandleGetPreview(const ListValue* args) {
       ReportUserActionHistogram(PREVIEW_FAILED);
       reported_failed_preview_ = true;
     }
-    web_ui_->CallJavascriptFunction("printPreviewFailed");
+    print_preview_ui->OnPrintPreviewFailed();
     return;
   }
-  scoped_ptr<DictionaryValue> settings(GetSettingsDictionary(args));
-  if (!settings.get())
-    return;
-
   VLOG(1) << "Print preview request start";
   RenderViewHost* rvh = initiator_tab->render_view_host();
   rvh->Send(new PrintMsg_PrintPreview(rvh->routing_id(), *settings));

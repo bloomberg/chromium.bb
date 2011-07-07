@@ -310,6 +310,13 @@ class PrintWebViewHelperPreviewTest : public PrintWebViewHelperTestBase {
   }
 
  protected:
+  void VerifyPrintPreviewCancelled(bool did_cancel) {
+    bool print_preview_cancelled =
+        (render_thread_.sink().GetUniqueMessageMatching(
+            PrintHostMsg_PrintPreviewCancelled::ID) != NULL);
+    EXPECT_EQ(did_cancel, print_preview_cancelled);
+  }
+
   void VerifyPrintPreviewFailed(bool did_fail) {
     bool print_preview_failed = (render_thread_.sink().GetUniqueMessageMatching(
         PrintHostMsg_PrintPreviewFailed::ID) != NULL);
@@ -350,8 +357,27 @@ TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreview) {
   CreatePrintSettingsDictionary(&dict);
   PrintWebViewHelper::Get(view_)->OnPrintPreview(dict);
 
+  VerifyPrintPreviewCancelled(false);
   VerifyPrintPreviewFailed(false);
   VerifyPrintPreviewGenerated(true);
+  VerifyPagesPrinted(false);
+}
+
+// Tests that cancelling a print preview works correctly.
+TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreviewCancel) {
+  LoadHTML(kPrintPreviewHTML);
+
+  // Cancel the print preview.
+  render_thread_.set_cancel_print_preview(true);
+
+  // Fill in some dummy values.
+  DictionaryValue dict;
+  CreatePrintSettingsDictionary(&dict);
+  PrintWebViewHelper::Get(view_)->OnPrintPreview(dict);
+
+  VerifyPrintPreviewCancelled(true);
+  VerifyPrintPreviewFailed(false);
+  VerifyPrintPreviewGenerated(false);
   VerifyPagesPrinted(false);
 }
 
@@ -364,6 +390,7 @@ TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreviewFail) {
   DictionaryValue empty_dict;
   PrintWebViewHelper::Get(view_)->OnPrintPreview(empty_dict);
 
+  VerifyPrintPreviewCancelled(false);
   VerifyPrintPreviewFailed(true);
   VerifyPrintPreviewGenerated(false);
   VerifyPagesPrinted(false);

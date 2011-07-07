@@ -28,15 +28,16 @@ using WebKit::WebNode;
 bool PrintWebViewHelper::CreatePreviewDocument(
     const PrintMsg_PrintPages_Params& params, WebKit::WebFrame* frame,
     WebKit::WebNode* node) {
-  preview_page_count_ = 0;
+  if (!PreviewPageRendered(-1))
+    return false;
+
   printing::PreviewMetafile metafile;
   if (!metafile.Init())
     return false;
 
-  if (!RenderPages(params, frame, node, false, &preview_page_count_,
-                   &metafile, true)) {
+  preview_page_count_ = 0;
+  if (!RenderPages(params, frame, node, &preview_page_count_, &metafile, true))
     return false;
-  }
 
   // Get the size of the resulting metafile.
   uint32 buf_size = metafile.GetDataSize();
@@ -60,22 +61,13 @@ bool PrintWebViewHelper::CreatePreviewDocument(
 bool PrintWebViewHelper::PrintPages(const PrintMsg_PrintPages_Params& params,
                                     WebFrame* frame,
                                     WebNode* node) {
-  int page_count = 0;
-  bool send_expected_page_count =
-#if defined(OS_CHROMEOS)
-      false;
-#else
-      true;
-#endif  // defined(OS_CHROMEOS)
-
   printing::NativeMetafile metafile;
   if (!metafile.Init())
     return false;
 
-  if (!RenderPages(params, frame, node, send_expected_page_count, &page_count,
-                   &metafile, false)) {
+  int page_count = 0;
+  if (!RenderPages(params, frame, node, &page_count, &metafile, false))
     return false;
-  }
 
   // Get the size of the resulting metafile.
   uint32 buf_size = metafile.GetDataSize();
@@ -148,7 +140,6 @@ bool PrintWebViewHelper::PrintPages(const PrintMsg_PrintPages_Params& params,
 bool PrintWebViewHelper::RenderPages(const PrintMsg_PrintPages_Params& params,
                                      WebKit::WebFrame* frame,
                                      WebKit::WebNode* node,
-                                     bool send_expected_page_count,
                                      int* page_count,
                                      printing::Metafile* metafile,
                                      bool is_preview) {
@@ -158,14 +149,21 @@ bool PrintWebViewHelper::RenderPages(const PrintMsg_PrintPages_Params& params,
 
   PrepareFrameAndViewForPrint prep_frame_view(printParams, frame, node,
                                               frame->view());
+  if (is_preview && !PreviewPageRendered(-1))
+    return false;
+
   *page_count = prep_frame_view.GetExpectedPageCount();
-  if (send_expected_page_count) {
+  if (!*page_count)
+    return false;
+  if (is_preview) {
+    Send(new PrintHostMsg_DidGetPreviewPageCount(routing_id(), *page_count));
+  } else {
+#if !defined(OS_CHROMEOS)
     Send(new PrintHostMsg_DidGetPrintedPagesCount(routing_id(),
                                                   printParams.document_cookie,
                                                   *page_count));
+#endif
   }
-  if (!*page_count)
-    return false;
 
   base::TimeTicks begin_time = base::TimeTicks::Now();
   base::TimeTicks page_begin_time = begin_time;
@@ -179,6 +177,8 @@ bool PrintWebViewHelper::RenderPages(const PrintMsg_PrintPages_Params& params,
       PrintPageInternal(page_params, canvas_size, frame, metafile);
       if (is_preview) {
         page_begin_time = ReportPreviewPageRenderTime(page_begin_time);
+        if (!PreviewPageRendered(i))
+          return false;
       }
     }
   } else {
@@ -187,6 +187,8 @@ bool PrintWebViewHelper::RenderPages(const PrintMsg_PrintPages_Params& params,
       PrintPageInternal(page_params, canvas_size, frame, metafile);
       if (is_preview) {
         page_begin_time = ReportPreviewPageRenderTime(page_begin_time);
+        if (!PreviewPageRendered(params.pages[i]))
+          return false;
       }
     }
   }

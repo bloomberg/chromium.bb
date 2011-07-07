@@ -24,7 +24,8 @@ MockRenderThread::MockRenderThread()
       widget_(NULL),
       reply_deserializer_(NULL),
       printer_(new MockPrinter),
-      print_dialog_user_response_(true) {
+      print_dialog_user_response_(true),
+      cancel_print_preview_(false) {
 }
 
 MockRenderThread::~MockRenderThread() {
@@ -109,6 +110,8 @@ bool MockRenderThread::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidGetPrintedPagesCount,
                         OnDidGetPrintedPagesCount)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidPrintPage, OnDidPrintPage)
+    IPC_MESSAGE_HANDLER(PrintHostMsg_DidPreviewPage,
+                        OnDidPreviewPage)
 #if defined(OS_WIN)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DuplicateSection, OnDuplicateSection)
 #endif
@@ -209,6 +212,10 @@ void MockRenderThread::OnDidPrintPage(
     printer_->PrintPage(params);
 }
 
+void MockRenderThread::OnDidPreviewPage(int page_number, bool* cancel) {
+  *cancel = cancel_print_preview_;
+}
+
 void MockRenderThread::OnUpdatePrintSettings(
     int document_cookie,
     const DictionaryValue& job_settings,
@@ -233,4 +240,8 @@ void MockRenderThread::OnUpdatePrintSettings(
 
 void MockRenderThread::set_print_dialog_user_response(bool response) {
   print_dialog_user_response_ = response;
+}
+
+void MockRenderThread::set_cancel_print_preview(bool cancel) {
+  cancel_print_preview_ = cancel;
 }
