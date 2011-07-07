@@ -23,7 +23,7 @@ void PrepareRestartOnCrashEnviroment(const CommandLine& parsed_command_line);
 
 // Registers Chrome with the Windows Restart Manager, which will restore the
 // Chrome session when the computer is restarted after a system update.
-bool RegisterApplicationRestart(const CommandLine& parsed_command_line);
+void RegisterApplicationRestart(const CommandLine& parsed_command_line);
 
 // This method handles the --hide-icons and --show-icons command line options
 // for chrome that get triggered by Windows from registry entries

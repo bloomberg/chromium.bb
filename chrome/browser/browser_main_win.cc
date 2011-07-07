@@ -182,23 +182,27 @@ void PrepareRestartOnCrashEnviroment(const CommandLine& parsed_command_line) {
   env->SetVar(env_vars::kRestartInfo, UTF16ToUTF8(dlg_strings));
 }
 
-bool RegisterApplicationRestart(const CommandLine& parsed_command_line) {
+void RegisterApplicationRestart(const CommandLine& parsed_command_line) {
   DCHECK(base::win::GetVersion() >= base::win::VERSION_VISTA);
   base::ScopedNativeLibrary library(FilePath(L"kernel32.dll"));
   // Get the function pointer for RegisterApplicationRestart.
   RegisterApplicationRestartProc register_application_restart =
       static_cast<RegisterApplicationRestartProc>(
           library.GetFunctionPointer("RegisterApplicationRestart"));
-  if (!register_application_restart)
-    return false;
-
+  if (!register_application_restart) {
+    LOG(WARNING) << "Cannot find RegisterApplicationRestart in kernel32.dll";
+    return;
+  }
   // The Windows Restart Manager expects a string of command line flags only,
   // without the program.
   CommandLine command_line(CommandLine::NO_PROGRAM);
   command_line.AppendArguments(parsed_command_line, false);
-  // Ensure restore last session is set.
   if (!command_line.HasSwitch(switches::kRestoreLastSession))
     command_line.AppendSwitch(switches::kRestoreLastSession);
+  if (command_line.command_line_string().length() > RESTART_MAX_CMD_LINE) {
+    LOG(WARNING) << "Command line too long for RegisterApplicationRestart";
+    return;
+  }
 
   // Restart Chrome if the computer is restarted as the result of an update.
   // This could be extended to handle crashes, hangs, and patches.
@@ -206,7 +210,6 @@ bool RegisterApplicationRestart(const CommandLine& parsed_command_line) {
       command_line.command_line_string().c_str(),
       RESTART_NO_CRASH | RESTART_NO_HANG | RESTART_NO_PATCH);
   DCHECK(SUCCEEDED(hr)) << "RegisterApplicationRestart failed.";
-  return SUCCEEDED(hr);
 }
 
 // This method handles the --hide-icons and --show-icons command line options

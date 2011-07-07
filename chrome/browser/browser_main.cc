@@ -1761,10 +1761,8 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // This could be run as late as WM_QUERYENDSESSION for system update reboots,
   // but should run on startup if extended to handle crashes/hangs/patches.
   // Also, better to run once here than once for each HWND's WM_QUERYENDSESSION.
-  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
-    bool result = RegisterApplicationRestart(parsed_command_line);
-    DCHECK(result);
-  }
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA)
+    RegisterApplicationRestart(parsed_command_line);
 #endif  // OS_WIN
 
   // Initialize and maintain network predictor module, which handles DNS
