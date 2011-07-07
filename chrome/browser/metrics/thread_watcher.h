@@ -455,7 +455,6 @@ class WatchDogThread : public base::Thread {
  protected:
   virtual void Init();
   virtual void CleanUp();
-  virtual void CleanUpAfterMessageLoopDestruction();
 
  private:
   static bool PostTaskHelper(

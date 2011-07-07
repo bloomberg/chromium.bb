@@ -649,12 +649,6 @@ void WatchDogThread::Init() {
   // This thread shouldn't be allowed to perform any blocking disk I/O.
   base::ThreadRestrictions::SetIOAllowed(false);
 
-#if defined(OS_WIN)
-  // Initializes the COM library on the current thread.
-  HRESULT result = CoInitialize(NULL);
-  CHECK(result == S_OK);
-#endif
-
   base::AutoLock lock(lock_);
   CHECK(!watchdog_thread_);
   watchdog_thread_ = this;
@@ -663,12 +657,4 @@ void WatchDogThread::Init() {
 void WatchDogThread::CleanUp() {
   base::AutoLock lock(lock_);
   watchdog_thread_ = NULL;
-}
-
-void WatchDogThread::CleanUpAfterMessageLoopDestruction() {
-#if defined(OS_WIN)
-  // Closes the COM library on the current thread. CoInitialize must be balanced
-  // by a corresponding call to CoUninitialize.
-  CoUninitialize();
-#endif
 }
