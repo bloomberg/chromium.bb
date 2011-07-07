@@ -1551,3 +1551,10 @@
    fun:invalidation::InvalidationClientImpl::Start
    fun:sync_notifier::ChromeInvalidationClient::Start
 }
+{
+   bug_88640
+   Heapcheck:Leak
+   fun:ProfileImpl::InitRegisteredProtocolHandlers
+   fun:ProfileImpl::DoFinalInit
+   fun:ProfileImpl::OnPrefsLoaded
+}
