@@ -129,7 +129,13 @@ class InputMethodManagerImpl : public InputMethodManager,
       if (descriptor) {
         result->push_back(*descriptor);
       } else {
-        LOG(ERROR) << "Descriptor is not found for: " << input_method_id;
+        std::map<std::string, input_method::InputMethodDescriptor>::
+            const_iterator ix = extra_input_method_ids_.find(input_method_id);
+        if (ix != extra_input_method_ids_.end()) {
+          result->push_back(ix->second);
+        } else {
+          LOG(ERROR) << "Descriptor is not found for: " << input_method_id;
+        }
       }
     }
     // Initially active_input_method_ids_ is empty. In this case, just
@@ -205,6 +211,13 @@ class InputMethodManagerImpl : public InputMethodManager,
         config_name == language_prefs::kPreloadEnginesConfigName &&
         value.type == input_method::ImeConfigValue::kValueTypeStringList) {
       active_input_method_ids_ = value.string_list_value;
+
+      std::map<std::string, input_method::InputMethodDescriptor>::
+          const_iterator ix;
+      for (ix = extra_input_method_ids_.begin();
+           ix != extra_input_method_ids_.end(); ++ix) {
+        active_input_method_ids_.push_back(ix->first);
+      }
     }
 
     // Before calling FlushImeConfig(), start input method process if necessary.
@@ -222,6 +235,30 @@ class InputMethodManagerImpl : public InputMethodManager,
     // Change the current keyboard layout if necessary.
     MaybeChangeCurrentKeyboardLayout(section, config_name, value);
     return pending_config_requests_.empty();
+  }
+
+  virtual void AddActiveIme(const std::string& id,
+                            const std::string& name,
+                            const std::vector<std::string>& layouts,
+                            const std::string& language) {
+    std::string virtual_layouts = JoinString(layouts, ',');
+
+    extra_input_method_ids_[id] =
+        input_method::InputMethodDescriptor::CreateInputMethodDescriptor(
+            id, virtual_layouts, language);
+    active_input_method_ids_.push_back(id);
+  }
+
+  virtual void RemoveActiveIme(const std::string& id) {
+    std::vector<std::string>::iterator ix =
+        std::find(active_input_method_ids_.begin(),
+                  active_input_method_ids_.end(),
+                  id);
+    if (ix != active_input_method_ids_.end()) {
+      active_input_method_ids_.erase(ix);
+    }
+
+    extra_input_method_ids_.erase(id);
   }
 
   virtual input_method::InputMethodDescriptor previous_input_method() const {
@@ -899,6 +936,11 @@ class InputMethodManagerImpl : public InputMethodManager,
 
   // The active input method ids cache.
   std::vector<std::string> active_input_method_ids_;
+
+  // Extra input methods that have been explicitly added to the menu, such as
+  // those created by extension.
+  std::map<std::string, input_method::InputMethodDescriptor>
+      extra_input_method_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodManagerImpl);
 };

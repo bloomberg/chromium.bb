@@ -20,6 +20,7 @@
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/input_method/ibus_input_methods.h"
+#include "chrome/browser/chromeos/input_method/input_method_engine.h"
 
 namespace chromeos {
 namespace input_method {
@@ -565,8 +566,8 @@ class IBusControllerImpl : public IBusController {
     if (name.empty()) {
       return false;
     }
-    if (!InputMethodIdIsWhitelisted(name)) {
-      LOG(ERROR) << "Input method '" << name << "' is not supported";
+    if (!InputMethodIdIsWhitelisted(name) &&
+        name.find(kExtensionImePrefix) != 0) {
       return false;
     }
 

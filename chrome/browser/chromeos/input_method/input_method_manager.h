@@ -12,6 +12,7 @@
 #include <set>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/observer_list.h"
 #include "base/time.h"
@@ -121,6 +122,15 @@ class InputMethodManager {
   virtual bool SetImeConfig(const std::string& section,
                             const std::string& config_name,
                             const input_method::ImeConfigValue& value) = 0;
+
+  // Add an input method to insert into the language menu.
+  virtual void AddActiveIme(const std::string& id,
+                            const std::string& name,
+                            const std::vector<std::string>& layouts,
+                            const std::string& language) = 0;
+
+  // Remove an input method from the language menu.
+  virtual void RemoveActiveIme(const std::string& id) = 0;
 
   // Sets the IME state to enabled, and launches input method daemon if needed.
   // Returns true if the daemon is started. Otherwise, e.g. the daemon is
