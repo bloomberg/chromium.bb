@@ -186,7 +186,7 @@ void JingleSessionManager::OnSessionDestroy(cricket::Session* cricket_session) {
   }
 }
 
-void JingleSessionManager::AcceptConnection(
+bool JingleSessionManager::AcceptConnection(
     JingleSession* jingle_session,
     cricket::Session* cricket_session) {
   DCHECK(CalledOnValidThread());
@@ -194,7 +194,7 @@ void JingleSessionManager::AcceptConnection(
   // Reject connection if we are closed.
   if (closed_) {
     cricket_session->Reject(cricket::STR_TERMINATE_DECLINE);
-    return;
+    return false;
   }
 
   const cricket::SessionDescription* session_description =
@@ -230,24 +230,20 @@ void JingleSessionManager::AcceptConnection(
 
     case protocol::SessionManager::INCOMPATIBLE: {
       cricket_session->Reject(cricket::STR_TERMINATE_INCOMPATIBLE_PARAMETERS);
-      jingle_session->ReleaseSession();
-      jingle_session->Close();
-      delete jingle_session;
-      break;
+      return false;
     }
 
     case protocol::SessionManager::DECLINE: {
       cricket_session->Reject(cricket::STR_TERMINATE_DECLINE);
-      jingle_session->ReleaseSession();
-      jingle_session->Close();
-      delete jingle_session;
-      break;
+      return false;
     }
 
     default: {
       NOTREACHED();
     }
   }
+
+  return true;
 }
 
 void JingleSessionManager::SessionDestroyed(JingleSession* jingle_session) {

@@ -97,8 +97,6 @@ TEST_F(ConnectionToClientTest, StateChange) {
 TEST_F(ConnectionToClientTest, Close) {
   viewer_->Disconnect();
   message_loop_.RunAllPending();
-  EXPECT_TRUE(session_->is_closed());
-
   viewer_->Disconnect();
   message_loop_.RunAllPending();
 }

@@ -42,8 +42,7 @@ class JingleThreadMessageLoop : public MessageLoop {
 
 // TODO(sergeyu): This class should be changed to inherit from Chromiums
 // base::Thread instead of libjingle's thread.
-class JingleThread : public talk_base::Thread,
-                     public talk_base::MessageHandler {
+class JingleThread : public talk_base::Thread {
  public:
   JingleThread();
   virtual ~JingleThread();
@@ -65,8 +64,6 @@ class JingleThread : public talk_base::Thread,
   TaskPump* task_pump();
 
  private:
-  virtual void OnMessage(talk_base::Message* msg);
-
   TaskPump* task_pump_;
   base::WaitableEvent started_event_;
   base::WaitableEvent stopped_event_;

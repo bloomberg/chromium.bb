@@ -451,13 +451,20 @@ void JingleSession::OnInitiate() {
   video_channel_.reset(
       new jingle_glue::TransportChannelSocketAdapter(raw_video_channel_));
 
-  if (!cricket_session_->initiator())
-    jingle_session_manager_->AcceptConnection(this, cricket_session_);
-
-  if (!closed_) {
-    // Set state to CONNECTING if the session is being accepted.
-    SetState(CONNECTING);
+  if (!cricket_session_->initiator()) {
+    if (!jingle_session_manager_->AcceptConnection(this, cricket_session_)) {
+      Close();
+      // Release session so that
+      // JingleSessionManager::SessionDestroyed() doesn't try to call
+      // cricket::SessionManager::DestroySession() for it.
+      ReleaseSession();
+      delete this;
+      return;
+    }
   }
+
+  // Set state to CONNECTING if the session is being accepted.
+  SetState(CONNECTING);
 }
 
 bool JingleSession::EstablishPseudoTcp(

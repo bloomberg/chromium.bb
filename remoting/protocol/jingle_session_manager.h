@@ -76,8 +76,9 @@ class JingleSessionManager
  private:
   friend class JingleSession;
 
-  // Called by JingleSession when a new connection is initiated.
-  void AcceptConnection(JingleSession* jingle_session,
+  // Called by JingleSession when a new connection is
+  // initiated. Returns true if session is accepted.
+  bool AcceptConnection(JingleSession* jingle_session,
                         cricket::Session* cricket_session);
 
   // Called by JingleSession when it is being destroyed.

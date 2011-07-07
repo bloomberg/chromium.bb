@@ -21,21 +21,28 @@ class JingleMessagePump : public base::MessagePump,
                           public talk_base::MessageHandler {
  public:
   JingleMessagePump(talk_base::Thread* thread)
-      : thread_(thread), delegate_(NULL) {
+      : thread_(thread), delegate_(NULL), stopping_(false) {
   }
 
   virtual void Run(Delegate* delegate) {
     delegate_ = delegate;
 
-    talk_base::Thread::Current()->Thread::Run();
+    thread_->Thread::Run();
     // Call Restart() so that we can run again.
-    talk_base::Thread::Current()->Restart();
+    thread_->Restart();
 
     delegate_ = NULL;
   }
 
   virtual void Quit() {
-    talk_base::Thread::Current()->Quit();
+    if (!stopping_) {
+      stopping_ = true;
+
+      // Shutdown gracefully: make sure that we excute all messages
+      // left in the queue before exiting. Thread::Quit() would not do
+      // that.
+      thread_->Post(this, kStopMessageId);
+    }
   }
 
   virtual void ScheduleWork() {
@@ -48,26 +55,42 @@ class JingleMessagePump : public base::MessagePump,
   }
 
   void OnMessage(talk_base::Message* msg) {
-    DCHECK(msg->message_id == kRunTasksMessageId);
-    DCHECK(delegate_);
+    if (msg->message_id == kRunTasksMessageId) {
+      DCHECK(delegate_);
 
-    // Clear currently pending messages in case there were delayed tasks.
-    // Will schedule it again from ScheduleNextDelayedTask() if neccessary.
-    thread_->Clear(this, kRunTasksMessageId);
+      // Clear currently pending messages in case there were delayed tasks.
+      // Will schedule it again from ScheduleNextDelayedTask() if neccessary.
+      thread_->Clear(this, kRunTasksMessageId);
 
-    // Process all pending tasks.
-    while (true) {
-      if (delegate_->DoWork())
-        continue;
-      if (delegate_->DoDelayedWork(&delayed_work_time_))
-        continue;
-      if (delegate_->DoIdleWork())
-        continue;
-      break;
+      // Process all pending tasks.
+      while (true) {
+        if (delegate_->DoWork())
+          continue;
+        if (delegate_->DoDelayedWork(&delayed_work_time_))
+          continue;
+        if (delegate_->DoIdleWork())
+          continue;
+        break;
+      }
+
+      ScheduleNextDelayedTask();
+    } else if (msg->message_id == kStopMessageId) {
+      DCHECK(stopping_);
+      // Stop the thread only if there are no more non-delayed
+      // messages left in the queue, otherwise post another task to
+      // try again later.
+      int delay = thread_->GetDelay();
+      if (delay > 0 || delay == talk_base::kForever) {
+        stopping_ = false;
+        thread_->Quit();
+      } else {
+        thread_->Post(this, kStopMessageId);
+      }
+    } else {
+      NOTREACHED();
     }
-
-    ScheduleNextDelayedTask();
   }
+
 
  private:
   void ScheduleNextDelayedTask() {
@@ -85,6 +108,7 @@ class JingleMessagePump : public base::MessagePump,
   talk_base::Thread* thread_;
   Delegate* delegate_;
   base::TimeTicks delayed_work_time_;
+  bool stopping_;
 };
 
 }  // namespace
@@ -145,9 +169,7 @@ void JingleThread::Run() {
 }
 
 void JingleThread::Stop() {
-  // Shutdown gracefully: make sure that we excute all messages left in the
-  // queue before exiting. Thread::Stop() would not do that.
-  Post(this, kStopMessageId);
+  message_loop_->PostTask(FROM_HERE, new MessageLoop::QuitTask());
   stopped_event_.Wait();
 
   // This will wait until the thread is actually finished.
@@ -160,18 +182,6 @@ MessageLoop* JingleThread::message_loop() {
 
 TaskPump* JingleThread::task_pump() {
   return task_pump_;
-}
-
-void JingleThread::OnMessage(talk_base::Message* msg) {
-  DCHECK(msg->message_id == kStopMessageId);
-
-  // Stop the thread only if there are no more messages left in the queue,
-  // otherwise post another task to try again later.
-  if (!msgq_.empty() || fPeekKeep_) {
-    Post(this, kStopMessageId);
-  } else {
-    MessageQueue::Quit();
-  }
 }
 
 }  // namespace remoting
