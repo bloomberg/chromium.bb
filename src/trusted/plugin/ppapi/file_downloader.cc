@@ -30,11 +30,7 @@ void FileDownloader::Initialize(PluginPpapi* instance) {
   PLUGIN_PRINTF(("FileDownloader::FileDownloader (this=%p)\n",
                  static_cast<void*>(this)));
   CHECK(instance != NULL);
-  CHECK(instance_ == NULL);
-  if (instance == NULL)
-    return;
-  if (instance_ != NULL)
-    return;  // Can only initialize once.
+  CHECK(instance_ == NULL);  // Can only initialize once.
   instance_ = instance;
   callback_factory_.Initialize(this);
 }

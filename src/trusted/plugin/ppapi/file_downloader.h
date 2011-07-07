@@ -44,7 +44,6 @@ class FileDownloader {
   ~FileDownloader() {}
 
   // Initialize() can only be called once during the lifetime of this instance.
-  // After the first call, subesquent calls do nothing.
   void Initialize(PluginPpapi* instance);
 
   // Issues a GET on |url| downloading the response into a file. The file is
