@@ -12,21 +12,61 @@
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_time.h"
 
+/**
+ * @file
+ * This file defines the API to create a file system associated with a file.
+ */
+
 struct PP_CompletionCallback;
 
 #define PPB_FILESYSTEM_INTERFACE_0_7 "PPB_FileSystem;0.7"
 #define PPB_FILESYSTEM_INTERFACE PPB_FILESYSTEM_INTERFACE_0_7
 
+/**
+ * @addtogroup Structs
+ * @{
+ */
+
+/**
+ * The <code>PPB_FileSystem</code> struct identifies the file system type
+ * associated with a file.
+ */
 struct PPB_FileSystem {
-  /** Creates a filesystem object of the given type. */
+  /** Create() creates a file system object of the given type.
+   *
+   * @param[in] instance A <code>PP_Instance</code> indentifying the instance
+   * with the file.
+   * @param[in] type A file system type as defined by
+   * <code>PP_FileSystemType</code> enum.
+   *
+   * @return A <code>PP_Resource</code> corresponding to a file system if
+   * successful.
+   */
   PP_Resource (*Create)(PP_Instance instance, PP_FileSystemType type);
 
-  /** Returns PP_TRUE if the given resource is a FileSystem. */
+  /**
+   * IsFileSystem() determines if the provided resource is a file system.
+   *
+   * @param[in] resource A <code>PP_Resource</code> corresponding to a file
+   * system.
+   *
+   * @return <code>PP_TRUE</code> if the resource is a
+   * <code>PPB_FileSystem</code>, <code>PP_FALSE</code> if the resource is
+   * invalid or some type other than <code>PPB_FileSystem</code>.
+   */
   PP_Bool (*IsFileSystem)(PP_Resource resource);
 
   /**
-   * Opens the file system. A file system must be opened before running any
-   * other operation on it.
+   * Open() opens the file system. A file system must be opened before running
+   * any other operation on it.
+   *
+   * @param[in] file_system A <code>PP_Resource</code> corresponding to a file
+   * system.
+   * @param[in] expected_size The expected size of the file system.
+   * @param[in] callback A <code>PP_CompletionCallback</code> to be called upon
+   * completion of Open().
+   *
+   * @return An int32_t containing an error code from <code>pp_errors.h</code>.
    *
    * TODO(brettw) clarify whether this must have completed before a file can
    * be opened in it. Clarify what it means to be "completed."
@@ -36,12 +76,20 @@ struct PPB_FileSystem {
                   struct PP_CompletionCallback callback);
 
   /**
-   * Returns the type of the given file system.
+   * GetType() returns the type of the provided file system.
    *
-   * Returns PP_FILESYSTEMTYPE_INVALID if the given resource is not a valid
-   * filesystem. It is valid to call this function even before Open completes.
+   * @param[in] file_system A <code>PP_Resource</code> corresponding to a file
+   * system.
+   *
+   * @return A <code>PP_FileSystemType</code> with the file system type if
+   * valid or <code>PP_FILESYSTEMTYPE_INVALID</code> if the provided resource
+   * is not a valid file system. It is valid to call this function even before
+   * Open() completes.
    */
   PP_FileSystemType (*GetType)(PP_Resource file_system);
 };
+/**
+ * @}
+ */
 
 #endif  /* PPAPI_C_PPB_FILE_SYSTEM_H_ */
