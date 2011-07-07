@@ -396,7 +396,7 @@ IPC_MESSAGE_ROUTED2(GpuCommandBufferMsg_CreateVideoDecoder,
 
 // Release all resources held by the hardware video decoder associated with this
 // stub.
-IPC_MESSAGE_ROUTED0(GpuCommandBufferMsg_DestroyVideoDecoder);
+IPC_MESSAGE_ROUTED0(GpuCommandBufferMsg_DestroyVideoDecoder)
 
 // Send from command buffer stub to proxy when window is invalid and must be
 // repainted.
