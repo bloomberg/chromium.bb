@@ -354,7 +354,7 @@ are declared in build/common.gypi.
       </message>
 
       <!-- content area context menus -->
-      <if expr="os == 'darwin'">
+      <if expr="is_macosx">
           <message name="IDS_CONTENT_CONTEXT_WRITING_DIRECTION_MENU" desc="The name of the Writing Direction submenu in the content area context menu.  To translate, launch /Applications/Textedit.app in an appropriately localized version of OS X, right-click on the text entry area and use the translation from there.">
             Writing Direction
           </message>
@@ -1043,7 +1043,7 @@ are declared in build/common.gypi.
         Close
       </message>
 
-      <if expr="os == 'darwin'">
+      <if expr="is_macosx">
         <message name="IDS_PREFERENCES" desc="The Mac menu item to open the preferences window in the app menu.">
           Preferences...
         </message>
@@ -2159,7 +2159,7 @@ are declared in build/common.gypi.
         Yesterday
       </message>
       <!-- Download Shelf-->
-      <if expr="os == 'darwin'">
+      <if expr="is_macosx">
         <message name="IDS_SHOW_ALL"
                  desc="In Title Case: Button text on a button that opens the downloads page">
           Show All
@@ -2261,13 +2261,13 @@ are declared in build/common.gypi.
                desc="In the download view, 'Retry download' link text">
         Retry download
       </message>
-      <if expr="os != 'darwin'">
+      <if expr="not is_macosx">
         <message name="IDS_DOWNLOAD_LINK_SHOW"
                  desc="In the download view, 'Show in folder' link text">
           Show in folder
         </message>
       </if>
-      <if expr="os == 'darwin'">
+      <if expr="is_macosx">
         <message name="IDS_DOWNLOAD_LINK_SHOW"
                  desc="Mac: In the download view, 'Show in Finder' link text">
           Show in Finder
@@ -2362,10 +2362,10 @@ are declared in build/common.gypi.
       <!-- GRIT doesn't support nesting <if>...</if> blocks, so these can't -->
       <!-- go within the above titlecase checks, instead markup must use    -->
       <!-- combined tests for all cases.                                    -->
-      <!-- NOTE: the last two (darwin cases) are the same English values,   -->
+      <!-- NOTE: the last two (OSX cases) are the same English values,      -->
       <!--       but two strings are needed in case some other language     -->
       <!--       needs a difference for Title Case support.                 -->
-      <if expr="os != 'darwin' and not pp_ifdef('use_titlecase')">
+      <if expr="not is_macosx and not pp_ifdef('use_titlecase')">
         <!-- !Mac & Sentence case -->
         <message name="IDS_DOWNLOAD_MENU_SHOW"
                  desc="Show the file in file explorer, 'Show in folder' item"
@@ -2373,7 +2373,7 @@ are declared in build/common.gypi.
           &amp;Show in folder
         </message>
       </if>
-      <if expr="os != 'darwin' and pp_ifdef('use_titlecase')">
+      <if expr="not is_macosx and pp_ifdef('use_titlecase')">
         <!-- !Mac & Title Case -->
         <message name="IDS_DOWNLOAD_MENU_SHOW"
                  desc="In Title Case: Show the file in file explorer, 'Show in folder' item"
@@ -2381,7 +2381,7 @@ are declared in build/common.gypi.
           &amp;Show in Folder
         </message>
       </if>
-      <if expr="os == 'darwin' and not pp_ifdef('use_titlecase')">
+      <if expr="is_macosx and not pp_ifdef('use_titlecase')">
         <!-- Mac & Sentence case -->
         <message name="IDS_DOWNLOAD_MENU_SHOW"
                  desc="Mac: Show the file in the Finder, 'Show in Finder' item"
@@ -2389,7 +2389,7 @@ are declared in build/common.gypi.
           &amp;Show in Finder
         </message>
       </if>
-      <if expr="os == 'darwin' and pp_ifdef('use_titlecase')">
+      <if expr="is_macosx and pp_ifdef('use_titlecase')">
         <!-- Mac & Title Case -->
         <message name="IDS_DOWNLOAD_MENU_SHOW"
                  desc="In Title Case: Mac: Show the file in the Finder, 'Show in Finder' item"
@@ -3808,12 +3808,12 @@ are declared in build/common.gypi.
       <message name="IDS_EXTENSION_LOAD_SIDEBAR_PAGE_FAILED" desc="">
         Could not load sidebar page '<ph name="SIDEBAR_PAGE">$1<ex>page.html</ex></ph>'.
       </message>
-      <if expr="os == 'win32'">
+      <if expr="is_win">
         <message name="IDS_EXTENSION_UNPACK_FAILED" desc="On windows, it is possible to mount a disk without the root of that disk having a drive letter.  The sandbox does not support this. See crbug/49530 .">
           Can not unpack extension.  To safely unpack an extension, there must be a path to your profile directory that starts with a drive letter and does not contain a junction, mount point, or symlink.  No such path exists for your profile.
         </message>
       </if>
-      <if expr="os != 'win32'">
+      <if expr="not is_win">
         <message name="IDS_EXTENSION_UNPACK_FAILED" desc="">
           Can not unpack extension.  To safely unpack an extension, there must be a path to your profile directory that does not contain a symlink.  No such path exists for your profile.
         </message>
@@ -5016,7 +5016,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Importing
       </message>
 
-      <if expr="os == 'darwin'">
+      <if expr="is_macosx">
         <message name="IDS_IMPORT_SETTINGS_MENU_MAC" desc="The text label for the Import menu item.">
           Import Bookmarks and Settings...
         </message>
@@ -5388,7 +5388,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <!-- Mac users do not close their browser; they quit it. -->
-      <if expr="os != 'darwin'">
+      <if expr="not is_macosx">
         <message name="IDS_COOKIES_CLEAR_WHEN_CLOSE_CHKBOX" desc="A checkbox in the Content Settings dialog for removing all cookies on when browser is closed.">
           Clear cookies and other site data when I close my browser
         </message>
@@ -5396,7 +5396,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Clear cookies and other site and plug-in data when I close my browser
         </message>
       </if>
-      <if expr="os == 'darwin'">
+      <if expr="is_macosx">
         <message name="IDS_COOKIES_CLEAR_WHEN_CLOSE_CHKBOX" desc="A checkbox in the Content Settings dialog for removing all cookies on when browser is quit (Mac).">
           Clear cookies and other site data when I quit my browser
         </message>
@@ -5616,7 +5616,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <!-- Automatic updates -->
-      <if expr="os == 'darwin'">
+      <if expr="is_macosx">
         <message name="IDS_PROMOTE_INFOBAR_TEXT" desc="The text to show in the automatic update setup info bar.  Mac-only.">
           <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> may not be able to keep itself updated.
         </message>
@@ -5632,7 +5632,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </if>
 
       <!-- About Chrome View -->
-      <if expr="os == 'darwin'">
+      <if expr="is_macosx">
         <message name="IDS_ABOUT_CHROME_PROMOTE_UPDATER" desc="The 'Set Up Automatic Updates for All Users' button in the About window.  Mac-only.">
           Set Up Automatic Updates for All Users
         </message>
@@ -6289,7 +6289,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         settings:
         <ph name="PLATFORM_TEXT">$1<ex>Goto the wrench menu and choose Fix It</ex></ph>
       </message>
-      <if expr="os == 'darwin'">
+      <if expr="is_macosx">
         <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_DISABLE_PLATFORM" desc="Mac OSX instructions for disabling use of a proxy server.">
           Go to
           <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>
@@ -6312,7 +6312,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           and make sure your configuration is set to &quot;no proxy&quot; or &quot;direct.&quot;
         </message>
       </if>
-      <if expr="os == 'win32'">
+      <if expr="is_win">
         <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_DISABLE_PLATFORM" desc="Windows instructions for disabling use of a proxy server.">
           Go to
           <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>
@@ -6452,7 +6452,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </ph>
       </message>
 
-      <if expr="os == 'darwin'">
+      <if expr="is_macosx">
         <message name="IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED_PLATFORM" desc="Summary (platform dependent section) in the error page when the network connection failed.  Describes how to get to the network Diagnostics screen under Mac OSX.">
           Go to
           <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>
@@ -7047,7 +7047,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <!-- Mac First-run dialog messages -->
-      <if expr="os == 'darwin'">
+      <if expr="is_macosx">
         <message name="IDS_FIRSTRUN_DLG_MAC_WINDOW_TITLE" desc="Window title of First Run Title on OS X - displayed in Window title bar">
           Welcome to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
         </message>
@@ -7140,7 +7140,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Preferences
         </message>
       </if>
-      <if expr="os == 'win32'">
+      <if expr="is_win">
         <message name="IDS_SETTINGS_TITLE" desc="Title for the settings tab.">
           Options
         </message>
@@ -7484,7 +7484,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
 
-      <if expr="os == 'win32'">
+      <if expr="is_win">
         <message name="IDS_AUTOFILL_OPTIONS_TITLE" desc="The title of the Autofill dialog.">
           Autofill Options
         </message>
@@ -7803,7 +7803,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Some preferences have been disabled by your IT administrator.
         </message>
       </if>
-      <if expr="os == 'win32'">
+      <if expr="is_win">
         <message name="IDS_OPTIONS_MANAGED_PREFS" desc="Windows banner displayed in case there are managed options the user won't be able to change.">
           Some options have been disabled by your IT administrator.
         </message>
@@ -7832,7 +7832,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Search preferences
         </message>
       </if>
-      <if expr="os == 'win32'">
+      <if expr="is_win">
         <message name="IDS_OPTIONS_SEARCH_PLACEHOLDER" desc="Text placeholder for an empty search field on Windows.">
           Search options
         </message>
@@ -7935,12 +7935,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <!-- Mac users do not close their browser; they quit it. -->
-      <if expr="os != 'darwin'">
+      <if expr="not is_macosx">
         <message name="IDS_COOKIES_COOKIE_EXPIRES_SESSION" desc="The Cookie Expires field value for a session cookie">
           When I close my browser
         </message>
       </if>
-      <if expr="os == 'darwin'">
+      <if expr="is_macosx">
         <message name="IDS_COOKIES_COOKIE_EXPIRES_SESSION" desc="The Cookie Expires field value for a session cookie (Mac)">
           When I quit my browser
         </message>
@@ -9553,7 +9553,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <!-- Mac AppleScript -->
-      <if expr="os == 'darwin'">
+      <if expr="is_macosx">
         <message name="IDS_GET_PROFILE_ERROR_APPLESCRIPT_MAC" desc="Error dialog title to be displayed when profile fails to load.  Mac-only.">
         Could not get profile.
         </message>
@@ -9587,11 +9587,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_WRONG_INDEX_ERROR_APPLESCRIPT_MAC" desc="Error dialog title to be displayed when ordered index is out of bounds.  Mac-only.">
                 Wrong index.
         </message>
-      </if> <!-- os == 'darwin' -->
+      </if> <!-- is_macosx -->
 
 
       <!-- Mac Menubar Menus -->
-      <if expr="os == 'darwin'">
+      <if expr="is_macosx">
         <!-- Menubar Menu Titles -->
         <!-- NOTE: Some of these exist in context menus with Title Case support, but we use different IDs in case we need slightly different strings in some language due to the different context. -->
         <message name="IDS_FILE_MENU_MAC" desc="The menu title of the Mac file menu.">
@@ -9840,7 +9840,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_HELP_MAC" desc="The Mac menu item to show help in the Help menu.">
           <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Help
         </message>
-      </if> <!-- os == 'darwin' -->
+      </if> <!-- is_macosx -->
 
       <!-- Linux Global Menubar Menus -->
       <if expr="is_posix and not is_macosx">
@@ -10026,7 +10026,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
     </if>
 
     <!-- Extra Mac UI Strings -->
-    <if expr="os == 'darwin'">
+    <if expr="is_macosx">
       <message name="IDS_PLEASE_RELAUNCH_BROWSER" desc="Title of the alert when Chrome needs to be relaunched for a change/update to take effect.">
         Please Relaunch <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
       </message>
@@ -12675,7 +12675,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
     </if>
 
-    <if expr="os == 'darwin'">
+    <if expr="is_macosx">
       <message name="IDS_SELECT_FOLDER_BUTTON_TITLE" desc="The name of the Select button in the folder selection dialog.">
         Select
       </message>

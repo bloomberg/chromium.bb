@@ -30,10 +30,10 @@
       <include name="IDR_BALLOON_CLOSE" file="balloon_close.png" type="BINDATA" />
       <include name="IDR_BALLOON_CLOSE_HOVER" file="balloon_close_hover.png" type="BINDATA" />
       <include name="IDR_BOOKMARK_BAR_CHEVRONS" file="chevron.png" type="BINDATA" />
-      <if expr="os != 'darwin'">
+      <if expr="not is_macosx">
         <include name="IDR_BOOKMARK_BAR_FOLDER" file="bookmark_bar_folder.png" type="BINDATA" />
       </if>
-      <if expr="os == 'darwin'">
+      <if expr="is_macosx">
         <include name="IDR_BOOKMARK_BAR_FOLDER" file="bookmark_bar_folder_mac.png" type="BINDATA" />
       </if>
       <include name="IDR_CLOSE_BUTTON_MASK" file="close_button_mask.png" type="BINDATA" />
@@ -43,7 +43,7 @@
       <include name="IDR_COMPACTNAV_BACK" file="compactnav_back.png" type="BINDATA" />
       <include name="IDR_COMPACTNAV_FORWARD" file="compactnav_forward.png" type="BINDATA" />
       <include name="IDR_COMPACTNAV_SEPARATOR" file="compactnav_separator.png" type="BINDATA" />
-      <if expr="os.find('win') != -1">
+      <if expr="is_win">
         <include name="IDR_CONFLICT_BADGE" file="conflict_badge.png" type="BINDATA" />
         <include name="IDR_CONFLICT_MENU" file="conflict_menu.png" type="BINDATA" />
       </if>
@@ -131,7 +131,7 @@
       <include name="IDR_FULLSCREEN_MENU_BUTTON" file="fullscreen_menu_button.png" type="BINDATA" />
       <include name="IDR_GEOLOCATION_ALLOWED_LOCATIONBAR_ICON" file="geolocation_allowed_locationbar_icon.png" type="BINDATA" />
       <include name="IDR_GEOLOCATION_DENIED_LOCATIONBAR_ICON" file="geolocation_denied_locationbar_icon.png" type="BINDATA" />
-      <if expr="os.find('win') != -1">
+      <if expr="is_win">
         <include name="IDR_INCOMPATIBILITY_DOT_ACTIVE" file="incompatibility_dot_active.png" type="BINDATA" />
         <include name="IDR_INCOMPATIBILITY_DOT_INACTIVE" file="incompatibility_dot_inactive.png" type="BINDATA" />
       </if>
@@ -141,10 +141,10 @@
       <include name="IDR_KILLED_TAB" file="killtab.png" type="BINDATA" />
       <include name="IDR_LOCATIONBG_POPUPMODE_CENTER" file="omnibox_popup_c.png" type="BINDATA" />
       <include name="IDR_LOCATIONBG_POPUPMODE_EDGE" file="omnibox_popup_edge.png" type="BINDATA" />
-      <if expr="os != 'darwin'">
+      <if expr="not is_macosx">
         <include name="IDR_LOCATION_BAR_KEYWORD_HINT_TAB" file="keyword_hint_tab.png" type="BINDATA" />
       </if>
-      <if expr="os == 'darwin'">
+      <if expr="is_macosx">
         <include name="IDR_LOCATION_BAR_KEYWORD_HINT_TAB" file="keyword_hint_tab_mac.png" type="BINDATA" />
       </if>
       <include name="IDR_MAXIMIZE_BUTTON_MASK" file="maximize_button_mask.png" type="BINDATA" />
@@ -294,23 +294,23 @@
       <include name="IDR_SPEECH_INPUT_MIC_FULL" file="speech_input_mic_full.png" type="BINDATA" />
       <include name="IDR_SPEECH_INPUT_MIC_MASK" file="speech_input_mic_mask.png" type="BINDATA" />
       <include name="IDR_SPEECH_INPUT_SPINNER" file="speech_input_spinner.png" type="BINDATA" />
-      <if expr="pp_ifdef('_google_chrome') and (os == 'darwin')">
+      <if expr="pp_ifdef('_google_chrome') and is_macosx">
         <include name="IDR_STATUS_TRAY_ICON" file="google_chrome/product_logo_22_mono.png" type="BINDATA" />
         <include name="IDR_STATUS_TRAY_ICON_PRESSED" file="google_chrome/product_logo_22_mono_invert.png" type="BINDATA" />
       </if>
-      <if expr="not pp_ifdef('_google_chrome') and (os == 'darwin')">
+      <if expr="not pp_ifdef('_google_chrome') and is_macosx">
         <include name="IDR_STATUS_TRAY_ICON" file="chromium/product_logo_22_mono.png" type="BINDATA" />
         <include name="IDR_STATUS_TRAY_ICON_PRESSED" file="chromium/product_logo_22_mono_invert.png" type="BINDATA" />
       </if>
-      <if expr="pp_ifdef('_google_chrome') and (os != 'darwin')">
+      <if expr="pp_ifdef('_google_chrome') and not is_macosx">
         <include name="IDR_STATUS_TRAY_ICON" file="google_chrome/product_logo_22.png" type="BINDATA" />
         <include name="IDR_STATUS_TRAY_ICON_PRESSED" file="google_chrome/product_logo_22.png" type="BINDATA" />
       </if>
-      <if expr="not pp_ifdef('_google_chrome') and (os != 'darwin')">
+      <if expr="not pp_ifdef('_google_chrome') and not is_macosx">
         <include name="IDR_STATUS_TRAY_ICON" file="chromium/product_logo_22.png" type="BINDATA" />
         <include name="IDR_STATUS_TRAY_ICON_PRESSED" file="chromium/product_logo_22.png" type="BINDATA" />
       </if>
-      <if expr="os == 'darwin'">
+      <if expr="is_macosx">
         <include name="IDR_TABPOSE_CLOSE" file="tabpose_close.png" type="BINDATA" />
       </if>
       <include name="IDR_TAB_ACTIVE_CENTER" file="tab_active_center.png" type="BINDATA" />

@@ -210,7 +210,7 @@
            Linux fonts do not have the issue Windows fonts for some locales
            (Indian) have. In that case, this need to be enclosed
            by platform-dependent if-clause. -->
-      <if expr="os == 'win32'">
+      <if expr="is_win">
         <message name="IDS_UI_FONT_FAMILY" use_name_for_id="true">
           default
         </message>

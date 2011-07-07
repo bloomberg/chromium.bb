@@ -172,7 +172,7 @@ templates and will be translated for each locale. -->
     <output filename="app/policy/common/html/zh-CN/chrome_policy_list.html" type="doc" lang="zh-CN" />
     <output filename="app/policy/common/html/zh-TW/chrome_policy_list.html" type="doc" lang="zh-TW" />
 
-    <if expr="os == 'darwin'">
+    <if expr="is_macosx">
       <output filename="app/policy/mac/app-Manifest.plist" type="plist" lang="en" />
 
       <!-- The following directory names use Mac language codes (en instead of en-US,

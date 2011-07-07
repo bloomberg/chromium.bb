@@ -30,12 +30,12 @@
       <include name="IDR_BROWSER_ACTION" file="browser_action.png" type="BINDATA" />
       <include name="IDR_BROWSER_ACTION_H" file="browser_action_h.png" type="BINDATA" />
       <include name="IDR_BROWSER_ACTION_P" file="browser_action_p.png" type="BINDATA" />
-      <if expr="os.find('win') == -1">
+      <if expr="not is_win">
         <include name="IDR_BROWSER_ACTIONS_OVERFLOW" file="browser_actions_overflow.png" type="BINDATA" />
         <include name="IDR_BROWSER_ACTIONS_OVERFLOW_H" file="browser_actions_overflow_h.png" type="BINDATA" />
         <include name="IDR_BROWSER_ACTIONS_OVERFLOW_P" file="browser_actions_overflow_p.png" type="BINDATA" />
       </if>
-      <if expr="os.find('win') != -1">
+      <if expr="is_win">
         <include name="IDR_BROWSER_ACTIONS_OVERFLOW" file="browser_actions_overflow_win.png" type="BINDATA" />
         <include name="IDR_BROWSER_ACTIONS_OVERFLOW_H" file="browser_actions_overflow_win_h.png" type="BINDATA" />
         <include name="IDR_BROWSER_ACTIONS_OVERFLOW_P" file="browser_actions_overflow_win_p.png" type="BINDATA" />
@@ -56,7 +56,7 @@
       <include name="IDR_CLOSE_BAR_H" file="close_bar_h.png" type="BINDATA" />
       <include name="IDR_CLOSE_BAR_MASK" file="close_bar_mask.png" type="BINDATA" />
       <include name="IDR_CLOSE_BAR_P" file="close_bar_p.png" type="BINDATA" />
-      <if expr="os.find('win') != -1">
+      <if expr="is_win">
         <include name="IDR_CONFLICT_FAVICON" file="about_conflicts_favicon.png" type="BINDATA" />
       </if>
       <include name="IDR_CONTENT_TOP_CENTER" file="content_top_center.png" type="BINDATA" />
@@ -128,13 +128,13 @@
       <if expr="not pp_ifdef('chromeos')">
         <include name="IDR_THEME_TAB_BACKGROUND" file="theme_tab_background.png" type="BINDATA" />
       </if>
-      <if expr="pp_ifdef('chromeos') or os == 'darwin'">
+      <if expr="pp_ifdef('chromeos') or is_macosx">
         <include name="IDR_THEME_TOOLBAR" file="theme_toolbar_default2.png" type="BINDATA" />
       </if>
-      <if expr="not pp_ifdef('chromeos') and os != 'darwin'">
+      <if expr="not pp_ifdef('chromeos') and not is_macosx">
         <include name="IDR_THEME_TOOLBAR" file="theme_toolbar_default.png" type="BINDATA" />
       </if>
-      <if expr="os == 'darwin'">
+      <if expr="is_macosx">
         <include name="IDR_THEME_TOOLBAR_INACTIVE" file="theme_toolbar_default_inactive2.png" type="BINDATA" />
       </if>
       <include name="IDR_THROBBER_WAITING" file="throbber_waiting.png" type="BINDATA" />

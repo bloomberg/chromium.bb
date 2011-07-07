@@ -206,7 +206,7 @@ be available for now. -->
           Chromium OS
         </message>
       </if>
-      <if expr="os.find('win') != -1">
+      <if expr="is_win">
         <message name="IDS_PRODUCT_FRAME_NAME" desc="The Chrome Frame application name">
           Chromium Frame
         </message>
@@ -550,7 +550,7 @@ be available for now. -->
         Launch native print dialog
       </message>
 
-      <if expr="os == 'darwin'">
+      <if expr="is_macosx">
         <message name="IDS_APP_MENU_PRODUCT_NAME" desc="The application's short name, used for the Mac's application menu, activity monitor, etc. This should be less than 16 characters. Example: Chrome, not Google Chrome.">
           Chromium
         </message>
