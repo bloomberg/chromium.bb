@@ -89,7 +89,7 @@ void GpuVideoService::InitializeVideoDecoder(int32 decoder_id) {
   GpuCommandBufferStub* stub = it->second.stub;
   DCHECK(stub->scheduler());
   OmxVideoDecodeAccelerator* omx_decoder =
-      new OmxVideoDecodeAccelerator(decoder, MessageLoop::current());
+      new OmxVideoDecodeAccelerator(decoder);
   omx_decoder->SetEglState(
       gfx::GLSurfaceEGL::GetDisplay(),
       stub->scheduler()->decoder()->GetGLContext()->GetHandle());

@@ -27,10 +27,14 @@
 // Class to wrap OpenMAX IL accelerator behind VideoDecodeAccelerator interface.
 // The implementation assumes an OpenMAX IL 1.1.2 implementation conforming to
 // http://www.khronos.org/registry/omxil/specs/OpenMAX_IL_1_1_2_Specification.pdf
+//
+// This class lives on a single thread and DCHECKs that it is never accessed
+// from any other.  OMX callbacks are trampolined from the OMX component's
+// thread to maintain this invariant.
 class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
  public:
-  OmxVideoDecodeAccelerator(media::VideoDecodeAccelerator::Client* client,
-                            MessageLoop* message_loop);
+  // Does not take ownership of |client| which must outlive |*this|.
+  OmxVideoDecodeAccelerator(media::VideoDecodeAccelerator::Client* client);
   virtual ~OmxVideoDecodeAccelerator();
 
   // media::VideoDecodeAccelerator implementation.
