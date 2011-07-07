@@ -6,6 +6,10 @@
 
 #include <string>
 
+std::string ExtensionTtsPlatformImpl::gender() {
+  return std::string();
+}
+
 std::string ExtensionTtsPlatformImpl::error() {
   return error_;
 }

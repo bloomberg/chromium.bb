@@ -41,7 +41,7 @@ class ExtensionTtsPlatformImpl {
 
   // Return the gender of the voice, should be either "male" or "female"
   // if known, otherwise the empty string.
-  virtual std::string gender() { return std::string(); }
+  virtual std::string gender();
 
   virtual std::string error();
   virtual void clear_error();
