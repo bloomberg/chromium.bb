@@ -77,7 +77,7 @@ void ActivateWindow(gfx::NativeWindow window) {
 }
 
 bool IsVisible(gfx::NativeView view) {
-  return gtk_widget_get_visible(view);
+  return GTK_WIDGET_VISIBLE(view);
 }
 
 void SimpleErrorBox(gfx::NativeWindow parent,

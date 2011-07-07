@@ -1257,7 +1257,7 @@ gboolean OmniboxViewGtk::HandleViewButtonPress(GtkWidget* sender,
     // determine whether we should select all of the text when the button is
     // released.
     button_1_pressed_ = true;
-    text_view_focused_before_button_press_ = gtk_widget_has_focus(text_view_);
+    text_view_focused_before_button_press_ = GTK_WIDGET_HAS_FOCUS(text_view_);
     text_selected_during_click_ = false;
 #endif
 
@@ -1698,7 +1698,7 @@ void OmniboxViewGtk::HandleViewMoveFocus(GtkWidget* widget,
     handled = true;
 #endif
 
-  if (!handled && gtk_widget_get_visible(instant_view_))
+  if (!handled && GTK_WIDGET_VISIBLE(instant_view_))
     handled = model_->CommitSuggestedText(true);
 
   if (!handled) {

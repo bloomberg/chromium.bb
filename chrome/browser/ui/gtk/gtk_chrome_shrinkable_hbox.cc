@@ -27,12 +27,12 @@ struct SizeAllocateData {
 };
 
 void CountVisibleChildren(GtkWidget* child, gpointer userdata) {
-  if (gtk_widget_get_visible(child))
+  if (GTK_WIDGET_VISIBLE(child))
     ++(*reinterpret_cast<int*>(userdata));
 }
 
 void SumChildrenWidthRequisition(GtkWidget* child, gpointer userdata) {
-  if (gtk_widget_get_visible(child)) {
+  if (GTK_WIDGET_VISIBLE(child)) {
     GtkRequisition req;
     gtk_widget_get_child_requisition(child, &req);
     (*reinterpret_cast<int*>(userdata)) += std::max(req.width, 0);
@@ -40,14 +40,14 @@ void SumChildrenWidthRequisition(GtkWidget* child, gpointer userdata) {
 }
 
 void ShowInvisibleChildren(GtkWidget* child, gpointer userdata) {
-  if (!gtk_widget_get_visible(child)) {
+  if (!GTK_WIDGET_VISIBLE(child)) {
     gtk_widget_show(child);
     ++(*reinterpret_cast<int*>(userdata));
   }
 }
 
 void ChildSizeAllocate(GtkWidget* child, gpointer userdata) {
-  if (!gtk_widget_get_visible(child))
+  if (!GTK_WIDGET_VISIBLE(child))
     return;
 
   SizeAllocateData* data = reinterpret_cast<SizeAllocateData*>(userdata);

@@ -80,7 +80,7 @@ gboolean OnMouseButtonPressed(GtkWidget* widget, GdkEventButton* event,
                               gpointer userdata) {
   if (event->type == GDK_BUTTON_PRESS) {
     if (gtk_button_get_focus_on_click(GTK_BUTTON(widget)) &&
-        !gtk_widget_has_focus(widget)) {
+        !GTK_WIDGET_HAS_FOCUS(widget)) {
       gtk_widget_grab_focus(widget);
     }
 
@@ -933,7 +933,7 @@ WindowOpenDisposition DispositionForCurrentButtonPressEvent() {
 bool GrabAllInput(GtkWidget* widget) {
   guint time = gtk_get_current_event_time();
 
-  if (!gtk_widget_get_visible(widget))
+  if (!GTK_WIDGET_VISIBLE(widget))
     return false;
 
   if (!gdk_pointer_grab(widget->window, TRUE,
@@ -1187,7 +1187,7 @@ string16 GetStockPreferencesMenuLabel() {
 
 bool IsWidgetAncestryVisible(GtkWidget* widget) {
   GtkWidget* parent = widget;
-  while (parent && gtk_widget_get_visible(parent))
+  while (parent && GTK_WIDGET_VISIBLE(parent))
     parent = parent->parent;
   return !parent;
 }

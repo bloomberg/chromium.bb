@@ -157,7 +157,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
 
     void set_profile(Profile* profile) { profile_ = profile; }
 
-    bool IsVisible();
+    bool IsVisible() { return GTK_WIDGET_VISIBLE(widget()); }
     void UpdateFromTabContents(TabContents* tab_contents);
 
     // Overridden from ui::AnimationDelegate:
@@ -228,7 +228,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
       preview_enabled_ = preview_enabled;
     }
 
-    bool IsVisible();
+    bool IsVisible() { return GTK_WIDGET_VISIBLE(widget()); }
 
     // Called to notify the PageAction that it should determine whether to be
     // visible or hidden. |contents| is the TabContents that is active, |url|

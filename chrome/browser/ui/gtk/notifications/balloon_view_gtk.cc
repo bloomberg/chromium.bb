@@ -287,7 +287,7 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   gtk_widget_set_tooltip_text(close_button_->widget(), dismiss_text.c_str());
   g_signal_connect(close_button_->widget(), "clicked",
                    G_CALLBACK(OnCloseButtonThunk), this);
-  gtk_widget_set_can_focus(close_button_->widget(), FALSE);
+  GTK_WIDGET_UNSET_FLAGS(close_button_->widget(), GTK_CAN_FOCUS);
   GtkWidget* close_alignment = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
   gtk_alignment_set_padding(GTK_ALIGNMENT(close_alignment),
                             kShelfVerticalMargin, kShelfVerticalMargin,
@@ -304,7 +304,7 @@ void BalloonViewImpl::Show(Balloon* balloon) {
                               options_text.c_str());
   g_signal_connect(options_menu_button_->widget(), "button-press-event",
                    G_CALLBACK(OnOptionsMenuButtonThunk), this);
-  gtk_widget_set_can_focus(options_menu_button_->widget(), FALSE);
+  GTK_WIDGET_UNSET_FLAGS(options_menu_button_->widget(), GTK_CAN_FOCUS);
   GtkWidget* options_alignment = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
   gtk_alignment_set_padding(GTK_ALIGNMENT(options_alignment),
                             kShelfVerticalMargin, kShelfVerticalMargin,

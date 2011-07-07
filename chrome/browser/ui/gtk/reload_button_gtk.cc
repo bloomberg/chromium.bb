@@ -49,7 +49,7 @@ ReloadButtonGtk::ReloadButtonGtk(LocationBarViewGtk* location_bar,
   g_signal_connect(widget(), "expose-event", G_CALLBACK(OnExposeThunk), this);
   g_signal_connect(widget(), "leave-notify-event",
                    G_CALLBACK(OnLeaveNotifyThunk), this);
-  gtk_widget_set_can_focus(widget(), FALSE);
+  GTK_WIDGET_UNSET_FLAGS(widget(), GTK_CAN_FOCUS);
 
   gtk_widget_set_has_tooltip(widget(), TRUE);
   g_signal_connect(widget(), "query-tooltip", G_CALLBACK(OnQueryTooltipThunk),
@@ -83,7 +83,7 @@ void ReloadButtonGtk::ChangeMode(Mode mode, bool force) {
   // If the change is forced, or the user isn't hovering the icon, or it's safe
   // to change it to the other image type, make the change immediately;
   // otherwise we'll let it happen later.
-  if (force || ((gtk_widget_get_state(widget()) == GTK_STATE_NORMAL) &&
+  if (force || ((GTK_WIDGET_STATE(widget()) == GTK_STATE_NORMAL) &&
       !testing_mouse_hovered_) || ((mode == MODE_STOP) ?
           !double_click_timer_.IsRunning() : (visible_mode_ != MODE_STOP))) {
     double_click_timer_.Stop();
@@ -231,7 +231,8 @@ void ReloadButtonGtk::UpdateThemeButtons() {
         widget()->style,
         (visible_mode_ == MODE_RELOAD) ? GTK_STOCK_REFRESH : GTK_STOCK_STOP);
     if (icon_set) {
-      GtkStateType state = gtk_widget_get_state(widget());
+      GtkStateType state = static_cast<GtkStateType>(
+          GTK_WIDGET_STATE(widget()));
       if (visible_mode_ == MODE_STOP && stop_.paint_override() != -1)
         state = static_cast<GtkStateType>(stop_.paint_override());
 

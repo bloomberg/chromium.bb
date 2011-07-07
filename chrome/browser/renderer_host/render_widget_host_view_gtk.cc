@@ -119,7 +119,7 @@ class RenderWidgetHostViewGtkWidget {
                                   GDK_FOCUS_CHANGE_MASK |
                                   GDK_ENTER_NOTIFY_MASK |
                                   GDK_LEAVE_NOTIFY_MASK);
-    gtk_widget_set_can_focus(widget, TRUE);
+    GTK_WIDGET_SET_FLAGS(widget, GTK_CAN_FOCUS);
 
     g_signal_connect(widget, "expose-event",
                      G_CALLBACK(OnExposeEvent), host_view);
@@ -321,7 +321,7 @@ class RenderWidgetHostViewGtkWidget {
 
     // TODO(evanm): why is this necessary here but not in test shell?
     // This logic is the same as GtkButton.
-    if (event->type == GDK_BUTTON_PRESS && !gtk_widget_has_focus(widget))
+    if (event->type == GDK_BUTTON_PRESS && !GTK_WIDGET_HAS_FOCUS(widget))
       gtk_widget_grab_focus(widget);
 
     host_view->is_popup_first_mouse_release_ = false;
@@ -695,7 +695,8 @@ void RenderWidgetHostViewGtk::Hide() {
 }
 
 bool RenderWidgetHostViewGtk::IsShowing() {
-  return gtk_widget_get_visible(view_.get());
+  // TODO(jcivelli): use gtk_widget_get_visible once we build with GTK 2.18.
+  return (GTK_WIDGET_FLAGS(view_.get()) & GTK_VISIBLE) != 0;
 }
 
 gfx::Rect RenderWidgetHostViewGtk::GetViewBounds() const {

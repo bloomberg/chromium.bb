@@ -280,7 +280,7 @@ OmniboxPopupViewGtk::OmniboxPopupViewGtk(const gfx::Font& font,
       font_(font.DeriveFont(kEditFontAdjust)),
       ignore_mouse_drag_(false),
       opened_(false) {
-  gtk_widget_set_can_focus(window_, FALSE);
+  GTK_WIDGET_UNSET_FLAGS(window_, GTK_CAN_FOCUS);
   // Don't allow the window to be resized.  This also forces the window to
   // shrink down to the size of its child contents.
   gtk_window_set_resizable(GTK_WINDOW(window_), FALSE);

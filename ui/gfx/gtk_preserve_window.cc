@@ -208,7 +208,7 @@ void gtk_preserve_window_size_allocate(GtkWidget* widget,
   GList *children = GTK_FIXED(widget)->children;
   while (children) {
     GtkFixedChild *child = reinterpret_cast<GtkFixedChild*>(children->data);
-    if (gtk_widget_get_visible(child->widget)) {
+    if (GTK_WIDGET_VISIBLE(child->widget)) {
       GtkRequisition child_requisition;
       gtk_widget_get_child_requisition(child->widget, &child_requisition);
 

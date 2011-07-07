@@ -279,7 +279,7 @@ void ActAsRoundedWindow(
   g_object_set_data_full(G_OBJECT(widget), kRoundedData,
                          data, FreeRoundedWindowData);
 
-  if (gtk_widget_get_visible(widget))
+  if (GTK_WIDGET_VISIBLE(widget))
     gtk_widget_queue_draw(widget);
 }
 
@@ -289,7 +289,7 @@ void StopActingAsRoundedWindow(GtkWidget* widget) {
   if (GTK_WIDGET_REALIZED(widget))
     gdk_window_shape_combine_mask(widget->window, NULL, 0, 0);
 
-  if (gtk_widget_get_visible(widget))
+  if (GTK_WIDGET_VISIBLE(widget))
     gtk_widget_queue_draw(widget);
 }
 

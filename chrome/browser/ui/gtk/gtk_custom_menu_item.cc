@@ -171,7 +171,7 @@ static void gtk_custom_menu_item_finalize(GObject *object) {
 
 static gint gtk_custom_menu_item_expose(GtkWidget* widget,
                                         GdkEventExpose* event) {
-  if (gtk_widget_get_visible(widget) &&
+  if (GTK_WIDGET_VISIBLE(widget) &&
       GTK_WIDGET_MAPPED(widget) &&
       gtk_bin_get_child(GTK_BIN(widget))) {
     // We skip the drawing in the GtkMenuItem class it draws the highlighted
@@ -212,7 +212,8 @@ static void gtk_custom_menu_item_expose_button(GtkWidget* hbox,
   int height = last_button->allocation.height;
 
   gtk_paint_box(hbox->style, hbox->window,
-                gtk_widget_get_state(current_button),
+                static_cast<GtkStateType>(
+                    GTK_WIDGET_STATE(current_button)),
                 GTK_SHADOW_OUT,
                 &current_button->allocation, hbox, "button",
                 x, y, width, height);
@@ -252,7 +253,8 @@ static gboolean gtk_custom_menu_item_hbox_expose(GtkWidget* widget,
             gtk_bin_get_child(GTK_BIN(current_button))->allocation;
         int half_offset = widget->style->xthickness / 2;
         gtk_paint_vline(widget->style, widget->window,
-                        gtk_widget_get_state(current_button),
+                        static_cast<GtkStateType>(
+                            GTK_WIDGET_STATE(current_button)),
                         &event->area, widget, "button",
                         child_alloc.y,
                         child_alloc.y + child_alloc.height,

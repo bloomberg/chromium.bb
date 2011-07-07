@@ -198,7 +198,7 @@ class GtkChromeShrinkableHBoxTest : public testing::Test {
                                 NULL, NULL, &padding, NULL);
 
     ChildData data;
-    data.visible = gtk_widget_get_visible(child);
+    data.visible = GTK_WIDGET_VISIBLE(child);
     data.padding = padding;
     data.x = child->allocation.x;
     data.width = child->allocation.width;

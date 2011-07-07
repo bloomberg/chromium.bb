@@ -111,7 +111,7 @@ static void gtk_chrome_link_button_style_changed(GtkChromeLinkButton* button) {
   // changed his GTK style.
   gtk_chrome_link_button_set_text(button);
 
-  if (gtk_widget_get_visible(GTK_WIDGET(button)))
+  if (GTK_WIDGET_VISIBLE(button))
     gtk_widget_queue_draw(GTK_WIDGET(button));
 }
 
@@ -120,10 +120,10 @@ static gboolean gtk_chrome_link_button_expose(GtkWidget* widget,
   GtkChromeLinkButton* button = GTK_CHROME_LINK_BUTTON(widget);
   GtkWidget* label = button->label;
 
-  if (gtk_widget_get_state(widget) == GTK_STATE_ACTIVE && button->is_normal) {
+  if (GTK_WIDGET_STATE(widget) == GTK_STATE_ACTIVE && button->is_normal) {
     gtk_label_set_markup(GTK_LABEL(label), button->pressed_markup);
     button->is_normal = FALSE;
-  } else if (gtk_widget_get_state(widget) != GTK_STATE_ACTIVE &&
+  } else if (GTK_WIDGET_STATE(widget) != GTK_STATE_ACTIVE &&
              !button->is_normal) {
     gtk_label_set_markup(GTK_LABEL(label),
         button->using_native_theme ? button->native_markup :
@@ -135,9 +135,9 @@ static gboolean gtk_chrome_link_button_expose(GtkWidget* widget,
   gtk_container_propagate_expose(GTK_CONTAINER(widget), label, event);
 
   // Draw the focus rectangle.
-  if (gtk_widget_has_focus(widget)) {
+  if (GTK_WIDGET_HAS_FOCUS(widget)) {
     gtk_paint_focus(widget->style, widget->window,
-                    gtk_widget_get_state(widget),
+                    static_cast<GtkStateType>(GTK_WIDGET_STATE(widget)),
                     &event->area, widget, NULL,
                     widget->allocation.x, widget->allocation.y,
                     widget->allocation.width, widget->allocation.height);
@@ -228,7 +228,7 @@ void gtk_chrome_link_button_set_use_gtk_theme(GtkChromeLinkButton* button,
 
     gtk_chrome_link_button_set_text(button);
 
-    if (gtk_widget_get_visible(GTK_WIDGET(button)))
+    if (GTK_WIDGET_VISIBLE(button))
       gtk_widget_queue_draw(GTK_WIDGET(button));
   }
 }
@@ -240,7 +240,7 @@ void gtk_chrome_link_button_set_label(GtkChromeLinkButton* button,
 
   gtk_chrome_link_button_set_text(button);
 
-  if (gtk_widget_get_visible(GTK_WIDGET(button)))
+  if (GTK_WIDGET_VISIBLE(button))
     gtk_widget_queue_draw(GTK_WIDGET(button));
 }
 
@@ -255,7 +255,7 @@ void gtk_chrome_link_button_set_normal_color(GtkChromeLinkButton* button,
 
   gtk_chrome_link_button_set_text(button);
 
-  if (gtk_widget_get_visible(GTK_WIDGET(button)))
+  if (GTK_WIDGET_VISIBLE(button))
     gtk_widget_queue_draw(GTK_WIDGET(button));
 }
 

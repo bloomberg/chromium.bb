@@ -236,7 +236,7 @@ bool TabGtk::IsSelected() const {
 }
 
 bool TabGtk::IsVisible() const {
-  return gtk_widget_get_visible(event_box_);
+  return GTK_WIDGET_FLAGS(event_box_) & GTK_VISIBLE;
 }
 
 void TabGtk::SetVisible(bool visible) const {
