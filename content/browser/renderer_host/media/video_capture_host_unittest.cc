@@ -12,6 +12,7 @@
 #include "base/stl_util-inl.h"
 #include "base/stringprintf.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/video_capture_host.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/common/media/video_capture_messages.h"
@@ -187,15 +188,15 @@ class VideoCaptureHostTest : public testing::Test {
 
  protected:
   virtual void SetUp() {
-    // Setup the VideoCaptureManager to use fake video capture device.
-#ifndef TEST_REAL_CAPTURE_DEVICE
-    media_stream::VideoCaptureManager* manager =
-        media_stream::VideoCaptureManager::Get();
-    manager->UseFakeDevice();
-#endif
     // Create a message loop so VideoCaptureHostTest can use it.
     message_loop_.reset(new MessageLoop(MessageLoop::TYPE_IO));
     io_thread_.reset(new BrowserThread(BrowserThread::IO, message_loop_.get()));
+    // Setup the VideoCaptureManager to use fake video capture device.
+#ifndef TEST_REAL_CAPTURE_DEVICE
+    media_stream::VideoCaptureManager* manager =
+        media_stream::MediaStreamManager::Get()->video_capture_manager();
+    manager->UseFakeDevice();
+#endif
     host_ = new MockVideoCaptureHost();
 
     // Simulate IPC channel connected.
@@ -231,8 +232,10 @@ class VideoCaptureHostTest : public testing::Test {
 
   // Called on the main thread.
   static void PostQuitOnVideoCaptureManagerThread(MessageLoop* message_loop) {
-    media_stream::VideoCaptureManager::Get()->GetMessageLoop()->PostTask(
-        FROM_HERE, NewRunnableFunction(&PostQuitMessageLoop, message_loop));
+    media_stream::MediaStreamManager::Get()->video_capture_manager()->
+        GetMessageLoop()->PostTask(FROM_HERE,
+                                   NewRunnableFunction(
+                                       &PostQuitMessageLoop, message_loop));
   }
 
   // SyncWithVideoCaptureManagerThread() waits until all pending tasks on the

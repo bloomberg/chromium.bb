@@ -44,7 +44,6 @@ MediaStreamDeviceSettings::MediaStreamDeviceSettings(
 }
 
 MediaStreamDeviceSettings::~MediaStreamDeviceSettings() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   STLDeleteValues(&requests_);
 }
 
@@ -55,7 +54,7 @@ void MediaStreamDeviceSettings::RequestCaptureDeviceUsage(
 
   if (requests_.find(label) != requests_.end()) {
     // Request with this id already exists.
-    requester_->Error(label);
+    requester_->SettingsError(label);
     return;
   }
 
@@ -81,7 +80,7 @@ void MediaStreamDeviceSettings::AvailableDevices(
   SettingsRequests::iterator request_it = requests_.find(label);
   if (request_it == requests_.end()) {
     // Request with this id doesn't exist.
-    requester_->Error(label);
+    requester_->SettingsError(label);
     return;
   }
 

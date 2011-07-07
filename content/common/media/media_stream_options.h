@@ -36,7 +36,8 @@ struct StreamOptions {
 enum MediaStreamType {
   kNoService = 0,
   kAudioCapture,
-  kVideoCapture
+  kVideoCapture,
+  kNumMediaStreamTypes
 };
 
 // StreamDeviceInfo describes information about a device.

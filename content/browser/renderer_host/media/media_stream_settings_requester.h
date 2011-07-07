@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/task.h"
 #include "content/common/media/media_stream_options.h"
 
 namespace media_stream {
@@ -27,14 +26,12 @@ class SettingsRequester {
                                const StreamDeviceInfoArray& devices) = 0;
 
   // An error for specified |request_id| has occurred.
-  virtual void Error(const std::string& label) = 0;
+  virtual void SettingsError(const std::string& label) = 0;
 
  protected:
   virtual ~SettingsRequester() {}
 };
 
 }  // namespace media_stream
-
-DISABLE_RUNNABLE_METHOD_REFCOUNT(media_stream::SettingsRequester);
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_MEDIA_MEDIA_STREAM_SETTINGS_REQUESTER_H_

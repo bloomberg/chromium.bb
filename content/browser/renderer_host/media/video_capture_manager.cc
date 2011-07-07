@@ -16,13 +16,6 @@ namespace media_stream {
 // explicitly calling open device.
 enum { kFirstSessionId = VideoCaptureManager::kStartOpenSessionId + 1 };
 
-static ::base::LazyInstance<VideoCaptureManager> g_video_capture_manager(
-    base::LINKER_INITIALIZED);
-
-VideoCaptureManager* VideoCaptureManager::Get() {
-  return g_video_capture_manager.Pointer();
-}
-
 VideoCaptureManager::VideoCaptureManager()
   : vc_device_thread_("VideoCaptureManagerThread"),
     listener_(NULL),

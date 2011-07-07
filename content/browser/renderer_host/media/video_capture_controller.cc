@@ -6,6 +6,7 @@
 
 #include "base/stl_util-inl.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "media/base/yuv_convert.h"
 
@@ -34,8 +35,8 @@ void VideoCaptureController::StartCapture(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   params_ = params;
-  media_stream::VideoCaptureManager* manager =
-      media_stream::VideoCaptureManager::Get();
+    media_stream::VideoCaptureManager* manager =
+        media_stream::MediaStreamManager::Get()->video_capture_manager();
   // Order the manager to start the actual capture.
   manager->Start(params, this);
 }
@@ -44,7 +45,7 @@ void VideoCaptureController::StopCapture(Task* stopped_task) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   media_stream::VideoCaptureManager* manager =
-      media_stream::VideoCaptureManager::Get();
+      media_stream::MediaStreamManager::Get()->video_capture_manager();
   manager->Stop(params_.session_id,
                 NewRunnableMethod(this,
                                   &VideoCaptureController::OnDeviceStopped,
@@ -156,7 +157,8 @@ void VideoCaptureController::OnIncomingCapturedFrame(const uint8* data,
 
 void VideoCaptureController::OnError() {
   event_handler_->OnError(id_);
-  media_stream::VideoCaptureManager::Get()->Error(params_.session_id);
+  media_stream::MediaStreamManager::Get()->video_capture_manager()->
+      Error(params_.session_id);
 }
 
 void VideoCaptureController::OnFrameInfo(

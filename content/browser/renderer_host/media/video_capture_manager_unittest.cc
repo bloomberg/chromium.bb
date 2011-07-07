@@ -69,7 +69,8 @@ class MockFrameObserver: public media::VideoCaptureDevice::EventHandler {
 class VideoCaptureManagerTest : public testing::Test {
  public:
   VideoCaptureManagerTest()
-      : listener_(),
+      : vcm_(),
+        listener_(),
         message_loop_(),
         io_thread_(),
         frame_observer_() {
@@ -81,6 +82,9 @@ class VideoCaptureManagerTest : public testing::Test {
     listener_.reset(new media_stream::MockMediaStreamProviderListener());
     message_loop_.reset(new MessageLoop(MessageLoop::TYPE_IO));
     io_thread_.reset(new BrowserThread(BrowserThread::IO, message_loop_.get()));
+    vcm_.reset(new media_stream::VideoCaptureManager());
+    vcm_->UseFakeDevice();
+    vcm_->Register(listener_.get());
     frame_observer_.reset(new MockFrameObserver());
   }
 
@@ -94,8 +98,9 @@ class VideoCaptureManagerTest : public testing::Test {
   }
 
   // Called on the main thread.
-  static void PostQuitOnVideoCaptureManagerThread(MessageLoop* message_loop) {
-    media_stream::VideoCaptureManager::Get()->GetMessageLoop()->PostTask(
+  static void PostQuitOnVideoCaptureManagerThread(
+      MessageLoop* message_loop, media_stream::VideoCaptureManager* vcm) {
+    vcm->GetMessageLoop()->PostTask(
         FROM_HERE, NewRunnableFunction(&PostQuitMessageLoop, message_loop));
   }
 
@@ -107,9 +112,11 @@ class VideoCaptureManagerTest : public testing::Test {
   void SyncWithVideoCaptureManagerThread() {
     message_loop_->PostTask(
         FROM_HERE, NewRunnableFunction(&PostQuitOnVideoCaptureManagerThread,
-                                       message_loop_.get()));
+                                       message_loop_.get(),
+                                       vcm_.get()));
     message_loop_->Run();
   }
+  scoped_ptr<media_stream::VideoCaptureManager> vcm_;
   scoped_ptr<media_stream::MockMediaStreamProviderListener> listener_;
   scoped_ptr<MessageLoop> message_loop_;
   scoped_ptr<BrowserThread> io_thread_;
@@ -131,31 +138,26 @@ TEST_F(VideoCaptureManagerTest, CreateAndClose) {
   EXPECT_CALL(*listener_, Closed(media_stream::kVideoCapture, _))
     .Times(1);
 
-  media_stream::VideoCaptureManager* vcm =
-      media_stream::VideoCaptureManager::Get();
-  // Make sure fake devices are used
-  vcm->UseFakeDevice();
-  vcm->Register(listener_.get());
-  vcm->EnumerateDevices();
+  vcm_->EnumerateDevices();
 
   // Wait to get device callback...
   SyncWithVideoCaptureManagerThread();
 
-  int video_session_id = vcm->Open(listener_->devices_.front());
+  int video_session_id = vcm_->Open(listener_->devices_.front());
 
   media::VideoCaptureParams capture_params;
   capture_params.session_id = video_session_id;
   capture_params.width = 320;
   capture_params.height = 240;
   capture_params.frame_per_second = 30;
-  vcm->Start(capture_params, frame_observer_.get());
+  vcm_->Start(capture_params, frame_observer_.get());
 
-  vcm->Stop(video_session_id, NULL);
-  vcm->Close(video_session_id);
+  vcm_->Stop(video_session_id, NULL);
+  vcm_->Close(video_session_id);
 
   // Wait to check callbacks before removing the listener
   SyncWithVideoCaptureManagerThread();
-  vcm->Unregister();
+  vcm_->Unregister();
 }
 
 // Open the same device twice, should fail.
@@ -171,26 +173,21 @@ TEST_F(VideoCaptureManagerTest, OpenTwice) {
   EXPECT_CALL(*listener_, Closed(media_stream::kVideoCapture, _))
     .Times(1);
 
-  media_stream::VideoCaptureManager* vcm =
-      media_stream::VideoCaptureManager::Get();
-  // Make sure fake devices are used
-  vcm->UseFakeDevice();
-  vcm->Register(listener_.get());
-  vcm->EnumerateDevices();
+  vcm_->EnumerateDevices();
 
   // Wait to get device callback...
   SyncWithVideoCaptureManagerThread();
 
-  int video_session_id = vcm->Open(listener_->devices_.front());
+  int video_session_id = vcm_->Open(listener_->devices_.front());
 
   // This should trigger an error callback with error code 'kDeviceAlreadyInUse'
-  vcm->Open(listener_->devices_.front());
+  vcm_->Open(listener_->devices_.front());
 
-  vcm->Close(video_session_id);
+  vcm_->Close(video_session_id);
 
   // Wait to check callbacks before removing the listener
   SyncWithVideoCaptureManagerThread();
-  vcm->Unregister();
+  vcm_->Unregister();
 }
 
 // Open two different devices.
@@ -203,12 +200,7 @@ TEST_F(VideoCaptureManagerTest, OpenTwo) {
   EXPECT_CALL(*listener_, Closed(media_stream::kVideoCapture, _))
     .Times(2);
 
-  media_stream::VideoCaptureManager* vcm =
-      media_stream::VideoCaptureManager::Get();
-  // Make sure fake devices are used
-  vcm->UseFakeDevice();
-  vcm->Register(listener_.get());
-  vcm->EnumerateDevices();
+  vcm_->EnumerateDevices();
 
   // Wait to get device callback...
   SyncWithVideoCaptureManagerThread();
@@ -216,18 +208,18 @@ TEST_F(VideoCaptureManagerTest, OpenTwo) {
   media_stream::StreamDeviceInfoArray::iterator it =
       listener_->devices_.begin();
 
-  int video_session_id_first = vcm->Open(*it);
+  int video_session_id_first = vcm_->Open(*it);
 
   // This should trigger an error callback with error code 'kDeviceAlreadyInUse'
   ++it;
-  int video_session_id_second = vcm->Open(*it);
+  int video_session_id_second = vcm_->Open(*it);
 
-  vcm->Close(video_session_id_first);
-  vcm->Close(video_session_id_second);
+  vcm_->Close(video_session_id_first);
+  vcm_->Close(video_session_id_second);
 
   // Wait to check callbacks before removing the listener
   SyncWithVideoCaptureManagerThread();
-  vcm->Unregister();
+  vcm_->Unregister();
 }
 
 // Try open a non-existing device.
@@ -239,12 +231,7 @@ TEST_F(VideoCaptureManagerTest, OpenNotExisting) {
                                 media_stream::kDeviceNotAvailable))
     .Times(1);
 
-  media_stream::VideoCaptureManager* vcm =
-      media_stream::VideoCaptureManager::Get();
-  // Make sure fake devices are used
-  vcm->UseFakeDevice();
-  vcm->Register(listener_.get());
-  vcm->EnumerateDevices();
+  vcm_->EnumerateDevices();
 
   // Wait to get device callback...
   SyncWithVideoCaptureManagerThread();
@@ -256,11 +243,11 @@ TEST_F(VideoCaptureManagerTest, OpenNotExisting) {
                                               device_id, false);
 
   // This should fail with error code 'kDeviceNotAvailable'
-  vcm->Open(dummy_device);
+  vcm_->Open(dummy_device);
 
   // Wait to check callbacks before removing the listener
   SyncWithVideoCaptureManagerThread();
-  vcm->Unregister();
+  vcm_->Unregister();
 }
 
 // Start a device using "magic" id, i.e. call Start without calling Open.
@@ -271,12 +258,6 @@ TEST_F(VideoCaptureManagerTest, StartUsingId) {
   EXPECT_CALL(*listener_, Closed(media_stream::kVideoCapture, _))
     .Times(1);
 
-  media_stream::VideoCaptureManager* vcm =
-      media_stream::VideoCaptureManager::Get();
-  // Make sure fake devices are used
-  vcm->UseFakeDevice();
-  vcm->Register(listener_.get());
-
   media::VideoCaptureParams capture_params;
   capture_params.session_id =
       media_stream::VideoCaptureManager::kStartOpenSessionId;
@@ -284,14 +265,14 @@ TEST_F(VideoCaptureManagerTest, StartUsingId) {
   capture_params.height = 240;
   capture_params.frame_per_second = 30;
   // Start shall trigger the Open callback
-  vcm->Start(capture_params, frame_observer_.get());
+  vcm_->Start(capture_params, frame_observer_.get());
 
   // Stop shall trigger the Close callback
-  vcm->Stop(media_stream::VideoCaptureManager::kStartOpenSessionId, NULL);
+  vcm_->Stop(media_stream::VideoCaptureManager::kStartOpenSessionId, NULL);
 
   // Wait to check callbacks before removing the listener
   SyncWithVideoCaptureManagerThread();
-  vcm->Unregister();
+  vcm_->Unregister();
 }
 
 }  // namespace

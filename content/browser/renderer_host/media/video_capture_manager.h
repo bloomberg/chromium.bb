@@ -12,7 +12,6 @@
 
 #include <map>
 
-#include "base/lazy_instance.h"
 #include "base/threading/thread.h"
 #include "content/browser/renderer_host/media/media_stream_provider.h"
 #include "content/common/media/media_stream_options.h"
@@ -29,8 +28,8 @@ class VideoCaptureManager : public MediaStreamProvider {
   // before MediaStream is implemented in Chrome and WebKit.
   enum { kStartOpenSessionId = 1 };
 
-  // Called to get a pointer to the singleton.
-  static VideoCaptureManager* Get();
+  VideoCaptureManager();
+  virtual ~VideoCaptureManager();
 
   // Implements MediaStreamProvider.
   virtual void Register(MediaStreamProviderListener* listener);
@@ -59,8 +58,6 @@ class VideoCaptureManager : public MediaStreamProvider {
   // won't stream any more captured frames.
   void Error(const media::VideoCaptureSessionId& capture_session_id);
 
-  virtual ~VideoCaptureManager();
-
   // Used by unit test to make sure a fake device is used instead of a real
   // video capture device. Due to timing requirements, the function must be
   // called before EnumerateDevices and Open.
@@ -68,10 +65,6 @@ class VideoCaptureManager : public MediaStreamProvider {
   MessageLoop* GetMessageLoop();
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<VideoCaptureManager>;
-
-  VideoCaptureManager();
-
   // Called by the public functions, executed on vc_device_thread_.
   void OnEnumerateDevices();
   void OnOpen(int capture_session_id, const StreamDeviceInfo& device);
