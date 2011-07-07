@@ -34,12 +34,12 @@ FormField* AddressField::Parse(AutofillScanner* scanner, bool is_ecml) {
 
   // Allow address fields to appear in any order.
   while (!scanner->IsEnd()) {
-    if (ParseCompany(scanner, is_ecml, address_field.get()) ||
-        ParseAddressLines(scanner, is_ecml, address_field.get()) ||
+    if (ParseAddressLines(scanner, is_ecml, address_field.get()) ||
         ParseCity(scanner, is_ecml, address_field.get()) ||
         ParseState(scanner, is_ecml, address_field.get()) ||
         ParseZipCode(scanner, is_ecml, address_field.get()) ||
-        ParseCountry(scanner, is_ecml, address_field.get())) {
+        ParseCountry(scanner, is_ecml, address_field.get()) ||
+        ParseCompany(scanner, is_ecml, address_field.get())) {
       continue;
     } else if (ParseField(scanner, attention_ignored, NULL) ||
                ParseField(scanner, region_ignored, NULL)) {
