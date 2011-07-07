@@ -257,7 +257,7 @@ cr.define('ntp4', function() {
       if (this.firstChild.classList.contains('new-tile-contents'))
         this.firstChild.classList.remove('new-tile-contents');
       else if (this.firstChild.classList.contains('removing-tile-contents'))
-        this.parentNode.removeChild(this);
+        this.tilePage.removeTile(this);
     },
   };
 
@@ -451,7 +451,8 @@ cr.define('ntp4', function() {
      * Adds the given element to the tile grid.
      * @param {Node} tileElement The tile object/node to insert.
      * @param {number} index The location in the tile grid to insert it at.
-     * @param {?boolean} animate If true, the add will be animated.
+     * @param {?boolean} animate If true, the tile in question will be animated
+     *     (other tiles, if they must reposition, do not animate).
      * @protected
      */
     addTileAt: function(tileElement, index, animate) {
@@ -468,6 +469,21 @@ cr.define('ntp4', function() {
       this.calculateLayoutValues_();
 
       this.positionTile_(index);
+    },
+
+    /**
+     * Removes the given tile and animates the respositioning of the other
+     * tiles.
+     * @param {HTMLElement} tile The tile to remove from |tileGrid_|.
+     */
+    removeTile: function(tile) {
+      this.classList.add('animating-tile-page');
+      var index = Array.prototype.indexOf.call(this.tileElements_, tile);
+      tile.parentNode.removeChild(tile);
+      this.calculateLayoutValues_();
+      for (var i = index; i < this.tileElements_.length; i++) {
+        this.positionTile_(i);
+      }
     },
 
     /**
