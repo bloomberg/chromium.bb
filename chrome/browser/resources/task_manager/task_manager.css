@@ -75,10 +75,19 @@ body {
 
 /* Title Column text containers. */
 .detail-title {
-  padding-left: 20px;
-  background-image: url(images/default_page.png);
-  background-position: left;
-  background-repeat: no-repeat;
+  display: -webkit-box;
+  height: 20px;
+}
+
+.detail-title-image {
+  height: 16px;
+  width: 16px;
+  padding: 2px;
+}
+
+.detail-title-text {
+  height: 18px;
+  padding: 1px;
 }
 
 /* Entire Table (including column header). */

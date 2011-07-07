@@ -156,8 +156,14 @@ TaskManager.prototype = {
       case 'title':
         var image_str = "url(" + entry.icon + ")";
         label.className = 'detail-title';
-        label.style.backgroundImage = image_str;
-        label.textContent = entry.title;
+        var image = this.document_.createElement('img');
+        image.className = 'detail-title-image';
+        image.src = entry.icon;
+        label.appendChild(image)
+        var text = this.document_.createElement('div');
+        text.className = 'detail-title-text';
+        text.textContent = entry.title;
+        label.appendChild(text)
         break;
       case 'privateMemory':
         label.className = 'detail-private-memory pid' + entry.processId;
