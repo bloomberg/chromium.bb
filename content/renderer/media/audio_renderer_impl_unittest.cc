@@ -13,10 +13,27 @@
 
 using ::testing::Return;
 
+// Class we would be tesing. The only difference between it and "real" one
+// is that test class does not open sockets and launch audio thread.
+class TestAudioRendererImpl : public AudioRendererImpl {
+ public:
+  explicit TestAudioRendererImpl(AudioMessageFilter* filter)
+      : AudioRendererImpl(filter) {
+  }
+ private:
+  virtual void CreateSocket(base::SyncSocket::Handle socket_handle) {}
+  virtual void CreateAudioThread() {}
+};
+
 class AudioRendererImplTest : public ::testing::Test {
  public:
   static const int kRouteId = 0;
   static const int kSize = 1024;
+
+  static void SetUpTestCase() {
+    // Set low latency mode, as it soon would be on by default.
+    AudioRendererImpl::set_latency_type(AudioRendererImpl::kLowLatency);
+  }
 
   AudioRendererImplTest() {
     message_loop_.reset(new MessageLoop(MessageLoop::TYPE_IO));
@@ -38,7 +55,7 @@ class AudioRendererImplTest : public ::testing::Test {
                                                         44100)));
 
     // Create and initialize audio renderer.
-    renderer_ = new AudioRendererImpl(filter_);
+    renderer_ = new TestAudioRendererImpl(filter_);
     renderer_->set_host(&host_);
     renderer_->Initialize(decoder_, media::NewExpectedCallback());
 
@@ -50,11 +67,18 @@ class AudioRendererImplTest : public ::testing::Test {
     base::SharedMemoryHandle duplicated_handle;
     EXPECT_TRUE(shared_mem_.ShareToProcess(base::GetCurrentProcessHandle(),
                                            &duplicated_handle));
-
-    renderer_->OnCreated(duplicated_handle, kSize);
+    CallOnCreated(duplicated_handle);
   }
 
   virtual ~AudioRendererImplTest() {
+  }
+
+  void CallOnCreated(base::SharedMemoryHandle handle) {
+    if (renderer_->latency_type() == AudioRendererImpl::kHighLatency) {
+      renderer_->OnCreated(handle, kSize);
+    } else {
+      renderer_->OnLowLatencyCreated(handle, 0, kSize);
+    }
   }
 
  protected:
@@ -96,11 +120,13 @@ TEST_F(AudioRendererImplTest, Stop) {
 
   // Run AudioMessageFilter::Delegate methods, which can be executed after being
   // stopped.  AudioRendererImpl shouldn't create any messages.
-  renderer_->OnRequestPacket(AudioBuffersState(kSize, 0));
+  if (renderer_->latency_type() == AudioRendererImpl::kHighLatency) {
+    renderer_->OnRequestPacket(AudioBuffersState(kSize, 0));
+  }
   renderer_->OnStateChanged(kAudioStreamError);
   renderer_->OnStateChanged(kAudioStreamPlaying);
   renderer_->OnStateChanged(kAudioStreamPaused);
-  renderer_->OnCreated(shared_mem_.handle(), kSize);
+  CallOnCreated(shared_mem_.handle());
   renderer_->OnVolume(0.5);
 
   // It's possible that the upstream decoder replies right after being stopped.

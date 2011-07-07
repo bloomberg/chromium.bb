@@ -267,6 +267,10 @@ const char kLoggingLevel[]                  = "log-level";
 // Make plugin processes log their sent and received messages to VLOG(1).
 const char kLogPluginMessages[]             = "log-plugin-messages";
 
+// Uses low-latency IPC for audio.
+// That is temporary until we make it default and remove old code path.
+const char kLowLatencyAudio[]               = "enable-low-latency-audio";
+
 // Causes the process to run as a NativeClient broker
 // (used for launching NaCl loader processes on 64-bit Windows).
 const char kNaClBrokerProcess[]             = "nacl-broker";

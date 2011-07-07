@@ -6,23 +6,19 @@
 
 #include <math.h>
 
+#include "base/command_line.h"
+#include "content/common/content_switches.h"
 #include "content/common/media/audio_messages.h"
 #include "content/renderer/render_thread.h"
 #include "content/renderer/render_view.h"
+#include "media/audio/audio_output_controller.h"
 #include "media/base/filter_host.h"
 
-namespace {
-
-// We will try to fill 200 ms worth of audio samples in each packet. A round
-// trip latency for IPC messages are typically 10 ms, this should give us
-// plenty of time to avoid clicks.
-const int kMillisecondsPerPacket = 200;
-
-// We have at most 3 packets in browser, i.e. 600 ms. This is a reasonable
-// amount to avoid clicks.
-const int kPacketsInBuffer = 3;
-
-}  // namespace
+// Static variable that says what code path we are using -- low or high
+// latency. Made separate variable so we don't have to go to command line
+// for every DCHECK().
+AudioRendererImpl::LatencyType AudioRendererImpl::latency_type_ =
+    AudioRendererImpl::kUninitializedLatency;
 
 AudioRendererImpl::AudioRendererImpl(AudioMessageFilter* filter)
     : AudioRendererBase(),
@@ -37,9 +33,26 @@ AudioRendererImpl::AudioRendererImpl(AudioMessageFilter* filter)
       prerolling_(false),
       preroll_bytes_(0) {
   DCHECK(io_loop_);
+  // Figure out if we are planning to use high or low latency code path.
+  // We are initializing only one variable and double initialization is Ok,
+  // so there would not be any issues caused by CPU memory model.
+  if (latency_type_ == kUninitializedLatency) {
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kLowLatencyAudio)) {
+      latency_type_ = kLowLatency;
+    } else {
+      latency_type_ = kHighLatency;
+    }
+  }
 }
 
 AudioRendererImpl::~AudioRendererImpl() {
+}
+
+// static
+void AudioRendererImpl::set_latency_type(LatencyType latency_type) {
+  DCHECK_EQ(kUninitializedLatency, latency_type_);
+  latency_type_ = latency_type;
 }
 
 base::TimeDelta AudioRendererImpl::ConvertToDuration(int bytes) {
@@ -71,6 +84,19 @@ void AudioRendererImpl::OnStop() {
   // task to clean up.
   io_loop_->PostTask(FROM_HERE,
       NewRunnableMethod(this, &AudioRendererImpl::DestroyTask));
+
+  if (audio_thread_.get()) {
+    socket_->Close();
+    audio_thread_->Join();
+  }
+}
+
+void AudioRendererImpl::NotifyDataAvailableIfNecessary() {
+  if (latency_type_ == kHighLatency) {
+    // Post a task to render thread to notify a packet reception.
+    io_loop_->PostTask(FROM_HERE,
+        NewRunnableMethod(this, &AudioRendererImpl::NotifyPacketReadyTask));
+  }
 }
 
 void AudioRendererImpl::ConsumeAudioSamples(
@@ -84,13 +110,11 @@ void AudioRendererImpl::ConsumeAudioSamples(
   // Use the base class to queue the buffer.
   AudioRendererBase::ConsumeAudioSamples(buffer_in);
 
-  // Post a task to render thread to notify a packet reception.
-  io_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &AudioRendererImpl::NotifyPacketReadyTask));
+  NotifyDataAvailableIfNecessary();
 }
 
 void AudioRendererImpl::SetPlaybackRate(float rate) {
-  DCHECK(rate >= 0.0f);
+  DCHECK_LE(0.0f, rate);
 
   base::AutoLock auto_lock(lock_);
   // Handle the case where we stopped due to |io_loop_| dying.
@@ -115,9 +139,7 @@ void AudioRendererImpl::SetPlaybackRate(float rate) {
   // If we are playing, give a kick to try fulfilling the packet request as
   // the previous packet request may be stalled by a pause.
   if (rate > 0.0f) {
-    io_loop_->PostTask(
-        FROM_HERE,
-        NewRunnableMethod(this, &AudioRendererImpl::NotifyPacketReadyTask));
+    NotifyDataAvailableIfNecessary();
   }
 }
 
@@ -170,6 +192,7 @@ void AudioRendererImpl::SetVolume(float volume) {
 void AudioRendererImpl::OnCreated(base::SharedMemoryHandle handle,
                                   uint32 length) {
   DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK_EQ(kHighLatency, latency_type_);
 
   base::AutoLock auto_lock(lock_);
   if (stopped_)
@@ -180,15 +203,51 @@ void AudioRendererImpl::OnCreated(base::SharedMemoryHandle handle,
   shared_memory_size_ = length;
 }
 
-void AudioRendererImpl::OnLowLatencyCreated(base::SharedMemoryHandle,
-                                            base::SyncSocket::Handle, uint32) {
-  // AudioRenderer should not have a low-latency audio channel.
-  NOTREACHED();
+void AudioRendererImpl::CreateSocket(base::SyncSocket::Handle socket_handle) {
+  DCHECK_EQ(kLowLatency, latency_type_);
+#if defined(OS_WIN)
+  DCHECK(socket_handle);
+#else
+  DCHECK_GE(socket_handle, 0);
+#endif
+  socket_.reset(new base::SyncSocket(socket_handle));
+}
+
+void AudioRendererImpl::CreateAudioThread() {
+  DCHECK_EQ(kLowLatency, latency_type_);
+  audio_thread_.reset(
+      new base::DelegateSimpleThread(this, "renderer_audio_thread"));
+  audio_thread_->Start();
+}
+
+void AudioRendererImpl::OnLowLatencyCreated(
+    base::SharedMemoryHandle handle,
+    base::SyncSocket::Handle socket_handle,
+    uint32 length) {
+  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK_EQ(kLowLatency, latency_type_);
+#if defined(OS_WIN)
+  DCHECK(handle);
+#else
+  DCHECK_GE(handle.fd, 0);
+#endif
+  DCHECK_NE(0u, length);
+
+  base::AutoLock auto_lock(lock_);
+  if (stopped_)
+    return;
+
+  shared_memory_.reset(new base::SharedMemory(handle, false));
+  shared_memory_->Map(length);
+  shared_memory_size_ = length;
+
+  CreateSocket(socket_handle);
+  CreateAudioThread();
 }
 
 void AudioRendererImpl::OnRequestPacket(AudioBuffersState buffers_state) {
   DCHECK(MessageLoop::current() == io_loop_);
-
+  DCHECK_EQ(kHighLatency, latency_type_);
   {
     base::AutoLock auto_lock(lock_);
     DCHECK(!pending_request_);
@@ -247,8 +306,10 @@ void AudioRendererImpl::CreateStreamTask(const AudioParameters& audio_params) {
   // Let the browser choose packet size.
   params_to_send.samples_per_packet = 0;
 
-  filter_->Send(new AudioHostMsg_CreateStream(
-      0, stream_id_, params_to_send, false));
+  filter_->Send(new AudioHostMsg_CreateStream(0,
+                                              stream_id_,
+                                              params_to_send,
+                                              latency_type_ == kLowLatency));
 }
 
 void AudioRendererImpl::PlayTask() {
@@ -293,6 +354,7 @@ void AudioRendererImpl::SetVolumeTask(double volume) {
 
 void AudioRendererImpl::NotifyPacketReadyTask() {
   DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK_EQ(kHighLatency, latency_type_);
 
   base::AutoLock auto_lock(lock_);
   if (stopped_)
@@ -345,4 +407,37 @@ void AudioRendererImpl::WillDestroyCurrentMessageLoop() {
 
   stopped_ = true;
   DestroyTask();
+}
+
+// Our audio thread runs here. We receive requests for more data and send it
+// on this thread.
+void AudioRendererImpl::Run() {
+  audio_thread_->SetThreadPriority(base::kThreadPriority_RealtimeAudio);
+
+  int bytes;
+  while (sizeof(bytes) == socket_->Receive(&bytes, sizeof(bytes))) {
+LOG(ERROR) << "+++ bytes: " << bytes;
+    if (bytes == media::AudioOutputController::kPauseMark)
+      continue;
+    else if (bytes < 0)
+      break;
+    base::AutoLock auto_lock(lock_);
+    if (stopped_)
+      break;
+    float playback_rate = GetPlaybackRate();
+    if (playback_rate <= 0.0f)
+      continue;
+    DCHECK(shared_memory_.get());
+    base::TimeDelta request_delay = ConvertToDuration(bytes);
+    // We need to adjust the delay according to playback rate.
+    if (playback_rate != 1.0f) {
+      request_delay = base::TimeDelta::FromMicroseconds(
+          static_cast<int64>(ceil(request_delay.InMicroseconds() *
+                                  playback_rate)));
+    }
+    FillBuffer(static_cast<uint8*>(shared_memory_->memory()),
+               shared_memory_size_,
+               request_delay,
+               true  /* buffers empty */);
+  }
 }
