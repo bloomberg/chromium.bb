@@ -196,6 +196,24 @@ const int kUIUpdateCoalescingTimeMS = 200;
 
 const char kHashMark[] = "#";
 
+// Returns |true| if entry has an internal chrome:// URL, |false| otherwise.
+bool HasInternalURL(const NavigationEntry* entry) {
+  if (!entry)
+    return false;
+
+  // Check the |virtual_url()| first. This catches regular chrome:// URLs
+  // including URLs that were rewritten (such as chrome://bookmarks).
+  if (entry->virtual_url().SchemeIs(chrome::kChromeUIScheme))
+    return true;
+
+  // If the |virtual_url()| isn't a chrome:// URL, check if it's actually
+  // view-source: of a chrome:// URL.
+  if (entry->virtual_url().SchemeIs(chrome::kViewSourceScheme))
+    return entry->url().SchemeIs(chrome::kChromeUIScheme);
+
+  return false;
+}
+
 }  // namespace
 
 extern bool g_log_bug53991;
@@ -3990,13 +4008,7 @@ void Browser::UpdateCommandsForTabState() {
       command_updater_.UpdateCommandEnabled(IDC_OPEN_FILE, false);
 
   // Changing the encoding is not possible on Chrome-internal webpages.
-  // Instead of using GetURL here, we use url() (which is the "real" url of the
-  // page) from the NavigationEntry because its reflects their origin rather
-  // than the display one (returned by GetURL) which may be different (like
-  // having "view-source:" on the front).
-  NavigationEntry* active_entry = nc.GetActiveEntry();
-  bool is_chrome_internal = (active_entry ?
-      active_entry->url().SchemeIs(chrome::kChromeUIScheme) : false);
+  bool is_chrome_internal = HasInternalURL(nc.GetActiveEntry());
   command_updater_.UpdateCommandEnabled(IDC_ENCODING_MENU,
       !is_chrome_internal && SavePackage::IsSavableContents(
           current_tab->contents_mime_type()));
