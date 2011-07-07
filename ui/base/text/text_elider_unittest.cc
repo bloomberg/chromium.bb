@@ -195,7 +195,13 @@ TEST(TextEliderTest, TestFilenameEliding) {
     {FILE_PATH_LITERAL("filename.longext"),
       "file" + kEllipsisStr + ".longext"},
     {FILE_PATH_LITERAL("filename.middleext.longext"),
-      "filename.mid" + kEllipsisStr + ".longext"}
+      "filename.mid" + kEllipsisStr + ".longext"},
+    {FILE_PATH_LITERAL("filename.superduperextremelylongext"),
+      "filename.sup" + kEllipsisStr + "emelylongext"},
+    {FILE_PATH_LITERAL("filenamereallylongtext.superduperextremelylongext"),
+      "filenamereall" + kEllipsisStr + "emelylongext"},
+    {FILE_PATH_LITERAL("file.name.really.long.text.superduperextremelylongext"),
+      "file.name.re" + kEllipsisStr + "emelylongext"}
   };
 
   static const gfx::Font font;

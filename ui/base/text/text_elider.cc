@@ -326,6 +326,12 @@ string16 ElideFilename(const FilePath& filename,
     return base::i18n::GetDisplayStringInLTRDirectionality(elided_name);
   }
 
+  if (ext_width >= available_pixel_width) {
+    string16 elided_name = ElideText(rootname + extension, font,
+                                     available_pixel_width, true);
+    return base::i18n::GetDisplayStringInLTRDirectionality(elided_name);
+  }
+
   int available_root_width = available_pixel_width - ext_width;
   string16 elided_name =
       ElideText(rootname, font, available_root_width, false);
