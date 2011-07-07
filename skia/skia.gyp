@@ -467,6 +467,7 @@
 
         '../third_party/skia/src/opts/opts_check_SSE2.cpp',
 
+        '../third_party/skia/src/pdf/SkBitSet.cpp',
         '../third_party/skia/src/pdf/SkPDFCatalog.cpp',
         '../third_party/skia/src/pdf/SkPDFDevice.cpp',
         '../third_party/skia/src/pdf/SkPDFDocument.cpp',
@@ -625,6 +626,7 @@
         '../third_party/skia/include/gpu/SkGr.h',
         '../third_party/skia/include/gpu/SkGrTexturePixelRef.h',
 
+        '../third_party/skia/include/pdf/SkBitSet.h',
         '../third_party/skia/include/pdf/SkPDFCatalog.h',
         '../third_party/skia/include/pdf/SkPDFDevice.h',
         '../third_party/skia/include/pdf/SkPDFDocument.h',
