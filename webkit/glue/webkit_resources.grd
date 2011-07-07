@@ -25,6 +25,32 @@
       <include name="IDR_MEDIA_SOUND_NONE_BUTTON" file="resources\media_sound_none.png" type="BINDATA" />
       <include name="IDR_MEDIA_SLIDER_THUMB" file="resources\media_slider_thumb.png" type="BINDATA" />
       <include name="IDR_MEDIA_VOLUME_SLIDER_THUMB" file="resources\media_volume_slider_thumb.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_PAUSE_BUTTON" file="resources\mediaplayer_pause.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_PAUSE_BUTTON_HOVER" file="resources\mediaplayer_pause_hover.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_PAUSE_BUTTON_DOWN" file="resources\mediaplayer_pause_down.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_PLAY_BUTTON" file="resources\mediaplayer_play.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_PLAY_BUTTON_HOVER" file="resources\mediaplayer_play_hover.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_PLAY_BUTTON_DOWN" file="resources\mediaplayer_play_down.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_PLAY_BUTTON_DISABLED" file="resources\mediaplayer_play_disabled.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_SOUND_DISABLED" file="resources\mediaplayer_sound_disabled.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_SOUND_FULL_BUTTON" file="resources\mediaplayer_sound_full.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_SOUND_FULL_BUTTON_HOVER" file="resources\mediaplayer_sound_full_hover.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_SOUND_FULL_BUTTON_DOWN" file="resources\mediaplayer_sound_full_down.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_SOUND_LEVEL2_BUTTON" file="resources\mediaplayer_sound_level2.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_SOUND_LEVEL2_BUTTON_HOVER" file="resources\mediaplayer_sound_level2_hover.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_SOUND_LEVEL2_BUTTON_DOWN" file="resources\mediaplayer_sound_level2_down.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_SOUND_LEVEL1_BUTTON" file="resources\mediaplayer_sound_level1.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_SOUND_LEVEL1_BUTTON_HOVER" file="resources\mediaplayer_sound_level1_hover.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_SOUND_LEVEL1_BUTTON_DOWN" file="resources\mediaplayer_sound_level1_down.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_SOUND_NONE_BUTTON" file="resources\mediaplayer_sound_none.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_SOUND_NONE_BUTTON_HOVER" file="resources\mediaplayer_sound_none_hover.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_SOUND_NONE_BUTTON_DOWN" file="resources\mediaplayer_sound_none_down.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_SLIDER_THUMB" file="resources\mediaplayer_slider_thumb.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_SLIDER_THUMB_HOVER" file="resources\mediaplayer_slider_thumb_hover.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_SLIDER_THUMB_DOWN" file="resources\mediaplayer_slider_thumb_down.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_VOLUME_SLIDER_THUMB" file="resources\mediaplayer_volume_slider_thumb.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_VOLUME_SLIDER_THUMB_HOVER" file="resources\mediaplayer_volume_slider_thumb_hover.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_VOLUME_SLIDER_THUMB_DOWN" file="resources\mediaplayer_volume_slider_thumb_down.png" type="BINDATA" />
       <include name="IDC_PAN_EAST" file="resources\pan_east.cur" type="CURSOR" />
       <include name="IDC_PAN_MIDDLE" file="resources\pan_middle.cur" type="CURSOR" />
       <include name="IDC_PAN_NORTH" file="resources\pan_north.cur" type="CURSOR" />
