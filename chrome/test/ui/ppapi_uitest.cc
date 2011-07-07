@@ -214,15 +214,8 @@ TEST_F(PPAPITest, MAYBE_DirectoryReader) {
   RunTestViaHTTP("DirectoryReader");
 }
 
-#if defined(OS_WIN)
-// Flaky on Windows, bug 87210
-#define MAYBE_Transport FLAKY_Transport
-#else
-#define MAYBE_Transport Transport
-#endif
-
 #if defined(ENABLE_P2P_APIS)
-TEST_F(PPAPITest, MAYBE_Transport) {
+TEST_F(PPAPITest, Transport) {
   RunTest("Transport");
 }
 #endif // ENABLE_P2P_APIS
