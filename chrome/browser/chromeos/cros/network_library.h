@@ -629,6 +629,12 @@ class CellularNetwork : public WirelessNetwork {
   const Apn& apn() const { return apn_; }
   const Apn& last_good_apn() const { return last_good_apn_; }
   void SetApn(const Apn& apn);
+
+  // Returns true if network supports activation.
+  // Current implementation returns same as SupportsDataPlan().
+  bool SupportsActivation() const;
+
+  // Returns true if one of the usage_url_ / payment_url_ (or both) is defined.
   bool SupportsDataPlan() const;
 
   // Misc.

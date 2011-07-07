@@ -1896,6 +1896,10 @@ void CellularNetwork::SetApn(const Apn& apn) {
   }
 }
 
+bool CellularNetwork::SupportsActivation() const {
+  return SupportsDataPlan();
+}
+
 bool CellularNetwork::SupportsDataPlan() const {
   // TODO(nkostylev): Are there cases when only one of this is defined?
   return !usage_url().empty() || !payment_url().empty();

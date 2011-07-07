@@ -402,6 +402,11 @@ void MobileSetupUIHTMLSource::StartDataRequest(const std::string& path,
                                                int request_id) {
   chromeos::CellularNetwork* network = GetCellularNetwork(service_path_);
   DCHECK(network);
+  if (!network->SupportsActivation()) {
+    scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
+    SendResponse(request_id, html_bytes);
+    return;
+  }
   DictionaryValue strings;
   strings.SetString("title", l10n_util::GetStringUTF16(IDS_MOBILE_SETUP_TITLE));
   strings.SetString("connecting_header",
@@ -471,9 +476,12 @@ WebUIMessageHandler* MobileSetupHandler::Attach(WebUI* web_ui) {
 
 void MobileSetupHandler::Init(TabContents* contents) {
   tab_contents_ = contents;
+  chromeos::CellularNetwork* network = GetCellularNetwork(service_path_);
+  if (!network || !network->SupportsActivation())
+    return;
   LoadCellularConfig();
   if (!chromeos::CrosLibrary::Get()->GetNetworkLibrary()->IsLocked())
-    SetupActivationProcess(GetCellularNetwork(service_path_));
+    SetupActivationProcess(network);
   else
     already_running_ = true;
 }
