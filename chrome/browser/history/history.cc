@@ -116,9 +116,6 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
   MessageLoop* message_loop_;
 };
 
-// static
-const history::StarID HistoryService::kBookmarkBarID = 1;
-
 // The history thread is intentionally not a BrowserThread because the
 // sync integration unit tests depend on being able to create more than one
 // history thread.

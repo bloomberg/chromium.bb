@@ -39,6 +39,10 @@ class StarredURLDatabase : public URLDatabase {
   friend class StarredURLDatabaseTest;
   FRIEND_TEST_ALL_PREFIXES(HistoryTest, CreateStarFolder);
 
+  // ID (both star_id and folder_id) of the bookmark bar.
+  // This entry always exists.
+  static const int64 kBookmarkBarID;
+
   // Writes bookmarks to the specified file.
   bool MigrateBookmarksToFile(const FilePath& path);
 

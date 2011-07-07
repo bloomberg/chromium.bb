@@ -115,6 +115,9 @@ void ResetBookmarkNode(const history::StarredEntry& entry,
 
 }  // namespace
 
+// static
+const int64 StarredURLDatabase::kBookmarkBarID = 1;
+
 StarredURLDatabase::StarredURLDatabase() {
 }
 
@@ -606,9 +609,8 @@ bool StarredURLDatabase::MigrateBookmarksToFileImpl(const FilePath& path) {
   }
 
   // Register the bookmark bar and other folder nodes in the maps.
-  id_to_node_map[HistoryService::kBookmarkBarID] = &bookmark_bar_node;
-  folder_id_to_id_map[HistoryService::kBookmarkBarID] =
-      HistoryService::kBookmarkBarID;
+  id_to_node_map[kBookmarkBarID] = &bookmark_bar_node;
+  folder_id_to_id_map[kBookmarkBarID] = kBookmarkBarID;
   if (other_folder_folder_id) {
     id_to_node_map[other_folder_id] = &other_node;
     folder_id_to_id_map[other_folder_folder_id] = other_folder_id;
