@@ -20,7 +20,6 @@
 #include "media/filters/ffmpeg_audio_decoder.h"
 #include "media/filters/ffmpeg_demuxer_factory.h"
 #include "media/filters/ffmpeg_video_decoder.h"
-#include "media/filters/rtc_video_decoder.h"
 #include "media/filters/null_audio_renderer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
@@ -377,17 +376,6 @@ WebMediaPlayerImpl::~WebMediaPlayerImpl() {
 void WebMediaPlayerImpl::load(const WebKit::WebURL& url) {
   DCHECK(MessageLoop::current() == main_loop_);
   DCHECK(proxy_);
-
-  if (media::RTCVideoDecoder::IsUrlSupported(url.spec())) {
-    // Remove the default decoder
-    scoped_refptr<media::VideoDecoder> old_videodecoder;
-    filter_collection_->SelectVideoDecoder(&old_videodecoder);
-    media::RTCVideoDecoder* rtc_video_decoder =
-        new media::RTCVideoDecoder(
-             message_loop_factory_->GetMessageLoop("VideoDecoderThread"),
-             url.spec());
-    filter_collection_->AddVideoDecoder(rtc_video_decoder);
-  }
 
   if (chunk_demuxer_factory_.get() &&
       chunk_demuxer_factory_->IsUrlSupported(url.spec())) {

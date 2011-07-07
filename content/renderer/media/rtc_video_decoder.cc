@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/filters/rtc_video_decoder.h"
+#include "content/renderer/media/rtc_video_decoder.h"
 
 #include <deque>
 
 #include "base/task.h"
-#include "googleurl/src/gurl.h"
 #include "media/base/callback.h"
 #include "media/base/filter_host.h"
 #include "media/base/filters.h"
@@ -15,9 +14,16 @@
 #include "media/base/media_format.h"
 #include "media/base/video_frame.h"
 
-namespace media {
-
-static const char kMediaScheme[] = "media";
+using media::DemuxerStream;
+using media::FilterCallback;
+using media::FilterStatusCB;
+using media::kNoTimestamp;
+using media::Limits;
+using media::MediaFormat;
+using media::PIPELINE_OK;
+using media::StatisticsCallback;
+using media::VideoDecoder;
+using media::VideoFrame;
 
 RTCVideoDecoder::RTCVideoDecoder(MessageLoop* message_loop,
                                  const std::string& url)
@@ -268,10 +274,3 @@ int RTCVideoDecoder::DeliverFrame(unsigned char* buffer,
 
   return 0;
 }
-
-bool RTCVideoDecoder::IsUrlSupported(const std::string& url) {
-  GURL gurl(url);
-  return gurl.SchemeIs(kMediaScheme);
-}
-
-}  // namespace media

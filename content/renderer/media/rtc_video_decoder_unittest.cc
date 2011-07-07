@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/singleton.h"
 #include "base/string_util.h"
+#include "content/renderer/media/rtc_video_decoder.h"
 #include "media/base/data_buffer.h"
 #include "media/base/filters.h"
 #include "media/base/limits.h"
@@ -15,7 +16,6 @@
 #include "media/base/mock_filters.h"
 #include "media/base/mock_task.h"
 #include "media/base/video_frame.h"
-#include "media/filters/rtc_video_decoder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
@@ -28,8 +28,15 @@ using ::testing::SetArgumentPointee;
 using ::testing::StrictMock;
 using ::testing::WithArg;
 using ::testing::Invoke;
-
-namespace media {
+using media::Limits;
+using media::MediaFormat;
+using media::MockStatisticsCallback;
+using media::MockVideoRenderer;
+using media::MockFilterHost;
+using media::NewExpectedCallback;
+using media::PipelineStatistics;
+using media::PIPELINE_OK;
+using media::StatisticsCallback;
 
 class RTCVideoDecoderTest : public testing::Test {
  protected:
@@ -135,8 +142,8 @@ TEST_F(RTCVideoDecoderTest, DoDeliverFrame) {
   EXPECT_CALL(*renderer_.get(), ConsumeVideoFrame(_))
       .Times(Limits::kMaxVideoFrames);
 
-  unsigned int video_frame_size = decoder_->width_*decoder_->height_*3/2;
-  unsigned char* video_frame = new unsigned char[video_frame_size];
+  unsigned int video_frame_size = decoder_->width_ * decoder_->height_ * 3 / 2;
+  uint8* video_frame = new uint8[video_frame_size];
 
   for (size_t i = 0; i < Limits::kMaxVideoFrames; ++i) {
     decoder_->DeliverFrame(video_frame, video_frame_size);
@@ -169,6 +176,3 @@ TEST_F(RTCVideoDecoderTest, DoFrameSizeChange) {
 
   message_loop_.RunAllPending();
 }
-
-
-}  // namespace media
