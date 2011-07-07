@@ -1065,7 +1065,7 @@ TEST_F(FocusManagerTest, ContainsView) {
   EXPECT_FALSE(GetFocusManager()->ContainsView(detached_view.get()));
 }
 
-TEST_F(FocusTraversalTest, DISABLED_NormalTraversal) {
+TEST_F(FocusTraversalTest, NormalTraversal) {
   const int kTraversalIDs[] = { kTopCheckBoxID,  kAppleTextfieldID,
       kOrangeTextfieldID, kBananaTextfieldID, kKiwiTextfieldID,
       kFruitButtonID, kFruitCheckBoxID, kComboboxID, kBroccoliButtonID,
@@ -1108,7 +1108,7 @@ TEST_F(FocusTraversalTest, DISABLED_NormalTraversal) {
   }
 }
 
-TEST_F(FocusTraversalTest, DISABLED_TraversalWithNonEnabledViews) {
+TEST_F(FocusTraversalTest, TraversalWithNonEnabledViews) {
   const int kDisabledIDs[] = {
       kBananaTextfieldID, kFruitCheckBoxID, kComboboxID, kAsparagusButtonID,
       kCauliflowerButtonID, kClosetLinkID, kVisitingLinkID, kBriceDeNiceLinkID,
@@ -1161,7 +1161,7 @@ TEST_F(FocusTraversalTest, DISABLED_TraversalWithNonEnabledViews) {
   }
 }
 
-TEST_F(FocusTraversalTest, DISABLED_TraversalWithInvisibleViews) {
+TEST_F(FocusTraversalTest, TraversalWithInvisibleViews) {
   const int kInvisibleIDs[] = { kTopCheckBoxID, kOKButtonID,
       kThumbnailContainerID };
 
@@ -1213,7 +1213,7 @@ TEST_F(FocusTraversalTest, DISABLED_TraversalWithInvisibleViews) {
   }
 }
 
-TEST_F(FocusTraversalTest, DISABLED_PaneTraversal) {
+TEST_F(FocusTraversalTest, PaneTraversal) {
   // Tests trapping the traversal within a pane - useful for full
   // keyboard accessibility for toolbars.
 
