@@ -480,10 +480,7 @@ void BrowserActionsToolbarGtk::Observe(NotificationType type,
                                        const NotificationSource& source,
                                        const NotificationDetails& details) {
   DCHECK(NotificationType::BROWSER_THEME_CHANGED == type);
-  if (theme_service_->UsingNativeTheme())
-    gtk_widget_show(separator_);
-  else
-    gtk_widget_hide(separator_);
+  gtk_widget_set_visible(separator_, theme_service_->UsingNativeTheme());
 }
 
 void BrowserActionsToolbarGtk::SetupDrags() {
@@ -566,10 +563,7 @@ void BrowserActionsToolbarGtk::RemoveButtonForExtension(
 }
 
 void BrowserActionsToolbarGtk::UpdateVisibility() {
-  if (button_count() == 0)
-    gtk_widget_hide(widget());
-  else
-    gtk_widget_show(widget());
+  gtk_widget_set_visible(widget(), button_count() != 0);
 }
 
 bool BrowserActionsToolbarGtk::ShouldDisplayBrowserAction(

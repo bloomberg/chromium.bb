@@ -35,10 +35,7 @@ void ProfileMenuButton::UpdateText(Profile* profile) {
   gtk_button_set_label(
       GTK_BUTTON(widget_.get()), UTF16ToUTF8(elided_text).c_str());
 
-  if (!text.empty())
-    gtk_widget_show(widget_.get());
-  else
-    gtk_widget_hide(widget_.get());
+  gtk_widget_set_visible(widget_.get(), !text.empty());
 }
 
 gboolean ProfileMenuButton::OnButtonPressed(GtkWidget* widget,

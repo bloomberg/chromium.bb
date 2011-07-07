@@ -615,11 +615,8 @@ void BrowserToolbarGtk::OnDragDataReceived(GtkWidget* widget,
 
 void BrowserToolbarGtk::NotifyPrefChanged(const std::string* pref) {
   if (!pref || *pref == prefs::kShowHomeButton) {
-    if (show_home_button_.GetValue() && !ShouldOnlyShowLocation()) {
-      gtk_widget_show(home_->widget());
-    } else {
-      gtk_widget_hide(home_->widget());
-    }
+    bool visible = show_home_button_.GetValue() && !ShouldOnlyShowLocation();
+    gtk_widget_set_visible(home_->widget(), visible);
   }
 
   if (!pref ||

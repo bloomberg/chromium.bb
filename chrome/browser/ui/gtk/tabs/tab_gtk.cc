@@ -240,11 +240,7 @@ bool TabGtk::IsVisible() const {
 }
 
 void TabGtk::SetVisible(bool visible) const {
-  if (visible) {
-    gtk_widget_show(event_box_);
-  } else {
-    gtk_widget_hide(event_box_);
-  }
+  gtk_widget_set_visible(event_box_, visible);
 }
 
 void TabGtk::CloseButtonClicked() {

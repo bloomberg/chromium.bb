@@ -451,20 +451,13 @@ void BookmarkBarGtk::Show(BookmarkBar::State old_state,
     }
   }
 
-  if (sync_ui_util::ShouldShowSyncErrorButton(sync_service_)) {
-    gtk_widget_show(sync_error_button_);
-  } else {
-    gtk_widget_hide(sync_error_button_);
-  }
+  gtk_widget_set_visible(
+      sync_error_button_,
+      sync_ui_util::ShouldShowSyncErrorButton(sync_service_));
 
   // Maybe show the instructions
-  if (show_instructions_) {
-    gtk_widget_hide(bookmark_toolbar_.get());
-    gtk_widget_show(instructions_);
-  } else {
-    gtk_widget_hide(instructions_);
-    gtk_widget_show(bookmark_toolbar_.get());
-  }
+  gtk_widget_set_visible(bookmark_toolbar_.get(), !show_instructions_);
+  gtk_widget_set_visible(instructions_, show_instructions_);
 
   SetChevronState();
 }
@@ -509,14 +502,11 @@ void BookmarkBarGtk::CreateAllBookmarkButtons() {
 }
 
 void BookmarkBarGtk::SetInstructionState() {
-  show_instructions_ = model_->GetBookmarkBarNode()->empty();
-  if (show_instructions_) {
-    gtk_widget_hide(bookmark_toolbar_.get());
-    gtk_widget_show_all(instructions_);
-  } else {
-    gtk_widget_hide(instructions_);
-    gtk_widget_show(bookmark_toolbar_.get());
-  }
+  if (model_)
+    show_instructions_ = model_->GetBookmarkBarNode()->empty();
+
+  gtk_widget_set_visible(bookmark_toolbar_.get(), !show_instructions_);
+  gtk_widget_set_visible(instructions_, show_instructions_);
 }
 
 void BookmarkBarGtk::SetChevronState() {
@@ -1442,11 +1432,9 @@ void BookmarkBarGtk::OnThrobbingWidgetDestroy(GtkWidget* widget) {
 }
 
 void BookmarkBarGtk::OnStateChanged() {
-  if (sync_ui_util::ShouldShowSyncErrorButton(sync_service_)) {
-    gtk_widget_show(sync_error_button_);
-  } else {
-    gtk_widget_hide(sync_error_button_);
-  }
+  gtk_widget_set_visible(
+      sync_error_button_,
+      sync_ui_util::ShouldShowSyncErrorButton(sync_service_));
 }
 
 void BookmarkBarGtk::ShowImportDialog() {

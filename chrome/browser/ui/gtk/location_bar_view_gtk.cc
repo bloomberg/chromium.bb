@@ -635,10 +635,7 @@ void LocationBarViewGtk::UpdateContentSettingsIcons() {
 
   // If there are no visible content things, hide the top level box so it
   // doesn't mess with padding.
-  if (any_visible)
-    gtk_widget_show(content_setting_hbox_.get());
-  else
-    gtk_widget_hide(content_setting_hbox_.get());
+  gtk_widget_set_visible(content_setting_hbox_.get(), any_visible);
 }
 
 void LocationBarViewGtk::UpdatePageActions() {
@@ -682,10 +679,8 @@ void LocationBarViewGtk::UpdatePageActions() {
 
   // If there are no visible page actions, hide the hbox too, so that it does
   // not affect the padding in the location bar.
-  if (PageActionVisibleCount() && !ShouldOnlyShowLocation())
-    gtk_widget_show(page_action_hbox_.get());
-  else
-    gtk_widget_hide(page_action_hbox_.get());
+  gtk_widget_set_visible(page_action_hbox_.get(),
+                         PageActionVisibleCount() && !ShouldOnlyShowLocation());
 }
 
 void LocationBarViewGtk::InvalidatePageActions() {
