@@ -22,8 +22,8 @@ stime_t StimeFromTimeval(const struct timeval*);
 
 struct HardwareProperties {
   float left, top, right, bottom;
-  float touch_width;  // mm
-  float touch_height;  // mm
+  float res_x;  // pixels/mm
+  float res_y;  // pixels/mm
   float screen_x_dpi;  // read from X server and passed to library
   float screen_y_dpi;  // read from X server and passed to library
   unsigned short max_finger_cnt;

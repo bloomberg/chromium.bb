@@ -18,8 +18,8 @@ TEST(ImmediateInterpreterTest, MoveDownTest) {
     0,  // top edge
     1000,  // right edge
     1000,  // bottom edge
-    2,  // TP width
-    2,  // TP height
+    500,  // pixels/TP width
+    500,  // pixels/TP height
     96,  // screen DPI x
     96,  // screen DPI y
     2,  // max fingers
@@ -81,8 +81,8 @@ TEST(ImmediateInterpreterTest, SetHardwarePropertiesTwiceTest) {
     0,  // top edge
     1000,  // right edge
     1000,  // bottom edge
-    2,  // TP width
-    2,  // TP height
+    500,  // pixels/TP width
+    500,  // pixels/TP height
     96,  // screen DPI x
     96,  // screen DPI y
     2,  // max fingers
