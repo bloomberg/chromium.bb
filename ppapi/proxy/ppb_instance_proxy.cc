@@ -116,6 +116,10 @@ bool PPB_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgSetFullscreen)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_GetScreenSize,
                         OnMsgGetScreenSize)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_RequestInputEvents,
+                        OnMsgRequestInputEvents)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_ClearInputEvents,
+                        OnMsgClearInputEvents)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -196,6 +200,35 @@ PP_Bool PPB_Instance_Proxy::GetScreenSize(PP_Instance instance,
   dispatcher()->Send(new PpapiHostMsg_PPBInstance_GetScreenSize(
       INTERFACE_ID_PPB_INSTANCE, instance, &result, size));
   return result;
+}
+
+int32_t PPB_Instance_Proxy::RequestInputEvents(PP_Instance instance,
+                                               uint32_t event_classes) {
+  dispatcher()->Send(new PpapiHostMsg_PPBInstance_RequestInputEvents(
+      INTERFACE_ID_PPB_INSTANCE, instance, false, event_classes));
+
+  // We always register for the classes we can handle, this function validates
+  // the flags so we can notify it if anything was invalid, without requiring
+  // a sync reply.
+  return ValidateRequestInputEvents(false, event_classes);
+}
+
+int32_t PPB_Instance_Proxy::RequestFilteringInputEvents(
+    PP_Instance instance,
+    uint32_t event_classes) {
+  dispatcher()->Send(new PpapiHostMsg_PPBInstance_RequestInputEvents(
+      INTERFACE_ID_PPB_INSTANCE, instance, true, event_classes));
+
+  // We always register for the classes we can handle, this function validates
+  // the flags so we can notify it if anything was invalid, without requiring
+  // a sync reply.
+  return ValidateRequestInputEvents(true, event_classes);
+}
+
+void PPB_Instance_Proxy::ClearInputEventRequest(PP_Instance instance,
+                                                uint32_t event_classes) {
+  dispatcher()->Send(new PpapiHostMsg_PPBInstance_ClearInputEvents(
+      INTERFACE_ID_PPB_INSTANCE, instance, event_classes));
 }
 
 void PPB_Instance_Proxy::ZoomChanged(PP_Instance instance,
@@ -287,6 +320,25 @@ void PPB_Instance_Proxy::OnMsgGetScreenSize(PP_Instance instance,
   EnterFunctionNoLock<PPB_Instance_FunctionAPI> enter(instance, false);
   if (enter.succeeded())
     *result = enter.functions()->GetScreenSize(instance, size);
+}
+
+void PPB_Instance_Proxy::OnMsgRequestInputEvents(PP_Instance instance,
+                                                 bool is_filtering,
+                                                 uint32_t event_classes) {
+  EnterFunctionNoLock<PPB_Instance_FunctionAPI> enter(instance, false);
+  if (enter.succeeded()) {
+    if (is_filtering)
+      enter.functions()->RequestFilteringInputEvents(instance, event_classes);
+    else
+      enter.functions()->RequestInputEvents(instance, event_classes);
+  }
+}
+
+void PPB_Instance_Proxy::OnMsgClearInputEvents(PP_Instance instance,
+                                               uint32_t event_classes) {
+  EnterFunctionNoLock<PPB_Instance_FunctionAPI> enter(instance, false);
+  if (enter.succeeded())
+    enter.functions()->ClearInputEventRequest(instance, event_classes);
 }
 
 void PPB_Instance_Proxy::OnMsgPostMessage(PP_Instance instance,

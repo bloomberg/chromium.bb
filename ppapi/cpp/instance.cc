@@ -4,6 +4,8 @@
 
 #include "ppapi/cpp/instance.h"
 
+#include "ppapi/c/pp_errors.h"
+#include "ppapi/c/ppb_input_event.h"
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/c/ppb_messaging.h"
 #include "ppapi/cpp/common.h"
@@ -20,6 +22,10 @@
 namespace pp {
 
 namespace {
+
+template <> const char* interface_name<PPB_InputEvent>() {
+  return PPB_INPUT_EVENT_INTERFACE;
+}
 
 template <> const char* interface_name<PPB_Instance>() {
   return PPB_INSTANCE_INTERFACE;
@@ -62,6 +68,10 @@ bool Instance::HandleDocumentLoad(const URLLoader& /*url_loader*/) {
 }
 
 bool Instance::HandleInputEvent(const PP_InputEvent& /*event*/) {
+  return false;
+}
+
+bool Instance::HandleInputEvent(const InputEvent& /*event*/) {
   return false;
 }
 
@@ -119,6 +129,27 @@ bool Instance::IsFullFrame() {
     return false;
   return PPBoolToBool(get_interface<PPB_Instance>()->IsFullFrame(
       pp_instance()));
+}
+
+int32_t Instance::RequestInputEvents(uint32_t event_classes) {
+  if (!has_interface<PPB_InputEvent>())
+    return PP_ERROR_NOINTERFACE;
+  return get_interface<PPB_InputEvent>()->RequestInputEvents(pp_instance(),
+                                                             event_classes);
+}
+
+int32_t Instance::RequestFilteringInputEvents(uint32_t event_classes) {
+  if (!has_interface<PPB_InputEvent>())
+    return PP_ERROR_NOINTERFACE;
+  return get_interface<PPB_InputEvent>()->RequestFilteringInputEvents(
+      pp_instance(), event_classes);
+}
+
+void Instance::ClearInputEventRequest(uint32_t event_classes) {
+  if (!has_interface<PPB_InputEvent>())
+    return;
+  get_interface<PPB_InputEvent>()->ClearInputEventRequest(pp_instance(),
+                                                          event_classes);
 }
 
 void Instance::PostMessage(const Var& message) {

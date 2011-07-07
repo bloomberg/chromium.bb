@@ -21,7 +21,7 @@
  */
 
 /**
- * The PP_Point structure defines the x and y coordinates of a point.
+ * The PP_Point structure defines the integer x and y coordinates of a point.
  */
 struct PP_Point {
   /**
@@ -37,6 +37,16 @@ struct PP_Point {
   int32_t y;
 };
 PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_Point, 8);
+
+/**
+ * The PP_FloatPoint structure defines the floating-point x and y coordinates
+ * of a point.
+ */
+struct PP_FloatPoint {
+  float x;
+  float y;
+};
+PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_FloatPoint, 8);
 /**
  * @}
  */
@@ -57,6 +67,13 @@ PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_Point, 8);
  */
 PP_INLINE struct PP_Point PP_MakePoint(int32_t x, int32_t y) {
   struct PP_Point ret;
+  ret.x = x;
+  ret.y = y;
+  return ret;
+}
+
+PP_INLINE struct PP_FloatPoint PP_MakeFloatPoint(float x, float y) {
+  struct PP_FloatPoint ret;
   ret.x = x;
   ret.y = y;
   return ret;

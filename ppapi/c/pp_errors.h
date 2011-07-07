@@ -72,6 +72,11 @@ enum {
    */
   PP_ERROR_INPROGRESS = -11,
 
+  /**
+   * The requested command is not supported by the browser.
+   */
+  PP_ERROR_NOTSUPPORTED = -12,
+
   /** This value indicates failure due to a file that does not exist. */
   PP_ERROR_FILENOTFOUND = -20,
 

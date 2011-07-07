@@ -24,6 +24,7 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/shared_impl/function_group_base.h"
+#include "ppapi/shared_impl/instance_impl.h"
 #include "ppapi/shared_impl/ppp_instance_combined.h"
 #include "ppapi/thunk/ppb_instance_api.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -35,6 +36,7 @@
 typedef struct NPObject NPObject;
 struct PP_Var;
 struct PPP_Find_Dev;
+struct PPP_InputEvent;
 struct PPP_Instance_Private;
 struct PPP_Messaging;
 struct PPP_Pdf;
@@ -80,7 +82,8 @@ class Resource;
 // ResourceTracker.
 class PluginInstance : public base::RefCounted<PluginInstance>,
                        public ::ppapi::FunctionGroupBase,
-                       public ::ppapi::thunk::PPB_Instance_FunctionAPI {
+                       public ::ppapi::thunk::PPB_Instance_FunctionAPI,
+                       public ::ppapi::InstanceImpl {
  public:
   // Create and return a PluginInstance object which supports the
   // PPP_Instance_0_5 interface.
@@ -276,6 +279,12 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
   virtual PP_Bool SetFullscreen(PP_Instance instance,
                                 PP_Bool fullscreen) OVERRIDE;
   virtual PP_Bool GetScreenSize(PP_Instance instance, PP_Size* size) OVERRIDE;
+  virtual int32_t RequestInputEvents(PP_Instance instance,
+                                     uint32_t event_classes) OVERRIDE;
+  virtual int32_t RequestFilteringInputEvents(PP_Instance instance,
+                                              uint32_t event_classes) OVERRIDE;
+  virtual void ClearInputEventRequest(PP_Instance instance,
+                                      uint32_t event_classes) OVERRIDE;
   virtual void ZoomChanged(PP_Instance instance, double factor) OVERRIDE;
   virtual void ZoomLimitsChanged(PP_Instance instance,
                                  double minimum_factor,
@@ -292,6 +301,7 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
                  ::ppapi::PPP_Instance_Combined* instance_interface);
 
   bool LoadFindInterface();
+  bool LoadInputEventInterface();
   bool LoadMessagingInterface();
   bool LoadPdfInterface();
   bool LoadSelectionInterface();
@@ -384,13 +394,15 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
   // The plugin-provided interfaces.
   const PPP_Find_Dev* plugin_find_interface_;
   const PPP_Messaging* plugin_messaging_interface_;
-  const PPP_Pdf* plugin_pdf_interface_;
+  const PPP_InputEvent* plugin_input_event_interface_;
   const PPP_Instance_Private* plugin_private_interface_;
+  const PPP_Pdf* plugin_pdf_interface_;
   const PPP_Selection_Dev* plugin_selection_interface_;
   const PPP_Zoom_Dev* plugin_zoom_interface_;
 
-  // A flag to indicate whether we have asked this plugin instance for its
-  // messaging interface, so that we can ask only once.
+  // Flags indicating whether we have asked this plugin instance for the
+  // corresponding interfaces, so that we can ask only once.
+  bool checked_for_plugin_input_event_interface_;
   bool checked_for_plugin_messaging_interface_;
 
   // This is only valid between a successful PrintBegin call and a PrintEnd
@@ -483,6 +495,11 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
   // the corresponding object. These are non-owning references.
   typedef std::map<NPObject*, ObjectVar*> NPObjectToObjectVarMap;
   NPObjectToObjectVarMap np_object_to_object_var_;
+
+  // Classes of events that the plugin has registered for, both for filtering
+  // and not. The bits are PP_INPUTEVENT_CLASS_*.
+  uint32_t input_event_mask_;
+  uint32_t filtered_input_event_mask_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginInstance);
 };

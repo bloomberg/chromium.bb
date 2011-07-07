@@ -17,12 +17,12 @@
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "ppapi/c/dev/ppp_printing_dev.h"
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/c/pp_input_event.h"
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/dev/scriptable_object_deprecated.h"
 #include "ppapi/cpp/graphics_2d.h"
 #include "ppapi/cpp/image_data.h"
+#include "ppapi/cpp/input_event.h"
 #include "ppapi/cpp/private/instance_private.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/private/var_private.h"
@@ -169,7 +169,9 @@ class MyInstance : public pp::InstancePrivate, public MyFetcherClient {
         height_(0),
         animation_counter_(0),
         print_settings_valid_(false),
-        showing_custom_cursor_(false) {}
+        showing_custom_cursor_(false) {
+    RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE);
+  }
 
   virtual ~MyInstance() {
     if (fetcher_) {
@@ -196,8 +198,8 @@ class MyInstance : public pp::InstancePrivate, public MyFetcherClient {
     return true;
   }
 
-  virtual bool HandleInputEvent(const PP_InputEvent& event) {
-    switch (event.type) {
+  virtual bool HandleInputEvent(const pp::InputEvent& event) {
+    switch (event.GetType()) {
       case PP_INPUTEVENT_TYPE_MOUSEDOWN:
         SayHello();
         ToggleCursor();

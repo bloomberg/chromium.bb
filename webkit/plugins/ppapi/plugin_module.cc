@@ -51,6 +51,7 @@
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppb_graphics_2d.h"
 #include "ppapi/c/ppb_image_data.h"
+#include "ppapi/c/ppb_input_event.h"
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/c/ppb_messaging.h"
 #include "ppapi/c/ppb_url_loader.h"
@@ -89,6 +90,7 @@
 #include "webkit/plugins/ppapi/ppb_font_impl.h"
 #include "webkit/plugins/ppapi/ppb_graphics_2d_impl.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
+#include "webkit/plugins/ppapi/ppb_input_event_impl.h"
 #include "webkit/plugins/ppapi/ppb_layer_compositor_impl.h"
 #include "webkit/plugins/ppapi/ppb_memory_impl.h"
 #include "webkit/plugins/ppapi/ppb_opengles_impl.h"
@@ -288,16 +290,22 @@ const void* GetInterface(const char* name) {
     return ::ppapi::thunk::GetPPB_ImageData_Thunk();
   if (strcmp(name, PPB_IMAGEDATA_TRUSTED_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_ImageDataTrusted_Thunk();
+  if (strcmp(name, PPB_INPUT_EVENT_INTERFACE) == 0)
+    return ::ppapi::thunk::GetPPB_InputEvent_Thunk();
   if (strcmp(name, PPB_INSTANCE_INTERFACE_0_4) == 0)
     return ::ppapi::thunk::GetPPB_Instance_0_4_Thunk();
   if (strcmp(name, PPB_INSTANCE_INTERFACE_0_5) == 0)
     return ::ppapi::thunk::GetPPB_Instance_0_5_Thunk();
   if (strcmp(name, PPB_INSTANCE_PRIVATE_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_Instance_Private_Thunk();
+  if (strcmp(name, PPB_KEYBOARD_INPUT_EVENT_INTERFACE) == 0)
+    return ::ppapi::thunk::GetPPB_KeyboardInputEvent_Thunk();
   if (strcmp(name, PPB_MEMORY_DEV_INTERFACE) == 0)
     return PPB_Memory_Impl::GetInterface();
   if (strcmp(name, PPB_MESSAGING_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_Messaging_Thunk();
+  if (strcmp(name, PPB_MOUSE_INPUT_EVENT_INTERFACE) == 0)
+    return ::ppapi::thunk::GetPPB_MouseInputEvent_Thunk();
   if (strcmp(name, PPB_PROXY_PRIVATE_INTERFACE) == 0)
     return PPB_Proxy_Impl::GetInterface();
   if (strcmp(name, PPB_SCROLLBAR_DEV_INTERFACE_0_4) == 0)
@@ -324,6 +332,8 @@ const void* GetInterface(const char* name) {
     return ::ppapi::thunk::GetPPB_VideoDecoder_Thunk();
   if (strcmp(name, PPB_VIDEOLAYER_DEV_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_VideoLayer_Thunk();
+  if (strcmp(name, PPB_WHEEL_INPUT_EVENT_INTERFACE) == 0)
+    return ::ppapi::thunk::GetPPB_WheelInputEvent_Thunk();
   if (strcmp(name, PPB_WIDGET_DEV_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_Widget_Thunk();
   if (strcmp(name, PPB_ZOOM_DEV_INTERFACE) == 0)

@@ -30,11 +30,20 @@
 #include "ppapi/proxy/ppapi_param_traits.h"
 #include "ppapi/proxy/serialized_flash_menu.h"
 #include "ppapi/proxy/serialized_structs.h"
+#include "ppapi/shared_impl/input_event_impl.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
 
 #define IPC_MESSAGE_START PpapiMsgStart
 
+IPC_ENUM_TRAITS(PP_InputEvent_Type)
+IPC_ENUM_TRAITS(PP_InputEvent_MouseButton)
+
 IPC_STRUCT_TRAITS_BEGIN(PP_Point)
+  IPC_STRUCT_TRAITS_MEMBER(x)
+  IPC_STRUCT_TRAITS_MEMBER(y)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(PP_FloatPoint)
   IPC_STRUCT_TRAITS_MEMBER(x)
   IPC_STRUCT_TRAITS_MEMBER(y)
 IPC_STRUCT_TRAITS_END()
@@ -56,6 +65,21 @@ IPC_STRUCT_TRAITS_BEGIN(::ppapi::Preferences)
   IPC_STRUCT_TRAITS_MEMBER(sans_serif_font_family)
   IPC_STRUCT_TRAITS_MEMBER(default_font_size)
   IPC_STRUCT_TRAITS_MEMBER(default_fixed_font_size)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(::ppapi::InputEventData)
+  IPC_STRUCT_TRAITS_MEMBER(is_filtered)
+  IPC_STRUCT_TRAITS_MEMBER(event_type)
+  IPC_STRUCT_TRAITS_MEMBER(event_time_stamp)
+  IPC_STRUCT_TRAITS_MEMBER(event_modifiers)
+  IPC_STRUCT_TRAITS_MEMBER(mouse_button)
+  IPC_STRUCT_TRAITS_MEMBER(mouse_position)
+  IPC_STRUCT_TRAITS_MEMBER(mouse_click_count)
+  IPC_STRUCT_TRAITS_MEMBER(wheel_delta)
+  IPC_STRUCT_TRAITS_MEMBER(wheel_ticks)
+  IPC_STRUCT_TRAITS_MEMBER(wheel_scroll_by_page)
+  IPC_STRUCT_TRAITS_MEMBER(key_code)
+  IPC_STRUCT_TRAITS_MEMBER(character_text)
 IPC_STRUCT_TRAITS_END()
 
 // These are from the browser to the plugin.
@@ -233,6 +257,15 @@ IPC_MESSAGE_ROUTED2(PpapiMsg_PPPClass_Deallocate,
 // PPP_Graphics3D_Dev.
 IPC_MESSAGE_ROUTED1(PpapiMsg_PPPGraphics3D_ContextLost,
                     PP_Instance /* instance */)
+
+// PPP_InputEvent.
+IPC_MESSAGE_ROUTED2(PpapiMsg_PPPInputEvent_HandleInputEvent,
+                    PP_Instance /* instance */,
+                    ppapi::InputEventData /* data */)
+IPC_SYNC_MESSAGE_ROUTED2_1(PpapiMsg_PPPInputEvent_HandleFilteredInputEvent,
+                           PP_Instance /* instance */,
+                           ppapi::InputEventData /* data */,
+                           PP_Bool /* result */)
 
 // PPP_Instance.
 IPC_SYNC_MESSAGE_ROUTED3_1(PpapiMsg_PPPInstance_DidCreate,
@@ -625,6 +658,13 @@ IPC_SYNC_MESSAGE_ROUTED1_2(PpapiHostMsg_PPBInstance_GetScreenSize,
                            PP_Instance /* instance */,
                            PP_Bool /* result */,
                            PP_Size /* size */)
+IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_RequestInputEvents,
+                    PP_Instance /* instance */,
+                    bool /* is_filtering */,
+                    uint32_t /* event_classes */)
+IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBInstance_ClearInputEvents,
+                    PP_Instance /* instance */,
+                    uint32_t /* event_classes */)
 IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBInstance_PostMessage,
                     PP_Instance /* instance */,
                     pp::proxy::SerializedVar /* message */)

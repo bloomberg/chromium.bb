@@ -33,6 +33,14 @@ class PPB_Instance_FunctionAPI {
   virtual PP_Bool SetFullscreen(PP_Instance instance, PP_Bool fullscreen) = 0;
   virtual PP_Bool GetScreenSize(PP_Instance instance, PP_Size* size) = 0;
 
+  // InputEvent.
+  virtual int32_t RequestInputEvents(PP_Instance instance,
+                                     uint32_t event_classes) = 0;
+  virtual int32_t RequestFilteringInputEvents(PP_Instance instance,
+                                              uint32_t event_classes) = 0;
+  virtual void ClearInputEventRequest(PP_Instance instance,
+                                      uint32_t event_classes) = 0;
+
   // Messaging.
   virtual void PostMessage(PP_Instance instance, PP_Var message) = 0;
 

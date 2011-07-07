@@ -66,6 +66,7 @@
 #include "ppapi/proxy/ppb_font_proxy.h"
 #include "ppapi/proxy/ppb_graphics_2d_proxy.h"
 #include "ppapi/proxy/ppb_image_data_proxy.h"
+#include "ppapi/proxy/ppb_input_event_proxy.h"
 #include "ppapi/proxy/ppb_instance_proxy.h"
 #include "ppapi/proxy/ppb_memory_proxy.h"
 #include "ppapi/proxy/ppb_opengles2_proxy.h"
@@ -80,6 +81,7 @@
 #include "ppapi/proxy/ppb_var_proxy.h"
 #include "ppapi/proxy/ppp_class_proxy.h"
 #include "ppapi/proxy/ppp_graphics_3d_proxy.h"
+#include "ppapi/proxy/ppp_input_event_proxy.h"
 #include "ppapi/proxy/ppp_instance_private_proxy.h"
 #include "ppapi/proxy/ppp_instance_proxy.h"
 #include "ppapi/proxy/var_serialization_rules.h"
@@ -136,6 +138,7 @@ InterfaceList::InterfaceList() {
   AddPPB(PPB_Font_Proxy::GetInfo());
   AddPPB(PPB_Graphics2D_Proxy::GetInfo());
   AddPPB(PPB_ImageData_Proxy::GetInfo());
+  AddPPB(PPB_InputEvent_Proxy::GetInfo());
   AddPPB(PPB_Instance_Proxy::GetInfoPrivate());
   AddPPB(PPB_Instance_Proxy::GetInfo0_4());
   AddPPB(PPB_Instance_Proxy::GetInfo0_5());
@@ -159,6 +162,7 @@ InterfaceList::InterfaceList() {
 
   // PPP (plugin) interfaces.
   AddPPP(PPP_Graphics3D_Proxy::GetInfo());
+  AddPPP(PPP_InputEvent_Proxy::GetInfo());
   AddPPP(PPP_Instance_Private_Proxy::GetInfo());
   AddPPP(PPP_Instance_Proxy::GetInfo0_4());
   AddPPP(PPP_Instance_Proxy::GetInfo0_5());

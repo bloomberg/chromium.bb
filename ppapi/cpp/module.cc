@@ -27,16 +27,35 @@
 
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_var.h"
+#include "ppapi/c/ppp_input_event.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/ppp_messaging.h"
 #include "ppapi/cpp/common.h"
-#include "ppapi/cpp/url_loader.h"
+#include "ppapi/cpp/input_event.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/resource.h"
+#include "ppapi/cpp/url_loader.h"
 #include "ppapi/cpp/var.h"
 
 namespace pp {
+
+// PPP_InputEvent implementation -----------------------------------------------
+
+PP_Bool InputEvent_HandleEvent(PP_Instance pp_instance, PP_Resource resource) {
+  Module* module_singleton = Module::Get();
+  if (!module_singleton)
+    return PP_FALSE;
+  Instance* instance = module_singleton->InstanceForPPInstance(pp_instance);
+  if (!instance)
+    return PP_FALSE;
+
+  return BoolToPPBool(instance->HandleInputEvent(InputEvent(resource)));
+}
+
+const PPP_InputEvent input_event_interface = {
+  &InputEvent_HandleEvent
+};
 
 // PPP_Instance implementation -------------------------------------------------
 
@@ -139,6 +158,8 @@ static PPP_Instance instance_interface = {
 #endif
 };
 
+// PPP_Messaging implementation ------------------------------------------------
+
 void Messaging_HandleMessage(PP_Instance pp_instance, PP_Var var) {
   Module* module_singleton = Module::Get();
   if (!module_singleton)
@@ -168,9 +189,10 @@ bool Module::Init() {
 }
 
 const void* Module::GetPluginInterface(const char* interface_name) {
+  if (strcmp(interface_name, PPP_INPUT_EVENT_INTERFACE) == 0)
+    return &input_event_interface;
   if (strcmp(interface_name, PPP_INSTANCE_INTERFACE) == 0)
     return &instance_interface;
-
   if (strcmp(interface_name, PPP_MESSAGING_INTERFACE) == 0)
     return &instance_messaging_interface;
 

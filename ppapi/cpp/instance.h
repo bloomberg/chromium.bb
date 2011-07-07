@@ -24,6 +24,7 @@ struct PP_InputEvent;
 namespace pp {
 
 class Graphics2D;
+class InputEvent;
 class ImageData;
 class Point;
 class Rect;
@@ -154,6 +155,9 @@ class Instance {
   /// @return true if @a event was handled, false otherwise.
   virtual bool HandleInputEvent(const PP_InputEvent& event);
 
+  /// @see InputEvent for an example
+  virtual bool HandleInputEvent(const InputEvent& event);
+
   /// Notification of a data stream available after an instance was created
   /// based on the MIME type of a DOMWindow navigation. This only applies to
   /// modules that are pre-registered to handle certain MIME types. If you
@@ -203,6 +207,10 @@ class Instance {
 
   /// See PPB_Instance.IsFullFrame.
   bool IsFullFrame();
+
+  int32_t RequestInputEvents(uint32_t event_classes);
+  int32_t RequestFilteringInputEvents(uint32_t event_classes);
+  void ClearInputEventRequest(uint32_t event_classes);
 
   // These functions use the PPP_Messaging and PPB_Messaging interfaces, so that
   // messaging can be done conveniently for a pp::Instance without using a
