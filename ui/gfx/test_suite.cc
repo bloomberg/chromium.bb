@@ -41,7 +41,7 @@ void GfxTestSuite::Initialize() {
 #elif defined(OS_POSIX)
   FilePath pak_dir;
   PathService::Get(base::DIR_MODULE, &pak_dir);
-  pak_dir = pak_dir.AppendASCII("app_unittests_strings");
+  pak_dir = pak_dir.AppendASCII("ui_unittests_strings");
   PathService::Override(ui::DIR_LOCALES, pak_dir);
   PathService::Override(ui::FILE_RESOURCES_PAK,
                         pak_dir.AppendASCII("ui_resources.pak"));

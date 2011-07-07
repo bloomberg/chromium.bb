@@ -60,7 +60,7 @@
               '<@(pak_inputs)',
             ],
             'outputs': [
-              '<(PRODUCT_DIR)/app_unittests_strings/en-US.pak',
+              '<(PRODUCT_DIR)/ui_unittests_strings/en-US.pak',
             ],
             'action': ['python', '<(repack_path)', '<@(_outputs)',
                        '<@(pak_inputs)'],
@@ -68,7 +68,7 @@
         ],
         'copies': [
           {
-            'destination': '<(PRODUCT_DIR)/app_unittests_strings',
+            'destination': '<(PRODUCT_DIR)/ui_unittests_strings',
             'files': [
               '<(grit_base_out_dir)/ui_resources/ui_resources.pak',
             ],
