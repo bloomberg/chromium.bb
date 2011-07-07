@@ -361,7 +361,8 @@ add_config('x86-mario-pre-flight-queue', [internal, {
   'quick_vm' : True,
   'overlays': 'both',
   'push_overlays': 'private',
-  'gs_path': 'gs://chromeos-x86-mario/pre-flight-master'
+  'gs_path': 'gs://chromeos-x86-mario/pre-flight-master',
+  'manifest_version' : _MANIFEST_VERSIONS_INT_URL,
 }])
 
 add_config('x86-alex-pre-flight-branch', [internal, {
