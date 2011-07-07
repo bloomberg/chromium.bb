@@ -406,6 +406,7 @@ string ProcessRawBitsSignatureWrap(X509Certificate::OSCertHandle cert_handle) {
 }
 
 void RegisterDynamicOids() {
+  psm::RegisterDynamicOids();
 }
 
 }  // namespace x509_certificate_model

@@ -2938,6 +2938,12 @@ are declared in build/common.gypi.
       <message translateable="false" name="IDS_CERT_OID_PKCS9_EMAIL_ADDRESS" desc="">
         E
       </message>
+      <message translateable="false" name="IDS_CERT_OID_BUSINESS_CATEGORY" desc="">
+        businessCategory
+      </message>
+      <message translateable="false" name="IDS_CERT_OID_EV_INCORPORATION_COUNTRY" desc="">
+        incorporationCountry
+      </message>
 
       <message name="IDS_CERT_OID_PKCS1_RSA_ENCRYPTION" desc="description of public key algorithm SEC_OID_PKCS1_RSA_ENCRYPTION">
         PKCS #1 RSA Encryption
