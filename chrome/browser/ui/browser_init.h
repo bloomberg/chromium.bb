@@ -175,7 +175,8 @@ class BrowserInit {
 
     // If the last session didn't exit cleanly and tab is a web contents tab,
     // an infobar is added allowing the user to restore the last session.
-    void AddCrashedInfoBarIfNecessary(TabContentsWrapper* tab);
+    void AddCrashedInfoBarIfNecessary(Browser* browser,
+                                      TabContentsWrapper* tab);
 
     // If we have been started with unsupported flags like --single-process,
     // politely nag the user about it.

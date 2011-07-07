@@ -494,7 +494,9 @@ bool SessionService::RestoreIfNecessary(const std::vector<GURL>& urls_to_open,
     SessionStartupPref pref = SessionStartupPref::GetStartupPref(profile());
     if (pref.type == SessionStartupPref::LAST) {
       SessionRestore::RestoreSession(
-          profile(), browser, false, browser ? false : true, urls_to_open);
+          profile(), browser,
+          browser ? 0 : SessionRestore::ALWAYS_CREATE_TABBED_BROWSER,
+          urls_to_open);
       return true;
     }
   }
