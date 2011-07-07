@@ -81,7 +81,6 @@ void HeartbeatSender::OnSignallingConnected(SignalStrategy* signal_strategy,
 
 void HeartbeatSender::OnSignallingDisconnected() {
   DCHECK_EQ(MessageLoop::current(), message_loop_);
-  DCHECK_EQ(state_, STARTED);
   state_ = STOPPED;
   request_.reset(NULL);
 }
