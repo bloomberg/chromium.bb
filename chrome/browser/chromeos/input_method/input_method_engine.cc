@@ -19,6 +19,24 @@ const char* kExtensionImePrefix = "_ext_ime_";
 const char* kErrorNotActive = "IME is not active";
 const char* kErrorWrongContext = "Context is not active";
 
+InputMethodEngine::KeyboardEvent::KeyboardEvent() {
+}
+
+InputMethodEngine::KeyboardEvent::~KeyboardEvent() {
+}
+
+InputMethodEngine::MenuItem::MenuItem() {
+}
+
+InputMethodEngine::MenuItem::~MenuItem() {
+}
+
+InputMethodEngine::Candidate::Candidate() {
+}
+
+InputMethodEngine::Candidate::~Candidate() {
+}
+
 InputMethodEngine::Observer::~Observer() {
 }
 

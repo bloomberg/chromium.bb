@@ -18,6 +18,9 @@ extern const char* kExtensionImePrefix;
 class InputMethodEngine {
  public:
   struct KeyboardEvent {
+    KeyboardEvent();
+    virtual ~KeyboardEvent();
+
     std::string type;
     std::string key;
     std::string key_code;
@@ -27,6 +30,9 @@ class InputMethodEngine {
   };
 
   struct MenuItem {
+    MenuItem();
+    virtual ~MenuItem();
+
     std::string id;
     std::string label;
     int style;
@@ -44,6 +50,9 @@ class InputMethodEngine {
   };
 
   struct Candidate {
+    Candidate();
+    virtual ~Candidate();
+
     std::string value;
     int id;
     std::string label;
