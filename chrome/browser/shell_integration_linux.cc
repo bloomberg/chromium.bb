@@ -14,6 +14,7 @@
 #include <string>
 #include <vector>
 
+#include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/eintr_wrapper.h"
 #include "base/environment.h"
@@ -40,14 +41,16 @@
 namespace {
 
 // Helper to launch xdg scripts. We don't want them to ask any questions on the
-// terminal etc.
-bool LaunchXdgUtility(const std::vector<std::string>& argv) {
+// terminal etc. The function returns true if the utility launches and exits
+// cleanly, in which case |exit_code| returns the utility's exit code.
+bool LaunchXdgUtility(const std::vector<std::string>& argv, int* exit_code) {
   // xdg-settings internally runs xdg-mime, which uses mv to move newly-created
   // files on top of originals after making changes to them. In the event that
   // the original files are owned by another user (e.g. root, which can happen
   // if they are updated within sudo), mv will prompt the user to confirm if
   // standard input is a terminal (otherwise it just does it). So make sure it's
   // not, to avoid locking everything up waiting for mv.
+  *exit_code = EXIT_FAILURE;
   int devnull = open("/dev/null", O_RDONLY);
   if (devnull < 0)
     return false;
@@ -61,9 +64,7 @@ bool LaunchXdgUtility(const std::vector<std::string>& argv) {
   }
   close(devnull);
 
-  int success_code;
-  base::WaitForExitCode(handle, &success_code);
-  return success_code == EXIT_SUCCESS;
+  return base::WaitForExitCode(handle, exit_code);
 }
 
 std::string CreateShortcutIcon(
@@ -103,7 +104,8 @@ std::string CreateShortcutIcon(
   argv.push_back(temp_file_path.value());
   std::string icon_name = temp_file_path.BaseName().RemoveExtension().value();
   argv.push_back(icon_name);
-  LaunchXdgUtility(argv);
+  int exit_code;
+  LaunchXdgUtility(argv, &exit_code);
   return icon_name;
 }
 
@@ -173,7 +175,8 @@ void CreateShortcutInApplicationsMenu(const FilePath& shortcut_filename,
   argv.push_back("user");
 
   argv.push_back(temp_file_path.value());
-  LaunchXdgUtility(argv);
+  int exit_code;
+  LaunchXdgUtility(argv, &exit_code);
 }
 
 // Quote a string such that it appears as one verbatim argument for the Exec
@@ -236,31 +239,84 @@ std::string ShellIntegration::GetDesktopName(base::Environment* env) {
 #endif
 }
 
-// We delegate the difficulty of setting the default browser in Linux desktop
-// environments to a new xdg utility, xdg-settings. We have to include a copy of
-// it for this to work, obviously, but that's actually the suggested approach
-// for xdg utilities anyway.
+namespace {
 
-// static
-bool ShellIntegration::SetAsDefaultBrowser() {
+// Utility function to get the path to the version of a script shipped with
+// Chrome. |script| gives the name of the script. |chrome_version| returns the
+// path to the Chrome version of the script, and the return value of the
+// function is true if the function is successful and the Chrome version is
+// not the script found on the PATH.
+bool GetChromeVersionOfScript(const std::string& script,
+                               std::string* chrome_version) {
+  // Get the path to the Chrome version.
+  FilePath chrome_dir;
+  if (!PathService::Get(base::DIR_EXE, &chrome_dir))
+    return false;
+
+  FilePath chrome_version_path = chrome_dir.Append(script);
+  *chrome_version = chrome_version_path.value();
+
+  // Check if this is different to the one on path.
+  std::vector<std::string> argv;
+  argv.push_back("which");
+  argv.push_back(script);
+  std::string path_version;
+  if (base::GetAppOutput(CommandLine(argv), &path_version)) {
+    // Remove trailing newline
+    path_version.erase(path_version.length() - 1, 1);
+    FilePath path_version_path(path_version);
+    return (chrome_version_path != path_version_path);
+  }
+  return false;
+}
+
+// Value returned by xdg-settings if it can't understand our request.
+const int EXIT_XDG_SETTINGS_SYNTAX_ERROR = 1;
+
+// We delegate the difficulty of setting the default browser and default url
+// scheme handler in Linux desktop environments to an xdg utility, xdg-settings.
+
+// When calling this script we first try to use the script on PATH. If that
+// fails we then try to use the script that we have included. This gives
+// scripts on the system priority over ours, as distribution vendors may have
+// tweaked the script, but still allows our copy to be used if the script on the
+// system fails, as the system copy may be missing capabilities of the Chrome
+// copy.
+
+// If |protocol| is empty this function sets Chrome as the default browser,
+// otherwise it sets Chrome as the default handler application for |protocol|.
+bool SetDefaultWebClient(const std::string& protocol) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
   scoped_ptr<base::Environment> env(base::Environment::Create());
 
   std::vector<std::string> argv;
   argv.push_back("xdg-settings");
   argv.push_back("set");
-  argv.push_back("default-web-browser");
-  argv.push_back(GetDesktopName(env.get()));
-  return LaunchXdgUtility(argv);
+  if (protocol.empty()) {
+    argv.push_back("default-web-browser");
+  } else {
+    argv.push_back("default-url-scheme-handler");
+    argv.push_back(protocol);
+  }
+  argv.push_back(ShellIntegration::GetDesktopName(env.get()));
+
+  int exit_code;
+  bool ran_ok = LaunchXdgUtility(argv, &exit_code);
+  if (ran_ok && exit_code == EXIT_XDG_SETTINGS_SYNTAX_ERROR) {
+    if (GetChromeVersionOfScript("xdg-settings", &argv[0])) {
+      ran_ok = LaunchXdgUtility(argv, &exit_code);
+    }
+  }
+
+  return ran_ok && exit_code == EXIT_SUCCESS;
 }
 
-// static
-bool ShellIntegration::SetAsDefaultProtocolClient(const std::string& protocol) {
-  // TODO(benwells): Implement this for Linux - crbug.com/83557
-  return false;
-}
-
-// static
-ShellIntegration::DefaultWebClientState ShellIntegration::IsDefaultBrowser() {
+// If |protocol| is empty this function checks if Chrome is the default browser,
+// otherwise it checks if Chrome is the default handler application for
+// |protocol|.
+ShellIntegration::DefaultWebClientState GetIsDefaultWebClient(
+    const std::string& protocol) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   scoped_ptr<base::Environment> env(base::Environment::Create());
@@ -268,25 +324,56 @@ ShellIntegration::DefaultWebClientState ShellIntegration::IsDefaultBrowser() {
   std::vector<std::string> argv;
   argv.push_back("xdg-settings");
   argv.push_back("check");
-  argv.push_back("default-web-browser");
-  argv.push_back(GetDesktopName(env.get()));
+  if (protocol.empty()) {
+    argv.push_back("default-web-browser");
+  } else {
+    argv.push_back("default-url-scheme-handler");
+    argv.push_back(protocol);
+  }
+  argv.push_back(ShellIntegration::GetDesktopName(env.get()));
 
   std::string reply;
-  if (!base::GetAppOutput(CommandLine(argv), &reply)) {
+  int success_code;
+  bool ran_ok = base::GetAppOutputWithExitCode(CommandLine(argv), &reply,
+                                               &success_code);
+  if (ran_ok && success_code == EXIT_XDG_SETTINGS_SYNTAX_ERROR) {
+    if (GetChromeVersionOfScript("xdg_settings", &argv[0])) {
+      ran_ok = base::GetAppOutputWithExitCode(CommandLine(argv), &reply,
+                                              &success_code);
+    }
+  }
+
+  if (!ran_ok || success_code != EXIT_SUCCESS) {
     // xdg-settings failed: we can't determine or set the default browser.
-    return UNKNOWN_DEFAULT_WEB_CLIENT;
+    return ShellIntegration::UNKNOWN_DEFAULT_WEB_CLIENT;
   }
 
   // Allow any reply that starts with "yes".
-  return (reply.find("yes") == 0) ?
-      IS_DEFAULT_WEB_CLIENT : NOT_DEFAULT_WEB_CLIENT;
+  return (reply.find("yes") == 0) ? ShellIntegration::IS_DEFAULT_WEB_CLIENT :
+                                    ShellIntegration::NOT_DEFAULT_WEB_CLIENT;
+}
+
+} // namespace
+
+// static
+bool ShellIntegration::SetAsDefaultBrowser() {
+  return SetDefaultWebClient("");
+}
+
+// static
+bool ShellIntegration::SetAsDefaultProtocolClient(const std::string& protocol) {
+  return SetDefaultWebClient(protocol);
+}
+
+// static
+ShellIntegration::DefaultWebClientState ShellIntegration::IsDefaultBrowser() {
+  return GetIsDefaultWebClient("");
 }
 
 // static
 ShellIntegration::DefaultWebClientState
 ShellIntegration::IsDefaultProtocolClient(const std::string& protocol) {
-  // TODO(benwells): Implement this for Linux - crbug.com/83557
-  return UNKNOWN_DEFAULT_WEB_CLIENT;
+  return GetIsDefaultWebClient(protocol);
 }
 
 // static
