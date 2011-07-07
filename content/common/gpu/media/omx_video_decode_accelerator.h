@@ -20,6 +20,7 @@
 #include "base/shared_memory.h"
 #include "media/video/video_decode_accelerator.h"
 #include "third_party/angle/include/EGL/egl.h"
+#include "third_party/angle/include/EGL/eglext.h"
 #include "third_party/openmax/il/OMX_Component.h"
 #include "third_party/openmax/il/OMX_Core.h"
 #include "third_party/openmax/il/OMX_Video.h"
@@ -56,10 +57,12 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   // Helper struct for keeping track of the relationship between an OMX output
   // buffer and the GLESBuffer it points to.
   struct OutputPicture {
-    OutputPicture(media::GLESBuffer g_b, OMX_BUFFERHEADERTYPE* o_b_h)
-        : gles_buffer(g_b), omx_buffer_header(o_b_h) {}
+    OutputPicture(media::GLESBuffer g_b, OMX_BUFFERHEADERTYPE* o_b_h,
+                  EGLImageKHR e_i)
+        : gles_buffer(g_b), omx_buffer_header(o_b_h),  egl_image(e_i) {}
     media::GLESBuffer gles_buffer;
     OMX_BUFFERHEADERTYPE* omx_buffer_header;
+    EGLImageKHR egl_image;
   };
   typedef std::map<int32, OutputPicture> OutputPictureById;
 
@@ -139,8 +142,6 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   // NOTE: all calls to this object *MUST* be executed in message_loop_.
   Client* client_;
 
-  std::vector<uint32> texture_ids_;
-  std::vector<uint32> context_ids_;
   // Method to handle events
   void EventHandlerCompleteTask(OMX_EVENTTYPE event,
                                 OMX_U32 data1,

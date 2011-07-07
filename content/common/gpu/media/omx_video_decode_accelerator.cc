@@ -396,9 +396,12 @@ void OmxVideoDecodeAccelerator::AssignGLESBuffers(
   CHECK_EQ(fake_output_buffers_.size(), 0U);
   CHECK_EQ(pictures_.size(), 0U);
 
+  static Gles2TextureToEglImageTranslator texture2eglImage_translator;
   for (size_t i = 0; i < buffers.size(); ++i) {
+    EGLImageKHR egl_image = texture2eglImage_translator.TranslateToEglImage(
+        egl_display_, egl_context_, buffers[i].texture_id());
     CHECK(pictures_.insert(std::make_pair(
-        buffers[i].id(), OutputPicture(buffers[i], NULL))).second);
+        buffers[i].id(), OutputPicture(buffers[i], NULL, egl_image))).second);
   }
 
   if (pictures_.size() < kNumPictureBuffers)
@@ -707,7 +710,6 @@ bool OmxVideoDecodeAccelerator::AllocateInputBuffers() {
 
 bool OmxVideoDecodeAccelerator::AllocateOutputBuffers() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
-  static Gles2TextureToEglImageTranslator texture2eglImage_translator;
 
   DCHECK(!pictures_.empty());
   gfx::Size decoded_pixel_size(pictures_.begin()->second.gles_buffer.size());
@@ -717,10 +719,9 @@ bool OmxVideoDecodeAccelerator::AllocateOutputBuffers() {
     media::GLESBuffer& gles_buffer = it->second.gles_buffer;
     OMX_BUFFERHEADERTYPE** omx_buffer = &it->second.omx_buffer_header;
     DCHECK(!*omx_buffer);
-    void* egl = texture2eglImage_translator.TranslateToEglImage(
-        egl_display_, egl_context_, gles_buffer.texture_id());
     OMX_ERRORTYPE result = OMX_UseEGLImage(
-        component_handle_, omx_buffer, output_port_, &gles_buffer, egl);
+        component_handle_, omx_buffer, output_port_, &gles_buffer,
+        it->second.egl_image);
     if (result != OMX_ErrorNone) {
       LOG(ERROR) << "OMX_UseEGLImage failed with: " << result;
       return false;
@@ -757,6 +758,7 @@ void OmxVideoDecodeAccelerator::FreeOutputBuffers() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   // Calls to OMX to free buffers.
   OMX_ERRORTYPE result;
+  static Gles2TextureToEglImageTranslator texture2eglImage_translator;
   for (OutputPictureById::iterator it = pictures_.begin();
        it != pictures_.end(); ++it) {
     OMX_BUFFERHEADERTYPE* omx_buffer = it->second.omx_buffer_header;
@@ -768,6 +770,8 @@ void OmxVideoDecodeAccelerator::FreeOutputBuffers() {
       StopOnError(VIDEODECODERERROR_INVALIDINPUT);
       return;
     }
+    texture2eglImage_translator.DestroyEglImage(egl_display_,
+                                                it->second.egl_image);
     client_->DismissPictureBuffer(it->first);
   }
   pictures_.clear();
