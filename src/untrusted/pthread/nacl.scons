@@ -41,12 +41,7 @@ if not env.Bit('nacl_glibc'):
     # '${CC}' directly in env.Depends and that should be fine for scons.
     # But sometimes '${CC}' is not just '.../gcc', it's '.../gcc -m32'.
     compiler = env.subst(compiler).split()[0]
-    # env['PROGSUFFIX'] is '.nexe', which is not what we want.
-    # This could use env['TRUSTED_ENV']['PROGSUFFIX'], but we don't
-    # have a TRUSTED_ENV if scons is invoked with just --mode=nacl.
-    if env.Bit('host_windows'):
-      compiler += '.exe'
-    env.Depends(compiler, n)
+    env.Depends(env.WhereIs(compiler), n)
 else:
   n = []
 env.Alias('install_libpthread', n)
