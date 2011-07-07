@@ -27,7 +27,7 @@ set_variable NULL R(8,8:0)
 
 echo
 echo "*** INIT MODULE"
-replay 99 PPB_GetInterface:s:i  s("PPB_Core;0.4") * i(1)
+replay 99 PPB_GetInterface:s:i  s("PPB_Core;0.5") * i(1)
 replay 99 PPB_GetInterface:s:i  s("PPB_Instance;0.4") * i(1)
 replay 99 PPB_GetInterface:s:i  s("PPB_Var(Deprecated);0.3") * i(1)
 # the results contain a process id which is non-determinisitic
@@ -53,7 +53,7 @@ echo
 echo "*** CALL loadUrl(): as buffer"
 replay 1 PPB_GetInterface:s:i  s("PPB_URLRequestInfo;0.2") * i(1)
 replay 1 PPB_GetInterface:s:i  s("PPB_URLResponseInfo;0.1") * i(1)
-replay 1 PPB_GetInterface:s:i  s("PPB_URLLoader;0.1") * i(1)
+replay 1 PPB_GetInterface:s:i  s("PPB_URLLoader;0.2") * i(1)
 replay 1 PPB_GetInterface:s:i  s("PPB_FileIO(Dev);0.3") * i(1)
 
 replay 1 PPB_FileIO_Dev_Create:i:i ${INSTANCE} * i(35)
@@ -118,7 +118,7 @@ echo "*** CALL loadUrl(): as file"
 replay 1 PPB_GetInterface:s:i  s("PPB_FileIO(Dev);0.3") * i(1)
 replay 1 PPB_GetInterface:s:i  s("PPB_URLRequestInfo;0.2") * i(1)
 replay 1 PPB_GetInterface:s:i  s("PPB_URLResponseInfo;0.1") * i(1)
-replay 1 PPB_GetInterface:s:i  s("PPB_URLLoader;0.1") * i(1)
+replay 1 PPB_GetInterface:s:i  s("PPB_URLLoader;0.2") * i(1)
 
 replay 1 PPB_URLLoader_Create:i:i  ${INSTANCE} * i(34)
 replay 1 PPB_URLRequestInfo_Create:i:i ${INSTANCE} * i(30)

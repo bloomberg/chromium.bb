@@ -68,9 +68,9 @@ int32_t Open(PP_Resource loader,
           GetMainSrpcChannel(), loader, request, callback_id, &pp_error);
   DebugPrintf("PPB_URLLoader::Open: %s\n", NaClSrpcErrorString(srpc_result));
 
-  if (srpc_result == NACL_SRPC_RESULT_OK)
-    return pp_error;
-  return PP_ERROR_FAILED;
+  if (srpc_result != NACL_SRPC_RESULT_OK)
+    pp_error = PP_ERROR_FAILED;
+  return MayForceCallback(callback, pp_error);
 }
 
 int32_t FollowRedirect(PP_Resource loader,
@@ -90,9 +90,9 @@ int32_t FollowRedirect(PP_Resource loader,
   DebugPrintf("PPB_URLLoader::FollowRedirect: %s\n",
               NaClSrpcErrorString(srpc_result));
 
-  if (srpc_result == NACL_SRPC_RESULT_OK)
-    return pp_error;
-  return PP_ERROR_FAILED;
+  if (srpc_result != NACL_SRPC_RESULT_OK)
+    pp_error = PP_ERROR_FAILED;
+  return MayForceCallback(callback, pp_error);
 }
 
 PP_Bool GetUploadProgress(PP_Resource loader,
@@ -185,9 +185,9 @@ int32_t ReadResponseBody(PP_Resource loader,
   DebugPrintf("PPB_URLLoader::ReadResponseBody: %s\n",
               NaClSrpcErrorString(srpc_result));
 
-  if (srpc_result == NACL_SRPC_RESULT_OK)
-    return pp_error_or_bytes;
-  return PP_ERROR_FAILED;
+  if (srpc_result != NACL_SRPC_RESULT_OK)
+    pp_error_or_bytes = PP_ERROR_FAILED;
+  return MayForceCallback(callback, pp_error_or_bytes);
 }
 
 int32_t FinishStreamingToFile(PP_Resource loader,
@@ -205,9 +205,9 @@ int32_t FinishStreamingToFile(PP_Resource loader,
       PpbURLLoaderRpcClient::PPB_URLLoader_FinishStreamingToFile(
           GetMainSrpcChannel(), loader, callback_id, &pp_error);
 
-  if (srpc_result == NACL_SRPC_RESULT_OK)
-    return pp_error;
-  return PP_ERROR_FAILED;
+  if (srpc_result != NACL_SRPC_RESULT_OK)
+    pp_error = PP_ERROR_FAILED;
+  return MayForceCallback(callback, pp_error);
 }
 
 void Close(PP_Resource loader) {

@@ -17,10 +17,10 @@ set_variable GRAPHICS_FMT  R(8,4:400,4:400)
 
 echo
 echo "*** INIT MODULE"
-replay 1 PPB_GetInterface:s:i  s("PPB_Core;0.4") * i(1)
+replay 1 PPB_GetInterface:s:i  s("PPB_Core;0.5") * i(1)
 replay 1 PPB_GetInterface:s:i  s("PPB_Instance;0.4") * i(1)
 replay 1 PPB_GetInterface:s:i  s("PPB_ImageData;0.3") * i(1)
-replay 1 PPB_GetInterface:s:i  s("PPB_Graphics2D;0.3") * i(1)
+replay 1 PPB_GetInterface:s:i  s("PPB_Graphics2D;0.4") * i(1)
 # The results contain a process id which is non-determinisitic. The
 # 'hide-results' option suppresses this output to help with golden file.
 rpc PPP_InitializeModule hide-results i(0) ${MODULE} h(pepper_desc) s("${service_string}") * i(0) i(0)

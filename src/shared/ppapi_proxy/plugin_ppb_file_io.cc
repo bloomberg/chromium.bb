@@ -63,7 +63,7 @@ int32_t Open(PP_Resource file_io,
   if (callback_id == 0)  // Just like Chrome, for now disallow blocking calls.
     return PP_ERROR_BADARGUMENT;
 
-  int32_t pp_error = PP_ERROR_FAILED;
+  int32_t pp_error;
   NaClSrpcError srpc_result =
       PpbFileIODevRpcClient::PPB_FileIO_Dev_Open(
           GetMainSrpcChannel(),
@@ -74,9 +74,9 @@ int32_t Open(PP_Resource file_io,
           &pp_error);
   DebugPrintf("PPB_FileIO_Dev::Open: %s\n", NaClSrpcErrorString(srpc_result));
 
-  if (srpc_result == NACL_SRPC_RESULT_OK)
-    return pp_error;
-  return PP_ERROR_FAILED;
+  if (srpc_result != NACL_SRPC_RESULT_OK)
+    pp_error = PP_ERROR_FAILED;
+  return MayForceCallback(callback, pp_error);
 }
 
 int32_t Query(PP_Resource file_io,
@@ -86,7 +86,7 @@ int32_t Query(PP_Resource file_io,
   UNREFERENCED_PARAMETER(info);
   UNREFERENCED_PARAMETER(callback);
 
-  return PP_ERROR_BADRESOURCE;
+  return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
 }
 
 int32_t Touch(PP_Resource file_io,
@@ -98,7 +98,7 @@ int32_t Touch(PP_Resource file_io,
   UNREFERENCED_PARAMETER(last_modified_time);
   UNREFERENCED_PARAMETER(callback);
 
-  return PP_ERROR_BADRESOURCE;
+  return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
 }
 
 int32_t Read(PP_Resource file_io,
@@ -118,7 +118,7 @@ int32_t Read(PP_Resource file_io,
   if (callback_id == 0)  // Just like Chrome, for now disallow blocking calls.
     return PP_ERROR_BADARGUMENT;
 
-  int32_t pp_error_or_bytes = PP_ERROR_FAILED;
+  int32_t pp_error_or_bytes;
   NaClSrpcError srpc_result =
       PpbFileIODevRpcClient::PPB_FileIO_Dev_Read(
           GetMainSrpcChannel(),
@@ -130,9 +130,9 @@ int32_t Read(PP_Resource file_io,
           buffer,
           &pp_error_or_bytes);
   DebugPrintf("PPB_FileIO_Dev::Read: %s\n", NaClSrpcErrorString(srpc_result));
-  if (srpc_result == NACL_SRPC_RESULT_OK)
-    return pp_error_or_bytes;
-  return PP_ERROR_FAILED;
+  if (srpc_result != NACL_SRPC_RESULT_OK)
+    pp_error_or_bytes = PP_ERROR_FAILED;
+  return MayForceCallback(callback, pp_error_or_bytes);
 }
 
 int32_t Write(PP_Resource file_io,
@@ -145,7 +145,7 @@ int32_t Write(PP_Resource file_io,
   UNREFERENCED_PARAMETER(bytes_to_write);
   UNREFERENCED_PARAMETER(callback);
 
-  return PP_ERROR_BADRESOURCE;
+  return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
 }
 
 int32_t SetLength(PP_Resource file_io,
@@ -155,7 +155,7 @@ int32_t SetLength(PP_Resource file_io,
   UNREFERENCED_PARAMETER(length);
   UNREFERENCED_PARAMETER(callback);
 
-  return PP_ERROR_BADRESOURCE;
+  return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
 }
 
 int32_t Flush(PP_Resource file_io,
@@ -163,7 +163,7 @@ int32_t Flush(PP_Resource file_io,
   UNREFERENCED_PARAMETER(file_io);
   UNREFERENCED_PARAMETER(callback);
 
-  return PP_ERROR_BADRESOURCE;
+  return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
 }
 
 void Close(PP_Resource file_io) {

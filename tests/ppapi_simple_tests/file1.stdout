@@ -12,7 +12,7 @@ input 1:  i(4444)
 input 2:  h(pepper_desc)
 input 3:  @LENGTHY_SERVICE_STRING
 replaying PPB_GetInterface:s:i:
-input 0:  s("PPB_Core;0.4")
+input 0:  s("PPB_Core;0.5")
 output 0:  i(1)
 rpc call complete PPP_InitializeModule:iihs:ii
 
@@ -24,7 +24,7 @@ input 1:  i(3)
 input 2:  C(23,chunk_size\x00url\x00to_file\x00)
 input 3:  C(16,10\x00myurl.html\x000\x00)
 replaying PPB_GetInterface:s:i:
-input 0:  s("PPB_URLLoader;0.1")
+input 0:  s("PPB_URLLoader;0.2")
 output 0:  i(1)
 replaying PPB_URLLoader_Create:i:i:
 input 0:  i(5555)

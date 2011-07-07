@@ -5,9 +5,22 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_callback.h"
 #include <string.h>
 #include "native_client/src/shared/ppapi_proxy/utility.h"
+#include "ppapi/c/pp_errors.h"
 #include "srpcgen/ppp_rpc.h"
 
 namespace ppapi_proxy {
+
+int32_t MayForceCallback(PP_CompletionCallback callback, int32_t result) {
+  if (result == PP_OK_COMPLETIONPENDING)
+    return result;
+
+  if (callback.func == NULL ||
+      (callback.flags & PP_COMPLETIONCALLBACK_FLAG_OPTIONAL) != 0)
+    return result;
+
+  PPBCoreInterface()->CallOnMainThread(0, callback, result);
+  return PP_OK_COMPLETIONPENDING;
+}
 
 // Initialize static mutex used as critical section for all callback tables.
 pthread_mutex_t CompletionCallbackTable::mutex_ = PTHREAD_MUTEX_INITIALIZER;
@@ -80,4 +93,3 @@ void CompletionCallbackRpcServer::RunCompletionCallback(
 
   rpc->result = NACL_SRPC_RESULT_OK;
 }
-

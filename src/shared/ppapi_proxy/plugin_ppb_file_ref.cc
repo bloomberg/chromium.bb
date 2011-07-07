@@ -5,8 +5,10 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_file_ref.h"
 
 #include "native_client/src/include/portability.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_callback.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
 #include "ppapi/c/pp_completion_callback.h"
+#include "ppapi/c/pp_errors.h"
 
 namespace ppapi_proxy {
 
@@ -49,7 +51,7 @@ int32_t MakeDirectory(PP_Resource directory_ref,
   UNREFERENCED_PARAMETER(directory_ref);
   UNREFERENCED_PARAMETER(make_ancestors);
   UNREFERENCED_PARAMETER(callback);
-  return 0;
+  return MayForceCallback(callback, PP_ERROR_FAILED);
 }
 
 int32_t Touch(PP_Resource file_ref,
@@ -60,14 +62,14 @@ int32_t Touch(PP_Resource file_ref,
   UNREFERENCED_PARAMETER(last_access_time);
   UNREFERENCED_PARAMETER(last_modified_time);
   UNREFERENCED_PARAMETER(callback);
-  return 0;
+  return MayForceCallback(callback, PP_ERROR_FAILED);
 }
 
 int32_t Delete(PP_Resource file_ref,
                struct PP_CompletionCallback callback) {
   UNREFERENCED_PARAMETER(file_ref);
   UNREFERENCED_PARAMETER(callback);
-  return 0;
+  return MayForceCallback(callback, PP_ERROR_FAILED);
 }
 
 int32_t Rename(PP_Resource file_ref,
@@ -76,7 +78,7 @@ int32_t Rename(PP_Resource file_ref,
   UNREFERENCED_PARAMETER(file_ref);
   UNREFERENCED_PARAMETER(new_file_ref);
   UNREFERENCED_PARAMETER(callback);
-  return 0;
+  return MayForceCallback(callback, PP_ERROR_FAILED);
 }
 }  // namespace
 

@@ -19,7 +19,7 @@ set_variable HANDLE_AUDIO i(34)
 echo
 echo "*** INIT MODULE"
 # PPB_xxx replays below will be triggered as a reaction to PPP_InitializeModule
-replay 1 PPB_GetInterface:s:i  s("PPB_Core;0.4") * i(1)
+replay 1 PPB_GetInterface:s:i  s("PPB_Core;0.5") * i(1)
 # The results contain a process id which is non-determinisitic.
 # We must hide the results to support golden file diffing.
 rpc PPP_InitializeModule hide-results i(0) ${MODULE} h(pepper_desc) s("${service_string}") * i(0) i(0)

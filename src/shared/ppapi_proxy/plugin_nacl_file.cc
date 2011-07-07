@@ -33,7 +33,7 @@ int32_t StreamAsFile(PP_Instance instance,
 
   if (srpc_result == NACL_SRPC_RESULT_OK)
     return PP_OK_COMPLETIONPENDING;
-  return PP_ERROR_FAILED;
+  return MayForceCallback(callback, PP_ERROR_FAILED);
 }
 
 

@@ -160,10 +160,9 @@ int32_t Flush(PP_Resource graphics_2d,
       PpbGraphics2DRpcClient::PPB_Graphics2D_Flush(
           GetMainSrpcChannel(), graphics_2d, callback_id, &pp_error);
   DebugPrintf("PPB_Graphics2D::Flush: %s\n", NaClSrpcErrorString(srpc_result));
-  if (srpc_result != NACL_SRPC_RESULT_OK) {
-    return PP_ERROR_FAILED;
-  }
-  return pp_error;
+  if (srpc_result != NACL_SRPC_RESULT_OK)
+    pp_error = PP_ERROR_FAILED;
+  return MayForceCallback(callback, pp_error);
 }
 
 }  // namespace

@@ -57,11 +57,11 @@ int32_t Open(PP_Resource file_system,
              struct PP_CompletionCallback callback) {
   DebugPrintf("PPB_FileSystem_Dev::Open: file_system=%"NACL_PRIu32"\n",
               file_system);
-  int32_t pp_error = PP_ERROR_FAILED;
   int32_t callback_id = CompletionCallbackTable::Get()->AddCallback(callback);
   if (callback_id == 0)
     return PP_ERROR_BADARGUMENT;
 
+  int32_t pp_error;
   NaClSrpcError srpc_result =
       PpbFileSystemDevRpcClient::PPB_FileSystem_Dev_Open(
           GetMainSrpcChannel(),
@@ -71,9 +71,9 @@ int32_t Open(PP_Resource file_system,
           &pp_error);
   DebugPrintf("PPB_FileSystem_Dev::Open: %s\n",
               NaClSrpcErrorString(srpc_result));
-  if (srpc_result == NACL_SRPC_RESULT_OK)
-    return pp_error;
-  return PP_ERROR_FAILED;
+  if (srpc_result != NACL_SRPC_RESULT_OK)
+    pp_error = PP_ERROR_FAILED;
+  return MayForceCallback(callback, pp_error);
 }
 
 PP_FileSystemType_Dev GetType(PP_Resource file_system) {

@@ -83,9 +83,9 @@ int32_t SwapBuffs(PP_Resource surface_id,
   scoped_refptr<PluginSurface3D> surface =
       PluginResource::GetAs<PluginSurface3D>(surface_id).get();
   if (!surface.get())
-    return PP_ERROR_BADRESOURCE;
+    return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
 
-  return surface->SwapBuffers(surface_id, callback);
+  return MayForceCallback(callback, surface->SwapBuffers(surface_id, callback));
 }
 
 }  // namespace

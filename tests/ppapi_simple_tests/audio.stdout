@@ -12,7 +12,7 @@ input 1:  i(4444)
 input 2:  h(pepper_desc)
 input 3:  @LENGTHY_SERVICE_STRING
 replaying PPB_GetInterface:s:i:
-input 0:  s("PPB_Core;0.4")
+input 0:  s("PPB_Core;0.5")
 output 0:  i(1)
 rpc call complete PPP_InitializeModule:iihs:ii
 

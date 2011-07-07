@@ -65,7 +65,7 @@ set_variable EXCEPTION R(8,8:0)
 
 echo
 echo "*** INIT MODULE"
-replay 1 PPB_GetInterface:s:i  s("PPB_Core;0.4") * i(1)
+replay 1 PPB_GetInterface:s:i  s("PPB_Core;0.5") * i(1)
 replay 1 PPB_GetInterface:s:i  s("PPB_Instance;0.4") * i(1)
 # the results contain a process id which is non-determinisitic
 rpc PPP_InitializeModule hide-results i(0) ${MODULE} h(pepper_desc) s("${service_string}") * i(0) i(0)

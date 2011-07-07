@@ -7,9 +7,15 @@
 
 #include <pthread.h>
 #include <map>
+#include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
 #include "ppapi/c/pp_completion_callback.h"
 
 namespace ppapi_proxy {
+
+// Skips callback invocation and returns |result| if callback function is NULL
+// or PP_COMPLETIONCALLBACK_FLAG_OPTIONAL is set. Otherwise, schedules the
+// callback with |result| as an argument and returns PP_OK_COMPLETIONPENDING.
+int32_t MayForceCallback(PP_CompletionCallback callback, int32_t result);
 
 // Maintains a table of PP_CompletionCallback objects and their respective
 // identifiers that can be used to retrieve the objects.

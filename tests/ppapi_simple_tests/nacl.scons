@@ -44,11 +44,9 @@ for test_exe, test_inputs in TESTS:
         stdout_golden=env.File(test + '.stdout'),
         )
 
-# TODO(robertm): see bug nacl1980
     env.AddNodeToTestSuite(node,
                            ['small_tests', 'sel_ldr_tests'],
-                           'run_ppapi_simple_' + test  + '_test',
-                           is_broken=True)
+                           'run_ppapi_simple_' + test  + '_test')
 
 ######################################################################
 # EMULATOR TESTS
