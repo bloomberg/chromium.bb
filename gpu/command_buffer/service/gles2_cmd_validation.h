@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,6 +36,10 @@ class ValueValidator {
   bool IsValid(const T value) const {
     return std::find(valid_values_.begin(), valid_values_.end(), value) !=
            valid_values_.end();
+  }
+
+  const std::vector<T>& GetValues() const {
+    return valid_values_;
   }
 
  private:

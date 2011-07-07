@@ -434,8 +434,7 @@ GLES2Implementation::GLES2Implementation(
       void* transfer_buffer,
       int32 transfer_buffer_id,
       bool share_resources)
-    : util_(0),  // TODO(gman): Get real number of compressed texture formats.
-      helper_(helper),
+    : helper_(helper),
       transfer_buffer_(
           kStartingOffset,
           transfer_buffer_size - kStartingOffset,
@@ -495,6 +494,11 @@ GLES2Implementation::GLES2Implementation(
     GL_NUM_COMPRESSED_TEXTURE_FORMATS,
     GL_NUM_SHADER_BINARY_FORMATS,
   };
+
+  util_.set_num_compressed_texture_formats(
+      gl_state_.num_compressed_texture_formats);
+  util_.set_num_shader_binary_formats(
+      gl_state_.num_shader_binary_formats);
 
   GetMultipleIntegervCHROMIUM(
       pnames, arraysize(pnames), &gl_state_.max_combined_texture_image_units,

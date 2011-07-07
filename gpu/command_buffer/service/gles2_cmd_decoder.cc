@@ -777,6 +777,8 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // Initialize or re-initialize the shader translator.
   bool InitializeShaderTranslator();
 
+  void UpdateCapabilities();
+
   // Helpers for the glGen and glDelete functions.
   bool GenTexturesHelper(GLsizei n, const GLuint* client_ids);
   void DeleteTexturesHelper(GLsizei n, const GLuint* client_ids);
@@ -1851,7 +1853,6 @@ GLES2DecoderImpl::GLES2DecoderImpl(SurfaceManager* surface_manager,
       surface_manager_(surface_manager),
       group_(ContextGroup::Ref(group ? group : new ContextGroup())),
       error_bits_(0),
-      util_(0),  // TODO(gman): Set to actual num compress texture formats.
       pack_alignment_(4),
       unpack_alignment_(4),
       attrib_0_buffer_id_(0),
@@ -1957,6 +1958,9 @@ bool GLES2DecoderImpl::Initialize(
   disallowed_extensions_ = disallowed_extensions;
 
   vertex_attrib_manager_.Initialize(group_->max_vertex_attribs());
+
+  util_.set_num_compressed_texture_formats(
+      validators_->compressed_texture_format.GetValues().size());
 
   if (gfx::GetGLImplementation() != gfx::kGLImplementationEGLGLES2) {
     // We have to enable vertex array 0 on OpenGL or it won't render. Note that
@@ -2143,6 +2147,13 @@ bool GLES2DecoderImpl::Initialize(
   }
 
   return true;
+}
+
+void GLES2DecoderImpl::UpdateCapabilities() {
+  util_.set_num_compressed_texture_formats(
+      validators_->compressed_texture_format.GetValues().size());
+  util_.set_num_shader_binary_formats(
+      validators_->shader_binary_format.GetValues().size());
 }
 
 bool GLES2DecoderImpl::InitializeShaderTranslator() {
@@ -3196,24 +3207,33 @@ bool GLES2DecoderImpl::GetHelper(
       }
       return true;
     case GL_COMPRESSED_TEXTURE_FORMATS:
-      *num_written = 0;
-      // We don't support compressed textures.
+      *num_written = validators_->compressed_texture_format.GetValues().size();
+      if (params) {
+        for (GLint ii = 0; ii < *num_written; ++ii) {
+          params[ii] = validators_->compressed_texture_format.GetValues()[ii];
+        }
+      }
       return true;
     case GL_NUM_COMPRESSED_TEXTURE_FORMATS:
       *num_written = 1;
       if (params) {
-        *params = 0;  // We don't support compressed textures.
+        *params = validators_->compressed_texture_format.GetValues().size();
       }
       return true;
     case GL_NUM_SHADER_BINARY_FORMATS:
       *num_written = 1;
       if (params) {
-        *params = 0;  // We don't support binary shader formats.
+        *params = validators_->shader_binary_format.GetValues().size();
       }
       return true;
     case GL_SHADER_BINARY_FORMATS:
-      *num_written = 0;
-      return true;  // We don't support binary shader format.s
+      *num_written = validators_->shader_binary_format.GetValues().size();
+      if (params) {
+        for (GLint ii = 0; ii <  *num_written; ++ii) {
+          params[ii] = validators_->shader_binary_format.GetValues()[ii];
+        }
+      }
+      return true;
     case GL_SHADER_COMPILER:
       *num_written = 1;
       if (params) {
@@ -6854,6 +6874,8 @@ error::Error GLES2DecoderImpl::HandleRequestExtensionCHROMIUM(
           feature_info_->feature_flags().chromium_webglsl) {
     InitializeShaderTranslator();
   }
+
+  UpdateCapabilities();
 
   return error::kNoError;
 }

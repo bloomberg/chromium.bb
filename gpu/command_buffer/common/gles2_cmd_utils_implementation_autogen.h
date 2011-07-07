@@ -833,6 +833,11 @@ std::string GLES2Util::GetStringRenderBufferTarget(uint32 value) {
       string_table, arraysize(string_table), value);
 }
 
+std::string GLES2Util::GetStringShaderBinaryFormat(uint32 value) {
+  return GLES2Util::GetQualifiedEnumString(
+      NULL, 0, value);
+}
+
 std::string GLES2Util::GetStringShaderParameter(uint32 value) {
   static EnumToString string_table[] = {
     { GL_SHADER_TYPE, "GL_SHADER_TYPE" },

@@ -150,6 +150,8 @@ int GLES2Util::GLGetNumValuesReturned(int id) const {
       return 4;
     case GL_SCISSOR_TEST:
       return 1;
+    case GL_SHADER_BINARY_FORMATS:
+      return num_shader_binary_formats_;
     case GL_SHADER_COMPILER:
       return 1;
     case GL_STENCIL_BACK_FAIL:

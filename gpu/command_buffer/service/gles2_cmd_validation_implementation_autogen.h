@@ -510,6 +510,7 @@ Validators::Validators()
       render_buffer_target(
           valid_render_buffer_target_table, arraysize(
               valid_render_buffer_target_table)),
+      shader_binary_format(),
       shader_parameter(
           valid_shader_parameter_table, arraysize(
               valid_shader_parameter_table)),

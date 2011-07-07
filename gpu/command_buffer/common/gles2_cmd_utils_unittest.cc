@@ -14,14 +14,26 @@ namespace gpu {
 namespace gles2 {
 
 class GLES2UtilTest : public testing:: Test {
- public:
-  GLES2UtilTest()
-      : util_(0) {
-  }
-
  protected:
   GLES2Util util_;
 };
+
+TEST_F(GLES2UtilTest, GLGetNumValuesReturned) {
+  EXPECT_EQ(0, util_.GLGetNumValuesReturned(GL_COMPRESSED_TEXTURE_FORMATS));
+  EXPECT_EQ(0, util_.GLGetNumValuesReturned(GL_SHADER_BINARY_FORMATS));
+
+  EXPECT_EQ(0, util_.num_compressed_texture_formats());
+  EXPECT_EQ(0, util_.num_shader_binary_formats());
+
+  util_.set_num_compressed_texture_formats(1);
+  util_.set_num_shader_binary_formats(2);
+
+  EXPECT_EQ(1, util_.GLGetNumValuesReturned(GL_COMPRESSED_TEXTURE_FORMATS));
+  EXPECT_EQ(2, util_.GLGetNumValuesReturned(GL_SHADER_BINARY_FORMATS));
+
+  EXPECT_EQ(1, util_.num_compressed_texture_formats());
+  EXPECT_EQ(2, util_.num_shader_binary_formats());
+}
 
 TEST_F(GLES2UtilTest, ComputeImageDataSizeFormats) {
   const uint32 kWidth = 16;

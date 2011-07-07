@@ -62,9 +62,25 @@ class GLES2Util {
     const char* name;
   };
 
-  explicit GLES2Util(
-      int num_compressed_texture_formats)
-      : num_compressed_texture_formats_(num_compressed_texture_formats) {
+  GLES2Util()
+      : num_compressed_texture_formats_(0),
+        num_shader_binary_formats_(0) {
+  }
+
+  int num_compressed_texture_formats() const {
+    return num_compressed_texture_formats_;
+  }
+
+  void set_num_compressed_texture_formats(int num_compressed_texture_formats) {
+    num_compressed_texture_formats_ = num_compressed_texture_formats;
+  }
+
+  int num_shader_binary_formats() const {
+    return num_shader_binary_formats_;
+  }
+
+  void set_num_shader_binary_formats(int num_shader_binary_formats) {
+    num_shader_binary_formats_ = num_shader_binary_formats;
   }
 
   // Gets the number of values a particular id will return when a glGet
@@ -111,6 +127,7 @@ class GLES2Util {
   static const size_t enum_to_string_table_len_;
 
   int num_compressed_texture_formats_;
+  int num_shader_binary_formats_;
 };
 
 }  // namespace gles2

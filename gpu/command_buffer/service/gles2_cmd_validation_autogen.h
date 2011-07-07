@@ -38,6 +38,7 @@ ValueValidator<GLenum> read_pixel_format;
 ValueValidator<GLenum> render_buffer_format;
 ValueValidator<GLenum> render_buffer_parameter;
 ValueValidator<GLenum> render_buffer_target;
+ValueValidator<GLenum> shader_binary_format;
 ValueValidator<GLenum> shader_parameter;
 ValueValidator<GLenum> shader_precision;
 ValueValidator<GLenum> shader_type;
