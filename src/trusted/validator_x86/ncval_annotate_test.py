@@ -27,7 +27,7 @@ class ToolchainTests(testutils.TempDirTestCase):
     # Check that ncval returns a non-zero return code when there is a
     # validation failure.
     source = """
-int main() {
+void _start() {
 #if defined(__i386__) || defined(__x86_64__)
   __asm__("ret"); /* This comment appears in output */
 #else
@@ -39,7 +39,8 @@ int main() {
     temp_dir = self.make_temp_dir()
     source_file = os.path.join(temp_dir, "code.c")
     write_file(source_file, source)
-    testutils.check_call(["nacl-gcc", "-g", source_file,
+    testutils.check_call(["nacl-gcc", "-g", "-nostartfiles", "-nostdlib",
+                          source_file,
                           "-o", os.path.join(temp_dir, "prog")] + NACL_CFLAGS)
     dest_file = os.path.join(self.make_temp_dir(), "file")
     rc = subprocess.call([sys.executable,
@@ -55,25 +56,25 @@ int main() {
     expected_pattern = """
 VALIDATOR: ADDRESS: ret instruction \(not allowed\)
   code: c3\s*ret
-  func: main
+  func: _start
   file: FILENAME:4
     __asm__\("ret"\); /\* This comment appears in output \*/
 
 VALIDATOR: ADDRESS: Illegal instruction
   code: c3\s*ret
-  func: main
+  func: _start
   file: FILENAME:4
     __asm__\("ret"\); /\* This comment appears in output \*/
 |
 VALIDATOR: ADDRESS: This instruction has been marked illegal by Native Client
   code: c3\s*retq
-  func: main
+  func: _start
   file: FILENAME:4
     __asm__\("ret"\); /\* This comment appears in output \*/
 
 VALIDATOR: ADDRESS: Illegal assignment to RSP
   code: c3\s*retq
-  func: main
+  func: _start
   file: FILENAME:4
     __asm__\("ret"\); /\* This comment appears in output \*/
 """
@@ -98,11 +99,12 @@ VALIDATOR: ADDRESS: Illegal assignment to RSP
 #  error Update this test for other architectures!
 #endif
 """
-    source = "int main() { %s }" % (disallowed * 150)
+    source = "void _start() { %s }" % (disallowed * 150)
     temp_dir = self.make_temp_dir()
     source_file = os.path.join(temp_dir, "code.c")
     write_file(source_file, source)
-    testutils.check_call(["nacl-gcc", "-g", source_file,
+    testutils.check_call(["nacl-gcc", "-g", "-nostartfiles", "-nostdlib",
+                          source_file,
                           "-o", os.path.join(temp_dir, "prog")] + NACL_CFLAGS)
     dest_file = os.path.join(self.make_temp_dir(), "file")
     subprocess.call([sys.executable,
