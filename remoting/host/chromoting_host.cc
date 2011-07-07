@@ -11,16 +11,12 @@
 #include "remoting/base/encoder.h"
 #include "remoting/base/encoder_row_based.h"
 #include "remoting/base/encoder_vp8.h"
-#include "remoting/host/capturer.h"
 #include "remoting/host/chromoting_host_context.h"
-#include "remoting/host/continue_window.h"
 #include "remoting/host/curtain.h"
 #include "remoting/host/desktop_environment.h"
-#include "remoting/host/disconnect_window.h"
 #include "remoting/host/event_executor.h"
 #include "remoting/host/host_config.h"
 #include "remoting/host/host_key_pair.h"
-#include "remoting/host/local_input_monitor.h"
 #include "remoting/host/screen_recorder.h"
 #include "remoting/host/user_authenticator.h"
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
@@ -35,26 +31,14 @@
 using remoting::protocol::ConnectionToClient;
 using remoting::protocol::InputStub;
 
-static const int kContinueWindowTimeoutSecs = 10 * 60;
-
 namespace remoting {
 
 // static
 ChromotingHost* ChromotingHost::Create(ChromotingHostContext* context,
                                        MutableHostConfig* config,
                                        AccessVerifier* access_verifier) {
-  Capturer* capturer = Capturer::Create();
-  EventExecutor* event_executor =
-      EventExecutor::Create(context->desktop_message_loop(), capturer);
-  Curtain* curtain = Curtain::Create();
-  DisconnectWindow* disconnect_window = DisconnectWindow::Create();
-  ContinueWindow* continue_window = ContinueWindow::Create();
-  LocalInputMonitor* local_input_monitor = LocalInputMonitor::Create();
-  return Create(context, config,
-                new DesktopEnvironment(capturer, event_executor, curtain,
-                                       disconnect_window, continue_window,
-                                       local_input_monitor),
-                access_verifier);
+  DesktopEnvironment* desktop_env = DesktopEnvironment::Create(context);
+  return Create(context, config, desktop_env, access_verifier);
 }
 
 // static
@@ -76,9 +60,9 @@ ChromotingHost::ChromotingHost(ChromotingHostContext* context,
       state_(kInitial),
       protocol_config_(protocol::CandidateSessionConfig::CreateDefault()),
       is_curtained_(false),
-      is_monitoring_local_inputs_(false),
       is_it2me_(false) {
   DCHECK(desktop_environment_.get());
+  desktop_environment_->set_host(this);
 }
 
 ChromotingHost::~ChromotingHost() {
@@ -150,8 +134,8 @@ void ChromotingHost::Shutdown(Task* shutdown_task) {
     recorder_->RemoveAllConnections();
   }
 
-  // Stop local inputs monitor.
-  MonitorLocalInputs(false);
+  // Stop all desktop interaction.
+  desktop_environment_->OnLastDisconnect();
 
   // Disconnect the clients.
   for (size_t i = 0; i < clients_.size(); i++) {
@@ -362,7 +346,7 @@ void ChromotingHost::PauseSession(bool pause) {
   for (client = clients_.begin(); client != clients_.end(); ++client) {
     client->get()->set_awaiting_continue_approval(pause);
   }
-  StartContinueWindowTimer(!pause);
+  desktop_environment_->OnPause(!pause);
 }
 
 void ChromotingHost::OnClientDisconnected(ConnectionToClient* connection) {
@@ -409,10 +393,7 @@ void ChromotingHost::OnClientDisconnected(ConnectionToClient* connection) {
   if (AuthenticatedClientsCount() == 0) {
     EnableCurtainMode(false);
     if (is_it2me_) {
-      MonitorLocalInputs(false);
-      ShowDisconnectWindow(false, std::string());
-      ShowContinueWindow(false);
-      StartContinueWindowTimer(false);
+      desktop_environment_->OnLastDisconnect();
     }
   }
 }
@@ -460,17 +441,6 @@ void ChromotingHost::EnableCurtainMode(bool enable) {
     return;
   desktop_environment_->curtain()->EnableCurtainMode(enable);
   is_curtained_ = enable;
-}
-
-void ChromotingHost::MonitorLocalInputs(bool enable) {
-  if (enable == is_monitoring_local_inputs_)
-    return;
-  if (enable) {
-    desktop_environment_->local_input_monitor()->Start(this);
-  } else {
-    desktop_environment_->local_input_monitor()->Stop();
-  }
-  is_monitoring_local_inputs_ = enable;
 }
 
 void ChromotingHost::LocalLoginSucceeded(
@@ -521,13 +491,11 @@ void ChromotingHost::LocalLoginSucceeded(
   // including closing the connection on failure of a critical operation.
   EnableCurtainMode(true);
   if (is_it2me_) {
-    MonitorLocalInputs(true);
     std::string username = connection->session()->jid();
     size_t pos = username.find('/');
     if (pos != std::string::npos)
       username.replace(pos, std::string::npos, "");
-    ShowDisconnectWindow(true, username);
-    StartContinueWindowTimer(true);
+    desktop_environment_->OnConnect(username);
   }
 
   // Notify observers that there is at least one authenticated client.
@@ -563,63 +531,6 @@ void ChromotingHost::ProcessPreAuthentication(
   }
   CHECK(client != clients_.end());
   client->get()->OnAuthorizationComplete(true);
-}
-
-void ChromotingHost::ShowDisconnectWindow(bool show,
-                                          const std::string& username) {
-  if (!context_->IsUIThread()) {
-    context_->PostToUIThread(
-        FROM_HERE,
-        NewRunnableMethod(this, &ChromotingHost::ShowDisconnectWindow,
-                          show, username));
-    return;
-  }
-
-  if (show) {
-    desktop_environment_->disconnect_window()->Show(this, username);
-  } else {
-    desktop_environment_->disconnect_window()->Hide();
-  }
-}
-
-void ChromotingHost::ShowContinueWindow(bool show) {
-  if (!context_->IsUIThread()) {
-    context_->PostToUIThread(
-        FROM_HERE,
-        NewRunnableMethod(this, &ChromotingHost::ShowContinueWindow, show));
-    return;
-  }
-
-  if (show) {
-    desktop_environment_->continue_window()->Show(this);
-  } else {
-    desktop_environment_->continue_window()->Hide();
-  }
-}
-
-void ChromotingHost::StartContinueWindowTimer(bool start) {
-  if (context_->main_message_loop() != MessageLoop::current()) {
-    context_->main_message_loop()->PostTask(
-        FROM_HERE,
-        NewRunnableMethod(this,
-                          &ChromotingHost::StartContinueWindowTimer,
-                          start));
-    return;
-  }
-  if (continue_window_timer_.IsRunning() == start)
-    return;
-  if (start) {
-    continue_window_timer_.Start(
-        base::TimeDelta::FromSeconds(kContinueWindowTimeoutSecs),
-        this, &ChromotingHost::ContinueWindowTimerFunc);
-  } else {
-    continue_window_timer_.Stop();
-  }
-}
-
-void ChromotingHost::ContinueWindowTimerFunc() {
-  PauseSession(true);
-  ShowContinueWindow(true);
 }
 
 void ChromotingHost::ShutdownNetwork() {

@@ -98,7 +98,7 @@ class ChromotingHostTest : public testing::Test {
     continue_window_ = new MockContinueWindow();
     local_input_monitor_ = new MockLocalInputMonitor();
     DesktopEnvironment* desktop =
-        new DesktopEnvironment(capturer, event_executor_, curtain_,
+        new DesktopEnvironment(&context_, capturer, event_executor_, curtain_,
                                disconnect_window_, continue_window_,
                                local_input_monitor_);
     MockAccessVerifier* access_verifier = new MockAccessVerifier();

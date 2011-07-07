@@ -190,7 +190,7 @@ class SimpleHost {
           remoting::LocalInputMonitor::Create();
       host = ChromotingHost::Create(
           &context, config,
-          new DesktopEnvironment(capturer, event_executor, curtain,
+          new DesktopEnvironment(&context, capturer, event_executor, curtain,
                                  disconnect_window, continue_window,
                                  local_input_monitor),
           access_verifier.release());

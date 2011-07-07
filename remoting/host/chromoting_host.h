@@ -9,7 +9,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
-#include "base/timer.h"
 #include "remoting/base/encoder.h"
 #include "remoting/host/access_verifier.h"
 #include "remoting/host/capturer.h"
@@ -175,21 +174,8 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
 
   void EnableCurtainMode(bool enable);
 
-  void MonitorLocalInputs(bool enable);
-
   void ProcessPreAuthentication(
       const scoped_refptr<protocol::ConnectionToClient>& connection);
-
-  // Show or hide the Disconnect window on the UI thread.  If |show| is false,
-  // hide the window, ignoring the |username| parameter.
-  void ShowDisconnectWindow(bool show, const std::string& username);
-
-  // Show or hide the Continue Sharing window on the UI thread.
-  void ShowContinueWindow(bool show);
-
-  void StartContinueWindowTimer(bool start);
-
-  void ContinueWindowTimerFunc();
 
   // The following methods are called during shutdown.
   void ShutdownNetwork();
@@ -231,12 +217,6 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   scoped_ptr<protocol::CandidateSessionConfig> protocol_config_;
 
   bool is_curtained_;
-  bool is_monitoring_local_inputs_;
-
-  // Timer controlling the "continue session" dialog. The timer is started when
-  // a connection is made or re-confirmed. On expiry, inputs to the host are
-  // blocked and the dialog is shown.
-  base::OneShotTimer<ChromotingHost> continue_window_timer_;
 
   // Whether or not the host is running in "IT2Me" mode, in which connections
   // are pre-authenticated, and hence the local login challenge can be bypassed.
