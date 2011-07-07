@@ -118,6 +118,7 @@ void ChromeInvalidationClient::RegisterTypes(
 void ChromeInvalidationClient::Ready(
     invalidation::InvalidationClient* client) {
   ticl_ready_ = true;
+  listener_->OnSessionStatusChanged(true);
   registration_manager_->SetRegisteredTypes(registered_types_);
 }
 
@@ -270,6 +271,8 @@ void ChromeInvalidationClient::ReissueRegistrations(
 void ChromeInvalidationClient::InformError(
     invalidation::InvalidationClient* client,
     const invalidation::ErrorInfo& error_info) {
+  listener_->OnSessionStatusChanged(false);
+  LOG(ERROR) << "Invalidation client encountered an error";
   // TODO(ghc): handle the error.
 }
 
