@@ -46,6 +46,8 @@
       "default_title": "__MSG_PLAY_MEDIA__",
       "default_icon": "images/icon_play_16x16.png",
       "file_filters": [
+        "filesystem:*.avi",
+        "filesystem:*.AVI",
         "filesystem:*.webm",
         "filesystem:*.WEBM",
         "filesystem:*.mp4",
@@ -77,6 +79,8 @@
       "default_title": "__MSG_ENQUEUE_MEDIA__",
       "default_icon": "images/icon_add_to_queue_16x16.png",
       "file_filters": [
+        "filesystem:*.avi",
+        "filesystem:*.AVI",
         "filesystem:*.webm",
         "filesystem:*.WEBM",
         "filesystem:*.mp4",
