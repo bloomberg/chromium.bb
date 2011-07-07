@@ -6,6 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/gtk+/gdk/gdkkeysyms.h"
+#include "ui/base/gtk/gtk_integers.h"
 
 namespace views {
 
@@ -144,6 +145,52 @@ TEST(CharacterComposerTest, CompositionStateIsClearedAfterReset) {
   character_composer.Reset();
   EXPECT_FALSE(character_composer.FilterKeyPress(GDK_KEY_a));
   EXPECT_TRUE(character_composer.GetComposedCharacter().empty());
+}
+
+// ComposeCheckerWithCompactTable in character_composer.cc is depending on the
+// assumption that the data in gtkimcontextsimpleseqs.h is correctly ordered.
+TEST(CharacterComposerTest, MainTableIsCorrectlyOrdered) {
+  // This file is included here intentionally, instead of the top of the file,
+  // because including this file at the top of the file will define a
+  // global constant and contaminate the global namespace.
+#include "third_party/gtk+/gtk/gtkimcontextsimpleseqs.h"
+  const int index_size = 26;
+  const int index_stride = 6;
+
+  // Verify that the index is correctly ordered
+  for (int i = 1; i < index_size; ++i) {
+    const int index_key_prev = gtk_compose_seqs_compact[(i - 1)*index_stride];
+    const int index_key = gtk_compose_seqs_compact[i*index_stride];
+    EXPECT_TRUE(index_key > index_key_prev);
+  }
+
+  // Verify that the sequenes are correctly ordered
+  struct {
+    int operator()(const uint16* l, const uint16* r, int length) const{
+      for (int i = 0; i < length; ++i) {
+        if (l[i] > r[i])
+          return 1;
+        if (l[i] < r[i])
+          return -1;
+      }
+      return 0;
+    }
+  } compare_sequence;
+
+  for (int i = 0; i < index_size; ++i) {
+    for (int length = 1; length < index_stride - 1; ++length) {
+      const int index_begin = gtk_compose_seqs_compact[i*index_stride + length];
+      const int index_end =
+          gtk_compose_seqs_compact[i*index_stride + length + 1];
+      const int stride = length + 1;
+      for (int index = index_begin + stride; index < index_end;
+           index += stride) {
+        const uint16* sequence = &gtk_compose_seqs_compact[index];
+        const uint16* sequence_prev = sequence - stride;
+        EXPECT_EQ(compare_sequence(sequence, sequence_prev, length), 1);
+      }
+    }
+  }
 }
 
 }  // namespace views
