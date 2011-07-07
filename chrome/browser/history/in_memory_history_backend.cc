@@ -22,10 +22,6 @@
 
 namespace history {
 
-// If a page becomes starred we use this id in place of the real starred id.
-// See note in OnURLsStarred.
-static const StarID kBogusStarredID = 0x0FFFFFFF;
-
 InMemoryHistoryBackend::InMemoryHistoryBackend()
     : profile_(NULL) {
 }
