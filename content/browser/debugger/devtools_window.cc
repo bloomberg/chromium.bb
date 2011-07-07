@@ -221,6 +221,12 @@ void DevToolsWindow::SetDocked(bool docked) {
   Show(DEVTOOLS_TOGGLE_ACTION_NONE);
 }
 
+void DevToolsWindow::Close() {
+    DCHECK(docked_);
+    NotifyCloseListener();
+    InspectedTabClosing();
+}
+
 RenderViewHost* DevToolsWindow::GetRenderViewHost() {
   return tab_contents_->render_view_host();
 }

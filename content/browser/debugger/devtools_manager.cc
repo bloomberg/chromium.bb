@@ -123,9 +123,9 @@ void DevToolsManager::ActivateWindow(RenderViewHost* client_rvh) {
 void DevToolsManager::CloseWindow(RenderViewHost* client_rvh) {
   DevToolsClientHost* client_host = FindOwnerDevToolsClientHost(client_rvh);
   if (client_host) {
-    RenderViewHost* inspected_rvh = GetInspectedRenderViewHost(client_host);
-    DCHECK(inspected_rvh);
-    UnregisterDevToolsClientHostFor(inspected_rvh);
+    DevToolsWindow* window = client_host->AsDevToolsWindow();
+    DCHECK(window);
+    window->Close();
   }
 }
 

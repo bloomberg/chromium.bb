@@ -45,6 +45,7 @@ class DevToolsWindow
   void Show(DevToolsToggleAction action);
   void Activate();
   void SetDocked(bool docked);
+  void Close();
   RenderViewHost* GetRenderViewHost();
 
   TabContentsWrapper* tab_contents() { return tab_contents_; }
