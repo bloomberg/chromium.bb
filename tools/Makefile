@@ -387,7 +387,9 @@ GCC_CONFIGURE_FLAGS-nolibc = --disable-shared \
 # such accesses leaked into that binary.  The pregcc build does not
 # produce target libraries that are linked into anything, and the glibc
 # build is not used for building irt.nexe, so they do not need this option.
-GCC_CFLAGS_FOR_TARGET-newlib = -mtls-use-call
+GCC_CFLAGS_FOR_TARGET-newlib = -mtls-use-call \
+			       -I$(HEADERS_FOR_BUILD)
+
 GCC_CONFIGURE_FLAGS-newlib = --disable-shared \
 			     --enable-languages="c,c++,objc" \
 			     --enable-threads=nacl \
@@ -770,53 +772,31 @@ BUILD/stamp-$(CROSSARCH)-gdb: | SRC/gdb BUILD
 .PHONY: gdb
 gdb: BUILD/stamp-$(CROSSARCH)-gdb
 
-##################################################################
-# Build the libraries and c runtime stubs.
-##################################################################
-.PHONY: nc_threads
-nc_threads:
-	cd .. && \
-	 ./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE) \
-	  --mode=nacl_extra_sdk install_libpthread --verbose \
-	  targetplatform=x86-$(BITSPLATFORM)
-
-.PHONY: nacl_libraries_nocpp
-nacl_libraries_nocpp:
-	cd .. && \
-	  (./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE) \
-	    --mode=nacl_extra_sdk extra_sdk_update_header \
-	    --verbose ) && \
-	  (./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE) \
-	    --mode=nacl_extra_sdk extra_sdk_update \
-	    nocpp=yes targetplatform=x86-32 --verbose ) && \
-	  (./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE) \
-	    --mode=nacl_extra_sdk extra_sdk_update \
-	    nocpp=yes targetplatform=x86-64 --verbose ) ;
-
-##################################################################
-# nacl_libraries:
-# Injects nacl-specific libraries in toolchain.
-##################################################################
-.PHONY: nacl_libraries
-nacl_libraries:
-	cd .. && \
-	  (./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE) \
-	    --mode=nacl_extra_sdk extra_sdk_update_header --verbose ) && \
-	  (./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE) \
-	    --mode=nacl_extra_sdk extra_sdk_update \
-	    targetplatform=x86-32 --verbose ) && \
-	  (./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE) \
-	    --mode=nacl_extra_sdk extra_sdk_update \
-	    targetplatform=x86-64 --verbose ) ;
-	chmod a-x "$(DESTDIR)$(SDKROOT)/$(CROSSARCH)"/lib{,32}/*.a
-	rm -f "$(DESTDIR)$(SDKROOT)/$(CROSSARCH)"/lib{,32}/*.la
-
 .PHONY: gdb_minimal_test
 gdb_minimal_test: BUILD/stamp-$(CROSSARCH)-gdb
 	cd .. && \
 	  ./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE) \
 	    --mode=nacl,dbg-linux platform=x86-32 gdb_minimal_test
 
+
+##################################################################
+# Install headers from the NaCl tree locally for the gcc build to see.
+##################################################################
+.PHONY: headers_for_build
+headers_for_build:
+	cd .. && \
+	  ./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE) \
+		     --verbose platform=x86-$(BITSPLATFORM) \
+		     install_headers includedir=$(HEADERS_FOR_BUILD_NATIVE)
+
+HEADERS_FOR_BUILD = \
+	$(abspath $(dir $(THISMAKEFILE)))/BUILD/headers_for_build
+
+ifeq ($(PLATFORM), win)
+  HEADERS_FOR_BUILD_NATIVE = `cygpath -m $(HEADERS_FOR_BUILD)`
+else
+  HEADERS_FOR_BUILD_NATIVE = $(HEADERS_FOR_BUILD)
+endif
 
 ##################################################################
 # Build the entire toolchain.
@@ -854,15 +834,12 @@ build-with-newlib:
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-pregcc
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-newlib
 	$(CREATE_REDIRECTORS) "$(DESTDIR)$(SDKROOT)"
-	$(MAKE) -f $(THISMAKEFILE) nc_threads
-	# We need libnacl.a for gfortran, but we don't have a c++ yet
-	$(MAKE) -f $(THISMAKEFILE) nacl_libraries_nocpp
+	$(MAKE) -f $(THISMAKEFILE) headers_for_build
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-gcc
 	case $$(SRC/binutils/config.guess) in \
 	*-linux*) $(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-gdb ;; \
 	esac
 	$(CREATE_REDIRECTORS) "$(DESTDIR)$(SDKROOT)"
-	$(MAKE) -f $(THISMAKEFILE) nacl_libraries
 	rm -rf "$(DESTDIR)$(SDKROOT)"/{include,lib/*.a*,lib/*.so*,lib32,lib64}
 
 # Newlib toolchain for buildbot.
