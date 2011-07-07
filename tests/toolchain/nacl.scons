@@ -56,6 +56,18 @@ env.AddNodeToTestSuite(node,
                        'run_float2_test')
 
 
+if env.Bit('bitcode'):
+  # NOTE: this test uses bitcode asm's
+  nexe = env.ComponentProgram('llvm_math_intrinsics', 'llvm_math_intrinsics.c')
+  node = env.CommandSelLdrTestNacl(
+      'llvm_math_intrinsics.out',
+      nexe,
+      stdout_golden=env.File('llvm_math_intrinsics.stdout'))
+  env.AddNodeToTestSuite(node,
+                         ['toolchain_tests','small_tests'],
+                         'run_llvm_math_intrinsics_test')
+
+
 nexe = env.ComponentProgram('initfini', 'initfini.c')
 node = env.CommandSelLdrTestNacl('initfini.out',
                                  nexe,
