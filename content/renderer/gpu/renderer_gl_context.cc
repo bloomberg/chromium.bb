@@ -38,7 +38,6 @@ const int32 kCommandBufferSize = 1024 * 1024;
 const int32 kTransferBufferSize = 1024 * 1024;
 
 const uint32 kMaxLatchesPerRenderer = 2048;
-const uint32 kInvalidLatchId = 0xffffffffu;
 
 // Singleton used to initialize and terminate the gles2 library.
 class GLES2Initializer {
@@ -381,8 +380,8 @@ RendererGLContext::RendererGLContext(GpuChannelHost* channel)
     : channel_(channel),
       parent_(base::WeakPtr<RendererGLContext>()),
       parent_texture_id_(0),
-      child_to_parent_latch_(kInvalidLatchId),
-      parent_to_child_latch_(kInvalidLatchId),
+      child_to_parent_latch_(gpu::kInvalidLatchId),
+      parent_to_child_latch_(gpu::kInvalidLatchId),
       latch_transfer_buffer_id_(-1),
       command_buffer_(NULL),
       gles2_helper_(NULL),
@@ -539,23 +538,11 @@ void RendererGLContext::Destroy() {
   delete gles2_implementation_;
   gles2_implementation_ = NULL;
 
-  if (child_to_parent_latch_ != kInvalidLatchId) {
-    DestroyLatch(child_to_parent_latch_);
-    child_to_parent_latch_ = kInvalidLatchId;
-  }
-  if (parent_to_child_latch_ != kInvalidLatchId) {
-    DestroyLatch(parent_to_child_latch_);
-    parent_to_child_latch_ = kInvalidLatchId;
-  }
-  if (command_buffer_ && latch_transfer_buffer_id_ != -1) {
-    command_buffer_->DestroyTransferBuffer(latch_transfer_buffer_id_);
-    latch_transfer_buffer_id_ = -1;
-  }
-
-  if (command_buffer_ && transfer_buffer_id_ != -1) {
-    command_buffer_->DestroyTransferBuffer(transfer_buffer_id_);
-    transfer_buffer_id_ = -1;
-  }
+  // Do not destroy these transfer buffers here, because commands are still
+  // in flight on the GPU process that may access them. When the command buffer
+  // is destroyed, the associated shared memory will be cleaned up.
+  latch_transfer_buffer_id_ = -1;
+  transfer_buffer_id_ = -1;
 
   delete gles2_helper_;
   gles2_helper_ = NULL;
@@ -566,6 +553,17 @@ void RendererGLContext::Destroy() {
   }
 
   channel_ = NULL;
+
+  // Destroy latches here, after the command buffer is destroyed so that no
+  // commands are still in flight that may access the latch memory.
+  if (child_to_parent_latch_ != gpu::kInvalidLatchId) {
+    DestroyLatch(child_to_parent_latch_);
+    child_to_parent_latch_ = gpu::kInvalidLatchId;
+  }
+  if (parent_to_child_latch_ != gpu::kInvalidLatchId) {
+    DestroyLatch(parent_to_child_latch_);
+    parent_to_child_latch_ = gpu::kInvalidLatchId;
+  }
 }
 
 void RendererGLContext::OnSwapBuffers() {

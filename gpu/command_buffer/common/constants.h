@@ -57,7 +57,7 @@ const int32 kCommandBufferSharedMemoryId = 4;
 const int32 kLatchSharedMemoryId = 5;
 
 // Invalid latch ID.
-const int32 kInvalidLatchId = 0xffffffffu;
+const uint32 kInvalidLatchId = 0xffffffffu;
 
 }  // namespace gpu
 
