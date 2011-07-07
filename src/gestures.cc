@@ -9,6 +9,7 @@
 #include <base/logging.h>
 
 #include "gestures/include/immediate_interpreter.h"
+#include "gestures/include/integral_gesture_filter_interpreter.h"
 #include "gestures/include/scaling_filter_interpreter.h"
 
 // C API:
@@ -81,7 +82,8 @@ GestureInterpreter::GestureInterpreter(int version)
       tap_to_click_(false),
       move_speed_(50),
       scroll_speed_(50) {
-  interpreter_.reset(new ScalingFilterInterpreter(new ImmediateInterpreter));
+  interpreter_.reset(new IntegralGestureFilterInterpreter(
+      new ScalingFilterInterpreter(new ImmediateInterpreter)));
 }
 
 GestureInterpreter::~GestureInterpreter() {}
