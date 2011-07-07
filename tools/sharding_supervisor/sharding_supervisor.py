@@ -11,8 +11,6 @@ the test in a separate process and report on the results. When all the shards
 have been completed, the supervisor reprints any lines indicating a test
 failure for convenience. If only one shard is to be run, a single subprocess
 is started for that shard and the output is identical to gtest's output.
-
-Usage: python sharding_supervisor.py [options] path/to/test [gtest_args]
 """
 
 
@@ -25,6 +23,7 @@ import sys
 import threading
 
 
+USAGE = "Usage: python %prog [options] path/to/test [gtest_args]"
 DEFAULT_NUM_CORES = 4
 DEFAULT_SHARDS_PER_CORE = 5 # num_shards = cores * SHARDS_PER_CORE
 DEFAULT_RUNS_PER_CORE = 1 # num_workers = cores * RUNS_PER_CORE
@@ -208,7 +207,7 @@ class ShardingSupervisor(object):
 
 
 def main():
-  parser = optparse.OptionParser()
+  parser = optparse.OptionParser(usage=USAGE)
   parser.add_option(
       "-n", "--shards_per_core", type="int", default=DEFAULT_SHARDS_PER_CORE,
       help="number of shards to generate per CPU")
