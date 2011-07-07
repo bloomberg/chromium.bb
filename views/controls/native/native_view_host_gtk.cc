@@ -85,11 +85,6 @@ void UnblockFocusSignals(GtkWidget* widget, gpointer data) {
     gtk_container_foreach(GTK_CONTAINER(widget), UnblockFocusSignals, data);
 }
 
-// Removes |child| from |parent|.
-void RemoveFromParent(GtkWidget* child, gpointer parent) {
-  gtk_container_remove(GTK_CONTAINER(parent), child);
-}
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -105,31 +100,31 @@ NativeViewHostGtk::NativeViewHostGtk(NativeViewHost* host)
 }
 
 NativeViewHostGtk::~NativeViewHostGtk() {
-  if (fixed_) {
-    gtk_container_foreach(GTK_CONTAINER(fixed_), RemoveFromParent, fixed_);
+  if (fixed_)
     gtk_widget_destroy(fixed_);
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeViewHostGtk, NativeViewHostWrapper implementation:
 
 void NativeViewHostGtk::NativeViewAttached() {
-  AttachHostWidget();
-
-  GtkWidget* host_widget = host_->native_view();
+  DCHECK(host_->native_view());
+  if (gtk_widget_get_parent(host_->native_view()))
+    gtk_widget_reparent(host_->native_view(), fixed_);
+  else
+    gtk_container_add(GTK_CONTAINER(fixed_), host_->native_view());
 
   // Let the widget know that the native component has been painted.
-  views::NativeWidgetGtk::RegisterChildExposeHandler(host_widget);
+  views::NativeWidgetGtk::RegisterChildExposeHandler(host_->native_view());
 
   if (!destroy_signal_id_) {
-    destroy_signal_id_ = g_signal_connect(host_widget,
+    destroy_signal_id_ = g_signal_connect(host_->native_view(),
                                           "destroy", G_CALLBACK(CallDestroy),
                                           this);
   }
 
   if (!focus_signal_id_) {
-    focus_signal_id_ = g_signal_connect(host_widget,
+    focus_signal_id_ = g_signal_connect(host_->native_view(),
                                         "focus-in-event",
                                         G_CALLBACK(CallFocusIn), this);
   }
@@ -137,20 +132,35 @@ void NativeViewHostGtk::NativeViewAttached() {
   // Always layout though.
   host_->Layout();
 
+  // We own the native view as long as it's attached, so that we can safely
+  // reparent it in multiple passes.
+  gtk_widget_ref(host_->native_view());
+
   // TODO(port): figure out focus.
 }
 
 void NativeViewHostGtk::NativeViewDetaching(bool destroyed) {
-  GtkWidget* host_widget = host_->native_view();
-  DCHECK(host_widget);
+  DCHECK(host_->native_view());
 
-  g_signal_handler_disconnect(G_OBJECT(host_widget), destroy_signal_id_);
+  g_signal_handler_disconnect(G_OBJECT(host_->native_view()),
+                              destroy_signal_id_);
   destroy_signal_id_ = 0;
 
-  g_signal_handler_disconnect(G_OBJECT(host_widget), focus_signal_id_);
+  g_signal_handler_disconnect(G_OBJECT(host_->native_view()),
+                              focus_signal_id_);
   focus_signal_id_ = 0;
 
   installed_clip_ = false;
+
+  if (fixed_ && !destroyed) {
+    DCHECK_NE(static_cast<gfx::NativeView>(NULL),
+              gtk_widget_get_parent(host_->native_view()));
+    gtk_container_remove(GTK_CONTAINER(fixed_), host_->native_view());
+    DCHECK_EQ(
+        0U, g_list_length(gtk_container_get_children(GTK_CONTAINER(fixed_))));
+  }
+
+  g_object_unref(G_OBJECT(host_->native_view()));
 }
 
 void NativeViewHostGtk::AddedToWidget() {
@@ -164,14 +174,15 @@ void NativeViewHostGtk::AddedToWidget() {
   if (!host_->native_view())
     return;
 
-  AttachHostWidget();
+  if (gtk_widget_get_parent(host_->native_view()))
+    gtk_widget_reparent(host_->native_view(), fixed_);
+  else
+    gtk_container_add(GTK_CONTAINER(fixed_), host_->native_view());
 
-  if (host_->IsVisibleInRootView()) {
-    gtk_widget_show(host_->native_view());
+  if (host_->IsVisibleInRootView())
     gtk_widget_show(fixed_);
-  } else {
+  else
     gtk_widget_hide(fixed_);
-  }
   host_->Layout();
 }
 
@@ -224,19 +235,18 @@ void NativeViewHostGtk::ShowWidget(int x, int y, int w, int h) {
     fixed_h = std::min(installed_clip_bounds_.height(), h);
   }
 
-  GtkWidget* host_widget = host_->native_view();
   // Don't call gtk_widget_size_allocate now, as we're possibly in the
   // middle of a re-size, and it kicks off another re-size, and you
   // get flashing.  Instead, we'll set the desired size as properties
   // on the widget and queue the re-size.
-  gtk_views_fixed_set_widget_size(host_widget, child_w, child_h);
-  gtk_fixed_move(GTK_FIXED(fixed_), host_widget, child_x, child_y);
+  gtk_views_fixed_set_widget_size(host_->native_view(), child_w, child_h);
+  gtk_fixed_move(GTK_FIXED(fixed_), host_->native_view(), child_x, child_y);
 
   // Size and place the fixed_.
   GetHostWidget()->PositionChild(fixed_, fixed_x, fixed_y, fixed_w, fixed_h);
 
-  gtk_widget_show(host_widget);
   gtk_widget_show(fixed_);
+  gtk_widget_show(host_->native_view());
 }
 
 void NativeViewHostGtk::HideWidget() {
@@ -245,9 +255,8 @@ void NativeViewHostGtk::HideWidget() {
 }
 
 void NativeViewHostGtk::SetFocus() {
-  GtkWidget* host_widget = host_->native_view();
-  DCHECK(host_widget);
-  gtk_widget_grab_focus(host_widget);
+  DCHECK(host_->native_view());
+  gtk_widget_grab_focus(host_->native_view());
 }
 
 gfx::NativeViewAccessible NativeViewHostGtk::GetNativeViewAccessible() {
@@ -281,24 +290,19 @@ void NativeViewHostGtk::CreateFixed(bool needs_window) {
   fixed_ = gtk_views_fixed_new();
   gtk_widget_set_name(fixed_, "views-native-view-host-fixed");
   gtk_fixed_set_has_window(GTK_FIXED(fixed_), needs_window);
-
   // Defeat refcounting. We need to own the fixed.
   gtk_widget_ref(fixed_);
 
   NativeWidgetGtk* widget_gtk = GetHostWidget();
-  if (widget_gtk) {
+  if (widget_gtk)
     widget_gtk->AddChild(fixed_);
-    // Clear the background so we don't get flicker.
-    gtk_widget_realize(fixed_);
-    gdk_window_set_back_pixmap(fixed_->window, NULL, false);
-  }
 
   if (host_->native_view())
-    AttachHostWidget();
+    gtk_container_add(GTK_CONTAINER(fixed_), host_->native_view());
 
-  if (widget_gtk && host_->native_view() && focused_widget)
+  if (widget_gtk && host_->native_view() && focused_widget) {
     gtk_widget_grab_focus(focused_widget);
-
+  }
   if (focus_event_blocked) {
     // Unblocking a signal handler that is not blocked fails.
     // Unblock only when it's unblocked.
@@ -311,9 +315,13 @@ void NativeViewHostGtk::DestroyFixed() {
     return;
 
   gtk_widget_hide(fixed_);
-  gtk_container_foreach(GTK_CONTAINER(fixed_), RemoveFromParent, fixed_);
   GetHostWidget()->RemoveChild(fixed_);
 
+  if (host_->native_view()) {
+    // We can safely remove the widget from its container since we own the
+    // widget from the moment it is attached.
+    gtk_container_remove(GTK_CONTAINER(fixed_), host_->native_view());
+  }
   // fixed_ should not have any children this point.
   DCHECK_EQ(0U,
             g_list_length(gtk_container_get_children(GTK_CONTAINER(fixed_))));
@@ -339,30 +347,6 @@ GtkWidget* NativeViewHostGtk::GetFocusedDescendant() {
     return NULL;
   return (focused == fixed_ || gtk_widget_is_ancestor(focused, fixed_)) ?
       focused : NULL;
-}
-
-void NativeViewHostGtk::AttachHostWidget() {
-  GtkWidget* host_widget = host_->native_view();
-  DCHECK(host_widget);
-
-  GtkWidget* host_parent = gtk_widget_get_parent(host_widget);
-  bool parent_changed = true;
-  if (host_parent) {
-    if (host_parent != fixed_)
-      gtk_widget_reparent(host_widget, fixed_);
-    else
-      parent_changed = false;
-  } else {
-    gtk_container_add(GTK_CONTAINER(fixed_), host_widget);
-  }
-
-  if (parent_changed) {
-    // We need to clear the background so we don't get flicker on tab switching.
-    // To do that we must realize the widget if it's not already.
-    if (!GTK_WIDGET_REALIZED(host_widget))
-      gtk_widget_realize(host_widget);
-    gdk_window_set_back_pixmap(host_widget->window, NULL, false);
-  }
 }
 
 // static

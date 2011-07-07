@@ -57,9 +57,6 @@ class NativeViewHostGtk : public NativeViewHostWrapper {
   // on a descendant of fixed_.
   GtkWidget* GetFocusedDescendant();
 
-  // Connects a new host widget.
-  void AttachHostWidget();
-
   // Invoked from the 'destroy' signal.
   static void CallDestroy(GtkObject* object, NativeViewHostGtk* host);
 
