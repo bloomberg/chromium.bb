@@ -297,7 +297,7 @@ emit_type(struct arg *a)
 	default:
 	case INT:
 	case FD:
-		printf("int ");
+		printf("int32_t ");
 		break;
 	case NEW_ID:
 	case UNSIGNED:
