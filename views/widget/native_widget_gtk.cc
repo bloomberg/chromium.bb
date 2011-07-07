@@ -860,6 +860,11 @@ gfx::NativeWindow NativeWidgetGtk::GetNativeWindow() const {
   return child_ ? NULL : GTK_WINDOW(widget_);
 }
 
+Widget* NativeWidgetGtk::GetTopLevelWidget() {
+  NativeWidgetPrivate* native_widget = GetTopLevelNativeWidget(GetNativeView());
+  return native_widget ? native_widget->GetWidget() : NULL;
+}
+
 const ui::Compositor* NativeWidgetGtk::GetCompositor() const {
   return compositor_.get();
 }

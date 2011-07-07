@@ -164,6 +164,7 @@ class NativeWidgetGtk : public internal::NativeWidgetPrivate,
   virtual const Widget* GetWidget() const OVERRIDE;
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
   virtual gfx::NativeWindow GetNativeWindow() const OVERRIDE;
+  virtual Widget* GetTopLevelWidget() OVERRIDE;
   virtual const ui::Compositor* GetCompositor() const OVERRIDE;
   virtual ui::Compositor* GetCompositor() OVERRIDE;
   virtual void MarkLayerDirty() OVERRIDE;

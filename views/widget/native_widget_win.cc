@@ -546,6 +546,11 @@ gfx::NativeWindow NativeWidgetWin::GetNativeWindow() const {
   return WindowImpl::hwnd();
 }
 
+Widget* NativeWidgetWin::GetTopLevelWidget() {
+  NativeWidgetPrivate* native_widget = GetTopLevelNativeWidget(GetNativeView());
+  return native_widget ? native_widget->GetWidget() : NULL;
+}
+
 const ui::Compositor* NativeWidgetWin::GetCompositor() const {
   return compositor_.get();
 }

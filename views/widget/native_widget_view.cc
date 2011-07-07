@@ -17,10 +17,15 @@ const char NativeWidgetView::kViewClassName[] = "views/NativeWidgetView";
 
 NativeWidgetView::NativeWidgetView(NativeWidgetViews* native_widget)
     : native_widget_(native_widget),
-      sent_create_(false) {
+      sent_create_(false),
+      delete_native_widget_(true) {
 }
 
 NativeWidgetView::~NativeWidgetView() {
+  if (delete_native_widget_) {
+    native_widget_->set_delete_native_view(false);
+    delete native_widget_;
+  }
 }
 
 Widget* NativeWidgetView::GetAssociatedWidget() {

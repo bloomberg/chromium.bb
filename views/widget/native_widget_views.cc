@@ -5,6 +5,7 @@
 #include "views/widget/native_widget_views.h"
 
 #include "ui/gfx/compositor/compositor.h"
+#include "views/desktop/desktop_window_view.h"
 #include "views/view.h"
 #include "views/views_delegate.h"
 #include "views/widget/native_widget_view.h"
@@ -21,10 +22,22 @@ NativeWidgetViews::NativeWidgetViews(internal::NativeWidgetDelegate* delegate)
       active_(false),
       minimized_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(close_widget_factory_(this)),
-      hosting_widget_(NULL) {
+      hosting_widget_(NULL),
+      ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET),
+      delete_native_view_(true) {
 }
 
 NativeWidgetViews::~NativeWidgetViews() {
+  delegate_->OnNativeWidgetDestroying();
+  if (delete_native_view_) {
+    view_->parent()->RemoveChildView(view_);
+    // We must prevent the NativeWidgetView from attempting to delete us.
+    view_->set_delete_native_widget(false);
+    delete view_;
+  }
+  delegate_->OnNativeWidgetDestroyed();
+  if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)
+    delete delegate_;
 }
 
 View* NativeWidgetViews::GetView() {
@@ -44,11 +57,16 @@ void NativeWidgetViews::OnActivate(bool active) {
 // NativeWidgetViews, NativeWidget implementation:
 
 void NativeWidgetViews::InitNativeWidget(const Widget::InitParams& params) {
+  ownership_ = params.ownership;
   View* desktop_view = ViewsDelegate::views_delegate->GetDefaultParentView();
   hosting_widget_ = desktop_view->GetWidget();
   view_ = new internal::NativeWidgetView(this);
   view_->SetBoundsRect(params.bounds);
   view_->SetPaintToLayer(true);
+  // TODO(beng): This is insufficient. While this handles the case where
+  //             params.parent_widget is NULL, we need to somehow handle a case
+  //             where we are passed a specified, valid parent. We may have to
+  //             add View* Widget::GetContainerView().
   desktop_view->AddChildView(view_);
 
   // TODO(beng): handle parenting.
@@ -84,6 +102,12 @@ gfx::NativeView NativeWidgetViews::GetNativeView() const {
 
 gfx::NativeWindow NativeWidgetViews::GetNativeWindow() const {
   return GetParentNativeWidget()->GetNativeWindow();
+}
+
+Widget* NativeWidgetViews::GetTopLevelWidget() {
+  if (view_->parent() == ViewsDelegate::views_delegate->GetDefaultParentView())
+    return GetWidget();
+  return view_->GetWidget()->GetTopLevelWidget();
 }
 
 const ui::Compositor* NativeWidgetViews::GetCompositor() const {
@@ -234,8 +258,9 @@ void NativeWidgetViews::Close() {
 }
 
 void NativeWidgetViews::CloseNow() {
-  view_->parent()->RemoveChildView(view_);
-  delete view_;
+  // TODO(beng): what about the other case??
+  if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)
+    delete view_;
 }
 
 void NativeWidgetViews::EnableClose(bool enable) {

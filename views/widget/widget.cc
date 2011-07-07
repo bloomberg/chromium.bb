@@ -153,8 +153,10 @@ Widget::~Widget() {
 
   DestroyRootView();
 
-  if (ownership_ == InitParams::WIDGET_OWNS_NATIVE_WIDGET)
+  if (ownership_ == InitParams::WIDGET_OWNS_NATIVE_WIDGET) {
+    CloseNow();
     delete native_widget_;
+  }
 }
 
 // static
@@ -330,9 +332,7 @@ Widget* Widget::GetTopLevelWidget() {
 }
 
 const Widget* Widget::GetTopLevelWidget() const {
-  internal::NativeWidgetPrivate* native_widget =
-      internal::NativeWidgetPrivate::GetTopLevelNativeWidget(GetNativeView());
-  return native_widget ? native_widget->GetWidget() : NULL;
+  return native_widget_->GetTopLevelWidget();
 }
 
 void Widget::SetContentsView(View* view) {

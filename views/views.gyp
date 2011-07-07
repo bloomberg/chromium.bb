@@ -497,6 +497,7 @@
         'widget/native_widget_test_utils_win.cc',
         'widget/native_widget_unittest.cc',
         'widget/native_widget_win_unittest.cc',
+        'widget/widget_unittest.cc',
 
         '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
       ],

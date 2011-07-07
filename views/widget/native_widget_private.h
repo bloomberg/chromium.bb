@@ -83,6 +83,9 @@ class NativeWidgetPrivate : public NativeWidget {
   virtual gfx::NativeView GetNativeView() const = 0;
   virtual gfx::NativeWindow GetNativeWindow() const = 0;
 
+  // Returns the topmost Widget in a hierarchy.
+  virtual Widget* GetTopLevelWidget() = 0;
+
   // Returns the Compositor, or NULL if there isn't one associated with this
   // NativeWidget.
   virtual const ui::Compositor* GetCompositor() const = 0;

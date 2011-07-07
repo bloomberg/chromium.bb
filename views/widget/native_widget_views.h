@@ -31,6 +31,10 @@ class NativeWidgetViews : public internal::NativeWidgetPrivate {
 
   void OnActivate(bool active);
 
+  void set_delete_native_view(bool delete_native_view) {
+    delete_native_view_ = delete_native_view;
+  }
+
   internal::NativeWidgetDelegate* delegate() { return delegate_; }
 
  protected:
@@ -44,6 +48,7 @@ class NativeWidgetViews : public internal::NativeWidgetPrivate {
   virtual const Widget* GetWidget() const OVERRIDE;
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
   virtual gfx::NativeWindow GetNativeWindow() const OVERRIDE;
+  virtual Widget* GetTopLevelWidget() OVERRIDE;
   virtual const ui::Compositor* GetCompositor() const OVERRIDE;
   virtual ui::Compositor* GetCompositor() OVERRIDE;
   virtual void MarkLayerDirty() OVERRIDE;
@@ -114,6 +119,9 @@ class NativeWidgetViews : public internal::NativeWidgetPrivate {
   internal::NativeWidgetPrivate* GetParentNativeWidget();
   const internal::NativeWidgetPrivate* GetParentNativeWidget() const;
 
+  // Called by the NativeWidgetView when it is deleted.
+  void OnDestroy();
+
   internal::NativeWidgetDelegate* delegate_;
 
   internal::NativeWidgetView* view_;
@@ -131,9 +139,14 @@ class NativeWidgetViews : public internal::NativeWidgetPrivate {
 
   Widget* hosting_widget_;
 
+  // See class documentation for Widget in widget.h for a note about ownership.
+  Widget::InitParams::Ownership ownership_;
+
+  bool delete_native_view_;
+
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetViews);
 };
 
-}
+}  // namespace views
 
 #endif  // VIEWS_WIDGET_NATIVE_WIDGET_VIEWS_H_
