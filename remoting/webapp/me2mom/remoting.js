@@ -239,8 +239,8 @@ function setClientMode(mode) {
 }
 
 function showWaiting_() {
-  showElement(document.getElementById('client-footer'), false);
-  showElement(document.getElementById('host-footer'), false);
+  showElement(document.getElementById('client-footer-text'), false);
+  showElement(document.getElementById('host-footer-text'), false);
   showElement(document.getElementById('waiting-footer'), true);
   document.getElementById('cancel-button').disabled = false;
 }
