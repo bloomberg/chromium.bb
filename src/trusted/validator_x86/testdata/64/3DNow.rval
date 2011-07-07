@@ -1,0 +1,4 @@
+VALIDATOR: Checking jump targets: 0 to 2a
+VALIDATOR: Checking that basic blocks are aligned
+VALIDATOR: ERROR: 20: Bad basic block alignment.
+***MODULE IS UNSAFE***
