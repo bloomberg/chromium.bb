@@ -1,0 +1,13 @@
+# Test illegal bit commands.
+# btr %rax,(%rax)
+48 0F B3 00
+# bts %rax,(%rax)
+48 0F AB 00
+# btc %rax,(%rax)
+48 0F BB 00
+# btrl $0x1,(%rax)
+0F BA 30 01
+# btsl $0x1,(%rax)
+0F BA 28 01
+# btcl $0x1,(%rax)
+0F BA 38 01
