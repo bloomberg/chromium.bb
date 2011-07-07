@@ -449,6 +449,7 @@ PluginModule::PluginModule(const std::string& name,
       name_(name),
       path_(path),
       reserve_instance_id_(NULL) {
+  memset(&entry_points_, 0, sizeof(entry_points_));
   pp_module_ = ResourceTracker::Get()->AddModule(this);
   GetMainThreadMessageLoop();  // Initialize the main thread message loop.
   GetLivePluginSet()->insert(this);
@@ -478,8 +479,11 @@ PluginModule::~PluginModule() {
 }
 
 bool PluginModule::InitAsInternalPlugin(const EntryPoints& entry_points) {
-  entry_points_ = entry_points;
-  return InitializeModule();
+  if (InitializeModule(entry_points)) {
+    entry_points_ = entry_points;
+    return true;
+  }
+  return false;
 }
 
 bool PluginModule::InitAsLibrary(const FilePath& path) {
@@ -487,12 +491,14 @@ bool PluginModule::InitAsLibrary(const FilePath& path) {
   if (!library)
     return false;
 
-  if (!LoadEntryPointsFromLibrary(library, &entry_points_) ||
-      !InitializeModule()) {
+  EntryPoints entry_points;
+
+  if (!LoadEntryPointsFromLibrary(library, &entry_points) ||
+      !InitializeModule(entry_points)) {
     base::UnloadNativeLibrary(library);
     return false;
   }
-
+  entry_points_ = entry_points;
   library_ = library;
   return true;
 }
@@ -603,9 +609,10 @@ PluginDelegate::PpapiBroker* PluginModule::GetBroker() {
   return webkit_forwarding_.get();
 }
 
-bool PluginModule::InitializeModule() {
+bool PluginModule::InitializeModule(const EntryPoints& entry_points) {
   DCHECK(!out_of_process_proxy_.get()) << "Don't call for proxied modules.";
-  int retval = entry_points_.initialize_module(pp_module(), &GetInterface);
+  DCHECK(entry_points.initialize_module != NULL);
+  int retval = entry_points.initialize_module(pp_module(), &GetInterface);
   if (retval != 0) {
     LOG(WARNING) << "PPP_InitializeModule returned failure " << retval;
     return false;

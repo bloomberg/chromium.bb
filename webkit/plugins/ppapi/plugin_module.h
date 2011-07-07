@@ -160,7 +160,7 @@ class PluginModule : public base::RefCounted<PluginModule>,
   // Calls the InitializeModule entrypoint. The entrypoint must have been
   // set and the plugin must not be out of process (we don't maintain
   // entrypoints in that case).
-  bool InitializeModule();
+  bool InitializeModule(const EntryPoints& entry_points);
 
   PluginDelegate::ModuleLifetime* lifetime_delegate_;
 
