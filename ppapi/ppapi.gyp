@@ -9,6 +9,17 @@
 {
   'variables': {
     'chromium_code': 1,  # Use higher warning level.
+
+    # NaCl also uses the C and C++ PPAPI targets. We want it to be able to use
+    # its own version of PPAPI when compiling into Chrome, which means we'll
+    # actually have two instances of each library in the checkout (though not
+    # compiled into the same binary since NaCl is a shared library).
+    #
+    # This value is the suffix that will be appended to the relevant projects.
+    # In Chrome, it's empty so the projects have the same name. NaCl sets this
+    # to "_nacl" and includes the .gypi files below, giving it different names
+    # for these projects.
+    'nacl_ppapi_library_suffix': '',
   },
   'target_defaults': {
     'conditions': [
