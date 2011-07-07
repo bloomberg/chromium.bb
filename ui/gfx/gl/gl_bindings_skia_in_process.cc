@@ -443,7 +443,7 @@ void BindSkiaToInProcessGL() {
     switch (gfx::GetGLImplementation()) {
       case gfx::kGLImplementationNone:
         NOTREACHED();
-        break;
+        return;
       case gfx::kGLImplementationDesktopGL:
         binding = kDesktop_GrGLBinding;
         break;
@@ -455,7 +455,7 @@ void BindSkiaToInProcessGL() {
         break;
       case gfx::kGLImplementationMockGL:
         NOTREACHED();
-        break;
+        return;
     }
 
     static GrGLInterface host_gl_interface = {
