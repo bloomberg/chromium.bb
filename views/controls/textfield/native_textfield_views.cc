@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
-#include "grit/app_strings.h"
+#include "grit/ui_strings.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/range/range.h"

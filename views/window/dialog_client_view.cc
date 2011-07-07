@@ -15,7 +15,7 @@
 #include <algorithm>
 
 #include "base/utf_string_conversions.h"
-#include "grit/app_strings.h"
+#include "grit/ui_strings.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"

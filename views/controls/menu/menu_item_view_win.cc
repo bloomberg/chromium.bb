@@ -7,7 +7,7 @@
 #include <uxtheme.h>
 #include <Vssym32.h>
 
-#include "grit/app_strings.h"
+#include "grit/ui_strings.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/native_theme_win.h"
 #include "views/controls/menu/menu_config.h"

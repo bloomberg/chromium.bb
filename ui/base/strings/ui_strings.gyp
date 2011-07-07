@@ -9,10 +9,10 @@
       'type': 'none',
       'actions': [
         {
-          'action_name': 'app_strings',
+          'action_name': 'ui_strings',
           'variables': {
-            'grit_grd_file': 'app_strings.grd',
-            'grit_out_dir': '<(grit_base_out_dir)/app_strings',
+            'grit_grd_file': 'ui_strings.grd',
+            'grit_out_dir': '<(grit_base_out_dir)/ui_strings',
           },
           'includes': [ '../../../build/grit_action.gypi' ],
         },
@@ -28,7 +28,7 @@
       'direct_dependent_settings': {
         'include_dirs': [
           '<(grit_base_out_dir)/app_locale_settings',
-          '<(grit_base_out_dir)/app_strings',
+          '<(grit_base_out_dir)/ui_strings',
         ],
       },
       'conditions': [
@@ -51,7 +51,7 @@
             'action_name': 'repack_ui_unittest_strings',
             'variables': {
               'pak_inputs': [
-                '<(grit_base_out_dir)/app_strings/app_strings_en-US.pak',
+                '<(grit_base_out_dir)/ui_strings/ui_strings_en-US.pak',
                 '<(grit_base_out_dir)/app_locale_settings/app_locale_settings_en-US.pak',
               ],
             },

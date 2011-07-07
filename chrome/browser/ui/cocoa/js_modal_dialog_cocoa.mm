@@ -11,8 +11,8 @@
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/chrome_browser_application_mac.h"
 #include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
-#include "grit/app_strings.h"
 #include "grit/generated_resources.h"
+#include "grit/ui_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/message_box_flags.h"
 

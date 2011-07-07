@@ -22,8 +22,8 @@
 #include "base/win/scoped_comptr.h"
 #include "base/win/windows_version.h"
 #include "content/browser/browser_thread.h"
-#include "grit/app_strings.h"
 #include "grit/generated_resources.h"
+#include "grit/ui_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 // This function takes the output of a SaveAs dialog: a filename, a filter and

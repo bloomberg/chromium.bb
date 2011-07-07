@@ -11,7 +11,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
-#include "grit/app_strings.h"
+#include "grit/ui_strings.h"
 #include "skia/ext/skia_utils_win.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/clipboard/clipboard.h"

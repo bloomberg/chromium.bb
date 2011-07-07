@@ -6,9 +6,9 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "grit/app_strings.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "grit/ui_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 

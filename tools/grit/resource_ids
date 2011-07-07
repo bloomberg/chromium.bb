@@ -81,7 +81,7 @@
     "messages": [9000],
   },
 
-  "ui/base/strings/app_strings.grd": {
+  "ui/base/strings/ui_strings.grd": {
     "messages": [9500],
   },
   # Chromium strings and Google Chrome strings must start at the same id.

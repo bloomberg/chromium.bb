@@ -13,7 +13,7 @@
 #include "base/message_loop.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
-#include "grit/app_strings.h"
+#include "grit/ui_strings.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"

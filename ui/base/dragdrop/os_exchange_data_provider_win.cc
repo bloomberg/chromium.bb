@@ -13,7 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_hglobal.h"
 #include "googleurl/src/gurl.h"
-#include "grit/app_strings.h"
+#include "grit/ui_strings.h"
 #include "net/base/net_util.h"
 #include "ui/base/clipboard/clipboard_util_win.h"
 #include "ui/base/l10n/l10n_util.h"

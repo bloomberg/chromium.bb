@@ -5,8 +5,8 @@
 #include "views/controls/button/menu_button.h"
 
 #include "base/utf_string_conversions.h"
-#include "grit/app_strings.h"
 #include "grit/ui_resources.h"
+#include "grit/ui_strings.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/l10n/l10n_util.h"

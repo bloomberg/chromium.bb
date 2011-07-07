@@ -7,7 +7,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/stl_util-inl.h"
 #include "base/utf_string_conversions.h"
-#include "grit/app_strings.h"
+#include "grit/ui_strings.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"

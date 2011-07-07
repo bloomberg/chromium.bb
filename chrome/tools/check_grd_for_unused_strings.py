@@ -147,7 +147,7 @@ if __name__ == '__main__':
       os.path.join(src_dir, 'ui', 'gfx', 'gfx_resources.grd'),
       os.path.join(src_dir, 'ui', 'resources', 'ui_resources.grd'),
       os.path.join(ui_base_dir, 'app_locale_settings.grd'),
-      os.path.join(ui_base_dir, 'app_strings.grd'),
+      os.path.join(ui_base_dir, 'ui_strings.grd'),
     ]
 
   # If no source directories were given, default them:
