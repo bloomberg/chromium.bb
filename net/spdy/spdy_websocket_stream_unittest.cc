@@ -13,100 +13,10 @@
 #include "net/spdy/spdy_protocol.h"
 #include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_test_util.h"
+#include "net/spdy/spdy_websocket_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-
-spdy::SpdyFrame* ConstructSpdyWebSocketHandshakeReq(
-    const char* const url,
-    const char* const origin,
-    const char* const protocol,
-    bool compressed,
-    spdy::SpdyStreamId stream_id,
-    net::RequestPriority request_priority) {
-  const net::SpdyHeaderInfo kSynStreamHeader = {
-    spdy::SYN_STREAM,
-    stream_id,
-    0,  // Associated stream ID
-    net::ConvertRequestPriorityToSpdyPriority(request_priority),
-    spdy::CONTROL_FLAG_NONE,
-    compressed,
-    spdy::INVALID,  // Status
-    NULL,  // Data,
-    0,  // Length
-    spdy::DATA_FLAG_NONE
-  };
-
-  const char* const headers[] = {
-    "url",
-    url,
-    "origin",
-    origin,
-    "protocol",
-    protocol,
-  };
-  int header_size = arraysize(headers) / 2;
-  if (protocol == NULL)
-    header_size -= 1;
-
-  return ConstructSpdyPacket(
-      kSynStreamHeader,
-      NULL,
-      0,
-      headers,
-      header_size);
-}
-
-spdy::SpdyFrame* ConstructSpdyWebSocketHandshakeResp(
-    const char* const url,
-    const char* const origin,
-    const char* const protocol,
-    bool compressed,
-    spdy::SpdyStreamId stream_id,
-    net::RequestPriority request_priority) {
-  const net::SpdyHeaderInfo kSynReplyHeader = {
-    spdy::SYN_REPLY,
-    stream_id,
-    0,  // Associated stream ID
-    net::ConvertRequestPriorityToSpdyPriority(request_priority),
-    spdy::CONTROL_FLAG_NONE,
-    false,
-    spdy::INVALID,  // Status
-    NULL,  // Data
-    0,  // Length
-    spdy::DATA_FLAG_NONE
-  };
-
-  const char* const headers[] = {
-    "sec-websocket-location",
-    url,
-    "sec-websocket-origin",
-    origin,
-    "sec-websocket-protocol",
-    protocol,
-  };
-  int header_size = arraysize(headers) / 2;
-  if (protocol == NULL)
-    header_size -= 1;
-
-  return ConstructSpdyPacket(
-      kSynReplyHeader,
-      NULL,
-      0,
-      headers,
-      header_size);
-}
-
-spdy::SpdyFrame* ConstructSpdyWebSocketFrame(
-    const char* data,
-    int len,
-    spdy::SpdyStreamId stream_id,
-    bool fin) {
-  spdy::SpdyFramer framer;
-  return framer.CreateDataFrame(
-      stream_id, data, len,
-      fin ? spdy::DATA_FLAG_FIN : spdy::DATA_FLAG_NONE);
-}
 
 struct SpdyWebSocketStreamEvent {
   enum EventType {
@@ -298,26 +208,42 @@ class SpdyWebSocketStreamTest : public testing::Test {
   void Prepare(spdy::SpdyStreamId stream_id) {
     stream_id_ = stream_id;
 
-    request_frame_.reset(ConstructSpdyWebSocketHandshakeReq(
-        "ws://example.com/echo",
-        "http://example.com/wsdemo",
-        NULL,
-        false,
+    const char* const request_headers[] = {
+      "url", "ws://example.com/echo",
+      "origin", "http://example.com/wsdemo",
+    };
+
+    int request_header_count = arraysize(request_headers) / 2;
+
+    const char* const response_headers[] = {
+      "sec-websocket-location", "ws://example.com/echo",
+      "sec-websocket-origin", "http://example.com/wsdemo",
+    };
+
+    int response_header_count = arraysize(response_headers) / 2;
+
+    request_frame_.reset(ConstructSpdyWebSocketHandshakeRequestFrame(
+        request_headers,
+        request_header_count,
         stream_id_,
         HIGHEST));
-    response_frame_.reset(ConstructSpdyWebSocketHandshakeResp(
-        "ws://example.com/echo",
-        "http://example.com/wsdemo",
-        NULL,
-        false,
+    response_frame_.reset(ConstructSpdyWebSocketHandshakeResponseFrame(
+        response_headers,
+        response_header_count,
         stream_id_,
         HIGHEST));
 
-    message_frame_.reset(ConstructSpdyWebSocketFrame(
-        kMessageFrame, kMessageFrameLength, stream_id_, false));
+    message_frame_.reset(ConstructSpdyWebSocketDataFrame(
+        kMessageFrame,
+        kMessageFrameLength,
+        stream_id_,
+        false));
 
-    closing_frame_.reset(ConstructSpdyWebSocketFrame(
-        kClosingFrame, kClosingFrameLength, stream_id_, false));
+    closing_frame_.reset(ConstructSpdyWebSocketDataFrame(
+        kClosingFrame,
+        kClosingFrameLength,
+        stream_id_,
+        false));
   }
   int InitSession(MockRead* reads, size_t reads_count,
                   MockWrite* writes, size_t writes_count,
