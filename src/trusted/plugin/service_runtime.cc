@@ -176,6 +176,7 @@ bool ServiceRuntime::InitCommunication(nacl::DescWrapper* nacl_desc,
   }
   PLUGIN_PRINTF(("ServiceRuntime::InitCommunication (load_status=%d)\n",
                  load_status));
+  plugin_->ReportSelLdrLoadStatus(load_status);
   if (LOAD_OK != load_status) {
     error_info->SetReport(
         ERROR_SEL_LDR_START_STATUS,

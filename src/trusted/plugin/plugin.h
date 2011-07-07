@@ -76,6 +76,9 @@ class Plugin : public PortableHandle {
                                     uint64_t loaded_bytes,
                                     uint64_t total_bytes) = 0;
 
+  // Report the error code that sel_ldr produces when starting a nexe.
+  virtual void ReportSelLdrLoadStatus(int status) = 0;
+
   // overriding virtual methods
   virtual bool InvokeEx(uintptr_t method_id,
                         CallType call_type,

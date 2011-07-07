@@ -70,7 +70,7 @@ window.domAutomationController.send(text);
   # Make sure the histogram parser works.
   def testParseHistogram(self):
     hist_data = """
-Histogram: NaCl.LoadStatus recorded 2 samples, average = 0.0 (flags = 0x1)
+Histogram: NaCl.LoadStatus.Plugin recorded 2 samples, average = 0.0 (flags = 0x1)
 0  ------------------------------------------------------------------------O (2 = 100.0%)
 1  ...
 
@@ -110,7 +110,7 @@ Histogram: NaCl.OSArch recorded 2 samples, average = 1.0 (flags = 0x1)
 """
 
     hists_expected = {
-        'NaCl.LoadStatus': {0: 2},
+        'NaCl.LoadStatus.Plugin': {0: 2},
         'NaCl.ManifestDownloadTime': {8: 1, 3: 1},
         'NaCl.NexeDownloadTime': {6: 1, 7: 1},
         'NaCl.NexeSize': {483: 2},
@@ -133,8 +133,15 @@ Histogram: NaCl.OSArch recorded 2 samples, average = 1.0 (flags = 0x1)
     nacl_utils.VerifyAllTestsPassed(self)
     hists = self.getHistograms('NaCl')
 
-    self.assertHistogramCount(hists, 'NaCl.LoadStatus', 1)
-    self.assertEqual(hists['NaCl.LoadStatus'][0], 1) # ERROR_SUCCESS
+    # Keep in sync with plugin_error.h
+    ERROR_SUCCESS = 0
+    # Keep in sync with nacl_error_code.h
+    LOAD_OK = 0
+
+    self.assertHistogramCount(hists, 'NaCl.LoadStatus.Plugin', 1)
+    self.assertEqual(hists['NaCl.LoadStatus.Plugin'][ERROR_SUCCESS], 1)
+    self.assertHistogramCount(hists, 'NaCl.LoadStatus.SelLdr', 1)
+    self.assertEqual(hists['NaCl.LoadStatus.SelLdr'][LOAD_OK], 1)
     self.assertHistogramCount(hists, 'NaCl.ManifestDownloadTime', 1)
     self.assertHistogramCount(hists, 'NaCl.NexeDownloadTime', 1)
     self.assertHistogramCount(hists, 'NaCl.NexeSize', 1)
@@ -148,8 +155,10 @@ Histogram: NaCl.OSArch recorded 2 samples, average = 1.0 (flags = 0x1)
     nacl_utils.VerifyAllTestsPassed(self)
     hists = self.getHistograms('NaCl')
 
-    self.assertHistogramCount(hists, 'NaCl.LoadStatus', 2)
-    self.assertEqual(hists['NaCl.LoadStatus'][0], 2) # ERROR_SUCCESS
+    self.assertHistogramCount(hists, 'NaCl.LoadStatus.Plugin', 2)
+    self.assertEqual(hists['NaCl.LoadStatus.Plugin'][ERROR_SUCCESS], 2)
+    self.assertHistogramCount(hists, 'NaCl.LoadStatus.SelLdr', 2)
+    self.assertEqual(hists['NaCl.LoadStatus.SelLdr'][LOAD_OK], 2)
     self.assertHistogramCount(hists, 'NaCl.ManifestDownloadTime', 2)
     self.assertHistogramCount(hists, 'NaCl.NexeDownloadTime', 2)
     self.assertHistogramCount(hists, 'NaCl.NexeSize', 2)
@@ -170,8 +179,17 @@ Histogram: NaCl.OSArch recorded 2 samples, average = 1.0 (flags = 0x1)
 
     # Keep in sync with plugin_error.h
     ERROR_SEL_LDR_START_STATUS = 27
-    self.assertHistogramCount(hists, 'NaCl.LoadStatus', 1)
-    self.assertEqual(hists['NaCl.LoadStatus'][ERROR_SEL_LDR_START_STATUS], 1)
+    self.assertHistogramCount(hists, 'NaCl.LoadStatus.Plugin', 1)
+    self.assertEqual(
+        hists['NaCl.LoadStatus.Plugin'][ERROR_SEL_LDR_START_STATUS],
+        1)
+
+    # Keep in sync with nacl_error_code.h
+    LOAD_VALIDATION_FAILED = 57
+    self.assertHistogramCount(hists, 'NaCl.LoadStatus.SelLdr', 1)
+    self.assertEqual(
+        hists['NaCl.LoadStatus.SelLdr'][LOAD_VALIDATION_FAILED],
+        1)
 
 
 if __name__ == '__main__':

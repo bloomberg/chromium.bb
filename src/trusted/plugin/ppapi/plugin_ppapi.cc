@@ -36,6 +36,7 @@
 #include "native_client/src/trusted/plugin/ppapi/scriptable_handle_ppapi.h"
 #include "native_client/src/trusted/plugin/scriptable_handle.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
+#include "native_client/src/trusted/service_runtime/nacl_error_code.h"
 
 #include "ppapi/c/dev/ppp_find_dev.h"
 #include "ppapi/c/dev/ppp_printing_dev.h"
@@ -195,9 +196,23 @@ void HistogramEnumerateLoadStatus(PluginErrorCode error_code) {
   if (ptr == NULL) return;
 
   ptr->HistogramEnumeration(
-      pp::Var("NaCl.LoadStatus").pp_var(),
+      pp::Var("NaCl.LoadStatus.Plugin").pp_var(),
       error_code,
       ERROR_MAX);
+}
+
+void HistogramEnumerateSelLdrLoadStatus(NaClErrorCode error_code) {
+  if (error_code < 0 || error_code >= NACL_ERROR_CODE_MAX) {
+    error_code = LOAD_STATUS_UNKNOWN;
+  }
+
+  const PPB_UMA_Private* ptr = GetUMAInterface();
+  if (ptr == NULL) return;
+
+  ptr->HistogramEnumeration(
+      pp::Var("NaCl.LoadStatus.SelLdr").pp_var(),
+      error_code,
+      NACL_ERROR_CODE_MAX);
 }
 
 // Derive a class from pp::Find_Dev to forward PPP_Find_Dev calls to
@@ -1302,6 +1317,10 @@ void PluginPpapi::EnqueueProgressEvent(const char* event_type,
       callback_factory_.NewCallback(&PluginPpapi::DispatchProgressEvent);
   pp::Core* core = pp::Module::Get()->core();
   core->CallOnMainThread(0, callback, 0);
+}
+
+void PluginPpapi::ReportSelLdrLoadStatus(int status) {
+  HistogramEnumerateSelLdrLoadStatus(static_cast<NaClErrorCode>(status));
 }
 
 void PluginPpapi::DispatchProgressEvent(int32_t result) {

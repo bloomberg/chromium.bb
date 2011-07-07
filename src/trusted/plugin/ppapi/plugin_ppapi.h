@@ -107,6 +107,10 @@ class PluginPpapi : public pp::InstancePrivate, public Plugin {
                                     LengthComputable length_computable,
                                     uint64_t loaded_bytes,
                                     uint64_t total_bytes);
+
+  // Report the error code that sel_ldr produces when starting a nexe.
+  virtual void ReportSelLdrLoadStatus(int status);
+
   // Called back by CallOnMainThread.  Dispatches the first enqueued progress
   // event.
   void DispatchProgressEvent(int32_t result);
