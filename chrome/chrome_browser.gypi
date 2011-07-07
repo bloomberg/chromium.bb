@@ -3748,7 +3748,6 @@
             ['exclude', '^browser/renderer_host/accelerated_surface_container_touch.cc'],
             ['exclude', '^browser/renderer_host/accelerated_surface_container_touch.h'],
             ['exclude', '^browser/renderer_host/render_widget_host_view_views_touch.cc'],
-            ['exclude', '^browser/renderer_host/render_widget_host_view_views_touch.cc'],
             ['exclude', '^browser/ui/touch/*'],
             ['exclude', '^browser/ui/views/tab_contents/tab_contents_container_views.cc'],
             ['exclude', '^browser/ui/views/tab_contents/tab_contents_container_views.h'],

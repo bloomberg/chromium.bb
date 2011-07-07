@@ -39,6 +39,7 @@ void RenderWidgetHostViewViews::AcceleratedCompositingActivated(
     NOTIMPLEMENTED();
 }
 
+#if !defined(TOUCH_UI)
 gfx::PluginWindowHandle RenderWidgetHostViewViews::GetCompositingSurface() {
   GtkNativeViewManager* manager = GtkNativeViewManager::GetInstance();
   gfx::PluginWindowHandle surface = gfx::kNullPluginWindow;
@@ -49,6 +50,7 @@ gfx::PluginWindowHandle RenderWidgetHostViewViews::GetCompositingSurface() {
   }
   return surface;
 }
+#endif
 
 gfx::NativeView RenderWidgetHostViewViews::GetInnerNativeView() const {
   // TODO(sad): Ideally this function should be equivalent to GetNativeView, and

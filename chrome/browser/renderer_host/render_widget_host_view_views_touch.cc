@@ -190,6 +190,13 @@ RenderWidgetHostView*
   return reinterpret_cast<RenderWidgetHostView*>(user_data);
 }
 
+gfx::PluginWindowHandle RenderWidgetHostViewViews::GetCompositingSurface() {
+  // On TOUCH_UI builds, the GPU process renders to an offscreen surface
+  // (created by the GPU process), which is later displayed by the browser.
+  // As the GPU process creates this surface, we can return any non-zero value.
+  return 1;
+}
+
 void RenderWidgetHostViewViews::AcceleratedSurfaceSetIOSurface(
     int32 width, int32 height, uint64 surface_id) {
   accelerated_surface_containers_[surface_id] =
