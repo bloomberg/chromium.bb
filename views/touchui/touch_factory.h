@@ -174,7 +174,7 @@ class TouchFactory {
   // index at the expense of space. If the kMaxDeviceNum grows larger that the
   // space waste becomes a concern, the 2D lookup table can be replaced by a
   // hash map.
-  char valuator_lookup_[kMaxDeviceNum][TP_LAST_ENTRY];
+  signed char valuator_lookup_[kMaxDeviceNum][TP_LAST_ENTRY];
 
   // Index table to find the min & max value of the TouchParam on a specific
   // device.
