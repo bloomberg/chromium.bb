@@ -7,6 +7,7 @@
 #include <set>
 
 #include "app/sql/connection.h"
+#include "app/sql/meta_table.h"
 #include "app/sql/statement.h"
 #include "app/sql/transaction.h"
 #include "base/bind.h"
@@ -18,6 +19,7 @@
 #include "webkit/quota/mock_special_storage_policy.h"
 #include "webkit/quota/quota_database.h"
 
+namespace quota {
 namespace {
 
 const base::Time kZeroTime;
@@ -30,74 +32,16 @@ class TestErrorDelegate : public sql::ErrorDelegate {
     return error;
   }
 };
-}  // namespace
 
-namespace quota {
+}  // namespace
 
 class QuotaDatabaseTest : public testing::Test {
  protected:
   typedef QuotaDatabase::QuotaTableEntry QuotaTableEntry;
   typedef QuotaDatabase::QuotaTableCallback QuotaTableCallback;
-  typedef QuotaDatabase::LastAccessTimeTableEntry LastAccessTimeTableEntry;
-  typedef QuotaDatabase::LastAccessTimeTableCallback
-      LastAccessTimeTableCallback;
-
-  template <typename Iterator>
-  bool AssignQuotaTable(
-      QuotaDatabase* quota_database, Iterator itr, Iterator end) {
-    if (!quota_database->LazyOpen(true))
-      return false;
-
-    for (; itr != end; ++itr) {
-      const char* kSql =
-          "INSERT INTO HostQuotaTable"
-          " (host, type, quota)"
-          " VALUES (?, ?, ?)";
-      sql::Statement statement;
-      statement.Assign(
-          quota_database->db_->GetCachedStatement(
-              SQL_FROM_HERE, kSql));
-      EXPECT_TRUE(statement.is_valid());
-
-      statement.BindString(0, itr->host);
-      statement.BindInt(1, static_cast<int>(itr->type));
-      statement.BindInt64(2, itr->quota);
-      if (!statement.Run())
-        return false;
-    }
-
-    quota_database->Commit();
-    return true;
-  }
-
-  template <typename Iterator>
-  bool AssignLastAccessTimeTable(
-      QuotaDatabase* quota_database, Iterator itr, Iterator end) {
-    if (!quota_database->LazyOpen(true))
-      return false;
-
-    for (; itr != end; ++itr) {
-      const char* kSql =
-          "INSERT INTO OriginLastAccessTable"
-          " (origin, type, used_count, last_access_time)"
-          " VALUES (?, ?, ?, ?)";
-      sql::Statement statement;
-      statement.Assign(
-          quota_database->db_->GetCachedStatement(
-              SQL_FROM_HERE, kSql));
-      EXPECT_TRUE(statement.is_valid());
-
-      statement.BindString(0, itr->origin.spec());
-      statement.BindInt(1, static_cast<int>(itr->type));
-      statement.BindInt(2, itr->used_count);
-      statement.BindInt64(3, itr->last_access_time.ToInternalValue());
-      if (!statement.Run())
-        return false;
-    }
-
-    quota_database->Commit();
-    return true;
-  }
+  typedef QuotaDatabase::OriginInfoTableEntry OriginInfoTableEntry;
+  typedef QuotaDatabase::OriginInfoTableCallback
+      OriginInfoTableCallback;
 
   void LazyOpen(const FilePath& kDbFile) {
     QuotaDatabase db(kDbFile);
@@ -105,6 +49,28 @@ class QuotaDatabaseTest : public testing::Test {
     ASSERT_TRUE(db.LazyOpen(true));
     EXPECT_TRUE(db.db_.get());
     EXPECT_TRUE(kDbFile.empty() || file_util::PathExists(kDbFile));
+  }
+
+  void UpgradeSchemaV2toV3(const FilePath& kDbFile) {
+    const QuotaTableEntry entries[] = {
+      { "a", kStorageTypeTemporary,  1 },
+      { "b", kStorageTypeTemporary,  2 },
+      { "c", kStorageTypePersistent, 3 },
+    };
+
+    CreateV2Database(kDbFile, entries, ARRAYSIZE_UNSAFE(entries));
+
+    QuotaDatabase db(kDbFile);
+    EXPECT_TRUE(db.LazyOpen(true));
+    EXPECT_TRUE(db.db_.get());
+
+    typedef EntryVerifier<QuotaTableEntry> Verifier;
+    Verifier verifier(entries, entries + ARRAYSIZE_UNSAFE(entries));
+    EXPECT_TRUE(db.DumpQuotaTable(
+        new QuotaTableCallback(
+            base::Bind(&Verifier::Run,
+                       base::Unretained(&verifier)))));
+    EXPECT_TRUE(verifier.table.empty());
   }
 
   void HostQuota(const FilePath& kDbFile) {
@@ -223,7 +189,7 @@ class QuotaDatabaseTest : public testing::Test {
         kOrigin1, kStorageTypeTemporary, base::Time::Now()));
 
     // Delete origin/type last access time information.
-    EXPECT_TRUE(db.DeleteOriginLastAccessTime(kOrigin3, kStorageTypeTemporary));
+    EXPECT_TRUE(db.DeleteOriginInfo(kOrigin3, kStorageTypeTemporary));
 
     // Querying again to see if the deletion has worked.
     exceptions.clear();
@@ -238,7 +204,77 @@ class QuotaDatabaseTest : public testing::Test {
     EXPECT_TRUE(origin.is_empty());
   }
 
-  void RegisterOrigins(const FilePath& kDbFile) {
+  void OriginLastModifiedSince(const FilePath& kDbFile) {
+    QuotaDatabase db(kDbFile);
+    ASSERT_TRUE(db.LazyOpen(true));
+
+    std::set<GURL> origins;
+    EXPECT_TRUE(db.GetOriginsModifiedSince(
+        kStorageTypeTemporary, &origins, base::Time()));
+    EXPECT_TRUE(origins.empty());
+
+    const GURL kOrigin1("http://a/");
+    const GURL kOrigin2("http://b/");
+    const GURL kOrigin3("http://c/");
+
+    // Report last mod time for the test origins.
+    EXPECT_TRUE(db.SetOriginLastModifiedTime(
+        kOrigin1, kStorageTypeTemporary, base::Time::FromInternalValue(10)));
+    EXPECT_TRUE(db.SetOriginLastModifiedTime(
+        kOrigin2, kStorageTypeTemporary, base::Time::FromInternalValue(20)));
+    EXPECT_TRUE(db.SetOriginLastModifiedTime(
+        kOrigin3, kStorageTypeTemporary, base::Time::FromInternalValue(30)));
+
+    EXPECT_TRUE(db.GetOriginsModifiedSince(
+        kStorageTypeTemporary, &origins, base::Time::FromInternalValue(15)));
+    EXPECT_EQ(2U, origins.size());
+    EXPECT_EQ(0U, origins.count(kOrigin1));
+    EXPECT_EQ(1U, origins.count(kOrigin2));
+    EXPECT_EQ(1U, origins.count(kOrigin3));
+
+    EXPECT_TRUE(db.GetOriginsModifiedSince(
+        kStorageTypeTemporary, &origins, base::Time::FromInternalValue(25)));
+    EXPECT_EQ(1U, origins.size());
+    EXPECT_EQ(0U, origins.count(kOrigin1));
+    EXPECT_EQ(0U, origins.count(kOrigin2));
+    EXPECT_EQ(1U, origins.count(kOrigin3));
+
+    EXPECT_TRUE(db.GetOriginsModifiedSince(
+        kStorageTypeTemporary, &origins, base::Time::FromInternalValue(35)));
+    EXPECT_TRUE(origins.empty());
+
+    // Update origin1's mod time but for persistent storage.
+    EXPECT_TRUE(db.SetOriginLastModifiedTime(
+        kOrigin1, kStorageTypePersistent, base::Time::FromInternalValue(40)));
+
+    // Must have no effects on temporary origins info.
+    EXPECT_TRUE(db.GetOriginsModifiedSince(
+        kStorageTypeTemporary, &origins, base::Time::FromInternalValue(15)));
+    EXPECT_EQ(2U, origins.size());
+    EXPECT_EQ(0U, origins.count(kOrigin1));
+    EXPECT_EQ(1U, origins.count(kOrigin2));
+    EXPECT_EQ(1U, origins.count(kOrigin3));
+
+    // One more update for persistent origin2.
+    EXPECT_TRUE(db.SetOriginLastModifiedTime(
+        kOrigin2, kStorageTypePersistent, base::Time::FromInternalValue(50)));
+
+    EXPECT_TRUE(db.GetOriginsModifiedSince(
+        kStorageTypePersistent, &origins, base::Time::FromInternalValue(35)));
+    EXPECT_EQ(2U, origins.size());
+    EXPECT_EQ(1U, origins.count(kOrigin1));
+    EXPECT_EQ(1U, origins.count(kOrigin2));
+    EXPECT_EQ(0U, origins.count(kOrigin3));
+
+    EXPECT_TRUE(db.GetOriginsModifiedSince(
+        kStorageTypePersistent, &origins, base::Time::FromInternalValue(45)));
+    EXPECT_EQ(1U, origins.size());
+    EXPECT_EQ(0U, origins.count(kOrigin1));
+    EXPECT_EQ(1U, origins.count(kOrigin2));
+    EXPECT_EQ(0U, origins.count(kOrigin3));
+  }
+
+  void RegisterInitialOriginInfo(const FilePath& kDbFile) {
     QuotaDatabase db(kDbFile);
 
     const GURL kOrigins[] = {
@@ -247,9 +283,7 @@ class QuotaDatabaseTest : public testing::Test {
       GURL("http://c/") };
     std::set<GURL> origins(kOrigins, kOrigins + ARRAYSIZE_UNSAFE(kOrigins));
 
-    EXPECT_TRUE(db.RegisterOrigins(origins,
-                                   kStorageTypeTemporary,
-                                   base::Time()));
+    EXPECT_TRUE(db.RegisterInitialOriginInfo(origins, kStorageTypeTemporary));
 
     int used_count = -1;
     EXPECT_TRUE(db.FindOriginUsedCount(GURL("http://a/"),
@@ -266,9 +300,7 @@ class QuotaDatabaseTest : public testing::Test {
                                        &used_count));
     EXPECT_EQ(1, used_count);
 
-    EXPECT_TRUE(db.RegisterOrigins(origins,
-                                   kStorageTypeTemporary,
-                                   base::Time()));
+    EXPECT_TRUE(db.RegisterInitialOriginInfo(origins, kStorageTypeTemporary));
 
     used_count = -1;
     EXPECT_TRUE(db.FindOriginUsedCount(GURL("http://a/"),
@@ -301,7 +333,9 @@ class QuotaDatabaseTest : public testing::Test {
     QuotaTableEntry* end = kTableEntries + ARRAYSIZE_UNSAFE(kTableEntries);
 
     QuotaDatabase db(kDbFile);
-    EXPECT_TRUE(AssignQuotaTable(&db, begin, end));
+    EXPECT_TRUE(db.LazyOpen(true));
+    AssignQuotaTable(db.db_.get(), begin, end);
+    db.Commit();
 
     typedef EntryVerifier<QuotaTableEntry> Verifier;
     Verifier verifier(begin, end);
@@ -312,27 +346,133 @@ class QuotaDatabaseTest : public testing::Test {
     EXPECT_TRUE(verifier.table.empty());
   }
 
-  void DumpLastAccessTimeTable(const FilePath& kDbFile) {
+  void DumpOriginInfoTable(const FilePath& kDbFile) {
     base::Time now(base::Time::Now());
-    LastAccessTimeTableEntry kTableEntries[] = {
-      {GURL("http://go/"), kStorageTypeTemporary, 2147483647, now},
-      {GURL("http://oo/"), kStorageTypeTemporary, 0, now},
-      {GURL("http://gle/"), kStorageTypeTemporary, 1, now},
+    OriginInfoTableEntry kTableEntries[] = {
+      {GURL("http://go/"), kStorageTypeTemporary, 2147483647, now, now},
+      {GURL("http://oo/"), kStorageTypeTemporary, 0, now, now},
+      {GURL("http://gle/"), kStorageTypeTemporary, 1, now, now},
     };
-    LastAccessTimeTableEntry* begin = kTableEntries;
-    LastAccessTimeTableEntry* end = kTableEntries +
-        ARRAYSIZE_UNSAFE(kTableEntries);
+    OriginInfoTableEntry* begin = kTableEntries;
+    OriginInfoTableEntry* end = kTableEntries + ARRAYSIZE_UNSAFE(kTableEntries);
 
     QuotaDatabase db(kDbFile);
-    EXPECT_TRUE(AssignLastAccessTimeTable(&db, begin, end));
+    EXPECT_TRUE(db.LazyOpen(true));
+    AssignOriginInfoTable(db.db_.get(), begin, end);
+    db.Commit();
 
-    typedef EntryVerifier<LastAccessTimeTableEntry> Verifier;
+    typedef EntryVerifier<OriginInfoTableEntry> Verifier;
     Verifier verifier(begin, end);
-    EXPECT_TRUE(db.DumpLastAccessTimeTable(
-        new LastAccessTimeTableCallback(
+    EXPECT_TRUE(db.DumpOriginInfoTable(
+        new OriginInfoTableCallback(
             base::Bind(&Verifier::Run,
                        base::Unretained(&verifier)))));
     EXPECT_TRUE(verifier.table.empty());
+  }
+
+ private:
+  template <typename Iterator>
+  void AssignQuotaTable(sql::Connection* db, Iterator itr, Iterator end) {
+    ASSERT_NE(db, (sql::Connection*)NULL);
+    for (; itr != end; ++itr) {
+      const char* kSql =
+          "INSERT INTO HostQuotaTable"
+          " (host, type, quota)"
+          " VALUES (?, ?, ?)";
+      sql::Statement statement;
+      statement.Assign(db->GetCachedStatement(SQL_FROM_HERE, kSql));
+      ASSERT_TRUE(statement.is_valid());
+
+      statement.BindString(0, itr->host);
+      statement.BindInt(1, static_cast<int>(itr->type));
+      statement.BindInt64(2, itr->quota);
+      EXPECT_TRUE(statement.Run());
+    }
+  }
+
+  template <typename Iterator>
+  void AssignOriginInfoTable(sql::Connection* db, Iterator itr, Iterator end) {
+    ASSERT_NE(db, (sql::Connection*)NULL);
+    for (; itr != end; ++itr) {
+      const char* kSql =
+          "INSERT INTO OriginInfoTable"
+          " (origin, type, used_count, last_access_time, last_modified_time)"
+          " VALUES (?, ?, ?, ?, ?)";
+      sql::Statement statement;
+      statement.Assign(db->GetCachedStatement(SQL_FROM_HERE, kSql));
+      ASSERT_TRUE(statement.is_valid());
+
+      statement.BindString(0, itr->origin.spec());
+      statement.BindInt(1, static_cast<int>(itr->type));
+      statement.BindInt(2, itr->used_count);
+      statement.BindInt64(3, itr->last_access_time.ToInternalValue());
+      statement.BindInt64(4, itr->last_modified_time.ToInternalValue());
+      EXPECT_TRUE(statement.Run());
+    }
+  }
+
+  bool OpenDatabase(sql::Connection* db, const FilePath& kDbFile) {
+    if (kDbFile.empty()) {
+      db->OpenInMemory();
+      return true;
+    }
+    if (!file_util::CreateDirectory(kDbFile.DirName()))
+      return false;
+    if (!db->Open(kDbFile))
+      return false;
+    db->Preload();
+    return true;
+  }
+
+  // Create V2 database and populate some data.
+  void CreateV2Database(
+      const FilePath& kDbFile,
+      const QuotaTableEntry* entries,
+      size_t entries_size) {
+    scoped_ptr<sql::Connection> db(new sql::Connection);
+    scoped_ptr<sql::MetaTable> meta_table(new sql::MetaTable);
+
+    // V2 schema definitions.
+    static const int kCurrentVersion = 2;
+    static const int kCompatibleVersion = 2;
+    static const char kHostQuotaTable[] = "HostQuotaTable";
+    static const char kOriginLastAccessTable[] = "OriginLastAccessTable";
+    static const QuotaDatabase::TableSchema kTables[] = {
+      { kHostQuotaTable,
+        "(host TEXT NOT NULL,"
+        " type INTEGER NOT NULL,"
+        " quota INTEGER,"
+        " UNIQUE(host, type))" },
+      { kOriginLastAccessTable,
+        "(origin TEXT NOT NULL,"
+        " type INTEGER NOT NULL,"
+        " used_count INTEGER,"
+        " last_access_time INTEGER,"
+        " UNIQUE(origin, type))" },
+    };
+    static const QuotaDatabase::IndexSchema kIndexes[] = {
+      { "HostIndex",
+        kHostQuotaTable,
+        "(host)",
+        false },
+      { "OriginLastAccessIndex",
+        kOriginLastAccessTable,
+        "(origin, last_access_time)",
+        false },
+    };
+
+    ASSERT_TRUE(OpenDatabase(db.get(), kDbFile));
+    EXPECT_TRUE(QuotaDatabase::CreateSchema(
+            db.get(), meta_table.get(),
+            kCurrentVersion, kCompatibleVersion,
+            kTables, ARRAYSIZE_UNSAFE(kTables),
+            kIndexes, ARRAYSIZE_UNSAFE(kIndexes)));
+
+    // V2 and V3 QuotaTable are compatible, so we can simply use
+    // AssignQuotaTable to poplulate v2 database here.
+    db->BeginTransaction();
+    AssignQuotaTable(db.get(), entries, entries + entries_size);
+    db->CommitTransaction();
   }
 };
 
@@ -342,6 +482,13 @@ TEST_F(QuotaDatabaseTest, LazyOpen) {
   const FilePath kDbFile = data_dir.path().AppendASCII("quota_manager.db");
   LazyOpen(kDbFile);
   LazyOpen(FilePath());
+}
+
+TEST_F(QuotaDatabaseTest, UpgradeSchema) {
+  ScopedTempDir data_dir;
+  ASSERT_TRUE(data_dir.CreateUniqueTempDir());
+  const FilePath kDbFile = data_dir.path().AppendASCII("quota_manager.db");
+  UpgradeSchemaV2toV3(kDbFile);
 }
 
 TEST_F(QuotaDatabaseTest, HostQuota) {
@@ -368,6 +515,14 @@ TEST_F(QuotaDatabaseTest, OriginLastAccessTimeLRU) {
   OriginLastAccessTimeLRU(FilePath());
 }
 
+TEST_F(QuotaDatabaseTest, OriginLastModifiedSince) {
+  ScopedTempDir data_dir;
+  ASSERT_TRUE(data_dir.CreateUniqueTempDir());
+  const FilePath kDbFile = data_dir.path().AppendASCII("quota_manager.db");
+  OriginLastModifiedSince(kDbFile);
+  OriginLastModifiedSince(FilePath());
+}
+
 TEST_F(QuotaDatabaseTest, BootstrapFlag) {
   ScopedTempDir data_dir;
   ASSERT_TRUE(data_dir.CreateUniqueTempDir());
@@ -382,12 +537,12 @@ TEST_F(QuotaDatabaseTest, BootstrapFlag) {
   EXPECT_FALSE(db.IsOriginDatabaseBootstrapped());
 }
 
-TEST_F(QuotaDatabaseTest, RegisterOrigins) {
+TEST_F(QuotaDatabaseTest, RegisterInitialOriginInfo) {
   ScopedTempDir data_dir;
   ASSERT_TRUE(data_dir.CreateUniqueTempDir());
   const FilePath kDbFile = data_dir.path().AppendASCII("quota_manager.db");
-  RegisterOrigins(kDbFile);
-  RegisterOrigins(FilePath());
+  RegisterInitialOriginInfo(kDbFile);
+  RegisterInitialOriginInfo(FilePath());
 }
 
 TEST_F(QuotaDatabaseTest, DumpQuotaTable) {
@@ -398,11 +553,11 @@ TEST_F(QuotaDatabaseTest, DumpQuotaTable) {
   DumpQuotaTable(FilePath());
 }
 
-TEST_F(QuotaDatabaseTest, DumpLastAccessTimeTable) {
+TEST_F(QuotaDatabaseTest, DumpOriginInfoTable) {
   ScopedTempDir data_dir;
   ASSERT_TRUE(data_dir.CreateUniqueTempDir());
   const FilePath kDbFile = data_dir.path().AppendASCII("quota_manager.db");
-  DumpLastAccessTimeTable(kDbFile);
-  DumpLastAccessTimeTable(FilePath());
+  DumpOriginInfoTable(kDbFile);
+  DumpOriginInfoTable(FilePath());
 }
 }  // namespace quota
