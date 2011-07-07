@@ -5,15 +5,15 @@
 #include "webkit/plugins/ppapi/file_callbacks.h"
 
 #include "base/logging.h"
-#include "ppapi/c/dev/ppb_file_system_dev.h"
-#include "ppapi/c/dev/pp_file_info_dev.h"
+#include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/c/ppb_file_system.h"
+#include "webkit/fileapi/file_system_types.h"
 #include "webkit/plugins/ppapi/callbacks.h"
 #include "webkit/plugins/ppapi/file_type_conversions.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppb_directory_reader_impl.h"
 #include "webkit/plugins/ppapi/ppb_file_system_impl.h"
-#include "webkit/fileapi/file_system_types.h"
 
 namespace webkit {
 namespace ppapi {
@@ -22,7 +22,7 @@ FileCallbacks::FileCallbacks(
     const base::WeakPtr<PluginModule>& module,
     PP_Resource resource_id,
     PP_CompletionCallback callback,
-    PP_FileInfo_Dev* info,
+    PP_FileInfo* info,
     scoped_refptr<PPB_FileSystem_Impl> file_system,
     scoped_refptr<PPB_DirectoryReader_Impl> directory_reader)
     : callback_(new TrackedCompletionCallback(module->GetCallbackTracker(),

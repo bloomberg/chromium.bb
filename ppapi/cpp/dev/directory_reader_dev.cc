@@ -7,7 +7,7 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/dev/directory_entry_dev.h"
-#include "ppapi/cpp/dev/file_ref_dev.h"
+#include "ppapi/cpp/file_ref.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
 
@@ -21,7 +21,7 @@ template <> const char* interface_name<PPB_DirectoryReader_Dev>() {
 
 }  // namespace
 
-DirectoryReader_Dev::DirectoryReader_Dev(const FileRef_Dev& directory_ref) {
+DirectoryReader_Dev::DirectoryReader_Dev(const FileRef& directory_ref) {
   if (!has_interface<PPB_DirectoryReader_Dev>())
     return;
   PassRefFromConstructor(get_interface<PPB_DirectoryReader_Dev>()->Create(

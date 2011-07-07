@@ -21,10 +21,6 @@
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "ppapi/c/dev/ppb_directory_reader_dev.h"
 #include "ppapi/c/dev/ppb_file_chooser_dev.h"
-#include "ppapi/c/dev/ppb_file_io_dev.h"
-#include "ppapi/c/dev/ppb_file_io_trusted_dev.h"
-#include "ppapi/c/dev/ppb_file_ref_dev.h"
-#include "ppapi/c/dev/ppb_file_system_dev.h"
 #include "ppapi/c/dev/ppb_find_dev.h"
 #include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/c/dev/ppb_fullscreen_dev.h"
@@ -49,6 +45,9 @@
 #include "ppapi/c/ppb_audio.h"
 #include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/c/ppb_core.h"
+#include "ppapi/c/ppb_file_io.h"
+#include "ppapi/c/ppb_file_ref.h"
+#include "ppapi/c/ppb_file_system.h"
 #include "ppapi/c/ppb_graphics_2d.h"
 #include "ppapi/c/ppb_image_data.h"
 #include "ppapi/c/ppb_input_event.h"
@@ -71,6 +70,7 @@
 #include "ppapi/c/trusted/ppb_audio_trusted.h"
 #include "ppapi/c/trusted/ppb_broker_trusted.h"
 #include "ppapi/c/trusted/ppb_buffer_trusted.h"
+#include "ppapi/c/trusted/ppb_file_io_trusted.h"
 #include "ppapi/c/trusted/ppb_image_data_trusted.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 #include "ppapi/thunk/enter.h"
@@ -258,13 +258,13 @@ const void* GetInterface(const char* name) {
     return ::ppapi::thunk::GetPPB_DirectoryReader_Thunk();
   if (strcmp(name, PPB_FILECHOOSER_DEV_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_FileChooser_Thunk();
-  if (strcmp(name, PPB_FILEIO_DEV_INTERFACE) == 0)
+  if (strcmp(name, PPB_FILEIO_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_FileIO_Thunk();
-  if (strcmp(name, PPB_FILEIOTRUSTED_DEV_INTERFACE) == 0)
+  if (strcmp(name, PPB_FILEIOTRUSTED_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_FileIOTrusted_Thunk();
-  if (strcmp(name, PPB_FILEREF_DEV_INTERFACE) == 0)
+  if (strcmp(name, PPB_FILEREF_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_FileRef_Thunk();
-  if (strcmp(name, PPB_FILESYSTEM_DEV_INTERFACE) == 0)
+  if (strcmp(name, PPB_FILESYSTEM_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_FileSystem_Thunk();
   if (strcmp(name, PPB_FIND_DEV_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_Find_Thunk();
@@ -368,6 +368,23 @@ const void* GetInterface(const char* name) {
   if (strcmp(name, PPB_TRANSPORT_DEV_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_Transport_Thunk();
 #endif
+
+  // Support the dev interfaces for file io, fileref and file system
+  // until relevant tests and examples are migrated over to non-dev interfaces
+  // in order to prevent breaking the tests and examples.
+  // TODO(sanga): Remove support for these dev interfaces once the relevant
+  // tests and examples are migrated to non-dev interfaces.
+  const bool support_dev_file_interfaces = true;
+  if (support_dev_file_interfaces) {
+    if (strcmp(name, "PPB_FileIO(Dev);0.4") == 0)
+      return ::ppapi::thunk::GetPPB_FileIO_Thunk();
+    if (strcmp(name, "PPB_FileIOTrusted(Dev);0.3") == 0)
+      return ::ppapi::thunk::GetPPB_FileIOTrusted_Thunk();
+    if (strcmp(name, "PPB_FileRef(Dev);0.8") == 0)
+      return ::ppapi::thunk::GetPPB_FileRef_Thunk();
+    if (strcmp(name, "PPB_FileSystem(Dev);0.6") == 0)
+      return ::ppapi::thunk::GetPPB_FileSystem_Thunk();
+  }
 
   // Only support the testing interface when the command line switch is
   // specified. This allows us to prevent people from (ab)using this interface
@@ -576,7 +593,7 @@ void PluginModule::SetBroker(PluginDelegate::PpapiBroker* broker) {
   broker_ = broker;
 }
 
-PluginDelegate::PpapiBroker* PluginModule::GetBroker(){
+PluginDelegate::PpapiBroker* PluginModule::GetBroker() {
   return broker_;
 }
 

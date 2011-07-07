@@ -5,7 +5,7 @@
 #ifndef PPAPI_THUNK_PPB_FILE_REF_API_H_
 #define PPAPI_THUNK_PPB_FILE_REF_API_H_
 
-#include "ppapi/c/dev/ppb_file_ref_dev.h"
+#include "ppapi/c/ppb_file_ref.h"
 
 namespace ppapi {
 namespace thunk {
@@ -14,7 +14,7 @@ class PPB_FileRef_API {
  public:
   virtual ~PPB_FileRef_API() {}
 
-  virtual PP_FileSystemType_Dev GetFileSystemType() const = 0;
+  virtual PP_FileSystemType GetFileSystemType() const = 0;
   virtual PP_Var GetName() const = 0;
   virtual PP_Var GetPath() const = 0;
   virtual PP_Resource GetParent() = 0;

@@ -16,8 +16,8 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sync_message.h"
-#include "ppapi/c/dev/pp_file_info_dev.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/private/ppb_flash_file.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_resource.h"
@@ -77,7 +77,7 @@ class ModuleLocalThreadAdapter
  private:
   class Filter : public IPC::ChannelProxy::MessageFilter {
    public:
-    Filter(Dispatcher* dispatcher);
+    explicit Filter(Dispatcher* dispatcher);
     ~Filter();
 
     void Send(IPC::Message* msg);
@@ -443,7 +443,7 @@ int32_t CreateModuleLocalDir(PP_Instance instance, const char* path) {
 
 int32_t QueryModuleLocalFile(PP_Instance instance,
                              const char* path,
-                             PP_FileInfo_Dev* info) {
+                             PP_FileInfo* info) {
   if (!g_module_local_thread_adapter)
     return PP_ERROR_FAILED;
 
@@ -590,7 +590,7 @@ void PPB_Flash_File_ModuleLocal_Proxy::OnMsgCreateDir(PP_Instance instance,
 
 void PPB_Flash_File_ModuleLocal_Proxy::OnMsgQueryFile(PP_Instance instance,
                                                       const std::string& path,
-                                                      PP_FileInfo_Dev* info,
+                                                      PP_FileInfo* info,
                                                       int32_t* result) {
   *result = ppb_flash_file_module_local_target()->
       QueryFile(instance, path.c_str(), info);
@@ -643,7 +643,7 @@ int32_t OpenFileRefFile(PP_Resource file_ref_id,
 }
 
 int32_t QueryFileRefFile(PP_Resource file_ref_id,
-                         PP_FileInfo_Dev* info) {
+                         PP_FileInfo* info) {
   PluginResource* file_ref =
       PluginResourceTracker::GetInstance()->GetResourceObject(file_ref_id);
   if (!file_ref)
@@ -722,7 +722,7 @@ void PPB_Flash_File_FileRef_Proxy::OnMsgOpenFile(
 
 void PPB_Flash_File_FileRef_Proxy::OnMsgQueryFile(
     const HostResource& host_resource,
-    PP_FileInfo_Dev* info,
+    PP_FileInfo* info,
     int32_t* result) {
   *result = ppb_flash_file_module_local_target()->
       QueryFile(host_resource.host_resource(), info);

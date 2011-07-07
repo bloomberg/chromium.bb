@@ -11,7 +11,7 @@
 #include "base/memory/scoped_callback_factory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
-#include "ppapi/c/dev/pp_file_info_dev.h"
+#include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/pp_time.h"
 #include "ppapi/thunk/ppb_file_io_api.h"
 #include "webkit/plugins/ppapi/callbacks.h"
@@ -19,8 +19,8 @@
 #include "webkit/plugins/ppapi/resource.h"
 
 struct PP_CompletionCallback;
-struct PPB_FileIO_Dev;
-struct PPB_FileIOTrusted_Dev;
+struct PPB_FileIO;
+struct PPB_FileIOTrusted;
 
 namespace webkit {
 namespace ppapi {
@@ -41,7 +41,7 @@ class PPB_FileIO_Impl : public Resource,
   virtual int32_t Open(PP_Resource file_ref,
                        int32_t open_flags,
                        PP_CompletionCallback callback) OVERRIDE;
-  virtual int32_t Query(PP_FileInfo_Dev* info,
+  virtual int32_t Query(PP_FileInfo* info,
                         PP_CompletionCallback callback) OVERRIDE;
   virtual int32_t Touch(PP_Time last_access_time,
                         PP_Time last_modified_time,
@@ -93,14 +93,14 @@ class PPB_FileIO_Impl : public Resource,
   base::ScopedCallbackFactory<PPB_FileIO_Impl> callback_factory_;
 
   base::PlatformFile file_;
-  PP_FileSystemType_Dev file_system_type_;
+  PP_FileSystemType file_system_type_;
 
   // Any pending callback for any PPB_FileIO(Trusted) call taking a callback.
   scoped_refptr<TrackedCompletionCallback> callback_;
 
   // Output buffer pointer for |Query()|; only non-null when a callback is
   // pending for it.
-  PP_FileInfo_Dev* info_;
+  PP_FileInfo* info_;
 
   // Pointer back to the caller's read buffer; used by |Read()|. Not owned.
   char* read_buffer_;

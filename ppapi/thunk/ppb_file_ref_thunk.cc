@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ppapi/c/dev/pp_file_info_dev.h"
-#include "ppapi/c/dev/ppb_file_ref_dev.h"
+#include "ppapi/c/pp_file_info.h"
+#include "ppapi/c/ppb_file_ref.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/thunk/common.h"
@@ -29,7 +29,7 @@ PP_Bool IsFileRef(PP_Resource resource) {
   return PP_FromBool(enter.succeeded());
 }
 
-PP_FileSystemType_Dev GetFileSystemType(PP_Resource file_ref) {
+PP_FileSystemType GetFileSystemType(PP_Resource file_ref) {
   EnterResource<PPB_FileRef_API> enter(file_ref, true);
   if (enter.failed())
     return PP_FILESYSTEMTYPE_INVALID;
@@ -98,7 +98,7 @@ int32_t Rename(PP_Resource file_ref,
   return MayForceCallback(callback, result);
 }
 
-const PPB_FileRef_Dev g_ppb_file_ref_thunk = {
+const PPB_FileRef g_ppb_file_ref_thunk = {
   &Create,
   &IsFileRef,
   &GetFileSystemType,
@@ -113,7 +113,7 @@ const PPB_FileRef_Dev g_ppb_file_ref_thunk = {
 
 }  // namespace
 
-const PPB_FileRef_Dev* GetPPB_FileRef_Thunk() {
+const PPB_FileRef* GetPPB_FileRef_Thunk() {
   return &g_ppb_file_ref_thunk;
 }
 

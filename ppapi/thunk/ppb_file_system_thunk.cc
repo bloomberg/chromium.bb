@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ppapi/c/dev/ppb_file_system_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/c/ppb_file_system.h"
 #include "ppapi/thunk/common.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
@@ -16,7 +16,7 @@ namespace thunk {
 
 namespace {
 
-PP_Resource Create(PP_Instance instance, PP_FileSystemType_Dev type) {
+PP_Resource Create(PP_Instance instance, PP_FileSystemType type) {
   EnterFunction<ResourceCreationAPI> enter(instance, true);
   if (enter.failed())
     return 0;
@@ -38,14 +38,14 @@ int32_t Open(PP_Resource file_system,
   return MayForceCallback(callback, result);
 }
 
-PP_FileSystemType_Dev GetType(PP_Resource file_system) {
+PP_FileSystemType GetType(PP_Resource file_system) {
   EnterResource<PPB_FileSystem_API> enter(file_system, true);
   if (enter.failed())
     return PP_FILESYSTEMTYPE_INVALID;
   return enter.object()->GetType();
 }
 
-const PPB_FileSystem_Dev g_ppb_file_system_thunk = {
+const PPB_FileSystem g_ppb_file_system_thunk = {
   &Create,
   &IsFileSystem,
   &Open,
@@ -54,7 +54,7 @@ const PPB_FileSystem_Dev g_ppb_file_system_thunk = {
 
 }  // namespace
 
-const PPB_FileSystem_Dev* GetPPB_FileSystem_Thunk() {
+const PPB_FileSystem* GetPPB_FileSystem_Thunk() {
   return &g_ppb_file_system_thunk;
 }
 

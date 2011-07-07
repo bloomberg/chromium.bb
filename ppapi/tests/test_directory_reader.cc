@@ -12,9 +12,9 @@
 #include "ppapi/c/dev/ppb_file_io_dev.h"
 #include "ppapi/cpp/dev/directory_entry_dev.h"
 #include "ppapi/cpp/dev/directory_reader_dev.h"
-#include "ppapi/cpp/dev/file_io_dev.h"
-#include "ppapi/cpp/dev/file_ref_dev.h"
-#include "ppapi/cpp/dev/file_system_dev.h"
+#include "ppapi/cpp/file_io.h"
+#include "ppapi/cpp/file_ref.h"
+#include "ppapi/cpp/file_system.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/tests/test_utils.h"
 #include "ppapi/tests/testing_instance.h"
@@ -29,7 +29,7 @@ std::string IntegerToString(int value) {
   return result;
 }
 
-int32_t DeleteDirectoryRecursively(pp::FileRef_Dev* dir,
+int32_t DeleteDirectoryRecursively(pp::FileRef* dir,
                                    TestCompletionCallback* callback) {
   if (!dir || !callback)
     return PP_ERROR_BADARGUMENT;
@@ -50,7 +50,7 @@ int32_t DeleteDirectoryRecursively(pp::FileRef_Dev* dir,
 
   for (std::vector<pp::DirectoryEntry_Dev>::const_iterator it = entries.begin();
        it != entries.end(); ++it) {
-    pp::FileRef_Dev file_ref = it->file_ref();
+    pp::FileRef file_ref = it->file_ref();
     if (it->file_type() == PP_FILETYPE_DIRECTORY) {
       rv = DeleteDirectoryRecursively(&file_ref, callback);
       if (rv != PP_OK && rv != PP_ERROR_FILENOTFOUND)
@@ -81,7 +81,7 @@ void TestDirectoryReader::RunTest() {
 
 std::string TestDirectoryReader::TestGetNextFile() {
   TestCompletionCallback callback(instance_->pp_instance(), force_async_);
-  pp::FileSystem_Dev file_system(
+  pp::FileSystem file_system(
       instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY);
   int32_t rv = file_system.Open(1024, callback);
   if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
@@ -96,7 +96,7 @@ std::string TestDirectoryReader::TestGetNextFile() {
   const char* file_prefix = "file_";
   const char* dir_prefix = "dir_";
 
-  pp::FileRef_Dev test_dir(file_system, test_dir_name);
+  pp::FileRef test_dir(file_system, test_dir_name);
   rv = DeleteDirectoryRecursively(&test_dir, &callback);
   if (rv != PP_OK && rv != PP_ERROR_FILENOTFOUND)
     return ReportError("DeleteDirectoryRecursively", rv);
@@ -113,9 +113,9 @@ std::string TestDirectoryReader::TestGetNextFile() {
   for (int i = 1; i < 4; ++i) {
     char buffer[40];
     sprintf(buffer, "%s/%s%d", test_dir_name, file_prefix, i);
-    pp::FileRef_Dev file_ref(file_system, buffer);
+    pp::FileRef file_ref(file_system, buffer);
 
-    pp::FileIO_Dev file_io(instance_);
+    pp::FileIO file_io(instance_);
     rv = file_io.Open(file_ref, PP_FILEOPENFLAG_CREATE, callback);
     if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
       return ReportError("FileIO::Open force_async", rv);
@@ -131,7 +131,7 @@ std::string TestDirectoryReader::TestGetNextFile() {
   for (int i = 1; i < 4; ++i) {
     char buffer[40];
     sprintf(buffer, "%s/%s%d", test_dir_name, dir_prefix, i);
-    pp::FileRef_Dev file_ref(file_system, buffer);
+    pp::FileRef file_ref(file_system, buffer);
 
     rv = file_ref.MakeDirectory(callback);
     if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
@@ -169,7 +169,7 @@ std::string TestDirectoryReader::TestGetNextFile() {
 
     for (std::vector<pp::DirectoryEntry_Dev>::const_iterator it =
              entries.begin(); it != entries.end(); ++it) {
-      pp::FileRef_Dev file_ref = it->file_ref();
+      pp::FileRef file_ref = it->file_ref();
       std::string file_path = file_ref.GetPath().AsString();
       std::set<std::string>::iterator found =
           expected_file_names.find(file_path);

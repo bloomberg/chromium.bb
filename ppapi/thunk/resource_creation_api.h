@@ -6,7 +6,6 @@
 #define PPAPI_THUNK_RESOURCE_CREATION_API_H_
 
 #include "ppapi/c/dev/ppb_file_chooser_dev.h"
-#include "ppapi/c/dev/ppb_file_system_dev.h"
 #include "ppapi/c/dev/ppb_graphics_3d_dev.h"
 #include "ppapi/c/dev/ppb_video_layer_dev.h"
 #include "ppapi/c/pp_bool.h"
@@ -14,6 +13,7 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/ppb_audio.h"
 #include "ppapi/c/ppb_audio_config.h"
+#include "ppapi/c/ppb_file_system.h"
 #include "ppapi/c/ppb_image_data.h"
 #include "ppapi/proxy/interface_id.h"
 
@@ -59,7 +59,7 @@ class ResourceCreationAPI {
   virtual PP_Resource CreateFileRef(PP_Resource file_system,
                                     const char* path) = 0;
   virtual PP_Resource CreateFileSystem(PP_Instance instance,
-                                       PP_FileSystemType_Dev type) = 0;
+                                       PP_FileSystemType type) = 0;
   virtual PP_Resource CreateFlashMenu(PP_Instance instance,
                                       const PP_Flash_Menu* menu_data) = 0;
   virtual PP_Resource CreateFlashNetConnector(PP_Instance instance) = 0;

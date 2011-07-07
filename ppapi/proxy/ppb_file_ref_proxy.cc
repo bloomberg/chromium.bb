@@ -4,8 +4,8 @@
 
 #include "ppapi/proxy/ppb_file_ref_proxy.h"
 
-#include "ppapi/c/dev/ppb_file_ref_dev.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/c/ppb_file_ref.h"
 #include "ppapi/c/private/ppb_proxy_private.h"
 #include "ppapi/proxy/enter_proxy.h"
 #include "ppapi/proxy/host_dispatcher.h"
@@ -43,7 +43,7 @@ class FileRef : public PluginResource, public PPB_FileRef_API {
   virtual PPB_FileRef_API* AsPPB_FileRef_API() OVERRIDE;
 
   // PPB_FileRef_API implementation.
-  virtual PP_FileSystemType_Dev GetFileSystemType() const OVERRIDE;
+  virtual PP_FileSystemType GetFileSystemType() const OVERRIDE;
   virtual PP_Var GetName() const OVERRIDE;
   virtual PP_Var GetPath() const OVERRIDE;
   virtual PP_Resource GetParent() OVERRIDE;
@@ -57,7 +57,7 @@ class FileRef : public PluginResource, public PPB_FileRef_API {
                          PP_CompletionCallback callback) OVERRIDE;
 
  private:
-  PP_FileSystemType_Dev file_system_type_;
+  PP_FileSystemType file_system_type_;
   PP_Var path_;
   PP_Var name_;
 
@@ -68,7 +68,7 @@ FileRef::FileRef(const PPBFileRef_CreateInfo& info)
     : PluginResource(info.resource) {
   Dispatcher* dispatcher = PluginDispatcher::GetForInstance(instance());
 
-  file_system_type_ = static_cast<PP_FileSystemType_Dev>(info.file_system_type);
+  file_system_type_ = static_cast<PP_FileSystemType>(info.file_system_type);
 
   name_ = ReceiveSerializedVarReturnValue(info.name).Return(dispatcher);
   path_ = ReceiveSerializedVarReturnValue(info.path).Return(dispatcher);
@@ -83,7 +83,7 @@ PPB_FileRef_API* FileRef::AsPPB_FileRef_API() {
   return this;
 }
 
-PP_FileSystemType_Dev FileRef::GetFileSystemType() const {
+PP_FileSystemType FileRef::GetFileSystemType() const {
   return file_system_type_;
 }
 
@@ -155,7 +155,7 @@ PPB_FileRef_Proxy::~PPB_FileRef_Proxy() {
 const InterfaceProxy::Info* PPB_FileRef_Proxy::GetInfo() {
   static const Info info = {
     ::ppapi::thunk::GetPPB_FileRef_Thunk(),
-    PPB_FILEREF_DEV_INTERFACE,
+    PPB_FILEREF_INTERFACE,
     INTERFACE_ID_PPB_FILE_REF,
     false,
     &CreateFileRefProxy,

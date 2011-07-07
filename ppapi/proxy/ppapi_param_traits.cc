@@ -6,7 +6,7 @@
 
 #include <string.h>  // For memcpy
 
-#include "ppapi/c/dev/pp_file_info_dev.h"
+#include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/private/ppb_flash_tcp_socket.h"
 #include "ppapi/proxy/host_resource.h"
@@ -97,10 +97,10 @@ bool ParamTraits<PP_Bool>::Read(const Message* m, void** iter, param_type* r) {
 void ParamTraits<PP_Bool>::Log(const param_type& p, std::string* l) {
 }
 
-// PP_FileInfo_Dev -------------------------------------------------------------
+// PP_FileInfo -------------------------------------------------------------
 
 // static
-void ParamTraits<PP_FileInfo_Dev>::Write(Message* m, const param_type& p) {
+void ParamTraits<PP_FileInfo>::Write(Message* m, const param_type& p) {
   ParamTraits<int64_t>::Write(m, p.size);
   ParamTraits<int>::Write(m, static_cast<int>(p.type));
   ParamTraits<int>::Write(m, static_cast<int>(p.system_type));
@@ -110,7 +110,7 @@ void ParamTraits<PP_FileInfo_Dev>::Write(Message* m, const param_type& p) {
 }
 
 // static
-bool ParamTraits<PP_FileInfo_Dev>::Read(const Message* m, void** iter,
+bool ParamTraits<PP_FileInfo>::Read(const Message* m, void** iter,
                                         param_type* r) {
   int type, system_type;
   if (!ParamTraits<int64_t>::Read(m, iter, &r->size) ||
@@ -124,17 +124,17 @@ bool ParamTraits<PP_FileInfo_Dev>::Read(const Message* m, void** iter,
       type != PP_FILETYPE_DIRECTORY &&
       type != PP_FILETYPE_OTHER)
     return false;
-  r->type = static_cast<PP_FileType_Dev>(type);
+  r->type = static_cast<PP_FileType>(type);
   if (system_type != PP_FILESYSTEMTYPE_EXTERNAL &&
       system_type != PP_FILESYSTEMTYPE_LOCALPERSISTENT &&
       system_type != PP_FILESYSTEMTYPE_LOCALTEMPORARY)
     return false;
-  r->system_type = static_cast<PP_FileSystemType_Dev>(system_type);
+  r->system_type = static_cast<PP_FileSystemType>(system_type);
   return true;
 }
 
 // static
-void ParamTraits<PP_FileInfo_Dev>::Log(const param_type& p, std::string* l) {
+void ParamTraits<PP_FileInfo>::Log(const param_type& p, std::string* l) {
 }
 
 // PP_Flash_NetAddress ---------------------------------------------------------

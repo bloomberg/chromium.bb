@@ -5,7 +5,7 @@
 #ifndef PPAPI_C_DEV_PPB_DIRECTORY_READER_DEV_H_
 #define PPAPI_C_DEV_PPB_DIRECTORY_READER_DEV_H_
 
-#include "ppapi/c/dev/pp_file_info_dev.h"
+#include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_module.h"
@@ -15,7 +15,7 @@ struct PP_CompletionCallback;
 
 struct PP_DirectoryEntry_Dev {
   PP_Resource file_ref;
-  PP_FileType_Dev file_type;
+  PP_FileType file_type;
 };
 PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_DirectoryEntry_Dev, 8);
 

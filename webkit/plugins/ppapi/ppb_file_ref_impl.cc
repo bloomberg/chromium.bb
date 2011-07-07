@@ -104,7 +104,7 @@ PPB_FileRef_Impl* PPB_FileRef_Impl::AsPPB_FileRef_Impl() {
   return this;
 }
 
-PP_FileSystemType_Dev PPB_FileRef_Impl::GetFileSystemType() const {
+PP_FileSystemType PPB_FileRef_Impl::GetFileSystemType() const {
   // When the file ref exists but there's no explicit filesystem object
   // associated with it, that means it's an "external" filesystem.
   if (!file_system_)

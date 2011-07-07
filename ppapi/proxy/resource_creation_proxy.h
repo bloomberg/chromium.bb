@@ -5,6 +5,8 @@
 #ifndef PPAPI_PROXY_RESOURCE_CREATION_PROXY_H_
 #define PPAPI_PROXY_RESOURCE_CREATION_PROXY_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "ipc/ipc_channel.h"
 #include "ppapi/c/pp_bool.h"
@@ -26,7 +28,7 @@ class ResourceCreationProxy : public ::ppapi::FunctionGroupBase,
                               public ::IPC::Channel::Listener,
                               public IPC::Message::Sender {
  public:
-  ResourceCreationProxy(Dispatcher* dispatcher);
+  explicit ResourceCreationProxy(Dispatcher* dispatcher);
   virtual ~ResourceCreationProxy();
 
   virtual ::ppapi::thunk::ResourceCreationAPI* AsResourceCreationAPI() OVERRIDE;
@@ -59,7 +61,7 @@ class ResourceCreationProxy : public ::ppapi::FunctionGroupBase,
   virtual PP_Resource CreateFileRef(PP_Resource file_system,
                                     const char* path) OVERRIDE;
   virtual PP_Resource CreateFileSystem(PP_Instance instance,
-                                       PP_FileSystemType_Dev type) OVERRIDE;
+                                       PP_FileSystemType type) OVERRIDE;
   virtual PP_Resource CreateFlashMenu(PP_Instance instance,
                                       const PP_Flash_Menu* menu_data) OVERRIDE;
   virtual PP_Resource CreateFlashNetConnector(PP_Instance instance) OVERRIDE;

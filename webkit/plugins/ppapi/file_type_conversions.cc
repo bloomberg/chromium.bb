@@ -4,8 +4,8 @@
 
 #include "webkit/plugins/ppapi/file_type_conversions.h"
 
-#include "ppapi/c/dev/ppb_file_io_dev.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/c/ppb_file_io.h"
 
 namespace webkit {
 namespace ppapi {
@@ -74,4 +74,3 @@ bool PepperFileOpenFlagsToPlatformFileFlags(int32_t pp_open_flags,
 
 }  // namespace ppapi
 }  // namespace webkit
-

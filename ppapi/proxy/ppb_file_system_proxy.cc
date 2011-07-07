@@ -6,8 +6,8 @@
 
 #include "base/message_loop.h"
 #include "base/task.h"
-#include "ppapi/c/dev/ppb_file_system_dev.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/c/ppb_file_system.h"
 #include "ppapi/proxy/enter_proxy.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
@@ -40,7 +40,7 @@ InterfaceProxy* CreateFileSystemProxy(Dispatcher* dispatcher,
 // the host.
 class FileSystem : public PluginResource, public PPB_FileSystem_API {
  public:
-  FileSystem(const HostResource& host_resource, PP_FileSystemType_Dev type);
+  FileSystem(const HostResource& host_resource, PP_FileSystemType type);
   virtual ~FileSystem();
 
   // ResourceObjectBase override.
@@ -49,13 +49,13 @@ class FileSystem : public PluginResource, public PPB_FileSystem_API {
   // PPB_FileSystem_APi implementation.
   virtual int32_t Open(int64_t expected_size,
                        PP_CompletionCallback callback) OVERRIDE;
-  virtual PP_FileSystemType_Dev GetType() OVERRIDE;
+  virtual PP_FileSystemType GetType() OVERRIDE;
 
   // Called when the host has responded to our open request.
   void OpenComplete(int32_t result);
 
  private:
-  PP_FileSystemType_Dev type_;
+  PP_FileSystemType type_;
   bool called_open_;
   PP_CompletionCallback current_open_callback_;
 
@@ -63,7 +63,7 @@ class FileSystem : public PluginResource, public PPB_FileSystem_API {
 };
 
 FileSystem::FileSystem(const HostResource& host_resource,
-                       PP_FileSystemType_Dev type)
+                       PP_FileSystemType type)
     : PluginResource(host_resource),
       type_(type),
       called_open_(false),
@@ -102,7 +102,7 @@ int32_t FileSystem::Open(int64_t expected_size,
   return PP_OK_COMPLETIONPENDING;
 }
 
-PP_FileSystemType_Dev FileSystem::GetType() {
+PP_FileSystemType FileSystem::GetType() {
   return type_;
 }
 
@@ -122,7 +122,7 @@ PPB_FileSystem_Proxy::~PPB_FileSystem_Proxy() {
 const InterfaceProxy::Info* PPB_FileSystem_Proxy::GetInfo() {
   static const Info info = {
     ::ppapi::thunk::GetPPB_FileSystem_Thunk(),
-    PPB_FILESYSTEM_DEV_INTERFACE,
+    PPB_FILESYSTEM_INTERFACE,
     INTERFACE_ID_PPB_FILE_SYSTEM,
     false,
     &CreateFileSystemProxy,
@@ -133,7 +133,7 @@ const InterfaceProxy::Info* PPB_FileSystem_Proxy::GetInfo() {
 // static
 PP_Resource PPB_FileSystem_Proxy::CreateProxyResource(
     PP_Instance instance,
-    PP_FileSystemType_Dev type) {
+    PP_FileSystemType type) {
   PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
   if (!dispatcher)
     return PP_ERROR_BADARGUMENT;
@@ -166,7 +166,7 @@ void PPB_FileSystem_Proxy::OnMsgCreate(PP_Instance instance,
   if (enter.failed())
     return;
   PP_Resource resource = enter.functions()->CreateFileSystem(
-      instance, static_cast<PP_FileSystemType_Dev>(type));
+      instance, static_cast<PP_FileSystemType>(type));
   if (!resource)
     return;  // CreateInfo default constructor initializes to 0.
   result->SetHostResource(instance, resource);

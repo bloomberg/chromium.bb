@@ -124,7 +124,7 @@ PP_Resource ResourceCreationProxy::CreateFileRef(PP_Resource file_system,
 
 PP_Resource ResourceCreationProxy::CreateFileSystem(
     PP_Instance instance,
-    PP_FileSystemType_Dev type) {
+    PP_FileSystemType type) {
   return PPB_FileSystem_Proxy::CreateProxyResource(instance, type);
 }
 

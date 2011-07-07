@@ -5,7 +5,7 @@
 #include "ppapi/proxy/serialized_structs.h"
 
 #include "ppapi/c/dev/ppb_font_dev.h"
-#include "ppapi/c/dev/pp_file_info_dev.h"
+#include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/pp_rect.h"
 
 namespace pp {

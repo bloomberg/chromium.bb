@@ -139,7 +139,7 @@ PP_Resource ResourceCreationImpl::CreateFileRef(PP_Resource file_system,
 
 PP_Resource ResourceCreationImpl::CreateFileSystem(
     PP_Instance instance,
-    PP_FileSystemType_Dev type) {
+    PP_FileSystemType type) {
   return PPB_FileSystem_Impl::Create(instance_, type);
 }
 

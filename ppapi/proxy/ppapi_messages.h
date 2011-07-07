@@ -18,8 +18,8 @@
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_platform_file.h"
-#include "ppapi/c/dev/pp_file_info_dev.h"
 #include "ppapi/c/pp_bool.h"
+#include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_point.h"
@@ -526,7 +526,7 @@ IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBFlashFile_FileRef_OpenFile,
                            int32_t /* result */)
 IPC_SYNC_MESSAGE_ROUTED1_2(PpapiHostMsg_PPBFlashFile_FileRef_QueryFile,
                            pp::proxy::HostResource /* file_ref */,
-                           PP_FileInfo_Dev /* info */,
+                           PP_FileInfo /* info */,
                            int32_t /* result */)
 
 // PPB_Flash_File_ModuleLocal.
@@ -554,7 +554,7 @@ IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFlashFile_ModuleLocal_CreateDir,
 IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBFlashFile_ModuleLocal_QueryFile,
                            PP_Instance /* instance */,
                            std::string /* path */,
-                           PP_FileInfo_Dev /* info */,
+                           PP_FileInfo /* info */,
                            int32_t /* result */)
 IPC_SYNC_MESSAGE_ROUTED2_2(
     PpapiHostMsg_PPBFlashFile_ModuleLocal_GetDirContents,

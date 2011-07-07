@@ -18,7 +18,7 @@ class PluginInstance;
 class ResourceCreationImpl : public ::ppapi::FunctionGroupBase,
                              public ::ppapi::thunk::ResourceCreationAPI {
  public:
-  ResourceCreationImpl(PluginInstance* instance);
+  explicit ResourceCreationImpl(PluginInstance* instance);
   virtual ~ResourceCreationImpl();
 
   // FunctionGroupBase implementation.
@@ -52,7 +52,7 @@ class ResourceCreationImpl : public ::ppapi::FunctionGroupBase,
   virtual PP_Resource CreateFileRef(PP_Resource file_system,
                                     const char* path) OVERRIDE;
   virtual PP_Resource CreateFileSystem(PP_Instance instance,
-                                       PP_FileSystemType_Dev type) OVERRIDE;
+                                       PP_FileSystemType type) OVERRIDE;
   virtual PP_Resource CreateFlashMenu(PP_Instance instance,
                                       const PP_Flash_Menu* menu_data) OVERRIDE;
   virtual PP_Resource CreateFlashNetConnector(PP_Instance instance) OVERRIDE;

@@ -9,7 +9,7 @@
 
 #include "base/file_path.h"
 #include "googleurl/src/gurl.h"
-#include "ppapi/c/dev/ppb_file_ref_dev.h"
+#include "ppapi/c/ppb_file_ref.h"
 #include "ppapi/thunk/ppb_file_ref_api.h"
 #include "webkit/plugins/ppapi/resource.h"
 
@@ -40,7 +40,7 @@ class PPB_FileRef_Impl : public Resource,
   virtual ::ppapi::thunk::PPB_FileRef_API* AsPPB_FileRef_API() OVERRIDE;
 
   // PPB_FileRef_API implementation.
-  virtual PP_FileSystemType_Dev GetFileSystemType() const OVERRIDE;
+  virtual PP_FileSystemType GetFileSystemType() const OVERRIDE;
   virtual PP_Var GetName() const OVERRIDE;
   virtual PP_Var GetPath() const OVERRIDE;
   virtual PP_Resource GetParent() OVERRIDE;

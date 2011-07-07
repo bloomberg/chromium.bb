@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ppapi/c/dev/ppb_file_io_trusted_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/c/trusted/ppb_file_io_trusted.h"
 #include "ppapi/thunk/common.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
@@ -44,7 +44,7 @@ int32_t WillSetLength(PP_Resource file_io,
   return MayForceCallback(callback, result);
 }
 
-const PPB_FileIOTrusted_Dev g_ppb_file_io_trusted_thunk = {
+const PPB_FileIOTrusted g_ppb_file_io_trusted_thunk = {
   &GetOSFileDescriptor,
   &WillWrite,
   &WillSetLength
@@ -52,7 +52,7 @@ const PPB_FileIOTrusted_Dev g_ppb_file_io_trusted_thunk = {
 
 }  // namespace
 
-const PPB_FileIOTrusted_Dev* GetPPB_FileIOTrusted_Thunk() {
+const PPB_FileIOTrusted* GetPPB_FileIOTrusted_Thunk() {
   return &g_ppb_file_io_trusted_thunk;
 }
 

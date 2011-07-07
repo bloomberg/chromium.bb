@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 #define PPAPI_CPP_DEV_DIRECTORY_ENTRY_DEV_H_
 
 #include "ppapi/c/dev/ppb_directory_reader_dev.h"
-#include "ppapi/cpp/dev/file_ref_dev.h"
+#include "ppapi/cpp/file_ref.h"
 
 namespace pp {
 
@@ -22,10 +22,10 @@ class DirectoryEntry_Dev {
   bool is_null() const { return !data_.file_ref; }
 
   // Returns the FileRef held by this DirectoryEntry.
-  FileRef_Dev file_ref() const { return FileRef_Dev(data_.file_ref); }
+  FileRef file_ref() const { return FileRef(data_.file_ref); }
 
   // Returns the type of the file referenced by this DirectoryEntry.
-  PP_FileType_Dev file_type() const { return data_.file_type; }
+  PP_FileType file_type() const { return data_.file_type; }
 
  private:
   friend class DirectoryReader_Dev;

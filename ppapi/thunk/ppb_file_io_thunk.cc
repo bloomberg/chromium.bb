@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ppapi/c/dev/ppb_file_io_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/thunk/common.h"
@@ -40,7 +39,7 @@ int32_t Open(PP_Resource file_io,
 }
 
 int32_t Query(PP_Resource file_io,
-              PP_FileInfo_Dev* info,
+              PP_FileInfo* info,
               PP_CompletionCallback callback) {
   EnterResource<PPB_FileIO_API> enter(file_io, true);
   if (enter.failed())
@@ -112,7 +111,7 @@ void Close(PP_Resource file_io) {
     enter.object()->Close();
 }
 
-const PPB_FileIO_Dev g_ppb_file_io_thunk = {
+const PPB_FileIO g_ppb_file_io_thunk = {
   &Create,
   &IsFileIO,
   &Open,
@@ -127,7 +126,7 @@ const PPB_FileIO_Dev g_ppb_file_io_thunk = {
 
 }  // namespace
 
-const PPB_FileIO_Dev* GetPPB_FileIO_Thunk() {
+const PPB_FileIO* GetPPB_FileIO_Thunk() {
   return &g_ppb_file_io_thunk;
 }
 

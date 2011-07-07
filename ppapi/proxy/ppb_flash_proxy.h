@@ -5,6 +5,7 @@
 #ifndef PPAPI_PPB_FLASH_PROXY_H_
 #define PPAPI_PPB_FLASH_PROXY_H_
 
+#include <string>
 #include <vector>
 
 #include "ipc/ipc_platform_file.h"
@@ -14,7 +15,7 @@
 #include "ppapi/proxy/host_resource.h"
 #include "ppapi/proxy/interface_proxy.h"
 
-struct PP_FileInfo_Dev;
+struct PP_FileInfo;
 struct PPB_Flash;
 
 namespace pp {

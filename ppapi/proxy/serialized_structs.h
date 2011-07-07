@@ -76,7 +76,7 @@ struct PPBFileRef_CreateInfo {
   PPBFileRef_CreateInfo();  // Initializes to 0.
 
   HostResource resource;
-  int file_system_type;  // One of PP_FileSystemType_Dev values.
+  int file_system_type;  // One of PP_FileSystemType values.
   SerializedVar path;
   SerializedVar name;
 };

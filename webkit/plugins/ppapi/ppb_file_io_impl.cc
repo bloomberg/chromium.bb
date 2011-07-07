@@ -11,8 +11,8 @@
 #include "base/platform_file.h"
 #include "base/logging.h"
 #include "base/time.h"
-#include "ppapi/c/dev/ppb_file_io_dev.h"
-#include "ppapi/c/dev/ppb_file_io_trusted_dev.h"
+#include "ppapi/c/ppb_file_io.h"
+#include "ppapi/c/trusted/ppb_file_io_trusted.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/thunk/enter.h"
@@ -89,7 +89,7 @@ int32_t PPB_FileIO_Impl::Open(PP_Resource pp_file_ref,
   return PP_OK_COMPLETIONPENDING;
 }
 
-int32_t PPB_FileIO_Impl::Query(PP_FileInfo_Dev* info,
+int32_t PPB_FileIO_Impl::Query(PP_FileInfo* info,
                                PP_CompletionCallback callback) {
   int32_t rv = CommonCallValidation(true, callback);
   if (rv != PP_OK)
@@ -308,8 +308,9 @@ void PPB_FileIO_Impl::ReadCallback(base::PlatformFileError error_code,
     rv = bytes_read;
     if (file_ != base::kInvalidPlatformFileValue)
       memcpy(read_buffer_, data, bytes_read);
-  } else
+  } else {
     rv = PlatformFileErrorToPepperError(error_code);
+  }
 
   read_buffer_ = NULL;
   RunPendingCallback(rv);

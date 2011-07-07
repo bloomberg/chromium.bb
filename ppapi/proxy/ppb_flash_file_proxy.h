@@ -5,6 +5,7 @@
 #ifndef PPAPI_PPB_FLASH_FILE_PROXY_H_
 #define PPAPI_PPB_FLASH_FILE_PROXY_H_
 
+#include <string>
 #include <vector>
 
 #include "ipc/ipc_platform_file.h"
@@ -12,7 +13,7 @@
 #include "ppapi/c/pp_module.h"
 #include "ppapi/proxy/interface_proxy.h"
 
-struct PP_FileInfo_Dev;
+struct PP_FileInfo;
 struct PPB_Flash_File_FileRef;
 struct PPB_Flash_File_ModuleLocal;
 
@@ -57,7 +58,7 @@ class PPB_Flash_File_ModuleLocal_Proxy : public InterfaceProxy {
                       int32_t* result);
   void OnMsgQueryFile(PP_Instance instance,
                       const std::string& path,
-                      PP_FileInfo_Dev* info,
+                      PP_FileInfo* info,
                       int32_t* result);
   void OnMsgGetDirContents(PP_Instance instance,
                            const std::string& path,
@@ -87,7 +88,7 @@ class PPB_Flash_File_FileRef_Proxy : public InterfaceProxy {
                      IPC::PlatformFileForTransit* file_handle,
                      int32_t* result);
   void OnMsgQueryFile(const HostResource& host_resource,
-                      PP_FileInfo_Dev* info,
+                      PP_FileInfo* info,
                       int32_t* result);
 };
 

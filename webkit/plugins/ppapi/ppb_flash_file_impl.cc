@@ -8,8 +8,8 @@
 
 #include <string>
 
-#include "ppapi/c/dev/pp_file_info_dev.h"
-#include "ppapi/c/dev/ppb_file_io_dev.h"
+#include "ppapi/c/pp_file_info.h"
+#include "ppapi/c/ppb_file_io.h"
 #include "ppapi/c/private/ppb_flash_file.h"
 #include "ppapi/thunk/enter.h"
 #include "webkit/plugins/ppapi/common.h"
@@ -123,7 +123,7 @@ int32_t CreateModuleLocalDir(PP_Instance pp_instance, const char* path) {
 
 int32_t QueryModuleLocalFile(PP_Instance pp_instance,
                              const char* path,
-                             PP_FileInfo_Dev* info) {
+                             PP_FileInfo* info) {
   if (!path || !info)
     return PP_ERROR_BADARGUMENT;
 
@@ -237,7 +237,7 @@ int32_t OpenFileRefFile(PP_Resource file_ref_id,
 }
 
 int32_t QueryFileRefFile(PP_Resource file_ref_id,
-                         PP_FileInfo_Dev* info) {
+                         PP_FileInfo* info) {
   EnterResource<PPB_FileRef_API> enter(file_ref_id, true);
   if (enter.failed())
     return PP_ERROR_BADRESOURCE;

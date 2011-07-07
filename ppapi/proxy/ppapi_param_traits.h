@@ -5,6 +5,9 @@
 #ifndef PPAPI_PROXY_PPAPI_PARAM_TRAITS_H_
 #define PPAPI_PROXY_PPAPI_PARAM_TRAITS_H_
 
+#include <string>
+#include <vector>
+
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_platform_file.h"
 #include "ppapi/c/pp_completion_callback.h"
@@ -12,7 +15,7 @@
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/c/pp_var.h"
 
-struct PP_FileInfo_Dev;
+struct PP_FileInfo;
 struct PP_ObjectProperty;
 struct PP_Flash_Menu;
 struct PP_Flash_NetAddress;
@@ -43,8 +46,8 @@ struct ParamTraits<PP_Bool> {
 };
 
 template<>
-struct ParamTraits<PP_FileInfo_Dev> {
-  typedef PP_FileInfo_Dev param_type;
+struct ParamTraits<PP_FileInfo> {
+  typedef PP_FileInfo param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
   static void Log(const param_type& p, std::string* l);

@@ -23,7 +23,7 @@ static const PP_FileHandle PP_kInvalidFileHandle = -1;
 
 struct PP_CompletionCallback;
 struct PP_FontDescription_Dev;
-struct PP_FileInfo_Dev;
+struct PP_FileInfo;
 
 struct PP_DirEntry_Dev {
   const char* name;
@@ -87,7 +87,7 @@ struct PPB_Flash_File_ModuleLocal {
   // PP_OK if success, one of the PP_ERROR_* in case of failure.
   int32_t (*QueryFile)(PP_Instance instance,
                        const char* path,
-                       struct PP_FileInfo_Dev* info);
+                       struct PP_FileInfo* info);
 
   // Gets the list of files contained in a directory. The return value is the
   // ppapi error, PP_OK if success, one of the PP_ERROR_* in case of failure. If
@@ -116,7 +116,7 @@ struct PPB_Flash_File_FileRef {
                       int32_t mode,
                       PP_FileHandle* file);
   int32_t (*QueryFile)(PP_Resource file_ref_id,
-                       struct PP_FileInfo_Dev* info);
+                       struct PP_FileInfo* info);
 };
 
 #endif  // PPAPI_C_PRIVATE_PPB_FLASH_FILE_H_

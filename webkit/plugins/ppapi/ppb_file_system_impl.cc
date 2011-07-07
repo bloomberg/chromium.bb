@@ -5,8 +5,8 @@
 #include "webkit/plugins/ppapi/ppb_file_system_impl.h"
 
 #include "base/memory/ref_counted.h"
-#include "ppapi/c/dev/ppb_file_system_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
+#include "ppapi/c/ppb_file_system.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -27,7 +27,7 @@ namespace webkit {
 namespace ppapi {
 
 PPB_FileSystem_Impl::PPB_FileSystem_Impl(PluginInstance* instance,
-                                         PP_FileSystemType_Dev type)
+                                         PP_FileSystemType type)
     : Resource(instance),
       instance_(instance),
       type_(type),
@@ -41,7 +41,7 @@ PPB_FileSystem_Impl::~PPB_FileSystem_Impl() {
 
 // static
 PP_Resource PPB_FileSystem_Impl::Create(PluginInstance* instance,
-                                        PP_FileSystemType_Dev type) {
+                                        PP_FileSystemType type) {
   if (type != PP_FILESYSTEMTYPE_EXTERNAL &&
       type != PP_FILESYSTEMTYPE_LOCALPERSISTENT &&
       type != PP_FILESYSTEMTYPE_LOCALTEMPORARY)
@@ -81,10 +81,9 @@ int32_t PPB_FileSystem_Impl::Open(int64_t expected_size,
   return PP_OK_COMPLETIONPENDING;
 }
 
-PP_FileSystemType_Dev PPB_FileSystem_Impl::GetType() {
+PP_FileSystemType PPB_FileSystem_Impl::GetType() {
   return type_;
 }
 
 }  // namespace ppapi
 }  // namespace webkit
-
