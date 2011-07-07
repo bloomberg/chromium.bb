@@ -30,6 +30,10 @@
   font-weight: bold;
 }
 
+.app-context-menu {
+  z-index: 1000;
+}
+
 /* Link (bookmark) tiles. */
 .link {
   display: -webkit-box;

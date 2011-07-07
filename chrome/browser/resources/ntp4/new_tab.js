@@ -89,6 +89,8 @@ cr.define('ntp4', function() {
    * Invoked at startup once the DOM is available to initialize the app.
    */
   function initialize() {
+    cr.enablePlatformSpecificCSSRules();
+
     // Load the current theme colors.
     themeChanged();
 

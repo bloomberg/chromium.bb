@@ -120,6 +120,7 @@ cr.define('ntp4', function() {
       });
 
       this.options_.disabled = !app.appData.options_url;
+      this.uninstall_.disabled = !app.appData.can_uninstall;
     },
 
     /**

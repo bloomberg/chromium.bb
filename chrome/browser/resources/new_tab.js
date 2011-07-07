@@ -1467,10 +1467,12 @@ function isDoneLoading() {
   return !document.body.classList.contains('loading');
 }
 
-// Initialize the listener for the "hide this" link on the apps promo. We do
-// this outside of getAppsCallback because it only needs to be done once per
-// NTP load.
 document.addEventListener('DOMContentLoaded', function() {
+  cr.enablePlatformSpecificCSSRules();
+
+  // Initialize the listener for the "hide this" link on the apps promo. We do
+  // this outside of getAppsCallback because it only needs to be done once per
+  // NTP load.
   $('apps-promo-hide').addEventListener('click', function() {
     chrome.send('hideAppsPromo', []);
     document.documentElement.classList.remove('apps-promo-visible');
