@@ -89,7 +89,6 @@ src_libbreakpad_a_SOURCES = \
 	src/google_breakpad/processor/memory_region.h \
 	src/google_breakpad/processor/minidump.h \
 	src/google_breakpad/processor/minidump_processor.h \
-	src/google-breakpad/processor/network_source_line_resolver.h \
 	src/google_breakpad/processor/process_state.h \
 	src/google_breakpad/processor/source_line_resolver_base.h \
 	src/google_breakpad/processor/source_line_resolver_interface.h \
@@ -131,10 +130,6 @@ src_libbreakpad_a_SOURCES = \
 	src/processor/module_factory.h \
 	src/processor/module_serializer.cc \
 	src/processor/module_serializer.h \
-	src/processor/network_interface.h \
-	src/processor/network_source_line_resolver.cc \
-	src/processor/network_source_line_server.cc \
-	src/processor/network_source_line_server.h \
 	src/processor/pathname_stripper.cc \
 	src/processor/pathname_stripper.h \
 	src/processor/postfix_evaluator-inl.h \
@@ -172,9 +167,7 @@ src_libbreakpad_a_SOURCES = \
 	src/processor/static_range_map-inl.h \
 	src/processor/static_range_map.h \
 	src/processor/tokenize.cc \
-	src/processor/tokenize.h \
-	src/processor/udp_network.cc \
-	src/processor/udp_network.h
+	src/processor/tokenize.h
 
 src_libbreakpad_a_LIBADD = src/third_party/libdisasm/libdisasm.a
 
@@ -209,8 +202,7 @@ src_third_party_libdisasm_libdisasm_a_SOURCES = \
 ## Programs
 bin_PROGRAMS += \
 	src/processor/minidump_dump \
-	src/processor/minidump_stackwalk \
-	src/processor/source_daemon
+	src/processor/minidump_stackwalk
 endif !DISABLE_PROCESSOR
 
 if LINUX_HOST
@@ -242,9 +234,6 @@ check_PROGRAMS += \
 	src/processor/map_serializers_unittest \
 	src/processor/minidump_processor_unittest \
 	src/processor/minidump_unittest \
-	src/processor/network_source_line_resolver_unittest \
-	src/processor/network_source_line_resolver_server_unittest \
-	src/processor/network_source_line_server_unittest \
 	src/processor/static_address_map_unittest \
 	src/processor/static_contained_range_map_unittest \
 	src/processor/static_map_unittest \
@@ -596,82 +585,6 @@ src_processor_minidump_unittest_LDADD = \
 	src/processor/minidump.o \
 	src/processor/pathname_stripper.o
 
-src_processor_network_source_line_resolver_unittest_SOURCES = \
-	src/processor/network_source_line_resolver_unittest.cc \
-	src/testing/gtest/src/gtest-all.cc \
-	src/testing/src/gmock-all.cc
-src_processor_network_source_line_resolver_unittest_CPPFLAGS = \
-	-I$(top_srcdir)/src \
-	-I$(top_srcdir)/src/testing/include \
-	-I$(top_srcdir)/src/testing/gtest/include \
-	-I$(top_srcdir)/src/testing/gtest \
-	-I$(top_srcdir)/src/testing
-src_processor_network_source_line_resolver_unittest_LDADD = \
-	src/processor/basic_code_modules.o \
-	src/processor/binarystream.o \
-	src/processor/cfi_frame_info.o \
-	src/processor/logging.o \
-	src/processor/network_source_line_resolver.o \
-	src/processor/pathname_stripper.o \
-	src/processor/tokenize.o \
-	src/processor/udp_network.o
-
-src_processor_network_source_line_resolver_server_unittest_SOURCES = \
-	src/processor/network_source_line_resolver_server_unittest.cc \
-	src/testing/gtest/src/gtest-all.cc \
-	src/testing/src/gmock-all.cc
-src_processor_network_source_line_resolver_server_unittest_CPPFLAGS = \
-	-I$(top_srcdir)/src \
-	-I$(top_srcdir)/src/testing/include \
-	-I$(top_srcdir)/src/testing/gtest/include \
-	-I$(top_srcdir)/src/testing/gtest \
-	-I$(top_srcdir)/src/testing
-src_processor_network_source_line_resolver_server_unittest_LDADD = \
-	src/processor/basic_code_modules.o \
-	src/processor/basic_source_line_resolver.o \
-	src/processor/binarystream.o \
-	src/processor/call_stack.o \
-	src/processor/cfi_frame_info.o \
-	src/processor/disassembler_x86.o \
-	src/processor/exploitability.o \
-	src/processor/exploitability_win.o \
-	src/processor/logging.o \
-	src/processor/minidump_processor.o \
-	src/processor/minidump.o \
-	src/processor/network_source_line_resolver.o \
-	src/processor/network_source_line_server.o \
-	src/processor/pathname_stripper.o \
-	src/processor/process_state.o \
-	src/processor/simple_symbol_supplier.o \
-	src/processor/source_line_resolver_base.o \
-	src/processor/stackwalker.o \
-	src/processor/stackwalker_amd64.o \
-	src/processor/stackwalker_arm.o \
-	src/processor/stackwalker_ppc.o \
-	src/processor/stackwalker_sparc.o \
-	src/processor/stackwalker_x86.o \
-	src/processor/tokenize.o \
-	src/processor/udp_network.o \
-	src/third_party/libdisasm/libdisasm.a
-
-src_processor_network_source_line_server_unittest_SOURCES = \
-	src/processor/network_source_line_server_unittest.cc \
-	src/testing/gtest/src/gtest-all.cc \
-	src/testing/src/gmock-all.cc
-src_processor_network_source_line_server_unittest_CPPFLAGS = \
-	-I$(top_srcdir)/src \
-	-I$(top_srcdir)/src/testing/include \
-	-I$(top_srcdir)/src/testing/gtest/include \
-	-I$(top_srcdir)/src/testing/gtest \
-	-I$(top_srcdir)/src/testing
-src_processor_network_source_line_server_unittest_LDADD = \
-	src/processor/binarystream.o \
-	src/processor/cfi_frame_info.o \
-	src/processor/logging.o \
-	src/processor/network_source_line_server.o \
-	src/processor/pathname_stripper.o \
-	src/processor/udp_network.o
-
 src_processor_static_address_map_unittest_SOURCES = \
 	src/processor/static_address_map_unittest.cc \
 	src/testing/gtest/src/gtest-all.cc \
@@ -869,7 +782,6 @@ src_processor_minidump_stackwalk_LDADD = \
 	src/processor/minidump_processor.o \
 	src/processor/pathname_stripper.o \
 	src/processor/process_state.o \
-	src/processor/network_source_line_resolver.o \
 	src/processor/simple_symbol_supplier.o \
 	src/processor/source_line_resolver_base.o \
 	src/processor/stackwalker.o \
@@ -879,23 +791,8 @@ src_processor_minidump_stackwalk_LDADD = \
 	src/processor/stackwalker_sparc.o \
 	src/processor/stackwalker_x86.o \
 	src/processor/tokenize.o \
-	src/processor/udp_network.o \
 	src/third_party/libdisasm/libdisasm.a
 
-src_processor_source_daemon_SOURCES = \
-	src/processor/source_daemon.cc
-src_processor_source_daemon_LDADD = \
-	src/processor/basic_code_modules.o \
-	src/processor/basic_source_line_resolver.o \
-	src/processor/binarystream.o \
-	src/processor/cfi_frame_info.o \
-	src/processor/logging.o \
-	src/processor/network_source_line_server.o \
-	src/processor/pathname_stripper.o \
-	src/processor/simple_symbol_supplier.o \
-	src/processor/source_line_resolver_base.o \
-	src/processor/tokenize.o \
-	src/processor/udp_network.o
 endif !DISABLE_PROCESSOR
 
 ## Additional files to be included in a source distribution
