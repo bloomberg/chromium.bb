@@ -249,9 +249,9 @@ def RunBuildStages(bot_id, options, build_config):
     # Wait for slave builds to complete.
     completion_stage.Run()
 
-  if build_config['master'] and build_and_test_success and (
-      not completion_stage or
-      stages.Results.WasStageSuccessfulOrSkipped(completion_stage.name)):
+  if (options.buildbot and build_config['master'] and build_and_test_success
+      and (not completion_stage or
+           stages.Results.WasStageSuccessfulOrSkipped(completion_stage.name))):
     stages.PublishUprevChangesStage(bot_id, options, build_config).Run()
 
   if os.path.exists(options.buildroot):

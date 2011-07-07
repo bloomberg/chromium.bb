@@ -523,6 +523,10 @@ class ManifestVersionedSyncStage(BuilderStage):
     return self.manifest_manager.GetNextBuildSpec(
         force_version=self._options.force_version, latest=True)
 
+  def PostSyncStep(self):
+    """Called at the end of the sync stage.  Base class version is noop."""
+    pass
+
   def _PerformStage(self):
     self.InitializeManifestManager()
     next_manifest = self.GetNextManifest()
@@ -549,6 +553,8 @@ class ManifestVersionedSyncStage(BuilderStage):
     self._ExtractOverlays()
     for path in BuilderStage.overlays:
       assert os.path.isdir(path), 'Missing overlay: %s' % path
+
+    self.PostSyncStep()
 
 
 class LKGMCandidateSyncStage(ManifestVersionedSyncStage):
@@ -597,6 +603,22 @@ class LKGMSyncStage(ManifestVersionedSyncStage):
     repository.CloneGitRepo(manifests_dir,
                             self._build_config['manifest_version'])
     return lkgm_manager.LKGMManager.GetAbsolutePathToLKGM()
+
+  def PostSyncStep(self):
+    """Override base class version.  Updates the prebuilt urls."""
+    # The LKGM does not include the updated prebuilt url.
+    # Update the url before running the build.
+    if (not self._options.buildbot
+        and (self._build_config['usepkg_chroot']
+             or self._build_config['usepkg_setup_board']
+             or self._build_config['usepkg_build_packages'])):
+      commands.UploadPrebuilts(
+          self._build_root, self._build_config['board'],
+          self._build_config['overlays'],
+          self._prebuilt_type, self._options.chrome_rev,
+          self._options.buildnumber,
+          ['--set-version', lkgm_manager.LKGMManager.GetLKGMVersion(),
+           '--sync-binhost-conf', '--sync-host', '--skip-upload'])
 
 
 class ManifestVersionedSyncCompletionStage(ForgivingBuilderStage):

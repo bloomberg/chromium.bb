@@ -107,6 +107,13 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     """Returns the path to the LKGM file blessed by builders."""
     return os.path.join(cls._TMP_MANIFEST_DIR, cls.LKGM_PATH)
 
+  @classmethod
+  def GetLKGMVersion(cls):
+    """Returns the full buildspec version the LKGM corresponds to."""
+    realpath = os.path.realpath(cls.GetAbsolutePathToLKGM())
+    version, _  = os.path.splitext(os.path.basename(realpath))
+    return version
+
   def __init__(self, source_dir, checkout_repo, manifest_repo, branch,
                build_name, build_type, clobber=False,
                dry_run=True):
