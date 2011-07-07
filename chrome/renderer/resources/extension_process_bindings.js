@@ -14,6 +14,7 @@ var chrome = chrome || {};
   native function GetChromeHidden();
   native function GetNextRequestId();
   native function GetNextContextMenuId();
+  native function GetNextTtsEventId();
   native function OpenChannelToTab();
   native function GetRenderViewId();
   native function SetIconCommon();
@@ -529,16 +530,35 @@ var chrome = chrome || {};
   }
 
   function setupTtsEvents() {
-    chrome.experimental.tts.onSpeak.dispatch =
+    chromeHidden.tts = {};
+    chromeHidden.tts.handlers = {};
+    chrome.experimental.ttsEngine.onSpeak.dispatch =
         function(text, options, requestId) {
-      var callback = function(errorMessage) {
-        if (errorMessage)
-          chrome.experimental.tts.speakCompleted(requestId, errorMessage);
-        else
-          chrome.experimental.tts.speakCompleted(requestId);
-      };
-      chrome.Event.prototype.dispatch.apply(this, [text, options, callback]);
-    };
+          var sendTtsEvent = function(event) {
+            chrome.experimental.ttsEngine.sendTtsEvent(requestId, event);
+          };
+          chrome.Event.prototype.dispatch.apply(
+              this, [text, options, sendTtsEvent]);
+        };
+    try {
+      chrome.experimental.ttsEngine.onEvent.addListener(
+          function(event) {
+            var eventHandler = chromeHidden.tts.handlers[event.srcId];
+            if (eventHandler) {
+              eventHandler({
+                             type: event.type,
+                             charIndex: event.charIndex,
+                             errorMessage: event.errorMessage
+                           });
+              if (event.isFinalEvent) {
+                delete chromeHidden.tts.handlers[event.srcId];
+              }
+            }
+          });
+      } catch (e) {
+        // This extension doesn't have permission to access TTS, so we
+        // can safely ignore this.
+      }
   }
 
   // Get the platform from navigator.appVersion.
@@ -988,6 +1008,17 @@ var chrome = chrome || {};
       return [requestId, suggestions];
     };
 
+    apiFunctions["experimental.tts.speak"].handleRequest = function() {
+      var args = arguments;
+      if (args.length > 1 && args[1].onevent) {
+        var id = GetNextTtsEventId();
+        args[1].srcId = id;
+        chromeHidden.tts.handlers[id] = args[1].onevent;
+      }
+      sendRequest(this.name, args, this.definition.parameters);
+      return id;
+    };
+
     if (chrome.test) {
       chrome.test.getApiDefinitions = GetExtensionAPIDefinition;
     }
@@ -1007,4 +1038,7 @@ var chrome = chrome || {};
 
   if (!chrome.experimental.tts)
     chrome.experimental.tts = {};
+
+  if (!chrome.experimental.ttsEngine)
+    chrome.experimental.ttsEngine = {};
 })();

@@ -706,29 +706,34 @@ TEST_F(ExtensionManifestTest, DefaultLocale) {
   EXPECT_EQ("de-AT", extension->default_locale());
 }
 
-TEST_F(ExtensionManifestTest, TtsProvider) {
-  LoadAndExpectError("tts_provider_invalid_1.json",
+TEST_F(ExtensionManifestTest, TtsEngine) {
+  LoadAndExpectError("tts_engine_invalid_1.json",
                      extension_manifest_errors::kInvalidTts);
-  LoadAndExpectError("tts_provider_invalid_2.json",
+  LoadAndExpectError("tts_engine_invalid_2.json",
                      extension_manifest_errors::kInvalidTtsVoices);
-  LoadAndExpectError("tts_provider_invalid_3.json",
+  LoadAndExpectError("tts_engine_invalid_3.json",
                      extension_manifest_errors::kInvalidTtsVoices);
-  LoadAndExpectError("tts_provider_invalid_4.json",
+  LoadAndExpectError("tts_engine_invalid_4.json",
                      extension_manifest_errors::kInvalidTtsVoicesVoiceName);
-  LoadAndExpectError("tts_provider_invalid_5.json",
-                     extension_manifest_errors::kInvalidTtsVoicesLocale);
-  LoadAndExpectError("tts_provider_invalid_6.json",
-                     extension_manifest_errors::kInvalidTtsVoicesLocale);
-  LoadAndExpectError("tts_provider_invalid_7.json",
+  LoadAndExpectError("tts_engine_invalid_5.json",
+                     extension_manifest_errors::kInvalidTtsVoicesLang);
+  LoadAndExpectError("tts_engine_invalid_6.json",
+                     extension_manifest_errors::kInvalidTtsVoicesLang);
+  LoadAndExpectError("tts_engine_invalid_7.json",
                      extension_manifest_errors::kInvalidTtsVoicesGender);
+  LoadAndExpectError("tts_engine_invalid_8.json",
+                     extension_manifest_errors::kInvalidTtsVoicesEventTypes);
+  LoadAndExpectError("tts_engine_invalid_9.json",
+                     extension_manifest_errors::kInvalidTtsVoicesEventTypes);
 
   scoped_refptr<Extension> extension(
-      LoadAndExpectSuccess("tts_provider_valid.json"));
+      LoadAndExpectSuccess("tts_engine_valid.json"));
 
   ASSERT_EQ(1u, extension->tts_voices().size());
   EXPECT_EQ("name", extension->tts_voices()[0].voice_name);
-  EXPECT_EQ("en-US", extension->tts_voices()[0].locale);
+  EXPECT_EQ("en-US", extension->tts_voices()[0].lang);
   EXPECT_EQ("female", extension->tts_voices()[0].gender);
+  EXPECT_EQ(3U, extension->tts_voices()[0].event_types.size());
 }
 
 TEST_F(ExtensionManifestTest, ForbidPortsInPermissions) {

@@ -272,6 +272,13 @@
                 </li>
               </ol>
             </li><li>
+              <a href="#events">Listening to events</a>
+              <ol>
+                <li style="display: none; ">
+                  <a>h3Name</a>
+                </li>
+              </ol>
+            </li><li>
               <a href="#ssml">SSML markup</a>
               <ol>
                 <li style="display: none; ">
@@ -279,7 +286,7 @@
                 </li>
               </ol>
             </li><li>
-              <a href="#provider">Implementing a speech provider</a>
+              <a href="#choosing_voice">Choosing a voice</a>
               <ol>
                 <li style="display: none; ">
                   <a>h3Name</a>
@@ -301,31 +308,31 @@
                     <a href="#global-methods">Methods</a>
                     <ol>
                       <li>
+                        <a href="#method-getVoices">getVoices</a>
+                      </li><li>
                         <a href="#method-isSpeaking">isSpeaking</a>
                       </li><li>
                         <a href="#method-speak">speak</a>
-                      </li><li style="display: none; ">
-                        <a href="#method-anchor">methodName</a>
                       </li><li>
                         <a href="#method-stop">stop</a>
                       </li>
                     </ol>
                   </li>
-                  <li>
-                    <a href="#global-events">Events</a>
+                  <li style="display: none; ">
+                    <a>Events</a>
                     <ol>
                       <li>
-                        <a href="#event-onSpeak">onSpeak</a>
-                      </li><li>
-                        <a href="#event-onStop">onStop</a>
+                        <a href="#event-anchor">eventName</a>
                       </li>
                     </ol>
                   </li>
-                  <li style="display: none; ">
+                  <li>
                     <a href="#types">Types</a>
                     <ol>
                       <li>
-                        <a href="#id-anchor">id</a>
+                        <a href="#type-TtsEvent">TtsEvent</a>
+                      </li><li>
+                        <a href="#type-TtsVoice">TtsVoice</a>
                       </li>
                     </ol>
                   </li>
@@ -343,8 +350,10 @@
         <!-- STATIC CONTENT PLACEHOLDER -->
         <div id="static"><p id="classSummary">
 Use the <code>chrome.experimental.tts</code> module to play synthesized
-text-to-speech (TTS) from your extension or packaged app, or to register
-as a speech provider for other extensions and packaged apps that want to speak.
+text-to-speech (TTS) from your extension or packaged app.
+See also the related
+<a href="experimental.ttsEngine.html">experimental.ttsEngine</a>
+module which allows an extension to implement a speech engine.
 </p>
 
 <p class="note"><b>Give us feedback:</b> If you have suggestions,
@@ -362,7 +371,7 @@ group.</p>
 5), Mac OS X, and Chrome OS, using speech synthesis capabilities
 provided by the operating system. On all platforms, the user can
 install extensions that register themselves as alternative speech
-synthesis providers.</p>
+engines.</p>
 
 <h2 id="generating_speech">Generating speech</h2>
 
@@ -371,122 +380,163 @@ packaged app to speak. For example:</p>
 
 <pre>chrome.experimental.tts.speak('Hello, world.');</pre>
 
+<p>To stop speaking immediately, just call <code>stop()</code>:
+
+</p><pre>chrome.experimental.tts.stop();</pre>
+
 <p>You can provide options that control various properties of the speech,
 such as its rate, pitch, and more. For example:</p>
 
-<pre>chrome.experimental.tts.speak('Hello, world.', {'rate': 0.8});</pre>
+<pre>chrome.experimental.tts.speak('Hello, world.', {'rate': 2.0});</pre>
 
-<p>It's also a good idea to specify the locale so that a synthesizer
+<p>It's also a good idea to specify the language so that a synthesizer
 supporting that language (and regional dialect, if applicable) is chosen.</p>
 
 <pre>chrome.experimental.tts.speak(
-    'Hello, world.',
-    {
-      'locale': 'en-US',
-      'rate': 0.8
-    });</pre>
+    'Hello, world.', {'lang': 'en-US', 'rate': 2.0});</pre>
 
-<p>Not all speech engines will support all options.</p>
+<p>By default, each call to <code>speak()</code> will interrupt any
+ongoing speech and speak immediately. To determine if a call would be
+interrupting anything, you can call <code>isSpeaking()</code>, or
+you can use the <code>enqueue</code> option to cause this utterance to
+be added to a queue of utterances that will be spoken when the current
+utterance has finished.
 
-<p>You can also pass a callback function that will be called when the
-speech has finished. For example, suppose we have an image on our page
-displaying a picture of a face with a closed mouth. We could open the mouth
-while speaking, and close it when done.</p>
-
-<pre>faceImage.src = 'open_mouth.png';
+</p><pre>chrome.experimental.tts.speak(
+    'Speak this first.');
 chrome.experimental.tts.speak(
-    'Hello, world.', null, function() {
-      faceImage.src = 'closed_mouth.png';
-    });
+    'Speak this next, when the first sentence is done.', {'enqueue': true});
 </pre>
 
-<p>To stop speaking immediately, just call <code>stop()</code>. Call
-<code>isSpeaking()</code> to find out if a TTS engine is currently speaking.</p>
+<p>A complete description of all options can be found in the
+<a href="#method-speak">speak() method documentation</a> below.
+Not all speech engines will support all options.</p>
 
-<p>You can check to see if an error occurred by checking
-<code>chrome.extension.lastError</code> inside the callback function.</p>
+<p>To catch errors and make sure you're calling <code>speak()</code>
+correctly, pass a callback function that takes no arguments. Inside
+the callback, check
+<a href="extension.html#property-lastError">chrome.extension.lastError</a>
+to see if there were any errors.</p>
 
-<h2 id="ssml">SSML markup</h2>
+<pre>chrome.experimental.tts.speak(
+    utterance,
+    options,
+    function() {
+      if (chrome.extension.lastError) {
+        console.log('Error: ' + chrome.extension.lastError.message);
+      }
+    });</pre>
+
+<p>The callback returns right away, before the speech engine has started
+generating speech. The purpose of the callback is to alert you to syntax
+errors in your use of the TTS API, not all possible errors that might occur
+in the process of synthesizing and outputting speech. To catch these errors
+too, you need to use an event listener, described below.
+
+</p><h2 id="events">Listening to events</h2>
+
+<p>To get more real-time information about the status of synthesized speech,
+pass an event listener in the options to <code>speak()</code>, like this:</p>
+
+<pre>chrome.experimental.tts.speak(
+    utterance,
+    {
+      'onevent': function(event) {
+        console.log('Event ' + event.type ' at position ' + event.charIndex);
+        if (event.type == 'error') {
+          console.log('Error: ' + event.errorMessage);
+        }
+      }
+    },
+    callback);</pre>
+
+<p>Each event includes an event type, the character index of the current
+speech relative to the utterance, and for error events, an optional
+error message. The event types are:</p>
+
+<ul>
+  <li><code>'start'</code>: the engine has started speaking the utterance.
+  </li><li><code>'word'</code>: a word boundary was reached. Use
+          <code>event.charIndex</code> to determine the current speech
+          position.
+  </li><li><code>'sentence'</code>: a sentence boundary was reached. Use
+          <code>event.charIndex</code> to determine the current speech
+          position.
+  </li><li><code>'marker'</code>: an SSML marker was reached. Use
+          <code>event.charIndex</code> to determine the current speech
+          position.
+  </li><li><code>'end'</code>: the engine has finished speaking the utterance.
+  </li><li><code>'interrupted'</code>: this utterance was interrupted by another
+          call to <code>speak()</code> or <code>stop()</code> and did not
+          finish.
+  </li><li><code>'cancelled'</code>: this utterance was queued, but then
+          cancelled by another call to <code>speak()</code> or
+          <code>stop()</code> and never began to speak at all.
+  </li><li><code>'error'</code>: An engine-specific error occurred and
+          this utterance cannot be spoken.
+          Check <code>event.errorMessage</code> for details.
+</li></ul>
+
+<p>Four of the event types, <code>'end'</code>, <code>'interrupted'</code>,
+<code>'cancelled'</code>, and <code>'error'</code>, are <i>final</i>. After
+one of those events is received, this utterance will no longer speak and
+no new events from this utterance will be received.</p>
+
+<p>Some TTS engines may not support all event types, and some may not even
+support any events at all. To require that the speech engine used sends
+the events you're interested in, you can pass a list of event types in
+the <code>requiredEventTypes</code> member of the options object, or use
+<code>getVoices</code> to choose a voice that has the events you need.
+Both are documented below.
+
+</p><h2 id="ssml">SSML markup</h2>
 
 <p>Utterances used in this API may include markup using the
 <a href="http://www.w3.org/TR/speech-synthesis">Speech Synthesis Markup
-Language (SSML)</a>. For example:
+Language (SSML)</a>. If you use SSML, the first argument to
+<code>speak()</code> should be a complete SSML document with an XML
+header and a top-level <code>&lt;speak&gt;</code> tag, not a document
+fragment.
 
-</p><pre>chrome.experimental.tts.speak('The &lt;emphasis&gt;second&lt;/emphasis&gt; word of this sentence was emphasized.');</pre>
+For example:
+
+</p><pre>chrome.experimental.tts.speak(
+    '&lt;?xml version="1.0"?&gt;' +
+    '&lt;speak&gt;' +
+    '  The &lt;emphasis&gt;second&lt;/emphasis&gt; ' +
+    '  word of this sentence was emphasized.' +
+    '&lt;/speak&gt;');</pre>
 
 <p>Not all speech engines will support all SSML tags, and some may not support
-SSML at all, but all engines are expected to ignore any SSML they don't
+SSML at all, but all engines are required to ignore any SSML they don't
 support and still speak the underlying text.</p>
 
-<h2 id="provider">Implementing a speech provider</h2>
+<h2 id="choosing_voice">Choosing a voice</h2>
 
-<p>An extension can register itself as a speech provider. By doing so, it
-can intercept some or all calls to functions such as
-<code>speak()</code> and <code>stop()</code> and provide an alternate
-implementation. Extensions are free to use any available web technology
-to provide speech, including streaming audio from a server, HTML5 audio,
-Native Client, or Flash. An extension could even do something different
-with the utterances, like display closed captions in a pop-up window or
-send them as log messages to a remote server.</p>
+<p>By default, Chrome will choose the most appropriate voice for each
+utterance you want to speak, based on the language and gender. On most
+Windows, Mac OS X, and Chrome OS systems, speech synthesis provided by
+the operating system should be able to speak any text in at least one
+language. Some users may have a variety of voices available, though,
+from their operating system and from speech engines implemented by other
+Chrome extensions. In those cases, you can implement custom code to choose
+the appropriate voice, or present the user with a list of choices.</p>
 
-<p>To provide TTS, an extension must first declare all voices it provides
-in the extension manifest, like this:</p>
+<p>To get a list of all voices, call <code>getVoices()</code> and pass it
+a function that receives an array of <code>TtsVoice</code> objects as its
+argument:</p>
 
-<pre>{
-  "name": "My TTS Provider",
-  "version": "1.0",
-  <b>"permissions": ["experimental"]
-  "tts": {
-    "voices": [
-      {
-        "voiceName": "Alice",
-        "locale": "en-US",
-        "gender": "female"
-      },
-      {
-        "voiceName": "Pat",
-        "locale": "en-US"
+<pre>chrome.experimental.tts.getVoices(
+    function(voices) {
+      for (var i = 0; i &lt; voices.length; i++) {
+        console.log('Voice ' + i + ':');
+        console.log('  name: ' + voices[i].voiceName);
+        console.log('  lang: ' + voices[i].lang);
+        console.log('  gender: ' + voices[i].gender);
+        console.log('  extension id: ' + voices[i].extensionId);
+        console.log('  event types: ' + voices[i].eventTypes);
       }
-    ]
-  },</b>
-  "background_page": "background.html",
-}</pre>
-
-<p>An extension can specify any number of voices. The three
-parameters—<code>voiceName</code>, <code>locale</code>,
-and <code>gender</code>—are all optional. If they are all unspecified,
-the extension will handle all speech from all clients. If any of them
-are specified, they can be used to filter speech requests. For
-example, if a voice only supports French, it should set the locale to
-'fr' (or something more specific like 'fr-FR') so that only utterances
-in that locale are routed to that extension.</p>
-
-<p>To handle speech calls, the extension should register listeners
-for <code>onSpeak</code> and <code>onStop</code>, like this:</p>
-
-<pre>var speakListener = function(utterance, options, callback) {
-  ...
-  callback();
-};
-var stopListener = function() {
-  ...
-};
-chrome.experimental.tts.onSpeak.addListener(speakListener);
-chrome.experimental.tts.onStop.addListener(stopListener);</pre>
-
-<p class="warning"><b>Important:</b> Don't forget to call the callback
-function from your speak listener!</p>
-
-<p>If an extension does not register listeners for both
-<code>onSpeak</code> and <code>onStop</code>, it will not intercept any
-speech calls, regardless of what is in the manifest.
-
-</p><p>The decision of whether or not to send a given speech request to an
-extension is based solely on whether the extension supports the given voice
-parameters in its manifest and has registered listeners
-for <code>onSpeak</code> and <code>onStop</code>. In other words,
-there's no way for an extension to receive a speech request and
-dynamically decide whether to handle it or not.</p>
+    });</pre>
 </div>
 
         <!-- API PAGE -->
@@ -519,6 +569,213 @@ dynamically decide whether to handle it or not.</p>
 
             <!-- iterates over all functions -->
             <div class="apiItem">
+              <a name="method-getVoices"></a> <!-- method-anchor -->
+              <h4>getVoices</h4>
+
+              <div class="summary"><span style="display: none; ">void</span>
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.experimental.tts.getVoices</span>(<span class="optional"><span style="display: none; ">, </span><span>function</span>
+                      <var><span>callback</span></var></span>)</div>
+
+              <div class="description">
+                <p class="todo" style="display: none; ">Undocumented.</p>
+                <p>Get an array of all available voices.</p>
+
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>callback</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>function</span>
+                        <span style="display: none; "></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <dd style="display: none; ">
+            Description of this parameter from the json schema.
+          </dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
+                  </div>
+                </dl>
+
+                <!-- RETURNS -->
+                <h4 style="display: none; ">Returns</h4>
+                <dl>
+                  <div style="display: none; ">
+                    <div>
+                    </div>
+                  </div>
+                </dl>
+
+                <!-- CALLBACK -->
+                <div>
+                  <div>
+                  <h4>Callback function</h4>
+                  <p style="display: none; ">
+                    The callback <em>parameter</em> should specify a function
+                    that looks like this:
+                  </p>
+                  <p>
+                    If you specify the <em>callback</em> parameter, it should
+                    specify a function that looks like this:
+                  </p>
+
+                  <!-- Note: intentionally longer 80 columns -->
+                  <pre>function(<span>array of TtsVoice voices</span>) <span class="subdued">{...}</span>;</pre>
+                  <dl>
+                    <div>
+                      <div>
+          <dt>
+            <var>voices</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span>
+                          array of <span><span>
+                      <span>
+                        <a href="experimental.tts.html#type-TtsVoice">TtsVoice</a>
+                      </span>
+                      <span style="display: none; ">
+                        <span>
+                          array of <span><span></span></span>
+                        </span>
+                        <span>paramType</span>
+                        <span></span>
+                      </span>
+                    </span></span>
+                        </span>
+                        <span style="display: none; ">paramType</span>
+                        <span style="display: none; "></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>Array of <a href="experimental.tts.html#type-TtsVoice">TtsVoice</a> objects representing the available voices for speech synthesis.</dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
+                    </div>
+                  </dl>
+                  </div>
+                </div>
+
+                <!-- MIN_VERSION -->
+                <p style="display: none; ">
+                  This function was added in version <b><span></span></b>.
+                  If you require this function, the manifest key
+                  <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+                  can ensure that your extension won't be run in an earlier browser version.
+                </p>
+              </div> <!-- /description -->
+
+            </div><div class="apiItem">
               <a name="method-isSpeaking"></a> <!-- method-anchor -->
               <h4>isSpeaking</h4>
 
@@ -763,7 +1020,7 @@ dynamically decide whether to handle it or not.</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The text to speak. May include SSML markup.</dd>
+          <dd>The text to speak, either plaintext or a complete well-formed SSML document. Speech engines that do not support SSML will strip away the tags and speak the text. The maximum length of the text is 32,768 characters.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -984,7 +1241,7 @@ dynamically decide whether to handle it or not.</p>
               </div><div>
                 <div>
           <dt>
-            <var>locale</var>
+            <var>extensionId</var>
               <em>
 
                 <!-- TYPE -->
@@ -1012,7 +1269,75 @@ dynamically decide whether to handle it or not.</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The language and optional region code that specify the language and dialect to be used for synthesis, in the form &lt;language&gt;-&lt;region&gt;. Examples: 'en', 'en-US', 'en-GB', 'zh-CN', etc.</dd>
+          <dd>The specific extension ID of the speech engine to use, if known.</dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>lang</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>string</span>
+                        <span style="display: none; "></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>The language to be used for synthesis, in the form &lt;language&gt;-&lt;region&gt;. Examples: 'en', 'en-US', 'en-GB', 'zh-CN', etc.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1148,7 +1473,7 @@ dynamically decide whether to handle it or not.</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Speaking speed between 0 and 1 inclusive, with 0 being slowest and 1 being fastest, with a default of 0.5.</dd>
+          <dd>Speaking rate relative to the default rate for this voice. 1.0 is the default rate, normally around 180 to 220 words per minute, 2.0 would be twice as fast, and 0.5 would be half as fast. Values below 0.1 or above 10.0 are strictly disallowed, but many voices will constrain the minimum and maximum rates further - i.e. a particular voice may not actually speak faster than 3 times normal even if you specify a value larger than 3.0.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1216,7 +1541,7 @@ dynamically decide whether to handle it or not.</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Speaking pitch between 0 and 1 inclusive, with 0 being lowest and 1 being highest, with a default of 0.5.</dd>
+          <dd>Speaking pitch between 0 and 2 inclusive, with 0 being lowest and 1 being highest, with 1.0 being the default pitch of this particular voice.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1321,6 +1646,305 @@ dynamically decide whether to handle it or not.</p>
           </dd>
 
         </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>requiredEventTypes</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span>
+                          array of <span><span>
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>string</span>
+                        <span style="display: none; "></span>
+                      </span>
+                    </span></span>
+                        </span>
+                        <span style="display: none; ">paramType</span>
+                        <span style="display: none; "></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>The TTS event types the voice must support. If missing, this criteria will not be used to filter voices.</dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>desiredEventTypes</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span>
+                          array of <span><span>
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>string</span>
+                        <span style="display: none; "></span>
+                      </span>
+                    </span></span>
+                        </span>
+                        <span style="display: none; ">paramType</span>
+                        <span style="display: none; "></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>The TTS event types that should be sent. If missing, all event types will be sent.</dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>onevent</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>function</span>
+                        <span style="display: none; "></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>This function is called with events that occur in the process of speaking the utterance.</dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd>
+            <div>
+          <h5>Parameters</h5>
+          <dl>
+            <div>
+              <div>
+          <dt>
+            <var>event</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="experimental.tts.html#type-TtsEvent">TtsEvent</a>
+                      </span>
+                      <span style="display: none; ">
+                        <span>
+                          array of <span><span></span></span>
+                        </span>
+                        <span>paramType</span>
+                        <span></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>The update event from the text-to-speech engine indicating the status of this utterance.</dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
+            </div>
+          </dl>
+        </div>
+          </dd>
+
+        </div>
               </div>
             </dl>
           </dd>
@@ -1372,7 +1996,7 @@ dynamically decide whether to handle it or not.</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>This function is called when speaking is finished.</dd>
+          <dd>Called right away, before speech finishes. Check chrome.extension.lastError to make sure there were no errors. Use options.onevent to get more detailed feedback.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1454,72 +2078,6 @@ dynamically decide whether to handle it or not.</p>
                 </p>
               </div> <!-- /description -->
 
-            </div><div class="apiItem" style="display: none; ">
-              <a></a> <!-- method-anchor -->
-              <h4>method name</h4>
-
-              <div class="summary"><span>void</span>
-                  <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.module.methodName</span>(<span><span>, </span><span></span>
-                      <var><span></span></var></span>)</div>
-
-              <div class="description">
-                <p class="todo">Undocumented.</p>
-                <p>
-                  A description from the json schema def of the function goes here.
-                </p>
-
-                <!-- PARAMETERS -->
-                <h4>Parameters</h4>
-                <dl>
-                  <div>
-                    <div>
-                    </div>
-                  </div>
-                </dl>
-
-                <!-- RETURNS -->
-                <h4>Returns</h4>
-                <dl>
-                  <div>
-                    <div>
-                    </div>
-                  </div>
-                </dl>
-
-                <!-- CALLBACK -->
-                <div>
-                  <div>
-                  <h4>Callback function</h4>
-                  <p>
-                    The callback <em>parameter</em> should specify a function
-                    that looks like this:
-                  </p>
-                  <p>
-                    If you specify the <em>callback</em> parameter, it should
-                    specify a function that looks like this:
-                  </p>
-
-                  <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span>;</pre>
-                  <dl>
-                    <div>
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                  </div>
-                </div>
-
-                <!-- MIN_VERSION -->
-                <p>
-                  This function was added in version <b><span></span></b>.
-                  If you require this function, the manifest key
-                  <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-                  can ensure that your extension won't be run in an earlier browser version.
-                </p>
-              </div> <!-- /description -->
-
             </div><div class="apiItem">
               <a name="method-stop"></a> <!-- method-anchor -->
               <h4>stop</h4>
@@ -1589,22 +2147,24 @@ dynamically decide whether to handle it or not.</p>
           </div>  <!-- /apiGroup -->
 
           <!-- EVENTS -->
-          <div id="eventsTemplate" class="apiGroup">
-            <a name="global-events"></a>
+          <div id="eventsTemplate" class="apiGroup" style="display: none; ">
+            <a></a>
             <h3>Events</h3>
             <!-- iterates over all events -->
             <div class="apiItem">
-              <a name="event-onSpeak"></a>
-              <h4>onSpeak</h4>
+              <a></a>
+              <h4>event name</h4>
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.experimental.tts.</span><span>onSpeak</span><span class="subdued">.addListener</span>(function(<span>string utterance, object options, function callback</span>) <span class="subdued">{...}</span><span></span>));
+                <span class="subdued">chrome.bookmarks</span><span>onEvent</span><span class="subdued">.addListener</span>(function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span><span>, Type opt_param1, Type opt_param2</span>));
               </div>
 
               <div class="description">
-                <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Called when the user makes a call to tts.speak and the options matches one of the tts_voices from this extension's manifest.</p>
+                <p class="todo">Undocumented.</p>
+                <p>
+                  A description from the json schema def of the event goes here.
+                </p>
 
                 <!-- LISTENER PARAMETERS -->
                 <div>
@@ -1612,8 +2172,49 @@ dynamically decide whether to handle it or not.</p>
                   <dl>
                     <div>
                       <div>
+                      </div>
+                    </div>
+                  </dl>
+                </div>
+
+                <!-- EXTRA PARAMETERS -->
+                <div>
+                  <h4>Extra parameters to addListener</h4>
+                  <dl>
+                    <div>
+                      <div>
+                      </div>
+                    </div>
+                  </dl>
+                </div>
+
+                <!-- LISTENER RETURN VALUE -->
+                <h4>Listener returns</h4>
+                <dl>
+                  <div>
+                    <div>
+                    </div>
+                  </div>
+                </dl>
+
+              </div> <!-- /description -->
+            </div> <!-- /apiItem -->
+
+          </div> <!-- /apiGroup -->
+
+          <!-- TYPES -->
+          <div class="apiGroup">
+            <a name="types"></a>
+            <h3 id="types">Types</h3>
+
+            <!-- iterates over all types -->
+            <div class="apiItem">
+              <a name="type-TtsEvent"></a>
+              <h4>TtsEvent</h4>
+
+              <div>
           <dt>
-            <var>utterance</var>
+            <var style="display: none; ">paramName</var>
               <em>
 
                 <!-- TYPE -->
@@ -1629,7 +2230,7 @@ dynamically decide whether to handle it or not.</p>
                         <span style="display: none; ">
                           array of <span><span></span></span>
                         </span>
-                        <span>string</span>
+                        <span>object</span>
                         <span style="display: none; "></span>
                       </span>
                     </span>
@@ -1641,7 +2242,52 @@ dynamically decide whether to handle it or not.</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The text to speak. This may include SSML, so if your engine does not support SSML, you should strip out all XML markup and synthesize only the underlying text content.</dd>
+          <dd>An event from the TTS engine to communicate the status of an utterance.</dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>type</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span class="enum">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>string</span>
+                        <span>["start", "end", "word", "sentence", "marker", "interrupted", "cancelled", "error"]</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>The message can be 'start' when this utterance is begun to be spoken, 'word' when a word boundary is reached, 'sentence' when a sentence boundary is reached, 'marker' when an SSML mark element is reached, 'end' when the end of the utterance is reached, 'interrupted' when the utterance is stopped or interrupted before reaching the end, 'cancelled' when it's removed from the queue before ever being synthesized, and 'error' when any other error occurs. Clients will always receive 'end', 'cancelled', 'interrupted', or 'error', and other events will depend on the engine.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1678,10 +2324,170 @@ dynamically decide whether to handle it or not.</p>
           </dd>
 
         </div>
-                    </div><div>
-                      <div>
+              </div><div>
+                <div>
           <dt>
-            <var>options</var>
+            <var>charIndex</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>number</span>
+                        <span style="display: none; "></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>The index of the current character in the utterance.</dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>errorMessage</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>string</span>
+                        <span style="display: none; "></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>The error message, if the message is 'error'.</dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
+
+            </div><div class="apiItem">
+              <a name="type-TtsVoice"></a>
+              <h4>TtsVoice</h4>
+
+              <div>
+          <dt>
+            <var style="display: none; ">paramName</var>
               <em>
 
                 <!-- TYPE -->
@@ -1709,7 +2515,7 @@ dynamically decide whether to handle it or not.</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The speak options.</dd>
+          <dd>A description of a voice available for speech synthesis.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1754,7 +2560,7 @@ dynamically decide whether to handle it or not.</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The name of the voice to use for synthesis.</dd>
+          <dd>The name of the voice.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1794,7 +2600,7 @@ dynamically decide whether to handle it or not.</p>
               </div><div>
                 <div>
           <dt>
-            <var>locale</var>
+            <var>lang</var>
               <em>
 
                 <!-- TYPE -->
@@ -1822,7 +2628,7 @@ dynamically decide whether to handle it or not.</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The language and region code that specify the language and dialect to be used for synthesis, in the form <language>-<region>, e.g. en-US, en-GB, fr-CA, zh-CN, etc.</region></language></dd>
+          <dd>The language that this voice supports, in the form &lt;language&gt;-&lt;region&gt;. Examples: 'en', 'en-US', 'en-GB', 'zh-CN', etc.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1890,7 +2696,7 @@ dynamically decide whether to handle it or not.</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Gender of voice for synthesized speech.</dd>
+          <dd>This voice's gender.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1930,7 +2736,7 @@ dynamically decide whether to handle it or not.</p>
               </div><div>
                 <div>
           <dt>
-            <var>rate</var>
+            <var>extensionId</var>
               <em>
 
                 <!-- TYPE -->
@@ -1946,7 +2752,7 @@ dynamically decide whether to handle it or not.</p>
                         <span style="display: none; ">
                           array of <span><span></span></span>
                         </span>
-                        <span>number</span>
+                        <span>string</span>
                         <span style="display: none; "></span>
                       </span>
                     </span>
@@ -1958,7 +2764,7 @@ dynamically decide whether to handle it or not.</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Speaking speed between 0 and 1 inclusive, with 0 being slowest and 1 being fastest.</dd>
+          <dd>The ID of the extension providing this voice.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1998,7 +2804,7 @@ dynamically decide whether to handle it or not.</p>
               </div><div>
                 <div>
           <dt>
-            <var>pitch</var>
+            <var>eventTypes</var>
               <em>
 
                 <!-- TYPE -->
@@ -2011,70 +2817,8 @@ dynamically decide whether to handle it or not.</p>
                         <a> Type</a>
                       </span>
                       <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>number</span>
-                        <span style="display: none; "></span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
-          <dd>Speaking pitch between 0 and 1 inclusive, with 0 being lowest and 1 being highest.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
-          <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>volume</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
-                    <span id="typeTemplate">
+                        <span>
+                          array of <span><span>
                       <span style="display: none; ">
                         <a> Type</a>
                       </span>
@@ -2082,95 +2826,12 @@ dynamically decide whether to handle it or not.</p>
                         <span style="display: none; ">
                           array of <span><span></span></span>
                         </span>
-                        <span>number</span>
+                        <span>string</span>
                         <span style="display: none; "></span>
                       </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
-          <dd>Speaking volume between 0 and 1 inclusive, with 0 being lowest and 1 being highest.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
-          <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-        </div>
-              </div>
-            </dl>
-          </dd>
-
-          <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-        </div>
-                    </div><div>
-                      <div>
-          <dt>
-            <var>callback</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
+                    </span></span>
                         </span>
-                        <span>function</span>
+                        <span style="display: none; ">paramType</span>
                         <span style="display: none; "></span>
                       </span>
                     </span>
@@ -2182,7 +2843,7 @@ dynamically decide whether to handle it or not.</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>You must call this function when speaking is finished.</dd>
+          <dd>All of the callback event types that this voice is capable of sending.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -2219,92 +2880,26 @@ dynamically decide whether to handle it or not.</p>
           </dd>
 
         </div>
-                    </div>
-                  </dl>
-                </div>
-
-                <!-- EXTRA PARAMETERS -->
-                <div style="display: none; ">
-                  <h4>Extra parameters to addListener</h4>
-                  <dl>
-                    <div>
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                </div>
-
-                <!-- LISTENER RETURN VALUE -->
-                <h4 style="display: none; ">Listener returns</h4>
-                <dl>
-                  <div style="display: none; ">
-                    <div>
-                    </div>
-                  </div>
-                </dl>
-
-              </div> <!-- /description -->
-            </div><div class="apiItem">
-              <a name="event-onStop"></a>
-              <h4>onStop</h4>
-
-              <div class="summary">
-                <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.experimental.tts.</span><span>onStop</span><span class="subdued">.addListener</span>(function(<span></span>) <span class="subdued">{...}</span><span></span>));
               </div>
+            </dl>
+          </dd>
 
-              <div class="description">
-                <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Fired when a call is made to tts.stop and this extension may be in the middle of speaking. If an extension receives a call to onStop and speech is already stopped, it should do nothing (not raise an error).</p>
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
 
-                <!-- LISTENER PARAMETERS -->
-                <div style="display: none; ">
-                  <h4>Listener parameters</h4>
-                  <dl>
-                    <div>
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                </div>
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
 
-                <!-- EXTRA PARAMETERS -->
-                <div style="display: none; ">
-                  <h4>Extra parameters to addListener</h4>
-                  <dl>
-                    <div>
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                </div>
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
 
-                <!-- LISTENER RETURN VALUE -->
-                <h4 style="display: none; ">Listener returns</h4>
-                <dl>
-                  <div style="display: none; ">
-                    <div>
-                    </div>
-                  </div>
-                </dl>
-
-              </div> <!-- /description -->
-            </div> <!-- /apiItem -->
-
-          </div> <!-- /apiGroup -->
-
-          <!-- TYPES -->
-          <div class="apiGroup" style="display: none; ">
-            <a name="types"></a>
-            <h3 id="types">Types</h3>
-
-            <!-- iterates over all types -->
-            <div class="apiItem">
-              <a></a>
-              <h4>type name</h4>
-
-              <div>
-              </div>
+        </div>
 
             </div> <!-- /apiItem -->
 

@@ -1,7 +1,7 @@
 {
   "name": "test",
   "version": "1",
-  "tts": {
+  "tts_engine": {
     "voices": "shouldBeAnArray"
   }
 }

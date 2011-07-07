@@ -2,11 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_tts_api.h"
-
 #include "base/memory/singleton.h"
-
-namespace util = extension_tts_api_util;
+#include "chrome/browser/extensions/extension_tts_api_platform.h"
 
 namespace {
 const char kNotSupportedError[] =
@@ -15,13 +12,15 @@ const char kNotSupportedError[] =
 
 class ExtensionTtsPlatformImplLinux : public ExtensionTtsPlatformImpl {
  public:
+  virtual bool PlatformImplAvailable() {
+    return false;
+  }
+
   virtual bool Speak(
+      int utterance_id,
       const std::string& utterance,
-      const std::string& language,
-      const std::string& gender,
-      double rate,
-      double pitch,
-      double volume) {
+      const std::string& lang,
+      const UtteranceContinuousParameters& params) {
     error_ = kNotSupportedError;
     return false;
   }
@@ -33,6 +32,10 @@ class ExtensionTtsPlatformImplLinux : public ExtensionTtsPlatformImpl {
 
   virtual bool IsSpeaking() {
     error_ = kNotSupportedError;
+    return false;
+  }
+
+  virtual bool SendsEvent(TtsEventType event_type) {
     return false;
   }
 

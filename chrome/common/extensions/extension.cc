@@ -2245,9 +2245,9 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
   }
 
   // Initialize text-to-speech voices (optional).
-  if (source.HasKey(keys::kTts)) {
+  if (source.HasKey(keys::kTtsEngine)) {
     DictionaryValue* tts_dict = NULL;
-    if (!source.GetDictionary(keys::kTts, &tts_dict)) {
+    if (!source.GetDictionary(keys::kTtsEngine, &tts_dict)) {
       *error = errors::kInvalidTts;
       return false;
     }
@@ -2274,11 +2274,11 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
             return false;
           }
         }
-        if (one_tts_voice->HasKey(keys::kTtsVoicesLocale)) {
+        if (one_tts_voice->HasKey(keys::kTtsVoicesLang)) {
           if (!one_tts_voice->GetString(
-                  keys::kTtsVoicesLocale, &voice_data.locale) ||
-              !l10n_util::IsValidLocaleSyntax(voice_data.locale)) {
-            *error = errors::kInvalidTtsVoicesLocale;
+                  keys::kTtsVoicesLang, &voice_data.lang) ||
+              !l10n_util::IsValidLocaleSyntax(voice_data.lang)) {
+            *error = errors::kInvalidTtsVoicesLang;
             return false;
           }
         }
@@ -2289,6 +2289,36 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
                voice_data.gender != keys::kTtsGenderFemale)) {
             *error = errors::kInvalidTtsVoicesGender;
             return false;
+          }
+        }
+        if (one_tts_voice->HasKey(keys::kTtsVoicesEventTypes)) {
+          ListValue* event_types_list;
+          if (!one_tts_voice->GetList(
+                  keys::kTtsVoicesEventTypes, &event_types_list)) {
+            *error = errors::kInvalidTtsVoicesEventTypes;
+            return false;
+          }
+          for (size_t i = 0; i < event_types_list->GetSize(); i++) {
+            std::string event_type;
+            if (!event_types_list->GetString(i, &event_type)) {
+              *error = errors::kInvalidTtsVoicesEventTypes;
+              return false;
+            }
+            if (event_type != keys::kTtsVoicesEventTypeEnd &&
+                event_type != keys::kTtsVoicesEventTypeError &&
+                event_type != keys::kTtsVoicesEventTypeMarker &&
+                event_type != keys::kTtsVoicesEventTypeSentence &&
+                event_type != keys::kTtsVoicesEventTypeStart &&
+                event_type != keys::kTtsVoicesEventTypeWord) {
+              *error = errors::kInvalidTtsVoicesEventTypes;
+              return false;
+            }
+            if (voice_data.event_types.find(event_type) !=
+                voice_data.event_types.end()) {
+              *error = errors::kInvalidTtsVoicesEventTypes;
+              return false;
+            }
+            voice_data.event_types.insert(event_type);
           }
         }
 

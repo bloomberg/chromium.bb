@@ -139,8 +139,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   struct TtsVoice {
     std::string voice_name;
-    std::string locale;
+    std::string lang;
     std::string gender;
+    std::set<std::string> event_types;
   };
 
   enum InitFromValueFlags {

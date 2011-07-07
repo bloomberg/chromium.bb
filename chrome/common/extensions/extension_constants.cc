@@ -81,13 +81,20 @@ const char* kThemeImages = "images";
 const char* kThemeTints = "tints";
 const char* kToolstripPath = "path";
 const char* kToolstrips = "toolstrips";
-const char* kTts = "tts";
+const char* kTtsEngine = "tts_engine";
 const char* kTtsGenderFemale = "female";
 const char* kTtsGenderMale = "male";
 const char* kTtsVoices = "voices";
+const char* kTtsVoicesEventTypeEnd = "end";
+const char* kTtsVoicesEventTypeError = "error";
+const char* kTtsVoicesEventTypeMarker = "marker";
+const char* kTtsVoicesEventTypeSentence = "sentence";
+const char* kTtsVoicesEventTypeStart = "start";
+const char* kTtsVoicesEventTypeWord = "word";
+const char* kTtsVoicesEventTypes = "event_types";
 const char* kTtsVoicesGender = "gender";
-const char* kTtsVoicesLocale = "locale";
-const char* kTtsVoicesVoiceName = "voiceName";
+const char* kTtsVoicesLang = "lang";
+const char* kTtsVoicesVoiceName = "voice_name";
 const char* kType = "type";
 const char* kUpdateURL = "update_url";
 const char* kVersion = "version";
@@ -326,15 +333,17 @@ const char* kInvalidToolstrip =
 const char* kInvalidToolstrips =
     "Invalid value for 'toolstrips'.";
 const char* kInvalidTts =
-    "Invalid value for 'tts'.";
+    "Invalid value for 'tts_engine'.";
 const char* kInvalidTtsVoices =
-    "Invalid value for 'tts.voices'.";
+    "Invalid value for 'tts_engine.voices'.";
+const char* kInvalidTtsVoicesEventTypes =
+    "Invalid value for 'tts_engine.voices[*].event_types'.";
 const char* kInvalidTtsVoicesGender =
-    "Invalid value for 'tts.voices[*].gender'.";
-const char* kInvalidTtsVoicesLocale =
-    "Invalid value for 'tts.voices[*].locale'.";
+    "Invalid value for 'tts_engine.voices[*].gender'.";
+const char* kInvalidTtsVoicesLang =
+    "Invalid value for 'tts_engine.voices[*].lang'.";
 const char* kInvalidTtsVoicesVoiceName =
-    "Invalid value for 'tts.voices[*].voiceName'.";
+    "Invalid value for 'tts_engine.voices[*].voice_name'.";
 const char* kInvalidUpdateURL =
     "Invalid value for update url: '[*]'.";
 const char* kInvalidURLPatternError =

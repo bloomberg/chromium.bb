@@ -1,0 +1,152 @@
+<p id="classSummary">
+Use the <code>chrome.experimental.ttsEngine</code> module to
+implement a text-to-speech (TTS) engine using an extension. If your
+extension registers using this API, it will receive events containing
+the intended utterance and other parameters when any extension or packaged
+app uses the
+<a href="experimental.tts.html">experimental.tts</a>
+module to generate speech. Your extension can then use any available
+web technology to synthesize and output the speech, and send events back
+to the calling function to report the status.
+</p>
+
+<p class="note"><b>Give us feedback:</b> If you have suggestions,
+especially changes that should be made before stabilizing the first
+version of this API, please send your ideas to the
+<a href="http://groups.google.com/a/chromium.org/group/chromium-extensions">chromium-extensions</a>
+group.</p>
+
+<h2 id="overview">Overview</h2>
+
+<p>To enable this experimental API, visit
+<b>chrome://flags</b> and enable <b>Experimental Extension APIs</b>.
+
+<p>An extension can register itself as a speech engine. By doing so, it
+can intercept some or all calls to functions such as
+<a href="experimental.tts.html#method-speak"><code>speak()</code></a> and
+<a href="experimental.tts.html#method-stop"><code>stop()</code></a>
+and provide an alternate implementation.
+Extensions are free to use any available web technology
+to provide speech, including streaming audio from a server, HTML5 audio,
+Native Client, or Flash. An extension could even do something different
+with the utterances, like display closed captions in a pop-up window or
+send them as log messages to a remote server.</p>
+
+<h2 id="manifest">Manifest</h2>
+
+<p>To implement a TTS engine, an extension must first declare all voices
+it provides in the extension manifest, like this:</p>
+
+<pre>{
+  "name": "My TTS Engine",
+  "version": "1.0",
+  <b>"permissions": ["experimental"],
+  "tts_engine": {
+    "voices": [
+      {
+        "voice_name": "Alice",
+        "lang": "en-US",
+        "gender": "female",
+        "event_types": ["start", "marker", "end"]
+      },
+      {
+        "voice_name": "Pat",
+        "lang": "en-US",
+        "event_types": ["end"]
+      }
+    ]
+  },</b>
+  "background_page": "background.html",
+}</pre>
+
+<p>An extension can specify any number of voices.</p>
+
+<p>The <code>voice_name</code> parameter is required. The name should be
+descriptive enough that it identifies the name of the voice and the
+engine used. In the unlikely event that two extensions register voices
+with the same name, a client can manually specify the extension id it
+wants to do the synthesis.</p>
+
+<p>The <code>gender</code> parameter is optional. If your voice corresponds
+to a male or female voice, you can use this parameter to help clients
+choose the most appropriate voice for their application.</p>
+
+<p>The <code>lang</code> parameter is optional, but highly recommended.
+Almost always, a voice can synthesize speech in just a single language.
+When an engine supports more than one language, it can easily register a
+separate voice for each language. Under rare circumstances where a single
+voice can handle more than one language, it's easiest to just list two
+separate voices and handle them using the same logic internally. However,
+if you want to create a voice that will handle utterances in any language,
+leave out the <code>lang</code> parameter from your extension's manifest.</p>
+
+<p>Finally, the <code>event_types</code> parameter is required if the engine can
+send events to update the client on the progress of speech synthesis.
+At a minimum, supporting the <code>'end'</code> event type to indicate
+when speech is finished is highly recommend, otherwise it's impossible
+for Chrome to schedule queued utterances.</p>
+
+<p class="note">If your TTS engine does not support the <code>'end'</code>
+event type, Chrome will pass the <code>enqueue</code> option to
+onSpeak, so that your engine can implement its own queuing. However, this is
+discouraged because it means that users cannot queue utterances that get
+sent to different speech engines.</p>
+
+<p>The possible event types you can send correspond to the event types that
+the <code>speak()</code> method receives:</p>
+
+<ul>
+  <li><code>'start'</code>: the engine has started speaking the utterance.
+  <li><code>'word'</code>: a word boundary was reached. Use
+          <code>event.charIndex</code> to determine the current speech
+          position.
+  <li><code>'sentence'</code>: a sentence boundary was reached. Use
+          <code>event.charIndex</code> to determine the current speech
+          position.
+  <li><code>'marker'</code>: an SSML marker was reached. Use
+          <code>event.charIndex</code> to determine the current speech
+          position.
+  <li><code>'end'</code>: the engine has finished speaking the utterance.
+  <li><code>'error'</code>: An engine-specific error occurred and
+          this utterance cannot be spoken.
+          Pass more information in <code>event.errorMessage</code>.
+</ul>
+
+<p>The <code>'interrupted'</code> and <code>'cancelled'</code> events are
+not sent by the speech engine; they are generated automatically by Chrome.</p>
+
+<p>The information about your extensions's voices from your manifest
+will be returned to any client that calls <code>getVoices</code>, assuming
+you've also registered speech event listeners as described below.</p>
+
+<h2 id="handling_speech_events">Handling Speech Events</h2>
+
+<p>To generate speech at the request of clients, your extension must
+register listeners for both <code>onSpeak</code> and <code>onStop</code>,
+like this:</p>
+
+<pre>var speakListener = function(utterance, options, sendTtsEvent) {
+  sendTtsEvent({'event_type': 'start', 'charIndex': 0})
+
+  // (start speaking)
+
+  sendTtsEvent({'event_type': 'end', 'charIndex': utterance.length})
+};
+
+var stopListener = function() {
+  // (stop all speech)
+};
+
+chrome.experimental.ttsEngine.onSpeak.addListener(speakListener);
+chrome.experimental.ttsEngine.onStop.addListener(stopListener);</pre>
+
+<p class="warning">If an extension does not register listeners for both
+<code>onSpeak</code> and <code>onStop</code>, it will not intercept any
+speech calls, regardless of what is in the manifest.</p>
+
+<p>The decision of whether or not to send a given speech request to an
+extension is based solely on whether the extension supports the given voice
+parameters in its manifest and has registered listeners
+for <code>onSpeak</code> and <code>onStop</code>. In other words,
+there's no way for an extension to receive a speech request and
+dynamically decide whether to handle it or not.</p>

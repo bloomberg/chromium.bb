@@ -3,16 +3,12 @@
   "version": "0.1",
   "description": "browser test for chrome.experimental.tts API",
   "background_page": "test.html",
-  "tts": {
+  "tts_engine": {
     "voices": [
       {
-        "voiceName": "Alice",
-        "locale": "en-US",
-        "gender": "female"
-      },
-      {
-        "voiceName": "Pat",
-        "locale": "en-US"
+        "voice_name": "Zach",
+        "lang": "en-US",
+        "event_types": [ "end", "error" ]
       }
     ]
   },

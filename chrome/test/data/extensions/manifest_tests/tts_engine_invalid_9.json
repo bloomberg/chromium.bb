@@ -1,10 +1,10 @@
 {
   "name": "test",
   "version": "1",
-  "tts": {
+  "tts_engine": {
     "voices": [
       {
-        "locale": "German"
+        "event_types": ["on vacation"]
       }
     ]
   }

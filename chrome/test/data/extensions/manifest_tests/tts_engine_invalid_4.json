@@ -1,10 +1,10 @@
 {
   "name": "test",
   "version": "1",
-  "tts": {
+  "tts_engine": {
     "voices": [
       {
-        "gender": "alien"
+        "voice_name": [ "Shouldn't be in an array" ]
       }
     ]
   }

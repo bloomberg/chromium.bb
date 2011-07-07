@@ -508,6 +508,76 @@
   },
   {
     "namespace": "experimental.tts",
+    "types": [
+      {
+        "id": "TtsEvent",
+        "type": "object",
+        "description": "An event from the TTS engine to communicate the status of an utterance.",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["start", "end", "word", "sentence", "marker", "interrupted", "cancelled", "error"],
+            "description": "The message can be 'start' when this utterance is begun to be spoken, 'word' when a word boundary is reached, 'sentence' when a sentence boundary is reached, 'marker' when an SSML mark element is reached, 'end' when the end of the utterance is reached, 'interrupted' when the utterance is stopped or interrupted before reaching the end, 'cancelled' when it's removed from the queue before ever being synthesized, and 'error' when any other error occurs. Clients will always receive 'end', 'cancelled', 'interrupted', or 'error', and other events will depend on the engine."
+          },
+          "charIndex": {
+            "type": "number",
+            "optional": true,
+            "description": "The index of the current character in the utterance."
+          },
+          "errorMessage": {
+            "type": "string",
+            "description": "The error message, if the message is 'error'.",
+            "optional": true
+          },
+          "srcId": {
+            "type": "number",
+            "description": "An ID unique to the calling function's context so that events can get routed back to the correct tts.speak call.",
+            "nodoc": true,
+            "optional": true
+          },
+          "isFinalEvent": {
+            "type": "boolean",
+            "description": "True if this is the final event that will be sent to this handler.",
+            "nodoc": true,
+            "optional": true
+          }
+        }
+      },
+      {
+        "id": "TtsVoice",
+        "type": "object",
+        "description": "A description of a voice available for speech synthesis.",
+        "properties": {
+          "voiceName": {
+            "type": "string",
+            "optional": true,
+            "description": "The name of the voice."
+          },
+          "lang": {
+            "type": "string",
+            "optional": true,
+            "description": "The language that this voice supports, in the form &lt;language&gt;-&lt;region&gt;. Examples: 'en', 'en-US', 'en-GB', 'zh-CN', etc."
+          },
+          "gender": {
+            "type": "string",
+            "optional": true,
+            "description": "This voice's gender.",
+            "enum": ["male", "female"]
+          },
+          "extensionId": {
+            "type": "string",
+            "optional": true,
+            "description": "The ID of the extension providing this voice."
+          },
+          "eventTypes": {
+            "type": "array",
+            "items": {"type": "string"},
+            "optional": true,
+            "description": "All of the callback event types that this voice is capable of sending."
+          }
+        }
+      }
+    ],
     "functions": [
       {
         "name": "speak",
@@ -517,7 +587,7 @@
           {
             "type": "string",
             "name": "utterance",
-            "description": "The text to speak. May include SSML markup."
+            "description": "The text to speak, either plaintext or a complete well-formed SSML document. Speech engines that do not support SSML will strip away the tags and speak the text. The maximum length of the text is 32,768 characters."
           },
           {
             "type": "object",
@@ -535,10 +605,15 @@
                 "optional": true,
                 "description": "The name of the voice to use for synthesis. If empty, uses any available voice."
               },
-	      "locale": {
+	      "extensionId": {
                 "type": "string",
                 "optional": true,
-                "description": "The language and optional region code that specify the language and dialect to be used for synthesis, in the form &lt;language&gt;-&lt;region&gt;. Examples: 'en', 'en-US', 'en-GB', 'zh-CN', etc."
+                "description": "The specific extension ID of the speech engine to use, if known."
+              },
+	      "lang": {
+                "type": "string",
+                "optional": true,
+                "description": "The language to be used for synthesis, in the form &lt;language&gt;-&lt;region&gt;. Examples: 'en', 'en-US', 'en-GB', 'zh-CN', etc."
               },
               "gender": {
                 "type": "string",
@@ -549,16 +624,16 @@
               "rate": {
                 "type": "number",
                 "optional": true,
-                "minimum": 0,
-                "maximum": 1,
-                "description": "Speaking speed between 0 and 1 inclusive, with 0 being slowest and 1 being fastest, with a default of 0.5."
+                "minimum": 0.1,
+                "maximum": 10,
+                "description": "Speaking rate relative to the default rate for this voice. 1.0 is the default rate, normally around 180 to 220 words per minute, 2.0 would be twice as fast, and 0.5 would be half as fast. Values below 0.1 or above 10.0 are strictly disallowed, but many voices will constrain the minimum and maximum rates further - i.e. a particular voice may not actually speak faster than 3 times normal even if you specify a value larger than 3.0."
               },
               "pitch": {
                 "type": "number",
                 "optional": true,
                 "minimum": 0,
-                "maximum": 1,
-                "description": "Speaking pitch between 0 and 1 inclusive, with 0 being lowest and 1 being highest, with a default of 0.5."
+                "maximum": 2,
+                "description": "Speaking pitch between 0 and 2 inclusive, with 0 being lowest and 1 being highest, with 1.0 being the default pitch of this particular voice."
               },
               "volume": {
                 "type": "number",
@@ -566,6 +641,30 @@
                 "minimum": 0,
                 "maximum": 1,
                 "description": "Speaking volume between 0 and 1 inclusive, with 0 being lowest and 1 being highest, with a default of 1.0."
+              },
+              "requiredEventTypes": {
+                "type": "array",
+                "items": {"type": "string"},
+                "optional": true,
+                "description": "The TTS event types the voice must support. If missing, this criteria will not be used to filter voices."
+              },
+              "desiredEventTypes": {
+                "type": "array",
+                "items": {"type": "string"},
+                "optional": true,
+                "description": "The TTS event types that should be sent. If missing, all event types will be sent."
+              },
+              "onevent": {
+                "type": "function",
+                "optional": true,
+                "description": "This function is called with events that occur in the process of speaking the utterance.",
+                "parameters": [
+                  {
+                    "name": "event",
+                    "$ref": "TtsEvent",
+                    "description": "The update event from the text-to-speech engine indicating the status of this utterance."
+                  }
+                ]
               }
             }
           },
@@ -573,7 +672,7 @@
             "type": "function",
             "name": "callback",
             "optional": true,
-            "description": "This function is called when speaking is finished.",
+            "description": "Called right away, before speech finishes. Check chrome.extension.lastError to make sure there were no errors. Use options.onevent to get more detailed feedback.",
             "parameters": []
           }
         ]
@@ -604,19 +703,44 @@
         ]
       },
       {
-        "name": "speakCompleted",
+        "name": "getVoices",
+        "type": "function",
+        "description": "Get an array of all available voices.",
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": [
+              {
+                "type": "array",
+                "name": "voices",
+                "items": { "$ref": "TtsVoice" },
+                "description": "Array of $ref:TtsVoice objects representing the available voices for speech synthesis."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "namespace": "experimental.ttsEngine",
+    "functions": [
+      {
+        "name": "sendTtsEvent",
         "nodoc": true,
         "type": "function",
-        "description": "A callback passed to the onSpeak event.",
+        "description": "Route a TTS event from a speech engine to a client.",
         "parameters": [
           {
             "type": "integer",
             "name": "requestId"
           },
           {
-            "type": "string",
-	    "optional": "true",
-            "name": "errorMessage"
+            "name": "event",
+            "$ref": "TtsEvent",
+            "description": "The update event from the text-to-speech engine indicating the status of this utterance."
           }
         ]
       }
@@ -630,7 +754,7 @@
           {
             "type": "string",
             "name": "utterance",
-            "description": "The text to speak. This may include SSML, so if your engine does not support SSML, you should strip out all XML markup and synthesize only the underlying text content."
+            "description": "The text to speak. This may include SSML, so if your engine does not support SSML, you should strip out all XML markup and synthesize only the underlying text content. This is guaranteed to be no more than 32,768 characters. If this engine does not support speaking that many characters at a time, the utterance should be split into smaller chunks and queued internally without returning an error."
           },
           {
             "type": "object",
@@ -642,10 +766,10 @@
                 "optional": true,
                 "description": "The name of the voice to use for synthesis."
               },
-	      "locale": {
+	      "lang": {
                 "type": "string",
                 "optional": true,
-                "description": "The language and region code that specify the language and dialect to be used for synthesis, in the form <language>-<region>, e.g. en-US, en-GB, fr-CA, zh-CN, etc."
+                "description": "The language to be used for synthesis, in the form <language>-<region>, e.g. en-US, en-GB, fr-CA, zh-CN, etc."
               },
               "gender": {
                 "type": "string",
@@ -656,36 +780,35 @@
               "rate": {
                 "type": "number",
                 "optional": true,
-                "minimum": 0,
-                "maximum": 1,
-                "description": "Speaking speed between 0 and 1 inclusive, with 0 being slowest and 1 being fastest."
+                "minimum": 0.1,
+                "maximum": 10.0,
+                "description": "Speaking rate relative to the default rate for this voice. 1.0 is the default rate, normally around 180 to 220 words per minute, 2.0 would be twice as fast, and 0.5 would be half as fast.  This value is guaranteed to be between 0.1 and 10.0, inclusive. When a voice does not support this full range of rates, the actual rate should be clipped to the range that is supported without returning an error."
               },
               "pitch": {
                 "type": "number",
                 "optional": true,
                 "minimum": 0,
-                "maximum": 1,
-                "description": "Speaking pitch between 0 and 1 inclusive, with 0 being lowest and 1 being highest."
+                "maximum": 2,
+                "description": "Speaking pitch between 0 and 2 inclusive, with 0 being lowest and 1 being highest, with 1.0 being the default pitch of this particular voice."
               },
               "volume": {
                 "type": "number",
                 "optional": true,
                 "minimum": 0,
                 "maximum": 1,
-                "description": "Speaking volume between 0 and 1 inclusive, with 0 being lowest and 1 being highest."
+                "description": "Speaking volume between 0 and 1 inclusive, with 0 being lowest and 1 being highest, with a default of 1.0."
               }
             }
 	  },
           {
+            "name": "sendTtsEvent",
             "type": "function",
-            "name": "callback",
-            "description": "You must call this function when speaking is finished.",
+            "description": "Call this function with events that occur in the process of speaking the utterance.",
             "parameters": [
               {
-                "type": "string",
-                "name": "error",
-		"optional": true,
-                "description": "Error message, which will be returned to the caller in chrome.extension.lastError."
+                "name": "event",
+                "$ref": "TtsEvent",
+                "description": "The event from the text-to-speech engine indicating the status of this utterance."
               }
             ]
           }
@@ -695,6 +818,19 @@
         "name": "onStop",
         "type": "function",
         "description": "Fired when a call is made to tts.stop and this extension may be in the middle of speaking. If an extension receives a call to onStop and speech is already stopped, it should do nothing (not raise an error)."
+      },
+      {
+        "name": "onEvent",
+        "type": "function",
+        "nodoc": true,
+        "parameters": [
+          {
+            "name": "event",
+            "$ref": "TtsEvent",
+            "description": "The event from the text-to-speech engine indicating the status of this utterance."
+          }
+        ],
+        "description": "Used to pass events back to the function calling speak()."
       }
     ]
   },

@@ -162,6 +162,8 @@ class ExtensionImpl : public ExtensionBase {
       return v8::FunctionTemplate::New(OpenChannelToTab);
     } else if (name->Equals(v8::String::New("GetNextContextMenuId"))) {
       return v8::FunctionTemplate::New(GetNextContextMenuId);
+    } else if (name->Equals(v8::String::New("GetNextTtsEventId"))) {
+      return v8::FunctionTemplate::New(GetNextTtsEventId);
     } else if (name->Equals(v8::String::New("GetCurrentPageActions"))) {
       return v8::FunctionTemplate::New(GetCurrentPageActions,
                                        v8::External::New(this));
@@ -373,6 +375,13 @@ class ExtensionImpl : public ExtensionBase {
     // will need to change.  See crbug.com/77023
     static int next_context_menu_id = 1;
     return v8::Integer::New(next_context_menu_id++);
+  }
+
+  static v8::Handle<v8::Value> GetNextTtsEventId(const v8::Arguments& args) {
+    // Note: this works because the TTS API only works in the
+    // extension process, not content scripts.
+    static int next_tts_event_id = 1;
+    return v8::Integer::New(next_tts_event_id++);
   }
 
   static v8::Handle<v8::Value> GetCurrentPageActions(

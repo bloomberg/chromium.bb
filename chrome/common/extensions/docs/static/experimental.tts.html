@@ -1,7 +1,9 @@
 <p id="classSummary">
 Use the <code>chrome.experimental.tts</code> module to play synthesized
-text-to-speech (TTS) from your extension or packaged app, or to register
-as a speech provider for other extensions and packaged apps that want to speak.
+text-to-speech (TTS) from your extension or packaged app.
+See also the related
+<a href="experimental.ttsEngine.html">experimental.ttsEngine</a>
+module which allows an extension to implement a speech engine.
 </p>
 
 <p class="note"><b>Give us feedback:</b> If you have suggestions,
@@ -19,7 +21,7 @@ group.</p>
 5), Mac OS X, and Chrome OS, using speech synthesis capabilities
 provided by the operating system. On all platforms, the user can
 install extensions that register themselves as alternative speech
-synthesis providers.</p>
+engines.</p>
 
 <h2 id="generating_speech">Generating speech</h2>
 
@@ -28,119 +30,160 @@ packaged app to speak. For example:</p>
 
 <pre>chrome.experimental.tts.speak('Hello, world.');</pre>
 
+<p>To stop speaking immediately, just call <code>stop()</code>:
+
+<pre>chrome.experimental.tts.stop();</pre>
+
 <p>You can provide options that control various properties of the speech,
 such as its rate, pitch, and more. For example:</p>
 
-<pre>chrome.experimental.tts.speak('Hello, world.', {'rate': 0.8});</pre>
+<pre>chrome.experimental.tts.speak('Hello, world.', {'rate': 2.0});</pre>
 
-<p>It's also a good idea to specify the locale so that a synthesizer
+<p>It's also a good idea to specify the language so that a synthesizer
 supporting that language (and regional dialect, if applicable) is chosen.</p>
 
 <pre>chrome.experimental.tts.speak(
-    'Hello, world.',
-    {
-      'locale': 'en-US',
-      'rate': 0.8
-    });</pre>
+    'Hello, world.', {'lang': 'en-US', 'rate': 2.0});</pre>
 
-<p>Not all speech engines will support all options.</p>
+<p>By default, each call to <code>speak()</code> will interrupt any
+ongoing speech and speak immediately. To determine if a call would be
+interrupting anything, you can call <code>isSpeaking()</code>, or
+you can use the <code>enqueue</code> option to cause this utterance to
+be added to a queue of utterances that will be spoken when the current
+utterance has finished.
 
-<p>You can also pass a callback function that will be called when the
-speech has finished. For example, suppose we have an image on our page
-displaying a picture of a face with a closed mouth. We could open the mouth
-while speaking, and close it when done.</p>
-
-<pre>faceImage.src = 'open_mouth.png';
+<pre>chrome.experimental.tts.speak(
+    'Speak this first.');
 chrome.experimental.tts.speak(
-    'Hello, world.', null, function() {
-      faceImage.src = 'closed_mouth.png';
-    });
+    'Speak this next, when the first sentence is done.', {'enqueue': true});
 </pre>
 
-<p>To stop speaking immediately, just call <code>stop()</code>. Call
-<code>isSpeaking()</code> to find out if a TTS engine is currently speaking.</p>
+<p>A complete description of all options can be found in the
+<a href="#method-speak">speak() method documentation</a> below.
+Not all speech engines will support all options.</p>
 
-<p>You can check to see if an error occurred by checking
-<code>chrome.extension.lastError</code> inside the callback function.</p>
+<p>To catch errors and make sure you're calling <code>speak()</code>
+correctly, pass a callback function that takes no arguments. Inside
+the callback, check
+<a href="extension.html#property-lastError">chrome.extension.lastError</a>
+to see if there were any errors.</p>
+
+<pre>chrome.experimental.tts.speak(
+    utterance,
+    options,
+    function() {
+      if (chrome.extension.lastError) {
+        console.log('Error: ' + chrome.extension.lastError.message);
+      }
+    });</pre>
+
+<p>The callback returns right away, before the speech engine has started
+generating speech. The purpose of the callback is to alert you to syntax
+errors in your use of the TTS API, not all possible errors that might occur
+in the process of synthesizing and outputting speech. To catch these errors
+too, you need to use an event listener, described below.
+
+<h2 id="events">Listening to events</h2>
+
+<p>To get more real-time information about the status of synthesized speech,
+pass an event listener in the options to <code>speak()</code>, like this:</p>
+
+<pre>chrome.experimental.tts.speak(
+    utterance,
+    {
+      'onevent': function(event) {
+        console.log('Event ' + event.type ' at position ' + event.charIndex);
+        if (event.type == 'error') {
+          console.log('Error: ' + event.errorMessage);
+        }
+      }
+    },
+    callback);</pre>
+
+<p>Each event includes an event type, the character index of the current
+speech relative to the utterance, and for error events, an optional
+error message. The event types are:</p>
+
+<ul>
+  <li><code>'start'</code>: the engine has started speaking the utterance.
+  <li><code>'word'</code>: a word boundary was reached. Use
+          <code>event.charIndex</code> to determine the current speech
+          position.
+  <li><code>'sentence'</code>: a sentence boundary was reached. Use
+          <code>event.charIndex</code> to determine the current speech
+          position.
+  <li><code>'marker'</code>: an SSML marker was reached. Use
+          <code>event.charIndex</code> to determine the current speech
+          position.
+  <li><code>'end'</code>: the engine has finished speaking the utterance.
+  <li><code>'interrupted'</code>: this utterance was interrupted by another
+          call to <code>speak()</code> or <code>stop()</code> and did not
+          finish.
+  <li><code>'cancelled'</code>: this utterance was queued, but then
+          cancelled by another call to <code>speak()</code> or
+          <code>stop()</code> and never began to speak at all.
+  <li><code>'error'</code>: An engine-specific error occurred and
+          this utterance cannot be spoken.
+          Check <code>event.errorMessage</code> for details.
+</ul>
+
+<p>Four of the event types, <code>'end'</code>, <code>'interrupted'</code>,
+<code>'cancelled'</code>, and <code>'error'</code>, are <i>final</i>. After
+one of those events is received, this utterance will no longer speak and
+no new events from this utterance will be received.</p>
+
+<p>Some TTS engines may not support all event types, and some may not even
+support any events at all. To require that the speech engine used sends
+the events you're interested in, you can pass a list of event types in
+the <code>requiredEventTypes</code> member of the options object, or use
+<code>getVoices</code> to choose a voice that has the events you need.
+Both are documented below.
 
 <h2 id="ssml">SSML markup</h2>
 
 <p>Utterances used in this API may include markup using the
 <a href="http://www.w3.org/TR/speech-synthesis">Speech Synthesis Markup
-Language (SSML)</a>. For example:
+Language (SSML)</a>. If you use SSML, the first argument to
+<code>speak()</code> should be a complete SSML document with an XML
+header and a top-level <code>&lt;speak&gt;</code> tag, not a document
+fragment.
 
-<pre>chrome.experimental.tts.speak('The &lt;emphasis&gt;second&lt;/emphasis&gt; word of this sentence was emphasized.');</pre>
+For example:
+
+<pre>chrome.experimental.tts.speak(
+    '&lt;?xml version="1.0"?&gt;' +
+    '&lt;speak&gt;' +
+    '  The &lt;emphasis&gt;second&lt;/emphasis&gt; ' +
+    '  word of this sentence was emphasized.' +
+    '&lt;/speak&gt;');</pre>
 
 <p>Not all speech engines will support all SSML tags, and some may not support
-SSML at all, but all engines are expected to ignore any SSML they don't
+SSML at all, but all engines are required to ignore any SSML they don't
 support and still speak the underlying text.</p>
 
-<h2 id="provider">Implementing a speech provider</h2>
+<h2 id="choosing_voice">Choosing a voice</h2>
 
-<p>An extension can register itself as a speech provider. By doing so, it
-can intercept some or all calls to functions such as
-<code>speak()</code> and <code>stop()</code> and provide an alternate
-implementation. Extensions are free to use any available web technology
-to provide speech, including streaming audio from a server, HTML5 audio,
-Native Client, or Flash. An extension could even do something different
-with the utterances, like display closed captions in a pop-up window or
-send them as log messages to a remote server.</p>
+<p>By default, Chrome will choose the most appropriate voice for each
+utterance you want to speak, based on the language and gender. On most
+Windows, Mac OS X, and Chrome OS systems, speech synthesis provided by
+the operating system should be able to speak any text in at least one
+language. Some users may have a variety of voices available, though,
+from their operating system and from speech engines implemented by other
+Chrome extensions. In those cases, you can implement custom code to choose
+the appropriate voice, or present the user with a list of choices.</p>
 
-<p>To provide TTS, an extension must first declare all voices it provides
-in the extension manifest, like this:</p>
+<p>To get a list of all voices, call <code>getVoices()</code> and pass it
+a function that receives an array of <code>TtsVoice</code> objects as its
+argument:</p>
 
-<pre>{
-  "name": "My TTS Provider",
-  "version": "1.0",
-  <b>"permissions": ["experimental"]
-  "tts": {
-    "voices": [
-      {
-        "voiceName": "Alice",
-        "locale": "en-US",
-        "gender": "female"
-      },
-      {
-        "voiceName": "Pat",
-        "locale": "en-US"
+<pre>chrome.experimental.tts.getVoices(
+    function(voices) {
+      for (var i = 0; i < voices.length; i++) {
+        console.log('Voice ' + i + ':');
+        console.log('  name: ' + voices[i].voiceName);
+        console.log('  lang: ' + voices[i].lang);
+        console.log('  gender: ' + voices[i].gender);
+        console.log('  extension id: ' + voices[i].extensionId);
+        console.log('  event types: ' + voices[i].eventTypes);
       }
-    ]
-  },</b>
-  "background_page": "background.html",
-}</pre>
-
-<p>An extension can specify any number of voices. The three
-parameters&mdash;<code>voiceName</code>, <code>locale</code>,
-and <code>gender</code>&mdash;are all optional. If they are all unspecified,
-the extension will handle all speech from all clients. If any of them
-are specified, they can be used to filter speech requests. For
-example, if a voice only supports French, it should set the locale to
-'fr' (or something more specific like 'fr-FR') so that only utterances
-in that locale are routed to that extension.</p>
-
-<p>To handle speech calls, the extension should register listeners
-for <code>onSpeak</code> and <code>onStop</code>, like this:</p>
-
-<pre>var speakListener = function(utterance, options, callback) {
-  ...
-  callback();
-};
-var stopListener = function() {
-  ...
-};
-chrome.experimental.tts.onSpeak.addListener(speakListener);
-chrome.experimental.tts.onStop.addListener(stopListener);</pre>
-
-<p class="warning"><b>Important:</b> Don't forget to call the callback
-function from your speak listener!</p>
-
-<p>If an extension does not register listeners for both
-<code>onSpeak</code> and <code>onStop</code>, it will not intercept any
-speech calls, regardless of what is in the manifest.
-
-<p>The decision of whether or not to send a given speech request to an
-extension is based solely on whether the extension supports the given voice
-parameters in its manifest and has registered listeners
-for <code>onSpeak</code> and <code>onStop</code>. In other words,
-there's no way for an extension to receive a speech request and
-dynamically decide whether to handle it or not.</p>
+    });</pre>

@@ -314,6 +314,7 @@ var chrome = chrome || {};
       "experimental.rlz",
       "experimental.sidebar",
       "experimental.tts",
+      "experimental.ttsEngine",
       "experimental.webNavigation",
       "experimental.webRequest",
       "fileBrowserHandler",

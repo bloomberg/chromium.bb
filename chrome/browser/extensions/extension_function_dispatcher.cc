@@ -40,6 +40,7 @@
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extension_test_api.h"
 #include "chrome/browser/extensions/extension_tts_api.h"
+#include "chrome/browser/extensions/extension_tts_engine_api.h"
 #include "chrome/browser/extensions/extension_web_socket_proxy_private_api.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/extensions/extension_webrequest_api.h"
@@ -249,10 +250,11 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<SetAccessibilityEnabledFunction>();
 
   // Text-to-speech.
+  RegisterFunction<ExtensionTtsEngineSendTtsEventFunction>();
+  RegisterFunction<ExtensionTtsGetVoicesFunction>();
+  RegisterFunction<ExtensionTtsIsSpeakingFunction>();
   RegisterFunction<ExtensionTtsSpeakFunction>();
   RegisterFunction<ExtensionTtsStopSpeakingFunction>();
-  RegisterFunction<ExtensionTtsIsSpeakingFunction>();
-  RegisterFunction<ExtensionTtsSpeakCompletedFunction>();
 
   // Context Menus.
   RegisterFunction<CreateContextMenuFunction>();

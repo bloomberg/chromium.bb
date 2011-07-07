@@ -287,13 +287,19 @@ void CrosMock::SetSpeechSynthesisLibraryExpectations() {
   EXPECT_CALL(*mock_speech_synthesis_library_, StopSpeaking())
       .WillOnce(Return(true))
       .RetiresOnSaturation();
+  EXPECT_CALL(*mock_speech_synthesis_library_, SetSpeakProperties(_))
+      .WillOnce(Return(true))
+      .RetiresOnSaturation();
   EXPECT_CALL(*mock_speech_synthesis_library_, Speak(_))
       .WillOnce(Return(true))
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_speech_synthesis_library_, IsSpeaking())
-      .Times(AnyNumber())
-      .WillRepeatedly(Return(true));
+      .WillOnce(Return(true))
+      .RetiresOnSaturation();
   EXPECT_CALL(*mock_speech_synthesis_library_, StopSpeaking())
+      .WillOnce(Return(true))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*mock_speech_synthesis_library_, SetSpeakProperties(_))
       .WillOnce(Return(true))
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_speech_synthesis_library_, Speak(_))
