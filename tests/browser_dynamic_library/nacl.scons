@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import os
 Import('env')
 
 if 'TRUSTED_ENV' not in env:
@@ -10,13 +11,16 @@ if 'TRUSTED_ENV' not in env:
 if env.Bit('nacl_static_link'):
   Return()
 
-libraries = (
+toolchain_libraries = [
     'runnable-ld.so',
     'libc.so.6',
     'libm.so.6',
     'libgcc_s.so.1',
     'libpthread.so.0',
     'libstdc++.so.6',
+    ]
+
+nacl_libraries = [
     'libppruntime.so',
     'libimc.so',
     'libplatform.so',
@@ -24,12 +28,13 @@ libraries = (
     'libimc_syscalls.so',
     'libgio.so',
     'libnacl.so',
-    )
-file_mapping = []
-for library_name in libraries:
-  file_mapping.append(('lib/%s' % library_name,
-                       env.File('${NACL_SDK_LIB}/' + library_name)))
+    ]
 
+def make_mappings(libdir, libs):
+  return [('lib/%s' % lib, env.File(os.path.join(libdir, lib))) for lib in libs]
+
+file_mapping = (make_mappings('${NACL_SDK_LIB}', toolchain_libraries) +
+                make_mappings('${LIB_DIR}', nacl_libraries))
 
 test_prog_fname = 'ppapi_test_example_${TARGET_FULLARCH}${PROGSUFFIX}'
 test_prog = env.File('${STAGING_DIR}/' + test_prog_fname)
