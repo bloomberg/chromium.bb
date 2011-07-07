@@ -66,7 +66,6 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
           this, &BrowsingDataRemover::OnClearedDatabases)),
       ALLOW_THIS_IN_INITIALIZER_LIST(cache_callback_(
           this, &BrowsingDataRemover::DoClearCache)),
-      appcache_service_(profile->GetAppCacheService()),
       ALLOW_THIS_IN_INITIALIZER_LIST(appcache_got_info_callback_(
           this, &BrowsingDataRemover::OnGotAppCacheInfo)),
       ALLOW_THIS_IN_INITIALIZER_LIST(appcache_deleted_callback_(
@@ -225,12 +224,15 @@ void BrowsingDataRemover::Remove(int remove_mask) {
               &BrowsingDataRemover::ClearDatabasesOnFILEThread));
     }
 
-    waiting_for_clear_appcache_ = true;
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(
-            this,
-            &BrowsingDataRemover::ClearAppCacheOnIOThread));
+    appcache_service_ = profile_->GetAppCacheService();
+    if (appcache_service_.get()) {
+      waiting_for_clear_appcache_ = true;
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          NewRunnableMethod(
+              this,
+              &BrowsingDataRemover::ClearAppCacheOnIOThread));
+    }
 
     waiting_for_clear_gears_data_ = true;
     BrowserThread::PostTask(
@@ -527,14 +529,9 @@ void BrowsingDataRemover::ClearAppCacheOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(waiting_for_clear_appcache_);
   appcache_info_ = new appcache::AppCacheInfoCollection;
-  if (appcache_service_) {
-    appcache_service_->GetAllAppCacheInfo(
-        appcache_info_, &appcache_got_info_callback_);
-    // continues in OnGotAppCacheInfo
-  } else {
-    // Couldn't get app cache service, nothing to clear.
-    OnClearedAppCache();
-  }
+  appcache_service_->GetAllAppCacheInfo(
+      appcache_info_, &appcache_got_info_callback_);
+  // continues in OnGotAppCacheInfo.
 }
 
 void BrowsingDataRemover::OnGotAppCacheInfo(int rv) {
