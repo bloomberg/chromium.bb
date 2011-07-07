@@ -19,6 +19,7 @@
 #include "chrome/browser/sidebar/sidebar_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#import "chrome/browser/ui/cocoa/browser/edit_search_engine_cocoa_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/bug_report_window_controller.h"
 #import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
@@ -224,7 +225,16 @@ bool BrowserWindowCocoa::IsFullscreenBubbleVisible() const {
 void BrowserWindowCocoa::ConfirmAddSearchProvider(
     const TemplateURL* template_url,
     Profile* profile) {
-  NOTIMPLEMENTED();
+  // The controller will release itself when the window closes.
+  EditSearchEngineCocoaController* editor =
+      [[EditSearchEngineCocoaController alloc] initWithProfile:profile
+                                                      delegate:NULL
+                                                   templateURL:template_url];
+  [NSApp beginSheet:[editor window]
+     modalForWindow:window()
+      modalDelegate:controller_
+     didEndSelector:@selector(sheetDidEnd:returnCode:context:)
+        contextInfo:NULL];
 }
 
 LocationBar* BrowserWindowCocoa::GetLocationBar() const {

@@ -218,6 +218,7 @@
                 'app/nibs/ContentBlockedGeolocation.xib',
                 'app/nibs/DownloadItem.xib',
                 'app/nibs/DownloadShelf.xib',
+                'app/nibs/EditSearchEngine.xib',
                 'app/nibs/ExtensionInstalledBubble.xib',
                 'app/nibs/ExtensionInstallPrompt.xib',
                 'app/nibs/ExtensionInstallPromptNoWarnings.xib',
