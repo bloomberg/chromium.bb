@@ -126,15 +126,18 @@ class MediaTestBase(pyauto.PyUITest):
   def ExecuteTest(self):
     """Test HTML5 Media Tag."""
 
-    def _VideoEnded():
-      """Determine if the video ended.
+    def _VideoEndedOrErrorOut():
+      """Determine if the video ended or there was an error when playing.
 
-      When the video has finished playing, its title is updated by player.html.
+      When the video has finished playing or there is error in playing the
+      video (e.g, the video cannot be found), its title is updated by
+      player.html.
 
       Returns:
-        True if the video has ended.
+        True if the video has ended or an error occurred.
       """
-      return self.GetDOMValue('document.title').strip() == 'END'
+      return (self.GetDOMValue('document.title').strip() == 'END' or
+              'ERROR' in self.GetDOMValue('document.title'))
 
     self.PreAllRunsProcess()
     for run_counter in range(self.number_of_runs):
@@ -145,7 +148,7 @@ class MediaTestBase(pyauto.PyUITest):
         url += '&actions=' + self.whole_test_scenarios[run_counter]
       logging.debug('Navigate to %s', url)
       self.NavigateToURL(url)
-      self.WaitUntil(lambda: _VideoEnded(),
+      self.WaitUntil(lambda: _VideoEndedOrErrorOut(),
                      self.TIMEOUT)
       self.PostEachRunProcess(run_counter)
 
