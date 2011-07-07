@@ -10,6 +10,7 @@ LoadCommittedDetails::LoadCommittedDetails()
     : entry(NULL),
       type(NavigationType::UNKNOWN),
       previous_entry_index(-1),
+      is_auto(false),
       did_replace_entry(false),
       is_in_page(false),
       is_main_frame(true),
