@@ -22,7 +22,7 @@
 #include "chrome/common/print_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
-#include "content/browser/debugger/devtools_manager.h"
+#include "content/browser/debugger/devtools_window.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
@@ -316,7 +316,7 @@ void CloudPrintFlowHandler::ShowDebugger() {
   if (web_ui_) {
     RenderViewHost* rvh = web_ui_->tab_contents()->render_view_host();
     if (rvh)
-      DevToolsManager::GetInstance()->OpenDevToolsWindow(rvh);
+      DevToolsWindow::OpenDevToolsWindow(rvh);
   }
 }
 

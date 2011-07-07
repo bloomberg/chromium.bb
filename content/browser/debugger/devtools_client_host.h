@@ -14,7 +14,6 @@ namespace IPC {
 class Message;
 }
 
-class DevToolsWindow;
 class TabContentsWrapper;
 
 // Describes interface for managing devtools clients from browser process. There
@@ -47,8 +46,6 @@ class DevToolsClientHost {
   void set_close_listener(CloseListener* listener) {
     close_listener_ = listener;
   }
-
-  virtual DevToolsWindow* AsDevToolsWindow();
 
   // Invoked when a tab is replaced by another tab. This is triggered by
   // TabStripModel::ReplaceTabContentsAt.

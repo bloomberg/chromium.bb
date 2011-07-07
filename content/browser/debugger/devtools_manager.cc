@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "base/auto_reset.h"
 #include "base/message_loop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/io_thread.h"
@@ -18,7 +17,6 @@
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/debugger/devtools_client_host.h"
 #include "content/browser/debugger/devtools_netlog_observer.h"
-#include "content/browser/debugger/devtools_window.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/site_instance.h"
 #include "content/common/devtools_messages.h"
@@ -42,9 +40,7 @@ void DevToolsManager::RegisterUserPrefs(PrefService* prefs) {
 }
 
 DevToolsManager::DevToolsManager()
-    : inspected_rvh_for_reopen_(NULL),
-      in_initial_show_(false),
-      last_orphan_cookie_(0) {
+    : last_orphan_cookie_(0) {
   registrar_.Add(this, NotificationType::RENDER_VIEW_HOST_DELETED,
                  NotificationService::AllSources());
 }
@@ -77,14 +73,6 @@ void DevToolsManager::RegisterDevToolsClientHostFor(
   SendAttachToAgent(inspected_rvh);
 }
 
-void DevToolsManager::ForwardToDevToolsAgent(
-    RenderViewHost* client_rvh,
-    const IPC::Message& message) {
-  DevToolsClientHost* client_host = FindOwnerDevToolsClientHost(client_rvh);
-  if (client_host)
-    ForwardToDevToolsAgent(client_host, message);
-}
-
 void DevToolsManager::ForwardToDevToolsAgent(DevToolsClientHost* from,
                                              const IPC::Message& message) {
   RenderViewHost* inspected_rvh = GetInspectedRenderViewHost(from);
@@ -110,46 +98,6 @@ void DevToolsManager::ForwardToDevToolsClient(RenderViewHost* inspected_rvh,
   client_host->SendMessageToClient(message);
 }
 
-void DevToolsManager::ActivateWindow(RenderViewHost* client_rvh) {
-  DevToolsClientHost* client_host = FindOwnerDevToolsClientHost(client_rvh);
-  if (!client_host)
-    return;
-
-  DevToolsWindow* window = client_host->AsDevToolsWindow();
-  DCHECK(window);
-  window->Activate();
-}
-
-void DevToolsManager::CloseWindow(RenderViewHost* client_rvh) {
-  DevToolsClientHost* client_host = FindOwnerDevToolsClientHost(client_rvh);
-  if (client_host) {
-    DevToolsWindow* window = client_host->AsDevToolsWindow();
-    DCHECK(window);
-    window->Close();
-  }
-}
-
-void DevToolsManager::RequestDockWindow(RenderViewHost* client_rvh) {
-  ReopenWindow(client_rvh, true);
-}
-
-void DevToolsManager::RequestUndockWindow(RenderViewHost* client_rvh) {
-  ReopenWindow(client_rvh, false);
-}
-
-void DevToolsManager::OpenDevToolsWindow(RenderViewHost* inspected_rvh) {
-  ToggleDevToolsWindow(
-      inspected_rvh,
-      true,
-      DEVTOOLS_TOGGLE_ACTION_NONE);
-}
-
-void DevToolsManager::ToggleDevToolsWindow(
-    RenderViewHost* inspected_rvh,
-    DevToolsToggleAction action) {
-  ToggleDevToolsWindow(inspected_rvh, false, action);
-}
-
 void DevToolsManager::RuntimePropertyChanged(RenderViewHost* inspected_rvh,
                                              const std::string& name,
                                              const std::string& value) {
@@ -164,15 +112,12 @@ void DevToolsManager::RuntimePropertyChanged(RenderViewHost* inspected_rvh,
   it->second[name] = value;
 }
 
-void DevToolsManager::InspectElement(RenderViewHost* inspected_rvh,
-                                     int x,
-                                     int y) {
+void DevToolsManager::SendInspectElement(RenderViewHost* inspected_rvh,
+                                         int x,
+                                         int y) {
   IPC::Message* m = new DevToolsAgentMsg_InspectElement(x, y);
   m->set_routing_id(inspected_rvh->routing_id());
   inspected_rvh->Send(m);
-  // TODO(loislo): we should initiate DevTools window opening from within
-  // renderer. Otherwise, we still can hit a race condition here.
-  OpenDevToolsWindow(inspected_rvh);
 }
 
 void DevToolsManager::ClientHostClosing(DevToolsClientHost* host) {
@@ -225,11 +170,6 @@ void DevToolsManager::UnregisterDevToolsClientHostFor(
 void DevToolsManager::OnNavigatingToPendingEntry(RenderViewHost* rvh,
                                                  RenderViewHost* dest_rvh,
                                                  const GURL& gurl) {
-  if (in_initial_show_) {
-    // Mute this even in case it is caused by the initial show routines.
-    return;
-  }
-
   int cookie = DetachClientHost(rvh);
   if (cookie != -1) {
     // Navigating to URL in the inspected window.
@@ -237,24 +177,6 @@ void DevToolsManager::OnNavigatingToPendingEntry(RenderViewHost* rvh,
 
     DevToolsClientHost* client_host = GetDevToolsClientHostFor(dest_rvh);
     client_host->FrameNavigating(gurl.spec());
-
-    return;
-  }
-
-  // Iterate over client hosts and if there is one that has render view host
-  // changing, reopen entire client window (this must be caused by the user
-  // manually refreshing its content).
-  for (ClientHostToInspectedRvhMap::iterator it =
-           client_host_to_inspected_rvh_.begin();
-       it != client_host_to_inspected_rvh_.end(); ++it) {
-    DevToolsWindow* window = it->first->AsDevToolsWindow();
-    if (window && window->GetRenderViewHost() == rvh) {
-      inspected_rvh_for_reopen_ = it->second;
-      MessageLoop::current()->PostTask(FROM_HERE,
-          NewRunnableMethod(this,
-                            &DevToolsManager::ForceReopenWindow));
-      return;
-    }
   }
 }
 
@@ -326,78 +248,6 @@ void DevToolsManager::SendDetachToAgent(RenderViewHost* inspected_rvh) {
   }
 }
 
-void DevToolsManager::ForceReopenWindow() {
-  if (inspected_rvh_for_reopen_) {
-    RenderViewHost* inspected_rvn = inspected_rvh_for_reopen_;
-    UnregisterDevToolsClientHostFor(inspected_rvn);
-    OpenDevToolsWindow(inspected_rvn);
-  }
-}
-
-DevToolsClientHost* DevToolsManager::FindOwnerDevToolsClientHost(
-    RenderViewHost* client_rvh) {
-  for (InspectedRvhToClientHostMap::iterator it =
-           inspected_rvh_to_client_host_.begin();
-       it != inspected_rvh_to_client_host_.end();
-       ++it) {
-    DevToolsWindow* win = it->second->AsDevToolsWindow();
-    if (!win)
-      continue;
-    if (client_rvh == win->GetRenderViewHost())
-      return it->second;
-  }
-  return NULL;
-}
-
-void DevToolsManager::ReopenWindow(RenderViewHost* client_rvh, bool docked) {
-  DevToolsClientHost* client_host = FindOwnerDevToolsClientHost(client_rvh);
-  if (!client_host)
-    return;
-  RenderViewHost* inspected_rvh = GetInspectedRenderViewHost(client_host);
-  DCHECK(inspected_rvh);
-  inspected_rvh->process()->profile()->GetPrefs()->SetBoolean(
-      prefs::kDevToolsOpenDocked, docked);
-
-  DevToolsWindow* window = client_host->AsDevToolsWindow();
-  DCHECK(window);
-  window->SetDocked(docked);
-}
-
-void DevToolsManager::ToggleDevToolsWindow(
-    RenderViewHost* inspected_rvh,
-    bool force_open,
-    DevToolsToggleAction action) {
-  bool do_open = force_open;
-  DevToolsClientHost* host = GetDevToolsClientHostFor(inspected_rvh);
-
-  if (host != NULL && host->AsDevToolsWindow() == NULL) {
-    // Break remote debugging / extension debugging session.
-    UnregisterDevToolsClientHostFor(inspected_rvh);
-    host = NULL;
-  }
-
-  if (!host) {
-    bool docked = inspected_rvh->process()->profile()->GetPrefs()->
-        GetBoolean(prefs::kDevToolsOpenDocked);
-    host = new DevToolsWindow(
-        inspected_rvh->site_instance()->browsing_instance()->profile(),
-        inspected_rvh,
-        docked);
-    RegisterDevToolsClientHostFor(inspected_rvh, host);
-    do_open = true;
-  }
-
-  DevToolsWindow* window = host->AsDevToolsWindow();
-  // If window is docked and visible, we hide it on toggle. If window is
-  // undocked, we show (activate) it.
-  if (!window->is_docked() || do_open) {
-    AutoReset<bool> auto_reset_in_initial_show(&in_initial_show_, true);
-    window->Show(action);
-  } else {
-    UnregisterDevToolsClientHostFor(inspected_rvh);
-  }
-}
-
 void DevToolsManager::BindClientHost(
     RenderViewHost* inspected_rvh,
     DevToolsClientHost* client_host,
@@ -437,8 +287,6 @@ void DevToolsManager::UnbindClientHost(RenderViewHost* inspected_rvh,
         NewRunnableFunction(&DevToolsNetLogObserver::Detach));
   }
   SendDetachToAgent(inspected_rvh);
-  if (inspected_rvh_for_reopen_ == inspected_rvh)
-    inspected_rvh_for_reopen_ = NULL;
 
   int process_id = inspected_rvh->process()->id();
   for (InspectedRvhToClientHostMap::iterator it =

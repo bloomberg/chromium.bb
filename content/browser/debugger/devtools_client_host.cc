@@ -4,10 +4,6 @@
 
 #include "content/browser/debugger/devtools_client_host.h"
 
-DevToolsWindow* DevToolsClientHost::AsDevToolsWindow() {
-  return NULL;
-}
-
 void DevToolsClientHost::NotifyCloseListener() {
   if (close_listener_) {
     close_listener_->ClientHostClosing(this);

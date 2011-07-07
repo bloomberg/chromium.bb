@@ -95,7 +95,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/debugger/devtools_manager.h"
+#include "content/browser/debugger/devtools_window.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/interstitial_page.h"
@@ -1310,8 +1310,7 @@ void TestingAutomationProvider::HandleInspectElementRequest(
     DCHECK(!reply_message_);
     reply_message_ = reply_message;
 
-    DevToolsManager::GetInstance()->InspectElement(
-        tab_contents->render_view_host(), x, y);
+    DevToolsWindow::InspectElement(tab_contents->render_view_host(), x, y);
   } else {
     AutomationMsg_InspectElement::WriteReplyParams(reply_message, -1);
     Send(reply_message);

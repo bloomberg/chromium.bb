@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
+
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/stringprintf.h"
@@ -24,6 +26,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/browsing_instance.h"
 #include "content/browser/debugger/devtools_manager.h"
 #include "content/browser/debugger/devtools_window.h"
 #include "content/browser/in_process_webkit/session_storage_namespace.h"
@@ -39,28 +42,60 @@
 
 const char DevToolsWindow::kDevToolsApp[] = "DevToolsApp";
 
+DevToolsWindow::DevToolsWindowList DevToolsWindow::instances_;
+
 // static
 TabContentsWrapper* DevToolsWindow::GetDevToolsContents(
     TabContents* inspected_tab) {
-  if (!inspected_tab) {
+  if (!inspected_tab)
     return NULL;
-  }
 
-  if (!DevToolsManager::GetInstance())
+  DevToolsManager* manager = DevToolsManager::GetInstance();
+  if (!manager)
     return NULL;  // Happens only in tests.
 
-  DevToolsClientHost* client_host = DevToolsManager::GetInstance()->
-          GetDevToolsClientHostFor(inspected_tab->render_view_host());
-  if (!client_host) {
+  DevToolsClientHost* client_host = manager->
+      GetDevToolsClientHostFor(inspected_tab->render_view_host());
+  DevToolsWindow* window = AsDevToolsWindow(client_host);
+  if (!window || !window->is_docked())
     return NULL;
-  }
-
-  DevToolsWindow* window = client_host->AsDevToolsWindow();
-  if (!window || !window->is_docked()) {
-    return NULL;
-  }
   return window->tab_contents();
 }
+
+// static
+DevToolsWindow* DevToolsWindow::FindDevToolsWindow(
+    RenderViewHost* window_rvh) {
+  for (DevToolsWindowList::iterator it = instances_.begin();
+       it != instances_.end(); ++it) {
+    if ((*it)->GetRenderViewHost() == window_rvh)
+      return *it;
+  }
+  return NULL;
+}
+
+// static
+DevToolsWindow* DevToolsWindow::OpenDevToolsWindow(
+    RenderViewHost* inspected_rvh) {
+  return ToggleDevToolsWindow(inspected_rvh, true,
+                              DEVTOOLS_TOGGLE_ACTION_NONE);
+}
+
+// static
+DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
+    RenderViewHost* inspected_rvh,
+    DevToolsToggleAction action) {
+  return ToggleDevToolsWindow(inspected_rvh, false, action);
+}
+
+void DevToolsWindow::InspectElement(RenderViewHost* inspected_rvh,
+                                    int x,
+                                    int y) {
+  DevToolsManager::GetInstance()->SendInspectElement(inspected_rvh, x, y);
+  // TODO(loislo): we should initiate DevTools window opening from within
+  // renderer. Otherwise, we still can hit a race condition here.
+  OpenDevToolsWindow(inspected_rvh);
+}
+
 
 DevToolsWindow::DevToolsWindow(Profile* profile,
                                RenderViewHost* inspected_rvh,
@@ -98,13 +133,16 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
   TabContents* tab = inspected_rvh->delegate()->GetAsTabContents();
   if (tab)
     inspected_tab_ = TabContentsWrapper::GetCurrentWrapperForContents(tab);
+
+  instances_.push_back(this);
 }
 
 DevToolsWindow::~DevToolsWindow() {
-}
-
-DevToolsWindow* DevToolsWindow::AsDevToolsWindow() {
-  return this;
+  DevToolsWindowList::iterator it = std::find(instances_.begin(),
+                                              instances_.end(),
+                                              this);
+  DCHECK(it != instances_.end());
+  instances_.erase(it);
 }
 
 void DevToolsWindow::SendMessageToClient(const IPC::Message& message) {
@@ -196,6 +234,12 @@ void DevToolsWindow::Activate() {
 void DevToolsWindow::SetDocked(bool docked) {
   if (docked_ == docked)
     return;
+
+  if (!inspected_tab_)
+    return;
+
+  profile_->GetPrefs()->SetBoolean(prefs::kDevToolsOpenDocked, docked);
+
   if (docked && (!GetInspectedBrowserWindow() ||
                  IsInspectedBrowserPopupOrPanel())) {
     // Cannot dock, avoid window flashing due to close-reopen cycle.
@@ -477,4 +521,50 @@ void DevToolsWindow::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
     if (inspected_window)
       inspected_window->HandleKeyboardEvent(event);
   }
+}
+
+// static
+DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
+    RenderViewHost* inspected_rvh,
+    bool force_open,
+    DevToolsToggleAction action) {
+  DevToolsManager* manager = DevToolsManager::GetInstance();
+
+  DevToolsClientHost* host = manager->GetDevToolsClientHostFor(inspected_rvh);
+  DevToolsWindow* window = AsDevToolsWindow(host);
+  if (host != NULL && window == NULL) {
+    // Break remote debugging / extension debugging session.
+    manager->UnregisterDevToolsClientHostFor(inspected_rvh);
+  }
+
+  bool do_open = force_open;
+  if (!window) {
+    Profile* profile = inspected_rvh->process()->profile();
+    bool docked = profile->GetPrefs()->GetBoolean(prefs::kDevToolsOpenDocked);
+    window = new DevToolsWindow(profile, inspected_rvh, docked);
+    manager->RegisterDevToolsClientHostFor(inspected_rvh, window);
+    do_open = true;
+  }
+
+  // If window is docked and visible, we hide it on toggle. If window is
+  // undocked, we show (activate) it.
+  if (!window->is_docked() || do_open)
+    window->Show(action);
+  else
+    manager->UnregisterDevToolsClientHostFor(inspected_rvh);
+
+  return window;
+}
+
+// static
+DevToolsWindow* DevToolsWindow::AsDevToolsWindow(
+    DevToolsClientHost* client_host) {
+  if (!client_host)
+    return NULL;
+  DevToolsWindowList::iterator it = std::find(instances_.begin(),
+                                              instances_.end(),
+                                              client_host);
+  if (it == instances_.end())
+    return NULL;
+  return *it;
 }

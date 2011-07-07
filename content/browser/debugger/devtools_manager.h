@@ -53,29 +53,17 @@ class DevToolsManager : public DevToolsClientHost::CloseListener,
                                      DevToolsClientHost* client_host);
   void UnregisterDevToolsClientHostFor(RenderViewHost* inspected_rvh);
 
-  void ForwardToDevToolsAgent(RenderViewHost* client_rvh,
-                              const IPC::Message& message);
   void ForwardToDevToolsAgent(DevToolsClientHost* from,
                               const IPC::Message& message);
   void ForwardToDevToolsClient(RenderViewHost* inspected_rvh,
                                const IPC::Message& message);
 
-  void ActivateWindow(RenderViewHost* client_rvn);
-  void CloseWindow(RenderViewHost* client_rvn);
-  void RequestDockWindow(RenderViewHost* client_rvn);
-  void RequestUndockWindow(RenderViewHost* client_rvn);
-
-  void OpenDevToolsWindow(RenderViewHost* inspected_rvh);
-  void ToggleDevToolsWindow(RenderViewHost* inspected_rvh,
-                            DevToolsToggleAction action);
   void RuntimePropertyChanged(RenderViewHost* inspected_rvh,
                               const std::string& name,
                               const std::string& value);
 
-  // Starts element inspection in the devtools client.
-  // Creates one by means of OpenDevToolsWindow if no client
-  // exists.
-  void InspectElement(RenderViewHost* inspected_rvh, int x, int y);
+  // Starts element inspection in the devtools agent.
+  void SendInspectElement(RenderViewHost* inspected_rvh, int x, int y);
 
   // Sends 'Attach' message to the agent using |dest_rvh| in case
   // there is a DevToolsClientHost registered for the |inspected_rvh|.
@@ -121,16 +109,6 @@ class DevToolsManager : public DevToolsClientHost::CloseListener,
   void SendAttachToAgent(RenderViewHost* inspected_rvh);
   void SendDetachToAgent(RenderViewHost* inspected_rvh);
 
-  void ForceReopenWindow();
-
-  DevToolsClientHost* FindOwnerDevToolsClientHost(RenderViewHost* client_rvh);
-
-  void ToggleDevToolsWindow(RenderViewHost* inspected_rvh,
-                            bool force_open,
-                            DevToolsToggleAction action);
-
-  void ReopenWindow(RenderViewHost* client_rvh, bool docked);
-
   void BindClientHost(RenderViewHost* inspected_rvh,
                       DevToolsClientHost* client_host,
                       const DevToolsRuntimeProperties& runtime_properties);
@@ -155,9 +133,6 @@ class DevToolsManager : public DevToolsClientHost::CloseListener,
   typedef std::map<RenderViewHost*, DevToolsRuntimeProperties>
       RuntimePropertiesMap;
   RuntimePropertiesMap runtime_properties_map_;
-
-  RenderViewHost* inspected_rvh_for_reopen_;
-  bool in_initial_show_;
 
   typedef std::map<int,
                    std::pair<DevToolsClientHost*, DevToolsRuntimeProperties> >

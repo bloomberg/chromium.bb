@@ -35,8 +35,7 @@
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/debugger/devtools_manager.h"
-#include "content/browser/debugger/devtools_toggle_action.h"
+#include "content/browser/debugger/devtools_window.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host.h"
@@ -351,7 +350,7 @@ void ExtensionsDOMHandler::HandleInspectMessage(const ListValue* args) {
     return;
   }
 
-  DevToolsManager::GetInstance()->OpenDevToolsWindow(host);
+  DevToolsWindow::OpenDevToolsWindow(host);
 }
 
 void ExtensionsDOMHandler::HandleReloadMessage(const ListValue* args) {

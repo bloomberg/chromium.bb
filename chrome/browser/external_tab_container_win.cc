@@ -34,8 +34,8 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/debugger/devtools_manager.h"
 #include "content/browser/debugger/devtools_toggle_action.h"
+#include "content/browser/debugger/devtools_window.h"
 #include "content/browser/load_notification_details.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -964,16 +964,16 @@ bool ExternalTabContainer::AcceleratorPressed(
       host->Send(new ViewMsg_Zoom(host->routing_id(), PageZoom::ZOOM_OUT));
       break;
     case IDC_DEV_TOOLS:
-      DevToolsManager::GetInstance()->ToggleDevToolsWindow(
+      DevToolsWindow::ToggleDevToolsWindow(
           tab_contents_->render_view_host(), DEVTOOLS_TOGGLE_ACTION_NONE);
       break;
     case IDC_DEV_TOOLS_CONSOLE:
-      DevToolsManager::GetInstance()->ToggleDevToolsWindow(
+      DevToolsWindow::ToggleDevToolsWindow(
           tab_contents_->render_view_host(),
           DEVTOOLS_TOGGLE_ACTION_SHOW_CONSOLE);
       break;
     case IDC_DEV_TOOLS_INSPECT:
-      DevToolsManager::GetInstance()->ToggleDevToolsWindow(
+      DevToolsWindow::ToggleDevToolsWindow(
           tab_contents_->render_view_host(),
           DEVTOOLS_TOGGLE_ACTION_INSPECT);
       break;

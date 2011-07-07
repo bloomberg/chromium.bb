@@ -51,7 +51,6 @@
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/child_process_security_policy.h"
-#include "content/browser/debugger/devtools_manager.h"
 #include "content/browser/debugger/devtools_window.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
@@ -1743,7 +1742,7 @@ void RenderViewContextMenu::CopyImageAt(int x, int y) {
 
 void RenderViewContextMenu::Inspect(int x, int y) {
   UserMetrics::RecordAction(UserMetricsAction("DevTools_InspectElement"));
-  DevToolsManager::GetInstance()->InspectElement(
+  DevToolsWindow::InspectElement(
       source_tab_contents_->render_view_host(), x, y);
 }
 

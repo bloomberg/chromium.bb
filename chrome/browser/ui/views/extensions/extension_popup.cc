@@ -13,8 +13,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/extensions/extension.h"
-#include "content/browser/debugger/devtools_manager.h"
-#include "content/browser/debugger/devtools_toggle_action.h"
+#include "content/browser/debugger/devtools_window.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/common/notification_details.h"
@@ -131,7 +130,7 @@ void ExtensionPopup::Observe(NotificationType type,
           // Listen for the the devtools window closing.
           registrar_.Add(this, NotificationType::DEVTOOLS_WINDOW_CLOSING,
               Source<Profile>(extension_host_->profile()));
-          DevToolsManager::GetInstance()->ToggleDevToolsWindow(
+          DevToolsWindow::ToggleDevToolsWindow(
               extension_host_->render_view_host(),
               DEVTOOLS_TOGGLE_ACTION_SHOW_CONSOLE);
         }

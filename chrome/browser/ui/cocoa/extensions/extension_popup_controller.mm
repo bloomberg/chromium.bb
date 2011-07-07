@@ -13,7 +13,7 @@
 #import "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_view_mac.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
-#include "content/browser/debugger/devtools_manager.h"
+#include "content/browser/debugger/devtools_window.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_source.h"
@@ -141,7 +141,7 @@ class DevtoolsNotificationBridge : public NotificationObserver {
 }
 
 - (void)showDevTools {
-  DevToolsManager::GetInstance()->OpenDevToolsWindow(host_->render_view_host());
+  DevToolsWindow::OpenDevToolsWindow(host_->render_view_host());
 }
 
 - (void)dealloc {

@@ -7,6 +7,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "content/browser/debugger/devtools_client_host.h"
@@ -32,12 +33,16 @@ class DevToolsWindow
  public:
   static const char kDevToolsApp[];
   static TabContentsWrapper* GetDevToolsContents(TabContents* inspected_tab);
+  static DevToolsWindow* FindDevToolsWindow(RenderViewHost* window_rvh);
 
-  DevToolsWindow(Profile* profile, RenderViewHost* inspected_rvh, bool docked);
+  static DevToolsWindow* OpenDevToolsWindow(RenderViewHost* inspected_rvh);
+  static DevToolsWindow* ToggleDevToolsWindow(RenderViewHost* inspected_rvh,
+                                              DevToolsToggleAction action);
+  static void InspectElement(RenderViewHost* inspected_rvh, int x, int y);
+
   virtual ~DevToolsWindow();
 
   // Overridden from DevToolsClientHost.
-  virtual DevToolsWindow* AsDevToolsWindow();
   virtual void SendMessageToClient(const IPC::Message& message);
   virtual void InspectedTabClosing();
   virtual void TabReplaced(TabContentsWrapper* new_tab);
@@ -53,6 +58,8 @@ class DevToolsWindow
   bool is_docked() { return docked_; }
 
  private:
+  DevToolsWindow(Profile* profile, RenderViewHost* inspected_rvh, bool docked);
+
   void CreateDevToolsBrowser();
   bool FindInspectedBrowserAndTabIndex(Browser**, int* tab);
   BrowserWindow* GetInspectedBrowserWindow();
@@ -90,6 +97,11 @@ class DevToolsWindow
 
   virtual void FrameNavigating(const std::string& url) {}
 
+  static DevToolsWindow* ToggleDevToolsWindow(RenderViewHost* inspected_rvh,
+                                              bool force_open,
+                                              DevToolsToggleAction action);
+  static DevToolsWindow* AsDevToolsWindow(DevToolsClientHost*);
+
   Profile* profile_;
   TabContentsWrapper* inspected_tab_;
   TabContentsWrapper* tab_contents_;
@@ -98,6 +110,8 @@ class DevToolsWindow
   bool is_loaded_;
   DevToolsToggleAction action_on_load_;
   NotificationRegistrar registrar_;
+  typedef std::vector<DevToolsWindow*> DevToolsWindowList;
+  static DevToolsWindowList instances_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsWindow);
 };
 

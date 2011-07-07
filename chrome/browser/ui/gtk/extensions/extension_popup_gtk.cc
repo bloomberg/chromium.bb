@@ -17,7 +17,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
-#include "content/browser/debugger/devtools_manager.h"
+#include "content/browser/debugger/devtools_window.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
@@ -96,8 +96,7 @@ void ExtensionPopupGtk::ShowPopup() {
   }
 
   if (being_inspected_) {
-    DevToolsManager::GetInstance()->OpenDevToolsWindow(
-        host_->render_view_host());
+    DevToolsWindow::OpenDevToolsWindow(host_->render_view_host());
     // Listen for the the devtools window closing.
     registrar_.Add(this, NotificationType::DEVTOOLS_WINDOW_CLOSING,
         Source<Profile>(host_->profile()));

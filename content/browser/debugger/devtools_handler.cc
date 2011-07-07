@@ -6,6 +6,7 @@
 
 #include "content/browser/debugger/devtools_file_util.h"
 #include "content/browser/debugger/devtools_manager.h"
+#include "content/browser/debugger/devtools_window.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/devtools_messages.h"
@@ -37,8 +38,11 @@ bool DevToolsHandler::OnMessageReceived(const IPC::Message& message) {
 }
 
 void DevToolsHandler::OnForwardToAgent(const IPC::Message& message) {
-  DevToolsManager::GetInstance()->ForwardToDevToolsAgent(
-      render_view_host(), message);
+  DevToolsWindow* window = DevToolsWindow::FindDevToolsWindow(
+      render_view_host());
+  if (!window)
+    return;
+  DevToolsManager::GetInstance()->ForwardToDevToolsAgent(window, message);
 }
 
 void DevToolsHandler::OnForwardToClient(const IPC::Message& message) {
@@ -47,19 +51,31 @@ void DevToolsHandler::OnForwardToClient(const IPC::Message& message) {
 }
 
 void DevToolsHandler::OnActivateWindow() {
-  DevToolsManager::GetInstance()->ActivateWindow(render_view_host());
+  DevToolsWindow* window = DevToolsWindow::FindDevToolsWindow(
+      render_view_host());
+  if (window)
+    window->Activate();
 }
 
 void DevToolsHandler::OnCloseWindow() {
-  DevToolsManager::GetInstance()->CloseWindow(render_view_host());
+  DevToolsWindow* window = DevToolsWindow::FindDevToolsWindow(
+      render_view_host());
+  if (window)
+    window->Close();
 }
 
 void DevToolsHandler::OnRequestDockWindow() {
-  DevToolsManager::GetInstance()->RequestDockWindow(render_view_host());
+  DevToolsWindow* window = DevToolsWindow::FindDevToolsWindow(
+      render_view_host());
+  if (window)
+    window->SetDocked(true);
 }
 
 void DevToolsHandler::OnRequestUndockWindow() {
-  DevToolsManager::GetInstance()->RequestUndockWindow(render_view_host());
+  DevToolsWindow* window = DevToolsWindow::FindDevToolsWindow(
+      render_view_host());
+  if (window)
+    window->SetDocked(false);
 }
 
 void DevToolsHandler::OnSaveAs(const std::string& file_name,

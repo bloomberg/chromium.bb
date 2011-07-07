@@ -1885,7 +1885,7 @@ void Browser::ToggleDevToolsWindow(DevToolsToggleAction action) {
       break;
   }
   UserMetrics::RecordAction(UserMetricsAction(uma_string.c_str()));
-  DevToolsManager::GetInstance()->ToggleDevToolsWindow(
+  DevToolsWindow::ToggleDevToolsWindow(
       GetSelectedTabContentsWrapper()->render_view_host(), action);
 }
 
