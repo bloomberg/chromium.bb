@@ -203,6 +203,10 @@ class TemplateURLService : public WebDataServiceConsumer,
   // OnTemplateURLServiceChanged.
   void Load();
 
+#if defined(UNIT_TEST)
+  void set_loaded(bool value) { loaded_ = value; }
+#endif
+
   // Whether or not the keywords have been loaded.
   bool loaded() { return loaded_; }
 

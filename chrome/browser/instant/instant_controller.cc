@@ -678,7 +678,7 @@ void InstantController::UpdateLoader(const TemplateURL* template_url,
 
 InstantController::PreviewCondition InstantController::GetPreviewConditionFor(
     const AutocompleteMatch& match, const TemplateURL** template_url) {
-  const TemplateURL* t_url = GetTemplateURL(match);
+  const TemplateURL* t_url = match.template_url;
   if (t_url) {
     if (!t_url->id() ||
         !t_url->instant_url() ||
@@ -737,17 +737,4 @@ void InstantController::ScheduleDestroy(InstantLoader* loader) {
 
 void InstantController::DestroyLoaders() {
   loaders_to_destroy_.reset();
-}
-
-const TemplateURL* InstantController::GetTemplateURL(
-    const AutocompleteMatch& match) {
-  const TemplateURL* template_url = match.template_url;
-  if (match.type == AutocompleteMatch::SEARCH_WHAT_YOU_TYPED ||
-      match.type == AutocompleteMatch::SEARCH_HISTORY ||
-      match.type == AutocompleteMatch::SEARCH_SUGGEST) {
-    TemplateURLService* model = TemplateURLServiceFactory::GetForProfile(
-        tab_contents_->profile());
-    template_url = model ? model->GetDefaultSearchProvider() : NULL;
-  }
-  return template_url;
 }

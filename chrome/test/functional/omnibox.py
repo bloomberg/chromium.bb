@@ -126,7 +126,9 @@ class OmniboxTest(pyauto.PyUITest):
     matches_description = test_utils.GetOmniboxMatchesFor(self,
         search_text, attr_dict={'description': verify_str})
     self.assertTrue(matches_description)
-    self.assertEqual(1, len(matches_description))
+    # There should be a least one entry with the description Google. Suggest
+    # results may end up having 'Google Search' in them, so use >=.
+    self.assertTrue(len(matches_description) >= 1)
     item = matches_description[0]
     self.assertTrue(re.search(url_re, item['destination_url']))
     self.assertEqual('search-what-you-typed', item['type'])

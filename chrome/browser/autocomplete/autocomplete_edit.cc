@@ -469,21 +469,14 @@ void AutocompleteEditModel::AcceptInput(WindowOpenDisposition disposition,
     match.transition = PageTransition::LINK;
   }
 
-  if (match.type == AutocompleteMatch::SEARCH_WHAT_YOU_TYPED ||
-      match.type == AutocompleteMatch::SEARCH_HISTORY ||
-      match.type == AutocompleteMatch::SEARCH_SUGGEST) {
-    const TemplateURL* default_provider =
-        TemplateURLServiceFactory::GetForProfile(profile_)->
-        GetDefaultSearchProvider();
-    if (default_provider && default_provider->url() &&
-        default_provider->url()->HasGoogleBaseURLs()) {
-      GoogleURLTracker::GoogleURLSearchCommitted();
+  if (match.template_url && match.template_url->url() &&
+      match.template_url->url()->HasGoogleBaseURLs()) {
+    GoogleURLTracker::GoogleURLSearchCommitted();
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-      // TODO(pastarmovj): Remove these metrics once we have proven that (close
-      // to) none searches that should have RLZ are sent out without one.
-      default_provider->url()->CollectRLZMetrics();
+    // TODO(pastarmovj): Remove these metrics once we have proven that (close
+    // to) none searches that should have RLZ are sent out without one.
+    match.template_url->url()->CollectRLZMetrics();
 #endif
-    }
   }
 
   view_->OpenMatch(match, disposition, alternate_nav_url,

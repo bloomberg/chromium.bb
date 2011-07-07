@@ -263,10 +263,6 @@ class InstantController : public InstantLoaderDelegate {
   // Destroys all loaders scheduled for destruction in |ScheduleForDestroy|.
   void DestroyLoaders();
 
-  // Returns the TemplateURL to use for the specified AutocompleteMatch, or
-  // NULL if there is no TemplateURL for |match|.
-  const TemplateURL* GetTemplateURL(const AutocompleteMatch& match);
-
   InstantDelegate* delegate_;
 
   // The TabContents last passed to |Update|.

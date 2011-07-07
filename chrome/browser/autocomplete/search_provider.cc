@@ -91,16 +91,6 @@ void SearchProvider::FinalizeInstantQuery(const string16& input_text,
   // destination_url for comparison as it varies depending upon the index passed
   // to TemplateURL::ReplaceSearchTerms.
   for (ACMatches::iterator i = matches_.begin(); i != matches_.end();) {
-    // Reset the description/description_class of all searches. We'll set the
-    // description of the new first match in the call to
-    // UpdateFirstSearchMatchDescription() below.
-    if ((i->type == AutocompleteMatch::SEARCH_HISTORY) ||
-        (i->type == AutocompleteMatch::SEARCH_SUGGEST) ||
-        (i->type == AutocompleteMatch::SEARCH_WHAT_YOU_TYPED)) {
-      i->description.clear();
-      i->description_class.clear();
-    }
-
     if (((i->type == AutocompleteMatch::SEARCH_HISTORY) ||
          (i->type == AutocompleteMatch::SEARCH_SUGGEST)) &&
         (i->fill_into_edit == text)) {
@@ -123,10 +113,6 @@ void SearchProvider::FinalizeInstantQuery(const string16& input_text,
                 input_.prevent_inline_autocomplete(), &match_map);
   DCHECK_EQ(1u, match_map.size());
   matches_.push_back(match_map.begin()->second);
-  // Sort the results so that UpdateFirstSearchDescription does the right thing.
-  std::sort(matches_.begin(), matches_.end(), &AutocompleteMatch::MoreRelevant);
-
-  UpdateFirstSearchMatchDescription();
 
   listener_->OnProviderUpdate(true);
 }
@@ -187,8 +173,8 @@ void SearchProvider::Start(const AutocompleteInput& input,
       match.contents.assign(l10n_util::GetStringUTF16(IDS_EMPTY_KEYWORD_VALUE));
       match.contents_class.push_back(
           ACMatchClassification(0, ACMatchClassification::NONE));
+      match.template_url = &providers_.default_provider();
       matches_.push_back(match);
-      UpdateFirstSearchMatchDescription();
     }
     Stop();
     return;
@@ -227,6 +213,33 @@ void SearchProvider::Stop() {
   StopSuggest();
   done_ = true;
   default_provider_suggest_text_.clear();
+}
+
+void SearchProvider::PostProcessResult(AutocompleteResult* result) {
+  // For each group of contiguous matches from the same TemplateURL, show the
+  // provider name as a description on the first match in the group.
+  const TemplateURL* last_template_url = NULL;
+  for (AutocompleteResult::iterator i = result->begin(); i != result->end();
+       ++i) {
+    if (i->provider == this &&
+        (i->type == AutocompleteMatch::SEARCH_WHAT_YOU_TYPED ||
+         i->type == AutocompleteMatch::SEARCH_HISTORY ||
+         i->type == AutocompleteMatch::SEARCH_SUGGEST)) {
+      i->description.clear();
+      i->description_class.clear();
+      DCHECK(i->template_url);  // We should always set a template_url
+      if (last_template_url != i->template_url) {
+        i->description = l10n_util::GetStringFUTF16(
+            IDS_AUTOCOMPLETE_SEARCH_DESCRIPTION,
+            i->template_url->AdjustedShortNameForLocaleDirection());
+        i->description_class.push_back(
+            ACMatchClassification(0, ACMatchClassification::DIM));
+      }
+      last_template_url = i->template_url;
+    } else {
+      last_template_url = NULL;
+    }
+  }
 }
 
 void SearchProvider::OnURLFetchComplete(const URLFetcher* source,
@@ -577,8 +590,6 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
   if (matches_.size() > max_total_matches)
     matches_.erase(matches_.begin() + max_total_matches, matches_.end());
 
-  UpdateFirstSearchMatchDescription();
-
   UpdateStarredStateOfMatches();
 
   UpdateDone();
@@ -758,6 +769,7 @@ void SearchProvider::AddMatchToMap(const string16& query_string,
   std::vector<size_t> content_param_offsets;
   const TemplateURL& provider = is_keyword ? providers_.keyword_provider() :
                                              providers_.default_provider();
+  match.template_url = &provider;
   match.contents.assign(query_string);
   // We do intra-string highlighting for suggestions - the suggested segment
   // will be highlighted, e.g. for input_text = "you" the suggestion may be
@@ -809,7 +821,6 @@ void SearchProvider::AddMatchToMap(const string16& query_string,
   if (is_keyword) {
     match.fill_into_edit.append(
         providers_.keyword_provider().keyword() + char16(' '));
-    match.template_url = &providers_.keyword_provider();
   }
   match.fill_into_edit.append(query_string);
   // Not all suggestions start with the original input.
@@ -859,6 +870,8 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
   match.destination_url = navigation.url;
   match.contents =
       StringForURLDisplay(navigation.url, true, !HasHTTPScheme(input_text));
+  match.template_url = is_keyword ? &providers_.keyword_provider() :
+                                    &providers_.default_provider();
   AutocompleteMatch::ClassifyMatchInString(input_text, match.contents,
                                            ACMatchClassification::URL,
                                            &match.contents_class);
@@ -887,29 +900,4 @@ void SearchProvider::UpdateDone() {
   // when the timer is started) and we're not waiting on instant.
   done_ = ((suggest_results_pending_ == 0) &&
            (instant_finalized_ || !InstantController::IsEnabled(profile_)));
-}
-
-void SearchProvider::UpdateFirstSearchMatchDescription() {
-  if (!providers_.valid_default_provider() || matches_.empty())
-    return;
-
-  for (ACMatches::iterator i = matches_.begin(); i != matches_.end(); ++i) {
-    AutocompleteMatch& match = *i;
-    switch (match.type) {
-      case AutocompleteMatch::SEARCH_WHAT_YOU_TYPED:
-      case AutocompleteMatch::SEARCH_HISTORY:
-      case AutocompleteMatch::SEARCH_SUGGEST:
-        match.description.assign(l10n_util::GetStringFUTF16(
-            IDS_AUTOCOMPLETE_SEARCH_DESCRIPTION,
-            providers_.default_provider().
-                AdjustedShortNameForLocaleDirection()));
-        match.description_class.push_back(
-            ACMatchClassification(0, ACMatchClassification::DIM));
-        // Only the first search match gets a description.
-        return;
-
-      default:
-        break;
-    }
-  }
 }

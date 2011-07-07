@@ -64,8 +64,9 @@ class SearchProvider : public AutocompleteProvider,
 
   // AutocompleteProvider
   virtual void Start(const AutocompleteInput& input,
-                     bool minimal_changes);
-  virtual void Stop();
+                     bool minimal_changes) OVERRIDE;
+  virtual void Stop() OVERRIDE;
+  virtual void PostProcessResult(AutocompleteResult* result) OVERRIDE;
 
   // URLFetcher::Delegate
   virtual void OnURLFetchComplete(const URLFetcher* source,
@@ -269,9 +270,6 @@ class SearchProvider : public AutocompleteProvider,
 
   // Updates the value of |done_| from the internal state.
   void UpdateDone();
-
-  // Updates the description/description_class of the first search match.
-  void UpdateFirstSearchMatchDescription();
 
   // Should we query for suggest results immediately? This is normally false,
   // but may be set to true during testing.

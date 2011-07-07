@@ -402,6 +402,16 @@ class AutocompleteProvider
   // NOTE: Remember to call OnProviderUpdate() if matches_ is updated.
   virtual void DeleteMatch(const AutocompleteMatch& match);
 
+  // Invoked after combining the results from all providers (including sorting,
+  // culling and all that) but before the AutocompleteController's delegate is
+  // notified. This is exposed to allow providers to alter the descriptions of
+  // matches based on position in the final result set. Providers should not use
+  // this to add new matches.
+  virtual void PostProcessResult(AutocompleteResult* result);
+
+#ifdef UNIT_TEST
+  void set_listener(ACProviderListener* listener) { listener_ = listener; }
+#endif
   // A suggested upper bound for how many matches a provider should return.
   // TODO(pkasting): http://b/1111299 , http://b/933133 This should go away once
   // we have good relevance heuristics; the controller should handle all

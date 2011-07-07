@@ -506,6 +506,9 @@ void AutocompleteProvider::Stop() {
 void AutocompleteProvider::DeleteMatch(const AutocompleteMatch& match) {
 }
 
+void AutocompleteProvider::PostProcessResult(AutocompleteResult* result) {
+}
+
 AutocompleteProvider::~AutocompleteProvider() {
   Stop();
 }
@@ -948,6 +951,14 @@ void AutocompleteController::UpdateResult(bool is_synchronous_pass) {
     // StartExpireTimer.
     result_.CopyOldMatches(input_, last_result);
   }
+
+  size_t start_size = result_.size();
+  for (ACProviders::const_iterator i(providers_.begin()); i != providers_.end();
+       ++i)
+    (*i)->PostProcessResult(&result_);
+  // Providers should not alter the number of matches, otherwise it's very
+  // likely the matches are no longer sorted.
+  DCHECK_EQ(start_size, result_.size());
 
   bool notify_default_match = is_synchronous_pass;
   if (!is_synchronous_pass) {

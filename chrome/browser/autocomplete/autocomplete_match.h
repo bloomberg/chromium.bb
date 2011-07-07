@@ -177,8 +177,8 @@ struct AutocompleteMatch {
   // Type of this match.
   Type type;
 
-  // If this match corresponds to a keyword, this is the TemplateURL the
-  // keyword was obtained from.
+  // Indicates the TemplateURL the match originated from. This is set for
+  // keywords as well as matches for the default search provider.
   const TemplateURL* template_url;
 
   // True if the user has starred the destination URL.

@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/autocomplete/search_provider.h"
+
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
-#include "chrome/browser/autocomplete/search_provider.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -108,10 +110,13 @@ void SearchProviderTest::SetUp() {
   TemplateURLService* turl_model =
       TemplateURLServiceFactory::GetForProfile(&profile_);
 
+  turl_model->Load();
+
   // Reset the default TemplateURL.
   default_t_url_ = new TemplateURL();
   default_t_url_->SetURL("http://defaultturl/{searchTerms}", 0, 0);
   default_t_url_->SetSuggestionsURL("http://defaultturl2/{searchTerms}", 0, 0);
+  default_t_url_->set_short_name(ASCIIToUTF16("t"));
   turl_model->Add(default_t_url_);
   turl_model->SetDefaultSearchProvider(default_t_url_);
   TemplateURLID default_provider_id = default_t_url_->id();
@@ -131,6 +136,7 @@ void SearchProviderTest::SetUp() {
   // Create another TemplateURL.
   keyword_t_url_ = new TemplateURL();
   keyword_t_url_->set_keyword(ASCIIToUTF16("k"));
+  keyword_t_url_->set_short_name(ASCIIToUTF16("k"));
   keyword_t_url_->SetURL("http://keyword/{searchTerms}", 0, 0);
   keyword_t_url_->SetSuggestionsURL("http://suggest_keyword/{searchTerms}", 0,
                                     0);
@@ -249,8 +255,8 @@ TEST_F(SearchProviderTest, QueryDefaultProvider) {
   // term term1.
   AutocompleteMatch term1_match = FindMatchWithDestination(term1_url_);
   EXPECT_TRUE(!term1_match.destination_url.is_empty());
-  // Term1 should have a description.
-  EXPECT_FALSE(term1_match.description.empty());
+  // Term1 should not have a description, it's set later.
+  EXPECT_TRUE(term1_match.description.empty());
 
   GURL what_you_typed_url = GURL(default_t_url_->url()->ReplaceSearchTerms(
       *default_t_url_, term, 0, string16()));
@@ -378,8 +384,8 @@ TEST_F(SearchProviderTest, FinalizeInstantQuery) {
   AutocompleteMatch instant_match = FindMatchWithDestination(instant_url);
   EXPECT_TRUE(!instant_match.destination_url.is_empty());
 
-  // And the 'foobar' match should have a description.
-  EXPECT_FALSE(instant_match.description.empty());
+  // And the 'foobar' match should not have a description, it'll be set later.
+  EXPECT_TRUE(instant_match.description.empty());
 
   // Make sure the what you typed match has no description.
   GURL what_you_typed_url = GURL(default_t_url_->url()->ReplaceSearchTerms(
@@ -425,8 +431,8 @@ TEST_F(SearchProviderTest, RememberInstantQuery) {
   instant_match = FindMatchWithDestination(instant_url);
   EXPECT_FALSE(instant_match.destination_url.is_empty());
 
-  // And the 'foobar' match should have a description.
-  EXPECT_FALSE(instant_match.description.empty());
+  // And the 'foobar' match should not have a description, it'll be set later.
+  EXPECT_TRUE(instant_match.description.empty());
 }
 
 // Make sure that if trailing whitespace is added to the text supplied to
@@ -532,4 +538,42 @@ TEST_F(SearchProviderTest, AutocompletePreviousSearchOnSpace) {
   EXPECT_GT(term_match.relevance, what_you_typed_match.relevance);
   // And the offset should be at 4.
   EXPECT_EQ(4u, term_match.inline_autocomplete_offset);
+}
+
+// Verifies the SearchProvider sets descriptions for results correctly.
+TEST_F(SearchProviderTest, PostProcessResults) {
+  // Add an entry that corresponds to a keyword search with 'term2'.
+  string16 term(ASCIIToUTF16("term2"));
+  HistoryService* history =
+      profile_.GetHistoryService(Profile::EXPLICIT_ACCESS);
+  GURL term_url(keyword_t_url_->url()->ReplaceSearchTerms(
+      *keyword_t_url_, term, 0, string16()));
+  history->AddPageWithDetails(term_url, string16(), 1, 1,
+                              base::Time::Now(), false,
+                              history::SOURCE_BROWSED);
+  history->SetKeywordSearchTermsForURL(term_url, keyword_t_url_->id(), term);
+
+  profile_.BlockUntilHistoryProcessesPendingRequests();
+
+  ACProviders providers;
+  SearchProvider* provider = provider_.release();
+  providers.push_back(provider);
+  AutocompleteController controller(providers);
+  provider->set_listener(&controller);
+  controller.Start(ASCIIToUTF16("k t"), string16(), false, false, true,
+                   AutocompleteInput::ALL_MATCHES);
+  const AutocompleteResult& result = controller.result();
+
+  // There should be two matches, one for the keyword one for what you typed.
+  ASSERT_EQ(2u, result.size());
+
+  EXPECT_TRUE(result.match_at(0).template_url != NULL);
+  EXPECT_TRUE(result.match_at(1).template_url != NULL);
+  EXPECT_NE(result.match_at(0).template_url,
+            result.match_at(1).template_url);
+
+  EXPECT_FALSE(result.match_at(0).description.empty());
+  EXPECT_FALSE(result.match_at(1).description.empty());
+  EXPECT_NE(result.match_at(0).description,
+            result.match_at(1).description);
 }
