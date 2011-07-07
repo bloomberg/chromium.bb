@@ -5,6 +5,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "ipc/ipc_message_utils.h"
 #include "ppapi/c/dev/ppb_fullscreen_dev.h"
+#include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppb_url_loader.h"
 #include "ppapi/c/ppp_instance.h"

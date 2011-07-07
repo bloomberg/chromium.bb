@@ -9,7 +9,6 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_time.h"
-#include "ppapi/c/pp_var.h"
 
 struct PP_CompletionCallback;
 
@@ -137,4 +136,4 @@ struct PPB_Core {
  */
 
 
-#endif  /* PPAPI_C_DEV_PPB_CORE_DEV_H_ */
+#endif  /* PPAPI_C_PPB_CORE_H_ */
