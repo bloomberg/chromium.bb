@@ -276,9 +276,10 @@ net::Socket* JingleSession::video_rtcp_channel() {
 }
 
 const std::string& JingleSession::jid() {
-  DCHECK(CalledOnValidThread());
-  // No synchronization is needed because jid_ is not changed
-  // after new connection is passed to JingleChromotocolServer callback.
+  // TODO(sergeyu): Fix ChromotingHost so that it doesn't call this
+  // method on invalid thread and uncomment this DCHECK.
+  // See crbug.com/88600 .
+  // DCHECK(CalledOnValidThread());
   return jid_;
 }
 
