@@ -182,18 +182,6 @@ bool AutofillProfileModelAssociator::AssociateModels() {
     return false;
   }
 
-  if (sync_service_->GetAutofillMigrationState() !=
-     syncable::MIGRATED) {
-    syncable::AutofillMigrationDebugInfo debug_info;
-    debug_info.autofill_profile_added_during_migration =
-        number_of_profiles_created_;
-    sync_service_->SetAutofillMigrationDebugInfo(
-        syncable::AutofillMigrationDebugInfo::PROFILES_ADDED,
-        debug_info);
-    sync_service_->SetAutofillMigrationState(
-        syncable::MIGRATED);
-  }
-
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
       new DoOptimisticRefreshForAutofill(personal_data_));
   return true;
@@ -515,4 +503,3 @@ bool AutofillProfileModelAssociator::CryptoReadyIfNecessary() {
 }
 
 }  // namespace browser_sync
-

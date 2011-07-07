@@ -349,9 +349,6 @@ Directory::PersistedKernelInfo::PersistedKernelInfo()
   for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
     reset_download_progress(ModelTypeFromInt(i));
   }
-  autofill_migration_state = NOT_DETERMINED;
-  memset(&autofill_migration_debug_info, 0,
-         sizeof(autofill_migration_debug_info));
 }
 
 Directory::PersistedKernelInfo::~PersistedKernelInfo() {}
@@ -868,73 +865,12 @@ bool Directory::initial_sync_ended_for_type(ModelType type) const {
   return kernel_->persisted_info.initial_sync_ended[type];
 }
 
-AutofillMigrationState Directory::get_autofill_migration_state() const {
-  ScopedKernelLock lock(this);
-  return kernel_->persisted_info.autofill_migration_state;
-}
-
-AutofillMigrationDebugInfo
-    Directory::get_autofill_migration_debug_info() const {
-  ScopedKernelLock lock(this);
-  return kernel_->persisted_info.autofill_migration_debug_info;
-}
-
 template <class T> void Directory::TestAndSet(
     T* kernel_data, const T* data_to_set) {
   if (*kernel_data != *data_to_set) {
     *kernel_data = *data_to_set;
     kernel_->info_status = KERNEL_SHARE_INFO_DIRTY;
   }
-}
-
-void Directory::set_autofill_migration_state_debug_info(
-    AutofillMigrationDebugInfo::PropertyToSet property_to_set,
-    const AutofillMigrationDebugInfo& info) {
-
-  ScopedKernelLock lock(this);
-  switch (property_to_set) {
-    case AutofillMigrationDebugInfo::MIGRATION_TIME: {
-      syncable::AutofillMigrationDebugInfo&
-        debug_info = kernel_->persisted_info.autofill_migration_debug_info;
-      TestAndSet<int64>(
-          &debug_info.autofill_migration_time,
-          &info.autofill_migration_time);
-      break;
-    }
-    case AutofillMigrationDebugInfo::ENTRIES_ADDED: {
-      AutofillMigrationDebugInfo& debug_info =
-        kernel_->persisted_info.autofill_migration_debug_info;
-      TestAndSet<int>(
-          &debug_info.autofill_entries_added_during_migration,
-          &info.autofill_entries_added_during_migration);
-      break;
-    }
-    case AutofillMigrationDebugInfo::PROFILES_ADDED: {
-      AutofillMigrationDebugInfo& debug_info =
-        kernel_->persisted_info.autofill_migration_debug_info;
-      TestAndSet<int>(
-          &debug_info.autofill_profile_added_during_migration,
-          &info.autofill_profile_added_during_migration);
-      break;
-    }
-    default:
-      NOTREACHED();
-  }
-}
-
-void Directory::set_autofill_migration_state(AutofillMigrationState state) {
-  ScopedKernelLock lock(this);
-  if (state == kernel_->persisted_info.autofill_migration_state) {
-    return;
-  }
-  kernel_->persisted_info.autofill_migration_state = state;
-  if (state == MIGRATED) {
-    syncable::AutofillMigrationDebugInfo& debug_info =
-        kernel_->persisted_info.autofill_migration_debug_info;
-    debug_info.autofill_migration_time =
-        base::Time::Now().ToInternalValue();
-  }
-  kernel_->info_status = KERNEL_SHARE_INFO_DIRTY;
 }
 
 void Directory::set_initial_sync_ended_for_type(ModelType type, bool x) {

@@ -48,7 +48,6 @@ void SyncBackendHostForProfileSyncTest::ConfigureDataTypes(
     sync_api::ConfigureReason reason,
     CancelableTask* ready_task,
     bool nigori_enabled) {
-  SetAutofillMigrationState(syncable::MIGRATED);
   SyncBackendHost::ConfigureDataTypes(data_type_controllers, types,
                                       reason, ready_task, nigori_enabled);
 }

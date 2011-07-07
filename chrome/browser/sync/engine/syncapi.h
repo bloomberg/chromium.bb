@@ -50,7 +50,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/sync/engine/configure_reason.h"
 #include "chrome/browser/sync/protocol/password_specifics.pb.h"
-#include "chrome/browser/sync/syncable/autofill_migration.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/util/cryptographer.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
@@ -886,17 +885,6 @@ class SyncManager {
   // Prerequisite for calling this is that OnInitializationComplete has been
   // called.
   bool InitialSyncEndedForAllEnabledTypes();
-
-  syncable::AutofillMigrationState GetAutofillMigrationState();
-
-  void SetAutofillMigrationState(
-    syncable::AutofillMigrationState state);
-
-  syncable::AutofillMigrationDebugInfo GetAutofillMigrationDebugInfo();
-
-  void SetAutofillMigrationDebugInfo(
-      syncable::AutofillMigrationDebugInfo::PropertyToSet property_to_set,
-      const syncable::AutofillMigrationDebugInfo& info);
 
   // Update tokens that we're using in Sync. Email must stay the same.
   void UpdateCredentials(const SyncCredentials& credentials);

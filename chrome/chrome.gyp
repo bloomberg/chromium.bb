@@ -691,7 +691,6 @@
         'browser/sync/sessions/sync_session_context.cc',
         'browser/sync/sessions/sync_session_context.h',
         'browser/sync/shared_value.h',
-        'browser/sync/syncable/autofill_migration.h',
         'browser/sync/syncable/blob.h',
         'browser/sync/syncable/dir_open_result.h',
         'browser/sync/syncable/directory_backing_store.cc',

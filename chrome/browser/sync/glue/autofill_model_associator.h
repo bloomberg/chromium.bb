@@ -102,12 +102,6 @@ class AutofillModelAssociator
   // TODO(georgey) : add the same processing for CC info (already in protocol
   // buffers).
 
-  // Is called to determine if we need to upgrade to the new
-  // autofillprofile2 data type. If so we need to sync up autofillprofile
-  // first to the latest available changes on the server and then upgrade
-  // to autofillprofile2.
-  virtual bool HasNotMigratedYet(const sync_api::BaseTransaction* trans);
-
  protected:
   // Given a profile from sync db it tries to match the profile against
   // one in web db. it ignores the guid and compares the actual data.
@@ -185,7 +179,6 @@ class AutofillModelAssociator
   // AssociateModels method as soon as possible.
   base::Lock abort_association_pending_lock_;
   bool abort_association_pending_;
-  int number_of_entries_created_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillModelAssociator);
 };

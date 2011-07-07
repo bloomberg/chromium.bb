@@ -199,8 +199,6 @@ void AutofillChangeProcessor::ApplyChangesFromSyncModel(
     return;
   StopObserving();
 
-  bool autofill_profile_not_migrated = HasNotMigratedYet(trans);
-
   sync_api::ReadNode autofill_root(trans);
   if (!autofill_root.InitByTagLookup(kAutofillTag)) {
     error_handler()->OnUnrecoverableError(FROM_HERE,
@@ -215,11 +213,12 @@ void AutofillChangeProcessor::ApplyChangesFromSyncModel(
           << "Autofill specifics data not present on delete!";
       const sync_pb::AutofillSpecifics& autofill =
           changes[i].specifics.GetExtension(sync_pb::autofill);
-      if (autofill.has_value() ||
-        (autofill_profile_not_migrated && autofill.has_profile())) {
+      if (autofill.has_value()) {
         autofill_changes_.push_back(AutofillChangeRecord(changes[i].action,
                                                          changes[i].id,
                                                          autofill));
+      } else if (autofill.has_profile()) {
+        LOG(WARNING) << "Change for old-style autofill profile being dropped!";
       } else {
         NOTREACHED() << "Autofill specifics has no data!";
       }
@@ -241,10 +240,11 @@ void AutofillChangeProcessor::ApplyChangesFromSyncModel(
     const sync_pb::AutofillSpecifics& autofill(
         sync_node.GetAutofillSpecifics());
     int64 sync_id = sync_node.GetId();
-    if (autofill.has_value() ||
-      (autofill_profile_not_migrated && autofill.has_profile())) {
+    if (autofill.has_value()) {
       autofill_changes_.push_back(AutofillChangeRecord(changes[i].action,
                                                        sync_id, autofill));
+    } else if (autofill.has_profile()) {
+      LOG(WARNING) << "Change for old-style autofill profile being dropped!";
     } else {
       NOTREACHED() << "Autofill specifics has no data!";
     }
@@ -441,11 +441,6 @@ void AutofillChangeProcessor::WriteAutofillEntry(
     autofill.add_usage_timestamp(timestamp->ToInternalValue());
   }
   node->SetAutofillSpecifics(autofill);
-}
-
-bool AutofillChangeProcessor::HasNotMigratedYet(
-    const sync_api::BaseTransaction* trans) {
-  return model_associator_->HasNotMigratedYet(trans);
 }
 
 }  // namespace browser_sync

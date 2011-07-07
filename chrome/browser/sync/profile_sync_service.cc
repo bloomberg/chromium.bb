@@ -1176,44 +1176,6 @@ void ProfileSyncService::GetModelSafeRoutingInfo(
   }
 }
 
-syncable::AutofillMigrationState
-    ProfileSyncService::GetAutofillMigrationState() {
-  if (backend_.get() && backend_initialized_) {
-    return backend_->GetAutofillMigrationState();
-  }
-  NOTREACHED();
-  return syncable::NOT_DETERMINED;
-}
-
-void ProfileSyncService::SetAutofillMigrationState(
-    syncable::AutofillMigrationState state) {
-  if (backend_.get() && backend_initialized_) {
-    backend_->SetAutofillMigrationState(state);
-  } else {
-    NOTREACHED();
-  }
-}
-
-syncable::AutofillMigrationDebugInfo
-    ProfileSyncService::GetAutofillMigrationDebugInfo() {
-  if (backend_.get() && backend_initialized_) {
-    return backend_->GetAutofillMigrationDebugInfo();
-  }
-  NOTREACHED();
-  syncable::AutofillMigrationDebugInfo debug_info = { 0 };
-  return debug_info;
-}
-
-void ProfileSyncService::SetAutofillMigrationDebugInfo(
-    syncable::AutofillMigrationDebugInfo::PropertyToSet property_to_set,
-    const syncable::AutofillMigrationDebugInfo& info) {
-  if (backend_.get() && backend_initialized_) {
-    backend_->SetAutofillMigrationDebugInfo(property_to_set, info);
-  } else {
-    NOTREACHED();
-  }
-}
-
 void ProfileSyncService::ActivateDataType(
     DataTypeController* data_type_controller,
     ChangeProcessor* change_processor) {

@@ -61,7 +61,6 @@
 #include "chrome/browser/sync/protocol/typed_url_specifics.pb.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/sessions/sync_session_context.h"
-#include "chrome/browser/sync/syncable/autofill_migration.h"
 #include "chrome/browser/sync/syncable/directory_change_delegate.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/model_type_payload_map.h"
@@ -1340,50 +1339,6 @@ class SyncManager::SyncInternal
     return true;
   }
 
-  syncable::AutofillMigrationState GetAutofillMigrationState() {
-    syncable::ScopedDirLookup lookup(dir_manager(), username_for_share());
-    if (!lookup.good()) {
-      DCHECK(false) << "ScopedDirLookup failed when checking initial sync";
-      return syncable::NOT_MIGRATED;
-    }
-
-    return lookup->get_autofill_migration_state();
-  }
-
-  void SetAutofillMigrationState(syncable::AutofillMigrationState state) {
-    syncable::ScopedDirLookup lookup(dir_manager(), username_for_share());
-    if (!lookup.good()) {
-      DCHECK(false) << "ScopedDirLookup failed when checking initial sync";
-      return;
-    }
-
-    return lookup->set_autofill_migration_state(state);
-  }
-
-  void SetAutofillMigrationDebugInfo(
-      syncable::AutofillMigrationDebugInfo::PropertyToSet property_to_set,
-      const syncable::AutofillMigrationDebugInfo& info) {
-    syncable::ScopedDirLookup lookup(dir_manager(), username_for_share());
-    if (!lookup.good()) {
-      DCHECK(false) << "ScopedDirLookup failed when checking initial sync";
-      return;
-    }
-
-    return lookup->set_autofill_migration_state_debug_info(
-        property_to_set, info);
-  }
-
-  syncable::AutofillMigrationDebugInfo
-      GetAutofillMigrationDebugInfo() {
-    syncable::ScopedDirLookup lookup(dir_manager(), username_for_share());
-    if (!lookup.good()) {
-      DCHECK(false) << "ScopedDirLookup failed when checking initial sync";
-      syncable::AutofillMigrationDebugInfo null_value = {0};
-      return null_value;
-    }
-    return lookup->get_autofill_migration_debug_info();
-  }
-
   // SyncEngineEventListener implementation.
   virtual void OnSyncEngineEvent(const SyncEngineEvent& event);
 
@@ -1689,27 +1644,6 @@ bool SyncManager::InitialSyncEndedForAllEnabledTypes() {
 
 void SyncManager::StartSyncingNormally() {
   data_->StartSyncingNormally();
-}
-
-syncable::AutofillMigrationState
-    SyncManager::GetAutofillMigrationState() {
-  return data_->GetAutofillMigrationState();
-}
-
-void SyncManager::SetAutofillMigrationState(
-    syncable::AutofillMigrationState state) {
-  return data_->SetAutofillMigrationState(state);
-}
-
-syncable::AutofillMigrationDebugInfo
-    SyncManager::GetAutofillMigrationDebugInfo() {
-  return data_->GetAutofillMigrationDebugInfo();
-}
-
-void SyncManager::SetAutofillMigrationDebugInfo(
-    syncable::AutofillMigrationDebugInfo::PropertyToSet property_to_set,
-    const syncable::AutofillMigrationDebugInfo& info) {
-  return data_->SetAutofillMigrationDebugInfo(property_to_set, info);
 }
 
 void SyncManager::SetPassphrase(const std::string& passphrase,

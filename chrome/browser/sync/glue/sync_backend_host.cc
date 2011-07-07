@@ -278,68 +278,6 @@ void SyncBackendHost::Shutdown(bool sync_disabled) {
   core_ = NULL;  // Releases reference to core_.
 }
 
-syncable::AutofillMigrationState
-    SyncBackendHost::GetAutofillMigrationState() {
-  DCHECK_GT(initialization_state_, NOT_INITIALIZED);
-  return core_->sync_manager()->GetAutofillMigrationState();
-}
-
-void SyncBackendHost::SetAutofillMigrationState(
-    syncable::AutofillMigrationState state) {
-  DCHECK_GT(initialization_state_, NOT_INITIALIZED);
-  return core_->sync_manager()->SetAutofillMigrationState(state);
-}
-
-syncable::AutofillMigrationDebugInfo
-    SyncBackendHost::GetAutofillMigrationDebugInfo() {
-  DCHECK_GT(initialization_state_, NOT_INITIALIZED);
-  return core_->sync_manager()->GetAutofillMigrationDebugInfo();
-}
-
-void SyncBackendHost::SetAutofillMigrationDebugInfo(
-    syncable::AutofillMigrationDebugInfo::PropertyToSet property_to_set,
-    const syncable::AutofillMigrationDebugInfo& info) {
-  DCHECK_GT(initialization_state_, NOT_INITIALIZED);
-  return core_->sync_manager()->SetAutofillMigrationDebugInfo(
-      property_to_set, info);
-}
-
-void SyncBackendHost::ConfigureAutofillMigration() {
-  if (GetAutofillMigrationState() == syncable::NOT_DETERMINED) {
-    sync_api::ReadTransaction trans(FROM_HERE, GetUserShare());
-    sync_api::ReadNode autofil_root_node(&trans);
-
-    // Check for the presence of autofill node.
-    if (!autofil_root_node.InitByTagLookup(browser_sync::kAutofillTag)) {
-        SetAutofillMigrationState(syncable::INSUFFICIENT_INFO_TO_DETERMINE);
-      return;
-    }
-
-    // Check for children under autofill node.
-    if (autofil_root_node.GetFirstChildId() == static_cast<int64>(0)) {
-      SetAutofillMigrationState(syncable::INSUFFICIENT_INFO_TO_DETERMINE);
-      return;
-    }
-
-    sync_api::ReadNode autofill_profile_root_node(&trans);
-
-    // Check for the presence of autofill profile root node.
-    if (!autofill_profile_root_node.InitByTagLookup(
-       browser_sync::kAutofillProfileTag)) {
-      SetAutofillMigrationState(syncable::NOT_MIGRATED);
-      return;
-    }
-
-    // If our state is not determined then we should not have the autofill
-    // profile node.
-    DCHECK(false);
-
-    // just set it as not migrated.
-    SetAutofillMigrationState(syncable::NOT_MIGRATED);
-    return;
-  }
-}
-
 SyncBackendHost::PendingConfigureDataTypesState::
 PendingConfigureDataTypesState() : deleted_type(false),
     reason(sync_api::CONFIGURE_REASON_UNKNOWN) {}
@@ -405,10 +343,6 @@ void SyncBackendHost::ConfigureDataTypes(
   DCHECK(!pending_config_mode_state_.get());
   DCHECK(!pending_download_state_.get());
   DCHECK_GT(initialization_state_, NOT_INITIALIZED);
-
-  if (types.count(syncable::AUTOFILL_PROFILE) != 0) {
-    ConfigureAutofillMigration();
-  }
 
   syncable::ModelTypeSet types_copy = types;
   if (enable_nigori) {

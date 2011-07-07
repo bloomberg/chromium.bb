@@ -473,28 +473,6 @@ void ConstructAboutInformation(ProfileSyncService* service,
         val->SetString("group", ModelSafeGroupToString(it->second));
         routing_info->Append(val);
       }
-
-      sync_ui_util::AddBoolSyncDetail(details,
-          "Autofill Migrated",
-          service->GetAutofillMigrationState() ==
-          syncable::MIGRATED);
-      syncable::AutofillMigrationDebugInfo info =
-          service->GetAutofillMigrationDebugInfo();
-
-      sync_ui_util::AddIntSyncDetail(details,
-                                     "Bookmarks created during migration",
-                                     info.bookmarks_added_during_migration);
-      sync_ui_util::AddIntSyncDetail(details,
-          "Autofill entries created during migration",
-          info.autofill_entries_added_during_migration);
-      sync_ui_util::AddIntSyncDetail(details,
-          "Autofill Profiles created during migration",
-          info.autofill_profile_added_during_migration);
-
-      DictionaryValue* val = new DictionaryValue;
-      val->SetString("stat_name", "Autofill Migration Time");
-      val->SetString("stat_value", ConstructTime(info.autofill_migration_time));
-      details->Append(val);
     }
   }
 }

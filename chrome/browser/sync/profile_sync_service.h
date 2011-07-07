@@ -24,7 +24,6 @@
 #include "chrome/browser/sync/js_event_handler_list.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/sync/sync_setup_wizard.h"
-#include "chrome/browser/sync/syncable/autofill_migration.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/unrecoverable_error_handler.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
@@ -389,22 +388,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // classes.  Figure out a different way to expose this info and
   // remove this function.
   void GetModelSafeRoutingInfo(browser_sync::ModelSafeRoutingInfo* out);
-
-  // TODO(akalin): Remove these four functions once we're done with
-  // autofill migration.
-
-  syncable::AutofillMigrationState
-      GetAutofillMigrationState();
-
-  void SetAutofillMigrationState(
-      syncable::AutofillMigrationState state);
-
-  syncable::AutofillMigrationDebugInfo
-      GetAutofillMigrationDebugInfo();
-
-  void SetAutofillMigrationDebugInfo(
-      syncable::AutofillMigrationDebugInfo::PropertyToSet property_to_set,
-      const syncable::AutofillMigrationDebugInfo& info);
 
   // TODO(zea): Remove these and have the dtc's call directly into the SBH.
   virtual void ActivateDataType(

@@ -44,7 +44,7 @@ static const string::size_type kUpdateStatementBufferSize = 2048;
 
 // Increment this version whenever updating DB tables.
 extern const int32 kCurrentDBVersion;  // Global visibility for our unittest.
-const int32 kCurrentDBVersion = 75;
+const int32 kCurrentDBVersion = 76;
 
 namespace {
 
@@ -379,28 +379,12 @@ bool DirectoryBackingStore::SaveChanges(
     update.prepare(dbhandle, "UPDATE share_info "
                    "SET store_birthday = ?, "
                    "next_id = ?, "
-                   "notification_state = ?, "
-                   "autofill_migration_state = ?, "
-                   "bookmarks_added_during_autofill_migration = ?, "
-                   "autofill_migration_time = ?, "
-                   "autofill_entries_added_during_migration = ?, "
-                   "autofill_profiles_added_during_migration = ? ");
+                   "notification_state = ? ");
 
-    const syncable::AutofillMigrationDebugInfo& debug_info =
-        info.autofill_migration_debug_info;
     update.bind_string(0, info.store_birthday);
     update.bind_int64(1, info.next_id);
     update.bind_blob(2, info.notification_state.data(),
                      info.notification_state.size());
-    update.bind_int(3, info.autofill_migration_state);
-    update.bind_int(4,
-        debug_info.bookmarks_added_during_migration);
-    update.bind_int64(5,
-        debug_info.autofill_migration_time);
-    update.bind_int(6,
-        debug_info.autofill_entries_added_during_migration);
-    update.bind_int(7,
-        debug_info.autofill_profile_added_during_migration);
 
     if (!(SQLITE_DONE == update.step() &&
           SQLITE_OK == update.reset() &&
@@ -487,6 +471,12 @@ DirOpenResult DirectoryBackingStore::InitializeTables() {
       version_on_disk = 75;
   }
 
+  // Version 76 removed all (5) autofill migration related columns.
+  if (version_on_disk == 75) {
+    if (MigrateVersion75To76())
+      version_on_disk = 76;
+  }
+
   // If one of the migrations requested it, drop columns that aren't current.
   // It's only safe to do this after migrating all the way to the current
   // version.
@@ -556,6 +546,28 @@ bool DirectoryBackingStore::RefreshColumns() {
                          "ALTER TABLE temp_metas RENAME TO metas");
   if (result != SQLITE_DONE)
     return false;
+
+  // Repeat the process for share_info.
+  SafeDropTable("temp_share_info");
+  if (CreateShareInfoTable(true) != SQLITE_DONE)
+    return false;
+
+  result = ExecQuery(load_dbhandle_,
+                "INSERT INTO temp_share_info (id, name, store_birthday, "
+                "db_create_version, db_create_time, next_id, cache_guid,"
+                "notification_state) "
+                "SELECT id, name, store_birthday, db_create_version, "
+                "db_create_time, next_id, cache_guid, notification_state "
+                "FROM share_info");
+  if (result != SQLITE_DONE)
+    return false;
+
+  SafeDropTable("share_info");
+  result = ExecQuery(load_dbhandle_,
+                     "ALTER TABLE temp_share_info RENAME TO share_info");
+  if (result != SQLITE_DONE)
+    return false;
+
   needs_column_refresh_ = false;
   return true;
 }
@@ -583,11 +595,7 @@ bool DirectoryBackingStore::LoadInfo(Directory::KernelLoadInfo* info) {
     SQLStatement query;
     query.prepare(load_dbhandle_,
                   "SELECT store_birthday, next_id, cache_guid, "
-                  "notification_state, autofill_migration_state, "
-                  "bookmarks_added_during_autofill_migration, "
-                  "autofill_migration_time, "
-                  "autofill_entries_added_during_migration, "
-                  "autofill_profiles_added_during_migration "
+                  "notification_state "
                   "FROM share_info");
     if (SQLITE_ROW != query.step())
       return false;
@@ -595,18 +603,6 @@ bool DirectoryBackingStore::LoadInfo(Directory::KernelLoadInfo* info) {
     info->kernel_info.next_id = query.column_int64(1);
     info->cache_guid = query.column_string(2);
     query.column_blob_as_string(3, &info->kernel_info.notification_state);
-    info->kernel_info.autofill_migration_state =
-        static_cast<AutofillMigrationState> (query.column_int(4));
-    syncable::AutofillMigrationDebugInfo& debug_info =
-        info->kernel_info.autofill_migration_debug_info;
-    debug_info.bookmarks_added_during_migration =
-      query.column_int(5);
-    debug_info.autofill_migration_time =
-      query.column_int64(6);
-    debug_info.autofill_entries_added_during_migration =
-      query.column_int(7);
-    debug_info.autofill_profile_added_during_migration =
-      query.column_int(8);
   }
   {
     SQLStatement query;
@@ -1079,6 +1075,19 @@ bool DirectoryBackingStore::MigrateVersion74To75() {
   return true;
 }
 
+bool DirectoryBackingStore::MigrateVersion75To76() {
+  // This change removed five columns:
+  //   autofill_migration_state
+  //   bookmarks_added_during_autofill_migration
+  //   autofill_migration_time
+  //   autofill_entries_added_during_migration
+  //   autofill_profiles_added_during_migration
+  // No data migration is necessary, but we should do a column refresh.
+  SetVersion(76);
+  needs_column_refresh_ = true;
+  return true;
+}
+
 int DirectoryBackingStore::CreateTables() {
   VLOG(1) << "First run, creating tables";
   // Create two little tables share_version and share_info
@@ -1098,8 +1107,7 @@ int DirectoryBackingStore::CreateTables() {
     return result;
 
   const bool kCreateAsTempShareInfo = false;
-  result =
-      CreateShareInfoTable(kCreateAsTempShareInfo);
+  result = CreateShareInfoTable(kCreateAsTempShareInfo);
   if (result != SQLITE_DONE)
     return result;
   {
@@ -1112,14 +1120,6 @@ int DirectoryBackingStore::CreateTables() {
                                       "?, "   // db_create_time
                                       "-2, "  // next_id
                                       "?, "   // cache_guid
-                                      "?, "   // autofill_migration_state
-                                      "?, "   // bookmarks_added
-                                              // _during_autofill_migration
-                                      "?, "   // autofill_migration_time
-                                      "?, "   // autofill_entries
-                                              // _added_during_migration
-                                      "?, "   // autofill_profiles_added
-                                              // _during_migration
                                       "?);");  // notification_state
     statement.bind_string(0, dir_name_);                   // id
     statement.bind_string(1, dir_name_);                   // name
@@ -1127,11 +1127,6 @@ int DirectoryBackingStore::CreateTables() {
     statement.bind_string(3, SYNC_ENGINE_VERSION_STRING);  // db_create_version
     statement.bind_int(4, static_cast<int32>(time(0)));    // db_create_time
     statement.bind_string(5, GenerateCacheGUID());         // cache_guid
-    statement.bind_int(6, 0);  // autofill_migration_state
-    statement.bind_int(7, 0);  // autofill_migration_time
-    statement.bind_int(8, 0);  // bookmarks_added_during_autofill_migration
-    statement.bind_int(9, 0);  // autofill_entries_added_during_migration
-    statement.bind_int(10, 0);  // autofill_profiles_added_during_migration
     statement.bind_blob(11, NULL, 0);                      // notification_state
     result = statement.step();
   }
@@ -1206,7 +1201,7 @@ int DirectoryBackingStore::CreateShareInfoTable(bool is_temporary) {
   const char* name = is_temporary ? "temp_share_info" : "share_info";
   string query = "CREATE TABLE ";
   query.append(name);
-  // This is the current schema for the ShareInfo table, from version 74
+  // This is the current schema for the ShareInfo table, from version 76
   // onward.
   query.append(" ("
       "id TEXT primary key, "
@@ -1215,12 +1210,7 @@ int DirectoryBackingStore::CreateShareInfoTable(bool is_temporary) {
       "db_create_version TEXT, "
       "db_create_time INT, "
       "next_id INT default -2, "
-      "cache_guid TEXT, "
-      "autofill_migration_state INT default 0, "
-      "bookmarks_added_during_autofill_migration INT default 0, "
-      "autofill_migration_time INT default 0, "
-      "autofill_entries_added_during_migration INT default 0, "
-      "autofill_profiles_added_during_migration INT default 0 ");
+      "cache_guid TEXT ");
 
   query.append(", notification_state BLOB");
   query.append(")");

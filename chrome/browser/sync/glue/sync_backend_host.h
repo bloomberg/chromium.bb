@@ -180,19 +180,6 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
 
   syncable::ModelTypeSet GetEncryptedDataTypes() const;
 
-  syncable::AutofillMigrationState
-      GetAutofillMigrationState();
-
-  void SetAutofillMigrationState(
-      syncable::AutofillMigrationState state);
-
-  syncable::AutofillMigrationDebugInfo
-      GetAutofillMigrationDebugInfo();
-
-  void SetAutofillMigrationDebugInfo(
-      syncable::AutofillMigrationDebugInfo::PropertyToSet property_to_set,
-      const syncable::AutofillMigrationDebugInfo& info);
-
   // Activates change processing for the given data type.  This must
   // be called synchronously with the data type's model association so
   // no changes are dropped between model association and change
@@ -592,8 +579,6 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   };
 
   UIModelWorker* ui_worker();
-
-  void ConfigureAutofillMigration();
 
   // Helper function for ConfigureDataTypes().  Caller owns return
   // value.  Takes ownership of |ready_task| (but not |routing_info|).
