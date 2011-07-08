@@ -192,6 +192,28 @@
    fun:_ZN8remoting*CapturerMac*
 }
 {
+   # See also http://openradar.appspot.com/radar?id=1235407
+   bug_77063
+   Memcheck:Free
+   fun:_ZdlPv
+   fun:_ZN15THFSPlusCatalogD2Ev
+   fun:_ZN5TNode10SetCatalogEP15THFSPlusCatalog
+   fun:_ZN15TMountPointList9AddVolumeEsb
+   fun:_ZN15TMountPointList4FindEsPN5TNode12StPopulatingE
+   fun:_ZN15TMountPointList20SupportsInvisibleBitEsPN5TNode12StPopulatingEb
+   fun:_ZNK21THFSPlusPropertyStore4OpenEbb
+   fun:_ZNK21THFSPlusPropertyStore13GetPropertiesEb
+   fun:_ZN16TFSCopyOperation22GetSourcePropertyStoreERK11THFSPlusRef
+   fun:_ZN16TFSCopyOperation13DoMoveToTrashERK11THFSPlusRef
+   fun:_ZN16TFSCopyOperation3RunEv
+   fun:_FSOperation
+   fun:_FSOperateOnObjectSync
+   fun:FSMoveObjectToTrashSync
+   fun:_Z9TrashFuncRK8FilePath
+   fun:_Z18DispatchToFunctionIPFvRK8FilePathES0_EvT_RK6Tuple1IT0_E
+   fun:_ZN16RunnableFunctionIPFvRK8FilePathE6Tuple1IS0_EE3RunEv
+}
+{
    # See also http://openradar.appspot.com/radar?id=1169404
    bug_79533a
    Memcheck:Value4
@@ -1394,27 +1416,6 @@
    fun:avcodec_open
    fun:_ZN5media23FFmpegVideoDecodeEngine10InitializeEP11MessageLoopPNS_17VideoDecodeEngine12EventHandlerEPNS_18VideoDecodeContextERKNS_16VideoCodecConfigE
    fun:_ZN5media18FFmpegVideoDecoder10InitializeEPNS_13DemuxerStreamEP14CallbackRunnerI6Tuple0EPS3_I6Tuple1IRKNS_18PipelineStatisticsEEE
-}
-{
-   bug_77063
-   Memcheck:Free
-   fun:_ZdlPv
-   fun:_ZN15THFSPlusCatalogD2Ev
-   fun:_ZN5TNode10SetCatalogEP15THFSPlusCatalog
-   fun:_ZN15TMountPointList9AddVolumeEsb
-   fun:_ZN15TMountPointList4FindEsPN5TNode12StPopulatingE
-   fun:_ZN15TMountPointList20SupportsInvisibleBitEsPN5TNode12StPopulatingEb
-   fun:_ZNK21THFSPlusPropertyStore4OpenEbb
-   fun:_ZNK21THFSPlusPropertyStore13GetPropertiesEb
-   fun:_ZN16TFSCopyOperation22GetSourcePropertyStoreERK11THFSPlusRef
-   fun:_ZN16TFSCopyOperation13DoMoveToTrashERK11THFSPlusRef
-   fun:_ZN16TFSCopyOperation3RunEv
-   fun:_FSOperation
-   fun:_FSOperateOnObjectSync
-   fun:FSMoveObjectToTrashSync
-   fun:_Z9TrashFuncRK8FilePath
-   fun:_Z18DispatchToFunctionIPFvRK8FilePathES0_EvT_RK6Tuple1IT0_E
-   fun:_ZN16RunnableFunctionIPFvRK8FilePathE6Tuple1IS0_EE3RunEv
 }
 {
    bug_77265_a
