@@ -32,7 +32,6 @@ namespace remoting {
 namespace protocol {
 
 class JingleSessionManager;
-class SocketWrapper;
 
 // Implements protocol::Session that work over libjingle session (the
 // cricket::Session object is passed to Init() method). Created
@@ -194,19 +193,16 @@ class JingleSession : public protocol::Session,
   scoped_ptr<jingle_glue::TransportChannelSocketAdapter> control_channel_;
   scoped_ptr<net::StreamSocket> control_socket_;
   scoped_ptr<net::StreamSocket> control_ssl_socket_;
-  scoped_ptr<SocketWrapper> control_socket_wrapper_;
 
   cricket::TransportChannel* raw_event_channel_;
   scoped_ptr<jingle_glue::TransportChannelSocketAdapter> event_channel_;
   scoped_ptr<net::StreamSocket> event_socket_;
   scoped_ptr<net::StreamSocket> event_ssl_socket_;
-  scoped_ptr<SocketWrapper> event_socket_wrapper_;
 
   cricket::TransportChannel* raw_video_channel_;
   scoped_ptr<jingle_glue::TransportChannelSocketAdapter> video_channel_;
   scoped_ptr<net::StreamSocket> video_socket_;
   scoped_ptr<net::StreamSocket> video_ssl_socket_;
-  scoped_ptr<SocketWrapper> video_socket_wrapper_;
 
   // Used to verify the certificate received in SSLClientSocket.
   scoped_ptr<net::CertVerifier> cert_verifier_;

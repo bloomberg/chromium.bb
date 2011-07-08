@@ -21,7 +21,6 @@
 #include "net/socket/ssl_server_socket.h"
 #include "remoting/base/constants.h"
 #include "remoting/protocol/jingle_session_manager.h"
-#include "remoting/protocol/socket_wrapper.h"
 #include "third_party/libjingle/source/talk/base/thread.h"
 #include "third_party/libjingle/source/talk/p2p/base/session.h"
 #include "third_party/libjingle/source/talk/p2p/base/p2ptransportchannel.h"
@@ -188,41 +187,31 @@ void JingleSession::CloseInternal(int result, bool failed) {
   if (!closed_ && !closing_) {
     closing_ = true;
 
-    if (control_channel_.get())
-      control_channel_->Close(result);
-    control_socket_.reset();
-    control_ssl_socket_.reset();
-    if (control_socket_wrapper_.get())
-      control_socket_wrapper_->Disconnect();
-
-    if (event_channel_.get())
-      event_channel_->Close(result);
-    event_socket_.reset();
-    event_ssl_socket_.reset();
-    if (event_socket_wrapper_.get())
-      event_socket_wrapper_->Disconnect();
-
-    if (video_channel_.get())
-      video_channel_->Close(result);
-    video_socket_.reset();
-    video_ssl_socket_.reset();
-    if (video_socket_wrapper_.get())
-      video_socket_wrapper_->Disconnect();
-
-    if (video_rtp_channel_.get())
-      video_rtp_channel_->Close(result);
-    if (video_rtcp_channel_.get())
-      video_rtcp_channel_->Close(result);
-
-    if (cricket_session_) {
-      cricket_session_->Terminate();
-      cricket_session_->SignalState.disconnect(this);
-    }
-
+    // Inform the StateChangeCallback, so calling code knows not to touch any
+    // channels.
     if (failed)
       SetState(FAILED);
     else
       SetState(CLOSED);
+
+    // Now tear down the remoting channel resources.
+    control_channel_.reset();
+    control_socket_.reset();
+    control_ssl_socket_.reset();
+    event_channel_.reset();
+    event_socket_.reset();
+    event_ssl_socket_.reset();
+    video_channel_.reset();
+    video_socket_.reset();
+    video_ssl_socket_.reset();
+    video_rtp_channel_.reset();
+    video_rtcp_channel_.reset();
+
+    // Tear down the cricket session, including the cricket transport channels.
+    if (cricket_session_) {
+      cricket_session_->Terminate();
+      cricket_session_->SignalState.disconnect(this);
+    }
 
     closed_ = true;
   }
@@ -255,18 +244,18 @@ void JingleSession::SetStateChangeCallback(StateChangeCallback* callback) {
 
 net::Socket* JingleSession::control_channel() {
   DCHECK(CalledOnValidThread());
-  return control_socket_wrapper_.get();
+  return control_ssl_socket_.get();
 }
 
 net::Socket* JingleSession::event_channel() {
   DCHECK(CalledOnValidThread());
-  return event_socket_wrapper_.get();
+  return event_ssl_socket_.get();
 }
 
 // TODO(sergeyu): Remove this method after we switch to RTP.
 net::Socket* JingleSession::video_channel() {
   DCHECK(CalledOnValidThread());
-  return video_socket_wrapper_.get();
+  return video_ssl_socket_.get();
 }
 
 net::Socket* JingleSession::video_rtp_channel() {
@@ -653,22 +642,9 @@ void JingleSession::OnSSLConnect(int result) {
     return;
   }
 
-  if (control_ssl_socket_.get() && control_ssl_socket_->IsConnected()) {
-    control_socket_wrapper_.reset(
-        new SocketWrapper(control_ssl_socket_.release()));
-  }
-  if (event_ssl_socket_.get() && event_ssl_socket_->IsConnected()) {
-    event_socket_wrapper_.reset(
-        new SocketWrapper(event_ssl_socket_.release()));
-  }
-  if (video_ssl_socket_.get() && video_ssl_socket_->IsConnected()) {
-    video_socket_wrapper_.reset(
-        new SocketWrapper(video_ssl_socket_.release()));
-  }
-
-  if (event_socket_wrapper_.get() &&
-      control_socket_wrapper_.get() &&
-      video_socket_wrapper_.get()) {
+  if (event_ssl_socket_.get() && event_ssl_socket_->IsConnected() &&
+      control_ssl_socket_.get() && control_ssl_socket_->IsConnected() &&
+      video_ssl_socket_.get() && video_ssl_socket_->IsConnected()) {
     SetState(CONNECTED);
   }
 }

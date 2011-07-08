@@ -596,8 +596,6 @@
         'protocol/session_manager.h',
         'protocol/socket_reader_base.cc',
         'protocol/socket_reader_base.h',
-        'protocol/socket_wrapper.cc',
-        'protocol/socket_wrapper.h',
         'protocol/util.cc',
         'protocol/util.h',
         'protocol/video_reader.cc',
