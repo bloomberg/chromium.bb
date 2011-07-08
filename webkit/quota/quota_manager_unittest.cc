@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <set>
 #include <sstream>
 #include <vector>
 
@@ -37,13 +38,12 @@ class QuotaManagerTest : public testing::Test {
  protected:
   typedef QuotaManager::QuotaTableEntry QuotaTableEntry;
   typedef QuotaManager::QuotaTableEntries QuotaTableEntries;
-  typedef QuotaManager::LastAccessTimeTableEntry LastAccessTimeTableEntry;
-  typedef QuotaManager::LastAccessTimeTableEntries LastAccessTimeTableEntries;
+  typedef QuotaManager::OriginInfoTableEntries OriginInfoTableEntries;
 
  public:
   QuotaManagerTest()
       : callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-        virtual_time_counter_(0) {
+        mock_time_counter_(0) {
   }
 
   void SetUp() {
@@ -202,7 +202,7 @@ class QuotaManagerTest : public testing::Test {
                              StorageType type) {
     DCHECK(client);
     quota_manager_->NotifyStorageAccessedInternal(
-        client->id(), origin, type, GetCurrentMockTime());
+        client->id(), origin, type, IncrementMockTime());
   }
 
   void DeleteOriginFromDatabase(const GURL& origin, StorageType type) {
@@ -223,18 +223,25 @@ class QuotaManagerTest : public testing::Test {
     quota_manager_->NotifyOriginNoLongerInUse(origin);
   }
 
+  void GetOriginsModifiedSince(StorageType type, base::Time modified_since) {
+    modified_origins_.clear();
+    quota_manager_->GetOriginsModifiedSince(type, modified_since,
+        callback_factory_.NewCallback(
+            &QuotaManagerTest::DidGetModifiedOrigins));
+  }
+
   void DumpQuotaTable() {
-    quota_table_.clear();
+    quota_entries_.clear();
     quota_manager_->DumpQuotaTable(
         callback_factory_.NewCallback(
             &QuotaManagerTest::DidDumpQuotaTable));
   }
 
-  void DumpLastAccessTimeTable() {
-    last_access_time_table_.clear();
-    quota_manager_->DumpLastAccessTimeTable(
+  void DumpOriginInfoTable() {
+    origin_info_entries_.clear();
+    quota_manager_->DumpOriginInfoTable(
         callback_factory_.NewCallback(
-            &QuotaManagerTest::DidDumpLastAccessTimeTable));
+            &QuotaManagerTest::DidDumpOriginInfoTable));
   }
 
   void DidGetUsageAndQuota(QuotaStatusCode status, int64 usage, int64 quota) {
@@ -299,12 +306,16 @@ class QuotaManagerTest : public testing::Test {
     lru_origin_ = origin;
   }
 
-  void DidDumpQuotaTable(const QuotaTableEntries& entries) {
-    quota_table_ = entries;
+  void DidGetModifiedOrigins(const std::set<GURL>& origins) {
+    modified_origins_ = origins;
   }
 
-  void DidDumpLastAccessTimeTable(const LastAccessTimeTableEntries& entries) {
-    last_access_time_table_ = entries;
+  void DidDumpQuotaTable(const QuotaTableEntries& entries) {
+    quota_entries_ = entries;
+  }
+
+  void DidDumpOriginInfoTable(const OriginInfoTableEntries& entries) {
+    origin_info_entries_ = entries;
   }
 
   void GetUsage_WithModifyTestBody(const StorageType type);
@@ -333,18 +344,19 @@ class QuotaManagerTest : public testing::Test {
   int64 quota() const { return quota_; }
   int64 available_space() const { return available_space_; }
   const GURL& lru_origin() const { return lru_origin_; }
-  const QuotaTableEntries& quota_table() const { return quota_table_; }
-  const LastAccessTimeTableEntries& last_access_time_table() const {
-    return last_access_time_table_;
+  const std::set<GURL>& modified_origins() const { return modified_origins_; }
+  const QuotaTableEntries& quota_entries() const { return quota_entries_; }
+  const OriginInfoTableEntries& origin_info_entries() const {
+    return origin_info_entries_;
   }
   FilePath profile_path() const { return data_dir_.path(); }
   int status_callback_count() const { return status_callback_count_; }
   void reset_status_callback_count() { status_callback_count_ = 0; }
 
  private:
-  base::Time GetCurrentMockTime() {
-    ++virtual_time_counter_;
-    return base::Time::FromDoubleT(virtual_time_counter_ * 10.0);
+  base::Time IncrementMockTime() {
+    ++mock_time_counter_;
+    return base::Time::FromDoubleT(mock_time_counter_ * 10.0);
   }
 
   ScopedTempDir data_dir_;
@@ -361,13 +373,14 @@ class QuotaManagerTest : public testing::Test {
   int64 quota_;
   int64 available_space_;
   GURL lru_origin_;
-  QuotaTableEntries quota_table_;
-  LastAccessTimeTableEntries last_access_time_table_;
+  std::set<GURL> modified_origins_;
+  QuotaTableEntries quota_entries_;
+  OriginInfoTableEntries origin_info_entries_;
   int status_callback_count_;
 
   int additional_callback_count_;
 
-  int virtual_time_counter_;
+  int mock_time_counter_;
 
   DISALLOW_COPY_AND_ASSIGN(QuotaManagerTest);
 };
@@ -1051,12 +1064,12 @@ TEST_F(QuotaManagerTest, EvictOriginData) {
   EvictOriginData(GURL("http://foo.com/"), kTemp);
   MessageLoop::current()->RunAllPending();
 
-  DumpLastAccessTimeTable();
+  DumpOriginInfoTable();
   MessageLoop::current()->RunAllPending();
 
-  typedef LastAccessTimeTableEntries::const_iterator iterator;
-  for (iterator itr(last_access_time_table().begin()),
-                end(last_access_time_table().end());
+  typedef OriginInfoTableEntries::const_iterator iterator;
+  for (iterator itr(origin_info_entries().begin()),
+                end(origin_info_entries().end());
        itr != end; ++itr) {
     if (itr->type == kTemp)
       EXPECT_NE(std::string("http://foo.com/"), itr->origin.spec());
@@ -1112,13 +1125,13 @@ TEST_F(QuotaManagerTest, EvictOriginDataWithDeletionError) {
     EXPECT_EQ(kQuotaErrorInvalidModification, status());
   }
 
-  DumpLastAccessTimeTable();
+  DumpOriginInfoTable();
   MessageLoop::current()->RunAllPending();
 
   bool found_origin_in_database = false;
-  typedef LastAccessTimeTableEntries::const_iterator iterator;
-  for (iterator itr(last_access_time_table().begin()),
-                end(last_access_time_table().end());
+  typedef OriginInfoTableEntries::const_iterator iterator;
+  for (iterator itr(origin_info_entries().begin()),
+                end(origin_info_entries().end());
        itr != end; ++itr) {
     if (itr->type == kTemp &&
         GURL("http://foo.com/") == itr->origin) {
@@ -1240,12 +1253,12 @@ TEST_F(QuotaManagerTest, DeleteOriginDataMultiple) {
 
   EXPECT_EQ(3, status_callback_count());
 
-  DumpLastAccessTimeTable();
+  DumpOriginInfoTable();
   MessageLoop::current()->RunAllPending();
 
-  typedef LastAccessTimeTableEntries::const_iterator iterator;
-  for (iterator itr(last_access_time_table().begin()),
-                end(last_access_time_table().end());
+  typedef OriginInfoTableEntries::const_iterator iterator;
+  for (iterator itr(origin_info_entries().begin()),
+                end(origin_info_entries().end());
        itr != end; ++itr) {
     if (itr->type == kTemp) {
       EXPECT_NE(std::string("http://foo.com/"), itr->origin.spec());
@@ -1408,6 +1421,54 @@ TEST_F(QuotaManagerTest, GetLRUOriginWithOriginInUse) {
   EXPECT_EQ("http://a.com/", lru_origin().spec());
 }
 
+TEST_F(QuotaManagerTest, GetOriginsModifiedSince) {
+  static const MockOriginData kData[] = {
+    { "http://a.com/",   kTemp,  0 },
+    { "http://a.com:1/", kTemp,  0 },
+    { "https://a.com/",  kTemp,  0 },
+    { "http://b.com/",   kPerm,  0 },  // persistent
+    { "http://c.com/",   kTemp,  0 },
+  };
+  MockStorageClient* client = CreateClient(kData, ARRAYSIZE_UNSAFE(kData));
+  RegisterClient(client);
+
+  GetOriginsModifiedSince(kTemp, base::Time());
+  MessageLoop::current()->RunAllPending();
+  EXPECT_TRUE(modified_origins().empty());
+
+  base::Time time1 = client->IncrementMockTime();
+  client->ModifyOriginAndNotify(GURL("http://a.com/"), kTemp, 10);
+  client->ModifyOriginAndNotify(GURL("http://a.com:1/"), kTemp, 10);
+  client->ModifyOriginAndNotify(GURL("http://b.com/"), kPerm, 10);
+  base::Time time2 = client->IncrementMockTime();
+  client->ModifyOriginAndNotify(GURL("https://a.com/"), kTemp, 10);
+  client->ModifyOriginAndNotify(GURL("http://c.com/"), kTemp, 10);
+  base::Time time3 = client->IncrementMockTime();
+
+  GetOriginsModifiedSince(kTemp, time1);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(4U, modified_origins().size());
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kData); ++i) {
+    if (kData[i].type == kTemp)
+      EXPECT_EQ(1U, modified_origins().count(GURL(kData[i].origin)));
+  }
+
+  GetOriginsModifiedSince(kTemp, time2);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(2U, modified_origins().size());
+
+  GetOriginsModifiedSince(kTemp, time3);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_TRUE(modified_origins().empty());
+
+  client->ModifyOriginAndNotify(GURL("http://a.com/"), kTemp, 10);
+
+  GetOriginsModifiedSince(kTemp, time3);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(1U, modified_origins().size());
+  EXPECT_EQ(1U, modified_origins().count(GURL("http://a.com/")));
+}
+
 TEST_F(QuotaManagerTest, DumpQuotaTable) {
   SetPersistentHostQuota("example1.com", 1);
   SetPersistentHostQuota("example2.com", 20);
@@ -1418,15 +1479,15 @@ TEST_F(QuotaManagerTest, DumpQuotaTable) {
   MessageLoop::current()->RunAllPending();
 
   const QuotaTableEntry kEntries[] = {
-    {"example1.com", kPerm, 1},
-    {"example2.com", kPerm, 20},
-    {"example3.com", kPerm, 300},
+    QuotaTableEntry("example1.com", kPerm, 1),
+    QuotaTableEntry("example2.com", kPerm, 20),
+    QuotaTableEntry("example3.com", kPerm, 300),
   };
   std::set<QuotaTableEntry> entries
       (kEntries, kEntries + ARRAYSIZE_UNSAFE(kEntries));
 
   typedef QuotaTableEntries::const_iterator iterator;
-  for (iterator itr(quota_table().begin()), end(quota_table().end());
+  for (iterator itr(quota_entries().begin()), end(quota_entries().end());
        itr != end; ++itr) {
     SCOPED_TRACE(testing::Message()
                  << "host = " << itr->host << ", "
@@ -1436,7 +1497,7 @@ TEST_F(QuotaManagerTest, DumpQuotaTable) {
   EXPECT_TRUE(entries.empty());
 }
 
-TEST_F(QuotaManagerTest, DumpLastAccessTimeTable) {
+TEST_F(QuotaManagerTest, DumpOriginInfoTable) {
   using std::make_pair;
 
   quota_manager()->NotifyStorageAccessed(
@@ -1453,7 +1514,7 @@ TEST_F(QuotaManagerTest, DumpLastAccessTimeTable) {
       kPerm);
   MessageLoop::current()->RunAllPending();
 
-  DumpLastAccessTimeTable();
+  DumpOriginInfoTable();
   MessageLoop::current()->RunAllPending();
 
   typedef std::pair<GURL, StorageType> TypedOrigin;
@@ -1465,9 +1526,9 @@ TEST_F(QuotaManagerTest, DumpLastAccessTimeTable) {
   std::set<Entry> entries
       (kEntries, kEntries + ARRAYSIZE_UNSAFE(kEntries));
 
-  typedef LastAccessTimeTableEntries::const_iterator iterator;
-  for (iterator itr(last_access_time_table().begin()),
-                end(last_access_time_table().end());
+  typedef OriginInfoTableEntries::const_iterator iterator;
+  for (iterator itr(origin_info_entries().begin()),
+                end(origin_info_entries().end());
        itr != end; ++itr) {
     SCOPED_TRACE(testing::Message()
                  << "host = " << itr->origin << ", "

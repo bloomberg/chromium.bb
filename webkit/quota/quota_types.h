@@ -14,6 +14,8 @@
 #include "base/callback_old.h"
 #include "base/stl_util-inl.h"
 
+class GURL;
+
 namespace quota {
 
 enum StorageType {
@@ -50,6 +52,7 @@ typedef Callback4<QuotaStatusCode,
 typedef Callback2<QuotaStatusCode,
                   int64>::Type AvailableSpaceCallback;
 typedef Callback1<QuotaStatusCode>::Type StatusCallback;
+typedef Callback1<const std::set<GURL>&>::Type GetOriginsCallback;
 
 // Simple template wrapper for a callback queue.
 template <typename CallbackType>
