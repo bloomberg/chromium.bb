@@ -33,6 +33,9 @@ void PrintAndWaitForPrintPreviewTab(
 
 }  // namespace
 
+// crbug.com/88104 - v8_shell#host doesn't build when host=="arm".
+#if !defined(ARCH_CPU_ARM_FAMILY)
+
 class PrintPreviewWebUITest
     : public WebUIBrowserTest,
       public TestTabStripModelObserver::LoadStartObserver {
@@ -72,7 +75,6 @@ class PrintPreviewWebUITest
   }
 };
 
-IN_PROC_BROWSER_TEST_F(PrintPreviewWebUITest, FLAKY_TestPrintPreview) {
-  ASSERT_TRUE(RunJavascriptTest("testPrintPreview",
-                                *Value::CreateBooleanValue(HasPDFLib())));
-}
+#include "js2webui/chrome/test/data/webui/print_preview-inl.h"
+
+#endif  // !defined(ARCH_CPU_ARM_FAMILY)

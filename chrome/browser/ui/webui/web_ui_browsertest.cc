@@ -279,7 +279,6 @@ IN_PROC_BROWSER_TEST_F(WebUIBrowserExpectFailTest, TestFailsFast) {
                        "WebUITestHandler::Observe");
 }
 
-
 // crbug.com/88104 - v8_shell#host doesn't build when host=="arm".
 #if !defined(ARCH_CPU_ARM_FAMILY)
 // This test framework is used in the generated tests, which are included
@@ -321,6 +320,6 @@ class WebUIBrowserTestPass
 const char WebUIBrowserTestPass::kChromeTestBrowserTestPass[] =
     "chrome://WebUIBrowserTestPass";
 
-#include "chrome/test/data/webui/sample_pass-inl.h"
+#include "js2webui/chrome/test/data/webui/sample_pass-inl.h"
 
 #endif  // !defined(ARCH_CPU_ARM_FAMILY)

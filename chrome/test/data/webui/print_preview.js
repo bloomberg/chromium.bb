@@ -70,13 +70,8 @@
  })();
 
 // Tests.
-function testPrintPreview(printEnabled) {
-  var printButton = $('print-button');
-  assertTrue(printButton != null, 'printButton != null');
-  var cancelButton = $('cancel-button');
-  assertTrue(cancelButton != null, 'cancelButton != null');
+function FLAKY_TestPrinterList() {
   var printer_list = $('printer-list');
-  assertTrue(printEnabled, 'printEnabled');
   assertTrue(!!printer_list, 'printer_list');
   assertTrue(printer_list.options.length >= 2, 'printer-list has at least 2');
   expectEquals('FooName', printer_list.options[0].text, '0 text is FooName');
@@ -86,3 +81,6 @@ function testPrintPreview(printEnabled) {
   expectEquals('BarDevice', printer_list.options[1].value,
                '1 value is BarDevice');
 }
+
+var test_fixture = 'PrintPreviewWebUITest';
+var test_add_library = false;

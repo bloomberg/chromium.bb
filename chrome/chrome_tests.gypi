@@ -2542,6 +2542,7 @@
         'renderer/safe_browsing/render_view_fake_resources_test.h',
         'renderer/translate_helper_browsertest.cc',
         'test/automation/dom_automation_browsertest.cc',
+        'test/data/webui/print_preview.js',
         'test/data/webui/sample_pass.js',
         'test/gpu/gpu_browsertest.cc',
         'test/in_process_browser_test_browsertest.cc',
@@ -2736,7 +2737,7 @@
                 '<(js2webui)',
               ],
               'outputs': [
-                '<(js2webui_out_dir)/chrome/<(rule_input_relpath)/<(RULE_INPUT_ROOT)-inl.h',
+                '<(js2webui_out_dir)/js2webui/chrome/<(rule_input_relpath)/<(RULE_INPUT_ROOT)-inl.h',
               ],
               'process_outputs_as_sources': 1,
               'action': [
