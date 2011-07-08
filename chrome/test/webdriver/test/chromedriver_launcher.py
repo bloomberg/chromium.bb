@@ -60,7 +60,7 @@ class ChromeDriverLauncher:
     """
     script_dir = os.path.dirname(__file__)
     chrome_src = os.path.abspath(os.path.join(
-        script_dir, os.pardir, os.pardir, os.pardir))
+        script_dir, os.pardir, os.pardir, os.pardir, os.pardir))
     bin_dirs = {
       'linux2': [ os.path.join(chrome_src, 'out', 'Debug'),
                   os.path.join(chrome_src, 'sconsbuild', 'Debug'),

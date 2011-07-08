@@ -42,7 +42,7 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 def DataDir():
   """Returns the path to the data dir chrome/test/data."""
   return os.path.normpath(
-    os.path.join(os.path.dirname(__file__), os.pardir, "data"))
+    os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, "data"))
 
 
 def GetFileURLForPath(path):
