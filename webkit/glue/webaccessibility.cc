@@ -354,6 +354,9 @@ void WebAccessibility::Init(const WebKit::WebAccessibilityObject& src,
           element.to<WebKit::WebFormControlElement>();
       if (form_element.formControlType() == ASCIIToUTF16("text") ||
           form_element.formControlType() == ASCIIToUTF16("textarea")) {
+        // Jaws gets confused by children of text fields, so we ignore them.
+        include_children = false;
+
         attributes[ATTR_TEXT_SEL_START] = base::IntToString16(
             src.selectionStart());
         attributes[ATTR_TEXT_SEL_END] = base::IntToString16(src.selectionEnd());
