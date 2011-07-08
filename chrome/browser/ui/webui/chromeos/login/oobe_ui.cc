@@ -94,7 +94,6 @@ class CoreOobeHandler : public OobeMessageHandler {
 OobeUIHTMLSource::OobeUIHTMLSource(DictionaryValue* localized_strings)
     : DataSource(chrome::kChromeUIOobeHost, MessageLoop::current()),
       localized_strings_(localized_strings) {
-  SetFontAndTextDirection(localized_strings_.get());
 }
 
 void OobeUIHTMLSource::StartDataRequest(const std::string& path,
@@ -215,6 +214,7 @@ void OobeUI::GetLocalizedStrings(DictionaryValue* localized_strings) {
     static_cast<OobeMessageHandler*>(handlers_[i])->
         GetLocalizedStrings(localized_strings);
   }
+  ChromeURLDataManager::DataSource::SetFontAndTextDirection(localized_strings);
 }
 
 void OobeUI::AddOobeMessageHandler(OobeMessageHandler* handler) {

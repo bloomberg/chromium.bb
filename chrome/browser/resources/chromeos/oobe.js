@@ -78,7 +78,8 @@ cr.define('cr.ui', function() {
    * Setups given "select" element using the list and adds callback.
    * @param {!Element} select Select object to be updated.
    * @param {!Object} list List of the options to be added.
-   * @param {string} callback Callback name which should be send to Chrome.
+   * @param {string} callback Callback name which should be send to Chrome or
+   * an empty string if the event listener shouldn't be added.
    */
   Oobe.setupSelect = function(select, list, callback) {
     select.options.length = 0;
@@ -88,9 +89,11 @@ cr.define('cr.ui', function() {
           new Option(item.title, item.value, item.selected, item.selected);
       select.appendChild(option);
     }
-    select.addEventListener('change', function(event) {
-      chrome.send(callback, [select.options[select.selectedIndex].value]);
-    });
+    if (callback) {
+      select.addEventListener('change', function(event) {
+        chrome.send(callback, [select.options[select.selectedIndex].value]);
+      });
+    }
   }
 
   /**
@@ -233,13 +236,11 @@ cr.define('cr.ui', function() {
    */
   Oobe.reloadContent = function(data) {
     i18nTemplate.process(document, data);
-    // Also update language and input methods lists.
-    Oobe.setupSelect($('language-select'),
-                     data.languageList,
-                     'networkOnLanguageChanged');
-    Oobe.setupSelect($('keyboard-select'),
-                     data.inputMethodsList,
-                     'networkOnInputMethodChanged');
+    // Update language and input method menu lists.
+    Oobe.setupSelect($('language-select'), data.languageList, '');
+    Oobe.setupSelect($('keyboard-select'), data.inputMethodsList, '');
+    // Update the network control position.
+    Oobe.refreshNetworkControl();
   }
 
   // Export

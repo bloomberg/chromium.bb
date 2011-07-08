@@ -35,7 +35,7 @@ const char kJsApiNetworkOnInputMethodChanged[] = "networkOnInputMethodChanged";
 const char kJsApiNetworkControlPosition[] = "networkControlPosition";
 
 // Width/height of the network control window.
-const int kNetworkControlWidth = 150;
+const int kNetworkControlWidth = 250;
 const int kNetworkControlHeight = 25;
 
 // Offsets for the network dropdown control menu.
