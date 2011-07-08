@@ -89,6 +89,7 @@ class SystemKeyEventListener : public WmMessageListener::Observer,
   bool stopped_;
 
   ObserverList<CapslockObserver> capslock_observers_;
+  int xkb_event_base_code_;
 
   // AudioHandler is a Singleton class we are just caching a pointer to here,
   // and we do not own the pointer.

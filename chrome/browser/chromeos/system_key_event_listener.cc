@@ -33,6 +33,7 @@ SystemKeyEventListener* SystemKeyEventListener::GetInstance() {
 
 SystemKeyEventListener::SystemKeyEventListener()
     : stopped_(false),
+      xkb_event_base_code_(-1),
       audio_handler_(AudioHandler::GetInstance()) {
   WmMessageListener::GetInstance()->AddObserver(this);
 
@@ -52,6 +53,17 @@ SystemKeyEventListener::SystemKeyEventListener()
   GrabKey(key_f8_, 0);
   GrabKey(key_f9_, 0);
   GrabKey(key_f10_, 0);
+
+  int xkb_major_version = XkbMajorVersion;
+  int xkb_minor_version = XkbMinorVersion;
+  if (!XkbQueryExtension(GDK_DISPLAY(),
+                         NULL,  // opcode_return
+                         &xkb_event_base_code_,
+                         NULL,  // error_return
+                         &xkb_major_version,
+                         &xkb_minor_version)) {
+    LOG(WARNING) << "Could not query Xkb extension";
+  }
 
   if (!XkbSelectEvents(GDK_DISPLAY(), XkbUseCoreKbd,
                        XkbIndicatorStateNotifyMask,
@@ -188,12 +200,13 @@ void SystemKeyEventListener::OnCapslock() {
 }
 
 bool SystemKeyEventListener::ProcessedXEvent(XEvent* xevent) {
-  XkbEvent* xkey_event = reinterpret_cast<XkbEvent*>(xevent);
-  if (xkey_event->any.xkb_type == XkbIndicatorStateNotify) {
-    OnCapslock();
-    return true;
-  }
-  if (xevent->type == KeyPress) {
+  if (xevent->type == xkb_event_base_code_) {
+    XkbEvent* xkey_event = reinterpret_cast<XkbEvent*>(xevent);
+    if (xkey_event->any.xkb_type == XkbIndicatorStateNotify) {
+      OnCapslock();
+      return true;
+    }
+  } else if (xevent->type == KeyPress) {
     int32 keycode = xevent->xkey.keycode;
     if (keycode) {
       // Only doing non-Alt/Shift/Ctrl modified keys
