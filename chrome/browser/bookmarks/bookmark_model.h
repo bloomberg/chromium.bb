@@ -6,11 +6,10 @@
 #define CHROME_BROWSER_BOOKMARKS_BOOKMARK_MODEL_H_
 #pragma once
 
-#include "build/build_config.h"
-
 #include <set>
 #include <vector>
 
+#include "base/basictypes.h"
 #include "base/observer_list.h"
 #include "base/string16.h"
 #include "base/synchronization/lock.h"
@@ -39,8 +38,7 @@ struct TitleMatch;
 // BookmarkNode ---------------------------------------------------------------
 
 // BookmarkNode contains information about a starred entry: title, URL, favicon,
-// star id and type. BookmarkNodes are returned from a BookmarkModel.
-//
+// id and type. BookmarkNodes are returned from BookmarkModel.
 class BookmarkNode : public ui::TreeNode<BookmarkNode> {
  public:
   enum Type {
@@ -50,25 +48,23 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
     OTHER_NODE,
     SYNCED
   };
-  // Creates a new node with the specified url and id of 0
+
+  // Creates a new node with an id of 0 and |url|.
   explicit BookmarkNode(const GURL& url);
-  // Creates a new node with the specified url and id.
+  // Creates a new node with |id| and |url|.
   BookmarkNode(int64 id, const GURL& url);
+
   virtual ~BookmarkNode();
 
-  // Returns the URL.
-  const GURL& GetURL() const { return url_; }
-  // Sets the URL to the given value.
-  void SetURL(const GURL& url) { url_ = url; }
-
-  // Returns a unique id for this node.
+  // Returns an unique id for this node.
   // For bookmark nodes that are managed by the bookmark model, the IDs are
   // persisted across sessions.
   int64 id() const { return id_; }
-  // Sets the id to the given value.
   void set_id(int64 id) { id_ = id; }
 
-  // Returns the type of this node.
+  const GURL& GetURL() const { return url_; }
+  void SetURL(const GURL& url) { url_ = url; }
+
   Type type() const { return type_; }
   void set_type(Type type) { type_ = type; }
 
@@ -78,11 +74,10 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
   void set_date_added(const base::Time& date) { date_added_ = date; }
 
   // Returns the last time the folder was modified. This is only maintained
-  // for folders (including the bookmark and other folder).
+  // for folders (including the bookmark bar and other folder).
   const base::Time& date_folder_modified() const {
     return date_folder_modified_;
   }
-  // Sets the last time the folder was modified.
   void set_date_folder_modified(const base::Time& date) {
     date_folder_modified_ = date;
   }
@@ -90,8 +85,6 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
   // Convenience for testing if this nodes represents a folder. A folder is a
   // node whose type is not URL.
   bool is_folder() const { return type_ != URL; }
-
-  // Is this a URL?
   bool is_url() const { return type_ == URL; }
 
   // Returns the favicon. In nearly all cases you should use the method
@@ -104,17 +97,8 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
   // The following methods are used by the bookmark model, and are not
   // really useful outside of it.
 
-  bool is_favicon_loaded() const { return loaded_favicon_; }
-  void set_favicon_loaded(bool value) { loaded_favicon_ = value; }
-
-  // Accessor method for controlling the visibility of a bookmark node/sub-tree.
-  // Note that visibility is not propagated down the tree hierarchy so if a
-  // parent node is marked as invisible, a child node may return "Visible". This
-  // function is primarily useful when traversing the model to generate a UI
-  // representation but we may want to suppress some nodes.
-  // TODO(yfriedman): Remove this when enable-synced-bookmarks-folder is
-  // no longer a command line flag.
-  bool IsVisible() const;
+  bool is_favicon_loaded() const { return is_favicon_loaded_; }
+  void set_is_favicon_loaded(bool loaded) { is_favicon_loaded_ = loaded; }
 
   HistoryService::Handle favicon_load_handle() const {
     return favicon_load_handle_;
@@ -126,40 +110,49 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
   // Called when the favicon becomes invalid.
   void InvalidateFavicon();
 
+  // Accessor method for controlling the visibility of a bookmark node/sub-tree.
+  // Note that visibility is not propagated down the tree hierarchy so if a
+  // parent node is marked as invisible, a child node may return "Visible". This
+  // function is primarily useful when traversing the model to generate a UI
+  // representation but we may want to suppress some nodes.
+  // TODO(yfriedman): Remove this when enable-synced-bookmarks-folder is
+  // no longer a command line flag.
+  bool IsVisible() const;
+
   // TODO(sky): Consider adding last visit time here, it'll greatly simplify
   // HistoryContentsProvider.
 
  private:
   friend class BookmarkModel;
 
-  // Helper to initialize various fields during construction.
+  // A helper function to initialize various fields during construction.
   void Initialize(int64 id);
 
-  // Unique identifier for this node.
+  // The unique identifier for this node.
   int64 id_;
 
-  // Whether the favicon has been loaded.
-  bool loaded_favicon_;
+  // The URL of this node. BookmarkModel maintains maps off this URL, so changes
+  // to the URL must be done through the BookmarkModel.
+  GURL url_;
 
-  // The favicon.
+  // The type of this node. See enum above.
+  Type type_;
+
+  // Date of when this node was created.
+  base::Time date_added_;
+
+  // Date of the last modification. Only used for folders.
+  base::Time date_folder_modified_;
+
+  // The favicon of this node.
   SkBitmap favicon_;
+
+  // Whether the favicon has been loaded.
+  bool is_favicon_loaded_;
 
   // If non-zero, it indicates we're loading the favicon and this is the handle
   // from the HistoryService.
   HistoryService::Handle favicon_load_handle_;
-
-  // The URL. BookmarkModel maintains maps off this URL, it is important that
-  // changes to the URL is done through the bookmark model.
-  GURL url_;
-
-  // Type of node.
-  Type type_;
-
-  // Date we were created.
-  base::Time date_added_;
-
-  // Time last modified. Only used for folders.
-  base::Time date_folder_modified_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkNode);
 };

@@ -29,7 +29,7 @@ using base::Time;
 namespace {
 
 // Helper to get a mutable bookmark node.
-static BookmarkNode* AsMutable(const BookmarkNode* node) {
+BookmarkNode* AsMutable(const BookmarkNode* node) {
   return const_cast<BookmarkNode*>(node);
 }
 
@@ -50,17 +50,9 @@ BookmarkNode::BookmarkNode(int64 id, const GURL& url)
 BookmarkNode::~BookmarkNode() {
 }
 
-void BookmarkNode::Initialize(int64 id) {
-  id_ = id;
-  loaded_favicon_ = false;
-  favicon_load_handle_ = 0;
-  type_ = !url_.is_empty() ? URL : BOOKMARK_BAR;
-  date_added_ = Time::Now();
-}
-
 void BookmarkNode::InvalidateFavicon() {
-  loaded_favicon_ = false;
   favicon_ = SkBitmap();
+  is_favicon_loaded_ = false;
 }
 
 bool BookmarkNode::IsVisible() const {
@@ -72,6 +64,14 @@ bool BookmarkNode::IsVisible() const {
     return true;
   }
   return false;
+}
+
+void BookmarkNode::Initialize(int64 id) {
+  id_ = id;
+  type_ = url_.is_empty() ? FOLDER : URL;
+  date_added_ = Time::Now();
+  is_favicon_loaded_ = false;
+  favicon_load_handle_ = 0;
 }
 
 // BookmarkModel --------------------------------------------------------------
@@ -234,7 +234,7 @@ const SkBitmap& BookmarkModel::GetFavicon(const BookmarkNode* node) {
   DCHECK(node);
   if (!node->is_favicon_loaded()) {
     BookmarkNode* mutable_node = AsMutable(node);
-    mutable_node->set_favicon_loaded(true);
+    mutable_node->set_is_favicon_loaded(true);
     LoadFavicon(mutable_node);
   }
   return node->favicon();
