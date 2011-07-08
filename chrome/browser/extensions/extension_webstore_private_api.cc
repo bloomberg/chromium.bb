@@ -454,6 +454,12 @@ void BeginInstallWithManifestFunction::InstallUIProceed() {
   SetResult(ERROR_NONE);
   SendResponse(true);
 
+  // The Permissions_Install histogram is recorded from the ExtensionService
+  // for all extension installs, so we only need to record the web store
+  // specific histogram here.
+  ExtensionService::RecordPermissionMessagesHistogram(
+      dummy_extension_, "Extensions.Permissions_WebStoreInstall");
+
   // Matches the AddRef in RunImpl().
   Release();
 }
@@ -462,6 +468,21 @@ void BeginInstallWithManifestFunction::InstallUIAbort(bool user_initiated) {
   error_ = std::string(kUserCancelledError);
   SetResult(USER_CANCELLED);
   SendResponse(false);
+
+  // The web store install histograms are a subset of the install histograms.
+  // We need to record both histograms here since CrxInstaller::InstallUIAbort
+  // is never called for web store install cancellations
+  std::string histogram_name = user_initiated ?
+      "Extensions.Permissions_WebStoreInstallCancel" :
+      "Extensions.Permissions_WebStoreInstallAbort";
+  ExtensionService::RecordPermissionMessagesHistogram(
+      dummy_extension_, histogram_name.c_str());
+
+  histogram_name = user_initiated ?
+      "Extensions.Permissions_InstallCancel" :
+      "Extensions.Permissions_InstallAbort";
+  ExtensionService::RecordPermissionMessagesHistogram(
+      dummy_extension_, histogram_name.c_str());
 
   // Matches the AddRef in RunImpl().
   Release();
