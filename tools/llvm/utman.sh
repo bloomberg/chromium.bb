@@ -631,10 +631,7 @@ glibc() {
                libpthread-2.9.so libpthread.a libpthread.so \
                libpthread.so.0 libpthread_nonshared.a \
                runnable-ld.so \
-               ld-2.9.so \
-               ldscripts/elf_nacl.x ldscripts/elf64_nacl.x \
-               ldscripts/elf_nacl.xs ldscripts/elf64_nacl.xs \
-               ldscripts/elf_nacl.x.static ldscripts/elf64_nacl.x.static"
+               ld-2.9.so"
 
   for lib in ${LIBS1} ; do
     cp -a "${NNACL_GLIBC_ROOT}/lib/gcc/nacl64/4.4.3/32/${lib}" \
@@ -647,6 +644,14 @@ glibc() {
     cp -a "${NNACL_GLIBC_ROOT}/nacl64/lib32/${lib}" "${PNACL_X8632_ROOT}"
     cp -a "${NNACL_GLIBC_ROOT}/nacl64/lib/${lib}" "${PNACL_X8664_ROOT}"
   done
+
+  # Copy linker scripts
+  # We currently only depend on elf[64]_nacl.x,
+  # elf[64]_nacl.xs, and elf[64]_nacl.x.static.
+  cp -a "${NNACL_GLIBC_ROOT}/nacl64/lib/ldscripts/elf_nacl.x"* \
+        "${PNACL_X8632_ROOT}"
+  cp -a "${NNACL_GLIBC_ROOT}/nacl64/lib/ldscripts/elf64_nacl.x"* \
+        "${PNACL_X8664_ROOT}"
 
   # ld-linux has different sonames across 32/64.
   # Create symlinks to make them look the same.
