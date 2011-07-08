@@ -53,17 +53,6 @@ install-lkgr-toolchains() {
   gclient runhooks --force
 }
 
-# We usually do not trust the TC to provide the latest (extra) SDK
-# so we rebuild them here
-# NOTE: we split this in two stages so that we can use -j8 for the second
-partial-sdk() {
-  local platforms=$1
-  # TODO(robertm): teach utman to only build the sdk for those platforms
-  #                we care about
-  echo "@@@BUILD_STEP partial_sdk@@@"
-  UTMAN_BUILDBOT=true tools/llvm/utman.sh extrasdk
-}
-
 # copy data to well known archive server
 push-data-to-archive-server() {
   /b/build/scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \
@@ -206,7 +195,6 @@ mode-trybot-arm() {
   FAIL_FAST=0
   clobber
   install-lkgr-toolchains
-  partial-sdk "arm"
   scons-tests "arm" "--mode=opt-host,nacl -j8 -k" "smoke_tests"
   browser-tests "arm" "--mode=opt-host,nacl -k"
   # TODO(pdox): Reenable when glibc-based PNaCl toolchain is building
@@ -218,7 +206,6 @@ mode-trybot-x8632() {
   FAIL_FAST=0
   clobber
   install-lkgr-toolchains
-  partial-sdk "x86-32"
   scons-tests "x86-32" "--mode=opt-host,nacl -j8 -k" "smoke_tests"
   browser-tests "x86-32" "--mode=opt-host,nacl -k"
   #ad-hoc-shared-lib-tests "x86-32"
@@ -228,7 +215,6 @@ mode-trybot-x8664() {
   FAIL_FAST=0
   clobber
   install-lkgr-toolchains
-  partial-sdk "x86-64"
   scons-tests "x86-64" "--mode=opt-host,nacl -j8 -k" "smoke_tests"
   browser-tests "x86-64" "--mode=opt-host,nacl -k"
   # no adhoc tests for x86-64
@@ -240,7 +226,6 @@ mode-trybot() {
   FAIL_FAST=0
   clobber
   install-lkgr-toolchains
-  partial-sdk "arm x86-32 x86-64"
   scons-tests "arm x86-32 x86-64" "--mode=opt-host,nacl -j8 -k" "smoke_tests"
   browser-tests "arm x86-32 x86-64" "--mode=opt-host,nacl -k"
   #ad-hoc-shared-lib-tests "arm x86-32"
@@ -251,7 +236,6 @@ mode-buildbot-x8632() {
   FAIL_FAST=0
   clobber
   install-lkgr-toolchains
-  partial-sdk "x86-32"
   # First build everything
   scons-tests "x86-32" "--mode=opt-host,nacl -j8 -k" ""
   # Then test (not all nexes which are build are also tested)
@@ -264,7 +248,6 @@ mode-buildbot-x8664() {
   FAIL_FAST=0
   clobber
   install-lkgr-toolchains
-  partial-sdk "x86-64"
   # First build everything
   scons-tests "x86-64" "--mode=opt-host,nacl -j8 -k" ""
   # Then test (not all nexes which are build are also tested)
@@ -289,7 +272,6 @@ mode-buildbot-arm() {
 
   clobber
   install-lkgr-toolchains
-  partial-sdk "arm"
 
   gyp-arm-build Release
 

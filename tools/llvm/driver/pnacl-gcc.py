@@ -68,7 +68,9 @@ EXTRA_ENV = {
 
 
   'PREFIXES'        : '${PREFIXES_USER} ${PREFIXES_BUILTIN}',
-  'PREFIXES_BUILTIN': '${STDLIB ? ${LIBS_ARCH}/ ${LIBS_BC}/}',
+  'PREFIXES_BUILTIN': '${STDLIB ? ' +
+                      '${LIBS_SDK}/ ${LIBS_SDK_ARCH}/ ' +
+                      '${LIBS_ARCH}/ ${LIBS_BC}/}',
   'PREFIXES_USER'   : '', # System prefixes specified by using the -B flag.
 
   'ISYSTEM'        : '${ISYSTEM_USER} ${ISYSTEM_BUILTIN}',
@@ -77,6 +79,7 @@ EXTRA_ENV = {
                           # using the -isystem flag.
 
   'ISYSTEM_newlib' :
+    '${BASE_SDK}/include ' +
     '${BASE_LLVM_GCC}/lib/gcc/arm-none-linux-gnueabi/4.2.1/include ' +
     '${BASE_LLVM_GCC}/' +
       'lib/gcc/arm-none-linux-gnueabi/4.2.1/install-tools/include ' +
@@ -86,6 +89,7 @@ EXTRA_ENV = {
     '${BASE_NEWLIB}/arm-none-linux-gnueabi/include',
 
   'ISYSTEM_glibc' :
+    '${BASE_SDK}/include ' +
     '${BASE_GLIBC}/include ' +
     '${BASE_LLVM_GCC}/lib/gcc/arm-none-linux-gnueabi/4.2.1/include ' +
     '${BASE_LLVM_GCC}/' +
@@ -107,12 +111,19 @@ EXTRA_ENV = {
   'EMITMODE'         : '${STATIC ? static : ${SHARED ? shared : dynamic}}',
 
   # Standard Library Directories
-  'LIBS_BC'          : '${BASE}/libs-bitcode',
+  'LIBS_BC'          : '${BASE}/lib',
 
   'LIBS_ARCH'        : '${LIBS_%ARCH%}',
-  'LIBS_ARM'         : '${BASE}/libs-arm',
-  'LIBS_X8632'       : '${BASE}/libs-x8632',
-  'LIBS_X8664'       : '${BASE}/libs-x8664',
+  'LIBS_ARM'         : '${BASE}/lib-arm',
+  'LIBS_X8632'       : '${BASE}/lib-x86-32',
+  'LIBS_X8664'       : '${BASE}/lib-x86-64',
+
+  'LIBS_SDK'         : '${BASE_SDK}/lib',
+
+  'LIBS_SDK_ARCH'    : '${LIBS_SDK_%ARCH%}',
+  'LIBS_SDK_X8632'   : '${BASE_SDK}/lib-x86-32',
+  'LIBS_SDK_X8664'   : '${BASE_SDK}/lib-x86-64',
+  'LIBS_SDK_ARM'     : '${BASE_SDK}/lib-arm',
 
   'LD_ARGS' : '${STDLIB ? ${LD_ARGS_%LIBMODE%_%EMITMODE%}' +
                       ' : ${LD_ARGS_nostdlib}}',

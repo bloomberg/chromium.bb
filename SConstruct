@@ -2952,24 +2952,45 @@ def AddHeaderInternal(env, nodes, subdir='nacl'):
 nacl_irt_env.AddMethod(AddHeaderInternal, 'AddHeaderToSdk')
 
 def PublishHeader(env, nodes, subdir):
-  dir = env.GetAbsDirArg('includedir', 'install_headers')
-  if subdir is not None:
-    dir += '/' + subdir
-  n = env.Install(dir, nodes)
-  env.Alias('install', env.Alias('install_headers', n))
-  return n
+  if ('install' in COMMAND_LINE_TARGETS or
+      'install_headers' in COMMAND_LINE_TARGETS):
+    dir = env.GetAbsDirArg('includedir', 'install_headers')
+    if subdir is not None:
+      dir += '/' + subdir
+    n = env.Install(dir, nodes)
+    env.Alias('install', env.Alias('install_headers', n))
+    return n
 
-def PublishLibrary(env, nodes):
-  dir = env.GetAbsDirArg('libdir', 'install_lib')
-  n = env.Install(dir, nodes)
-  env.Alias('install', env.Alias('install_lib', n))
-  return n
+# TODO(pdox): Get rid of install_lib_platform / install_lib_portable
+#             by having a "bitcode" target platform.
+def PublishLibrary(env, nodes, is_platform):
+  env.Alias('build_lib', nodes)
+  if is_platform:
+    env.Alias('build_lib_platform', nodes)
+  else:
+    env.Alias('build_lib_portable', nodes)
+
+  if ('install' in COMMAND_LINE_TARGETS or
+      'install_lib' in COMMAND_LINE_TARGETS):
+    dir = env.GetAbsDirArg('libdir', 'install_lib')
+    n = env.Install(dir, nodes)
+    env.Alias('install', env.Alias('install_lib', n))
+    return n
+
+  if is_platform and 'install_lib_platform' in COMMAND_LINE_TARGETS:
+    dir = env.GetAbsDirArg('libdir', 'install_lib_platform')
+    n = env.Install(dir, nodes)
+    env.Alias('install_lib_platform', n)
+    return n
+  elif not is_platform and 'install_lib_portable' in COMMAND_LINE_TARGETS:
+    dir = env.GetAbsDirArg('libdir', 'install_lib_portable')
+    n = env.Install(dir, nodes)
+    env.Alias('install_lib_portable', n)
+    return n
 
 def NaClAddHeader(env, nodes, subdir='nacl'):
   n = AddHeaderInternal(env, nodes, subdir)
-  if ('install' in COMMAND_LINE_TARGETS or
-      'install_headers' in COMMAND_LINE_TARGETS):
-    PublishHeader(env, n, subdir)
+  PublishHeader(env, n, subdir)
   return n
 nacl_env.AddMethod(NaClAddHeader, 'AddHeaderToSdk')
 
@@ -2981,19 +3002,13 @@ def NaClAddLibrary(env, nodes, is_platform=False):
     return name + '.a'
   lib_nodes = [env.File(os.path.join('${LIB_DIR}', libname(lib)))
                for lib in nodes]
-  env.Alias('build_lib', lib_nodes)
-  if ('install' in COMMAND_LINE_TARGETS or
-      'install_lib' in COMMAND_LINE_TARGETS):
-    PublishLibrary(env, lib_nodes)
+  PublishLibrary(env, lib_nodes, is_platform)
   return lib_nodes
 nacl_env.AddMethod(NaClAddLibrary, 'AddLibraryToSdk')
 
 def NaClAddObject(env, nodes, is_platform=False):
   lib_nodes = env.Replicate('${LIB_DIR}', nodes)
-  env.Alias('build_lib', lib_nodes)
-  if ('install' in COMMAND_LINE_TARGETS or
-      'install_lib' in COMMAND_LINE_TARGETS):
-    PublishLibrary(env, lib_nodes)
+  PublishLibrary(env, lib_nodes, is_platform)
   return lib_nodes
 nacl_env.AddMethod(NaClAddObject, 'AddObjectToSdk')
 
@@ -3013,7 +3028,7 @@ def AddImplicitLibs(env):
     if GetPlatform('targetplatform') == 'x86-32':
       implicit_libs.append(os.path.join('32', 'crt1.o'))
     if env.Bit('bitcode'):
-      implicit_libs += ['libehsupport.a']
+      implicit_libs += ['nacl_startup.bc','libehsupport.a']
     else:
       implicit_libs += ['crti.o', 'crtn.o']
     env['IMPLICIT_LIBS'] = [env.File(os.path.join('${LIB_DIR}', file))
@@ -3048,6 +3063,7 @@ nacl_irt_env.Append(
         'src/untrusted/irt/nacl.scons',
         'src/untrusted/nacl/nacl.scons',
         'src/untrusted/pthread/nacl.scons',
+        'src/untrusted/startup/nacl.scons',
         'src/untrusted/stubs/nacl.scons',
     ])
 

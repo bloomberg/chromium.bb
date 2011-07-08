@@ -40,6 +40,7 @@ INITIAL_ENV = {
 
   # Directories
   'BASE_PKG'        : '${BASE}/pkg',
+  'BASE_SDK'        : '${BASE}/sdk',
   'BASE_LLVM'       : '${BASE_PKG}/llvm',
   'BASE_LLVM_GCC'   : '${BASE_PKG}/llvm-gcc',
   'BASE_NEWLIB'     : '${BASE_PKG}/newlib',

@@ -141,18 +141,21 @@ readonly TC_BUILD_NEWLIB="${TC_BUILD}/newlib"
 readonly TC_BUILD_LIBSTDCPP="${TC_BUILD_LLVM_GCC}-arm/libstdcpp"
 readonly TC_BUILD_COMPILER_RT="${TC_BUILD}/compiler_rt"
 
-# These are fake directories, for storing the timestamp only
-readonly TC_BUILD_EXTRASDK="${TC_BUILD}/extrasdk"
-
 readonly TIMESTAMP_FILENAME="make-timestamp"
 
 # PNaCl toolchain locations (absolute!)
 readonly PNACL_TOOLCHAIN_ROOT="${PNACL_ROOT}"
-readonly PNACL_BITCODE_ROOT="${PNACL_TOOLCHAIN_ROOT}/libs-bitcode"
 
-readonly PNACL_ARM_ROOT="${PNACL_TOOLCHAIN_ROOT}/libs-arm"
-readonly PNACL_X8632_ROOT="${PNACL_TOOLCHAIN_ROOT}/libs-x8632"
-readonly PNACL_X8664_ROOT="${PNACL_TOOLCHAIN_ROOT}/libs-x8664"
+readonly PNACL_SDK_ROOT="${PNACL_TOOLCHAIN_ROOT}/sdk"
+readonly PNACL_SDK_INCLUDE="${PNACL_SDK_ROOT}/include"
+readonly PNACL_SDK_LIB="${PNACL_SDK_ROOT}/lib"
+
+# The pattern `lib-${platform}' is implicit in verify(),
+# libehsupport(), and sdk().
+readonly PNACL_LIB_ROOT="${PNACL_TOOLCHAIN_ROOT}/lib"
+readonly PNACL_ARM_ROOT="${PNACL_TOOLCHAIN_ROOT}/lib-arm"
+readonly PNACL_X8632_ROOT="${PNACL_TOOLCHAIN_ROOT}/lib-x86-32"
+readonly PNACL_X8664_ROOT="${PNACL_TOOLCHAIN_ROOT}/lib-x86-64"
 
 # PNaCl client-translators (sandboxed) binary locations
 readonly PNACL_SB_ROOT="${PNACL_ROOT}/tools-sb"
@@ -564,10 +567,8 @@ libs() {
   # NOTE: this currently depends on "llvm-gcc arm"
   build-libgcc_eh-bitcode arm
 
-
   libehsupport
   libstdcpp
-  extrasdk
 }
 
 libc() {
@@ -687,7 +688,6 @@ status() {
   status-helper "GCC-STAGE1"        llvm-gcc
 
   status-helper "NEWLIB"            newlib
-  status-helper "EXTRASDK"          extrasdk
   status-helper "LIBSTDCPP"         libstdcpp
 
 }
@@ -782,10 +782,8 @@ clean-install() {
 #+ libs-clean            - Removes the library directories
 libs-clean() {
   StepBanner "LIBS-CLEAN" "Cleaning ${PNACL_TOOLCHAIN_ROOT}/libs-*"
-  rm -rf ${PNACL_ARM_ROOT} \
-         ${PNACL_BITCODE_ROOT} \
-         ${PNACL_X8632_ROOT} \
-         ${PNACL_X8664_ROOT}
+  rm -rf "${PNACL_LIB_ROOT}"/*
+  rm -rf "${PNACL_LIB_ROOT}"-*/*
 }
 
 
@@ -803,10 +801,15 @@ untrusted_sdk() {
   everything
   prune
 
+  # Building the sandboxed tools requires the SDK
+  sdk
   install-translators srpc
   prune-translator-install srpc
-  prune
 
+  # Remove the SDK so it doesn't end up in the tarball
+  sdk-clean
+
+  prune
   tarball $1
 }
 
@@ -838,7 +841,7 @@ prune() {
 
   if ${LIBMODE_GLIBC}; then
     echo "remove pnacl_cache directory"
-    rm -rf "${PNACL_BITCODE_ROOT}"/pnacl_cache
+    rm -rf "${PNACL_LIB_ROOT}"/pnacl_cache
   fi
 
   echo "remove driver log"
@@ -1212,8 +1215,8 @@ build-libgcc_eh-bitcode() {
   # removed the old native versions of libgcc_eh if any
   rm -f "${PNACL_ROOT}"/libs-*/libgcc_eh.a
   # install the new bitcode version
-  mkdir -p "${PNACL_BITCODE_ROOT}"
-  cp libgcc_eh.a "${PNACL_BITCODE_ROOT}"
+  mkdir -p "${PNACL_LIB_ROOT}"
+  cp libgcc_eh.a "${PNACL_LIB_ROOT}"
   spopd
 }
 
@@ -1276,11 +1279,11 @@ build-compiler-rt-bitcode() {
   rm -f "${PNACL_ARM_ROOT}/libgcc.a" \
         "${PNACL_X8632_ROOT}/libgcc.a" \
         "${PNACL_X8664_ROOT}/libgcc.a" \
-        "${PNACL_BITCODE_ROOT}/libgcc.a"
+        "${PNACL_LIB_ROOT}/libgcc.a"
 
-  mkdir -p "${PNACL_BITCODE_ROOT}"
+  mkdir -p "${PNACL_LIB_ROOT}"
   ls -l bitcode/libgcc.a
-  cp bitcode/libgcc.a "${PNACL_BITCODE_ROOT}"
+  cp bitcode/libgcc.a "${PNACL_LIB_ROOT}"
 
   spopd
 }
@@ -1423,8 +1426,8 @@ libstdcpp-install() {
     ${MAKE_OPTS} install-data
 
   # Install bitcode library
-  mkdir -p "${PNACL_BITCODE_ROOT}"
-  cp "${objdir}/src/.libs/libstdc++.a" "${PNACL_BITCODE_ROOT}"
+  mkdir -p "${PNACL_LIB_ROOT}"
+  cp "${objdir}/src/.libs/libstdc++.a" "${PNACL_LIB_ROOT}"
 
   spopd
 }
@@ -2140,6 +2143,12 @@ install-translators() {
     exit -1
   fi
 
+  if ! [ -d "${PNACL_SDK_ROOT}" ]; then
+    echo "ERROR: SDK must be installed to build translators."
+    echo "You can install the SDK by running: $0 sdk"
+    exit -1
+  fi
+
   local srpc_kind=$1
   check-sb-mode ${srpc_kind}
 
@@ -2348,7 +2357,7 @@ newlib-install() {
   rm -f "${sys_include}/pthread.h"
 
   StepBanner "NEWLIB" "copying libraries"
-  local destdir="${PNACL_BITCODE_ROOT}"
+  local destdir="${PNACL_LIB_ROOT}"
   # We only install libc/libg/libm
   mkdir -p "${destdir}"
   cp ${objdir}/${REAL_CROSS_TARGET}/newlib/lib[cgm].a "${destdir}"
@@ -2358,207 +2367,143 @@ newlib-install() {
 
 
 #########################################################################
-#     < EXTRASDK >
+#     < SDK >
 #########################################################################
-#+ extrasdk-clean  - Clean extra-sdk stuff
+SCONS_COMMON=(./scons
+              -j${UTMAN_CONCURRENCY}
+              bitcode=1
+              sdl=none
+              disable_nosys_linker_warnings=1
+              naclsdk_validate=0
+              --verbose)
 
-extrasdk-clean() {
-  StepBanner "EXTRASDK" "Clean"
-  rm -rf "${TC_BUILD_EXTRASDK}"
+sdk() {
+  StepBanner "SDK"
+  sdk-clean
+  sdk-headers
+  sdk-libs
+  sdk-verify
+}
 
-  StepBanner "EXTRASDK" "Clean bitcode lib"
-  # TODO(robertm): consider having a dedicated dir for this so can
-  #                delete this wholesale
-  # Do not clean libc and libstdc++ but everything else
-  rm -f "${PNACL_BITCODE_ROOT}"/*google*.a
-  rm -f "${PNACL_BITCODE_ROOT}"/libsrpc.a
-  rm -f "${PNACL_BITCODE_ROOT}"/libnpapi.a
-  rm -f "${PNACL_BITCODE_ROOT}"/libppapi.a
-  rm -f "${PNACL_BITCODE_ROOT}"/libnosys.a
-  rm -f "${PNACL_BITCODE_ROOT}"/libav.a
-  rm -f "${PNACL_BITCODE_ROOT}"/libgio.a
-
-  if ${LIBMODE_NEWLIB}; then
-    rm -f "${PNACL_BITCODE_ROOT}"/*nacl*
-    rm -f "${PNACL_BITCODE_ROOT}"/libpthread.a
-  fi
-
-  if ${LIBMODE_NEWLIB}; then
-    StepBanner "EXTRASDK" "Clean arm libs"
-    # Do not clean libgcc but everything else
-    rm -f "${PNACL_ARM_ROOT}"/*crt*
-
-    StepBanner "EXTRASDK" "Clean x86-32 libs"
-    # Do not clean libgcc but everything else
-    rm -f "${PNACL_X8632_ROOT}"/*crt*
-
-    StepBanner "EXTRASDK" "Clean x86-64 libs"
-    # Do not clean libgcc but everything else
-    rm -f "${PNACL_X8664_ROOT}"/*crt*
-  fi
-
-  StepBanner "EXTRASDK" "Cleaning libehsupport"
-  rm -rf "${PNACL_ARM_ROOT}"/libehsupport*
-  rm -rf "${PNACL_X8632_ROOT}"/libehsupport*
-  rm -rf "${PNACL_X8664_ROOT}"/libehsupport*
+#+ sdk-clean             - Clean sdk stuff
+sdk-clean() {
+  StepBanner "SDK" "Clean"
+  rm -rf "${PNACL_SDK_ROOT}"
 
   # clean scons obj dirs
-  rm -rf scons-out/nacl_extra_sdk-*-pnacl*
+  rm -rf scons-out/nacl-*-pnacl*
+}
+
+sdk-headers() {
+  mkdir -p "${PNACL_SDK_INCLUDE}"
+
+  local extra_flags=""
+  local neutral_platform="x86-32"
+  if ${LIBMODE_GLIBC}; then
+    extra_flags="--nacl_glibc"
+  fi
+
+  StepBanner "SDK" "Install headers"
+  RunWithLog "sdk.headers" \
+      "${SCONS_COMMON[@]}" \
+      ${extra_flags} \
+      platform=${neutral_platform} \
+      install_headers \
+      includedir="${PNACL_SDK_INCLUDE}"
+}
+
+sdk-libs() {
+  StepBanner "SDK" "Install libraries"
+  mkdir -p "${PNACL_SDK_LIB}"
+
+  local extra_flags=""
+  local neutral_platform="x86-32"
+  if ${LIBMODE_GLIBC}; then
+    extra_flags="--nacl_glibc"
+  fi
+
+  StepBanner "SDK" "Make/Install bitcode components"
+  RunWithLog "sdk.libs.bitcode" \
+      "${SCONS_COMMON[@]}" \
+      ${extra_flags} \
+      platform=${neutral_platform} \
+      install_lib_portable \
+      libdir="${PNACL_SDK_LIB}"
+
+  for platform in arm x86-32 x86-64; do
+    if ${LIBMODE_GLIBC} && [ ${platform} == "arm" ]; then
+      continue
+    fi
+    StepBanner "SDK" "Make/Install ${platform} components"
+    RunWithLog "sdk.libs.${platform}" \
+      "${SCONS_COMMON[@]}" \
+      ${extra_flags} \
+      platform=${platform} \
+      install_lib_platform \
+      libdir="${PNACL_SDK_LIB}-${platform}"
+  done
+}
+
+sdk-verify() {
+  StepBanner "SDK" "Verify"
+
+  # Verify bitcode libraries
+  SubBanner "VERIFY: ${PNACL_SDK_LIB}"
+  for i in ${PNACL_SDK_LIB}/*.a ; do
+    verify-archive-llvm "$i"
+  done
+
+  for platform in arm x86-32 x86-64; do
+    if [ "${platform}" == "arm" ] && ! ${UTMAN_BUILD_ARM}; then
+      continue
+    fi
+
+    SubBanner "VERIFY: ${PNACL_SDK_LIB}-${platform}"
+
+    for i in ${PNACL_SDK_LIB}-${platform}/*.o ; do
+      verify-object-${platform} "$i"
+    done
+
+    for i in ${PNACL_SDK_LIB}-${platform}/*.a ; do
+      verify-archive-${platform} "$i"
+    done
+  done
 }
 
 libehsupport() {
-  extrasdk-clean
-  local headerdir
+  libehsupport-clean
+  libehsupport-install
+}
+
+libehsupport-clean() {
+  rm -rf "${PNACL_LIB_ROOT}"*/libehsupport*
+}
+
+libehsupport-install() {
   local extra_flag=""
-  if ${LIBMODE_NEWLIB}; then
-    headerdir="${NEWLIB_INSTALL_DIR}/${CROSS_TARGET_ARM}/include"
-  else
+  if ${LIBMODE_GLIBC}; then
     extra_flag="--nacl_glibc"
-    headerdir="${GLIBC_INSTALL_DIR}/include"
   fi
 
-  if ${LIBMODE_NEWLIB}; then
-    StepBanner "EXTRASDK" "Make/Install arm ehsupport"
-    RunWithLog "extra_sdk.arm_ehsupport" \
+  for platform in x86-32 x86-64 arm; do
+    if [ ${platform} == "arm" ] && ${LIBMODE_GLIBC}; then
+      continue
+    fi
+
+    StepBanner "LIBEHSUPPORT" "Make/Install ${platform} ehsupport"
+    RunWithLog "libehsupport.${platform}" \
         ./scons MODE=nacl_extra_sdk \
-        extra_sdk_lib_destination="${PNACL_ARM_ROOT}" \
-        extra_sdk_include_destination="${headerdir}" \
+        extra_sdk_lib_destination="${PNACL_LIB_ROOT}-${platform}" \
         bitcode=1 \
         ${extra_flag} \
-        platform=arm \
+        platform=${platform} \
         sdl=none \
         naclsdk_validate=0 \
         --verbose \
         install_libehsupport
-  fi
-
-  StepBanner "EXTRASDK" "Make/Install x86-32 ehsupport"
-  RunWithLog "extra_sdk.x86_32_ehsupport" \
-      ./scons MODE=nacl_extra_sdk \
-      extra_sdk_lib_destination="${PNACL_X8632_ROOT}" \
-      extra_sdk_include_destination="${headerdir}" \
-      bitcode=1 \
-      ${extra_flag} \
-      platform=x86-32 \
-      sdl=none \
-      naclsdk_validate=0 \
-      --verbose \
-      install_libehsupport
-
-  StepBanner "EXTRASDK" "Make/Install x86-64 ehsupport"
-  RunWithLog "extra_sdk.x86_64_ehsupport" \
-      ./scons MODE=nacl_extra_sdk \
-      extra_sdk_lib_destination="${PNACL_X8664_ROOT}" \
-      extra_sdk_include_destination="${headerdir}" \
-      bitcode=1 \
-      ${extra_flag} \
-      platform=x86-64 \
-      sdl=none \
-      naclsdk_validate=0 \
-      --verbose \
-      install_libehsupport
+  done
 }
 
-
-#+ extrasdk               - build and install all extra sdk components
-extrasdk() {
-  StepBanner "EXTRASDK"
-
-  extrasdk-clean
-
-  local headerdir
-  local extra_flag=""
-  local neutral_platform
-  if ${LIBMODE_NEWLIB}; then
-    headerdir="${NEWLIB_INSTALL_DIR}/${CROSS_TARGET_ARM}/include"
-    neutral_platform=arm
-  else
-    extra_flag="--nacl_glibc"
-    headerdir="${GLIBC_INSTALL_DIR}/include"
-    neutral_platform=x86-32
-  fi
-
-  StepBanner "EXTRASDK" "Make/Install headers"
-  RunWithLog "extra_sdk.headers" \
-      ./scons MODE=nacl_extra_sdk \
-      extra_sdk_lib_destination="${PNACL_BITCODE_ROOT}" \
-      extra_sdk_include_destination="${headerdir}" \
-      bitcode=1 \
-      ${extra_flag} \
-      platform=${neutral_platform} \
-      sdl=none \
-      naclsdk_validate=0 \
-      extra_sdk_update_header
-
-  if ${LIBMODE_NEWLIB}; then
-    StepBanner "EXTRASDK" "Make/Install bitcode libpthread"
-    RunWithLog "extra_sdk.bitcode_libpthread" \
-        ./scons MODE=nacl_extra_sdk -j 8\
-        extra_sdk_lib_destination="${PNACL_BITCODE_ROOT}" \
-        extra_sdk_include_destination="${headerdir}" \
-        bitcode=1 \
-        ${extra_flag} \
-        platform=${neutral_platform} \
-        sdl=none \
-        naclsdk_validate=0 \
-        install_libpthread
-  fi
-
-  StepBanner "EXTRASDK" "Make/Install bitcode components (${LIBMODE})"
-  RunWithLog "extra_sdk.bitcode_components" \
-      ./scons MODE=nacl_extra_sdk -j 8 \
-      extra_sdk_lib_destination="${PNACL_BITCODE_ROOT}" \
-      extra_sdk_include_destination="${headerdir}" \
-      disable_nosys_linker_warnings=1 \
-      bitcode=1 \
-      ${extra_flag} \
-      platform=${neutral_platform} \
-      sdl=none \
-      naclsdk_validate=0 \
-      --verbose \
-      extra_sdk_libs
-
-  if ${LIBMODE_NEWLIB} ; then
-    StepBanner "EXTRASDK" "Make/Install arm components"
-    RunWithLog "extra_sdk.arm_components" \
-        ./scons MODE=nacl_extra_sdk \
-        extra_sdk_lib_destination="${PNACL_ARM_ROOT}" \
-        extra_sdk_include_destination="${headerdir}" \
-        bitcode=1 \
-        ${extra_flag} \
-        platform=arm \
-        sdl=none \
-        naclsdk_validate=0 \
-        --verbose \
-        extra_sdk_libs_platform
-  fi
-
-  StepBanner "EXTRASDK" "Make/Install x86-32 components"
-  RunWithLog "extra_sdk.libs_x8632" \
-      ./scons MODE=nacl_extra_sdk \
-      extra_sdk_lib_destination="${PNACL_X8632_ROOT}" \
-      extra_sdk_include_destination="${headerdir}" \
-      bitcode=1 \
-      ${extra_flag} \
-      platform=x86-32 \
-      sdl=none \
-      naclsdk_validate=0 \
-      --verbose \
-      extra_sdk_libs_platform
-
-  StepBanner "EXTRASDK" "Make/Install x86-64 components"
-  RunWithLog "extra_sdk.libs_x8664" \
-      ./scons MODE=nacl_extra_sdk \
-      extra_sdk_lib_destination="${PNACL_X8664_ROOT}" \
-      extra_sdk_include_destination="${headerdir}" \
-      bitcode=1 \
-      ${extra_flag} \
-      platform=x86-64 \
-      sdl=none \
-      naclsdk_validate=0 \
-      --verbose \
-      extra_sdk_libs_platform
-}
 
 newlib-nacl-headers-clean() {
   # Clean the include directory and revert it to its pure state
@@ -2886,49 +2831,35 @@ verify-archive-x86-32() {
 verify-archive-x86-64() {
   VerifyArchive verify-object-x86-64 '*.o *.ons' "$@"
 }
+
 #@-------------------------------------------------------------------------
 #+ verify                - Verifies that toolchain/pnacl-untrusted ELF files
 #+                         are of the correct architecture.
 verify() {
   StepBanner "VERIFY"
 
-  if ${UTMAN_BUILD_ARM}; then
-    SubBanner "VERIFY: ${PNACL_ARM_ROOT}"
-    for i in ${PNACL_ARM_ROOT}/*.o ; do
-      verify-object-arm "$i"
-    done
-
-    for i in ${PNACL_ARM_ROOT}/*.a ; do
-      verify-archive-arm "$i"
-    done
-  fi
-
-  SubBanner "VERIFY: ${PNACL_X8632_ROOT}"
-  for i in ${PNACL_X8632_ROOT}/*.o ; do
-     verify-object-x86-32  "$i"
-  done
-
-  for i in ${PNACL_X8632_ROOT}/*.a ; do
-    verify-archive-x86-32 "$i"
-  done
-
-  SubBanner "VERIFY: ${PNACL_X8664_ROOT}"
-  for i in ${PNACL_X8664_ROOT}/*.o ; do
-     verify-object-x86-64  "$i"
-  done
-
-  for i in ${PNACL_X8664_ROOT}/*.a ; do
-    verify-archive-x86-64 "$i"
-  done
-
-  SubBanner "VERIFY: ${PNACL_BITCODE_ROOT}"
-  for i in ${PNACL_BITCODE_ROOT}/*.a ; do
+  # Verify bitcode libraries
+  SubBanner "VERIFY: ${PNACL_LIB_ROOT}"
+  for i in ${PNACL_LIB_ROOT}/*.a ; do
     verify-archive-llvm "$i"
   done
 
-  # we currently do not expect any .o files in this directory
-  #for i in ${PNACL_BITCODE_ROOT}/*.o ; do
-  #done
+  # Verify platform libraries
+  for platform in arm x86-32 x86-64; do
+    if [ "${platform}" == "arm" ] && ! ${UTMAN_BUILD_ARM}; then
+      continue
+    fi
+
+    SubBanner "VERIFY: ${PNACL_LIB_ROOT}-${platform}"
+    # There are currently no .o files here
+    #for i in "${PNACL_LIB_ROOT}-${platform}"/*.o ; do
+    #  verify-object-${platform} "$i"
+    #done
+
+    for i in "${PNACL_LIB_ROOT}-${platform}"/*.a ; do
+      verify-archive-${platform} "$i"
+    done
+  done
 }
 
 #@ verify-triple-build <arch> - Verify that the sandboxed translator produces

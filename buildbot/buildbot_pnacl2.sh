@@ -15,6 +15,7 @@ CLOBBER=${CLOBBER:-yes}
 SCONS_TRUSTED="./scons --mode=opt-host -j8"
 SCONS_NACL="./scons --mode=opt-host,nacl -j8"
 SPEC_HARNESS=${SPEC_HARNESS:-${HOME}/cpu2000-redhat64-ia32}/
+UTMAN=tools/llvm/utman.sh
 
 # Rough test running time classification for ARM which is our bottleneck
 FAST_ARM="176.gcc 181.mcf 197.parser 254.gap"
@@ -78,7 +79,7 @@ basic-setup-pnacl() {
   local platforms=$1
   build-sel_ldr "${platforms}"
   build-sel_universal "${platforms}"
-  build-libs "${platforms}" bitcode=1
+  ${UTMAN} sdk
 }
 
 build-sel_ldr() {
