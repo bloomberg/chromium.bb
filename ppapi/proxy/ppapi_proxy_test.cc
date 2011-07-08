@@ -224,6 +224,7 @@ uint32 PluginProxyTestHarness::PluginDelegateMock::Register(
 void PluginProxyTestHarness::PluginDelegateMock::Unregister(
     uint32 plugin_dispatcher_id) {
 }
+
 // PluginProxyTest -------------------------------------------------------------
 
 PluginProxyTest::PluginProxyTest() {

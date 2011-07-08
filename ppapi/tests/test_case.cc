@@ -35,20 +35,24 @@ std::string TestCase::MakeFailureMessage(const char* file,
   return output.str();
 }
 
-pp::Var TestCase::GetTestObject() {
+#if !(defined __native_client__)
+pp::VarPrivate TestCase::GetTestObject() {
   if (test_object_.is_undefined()) {
     pp::deprecated::ScriptableObject* so = CreateTestObject();
     if (so)
-      test_object_ = pp::Var(instance_, so);  // Takes ownership.
+      test_object_ = pp::VarPrivate(instance_, so);  // Takes ownership.
   }
   return test_object_;
 }
+#endif
 
 void TestCase::HandleMessage(const pp::Var& message_data) {}
 
+#if !(defined __native_client__)
 pp::deprecated::ScriptableObject* TestCase::CreateTestObject() {
   return NULL;
 }
+#endif
 
 bool TestCase::InitTestingInterface() {
   testing_interface_ = GetTestingInterface();
@@ -65,10 +69,7 @@ bool TestCase::InitTestingInterface() {
 }
 
 bool TestCase::EnsureRunningOverHTTP() {
-  pp::Var window = instance_->GetWindowObject();
-  pp::Var location = window.GetProperty("location");
-  pp::Var protocol = location.GetProperty("protocol");
-  if (!protocol.is_string() || protocol.AsString() != "http:") {
+  if (instance_->protocol() != "http:") {
     instance_->AppendError("This test needs to be run over HTTP.");
     return false;
   }

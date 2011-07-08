@@ -1,8 +1,10 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ppapi/tests/test_scrollbar.h"
+
+#include <cstring>
 
 #include "ppapi/c/pp_input_event.h"
 #include "ppapi/cpp/instance.h"
@@ -31,7 +33,9 @@ std::string TestScrollbar::TestHandleEvent() {
   scrollbar_.SetDocumentSize(10000);
 
   PP_InputEvent event;
+  std::memset(&event, 0, sizeof(event));
   event.type = PP_INPUTEVENT_TYPE_KEYDOWN;
+  event.u.key.modifier = 0;
   event.u.key.key_code = 0x28; // VKEY_DOWN
   scrollbar_.HandleEvent(event);
 

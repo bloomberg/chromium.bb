@@ -139,10 +139,11 @@ InterfaceList::InterfaceList() {
   AddPPB(PPB_Graphics2D_Proxy::GetInfo());
   AddPPB(PPB_ImageData_Proxy::GetInfo());
   AddPPB(PPB_InputEvent_Proxy::GetInfo());
-  AddPPB(PPB_Instance_Proxy::GetInfoPrivate());
   AddPPB(PPB_Instance_Proxy::GetInfo0_4());
   AddPPB(PPB_Instance_Proxy::GetInfo0_5());
   AddPPB(PPB_Instance_Proxy::GetInfoFullscreen());
+  AddPPB(PPB_Instance_Proxy::GetInfoMessaging());
+  AddPPB(PPB_Instance_Proxy::GetInfoPrivate());
   AddPPB(PPB_Memory_Proxy::GetInfo());
   AddPPB(PPB_OpenGLES2_Proxy::GetInfo());
   AddPPB(PPB_PDF_Proxy::GetInfo());

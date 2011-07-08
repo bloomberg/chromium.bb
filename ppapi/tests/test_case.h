@@ -11,7 +11,12 @@
 
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/cpp/dev/scrollbar_dev.h"
+
+#if (defined __native_client__)
 #include "ppapi/cpp/var.h"
+#else
+#include "ppapi/cpp/private/var_private.h"
+#endif
 
 struct PPB_Testing_Dev;
 class TestingInstance;
@@ -38,9 +43,11 @@ class TestCase {
   static std::string MakeFailureMessage(const char* file, int line,
                                         const char* cmd);
 
+#if !(defined __native_client__)
   // Returns the scriptable test object for the current test, if any.
   // Internally, this uses CreateTestObject which each test overrides.
-  pp::Var GetTestObject();
+  pp::VarPrivate GetTestObject();
+#endif
 
   // A function that is invoked whenever HandleMessage is called on the
   // associated TestingInstance. Default implementation does nothing.  TestCases
@@ -49,6 +56,7 @@ class TestCase {
   virtual void HandleMessage(const pp::Var& message_data);
 
  protected:
+#if !(defined __native_client__)
   // Overridden by each test to supply a ScriptableObject corresponding to the
   // test. There can only be one object created for all test in a given class
   // so be sure your object is designed to be re-used.
@@ -56,6 +64,7 @@ class TestCase {
   // This object should be created on the heap. Ownership will be passed to the
   // caller. Return NULL if there is no supported test object (the default).
   virtual pp::deprecated::ScriptableObject* CreateTestObject();
+#endif
 
   // Initializes the testing interface.
   bool InitTestingInterface();
@@ -73,8 +82,10 @@ class TestCase {
   bool force_async_;
 
  private:
+#if !(defined __native_client__)
   // Holds the test object, if any was retrieved from CreateTestObject.
-  pp::Var test_object_;
+  pp::VarPrivate test_object_;
+#endif
 };
 
 // This class is an implementation detail.
