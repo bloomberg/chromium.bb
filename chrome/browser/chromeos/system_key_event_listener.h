@@ -85,8 +85,16 @@ class SystemKeyEventListener : public WmMessageListener::Observer,
   int32 key_f8_;
   int32 key_f9_;
   int32 key_f10_;
+  int32 key_esc_;
 
   bool stopped_;
+
+  // Tells if one of system setting bubble (VolumeBubble or BrightnessBubble)
+  // is shown.
+  static bool IsBubbleShown();
+
+  // Hides all shown system setting bubbles (VolumeBubble and BrightnessBubble).
+  static void HideBubble();
 
   ObserverList<CapslockObserver> capslock_observers_;
   int xkb_event_base_code_;

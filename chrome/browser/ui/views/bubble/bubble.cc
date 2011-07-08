@@ -55,6 +55,10 @@ Bubble* Bubble::Show(views::Widget* parent,
   Bubble* bubble = new Bubble;
   bubble->InitBubble(parent, position_relative_to, arrow_location,
                      contents, delegate);
+
+  // Register the Escape accelerator for closing.
+  bubble->RegisterEscapeAccelerator();
+
   return bubble;
 }
 
@@ -139,7 +143,8 @@ Bubble::Bubble()
       show_while_screen_is_locked_(false),
 #endif
       arrow_location_(BubbleBorder::NONE),
-      contents_(NULL) {
+      contents_(NULL),
+      accelerator_registered_(false) {
 }
 
 #if defined(OS_CHROMEOS)
@@ -267,10 +272,6 @@ void Bubble::InitBubble(views::Widget* parent,
 #endif
   GetWidget()->SetBounds(window_bounds);
 
-  // Register the Escape accelerator for closing.
-  GetWidget()->GetFocusManager()->RegisterAccelerator(
-      views::Accelerator(ui::VKEY_ESCAPE, false, false, false), this);
-
   // Done creating the bubble.
   NotificationService::current()->Notify(NotificationType::INFO_BUBBLE_CREATED,
                                          Source<Bubble>(this),
@@ -285,6 +286,19 @@ void Bubble::InitBubble(views::Widget* parent,
 #elif defined(TOOLKIT_USES_GTK)
   GetWidget()->Show();
 #endif
+}
+
+void Bubble::RegisterEscapeAccelerator() {
+  GetWidget()->GetFocusManager()->RegisterAccelerator(
+      views::Accelerator(ui::VKEY_ESCAPE, false, false, false), this);
+  accelerator_registered_ = true;
+}
+
+void Bubble::UnregisterEscapeAccelerator() {
+  DCHECK(accelerator_registered_);
+  GetWidget()->GetFocusManager()->UnregisterAccelerator(
+      views::Accelerator(ui::VKEY_ESCAPE, false, false, false), this);
+  accelerator_registered_ = false;
 }
 
 BorderContents* Bubble::CreateBorderContents() {
@@ -334,8 +348,8 @@ void Bubble::DoClose(bool closed_by_escape) {
   if (show_status_ == kClosed)
     return;
 
-  GetWidget()->GetFocusManager()->UnregisterAccelerator(
-      views::Accelerator(ui::VKEY_ESCAPE, false, false, false), this);
+  if (accelerator_registered_)
+    UnregisterEscapeAccelerator();
   if (delegate_)
     delegate_->BubbleClosing(this, closed_by_escape);
   show_status_ = kClosed;

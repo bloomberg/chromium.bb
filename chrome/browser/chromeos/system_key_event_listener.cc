@@ -43,6 +43,7 @@ SystemKeyEventListener::SystemKeyEventListener()
   key_f8_ = XKeysymToKeycode(GDK_DISPLAY(), XK_F8);
   key_f9_ = XKeysymToKeycode(GDK_DISPLAY(), XK_F9);
   key_f10_ = XKeysymToKeycode(GDK_DISPLAY(), XK_F10);
+  key_esc_ = XKeysymToKeycode(GDK_DISPLAY(), XK_Escape);
 
   if (key_volume_mute_)
     GrabKey(key_volume_mute_, 0);
@@ -53,6 +54,7 @@ SystemKeyEventListener::SystemKeyEventListener()
   GrabKey(key_f8_, 0);
   GrabKey(key_f9_, 0);
   GrabKey(key_f10_, 0);
+  GrabKey(key_esc_, 0);
 
   int xkb_major_version = XkbMajorVersion;
   int xkb_minor_version = XkbMinorVersion;
@@ -229,11 +231,26 @@ bool SystemKeyEventListener::ProcessedXEvent(XEvent* xevent) {
             UserMetrics::RecordAction(UserMetricsAction("Accel_VolumeUp_F10"));
           OnVolumeUp();
           return true;
+        } else if (keycode == key_esc_ && IsBubbleShown()) {
+          HideBubble();
+          return true;
         }
       }
     }
   }
   return false;
+}
+
+// static
+bool SystemKeyEventListener::IsBubbleShown() {
+  return BrightnessBubble::GetInstance()->IsShown() ||
+         VolumeBubble::GetInstance()->IsShown();
+}
+
+// static
+void SystemKeyEventListener::HideBubble() {
+  BrightnessBubble::GetInstance()->HideBubble();
+  VolumeBubble::GetInstance()->HideBubble();
 }
 
 }  // namespace chromeos
