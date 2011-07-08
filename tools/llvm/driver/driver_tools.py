@@ -39,9 +39,6 @@ INITIAL_ENV = {
   'DRIVER_EXT'      : '${@GetDriverExt}',   # '.py' or ''
 
   # Directories
-  'BASE_TOOLCHAIN'  : '${BASE_NACL}/toolchain',
-  'BASE_TRUSTED'    : '${BASE_TOOLCHAIN}/linux_arm-trusted',
-
   'BASE_PKG'        : '${BASE}/pkg',
   'BASE_LLVM'       : '${BASE_PKG}/llvm',
   'BASE_LLVM_GCC'   : '${BASE_PKG}/llvm-gcc',
@@ -132,17 +129,22 @@ INITIAL_ENV = {
   'EMULATOR'            : '${EMULATOR_%ARCH%}',
   'EMULATOR_X8632'      : '',
   'EMULATOR_X8664'      : '',
-  'EMULATOR_ARM'        : '${BASE_TRUSTED}/run_under_qemu_arm',
-
-  'LLVM_MC'       : '${BASE_LLVM_BIN}/llvm-mc${EXEC_EXT}',
-  'LLVM_AS'       : '${BASE_LLVM_BIN}/llvm-as${EXEC_EXT}',
+  # NOTE: this is currently the only dependency on the arm trusted TC
+  'EMULATOR_ARM'        :
+      '${BASE_NACL}/toolchain/linux_arm-trusted/run_under_qemu_arm',
 
   'SEL_LDR'       : '${SCONS_STAGING}/sel_ldr${EXEC_EXT}',
 
-  'AS_SB'         : '${SEL_LDR} -a -- ${BASE_SB}/nonsrpc/bin/as',
+  # c.f. http://code.google.com/p/nativeclient/issues/detail?id=1968
+  # LLVM_AS is used to compile a .ll file to a bitcode file (".po")
+  'LLVM_AS'       : '${BASE_LLVM_BIN}/llvm-as${EXEC_EXT}',
+  # LLVM_MC is llvm's replacement for bintutil's as
+  'LLVM_MC'       : '${BASE_LLVM_BIN}/llvm-mc${EXEC_EXT}',
+
+  # c.f. http://code.google.com/p/nativeclient/issues/detail?id=1968
   'AS_ARM'        : '${BINUTILS_BASE}as',
-  'AS_X8632'      : '${BASE_TOOLCHAIN}/${SCONS_OS}_x86_newlib/bin/nacl-as',
-  'AS_X8664'      : '${BASE_TOOLCHAIN}/${SCONS_OS}_x86_newlib/bin/nacl64-as',
+  'AS_X8632'      : '${LLVM_MC}',
+  'AS_X8664'      : '${LLVM_MC}',
 
   'LD_SB'         : '${SEL_LDR} -a -- ${BASE_SB}/nonsrpc/bin/ld',
   'LLC_SB'        : '${SEL_LDR} -a -- ${BASE_SB}/nonsrpc/bin/llc',
@@ -648,7 +650,8 @@ def FindBasePNaCl():
     return shell.escape(dir)
   else:
     # If we've invoked from tools/llvm/driver
-    return '${BASE_TOOLCHAIN}/pnacl_${BUILD_OS}_${BUILD_ARCH}_${LIBMODE}'
+    return '${BASE_NACL}/toolchain/pnacl_${BUILD_OS}_${BUILD_ARCH}_${LIBMODE}'
+
 
 @env.register
 @memoize
