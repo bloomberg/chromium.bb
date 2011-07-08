@@ -4,25 +4,100 @@
 
 #include "character_composer.h"
 
-#include <cstdlib>
+#include <algorithm>
+#include <iterator>
 
 #include "third_party/gtk+/gdk/gdkkeysyms.h"
+#include "ui/base/gtk/gtk_integers.h"
 
 namespace {
 
-inline int CompareSequenceValue(unsigned int key, uint16 value) {
-  return (key > value) ? 1 : ((key < value) ? -1 : 0);
+typedef std::vector<unsigned int> ComposeBufferType;
+
+// An iterator class to apply std::lower_bound for composition table.
+class SequenceIterator
+    : public std::iterator<std::random_access_iterator_tag, const uint16*> {
+ public:
+  SequenceIterator() : ptr_(NULL), stride_(0) {}
+  SequenceIterator(const uint16* ptr, int stride)
+      : ptr_(ptr), stride_(stride) {}
+
+  const uint16* ptr() const {return ptr_;}
+  int stride() const {return stride_;}
+
+  SequenceIterator& operator++() {
+    ptr_ += stride_;
+    return *this;
+  }
+  SequenceIterator& operator+=(int n) {
+    ptr_ += stride_*n;
+    return *this;
+  }
+
+  const uint16* operator*() const {return ptr_;}
+
+ private:
+  const uint16* ptr_;
+  int stride_;
+};
+
+inline SequenceIterator operator+(const SequenceIterator& l, int r) {
+  return SequenceIterator(l) += r;
 }
+
+inline int operator-(const SequenceIterator& l, const SequenceIterator& r) {
+  const int d = l.ptr() - r.ptr();
+  DCHECK(l.stride() == r.stride() && l.stride() > 0 && d%l.stride() == 0);
+  return d/l.stride();
+}
+
+inline bool operator==(const SequenceIterator& l, const SequenceIterator& r) {
+  DCHECK(l.stride() == r.stride());
+  return l.ptr() == r.ptr();
+}
+
+inline bool operator!=(const SequenceIterator& l, const SequenceIterator& r) {
+  return !(l == r);
+}
+
+// A function to compare keycode value.
+inline int CompareSequenceValue(unsigned int l, unsigned int r) {
+  return (l > r) ? 1 : ((l < r) ? -1 : 0);
+}
+
+// A template to make |CompareFunc| work like operator<.
+// |CompareFunc| is required to implement a member function,
+// int operator()(const ComposeBufferType& l, const uint16* r) const.
+template<typename CompareFunc>
+struct ComparatorAdoptor {
+  bool operator()(const ComposeBufferType& l, const uint16* r) const {
+    return CompareFunc()(l, r) == -1;
+  }
+  bool operator()(const uint16* l, const ComposeBufferType& r) const {
+    return CompareFunc()(r, l) == 1;
+  }
+};
 
 class ComposeChecker {
  public:
+  // This class does not take the ownership of |data|, |data| should be alive
+  // for the lifetime of the object.
+  // |data| is a pointer to the head of an array of
+  // length (|max_sequence_length| + 2)*|n_sequences|.
+  // Every (|max_sequence_length| + 2) elements of |data| represent an entry.
+  // First |max_sequence_length| elements of an entry is the sequecne which
+  // composes the character represented by the last two elements of the entry.
   ComposeChecker(const uint16* data, int max_sequence_length, int n_sequences);
-  bool CheckSequence(const std::vector<unsigned int>& sequence,
+  bool CheckSequence(const ComposeBufferType& sequence,
                      uint32* composed_character) const;
 
  private:
-  static int CompareSequence(const void* key_void, const void* value_void);
+  struct CompareSequence {
+    int operator()(const ComposeBufferType& l, const uint16* r) const;
+  };
 
+  // This class does not take the ownership of |data_|,
+  // the dtor does not delete |data_|.
   const uint16* data_;
   int max_sequence_length_;
   int n_sequences_;
@@ -40,46 +115,38 @@ ComposeChecker::ComposeChecker(const uint16* data,
       row_stride_(max_sequence_length + 2) {
 }
 
-bool ComposeChecker::CheckSequence(
-    const std::vector<unsigned int>& sequence,
-    uint32* composed_character) const {
+bool ComposeChecker::CheckSequence(const ComposeBufferType& sequence,
+                                   uint32* composed_character) const {
   const int sequence_length = sequence.size();
   if (sequence_length > max_sequence_length_)
     return false;
-  // Find sequence in the table
-  const uint16* found = static_cast<const uint16*>(
-      bsearch(&sequence, data_, n_sequences_,
-              sizeof(uint16)*row_stride_, CompareSequence));
-  if (!found)
+  // Find sequence in the table.
+  const SequenceIterator begin(data_, row_stride_);
+  const SequenceIterator end = begin + n_sequences_;
+  const SequenceIterator found = std::lower_bound(
+      begin, end, sequence, ComparatorAdoptor<CompareSequence>());
+  if (found == end || CompareSequence()(sequence, *found) != 0)
     return false;
-  // Ensure |found| is pointing the first matching element
-  while (found > data_ &&
-         CompareSequence(&sequence, found - row_stride_) == 0)
-    found -= row_stride_;
 
-  if (sequence_length == max_sequence_length_ || found[sequence_length] == 0) {
-    // |found| is not partially matching. It's fully matching
-    const uint16* data_end = data_ + row_stride_*n_sequences_;
-    if (found + row_stride_ >= data_end ||
-        CompareSequence(&sequence, found + row_stride_) != 0) {
-      // There is no composition longer than |found| which matches to |sequence|
-      const uint32 value = (found[max_sequence_length_] << 16) |
-          found[max_sequence_length_ + 1];
+  if (sequence_length == max_sequence_length_ ||
+      (*found)[sequence_length] == 0) {
+    // |found| is not partially matching. It's fully matching.
+    if (found + 1 == end ||
+        CompareSequence()(sequence, *(found + 1)) != 0) {
+      // There is no composition longer than |found| which matches to
+      // |sequence|.
+      const uint32 value = ((*found)[max_sequence_length_] << 16) |
+          (*found)[max_sequence_length_ + 1];
       *composed_character = value;
     }
   }
   return true;
 }
 
-// static
-int ComposeChecker::CompareSequence(const void* key_void,
-                                    const void* value_void) {
-  typedef std::vector<unsigned int> KeyType;
-  const KeyType& key = *static_cast<const KeyType*>(key_void);
-  const uint16* value = static_cast<const uint16*>(value_void);
-
-  for(size_t i = 0; i < key.size(); ++i) {
-    const int compare_result = CompareSequenceValue(key[i], value[i]);
+int ComposeChecker::CompareSequence::operator()(const ComposeBufferType& l,
+                                                const uint16* r) const {
+  for(size_t i = 0; i < l.size(); ++i) {
+    const int compare_result = CompareSequenceValue(l[i], r[i]);
     if(compare_result)
       return compare_result;
   }
@@ -89,18 +156,33 @@ int ComposeChecker::CompareSequence(const void* key_void,
 
 class ComposeCheckerWithCompactTable {
  public:
+  // This class does not take the ownership of |data|, |data| should be alive
+  // for the lifetime of the object.
+  // First |index_size|*|index_stride| elements of |data| are an index table.
+  // Every |index_stride| elements of an index table are an index entry.
+  // If you are checking with a sequence of length N beginning with character C,
+  // you have to find an index entry whose first element is C, then get the N-th
+  // element of the index entry as the index.
+  // The index is pointing the element of |data| where the composition table for
+  // sequences of length N beginning with C is placed.
+
   ComposeCheckerWithCompactTable(const uint16* data,
                                  int max_sequence_length,
                                  int index_size,
                                  int index_stride);
-  bool CheckSequence(const std::vector<unsigned int>& sequence,
+  bool CheckSequence(const ComposeBufferType& sequence,
                      uint32* composed_character) const;
 
  private:
-  static int CompareSequenceFront(const void* key_void, const void* value_void);
-  static int CompareSequenceSkipFront(const void* key_void,
-                                      const void* value_void);
+  struct CompareSequenceFront {
+    int operator()(const ComposeBufferType& l, const uint16* r) const;
+  };
+  struct CompareSequenceSkipFront {
+    int operator()(const ComposeBufferType& l, const uint16* r) const;
+  };
 
+  // This class does not take the ownership of |data_|,
+  // the dtor does not delete |data_|.
   const uint16* data_;
   int max_sequence_length_;
   int index_size_;
@@ -119,34 +201,39 @@ ComposeCheckerWithCompactTable::ComposeCheckerWithCompactTable(
 }
 
 bool ComposeCheckerWithCompactTable::CheckSequence(
-    const std::vector<unsigned int>& sequence,
+    const ComposeBufferType& sequence,
     uint32* composed_character) const {
   const int compose_length = sequence.size();
   if (compose_length > max_sequence_length_)
     return false;
-  // Find corresponding index for the first keypress
-  const uint16* index = static_cast<const uint16*>(
-      bsearch(&sequence, data_, index_size_,
-              sizeof(uint16)*index_stride_, CompareSequenceFront));
-  if (!index)
+  // Find corresponding index for the first keypress.
+  const SequenceIterator index_begin(data_, index_stride_);
+  const SequenceIterator index_end = index_begin + index_size_;
+  const SequenceIterator index =
+      std::lower_bound(index_begin, index_end, sequence,
+                       ComparatorAdoptor<CompareSequenceFront>());
+  if (index == index_end || CompareSequenceFront()(sequence, *index) != 0)
     return false;
   if (compose_length == 1)
     return true;
-  // Check for composition sequences
+  // Check for composition sequences.
   for (int length = compose_length - 1; length < max_sequence_length_;
        ++length) {
-    const uint16* table = data_ + index[length];
-    const uint16* table_next = data_ + index[length + 1];
+    const uint16* table = data_ + (*index)[length];
+    const uint16* table_next = data_ + (*index)[length + 1];
     if (table_next > table) {
-      // There are composition sequences for this |length|
+      // There are composition sequences for this |length|.
       const int row_stride = length + 1;
       const int n_sequences = (table_next - table)/row_stride;
-      const uint16* seq = static_cast<const uint16*>(
-          bsearch(&sequence, table, n_sequences,
-                  sizeof(uint16)*row_stride, CompareSequenceSkipFront));
-      if (seq) {
-        if (length == compose_length - 1) // exact match
-          *composed_character = seq[length];
+      const SequenceIterator table_begin(table, row_stride);
+      const SequenceIterator table_end = table_begin + n_sequences;
+      const SequenceIterator found =
+          std::lower_bound(table_begin, table_end, sequence,
+                           ComparatorAdoptor<CompareSequenceSkipFront>());
+      if (found != table_end &&
+          CompareSequenceSkipFront()(sequence, *found) == 0) {
+        if (length == compose_length - 1)  // Exact match.
+          *composed_character = (*found)[length];
         return true;
       }
     }
@@ -154,38 +241,31 @@ bool ComposeCheckerWithCompactTable::CheckSequence(
   return false;
 }
 
-// static
-int ComposeCheckerWithCompactTable::CompareSequenceFront(
-    const void* key_void,
-    const void* value_void) {
-  typedef std::vector<unsigned int> KeyType;
-  const KeyType& key = *static_cast<const KeyType*>(key_void);
-  const uint16* value = static_cast<const uint16*>(value_void);
-
-  return CompareSequenceValue(key[0], value[0]);
+int ComposeCheckerWithCompactTable::CompareSequenceFront::operator()(
+    const ComposeBufferType& l, const uint16* r) const {
+  return CompareSequenceValue(l[0], r[0]);
 }
 
-// static
-int ComposeCheckerWithCompactTable::CompareSequenceSkipFront(
-    const void* key_void,
-    const void* value_void) {
-  typedef std::vector<unsigned int> KeyType;
-  const KeyType& key = *static_cast<const KeyType*>(key_void);
-  const uint16* value = static_cast<const uint16*>(value_void);
-
-  for(size_t i = 1; i < key.size(); ++i) {
-    const int compare_result = CompareSequenceValue(key[i], value[i - 1]);
+int ComposeCheckerWithCompactTable::CompareSequenceSkipFront::operator()(
+    const ComposeBufferType& l, const uint16* r) const {
+  for(size_t i = 1; i < l.size(); ++i) {
+    const int compare_result = CompareSequenceValue(l[i], r[i - 1]);
     if(compare_result)
       return compare_result;
   }
   return 0;
 }
 
-// Main table
-typedef uint16 guint16;
+
+// Main table.
+
+// This file is included here intentionally, instead of the top of the file,
+// because including this file outside the anonymous namespace will define a
+// global constant and contaminate the global namespace.
 #include "third_party/gtk+/gtk/gtkimcontextsimpleseqs.h"
 
-// Additional table
+
+// Additional table.
 
 // The difference between this and the default input method is the handling
 // of C+acute - this method produces C WITH CEDILLA rather than C WITH ACUTE.
@@ -232,24 +312,24 @@ bool KeypressShouldBeIgnored(unsigned int keycode) {
   }
 }
 
-bool CheckCharacterComposeTable(const std::vector<unsigned int>& sequence,
+bool CheckCharacterComposeTable(const ComposeBufferType& sequence,
                                 uint32* composed_character) {
-  // Check cedilla compose table
+  // Check cedilla compose table.
   const ComposeChecker kCedillaComposeChecker(
-    cedilla_compose_seqs, 4, arraysize(cedilla_compose_seqs)/(4 + 2));
+      cedilla_compose_seqs, 4, arraysize(cedilla_compose_seqs)/(4 + 2));
   if (kCedillaComposeChecker.CheckSequence(sequence, composed_character))
     return true;
 
-  // Check main compose table
+  // Check main compose table.
   const ComposeCheckerWithCompactTable kMainComposeChecker(
-      gtk_compose_seqs_compact, 5, 26, 6);
+      gtk_compose_seqs_compact, 5, 24, 6);
   if (kMainComposeChecker.CheckSequence(sequence, composed_character))
     return true;
 
   return false;
 }
 
-}  // anonymous namespace
+}  // namespace
 
 namespace views {
 
@@ -268,22 +348,22 @@ bool CharacterComposer::FilterKeyPress(unsigned int keycode) {
 
   compose_buffer_.push_back(keycode);
 
-  // Check compose table
+  // Check compose table.
   composed_character_.clear();
   uint32 composed_character_utf32 = 0;
   if (CheckCharacterComposeTable(compose_buffer_, &composed_character_utf32)) {
-    // Key press is recognized as a part of composition
+    // Key press is recognized as a part of composition.
     if (composed_character_utf32 !=0) {
-      // We get a composed character
+      // We get a composed character.
       compose_buffer_.clear();
-      // We assume that composed character is in BMP
+      // We assume that composed character is in BMP.
       if (composed_character_utf32 <= 0xffff)
         composed_character_ += static_cast<char16>(composed_character_utf32);
     }
     return true;
   }
-  // Key press is not a part of composition
-  compose_buffer_.pop_back(); // remove the keypress added this time
+  // Key press is not a part of composition.
+  compose_buffer_.pop_back();  // Remove the keypress added this time.
   if (!compose_buffer_.empty()) {
     compose_buffer_.clear();
     return true;

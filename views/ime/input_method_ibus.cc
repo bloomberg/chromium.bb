@@ -727,7 +727,7 @@ void InputMethodIBus::ProcessUnfilteredKeyPressEvent(const KeyEvent& key,
 
   // Process compose and dead keys
   if (character_composer_.FilterKeyPress(ibus_keyval)) {
-    string16 composed = character_composer_.GetComposedCharacter();
+    string16 composed = character_composer_.composed_character();
     if (!composed.empty()) {
       TextInputClient* client = GetTextInputClient();
       if (client)

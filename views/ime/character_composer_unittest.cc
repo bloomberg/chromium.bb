@@ -12,29 +12,29 @@ namespace views {
 
 namespace {
 
-// Expects key is not filtered and no character is composed
+// Expects key is not filtered and no character is composed.
 void ExpectKeyNotFiltered(CharacterComposer* character_composer, uint key) {
   EXPECT_FALSE(character_composer->FilterKeyPress(key));
-  EXPECT_TRUE(character_composer->GetComposedCharacter().empty());
+  EXPECT_TRUE(character_composer->composed_character().empty());
 }
 
-// Expects key is filtered and no character is composed
+// Expects key is filtered and no character is composed.
 void ExpectKeyFiltered(CharacterComposer* character_composer, uint key) {
   EXPECT_TRUE(character_composer->FilterKeyPress(key));
-  EXPECT_TRUE(character_composer->GetComposedCharacter().empty());
+  EXPECT_TRUE(character_composer->composed_character().empty());
 }
 
-// Expects |expected_character| is composed after sequence [key1, key2]
+// Expects |expected_character| is composed after sequence [key1, key2].
 void ExpectCharacterComposed(CharacterComposer* character_composer,
                              uint key1,
                              uint key2,
                              const string16& expected_character) {
   ExpectKeyFiltered(character_composer, key1);
   EXPECT_TRUE(character_composer->FilterKeyPress(key2));
-  EXPECT_EQ(character_composer->GetComposedCharacter(), expected_character);
+  EXPECT_EQ(character_composer->composed_character(), expected_character);
 }
 
-// Expects |expected_character| is composed after sequence [key1, key2, key3]
+// Expects |expected_character| is composed after sequence [key1, key2, key3].
 void ExpectCharacterComposed(CharacterComposer* character_composer,
                              uint key1,
                              uint key2,
@@ -45,7 +45,7 @@ void ExpectCharacterComposed(CharacterComposer* character_composer,
 }
 
 // Expects |expected_character| is composed after sequence [key1, key2, key3,
-// key 4]
+// key 4].
 void ExpectCharacterComposed(CharacterComposer* character_composer,
                              uint key1,
                              uint key2,
@@ -57,11 +57,11 @@ void ExpectCharacterComposed(CharacterComposer* character_composer,
                           expected_character);
 }
 
-} // anonymous namespace
+} // namespace
 
 TEST(CharacterComposerTest, InitialState) {
   CharacterComposer character_composer;
-  EXPECT_TRUE(character_composer.GetComposedCharacter().empty());
+  EXPECT_TRUE(character_composer.composed_character().empty());
 }
 
 TEST(CharacterComposerTest, NormalKeyIsNotFiltered) {
@@ -78,16 +78,16 @@ TEST(CharacterComposerTest, NormalKeyIsNotFiltered) {
 TEST(CharacterComposerTest, PartiallyMatchingSequence) {
   CharacterComposer character_composer;
 
-  // Composition with sequence ['dead acute', '1'] will fail
+  // Composition with sequence ['dead acute', '1'] will fail.
   ExpectKeyFiltered(&character_composer, GDK_KEY_dead_acute);
   EXPECT_TRUE(character_composer.FilterKeyPress(GDK_KEY_1));
-  EXPECT_TRUE(character_composer.GetComposedCharacter().empty());
+  EXPECT_TRUE(character_composer.composed_character().empty());
 
-  // Composition with sequence ['dead acute', 'dead circumflex', '1'] will fail
+  // Composition with sequence ['dead acute', 'dead circumflex', '1'] will fail.
   ExpectKeyFiltered(&character_composer, GDK_KEY_dead_acute);
   ExpectKeyFiltered(&character_composer, GDK_KEY_dead_circumflex);
   EXPECT_TRUE(character_composer.FilterKeyPress(GDK_KEY_1));
-  EXPECT_TRUE(character_composer.GetComposedCharacter().empty());
+  EXPECT_TRUE(character_composer.composed_character().empty());
 }
 
 TEST(CharacterComposerTest, FullyMatchingSequences) {
@@ -118,11 +118,11 @@ TEST(CharacterComposerTest, FullyMatchingSequences) {
 
 TEST(CharacterComposerTest, FullyMatchingSequencesAfterMatchingFailure) {
   CharacterComposer character_composer;
-  // Composition with sequence ['dead acute', 'dead circumflex', '1'] will fail
+  // Composition with sequence ['dead acute', 'dead circumflex', '1'] will fail.
   ExpectKeyFiltered(&character_composer, GDK_KEY_dead_acute);
   ExpectKeyFiltered(&character_composer, GDK_KEY_dead_circumflex);
   EXPECT_TRUE(character_composer.FilterKeyPress(GDK_KEY_1));
-  EXPECT_TRUE(character_composer.GetComposedCharacter().empty());
+  EXPECT_TRUE(character_composer.composed_character().empty());
   // LATIN SMALL LETTER A WITH CIRCUMFLEX AND ACUTE
   ExpectCharacterComposed(&character_composer, GDK_KEY_dead_acute,
                           GDK_KEY_dead_circumflex, GDK_KEY_a,
@@ -134,7 +134,7 @@ TEST(CharacterComposerTest, ComposedCharacterIsClearedAfterReset) {
   ExpectCharacterComposed(&character_composer, GDK_KEY_dead_acute, GDK_KEY_a,
                           string16(1, 0x00E1));
   character_composer.Reset();
-  EXPECT_TRUE(character_composer.GetComposedCharacter().empty());
+  EXPECT_TRUE(character_composer.composed_character().empty());
 }
 
 TEST(CharacterComposerTest, CompositionStateIsClearedAfterReset) {
@@ -144,7 +144,7 @@ TEST(CharacterComposerTest, CompositionStateIsClearedAfterReset) {
   ExpectKeyFiltered(&character_composer, GDK_KEY_dead_acute);
   character_composer.Reset();
   EXPECT_FALSE(character_composer.FilterKeyPress(GDK_KEY_a));
-  EXPECT_TRUE(character_composer.GetComposedCharacter().empty());
+  EXPECT_TRUE(character_composer.composed_character().empty());
 }
 
 // ComposeCheckerWithCompactTable in character_composer.cc is depending on the
