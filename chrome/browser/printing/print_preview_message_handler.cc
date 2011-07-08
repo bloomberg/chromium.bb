@@ -113,6 +113,9 @@ void PrintPreviewMessageHandler::OnPagesReadyForPreview(
       TabContentsWrapper::GetCurrentWrapperForContents(print_preview_tab);
 
   if (params.reuse_existing_data) {
+    // Need to match normal rendering where we are expected to send this.
+    print_preview_ui->OnDidGetPreviewPageCount(params.expected_pages_count);
+
     print_preview_ui->OnPreviewDataIsAvailable(
         params.expected_pages_count,
         wrapper->print_view_manager()->RenderSourceName(),
