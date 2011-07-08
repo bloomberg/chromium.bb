@@ -184,9 +184,13 @@ env.AddNodeToTestSuite(node,
                        is_broken=env.PyAutoTesterIsBroken())
 
 uma_test_files = [
+    # Validator failure
     env.File('${STAGING_DIR}/ppapi_bad_bative.html'),
-    env.File('${STAGING_DIR}/partly_broken.nexe'),
+    env.File('${STAGING_DIR}/partly_broken${PROGSUFFIX}'),
     env.File('${STAGING_DIR}/partly_broken.nmf'),
+    # Data URI
+    env.File('${STAGING_DIR}/srpc_hw_data.html'),
+    env.File('${STAGING_DIR}/srpc_hw_%s${PROGSUFFIX}' % platform)
     ] + CreateDefaultDeps('ppapi_ppb_core')
 
 

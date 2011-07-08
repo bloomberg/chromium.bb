@@ -206,6 +206,10 @@ void HistogramEnumerateSelLdrLoadStatus(NaClErrorCode error_code) {
                      LOAD_STATUS_UNKNOWN);
 }
 
+void HistogramEnumerateManifestIsDataURI(bool is_data_uri) {
+  HistogramEnumerate("NaCl.Manifest.IsDataURI", is_data_uri, 2, -1);
+}
+
 // Derive a class from pp::Find_Dev to forward PPP_Find_Dev calls to
 // the plugin.
 class FindAdapter : public pp::Find_Dev {
@@ -1054,6 +1058,7 @@ void PluginPpapi::RequestNaClManifest(const nacl::string& url) {
                        kUnknownBytes,
                        kUnknownBytes);
   bool is_data_uri = GetUrlScheme(nmf_resolved_url.AsString()) == SCHEME_DATA;
+  HistogramEnumerateManifestIsDataURI(static_cast<int>(is_data_uri));
   if (is_data_uri) {
     pp::CompletionCallback open_callback =
         callback_factory_.NewCallback(&PluginPpapi::NaClManifestBufferReady);

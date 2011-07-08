@@ -70,7 +70,7 @@ node = env.PPAPIBrowserTester(
     url='srpc_hw_data.html',
     files=env.ExtractPublishedFiles(srpc_hw_nexe_name),
     # have to hardcode the port so the data URI can encode an absolute path
-    args=['--debug', '--enable_experimental_js', '--port', '50000'])
+    args=['--debug', '--enable_experimental_js'])
 
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],

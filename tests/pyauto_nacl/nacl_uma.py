@@ -132,6 +132,7 @@ Histogram: NaCl.OSArch recorded 2 samples, average = 1.0 (flags = 0x1)
           'NaCl.Client.OSArch',
           'NaCl.LoadStatus.Plugin',
           'NaCl.LoadStatus.SelLdr',
+          'NaCl.Manifest.IsDataURI',
           'NaCl.Perf.DownloadTime.Manifest',
           'NaCl.Perf.DownloadTime.Nexe',
           'NaCl.Perf.Size.Manifest',
@@ -151,6 +152,7 @@ Histogram: NaCl.OSArch recorded 2 samples, average = 1.0 (flags = 0x1)
       # Check predictable values.
       self.assertEqual(hists['NaCl.LoadStatus.Plugin'][ERROR_SUCCESS], count)
       self.assertEqual(hists['NaCl.LoadStatus.SelLdr'][LOAD_OK], count)
+      self.assertEqual(hists['NaCl.Manifest.IsDataURI'][0], count)
 
     # Make sure UMA stats are logged.
     self.NavigateToURL(url)
@@ -189,6 +191,18 @@ Histogram: NaCl.OSArch recorded 2 samples, average = 1.0 (flags = 0x1)
     self.assertEqual(
         hists['NaCl.LoadStatus.SelLdr'][LOAD_VALIDATION_FAILED],
         1)
+
+  def testDataURI(self):
+    url = self.GetHttpURLForDataPath('srpc_hw_data.html')
+
+    # Make sure UMA stats are logged.
+    self.NavigateToURL(url)
+    nacl_utils.WaitForNexeLoad(self)
+    nacl_utils.VerifyAllTestsPassed(self)
+    hists = self.getHistograms('NaCl')
+
+    self.assertHistogramCount(hists, 'NaCl.Manifest.IsDataURI', 1)
+    self.assertEqual(hists['NaCl.Manifest.IsDataURI'][1], 1)
 
 
 if __name__ == '__main__':
