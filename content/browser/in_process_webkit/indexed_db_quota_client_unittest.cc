@@ -27,10 +27,12 @@ class IndexedDBQuotaClientTest : public testing::Test {
  public:
   const GURL kOriginA;
   const GURL kOriginB;
+  const GURL kOriginOther;
 
   IndexedDBQuotaClientTest()
       : kOriginA("http://host"),
         kOriginB("http://host:8000"),
+        kOriginOther("http://other"),
         usage_(0),
         callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
         message_loop_(MessageLoop::TYPE_IO),
@@ -68,6 +70,29 @@ class IndexedDBQuotaClientTest : public testing::Test {
     return usage_;
   }
 
+  const std::set<GURL>& GetOriginsForType(
+      quota::QuotaClient* client,
+      quota::StorageType type) {
+    origins_.clear();
+    client->GetOriginsForType(type,
+        callback_factory_.NewCallback(
+            &IndexedDBQuotaClientTest::OnGetOriginsComplete));
+    MessageLoop::current()->RunAllPending();
+    return origins_;
+  }
+
+  const std::set<GURL>& GetOriginsForHost(
+      quota::QuotaClient* client,
+      quota::StorageType type,
+      const std::string& host) {
+    origins_.clear();
+    client->GetOriginsForHost(type, host,
+        callback_factory_.NewCallback(
+            &IndexedDBQuotaClientTest::OnGetOriginsComplete));
+    MessageLoop::current()->RunAllPending();
+    return origins_;
+  }
+
   IndexedDBContext* idb_context() { return idb_context_.get(); }
 
   void SetFileSizeTo(const FilePath& path, int size) {
@@ -91,8 +116,13 @@ class IndexedDBQuotaClientTest : public testing::Test {
     usage_ = usage;
   }
 
+  void OnGetOriginsComplete(const std::set<GURL>& origins) {
+    origins_ = origins;
+  }
+
   ScopedTempDir temp_dir_;
   int64 usage_;
+  std::set<GURL> origins_;
   scoped_refptr<IndexedDBContext> idb_context_;
   base::ScopedCallbackFactory<IndexedDBQuotaClientTest> callback_factory_;
   MessageLoop message_loop_;
@@ -117,4 +147,46 @@ TEST_F(IndexedDBQuotaClientTest, GetOriginUsage) {
   EXPECT_EQ(0, GetOriginUsage(&client, kOriginA, kPerm));
   EXPECT_EQ(3, GetOriginUsage(&client, kOriginB, kTemp));
   EXPECT_EQ(0, GetOriginUsage(&client, kOriginB, kPerm));
+}
+
+TEST_F(IndexedDBQuotaClientTest, GetOriginsForHost) {
+  IndexedDBQuotaClient client(
+      base::MessageLoopProxy::CreateForCurrentThread(),
+      idb_context());
+
+  EXPECT_EQ(kOriginA.host(), kOriginB.host());
+  EXPECT_NE(kOriginA.host(), kOriginOther.host());
+
+  std::set<GURL> origins = GetOriginsForHost(&client, kTemp, kOriginA.host());
+  EXPECT_TRUE(origins.empty());
+
+  AddFakeIndexedDB(kOriginA, 1000);
+  origins = GetOriginsForHost(&client, kTemp, kOriginA.host());
+  EXPECT_EQ(origins.size(), 1ul);
+  EXPECT_TRUE(origins.find(kOriginA) != origins.end());
+
+  AddFakeIndexedDB(kOriginB, 1000);
+  origins = GetOriginsForHost(&client, kTemp, kOriginA.host());
+  EXPECT_EQ(origins.size(), 2ul);
+  EXPECT_TRUE(origins.find(kOriginA) != origins.end());
+  EXPECT_TRUE(origins.find(kOriginB) != origins.end());
+
+  EXPECT_TRUE(GetOriginsForHost(&client, kPerm, kOriginA.host()).empty());
+  EXPECT_TRUE(GetOriginsForHost(&client, kTemp, kOriginOther.host()).empty());
+}
+
+TEST_F(IndexedDBQuotaClientTest, GetOriginsForType) {
+  IndexedDBQuotaClient client(
+      base::MessageLoopProxy::CreateForCurrentThread(),
+      idb_context());
+
+  EXPECT_TRUE(GetOriginsForType(&client, kTemp).empty());
+  EXPECT_TRUE(GetOriginsForType(&client, kPerm).empty());
+
+  AddFakeIndexedDB(kOriginA, 1000);
+  std::set<GURL> origins = GetOriginsForType(&client, kTemp);
+  EXPECT_EQ(origins.size(), 1ul);
+  EXPECT_TRUE(origins.find(kOriginA) != origins.end());
+
+  EXPECT_TRUE(GetOriginsForType(&client, kPerm).empty());
 }

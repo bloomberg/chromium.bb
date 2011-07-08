@@ -62,6 +62,8 @@ class IndexedDBContext : public base::RefCountedThreadSafe<IndexedDBContext> {
   // Does a particular origin get unlimited storage?
   bool IsUnlimitedStorageGranted(const GURL& origin) const;
 
+  void GetAllOriginIdentifiers(std::vector<string16>* origin_ids);
+
 #ifdef UNIT_TEST
   // For unit tests allow to override the |data_path_|.
   void set_data_path(const FilePath& data_path) { data_path_ = data_path; }

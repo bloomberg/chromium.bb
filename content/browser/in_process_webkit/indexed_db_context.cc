@@ -65,8 +65,8 @@ IndexedDBContext::IndexedDBContext(
       special_storage_policy_(special_storage_policy) {
   data_path_ = webkit_context->data_path().Append(kIndexedDBDirectory);
   if (quota_manager_proxy) {
-//    quota_manager_proxy->RegisterClient(
-//        new IndexedDBQuotaClient(webkit_thread_loop, this));
+    quota_manager_proxy->RegisterClient(
+        new IndexedDBQuotaClient(webkit_thread_loop, this));
   }
 }
 
@@ -117,4 +117,21 @@ void IndexedDBContext::DeleteIndexedDBForOrigin(const string16& origin_id) {
 bool IndexedDBContext::IsUnlimitedStorageGranted(
     const GURL& origin) const {
   return special_storage_policy_->IsStorageUnlimited(origin);
+}
+
+// TODO(dgrogan): Merge this code with the similar loop in
+// BrowsingDataIndexedDBHelperImpl::FetchIndexedDBInfoInWebKitThread.
+void IndexedDBContext::GetAllOriginIdentifiers(
+    std::vector<string16>* origin_ids) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
+  file_util::FileEnumerator file_enumerator(data_path_,
+      false, file_util::FileEnumerator::DIRECTORIES);
+  for (FilePath file_path = file_enumerator.Next(); !file_path.empty();
+       file_path = file_enumerator.Next()) {
+    if (file_path.Extension() == IndexedDBContext::kIndexedDBExtension) {
+      WebKit::WebString origin_id_webstring =
+          webkit_glue::FilePathToWebString(file_path.BaseName());
+      origin_ids->push_back(origin_id_webstring);
+    }
+  }
 }
