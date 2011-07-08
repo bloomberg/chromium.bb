@@ -102,6 +102,7 @@ static void SetupPangoLayout(PangoLayout* layout,
                              const string16& text,
                              const gfx::Font& font,
                              int width,
+                             base::i18n::TextDirection text_direction,
                              int flags) {
   if (!cairo_font_options)
     UpdateCairoFontOptions();
@@ -130,7 +131,7 @@ static void SetupPangoLayout(PangoLayout* layout,
           (flags & gfx::Canvas::CHARACTER_BREAK) ?
               PANGO_WRAP_WORD_CHAR : PANGO_WRAP_WORD);
     }
-  } else if (base::i18n::IsRTL()){
+  } else if (text_direction == base::i18n::RIGHT_TO_LEFT){
     pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_END);
   } else {
     // Fading the text will be handled in the draw operation.
@@ -205,6 +206,8 @@ class DrawStringContext {
   int text_width_;
   int text_height_;
 
+  base::i18n::TextDirection text_direction_;
+
   DISALLOW_COPY_AND_ASSIGN(DrawStringContext);
 };
 
@@ -223,13 +226,15 @@ DrawStringContext::DrawStringContext(gfx::CanvasSkia* canvas,
       text_x_(bounds.x()),
       text_y_(bounds.y()),
       text_width_(0),
-      text_height_(0) {
+      text_height_(0),
+      text_direction_(base::i18n::GetFirstStrongCharacterDirection(text)) {
   DCHECK(!bounds_.IsEmpty());
 
   cr_ = skia::BeginPlatformPaint(canvas_);
   layout_ = pango_cairo_create_layout(cr_);
 
-  SetupPangoLayout(layout_, text, font, bounds_.width(), flags_);
+  SetupPangoLayout(
+      layout_, text, font, bounds_.width(), text_direction_, flags_);
 
   pango_layout_set_height(layout_, bounds_.height() * PANGO_SCALE);
 
@@ -282,7 +287,7 @@ void DrawStringContext::Draw(const SkColor& text_color) {
 
   // If we're not eliding, use a fixed color.
   // Otherwise, create a gradient pattern to use as the source.
-  if (base::i18n::IsRTL() ||
+  if (text_direction_ == base::i18n::RIGHT_TO_LEFT ||
       (flags_ & gfx::Canvas::NO_ELLIPSIS) ||
       text_width_ <= bounds_.width()) {
     cairo_set_source_rgba(cr_, r, g, b, a);
@@ -372,7 +377,13 @@ void CanvasSkia::SizeStringInt(const string16& text,
   cairo_t* cr = cairo_create(surface);
   PangoLayout* layout = pango_cairo_create_layout(cr);
 
-  SetupPangoLayout(layout, text, font, *width, flags);
+  SetupPangoLayout(
+      layout,
+      text,
+      font,
+      *width,
+      base::i18n::GetFirstStrongCharacterDirection(text),
+      flags);
 
   pango_layout_get_pixel_size(layout, width, height);
 
