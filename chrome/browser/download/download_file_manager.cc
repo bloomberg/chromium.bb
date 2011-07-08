@@ -274,7 +274,7 @@ void DownloadFileManager::OnDownloadManagerShutdown(DownloadManager* manager) {
 //
 // There are 2 possible rename cases where this method can be called:
 // 1. tmp -> foo.crdownload (not final, safe)
-// 2. tmp-> Unconfirmed.xxx.crdownload (not final, dangerous)
+// 2. tmp -> Unconfirmed.xxx.crdownload (not final, dangerous)
 void DownloadFileManager::RenameInProgressDownloadFile(
     int id, const FilePath& full_path) {
   VLOG(20) << __FUNCTION__ << "()" << " id = " << id

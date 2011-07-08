@@ -235,7 +235,8 @@ class SelectFileObserver : public DownloadManager::Observer {
   // Downloadmanager::Observer functions.
   virtual void ModelChanged() {}
   virtual void ManagerGoingDown() {}
-  virtual void SelectFileDialogDisplayed(int32 id) {
+  virtual void SelectFileDialogDisplayed(int32 id,
+                                         const FilePath& suggested_path) {
     file_dialog_ids_.insert(id);
   }
 
@@ -292,8 +293,11 @@ class ItemObserver : public DownloadItem::Observer {
 
 TEST_F(DownloadManagerTest, StartDownload) {
   BrowserThread io_thread(BrowserThread::IO, &message_loop_);
+  ScopedTempDir download_save_dir;
+  ASSERT_TRUE(download_save_dir.CreateUniqueTempDir());
   PrefService* prefs = profile_->GetPrefs();
-  prefs->SetFilePath(prefs::kDownloadDefaultDirectory, FilePath());
+  prefs->SetFilePath(prefs::kDownloadDefaultDirectory,
+                     download_save_dir.path());
   download_manager_->download_prefs()->EnableAutoOpenBasedOnExtension(
       FilePath(FILE_PATH_LITERAL("example.pdf")));
 

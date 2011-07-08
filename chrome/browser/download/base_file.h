@@ -32,7 +32,7 @@ class BaseFile {
            const linked_ptr<net::FileStream>& file_stream);
   virtual ~BaseFile();
 
-  // If calculate_hash is true, sha256 hash will be calculated.
+  // If |calculate_hash| is true, sha256 hash will be calculated.
   bool Initialize(bool calculate_hash);
 
   // Write a new chunk of data to the file. Returns true on success (all bytes

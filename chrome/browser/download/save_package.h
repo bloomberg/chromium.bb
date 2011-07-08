@@ -124,6 +124,10 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
   int tab_id() const { return tab_id_; }
   int id() const { return unique_id_; }
 
+  // Determines the saved file name based on the information of the
+  // current page, and then starts to download the page. This method
+  // runs in the background and may finish asynchronously after this
+  // method returns.
   void GetSaveInfo();
 
   // Statics -------------------------------------------------------------------

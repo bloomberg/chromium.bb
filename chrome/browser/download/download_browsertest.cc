@@ -127,6 +127,7 @@ class DownloadsObserver : public DownloadManager::Observer,
 
   // State accessors.
   bool select_file_dialog_seen() { return select_file_dialog_seen_; }
+  const FilePath& suggested_path() { return suggested_path_; }
 
   // Wait for whatever state was specified in the constructor.
   void WaitForFinished() {
@@ -239,8 +240,10 @@ class DownloadsObserver : public DownloadManager::Observer,
     }
   }
 
-  virtual void SelectFileDialogDisplayed(int32 /* id */) {
+  virtual void SelectFileDialogDisplayed(
+      int32 /* id */, const FilePath& suggested_path) {
     select_file_dialog_seen_ = true;
+    suggested_path_ = suggested_path;
     SignalIfFinished();
   }
 
@@ -315,6 +318,9 @@ class DownloadsObserver : public DownloadManager::Observer,
 
   // Holds the download ids which were dangerous.
   std::set<int32> dangerous_downloads_seen_;
+
+  // The suggested file path in the select file dialog.
+  FilePath suggested_path_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadsObserver);
 };
@@ -491,12 +497,6 @@ class CancelTestDataCollector
 
 class DownloadTest : public InProcessBrowserTest {
  public:
-  enum SelectExpectation {
-    EXPECT_NO_SELECT_DIALOG = -1,
-    EXPECT_NOTHING,
-    EXPECT_SELECT_DIALOG
-  };
-
   DownloadTest() {
     EnableDOMAutomation();
   }
@@ -544,7 +544,7 @@ class DownloadTest : public InProcessBrowserTest {
 
   // Location of the file destination (place to which it is downloaded).
   FilePath DestinationFile(Browser* browser, FilePath file) {
-    return GetDownloadDirectory(browser).Append(file);
+    return GetDownloadSaveDirectory(browser).Append(file);
   }
 
   // Must be called after browser creation.  Creates a temporary
@@ -565,11 +565,16 @@ class DownloadTest : public InProcessBrowserTest {
     return true;
   }
 
+  // Delete the default folder for downloaded files.
+  bool DeleteDownloadsDirectory() {
+    return downloads_directory_.Delete();
+  }
+
   DownloadPrefs* GetDownloadPrefs(Browser* browser) {
     return browser->profile()->GetDownloadManager()->download_prefs();
   }
 
-  FilePath GetDownloadDirectory(Browser* browser) {
+  FilePath GetDownloadSaveDirectory(Browser* browser) {
     DownloadManager* download_mananger =
         browser->profile()->GetDownloadManager();
     return download_mananger->download_prefs()->download_path();
@@ -577,13 +582,17 @@ class DownloadTest : public InProcessBrowserTest {
 
   // Create a DownloadsObserver that will wait for the
   // specified number of downloads to finish.
-  DownloadsObserver* CreateWaiter(Browser* browser, int num_downloads) {
+  // If |finish_on_select_file| is true, the object will also be
+  // considered finished when the select file dialog is displayed.
+  DownloadsObserver* CreateWaiter(Browser* browser,
+                                  int num_downloads,
+                                  bool finish_on_select_file) {
     DownloadManager* download_manager =
         browser->profile()->GetDownloadManager();
     return new DownloadsObserver(
         download_manager, num_downloads,
         DownloadItem::COMPLETE,  // Really done
-        false,                   // Bail on select file
+        finish_on_select_file,  // Bail on select file
         ON_DANGEROUS_DOWNLOAD_FAIL);
   }
 
@@ -620,19 +629,25 @@ class DownloadTest : public InProcessBrowserTest {
   // Download |url|, then wait for the download to finish.
   // |disposition| indicates where the navigation occurs (current tab, new
   // foreground tab, etc).
-  // |expectation| indicates whether or not a Select File dialog should be
+  // |expect_file_dialog| indicates whether a select file dialog should be
   // open when the download is finished, or if we don't care.
-  // If the dialog appears, the routine exits.  The only effect |expectation|
-  // has is whether or not the test succeeds.
+  // If the dialog appears, the routine exits. The only effect
+  // |expect_file_dialog| has is whether or not the test succeeds.
+  // |expected_suggested_path| is the path expected to be suggested in the
+  // select file dialog. This |expected_suggested_path| must be specified
+  // if |expect_file_dialog| is true. If |expect_file_dialog| is false,
+  // |expected_suggested_path| is ignored.
   // |browser_test_flags| indicate what to wait for, and is an OR of 0 or more
   // values in the ui_test_utils::BrowserTestWaitFlags enum.
   void DownloadAndWaitWithDisposition(Browser* browser,
                                       const GURL& url,
                                       WindowOpenDisposition disposition,
-                                      SelectExpectation expectation,
+                                      bool expect_file_dialog,
+                                      const FilePath& expected_suggested_path,
                                       int browser_test_flags) {
     // Setup notification, navigate, and block.
-    scoped_ptr<DownloadsObserver> observer(CreateWaiter(browser, 1));
+    scoped_ptr<DownloadsObserver> observer(
+        CreateWaiter(browser, 1, expect_file_dialog));
     // This call will block until the condition specified by
     // |browser_test_flags|, but will not wait for the download to finish.
     ui_test_utils::NavigateToURLWithDisposition(browser,
@@ -642,22 +657,31 @@ class DownloadTest : public InProcessBrowserTest {
     // Waits for the download to complete.
     observer->WaitForFinished();
 
-    // If specified, check the state of the select file dialog.
-    if (expectation != EXPECT_NOTHING) {
-      EXPECT_EQ(expectation == EXPECT_SELECT_DIALOG,
-                observer->select_file_dialog_seen());
+    // Checks if the select file dialog was displayed as expected.
+    // If displayed, checks the suggested path in the dialog.
+    if (expect_file_dialog) {
+      EXPECT_TRUE(observer->select_file_dialog_seen());
+      EXPECT_EQ(observer->suggested_path(), expected_suggested_path);
+    } else {
+      EXPECT_FALSE(observer->select_file_dialog_seen());
     }
   }
 
   // Download a file in the current tab, then wait for the download to finish.
-  void DownloadAndWait(Browser* browser,
-                       const GURL& url,
-                       SelectExpectation expectation) {
+  // Expect that no select file dialog is displayed.
+  void DownloadAndWait(Browser* browser, const GURL& url) {
     DownloadAndWaitWithDisposition(
-        browser,
-        url,
-        CURRENT_TAB,
-        expectation,
+        browser, url, CURRENT_TAB, false, FilePath(),
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  }
+
+  // Download a file in the current tab, then wait for the download to finish.
+  // Expect that a select file dialog suggesting |expected_suggested_path|
+  // is displayed.
+  void DownloadAndWaitWithDialog(Browser* browser, const GURL& url,
+                                 const FilePath& expected_suggested_path) {
+    DownloadAndWaitWithDisposition(
+        browser, url, CURRENT_TAB, true, expected_suggested_path,
         ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   }
 
@@ -723,7 +747,7 @@ class DownloadTest : public InProcessBrowserTest {
 
     // Download a partial web page in a background tab and wait.
     // The mock system will not complete until it gets a special URL.
-    scoped_ptr<DownloadsObserver> observer(CreateWaiter(browser, 1));
+    scoped_ptr<DownloadsObserver> observer(CreateWaiter(browser, 1, false));
     ui_test_utils::NavigateToURL(browser, url);
 
     // TODO(ahendrickson): check download status text before downloading.
@@ -948,13 +972,38 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadMimeType) {
   FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
   GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
 
-  // Download the file and wait.  We do not expect the Select File dialog.
-  DownloadAndWait(browser(), url, EXPECT_NO_SELECT_DIALOG);
+  // Download the file and wait.
+  DownloadAndWait(browser(), url);
 
   // Check state.
   EXPECT_EQ(1, browser()->tab_count());
   CheckDownload(browser(), file, file);
   CheckDownloadUI(browser(), true, true, file);
+}
+
+// Checks if a file is saved to the user's "Downloads" folder
+// in the following situation:
+// The default folder for downloaded files does not exist.
+// The user's "Downloads" folder exists.
+IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadFolder) {
+  ASSERT_TRUE(InitialSetup(false));
+  FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
+  GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
+
+  FilePath default_download_dir =
+      download_util::GetDefaultDownloadDirectoryFromPathService();
+  FilePath downloaded_file = default_download_dir.Append(file);
+
+  // Delete the default folder for downloaded files.
+  ASSERT_TRUE(DeleteDownloadsDirectory());
+  ASSERT_FALSE(file_util::PathExists(GetDownloadSaveDirectory(browser())));
+
+  // Download the file and wait.
+  DownloadAndWaitWithDialog(browser(), url, downloaded_file);
+
+  EXPECT_FALSE(file_util::PathExists(downloaded_file));
+  EXPECT_FALSE(file_util::PathExists(GetDownloadSaveDirectory(browser())));
+  EXPECT_EQ(1, browser()->tab_count());
 }
 
 #if defined(OS_WIN)
@@ -965,8 +1014,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CheckInternetZone) {
   FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
   GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
 
-  // Download the file and wait.  We do not expect the Select File dialog.
-  DownloadAndWait(browser(), url, EXPECT_NO_SELECT_DIALOG);
+  // Download the file and wait.
+  DownloadAndWait(browser(), url);
 
   // Check state.  Special file state must be checked before CheckDownload,
   // as CheckDownload will delete the output file.
@@ -979,7 +1028,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CheckInternetZone) {
 }
 #endif
 
-// Put up a Select File dialog when the file is downloaded, due to its MIME
+// Put up a select file dialog when the file is downloaded, due to its MIME
 // type.
 //
 // This test runs correctly, but leaves behind turds in the test user's
@@ -990,14 +1039,15 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_DownloadMimeTypeSelect) {
   ASSERT_TRUE(InitialSetup(true));
   FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
   GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
+  FilePath file_path(DestinationFile(browser(), file));
 
-  // Download the file and wait.  We expect the Select File dialog to appear
+  // Download the file and wait.  We expect the select file dialog to appear
   // due to the MIME type.
-  DownloadAndWait(browser(), url, EXPECT_SELECT_DIALOG);
+  DownloadAndWaitWithDialog(browser(), url, file_path);
 
   // Check state.
   EXPECT_EQ(1, browser()->tab_count());
-  // Since we exited while the Select File dialog was visible, there should not
+  // Since we exited while the select file dialog was visible, there should not
   // be anything in the download shelf and so it should not be visible.
   CheckDownloadUI(browser(), false, false, FilePath());
 }
@@ -1032,7 +1082,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, ContentDisposition) {
   FilePath download_file(FILE_PATH_LITERAL("download-test3-attachment.gif"));
 
   // Download a file and wait.
-  DownloadAndWait(browser(), url, EXPECT_NO_SELECT_DIALOG);
+  DownloadAndWait(browser(), url);
 
   CheckDownload(browser(), download_file, file);
 
@@ -1052,7 +1102,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, PerWindowShelf) {
   FilePath download_file(FILE_PATH_LITERAL("download-test3-attachment.gif"));
 
   // Download a file and wait.
-  DownloadAndWait(browser(), url, EXPECT_NO_SELECT_DIALOG);
+  DownloadAndWait(browser(), url);
 
   CheckDownload(browser(), download_file, file);
 
@@ -1117,7 +1167,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, IncognitoDownload) {
   // Since |incognito| is a separate browser, we have to set it up explicitly.
   incognito->profile()->GetPrefs()->SetBoolean(prefs::kPromptForDownload,
                                                false);
-  DownloadAndWait(incognito, url, EXPECT_NO_SELECT_DIALOG);
+  DownloadAndWait(incognito, url);
 
   // We should still have 2 windows.
   ExpectWindowCountAfterDownload(2);
@@ -1184,7 +1234,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CloseNewTab1) {
       browser(),
       url,
       NEW_BACKGROUND_TAB,
-      EXPECT_NO_SELECT_DIALOG,
+      false,
+      FilePath(),
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
   // When the download finishes, we should still have one tab.
@@ -1216,7 +1267,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DontCloseNewTab2) {
   DownloadAndWaitWithDisposition(browser(),
                                  GURL("javascript:openNew()"),
                                  CURRENT_TAB,
-                                 EXPECT_NO_SELECT_DIALOG,
+                                 false,
+                                 FilePath(),
                                  ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
 
   // When the download finishes, we should have two tabs.
@@ -1258,7 +1310,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DontCloseNewTab3) {
   DownloadAndWaitWithDisposition(browser(),
                                  url,
                                  CURRENT_TAB,
-                                 EXPECT_NO_SELECT_DIALOG,
+                                 false,
+                                 FilePath(),
                                  ui_test_utils::BROWSER_TEST_NONE);
 
   // When the download finishes, we should have two tabs.
@@ -1291,7 +1344,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CloseNewTab2) {
   DownloadAndWaitWithDisposition(browser(),
                                  GURL("javascript:openNew()"),
                                  CURRENT_TAB,
-                                 EXPECT_NO_SELECT_DIALOG,
+                                 false,
+                                 FilePath(),
                                  ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
 
   // When the download finishes, we should still have one tab.
@@ -1326,7 +1380,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CloseNewTab3) {
       browser(),
       GURL("javascript:document.getElementById('form').submit()"),
       CURRENT_TAB,
-      EXPECT_NO_SELECT_DIALOG,
+      false,
+      FilePath(),
       ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
 
   // When the download finishes, we should still have one tab.
@@ -1356,7 +1411,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, NewWindow) {
   DownloadAndWaitWithDisposition(browser(),
                                  url,
                                  NEW_WINDOW,
-                                 EXPECT_NO_SELECT_DIALOG,
+                                 false,
+                                 FilePath(),
                                  ui_test_utils::BROWSER_TEST_NONE);
 
   // When the download finishes, the download shelf SHOULD NOT be visible in
@@ -1463,8 +1519,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadHistoryCheck) {
   int64 origin_size;
   file_util::GetFileSize(origin_file, &origin_size);
 
-  // Download the file and wait.  We do not expect the Select File dialog.
-  DownloadAndWait(browser(), url, EXPECT_NO_SELECT_DIALOG);
+  // Download the file and wait.
+  DownloadAndWait(browser(), url);
 
   // Get details of what downloads have just happened.
   std::vector<DownloadItem*> downloads;
@@ -1501,7 +1557,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, ChromeURLAfterDownload) {
   GURL extensions_url(chrome::kChromeUIExtensionsURL);
 
   ui_test_utils::NavigateToURL(browser(), flags_url);
-  DownloadAndWait(browser(), download_url, EXPECT_NO_SELECT_DIALOG);
+  DownloadAndWait(browser(), download_url);
   ui_test_utils::NavigateToURL(browser(), extensions_url);
   TabContents* contents = browser()->GetSelectedTabContents();
   ASSERT_TRUE(contents);
@@ -1538,7 +1594,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_BrowserCloseAfterDownload) {
       &result));
   EXPECT_TRUE(result);
 
-  DownloadAndWait(browser(), download_url, EXPECT_NO_SELECT_DIALOG);
+  DownloadAndWait(browser(), download_url);
 
   ui_test_utils::WindowedNotificationObserver signal(
       NotificationType::BROWSER_CLOSED,
@@ -1560,7 +1616,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, AutoOpen) {
   MockDownloadOpeningObserver observer(
       browser()->profile()->GetDownloadManager());
 
-  DownloadAndWait(browser(), url, EXPECT_NO_SELECT_DIALOG);
+  DownloadAndWait(browser(), url);
 
   // Find the download and confirm it was opened.
   std::vector<DownloadItem*> downloads;

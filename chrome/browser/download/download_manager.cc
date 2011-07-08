@@ -8,7 +8,6 @@
 #include "base/file_util.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
-#include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/stl_util-inl.h"
 #include "base/stringprintf.h"
@@ -410,30 +409,23 @@ void DownloadManager::CheckVisitedReferrerBeforeDone(
           download_prefs()->download_path()));
 }
 
-void DownloadManager::CheckIfSuggestedPathExists(int32 download_id,
-                                                 DownloadStateInfo state,
-                                                 const FilePath& default_path) {
+void DownloadManager::CheckIfSuggestedPathExists(
+    int32 download_id,
+    DownloadStateInfo state,
+    const FilePath& download_save_dir) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  // Make sure the default download directory exists.
-  // TODO(phajdan.jr): only create the directory when we're sure the user
-  // is going to save there and not to another directory of his choice.
-  file_util::CreateDirectory(default_path);
-
-  // Check writability of the suggested path. If we can't write to it, default
-  // to the user's "My Documents" directory. We'll prompt them in this case.
-  FilePath dir = state.suggested_path.DirName();
-  FilePath filename = state.suggested_path.BaseName();
-  if (!file_util::PathIsWritable(dir)) {
-    VLOG(1) << "Unable to write to directory \"" << dir.value() << "\"";
+  FilePath default_download_dir =
+      download_util::GetDefaultDownloadDirectoryFromPathService();
+  FilePath save_dir;
+  if (download_util::ChooseSavableDirectory(
+          FilePath(), download_save_dir, default_download_dir, &save_dir))
     state.prompt_user_for_save_location = true;
-    PathService::Get(chrome::DIR_USER_DOCUMENTS, &state.suggested_path);
-    state.suggested_path = state.suggested_path.Append(filename);
-  }
+  state.suggested_path = save_dir.Append(state.suggested_path.BaseName());
 
   // If the download is deemed dangerous, we'll use a temporary name for it.
   if (state.IsDangerous()) {
-    state.target_name = FilePath(state.suggested_path).BaseName();
+    state.target_name = state.suggested_path.BaseName();
     // Create a temporary file to hold the file until the user approves its
     // download.
     FilePath::StringType file_name;
@@ -452,7 +444,7 @@ void DownloadManager::CheckIfSuggestedPathExists(int32 download_id,
           unconfirmed_prefix.append(
               FILE_PATH_LITERAL(" %d.crdownload")).c_str(),
           base::RandInt(0, 100000));
-      path = dir.Append(file_name);
+      path = state.suggested_path.DirName().Append(file_name);
       if (file_util::PathExists(path))
         path = FilePath();
     }
@@ -542,7 +534,7 @@ void DownloadManager::OnPathExistenceAvailable(
                                     contents, owning_window,
                                     reinterpret_cast<void*>(id_ptr));
     FOR_EACH_OBSERVER(Observer, observers_,
-                      SelectFileDialogDisplayed(download_id));
+                      SelectFileDialogDisplayed(download_id, suggested_path));
   } else {
     // No prompting for download, just continue with the suggested name.
     ContinueDownloadWithPath(download, suggested_path);

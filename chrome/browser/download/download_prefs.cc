@@ -60,18 +60,18 @@ void DownloadPrefs::RegisterUserPrefs(PrefService* prefs) {
                              SavePackage::SAVE_AS_COMPLETE_HTML,
                              PrefService::UNSYNCABLE_PREF);
 
-  // The default download path is userprofile\download.
-  const FilePath& default_download_path =
-      download_util::GetDefaultDownloadDirectory();
+  // The user's default "Downloads" folder.
+  FilePath default_download_dir =
+      download_util::GetDefaultDownloadDirectoryFromPathService();
   prefs->RegisterFilePathPref(prefs::kDownloadDefaultDirectory,
-                              default_download_path,
+                              default_download_dir,
                               PrefService::UNSYNCABLE_PREF);
 
 #if defined(OS_CHROMEOS)
   // Ensure that the download directory specified in the preferences exists.
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableFunction(&file_util::CreateDirectory, default_download_path));
+      NewRunnableFunction(&file_util::CreateDirectory, default_download_dir));
 #endif  // defined(OS_CHROMEOS)
 
   // If the download path is dangerous we forcefully reset it. But if we do
@@ -82,7 +82,7 @@ void DownloadPrefs::RegisterUserPrefs(PrefService* prefs) {
         prefs::kDownloadDefaultDirectory);
     if (download_util::DownloadPathIsDangerous(current_download_dir)) {
       prefs->SetFilePath(prefs::kDownloadDefaultDirectory,
-                         default_download_path);
+                         default_download_dir);
     }
     prefs->SetBoolean(prefs::kDownloadDirUpgraded, true);
   }
