@@ -281,14 +281,14 @@ void Plugin::ShutDownSubprocesses() {
   PLUGIN_PRINTF(("Plugin::ShutDownSubprocesses (this=%p)\n",
                  static_cast<void*>(this)));
   PLUGIN_PRINTF(("Plugin::ShutDownSubprocesses %s\n",
-                 main_subprocess_.description().c_str()));
+                 main_subprocess_.detailed_description().c_str()));
 
   // Shutdown service runtime. This must be done before all other calls so
   // they don't block forever when waiting for the upcall thread to exit.
   main_subprocess_.Shutdown();
   for (size_t i = 0; i < nacl_subprocesses_.size(); ++i) {
     PLUGIN_PRINTF(("Plugin::ShutDownSubprocesses %s\n",
-                   nacl_subprocesses_[i]->description().c_str()));
+                   nacl_subprocesses_[i]->detailed_description().c_str()));
     delete nacl_subprocesses_[i];
   }
   nacl_subprocesses_.clear();
@@ -401,7 +401,7 @@ bool Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
     return false;
   }
   PLUGIN_PRINTF(("Plugin::LoadNaClModule finished %s\n",
-                 main_subprocess_.description().c_str()));
+                 main_subprocess_.detailed_description().c_str()));
   return true;
 }
 
@@ -422,7 +422,7 @@ NaClSubprocessId Plugin::LoadHelperNaClModule(nacl::DescWrapper* wrapper,
   }
 
   PLUGIN_PRINTF(("Plugin::LoadHelperNaClModule finished %s\n",
-                 nacl_subprocess.get()->description().c_str()));
+                 nacl_subprocess.get()->detailed_description().c_str()));
 
   nacl_subprocesses_.push_back(nacl_subprocess.release());
   return next_id;

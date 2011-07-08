@@ -17,7 +17,13 @@ nacl::string NaClSubprocess::description() {
   } else {
     ss << "helper subprocess #" << assigned_id_;
   }
-  ss << " w/ this(" << static_cast<void*>(this)
+  return ss.str();
+}
+
+nacl::string NaClSubprocess::detailed_description() {
+  nacl::stringstream ss;
+  ss << description()
+     << " w/ this(" << static_cast<void*>(this)
      << "), socket(" << static_cast<void*>(socket_)
      << "), service_runtime(" << static_cast<void*>(service_runtime_)
      << ")";

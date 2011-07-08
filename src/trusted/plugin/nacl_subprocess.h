@@ -45,7 +45,12 @@ class NaClSubprocess {
   ScriptableHandle* socket() const { return socket_; }
   void set_socket(ScriptableHandle* socket) { socket_ = socket; }
 
+  // A basic description of the subprocess.
   nacl::string description();
+
+  // A detailed description of the subprocess that may contain addresses.
+  // Only use for debugging, but do not expose this to untrusted webapps.
+  nacl::string detailed_description();
 
   // Start up interfaces.
   bool StartSrpcServices();
