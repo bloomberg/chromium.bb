@@ -12,6 +12,9 @@
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/resource.h"
 
+/// @file
+/// This file defines the API to create a file system associated with a file.
+
 struct PP_FileInfo;
 
 namespace pp {
@@ -19,11 +22,27 @@ namespace pp {
 class CompletionCallback;
 class FileRef;
 
-// Wraps methods from ppb_file_system.h
+/// The <code>FileSystem</code> class identifies the file system type
+/// associated with a file.
 class FileSystem : public Resource {
  public:
+
+  /// This constructor creates a file system object of the given type.
+  ///
+  /// @param[in] instance A <code>Instance</code> indentifying the instance
+  /// with the file.
+  /// @param[in] type A file system type as defined by
+  /// <code>PP_FileSystemType</code> enum.
   FileSystem(Instance* instance, PP_FileSystemType type);
 
+  /// Open() opens the file system. A file system must be opened before running
+  /// any other operation on it.
+  ///
+  /// @param[in] expected_size The expected size of the file system.
+  /// @param[in] callback A <code>PP_CompletionCallback</code> to be called upon
+  /// completion of Open().
+  ///
+  /// @return An int32_t containing an error code from <code>pp_errors.h</code>.
   int32_t Open(int64_t expected_size, const CompletionCallback& cc);
 };
 
