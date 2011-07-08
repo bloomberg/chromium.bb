@@ -264,9 +264,11 @@ remoting.tryShare = function() {
 
   var div = document.getElementById('host-plugin-container');
   var plugin = document.createElement('embed');
-  plugin.setAttribute('type', remoting.PLUGIN_MIMETYPE);
-  plugin.setAttribute('hidden', 'true');
-  plugin.setAttribute('id', remoting.HOST_PLUGIN_ID);
+  plugin.type = remoting.PLUGIN_MIMETYPE;
+  plugin.id = remoting.HOST_PLUGIN_ID;
+  // Hiding the plugin means it doesn't load, so make it size zero instead.
+  plugin.width = 0;
+  plugin.height = 0;
   div.appendChild(plugin);
   plugin.onStateChanged = onStateChanged_;
   plugin.logDebugInfo = debugInfoCallback_;

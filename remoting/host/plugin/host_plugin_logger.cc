@@ -57,6 +57,8 @@ void HostPluginLogger::va_VLog(int verboselevel,
 }
 
 void HostPluginLogger::LogToHostUI(const std::string& message) {
+  // TODO(garykac): Fix crbug.com/88792
+  return;
   if (message_loop_ != MessageLoop::current()) {
     message_loop_->PostTask(
         FROM_HERE,
