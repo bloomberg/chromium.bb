@@ -150,6 +150,21 @@ void HistogramSizeKB(const std::string& name, int32_t sample) {
                              kSizeKBBuckets);
 }
 
+void HistogramEnumerate(const std::string& name, int sample, int maximum,
+                        int out_of_range_replacement) {
+  if (sample < 0 || sample >= maximum) {
+    if (out_of_range_replacement < 0)
+      // No replacement for bad input, abort.
+      return;
+    else
+      // Use a specific value to signal a bad input.
+      sample = out_of_range_replacement;
+  }
+  const PPB_UMA_Private* ptr = GetUMAInterface();
+  if (ptr == NULL) return;
+  ptr->HistogramEnumeration(pp::Var(name).pp_var(), sample, maximum);
+}
+
 void HistogramEnumerateOsArch(const std::string& sandbox_isa) {
   enum NaClOSArch {
     kNaClLinux32 = 0,
@@ -178,41 +193,17 @@ void HistogramEnumerateOsArch(const std::string& sandbox_isa) {
   if (sandbox_isa == "arm")
     os_arch = static_cast<NaClOSArch>(os_arch + 2);
 
-  if (os_arch < kNaClOSArchMax) {
-    const PPB_UMA_Private* ptr = GetUMAInterface();
-    if (ptr == NULL) return;
-    ptr->HistogramEnumeration(pp::Var("NaCl.OSArch").pp_var(),
-                              os_arch,
-                              kNaClOSArchMax);
-  }
+  HistogramEnumerate("NaCl.Client.OSArch", os_arch, kNaClOSArchMax, -1);
 }
 
 void HistogramEnumerateLoadStatus(PluginErrorCode error_code) {
-  if (error_code < 0 || error_code >= ERROR_MAX) {
-    error_code = ERROR_UNKNOWN;
-  }
-
-  const PPB_UMA_Private* ptr = GetUMAInterface();
-  if (ptr == NULL) return;
-
-  ptr->HistogramEnumeration(
-      pp::Var("NaCl.LoadStatus.Plugin").pp_var(),
-      error_code,
-      ERROR_MAX);
+  HistogramEnumerate("NaCl.LoadStatus.Plugin", error_code, ERROR_MAX,
+                     ERROR_UNKNOWN);
 }
 
 void HistogramEnumerateSelLdrLoadStatus(NaClErrorCode error_code) {
-  if (error_code < 0 || error_code >= NACL_ERROR_CODE_MAX) {
-    error_code = LOAD_STATUS_UNKNOWN;
-  }
-
-  const PPB_UMA_Private* ptr = GetUMAInterface();
-  if (ptr == NULL) return;
-
-  ptr->HistogramEnumeration(
-      pp::Var("NaCl.LoadStatus.SelLdr").pp_var(),
-      error_code,
-      NACL_ERROR_CODE_MAX);
+  HistogramEnumerate("NaCl.LoadStatus.SelLdr", error_code, NACL_ERROR_CODE_MAX,
+                     LOAD_STATUS_UNKNOWN);
 }
 
 // Derive a class from pp::Find_Dev to forward PPP_Find_Dev calls to
@@ -745,8 +736,9 @@ void PluginPpapi::NexeFileDidOpen(int32_t pp_error) {
   size_t nexe_bytes_read = static_cast<size_t>(stat_buf.st_size);
 
   nexe_size_ = nexe_bytes_read;
-  HistogramSizeKB("NaCl.NexeSize", static_cast<int32_t>(nexe_size_ / 1024));
-  HistogramTimeSmall("NaCl.NexeDownloadTime",
+  HistogramSizeKB("NaCl.Perf.Size.Nexe",
+                  static_cast<int32_t>(nexe_size_ / 1024));
+  HistogramTimeSmall("NaCl.Perf.DownloadTime.Nexe",
                      nexe_downloader_.TimeSinceOpenMilliseconds());
 
   // Inform JavaScript that we successfully loaded the manifest file.
@@ -777,9 +769,9 @@ bool PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel,
     float dt = static_cast<float>(
         (NaClGetTimeOfDayMicroseconds() - init_time_) / NACL_MICROS_PER_MILLI);
     float size_in_MB = static_cast<float>(nexe_size_) / 1024.f / 1024.f;
-    HistogramTimeSmall("NaCl.NexeStartupTimePerMB",
+    HistogramTimeSmall("NaCl.Perf.StartupTime.PerMB",
                        static_cast<int64_t>(dt / size_in_MB));
-    HistogramTimeSmall("NaCl.NexeStartupTime",
+    HistogramTimeSmall("NaCl.Perf.StartupTime.Total",
                        static_cast<int64_t>(dt));
   }
 
@@ -920,7 +912,7 @@ void PluginPpapi::NaClManifestBufferReady(int32_t pp_error) {
 void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
   PLUGIN_PRINTF(("PluginPpapi::NaClManifestFileDidOpen (pp_error=%"
                  NACL_PRId32")\n", pp_error));
-  HistogramTimeSmall("NaCl.ManifestDownloadTime",
+  HistogramTimeSmall("NaCl.Perf.DownloadTime.Manifest",
                      nexe_downloader_.TimeSinceOpenMilliseconds());
   ErrorInfo error_info;
   // The manifest file was successfully opened.  Set the src property on the
@@ -1011,6 +1003,9 @@ void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
 }
 
 void PluginPpapi::ProcessNaClManifest(const nacl::string& manifest_json) {
+  HistogramSizeKB("NaCl.Perf.Size.Manifest",
+                  static_cast<int32_t>(manifest_json.length() / 1024));
+
   nacl::string nexe_url;
   ErrorInfo error_info;
   if (!SetManifestObject(manifest_json, &error_info)) {
@@ -1058,7 +1053,8 @@ void PluginPpapi::RequestNaClManifest(const nacl::string& url) {
                        LENGTH_IS_NOT_COMPUTABLE,
                        kUnknownBytes,
                        kUnknownBytes);
-  if (GetUrlScheme(nmf_resolved_url.AsString()) == SCHEME_DATA) {
+  bool is_data_uri = GetUrlScheme(nmf_resolved_url.AsString()) == SCHEME_DATA;
+  if (is_data_uri) {
     pp::CompletionCallback open_callback =
         callback_factory_.NewCallback(&PluginPpapi::NaClManifestBufferReady);
     // Will always call the callback on success or failure.

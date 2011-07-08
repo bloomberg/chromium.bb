@@ -64,7 +64,7 @@ window.domAutomationController.send(text);
     return self.parseHistogramData(self.getHistogramData(path))
 
   def assertHistogramCount(self, hists, name, count):
-    self.assertTrue(name in hists, hists)
+    self.assertTrue(name in hists, name)
     self.assertEqual(sum(hists[name].values()), count)
 
   # Make sure the histogram parser works.
@@ -127,49 +127,48 @@ Histogram: NaCl.OSArch recorded 2 samples, average = 1.0 (flags = 0x1)
     page = 'ppapi_ppb_core.html'
     url = self.GetHttpURLForDataPath(page)
 
+    def checkHists(hists, count):
+      expected = [
+          'NaCl.Client.OSArch',
+          'NaCl.LoadStatus.Plugin',
+          'NaCl.LoadStatus.SelLdr',
+          'NaCl.Perf.DownloadTime.Manifest',
+          'NaCl.Perf.DownloadTime.Nexe',
+          'NaCl.Perf.Size.Manifest',
+          'NaCl.Perf.Size.Nexe',
+          'NaCl.Perf.StartupTime.Total',
+          'NaCl.Perf.StartupTime.PerMB']
+
+      # Check each histogram exists and has "count" samples.
+      for name in expected:
+        self.assertHistogramCount(hists, name, count)
+
+      # Keep in sync with plugin_error.h
+      ERROR_SUCCESS = 0
+      # Keep in sync with nacl_error_code.h
+      LOAD_OK = 0
+
+      # Check predictable values.
+      self.assertEqual(hists['NaCl.LoadStatus.Plugin'][ERROR_SUCCESS], count)
+      self.assertEqual(hists['NaCl.LoadStatus.SelLdr'][LOAD_OK], count)
+
     # Make sure UMA stats are logged.
     self.NavigateToURL(url)
     nacl_utils.WaitForNexeLoad(self)
     nacl_utils.VerifyAllTestsPassed(self)
     hists = self.getHistograms('NaCl')
-
-    # Keep in sync with plugin_error.h
-    ERROR_SUCCESS = 0
-    # Keep in sync with nacl_error_code.h
-    LOAD_OK = 0
-
-    self.assertHistogramCount(hists, 'NaCl.LoadStatus.Plugin', 1)
-    self.assertEqual(hists['NaCl.LoadStatus.Plugin'][ERROR_SUCCESS], 1)
-    self.assertHistogramCount(hists, 'NaCl.LoadStatus.SelLdr', 1)
-    self.assertEqual(hists['NaCl.LoadStatus.SelLdr'][LOAD_OK], 1)
-    self.assertHistogramCount(hists, 'NaCl.ManifestDownloadTime', 1)
-    self.assertHistogramCount(hists, 'NaCl.NexeDownloadTime', 1)
-    self.assertHistogramCount(hists, 'NaCl.NexeSize', 1)
-    self.assertHistogramCount(hists, 'NaCl.NexeStartupTime', 1)
-    self.assertHistogramCount(hists, 'NaCl.NexeStartupTimePerMB', 1)
-    self.assertHistogramCount(hists, 'NaCl.OSArch', 1)
+    checkHists(hists, 1)
 
     # Do it again.
     self.NavigateToURL(url)
     nacl_utils.WaitForNexeLoad(self)
     nacl_utils.VerifyAllTestsPassed(self)
     hists = self.getHistograms('NaCl')
-
-    self.assertHistogramCount(hists, 'NaCl.LoadStatus.Plugin', 2)
-    self.assertEqual(hists['NaCl.LoadStatus.Plugin'][ERROR_SUCCESS], 2)
-    self.assertHistogramCount(hists, 'NaCl.LoadStatus.SelLdr', 2)
-    self.assertEqual(hists['NaCl.LoadStatus.SelLdr'][LOAD_OK], 2)
-    self.assertHistogramCount(hists, 'NaCl.ManifestDownloadTime', 2)
-    self.assertHistogramCount(hists, 'NaCl.NexeDownloadTime', 2)
-    self.assertHistogramCount(hists, 'NaCl.NexeSize', 2)
-    self.assertHistogramCount(hists, 'NaCl.NexeStartupTime', 2)
-    self.assertHistogramCount(hists, 'NaCl.NexeStartupTimePerMB', 2)
-    self.assertHistogramCount(hists, 'NaCl.OSArch', 2)
+    checkHists(hists, 2)
 
   def testValidatorFail(self):
     # This test should induce a validation failure.
-    page = 'ppapi_bad_native.html'
-    url = self.GetHttpURLForDataPath(page)
+    url = self.GetHttpURLForDataPath('ppapi_bad_native.html')
 
     # Make sure UMA stats are logged.
     self.NavigateToURL(url)
