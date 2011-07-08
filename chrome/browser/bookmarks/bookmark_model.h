@@ -14,7 +14,6 @@
 #include "base/string16.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
-#include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/bookmarks/bookmark_service.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/history/history.h"
@@ -28,6 +27,7 @@
 class BookmarkIndex;
 class BookmarkLoadDetails;
 class BookmarkModel;
+class BookmarkModelObserver;
 class BookmarkStorage;
 class Profile;
 
@@ -198,13 +198,8 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
   // (as long as the model is loaded).
   const BookmarkNode* GetParentForNewNodes();
 
-  void AddObserver(BookmarkModelObserver* observer) {
-    observers_.AddObserver(observer);
-  }
-
-  void RemoveObserver(BookmarkModelObserver* observer) {
-    observers_.RemoveObserver(observer);
-  }
+  void AddObserver(BookmarkModelObserver* observer);
+  void RemoveObserver(BookmarkModelObserver* observer);
 
   // Notify the observes that an import is about to happen, so they can
   // delay any expensive UI updates until it is finished.

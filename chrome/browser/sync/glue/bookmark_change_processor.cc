@@ -1,6 +1,7 @@
 // Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include "chrome/browser/sync/glue/bookmark_change_processor.h"
 
 #include <stack>
@@ -10,6 +11,7 @@
 #include "base/string_util.h"
 #include "base/tracked.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/profiles/profile.h"

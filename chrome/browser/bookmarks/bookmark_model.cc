@@ -12,6 +12,7 @@
 #include "base/memory/scoped_vector.h"
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_index.h"
+#include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/bookmarks/bookmark_storage.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser_process.h"
@@ -155,6 +156,24 @@ const BookmarkNode* BookmarkModel::GetParentForNewNodes() {
   std::vector<const BookmarkNode*> nodes =
       bookmark_utils::GetMostRecentlyModifiedFolders(this, 1);
   return nodes.empty() ? bookmark_bar_node_ : nodes[0];
+}
+
+void BookmarkModel::AddObserver(BookmarkModelObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void BookmarkModel::RemoveObserver(BookmarkModelObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+void BookmarkModel::BeginImportMode() {
+  FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
+                    BookmarkImportBeginning(this));
+}
+
+void BookmarkModel::EndImportMode() {
+  FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
+                    BookmarkImportEnding(this));
 }
 
 void BookmarkModel::Remove(const BookmarkNode* parent, int index) {
@@ -636,16 +655,6 @@ void BookmarkModel::RemoveAndDeleteNode(BookmarkNode* delete_me) {
       NotificationType::URLS_STARRED,
       Source<Profile>(profile_),
       Details<history::URLsStarredDetails>(&details));
-}
-
-void BookmarkModel::BeginImportMode() {
-  FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
-                    BookmarkImportBeginning(this));
-}
-
-void BookmarkModel::EndImportMode() {
-  FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
-                    BookmarkImportEnding(this));
 }
 
 BookmarkNode* BookmarkModel::AddNode(BookmarkNode* parent,

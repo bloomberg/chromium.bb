@@ -6,7 +6,9 @@
 #define CHROME_TEST_BOOKMARK_LOAD_OBSERVER_H_
 #pragma once
 
-#include "chrome/browser/bookmarks/bookmark_model.h"
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
+#include "chrome/browser/bookmarks/bookmark_model_observer.h"
 
 // BookmarkLoadObserver is used when blocking until the BookmarkModel
 // finishes loading. As soon as the BookmarkModel finishes loading the message

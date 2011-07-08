@@ -17,6 +17,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_codec.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/common/chrome_constants.h"
