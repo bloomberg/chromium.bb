@@ -21,6 +21,10 @@
 
 namespace {
 
+// We pin the first context that the Compositor class creates with ref counting.
+// This hosts the shaders that are shared between all Compositor contexts.
+scoped_refptr<gfx::GLContext> g_share_context;
+
 GLuint CompileShader(GLenum type, const GLchar* source) {
   GLuint shader = glCreateShader(type);
   if (!shader)
@@ -49,6 +53,9 @@ GLuint CompileShader(GLenum type, const GLchar* source) {
 
 
 namespace ui {
+
+TextureProgramGL* CompositorGL::program_swizzle_ = NULL;
+TextureProgramGL* CompositorGL::program_no_swizzle_ = NULL;
 
 // Wraps a simple GL program for drawing textures to the screen.
 class TextureProgramGL {
@@ -92,7 +99,6 @@ class TextureProgramGL {
   GLuint a_tex_loc_;
   GLuint u_tex_loc_;
   GLuint u_mat_loc_;
-
 };
 
 class TextureProgramNoSwizzleGL : public TextureProgramGL {
@@ -320,7 +326,14 @@ CompositorGL::CompositorGL(gfx::AcceleratedWidget widget,
     : started_(false),
       size_(size) {
   gl_surface_ = gfx::GLSurface::CreateViewGLSurface(widget);
-  gl_context_ = gfx::GLContext::CreateGLContext(NULL, gl_surface_.get());
+  if (g_share_context.get()) {
+    gl_context_ = gfx::GLContext::CreateGLContext(
+        g_share_context->share_group(), gl_surface_.get());
+  } else {
+    gl_context_ = gfx::GLContext::CreateGLContext(
+        NULL, gl_surface_.get());
+    g_share_context = gl_context_;
+  }
   gl_context_->MakeCurrent(gl_surface_.get());
   if (!InitShaders())
     LOG(ERROR) << "Unable to initialize shaders (context = "
@@ -342,11 +355,11 @@ gfx::Size CompositorGL::GetSize() {
 }
 
 TextureProgramGL* CompositorGL::program_no_swizzle() {
-  return program_no_swizzle_.get();
+  return program_no_swizzle_;
 }
 
 TextureProgramGL* CompositorGL::program_swizzle() {
-  return program_swizzle_.get();
+  return program_swizzle_;
 }
 
 Texture* CompositorGL::CreateTexture() {
@@ -392,17 +405,19 @@ void CompositorGL::OnWidgetSizeChanged(const gfx::Size& size) {
 }
 
 bool CompositorGL::InitShaders() {
-  scoped_ptr<TextureProgramGL> temp_program(new TextureProgramNoSwizzleGL());
-  if (!temp_program->Initialize())
-    return false;
-  else
-    program_no_swizzle_.reset(temp_program.release());
+  if (!program_no_swizzle_) {
+    scoped_ptr<TextureProgramGL> temp_program(new TextureProgramNoSwizzleGL());
+    if (!temp_program->Initialize())
+      return false;
+    program_no_swizzle_ = temp_program.release();
+  }
 
-  temp_program.reset(new TextureProgramSwizzleGL());
-  if (!temp_program->Initialize())
-    return false;
-  else
-    program_swizzle_.reset(temp_program.release());
+  if (!program_swizzle_) {
+    scoped_ptr<TextureProgramGL> temp_program(new TextureProgramSwizzleGL());
+    if (!temp_program->Initialize())
+      return false;
+    program_swizzle_ = temp_program.release();
+  }
 
   return true;
 }

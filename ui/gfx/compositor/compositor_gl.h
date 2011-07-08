@@ -75,10 +75,8 @@ class CompositorGL : public Compositor {
   scoped_refptr<gfx::GLSurface> gl_surface_;
   scoped_refptr<gfx::GLContext> gl_context_;
 
-  // TODO(wjmaclean): Make these static so they ca be shared in a single
-  // context.
-  scoped_ptr<TextureProgramGL> program_swizzle_;
-  scoped_ptr<TextureProgramGL> program_no_swizzle_;
+  static TextureProgramGL* program_swizzle_;
+  static TextureProgramGL* program_no_swizzle_;
 
   gfx::Size size_;
 
