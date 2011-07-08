@@ -1256,8 +1256,6 @@ FilePath SavePackage::GetSaveDirPreference(PrefService* prefs) {
 }
 
 void SavePackage::GetSaveInfo() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
   // Can't use tab_contents_ in the file thread, so get the data that we need
   // before calling to it.
   PrefService* prefs = tab_contents()->profile()->GetPrefs();
@@ -1269,22 +1267,24 @@ void SavePackage::GetSaveInfo() {
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(this, &SavePackage::CreateDirectoryOnFileThread,
-                        website_save_dir, download_save_dir, mime_type));
+          website_save_dir, download_save_dir, mime_type));
 }
 
 void SavePackage::CreateDirectoryOnFileThread(
     const FilePath& website_save_dir,
     const FilePath& download_save_dir,
     const std::string& mime_type) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
   FilePath save_dir;
-  FilePath default_download_dir =
-      download_util::GetDefaultDownloadDirectoryFromPathService();
-  // Ignores the returned value since the select file dialog should be
-  // displayed in any case.
-  download_util::ChooseSavableDirectory(
-      website_save_dir, download_save_dir, default_download_dir, &save_dir);
+  // If the default html/websites save folder doesn't exist...
+  if (!file_util::DirectoryExists(website_save_dir)) {
+    // If the default download dir doesn't exist, create it.
+    if (!file_util::DirectoryExists(download_save_dir))
+      file_util::CreateDirectory(download_save_dir);
+    save_dir = download_save_dir;
+  } else {
+    // If it does exist, use the default save dir param.
+    save_dir = website_save_dir;
+  }
 
   bool can_save_as_complete = CanSaveAsComplete(mime_type);
   FilePath suggested_filename = GetSuggestedNameForSaveAs(can_save_as_complete,
@@ -1314,8 +1314,6 @@ void SavePackage::CreateDirectoryOnFileThread(
 
 void SavePackage::ContinueGetSaveInfo(const FilePath& suggested_path,
                                       bool can_save_as_complete) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
   // The TabContents which owns this SavePackage may have disappeared during
   // the UI->FILE->UI thread hop of
   // GetSaveInfo->CreateDirectoryOnFileThread->ContinueGetSaveInfo.
@@ -1406,8 +1404,6 @@ void SavePackage::ContinueGetSaveInfo(const FilePath& suggested_path,
 // Called after the save file dialog box returns.
 void SavePackage::ContinueSave(const FilePath& final_name,
                                int index) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
   // Ensure the filename is safe.
   saved_main_file_path_ = final_name;
   download_util::GenerateSafeFileName(tab_contents()->contents_mime_type(),

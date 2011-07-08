@@ -209,49 +209,36 @@ const int kAllNetErrorCodes[] = {
 
 // Download temporary file creation --------------------------------------------
 
-bool ChooseSavableDirectory(
-    const FilePath& website_save_dir,
-    const FilePath& download_save_dir,
-    const FilePath& default_download_dir,
-    FilePath* save_dir) {
-  bool prompt_dialog = false;
-  if (file_util::PathIsWritable(website_save_dir)) {
-    // If the default html/websites save folder exists,
-    // then use the default html/websites save folder.
-    *save_dir = website_save_dir;
-  } else if (file_util::PathIsWritable(download_save_dir)) {
-    // If the default html/websites save folder does not exist
-    // but the default download folder exists,
-    // then use the default download folder.
-    *save_dir = download_save_dir;
-  } else {
-    // If both the above folders do not exist,
-    // use the user's "Downloads" folder.
-    *save_dir = default_download_dir;
-    prompt_dialog = true;
-    if (!file_util::PathIsWritable(*save_dir)) {
-      VLOG(1) << "Cannot find the user's writable \"Downloads\" folder.";
-      // Create the |download_save_dir| folder if we cannot get
-      // the user's writable "Downloads" folder (This will be a rare case).
-      *save_dir = download_save_dir;
+class DefaultDownloadDirectory {
+ public:
+  const FilePath& path() const { return path_; }
+ private:
+  DefaultDownloadDirectory() {
+    if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &path_)) {
+      NOTREACHED();
     }
-    // Make sure that the folder does exist.
-    if (!file_util::CreateDirectory(*save_dir))
-      LOG(ERROR) << "Failed to create " << (*save_dir).value();
+    if (DownloadPathIsDangerous(path_)) {
+      if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS_SAFE, &path_)) {
+        NOTREACHED();
+      }
+    }
   }
-  return prompt_dialog;
+  friend struct base::DefaultLazyInstanceTraits<DefaultDownloadDirectory>;
+  FilePath path_;
+};
+
+static base::LazyInstance<DefaultDownloadDirectory>
+    g_default_download_directory(base::LINKER_INITIALIZED);
+
+const FilePath& GetDefaultDownloadDirectory() {
+  return g_default_download_directory.Get().path();
 }
 
-FilePath GetDefaultDownloadDirectoryFromPathService() {
-  FilePath default_download_dir;
-  if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &default_download_dir))
-    NOTREACHED();
-  if (DownloadPathIsDangerous(default_download_dir)) {
-    if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS_SAFE,
-                          &default_download_dir))
-      NOTREACHED();
-  }
-  return default_download_dir;
+bool CreateTemporaryFileForDownload(FilePath* temp_file) {
+  if (file_util::CreateTemporaryFileInDir(GetDefaultDownloadDirectory(),
+                                          temp_file))
+    return true;
+  return file_util::CreateTemporaryFile(temp_file);
 }
 
 bool DownloadPathIsDangerous(const FilePath& download_path) {

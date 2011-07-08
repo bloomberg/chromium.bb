@@ -7,7 +7,6 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "base/gtest_prod_util.h"
 #include "chrome/browser/download/save_package.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 
@@ -35,9 +34,6 @@ class DownloadTabHelper : public TabContentsObserver {
   // Save page with the main HTML file path, the directory for saving resources,
   // and the save type: HTML only or complete web page. Returns true if the
   // saving process has been initiated successfully.
-  // This method is used in automated testing to bypass prompting the user for
-  // file names. Instead, the names and paths are hard coded rather than
-  // running them through file name sanitation and extension / mime checking.
   bool SavePage(const FilePath& main_file, const FilePath& dir_path,
                 SavePackage::SavePackageType save_type);
 
@@ -52,20 +48,6 @@ class DownloadTabHelper : public TabContentsObserver {
   void OnStartDownload(DownloadItem* download);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(SavePageBrowserTest, SaveFolder1);
-  FRIEND_TEST_ALL_PREFIXES(SavePageBrowserTest, SaveFolder2);
-  FRIEND_TEST_ALL_PREFIXES(SavePageBrowserTest, SaveFolder3);
-
-  // Used in automated testing to bypass prompting the user for file names.
-  // The difference between SavePageBasedOnDefaultPrefs() and SavePage()
-  // is whether the default folder prefs are used. In case of SavePage(),
-  // we need to give it the file path to which the file is saved.
-  // On the other hand, in case of SavePageBasedOnDefaultPrefs(),
-  // we need not to give the file path since the file path is determined
-  // based on the default folder prefs. This method returns the title
-  // of the current tab.
-  string16 SavePageBasedOnDefaultPrefs();
-
   // TabContentsObserver overrides.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void DidGetUserGesture() OVERRIDE;

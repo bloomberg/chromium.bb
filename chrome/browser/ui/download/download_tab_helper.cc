@@ -54,6 +54,9 @@ void DownloadTabHelper::OnSaveURL(const GURL& url) {
   dlm->DownloadUrl(url, tab_contents()->GetURL(), "", tab_contents());
 }
 
+// Used in automated testing to bypass prompting the user for file names.
+// Instead, the names and paths are hard coded rather than running them through
+// file name sanitation and extension / mime checking.
 bool DownloadTabHelper::SavePage(const FilePath& main_file,
                                  const FilePath& dir_path,
                                  SavePackage::SavePackageType save_type) {
@@ -62,21 +65,7 @@ bool DownloadTabHelper::SavePage(const FilePath& main_file,
 
   save_package_ =
       new SavePackage(tab_contents_wrapper_, save_type, main_file, dir_path);
-  // Skips GetSaveInfo() and directly calls Init().
-  // We do not have to explicitly disable the select file dialog
-  // since we skip the process that can show the dialog.
   return save_package_->Init();
-}
-
-string16 DownloadTabHelper::SavePageBasedOnDefaultPrefs() {
-  tab_contents()->Stop();
-
-  save_package_ = new SavePackage(tab_contents_wrapper_);
-  // Disables the select file dialog.
-  save_package_->SetShouldPromptUser(false);
-  // This GetSaveInfo() calls save_package_->Init() in the background.
-  save_package_->GetSaveInfo();
-  return tab_contents()->GetTitle();
 }
 
 bool DownloadTabHelper::CanDownload(int request_id) {

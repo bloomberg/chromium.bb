@@ -55,12 +55,10 @@ bool BaseFile::Initialize(bool calculate_hash) {
   if (calculate_hash_)
     secure_hash_.reset(crypto::SecureHash::Create(crypto::SecureHash::SHA256));
 
-  FilePath save_path =
-      download_util::GetDefaultDownloadDirectoryFromPathService();
-  if (full_path_.empty() &&
-      !file_util::CreateTemporaryFileInDir(save_path, &full_path_))
-    return false;
-  return Open();
+  if (!full_path_.empty() ||
+      download_util::CreateTemporaryFileForDownload(&full_path_))
+    return Open();
+  return false;
 }
 
 bool BaseFile::AppendDataToFile(const char* data, size_t data_len) {

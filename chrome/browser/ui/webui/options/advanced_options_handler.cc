@@ -9,8 +9,6 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/file_util.h"
-#include "base/path_service.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -25,7 +23,6 @@
 #include "chrome/browser/service/service_process_control.h"
 #include "chrome/browser/ui/options/options_util.h"
 #include "chrome/browser/ui/webui/options/options_managed_banner_handler.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -189,9 +186,6 @@ void AdvancedOptionsHandler::Initialize() {
   SetupMetricsReportingSettingVisibility();
   SetupFontSizeLabel();
   SetupDownloadLocationPath();
-  download_path_checker_ = new DownloadPathChecker(this);
-  download_path_checker_->CheckIfDownloadPathExists(
-      default_download_location_.GetValue());
   SetupPromptForDownload();
   SetupAutoOpenFileTypesDisabledAttribute();
   SetupProxySettingsSection();
@@ -645,51 +639,5 @@ void AdvancedOptionsHandler::SetupSSLConfigSettings() {
     FundamentalValue disabled(tls1_enabled_.IsManaged());
     web_ui_->CallJavascriptFunction(
         "options.AdvancedOptions.SetUseTLS1CheckboxState", checked, disabled);
-  }
-}
-
-AdvancedOptionsHandler::DownloadPathChecker::DownloadPathChecker(
-    AdvancedOptionsHandler* handler)
-    : handler_(handler) {
-}
-
-AdvancedOptionsHandler::DownloadPathChecker::~DownloadPathChecker() {
-}
-
-void AdvancedOptionsHandler::DownloadPathChecker::
-                             CheckIfDownloadPathExists(const FilePath& path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(this,
-          &DownloadPathChecker::CheckIfDownloadPathExistsOnFileThread, path));
-}
-
-void AdvancedOptionsHandler::DownloadPathChecker::
-                             CheckIfDownloadPathExistsOnFileThread(
-                                 const FilePath& path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  if (!file_util::PathExists(path)) {
-    FilePath new_path;
-    if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &new_path)) {
-      // Create the |path| folder if we cannot get DIR_DEFAULT_DOWNLOADS
-      // (This will be a rare case).
-      new_path = path;
-    }
-    // Make sure that the folder does exist.
-    if (!file_util::CreateDirectory(new_path))
-      LOG(ERROR) << "Failed to create " << new_path.value();
-
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this,
-            &DownloadPathChecker::OnDownloadPathChanged, new_path));
-  }
-}
-
-void AdvancedOptionsHandler::DownloadPathChecker::
-                             OnDownloadPathChanged(const FilePath path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (handler_) {
-    handler_->default_download_location_.SetValue(path);
-    handler_->SetupDownloadLocationPath();
   }
 }

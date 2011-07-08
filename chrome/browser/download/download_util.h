@@ -50,20 +50,12 @@ namespace download_util {
 
 // Download temporary file creation --------------------------------------------
 
-// Chooses a writable directory from |website_save_dir|, |download_save_dir|
-// and |default_download_dir| in this order of priority.
-// If none of them is writable, creates |download_save_dir| and
-// chooses |download_save_dir|. The choosed directory is stored to |save_dir|.
-// Returns true if neither |website_save_dir| nor |download_save_dir|
-// is writable, which indicates the select file dialog should be displayed.
-bool ChooseSavableDirectory(const FilePath& website_save_dir,
-                            const FilePath& download_save_dir,
-                            const FilePath& default_download_dir,
-                            FilePath* save_dir);
+// Return the default download directory.
+const FilePath& GetDefaultDownloadDirectory();
 
-// Returns the user's default "Downloads" folder provided by PathService.
-// This method returns the folder provided by PathService.
-FilePath GetDefaultDownloadDirectoryFromPathService();
+// Create a temporary file for a download in the user's default download
+// directory and return true if was successful in creating the file.
+bool CreateTemporaryFileForDownload(FilePath* path);
 
 // Return true if the |download_path| is dangerous path.
 bool DownloadPathIsDangerous(const FilePath& download_path);

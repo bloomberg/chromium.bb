@@ -87,9 +87,7 @@ class DownloadManager
     // Called immediately after the DownloadManager puts up a select file
     // dialog.
     // |id| indicates which download opened the dialog.
-    // |suggested_path| indicates the path suggested in the dialog.
-    virtual void SelectFileDialogDisplayed(
-        int32 id, const FilePath& suggested_path) {}
+    virtual void SelectFileDialogDisplayed(int32 id) {}
 
    protected:
     virtual ~Observer() {}
@@ -313,7 +311,7 @@ class DownloadManager
   // stalls from interacting with the file system.
   void CheckIfSuggestedPathExists(int32 download_id,
                                   DownloadStateInfo state,
-                                  const FilePath& download_save_dir);
+                                  const FilePath& default_path);
 
   // Called on the UI thread once the DownloadManager has determined whether the
   // suggested file path exists.

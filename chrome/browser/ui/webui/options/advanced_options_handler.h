@@ -21,37 +21,6 @@ class AdvancedOptionsHandler
       public SelectFileDialog::Listener,
       public CloudPrintSetupHandlerDelegate {
  public:
-
-  class DownloadPathChecker
-      : public base::RefCountedThreadSafe<DownloadPathChecker> {
-   public:
-    explicit DownloadPathChecker(AdvancedOptionsHandler* handler);
-
-    // Check if the download folder still exists. If the download folder
-    // does not exist, the download folder is changed to the user's
-    // "Downloads" folder. This check runs in the background and may finish
-    // asynchronously after this method returns.
-    void CheckIfDownloadPathExists(const FilePath& path);
-
-   private:
-    friend class base::RefCountedThreadSafe<DownloadPathChecker>;
-    ~DownloadPathChecker();
-
-    // Called on the FILE thread to check the existence of the download folder.
-    // If it does not exist, this method tells the user's "Downloads"
-    // to OnDownloadPathChanged().
-    void CheckIfDownloadPathExistsOnFileThread(const FilePath& path);
-
-    // Called on the UI thread when the FILE thread finds that the download
-    // folder does not exist. This method changes the download folder to
-    // the user's "Downloads" folder and notifies this preference change
-    // to observers.
-    void OnDownloadPathChanged(const FilePath path);
-
-    // The handler we will report back to.
-    AdvancedOptionsHandler* handler_;
-  };
-
   AdvancedOptionsHandler();
   virtual ~AdvancedOptionsHandler();
 
@@ -164,7 +133,7 @@ class AdvancedOptionsHandler
 
   void SetupFontSizeLabel();
 
-  // Setup the download folder based on user preferences.
+  // Setup the download path based on user preferences.
   void SetupDownloadLocationPath();
 
   // Setup the pref whether to prompt for download location every time.
@@ -178,8 +147,6 @@ class AdvancedOptionsHandler
 
   // Setup the checked state for SSL related checkboxes.
   void SetupSSLConfigSettings();
-
-  scoped_refptr<DownloadPathChecker> download_path_checker_;
 
   scoped_refptr<SelectFileDialog> select_folder_dialog_;
 
