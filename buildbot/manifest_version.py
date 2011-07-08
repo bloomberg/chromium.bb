@@ -60,12 +60,11 @@ def _GitCleanDirectory(directory):
       raise GitCommandException(err_msg)
 
 
-def _PrepForChanges(git_repo, dry_run):
+def _PrepForChanges(git_repo):
   """Prepare a git/repo repository for making changes. It should
      have no files modified when you call this.
   Args:
     git_repo: git repo to push
-    dry_run: Run but we are not planning on pushing changes for real.
   raises: GitCommandException
   """
   _GitCleanDirectory(git_repo)
@@ -87,12 +86,6 @@ def _PrepForChanges(git_repo, dry_run):
         pass
 
       cros_lib.RunCommand(['git', 'pull', '--force'], cwd=git_repo)
-
-      # For debug users we want to keep previous commit history and cannot rely
-      # on sync to pick up new changes.
-      if not dry_run:
-        cros_lib.RunCommand(['git', 'checkout',
-                             '-b', _PUSH_BRANCH, '-t', 'master'], cwd=git_repo)
 
 # TODO Test fix for chromium-os:16249
 #    repository.FixExternalRepoPushUrls(git_repo)
@@ -292,7 +285,7 @@ class VersionInfo(object):
 
     repo_dir = os.path.dirname(self.version_file)
 
-    _PrepForChanges(repo_dir, dry_run)
+    _PrepForChanges(repo_dir)
 
     shutil.copyfile(temp_file, self.version_file)
     os.unlink(temp_file)
@@ -417,9 +410,6 @@ class BuildSpecsManager(object):
                                      BuildSpecsManager.STATUS_INFLIGHT, dir_pfx)
 
     # Conservatively grab the latest manifest versions repository.
-    # Note:  This is key to some of the Git push logic for non-repos for
-    # local developers.  If this is changed, please revisit PushChanges and
-    # PrepForChanges.
     _RemoveDirs(self._TMP_MANIFEST_DIR)
     repository.CloneGitRepo(self._TMP_MANIFEST_DIR, self.manifest_repo)
 
@@ -625,7 +615,7 @@ class BuildSpecsManager(object):
     self._PushSpecChanges(message)
 
   def _PrepSpecChanges(self):
-    _PrepForChanges(self._TMP_MANIFEST_DIR, self.dry_run)
+    _PrepForChanges(self._TMP_MANIFEST_DIR)
 
   def _PushSpecChanges(self, commit_message):
     _PushGitChanges(self._TMP_MANIFEST_DIR, commit_message,
