@@ -124,6 +124,15 @@ cr.define('options', function() {
         autofillEnabled.disabled = true;
         autofillEnabled.checked = false;
         cr.dispatchSimpleEvent(autofillEnabled, 'change');
+      } else {
+        Preferences.getInstance().addEventListener(
+            'autofill.enabled',
+            function(event) {
+              var managed = event.value && event.value['managed'];
+              var value = event.value && event.value['value'] != undefined ?
+                  event.value['value'] : event.value;
+              $('autofill-settings').disabled = managed && !value;
+            });
       }
     },
 
