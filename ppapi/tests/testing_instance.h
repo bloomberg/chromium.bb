@@ -8,23 +8,11 @@
 #include <string>
 
 #include "ppapi/cpp/completion_callback.h"
-
-#if defined(__native_client__)
 #include "ppapi/cpp/instance.h"
-#else
-#include "ppapi/cpp/private/instance_private.h"
-#endif
 
 class TestCase;
 
-// In trusted builds, we use InstancePrivate and allow tests that use
-// synchronous scripting. NaCl does not support synchronous scripting.
-class TestingInstance : public
-#if defined(__native_client__)
-pp::Instance {
-#else
-pp::InstancePrivate {
-#endif
+class TestingInstance : public pp::Instance {
  public:
   explicit TestingInstance(PP_Instance instance);
   virtual ~TestingInstance();
@@ -32,10 +20,7 @@ pp::InstancePrivate {
   // pp::Instance override.
   virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]);
   virtual void DidChangeView(const pp::Rect& position, const pp::Rect& clip);
-
-#if !(defined __native_client__)
   virtual pp::Var GetInstanceObject();
-#endif
 
   // Outputs the information from one test run, using the format
   //   <test_name> [PASS|FAIL <error_message>]
@@ -60,10 +45,6 @@ pp::InstancePrivate {
   // Passes the message_data through to the HandleMessage method on the
   // TestClass object that's associated with this instance.
   virtual void HandleMessage(const pp::Var& message_data);
-
-  const std::string& protocol() {
-    return protocol_;
-  }
 
  private:
   void ExecuteTests(int32_t unused);
@@ -97,10 +78,6 @@ pp::InstancePrivate {
 
   // True if running in Native Client.
   bool nacl_mode_;
-
-  // String representing the protocol.  Used for detecting whether we're running
-  // with http.
-  std::string protocol_;
 };
 
 #endif  // PPAPI_TESTS_TESTING_INSTANCE_H_

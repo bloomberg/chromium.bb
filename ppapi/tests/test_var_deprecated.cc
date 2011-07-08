@@ -57,7 +57,7 @@ pp::Var VarScriptableObject::Call(const pp::Var& method_name,
     if (args.size() != 1)
       *exception = pp::Var("Bad argument to SetValue(<value>)");
     else
-      test_var_deprecated_->set_var_from_page(pp::VarPrivate(args[0]));
+      test_var_deprecated_->set_var_from_page(args[0]);
   }
 
   return pp::Var();
@@ -297,7 +297,7 @@ std::string TestVarDeprecated::TestHasPropertyAndMethod() {
   uint32_t before_objects = testing_interface_->GetLiveObjectsForInstance(
       instance_->pp_instance());
   {
-    pp::VarPrivate window = instance_->GetWindowObject();
+    pp::Var window = instance_->GetWindowObject();
     ASSERT_TRUE(window.is_object());
 
     // Regular property.
@@ -330,7 +330,7 @@ std::string TestVarDeprecated::TestHasPropertyAndMethod() {
 
     // Try to use something not an object.
     exception = pp::Var();
-    pp::VarPrivate string_object("asdf");
+    pp::Var string_object("asdf");
     ASSERT_FALSE(string_object.HasProperty("find", &exception));
     ASSERT_FALSE(exception.is_undefined());
     exception = pp::Var();
@@ -397,4 +397,3 @@ std::string TestVarDeprecated::TestPassReference() {
 
   PASS();
 }
-

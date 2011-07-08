@@ -121,7 +121,7 @@ std::string TestURLUtil::TestDocumentCanAccessDocument() {
 std::string TestURLUtil::TestGetDocumentURL() {
   pp::Var url = util_->GetDocumentURL(*instance_);
   ASSERT_TRUE(url.is_string());
-  pp::VarPrivate window = instance_->GetWindowObject();
+  pp::Var window = instance_->GetWindowObject();
   pp::Var href = window.GetProperty("location").GetProperty("href");
   ASSERT_TRUE(href.is_string());
   // In the test framework, they should be the same.

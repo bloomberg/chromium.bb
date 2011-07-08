@@ -44,18 +44,11 @@ void TestPostMessage::HandleMessage(const pp::Var& message_data) {
 
 bool TestPostMessage::AddEchoingListener(const std::string& expression) {
   std::string js_code;
-  // Note the following code is dependent on some features of test_case.html.
-  // E.g., it is assumed that the DOM element where the plugin is embedded has
-  // an id of 'plugin', and there is a function 'IsTestingMessage' that allows
-  // us to ignore the messages that are intended for use by the testing
-  // framework itself.
   js_code += "var plugin = document.getElementById('plugin');"
              "var message_handler = function(message_event) {"
-             "  if (!IsTestingMessage(message_event.data)) {"
-             "    plugin.postMessage(";
+             "  plugin.postMessage(";
   js_code += expression;
-  js_code += "                      );"
-             "  }"
+  js_code += "  );"
              "};"
              "plugin.addEventListener('message', message_handler);"
              // Maintain an array of all event listeners, attached to the

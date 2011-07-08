@@ -7,7 +7,6 @@
 #include "ppapi/c/dev/ppb_fullscreen_dev.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb_instance.h"
-#include "ppapi/c/ppb_messaging.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_resource.h"
@@ -71,18 +70,6 @@ const InterfaceProxy::Info* PPB_Instance_Proxy::GetInfo0_5() {
 }
 
 // static
-const InterfaceProxy::Info* PPB_Instance_Proxy::GetInfoMessaging() {
-  static const Info info = {
-    ppapi::thunk::GetPPB_Messaging_Thunk(),
-    PPB_MESSAGING_INTERFACE,
-    INTERFACE_ID_NONE,  // 0_5 is the canonical one.
-    false,
-    &CreateInstanceProxy,
-  };
-  return &info;
-}
-
-// static
 const InterfaceProxy::Info* PPB_Instance_Proxy::GetInfoPrivate() {
   static const Info info = {
     ppapi::thunk::GetPPB_Instance_Private_Thunk(),
@@ -125,8 +112,6 @@ bool PPB_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgIsFullFrame)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_ExecuteScript,
                         OnMsgExecuteScript)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_PostMessage,
-                        OnMsgPostMessage)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_SetFullscreen,
                         OnMsgSetFullscreen)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_GetScreenSize,
