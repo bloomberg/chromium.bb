@@ -355,6 +355,7 @@ void MediaStreamManager::SettingsError(const std::string& label) {
 void MediaStreamManager::UseFakeDevice() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   video_capture_manager_->UseFakeDevice();
+  device_settings_->UseFakeUI();
   // TODO(mflodman) Add audio manager when available.
 }
 

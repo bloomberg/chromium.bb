@@ -38,7 +38,9 @@ struct MediaStreamDeviceSettings::SettingsRequest {
 
 MediaStreamDeviceSettings::MediaStreamDeviceSettings(
     SettingsRequester* requester)
-    : requester_(requester) {
+    : requester_(requester),
+      // TODO(macourteau) Change to false when UI exists.
+      use_fake_ui_(true) {
   DCHECK(requester_);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 }
@@ -99,30 +101,38 @@ void MediaStreamDeviceSettings::AvailableDevices(
 
   if (request->devices.size() == num_media_requests) {
     // We have all answers needed.
-
-    // TODO(mflodman)
-    // This is the place to:
-    // - Choose what devices to use from some kind of settings, user dialog or
-    //   default device.
-    // - Request user permission / show we're using devices.
-
-    // Temporary solution: pick first non-opened device for each media type.
-    StreamDeviceInfoArray devices_to_use;
-    for (DeviceMap::iterator it = request->devices.begin();
-         it != request->devices.end(); ++it) {
-      for (StreamDeviceInfoArray::iterator device_it = it->second.begin();
-           device_it != it->second.end(); ++device_it) {
-        if (!device_it->in_use) {
-          devices_to_use.push_back(*device_it);
-          break;
+    if (!use_fake_ui_) {
+      // TODO(macourteau)
+      // This is the place to:
+      // - Choose what devices to use from some kind of settings, user dialog or
+      //   default device.
+      // - Request user permission / show we're using devices.
+      DCHECK(false);
+    } else {
+      // Used to fake UI, which is needed for server based testing.
+      // Choose first non-opened device for each media type.
+      StreamDeviceInfoArray devices_to_use;
+      for (DeviceMap::iterator it = request->devices.begin();
+           it != request->devices.end(); ++it) {
+        for (StreamDeviceInfoArray::iterator device_it = it->second.begin();
+             device_it != it->second.end(); ++device_it) {
+          if (!device_it->in_use) {
+            devices_to_use.push_back(*device_it);
+            break;
+          }
         }
       }
+      // Post result and delete request.
+      requester_->DevicesAccepted(label, devices_to_use);
+      requests_.erase(request_it);
+      delete request;
     }
-    // Post result and delete request.
-    requester_->DevicesAccepted(label, devices_to_use);
-    requests_.erase(request_it);
-    delete request;
   }
+}
+
+void MediaStreamDeviceSettings::UseFakeUI() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  use_fake_ui_ = true;
 }
 
 }  // namespace media_stream

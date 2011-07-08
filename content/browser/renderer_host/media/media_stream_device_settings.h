@@ -58,6 +58,11 @@ class MediaStreamDeviceSettings {
   void AvailableDevices(const std::string& label, MediaStreamType stream_type,
                         const StreamDeviceInfoArray& devices);
 
+  // Used for testing only. This function is called to use faked UI, which is
+  // needed for server based tests. The first non-opened device(s) will be
+  // picked.
+  void UseFakeUI();
+
  private:
   struct SettingsRequest;
 
@@ -65,6 +70,8 @@ class MediaStreamDeviceSettings {
 
   typedef std::map<std::string, SettingsRequest*> SettingsRequests;
   SettingsRequests requests_;
+
+  bool use_fake_ui_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamDeviceSettings);
 };
