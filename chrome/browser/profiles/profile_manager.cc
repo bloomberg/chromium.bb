@@ -43,9 +43,9 @@
 
 namespace {
 
-void DeleteProfileDirectories(std::vector<FilePath> paths) {
+void DeleteProfileDirectories(const std::vector<FilePath>& paths) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  for (std::vector<FilePath>::iterator it = paths.begin();
+  for (std::vector<FilePath>::const_iterator it = paths.begin();
        it != paths.end(); ++it) {
     file_util::Delete(*it, true);
   }
