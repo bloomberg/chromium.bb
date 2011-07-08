@@ -527,7 +527,7 @@ bool PluginPpapi::Init(uint32_t argc, const char* argn[], const char* argv[]) {
       PPInstanceToInstanceIdentifier(static_cast<pp::InstancePrivate*>(this)),
       static_cast<int>(argc),
       // TODO(polina): Can we change the args on our end to be const to
-      // avoid these ugly casts? This will also require changes to npapi code.
+      // avoid these ugly casts?
       const_cast<char**>(argn),
       const_cast<char**>(argv));
   if (status) {
@@ -717,10 +717,6 @@ void PluginPpapi::NexeFileDidOpen(int32_t pp_error) {
       error_info.SetReport(ERROR_NEXE_LOAD_URL, "could not load nexe url.");
       ReportLoadError(error_info);
     }
-    return;
-  }
-  if (!IsValidNexeOrigin(nexe_downloader_.url(), &error_info)) {
-    ReportLoadError(error_info);
     return;
   }
   int32_t file_desc_ok_to_close = DUP(file_desc);
@@ -1049,6 +1045,8 @@ void PluginPpapi::RequestNaClManifest(const nacl::string& url) {
     ReportLoadError(error_info);
     return;
   }
+  PLUGIN_PRINTF(("PluginPpapi::RequestNaClManifest (resolved url='%s')\n",
+                 nmf_resolved_url.AsString().c_str()));
   set_manifest_base_url(nmf_resolved_url.AsString());
   set_manifest_url(url);
   // Inform JavaScript that a load is starting.
@@ -1217,9 +1215,9 @@ bool PluginPpapi::StreamAsFile(const nacl::string& url,
       url_util_->ResolveRelativeToURL(pp::Var(plugin_base_url()), url);
   if (!resolved_url.is_string()) {
     PLUGIN_PRINTF(("PluginPpapi::StreamAsFile: "
-                   "could not resolve url \"%s\" relative to page \"%s\".",
+                   "could not resolve url \"%s\" relative to plugin \"%s\".",
                    url.c_str(),
-                   origin().c_str()));
+                   plugin_base_url().c_str()));
     return false;
   }
   // Will always call the callback on success or failure.

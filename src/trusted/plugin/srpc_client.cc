@@ -76,7 +76,7 @@ void SrpcClient::GetMethods() {
     return;
   }
   uint32_t method_count = NaClSrpcServiceMethodCount(srpc_channel_.client);
-  // Intern the methods into a mapping from NPIdentifiers to MethodInfo.
+  // Intern the methods into a mapping from identifiers to MethodInfo.
   for (uint32_t i = 0; i < method_count; ++i) {
     int retval;
     const char* name;

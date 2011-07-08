@@ -18,13 +18,6 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/plugin/api_defines.h"
 
-namespace nacl {
-
-class DescWrapper;
-class NPModule;
-
-}  // namespace
-
 namespace plugin {
 
 class ErrorInfo;
@@ -32,7 +25,7 @@ class ScriptableHandle;
 class PortableHandle;
 
 // BrowserInterface represents the interface to the browser from
-// the plugin, independent of whether it is the ActiveX or NPAPI instance.
+// the plugin, independent of whether it is the PPAPI instance or not.
 // I.e., when the plugin needs to request an alert, it uses these interfaces.
 class BrowserInterface {
  public:
@@ -62,21 +55,9 @@ class BrowserInterface {
   virtual bool AddToConsole(InstanceIdentifier instance_id,
                             const nacl::string& text) = 0;
 
-  // Gets the origin of the current page.  Origin is scheme://domain.
-  bool GetOrigin(InstanceIdentifier instance_id,
-                 nacl::string* origin);
-
   // Creates a browser scriptable handle for a given portable handle.
   // If handle is NULL, returns NULL.
   virtual ScriptableHandle* NewScriptableHandle(PortableHandle* handle) = 0;
-
-  // Returns true if the first few bytes of the file or shared memory
-  // represented by |wrapper| appear to be a valid ELF file; returns an
-  // informative error message otherwise.  The check for valid ELF executable
-  // is only done looking at the e_ident bytes.  Fuller checking is done by
-  // the service_runtime.
-  static bool MightBeElfExecutable(nacl::DescWrapper* wrapper,
-                                   ErrorInfo* error_info);
 };
 
 }  // namespace plugin

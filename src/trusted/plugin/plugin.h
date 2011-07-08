@@ -5,8 +5,7 @@
  */
 
 // The portable representation of an instance and root scriptable object.
-// The ActiveX, NPAPI, and Pepper versions of the plugin instantiate
-// subclasses of this class.
+// The PPAPI version of the plugin instantiates a subclass of this class.
 
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PLUGIN_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PLUGIN_H_
@@ -35,10 +34,6 @@ class ScriptableHandle;
 class Plugin : public PortableHandle {
  public:
   void Invalidate();
-
-  // Check that full_url meets the origin requirements for loading a nexe.
-  bool IsValidNexeOrigin(nacl::string full_url,
-                         ErrorInfo* error_info);
 
   // Load support.
   // NaCl module can be loaded given a DescWrapper.
@@ -101,9 +96,6 @@ class Plugin : public PortableHandle {
   }
   virtual Plugin* plugin() const { return const_cast<Plugin*>(this); }
 
-  // Origin of the page with the <embed> tag that created this plugin instance.
-  nacl::string origin() const { return origin_; }
-
   // URL resolution support.
   // plugin_base_url is the URL used for resolving relative URLs used in
   // src="...".
@@ -113,12 +105,6 @@ class Plugin : public PortableHandle {
   // in manifest files.  If the manifest is a data URI, this is an empty string.
   nacl::string manifest_base_url() const { return manifest_base_url_; }
   void set_manifest_base_url(nacl::string url) { manifest_base_url_ = url; }
-
-  // The origin of the NaCl module.
-  nacl::string nacl_module_origin() const { return nacl_module_origin_; }
-  void set_nacl_module_origin(nacl::string origin) {
-    nacl_module_origin_ = origin;
-  }
 
   // The URL of the manifest file as set by the "src" attribute.
   // It is not the fully resolved URL if it was set as relative.
@@ -215,13 +201,9 @@ class Plugin : public PortableHandle {
   NaClSubprocess main_subprocess_;
   std::vector<NaClSubprocess*> nacl_subprocesses_;
 
-  nacl::string origin_;
-  bool origin_valid_;
-
   nacl::string plugin_base_url_;
   nacl::string manifest_base_url_;
   nacl::string manifest_url_;
-  nacl::string nacl_module_origin_;
   ReadyState nacl_ready_state_;
 
   nacl::DescWrapperFactory* wrapper_factory_;

@@ -11,10 +11,7 @@
       # TODO: we should put a scons file in src/third_party_mod/nacl_plugin
       # which exports a library which is then linked in.
       # Currently this results inlink time symbol clashes
-      # generic URL-origin / same-domain handling
-      'origin.cc',
       # Portable plugin code
-      'browser_interface.cc',
       'connected_socket.cc',
       'desc_based_handle.cc',
       'method_map.cc',

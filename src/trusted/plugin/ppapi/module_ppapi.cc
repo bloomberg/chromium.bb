@@ -19,8 +19,6 @@ namespace plugin {
 
 class ModulePpapi : public pp::Module {
  public:
-  // TODO(polina): factor out the code below as it is identical to
-  // NPP_Initialize and NPP_Shutdown
   ModulePpapi() : pp::Module(), init_was_successful_(false) {
     PLUGIN_PRINTF(("ModulePpapi::ModulePpapi (this=%p)\n",
                    static_cast<void*>(this)));

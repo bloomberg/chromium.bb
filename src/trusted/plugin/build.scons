@@ -8,11 +8,6 @@
 
 Import('env')
 
-# NOTE(robertm): currently needed for env.ComponentObject magic below
-env.Prepend(
-    CPPPATH=['${SOURCE_ROOT}/native_client/src/third_party/npapi/files/include']
-)
-
 if not env.Bit('mac'):
   env['COMPONENT_STATIC'] = False
 
@@ -57,20 +52,16 @@ if env.Bit('windows'):
         CPPDEFINES = ['XP_WIN', 'WIN32', '_WINDOWS'],
     )
 
-# Both the NPAPI and PPAPI plugins depend upon the code that is in the
-# top (plugin) directory and on a large set of libraries.  Although we
-# have removed NPAPI, we continue to keep the common and ppapi specific
-# sources separate.
+# The PPAPI plugin depends upon the code that is in the top (plugin) directory
+# and on a large set of libraries.  We continue to keep the common and ppapi
+# specific sources separate for the moment.
 # TODO: We should remove common and flatten ppapi into the main plugin dir
 # if we plan to only support one plugin architecture.
 common_inputs = [
     # TODO: we should put a scons file in src/third_party_mod/nacl_plugin
     #       which exports a library which is then linked in.
     #       Currently this results inlink time symbol clashes
-    # generic URL-origin / same-domain handling
-    'origin.cc',
     # Portable plugin code
-    'browser_interface.cc',
     'connected_socket.cc',
     'desc_based_handle.cc',
     'method_map.cc',
@@ -96,10 +87,10 @@ else:
 
 common_objs = plugin_env.ComponentObject(common_inputs)
 
-# The common libraries are those used by both the NPAPI and PPAPI plugins.
-# They and the NPAPI/PPAPI specific libraries must come before OS libraries,
-# because they may generate references that are resolved by the OS libraries.
-# E.g., libplatform.a contains references to symbols from libcrypto.so.
+# The libraries used by both the PPAPI plugin.  They and the PPAPI specific
+# libraries must come before OS libraries, because they may generate references
+# that are resolved by the OS libraries.  E.g., libplatform.a contains
+# references to symbols from libcrypto.so.
 common_libs = [
     'nonnacl_util',
     'nonnacl_srpc',

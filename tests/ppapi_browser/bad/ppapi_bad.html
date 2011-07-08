@@ -21,7 +21,7 @@ testProgressEventStateMachine(
     1,  // errorCount
     0,  // abortCount
     0,  // loadCount
-    'NaCl module load failed: not an ELF executable: bad magic number.');
+    'NaCl module load failed: Too many program header entries in ELF file');
 // 'cross_origin' loads a manifest, then tries to load a cross-origin nexe.
 testProgressEventStateMachine(
     tester,

@@ -28,7 +28,6 @@
 #include "native_client/src/trusted/desc/nacl_desc_conn_cap.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
-#include "native_client/src/trusted/plugin/origin.h"
 #include "native_client/src/trusted/plugin/browser_interface.h"
 #include "native_client/src/trusted/plugin/connected_socket.h"
 #include "native_client/src/trusted/plugin/plugin_error.h"
@@ -250,16 +249,6 @@ bool Plugin::Init(BrowserInterface* browser_interface,
   PLUGIN_PRINTF(("Plugin::Init (wrapper_factory=%p)\n",
                  reinterpret_cast<void*>(wrapper_factory_)));
 
-  // Check that the origin is allowed.
-  origin_ = NACL_NO_URL;
-  if (browser_interface_->GetOrigin(instance_id_, &origin_)) {
-    PLUGIN_PRINTF(("Plugin::Init (origin='%s')\n", origin_.c_str()));
-    // Check that origin is in the list of permitted origins.
-    origin_valid_ = nacl::OriginIsInWhitelist(origin_);
-    // This implementation of same-origin policy does not take
-    // document.domain element into account.
-  }
-
   // Set up the scriptable methods for the plugin.
   LoadMethods();
 
@@ -276,7 +265,6 @@ Plugin::Plugin()
     argn_(NULL),
     argv_(NULL),
     main_subprocess_(kMainSubprocessId, NULL, NULL),
-    origin_valid_(false),
     nacl_ready_state_(UNSENT),
     wrapper_factory_(NULL) {
   PLUGIN_PRINTF(("Plugin::Plugin (this=%p)\n", static_cast<void*>(this)));
@@ -322,9 +310,7 @@ Plugin::~Plugin() {
   // so we shut down here what we can and prevent attempts to shut down
   // other linked structures in Deallocate.
 
-  // We should not need to call ShutDownSubprocesses() here.  In the
-  // NPAPI plugin, it should have already been called in
-  // NPP_Destroy().
+  // TODO(sehr,polina): We should not need to call ShutDownSubprocesses() here.
   ShutDownSubprocesses();
 
   delete wrapper_factory_;
@@ -335,50 +321,9 @@ Plugin::~Plugin() {
                  static_cast<void*>(this)));
 }
 
-bool Plugin::IsValidNexeOrigin(nacl::string full_url,
-                               ErrorInfo* error_info) {
-  PLUGIN_PRINTF(("Plugin::IsValidNexeOrigin (full_url='%s')\n",
-                 full_url.c_str()));
-  CHECK(NACL_NO_URL != full_url);
-  set_nacl_module_origin(nacl::UrlToOrigin(full_url));
-  set_manifest_url(full_url);
-
-  bool module_origin_valid = nacl::OriginIsInWhitelist(nacl_module_origin_);
-  PLUGIN_PRINTF(("Plugin::IsValidNexeOrigin "
-                 "(page_origin='%s', page_origin_valid=%d)\n",
-                 origin_.c_str(), origin_valid_));
-  PLUGIN_PRINTF(("Plugin::IsValidNexeOrigin "
-                 "(nacl_origin='%s', nacl_origin_valid=%d)\n",
-                 nacl_module_origin_.c_str(), module_origin_valid));
-
-  // If the origin of the nacl module or of the page with <embed>/<object>
-  // NaCl plugin element is not in the whitelist, refuse to load.
-  // TODO(adonovan): JavaScript permits cross-origin loading, and so
-  // does Chrome; why don't we?
-  if (!origin_valid_ || !module_origin_valid) {
-    error_info->SetReport(
-        ERROR_NEXE_ORIGIN_PROTOCOL,
-        nacl::string("module URL ") +
-        manifest_url() + " uses an unsupported protocol. " +
-        "Only http, https, and chrome-extension are currently supported.");
-    return false;
-  }
-  return true;
-}
-
 bool Plugin::LoadNaClModuleCommon(nacl::DescWrapper* wrapper,
                                   NaClSubprocess* subprocess,
                                   ErrorInfo* error_info) {
-  // Check ELF magic and ABI version compatibility.
-  bool might_be_elf_exe =
-      browser_interface_->MightBeElfExecutable(wrapper, error_info);
-  PLUGIN_PRINTF(("Plugin::LoadNaClModuleCommon "
-                 "(might_be_elf_exe=%d, error='%s')\n",
-                 might_be_elf_exe, error_info->message().c_str()));
-  if (!might_be_elf_exe) {
-    return false;
-  }
-
   ServiceRuntime* new_service_runtime = new(std::nothrow) ServiceRuntime(this);
   subprocess->set_service_runtime(new_service_runtime);
   PLUGIN_PRINTF(("Plugin::LoadNaClModuleCommon (service_runtime=%p)\n",

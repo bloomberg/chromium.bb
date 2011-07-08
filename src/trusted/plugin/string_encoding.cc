@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include "native_client/src/include/nacl_platform.h"
@@ -10,7 +10,7 @@
 
 namespace plugin {
 
-// NPAPI requires us to encode byte strings as UTF-8.  Unfortunately
+// PPAPI requires us to encode byte strings as UTF-8.  Unfortunately
 // this is rather inefficient, in terms of both space and time.
 
 bool ByteStringAsUTF8(const char* input, size_t input_byte_count,
