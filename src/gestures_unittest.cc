@@ -66,4 +66,23 @@ TEST(GesturesTest, StimeFromTimevalTest) {
 }
 
 
+TEST(GesturesTest, HardwareStateGetFingerStateTest) {
+  FingerState fs[] = {
+    { 0, 0, 0, 0, 1, 0, 150, 4000, 4 },
+    { 0, 0, 0, 0, 1, 0, 550, 2000, 2 },
+    { 0, 0, 0, 0, 1, 0, 250, 3000, 7 }
+  };
+  HardwareState hs = { 10000, 0, 3, &fs[0] };
+  EXPECT_EQ(&fs[0], hs.GetFingerState(4));
+  EXPECT_EQ(&fs[1], hs.GetFingerState(2));
+  EXPECT_EQ(&fs[2], hs.GetFingerState(7));
+  EXPECT_EQ(reinterpret_cast<FingerState*>(NULL), hs.GetFingerState(8));
+
+  const HardwareState& const_hs = hs;
+  EXPECT_EQ(&fs[0], const_hs.GetFingerState(4));
+  EXPECT_EQ(&fs[1], const_hs.GetFingerState(2));
+  EXPECT_EQ(&fs[2], const_hs.GetFingerState(7));
+  EXPECT_EQ(reinterpret_cast<const FingerState*>(NULL), hs.GetFingerState(8));
+}
+
 }  // namespace gestures

@@ -22,6 +22,19 @@ stime_t StimeFromTimeval(const struct timeval* tv) {
       static_cast<stime_t>(tv->tv_usec) / 1000000.0;
 }
 
+FingerState* HardwareState::GetFingerState(short tracking_id) {
+  return const_cast<FingerState*>(
+      const_cast<const HardwareState*>(this)->GetFingerState(tracking_id));
+}
+
+const FingerState* HardwareState::GetFingerState(short tracking_id) const {
+  for (short i = 0; i < finger_cnt; i++) {
+    if (fingers[i].tracking_id == tracking_id)
+      return &fingers[i];
+  }
+  return NULL;
+}
+
 GestureInterpreter* NewGestureInterpreterImpl(int version) {
   if (version < kMinSupportedVersion) {
     LOG(ERROR) << "Client too old. It's using version " << version
