@@ -10,6 +10,13 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+namespace {
+
+// Eula screen id.
+const char kEulaScreen[] = "eula";
+
+}  // namespace
+
 namespace chromeos {
 
 EulaScreenHandler::EulaScreenHandler()
@@ -29,8 +36,8 @@ void EulaScreenHandler::Show() {
     show_on_init_ = true;
     return;
   }
-  scoped_ptr<Value> value(Value::CreateIntegerValue(1));
-  web_ui_->CallJavascriptFunction("cr.ui.Oobe.toggleStep", *value);
+  StringValue screen(kEulaScreen);
+  web_ui_->CallJavascriptFunction("cr.ui.Oobe.showScreen", screen);
 }
 
 void EulaScreenHandler::Hide() {

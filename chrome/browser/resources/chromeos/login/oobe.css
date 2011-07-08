@@ -171,7 +171,8 @@ hr.bottomshadow {
 
 #oobe.connect #continue-button,
 #oobe.eula #back-button,
-#oobe.eula #accept-button {
+#oobe.eula #accept-button,
+#oobe.signin #signin-button {
   display: inline-block;
 }
 
@@ -240,6 +241,21 @@ button {
 
 #eulas.one-column #oem-eula {
   display: none;
+}
+
+#signin > div {
+  width: 14em;
+  margin: 7em auto;
+  text-align: center;
+}
+
+#email,
+#password {
+  display: block;
+}
+
+#email {
+  margin-bottom: 20px;
 }
 
 .button-strip {

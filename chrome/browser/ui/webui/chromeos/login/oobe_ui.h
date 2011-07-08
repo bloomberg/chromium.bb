@@ -12,6 +12,10 @@
 class DictionaryValue;
 
 namespace chromeos {
+class SigninScreenHandler;
+}
+
+namespace chromeos {
 
 // Base class for the OOBE WebUI handlers.
 class OobeMessageHandler : public WebUIMessageHandler {
@@ -66,6 +70,8 @@ class OobeUI : public OobeDisplay,
   // Initializes the handlers.
   void InitializeHandlers();
 
+  void ShowSigninScreen();
+
  private:
   void AddOobeMessageHandler(OobeMessageHandler* handler);
 
@@ -73,6 +79,7 @@ class OobeUI : public OobeDisplay,
   UpdateScreenActor* update_screen_actor_;
   NetworkScreenActor* network_screen_actor_;
   EulaScreenActor* eula_screen_actor_;
+  SigninScreenHandler* signin_screen_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(OobeUI);
 };

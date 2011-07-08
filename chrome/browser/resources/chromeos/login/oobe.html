@@ -1,0 +1,62 @@
+<!DOCTYPE HTML>
+<html i18n-values="dir:textdirection">
+<head>
+<title i18n-content="title"></title>
+<link rel="stylesheet" href="chrome://resources/css/button.css">
+<link rel="stylesheet" href="chrome://resources/css/select.css">
+<link rel="stylesheet" href="chrome://resources/css/throbber.css">
+<link rel="stylesheet" href="oobe.css">
+<script src="chrome://resources/js/cr.js"></script>
+<script src="chrome://resources/js/cr/event_target.js"></script>
+<script src="chrome://resources/js/cr/ui.js"></script>
+<script src="chrome://resources/js/local_strings.js"></script>
+<script src="chrome://resources/js/util.js"></script>
+<script src="oobe.js"></script>
+<script src="oobe_screen_network.js"></script>
+<script src="oobe_screen_eula.js"></script>
+<script src="oobe_screen_update.js"></script>
+<script src="screen_signin.js"></script>
+</head>
+<body i18n-values=".style.fontFamily:fontfamily;">
+  <div id="oobe" class="connect">
+    <div id="outer-container">
+      <div id="header">
+        <div>
+          <span i18n-content="productName"></span>
+        </div>
+        <div id="header-sections"></div>
+      </div>
+      <hr class="topshadow">
+      <div id="inner-container">
+        <include src="oobe_screen_network.html">
+        <include src="oobe_screen_eula.html">
+        <include src="oobe_screen_update.html">
+        <include src="screen_signin.html">
+      </div>
+      <hr class="bottomshadow">
+      <div id="footer">
+        <div id="progress"></div>
+        <div id="button-strip" class="button-strip"></div>
+      </div>
+    </div>
+  </div>
+  <div id="security-info">
+    <a id="security-link" href="#" i18n-content="eulaSystemSecuritySetting"></a>
+  </div>
+  <div id="popup-overlay" hidden>
+    <div id="security-info-popup">
+      <h1 i18n-content="eulaSystemSecuritySetting"></h1>
+      <div class="popup-content-area">
+        <p i18n-content="eulaTpmDesc"></p>
+        <p i18n-content="eulaTpmKeyDesc"></p>
+        <div id="tpm-busy">
+          <div id="throbber" class="throbber"></div>
+          <span i18n-content="eulaTpmBusy"></span>
+        </div>
+        <p id="tpm-password" hidden></p>
+      </div>
+      <button id="security-ok-button" i18n-content="eulaTpmOkButton"></button>
+    </div>
+  </div>
+</body>
+</html>

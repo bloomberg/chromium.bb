@@ -7,7 +7,8 @@
  * This is the main code for the OOBE WebUI implementation.
  */
 
-const steps = ['connect', 'eula', 'update'];
+var localStrings = new LocalStrings();
+
 
 cr.define('cr.ui', function() {
   /**
@@ -21,11 +22,14 @@ cr.define('cr.ui', function() {
 
   cr.addSingletonGetter(Oobe);
 
-  Oobe.localStrings_ = new LocalStrings();
-
   Oobe.prototype = {
     /**
-     * Current OOBE step, index in the steps array.
+     * Registered screens.
+     */
+    screens_: [],
+
+    /**
+     * Current OOBE step, index in the screens array.
      * @type {number}
      */
     currentStep_: 0,
@@ -35,8 +39,8 @@ cr.define('cr.ui', function() {
      * @param {number} nextStepIndex Index of the next step.
      */
     toggleStep_: function(nextStepIndex) {
-      var currentStepId = steps[this.currentStep_];
-      var nextStepId = steps[nextStepIndex];
+      var currentStepId = this.screens_[this.currentStep_];
+      var nextStepId = this.screens_[nextStepIndex];
       var oldStep = $(currentStepId);
       var oldHeader = $('header-' + currentStepId);
       var newStep = $(nextStepId);
@@ -72,6 +76,58 @@ cr.define('cr.ui', function() {
       this.currentStep_ = nextStepIndex;
       $('oobe').className = nextStepId;
     },
+
+    /**
+     * Show screen of given screen id.
+     * @param {string} screenId Id of the screen to show.
+     */
+    showScreen: function(screenId) {
+      var index = this.getScreenIndex_(screenId);
+      if (index >= 0)
+        this.toggleStep_(index);
+    },
+
+    /**
+     * Gets index of given screen id in screens_.
+     * @param {string} screenId Id of the screen to look up.
+     * @private
+     */
+    getScreenIndex_: function(screenId) {
+      for (var i = 0; i < this.screens_.length; ++i) {
+        if (this.screens_[i] == screenId)
+          return i;
+      }
+      return -1;
+    },
+
+    /**
+     * Register an oobe screen.
+     * @param {Element} el Decorated screen element.
+     */
+    registerScreen: function(el) {
+      var screenId = el.id;
+      this.screens_.push(screenId);
+
+      var header = document.createElement('span');
+      header.id = 'header-' + screenId;
+      header.className = 'header-section right';
+      header.textContent = el.header;
+      $('header-sections').appendChild(header);
+
+      var dot = document.createElement('div');
+      dot.id = screenId + '-dot';
+      dot.className = 'progdot';
+      $('progress').appendChild(dot);
+
+      var buttons = el.buttons;
+      if (buttons) {
+        var buttonStrip = $('button-strip');
+        for (var i = 0; i < buttons.length; ++i) {
+          var button = buttons[i];
+          buttonStrip.appendChild(button);
+        }
+      }
+    }
   };
 
   /**
@@ -117,26 +173,11 @@ cr.define('cr.ui', function() {
    * be invoked to do final setup.
    */
   Oobe.initialize = function() {
-    // Adjust inner container height based on first step's height
-    $('inner-container').style.height = $(steps[0]).offsetHeight;
+    oobe.NetworkScreen.register();
+    oobe.EulaScreen.register();
+    oobe.UpdateScreen.register();
+    login.SigninScreen.register();
 
-    Oobe.setupSelect($('language-select'),
-                     templateData.languageList,
-                     'networkOnLanguageChanged');
-
-    Oobe.setupSelect($('keyboard-select'),
-                     templateData.inputMethodsList,
-                     'networkOnInputMethodChanged');
-
-    $('continue-button').addEventListener('click', function(event) {
-      chrome.send('networkOnExit', []);
-    });
-    $('back-button').addEventListener('click', function(event) {
-      chrome.send('eulaOnExit', [false, $('usage-stats').checked]);
-    });
-    $('accept-button').addEventListener('click', function(event) {
-      chrome.send('eulaOnExit', [true, $('usage-stats').checked]);
-    });
     $('security-link').addEventListener('click', function(event) {
       chrome.send('eulaOnTpmPopupOpened', []);
       $('popup-overlay').hidden = false;
@@ -154,6 +195,14 @@ cr.define('cr.ui', function() {
    */
   Oobe.toggleStep = function(nextStepIndex) {
     Oobe.getInstance().toggleStep_(nextStepIndex);
+  };
+
+  /**
+   * Shows the given screen.
+   * @param {string} screenId Id of the screen to show.
+   */
+  Oobe.showScreen = function(screenId) {
+    Oobe.getInstance().showScreen(screenId);
   };
 
   /**

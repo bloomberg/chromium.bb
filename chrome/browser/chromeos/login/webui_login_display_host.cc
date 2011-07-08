@@ -76,8 +76,13 @@ void WebUILoginDisplayHost::StartWizard(const std::string& first_screen_name,
 }
 
 void WebUILoginDisplayHost::StartSignInScreen() {
-  LoadURL(GURL(kLoginURL));
+  if (!login_window_)
+    LoadURL(GURL(kOobeURL));
+
   BaseLoginDisplayHost::StartSignInScreen();
+
+  OobeUI* oobe_ui = static_cast<OobeUI*>(login_view_->GetWebUI());
+  oobe_ui->ShowSigninScreen();
 }
 
 void WebUILoginDisplayHost::LoadURL(const GURL& url) {

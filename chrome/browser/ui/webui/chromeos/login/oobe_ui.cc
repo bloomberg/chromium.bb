@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_screen_handler.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
@@ -144,7 +145,8 @@ OobeUI::OobeUI(TabContents* contents)
     : ChromeWebUI(contents),
       update_screen_actor_(NULL),
       network_screen_actor_(NULL),
-      eula_screen_actor_(NULL) {
+      eula_screen_actor_(NULL),
+      signin_screen_handler_(NULL) {
   AddOobeMessageHandler(new CoreOobeHandler(this));
 
   NetworkScreenHandler* network_screen_handler = new NetworkScreenHandler;
@@ -158,6 +160,9 @@ OobeUI::OobeUI(TabContents* contents)
   UpdateScreenHandler* update_screen_handler = new UpdateScreenHandler;
   update_screen_actor_ = update_screen_handler;
   AddOobeMessageHandler(update_screen_handler);
+
+  signin_screen_handler_ = new SigninScreenHandler;
+  AddOobeMessageHandler(signin_screen_handler_);
 
   DictionaryValue* localized_strings = new DictionaryValue;
   GetLocalizedStrings(localized_strings);
@@ -226,6 +231,10 @@ void OobeUI::InitializeHandlers() {
   for (size_t i = 1; i < handlers_.size(); ++i) {
     static_cast<OobeMessageHandler*>(handlers_[i])->InitializeBase();
   }
+}
+
+void OobeUI::ShowSigninScreen() {
+  signin_screen_handler_->Show();
 }
 
 }  // namespace chromeos
