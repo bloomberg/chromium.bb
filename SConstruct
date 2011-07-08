@@ -874,65 +874,6 @@ def CrossToolsBuild(env):
 
 pre_base_env.AddMethod(CrossToolsBuild, 'CrossToolsBuild')
 
-# ----------------------------------------------------------
-# PLUGIN PREREQUISITES
-# ----------------------------------------------------------
-
-PREREQUISITES = pre_base_env.Alias('plugin_prerequisites', [])
-
-
-def GetPluginPrerequsites():
-  # the first source is the banner. drop it
-  return PREREQUISITES[0].sources[1:]
-
-# this is a horrible hack printing all the dependencies
-# dynamically accumulated for PREREQUISITES via AddPluginPrerequisite
-def PluginPrerequisiteInfo(target, source, env):
-  Banner("Pluging Prerequisites")
-  deps =  [dep.abspath for dep in GetPluginPrerequsites()]
-  print "abbreviated list: ", str([os.path.basename(d) for d in deps])
-  print "full list:"
-  for dep in deps:
-    print dep
-  return None
-
-banner = pre_base_env.Command('plugin_prerequisites_banner', [],
-                              PluginPrerequisiteInfo)
-
-pre_base_env.Alias('plugin_prerequisites', banner)
-
-def AddPluginPrerequisite(env, nodes):
-  env.Alias('plugin_prerequisites', nodes)
-  return n
-
-pre_base_env.AddMethod(AddPluginPrerequisite)
-
-
-# NOTE: PROGRAMFILES is only used for windows
-#       SILENT is used to turn of user ack
-INSTALL_COMMAND = ['${PYTHON}',
-                   '${SCONSTRUCT_DIR}/tools/firefoxinstall.py',
-                   'SILENT="%s"' % ARGUMENTS.get('SILENT', ''),
-                   '"PROGRAMFILES=%s"' % os.getenv('PROGRAMFILES', ''),
-                   ]
-
-n = pre_base_env.Alias(target='firefox_install_restore',
-                       source=[],
-                       action=' '.join(INSTALL_COMMAND + ['MODE=RESTORE']))
-AlwaysBuild(n)
-
-
-n = pre_base_env.Alias(target='firefox_install_backup',
-                       source=[],
-                       action=' '.join(INSTALL_COMMAND + ['MODE=BACKUP']))
-AlwaysBuild(n)
-
-
-n = pre_base_env.Alias(target='firefox_remove',
-                       source=[],
-                       action=' '.join(INSTALL_COMMAND + ['MODE=REMOVE']))
-AlwaysBuild(n)
-
 
 # ----------------------------------------------------------
 def HasSuffix(item, suffix):
@@ -999,19 +940,6 @@ def AddDualLibrary(env):
     env['SHARED_LIBS_SPECIAL'] = env.Bit('target_x86_64') and env.Bit('linux')
 
 
-def InstallPlugin(target, source, env):
-  Banner('Pluging Installation')
-  # NOTE: sandbox settings are ignored for non-linux systems
-  # TODO: we may want to enable this for more linux platforms
-  if pre_base_env.Bit('build_x86_32'):
-    sb = 'USE_SANDBOX=1'
-  else:
-    sb = 'USE_SANDBOX=0'
-
-  deps =  [dep.abspath for dep in GetPluginPrerequsites()]
-  command = env.subst(' '.join(INSTALL_COMMAND + ['MODE=INSTALL', sb] + deps))
-  return os.system(command)
-
 # In prebuild mode we ignore the dependencies so that stuff does
 # NOT get build again
 # Optionally ignore the build process.
@@ -1027,19 +955,6 @@ DeclareBit('disable_hardy64_vmware_failures',
 pre_base_env.SetBitFromOption('disable_hardy64_vmware_failures', False)
 if pre_base_env.Bit('disable_hardy64_vmware_failures'):
   print 'Running with --disable_hardy64_vmware_failures'
-
-
-if pre_base_env.Bit('prebuilt') or pre_base_env.Bit('built_elsewhere'):
-  n = pre_base_env.Command('firefox_install_command',
-                           [],
-                           InstallPlugin)
-else:
-  n = pre_base_env.Command('firefox_install_command',
-                           PREREQUISITES,
-                           InstallPlugin)
-
-n = pre_base_env.Alias('firefox_install', n)
-AlwaysBuild(n)
 
 
 # ----------------------------------------------------------
@@ -2067,10 +1982,8 @@ Common tasks:
 
 * sel_ldr:            scons --mode=opt-linux sel_ldr
 
-* build the plugin:         scons --mode=opt-linux npGoogleNaClPlugin
+* build the plugin:         scons --mode=opt-linux ppNaClPlugin
 *      or:                  scons --mode=opt-linux src/trusted/plugin
-* install the plugin:       scons --verbose firefox_install
-* install pre-built plugin: scons --prebuilt firefox_install
 
 * build libs needed by sdk: scons --mode=nacl_extra_sdk extra_sdk_update
 * purge libs needed by sdk: scons --mode=nacl_extra_sdk extra_sdk_clean

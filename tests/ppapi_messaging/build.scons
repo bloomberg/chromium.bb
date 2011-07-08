@@ -46,7 +46,6 @@ elif plugin_env.Bit('mac'):  # os x
                     BUNDLE_PKGINFO_FILENAME=0,
                     BUNDLE_RESOURCES='ppapi_messaging.rsrc',
                     BUNDLE_INFO_PLIST='Info.plist')
-  plugin_env.AddPluginPrerequisite([bundle_name])
   trusted_plugin = bundle_name
 
 if not trusted_plugin == None:

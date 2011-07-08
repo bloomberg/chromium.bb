@@ -77,15 +77,6 @@
             '<(DEPTH)/native_client/src/trusted/reverse_service/reverse_service.gyp:reverse_service',
             '<(DEPTH)/native_client/src/trusted/weak_ref/weak_ref.gyp:weak_ref',
           ],
-# TODO(noelallen) We will need to put this back in with a new .def file once we need to export symbols
-# to support the plugin as a sandboxed DLL.
-#        'conditions': [
-#          ['OS=="win"', {
-#            'sources': [
-#              'win/nacl_plugin.def',
-#            ],
-#          }],
-#        ],
       }],
     }],
     ['nacl_standalone==0', {

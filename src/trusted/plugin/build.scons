@@ -182,8 +182,6 @@ if not ppapi_env.Bit('chrome'):
     ppapi_plugin = ppapi_env.ComponentLibrary(ppNaClPlugin,
                                               common_inputs + ppapi_inputs,
                                               no_import_lib=True)
-    # we need this to build the plugin, so register it here
-    ppapi_env.AddPluginPrerequisite([ppapi_plugin])
   else:  # mac
     # This builds with
     #   MODE=... scons-out/.../staging/ppNaClPlugin.bundle sel_ldr
@@ -207,8 +205,6 @@ if not ppapi_env.Bit('chrome'):
                      BUNDLE_PKGINFO_FILENAME = 0,
                      BUNDLE_RESOURCES = 'ppNaClPlugin.rsrc',
                      BUNDLE_INFO_PLIST = 'osx_ppapi/Info.plist')
-    # we need this to build the plugin, so register it here
-    ppapi_env.AddPluginPrerequisite([bundle_name])
 
   ppapi_env.Alias('plugin', ppapi_env.GetPPAPIPluginPath(False))
 

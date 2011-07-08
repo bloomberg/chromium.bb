@@ -293,9 +293,6 @@ if ((not env.Bit('coverage_enabled') or not env.Bit('windows')) and
                                                       ] + VALIDATOR_LIBS
                                                       + DEBUG_LIBS)
 
-  # we need this to build the plugin, so register it here
-  env.AddPluginPrerequisite(SEL_LDR_NODE)
-
   # NOTE: we do not have segments on ARM
   if env.Bit('build_x86'):
     env.ComponentProgram('nacl_ldt_unittest',
