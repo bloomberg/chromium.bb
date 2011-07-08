@@ -1478,7 +1478,9 @@ def CommandSelLdrTestNacl(env, name, nexe,
   if env.Bit('nacl_glibc') and env['NACL_BUILD_FAMILY'] != 'TRUSTED':
     if not glibc_static and not env.Bit('nacl_static_link'):
       command = ['${NACL_SDK_LIB}/runnable-ld.so',
-                 '--library-path', '${NACL_SDK_LIB}'] + command
+                 # Locally-built shared libraries come from ${LIB_DIR}
+                 # while toolchain-provided ones come from ${NACL_SDK_LIB}.
+                 '--library-path', '${LIB_DIR}:${NACL_SDK_LIB}'] + command
     # Enable file access.
     sel_ldr_flags += ['-a']
 

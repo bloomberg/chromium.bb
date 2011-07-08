@@ -639,40 +639,17 @@ glibc-adhoc-files: | SRC/glibc SRC/linux-headers-for-nacl
 	    localedef mtrace pcprofiledump rpcgen sprof tzselect xtrace; do \
 	    rm -f $(ARCH_DEST)/bin/$$f ; \
 	done
-
-
-##################################################################
-# Native Client libraries.
-##################################################################
-
-# Extra arguments to scons to define build and install destinations.
-SCONS_DESTINATIONS_NOLIB=\
- DESTINATION_ROOT=tools/BUILD \
- naclsdk_mode=custom:$(SDKLOC_NATIVE) \
- extra_sdk_include_destination=$(ARCH_DEST_INC_NATIVE) \
-
-BUILD_EXTRA_SDK=BUILD/opt-$(PLATFORM)-x86-$(LIB_BITS)
-
-.PHONY: scons-libs-glibc
-scons-libs-glibc: glibc-adhoc-files
 	# These libraries are in link lines because newlib needs them.
 	# Since glibc doesn't need them, we just stub them out as empty
 	# linker scripts.  For -lfoo the linker looks for libfoo.so first
 	# and then libfoo.a, but only the latter under -static, so install
 	# under .a names to cover both cases.
-	for lib in nacl crt_platform nosys; do \
-	  echo '/* Intentionally empty */' > \
-	      $(ARCH_DEST_LIB_NATIVE)/lib$${lib}.a; \
+	for libdir in lib32 lib; do \
+	  for lib in nacl crt_platform nosys; do \
+	    echo '/* Intentionally empty */' > \
+		$(SDKLOC_NATIVE)/$(CROSSARCH)/$${libdir}/lib$${lib}.a; \
+	  done; \
 	done
-	rm -rf $(BUILD_EXTRA_SDK)
-	mkdir $(BUILD_EXTRA_SDK)
-	cd .. && \
-	  (./$(SCONS) \
-	    $(SCONS_DESTINATIONS_NOLIB) \
-	    extra_sdk_lib_destination=$(ARCH_DEST_LIB_NATIVE) \
-	    MODE=nacl_extra_sdk --nacl_glibc \
-	    extra_sdk_update_header extra_sdk_update \
-	    targetplatform=x86-$(LIB_BITS) --verbose )
 
 ##################################################################
 # gcc:
@@ -821,8 +798,6 @@ endif
 	$(MAKE) -f $(THISMAKEFILE) glibc-adhoc-files
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-full-gcc
 	$(CREATE_REDIRECTORS) "$(DESTDIR)$(SDKROOT)"
-	$(MAKE) -f $(THISMAKEFILE) scons-libs-glibc LIB_BITS=32
-	$(MAKE) -f $(THISMAKEFILE) scons-libs-glibc LIB_BITS=64
 	rm -rf "$(DESTDIR)$(SDKROOT)"/{include,lib/*.a*,$(CROSSARCH)/lib{,32}/*.la}
 	rm -rf "$(DESTDIR)$(SDKROOT)"/{lib/{*/*/*/*{,/*}.la,*.so*},lib{32,64}}
 
