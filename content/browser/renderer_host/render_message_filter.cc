@@ -32,6 +32,7 @@
 #include "content/common/url_constants.h"
 #include "content/common/view_messages.h"
 #include "ipc/ipc_channel_handle.h"
+#include "ipc/ipc_platform_file.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/host_resolver_impl.h"
 #include "net/base/io_buffer.h"
@@ -850,15 +851,9 @@ void RenderMessageFilter::AsyncOpenFileOnFileThread(const FilePath& path,
   base::PlatformFile file = base::CreatePlatformFile(
       path, flags, NULL, &error_code);
   IPC::PlatformFileForTransit file_for_transit =
-      IPC::InvalidPlatformFileForTransit();
-  if (file != base::kInvalidPlatformFileValue) {
-#if defined(OS_WIN)
-    ::DuplicateHandle(::GetCurrentProcess(), file, peer_handle(),
-                      &file_for_transit, 0, false, DUPLICATE_SAME_ACCESS);
-#else
-    file_for_transit = base::FileDescriptor(file, true);
-#endif
-  }
+      file != base::kInvalidPlatformFileValue ?
+          IPC::GetFileHandleForProcess(file, peer_handle(), true) :
+          IPC::InvalidPlatformFileForTransit();
 
   IPC::Message* reply = new ViewMsg_AsyncOpenFile_ACK(
       routing_id, error_code, file_for_transit, message_id);
