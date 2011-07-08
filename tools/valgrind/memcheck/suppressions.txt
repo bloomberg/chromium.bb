@@ -4819,6 +4819,33 @@
   fun:ChromeMain
   fun:main
 }
+{
+   bug_88735
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZNK23ProtocolHandlerRegistry14MaybeCreateJobEPN3net10URLRequestE
+   fun:_Z*11MakeRequestRK4GURLP23ProtocolHandlerRegistry
+   fun:_Z18DispatchToFunctionIPFvRK4GURLP23ProtocolHandlerRegistryES0_13scoped_refptrIS3_EEvT_RK6Tuple2IT0_T1_E
+   fun:_ZN16RunnableFunctionIPFvRK4GURLP23ProtocolHandlerRegistryE6Tuple2IS0_13scoped_refptrIS3_EEE3RunEv
+   fun:*18TaskClosureAdapter3RunEv
+   fun:_ZN4base8internal8Invoker1ILb0ENS0_15InvokerStorage1IMN12_GLOBAL__N_118TaskClosureAdapterEFvvEPS4_EES6_E8DoInvokeEPNS0_18InvokerStorageBaseE
+}
+{
+   bug_88640_a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN11ProfileImpl30InitRegisteredProtocolHandlersEv
+   fun:_ZN11ProfileImpl11DoFinalInitEv
+   fun:_ZN11ProfileImpl13OnPrefsLoadedEb
+}
+{
+   bug_88640_b
+   Memcheck:Leak
+   ...
+   fun:_ZN11ProfileImpl13OnPrefsLoadedEb
+   ...
+   fun:_ZN11ProfileImplC1ERK8FilePathPN7Profile8DelegateE
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations

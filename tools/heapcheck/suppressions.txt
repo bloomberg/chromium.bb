@@ -1558,3 +1558,10 @@
    fun:ProfileImpl::DoFinalInit
    fun:ProfileImpl::OnPrefsLoaded
 }
+{
+   bug_88735
+   Heapcheck:Leak
+   ...
+   fun:ProtocolHandlerRegistry::MaybeCreateJob
+   fun:MakeRequest
+}
