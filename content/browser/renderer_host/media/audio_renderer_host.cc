@@ -9,6 +9,8 @@
 #include "base/shared_memory.h"
 #include "content/browser/renderer_host/media/audio_common.h"
 #include "content/browser/renderer_host/media/audio_sync_reader.h"
+#include "content/browser/renderer_host/media/media_observer.h"
+#include "content/browser/resource_context.h"
 #include "content/common/media/audio_messages.h"
 #include "ipc/ipc_logging.h"
 
@@ -24,7 +26,9 @@ AudioRendererHost::AudioEntry::~AudioEntry() {}
 
 ///////////////////////////////////////////////////////////////////////////////
 // AudioRendererHost implementations.
-AudioRendererHost::AudioRendererHost() {
+AudioRendererHost::AudioRendererHost(
+    const content::ResourceContext* resource_context)
+    : resource_context_(resource_context) {
 }
 
 AudioRendererHost::~AudioRendererHost() {
@@ -282,6 +286,8 @@ void AudioRendererHost::OnCreateStream(
   audio_entries_.insert(std::make_pair(
       AudioEntryId(msg.routing_id(), stream_id),
       entry.release()));
+  resource_context_->media_observer()->OnSetAudioStreamStatus(
+      this, msg.routing_id(), stream_id, "created");
 }
 
 void AudioRendererHost::OnPlayStream(const IPC::Message& msg, int stream_id) {
@@ -294,6 +300,8 @@ void AudioRendererHost::OnPlayStream(const IPC::Message& msg, int stream_id) {
   }
 
   entry->controller->Play();
+  resource_context_->media_observer()->OnSetAudioStreamPlaying(
+      this, msg.routing_id(), stream_id, true);
 }
 
 void AudioRendererHost::OnPauseStream(const IPC::Message& msg, int stream_id) {
@@ -306,6 +314,8 @@ void AudioRendererHost::OnPauseStream(const IPC::Message& msg, int stream_id) {
   }
 
   entry->controller->Pause();
+  resource_context_->media_observer()->OnSetAudioStreamPlaying(
+      this, msg.routing_id(), stream_id, false);
 }
 
 void AudioRendererHost::OnFlushStream(const IPC::Message& msg, int stream_id) {
@@ -318,10 +328,15 @@ void AudioRendererHost::OnFlushStream(const IPC::Message& msg, int stream_id) {
   }
 
   entry->controller->Flush();
+  resource_context_->media_observer()->OnSetAudioStreamStatus(
+      this, msg.routing_id(), stream_id, "flushed");
 }
 
 void AudioRendererHost::OnCloseStream(const IPC::Message& msg, int stream_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  resource_context_->media_observer()->OnSetAudioStreamStatus(
+      this, msg.routing_id(), stream_id, "closed");
 
   AudioEntry* entry = LookupById(msg.routing_id(), stream_id);
 
@@ -343,6 +358,8 @@ void AudioRendererHost::OnSetVolume(const IPC::Message& msg, int stream_id,
   if (volume < 0 || volume > 1.0)
     return;
   entry->controller->SetVolume(volume);
+  resource_context_->media_observer()->OnSetAudioStreamVolume(
+      this, msg.routing_id(), stream_id, volume);
 }
 
 void AudioRendererHost::OnGetVolume(const IPC::Message& msg, int stream_id) {
@@ -413,6 +430,10 @@ void AudioRendererHost::DeleteEntry(AudioEntry* entry) {
   // Erase the entry from the map.
   audio_entries_.erase(
       AudioEntryId(entry->render_view_id, entry->stream_id));
+
+  // Notify the media observer.
+  resource_context_->media_observer()->OnDeleteAudioStream(
+      this, entry->render_view_id, entry->stream_id);
 }
 
 void AudioRendererHost::DeleteEntryOnError(AudioEntry* entry) {
@@ -421,6 +442,9 @@ void AudioRendererHost::DeleteEntryOnError(AudioEntry* entry) {
   // Sends the error message first before we close the stream because
   // |entry| is destroyed in DeleteEntry().
   SendErrorMessage(entry->render_view_id, entry->stream_id);
+
+  resource_context_->media_observer()->OnSetAudioStreamStatus(
+      this, entry->render_view_id, entry->stream_id, "error");
   CloseAndDeleteStream(entry);
 }
 

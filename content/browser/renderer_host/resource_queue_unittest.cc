@@ -77,7 +77,7 @@ ResourceDispatcherHostRequestInfo* GetRequestInfo(int request_id) {
   return new ResourceDispatcherHostRequestInfo(
       new DummyResourceHandler(), ChildProcessInfo::RENDER_PROCESS, 0, 0, 0,
       request_id, ResourceType::MAIN_FRAME, 0, false, false, false,
-      &content::MockResourceContext::GetInstance());
+      content::MockResourceContext::GetInstance());
 }
 
 void InitializeQueue(ResourceQueue* queue, ResourceQueueDelegate* delegate) {

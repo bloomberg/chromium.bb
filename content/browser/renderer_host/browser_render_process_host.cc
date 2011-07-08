@@ -353,7 +353,7 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
 
   channel_->AddFilter(resource_message_filter);
   channel_->AddFilter(new AudioInputRendererHost());
-  channel_->AddFilter(new AudioRendererHost());
+  channel_->AddFilter(new AudioRendererHost(&profile()->GetResourceContext()));
   channel_->AddFilter(
       new AppCacheDispatcherHost(&profile()->GetResourceContext(), id()));
   channel_->AddFilter(new ClipboardMessageFilter());

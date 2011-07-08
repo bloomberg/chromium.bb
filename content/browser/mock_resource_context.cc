@@ -12,8 +12,8 @@ namespace content {
 static base::LazyInstance<MockResourceContext>
     g_mock_resource_context(base::LINKER_INITIALIZED);
 
-const ResourceContext& MockResourceContext::GetInstance() {
-  return g_mock_resource_context.Get();
+MockResourceContext* MockResourceContext::GetInstance() {
+  return &g_mock_resource_context.Get();
 }
 
 MockResourceContext::MockResourceContext()

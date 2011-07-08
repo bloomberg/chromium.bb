@@ -20,13 +20,17 @@ class MediaInternalsTest : public testing::Test {
     return &internals_->data_;
   }
 
+  void DeleteItem(const std::string& item) {
+    internals_->DeleteItem(item);
+  }
+
   void UpdateItem(const std::string& item, const std::string& property,
                   Value* value) {
-    internals_->UpdateItemOnIOThread("", item, property, value);
+    internals_->UpdateItem("", item, property, value);
   }
 
   void SendUpdate(const std::string& function, Value* value) {
-    internals_->SendUpdateOnIOThread(function, value);
+    internals_->SendUpdate(function, value);
   }
 
  protected:
@@ -91,4 +95,20 @@ TEST_F(MediaInternalsTest, RemovedObserversReceiveNoNotifications) {
   EXPECT_CALL(*observer.get(), OnUpdate(testing::_)).Times(0);
 
   message_loop.RunAllPending();
+}
+
+TEST_F(MediaInternalsTest, DeleteRemovesItem) {
+  Value* out;
+
+  UpdateItem("some.item", "testing", Value::CreateNullValue());
+  EXPECT_TRUE(data()->Get("some.item", &out));
+  EXPECT_TRUE(data()->Get("some", &out));
+
+  DeleteItem("some.item");
+  EXPECT_FALSE(data()->Get("some.item", &out));
+  EXPECT_TRUE(data()->Get("some", &out));
+
+  DeleteItem("some");
+  EXPECT_FALSE(data()->Get("some.item", &out));
+  EXPECT_FALSE(data()->Get("some", &out));
 }

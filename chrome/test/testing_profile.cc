@@ -600,7 +600,7 @@ net::URLRequestContextGetter* TestingProfile::GetRequestContextForIsolatedApp(
 }
 
 const content::ResourceContext& TestingProfile::GetResourceContext() {
-  return content::MockResourceContext::GetInstance();
+  return *content::MockResourceContext::GetInstance();
 }
 
 FindBarState* TestingProfile::GetFindBarState() {

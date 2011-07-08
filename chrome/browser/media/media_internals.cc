@@ -12,15 +12,29 @@
 #include "content/browser/webui/web_ui.h"
 
 // The names of the javascript functions to call with updates.
+static const char kDeleteItemFunction[] = "onItemDeleted";
 static const char kAudioUpdateFunction[] = "onAudioUpdate";
 static const char kSendEverythingFunction[] = "onReceiveEverything";
 
 MediaInternals::~MediaInternals() {}
 
+void MediaInternals::OnDeleteAudioStream(
+    void* host, int32 render_view, int stream_id) {
+  std::string stream = base::StringPrintf("audio_streams.%p:%d:%d",
+                                          host, render_view, stream_id);
+  DeleteItem(stream);
+}
+
 void MediaInternals::OnSetAudioStreamPlaying(
     void* host, int32 render_view, int stream_id, bool playing) {
   UpdateAudioStream(host, render_view, stream_id,
                     "playing", Value::CreateBooleanValue(playing));
+}
+
+void MediaInternals::OnSetAudioStreamStatus(
+    void* host, int32 render_view, int stream_id, const std::string& status) {
+  UpdateAudioStream(host, render_view, stream_id,
+                    "status", Value::CreateStringValue(status));
 }
 
 void MediaInternals::OnSetAudioStreamVolume(
@@ -38,10 +52,7 @@ void MediaInternals::RemoveUI(MediaInternalsObserver* ui) {
 }
 
 void MediaInternals::SendEverything() {
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          this, &MediaInternals::SendUpdateOnIOThread,
-          std::string(kSendEverythingFunction), &data_));
+  SendUpdate(kSendEverythingFunction, &data_);
 }
 
 MediaInternals::MediaInternals()
@@ -50,15 +61,18 @@ MediaInternals::MediaInternals()
 void MediaInternals::UpdateAudioStream(
     void* host, int32 render_view, int stream_id,
     const std::string& property, Value* value) {
-  std::string stream = base::StringPrintf("audio_streams.%p.%d.%d",
+  std::string stream = base::StringPrintf("audio_streams.%p:%d:%d",
                                           host, render_view, stream_id);
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          this, &MediaInternals::UpdateItemOnIOThread,
-          std::string(kAudioUpdateFunction), stream, property, value));
+  UpdateItem(kAudioUpdateFunction, stream, property, value);
 }
 
-void MediaInternals::UpdateItemOnIOThread(
+void MediaInternals::DeleteItem(const std::string& item) {
+  data_.Remove(item, NULL);
+  scoped_ptr<Value> value(Value::CreateStringValue(item));
+  SendUpdate(kDeleteItemFunction, value.get());
+}
+
+void MediaInternals::UpdateItem(
     const std::string& update_fn, const std::string& id,
     const std::string& property, Value* value) {
   DictionaryValue* item_properties;
@@ -68,11 +82,10 @@ void MediaInternals::UpdateItemOnIOThread(
     item_properties->SetString("id", id);
   }
   item_properties->Set(property, value);
-  SendUpdateOnIOThread(update_fn, item_properties);
+  SendUpdate(update_fn, item_properties);
 }
 
-void MediaInternals::SendUpdateOnIOThread(const std::string& function,
-                                          Value* value) {
+void MediaInternals::SendUpdate(const std::string& function, Value* value) {
   scoped_ptr<std::vector<const Value*> > args(new std::vector<const Value*>());
   args->push_back(value);
   string16 update = WebUI::GetJavascriptCall(function, *args.get());

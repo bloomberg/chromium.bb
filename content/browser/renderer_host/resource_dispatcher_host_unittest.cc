@@ -151,9 +151,9 @@ class ForwardingFilter : public ResourceMessageFilter {
     : ResourceMessageFilter(
         ChildProcessInfo::GenerateChildProcessUniqueId(),
         ChildProcessInfo::RENDER_PROCESS,
-        &content::MockResourceContext::GetInstance(),
+        content::MockResourceContext::GetInstance(),
         new MockURLRequestContextSelector(
-            content::MockResourceContext::GetInstance().request_context()),
+            content::MockResourceContext::GetInstance()->request_context()),
         NULL),
       dest_(dest) {
     OnChannelConnected(base::GetCurrentProcId());

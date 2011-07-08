@@ -189,6 +189,8 @@
         #'../content/browser/net/url_request_mock_http_job.h',
         '../content/browser/net/url_request_mock_net_error_job.cc',
         '../content/browser/net/url_request_mock_net_error_job.h',
+        '../content/browser/renderer_host/media/mock_media_observer.cc',
+        '../content/browser/renderer_host/media/mock_media_observer.h',
         '../content/browser/renderer_host/mock_render_process_host.cc',
         '../content/browser/renderer_host/mock_render_process_host.h',
         '../content/browser/renderer_host/test_backing_store.cc',

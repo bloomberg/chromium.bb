@@ -10,9 +10,22 @@
 // to receive callbacks as media events occur.
 class MediaObserver {
  public:
+  virtual ~MediaObserver() {}
+
+  // Called when an audio stream is deleted.
+  virtual void OnDeleteAudioStream(void* host, int32 render_view,
+                                   int stream_id) = 0;
+
   // Called when an audio stream is set to playing or paused.
   virtual void OnSetAudioStreamPlaying(void* host, int32 render_view,
                                        int stream_id, bool playing) = 0;
+
+  // Called when the status of an audio stream is set to "created", "flushed",
+  // "closed", or "error".
+  virtual void OnSetAudioStreamStatus(void* host, int32 render_view,
+                                      int stream_id,
+                                      const std::string& status) = 0;
+
   // Called when the volume of an audio stream is set.
   virtual void OnSetAudioStreamVolume(void* host, int32 render_view,
                                       int stream_id, double volume) = 0;

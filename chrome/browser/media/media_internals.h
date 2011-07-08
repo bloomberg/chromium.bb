@@ -18,9 +18,13 @@ class MediaInternals : public MediaObserver {
  public:
   virtual ~MediaInternals();
 
-  // MediaObserver implementation. These are callable from any thread:
+  // MediaObserver implementation. These are called from the IO thread:
+  virtual void OnDeleteAudioStream(void* host, int32 render_view,
+                                   int stream_id);
   virtual void OnSetAudioStreamPlaying(void* host, int32 render_view,
                                        int stream_id, bool playing);
+  virtual void OnSetAudioStreamStatus(void* host, int32 render_view,
+                                      int stream_id, const std::string& status);
   virtual void OnSetAudioStreamVolume(void* host, int32 render_view,
                                       int stream_id, double volume);
 
@@ -43,13 +47,16 @@ class MediaInternals : public MediaObserver {
   void UpdateAudioStream(void* host, int32 render_view, int stream_id,
                          const std::string& property, Value* value);
 
+  // Removes |item| from |data_|.
+  void DeleteItem(const std::string& item);
+
   // Sets data_.id.property = value and notifies attached UIs using update_fn.
   // id may be any depth, e.g. "video.decoders.1.2.3"
-  void UpdateItemOnIOThread(const std::string& update_fn, const std::string& id,
-                            const std::string& property, Value* value);
+  void UpdateItem(const std::string& update_fn, const std::string& id,
+                  const std::string& property, Value* value);
 
   // Calls javascript |function|(|value|) on each attached UI.
-  void SendUpdateOnIOThread(const std::string& function, Value* value);
+  void SendUpdate(const std::string& function, Value* value);
 
   static MediaInternals* instance_;
   DictionaryValue data_;
@@ -57,7 +64,5 @@ class MediaInternals : public MediaObserver {
 
   DISALLOW_COPY_AND_ASSIGN(MediaInternals);
 };
-
-DISABLE_RUNNABLE_METHOD_REFCOUNT(MediaInternals);
 
 #endif  // CHROME_BROWSER_MEDIA_MEDIA_INTERNALS_H_

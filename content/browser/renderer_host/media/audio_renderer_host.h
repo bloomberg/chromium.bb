@@ -69,6 +69,10 @@
 class AudioManager;
 struct AudioParameters;
 
+namespace content {
+class ResourceContext;
+}  // namespace content
+
 class AudioRendererHost : public BrowserMessageFilter,
                           public media::AudioOutputController::EventHandler {
  public:
@@ -103,8 +107,7 @@ class AudioRendererHost : public BrowserMessageFilter,
   typedef std::map<AudioEntryId, AudioEntry*> AudioEntryMap;
 
   // Called from UI thread from the owner of this object.
-  AudioRendererHost();
-
+  AudioRendererHost(const content::ResourceContext* resource_context);
 
   // BrowserMessageFilter implementation.
   virtual void OnChannelClosing();
@@ -215,6 +218,7 @@ class AudioRendererHost : public BrowserMessageFilter,
 
   // A map of id to audio sources.
   AudioEntryMap audio_entries_;
+  const content::ResourceContext* resource_context_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererHost);
 };

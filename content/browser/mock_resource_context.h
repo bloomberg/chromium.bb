@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/browser/resource_context.h"
 
 namespace base {
@@ -18,7 +19,9 @@ namespace content {
 
 class MockResourceContext : public ResourceContext {
  public:
-  static const ResourceContext& GetInstance();
+  // Note that this is a shared instance between all tests. Make no assumptions
+  // regarding its members.
+  static MockResourceContext* GetInstance();
 
  private:
   friend struct base::DefaultLazyInstanceTraits<MockResourceContext>;

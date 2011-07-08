@@ -8,7 +8,9 @@
 #include "base/process_util.h"
 #include "base/sync_socket.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/mock_resource_context.h"
 #include "content/browser/renderer_host/media/audio_renderer_host.h"
+#include "content/browser/renderer_host/media/mock_media_observer.h"
 #include "content/common/media/audio_messages.h"
 #include "ipc/ipc_message_utils.h"
 #include "media/audio/audio_manager.h"
@@ -17,6 +19,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
+using ::testing::AtLeast;
 using ::testing::DoAll;
 using ::testing::InSequence;
 using ::testing::InvokeWithoutArgs;
@@ -37,7 +40,9 @@ static bool IsRunningHeadless() {
 
 class MockAudioRendererHost : public AudioRendererHost {
  public:
-  MockAudioRendererHost() : shared_memory_length_(0) {
+  MockAudioRendererHost(const content::ResourceContext* resource_context)
+      : AudioRendererHost(resource_context),
+        shared_memory_length_(0) {
   }
 
   virtual ~MockAudioRendererHost() {
@@ -171,8 +176,16 @@ class AudioRendererHostTest : public testing::Test {
   virtual void SetUp() {
     // Create a message loop so AudioRendererHost can use it.
     message_loop_.reset(new MessageLoop(MessageLoop::TYPE_IO));
+
+    // Claim to be on both the UI and IO threads to pass all the DCHECKS.
     io_thread_.reset(new BrowserThread(BrowserThread::IO, message_loop_.get()));
-    host_ = new MockAudioRendererHost();
+    ui_thread_.reset(new BrowserThread(BrowserThread::UI, message_loop_.get()));
+
+    observer_.reset(new MockMediaObserver());
+    content::MockResourceContext* context =
+        content::MockResourceContext::GetInstance();
+    context->set_media_observer(observer_.get());
+    host_ = new MockAudioRendererHost(context);
 
     // Simulate IPC channel connected.
     host_->OnChannelConnected(base::GetCurrentProcId());
@@ -190,9 +203,14 @@ class AudioRendererHostTest : public testing::Test {
     SyncWithAudioThread();
 
     io_thread_.reset();
+    ui_thread_.reset();
   }
 
   void Create() {
+    EXPECT_CALL(*observer_,
+                OnSetAudioStreamStatus(_, kRouteId, kStreamId, "created"));
+    EXPECT_CALL(*observer_, OnDeleteAudioStream(_, kRouteId, kStreamId));
+
     InSequence s;
     // 1. We will first receive a OnStreamCreated() signal.
     EXPECT_CALL(*host_,
@@ -222,6 +240,10 @@ class AudioRendererHostTest : public testing::Test {
   }
 
   void CreateLowLatency() {
+    EXPECT_CALL(*observer_,
+                OnSetAudioStreamStatus(_, kRouteId, kStreamId, "created"));
+    EXPECT_CALL(*observer_, OnDeleteAudioStream(_, kRouteId, kStreamId));
+
     InSequence s;
     // We will first receive a OnLowLatencyStreamCreated() signal.
     EXPECT_CALL(*host_,
@@ -248,6 +270,9 @@ class AudioRendererHostTest : public testing::Test {
   }
 
   void Close() {
+    EXPECT_CALL(*observer_,
+                OnSetAudioStreamStatus(_, kRouteId, kStreamId, "closed"));
+
     // Send a message to AudioRendererHost to tell it we want to close the
     // stream.
     IPC::Message msg;
@@ -257,6 +282,8 @@ class AudioRendererHostTest : public testing::Test {
   }
 
   void Play() {
+    EXPECT_CALL(*observer_,
+                OnSetAudioStreamPlaying(_, kRouteId, kStreamId, true));
     EXPECT_CALL(*host_, OnStreamPlaying(kRouteId, kStreamId))
         .WillOnce(QuitMessageLoop(message_loop_.get()));
 
@@ -267,6 +294,8 @@ class AudioRendererHostTest : public testing::Test {
   }
 
   void Pause() {
+    EXPECT_CALL(*observer_,
+                OnSetAudioStreamPlaying(_, kRouteId, kStreamId, false));
     EXPECT_CALL(*host_, OnStreamPaused(kRouteId, kStreamId))
         .WillOnce(QuitMessageLoop(message_loop_.get()));
 
@@ -277,6 +306,8 @@ class AudioRendererHostTest : public testing::Test {
   }
 
   void SetVolume(double volume) {
+    EXPECT_CALL(*observer_,
+                OnSetAudioStreamVolume(_, kRouteId, kStreamId, volume));
     IPC::Message msg;
     msg.set_routing_id(kRouteId);
     host_->OnSetVolume(msg, kStreamId, volume);
@@ -296,6 +327,8 @@ class AudioRendererHostTest : public testing::Test {
   }
 
   void SimulateError() {
+    EXPECT_CALL(*observer_,
+                OnSetAudioStreamStatus(_, kRouteId, kStreamId, "error"));
     // Find the first AudioOutputController in the AudioRendererHost.
     CHECK(host_->audio_entries_.size())
         << "Calls Create() before calling this method";
@@ -342,9 +375,11 @@ class AudioRendererHostTest : public testing::Test {
 
  private:
   bool mock_stream_;
+  scoped_ptr<MockMediaObserver> observer_;
   scoped_refptr<MockAudioRendererHost> host_;
   scoped_ptr<MessageLoop> message_loop_;
   scoped_ptr<BrowserThread> io_thread_;
+  scoped_ptr<BrowserThread> ui_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererHostTest);
 };
