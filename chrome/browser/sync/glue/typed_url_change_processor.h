@@ -71,6 +71,12 @@ class TypedUrlChangeProcessor : public ChangeProcessor,
   void HandleURLsDeleted(history::URLsDeletedDetails* details);
   void HandleURLsVisited(history::URLVisitedDetails* details);
 
+  // Returns true if the caller should sync as a result of the passed visit
+  // notification. We use this to throttle the number of sync changes we send
+  // to the server so we don't hit the server for every
+  // single typed URL visit.
+  bool ShouldSyncVisit(history::URLVisitedDetails* details);
+
   // Utility routine that either updates an existing sync node or creates a
   // new one for the passed |typed_url| if one does not already exist. Returns
   // false and sets an unrecoverable error if the operation failed.

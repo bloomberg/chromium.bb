@@ -18,6 +18,14 @@
 
 namespace browser_sync {
 
+// This is the threshold at which we start throttling sync updates for typed
+// URLs - any URLs with a typed_count >= this threshold will be throttled.
+static const int kTypedUrlVisitThrottleThreshold = 10;
+
+// This is the multiple we use when throttling sync updates. If the multiple is
+// N, we sync up every Nth update (i.e. when typed_count % N == 0).
+static const int kTypedUrlVisitThrottleMultiple = 10;
+
 TypedUrlChangeProcessor::TypedUrlChangeProcessor(
     TypedUrlModelAssociator* model_associator,
     history::HistoryBackend* history_backend,
@@ -107,8 +115,6 @@ bool TypedUrlChangeProcessor::CreateOrUpdateSyncNode(
 
   sync_api::WriteNode update_node(trans);
   if (update_node.InitByClientTagLookup(syncable::TYPED_URLS, tag)) {
-    // TODO(atwilson): Don't bother updating if the only change is
-    // a visit deletion or addition of a RELOAD visit (http://crbug.com/82451).
     model_associator_->WriteToSyncNode(url, visit_vector, &update_node);
   } else {
     sync_api::WriteNode create_node(trans);
@@ -155,12 +161,29 @@ void TypedUrlChangeProcessor::HandleURLsDeleted(
 
 void TypedUrlChangeProcessor::HandleURLsVisited(
     history::URLVisitedDetails* details) {
-  if (!details->row.typed_count()) {
-    // We only care about typed urls.
+  if (!ShouldSyncVisit(details))
     return;
-  }
+
   sync_api::WriteTransaction trans(FROM_HERE, share_handle());
   CreateOrUpdateSyncNode(details->row, &trans);
+}
+
+bool TypedUrlChangeProcessor::ShouldSyncVisit(
+    history::URLVisitedDetails* details) {
+  int typed_count = details->row.typed_count();
+  PageTransition::Type transition = static_cast<PageTransition::Type>(
+      details->transition & PageTransition::CORE_MASK);
+
+  // Just use an ad-hoc criteria to determine whether to ignore this
+  // notification. For most users, the distribution of visits is roughly a bell
+  // curve with a long tail - there are lots of URLs with < 5 visits so we want
+  // to make sure we sync up every visit to ensure the proper ordering of
+  // suggestions. But there are relatively few URLs with > 10 visits, and those
+  // tend to be more broadly distributed such that there's no need to sync up
+  // every visit to preserve their relative ordering.
+  return (transition == PageTransition::TYPED &&
+          (typed_count < kTypedUrlVisitThrottleThreshold ||
+           (typed_count % kTypedUrlVisitThrottleMultiple) == 0));
 }
 
 void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(

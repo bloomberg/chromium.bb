@@ -210,6 +210,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
   }
 
   void GetTypedUrlsFromSyncDB(std::vector<history::URLRow>* urls) {
+    urls->clear();
     sync_api::ReadTransaction trans(FROM_HERE, service_->GetUserShare());
     sync_api::ReadNode typed_url_root(&trans);
     if (!typed_url_root.InitByTagLookup(browser_sync::kTypedUrlTag))
@@ -540,6 +541,73 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeUpdateFromVisit) {
   GetTypedUrlsFromSyncDB(&new_sync_entries);
   ASSERT_EQ(1U, new_sync_entries.size());
   EXPECT_TRUE(URLsEqual(updated_entry, new_sync_entries[0]));
+}
+
+TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserIgnoreChangeUpdateFromVisit) {
+  history::VisitVector original_visits;
+  history::URLRow original_entry(MakeTypedUrlEntry("http://mine.com", "entry",
+                                                   2, 15, false,
+                                                   &original_visits));
+  std::vector<history::URLRow> original_entries;
+  original_entries.push_back(original_entry);
+
+  EXPECT_CALL((*history_backend_.get()), GetAllTypedURLs(_)).
+      WillOnce(DoAll(SetArgumentPointee<0>(original_entries), Return(true)));
+  EXPECT_CALL((*history_backend_.get()), GetVisitsForURL(_, _)).
+      WillRepeatedly(DoAll(SetArgumentPointee<1>(original_visits),
+                           Return(true)));
+  CreateRootTask task(this, syncable::TYPED_URLS);
+  StartSyncService(&task);
+  std::vector<history::URLRow> new_sync_entries;
+  GetTypedUrlsFromSyncDB(&new_sync_entries);
+  ASSERT_EQ(1U, new_sync_entries.size());
+  EXPECT_TRUE(URLsEqual(original_entry, new_sync_entries[0]));
+
+  history::VisitVector updated_visits;
+  history::URLRow updated_entry(MakeTypedUrlEntry("http://mine.com", "entry",
+                                                  7, 15, false,
+                                                  &updated_visits));
+  history::URLVisitedDetails details;
+  details.row = updated_entry;
+
+  // Should ignore this change because it's not TYPED.
+  details.transition = PageTransition::RELOAD;
+  scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&history_thread_));
+  notifier->Notify(NotificationType::HISTORY_URL_VISITED,
+                   Details<history::URLVisitedDetails>(&details));
+
+  GetTypedUrlsFromSyncDB(&new_sync_entries);
+
+  // Should be no changes to the sync DB from this notification.
+  ASSERT_EQ(1U, new_sync_entries.size());
+  EXPECT_TRUE(URLsEqual(original_entry, new_sync_entries[0]));
+
+  // Now, try updating it with a large number of visits not divisible by 10
+  // (should ignore this visit).
+  history::URLRow twelve_visits(MakeTypedUrlEntry("http://mine.com", "entry",
+                                                  12, 15, false,
+                                                  &updated_visits));
+  details.row = twelve_visits;
+  details.transition = PageTransition::TYPED;
+  notifier->Notify(NotificationType::HISTORY_URL_VISITED,
+                   Details<history::URLVisitedDetails>(&details));
+  GetTypedUrlsFromSyncDB(&new_sync_entries);
+  // Should be no changes to the sync DB from this notification.
+  ASSERT_EQ(1U, new_sync_entries.size());
+  EXPECT_TRUE(URLsEqual(original_entry, new_sync_entries[0]));
+
+  // Now, try updating it with a large number of visits that is divisible by 10
+  // (should *not* be ignored).
+  history::URLRow twenty_visits(MakeTypedUrlEntry("http://mine.com", "entry",
+                                                  20, 15, false,
+                                                  &updated_visits));
+  details.row = twenty_visits;
+  details.transition = PageTransition::TYPED;
+  notifier->Notify(NotificationType::HISTORY_URL_VISITED,
+                   Details<history::URLVisitedDetails>(&details));
+  GetTypedUrlsFromSyncDB(&new_sync_entries);
+  ASSERT_EQ(1U, new_sync_entries.size());
+  EXPECT_TRUE(URLsEqual(twenty_visits, new_sync_entries[0]));
 }
 
 TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeRemove) {
