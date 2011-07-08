@@ -245,7 +245,7 @@ void GlobalMenuBar::BuildGtkMenuFrom(
   gtk_widget_show(menu);
 
   GtkWidget* menu_item = gtk_menu_item_new_with_mnemonic(
-      gfx::ConvertAcceleratorsFromWindowsStyle(
+      gfx::RemoveWindowsStyleAccelerators(
           l10n_util::GetStringUTF8(menu_str_id)).c_str());
 
   // Give the owner a chance to sink the reference before we add it to the menu
