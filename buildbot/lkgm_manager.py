@@ -173,21 +173,6 @@ class LKGMManager(manifest_version.BuildSpecsManager):
 
     return _LKGMCandidateInfo(version_info.VersionString())
 
-
-  def _SetInFlightWithRetry(self, commit_message, retries):
-    for index in range(retries + 1):
-      try:
-        self._SetInFlight(commit_message)
-        break
-      except (manifest_version.GitCommandException,
-              cros_lib.RunCommandError) as e:
-        last_error = 'Failed to set build in-flight: %s' % e
-        logging.error(last_error)
-        logging.error('Retrying:  Retry %d/%d' %
-                      (index + 1, retries + 1))
-    else:
-      raise manifest_version.GenerateBuildSpecException(last_error)
-
   def CreateNewCandidate(self, force_version=None, retries=3):
     """Gets the version number of the next build spec to build.
       Args:
@@ -199,28 +184,33 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       Raises:
         GenerateBuildSpecException in case of failure to generate a buildspec
     """
-    try:
-      version_info = self._GetCurrentVersionInfo()
-      self._LoadSpecs(version_info)
-      lkgm_info = self._GetLatestCandidateByVersion(version_info)
-      if force_version:
-        self.current_version = force_version
-      else:
+    last_error = None
+    for _ in range(0, retries + 1):
+      try:
+        version_info = self._GetCurrentVersionInfo()
+        self._LoadSpecs(version_info)
+        lkgm_info = self._GetLatestCandidateByVersion(version_info)
+        if force_version:
+          return self.GetLocalManifest(force_version)
+
+        self._PrepSpecChanges()
         self.current_version = self._CreateNewBuildSpec(lkgm_info)
+        if self.current_version:
+          logging.debug('Using build spec: %s', self.current_version)
+          commit_message = 'Automatic: Start %s %s' % (self.build_name,
+                                                       self.current_version)
+          self._SetInFlight()
+          self._PushSpecChanges(commit_message)
 
-      if self.current_version:
-        logging.debug('Using build spec: %s', self.current_version)
-        commit_message = 'Automatic: Start %s %s' % (self.build_name,
-                                                     self.current_version)
-        self._SetInFlightWithRetry(commit_message, retries)
+        return self.GetLocalManifest(self.current_version)
 
-      return self.GetLocalManifest(self.current_version)
-
-    except (cros_lib.RunCommandError,
-            manifest_version.GitCommandException) as e:
-      err_msg = 'Failed to generate LKGM Candidate. error: %s' % e
-      logging.error(err_msg)
-      raise manifest_version.GenerateBuildSpecException(err_msg)
+      except (cros_lib.RunCommandError,
+              manifest_version.GitCommandException) as e:
+        err_msg = 'Failed to generate LKGM Candidate. error: %s' % e
+        logging.error(err_msg)
+        last_error = err_msg
+    else:
+      raise manifest_version.GenerateBuildSpecException(last_error)
 
   def GetLatestCandidate(self, force_version=None, retries=5):
     """Gets the version number of the next build spec to build.
@@ -246,22 +236,29 @@ class LKGMManager(manifest_version.BuildSpecsManager):
 
       return version_to_use
 
-    try:
-      self.current_version = self._RunLambdaWithTimeout(
-          _AttemptToGetLatestCandidate)
-      if self.current_version:
-        logging.debug('Using build spec: %s', self.current_version)
-        commit_message = 'Automatic: Start %s %s' % (self.build_name,
-                                                     self.current_version)
-        self._SetInFlightWithRetry(commit_message, retries)
+    self.current_version = self._RunLambdaWithTimeout(
+        _AttemptToGetLatestCandidate)
+    if self.current_version:
+      last_error = None
+      for _ in range(0, retries + 1):
+        try:
+            logging.debug('Using build spec: %s', self.current_version)
+            commit_message = 'Automatic: Start %s %s' % (self.build_name,
+                                                         self.current_version)
+            self._PrepSpecChanges()
+            self._SetInFlight()
+            self._PushSpecChanges(commit_message)
+            break
+        except (cros_lib.RunCommandError,
+                manifest_version.GitCommandException) as e:
+          err_msg = 'Failed to set LKGM Candidate inflight. error: %s' % e
+          logging.error(err_msg)
+          last_error = err_msg
+          raise
+      else:
+        raise manifest_version.GenerateBuildSpecException(last_error)
 
-      return self.GetLocalManifest(self.current_version)
-
-    except (cros_lib.RunCommandError,
-            manifest_version.GitCommandException) as e:
-      err_msg = 'Failed to get next LKGM Candidate. error: %s' % e
-      logging.error(err_msg)
-      raise manifest_version.GenerateBuildSpecException(err_msg)
+    return self.GetLocalManifest(self.current_version)
 
   def GetBuildersStatus(self, builders_array):
     """Returns a build-names->status dictionary of build statuses."""
@@ -306,6 +303,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     """Promotes the current LKGM candidate to be a real versioned LKGM."""
     assert self.current_version, 'No current manifest exists.'
 
+    last_error = None
     path_to_candidate = self.GetLocalManifest(self.current_version)
     path_to_lkgm = self.GetAbsolutePathToLKGM()
     assert os.path.exists(path_to_candidate), 'Candidate not found locally.'
