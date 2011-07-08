@@ -32,6 +32,7 @@ toolchain/hg-log/
 /build/Release/
 /chromebinaries/
 /scons-out/
+/src/third_party/ppapi/
 /src/third_party/valgrind/bin/
 /toolchain/
 /tools/BUILD/
