@@ -456,6 +456,9 @@ void BindSkiaToInProcessGL() {
       case gfx::kGLImplementationMockGL:
         NOTREACHED();
         return;
+      default:
+        NOTREACHED();
+        return;
     }
 
     static GrGLInterface host_gl_interface = {
