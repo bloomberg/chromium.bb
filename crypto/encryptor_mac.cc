@@ -20,7 +20,9 @@ Encryptor::Encryptor()
 Encryptor::~Encryptor() {
 }
 
-bool Encryptor::Init(SymmetricKey* key, Mode mode, const std::string& iv) {
+bool Encryptor::Init(SymmetricKey* key,
+                     Mode mode,
+                     const base::StringPiece& iv) {
   DCHECK(key);
   DCHECK_EQ(CBC, mode) << "Unsupported mode of operation";
   CSSM_DATA raw_key = key->cssm_data();
@@ -33,12 +35,12 @@ bool Encryptor::Init(SymmetricKey* key, Mode mode, const std::string& iv) {
 
   key_ = key;
   mode_ = mode;
-  iv_ = iv;
+  iv.CopyToString(&iv_);
   return true;
 }
 
 bool Encryptor::Crypt(int /*CCOperation*/ op,
-                      const std::string& input,
+                      const base::StringPiece& input,
                       std::string* output) {
   DCHECK(key_);
   CSSM_DATA raw_key = key_->cssm_data();
@@ -65,11 +67,13 @@ bool Encryptor::Crypt(int /*CCOperation*/ op,
   return true;
 }
 
-bool Encryptor::Encrypt(const std::string& plaintext, std::string* ciphertext) {
+bool Encryptor::Encrypt(const base::StringPiece& plaintext,
+                        std::string* ciphertext) {
   return Crypt(kCCEncrypt, plaintext, ciphertext);
 }
 
-bool Encryptor::Decrypt(const std::string& ciphertext, std::string* plaintext) {
+bool Encryptor::Decrypt(const base::StringPiece& ciphertext,
+                        std::string* plaintext) {
   return Crypt(kCCDecrypt, ciphertext, plaintext);
 }
 

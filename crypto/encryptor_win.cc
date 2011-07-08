@@ -37,7 +37,9 @@ Encryptor::Encryptor()
 Encryptor::~Encryptor() {
 }
 
-bool Encryptor::Init(SymmetricKey* key, Mode mode, const std::string& iv) {
+bool Encryptor::Init(SymmetricKey* key,
+                     Mode mode,
+                     const base::StringPiece& iv) {
   DCHECK(key);
   DCHECK_EQ(CBC, mode) << "Unsupported mode of operation";
 
@@ -77,7 +79,8 @@ bool Encryptor::Init(SymmetricKey* key, Mode mode, const std::string& iv) {
   return true;
 }
 
-bool Encryptor::Encrypt(const std::string& plaintext, std::string* ciphertext) {
+bool Encryptor::Encrypt(const base::StringPiece& plaintext,
+                        std::string* ciphertext) {
   DWORD data_len = plaintext.size();
   DWORD total_len = data_len + block_size_;
 
@@ -94,7 +97,8 @@ bool Encryptor::Encrypt(const std::string& plaintext, std::string* ciphertext) {
   return true;
 }
 
-bool Encryptor::Decrypt(const std::string& ciphertext, std::string* plaintext) {
+bool Encryptor::Decrypt(const base::StringPiece& ciphertext,
+                        std::string* plaintext) {
   DWORD data_len = ciphertext.size();
   if (data_len == 0)
     return false;
