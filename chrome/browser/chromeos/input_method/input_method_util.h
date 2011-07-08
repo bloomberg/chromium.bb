@@ -26,6 +26,8 @@ const struct ExtraLanguage {
   { "id", "xkb:us::eng" }, // For Indonesian, use US keyboard layout.
   // The code "fil" comes from app/l10_util.cc.
   { "fil", "xkb:us::eng" },  // For Filipino, use US keyboard layout.
+  // For Netherlands, use US international keyboard layout.
+  { "nl", "xkb:us:intl:eng" },
   // The code "es-419" comes from app/l10_util.cc.
   // For Spanish in Latin America, use Latin American keyboard layout.
   { "es-419", "xkb:latam::spa" },
