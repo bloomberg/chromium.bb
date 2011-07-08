@@ -1976,7 +1976,6 @@ Common tasks:
 
 * cleaning:           scons -c
 * building:           scons
-* just the doc:       scons --mode=doc
 * build mandel:       scons --mode=nacl mandel.nexe
 * smoke test:         scons --mode=nacl,opt-linux -k pp=1 smoke_tests
 
@@ -3121,23 +3120,6 @@ if linux_coverage_env.Bit('target_x86_64'):
 linux_coverage_env['OPTIONAL_COVERAGE_LIBS'] = '$COVERAGE_LIBS'
 AddDualLibrary(linux_coverage_env)
 environment_list.append(linux_coverage_env)
-
-# ----------------------------------------------------------
-# VARIOUS HELPERS
-# ----------------------------------------------------------
-
-doc_env = pre_base_env.Clone(
-  NACL_BUILD_FAMILY = 'NO_PLATFORM',
-  BUILD_TYPE = 'doc',
-  BUILD_TYPE_DESCRIPTION = 'Documentation build',
-  HOST_PLATFORM_SUFFIX='',
-)
-environment_list.append(doc_env)
-doc_env.Append(
-  BUILD_SCONSCRIPTS = [
-#    'documentation',  # Doxygen files removed from this directory in rev 4062
-    ],
-)
 
 # ----------------------------------------------------------
 # Environment Massaging
