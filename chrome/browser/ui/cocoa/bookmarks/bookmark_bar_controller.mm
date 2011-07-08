@@ -843,14 +843,17 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   return (AnimatableView*)[self view];
 }
 
-// Position the off-the-side chevron to the left of the otherBookmarks button.
+// Position the off-the-side chevron to the left of the otherBookmarks button,
+// unless it's hidden in which case it's right aligned on top of it.
 - (void)positionOffTheSideButton {
   NSRect frame = [offTheSideButton_ frame];
   frame.size.height = bookmarks::kBookmarkFolderButtonHeight;
-  if (otherBookmarksButton_.get()) {
+  if (otherBookmarksButton_.get() && ![otherBookmarksButton_ isHidden]) {
     frame.origin.x = ([otherBookmarksButton_ frame].origin.x -
                       (frame.size.width +
                        bookmarks::kBookmarkHorizontalPadding));
+  } else {
+    frame.origin.x = (NSMaxX([otherBookmarksButton_ frame]) - frame.size.width);
   }
   [offTheSideButton_ setFrame:frame];
 }
@@ -1314,12 +1317,25 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   }
 }
 
+// Shows or hides the Other Bookmarks button as appropriate, and returns
+// whether it ended up visible.
+- (BOOL)setOtherBookmarksButtonVisibility {
+  if (!otherBookmarksButton_.get())
+    return NO;
+
+  BOOL visible = ![otherBookmarksButton_ bookmarkNode]->empty();
+  [otherBookmarksButton_ setHidden:!visible];
+  return visible;
+}
+
 // Create the button for "Other Bookmarks" on the right of the bar.
 - (void)createOtherBookmarksButton {
   // Can't create this until the model is loaded, but only need to
   // create it once.
-  if (otherBookmarksButton_.get())
+  if (otherBookmarksButton_.get()) {
+    [self setOtherBookmarksButtonVisibility];
     return;
+  }
 
   // TODO(jrg): remove duplicate code
   NSCell* cell = [self cellForBookmarkNode:bookmarkModel_->other_node()];
@@ -1344,6 +1360,8 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   [button setTarget:self];
   [button setAction:@selector(openBookmarkFolderFromButton:)];
   [buttonView_ addSubview:button];
+
+  [self setOtherBookmarksButtonVisibility];
 
   // Now that it's here, move the chevron over.
   [self positionOffTheSideButton];
@@ -1554,9 +1572,11 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   CGFloat maxViewX = NSMaxX([[self view] bounds]);
   NSButton* otherBookmarksButton = otherBookmarksButton_.get();
   // If necessary, pull in the width to account for the Other Bookmarks button.
-  if (otherBookmarksButton_)
+  if ([self setOtherBookmarksButtonVisibility])
     maxViewX = [otherBookmarksButton frame].origin.x -
         bookmarks::kBookmarkHorizontalPadding;
+
+  [self positionOffTheSideButton];
   // If we're already overflowing, then we need to account for the chevron.
   if (barCount > displayedButtonCount_)
     maxViewX = [offTheSideButton_ frame].origin.x -
@@ -2096,6 +2116,8 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   // If we go from 0 --> 1 bookmarks we may need to hide the
   // "bookmarks go here" text container.
   [self showOrHideNoItemContainerForNode:model->GetBookmarkBarNode()];
+  // Cope with chevron or "Other Bookmarks" buttons possibly changing state.
+  [self reconfigureBookmarkBar];
 }
 
 // TODO(jrg): for now this is brute force.
@@ -2121,9 +2143,8 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   // If the bar is one of the parents we may need to update the visibility
   // of the "bookmarks go here" presentation.
   [self showOrHideNoItemContainerForNode:model->GetBookmarkBarNode()];
-  // If we moved the only item on the "off the side" menu somewhere
-  // else, we may no longer need to show it.
-  [self configureOffTheSideButtonContentsAndVisibility];
+  // Cope with chevron or "Other Bookmarks" buttons possibly changing state.
+  [self reconfigureBookmarkBar];
 }
 
 - (void)nodeRemoved:(BookmarkModel*)model
