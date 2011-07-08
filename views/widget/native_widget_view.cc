@@ -62,7 +62,6 @@ void NativeWidgetView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 }
 
 void NativeWidgetView::OnPaint(gfx::Canvas* canvas) {
-  canvas->FillRectInt(SK_ColorRED, 0, 0, width(), height());
   delegate()->OnNativeWidgetPaint(canvas);
 }
 

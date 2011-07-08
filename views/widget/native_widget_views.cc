@@ -209,6 +209,8 @@ void NativeWidgetViews::BecomeModal() {
 }
 
 gfx::Rect NativeWidgetViews::GetWindowScreenBounds() const {
+  if (GetWidget() == GetWidget()->GetTopLevelWidget())
+    return view_->bounds();
   gfx::Point origin = view_->bounds().origin();
   View::ConvertPointToScreen(view_->parent(), &origin);
   return gfx::Rect(origin.x(), origin.y(), view_->width(), view_->height());
