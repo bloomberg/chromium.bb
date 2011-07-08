@@ -45,5 +45,10 @@ nodes.append(env.CommandSelLdrTestNacl(
         exit_status='trusted_segfault',
         using_nacl_signal_handler='1'))
 
+# For both Valgrind and Coverage instrumented tests, we ignore signal handler
+# tests which can produce strange or flaky results.
+# Bug=http://code.google.com/p/nativeclient/issues/detail?id=1983
+#
+is_broken = env.IsRunningUnderValgrind() or env.Bit('coverage_enabled')
 env.AddNodeToTestSuite(nodes, ['small_tests'], 'run_signal_handler_test',
-                       is_broken=env.IsRunningUnderValgrind())
+                       is_broken=is_broken)
