@@ -1799,25 +1799,6 @@ if pre_base_env.Bit('dangerous_debug_disable_inner_sandbox'):
       )
 
 # ----------------------------------------------------------
-DeclareBit('chrome',
-           'Build the plugin as a static library to be linked with Chrome')
-pre_base_env.SetBitFromOption('chrome', False)
-if pre_base_env.Bit('chrome'):
-  pre_base_env.Append(
-    CPPDEFINES = [
-        ['CHROME_BUILD', 1],
-    ],
-  )
-  # To build for Chrome sdl=none must be used
-  ARGUMENTS['sdl'] = 'none'
-else:
-  pre_base_env.Append(
-    CPPDEFINES = [
-        ['NACL_STANDALONE', 1],
-    ],
-  )
-
-# ----------------------------------------------------------
 def CheckPlatformPreconditions():
   "Check and fail fast if platform-specific preconditions are unmet."
 
@@ -1856,6 +1837,7 @@ base_env.Append(
   CPPDEFINES = [
     ['NACL_TARGET_ARCH', '${TARGET_ARCHITECTURE}' ],
     ['NACL_TARGET_SUBARCH', '${TARGET_SUBARCH}' ],
+    ['NACL_STANDALONE', 1],
     ],
   CPPPATH = ['${SOURCE_ROOT}',
              '${MAIN_DIR}/src/third_party'],

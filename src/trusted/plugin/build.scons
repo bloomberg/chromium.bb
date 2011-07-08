@@ -172,41 +172,40 @@ if ppapi_env['SHARED_LIBS_SPECIAL']:
 else:
   ppapi_env.Append(LIBS=ppapi_libs + os_libs)
 
-if not ppapi_env.Bit('chrome'):
-  if not env.Bit('mac'):  # linux, windows, arm
-    # This builds with
-    #   MODE=... ppNaClPlugin sel_ldr
-    # with the output going to
-    #   scons-out/.../staging/libppNaClPlugin.so on Linux and
-    #   scons-out/.../staging/ppNaClPlugin.dll on Windows.
-    ppapi_plugin = ppapi_env.ComponentLibrary(ppNaClPlugin,
-                                              common_inputs + ppapi_inputs,
-                                              no_import_lib=True)
-  else:  # mac
-    # This builds with
-    #   MODE=... scons-out/.../staging/ppNaClPlugin.bundle sel_ldr
-    # This places both ppNaClPlugin.bundle/ and sel_ldr into staging/.
-    # One must either set $NACL_SEL_LDR=path/to/sel_ldr or manually
-    # copy sel_ldr to path/to/ppNaClPlugin.bundle/Contents/Resources/.
-    # (the 2nd option has been disabled:
-    # see ../nonnacl_util/osx/get_plugin_dirname.mm).
-    REZ = '/Developer/Tools/Rez'
-    ppapi_env.Command(target='ppNaClPlugin.rsrc',
-                      source='osx_ppapi/ppNaClPlugin.r',
-                      action=[Action(REZ + ' -o ${TARGET} ${SOURCE} -useDF')])
-    ppapi_plugin = ppapi_env.ComponentProgram(ppNaClPlugin,
-                                              common_inputs + ppapi_inputs,
-                                              no_import_lib=True)
-    # Bundle pattern can be found in
-    # site_scons/site_tools/target_platform_mac.py
-    bundle_name = '${STAGING_DIR}/' + ppNaClPlugin + '.bundle'
-    ppapi_env.Bundle(bundle_name,
-                     BUNDLE_EXE = ppapi_plugin,
-                     BUNDLE_PKGINFO_FILENAME = 0,
-                     BUNDLE_RESOURCES = 'ppNaClPlugin.rsrc',
-                     BUNDLE_INFO_PLIST = 'osx_ppapi/Info.plist')
+if not env.Bit('mac'):  # linux, windows, arm
+  # This builds with
+  #   MODE=... ppNaClPlugin sel_ldr
+  # with the output going to
+  #   scons-out/.../staging/libppNaClPlugin.so on Linux and
+  #   scons-out/.../staging/ppNaClPlugin.dll on Windows.
+  ppapi_plugin = ppapi_env.ComponentLibrary(ppNaClPlugin,
+                                            common_inputs + ppapi_inputs,
+                                            no_import_lib=True)
+else:  # mac
+  # This builds with
+  #   MODE=... scons-out/.../staging/ppNaClPlugin.bundle sel_ldr
+  # This places both ppNaClPlugin.bundle/ and sel_ldr into staging/.
+  # One must either set $NACL_SEL_LDR=path/to/sel_ldr or manually
+  # copy sel_ldr to path/to/ppNaClPlugin.bundle/Contents/Resources/.
+  # (the 2nd option has been disabled:
+  # see ../nonnacl_util/osx/get_plugin_dirname.mm).
+  REZ = '/Developer/Tools/Rez'
+  ppapi_env.Command(target='ppNaClPlugin.rsrc',
+                    source='osx_ppapi/ppNaClPlugin.r',
+                    action=[Action(REZ + ' -o ${TARGET} ${SOURCE} -useDF')])
+  ppapi_plugin = ppapi_env.ComponentProgram(ppNaClPlugin,
+                                            common_inputs + ppapi_inputs,
+                                            no_import_lib=True)
+  # Bundle pattern can be found in
+  # site_scons/site_tools/target_platform_mac.py
+  bundle_name = '${STAGING_DIR}/' + ppNaClPlugin + '.bundle'
+  ppapi_env.Bundle(bundle_name,
+                   BUNDLE_EXE = ppapi_plugin,
+                   BUNDLE_PKGINFO_FILENAME = 0,
+                   BUNDLE_RESOURCES = 'ppNaClPlugin.rsrc',
+                   BUNDLE_INFO_PLIST = 'osx_ppapi/Info.plist')
 
-  ppapi_env.Alias('plugin', ppapi_env.GetPPAPIPluginPath(False))
+ppapi_env.Alias('plugin', ppapi_env.GetPPAPIPluginPath(False))
 
 ###############################################################################
 # PPAPI Plugin Test
