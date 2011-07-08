@@ -759,7 +759,7 @@ class BuildTargetStage(BuilderStage):
                    extra_env=env)
 
     if self._options.tests and (self._build_config['vm_tests'] or
-                                self._options.remote_ip):
+                                self._options.hw_tests):
       mod_for_test = True
     else:
       mod_for_test = False
@@ -819,12 +819,19 @@ class TestStage(BuilderStage):
 class TestHWStage(BuilderStage):
   """Stage that performs testing on actual HW."""
   def _PerformStage(self):
-      commands.UpdateRemoteHW(self._build_root,
-                              self._build_config['board'],
-                              self._options.remote_ip)
-      commands.RemoteRunPyAuto(self._build_root,
-                              self._build_config['board'],
-                              self._options.remote_ip)
+    if self._options.remote_ip:
+      ip = self._options.remote_ip
+    elif self._build_config['remote_ip']:
+      ip = self._build_config['remote_ip']
+    else:
+      raise Exception('Please specify remote_ip.')
+
+    commands.UpdateRemoteHW(self._build_root,
+                            self._build_config['board'],
+                            ip)
+    commands.RemoteRunPyAuto(self._build_root,
+                             self._build_config['board'],
+                             ip)
 
 
 class RemoteTestStatusStage(BuilderStage):

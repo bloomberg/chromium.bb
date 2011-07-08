@@ -525,7 +525,6 @@ class TestHWStageTest(AbstractStageTest):
     mox.MoxTestBase.setUp(self)
     AbstractStageTest.setUp(self)
 
-
   def ConstructStage(self):
     return stages.TestHWStage(self.bot_id, self.options, self.build_config)
 
@@ -534,7 +533,7 @@ class TestHWStageTest(AbstractStageTest):
     when remoteip option is set."""
     self.bot_id = 'x86-generic-chrome-pre-flight-queue'
     self.build_config = config.config[self.bot_id].copy()
-    self.options.remote_ip = '1.1.1.1'
+    ip = self.options.remote_ip = '1.1.1.1'
 
     self.mox.StubOutWithMock(cros_lib, 'OldRunCommand')
     self.mox.StubOutWithMock(commands, 'UpdateRemoteHW')
@@ -543,10 +542,57 @@ class TestHWStageTest(AbstractStageTest):
     os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     commands.UpdateRemoteHW(self.build_root,
                             self.build_config['board'],
-                            self.options.remote_ip)
+                            ip)
     commands.RemoteRunPyAuto(self.build_root,
                             self.build_config['board'],
-                            self.options.remote_ip)
+                            ip)
+
+    self.mox.ReplayAll()
+    self.RunStage()
+    self.mox.VerifyAll()
+
+  def testHWTest2(self):
+    """Tests if remote tests commands are called
+    when remote_ip config is set."""
+    self.bot_id = 'x86-generic-chrome-pre-flight-queue'
+    self.build_config = config.config[self.bot_id].copy()
+    ip = self.build_config['remote_ip'] = '1.1.1.1'
+
+    self.mox.StubOutWithMock(cros_lib, 'OldRunCommand')
+    self.mox.StubOutWithMock(commands, 'UpdateRemoteHW')
+    self.mox.StubOutWithMock(commands, 'RemoteRunPyAuto')
+
+    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
+    commands.UpdateRemoteHW(self.build_root,
+                            self.build_config['board'],
+                            ip)
+    commands.RemoteRunPyAuto(self.build_root,
+                            self.build_config['board'],
+                            ip)
+
+    self.mox.ReplayAll()
+    self.RunStage()
+    self.mox.VerifyAll()
+
+  def testHWTest3(self):
+    """Tests if remote tests commands are called
+    when both remoteip option and remote_ip config are set."""
+    self.bot_id = 'x86-generic-chrome-pre-flight-queue'
+    self.build_config = config.config[self.bot_id].copy()
+    ip = self.options.remote_ip = '1.1.1.1'
+    self.build_config['remote_ip'] = '2.2.2.2'
+
+    self.mox.StubOutWithMock(cros_lib, 'OldRunCommand')
+    self.mox.StubOutWithMock(commands, 'UpdateRemoteHW')
+    self.mox.StubOutWithMock(commands, 'RemoteRunPyAuto')
+
+    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
+    commands.UpdateRemoteHW(self.build_root,
+                            self.build_config['board'],
+                            ip)
+    commands.RemoteRunPyAuto(self.build_root,
+                            self.build_config['board'],
+                            ip)
 
     self.mox.ReplayAll()
     self.RunStage()
@@ -730,7 +776,7 @@ class BuildTargetStageTest(AbstractStageTest):
     """Make sure our logic for build test arg can toggle to false."""
     self.build_config['vm_tests'] = False
     self.options.tests = True
-    self.options.remote_ip = '1.1.1.1'
+    self.options.hw_tests = True
     self.build_config['build_type'] = 'full'
     self.build_config['usepkg_chroot'] = True
     self.build_config['usepkg_setup_board'] = True

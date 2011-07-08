@@ -239,7 +239,7 @@ def RunBuildStages(bot_id, options, build_config):
 
     if options.tests:
       stages.TestStage(bot_id, options, build_config).Run()
-      if options.remote_ip:
+      if options.hw_tests:
         stages.TestHWStage(bot_id, options, build_config).Run()
 
     if options.remote_test_status:
@@ -502,6 +502,9 @@ def _CreateParser():
   group.add_option('--clobber', action='store_true', dest='clobber',
                     default=False,
                     help='Clears an old checkout before syncing')
+  group.add_option('--hwtests', action='store_true', dest='hw_tests',
+                    default=False,
+                    help='Run tests on remote machine')
   group.add_option('--noarchive', action='store_false', dest='archive',
                     default=True,
                     help="Don't run archive stage.")
@@ -521,7 +524,8 @@ def _CreateParser():
                     default=True,
                     help='Override values from buildconfig and never uprev.')
   group.add_option('--remoteip', dest='remote_ip', default=None,
-                   help='IP of the remote machine where tests are run.')
+                    help='IP of the remote Chromium OS machine used for '
+                         'testing.')
   group.add_option('--remoteteststatus', dest='remote_test_status',
                     default=None, help='List of remote jobs to check status')
   group.add_option('--resume', action='store_true',

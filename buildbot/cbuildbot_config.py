@@ -47,6 +47,8 @@ vm_tests -- Runs the smoke suite and au test harness in a qemu-based VM
             using KVM.
 quick_vm -- If vm_tests is true, run a minimal au test harness suite.
 
+remote_ip -- IP of the remote Chromium OS machine used for testing.
+
 fast -- Use parallel_emerge for faster (but slightly more risky) builds.
 usepkg_chroot -- Use binary packages for make_chroot. (emerge --usepkg)
 usepkg_setup_board -- Use binary packages for setup_board. (emerge --usepkg)
@@ -130,6 +132,9 @@ default = {
   'build_tests' : True,
   'vm_tests' : True,
   'quick_vm' : True,
+
+  'remote_ip' : None,
+
   'gs_path': GS_PATH_DEFAULT,
 
   'build_type': 'binary',
@@ -265,6 +270,8 @@ add_config('x86-generic-chrome-pre-flight-queue', [{
   'overlays': 'public',
   'push_overlays': 'public',
   'manifest_version': _MANIFEST_VERSIONS_URL,
+
+  'remote_ip' : None, # Placeholder for future IP
 }])
 
 add_config('arm-generic-chrome-pre-flight-queue', [arm, {
