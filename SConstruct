@@ -3209,8 +3209,7 @@ Default(None)
 
 # Apply optional supplement if present in the directory tree.
 if os.path.exists(pre_base_env.subst('$MAIN_DIR/supplement/supplement.scons')):
-  SConscript('supplement/supplement.scons',
-      exports=['environment_list', 'linux_env'])
+  SConscript('supplement/supplement.scons', exports=['environment_list'])
 
 # print sytem info (optionally)
 if VerboseConfigInfo(pre_base_env):
