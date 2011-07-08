@@ -59,6 +59,9 @@ class ConfirmInfoBarDelegate : public InfoBarDelegate {
   explicit ConfirmInfoBarDelegate(TabContents* contents);
   virtual ~ConfirmInfoBarDelegate();
 
+  virtual bool ShouldExpire(
+      const content::LoadCommittedDetails& details) const OVERRIDE;
+
  private:
   // InfoBarDelegate:
   virtual InfoBar* CreateInfoBar(TabContentsWrapper* owner) OVERRIDE;

@@ -187,7 +187,7 @@ DefaultBrowserInfoBarDelegate::~DefaultBrowserInfoBarDelegate() {
 
 bool DefaultBrowserInfoBarDelegate::ShouldExpire(
     const content::LoadCommittedDetails& details) const {
-  return details.is_user_initiated_main_frame_load() && should_expire_;
+  return details.is_navigation_to_different_page() && should_expire_;
 }
 
 gfx::Image* DefaultBrowserInfoBarDelegate::GetIcon() const {

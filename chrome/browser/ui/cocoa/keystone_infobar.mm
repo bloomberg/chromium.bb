@@ -84,7 +84,7 @@ KeystonePromotionInfoBarDelegate::~KeystonePromotionInfoBarDelegate() {
 
 bool KeystonePromotionInfoBarDelegate::ShouldExpire(
     const content::LoadCommittedDetails& details) const {
-  return details.is_user_initiated_main_frame_load() && can_expire_;
+  return details.is_navigation_to_different_page() && can_expire_;
 }
 
 gfx::Image* KeystonePromotionInfoBarDelegate::GetIcon() const {

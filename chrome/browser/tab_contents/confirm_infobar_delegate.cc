@@ -4,6 +4,7 @@
 
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 
+#include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -48,6 +49,13 @@ bool ConfirmInfoBarDelegate::EqualsDelegate(InfoBarDelegate* delegate) const {
       delegate->AsConfirmInfoBarDelegate();
   return confirm_delegate &&
       (confirm_delegate->GetMessageText() == GetMessageText());
+}
+
+bool ConfirmInfoBarDelegate::ShouldExpire(
+    const content::LoadCommittedDetails& details) const {
+  if (details.did_replace_entry)
+    return false;
+  return InfoBarDelegate::ShouldExpire(details);
 }
 
 ConfirmInfoBarDelegate* ConfirmInfoBarDelegate::AsConfirmInfoBarDelegate() {
