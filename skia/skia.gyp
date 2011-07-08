@@ -727,7 +727,12 @@
         [ 'OS != "mac"', {
           'sources/': [
             ['exclude', '_mac\\.(cc|cpp|mm?)$'],
-            ['exclude', '/mac/'] ],
+            ['exclude', '/mac/']
+          ],
+          'sources': [
+            '../third_party/skia/include/utils/SkMatrix44.h',
+            '../third_party/skia/src/utils/SkMatrix44.cpp',
+          ],
         }],
         [ 'toolkit_uses_gtk == 0', {
           'sources/': [ ['exclude', '_(linux|gtk)\\.(cc|cpp)$'] ],

@@ -339,21 +339,15 @@ void CompositorWin::Init() {
 
 void CompositorWin::UpdatePerspective(const ui::Transform& transform,
                                       const gfx::Size& view_size) {
-  // Apply transform from view.
-  const SkMatrix& sk_matrix(transform.matrix());
-  // Use -1 * kMTransY for y-translation as origin for views is upper left.
-  D3DXMATRIX transform_matrix(
-      // row 1
-      sk_matrix[SkMatrix::kMScaleX], sk_matrix[SkMatrix::kMSkewX], 0.0f,
-      sk_matrix[SkMatrix::kMPersp0],
-      // row 2
-      sk_matrix[SkMatrix::kMSkewY], sk_matrix[SkMatrix::kMScaleY], 0.0f,
-      sk_matrix[SkMatrix::kMPersp1],
-      // row 3
-      0.0f, 0.0f, 1.0f, sk_matrix[SkMatrix::kMPersp2],
-      // row 4.
-      sk_matrix[SkMatrix::kMTransX], -sk_matrix[SkMatrix::kMTransY], 0.0f,
-      1.0f);
+  float transform_data_buffer[16];
+  transform.matrix().asColMajorf(transform_data_buffer);
+  D3DXMATRIX transform_matrix(&transform_data_buffer[0]);
+  std::swap(transform_matrix._12, transform_matrix._21);
+  std::swap(transform_matrix._13, transform_matrix._31);
+  std::swap(transform_matrix._23, transform_matrix._32);
+
+  // Different coordinate system; flip the y.
+  transform_matrix._42 *= -1;
 
   // Scale so x and y are from 0-2.
   D3DXMATRIX scale_matrix;
@@ -380,6 +374,7 @@ void CompositorWin::UpdatePerspective(const ui::Transform& transform,
 
   D3DXMATRIX wvp = transform_matrix * scale_matrix * translate_matrix * view *
       projection_matrix;
+
   fx_->GetVariableByName("gWVP")->AsMatrix()->SetMatrix(wvp);
 }
 

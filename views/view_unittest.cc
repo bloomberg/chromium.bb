@@ -613,6 +613,18 @@ gfx::Point ConvertPointToView(View* view, const gfx::Point& p) {
   return tmp;
 }
 
+void RotateCounterclockwise(ui::Transform& transform) {
+  transform.matrix().set3x3(0, -1, 0,
+                            1,  0, 0,
+                            0,  0, 1);
+}
+
+void RotateClockwise(ui::Transform& transform) {
+  transform.matrix().set3x3( 0, 1, 0,
+                            -1, 0, 0,
+                             0, 0, 1);
+}
+
 }  // namespace
 
 TEST_F(ViewTest, HitTestMasks) {
@@ -1521,7 +1533,7 @@ TEST_F(ViewTest, TransformPaint) {
 
   // Rotate |v1| counter-clockwise.
   ui::Transform transform;
-  transform.SetRotate(-90.0f);
+  RotateCounterclockwise(transform);
   transform.SetTranslateY(500.0f);
   v1->SetTransform(transform);
 
@@ -1555,7 +1567,7 @@ TEST_F(ViewTest, TransformEvent) {
 
   // Rotate |v1| counter-clockwise.
   ui::Transform transform(v1->GetTransform());
-  transform.SetRotate(-90.0f);
+  RotateCounterclockwise(transform);
   transform.SetTranslateY(500.0f);
   v1->SetTransform(transform);
 
@@ -1577,7 +1589,7 @@ TEST_F(ViewTest, TransformEvent) {
 
   // Now rotate |v2| inside |v1| clockwise.
   transform = v2->GetTransform();
-  transform.SetRotate(90.0f);
+  RotateClockwise(transform);
   transform.SetTranslateX(100.0f);
   v2->SetTransform(transform);
 
@@ -1607,7 +1619,7 @@ TEST_F(ViewTest, TransformEvent) {
 
   // Rotate |v3| clockwise with respect to |v2|.
   transform = v1->GetTransform();
-  transform.SetRotate(90.0f);
+  RotateClockwise(transform);
   transform.SetTranslateX(30.0f);
   v3->SetTransform(transform);
 
@@ -1643,7 +1655,7 @@ TEST_F(ViewTest, TransformEvent) {
 
   // Rotate |v3| clockwise with respect to |v2|, and scale it along both axis.
   transform = v3->GetTransform();
-  transform.SetRotate(90.0f);
+  RotateClockwise(transform);
   transform.SetTranslateX(30.0f);
   // Rotation sets some scaling transformation. Using SetScale would overwrite
   // that and pollute the rotation. So combine the scaling with the existing
@@ -1696,7 +1708,7 @@ TEST_F(ViewTest, TransformVisibleBound) {
 
   // Rotate |child| counter-clockwise
   ui::Transform transform;
-  transform.SetRotate(-90.0f);
+  RotateCounterclockwise(transform);
   transform.SetTranslateY(50.0f);
   child->SetTransform(transform);
   EXPECT_EQ(gfx::Rect(40, 0, 10, 50), child->GetVisibleBounds());
@@ -1827,12 +1839,15 @@ TEST_F(ViewTest, ConvertPointToViewWithTransform) {
     transform.ConcatScale(100, 55);
     transform.ConcatTranslate(110, -110);
 
-    EXPECT_EQ(210, transform.matrix().getTranslateX());
-    EXPECT_EQ(-55, transform.matrix().getTranslateY());
-    EXPECT_EQ(100, transform.matrix().getScaleX());
-    EXPECT_EQ(55, transform.matrix().getScaleY());
-    EXPECT_EQ(0, transform.matrix().getSkewX());
-    EXPECT_EQ(0, transform.matrix().getSkewY());
+    // convert to a 3x3 matrix.
+    const SkMatrix& matrix = transform.matrix();
+
+    EXPECT_EQ(210, matrix.getTranslateX());
+    EXPECT_EQ(-55, matrix.getTranslateY());
+    EXPECT_EQ(100, matrix.getScaleX());
+    EXPECT_EQ(55, matrix.getScaleY());
+    EXPECT_EQ(0, matrix.getSkewX());
+    EXPECT_EQ(0, matrix.getSkewY());
   }
 
   {
@@ -1845,12 +1860,15 @@ TEST_F(ViewTest, ConvertPointToViewWithTransform) {
     transform.ConcatTransform(t2);
     transform.ConcatTransform(t3);
 
-    EXPECT_EQ(210, transform.matrix().getTranslateX());
-    EXPECT_EQ(-55, transform.matrix().getTranslateY());
-    EXPECT_EQ(100, transform.matrix().getScaleX());
-    EXPECT_EQ(55, transform.matrix().getScaleY());
-    EXPECT_EQ(0, transform.matrix().getSkewX());
-    EXPECT_EQ(0, transform.matrix().getSkewY());
+    // convert to a 3x3 matrix
+    const SkMatrix& matrix = transform.matrix();
+
+    EXPECT_EQ(210, matrix.getTranslateX());
+    EXPECT_EQ(-55, matrix.getTranslateY());
+    EXPECT_EQ(100, matrix.getScaleX());
+    EXPECT_EQ(55, matrix.getScaleY());
+    EXPECT_EQ(0, matrix.getSkewX());
+    EXPECT_EQ(0, matrix.getSkewY());
   }
 
   // Conversions from child->top and top->child.
@@ -1926,7 +1944,7 @@ TEST_F(ViewTest, ConvertRectWithTransform) {
 
   // Rotate |v2|
   ui::Transform t2;
-  t2.SetRotate(-90.0f);
+  RotateCounterclockwise(t2);
   t2.SetTranslateY(100.0f);
   v2->SetTransform(t2);
 
@@ -2571,13 +2589,13 @@ TEST_F(ViewLayerTest, ToggleVisibilityWithTransform) {
   transform.SetScale(2.0f, 2.0f);
   view->SetTransform(transform);
   widget()->SetContentsView(view);
-  EXPECT_EQ(2.0f, view->GetTransform().matrix()[0]);
+  EXPECT_EQ(2.0f, view->GetTransform().matrix().get(0, 0));
 
   view->SetVisible(false);
-  EXPECT_EQ(2.0f, view->GetTransform().matrix()[0]);
+  EXPECT_EQ(2.0f, view->GetTransform().matrix().get(0, 0));
 
   view->SetVisible(true);
-  EXPECT_EQ(2.0f, view->GetTransform().matrix()[0]);
+  EXPECT_EQ(2.0f, view->GetTransform().matrix().get(0, 0));
 }
 
 // Verifies a transform persists after removing/adding a view with a transform.

@@ -117,10 +117,14 @@
         'gfx/skia_util.h',
         'gfx/skia_utils_gtk.cc',
         'gfx/skia_utils_gtk.h',
-        'gfx/transform.h',
-        'gfx/transform.cc',
       ],
       'conditions': [
+        ['OS!="mac"', {
+          'sources': [
+            'gfx/transform.h',
+            'gfx/transform.cc',
+          ],
+        }],
         ['OS=="win"', {
           'sources': [
             'gfx/canvas_direct2d.cc',

@@ -13,6 +13,22 @@
 #include "ui/gfx/transform.h"
 #include "ui/gfx/rect.h"
 
+namespace {
+
+void SetMatrixElement(SkMatrix44& matrix, int index, SkMScalar value) {
+  int row = index / 4;
+  int col = index % 4;
+  matrix.set(row, col, value);
+}
+
+SkMScalar GetMatrixElement(const SkMatrix44& matrix, int index) {
+  int row = index / 4;
+  int col = index % 4;
+  return matrix.get(row, col);
+}
+
+} // anonymous namespace
+
 namespace ui {
 
 LayerAnimator::LayerAnimator(Layer* layer)
@@ -51,21 +67,15 @@ void LayerAnimator::AnimateToPoint(const gfx::Point& target) {
 void LayerAnimator::AnimateTransform(const Transform& transform) {
   StopAnimating(TRANSFORM);
   const Transform& layer_transform = layer_->transform();
-  bool all_equal = true;
-  // TODO: replace with == when we Transform supports ==.
-  for (int i = 0; i < 9; ++i) {
-    if (transform.matrix()[i] != layer_transform.matrix()[i]) {
-      all_equal = false;
-      break;
-    }
-  }
-  if (all_equal)
+  if (transform == layer_transform)
     return;  // Already there.
 
   Element& element = elements_[TRANSFORM];
-  for (int i = 0; i < 9; ++i) {
-    element.params.transform.start[i] = layer_transform.matrix()[i];
-    element.params.transform.target[i] = transform.matrix()[i];
+  for (int i = 0; i < 16; ++i) {
+    element.params.transform.start[i] =
+      GetMatrixElement(layer_transform.matrix(), i);
+    element.params.transform.target[i] =
+      GetMatrixElement(transform.matrix(), i);
   }
   element.animation = CreateAndStartAnimation();
 }
@@ -90,10 +100,11 @@ void LayerAnimator::AnimationProgressed(const ui::Animation* animation) {
 
     case TRANSFORM: {
       Transform transform;
-      for (int i = 0; i < 9; ++i) {
-        transform.matrix()[i] = e->second.animation->CurrentValueBetween(
-            e->second.params.transform.start[i],
-            e->second.params.transform.target[i]);
+      for (int i = 0; i < 16; ++i) {
+        SkMScalar value = e->second.animation->CurrentValueBetween(
+          e->second.params.transform.start[i],
+          e->second.params.transform.target[i]);
+        SetMatrixElement(transform.matrix(), i, value);
       }
       layer_->set_transform(transform);
       break;
@@ -121,8 +132,11 @@ void LayerAnimator::AnimationEnded(const ui::Animation* animation) {
 
     case TRANSFORM: {
       Transform transform;
-      for (int i = 0; i < 9; ++i)
-        transform.matrix()[i] = e->second.params.transform.target[i];
+      for (int i = 0; i < 16; ++i) {
+        SetMatrixElement(transform.matrix(),
+                         i,
+                         e->second.params.transform.target[i]);
+      }
       layer_->set_transform(transform);
       break;
     }

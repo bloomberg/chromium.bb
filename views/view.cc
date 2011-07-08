@@ -17,6 +17,7 @@
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/path.h"
+#include "ui/gfx/point3.h"
 #include "ui/gfx/transform.h"
 #include "views/background.h"
 #include "views/context_menu_controller.h"
@@ -1715,7 +1716,9 @@ bool View::ConvertPointForAncestor(const View* ancestor,
   ui::Transform trans;
   // TODO(sad): Have some way of caching the transformation results.
   bool result = GetTransformRelativeTo(ancestor, &trans);
-  trans.TransformPoint(point);
+  gfx::Point3f p(*point);
+  trans.TransformPoint(p);
+  *point = p.AsPoint();
   return result;
 }
 
@@ -1723,7 +1726,9 @@ bool View::ConvertPointFromAncestor(const View* ancestor,
                                     gfx::Point* point) const {
   ui::Transform trans;
   bool result = GetTransformRelativeTo(ancestor, &trans);
-  trans.TransformPointReverse(point);
+  gfx::Point3f p(*point);
+  trans.TransformPointReverse(p);
+  *point = p.AsPoint();
   return result;
 }
 

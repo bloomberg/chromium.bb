@@ -279,30 +279,7 @@ void TextureGL::DrawInternal(const ui::TextureProgramGL& program,
   t.ConcatScale(2.0f/window_size.width(), 2.0f/window_size.height());
 
   GLfloat m[16];
-  const SkMatrix& matrix = t.matrix();
-
-  // Convert 3x3 view transform matrix (row major) into 4x4 GL matrix (column
-  // major). Assume 2-D rotations/translations restricted to XY plane.
-
-  m[ 0] = matrix[0];
-  m[ 1] = matrix[3];
-  m[ 2] = 0;
-  m[ 3] = matrix[6];
-
-  m[ 4] = matrix[1];
-  m[ 5] = matrix[4];
-  m[ 6] = 0;
-  m[ 7] = matrix[7];
-
-  m[ 8] = 0;
-  m[ 9] = 0;
-  m[10] = 1;
-  m[11] = 0;
-
-  m[12] = matrix[2];
-  m[13] = matrix[5];
-  m[14] = 0;
-  m[15] = matrix[8];
+  t.matrix().asColMajorf(m);
 
   static const GLfloat vertices[] = { -1., -1., +0., +0., +1.,
                                       +1., -1., +0., +1., +1.,

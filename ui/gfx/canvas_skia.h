@@ -158,7 +158,9 @@ class CanvasSkia : public skia::PlatformCanvas,
                             int dest_x, int dest_y, int w, int h);
   virtual gfx::NativeDrawingContext BeginPlatformPaint();
   virtual void EndPlatformPaint();
+#if !defined(OS_MACOSX)
   virtual void Transform(const ui::Transform& transform);
+#endif
   virtual ui::TextureID GetTextureID();
   virtual CanvasSkia* AsCanvasSkia();
   virtual const CanvasSkia* AsCanvasSkia() const;

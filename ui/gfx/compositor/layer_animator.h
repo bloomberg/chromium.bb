@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "third_party/skia/include/core/SkScalar.h"
+#include "third_party/skia/include/utils/SkMatrix44.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/tween.h"
 #include "ui/gfx/point.h"
@@ -68,8 +69,8 @@ class LayerAnimator : public ui::AnimationDelegate {
   // Parameters used whe animating the transform.
   struct TransformParams {
     // TODO: make 4x4 whe Transform is updated.
-    SkScalar start[9];
-    SkScalar target[9];
+    SkMScalar start[16];
+    SkMScalar target[16];
   };
 
   union Params {

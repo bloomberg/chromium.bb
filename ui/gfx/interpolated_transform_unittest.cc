@@ -20,9 +20,13 @@ bool ApproximatelyEqual(float lhs, float rhs) {
 }
 
 bool ApproximatelyEqual(const ui::Transform& lhs, const ui::Transform& rhs) {
-  for (int i = 0; i < 9; ++i) {
-    if (!ApproximatelyEqual(lhs.matrix()[i], rhs.matrix()[i]))
-      return false;
+  for (int i = 0; i < 4; ++i) {
+    for (int j = 0; j < 4; ++j) {
+      if (!ApproximatelyEqual(lhs.matrix().get(i, j),
+                              rhs.matrix().get(i, j))) {
+        return false;
+      }
+    }
   }
   return true;
 }
@@ -87,10 +91,10 @@ TEST(InterpolatedTransformTest, InterpolatedRotationAboutPivot) {
   EXPECT_TRUE(ApproximatelyEqual(ui::Transform(), result));
   result = interpolated_xform.Interpolate(1.0f);
   gfx::Point expected_result = pivot;
-  EXPECT_TRUE(result.TransformPoint(&pivot));
+  result.TransformPoint(pivot);
   EXPECT_EQ(expected_result, pivot);
   expected_result = gfx::Point(0, 100);
-  EXPECT_TRUE(result.TransformPoint(&above_pivot));
+  result.TransformPoint(above_pivot);
   EXPECT_EQ(expected_result, above_pivot);
 }
 
@@ -104,9 +108,9 @@ TEST(InterpolatedTransformTest, InterpolatedScaleAboutPivot) {
   EXPECT_TRUE(ApproximatelyEqual(ui::Transform(), result));
   result = interpolated_xform.Interpolate(1.0f);
   gfx::Point expected_result = pivot;
-  EXPECT_TRUE(result.TransformPoint(&pivot));
+  result.TransformPoint(pivot);
   EXPECT_EQ(expected_result, pivot);
   expected_result = gfx::Point(100, 300);
-  EXPECT_TRUE(result.TransformPoint(&above_pivot));
+  result.TransformPoint(above_pivot);
   EXPECT_EQ(expected_result, above_pivot);
 }

@@ -331,9 +331,11 @@ void CanvasSkia::EndPlatformPaint() {
   skia::EndPlatformPaint(this);
 }
 
+#if !defined(OS_MACOSX)
 void CanvasSkia::Transform(const ui::Transform& transform) {
   concat(transform.matrix());
 }
+#endif
 
 CanvasSkia* CanvasSkia::AsCanvasSkia() {
   return this;

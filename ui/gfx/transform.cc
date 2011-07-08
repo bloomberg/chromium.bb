@@ -3,12 +3,32 @@
 // found in the LICENSE file.
 
 #include "ui/gfx/transform.h"
-
-#include <cmath>
-
-#include "ui/gfx/point.h"
+#include "ui/gfx/point3.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/skia_util.h"
+
+namespace {
+
+static int SymmetricRound(float x) {
+  return static_cast<int>(
+    x > 0
+      ? std::floor(x + 0.5f)
+      : std::ceil(x - 0.5f));
+}
+
+static const float EPSILON = 1e-6f;
+
+static bool ApproximatelyEqual(float a, float b) {
+  if (a == 0) {
+    return fabs(b) < EPSILON;
+  }
+  if (b == 0) {
+    return fabs(a) < EPSILON;
+  }
+  return fabs(a - b) / std::max(fabs(a), fabs(b)) < EPSILON;
+}
+
+} // namespace
 
 namespace ui {
 
@@ -18,97 +38,164 @@ Transform::Transform() {
 
 Transform::~Transform() {}
 
+bool Transform::operator==(const Transform& rhs) const {
+  for (int i = 0; i < 4; ++i) {
+    for (int j = 0; j < 4; ++j) {
+      if (!ApproximatelyEqual(matrix_.get(i,j), rhs.matrix_.get(i,j))) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+bool Transform::operator!=(const Transform& rhs) const {
+  return !(*this == rhs);
+}
+
 void Transform::SetRotate(float degree) {
-  matrix_.setRotate(SkFloatToScalar(degree));
+  matrix_.setRotateDegreesAbout(0, 0, 1, SkFloatToScalar(degree));
 }
 
 void Transform::SetScaleX(float x) {
-  matrix_.setScaleX(SkFloatToScalar(x));
+  matrix_.set(0, 0, SkFloatToScalar(x));
 }
 
 void Transform::SetScaleY(float y) {
-  matrix_.setScaleY(SkFloatToScalar(y));
+  matrix_.set(1, 1, SkFloatToScalar(y));
 }
 
 void Transform::SetScale(float x, float y) {
-  matrix_.setScale(SkFloatToScalar(x), SkFloatToScalar(y));
+  matrix_.setScale(
+    SkFloatToScalar(x),
+    SkFloatToScalar(y),
+    matrix_.get(2, 2));
 }
 
 void Transform::SetTranslateX(float x) {
-  matrix_.setTranslateX(SkFloatToScalar(x));
+  matrix_.set(0, 3, SkFloatToScalar(x));
 }
 
 void Transform::SetTranslateY(float y) {
-  matrix_.setTranslateY(SkFloatToScalar(y));
+  matrix_.set(1, 3, SkFloatToScalar(y));
 }
 
 void Transform::SetTranslate(float x, float y) {
-  matrix_.setTranslate(SkFloatToScalar(x), SkFloatToScalar(y));
+  matrix_.setTranslate(
+    SkFloatToScalar(x),
+    SkFloatToScalar(y),
+    matrix_.get(2, 3));
 }
 
 void Transform::ConcatRotate(float degree) {
-  matrix_.postRotate(SkFloatToScalar(degree));
+  SkMatrix44 rot;
+  rot.setRotateDegreesAbout(0, 0, 1, SkFloatToScalar(degree));
+  matrix_.postConcat(rot);
 }
 
 void Transform::ConcatScale(float x, float y) {
-  matrix_.postScale(SkFloatToScalar(x), SkFloatToScalar(y));
+  SkMatrix44 scale;
+  scale.setScale(SkFloatToScalar(x), SkFloatToScalar(y), 1);
+  matrix_.postConcat(scale);
 }
 
 void Transform::ConcatTranslate(float x, float y) {
-  matrix_.postTranslate(SkFloatToScalar(x), SkFloatToScalar(y));
+  SkMatrix44 translate;
+  translate.setTranslate(SkFloatToScalar(x), SkFloatToScalar(y), 0);
+  matrix_.postConcat(translate);
 }
 
-bool Transform::PreconcatTransform(const Transform& transform) {
-  return matrix_.setConcat(matrix_, transform.matrix_);
+void Transform::PreconcatTransform(const Transform& transform) {
+  if (!transform.matrix_.isIdentity()) {
+    matrix_.preConcat(transform.matrix_);
+  }
 }
 
-bool Transform::ConcatTransform(const Transform& transform) {
-  return matrix_.setConcat(transform.matrix_, matrix_);
+void Transform::ConcatTransform(const Transform& transform) {
+  if (!transform.matrix_.isIdentity()) {
+    matrix_.postConcat(transform.matrix_);
+  }
 }
 
 bool Transform::HasChange() const {
   return !matrix_.isIdentity();
 }
 
-bool Transform::TransformPoint(gfx::Point* point) const {
-  SkPoint skp;
-  matrix_.mapXY(SkIntToScalar(point->x()), SkIntToScalar(point->y()), &skp);
-  point->SetPoint(static_cast<int>(std::floor(skp.fX)),
-                  static_cast<int>(std::floor(skp.fY)));
-  return true;
+void Transform::TransformPoint(gfx::Point& point) const {
+  TransformPointInternal(matrix_, point);
 }
 
-bool Transform::TransformPointReverse(gfx::Point* point) const {
-  SkMatrix inverse;
+void Transform::TransformPoint(gfx::Point3f& point) const {
+  TransformPointInternal(matrix_, point);
+}
+
+bool Transform::TransformPointReverse(gfx::Point& point) const {
   // TODO(sad): Try to avoid trying to invert the matrix.
-  if (matrix_.invert(&inverse)) {
-    SkPoint skp;
-    inverse.mapXY(SkIntToScalar(point->x()), SkIntToScalar(point->y()), &skp);
-    point->SetPoint(static_cast<int>(std::floor(skp.fX)),
-                    static_cast<int>(std::floor(skp.fY)));
-    return true;
-  }
-  return false;
-}
-
-bool Transform::TransformRect(gfx::Rect* rect) const {
-  SkRect src = gfx::RectToSkRect(*rect);
-  if (!matrix_.mapRect(&src))
-    return false;
-  *rect = gfx::SkRectToRect(src);
-  return true;
-}
-
-bool Transform::TransformRectReverse(gfx::Rect* rect) const {
-  SkMatrix inverse;
+  SkMatrix44 inverse;
   if (!matrix_.invert(&inverse))
     return false;
 
-  SkRect src = gfx::RectToSkRect(*rect);
-  if (!inverse.mapRect(&src))
+  TransformPointInternal(inverse, point);
+  return true;
+}
+
+bool Transform::TransformPointReverse(gfx::Point3f& point) const {
+  // TODO(sad): Try to avoid trying to invert the matrix.
+  SkMatrix44 inverse;
+  if (!matrix_.invert(&inverse))
     return false;
+
+  TransformPointInternal(inverse, point);
+  return true;
+}
+
+void Transform::TransformRect(gfx::Rect* rect) const {
+  SkRect src = gfx::RectToSkRect(*rect);
+  const SkMatrix& matrix = matrix_;
+  matrix.mapRect(&src);
+  *rect = gfx::SkRectToRect(src);
+}
+
+bool Transform::TransformRectReverse(gfx::Rect* rect) const {
+  SkMatrix44 inverse;
+  if (!matrix_.invert(&inverse))
+    return false;
+  const SkMatrix& matrix = inverse;
+  SkRect src = gfx::RectToSkRect(*rect);
+  matrix.mapRect(&src);
   *rect = gfx::SkRectToRect(src);
   return true;
+}
+
+void Transform::TransformPointInternal(const SkMatrix44& xform,
+                                       gfx::Point3f& point) const {
+  SkScalar p[4] = {
+    SkFloatToScalar(point.x()),
+    SkFloatToScalar(point.y()),
+    SkFloatToScalar(point.z()),
+    1 };
+
+  xform.map(p);
+
+  if (p[3] != 1 && abs(p[3]) > 0) {
+    point.SetPoint(p[0] / p[3], p[1] / p[3], p[2]/ p[3]);
+  } else {
+    point.SetPoint(p[0], p[1], p[2]);
+  }
+}
+
+void Transform::TransformPointInternal(const SkMatrix44& xform,
+                                       gfx::Point& point) const {
+  SkScalar p[4] = {
+    SkIntToScalar(point.x()),
+    SkIntToScalar(point.y()),
+    0,
+    1 };
+
+  xform.map(p);
+
+  point.SetPoint(SymmetricRound(p[0]),
+                 SymmetricRound(p[1]));
 }
 
 }  // namespace ui

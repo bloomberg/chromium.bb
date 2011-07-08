@@ -214,8 +214,10 @@ class Canvas {
   // returned by BeginPlatformPaint().
   virtual void EndPlatformPaint() = 0;
 
+#if !defined(OS_MACOSX)
   // Apply transformation on the canvas.
   virtual void Transform(const ui::Transform& transform) = 0;
+#endif
 
   // Create a texture ID that can be used for accelerated drawing.
   virtual ui::TextureID GetTextureID() = 0;

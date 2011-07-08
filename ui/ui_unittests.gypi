@@ -47,7 +47,6 @@
         'gfx/image/image_unittest_util.h',
         'gfx/image/image_unittest_util.cc',
         'gfx/insets_unittest.cc',
-        'gfx/interpolated_transform_unittest.cc',
         'gfx/rect_unittest.cc',
         'gfx/run_all_unittests.cc',
         'gfx/skbitmap_operations_unittest.cc',
@@ -103,6 +102,12 @@
               '-loleacc.lib',
             ],
           },
+        }],
+        ['OS != "mac"', {
+          'sources': [
+            'gfx/transform_unittest.cc',
+            'gfx/interpolated_transform_unittest.cc',
+          ],
         }],
         ['toolkit_uses_gtk == 1', {
           'sources': [
