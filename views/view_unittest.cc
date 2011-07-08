@@ -1105,7 +1105,7 @@ class TestDialog : public DialogDelegate, public ButtonListener {
 
   virtual View* GetContentsView() OVERRIDE {
     if (!contents_) {
-      contents_ = new View();
+      contents_ = new View;
       button1_ = new NativeTextButton(this, L"Button1");
       button2_ = new NativeTextButton(this, L"Button2");
       checkbox_ = new NativeCheckbox(L"My checkbox");
@@ -2114,34 +2114,34 @@ TEST_F(ViewTest, ViewHierarchyChanged) {
 TEST_F(ViewTest, RemoveAllChildViews) {
   View root;
 
-  View* child1 = new View();
+  View* child1 = new View;
   root.AddChildView(child1);
 
   for (int i = 0; i < 2; ++i)
-    root.AddChildView(new View());
+    root.AddChildView(new View);
 
-  View* foo = new View();
+  View* foo = new View;
   child1->AddChildView(foo);
 
   // Add some nodes to |foo|.
   for (int i = 0; i < 3; ++i)
-    foo->AddChildView(new View());
+    foo->AddChildView(new View);
 
-  ASSERT_EQ(3, root.child_count());
-  ASSERT_EQ(1, child1->child_count());
-  ASSERT_EQ(3, foo->child_count());
+  EXPECT_EQ(3, root.child_count());
+  EXPECT_EQ(1, child1->child_count());
+  EXPECT_EQ(3, foo->child_count());
 
   // Now remove all child views from root.
   root.RemoveAllChildViews(true);
 
-  ASSERT_EQ(0, root.child_count());
-  ASSERT_FALSE(root.has_children());
+  EXPECT_EQ(0, root.child_count());
+  EXPECT_FALSE(root.has_children());
 }
 
 TEST_F(ViewTest, Contains) {
   View v1;
-  View* v2 = new View();
-  View* v3 = new View();
+  View* v2 = new View;
+  View* v3 = new View;
 
   v1.AddChildView(v2);
   v2->AddChildView(v3);
@@ -2172,32 +2172,32 @@ TEST_F(ViewTest, Contains) {
 TEST_F(ViewTest, GetIndexOf) {
   View root;
 
-  View* child1 = new View();
+  View* child1 = new View;
   root.AddChildView(child1);
 
-  View* child2 = new View();
+  View* child2 = new View;
   root.AddChildView(child2);
 
-  View* foo1 = new View();
+  View* foo1 = new View;
   child1->AddChildView(foo1);
 
-  ASSERT_EQ(-1, root.GetIndexOf(NULL));
-  ASSERT_EQ(-1, root.GetIndexOf(&root));
-  ASSERT_EQ(0, root.GetIndexOf(child1));
-  ASSERT_EQ(1, root.GetIndexOf(child2));
-  ASSERT_EQ(-1, root.GetIndexOf(foo1));
+  EXPECT_EQ(-1, root.GetIndexOf(NULL));
+  EXPECT_EQ(-1, root.GetIndexOf(&root));
+  EXPECT_EQ(0, root.GetIndexOf(child1));
+  EXPECT_EQ(1, root.GetIndexOf(child2));
+  EXPECT_EQ(-1, root.GetIndexOf(foo1));
 
-  ASSERT_EQ(-1, child1->GetIndexOf(NULL));
-  ASSERT_EQ(-1, child1->GetIndexOf(&root));
-  ASSERT_EQ(-1, child1->GetIndexOf(child1));
-  ASSERT_EQ(-1, child1->GetIndexOf(child2));
-  ASSERT_EQ(0, child1->GetIndexOf(foo1));
+  EXPECT_EQ(-1, child1->GetIndexOf(NULL));
+  EXPECT_EQ(-1, child1->GetIndexOf(&root));
+  EXPECT_EQ(-1, child1->GetIndexOf(child1));
+  EXPECT_EQ(-1, child1->GetIndexOf(child2));
+  EXPECT_EQ(0, child1->GetIndexOf(foo1));
 
-  ASSERT_EQ(-1, child2->GetIndexOf(NULL));
-  ASSERT_EQ(-1, child2->GetIndexOf(&root));
-  ASSERT_EQ(-1, child2->GetIndexOf(child2));
-  ASSERT_EQ(-1, child2->GetIndexOf(child1));
-  ASSERT_EQ(-1, child2->GetIndexOf(foo1));
+  EXPECT_EQ(-1, child2->GetIndexOf(NULL));
+  EXPECT_EQ(-1, child2->GetIndexOf(&root));
+  EXPECT_EQ(-1, child2->GetIndexOf(child2));
+  EXPECT_EQ(-1, child2->GetIndexOf(child1));
+  EXPECT_EQ(-1, child2->GetIndexOf(foo1));
 }
 
 // Verifies that the child views can be reordered correctly.
