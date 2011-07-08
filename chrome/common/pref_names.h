@@ -456,7 +456,6 @@ extern const char kCloudPrintRobotRefreshToken[];
 extern const char kCloudPrintRobotEmail[];
 
 extern const char kProxy[];
-extern const char kMaxConnectionsPerProxy[];
 
 extern const char kManagedDefaultCookiesSetting[];
 extern const char kManagedDefaultImagesSetting[];

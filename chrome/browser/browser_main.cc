@@ -277,9 +277,7 @@ MetricsService* BrowserMainParts::SetupMetricsAndFieldTrials(
   // to send metrics.
   field_trial_list_.reset(new base::FieldTrialList(metrics->GetClientId()));
 
-  SetupFieldTrials(metrics->recording_active(),
-                   local_state->IsManagedPreference(
-                       prefs::kMaxConnectionsPerProxy));
+  SetupFieldTrials(metrics->recording_active());
 
   // Initialize FieldTrialSynchronizer system. This is a singleton and is used
   // for posting tasks via NewRunnableMethod. Its deleted when it goes out of
@@ -635,8 +633,7 @@ MetricsService* BrowserMainParts::InitializeMetrics(
   return metrics;
 }
 
-void BrowserMainParts::SetupFieldTrials(bool metrics_recording_enabled,
-                                        bool proxy_policy_is_set) {
+void BrowserMainParts::SetupFieldTrials(bool metrics_recording_enabled) {
   if (metrics_recording_enabled)
     chrome_browser_net_websocket_experiment::WebSocketExperimentRunner::Start();
 
@@ -644,10 +641,7 @@ void BrowserMainParts::SetupFieldTrials(bool metrics_recording_enabled,
   // ProxyConnectionsFieldTrial().
   ConnectionFieldTrial();
   SocketTimeoutFieldTrial();
-  // If a policy is defining the number of active connections this field test
-  // shoud not be performed.
-  if (!proxy_policy_is_set)
-    ProxyConnectionsFieldTrial();
+  ProxyConnectionsFieldTrial();
   prerender::ConfigurePrefetchAndPrerender(parsed_command_line());
   SpdyFieldTrial();
   ConnectBackupJobsFieldTrial();

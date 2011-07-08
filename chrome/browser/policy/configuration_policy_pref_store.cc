@@ -274,8 +274,6 @@ const ConfigurationPolicyPrefKeeper::PolicyToPreferenceMapEntry
     prefs::kEditBookmarksEnabled },
   { Value::TYPE_BOOLEAN, kPolicyAllowFileSelectionDialogs,
     prefs::kAllowFileSelectionDialogs },
-  { Value::TYPE_INTEGER, kPolicyMaxConnectionsPerProxy,
-    prefs::kMaxConnectionsPerProxy },
 
 #if defined(OS_CHROMEOS)
   { Value::TYPE_BOOLEAN, kPolicyChromeOsLockOnIdleSuspend,
@@ -1067,8 +1065,6 @@ ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList() {
       key::kAllowFileSelectionDialogs },
     { kPolicyDiskCacheDir, Value::TYPE_STRING,
       key::kDiskCacheDir },
-    { kPolicyMaxConnectionsPerProxy, Value::TYPE_INTEGER,
-      key::kMaxConnectionsPerProxy },
 
 #if defined(OS_CHROMEOS)
     { kPolicyChromeOsLockOnIdleSuspend, Value::TYPE_BOOLEAN,

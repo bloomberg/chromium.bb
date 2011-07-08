@@ -94,7 +94,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 92
+#   For your editing convenience: highest ID currently used: 91
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -1592,22 +1592,6 @@
       'id': 91,
       'caption': '''Release channel''',
       'desc': '''Specifies the release channel that this device should be locked to. This policy is a work in progress; currently, the user can still change the release channel even if it's specified by the policy.'''
-    },
-    {
-      'name': 'MaxConnectionsPerProxy',
-      'type': 'int',
-      'supported_on': ['chrome_os:1.0-','chrome.*:14-'],
-      'features': {'dynamic_refresh': 0},
-      'example_value': 32,
-      'id': 92,
-      'caption': '''Maximal number of concurrent connections to the proxy server''',
-      'desc': '''Specifies the maximal number of simultanious connections to the proxy server.
-
-      Some proxy servers can not handle high number of concurrent connections per client and this can be solved by setting this policy to a lower value.
-
-      The value of this policy should be lower than 100 and higher than 6 and the default value is 32.
-
-      Some web apps are known to consume many connections with hanging GETs, so lowering below 32 may lead to browser networking hangs if too many such web apps are open. Lower below the default at your own risk.''',
     },
 
   ],

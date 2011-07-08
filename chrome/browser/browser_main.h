@@ -147,8 +147,7 @@ class BrowserMainParts {
       const PrefService* local_state);
 
   // Add an invocation of your field trial init function to this method.
-  void SetupFieldTrials(bool metrics_recording_enabled,
-                        bool proxy_policy_is_set);
+  void SetupFieldTrials(bool metrics_recording_enabled);
 
   // Members initialized on construction ---------------------------------------
 
