@@ -163,6 +163,10 @@ TEST_F(PPAPITest,PaintAggregator) {
   RunTestViaHTTP("PaintAggregator");
 }
 
+#if defined(OS_MACOSX)
+// crbug.com/88754
+#define Scrollbar FAILS_Scrollbar
+#endif
 TEST_F(PPAPITest, Scrollbar) {
   RunTest("Scrollbar");
 }

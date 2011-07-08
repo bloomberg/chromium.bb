@@ -17,7 +17,11 @@ TestCaseFactory* TestCaseFactory::head_ = NULL;
 // Returns a new heap-allocated test case for the given test, or NULL on
 // failure.
 TestingInstance::TestingInstance(PP_Instance instance)
+#if (defined __native_client__)
     : pp::Instance(instance),
+#else
+    : pp::InstancePrivate(instance),
+#endif
       current_case_(NULL),
       executed_tests_(false),
       nacl_mode_(false) {
@@ -36,8 +40,9 @@ bool TestingInstance::Init(uint32_t argc,
     if (std::strcmp(argn[i], "mode") == 0) {
       if (std::strcmp(argv[i], "nacl") == 0)
         nacl_mode_ = true;
-      break;
     }
+    else if (std::strcmp(argn[i], "protocol") == 0)
+      protocol_ = argv[i];
   }
   // Create the proper test case from the argument.
   for (uint32_t i = 0; i < argc; i++) {
@@ -57,12 +62,14 @@ bool TestingInstance::Init(uint32_t argc,
   return true;
 }
 
+#if !(defined __native_client__)
 pp::Var TestingInstance::GetInstanceObject() {
   if (current_case_)
     return current_case_->GetTestObject();
 
-  return pp::Var(this, NULL);
+  return pp::VarPrivate();
 }
+#endif
 
 void TestingInstance::HandleMessage(const pp::Var& message_data) {
   current_case_->HandleMessage(message_data);
@@ -109,10 +116,7 @@ void TestingInstance::ExecuteTests(int32_t unused) {
   SetCookie("STARTUP_COOKIE", "STARTED");
 
   // Clear the console.
-  // This does: window.document.getElementById("console").innerHTML = "";
-  pp::Var window = GetWindowObject();
-  window.GetProperty("document").
-      Call("getElementById", "console").SetProperty("innerHTML", "");
+  PostMessage(pp::Var("TESTING_MESSAGE:ClearConsole"));
 
   if (!errors_.empty()) {
     // Catch initialization errors and output the current error string to
@@ -131,8 +135,7 @@ void TestingInstance::ExecuteTests(int32_t unused) {
 
   // Declare we're done by setting a cookie to either "PASS" or the errors.
   SetCookie("COMPLETION_COOKIE", errors_.empty() ? "PASS" : errors_);
-
-  window.Call("DidExecuteTests");
+  PostMessage(pp::Var("TESTING_MESSAGE:DidExecuteTests"));
 }
 
 TestCase* TestingInstance::CaseForTestName(const char* name) {
@@ -168,6 +171,7 @@ void TestingInstance::LogAvailableTests() {
   }
   html.append("</dl>");
   html.append("<button onclick='RunAll()'>Run All Tests</button>");
+
   LogHTML(html);
 }
 
@@ -180,19 +184,18 @@ void TestingInstance::LogError(const std::string& text) {
 }
 
 void TestingInstance::LogHTML(const std::string& html) {
-  // This does: window.document.getElementById("console").innerHTML += html
-  pp::Var console = GetWindowObject().GetProperty("document").
-      Call("getElementById", "console");
-  pp::Var inner_html = console.GetProperty("innerHTML");
-  console.SetProperty("innerHTML", inner_html.AsString() + html);
+  std::string message("TESTING_MESSAGE:LogHTML:");
+  message.append(html);
+  PostMessage(pp::Var(message));
 }
 
 void TestingInstance::SetCookie(const std::string& name,
                                 const std::string& value) {
-  // window.document.cookie = "<name>=<value>; path=/"
-  std::string cookie_string = name + "=" + value + "; path=/";
-  pp::Var document = GetWindowObject().GetProperty("document");
-  document.SetProperty("cookie", cookie_string);
+  std::string message("TESTING_MESSAGE:SetCookie:");
+  message.append(name);
+  message.append("=");
+  message.append(value);
+  PostMessage(pp::Var(message));
 }
 
 class Module : public pp::Module {
