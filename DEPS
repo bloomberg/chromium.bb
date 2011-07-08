@@ -1,7 +1,7 @@
 vars = {
   # These two should be updated to the same revision whenever possible.
-  "arm_toolchain_version": "5940",
-  "x86_toolchain_version": "5940",
+  "arm_toolchain_version": "5958",
+  "x86_toolchain_version": "5958",
   # Keep them seperate from the rest of the list.
   "chrome_rev": "91508",
   "chromium_trunk": "http://src.chromium.org/svn/trunk",
@@ -107,4 +107,3 @@ hooks = [
                "--arm-version", Var("arm_toolchain_version")],
   },
 ]
-
