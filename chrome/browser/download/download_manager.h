@@ -325,10 +325,8 @@ class DownloadManager
                                 const FilePath& chosen_file);
 
   // Download cancel helper function.
-  // |request_handle| is passed by value because it is ultimately passed to
-  // other threads, and this way we don't have to worry about object lifetimes.
   void DownloadCancelledInternal(int download_id,
-                                 DownloadRequestHandle request_handle);
+                                 const DownloadRequestHandle& request_handle);
 
   // All data has been downloaded.
   // |hash| is sha256 hash for the downloaded file. It is empty when the hash

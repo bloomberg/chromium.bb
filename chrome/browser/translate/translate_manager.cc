@@ -300,6 +300,9 @@ void TranslateManager::Observe(NotificationType type,
       // only once.
       TabContentsWrapper* wrapper =
           TabContentsWrapper::GetCurrentWrapperForContents(tab);
+      if (!wrapper || !wrapper->translate_tab_helper())
+        return;
+
       LanguageState& language_state =
           wrapper->translate_tab_helper()->language_state();
       if (language_state.page_translatable() &&
@@ -486,6 +489,9 @@ void TranslateManager::InitiateTranslation(TabContents* tab,
 
   TabContentsWrapper* wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(tab);
+  if (!wrapper || !wrapper->translate_tab_helper())
+    return;
+
   TranslateTabHelper* helper = wrapper->translate_tab_helper();
   std::string auto_translate_to = helper->language_state().AutoTranslateTo();
   if (!auto_translate_to.empty()) {
@@ -606,6 +612,8 @@ void TranslateManager::DoTranslatePage(TabContents* tab,
 
   TabContentsWrapper* wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(tab);
+  if (!wrapper || !wrapper->translate_tab_helper())
+    return;
 
   wrapper->translate_tab_helper()->language_state().set_translation_pending(
       true);
@@ -617,8 +625,7 @@ void TranslateManager::DoTranslatePage(TabContents* tab,
   // but we don't have that yet.  So before start translation, we clear the
   // current form and re-parse it in AutofillManager first to get the new
   // labels.
-  if (wrapper)
-    wrapper->autofill_manager()->Reset();
+  wrapper->autofill_manager()->Reset();
 }
 
 void TranslateManager::PageTranslated(TabContents* tab,
@@ -740,6 +747,8 @@ void TranslateManager::ShowInfoBar(TabContents* tab,
   infobar->UpdateBackgroundAnimation(old_infobar);
   TabContentsWrapper* wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(tab);
+  if (!wrapper)
+    return;
   if (old_infobar) {
     // There already is a translate infobar, simply replace it.
     wrapper->ReplaceInfoBar(old_infobar, infobar);
@@ -760,6 +769,9 @@ TranslateInfoBarDelegate* TranslateManager::GetTranslateInfoBarDelegate(
     TabContents* tab) {
   TabContentsWrapper* wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(tab);
+  if (!wrapper)
+    return NULL;
+
   for (size_t i = 0; i < wrapper->infobar_count(); ++i) {
     TranslateInfoBarDelegate* delegate =
         wrapper->GetInfoBarDelegateAt(i)->AsTranslateInfoBarDelegate();

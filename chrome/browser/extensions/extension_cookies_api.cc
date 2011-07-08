@@ -503,7 +503,8 @@ bool GetAllCookieStoresFunction::RunImpl() {
         extension_cookies_helpers::CreateCookieStoreValue(
             original_profile, original_tab_ids.release()));
   }
-  if (incognito_tab_ids.get() && incognito_tab_ids->GetSize() > 0) {
+  if (incognito_tab_ids.get() && incognito_tab_ids->GetSize() > 0 &&
+      incognito_profile) {
     cookie_store_list->Append(
         extension_cookies_helpers::CreateCookieStoreValue(
             incognito_profile, incognito_tab_ids.release()));

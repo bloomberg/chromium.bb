@@ -841,7 +841,7 @@ void DownloadManager::DownloadCancelled(int32 download_id) {
 }
 
 void DownloadManager::DownloadCancelledInternal(
-    int download_id, DownloadRequestHandle request_handle) {
+    int download_id, const DownloadRequestHandle& request_handle) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   request_handle.CancelRequest();
 

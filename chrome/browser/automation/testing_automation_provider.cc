@@ -4117,6 +4117,7 @@ void TestingAutomationProvider::GetExtensionsInfo(
   ExtensionService* service = profile()->GetExtensionService();
   if (!service) {
     reply.SendError("No extensions service.");
+    return;
   }
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
   ListValue* extensions_values = new ListValue;

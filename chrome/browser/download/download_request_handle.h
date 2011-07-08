@@ -38,11 +38,11 @@ class DownloadRequestHandle {
   DownloadManager* GetDownloadManager() const;
 
   // Pause or resume the matching URL request.
-  void PauseRequest();
-  void ResumeRequest();
+  void PauseRequest() const;
+  void ResumeRequest() const;
 
   // Cancel the request
-  void CancelRequest();
+  void CancelRequest() const;
 
   std::string DebugString() const;
 

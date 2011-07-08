@@ -51,7 +51,7 @@ DownloadRequestHandle::DownloadRequestHandle(ResourceDispatcherHost* rdh,
   DCHECK(rdh);
 }
 
-TabContents* DownloadRequestHandle::GetTabContents() const{
+TabContents* DownloadRequestHandle::GetTabContents() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return tab_util::GetTabContentsByID(child_id_, render_view_id_);
 }
@@ -68,7 +68,7 @@ DownloadManager* DownloadRequestHandle::GetDownloadManager() const {
   return profile->GetDownloadManager();
 }
 
-void DownloadRequestHandle::PauseRequest() {
+void DownloadRequestHandle::PauseRequest() const {
   // The post is safe because ResourceDispatcherHost is guaranteed
   // to outlive the IO thread.
   if (rdh_) {
@@ -79,7 +79,7 @@ void DownloadRequestHandle::PauseRequest() {
   }
 }
 
-void DownloadRequestHandle::ResumeRequest() {
+void DownloadRequestHandle::ResumeRequest() const {
   // The post is safe because ResourceDispatcherHost is guaranteed
   // to outlive the IO thread.
   if (rdh_) {
@@ -90,7 +90,7 @@ void DownloadRequestHandle::ResumeRequest() {
   }
 }
 
-void DownloadRequestHandle::CancelRequest() {
+void DownloadRequestHandle::CancelRequest() const {
   // The post is safe because ResourceDispatcherHost is guaranteed
   // to outlive the IO thread.
   if (rdh_) {
