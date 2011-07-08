@@ -14,7 +14,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/ui/webui/options/options_managed_banner_handler.h"
+#include "chrome/browser/policy/browser_policy_connector.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -68,8 +68,8 @@ void AccountsOptionsHandler::GetLocalizedValues(
       UserManager::Get()->IsLoggedInAsGuest() ?
       ASCIIToUTF16("true") : ASCIIToUTF16("false"));
   localized_strings->SetString("whitelist_is_managed",
-      g_browser_process->local_state()->IsManagedPreference(
-          kAccountsPrefUsers) ?  ASCIIToUTF16("true") : ASCIIToUTF16("false"));
+      g_browser_process->browser_policy_connector()->IsEnterpriseManaged() ?
+          ASCIIToUTF16("true") : ASCIIToUTF16("false"));
 }
 
 UserCrosSettingsProvider* AccountsOptionsHandler::users_settings() const {
@@ -113,14 +113,6 @@ void AccountsOptionsHandler::WhitelistExistingUsers(const ListValue* args) {
   }
 
   web_ui_->CallJavascriptFunction("AccountsOptions.addUsers", whitelist_users);
-}
-
-void AccountsOptionsHandler::Initialize() {
-  DCHECK(web_ui_);
-  banner_handler_.reset(
-      OptionsManagedBannerHandler::Create(web_ui_,
-                                      ASCIIToUTF16("AccountsOptions"),
-                                      OPTIONS_PAGE_ACCOUNTS));
 }
 
 }  // namespace chromeos

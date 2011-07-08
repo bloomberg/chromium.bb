@@ -8,8 +8,6 @@
 
 #include "chrome/browser/ui/webui/options/chromeos/cros_options_page_ui_handler.h"
 
-class OptionsManagedBannerHandler;
-
 namespace chromeos {
 
 class UserCrosSettingsProvider;
@@ -25,7 +23,6 @@ class AccountsOptionsHandler : public CrosOptionsPageUIHandler {
 
   // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
-  virtual void Initialize();
 
  private:
   UserCrosSettingsProvider* users_settings() const;
@@ -36,8 +33,6 @@ class AccountsOptionsHandler : public CrosOptionsPageUIHandler {
 
   // Javascript callback to auto add existing users to white list.
   void WhitelistExistingUsers(const ListValue* args);
-
-  scoped_ptr<OptionsManagedBannerHandler> banner_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(AccountsOptionsHandler);
 };

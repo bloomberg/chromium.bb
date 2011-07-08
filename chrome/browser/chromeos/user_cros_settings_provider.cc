@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/cros_settings_names.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "content/browser/browser_thread.h"
@@ -565,7 +566,7 @@ bool UserCrosSettingsProvider::Get(const std::string& path,
     PrefService* prefs = g_browser_process->local_state();
     *out_value = CreateSettingsBooleanValue(
         prefs->GetBoolean(path.c_str()),
-        prefs->IsManagedPreference(path.c_str()),
+        g_browser_process->browser_policy_connector()->IsEnterpriseManaged(),
         !UserManager::Get()->current_user_is_owner());
     return true;
   } else if (path == kAccountsPrefUsers) {
