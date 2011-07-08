@@ -98,11 +98,12 @@ void PppInstanceRpcServer::PPP_Instance_DidCreate(
   if (argv_copy.get() == NULL) {
     return;
   }
-  bool initialize_result = instance_interface->DidCreate(instance,
-                                                         argc,
-                                                         argn_copy.get(),
-                                                         argv_copy.get());
-  *success = initialize_result ? kMethodSuccess : kMethodFailure;
+  bool created = instance_interface->DidCreate(instance,
+                                               argc,
+                                               argn_copy.get(),
+                                               argv_copy.get());
+  DebugPrintf("PPP_Instance::DidCreate: created=%d\n", created);
+  *success = created ? kMethodSuccess : kMethodFailure;
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -121,6 +122,7 @@ void PppInstanceRpcServer::PPP_Instance_DidDestroy(
     return;
   }
   instance_interface->DidDestroy(instance);
+  DebugPrintf("PPP_Instance::DidDestroy\n");
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -151,6 +153,7 @@ void PppInstanceRpcServer::PPP_Instance_DidChangeView(
   }
 
   instance_interface->DidChangeView(instance_id, &position_rect, &clip_rect);
+  DebugPrintf("PPP_Instance::DidChangeView\n");
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -170,6 +173,7 @@ void PppInstanceRpcServer::PPP_Instance_DidChangeFocus(
     instance_interface->DidChangeFocus(instance,
         static_cast<PP_Bool>(has_focus));
   }
+  DebugPrintf("PPP_Instance::DidChangeFocus\n");
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -192,8 +196,9 @@ void PppInstanceRpcServer::PPP_Instance_HandleInputEvent(
   }
   const PP_InputEvent* event =
       reinterpret_cast<const PP_InputEvent*>(event_data);
-  bool event_result = instance_interface->HandleInputEvent(instance, event);
-  *success = event_result ? kMethodSuccess : kMethodFailure;
+  bool handled = instance_interface->HandleInputEvent(instance, event);
+  DebugPrintf("PPP_Instance::HandleInputEvent: handled=%d\n", handled);
+  *success = handled ? kMethodSuccess : kMethodFailure;
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -213,9 +218,9 @@ void PppInstanceRpcServer::PPP_Instance_HandleDocumentLoad(
       instance_interface->HandleDocumentLoad == NULL) {
     return;
   }
-  bool handle_result = instance_interface->HandleDocumentLoad(instance,
-                                                              url_loader);
-  *success = handle_result ? kMethodSuccess : kMethodFailure;
+  bool handled = instance_interface->HandleDocumentLoad(instance, url_loader);
+  DebugPrintf("PPP_Instance::HandleDocumentLoad: handled=%d\n", handled);
+  *success = handled ? kMethodSuccess : kMethodFailure;
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -238,6 +243,7 @@ void PppInstanceRpcServer::PPP_Instance_GetInstanceObject(
     return;
   }
   PP_Var instance_var = instance_interface->GetInstanceObject(instance);
+  DebugPrintf("PPP_Instance::GetInstanceObject: type=%d\n", instance_var.type);
   if (instance_var.type != PP_VARTYPE_OBJECT) {
     return;
   }
