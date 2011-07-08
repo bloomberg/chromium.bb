@@ -264,12 +264,11 @@ cr.define('ntp4', function() {
 
   /**
    * Creates a new MostVisitedPage object.
-   * @param {string} name The display name for the page.
    * @constructor
    * @extends {TilePage}
    */
-  function MostVisitedPage(name) {
-    var el = new TilePage(name, mostVisitedPageGridValues);
+  function MostVisitedPage() {
+    var el = new TilePage(mostVisitedPageGridValues);
     el.__proto__ = MostVisitedPage.prototype;
     el.initialize();
 

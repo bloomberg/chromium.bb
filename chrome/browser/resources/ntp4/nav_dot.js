@@ -14,14 +14,15 @@ cr.define('ntp4', function() {
   /**
    * Creates a new navigation dot.
    * @param {TilePage} page The associated TilePage.
+   * @param {string} title The title of the navigation dot.
    * @param {bool} animate If true, animates into existence.
    * @constructor
    * @extends {HTMLLIElement}
    */
-  function NavDot(page, animate) {
+  function NavDot(page, title, animate) {
     var dot = cr.doc.createElement('li');
     dot.__proto__ = NavDot.prototype;
-    dot.initialize(page, animate);
+    dot.initialize(page, title, animate);
 
     return dot;
   }
@@ -29,17 +30,18 @@ cr.define('ntp4', function() {
   NavDot.prototype = {
     __proto__: HTMLLIElement.prototype,
 
-    initialize: function(page, animate) {
+    initialize: function(page, title, animate) {
       this.className = 'dot';
       this.setAttribute('tabindex', 0);
       this.setAttribute('role', 'button');
 
       this.page_ = page;
+      this.title_ = title;
 
       // TODO(estade): should there be some limit to the number of characters?
       this.input_ = this.ownerDocument.createElement('input');
       this.input_.setAttribute('spellcheck', false);
-      this.input_.value = page.pageName;
+      this.input_.value = title;
       this.appendChild(this.input_);
 
       this.addEventListener('click', this.onClick_);
@@ -118,7 +120,7 @@ cr.define('ntp4', function() {
     onInputKeyDown_: function(e) {
       switch (e.keyIdentifier) {
         case 'U+001B':  // Escape cancels edits.
-          this.input_.value = this.page_.pageName;
+          this.input_.value = this.title_;
         case 'Enter':  // Fall through.
           this.input_.blur();
           break;
@@ -132,7 +134,8 @@ cr.define('ntp4', function() {
      */
     onInputBlur_: function(e) {
       window.getSelection().removeAllRanges();
-      // TODO(estade): persist changes to textContent.
+      this.title_ = this.input_.value;
+      ntp4.saveAppPageName(this.page_, this.title_);
     },
 
     /**

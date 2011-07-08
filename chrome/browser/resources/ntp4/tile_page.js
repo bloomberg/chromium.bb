@@ -302,15 +302,13 @@ cr.define('ntp4', function() {
   /**
    * Creates a new TilePage object. This object contains tiles and controls
    * their layout.
-   * @param {string} name The display name for the page.
    * @param {Object} gridValues Pixel values that define the size and layout
    *     of the tile grid.
    * @constructor
    * @extends {HTMLDivElement}
    */
-  function TilePage(name, gridValues) {
+  function TilePage(gridValues) {
     var el = cr.doc.createElement('div');
-    el.pageName = name;
     el.gridValues_ = gridValues;
     el.__proto__ = TilePage.prototype;
     el.initialize();
@@ -363,11 +361,6 @@ cr.define('ntp4', function() {
       this.content_ = this.ownerDocument.createElement('div');
       this.content_.className = 'tile-page-content';
       this.appendChild(this.content_);
-
-      var title = this.ownerDocument.createElement('span');
-      title.textContent = this.pageName;
-      title.className = 'tile-page-title';
-      this.content_.appendChild(title);
 
       // Div that sets the vertical position of the tile grid.
       this.topMargin_ = this.ownerDocument.createElement('div');

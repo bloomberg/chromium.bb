@@ -1166,6 +1166,9 @@ const char kNTPWebStorePromoExpire[] = "ntp.webstorepromo.expire";
 // Specifies what users should maximize the NTP web store promo.
 const char kNTPWebStorePromoUserGroup[] = "ntp.webstorepromo.usergroup";
 
+// Customized app page names that appear on the New Tab Page.
+const char kNTPAppPageNames[] = "ntp.app_page_names";
+
 // The most up-to-date GPU blacklist downloaded from the web, which replaces
 // the one that's installed with chrome.
 const char kGpuBlacklist[] = "gpu_blacklist";
