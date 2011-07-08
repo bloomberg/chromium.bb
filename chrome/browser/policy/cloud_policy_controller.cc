@@ -10,12 +10,14 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/rand_util.h"
 #include "base/string_util.h"
 #include "chrome/browser/policy/cloud_policy_cache_base.h"
 #include "chrome/browser/policy/cloud_policy_subsystem.h"
 #include "chrome/browser/policy/device_management_backend.h"
 #include "chrome/browser/policy/device_management_service.h"
+#include "chrome/browser/policy/enterprise_metrics.h"
 #include "chrome/browser/policy/proto/device_management_constants.h"
 
 // Domain names that are known not to be managed.
@@ -112,8 +114,13 @@ void CloudPolicyController::HandlePolicyResponse(
       cache_->SetPolicy(response.response(0));
       SetState(STATE_POLICY_VALID);
     } else {
+      UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyFetchBadResponse,
+                                kMetricPolicySize);
       SetState(STATE_POLICY_UNAVAILABLE);
     }
+  } else {
+    UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyFetchBadResponse,
+                              kMetricPolicySize);
   }
 }
 

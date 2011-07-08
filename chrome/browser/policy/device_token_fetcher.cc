@@ -9,8 +9,10 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "chrome/browser/policy/cloud_policy_cache_base.h"
 #include "chrome/browser/policy/device_management_service.h"
+#include "chrome/browser/policy/enterprise_metrics.h"
 #include "chrome/browser/policy/proto/device_management_constants.h"
 #include "chrome/browser/policy/proto/device_management_local.pb.h"
 
@@ -119,10 +121,14 @@ void DeviceTokenFetcher::RemoveObserver(
 void DeviceTokenFetcher::HandleRegisterResponse(
     const em::DeviceRegisterResponse& response) {
   if (response.has_device_management_token()) {
+    UMA_HISTOGRAM_ENUMERATION(kMetricToken, kMetricTokenFetchOK,
+                              kMetricTokenSize);
     device_token_ = response.device_management_token();
     SetState(STATE_TOKEN_AVAILABLE);
   } else {
     NOTREACHED();
+    UMA_HISTOGRAM_ENUMERATION(kMetricToken, kMetricTokenFetchBadResponse,
+                              kMetricTokenSize);
     SetState(STATE_ERROR);
   }
 }

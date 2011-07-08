@@ -1621,6 +1621,8 @@
         'browser/policy/dummy_configuration_policy_provider.h',
         'browser/policy/enterprise_install_attributes.cc',
         'browser/policy/enterprise_install_attributes.h',
+        'browser/policy/enterprise_metrics.cc',
+        'browser/policy/enterprise_metrics.h',
         'browser/policy/file_based_policy_loader.cc',
         'browser/policy/file_based_policy_loader.h',
         'browser/policy/file_based_policy_provider.cc',

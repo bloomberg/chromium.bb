@@ -11,9 +11,11 @@
 #include <sys/utsname.h>
 #endif
 
+#include "base/metrics/histogram.h"
 #include "base/stringprintf.h"
 #include "base/sys_info.h"
 #include "chrome/browser/policy/device_management_service.h"
+#include "chrome/browser/policy/enterprise_metrics.h"
 #include "chrome/common/chrome_version_info.h"
 #include "net/base/escape.h"
 #include "net/url_request/url_request_status.h"
@@ -302,9 +304,28 @@ class DeviceManagementRegisterJob : public DeviceManagementJobBase {
  private:
   // DeviceManagementJobBase overrides.
   virtual void OnError(DeviceManagementBackend::ErrorCode error) {
+    MetricToken sample;
+    switch (error) {
+      case DeviceManagementBackend::kErrorRequestInvalid:
+      case DeviceManagementBackend::kErrorRequestFailed:
+        sample = kMetricTokenFetchRequestFailed;
+        break;
+      case DeviceManagementBackend::kErrorServiceDeviceNotFound:
+        sample = kMetricTokenFetchDeviceNotFound;
+        break;
+      case DeviceManagementBackend::kErrorServiceManagementNotSupported:
+        sample = kMetricTokenFetchManagementNotSupported;
+        break;
+      default:
+        sample = kMetricTokenFetchServerFailed;
+        break;
+    }
+    UMA_HISTOGRAM_ENUMERATION(kMetricToken, sample, kMetricTokenSize);
     delegate_->OnError(error);
   }
   virtual void OnResponse(const em::DeviceManagementResponse& response) {
+    UMA_HISTOGRAM_ENUMERATION(kMetricToken, kMetricTokenFetchResponseReceived,
+                              kMetricTokenSize);
     delegate_->HandleRegisterResponse(response.register_response());
   }
 
@@ -372,9 +393,28 @@ class DeviceManagementPolicyJob : public DeviceManagementJobBase {
  private:
   // DeviceManagementJobBase overrides.
   virtual void OnError(DeviceManagementBackend::ErrorCode error) {
+    MetricPolicy sample;
+    switch (error) {
+      case DeviceManagementBackend::kErrorRequestInvalid:
+      case DeviceManagementBackend::kErrorRequestFailed:
+        sample = kMetricPolicyFetchRequestFailed;
+        break;
+      case DeviceManagementBackend::kErrorServicePolicyNotFound:
+        sample = kMetricPolicyFetchNotFound;
+        break;
+      case DeviceManagementBackend::kErrorServiceManagementTokenInvalid:
+        sample = kMetricPolicyFetchInvalidToken;
+        break;
+      default:
+        sample = kMetricPolicyFetchServerFailed;
+        break;
+    }
+    UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, sample, kMetricPolicySize);
     delegate_->OnError(error);
   }
   virtual void OnResponse(const em::DeviceManagementResponse& response) {
+    UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyFetchResponseReceived,
+                              kMetricPolicySize);
     delegate_->HandlePolicyResponse(response.policy_response());
   }
 
@@ -467,6 +507,8 @@ void DeviceManagementBackendImpl::ProcessRegisterRequest(
     const std::string& device_id,
     const em::DeviceRegisterRequest& request,
     DeviceRegisterResponseDelegate* delegate) {
+  UMA_HISTOGRAM_ENUMERATION(kMetricToken, kMetricTokenFetchRequested,
+                            kMetricTokenSize);
   AddJob(new DeviceManagementRegisterJob(this, auth_token, device_id, request,
                                          delegate));
 }
@@ -485,6 +527,8 @@ void DeviceManagementBackendImpl::ProcessPolicyRequest(
     const std::string& device_id,
     const em::DevicePolicyRequest& request,
     DevicePolicyResponseDelegate* delegate) {
+  UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyFetchRequested,
+                            kMetricPolicySize);
   AddJob(new DeviceManagementPolicyJob(this, device_management_token, device_id,
                                        request, delegate));
 }

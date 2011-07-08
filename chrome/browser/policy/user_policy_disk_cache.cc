@@ -4,10 +4,30 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/task.h"
+#include "chrome/browser/policy/enterprise_metrics.h"
 #include "chrome/browser/policy/proto/device_management_local.pb.h"
 #include "chrome/browser/policy/user_policy_disk_cache.h"
 #include "content/browser/browser_thread.h"
+
+namespace {
+
+// Other places can sample on the same UMA counter, so make sure they all do
+// it on the same thread (UI).
+void SampleUMAOnUIThread(policy::MetricPolicy sample) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  UMA_HISTOGRAM_ENUMERATION(policy::kMetricPolicy, sample,
+                            policy::kMetricPolicySize);
+}
+
+void SampleUMA(policy::MetricPolicy sample) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          NewRunnableFunction(&SampleUMAOnUIThread, sample));
+}
+
+}  // namespace
 
 namespace policy {
 
@@ -46,6 +66,7 @@ void UserPolicyDiskCache::LoadOnFileThread() {
   if (!file_util::ReadFileToString(backing_file_path_, &data)) {
     LOG(WARNING) << "Failed to read policy data from "
                  << backing_file_path_.value();
+    SampleUMA(kMetricPolicyLoadFailed);
     return;
   }
 
@@ -54,6 +75,7 @@ void UserPolicyDiskCache::LoadOnFileThread() {
   if (!cached_response.ParseFromArray(data.c_str(), data.size())) {
     LOG(WARNING) << "Failed to parse policy data read from "
                  << backing_file_path_.value();
+    SampleUMA(kMetricPolicyLoadFailed);
     return;
   }
 
@@ -67,10 +89,11 @@ void UserPolicyDiskCache::LoadOnFileThread() {
 void UserPolicyDiskCache::FinishLoadOnUIThread(
     const em::CachedCloudPolicyResponse& policy) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyLoadSucceeded,
+                            kMetricPolicySize);
   if (delegate_.get())
     delegate_->OnDiskCacheLoaded(policy);
 }
-
 
 void UserPolicyDiskCache::StoreOnFileThread(
     const em::CachedCloudPolicyResponse& policy) {
@@ -78,20 +101,24 @@ void UserPolicyDiskCache::StoreOnFileThread(
   std::string data;
   if (!policy.SerializeToString(&data)) {
     LOG(WARNING) << "Failed to serialize policy data";
+    SampleUMA(kMetricPolicyStoreFailed);
     return;
   }
 
   if (!file_util::CreateDirectory(backing_file_path_.DirName())) {
     LOG(WARNING) << "Failed to create directory "
                  << backing_file_path_.DirName().value();
+    SampleUMA(kMetricPolicyStoreFailed);
     return;
   }
 
   int size = data.size();
   if (file_util::WriteFile(backing_file_path_, data.c_str(), size) != size) {
     LOG(WARNING) << "Failed to write " << backing_file_path_.value();
+    SampleUMA(kMetricPolicyStoreFailed);
     return;
   }
+  SampleUMA(kMetricPolicyStoreSucceeded);
 }
 
 }  // namespace policy

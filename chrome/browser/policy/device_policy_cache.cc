@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/task.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/device_policy_identity_strategy.h"
 #include "chrome/browser/policy/enterprise_install_attributes.h"
+#include "chrome/browser/policy/enterprise_metrics.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/browser/policy/proto/device_management_constants.h"
@@ -146,6 +148,9 @@ void DevicePolicyCache::SetPolicy(const em::PolicyFetchResponse& policy) {
   std::string registration_user(install_attributes_->GetRegistrationUser());
   if (registration_user.empty()) {
     LOG(WARNING) << "Refusing to accept policy on non-enterprise device.";
+    UMA_HISTOGRAM_ENUMERATION(kMetricPolicy,
+                              kMetricPolicyFetchNonEnterpriseDevice,
+                              kMetricPolicySize);
     InformNotifier(CloudPolicySubsystem::LOCAL_ERROR,
                    CloudPolicySubsystem::POLICY_LOCAL_ERROR);
     return;
@@ -155,6 +160,8 @@ void DevicePolicyCache::SetPolicy(const em::PolicyFetchResponse& policy) {
   em::PolicyData policy_data;
   if (!policy_data.ParseFromString(policy.policy_data())) {
     LOG(WARNING) << "Invalid policy protobuf";
+    UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyFetchInvalidPolicy,
+                              kMetricPolicySize);
     InformNotifier(CloudPolicySubsystem::LOCAL_ERROR,
                    CloudPolicySubsystem::POLICY_LOCAL_ERROR);
     return;
@@ -163,6 +170,8 @@ void DevicePolicyCache::SetPolicy(const em::PolicyFetchResponse& policy) {
   if (registration_user != policy_data.username()) {
     LOG(WARNING) << "Refusing policy blob for " << policy_data.username()
                  << " which doesn't match " << registration_user;
+    UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyFetchUserMismatch,
+                              kMetricPolicySize);
     InformNotifier(CloudPolicySubsystem::LOCAL_ERROR,
                    CloudPolicySubsystem::POLICY_LOCAL_ERROR);
     return;
@@ -202,6 +211,8 @@ void DevicePolicyCache::OnRetrievePolicyCompleted(
     em::PolicyData policy_data;
     if (!policy_data.ParseFromString(policy.policy_data())) {
       LOG(WARNING) << "Failed to parse PolicyData protobuf.";
+      UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyLoadFailed,
+                                kMetricPolicySize);
       InformNotifier(CloudPolicySubsystem::LOCAL_ERROR,
                      CloudPolicySubsystem::POLICY_LOCAL_ERROR);
       return;
@@ -217,10 +228,14 @@ void DevicePolicyCache::OnRetrievePolicyCompleted(
       return;
     }
     if (!policy_data.has_username() || !policy_data.has_device_id()) {
+      UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyLoadFailed,
+                                kMetricPolicySize);
       InformNotifier(CloudPolicySubsystem::LOCAL_ERROR,
                      CloudPolicySubsystem::POLICY_LOCAL_ERROR);
       return;
     }
+    UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyLoadSucceeded,
+                              kMetricPolicySize);
     identity_strategy_->SetDeviceManagementCredentials(
         policy_data.username(),
         policy_data.device_id(),
@@ -229,15 +244,23 @@ void DevicePolicyCache::OnRetrievePolicyCompleted(
   } else {  // In other words, starting_up_ == false.
     if (code != chromeos::SignedSettings::SUCCESS) {
       if (code == chromeos::SignedSettings::BAD_SIGNATURE) {
+        UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyFetchBadSignature,
+                                  kMetricPolicySize);
         InformNotifier(CloudPolicySubsystem::LOCAL_ERROR,
                        CloudPolicySubsystem::SIGNATURE_MISMATCH);
       } else {
+        UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyFetchOtherFailed,
+                                  kMetricPolicySize);
         InformNotifier(CloudPolicySubsystem::LOCAL_ERROR,
                        CloudPolicySubsystem::POLICY_LOCAL_ERROR);
       }
       return;
     }
-    SetPolicyInternal(policy, NULL, false);
+    bool ok = SetPolicyInternal(policy, NULL, false);
+    if (ok) {
+      UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyFetchOK,
+                                kMetricPolicySize);
+    }
   }
 }
 
@@ -257,15 +280,23 @@ void DevicePolicyCache::PolicyStoreOpCompleted(
     chromeos::SignedSettings::ReturnCode code) {
   DCHECK(CalledOnValidThread());
   if (code != chromeos::SignedSettings::SUCCESS) {
+    UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyStoreFailed,
+                              kMetricPolicySize);
     if (code == chromeos::SignedSettings::BAD_SIGNATURE) {
+      UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyFetchBadSignature,
+                                kMetricPolicySize);
       InformNotifier(CloudPolicySubsystem::LOCAL_ERROR,
                      CloudPolicySubsystem::SIGNATURE_MISMATCH);
     } else {
+      UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyFetchOtherFailed,
+                                kMetricPolicySize);
       InformNotifier(CloudPolicySubsystem::LOCAL_ERROR,
                      CloudPolicySubsystem::POLICY_LOCAL_ERROR);
     }
     return;
   }
+  UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyStoreSucceeded,
+                            kMetricPolicySize);
   signed_settings_helper_->StartRetrievePolicyOp(this);
 }
 

@@ -5,7 +5,27 @@
 #include "chrome/browser/policy/user_policy_token_cache.h"
 
 #include "base/file_util.h"
+#include "base/metrics/histogram.h"
+#include "chrome/browser/policy/enterprise_metrics.h"
 #include "content/browser/browser_thread.h"
+
+namespace {
+
+// Other places can sample on the same UMA counter, so make sure they all do
+// it on the same thread (UI).
+void SampleUMAOnUIThread(policy::MetricToken sample) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  UMA_HISTOGRAM_ENUMERATION(policy::kMetricToken, sample,
+                            policy::kMetricTokenSize);
+}
+
+void SampleUMA(policy::MetricToken sample) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          NewRunnableFunction(&SampleUMAOnUIThread, sample));
+}
+
+}  // namespace
 
 namespace policy {
 
@@ -52,6 +72,9 @@ void UserPolicyTokenCache::LoadOnFileThread() {
         device_credentials.ParseFromArray(data.c_str(), data.size())) {
       device_token = device_credentials.device_token();
       device_id = device_credentials.device_id();
+      SampleUMA(kMetricTokenLoadSucceeded);
+    } else {
+      SampleUMA(kMetricTokenLoadFailed);
     }
   }
 
@@ -81,16 +104,24 @@ void UserPolicyTokenCache::StoreOnFileThread(const std::string& token,
   if (!success) {
     LOG(WARNING) << "Failed serialize device token data, will not write "
                  << cache_file_.value();
+    SampleUMA(kMetricTokenStoreFailed);
     return;
   }
 
   if (!file_util::CreateDirectory(cache_file_.DirName())) {
     LOG(WARNING) << "Failed to create directory "
                  << cache_file_.DirName().value();
+    SampleUMA(kMetricTokenStoreFailed);
     return;
   }
 
-  file_util::WriteFile(cache_file_, data.c_str(), data.length());
+  int size = data.size();
+  if (file_util::WriteFile(cache_file_, data.c_str(), size) != size) {
+    LOG(WARNING) << "Failed to write " << cache_file_.value();
+    SampleUMA(kMetricTokenStoreFailed);
+  }
+
+  SampleUMA(kMetricTokenStoreSucceeded);
 }
 
 }  // namespace policy

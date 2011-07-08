@@ -9,10 +9,12 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/cloud_policy_provider.h"
+#include "chrome/browser/policy/enterprise_metrics.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/proto/cloud_policy.pb.h"
 #include "chrome/browser/policy/proto/device_management_local.pb.h"
@@ -47,6 +49,8 @@ void UserPolicyCache::SetPolicy(const em::PolicyFetchResponse& policy) {
   base::Time timestamp;
   if (!SetPolicyInternal(policy, &timestamp, false))
     return;
+  UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyFetchOK,
+                            kMetricPolicySize);
 
   if (timestamp > base::Time::NowFromSystemTime() +
                   base::TimeDelta::FromMinutes(1)) {

@@ -5,11 +5,13 @@
 #include "chrome/browser/chromeos/login/enterprise_enrollment_screen.h"
 
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/policy/enterprise_metrics.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 
 namespace chromeos {
@@ -40,6 +42,9 @@ void EnterpriseEnrollmentScreen::Authenticate(const std::string& user,
                                               const std::string& password,
                                               const std::string& captcha,
                                               const std::string& access_code) {
+  UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
+                            policy::kMetricEnrollmentStarted,
+                            policy::kMetricEnrollmentSize);
   captcha_token_.clear();
   user_ = user;
   auth_fetcher_.reset(
@@ -60,6 +65,9 @@ void EnterpriseEnrollmentScreen::Authenticate(const std::string& user,
 }
 
 void EnterpriseEnrollmentScreen::CancelEnrollment() {
+  UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
+                            policy::kMetricEnrollmentCancelled,
+                            policy::kMetricEnrollmentSize);
   auth_fetcher_.reset();
   registrar_.reset();
   g_browser_process->browser_policy_connector()->DeviceStopAutoRetry();
@@ -113,6 +121,9 @@ void EnterpriseEnrollmentScreen::OnIssueAuthTokenSuccess(
     const std::string& service,
     const std::string& auth_token) {
   if (service != GaiaConstants::kDeviceManagementService) {
+    UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
+                              policy::kMetricEnrollmentOtherFailed,
+                              policy::kMetricEnrollmentSize);
     NOTREACHED() << service;
     return;
   }
@@ -123,6 +134,9 @@ void EnterpriseEnrollmentScreen::OnIssueAuthTokenSuccess(
       g_browser_process->browser_policy_connector();
   if (!connector->device_cloud_policy_subsystem()) {
     NOTREACHED() << "Cloud policy subsystem not initialized.";
+    UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
+                              policy::kMetricEnrollmentOtherFailed,
+                              policy::kMetricEnrollmentSize);
     if (view())
       view()->ShowFatalEnrollmentError();
     return;
@@ -142,6 +156,9 @@ void EnterpriseEnrollmentScreen::OnIssueAuthTokenFailure(
     const GoogleServiceAuthError& error) {
   if (service != GaiaConstants::kDeviceManagementService) {
     NOTREACHED() << service;
+    UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
+                              policy::kMetricEnrollmentOtherFailed,
+                              policy::kMetricEnrollmentSize);
     return;
   }
 
@@ -173,11 +190,23 @@ void EnterpriseEnrollmentScreen::OnPolicyStateChanged(
       case policy::CloudPolicySubsystem::SUCCESS:
         // Success!
         registrar_.reset();
+        UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
+                                  policy::kMetricEnrollmentOK,
+                                  policy::kMetricEnrollmentSize);
         view()->ShowConfirmationScreen();
         return;
     }
 
     // We have an error.
+    if (state == policy::CloudPolicySubsystem::UNMANAGED) {
+      UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
+                                policy::kMetricEnrollmentNotSupported,
+                                policy::kMetricEnrollmentSize);
+    } else {
+      UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
+                                policy::kMetricEnrollmentPolicyFailed,
+                                policy::kMetricEnrollmentSize);
+    }
     LOG(WARNING) << "Policy subsystem error during enrollment: " << state
                  << " details: " << error_details;
   }
@@ -199,16 +228,27 @@ void EnterpriseEnrollmentScreen::HandleAuthError(
     return;
 
   switch (error.state()) {
-    case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
     case GoogleServiceAuthError::CONNECTION_FAILED:
+      UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
+                                policy::kMetricEnrollmentNetworkFailed,
+                                policy::kMetricEnrollmentSize);
+      view()->ShowNetworkEnrollmentError();
+      return;
+    case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
     case GoogleServiceAuthError::CAPTCHA_REQUIRED:
     case GoogleServiceAuthError::TWO_FACTOR:
+    case GoogleServiceAuthError::SERVICE_UNAVAILABLE:
+      UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
+                                policy::kMetricEnrollmentLoginFailed,
+                                policy::kMetricEnrollmentSize);
       view()->ShowAuthError(error);
       return;
     case GoogleServiceAuthError::USER_NOT_SIGNED_UP:
     case GoogleServiceAuthError::ACCOUNT_DELETED:
     case GoogleServiceAuthError::ACCOUNT_DISABLED:
-    case GoogleServiceAuthError::SERVICE_UNAVAILABLE:
+      UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
+                                policy::kMetricEnrollmentNotSupported,
+                                policy::kMetricEnrollmentSize);
       view()->ShowAccountError();
       return;
     case GoogleServiceAuthError::NONE:
@@ -217,11 +257,17 @@ void EnterpriseEnrollmentScreen::HandleAuthError(
       // fall through.
     case GoogleServiceAuthError::REQUEST_CANCELED:
       LOG(ERROR) << "Unexpected GAIA auth error: " << error.state();
+      UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
+                                policy::kMetricEnrollmentNetworkFailed,
+                                policy::kMetricEnrollmentSize);
       view()->ShowFatalAuthError();
       return;
   }
 
   NOTREACHED() << error.state();
+  UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
+                            policy::kMetricEnrollmentOtherFailed,
+                            policy::kMetricEnrollmentSize);
 }
 
 void EnterpriseEnrollmentScreen::WriteInstallAttributesData() {

@@ -7,7 +7,9 @@
 #include <string>
 
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/values.h"
+#include "chrome/browser/policy/enterprise_metrics.h"
 #include "chrome/browser/policy/policy_notifier.h"
 
 namespace policy {
@@ -65,6 +67,8 @@ bool CloudPolicyCacheBase::SetPolicyInternal(
                                  &temp_timestamp, &temp_public_key_version);
   if (!ok) {
     LOG(WARNING) << "Decoding policy data failed.";
+    UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyFetchInvalidPolicy,
+                              kMetricPolicySize);
     return false;
   }
   if (timestamp) {
@@ -73,6 +77,9 @@ bool CloudPolicyCacheBase::SetPolicyInternal(
   if (check_for_timestamp_validity &&
       temp_timestamp > base::Time::NowFromSystemTime()) {
     LOG(WARNING) << "Rejected policy data, file is from the future.";
+    UMA_HISTOGRAM_ENUMERATION(kMetricPolicy,
+                              kMetricPolicyFetchTimestampInFuture,
+                              kMetricPolicySize);
     return false;
   }
   public_key_version_.version = temp_public_key_version.version;
@@ -84,6 +91,11 @@ bool CloudPolicyCacheBase::SetPolicyInternal(
   mandatory_policy_.Swap(&mandatory_policy);
   recommended_policy_.Swap(&recommended_policy);
   initialization_complete_ = true;
+
+  if (!new_policy_differs) {
+    UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyFetchNotModified,
+                              kMetricPolicySize);
+  }
 
   if (new_policy_differs || initialization_was_not_complete) {
     FOR_EACH_OBSERVER(Observer, observer_list_, OnCacheUpdate(this));
