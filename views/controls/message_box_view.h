@@ -56,6 +56,9 @@ class MessageBoxView : public View {
   // Sets the state of the check-box.
   void SetCheckBoxSelected(bool selected);
 
+  // View:
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+
  protected:
   // View:
   virtual void ViewHierarchyChanged(bool is_add,

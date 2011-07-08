@@ -78,9 +78,6 @@ class AccessibilityEventRouterViews {
   void DispatchAccessibilityNotification(
       views::View* view, NotificationType type);
 
-  // Return the name of a view.
-  std::string GetViewName(views::View* view);
-
   // Each of these methods constructs an AccessibilityControlInfo object
   // and sends a notification of a specific accessibility event.
   void SendButtonNotification(
@@ -91,14 +88,17 @@ class AccessibilityEventRouterViews {
       views::View* view, NotificationType type, Profile* profile);
   void SendMenuItemNotification(
       views::View* view, NotificationType type, Profile* profile);
-  void SendLocationBarNotification(
-      views::View* view, NotificationType type, Profile* profile);
   void SendTextfieldNotification(
       views::View* view, NotificationType type, Profile* profile);
   void SendComboboxNotification(
       views::View* view, NotificationType type, Profile* profile);
   void SendCheckboxNotification(
       views::View* view, NotificationType type, Profile* profile);
+  void SendWindowNotification(
+      views::View* view, NotificationType type, Profile* profile);
+
+  // Return the name of a view.
+  std::string GetViewName(views::View* view);
 
   // Return true if it's an event on a menu.
   bool IsMenuEvent(views::View* view, NotificationType type);
@@ -110,6 +110,10 @@ class AccessibilityEventRouterViews {
   // initialize it to -1 to detect this case.
   void RecursiveGetMenuItemIndexAndCount(
       views::View* menu, views::View* item, int* index, int* count);
+
+  // Recursively explore the subviews and return the text from the first
+  // subview with a role of STATIC_TEXT.
+  std::string RecursiveGetStaticText(views::View* view);
 
   // The profile associated with the most recent window event  - used to
   // figure out where to route a few events that can't be directly traced

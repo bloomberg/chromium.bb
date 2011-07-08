@@ -1066,7 +1066,7 @@ bool LocationBarView::SkipDefaultKeyEventProcessing(
 }
 
 void LocationBarView::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_GROUPING;
+  state->role = ui::AccessibilityTypes::ROLE_LOCATION_BAR;
   state->name = l10n_util::GetStringUTF16(IDS_ACCNAME_LOCATION);
   state->value = location_entry_->GetText();
 

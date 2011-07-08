@@ -620,6 +620,8 @@ return ROLE_SYSTEM_ALERT;
       return ROLE_SYSTEM_GROUPING;
     case AccessibilityTypes::ROLE_LINK:
       return ROLE_SYSTEM_LINK;
+    case AccessibilityTypes::ROLE_LOCATION_BAR:
+      return ROLE_SYSTEM_GROUPING;
     case AccessibilityTypes::ROLE_MENUBAR:
       return ROLE_SYSTEM_MENUBAR;
     case AccessibilityTypes::ROLE_MENUITEM:

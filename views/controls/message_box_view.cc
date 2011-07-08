@@ -7,6 +7,7 @@
 #include "base/i18n/rtl.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
+#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/message_box_flags.h"
@@ -17,6 +18,7 @@
 #include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
 #include "views/views_delegate.h"
+#include "views/widget/widget.h"
 #include "views/window/client_view.h"
 
 static const int kDefaultMessageWidth = 320;
@@ -85,6 +87,10 @@ void MessageBoxView::SetCheckBoxSelected(bool selected) {
   checkbox_->SetChecked(selected);
 }
 
+void MessageBoxView::GetAccessibleState(ui::AccessibleViewState* state) {
+  state->role = ui::AccessibilityTypes::ROLE_ALERT;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // MessageBoxView, View overrides:
 
@@ -94,6 +100,9 @@ void MessageBoxView::ViewHierarchyChanged(bool is_add,
   if (child == this && is_add) {
     if (prompt_field_)
       prompt_field_->SelectAll();
+
+    GetWidget()->NotifyAccessibilityEvent(
+        this, ui::AccessibilityTypes::EVENT_ALERT, true);
   }
 }
 

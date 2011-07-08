@@ -172,6 +172,7 @@ void BrowserActionButton::UpdateState() {
   if (name.empty())
     name = UTF8ToUTF16(extension()->name());
   SetTooltipText(UTF16ToWideHack(name));
+  SetAccessibleName(name);
   parent()->SchedulePaint();
 }
 

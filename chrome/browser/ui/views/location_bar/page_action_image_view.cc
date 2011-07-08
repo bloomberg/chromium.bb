@@ -105,6 +105,7 @@ void PageActionImageView::ExecuteAction(int button,
 
 void PageActionImageView::GetAccessibleState(ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
+  state->name = UTF8ToUTF16(tooltip_);
 }
 
 bool PageActionImageView::OnMousePressed(const views::MouseEvent& event) {
