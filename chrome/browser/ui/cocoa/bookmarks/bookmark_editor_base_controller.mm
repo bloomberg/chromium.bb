@@ -284,6 +284,10 @@ class BookmarkEditorBaseControllerBridge : public BookmarkModelObserver {
   return profile_->GetBookmarkModel();
 }
 
+- (Profile*)profile {
+  return profile_;
+}
+
 - (const BookmarkNode*)parentNode {
   return parentNode_;
 }

@@ -104,6 +104,7 @@ class BookmarkModel;
 
 // Accessors
 - (BookmarkModel*)bookmarkModel;
+- (Profile*)profile;
 - (const BookmarkNode*)parentNode;
 
 @end

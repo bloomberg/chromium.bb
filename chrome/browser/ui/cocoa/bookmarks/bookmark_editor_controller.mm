@@ -7,6 +7,7 @@
 #include "base/string16.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 
 @interface BookmarkEditorController (Private)
@@ -54,7 +55,14 @@
     initialUrl_.reset([[NSString stringWithUTF8String:url_string.c_str()]
                         retain]);
   } else {
-    initialUrl_.reset([@"" retain]);
+    GURL url;
+    string16 title16;
+    bookmark_utils::GetURLAndTitleToBookmarkFromCurrentTab([self profile],
+        &url, &title16);
+    [self setInitialName:base::SysUTF16ToNSString(title16)];
+    if (url.is_valid())
+      initialUrl_.reset([[NSString stringWithUTF8String:url.spec().c_str()]
+                          retain]);
   }
   [self setDisplayURL:initialUrl_];
   [super awakeFromNib];
