@@ -31,7 +31,8 @@
 #include "views/controls/button/image_button.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/label.h"
-#include "views/controls/menu/menu_2.h"
+#include "views/controls/menu/menu_item_view.h"
+#include "views/controls/menu/menu_model_adapter.h"
 #include "views/controls/menu/view_menu_delegate.h"
 #include "views/widget/widget.h"
 
@@ -61,7 +62,6 @@ class NotificationControlView : public views::View,
       : balloon_view_(view),
         close_button_(NULL),
         options_menu_contents_(NULL),
-        options_menu_menu_(NULL),
         options_menu_button_(NULL) {
     // TODO(oshima): make background transparent.
     set_background(views::Background::CreateSolidBackground(SK_ColorWHITE));
@@ -117,7 +117,21 @@ class NotificationControlView : public views::View,
   // views::ViewMenuDelegate implements.
   virtual void RunMenu(views::View* source, const gfx::Point& pt) {
     CreateOptionsMenu();
-    options_menu_menu_->RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
+
+    views::MenuModelAdapter menu_model_adapter(options_menu_contents_.get());
+    views::MenuItemView menu(&menu_model_adapter);
+    menu_model_adapter.BuildMenu(&menu);
+
+    gfx::Point screen_location;
+    views::View::ConvertPointToScreen(options_menu_button_,
+                                      &screen_location);
+    gfx::NativeWindow window =
+        source->GetWidget()->GetTopLevelWidget()->GetNativeWindow();
+    menu.RunMenuAt(window,
+                   options_menu_button_,
+                   gfx::Rect(screen_location, options_menu_button_->size()),
+                   views::MenuItemView::TOPRIGHT,
+                   true);
   }
 
   // views::ButtonListener implements.
@@ -167,8 +181,6 @@ class NotificationControlView : public views::View,
     // Figure out where to show the source info.
     options_menu_contents_->AddItem(kNoopCommand, source_label_text);
     options_menu_contents_->AddItem(kRevokePermissionCommand, label_text);
-
-    options_menu_menu_.reset(new views::Menu2(options_menu_contents_.get()));
   }
 
   BalloonViewImpl* balloon_view_;
@@ -177,7 +189,6 @@ class NotificationControlView : public views::View,
 
   // The options menu.
   scoped_ptr<ui::SimpleMenuModel> options_menu_contents_;
-  scoped_ptr<views::Menu2> options_menu_menu_;
   views::MenuButton* options_menu_button_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationControlView);

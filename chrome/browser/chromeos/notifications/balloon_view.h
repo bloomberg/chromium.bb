@@ -21,7 +21,6 @@
 #include "views/view.h"
 
 namespace views {
-class Menu2;
 class MenuButton;
 class MouseEvent;
 class TextButton;
