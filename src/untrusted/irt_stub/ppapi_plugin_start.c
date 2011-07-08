@@ -4,10 +4,6 @@
  * found in the LICENSE file.
  */
 
-/* TODO(mcgrathr): this should be predefined in all builds,
-   but that needs cleaning up scons hooey of nacl_extra_sdk_env vs nacl_env */
-#undef  _GNU_SOURCE
-#define _GNU_SOURCE  /* This makes glibc's unistd.h declare environ.  */
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
