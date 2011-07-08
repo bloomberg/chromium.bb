@@ -215,8 +215,11 @@ class ObfuscatedFileSystemFileUtil : public FileSystemFileUtil,
   // This does the reverse of DataPathToLocalPath.
   FilePath LocalPathToDataPath(
       const GURL& origin, FileSystemType type, const FilePath& local_path);
+  // This returns NULL if |create| flag is false and a filesystem does not
+  // exist for the given |origin_url| and |type|.
+  // For read operations |create| should be false.
   FileSystemDirectoryDatabase* GetDirectoryDatabase(
-      const GURL& origin_url, FileSystemType type);
+      const GURL& origin_url, FileSystemType type, bool create);
   void MarkUsed();
   void DropDatabases();
   bool DestroyDirectoryDatabase(const GURL& origin, FileSystemType type);
