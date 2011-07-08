@@ -4,6 +4,7 @@
 
 #include "ui/base/win/hwnd_util.h"
 
+#include "base/i18n/rtl.h"
 #include "base/string_util.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
@@ -172,6 +173,17 @@ void CenterAndSizeWindow(HWND parent,
 void CheckWindowCreated(HWND hwnd) {
   if (!hwnd)
     LOG_GETLASTERROR(FATAL);
+}
+
+void ShowSystemMenu(HWND window, int screen_x, int screen_y) {
+  UINT flags = TPM_LEFTBUTTON | TPM_RIGHTBUTTON | TPM_RETURNCMD;
+  if (base::i18n::IsRTL())
+    flags |= TPM_RIGHTALIGN;
+  HMENU system_menu = GetSystemMenu(window, FALSE);
+  int command = TrackPopupMenu(system_menu, flags, screen_x, screen_y, 0,
+                               window, NULL);
+  if (command)
+    SendMessage(window, WM_SYSCOMMAND, command, 0);
 }
 
 }  // namespace ui

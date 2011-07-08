@@ -39,6 +39,7 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/enumerate_modules_model_win.h"
+#include "chrome/browser/ui/views/app_menu_button_win.h"
 #endif
 
 // static
@@ -165,7 +166,11 @@ void ToolbarView::Init(Profile* profile) {
 
   browser_actions_ = new BrowserActionsContainer(browser_, this);
 
+#if defined(OS_WIN)
+  app_menu_ = new AppMenuButtonWin(this);
+#else
   app_menu_ = new views::MenuButton(NULL, std::wstring(), this, false);
+#endif
   app_menu_->set_border(NULL);
   app_menu_->EnableCanvasFlippingForRTLUI(true);
   app_menu_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_APP));

@@ -1489,13 +1489,7 @@ LRESULT NativeWidgetWin::OnMouseRange(UINT message,
     w_param = SendMessage(GetNativeView(), WM_NCHITTEST, 0,
                           MAKELPARAM(screen_point.x, screen_point.y));
     if (w_param == HTCAPTION || w_param == HTSYSMENU) {
-      UINT flags = TPM_LEFTBUTTON | TPM_RIGHTBUTTON | TPM_RETURNCMD;
-      if (base::i18n::IsRTL())
-        flags |= TPM_RIGHTALIGN;
-      HMENU system_menu = GetSystemMenu(GetNativeView(), FALSE);
-      int id = TrackPopupMenu(system_menu, flags, screen_point.x,
-                              screen_point.y, 0, GetNativeView(), NULL);
-      ExecuteSystemMenuCommand(id);
+      ui::ShowSystemMenu(GetNativeView(), screen_point.x, screen_point.y);
       return 0;
     }
   } else if (message == WM_NCLBUTTONDOWN &&

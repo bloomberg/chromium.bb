@@ -44,6 +44,10 @@ void CenterAndSizeWindow(HWND parent,
 // CreateWindow.
 void CheckWindowCreated(HWND hwnd);
 
+// Shows the system menu for |window| and sends the selected command (if the
+// user selected something.
+void ShowSystemMenu(HWND window, int screen_x, int screen_y);
+
 }  // namespace ui
 
 #endif  // UI_BASE_WIN_HWND_UTIL_H_
