@@ -174,8 +174,8 @@ remoting.init = function() {
 
   updateAuthStatus_();
   refreshEmail_();
-  setHostMode('unshared');
-  setClientMode('unconnected');
+  remoting.setHostMode('unshared');
+  remoting.setClientMode('unconnected');
   setGlobalMode(getAppStartupMode());
   addClass(document.getElementById('loading-mode'), 'hidden');
   removeClass(document.getElementById('choice-mode'), 'hidden');
@@ -224,14 +224,14 @@ function setGlobalModePersistent(mode) {
   }
 }
 
-function setHostMode(mode) {
+remoting.setHostMode = function(mode) {
   var section = document.getElementById('host-panel');
   var modes = section.getElementsByClassName('mode');
   remoting.debug.log('Host mode: ' + mode);
   setMode_(mode, modes);
 }
 
-function setClientMode(mode) {
+remoting.setClientMode = function(mode) {
   var section = document.getElementById('client-panel');
   var modes = section.getElementsByClassName('mode');
   remoting.debug.log('Client mode: ' + mode);
@@ -245,7 +245,7 @@ function showWaiting_() {
   document.getElementById('cancel-button').disabled = false;
 }
 
-function tryShare() {
+remoting.tryShare = function() {
   remoting.debug.log('Attempting to share...');
   if (remoting.oauth2.needsNewAccessToken()) {
     remoting.debug.log('Refreshing token...');
@@ -255,7 +255,7 @@ function tryShare() {
         showShareError_('unable-to-get-token');
         throw 'Unable to get access token';
       }
-      tryShare();
+      remoting.tryShare();
     });
     return;
   }
@@ -273,13 +273,12 @@ function tryShare() {
   plugin.connect(getEmail(),
                  'oauth2:' + remoting.oauth2.getAccessToken());
 }
-remoting.tryShare = tryShare;
 
 function onStateChanged_() {
   var plugin = document.getElementById(remoting.HOST_PLUGIN_ID);
   var state = plugin.state;
   if (state == plugin.REQUESTED_ACCESS_CODE) {
-    setHostMode('preparing-to-share');
+    remoting.setHostMode('preparing-to-share');
   } else if (state == plugin.RECEIVED_ACCESS_CODE) {
     var accessCode = plugin.accessCode;
     var accessCodeDisplay = document.getElementById('access-code-display');
@@ -291,12 +290,12 @@ function onStateChanged_() {
       nextFourDigits.innerText = accessCode.substring(i, i + kDigitsPerGroup);
       accessCodeDisplay.appendChild(nextFourDigits);
     }
-    setHostMode('ready-to-share');
+    remoting.setHostMode('ready-to-share');
   } else if (state == plugin.CONNECTED) {
-    setHostMode('shared');
+    remoting.setHostMode('shared');
   } else if (state == plugin.DISCONNECTED) {
     setGlobalMode(remoting.AppMode.HOST);
-    setHostMode('unshared');
+    remoting.setHostMode('unshared');
     plugin.parentNode.removeChild(plugin);
   } else {
     remoting.debug.log('Unknown state -> ' + state);
@@ -315,15 +314,14 @@ function showShareError_(errorCode) {
   var errorDiv = document.getElementById(errorCode);
   errorDiv.style.display = 'block';
   remoting.debug.log("Sharing error: " + errorCode);
-  setHostMode('share-failed');
+  remoting.setHostMode('share-failed');
 }
 
-function cancelShare() {
+remoting.cancelShare = function() {
   remoting.debug.log('Canceling share...');
   var plugin = document.getElementById(remoting.HOST_PLUGIN_ID);
   plugin.disconnect();
 }
-remoting.cancelShare = cancelShare;
 
 /**
  * Show a client message that stays on the screeen until the state changes.
@@ -419,7 +417,7 @@ function showConnectError_(responseCode, responseString) {
     responseNode.innerText = responseString + ' (' + responseCode + ')';
   }
   remoting.accessCode = '';
-  setClientMode('connect-failed');
+  remoting.setClientMode('connect-failed');
 }
 
 function parseServerResponse_(xhr) {
@@ -454,14 +452,14 @@ function resolveSupportId(supportId) {
       headers);
 }
 
-function tryConnect() {
+remoting.tryConnect = function() {
   if (remoting.oauth2.needsNewAccessToken()) {
     remoting.oauth2.refreshAccessToken(function() {
       if (remoting.oauth2.needsNewAccessToken()) {
         // If we still need it, we're going to infinite loop.
         throw 'Unable to get access token.';
       }
-      tryConnect();
+      remoting.tryConnect();
     });
     return;
   }
@@ -473,16 +471,15 @@ function tryConnect() {
     showConnectError_(404);
   } else {
     var supportId = remoting.accessCode.substring(0, kSupportIdLen);
-    setClientMode('connecting');
+    remoting.setClientMode('connecting');
     resolveSupportId(supportId);
   }
 }
-remoting.tryConnect = tryConnect;
 
-function cancelPendingOperation() {
+remoting.cancelPendingOperation = function() {
   document.getElementById('cancel-button').disabled = true;
   if (remoting.currentMode == remoting.AppMode.HOST) {
-    cancelShare();
+    remoting.cancelShare();
   }
 }
 
