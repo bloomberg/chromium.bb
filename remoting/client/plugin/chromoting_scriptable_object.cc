@@ -102,6 +102,7 @@ void ChromotingScriptableObject::Init() {
   AddMethod("submitLoginInfo", &ChromotingScriptableObject::DoSubmitLogin);
   AddMethod("setScaleToFit", &ChromotingScriptableObject::DoSetScaleToFit);
   AddMethod("onIq", &ChromotingScriptableObject::DoOnIq);
+  AddMethod("releaseAllKeys", &ChromotingScriptableObject::DoReleaseAllKeys);
 }
 
 bool ChromotingScriptableObject::HasProperty(const Var& name, Var* exception) {
@@ -454,6 +455,16 @@ Var ChromotingScriptableObject::DoOnIq(const std::vector<Var>& args,
 
   xmpp_proxy_->OnIq(args[0].AsString());
 
+  return Var();
+}
+
+Var ChromotingScriptableObject::DoReleaseAllKeys(
+    const std::vector<pp::Var>& args, pp::Var* exception) {
+  if (args.size() != 0) {
+    *exception = Var("Usage: DoReleaseAllKeys()");
+    return Var();
+  }
+  instance_->ReleaseAllKeys();
   return Var();
 }
 

@@ -7,6 +7,16 @@ var remoting = remoting || {};
 (function() {
 "use strict";
 
+window.addEventListener('blur', pluginLostFocus_, false);
+
+function pluginLostFocus_() {
+  // If the plug loses input focus, release all keys as a precaution against
+  // leaving them 'stuck down' on the host.
+  if (remoting.session && remoting.session.plugin) {
+    remoting.session.plugin.releaseAllKeys();
+  }
+}
+
 /** @enum {string} */
 remoting.AppMode = {
   CLIENT: 'client',

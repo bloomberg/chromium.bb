@@ -90,6 +90,8 @@ class ChromotingInstance : public pp::InstancePrivate {
   // If no connection is currently active then NULL will be returned.
   ChromotingStats* GetStats();
 
+  void ReleaseAllKeys();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromotingInstanceTest, TestCaseSetup);
 

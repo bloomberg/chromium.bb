@@ -103,6 +103,9 @@
 //   // Method for receiving an XMPP IQ stanza in response to a previous
 //   // sendIq() invocation. Other packets will be silently dropped.
 //   void onIq(string response_xml);
+//
+//   // Method for releasing all keys to ensure a consistent host state.
+//   void releaseAllKeys();
 // }
 
 #ifndef REMOTING_CLIENT_PLUGIN_CHROMOTING_SCRIPTABLE_OBJECT_H_
@@ -218,9 +221,14 @@ class ChromotingScriptableObject
   // This method is called by JS to set scale-to-fit.
   pp::Var DoSetScaleToFit(const std::vector<pp::Var>& args, pp::Var* exception);
 
-  // This method is caleld by Javascript to provide responses to sendIq()
+  // This method is called by Javascript to provide responses to sendIq()
   // requests.
   pp::Var DoOnIq(const std::vector<pp::Var>& args, pp::Var* exception);
+
+  // This method is called by Javascript when the plugin loses input focus to
+  // release all pressed keys.
+  pp::Var DoReleaseAllKeys(const std::vector<pp::Var>& args,
+                           pp::Var* exception);
 
   PropertyNameMap property_names_;
   std::vector<PropertyDescriptor> properties_;

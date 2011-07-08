@@ -298,4 +298,8 @@ ChromotingStats* ChromotingInstance::GetStats() {
   return client_->GetStats();
 }
 
+void ChromotingInstance::ReleaseAllKeys() {
+  input_handler_->ReleaseAllKeys();
+}
+
 }  // namespace remoting

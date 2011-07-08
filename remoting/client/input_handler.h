@@ -1,9 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef REMOTING_CLIENT_INPUT_HANDLER_H_
 #define REMOTING_CLIENT_INPUT_HANDLER_H_
+
+#include <set>
 
 #include "base/basictypes.h"
 #include "base/task.h"
@@ -23,9 +25,11 @@ class InputHandler {
   InputHandler(ClientContext* context,
                protocol::ConnectionToHost* connection,
                ChromotingView* view);
-  virtual ~InputHandler() {}
+  virtual ~InputHandler();
 
   virtual void Initialize() = 0;
+
+  void ReleaseAllKeys();
 
  protected:
   void SendKeyEvent(bool press, int keycode);
@@ -38,6 +42,8 @@ class InputHandler {
   ChromotingView* view_;
 
  private:
+  std::set<int> pressed_keys_;
+
   DISALLOW_COPY_AND_ASSIGN(InputHandler);
 };
 

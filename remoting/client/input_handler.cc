@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,9 +22,18 @@ InputHandler::InputHandler(ClientContext* context,
       view_(view) {
 }
 
+InputHandler::~InputHandler() {
+}
+
 void InputHandler::SendKeyEvent(bool press, int keycode) {
   protocol::InputStub* stub = connection_->input_stub();
   if (stub) {
+    if (press) {
+      pressed_keys_.insert(keycode);
+    } else {
+      pressed_keys_.erase(keycode);
+    }
+
     KeyEvent* event = new KeyEvent();
     event->set_keycode(keycode);
     event->set_pressed(press);
@@ -54,6 +63,15 @@ void InputHandler::SendMouseButtonEvent(bool button_down,
 
     stub->InjectMouseEvent(event, new DeleteTask<MouseEvent>(event));
   }
+}
+
+void InputHandler::ReleaseAllKeys() {
+  std::set<int> pressed_keys_copy = pressed_keys_;
+  std::set<int>::iterator i;
+  for (i = pressed_keys_copy.begin(); i != pressed_keys_copy.end(); ++i) {
+    SendKeyEvent(false, *i);
+  }
+  pressed_keys_.clear();
 }
 
 }  // namespace remoting
