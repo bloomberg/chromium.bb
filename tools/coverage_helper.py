@@ -34,8 +34,8 @@ class CoverageHelper(object):
   # Set of results to ignore by path.
   #
   def Filter(self):
-    filters = ['../ppapi/c', '../ppapi/cpp', 'src/trusted/sel_universal',
-      'src/third_party/valgrind', 'src/tools']
+    filters = ['src/third_party/ppapi/c', 'src/third_party/ppapi/cpp',
+      'src/trusted/sel_universal', 'src/third_party/valgrind', 'src/tools']
     return set([os.path.realpath(path) for path in filters])
 
   #
@@ -95,6 +95,6 @@ class CoverageHelper(object):
     groups.extend(self.GetDirList('src/trusted'))
     groups.extend(self.GetDirList('src/shared'))
     groups.extend(self.GetDirList('src/third_party'))
-    groups.extend(self.GetDirList('../ppapi'))
+    groups.extend(self.GetDirList('src/third_party/ppapi'))
     groups.extend(self.GetDirList('..'))
     return groups
