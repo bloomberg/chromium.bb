@@ -1682,7 +1682,7 @@ bool MenuController::AcceptOrSelect(MenuItemView* parent,
     // There's only one match, activate it (or open if it has a submenu).
     if (submenu->GetMenuItemAt(details.first_match)->HasSubmenu()) {
       SetSelection(submenu->GetMenuItemAt(details.first_match),
-                   SELECTION_OPEN_SUBMENU);
+                   SELECTION_OPEN_SUBMENU | SELECTION_UPDATE_IMMEDIATELY);
     } else {
       Accept(submenu->GetMenuItemAt(details.first_match), 0);
       return true;
