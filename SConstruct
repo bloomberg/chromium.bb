@@ -952,8 +952,8 @@ pre_base_env.SetBitFromOption('prebuilt', False)
 # ----------------------------------------------------------
 def GetEmulator(env):
   emulator = ARGUMENTS.get('force_emulator')
-  if emulator is None:
-    emulator = env.get('EMULATOR', '')
+  if emulator is None and 'TRUSTED_ENV' in env:
+    emulator = env['TRUSTED_ENV'].get('EMULATOR')
   return emulator
 
 def UsingEmulator(env):
@@ -1370,11 +1370,11 @@ def SelUniversalTest(env, name, nexe, sel_universal_flags=None, **kwargs):
   if sel_universal_flags is None:
     sel_universal_flags = []
 
-  # when run under qemu, sel_universal must sneeak in qemu to execv
+  # When run under qemu, sel_universal must sneak in qemu to the execv
   # call that spawns sel_ldr.
   if env.Bit('target_arm') and env.UsingEmulator():
     sel_universal_flags.append('--command_prefix')
-    sel_universal_flags.append(env['EMULATOR'])
+    sel_universal_flags.append(GetEmulator(env))
 
   node = CommandSelLdrTestNacl(env,
                                name,
@@ -1560,12 +1560,8 @@ def CommandTest(env, name, command, size='small', direct_emulation=True,
     script_flags.append(run_under);
 
   emulator = GetEmulator(env)
-  if emulator:
-    if direct_emulation:
-      command = [emulator] + command
-    else:
-      extra_env = ['EMULATOR=%s' %  env['EMULATOR'].replace(' ', r'\ ')]
-      extra['osenv'] = extra.get('osenv', []) + extra_env
+  if emulator and direct_emulation:
+    command = [emulator] + command
 
   script_flags.append('--perf_env_description')
   script_flags.append(env.GetPerfEnvDescription())
@@ -2233,8 +2229,6 @@ mac_env.Append(
 (mac_debug_env, mac_optimized_env) = GenerateOptimizationLevels(mac_env)
 
 # ----------------------------------------------------------
-EMULATOR = None
-
 linux_env = unix_like_env.Clone(
     BUILD_TYPE = '${OPTIMIZATION_LEVEL}-linux',
     BUILD_TYPE_DESCRIPTION = 'Linux ${OPTIMIZATION_LEVEL} build',
@@ -2286,13 +2280,10 @@ elif linux_env.Bit('build_x86_64'):
       LINKFLAGS = ['-m64', '-L/usr/lib64'],
       )
 elif linux_env.Bit('build_arm'):
-  # NOTE: this hack allows us to propagate the emulator to the untrusted env
-  # TODO(robertm): clean this up
-  EMULATOR = os.getenv('ARM_EMU', '')
   linux_env.Replace(CC=os.getenv('ARM_CC', 'NO-ARM-CC-SPECIFIED'),
                     CXX=os.getenv('ARM_CXX', 'NO-ARM-CXX-SPECIFIED'),
                     LD=os.getenv('ARM_LD', 'NO-ARM-LD-SPECIFIED'),
-                    EMULATOR=EMULATOR,
+                    EMULATOR=os.getenv('ARM_EMU', ''),
                     ASFLAGS=[],
                     LIBPATH=['${LIB_DIR}',
                              os.getenv('ARM_LIB_DIR', '').split()],
@@ -2445,10 +2436,6 @@ if nacl_env.Bit('bitcode'):
   # TODO(robertm): remove this ASAP, we currently have llvm issue with c++
   nacl_env.FilterOut(CCFLAGS = ['-Werror'])
   nacl_env.Append(CFLAGS = werror_flags)
-
-  # NOTE: we change the linker command line to make it possible to
-  #       sneak in startup and cleanup code
-  nacl_env.Prepend(EMULATOR=EMULATOR)
 
   # passing -O when linking requests LTO, which does additional global
   # optimizations at link time
@@ -3128,7 +3115,6 @@ MAYBE_RELEVANT_CONFIG = ['BUILD_OS',
                          'TARGET_OS',
                          'TARGET_ARCHITECTURE',
                          'TARGET_SUBARCH',
-                         'EMULATOR',
                          ]
 
 def DumpCompilerVersion(cc, env):
