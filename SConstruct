@@ -947,16 +947,6 @@ DeclareBit('prebuilt', 'Disable all build steps, only support install steps')
 pre_base_env.SetBitFromOption('prebuilt', False)
 
 
-# Disable tests/platform quals that would fail on vmware + hardy + 64 as
-# currently run on some of the buildbots.
-DeclareBit('disable_hardy64_vmware_failures',
-           'Disable tests/platform quals that would fail on '
-           'vmware + hardy + 64 as currently run on some of the buildbots.')
-pre_base_env.SetBitFromOption('disable_hardy64_vmware_failures', False)
-if pre_base_env.Bit('disable_hardy64_vmware_failures'):
-  print 'Running with --disable_hardy64_vmware_failures'
-
-
 # ----------------------------------------------------------
 # HELPERS FOR TEST INVOLVING TRUSTED AND UNTRUSTED ENV
 # ----------------------------------------------------------
@@ -1466,9 +1456,7 @@ def CommandSelLdrTestNacl(env, name, nexe,
     sel_ldr_flags += ['-cc']
 
   # Skip platform qualification checks on configurations with known issues.
-  if GetEmulator(env) or \
-    env.Bit('disable_hardy64_vmware_failures') or \
-    env.IsRunningUnderValgrind():
+  if GetEmulator(env) or env.IsRunningUnderValgrind():
     sel_ldr_flags += ['-Q']
 
   # The glibc modifications only make sense for nacl_env tests.

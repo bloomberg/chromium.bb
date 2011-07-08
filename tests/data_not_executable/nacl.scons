@@ -32,9 +32,5 @@ is_broken = prog_env.Bit('target_arm') and prog_env.UsingEmulator()
 # upgraded to a newer kernel.
 is_broken = prog_env.Bit('target_arm')
 
-# 64-bit Ubuntu Hardy (Linux) on VMWare also seems to have problems
-# with NX page protection, but later versions of Ubuntu are OK on
-# VMWare, and 64-bit Hardy is OK on real hardware.
-if not prog_env.Bit('disable_hardy64_vmware_failures'):
-  prog_env.AddNodeToTestSuite(node, ['small_tests'], 'run_execute_data_test',
-                         is_broken=is_broken)
+prog_env.AddNodeToTestSuite(node, ['small_tests'], 'run_execute_data_test',
+                            is_broken=is_broken)

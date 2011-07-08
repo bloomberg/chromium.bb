@@ -135,16 +135,12 @@ BOT_ASSIGNMENT = {
         python + ' buildbot/buildbot_standard.py opt 32 newlib',
     'nacl-mac10.6_glibc_opt':
         python + ' buildbot/buildbot_standard.py opt 32 glibc',
-    'nacl-hardy32_newlib_opt':
-        python + ' buildbot/buildbot_standard.py opt 32 newlib',
     'nacl-lucid32_newlib_dbg':
         python + ' buildbot/buildbot_standard.py dbg 32 newlib',
     'nacl-lucid32_newlib_opt':
         python + ' buildbot/buildbot_standard.py opt 32 newlib',
     'nacl-lucid32_glibc_opt':
         python + ' buildbot/buildbot_standard.py opt 32 glibc',
-    'nacl-hardy64_newlib_opt':
-        python + ' buildbot/buildbot_standard.py opt 64 newlib',
     'nacl-lucid64_newlib_dbg':
         python + ' buildbot/buildbot_standard.py dbg 64 newlib',
     'nacl-lucid64_newlib_opt':
