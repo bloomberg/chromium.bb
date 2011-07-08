@@ -419,7 +419,7 @@ DownloadRow.prototype = {
   },
 
   openFilePath_: function() {
-    chromeSend('openNewFullWindow', 'file://' + this.path);
+    chromeSend('openNewFullWindow', 'file://' + escape(this.path));
   },
 
   /**
