@@ -44,7 +44,7 @@ PP_Bool IsFormatAvailable(PP_Instance instance_id,
       static_cast<int>(clipboard_type),
       static_cast<int>(format),
       &result));
-  return BoolToPPBool(result);
+  return PP_FromBool(result);
 }
 
 PP_Var ReadPlainText(PP_Instance instance_id,
@@ -134,7 +134,7 @@ void PPB_Flash_Clipboard_Proxy::OnMsgIsFormatAvailable(
     int clipboard_type,
     int format,
     bool* result) {
-  *result = PPBoolToBool(ppb_flash_clipboard_target()->IsFormatAvailable(
+  *result = PP_ToBool(ppb_flash_clipboard_target()->IsFormatAvailable(
       instance_id,
       static_cast<PP_Flash_Clipboard_Type>(clipboard_type),
       static_cast<PP_Flash_Clipboard_Format>(format)));

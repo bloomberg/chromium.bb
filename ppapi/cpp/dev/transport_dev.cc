@@ -32,7 +32,7 @@ Transport_Dev::Transport_Dev(Instance* instance,
 bool Transport_Dev::IsWritable() {
   if (!has_interface<PPB_Transport_Dev>())
     return false;
-  return PPBoolToBool(
+  return PP_ToBool(
       get_interface<PPB_Transport_Dev>()->IsWritable(pp_resource()));
 }
 

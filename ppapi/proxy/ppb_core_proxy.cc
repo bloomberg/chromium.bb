@@ -65,7 +65,7 @@ void CallOnMainThread(int delay_in_ms,
 }
 
 PP_Bool IsMainThread() {
-  return BoolToPPBool(GetMainThreadMessageLoop()->BelongsToCurrentThread());
+  return PP_FromBool(GetMainThreadMessageLoop()->BelongsToCurrentThread());
 }
 
 const PPB_Core core_interface = {

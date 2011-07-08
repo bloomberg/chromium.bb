@@ -33,8 +33,8 @@ bool PPTextRunToTextRun(const PP_TextRun_Dev* run,
     return false;
 
   output->text = *str;
-  output->rtl = PPBoolToBool(run->rtl);
-  output->override_direction = PPBoolToBool(run->override_direction);
+  output->rtl = PP_ToBool(run->rtl);
+  output->override_direction = PP_ToBool(run->override_direction);
   return true;
 }
 

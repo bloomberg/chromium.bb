@@ -8,7 +8,6 @@
 #include "ppapi/c/ppb_input_event.h"
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/c/ppb_messaging.h"
-#include "ppapi/cpp/common.h"
 #include "ppapi/cpp/dev/surface_3d_dev.h"
 #include "ppapi/cpp/graphics_2d.h"
 #include "ppapi/cpp/image_data.h"
@@ -113,22 +112,21 @@ Var Instance::GetInstanceObject() {
 bool Instance::BindGraphics(const Graphics2D& graphics) {
   if (!has_interface<PPB_Instance>())
     return false;
-  return PPBoolToBool(get_interface<PPB_Instance>()->BindGraphics(
+  return PP_ToBool(get_interface<PPB_Instance>()->BindGraphics(
       pp_instance(), graphics.pp_resource()));
 }
 
 bool Instance::BindGraphics(const Surface3D_Dev& graphics) {
   if (!has_interface<PPB_Instance>())
     return false;
-  return PPBoolToBool(get_interface<PPB_Instance>()->BindGraphics(
+  return PP_ToBool(get_interface<PPB_Instance>()->BindGraphics(
       pp_instance(), graphics.pp_resource()));
 }
 
 bool Instance::IsFullFrame() {
   if (!has_interface<PPB_Instance>())
     return false;
-  return PPBoolToBool(get_interface<PPB_Instance>()->IsFullFrame(
-      pp_instance()));
+  return PP_ToBool(get_interface<PPB_Instance>()->IsFullFrame(pp_instance()));
 }
 
 int32_t Instance::RequestInputEvents(uint32_t event_classes) {

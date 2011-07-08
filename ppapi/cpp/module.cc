@@ -30,7 +30,6 @@
 #include "ppapi/c/ppp_input_event.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/ppp_messaging.h"
-#include "ppapi/cpp/common.h"
 #include "ppapi/cpp/input_event.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/rect.h"
@@ -50,7 +49,7 @@ PP_Bool InputEvent_HandleEvent(PP_Instance pp_instance, PP_Resource resource) {
   if (!instance)
     return PP_FALSE;
 
-  return BoolToPPBool(instance->HandleInputEvent(InputEvent(resource)));
+  return PP_FromBool(instance->HandleInputEvent(InputEvent(resource)));
 }
 
 const PPP_InputEvent input_event_interface = {
@@ -71,7 +70,7 @@ PP_Bool Instance_DidCreate(PP_Instance pp_instance,
   if (!instance)
     return PP_FALSE;
   module_singleton->current_instances_[pp_instance] = instance;
-  return BoolToPPBool(instance->Init(argc, argn, argv));
+  return PP_FromBool(instance->Init(argc, argn, argv));
 }
 
 void Instance_DidDestroy(PP_Instance instance) {
@@ -108,7 +107,7 @@ void Instance_DidChangeFocus(PP_Instance pp_instance, PP_Bool has_focus) {
   Instance* instance = module_singleton->InstanceForPPInstance(pp_instance);
   if (!instance)
     return;
-  instance->DidChangeFocus(PPBoolToBool(has_focus));
+  instance->DidChangeFocus(PP_ToBool(has_focus));
 }
 
 PP_Bool Instance_HandleInputEvent(PP_Instance pp_instance,
@@ -119,7 +118,7 @@ PP_Bool Instance_HandleInputEvent(PP_Instance pp_instance,
   Instance* instance = module_singleton->InstanceForPPInstance(pp_instance);
   if (!instance)
     return PP_FALSE;
-  return BoolToPPBool(instance->HandleInputEvent(*event));
+  return PP_FromBool(instance->HandleInputEvent(*event));
 }
 
 PP_Bool Instance_HandleDocumentLoad(PP_Instance pp_instance,
@@ -130,8 +129,7 @@ PP_Bool Instance_HandleDocumentLoad(PP_Instance pp_instance,
   Instance* instance = module_singleton->InstanceForPPInstance(pp_instance);
   if (!instance)
     return PP_FALSE;
-  return BoolToPPBool(
-      instance->HandleDocumentLoad(URLLoader(pp_url_loader)));
+  return PP_FromBool(instance->HandleDocumentLoad(URLLoader(pp_url_loader)));
 }
 
 #ifndef PPAPI_INSTANCE_REMOVE_SCRIPTING

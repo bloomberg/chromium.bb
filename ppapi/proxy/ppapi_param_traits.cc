@@ -78,7 +78,7 @@ void WriteVectorWithoutCopy(Message* m, const std::vector<T>& p) {
 
 // static
 void ParamTraits<PP_Bool>::Write(Message* m, const param_type& p) {
-  ParamTraits<bool>::Write(m, pp::proxy::PPBoolToBool(p));
+  ParamTraits<bool>::Write(m, PP_ToBool(p));
 }
 
 // static
@@ -89,7 +89,7 @@ bool ParamTraits<PP_Bool>::Read(const Message* m, void** iter, param_type* r) {
   bool result = false;
   if (!ParamTraits<bool>::Read(m, iter, &result))
     return false;
-  *r = pp::proxy::BoolToPPBool(result);
+  *r = PP_FromBool(result);
   return true;
 }
 

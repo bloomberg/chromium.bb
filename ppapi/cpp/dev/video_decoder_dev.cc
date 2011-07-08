@@ -7,12 +7,10 @@
 #include "ppapi/c/dev/ppb_video_decoder_dev.h"
 #include "ppapi/c/dev/ppp_video_decoder_dev.h"
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/cpp/common.h"
 #include "ppapi/cpp/dev/context_3d_dev.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
-#include "ppapi/thunk/common.h"
 
 namespace pp {
 
@@ -53,7 +51,7 @@ bool VideoDecoder_Dev::GetConfigs(Instance* instance,
                                   uint32_t* num_of_matching_configs) {
   if (!has_interface<PPB_VideoDecoder_Dev>())
     return false;
-  return PPBoolToBool(get_interface<PPB_VideoDecoder_Dev>()->GetConfigs(
+  return PP_ToBool(get_interface<PPB_VideoDecoder_Dev>()->GetConfigs(
       instance->pp_instance(), prototype_config, matching_configs,
       matching_configs_size, num_of_matching_configs));
 }

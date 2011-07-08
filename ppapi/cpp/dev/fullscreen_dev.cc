@@ -5,7 +5,6 @@
 #include "ppapi/cpp/dev/fullscreen_dev.h"
 
 #include "ppapi/c/dev/ppb_fullscreen_dev.h"
-#include "ppapi/cpp/common.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
@@ -37,14 +36,14 @@ bool Fullscreen_Dev::IsFullscreen() {
 bool Fullscreen_Dev::SetFullscreen(bool fullscreen) {
   if (!has_interface<PPB_Fullscreen_Dev>())
     return false;
-  return PPBoolToBool(get_interface<PPB_Fullscreen_Dev>()->SetFullscreen(
-      instance_->pp_instance(), BoolToPPBool(fullscreen)));
+  return PP_ToBool(get_interface<PPB_Fullscreen_Dev>()->SetFullscreen(
+      instance_->pp_instance(), PP_FromBool(fullscreen)));
 }
 
 bool Fullscreen_Dev::GetScreenSize(Size* size) {
   if (!has_interface<PPB_Fullscreen_Dev>())
     return false;
-  return PPBoolToBool(get_interface<PPB_Fullscreen_Dev>()->GetScreenSize(
+  return PP_ToBool(get_interface<PPB_Fullscreen_Dev>()->GetScreenSize(
       instance_->pp_instance(), &size->pp_size()));
 }
 

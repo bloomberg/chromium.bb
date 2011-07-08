@@ -5,7 +5,6 @@
 #include "ppapi/cpp/dev/widget_dev.h"
 
 #include "ppapi/c/dev/ppb_widget_dev.h"
-#include "ppapi/cpp/common.h"
 #include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
@@ -31,21 +30,21 @@ Widget_Dev::Widget_Dev(const Widget_Dev& other) : Resource(other) {
 bool Widget_Dev::Paint(const Rect& rect, ImageData* image) {
   if (!has_interface<PPB_Widget_Dev>())
     return false;
-  return PPBoolToBool(get_interface<PPB_Widget_Dev>()->Paint(
+  return PP_ToBool(get_interface<PPB_Widget_Dev>()->Paint(
       pp_resource(), &rect.pp_rect(), image->pp_resource()));
 }
 
 bool Widget_Dev::HandleEvent(const PP_InputEvent& event) {
   if (!has_interface<PPB_Widget_Dev>())
     return false;
-  return PPBoolToBool(get_interface<PPB_Widget_Dev>()->HandleEvent(
+  return PP_ToBool(get_interface<PPB_Widget_Dev>()->HandleEvent(
       pp_resource(), &event));
 }
 
 bool Widget_Dev::GetLocation(Rect* location) {
   if (!has_interface<PPB_Widget_Dev>())
     return false;
-  return PPBoolToBool(get_interface<PPB_Widget_Dev>()->GetLocation(
+  return PP_ToBool(get_interface<PPB_Widget_Dev>()->GetLocation(
       pp_resource(), &location->pp_rect()));
 }
 

@@ -4,7 +4,6 @@
 
 #include "ppapi/cpp/input_event.h"
 
-#include "ppapi/cpp/common.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"

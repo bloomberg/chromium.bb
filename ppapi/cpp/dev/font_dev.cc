@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "ppapi/cpp/common.h"
 #include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/point.h"
@@ -75,8 +74,8 @@ TextRun_Dev::TextRun_Dev(const std::string& text,
                          bool override_direction)
     : text_(text) {
   pp_text_run_.text = text_.pp_var();
-  pp_text_run_.rtl = BoolToPPBool(rtl);
-  pp_text_run_.override_direction = BoolToPPBool(override_direction);
+  pp_text_run_.rtl = PP_FromBool(rtl);
+  pp_text_run_.override_direction = PP_FromBool(override_direction);
 }
 
 TextRun_Dev::TextRun_Dev(const TextRun_Dev& other) : text_(other.text_) {
@@ -151,14 +150,14 @@ bool Font_Dev::DrawTextAt(ImageData* dest,
                           bool image_data_is_opaque) const {
   if (!has_interface<PPB_Font_Dev>())
     return false;
-  return PPBoolToBool(get_interface<PPB_Font_Dev>()->DrawTextAt(
+  return PP_ToBool(get_interface<PPB_Font_Dev>()->DrawTextAt(
       pp_resource(),
       dest->pp_resource(),
       &text.pp_text_run(),
       &position.pp_point(),
       color,
       &clip.pp_rect(),
-      BoolToPPBool(image_data_is_opaque)));
+      PP_FromBool(image_data_is_opaque)));
 }
 
 int32_t Font_Dev::MeasureText(const TextRun_Dev& text) const {

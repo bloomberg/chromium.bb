@@ -94,7 +94,7 @@ bool HasProperty(PP_Var var,
         SerializedVarSendInput(dispatcher, var),
         SerializedVarSendInput(dispatcher, name), &se, &result));
   }
-  return PPBoolToBool(result);
+  return PP_ToBool(result);
 }
 
 bool HasMethod(PP_Var var,
@@ -112,7 +112,7 @@ bool HasMethod(PP_Var var,
         SerializedVarSendInput(dispatcher, var),
         SerializedVarSendInput(dispatcher, name), &se, &result));
   }
-  return PPBoolToBool(result);
+  return PP_ToBool(result);
 }
 
 PP_Var GetProperty(PP_Var var,
@@ -251,7 +251,7 @@ bool IsInstanceOf(PP_Var var,
       class_int, &class_data_int, &result));
   *ppp_class_data =
       reinterpret_cast<void*>(static_cast<intptr_t>(class_data_int));
-  return PPBoolToBool(result);
+  return PP_ToBool(result);
 }
 
 PP_Var CreateObject(PP_Instance instance,
@@ -393,7 +393,7 @@ void PPB_Var_Deprecated_Proxy::OnMsgHasProperty(
     SerializedVarOutParam exception,
     PP_Bool* result) {
   SetAllowPluginReentrancy();
-  *result = BoolToPPBool(ppb_var_target()->HasProperty(
+  *result = PP_FromBool(ppb_var_target()->HasProperty(
       var.Get(dispatcher()),
       name.Get(dispatcher()),
       exception.OutParam(dispatcher())));
@@ -405,7 +405,7 @@ void PPB_Var_Deprecated_Proxy::OnMsgHasMethodDeprecated(
     SerializedVarOutParam exception,
     PP_Bool* result) {
   SetAllowPluginReentrancy();
-  *result = BoolToPPBool(ppb_var_target()->HasMethod(
+  *result = PP_FromBool(ppb_var_target()->HasMethod(
       var.Get(dispatcher()),
       name.Get(dispatcher()),
       exception.OutParam(dispatcher())));

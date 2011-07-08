@@ -482,7 +482,7 @@ int32_t GetModuleLocalDirContents(PP_Instance instance,
     char* name_copy = new char[source.name.size() + 1];
     memcpy(name_copy, source.name.c_str(), source.name.size() + 1);
     dest->name = name_copy;
-    dest->is_dir = BoolToPPBool(source.is_dir);
+    dest->is_dir = PP_FromBool(source.is_dir);
   }
 
   return result;
@@ -611,7 +611,7 @@ void PPB_Flash_File_ModuleLocal_Proxy::OnMsgGetDirContents(
   entries->resize(contents->count);
   for (int32_t i = 0; i < contents->count; i++) {
     (*entries)[i].name.assign(contents->entries[i].name);
-    (*entries)[i].is_dir = PPBoolToBool(contents->entries[i].is_dir);
+    (*entries)[i].is_dir = PP_ToBool(contents->entries[i].is_dir);
   }
   ppb_flash_file_module_local_target()->FreeDirContents(instance, contents);
 }

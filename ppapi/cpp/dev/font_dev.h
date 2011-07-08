@@ -8,7 +8,6 @@
 #include <string>
 
 #include "ppapi/c/dev/ppb_font_dev.h"
-#include "ppapi/cpp/common.h"
 #include "ppapi/cpp/resource.h"
 #include "ppapi/cpp/var.h"
 
@@ -51,14 +50,14 @@ class FontDescription_Dev {
   PP_FontWeight_Dev weight() const { return pp_font_description_.weight; }
   void set_weight(PP_FontWeight_Dev w) { pp_font_description_.weight = w; }
 
-  bool italic() const { return PPBoolToBool(pp_font_description_.italic); }
-  void set_italic(bool i) { pp_font_description_.italic = BoolToPPBool(i); }
+  bool italic() const { return PP_ToBool(pp_font_description_.italic); }
+  void set_italic(bool i) { pp_font_description_.italic = PP_FromBool(i); }
 
   bool small_caps() const {
-    return PPBoolToBool(pp_font_description_.small_caps);
+    return PP_ToBool(pp_font_description_.small_caps);
   }
   void set_small_caps(bool s) {
-    pp_font_description_.small_caps = BoolToPPBool(s);
+    pp_font_description_.small_caps = PP_FromBool(s);
   }
 
   int letter_spacing() const { return pp_font_description_.letter_spacing; }

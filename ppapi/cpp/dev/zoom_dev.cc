@@ -5,7 +5,6 @@
 #include "ppapi/cpp/dev/zoom_dev.h"
 
 #include "ppapi/c/dev/ppb_zoom_dev.h"
-#include "ppapi/cpp/common.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
@@ -23,8 +22,7 @@ void Zoom(PP_Instance instance,
       pp::Instance::GetPerInstanceObject(instance, kPPPZoomInterface);
   if (!object)
     return;
-  static_cast<Zoom_Dev*>(object)->Zoom(factor,
-                                       PPBoolToBool(text_only));
+  static_cast<Zoom_Dev*>(object)->Zoom(factor, PP_ToBool(text_only));
 }
 
 const PPP_Zoom_Dev ppp_zoom = {

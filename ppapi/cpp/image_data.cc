@@ -8,7 +8,6 @@
 
 #include <algorithm>
 
-#include "ppapi/cpp/common.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
@@ -55,7 +54,7 @@ ImageData::ImageData(Instance* instance,
 
   PassRefAndInitData(get_interface<PPB_ImageData>()->Create(
       instance->pp_instance(), format, &size.pp_size(),
-      BoolToPPBool(init_to_zero)));
+      PP_FromBool(init_to_zero)));
 }
 
 ImageData& ImageData::operator=(const ImageData& other) {

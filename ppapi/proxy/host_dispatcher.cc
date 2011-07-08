@@ -40,7 +40,7 @@ PP_Bool ReserveInstanceID(PP_Module module, PP_Instance instance) {
   bool usable = true;
   if (!found->second->Send(new PpapiMsg_ReserveInstanceId(instance, &usable)))
     return PP_TRUE;
-  return BoolToPPBool(usable);
+  return PP_FromBool(usable);
 }
 
 // Saves the state of the given bool and puts it back when it goes out of

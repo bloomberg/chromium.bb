@@ -4,7 +4,6 @@
 
 #include "ppapi/cpp/core.h"
 
-#include "ppapi/cpp/common.h"
 #include "ppapi/cpp/completion_callback.h"
 
 namespace pp {
@@ -20,7 +19,7 @@ void Core::CallOnMainThread(int32_t delay_in_milliseconds,
 }
 
 bool Core::IsMainThread() {
-  return PPBoolToBool(interface_->IsMainThread());
+  return PP_ToBool(interface_->IsMainThread());
 }
 
 }  // namespace pp

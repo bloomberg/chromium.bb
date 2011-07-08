@@ -5,7 +5,6 @@
 #include "ppapi/cpp/dev/find_dev.h"
 
 #include "ppapi/c/dev/ppb_find_dev.h"
-#include "ppapi/cpp/common.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
@@ -28,15 +27,15 @@ PP_Bool StartFind(PP_Instance instance,
   if (!object)
     return PP_FALSE;
   bool return_value = static_cast<Find_Dev*>(object)->StartFind(
-      text, PPBoolToBool(case_sensitive));
-  return BoolToPPBool(return_value);
+      text, PP_ToBool(case_sensitive));
+  return PP_FromBool(return_value);
 }
 
 void SelectFindResult(PP_Instance instance, PP_Bool forward) {
   void* object =
       pp::Instance::GetPerInstanceObject(instance, kPPPFindInterface);
   if (object)
-    static_cast<Find_Dev*>(object)->SelectFindResult(PPBoolToBool(forward));
+    static_cast<Find_Dev*>(object)->SelectFindResult(PP_ToBool(forward));
 }
 
 void StopFind(PP_Instance instance) {
@@ -66,7 +65,7 @@ Find_Dev::~Find_Dev() {
 void Find_Dev::NumberOfFindResultsChanged(int32_t total, bool final_result) {
   if (has_interface<PPB_Find_Dev>()) {
     get_interface<PPB_Find_Dev>()->NumberOfFindResultsChanged(
-        associated_instance_->pp_instance(), total, BoolToPPBool(final_result));
+        associated_instance_->pp_instance(), total, PP_FromBool(final_result));
   }
 }
 

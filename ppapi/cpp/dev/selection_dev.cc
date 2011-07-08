@@ -4,7 +4,6 @@
 
 #include "ppapi/cpp/dev/selection_dev.h"
 
-#include "ppapi/cpp/common.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/var.h"
@@ -21,7 +20,7 @@ PP_Var GetSelectedText(PP_Instance instance, PP_Bool html) {
   if (!object)
     return Var().Detach();
   return static_cast<Selection_Dev*>(object)->
-      GetSelectedText(PPBoolToBool(html)).Detach();
+      GetSelectedText(PP_ToBool(html)).Detach();
 }
 
 const PPP_Selection_Dev ppp_selection = {

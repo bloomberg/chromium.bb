@@ -128,7 +128,7 @@ void SerializedVar::Inner::WriteToMessage(IPC::Message* m) const {
       // just serialized.
       break;
     case PP_VARTYPE_BOOL:
-      m->WriteBool(PPBoolToBool(var_.value.as_bool));
+      m->WriteBool(PP_ToBool(var_.value.as_bool));
       break;
     case PP_VARTYPE_INT32:
       m->WriteInt(var_.value.as_int);
@@ -185,7 +185,7 @@ bool SerializedVar::Inner::ReadFromMessage(const IPC::Message* m, void** iter) {
     case PP_VARTYPE_BOOL: {
       bool bool_value;
       success = m->ReadBool(iter, &bool_value);
-      var_.value.as_bool = BoolToPPBool(bool_value);
+      var_.value.as_bool = PP_FromBool(bool_value);
       break;
     }
     case PP_VARTYPE_INT32:
