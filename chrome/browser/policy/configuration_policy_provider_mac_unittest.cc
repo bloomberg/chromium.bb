@@ -345,6 +345,9 @@ INSTANTIATE_TEST_CASE_P(
             key::kDisabledSchemes),
         PolicyTestParams::ForStringPolicy(
             kPolicyDiskCacheDir,
-            key::kDiskCacheDir)));
+            key::kDiskCacheDir),
+        PolicyTestParams::ForIntegerPolicy(
+            kPolicyMaxConnectionsPerProxy,
+            key::kMaxConnectionsPerProxy)));
 
 }  // namespace policy

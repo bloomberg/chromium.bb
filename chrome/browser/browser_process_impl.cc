@@ -77,6 +77,7 @@
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/common/notification_service.h"
 #include "ipc/ipc_logging.h"
+#include "net/socket/client_socket_pool_manager.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -848,6 +849,15 @@ void BrowserProcessImpl::CreateLocalState() {
   // Initialize the disk cache location policy. This policy is not hot update-
   // able so we need to have it when initializing the profiles.
   local_state_->RegisterFilePathPref(prefs::kDiskCacheDir, FilePath());
+
+  // Another policy that needs to be defined before the net subsystem is
+  // initialized is MaxConnectionsPerProxy so we do it here.
+  local_state_->RegisterIntegerPref(prefs::kMaxConnectionsPerProxy,
+                                    net::kDefaultMaxSocketsPerProxyServer);
+  int max_per_proxy = local_state_->GetInteger(prefs::kMaxConnectionsPerProxy);
+  net::ClientSocketPoolManager::set_max_sockets_per_proxy_server(
+      std::max(std::min(max_per_proxy, 99),
+               net::ClientSocketPoolManager::max_sockets_per_group()));
 
   // This is observed by ChildProcessSecurityPolicy, which lives in content/
   // though, so it can't register itself.

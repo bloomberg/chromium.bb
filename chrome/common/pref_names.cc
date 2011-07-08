@@ -1322,6 +1322,7 @@ const char kCloudPrintRobotEmail[] = "cloud_print.robot_email";
 
 // Preference to story proxy settings.
 const char kProxy[] = "proxy";
+const char kMaxConnectionsPerProxy[] = "net.max_connections_per_proxy";
 
 // Preferences that are exclusivly used to store managed values for default
 // content settings.

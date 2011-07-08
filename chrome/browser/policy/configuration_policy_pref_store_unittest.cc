@@ -273,7 +273,9 @@ INSTANTIATE_TEST_CASE_P(
         TypeAndName(kPolicyRestoreOnStartup,
                     prefs::kRestoreOnStartup),
         TypeAndName(kPolicyPolicyRefreshRate,
-                    prefs::kUserPolicyRefreshRate)));
+                    prefs::kUserPolicyRefreshRate),
+        TypeAndName(kPolicyMaxConnectionsPerProxy,
+                    prefs::kMaxConnectionsPerProxy)));
 
 // Test cases for the proxy policy settings.
 class ConfigurationPolicyPrefStoreProxyTest : public testing::Test {
