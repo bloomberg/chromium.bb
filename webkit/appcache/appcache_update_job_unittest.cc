@@ -10,6 +10,7 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_error_job.h"
+#include "net/url_request/url_request_job_factory.h"
 #include "net/url_request/url_request_test_job.h"
 #include "net/url_request/url_request_test_util.h"
 #include "webkit/appcache/appcache_group.h"
@@ -49,8 +50,7 @@ class MockHttpServer {
     return GURL("https://cross_origin_host/" + path);
   }
 
-  static net::URLRequestJob* JobFactory(net::URLRequest* request,
-                                        const std::string& scheme) {
+  static net::URLRequestJob* JobFactory(net::URLRequest* request) {
     if (request->url().host() != "mockhost" &&
         request->url().host() != "cross_origin_host")
       return new net::URLRequestErrorJob(request, -1);
@@ -179,6 +179,14 @@ class MockHttpServer {
                                arraysize(not_found_headers));
       (*body) = "";
     }
+  }
+};
+
+class MockHttpServerJobFactory
+    : public net::URLRequestJobFactory::ProtocolHandler {
+ public:
+  virtual net::URLRequestJob* MaybeCreateJob(net::URLRequest* request) const {
+    return MockHttpServer::JobFactory(request);
   }
 };
 
@@ -311,14 +319,16 @@ class MockFrontend : public AppCacheFrontend {
 };
 
 // Helper factories to simulate redirected URL responses for tests.
-static net::URLRequestJob* RedirectFactory(net::URLRequest* request,
-                                           const std::string& scheme) {
-  return new net::URLRequestTestJob(
-      request,
-      net::URLRequestTestJob::test_redirect_headers(),
-      net::URLRequestTestJob::test_data_1(),
-      true);
-}
+class RedirectFactory : public net::URLRequestJobFactory::ProtocolHandler {
+ public:
+  virtual net::URLRequestJob* MaybeCreateJob(net::URLRequest* request) const {
+    return new net::URLRequestTestJob(
+        request,
+        net::URLRequestTestJob::test_redirect_headers(),
+        net::URLRequestTestJob::test_data_1(),
+        true);
+  }
+};
 
 // Helper class to simulate a URL that returns retry or success.
 class RetryRequestTestJob : public net::URLRequestTestJob {
@@ -347,8 +357,7 @@ class RetryRequestTestJob : public net::URLRequestTestJob {
     expected_requests_ = 0;
   }
 
-  static net::URLRequestJob* RetryFactory(net::URLRequest* request,
-                                          const std::string& scheme) {
+  static net::URLRequestJob* RetryFactory(net::URLRequest* request) {
     ++num_requests_;
     if (num_retries_ > 0 && request->original_url() == kRetryUrl) {
       --num_retries_;
@@ -417,6 +426,14 @@ class RetryRequestTestJob : public net::URLRequestTestJob {
   static int expected_requests_;
 };
 
+class RetryRequestTestJobFactory
+    : public net::URLRequestJobFactory::ProtocolHandler {
+ public:
+  virtual net::URLRequestJob* MaybeCreateJob(net::URLRequest* request) const {
+    return RetryRequestTestJob::RetryFactory(request);
+  }
+};
+
 // static
 const GURL RetryRequestTestJob::kRetryUrl("http://retry");
 int RetryRequestTestJob::num_requests_ = 0;
@@ -449,8 +466,7 @@ class HttpHeadersRequestTestJob : public net::URLRequestTestJob {
     already_checked_ = false;
   }
 
-  static net::URLRequestJob* IfModifiedSinceFactory(net::URLRequest* request,
-                                                    const std::string& scheme) {
+  static net::URLRequestJob* IfModifiedSinceFactory(net::URLRequest* request) {
     if (!already_checked_) {
       already_checked_ = true;  // only check once for a test
       const net::HttpRequestHeaders& extra_headers =
@@ -466,7 +482,7 @@ class HttpHeadersRequestTestJob : public net::URLRequestTestJob {
               net::HttpRequestHeaders::kIfNoneMatch, &header_value) &&
           header_value == expect_if_none_match_;
     }
-    return MockHttpServer::JobFactory(request, scheme);
+    return MockHttpServer::JobFactory(request);
   }
 
  private:
@@ -484,12 +500,20 @@ std::string HttpHeadersRequestTestJob::expect_if_none_match_;
 bool HttpHeadersRequestTestJob::saw_if_none_match_ = false;
 bool HttpHeadersRequestTestJob::already_checked_ = false;
 
+class IfModifiedSinceJobFactory
+    : public net::URLRequestJobFactory::ProtocolHandler {
+ public:
+  virtual net::URLRequestJob* MaybeCreateJob(net::URLRequest* request) const {
+    return HttpHeadersRequestTestJob::IfModifiedSinceFactory(request);
+  }
+};
+
 namespace {
 
 class IOThread : public base::Thread {
  public:
   explicit IOThread(const char* name)
-      : base::Thread(name), old_factory_(NULL), old_factory_https_(NULL) {
+      : base::Thread(name) {
   }
 
   ~IOThread() {
@@ -502,22 +526,27 @@ class IOThread : public base::Thread {
     return request_context_;
   }
 
+  void SetNewJobFactory(net::URLRequestJobFactory* job_factory) {
+    DCHECK(job_factory);
+    job_factory_.reset(job_factory);
+    request_context_->set_job_factory(job_factory_.get());
+  }
+
   virtual void Init() {
-    old_factory_ = net::URLRequest::RegisterProtocolFactory(
-        "http", MockHttpServer::JobFactory);
-    old_factory_https_ = net::URLRequest::RegisterProtocolFactory(
-        "https", MockHttpServer::JobFactory);
+    job_factory_.reset(new net::URLRequestJobFactory);
+    job_factory_->SetProtocolHandler("http", new MockHttpServerJobFactory);
+    job_factory_->SetProtocolHandler("https", new MockHttpServerJobFactory);
     request_context_ = new TestURLRequestContext();
+    request_context_->set_job_factory(job_factory_.get());
   }
 
   virtual void CleanUp() {
-    net::URLRequest::RegisterProtocolFactory("http", old_factory_);
-    net::URLRequest::RegisterProtocolFactory("https", old_factory_https_);
     request_context_ = NULL;
+    job_factory_.reset();
   }
 
-  net::URLRequest::ProtocolFactory* old_factory_;
-  net::URLRequest::ProtocolFactory* old_factory_https_;
+ private:
+  scoped_ptr<net::URLRequestJobFactory> job_factory_;
   scoped_refptr<net::URLRequestContext> request_context_;
 };
 
@@ -568,32 +597,10 @@ class AppCacheUpdateJobTest : public testing::Test,
         expect_newest_cache_(NULL),
         expect_non_null_update_time_(false),
         tested_manifest_(NONE),
-        tested_manifest_path_override_(NULL),
-        registered_factory_(false),
-        old_factory_(NULL) {
-  }
-
-  static void SetUpTestCase() {
-    io_thread_ = new IOThread("AppCacheUpdateJob IO test thread");
+        tested_manifest_path_override_(NULL) {
+    io_thread_.reset(new IOThread("AppCacheUpdateJob IO test thread"));
     base::Thread::Options options(MessageLoop::TYPE_IO, 0);
     io_thread_->StartWithOptions(options);
-  }
-
-  static base::WaitableEvent* io_thread_shutdown_event_;
-
-  // Cleanup function; must be called on the IO Thread.
-  static void CleanupIOThread() {
-    io_thread_shutdown_event_->Signal();
-  }
-
-  static void TearDownTestCase() {
-    io_thread_shutdown_event_ = new base::WaitableEvent(false, false);
-    io_thread_->message_loop()->PostTask(FROM_HERE,
-      NewRunnableFunction(CleanupIOThread));
-    io_thread_shutdown_event_->Wait();
-    delete io_thread_shutdown_event_;
-    delete io_thread_;
-    io_thread_ = NULL;
   }
 
   // Use a separate IO thread to run a test. Thread will be destroyed
@@ -819,9 +826,9 @@ class AppCacheUpdateJobTest : public testing::Test,
   void ManifestRedirectTest() {
     ASSERT_EQ(MessageLoop::TYPE_IO, MessageLoop::current()->type());
 
-    old_factory_ =
-        net::URLRequest::RegisterProtocolFactory("http", RedirectFactory);
-    registered_factory_ = true;
+    net::URLRequestJobFactory* new_factory(new net::URLRequestJobFactory);
+    new_factory->SetProtocolHandler("http", new RedirectFactory);
+    io_thread_->SetNewJobFactory(new_factory);
 
     MakeService();
     group_ = new AppCacheGroup(service_.get(), GURL("http://testme"),
@@ -1611,9 +1618,9 @@ class AppCacheUpdateJobTest : public testing::Test,
     // Set some large number of times to return retry.
     // Expect 1 manifest fetch and 3 retries.
     RetryRequestTestJob::Initialize(5, RetryRequestTestJob::RETRY_AFTER_0, 4);
-    old_factory_ = net::URLRequest::RegisterProtocolFactory(
-        "http", RetryRequestTestJob::RetryFactory);
-    registered_factory_ = true;
+    net::URLRequestJobFactory* new_factory(new net::URLRequestJobFactory);
+    new_factory->SetProtocolHandler("http", new RetryRequestTestJobFactory);
+    io_thread_->SetNewJobFactory(new_factory);
 
     MakeService();
     group_ = new AppCacheGroup(service_.get(), RetryRequestTestJob::kRetryUrl,
@@ -1642,9 +1649,9 @@ class AppCacheUpdateJobTest : public testing::Test,
     // Set some large number of times to return retry.
     // Expect 1 manifest fetch and 0 retries.
     RetryRequestTestJob::Initialize(5, RetryRequestTestJob::NO_RETRY_AFTER, 1);
-    old_factory_ = net::URLRequest::RegisterProtocolFactory(
-        "http", RetryRequestTestJob::RetryFactory);
-    registered_factory_ = true;
+    net::URLRequestJobFactory* new_factory(new net::URLRequestJobFactory);
+    new_factory->SetProtocolHandler("http", new RetryRequestTestJobFactory);
+    io_thread_->SetNewJobFactory(new_factory);
 
     MakeService();
     group_ = new AppCacheGroup(service_.get(), RetryRequestTestJob::kRetryUrl,
@@ -1674,9 +1681,9 @@ class AppCacheUpdateJobTest : public testing::Test,
     // Expect 1 request and 0 retry attempts.
     RetryRequestTestJob::Initialize(
         5, RetryRequestTestJob::NONZERO_RETRY_AFTER, 1);
-    old_factory_ = net::URLRequest::RegisterProtocolFactory(
-        "http", RetryRequestTestJob::RetryFactory);
-    registered_factory_ = true;
+    net::URLRequestJobFactory* new_factory(new net::URLRequestJobFactory);
+    new_factory->SetProtocolHandler("http", new RetryRequestTestJobFactory);
+    io_thread_->SetNewJobFactory(new_factory);
 
     MakeService();
     group_ = new AppCacheGroup(service_.get(), RetryRequestTestJob::kRetryUrl,
@@ -1705,9 +1712,9 @@ class AppCacheUpdateJobTest : public testing::Test,
     // Set 2 as the retry limit (does not exceed the max).
     // Expect 1 manifest fetch, 2 retries, 1 url fetch, 1 manifest refetch.
     RetryRequestTestJob::Initialize(2, RetryRequestTestJob::RETRY_AFTER_0, 5);
-    old_factory_ = net::URLRequest::RegisterProtocolFactory(
-        "http", RetryRequestTestJob::RetryFactory);
-    registered_factory_ = true;
+    net::URLRequestJobFactory* new_factory(new net::URLRequestJobFactory);
+    new_factory->SetProtocolHandler("http", new RetryRequestTestJobFactory);
+    io_thread_->SetNewJobFactory(new_factory);
 
     MakeService();
     group_ = new AppCacheGroup(service_.get(), RetryRequestTestJob::kRetryUrl,
@@ -1736,9 +1743,9 @@ class AppCacheUpdateJobTest : public testing::Test,
     // Set 1 as the retry limit (does not exceed the max).
     // Expect 1 manifest fetch, 1 url fetch, 1 url retry, 1 manifest refetch.
     RetryRequestTestJob::Initialize(1, RetryRequestTestJob::RETRY_AFTER_0, 4);
-    old_factory_ = net::URLRequest::RegisterProtocolFactory(
-        "http", RetryRequestTestJob::RetryFactory);
-    registered_factory_ = true;
+    net::URLRequestJobFactory* new_factory(new net::URLRequestJobFactory);
+    new_factory->SetProtocolHandler("http", new RetryRequestTestJobFactory);
+    io_thread_->SetNewJobFactory(new_factory);
 
     MakeService();
     group_ = new AppCacheGroup(service_.get(), GURL("http://retryurl"),
@@ -2577,9 +2584,9 @@ class AppCacheUpdateJobTest : public testing::Test,
   void IfModifiedSinceTest() {
     ASSERT_EQ(MessageLoop::TYPE_IO, MessageLoop::current()->type());
 
-    old_factory_ = net::URLRequest::RegisterProtocolFactory(
-        "http", HttpHeadersRequestTestJob::IfModifiedSinceFactory);
-    registered_factory_ = true;
+    net::URLRequestJobFactory* new_factory(new net::URLRequestJobFactory);
+    new_factory->SetProtocolHandler("http", new IfModifiedSinceJobFactory);
+    io_thread_->SetNewJobFactory(new_factory);
 
     MakeService();
     group_ = new AppCacheGroup(service_.get(), GURL("http://headertest"), 111);
@@ -2643,9 +2650,9 @@ class AppCacheUpdateJobTest : public testing::Test,
     ASSERT_EQ(MessageLoop::TYPE_IO, MessageLoop::current()->type());
 
     HttpHeadersRequestTestJob::Initialize("Sat, 29 Oct 1994 19:43:31 GMT", "");
-    old_factory_ = net::URLRequest::RegisterProtocolFactory(
-        "http", HttpHeadersRequestTestJob::IfModifiedSinceFactory);
-    registered_factory_ = true;
+    net::URLRequestJobFactory* new_factory(new net::URLRequestJobFactory);
+    new_factory->SetProtocolHandler("http", new IfModifiedSinceJobFactory);
+    io_thread_->SetNewJobFactory(new_factory);
 
     MakeService();
     group_ = new AppCacheGroup(
@@ -2701,9 +2708,9 @@ class AppCacheUpdateJobTest : public testing::Test,
     ASSERT_EQ(MessageLoop::TYPE_IO, MessageLoop::current()->type());
 
     HttpHeadersRequestTestJob::Initialize("", "\"LadeDade\"");
-    old_factory_ = net::URLRequest::RegisterProtocolFactory(
-        "http", HttpHeadersRequestTestJob::IfModifiedSinceFactory);
-    registered_factory_ = true;
+    net::URLRequestJobFactory* new_factory(new net::URLRequestJobFactory);
+    new_factory->SetProtocolHandler("http", new IfModifiedSinceJobFactory);
+    io_thread_->SetNewJobFactory(new_factory);
 
     MakeService();
     group_ = new AppCacheGroup(
@@ -2759,9 +2766,9 @@ class AppCacheUpdateJobTest : public testing::Test,
     ASSERT_EQ(MessageLoop::TYPE_IO, MessageLoop::current()->type());
 
     HttpHeadersRequestTestJob::Initialize("", "\"LadeDade\"");
-    old_factory_ = net::URLRequest::RegisterProtocolFactory(
-        "http", HttpHeadersRequestTestJob::IfModifiedSinceFactory);
-    registered_factory_ = true;
+    net::URLRequestJobFactory* new_factory(new net::URLRequestJobFactory);
+    new_factory->SetProtocolHandler("http", new IfModifiedSinceJobFactory);
+    io_thread_->SetNewJobFactory(new_factory);
 
     MakeService();
     group_ = new AppCacheGroup(service_.get(), GURL("http://headertest"), 111);
@@ -2794,9 +2801,9 @@ class AppCacheUpdateJobTest : public testing::Test,
     // Verify that code is correct when building multiple extra headers.
     HttpHeadersRequestTestJob::Initialize(
         "Sat, 29 Oct 1994 19:43:31 GMT", "\"LadeDade\"");
-    old_factory_ = net::URLRequest::RegisterProtocolFactory(
-        "http", HttpHeadersRequestTestJob::IfModifiedSinceFactory);
-    registered_factory_ = true;
+    net::URLRequestJobFactory* new_factory(new net::URLRequestJobFactory);
+    new_factory->SetProtocolHandler("http", new IfModifiedSinceJobFactory);
+    io_thread_->SetNewJobFactory(new_factory);
 
     MakeService();
     group_ = new AppCacheGroup(service_.get(), GURL("http://headertest"), 111);
@@ -2918,8 +2925,6 @@ class AppCacheUpdateJobTest : public testing::Test,
     STLDeleteContainerPointers(frontends_.begin(), frontends_.end());
     response_infos_.clear();
     service_.reset(NULL);
-    if (registered_factory_)
-      net::URLRequest::RegisterProtocolFactory("http", old_factory_);
 
     event_->Signal();
   }
@@ -3234,7 +3239,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     PENDING_MASTER_NO_UPDATE,
   };
 
-  static IOThread* io_thread_;
+  scoped_ptr<IOThread> io_thread_;
 
   scoped_ptr<MockAppCacheService> service_;
   scoped_refptr<AppCacheGroup> group_;
@@ -3266,15 +3271,7 @@ class AppCacheUpdateJobTest : public testing::Test,
   const char* tested_manifest_path_override_;
   AppCache::EntryMap expect_extra_entries_;
   std::map<GURL, int64> expect_response_ids_;
-
-  bool registered_factory_;
-  net::URLRequest::ProtocolFactory* old_factory_;
 };
-
-// static
-IOThread* AppCacheUpdateJobTest::io_thread_ = NULL;
-base::WaitableEvent* AppCacheUpdateJobTest::io_thread_shutdown_event_ = NULL;
-
 
 TEST_F(AppCacheUpdateJobTest, AlreadyChecking) {
   MockAppCacheService service;
