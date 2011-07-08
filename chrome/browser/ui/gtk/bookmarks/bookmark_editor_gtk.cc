@@ -276,10 +276,17 @@ void BookmarkEditorGtk::Init(GtkWindow* parent_window) {
 
   name_entry_ = gtk_entry_new();
   std::string title;
+  GURL url;
   if (details_.type == EditDetails::EXISTING_NODE) {
     title = UTF16ToUTF8(details_.existing_node->GetTitle());
+    url = details_.existing_node->GetURL();
   } else if (details_.type == EditDetails::NEW_FOLDER) {
     title = l10n_util::GetStringUTF8(IDS_BOOMARK_EDITOR_NEW_FOLDER_NAME);
+  } else if (details_.type == EditDetails::NEW_URL) {
+    string16 title16;
+    bookmark_utils::GetURLAndTitleToBookmarkFromCurrentTab(profile_,
+        &url, &title16);
+    title = UTF16ToUTF8(title16);
   }
   gtk_entry_set_text(GTK_ENTRY(name_entry_), title.c_str());
   g_signal_connect(name_entry_, "changed",
@@ -289,10 +296,7 @@ void BookmarkEditorGtk::Init(GtkWindow* parent_window) {
   GtkWidget* table;
   if (details_.type != EditDetails::NEW_FOLDER) {
     url_entry_ = gtk_entry_new();
-    std::string url_spec;
-    if (details_.type == EditDetails::EXISTING_NODE)
-      url_spec = details_.existing_node->GetURL().spec();
-    gtk_entry_set_text(GTK_ENTRY(url_entry_), url_spec.c_str());
+    gtk_entry_set_text(GTK_ENTRY(url_entry_), url.spec().c_str());
     g_signal_connect(url_entry_, "changed",
                      G_CALLBACK(OnEntryChangedThunk), this);
     gtk_entry_set_activates_default(GTK_ENTRY(url_entry_), TRUE);

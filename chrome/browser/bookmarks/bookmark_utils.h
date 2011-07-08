@@ -193,6 +193,12 @@ void GetURLAndTitleToBookmark(TabContents* tab_contents,
                               GURL* url,
                               string16* title);
 
+// Fills in the URL and title for a bookmark from the current tab of the
+// specified profile.
+void GetURLAndTitleToBookmarkFromCurrentTab(Profile* profile,
+                                            GURL* url,
+                                            string16* title);
+
 // Returns, by reference in |urls|, the url and title pairs for each open
 // tab in browser.
 void GetURLsForOpenTabs(Browser* browser,

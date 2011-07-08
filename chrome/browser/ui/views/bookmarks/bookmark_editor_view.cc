@@ -267,11 +267,19 @@ void BookmarkEditorView::Init() {
   title_tf_.set_parent_owned(false);
 
   std::wstring title;
-  if (details_.type == EditDetails::EXISTING_NODE)
+  GURL url;
+  if (details_.type == EditDetails::EXISTING_NODE) {
     title = details_.existing_node->GetTitle();
-  else if (details_.type == EditDetails::NEW_FOLDER)
+    url = details_.existing_node->GetURL();
+  } else if (details_.type == EditDetails::NEW_FOLDER) {
     title = UTF16ToWide(
         l10n_util::GetStringUTF16(IDS_BOOMARK_EDITOR_NEW_FOLDER_NAME));
+  } else if (details_.type == EditDetails::NEW_URL) {
+    string16 title16;
+    bookmark_utils::GetURLAndTitleToBookmarkFromCurrentTab(profile_,
+        &url, &title16);
+    title = UTF16ToWide(title16);
+  }
   title_tf_.SetText(title);
   title_tf_.SetController(this);
 
@@ -280,14 +288,14 @@ void BookmarkEditorView::Init() {
   title_tf_.SetAccessibleName(WideToUTF16Hack(title_label_->GetText()));
 
   string16 url_text;
-  if (details_.type == EditDetails::EXISTING_NODE) {
+  if (details_.type != EditDetails::NEW_FOLDER) {
     std::string languages = profile_
         ? profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)
         : std::string();
     // Because this gets parsed by FixupURL(), it's safe to omit the scheme or
     // trailing slash, and unescape most characters, but we need to not drop any
     // username/password, or unescape anything that changes the meaning.
-    url_text = net::FormatUrl(details_.existing_node->GetURL(), languages,
+    url_text = net::FormatUrl(url, languages,
         net::kFormatUrlOmitAll & ~net::kFormatUrlOmitUsernamePassword,
         UnescapeRule::SPACES, NULL, NULL, NULL);
   }
