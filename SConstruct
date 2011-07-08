@@ -1295,10 +1295,11 @@ def PyAutoTesterIsBroken(env):
 pre_base_env.AddMethod(PyAutoTesterIsBroken)
 
 
-# Disable async surfaway pyauto test suite until issues it raises on bots
-# are fixed.  TODO(nfullagar): re-enable when this suite won't break the bots.
+# Disable async surfaway pyauto test suite on newlib until issues it raises on
+# bots are fixed.  TODO(nfullagar): re-enable when this suite for newlib when it
+# won't break the bots.
 def PyAutoTesterSurfawayAsyncIsBroken(env):
-  return True
+  return not env.Bit('nacl_glibc')
 
 pre_base_env.AddMethod(PyAutoTesterSurfawayAsyncIsBroken)
 

@@ -43,7 +43,7 @@ class NaClTest(pyauto.PyUITest):
       self.assertEqual(page_title, self.GetActiveTabTitle())
       tab.GoBack()
       nacl_utils.AssertNoCrash(self)
-      self.assertEqual(version_title, self.GetActiveTabTitle())
+      self.WaitUntil(lambda: self.GetActiveTabTitle() == version_title);
 
   def surfAwayAsync(self, page, title_word):
     """Navigate to PPAPI page and surf away asynchronously."""
