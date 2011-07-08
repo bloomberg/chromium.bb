@@ -229,7 +229,7 @@ remoting.ClientSession.prototype.registerConnection_ =
     that.clientJid = xhr.responseText;
 
     // TODO(ajwong): Remove old version support.
-    if (that.plugin.API_VERSION_ >= 2) {
+    if (that.plugin.apiVersion >= 2) {
       that.plugin.connect(that.hostJid, that.hostPublicKey, that.clientJid,
                           that.accessCode);
     } else {
