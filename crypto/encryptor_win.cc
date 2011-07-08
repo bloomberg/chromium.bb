@@ -4,8 +4,9 @@
 
 #include "crypto/encryptor.h"
 
-#include <vector>
+#include <string.h>
 
+#include "base/string_util.h"
 #include "crypto/symmetric_key.h"
 
 namespace crypto {
@@ -83,36 +84,42 @@ bool Encryptor::Encrypt(const base::StringPiece& plaintext,
                         std::string* ciphertext) {
   DWORD data_len = plaintext.size();
   DWORD total_len = data_len + block_size_;
+  CHECK_GT(total_len, data_len);
 
   // CryptoAPI encrypts/decrypts in place.
-  std::vector<BYTE> tmp(total_len);
-  memcpy(&tmp[0], plaintext.data(), data_len);
+  char* ciphertext_data = WriteInto(ciphertext, total_len + 1);
+  memcpy(ciphertext_data, plaintext.data(), data_len);
 
-  BOOL ok = CryptEncrypt(capi_key_.get(), NULL, TRUE, 0, &tmp[0],
-                         &data_len, total_len);
-  if (!ok)
+  BOOL ok = CryptEncrypt(capi_key_.get(), NULL, TRUE, 0,
+                         reinterpret_cast<BYTE*>(ciphertext_data), &data_len,
+                         total_len);
+  if (!ok) {
+    ciphertext->clear();
     return false;
+  }
 
-  ciphertext->assign(reinterpret_cast<char*>(&tmp[0]), data_len);
+  ciphertext->resize(data_len);
   return true;
 }
 
 bool Encryptor::Decrypt(const base::StringPiece& ciphertext,
                         std::string* plaintext) {
   DWORD data_len = ciphertext.size();
-  if (data_len == 0)
+  if (data_len == 0 || (data_len + 1) < data_len)
     return false;
 
-  std::vector<BYTE> tmp(data_len);
-  memcpy(&tmp[0], ciphertext.data(), data_len);
+  // CryptoAPI encrypts/decrypts in place.
+  char* plaintext_data = WriteInto(plaintext, data_len + 1);
+  memcpy(plaintext_data, ciphertext.data(), data_len);
 
-  BOOL ok = CryptDecrypt(capi_key_.get(), NULL, TRUE, 0, &tmp[0], &data_len);
-  if (!ok)
+  BOOL ok = CryptDecrypt(capi_key_.get(), NULL, TRUE, 0,
+                         reinterpret_cast<BYTE*>(plaintext_data), &data_len);
+  if (!ok) {
+    plaintext->clear();
     return false;
+  }
 
-  DCHECK_GT(tmp.size(), data_len);
-
-  plaintext->assign(reinterpret_cast<char*>(&tmp[0]), data_len);
+  plaintext->resize(data_len);
   return true;
 }
 
