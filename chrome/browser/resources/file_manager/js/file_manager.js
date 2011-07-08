@@ -2326,10 +2326,13 @@ FileManager.prototype = {
    * @return {boolean} True if name is vaild.
    */
   FileManager.prototype.validateFileName_ = function(name, isFolder) {
+    if (name.length == 0) {
+      return false;
+    }
     var testResult = /[\/\\\<\>\:\?\*\"\|]/.exec(name);
     if (testResult) {
       var msgId = isFolder ? 'ERROR_INVALID_FOLDER_CHARACTER' :
-                             'ERROR_INVALID_FILE_CHARACTER'
+                             'ERROR_INVALID_FILE_CHARACTER';
       window.alert(strf(msgId, testResult[0]));
       return false;
     }
@@ -2339,6 +2342,10 @@ FileManager.prototype = {
     }
     if (/^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])$/i.test(name)) {
       window.alert(str('ERROR_RESERVED_NAME'));
+      return false;
+    }
+    if (this.filterFiles_ && name[0] == '.') {
+      window.alert(str('ERROR_HIDDEN_NAME'));
       return false;
     }
     return true;
