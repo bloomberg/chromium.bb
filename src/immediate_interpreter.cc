@@ -98,6 +98,36 @@ void ImmediateInterpreter::UpdatePalmState(const HardwareState& hwstate) {
   }
 }
 
+namespace {
+struct GetGesturingFingersCompare {
+  // Returns true if finger_a is strictly closer to keyboard than finger_b
+  bool operator()(const FingerState* finger_a, const FingerState* finger_b) {
+    return finger_a->position_y < finger_b->position_y;
+  }
+};
+}  // namespace {}
+
+set<short, kMaxGesturingFingers> ImmediateInterpreter::GetGesturingFingers(
+    const HardwareState& hwstate) const {
+  const size_t kMaxSize = 2;  // We support up to 2 finger gestures
+  if (pointing_.size() <= kMaxSize ||
+      (hw_props_.supports_t5r2 && pointing_.size() > 2))
+    return pointing_;
+
+  const FingerState* fs[hwstate.finger_cnt];
+  for (size_t i = 0; i < hwstate.finger_cnt; ++i)
+    fs[i] = &hwstate.fingers[i];
+
+  GetGesturingFingersCompare compare;
+  // Pull the kMaxSize FingerStates w/ the lowest position_y to the
+  // front of fs[].
+  std::partial_sort(fs, fs + kMaxSize, fs + hwstate.finger_cnt, compare);
+  set<short, kMaxGesturingFingers> ret;
+  ret.insert(fs[0]->tracking_id);
+  ret.insert(fs[1]->tracking_id);
+  return ret;
+}
+
 void ImmediateInterpreter::SetPrevState(const HardwareState& hwstate) {
   prev_state_.timestamp = hwstate.timestamp;
   prev_state_.finger_cnt = min(hwstate.finger_cnt, hw_props_.max_finger_cnt);

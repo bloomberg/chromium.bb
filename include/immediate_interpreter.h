@@ -25,6 +25,7 @@ static const int kMaxGesturingFingers = 5;
 class ImmediateInterpreter : public Interpreter {
   FRIEND_TEST(ImmediateInterpreterTest, SameFingersTest);
   FRIEND_TEST(ImmediateInterpreterTest, PalmTest);
+  FRIEND_TEST(ImmediateInterpreterTest, GetGesturingFingersTest);
  public:
   ImmediateInterpreter();
   virtual ~ImmediateInterpreter();
@@ -42,6 +43,13 @@ class ImmediateInterpreter : public Interpreter {
 
   // Updates *palm_, pointing_ below.
   void UpdatePalmState(const HardwareState& hwstate);
+
+  // Gets the finger or fingers we should consider for gestures.
+  // Currently, it fetches the (up to) two fingers closest to the keyboard
+  // that are not palms. There is one exception: for t5r2 pads with > 2
+  // fingers present, we return all fingers.
+  set<short, kMaxGesturingFingers> GetGesturingFingers(
+      const HardwareState& hwstate) const;
 
   // Does a deep copy of hwstate into prev_state_
   void SetPrevState(const HardwareState& hwstate);
