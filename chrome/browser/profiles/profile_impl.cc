@@ -602,6 +602,14 @@ ProfileImpl::~ProfileImpl() {
         NewRunnableFunction(&BrowsingDataRemover::ClearGearsData, path_));
   }
 
+  if (db_tracker_) {
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        NewRunnableMethod(
+            db_tracker_.get(),
+            &webkit_database::DatabaseTracker::Shutdown));
+  }
+
   // DownloadManager is lazily created, so check before accessing it.
   if (download_manager_.get()) {
     // The download manager queries the history system and should be shut down
@@ -1309,7 +1317,8 @@ void ProfileImpl::CreateQuotaManagerAndClients() {
       GetExtensionSpecialStoragePolicy(),
       quota_manager_->proxy());
   db_tracker_ = new webkit_database::DatabaseTracker(
-      GetPath(), IsOffTheRecord(), GetExtensionSpecialStoragePolicy(),
+      GetPath(), IsOffTheRecord(), clear_local_state_on_exit_,
+      GetExtensionSpecialStoragePolicy(),
       quota_manager_->proxy(),
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
   webkit_context_ = new WebKitContext(
@@ -1382,6 +1391,10 @@ void ProfileImpl::Observe(NotificationType type,
         }
         if (appcache_service_) {
           appcache_service_->SetClearLocalStateOnExit(
+              clear_local_state_on_exit_);
+        }
+        if (db_tracker_) {
+          db_tracker_->SetClearLocalStateOnExit(
               clear_local_state_on_exit_);
         }
       } else if (*pref_name_in == prefs::kGoogleServicesUsername) {

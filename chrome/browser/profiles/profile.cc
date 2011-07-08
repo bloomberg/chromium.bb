@@ -265,12 +265,13 @@ class OffTheRecordProfileImpl : public Profile,
             profile_->GetRuntimeId(), GetRuntimeId()));
 
     // Clean up all DB files/directories
-    if (db_tracker_)
+    if (db_tracker_) {
       BrowserThread::PostTask(
           BrowserThread::FILE, FROM_HERE,
           NewRunnableMethod(
               db_tracker_.get(),
-              &webkit_database::DatabaseTracker::DeleteIncognitoDBDirectory));
+              &webkit_database::DatabaseTracker::Shutdown));
+    }
 
     BrowserList::RemoveObserver(this);
 
@@ -741,7 +742,7 @@ class OffTheRecordProfileImpl : public Profile,
         GetExtensionSpecialStoragePolicy(),
         quota_manager_->proxy());
     db_tracker_ = new webkit_database::DatabaseTracker(
-        GetPath(), IsOffTheRecord(), GetExtensionSpecialStoragePolicy(),
+        GetPath(), IsOffTheRecord(), false, GetExtensionSpecialStoragePolicy(),
         quota_manager_->proxy(),
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
     webkit_context_ = new WebKitContext(

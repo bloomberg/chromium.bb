@@ -123,9 +123,6 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual MHTMLGenerationManager* mhtml_generation_manager();
 
  private:
-  void ClearLocalState(const FilePath& profile_path);
-  bool ShouldClearLocalState(FilePath* profile_path);
-
   void CreateResourceDispatcherHost();
   void CreateMetricsService();
 

@@ -103,6 +103,10 @@ void VfsBackend::OpenFile(const FilePath& file_path,
              base::PLATFORM_FILE_DELETE_ON_CLOSE;
   }
 
+  // This flag will allow us to delete the file later on from the browser
+  // process.
+  flags |= base::PLATFORM_FILE_SHARE_DELETE;
+
   // Try to open/create the DB file.
   *file_handle =
       base::CreatePlatformFile(file_path, flags, NULL, NULL);

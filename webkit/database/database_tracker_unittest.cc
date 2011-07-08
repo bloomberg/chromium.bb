@@ -5,6 +5,8 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop_proxy.h"
+#include "base/platform_file.h"
 #include "base/scoped_temp_dir.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -184,7 +186,7 @@ class DatabaseTracker_TestHelper_Test {
     ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
     scoped_refptr<DatabaseTracker> tracker(
-        new DatabaseTracker(temp_dir.path(), incognito_mode,
+        new DatabaseTracker(temp_dir.path(), incognito_mode, false,
                             new TestSpecialStoragePolicy,
                             NULL, NULL));
 
@@ -287,7 +289,7 @@ class DatabaseTracker_TestHelper_Test {
     ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
     scoped_refptr<DatabaseTracker> tracker(
-        new DatabaseTracker(temp_dir.path(), incognito_mode,
+        new DatabaseTracker(temp_dir.path(), incognito_mode, false,
                             new TestSpecialStoragePolicy,
                             NULL, NULL));
 
@@ -407,14 +409,14 @@ class DatabaseTracker_TestHelper_Test {
     // Trying to delete an origin with databases in use should fail
     tracker->DatabaseOpened(kOrigin1, kDB1, kDescription, 0,
                             &database_size);
-    EXPECT_FALSE(tracker->DeleteOrigin(kOrigin1));
+    EXPECT_FALSE(tracker->DeleteOrigin(kOrigin1, false));
     origin1_info = tracker->GetCachedOriginInfo(kOrigin1);
     EXPECT_TRUE(origin1_info);
     EXPECT_EQ(1, origin1_info->GetDatabaseSize(kDB1));
     tracker->DatabaseClosed(kOrigin1, kDB1);
 
     // Delete an origin that doesn't have any database in use
-    EXPECT_TRUE(tracker->DeleteOrigin(kOrigin1));
+    EXPECT_TRUE(tracker->DeleteOrigin(kOrigin1, false));
     origins_info.clear();
     EXPECT_TRUE(tracker->GetAllOriginsInfo(&origins_info));
     EXPECT_EQ(size_t(1), origins_info.size());
@@ -438,7 +440,7 @@ class DatabaseTracker_TestHelper_Test {
     scoped_refptr<TestQuotaManagerProxy> test_quota_proxy(
         new TestQuotaManagerProxy);
     scoped_refptr<DatabaseTracker> tracker(
-        new DatabaseTracker(temp_dir.path(), false /* incognito */,
+        new DatabaseTracker(temp_dir.path(), false /* incognito */, false,
                             NULL, test_quota_proxy, NULL));
     EXPECT_TRUE(test_quota_proxy->registered_client_);
 
@@ -516,6 +518,102 @@ class DatabaseTracker_TestHelper_Test {
     crashed_renderer_connections.RemoveAllConnections();
     test_quota_proxy->SimulateQuotaManagerDestroyed();
   }
+
+  static void DatabaseTrackerClearLocalStateOnExit() {
+    int64 database_size = 0;
+    const string16 kOrigin1 =
+        DatabaseUtil::GetOriginIdentifier(GURL(kOrigin1Url));
+    const string16 kOrigin2 =
+        DatabaseUtil::GetOriginIdentifier(GURL(kOrigin2Url));
+    const string16 kDB1 = ASCIIToUTF16("db1");
+    const string16 kDB2 = ASCIIToUTF16("db2");
+    const string16 kDB3 = ASCIIToUTF16("db3");
+    const string16 kDescription = ASCIIToUTF16("database_description");
+
+    // Initialize the tracker database.
+    ScopedTempDir temp_dir;
+    ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+    FilePath origin1_db_dir;
+    {
+      scoped_refptr<DatabaseTracker> tracker(
+          new DatabaseTracker(
+              temp_dir.path(), false, true,
+              new TestSpecialStoragePolicy,
+              NULL,
+              base::MessageLoopProxy::CreateForCurrentThread()));
+
+      // Open three new databases.
+      tracker->DatabaseOpened(kOrigin1, kDB1, kDescription, 0,
+                              &database_size);
+      EXPECT_EQ(0, database_size);
+      tracker->DatabaseOpened(kOrigin2, kDB2, kDescription, 0,
+                              &database_size);
+      EXPECT_EQ(0, database_size);
+      tracker->DatabaseOpened(kOrigin1, kDB3, kDescription, 0,
+                              &database_size);
+      EXPECT_EQ(0, database_size);
+
+      // Write some data to each file.
+      FilePath db_file;
+      db_file = tracker->GetFullDBFilePath(kOrigin1, kDB1);
+      EXPECT_TRUE(file_util::CreateDirectory(db_file.DirName()));
+      EXPECT_TRUE(EnsureFileOfSize(db_file, 1));
+
+      db_file = tracker->GetFullDBFilePath(kOrigin2, kDB2);
+      EXPECT_TRUE(file_util::CreateDirectory(db_file.DirName()));
+      EXPECT_TRUE(EnsureFileOfSize(db_file, 2));
+
+      db_file = tracker->GetFullDBFilePath(kOrigin1, kDB3);
+      EXPECT_TRUE(file_util::CreateDirectory(db_file.DirName()));
+      EXPECT_TRUE(EnsureFileOfSize(db_file, 3));
+
+      // Store the origin database directory as long as it still exists.
+      origin1_db_dir = tracker->GetFullDBFilePath(kOrigin1, kDB3).DirName();
+
+      tracker->DatabaseModified(kOrigin1, kDB1);
+      tracker->DatabaseModified(kOrigin2, kDB2);
+      tracker->DatabaseModified(kOrigin1, kDB3);
+
+      // Close all databases but one database.
+      tracker->DatabaseClosed(kOrigin1, kDB1);
+      tracker->DatabaseClosed(kOrigin2, kDB2);
+
+      // Keep an open file handle to the last database.
+      base::PlatformFile file_handle = base::CreatePlatformFile(
+          tracker->GetFullDBFilePath(kOrigin1, kDB3),
+          base::PLATFORM_FILE_READ |
+          base::PLATFORM_FILE_WRITE |
+          base::PLATFORM_FILE_EXCLUSIVE_READ |
+          base::PLATFORM_FILE_EXCLUSIVE_WRITE |
+          base::PLATFORM_FILE_OPEN_ALWAYS |
+          base::PLATFORM_FILE_SHARE_DELETE,
+          NULL, NULL);
+
+      tracker->Shutdown();
+
+      base::ClosePlatformFile(file_handle);
+      tracker->DatabaseClosed(kOrigin1, kDB3);
+    }
+
+    // At this point, the database tracker should be gone. Create a new one.
+    scoped_refptr<DatabaseTracker> tracker(
+        new DatabaseTracker(temp_dir.path(), false, false,
+                            new TestSpecialStoragePolicy,
+                            NULL, NULL));
+
+    // Get all data for all origins.
+    std::vector<OriginInfo> origins_info;
+    EXPECT_TRUE(tracker->GetAllOriginsInfo(&origins_info));
+    EXPECT_EQ(size_t(1), origins_info.size());
+    EXPECT_EQ(kOrigin2, origins_info[0].GetOrigin());
+    EXPECT_EQ(FilePath(), tracker->GetFullDBFilePath(kOrigin1, kDB1));
+    EXPECT_TRUE(
+        file_util::PathExists(tracker->GetFullDBFilePath(kOrigin2, kDB2)));
+    EXPECT_EQ(FilePath(), tracker->GetFullDBFilePath(kOrigin1, kDB3));
+
+    // The origin directory should be gone as well.
+    EXPECT_FALSE(file_util::PathExists(origin1_db_dir));
+  }
 };
 
 TEST(DatabaseTrackerTest, DeleteOpenDatabase) {
@@ -537,6 +635,11 @@ TEST(DatabaseTrackerTest, DatabaseTrackerIncognitoMode) {
 TEST(DatabaseTrackerTest, DatabaseTrackerQuotaIntegration) {
   // There is no difference in behavior between incognito and not.
   DatabaseTracker_TestHelper_Test::DatabaseTrackerQuotaIntegration();
+}
+
+TEST(DatabaseTrackerTest, DatabaseTrackerClearLocalStateOnExit) {
+  // Only works for regular mode.
+  DatabaseTracker_TestHelper_Test::DatabaseTrackerClearLocalStateOnExit();
 }
 
 }  // namespace webkit_database

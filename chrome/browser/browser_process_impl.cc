@@ -80,7 +80,6 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "webkit/database/database_tracker.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 
 #if defined(OS_WIN)
@@ -149,12 +148,6 @@ BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
 }
 
 BrowserProcessImpl::~BrowserProcessImpl() {
-  FilePath profile_path;
-  bool clear_local_state_on_exit;
-
-  // Store the profile path for clearing local state data on exit.
-  clear_local_state_on_exit = ShouldClearLocalState(&profile_path);
-
 #if defined(OS_CHROMEOS)
   if (web_socket_proxy_thread_.get())
     chromeos::WebSocketProxyController::Shutdown();
@@ -267,18 +260,8 @@ BrowserProcessImpl::~BrowserProcessImpl() {
   // Now OK to destroy NotificationService.
   main_notification_service_.reset();
 
-  // Prior to clearing local state, we want to complete tasks pending
-  // on the db thread too.
-  db_thread_.reset();
-
   // Stop the watchdog thread after stopping other threads.
   watchdog_thread_.reset();
-
-  // At this point, no render process exist and the file, io, db, and
-  // webkit threads in this process have all terminated, so it's safe
-  // to access local state data such as cookies, database, or local storage.
-  if (clear_local_state_on_exit)
-    ClearLocalState(profile_path);
 
   g_browser_process = NULL;
 }
@@ -671,29 +654,6 @@ MHTMLGenerationManager* BrowserProcessImpl::mhtml_generation_manager() {
     mhtml_generation_manager_ = new MHTMLGenerationManager();
 
   return mhtml_generation_manager_.get();
-}
-
-void BrowserProcessImpl::ClearLocalState(const FilePath& profile_path) {
-  webkit_database::DatabaseTracker::ClearLocalState(profile_path);
-}
-
-bool BrowserProcessImpl::ShouldClearLocalState(FilePath* profile_path) {
-  FilePath user_data_dir;
-  Profile* profile;
-
-  // Check for the existence of a profile manager. When quitting early,
-  // e.g. because another chrome instance is running, or when invoked with
-  // options such as --uninstall or --try-chrome-again=0, the profile manager
-  // does not exist yet.
-  if (!profile_manager_.get())
-    return false;
-
-  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-  profile = profile_manager_->GetDefaultProfile(user_data_dir);
-  if (!profile)
-    return false;
-  *profile_path = profile->GetPath();
-  return profile->GetPrefs()->GetBoolean(prefs::kClearSiteDataOnExit);
 }
 
 void BrowserProcessImpl::CreateResourceDispatcherHost() {

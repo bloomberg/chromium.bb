@@ -88,7 +88,9 @@ class DatabaseTracker
     virtual ~Observer() {}
   };
 
-  DatabaseTracker(const FilePath& profile_path, bool is_incognito,
+  DatabaseTracker(const FilePath& profile_path,
+                  bool is_incognito,
+                  bool clear_local_state_on_exit,
                   quota::SpecialStoragePolicy* special_storage_policy,
                   quota::QuotaManagerProxy* quota_manager_proxy,
                   base::MessageLoopProxy* db_tracker_thread);
@@ -158,10 +160,10 @@ class DatabaseTracker
   bool CloseIncognitoFileHandle(const string16& vfs_file_path);
   bool HasSavedIncognitoFileHandle(const string16& vfs_file_path) const;
 
-  // Deletes the directory that stores all DBs in incognito mode, if it exists.
-  void DeleteIncognitoDBDirectory();
-
-  static void ClearLocalState(const FilePath& profile_path);
+  // Shutdown the database tracker, deleting database files if the tracker is
+  // used for an incognito profile or |clear_local_state_on_exit_| is true.
+  void Shutdown();
+  void SetClearLocalStateOnExit(bool clear_local_state_on_exit);
 
  private:
   friend class base::RefCountedThreadSafe<DatabaseTracker>;
@@ -193,9 +195,21 @@ class DatabaseTracker
   // virtual for unittesting only
   virtual ~DatabaseTracker();
 
+  // Deletes the directory that stores all DBs in incognito mode, if it exists.
+  void DeleteIncognitoDBDirectory();
+
+  // Deletes databases not protected by the special storage policy if
+  // |clear_local_state_on_exit_| is true and blocks databases from being
+  // created/opened.
+  void ClearLocalState();
+
   bool DeleteClosedDatabase(const string16& origin_identifier,
                             const string16& database_name);
-  bool DeleteOrigin(const string16& origin_identifier);
+
+  // Delete all files belonging to the given origin given that no database
+  // connections within this origin are open, or if |force| is true, delete
+  // the meta data and rename the associated directory.
+  bool DeleteOrigin(const string16& origin_identifier, bool force);
   void DeleteDatabaseIfNeeded(const string16& origin_identifier,
                               const string16& database_name);
 
@@ -228,6 +242,7 @@ class DatabaseTracker
 
   bool is_initialized_;
   const bool is_incognito_;
+  bool clear_local_state_on_exit_;
   bool shutting_down_;
   const FilePath profile_path_;
   const FilePath db_dir_;
@@ -246,6 +261,9 @@ class DatabaseTracker
   scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
 
   scoped_refptr<quota::QuotaManagerProxy> quota_manager_proxy_;
+
+  // The database tracker thread we're supposed to run file IO on.
+  scoped_refptr<base::MessageLoopProxy> db_tracker_thread_;
 
   // When in incognito mode, store a DELETE_ON_CLOSE handle to each
   // main DB and journal file that was accessed. When the incognito profile

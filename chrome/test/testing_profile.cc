@@ -397,7 +397,8 @@ ChromeAppCacheService* TestingProfile::GetAppCacheService() {
 webkit_database::DatabaseTracker* TestingProfile::GetDatabaseTracker() {
   if (!db_tracker_) {
     db_tracker_ = new webkit_database::DatabaseTracker(
-        GetPath(), false, GetExtensionSpecialStoragePolicy(), NULL, NULL);
+        GetPath(), false, false, GetExtensionSpecialStoragePolicy(),
+        NULL, NULL);
   }
   return db_tracker_;
 }
