@@ -2551,9 +2551,11 @@ libehsupport-clean() {
 }
 
 libehsupport-install() {
-  local extra_flag=""
+  local extra_flags=""
+  local scons_extra=""
   if ${LIBMODE_GLIBC}; then
-    extra_flag="--nacl_glibc"
+    extra_flags="--nacl_glibc"
+    scons_extra="-glibc"
   fi
 
   for platform in x86-32 x86-64 arm; do
@@ -2563,15 +2565,15 @@ libehsupport-install() {
 
     StepBanner "LIBEHSUPPORT" "Make/Install ${platform} ehsupport"
     RunWithLog "libehsupport.${platform}" \
-        ./scons MODE=nacl_extra_sdk \
-        extra_sdk_lib_destination="${PNACL_LIB_ROOT}-${platform}" \
-        bitcode=1 \
-        ${extra_flag} \
+        "${SCONS_COMMON[@]}" \
+        ${extra_flags} \
         platform=${platform} \
-        sdl=none \
-        naclsdk_validate=0 \
-        --verbose \
-        install_libehsupport
+        libehsupport
+
+    local sconsdir="scons-out/nacl-${platform}-pnacl${scons_extra}"
+    cp "${sconsdir}"/obj/src/untrusted/ehsupport/libehsupport.* \
+       "${PNACL_LIB_ROOT}-${platform}"
+
   done
 }
 

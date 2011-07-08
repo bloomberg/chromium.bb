@@ -21,6 +21,4 @@ native_env.Append(LINKFLAGS=[# TODO(pdox): This flag shouldn't be necessary,
 
 native_env.NaClSdkLibrary('libehsupport', ['unwind_support.c'])
 
-n = native_env.AddLibraryToSdk(['libehsupport'], is_platform=True)
-
-native_env.Alias('install_libehsupport', n)
+native_env.AddLibraryToSdk(['libehsupport'], is_platform=True)
