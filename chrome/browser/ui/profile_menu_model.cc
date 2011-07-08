@@ -4,12 +4,143 @@
 
 #include "chrome/browser/ui/profile_menu_model.h"
 
+#include "base/path_service.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+
+namespace {
+
+enum {
+  COMMAND_CUSTOMIZE_PROFILE,
+  COMMAND_DELETE_PROFILE,
+  COMMAND_CREATE_NEW_PROFILE,
+  COMMAND_SWITCH_PROFILE_MENU,
+  // The profiles submenu contains a menu item for each profile. For
+  // the i'th profile the command ID is COMMAND_SWITCH_TO_PROFILE + i.
+  // Since there can be any number of profiles this must be the last command id.
+  COMMAND_SWITCH_TO_PROFILE,
+};
+
+class SwitchProfileMenuModel : public ui::SimpleMenuModel,
+                               public ui::SimpleMenuModel::Delegate {
+ public:
+  SwitchProfileMenuModel(ui::SimpleMenuModel::Delegate* delegate,
+                         Browser* browser);
+
+  // Overridden from ui::SimpleMenuModel::Delegate.
+  virtual void ExecuteCommand(int command_id) OVERRIDE;
+  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
+  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
+  virtual bool GetAcceleratorForCommandId(
+      int command_id,
+      ui::Accelerator* accelerator) OVERRIDE;
+
+ private:
+  bool IsSwitchProfileCommand(int command_id) const;
+  size_t GetProfileIndexFromSwitchProfileCommand(int command_id) const;
+
+  Browser* browser_;
+  ui::SimpleMenuModel::Delegate* delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(SwitchProfileMenuModel);
+};
+
+class ProfileSwitchObserver : public ProfileManagerObserver {
+  virtual void OnProfileCreated(Profile* profile) OVERRIDE {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+    Browser* browser = BrowserList::FindTabbedBrowser(profile, false);
+    if (browser)
+      browser->window()->Activate();
+    else
+      Browser::NewWindowWithProfile(profile);
+  }
+
+  virtual bool DeleteAfterCreation() OVERRIDE { return true; }
+};
+
+SwitchProfileMenuModel::SwitchProfileMenuModel(
+    ui::SimpleMenuModel::Delegate* delegate,
+    Browser* browser)
+    : SimpleMenuModel(this),
+      browser_(browser),
+      delegate_(delegate) {
+  ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  size_t count = cache.GetNumberOfProfiles();
+  for (size_t i = 0; i < count; ++i) {
+    AddCheckItem(COMMAND_SWITCH_TO_PROFILE + i,
+                 cache.GetNameOfProfileAtIndex(i));
+  }
+
+  AddSeparator();
+
+  const string16 short_product_name =
+      l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
+  AddItem(COMMAND_CREATE_NEW_PROFILE, l10n_util::GetStringFUTF16(
+      IDS_PROFILES_CREATE_NEW_PROFILE_OPTION, short_product_name));
+}
+
+void SwitchProfileMenuModel::ExecuteCommand(int command_id) {
+  ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  if (IsSwitchProfileCommand(command_id)) {
+    size_t index = GetProfileIndexFromSwitchProfileCommand(command_id);
+    FilePath profile_path = cache.GetPathOfProfileAtIndex(index);
+    ProfileSwitchObserver* observer = new ProfileSwitchObserver;
+    // The observer is deleted by the manager when profile creation is finished.
+    g_browser_process->profile_manager()->CreateProfileAsync(
+        profile_path, observer);
+  } else {
+    delegate_->ExecuteCommand(command_id);
+  }
+}
+
+bool SwitchProfileMenuModel::IsCommandIdChecked(int command_id) const {
+  ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  if (IsSwitchProfileCommand(command_id)) {
+    size_t index = GetProfileIndexFromSwitchProfileCommand(command_id);
+    FilePath userDataFolder;
+    PathService::Get(chrome::DIR_USER_DATA, &userDataFolder);
+    FilePath profile_path = cache.GetPathOfProfileAtIndex(index);
+    return browser_->GetProfile()->GetPath() == profile_path;
+  }
+  return delegate_->IsCommandIdChecked(command_id);
+}
+
+bool SwitchProfileMenuModel::IsCommandIdEnabled(int command_id) const {
+  if (IsSwitchProfileCommand(command_id))
+    return true;
+  return delegate_->IsCommandIdEnabled(command_id);
+}
+
+bool SwitchProfileMenuModel::GetAcceleratorForCommandId(
+    int command_id,
+    ui::Accelerator* accelerator) {
+  if (IsSwitchProfileCommand(command_id))
+    return false;
+  return delegate_->GetAcceleratorForCommandId(command_id, accelerator);
+}
+
+bool SwitchProfileMenuModel::IsSwitchProfileCommand(int command_id) const {
+  return command_id >= COMMAND_SWITCH_TO_PROFILE;
+}
+
+size_t SwitchProfileMenuModel::GetProfileIndexFromSwitchProfileCommand(
+    int command_id) const {
+  DCHECK(IsSwitchProfileCommand(command_id));
+  return command_id - COMMAND_SWITCH_TO_PROFILE;
+}
+
+} // namespace
 
 ProfileMenuModel::ProfileMenuModel(Browser* browser)
     : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
@@ -20,8 +151,20 @@ ProfileMenuModel::ProfileMenuModel(Browser* browser)
 
   const string16 short_product_name =
       l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
-  AddItem(COMMAND_CREATE_NEW_PROFILE, l10n_util::GetStringFUTF16(
-      IDS_PROFILES_CREATE_NEW_PROFILE_OPTION, short_product_name));
+  ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  if (cache.GetNumberOfProfiles() > 1) {
+    switch_profiles_sub_menu_model_.reset(
+        new SwitchProfileMenuModel(this, browser_));
+    AddSubMenu(COMMAND_SWITCH_PROFILE_MENU, l10n_util::GetStringFUTF16(
+        IDS_PROFILES_MENU, short_product_name),
+        switch_profiles_sub_menu_model_.get());
+  } else {
+    switch_profiles_sub_menu_model_.reset();
+    AddItem(COMMAND_CREATE_NEW_PROFILE, l10n_util::GetStringFUTF16(
+        IDS_PROFILES_CREATE_NEW_PROFILE_OPTION, short_product_name));
+  }
+
   AddItemWithStringId(COMMAND_DELETE_PROFILE,
                       IDS_PROFILES_DELETE_PROFILE);
 }

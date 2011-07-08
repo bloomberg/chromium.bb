@@ -477,10 +477,9 @@ bool BrowserView::ShouldShowAvatar() const {
     return true;
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kMultiProfiles)) {
-    ProfileInfoCache& cache =
-        g_browser_process->profile_manager()->GetProfileInfoCache();
-    if (cache.GetNumberOfProfiles() > 1)
-      return true;
+    // TODO(sail): Once the multi-profile options UI is done we only want to
+    // show the avatar if the user has more than one profile.
+    return true;
   }
 
   return false;

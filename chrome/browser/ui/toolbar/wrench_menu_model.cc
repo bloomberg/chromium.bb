@@ -9,7 +9,6 @@
 
 #include "base/command_line.h"
 #include "base/i18n/number_formatting.h"
-#include "base/path_service.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -18,9 +17,6 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
-#include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/task_manager/task_manager.h"
@@ -46,10 +42,6 @@
 #if defined(TOOLKIT_USES_GTK)
 #include <gtk/gtk.h>
 #include "chrome/browser/ui/gtk/gtk_util.h"
-#endif
-
-#if defined(OS_MACOSX)
-#include "chrome/browser/ui/browser_window.h"
 #endif
 
 #if defined(OS_WIN)
@@ -217,96 +209,6 @@ void BookmarkSubMenuModel::Build(Browser* browser) {
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// ProfilesSubMenuModel
-
-ProfilesSubMenuModel::ProfilesSubMenuModel(
-    ui::SimpleMenuModel::Delegate* delegate, Browser* browser)
-    : SimpleMenuModel(this),
-      browser_(browser),
-      delegate_(delegate) {
-  Build();
-}
-
-void ProfilesSubMenuModel::Build() {
-  ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-  size_t count = cache.GetNumberOfProfiles();
-  for (size_t i = 0; i < count; ++i) {
-    AddCheckItem(COMMAND_SWITCH_TO_PROFILE + i,
-                 cache.GetNameOfProfileAtIndex(i));
-  }
-
-  AddSeparator();
-
-  const string16 short_product_name =
-      l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
-  AddItem(IDC_CREATE_NEW_PROFILE, l10n_util::GetStringFUTF16(
-      IDS_PROFILES_CREATE_NEW_PROFILE_OPTION, short_product_name));
-}
-
-class ProfileSwitchObserver : public ProfileManagerObserver {
-  virtual void OnProfileCreated(Profile* profile) OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-    Browser* browser = BrowserList::FindTabbedBrowser(profile, false);
-    if (browser)
-      browser->window()->Activate();
-    else
-      Browser::NewWindowWithProfile(profile);
-  }
-
-  virtual bool DeleteAfterCreation() OVERRIDE { return true; }
-};
-
-void ProfilesSubMenuModel::ExecuteCommand(int command_id) {
-  ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-  size_t index = command_id;
-  if (index < cache.GetNumberOfProfiles()) {
-    FilePath profile_path = cache.GetPathOfProfileAtIndex(index);
-    ProfileSwitchObserver* observer = new ProfileSwitchObserver;
-    // The observer is deleted by the manager when profile creation is finished.
-    g_browser_process->profile_manager()->CreateProfileAsync(
-        profile_path, observer);
-  } else {
-    delegate_->ExecuteCommand(command_id);
-  }
-}
-
-bool ProfilesSubMenuModel::IsCommandIdChecked(int command_id) const {
-  ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-  size_t index = command_id;
-  if (index < cache.GetNumberOfProfiles()) {
-    FilePath userDataFolder;
-    PathService::Get(chrome::DIR_USER_DATA, &userDataFolder);
-    FilePath profile_path = cache.GetPathOfProfileAtIndex(index);
-    return browser_->GetProfile()->GetPath() == profile_path;
-  }
-  return delegate_->IsCommandIdChecked(command_id);
-}
-
-bool ProfilesSubMenuModel::IsCommandIdEnabled(int command_id) const {
-  ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-  size_t index = command_id;
-  if (index < cache.GetNumberOfProfiles())
-    return true;
-  return delegate_->IsCommandIdEnabled(command_id);
-}
-
-bool ProfilesSubMenuModel::GetAcceleratorForCommandId(
-    int command_id,
-    ui::Accelerator* accelerator) {
-  ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-  size_t index = command_id;
-  if (index < cache.GetNumberOfProfiles())
-    return false;
-  return delegate_->GetAcceleratorForCommandId(command_id, accelerator);
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // WrenchMenuModel
 
 WrenchMenuModel::WrenchMenuModel(ui::AcceleratorProvider* provider,
@@ -401,14 +303,7 @@ bool WrenchMenuModel::GetIconForCommandId(int command_id,
 }
 
 void WrenchMenuModel::ExecuteCommand(int command_id) {
-  switch (command_id) {
-    case IDC_CREATE_NEW_PROFILE:
-      ProfileManager::CreateMultiProfileAsync();
-      break;
-    default:
-      browser_->ExecuteCommand(command_id);
-      break;
-  }
+  browser_->ExecuteCommand(command_id);
 }
 
 bool WrenchMenuModel::IsCommandIdChecked(int command_id) const {
@@ -426,10 +321,6 @@ bool WrenchMenuModel::IsCommandIdEnabled(int command_id) const {
     case IDC_SHOW_BOOKMARK_BAR:
       return !browser_->profile()->GetPrefs()->IsManagedPreference(
           prefs::kEnableBookmarkBar);
-    case IDC_CREATE_NEW_PROFILE:
-      return true;
-    case IDC_PROFILE_MENU:
-      return true;
     default:
       return browser_->command_updater()->IsCommandEnabled(command_id);
   }
@@ -567,28 +458,6 @@ void WrenchMenuModel::Build() {
   AddItemWithStringId(IDC_SHOW_HISTORY, IDS_SHOW_HISTORY);
   AddItemWithStringId(IDC_SHOW_DOWNLOADS, IDS_SHOW_DOWNLOADS);
   AddSeparator();
-
-#if !defined(OS_CHROMEOS)
-  const string16 short_product_name =
-      l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
-  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
-  if (browser_command_line.HasSwitch(switches::kMultiProfiles)) {
-    ProfileInfoCache& cache =
-        g_browser_process->profile_manager()->GetProfileInfoCache();
-    if (cache.GetNumberOfProfiles() > 1) {
-      profiles_sub_menu_model_.reset(new ProfilesSubMenuModel(this, browser_));
-      AddSubMenu(IDC_PROFILE_MENU, l10n_util::GetStringFUTF16(
-          IDS_PROFILES_MENU, short_product_name),
-          profiles_sub_menu_model_.get());
-    } else {
-      profiles_sub_menu_model_.reset();
-      AddItem(IDC_CREATE_NEW_PROFILE, l10n_util::GetStringFUTF16(
-          IDS_PROFILES_CREATE_NEW_PROFILE_OPTION, short_product_name));
-    }
-
-    AddSeparator();
-  }
-#endif
 
 #if defined(OS_CHROMEOS)
   AddItemWithStringId(IDC_OPTIONS, IDS_SETTINGS);

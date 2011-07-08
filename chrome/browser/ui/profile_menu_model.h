@@ -29,17 +29,10 @@ class ProfileMenuModel : public ui::SimpleMenuModel,
   virtual void ExecuteCommand(int command_id) OVERRIDE;
 
  private:
-  enum {
-    COMMAND_CUSTOMIZE_PROFILE,
-    COMMAND_CREATE_NEW_PROFILE,
-    COMMAND_DELETE_PROFILE,
-  };
-
   Browser* browser_;
+  scoped_ptr<ui::SimpleMenuModel> switch_profiles_sub_menu_model_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileMenuModel);
 };
 
 #endif  // CHROME_BROWSER_UI_PROFILE_MENU_MODEL_H_
-
-
