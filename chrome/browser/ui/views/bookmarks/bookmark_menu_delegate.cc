@@ -25,6 +25,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/menu/menu_item_view.h"
+#include "views/controls/menu/submenu_view.h"
 
 using views::MenuItemView;
 
@@ -61,9 +62,20 @@ void BookmarkMenuDelegate::Init(views::MenuDelegate* real_delegate,
   real_delegate_ = real_delegate;
   if (parent) {
     parent_menu_item_ = parent;
+    int initial_count = parent->GetSubmenu() ?
+        parent->GetSubmenu()->GetMenuItemCount() : 0;
     BuildMenu(node, start_child_index, parent, &next_menu_id_);
-    if (show_options == SHOW_OTHER_FOLDER)
-      BuildOtherFolderMenu(parent, &next_menu_id_);
+    if (show_options == SHOW_OTHER_FOLDER) {
+      const BookmarkNode* other_folder =
+          profile_->GetBookmarkModel()->other_node();
+      if (other_folder->child_count() > 0) {
+        int current_count = parent->GetSubmenu() ?
+            parent->GetSubmenu()->GetMenuItemCount() : 0;
+        if (current_count != initial_count)
+          parent->AppendSeparator();
+        BuildOtherFolderMenu(parent, &next_menu_id_);
+      }
+    }
   } else {
     menu_ = CreateMenu(node, start_child_index, show_options);
   }
