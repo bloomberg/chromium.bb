@@ -8,6 +8,9 @@
 #include <ibus.h>
 #endif
 
+namespace chromeos {
+namespace input_method {
+
 #if defined(HAVE_IBUS)
 std::string GetIBusKey(int keyval) {
   // TODO: Ensure all keys are supported.
@@ -86,3 +89,6 @@ std::string GetIBusKeyCode(int keyval, int keycode) {
   return "";
 }
 #endif // HAVE_IBUS
+
+}  // namespace input_method
+}  // namespace chromeos
