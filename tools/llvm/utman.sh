@@ -207,7 +207,7 @@ fi
 
 # Current milestones in each repo
 # hg-update-all uses these
-readonly LLVM_REV=85f1eac20d0b
+readonly LLVM_REV=d2d82032032b
 readonly LLVM_GCC_REV=4143147bce3b
 readonly NEWLIB_REV=9bef47f82918
 readonly BINUTILS_REV=c02b0252b557
