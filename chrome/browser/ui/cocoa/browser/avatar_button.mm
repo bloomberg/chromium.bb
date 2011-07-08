@@ -6,6 +6,7 @@
 
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/image_utils.h"
 #import "chrome/browser/ui/cocoa/menu_controller.h"
@@ -23,12 +24,10 @@
 
 @implementation AvatarButton
 
-- (id)initWithController:(BrowserWindowController*)bwc {
+- (id)initWithBrowser:(Browser*)browser {
   if ((self = [super init])) {
-    // TODO(rsesek): Eventually the PMM will require a Browser so the BWC
-    // is plumbed here for that reason. SAIL WILL DO THIS!!1!!1
-    controller_ = bwc;
-    model_.reset(new ProfileMenuModel([controller_ profile]));
+    browser_ = browser;
+    model_.reset(new ProfileMenuModel(browser_));
     menuController_.reset(
         [[MenuController alloc] initWithModel:model_.get()
                        useWithPopUpButtonCell:NO]);
@@ -48,13 +47,13 @@
     [self addSubview:button_];
     [self setOpenMenuOnClick:YES];
 
-    if ([controller_ profile]->IsOffTheRecord()) {
+    if (browser_->profile()->IsOffTheRecord()) {
       [self setImage:gfx::GetCachedImageWithName(@"otr_icon.pdf")];
-    } else if ([controller_ shouldShowAvatar]) {
+    } else {
       ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
       [self setImage:rb.GetNativeImageNamed(IDR_PROFILE_AVATAR_1).ToNSImage()];
       [button_ setToolTip:
-          base::SysUTF8ToNSString([controller_ profile]->GetProfileName())];
+          base::SysUTF8ToNSString(browser_->profile()->GetProfileName())];
     }
   }
   return self;

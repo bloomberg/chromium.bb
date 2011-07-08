@@ -1618,8 +1618,8 @@
 
   // Install the image into the badge view. Hide it for now; positioning,
   // sizing, and showing will be done by the layout code. The AvatarButton will
-  // choose which image to display based on the BWC.
-  avatarButton_.reset([[AvatarButton alloc] initWithController:self]);
+  // choose which image to display based on the browser.
+  avatarButton_.reset([[AvatarButton alloc] initWithBrowser:browser_.get()]);
   [avatarButton_ setAutoresizingMask:NSViewMinXMargin | NSViewMinYMargin];
   [avatarButton_ setHidden:YES];
   // The button shouldn't do anything in incognito.

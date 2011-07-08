@@ -11,7 +11,7 @@
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 
-@class BrowserWindowController;
+class Browser;
 @class MenuController;
 class ProfileMenuModel;
 
@@ -21,7 +21,7 @@ class ProfileMenuModel;
 // Incognito, clicking will do nothing.
 @interface AvatarButton : NSView {
  @private
-  __weak BrowserWindowController* controller_;
+  Browser* browser_;
 
   // The button child view of this view.
   scoped_nsobject<NSButton> button_;
@@ -34,7 +34,7 @@ class ProfileMenuModel;
 }
 
 // Designated initializer.
-- (id)initWithController:(BrowserWindowController*)bwc;
+- (id)initWithBrowser:(Browser*)browser;
 
 // Whether or not to open the menu when clicked.
 - (void)setOpenMenuOnClick:(BOOL)flag;

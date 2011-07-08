@@ -321,7 +321,7 @@ void BrowserTitlebar::Init() {
     gtk_widget_show_all(titlebar_profile_vbox_);
 
     profile_button_.reset(new ProfileMenuButton(
-        browser_window_->browser()->profile()));
+        browser_window_->browser()));
     gtk_box_pack_start(GTK_BOX(titlebar_profile_vbox_),
                        profile_button_->widget(), FALSE, FALSE, 0);
     profile_button_->UpdateText();

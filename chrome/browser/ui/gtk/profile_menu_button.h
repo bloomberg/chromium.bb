@@ -13,13 +13,13 @@
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 
-class Profile;
+class Browser;
 class ProfileMenuModel;
 
 // Shows the button for the multiprofile menu.
 class ProfileMenuButton {
  public:
-  explicit ProfileMenuButton(Profile* profile);
+  explicit ProfileMenuButton(Browser* browser);
 
   virtual ~ProfileMenuButton();
 
@@ -34,7 +34,7 @@ class ProfileMenuButton {
   scoped_ptr<MenuGtk> menu_;
   scoped_ptr<ProfileMenuModel> profile_menu_model_;
   OwnedWidgetGtk widget_;
-  Profile* profile_;
+  Browser* browser_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileMenuButton);
 };

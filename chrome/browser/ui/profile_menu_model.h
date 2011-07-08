@@ -8,7 +8,7 @@
 
 #include "ui/base/models/simple_menu_model.h"
 
-class Profile;
+class Browser;
 
 // ProfileMenuModel
 //
@@ -18,7 +18,7 @@ class Profile;
 class ProfileMenuModel : public ui::SimpleMenuModel,
                          public ui::SimpleMenuModel::Delegate {
  public:
-  explicit ProfileMenuModel(Profile* profile);
+  explicit ProfileMenuModel(Browser* browser);
   virtual ~ProfileMenuModel();
 
   // ui::SimpleMenuModel::Delegate implementation
@@ -30,11 +30,12 @@ class ProfileMenuModel : public ui::SimpleMenuModel,
 
  private:
   enum {
+    COMMAND_CUSTOMIZE_PROFILE,
     COMMAND_CREATE_NEW_PROFILE,
     COMMAND_DELETE_PROFILE,
   };
 
-  Profile* profile_;
+  Browser* browser_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileMenuModel);
 };

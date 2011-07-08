@@ -203,7 +203,7 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(BrowserFrame* frame,
 
   if (browser_view_->ShouldShowAvatar()) {
     ui::MenuModel* menu_model = browser_view_->IsOffTheRecord() ?
-        NULL : new ProfileMenuModel(browser_view_->browser()->profile());
+        NULL : new ProfileMenuModel(browser_view_->browser());
     // AvatarMenuButton takes ownership of |menu_model|.
     avatar_button_.reset(new AvatarMenuButton(std::wstring(), menu_model));
     AddChildView(avatar_button_.get());

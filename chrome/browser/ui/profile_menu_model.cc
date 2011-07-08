@@ -6,13 +6,18 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/url_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-ProfileMenuModel::ProfileMenuModel(Profile* profile)
+ProfileMenuModel::ProfileMenuModel(Browser* browser)
     : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
-      profile_(profile) {
+      browser_(browser) {
+  AddItemWithStringId(COMMAND_CUSTOMIZE_PROFILE,
+                      IDS_PROFILES_CUSTOMIZE_PROFILE);
+  AddSeparator();
+
   const string16 short_product_name =
       l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
   AddItem(COMMAND_CREATE_NEW_PROFILE, l10n_util::GetStringFUTF16(
@@ -40,12 +45,15 @@ bool ProfileMenuModel::GetAcceleratorForCommandId(int command_id,
 
 void ProfileMenuModel::ExecuteCommand(int command_id) {
   switch (command_id) {
+     case COMMAND_CUSTOMIZE_PROFILE:
+       browser_->ShowOptionsTab(chrome::kPersonalOptionsSubPage);
+       break;
     case COMMAND_CREATE_NEW_PROFILE:
       ProfileManager::CreateMultiProfileAsync();
       break;
     case COMMAND_DELETE_PROFILE:
       g_browser_process->profile_manager()->ScheduleProfileForDeletion(
-          profile_->GetPath());
+          browser_->profile()->GetPath());
       break;
     default:
       NOTREACHED();

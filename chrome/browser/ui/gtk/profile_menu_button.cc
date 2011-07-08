@@ -7,6 +7,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_button.h"
 #include "chrome/browser/ui/profile_menu_model.h"
 #include "chrome/common/pref_names.h"
@@ -15,8 +16,8 @@
 // Maximum width for name string in pixels.
 const int kMaxTextWidth = 200;
 
-ProfileMenuButton::ProfileMenuButton(Profile* profile) : profile_(profile) {
-  profile_menu_model_.reset(new ProfileMenuModel(profile_));
+ProfileMenuButton::ProfileMenuButton(Browser* browser) : browser_(browser) {
+  profile_menu_model_.reset(new ProfileMenuModel(browser_));
   menu_.reset(new MenuGtk(NULL, profile_menu_model_.get()));
 
   widget_.Own(gtk_button_new());
@@ -29,8 +30,8 @@ ProfileMenuButton::ProfileMenuButton(Profile* profile) : profile_(profile) {
 ProfileMenuButton::~ProfileMenuButton() {}
 
 void ProfileMenuButton::UpdateText() {
-  string16 text = UTF8ToUTF16(
-      profile_->GetPrefs()->GetString(prefs::kGoogleServicesUsername));
+  string16 text = UTF8ToUTF16(browser_->profile()->GetPrefs()->GetString(
+      prefs::kGoogleServicesUsername));
   string16 elided_text = ui::ElideText(text, gfx::Font(), kMaxTextWidth, false);
   gtk_button_set_label(
       GTK_BUTTON(widget_.get()), UTF16ToUTF8(elided_text).c_str());
