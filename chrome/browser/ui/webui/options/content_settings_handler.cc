@@ -267,11 +267,6 @@ void ContentSettingsHandler::GetLocalizedValues(
 
 void ContentSettingsHandler::Initialize() {
   const HostContentSettingsMap* settings_map = GetContentSettingsMap();
-  scoped_ptr<Value> block_3rd_party(Value::CreateBooleanValue(
-      settings_map->BlockThirdPartyCookies()));
-  web_ui_->CallJavascriptFunction("ContentSettings.setBlockThirdPartyCookies",
-                                  *block_3rd_party.get());
-
   notification_registrar_.Add(
       this, NotificationType::OTR_PROFILE_CREATED,
       NotificationService::AllSources());
@@ -569,9 +564,6 @@ void ContentSettingsHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("setContentFilter",
       NewCallback(this,
                   &ContentSettingsHandler::SetContentFilter));
-  web_ui_->RegisterMessageCallback("setAllowThirdPartyCookies",
-      NewCallback(this,
-                  &ContentSettingsHandler::SetAllowThirdPartyCookies));
   web_ui_->RegisterMessageCallback("removeException",
       NewCallback(this,
                   &ContentSettingsHandler::RemoveException));
@@ -604,13 +596,6 @@ void ContentSettingsHandler::SetContentFilter(const ListValue* args) {
     GetContentSettingsMap()->
         SetDefaultContentSetting(content_type, default_setting);
   }
-}
-
-void ContentSettingsHandler::SetAllowThirdPartyCookies(const ListValue* args) {
-  string16 allow = ExtractStringValue(args);
-
-  GetContentSettingsMap()->SetBlockThirdPartyCookies(
-      LowerCaseEqualsASCII(allow, "true"));
 }
 
 void ContentSettingsHandler::RemoveException(const ListValue* args) {

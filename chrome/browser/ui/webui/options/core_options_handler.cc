@@ -141,6 +141,8 @@ Value* CoreOptionsHandler::FetchPref(const std::string& pref_name) {
     DictionaryValue* dict = new DictionaryValue;
     dict->Set("value", pref->GetValue()->DeepCopy());
     dict->SetBoolean("managed", pref->IsManaged());
+    dict->SetBoolean("extensionControlled", pref->IsExtensionControlled());
+    dict->SetBoolean("disabled", !pref->IsUserModifiable());
     return_value = dict;
   } else {
     return_value = Value::CreateNullValue();
@@ -377,6 +379,8 @@ void CoreOptionsHandler::NotifyPrefChanged(const std::string* pref_name) {
       DictionaryValue* dict = new DictionaryValue;
       dict->Set("value", pref->GetValue()->DeepCopy());
       dict->SetBoolean("managed", pref->IsManaged());
+      dict->SetBoolean("extensionControlled", pref->IsExtensionControlled());
+      dict->SetBoolean("disabled", !pref->IsUserModifiable());
       result_value.Append(dict);
 
       web_ui_->CallJavascriptFunction(WideToASCII(callback_function),

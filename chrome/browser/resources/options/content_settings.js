@@ -54,11 +54,6 @@ cr.define('options', function() {
       }
 
       // Cookies filter page ---------------------------------------------------
-      $('block-third-party-cookies').onclick = function(event) {
-        chrome.send('setAllowThirdPartyCookies',
-                    [String($('block-third-party-cookies').checked)]);
-      };
-
       $('show-cookies-button').onclick = function(event) {
         chrome.send('coreOptionsUserMetricsAction', ['Options_ShowCookies']);
         OptionsPage.navigateToPage('cookies');
@@ -118,14 +113,6 @@ cr.define('options', function() {
 
     exceptionsList.parentNode.hidden = false;
     exceptionsList.setExceptions(list);
-  };
-
-  /**
-   * Sets the initial value for the Third Party Cookies checkbox.
-   * @param {boolean=} block True if we are blocking third party cookies.
-   */
-  ContentSettings.setBlockThirdPartyCookies = function(block) {
-    $('block-third-party-cookies').checked = block;
   };
 
   /**

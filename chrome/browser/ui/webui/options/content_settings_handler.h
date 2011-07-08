@@ -85,9 +85,6 @@ class ContentSettingsHandler : public OptionsPageUIHandler {
   // rejected. Called while the user is editing an exception pattern.
   void CheckExceptionPatternValidity(const ListValue* args);
 
-  // Sets the global 3rd party cookies pref.
-  void SetAllowThirdPartyCookies(const ListValue* args);
-
   // Utility functions ---------------------------------------------------------
 
   // Gets the HostContentSettingsMap for the normal profile.

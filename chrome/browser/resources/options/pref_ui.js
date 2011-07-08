@@ -13,18 +13,23 @@ cr.define('options', function() {
    * @param {!Event} event The pref change event.
    */
   function updateElementState_(el, event) {
-    el.managed = event.value && event.value['managed'] != undefined ?
-        event.value['managed'] : false;
+    el.managed = false;
 
-    // Managed UI elements can only be disabled as a result of being
-    // managed. They cannot be enabled as a result of a pref being
-    // unmanaged.
-    if (el.managed)
-      el.disabled = true;
+    if (!event.value)
+      return;
 
-    // Disable UI elements if backend says so.
-    if (!el.disabled && event.value && event.value['disabled'])
-      el.disabled = true;
+    el.managed = event.value['managed'];
+
+    // Disable UI elements if the backend says so.
+    // |reenable| is a flag that tells us if the element is disabled because the
+    // preference is not modifiable by the user. If the element is disabled but
+    // the flag is not set, it means that the element has been disabled
+    // somewhere else, so we don't do anything.
+    if (el.disabled && !el.notUserModifiable)
+      return;
+
+    el.disabled = event.value['disabled'];
+    el.notUserModifiable = event.value['disabled'];
   }
 
   /////////////////////////////////////////////////////////////////////////////
