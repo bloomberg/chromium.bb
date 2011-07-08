@@ -18,7 +18,7 @@
 #include "native_client/src/shared/ppapi_proxy/proxy_var_cache.h"
 #include "native_client/src/shared/ppapi_proxy/string_proxy_var.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
-#include "ppapi/c/pp_var.h"
+#include "native_client/src/third_party/ppapi/c/pp_var.h"
 
 namespace ppapi_proxy {
 

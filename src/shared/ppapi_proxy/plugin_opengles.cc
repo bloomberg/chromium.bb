@@ -7,7 +7,7 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_context_3d.h"
 
 #include "gpu/command_buffer/client/gles2_implementation.h"
-#include "ppapi/c/dev/ppb_opengles_dev.h"
+#include "native_client/src/third_party/ppapi/c/dev/ppb_opengles_dev.h"
 
 using ppapi_proxy::PluginContext3D;
 using ppapi_proxy::PluginResource;

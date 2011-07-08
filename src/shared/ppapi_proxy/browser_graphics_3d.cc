@@ -9,9 +9,9 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_resource.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
-#include "ppapi/c/dev/ppb_context_3d_dev.h"
-#include "ppapi/c/dev/ppb_context_3d_trusted_dev.h"
-#include "ppapi/c/pp_errors.h"
+#include "native_client/src/third_party/ppapi/c/dev/ppb_context_3d_dev.h"
+#include "native_client/src/third_party/ppapi/c/dev/ppb_context_3d_trusted_dev.h"
+#include "native_client/src/third_party/ppapi/c/pp_errors.h"
 #include "srpcgen/ppb_rpc.h"
 
 using ppapi_proxy::DebugPrintf;

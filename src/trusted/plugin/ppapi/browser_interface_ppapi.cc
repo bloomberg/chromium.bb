@@ -13,8 +13,8 @@
 #include "native_client/src/trusted/plugin/api_defines.h"
 #include "native_client/src/trusted/plugin/ppapi/scriptable_handle_ppapi.h"
 
-#include "ppapi/cpp/private/instance_private.h"
-#include "ppapi/cpp/private/var_private.h"
+#include "native_client/src/third_party/ppapi/cpp/private/instance_private.h"
+#include "native_client/src/third_party/ppapi/cpp/private/var_private.h"
 
 using nacl::assert_cast;
 

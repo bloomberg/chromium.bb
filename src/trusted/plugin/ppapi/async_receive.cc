@@ -8,7 +8,7 @@
 
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/plugin/string_encoding.h"
-#include "ppapi/cpp/private/var_private.h"
+#include "native_client/src/third_party/ppapi/cpp/private/var_private.h"
 
 namespace plugin {
 

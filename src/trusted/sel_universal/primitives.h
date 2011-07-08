@@ -7,7 +7,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_SEL_UNIVERASAL_PRIMITIVES_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_SEL_UNIVERASAL_PRIMITIVES_H_
 
-#include "ppapi/c/pp_input_event.h"
+#include "native_client/src/third_party/ppapi/c/pp_input_event.h"
 
 // ppapi does not have a user defined event notion.
 // c.f. ppapi/c/pp_input_event.h

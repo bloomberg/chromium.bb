@@ -4,7 +4,7 @@
 //
 // SRPC-abstraction wrappers around PPB_AudioConfig functions.
 
-#include "ppapi/c/ppb_audio_config.h"
+#include "native_client/src/third_party/ppapi/c/ppb_audio_config.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/ppapi_proxy/browser_globals.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"

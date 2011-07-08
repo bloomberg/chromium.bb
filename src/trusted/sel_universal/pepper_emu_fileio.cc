@@ -14,9 +14,9 @@
 #include <string>
 #include <map>
 
-#include "ppapi/c/pp_errors.h"
-#include "ppapi/c/ppb_url_request_info.h"
-#include "ppapi/c/ppb_url_response_info.h"
+#include "native_client/src/third_party/ppapi/c/pp_errors.h"
+#include "native_client/src/third_party/ppapi/c/ppb_url_request_info.h"
+#include "native_client/src/third_party/ppapi/c/ppb_url_response_info.h"
 
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_check.h"

@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can
 # be found in the LICENSE file.
 
-# This file needs to be in sync with $SOURCE_ROOT/ppapi/ppapi.gyp
+# This file needs to be in sync with $MAIN_DIR/src/third_party/ppapi/ppapi.gyp
 # at the revision specified in $SOURCE_ROOT/native_client/DEPS.
 
 Import('env')

@@ -22,8 +22,8 @@
 #include "native_client/src/shared/ppapi_proxy/object_capability.h"
 #include "native_client/src/shared/ppapi_proxy/object_proxy.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
-#include "ppapi/c/pp_bool.h"
-#include "ppapi/c/pp_var.h"
+#include "native_client/src/third_party/ppapi/c/pp_bool.h"
+#include "native_client/src/third_party/ppapi/c/pp_var.h"
 
 namespace ppapi_proxy {
 

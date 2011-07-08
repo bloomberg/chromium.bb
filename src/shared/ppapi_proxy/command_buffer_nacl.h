@@ -6,8 +6,8 @@
 #define NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_COMMAND_BUFFER_NACL_H
 
 #include "gpu/command_buffer/common/command_buffer.h"
-#include "ppapi/c/dev/ppb_context_3d_trusted_dev.h"
-#include "ppapi/c/pp_resource.h"
+#include "native_client/src/third_party/ppapi/c/dev/ppb_context_3d_trusted_dev.h"
+#include "native_client/src/third_party/ppapi/c/pp_resource.h"
 
 struct PPB_Core;
 

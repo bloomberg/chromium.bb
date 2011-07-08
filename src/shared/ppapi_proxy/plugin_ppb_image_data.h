@@ -7,7 +7,7 @@
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_resource.h"
-#include "ppapi/c/ppb_image_data.h"
+#include "native_client/src/third_party/ppapi/c/ppb_image_data.h"
 
 namespace ppapi_proxy {
 

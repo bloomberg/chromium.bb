@@ -11,10 +11,10 @@
 
 #include "native_client/src/include/nacl_scoped_ptr.h"
 
-#include "ppapi/c/pp_errors.h"  // for PP_OK
-#include "ppapi/cpp/completion_callback.h"  // for pp::CompletionCallback
-#include "ppapi/cpp/core.h"  // for pp::
-#include "ppapi/cpp/module.h"  // for pp::Module
+#include "native_client/src/third_party/ppapi/c/pp_errors.h"  // for PP_OK
+#include "native_client/src/third_party/ppapi/cpp/completion_callback.h"  // for pp::CompletionCallback
+#include "native_client/src/third_party/ppapi/cpp/core.h"  // for pp::
+#include "native_client/src/third_party/ppapi/cpp/module.h"  // for pp::Module
 
 namespace plugin {
 

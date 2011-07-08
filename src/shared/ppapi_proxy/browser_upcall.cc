@@ -27,9 +27,9 @@
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
-#include "ppapi/c/pp_completion_callback.h"
-#include "ppapi/c/pp_errors.h"
-#include "ppapi/c/ppb_core.h"
+#include "native_client/src/third_party/ppapi/c/pp_completion_callback.h"
+#include "native_client/src/third_party/ppapi/c/pp_errors.h"
+#include "native_client/src/third_party/ppapi/c/ppb_core.h"
 #include "srpcgen/upcall.h"
 
 using nacl::DescWrapper;

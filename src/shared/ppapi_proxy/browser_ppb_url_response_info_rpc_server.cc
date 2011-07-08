@@ -9,7 +9,7 @@
 #include "native_client/src/shared/ppapi_proxy/browser_globals.h"
 #include "native_client/src/shared/ppapi_proxy/object_serialize.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
-#include "ppapi/c/ppb_url_response_info.h"
+#include "native_client/src/third_party/ppapi/c/ppb_url_response_info.h"
 #include "srpcgen/ppb_rpc.h"
 
 using ppapi_proxy::PPBURLResponseInfoInterface;

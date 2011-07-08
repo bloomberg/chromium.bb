@@ -7,9 +7,9 @@
 // Include file order cannot be observed because ppp_instance declares a
 // structure return type that causes an error on Windows.
 // TODO(sehr, brettw): fix the return types and include order in PPAPI.
-#include "ppapi/c/pp_instance.h"
-#include "ppapi/c/pp_rect.h"
-#include "ppapi/c/pp_resource.h"
+#include "native_client/src/third_party/ppapi/c/pp_instance.h"
+#include "native_client/src/third_party/ppapi/c/pp_rect.h"
+#include "native_client/src/third_party/ppapi/c/pp_resource.h"
 #include "srpcgen/ppp_rpc.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/ppapi_proxy/browser_globals.h"

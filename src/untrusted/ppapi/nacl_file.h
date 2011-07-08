@@ -9,8 +9,8 @@
 
 #include <stdarg.h>
 #include <unistd.h>
-#include "ppapi/c/pp_completion_callback.h"
-#include "ppapi/c/pp_instance.h"
+#include "native_client/src/third_party/ppapi/c/pp_completion_callback.h"
+#include "native_client/src/third_party/ppapi/c/pp_instance.h"
 
 #ifdef __cplusplus
 extern "C" {

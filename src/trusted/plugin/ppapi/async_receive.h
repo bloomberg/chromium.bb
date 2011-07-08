@@ -6,7 +6,7 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_NPAPI_ASYNC_RECEIVE_H_
 
 #include "native_client/src/trusted/plugin/ppapi/plugin_ppapi.h"
-#include "ppapi/cpp/private/var_private.h"
+#include "native_client/src/third_party/ppapi/cpp/private/var_private.h"
 
 namespace plugin {
 

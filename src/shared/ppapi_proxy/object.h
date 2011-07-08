@@ -11,8 +11,8 @@
 #include <string>
 
 #include "native_client/src/include/nacl_macros.h"
-#include "ppapi/c/dev/ppp_class_deprecated.h"
-#include "ppapi/c/pp_var.h"
+#include "native_client/src/third_party/ppapi/c/dev/ppp_class_deprecated.h"
+#include "native_client/src/third_party/ppapi/c/pp_var.h"
 
 namespace ppapi_proxy {
 

@@ -13,8 +13,8 @@
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/trusted/plugin/portable_handle.h"
 #include "native_client/src/trusted/plugin/scriptable_handle.h"
-#include "ppapi/cpp/dev/scriptable_object_deprecated.h"
-#include "ppapi/cpp/private/var_private.h"
+#include "native_client/src/third_party/ppapi/cpp/dev/scriptable_object_deprecated.h"
+#include "native_client/src/third_party/ppapi/cpp/private/var_private.h"
 
 namespace plugin {
 

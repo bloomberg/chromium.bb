@@ -8,43 +8,43 @@ ppapi_tests_target = 'ppapi_tests_${TARGET_FULLARCH}'
 
 ppapi_tests_sources = [
     # Common test files
-    '${SOURCE_ROOT}/ppapi/tests/test_case.cc',
-    '${SOURCE_ROOT}/ppapi/tests/test_utils.cc',
-    '${SOURCE_ROOT}/ppapi/tests/testing_instance.cc',
+    '${MAIN_DIR}/src/third_party/ppapi/tests/test_case.cc',
+    '${MAIN_DIR}/src/third_party/ppapi/tests/test_utils.cc',
+    '${MAIN_DIR}/src/third_party/ppapi/tests/testing_instance.cc',
 
     # Compile-time tests
-    '${SOURCE_ROOT}/ppapi/tests/test_c_includes.c',
-    '${SOURCE_ROOT}/ppapi/tests/test_cpp_includes.cc',
-    '${SOURCE_ROOT}/ppapi/tests/test_struct_sizes.c',
+    '${MAIN_DIR}/src/third_party/ppapi/tests/test_c_includes.c',
+    '${MAIN_DIR}/src/third_party/ppapi/tests/test_cpp_includes.cc',
+    '${MAIN_DIR}/src/third_party/ppapi/tests/test_struct_sizes.c',
 
     # Test cases (PLEASE KEEP THIS SECTION IN ALPHABETICAL ORDER)
     # Add/uncomment PPAPI interfaces below when they get proxied.
-    #'${SOURCE_ROOT}/ppapi/tests/test_buffer.cc',
-    #'${SOURCE_ROOT}/ppapi/tests/test_char_set.cc',
-    #'${SOURCE_ROOT}/ppapi/tests/test_directory_reader.cc',
-    #'${SOURCE_ROOT}/ppapi/tests/test_file_io.cc',
-    #'${SOURCE_ROOT}/ppapi/tests/test_file_ref.cc',
-    #'${SOURCE_ROOT}/ppapi/tests/test_file_system.cc',
-    '${SOURCE_ROOT}/ppapi/tests/test_graphics_2d.cc',
-    '${SOURCE_ROOT}/ppapi/tests/test_image_data.cc',
-    '${SOURCE_ROOT}/ppapi/tests/test_paint_aggregator.cc',
-    '${SOURCE_ROOT}/ppapi/tests/test_post_message.cc',
-    '${SOURCE_ROOT}/ppapi/tests/test_scrollbar.cc',
-    #'${SOURCE_ROOT}/ppapi/tests/test_transport.cc',
-    #'${SOURCE_ROOT}/ppapi/tests/test_uma.cc',
+    #'${MAIN_DIR}/src/third_party/ppapi/tests/test_buffer.cc',
+    #'${MAIN_DIR}/src/third_party/ppapi/tests/test_char_set.cc',
+    #'${MAIN_DIR}/src/third_party/ppapi/tests/test_directory_reader.cc',
+    #'${MAIN_DIR}/src/third_party/ppapi/tests/test_file_io.cc',
+    #'${MAIN_DIR}/src/third_party/ppapi/tests/test_file_ref.cc',
+    #'${MAIN_DIR}/src/third_party/ppapi/tests/test_file_system.cc',
+    '${MAIN_DIR}/src/third_party/ppapi/tests/test_graphics_2d.cc',
+    '${MAIN_DIR}/src/third_party/ppapi/tests/test_image_data.cc',
+    '${MAIN_DIR}/src/third_party/ppapi/tests/test_paint_aggregator.cc',
+    '${MAIN_DIR}/src/third_party/ppapi/tests/test_post_message.cc',
+    '${MAIN_DIR}/src/third_party/ppapi/tests/test_scrollbar.cc',
+    #'${MAIN_DIR}/src/third_party/ppapi/tests/test_transport.cc',
+    #'${MAIN_DIR}/src/third_party/ppapi/tests/test_uma.cc',
     # Activating the URL loader test requires a test httpd that
     # understands HTTP POST, which our current httpd.py doesn't.
     # It also requires deactivating the tests that use FileIOTrusted
     # when running in NaCl.
-    #'${SOURCE_ROOT}/ppapi/tests/test_url_loader.cc',
-    #'${SOURCE_ROOT}/ppapi/tests/test_url_util.cc',
-    #'${SOURCE_ROOT}/ppapi/tests/test_video_decoder.cc',
+    #'${MAIN_DIR}/src/third_party/ppapi/tests/test_url_loader.cc',
+    #'${MAIN_DIR}/src/third_party/ppapi/tests/test_url_util.cc',
+    #'${MAIN_DIR}/src/third_party/ppapi/tests/test_video_decoder.cc',
 
     # Deprecated test cases.
-    '${SOURCE_ROOT}/ppapi/tests/test_instance_deprecated.cc',
+    '${MAIN_DIR}/src/third_party/ppapi/tests/test_instance_deprecated.cc',
     # Var_deprecated fails in TestPassReference, and we probably won't
     # fix it.
-    #'${SOURCE_ROOT}/ppapi/tests/test_var_deprecated.cc'
+    #'${MAIN_DIR}/src/third_party/ppapi/tests/test_var_deprecated.cc'
     ]
 
 ppapi_tests_nexe = env.ComponentProgram(ppapi_tests_target,
@@ -59,12 +59,12 @@ ppapi_tests_nexe = env.ComponentProgram(ppapi_tests_target,
 # http://localhost:5103/scons-out/nacl-x86-64/staging/test_case.html?mode=nacl
 
 env.Publish(ppapi_tests_target, 'run',
-            ['${SOURCE_ROOT}/ppapi/tests/test_url_loader_data/*'],
+            ['${MAIN_DIR}/src/third_party/ppapi/tests/test_url_loader_data/*'],
             subdir='test_url_loader_data')
 
 env.Publish(ppapi_tests_target, 'run',
             [ppapi_tests_nexe,
-             '${SOURCE_ROOT}/ppapi/tests/test_case.html',
+             '${MAIN_DIR}/src/third_party/ppapi/tests/test_case.html',
              'test_case.nmf',
-             '${SOURCE_ROOT}/ppapi/tests/test_image_data',
-             '${SOURCE_ROOT}/ppapi/tests/test_page.css'])
+             '${MAIN_DIR}/src/third_party/ppapi/tests/test_image_data',
+             '${MAIN_DIR}/src/third_party/ppapi/tests/test_page.css'])

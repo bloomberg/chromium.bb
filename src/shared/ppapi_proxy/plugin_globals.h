@@ -6,12 +6,12 @@
 #define NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PLUGIN_GLOBALS_H_
 
 #include "native_client/src/untrusted/irt/irt_ppapi.h"
-#include "ppapi/c/dev/ppb_var_deprecated.h"
-#include "ppapi/c/pp_module.h"
-#include "ppapi/c/ppb.h"
-#include "ppapi/c/ppb_core.h"
-#include "ppapi/c/ppb_var.h"
-#include "ppapi/c/ppp_messaging.h"
+#include "native_client/src/third_party/ppapi/c/dev/ppb_var_deprecated.h"
+#include "native_client/src/third_party/ppapi/c/pp_module.h"
+#include "native_client/src/third_party/ppapi/c/ppb.h"
+#include "native_client/src/third_party/ppapi/c/ppb_core.h"
+#include "native_client/src/third_party/ppapi/c/ppb_var.h"
+#include "native_client/src/third_party/ppapi/c/ppp_messaging.h"
 
 struct NaClSrpcChannel;
 

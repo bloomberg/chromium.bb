@@ -16,17 +16,19 @@ env.FilterOut(CCFLAGS=['-pedantic'])
 
 # Load ppapi_cpp.gypi
 ppapi_cpp_gypi = gyp_extract.LoadGypFile(
-    env.File('#/../ppapi/ppapi_cpp.gypi').path)
+    env.File('$MAIN_DIR/src/third_party/ppapi/ppapi_cpp.gypi').abspath)
 
 # From ppapi_cpp.gypi:ppapi_cpp_objects:cpp/[^/]*\.h
 cpp_headers = gyp_extract.GypTargetSources(
     ppapi_cpp_gypi, 'ppapi_cpp_objects', 'cpp/[^/]*\.h')
-cpp_headers = ['ppapi/' + header_file for header_file in cpp_headers]
+cpp_headers = ['native_client/src/third_party/ppapi/' +
+    header_file for header_file in cpp_headers]
 
 # From ppapi_cpp.gypi:ppapi_cpp_objects:cpp/dev/[^/]*\.h
 cpp_dev_headers = gyp_extract.GypTargetSources(
     ppapi_cpp_gypi, 'ppapi_cpp_objects', 'cpp/dev/[^/]*\.h')
-cpp_dev_headers = ['ppapi/' + header_file for header_file in cpp_dev_headers]
+cpp_dev_headers = ['native_client/src/third_party/ppapi/' +
+    header_file for header_file in cpp_dev_headers]
 
 
 def EmitHeaderTest(target=None, source=None, env=None):
@@ -37,7 +39,7 @@ def EmitHeaderTest(target=None, source=None, env=None):
   return 0
 
 
-env.Append(CPPPATH=['${SOURCE_ROOT}/ppapi/lib/gl/include'])
+env.Append(CPPPATH=['${MAIN_DIR}/src/third_party/ppapi/lib/gl/include'])
 cpp_header_test_cc = env.Command(
     '$OBJ_ROOT/gen/native_client/test/ppapi/cpp_header_test.cc',
     [], Action(EmitHeaderTest, varlist=['TEST_HEADERS']),

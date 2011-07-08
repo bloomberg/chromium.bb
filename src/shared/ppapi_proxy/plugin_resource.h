@@ -8,7 +8,7 @@
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/ref_counted.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_resource_tracker.h"
-#include "ppapi/c/pp_resource.h"
+#include "native_client/src/third_party/ppapi/c/pp_resource.h"
 
 namespace ppapi_proxy {
 

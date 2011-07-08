@@ -14,7 +14,7 @@
 #include "native_client/src/shared/ppapi_proxy/object_capability.h"
 #include "native_client/src/shared/ppapi_proxy/object_serialize.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
-#include "ppapi/c/pp_var.h"
+#include "native_client/src/third_party/ppapi/c/pp_var.h"
 #include "srpcgen/ppb_rpc.h"
 #include "srpcgen/ppp_rpc.h"
 

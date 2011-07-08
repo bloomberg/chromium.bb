@@ -13,7 +13,7 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
-#include "ppapi/c/ppb_url_response_info.h"
+#include "native_client/src/third_party/ppapi/c/ppb_url_response_info.h"
 #include "srpcgen/ppb_rpc.h"
 
 namespace ppapi_proxy {

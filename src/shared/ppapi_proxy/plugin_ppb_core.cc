@@ -12,10 +12,10 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_resource_tracker.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_upcall.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
-#include "ppapi/c/pp_completion_callback.h"
-#include "ppapi/c/pp_resource.h"
-#include "ppapi/c/ppb_core.h"
-#include "ppapi/cpp/common.h"
+#include "native_client/src/third_party/ppapi/c/pp_completion_callback.h"
+#include "native_client/src/third_party/ppapi/c/pp_resource.h"
+#include "native_client/src/third_party/ppapi/c/ppb_core.h"
+#include "native_client/src/third_party/ppapi/cpp/common.h"
 #include "srpcgen/ppb_rpc.h"
 
 using ppapi_proxy::DebugPrintf;

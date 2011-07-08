@@ -6,9 +6,9 @@
 #define NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_BROWSER_PPP_SCROLLBAR_H_
 
 #include "native_client/src/include/nacl_macros.h"
-#include "ppapi/c/dev/ppp_scrollbar_dev.h"
-#include "ppapi/c/pp_resource.h"
-#include "ppapi/c/pp_var.h"
+#include "native_client/src/third_party/ppapi/c/dev/ppp_scrollbar_dev.h"
+#include "native_client/src/third_party/ppapi/c/pp_resource.h"
+#include "native_client/src/third_party/ppapi/c/pp_var.h"
 
 namespace ppapi_proxy {
 

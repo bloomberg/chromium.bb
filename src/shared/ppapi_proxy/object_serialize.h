@@ -7,7 +7,7 @@
 #ifndef NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_OBJECT_SERIALIZE_H_
 #define NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_OBJECT_SERIALIZE_H_
 
-#include "ppapi/c/pp_var.h"
+#include "native_client/src/third_party/ppapi/c/pp_var.h"
 
 struct NaClSrpcChannel;
 

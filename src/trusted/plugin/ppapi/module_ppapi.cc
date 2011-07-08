@@ -10,8 +10,8 @@
 #include "native_client/src/trusted/plugin/ppapi/plugin_ppapi.h"
 #include "native_client/src/trusted/plugin/nacl_entry_points.h"
 
-#include "ppapi/c/private/ppb_nacl_private.h"
-#include "ppapi/cpp/module.h"
+#include "native_client/src/third_party/ppapi/c/private/ppb_nacl_private.h"
+#include "native_client/src/third_party/ppapi/cpp/module.h"
 
 GetURandomFDFunc get_urandom_fd;
 

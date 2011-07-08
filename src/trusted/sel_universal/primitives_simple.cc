@@ -20,7 +20,7 @@
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/trusted/sel_universal/primitives.h"
 
-#include "ppapi/c/pp_input_event.h"
+#include "native_client/src/third_party/ppapi/c/pp_input_event.h"
 
 // Standard helper class to tie mutex lock/unlock to a scope.
 class ScopedMutexLock {

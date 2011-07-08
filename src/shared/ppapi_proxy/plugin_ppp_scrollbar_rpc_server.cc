@@ -9,9 +9,9 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_process.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
-#include "ppapi/c/dev/ppp_scrollbar_dev.h"
-#include "ppapi/c/pp_resource.h"
-#include "ppapi/c/ppp.h"
+#include "native_client/src/third_party/ppapi/c/dev/ppp_scrollbar_dev.h"
+#include "native_client/src/third_party/ppapi/c/pp_resource.h"
+#include "native_client/src/third_party/ppapi/c/ppp.h"
 #include "srpcgen/ppp_rpc.h"
 
 using ppapi_proxy::DebugPrintf;

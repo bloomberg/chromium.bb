@@ -12,7 +12,7 @@
 #include <stdint.h>
 #include <SDL/SDL_keysym.h>
 #include <SDL/SDL_events.h>
-#include "ppapi/c/pp_input_event.h"
+#include "native_client/src/third_party/ppapi/c/pp_input_event.h"
 
 #include "native_client/src/trusted/sel_universal/primitives.h"
 

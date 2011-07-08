@@ -12,8 +12,8 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/ref_counted.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_resource.h"
-#include "ppapi/c/pp_resource.h"
-#include "ppapi/c/ppb_audio.h"
+#include "native_client/src/third_party/ppapi/c/pp_resource.h"
+#include "native_client/src/third_party/ppapi/c/ppb_audio.h"
 
 namespace ppapi_proxy {
 

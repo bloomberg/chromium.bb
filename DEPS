@@ -40,7 +40,7 @@ deps = {
     Var("valgrind_rev"),
   "net/tools/testserver":
     Var("chromium_trunk") + "/src/net/tools/testserver@" + Var("chrome_rev"),
-  "ppapi":
+  "native_client/src/third_party/ppapi":
     Var("chromium_trunk") + "/src/ppapi@" + Var("chrome_rev"),
   "testing/gtest":
     "http://googletest.googlecode.com/svn/trunk@" + Var("gtest_rev"),

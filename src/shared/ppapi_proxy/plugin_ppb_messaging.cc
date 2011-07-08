@@ -10,8 +10,8 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
-#include "ppapi/c/pp_instance.h"
-#include "ppapi/c/pp_var.h"
+#include "native_client/src/third_party/ppapi/c/pp_instance.h"
+#include "native_client/src/third_party/ppapi/c/pp_var.h"
 #include "srpcgen/ppb_rpc.h"
 
 namespace ppapi_proxy {

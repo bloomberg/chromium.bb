@@ -12,7 +12,7 @@
 #include "native_client/src/shared/ppapi_proxy/browser_globals.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
-#include "ppapi/c/pp_completion_callback.h"
+#include "native_client/src/third_party/ppapi/c/pp_completion_callback.h"
 #include "srpcgen/ppp_rpc.h"
 
 namespace ppapi_proxy {

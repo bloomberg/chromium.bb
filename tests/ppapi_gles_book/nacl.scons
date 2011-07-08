@@ -23,7 +23,7 @@ env.Append(CCFLAGS=['-Wno-missing-braces'])
 # Add local path to find GPU sources and GLES2 includes.
 env.Append(CPPPATH=[
     '$SOURCE_ROOT/third_party/gles2_book/Common/Include',
-    '$SOURCE_ROOT/ppapi/lib/gl/include',
+    '$MAIN_DIR/src/third_party/ppapi/lib/gl/include',
     ])
 
 gles_demo_srcs = [

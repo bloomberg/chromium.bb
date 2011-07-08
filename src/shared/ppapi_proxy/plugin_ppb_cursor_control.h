@@ -6,7 +6,7 @@
 #define NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PLUGIN_PPB_CURSOR_CONTROL_H_
 
 #include "native_client/src/include/nacl_macros.h"
-#include "ppapi/c/dev/ppb_cursor_control_dev.h"
+#include "native_client/src/third_party/ppapi/c/dev/ppb_cursor_control_dev.h"
 
 namespace ppapi_proxy {
 

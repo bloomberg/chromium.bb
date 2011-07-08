@@ -13,8 +13,8 @@
 #ifndef NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PLUGIN_UPCALL_H_
 #define NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PLUGIN_UPCALL_H_
 
-#include "ppapi/c/pp_completion_callback.h"
-#include "ppapi/c/pp_resource.h"
+#include "native_client/src/third_party/ppapi/c/pp_completion_callback.h"
+#include "native_client/src/third_party/ppapi/c/pp_resource.h"
 
 namespace ppapi_proxy {
 

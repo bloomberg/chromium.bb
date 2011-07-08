@@ -14,8 +14,8 @@
 #include "native_client/src/trusted/plugin/plugin_error.h"
 #include "native_client/src/trusted/plugin/utility.h"
 #include "native_client/src/third_party_mod/jsoncpp/include/json/reader.h"
-#include "ppapi/cpp/dev/url_util_dev.h"
-#include "ppapi/cpp/var.h"
+#include "native_client/src/third_party/ppapi/cpp/dev/url_util_dev.h"
+#include "native_client/src/third_party/ppapi/cpp/var.h"
 
 namespace plugin {
 

@@ -350,9 +350,9 @@ def main(argv):
       ppapi = True
 
   if ppapi:
-    AddHeader("ppapi/c/pp_instance.h")
-    AddHeader("ppapi/c/pp_module.h")
-    AddHeader("ppapi/c/pp_resource.h")
+    AddHeader("native_client/src/third_party/ppapi/c/pp_instance.h")
+    AddHeader("native_client/src/third_party/ppapi/c/pp_module.h")
+    AddHeader("native_client/src/third_party/ppapi/c/pp_resource.h")
 
   # Convert to forward slash paths if needed
   h_file_name = "/".join(h_file_name.split("\\"))

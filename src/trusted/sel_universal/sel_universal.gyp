@@ -31,6 +31,9 @@
       'dependencies': [
         '<(DEPTH)/native_client/src/shared/imc/imc.gyp:imc',
         '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
+        #TODO(brettw) use the _nacl one instead.
+        #'<(DEPTH)/native_client/src/shared/ppapi/ppapi.gyp:ppapi_c_nacl',
+        '<(DEPTH)/native_client/src/shared/ppapi/ppapi.gyp:ppapi_c',
         '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc',
         '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer',
         '<(DEPTH)/native_client/src/trusted/reverse_service/reverse_service.gyp:reverse_service',
@@ -63,6 +66,9 @@
           'dependencies': [
             '<(DEPTH)/native_client/src/shared/imc/imc.gyp:imc64',
             '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform64',
+            #TODO(brettw) use the _nacl one instead.
+            #'<(DEPTH)/native_client/src/shared/ppapi/ppapi.gyp:ppapi_c_nacl',
+            '<(DEPTH)/native_client/src/shared/ppapi/ppapi.gyp:ppapi_c',
             '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc64',
             '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer64',
             '<(DEPTH)/native_client/src/trusted/reverse_service/reverse_service.gyp:reverse_service64',

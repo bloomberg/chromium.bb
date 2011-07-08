@@ -21,7 +21,7 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
-#include "ppapi/c/pp_errors.h"
+#include "native_client/src/third_party/ppapi/c/pp_errors.h"
 #include "srpcgen/ppp_rpc.h"
 #include "srpcgen/upcall.h"
 

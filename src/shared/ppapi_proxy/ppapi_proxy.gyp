@@ -59,6 +59,11 @@
       'include_dirs': [
         '<(DEPTH)/native_client/src/shared/ppapi_proxy/trusted',
       ],
+      'dependencies': [
+        #TODO(brettw) use the _nacl one instead.
+        #'<(DEPTH)/native_client/src/shared/ppapi/ppapi.gyp:ppapi_c_nacl',
+        '<(DEPTH)/native_client/src/shared/ppapi/ppapi.gyp:ppapi_c',
+      ],
     },
   ],
 }

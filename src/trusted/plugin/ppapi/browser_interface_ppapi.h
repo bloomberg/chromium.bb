@@ -11,7 +11,7 @@
 
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/trusted/plugin/browser_interface.h"
-#include "ppapi/cpp/instance.h"
+#include "native_client/src/third_party/ppapi/cpp/instance.h"
 
 namespace pp {
 class InstancePrivate;

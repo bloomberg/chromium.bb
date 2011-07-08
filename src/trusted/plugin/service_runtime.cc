@@ -36,9 +36,9 @@
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
 
-#include "ppapi/c/pp_errors.h"
-#include "ppapi/cpp/core.h"
-#include "ppapi/cpp/completion_callback.h"
+#include "native_client/src/third_party/ppapi/c/pp_errors.h"
+#include "native_client/src/third_party/ppapi/cpp/core.h"
+#include "native_client/src/third_party/ppapi/cpp/completion_callback.h"
 
 using std::vector;
 

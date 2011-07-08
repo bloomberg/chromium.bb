@@ -8,11 +8,11 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_callback.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
-#include "ppapi/c/dev/ppb_scrollbar_dev.h"
-#include "ppapi/c/pp_completion_callback.h"
-#include "ppapi/c/pp_errors.h"
-#include "ppapi/c/pp_input_event.h"
-#include "ppapi/c/pp_rect.h"
+#include "native_client/src/third_party/ppapi/c/dev/ppb_scrollbar_dev.h"
+#include "native_client/src/third_party/ppapi/c/pp_completion_callback.h"
+#include "native_client/src/third_party/ppapi/c/pp_errors.h"
+#include "native_client/src/third_party/ppapi/c/pp_input_event.h"
+#include "native_client/src/third_party/ppapi/c/pp_rect.h"
 #include "srpcgen/ppb_rpc.h"
 
 namespace ppapi_proxy {
