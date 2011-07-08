@@ -85,28 +85,17 @@ class FrameRateTest_Reference : public FrameRateTest {
   }
 };
 
-TEST_F(FrameRateTest, Blank_Steady) {
-  RunTest("blank", "steady", "");
+#define FRAME_RATE_TEST(content, gesture) \
+TEST_F(FrameRateTest, content##_##gesture) { \
+  RunTest(#content, #gesture, ""); \
+} \
+TEST_F(FrameRateTest_Reference, content##_##gesture) { \
+  RunTest(#content, #gesture, "_ref"); \
 }
 
-TEST_F(FrameRateTest, Blank_Reading) {
-  RunTest("blank", "reading", "");
-}
-
-TEST_F(FrameRateTest, Blank_Mouse_Wheel) {
-  RunTest("blank", "mouse_wheel", "");
-}
-
-TEST_F(FrameRateTest, Blank_Mac_Fling) {
-  RunTest("blank", "mac_fling", "");
-}
-
-// TODO(darin): Need to update the reference build to a version that supports
-// the webkitRequestAnimationFrame API.
-#if 0
-TEST_F(FrameRateTest_Reference, Blank) {
-  RunTest("blank", "_ref");
-}
-#endif
+FRAME_RATE_TEST(blank, steady);
+FRAME_RATE_TEST(blank, reading);
+FRAME_RATE_TEST(blank, mouse_wheel);
+FRAME_RATE_TEST(blank, mac_fling);
 
 }  // namespace
