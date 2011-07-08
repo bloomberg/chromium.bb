@@ -127,8 +127,6 @@ class RootView : public View,
   virtual void CalculateOffsetToAncestorWithLayer(gfx::Point* offset,
                                                   View** ancestor) OVERRIDE;
 
-  View* touch_pressed_handler() const { return touch_pressed_handler_; }
-
  private:
   friend class View;
   friend class Widget;

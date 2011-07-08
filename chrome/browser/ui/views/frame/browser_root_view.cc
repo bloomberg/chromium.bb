@@ -21,7 +21,7 @@
 #if defined(TOUCH_UI)
 #include "content/common/notification_service.h"
 #include "content/common/notification_type.h"
-#include "views/ime/text_input_client.h"
+#include "views/ime/input_method.h"
 #endif
 
 // static
@@ -38,13 +38,14 @@ BrowserRootView::BrowserRootView(BrowserView* browser_view,
 ui::TouchStatus BrowserRootView::OnTouchEvent(const views::TouchEvent& event) {
   const ui::TouchStatus status = views::internal::RootView::OnTouchEvent(event);
 
-  views::View* handler = touch_pressed_handler();
-  if (!handler)
+  if (event.type() != ui::ET_TOUCH_PRESSED)
     return status;
-  views::TextInputClient* text_input_client = handler->GetTextInputClient();
-  if (!text_input_client)
+
+  views::InputMethod* input_method = GetInputMethod();
+  if (!input_method)
     return status;
-  ui::TextInputType text_input_type = text_input_client->GetTextInputType();
+
+  ui::TextInputType text_input_type = input_method->GetTextInputType();
   if (text_input_type != ui::TEXT_INPUT_TYPE_NONE) {
     NotificationService::current()->Notify(
         NotificationType::EDITABLE_ELEMENT_TOUCHED,
