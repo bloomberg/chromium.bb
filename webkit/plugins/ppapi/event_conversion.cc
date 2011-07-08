@@ -15,6 +15,7 @@
 #include "ppapi/shared_impl/input_event_impl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "webkit/plugins/ppapi/common.h"
+#include "webkit/plugins/ppapi/time_conversion.h"
 
 using ppapi::InputEventData;
 using WebKit::WebInputEvent;
@@ -63,10 +64,7 @@ PP_InputEvent_Type ConvertEventTypes(WebInputEvent::Type wetype) {
 InputEventData GetEventWithCommonFieldsAndType(const WebInputEvent& web_event) {
   InputEventData result;
   result.event_type = ConvertEventTypes(web_event.type);
-  // TODO(brettw) http://code.google.com/p/chromium/issues/detail?id=57448
-  // This should use a tick count rather than the wall clock time that WebKit
-  // uses.
-  result.event_time_stamp = web_event.timeStampSeconds;
+  result.event_time_stamp = EventTimeToPPTimeTicks(web_event.timeStampSeconds);
   return result;
 }
 
@@ -167,7 +165,7 @@ WebKeyboardEvent* BuildKeyEvent(const PP_InputEvent& event) {
     default:
       NOTREACHED();
   }
-  key_event->timeStampSeconds = event.time_stamp;
+  key_event->timeStampSeconds = PPTimeTicksToEventTime(event.time_stamp);
   key_event->modifiers = event.u.key.modifier;
   key_event->windowsKeyCode = event.u.key.key_code;
   return key_event;
@@ -176,7 +174,7 @@ WebKeyboardEvent* BuildKeyEvent(const PP_InputEvent& event) {
 WebKeyboardEvent* BuildCharEvent(const PP_InputEvent& event) {
   WebKeyboardEvent* key_event = new WebKeyboardEvent();
   key_event->type = WebInputEvent::Char;
-  key_event->timeStampSeconds = event.time_stamp;
+  key_event->timeStampSeconds = PPTimeTicksToEventTime(event.time_stamp);
   key_event->modifiers = event.u.character.modifier;
 
   // Make sure to not read beyond the buffer in case some bad code doesn't
@@ -220,7 +218,7 @@ WebMouseEvent* BuildMouseEvent(const PP_InputEvent& event) {
     default:
       NOTREACHED();
   }
-  mouse_event->timeStampSeconds = event.time_stamp;
+  mouse_event->timeStampSeconds = PPTimeTicksToEventTime(event.time_stamp);
   mouse_event->modifiers = event.u.mouse.modifier;
   mouse_event->button =
       static_cast<WebMouseEvent::Button>(event.u.mouse.button);
@@ -233,7 +231,8 @@ WebMouseEvent* BuildMouseEvent(const PP_InputEvent& event) {
 WebMouseWheelEvent* BuildMouseWheelEvent(const PP_InputEvent& event) {
   WebMouseWheelEvent* mouse_wheel_event = new WebMouseWheelEvent();
   mouse_wheel_event->type = WebInputEvent::MouseWheel;
-  mouse_wheel_event->timeStampSeconds = event.time_stamp;
+  mouse_wheel_event->timeStampSeconds =
+      PPTimeTicksToEventTime(event.time_stamp);
   mouse_wheel_event->modifiers = event.u.wheel.modifier;
   mouse_wheel_event->deltaX = event.u.wheel.delta_x;
   mouse_wheel_event->deltaY = event.u.wheel.delta_y;

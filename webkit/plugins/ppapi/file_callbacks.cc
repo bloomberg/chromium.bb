@@ -14,6 +14,7 @@
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppb_directory_reader_impl.h"
 #include "webkit/plugins/ppapi/ppb_file_system_impl.h"
+#include "webkit/plugins/ppapi/time_conversion.h"
 
 namespace webkit {
 namespace ppapi {
@@ -51,9 +52,9 @@ void FileCallbacks::DidReadMetadata(
   DCHECK(info_);
   DCHECK(file_system_);
   info_->size = file_info.size;
-  info_->creation_time = file_info.creation_time.ToDoubleT();
-  info_->last_access_time = file_info.last_accessed.ToDoubleT();
-  info_->last_modified_time = file_info.last_modified.ToDoubleT();
+  info_->creation_time = TimeToPPTime(file_info.creation_time);
+  info_->last_access_time = TimeToPPTime(file_info.last_accessed);
+  info_->last_modified_time = TimeToPPTime(file_info.last_modified);
   info_->system_type = file_system_->type();
   if (file_info.is_directory)
     info_->type = PP_FILETYPE_DIRECTORY;

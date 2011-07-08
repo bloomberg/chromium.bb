@@ -17,6 +17,7 @@
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_url_request_info_impl.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
+#include "webkit/plugins/ppapi/time_conversion.h"
 #include "webkit/plugins/ppapi/var.h"
 
 using ppapi::thunk::EnterResource;
@@ -95,7 +96,7 @@ double GetLocalTimeZoneOffset(PP_Instance pp_instance, PP_Time t) {
   // We can't do the conversion here because on Linux, the localtime calls
   // require filesystem access prohibited by the sandbox.
   return instance->delegate()->GetLocalTimeZoneOffset(
-      base::Time::FromDoubleT(t));
+      PPTimeToTime(t));
 }
 
 PP_Var GetCommandLineArgs(PP_Module pp_module) {

@@ -149,15 +149,12 @@ void MemFree(void* ptr) {
   free(ptr);
 }
 
-double GetTime() {
-  return base::Time::Now().ToDoubleT();
+PP_Time GetTime() {
+  return TimeToPPTime(base::Time::Now());
 }
 
-double GetTickTime() {
-  // TODO(brettw) http://code.google.com/p/chromium/issues/detail?id=57448
-  // This should be a tick timer rather than wall clock time, but needs to
-  // match message times, which also currently use wall clock time.
-  return GetTime();
+PP_TimeTicks GetTickTime() {
+  return TimeTicksToPPTimeTicks(base::TimeTicks::Now());
 }
 
 void CallOnMainThread(int delay_in_msec,

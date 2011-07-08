@@ -20,6 +20,7 @@
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_file_ref_impl.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
+#include "webkit/plugins/ppapi/time_conversion.h"
 
 #if defined(OS_WIN)
 #include "base/utf_string_conversions.h"
@@ -137,9 +138,9 @@ int32_t QueryModuleLocalFile(PP_Instance pp_instance,
       &file_info);
   if (result == base::PLATFORM_FILE_OK) {
     info->size = file_info.size;
-    info->creation_time = file_info.creation_time.ToDoubleT();
-    info->last_access_time = file_info.last_accessed.ToDoubleT();
-    info->last_modified_time = file_info.last_modified.ToDoubleT();
+    info->creation_time = TimeToPPTime(file_info.creation_time);
+    info->last_access_time = TimeToPPTime(file_info.last_accessed);
+    info->last_modified_time = TimeToPPTime(file_info.last_modified);
     info->system_type = PP_FILESYSTEMTYPE_EXTERNAL;
     if (file_info.is_directory)
       info->type = PP_FILETYPE_DIRECTORY;
@@ -253,9 +254,9 @@ int32_t QueryFileRefFile(PP_Resource file_ref_id,
       &file_info);
   if (result == base::PLATFORM_FILE_OK) {
     info->size = file_info.size;
-    info->creation_time = file_info.creation_time.ToDoubleT();
-    info->last_access_time = file_info.last_accessed.ToDoubleT();
-    info->last_modified_time = file_info.last_modified.ToDoubleT();
+    info->creation_time = TimeToPPTime(file_info.creation_time);
+    info->last_access_time = TimeToPPTime(file_info.last_accessed);
+    info->last_modified_time = TimeToPPTime(file_info.last_modified);
     info->system_type = PP_FILESYSTEMTYPE_EXTERNAL;
     if (file_info.is_directory)
       info->type = PP_FILETYPE_DIRECTORY;

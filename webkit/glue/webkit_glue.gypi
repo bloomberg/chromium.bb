@@ -310,6 +310,8 @@
         '../plugins/ppapi/resource_creation_impl.h',
         '../plugins/ppapi/resource_tracker.cc',
         '../plugins/ppapi/resource_tracker.h',
+        '../plugins/ppapi/time_conversion.cc',
+        '../plugins/ppapi/time_conversion.h',
         '../plugins/ppapi/string.cc',
         '../plugins/ppapi/string.h',
         '../plugins/ppapi/var.cc',

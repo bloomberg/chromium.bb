@@ -17,6 +17,7 @@
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_directory_reader_impl.h"
 #include "webkit/plugins/ppapi/ppb_file_system_impl.h"
+#include "webkit/plugins/ppapi/time_conversion.h"
 #include "webkit/plugins/ppapi/var.h"
 
 using ppapi::thunk::EnterResourceNoLock;
@@ -181,8 +182,8 @@ int32_t PPB_FileRef_Impl::Touch(PP_Time last_access_time,
     return PP_ERROR_NOACCESS;
   if (!instance()->delegate()->Touch(
           GetFileSystemURL(),
-          base::Time::FromDoubleT(last_access_time),
-          base::Time::FromDoubleT(last_modified_time),
+          PPTimeToTime(last_access_time),
+          PPTimeToTime(last_modified_time),
           new FileCallbacks(instance()->module()->AsWeakPtr(),
                             GetReferenceNoAddRef(), callback,
                             NULL, NULL, NULL)))

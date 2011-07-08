@@ -23,6 +23,7 @@
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_file_ref_impl.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
+#include "webkit/plugins/ppapi/time_conversion.h"
 
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_FileIO_API;
@@ -111,16 +112,16 @@ int32_t PPB_FileIO_Impl::Query(PP_FileInfo* info,
 }
 
 int32_t PPB_FileIO_Impl::Touch(PP_Time last_access_time,
-                      PP_Time last_modified_time,
-                      PP_CompletionCallback callback) {
+                               PP_Time last_modified_time,
+                               PP_CompletionCallback callback) {
   int32_t rv = CommonCallValidation(true, callback);
   if (rv != PP_OK)
     return rv;
 
   if (!base::FileUtilProxy::Touch(
           instance()->delegate()->GetFileThreadMessageLoopProxy(),
-          file_, base::Time::FromDoubleT(last_access_time),
-          base::Time::FromDoubleT(last_modified_time),
+          file_, PPTimeToTime(last_access_time),
+          PPTimeToTime(last_modified_time),
           callback_factory_.NewCallback(&PPB_FileIO_Impl::StatusCallback)))
     return PP_ERROR_FAILED;
 
@@ -285,9 +286,9 @@ void PPB_FileIO_Impl::QueryInfoCallback(
   DCHECK(info_);
   if (error_code == base::PLATFORM_FILE_OK) {
     info_->size = file_info.size;
-    info_->creation_time = file_info.creation_time.ToDoubleT();
-    info_->last_access_time = file_info.last_accessed.ToDoubleT();
-    info_->last_modified_time = file_info.last_modified.ToDoubleT();
+    info_->creation_time = TimeToPPTime(file_info.creation_time);
+    info_->last_access_time = TimeToPPTime(file_info.last_accessed);
+    info_->last_modified_time = TimeToPPTime(file_info.last_modified);
     info_->system_type = file_system_type_;
     if (file_info.is_directory)
       info_->type = PP_FILETYPE_DIRECTORY;
