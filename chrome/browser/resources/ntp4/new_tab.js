@@ -59,8 +59,8 @@ cr.define('ntp4', function() {
    * The left and right paging buttons.
    * @type {!Element|undefined}
    */
-  var pageSwitcherLeft;
-  var pageSwitcherRight;
+  var pageSwitcherStart;
+  var pageSwitcherEnd;
 
   /**
    * The 'trash' element.  Note that technically this is unnecessary,
@@ -116,12 +116,12 @@ cr.define('ntp4', function() {
     dots = dotList.getElementsByClassName('dot');
     tilePages = pageList.getElementsByClassName('tile-page');
     appsPages = pageList.getElementsByClassName('apps-page');
-    pageSwitcherLeft = getRequiredElement('page-switcher-left');
-    pageSwitcherLeft.addEventListener('click', onPageSwitcherClicked);
-    pageSwitcherLeft.addEventListener('mousewheel', onPageSwitcherScrolled);
-    pageSwitcherRight = getRequiredElement('page-switcher-right');
-    pageSwitcherRight.addEventListener('click', onPageSwitcherClicked);
-    pageSwitcherRight.addEventListener('mousewheel', onPageSwitcherScrolled);
+    pageSwitcherStart = getRequiredElement('page-switcher-start');
+    pageSwitcherStart.addEventListener('click', onPageSwitcherClicked);
+    pageSwitcherStart.addEventListener('mousewheel', onPageSwitcherScrolled);
+    pageSwitcherEnd = getRequiredElement('page-switcher-end');
+    pageSwitcherEnd.addEventListener('click', onPageSwitcherClicked);
+    pageSwitcherEnd.addEventListener('mousewheel', onPageSwitcherScrolled);
 
     // Initialize the cardSlider without any cards at the moment
     var sliderFrame = getRequiredElement('card-slider-frame');
@@ -405,8 +405,7 @@ cr.define('ntp4', function() {
    */
   function onPageSwitcherClicked(e) {
     cardSlider.selectCard(cardSlider.currentCard +
-        (e.currentTarget == pageSwitcherLeft ? -1 : 1),
-        true);
+        (e.currentTarget == pageSwitcherStart ? -1 : 1), true);
   }
 
   /**
@@ -438,15 +437,19 @@ cr.define('ntp4', function() {
   function updatePageSwitchers() {
     var page = cardSlider.currentCardValue;
 
-    pageSwitcherLeft.hidden = page && (cardSlider.currentCard == 0);
-    pageSwitcherRight.hidden = page &&
+    pageSwitcherStart.hidden = page && (cardSlider.currentCard == 0);
+    pageSwitcherEnd.hidden = page &&
         (cardSlider.currentCard == cardSlider.cardCount - 1);
 
     if (!page)
       return;
+
+    var pageSwitcherLeft = isRTL() ? pageSwitcherEnd : pageSwitcherStart;
+    var pageSwitcherRight = isRTL() ? pageSwitcherStart : pageSwitcherEnd;
     var scrollbarWidth = page.scrollbarWidth;
     pageSwitcherLeft.style.width =
         (page.sideMargin + 13) + 'px';
+    pageSwitcherLeft.style.left = '0';
     pageSwitcherRight.style.width =
         (page.sideMargin - scrollbarWidth + 13) + 'px';
     pageSwitcherRight.style.right = scrollbarWidth + 'px';
@@ -548,6 +551,13 @@ cr.define('ntp4', function() {
     mostVisitedPage.data = data;
   }
 
+  /**
+   * Check the directionality of the page.
+   * @return {boolean} True if Chrome is running an RTL UI.
+   */
+  function isRTL() {
+    return document.documentElement.dir == 'rtl';
+
   /*
    * Save the name of an app page.
    * Store the app page name into the preferences store.
@@ -571,6 +581,7 @@ cr.define('ntp4', function() {
     getCardSlider: getCardSlider,
     getAppsPageIndex: getAppsPageIndex,
     initialize: initialize,
+    isRTL: isRTL,
     leaveRearrangeMode: leaveRearrangeMode,
     themeChanged: themeChanged,
     setRecentlyClosedTabs: setRecentlyClosedTabs,

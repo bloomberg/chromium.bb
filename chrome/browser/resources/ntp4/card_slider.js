@@ -301,7 +301,9 @@ var CardSlider = (function() {
      * @private
      */
     transformToCurrentCard_: function(opt_animate) {
-      this.currentLeft_ = -this.currentCard * this.cardWidth_;
+      this.currentLeft_ = -this.cardWidth_ *
+          (ntp4.isRTL() ? this.cards_.length - this.currentCard - 1 :
+                          this.currentCard);
 
       // Animate to the current card, which will either transition if the
       // current card is new, or reset the existing card if we didn't drag
