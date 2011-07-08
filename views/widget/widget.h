@@ -245,6 +245,7 @@ class Widget : public internal::NativeWidgetDelegate,
   // fit the entire size of the RootView. The RootView takes ownership of this
   // View, unless it is set as not being parent-owned.
   void SetContentsView(View* view);
+  View* GetContentsView();
 
   // Returns the bounds of the Widget in screen coordinates.
   gfx::Rect GetWindowScreenBounds() const;

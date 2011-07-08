@@ -70,6 +70,10 @@ void RootView::SetContentsView(View* contents_view) {
   Layout();
 }
 
+View* RootView::GetContentsView() {
+  return child_count() > 0 ? GetChildViewAt(0) : NULL;
+}
+
 void RootView::NotifyNativeViewHierarchyChanged(bool attached,
                                                 gfx::NativeView native_view) {
   PropagateNativeViewHierarchyChanged(attached, native_view, this);

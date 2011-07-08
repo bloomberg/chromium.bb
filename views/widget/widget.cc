@@ -337,6 +337,10 @@ void Widget::SetContentsView(View* view) {
   root_view_->SetContentsView(view);
 }
 
+View* Widget::GetContentsView() {
+  return root_view_->GetContentsView();
+}
+
 gfx::Rect Widget::GetWindowScreenBounds() const {
   return native_widget_->GetWindowScreenBounds();
 }

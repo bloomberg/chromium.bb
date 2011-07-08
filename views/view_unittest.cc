@@ -2605,17 +2605,17 @@ TEST_F(ViewLayerTest, ResetTransformOnLayerAfterAdd) {
   transform.SetScale(2.0f, 2.0f);
   view->SetTransform(transform);
   widget()->SetContentsView(view);
-  EXPECT_EQ(2.0f, view->GetTransform().matrix()[0]);
+  EXPECT_EQ(2.0f, view->GetTransform().matrix().get(0, 0));
   ASSERT_TRUE(view->layer() != NULL);
-  EXPECT_EQ(2.0f, view->layer()->transform().matrix()[0]);
+  EXPECT_EQ(2.0f, view->layer()->transform().matrix().get(0, 0));
 
   View* parent = view->parent();
   parent->RemoveChildView(view);
   parent->AddChildView(view);
 
-  EXPECT_EQ(2.0f, view->GetTransform().matrix()[0]);
+  EXPECT_EQ(2.0f, view->GetTransform().matrix().get(0, 0));
   ASSERT_TRUE(view->layer() != NULL);
-  EXPECT_EQ(2.0f, view->layer()->transform().matrix()[0]);
+  EXPECT_EQ(2.0f, view->layer()->transform().matrix().get(0, 0));
 }
 
 // Makes sure that layer persists after toggling the visibility

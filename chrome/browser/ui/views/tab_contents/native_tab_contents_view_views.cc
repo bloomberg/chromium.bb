@@ -39,6 +39,12 @@ void NativeTabContentsViewViews::Unparent() {
 
 RenderWidgetHostView* NativeTabContentsViewViews::CreateRenderWidgetHostView(
     RenderWidgetHost* render_widget_host) {
+  // Remove the old RenderWidgetHostView, otherwise SetContentsView will delete
+  // it.
+  views::View* old_rwhv = GetWidget()->GetContentsView();
+  if (old_rwhv)
+    old_rwhv->parent()->RemoveChildView(old_rwhv);
+
   RenderWidgetHostViewViews* view =
       new RenderWidgetHostViewViews(render_widget_host);
   GetWidget()->SetContentsView(view);
