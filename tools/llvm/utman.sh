@@ -2508,7 +2508,7 @@ sdk-libs() {
       libdir="${PNACL_SDK_LIB}"
 
   for platform in arm x86-32 x86-64; do
-    if [ "${platform}" == "arm" ] && ! ${UTMAN_BUILD_ARM}; then
+    if [ "${platform}" == "arm" ] && ${LIBMODE_GLIBC}; then
       continue
     fi
     StepBanner "SDK" "Make/Install ${platform} components"
@@ -2531,7 +2531,7 @@ sdk-verify() {
   done
 
   for platform in arm x86-32 x86-64; do
-    if [ "${platform}" == "arm" ] && ! ${UTMAN_BUILD_ARM}; then
+    if [ "${platform}" == "arm" ] && ${LIBMODE_GLIBC}; then
       continue
     fi
 
@@ -2565,7 +2565,7 @@ libehsupport-install() {
   fi
 
   for platform in x86-32 x86-64 arm; do
-    if [ "${platform}" == "arm" ] && ! ${UTMAN_BUILD_ARM}; then
+    if [ "${platform}" == "arm" ] && ${LIBMODE_GLIBC}; then
       continue
     fi
 
@@ -2925,7 +2925,7 @@ verify() {
 
   # Verify platform libraries
   for platform in arm x86-32 x86-64; do
-    if [ "${platform}" == "arm" ] && ! ${UTMAN_BUILD_ARM}; then
+    if [ "${platform}" == "arm" ] && ${LIBMODE_GLIBC}; then
       continue
     fi
 
