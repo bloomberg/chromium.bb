@@ -390,7 +390,7 @@ GLuint CreateShaderFromSource(gpu::gles2::GLES2Implementation* gl,
     GLuint shader = gl->CreateShader(type);
     gl->ShaderSource(shader, 1, &source, NULL);
     gl->CompileShader(shader);
-    int status;
+    int status = GL_FALSE;
     gl->GetShaderiv(shader, GL_COMPILE_STATUS, &status);
     if (!status) {
         int size = 0;
@@ -432,7 +432,7 @@ bool RenderWidgetFullscreenPepper::InitContext() {
 
   gl->BindAttribLocation(program_, 0, "in_tex_coord");
   gl->LinkProgram(program_);
-  int status;
+  int status = GL_FALSE;
   gl->GetProgramiv(program_, GL_LINK_STATUS, &status);
   if (!status) {
     int size = 0;

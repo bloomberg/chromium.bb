@@ -29,7 +29,7 @@ PPB_Surface3D_Impl::PPB_Surface3D_Impl(PluginInstance* instance)
 
 PPB_Surface3D_Impl::~PPB_Surface3D_Impl() {
   if (context_)
-    context_->BindSurfaces(0, 0);
+    context_->BindSurfacesImpl(NULL, NULL);
 }
 
 // static

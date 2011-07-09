@@ -144,7 +144,11 @@ int32_t PPB_Context3D_Impl::BindSurfaces(PP_Resource draw, PP_Resource read) {
     return PP_ERROR_BADRESOURCE;
   PPB_Surface3D_Impl* new_read =
       static_cast<PPB_Surface3D_Impl*>(enter_read.object());
+  return BindSurfacesImpl(new_draw, new_read);
+}
 
+int32_t PPB_Context3D_Impl::BindSurfacesImpl(PPB_Surface3D_Impl* new_draw,
+                                             PPB_Surface3D_Impl* new_read) {
   // TODO(alokp): Support separate draw-read surfaces.
   DCHECK_EQ(new_draw, new_read);
   if (new_draw != new_read)
@@ -153,12 +157,12 @@ int32_t PPB_Context3D_Impl::BindSurfaces(PP_Resource draw, PP_Resource read) {
   if (new_draw == draw_surface_)
     return PP_OK;
 
-  if (new_draw->context())
+  if (new_draw && new_draw->context())
     return PP_GRAPHICS3DERROR_BAD_ACCESS;  // Already bound.
 
   if (draw_surface_)
     draw_surface_->BindToContext(NULL);
-  if (!new_draw->BindToContext(this))
+  if (new_draw && !new_draw->BindToContext(this))
     return PP_ERROR_NOMEMORY;
 
   draw_surface_ = new_draw;
