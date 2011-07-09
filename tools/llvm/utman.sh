@@ -1868,6 +1868,11 @@ llvm-sb-make() {
     build_with_srpc=1
   fi
 
+  local use_tcmalloc=0
+  if ${LIBMODE_NEWLIB} ; then
+    use_tcmalloc=1
+  fi
+
   RunWithLog ${LLVM_SB_LOG_PREFIX}.make \
       env -i PATH="/usr/bin:/bin" \
       ONLY_TOOLS=llc \
@@ -1875,7 +1880,7 @@ llvm-sb-make() {
       NACL_SRPC=${build_with_srpc} \
       KEEP_SYMBOLS=1 \
       VERBOSE=1 \
-      make ENABLE_OPTIMIZED=1 OPTIMIZE_OPTION=-O3 USE_TCMALLOC=1 \
+      make ENABLE_OPTIMIZED=1 OPTIMIZE_OPTION=-O3 USE_TCMALLOC=$use_tcmalloc \
            ${MAKE_OPTS} tools-only
 
   ts-touch-commit "${objdir}"
@@ -1970,6 +1975,7 @@ google-perftools-configure() {
     CC="${PNACL_GCC} ${flags}" \
     CXX="${PNACL_GPP} ${flags}" \
     LD="${PNACL_LD} ${flags}" \
+    AR="${PNACL_AR}" \
     RANLIB="${PNACL_RANLIB}")
   local install="${TC_BUILD_GOOGLE_PERFTOOLS}"/install
 
