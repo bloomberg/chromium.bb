@@ -49,12 +49,10 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
     return [NSString stringWithFormat:@"%@\n%@", title, url];
 }
 
-- (id)initWithBridge:(BookmarkMenuBridge *)bridge
-             andMenu:(NSMenu*)menu {
+- (id)initWithBridge:(BookmarkMenuBridge *)bridge {
   if ((self = [super init])) {
     bridge_ = bridge;
     DCHECK(bridge_);
-    menu_ = menu;
     [[self menu] setDelegate:self];
   }
   return self;
@@ -66,7 +64,7 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
 }
 
 - (NSMenu*)menu {
-  return menu_;
+  return [[[NSApp mainMenu] itemWithTag:IDC_BOOKMARKS_MENU] submenu];
 }
 
 - (BOOL)validateMenuItem:(NSMenuItem*)menuItem {

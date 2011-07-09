@@ -21,12 +21,10 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/mac/nsimage_cache.h"
 
-BookmarkMenuBridge::BookmarkMenuBridge(Profile* profile,
-                                       NSMenu *menu)
+BookmarkMenuBridge::BookmarkMenuBridge(Profile* profile)
     : menuIsValid_(false),
       profile_(profile),
-      controller_([[BookmarkMenuCocoaController alloc] initWithBridge:this
-                                                              andMenu:menu]) {
+      controller_([[BookmarkMenuCocoaController alloc] initWithBridge:this]) {
   if (GetBookmarkModel())
     ObserveBookmarkModel();
 }
@@ -79,17 +77,14 @@ void BookmarkMenuBridge::UpdateMenuInternal(NSMenu* bookmark_menu,
     AddNodeToMenu(barNode, bookmark_menu, !is_submenu);
   }
 
-  // If the "Other Bookmarks" folder has any content, make a submenu for it and
-  // fill it in.
-  if (!model->other_node()->empty()) {
-    NSString* other_items_title =
-        l10n_util::GetNSString(IDS_BOOMARK_BAR_OTHER_FOLDER_NAME);
-    [bookmark_menu addItem:[NSMenuItem separatorItem]];
-    AddNodeAsSubmenu(bookmark_menu,
-                     model->other_node(),
-                     other_items_title,
-                     !is_submenu);
-  }
+  // Create a submenu for "other bookmarks", and fill it in.
+  NSString* other_items_title =
+      l10n_util::GetNSString(IDS_BOOMARK_BAR_OTHER_FOLDER_NAME);
+  [bookmark_menu addItem:[NSMenuItem separatorItem]];
+  AddNodeAsSubmenu(bookmark_menu,
+                   model->other_node(),
+                   other_items_title,
+                   !is_submenu);
 
   menuIsValid_ = true;
 }

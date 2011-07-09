@@ -116,8 +116,7 @@ class ZoomLevelObserver : public NotificationObserver {
 
   if (!bookmarkMenuBridge_.get()) {
     bookmarkMenuBridge_.reset(
-        new BookmarkMenuBridge([self wrenchMenuModel]->browser()->profile(),
-                              bookmarkMenu));
+        new BookmarkMenuBridge([self wrenchMenuModel]->browser()->profile()));
   }
   DCHECK(bookmarkMenuBridge_.get() != NULL);
 
