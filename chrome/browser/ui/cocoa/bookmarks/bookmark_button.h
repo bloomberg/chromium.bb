@@ -171,8 +171,6 @@ class ThemeProvider;
 // represented by the button at |point| if it is a folder, or 2) inserted
 // into the parent of the non-folder bookmark at |point| in front of that
 // button. Returns YES if at least one bookmark was added.
-// TODO(mrossetti): Change function to use a pair-like structure for
-// URLs and titles. http://crbug.com/44411
 - (BOOL)addURLs:(NSArray*)urls withTitles:(NSArray*)titles at:(NSPoint)point;
 
 // Move a button from one place in the menu to another. This is safe
