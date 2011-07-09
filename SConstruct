@@ -2045,54 +2045,57 @@ The optional target argument overrides the setting of what that target is."""
 
 base_env.AddMethod(SDKInstallTrusted)
 
-# ----------------------------------------------------------
-windows_env = base_env.Clone(
-    BUILD_TYPE = '${OPTIMIZATION_LEVEL}-win',
-    BUILD_TYPE_DESCRIPTION = 'Windows ${OPTIMIZATION_LEVEL} build',
-    tools = ['target_platform_windows'],
-    # Windows /SAFESEH linking requires either an .sxdata section be present or
-    # that @feat.00 be defined as a local, abolute symbol with an odd value.
-    ASCOM = '$ASPPCOM /E | $WINASM -defsym @feat.00=1 -o $TARGET',
-    PDB = '${TARGET.base}.pdb',
-    # Strict doesnt't currently work for windows since some of the system
-    # libraries like wsock32 are magical.
-    LIBS_STRICT = False,
-    TARGET_ARCH='x86_64' if base_env.Bit('build_x86_64') else 'x86',
-)
 
-windows_env.Append(
-    CPPDEFINES = [
-        ['NACL_WINDOWS', '1'],
-        ['NACL_OSX', '0'],
-        ['NACL_LINUX', '0'],
-        ['_WIN32_WINNT', '0x0501'],
-        ['__STDC_LIMIT_MACROS', '1'],
-        ['NOMINMAX', '1'],
-    ],
-    LIBS = ['wsock32', 'advapi32'],
-    CCFLAGS = ['/EHsc', '/WX'],
-)
+def MakeWindowsEnv():
+  windows_env = base_env.Clone(
+      BUILD_TYPE = '${OPTIMIZATION_LEVEL}-win',
+      BUILD_TYPE_DESCRIPTION = 'Windows ${OPTIMIZATION_LEVEL} build',
+      tools = ['target_platform_windows'],
+      # Windows /SAFESEH linking requires either an .sxdata section be
+      # present or that @feat.00 be defined as a local, absolute symbol
+      # with an odd value.
+      ASCOM = '$ASPPCOM /E | $WINASM -defsym @feat.00=1 -o $TARGET',
+      PDB = '${TARGET.base}.pdb',
+      # Strict doesn't currently work for Windows since some of the system
+      # libraries like wsock32 are magical.
+      LIBS_STRICT = False,
+      TARGET_ARCH='x86_64' if base_env.Bit('build_x86_64') else 'x86',
+  )
 
-# This linker option allows us to ensure our builds are compatible with
-# Chromium, which uses it.
-if windows_env.Bit('build_x86_32'):
-  windows_env.Append(LINKFLAGS = "/safeseh")
+  windows_env.Append(
+      CPPDEFINES = [
+          ['NACL_WINDOWS', '1'],
+          ['NACL_OSX', '0'],
+          ['NACL_LINUX', '0'],
+          ['_WIN32_WINNT', '0x0501'],
+          ['__STDC_LIMIT_MACROS', '1'],
+          ['NOMINMAX', '1'],
+      ],
+      LIBS = ['wsock32', 'advapi32'],
+      CCFLAGS = ['/EHsc', '/WX'],
+  )
 
-# We use the GNU assembler (gas) on Windows so that we can use the
-# same .S assembly files on all platforms.  Microsoft's assembler uses
-# a completely different syntax for x86 code.
-if windows_env.Bit('build_x86_64'):
-  # This assembler only works for x86-64 code.
-  windows_env['WINASM'] = \
-      windows_env.File('$SOURCE_ROOT/third_party/mingw-w64/mingw/bin/'
-                       'x86_64-w64-mingw32-as.exe').abspath
-else:
-  # This assembler only works for x86-32 code.
-  windows_env['WINASM'] = \
-      windows_env.File('src/third_party/gnu_binutils/files/as').abspath
+  # This linker option allows us to ensure our builds are compatible with
+  # Chromium, which uses it.
+  if windows_env.Bit('build_x86_32'):
+    windows_env.Append(LINKFLAGS = "/safeseh")
+
+  # We use the GNU assembler (gas) on Windows so that we can use the
+  # same .S assembly files on all platforms.  Microsoft's assembler uses
+  # a completely different syntax for x86 code.
+  if windows_env.Bit('build_x86_64'):
+    # This assembler only works for x86-64 code.
+    windows_env['WINASM'] = \
+        windows_env.File('$SOURCE_ROOT/third_party/mingw-w64/mingw/bin/'
+                         'x86_64-w64-mingw32-as.exe').abspath
+  else:
+    # This assembler only works for x86-32 code.
+    windows_env['WINASM'] = \
+        windows_env.File('src/third_party/gnu_binutils/files/as').abspath
+  return windows_env
 
 (windows_debug_env,
- windows_optimized_env) = GenerateOptimizationLevels(windows_env)
+ windows_optimized_env) = GenerateOptimizationLevels(MakeWindowsEnv())
 
 if ARGUMENTS.get('sdl', 'none') != 'none':
   # These will only apply to sdl!=none builds!
@@ -2130,162 +2133,167 @@ n = windows_debug_env.Replicate(
     '${VC80_DIR}/vc/redist/x86/Microsoft.VC80.CRT')
 
 windows_debug_env.Alias('windows_debug_data_install', n)
-# ----------------------------------------------------------
 
-unix_like_env = base_env.Clone()
-# -Wdeclaration-after-statement is desirable because MS studio does
-# not allow declarations after statements in a block, and since much
-# of our code is portable and primarily initially tested on Linux,
-# it'd be nice to get the build error earlier rather than later
-# (building and testing on Linux is faster).
-unix_like_env.Prepend(
-  CFLAGS = ['-std=gnu99', '-Wdeclaration-after-statement' ],
-  CCFLAGS = [
-    # '-malign-double',
-    '-Wall',
-    '-pedantic',
-    '-Wextra',
-    '-Wno-long-long',
-    '-Wswitch-enum',
-    '-Wsign-compare',
-    '-fvisibility=hidden',
-  ] + werror_flags,
-  CXXFLAGS=['-std=c++98'],
-  LIBPATH=['/usr/lib'],
-  LIBS = ['pthread'],
-  CPPDEFINES = [['__STDC_LIMIT_MACROS', '1'],
-                ['__STDC_FORMAT_MACROS', '1'],
-                ],
-)
 
-if unix_like_env.Bit('use_libcrypto'):
-  unix_like_env.Append(LIBS=['crypto'])
-else:
-  unix_like_env.Append(CFLAGS=['-DUSE_CRYPTO=0'])
-
-if unix_like_env.Bit('enable_tmpfs_redirect_var'):
-  unix_like_env.Append(CPPDEFINES = [['NACL_ENABLE_TMPFS_REDIRECT_VAR', '1']])
-else:
-  unix_like_env.Append(CPPDEFINES = [['NACL_ENABLE_TMPFS_REDIRECT_VAR', '0']])
-
-# ----------------------------------------------------------
-
-mac_env = unix_like_env.Clone(
-    BUILD_TYPE = '${OPTIMIZATION_LEVEL}-mac',
-    BUILD_TYPE_DESCRIPTION = 'MacOS ${OPTIMIZATION_LEVEL} build',
-    tools = ['target_platform_mac'],
-    # TODO(bradnelson): this should really be able to live in unix_like_env
-    #                   but can't due to what the target_platform_x module is
-    #                   doing.
-    LINK = '$CXX',
-    PLUGIN_SUFFIX = '.bundle',
-)
-
-if mac_env.Bit('build_x86_64'):
-  # OS X 10.5 was the first version to support x86-64.  We need to
-  # specify 10.5 rather than 10.4 here otherwise building
-  # get_plugin_dirname.mm gives the warning (converted to an error)
-  # "Mac OS X version 10.5 or later is needed for use of the new objc abi".
-  mac_env.Append(
-      CCFLAGS=['-mmacosx-version-min=10.5'],
-      LINKFLAGS=['-mmacosx-version-min=10.5'],
-      CPPDEFINES=[['MAC_OS_X_VERSION_MIN_REQUIRED', 'MAC_OS_X_VERSION_10_5']])
-else:
-  mac_env.Append(
-      CCFLAGS=['-mmacosx-version-min=10.4'],
-      LINKFLAGS=['-mmacosx-version-min=10.4'],
-      CPPDEFINES=[['MAC_OS_X_VERSION_MIN_REQUIRED', 'MAC_OS_X_VERSION_10_4']])
-subarch_flag = '-m%s' % mac_env['BUILD_SUBARCH']
-mac_env.Append(
-    CCFLAGS=[subarch_flag, '-fPIC'],
-    ASFLAGS=[subarch_flag],
-    LINKFLAGS=[subarch_flag, '-fPIC'],
-    CPPDEFINES = [['NACL_WINDOWS', '0'],
-                  ['NACL_OSX', '1'],
-                  ['NACL_LINUX', '0'],
-                  # defining _DARWIN_C_SOURCE breaks 10.4
-                  #['_DARWIN_C_SOURCE', '1'],
-                  #['__STDC_LIMIT_MACROS', '1']
+def MakeUnixLikeEnv():
+  unix_like_env = base_env.Clone()
+  # -Wdeclaration-after-statement is desirable because MS studio does
+  # not allow declarations after statements in a block, and since much
+  # of our code is portable and primarily initially tested on Linux,
+  # it'd be nice to get the build error earlier rather than later
+  # (building and testing on Linux is faster).
+  unix_like_env.Prepend(
+    CFLAGS = ['-std=gnu99', '-Wdeclaration-after-statement' ],
+    CCFLAGS = [
+      # '-malign-double',
+      '-Wall',
+      '-pedantic',
+      '-Wextra',
+      '-Wno-long-long',
+      '-Wswitch-enum',
+      '-Wsign-compare',
+      '-fvisibility=hidden',
+    ] + werror_flags,
+    CXXFLAGS=['-std=c++98'],
+    LIBPATH=['/usr/lib'],
+    LIBS = ['pthread'],
+    CPPDEFINES = [['__STDC_LIMIT_MACROS', '1'],
+                  ['__STDC_FORMAT_MACROS', '1'],
                   ],
-)
+  )
 
-(mac_debug_env, mac_optimized_env) = GenerateOptimizationLevels(mac_env)
+  if unix_like_env.Bit('use_libcrypto'):
+    unix_like_env.Append(LIBS=['crypto'])
+  else:
+    unix_like_env.Append(CFLAGS=['-DUSE_CRYPTO=0'])
 
-# ----------------------------------------------------------
-linux_env = unix_like_env.Clone(
-    BUILD_TYPE = '${OPTIMIZATION_LEVEL}-linux',
-    BUILD_TYPE_DESCRIPTION = 'Linux ${OPTIMIZATION_LEVEL} build',
-    tools = ['target_platform_linux'],
-    # TODO(bradnelson): this should really be able to live in unix_like_env
-    #                   but can't due to what the target_platform_x module is
-    #                   doing.
-    LINK = '$CXX',
-)
+  if unix_like_env.Bit('enable_tmpfs_redirect_var'):
+    unix_like_env.Append(CPPDEFINES = [['NACL_ENABLE_TMPFS_REDIRECT_VAR', '1']])
+  else:
+    unix_like_env.Append(CPPDEFINES = [['NACL_ENABLE_TMPFS_REDIRECT_VAR', '0']])
+  return unix_like_env
 
-# -m32 and -L/usr/lib32 are needed to do 32-bit builds on 64-bit
-# user-space machines; requires ia32-libs-dev to be installed; or,
-# failing that, ia32-libs and symbolic links *manually* created for
-# /usr/lib32/libssl.so and /usr/lib32/libcrypto.so to the current
-# /usr/lib32/lib*.so.version (tested with ia32-libs 2.2ubuntu11; no
-# ia32-libs-dev was available for testing).
-# Additional symlinks of this sort are needed for gtk,
-# see src/trusted/nonnacl_util/build.scons.
 
-linux_env.SetDefault(
-    # NOTE: look into http://www.scons.org/wiki/DoxygenBuilder
-    DOXYGEN = ARGUMENTS.get('DOXYGEN', '/usr/bin/doxygen'),
-)
+def MakeMacEnv():
+  mac_env = MakeUnixLikeEnv().Clone(
+      BUILD_TYPE = '${OPTIMIZATION_LEVEL}-mac',
+      BUILD_TYPE_DESCRIPTION = 'MacOS ${OPTIMIZATION_LEVEL} build',
+      tools = ['target_platform_mac'],
+      # TODO(bradnelson): this should really be able to live in unix_like_env
+      #                   but can't due to what the target_platform_x module is
+      #                   doing.
+      LINK = '$CXX',
+      PLUGIN_SUFFIX = '.bundle',
+  )
 
-# Prepend so we can disable warnings via Append
-linux_env.Prepend(
-    CPPDEFINES = [['NACL_WINDOWS', '0'],
-                  ['NACL_OSX', '0'],
-                  ['NACL_LINUX', '1'],
-                  ['_BSD_SOURCE', '1'],
-                  ['_POSIX_C_SOURCE', '199506'],
-                  ['_XOPEN_SOURCE', '600'],
-                  ['_GNU_SOURCE', '1'],
-                  ['_LARGEFILE64_SOURCE', '1'],
-                  ],
-    LIBS = ['rt'],
-)
+  if mac_env.Bit('build_x86_64'):
+    # OS X 10.5 was the first version to support x86-64.  We need to
+    # specify 10.5 rather than 10.4 here otherwise building
+    # get_plugin_dirname.mm gives the warning (converted to an error)
+    # "Mac OS X version 10.5 or later is needed for use of the new objc abi".
+    mac_env.Append(
+        CCFLAGS=['-mmacosx-version-min=10.5'],
+        LINKFLAGS=['-mmacosx-version-min=10.5'],
+        CPPDEFINES=[['MAC_OS_X_VERSION_MIN_REQUIRED', 'MAC_OS_X_VERSION_10_5']])
+  else:
+    mac_env.Append(
+        CCFLAGS=['-mmacosx-version-min=10.4'],
+        LINKFLAGS=['-mmacosx-version-min=10.4'],
+        CPPDEFINES=[['MAC_OS_X_VERSION_MIN_REQUIRED', 'MAC_OS_X_VERSION_10_4']])
+  subarch_flag = '-m%s' % mac_env['BUILD_SUBARCH']
+  mac_env.Append(
+      CCFLAGS=[subarch_flag, '-fPIC'],
+      ASFLAGS=[subarch_flag],
+      LINKFLAGS=[subarch_flag, '-fPIC'],
+      CPPDEFINES = [['NACL_WINDOWS', '0'],
+                    ['NACL_OSX', '1'],
+                    ['NACL_LINUX', '0'],
+                    # defining _DARWIN_C_SOURCE breaks 10.4
+                    #['_DARWIN_C_SOURCE', '1'],
+                    #['__STDC_LIMIT_MACROS', '1']
+                    ],
+  )
+  return mac_env
 
-if linux_env.Bit('build_x86_32'):
+(mac_debug_env, mac_optimized_env) = GenerateOptimizationLevels(MakeMacEnv())
+
+
+def MakeLinuxEnv():
+  linux_env = MakeUnixLikeEnv().Clone(
+      BUILD_TYPE = '${OPTIMIZATION_LEVEL}-linux',
+      BUILD_TYPE_DESCRIPTION = 'Linux ${OPTIMIZATION_LEVEL} build',
+      tools = ['target_platform_linux'],
+      # TODO(bradnelson): this should really be able to live in unix_like_env
+      #                   but can't due to what the target_platform_x module is
+      #                   doing.
+      LINK = '$CXX',
+  )
+
+  # -m32 and -L/usr/lib32 are needed to do 32-bit builds on 64-bit
+  # user-space machines; requires ia32-libs-dev to be installed; or,
+  # failing that, ia32-libs and symbolic links *manually* created for
+  # /usr/lib32/libssl.so and /usr/lib32/libcrypto.so to the current
+  # /usr/lib32/lib*.so.version (tested with ia32-libs 2.2ubuntu11; no
+  # ia32-libs-dev was available for testing).
+  # Additional symlinks of this sort are needed for gtk,
+  # see src/trusted/nonnacl_util/build.scons.
+
+  linux_env.SetDefault(
+      # NOTE: look into http://www.scons.org/wiki/DoxygenBuilder
+      DOXYGEN = ARGUMENTS.get('DOXYGEN', '/usr/bin/doxygen'),
+  )
+
+  # Prepend so we can disable warnings via Append
   linux_env.Prepend(
-      ASFLAGS = ['-m32', ],
-      CCFLAGS = ['-m32', ],
-      LINKFLAGS = ['-m32', '-L/usr/lib32'],
-      )
-elif linux_env.Bit('build_x86_64'):
-  linux_env.Prepend(
-      ASFLAGS = ['-m64', ],
-      CCFLAGS = ['-m64', ],
-      LINKFLAGS = ['-m64', '-L/usr/lib64'],
-      )
-elif linux_env.Bit('build_arm'):
-  linux_env.Replace(CC=os.getenv('ARM_CC', 'NO-ARM-CC-SPECIFIED'),
-                    CXX=os.getenv('ARM_CXX', 'NO-ARM-CXX-SPECIFIED'),
-                    LD=os.getenv('ARM_LD', 'NO-ARM-LD-SPECIFIED'),
-                    EMULATOR=os.getenv('ARM_EMU', ''),
-                    ASFLAGS=[],
-                    LIBPATH=['${LIB_DIR}',
-                             os.getenv('ARM_LIB_DIR', '').split()],
-                    LINKFLAGS=os.getenv('ARM_LINKFLAGS', ''),
-                    )
+      CPPDEFINES = [['NACL_WINDOWS', '0'],
+                    ['NACL_OSX', '0'],
+                    ['NACL_LINUX', '1'],
+                    ['_BSD_SOURCE', '1'],
+                    ['_POSIX_C_SOURCE', '199506'],
+                    ['_XOPEN_SOURCE', '600'],
+                    ['_GNU_SOURCE', '1'],
+                    ['_LARGEFILE64_SOURCE', '1'],
+                    ],
+      LIBS = ['rt'],
+  )
 
-  linux_env.Append(LIBS=['rt', 'dl', 'pthread', 'crypto'],
-                   CCFLAGS=['-march=armv6'])
-else:
-  Banner('Strange platform: %s' % BUILD_NAME)
+  if linux_env.Bit('build_x86_32'):
+    linux_env.Prepend(
+        ASFLAGS = ['-m32', ],
+        CCFLAGS = ['-m32', ],
+        LINKFLAGS = ['-m32', '-L/usr/lib32'],
+        )
+  elif linux_env.Bit('build_x86_64'):
+    linux_env.Prepend(
+        ASFLAGS = ['-m64', ],
+        CCFLAGS = ['-m64', ],
+        LINKFLAGS = ['-m64', '-L/usr/lib64'],
+        )
+  elif linux_env.Bit('build_arm'):
+    linux_env.Replace(CC=os.getenv('ARM_CC', 'NO-ARM-CC-SPECIFIED'),
+                      CXX=os.getenv('ARM_CXX', 'NO-ARM-CXX-SPECIFIED'),
+                      LD=os.getenv('ARM_LD', 'NO-ARM-LD-SPECIFIED'),
+                      EMULATOR=os.getenv('ARM_EMU', ''),
+                      ASFLAGS=[],
+                      LIBPATH=['${LIB_DIR}',
+                               os.getenv('ARM_LIB_DIR', '').split()],
+                      LINKFLAGS=os.getenv('ARM_LINKFLAGS', ''),
+                      )
 
-# Ensure that the executable does not get a PT_GNU_STACK header that
-# causes the kernel to set the READ_IMPLIES_EXEC personality flag,
-# which disables NX page protection.  This is Linux-specific.
-linux_env.Prepend(LINKFLAGS=['-Wl,-z,noexecstack'])
+    linux_env.Append(LIBS=['rt', 'dl', 'pthread', 'crypto'],
+                     CCFLAGS=['-march=armv6'])
+  else:
+    Banner('Strange platform: %s' % BUILD_NAME)
 
-# TODO(robert): support for arm builds
+  # Ensure that the executable does not get a PT_GNU_STACK header that
+  # causes the kernel to set the READ_IMPLIES_EXEC personality flag,
+  # which disables NX page protection.  This is Linux-specific.
+  linux_env.Prepend(LINKFLAGS=['-Wl,-z,noexecstack'])
+  return linux_env
 
-(linux_debug_env, linux_optimized_env) = GenerateOptimizationLevels(linux_env)
+(linux_debug_env, linux_optimized_env) = \
+    GenerateOptimizationLevels(MakeLinuxEnv())
+
 
 # Do this before the site_scons/site_tools/naclsdk.py stuff to pass it along.
 pre_base_env.Append(
@@ -3052,7 +3060,7 @@ nacl_irt_env.Append(
 
 environment_list.append(nacl_irt_env)
 
-windows_coverage_env = windows_env.Clone(
+windows_coverage_env = MakeWindowsEnv().Clone(
     tools = ['code_coverage'],
     BUILD_TYPE = 'coverage-win',
     BUILD_TYPE_DESCRIPTION = 'Windows code coverage build',
@@ -3071,7 +3079,7 @@ windows_coverage_env.Append(LINKFLAGS = ['/NODEFAULTLIB:msvcrt'])
 AddDualLibrary(windows_coverage_env)
 environment_list.append(windows_coverage_env)
 
-mac_coverage_env = mac_env.Clone(
+mac_coverage_env = MakeMacEnv().Clone(
     tools = ['code_coverage'],
     BUILD_TYPE = 'coverage-mac',
     BUILD_TYPE_DESCRIPTION = 'MacOS code coverage build',
