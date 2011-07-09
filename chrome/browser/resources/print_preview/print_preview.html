@@ -13,6 +13,7 @@
 <script src="print_preview.js"></script>
 <script src="print_preview_animations.js"></script>
 <script src="print_preview_utils.js"></script>
+<script src="page_settings.js"></script>
 <script src="copies_settings.js"></script>
 </head>
 <body>
@@ -32,24 +33,7 @@
         <select id="printer-list"></select>
       </div>
       <hr>
-      <div class="two-column">
-        <h1 i18n-content="pagesLabel"></h1>
-        <div>
-          <input id="all-pages" name="pages" checked type="radio"/>
-          <label for="all-pages" i18n-content="optionAllPages"></label>
-        </div>
-        <div>
-          <div id="print-pages-div">
-            <input id="print-pages" name="pages" type="radio"
-                i18n-values="aria-label:printPagesLabel;"/>
-            <input id="individual-pages" type="text"
-                i18n-values="placeholder:examplePageRangeText"/>
-          </div>
-          <span id="individual-pages-hint" class="hint"
-              i18n-content="pageRangeInstruction" aria-hidden="true"
-              aria-live="polite"></span>
-        </div>
-      </div>
+      <include src="page_settings.html"></include>
       <hr id="hr-before-copies" class="invisible">
       <include src="copies_settings.html"></include>
       <hr>

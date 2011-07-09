@@ -4,19 +4,6 @@
 
 var localStrings = new LocalStrings();
 
-// The total page count of the previewed document regardless of which pages the
-// user has selected.
-var totalPageCount;
-
-// The previously selected pages by the user. It is used in
-// onPageSelectionMayHaveChanged() to make sure that a new preview is not
-// requested more often than necessary.
-var previouslySelectedPages = [];
-
-// Timer id of the page range text field. It is used to reset the timer whenever
-// needed.
-var timerId;
-
 // Store the last selected printer index.
 var lastSelectedPrinterIndex = 0;
 
@@ -39,11 +26,11 @@ var hasPendingPreviewRequest = false;
 // True when a pending print file request exists.
 var hasPendingPrintFileRequest = false;
 
-// True when preview tab has some error.
-var hasError = false;
-
 // True when preview tab is hidden.
 var isTabHidden = false;
+
+// Object holding all the pages related settings.
+var pageSettings;
 
 // Object holding all the copies related settings.
 var copiesSettings;
@@ -77,34 +64,13 @@ function onLoad() {
   $('printer-list').disabled = true;
   $('print-button').onclick = printFile;
 
+  pageSettings = print_preview.PageSettings.getInstance();
   copiesSettings = print_preview.CopiesSettings.getInstance();
+  pageSettings.addEventListeners();
+  copiesSettings.addEventListeners();
 
-  setDefaultHandlersForPagesAndCopiesControls();
   showLoadingAnimation();
   chrome.send('getDefaultPrinter');
-}
-
-/**
- * Sets the default event handlers for pages and copies controls.
- */
-function setDefaultHandlersForPagesAndCopiesControls() {
-  var allPages = $('all-pages');
-  var printPages = $('print-pages');
-  var individualPages = $('individual-pages');
-
-  allPages.onclick = null;
-  printPages.onclick = null;
-  individualPages.oninput = null;
-  individualPages.onfocus = null;
-  individualPages.onblur = null;
-
-  if (!hasError) {
-    allPages.onclick = updatePrintButtonState;
-    printPages.onclick = handleIndividualPagesCheckbox;
-    individualPages.onblur = onIndividualPagesBlur;
-    individualPages.oninput = onIndividualPagesInput;
-    copiesSettings.addEventListeners();
-  }
 }
 
 /**
@@ -112,12 +78,6 @@ function setDefaultHandlersForPagesAndCopiesControls() {
  */
 function addEventListeners() {
   // Controls that require preview rendering.
-  $('all-pages').onclick = onPageSelectionMayHaveChanged;
-  $('print-pages').onclick = handleIndividualPagesCheckbox;
-  var individualPages = $('individual-pages');
-  individualPages.onblur = onIndividualPagesBlur;
-  individualPages.onfocus = onIndividualPagesFocus;
-  individualPages.oninput = onIndividualPagesInput;
   $('landscape').onclick = onLayoutModeToggle;
   $('portrait').onclick = onLayoutModeToggle;
   $('printer-list').onchange = updateControlsWithSelectedPrinterCapabilities;
@@ -128,43 +88,10 @@ function addEventListeners() {
 }
 
 /**
- * Handles the blur event for the |individual-pages| element. Un-checks the
- * associated radio control if the input field is empty.
- */
-function onIndividualPagesBlur() {
-  if (!$('individual-pages').value.length)
-    $('all-pages').checked = true;
-
-  if (!hasPendingPreviewRequest) {
-    clearTimeout(timerId);
-    onPageSelectionMayHaveChanged();
-  }
-}
-
-/**
- * Handles the focus event for the |individual-pages| element.
- */
-function onIndividualPagesFocus() {
-  addTimerToPageRangeField();
-}
-
-/**
- * Handles the input event for the |individual-pages| element. Ensures the input
- * field is non-empty before checking the associated radio control.
- */
-function onIndividualPagesInput() {
-  if (!$('print-pages').checked && $('individual-pages').value.length)
-    $('print-pages').checked = true;
-
-  resetPageRangeFieldTimer();
-}
-
-/**
  * Removes event listeners from the settings controls.
  */
 function removeEventListeners() {
-  clearTimeout(timerId);
-  setDefaultHandlersForPagesAndCopiesControls();
+  clearTimeout(pageSettings.timerId_);
 
   // Controls that require preview rendering
   $('landscape').onclick = null;
@@ -335,14 +262,13 @@ function getDuplexMode() {
  * @return {string} JSON string with print job settings.
  */
 function getSettingsJSON() {
-  var printAll = $('all-pages').checked;
   var deviceName = getSelectedPrinterName();
   var printToPDF = (deviceName == PRINT_TO_PDF);
 
   return JSON.stringify(
       {'deviceName': deviceName,
-       'pageRange': pageSetToPageRanges(getSelectedPagesSet()),
-       'printAll': printAll,
+       'pageRange': pageSettings.selectedPageRanges,
+       'printAll': pageSettings.allPagesRadioButton.checked,
        'duplex': getDuplexMode(),
        'copies': copiesSettings.numberOfCopies,
        'collate': isCollated(),
@@ -536,7 +462,6 @@ function setColor(color) {
  * @param {string} errorMessage The error message to be displayed.
  */
 function displayErrorMessage(errorMessage) {
-  hasError = true;
   $('print-button').disabled = true;
   $('overlay-layer').classList.remove('invisible');
   $('dancing-dots-text').classList.add('hidden');
@@ -604,10 +529,7 @@ function onPDFLoad() {
  * @param {number} pageCount The number of pages.
  */
 function onDidGetPreviewPageCount(pageCount) {
-  totalPageCount = pageCount;
-
-  if (!isSelectedPagesValid())
-    pageRangesFieldChanged();
+  pageSettings.updateState(pageCount);
 }
 
 /**
@@ -656,29 +578,17 @@ function checkIfSettingsChangedAndRegeneratePreview() {
   var tempPrintSettings = new PrintSettings();
   tempPrintSettings.save();
 
-  if (previouslySelectedPages.length == 0) {
-    for (var i = 0; i < totalPageCount; i++) {
-      previouslySelectedPages.push(i+1);
-    }
-  }
-
   if (printSettings.deviceName != tempPrintSettings.deviceName) {
     updateControlsWithSelectedPrinterCapabilities();
     return true;
-  } else if (printSettings.isLandscape != tempPrintSettings.isLandscape) {
+  }
+  if (printSettings.isLandscape != tempPrintSettings.isLandscape) {
     setDefaultValuesAndRegeneratePreview();
     return true;
-  } else if (isSelectedPagesValid()) {
-    var currentlySelectedPages = getSelectedPagesSet();
-    if (!areArraysEqual(previouslySelectedPages, currentlySelectedPages)) {
-      previouslySelectedPages = currentlySelectedPages;
-      requestPrintPreview();
-      return true;
-    }
   }
+  if (pageSettings.requestPrintPreviewIfNeeded())
+    return true;
 
-  if (!isSelectedPagesValid())
-    pageRangesFieldChanged();
   return false;
 }
 
@@ -731,51 +641,12 @@ function updatePrintButtonState() {
   if (showingSystemDialog)
     return;
 
-  if (getSelectedPrinterName() == PRINT_TO_PDF) {
-    $('print-button').disabled = !isSelectedPagesValid();
-  } else {
-    $('print-button').disabled = (!copiesSettings.isValid() ||
-                                  !isSelectedPagesValid());
-  }
+  var settingsValid = pageSettings.isPageSelectionValid() &&
+      (copiesSettings.isValid() || getSelectedPrinterName() == PRINT_TO_PDF);
+  $('print-button').disabled = !settingsValid;
 }
 
 window.addEventListener('DOMContentLoaded', onLoad);
-
-/**
- * Validates the page ranges text and updates the hint accordingly.
- */
-function validatePageRangesField() {
-  var individualPagesField = $('individual-pages');
-  var individualPagesHint = $('individual-pages-hint');
-
-  if (isSelectedPagesValid()) {
-    individualPagesField.classList.remove('invalid');
-    fadeOutElement(individualPagesHint);
-    individualPagesHint.setAttribute('aria-hidden', 'true');
-  } else {
-    individualPagesField.classList.add('invalid');
-    individualPagesHint.classList.remove('suggestion');
-    individualPagesHint.setAttribute('aria-hidden', 'false');
-    individualPagesHint.innerHTML =
-        localStrings.getStringF('pageRangeInstruction',
-                                localStrings.getString(
-                                    'examplePageRangeText'));
-    fadeInElement(individualPagesHint);
-  }
-}
-
-/**
- * Executes whenever a blur event occurs on the 'individual-pages'
- * field or when the timer expires. It takes care of
- * 1) showing/hiding warnings/suggestions
- * 2) updating print button/summary
- */
-function pageRangesFieldChanged() {
-  validatePageRangesField();
-  resetPageRangeFieldTimer();
-  updatePrintButtonState();
-  updatePrintSummary();
-}
 
 /**
  * Updates the print summary based on the currently selected user options.
@@ -791,12 +662,12 @@ function updatePrintSummary() {
     return;
   }
 
-  if (!isSelectedPagesValid()) {
+  if (!pageSettings.isPageSelectionValid()) {
     printSummary.innerHTML = '';
     return;
   }
 
-  var pageSet = getSelectedPagesSet();
+  var pageSet = pageSettings.selectedPagesSet;
   var numOfSheets = pageSet.length;
   var summaryLabel = localStrings.getString('printPreviewSheetsLabelSingular');
   var numOfPagesText = '';
@@ -834,14 +705,6 @@ function updatePrintSummary() {
 }
 
 /**
- * Gives focus to the individual pages textfield when 'print-pages' textbox is
- * clicked.
- */
-function handleIndividualPagesCheckbox() {
-  $('individual-pages').focus();
-}
-
-/**
  * When the user switches printing orientation mode the page field selection is
  * reset to "all pages selected". After the change the number of pages will be
  * different and currently selected page numbers might no longer be valid.
@@ -851,8 +714,6 @@ function onLayoutModeToggle() {
   // If the chosen layout is same as before, nothing needs to be done.
   if (printSettings.isLandscape == isLandscape())
     return;
-
-  $('individual-pages').classList.remove('invalid');
   setDefaultValuesAndRegeneratePreview();
 }
 
@@ -860,80 +721,7 @@ function onLayoutModeToggle() {
  * Sets the default values and sends a request to regenerate preview data.
  */
 function setDefaultValuesAndRegeneratePreview() {
-  fadeOutElement($('individual-pages-hint'));
-  totalPageCount = undefined;
-  previouslySelectedPages.length = 0;
-  requestPrintPreview();
-}
-
-/**
- * Returns the selected pages in ascending order without any duplicates.
- *
- * @return {Array}
- */
-function getSelectedPagesSet() {
-  var pageRangeText = $('individual-pages').value;
-
-  if ($('all-pages').checked || pageRangeText.length == 0)
-    pageRangeText = '1-' + totalPageCount;
-
-  var pageList = pageRangeTextToPageList(pageRangeText, totalPageCount);
-  return pageListToPageSet(pageList);
-}
-
-/**
- * Validates the 'individual-pages' text field value.
- *
- * @return {boolean} true if the text is valid.
- */
-function isSelectedPagesValid() {
-  var pageRangeText = $('individual-pages').value;
-
-  if ($('all-pages').checked || pageRangeText.length == 0)
-    return true;
-
-  return isPageRangeTextValid(pageRangeText, totalPageCount);
-}
-
-/**
- * Whenever the page range textfield gains focus we add a timer to detect when
- * the user stops typing in order to update the print preview.
- */
-function addTimerToPageRangeField() {
-  timerId = window.setTimeout(onPageSelectionMayHaveChanged, 1000);
-}
-
-/**
- * As the user types in the page range textfield, we need to reset this timer,
- * since the page ranges are still being edited.
- */
-function resetPageRangeFieldTimer() {
-  clearTimeout(timerId);
-  addTimerToPageRangeField();
-}
-
-/**
- * When the user stops typing in the page range textfield or clicks on the
- * 'all-pages' checkbox, a new print preview is requested, only if
- * 1) The input is compeletely valid (it can be parsed in its entirety).
- * 2) The newly selected pages differ from the previously selected.
- */
-function onPageSelectionMayHaveChanged() {
-  if ($('print-pages').checked)
-    pageRangesFieldChanged();
-  var currentlySelectedPages = getSelectedPagesSet();
-
-  // Toggling between "all pages"/"some pages" radio buttons while having an
-  // invalid entry in the page selection textfield still requires updating the
-  // print summary and print button.
-  if (!isSelectedPagesValid() ||
-      areArraysEqual(previouslySelectedPages, currentlySelectedPages)) {
-    updatePrintButtonState();
-    updatePrintSummary();
-    return;
-  }
-
-  previouslySelectedPages = currentlySelectedPages;
+  pageSettings.resetState();
   requestPrintPreview();
 }
 
