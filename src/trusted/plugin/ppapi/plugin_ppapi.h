@@ -204,6 +204,10 @@ class PluginPpapi : public pp::InstancePrivate, public Plugin {
   bool SelectNexeURLFromManifest(nacl::string* result,
                                  ErrorInfo* error_info);
 
+  // Logs timing information to a UMA histogram, and also logs the same timing
+  // information divided by the size of the nexe to another histogram.
+  void HistogramStartupTime(const std::string& name, float dt);
+
   // Determines the appropriate nexe for the sandbox and requests a load.
   void RequestNexeLoad();
 

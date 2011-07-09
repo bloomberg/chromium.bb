@@ -601,6 +601,8 @@ PluginPpapi::PluginPpapi(PP_Instance pp_instance)
 
 
 PluginPpapi::~PluginPpapi() {
+  int64_t shutdown_start = NaClGetTimeOfDayMicroseconds();
+
   PLUGIN_PRINTF(("PluginPpapi::~PluginPpapi (this=%p, scriptable_handle=%p)\n",
                  static_cast<void*>(this),
                  static_cast<void*>(scriptable_handle())));
@@ -615,6 +617,11 @@ PluginPpapi::~PluginPpapi() {
   ScriptableHandle* scriptable_handle_ = scriptable_handle();
   ScriptableHandle::Unref(&scriptable_handle_);
   NaClSrpcModuleFini();
+
+  HistogramTimeSmall(
+      "NaCl.Perf.ShutdownTime.Total",
+      static_cast<float>(NaClGetTimeOfDayMicroseconds() - shutdown_start)
+          / NACL_MICROS_PER_MILLI);
 }
 
 
@@ -702,6 +709,16 @@ pp::Var PluginPpapi::GetInstanceObject() {
   return *handle_var;  // make a copy
 }
 
+void PluginPpapi::HistogramStartupTime(const std::string& name, float dt) {
+  // TODO(elijahtaylor) nexe_size_ should never be zero (or less), revisit
+  // when dynamic loading is more mature.
+  // http://code.google.com/p/nativeclient/issues/detail?id=1534
+  if (nexe_size_ > 0) {
+    float size_in_MB = static_cast<float>(nexe_size_) / (1024.f * 1024.f);
+    HistogramTimeSmall(name, static_cast<int64_t>(dt));
+    HistogramTimeSmall(name + "PerMB", static_cast<int64_t>(dt / size_in_MB));
+  }
+}
 
 void PluginPpapi::NexeFileDidOpen(int32_t pp_error) {
   PLUGIN_PRINTF(("PluginPpapi::NexeFileDidOpen (pp_error=%"NACL_PRId32")\n",
@@ -738,18 +755,29 @@ void PluginPpapi::NexeFileDidOpen(int32_t pp_error) {
   nexe_size_ = nexe_bytes_read;
   HistogramSizeKB("NaCl.Perf.Size.Nexe",
                   static_cast<int32_t>(nexe_size_ / 1024));
-  HistogramTimeSmall("NaCl.Perf.DownloadTime.Nexe",
-                     nexe_downloader_.TimeSinceOpenMilliseconds());
+  HistogramStartupTime(
+      "NaCl.Perf.StartupTime.NexeDownload",
+      static_cast<float>(nexe_downloader_.TimeSinceOpenMilliseconds()));
 
   // Inform JavaScript that we successfully loaded the manifest file.
   EnqueueProgressEvent("progress",
                        LENGTH_IS_COMPUTABLE,
                        nexe_bytes_read,
                        nexe_bytes_read);
+
+  int64_t load_start = NaClGetTimeOfDayMicroseconds();
   nacl::scoped_ptr<nacl::DescWrapper>
       wrapper(wrapper_factory()->MakeFileDesc(file_desc_ok_to_close, O_RDONLY));
   bool was_successful = LoadNaClModule(wrapper.get(), &error_info);
   if (was_successful) {
+    int64_t done_time = NaClGetTimeOfDayMicroseconds();
+    HistogramStartupTime(
+        "NaCl.Perf.StartupTime.LoadModule",
+        static_cast<float>(done_time - load_start) / NACL_MICROS_PER_MILLI);
+    HistogramStartupTime(
+        "NaCl.Perf.StartupTime.Total",
+        static_cast<float>(done_time - init_time_) / NACL_MICROS_PER_MILLI);
+
     ReportLoadSuccess(LENGTH_IS_COMPUTABLE, nexe_bytes_read, nexe_bytes_read);
   } else {
     ReportLoadError(error_info);
@@ -762,18 +790,13 @@ bool PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel,
   PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution (srpc_channel=%p)\n",
                  reinterpret_cast<void*>(srpc_channel)));
 
-  // TODO(elijahtaylor) nexe_size_ should never be less than zero, revisit when
-  // dynamic loading is more mature.
-  // http://code.google.com/p/nativeclient/issues/detail?id=1534
-  if (init_time_ > 0 && nexe_size_ > 0) {
-    float dt = static_cast<float>(
-        (NaClGetTimeOfDayMicroseconds() - init_time_) / NACL_MICROS_PER_MILLI);
-    float size_in_MB = static_cast<float>(nexe_size_) / 1024.f / 1024.f;
-    HistogramTimeSmall("NaCl.Perf.StartupTime.PerMB",
-                       static_cast<int64_t>(dt / size_in_MB));
-    HistogramTimeSmall("NaCl.Perf.StartupTime.Total",
-                       static_cast<int64_t>(dt));
-  }
+  // Log the amound of time that has passed between the trusted plugin being
+  // initialized and the untrusted plugin being initialized.  This is (roughly)
+  // the cost of using NaCl, in terms of startup time.
+  HistogramStartupTime(
+      "NaCl.Perf.StartupTime.NaClOverhead",
+      static_cast<float>(NaClGetTimeOfDayMicroseconds() - init_time_)
+          / NACL_MICROS_PER_MILLI);
 
   // Check that the .nexe exports the PPAPI intialization method.
   NaClSrpcService* client_service = srpc_channel->client;
@@ -912,7 +935,7 @@ void PluginPpapi::NaClManifestBufferReady(int32_t pp_error) {
 void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
   PLUGIN_PRINTF(("PluginPpapi::NaClManifestFileDidOpen (pp_error=%"
                  NACL_PRId32")\n", pp_error));
-  HistogramTimeSmall("NaCl.Perf.DownloadTime.Manifest",
+  HistogramTimeSmall("NaCl.Perf.StartupTime.ManifestDownload",
                      nexe_downloader_.TimeSinceOpenMilliseconds());
   ErrorInfo error_info;
   // The manifest file was successfully opened.  Set the src property on the

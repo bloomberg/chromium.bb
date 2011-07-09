@@ -128,17 +128,32 @@ Histogram: NaCl.OSArch recorded 2 samples, average = 1.0 (flags = 0x1)
     url = self.GetHttpURLForDataPath(page)
 
     def checkHists(hists, count):
+      # List all NaCl.* UMA stats that are expected on a normal load.
       expected = [
           'NaCl.Client.OSArch',
           'NaCl.LoadStatus.Plugin',
           'NaCl.LoadStatus.SelLdr',
           'NaCl.Manifest.IsDataURI',
-          'NaCl.Perf.DownloadTime.Manifest',
-          'NaCl.Perf.DownloadTime.Nexe',
           'NaCl.Perf.Size.Manifest',
           'NaCl.Perf.Size.Nexe',
+          'NaCl.Perf.StartupTime.LoadModule',
+          'NaCl.Perf.StartupTime.LoadModulePerMB',
+          'NaCl.Perf.StartupTime.ManifestDownload',
+          'NaCl.Perf.StartupTime.NaClOverhead',
+          'NaCl.Perf.StartupTime.NaClOverheadPerMB',
+          'NaCl.Perf.StartupTime.NexeDownload',
+          'NaCl.Perf.StartupTime.NexeDownloadPerMB',
           'NaCl.Perf.StartupTime.Total',
-          'NaCl.Perf.StartupTime.PerMB']
+          'NaCl.Perf.StartupTime.TotalPerMB']
+
+      unpredictable = [
+          # Anything that occurs at shutdown is at the mercy of the garbage
+          # collector, so we don't know when it will show up in the histograms.
+          'NaCl.Perf.ShutdownTime.Total']
+
+      # Make sure we get everything expected, and nothing that we don't.
+      for name in hists.keys():
+        self.assertTrue(name in expected or name in unpredictable, name)
 
       # Check each histogram exists and has "count" samples.
       for name in expected:
