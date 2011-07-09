@@ -20,6 +20,7 @@ class AvatarMenu : public base::RefCounted<AvatarMenu>,
                    public views::MenuModelAdapter {
  public:
   AvatarMenu(ui::MenuModel* model, Profile* profile);
+  ~AvatarMenu();
 
   // Shows the menu relative to the specified view.
   void RunMenu(views::MenuButton* host);

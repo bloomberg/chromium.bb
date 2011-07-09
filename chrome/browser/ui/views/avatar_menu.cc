@@ -52,6 +52,7 @@ class ScaledImageButton : public views::ImageButton {
 class AvatarIconGridView : public views::View, public views::ButtonListener {
  public:
   AvatarIconGridView(Profile* profile, views::MenuItemView* menu);
+  ~AvatarIconGridView();
 
   virtual void Layout() OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
@@ -122,6 +123,9 @@ AvatarIconGridView::AvatarIconGridView(Profile* profile,
   }
 }
 
+AvatarIconGridView::~AvatarIconGridView() {
+}
+
 void AvatarIconGridView::Layout() {
   for (IconIndexToButtonMap::const_iterator it =
        icon_index_to_button_map_.begin();
@@ -176,6 +180,9 @@ AvatarMenu::AvatarMenu(ui::MenuModel* model, Profile* profile)
   views::MenuItemView* item =
       root_->GetMenuItemByID(ProfileMenuModel::COMMAND_CHOOSE_AVATAR_ICON);
   item->AddChildView(new AvatarIconGridView(profile_, root_.get()));
+}
+
+AvatarMenu::~AvatarMenu() {
 }
 
 void AvatarMenu::RunMenu(views::MenuButton* host) {
