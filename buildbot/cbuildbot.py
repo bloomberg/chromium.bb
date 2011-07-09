@@ -11,14 +11,13 @@ full and pre-flight-queue builds.
 """
 
 import constants
+import multiprocessing
+import Queue
 import optparse
 import os
 import pprint
 import subprocess
 import sys
-import time
-
-from multiprocessing import Process
 
 if __name__ == '__main__':
   sys.path.append(constants.SOURCE_ROOT)
@@ -126,20 +125,35 @@ def _RunSudoNoOp():
   proc.communicate()
 
 
-def _RunSudoPeriodically():
-  """Runs inside of a separate process.  Periodically runs sudo."""
+def _RunSudoPeriodically(queue):
+  """Runs inside of a separate process.  Periodically runs sudo.
+
+  Put anything in the queue to signal the process to quit.
+  """
   SUDO_INTERVAL_MINUTES = 5
   while True:
     print ('Trybot background sudo keep-alive process is running.  Run '
            "'kill -9 %s' to terminate." % str(os.getpid()))
     _RunSudoNoOp()
-    time.sleep(SUDO_INTERVAL_MINUTES * 60)
+    try:
+      # End the process if we get an exit signal
+      queue.get(True, SUDO_INTERVAL_MINUTES * 60)
+      break
+    except Queue.Empty:
+      pass
 
 
 def _LaunchSudoKeepAliveProcess():
-  """"Start the background process that avoids the 15 min sudo timeout."""
-  p = Process(target=_RunSudoPeriodically)
+  """"Start the background process that avoids the 15 min sudo timeout.
+
+  Returns:
+    A multiprocessing.Queue that can be used to stop the process.  Stop
+    the process by putting anything in the queue.
+  """
+  queue = multiprocessing.Queue()
+  p = multiprocessing.Process(target=_RunSudoPeriodically, args=(queue,))
   p.start()
+  return queue
 
 
 def RunBuildStages(bot_id, options, build_config):
@@ -177,12 +191,6 @@ def RunBuildStages(bot_id, options, build_config):
   gerrit_patches, local_patches = _PreProcessPatches(options.gerrit_patches,
                                                      options.local_patches,
                                                      tracking_branch)
-
-  # For trybots, after most of the preprocessing is done, run sudo to set the
-  # timestamp and kick off the sudo keep-alive process.
-  if not options.buildbot:
-    _RunSudoNoOp()
-    _LaunchSudoKeepAliveProcess()
 
   if _IsIncrementalBuild(options.buildroot, options.clobber):
     _CheckBuildRootBranch(options.buildroot, tracking_branch)
@@ -338,6 +346,24 @@ def _DetermineDefaultBuildRoot(git_url):
     buildroot = os.path.join(top_level, _DEFAULT_EXT_BUILDROOT)
 
   return buildroot
+
+
+def _RunBuildStagesWithCheck(bot_id, options, build_config):
+  if not RunBuildStages(bot_id, options, build_config):
+    sys.exit(1)
+
+
+def _RunBuildStagesWithSudoProcess(bot_id, options, build_config):
+  """Starts sudo process before running build stages, and manages cleanup."""
+  # Reset sudo timestamp
+  _RunSudoNoOp()
+  sudo_queue = _LaunchSudoKeepAliveProcess()
+
+  try:
+    _RunBuildStagesWithCheck(bot_id, options, build_config)
+  finally:
+    # Pass the stop message to the sudo process.
+    sudo_queue.put(object())
 
 
 # Parser related functions
@@ -560,8 +586,10 @@ def main(argv=None):
 
   _SetupRedirectOutputToFile()
 
-  if not RunBuildStages(bot_id, options, build_config):
-    sys.exit(1)
+  if options.buildbot:
+    _RunBuildStagesWithCheck(bot_id, options, build_config)
+  else:
+    _RunBuildStagesWithSudoProcess(bot_id, options, build_config)
 
 
 if __name__ == '__main__':

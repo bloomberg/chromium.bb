@@ -216,7 +216,8 @@ class FullInterfaceTest(unittest.TestCase):
     self.mox.StubOutWithMock(cbuildbot, '_GetInput')
     self.mox.StubOutWithMock(cros_lib, 'FindRepoDir')
     self.mox.StubOutWithMock(cbuildbot, '_SetupRedirectOutputToFile')
-    self.mox.StubOutWithMock(cbuildbot, 'RunBuildStages')
+    self.mox.StubOutWithMock(cbuildbot, '_RunBuildStagesWithCheck')
+    self.mox.StubOutWithMock(cbuildbot, '_RunBuildStagesWithSudoProcess')
     self.mox.StubOutWithMock(cbuildbot.os.path, 'realpath')
 
     parser.error(mox.IgnoreArg()).InAnyOrder().AndRaise(TestExitedException())
@@ -226,8 +227,14 @@ class FullInterfaceTest(unittest.TestCase):
     (cbuildbot.os.path.realpath('/b/test_build1').InAnyOrder().
         AndReturn('/b/test_build1'))
     cbuildbot._SetupRedirectOutputToFile().InAnyOrder()
-    cbuildbot.RunBuildStages(mox.IgnoreArg(), mox.IgnoreArg(),
-                             mox.IgnoreArg()).InAnyOrder().AndReturn(True)
+    cbuildbot._RunBuildStagesWithCheck(
+        mox.IgnoreArg(),
+        mox.IgnoreArg(),
+        mox.IgnoreArg()).InAnyOrder().AndReturn(True)
+    cbuildbot._RunBuildStagesWithSudoProcess(
+        mox.IgnoreArg(),
+        mox.IgnoreArg(),
+        mox.IgnoreArg()).InAnyOrder().AndReturn(True)
 
     self.external_marker = ('/b/trybot/.trybot')
     self.internal_marker = ('/b/trybot-internal/.trybot')
