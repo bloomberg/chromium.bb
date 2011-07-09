@@ -162,7 +162,7 @@ uint32_t KeyboardInputEvent::GetKeyCode() const {
 
 Var KeyboardInputEvent::GetCharacterText() const {
   if (!has_interface<PPB_KeyboardInputEvent>())
-    return PP_INPUTEVENT_TYPE_UNDEFINED;
+    return Var();
   return Var(Var::PassRef(),
              get_interface<PPB_KeyboardInputEvent>()->GetCharacterText(
                  pp_resource()));
