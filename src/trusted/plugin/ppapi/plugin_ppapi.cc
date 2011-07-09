@@ -620,7 +620,7 @@ PluginPpapi::~PluginPpapi() {
 
   HistogramTimeSmall(
       "NaCl.Perf.ShutdownTime.Total",
-      static_cast<float>(NaClGetTimeOfDayMicroseconds() - shutdown_start)
+      (NaClGetTimeOfDayMicroseconds() - shutdown_start)
           / NACL_MICROS_PER_MILLI);
 }
 
