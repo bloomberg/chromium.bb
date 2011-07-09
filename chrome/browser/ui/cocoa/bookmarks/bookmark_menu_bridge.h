@@ -37,7 +37,7 @@ class Profile;
 class BookmarkMenuBridge : public BookmarkModelObserver,
                            public MainMenuItem {
  public:
-  BookmarkMenuBridge(Profile* profile);
+  BookmarkMenuBridge(Profile* profile, NSMenu* menu);
   virtual ~BookmarkMenuBridge();
 
   // BookmarkModelObserver:

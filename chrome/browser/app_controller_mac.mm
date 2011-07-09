@@ -461,7 +461,8 @@ void RecordLastRunAppBundlePath() {
   // Rebuild the menus with the new profile.
   lastProfile_ = profile;
 
-  bookmarkMenuBridge_.reset(new BookmarkMenuBridge(lastProfile_));
+  bookmarkMenuBridge_.reset(new BookmarkMenuBridge(lastProfile_,
+      [[[NSApp mainMenu] itemWithTag:IDC_BOOKMARKS_MENU] submenu]));
   bookmarkMenuBridge_->BuildMenu();
 
   historyMenuBridge_.reset(new HistoryMenuBridge(lastProfile_));
