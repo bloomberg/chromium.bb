@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,7 @@ class BookmarkMenuBridge;
 @interface BookmarkMenuCocoaController : NSObject<NSMenuDelegate> {
  @private
   BookmarkMenuBridge* bridge_;  // weak; owns me
+  NSMenu *menu_;
 }
 
 // The Bookmarks menu
@@ -33,7 +34,8 @@ class BookmarkMenuBridge;
 // Make a relevant tooltip string for node.
 + (NSString*)tooltipForNode:(const BookmarkNode*)node;
 
-- (id)initWithBridge:(BookmarkMenuBridge *)bridge;
+- (id)initWithBridge:(BookmarkMenuBridge *)bridge
+             andMenu:(NSMenu*)menu;
 
 // Called by any Bookmark menu item.
 // The menu item's tag is the bookmark ID.
