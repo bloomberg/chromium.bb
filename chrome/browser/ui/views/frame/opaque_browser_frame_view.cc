@@ -13,7 +13,6 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/themes/theme_service.h"
-#include "chrome/browser/ui/profile_menu_model.h"
 #include "chrome/browser/ui/views/avatar_menu_button.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -202,10 +201,8 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(BrowserFrame* frame,
   }
 
   if (browser_view_->ShouldShowAvatar()) {
-    ui::MenuModel* menu_model = browser_view_->IsOffTheRecord() ?
-        NULL : new ProfileMenuModel(browser_view_->browser());
-    // AvatarMenuButton takes ownership of |menu_model|.
-    avatar_button_.reset(new AvatarMenuButton(std::wstring(), menu_model));
+    avatar_button_.reset(new AvatarMenuButton(
+        browser_view_->browser(), !browser_view_->IsOffTheRecord()));
     AddChildView(avatar_button_.get());
     UpdateAvatarInfo();
     if (!browser_view_->IsOffTheRecord()) {

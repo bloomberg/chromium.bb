@@ -35,10 +35,12 @@ gfx::Size MenuItemView::CalculatePreferredSize() {
 #else
   int height = font.GetHeight();
 #endif
+  gfx::Size child_size = GetChildPreferredSize();
   return gfx::Size(
       font.GetStringWidth(title_) + label_start_ +
-          item_right_margin_ + GetChildPreferredWidth(),
-      height + GetBottomMargin() + GetTopMargin());
+          item_right_margin_ + child_size.width(),
+      std::max(height, child_size.height()) + GetBottomMargin() +
+          GetTopMargin());
 }
 
 void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {

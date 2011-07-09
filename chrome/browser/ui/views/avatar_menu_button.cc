@@ -4,22 +4,20 @@
 
 #include "chrome/browser/ui/views/avatar_menu_button.h"
 
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/profile_menu_model.h"
+#include "chrome/browser/ui/views/avatar_menu.h"
 #include "ui/gfx/canvas_skia.h"
-#include "views/controls/menu/menu_model_adapter.h"
 #include "views/widget/widget.h"
-
-// Menu should display below the image on the frame. This
-// offset size depends on whether the frame is in glass or opaque mode.
-const int kMenuDisplayOffset = 5;
 
 static inline int Round(double x) {
   return static_cast<int>(x + 0.5);
 }
 
-AvatarMenuButton::AvatarMenuButton(const std::wstring& text,
-                                   ui::MenuModel* menu_model)
-    : MenuButton(NULL, text, this, false),
-      menu_model_(menu_model) {
+AvatarMenuButton::AvatarMenuButton(Browser* browser, bool has_menu)
+    : MenuButton(NULL, std::wstring(), this, false),
+      browser_(browser),
+      has_menu_(has_menu) {
   // In RTL mode, the avatar icon should be looking the opposite direction.
   EnableCanvasFlippingForRTLUI(true);
 }
@@ -53,18 +51,20 @@ void AvatarMenuButton::OnPaint(gfx::Canvas* canvas) {
       dst_x, dst_y, dst_width, dst_height, false);
 }
 
+bool AvatarMenuButton::HitTest(const gfx::Point& point) const {
+  if (!has_menu_)
+    return false;
+  return views::MenuButton::HitTest(point);
+}
+
 // views::ViewMenuDelegate implementation
 void AvatarMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
-  if (!menu_model_.get())
+  if (!has_menu_)
     return;
 
-  views::MenuModelAdapter menu_model_adapter(menu_model_.get());
-  views::MenuItemView menu(&menu_model_adapter);
-  menu_model_adapter.BuildMenu(&menu);
-
-  gfx::Point menu_point(pt.x(), pt.y() + kMenuDisplayOffset);
-  menu.RunMenuAt(source->GetWidget()->GetNativeWindow(), NULL,
-                 gfx::Rect(pt, gfx::Size(0, 0)),
-                 views::MenuItemView::TOPRIGHT,
-                 true);
+  menu_model_.reset(new ProfileMenuModel(browser_));
+  // The avatar menu will automatically delete itself when done.
+  AvatarMenu* avatar_menu =
+      new AvatarMenu(menu_model_.get(), browser_->profile());
+  avatar_menu->RunMenu(this);
 }

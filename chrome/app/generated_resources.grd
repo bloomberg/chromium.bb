@@ -8273,6 +8273,9 @@ ls' lab.">
       <message name="IDS_NUMBERED_PROFILE_NAME" desc="The name given to a newly created profile. Displayed in wrench menu and settings UI.">
         Profile <ph name="VALUE">$1<ex>1</ex></ph>
       </message>
+      <message name="IDS_NUMBERED_AVATAR_NAME" desc="The name for a profile avatar icon.">
+        Icon <ph name="VALUE">$1<ex>1</ex></ph>
+      </message>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_PROFILES_DELETE_PROFILE" desc="Delete profile menu item and button title.">
           Delete profile...

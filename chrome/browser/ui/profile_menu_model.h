@@ -10,14 +10,23 @@
 
 class Browser;
 
-// ProfileMenuModel
-//
-// Menu for the multi-profile button displayed on the browser frame when the
-// user is in a multi-profile-enabled account. Stub for now. TODO(mirandac):
-// enable and fill in as part of multi-profile work.
+// Menu for the multi-profile button displayed on the browser frame.
 class ProfileMenuModel : public ui::SimpleMenuModel,
                          public ui::SimpleMenuModel::Delegate {
  public:
+  enum {
+    COMMAND_PROFILE_NAME,
+    COMMAND_CHOOSE_AVATAR_ICON,
+    COMMAND_CUSTOMIZE_PROFILE,
+    COMMAND_DELETE_PROFILE,
+    COMMAND_CREATE_NEW_PROFILE,
+    COMMAND_SWITCH_PROFILE_MENU,
+    // The profiles submenu contains a menu item for each profile. For the i'th
+    // profile the command ID is COMMAND_SWITCH_TO_PROFILE + i. Since there can
+    // be any number of profiles this must be the last command id.
+    COMMAND_SWITCH_TO_PROFILE,
+  };
+
   explicit ProfileMenuModel(Browser* browser);
   virtual ~ProfileMenuModel();
 

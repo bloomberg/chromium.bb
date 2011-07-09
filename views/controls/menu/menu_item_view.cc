@@ -484,14 +484,22 @@ void MenuItemView::Layout() {
   if (!has_children())
     return;
 
-  // Child views are laid out right aligned and given the full height. To right
-  // align start with the last view and progress to the first.
-  for (int i = child_count() - 1, x = width() - item_right_margin_; i >= 0;
-       --i) {
-    View* child = GetChildViewAt(i);
-    int width = child->GetPreferredSize().width();
-    child->SetBounds(x - width, 0, width, height());
-    x -= width - kChildXPadding;
+  if (child_count() == 1 && GetTitle().size() == 0) {
+    // We only have one child and no title so let the view take over all the
+    // space.
+    View* child = GetChildViewAt(0);
+    gfx::Size size = child->GetPreferredSize();
+    child->SetBounds(label_start_, GetTopMargin(), size.width(), size.height());
+  } else {
+    // Child views are laid out right aligned and given the full height. To
+    // right align start with the last view and progress to the first.
+    for (int i = child_count() - 1, x = width() - item_right_margin_; i >= 0;
+         --i) {
+      View* child = GetChildViewAt(i);
+      int width = child->GetPreferredSize().width();
+      child->SetBounds(x - width, 0, width, height());
+      x -= width - kChildXPadding;
+    }
   }
 }
 
@@ -732,9 +740,14 @@ int MenuItemView::GetBottomMargin() {
         MenuConfig::instance().item_no_icon_bottom_margin;
 }
 
-int MenuItemView::GetChildPreferredWidth() {
+gfx::Size MenuItemView::GetChildPreferredSize() {
   if (!has_children())
-    return 0;
+    return gfx::Size();
+
+  if (GetTitle().size() == 0 && child_count() == 1) {
+    View* child = GetChildViewAt(0);
+    return child->GetPreferredSize();
+  }
 
   int width = 0;
   for (int i = 0; i < child_count(); ++i) {
@@ -742,7 +755,9 @@ int MenuItemView::GetChildPreferredWidth() {
       width += kChildXPadding;
     width += GetChildViewAt(i)->GetPreferredSize().width();
   }
-  return width;
+  // Return a height of 0 to indicate that we should use the title height
+  // instead.
+  return gfx::Size(width, 0);
 }
 
 string16 MenuItemView::GetAcceleratorText() {

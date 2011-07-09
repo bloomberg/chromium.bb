@@ -406,8 +406,8 @@ class MenuItemView : public View {
   int GetTopMargin();
   int GetBottomMargin();
 
-  // Returns the preferred width (and padding) of any children.
-  int GetChildPreferredWidth();
+  // Returns the preferred size (and padding) of any children.
+  gfx::Size GetChildPreferredSize();
 
   // Calculates the preferred size.
   gfx::Size CalculatePreferredSize();

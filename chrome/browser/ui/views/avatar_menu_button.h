@@ -16,6 +16,7 @@
 namespace gfx {
 class Canvas;
 }
+class Browser;
 
 // AvatarMenuButton
 //
@@ -25,18 +26,22 @@ class Canvas;
 class AvatarMenuButton : public views::MenuButton,
                          public views::ViewMenuDelegate {
  public:
-  // Creates a new button. The object will take ownership of the menu model.
-  AvatarMenuButton(const std::wstring& text, ui::MenuModel* menu_model);
+  // Creates a new button. If |has_menu| is true then clicking on the button
+  // will cause the profile menu to be displayed.
+  AvatarMenuButton(Browser* browser, bool has_menu);
 
   virtual ~AvatarMenuButton();
 
   // views::MenuButton
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual bool HitTest(const gfx::Point& point) const OVERRIDE;
 
  private:
   // views::ViewMenuDelegate
   virtual void RunMenu(views::View* source, const gfx::Point& pt) OVERRIDE;
 
+  Browser* browser_;
+  bool has_menu_;
   scoped_ptr<ui::MenuModel> menu_model_;
 
   DISALLOW_COPY_AND_ASSIGN(AvatarMenuButton);

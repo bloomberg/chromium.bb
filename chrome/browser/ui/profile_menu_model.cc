@@ -17,17 +17,6 @@
 
 namespace {
 
-enum {
-  COMMAND_CUSTOMIZE_PROFILE,
-  COMMAND_DELETE_PROFILE,
-  COMMAND_CREATE_NEW_PROFILE,
-  COMMAND_SWITCH_PROFILE_MENU,
-  // The profiles submenu contains a menu item for each profile. For
-  // the i'th profile the command ID is COMMAND_SWITCH_TO_PROFILE + i.
-  // Since there can be any number of profiles this must be the last command id.
-  COMMAND_SWITCH_TO_PROFILE,
-};
-
 class SwitchProfileMenuModel : public ui::SimpleMenuModel,
                                public ui::SimpleMenuModel::Delegate {
  public:
@@ -76,7 +65,7 @@ SwitchProfileMenuModel::SwitchProfileMenuModel(
       g_browser_process->profile_manager()->GetProfileInfoCache();
   size_t count = cache.GetNumberOfProfiles();
   for (size_t i = 0; i < count; ++i) {
-    AddCheckItem(COMMAND_SWITCH_TO_PROFILE + i,
+    AddCheckItem(ProfileMenuModel::COMMAND_SWITCH_TO_PROFILE + i,
                  cache.GetNameOfProfileAtIndex(i));
   }
 
@@ -84,8 +73,9 @@ SwitchProfileMenuModel::SwitchProfileMenuModel(
 
   const string16 short_product_name =
       l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
-  AddItem(COMMAND_CREATE_NEW_PROFILE, l10n_util::GetStringFUTF16(
-      IDS_PROFILES_CREATE_NEW_PROFILE_OPTION, short_product_name));
+  AddItem(ProfileMenuModel::COMMAND_CREATE_NEW_PROFILE,
+          l10n_util::GetStringFUTF16(IDS_PROFILES_CREATE_NEW_PROFILE_OPTION,
+                                     short_product_name));
 }
 
 void SwitchProfileMenuModel::ExecuteCommand(int command_id) {
@@ -131,13 +121,13 @@ bool SwitchProfileMenuModel::GetAcceleratorForCommandId(
 }
 
 bool SwitchProfileMenuModel::IsSwitchProfileCommand(int command_id) const {
-  return command_id >= COMMAND_SWITCH_TO_PROFILE;
+  return command_id >= ProfileMenuModel::COMMAND_SWITCH_TO_PROFILE;
 }
 
 size_t SwitchProfileMenuModel::GetProfileIndexFromSwitchProfileCommand(
     int command_id) const {
   DCHECK(IsSwitchProfileCommand(command_id));
-  return command_id - COMMAND_SWITCH_TO_PROFILE;
+  return command_id - ProfileMenuModel::COMMAND_SWITCH_TO_PROFILE;
 }
 
 } // namespace
@@ -145,14 +135,23 @@ size_t SwitchProfileMenuModel::GetProfileIndexFromSwitchProfileCommand(
 ProfileMenuModel::ProfileMenuModel(Browser* browser)
     : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
       browser_(browser) {
+  ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  size_t profile_index = cache.GetIndexOfProfileWithPath(
+      browser_->profile()->GetPath());
+  AddItem(COMMAND_PROFILE_NAME, cache.GetNameOfProfileAtIndex(profile_index));
+
+  // TODO(sail): Need to implement an icon chooser on other platforms too.
+#if defined(TOOLKIT_VIEWS)
+  AddItem(COMMAND_CHOOSE_AVATAR_ICON, string16());
+#endif
+
   AddItemWithStringId(COMMAND_CUSTOMIZE_PROFILE,
                       IDS_PROFILES_CUSTOMIZE_PROFILE);
   AddSeparator();
 
   const string16 short_product_name =
       l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
-  ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
   if (cache.GetNumberOfProfiles() > 1) {
     switch_profiles_sub_menu_model_.reset(
         new SwitchProfileMenuModel(this, browser_));
@@ -178,7 +177,12 @@ bool ProfileMenuModel::IsCommandIdChecked(int command_id) const {
 }
 
 bool ProfileMenuModel::IsCommandIdEnabled(int command_id) const {
-  return true;
+  switch (command_id) {
+    case COMMAND_PROFILE_NAME:
+      return false;
+    default:
+      return true;
+  }
 }
 
 bool ProfileMenuModel::GetAcceleratorForCommandId(int command_id,
@@ -188,9 +192,11 @@ bool ProfileMenuModel::GetAcceleratorForCommandId(int command_id,
 
 void ProfileMenuModel::ExecuteCommand(int command_id) {
   switch (command_id) {
-     case COMMAND_CUSTOMIZE_PROFILE:
-       browser_->ShowOptionsTab(chrome::kPersonalOptionsSubPage);
-       break;
+    case COMMAND_CUSTOMIZE_PROFILE:
+      browser_->ShowOptionsTab(chrome::kPersonalOptionsSubPage);
+      break;
+    case COMMAND_CHOOSE_AVATAR_ICON:
+      break;
     case COMMAND_CREATE_NEW_PROFILE:
       ProfileManager::CreateMultiProfileAsync();
       break;

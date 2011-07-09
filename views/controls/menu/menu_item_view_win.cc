@@ -18,11 +18,13 @@ using gfx::NativeTheme;
 namespace views {
 
 gfx::Size MenuItemView::CalculatePreferredSize() {
+  gfx::Size child_size = GetChildPreferredSize();
   const gfx::Font& font = GetFont();
   return gfx::Size(
       font.GetStringWidth(title_) + label_start_ + item_right_margin_ +
-          GetChildPreferredWidth(),
-      font.GetHeight() + GetBottomMargin() + GetTopMargin());
+          child_size.width(),
+      std::max(child_size.height(), font.GetHeight()) + GetBottomMargin() +
+          GetTopMargin());
 }
 
 void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
