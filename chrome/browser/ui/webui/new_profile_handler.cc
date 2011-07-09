@@ -54,7 +54,8 @@ void NewProfileHandler::HandleCreate(const ListValue* args) {
 }
 
 void NewProfileHandler::HandleCancel(const ListValue* args) {
-  // TODO(sail): delete this profile.
+  g_browser_process->profile_manager()->ScheduleProfileForDeletion(
+      web_ui_->GetProfile()->GetPath());
 }
 
 void NewProfileHandler::HandleRequestProfileInfo(const ListValue* args) {
