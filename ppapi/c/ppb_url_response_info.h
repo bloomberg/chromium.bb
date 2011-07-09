@@ -25,28 +25,59 @@
 /**
  * This enumeration contains properties set on a URL response.
  */
-// TODO(viettrungluu) Explain each property in more detail (e.g. note how the
-// full URL in the response corresponds to the relative URL in the original
-// request).
 typedef enum {
-  /** This corresponds to a string (<code>PP_VARTYPE_STRING</code>). */
+  /**
+   * This corresponds to a string (PP_VARTYPE_STRING); an absolute URL formed by
+   * resolving the relative request URL with the absolute document URL. Refer
+   * to the
+   * <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html#sec5.1.2">
+   * HTTP Request URI</a> and
+   * <a href="http://www.w3.org/TR/html4/struct/links.html#h-12.4.1">
+   * HTML Resolving Relative URIs</a> documentation for further information.
+   */
   PP_URLRESPONSEPROPERTY_URL,
 
-  /** This corresponds to a string (<code>PP_VARTYPE_STRING</code>).*/
+  /**
+   * This corresponds to a string (PP_VARTYPE_STRING); the absolute URL returned
+   * in the response header's 'Location' field if this is a redirect response,
+   * an empty string otherwise. Refer to the
+   * <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3">
+   * HTTP Status Codes - Redirection</a> documentation for further information.
+   */
   PP_URLRESPONSEPROPERTY_REDIRECTURL,
 
-  /** This corresponds to a string (<code>PP_VARTYPE_STRING</code>).*/
+  /**
+   * This corresponds to a string (PP_VARTYPE_STRING); the HTTP method to be
+   * used in a new request if this is a redirect response, an empty string
+   * otherwise. Refer to the
+   * <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3">
+   * HTTP Status Codes - Redirection</a> documentation for further information.
+   */
   PP_URLRESPONSEPROPERTY_REDIRECTMETHOD,
 
-  /** This corresponds to an int32 (<code>PP_VARETYPE_INT32</code>)*/
+  /**
+   * This corresponds to an int32 (PP_VARETYPE_INT32); the status code from the
+   * response, e.g., 200 if the request was successful. Refer to the
+   * <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec6.html#sec6.1.1">
+   * HTTP Status Code and Reason Phrase</a> documentation for further
+   * information.
+   */
   PP_URLRESPONSEPROPERTY_STATUSCODE,
 
-  /** This corresponds to a string (<code>PP_VARTYPE_STRING</code>).*/
+  /**
+   * This corresponds to a string (PP_VARTYPE_STRING); the status line
+   * from the response. Refer to the
+   * <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec6.html#sec6.1">
+   * HTTP Response Status Line</a> documentation for further information.
+   */
   PP_URLRESPONSEPROPERTY_STATUSLINE,
 
   /**
-   * This corresponds to a string(<code>PP_VARTYPE_STRING</code>),
-   * \n delimited
+   * This corresponds to a string(PP_VARTYPE_STRING), a \n-delimited list of
+   * header field/value pairs of the form "field: value", returned by the
+   * server. Refer to the
+   * <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14">
+   * HTTP Header Field Definitions</a> documentation for further information.
    */
   PP_URLRESPONSEPROPERTY_HEADERS
 } PP_URLResponseProperty;
