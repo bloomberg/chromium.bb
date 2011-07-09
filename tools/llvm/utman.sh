@@ -2447,6 +2447,7 @@ newlib-install() {
 #     < SDK >
 #########################################################################
 SCONS_COMMON=(./scons
+              MODE=nacl,opt-host
               -j${UTMAN_CONCURRENCY}
               bitcode=1
               sdl=none
