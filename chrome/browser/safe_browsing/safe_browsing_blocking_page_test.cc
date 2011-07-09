@@ -467,7 +467,8 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, PhishingReportError) {
             browser()->GetSelectedTabContents()->GetURL().path());
 }
 
-IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, PhishingLearnMore) {
+IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
+                       DISABLED_PhishingLearnMore) {
   GURL url = test_server()->GetURL(kEmptyPage);
   AddURLResult(url, SafeBrowsingService::URL_PHISHING);
 
