@@ -52,7 +52,7 @@ class ScaledImageButton : public views::ImageButton {
 class AvatarIconGridView : public views::View, public views::ButtonListener {
  public:
   AvatarIconGridView(Profile* profile, views::MenuItemView* menu);
-  ~AvatarIconGridView();
+  virtual ~AvatarIconGridView();
 
   virtual void Layout() OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
