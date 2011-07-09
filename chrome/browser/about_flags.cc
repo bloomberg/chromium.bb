@@ -370,6 +370,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableAutofillFeedback)
   },
+  {
+    "panels",
+    IDS_FLAGS_ENABLE_PANELS_NAME,
+    IDS_FLAGS_ENABLE_PANELS_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnablePanels)
+  },
 };
 
 const Experiment* experiments = kExperiments;
