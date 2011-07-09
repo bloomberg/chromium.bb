@@ -374,7 +374,7 @@ def _CheckLocalPatches(option, opt_str, value, parser):
         raise optparse.OptionValueError('Project %s does not have branch %s'
                                         % (project, branch))
 
-  parser.values.local_patches.append(patch)
+    parser.values.local_patches.append(patch)
 
 
 def _CheckGerritPatches(option, opt_str, value, parser):
