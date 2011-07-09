@@ -8,9 +8,9 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/policy/cloud_policy_cache_base.h"
+#include "chrome/browser/policy/cloud_policy_data_store.h"
 #include "chrome/browser/policy/device_management_service.h"
 #include "chrome/browser/policy/enterprise_metrics.h"
 #include "chrome/browser/policy/proto/device_management_constants.h"
@@ -34,9 +34,11 @@ namespace em = enterprise_management;
 DeviceTokenFetcher::DeviceTokenFetcher(
     DeviceManagementService* service,
     CloudPolicyCacheBase* cache,
+    CloudPolicyDataStore* data_store,
     PolicyNotifier* notifier) {
   Initialize(service,
              cache,
+             data_store,
              notifier,
              new DelayedWorkScheduler);
 }
@@ -44,36 +46,24 @@ DeviceTokenFetcher::DeviceTokenFetcher(
 DeviceTokenFetcher::DeviceTokenFetcher(
     DeviceManagementService* service,
     CloudPolicyCacheBase* cache,
+    CloudPolicyDataStore* data_store,
     PolicyNotifier* notifier,
     DelayedWorkScheduler* scheduler) {
-  Initialize(service,
-             cache,
-             notifier,
-             scheduler);
+  Initialize(service, cache, data_store, notifier, scheduler);
 }
 
 DeviceTokenFetcher::~DeviceTokenFetcher() {
   scheduler_->CancelDelayedWork();
 }
 
-void DeviceTokenFetcher::FetchToken(
-    const std::string& auth_token,
-    const std::string& device_id,
-    em::DeviceRegisterRequest_Type policy_type,
-    const std::string& machine_id,
-    const std::string& machine_model) {
+void DeviceTokenFetcher::FetchToken() {
   SetState(STATE_INACTIVE);
-  auth_token_ = auth_token;
-  device_id_ = device_id;
-  policy_type_ = policy_type;
-  machine_id_ = machine_id;
-  machine_model_ = machine_model;
   FetchTokenInternal();
 }
 
 void DeviceTokenFetcher::FetchTokenInternal() {
   DCHECK(state_ != STATE_TOKEN_AVAILABLE);
-  if (auth_token_.empty() || device_id_.empty()) {
+  if (data_store_->gaia_token().empty() || data_store_->device_id().empty()) {
     // Maybe this device is unmanaged, just exit. The CloudPolicyController
     // will call FetchToken() again if something changes.
     return;
@@ -81,12 +71,14 @@ void DeviceTokenFetcher::FetchTokenInternal() {
   // Construct a new backend, which will discard any previous requests.
   backend_.reset(service_->CreateBackend());
   em::DeviceRegisterRequest request;
-  request.set_type(policy_type_);
-  if (!machine_id_.empty())
-    request.set_machine_id(machine_id_);
-  if (!machine_model_.empty())
-    request.set_machine_model(machine_model_);
-  backend_->ProcessRegisterRequest(auth_token_, device_id_, request, this);
+  request.set_type(data_store_->policy_register_type());
+  if (!data_store_->machine_id().empty())
+    request.set_machine_id(data_store_->machine_id());
+  if (!data_store_->machine_model().empty())
+    request.set_machine_model(data_store_->machine_model());
+  backend_->ProcessRegisterRequest(data_store_->gaia_token(),
+                                   data_store_->device_id(),
+                                   request, this);
 }
 
 void DeviceTokenFetcher::SetUnmanagedState() {
@@ -97,25 +89,9 @@ void DeviceTokenFetcher::SetUnmanagedState() {
   SetState(STATE_UNMANAGED);
 }
 
-const std::string& DeviceTokenFetcher::GetDeviceToken() {
-  return device_token_;
-}
-
 void DeviceTokenFetcher::StopAutoRetry() {
   scheduler_->CancelDelayedWork();
   backend_.reset();
-  device_token_.clear();
-  auth_token_.clear();
-  device_id_.clear();
-}
-
-void DeviceTokenFetcher::AddObserver(DeviceTokenFetcher::Observer* observer) {
-  observer_list_.AddObserver(observer);
-}
-
-void DeviceTokenFetcher::RemoveObserver(
-    DeviceTokenFetcher::Observer* observer) {
-  observer_list_.RemoveObserver(observer);
 }
 
 void DeviceTokenFetcher::HandleRegisterResponse(
@@ -123,7 +99,7 @@ void DeviceTokenFetcher::HandleRegisterResponse(
   if (response.has_device_management_token()) {
     UMA_HISTOGRAM_ENUMERATION(kMetricToken, kMetricTokenFetchOK,
                               kMetricTokenSize);
-    device_token_ = response.device_management_token();
+    data_store_->SetDeviceToken(response.device_management_token(), false);
     SetState(STATE_TOKEN_AVAILABLE);
   } else {
     NOTREACHED();
@@ -156,11 +132,13 @@ void DeviceTokenFetcher::OnError(DeviceManagementBackend::ErrorCode code) {
 
 void DeviceTokenFetcher::Initialize(DeviceManagementService* service,
                                     CloudPolicyCacheBase* cache,
+                                    CloudPolicyDataStore* data_store,
                                     PolicyNotifier* notifier,
                                     DelayedWorkScheduler* scheduler) {
   service_ = service;
   cache_ = cache;
   notifier_ = notifier;
+  data_store_ = data_store;
   effective_token_fetch_error_delay_ms_ = kTokenFetchErrorDelayMilliseconds;
   state_ = STATE_INACTIVE;
   scheduler_.reset(scheduler);
@@ -177,15 +155,11 @@ void DeviceTokenFetcher::SetState(FetcherState state) {
   base::Time delayed_work_at;
   switch (state_) {
     case STATE_INACTIVE:
-      device_token_.clear();
-      auth_token_.clear();
-      device_id_.clear();
       notifier_->Inform(CloudPolicySubsystem::UNENROLLED,
                         CloudPolicySubsystem::NO_DETAILS,
                         PolicyNotifier::TOKEN_FETCHER);
       break;
     case STATE_TOKEN_AVAILABLE:
-      FOR_EACH_OBSERVER(Observer, observer_list_, OnDeviceTokenAvailable());
       notifier_->Inform(CloudPolicySubsystem::SUCCESS,
                         CloudPolicySubsystem::NO_DETAILS,
                         PolicyNotifier::TOKEN_FETCHER);

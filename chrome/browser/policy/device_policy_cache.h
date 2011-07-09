@@ -6,8 +6,6 @@
 #define CHROME_BROWSER_POLICY_DEVICE_POLICY_CACHE_H_
 #pragma once
 
-#include <string>
-
 #include "base/memory/scoped_callback_factory.h"
 #include "chrome/browser/chromeos/login/signed_settings.h"
 #include "chrome/browser/chromeos/login/signed_settings_helper.h"
@@ -16,7 +14,7 @@
 
 namespace policy {
 
-class DevicePolicyIdentityStrategy;
+class CloudPolicyDataStore;
 class EnterpriseInstallAttributes;
 class PolicyMap;
 
@@ -27,7 +25,7 @@ namespace em = enterprise_management;
 class DevicePolicyCache : public CloudPolicyCacheBase,
                           public chromeos::SignedSettingsHelper::Callback {
  public:
-  explicit DevicePolicyCache(DevicePolicyIdentityStrategy* identity_strategy,
+  explicit DevicePolicyCache(CloudPolicyDataStore* data_store,
                              EnterpriseInstallAttributes* install_attributes);
   virtual ~DevicePolicyCache();
 
@@ -48,7 +46,7 @@ class DevicePolicyCache : public CloudPolicyCacheBase,
   // Alternate c'tor allowing tests to mock out the SignedSettingsHelper
   // singleton.
   DevicePolicyCache(
-      DevicePolicyIdentityStrategy* identity_strategy,
+      CloudPolicyDataStore* data_store,
       EnterpriseInstallAttributes* install_attributes,
       chromeos::SignedSettingsHelper* signed_settings_helper);
 
@@ -67,7 +65,7 @@ class DevicePolicyCache : public CloudPolicyCacheBase,
                                  PolicyMap* mandatory,
                                  PolicyMap* recommended);
 
-  DevicePolicyIdentityStrategy* identity_strategy_;
+  CloudPolicyDataStore* data_store_;
   EnterpriseInstallAttributes* install_attributes_;
 
   chromeos::SignedSettingsHelper* signed_settings_helper_;

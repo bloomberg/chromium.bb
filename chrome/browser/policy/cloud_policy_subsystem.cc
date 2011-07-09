@@ -11,7 +11,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/cloud_policy_cache_base.h"
 #include "chrome/browser/policy/cloud_policy_controller.h"
-#include "chrome/browser/policy/cloud_policy_identity_strategy.h"
+#include "chrome/browser/policy/cloud_policy_data_store.h"
 #include "chrome/browser/policy/device_management_service.h"
 #include "chrome/browser/policy/device_token_fetcher.h"
 #include "chrome/browser/policy/policy_notifier.h"
@@ -49,7 +49,7 @@ CloudPolicySubsystem::ObserverRegistrar::~ObserverRegistrar() {
 }
 
 CloudPolicySubsystem::CloudPolicySubsystem(
-    CloudPolicyIdentityStrategy* identity_strategy,
+    CloudPolicyDataStore* data_store,
     CloudPolicyCacheBase* policy_cache) {
   std::string device_management_url;
   CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -57,7 +57,7 @@ CloudPolicySubsystem::CloudPolicySubsystem(
     device_management_url =
         command_line->GetSwitchValueASCII(switches::kDeviceManagementUrl);
   }
-  Initialize(identity_strategy, policy_cache, device_management_url);
+  Initialize(data_store, policy_cache, device_management_url);
 }
 
 CloudPolicySubsystem::~CloudPolicySubsystem() {
@@ -76,11 +76,11 @@ void CloudPolicySubsystem::OnIPAddressChanged() {
 }
 
 void CloudPolicySubsystem::Initialize(
-    CloudPolicyIdentityStrategy* identity_strategy,
+    CloudPolicyDataStore* data_store,
     CloudPolicyCacheBase* policy_cache,
     const std::string& device_management_url) {
   device_management_url_ = device_management_url;
-  identity_strategy_ = identity_strategy;
+  data_store_ = data_store;
   net::NetworkChangeNotifier::AddIPAddressObserver(this);
   notifier_.reset(new PolicyNotifier());
   if (!device_management_url_.empty()) {
@@ -100,7 +100,6 @@ void CloudPolicySubsystem::CompleteInitialization(
     DCHECK(device_management_service_.get());
     DCHECK(cloud_policy_cache_.get());
     DCHECK(device_token_fetcher_.get());
-    DCHECK(identity_strategy_);
 
     refresh_pref_name_ = refresh_pref_name;
     CreateCloudPolicyController();
@@ -133,6 +132,7 @@ CloudPolicySubsystem::ErrorDetails CloudPolicySubsystem::error_details() {
 void CloudPolicySubsystem::StopAutoRetry() {
   cloud_policy_controller_->StopAutoRetry();
   device_token_fetcher_->StopAutoRetry();
+  data_store_->Reset();
 }
 
 // static
@@ -179,6 +179,7 @@ void CloudPolicySubsystem::CreateDeviceTokenFetcher() {
   device_token_fetcher_.reset(
       new DeviceTokenFetcher(device_management_service_.get(),
                              cloud_policy_cache_.get(),
+                             data_store_,
                              notifier_.get()));
 }
 
@@ -188,13 +189,11 @@ void CloudPolicySubsystem::CreateCloudPolicyController() {
       new CloudPolicyController(device_management_service_.get(),
                                 cloud_policy_cache_.get(),
                                 device_token_fetcher_.get(),
-                                identity_strategy_,
+                                data_store_,
                                 notifier_.get()));
 }
 
 CloudPolicySubsystem::CloudPolicySubsystem()
-    : refresh_pref_name_(NULL),
-      identity_strategy_(NULL) {
-}
+    : refresh_pref_name_(NULL) {}
 
 }  // namespace policy

@@ -7,22 +7,22 @@
 #include <algorithm>
 
 #include "base/bind.h"
-#include "base/callback.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/rand_util.h"
 #include "base/string_util.h"
 #include "chrome/browser/policy/cloud_policy_cache_base.h"
 #include "chrome/browser/policy/cloud_policy_subsystem.h"
-#include "chrome/browser/policy/device_management_backend.h"
 #include "chrome/browser/policy/device_management_service.h"
 #include "chrome/browser/policy/enterprise_metrics.h"
 #include "chrome/browser/policy/proto/device_management_constants.h"
+#include "chrome/common/guid.h"
+
+namespace {
 
 // Domain names that are known not to be managed.
 // We don't register the device when such a user logs in.
-static const char* kNonManagedDomains[] = {
+const char* kNonManagedDomains[] = {
   "@googlemail.com",
   "@gmail.com"
 };
@@ -30,7 +30,7 @@ static const char* kNonManagedDomains[] = {
 // Checks the domain part of the given username against the list of known
 // non-managed domain names. Returns false if |username| is empty or
 // in a domain known not to be managed.
-static bool CanBeInManagedDomain(const std::string& username) {
+bool CanBeInManagedDomain(const std::string& username) {
   if (username.empty()) {
     // This means incognito user in case of ChromiumOS and
     // no logged-in user in case of Chromium (SigninService).
@@ -42,6 +42,8 @@ static bool CanBeInManagedDomain(const std::string& username) {
     }
   }
   return true;
+}
+
 }
 
 namespace policy {
@@ -68,19 +70,18 @@ CloudPolicyController::CloudPolicyController(
     DeviceManagementService* service,
     CloudPolicyCacheBase* cache,
     DeviceTokenFetcher* token_fetcher,
-    CloudPolicyIdentityStrategy* identity_strategy,
+    CloudPolicyDataStore* data_store,
     PolicyNotifier* notifier) {
   Initialize(service,
              cache,
              token_fetcher,
-             identity_strategy,
+             data_store,
              notifier,
              new DelayedWorkScheduler);
 }
 
 CloudPolicyController::~CloudPolicyController() {
-  token_fetcher_->RemoveObserver(this);
-  identity_strategy_->RemoveObserver(this);
+  data_store_->RemoveObserver(this);
   scheduler_->CancelDelayedWork();
 }
 
@@ -160,37 +161,43 @@ void CloudPolicyController::OnError(DeviceManagementBackend::ErrorCode code) {
   }
 }
 
-void CloudPolicyController::OnDeviceTokenAvailable() {
-  identity_strategy_->OnDeviceTokenAvailable(token_fetcher_->GetDeviceToken());
-}
-
 void CloudPolicyController::OnDeviceTokenChanged() {
-  if (identity_strategy_->GetDeviceToken().empty())
+  if (data_store_->device_token().empty())
     SetState(STATE_TOKEN_UNAVAILABLE);
   else
     SetState(STATE_TOKEN_VALID);
 }
 
 void CloudPolicyController::OnCredentialsChanged() {
-  notifier_->Inform(CloudPolicySubsystem::UNENROLLED,
-                    CloudPolicySubsystem::NO_DETAILS,
-                    PolicyNotifier::POLICY_CONTROLLER);
-  effective_policy_refresh_error_delay_ms_ =
-      kPolicyRefreshErrorDelayInMilliseconds;
-  SetState(STATE_TOKEN_UNAVAILABLE);
+  // This notification is only interesting if we don't have a device token.
+  // If we already have a device token, that must be matching the current
+  // user, because (1) we always recreate the policy subsystem after user
+  // login (2) tokens are cached per user.
+  if (data_store_->device_token().empty()) {
+    notifier_->Inform(CloudPolicySubsystem::UNENROLLED,
+                      CloudPolicySubsystem::NO_DETAILS,
+                      PolicyNotifier::POLICY_CONTROLLER);
+    effective_policy_refresh_error_delay_ms_ =
+        kPolicyRefreshErrorDelayInMilliseconds;
+    SetState(STATE_TOKEN_UNAVAILABLE);
+  }
+}
+
+void CloudPolicyController::OnDataStoreGoingAway() {
+  NOTREACHED();
 }
 
 CloudPolicyController::CloudPolicyController(
     DeviceManagementService* service,
     CloudPolicyCacheBase* cache,
     DeviceTokenFetcher* token_fetcher,
-    CloudPolicyIdentityStrategy* identity_strategy,
+    CloudPolicyDataStore* data_store,
     PolicyNotifier* notifier,
     DelayedWorkScheduler* scheduler) {
   Initialize(service,
              cache,
              token_fetcher,
-             identity_strategy,
+             data_store,
              notifier,
              scheduler);
 }
@@ -199,7 +206,7 @@ void CloudPolicyController::Initialize(
     DeviceManagementService* service,
     CloudPolicyCacheBase* cache,
     DeviceTokenFetcher* token_fetcher,
-    CloudPolicyIdentityStrategy* identity_strategy,
+    CloudPolicyDataStore* data_store,
     PolicyNotifier* notifier,
     DelayedWorkScheduler* scheduler) {
   DCHECK(cache);
@@ -207,33 +214,29 @@ void CloudPolicyController::Initialize(
   service_ = service;
   cache_ = cache;
   token_fetcher_ = token_fetcher;
-  identity_strategy_ = identity_strategy;
+  data_store_ = data_store;
   notifier_ = notifier;
   state_ = STATE_TOKEN_UNAVAILABLE;
   policy_refresh_rate_ms_ = kPolicyRefreshRateInMilliseconds;
   effective_policy_refresh_error_delay_ms_ =
       kPolicyRefreshErrorDelayInMilliseconds;
   scheduler_.reset(scheduler);
-  token_fetcher_->AddObserver(this);
-  identity_strategy_->AddObserver(this);
-  if (!identity_strategy_->GetDeviceToken().empty())
+  data_store_->AddObserver(this);
+  if (!data_store_->device_token().empty())
     SetState(STATE_TOKEN_VALID);
   else
     SetState(STATE_TOKEN_UNAVAILABLE);
 }
 
 void CloudPolicyController::FetchToken() {
-  std::string username;
-  std::string auth_token;
-  std::string device_id = identity_strategy_->GetDeviceID();
-  std::string machine_id = identity_strategy_->GetMachineID();
-  std::string machine_model = identity_strategy_->GetMachineModel();
-  em::DeviceRegisterRequest_Type policy_type =
-      identity_strategy_->GetPolicyRegisterType();
-  if (identity_strategy_->GetCredentials(&username, &auth_token)) {
-    if (CanBeInManagedDomain(username)) {
-      token_fetcher_->FetchToken(auth_token, device_id, policy_type,
-                                 machine_id, machine_model);
+  if (data_store_->token_cache_loaded() &&
+      !data_store_->user_name().empty() &&
+      !data_store_->gaia_token().empty()) {
+    if (CanBeInManagedDomain(data_store_->user_name())) {
+      // Generate a new random device id. (It'll only be kept if registration
+      // succeeds.)
+      data_store_->set_device_id(guid::GenerateGUID());
+      token_fetcher_->FetchToken();
     } else {
       SetState(STATE_TOKEN_UNMANAGED);
     }
@@ -242,11 +245,11 @@ void CloudPolicyController::FetchToken() {
 
 void CloudPolicyController::SendPolicyRequest() {
   backend_.reset(service_->CreateBackend());
-  DCHECK(!identity_strategy_->GetDeviceToken().empty());
+  DCHECK(!data_store_->device_token().empty());
   em::DevicePolicyRequest policy_request;
   em::PolicyFetchRequest* fetch_request = policy_request.add_request();
   fetch_request->set_signature_type(em::PolicyFetchRequest::SHA1_RSA);
-  fetch_request->set_policy_type(identity_strategy_->GetPolicyType());
+  fetch_request->set_policy_type(data_store_->policy_type());
   if (!cache_->is_unmanaged() &&
       !cache_->last_policy_refresh_time().is_null()) {
     base::TimeDelta timestamp =
@@ -257,8 +260,8 @@ void CloudPolicyController::SendPolicyRequest() {
   if (cache_->GetPublicKeyVersion(&key_version))
     fetch_request->set_public_key_version(key_version);
 
-  backend_->ProcessPolicyRequest(identity_strategy_->GetDeviceToken(),
-                                 identity_strategy_->GetDeviceID(),
+  backend_->ProcessPolicyRequest(data_store_->device_token(),
+                                 data_store_->device_id(),
                                  policy_request, this);
 }
 

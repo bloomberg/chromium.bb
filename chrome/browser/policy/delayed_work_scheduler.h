@@ -19,7 +19,7 @@ class DelayedWorkScheduler {
   virtual ~DelayedWorkScheduler();
 
   // Cancels the delayed work task.
-  void CancelDelayedWork();
+  virtual void CancelDelayedWork();
 
   // Posts a new delayed task.
   virtual void PostDelayedWork(const base::Closure& callback, int64 delay);

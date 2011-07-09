@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/policy/enterprise_install_attributes.h"
@@ -21,14 +22,11 @@ class TokenService;
 
 namespace policy {
 
+class CloudPolicyDataStore;
 class CloudPolicyProvider;
 class CloudPolicySubsystem;
 class ConfigurationPolicyProvider;
-class UserPolicyIdentityStrategy;
-
-#if defined(OS_CHROMEOS)
-class DevicePolicyIdentityStrategy;
-#endif
+class UserPolicyTokenCache;
 
 // Manages the lifecycle of browser-global policy infrastructure, such as the
 // platform policy providers, device- and the user-cloud policy infrastructure.
@@ -134,12 +132,13 @@ class BrowserPolicyConnector : public NotificationObserver {
   scoped_ptr<CloudPolicyProvider> recommended_cloud_provider_;
 
 #if defined(OS_CHROMEOS)
-  scoped_ptr<DevicePolicyIdentityStrategy> device_identity_strategy_;
+  scoped_ptr<CloudPolicyDataStore> device_data_store_;
   scoped_ptr<CloudPolicySubsystem> device_cloud_policy_subsystem_;
   scoped_ptr<EnterpriseInstallAttributes> install_attributes_;
 #endif
 
-  scoped_ptr<UserPolicyIdentityStrategy> user_identity_strategy_;
+  scoped_refptr<UserPolicyTokenCache> user_policy_token_cache_;
+  scoped_ptr<CloudPolicyDataStore> user_data_store_;
   scoped_ptr<CloudPolicySubsystem> user_cloud_policy_subsystem_;
 
   ScopedRunnableMethodFactory<BrowserPolicyConnector> method_factory_;

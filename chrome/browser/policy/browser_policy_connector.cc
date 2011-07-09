@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "chrome/browser/net/gaia/token_service.h"
+#include "chrome/browser/policy/cloud_policy_data_store.h"
 #include "chrome/browser/policy/cloud_policy_provider.h"
 #include "chrome/browser/policy/cloud_policy_provider_impl.h"
 #include "chrome/browser/policy/cloud_policy_subsystem.h"
@@ -15,7 +16,7 @@
 #include "chrome/browser/policy/dummy_cloud_policy_provider.h"
 #include "chrome/browser/policy/dummy_configuration_policy_provider.h"
 #include "chrome/browser/policy/user_policy_cache.h"
-#include "chrome/browser/policy/user_policy_identity_strategy.h"
+#include "chrome/browser/policy/user_policy_token_cache.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
@@ -34,8 +35,6 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/policy/device_policy_cache.h"
-#include "chrome/browser/policy/device_policy_identity_strategy.h"
-#include "content/common/notification_service.h"
 #endif
 
 namespace policy {
@@ -107,14 +106,15 @@ BrowserPolicyConnector::~BrowserPolicyConnector() {
   if (device_cloud_policy_subsystem_.get())
     device_cloud_policy_subsystem_->Shutdown();
   device_cloud_policy_subsystem_.reset();
-  device_identity_strategy_.reset();
+  device_data_store_.reset();
 #endif
 
   // Shutdown user cloud policy.
   if (user_cloud_policy_subsystem_.get())
     user_cloud_policy_subsystem_->Shutdown();
   user_cloud_policy_subsystem_.reset();
-  user_identity_strategy_.reset();
+  user_data_store_.reset();
+  user_policy_token_cache_ = NULL;
 }
 
 ConfigurationPolicyProvider*
@@ -181,8 +181,10 @@ void BrowserPolicyConnector::SetDeviceCredentials(
     const std::string& owner_email,
     const std::string& gaia_token) {
 #if defined(OS_CHROMEOS)
-  if (device_identity_strategy_.get())
-    device_identity_strategy_->SetAuthCredentials(owner_email, gaia_token);
+  if (device_data_store_.get()) {
+    device_data_store_->set_user_name(owner_email);
+    device_data_store_->SetGaiaToken(gaia_token);
+  }
 #endif
 }
 
@@ -222,8 +224,10 @@ void BrowserPolicyConnector::DeviceStopAutoRetry() {
 
 void BrowserPolicyConnector::FetchDevicePolicy() {
 #if defined(OS_CHROMEOS)
-  if (device_identity_strategy_.get())
-    return device_identity_strategy_->FetchPolicy();
+  if (device_data_store_.get()) {
+    DCHECK(!device_data_store_->device_token().empty());
+    device_data_store_->NotifyDeviceTokenChanged();
+  }
 #endif
 }
 
@@ -234,7 +238,8 @@ void BrowserPolicyConnector::InitializeUserPolicy(const std::string& user_name,
 
   // Throw away the old backend.
   user_cloud_policy_subsystem_.reset();
-  user_identity_strategy_.reset();
+  user_data_store_.reset();
+  user_policy_token_cache_ = NULL;
   registrar_.RemoveAll();
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -247,26 +252,26 @@ void BrowserPolicyConnector::InitializeUserPolicy(const std::string& user_name,
     FilePath policy_cache_dir = policy_dir.Append(kPolicyDir);
     UserPolicyCache* user_policy_cache =
         new UserPolicyCache(policy_cache_dir.Append(kPolicyCacheFile));
+    user_data_store_.reset(CloudPolicyDataStore::CreateForUserPolicies());
+    user_policy_token_cache_ = new UserPolicyTokenCache(
+        user_data_store_->GetWeakPtr(),
+        policy_cache_dir.Append(kTokenCacheFile));
 
     // Prepending user caches meaning they will take precedence of device policy
     // caches.
     managed_cloud_provider_->PrependCache(user_policy_cache);
     recommended_cloud_provider_->PrependCache(user_policy_cache);
-    user_identity_strategy_.reset(
-        new UserPolicyIdentityStrategy(
-            user_name,
-            policy_cache_dir.Append(kTokenCacheFile)));
     user_cloud_policy_subsystem_.reset(new CloudPolicySubsystem(
-        user_identity_strategy_.get(),
+        user_data_store_.get(),
         user_policy_cache));
 
     // Initiate the DM-Token load.
-    user_identity_strategy_->LoadTokenCache();
+    user_policy_token_cache_->Load();
 
+    user_data_store_->set_user_name(user_name);
     if (token_service_->HasTokenForService(
             GaiaConstants::kDeviceManagementService)) {
-      user_identity_strategy_->SetAuthToken(
-          token_service_->GetTokenForService(
+      user_data_store_->SetGaiaToken(token_service_->GetTokenForService(
               GaiaConstants::kDeviceManagementService));
     }
 
@@ -294,22 +299,22 @@ void BrowserPolicyConnector::InitializeDevicePolicy() {
 #if defined(OS_CHROMEOS)
   // Throw away the old backend.
   device_cloud_policy_subsystem_.reset();
-  device_identity_strategy_.reset();
+  device_data_store_.reset();
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kEnableDevicePolicy)) {
-    device_identity_strategy_.reset(new DevicePolicyIdentityStrategy());
+    device_data_store_.reset(CloudPolicyDataStore::CreateForDevicePolicies());
     install_attributes_.reset(new EnterpriseInstallAttributes(
         chromeos::CrosLibrary::Get()->GetCryptohomeLibrary()));
     DevicePolicyCache* device_policy_cache =
-        new DevicePolicyCache(device_identity_strategy_.get(),
+        new DevicePolicyCache(device_data_store_.get(),
                               install_attributes_.get());
 
     managed_cloud_provider_->AppendCache(device_policy_cache);
     recommended_cloud_provider_->AppendCache(device_policy_cache);
 
     device_cloud_policy_subsystem_.reset(new CloudPolicySubsystem(
-        device_identity_strategy_.get(),
+        device_data_store_.get(),
         device_policy_cache));
 
     // Initialize the subsystem once the message loops are spinning.
@@ -342,8 +347,8 @@ void BrowserPolicyConnector::Observe(NotificationType type,
     const TokenService::TokenAvailableDetails* token_details =
         Details<const TokenService::TokenAvailableDetails>(details).ptr();
     if (token_details->service() == GaiaConstants::kDeviceManagementService) {
-      if (user_identity_strategy_.get()) {
-        user_identity_strategy_->SetAuthToken(token_details->token());
+      if (user_data_store_.get()) {
+        user_data_store_->SetGaiaToken(token_details->token());
       }
     }
   } else {

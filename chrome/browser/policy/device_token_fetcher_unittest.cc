@@ -4,19 +4,14 @@
 
 #include "chrome/browser/policy/device_token_fetcher.h"
 
-#include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
-#include "chrome/browser/net/gaia/token_service.h"
-#include "chrome/browser/policy/device_management_service.h"
+#include "chrome/browser/policy/cloud_policy_data_store.h"
 #include "chrome/browser/policy/logging_work_scheduler.h"
 #include "chrome/browser/policy/mock_device_management_backend.h"
 #include "chrome/browser/policy/mock_device_management_service.h"
 #include "chrome/browser/policy/policy_notifier.h"
-#include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/browser/policy/user_policy_cache.h"
-#include "chrome/common/net/gaia/gaia_constants.h"
-#include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,12 +23,14 @@ const char kTestToken[] = "device_token_fetcher_test_auth_token";
 using testing::_;
 using testing::Mock;
 
-class MockTokenAvailableObserver : public DeviceTokenFetcher::Observer {
+class MockTokenAvailableObserver : public CloudPolicyDataStore::Observer {
  public:
   MockTokenAvailableObserver() {}
   virtual ~MockTokenAvailableObserver() {}
 
-  MOCK_METHOD0(OnDeviceTokenAvailable, void());
+  MOCK_METHOD0(OnDeviceTokenChanged, void());
+  MOCK_METHOD0(OnCredentialsChanged, void());
+  MOCK_METHOD0(OnDataStoreGoingAway, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockTokenAvailableObserver);
@@ -51,16 +48,27 @@ class DeviceTokenFetcherTest : public testing::Test {
     cache_.reset(new UserPolicyCache(
         temp_user_data_dir_.path().AppendASCII("DeviceTokenFetcherTest")));
     service_.set_backend(&backend_);
+    data_store_.reset(CloudPolicyDataStore::CreateForUserPolicies());
+    data_store_->AddObserver(&observer_);
   }
 
   virtual void TearDown() {
     loop_.RunAllPending();
+    data_store_->RemoveObserver(&observer_);
+  }
+
+  void FetchToken(DeviceTokenFetcher* fetcher) {
+    data_store_->SetupForTesting("", "fake_device_id", "fake_user_name",
+                                 "fake_auth_token", true);
+    fetcher->FetchToken();
   }
 
   MessageLoop loop_;
   MockDeviceManagementBackend backend_;
   MockDeviceManagementService service_;
   scoped_ptr<CloudPolicyCacheBase> cache_;
+  scoped_ptr<CloudPolicyDataStore> data_store_;
+  MockTokenAvailableObserver observer_;
   PolicyNotifier notifier_;
   ScopedTempDir temp_user_data_dir_;
 
@@ -73,32 +81,26 @@ TEST_F(DeviceTokenFetcherTest, FetchToken) {
   testing::InSequence s;
   EXPECT_CALL(backend_, ProcessRegisterRequest(_, _, _, _)).WillOnce(
       MockDeviceManagementBackendSucceedRegister());
-  DeviceTokenFetcher fetcher(&service_, cache_.get(), &notifier_);
-  MockTokenAvailableObserver observer;
-  EXPECT_CALL(observer, OnDeviceTokenAvailable());
-  fetcher.AddObserver(&observer);
-  EXPECT_EQ("", fetcher.GetDeviceToken());
-  fetcher.FetchToken("fake_auth_token", "fake_device_id",
-                     em::DeviceRegisterRequest::USER,
-                     "fake_machine_id", "fake_machine_model");
+  DeviceTokenFetcher fetcher(&service_, cache_.get(), data_store_.get(),
+                             &notifier_);
+  EXPECT_CALL(observer_, OnDeviceTokenChanged());
+  EXPECT_EQ("", data_store_->device_token());
+  FetchToken(&fetcher);
   loop_.RunAllPending();
-  Mock::VerifyAndClearExpectations(&observer);
-  std::string token = fetcher.GetDeviceToken();
+  Mock::VerifyAndClearExpectations(&observer_);
+  std::string token = data_store_->device_token();
   EXPECT_NE("", token);
 
   // Calling FetchToken() again should result in a new token being fetched.
   EXPECT_CALL(backend_, ProcessRegisterRequest(_, _, _, _)).WillOnce(
       MockDeviceManagementBackendSucceedRegister());
-  EXPECT_CALL(observer, OnDeviceTokenAvailable());
-  fetcher.FetchToken("fake_auth_token", "fake_device_id",
-                     em::DeviceRegisterRequest::USER,
-                     "fake_machine_id", "fake_machine_model");
+  EXPECT_CALL(observer_, OnDeviceTokenChanged());
+  FetchToken(&fetcher);
   loop_.RunAllPending();
-  Mock::VerifyAndClearExpectations(&observer);
-  std::string token2 = fetcher.GetDeviceToken();
+  Mock::VerifyAndClearExpectations(&observer_);
+  std::string token2 = data_store_->device_token();
   EXPECT_NE("", token2);
   EXPECT_NE(token, token2);
-  fetcher.RemoveObserver(&observer);
 }
 
 TEST_F(DeviceTokenFetcherTest, RetryOnError) {
@@ -107,18 +109,13 @@ TEST_F(DeviceTokenFetcherTest, RetryOnError) {
       MockDeviceManagementBackendFailRegister(
           DeviceManagementBackend::kErrorRequestFailed)).WillOnce(
       MockDeviceManagementBackendSucceedRegister());
-  DeviceTokenFetcher fetcher(&service_, cache_.get(), &notifier_,
-                             new DummyWorkScheduler);
-  MockTokenAvailableObserver observer;
-  EXPECT_CALL(observer, OnDeviceTokenAvailable());
-  fetcher.AddObserver(&observer);
-  fetcher.FetchToken("fake_auth_token", "fake_device_id",
-                     em::DeviceRegisterRequest::USER,
-                     "fake_machine_id", "fake_machine_model");
+  DeviceTokenFetcher fetcher(&service_, cache_.get(), data_store_.get(),
+                             &notifier_, new DummyWorkScheduler);
+  EXPECT_CALL(observer_, OnDeviceTokenChanged());
+  FetchToken(&fetcher);
   loop_.RunAllPending();
-  Mock::VerifyAndClearExpectations(&observer);
-  EXPECT_NE("", fetcher.GetDeviceToken());
-  fetcher.RemoveObserver(&observer);
+  Mock::VerifyAndClearExpectations(&observer_);
+  EXPECT_NE("", data_store_->device_token());
 }
 
 TEST_F(DeviceTokenFetcherTest, UnmanagedDevice) {
@@ -126,18 +123,14 @@ TEST_F(DeviceTokenFetcherTest, UnmanagedDevice) {
       MockDeviceManagementBackendFailRegister(
           DeviceManagementBackend::kErrorServiceManagementNotSupported));
   EXPECT_FALSE(cache_->is_unmanaged());
-  DeviceTokenFetcher fetcher(&service_, cache_.get(), &notifier_);
-  MockTokenAvailableObserver observer;
-  EXPECT_CALL(observer, OnDeviceTokenAvailable()).Times(0);
-  fetcher.AddObserver(&observer);
-  fetcher.FetchToken("fake_auth_token", "fake_device_id",
-                     em::DeviceRegisterRequest::USER,
-                     "fake_machine_id", "fake_machine_model");
+  DeviceTokenFetcher fetcher(&service_, cache_.get(), data_store_.get(),
+                             &notifier_);
+  EXPECT_CALL(observer_, OnDeviceTokenChanged()).Times(0);
+  FetchToken(&fetcher);
   loop_.RunAllPending();
-  Mock::VerifyAndClearExpectations(&observer);
-  EXPECT_EQ("", fetcher.GetDeviceToken());
+  Mock::VerifyAndClearExpectations(&observer_);
+  EXPECT_EQ("", data_store_->device_token());
   EXPECT_TRUE(cache_->is_unmanaged());
-  fetcher.RemoveObserver(&observer);
 }
 
 }  // namespace policy

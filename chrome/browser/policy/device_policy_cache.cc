@@ -4,26 +4,25 @@
 
 #include "chrome/browser/policy/device_policy_cache.h"
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/task.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/update_library.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
-#include "chrome/browser/policy/configuration_policy_pref_store.h"
-#include "chrome/browser/policy/device_policy_identity_strategy.h"
+#include "chrome/browser/policy/cloud_policy_data_store.h"
 #include "chrome/browser/policy/enterprise_install_attributes.h"
 #include "chrome/browser/policy/enterprise_metrics.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/browser/policy/proto/device_management_constants.h"
 #include "chrome/browser/policy/proto/device_management_local.pb.h"
-#include "content/browser/browser_thread.h"
 #include "policy/configuration_policy_type.h"
 
 namespace {
@@ -113,9 +112,9 @@ Value* DecodeIntegerValue(google::protobuf::int64 value) {
 namespace policy {
 
 DevicePolicyCache::DevicePolicyCache(
-    DevicePolicyIdentityStrategy* identity_strategy,
+    CloudPolicyDataStore* data_store,
     EnterpriseInstallAttributes* install_attributes)
-    : identity_strategy_(identity_strategy),
+    : data_store_(data_store),
       install_attributes_(install_attributes),
       signed_settings_helper_(chromeos::SignedSettingsHelper::Get()),
       starting_up_(true),
@@ -123,10 +122,10 @@ DevicePolicyCache::DevicePolicyCache(
 }
 
 DevicePolicyCache::DevicePolicyCache(
-    DevicePolicyIdentityStrategy* identity_strategy,
+    CloudPolicyDataStore* data_store,
     EnterpriseInstallAttributes* install_attributes,
     chromeos::SignedSettingsHelper* signed_settings_helper)
-    : identity_strategy_(identity_strategy),
+    : data_store_(data_store),
       install_attributes_(install_attributes),
       signed_settings_helper_(signed_settings_helper),
       starting_up_(true),
@@ -201,11 +200,15 @@ void DevicePolicyCache::OnRetrievePolicyCompleted(
   DCHECK(CalledOnValidThread());
   if (starting_up_) {
     starting_up_ = false;
+    // All the code paths should issue a data_store_->SetDeviceToken(..., true)
+    // to signal that the cache has finished loading, so other components
+    // are free to modify token data.
     if (code == chromeos::SignedSettings::NOT_FOUND ||
         code == chromeos::SignedSettings::KEY_UNAVAILABLE ||
         !policy.has_policy_data()) {
       InformNotifier(CloudPolicySubsystem::UNENROLLED,
                      CloudPolicySubsystem::NO_DETAILS);
+      data_store_->SetDeviceToken("", true);
       return;
     }
     em::PolicyData policy_data;
@@ -215,6 +218,7 @@ void DevicePolicyCache::OnRetrievePolicyCompleted(
                                 kMetricPolicySize);
       InformNotifier(CloudPolicySubsystem::LOCAL_ERROR,
                      CloudPolicySubsystem::POLICY_LOCAL_ERROR);
+      data_store_->SetDeviceToken("", true);
       return;
     }
     if (!policy_data.has_request_token() ||
@@ -225,6 +229,7 @@ void DevicePolicyCache::OnRetrievePolicyCompleted(
       // TODO(jkummerow): Reminder: When we want to feed device-wide settings
       // made by a local owner into this cache, we need to call
       // SetPolicyInternal() here.
+      data_store_->SetDeviceToken("", true);
       return;
     }
     if (!policy_data.has_username() || !policy_data.has_device_id()) {
@@ -232,14 +237,14 @@ void DevicePolicyCache::OnRetrievePolicyCompleted(
                                 kMetricPolicySize);
       InformNotifier(CloudPolicySubsystem::LOCAL_ERROR,
                      CloudPolicySubsystem::POLICY_LOCAL_ERROR);
+      data_store_->SetDeviceToken("", true);
       return;
     }
     UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyLoadSucceeded,
                               kMetricPolicySize);
-    identity_strategy_->SetDeviceManagementCredentials(
-        policy_data.username(),
-        policy_data.device_id(),
-        policy_data.request_token());
+    data_store_->set_user_name(policy_data.username());
+    data_store_->set_device_id(policy_data.device_id());
+    data_store_->SetDeviceToken(policy_data.request_token(), true);
     SetPolicyInternal(policy, NULL, false);
   } else {  // In other words, starting_up_ == false.
     if (code != chromeos::SignedSettings::SUCCESS) {

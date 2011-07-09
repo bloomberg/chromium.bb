@@ -142,8 +142,9 @@ void LoggingWorkScheduler::PostDelayedWork(
 }
 
 void LoggingWorkScheduler::CancelDelayedWork() {
-  DCHECK(callback_.get());
-  callback_->Reset();
+  if (!callback_.get()) return;
+  callback_->Reset();  // Erase the callback to the delayed work.
+  callback_.reset(NULL);  // Erase the pointer to the callback.
 }
 
 }  // namespace policy

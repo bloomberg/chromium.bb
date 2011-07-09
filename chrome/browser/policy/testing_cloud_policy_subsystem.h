@@ -10,6 +10,7 @@
 
 namespace policy {
 
+class CloudPolicyDataStore;
 class EventLogger;
 
 // A CloudPolicySubsystem for testing: it uses EventLogger to issue delayed
@@ -17,7 +18,7 @@ class EventLogger;
 class TestingCloudPolicySubsystem : public CloudPolicySubsystem {
  public:
   // Takes ownership of |policy_cache|.
-  TestingCloudPolicySubsystem(CloudPolicyIdentityStrategy* identity_strategy,
+  TestingCloudPolicySubsystem(CloudPolicyDataStore* data,
                               CloudPolicyCacheBase* policy_cache,
                               const std::string& device_management_url,
                               EventLogger* logger);

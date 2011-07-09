@@ -5,7 +5,7 @@
 #include "chrome/browser/policy/device_policy_cache.h"
 
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
-#include "chrome/browser/policy/device_policy_identity_strategy.h"
+#include "chrome/browser/policy/cloud_policy_data_store.h"
 #include "chrome/browser/policy/enterprise_install_attributes.h"
 #include "policy/configuration_policy_type.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -109,7 +109,8 @@ class DevicePolicyCacheTest : public testing::Test {
         install_attributes_(cryptohome_.get()) {}
 
   virtual void SetUp() {
-    cache_.reset(new DevicePolicyCache(&identity_strategy_,
+    data_store_.reset(CloudPolicyDataStore::CreateForUserPolicies());
+    cache_.reset(new DevicePolicyCache(data_store_.get(),
                                        &install_attributes_,
                                        &signed_settings_helper_));
   }
@@ -134,7 +135,7 @@ class DevicePolicyCacheTest : public testing::Test {
 
   scoped_ptr<chromeos::CryptohomeLibrary> cryptohome_;
   EnterpriseInstallAttributes install_attributes_;
-  DevicePolicyIdentityStrategy identity_strategy_;
+  scoped_ptr<CloudPolicyDataStore> data_store_;
   MockSignedSettingsHelper signed_settings_helper_;
   scoped_ptr<DevicePolicyCache> cache_;
 

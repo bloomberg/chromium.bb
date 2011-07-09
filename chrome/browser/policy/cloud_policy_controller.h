@@ -8,19 +8,12 @@
 
 #include <string>
 
-#include "base/file_path.h"
+#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/observer_list.h"
-#include "base/task.h"
-#include "base/time.h"
-#include "chrome/browser/policy/cloud_policy_identity_strategy.h"
+#include "chrome/browser/policy/cloud_policy_data_store.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/delayed_work_scheduler.h"
-#include "chrome/browser/policy/device_management_backend.h"
 #include "chrome/browser/policy/device_token_fetcher.h"
-
-class Profile;
-class TokenService;
 
 namespace policy {
 
@@ -32,14 +25,13 @@ class DeviceManagementBackend;
 // listens to their callbacks/notifications.
 class CloudPolicyController
     : public DeviceManagementBackend::DevicePolicyResponseDelegate,
-      public DeviceTokenFetcher::Observer,
-      public CloudPolicyIdentityStrategy::Observer {
+      public CloudPolicyDataStore::Observer {
  public:
   // All parameters are weak pointers.
   CloudPolicyController(DeviceManagementService* service,
                         CloudPolicyCacheBase* cache,
                         DeviceTokenFetcher* token_fetcher,
-                        CloudPolicyIdentityStrategy* identity_strategy,
+                        CloudPolicyDataStore* data_store,
                         PolicyNotifier* notifier);
   virtual ~CloudPolicyController();
 
@@ -55,15 +47,13 @@ class CloudPolicyController
 
   // DevicePolicyResponseDelegate implementation:
   virtual void HandlePolicyResponse(
-      const em::DevicePolicyResponse& response);
-  virtual void OnError(DeviceManagementBackend::ErrorCode code);
+      const em::DevicePolicyResponse& response) OVERRIDE;
+  virtual void OnError(DeviceManagementBackend::ErrorCode code) OVERRIDE;
 
-  // DeviceTokenFetcher::Observer implementation:
-  virtual void OnDeviceTokenAvailable();
-
-  // CloudPolicyIdentityStrategy::Observer implementation:
-  virtual void OnDeviceTokenChanged();
-  virtual void OnCredentialsChanged();
+  // CloudPolicyDataStore::Observer implementation:
+  virtual void OnDeviceTokenChanged() OVERRIDE;
+  virtual void OnCredentialsChanged() OVERRIDE;
+  virtual void OnDataStoreGoingAway() OVERRIDE;
 
  private:
   // Indicates the current state the controller is in.
@@ -92,7 +82,7 @@ class CloudPolicyController
   CloudPolicyController(DeviceManagementService* service,
                         CloudPolicyCacheBase* cache,
                         DeviceTokenFetcher* token_fetcher,
-                        CloudPolicyIdentityStrategy* identity_strategy,
+                        CloudPolicyDataStore* data_store,
                         PolicyNotifier* notifier,
                         DelayedWorkScheduler* scheduler);
 
@@ -100,7 +90,7 @@ class CloudPolicyController
   void Initialize(DeviceManagementService* service,
                   CloudPolicyCacheBase* cache,
                   DeviceTokenFetcher* token_fetcher,
-                  CloudPolicyIdentityStrategy* identity_strategy,
+                  CloudPolicyDataStore* data_store,
                   PolicyNotifier* notifier,
                   DelayedWorkScheduler* scheduler);
 
@@ -124,7 +114,7 @@ class CloudPolicyController
 
   DeviceManagementService* service_;
   CloudPolicyCacheBase* cache_;
-  CloudPolicyIdentityStrategy* identity_strategy_;
+  CloudPolicyDataStore* data_store_;
   DeviceTokenFetcher* token_fetcher_;
   scoped_ptr<DeviceManagementBackend> backend_;
   ControllerState state_;

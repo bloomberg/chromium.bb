@@ -12,23 +12,16 @@
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/policy/proto/device_management_local.pb.h"
+#include "chrome/browser/policy/cloud_policy_data_store.h"
 
 namespace policy {
 
 // Responsible for managing the on-disk token cache.
 class UserPolicyTokenCache
-    : public base::RefCountedThreadSafe<UserPolicyTokenCache> {
+    : public base::RefCountedThreadSafe<UserPolicyTokenCache>,
+      public CloudPolicyDataStore::Observer {
  public:
-  // Callback interface for reporting a successfull load.
-  class Delegate {
-   public:
-    virtual ~Delegate();
-    virtual void OnTokenCacheLoaded(const std::string& token,
-                                    const std::string& device_id) = 0;
-  };
-
-  UserPolicyTokenCache(const base::WeakPtr<Delegate>& delegate,
+  UserPolicyTokenCache(const base::WeakPtr<CloudPolicyDataStore>& data_store,
                        const FilePath& cache_file);
 
   // Starts loading the disk cache. After the load is finished, the result is
@@ -38,9 +31,14 @@ class UserPolicyTokenCache
   // Stores credentials asynchronously to disk.
   void Store(const std::string& token, const std::string& device_id);
 
+  // CloudPolicyData::Observer implementation:
+  virtual void OnDeviceTokenChanged() OVERRIDE;
+  virtual void OnCredentialsChanged() OVERRIDE;
+  virtual void OnDataStoreGoingAway() OVERRIDE;
+
  private:
   friend class base::RefCountedThreadSafe<UserPolicyTokenCache>;
-  ~UserPolicyTokenCache();
+  virtual ~UserPolicyTokenCache();
 
   void LoadOnFileThread();
   void NotifyOnUIThread(const std::string& token,
@@ -48,7 +46,7 @@ class UserPolicyTokenCache
   void StoreOnFileThread(const std::string& token,
                          const std::string& device_id);
 
-  const base::WeakPtr<Delegate> delegate_;
+  const base::WeakPtr<CloudPolicyDataStore> data_store_;
   const FilePath cache_file_;
 
   DISALLOW_COPY_AND_ASSIGN(UserPolicyTokenCache);

@@ -7,6 +7,7 @@
 #include "base/file_util.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/policy/enterprise_metrics.h"
+#include "chrome/browser/policy/proto/device_management_local.pb.h"
 #include "content/browser/browser_thread.h"
 
 namespace {
@@ -31,13 +32,13 @@ namespace policy {
 
 namespace em = enterprise_management;
 
-UserPolicyTokenCache::Delegate::~Delegate() {}
-
 UserPolicyTokenCache::UserPolicyTokenCache(
-    const base::WeakPtr<Delegate>& delegate,
+    const base::WeakPtr<CloudPolicyDataStore>& data_store,
     const FilePath& cache_file)
-    : delegate_(delegate),
-      cache_file_(cache_file) {}
+    : data_store_(data_store),
+      cache_file_(cache_file) {
+  data_store_->AddObserver(this);
+}
 
 void UserPolicyTokenCache::Load() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -58,6 +59,8 @@ void UserPolicyTokenCache::Store(const std::string& token,
 }
 
 UserPolicyTokenCache::~UserPolicyTokenCache() {
+  if (data_store_)
+    data_store_->RemoveObserver(this);
 }
 
 void UserPolicyTokenCache::LoadOnFileThread() {
@@ -89,8 +92,11 @@ void UserPolicyTokenCache::LoadOnFileThread() {
 void UserPolicyTokenCache::NotifyOnUIThread(const std::string& token,
                                             const std::string& device_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (delegate_.get())
-    delegate_->OnTokenCacheLoaded(token, device_id);
+  if (data_store_) {
+    data_store_->set_device_id(device_id);
+    data_store_->SetDeviceToken(token, true);
+    data_store_->NotifyDeviceTokenChanged();
+  }
 }
 
 void UserPolicyTokenCache::StoreOnFileThread(const std::string& token,
@@ -122,6 +128,21 @@ void UserPolicyTokenCache::StoreOnFileThread(const std::string& token,
   }
 
   SampleUMA(kMetricTokenStoreSucceeded);
+}
+
+void UserPolicyTokenCache::OnDeviceTokenChanged() {
+  if (!data_store_->device_token().empty() &&
+      !data_store_->device_id().empty()) {
+    // This will also happen after loading the cache.
+    Store(data_store_->device_token(), data_store_->device_id());
+  }
+}
+
+void UserPolicyTokenCache::OnCredentialsChanged() {
+}
+
+void UserPolicyTokenCache::OnDataStoreGoingAway() {
+  data_store_->RemoveObserver(this);
 }
 
 }  // namespace policy

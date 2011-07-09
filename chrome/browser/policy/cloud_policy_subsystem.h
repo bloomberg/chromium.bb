@@ -17,7 +17,7 @@ namespace policy {
 
 class CloudPolicyCacheBase;
 class CloudPolicyController;
-class CloudPolicyIdentityStrategy;
+class CloudPolicyDataStore;
 class DeviceManagementService;
 class DeviceTokenFetcher;
 class PolicyNotifier;
@@ -67,7 +67,7 @@ class CloudPolicySubsystem
     DISALLOW_COPY_AND_ASSIGN(ObserverRegistrar);
   };
 
-  CloudPolicySubsystem(CloudPolicyIdentityStrategy* identity_strategy,
+  CloudPolicySubsystem(CloudPolicyDataStore* data_store,
                        CloudPolicyCacheBase* policy_cache);
   virtual ~CloudPolicySubsystem();
 
@@ -103,7 +103,7 @@ class CloudPolicySubsystem
 
   CloudPolicySubsystem();
 
-  void Initialize(CloudPolicyIdentityStrategy* identity_strategy,
+  void Initialize(CloudPolicyDataStore* data_store,
                   CloudPolicyCacheBase* policy_cache,
                   const std::string& device_management_url);
 
@@ -129,8 +129,7 @@ class CloudPolicySubsystem
 
   PrefChangeRegistrar pref_change_registrar_;
 
-  // Weak reference to pass on to |cloud_policy_controller_| on creation.
-  CloudPolicyIdentityStrategy* identity_strategy_;
+  CloudPolicyDataStore* data_store_;
 
   // Cloud policy infrastructure stuff.
   scoped_ptr<PolicyNotifier> notifier_;

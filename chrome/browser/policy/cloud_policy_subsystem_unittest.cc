@@ -4,13 +4,13 @@
 
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/policy/cloud_policy_identity_strategy.h"
+#include "chrome/browser/policy/cloud_policy_data_store.h"
 #include "chrome/browser/policy/logging_work_scheduler.h"
-#include "chrome/browser/policy/mock_configuration_policy_store.h"
 #include "chrome/browser/policy/proto/cloud_policy.pb.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/browser/policy/testing_cloud_policy_subsystem.h"
@@ -22,22 +22,15 @@
 #include "content/browser/browser_thread.h"
 #include "content/common/url_fetcher.h"
 #include "policy/policy_constants.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
 
 using ::testing::_;
-using ::testing::AtLeast;
 using ::testing::AtMost;
-using ::testing::DoAll;
 using ::testing::InSequence;
-using ::testing::Invoke;
-using ::testing::Return;
 
 namespace em = enterprise_management;
-
-class CloudPolicySubsystemTest;
 
 namespace {
 
@@ -48,63 +41,12 @@ const char kDMToken[] = "token123456";
 const char kDeviceManagementUrl[] =
     "http://localhost:12345/device_management_test";
 
-// Constant responses of the identity strategy.
-const char kMachineId[] = "dummy-cros-machine-123";
-const char kMachineModel[] = "Pony";
-const char kDeviceId[] = "abc-xyz-123";
+// Fake data to be included in requests.
 const char kUsername[] = "john@smith.com";
 const char kAuthToken[] = "secret123";
 const char kPolicyType[] = "google/chrome/test";
 
 }  // namespace
-
-// A stripped-down identity strategy for the tests.
-class TestingIdentityStrategy : public CloudPolicyIdentityStrategy {
- public:
-  TestingIdentityStrategy() {
-  }
-
-  virtual std::string GetDeviceToken() OVERRIDE {
-    return device_token_;
-  }
-
-  virtual std::string GetDeviceID() OVERRIDE {
-    return kDeviceId;
-  }
-
-  virtual std::string GetMachineID() OVERRIDE {
-    return kMachineId;
-  }
-
-  virtual std::string GetMachineModel() OVERRIDE {
-    return kMachineModel;
-  }
-
-  virtual em::DeviceRegisterRequest_Type GetPolicyRegisterType() OVERRIDE {
-    return em::DeviceRegisterRequest::USER;
-  }
-
-  virtual std::string GetPolicyType() OVERRIDE {
-    return kPolicyType;
-  }
-
-  virtual bool GetCredentials(std::string* username,
-                              std::string* auth_token) OVERRIDE {
-    *username = kUsername;
-    *auth_token = kAuthToken;;
-    return !username->empty() && !auth_token->empty();
-  }
-
-  virtual void OnDeviceTokenAvailable(const std::string& token) OVERRIDE {
-    device_token_ = token;
-    NotifyDeviceTokenChanged();
-  }
-
- private:
-  std::string device_token_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestingIdentityStrategy);
-};
 
 // An action that returns an URLRequestJob with an HTTP error code.
 ACTION_P(CreateFailedResponse, http_error_code) {
@@ -173,13 +115,13 @@ class CloudPolicySubsystemTestBase : public TESTBASE {
     logger_.reset(new EventLogger);
     factory_.reset(new TestingPolicyURLFetcherFactory(logger_.get()));
     URLFetcher::set_factory(factory_.get());
-    identity_strategy_.reset(new TestingIdentityStrategy);
     ASSERT_TRUE(temp_user_data_dir_.CreateUniqueTempDir());
+    data_store_.reset(CloudPolicyDataStore::CreateForUserPolicies());
     cache_ = new UserPolicyCache(
         temp_user_data_dir_.path().AppendASCII("CloudPolicyControllerTest"));
     cloud_policy_subsystem_.reset(new TestingCloudPolicySubsystem(
-        identity_strategy_.get(), cache_, kDeviceManagementUrl,
-        logger_.get()));
+        data_store_.get(), cache_,
+        kDeviceManagementUrl, logger_.get()));
     cloud_policy_subsystem_->CompleteInitialization(
         prefs::kDevicePolicyRefreshRate, 0);
   }
@@ -188,6 +130,7 @@ class CloudPolicySubsystemTestBase : public TESTBASE {
     ((TestingBrowserProcess*) g_browser_process)->SetLocalState(NULL);
     cloud_policy_subsystem_->Shutdown();
     cloud_policy_subsystem_.reset();
+    data_store_.reset();
     factory_.reset();
     logger_.reset();
     prefs_.reset();
@@ -203,6 +146,9 @@ class CloudPolicySubsystemTestBase : public TESTBASE {
        .WillOnce(InvokeWithoutArgs(
            this,
            &CloudPolicySubsystemTestBase::StopMessageLoop));
+    data_store_->set_user_name(kUsername);
+    data_store_->SetGaiaToken(kAuthToken);
+    data_store_->SetDeviceToken("", true);
     loop_.RunAllPending();
   }
 
@@ -290,7 +236,7 @@ class CloudPolicySubsystemTestBase : public TESTBASE {
   BrowserThread io_thread_;
 
   scoped_ptr<EventLogger> logger_;
-  scoped_ptr<TestingIdentityStrategy> identity_strategy_;
+  scoped_ptr<CloudPolicyDataStore> data_store_;
   scoped_ptr<CloudPolicySubsystem> cloud_policy_subsystem_;
   scoped_ptr<PrefService> prefs_;
   CloudPolicyCacheBase* cache_;

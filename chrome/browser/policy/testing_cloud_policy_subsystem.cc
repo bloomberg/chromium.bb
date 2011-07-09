@@ -11,19 +11,20 @@
 namespace policy {
 
 TestingCloudPolicySubsystem::TestingCloudPolicySubsystem(
-    CloudPolicyIdentityStrategy* identity_strategy,
+    CloudPolicyDataStore* data_store,
     CloudPolicyCacheBase* policy_cache,
     const std::string& device_management_url,
     EventLogger* logger)
         : CloudPolicySubsystem(),
           logger_(logger) {
-  Initialize(identity_strategy, policy_cache, device_management_url);
+  Initialize(data_store, policy_cache, device_management_url);
 }
 
 void TestingCloudPolicySubsystem::CreateDeviceTokenFetcher() {
   device_token_fetcher_.reset(
       new DeviceTokenFetcher(device_management_service_.get(),
                              cloud_policy_cache_.get(),
+                             data_store_,
                              notifier_.get(),
                              new LoggingWorkScheduler(logger_)));
 }
@@ -33,7 +34,7 @@ void TestingCloudPolicySubsystem::CreateCloudPolicyController() {
       new CloudPolicyController(device_management_service_.get(),
                                 cloud_policy_cache_.get(),
                                 device_token_fetcher_.get(),
-                                identity_strategy_,
+                                data_store_,
                                 notifier_.get(),
                                 new LoggingWorkScheduler(logger_)));
 }
