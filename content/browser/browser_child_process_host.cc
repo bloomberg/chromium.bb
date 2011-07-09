@@ -124,6 +124,11 @@ base::TerminationStatus BrowserChildProcessHost::GetChildTerminationStatus(
 }
 
 void BrowserChildProcessHost::OnChildDied() {
+  // TODO(kbr): the duplication of the child process's handle between
+  // child_process_ and our inheritance from ChildProcessInfo is
+  // problematic and needs to be cleaned up. Ideally I think this
+  // class would not derive from ChildProcessInfo. See bug 88769.
+  set_handle(child_process_->GetHandle());
   if (handle() != base::kNullProcessHandle) {
     int exit_code;
     base::TerminationStatus status = GetChildTerminationStatus(&exit_code);
