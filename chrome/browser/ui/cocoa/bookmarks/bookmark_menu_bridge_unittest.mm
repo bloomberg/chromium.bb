@@ -21,8 +21,8 @@
 class TestBookmarkMenuBridge : public BookmarkMenuBridge {
  public:
   TestBookmarkMenuBridge(Profile* profile)
-      :  menu_([[NSMenu alloc] initWithTitle:@"test"]),
-         BookmarkMenuBridge(profile, menu_) {
+      : BookmarkMenuBridge(profile),
+        menu_([[NSMenu alloc] initWithTitle:@"test"]) {
   }
   virtual ~TestBookmarkMenuBridge() {}
 
