@@ -5501,7 +5501,7 @@ ls' lab.">
     </message>
 
     <message name="IDS_HANDLER_OPTIONS_WINDOW_TITLE" desc="The title of the window that lets a user change what handlers they have registered for various protocols / mimetypes.">
-      Protocol and MIME type Handlers
+      Protocol Handlers
     </message>
       <message name="IDS_GEOLOCATION_TAB_LABEL" desc="Label for Geolocation tab on Content Settings dialog">
         Location
