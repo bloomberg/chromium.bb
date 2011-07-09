@@ -117,6 +117,8 @@ class AutocompleteEditModel : public AutocompleteControllerDelegate {
   // making this accessor unnecessary.
   AutocompletePopupModel* popup_model() const { return popup_; }
 
+  AutocompleteEditController* controller() const { return controller_; }
+
   // Invoked when the profile has changed.
   void SetProfile(Profile* profile);
 

@@ -453,6 +453,15 @@ void Navigate(NavigateParams* params) {
     // add it to the appropriate tabstrip.
   }
 
+  // If the user navigated from the omnibox, and the selected tab is going to
+  // lose focus, then make sure the focus for the source tab goes away from the
+  // omnibox.
+  if (params->source_contents &&
+      (params->disposition == NEW_FOREGROUND_TAB ||
+       params->disposition == NEW_WINDOW) &&
+      (params->tabstrip_add_types & TabStripModel::ADD_INHERIT_OPENER))
+    params->source_contents->tab_contents()->Focus();
+
   if (params->source_contents == params->target_contents) {
     // The navigation occurred in the source tab.
     params->browser->UpdateUIForNavigationInTab(

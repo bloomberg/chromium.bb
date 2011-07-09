@@ -5,11 +5,15 @@
 #include "chrome/browser/ui/browser_navigator_browsertest.h"
 
 #include "base/command_line.h"
+#include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/omnibox/location_bar.h"
+#include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/ui_test_utils.h"
@@ -986,6 +990,44 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_EQ(2, browser()->tab_count());
   EXPECT_EQ(GURL("chrome://settings/browser"),
             browser()->GetSelectedTabContents()->GetURL());
+}
+
+// Tests that when a new tab is opened from the omnibox, the focus is moved from
+// the omnibox for the current tab.
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
+                       NavigateFromOmniboxIntoNewTab) {
+  GURL url("http://www.google.com/");
+  GURL url2("http://maps.google.com/");
+
+  // Navigate to url.
+  browser::NavigateParams p(MakeNavigateParams());
+  p.disposition = CURRENT_TAB;
+  p.url = url;
+  browser::Navigate(&p);
+
+  // Focus the omnibox.
+  browser()->FocusLocationBar();
+
+  AutocompleteEditController* controller =
+      browser()->window()->GetLocationBar()->location_entry()->model()->
+          controller();
+
+  // Simulate an alt-enter.
+  controller->OnAutocompleteAccept(url2, NEW_FOREGROUND_TAB,
+                                   PageTransition::TYPED, GURL());
+
+  // Make sure the second tab is selected.
+  EXPECT_EQ(1, browser()->active_index());
+
+  // The tab contents should have the focus in the second tab.
+  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(),
+                                           VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
+
+  // Go back to the first tab. The focus should not be in the omnibox.
+  browser()->SelectPreviousTab();
+  EXPECT_EQ(0, browser()->active_index());
+  EXPECT_FALSE(ui_test_utils::IsViewFocused(browser(),
+                                            VIEW_ID_LOCATION_BAR));
 }
 
 }  // namespace
