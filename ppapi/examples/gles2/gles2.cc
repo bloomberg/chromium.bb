@@ -8,7 +8,6 @@
 #include <map>
 #include <set>
 #include <vector>
-
 #include "ppapi/c/dev/ppb_opengles_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/cpp/dev/context_3d_dev.h"
@@ -348,7 +347,7 @@ void GLES2DemoInstance::Render(const PP_GLESBuffer_Dev& buffer) {
   pp::CompletionCallback cb =
       callback_factory_.NewCallback(
           &GLES2DemoInstance::PaintFinished, buffer.info.id);
-  assert(surface_->SwapBuffers(cb) == PP_ERROR_WOULDBLOCK);
+  assert(surface_->SwapBuffers(cb) == PP_OK_COMPLETIONPENDING);
   assertNoGLError();
 }
 

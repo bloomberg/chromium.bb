@@ -29,7 +29,7 @@ class URLResponseInfo;
 //     void ProcessURL(const char* url) {
 //       CompletionCallback* cc = NewCallback();
 //       int32_t rv = loader_.Open(MakeRequest(url), cc);
-//       if (rv != PP_Error_WouldBlock)
+//       if (rv != PP_OK_COMPLETIONPENDING)
 //         cc->Run(rv);
 //     }
 //    private:
@@ -60,7 +60,7 @@ class URLResponseInfo;
 //     void ReadMore() {
 //       CompletionCallback* cc = NewCallback();
 //       int32_t rv = fio_.Read(offset_, buf_, sizeof(buf_), cc);
-//       if (rv != PP_Error_WouldBlock)
+//       if (rv != PP_OK_COMPLETIONPENDING)
 //         cc->Run(rv);
 //     }
 //     void ProcessResponseInfo(const URLResponseInfo& response_info) {

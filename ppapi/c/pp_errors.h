@@ -34,7 +34,6 @@ enum {
    * available.
    */
   PP_OK_COMPLETIONPENDING = -1,
-  PP_ERROR_WOULDBLOCK = -1,  /* DEPRECATED: DO NOT USE */
 
   /** This value indicates failure for unspecified reasons. */
   PP_ERROR_FAILED = -2,
