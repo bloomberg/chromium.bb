@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/new_profile_handler.h"
+#include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -93,6 +94,10 @@ NewProfileUI::NewProfileUI(TabContents* contents) : ChromeWebUI(contents) {
   NewProfileHandler* handler = new NewProfileHandler();
   AddMessageHandler(handler);
   handler->Attach(this);
+
+  // Set up the chrome://theme/ source.
+  ThemeSource* theme = new ThemeSource(contents->profile());
+  contents->profile()->GetChromeURLDataManager()->AddDataSource(theme);
 
   // Set up the new profile source.
   NewProfileUIHTMLSource* html_source =
