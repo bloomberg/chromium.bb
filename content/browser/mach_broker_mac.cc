@@ -202,7 +202,7 @@ void MachBroker::Observe(int type,
   // especially when the renderer is already gone or has crashed.  Find a better
   // way to listen for child process deaths.  http://crbug.com/55734
   base::ProcessHandle handle = 0;
-  switch (type.value) {
+  switch (type) {
     case content::NOTIFICATION_RENDERER_PROCESS_CLOSED:
     case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED:
       handle = Source<RenderProcessHost>(source)->GetHandle();

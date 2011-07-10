@@ -476,7 +476,7 @@ void RecordLastRunAppBundlePath() {
     return;
 
   NotificationService::current()->Notify(
-      chrome::NOTIFICATION_NO_KEY_WINDOW,
+      content::NOTIFICATION_NO_KEY_WINDOW,
       NotificationService::AllSources(),
       NotificationService::NoDetails());
 }
