@@ -2,45 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_SYSTEM_ACCESS_H_
-#define CHROME_BROWSER_CHROMEOS_SYSTEM_ACCESS_H_
+#ifndef CHROME_BROWSER_CHROMEOS_SYSTEM_SYSLOGS_PROVIDER_H_
+#define CHROME_BROWSER_CHROMEOS_SYSTEM_SYSLOGS_PROVIDER_H_
 #pragma once
 
 #include <string>
 
 #include "base/callback_old.h"
 #include "content/browser/cancelable_request.h"
-#include "unicode/timezone.h"
 
 class CancelableRequestConsumerBase;
 
 namespace chromeos {
+namespace system {
 
 typedef std::map<std::string, std::string> LogDictionaryType;
 
-// This interface provides access to Chrome OS system APIs such as the
-// timezone setting.
-class SystemAccess : public CancelableRequestProvider {
+// This interface provides access to Chrome OS syslogs.
+class SyslogsProvider : public CancelableRequestProvider {
  public:
-  class Observer {
-   public:
-    // Called when the timezone has changed. |timezone| is non-null.
-    virtual void TimezoneChanged(const icu::TimeZone& timezone) = 0;
-  };
-
-  static SystemAccess* GetInstance();
-
-  // Returns the current timezone as an icu::Timezone object.
-  virtual const icu::TimeZone& GetTimezone() = 0;
-
-  // Sets the current timezone. |timezone| must be non-null.
-  virtual void SetTimezone(const icu::TimeZone& timezone) = 0;
-
-  // Retrieve the named machine statistic (e.g. "hardware_class").
-  // This does not update the statistcs. If the |name| is not set, |result|
-  // preserves old value.
-  virtual bool GetMachineStatistic(const std::string& name,
-                                   std::string* result) = 0;
+  static SyslogsProvider* GetInstance();
 
   // The callback type used with RequestSyslogs().
   typedef Callback2<LogDictionaryType*,
@@ -65,14 +46,11 @@ class SystemAccess : public CancelableRequestProvider {
       CancelableRequestConsumerBase* consumer,
       ReadCompleteCallback* callback) = 0;
 
-  // The observer is used to monitor timezone changes.
-  virtual void AddObserver(Observer* observer) = 0;
-  virtual void RemoveObserver(Observer* observer) = 0;
-
  protected:
-  virtual ~SystemAccess() {}
+  virtual ~SyslogsProvider() {}
 };
 
+}  // namespace system
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_SYSTEM_ACCESS_H_
+#endif  // CHROME_BROWSER_CHROMEOS_SYSTEM_SYSLOGS_PROVIDER_H_

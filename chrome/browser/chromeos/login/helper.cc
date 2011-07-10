@@ -6,7 +6,6 @@
 
 #include "base/file_util.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "chrome/browser/chromeos/system_access.h"
 #include "chrome/browser/google/google_util.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"

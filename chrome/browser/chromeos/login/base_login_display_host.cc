@@ -23,7 +23,7 @@
 #include "chrome/browser/chromeos/login/views_login_display_host.h"
 #include "chrome/browser/chromeos/login/webui_login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/browser/chromeos/system_access.h"
+#include "chrome/browser/chromeos/system/timezone_settings.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -325,7 +325,7 @@ void ShowLoginWizard(const std::string& first_screen_name,
       icu::TimeZone* timezone = icu::TimeZone::createTimeZone(
           icu::UnicodeString::fromUTF8(timezone_name));
       CHECK(timezone) << "Timezone could not be set for " << timezone_name;
-      chromeos::SystemAccess::GetInstance()->SetTimezone(*timezone);
+      chromeos::system::TimezoneSettings::GetInstance()->SetTimezone(*timezone);
     }
   }
 }

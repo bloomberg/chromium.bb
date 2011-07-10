@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/name_value_pairs_parser.h"
+#include "chrome/browser/chromeos/system/name_value_pairs_parser.h"
 
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -12,6 +12,7 @@
 #include "base/threading/thread_restrictions.h"
 
 namespace chromeos {  // NOLINT
+namespace system {
 
 namespace {
 
@@ -100,4 +101,5 @@ bool NameValuePairsParser::ParseNameValuePairsFromTool(
   return true;
 }
 
+}  // namespace system
 }  // namespace chromeos

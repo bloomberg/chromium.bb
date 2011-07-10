@@ -14,7 +14,7 @@
 #include "chrome/browser/prefs/pref_member.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_type.h"
-#include "chrome/browser/chromeos/system_access.h"
+#include "chrome/browser/chromeos/system/timezone_settings.h"
 #include "unicode/calendar.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/menu/menu_delegate.h"
@@ -35,7 +35,7 @@ class ClockMenuButton : public StatusAreaButton,
                         public views::ViewMenuDelegate,
                         public NotificationObserver,
                         public PowerLibrary::Observer,
-                        public SystemAccess::Observer {
+                        public system::TimezoneSettings::Observer {
  public:
   explicit ClockMenuButton(StatusAreaHost* host);
   virtual ~ClockMenuButton();
@@ -49,7 +49,7 @@ class ClockMenuButton : public StatusAreaButton,
   virtual void PowerChanged(PowerLibrary* obj) {}
   virtual void SystemResumed();
 
-  // Overridden from SystemAccess::Observer:
+  // Overridden from TimezoneSettings::Observer:
   virtual void TimezoneChanged(const icu::TimeZone& timezone);
 
   // views::View

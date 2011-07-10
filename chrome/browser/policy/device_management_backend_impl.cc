@@ -21,7 +21,7 @@
 #include "net/url_request/url_request_status.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/system_access.h"
+#include "chrome/browser/chromeos/system/statistics_provider.h"
 #endif
 
 namespace policy {
@@ -460,12 +460,13 @@ std::string DeviceManagementBackendImpl::GetPlatformString() {
   std::string os_hardware(base::SysInfo::CPUArchitecture());
 
 #if defined(OS_CHROMEOS)
-  chromeos::SystemAccess* sys_lib = chromeos::SystemAccess::GetInstance();
+  chromeos::system::StatisticsProvider* provider =
+      chromeos::system::StatisticsProvider::GetInstance();
 
   std::string hwclass;
   std::string board;
-  if (!sys_lib->GetMachineStatistic(kMachineInfoHWClass, &hwclass) ||
-      !sys_lib->GetMachineStatistic(kMachineInfoBoard, &board)) {
+  if (!provider->GetMachineStatistic(kMachineInfoHWClass, &hwclass) ||
+      !provider->GetMachineStatistic(kMachineInfoBoard, &board)) {
     LOG(ERROR) << "Failed to get machine information";
   }
   os_name += ",CrOS," + board;

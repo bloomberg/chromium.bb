@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_NAME_VALUE_PAIRS_PARSER_H_
-#define CHROME_BROWSER_CHROMEOS_NAME_VALUE_PAIRS_PARSER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_SYSTEM_NAME_VALUE_PAIRS_PARSER_H_
+#define CHROME_BROWSER_CHROMEOS_SYSTEM_NAME_VALUE_PAIRS_PARSER_H_
 #pragma once
 
 #include <map>
@@ -13,6 +13,7 @@
 #include "base/basictypes.h"
 
 namespace chromeos {
+namespace system {
 
 // The parser is used to get machine info as name-value pairs. Defined
 // here to be accessable by tests.
@@ -47,6 +48,7 @@ class NameValuePairsParser {
   DISALLOW_COPY_AND_ASSIGN(NameValuePairsParser);
 };
 
+}  // namespace system
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_NAME_VALUE_PAIRS_PARSER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_SYSTEM_NAME_VALUE_PAIRS_PARSER_H_

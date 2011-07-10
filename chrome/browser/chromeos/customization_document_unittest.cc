@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/customization_document.h"
 
 #include "base/time.h"
-#include "chrome/browser/chromeos/mock_system_access.h"
+#include "chrome/browser/chromeos/system/mock_statistics_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -116,14 +116,14 @@ using ::testing::Return;
 using ::testing::SetArgumentPointee;
 
 TEST(StartupCustomizationDocumentTest, Basic) {
-  MockSystemAccess mock_system_access;
-  EXPECT_CALL(mock_system_access, GetMachineStatistic(_, NotNull()))
+  system::MockStatisticsProvider mock_statistics_provider;
+  EXPECT_CALL(mock_statistics_provider, GetMachineStatistic(_, NotNull()))
       .WillRepeatedly(Return(false));
-  EXPECT_CALL(mock_system_access,
+  EXPECT_CALL(mock_statistics_provider,
       GetMachineStatistic(std::string("hardware_class"), NotNull()))
           .WillOnce(DoAll(SetArgumentPointee<1>(std::string("Mario 12345")),
                           Return(true)));
-  StartupCustomizationDocument customization(&mock_system_access,
+  StartupCustomizationDocument customization(&mock_statistics_provider,
                                              kGoodStartupManifest);
   EXPECT_EQ("ru-RU", customization.initial_locale());
   EXPECT_EQ("Europe/Moscow", customization.initial_timezone());
@@ -146,24 +146,24 @@ TEST(StartupCustomizationDocumentTest, Basic) {
 }
 
 TEST(StartupCustomizationDocumentTest, VPD) {
-  MockSystemAccess mock_system_access;
-  EXPECT_CALL(mock_system_access,
+  system::MockStatisticsProvider mock_statistics_provider;
+  EXPECT_CALL(mock_statistics_provider,
       GetMachineStatistic(std::string("hardware_class"), NotNull()))
           .WillOnce(DoAll(SetArgumentPointee<1>(std::string("Mario 12345")),
                           Return(true)));
-  EXPECT_CALL(mock_system_access,
+  EXPECT_CALL(mock_statistics_provider,
       GetMachineStatistic(std::string("initial_locale"), NotNull()))
           .WillOnce(DoAll(SetArgumentPointee<1>(std::string("ja")),
                           Return(true)));
-  EXPECT_CALL(mock_system_access,
+  EXPECT_CALL(mock_statistics_provider,
       GetMachineStatistic(std::string("initial_timezone"), NotNull()))
           .WillOnce(DoAll(SetArgumentPointee<1>(std::string("Asia/Tokyo")),
                           Return(true)));
-  EXPECT_CALL(mock_system_access,
+  EXPECT_CALL(mock_statistics_provider,
       GetMachineStatistic(std::string("keyboard_layout"), NotNull()))
           .WillOnce(DoAll(SetArgumentPointee<1>(std::string("mozc-jp")),
                           Return(true)));
-  StartupCustomizationDocument customization(&mock_system_access,
+  StartupCustomizationDocument customization(&mock_statistics_provider,
                                              kGoodStartupManifest);
   EXPECT_TRUE(customization.IsReady());
   EXPECT_EQ("ja", customization.initial_locale());
@@ -172,8 +172,9 @@ TEST(StartupCustomizationDocumentTest, VPD) {
 }
 
 TEST(StartupCustomizationDocumentTest, BadManifest) {
-  MockSystemAccess mock_system_access;
-  StartupCustomizationDocument customization(&mock_system_access, kBadManifest);
+  system::MockStatisticsProvider mock_statistics_provider;
+  StartupCustomizationDocument customization(&mock_statistics_provider,
+                                             kBadManifest);
   EXPECT_FALSE(customization.IsReady());
 }
 

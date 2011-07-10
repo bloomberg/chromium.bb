@@ -9,7 +9,7 @@
 
 #include "base/string16.h"
 #include "chrome/browser/chromeos/cros_settings_provider.h"
-#include "chrome/browser/chromeos/system_access.h"
+#include "chrome/browser/chromeos/system/timezone_settings.h"
 #include "third_party/icu/public/i18n/unicode/timezone.h"
 
 class Value;
@@ -18,7 +18,7 @@ class ListValue;
 namespace chromeos {
 
 class SystemSettingsProvider : public CrosSettingsProvider,
-                               public SystemAccess::Observer {
+                               public system::TimezoneSettings::Observer {
  public:
   SystemSettingsProvider();
   virtual ~SystemSettingsProvider();
@@ -27,7 +27,7 @@ class SystemSettingsProvider : public CrosSettingsProvider,
   virtual bool Get(const std::string& path, Value** out_value) const;
   virtual bool HandlesSetting(const std::string& path);
 
-  // Overridden from SystemAccess::Observer:
+  // Overridden from TimezoneSettings::Observer:
   virtual void TimezoneChanged(const icu::TimeZone& timezone);
 
   // Creates the map of timezones used by the options page.

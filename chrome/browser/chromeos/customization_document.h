@@ -28,7 +28,9 @@ namespace base {
 
 namespace chromeos {
 
-class SystemAccess;
+namespace system {
+class StatisticsProvider;
+}  // system
 
 // Base class for OEM customization document classes.
 class CustomizationDocument {
@@ -80,12 +82,12 @@ class StartupCustomizationDocument : public CustomizationDocument {
   StartupCustomizationDocument();
 
   // C-tor for test construction.
-  StartupCustomizationDocument(SystemAccess* system_access,
+  StartupCustomizationDocument(system::StatisticsProvider* provider,
                                const std::string& manifest);
 
   virtual ~StartupCustomizationDocument();
 
-  void Init(SystemAccess* system_access);
+  void Init(system::StatisticsProvider* provider);
 
   // If |attr| exists in machine stat, assign it to |value|.
   void InitFromMachineStatistic(const char* attr, std::string* value);

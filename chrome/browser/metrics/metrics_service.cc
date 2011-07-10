@@ -200,7 +200,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/external_metrics.h"
-#include "chrome/browser/chromeos/system_access.h"
+#include "chrome/browser/chromeos/system/statistics_provider.h"
 #endif
 
 namespace {
@@ -343,7 +343,7 @@ class MetricsService::InitTask : public Task {
     webkit::npapi::PluginList::Singleton()->GetPlugins(false, &plugins);
     std::string hardware_class;  // Empty string by default.
 #if defined(OS_CHROMEOS)
-    chromeos::SystemAccess::GetInstance()->GetMachineStatistic(
+    chromeos::system::StatisticsProvider::GetInstance()->GetMachineStatistic(
         "hardware_class", &hardware_class);
 #endif  // OS_CHROMEOS
     callback_loop_->PostTask(FROM_HERE, new InitTaskComplete(

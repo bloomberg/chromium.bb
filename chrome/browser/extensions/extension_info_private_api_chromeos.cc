@@ -8,7 +8,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/browser/chromeos/system_access.h"
+#include "chrome/browser/chromeos/system/statistics_provider.h"
 
 using chromeos::CrosLibrary;
 using chromeos::NetworkLibrary;
@@ -55,8 +55,9 @@ bool GetChromeosInfoFunction::GetValue(const std::string& property_name,
                                        std::string* value) {
   value->clear();
   if (property_name == kPropertyHWID) {
-    chromeos::SystemAccess* system = chromeos::SystemAccess::GetInstance();
-    system->GetMachineStatistic(kHardwareClass, value);
+    chromeos::system::StatisticsProvider* provider =
+        chromeos::system::StatisticsProvider::GetInstance();
+    provider->GetMachineStatistic(kHardwareClass, value);
   } else if (property_name == kPropertyHomeProvider) {
     if (CrosLibrary::Get()->EnsureLoaded()) {
       NetworkLibrary* netlib = CrosLibrary::Get()->GetNetworkLibrary();

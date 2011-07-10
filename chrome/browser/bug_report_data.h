@@ -12,7 +12,7 @@
 #include "chrome/browser/bug_report_util.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/system_access.h"
+#include "chrome/browser/chromeos/system/syslogs_provider.h"
 #endif
 
 class BugReportData {
@@ -43,7 +43,7 @@ class BugReportData {
                   );
 
 #if defined(OS_CHROMEOS)
-  void SyslogsComplete(chromeos::LogDictionaryType* logs,
+  void SyslogsComplete(chromeos::system::LogDictionaryType* logs,
                        std::string* zip_content);
 #endif
 
@@ -55,7 +55,7 @@ class BugReportData {
   const std::vector<unsigned char>& image() const { return image_; }
 #if defined(OS_CHROMEOS)
   const std::string& user_email() const { return user_email_; }
-  chromeos::LogDictionaryType* sys_info() const { return sys_info_; }
+  chromeos::system::LogDictionaryType* sys_info() const { return sys_info_; }
   bool send_sys_info() const { return send_sys_info_; }
   bool sent_report() const { return sent_report_; }
   std::string* zip_content() const { return zip_content_; }
@@ -76,7 +76,7 @@ class BugReportData {
 #if defined(OS_CHROMEOS)
   // Chromeos specific values for SendReport.
   std::string user_email_;
-  chromeos::LogDictionaryType* sys_info_;
+  chromeos::system::LogDictionaryType* sys_info_;
   // Content of the compressed system logs.
   std::string* zip_content_;
   // NOTE: Extra boolean sent_report_ is required because callback may

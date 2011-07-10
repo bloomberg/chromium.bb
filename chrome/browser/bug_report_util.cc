@@ -260,7 +260,7 @@ void BugReportUtil::SendReport(Profile* profile,
     const std::string& user_email_text,
     const char* zipped_logs_data,
     int zipped_logs_length,
-    const chromeos::LogDictionaryType* const sys_info) {
+    const chromeos::system::LogDictionaryType* const sys_info) {
 #else
     int png_height) {
 #endif
@@ -326,8 +326,8 @@ void BugReportUtil::SendReport(Profile* profile,
 #if defined(OS_CHROMEOS)
   if (sys_info) {
     // Add the product specific data
-    for (chromeos::LogDictionaryType::const_iterator i = sys_info->begin();
-         i != sys_info->end(); ++i)
+    for (chromeos::system::LogDictionaryType::const_iterator i =
+             sys_info->begin(); i != sys_info->end(); ++i)
       if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kCompressSystemFeedback) || ValidFeedbackSize(i->second)) {
         AddFeedbackData(&feedback_data, i->first, i->second);

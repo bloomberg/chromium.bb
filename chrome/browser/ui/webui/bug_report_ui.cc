@@ -44,7 +44,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/chromeos/system_access.h"
+#include "chrome/browser/chromeos/system/syslogs_provider.h"
 #endif
 
 namespace {
@@ -223,8 +223,8 @@ class BugReportHandler : public WebUIMessageHandler,
   BugReportData* bug_report_;
   std::string target_tab_url_;
 #if defined(OS_CHROMEOS)
-  // Variables to track SystemAccess::RequestSyslogs callback.
-  chromeos::SystemAccess::Handle syslogs_handle_;
+  // Variables to track SyslogsProvider::RequestSyslogs callback.
+  chromeos::system::SyslogsProvider::Handle syslogs_handle_;
   CancelableRequestConsumer syslogs_consumer_;
 #endif
 
@@ -566,12 +566,12 @@ void BugReportHandler::HandleGetDialogDefaults(const ListValue*) {
   // 1: about:system
   dialog_defaults.Append(new StringValue(chrome::kChromeUISystemInfoURL));
   // Trigger the request for system information here.
-  chromeos::SystemAccess* system_access =
-      chromeos::SystemAccess::GetInstance();
-  if (system_access) {
-    syslogs_handle_ = system_access->RequestSyslogs(
+  chromeos::system::SyslogsProvider* provider =
+      chromeos::system::SyslogsProvider::GetInstance();
+  if (provider) {
+    syslogs_handle_ = provider->RequestSyslogs(
         true,  // don't compress.
-        chromeos::SystemAccess::SYSLOGS_FEEDBACK,
+        chromeos::system::SyslogsProvider::SYSLOGS_FEEDBACK,
         &syslogs_consumer_,
         NewCallback(bug_report_, &BugReportData::SyslogsComplete));
   }
@@ -725,10 +725,10 @@ void BugReportHandler::HandleOpenSystemTab(const ListValue* args) {
 void BugReportHandler::CancelFeedbackCollection() {
 #if defined(OS_CHROMEOS)
   if (syslogs_handle_ != 0) {
-    chromeos::SystemAccess* system_access =
-        chromeos::SystemAccess::GetInstance();
-    if (system_access)
-      system_access->CancelRequest(syslogs_handle_);
+    chromeos::system::SyslogsProvider* provider =
+        chromeos::system::SyslogsProvider::GetInstance();
+    if (provider)
+      provider->CancelRequest(syslogs_handle_);
   }
 #endif
 }

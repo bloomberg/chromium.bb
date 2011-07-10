@@ -9,7 +9,7 @@
 #include "chrome/browser/policy/proto/device_management_constants.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/system_access.h"
+#include "chrome/browser/chromeos/system/statistics_provider.h"
 #endif
 
 namespace {
@@ -34,13 +34,14 @@ CloudPolicyDataStore* CloudPolicyDataStore::CreateForDevicePolicies() {
   std::string machine_model;
   std::string machine_id;
 #if defined(OS_CHROMEOS)
-  chromeos::SystemAccess* sys_lib = chromeos::SystemAccess::GetInstance();
-  if (!sys_lib->GetMachineStatistic(kMachineInfoSystemHwqual,
-                                    &machine_model)) {
+  chromeos::system::StatisticsProvider* provider =
+      chromeos::system::StatisticsProvider::GetInstance();
+  if (!provider->GetMachineStatistic(kMachineInfoSystemHwqual,
+                                     &machine_model)) {
     LOG(ERROR) << "Failed to get machine model.";
   }
-  if (!sys_lib->GetMachineStatistic(kMachineInfoSerialNumber,
-                                    &machine_id)) {
+  if (!provider->GetMachineStatistic(kMachineInfoSerialNumber,
+                                     &machine_id)) {
     LOG(ERROR) << "Failed to get machine serial number.";
   }
 #endif

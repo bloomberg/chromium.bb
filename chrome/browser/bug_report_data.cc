@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,7 +50,7 @@ void BugReportData::UpdateData(Profile* profile,
 
 #if defined(OS_CHROMEOS)
 // Called from the same thread as HandleGetDialogDefaults, i.e. the UI thread.
-void BugReportData::SyslogsComplete(chromeos::LogDictionaryType* logs,
+void BugReportData::SyslogsComplete(chromeos::system::LogDictionaryType* logs,
                                     std::string* zip_content) {
   if (sent_report_) {
     // We already sent the report, just delete the data.

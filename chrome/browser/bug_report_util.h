@@ -20,7 +20,7 @@
 #include "base/win/windows_version.h"
 #elif defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/system_access.h"
+#include "chrome/browser/chromeos/system/syslogs_provider.h"
 #endif
 
 class Profile;
@@ -75,7 +75,7 @@ class BugReportUtil {
       const std::string& user_email_text,
       const char* zipped_logs_data,
       int zipped_logs_length,
-      const chromeos::LogDictionaryType* const sys_info);
+      const chromeos::system::LogDictionaryType* const sys_info);
 #else
       int png_height);
 #endif

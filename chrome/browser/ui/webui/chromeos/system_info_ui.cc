@@ -15,7 +15,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/system_access.h"
+#include "chrome/browser/chromeos/system/syslogs_provider.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/chrome_paths.h"
@@ -48,7 +48,7 @@ class SystemInfoUIHTMLSource : public ChromeURLDataManager::DataSource {
  private:
   ~SystemInfoUIHTMLSource() {}
 
-  void SyslogsComplete(chromeos::LogDictionaryType* sys_info,
+  void SyslogsComplete(chromeos::system::LogDictionaryType* sys_info,
                        std::string* ignored_content);
 
   CancelableRequestConsumer consumer_;
@@ -92,19 +92,19 @@ void SystemInfoUIHTMLSource::StartDataRequest(const std::string& path,
   path_ = path;
   request_id_ = request_id;
 
-  chromeos::SystemAccess* system_access =
-      chromeos::SystemAccess::GetInstance();
-  if (system_access) {
-    system_access->RequestSyslogs(
+  chromeos::system::SyslogsProvider* provider =
+      chromeos::system::SyslogsProvider::GetInstance();
+  if (provider) {
+    provider->RequestSyslogs(
         false,  // don't compress.
-        chromeos::SystemAccess::SYSLOGS_SYSINFO,
+        chromeos::system::SyslogsProvider::SYSLOGS_SYSINFO,
         &consumer_,
         NewCallback(this, &SystemInfoUIHTMLSource::SyslogsComplete));
   }
 }
 
 void SystemInfoUIHTMLSource::SyslogsComplete(
-    chromeos::LogDictionaryType* sys_info,
+    chromeos::system::LogDictionaryType* sys_info,
     std::string* ignored_content) {
   DCHECK(!ignored_content);
 
@@ -127,7 +127,7 @@ void SystemInfoUIHTMLSource::SyslogsComplete(
   if (sys_info) {
      ListValue* details = new ListValue();
      strings.Set("details", details);
-     chromeos::LogDictionaryType::iterator it;
+     chromeos::system::LogDictionaryType::iterator it;
      for (it = sys_info->begin(); it != sys_info->end(); ++it) {
        DictionaryValue* val = new DictionaryValue;
        val->SetString("stat_name", it->first);

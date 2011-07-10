@@ -10,7 +10,7 @@
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/system_access.h"
+#include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/time_format.h"
@@ -531,8 +531,8 @@ void WebUIHandler::ProcessError(int message_id) {
 
 bool WebUIHandler::ExtractInfoFromConfigFile(const ConfigFile& config_file) {
   std::string hwid;
-  if (!chromeos::SystemAccess::GetInstance()->GetMachineStatistic(
-          kHwidStatistic, &hwid))
+  if (!chromeos::system::StatisticsProvider::GetInstance()->
+      GetMachineStatistic(kHwidStatistic, &hwid))
     return false;
 
   image_file_name_ = config_file.GetProperty(kFileName, hwid);
@@ -674,4 +674,3 @@ ImageBurnUI::ImageBurnUI(TabContents* contents) : ChromeWebUI(contents) {
   imageburner::UIHTMLSource* html_source = new imageburner::UIHTMLSource();
   contents->profile()->GetChromeURLDataManager()->AddDataSource(html_source);
 }
-

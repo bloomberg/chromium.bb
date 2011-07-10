@@ -62,7 +62,7 @@
 
 #ifdef OS_CHROMEOS
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/system_access.h"
+#include "chrome/browser/chromeos/system/syslogs_provider.h"
 #endif
 #ifdef OS_WIN
 #include "chrome/browser/net/service_providers_win.h"
@@ -193,7 +193,7 @@ class NetInternalsMessageHandler
   class SystemLogsGetter {
    public:
     SystemLogsGetter(NetInternalsMessageHandler* handler,
-                     chromeos::SystemAccess* system_access);
+                     chromeos::system::SyslogsProvider* syslogs_provider);
     ~SystemLogsGetter();
 
     // Deletes logs copy we currently have, and resets logs_requested and
@@ -211,7 +211,7 @@ class NetInternalsMessageHandler
     void LoadSystemLogs();
     // Processes callback from libcros containing system logs. Postponed
     // request responses are sent.
-    void OnSystemLogsLoaded(chromeos::LogDictionaryType* sys_info,
+    void OnSystemLogsLoaded(chromeos::system::LogDictionaryType* sys_info,
                             std::string* ignored_content);
 
    private:
@@ -225,10 +225,10 @@ class NetInternalsMessageHandler
     void SendLogs(const SystemLogRequest& request);
 
     NetInternalsMessageHandler* handler_;
-    chromeos::SystemAccess* system_access_;
+    chromeos::system::SyslogsProvider* syslogs_provider_;
     // List of postponed requests.
     std::list<SystemLogRequest> requests_;
-    scoped_ptr<chromeos::LogDictionaryType> logs_;
+    scoped_ptr<chromeos::system::LogDictionaryType> logs_;
     bool logs_received_;
     bool logs_requested_;
     CancelableRequestConsumer consumer_;
@@ -525,7 +525,7 @@ WebUIMessageHandler* NetInternalsMessageHandler::Attach(WebUI* web_ui) {
                             web_ui->GetProfile()->GetRequestContext());
 #ifdef OS_CHROMEOS
   syslogs_getter_.reset(new SystemLogsGetter(this,
-      chromeos::SystemAccess::GetInstance()));
+      chromeos::system::SyslogsProvider::GetInstance()));
 #endif
   renderer_ready_io_callback_.reset(
       proxy_->CreateCallback(&IOThreadImpl::OnRendererReady));
@@ -710,13 +710,13 @@ void NetInternalsMessageHandler::OnGetPrerenderInfo(const ListValue* list) {
 
 NetInternalsMessageHandler::SystemLogsGetter::SystemLogsGetter(
     NetInternalsMessageHandler* handler,
-    chromeos::SystemAccess* system_access)
+    chromeos::system::SyslogsProvider* syslogs_provider)
     : handler_(handler),
-      system_access_(system_access),
+      syslogs_provider_(syslogs_provider),
       logs_(NULL),
       logs_received_(false),
       logs_requested_(false) {
-  if (!system_access_)
+  if (!syslogs_provider_)
     LOG(ERROR) << "System access library not loaded";
 }
 
@@ -725,8 +725,8 @@ NetInternalsMessageHandler::SystemLogsGetter::~SystemLogsGetter() {
 }
 
 void NetInternalsMessageHandler::SystemLogsGetter::DeleteSystemLogs() {
-  if (system_access_ && logs_requested_ && !logs_received_) {
-    system_access_->CancelRequest(syslogs_request_id_);
+  if (syslogs_provider_ && logs_requested_ && !logs_received_) {
+    syslogs_provider_->CancelRequest(syslogs_request_id_);
   }
   logs_requested_ = false;
   logs_received_ = false;
@@ -751,12 +751,12 @@ void NetInternalsMessageHandler::SystemLogsGetter::RequestSystemLog(
 }
 
 void NetInternalsMessageHandler::SystemLogsGetter::LoadSystemLogs() {
-  if (logs_requested_ || !system_access_)
+  if (logs_requested_ || !syslogs_provider_)
     return;
   logs_requested_ = true;
-  syslogs_request_id_ = system_access_->RequestSyslogs(
+  syslogs_request_id_ = syslogs_provider_->RequestSyslogs(
       false,  // compress logs.
-      chromeos::SystemAccess::SYSLOGS_NETWORK,
+      chromeos::system::SyslogsProvider::SYSLOGS_NETWORK,
       &consumer_,
       NewCallback(
           this,
@@ -764,7 +764,8 @@ void NetInternalsMessageHandler::SystemLogsGetter::LoadSystemLogs() {
 }
 
 void NetInternalsMessageHandler::SystemLogsGetter::OnSystemLogsLoaded(
-    chromeos::LogDictionaryType* sys_info, std::string* ignored_content) {
+    chromeos::system::LogDictionaryType* sys_info,
+    std::string* ignored_content) {
   DCHECK(!ignored_content);
   logs_.reset(sys_info);
   logs_received_ = true;
@@ -779,7 +780,8 @@ void NetInternalsMessageHandler::SystemLogsGetter::OnSystemLogsLoaded(
 void NetInternalsMessageHandler::SystemLogsGetter::SendLogs(
     const SystemLogRequest& request) {
   DictionaryValue* result = new DictionaryValue();
-  chromeos::LogDictionaryType::iterator log_it = logs_->find(request.log_key);
+  chromeos::system::LogDictionaryType::iterator log_it =
+      logs_->find(request.log_key);
   if (log_it != logs_->end()) {
     if (!log_it->second.empty()) {
       result->SetString("log", log_it->second);

@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/mock_system_access.h"
+#include "chrome/browser/chromeos/system/mock_statistics_provider.h"
 
 namespace chromeos {
+namespace system {
 
-MockSystemAccess::MockSystemAccess() {}
+MockStatisticsProvider::MockStatisticsProvider() {}
 
-MockSystemAccess::~MockSystemAccess() {}
+MockStatisticsProvider::~MockStatisticsProvider() {}
 
+}  // namespace system
 }  // namespace chromeos

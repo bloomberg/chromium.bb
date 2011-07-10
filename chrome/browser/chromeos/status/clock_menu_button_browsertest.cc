@@ -8,7 +8,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/frame/browser_view.h"
 #include "chrome/browser/chromeos/status/status_area_view.h"
-#include "chrome/browser/chromeos/system_access.h"
+#include "chrome/browser/chromeos/system/timezone_settings.h"
 #include "chrome/browser/chromeos/view_ids.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/ui/browser.h"
@@ -42,11 +42,11 @@ IN_PROC_BROWSER_TEST_F(ClockMenuButtonTest, TimezoneTest) {
   // Update timezone and make sure clock text changes.
   scoped_ptr<icu::TimeZone> timezone_first(icu::TimeZone::createTimeZone(
       icu::UnicodeString::fromUTF8("Asia/Hong_Kong")));
-  SystemAccess::GetInstance()->SetTimezone(*timezone_first);
+  system::TimezoneSettings::GetInstance()->SetTimezone(*timezone_first);
   std::wstring text_before = clock->text();
   scoped_ptr<icu::TimeZone> timezone_second(icu::TimeZone::createTimeZone(
       icu::UnicodeString::fromUTF8("Pacific/Samoa")));
-  SystemAccess::GetInstance()->SetTimezone(*timezone_second);
+  system::TimezoneSettings::GetInstance()->SetTimezone(*timezone_second);
   std::wstring text_after = clock->text();
   EXPECT_NE(text_before, text_after);
 }

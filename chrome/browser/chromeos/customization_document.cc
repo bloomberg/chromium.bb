@@ -16,7 +16,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/browser/chromeos/system_access.h"
+#include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/browser/browser_thread.h"
@@ -147,13 +147,14 @@ StartupCustomizationDocument::StartupCustomizationDocument() {
     base::ThreadRestrictions::ScopedAllowIO allow_io;
     LoadManifestFromFile(FilePath(kStartupCustomizationManifestPath));
   }
-  Init(SystemAccess::GetInstance());
+  Init(chromeos::system::StatisticsProvider::GetInstance());
 }
 
 StartupCustomizationDocument::StartupCustomizationDocument(
-    SystemAccess* system_access, const std::string& manifest) {
+    chromeos::system::StatisticsProvider* statistics_provider,
+    const std::string& manifest) {
   LoadManifestFromString(manifest);
-  Init(system_access);
+  Init(statistics_provider);
 }
 
 StartupCustomizationDocument::~StartupCustomizationDocument() {}
@@ -163,7 +164,8 @@ StartupCustomizationDocument* StartupCustomizationDocument::GetInstance() {
       DefaultSingletonTraits<StartupCustomizationDocument> >::get();
 }
 
-void StartupCustomizationDocument::Init(SystemAccess* system_access) {
+void StartupCustomizationDocument::Init(
+    chromeos::system::StatisticsProvider* statistics_provider) {
   if (!IsReady())
     return;
 
@@ -173,7 +175,7 @@ void StartupCustomizationDocument::Init(SystemAccess* system_access) {
   root_->GetString(kRegistrationUrlAttr, &registration_url_);
 
   std::string hwid;
-  if (system_access->GetMachineStatistic(kHardwareClass, &hwid)) {
+  if (statistics_provider->GetMachineStatistic(kHardwareClass, &hwid)) {
     ListValue* hwid_list = NULL;
     if (root_->GetList(kHwidMapAttr, &hwid_list)) {
       for (size_t i = 0; i < hwid_list->GetSize(); ++i) {
@@ -204,9 +206,12 @@ void StartupCustomizationDocument::Init(SystemAccess* system_access) {
     LOG(ERROR) << "HWID is missing in machine statistics";
   }
 
-  system_access->GetMachineStatistic(kInitialLocaleAttr, &initial_locale_);
-  system_access->GetMachineStatistic(kInitialTimezoneAttr, &initial_timezone_);
-  system_access->GetMachineStatistic(kKeyboardLayoutAttr, &keyboard_layout_);
+  statistics_provider->GetMachineStatistic(kInitialLocaleAttr,
+                                           &initial_locale_);
+  statistics_provider->GetMachineStatistic(kInitialTimezoneAttr,
+                                           &initial_timezone_);
+  statistics_provider->GetMachineStatistic(kKeyboardLayoutAttr,
+                                           &keyboard_layout_);
 }
 
 std::string StartupCustomizationDocument::GetHelpPage(

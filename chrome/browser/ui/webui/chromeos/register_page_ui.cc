@@ -17,7 +17,7 @@
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/browser/chromeos/system_access.h"
+#include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/chromeos/version_loader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
@@ -274,14 +274,16 @@ void RegisterPageHandler::SendUserInfo() {
 #if defined(OS_CHROMEOS)
   DictionaryValue value;
 
-  chromeos::SystemAccess * sys_lib =
-      chromeos::SystemAccess::GetInstance();
+  chromeos::system::StatisticsProvider * provider =
+      chromeos::system::StatisticsProvider::GetInstance();
 
   // Required info.
   std::string system_hwqual;
   std::string serial_number;
-  if (!sys_lib->GetMachineStatistic(kMachineInfoSystemHwqual, &system_hwqual) ||
-      !sys_lib->GetMachineStatistic(kMachineInfoSerialNumber, &serial_number)) {
+  if (!provider->GetMachineStatistic(kMachineInfoSystemHwqual,
+                                     &system_hwqual) ||
+      !provider->GetMachineStatistic(kMachineInfoSerialNumber,
+                                     &serial_number)) {
     SkipRegistration("Failed to get required machine info.");
     return;
   }
