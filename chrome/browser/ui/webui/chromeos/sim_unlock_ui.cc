@@ -15,11 +15,11 @@
 #include "chrome/browser/chromeos/sim_dialog_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/content_notification_types.h"
 #include "content/common/notification_service.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
@@ -444,14 +444,14 @@ void SimUnlockHandler::EnterCode(const std::string& code,
 
 void SimUnlockHandler::NotifyOnEnterPinEnded(bool cancelled) {
   NotificationService::current()->Notify(
-      chrome::ENTER_PIN_ENDED,
+      chrome::NOTIFICATION_ENTER_PIN_ENDED,
       NotificationService::AllSources(),
       Details<bool>(&cancelled));
 }
 
 void SimUnlockHandler::NotifyOnRequirePinChangeEnded(bool new_value) {
   NotificationService::current()->Notify(
-      chrome::REQUIRE_PIN_SETTING_CHANGE_ENDED,
+      chrome::NOTIFICATION_REQUIRE_PIN_SETTING_CHANGE_ENDED,
       NotificationService::AllSources(),
       Details<bool>(&new_value));
 }

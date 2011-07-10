@@ -16,6 +16,7 @@
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/notifications/balloon_view_host.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -227,7 +228,8 @@ void BalloonViewImpl::Show(Balloon* balloon) {
     html_contents_->EnableWebUI();
   AddChildView(html_contents_->view());
   notification_registrar_.Add(this,
-    chrome::NOTIFY_BALLOON_DISCONNECTED, Source<Balloon>(balloon));
+    chrome::NOTIFICATION_NOTIFY_BALLOON_DISCONNECTED,
+    Source<Balloon>(balloon));
 }
 
 void BalloonViewImpl::Update() {
@@ -301,7 +303,7 @@ gfx::Size BalloonViewImpl::GetPreferredSize() {
 void BalloonViewImpl::Observe(int type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
-  if (type != chrome::NOTIFY_BALLOON_DISCONNECTED) {
+  if (type != chrome::NOTIFICATION_NOTIFY_BALLOON_DISCONNECTED) {
     NOTREACHED();
     return;
   }
@@ -309,7 +311,8 @@ void BalloonViewImpl::Observe(int type,
   // If the renderer process attached to this balloon is disconnected
   // (e.g., because of a crash), we want to close the balloon.
   notification_registrar_.Remove(this,
-      chrome::NOTIFY_BALLOON_DISCONNECTED, Source<Balloon>(balloon_));
+      chrome::NOTIFICATION_NOTIFY_BALLOON_DISCONNECTED,
+      Source<Balloon>(balloon_));
   Close(false);
 }
 

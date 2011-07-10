@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/login/authentication_notification_details.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_service.h"
 
 using chromeos::CrosLibrary;
@@ -49,7 +50,7 @@ LoginObserver::LoginObserver(chromeos::ExistingUserController* controller,
       automation_(automation->AsWeakPtr()),
       reply_message_(reply_message) {
   controller_->set_login_status_consumer(this);
-  registrar_.Add(this, chrome::LOAD_STOP,
+  registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
                  NotificationService::AllSources());
 }
 
@@ -87,7 +88,7 @@ ScreenLockUnlockObserver::ScreenLockUnlockObserver(
     : automation_(automation->AsWeakPtr()),
       reply_message_(reply_message),
       lock_screen_(lock_screen) {
-  registrar_.Add(this, chrome::SCREEN_LOCK_STATE_CHANGED,
+  registrar_.Add(this, chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
                  NotificationService::AllSources());
 }
 
@@ -96,7 +97,7 @@ ScreenLockUnlockObserver::~ScreenLockUnlockObserver() {}
 void ScreenLockUnlockObserver::Observe(int type,
                                        const NotificationSource& source,
                                        const NotificationDetails& details) {
-  DCHECK(type == chrome::SCREEN_LOCK_STATE_CHANGED);
+  DCHECK(type == chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED);
   if (automation_) {
     AutomationJSONReply reply(automation_, reply_message_.release());
     bool is_screen_locked = *Details<bool>(details).ptr();

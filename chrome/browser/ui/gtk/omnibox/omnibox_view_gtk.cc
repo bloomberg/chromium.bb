@@ -213,9 +213,10 @@ OmniboxViewGtk::OmniboxViewGtk(
 }
 
 OmniboxViewGtk::~OmniboxViewGtk() {
-  NotificationService::current()->Notify(chrome::OMNIBOX_DESTROYED,
-                                         Source<OmniboxViewGtk>(this),
-                                         NotificationService::NoDetails());
+  NotificationService::current()->Notify(
+      chrome::NOTIFICATION_OMNIBOX_DESTROYED,
+      Source<OmniboxViewGtk>(this),
+      NotificationService::NoDetails());
 
   // Explicitly teardown members which have a reference to us.  Just to be safe
   // we want them to be destroyed before destroying any other internal state.

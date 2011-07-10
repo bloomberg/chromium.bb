@@ -53,7 +53,7 @@ void BookmarkBubbleGtk::BubbleClosing(BubbleGtk* bubble,
   }
 
   NotificationService::current()->Notify(
-      chrome::BOOKMARK_BUBBLE_HIDDEN,
+      chrome::NOTIFICATION_BOOKMARK_BUBBLE_HIDDEN,
       Source<Profile>(profile_->GetOriginalProfile()),
       NotificationService::NoDetails());
 }

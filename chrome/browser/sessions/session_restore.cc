@@ -186,7 +186,7 @@ void TabLoader::StartLoading() {
     LoadNextTab();
   } else {
     // Start listening to network state notification now.
-    registrar_.Add(this, chrome::NETWORK_STATE_CHANGED,
+    registrar_.Add(this, chrome::NOTIFICATION_NETWORK_STATE_CHANGED,
                    NotificationService::AllSources());
   }
 #else
@@ -233,7 +233,7 @@ void TabLoader::Observe(int type,
                         const NotificationDetails& details) {
   switch (type) {
 #if defined(OS_CHROMEOS)
-    case chrome::NETWORK_STATE_CHANGED: {
+    case chrome::NOTIFICATION_NETWORK_STATE_CHANGED: {
       chromeos::NetworkStateDetails* state_details =
           Details<chromeos::NetworkStateDetails>(details).ptr();
       switch (state_details->state()) {

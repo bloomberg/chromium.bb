@@ -33,7 +33,7 @@ const NSTimeInterval kMinimumTimeInterval =
 class AppNotificationBridge : public NotificationObserver {
  public:
   explicit AppNotificationBridge(InfoBubbleWindow* owner) : owner_(owner) {
-    registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
+    registrar_.Add(this, content::NOTIFICATION_APP_TERMINATING,
                    NotificationService::AllSources());
   }
 
@@ -42,7 +42,7 @@ class AppNotificationBridge : public NotificationObserver {
                const NotificationSource& source,
                const NotificationDetails& details) {
     switch (type) {
-      case chrome::NOTIFICATION_APP_TERMINATING:
+      case content::NOTIFICATION_APP_TERMINATING:
         [owner_ appIsTerminating];
         break;
       default:

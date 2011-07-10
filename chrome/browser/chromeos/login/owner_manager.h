@@ -16,7 +16,6 @@
 
 class FilePath;
 class NotificationDetails;
-class int;
 
 namespace chromeos {
 

@@ -74,7 +74,9 @@ class AutomationTabHelperBrowserTest : public InProcessBrowserTest {
     testing::InSequence expect_in_sequence;
     EXPECT_CALL(*mock_tab_observer, OnFirstPendingLoad(_));
     EXPECT_CALL(*mock_notification_observer, Observe(
-        testing::Eq(chrome::NOTIFICATION_DOM_OPERATION_RESPONSE), _, _));
+        testing::Eq(
+            static_cast<int>(chrome::NOTIFICATION_DOM_OPERATION_RESPONSE)),
+            _, _));
     EXPECT_CALL(*mock_tab_observer, OnNoMorePendingLoads(_))
         .WillOnce(testing::InvokeWithoutArgs(
             MessageLoopForUI::current(), &MessageLoop::Quit));
@@ -190,7 +192,9 @@ IN_PROC_BROWSER_TEST_F(AutomationTabHelperBrowserTest,
   {
     testing::InSequence expect_in_sequence;
     EXPECT_CALL(mock_notification_observer, Observe(
-        testing::Eq(chrome::NOTIFICATION_DOM_OPERATION_RESPONSE), _, _));
+        testing::Eq(
+            static_cast<int>(chrome::NOTIFICATION_DOM_OPERATION_RESPONSE)),
+            _, _));
     EXPECT_CALL(mock_tab_observer, OnNoMorePendingLoads(_));
   }
 

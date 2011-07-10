@@ -51,7 +51,7 @@ PersonalOptionsHandler::PersonalOptionsHandler() {
   multiprofile_ = ProfileManager::IsMultipleProfilesEnabled();
 #if defined(OS_CHROMEOS)
   registrar_.Add(this,
-                 chrome::LOGIN_USER_IMAGE_CHANGED,
+                 chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
                  NotificationService::AllSources());
 #endif
 }
@@ -210,7 +210,7 @@ void PersonalOptionsHandler::Observe(int type,
   if (type == chrome::NOTIFICATION_BROWSER_THEME_CHANGED) {
     ObserveThemeChanged();
 #if defined(OS_CHROMEOS)
-  } else if (type == chrome::LOGIN_USER_IMAGE_CHANGED) {
+  } else if (type == chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED) {
     LoadAccountPicture(NULL);
 #endif
   } else {

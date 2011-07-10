@@ -12,6 +12,7 @@
 #include "base/stl_util-inl.h"
 #include "chrome/browser/password_manager/password_store_change.h"
 #include "content/browser/browser_thread.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_service.h"
 
 using std::vector;
@@ -34,7 +35,7 @@ void PasswordStoreX::AddLoginImpl(const PasswordForm& form) {
     PasswordStoreChangeList changes;
     changes.push_back(PasswordStoreChange(PasswordStoreChange::ADD, form));
     NotificationService::current()->Notify(
-        chrome::LOGINS_CHANGED,
+        chrome::NOTIFICATION_LOGINS_CHANGED,
         Source<PasswordStore>(this),
         Details<PasswordStoreChangeList>(&changes));
     allow_fallback_ = false;
@@ -49,7 +50,7 @@ void PasswordStoreX::UpdateLoginImpl(const PasswordForm& form) {
     PasswordStoreChangeList changes;
     changes.push_back(PasswordStoreChange(PasswordStoreChange::UPDATE, form));
     NotificationService::current()->Notify(
-        chrome::LOGINS_CHANGED,
+        chrome::NOTIFICATION_LOGINS_CHANGED,
         Source<PasswordStore>(this),
         Details<PasswordStoreChangeList>(&changes));
     allow_fallback_ = false;
@@ -64,7 +65,7 @@ void PasswordStoreX::RemoveLoginImpl(const PasswordForm& form) {
     PasswordStoreChangeList changes;
     changes.push_back(PasswordStoreChange(PasswordStoreChange::REMOVE, form));
     NotificationService::current()->Notify(
-        chrome::LOGINS_CHANGED,
+        chrome::NOTIFICATION_LOGINS_CHANGED,
         Source<PasswordStore>(this),
         Details<PasswordStoreChangeList>(&changes));
     allow_fallback_ = false;
@@ -88,7 +89,7 @@ void PasswordStoreX::RemoveLoginsCreatedBetweenImpl(
                                             **it));
     }
     NotificationService::current()->Notify(
-        chrome::LOGINS_CHANGED,
+        chrome::NOTIFICATION_LOGINS_CHANGED,
         Source<PasswordStore>(this),
         Details<PasswordStoreChangeList>(&changes));
     allow_fallback_ = false;

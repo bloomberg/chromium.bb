@@ -337,7 +337,8 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   gtk_widget_show_all(frame_container_);
 
   notification_registrar_.Add(this,
-      chrome::NOTIFY_BALLOON_DISCONNECTED, Source<Balloon>(balloon));
+      chrome::NOTIFICATION_NOTIFY_BALLOON_DISCONNECTED,
+      Source<Balloon>(balloon));
 }
 
 void BalloonViewImpl::Update() {
@@ -383,11 +384,11 @@ gfx::Rect BalloonViewImpl::GetContentsRectangle() const {
 void BalloonViewImpl::Observe(int type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
-  if (type == chrome::NOTIFY_BALLOON_DISCONNECTED) {
+  if (type == chrome::NOTIFICATION_NOTIFY_BALLOON_DISCONNECTED) {
     // If the renderer process attached to this balloon is disconnected
     // (e.g., because of a crash), we want to close the balloon.
     notification_registrar_.Remove(this,
-        chrome::NOTIFY_BALLOON_DISCONNECTED,
+        chrome::NOTIFICATION_NOTIFY_BALLOON_DISCONNECTED,
         Source<Balloon>(balloon_));
     Close(false);
   } else if (type == chrome::NOTIFICATION_BROWSER_THEME_CHANGED) {
