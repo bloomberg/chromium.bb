@@ -18,7 +18,7 @@
 PopupMenuHelper::PopupMenuHelper(RenderViewHost* render_view_host)
     : render_view_host_(render_view_host) {
   notification_registrar_.Add(
-      this, content::RENDER_WIDGET_HOST_DESTROYED,
+      this, content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
       Source<RenderWidgetHost>(render_view_host));
 }
 
@@ -79,7 +79,7 @@ void PopupMenuHelper::Observe(
     int type,
     const NotificationSource& source,
     const NotificationDetails& details) {
-  DCHECK(type == content::RENDER_WIDGET_HOST_DESTROYED);
+  DCHECK(type == content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED);
   RenderViewHost* rvh = Source<RenderViewHost>(source).ptr();
   DCHECK_EQ(render_view_host_, rvh);
   render_view_host_ = NULL;

@@ -44,6 +44,7 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_window_controller.h"
 #include "chrome/browser/ui/cocoa/task_manager_mac.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/app_mode_common_mac.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
@@ -550,7 +551,7 @@ void RecordLastRunAppBundlePath() {
 // This is called after profiles have been loaded and preferences registered.
 // It is safe to access the default profile here.
 - (void)applicationDidBecomeActive:(NSNotification*)notify {
-  NotificationService::current()->Notify(chrome::NOTIFICATION_APP_ACTIVATED,
+  NotificationService::current()->Notify(content::NOTIFICATION_APP_ACTIVATED,
                                          NotificationService::AllSources(),
                                          NotificationService::NoDetails());
 }

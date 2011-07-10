@@ -748,7 +748,7 @@ TabContentsWrapper* InstantLoader::ReleasePreviewContents(
           SetTakesFocusOnlyOnMouseDown(false);
       registrar_.Remove(
           this,
-          chrome::RENDER_VIEW_HOST_CHANGED,
+          content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
           Source<NavigationController>(&preview_contents_->controller()));
 #endif
     }
@@ -858,7 +858,7 @@ void InstantLoader::Observe(int type,
                             const NotificationSource& source,
                             const NotificationDetails& details) {
 #if defined(OS_MACOSX)
-  if (type == chrome::RENDER_VIEW_HOST_CHANGED) {
+  if (type == content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED) {
     if (preview_contents_->tab_contents()->GetRenderWidgetHostView()) {
       preview_contents_->tab_contents()->GetRenderWidgetHostView()->
           SetTakesFocusOnlyOnMouseDown(true);
