@@ -256,9 +256,6 @@ class ChromeTests:
   def TestSql(self):
     return self.SimpleTest("chrome", "sql_unittests")
 
-  def TestApp(self):
-    return self.SimpleTest("chrome", "app_unittests")
-
   def TestUIUnit(self):
     return self.SimpleTest("chrome", "ui_unittests")
 
@@ -438,8 +435,6 @@ class ChromeTests:
     "ui": TestUI,                "ui_tests": TestUI,
     "unit": TestUnit,            "unit_tests": TestUnit,
     "sql": TestSql,              "sql_unittests": TestSql,
-    # TODO(rsesek): Temporary, remove after buildbot master restart.
-    "app": TestApp,              "app_unittests": TestApp,
     "ui_unit": TestUIUnit,       "ui_unittests": TestUIUnit,
     "gfx": TestGfx,              "gfx_unittests": TestGfx,
     "views": TestViews,          "views_unittests": TestViews,
