@@ -468,7 +468,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, PhishingReportError) {
 }
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
-                       FLAKY_PhishingLearnMore) {
+                       PhishingLearnMore) {
   GURL url = test_server()->GetURL(kEmptyPage);
   AddURLResult(url, SafeBrowsingService::URL_PHISHING);
 
