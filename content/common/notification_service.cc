@@ -129,7 +129,7 @@ NotificationService::~NotificationService() {
   }
 #endif
 
-  for (size_t i = 0; i < observers_.size(); i++) {
+  for (int i = 0; i < static_cast<int>(observers_.size()); i++) {
     NotificationSourceMap omap = observers_[i];
     for (NotificationSourceMap::iterator it = omap.begin();
          it != omap.end(); ++it)
