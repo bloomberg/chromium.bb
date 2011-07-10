@@ -39,6 +39,7 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service_mock_builder.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -56,7 +57,6 @@
 #include "content/common/json_value_serializer.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/cookie_options.h"
@@ -492,19 +492,19 @@ class ExtensionServiceTest
   : public ExtensionServiceTestBase, public NotificationObserver {
  public:
   ExtensionServiceTest() : installed_(NULL) {
-    registrar_.Add(this, NotificationType::EXTENSION_LOADED,
+    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                    NotificationService::AllSources());
-    registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
+    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                    NotificationService::AllSources());
-    registrar_.Add(this, NotificationType::EXTENSION_INSTALLED,
+    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
                    NotificationService::AllSources());
   }
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
-    switch (type.value) {
-      case NotificationType::EXTENSION_LOADED: {
+    switch (type) {
+      case chrome::NOTIFICATION_EXTENSION_LOADED: {
         const Extension* extension = Details<const Extension>(details).ptr();
         loaded_.push_back(make_scoped_refptr(extension));
         // The tests rely on the errors being in a certain order, which can vary
@@ -513,7 +513,7 @@ class ExtensionServiceTest
         break;
       }
 
-      case NotificationType::EXTENSION_UNLOADED: {
+      case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
         const Extension* e =
             Details<UnloadedExtensionInfo>(details)->extension;
         unloaded_id_ = e->id();
@@ -526,7 +526,7 @@ class ExtensionServiceTest
         loaded_.erase(i);
         break;
       }
-      case NotificationType::EXTENSION_INSTALLED:
+      case chrome::NOTIFICATION_EXTENSION_INSTALLED:
         installed_ = Details<const Extension>(details).ptr();
         break;
 
@@ -3194,7 +3194,7 @@ TEST_F(ExtensionServiceTest, LoadAndRelocalizeExtensions) {
 class ExtensionsReadyRecorder : public NotificationObserver {
  public:
   ExtensionsReadyRecorder() : ready_(false) {
-    registrar_.Add(this, NotificationType::EXTENSIONS_READY,
+    registrar_.Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
                    NotificationService::AllSources());
   }
 
@@ -3202,11 +3202,11 @@ class ExtensionsReadyRecorder : public NotificationObserver {
   bool ready() { return ready_; }
 
  private:
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
-    switch (type.value) {
-      case NotificationType::EXTENSIONS_READY:
+    switch (type) {
+      case chrome::NOTIFICATION_EXTENSIONS_READY:
         ready_ = true;
         break;
       default:

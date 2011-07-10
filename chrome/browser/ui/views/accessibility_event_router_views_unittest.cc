@@ -9,6 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_accessibility_api.h"
 #include "chrome/browser/ui/views/accessibility_event_router_views.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/testing_profile.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_service.h"
@@ -114,10 +115,10 @@ class AccessibilityEventRouterViewsTest
  protected:
   // Implement NotificationObserver::Observe and store information about a
   // ACCESSIBILITY_CONTROL_FOCUSED event.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
-    ASSERT_EQ(type.value, NotificationType::ACCESSIBILITY_CONTROL_FOCUSED);
+    ASSERT_EQ(type, chrome::NOTIFICATION_ACCESSIBILITY_CONTROL_FOCUSED);
     const AccessibilityControlInfo* info =
         Details<const AccessibilityControlInfo>(details).ptr();
     focus_event_count_++;
@@ -157,7 +158,7 @@ TEST_F(AccessibilityEventRouterViewsTest, TestFocusNotification) {
   // Start listening to ACCESSIBILITY_CONTROL_FOCUSED notifications.
   NotificationRegistrar registrar;
   registrar.Add(this,
-                NotificationType::ACCESSIBILITY_CONTROL_FOCUSED,
+                chrome::NOTIFICATION_ACCESSIBILITY_CONTROL_FOCUSED,
                 NotificationService::AllSources());
 
   // Switch on accessibility event notifications.

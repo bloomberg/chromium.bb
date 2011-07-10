@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/cocoa/info_bubble_view.h"
 #include "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "content/common/notification_details.h"
@@ -35,26 +36,26 @@ class ExtensionLoadedNotificationObserver : public NotificationObserver {
   ExtensionLoadedNotificationObserver(
       ExtensionInstalledBubbleController* controller, Profile* profile)
           : controller_(controller) {
-    registrar_.Add(this, NotificationType::EXTENSION_LOADED,
+    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
         Source<Profile>(profile));
-    registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
+    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
         Source<Profile>(profile));
   }
 
  private:
   // NotificationObserver implementation. Tells the controller to start showing
   // its window on the main thread when the extension has finished loading.
-  void Observe(NotificationType type,
+  void Observe(int type,
                const NotificationSource& source,
                const NotificationDetails& details) {
-    if (type == NotificationType::EXTENSION_LOADED) {
+    if (type == chrome::NOTIFICATION_EXTENSION_LOADED) {
       const Extension* extension = Details<const Extension>(details).ptr();
       if (extension == [controller_ extension]) {
         [controller_ performSelectorOnMainThread:@selector(showWindow:)
                                       withObject:controller_
                                    waitUntilDone:NO];
       }
-    } else if (type == NotificationType::EXTENSION_UNLOADED) {
+    } else if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED) {
       const Extension* extension = Details<const Extension>(details).ptr();
       if (extension == [controller_ extension]) {
         [controller_ performSelectorOnMainThread:@selector(extensionUnloaded:)

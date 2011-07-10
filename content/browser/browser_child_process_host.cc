@@ -35,7 +35,7 @@ static base::LazyInstance<ChildProcessList> g_child_process_list(
 class ChildNotificationTask : public Task {
  public:
   ChildNotificationTask(
-      NotificationType notification_type, ChildProcessInfo* info)
+      int notification_type, ChildProcessInfo* info)
       : notification_type_(notification_type), info_(*info) { }
 
   virtual void Run() {
@@ -45,7 +45,7 @@ class ChildNotificationTask : public Task {
   }
 
  private:
-  NotificationType notification_type_;
+  int notification_type_;
   ChildProcessInfo info_;
 };
 
@@ -113,7 +113,7 @@ void BrowserChildProcessHost::SetTerminateChildOnShutdown(
   child_process_->SetTerminateChildOnShutdown(terminate_on_shutdown);
 }
 
-void BrowserChildProcessHost::Notify(NotificationType type) {
+void BrowserChildProcessHost::Notify(int type) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE, new ChildNotificationTask(type, this));
 }
@@ -133,7 +133,7 @@ void BrowserChildProcessHost::OnChildDied() {
         OnProcessCrashed(exit_code);
 
         // Report that this child process crashed.
-        Notify(NotificationType::CHILD_PROCESS_CRASHED);
+        Notify(content::NOTIFICATION_CHILD_PROCESS_CRASHED);
         UMA_HISTOGRAM_COUNTS("ChildProcess.Crashes", this->type());
         break;
       }
@@ -141,7 +141,7 @@ void BrowserChildProcessHost::OnChildDied() {
         OnProcessWasKilled(exit_code);
 
         // Report that this child process was killed.
-        Notify(NotificationType::CHILD_PROCESS_WAS_KILLED);
+        Notify(content::NOTIFICATION_CHILD_PROCESS_WAS_KILLED);
         UMA_HISTOGRAM_COUNTS("ChildProcess.Kills", this->type());
         break;
       }
@@ -149,7 +149,7 @@ void BrowserChildProcessHost::OnChildDied() {
         break;
     }
     // Notify in the main loop of the disconnection.
-    Notify(NotificationType::CHILD_PROCESS_HOST_DISCONNECTED);
+    Notify(content::NOTIFICATION_CHILD_PROCESS_HOST_DISCONNECTED);
   }
   ChildProcessHost::OnChildDied();
 }

@@ -96,7 +96,7 @@ class InfoBarContainer : public NotificationObserver {
   typedef std::vector<InfoBar*> InfoBars;
 
   // NotificationObserver:
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
 

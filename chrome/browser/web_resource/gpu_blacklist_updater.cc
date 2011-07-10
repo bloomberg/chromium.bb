@@ -11,12 +11,12 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/gpu/gpu_blacklist.h"
 #include "content/browser/gpu/gpu_data_manager.h"
-#include "content/common/notification_type.h"
 #include "grit/browser_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -42,7 +42,7 @@ GpuBlacklistUpdater::GpuBlacklistUpdater()
     : WebResourceService(g_browser_process->local_state(),
                          GpuBlacklistUpdater::kDefaultGpuBlacklistURL,
                          false,  // don't append locale to URL
-                         NotificationType::NOTIFICATION_TYPE_COUNT,
+                         chrome::NOTIFICATION_CHROME_END,
                          prefs::kGpuBlacklistUpdate,
                          kStartGpuBlacklistFetchDelay,
                          kCacheUpdateDelay) {

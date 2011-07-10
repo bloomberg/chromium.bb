@@ -33,6 +33,7 @@
 #include "chrome/browser/ui/gtk/tabs/tab_strip_gtk.h"
 #include "chrome/browser/ui/gtk/tabstrip_origin_provider.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -156,7 +157,7 @@ BookmarkBarGtk::BookmarkBarGtk(BrowserWindowGtk* window,
   SetBookmarkBarState(BookmarkBar::SHOW,
                       BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
 
-  registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
+  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  Source<ThemeService>(theme_service_));
 
   edit_bookmarks_enabled_.Init(prefs::kEditBookmarksEnabled,
@@ -929,10 +930,10 @@ void BookmarkBarGtk::BookmarkNodeChildrenReordered(BookmarkModel* model,
   CreateAllBookmarkButtons();
 }
 
-void BookmarkBarGtk::Observe(NotificationType type,
+void BookmarkBarGtk::Observe(int type,
                              const NotificationSource& source,
                              const NotificationDetails& details) {
-  if (type == NotificationType::BROWSER_THEME_CHANGED) {
+  if (type == chrome::NOTIFICATION_BROWSER_THEME_CHANGED) {
     if (model_ && model_->IsLoaded()) {
       // Regenerate the bookmark bar with all new objects with their theme
       // properties set correctly for the new theme.
@@ -954,7 +955,7 @@ void BookmarkBarGtk::Observe(NotificationType type,
     }
 
     SetOverflowButtonAppearance();
-  } else if (type == NotificationType::PREF_CHANGED) {
+  } else if (type == chrome::NOTIFICATION_PREF_CHANGED) {
     const std::string& pref_name = *Details<std::string>(details).ptr();
     if (pref_name == prefs::kEditBookmarksEnabled)
       OnEditBookmarksEnabledChanged();

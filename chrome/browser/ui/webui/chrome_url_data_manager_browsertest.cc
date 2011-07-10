@@ -17,14 +17,14 @@ class NavigationNotificationObserver : public NotificationObserver {
   NavigationNotificationObserver()
       : got_navigation_(false),
         http_status_code_(0) {
-    registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
+    registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                    NotificationService::AllSources());
   }
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE {
-    DCHECK_EQ(NotificationType::NAV_ENTRY_COMMITTED, type.value);
+    DCHECK_EQ(content::NOTIFICATION_NAV_ENTRY_COMMITTED, type);
     got_navigation_ = true;
     http_status_code_ =
         Details<content::LoadCommittedDetails>(details)->

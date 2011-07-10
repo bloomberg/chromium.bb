@@ -17,9 +17,9 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/options/font_settings_utils.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/common/notification_details.h"
-#include "content/common/notification_type.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -149,10 +149,10 @@ void FontSettingsHandler::FontsListHasLoaded(
                                   selected_values);
 }
 
-void FontSettingsHandler::Observe(NotificationType type,
+void FontSettingsHandler::Observe(int type,
                                   const NotificationSource& source,
                                   const NotificationDetails& details) {
-  if (type == NotificationType::PREF_CHANGED) {
+  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
     std::string* pref_name = Details<std::string>(details).ptr();
     if (*pref_name == prefs::kWebKitStandardFontFamily) {
       SetUpStandardFontSample();

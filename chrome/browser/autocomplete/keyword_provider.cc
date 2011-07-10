@@ -16,6 +16,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
 #include "grit/generated_resources.h"
@@ -63,12 +64,13 @@ KeywordProvider::KeywordProvider(ACProviderListener* listener, Profile* profile)
   // Extension suggestions always come from the original profile, since that's
   // where extensions run. We use the input ID to distinguish whether the
   // suggestions are meant for us.
-  registrar_.Add(this, NotificationType::EXTENSION_OMNIBOX_SUGGESTIONS_READY,
-                 Source<Profile>(profile->GetOriginalProfile()));
   registrar_.Add(this,
-                 NotificationType::EXTENSION_OMNIBOX_DEFAULT_SUGGESTION_CHANGED,
+                 chrome::NOTIFICATION_EXTENSION_OMNIBOX_SUGGESTIONS_READY,
                  Source<Profile>(profile->GetOriginalProfile()));
-  registrar_.Add(this, NotificationType::EXTENSION_OMNIBOX_INPUT_ENTERED,
+  registrar_.Add(
+      this, chrome::NOTIFICATION_EXTENSION_OMNIBOX_DEFAULT_SUGGESTION_CHANGED,
+      Source<Profile>(profile->GetOriginalProfile()));
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_OMNIBOX_INPUT_ENTERED,
                  Source<Profile>(profile));
 }
 
@@ -451,15 +453,15 @@ AutocompleteMatch KeywordProvider::CreateAutocompleteMatch(
   return result;
 }
 
-void KeywordProvider::Observe(NotificationType type,
+void KeywordProvider::Observe(int type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
   TemplateURLService* model =
       profile_ ? TemplateURLServiceFactory::GetForProfile(profile_) : model_;
   const AutocompleteInput& input = extension_suggest_last_input_;
 
-  switch (type.value) {
-    case NotificationType::EXTENSION_OMNIBOX_INPUT_ENTERED:
+  switch (type) {
+    case chrome::NOTIFICATION_EXTENSION_OMNIBOX_INPUT_ENTERED:
       // Input has been accepted, so we're done with this input session. Ensure
       // we don't send the OnInputCancelled event, or handle any more stray
       // suggestions_ready events.
@@ -467,7 +469,7 @@ void KeywordProvider::Observe(NotificationType type,
       current_input_id_ = 0;
       return;
 
-    case NotificationType::EXTENSION_OMNIBOX_DEFAULT_SUGGESTION_CHANGED: {
+    case chrome::NOTIFICATION_EXTENSION_OMNIBOX_DEFAULT_SUGGESTION_CHANGED: {
       // It's possible to change the default suggestion while not in an editing
       // session.
       string16 keyword, remaining_input;
@@ -484,7 +486,7 @@ void KeywordProvider::Observe(NotificationType type,
       return;
     }
 
-    case NotificationType::EXTENSION_OMNIBOX_SUGGESTIONS_READY: {
+    case chrome::NOTIFICATION_EXTENSION_OMNIBOX_SUGGESTIONS_READY: {
       const ExtensionOmniboxSuggestions& suggestions =
         *Details<ExtensionOmniboxSuggestions>(details).ptr();
       if (suggestions.request_id != current_input_id_)

@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -28,7 +29,6 @@
 #include "content/common/notification_details.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -77,10 +77,10 @@ class DevmodeObserver : public NotificationObserver {
   }
   virtual ~DevmodeObserver() {}
 
-  void Observe(NotificationType type,
+  void Observe(int type,
                const NotificationSource& source,
                const NotificationDetails& details) {
-    if (type == NotificationType::PREF_CHANGED)
+    if (type == chrome::NOTIFICATION_PREF_CHANGED)
       [menu_ updateInspectorItem];
     else
       NOTREACHED();
@@ -98,17 +98,17 @@ class ProfileObserverBridge : public NotificationObserver {
                         const Profile* profile)
       : owner_(owner),
         profile_(profile) {
-    registrar_.Add(this, NotificationType::PROFILE_DESTROYED,
+    registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                    Source<Profile>(profile));
   }
 
   ~ProfileObserverBridge() {}
 
   // Overridden from NotificationObserver
-  void Observe(NotificationType type,
+  void Observe(int type,
                const NotificationSource& source,
                const NotificationDetails& details) {
-    if (type == NotificationType::PROFILE_DESTROYED &&
+    if (type == chrome::NOTIFICATION_PROFILE_DESTROYED &&
         source == Source<Profile>(profile_)) {
       [owner_ invalidateProfile];
     }

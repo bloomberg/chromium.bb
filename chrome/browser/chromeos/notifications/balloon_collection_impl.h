@@ -72,7 +72,7 @@ class BalloonCollectionImpl : public BalloonCollection,
   virtual const Balloons& GetActiveBalloons();
 
   // NotificationObserver overrides:
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

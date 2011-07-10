@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
@@ -121,14 +122,14 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
 
   // Register on-load actions.
   registrar_.Add(this,
-                 NotificationType::LOAD_STOP,
+                 content::NOTIFICATION_LOAD_STOP,
                  Source<NavigationController>(&tab_contents_->controller()));
   registrar_.Add(this,
-                 NotificationType::TAB_CLOSING,
+                 content::NOTIFICATION_TAB_CLOSING,
                  Source<NavigationController>(&tab_contents_->controller()));
   registrar_.Add(
       this,
-      NotificationType::BROWSER_THEME_CHANGED,
+      chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
       Source<ThemeService>(ThemeServiceFactory::GetForProfile(profile_)));
   TabContents* tab = inspected_rvh->delegate()->GetAsTabContents();
   if (tab)
@@ -394,15 +395,15 @@ void DevToolsWindow::CallClientFunction(const string16& function_name,
       ExecuteJavascriptInWebFrame(string16(), javascript);
 }
 
-void DevToolsWindow::Observe(NotificationType type,
+void DevToolsWindow::Observe(int type,
                              const NotificationSource& source,
                              const NotificationDetails& details) {
-  if (type == NotificationType::LOAD_STOP && !is_loaded_) {
+  if (type == content::NOTIFICATION_LOAD_STOP && !is_loaded_) {
     is_loaded_ = true;
     UpdateTheme();
     DoAction();
     AddDevToolsExtensionsToClient();
-  } else if (type == NotificationType::TAB_CLOSING) {
+  } else if (type == content::NOTIFICATION_TAB_CLOSING) {
     if (Source<NavigationController>(source).ptr() ==
             &tab_contents_->controller()) {
       // This happens when browser closes all of its tabs as a result
@@ -412,7 +413,7 @@ void DevToolsWindow::Observe(NotificationType type,
       NotifyCloseListener();
       delete this;
     }
-  } else if (type == NotificationType::BROWSER_THEME_CHANGED) {
+  } else if (type == chrome::NOTIFICATION_BROWSER_THEME_CHANGED) {
     UpdateTheme();
   }
 }

@@ -1655,7 +1655,7 @@ void ResourceDispatcherHost::NotifyResponseStarted(net::URLRequest* request,
       BrowserThread::UI, FROM_HERE,
       NewRunnableFunction(
           &ResourceDispatcherHost::NotifyOnUI<ResourceRequestDetails>,
-          NotificationType::RESOURCE_RESPONSE_STARTED,
+          content::NOTIFICATION_RESOURCE_RESPONSE_STARTED,
           render_process_id, render_view_id, detail));
 }
 
@@ -1673,12 +1673,12 @@ void ResourceDispatcherHost::NotifyReceivedRedirect(net::URLRequest* request,
       BrowserThread::UI, FROM_HERE,
       NewRunnableFunction(
           &ResourceDispatcherHost::NotifyOnUI<ResourceRedirectDetails>,
-          NotificationType::RESOURCE_RECEIVED_REDIRECT,
+          content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
           render_process_id, render_view_id, detail));
 }
 
 template <class T>
-void ResourceDispatcherHost::NotifyOnUI(NotificationType type,
+void ResourceDispatcherHost::NotifyOnUI(int type,
                                         int render_process_id,
                                         int render_view_id,
                                         T* detail) {

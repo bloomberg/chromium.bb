@@ -23,9 +23,9 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/geolocation/geolocation_provider.h"
 #include "content/browser/renderer_host/render_process_host.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
@@ -81,7 +81,7 @@ class GeolocationInfoBarQueueController : NotificationObserver {
                        bool allowed);
 
   // NotificationObserver
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -418,9 +418,9 @@ void GeolocationInfoBarQueueController::OnPermissionSet(
 }
 
 void GeolocationInfoBarQueueController::Observe(
-    NotificationType type, const NotificationSource& source,
+    int type, const NotificationSource& source,
     const NotificationDetails& details) {
-  registrar_.Remove(this, NotificationType::TAB_CONTENTS_DESTROYED,
+  registrar_.Remove(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
                     source);
   TabContents* tab_contents = Source<TabContents>(source).ptr();
   for (PendingInfoBarRequests::iterator i = pending_infobar_requests_.begin();
@@ -451,10 +451,10 @@ void GeolocationInfoBarQueueController::ShowQueuedInfoBar(int render_process_id,
       }
 
       if (!i->infobar_delegate) {
-        if (!registrar_.IsRegistered(this,
-                                     NotificationType::TAB_CONTENTS_DESTROYED,
-                                     Source<TabContents>(tab_contents))) {
-          registrar_.Add(this, NotificationType::TAB_CONTENTS_DESTROYED,
+        if (!registrar_.IsRegistered(
+                this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
+                Source<TabContents>(tab_contents))) {
+          registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
                          Source<TabContents>(tab_contents));
         }
         i->infobar_delegate = new GeolocationConfirmInfoBarDelegate(

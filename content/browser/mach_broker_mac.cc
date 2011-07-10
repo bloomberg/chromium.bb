@@ -33,16 +33,16 @@ class RegisterNotificationTask : public Task {
 
   virtual void Run() {
     broker_->registrar_.Add(broker_,
-        NotificationType::RENDERER_PROCESS_CLOSED,
+        content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
         NotificationService::AllSources());
     broker_->registrar_.Add(broker_,
-        NotificationType::RENDERER_PROCESS_TERMINATED,
+        content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
         NotificationService::AllSources());
     broker_->registrar_.Add(broker_,
-        NotificationType::CHILD_PROCESS_CRASHED,
+        content::NOTIFICATION_CHILD_PROCESS_CRASHED,
         NotificationService::AllSources());
     broker_->registrar_.Add(broker_,
-        NotificationType::CHILD_PROCESS_HOST_DISCONNECTED,
+        content::NOTIFICATION_CHILD_PROCESS_HOST_DISCONNECTED,
         NotificationService::AllSources());
   }
 
@@ -195,7 +195,7 @@ mach_port_t MachBroker::TaskForPid(base::ProcessHandle pid) const {
   return it->second.mach_task_;
 }
 
-void MachBroker::Observe(NotificationType type,
+void MachBroker::Observe(int type,
                          const NotificationSource& source,
                          const NotificationDetails& details) {
   // TODO(rohitrao): These notifications do not always carry the proper PIDs,
@@ -203,12 +203,12 @@ void MachBroker::Observe(NotificationType type,
   // way to listen for child process deaths.  http://crbug.com/55734
   base::ProcessHandle handle = 0;
   switch (type.value) {
-    case NotificationType::RENDERER_PROCESS_CLOSED:
-    case NotificationType::RENDERER_PROCESS_TERMINATED:
+    case content::NOTIFICATION_RENDERER_PROCESS_CLOSED:
+    case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED:
       handle = Source<RenderProcessHost>(source)->GetHandle();
       break;
-    case NotificationType::CHILD_PROCESS_CRASHED:
-    case NotificationType::CHILD_PROCESS_HOST_DISCONNECTED:
+    case content::NOTIFICATION_CHILD_PROCESS_CRASHED:
+    case content::NOTIFICATION_CHILD_PROCESS_HOST_DISCONNECTED:
       handle = Details<ChildProcessInfo>(details)->handle();
       break;
     default:

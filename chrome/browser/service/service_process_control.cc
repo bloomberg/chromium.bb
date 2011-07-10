@@ -13,6 +13,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/service_messages.h"
 #include "chrome/common/service_process_util.h"
 #include "content/browser/browser_thread.h"
@@ -204,7 +205,7 @@ void ServiceProcessControl::OnChannelConnected(int32 peer_pid) {
     Send(new ServiceMsg_UpdateAvailable);
   } else {
     if (registrar_.IsEmpty())
-      registrar_.Add(this, NotificationType::UPGRADE_RECOMMENDED,
+      registrar_.Add(this, chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
                      NotificationService::AllSources());
   }
   RunConnectDoneTasks();
@@ -224,10 +225,10 @@ bool ServiceProcessControl::Send(IPC::Message* message) {
 }
 
 // NotificationObserver implementation.
-void ServiceProcessControl::Observe(NotificationType type,
+void ServiceProcessControl::Observe(int type,
                                     const NotificationSource& source,
                                     const NotificationDetails& details) {
-  if (type == NotificationType::UPGRADE_RECOMMENDED) {
+  if (type == chrome::NOTIFICATION_UPGRADE_RECOMMENDED) {
     Send(new ServiceMsg_UpdateAvailable);
   }
 }

@@ -12,11 +12,11 @@
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/notification_details.h"
-#include "content/common/notification_type.h"
 
 namespace {
 
@@ -68,10 +68,10 @@ void ShownSectionsHandler::RegisterMessages() {
       NewCallback(this, &ShownSectionsHandler::HandleSetShownSections));
 }
 
-void ShownSectionsHandler::Observe(NotificationType type,
+void ShownSectionsHandler::Observe(int type,
                                    const NotificationSource& source,
                                    const NotificationDetails& details) {
-  if (type == NotificationType::PREF_CHANGED) {
+  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
     std::string* pref_name = Details<std::string>(details).ptr();
     DCHECK(*pref_name == prefs::kNTPShownSections);
     int sections = pref_service_->GetInteger(prefs::kNTPShownSections);

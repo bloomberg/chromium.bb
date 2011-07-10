@@ -25,7 +25,7 @@ BrowserPolicyConnector* BrowserPolicyConnector::CreateForTests() {
 BrowserPolicyConnector::~BrowserPolicyConnector() {
 }
 
-void BrowserPolicyConnector::Observe(NotificationType type,
+void BrowserPolicyConnector::Observe(int type,
                                      const NotificationSource& source,
                                      const NotificationDetails& details) {
 }

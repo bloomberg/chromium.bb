@@ -43,24 +43,24 @@ void TestTabStripModelObserver::WaitForObservation() {
 void TestTabStripModelObserver::TabInsertedAt(
     TabContentsWrapper* contents, int index, bool foreground) {
   NavigationController* controller = &contents->controller();
-  registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
+  registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                  Source<NavigationController>(controller));
-  registrar_.Add(this, NotificationType::LOAD_START,
+  registrar_.Add(this, content::NOTIFICATION_LOAD_START,
                  Source<NavigationController>(controller));
-  registrar_.Add(this, NotificationType::LOAD_STOP,
+  registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
                  Source<NavigationController>(controller));
 }
 
 void TestTabStripModelObserver::Observe(
-    NotificationType type, const NotificationSource& source,
+    int type, const NotificationSource& source,
     const NotificationDetails& details) {
-  if (type == NotificationType::NAV_ENTRY_COMMITTED ||
-      type == NotificationType::LOAD_START) {
+  if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED ||
+      type == content::NOTIFICATION_LOAD_START) {
     if (!navigation_started_) {
       load_start_observer_->OnLoadStart();
       navigation_started_ = true;
     }
-  } else if (type == NotificationType::LOAD_STOP) {
+  } else if (type == content::NOTIFICATION_LOAD_STOP) {
     if (navigation_started_ &&
         ++navigations_completed_ == number_of_navigations_) {
       navigation_started_ = false;

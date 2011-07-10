@@ -8,8 +8,8 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "content/browser/browser_thread.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/image_decoder.h"
@@ -121,7 +121,7 @@ class ImageLoadingTracker::ImageLoader
 ImageLoadingTracker::ImageLoadingTracker(Observer* observer)
     : observer_(observer),
       next_id_(0) {
-  registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  NotificationService::AllSources());
 }
 
@@ -179,10 +179,10 @@ void ImageLoadingTracker::OnImageLoaded(
   observer_->OnImageLoaded(image, resource, id);
 }
 
-void ImageLoadingTracker::Observe(NotificationType type,
+void ImageLoadingTracker::Observe(int type,
                                   const NotificationSource& source,
                                   const NotificationDetails& details) {
-  DCHECK(type == NotificationType::EXTENSION_UNLOADED);
+  DCHECK(type == chrome::NOTIFICATION_EXTENSION_UNLOADED);
 
   const Extension* extension =
       Details<UnloadedExtensionInfo>(details)->extension;

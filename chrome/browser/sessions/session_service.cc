@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/navigation_entry.h"
@@ -445,10 +446,11 @@ void SessionService::Save() {
   bool had_commands = !pending_commands().empty();
   BaseSessionService::Save();
   if (had_commands) {
-    RecordSessionUpdateHistogramData(NotificationType::SESSION_SERVICE_SAVED,
+    RecordSessionUpdateHistogramData(
+        chrome::NOTIFICATION_SESSION_SERVICE_SAVED,
         &last_updated_save_time_);
     NotificationService::current()->Notify(
-        NotificationType::SESSION_SERVICE_SAVED,
+        chrome::NOTIFICATION_SESSION_SERVICE_SAVED,
         Source<Profile>(profile()),
         NotificationService::NoDetails());
   }
@@ -456,21 +458,21 @@ void SessionService::Save() {
 
 void SessionService::Init() {
   // Register for the notifications we're interested in.
-  registrar_.Add(this, NotificationType::TAB_PARENTED,
+  registrar_.Add(this, content::NOTIFICATION_TAB_PARENTED,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::TAB_CLOSED,
+  registrar_.Add(this, content::NOTIFICATION_TAB_CLOSED,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::NAV_LIST_PRUNED,
+  registrar_.Add(this, content::NOTIFICATION_NAV_LIST_PRUNED,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::NAV_ENTRY_CHANGED,
+  registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_CHANGED,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
+  registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::BROWSER_OPENED,
+  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_OPENED,
                  NotificationService::AllSources());
-  registrar_.Add(this,
-                 NotificationType::TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED,
-                 NotificationService::AllSources());
+  registrar_.Add(
+      this, chrome::NOTIFICATION_TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED,
+      NotificationService::AllSources());
 }
 
 bool SessionService::RestoreIfNecessary(const std::vector<GURL>& urls_to_open,
@@ -503,12 +505,12 @@ bool SessionService::RestoreIfNecessary(const std::vector<GURL>& urls_to_open,
   return false;
 }
 
-void SessionService::Observe(NotificationType type,
+void SessionService::Observe(int type,
                              const NotificationSource& source,
                              const NotificationDetails& details) {
   // All of our messages have the NavigationController as the source.
-  switch (type.value) {
-    case NotificationType::BROWSER_OPENED: {
+  switch (type) {
+    case chrome::NOTIFICATION_BROWSER_OPENED: {
       Browser* browser = Source<Browser>(source).ptr();
       if (browser->profile() != profile() ||
           !should_track_changes_for_browser_type(browser->type())) {
@@ -520,7 +522,7 @@ void SessionService::Observe(NotificationType type,
       break;
     }
 
-    case NotificationType::TAB_PARENTED: {
+    case content::NOTIFICATION_TAB_PARENTED: {
       TabContentsWrapper* tab = Source<TabContentsWrapper>(source).ptr();
       SetTabWindow(tab->restore_tab_helper()->window_id(),
                    tab->restore_tab_helper()->session_id());
@@ -533,7 +535,7 @@ void SessionService::Observe(NotificationType type,
       break;
     }
 
-    case NotificationType::TAB_CLOSED: {
+    case content::NOTIFICATION_TAB_CLOSED: {
       TabContentsWrapper* tab =
           TabContentsWrapper::GetCurrentWrapperForContents(
               Source<NavigationController>(source).ptr()->tab_contents());
@@ -542,12 +544,12 @@ void SessionService::Observe(NotificationType type,
       TabClosed(tab->restore_tab_helper()->window_id(),
                 tab->restore_tab_helper()->session_id(),
                 tab->tab_contents()->closed_by_user_gesture());
-      RecordSessionUpdateHistogramData(NotificationType::TAB_CLOSED,
+      RecordSessionUpdateHistogramData(content::NOTIFICATION_TAB_CLOSED,
           &last_updated_tab_closed_time_);
       break;
     }
 
-    case NotificationType::NAV_LIST_PRUNED: {
+    case content::NOTIFICATION_NAV_LIST_PRUNED: {
       TabContentsWrapper* tab =
           TabContentsWrapper::GetCurrentWrapperForContents(
               Source<NavigationController>(source).ptr()->tab_contents());
@@ -565,12 +567,12 @@ void SessionService::Observe(NotificationType type,
             tab->restore_tab_helper()->session_id(),
             tab->controller().entry_count());
       }
-      RecordSessionUpdateHistogramData(NotificationType::NAV_LIST_PRUNED,
+      RecordSessionUpdateHistogramData(content::NOTIFICATION_NAV_LIST_PRUNED,
           &last_updated_nav_list_pruned_time_);
       break;
     }
 
-    case NotificationType::NAV_ENTRY_CHANGED: {
+    case content::NOTIFICATION_NAV_ENTRY_CHANGED: {
       TabContentsWrapper* tab =
           TabContentsWrapper::GetCurrentWrapperForContents(
               Source<NavigationController>(source).ptr()->tab_contents());
@@ -584,7 +586,7 @@ void SessionService::Observe(NotificationType type,
       break;
     }
 
-    case NotificationType::NAV_ENTRY_COMMITTED: {
+    case content::NOTIFICATION_NAV_ENTRY_COMMITTED: {
       TabContentsWrapper* tab =
           TabContentsWrapper::GetCurrentWrapperForContents(
               Source<NavigationController>(source).ptr()->tab_contents());
@@ -602,13 +604,14 @@ void SessionService::Observe(NotificationType type,
       Details<content::LoadCommittedDetails> changed(details);
       if (changed->type == NavigationType::NEW_PAGE ||
         changed->type == NavigationType::EXISTING_PAGE) {
-        RecordSessionUpdateHistogramData(NotificationType::NAV_ENTRY_COMMITTED,
+        RecordSessionUpdateHistogramData(
+            content::NOTIFICATION_NAV_ENTRY_COMMITTED,
             &last_updated_nav_entry_commit_time_);
       }
       break;
     }
 
-    case NotificationType::TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED: {
+    case chrome::NOTIFICATION_TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED: {
       ExtensionTabHelper* extension_tab_helper =
           Source<ExtensionTabHelper>(source).ptr();
       if (extension_tab_helper->extension_app()) {
@@ -1351,7 +1354,7 @@ Browser::Type SessionService::BrowserTypeForWindowType(WindowType type) {
   }
 }
 
-void SessionService::RecordSessionUpdateHistogramData(NotificationType type,
+void SessionService::RecordSessionUpdateHistogramData(int type,
     base::TimeTicks* last_updated_time) {
   if (!last_updated_time->is_null()) {
     base::TimeDelta delta = base::TimeTicks::Now() - *last_updated_time;
@@ -1361,20 +1364,20 @@ void SessionService::RecordSessionUpdateHistogramData(NotificationType type,
     if (delta >= save_delay_in_mins_) {
       use_long_period = true;
     }
-    switch (type.value) {
-      case NotificationType::SESSION_SERVICE_SAVED :
+    switch (type) {
+      case chrome::NOTIFICATION_SESSION_SERVICE_SAVED :
         RecordUpdatedSaveTime(delta, use_long_period);
         RecordUpdatedSessionNavigationOrTab(delta, use_long_period);
         break;
-      case NotificationType::TAB_CLOSED:
+      case content::NOTIFICATION_TAB_CLOSED:
         RecordUpdatedTabClosed(delta, use_long_period);
         RecordUpdatedSessionNavigationOrTab(delta, use_long_period);
         break;
-      case NotificationType::NAV_LIST_PRUNED:
+      case content::NOTIFICATION_NAV_LIST_PRUNED:
         RecordUpdatedNavListPruned(delta, use_long_period);
         RecordUpdatedSessionNavigationOrTab(delta, use_long_period);
         break;
-      case NotificationType::NAV_ENTRY_COMMITTED:
+      case content::NOTIFICATION_NAV_ENTRY_COMMITTED:
         RecordUpdatedNavEntryCommit(delta, use_long_period);
         RecordUpdatedSessionNavigationOrTab(delta, use_long_period);
         break;

@@ -8,8 +8,8 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -18,7 +18,7 @@ OverflowButton::OverflowButton(Profile* profile) : profile_(profile) {
   gtk_widget_set_no_show_all(widget_.get(), TRUE);
 
   GtkThemeService* theme_service = GtkThemeService::GetFrom(profile);
-  registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
+  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  Source<ThemeService>(theme_service));
   theme_service->InitThemesFor(this);
 }
@@ -27,7 +27,7 @@ OverflowButton::~OverflowButton() {
   widget_.Destroy();
 }
 
-void OverflowButton::Observe(NotificationType type,
+void OverflowButton::Observe(int type,
                              const NotificationSource& source,
                              const NotificationDetails& details) {
   GtkWidget* former_child = gtk_bin_get_child(GTK_BIN(widget()));

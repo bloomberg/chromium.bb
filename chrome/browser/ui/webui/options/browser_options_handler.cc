@@ -25,13 +25,13 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/options/options_managed_banner_handler.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -348,7 +348,7 @@ void BrowserOptionsHandler::OnItemsRemoved(int start, int length) {
   OnModelChanged();
 }
 
-void BrowserOptionsHandler::Observe(NotificationType type,
+void BrowserOptionsHandler::Observe(int type,
                      const NotificationSource& source,
                      const NotificationDetails& details) {
   UpdateDefaultBrowserState();
@@ -454,7 +454,7 @@ void BrowserOptionsHandler::RequestAutocompleteSuggestions(
 void BrowserOptionsHandler::ToggleShowBookmarksBar(const ListValue* args) {
   Source<Profile> source(web_ui_->GetProfile());
   NotificationService::current()->Notify(
-      NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
+      chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
       source,
       NotificationService::NoDetails());
 }

@@ -14,6 +14,7 @@
 #include "chrome/browser/enumerate_modules_model_win.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -128,7 +129,7 @@ class ConflictsDOMHandler : public WebUIMessageHandler,
  private:
   void SendModuleList();
 
-  void Observe(NotificationType type,
+  void Observe(int type,
                const NotificationSource& source,
                const NotificationDetails& details);
 
@@ -144,7 +145,7 @@ void ConflictsDOMHandler::RegisterMessages() {
 
 void ConflictsDOMHandler::HandleRequestModuleList(const ListValue* args) {
   // This request is handled asynchronously. See Observe for when we reply back.
-  registrar_.Add(this, NotificationType::MODULE_LIST_ENUMERATED,
+  registrar_.Add(this, chrome::NOTIFICATION_MODULE_LIST_ENUMERATED,
                  NotificationService::AllSources());
   EnumerateModulesModel::GetInstance()->ScanNow();
 }
@@ -175,11 +176,11 @@ void ConflictsDOMHandler::SendModuleList() {
   web_ui_->CallJavascriptFunction("returnModuleList", results);
 }
 
-void ConflictsDOMHandler::Observe(NotificationType type,
+void ConflictsDOMHandler::Observe(int type,
                                   const NotificationSource& source,
                                   const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::MODULE_LIST_ENUMERATED:
+  switch (type) {
+    case chrome::NOTIFICATION_MODULE_LIST_ENUMERATED:
       SendModuleList();
       registrar_.RemoveAll();
       break;

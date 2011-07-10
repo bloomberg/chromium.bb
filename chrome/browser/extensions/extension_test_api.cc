@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extensions_quota_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_service.h"
 
 namespace {
@@ -28,7 +29,7 @@ ExtensionTestPassFunction::~ExtensionTestPassFunction() {}
 
 bool ExtensionTestPassFunction::RunImpl() {
   NotificationService::current()->Notify(
-      NotificationType::EXTENSION_TEST_PASSED,
+      chrome::NOTIFICATION_EXTENSION_TEST_PASSED,
       Source<Profile>(dispatcher()->profile()),
       NotificationService::NoDetails());
   return true;
@@ -40,7 +41,7 @@ bool ExtensionTestFailFunction::RunImpl() {
   std::string message;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &message));
   NotificationService::current()->Notify(
-      NotificationType::EXTENSION_TEST_FAILED,
+      chrome::NOTIFICATION_EXTENSION_TEST_FAILED,
       Source<Profile>(dispatcher()->profile()),
       Details<std::string>(&message));
   return true;
@@ -80,7 +81,7 @@ bool ExtensionTestSendMessageFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &message));
   AddRef();  // balanced in Reply
   NotificationService::current()->Notify(
-      NotificationType::EXTENSION_TEST_MESSAGE,
+      chrome::NOTIFICATION_EXTENSION_TEST_MESSAGE,
       Source<ExtensionTestSendMessageFunction>(this),
       Details<std::string>(&message));
   return true;

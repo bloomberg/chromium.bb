@@ -9,10 +9,10 @@
 #include <map>
 
 #include "base/basictypes.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 #include "ipc/ipc_message.h"
 
 // Template trick so that AutomationResourceTracker can be used with non-pointer
@@ -120,7 +120,7 @@ class AutomationResourceTracker : public AutomationResourceTrackerImpl,
   // NotificationObserver implementation--the only thing that this tracker
   // does in response to notifications is to tell the AutomationProxy
   // that the associated handle is now invalid.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
      T resource =

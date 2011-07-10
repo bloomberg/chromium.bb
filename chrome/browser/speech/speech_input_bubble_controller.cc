@@ -7,9 +7,9 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 #include "ui/gfx/rect.h"
 
 namespace speech_input {
@@ -110,18 +110,18 @@ void SpeechInputBubbleController::UpdateTabContentsSubscription(
   }
 
   if (action == BUBBLE_ADDED) {
-    registrar_->Add(this, NotificationType::TAB_CONTENTS_DESTROYED,
+    registrar_->Add(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
                     Source<TabContents>(tab_contents));
   } else {
-    registrar_->Remove(this, NotificationType::TAB_CONTENTS_DESTROYED,
+    registrar_->Remove(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
                     Source<TabContents>(tab_contents));
   }
 }
 
-void SpeechInputBubbleController::Observe(NotificationType type,
+void SpeechInputBubbleController::Observe(int type,
                                           const NotificationSource& source,
                                           const NotificationDetails& details) {
-  if (type == NotificationType::TAB_CONTENTS_DESTROYED) {
+  if (type == content::NOTIFICATION_TAB_CONTENTS_DESTROYED) {
     // Cancel all bubbles and active recognition sessions for this tab.
     TabContents* tab_contents = Source<TabContents>(source).ptr();
     BubbleCallerIdMap::iterator iter = bubbles_.begin();

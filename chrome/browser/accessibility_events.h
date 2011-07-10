@@ -10,7 +10,6 @@
 
 class AccessibilityControlInfo;
 class DictionaryValue;
-class NotificationType;
 class Profile;
 
 // Use the NotificationService to post the given accessibility
@@ -18,7 +17,7 @@ class Profile;
 // listeners.  Will not send if the profile's pause level is nonzero
 // (using profile->PauseAccessibilityEvents).
 void SendAccessibilityNotification(
-    NotificationType type, AccessibilityControlInfo* info);
+    int type, AccessibilityControlInfo* info);
 
 // Abstract parent class for accessibility information about a control
 // passed to event listeners.

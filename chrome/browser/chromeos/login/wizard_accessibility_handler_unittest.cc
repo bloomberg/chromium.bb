@@ -4,6 +4,7 @@
 
 #include "chrome/browser/accessibility_events.h"
 #include "chrome/browser/chromeos/login/wizard_accessibility_handler.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using chromeos::EarconType;
@@ -22,7 +23,7 @@ class WizardAccessibilityHandlerTest : public testing::Test {
     textbox_info->SetValue(value, selection_start, selection_end);
     EarconType earcon = chromeos::NO_EARCON;
     handler->DescribeAccessibilityEvent(
-        NotificationType::ACCESSIBILITY_TEXT_CHANGED,
+        chrome::NOTIFICATION_ACCESSIBILITY_TEXT_CHANGED,
         textbox_info,
         description,
         &earcon);
@@ -45,7 +46,7 @@ TEST_F(WizardAccessibilityHandlerTest, TestFocusEvents) {
   std::string button_name = "Save";
   AccessibilityButtonInfo button_info(NULL, button_name);
   handler.DescribeAccessibilityEvent(
-      NotificationType::ACCESSIBILITY_CONTROL_FOCUSED,
+      chrome::NOTIFICATION_ACCESSIBILITY_CONTROL_FOCUSED,
       &button_info,
       &description,
       &earcon);
@@ -56,7 +57,7 @@ TEST_F(WizardAccessibilityHandlerTest, TestFocusEvents) {
   std::string checkbox_name = "Accessibility";
   AccessibilityCheckboxInfo checkbox_info(NULL, checkbox_name, false);
   handler.DescribeAccessibilityEvent(
-      NotificationType::ACCESSIBILITY_CONTROL_FOCUSED,
+      chrome::NOTIFICATION_ACCESSIBILITY_CONTROL_FOCUSED,
       &checkbox_info,
       &description,
       &earcon);
@@ -64,7 +65,7 @@ TEST_F(WizardAccessibilityHandlerTest, TestFocusEvents) {
   EXPECT_EQ("Accessibility Unchecked check box", description);
   checkbox_info.SetChecked(true);
   handler.DescribeAccessibilityEvent(
-      NotificationType::ACCESSIBILITY_CONTROL_FOCUSED,
+      chrome::NOTIFICATION_ACCESSIBILITY_CONTROL_FOCUSED,
       &checkbox_info,
       &description,
       &earcon);
@@ -77,7 +78,7 @@ TEST_F(WizardAccessibilityHandlerTest, TestFocusEvents) {
   AccessibilityComboBoxInfo combobox_info(
       NULL, combobox_name, combobox_value, 12, 35);
   handler.DescribeAccessibilityEvent(
-      NotificationType::ACCESSIBILITY_CONTROL_FOCUSED,
+      chrome::NOTIFICATION_ACCESSIBILITY_CONTROL_FOCUSED,
       &combobox_info,
       &description,
       &earcon);
@@ -93,7 +94,7 @@ TEST_F(WizardAccessibilityHandlerTest, TestTextEvents) {
 
   AccessibilityTextBoxInfo textbox_info(NULL, "", false);
   handler.DescribeAccessibilityEvent(
-      NotificationType::ACCESSIBILITY_CONTROL_FOCUSED,
+      chrome::NOTIFICATION_ACCESSIBILITY_CONTROL_FOCUSED,
       &textbox_info,
       &description,
       &earcon);

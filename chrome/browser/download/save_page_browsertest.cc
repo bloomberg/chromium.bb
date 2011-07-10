@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/download/download_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/active_downloads_ui.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/in_process_browser_test.h"
@@ -44,7 +45,7 @@ class SavePageBrowserTest : public InProcessBrowserTest {
   GURL WaitForSavePackageToFinish() {
     ui_test_utils::TestNotificationObserver observer;
     ui_test_utils::RegisterAndWait(&observer,
-        NotificationType::SAVE_PACKAGE_SUCCESSFULLY_FINISHED,
+        chrome::NOTIFICATION_SAVE_PACKAGE_SUCCESSFULLY_FINISHED,
         NotificationService::AllSources());
     return *Details<GURL>(observer.details()).ptr();
   }

@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/constrained_html_ui.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -29,7 +30,6 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 #include "grit/browser_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -255,11 +255,11 @@ std::string BrowserSignin::GetSignedInUsername() const {
   return username;
 }
 
-void BrowserSignin::Observe(NotificationType type,
+void BrowserSignin::Observe(int type,
                             const NotificationSource& source,
                             const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::GOOGLE_SIGNIN_SUCCESSFUL: {
+  switch (type) {
+    case chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL: {
       VLOG(1) << "GOOGLE_SIGNIN_SUCCESSFUL";
       if (delegate_)
         delegate_->OnLoginSuccess();
@@ -267,7 +267,7 @@ void BrowserSignin::Observe(NotificationType type,
       OnLoginFinished();
       break;
     }
-    case NotificationType::GOOGLE_SIGNIN_FAILED: {
+    case chrome::NOTIFICATION_GOOGLE_SIGNIN_FAILED: {
       VLOG(1) << "GOOGLE_SIGNIN_FAILED";
       // The signin failed, refresh the UI with error information.
       html_dialog_ui_delegate_->ReloadUI();
@@ -310,19 +310,19 @@ BrowserSigninHtml* BrowserSignin::CreateHtmlDialogUI() {
 
 void BrowserSignin::RegisterAuthNotifications() {
   registrar_.Add(this,
-                 NotificationType::GOOGLE_SIGNIN_SUCCESSFUL,
+                 chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
                  Source<Profile>(profile_));
   registrar_.Add(this,
-                 NotificationType::GOOGLE_SIGNIN_FAILED,
+                 chrome::NOTIFICATION_GOOGLE_SIGNIN_FAILED,
                  Source<Profile>(profile_));
 }
 
 void BrowserSignin::UnregisterAuthNotifications() {
   registrar_.Remove(this,
-                    NotificationType::GOOGLE_SIGNIN_SUCCESSFUL,
+                    chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
                     Source<Profile>(profile_));
   registrar_.Remove(this,
-                    NotificationType::GOOGLE_SIGNIN_FAILED,
+                    chrome::NOTIFICATION_GOOGLE_SIGNIN_FAILED,
                     Source<Profile>(profile_));
 }
 

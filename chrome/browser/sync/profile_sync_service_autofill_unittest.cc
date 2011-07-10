@@ -41,11 +41,11 @@
 #include "chrome/browser/webdata/autofill_entry.h"
 #include "chrome/browser/webdata/autofill_table.h"
 #include "chrome/browser/webdata/web_database.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/test/sync/engine/test_id_factory.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using base::Time;
@@ -871,7 +871,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeAddEntry) {
   AutofillChangeList changes;
   changes.push_back(AutofillChange(AutofillChange::ADD, added_entry.key()));
   scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&db_thread_));
-  notifier->Notify(NotificationType::AUTOFILL_ENTRIES_CHANGED,
+  notifier->Notify(chrome::NOTIFICATION_AUTOFILL_ENTRIES_CHANGED,
                    Source<WebDataService>(web_data_service_.get()),
                    Details<AutofillChangeList>(&changes));
 
@@ -900,7 +900,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeAddProfile) {
   AutofillProfileChange change(AutofillProfileChange::ADD,
       added_profile.guid(), &added_profile);
   scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&db_thread_));
-  notifier->Notify(NotificationType::AUTOFILL_PROFILE_CHANGED,
+  notifier->Notify(chrome::NOTIFICATION_AUTOFILL_PROFILE_CHANGED,
                    Source<WebDataService>(web_data_service_.get()),
                    Details<AutofillProfileChange>(&change));
 
@@ -934,7 +934,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeUpdateEntry) {
   changes.push_back(AutofillChange(AutofillChange::UPDATE,
                                    updated_entry.key()));
   scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&db_thread_));
-  notifier->Notify(NotificationType::AUTOFILL_ENTRIES_CHANGED,
+  notifier->Notify(chrome::NOTIFICATION_AUTOFILL_ENTRIES_CHANGED,
                    Source<WebDataService>(web_data_service_.get()),
                    Details<AutofillChangeList>(&changes));
 
@@ -964,7 +964,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeRemoveEntry) {
   changes.push_back(AutofillChange(AutofillChange::REMOVE,
                                    original_entry.key()));
   scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&db_thread_));
-  notifier->Notify(NotificationType::AUTOFILL_ENTRIES_CHANGED,
+  notifier->Notify(chrome::NOTIFICATION_AUTOFILL_ENTRIES_CHANGED,
                    Source<WebDataService>(web_data_service_.get()),
                    Details<AutofillChangeList>(&changes));
 
@@ -1002,7 +1002,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeRemoveProfile) {
   AutofillProfileChange change(AutofillProfileChange::REMOVE,
                                sync_profile.guid(), NULL);
   scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&db_thread_));
-  notifier->Notify(NotificationType::AUTOFILL_PROFILE_CHANGED,
+  notifier->Notify(chrome::NOTIFICATION_AUTOFILL_PROFILE_CHANGED,
                    Source<WebDataService>(web_data_service_.get()),
                    Details<AutofillProfileChange>(&change));
 
@@ -1029,7 +1029,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeError) {
   changes.push_back(AutofillChange(AutofillChange::ADD,
                                    evil_entry.key()));
   scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&db_thread_));
-  notifier->Notify(NotificationType::AUTOFILL_ENTRIES_CHANGED,
+  notifier->Notify(chrome::NOTIFICATION_AUTOFILL_ENTRIES_CHANGED,
                    Source<WebDataService>(web_data_service_.get()),
                    Details<AutofillChangeList>(&changes));
 
@@ -1041,7 +1041,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeError) {
   EXPECT_TRUE(service_->unrecoverable_error_detected());
 
   // Ensure future autofill notifications don't crash.
-  notifier->Notify(NotificationType::AUTOFILL_ENTRIES_CHANGED,
+  notifier->Notify(chrome::NOTIFICATION_AUTOFILL_ENTRIES_CHANGED,
                    Source<WebDataService>(web_data_service_.get()),
                    Details<AutofillChangeList>(&changes));
 }

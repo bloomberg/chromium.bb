@@ -22,6 +22,7 @@
 #include "chrome/browser/history/text_database_manager.h"
 #include "chrome/browser/history/thumbnail_database.h"
 #include "chrome/browser/history/top_sites.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/test/testing_profile.h"
 #include "chrome/tools/profiles/thumbnail-inl.h"
@@ -119,7 +120,7 @@ class ExpireHistoryTest : public testing::Test,
   // Notifications intended to be broadcast, we can check these values to make
   // sure that the deletor is doing the correct broadcasts. We own the details
   // pointers.
-  typedef std::vector< std::pair<NotificationType, HistoryDetails*> >
+  typedef std::vector< std::pair<int, HistoryDetails*> >
       NotificationList;
   NotificationList notifications_;
 
@@ -168,7 +169,7 @@ class ExpireHistoryTest : public testing::Test,
   }
 
   // BroadcastNotificationDelegate implementation.
-  void BroadcastNotifications(NotificationType type,
+  void BroadcastNotifications(int type,
                               HistoryDetails* details_deleted) {
     // This gets called when there are notifications to broadcast. Instead, we
     // store them so we can tell that the correct notifications were sent.
@@ -376,7 +377,7 @@ void ExpireHistoryTest::EnsureURLInfoGone(const URLRow& row) {
 
   bool found_delete_notification = false;
   for (size_t i = 0; i < notifications_.size(); i++) {
-    if (notifications_[i].first == NotificationType::HISTORY_URLS_DELETED) {
+    if (notifications_[i].first == chrome::NOTIFICATION_HISTORY_URLS_DELETED) {
       const URLsDeletedDetails* deleted_details =
           reinterpret_cast<URLsDeletedDetails*>(notifications_[i].second);
       if (deleted_details->urls.find(row.url()) !=
@@ -384,9 +385,10 @@ void ExpireHistoryTest::EnsureURLInfoGone(const URLRow& row) {
         found_delete_notification = true;
       }
     } else {
-      EXPECT_NE(notifications_[i].first, NotificationType::HISTORY_URL_VISITED);
       EXPECT_NE(notifications_[i].first,
-                NotificationType::HISTORY_TYPED_URLS_MODIFIED);
+                chrome::NOTIFICATION_HISTORY_URL_VISITED);
+      EXPECT_NE(notifications_[i].first,
+                chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED);
     }
   }
   EXPECT_TRUE(found_delete_notification);

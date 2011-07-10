@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/page_navigator.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -625,7 +626,7 @@ void ToggleWhenVisible(Profile* profile) {
   // And notify the notification service.
   Source<Profile> source(profile);
   NotificationService::current()->Notify(
-      NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
+      chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
       source,
       NotificationService::NoDetails());
 }

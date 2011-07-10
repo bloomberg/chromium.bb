@@ -12,6 +12,7 @@
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/webdata/autofill_entry.h"
 #include "chrome/browser/webdata/web_database.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/thread_observer_helper.h"
 #include "webkit/glue/form_field.h"
 
@@ -63,10 +64,10 @@ class AutofillDBThreadObserverHelper : public DBThreadObserverHelper {
  protected:
   virtual void RegisterObservers() {
     registrar_.Add(&observer_,
-                   NotificationType::AUTOFILL_ENTRIES_CHANGED,
+                   chrome::NOTIFICATION_AUTOFILL_ENTRIES_CHANGED,
                    NotificationService::AllSources());
     registrar_.Add(&observer_,
-                   NotificationType::AUTOFILL_PROFILE_CHANGED,
+                   chrome::NOTIFICATION_AUTOFILL_PROFILE_CHANGED,
                    NotificationService::AllSources());
   }
 };

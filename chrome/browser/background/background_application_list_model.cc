@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "content/common/notification_details.h"
@@ -153,13 +154,13 @@ BackgroundApplicationListModel::BackgroundApplicationListModel(Profile* profile)
     : profile_(profile) {
   DCHECK(profile_);
   registrar_.Add(this,
-                 NotificationType::EXTENSION_LOADED,
+                 chrome::NOTIFICATION_EXTENSION_LOADED,
                  Source<Profile>(profile));
   registrar_.Add(this,
-                 NotificationType::EXTENSION_UNLOADED,
+                 chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  Source<Profile>(profile));
   registrar_.Add(this,
-                 NotificationType::EXTENSIONS_READY,
+                 chrome::NOTIFICATION_EXTENSIONS_READY,
                  Source<Profile>(profile));
   ExtensionService* service = profile->GetExtensionService();
   if (service && service->is_ready())
@@ -249,10 +250,10 @@ bool BackgroundApplicationListModel::IsBackgroundApp(
 }
 
 void BackgroundApplicationListModel::Observe(
-    NotificationType type,
+    int type,
     const NotificationSource& source,
     const NotificationDetails& details) {
-  if (type == NotificationType::EXTENSIONS_READY) {
+  if (type == chrome::NOTIFICATION_EXTENSIONS_READY) {
     Update();
     return;
   }
@@ -260,11 +261,11 @@ void BackgroundApplicationListModel::Observe(
   if (!service || !service->is_ready())
     return;
 
-  switch (type.value) {
-    case NotificationType::EXTENSION_LOADED:
+  switch (type) {
+    case chrome::NOTIFICATION_EXTENSION_LOADED:
       OnExtensionLoaded(Details<Extension>(details).ptr());
       break;
-    case NotificationType::EXTENSION_UNLOADED:
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED:
       OnExtensionUnloaded(Details<UnloadedExtensionInfo>(details)->extension);
       break;
     default:

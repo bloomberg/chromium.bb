@@ -8,8 +8,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -34,7 +34,7 @@ TakePhotoDialog::TakePhotoDialog()
   camera_controller_.set_frame_height(kFrameHeight);
   registrar_.Add(
       this,
-      NotificationType::SCREEN_LOCK_STATE_CHANGED,
+      chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
       NotificationService::AllSources());
 }
 
@@ -109,10 +109,10 @@ void TakePhotoDialog::OnCaptureFailure() {
   take_photo_view_->ShowCameraError();
 }
 
-void TakePhotoDialog::Observe(NotificationType type,
+void TakePhotoDialog::Observe(int type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
-  if (type != NotificationType::SCREEN_LOCK_STATE_CHANGED)
+  if (type != chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED)
     return;
 
   bool is_screen_locked = *Details<bool>(details).ptr();

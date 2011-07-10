@@ -32,6 +32,7 @@
 #include "chrome/browser/ui/gtk/tabs/tab_strip_gtk.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/native_web_keyboard_event.h"
@@ -300,7 +301,7 @@ void FindBarGtk::InitWidgets() {
   gtk_box_pack_end(GTK_BOX(hbox), border_bin_, TRUE, TRUE, 0);
 
   theme_service_->InitThemesFor(this);
-  registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
+  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  Source<ThemeService>(theme_service_));
 
   g_signal_connect(widget(), "parent-set", G_CALLBACK(OnParentSet), this);
@@ -456,10 +457,10 @@ FindBarTesting* FindBarGtk::GetFindBarTesting() {
   return this;
 }
 
-void FindBarGtk::Observe(NotificationType type,
+void FindBarGtk::Observe(int type,
                          const NotificationSource& source,
                          const NotificationDetails& details) {
-  DCHECK_EQ(type.value, NotificationType::BROWSER_THEME_CHANGED);
+  DCHECK_EQ(type, chrome::NOTIFICATION_BROWSER_THEME_CHANGED);
 
   // Force reshapings of the find bar window.
   container_width_ = -1;

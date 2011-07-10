@@ -29,11 +29,11 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/codec/png_codec.h"
 
@@ -103,9 +103,10 @@ void UpdateOwnership(bool is_owner) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   g_user_manager.Get().set_current_user_is_owner(is_owner);
-  NotificationService::current()->Notify(NotificationType::OWNERSHIP_CHECKED,
-                                         NotificationService::AllSources(),
-                                         NotificationService::NoDetails());
+  NotificationService::current()->Notify(
+      chrome::NOTIFICATION_OWNERSHIP_CHECKED,
+      NotificationService::AllSources(),
+      NotificationService::NoDetails());
   if (is_owner) {
     // Also update cached value.
     UserCrosSettingsProvider::UpdateCachedOwner(
@@ -537,7 +538,7 @@ void UserManager::OnImageLoaded(const std::string& username,
   if (should_save_image)
     SaveUserImage(username, image);
   NotificationService::current()->Notify(
-      NotificationType::LOGIN_USER_IMAGE_CHANGED,
+      chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
       Source<UserManager>(this),
       Details<const User>(&user));
 }
@@ -552,7 +553,7 @@ UserManager::UserManager()
       current_user_is_owner_(false),
       current_user_is_new_(false),
       user_is_logged_in_(false) {
-  registrar_.Add(this, NotificationType::OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED,
+  registrar_.Add(this, chrome::NOTIFICATION_OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED,
       NotificationService::AllSources());
 }
 
@@ -602,7 +603,7 @@ void RealTPMTokenInfoDelegate::GetTokenInfo(std::string* token_name,
 
 void UserManager::NotifyOnLogin() {
   NotificationService::current()->Notify(
-      NotificationType::LOGIN_USER_CHANGED,
+      chrome::NOTIFICATION_LOGIN_USER_CHANGED,
       Source<UserManager>(this),
       Details<const User>(&logged_in_user_));
 
@@ -629,10 +630,10 @@ void UserManager::NotifyOnLogin() {
       NewRunnableFunction(&CheckOwnership));
 }
 
-void UserManager::Observe(NotificationType type,
+void UserManager::Observe(int type,
                           const NotificationSource& source,
                           const NotificationDetails& details) {
-  if (type == NotificationType::OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED) {
+  if (type == chrome::NOTIFICATION_OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED) {
     BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
         NewRunnableFunction(&CheckOwnership));
   }

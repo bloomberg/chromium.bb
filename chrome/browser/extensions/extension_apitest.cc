@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/extension_test_api.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/common/notification_registrar.h"
 
@@ -26,9 +27,9 @@ ExtensionApiTest::~ExtensionApiTest() {}
 ExtensionApiTest::ResultCatcher::ResultCatcher()
     : profile_restriction_(NULL),
       waiting_(false) {
-  registrar_.Add(this, NotificationType::EXTENSION_TEST_PASSED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_TEST_PASSED,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::EXTENSION_TEST_FAILED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_TEST_FAILED,
                  NotificationService::AllSources());
 }
 
@@ -59,15 +60,15 @@ bool ExtensionApiTest::ResultCatcher::GetNextResult() {
 }
 
 void ExtensionApiTest::ResultCatcher::Observe(
-    NotificationType type, const NotificationSource& source,
+    int type, const NotificationSource& source,
     const NotificationDetails& details) {
   if (profile_restriction_ &&
       Source<Profile>(source).ptr() != profile_restriction_) {
     return;
   }
 
-  switch (type.value) {
-    case NotificationType::EXTENSION_TEST_PASSED:
+  switch (type) {
+    case chrome::NOTIFICATION_EXTENSION_TEST_PASSED:
       VLOG(1) << "Got EXTENSION_TEST_PASSED notification.";
       results_.push_back(true);
       messages_.push_back("");
@@ -75,7 +76,7 @@ void ExtensionApiTest::ResultCatcher::Observe(
         MessageLoopForUI::current()->Quit();
       break;
 
-    case NotificationType::EXTENSION_TEST_FAILED:
+    case chrome::NOTIFICATION_EXTENSION_TEST_FAILED:
       VLOG(1) << "Got EXTENSION_TEST_FAILED notification.";
       results_.push_back(false);
       messages_.push_back(*(Details<std::string>(details).ptr()));

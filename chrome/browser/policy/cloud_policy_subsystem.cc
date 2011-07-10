@@ -16,11 +16,11 @@
 #include "chrome/browser/policy/device_token_fetcher.h"
 #include "chrome/browser/policy/policy_notifier.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 
 namespace {
 
@@ -154,10 +154,10 @@ void CloudPolicySubsystem::UpdatePolicyRefreshRate(int64 refresh_rate) {
   }
 }
 
-void CloudPolicySubsystem::Observe(NotificationType type,
+void CloudPolicySubsystem::Observe(int type,
                                    const NotificationSource& source,
                                    const NotificationDetails& details) {
-  if (type == NotificationType::PREF_CHANGED) {
+  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
     DCHECK_EQ(*(Details<std::string>(details).ptr()),
               std::string(refresh_pref_name_));
     PrefService* local_state = g_browser_process->local_state();

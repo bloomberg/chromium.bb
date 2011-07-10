@@ -6,6 +6,7 @@
 
 #include "base/platform_file.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -118,7 +119,7 @@ void MHTMLGenerationManager::JobFinished(int job_id, bool success) {
     details.success = success;
 
     NotificationService::current()->Notify(
-        NotificationType::MHTML_GENERATED,
+        chrome::NOTIFICATION_MHTML_GENERATED,
         Source<RenderViewHost>(tab_contents->render_view_host()),
         Details<NotificationDetails>(&details));
   }

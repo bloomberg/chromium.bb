@@ -31,9 +31,10 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "chrome/browser/internal_auth.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 #include "content/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/libevent/evdns.h"
@@ -153,7 +154,7 @@ inline size_t strlen(const uint8* s) {
 void SendNotification() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   NotificationService::current()->Notify(
-      NotificationType::WEB_SOCKET_PROXY_STARTED,
+      chrome::NOTIFICATION_WEB_SOCKET_PROXY_STARTED,
       NotificationService::AllSources(), NotificationService::NoDetails());
 }
 

@@ -18,6 +18,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
@@ -144,7 +145,7 @@ void BookmarkModel::Load() {
 
   // Listen for changes to favicons so that we can update the favicon of the
   // node appropriately.
-  registrar_.Add(this, NotificationType::FAVICON_CHANGED,
+  registrar_.Add(this, chrome::NOTIFICATION_FAVICON_CHANGED,
                  Source<Profile>(profile_));
 
   // Load the bookmarks. BookmarkStorage notifies us when done.
@@ -600,7 +601,7 @@ void BookmarkModel::DoneLoading(
 
   // And generic notification.
   NotificationService::current()->Notify(
-      NotificationType::BOOKMARK_MODEL_LOADED,
+      chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED,
       Source<Profile>(profile_),
       NotificationService::NoDetails());
 }
@@ -652,7 +653,7 @@ void BookmarkModel::RemoveAndDeleteNode(BookmarkNode* delete_me) {
   }
 
   NotificationService::current()->Notify(
-      NotificationType::URLS_STARRED,
+      chrome::NOTIFICATION_URLS_STARRED,
       Source<Profile>(profile_),
       Details<history::URLsStarredDetails>(&details));
 }
@@ -675,7 +676,7 @@ BookmarkNode* BookmarkModel::AddNode(BookmarkNode* parent,
     history::URLsStarredDetails details(true);
     details.changed_urls.insert(node->GetURL());
     NotificationService::current()->Notify(
-        NotificationType::URLS_STARRED,
+        chrome::NOTIFICATION_URLS_STARRED,
         Source<Profile>(profile_),
         Details<history::URLsStarredDetails>(&details));
   }
@@ -768,11 +769,11 @@ void BookmarkModel::CancelPendingFaviconLoadRequests(BookmarkNode* node) {
   }
 }
 
-void BookmarkModel::Observe(NotificationType type,
+void BookmarkModel::Observe(int type,
                             const NotificationSource& source,
                             const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::FAVICON_CHANGED: {
+  switch (type) {
+    case chrome::NOTIFICATION_FAVICON_CHANGED: {
       // Prevent the observers from getting confused for multiple favicon loads.
       Details<history::FaviconChangeDetails> favicon_details(details);
       for (std::set<GURL>::const_iterator i = favicon_details->urls.begin();

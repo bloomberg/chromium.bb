@@ -255,17 +255,17 @@ ExtensionWebNavigationEventRouter::~ExtensionWebNavigationEventRouter() {}
 void ExtensionWebNavigationEventRouter::Init() {
   if (registrar_.IsEmpty()) {
     registrar_.Add(this,
-                   NotificationType::CREATING_NEW_WINDOW,
+                   content::NOTIFICATION_CREATING_NEW_WINDOW,
                    NotificationService::AllSources());
   }
 }
 
 void ExtensionWebNavigationEventRouter::Observe(
-    NotificationType type,
+    int type,
     const NotificationSource& source,
     const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::CREATING_NEW_WINDOW:
+  switch (type) {
+    case content::NOTIFICATION_CREATING_NEW_WINDOW:
       CreatingNewWindow(
           Source<TabContents>(source).ptr(),
           Details<const ViewHostMsg_CreateWindow_Params>(details).ptr());

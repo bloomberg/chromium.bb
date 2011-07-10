@@ -11,10 +11,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/browser_theme_pack.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "grit/ui_resources.h"
@@ -215,7 +215,7 @@ void ThemeService::Init(Profile* profile) {
   // installed but not loaded (which may confuse listeners to
   // BROWSER_THEME_CHANGED).
   registrar_.Add(this,
-                 NotificationType::EXTENSION_LOADED,
+                 chrome::NOTIFICATION_EXTENSION_LOADED,
                  Source<Profile>(profile_));
 
   LoadThemePrefs();
@@ -602,7 +602,7 @@ void ThemeService::NotifyThemeChanged() {
   VLOG(1) << "Sending BROWSER_THEME_CHANGED";
   // Redraw!
   NotificationService* service = NotificationService::current();
-  service->Notify(NotificationType::BROWSER_THEME_CHANGED,
+  service->Notify(chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                   Source<ThemeService>(this),
                   NotificationService::NoDetails());
 #if defined(OS_MACOSX)
@@ -616,10 +616,10 @@ void ThemeService::FreePlatformCaches() {
 }
 #endif
 
-void ThemeService::Observe(NotificationType type,
+void ThemeService::Observe(int type,
                            const NotificationSource& source,
                            const NotificationDetails& details) {
-  DCHECK(type == NotificationType::EXTENSION_LOADED);
+  DCHECK(type == chrome::NOTIFICATION_EXTENSION_LOADED);
   const Extension* extension = Details<const Extension>(details).ptr();
   if (!extension->is_theme()) {
     return;

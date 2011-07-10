@@ -37,7 +37,7 @@ class ThemeInstallBubbleView : public NotificationObserver,
   virtual ~ThemeInstallBubbleView();
 
   // NotificationObserver
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

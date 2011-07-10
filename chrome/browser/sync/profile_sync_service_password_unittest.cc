@@ -27,6 +27,7 @@
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/sync/engine/test_id_factory.h"
@@ -34,7 +35,6 @@
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_observer_mock.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "webkit/glue/password_form.h"
 
@@ -161,10 +161,10 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
     notification_service_ = new ThreadNotificationService(&db_thread_);
     notification_service_->Init();
     registrar_.Add(&observer_,
-        NotificationType::SYNC_CONFIGURE_DONE,
+        chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
         NotificationService::AllSources());
     registrar_.Add(&observer_,
-        NotificationType::SYNC_CONFIGURE_BLOCKED,
+        chrome::NOTIFICATION_SYNC_CONFIGURE_BLOCKED,
         NotificationService::AllSources());
   }
 
@@ -222,11 +222,11 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
 
       EXPECT_CALL(observer_,
           Observe(
-              NotificationType(NotificationType::SYNC_CONFIGURE_DONE),_,_));
+              int(chrome::NOTIFICATION_SYNC_CONFIGURE_DONE),_,_));
       EXPECT_CALL(observer_,
           Observe(
-              NotificationType(
-              NotificationType::SYNC_CONFIGURE_BLOCKED),_,_))
+              int(
+              chrome::NOTIFICATION_SYNC_CONFIGURE_BLOCKED),_,_))
           .WillOnce(InvokeWithoutArgs(QuitMessageLoop));
 
       service_->RegisterDataTypeController(data_type_controller);

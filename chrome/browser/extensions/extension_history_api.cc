@@ -15,8 +15,8 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 
 namespace keys = extension_history_api_constants;
 
@@ -72,23 +72,23 @@ void ExtensionHistoryEventRouter::ObserveProfile(Profile* profile) {
   NotificationSource source = Source<Profile>(profile);
   CHECK(registrar_.IsEmpty());
   registrar_.Add(this,
-                 NotificationType::HISTORY_URL_VISITED,
+                 chrome::NOTIFICATION_HISTORY_URL_VISITED,
                  source);
   registrar_.Add(this,
-                 NotificationType::HISTORY_URLS_DELETED,
+                 chrome::NOTIFICATION_HISTORY_URLS_DELETED,
                  source);
 }
 
-void ExtensionHistoryEventRouter::Observe(NotificationType type,
+void ExtensionHistoryEventRouter::Observe(int type,
                                           const NotificationSource& source,
                                           const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::HISTORY_URL_VISITED:
+  switch (type) {
+    case chrome::NOTIFICATION_HISTORY_URL_VISITED:
       HistoryUrlVisited(
           Source<Profile>(source).ptr(),
           Details<const history::URLVisitedDetails>(details).ptr());
       break;
-    case NotificationType::HISTORY_URLS_DELETED:
+    case chrome::NOTIFICATION_HISTORY_URLS_DELETED:
       HistoryUrlsRemoved(
           Source<Profile>(source).ptr(),
           Details<const history::URLsDeletedDetails>(details).ptr());

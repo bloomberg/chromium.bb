@@ -13,7 +13,6 @@
 #include "content/common/notification_registrar.h"
 
 class NotificationDetails;
-class NotificationType;
 class NotificationSource;
 
 namespace browser_sync {
@@ -32,7 +31,7 @@ class BookmarkDataTypeController : public FrontendDataTypeController,
   virtual syncable::ModelType type() const;
 
   // NotificationObserver interface.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

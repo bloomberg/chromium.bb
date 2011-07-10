@@ -24,18 +24,12 @@ bool NotificationService::HasKey(const NotificationSourceMap& map,
 
 NotificationService::NotificationService() {
   DCHECK(current() == NULL);
-#ifndef NDEBUG
-  memset(observer_counts_, 0, sizeof(observer_counts_));
-#endif
-
   lazy_tls_ptr.Pointer()->Set(this);
 }
 
 void NotificationService::AddObserver(NotificationObserver* observer,
-                                      NotificationType type,
+                                      int type,
                                       const NotificationSource& source) {
-  DCHECK(type.value < NotificationType::NOTIFICATION_TYPE_COUNT);
-
   // We have gotten some crashes where the observer pointer is NULL. The problem
   // is that this happens when we actually execute a notification, so have no
   // way of knowing who the bad observer was. We want to know when this happens
@@ -44,81 +38,78 @@ void NotificationService::AddObserver(NotificationObserver* observer,
   CHECK(observer);
 
   NotificationObserverList* observer_list;
-  if (HasKey(observers_[type.value], source)) {
-    observer_list = observers_[type.value][source.map_key()];
+  if (HasKey(observers_[type], source)) {
+    observer_list = observers_[type][source.map_key()];
   } else {
     observer_list = new NotificationObserverList;
-    observers_[type.value][source.map_key()] = observer_list;
+    observers_[type][source.map_key()] = observer_list;
   }
 
   observer_list->AddObserver(observer);
 #ifndef NDEBUG
-  ++observer_counts_[type.value];
+  ++observer_counts_[type];
 #endif
 }
 
 void NotificationService::RemoveObserver(NotificationObserver* observer,
-                                         NotificationType type,
+                                         int type,
                                          const NotificationSource& source) {
-  DCHECK(type.value < NotificationType::NOTIFICATION_TYPE_COUNT);
-
   // This is a very serious bug.  An object is most likely being deleted on
   // the wrong thread, and as a result another thread's NotificationService
   // has its deleted pointer in its map.  A garbge object will be called in the
   // future.
   // NOTE: when this check shows crashes, use BrowserThread::DeleteOnIOThread or
   // other variants as the trait on the object.
-  CHECK(HasKey(observers_[type.value], source));
+  CHECK(HasKey(observers_[type], source));
 
   NotificationObserverList* observer_list =
-      observers_[type.value][source.map_key()];
+      observers_[type][source.map_key()];
   if (observer_list) {
     observer_list->RemoveObserver(observer);
 #ifndef NDEBUG
-    --observer_counts_[type.value];
+    --observer_counts_[type];
 #endif
   }
 
   // TODO(jhughes): Remove observer list from map if empty?
 }
 
-void NotificationService::Notify(NotificationType type,
+void NotificationService::Notify(int type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {
-  DCHECK(type.value > NotificationType::ALL) <<
+  DCHECK(type > content::NOTIFICATION_ALL) <<
       "Allowed for observing, but not posting.";
-  DCHECK(type.value < NotificationType::NOTIFICATION_TYPE_COUNT);
 
   // There's no particular reason for the order in which the different
   // classes of observers get notified here.
 
   // Notify observers of all types and all sources
-  if (HasKey(observers_[NotificationType::ALL], AllSources()) &&
+  if (HasKey(observers_[content::NOTIFICATION_ALL], AllSources()) &&
       source != AllSources()) {
     FOR_EACH_OBSERVER(NotificationObserver,
-       *observers_[NotificationType::ALL][AllSources().map_key()],
+       *observers_[content::NOTIFICATION_ALL][AllSources().map_key()],
        Observe(type, source, details));
   }
 
   // Notify observers of all types and the given source
-  if (HasKey(observers_[NotificationType::ALL], source)) {
+  if (HasKey(observers_[content::NOTIFICATION_ALL], source)) {
     FOR_EACH_OBSERVER(NotificationObserver,
-        *observers_[NotificationType::ALL][source.map_key()],
+        *observers_[content::NOTIFICATION_ALL][source.map_key()],
         Observe(type, source, details));
   }
 
   // Notify observers of the given type and all sources
-  if (HasKey(observers_[type.value], AllSources()) &&
+  if (HasKey(observers_[type], AllSources()) &&
       source != AllSources()) {
     FOR_EACH_OBSERVER(NotificationObserver,
-                      *observers_[type.value][AllSources().map_key()],
+                      *observers_[type][AllSources().map_key()],
                       Observe(type, source, details));
   }
 
   // Notify observers of the given type and the given source
-  if (HasKey(observers_[type.value], source)) {
+  if (HasKey(observers_[type], source)) {
     FOR_EACH_OBSERVER(NotificationObserver,
-                      *observers_[type.value][source.map_key()],
+                      *observers_[type][source.map_key()],
                       Observe(type, source, details));
   }
 }
@@ -128,7 +119,7 @@ NotificationService::~NotificationService() {
   lazy_tls_ptr.Pointer()->Set(NULL);
 
 #ifndef NDEBUG
-  for (int i = 0; i < NotificationType::NOTIFICATION_TYPE_COUNT; i++) {
+  for (size_t i = 0; i < observer_counts_.size(); i++) {
     if (observer_counts_[i] > 0) {
       // This may not be completely fixable -- see
       // http://code.google.com/p/chromium/issues/detail?id=11010 .
@@ -138,7 +129,7 @@ NotificationService::~NotificationService() {
   }
 #endif
 
-  for (int i = 0; i < NotificationType::NOTIFICATION_TYPE_COUNT; i++) {
+  for (size_t i = 0; i < observers_.size(); i++) {
     NotificationSourceMap omap = observers_[i];
     for (NotificationSourceMap::iterator it = omap.begin();
          it != omap.end(); ++it)

@@ -9,10 +9,10 @@
 #include "base/memory/scoped_nsobject.h"
 #include "base/string_util.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -27,12 +27,12 @@ namespace BaseBubbleControllerInternal {
 class Bridge : public NotificationObserver {
  public:
   explicit Bridge(BaseBubbleController* controller) : controller_(controller) {
-    registrar_.Add(this, NotificationType::TAB_CONTENTS_HIDDEN,
+    registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_HIDDEN,
         NotificationService::AllSources());
   }
 
   // NotificationObserver:
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
     [controller_ close];

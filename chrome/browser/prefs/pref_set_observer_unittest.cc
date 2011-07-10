@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/prefs/pref_set_observer.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_pref_service.h"
 #include "content/common/notification_details.h"
@@ -73,7 +74,7 @@ TEST_F(PrefSetObserverTest, Observe) {
   scoped_ptr<PrefSetObserver> pref_set(CreatePrefSetObserver(&observer));
 
   EXPECT_CALL(observer,
-              Observe(NotificationType(NotificationType::PREF_CHANGED),
+              Observe(int(chrome::NOTIFICATION_PREF_CHANGED),
                       Source<PrefService>(pref_service_.get()),
                       PrefNameDetails(prefs::kHomePage)));
   pref_service_->SetUserPref(prefs::kHomePage,
@@ -81,7 +82,7 @@ TEST_F(PrefSetObserverTest, Observe) {
   Mock::VerifyAndClearExpectations(&observer);
 
   EXPECT_CALL(observer,
-              Observe(NotificationType(NotificationType::PREF_CHANGED),
+              Observe(int(chrome::NOTIFICATION_PREF_CHANGED),
                       Source<PrefService>(pref_service_.get()),
                       PrefNameDetails(prefs::kHomePageIsNewTabPage)));
   pref_service_->SetUserPref(prefs::kHomePageIsNewTabPage,

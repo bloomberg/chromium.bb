@@ -65,7 +65,7 @@ class TabCloseableStateWatcher : public ::TabCloseableStateWatcher,
   virtual void OnBrowserRemoved(const Browser* browser);
 
   // NotificationObserver implementation:
-  virtual void Observe(NotificationType type, const NotificationSource& source,
+  virtual void Observe(int type, const NotificationSource& source,
                        const NotificationDetails& details);
 
   // Called by private class TabStripWatcher for TabStripModelObserver

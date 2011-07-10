@@ -24,7 +24,7 @@ void UserMetrics::Record(const char *action) {
     return;
   }
 
-  NotificationService::current()->Notify(NotificationType::USER_ACTION,
+  NotificationService::current()->Notify(content::NOTIFICATION_USER_ACTION,
                                          NotificationService::AllSources(),
                                          Details<const char*>(&action));
 }

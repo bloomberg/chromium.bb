@@ -16,8 +16,8 @@
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 #include "content/common/view_messages.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/gfx/rect.h"
@@ -62,22 +62,22 @@ TouchBrowserFrameView::TouchBrowserFrameView(BrowserFrame* frame,
       focus_listener_added_(false),
       keyboard_(NULL) {
   registrar_.Add(this,
-                 NotificationType::NAV_ENTRY_COMMITTED,
+                 chrome::NAV_ENTRY_COMMITTED,
                  NotificationService::AllSources());
   registrar_.Add(this,
-                 NotificationType::FOCUS_CHANGED_IN_PAGE,
+                 chrome::FOCUS_CHANGED_IN_PAGE,
                  NotificationService::AllSources());
   registrar_.Add(this,
-                 NotificationType::TAB_CONTENTS_DESTROYED,
+                 chrome::TAB_CONTENTS_DESTROYED,
                  NotificationService::AllSources());
   registrar_.Add(this,
-                 NotificationType::HIDE_KEYBOARD_INVOKED,
+                 chrome::HIDE_KEYBOARD_INVOKED,
                  NotificationService::AllSources());
   registrar_.Add(this,
-                 NotificationType::SET_KEYBOARD_HEIGHT_INVOKED,
+                 chrome::SET_KEYBOARD_HEIGHT_INVOKED,
                  NotificationService::AllSources());
   registrar_.Add(this,
-                 NotificationType::EDITABLE_ELEMENT_TOUCHED,
+                 chrome::EDITABLE_ELEMENT_TOUCHED,
                  NotificationService::AllSources());
 
   browser_view->browser()->tabstrip_model()->AddObserver(this);
@@ -260,11 +260,11 @@ void TouchBrowserFrameView::TabStripEmpty() {
   }
 }
 
-void TouchBrowserFrameView::Observe(NotificationType type,
+void TouchBrowserFrameView::Observe(int type,
                                     const NotificationSource& source,
                                     const NotificationDetails& details) {
   Browser* browser = browser_view()->browser();
-  if (type == NotificationType::FOCUS_CHANGED_IN_PAGE) {
+  if (type == chrome::FOCUS_CHANGED_IN_PAGE) {
     // Only modify the keyboard state if the currently active tab sent the
     // notification.
     const TabContents* current_tab = browser->GetSelectedTabContents();
@@ -278,7 +278,7 @@ void TouchBrowserFrameView::Observe(NotificationType type,
     // can be determined after tab switching.
     GetFocusedStateAccessor()->SetProperty(
         source_tab->property_bag(), editable);
-  } else if (type == NotificationType::NAV_ENTRY_COMMITTED) {
+  } else if (type == chrome::NAV_ENTRY_COMMITTED) {
     NavigationController* controller =
         Source<NavigationController>(source).ptr();
     Browser* source_browser = Browser::GetBrowserForController(
@@ -299,12 +299,12 @@ void TouchBrowserFrameView::Observe(NotificationType type,
     }
     if (source_browser == browser)
       UpdateKeyboardAndLayout(keyboard_type == GENERIC);
-  } else if (type == NotificationType::TAB_CONTENTS_DESTROYED) {
+  } else if (type == chrome::TAB_CONTENTS_DESTROYED) {
     GetFocusedStateAccessor()->DeleteProperty(
         Source<TabContents>(source).ptr()->property_bag());
-  } else if (type == NotificationType::PREF_CHANGED) {
+  } else if (type == chrome::PREF_CHANGED) {
     OpaqueBrowserFrameView::Observe(type, source, details);
-  } else if (type == NotificationType::HIDE_KEYBOARD_INVOKED) {
+  } else if (type == chrome::HIDE_KEYBOARD_INVOKED) {
     TabContents* tab_contents =
         browser_view()->browser()->GetSelectedTabContents();
     if (tab_contents) {
@@ -312,7 +312,7 @@ void TouchBrowserFrameView::Observe(NotificationType type,
                                              false);
     }
     UpdateKeyboardAndLayout(false);
-  } else if (type == NotificationType::SET_KEYBOARD_HEIGHT_INVOKED) {
+  } else if (type == chrome::SET_KEYBOARD_HEIGHT_INVOKED) {
     // TODO(penghuang) Allow extension conrtol the virtual keyboard directly
     // instead of using Notification.
     int height = *reinterpret_cast<int*>(details.map_key());
@@ -323,7 +323,7 @@ void TouchBrowserFrameView::Observe(NotificationType type,
       keyboard_height_ = height;
       parent()->Layout();
     }
-  } else if (type == NotificationType::EDITABLE_ELEMENT_TOUCHED) {
+  } else if (type == chrome::EDITABLE_ELEMENT_TOUCHED) {
     UpdateKeyboardAndLayout(true);
   }
 }

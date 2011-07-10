@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -70,7 +71,7 @@ TabCloseableStateWatcher::TabCloseableStateWatcher()
               switches::kGuestSession)),
       waiting_for_browser_(false) {
   BrowserList::AddObserver(this);
-  notification_registrar_.Add(this, NotificationType::APP_EXITING,
+  notification_registrar_.Add(this, content::NOTIFICATION_APP_EXITING,
       NotificationService::AllSources());
 }
 
@@ -187,9 +188,9 @@ void TabCloseableStateWatcher::OnBrowserRemoved(const Browser* browser) {
 ////////////////////////////////////////////////////////////////////////////////
 // TabCloseableStateWatcher, NotificationObserver implementation:
 
-void TabCloseableStateWatcher::Observe(NotificationType type,
+void TabCloseableStateWatcher::Observe(int type,
     const NotificationSource& source, const NotificationDetails& details) {
-  if (type.value != NotificationType::APP_EXITING)
+  if (type != content::NOTIFICATION_APP_EXITING)
     NOTREACHED();
   if (!signing_off_) {
     signing_off_ = true;
@@ -260,7 +261,7 @@ void TabCloseableStateWatcher::SetCloseableState(bool closeable) {
 
   // Notify of change in tab closeable state.
   NotificationService::current()->Notify(
-      NotificationType::TAB_CLOSEABLE_STATE_CHANGED,
+      chrome::NOTIFICATION_TAB_CLOSEABLE_STATE_CHANGED,
       NotificationService::AllSources(),
       Details<bool>(&can_close_tab_));
 }

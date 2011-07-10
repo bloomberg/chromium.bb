@@ -20,9 +20,9 @@ class TestNotificationTracker : public NotificationObserver {
   // Records one received notification.
   struct Event {
     Event();
-    Event(NotificationType t, NotificationSource s, NotificationDetails d);
+    Event(int t, NotificationSource s, NotificationDetails d);
 
-    NotificationType type;
+    int type;
     NotificationSource source;
     NotificationDetails details;
   };
@@ -34,11 +34,11 @@ class TestNotificationTracker : public NotificationObserver {
   virtual ~TestNotificationTracker();
 
   // Makes this object listen for the given notification with the given source.
-  void ListenFor(NotificationType type, const NotificationSource& source);
+  void ListenFor(int type, const NotificationSource& source);
 
   // Makes this object listen for notifications of the given type coming from
   // any source.
-  void ListenForAll(NotificationType type);
+  void ListenForAll(int type);
 
   // Clears the list of events.
   void Reset();
@@ -52,12 +52,12 @@ class TestNotificationTracker : public NotificationObserver {
   //   Check1AndReset(NOTIFY_A);
   //   <do stuff>
   //   Check2AndReset(NOTIFY_B, NOTIFY_C)
-  bool Check1AndReset(NotificationType type);
-  bool Check2AndReset(NotificationType type1,
-                      NotificationType type2);
-  bool Check3AndReset(NotificationType type1,
-                      NotificationType type2,
-                      NotificationType type3);
+  bool Check1AndReset(int type);
+  bool Check2AndReset(int type1,
+                      int type2);
+  bool Check3AndReset(int type1,
+                      int type2,
+                      int type3);
 
   // Returns the number of notifications received since the last reset.
   size_t size() const { return events_.size(); }
@@ -67,7 +67,7 @@ class TestNotificationTracker : public NotificationObserver {
   const Event& at(size_t i) const { return events_[i]; }
 
  protected:
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
  private:

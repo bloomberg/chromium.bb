@@ -37,7 +37,7 @@ SiteInstance::SiteInstance(BrowsingInstance* browsing_instance)
       has_site_(false) {
   DCHECK(browsing_instance);
 
-  registrar_.Add(this, NotificationType::RENDERER_PROCESS_TERMINATED,
+  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                  NotificationService::AllSources());
 }
 
@@ -232,10 +232,10 @@ RenderProcessHost::Type SiteInstance::GetRendererType() {
   return RendererTypeForURL(site_);
 }
 
-void SiteInstance::Observe(NotificationType type,
+void SiteInstance::Observe(int type,
                            const NotificationSource& source,
                            const NotificationDetails& details) {
-  DCHECK(type == NotificationType::RENDERER_PROCESS_TERMINATED);
+  DCHECK(type == content::NOTIFICATION_RENDERER_PROCESS_TERMINATED);
   RenderProcessHost* rph = Source<RenderProcessHost>(source).ptr();
   if (rph == process_)
     process_ = NULL;

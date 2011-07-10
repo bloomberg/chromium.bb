@@ -52,11 +52,11 @@ class DeleteTabContentsOnDestroyedObserver : public NotificationObserver {
       : source_(source),
         tab_to_delete_(tab_to_delete) {
     registrar_.Add(this,
-                   NotificationType::TAB_CONTENTS_DESTROYED,
+                   content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
                    Source<TabContents>(source->tab_contents()));
   }
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
     TabContentsWrapper* tab_to_delete = tab_to_delete_;

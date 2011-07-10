@@ -47,6 +47,7 @@
 #include "chrome/browser/ui/gtk/view_id_util.h"
 #include "chrome/browser/ui/omnibox/location_bar_util.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_resource.h"
@@ -331,7 +332,7 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
                    G_CALLBACK(&OnHboxSizeAllocateThunk), this);
 
   registrar_.Add(this,
-                 NotificationType::BROWSER_THEME_CHANGED,
+                 chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
   edit_bookmarks_enabled_.Init(prefs::kEditBookmarksEnabled,
                                profile_->GetPrefs(), this);
@@ -558,7 +559,7 @@ void LocationBarViewGtk::OnSetFocus() {
       l10n_util::GetStringUTF8(IDS_ACCNAME_LOCATION).c_str(),
       false);
   NotificationService::current()->Notify(
-      NotificationType::ACCESSIBILITY_CONTROL_FOCUSED,
+      chrome::NOTIFICATION_ACCESSIBILITY_CONTROL_FOCUSED,
       Source<Profile>(profile_),
       Details<AccessibilityTextBoxInfo>(&info));
 
@@ -662,7 +663,7 @@ void LocationBarViewGtk::UpdatePageActions() {
                        page_action_views_[i]->widget(), FALSE, FALSE, 0);
     }
     NotificationService::current()->Notify(
-        NotificationType::EXTENSION_PAGE_ACTION_COUNT_CHANGED,
+        chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_COUNT_CHANGED,
         Source<LocationBar>(this),
         NotificationService::NoDetails());
   }
@@ -688,7 +689,7 @@ void LocationBarViewGtk::InvalidatePageActions() {
   page_action_views_.reset();
   if (page_action_views_.size() != count_before) {
     NotificationService::current()->Notify(
-        NotificationType::EXTENSION_PAGE_ACTION_COUNT_CHANGED,
+        chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_COUNT_CHANGED,
         Source<LocationBar>(this),
         NotificationService::NoDetails());
   }
@@ -756,15 +757,15 @@ void LocationBarViewGtk::TestPageActionPressed(size_t index) {
   page_action_views_[index]->TestActivatePageAction();
 }
 
-void LocationBarViewGtk::Observe(NotificationType type,
+void LocationBarViewGtk::Observe(int type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {
-  if (type.value == NotificationType::PREF_CHANGED) {
+  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
     UpdateStarIcon();
     return;
   }
 
-  DCHECK_EQ(type.value, NotificationType::BROWSER_THEME_CHANGED);
+  DCHECK_EQ(type, chrome::NOTIFICATION_BROWSER_THEME_CHANGED);
 
   if (theme_service_->UsingNativeTheme()) {
     gtk_widget_modify_bg(tab_to_search_box_, GTK_STATE_NORMAL, NULL);
@@ -1523,7 +1524,7 @@ void LocationBarViewGtk::PageActionViewGtk::UpdateVisibility(
 
   if (visible != old_visible) {
     NotificationService::current()->Notify(
-        NotificationType::EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
+        chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
         Source<ExtensionAction>(page_action_),
         Details<TabContents>(contents));
   }

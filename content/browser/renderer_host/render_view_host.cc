@@ -31,12 +31,12 @@
 #include "content/browser/user_metrics.h"
 #include "content/common/bindings_policy.h"
 #include "content/common/content_constants.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/desktop_notification_messages.h"
 #include "content/common/drag_messages.h"
 #include "content/common/native_web_keyboard_event.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 #include "content/common/result_codes.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/common/url_constants.h"
@@ -116,7 +116,7 @@ RenderViewHost::RenderViewHost(SiteInstance* instance,
   content::GetContentClient()->browser()->RenderViewHostCreated(this);
 
   NotificationService::current()->Notify(
-      NotificationType::RENDER_VIEW_HOST_CREATED,
+      content::NOTIFICATION_RENDER_VIEW_HOST_CREATED,
       Source<RenderViewHost>(this),
       NotificationService::NoDetails());
 }
@@ -126,7 +126,7 @@ RenderViewHost::~RenderViewHost() {
       RenderViewHostObserver, observers_, RenderViewHostDestruction());
 
   NotificationService::current()->Notify(
-      NotificationType::RENDER_VIEW_HOST_DELETED,
+      content::NOTIFICATION_RENDER_VIEW_HOST_DELETED,
       Source<RenderViewHost>(this),
       NotificationService::NoDetails());
 
@@ -354,7 +354,7 @@ void RenderViewHost::ClosePage() {
     // TODO(creis): Should this be moved to Shutdown?  It may not be called for
     // RenderViewHosts that have been swapped out.
     NotificationService::current()->Notify(
-        NotificationType::RENDER_VIEW_HOST_WILL_CLOSE_RENDER_VIEW,
+        content::NOTIFICATION_RENDER_VIEW_HOST_WILL_CLOSE_RENDER_VIEW,
         Source<RenderViewHost>(this),
         NotificationService::NoDetails());
 
@@ -1051,7 +1051,7 @@ void RenderViewHost::OnUpdateDragCursor(WebDragOperation current_op) {
 
 void RenderViewHost::OnTargetDropACK() {
   NotificationService::current()->Notify(
-      NotificationType::RENDER_VIEW_HOST_DID_RECEIVE_DRAG_TARGET_DROP_ACK,
+      content::NOTIFICATION_RENDER_VIEW_HOST_DID_RECEIVE_DRAG_TARGET_DROP_ACK,
       Source<RenderViewHost>(this),
       NotificationService::NoDetails());
 }
@@ -1248,7 +1248,7 @@ void RenderViewHost::OnAccessibilityNotifications(
     }
 
     NotificationService::current()->Notify(
-        NotificationType::RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED,
+        content::NOTIFICATION_RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED,
         Source<RenderViewHost>(this),
         NotificationService::NoDetails());
   }
@@ -1265,7 +1265,7 @@ void RenderViewHost::OnScriptEvalResponse(int id, const ListValue& result) {
   }
   std::pair<int, Value*> details(id, result_value);
   NotificationService::current()->Notify(
-      NotificationType::EXECUTE_JAVASCRIPT_RESULT,
+      content::NOTIFICATION_EXECUTE_JAVASCRIPT_RESULT,
       Source<RenderViewHost>(this),
       Details<std::pair<int, Value*> >(&details));
 }

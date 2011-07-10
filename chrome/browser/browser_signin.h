@@ -66,7 +66,7 @@ class BrowserSignin : public NotificationObserver {
   virtual std::string GetSignedInUsername() const;
 
   // NotificationObserver implementation.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

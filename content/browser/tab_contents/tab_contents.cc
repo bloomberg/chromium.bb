@@ -199,7 +199,7 @@ TabContents::TabContents(Profile* profile,
   view_->CreateView(base_tab_contents ?
       base_tab_contents->view()->GetContainerSize() : gfx::Size());
 
-  registrar_.Add(this, NotificationType::RENDER_WIDGET_HOST_DESTROYED,
+  registrar_.Add(this, content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
                  NotificationService::AllSources());
 
   // Can only add observers after render_manager_.Init() is called, since that's
@@ -228,7 +228,7 @@ TabContents::~TabContents() {
 
   // Notify any observer that have a reference on this tab contents.
   NotificationService::current()->Notify(
-      NotificationType::TAB_CONTENTS_DESTROYED,
+      content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
       Source<TabContents>(this),
       NotificationService::NoDetails());
 
@@ -454,7 +454,7 @@ void TabContents::WasHidden() {
   }
 
   NotificationService::current()->Notify(
-      NotificationType::TAB_CONTENTS_HIDDEN,
+      content::NOTIFICATION_TAB_CONTENTS_HIDDEN,
       Source<TabContents>(this),
       NotificationService::NoDetails());
 }
@@ -889,7 +889,7 @@ void TabContents::OnDidFailProvisionalLoadWithError(
   details.set_error_code(error_code);
 
   NotificationService::current()->Notify(
-      NotificationType::FAIL_PROVISIONAL_LOAD_WITH_ERROR,
+      content::NOTIFICATION_FAIL_PROVISIONAL_LOAD_WITH_ERROR,
       Source<NavigationController>(&controller_),
       Details<ProvisionalLoadDetails>(&details));
 
@@ -914,7 +914,7 @@ void TabContents::OnDidLoadResourceFromMemoryCache(
                                      cert_id, cert_status);
 
   NotificationService::current()->Notify(
-      NotificationType::LOAD_FROM_MEMORY_CACHE,
+      content::NOTIFICATION_LOAD_FROM_MEMORY_CACHE,
       Source<NavigationController>(&controller_),
       Details<LoadFromMemoryCacheDetails>(&details));
 }
@@ -974,7 +974,7 @@ void TabContents::OnUpdateZoomLimits(int minimum_percent,
 
 void TabContents::OnFocusedNodeChanged(bool is_editable_node) {
   NotificationService::current()->Notify(
-      NotificationType::FOCUS_CHANGED_IN_PAGE,
+      content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
       Source<TabContents>(this),
       Details<const bool>(&is_editable_node));
 }
@@ -1002,8 +1002,8 @@ void TabContents::SetIsLoading(bool is_loading,
     delegate_->LoadingStateChanged(this);
   NotifyNavigationStateChanged(INVALIDATE_LOAD);
 
-  NotificationType type = is_loading ? NotificationType::LOAD_START :
-      NotificationType::LOAD_STOP;
+  int type = is_loading ? content::NOTIFICATION_LOAD_START :
+      content::NOTIFICATION_LOAD_STOP;
   NotificationDetails det = NotificationService::NoDetails();
   if (details)
       det = Details<LoadNotificationDetails>(details);
@@ -1195,7 +1195,7 @@ bool TabContents::UpdateTitleForEntry(NavigationEntry* entry,
   TitleUpdatedDetails details(entry, explicit_set);
 
   NotificationService::current()->Notify(
-      NotificationType::TAB_CONTENTS_TITLE_UPDATED,
+      content::NOTIFICATION_TAB_CONTENTS_TITLE_UPDATED,
       Source<TabContents>(this),
       Details<TitleUpdatedDetails>(&details));
 
@@ -1208,7 +1208,7 @@ void TabContents::NotifySwapped() {
   // pointer.  See Bug 1230284.
   notify_disconnection_ = true;
   NotificationService::current()->Notify(
-      NotificationType::TAB_CONTENTS_SWAPPED,
+      content::NOTIFICATION_TAB_CONTENTS_SWAPPED,
       Source<TabContents>(this),
       NotificationService::NoDetails());
 }
@@ -1216,7 +1216,7 @@ void TabContents::NotifySwapped() {
 void TabContents::NotifyConnected() {
   notify_disconnection_ = true;
   NotificationService::current()->Notify(
-      NotificationType::TAB_CONTENTS_CONNECTED,
+      content::NOTIFICATION_TAB_CONTENTS_CONNECTED,
       Source<TabContents>(this),
       NotificationService::NoDetails());
 }
@@ -1227,7 +1227,7 @@ void TabContents::NotifyDisconnected() {
 
   notify_disconnection_ = false;
   NotificationService::current()->Notify(
-      NotificationType::TAB_CONTENTS_DISCONNECTED,
+      content::NOTIFICATION_TAB_CONTENTS_DISCONNECTED,
       Source<TabContents>(this),
       NotificationService::NoDetails());
 }
@@ -1255,7 +1255,7 @@ ViewType::Type TabContents::GetRenderViewType() const {
 
 void TabContents::RenderViewCreated(RenderViewHost* render_view_host) {
   NotificationService::current()->Notify(
-      NotificationType::RENDER_VIEW_HOST_CREATED_FOR_TAB,
+      content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,
       Source<TabContents>(this),
       Details<RenderViewHost>(render_view_host));
   NavigationEntry* entry = controller_.GetActiveEntry();
@@ -1527,7 +1527,7 @@ void TabContents::DocumentOnLoadCompletedInMainFrame(
     RenderViewHost* render_view_host,
     int32 page_id) {
   NotificationService::current()->Notify(
-      NotificationType::LOAD_COMPLETED_MAIN_FRAME,
+      content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
       Source<TabContents>(this),
       Details<int>(&page_id));
 }
@@ -1790,11 +1790,11 @@ bool TabContents::CreateRenderViewForRenderManager(
   return true;
 }
 
-void TabContents::Observe(NotificationType type,
+void TabContents::Observe(int type,
                           const NotificationSource& source,
                           const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::RENDER_WIDGET_HOST_DESTROYED:
+  switch (type) {
+    case content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED:
       view_->RenderWidgetHostDestroyed(Source<RenderWidgetHost>(source).ptr());
       break;
     default:

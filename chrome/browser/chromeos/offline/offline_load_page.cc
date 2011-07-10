@@ -17,6 +17,7 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
@@ -24,8 +25,8 @@
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -71,7 +72,7 @@ OfflineLoadPage::OfflineLoadPage(TabContents* tab_contents,
       proceeded_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       in_test_(false) {
-  registrar_.Add(this, NotificationType::NETWORK_STATE_CHANGED,
+  registrar_.Add(this, chrome::NOTIFICATION_NETWORK_STATE_CHANGED,
                  NotificationService::AllSources());
 }
 
@@ -198,17 +199,17 @@ void OfflineLoadPage::DontProceed() {
   InterstitialPage::DontProceed();
 }
 
-void OfflineLoadPage::Observe(NotificationType type,
+void OfflineLoadPage::Observe(int type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
-  if (type.value == NotificationType::NETWORK_STATE_CHANGED) {
+  if (type == chrome::NOTIFICATION_NETWORK_STATE_CHANGED) {
     chromeos::NetworkStateDetails* state_details =
         Details<chromeos::NetworkStateDetails>(details).ptr();
     DVLOG(1) << "NetworkStateChanaged notification received: state="
              << state_details->state();
     if (state_details->state() ==
         chromeos::NetworkStateDetails::CONNECTED) {
-      registrar_.Remove(this, NotificationType::NETWORK_STATE_CHANGED,
+      registrar_.Remove(this, chrome::NOTIFICATION_NETWORK_STATE_CHANGED,
                         NotificationService::AllSources());
       Proceed();
     }

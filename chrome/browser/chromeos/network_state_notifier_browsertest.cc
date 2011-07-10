@@ -6,6 +6,7 @@
 
 #include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
 #include "chrome/browser/chromeos/cros/mock_network_library.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_registrar.h"
@@ -40,11 +41,11 @@ class NetworkStateNotifierTest : public CrosInProcessBrowserTest,
   }
 
   // NotificationObserver overrides.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    EXPECT_TRUE(NotificationType::NETWORK_STATE_CHANGED == type);
+    EXPECT_TRUE(chrome::NOTIFICATION_NETWORK_STATE_CHANGED == type);
     chromeos::NetworkStateDetails* state_details =
         Details<chromeos::NetworkStateDetails>(details).ptr();
     state_ = state_details->state();
@@ -52,7 +53,7 @@ class NetworkStateNotifierTest : public CrosInProcessBrowserTest,
 
   void WaitForNotification() {
     ui_test_utils::WaitForNotification(
-        NotificationType::NETWORK_STATE_CHANGED);
+        chrome::NOTIFICATION_NETWORK_STATE_CHANGED);
   }
 
  protected:
@@ -63,7 +64,7 @@ class NetworkStateNotifierTest : public CrosInProcessBrowserTest,
 IN_PROC_BROWSER_TEST_F(NetworkStateNotifierTest, TestConnected) {
   // NETWORK_STATE_CHAGNED has to be registered in UI thread.
   NotificationRegistrar registrar;
-  registrar.Add(this, NotificationType::NETWORK_STATE_CHANGED,
+  registrar.Add(this, chrome::NOTIFICATION_NETWORK_STATE_CHANGED,
                  NotificationService::AllSources());
   EXPECT_CALL(*mock_network_library_, Connected())
       .Times(1)
@@ -77,7 +78,7 @@ IN_PROC_BROWSER_TEST_F(NetworkStateNotifierTest, TestConnected) {
 
 IN_PROC_BROWSER_TEST_F(NetworkStateNotifierTest, TestConnecting) {
   NotificationRegistrar registrar;
-  registrar.Add(this, NotificationType::NETWORK_STATE_CHANGED,
+  registrar.Add(this, chrome::NOTIFICATION_NETWORK_STATE_CHANGED,
                  NotificationService::AllSources());
   EXPECT_CALL(*mock_network_library_, Connected())
       .Times(1)
@@ -95,7 +96,7 @@ IN_PROC_BROWSER_TEST_F(NetworkStateNotifierTest, TestConnecting) {
 
 IN_PROC_BROWSER_TEST_F(NetworkStateNotifierTest, TestDisconnected) {
   NotificationRegistrar registrar;
-  registrar.Add(this, NotificationType::NETWORK_STATE_CHANGED,
+  registrar.Add(this, chrome::NOTIFICATION_NETWORK_STATE_CHANGED,
                  NotificationService::AllSources());
   EXPECT_CALL(*mock_network_library_, Connected())
       .Times(1)

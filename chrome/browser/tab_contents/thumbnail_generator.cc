@@ -146,9 +146,9 @@ void ThumbnailGenerator::StartThumbnailing(TabContents* tab_contents) {
     // subclass, RenderViewHost when it is in a tab. We don't make thumbnails
     // for RenderViewHosts that aren't in tabs, or RenderWidgetHosts that
     // aren't views like select popups.
-    registrar_.Add(this, NotificationType::RENDER_VIEW_HOST_CREATED_FOR_TAB,
+    registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,
                    Source<TabContents>(tab_contents));
-    registrar_.Add(this, NotificationType::TAB_CONTENTS_DISCONNECTED,
+    registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_DISCONNECTED,
                    Source<TabContents>(tab_contents));
   }
 }
@@ -159,26 +159,26 @@ void ThumbnailGenerator::MonitorRenderer(RenderWidgetHost* renderer,
   bool currently_monitored =
       registrar_.IsRegistered(
         this,
-        NotificationType::RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK,
+        content::NOTIFICATION_RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK,
         renderer_source);
   if (monitor != currently_monitored) {
     if (monitor) {
       registrar_.Add(
           this,
-          NotificationType::RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK,
+          content::NOTIFICATION_RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK,
           renderer_source);
       registrar_.Add(
           this,
-          NotificationType::RENDER_WIDGET_VISIBILITY_CHANGED,
+          content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
           renderer_source);
     } else {
       registrar_.Remove(
           this,
-          NotificationType::RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK,
+          content::NOTIFICATION_RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK,
           renderer_source);
       registrar_.Remove(
           this,
-          NotificationType::RENDER_WIDGET_VISIBILITY_CHANGED,
+          content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
           renderer_source);
     }
   }
@@ -307,23 +307,23 @@ void ThumbnailGenerator::WidgetDidReceivePaintAtSizeAck(
   }
 }
 
-void ThumbnailGenerator::Observe(NotificationType type,
+void ThumbnailGenerator::Observe(int type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::RENDER_VIEW_HOST_CREATED_FOR_TAB: {
+  switch (type) {
+    case content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB: {
       // Install our observer for all new RVHs.
       RenderViewHost* renderer = Details<RenderViewHost>(details).ptr();
       MonitorRenderer(renderer, true);
       break;
     }
 
-    case NotificationType::RENDER_WIDGET_VISIBILITY_CHANGED:
+    case content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED:
       if (!*Details<bool>(details).ptr())
         WidgetHidden(Source<RenderWidgetHost>(source).ptr());
       break;
 
-    case NotificationType::RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK: {
+    case content::NOTIFICATION_RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK: {
       RenderWidgetHost::PaintAtSizeAckDetails* size_ack_details =
           Details<RenderWidgetHost::PaintAtSizeAckDetails>(details).ptr();
       WidgetDidReceivePaintAtSizeAck(
@@ -333,12 +333,12 @@ void ThumbnailGenerator::Observe(NotificationType type,
       break;
     }
 
-    case NotificationType::TAB_CONTENTS_DISCONNECTED:
+    case content::NOTIFICATION_TAB_CONTENTS_DISCONNECTED:
       TabContentsDisconnected(Source<TabContents>(source).ptr());
       break;
 
     default:
-      NOTREACHED() << "Unexpected notification type: " << type.value;
+      NOTREACHED() << "Unexpected notification type: " << type;
   }
 }
 

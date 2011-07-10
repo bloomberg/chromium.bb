@@ -397,7 +397,7 @@ void DraggedTabController::InitTabDragData(BaseTab* tab,
       drag_data->source_model_index);
   drag_data->pinned = source_tabstrip_->IsTabPinned(tab);
   registrar_.Add(this,
-                 NotificationType::TAB_CONTENTS_DESTROYED,
+                 content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
                  Source<TabContents>(drag_data->contents->tab_contents()));
 
   // We need to be the delegate so we receive messages about stuff, otherwise
@@ -471,10 +471,10 @@ DraggedTabController::GetJavaScriptDialogCreator() {
 ///////////////////////////////////////////////////////////////////////////////
 // DraggedTabController, NotificationObserver implementation:
 
-void DraggedTabController::Observe(NotificationType type,
+void DraggedTabController::Observe(int type,
                                    const NotificationSource& source,
                                    const NotificationDetails& details) {
-  DCHECK_EQ(type.value, NotificationType::TAB_CONTENTS_DESTROYED);
+  DCHECK_EQ(type, content::NOTIFICATION_TAB_CONTENTS_DESTROYED);
   TabContents* destroyed_contents = Source<TabContents>(source).ptr();
   for (size_t i = 0; i < drag_data_.size(); ++i) {
     if (drag_data_[i].contents->tab_contents() == destroyed_contents) {

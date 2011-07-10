@@ -10,9 +10,9 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/trials/http_throttling_trial.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_type.h"
 #include "content/common/notification_details.h"
 #include "net/http/http_stream_factory.h"
 #include "net/url_request/url_request_throttler_manager.h"
@@ -45,10 +45,10 @@ NetPrefObserver::~NetPrefObserver() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void NetPrefObserver::Observe(NotificationType type,
+void NetPrefObserver::Observe(int type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
-  DCHECK_EQ(type.value, NotificationType::PREF_CHANGED);
+  DCHECK_EQ(type, chrome::NOTIFICATION_PREF_CHANGED);
 
   std::string* pref_name = Details<std::string>(details).ptr();
   ApplySettings(pref_name);

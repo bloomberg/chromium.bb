@@ -27,8 +27,8 @@
 #include "chrome/browser/history/page_usage_data.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
-#include "content/common/notification_type.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -718,7 +718,7 @@ std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
     // TODO(meelapshah) Disabled due to potential PageCycler regression.
     // Re-enable this.
     // GetMostRecentRedirectsTo(url, &details->redirects);
-    BroadcastNotifications(NotificationType::HISTORY_URL_VISITED, details);
+    BroadcastNotifications(chrome::NOTIFICATION_HISTORY_URL_VISITED, details);
   } else {
     VLOG(0) << "Failed to build visit insert statement:  "
             << "url_id = " << url_id;
@@ -807,7 +807,7 @@ void HistoryBackend::AddPagesWithDetails(const std::vector<URLRow>& urls,
   //
   // TODO(brettw) bug 1140015: Add an "add page" notification so the history
   // views can keep in sync.
-  BroadcastNotifications(NotificationType::HISTORY_TYPED_URLS_MODIFIED,
+  BroadcastNotifications(chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED,
                          modified.release());
 
   ScheduleCommit();
@@ -863,7 +863,7 @@ void HistoryBackend::SetPageTitle(const GURL& url,
       if (changed_urls[i].typed_count() > 0)
         modified->changed_urls.push_back(changed_urls[i]);
     }
-    BroadcastNotifications(NotificationType::HISTORY_TYPED_URLS_MODIFIED,
+    BroadcastNotifications(chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED,
                            modified);
   }
 
@@ -1042,8 +1042,8 @@ void HistoryBackend::SetKeywordSearchTermsForURL(const GURL& url,
   details->url = url;
   details->keyword_id = keyword_id;
   details->term = term;
-  BroadcastNotifications(NotificationType::HISTORY_KEYWORD_SEARCH_TERM_UPDATED,
-                         details);
+  BroadcastNotifications(
+      chrome::NOTIFICATION_HISTORY_KEYWORD_SEARCH_TERM_UPDATED, details);
   ScheduleCommit();
 }
 
@@ -1666,7 +1666,8 @@ void HistoryBackend::SetImportedFavicons(
     // Send the notification about the changed favicon URLs.
     FaviconChangeDetails* changed_details = new FaviconChangeDetails;
     changed_details->urls.swap(favicons_changed);
-    BroadcastNotifications(NotificationType::FAVICON_CHANGED, changed_details);
+    BroadcastNotifications(chrome::NOTIFICATION_FAVICON_CHANGED,
+                           changed_details);
   }
 }
 
@@ -1810,7 +1811,8 @@ void HistoryBackend::SetFaviconMapping(const GURL& page_url,
   // Send the notification about the changed favicons.
   FaviconChangeDetails* changed_details = new FaviconChangeDetails;
   changed_details->urls.swap(favicons_changed);
-  BroadcastNotifications(NotificationType::FAVICON_CHANGED, changed_details);
+  BroadcastNotifications(chrome::NOTIFICATION_FAVICON_CHANGED,
+                         changed_details);
 
   ScheduleCommit();
 }
@@ -2037,7 +2039,7 @@ void HistoryBackend::ProcessDBTask(
 }
 
 void HistoryBackend::BroadcastNotifications(
-    NotificationType type,
+    int type,
     HistoryDetails* details_deleted) {
   DCHECK(delegate_.get());
   delegate_->BroadcastNotifications(type, details_deleted);
@@ -2123,7 +2125,7 @@ void HistoryBackend::DeleteAllHistory() {
   // will pick this up and clear itself.
   URLsDeletedDetails* details = new URLsDeletedDetails;
   details->all_history = true;
-  BroadcastNotifications(NotificationType::HISTORY_URLS_DELETED, details);
+  BroadcastNotifications(chrome::NOTIFICATION_HISTORY_URLS_DELETED, details);
 }
 
 bool HistoryBackend::ClearAllThumbnailHistory(

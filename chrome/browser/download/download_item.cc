@@ -28,6 +28,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
@@ -462,7 +463,7 @@ void DownloadItem::StartCrxInstall() {
   // will call Completed() on this item.  If this DownloadItem is not
   // around when CRX_INSTALLER_DONE fires, Complete() will not be called.
   registrar_.Add(this,
-                 NotificationType::CRX_INSTALLER_DONE,
+                 chrome::NOTIFICATION_CRX_INSTALLER_DONE,
                  Source<CrxInstaller>(crx_installer.get()));
 
   // The status text and percent complete indicator will change now
@@ -472,17 +473,17 @@ void DownloadItem::StartCrxInstall() {
 }
 
 // NotificationObserver implementation.
-void DownloadItem::Observe(NotificationType type,
+void DownloadItem::Observe(int type,
                            const NotificationSource& source,
                            const NotificationDetails& details) {
   // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  DCHECK(type == NotificationType::CRX_INSTALLER_DONE);
+  DCHECK(type == chrome::NOTIFICATION_CRX_INSTALLER_DONE);
 
   // No need to listen for CRX_INSTALLER_DONE anymore.
   registrar_.Remove(this,
-                    NotificationType::CRX_INSTALLER_DONE,
+                    chrome::NOTIFICATION_CRX_INSTALLER_DONE,
                     source);
 
   auto_opened_ = true;

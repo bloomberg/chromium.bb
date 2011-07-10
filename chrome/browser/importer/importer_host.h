@@ -141,7 +141,7 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
 
   // NotificationObserver:
   // Called when TemplateURLService has been loaded.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
 

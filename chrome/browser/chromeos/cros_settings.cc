@@ -9,9 +9,10 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros_settings_provider.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
+#include "chrome/common/chrome_notification_types.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 
 namespace chromeos {
 
@@ -38,7 +39,7 @@ void CrosSettings::FireObservers(const char* path) {
   NotificationObserverList::Iterator it(*(observer_iterator->second));
   NotificationObserver* observer;
   while ((observer = it.GetNext()) != NULL) {
-    observer->Observe(NotificationType::SYSTEM_SETTING_CHANGED,
+    observer->Observe(chrome::NOTIFICATION_SYSTEM_SETTING_CHANGED,
                       Source<CrosSettings>(this),
                       Details<std::string>(&path_str));
   }

@@ -14,11 +14,11 @@
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 #include "net/base/cookie_monster.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -33,19 +33,19 @@ ExtensionCookiesEventRouter::~ExtensionCookiesEventRouter() {}
 void ExtensionCookiesEventRouter::Init() {
   CHECK(registrar_.IsEmpty());
   registrar_.Add(this,
-                 NotificationType::COOKIE_CHANGED,
+                 chrome::NOTIFICATION_COOKIE_CHANGED,
                  NotificationService::AllSources());
 }
 
-void ExtensionCookiesEventRouter::Observe(NotificationType type,
+void ExtensionCookiesEventRouter::Observe(int type,
                                           const NotificationSource& source,
                                           const NotificationDetails& details) {
   Profile* profile = Source<Profile>(source).ptr();
   if (!profile_->IsSameProfile(profile)) {
     return;
   }
-  switch (type.value) {
-    case NotificationType::COOKIE_CHANGED:
+  switch (type) {
+    case chrome::NOTIFICATION_COOKIE_CHANGED:
       CookieChanged(
           profile,
           Details<ChromeCookieDetails>(details).ptr());

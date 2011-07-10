@@ -24,7 +24,7 @@ class WebSocketProxyPrivateGetPassportForTCPFunction
 
   // NotificationObserver implementation.
   virtual void Observe(
-      NotificationType type, const NotificationSource& source,
+      int type, const NotificationSource& source,
       const NotificationDetails& details) OVERRIDE;
 
   // Finalizes async operation.

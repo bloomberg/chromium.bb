@@ -7,11 +7,11 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/base/net_util.h"
 
@@ -28,16 +28,16 @@ class TemplateURLScraperTest : public InProcessBrowserTest {
 class TemplateURLServiceLoader : public NotificationObserver {
  public:
   explicit TemplateURLServiceLoader(TemplateURLService* model) : model_(model) {
-    registrar_.Add(this, NotificationType::TEMPLATE_URL_SERVICE_LOADED,
+    registrar_.Add(this, chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED,
                    Source<TemplateURLService>(model));
     model_->Load();
     ui_test_utils::RunMessageLoop();
   }
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
-    if (type == NotificationType::TEMPLATE_URL_SERVICE_LOADED &&
+    if (type == chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED &&
         Source<TemplateURLService>(source).ptr() == model_) {
       MessageLoop::current()->Quit();
     }

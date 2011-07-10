@@ -41,6 +41,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/user_metrics.h"
@@ -74,15 +75,15 @@ class ScreenLockObserver : public chromeos::ScreenLockLibrary::Observer,
                            public NotificationObserver {
  public:
   ScreenLockObserver() {
-    registrar_.Add(this, NotificationType::LOGIN_USER_CHANGED,
+    registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_CHANGED,
                    NotificationService::AllSources());
   }
 
   // NotificationObserver overrides:
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE {
-    if (type == NotificationType::LOGIN_USER_CHANGED) {
+    if (type == chrome::NOTIFICATION_LOGIN_USER_CHANGED) {
       // Register Screen Lock after login screen to make sure
       // we don't show the screen lock on top of the login screen by accident.
       if (chromeos::CrosLibrary::Get()->EnsureLoaded())
@@ -1112,7 +1113,7 @@ ScreenLocker::~ScreenLocker() {
   screen_locker_ = NULL;
   bool state = false;
   NotificationService::current()->Notify(
-      NotificationType::SCREEN_LOCK_STATE_CHANGED,
+      chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
       Source<ScreenLocker>(this),
       Details<bool>(&state));
   if (CrosLibrary::Get()->EnsureLoaded())
@@ -1143,7 +1144,7 @@ void ScreenLocker::ScreenLockReady() {
 
   bool state = true;
   NotificationService::current()->Notify(
-      NotificationType::SCREEN_LOCK_STATE_CHANGED,
+      chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
       Source<ScreenLocker>(this),
       Details<bool>(&state));
   if (CrosLibrary::Get()->EnsureLoaded())

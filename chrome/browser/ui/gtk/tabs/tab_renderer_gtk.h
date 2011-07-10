@@ -81,7 +81,7 @@ class TabRendererGtk : public ui::AnimationDelegate,
     }
 
     // Provide NotificationObserver implementation.
-    virtual void Observe(NotificationType type,
+    virtual void Observe(int type,
                          const NotificationSource& source,
                          const NotificationDetails& details);
 
@@ -164,7 +164,7 @@ class TabRendererGtk : public ui::AnimationDelegate,
   virtual void SetBounds(const gfx::Rect& bounds);
 
   // Provide NotificationObserver implementation.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

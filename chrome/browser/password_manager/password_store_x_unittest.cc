@@ -78,7 +78,7 @@ class DBThreadObserverHelper
   void AddObserverTask() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
     registrar_.Add(&observer_,
-                   NotificationType::LOGINS_CHANGED,
+                   chrome::LOGINS_CHANGED,
                    NotificationService::AllSources());
     done_event_.Signal();
   }
@@ -541,7 +541,7 @@ TEST_P(PasswordStoreXTest, Notifications) {
   };
 
   EXPECT_CALL(helper->observer(),
-              Observe(NotificationType(NotificationType::LOGINS_CHANGED),
+              Observe(int(chrome::LOGINS_CHANGED),
                       NotificationService::AllSources(),
                       Property(&Details<const PasswordStoreChangeList>::ptr,
                                Pointee(ElementsAreArray(
@@ -565,7 +565,7 @@ TEST_P(PasswordStoreXTest, Notifications) {
   };
 
   EXPECT_CALL(helper->observer(),
-              Observe(NotificationType(NotificationType::LOGINS_CHANGED),
+              Observe(int(chrome::LOGINS_CHANGED),
                       NotificationService::AllSources(),
                       Property(&Details<const PasswordStoreChangeList>::ptr,
                                Pointee(ElementsAreArray(
@@ -584,7 +584,7 @@ TEST_P(PasswordStoreXTest, Notifications) {
   };
 
   EXPECT_CALL(helper->observer(),
-              Observe(NotificationType(NotificationType::LOGINS_CHANGED),
+              Observe(int(chrome::LOGINS_CHANGED),
                       NotificationService::AllSources(),
                       Property(&Details<const PasswordStoreChangeList>::ptr,
                                Pointee(ElementsAreArray(

@@ -11,9 +11,9 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/testing_profile.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -227,9 +227,10 @@ string16 TemplateURLServiceTestUtil::GetAndClearSearchTerm() {
 void TemplateURLServiceTestUtil::SetGoogleBaseURL(
     const std::string& base_url) const {
   TemplateURLRef::SetGoogleBaseURL(new std::string(base_url));
-  NotificationService::current()->Notify(NotificationType::GOOGLE_URL_UPDATED,
-                                         NotificationService::AllSources(),
-                                         NotificationService::NoDetails());
+  NotificationService::current()->Notify(
+      chrome::NOTIFICATION_GOOGLE_URL_UPDATED,
+      NotificationService::AllSources(),
+      NotificationService::NoDetails());
 }
 
 WebDataService* TemplateURLServiceTestUtil::GetWebDataService() {

@@ -13,6 +13,7 @@ extern "C" {
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_service.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/rect.h"
@@ -303,7 +304,7 @@ void WmIpc::FetchLayoutModeProperty() {
           &value)) {
     layout_mode_ = static_cast<WmIpcLayoutMode>(value);
     NotificationService::current()->Notify(
-        NotificationType::LAYOUT_MODE_CHANGED,
+        chrome::NOTIFICATION_LAYOUT_MODE_CHANGED,
         Source<WmIpc>(this),
         Details<WmIpcLayoutMode>(&layout_mode_));
   } else {

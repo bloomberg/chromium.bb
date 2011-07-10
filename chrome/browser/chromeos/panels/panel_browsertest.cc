@@ -45,7 +45,7 @@ IN_PROC_BROWSER_TEST_F(PanelTest, PanelOpenSmall) {
   browser()->OpenURL(url, GURL(), CURRENT_TAB, PageTransition::TYPED);
 
   // Wait for notification that window.open has been processed.
-  ui_test_utils::WaitForNotification(NotificationType::TAB_ADDED);
+  ui_test_utils::WaitForNotification(content::NOTIFICATION_TAB_ADDED);
 
   // Find the new browser.
   Browser* new_browser = NULL;
@@ -84,7 +84,7 @@ IN_PROC_BROWSER_TEST_F(PanelTest, PanelOpenLarge) {
   browser()->OpenURL(url, GURL(), CURRENT_TAB, PageTransition::TYPED);
 
   // Wait for notification that window.open has been processed.
-  ui_test_utils::WaitForNotification(NotificationType::TAB_ADDED);
+  ui_test_utils::WaitForNotification(content::NOTIFICATION_TAB_ADDED);
 
   // Shouldn't find a new browser.
   Browser* new_browser = NULL;

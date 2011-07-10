@@ -10,10 +10,10 @@
 #include <vector>
 
 #include "base/memory/singleton.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 
 #include "net/url_request/url_request.h"
 
@@ -97,7 +97,7 @@ class MediaPlayer : public NotificationObserver,
   virtual net::URLRequestJob* MaybeInterceptResponse(net::URLRequest* request);
 
   // Used to detect when the mediaplayer is closed.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

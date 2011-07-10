@@ -46,7 +46,7 @@ class PrefDefaultProvider : public DefaultProviderInterface,
   static void RegisterUserPrefs(PrefService* prefs);
 
   // NotificationObserver implementation.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -130,7 +130,7 @@ class PrefProvider : public ProviderInterface,
       ContentSettingsType content_type);
 
   // NotificationObserver implementation.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

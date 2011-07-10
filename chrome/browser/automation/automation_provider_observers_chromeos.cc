@@ -49,7 +49,7 @@ LoginObserver::LoginObserver(chromeos::ExistingUserController* controller,
       automation_(automation->AsWeakPtr()),
       reply_message_(reply_message) {
   controller_->set_login_status_consumer(this);
-  registrar_.Add(this, NotificationType::LOAD_STOP,
+  registrar_.Add(this, chrome::LOAD_STOP,
                  NotificationService::AllSources());
 }
 
@@ -73,7 +73,7 @@ void LoginObserver::OnLoginSuccess(
   controller_->set_login_status_consumer(NULL);
 }
 
-void LoginObserver::Observe(NotificationType type,
+void LoginObserver::Observe(int type,
                             const NotificationSource& source,
                             const NotificationDetails& details) {
   AutomationJSONReply(automation_, reply_message_.release()).SendSuccess(NULL);
@@ -87,16 +87,16 @@ ScreenLockUnlockObserver::ScreenLockUnlockObserver(
     : automation_(automation->AsWeakPtr()),
       reply_message_(reply_message),
       lock_screen_(lock_screen) {
-  registrar_.Add(this, NotificationType::SCREEN_LOCK_STATE_CHANGED,
+  registrar_.Add(this, chrome::SCREEN_LOCK_STATE_CHANGED,
                  NotificationService::AllSources());
 }
 
 ScreenLockUnlockObserver::~ScreenLockUnlockObserver() {}
 
-void ScreenLockUnlockObserver::Observe(NotificationType type,
+void ScreenLockUnlockObserver::Observe(int type,
                                        const NotificationSource& source,
                                        const NotificationDetails& details) {
-  DCHECK(type == NotificationType::SCREEN_LOCK_STATE_CHANGED);
+  DCHECK(type == chrome::SCREEN_LOCK_STATE_CHANGED);
   if (automation_) {
     AutomationJSONReply reply(automation_, reply_message_.release());
     bool is_screen_locked = *Details<bool>(details).ptr();

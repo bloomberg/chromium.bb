@@ -11,6 +11,7 @@
 #import "chrome/browser/ui/cocoa/infobars/infobar_controller.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -25,18 +26,18 @@ class InfoBarNotificationObserver : public NotificationObserver {
 
  private:
   // NotificationObserver implementation
-  void Observe(NotificationType type,
+  void Observe(int type,
                const NotificationSource& source,
                const NotificationDetails& details) {
     TabContentsWrapper* tab_contents = Source<TabContentsWrapper>(source).ptr();
-    switch (type.value) {
-      case NotificationType::TAB_CONTENTS_INFOBAR_ADDED:
+    switch (type) {
+      case chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED:
         [controller_ addInfoBar:Details<InfoBarAddedDetails>(details)->
                                     CreateInfoBar(tab_contents)
                         animate:YES];
         break;
 
-      case NotificationType::TAB_CONTENTS_INFOBAR_REMOVED: {
+      case chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED: {
         InfoBarRemovedDetails* removed_details =
             Details<InfoBarRemovedDetails>(details).ptr();
         [controller_
@@ -45,7 +46,7 @@ class InfoBarNotificationObserver : public NotificationObserver {
         break;
       }
 
-      case NotificationType::TAB_CONTENTS_INFOBAR_REPLACED: {
+      case chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REPLACED: {
         InfoBarReplacedDetails* replaced_details =
             Details<InfoBarReplacedDetails>(details).ptr();
         [controller_ closeInfoBarsForDelegate:replaced_details->first
@@ -138,11 +139,11 @@ class InfoBarNotificationObserver : public NotificationObserver {
 
     Source<TabContentsWrapper> source(currentTabContents_);
     registrar_.Add(infoBarObserver_.get(),
-                   NotificationType::TAB_CONTENTS_INFOBAR_ADDED, source);
+                   chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED, source);
     registrar_.Add(infoBarObserver_.get(),
-                   NotificationType::TAB_CONTENTS_INFOBAR_REMOVED, source);
+                   chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED, source);
     registrar_.Add(infoBarObserver_.get(),
-                   NotificationType::TAB_CONTENTS_INFOBAR_REPLACED, source);
+                   chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REPLACED, source);
   }
 
   [self positionInfoBarsAndRedraw];

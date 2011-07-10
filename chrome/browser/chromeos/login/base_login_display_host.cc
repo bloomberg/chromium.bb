@@ -28,8 +28,8 @@
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/cros/chromeos_wm_ipc_enums.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -97,7 +97,7 @@ BaseLoginDisplayHost::BaseLoginDisplayHost(const gfx::Rect& background_bounds)
   // will block the shutdown.
   registrar_.Add(
       this,
-      NotificationType::APP_EXITING,
+      content::NOTIFICATION_APP_EXITING,
       NotificationService::AllSources());
   DCHECK(default_host_ == NULL);
   default_host_ = this;
@@ -194,10 +194,10 @@ void BaseLoginDisplayHost::StartSignInScreen() {
 
 // BaseLoginDisplayHost --------------------------------------------------------
 
-void BaseLoginDisplayHost::Observe(NotificationType type,
+void BaseLoginDisplayHost::Observe(int type,
                                    const NotificationSource& source,
                                    const NotificationDetails& details) {
-  CHECK(type == NotificationType::APP_EXITING);
+  CHECK(type == content::NOTIFICATION_APP_EXITING);
 
   registrar_.RemoveAll();
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);

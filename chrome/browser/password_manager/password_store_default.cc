@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
@@ -130,7 +131,7 @@ void PasswordStoreDefault::AddLoginImpl(const PasswordForm& form) {
     PasswordStoreChangeList changes;
     changes.push_back(PasswordStoreChange(PasswordStoreChange::ADD, form));
     NotificationService::current()->Notify(
-        NotificationType::LOGINS_CHANGED,
+        chrome::NOTIFICATION_LOGINS_CHANGED,
         Source<PasswordStore>(this),
         Details<PasswordStoreChangeList>(&changes));
   }
@@ -141,7 +142,7 @@ void PasswordStoreDefault::UpdateLoginImpl(const PasswordForm& form) {
     PasswordStoreChangeList changes;
     changes.push_back(PasswordStoreChange(PasswordStoreChange::UPDATE, form));
     NotificationService::current()->Notify(
-        NotificationType::LOGINS_CHANGED,
+        chrome::NOTIFICATION_LOGINS_CHANGED,
         Source<PasswordStore>(this),
         Details<PasswordStoreChangeList>(&changes));
   }
@@ -152,7 +153,7 @@ void PasswordStoreDefault::RemoveLoginImpl(const PasswordForm& form) {
     PasswordStoreChangeList changes;
     changes.push_back(PasswordStoreChange(PasswordStoreChange::REMOVE, form));
     NotificationService::current()->Notify(
-        NotificationType::LOGINS_CHANGED,
+        chrome::NOTIFICATION_LOGINS_CHANGED,
         Source<PasswordStore>(this),
         Details<PasswordStoreChangeList>(&changes));
   }
@@ -170,7 +171,7 @@ void PasswordStoreDefault::RemoveLoginsCreatedBetweenImpl(
                                               **it));
       }
       NotificationService::current()->Notify(
-          NotificationType::LOGINS_CHANGED,
+          chrome::NOTIFICATION_LOGINS_CHANGED,
           Source<PasswordStore>(this),
           Details<PasswordStoreChangeList>(&changes));
     }

@@ -105,7 +105,7 @@ class BackgroundApplicationListModel : public NotificationObserver {
   Application* FindApplication(const Extension* extension);
 
   // NotificationObserver implementation.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

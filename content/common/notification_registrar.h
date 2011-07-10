@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "content/common/notification_type.h"
+#include "content/common/content_notification_types.h"
 
 class NotificationObserver;
 class NotificationSource;
@@ -30,10 +30,10 @@ class NotificationRegistrar {
 
   // Wrappers around NotificationService::[Add|Remove]Observer.
   void Add(NotificationObserver* observer,
-           NotificationType type,
+           int type,
            const NotificationSource& source);
   void Remove(NotificationObserver* observer,
-              NotificationType type,
+              int type,
               const NotificationSource& source);
 
   // Unregisters all notifications.
@@ -45,7 +45,7 @@ class NotificationRegistrar {
   // Returns true if there is already a registered notification with the
   // specified details.
   bool IsRegistered(NotificationObserver* observer,
-                    NotificationType type,
+                    int type,
                     const NotificationSource& source);
 
  private:

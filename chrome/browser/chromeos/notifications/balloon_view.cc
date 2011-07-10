@@ -18,9 +18,9 @@
 #include "chrome/browser/ui/views/notifications/balloon_view_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -227,7 +227,7 @@ void BalloonViewImpl::Show(Balloon* balloon) {
     html_contents_->EnableWebUI();
   AddChildView(html_contents_->view());
   notification_registrar_.Add(this,
-    NotificationType::NOTIFY_BALLOON_DISCONNECTED, Source<Balloon>(balloon));
+    chrome::NOTIFY_BALLOON_DISCONNECTED, Source<Balloon>(balloon));
 }
 
 void BalloonViewImpl::Update() {
@@ -298,10 +298,10 @@ gfx::Size BalloonViewImpl::GetPreferredSize() {
 ////////////////////////////////////////////////////////////////////////////////
 // NotificationObserver overrides.
 
-void BalloonViewImpl::Observe(NotificationType type,
+void BalloonViewImpl::Observe(int type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
-  if (type != NotificationType::NOTIFY_BALLOON_DISCONNECTED) {
+  if (type != chrome::NOTIFY_BALLOON_DISCONNECTED) {
     NOTREACHED();
     return;
   }
@@ -309,7 +309,7 @@ void BalloonViewImpl::Observe(NotificationType type,
   // If the renderer process attached to this balloon is disconnected
   // (e.g., because of a crash), we want to close the balloon.
   notification_registrar_.Remove(this,
-      NotificationType::NOTIFY_BALLOON_DISCONNECTED, Source<Balloon>(balloon_));
+      chrome::NOTIFY_BALLOON_DISCONNECTED, Source<Balloon>(balloon_));
   Close(false);
 }
 

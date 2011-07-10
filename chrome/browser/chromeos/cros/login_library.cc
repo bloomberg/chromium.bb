@@ -13,9 +13,9 @@
 #include "chrome/browser/chromeos/login/signed_settings_temp_storage.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 
 namespace em = enterprise_management;
 namespace chromeos {
@@ -171,10 +171,10 @@ class LoginLibraryImpl : public LoginLibrary {
 
   void CompleteSetOwnerKey(bool value) {
     VLOG(1) << "Owner key generation: " << (value ? "success" : "fail");
-    NotificationType result =
-        NotificationType::OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED;
+    int result =
+        chrome::NOTIFICATION_OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED;
     if (!value)
-      result = NotificationType::OWNER_KEY_FETCH_ATTEMPT_FAILED;
+      result = chrome::NOTIFICATION_OWNER_KEY_FETCH_ATTEMPT_FAILED;
 
     // Whether we exported the public key or not, send a notification indicating
     // that we're done with this attempt.

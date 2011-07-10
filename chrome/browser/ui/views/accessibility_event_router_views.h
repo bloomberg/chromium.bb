@@ -76,32 +76,32 @@ class AccessibilityEventRouterViews {
   // Checks the type of the view and calls one of the more specific
   // Send*Notification methods, below.
   void DispatchAccessibilityNotification(
-      views::View* view, NotificationType type);
+      views::View* view, int type);
 
   // Each of these methods constructs an AccessibilityControlInfo object
   // and sends a notification of a specific accessibility event.
   void SendButtonNotification(
-      views::View* view, NotificationType type, Profile* profile);
+      views::View* view, int type, Profile* profile);
   void SendLinkNotification(
-      views::View* view, NotificationType type, Profile* profile);
+      views::View* view, int type, Profile* profile);
   void SendMenuNotification(
-      views::View* view, NotificationType type, Profile* profile);
+      views::View* view, int type, Profile* profile);
   void SendMenuItemNotification(
-      views::View* view, NotificationType type, Profile* profile);
+      views::View* view, int type, Profile* profile);
   void SendTextfieldNotification(
-      views::View* view, NotificationType type, Profile* profile);
+      views::View* view, int type, Profile* profile);
   void SendComboboxNotification(
-      views::View* view, NotificationType type, Profile* profile);
+      views::View* view, int type, Profile* profile);
   void SendCheckboxNotification(
-      views::View* view, NotificationType type, Profile* profile);
+      views::View* view, int type, Profile* profile);
   void SendWindowNotification(
-      views::View* view, NotificationType type, Profile* profile);
+      views::View* view, int type, Profile* profile);
 
   // Return the name of a view.
   std::string GetViewName(views::View* view);
 
   // Return true if it's an event on a menu.
-  bool IsMenuEvent(views::View* view, NotificationType type);
+  bool IsMenuEvent(views::View* view, int type);
 
   // Recursively explore all menu items of |menu| and return in |count|
   // the total number of items, and in |index| the 0-based index of

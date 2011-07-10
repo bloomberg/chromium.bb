@@ -55,7 +55,7 @@ class BrowserAccessibilityManager {
 
   virtual ~BrowserAccessibilityManager();
 
-  // Type is a ViewHostMsg_AccessibilityNotification_Params::NotificationType.
+  // Type is a ViewHostMsg_AccessibilityNotification_Params::int.
   // We pass it as int so that we don't include the render message declaration
   // header here.
   virtual void NotifyAccessibilityEvent(

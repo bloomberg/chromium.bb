@@ -13,9 +13,9 @@
 #include "base/time.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/glue/typed_url_model_associator.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
-#include "content/common/notification_type.h"
 
 class MessageLoop;
 class NotificationService;
@@ -45,7 +45,7 @@ class TypedUrlChangeProcessor : public ChangeProcessor,
 
   // NotificationObserver implementation.
   // History -> sync_api model change application.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

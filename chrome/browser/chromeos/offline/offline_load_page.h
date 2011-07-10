@@ -61,7 +61,7 @@ class OfflineLoadPage : public ChromeInterstitialPage {
   virtual void DontProceed();
 
   // Overrides ChromeInterstitialPage's Observe.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

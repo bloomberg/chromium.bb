@@ -249,7 +249,7 @@ void RenderWidgetHost::WasHidden() {
 
   bool is_visible = false;
   NotificationService::current()->Notify(
-      NotificationType::RENDER_WIDGET_VISIBILITY_CHANGED,
+      content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
       Source<RenderWidgetHost>(this),
       Details<bool>(&is_visible));
 }
@@ -284,7 +284,7 @@ void RenderWidgetHost::WasRestored() {
 
   bool is_visible = true;
   NotificationService::current()->Notify(
-      NotificationType::RENDER_WIDGET_VISIBILITY_CHANGED,
+      content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
       Source<RenderWidgetHost>(this),
       Details<bool>(&is_visible));
 
@@ -757,7 +757,7 @@ void RenderWidgetHost::ImeCancelComposition() {
 
 void RenderWidgetHost::Destroy() {
   NotificationService::current()->Notify(
-      NotificationType::RENDER_WIDGET_HOST_DESTROYED,
+      content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
       Source<RenderWidgetHost>(this),
       NotificationService::NoDetails());
 
@@ -785,7 +785,7 @@ void RenderWidgetHost::CheckRendererIsUnresponsive() {
 
   // OK, looks like we have a hung renderer!
   NotificationService::current()->Notify(
-      NotificationType::RENDERER_PROCESS_HANG,
+      content::NOTIFICATION_RENDERER_PROCESS_HANG,
       Source<RenderWidgetHost>(this),
       NotificationService::NoDetails());
   is_unresponsive_ = true;
@@ -858,7 +858,7 @@ void RenderWidgetHost::OnMsgPaintAtSizeAck(int tag, const gfx::Size& size) {
   PaintAtSizeAckDetails details = {tag, size};
   gfx::Size size_details = size;
   NotificationService::current()->Notify(
-      NotificationType::RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK,
+      content::NOTIFICATION_RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK,
       Source<RenderWidgetHost>(this),
       Details<PaintAtSizeAckDetails>(&details));
 }
@@ -869,7 +869,7 @@ void RenderWidgetHost::OnMsgUpdateRect(
   TimeTicks paint_start = TimeTicks::Now();
 
   NotificationService::current()->Notify(
-      NotificationType::RENDER_WIDGET_HOST_WILL_PAINT,
+      content::NOTIFICATION_RENDER_WIDGET_HOST_WILL_PAINT,
       Source<RenderWidgetHost>(this),
       NotificationService::NoDetails());
 
@@ -966,7 +966,7 @@ void RenderWidgetHost::OnMsgUpdateRect(
   }
 
   NotificationService::current()->Notify(
-      NotificationType::RENDER_WIDGET_HOST_DID_PAINT,
+      content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT,
       Source<RenderWidgetHost>(this),
       NotificationService::NoDetails());
 
@@ -1024,7 +1024,7 @@ void RenderWidgetHost::OnMsgInputEventAck(const IPC::Message& message) {
   }
   // This is used only for testing.
   NotificationService::current()->Notify(
-      NotificationType::RENDER_WIDGET_HOST_DID_RECEIVE_INPUT_EVENT_ACK,
+      content::NOTIFICATION_RENDER_WIDGET_HOST_DID_RECEIVE_INPUT_EVENT_ACK,
       Source<RenderWidgetHost>(this),
       Details<int>(&type));
 }

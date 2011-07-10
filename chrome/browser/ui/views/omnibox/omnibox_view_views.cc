@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/views/autocomplete/autocomplete_popup_contents_view.h"
 #include "chrome/browser/ui/views/autocomplete/touch_autocomplete_popup_contents_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
 #include "googleurl/src/gurl.h"
@@ -144,9 +145,9 @@ OmniboxViewViews::OmniboxViewViews(AutocompleteEditController* controller,
 }
 
 OmniboxViewViews::~OmniboxViewViews() {
-  NotificationService::current()->Notify(NotificationType::OMNIBOX_DESTROYED,
-                                         Source<OmniboxViewViews>(this),
-                                         NotificationService::NoDetails());
+  NotificationService::current()->Notify(
+      chrome::NOTIFICATION_OMNIBOX_DESTROYED, Source<OmniboxViewViews>(this),
+      NotificationService::NoDetails());
   // Explicitly teardown members which have a reference to us.  Just to be safe
   // we want them to be destroyed before destroying any other internal state.
   popup_view_.reset();
@@ -564,10 +565,10 @@ int OmniboxViewViews::OnPerformDrop(const views::DropTargetEvent& event) {
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxViewViews, NotificationObserver implementation:
 
-void OmniboxViewViews::Observe(NotificationType type,
+void OmniboxViewViews::Observe(int type,
                                const NotificationSource& source,
                                const NotificationDetails& details) {
-  DCHECK(type == NotificationType::BROWSER_THEME_CHANGED);
+  DCHECK(type == chrome::NOTIFICATION_BROWSER_THEME_CHANGED);
   SetBaseColor();
 }
 

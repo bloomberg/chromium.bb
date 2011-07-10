@@ -80,7 +80,7 @@ class CollectedCookiesWin : public ConstrainedDialogDelegate,
   void AddContentException(views::TreeView* tree_view, ContentSetting setting);
 
   // NotificationObserver:
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
 

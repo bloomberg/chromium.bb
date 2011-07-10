@@ -35,6 +35,7 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/extension_icon_source.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -252,9 +253,9 @@ class OffTheRecordProfileImpl : public Profile,
   }
 
   virtual ~OffTheRecordProfileImpl() {
-    NotificationService::current()->Notify(NotificationType::PROFILE_DESTROYED,
-                                           Source<Profile>(this),
-                                           NotificationService::NoDetails());
+    NotificationService::current()->Notify(
+        chrome::NOTIFICATION_PROFILE_DESTROYED, Source<Profile>(this),
+        NotificationService::NoDetails());
 
     ProfileDependencyManager::GetInstance()->DestroyProfileServices(this);
 

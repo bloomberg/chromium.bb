@@ -12,8 +12,8 @@
 #include "chrome/browser/chromeos/status/status_area_button.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_member.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_observer.h"
-#include "content/common/notification_type.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
 #include "unicode/calendar.h"
 #include "views/controls/button/menu_button.h"
@@ -60,7 +60,7 @@ class ClockMenuButton : public StatusAreaButton,
   void UpdateText();
 
   // NotificationObserver implementation.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

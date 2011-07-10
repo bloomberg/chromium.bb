@@ -17,6 +17,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_source.h"
 #include "grit/generated_resources.h"
@@ -381,7 +382,7 @@ BookmarkFaviconFetcher::BookmarkFaviconFetcher(
       observer_(observer) {
   favicons_map_.reset(new URLFaviconMap());
   registrar_.Add(this,
-                 NotificationType::PROFILE_DESTROYED,
+                 chrome::NOTIFICATION_PROFILE_DESTROYED,
                  Source<Profile>(profile_));
 }
 
@@ -399,10 +400,10 @@ void BookmarkFaviconFetcher::ExportBookmarks() {
   }
 }
 
-void BookmarkFaviconFetcher::Observe(NotificationType type,
+void BookmarkFaviconFetcher::Observe(int type,
                                      const NotificationSource& source,
                                      const NotificationDetails& details) {
-  if (NotificationType::PROFILE_DESTROYED == type && fetcher != NULL) {
+  if (chrome::NOTIFICATION_PROFILE_DESTROYED == type && fetcher != NULL) {
     MessageLoop::current()->DeleteSoon(FROM_HERE, fetcher);
     fetcher = NULL;
   }

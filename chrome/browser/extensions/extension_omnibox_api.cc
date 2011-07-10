@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/common/notification_service.h"
 
@@ -99,7 +100,7 @@ void ExtensionOmniboxEventRouter::OnInputEntered(
       extension_id, events::kOnInputEntered, json_args, profile, GURL());
 
   NotificationService::current()->Notify(
-      NotificationType::EXTENSION_OMNIBOX_INPUT_ENTERED,
+      chrome::NOTIFICATION_EXTENSION_OMNIBOX_INPUT_ENTERED,
       Source<Profile>(profile), NotificationService::NoDetails());
 }
 
@@ -140,7 +141,7 @@ bool OmniboxSendSuggestionsFunction::RunImpl() {
   }
 
   NotificationService::current()->Notify(
-      NotificationType::EXTENSION_OMNIBOX_SUGGESTIONS_READY,
+      chrome::NOTIFICATION_EXTENSION_OMNIBOX_SUGGESTIONS_READY,
       Source<Profile>(profile_),
       Details<ExtensionOmniboxSuggestions>(&suggestions));
 
@@ -171,7 +172,7 @@ bool OmniboxSetDefaultSuggestionFunction::RunImpl() {
       suggestion);
 
   NotificationService::current()->Notify(
-      NotificationType::EXTENSION_OMNIBOX_DEFAULT_SUGGESTION_CHANGED,
+      chrome::NOTIFICATION_EXTENSION_OMNIBOX_DEFAULT_SUGGESTION_CHANGED,
       Source<Profile>(profile_),
       NotificationService::NoDetails());
 

@@ -89,7 +89,7 @@ class UserScriptListener
   void CollectURLPatterns(const Extension* extension, URLPatterns* patterns);
 
   // NotificationObserver
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

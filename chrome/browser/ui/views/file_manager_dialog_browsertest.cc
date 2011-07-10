@@ -130,7 +130,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerDialogTest, SelectFileAndCancel) {
   // Inject JavaScript to click the cancel button and wait for notification
   // that the window has closed.
   ui_test_utils::WindowedNotificationObserver host_destroyed(
-      NotificationType::RENDER_WIDGET_HOST_DESTROYED,
+      chrome::RENDER_WIDGET_HOST_DESTROYED,
       NotificationService::AllSources());
   RenderViewHost* host = dialog_->GetRenderViewHost();
   string16 main_frame;
@@ -194,7 +194,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerDialogTest, SelectFileAndOpen) {
   // Inject JavaScript to click the open button and wait for notification
   // that the window has closed.
   ui_test_utils::WindowedNotificationObserver host_destroyed(
-      NotificationType::RENDER_WIDGET_HOST_DESTROYED,
+      chrome::RENDER_WIDGET_HOST_DESTROYED,
       NotificationService::AllSources());
   RenderViewHost* host = dialog_->GetRenderViewHost();
   string16 main_frame;
@@ -254,7 +254,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerDialogTest, SelectFileAndSave) {
   // Inject JavaScript to click the save button and wait for notification
   // that the window has closed.
   ui_test_utils::WindowedNotificationObserver host_destroyed(
-      NotificationType::RENDER_WIDGET_HOST_DESTROYED,
+      chrome::RENDER_WIDGET_HOST_DESTROYED,
       NotificationService::AllSources());
   RenderViewHost* host = dialog_->GetRenderViewHost();
   string16 main_frame;

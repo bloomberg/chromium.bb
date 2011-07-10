@@ -12,9 +12,9 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/sync/glue/password_model_associator.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
-#include "content/common/notification_type.h"
 
 class PasswordStore;
 class MessageLoop;
@@ -38,7 +38,7 @@ class PasswordChangeProcessor : public ChangeProcessor,
 
   // NotificationObserver implementation.
   // Passwords -> sync_api model change application.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
 

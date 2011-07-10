@@ -16,6 +16,7 @@
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_test_helper.h"
 #include "chrome/browser/sessions/session_types.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/browser_with_test_window_test.h"
 #include "chrome/test/testing_profile.h"
@@ -23,7 +24,6 @@
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class SessionServiceTest : public BrowserWithTestWindowTest,
@@ -49,10 +49,10 @@ class SessionServiceTest : public BrowserWithTestWindowTest,
   }
 
   // Upon notification, increment the sync_save_count variable
-  void Observe(NotificationType type,
+  void Observe(int type,
                const NotificationSource& source,
                const NotificationDetails& details) {
-    ASSERT_EQ(type.value, NotificationType::SESSION_SERVICE_SAVED);
+    ASSERT_EQ(type, chrome::NOTIFICATION_SESSION_SERVICE_SAVED);
     sync_save_count_++;
   }
 
@@ -635,7 +635,7 @@ TEST_F(SessionServiceTest, GetCurrentSession) {
 // Test that the notification for SESSION_SERVICE_SAVED is working properly.
 TEST_F(SessionServiceTest, SavedSessionNotification) {
   NotificationRegistrar registrar_;
-  registrar_.Add(this, NotificationType::SESSION_SERVICE_SAVED,
+  registrar_.Add(this, chrome::NOTIFICATION_SESSION_SERVICE_SAVED,
                  NotificationService::AllSources());
   service()->Save();
   EXPECT_EQ(sync_save_count_, 1);

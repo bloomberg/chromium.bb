@@ -82,7 +82,7 @@ class InputMethodManagerImpl : public InputMethodManager,
     // Chrome in case of a sudden crash, we have a way to do it from an
     // upstart script. See crosbug.com/6515 and crosbug.com/6995 for
     // details.
-    notification_registrar_.Add(this, NotificationType::APP_TERMINATING,
+    notification_registrar_.Add(this, content::NOTIFICATION_APP_TERMINATING,
                                 NotificationService::AllSources());
 
     ibus_controller_ = input_method::IBusController::Create();
@@ -860,11 +860,11 @@ class InputMethodManagerImpl : public InputMethodManager,
   }
 
   // NotificationObserver implementation:
-  void Observe(NotificationType type,
+  void Observe(int type,
                const NotificationSource& source,
                const NotificationDetails& details) {
     // Stop the input method daemon on browser shutdown.
-    if (type.value == NotificationType::APP_TERMINATING) {
+    if (type == content::NOTIFICATION_APP_TERMINATING) {
       notification_registrar_.RemoveAll();
       StopInputMethodDaemon();
 #if !defined(TOUCH_UI)

@@ -13,12 +13,12 @@
 #include "chrome/browser/sync/profile_sync_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_type.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using browser_sync::DataTypeManager;
@@ -251,9 +251,9 @@ TEST_F(ProfileSyncServiceStartupTest, SKIP_MACOSX(StartFailure)) {
       configure_result, FROM_HERE, syncable::ModelTypeSet());
   EXPECT_CALL(*data_type_manager, Configure(_, _)).
       WillRepeatedly(DoAll(NotifyFromDataTypeManager(data_type_manager,
-                         NotificationType::SYNC_CONFIGURE_START),
+                         chrome::NOTIFICATION_SYNC_CONFIGURE_START),
                      NotifyFromDataTypeManagerWithResult(data_type_manager,
-                         NotificationType::SYNC_CONFIGURE_DONE,
+                         chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
                          &result)));
   EXPECT_CALL(*data_type_manager, state()).
       WillOnce(Return(DataTypeManager::STOPPED));

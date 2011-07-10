@@ -5,6 +5,7 @@
 #include "chrome/browser/translate/translate_tab_helper.h"
 
 #include "chrome/browser/translate/page_translated_details.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
@@ -42,7 +43,7 @@ void TranslateTabHelper::OnLanguageDetermined(const std::string& language,
 
   std::string lang = language;
   NotificationService::current()->Notify(
-      NotificationType::TAB_LANGUAGE_DETERMINED,
+      chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
       Source<TabContents>(tab_contents()),
       Details<std::string>(&lang));
 }
@@ -55,7 +56,7 @@ void TranslateTabHelper::OnPageTranslated(int32 page_id,
   language_state_.set_translation_pending(false);
   PageTranslatedDetails details(original_lang, translated_lang, error_type);
   NotificationService::current()->Notify(
-      NotificationType::PAGE_TRANSLATED,
+      chrome::NOTIFICATION_PAGE_TRANSLATED,
       Source<TabContents>(tab_contents()),
       Details<PageTranslatedDetails>(&details));
 }

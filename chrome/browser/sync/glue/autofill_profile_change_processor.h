@@ -16,10 +16,10 @@
 #include "chrome/browser/sync/unrecoverable_error_handler.h"
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/browser/webdata/web_database.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 
 namespace browser_sync {
 
@@ -43,7 +43,7 @@ class AutofillProfileChangeProcessor : public ChangeProcessor,
   virtual void CommitChangesFromSyncModel();
 
   // Virtual method implemented for the observer class.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

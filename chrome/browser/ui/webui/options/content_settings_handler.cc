@@ -21,13 +21,14 @@
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_settings_helper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -268,25 +269,25 @@ void ContentSettingsHandler::GetLocalizedValues(
 void ContentSettingsHandler::Initialize() {
   const HostContentSettingsMap* settings_map = GetContentSettingsMap();
   notification_registrar_.Add(
-      this, NotificationType::OTR_PROFILE_CREATED,
+      this, chrome::NOTIFICATION_OTR_PROFILE_CREATED,
       NotificationService::AllSources());
   notification_registrar_.Add(
-      this, NotificationType::PROFILE_DESTROYED,
+      this, chrome::NOTIFICATION_PROFILE_DESTROYED,
       NotificationService::AllSources());
 
   UpdateHandlersEnabledRadios();
   UpdateAllExceptionsViewsFromModel();
   notification_registrar_.Add(
-      this, NotificationType::CONTENT_SETTINGS_CHANGED,
+      this, chrome::NOTIFICATION_CONTENT_SETTINGS_CHANGED,
       Source<HostContentSettingsMap>(settings_map));
   notification_registrar_.Add(
-      this, NotificationType::DESKTOP_NOTIFICATION_DEFAULT_CHANGED,
+      this, chrome::NOTIFICATION_DESKTOP_NOTIFICATION_DEFAULT_CHANGED,
       NotificationService::AllSources());
   notification_registrar_.Add(
-      this, NotificationType::DESKTOP_NOTIFICATION_SETTINGS_CHANGED,
+      this, chrome::NOTIFICATION_DESKTOP_NOTIFICATION_SETTINGS_CHANGED,
       NotificationService::AllSources());
   notification_registrar_.Add(
-      this, NotificationType::PROTOCOL_HANDLER_REGISTRY_CHANGED,
+      this, chrome::NOTIFICATION_PROTOCOL_HANDLER_REGISTRY_CHANGED,
       NotificationService::AllSources());
 
   PrefService* prefs = web_ui_->GetProfile()->GetPrefs();
@@ -295,11 +296,11 @@ void ContentSettingsHandler::Initialize() {
   pref_change_registrar_.Add(prefs::kGeolocationContentSettings, this);
 }
 
-void ContentSettingsHandler::Observe(NotificationType type,
+void ContentSettingsHandler::Observe(int type,
                                      const NotificationSource& source,
                                      const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::PROFILE_DESTROYED: {
+  switch (type) {
+    case chrome::NOTIFICATION_PROFILE_DESTROYED: {
       Profile* profile = static_cast<Source<Profile> >(source).ptr();
       if (profile->IsOffTheRecord()) {
         web_ui_->CallJavascriptFunction(
@@ -308,12 +309,12 @@ void ContentSettingsHandler::Observe(NotificationType type,
       break;
     }
 
-    case NotificationType::OTR_PROFILE_CREATED: {
+    case chrome::NOTIFICATION_OTR_PROFILE_CREATED: {
       UpdateAllOTRExceptionsViewsFromModel();
       break;
     }
 
-    case NotificationType::CONTENT_SETTINGS_CHANGED: {
+    case chrome::NOTIFICATION_CONTENT_SETTINGS_CHANGED: {
       const ContentSettingsDetails* settings_details =
           Details<const ContentSettingsDetails>(details).ptr();
 
@@ -325,7 +326,7 @@ void ContentSettingsHandler::Observe(NotificationType type,
       break;
     }
 
-    case NotificationType::PREF_CHANGED: {
+    case chrome::NOTIFICATION_PREF_CHANGED: {
       const std::string& pref_name = *Details<std::string>(details).ptr();
       if (pref_name == prefs::kGeolocationDefaultContentSetting)
         UpdateSettingDefaultFromModel(CONTENT_SETTINGS_TYPE_GEOLOCATION);
@@ -334,17 +335,17 @@ void ContentSettingsHandler::Observe(NotificationType type,
       break;
     }
 
-    case NotificationType::DESKTOP_NOTIFICATION_DEFAULT_CHANGED: {
+    case chrome::NOTIFICATION_DESKTOP_NOTIFICATION_DEFAULT_CHANGED: {
       UpdateSettingDefaultFromModel(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
       break;
     }
 
-    case NotificationType::DESKTOP_NOTIFICATION_SETTINGS_CHANGED: {
+    case chrome::NOTIFICATION_DESKTOP_NOTIFICATION_SETTINGS_CHANGED: {
       UpdateNotificationExceptionsView();
       break;
     }
 
-    case NotificationType::PROTOCOL_HANDLER_REGISTRY_CHANGED: {
+    case chrome::NOTIFICATION_PROTOCOL_HANDLER_REGISTRY_CHANGED: {
       UpdateHandlersEnabledRadios();
       break;
     }

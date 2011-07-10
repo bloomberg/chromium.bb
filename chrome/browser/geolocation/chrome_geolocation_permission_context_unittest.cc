@@ -20,6 +20,7 @@
 #include "content/browser/geolocation/mock_location_provider.h"
 #include "content/browser/renderer_host/mock_render_process_host.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/geolocation_messages.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_service.h"
@@ -36,7 +37,7 @@ class ClosedDelegateTracker : public NotificationObserver {
   virtual ~ClosedDelegateTracker();
 
   // NotificationObserver:
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -53,17 +54,17 @@ class ClosedDelegateTracker : public NotificationObserver {
 };
 
 ClosedDelegateTracker::ClosedDelegateTracker() {
-  registrar_.Add(this, NotificationType::TAB_CONTENTS_INFOBAR_REMOVED,
+  registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
                  NotificationService::AllSources());
 }
 
 ClosedDelegateTracker::~ClosedDelegateTracker() {
 }
 
-void ClosedDelegateTracker::Observe(NotificationType type,
+void ClosedDelegateTracker::Observe(int type,
                                     const NotificationSource& source,
                                     const NotificationDetails& details) {
-  DCHECK(type.value == NotificationType::TAB_CONTENTS_INFOBAR_REMOVED);
+  DCHECK(type == chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED);
   removed_infobar_delegates_.insert(
       Details<InfoBarRemovedDetails>(details)->first);
 }

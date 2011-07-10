@@ -14,9 +14,9 @@
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace base {
@@ -67,9 +67,9 @@ class ThreadNotifier :  // NOLINT
  public:
   explicit ThreadNotifier(base::Thread* notify_thread);
 
-  void Notify(NotificationType type, const NotificationDetails& details);
+  void Notify(int type, const NotificationDetails& details);
 
-  void Notify(NotificationType type,
+  void Notify(int type,
               const NotificationSource& source,
               const NotificationDetails& details);
 
@@ -77,7 +77,7 @@ class ThreadNotifier :  // NOLINT
   friend class base::RefCountedThreadSafe<ThreadNotifier>;
   virtual ~ThreadNotifier();
 
-  void NotifyTask(NotificationType type,
+  void NotifyTask(int type,
                   const NotificationSource& source,
                   const NotificationDetails& details);
 

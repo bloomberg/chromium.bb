@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/theme_install_bubble_view.h"
 
 #include "base/utf_string_conversions.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
@@ -47,27 +48,27 @@ ThemeInstallBubbleView::ThemeInstallBubbleView(TabContents* tab_contents)
   // Close when theme has been installed.
   registrar_.Add(
       this,
-      NotificationType::BROWSER_THEME_CHANGED,
+      chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
       NotificationService::AllSources());
 
   // Close when we are installing an extension, not a theme.
   registrar_.Add(
       this,
-      NotificationType::NO_THEME_DETECTED,
+      chrome::NOTIFICATION_NO_THEME_DETECTED,
       NotificationService::AllSources());
   registrar_.Add(
       this,
-      NotificationType::EXTENSION_INSTALLED,
+      chrome::NOTIFICATION_EXTENSION_INSTALLED,
       NotificationService::AllSources());
   registrar_.Add(
       this,
-      NotificationType::EXTENSION_INSTALL_ERROR,
+      chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
       NotificationService::AllSources());
 
   // Don't let the bubble overlap the confirm dialog.
   registrar_.Add(
       this,
-      NotificationType::EXTENSION_WILL_SHOW_CONFIRM_DIALOG,
+      chrome::NOTIFICATION_EXTENSION_WILL_SHOW_CONFIRM_DIALOG,
       NotificationService::AllSources());
 
   popup_ = new views::Widget;
@@ -156,7 +157,7 @@ void ThemeInstallBubbleView::Close() {
   }
 }
 
-void ThemeInstallBubbleView::Observe(NotificationType type,
+void ThemeInstallBubbleView::Observe(int type,
                                      const NotificationSource& source,
                                      const NotificationDetails& details) {
   Close();

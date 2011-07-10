@@ -26,17 +26,17 @@ AlternateNavURLFetcher::AlternateNavURLFetcher(
       state_(NOT_STARTED),
       navigated_to_entry_(false),
       infobar_contents_(NULL) {
-  registrar_.Add(this, NotificationType::NAV_ENTRY_PENDING,
+  registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
                  NotificationService::AllSources());
 }
 
 AlternateNavURLFetcher::~AlternateNavURLFetcher() {}
 
-void AlternateNavURLFetcher::Observe(NotificationType type,
+void AlternateNavURLFetcher::Observe(int type,
                                      const NotificationSource& source,
                                      const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::NAV_ENTRY_PENDING:
+  switch (type) {
+    case content::NOTIFICATION_NAV_ENTRY_PENDING:
       // If we've already received a notification for the same controller, we
       // should delete ourselves as that indicates that the page is being
       // re-loaded so this instance is now stale.
@@ -51,9 +51,9 @@ void AlternateNavURLFetcher::Observe(NotificationType type,
         // Start listening for the commit notification. We also need to listen
         // for the tab close command since that means the load will never
         // commit!
-        registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
+        registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                        Source<NavigationController>(controller_));
-        registrar_.Add(this, NotificationType::TAB_CLOSED,
+        registrar_.Add(this, content::NOTIFICATION_TAB_CLOSED,
                        Source<NavigationController>(controller_));
 
         DCHECK_EQ(NOT_STARTED, state_);
@@ -66,15 +66,15 @@ void AlternateNavURLFetcher::Observe(NotificationType type,
       }
       break;
 
-    case NotificationType::NAV_ENTRY_COMMITTED:
+    case content::NOTIFICATION_NAV_ENTRY_COMMITTED:
       // The page was navigated, we can show the infobar now if necessary.
-      registrar_.Remove(this, NotificationType::NAV_ENTRY_COMMITTED,
+      registrar_.Remove(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                         Source<NavigationController>(controller_));
       navigated_to_entry_ = true;
       ShowInfobarIfPossible();
       break;
 
-    case NotificationType::TAB_CLOSED:
+    case content::NOTIFICATION_TAB_CLOSED:
       // We have been closed. In order to prevent the URLFetcher from trying to
       // access the controller that will be invalid, we delete ourselves.
       // This deletes the URLFetcher and insures its callback won't be called.

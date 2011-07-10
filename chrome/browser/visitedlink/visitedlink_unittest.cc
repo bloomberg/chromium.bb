@@ -496,12 +496,12 @@ class VisitRelayingRenderProcessHost : public BrowserRenderProcessHost {
   explicit VisitRelayingRenderProcessHost(Profile* profile)
       : BrowserRenderProcessHost(profile) {
     NotificationService::current()->Notify(
-        NotificationType::RENDERER_PROCESS_CREATED,
+        content::NOTIFICATION_RENDERER_PROCESS_CREATED,
         Source<RenderProcessHost>(this), NotificationService::NoDetails());
   }
   virtual ~VisitRelayingRenderProcessHost() {
     NotificationService::current()->Notify(
-        NotificationType::RENDERER_PROCESS_TERMINATED,
+        content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
         Source<RenderProcessHost>(this), NotificationService::NoDetails());
   }
 

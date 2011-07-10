@@ -11,9 +11,9 @@
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/notifications/system_notification.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
-#include "content/common/notification_type.h"
 
 class ListValue;
 class NotificationDetails;
@@ -45,7 +45,7 @@ class LocaleChangeGuard : public NotificationObserver {
   void Check();
 
   // NotificationObserver implementation.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

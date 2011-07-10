@@ -12,6 +12,7 @@
 #include "chrome/browser/tab_contents/infobar.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
 #include "ui/base/animation/slide_animation.h"
@@ -43,11 +44,11 @@ void InfoBarContainer::ChangeTabContents(TabContentsWrapper* contents) {
   tab_contents_ = contents;
   if (tab_contents_) {
     Source<TabContentsWrapper> tc_source(tab_contents_);
-    registrar_.Add(this, NotificationType::TAB_CONTENTS_INFOBAR_ADDED,
+    registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
                    tc_source);
-    registrar_.Add(this, NotificationType::TAB_CONTENTS_INFOBAR_REMOVED,
+    registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
                    tc_source);
-    registrar_.Add(this, NotificationType::TAB_CONTENTS_INFOBAR_REPLACED,
+    registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REPLACED,
                    tc_source);
 
     for (size_t i = 0; i < tab_contents_->infobar_count(); ++i) {
@@ -120,24 +121,24 @@ void InfoBarContainer::RemoveAllInfoBarsForDestruction() {
   ChangeTabContents(NULL);
 }
 
-void InfoBarContainer::Observe(NotificationType type,
+void InfoBarContainer::Observe(int type,
                                const NotificationSource& source,
                                const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::TAB_CONTENTS_INFOBAR_ADDED:
+  switch (type) {
+    case chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED:
       AddInfoBar(
           Details<InfoBarAddedDetails>(details)->CreateInfoBar(tab_contents_),
           infobars_.size(), true, WANT_CALLBACK);
       break;
 
-    case NotificationType::TAB_CONTENTS_INFOBAR_REMOVED: {
+    case chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED: {
       InfoBarRemovedDetails* removed_details =
           Details<InfoBarRemovedDetails>(details).ptr();
       RemoveInfoBar(removed_details->first, removed_details->second);
       break;
     }
 
-    case NotificationType::TAB_CONTENTS_INFOBAR_REPLACED: {
+    case chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REPLACED: {
       InfoBarReplacedDetails* replaced_details =
           Details<InfoBarReplacedDetails>(details).ptr();
       AddInfoBar(replaced_details->second->CreateInfoBar(tab_contents_),

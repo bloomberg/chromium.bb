@@ -5,7 +5,7 @@
 #include "chrome/browser/prefs/pref_set_observer.h"
 
 #include "chrome/common/pref_names.h"
-#include "content/common/notification_type.h"
+#include "content/common/content_notification_types.h"
 
 PrefSetObserver::PrefSetObserver(PrefService* pref_service,
                                  NotificationObserver* observer)
@@ -69,7 +69,7 @@ PrefSetObserver* PrefSetObserver::CreateDefaultSearchPrefSetObserver(
   return pref_set;
 }
 
-void PrefSetObserver::Observe(NotificationType type,
+void PrefSetObserver::Observe(int type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
   if (observer_)

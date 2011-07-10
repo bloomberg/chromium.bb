@@ -7,6 +7,7 @@
 #include "chrome/browser/sync/glue/data_type_manager_mock.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/sync/sessions/session_state.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -63,7 +64,7 @@ class BackendMigratorTest : public testing::Test {
     DataTypeManager::ConfigureResultWithErrorLocation result_with_location(
         result, FROM_HERE, types);
     NotificationService::current()->Notify(
-        NotificationType::SYNC_CONFIGURE_DONE,
+        chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
         Source<DataTypeManager>(&manager_),
         Details<DataTypeManager::ConfigureResultWithErrorLocation>(
             &result_with_location));

@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/pref_names.h"
@@ -28,7 +29,6 @@
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -76,7 +76,7 @@ BrowserActionButton::BrowserActionButton(const Extension* extension,
   // No UpdateState() here because View hierarchy not setup yet. Our parent
   // should call UpdateState() after creation.
 
-  registrar_.Add(this, NotificationType::EXTENSION_BROWSER_ACTION_UPDATED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
                  Source<ExtensionAction>(browser_action_));
 }
 
@@ -186,10 +186,10 @@ GURL BrowserActionButton::GetPopupUrl() {
   return (tab_id < 0) ? GURL() : browser_action_->GetPopupUrl(tab_id);
 }
 
-void BrowserActionButton::Observe(NotificationType type,
+void BrowserActionButton::Observe(int type,
                                   const NotificationSource& source,
                                   const NotificationDetails& details) {
-  DCHECK(type == NotificationType::EXTENSION_BROWSER_ACTION_UPDATED);
+  DCHECK(type == chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED);
   UpdateState();
   // The browser action may have become visible/hidden so we need to make
   // sure the state gets updated.

@@ -75,7 +75,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
     // the main thread.
     //
     // Ownership of the HistoryDetails is transferred to this function.
-    virtual void BroadcastNotifications(NotificationType type,
+    virtual void BroadcastNotifications(int type,
                                         HistoryDetails* details) = 0;
 
     // Invoked when the backend has finished loading the db.
@@ -487,7 +487,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Schedules a broadcast of the given notification on the main thread. The
   // details argument will have ownership taken by this function (it will be
   // sent to the main thread and deleted there).
-  virtual void BroadcastNotifications(NotificationType type,
+  virtual void BroadcastNotifications(int type,
                                       HistoryDetails* details_deleted);
 
   // Deleting all history ------------------------------------------------------

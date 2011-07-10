@@ -16,10 +16,10 @@
 #include "chrome/browser/ui/views/bookmarks/bookmark_menu_delegate.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/user_metrics.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -438,7 +438,7 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
     UpdateZoomControls();
 
     registrar_.Add(
-        this, NotificationType::ZOOM_LEVEL_CHANGED,
+        this, content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
         Source<HostZoomMap>(menu->browser_->profile()->GetHostZoomMap()));
   }
 
@@ -488,10 +488,10 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
   }
 
   // NotificationObserver:
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
-    DCHECK_EQ(NotificationType::ZOOM_LEVEL_CHANGED, type.value);
+    DCHECK_EQ(content::NOTIFICATION_ZOOM_LEVEL_CHANGED, type);
     UpdateZoomControls();
   }
 

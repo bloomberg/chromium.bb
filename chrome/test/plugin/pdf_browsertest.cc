@@ -16,8 +16,8 @@
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_observer.h"
-#include "content/common/notification_type.h"
 #include "net/test/test_server.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -81,7 +81,7 @@ class PDFBrowserTest : public InProcessBrowserTest,
     TabContentsWrapper* wrapper =  browser()->GetSelectedTabContentsWrapper();
     wrapper->CaptureSnapshot();
     ui_test_utils::RegisterAndWait(this,
-                                   NotificationType::TAB_SNAPSHOT_TAKEN,
+                                   chrome::TAB_SNAPSHOT_TAKEN,
                                    Source<TabContentsWrapper>(wrapper));
     ASSERT_FALSE(snapshot_different_) << "Rendering didn't match, see result "
         "at " << snapshot_filename_.value().c_str();
@@ -106,10 +106,10 @@ class PDFBrowserTest : public InProcessBrowserTest,
 
  private:
   // NotificationObserver
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
-    if (type == NotificationType::TAB_SNAPSHOT_TAKEN) {
+    if (type == chrome::TAB_SNAPSHOT_TAKEN) {
       MessageLoopForUI::current()->Quit();
       FilePath reference = ui_test_utils::GetTestFilePath(
           GetPDFTestDir(),
@@ -172,7 +172,7 @@ class PDFBrowserTest : public InProcessBrowserTest,
               reinterpret_cast<char*>(&png_data[0]), png_data.size());
         }
       }
-    } else if (type == NotificationType::LOAD_STOP) {
+    } else if (type == chrome::LOAD_STOP) {
       load_stop_notification_count_++;
     }
   }
@@ -185,7 +185,7 @@ class PDFBrowserTest : public InProcessBrowserTest,
   std::string expected_filename_;
   // If the snapshot is different, holds the location where it's saved.
   FilePath snapshot_filename_;
-  // How many times we've seen NotificationType::LOAD_STOP.
+  // How many times we've seen chrome::LOAD_STOP.
   int load_stop_notification_count_;
 
   scoped_ptr<net::TestServer> pdf_test_server_;
@@ -276,7 +276,7 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, FLAKY_SLOW_Loading) {
       &(browser()->GetSelectedTabContents()->controller());
   NotificationRegistrar registrar;
   registrar.Add(this,
-                NotificationType::LOAD_STOP,
+                chrome::LOAD_STOP,
                 Source<NavigationController>(controller));
   std::string base_url = std::string("files/");
 
@@ -303,7 +303,7 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, FLAKY_SLOW_Loading) {
 
     while (true) {
       int last_count = load_stop_notification_count();
-      // We might get extraneous NotificationType::LOAD_STOP notifications when
+      // We might get extraneous chrome::LOAD_STOP notifications when
       // doing async loading.  This happens when the first loader is cancelled
       // and before creating a byte-range request loader.
       bool complete = false;

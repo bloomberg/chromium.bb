@@ -113,7 +113,7 @@ class BrowserPolicyConnector : public NotificationObserver {
       CloudPolicyProvider* recommended_cloud_provider);
 
   // NotificationObserver method overrides:
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
 

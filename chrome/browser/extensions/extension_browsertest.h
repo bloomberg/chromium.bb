@@ -12,9 +12,9 @@
 #include "base/file_path.h"
 #include "base/scoped_temp_dir.h"
 #include "chrome/test/in_process_browser_test.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_observer.h"
-#include "content/common/notification_type.h"
 
 class Extension;
 
@@ -112,7 +112,7 @@ class ExtensionBrowserTest
   bool WaitForExtensionCrash(const std::string& extension_id);
 
   // NotificationObserver
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

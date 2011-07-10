@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_service.h"
 
 namespace download_crx_util {
@@ -55,7 +56,7 @@ scoped_refptr<CrxInstaller> OpenChromeExtension(
   CHECK(service);
   NotificationService* nservice = NotificationService::current();
   GURL nonconst_download_url = download_item.GetURL();
-  nservice->Notify(NotificationType::EXTENSION_READY_FOR_INSTALL,
+  nservice->Notify(chrome::NOTIFICATION_EXTENSION_READY_FOR_INSTALL,
                    Source<DownloadManager>(profile->GetDownloadManager()),
                    Details<GURL>(&nonconst_download_url));
 

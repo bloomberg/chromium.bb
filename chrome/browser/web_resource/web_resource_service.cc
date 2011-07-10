@@ -15,6 +15,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/sync/sync_ui_util.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/extensions/extension.h"
@@ -213,7 +214,7 @@ WebResourceService::WebResourceService(
     PrefService* prefs,
     const char* web_resource_server,
     bool apply_locale_to_url,
-    NotificationType::Type notification_type,
+    int notification_type,
     const char* last_update_time_pref_name,
     int start_fetch_delay,
     int cache_update_delay)
@@ -262,7 +263,7 @@ void WebResourceService::OnWebResourceUnpacked(
 
 void WebResourceService::WebResourceStateChange() {
   web_resource_update_scheduled_ = false;
-  if (notification_type_ == NotificationType::NOTIFICATION_TYPE_COUNT)
+  if (notification_type_ == chrome::NOTIFICATION_CHROME_END)
     return;
   NotificationService* service = NotificationService::current();
   service->Notify(notification_type_,

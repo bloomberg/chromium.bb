@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_service.h"
 #include "grit/theme_resources.h"
 #include "ui/base/gtk/gtk_windowing.h"
@@ -311,7 +312,7 @@ OmniboxPopupViewGtk::OmniboxPopupViewGtk(const gfx::Font& font,
                    G_CALLBACK(HandleExposeThunk), this);
 
   registrar_.Add(this,
-                 NotificationType::BROWSER_THEME_CHANGED,
+                 chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
   theme_service_->InitThemesFor(this);
 
@@ -388,10 +389,10 @@ void OmniboxPopupViewGtk::OnDragCanceled() {
   ignore_mouse_drag_ = true;
 }
 
-void OmniboxPopupViewGtk::Observe(NotificationType type,
+void OmniboxPopupViewGtk::Observe(int type,
                                   const NotificationSource& source,
                                   const NotificationDetails& details) {
-  DCHECK(type == NotificationType::BROWSER_THEME_CHANGED);
+  DCHECK(type == chrome::NOTIFICATION_BROWSER_THEME_CHANGED);
 
   if (theme_service_->UsingNativeTheme()) {
     gtk_util::UndoForceFontSize(window_);

@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_sidebar_api.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sidebar/sidebar_container.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
@@ -219,10 +220,10 @@ SidebarManager::~SidebarManager() {
   DCHECK(sidebar_host_to_tab_.empty());
 }
 
-void SidebarManager::Observe(NotificationType type,
+void SidebarManager::Observe(int type,
                              const NotificationSource& source,
                              const NotificationDetails& details) {
-  if (type == NotificationType::TAB_CONTENTS_DESTROYED) {
+  if (type == content::NOTIFICATION_TAB_CONTENTS_DESTROYED) {
     HideAllSidebars(Source<TabContents>(source).ptr());
   } else {
     NOTREACHED() << "Got a notification we didn't register for!";
@@ -231,7 +232,7 @@ void SidebarManager::Observe(NotificationType type,
 
 void SidebarManager::UpdateSidebar(SidebarContainer* host) {
   NotificationService::current()->Notify(
-      NotificationType::SIDEBAR_CHANGED,
+      chrome::NOTIFICATION_SIDEBAR_CHANGED,
       Source<SidebarManager>(this),
       Details<SidebarContainer>(host));
 }
@@ -273,7 +274,7 @@ void SidebarManager::RegisterSidebarContainerFor(
   // If it's a first sidebar for this tab, register destroy notification.
   if (tab_to_sidebar_host_.find(tab) == tab_to_sidebar_host_.end()) {
     registrar_.Add(this,
-                   NotificationType::TAB_CONTENTS_DESTROYED,
+                   content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
                    Source<TabContents>(tab));
   }
 
@@ -292,7 +293,7 @@ void SidebarManager::UnregisterSidebarContainerFor(
   // If there's no more sidebars linked to this tab, unsubscribe.
   if (tab_to_sidebar_host_.find(tab) == tab_to_sidebar_host_.end()) {
     registrar_.Remove(this,
-                      NotificationType::TAB_CONTENTS_DESTROYED,
+                      content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
                       Source<TabContents>(tab));
   }
 

@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/in_process_browser_test.h"
@@ -200,7 +201,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
   bool SendKeyAndWait(const Browser* browser,
                       ui::KeyboardCode key,
                       int modifiers,
-                      NotificationType type,
+                      int type,
                       const NotificationSource& source) WARN_UNUSED_RESULT {
     return ui_test_utils::SendKeyPressAndWait(
         browser, key,
@@ -220,8 +221,8 @@ class OmniboxViewTest : public InProcessBrowserTest,
     NotificationRegistrar registrar;
     registrar.Add(this,
                   (tab_count < expected_tab_count ?
-                   NotificationType::TAB_PARENTED :
-                   NotificationType::TAB_CLOSED),
+                   content::NOTIFICATION_TAB_PARENTED :
+                   content::NOTIFICATION_TAB_CLOSED),
                    NotificationService::AllSources());
 
     while (!HasFailure() && browser->tab_count() != expected_tab_count)
@@ -247,7 +248,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
 
     NotificationRegistrar registrar;
     registrar.Add(this,
-                  NotificationType::AUTOCOMPLETE_CONTROLLER_RESULT_READY,
+                  chrome::NOTIFICATION_AUTOCOMPLETE_CONTROLLER_RESULT_READY,
                   Source<AutocompleteController>(controller));
 
     while (!HasFailure() && !controller->done())
@@ -263,7 +264,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
 
     if (!model->loaded()) {
       NotificationRegistrar registrar;
-      registrar.Add(this, NotificationType::TEMPLATE_URL_SERVICE_LOADED,
+      registrar.Add(this, chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED,
                     Source<TemplateURLService>(model));
       model->Load();
       ui_test_utils::RunMessageLoop();
@@ -295,7 +296,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
 
     if (!history_service->BackendLoaded()) {
       NotificationRegistrar registrar;
-      registrar.Add(this, NotificationType::HISTORY_LOADED,
+      registrar.Add(this, chrome::NOTIFICATION_HISTORY_LOADED,
                     Source<Profile>(profile));
       ui_test_utils::RunMessageLoop();
     }
@@ -305,7 +306,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
 
     if (!bookmark_model->IsLoaded()) {
       NotificationRegistrar registrar;
-      registrar.Add(this, NotificationType::BOOKMARK_MODEL_LOADED,
+      registrar.Add(this, chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED,
                     Source<Profile>(profile));
       ui_test_utils::RunMessageLoop();
     }
@@ -344,16 +345,16 @@ class OmniboxViewTest : public InProcessBrowserTest,
     ASSERT_NO_FATAL_FAILURE(SetupHistory());
   }
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
-    switch (type.value) {
-      case NotificationType::TAB_PARENTED:
-      case NotificationType::TAB_CLOSED:
-      case NotificationType::TEMPLATE_URL_SERVICE_LOADED:
-      case NotificationType::AUTOCOMPLETE_CONTROLLER_RESULT_READY:
-      case NotificationType::HISTORY_LOADED:
-      case NotificationType::BOOKMARK_MODEL_LOADED:
+    switch (type) {
+      case content::NOTIFICATION_TAB_PARENTED:
+      case content::NOTIFICATION_TAB_CLOSED:
+      case chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED:
+      case chrome::NOTIFICATION_AUTOCOMPLETE_CONTROLLER_RESULT_READY:
+      case chrome::NOTIFICATION_HISTORY_LOADED:
+      case chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED:
         break;
       default:
         FAIL() << "Unexpected notification type";
@@ -416,7 +417,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
     // Try alt-f4 to close the browser.
     ASSERT_TRUE(SendKeyAndWait(
         browser(), ui::VKEY_F4, ui::EF_ALT_DOWN,
-        NotificationType::BROWSER_CLOSED, Source<Browser>(browser())));
+        chrome::NOTIFICATION_BROWSER_CLOSED, Source<Browser>(browser())));
 #endif
   }
 
@@ -437,7 +438,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
     // No BROWSER_CLOSED notification will be sent.
     ASSERT_TRUE(SendKeyAndWait(
         popup, ui::VKEY_W, ui::EF_CONTROL_DOWN,
-        NotificationType::BROWSER_CLOSED, Source<Browser>(popup)));
+        chrome::NOTIFICATION_BROWSER_CLOSED, Source<Browser>(popup)));
 
     // Create another popup.
     popup = CreateBrowserForPopup(browser()->profile());
@@ -465,7 +466,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
     // Try alt-f4 to close the popup.
     ASSERT_TRUE(SendKeyAndWait(
         popup, ui::VKEY_F4, ui::EF_ALT_DOWN,
-        NotificationType::BROWSER_CLOSED, Source<Browser>(popup)));
+        chrome::NOTIFICATION_BROWSER_CLOSED, Source<Browser>(popup)));
 #endif
   }
 

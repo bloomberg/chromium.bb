@@ -15,7 +15,7 @@ bool WebUITestHandler::RunJavascript(const std::string& js_test, bool is_test) {
   if (is_test) {
     NotificationRegistrar notification_registrar;
     notification_registrar.Add(
-        this, NotificationType::EXECUTE_JAVASCRIPT_RESULT,
+        this, content::NOTIFICATION_EXECUTE_JAVASCRIPT_RESULT,
         Source<RenderViewHost>(web_ui_->GetRenderViewHost()));
     web_ui_->GetRenderViewHost()->ExecuteJavascriptInWebFrameNotifyResult(
         string16(), UTF8ToUTF16(js_test));
@@ -27,7 +27,7 @@ bool WebUITestHandler::RunJavascript(const std::string& js_test, bool is_test) {
   }
 }
 
-void WebUITestHandler::Observe(NotificationType type,
+void WebUITestHandler::Observe(int type,
                                const NotificationSource& source,
                                const NotificationDetails& details) {
   // Quit the message loop if we were waiting so Waiting process can get result

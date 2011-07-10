@@ -315,7 +315,7 @@ class SafeBrowsingBlockingPageTest : public InProcessBrowserTest,
     TabContents* contents = browser()->GetSelectedTabContents();
     if (!InterstitialPage::GetInterstitialPage(contents))
       ui_test_utils::WaitForNotificationFrom(
-          NotificationType::INTERSTITIAL_ATTACHED,
+          content::NOTIFICATION_INTERSTITIAL_ATTACHED,
           Source<TabContents>(contents));
   }
 

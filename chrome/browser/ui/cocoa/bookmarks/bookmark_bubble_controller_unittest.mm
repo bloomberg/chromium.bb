@@ -475,7 +475,7 @@ TEST_F(BookmarkBubbleControllerTest, BubbleGoesAwayOnNewTab) {
   // we fake the notification that would be triggered by a tab
   // creation. See TabContents::NotifyConnected().
   NotificationService::current()->Notify(
-      NotificationType::TAB_CONTENTS_CONNECTED,
+      content::NOTIFICATION_TAB_CONTENTS_CONNECTED,
       Source<TabContents>(NULL),
       NotificationService::NoDetails());
 

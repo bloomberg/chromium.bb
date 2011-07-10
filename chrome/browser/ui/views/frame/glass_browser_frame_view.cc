@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/views/tabs/side_tab_strip.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/common/notification_service.h"
@@ -90,7 +91,7 @@ GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
     AddChildView(avatar_button_.get());
     UpdateAvatarInfo();
     if (!browser_view_->IsOffTheRecord()) {
-      registrar_.Add(this, NotificationType::PROFILE_CACHED_INFO_CHANGED,
+      registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
                      NotificationService::AllSources());
     }
   }
@@ -513,11 +514,11 @@ void GlassBrowserFrameView::DisplayNextThrobberFrame() {
               reinterpret_cast<LPARAM>(throbber_icons_[throbber_frame_]));
 }
 
-void GlassBrowserFrameView::Observe(NotificationType type,
+void GlassBrowserFrameView::Observe(int type,
                                     const NotificationSource& source,
                                     const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::PROFILE_CACHED_INFO_CHANGED:
+  switch (type) {
+    case chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED:
       UpdateAvatarInfo();
       LayoutAvatar();
       break;

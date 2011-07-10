@@ -23,14 +23,15 @@
 #include "chrome/browser/service/service_process_control.h"
 #include "chrome/browser/ui/options/options_util.h"
 #include "chrome/browser/ui/webui/options/options_managed_banner_handler.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/user_metrics.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_details.h"
-#include "content/common/notification_type.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -306,10 +307,10 @@ void AdvancedOptionsHandler::RegisterMessages() {
 #endif
 }
 
-void AdvancedOptionsHandler::Observe(NotificationType type,
+void AdvancedOptionsHandler::Observe(int type,
                                      const NotificationSource& source,
                                      const NotificationDetails& details) {
-  if (type == NotificationType::PREF_CHANGED) {
+  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
     std::string* pref_name = Details<std::string>(details).ptr();
     if ((*pref_name == prefs::kDownloadDefaultDirectory) ||
         (*pref_name == prefs::kPromptForDownload) ||

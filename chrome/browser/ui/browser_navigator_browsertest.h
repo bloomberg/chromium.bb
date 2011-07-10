@@ -7,7 +7,7 @@
 
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/in_process_browser_test.h"
-#include "content/common/notification_type.h"
+#include "content/common/content_notification_types.h"
 
 class GURL;
 class NotificationDetails;
@@ -38,7 +38,7 @@ class BrowserNavigatorTest : public InProcessBrowserTest,
   void RunSuppressTest(WindowOpenDisposition disposition);
 
   // NotificationObserver:
-  virtual void Observe(NotificationType type, const NotificationSource& source,
+  virtual void Observe(int type, const NotificationSource& source,
                        const NotificationDetails& details);
 
   size_t created_tab_contents_count_;

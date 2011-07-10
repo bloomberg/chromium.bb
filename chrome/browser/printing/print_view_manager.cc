@@ -14,6 +14,7 @@
 #include "chrome/browser/printing/print_view_manager_observer.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/print_preview_ui.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/print_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/navigation_entry.h"
@@ -223,7 +224,7 @@ void PrintViewManager::OnPrintingFailed(int cookie) {
   ReleasePrinterQuery(cookie);
 
   NotificationService::current()->Notify(
-      NotificationType::PRINT_JOB_RELEASED,
+      chrome::NOTIFICATION_PRINT_JOB_RELEASED,
       Source<TabContents>(tab_contents()),
       NotificationService::NoDetails());
 }
@@ -243,11 +244,11 @@ bool PrintViewManager::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void PrintViewManager::Observe(NotificationType type,
+void PrintViewManager::Observe(int type,
                                const NotificationSource& source,
                                const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::PRINT_JOB_EVENT: {
+  switch (type) {
+    case chrome::NOTIFICATION_PRINT_JOB_EVENT: {
       OnNotifyPrintJobEvent(*Details<JobEventDetails>(details).ptr());
       break;
     }
@@ -265,7 +266,7 @@ void PrintViewManager::OnNotifyPrintJobEvent(
       TerminatePrintJob(true);
 
       NotificationService::current()->Notify(
-          NotificationType::PRINT_JOB_RELEASED,
+          chrome::NOTIFICATION_PRINT_JOB_RELEASED,
           Source<TabContentsWrapper>(tab_),
           NotificationService::NoDetails());
       break;
@@ -295,7 +296,7 @@ void PrintViewManager::OnNotifyPrintJobEvent(
       ReleasePrintJob();
 
       NotificationService::current()->Notify(
-          NotificationType::PRINT_JOB_RELEASED,
+          chrome::NOTIFICATION_PRINT_JOB_RELEASED,
           Source<TabContentsWrapper>(tab_),
           NotificationService::NoDetails());
       break;
@@ -377,7 +378,7 @@ bool PrintViewManager::CreateNewPrintJob(PrintJobWorkerOwner* job) {
 
   print_job_ = new PrintJob();
   print_job_->Initialize(job, this, number_pages_);
-  registrar_.Add(this, NotificationType::PRINT_JOB_EVENT,
+  registrar_.Add(this, chrome::NOTIFICATION_PRINT_JOB_EVENT,
                  Source<PrintJob>(print_job_.get()));
   printing_succeeded_ = false;
   return true;
@@ -437,7 +438,7 @@ void PrintViewManager::ReleasePrintJob() {
 
   PrintingDone(printing_succeeded_);
 
-  registrar_.Remove(this, NotificationType::PRINT_JOB_EVENT,
+  registrar_.Remove(this, chrome::NOTIFICATION_PRINT_JOB_EVENT,
                     Source<PrintJob>(print_job_.get()));
   print_job_->DisconnectSource();
   // Don't close the worker thread.

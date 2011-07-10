@@ -34,6 +34,7 @@
 #include "chrome/browser/download/download_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/time_format.h"
 #include "content/browser/browser_thread.h"
@@ -860,9 +861,9 @@ void NotifyDownloadInitiated(int render_process_id, int render_view_id) {
   if (!rvh)
     return;
 
-  NotificationService::current()->Notify(NotificationType::DOWNLOAD_INITIATED,
-                                         Source<RenderViewHost>(rvh),
-                                         NotificationService::NoDetails());
+  NotificationService::current()->Notify(
+      chrome::NOTIFICATION_DOWNLOAD_INITIATED, Source<RenderViewHost>(rvh),
+      NotificationService::NoDetails());
 }
 
 int GetUniquePathNumberWithCrDownload(const FilePath& path) {

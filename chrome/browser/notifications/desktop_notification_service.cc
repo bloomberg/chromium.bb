@@ -21,6 +21,7 @@
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_child_process_host.h"
@@ -31,7 +32,6 @@
 #include "content/browser/worker_host/worker_process_host.h"
 #include "content/common/desktop_notification_messages.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -293,14 +293,14 @@ void DesktopNotificationService::StartObserving() {
   if (!profile_->IsOffTheRecord()) {
     prefs_registrar_.Add(prefs::kDesktopNotificationAllowedOrigins, this);
     prefs_registrar_.Add(prefs::kDesktopNotificationDeniedOrigins, this);
-    notification_registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
+    notification_registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                                 NotificationService::AllSources());
     notification_registrar_.Add(
         this,
-        NotificationType::CONTENT_SETTINGS_CHANGED,
+        chrome::NOTIFICATION_CONTENT_SETTINGS_CHANGED,
         Source<HostContentSettingsMap>(profile_->GetHostContentSettingsMap()));
   }
-  notification_registrar_.Add(this, NotificationType::PROFILE_DESTROYED,
+  notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                               Source<Profile>(profile_));
 }
 
@@ -350,13 +350,13 @@ void DesktopNotificationService::DenyPermission(const GURL& origin) {
           origin));
 }
 
-void DesktopNotificationService::Observe(NotificationType type,
+void DesktopNotificationService::Observe(int type,
                                          const NotificationSource& source,
                                          const NotificationDetails& details) {
-  if (NotificationType::PREF_CHANGED == type) {
+  if (chrome::NOTIFICATION_PREF_CHANGED == type) {
     const std::string& name = *Details<std::string>(details).ptr();
     OnPrefsChanged(name);
-  } else if (NotificationType::CONTENT_SETTINGS_CHANGED == type) {
+  } else if (chrome::NOTIFICATION_CONTENT_SETTINGS_CHANGED == type) {
     // TODO(markusheintz): Check if content settings type default was changed;
     const ContentSetting default_content_setting =
         profile_->GetHostContentSettingsMap()->GetDefaultContentSetting(
@@ -368,14 +368,14 @@ void DesktopNotificationService::Observe(NotificationType type,
             prefs_cache_.get(),
             &NotificationsPrefsCache::SetCacheDefaultContentSetting,
             default_content_setting));
-  } else if (NotificationType::EXTENSION_UNLOADED == type) {
+  } else if (chrome::NOTIFICATION_EXTENSION_UNLOADED == type) {
     // Remove all notifications currently shown or queued by the extension
     // which was unloaded.
     const Extension* extension =
         Details<UnloadedExtensionInfo>(details)->extension;
     if (extension)
       ui_manager_->CancelAllBySourceOrigin(extension->url());
-  } else if (NotificationType::PROFILE_DESTROYED == type) {
+  } else if (chrome::NOTIFICATION_PROFILE_DESTROYED == type) {
     StopObserving();
   }
 }
@@ -581,7 +581,7 @@ string16 DesktopNotificationService::DisplayNameForOrigin(
 
 void DesktopNotificationService::NotifySettingsChange() {
   NotificationService::current()->Notify(
-      NotificationType::DESKTOP_NOTIFICATION_SETTINGS_CHANGED,
+      chrome::NOTIFICATION_DESKTOP_NOTIFICATION_SETTINGS_CHANGED,
       Source<DesktopNotificationService>(this),
       NotificationService::NoDetails());
 }

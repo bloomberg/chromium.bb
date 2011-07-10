@@ -35,6 +35,7 @@
 #import "chrome/browser/ui/cocoa/theme_install_bubble_view.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/native_web_keyboard_event.h"
@@ -51,9 +52,10 @@ BrowserWindowCocoa::BrowserWindowCocoa(Browser* browser,
     controller_(controller),
     confirm_close_factory_(browser) {
   // This pref applies to all windows, so all must watch for it.
-  registrar_.Add(this, NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::SIDEBAR_CHANGED,
+  registrar_.Add(this, chrome::NOTIFICATION_SIDEBAR_CHANGED,
                  NotificationService::AllSources());
 }
 
@@ -583,16 +585,16 @@ WindowOpenDisposition BrowserWindowCocoa::GetDispositionForPopupBounds(
   return NEW_POPUP;
 }
 
-void BrowserWindowCocoa::Observe(NotificationType type,
+void BrowserWindowCocoa::Observe(int type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {
-  switch (type.value) {
+  switch (type) {
     // Only the key window gets a direct toggle from the menu.
     // Other windows hear about it from the notification.
-    case NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED:
+    case chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED:
       [controller_ updateBookmarkBarVisibilityWithAnimation:YES];
       break;
-    case NotificationType::SIDEBAR_CHANGED:
+    case chrome::NOTIFICATION_SIDEBAR_CHANGED:
       UpdateSidebarForContents(
           Details<SidebarContainer>(details)->tab_contents());
       break;

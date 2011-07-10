@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/window_sizer.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/common/notification_service.h"
@@ -597,7 +598,7 @@ void ConstrainedWindowViews::CloseConstrainedWindow() {
   // Broadcast to all observers of NOTIFY_CWINDOW_CLOSED.
   // One example of such an observer is AutomationCWindowTracker in the
   // automation component.
-  NotificationService::current()->Notify(NotificationType::CWINDOW_CLOSED,
+  NotificationService::current()->Notify(chrome::NOTIFICATION_CWINDOW_CLOSED,
                                          Source<ConstrainedWindow>(this),
                                          NotificationService::NoDetails());
   Close();

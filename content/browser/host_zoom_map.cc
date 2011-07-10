@@ -20,7 +20,7 @@ using WebKit::WebView;
 
 HostZoomMap::HostZoomMap() : default_zoom_level_(0.0) {
   registrar_.Add(
-      this, NotificationType::RENDER_VIEW_HOST_WILL_CLOSE_RENDER_VIEW,
+      this, content::NOTIFICATION_RENDER_VIEW_HOST_WILL_CLOSE_RENDER_VIEW,
       NotificationService::AllSources());
 }
 
@@ -41,9 +41,10 @@ void HostZoomMap::SetZoomLevel(std::string host, double level) {
       host_zoom_levels_[host] = level;
   }
 
-  NotificationService::current()->Notify(NotificationType::ZOOM_LEVEL_CHANGED,
-                                         Source<HostZoomMap>(this),
-                                         Details<const std::string>(&host));
+  NotificationService::current()->Notify(
+      content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
+      Source<HostZoomMap>(this),
+      Details<const std::string>(&host));
 }
 
 double HostZoomMap::GetTemporaryZoomLevel(int render_process_id,
@@ -88,20 +89,21 @@ void HostZoomMap::SetTemporaryZoomLevel(int render_process_id,
   }
 
   std::string host;
-  NotificationService::current()->Notify(NotificationType::ZOOM_LEVEL_CHANGED,
-                                         Source<HostZoomMap>(this),
-                                         Details<const std::string>(&host));
+  NotificationService::current()->Notify(
+      content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
+      Source<HostZoomMap>(this),
+      Details<const std::string>(&host));
 
 }
 
 void HostZoomMap::Observe(
-    NotificationType type,
+    int type,
     const NotificationSource& source,
     const NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  switch (type.value) {
-    case NotificationType::RENDER_VIEW_HOST_WILL_CLOSE_RENDER_VIEW: {
+  switch (type) {
+    case content::NOTIFICATION_RENDER_VIEW_HOST_WILL_CLOSE_RENDER_VIEW: {
       base::AutoLock auto_lock(lock_);
       int render_view_id = Source<RenderViewHost>(source)->routing_id();
       int render_process_id = Source<RenderViewHost>(source)->process()->id();

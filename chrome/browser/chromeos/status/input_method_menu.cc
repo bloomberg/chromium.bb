@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/notification_service.h"
@@ -162,7 +163,7 @@ InputMethodMenu::InputMethodMenu(PrefService* pref_service,
   if (screen_mode_ == StatusAreaHost::kLoginMode) {
     // This button is for the login screen.
     registrar_.Add(this,
-                   NotificationType::LOGIN_USER_CHANGED,
+                   chrome::NOTIFICATION_LOGIN_USER_CHANGED,
                    NotificationService::AllSources());
   }
 }
@@ -677,10 +678,10 @@ void InputMethodMenu::RegisterPrefs(PrefService* local_state) {
                                   PrefService::UNSYNCABLE_PREF);
 }
 
-void InputMethodMenu::Observe(NotificationType type,
+void InputMethodMenu::Observe(int type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
-  if (type == NotificationType::LOGIN_USER_CHANGED) {
+  if (type == chrome::NOTIFICATION_LOGIN_USER_CHANGED) {
     // When a user logs in, we should remove |this| object from the observer
     // list so that PreferenceUpdateNeeded() does not update the local state
     // anymore.

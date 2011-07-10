@@ -180,7 +180,7 @@ class ExternalTabContainer : public TabContentsDelegate,
                                       const std::string& target);
 
   // Overridden from NotificationObserver:
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -366,7 +366,7 @@ class TemporaryPopupExternalTabContainer : public ExternalTabContainer {
     return false;
   }
 
-  virtual void Observe(NotificationType type, const NotificationSource& source,
+  virtual void Observe(int type, const NotificationSource& source,
                        const NotificationDetails& details) {}
 
   virtual void OpenURLFromTab(TabContents* source, const GURL& url,

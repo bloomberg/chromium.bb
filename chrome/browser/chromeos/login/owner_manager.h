@@ -16,7 +16,7 @@
 
 class FilePath;
 class NotificationDetails;
-class NotificationType;
+class int;
 
 namespace chromeos {
 
@@ -90,7 +90,7 @@ class OwnerManager : public base::RefCountedThreadSafe<OwnerManager> {
 
  private:
   // A helper method to send a notification on another thread.
-  void SendNotification(NotificationType type,
+  void SendNotification(int type,
                         const NotificationDetails& details);
 
   // Calls back a key update delegate on a given thread.

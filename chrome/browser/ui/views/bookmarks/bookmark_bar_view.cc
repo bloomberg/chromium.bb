@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/views/event_utils.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
@@ -428,8 +429,8 @@ void BookmarkBarView::SetProfile(Profile* profile) {
   other_bookmarked_button_->SetEnabled(false);
 
   Source<Profile> ns_source(profile_->GetOriginalProfile());
-  registrar_.Add(this, NotificationType::BOOKMARK_BUBBLE_SHOWN, ns_source);
-  registrar_.Add(this, NotificationType::BOOKMARK_BUBBLE_HIDDEN, ns_source);
+  registrar_.Add(this, chrome::NOTIFICATION_BOOKMARK_BUBBLE_SHOWN, ns_source);
+  registrar_.Add(this, chrome::NOTIFICATION_BOOKMARK_BUBBLE_HIDDEN, ns_source);
 
   // Remove any existing bookmark buttons.
   while (GetBookmarkButtonCount())
@@ -1145,12 +1146,12 @@ void BookmarkBarView::ShowContextMenuForView(View* source,
   controller.RunMenuAt(p);
 }
 
-void BookmarkBarView::Observe(NotificationType type,
+void BookmarkBarView::Observe(int type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
   DCHECK(profile_);
-  switch (type.value) {
-    case NotificationType::BOOKMARK_BUBBLE_SHOWN: {
+  switch (type) {
+    case chrome::NOTIFICATION_BOOKMARK_BUBBLE_SHOWN: {
       StopThrobbing(true);
       GURL url = *(Details<GURL>(details).ptr());
       const BookmarkNode* node = model_->GetMostRecentlyAddedNodeForURL(url);
@@ -1159,7 +1160,7 @@ void BookmarkBarView::Observe(NotificationType type,
       StartThrobbing(node, false);
       break;
     }
-    case NotificationType::BOOKMARK_BUBBLE_HIDDEN:
+    case chrome::NOTIFICATION_BOOKMARK_BUBBLE_HIDDEN:
       StopThrobbing(false);
       break;
 

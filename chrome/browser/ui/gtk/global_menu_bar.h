@@ -65,7 +65,7 @@ class GlobalMenuBar : public CommandUpdater::CommandObserver,
   virtual void EnabledStateChangedForCommand(int id, bool enabled);
 
   // NotificationObserver:
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

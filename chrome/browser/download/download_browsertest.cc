@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/active_downloads_ui.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -1130,7 +1131,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, IncognitoDownload) {
   // message loop runs.  So it isn't possible to get a BROWSER_CLOSED
   // notification inside of a test.
   ui_test_utils::WindowedNotificationObserver signal(
-      NotificationType::BROWSER_CLOSED,
+      chrome::NOTIFICATION_BROWSER_CLOSED,
       Source<Browser>(incognito));
 #endif
 
@@ -1381,7 +1382,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, NewWindow) {
   // message loop runs.  So it isn't possible to get a BROWSER_CLOSED
   // notification inside of a test.
   ui_test_utils::WindowedNotificationObserver signal(
-      NotificationType::BROWSER_CLOSED,
+      chrome::NOTIFICATION_BROWSER_CLOSED,
       Source<Browser>(download_browser));
 #endif
 
@@ -1541,7 +1542,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_BrowserCloseAfterDownload) {
   DownloadAndWait(browser(), download_url, EXPECT_NO_SELECT_DIALOG);
 
   ui_test_utils::WindowedNotificationObserver signal(
-      NotificationType::BROWSER_CLOSED,
+      chrome::NOTIFICATION_BROWSER_CLOSED,
       Source<Browser>(browser()));
   browser()->CloseWindow();
   signal.Wait();

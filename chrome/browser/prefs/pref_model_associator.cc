@@ -12,6 +12,7 @@
 #include "base/values.h"
 #include "chrome/browser/sync/api/sync_change.h"
 #include "chrome/browser/sync/protocol/preference_specifics.pb.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/common/json_value_serializer.h"
 #include "content/common/notification_service.h"
@@ -273,7 +274,7 @@ void PrefModelAssociator::SendUpdateNotificationsIfNecessary(
   // notification to update the UI.
   if (0 == pref_name.compare(prefs::kShowBookmarkBar)) {
     NotificationService::current()->Notify(
-        NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
+        chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
         Source<PrefModelAssociator>(this),
         NotificationService::NoDetails());
   }

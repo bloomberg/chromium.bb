@@ -14,6 +14,7 @@
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/browser/tab_contents/navigation_entry.h"
@@ -72,7 +73,7 @@ void ExtensionBrowserEventRouter::Init() {
 #elif defined(OS_MACOSX)
   // Needed for when no suitable window can be passed to an extension as the
   // currently focused window.
-  registrar_.Add(this, NotificationType::NO_KEY_WINDOW,
+  registrar_.Add(this, content::NOTIFICATION_NO_KEY_WINDOW,
                  NotificationService::AllSources());
 #endif
 
@@ -127,7 +128,7 @@ void ExtensionBrowserEventRouter::RegisterForBrowserNotifications(
   // If this is a new window, it isn't ready at this point, so we register to be
   // notified when it is. If this is an existing window, this is a no-op that we
   // just do to reduce code complexity.
-  registrar_.Add(this, NotificationType::BROWSER_WINDOW_READY,
+  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_WINDOW_READY,
       Source<const Browser>(browser));
 
   for (int i = 0; i < browser->tabstrip_model()->count(); ++i)
@@ -136,22 +137,22 @@ void ExtensionBrowserEventRouter::RegisterForBrowserNotifications(
 
 void ExtensionBrowserEventRouter::RegisterForTabNotifications(
     TabContents* contents) {
-  registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
+  registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                  Source<NavigationController>(&contents->controller()));
 
   // Observing TAB_CONTENTS_DESTROYED is necessary because it's
   // possible for tabs to be created, detached and then destroyed without
   // ever having been re-attached and closed. This happens in the case of
   // a devtools TabContents that is opened in window, docked, then closed.
-  registrar_.Add(this, NotificationType::TAB_CONTENTS_DESTROYED,
+  registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
                  Source<TabContents>(contents));
 }
 
 void ExtensionBrowserEventRouter::UnregisterForTabNotifications(
     TabContents* contents) {
-  registrar_.Remove(this, NotificationType::NAV_ENTRY_COMMITTED,
+  registrar_.Remove(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       Source<NavigationController>(&contents->controller()));
-  registrar_.Remove(this, NotificationType::TAB_CONTENTS_DESTROYED,
+  registrar_.Remove(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
       Source<TabContents>(contents));
 }
 
@@ -175,7 +176,7 @@ void ExtensionBrowserEventRouter::OnBrowserRemoved(const Browser* browser) {
   // Stop listening to TabStripModel events for this browser.
   browser->tabstrip_model()->RemoveObserver(this);
 
-  registrar_.Remove(this, NotificationType::BROWSER_WINDOW_READY,
+  registrar_.Remove(this, chrome::NOTIFICATION_BROWSER_WINDOW_READY,
       Source<const Browser>(browser));
 
   DispatchSimpleBrowserEvent(browser->profile(),
@@ -487,25 +488,25 @@ ExtensionBrowserEventRouter::TabEntry* ExtensionBrowserEventRouter::GetTabEntry(
   return &i->second;
 }
 
-void ExtensionBrowserEventRouter::Observe(NotificationType type,
+void ExtensionBrowserEventRouter::Observe(int type,
                                           const NotificationSource& source,
                                           const NotificationDetails& details) {
-  if (type == NotificationType::NAV_ENTRY_COMMITTED) {
+  if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
     NavigationController* source_controller =
         Source<NavigationController>(source).ptr();
     TabUpdated(source_controller->tab_contents(), true);
-  } else if (type == NotificationType::TAB_CONTENTS_DESTROYED) {
+  } else if (type == content::NOTIFICATION_TAB_CONTENTS_DESTROYED) {
     // Tab was destroyed after being detached (without being re-attached).
     TabContents* contents = Source<TabContents>(source).ptr();
-    registrar_.Remove(this, NotificationType::NAV_ENTRY_COMMITTED,
+    registrar_.Remove(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         Source<NavigationController>(&contents->controller()));
-    registrar_.Remove(this, NotificationType::TAB_CONTENTS_DESTROYED,
+    registrar_.Remove(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
         Source<TabContents>(contents));
-  } else if (type == NotificationType::BROWSER_WINDOW_READY) {
+  } else if (type == chrome::NOTIFICATION_BROWSER_WINDOW_READY) {
     const Browser* browser = Source<const Browser>(source).ptr();
     OnBrowserWindowReady(browser);
 #if defined(OS_MACOSX)
-  } else if (type == NotificationType::NO_KEY_WINDOW) {
+  } else if (type == content::NOTIFICATION_NO_KEY_WINDOW) {
     OnBrowserSetLastActive(NULL);
 #endif
   } else {

@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
@@ -83,14 +84,14 @@ class ResourceChangeObserver : public TaskManagerModelObserver {
 class BackgroundContentsListener : public NotificationObserver {
  public:
   explicit BackgroundContentsListener(Profile* profile) {
-    registrar_.Add(this, NotificationType::BACKGROUND_CONTENTS_NAVIGATED,
+    registrar_.Add(this, chrome::NOTIFICATION_BACKGROUND_CONTENTS_NAVIGATED,
                    Source<Profile>(profile));
   }
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
     // Quit once the BackgroundContents has been loaded.
-    if (type.value == NotificationType::BACKGROUND_CONTENTS_NAVIGATED)
+    if (type == chrome::NOTIFICATION_BACKGROUND_CONTENTS_NAVIGATED)
       MessageLoopForUI::current()->Quit();
   }
  private:

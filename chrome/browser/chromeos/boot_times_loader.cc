@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/login/authentication_notification_details.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/network_state_notifier.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
@@ -342,9 +343,9 @@ void BootTimesLoader::RecordLoginAttempted() {
   AddLoginTimeMarker("LoginStarted", false);
   if (!have_registered_) {
     have_registered_ = true;
-    registrar_.Add(this, NotificationType::LOAD_START,
+    registrar_.Add(this, content::NOTIFICATION_LOAD_START,
                    NotificationService::AllSources());
-    registrar_.Add(this, NotificationType::LOGIN_AUTHENTICATION,
+    registrar_.Add(this, chrome::NOTIFICATION_LOGIN_AUTHENTICATION,
                    NotificationService::AllSources());
   }
 }
@@ -360,18 +361,18 @@ void BootTimesLoader::AddLogoutTimeMarker(
 }
 
 void BootTimesLoader::Observe(
-    NotificationType type,
+    int type,
     const NotificationSource& source,
     const NotificationDetails& details) {
-  if (type == NotificationType::LOGIN_AUTHENTICATION) {
+  if (type == chrome::NOTIFICATION_LOGIN_AUTHENTICATION) {
     Details<AuthenticationNotificationDetails> auth_details(details);
     if (auth_details->success()) {
       AddLoginTimeMarker("Authenticate", true);
       RecordCurrentStats(kLoginSuccess);
-      registrar_.Remove(this, NotificationType::LOGIN_AUTHENTICATION,
+      registrar_.Remove(this, chrome::NOTIFICATION_LOGIN_AUTHENTICATION,
                         NotificationService::AllSources());
     }
-  } else if (type == NotificationType::LOAD_START) {
+  } else if (type == content::NOTIFICATION_LOAD_START) {
     // Make sure it's not some page load initiated by OOBE/login screen.
     if (!UserManager::Get()->user_is_logged_in())
       return;
@@ -383,7 +384,7 @@ void BootTimesLoader::Observe(
       AddLoginTimeMarker("LoginDone", true);
       RecordCurrentStats(kChromeFirstRender);
       // Post chrome first render stat.
-      registrar_.Remove(this, NotificationType::LOAD_START,
+      registrar_.Remove(this, content::NOTIFICATION_LOAD_START,
                         NotificationService::AllSources());
       // Don't swamp the FILE thread right away.
       BrowserThread::PostDelayedTask(

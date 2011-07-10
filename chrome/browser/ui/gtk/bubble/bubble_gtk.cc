@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/gtk/bubble/bubble_accelerators_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_service.h"
 #include "ui/base/gtk/gtk_windowing.h"
 #include "ui/gfx/gtk_util.h"
@@ -179,7 +180,7 @@ void BubbleGtk::Init(GtkWidget* anchor_widget,
     GrabPointerAndKeyboard();
   }
 
-  registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
+  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  Source<ThemeService>(theme_service_));
   theme_service_->InitThemesFor(this);
 }
@@ -343,10 +344,10 @@ void BubbleGtk::StackWindow() {
     ui::StackPopupWindow(window_, GTK_WIDGET(toplevel_window_));
 }
 
-void BubbleGtk::Observe(NotificationType type,
+void BubbleGtk::Observe(int type,
                         const NotificationSource& source,
                         const NotificationDetails& details) {
-  DCHECK_EQ(type.value, NotificationType::BROWSER_THEME_CHANGED);
+  DCHECK_EQ(type, chrome::NOTIFICATION_BROWSER_THEME_CHANGED);
   if (theme_service_->UsingNativeTheme() && match_system_theme_) {
     gtk_widget_modify_bg(window_, GTK_STATE_NORMAL, NULL);
   } else {

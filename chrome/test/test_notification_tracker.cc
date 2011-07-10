@@ -7,11 +7,11 @@
 #include "content/common/notification_service.h"
 
 TestNotificationTracker::Event::Event()
-    : type(NotificationType::ALL),
+    : type(content::NOTIFICATION_ALL),
       source(NotificationService::AllSources()),
       details(NotificationService::NoDetails()) {
 }
-TestNotificationTracker::Event::Event(NotificationType t,
+TestNotificationTracker::Event::Event(int t,
                                       NotificationSource s,
                                       NotificationDetails d)
     : type(t),
@@ -25,7 +25,7 @@ TestNotificationTracker::TestNotificationTracker() {
 TestNotificationTracker::~TestNotificationTracker() {
 }
 
-void TestNotificationTracker::ListenFor(NotificationType type,
+void TestNotificationTracker::ListenFor(int type,
                                         const NotificationSource& source) {
   registrar_.Add(this, type, source);
 }
@@ -34,7 +34,7 @@ void TestNotificationTracker::Reset() {
   events_.clear();
 }
 
-bool TestNotificationTracker::Check1AndReset(NotificationType type) {
+bool TestNotificationTracker::Check1AndReset(int type) {
   if (size() != 1) {
     Reset();
     return false;
@@ -44,8 +44,8 @@ bool TestNotificationTracker::Check1AndReset(NotificationType type) {
   return success;
 }
 
-bool TestNotificationTracker::Check2AndReset(NotificationType type1,
-                                             NotificationType type2) {
+bool TestNotificationTracker::Check2AndReset(int type1,
+                                             int type2) {
   if (size() != 2) {
     Reset();
     return false;
@@ -55,9 +55,9 @@ bool TestNotificationTracker::Check2AndReset(NotificationType type1,
   return success;
 }
 
-bool TestNotificationTracker::Check3AndReset(NotificationType type1,
-                                             NotificationType type2,
-                                             NotificationType type3) {
+bool TestNotificationTracker::Check3AndReset(int type1,
+                                             int type2,
+                                             int type3) {
   if (size() != 3) {
     Reset();
     return false;
@@ -69,7 +69,7 @@ bool TestNotificationTracker::Check3AndReset(NotificationType type1,
   return success;
 }
 
-void TestNotificationTracker::Observe(NotificationType type,
+void TestNotificationTracker::Observe(int type,
                                       const NotificationSource& source,
                                       const NotificationDetails& details) {
   events_.push_back(Event(type, source, details));

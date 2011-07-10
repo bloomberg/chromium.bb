@@ -18,10 +18,10 @@
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 #include "unicode/timezone.h"
 
 namespace chromeos {
@@ -264,10 +264,10 @@ void Preferences::Init(PrefService* prefs) {
   }
 }
 
-void Preferences::Observe(NotificationType type,
+void Preferences::Observe(int type,
                           const NotificationSource& source,
                           const NotificationDetails& details) {
-  if (type == NotificationType::PREF_CHANGED)
+  if (type == chrome::NOTIFICATION_PREF_CHANGED)
     NotifyPrefChanged(Details<std::string>(details).ptr());
 }
 

@@ -19,13 +19,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/extension_icon_source.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 
 using base::IntToString;
 namespace events = extension_event_names;
@@ -256,11 +256,11 @@ ExtensionManagementEventRouter::ExtensionManagementEventRouter(Profile* profile)
 ExtensionManagementEventRouter::~ExtensionManagementEventRouter() {}
 
 void ExtensionManagementEventRouter::Init() {
-  NotificationType::Type types[] = {
-    NotificationType::EXTENSION_INSTALLED,
-    NotificationType::EXTENSION_UNINSTALLED,
-    NotificationType::EXTENSION_LOADED,
-    NotificationType::EXTENSION_UNLOADED
+  int types[] = {
+    chrome::NOTIFICATION_EXTENSION_INSTALLED,
+    chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
+    chrome::NOTIFICATION_EXTENSION_LOADED,
+    chrome::NOTIFICATION_EXTENSION_UNLOADED
   };
 
   CHECK(registrar_.IsEmpty());
@@ -272,7 +272,7 @@ void ExtensionManagementEventRouter::Init() {
 }
 
 void ExtensionManagementEventRouter::Observe(
-    NotificationType type,
+    int type,
     const NotificationSource& source,
     const NotificationDetails& details) {
   const char* event_name = NULL;
@@ -282,17 +282,17 @@ void ExtensionManagementEventRouter::Observe(
     return;
   }
 
-  switch (type.value) {
-    case NotificationType::EXTENSION_INSTALLED:
+  switch (type) {
+    case chrome::NOTIFICATION_EXTENSION_INSTALLED:
       event_name = events::kOnExtensionInstalled;
       break;
-    case NotificationType::EXTENSION_UNINSTALLED:
+    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED:
       event_name = events::kOnExtensionUninstalled;
       break;
-    case NotificationType::EXTENSION_LOADED:
+    case chrome::NOTIFICATION_EXTENSION_LOADED:
       event_name = events::kOnExtensionEnabled;
       break;
-    case NotificationType::EXTENSION_UNLOADED:
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED:
       event_name = events::kOnExtensionDisabled;
       break;
     default:

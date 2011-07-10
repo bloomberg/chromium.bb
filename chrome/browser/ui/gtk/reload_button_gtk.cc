@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_source.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -61,7 +62,7 @@ ReloadButtonGtk::ReloadButtonGtk(LocationBarViewGtk* location_bar,
   if (theme_service_) {
     theme_service_->InitThemesFor(this);
     registrar_.Add(this,
-                   NotificationType::BROWSER_THEME_CHANGED,
+                   chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                    Source<ThemeService>(theme_service_));
   }
 
@@ -127,10 +128,10 @@ void ReloadButtonGtk::ChangeMode(Mode mode, bool force) {
 ////////////////////////////////////////////////////////////////////////////////
 // ReloadButtonGtk, NotificationObserver implementation:
 
-void ReloadButtonGtk::Observe(NotificationType type,
+void ReloadButtonGtk::Observe(int type,
                               const NotificationSource& source,
                               const NotificationDetails& /* details */) {
-  DCHECK(NotificationType::BROWSER_THEME_CHANGED == type);
+  DCHECK(chrome::NOTIFICATION_BROWSER_THEME_CHANGED == type);
 
   GtkThemeService* provider = static_cast<GtkThemeService*>(
       Source<ThemeService>(source).ptr());

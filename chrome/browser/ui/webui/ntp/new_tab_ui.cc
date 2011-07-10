@@ -40,6 +40,7 @@
 #include "chrome/browser/ui/webui/ntp/shown_sections_handler.h"
 #include "chrome/browser/ui/webui/ntp/value_helper.h"
 #include "chrome/browser/ui/webui/theme_source.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
@@ -266,7 +267,7 @@ void MetricsHandler::HandleLogEventTime(const ListValue* args) {
     NOTREACHED();
   }
   NotificationService::current()->Notify(
-      NotificationType::METRIC_EVENT_DURATION,
+      chrome::NOTIFICATION_METRIC_EVENT_DURATION,
       Source<TabContents>(tab),
       Details<MetricEventDurationDetails>(&details));
 }
@@ -339,7 +340,7 @@ void NewTabPageClosePromoHandler::HandleClosePromo(
     const ListValue* args) {
   web_ui_->GetProfile()->GetPrefs()->SetBoolean(prefs::kNTPPromoClosed, true);
   NotificationService* service = NotificationService::current();
-  service->Notify(NotificationType::PROMO_RESOURCE_STATE_CHANGED,
+  service->Notify(chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED,
                   Source<NewTabPageClosePromoHandler>(this),
                   NotificationService::NoDetails());
 }
@@ -409,11 +410,12 @@ NewTabUI::NewTabUI(TabContents* contents)
   contents->profile()->GetChromeURLDataManager()->AddDataSource(html_source);
 
   // Listen for theme installation.
-  registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
+  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  Source<ThemeService>(
                      ThemeServiceFactory::GetForProfile(GetProfile())));
   // Listen for bookmark bar visibility changes.
-  registrar_.Add(this, NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
                  NotificationService::AllSources());
 }
 
@@ -431,7 +433,7 @@ void NewTabUI::PaintTimeout() {
     base::TimeDelta load_time = last_paint_ - start_;
     int load_time_ms = static_cast<int>(load_time.InMilliseconds());
     NotificationService::current()->Notify(
-        NotificationType::INITIAL_NEW_TAB_UI_LOAD,
+        chrome::NOTIFICATION_INITIAL_NEW_TAB_UI_LOAD,
         NotificationService::AllSources(),
         Details<int>(&load_time_ms));
     UMA_HISTOGRAM_TIMES("NewTabUI load", load_time);
@@ -447,7 +449,7 @@ void NewTabUI::PaintTimeout() {
 void NewTabUI::StartTimingPaint(RenderViewHost* render_view_host) {
   start_ = base::TimeTicks::Now();
   last_paint_ = start_;
-  registrar_.Add(this, NotificationType::RENDER_WIDGET_HOST_DID_PAINT,
+  registrar_.Add(this, content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT,
       Source<RenderWidgetHost>(render_view_host));
   timer_.Start(base::TimeDelta::FromMilliseconds(kTimeoutMs), this,
                &NewTabUI::PaintTimeout);
@@ -461,11 +463,11 @@ void NewTabUI::RenderViewReused(RenderViewHost* render_view_host) {
   StartTimingPaint(render_view_host);
 }
 
-void NewTabUI::Observe(NotificationType type,
+void NewTabUI::Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::BROWSER_THEME_CHANGED: {
+  switch (type) {
+    case chrome::NOTIFICATION_BROWSER_THEME_CHANGED: {
       InitializeCSSCaches();
       ListValue args;
       args.Append(Value::CreateStringValue(
@@ -475,7 +477,7 @@ void NewTabUI::Observe(NotificationType type,
       CallJavascriptFunction("themeChanged", args);
       break;
     }
-    case NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED: {
+    case chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED: {
       if (GetProfile()->GetPrefs()->IsManagedPreference(
               prefs::kEnableBookmarkBar)) {
         break;
@@ -486,12 +488,12 @@ void NewTabUI::Observe(NotificationType type,
         CallJavascriptFunction("bookmarkBarDetached");
       break;
     }
-    case NotificationType::RENDER_WIDGET_HOST_DID_PAINT: {
+    case content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT: {
       last_paint_ = base::TimeTicks::Now();
       break;
     }
     default:
-      CHECK(false) << "Unexpected notification: " << type.value;
+      CHECK(false) << "Unexpected notification: " << type;
   }
 }
 

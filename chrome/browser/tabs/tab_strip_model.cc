@@ -22,6 +22,7 @@
 #include "chrome/browser/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/tabs/tab_strip_model_order_controller.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_process_host.h"
@@ -66,10 +67,10 @@ TabStripModel::TabStripModel(TabStripModelDelegate* delegate, Profile* profile)
       order_controller_(NULL) {
   DCHECK(delegate_);
   registrar_.Add(this,
-                 NotificationType::TAB_CONTENTS_DESTROYED,
+                 content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
                  NotificationService::AllSources());
   registrar_.Add(this,
-                 NotificationType::EXTENSION_UNLOADED,
+                 chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  Source<Profile>(profile_));
   order_controller_ = new TabStripModelOrderController(this);
 }
@@ -987,11 +988,11 @@ bool TabStripModel::WillContextMenuPin(int index) {
 ///////////////////////////////////////////////////////////////////////////////
 // TabStripModel, NotificationObserver implementation:
 
-void TabStripModel::Observe(NotificationType type,
+void TabStripModel::Observe(int type,
                             const NotificationSource& source,
                             const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::TAB_CONTENTS_DESTROYED: {
+  switch (type) {
+    case content::NOTIFICATION_TAB_CONTENTS_DESTROYED: {
       // Sometimes, on qemu, it seems like a TabContents object can be destroyed
       // while we still have a reference to it. We need to break this reference
       // here so we don't crash later.
@@ -1004,7 +1005,7 @@ void TabStripModel::Observe(NotificationType type,
       break;
     }
 
-    case NotificationType::EXTENSION_UNLOADED: {
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
       const Extension* extension =
           Details<UnloadedExtensionInfo>(details)->extension;
       // Iterate backwards as we may remove items while iterating.

@@ -29,6 +29,7 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -93,16 +94,16 @@ class ChromeCookieMonsterDelegate : public net::CookieMonster::Delegate {
     explicit ProfileGetter(Profile* profile) : profile_(profile) {
       DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
       registrar_.Add(this,
-                     NotificationType::PROFILE_DESTROYED,
+                     chrome::NOTIFICATION_PROFILE_DESTROYED,
                      Source<Profile>(profile_));
     }
 
     // NotificationObserver implementation.
-    void Observe(NotificationType type,
+    void Observe(int type,
                  const NotificationSource& source,
                  const NotificationDetails& details) {
       DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-      if (NotificationType::PROFILE_DESTROYED == type) {
+      if (chrome::NOTIFICATION_PROFILE_DESTROYED == type) {
         Profile* profile = Source<Profile>(source).ptr();
         if (profile_ == profile)
           profile_ = NULL;
@@ -134,7 +135,7 @@ class ChromeCookieMonsterDelegate : public net::CookieMonster::Delegate {
     if (profile_getter_->get()) {
       ChromeCookieDetails cookie_details(&cookie, removed, cause);
       NotificationService::current()->Notify(
-          NotificationType::COOKIE_CHANGED,
+          chrome::NOTIFICATION_COOKIE_CHANGED,
           Source<Profile>(profile_getter_->get()),
           Details<ChromeCookieDetails>(&cookie_details));
     }

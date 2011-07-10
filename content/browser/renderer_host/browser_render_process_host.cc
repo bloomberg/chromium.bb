@@ -812,7 +812,7 @@ void BrowserRenderProcessHost::OnChannelError() {
 
   RendererClosedDetails details(status, exit_code, is_extension_process_);
   NotificationService::current()->Notify(
-      NotificationType::RENDERER_PROCESS_CLOSED,
+      content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
       Source<RenderProcessHost>(this),
       Details<RendererClosedDetails>(&details));
 
@@ -842,7 +842,7 @@ void BrowserRenderProcessHost::OnShutdownRequest() {
   // Notify any tabs that might have swapped out renderers from this process.
   // They should not attempt to swap them back in.
   NotificationService::current()->Notify(
-      NotificationType::RENDERER_PROCESS_CLOSING,
+      content::NOTIFICATION_RENDERER_PROCESS_CLOSING,
       Source<RenderProcessHost>(this), NotificationService::NoDetails());
 
   Send(new ChildProcessMsg_Shutdown());
@@ -896,7 +896,7 @@ void BrowserRenderProcessHost::OnProcessLaunched() {
   // was after, we can end up executing JavaScript before the initialization
   // happens.
   NotificationService::current()->Notify(
-      NotificationType::RENDERER_PROCESS_CREATED,
+      content::NOTIFICATION_RENDERER_PROCESS_CREATED,
       Source<RenderProcessHost>(this), NotificationService::NoDetails());
 
   while (!queued_messages_.empty()) {

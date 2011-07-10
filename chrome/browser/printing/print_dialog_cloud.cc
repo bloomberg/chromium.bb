@@ -27,9 +27,9 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/webui/web_ui.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 #include "content/common/view_messages.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "webkit/glue/webpreferences.h"
@@ -270,15 +270,15 @@ void CloudPrintFlowHandler::RegisterMessages() {
     if (pending_entry)
       pending_entry->set_url(CloudPrintURL(
           web_ui_->GetProfile()).GetCloudPrintServiceDialogURL());
-    registrar_.Add(this, NotificationType::LOAD_STOP,
+    registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
                    Source<NavigationController>(controller));
   }
 }
 
-void CloudPrintFlowHandler::Observe(NotificationType type,
+void CloudPrintFlowHandler::Observe(int type,
                                     const NotificationSource& source,
                                     const NotificationDetails& details) {
-  if (type.value == NotificationType::LOAD_STOP) {
+  if (type == content::NOTIFICATION_LOAD_STOP) {
     // Take the opportunity to set some (minimal) additional
     // script permissions required for the web UI.
     GURL url = web_ui_->tab_contents()->GetURL();

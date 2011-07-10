@@ -6,6 +6,7 @@
 #include "base/string16.h"
 #include "chrome/browser/printing/print_job.h"
 #include "chrome/browser/printing/print_job_worker.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_service.h"
 #include "googleurl/src/gurl.h"
@@ -76,7 +77,7 @@ class TestPrintJob : public printing::PrintJob {
 class TestPrintNotifObserv : public NotificationObserver {
  public:
   // NotificationObserver
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
     EXPECT_FALSE(true);
@@ -94,7 +95,7 @@ TEST(PrintJobTest, SimplePrint) {
 
   NotificationRegistrar registrar_;
   TestPrintNotifObserv observ;
-  registrar_.Add(&observ, NotificationType::ALL,
+  registrar_.Add(&observ, content::NOTIFICATION_ALL,
                  NotificationService::AllSources());
   volatile bool check = false;
   scoped_refptr<printing::PrintJob> job(new TestPrintJob(&check));

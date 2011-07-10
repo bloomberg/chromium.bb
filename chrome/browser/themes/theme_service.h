@@ -249,7 +249,7 @@ class ThemeService : public base::NonThreadSafe,
   Profile* profile() { return profile_; }
 
   // NotificationObserver:
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

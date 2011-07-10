@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/test/automation/javascript_execution_controller.h"
@@ -39,7 +40,6 @@
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_type.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -65,11 +65,11 @@ class NavigationNotificationObserver : public NotificationObserver {
         number_of_navigations_(number_of_navigations),
         running_(false),
         done_(false) {
-    registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
+    registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                    Source<NavigationController>(controller));
-    registrar_.Add(this, NotificationType::LOAD_START,
+    registrar_.Add(this, content::NOTIFICATION_LOAD_START,
                    Source<NavigationController>(controller));
-    registrar_.Add(this, NotificationType::LOAD_STOP,
+    registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
                    Source<NavigationController>(controller));
   }
 
@@ -80,13 +80,13 @@ class NavigationNotificationObserver : public NotificationObserver {
     }
   }
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
-    if (type == NotificationType::NAV_ENTRY_COMMITTED ||
-        type == NotificationType::LOAD_START) {
+    if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED ||
+        type == content::NOTIFICATION_LOAD_START) {
       navigation_started_ = true;
-    } else if (type == NotificationType::LOAD_STOP) {
+    } else if (type == content::NOTIFICATION_LOAD_STOP) {
       if (navigation_started_ &&
           ++navigations_completed_ == number_of_navigations_) {
         navigation_started_ = false;
@@ -123,15 +123,15 @@ class DOMOperationObserver : public NotificationObserver {
  public:
   explicit DOMOperationObserver(RenderViewHost* render_view_host)
       : did_respond_(false) {
-    registrar_.Add(this, NotificationType::DOM_OPERATION_RESPONSE,
+    registrar_.Add(this, chrome::NOTIFICATION_DOM_OPERATION_RESPONSE,
                    Source<RenderViewHost>(render_view_host));
     ui_test_utils::RunMessageLoop();
   }
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
-    DCHECK(type == NotificationType::DOM_OPERATION_RESPONSE);
+    DCHECK(type == chrome::NOTIFICATION_DOM_OPERATION_RESPONSE);
     Details<DomOperationNotificationDetails> dom_op_details(details);
     response_ = dom_op_details->json();
     did_respond_ = true;
@@ -159,7 +159,7 @@ class FindInPageNotificationObserver : public NotificationObserver {
         number_of_matches_(0) {
     current_find_request_id_ =
         parent_tab->find_tab_helper()->current_find_request_id();
-    registrar_.Add(this, NotificationType::FIND_RESULT_AVAILABLE,
+    registrar_.Add(this, chrome::NOTIFICATION_FIND_RESULT_AVAILABLE,
                    Source<TabContents>(parent_tab_->tab_contents()));
     ui_test_utils::RunMessageLoop();
   }
@@ -168,9 +168,9 @@ class FindInPageNotificationObserver : public NotificationObserver {
 
   int number_of_matches() const { return number_of_matches_; }
 
-  virtual void Observe(NotificationType type, const NotificationSource& source,
+  virtual void Observe(int type, const NotificationSource& source,
                        const NotificationDetails& details) {
-    if (type == NotificationType::FIND_RESULT_AVAILABLE) {
+    if (type == chrome::NOTIFICATION_FIND_RESULT_AVAILABLE) {
       Details<FindNotificationDetails> find_details(details);
       if (find_details->request_id() == current_find_request_id_) {
         // We get multiple responses and one of those will contain the ordinal.
@@ -343,13 +343,14 @@ void WaitForNavigations(NavigationController* controller,
 
 void WaitForNewTab(Browser* browser) {
   TestNotificationObserver observer;
-  RegisterAndWait(&observer, NotificationType::TAB_ADDED,
+  RegisterAndWait(&observer, content::NOTIFICATION_TAB_ADDED,
                   Source<Browser>(browser));
 }
 
 void WaitForBrowserActionUpdated(ExtensionAction* browser_action) {
   TestNotificationObserver observer;
-  RegisterAndWait(&observer, NotificationType::EXTENSION_BROWSER_ACTION_UPDATED,
+  RegisterAndWait(&observer,
+                  chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
                   Source<ExtensionAction>(browser_action));
 }
 
@@ -359,13 +360,13 @@ void WaitForLoadStop(TabContents* tab) {
   if (!tab->is_loading() && !tab->render_manager()->pending_render_view_host())
     return;
   TestNotificationObserver observer;
-  RegisterAndWait(&observer, NotificationType::LOAD_STOP,
+  RegisterAndWait(&observer, content::NOTIFICATION_LOAD_STOP,
                   Source<NavigationController>(&tab->controller()));
 }
 
 Browser* WaitForNewBrowser() {
   TestNotificationObserver observer;
-  RegisterAndWait(&observer, NotificationType::BROWSER_WINDOW_READY,
+  RegisterAndWait(&observer, chrome::NOTIFICATION_BROWSER_WINDOW_READY,
                   NotificationService::AllSources());
   return Source<Browser>(observer.source()).ptr();
 }
@@ -417,7 +418,7 @@ static void NavigateToURLWithDispositionBlockUntilNavigationsComplete(
   if (browser_test_flags & BROWSER_TEST_WAIT_FOR_BROWSER)
     browser = WaitForBrowserNotInSet(initial_browsers);
   if (browser_test_flags & BROWSER_TEST_WAIT_FOR_TAB)
-    WaitForNotification(NotificationType::TAB_ADDED);
+    WaitForNotification(content::NOTIFICATION_TAB_ADDED);
   if (!(browser_test_flags & BROWSER_TEST_WAIT_FOR_NAVIGATION)) {
     // Some other flag caused the wait prior to this.
     return;
@@ -551,7 +552,7 @@ GURL GetFileUrlWithQuery(const FilePath& path,
 
 AppModalDialog* WaitForAppModalDialog() {
   TestNotificationObserver observer;
-  RegisterAndWait(&observer, NotificationType::APP_MODAL_DIALOG_SHOWN,
+  RegisterAndWait(&observer, chrome::NOTIFICATION_APP_MODAL_DIALOG_SHOWN,
                   NotificationService::AllSources());
   return Source<AppModalDialog>(observer.source()).ptr();
 }
@@ -560,19 +561,19 @@ void CrashTab(TabContents* tab) {
   RenderProcessHost* rph = tab->render_view_host()->process();
   base::KillProcess(rph->GetHandle(), 0, false);
   TestNotificationObserver observer;
-  RegisterAndWait(&observer, NotificationType::RENDERER_PROCESS_CLOSED,
+  RegisterAndWait(&observer, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
                   Source<RenderProcessHost>(rph));
 }
 
 void WaitForFocusChange(TabContents* tab_contents) {
   TestNotificationObserver observer;
-  RegisterAndWait(&observer, NotificationType::FOCUS_CHANGED_IN_PAGE,
+  RegisterAndWait(&observer, content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
                   Source<TabContents>(tab_contents));
 }
 
 void WaitForFocusInBrowser(Browser* browser) {
   TestNotificationObserver observer;
-  RegisterAndWait(&observer, NotificationType::FOCUS_RETURNED_TO_BROWSER,
+  RegisterAndWait(&observer, chrome::NOTIFICATION_FOCUS_RETURNED_TO_BROWSER,
                   Source<Browser>(browser));
 }
 
@@ -586,19 +587,19 @@ int FindInPage(TabContentsWrapper* tab_contents, const string16& search_string,
   return observer.number_of_matches();
 }
 
-void WaitForNotification(NotificationType type) {
+void WaitForNotification(int type) {
   TestNotificationObserver observer;
   RegisterAndWait(&observer, type, NotificationService::AllSources());
 }
 
-void WaitForNotificationFrom(NotificationType type,
+void WaitForNotificationFrom(int type,
                              const NotificationSource& source) {
   TestNotificationObserver observer;
   RegisterAndWait(&observer, type, source);
 }
 
 void RegisterAndWait(NotificationObserver* observer,
-                     NotificationType type,
+                     int type,
                      const NotificationSource& source) {
   NotificationRegistrar registrar;
   registrar.Add(observer, type, source);
@@ -619,7 +620,7 @@ void WaitForHistoryToLoad(Browser* browser) {
   HistoryService* history_service =
       browser->profile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
   if (!history_service->BackendLoaded())
-    WaitForNotification(NotificationType::HISTORY_LOADED);
+    WaitForNotification(chrome::NOTIFICATION_HISTORY_LOADED);
 }
 
 bool GetNativeWindow(const Browser* browser, gfx::NativeWindow* native_window) {
@@ -680,7 +681,7 @@ bool SendKeyPressAndWait(const Browser* browser,
                          bool shift,
                          bool alt,
                          bool command,
-                         NotificationType type,
+                         int type,
                          const NotificationSource& source) {
   WindowedNotificationObserver observer(type, source);
 
@@ -832,7 +833,7 @@ TestNotificationObserver::TestNotificationObserver()
 
 TestNotificationObserver::~TestNotificationObserver() {}
 
-void TestNotificationObserver::Observe(NotificationType type,
+void TestNotificationObserver::Observe(int type,
                                        const NotificationSource& source,
                                        const NotificationDetails& details) {
   source_ = source;
@@ -841,7 +842,7 @@ void TestNotificationObserver::Observe(NotificationType type,
 }
 
 WindowedNotificationObserver::WindowedNotificationObserver(
-    NotificationType notification_type,
+    int notification_type,
     const NotificationSource& source)
     : seen_(false),
       running_(false),
@@ -875,7 +876,7 @@ void WindowedNotificationObserver::WaitFor(const NotificationSource& source) {
   ui_test_utils::RunMessageLoop();
 }
 
-void WindowedNotificationObserver::Observe(NotificationType type,
+void WindowedNotificationObserver::Observe(int type,
                                            const NotificationSource& source,
                                            const NotificationDetails& details) {
   if (waiting_for_ == source ||
@@ -896,7 +897,7 @@ TitleWatcher::TitleWatcher(TabContents* tab_contents,
       quit_loop_on_observation_(false) {
   EXPECT_TRUE(tab_contents != NULL);
   notification_registrar_.Add(this,
-                              NotificationType::TAB_CONTENTS_TITLE_UPDATED,
+                              content::NOTIFICATION_TAB_CONTENTS_TITLE_UPDATED,
                               Source<TabContents>(tab_contents));
 }
 
@@ -911,10 +912,10 @@ bool TitleWatcher::Wait() {
   return title_observed_;
 }
 
-void TitleWatcher::Observe(NotificationType type,
+void TitleWatcher::Observe(int type,
                            const NotificationSource& source,
                            const NotificationDetails& details) {
-  if (type != NotificationType::TAB_CONTENTS_TITLE_UPDATED)
+  if (type != content::NOTIFICATION_TAB_CONTENTS_TITLE_UPDATED)
     return;
 
   TabContents* source_contents = Source<TabContents>(source).ptr();
@@ -928,13 +929,13 @@ void TitleWatcher::Observe(NotificationType type,
 }
 
 DOMMessageQueue::DOMMessageQueue() {
-  registrar_.Add(this, NotificationType::DOM_OPERATION_RESPONSE,
+  registrar_.Add(this, chrome::NOTIFICATION_DOM_OPERATION_RESPONSE,
                  NotificationService::AllSources());
 }
 
 DOMMessageQueue::~DOMMessageQueue() {}
 
-void DOMMessageQueue::Observe(NotificationType type,
+void DOMMessageQueue::Observe(int type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
   Details<DomOperationNotificationDetails> dom_op_details(details);

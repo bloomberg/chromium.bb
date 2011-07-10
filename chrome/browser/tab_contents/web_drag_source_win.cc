@@ -9,8 +9,8 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 
 using WebKit::WebDragOperationNone;
 
@@ -36,9 +36,9 @@ WebDragSource::WebDragSource(gfx::NativeWindow source_wnd,
       source_wnd_(source_wnd),
       render_view_host_(tab_contents->render_view_host()),
       effect_(DROPEFFECT_NONE) {
-  registrar_.Add(this, NotificationType::TAB_CONTENTS_SWAPPED,
+  registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_SWAPPED,
                  Source<TabContents>(tab_contents));
-  registrar_.Add(this, NotificationType::TAB_CONTENTS_DISCONNECTED,
+  registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_DISCONNECTED,
                  Source<TabContents>(tab_contents));
 }
 
@@ -107,14 +107,14 @@ void WebDragSource::OnDragSourceMove() {
                                        screen.x(), screen.y());
 }
 
-void WebDragSource::Observe(NotificationType type,
+void WebDragSource::Observe(int type,
     const NotificationSource& source, const NotificationDetails& details) {
-  if (NotificationType::TAB_CONTENTS_SWAPPED == type) {
+  if (content::NOTIFICATION_TAB_CONTENTS_SWAPPED == type) {
     // When the tab contents get swapped, our render view host goes away.
     // That's OK, we can continue the drag, we just can't send messages back to
     // our drag source.
     render_view_host_ = NULL;
-  } else if (NotificationType::TAB_CONTENTS_DISCONNECTED == type) {
+  } else if (content::NOTIFICATION_TAB_CONTENTS_DISCONNECTED == type) {
     // This could be possible when we close the tab and the source is still
     // being used in DoDragDrop at the time that the virtual file is being
     // downloaded.

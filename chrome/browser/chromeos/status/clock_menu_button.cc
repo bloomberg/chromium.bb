@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/status/status_area_host.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
@@ -98,10 +99,10 @@ void ClockMenuButton::UpdateText() {
 
 // ClockMenuButton, NotificationObserver implementation:
 
-void ClockMenuButton::Observe(NotificationType type,
+void ClockMenuButton::Observe(int type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
-  if (type == NotificationType::PREF_CHANGED) {
+  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
     std::string* pref_name = Details<std::string>(details).ptr();
     if (*pref_name == prefs::kUse24HourClock) {
       UpdateText();

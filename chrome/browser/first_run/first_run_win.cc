@@ -27,6 +27,7 @@
 #include "chrome/browser/importer/importer_list.h"
 #include "chrome/browser/importer/importer_progress_dialog.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/worker_thread_ticker.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -59,18 +60,18 @@ class FirstRunDelayedTasks : public NotificationObserver {
 
   explicit FirstRunDelayedTasks(Tasks task) {
     if (task == INSTALL_EXTENSIONS) {
-      registrar_.Add(this, NotificationType::EXTENSIONS_READY,
+      registrar_.Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
                      NotificationService::AllSources());
     }
-    registrar_.Add(this, NotificationType::BROWSER_CLOSED,
+    registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSED,
                    NotificationService::AllSources());
   }
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
     // After processing the notification we always delete ourselves.
-    if (type.value == NotificationType::EXTENSIONS_READY)
+    if (type == chrome::NOTIFICATION_EXTENSIONS_READY)
       DoExtensionWork(Source<Profile>(source).ptr()->GetExtensionService());
     delete this;
     return;

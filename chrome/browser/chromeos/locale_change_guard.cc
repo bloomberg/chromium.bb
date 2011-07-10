@@ -12,6 +12,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/user_metrics.h"
@@ -43,14 +44,14 @@ LocaleChangeGuard::LocaleChangeGuard(Profile* profile)
       note_(NULL),
       reverted_(false) {
   DCHECK(profile_);
-  registrar_.Add(this, NotificationType::OWNERSHIP_CHECKED,
+  registrar_.Add(this, chrome::NOTIFICATION_OWNERSHIP_CHECKED,
                  NotificationService::AllSources());
 }
 
 LocaleChangeGuard::~LocaleChangeGuard() {}
 
 void LocaleChangeGuard::OnLogin() {
-  registrar_.Add(this, NotificationType::LOAD_COMPLETED_MAIN_FRAME,
+  registrar_.Add(this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
                  NotificationService::AllSources());
 }
 
@@ -74,22 +75,22 @@ void LocaleChangeGuard::RevertLocaleChange(const ListValue* list) {
     browser->ExecuteCommand(IDC_EXIT);
 }
 
-void LocaleChangeGuard::Observe(NotificationType type,
+void LocaleChangeGuard::Observe(int type,
                                 const NotificationSource& source,
                                 const NotificationDetails& details) {
   if (profile_ == NULL) {
     NOTREACHED();
     return;
   }
-  switch (type.value) {
-    case NotificationType::LOAD_COMPLETED_MAIN_FRAME: {
+  switch (type) {
+    case content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME: {
       // We need to perform locale change check only once, so unsubscribe.
-      registrar_.Remove(this, NotificationType::LOAD_COMPLETED_MAIN_FRAME,
+      registrar_.Remove(this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
                         NotificationService::AllSources());
       Check();
       break;
     }
-    case NotificationType::OWNERSHIP_CHECKED: {
+    case chrome::NOTIFICATION_OWNERSHIP_CHECKED: {
       if (UserManager::Get()->current_user_is_owner()) {
         PrefService* local_state = g_browser_process->local_state();
         if (local_state) {

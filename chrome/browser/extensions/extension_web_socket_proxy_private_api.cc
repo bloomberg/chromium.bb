@@ -40,7 +40,7 @@ bool WebSocketProxyPrivateGetPassportForTCPFunction::RunImpl() {
     if (!chromeos::WebSocketProxyController::IsInitiated()) {
       delay_response = true;
       registrar_.Add(
-          this, NotificationType::WEB_SOCKET_PROXY_STARTED,
+          this, chrome::WEB_SOCKET_PROXY_STARTED,
           NotificationService::AllSources());
       chromeos::WebSocketProxyController::Initiate();
     }
@@ -67,10 +67,10 @@ bool WebSocketProxyPrivateGetPassportForTCPFunction::RunImpl() {
 }
 
 void WebSocketProxyPrivateGetPassportForTCPFunction::Observe(
-    NotificationType type, const NotificationSource& source,
+    int type, const NotificationSource& source,
     const NotificationDetails& details) {
 #if defined(OS_CHROMEOS)
-  DCHECK(type.value == NotificationType::WEB_SOCKET_PROXY_STARTED);
+  DCHECK(type == chrome::WEB_SOCKET_PROXY_STARTED);
 #else
   NOTREACHED();
 #endif

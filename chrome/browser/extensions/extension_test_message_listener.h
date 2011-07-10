@@ -59,7 +59,7 @@ class ExtensionTestMessageListener : public NotificationObserver {
   void Reply(const std::string& message);
 
   // Implements the NotificationObserver interface.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

@@ -13,11 +13,11 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 #include "googleurl/src/gurl.h"
 
 namespace {
@@ -156,13 +156,13 @@ void NotificationProvider::ClearAllContentSettingsRules(
     ResetAllOrigins();
 }
 
-void NotificationProvider::Observe(NotificationType type,
+void NotificationProvider::Observe(int type,
                                    const NotificationSource& source,
                                    const NotificationDetails& details) {
-  if (NotificationType::PREF_CHANGED == type) {
+  if (chrome::NOTIFICATION_PREF_CHANGED == type) {
     const std::string& name = *Details<std::string>(details).ptr();
     OnPrefsChanged(name);
-  } else if (NotificationType::PROFILE_DESTROYED == type) {
+  } else if (chrome::NOTIFICATION_PROFILE_DESTROYED == type) {
     StopObserving();
   }
 }
@@ -178,11 +178,11 @@ void NotificationProvider::StartObserving() {
     prefs_registrar_.Add(prefs::kDesktopNotificationAllowedOrigins, this);
     prefs_registrar_.Add(prefs::kDesktopNotificationDeniedOrigins, this);
 
-    notification_registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
+    notification_registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                                 NotificationService::AllSources());
   }
 
-  notification_registrar_.Add(this, NotificationType::PROFILE_DESTROYED,
+  notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                               Source<Profile>(profile_));
 }
 
@@ -207,7 +207,7 @@ void NotificationProvider::NotifySettingsChange() {
   // notification, and use the HostContentSettingsMap as source once this
   // content settings provider in integrated in the HostContentSetttingsMap.
   NotificationService::current()->Notify(
-      NotificationType::DESKTOP_NOTIFICATION_SETTINGS_CHANGED,
+      chrome::NOTIFICATION_DESKTOP_NOTIFICATION_SETTINGS_CHANGED,
       Source<DesktopNotificationService>(
           DesktopNotificationServiceFactory::GetForProfile(profile_)),
       NotificationService::NoDetails());

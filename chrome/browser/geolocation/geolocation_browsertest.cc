@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
@@ -27,7 +28,6 @@
 #include "content/common/geoposition.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
 
@@ -44,9 +44,9 @@ class IFrameLoader : public NotificationObserver {
         javascript_completed_(false) {
     NavigationController* controller =
         &browser->GetSelectedTabContents()->controller();
-    registrar_.Add(this, NotificationType::LOAD_STOP,
+    registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
                    Source<NavigationController>(controller));
-    registrar_.Add(this, NotificationType::DOM_OPERATION_RESPONSE,
+    registrar_.Add(this, chrome::NOTIFICATION_DOM_OPERATION_RESPONSE,
                    NotificationService::AllSources());
     std::string script = base::StringPrintf(
         "window.domAutomationController.setAutomationId(0);"
@@ -71,12 +71,12 @@ class IFrameLoader : public NotificationObserver {
 
   GURL iframe_url() const { return iframe_url_; }
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
-    if (type == NotificationType::LOAD_STOP) {
+    if (type == content::NOTIFICATION_LOAD_STOP) {
       navigation_completed_ = true;
-    } else if (type == NotificationType::DOM_OPERATION_RESPONSE) {
+    } else if (type == chrome::NOTIFICATION_DOM_OPERATION_RESPONSE) {
       Details<DomOperationNotificationDetails> dom_op_details(details);
       javascript_response_ = dom_op_details->json();
       javascript_completed_ = true;
@@ -112,17 +112,17 @@ class GeolocationNotificationObserver : public NotificationObserver {
       infobar_(NULL),
       navigation_started_(false),
       navigation_completed_(false) {
-    registrar_.Add(this, NotificationType::DOM_OPERATION_RESPONSE,
+    registrar_.Add(this, chrome::NOTIFICATION_DOM_OPERATION_RESPONSE,
                    NotificationService::AllSources());
     if (wait_for_infobar) {
-      registrar_.Add(this, NotificationType::TAB_CONTENTS_INFOBAR_ADDED,
+      registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
                      NotificationService::AllSources());
     } else {
-      registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
+      registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                      NotificationService::AllSources());
-      registrar_.Add(this, NotificationType::LOAD_START,
+      registrar_.Add(this, content::NOTIFICATION_LOAD_START,
                      NotificationService::AllSources());
-      registrar_.Add(this, NotificationType::LOAD_STOP,
+      registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
                      NotificationService::AllSources());
     }
   }
@@ -147,21 +147,21 @@ class GeolocationNotificationObserver : public NotificationObserver {
   }
 
   // NotificationObserver
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
-    if (type.value == NotificationType::TAB_CONTENTS_INFOBAR_ADDED) {
+    if (type == chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED) {
       infobar_ = Details<InfoBarAddedDetails>(details).ptr();
       ASSERT_TRUE(infobar_->GetIcon());
       ASSERT_TRUE(infobar_->AsConfirmInfoBarDelegate());
-    } else if (type == NotificationType::DOM_OPERATION_RESPONSE) {
+    } else if (type == chrome::NOTIFICATION_DOM_OPERATION_RESPONSE) {
       Details<DomOperationNotificationDetails> dom_op_details(details);
       javascript_response_ = dom_op_details->json();
       LOG(WARNING) << "javascript_response " << javascript_response_;
-    } else if (type == NotificationType::NAV_ENTRY_COMMITTED ||
-               type == NotificationType::LOAD_START) {
+    } else if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED ||
+               type == content::NOTIFICATION_LOAD_START) {
       navigation_started_ = true;
-    } else if (type == NotificationType::LOAD_STOP) {
+    } else if (type == content::NOTIFICATION_LOAD_STOP) {
       if (navigation_started_) {
         navigation_started_ = false;
         navigation_completed_ = true;

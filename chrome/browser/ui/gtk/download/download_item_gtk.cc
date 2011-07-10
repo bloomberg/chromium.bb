@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/nine_box.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -242,7 +243,7 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
     gtk_widget_show_all(dangerous_prompt_);
   }
 
-  registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
+  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  Source<ThemeService>(theme_service_));
   theme_service_->InitThemesFor(this);
 
@@ -367,10 +368,10 @@ void DownloadItemGtk::AnimationProgressed(const ui::Animation* animation) {
   }
 }
 
-void DownloadItemGtk::Observe(NotificationType type,
+void DownloadItemGtk::Observe(int type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
-  if (type == NotificationType::BROWSER_THEME_CHANGED) {
+  if (type == chrome::NOTIFICATION_BROWSER_THEME_CHANGED) {
     // Our GtkArrow is only visible in gtk mode. Otherwise, we let the custom
     // rendering code do whatever it wants.
     if (theme_service_->UsingNativeTheme()) {

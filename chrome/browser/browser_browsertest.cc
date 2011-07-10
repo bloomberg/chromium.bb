@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
@@ -35,7 +36,6 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 #include "content/common/page_transition_types.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -299,7 +299,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CancelBeforeUnloadResetsURL) {
   // Wait for the ShouldClose_ACK to arrive.  We can detect it by waiting for
   // the pending RVH to be destroyed.
   ui_test_utils::WaitForNotification(
-      NotificationType::RENDER_WIDGET_HOST_DESTROYED);
+      content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED);
   EXPECT_EQ(url.spec(), WideToUTF8(browser()->toolbar_model()->GetText()));
 
   // Clear the beforeunload handler so the test can easily exit.
@@ -612,7 +612,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_PageLanguageDetection) {
   Source<TabContents> source(current_tab);
 
   ui_test_utils::WindowedNotificationObserverWithDetails<std::string>
-      en_language_detected_signal(NotificationType::TAB_LANGUAGE_DETERMINED,
+      en_language_detected_signal(chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
                                   source);
   EXPECT_EQ("", helper->language_state().original_language());
   en_language_detected_signal.Wait();
@@ -623,7 +623,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_PageLanguageDetection) {
 
   // Now navigate to a page in French.
   ui_test_utils::WindowedNotificationObserverWithDetails<std::string>
-      fr_language_detected_signal(NotificationType::TAB_LANGUAGE_DETERMINED,
+      fr_language_detected_signal(chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
                                   source);
   ui_test_utils::NavigateToURL(
       browser(), GURL(test_server()->GetURL("files/french_page.html")));

@@ -16,10 +16,10 @@
 #include "chrome/browser/webdata/autofill_entry.h"
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -606,9 +606,9 @@ void WebDataService::InitializeDatabaseIfNecessary() {
 
 void WebDataService::NotifyDatabaseLoadedOnUIThread() {
   // Notify that the database has been initialized.
-  NotificationService::current()->Notify(NotificationType::WEB_DATABASE_LOADED,
-                                         Source<WebDataService>(this),
-                                         NotificationService::NoDetails());
+  NotificationService::current()->Notify(
+      chrome::NOTIFICATION_WEB_DATABASE_LOADED, Source<WebDataService>(this),
+      NotificationService::NoDetails());
 }
 
 void WebDataService::ShutdownDatabase() {
@@ -935,7 +935,7 @@ void WebDataService::AddFormElementsImpl(
     // This is sent here so that work resulting from this notification will be
     // done on the DB thread, and not the UI thread.
     NotificationService::current()->Notify(
-        NotificationType::AUTOFILL_ENTRIES_CHANGED,
+        chrome::NOTIFICATION_AUTOFILL_ENTRIES_CHANGED,
         Source<WebDataService>(this),
         Details<AutofillChangeList>(&changes));
   }
@@ -971,7 +971,7 @@ void WebDataService::RemoveFormElementsAddedBetweenImpl(
         // This is sent here so that work resulting from this notification
         // will be done on the DB thread, and not the UI thread.
         NotificationService::current()->Notify(
-            NotificationType::AUTOFILL_ENTRIES_CHANGED,
+            chrome::NOTIFICATION_AUTOFILL_ENTRIES_CHANGED,
             Source<WebDataService>(this),
             Details<AutofillChangeList>(&changes));
       }
@@ -998,7 +998,7 @@ void WebDataService::RemoveFormValueForElementNameImpl(
 
       // Post the notifications including the list of affected keys.
       NotificationService::current()->Notify(
-          NotificationType::AUTOFILL_ENTRIES_CHANGED,
+          chrome::NOTIFICATION_AUTOFILL_ENTRIES_CHANGED,
           Source<WebDataService>(this),
           Details<AutofillChangeList>(&changes));
     }
@@ -1021,7 +1021,7 @@ void WebDataService::AddAutofillProfileImpl(
     AutofillProfileChange change(AutofillProfileChange::ADD,
                                  profile.guid(), &profile);
     NotificationService::current()->Notify(
-        NotificationType::AUTOFILL_PROFILE_CHANGED,
+        chrome::NOTIFICATION_AUTOFILL_PROFILE_CHANGED,
         Source<WebDataService>(this),
         Details<AutofillProfileChange>(&change));
   }
@@ -1055,7 +1055,7 @@ void WebDataService::UpdateAutofillProfileImpl(
     AutofillProfileChange change(AutofillProfileChange::UPDATE,
                                  profile.guid(), &profile);
     NotificationService::current()->Notify(
-        NotificationType::AUTOFILL_PROFILE_CHANGED,
+        chrome::NOTIFICATION_AUTOFILL_PROFILE_CHANGED,
         Source<WebDataService>(this),
         Details<AutofillProfileChange>(&change));
   }
@@ -1084,7 +1084,7 @@ void WebDataService::RemoveAutofillProfileImpl(
     // Send GUID-based notification.
     AutofillProfileChange change(AutofillProfileChange::REMOVE, guid, NULL);
     NotificationService::current()->Notify(
-        NotificationType::AUTOFILL_PROFILE_CHANGED,
+        chrome::NOTIFICATION_AUTOFILL_PROFILE_CHANGED,
         Source<WebDataService>(this),
         Details<AutofillProfileChange>(&change));
   }
@@ -1121,7 +1121,7 @@ void WebDataService::EmptyMigrationTrashImpl(
         AutofillProfileChange change(AutofillProfileChange::REMOVE,
                                      *iter, NULL);
         NotificationService::current()->Notify(
-            NotificationType::AUTOFILL_PROFILE_CHANGED,
+            chrome::NOTIFICATION_AUTOFILL_PROFILE_CHANGED,
             Source<WebDataService>(this),
             Details<AutofillProfileChange>(&change));
       }
@@ -1137,7 +1137,7 @@ void WebDataService::EmptyMigrationTrashImpl(
           AutofillProfileChange change(AutofillProfileChange::UPDATE,
                                        (*iter)->guid(), *iter);
           NotificationService::current()->Notify(
-              NotificationType::AUTOFILL_PROFILE_CHANGED,
+              chrome::NOTIFICATION_AUTOFILL_PROFILE_CHANGED,
               Source<WebDataService>(this),
               Details<AutofillProfileChange>(&change));
         }
@@ -1169,7 +1169,7 @@ void WebDataService::AddCreditCardImpl(
     AutofillCreditCardChange change(AutofillCreditCardChange::ADD,
                                     credit_card.guid(), &credit_card);
     NotificationService::current()->Notify(
-        NotificationType::AUTOFILL_CREDIT_CARD_CHANGED,
+        chrome::NOTIFICATION_AUTOFILL_CREDIT_CARD_CHANGED,
         Source<WebDataService>(this),
         Details<AutofillCreditCardChange>(&change));
   }
@@ -1202,7 +1202,7 @@ void WebDataService::UpdateCreditCardImpl(
     AutofillCreditCardChange change(AutofillCreditCardChange::UPDATE,
                                     credit_card.guid(), &credit_card);
     NotificationService::current()->Notify(
-        NotificationType::AUTOFILL_CREDIT_CARD_CHANGED,
+        chrome::NOTIFICATION_AUTOFILL_CREDIT_CARD_CHANGED,
         Source<WebDataService>(this),
         Details<AutofillCreditCardChange>(&change));
   }
@@ -1224,7 +1224,7 @@ void WebDataService::RemoveCreditCardImpl(
     AutofillCreditCardChange change(AutofillCreditCardChange::REMOVE, guid,
                                     NULL);
     NotificationService::current()->Notify(
-        NotificationType::AUTOFILL_CREDIT_CARD_CHANGED,
+        chrome::NOTIFICATION_AUTOFILL_CREDIT_CARD_CHANGED,
         Source<WebDataService>(this),
         Details<AutofillCreditCardChange>(&change));
   }
@@ -1260,7 +1260,7 @@ void WebDataService::RemoveAutofillProfilesAndCreditCardsModifiedBetweenImpl(
         AutofillProfileChange change(AutofillProfileChange::REMOVE, *iter,
                                      NULL);
         NotificationService::current()->Notify(
-            NotificationType::AUTOFILL_PROFILE_CHANGED,
+            chrome::NOTIFICATION_AUTOFILL_PROFILE_CHANGED,
             Source<WebDataService>(this),
             Details<AutofillProfileChange>(&change));
       }
@@ -1270,7 +1270,7 @@ void WebDataService::RemoveAutofillProfilesAndCreditCardsModifiedBetweenImpl(
         AutofillCreditCardChange change(AutofillCreditCardChange::REMOVE,
                                         *iter, NULL);
         NotificationService::current()->Notify(
-            NotificationType::AUTOFILL_CREDIT_CARD_CHANGED,
+            chrome::NOTIFICATION_AUTOFILL_CREDIT_CARD_CHANGED,
             Source<WebDataService>(this),
             Details<AutofillCreditCardChange>(&change));
       }

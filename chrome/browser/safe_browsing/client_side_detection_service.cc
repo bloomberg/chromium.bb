@@ -66,7 +66,7 @@ ClientSideDetectionService::ClientSideDetectionService(
     net::URLRequestContextGetter* request_context_getter)
     : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       request_context_getter_(request_context_getter) {
-  registrar_.Add(this, NotificationType::RENDERER_PROCESS_CREATED,
+  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
                  NotificationService::AllSources());
 }
 
@@ -189,11 +189,11 @@ void ClientSideDetectionService::OnURLFetchComplete(
   }
 }
 
-void ClientSideDetectionService::Observe(NotificationType type,
+void ClientSideDetectionService::Observe(int type,
                                          const NotificationSource& source,
                                          const NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(type == NotificationType::RENDERER_PROCESS_CREATED);
+  DCHECK(type == content::NOTIFICATION_RENDERER_PROCESS_CREATED);
   if (!model_.get()) {
     // Model might not be ready or maybe there was an error.
     return;

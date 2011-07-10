@@ -12,8 +12,8 @@
 #include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 #include "views/view.h"
 #include "views/widget/widget.h"
 
@@ -62,7 +62,7 @@ class ContentView : public views::View {
 
   ~ContentView() {
     NotificationService::current()->Notify(
-        NotificationType::WIZARD_CONTENT_VIEW_DESTROYED,
+        chrome::NOTIFICATION_WIZARD_CONTENT_VIEW_DESTROYED,
         NotificationService::AllSources(),
         NotificationService::NoDetails());
   }

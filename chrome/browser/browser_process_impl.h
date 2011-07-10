@@ -104,7 +104,7 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual bool plugin_finder_disabled() const;
 
   // NotificationObserver methods
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

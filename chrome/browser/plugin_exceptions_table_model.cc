@@ -7,6 +7,7 @@
 #include "base/auto_reset.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -19,10 +20,10 @@ PluginExceptionsTableModel::PluginExceptionsTableModel(
       otr_map_(otr_content_settings_map),
       updates_disabled_(false),
       observer_(NULL) {
-  registrar_.Add(this, NotificationType::CONTENT_SETTINGS_CHANGED,
+  registrar_.Add(this, chrome::NOTIFICATION_CONTENT_SETTINGS_CHANGED,
                  Source<HostContentSettingsMap>(map_));
   if (otr_map_) {
-    registrar_.Add(this, NotificationType::CONTENT_SETTINGS_CHANGED,
+    registrar_.Add(this, chrome::NOTIFICATION_CONTENT_SETTINGS_CHANGED,
                    Source<HostContentSettingsMap>(otr_map_));
   }
 }
@@ -122,7 +123,7 @@ int PluginExceptionsTableModel::GetGroupID(int row) {
   return settings_[row].plugin_id;
 }
 
-void PluginExceptionsTableModel::Observe(NotificationType type,
+void PluginExceptionsTableModel::Observe(int type,
                                          const NotificationSource& source,
                                          const NotificationDetails& details) {
   if (!updates_disabled_)

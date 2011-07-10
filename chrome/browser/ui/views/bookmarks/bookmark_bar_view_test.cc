@@ -11,6 +11,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/interactive_ui/view_event_test_base.h"
 #include "chrome/test/testing_profile.h"
@@ -460,11 +461,11 @@ class ContextMenuNotificationObserver : public NotificationObserver {
  public:
   explicit ContextMenuNotificationObserver(Task* task) : task_(task) {
     registrar_.Add(this,
-                   NotificationType::BOOKMARK_CONTEXT_MENU_SHOWN,
+                   chrome::NOTIFICATION_BOOKMARK_CONTEXT_MENU_SHOWN,
                    NotificationService::AllSources());
   }
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
     MessageLoop::current()->PostTask(FROM_HERE, task_);

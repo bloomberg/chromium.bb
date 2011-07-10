@@ -72,11 +72,11 @@ void BrowserNavigatorTest::RunSuppressTest(WindowOpenDisposition disposition) {
   EXPECT_EQ(old_url, browser()->GetSelectedTabContents()->GetURL());
 }
 
-void BrowserNavigatorTest::Observe(NotificationType type,
+void BrowserNavigatorTest::Observe(int type,
                                    const NotificationSource& source,
                                    const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::RENDER_VIEW_HOST_CREATED_FOR_TAB: {
+  switch (type) {
+    case content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB: {
       ++this->created_tab_contents_count_;
       break;
     }
@@ -111,7 +111,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_SingletonTabExisting) {
   NotificationRegistrar registrar;
 
   // As the registrar object goes out of scope, this will get unregistered
-  registrar.Add(this, NotificationType::RENDER_VIEW_HOST_CREATED_FOR_TAB,
+  registrar.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,
                 NotificationService::AllSources());
 
   browser()->AddSelectedTabWithURL(singleton_url1, PageTransition::LINK);

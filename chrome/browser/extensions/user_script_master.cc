@@ -16,6 +16,7 @@
 #include "base/version.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_resource.h"
@@ -250,13 +251,13 @@ UserScriptMaster::UserScriptMaster(Profile* profile)
     : extensions_service_ready_(false),
       pending_load_(false),
       profile_(profile) {
-  registrar_.Add(this, NotificationType::EXTENSIONS_READY,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
                  Source<Profile>(profile_));
-  registrar_.Add(this, NotificationType::EXTENSION_LOADED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  Source<Profile>(profile_));
-  registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  Source<Profile>(profile_));
-  registrar_.Add(this, NotificationType::RENDERER_PROCESS_CREATED,
+  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
                  NotificationService::AllSources());
 }
 
@@ -286,22 +287,22 @@ void UserScriptMaster::NewScriptsAvailable(base::SharedMemory* handle) {
     }
 
     NotificationService::current()->Notify(
-        NotificationType::USER_SCRIPTS_UPDATED,
+        chrome::NOTIFICATION_USER_SCRIPTS_UPDATED,
         Source<Profile>(profile_),
         Details<base::SharedMemory>(handle));
   }
 }
 
-void UserScriptMaster::Observe(NotificationType type,
+void UserScriptMaster::Observe(int type,
                                const NotificationSource& source,
                                const NotificationDetails& details) {
   bool should_start_load = false;
-  switch (type.value) {
-    case NotificationType::EXTENSIONS_READY:
+  switch (type) {
+    case chrome::NOTIFICATION_EXTENSIONS_READY:
       extensions_service_ready_ = true;
       should_start_load = true;
       break;
-    case NotificationType::EXTENSION_LOADED: {
+    case chrome::NOTIFICATION_EXTENSION_LOADED: {
       // Add any content scripts inside the extension.
       const Extension* extension = Details<const Extension>(details).ptr();
       bool incognito_enabled = profile_->GetExtensionService()->
@@ -316,7 +317,7 @@ void UserScriptMaster::Observe(NotificationType type,
         should_start_load = true;
       break;
     }
-    case NotificationType::EXTENSION_UNLOADED: {
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
       // Remove any content scripts.
       const Extension* extension =
           Details<UnloadedExtensionInfo>(details)->extension;
@@ -334,7 +335,7 @@ void UserScriptMaster::Observe(NotificationType type,
 
       break;
     }
-    case NotificationType::RENDERER_PROCESS_CREATED: {
+    case content::NOTIFICATION_RENDERER_PROCESS_CREATED: {
       RenderProcessHost* process = Source<RenderProcessHost>(source).ptr();
       if (ScriptsReady())
         SendUpdate(process, GetSharedMemory());

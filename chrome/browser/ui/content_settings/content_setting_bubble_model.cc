@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/collected_cookies_infobar_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -327,7 +328,7 @@ class ContentSettingCookiesBubbleModel : public ContentSettingSingleRadioGroup {
     if (!tab_contents())
       return;
     NotificationService::current()->Notify(
-        NotificationType::COLLECTED_COOKIES_SHOWN,
+        chrome::NOTIFICATION_COLLECTED_COOKIES_SHOWN,
         Source<TabSpecificContentSettings>(tab_contents()->content_settings()),
         NotificationService::NoDetails());
     browser()->ShowCollectedCookiesDialog(tab_contents()->tab_contents());
@@ -506,9 +507,9 @@ ContentSettingBubbleModel::ContentSettingBubbleModel(
     : tab_contents_(tab_contents),
       profile_(profile),
       content_type_(content_type) {
-  registrar_.Add(this, NotificationType::TAB_CONTENTS_DESTROYED,
+  registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
                  Source<TabContents>(tab_contents->tab_contents()));
-  registrar_.Add(this, NotificationType::PROFILE_DESTROYED,
+  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                  Source<Profile>(profile_));
 }
 
@@ -535,15 +536,15 @@ void ContentSettingBubbleModel::AddBlockedResource(
   bubble_content_.resource_identifiers.insert(resource_identifier);
 }
 
-void ContentSettingBubbleModel::Observe(NotificationType type,
+void ContentSettingBubbleModel::Observe(int type,
                                         const NotificationSource& source,
                                         const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::TAB_CONTENTS_DESTROYED:
+  switch (type) {
+    case content::NOTIFICATION_TAB_CONTENTS_DESTROYED:
       DCHECK(source == Source<TabContents>(tab_contents_->tab_contents()));
       tab_contents_ = NULL;
       break;
-    case NotificationType::PROFILE_DESTROYED:
+    case chrome::NOTIFICATION_PROFILE_DESTROYED:
       DCHECK(source == Source<Profile>(profile_));
       profile_ = NULL;
       break;

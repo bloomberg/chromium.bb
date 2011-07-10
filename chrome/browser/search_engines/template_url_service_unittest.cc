@@ -19,6 +19,7 @@
 #include "chrome/browser/search_engines/template_url_service_test_util.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/webdata/web_database.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_pref_service.h"
 #include "chrome/test/testing_profile.h"
@@ -145,7 +146,7 @@ class TemplateURLServiceTest : public testing::Test {
   // preferences have changed.
   void NotifyManagedPrefsHaveChanged() {
     model()->Observe(
-        NotificationType::PREF_CHANGED,
+        chrome::NOTIFICATION_PREF_CHANGED,
         Source<PrefService>(profile()->GetTestingPrefService()),
         Details<std::string>(NULL));
   }

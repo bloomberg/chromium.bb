@@ -11,6 +11,7 @@
 #include "chrome/browser/sync/engine/configure_reason.h"
 #include "chrome/browser/sync/glue/data_type_manager.h"
 #include "chrome/browser/sync/sessions/session_state.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
@@ -26,7 +27,7 @@ BackendMigrator::BackendMigrator(ProfileSyncService* service,
     : state_(IDLE), service_(service), manager_(manager),
       restart_migration_(false),
       method_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
-  registrar_.Add(this, NotificationType::SYNC_CONFIGURE_DONE,
+  registrar_.Add(this, chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
                  Source<DataTypeManager>(manager_));
   service_->AddObserver(this);
 }
@@ -113,10 +114,10 @@ void BackendMigrator::OnStateChanged() {
   manager_->Configure(full_set, sync_api::CONFIGURE_REASON_MIGRATION);
 }
 
-void BackendMigrator::Observe(NotificationType type,
+void BackendMigrator::Observe(int type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
-  DCHECK_EQ(NotificationType::SYNC_CONFIGURE_DONE, type.value);
+  DCHECK_EQ(chrome::NOTIFICATION_SYNC_CONFIGURE_DONE, type);
   if (state_ == IDLE)
     return;
 

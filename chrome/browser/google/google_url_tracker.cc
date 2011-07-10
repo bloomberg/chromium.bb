@@ -14,6 +14,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/navigation_controller.h"
@@ -257,9 +258,10 @@ void GoogleURLTracker::AcceptGoogleURL(const GURL& new_google_url) {
                                               google_url_.spec());
   g_browser_process->local_state()->SetString(prefs::kLastPromptedGoogleURL,
                                               google_url_.spec());
-  NotificationService::current()->Notify(NotificationType::GOOGLE_URL_UPDATED,
-                                         NotificationService::AllSources(),
-                                         NotificationService::NoDetails());
+  NotificationService::current()->Notify(
+      chrome::NOTIFICATION_GOOGLE_URL_UPDATED,
+      NotificationService::AllSources(),
+      NotificationService::NoDetails());
   need_to_prompt_ = false;
 }
 
@@ -288,26 +290,26 @@ void GoogleURLTracker::RedoSearch() {
                                          PageTransition::GENERATED);
 }
 
-void GoogleURLTracker::Observe(NotificationType type,
+void GoogleURLTracker::Observe(int type,
                                const NotificationSource& source,
                                const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::NAV_ENTRY_PENDING: {
+  switch (type) {
+    case content::NOTIFICATION_NAV_ENTRY_PENDING: {
       NavigationController* controller =
           Source<NavigationController>(source).ptr();
       OnNavigationPending(source, controller->pending_entry()->url());
       break;
     }
 
-    case NotificationType::NAV_ENTRY_COMMITTED:
-    case NotificationType::TAB_CLOSED:
+    case content::NOTIFICATION_NAV_ENTRY_COMMITTED:
+    case content::NOTIFICATION_TAB_CLOSED:
       OnNavigationCommittedOrTabClosed(
           Source<NavigationController>(source).ptr()->tab_contents(),
-          type.value);
+          type);
       break;
 
     default:
-      NOTREACHED() << "Unknown notification received:" << type.value;
+      NOTREACHED() << "Unknown notification received:" << type;
   }
 }
 
@@ -320,7 +322,7 @@ void GoogleURLTracker::SearchCommitted() {
   if (registrar_.IsEmpty() && (need_to_prompt_ || fetcher_.get())) {
     // This notification will fire a bit later in the same call chain we're
     // currently in.
-    registrar_.Add(this, NotificationType::NAV_ENTRY_PENDING,
+    registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
                    NotificationService::AllSources());
   }
 }
@@ -329,22 +331,22 @@ void GoogleURLTracker::OnNavigationPending(const NotificationSource& source,
                                            const GURL& pending_url) {
   controller_ = Source<NavigationController>(source).ptr();
   search_url_ = pending_url;
-  registrar_.Remove(this, NotificationType::NAV_ENTRY_PENDING,
+  registrar_.Remove(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
                     NotificationService::AllSources());
   // Start listening for the commit notification. We also need to listen for the
   // tab close command since that means the load will never commit.
-  registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
+  registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                  Source<NavigationController>(controller_));
-  registrar_.Add(this, NotificationType::TAB_CLOSED,
+  registrar_.Add(this, content::NOTIFICATION_TAB_CLOSED,
                  Source<NavigationController>(controller_));
 }
 
 void GoogleURLTracker::OnNavigationCommittedOrTabClosed(
     TabContents* tab_contents,
-    NotificationType::Type type) {
+    int type) {
   registrar_.RemoveAll();
 
-  if (type == NotificationType::NAV_ENTRY_COMMITTED) {
+  if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
     ShowGoogleURLInfoBarIfNecessary(tab_contents);
   } else {
     controller_ = NULL;

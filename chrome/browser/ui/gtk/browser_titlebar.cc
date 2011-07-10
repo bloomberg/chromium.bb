@@ -35,6 +35,7 @@
 #include "chrome/browser/ui/gtk/unity_service.h"
 #include "chrome/browser/ui/toolbar/encoding_menu_controller.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -403,7 +404,7 @@ void BrowserTitlebar::Init() {
     // color.
     theme_service_ = GtkThemeService::GetFrom(
         browser_window_->browser()->profile());
-    registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
+    registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                    Source<ThemeService>(theme_service_));
     theme_service_->InitThemesFor(this);
     UpdateTitleAndIcon();
@@ -942,15 +943,15 @@ bool BrowserTitlebar::GetAcceleratorForCommandId(
   return accelerator_gtk;
 }
 
-void BrowserTitlebar::Observe(NotificationType type,
+void BrowserTitlebar::Observe(int type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::BROWSER_THEME_CHANGED:
+  switch (type) {
+    case chrome::NOTIFICATION_BROWSER_THEME_CHANGED:
       UpdateTextColor();
       break;
 
-    case NotificationType::PREF_CHANGED: {
+    case chrome::NOTIFICATION_PREF_CHANGED: {
       std::string* name = Details<std::string>(details).ptr();
       if (prefs::kGoogleServicesUsername == *name)
         profile_button_->UpdateText();

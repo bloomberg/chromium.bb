@@ -6,13 +6,12 @@
 
 #include "base/message_loop.h"
 #include "chrome/browser/prefs/pref_value_store.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/testing_pref_service.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
 namespace {
 
 const char kBoolPref[] = "bool";
@@ -73,10 +72,10 @@ class PrefMemberTestClass : public NotificationObserver {
     str_.Init(kStringPref, prefs, this);
   }
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
-    DCHECK(NotificationType::PREF_CHANGED == type);
+    DCHECK(chrome::NOTIFICATION_PREF_CHANGED == type);
     PrefService* prefs_in = Source<PrefService>(source).ptr();
     EXPECT_EQ(prefs_in, prefs_);
     std::string* pref_name_in = Details<std::string>(details).ptr();

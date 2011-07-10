@@ -9,12 +9,12 @@
 
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_webstore_private_api.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 #include "net/base/mock_host_resolver.h"
 
 // This is a helper class to let us automatically accept extension install
@@ -25,7 +25,7 @@ class GalleryInstallApiTestObserver :
  public:
   GalleryInstallApiTestObserver() {
     registrar_.Add(this,
-                  NotificationType::EXTENSION_WILL_SHOW_CONFIRM_DIALOG,
+                  chrome::NOTIFICATION_EXTENSION_WILL_SHOW_CONFIRM_DIALOG,
                   NotificationService::AllSources());
   }
 
@@ -33,7 +33,7 @@ class GalleryInstallApiTestObserver :
     delegate->InstallUIProceed();
   }
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE {
     ExtensionInstallUI* prompt = Source<ExtensionInstallUI>(source).ptr();

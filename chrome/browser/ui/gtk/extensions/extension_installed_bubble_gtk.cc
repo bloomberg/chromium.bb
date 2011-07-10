@@ -19,9 +19,9 @@
 #include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -89,25 +89,25 @@ ExtensionInstalledBubbleGtk::ExtensionInstalledBubbleGtk(
   // fired, but all of the EXTENSION_LOADED Observers have run. Only then can we
   // be sure that a browser action or page action has had views created which we
   // can inspect for the purpose of pointing to them.
-  registrar_.Add(this, NotificationType::EXTENSION_LOADED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
       Source<Profile>(browser->profile()));
-  registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
       Source<Profile>(browser->profile()));
 }
 
 ExtensionInstalledBubbleGtk::~ExtensionInstalledBubbleGtk() {}
 
-void ExtensionInstalledBubbleGtk::Observe(NotificationType type,
+void ExtensionInstalledBubbleGtk::Observe(int type,
                                           const NotificationSource& source,
                                           const NotificationDetails& details) {
-  if (type == NotificationType::EXTENSION_LOADED) {
+  if (type == chrome::NOTIFICATION_EXTENSION_LOADED) {
     const Extension* extension = Details<const Extension>(details).ptr();
     if (extension == extension_) {
       // PostTask to ourself to allow all EXTENSION_LOADED Observers to run.
       MessageLoopForUI::current()->PostTask(FROM_HERE, NewRunnableMethod(this,
           &ExtensionInstalledBubbleGtk::ShowInternal));
     }
-  } else if (type == NotificationType::EXTENSION_UNLOADED) {
+  } else if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED) {
     const Extension* extension =
         Details<UnloadedExtensionInfo>(details)->extension;
     if (extension == extension_)

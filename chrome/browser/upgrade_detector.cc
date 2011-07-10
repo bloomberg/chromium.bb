@@ -5,9 +5,9 @@
 #include "chrome/browser/upgrade_detector.h"
 
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 #include "grit/theme_resources.h"
 
 // static
@@ -43,7 +43,7 @@ void UpgradeDetector::NotifyUpgradeDetected() {
   upgrade_detected_time_ = base::Time::Now();
 
   NotificationService::current()->Notify(
-      NotificationType::UPGRADE_DETECTED,
+      chrome::NOTIFICATION_UPGRADE_DETECTED,
       Source<UpgradeDetector>(this),
       NotificationService::NoDetails());
 }
@@ -52,7 +52,7 @@ void UpgradeDetector::NotifyUpgradeRecommended() {
   notify_upgrade_ = true;
 
   NotificationService::current()->Notify(
-      NotificationType::UPGRADE_RECOMMENDED,
+      chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
       Source<UpgradeDetector>(this),
       NotificationService::NoDetails());
 }

@@ -16,7 +16,6 @@
 #include "content/common/notification_registrar.h"
 
 class NotificationDetails;
-class NotificationType;
 class NotificationSource;
 
 namespace browser_sync {
@@ -35,7 +34,7 @@ class AutofillDataTypeController : public NonFrontendDataTypeController,
   virtual browser_sync::ModelSafeGroup model_safe_group() const;
 
   // NotificationObserver implementation.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

@@ -8,6 +8,7 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/icon_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/navigation_controller.h"
@@ -137,7 +138,7 @@ void FaviconTabHelper::StartDownload(int id, const GURL& url, int image_size) {
 
 void FaviconTabHelper::NotifyFaviconUpdated() {
   NotificationService::current()->Notify(
-      NotificationType::FAVICON_UPDATED,
+      chrome::NOTIFICATION_FAVICON_UPDATED,
       Source<TabContents>(tab_contents()),
       NotificationService::NoDetails());
   tab_contents()->NotifyNavigationStateChanged(TabContents::INVALIDATE_TAB);

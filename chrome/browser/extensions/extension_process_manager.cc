@@ -13,12 +13,12 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 
 namespace {
 
@@ -40,7 +40,7 @@ class IncognitoExtensionProcessManager : public ExtensionProcessManager {
 
  private:
   // NotificationObserver:
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -87,19 +87,19 @@ ExtensionProcessManager* ExtensionProcessManager::Create(Profile* profile) {
 ExtensionProcessManager::ExtensionProcessManager(Profile* profile)
     : browsing_instance_(new BrowsingInstance(profile)) {
   Profile* original_profile = profile->GetOriginalProfile();
-  registrar_.Add(this, NotificationType::EXTENSIONS_READY,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
                  Source<Profile>(original_profile));
-  registrar_.Add(this, NotificationType::EXTENSION_LOADED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  Source<Profile>(original_profile));
-  registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  Source<Profile>(original_profile));
-  registrar_.Add(this, NotificationType::EXTENSION_HOST_DESTROYED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
                  Source<Profile>(profile));
-  registrar_.Add(this, NotificationType::RENDERER_PROCESS_TERMINATED,
+  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::RENDERER_PROCESS_CLOSED,
+  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::APP_TERMINATING,
+  registrar_.Add(this, content::NOTIFICATION_APP_TERMINATING,
                  NotificationService::AllSources());
 }
 
@@ -269,17 +269,17 @@ bool ExtensionProcessManager::HasExtensionHost(ExtensionHost* host) const {
   return all_hosts_.find(host) != all_hosts_.end();
 }
 
-void ExtensionProcessManager::Observe(NotificationType type,
+void ExtensionProcessManager::Observe(int type,
                                       const NotificationSource& source,
                                       const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::EXTENSIONS_READY: {
+  switch (type) {
+    case chrome::NOTIFICATION_EXTENSIONS_READY: {
       CreateBackgroundHosts(this,
           Source<Profile>(source).ptr()->GetExtensionService()->extensions());
       break;
     }
 
-    case NotificationType::EXTENSION_LOADED: {
+    case chrome::NOTIFICATION_EXTENSION_LOADED: {
       ExtensionService* service =
           Source<Profile>(source).ptr()->GetExtensionService();
       if (service->is_ready()) {
@@ -289,7 +289,7 @@ void ExtensionProcessManager::Observe(NotificationType type,
       break;
     }
 
-    case NotificationType::EXTENSION_UNLOADED: {
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
       const Extension* extension =
           Details<UnloadedExtensionInfo>(details)->extension;
       for (ExtensionHostSet::iterator iter = background_hosts_.begin();
@@ -305,21 +305,21 @@ void ExtensionProcessManager::Observe(NotificationType type,
       break;
     }
 
-    case NotificationType::EXTENSION_HOST_DESTROYED: {
+    case chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED: {
       ExtensionHost* host = Details<ExtensionHost>(details).ptr();
       all_hosts_.erase(host);
       background_hosts_.erase(host);
       break;
     }
 
-    case NotificationType::RENDERER_PROCESS_TERMINATED:
-    case NotificationType::RENDERER_PROCESS_CLOSED: {
+    case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED:
+    case content::NOTIFICATION_RENDERER_PROCESS_CLOSED: {
       RenderProcessHost* host = Source<RenderProcessHost>(source).ptr();
       UnregisterExtensionProcess(host->id());
       break;
     }
 
-    case NotificationType::APP_TERMINATING: {
+    case content::NOTIFICATION_APP_TERMINATING: {
       // Close background hosts when the last browser is closed so that they
       // have time to shutdown various objects on different threads. Our
       // destructor is called too late in the shutdown sequence.
@@ -340,7 +340,7 @@ void ExtensionProcessManager::OnExtensionHostCreated(ExtensionHost* host,
   if (is_background)
     background_hosts_.insert(host);
   NotificationService::current()->Notify(
-      NotificationType::EXTENSION_HOST_CREATED,
+      chrome::NOTIFICATION_EXTENSION_HOST_CREATED,
       Source<ExtensionProcessManager>(this),
       Details<ExtensionHost>(host));
 }
@@ -365,7 +365,7 @@ IncognitoExtensionProcessManager::IncognitoExtensionProcessManager(
                             GetExtensionProcessManager()) {
   DCHECK(profile->IsOffTheRecord());
 
-  registrar_.Add(this, NotificationType::BROWSER_WINDOW_READY,
+  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_WINDOW_READY,
                  NotificationService::AllSources());
 }
 
@@ -439,11 +439,11 @@ bool IncognitoExtensionProcessManager::IsIncognitoEnabled(
 }
 
 void IncognitoExtensionProcessManager::Observe(
-    NotificationType type,
+    int type,
     const NotificationSource& source,
     const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::BROWSER_WINDOW_READY: {
+  switch (type) {
+    case chrome::NOTIFICATION_BROWSER_WINDOW_READY: {
       // We want to spawn our background hosts as soon as the user opens an
       // incognito window. Watch for new browsers and create the hosts if
       // it matches our profile.

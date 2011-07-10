@@ -10,6 +10,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/chrome_switches.h"
@@ -42,10 +43,10 @@ void SigninManager::Initialize(Profile* profile) {
 void SigninManager::CleanupNotificationRegistration() {
 #if !defined(OS_CHROMEOS)
   if (registrar_.IsRegistered(this,
-                              NotificationType::TOKEN_AVAILABLE,
+                              chrome::NOTIFICATION_TOKEN_AVAILABLE,
                               NotificationService::AllSources())) {
     registrar_.Remove(this,
-                      NotificationType::TOKEN_AVAILABLE,
+                      chrome::NOTIFICATION_TOKEN_AVAILABLE,
                       NotificationService::AllSources());
   }
 #endif
@@ -92,7 +93,7 @@ void SigninManager::StartSignIn(const std::string& username,
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableAutoLogin)) {
     registrar_.Add(this,
-                   NotificationType::TOKEN_AVAILABLE,
+                   chrome::NOTIFICATION_TOKEN_AVAILABLE,
                    NotificationService::AllSources());
   }
 #endif
@@ -147,7 +148,7 @@ void SigninManager::OnGetUserInfoSuccess(const std::string& key,
 
   GoogleServiceSigninSuccessDetails details(username_, password_);
   NotificationService::current()->Notify(
-      NotificationType::GOOGLE_SIGNIN_SUCCESSFUL,
+      chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
       Source<Profile>(profile_),
       Details<const GoogleServiceSigninSuccessDetails>(&details));
 
@@ -180,7 +181,7 @@ void SigninManager::OnTokenAuthFailure(const GoogleServiceAuthError& error) {
 
 void SigninManager::OnClientLoginFailure(const GoogleServiceAuthError& error) {
   NotificationService::current()->Notify(
-      NotificationType::GOOGLE_SIGNIN_FAILED,
+      chrome::NOTIFICATION_GOOGLE_SIGNIN_FAILED,
       Source<Profile>(profile_),
       Details<const GoogleServiceAuthError>(&error));
 
@@ -198,11 +199,11 @@ void SigninManager::OnClientLoginFailure(const GoogleServiceAuthError& error) {
   SignOut();
 }
 
-void SigninManager::Observe(NotificationType type,
+void SigninManager::Observe(int type,
                             const NotificationSource& source,
                             const NotificationDetails& details) {
 #if !defined(OS_CHROMEOS)
-  DCHECK(type == NotificationType::TOKEN_AVAILABLE);
+  DCHECK(type == chrome::NOTIFICATION_TOKEN_AVAILABLE);
   TokenService::TokenAvailableDetails* tok_details =
       Details<TokenService::TokenAvailableDetails>(details).ptr();
 

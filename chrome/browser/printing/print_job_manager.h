@@ -52,7 +52,7 @@ class PrintJobManager : public NotificationObserver {
   static void RegisterPrefs(PrefService* prefs);
 
   // NotificationObserver
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

@@ -15,6 +15,7 @@
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_io_data.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
@@ -476,7 +477,7 @@ int ProtocolHandlerRegistry::GetHandlerIndex(const std::string& scheme) const {
 void ProtocolHandlerRegistry::NotifyChanged() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   NotificationService::current()->Notify(
-      NotificationType::PROTOCOL_HANDLER_REGISTRY_CHANGED,
+      chrome::NOTIFICATION_PROTOCOL_HANDLER_REGISTRY_CHANGED,
       Source<Profile>(profile_),
       NotificationService::NoDetails());
 }

@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/scoped_temp_dir.h"
 #include "chrome/browser/chromeos/login/mock_owner_key_utils.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/browser/browser_thread.h"
 #include "crypto/nss_util.h"
 #include "crypto/rsa_private_key.h"
@@ -36,11 +37,11 @@ MockKeyLoadObserver::MockKeyLoadObserver(base::WaitableEvent* e)
       observed_(false) {
   registrar_.Add(
       this,
-      NotificationType::OWNER_KEY_FETCH_ATTEMPT_FAILED,
+      chrome::NOTIFICATION_OWNER_KEY_FETCH_ATTEMPT_FAILED,
       NotificationService::AllSources());
   registrar_.Add(
       this,
-      NotificationType::OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED,
+      chrome::NOTIFICATION_OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED,
       NotificationService::AllSources());
 }
 
@@ -48,16 +49,16 @@ MockKeyLoadObserver::~MockKeyLoadObserver() {
   DCHECK(observed_);
 }
 
-void MockKeyLoadObserver::Observe(NotificationType type,
+void MockKeyLoadObserver::Observe(int type,
                                   const NotificationSource& source,
                                   const NotificationDetails& details) {
   LOG(INFO) << "Observed key fetch event";
-  if (type == NotificationType::OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED) {
+  if (type == chrome::NOTIFICATION_OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED) {
     DCHECK(success_expected_);
     observed_ = true;
     if (event_)
       event_->Signal();
-  } else if (type == NotificationType::OWNER_KEY_FETCH_ATTEMPT_FAILED) {
+  } else if (type == chrome::NOTIFICATION_OWNER_KEY_FETCH_ATTEMPT_FAILED) {
     DCHECK(!success_expected_);
     observed_ = true;
     if (event_)

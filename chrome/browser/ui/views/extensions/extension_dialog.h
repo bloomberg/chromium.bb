@@ -65,7 +65,7 @@ class ExtensionDialog : public views::WidgetDelegate,
   virtual void OnExtensionPreferredSizeChanged(ExtensionView* view);
 
   // NotificationObserver overrides.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

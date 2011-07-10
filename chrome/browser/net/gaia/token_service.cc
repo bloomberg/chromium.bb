@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/string_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
@@ -66,7 +67,7 @@ void TokenService::Initialize(const char* const source,
 #endif
 
   registrar_.Add(this,
-                 NotificationType::TOKEN_UPDATED,
+                 chrome::NOTIFICATION_TOKEN_UPDATED,
                  NotificationService::AllSources());
 }
 
@@ -167,7 +168,7 @@ void TokenService::FireTokenAvailableNotification(
 
   TokenAvailableDetails details(service, auth_token);
   NotificationService::current()->Notify(
-      NotificationType::TOKEN_AVAILABLE,
+      chrome::NOTIFICATION_TOKEN_AVAILABLE,
       Source<TokenService>(this),
       Details<const TokenAvailableDetails>(&details));
 }
@@ -178,7 +179,7 @@ void TokenService::FireTokenRequestFailedNotification(
 
   TokenRequestFailedDetails details(service, error);
   NotificationService::current()->Notify(
-      NotificationType::TOKEN_REQUEST_FAILED,
+      chrome::NOTIFICATION_TOKEN_REQUEST_FAILED,
       Source<TokenService>(this),
       Details<const TokenRequestFailedDetails>(&details));
 }
@@ -222,7 +223,7 @@ void TokenService::OnWebDataServiceRequestDone(WebDataService::Handle h,
   }
 
   NotificationService::current()->Notify(
-      NotificationType::TOKEN_LOADING_FINISHED,
+      chrome::NOTIFICATION_TOKEN_LOADING_FINISHED,
       Source<TokenService>(this),
       NotificationService::NoDetails());
 }
@@ -254,10 +255,10 @@ void TokenService::LoadTokensIntoMemory(
   }
 }
 
-void TokenService::Observe(NotificationType type,
+void TokenService::Observe(int type,
                            const NotificationSource& source,
                            const NotificationDetails& details) {
-  DCHECK(type == NotificationType::TOKEN_UPDATED);
+  DCHECK(type == chrome::NOTIFICATION_TOKEN_UPDATED);
   TokenAvailableDetails* tok_details =
       Details<TokenAvailableDetails>(details).ptr();
   OnIssueAuthTokenSuccess(tok_details->service(), tok_details->token());

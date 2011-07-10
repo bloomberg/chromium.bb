@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_webstore_private_api.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/common/notification_observer.h"
@@ -91,7 +92,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, InstallNoGesture) {
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
                        IncorrectManifest1) {
   ui_test_utils::WindowedNotificationObserver observer(
-      NotificationType::EXTENSION_INSTALL_ERROR,
+      chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
       NotificationService::AllSources());
   ASSERT_TRUE(RunInstallTest("incorrect_manifest1.html", "extension.crx"));
   observer.Wait();
@@ -100,7 +101,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
                        IncorrectManifest2) {
   ui_test_utils::WindowedNotificationObserver observer(
-      NotificationType::EXTENSION_INSTALL_ERROR,
+      chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
       NotificationService::AllSources());
   ASSERT_TRUE(RunInstallTest("incorrect_manifest2.html", "extension.crx"));
   observer.Wait();

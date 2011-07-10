@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper_delegate.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_messages.h"
@@ -52,7 +53,7 @@ void ExtensionTabHelper::SetExtensionApp(const Extension* extension) {
   UpdateExtensionAppIcon(extension_app_);
 
   NotificationService::current()->Notify(
-      NotificationType::TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED,
+      chrome::NOTIFICATION_TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED,
       Source<ExtensionTabHelper>(this),
       NotificationService::NoDetails());
 }
@@ -97,7 +98,7 @@ void ExtensionTabHelper::DidNavigateMainFramePostCommit(
       browser_action->ClearAllValuesForTab(
           wrapper_->restore_tab_helper()->session_id().id());
       NotificationService::current()->Notify(
-          NotificationType::EXTENSION_BROWSER_ACTION_UPDATED,
+          chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
           Source<ExtensionAction>(browser_action),
           NotificationService::NoDetails());
     }

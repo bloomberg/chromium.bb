@@ -25,7 +25,7 @@ class CoreChromeOSOptionsHandler : public CoreOptionsHandler {
   virtual void StopObservingPref(const std::string& path);
 
   // NotificationObserver implementation.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

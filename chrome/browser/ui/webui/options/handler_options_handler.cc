@@ -10,6 +10,7 @@
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -41,7 +42,7 @@ void HandlerOptionsHandler::GetLocalizedValues(
 void HandlerOptionsHandler::Initialize() {
   UpdateHandlerList();
   notification_registrar_.Add(
-      this, NotificationType::PROTOCOL_HANDLER_REGISTRY_CHANGED,
+      this, chrome::NOTIFICATION_PROTOCOL_HANDLER_REGISTRY_CHANGED,
       NotificationService::AllSources());
 }
 
@@ -156,10 +157,10 @@ ProtocolHandler HandlerOptionsHandler::ParseHandlerFromArgs(
                                                 title);
 }
 
-void HandlerOptionsHandler::Observe(NotificationType type,
+void HandlerOptionsHandler::Observe(int type,
                                     const NotificationSource& source,
                                     const NotificationDetails& details) {
-  if (type == NotificationType::PROTOCOL_HANDLER_REGISTRY_CHANGED)
+  if (type == chrome::NOTIFICATION_PROTOCOL_HANDLER_REGISTRY_CHANGED)
     UpdateHandlerList();
   else
     NOTREACHED();

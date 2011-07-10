@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/value_conversions.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "content/common/notification_type.h"
+#include "chrome/common/chrome_notification_types.h"
 
 namespace subtle {
 
@@ -51,11 +51,11 @@ void PrefMemberBase::MoveToThread(BrowserThread::ID thread_id) {
   internal()->MoveToThread(thread_id);
 }
 
-void PrefMemberBase::Observe(NotificationType type,
+void PrefMemberBase::Observe(int type,
                              const NotificationSource& source,
                              const NotificationDetails& details) {
   VerifyValuePrefName();
-  DCHECK(NotificationType::PREF_CHANGED == type);
+  DCHECK(chrome::NOTIFICATION_PREF_CHANGED == type);
   UpdateValueFromPref();
   if (!setting_value_ && observer_)
     observer_->Observe(type, source, details);

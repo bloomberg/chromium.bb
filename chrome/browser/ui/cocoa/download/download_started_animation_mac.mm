@@ -51,16 +51,16 @@ class DownloadAnimationTabObserver : public NotificationObserver {
       : owner_(owner),
         tab_contents_(tab_contents) {
     registrar_.Add(this,
-                   NotificationType::TAB_CONTENTS_HIDDEN,
+                   content::NOTIFICATION_TAB_CONTENTS_HIDDEN,
                    Source<TabContents>(tab_contents_));
     registrar_.Add(this,
-                   NotificationType::TAB_CONTENTS_DESTROYED,
+                   content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
                    Source<TabContents>(tab_contents_));
   }
 
   // Runs when a tab is hidden or destroyed. Let our owner know we should end
   // the animation.
-  void Observe(NotificationType type,
+  void Observe(int type,
                const NotificationSource& source,
                const NotificationDetails& details) {
     // This ends up deleting us.

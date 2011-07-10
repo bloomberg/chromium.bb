@@ -10,6 +10,7 @@
 
 #include "chrome/browser/chromeos/notifications/balloon_collection_impl.h"
 #include "chrome/browser/chromeos/notifications/balloon_view.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
 #include "grit/generated_resources.h"
@@ -466,7 +467,7 @@ void NotificationPanel::Show() {
     panel_controller_->Init(false /* don't focus when opened */,
                             gfx::Rect(0, 0, kBalloonMinWidth, 1), 0,
                             WM_IPC_PANEL_USER_RESIZE_VERTICALLY);
-    registrar_.Add(this, NotificationType::PANEL_STATE_CHANGED,
+    registrar_.Add(this, chrome::NOTIFICATION_PANEL_STATE_CHANGED,
                    Source<PanelController>(panel_controller_.get()));
   }
   panel_widget_->Show();
@@ -616,10 +617,10 @@ void NotificationPanel::ActivatePanel() {
 ////////////////////////////////////////////////////////////////////////////////
 // NotificationObserver overrides.
 
-void NotificationPanel::Observe(NotificationType type,
+void NotificationPanel::Observe(int type,
                                 const NotificationSource& source,
                                 const NotificationDetails& details) {
-  DCHECK(type == NotificationType::PANEL_STATE_CHANGED);
+  DCHECK(type == chrome::NOTIFICATION_PANEL_STATE_CHANGED);
   PanelController::State* state =
       reinterpret_cast<PanelController::State*>(details.map_key());
   switch (*state) {
@@ -687,7 +688,7 @@ void NotificationPanel::Init() {
 
 void NotificationPanel::UnregisterNotification() {
   if (panel_controller_.get())
-    registrar_.Remove(this, NotificationType::PANEL_STATE_CHANGED,
+    registrar_.Remove(this, chrome::NOTIFICATION_PANEL_STATE_CHANGED,
                       Source<PanelController>(panel_controller_.get()));
 }
 

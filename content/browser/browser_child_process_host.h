@@ -87,7 +87,7 @@ class BrowserChildProcessHost : public ChildProcessHost,
   // Overrides from ChildProcessHost
   virtual void OnChildDied();
   virtual void ShutdownStarted();
-  virtual void Notify(NotificationType type);
+  virtual void Notify(int type);
   // Extends the base class implementation and removes this host from
   // the host list. Calls ChildProcessHost::ForceShutdown
   virtual void ForceShutdown();

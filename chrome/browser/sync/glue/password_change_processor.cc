@@ -15,9 +15,10 @@
 #include "chrome/browser/sync/glue/password_model_associator.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/protocol/password_specifics.pb.h"
+#include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 #include "webkit/glue/password_form.h"
 
 namespace browser_sync {
@@ -45,11 +46,11 @@ PasswordChangeProcessor::~PasswordChangeProcessor() {
   DCHECK(expected_loop_ == MessageLoop::current());
 }
 
-void PasswordChangeProcessor::Observe(NotificationType type,
+void PasswordChangeProcessor::Observe(int type,
                                       const NotificationSource& source,
                                       const NotificationDetails& details) {
   DCHECK(expected_loop_ == MessageLoop::current());
-  DCHECK(NotificationType::LOGINS_CHANGED == type);
+  DCHECK(chrome::NOTIFICATION_LOGINS_CHANGED == type);
   if (!observing_)
     return;
 
@@ -222,14 +223,14 @@ void PasswordChangeProcessor::StopImpl() {
 void PasswordChangeProcessor::StartObserving() {
   DCHECK(expected_loop_ == MessageLoop::current());
   notification_registrar_.Add(this,
-                              NotificationType::LOGINS_CHANGED,
+                              chrome::NOTIFICATION_LOGINS_CHANGED,
                               Source<PasswordStore>(password_store_));
 }
 
 void PasswordChangeProcessor::StopObserving() {
   DCHECK(expected_loop_ == MessageLoop::current());
   notification_registrar_.Remove(this,
-                                 NotificationType::LOGINS_CHANGED,
+                                 chrome::NOTIFICATION_LOGINS_CHANGED,
                                  Source<PasswordStore>(password_store_));
 }
 

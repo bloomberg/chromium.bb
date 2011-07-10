@@ -130,7 +130,7 @@ void RenderProcessHost::Release(int listener_id) {
   // When no other owners of this object, we can delete ourselves
   if (listeners_.IsEmpty()) {
     NotificationService::current()->Notify(
-        NotificationType::RENDERER_PROCESS_TERMINATED,
+        content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
         Source<RenderProcessHost>(this), NotificationService::NoDetails());
     MessageLoop::current()->DeleteSoon(FROM_HERE, this);
     deleting_soon_ = true;

@@ -32,7 +32,7 @@ OwnershipService::OwnershipService()
       ownership_status_(OWNERSHIP_UNKNOWN) {
   notification_registrar_.Add(
       this,
-      NotificationType::OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED,
+      chrome::OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED,
       NotificationService::AllSources());
 }
 
@@ -149,10 +149,10 @@ void OwnershipService::StartVerifyAttempt(const std::string& data,
   return;
 }
 
-void OwnershipService::Observe(NotificationType type,
+void OwnershipService::Observe(int type,
                                const NotificationSource& source,
                                const NotificationDetails& details) {
-  if (type.value == NotificationType::OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED) {
+  if (type == chrome::OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED) {
     SetStatus(OWNERSHIP_TAKEN);
     notification_registrar_.RemoveAll();
   } else {

@@ -51,7 +51,7 @@ class PluginUpdater : public NotificationObserver {
   void UpdatePreferences(Profile* profile, int delay_ms);
 
   // NotificationObserver method overrides
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

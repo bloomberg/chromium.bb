@@ -4,10 +4,10 @@
 
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/test/testing_pref_service.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_observer_mock.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -34,7 +34,7 @@ void PasswordStoreX::AddLoginImpl(const PasswordForm& form) {
     PasswordStoreChangeList changes;
     changes.push_back(PasswordStoreChange(PasswordStoreChange::ADD, form));
     NotificationService::current()->Notify(
-        NotificationType::LOGINS_CHANGED,
+        chrome::LOGINS_CHANGED,
         Source<PasswordStore>(this),
         Details<PasswordStoreChangeList>(&changes));
     allow_fallback_ = false;
@@ -49,7 +49,7 @@ void PasswordStoreX::UpdateLoginImpl(const PasswordForm& form) {
     PasswordStoreChangeList changes;
     changes.push_back(PasswordStoreChange(PasswordStoreChange::UPDATE, form));
     NotificationService::current()->Notify(
-        NotificationType::LOGINS_CHANGED,
+        chrome::LOGINS_CHANGED,
         Source<PasswordStore>(this),
         Details<PasswordStoreChangeList>(&changes));
     allow_fallback_ = false;
@@ -64,7 +64,7 @@ void PasswordStoreX::RemoveLoginImpl(const PasswordForm& form) {
     PasswordStoreChangeList changes;
     changes.push_back(PasswordStoreChange(PasswordStoreChange::REMOVE, form));
     NotificationService::current()->Notify(
-        NotificationType::LOGINS_CHANGED,
+        chrome::LOGINS_CHANGED,
         Source<PasswordStore>(this),
         Details<PasswordStoreChangeList>(&changes));
     allow_fallback_ = false;
@@ -88,7 +88,7 @@ void PasswordStoreX::RemoveLoginsCreatedBetweenImpl(
                                             **it));
     }
     NotificationService::current()->Notify(
-        NotificationType::LOGINS_CHANGED,
+        chrome::LOGINS_CHANGED,
         Source<PasswordStore>(this),
         Details<PasswordStoreChangeList>(&changes));
     allow_fallback_ = false;

@@ -19,10 +19,10 @@
 #include "chrome/browser/sync/unrecoverable_error_handler.h"
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/browser/webdata/web_database.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/guid.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 
 namespace browser_sync {
 
@@ -92,10 +92,10 @@ void AutofillProfileChangeProcessor::ApplyChangesFromSyncModel(
   }
 }
 
-void AutofillProfileChangeProcessor::Observe(NotificationType type,
+void AutofillProfileChangeProcessor::Observe(int type,
     const NotificationSource& source,
     const NotificationDetails& details) {
-  DCHECK_EQ(type.value, NotificationType::AUTOFILL_PROFILE_CHANGED);
+  DCHECK_EQ(type, chrome::NOTIFICATION_AUTOFILL_PROFILE_CHANGED);
   WebDataService* wds = Source<WebDataService>(source).ptr();
 
   if (!wds || wds->GetDatabase() != web_database_)
@@ -298,7 +298,7 @@ void AutofillProfileChangeProcessor::AddAutofillProfileSyncNode(
 void AutofillProfileChangeProcessor::StartObserving() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   notification_registrar_.Add(this,
-      NotificationType::AUTOFILL_PROFILE_CHANGED,
+      chrome::NOTIFICATION_AUTOFILL_PROFILE_CHANGED,
       NotificationService::AllSources());
 }
 

@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
 
@@ -71,7 +72,7 @@ bool TypedUrlDataTypeController::StartModels() {
     history_service_ = history;
     return true;
   } else {
-    notification_registrar_.Add(this, NotificationType::HISTORY_LOADED,
+    notification_registrar_.Add(this, chrome::NOTIFICATION_HISTORY_LOADED,
                                 NotificationService::AllSources());
     return false;
   }
@@ -99,13 +100,13 @@ void TypedUrlDataTypeController::CreateSyncComponents() {
   set_change_processor(sync_components.change_processor);
 }
 
-void TypedUrlDataTypeController::Observe(NotificationType type,
+void TypedUrlDataTypeController::Observe(int type,
                                          const NotificationSource& source,
                                          const NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(state(), MODEL_STARTING);
   notification_registrar_.Remove(this,
-                                 NotificationType::HISTORY_LOADED,
+                                 chrome::NOTIFICATION_HISTORY_LOADED,
                                  NotificationService::AllSources());
   history_service_ = profile()->GetHistoryServiceWithoutCreating();
   DCHECK(history_service_.get());

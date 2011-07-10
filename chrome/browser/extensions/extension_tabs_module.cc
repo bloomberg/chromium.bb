@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/window_sizer.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_error_utils.h"
@@ -1205,7 +1206,7 @@ bool CaptureVisibleTabFunction::RunImpl() {
   TabContentsWrapper* wrapper = browser->GetSelectedTabContentsWrapper();
   wrapper->CaptureSnapshot();
   registrar_.Add(this,
-                 NotificationType::TAB_SNAPSHOT_TAKEN,
+                 chrome::NOTIFICATION_TAB_SNAPSHOT_TAKEN,
                  Source<TabContentsWrapper>(wrapper));
   AddRef();  // Balanced in CaptureVisibleTabFunction::Observe().
 
@@ -1234,10 +1235,10 @@ bool CaptureVisibleTabFunction::CaptureSnapshotFromBackingStore(
 // If a backing store was not available in CaptureVisibleTabFunction::RunImpl,
 // than the renderer was asked for a snapshot.  Listen for a notification
 // that the snapshot is available.
-void CaptureVisibleTabFunction::Observe(NotificationType type,
+void CaptureVisibleTabFunction::Observe(int type,
                                         const NotificationSource& source,
                                         const NotificationDetails& details) {
-  DCHECK(type == NotificationType::TAB_SNAPSHOT_TAKEN);
+  DCHECK(type == chrome::NOTIFICATION_TAB_SNAPSHOT_TAKEN);
 
   const SkBitmap *screen_capture = Details<const SkBitmap>(details).ptr();
   const bool error = screen_capture->empty();
@@ -1347,20 +1348,20 @@ bool DetectTabLanguageFunction::RunImpl() {
   }
   // The tab contents does not know its language yet.  Let's  wait until it
   // receives it, or until the tab is closed/navigates to some other page.
-  registrar_.Add(this, NotificationType::TAB_LANGUAGE_DETERMINED,
+  registrar_.Add(this, chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
                  Source<TabContents>(contents->tab_contents()));
-  registrar_.Add(this, NotificationType::TAB_CLOSING,
+  registrar_.Add(this, content::NOTIFICATION_TAB_CLOSING,
                  Source<NavigationController>(&(contents->controller())));
-  registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
+  registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                  Source<NavigationController>(&(contents->controller())));
   return true;
 }
 
-void DetectTabLanguageFunction::Observe(NotificationType type,
+void DetectTabLanguageFunction::Observe(int type,
                                         const NotificationSource& source,
                                         const NotificationDetails& details) {
   std::string language;
-  if (type == NotificationType::TAB_LANGUAGE_DETERMINED)
+  if (type == chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED)
     language = *Details<std::string>(details).ptr();
 
   registrar_.RemoveAll();

@@ -22,11 +22,11 @@
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 #include "googleurl/src/url_parse.h"
 #include "googleurl/src/url_util.h"
 #include "net/base/escape.h"
@@ -81,9 +81,9 @@ ShortcutsProvider::ShortcutsProvider(ACProviderListener* listener,
                                      Profile* profile)
     : AutocompleteProvider(listener, profile, "ShortcutsProvider"),
       languages_(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)) {
-  notification_registrar_.Add(this, NotificationType::OMNIBOX_OPENED_URL,
+  notification_registrar_.Add(this, chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
                               Source<Profile>(profile));
-  notification_registrar_.Add(this, NotificationType::HISTORY_URLS_DELETED,
+  notification_registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,
                               Source<Profile>(profile));
 }
 
@@ -129,17 +129,17 @@ void ShortcutsProvider::DeleteMatch(const AutocompleteMatch& match) {
   history_service->DeleteURL(match.destination_url);
 }
 
-void ShortcutsProvider::Observe(NotificationType type,
+void ShortcutsProvider::Observe(int type,
                                 const NotificationSource& source,
                                 const NotificationDetails& details) {
-  if (type == NotificationType::HISTORY_URLS_DELETED) {
+  if (type == chrome::NOTIFICATION_HISTORY_URLS_DELETED) {
     const std::set<GURL>& urls =
         Details<const history::URLsDeletedDetails>(details)->urls;
     DeleteShortcutsWithURLs(urls);
     return;
   }
 
-  DCHECK(type == NotificationType::OMNIBOX_OPENED_URL);
+  DCHECK(type == chrome::NOTIFICATION_OMNIBOX_OPENED_URL);
 
   AutocompleteLog* log = Details<AutocompleteLog>(details).ptr();
   string16 text_lowercase(base::i18n::ToLower(log->text));

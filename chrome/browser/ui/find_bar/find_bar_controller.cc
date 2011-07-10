@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/common/notification_details.h"
@@ -84,9 +85,9 @@ void FindBarController::ChangeTabContents(TabContentsWrapper* contents) {
   if (!tab_contents_)
     return;
 
-  registrar_.Add(this, NotificationType::FIND_RESULT_AVAILABLE,
+  registrar_.Add(this, chrome::NOTIFICATION_FIND_RESULT_AVAILABLE,
                  Source<TabContents>(tab_contents_->tab_contents()));
-  registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
+  registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                  Source<NavigationController>(&tab_contents_->controller()));
 
   MaybeSetPrepopulateText();
@@ -106,11 +107,11 @@ void FindBarController::ChangeTabContents(TabContentsWrapper* contents) {
 ////////////////////////////////////////////////////////////////////////////////
 // FindBarHost, NotificationObserver implementation:
 
-void FindBarController::Observe(NotificationType type,
+void FindBarController::Observe(int type,
                                 const NotificationSource& source,
                                 const NotificationDetails& details) {
   FindTabHelper* find_tab_helper = tab_contents_->find_tab_helper();
-  if (type == NotificationType::FIND_RESULT_AVAILABLE) {
+  if (type == chrome::NOTIFICATION_FIND_RESULT_AVAILABLE) {
     // Don't update for notifications from TabContentses other than the one we
     // are actively tracking.
     if (Source<TabContents>(source).ptr() == tab_contents_->tab_contents()) {
@@ -123,7 +124,7 @@ void FindBarController::Observe(NotificationType type,
           find_bar_->AudibleAlert();
       }
     }
-  } else if (type == NotificationType::NAV_ENTRY_COMMITTED) {
+  } else if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
     NavigationController* source_controller =
         Source<NavigationController>(source).ptr();
     if (source_controller == &tab_contents_->controller()) {

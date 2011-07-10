@@ -8,7 +8,7 @@
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/tab_contents/navigation_entry.h"
-#include "content/common/notification_type.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/page_transition_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -19,7 +19,7 @@ void SimulateRendererCrash(Browser* browser) {
                    PageTransition::TYPED);
   LOG(ERROR) << "SimulateRendererCrash, before WaitForNotification";
   ui_test_utils::WaitForNotification(
-      NotificationType::TAB_CONTENTS_DISCONNECTED);
+      content::NOTIFICATION_TAB_CONTENTS_DISCONNECTED);
   LOG(ERROR) << "SimulateRendererCrash, after WaitForNotification";
 }
 

@@ -99,6 +99,7 @@
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -250,28 +251,29 @@ Browser::Browser(Type type, Profile* profile)
           tab_restore_service_delegate_(
               new BrowserTabRestoreServiceDelegate(this))),
       bookmark_bar_state_(BookmarkBar::HIDDEN) {
-  registrar_.Add(this, NotificationType::SSL_VISIBLE_STATE_CHANGED,
+  registrar_.Add(this, content::NOTIFICATION_SSL_VISIBLE_STATE_CHANGED,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::EXTENSION_UPDATE_DISABLED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::EXTENSION_LOADED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::EXTENSION_UNINSTALLED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::EXTENSION_PROCESS_TERMINATED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
                  NotificationService::AllSources());
   registrar_.Add(
-      this, NotificationType::BROWSER_THEME_CHANGED,
+      this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
       Source<ThemeService>(ThemeServiceFactory::GetForProfile(profile_)));
-  registrar_.Add(this, NotificationType::TAB_CONTENT_SETTINGS_CHANGED,
+  registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENT_SETTINGS_CHANGED,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
                  NotificationService::AllSources());
 
   // Need to know when to alert the user of theme install delay.
-  registrar_.Add(this, NotificationType::EXTENSION_READY_FOR_INSTALL,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_READY_FOR_INSTALL,
                  NotificationService::AllSources());
 
   PrefService* local_state = g_browser_process->local_state();
@@ -467,7 +469,7 @@ void Browser::InitBrowserWindow() {
 #endif
 
   NotificationService::current()->Notify(
-      NotificationType::BROWSER_WINDOW_READY,
+      chrome::NOTIFICATION_BROWSER_WINDOW_READY,
       Source<Browser>(this),
       NotificationService::NoDetails());
 
@@ -1001,7 +1003,7 @@ void Browser::OnWindowClosing() {
 
   // TODO(sky): convert session/tab restore to use notification.
   NotificationService::current()->Notify(
-      NotificationType::BROWSER_CLOSING,
+      chrome::NOTIFICATION_BROWSER_CLOSING,
       Source<Browser>(this),
       Details<bool>(&exiting));
 
@@ -2852,10 +2854,10 @@ void Browser::TabInsertedAt(TabContentsWrapper* contents,
 
   // If the tab crashes in the beforeunload or unload handler, it won't be
   // able to ack. But we know we can close it.
-  registrar_.Add(this, NotificationType::TAB_CONTENTS_DISCONNECTED,
+  registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_DISCONNECTED,
                  Source<TabContents>(contents->tab_contents()));
 
-  registrar_.Add(this, NotificationType::INTERSTITIAL_ATTACHED,
+  registrar_.Add(this, content::NOTIFICATION_INTERSTITIAL_ATTACHED,
                  Source<TabContents>(contents->tab_contents()));
 }
 
@@ -2863,7 +2865,7 @@ void Browser::TabClosingAt(TabStripModel* tab_strip_model,
                            TabContentsWrapper* contents,
                            int index) {
   NotificationService::current()->Notify(
-      NotificationType::TAB_CLOSING,
+      content::NOTIFICATION_TAB_CLOSING,
       Source<NavigationController>(&contents->controller()),
       NotificationService::NoDetails());
 
@@ -3092,7 +3094,7 @@ void Browser::AddNewContents(TabContents* source,
 
   if (source) {
     NotificationService::current()->Notify(
-      NotificationType::TAB_ADDED,
+      content::NOTIFICATION_TAB_ADDED,
       Source<TabContentsDelegate>(source->delegate()),
       Details<TabContents>(source));
   }
@@ -3232,7 +3234,7 @@ void Browser::TabContentsFocused(TabContents* tab_content) {
 
 bool Browser::TakeFocus(bool reverse) {
   NotificationService::current()->Notify(
-      NotificationType::FOCUS_RETURNED_TO_BROWSER,
+      chrome::NOTIFICATION_FOCUS_RETURNED_TO_BROWSER,
       Source<Browser>(this),
       NotificationService::NoDetails());
   return false;
@@ -3534,11 +3536,11 @@ void Browser::FileSelected(const FilePath& path, int index, void* params) {
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, NotificationObserver implementation:
 
-void Browser::Observe(NotificationType type,
+void Browser::Observe(int type,
                       const NotificationSource& source,
                       const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::TAB_CONTENTS_DISCONNECTED:
+  switch (type) {
+    case content::NOTIFICATION_TAB_CONTENTS_DISCONNECTED:
       if (is_attempting_to_close_browser_) {
         // Pass in false so that we delay processing. We need to delay the
         // processing as it may close the tab, which is currently on the call
@@ -3547,7 +3549,7 @@ void Browser::Observe(NotificationType type,
       }
       break;
 
-    case NotificationType::SSL_VISIBLE_STATE_CHANGED:
+    case content::NOTIFICATION_SSL_VISIBLE_STATE_CHANGED:
       // When the current tab's SSL state changes, we need to update the URL
       // bar to reflect the new state. Note that it's possible for the selected
       // tab contents to be NULL. This is because we listen for all sources
@@ -3560,7 +3562,7 @@ void Browser::Observe(NotificationType type,
         UpdateToolbar(false);
       break;
 
-    case NotificationType::EXTENSION_UPDATE_DISABLED: {
+    case chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED: {
       // Show the UI if the extension was disabled for escalated permissions.
       Profile* profile = Source<Profile>(source).ptr();
       if (profile_->IsSameProfile(profile)) {
@@ -3574,7 +3576,7 @@ void Browser::Observe(NotificationType type,
       break;
     }
 
-    case NotificationType::EXTENSION_UNLOADED: {
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
       if (window()->GetLocationBar())
         window()->GetLocationBar()->UpdatePageActions();
 
@@ -3593,23 +3595,23 @@ void Browser::Observe(NotificationType type,
       break;
     }
 
-    case NotificationType::EXTENSION_PROCESS_TERMINATED: {
+    case chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED: {
       if (window()->GetLocationBar())
         window()->GetLocationBar()->InvalidatePageActions();
       break;
     }
 
-    case NotificationType::EXTENSION_UNINSTALLED:
-    case NotificationType::EXTENSION_LOADED:
+    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED:
+    case chrome::NOTIFICATION_EXTENSION_LOADED:
       if (window()->GetLocationBar())
         window()->GetLocationBar()->UpdatePageActions();
       break;
 
-    case NotificationType::BROWSER_THEME_CHANGED:
+    case chrome::NOTIFICATION_BROWSER_THEME_CHANGED:
       window()->UserChangedTheme();
       break;
 
-    case NotificationType::EXTENSION_READY_FOR_INSTALL: {
+    case chrome::NOTIFICATION_EXTENSION_READY_FOR_INSTALL: {
       // Handle EXTENSION_READY_FOR_INSTALL for last active tabbed browser.
       if (BrowserList::FindTabbedBrowser(profile(), true) != this)
         break;
@@ -3624,7 +3626,7 @@ void Browser::Observe(NotificationType type,
       break;
     }
 
-    case NotificationType::PREF_CHANGED: {
+    case chrome::NOTIFICATION_PREF_CHANGED: {
       const std::string& pref_name = *Details<std::string>(details).ptr();
       if (pref_name == prefs::kUseVerticalTabs) {
         UseVerticalTabsChanged();
@@ -3661,7 +3663,7 @@ void Browser::Observe(NotificationType type,
       break;
     }
 
-    case NotificationType::TAB_CONTENT_SETTINGS_CHANGED: {
+    case chrome::NOTIFICATION_TAB_CONTENT_SETTINGS_CHANGED: {
       TabContents* tab_contents = Source<TabContents>(source).ptr();
       if (tab_contents == GetSelectedTabContents()) {
         LocationBar* location_bar = window()->GetLocationBar();
@@ -3671,11 +3673,11 @@ void Browser::Observe(NotificationType type,
       break;
     }
 
-    case NotificationType::INTERSTITIAL_ATTACHED:
+    case content::NOTIFICATION_INTERSTITIAL_ATTACHED:
       UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_STATE);
       break;
 
-    case NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED:
+    case chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED:
       UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_PREF_CHANGE);
       break;
 
@@ -4546,9 +4548,9 @@ void Browser::TabDetachedAtImpl(TabContentsWrapper* contents, int index,
     ClearUnloadState(contents->tab_contents(), false);
   }
 
-  registrar_.Remove(this, NotificationType::INTERSTITIAL_ATTACHED,
+  registrar_.Remove(this, content::NOTIFICATION_INTERSTITIAL_ATTACHED,
                     Source<TabContents>(contents->tab_contents()));
-  registrar_.Remove(this, NotificationType::TAB_CONTENTS_DISCONNECTED,
+  registrar_.Remove(this, content::NOTIFICATION_TAB_CONTENTS_DISCONNECTED,
                     Source<TabContents>(contents->tab_contents()));
 }
 

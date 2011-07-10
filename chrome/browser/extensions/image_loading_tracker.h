@@ -86,7 +86,7 @@ class ImageLoadingTracker : public NotificationObserver {
 
   // NotificationObserver method. If an extension is uninstalled while we're
   // waiting for the image we remove the entry from load_map_.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

@@ -18,19 +18,19 @@ using WebKit::WebTouchEvent;
 
 namespace {
 
-WebKit::WebTouchPoint::State TouchPointStateFromEvent(
+WebKit::WebTouchPocontent::NOTIFICATION_State TouchPointStateFromEvent(
     const views::TouchEvent* event) {
   switch (event->type()) {
     case ui::ET_TOUCH_PRESSED:
-      return WebKit::WebTouchPoint::StatePressed;
+      return WebKit::WebTouchPocontent::NOTIFICATION_StatePressed;
     case ui::ET_TOUCH_RELEASED:
-      return WebKit::WebTouchPoint::StateReleased;
+      return WebKit::WebTouchPocontent::NOTIFICATION_StateReleased;
     case ui::ET_TOUCH_MOVED:
-      return WebKit::WebTouchPoint::StateMoved;
+      return WebKit::WebTouchPocontent::NOTIFICATION_StateMoved;
     case ui::ET_TOUCH_CANCELLED:
-      return WebKit::WebTouchPoint::StateCancelled;
+      return WebKit::WebTouchPocontent::NOTIFICATION_StateCancelled;
     default:
-      return WebKit::WebTouchPoint::StateUndefined;
+      return WebKit::WebTouchPocontent::NOTIFICATION_StateUndefined;
   }
 }
 
@@ -138,7 +138,7 @@ ui::TouchStatus RenderWidgetHostViewViews::OnTouchEvent(
 
   // Update the location and state of the point.
   point->state = TouchPointStateFromEvent(&event);
-  if (point->state == WebKit::WebTouchPoint::StateMoved) {
+  if (point->state == WebKit::WebTouchPocontent::NOTIFICATION_StateMoved) {
     // It is possible for badly written touch drivers to emit Move events even
     // when the touch location hasn't changed. In such cases, consume the event
     // and pretend nothing happened.
@@ -152,7 +152,7 @@ ui::TouchStatus RenderWidgetHostViewViews::OnTouchEvent(
   for (int i = 0; i < touch_event_.touchPointsLength; ++i) {
     WebKit::WebTouchPoint* iter = touch_event_.touchPoints + i;
     if (iter != point) {
-      iter->state = WebKit::WebTouchPoint::StateStationary;
+      iter->state = WebKit::WebTouchPocontent::NOTIFICATION_StateStationary;
     }
   }
 

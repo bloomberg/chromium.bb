@@ -17,7 +17,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/common/notification_type.h"
+#include "content/common/content_notification_types.h"
 #include "ipc/ipc_channel_proxy.h"
 
 class CommandLine;
@@ -93,7 +93,7 @@ class ChildProcessHost : public IPC::Channel::Listener,
   // Notifies the derived class that we told the child process to kill itself.
   virtual void ShutdownStarted();
   // Subclasses can implement specific notification methods.
-  virtual void Notify(NotificationType type);
+  virtual void Notify(int type);
 
  private:
   // By using an internal class as the IPC::Channel::Listener, we can intercept

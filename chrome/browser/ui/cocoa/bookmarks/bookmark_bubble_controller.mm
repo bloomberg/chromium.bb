@@ -26,7 +26,7 @@ class BookmarkBubbleNotificationBridge : public NotificationObserver {
   BookmarkBubbleNotificationBridge(BookmarkBubbleController* controller,
                                    SEL selector);
   virtual ~BookmarkBubbleNotificationBridge() {}
-  void Observe(NotificationType type,
+  void Observe(int type,
                const NotificationSource& source,
                const NotificationDetails& details);
  private:
@@ -40,16 +40,16 @@ BookmarkBubbleNotificationBridge::BookmarkBubbleNotificationBridge(
     : controller_(controller), selector_(selector) {
   // registrar_ will automatically RemoveAll() when destroyed so we
   // don't need to do so explicitly.
-  registrar_.Add(this, NotificationType::TAB_CONTENTS_CONNECTED,
+  registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_CONNECTED,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::TAB_CLOSED,
+  registrar_.Add(this, content::NOTIFICATION_TAB_CLOSED,
                  NotificationService::AllSources());
 }
 
 // At this time all notifications instigate the same behavior (go
 // away) so we don't bother checking which notification came in.
 void BookmarkBubbleNotificationBridge::Observe(
-  NotificationType type,
+  int type,
   const NotificationSource& source,
   const NotificationDetails& details) {
   [controller_ performSelector:selector_ withObject:controller_];

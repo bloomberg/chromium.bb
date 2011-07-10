@@ -57,7 +57,7 @@ class ChromeAppCacheService
                                 net::CompletionCallback* callback);
 
   // NotificationObserver override
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

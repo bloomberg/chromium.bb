@@ -99,7 +99,7 @@ SpellCheckHostImpl::SpellCheckHostImpl(
   custom_dictionary_file_ =
       personal_file_directory.Append(chrome::kCustomDictionaryFileName);
 
-  registrar_.Add(this, NotificationType::RENDERER_PROCESS_CREATED,
+  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
                  NotificationService::AllSources());
 }
 
@@ -333,10 +333,10 @@ void SpellCheckHostImpl::OnURLFetchComplete(const URLFetcher* source,
       NewRunnableMethod(this, &SpellCheckHostImpl::SaveDictionaryData));
 }
 
-void SpellCheckHostImpl::Observe(NotificationType type,
+void SpellCheckHostImpl::Observe(int type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {
-  DCHECK(type == NotificationType::RENDERER_PROCESS_CREATED);
+  DCHECK(type == content::NOTIFICATION_RENDERER_PROCESS_CREATED);
   RenderProcessHost* process = Source<RenderProcessHost>(source).ptr();
   InitForRenderer(process);
 }

@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/touch/frame/keyboard_container_view.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_view_touch.h"
 #include "chrome/browser/ui/views/dom_view.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
 #include "ui/base/animation/slide_animation.h"
@@ -53,16 +54,16 @@ void TouchLoginView::Init() {
   InitVirtualKeyboard();
 
   registrar_.Add(this,
-                 NotificationType::FOCUS_CHANGED_IN_PAGE,
+                 content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
                  NotificationService::AllSources());
   registrar_.Add(this,
-                 NotificationType::TAB_CONTENTS_DESTROYED,
+                 content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
                  NotificationService::AllSources());
   registrar_.Add(this,
-                 NotificationType::HIDE_KEYBOARD_INVOKED,
+                 chrome::NOTIFICATION_HIDE_KEYBOARD_INVOKED,
                  NotificationService::AllSources());
   registrar_.Add(this,
-                 NotificationType::SET_KEYBOARD_HEIGHT_INVOKED,
+                 chrome::NOTIFICATION_SET_KEYBOARD_HEIGHT_INVOKED,
                  NotificationService::AllSources());
 }
 
@@ -150,10 +151,10 @@ TouchLoginView::VirtualKeyboardType
   return NONE;
 }
 
-void TouchLoginView::Observe(NotificationType type,
+void TouchLoginView::Observe(int type,
                              const NotificationSource& source,
                              const NotificationDetails& details) {
-  if (type == NotificationType::FOCUS_CHANGED_IN_PAGE) {
+  if (type == content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE) {
     // Only modify the keyboard state if the currently active tab sent the
     // notification.
     const TabContents* current_tab = webui_login_->tab_contents();
@@ -167,12 +168,12 @@ void TouchLoginView::Observe(NotificationType type,
     // can be determined after tab switching.
     GetFocusedStateAccessor()->SetProperty(
         source_tab->property_bag(), editable);
-  } else if (type == NotificationType::TAB_CONTENTS_DESTROYED) {
+  } else if (type == content::NOTIFICATION_TAB_CONTENTS_DESTROYED) {
     GetFocusedStateAccessor()->DeleteProperty(
         Source<TabContents>(source).ptr()->property_bag());
-  } else if (type == NotificationType::HIDE_KEYBOARD_INVOKED) {
+  } else if (type == chrome::NOTIFICATION_HIDE_KEYBOARD_INVOKED) {
     UpdateKeyboardAndLayout(false);
-  } else if (type == NotificationType::SET_KEYBOARD_HEIGHT_INVOKED) {
+  } else if (type == chrome::NOTIFICATION_SET_KEYBOARD_HEIGHT_INVOKED) {
     // TODO(penghuang) Allow extension conrtol the virtual keyboard directly
     // instead of using Notification.
     int height = *(Details<int>(details).ptr());

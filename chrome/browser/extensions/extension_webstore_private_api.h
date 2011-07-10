@@ -148,7 +148,7 @@ class PromptBrowserLoginFunction : public AsyncExtensionFunction,
   virtual void OnLoginFailure(const GoogleServiceAuthError& error);
 
   // Implements the NotificationObserver interface.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

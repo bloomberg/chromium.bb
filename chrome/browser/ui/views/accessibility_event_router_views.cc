@@ -12,7 +12,7 @@
 #include "chrome/browser/extensions/extension_accessibility_api.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "content/common/notification_type.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/menu/menu_item_view.h"
@@ -45,30 +45,30 @@ void AccessibilityEventRouterViews::HandleAccessibilityEvent(
   switch (event_type) {
     case ui::AccessibilityTypes::EVENT_FOCUS:
       DispatchAccessibilityNotification(
-          view, NotificationType::ACCESSIBILITY_CONTROL_FOCUSED);
+          view, chrome::NOTIFICATION_ACCESSIBILITY_CONTROL_FOCUSED);
       break;
     case ui::AccessibilityTypes::EVENT_MENUSTART:
     case ui::AccessibilityTypes::EVENT_MENUPOPUPSTART:
       DispatchAccessibilityNotification(
-          view, NotificationType::ACCESSIBILITY_MENU_OPENED);
+          view, chrome::NOTIFICATION_ACCESSIBILITY_MENU_OPENED);
       break;
     case ui::AccessibilityTypes::EVENT_MENUEND:
     case ui::AccessibilityTypes::EVENT_MENUPOPUPEND:
       DispatchAccessibilityNotification(
-          view, NotificationType::ACCESSIBILITY_MENU_CLOSED);
+          view, chrome::NOTIFICATION_ACCESSIBILITY_MENU_CLOSED);
       break;
     case ui::AccessibilityTypes::EVENT_TEXT_CHANGED:
     case ui::AccessibilityTypes::EVENT_SELECTION_CHANGED:
       DispatchAccessibilityNotification(
-          view, NotificationType::ACCESSIBILITY_TEXT_CHANGED);
+          view, chrome::NOTIFICATION_ACCESSIBILITY_TEXT_CHANGED);
       break;
     case ui::AccessibilityTypes::EVENT_VALUE_CHANGED:
       DispatchAccessibilityNotification(
-          view, NotificationType::ACCESSIBILITY_CONTROL_ACTION);
+          view, chrome::NOTIFICATION_ACCESSIBILITY_CONTROL_ACTION);
       break;
     case ui::AccessibilityTypes::EVENT_ALERT:
       DispatchAccessibilityNotification(
-          view, NotificationType::ACCESSIBILITY_WINDOW_OPENED);
+          view, chrome::NOTIFICATION_ACCESSIBILITY_WINDOW_OPENED);
       break;
     case ui::AccessibilityTypes::EVENT_NAME_CHANGED:
       NOTIMPLEMENTED();
@@ -97,7 +97,7 @@ void AccessibilityEventRouterViews::HandleMenuItemFocused(
       item_index,
       item_count);
   SendAccessibilityNotification(
-      NotificationType::ACCESSIBILITY_CONTROL_FOCUSED, &info);
+      chrome::NOTIFICATION_ACCESSIBILITY_CONTROL_FOCUSED, &info);
 }
 
 //
@@ -105,7 +105,7 @@ void AccessibilityEventRouterViews::HandleMenuItemFocused(
 //
 
 void AccessibilityEventRouterViews::DispatchAccessibilityNotification(
-    views::View* view, NotificationType type) {
+    views::View* view, int type) {
   // Get the profile associated with this view. If it's not found, use
   // the most recent profile where accessibility events were sent, or
   // the default profile.
@@ -126,8 +126,8 @@ void AccessibilityEventRouterViews::DispatchAccessibilityNotification(
 
   most_recent_profile_ = profile;
 
-  if (type == NotificationType::ACCESSIBILITY_MENU_OPENED ||
-      type == NotificationType::ACCESSIBILITY_MENU_CLOSED) {
+  if (type == chrome::NOTIFICATION_ACCESSIBILITY_MENU_OPENED ||
+      type == chrome::NOTIFICATION_ACCESSIBILITY_MENU_CLOSED) {
     SendMenuNotification(view, type, profile);
     return;
   }
@@ -174,7 +174,7 @@ void AccessibilityEventRouterViews::DispatchAccessibilityNotification(
 
 void AccessibilityEventRouterViews::SendButtonNotification(
     views::View* view,
-    NotificationType type,
+    int type,
     Profile* profile) {
   AccessibilityButtonInfo info(profile, GetViewName(view));
   SendAccessibilityNotification(type, &info);
@@ -182,7 +182,7 @@ void AccessibilityEventRouterViews::SendButtonNotification(
 
 void AccessibilityEventRouterViews::SendLinkNotification(
     views::View* view,
-    NotificationType type,
+    int type,
     Profile* profile) {
   AccessibilityLinkInfo info(profile, GetViewName(view));
   SendAccessibilityNotification(type, &info);
@@ -190,7 +190,7 @@ void AccessibilityEventRouterViews::SendLinkNotification(
 
 void AccessibilityEventRouterViews::SendMenuNotification(
     views::View* view,
-    NotificationType type,
+    int type,
     Profile* profile) {
   AccessibilityMenuInfo info(profile, GetViewName(view));
   SendAccessibilityNotification(type, &info);
@@ -198,7 +198,7 @@ void AccessibilityEventRouterViews::SendMenuNotification(
 
 void AccessibilityEventRouterViews::SendMenuItemNotification(
     views::View* view,
-    NotificationType type,
+    int type,
     Profile* profile) {
   std::string name = GetViewName(view);
 
@@ -225,7 +225,7 @@ void AccessibilityEventRouterViews::SendMenuItemNotification(
 
 void AccessibilityEventRouterViews::SendTextfieldNotification(
     views::View* view,
-    NotificationType type,
+    int type,
     Profile* profile) {
   ui::AccessibleViewState state;
   view->GetAccessibleState(&state);
@@ -240,7 +240,7 @@ void AccessibilityEventRouterViews::SendTextfieldNotification(
 
 void AccessibilityEventRouterViews::SendComboboxNotification(
     views::View* view,
-    NotificationType type,
+    int type,
     Profile* profile) {
   ui::AccessibleViewState state;
   view->GetAccessibleState(&state);
@@ -253,7 +253,7 @@ void AccessibilityEventRouterViews::SendComboboxNotification(
 
 void AccessibilityEventRouterViews::SendCheckboxNotification(
     views::View* view,
-    NotificationType type,
+    int type,
     Profile* profile) {
   ui::AccessibleViewState state;
   view->GetAccessibleState(&state);
@@ -266,7 +266,7 @@ void AccessibilityEventRouterViews::SendCheckboxNotification(
 
 void AccessibilityEventRouterViews::SendWindowNotification(
     views::View* view,
-    NotificationType type,
+    int type,
     Profile* profile) {
   ui::AccessibleViewState state;
   view->GetAccessibleState(&state);
@@ -293,9 +293,9 @@ std::string AccessibilityEventRouterViews::GetViewName(views::View* view) {
 
 bool AccessibilityEventRouterViews::IsMenuEvent(
     views::View* view,
-    NotificationType type) {
-  if (type == NotificationType::ACCESSIBILITY_MENU_OPENED ||
-      type == NotificationType::ACCESSIBILITY_MENU_CLOSED)
+    int type) {
+  if (type == chrome::NOTIFICATION_ACCESSIBILITY_MENU_OPENED ||
+      type == chrome::NOTIFICATION_ACCESSIBILITY_MENU_CLOSED)
     return true;
 
   while (view) {

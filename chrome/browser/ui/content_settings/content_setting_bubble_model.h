@@ -81,7 +81,7 @@ class ContentSettingBubbleModel : public NotificationObserver {
   const BubbleContent& bubble_content() const { return bubble_content_; }
 
   // NotificationObserver:
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

@@ -22,7 +22,7 @@
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_type.h"
+#include "content/common/content_notification_types.h"
 
 namespace keys = extension_processes_api_constants;
 

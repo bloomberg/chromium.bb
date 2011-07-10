@@ -16,6 +16,7 @@
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #import "chrome/browser/ui/cocoa/history_menu_cocoa_controller.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_service.h"
@@ -103,7 +104,7 @@ HistoryMenuBridge::HistoryMenuBridge(Profile* profile)
   // The service is not ready for use yet, so become notified when it does.
   if (!history_service_) {
     registrar_.Add(
-        this, NotificationType::HISTORY_LOADED, Source<Profile>(profile_));
+        this, chrome::NOTIFICATION_HISTORY_LOADED, Source<Profile>(profile_));
   }
 }
 
@@ -114,12 +115,13 @@ HistoryMenuBridge::~HistoryMenuBridge() {
   // Unregister ourselves as observers and notifications.
   if (history_service_) {
     const NotificationSource& src = NotificationService::AllSources();
-    registrar_.Remove(this, NotificationType::HISTORY_TYPED_URLS_MODIFIED, src);
-    registrar_.Remove(this, NotificationType::HISTORY_URL_VISITED, src);
-    registrar_.Remove(this, NotificationType::HISTORY_URLS_DELETED, src);
+    registrar_.Remove(this, chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED,
+                      src);
+    registrar_.Remove(this, chrome::NOTIFICATION_HISTORY_URL_VISITED, src);
+    registrar_.Remove(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED, src);
   } else {
     registrar_.Remove(
-        this, NotificationType::HISTORY_LOADED, Source<Profile>(profile_));
+        this, chrome::NOTIFICATION_HISTORY_LOADED, Source<Profile>(profile_));
   }
 
   if (tab_restore_service_)
@@ -134,12 +136,12 @@ HistoryMenuBridge::~HistoryMenuBridge() {
   }
 }
 
-void HistoryMenuBridge::Observe(NotificationType type,
+void HistoryMenuBridge::Observe(int type,
                                 const NotificationSource& source,
                                 const NotificationDetails& details) {
   // A history service is now ready. Check to see if it's the one for the main
   // profile. If so, perform final initialization.
-  if (type == NotificationType::HISTORY_LOADED) {
+  if (type == chrome::NOTIFICATION_HISTORY_LOADED) {
     HistoryService* hs =
         profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
     if (hs != NULL && hs->BackendLoaded()) {
@@ -148,7 +150,7 @@ void HistoryMenuBridge::Observe(NotificationType type,
 
       // Found our HistoryService, so stop listening for this notification.
       registrar_.Remove(this,
-                        NotificationType::HISTORY_LOADED,
+                        chrome::NOTIFICATION_HISTORY_LOADED,
                         Source<Profile>(profile_));
     }
   }
@@ -363,9 +365,10 @@ NSMenuItem* HistoryMenuBridge::AddItemToMenu(HistoryItem* item,
 
 void HistoryMenuBridge::Init() {
   const NotificationSource& source = NotificationService::AllSources();
-  registrar_.Add(this, NotificationType::HISTORY_TYPED_URLS_MODIFIED, source);
-  registrar_.Add(this, NotificationType::HISTORY_URL_VISITED, source);
-  registrar_.Add(this, NotificationType::HISTORY_URLS_DELETED, source);
+  registrar_.Add(this, chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED,
+                 source);
+  registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URL_VISITED, source);
+  registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED, source);
 }
 
 void HistoryMenuBridge::CreateMenu() {

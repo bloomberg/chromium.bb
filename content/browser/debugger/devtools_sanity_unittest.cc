@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
@@ -28,12 +29,12 @@ namespace {
 class BrowserClosedObserver : public NotificationObserver {
  public:
   explicit BrowserClosedObserver(Browser* browser) {
-    registrar_.Add(this, NotificationType::BROWSER_CLOSED,
+    registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSED,
                    Source<Browser>(browser));
     ui_test_utils::RunMessageLoop();
   }
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
     MessageLoopForUI::current()->Quit();
@@ -182,7 +183,7 @@ class DevToolsExtensionDebugTest : public DevToolsSanityTest,
     size_t num_before = service->extensions()->size();
     {
       NotificationRegistrar registrar;
-      registrar.Add(this, NotificationType::EXTENSION_LOADED,
+      registrar.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                     NotificationService::AllSources());
       CancelableQuitTask* delayed_quit =
           new CancelableQuitTask("Extension load timed out.");
@@ -205,7 +206,7 @@ class DevToolsExtensionDebugTest : public DevToolsSanityTest,
     // this method is running.
 
     NotificationRegistrar registrar;
-    registrar.Add(this, NotificationType::EXTENSION_HOST_DID_STOP_LOADING,
+    registrar.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
                   NotificationService::AllSources());
     CancelableQuitTask* delayed_quit =
         new CancelableQuitTask("Extension host load timed out.");
@@ -226,12 +227,12 @@ class DevToolsExtensionDebugTest : public DevToolsSanityTest,
     return true;
   }
 
-  void Observe(NotificationType type,
+  void Observe(int type,
                const NotificationSource& source,
                const NotificationDetails& details) {
-    switch (type.value) {
-      case NotificationType::EXTENSION_LOADED:
-      case NotificationType::EXTENSION_HOST_DID_STOP_LOADING:
+    switch (type) {
+      case chrome::NOTIFICATION_EXTENSION_LOADED:
+      case chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING:
         MessageLoopForUI::current()->Quit();
         break;
       default:

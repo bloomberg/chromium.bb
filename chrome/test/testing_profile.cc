@@ -44,6 +44,7 @@
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/bookmark_load_observer.h"
 #include "chrome/test/test_url_request_context_getter.h"
@@ -168,7 +169,7 @@ TestingProfile::TestingProfile()
 
 TestingProfile::~TestingProfile() {
   NotificationService::current()->Notify(
-      NotificationType::PROFILE_DESTROYED,
+      chrome::NOTIFICATION_PROFILE_DESTROYED,
       Source<Profile>(static_cast<Profile*>(this)),
       NotificationService::NoDetails());
 
@@ -306,7 +307,7 @@ void TestingProfile::BlockUntilBookmarkModelLoaded() {
 void TestingProfile::BlockUntilTopSitesLoaded() {
   if (!GetHistoryService(Profile::EXPLICIT_ACCESS))
     GetTopSites()->HistoryLoaded();
-  ui_test_utils::WaitForNotification(NotificationType::TOP_SITES_LOADED);
+  ui_test_utils::WaitForNotification(chrome::NOTIFICATION_TOP_SITES_LOADED);
 }
 
 void TestingProfile::CreateTemplateURLFetcher() {

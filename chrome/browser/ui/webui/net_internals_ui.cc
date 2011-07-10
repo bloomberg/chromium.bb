@@ -32,6 +32,7 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/jstemplate_builder.h"
@@ -39,7 +40,6 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_details.h"
-#include "content/common/notification_type.h"
 #include "grit/generated_resources.h"
 #include "grit/net_internals_resources.h"
 #include "net/base/escape.h"
@@ -166,7 +166,7 @@ class NetInternalsMessageHandler
   void CallJavascriptFunction(const std::wstring& function_name, Value* arg);
 
   // NotificationObserver implementation.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -638,11 +638,11 @@ void NetInternalsMessageHandler::CallJavascriptFunction(
   }
 }
 
-void NetInternalsMessageHandler::Observe(NotificationType type,
+void NetInternalsMessageHandler::Observe(int type,
                                          const NotificationSource& source,
                                          const NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(type.value, NotificationType::PREF_CHANGED);
+  DCHECK_EQ(type, chrome::NOTIFICATION_PREF_CHANGED);
 
   std::string* pref_name = Details<std::string>(details).ptr();
   if (*pref_name == prefs::kHttpThrottlingEnabled) {

@@ -17,6 +17,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/pref_names.h"
@@ -172,7 +173,7 @@ PrefDefaultProvider::PrefDefaultProvider(Profile* profile)
 
   pref_change_registrar_.Init(prefs);
   pref_change_registrar_.Add(prefs::kDefaultContentSettings, this);
-  notification_registrar_.Add(this, NotificationType::PROFILE_DESTROYED,
+  notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                               Source<Profile>(profile_));
   initializing_ = false;
 }
@@ -233,12 +234,12 @@ bool PrefDefaultProvider::DefaultSettingIsManaged(
   return false;
 }
 
-void PrefDefaultProvider::Observe(NotificationType type,
+void PrefDefaultProvider::Observe(int type,
                                   const NotificationSource& source,
                                   const NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (type == NotificationType::PREF_CHANGED) {
+  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
     DCHECK_EQ(profile_->GetPrefs(), Source<PrefService>(source).ptr());
     if (updating_preferences_)
       return;
@@ -258,7 +259,7 @@ void PrefDefaultProvider::Observe(NotificationType type,
                                      std::string());
       NotifyObservers(details);
     }
-  } else if (type == NotificationType::PROFILE_DESTROYED) {
+  } else if (type == chrome::NOTIFICATION_PROFILE_DESTROYED) {
     DCHECK_EQ(profile_, Source<Profile>(source).ptr());
     UnregisterObservers();
   } else {
@@ -271,7 +272,7 @@ void PrefDefaultProvider::UnregisterObservers() {
   if (!profile_)
     return;
   pref_change_registrar_.RemoveAll();
-  notification_registrar_.Remove(this, NotificationType::PROFILE_DESTROYED,
+  notification_registrar_.Remove(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                                  Source<Profile>(profile_));
   profile_ = NULL;
 }
@@ -337,7 +338,7 @@ void PrefDefaultProvider::NotifyObservers(
   if (initializing_ || profile_ == NULL)
     return;
   NotificationService::current()->Notify(
-      NotificationType::CONTENT_SETTINGS_CHANGED,
+      chrome::NOTIFICATION_CONTENT_SETTINGS_CHANGED,
       Source<HostContentSettingsMap>(profile_->GetHostContentSettingsMap()),
       Details<const ContentSettingsDetails>(&details));
 }
@@ -433,7 +434,7 @@ void PrefProvider::Init() {
   pref_change_registrar_.Add(prefs::kContentSettingsPatterns, this);
   pref_change_registrar_.Add(prefs::kContentSettingsPatternPairs, this);
 
-  notification_registrar_.Add(this, NotificationType::PROFILE_DESTROYED,
+  notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                               Source<Profile>(profile_));
   initializing_ = false;
 }
@@ -575,12 +576,12 @@ void PrefProvider::ClearAllContentSettingsRules(
 }
 
 void PrefProvider::Observe(
-    NotificationType type,
+    int type,
     const NotificationSource& source,
     const NotificationDetails& details) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (type == NotificationType::PREF_CHANGED) {
+  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
     DCHECK_EQ(profile_->GetPrefs(), Source<PrefService>(source).ptr());
     if (updating_preferences_)
       return;
@@ -606,7 +607,7 @@ void PrefProvider::Observe(
                                      std::string());
       NotifyObservers(details);
     }
-  } else if (type == NotificationType::PROFILE_DESTROYED) {
+  } else if (type == chrome::NOTIFICATION_PROFILE_DESTROYED) {
     DCHECK_EQ(profile_, Source<Profile>(source).ptr());
     UnregisterObservers();
   } else {
@@ -923,7 +924,7 @@ void PrefProvider::NotifyObservers(
   if (initializing_ || profile_ == NULL)
     return;
   NotificationService::current()->Notify(
-      NotificationType::CONTENT_SETTINGS_CHANGED,
+      chrome::NOTIFICATION_CONTENT_SETTINGS_CHANGED,
       Source<HostContentSettingsMap>(
           profile_->GetHostContentSettingsMap()),
       Details<const ContentSettingsDetails>(&details));
@@ -934,7 +935,7 @@ void PrefProvider::UnregisterObservers() {
   if (!profile_)
     return;
   pref_change_registrar_.RemoveAll();
-  notification_registrar_.Remove(this, NotificationType::PROFILE_DESTROYED,
+  notification_registrar_.Remove(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                                  Source<Profile>(profile_));
   profile_ = NULL;
 }

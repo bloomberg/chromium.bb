@@ -36,13 +36,13 @@
 #include "chrome/browser/ui/gtk/view_id_util.h"
 #include "chrome/browser/ui/toolbar/encoding_menu_controller.h"
 #include "chrome/browser/upgrade_detector.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -97,10 +97,10 @@ BrowserToolbarGtk::BrowserToolbarGtk(Browser* browser, BrowserWindowGtk* window)
   browser_->command_updater()->AddCommandObserver(IDC_BOOKMARK_PAGE, this);
 
   registrar_.Add(this,
-                 NotificationType::BROWSER_THEME_CHANGED,
+                 chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
   registrar_.Add(this,
-                 NotificationType::UPGRADE_RECOMMENDED,
+                 chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
                  NotificationService::AllSources());
 }
 
@@ -222,7 +222,7 @@ void BrowserToolbarGtk::Init(Profile* profile,
   gtk_box_pack_start(GTK_BOX(toolbar_), wrench_box, FALSE, FALSE, 4);
 
   wrench_menu_.reset(new MenuGtk(this, &wrench_menu_model_));
-  registrar_.Add(this, NotificationType::ZOOM_LEVEL_CHANGED,
+  registrar_.Add(this, content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
       Source<HostZoomMap>(browser_->profile()->GetHostZoomMap()));
 
   if (ShouldOnlyShowLocation()) {
@@ -346,12 +346,12 @@ bool BrowserToolbarGtk::GetAcceleratorForCommandId(
 
 // NotificationObserver --------------------------------------------------------
 
-void BrowserToolbarGtk::Observe(NotificationType type,
+void BrowserToolbarGtk::Observe(int type,
                                 const NotificationSource& source,
                                 const NotificationDetails& details) {
-  if (type == NotificationType::PREF_CHANGED) {
+  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
     NotifyPrefChanged(Details<std::string>(details).ptr());
-  } else if (type == NotificationType::BROWSER_THEME_CHANGED) {
+  } else if (type == chrome::NOTIFICATION_BROWSER_THEME_CHANGED) {
     // Update the spacing around the menu buttons
     bool use_gtk = theme_service_->UsingNativeTheme();
     int border = use_gtk ? 0 : 2;
@@ -384,10 +384,10 @@ void BrowserToolbarGtk::Observe(NotificationType type,
     }
 
     UpdateRoundedness();
-  } else if (type == NotificationType::UPGRADE_RECOMMENDED) {
+  } else if (type == chrome::NOTIFICATION_UPGRADE_RECOMMENDED) {
     // Redraw the wrench menu to update the badge.
     gtk_widget_queue_draw(wrench_menu_button_->widget());
-  } else if (type == NotificationType::ZOOM_LEVEL_CHANGED) {
+  } else if (type == content::NOTIFICATION_ZOOM_LEVEL_CHANGED) {
     // If our zoom level changed, we need to tell the menu to update its state,
     // since the menu could still be open.
     wrench_menu_->UpdateMenu();

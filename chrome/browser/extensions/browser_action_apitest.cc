@@ -16,6 +16,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/ui_test_utils.h"
@@ -37,7 +38,7 @@ class BrowserActionApiTest : public ExtensionApiTest {
     ResultCatcher catcher;
     GetBrowserActionsBar().Press(index);
     ui_test_utils::WaitForNotification(
-        NotificationType::EXTENSION_POPUP_VIEW_READY);
+        chrome::NOTIFICATION_EXTENSION_POPUP_VIEW_READY);
     EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
     return GetBrowserActionsBar().HasPopup();
   }

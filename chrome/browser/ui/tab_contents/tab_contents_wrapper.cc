@@ -47,6 +47,7 @@
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper_delegate.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
@@ -152,12 +153,12 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   if (OmniboxSearchHint::IsEnabled(contents->profile()))
     omnibox_search_hint_.reset(new OmniboxSearchHint(this));
 
-  registrar_.Add(this, NotificationType::GOOGLE_URL_UPDATED,
+  registrar_.Add(this, chrome::NOTIFICATION_GOOGLE_URL_UPDATED,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::USER_STYLE_SHEET_UPDATED,
+  registrar_.Add(this, chrome::NOTIFICATION_USER_STYLE_SHEET_UPDATED,
                  NotificationService::AllSources());
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-  registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
+  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
 #endif
 
@@ -408,11 +409,11 @@ void TabContentsWrapper::TabContentsDestroyed(TabContents* tab) {
   DCHECK(in_destructor_);
 }
 
-void TabContentsWrapper::Observe(NotificationType type,
+void TabContentsWrapper::Observe(int type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::NAV_ENTRY_COMMITTED: {
+  switch (type) {
+    case content::NOTIFICATION_NAV_ENTRY_COMMITTED: {
       DCHECK(&tab_contents_->controller() ==
              Source<NavigationController>(source).ptr());
 
@@ -430,19 +431,19 @@ void TabContentsWrapper::Observe(NotificationType type,
 
       break;
     }
-    case NotificationType::GOOGLE_URL_UPDATED:
+    case chrome::NOTIFICATION_GOOGLE_URL_UPDATED:
       UpdateAlternateErrorPageURL(render_view_host());
       break;
-    case NotificationType::USER_STYLE_SHEET_UPDATED:
+    case chrome::NOTIFICATION_USER_STYLE_SHEET_UPDATED:
       UpdateWebPreferences();
       break;
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-    case NotificationType::BROWSER_THEME_CHANGED: {
+    case chrome::NOTIFICATION_BROWSER_THEME_CHANGED: {
       UpdateRendererPreferences();
       break;
     }
 #endif
-    case NotificationType::PREF_CHANGED: {
+    case chrome::NOTIFICATION_PREF_CHANGED: {
       std::string* pref_name_in = Details<std::string>(details).ptr();
       DCHECK(Source<PrefService>(source).ptr() == profile()->GetPrefs());
       if (*pref_name_in == prefs::kAlternateErrorPagesEnabled) {
@@ -480,14 +481,14 @@ void TabContentsWrapper::AddInfoBar(InfoBarDelegate* delegate) {
 
   infobars_.push_back(delegate);
   NotificationService::current()->Notify(
-      NotificationType::TAB_CONTENTS_INFOBAR_ADDED,
+      chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
       Source<TabContentsWrapper>(this), Details<InfoBarAddedDetails>(delegate));
 
   // Add ourselves as an observer for navigations the first time a delegate is
   // added. We use this notification to expire InfoBars that need to expire on
   // page transitions.
   if (infobars_.size() == 1) {
-    registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
+    registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                    Source<NavigationController>(&tab_contents_->controller()));
   }
 }
@@ -514,7 +515,7 @@ void TabContentsWrapper::ReplaceInfoBar(InfoBarDelegate* old_delegate,
 
   InfoBarReplacedDetails replaced_details(old_delegate, new_delegate);
   NotificationService::current()->Notify(
-      NotificationType::TAB_CONTENTS_INFOBAR_REPLACED,
+      chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REPLACED,
       Source<TabContentsWrapper>(this),
       Details<InfoBarReplacedDetails>(&replaced_details));
 
@@ -561,7 +562,7 @@ void TabContentsWrapper::OnRegisterProtocolHandler(const std::string& protocol,
 
 void TabContentsWrapper::OnSnapshot(const SkBitmap& bitmap) {
   NotificationService::current()->Notify(
-      NotificationType::TAB_SNAPSHOT_TAKEN,
+      chrome::NOTIFICATION_TAB_SNAPSHOT_TAKEN,
       Source<TabContentsWrapper>(this),
       Details<const SkBitmap>(&bitmap));
 }
@@ -645,14 +646,14 @@ void TabContentsWrapper::RemoveInfoBarInternal(InfoBarDelegate* delegate,
 
   InfoBarRemovedDetails removed_details(infobar, animate);
   NotificationService::current()->Notify(
-      NotificationType::TAB_CONTENTS_INFOBAR_REMOVED,
+      chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
       Source<TabContentsWrapper>(this),
       Details<InfoBarRemovedDetails>(&removed_details));
 
   infobars_.erase(infobars_.begin() + i);
   // Remove ourselves as an observer if we are tracking no more InfoBars.
   if (infobars_.empty()) {
-    registrar_.Remove(this, NotificationType::NAV_ENTRY_COMMITTED,
+    registrar_.Remove(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         Source<NavigationController>(&tab_contents_->controller()));
   }
 }

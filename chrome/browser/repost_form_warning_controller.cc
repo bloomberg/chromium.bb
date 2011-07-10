@@ -12,11 +12,11 @@ RepostFormWarningController::RepostFormWarningController(
     : tab_contents_(tab_contents),
       window_(NULL) {
   NavigationController* controller = &tab_contents->controller();
-  registrar_.Add(this, NotificationType::LOAD_START,
+  registrar_.Add(this, content::NOTIFICATION_LOAD_START,
                  Source<NavigationController>(controller));
-  registrar_.Add(this, NotificationType::TAB_CLOSING,
+  registrar_.Add(this, content::NOTIFICATION_TAB_CLOSING,
                  Source<NavigationController>(controller));
-  registrar_.Add(this, NotificationType::REPOST_WARNING_SHOWN,
+  registrar_.Add(this, content::NOTIFICATION_REPOST_WARNING_SHOWN,
                  Source<NavigationController>(controller));
 }
 
@@ -47,16 +47,16 @@ void RepostFormWarningController::Continue() {
   }
 }
 
-void RepostFormWarningController::Observe(NotificationType type,
+void RepostFormWarningController::Observe(int type,
                                 const NotificationSource& source,
                                 const NotificationDetails& details) {
   // Close the dialog if we load a page (because reloading might not apply to
   // the same page anymore) or if the tab is closed, because then we won't have
   // a navigation controller anymore.
   if (tab_contents_ &&
-      (type == NotificationType::LOAD_START ||
-       type == NotificationType::TAB_CLOSING ||
-       type == NotificationType::REPOST_WARNING_SHOWN)) {
+      (type == content::NOTIFICATION_LOAD_START ||
+       type == content::NOTIFICATION_TAB_CLOSING ||
+       type == content::NOTIFICATION_REPOST_WARNING_SHOWN)) {
     DCHECK_EQ(Source<NavigationController>(source).ptr(),
               &tab_contents_->controller());
     Cancel();

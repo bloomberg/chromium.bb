@@ -7,6 +7,7 @@
 #include "chrome/browser/download/mhtml_generation_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/testing_browser_process.h"
 #include "chrome/test/ui_test_utils.h"
@@ -49,7 +50,7 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateMHTML) {
   Source<RenderViewHost> source(tab->render_view_host());
   ui_test_utils::WindowedNotificationObserverWithDetails<
       MHTMLGenerationManager::NotificationDetails> signal(
-          NotificationType::MHTML_GENERATED, source);
+          chrome::NOTIFICATION_MHTML_GENERATED, source);
   mhtml_generation_manager->GenerateMHTML(tab, path);
   signal.Wait();
 

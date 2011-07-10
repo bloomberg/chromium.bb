@@ -6,10 +6,10 @@
 
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
 #include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/browser/javascript_dialogs.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 
 AppModalDialog::AppModalDialog(content::DialogDelegate* delegate,
                                const string16& title)
@@ -29,7 +29,7 @@ void AppModalDialog::ShowModalDialog() {
   CreateAndShowDialog();
 
   NotificationService::current()->Notify(
-      NotificationType::APP_MODAL_DIALOG_SHOWN,
+      chrome::NOTIFICATION_APP_MODAL_DIALOG_SHOWN,
       Source<AppModalDialog>(this),
       NotificationService::NoDetails());
 }

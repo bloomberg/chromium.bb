@@ -185,7 +185,7 @@ TEST_F(RenderViewHostManagerTest, Navigate) {
   SiteInstance* instance = SiteInstance::CreateSiteInstance(profile_.get());
 
   TestTabContents tab_contents(profile_.get(), instance);
-  notifications.ListenFor(NotificationType::RENDER_VIEW_HOST_CHANGED,
+  notifications.ListenFor(content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
                      Source<NavigationController>(&tab_contents.controller()));
 
   // Create.
@@ -254,7 +254,7 @@ TEST_F(RenderViewHostManagerTest, Navigate) {
 
   // We should observe a notification.
   EXPECT_TRUE(notifications.Check1AndReset(
-      NotificationType::RENDER_VIEW_HOST_CHANGED));
+      content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED));
 }
 
 // Tests WebUI creation.

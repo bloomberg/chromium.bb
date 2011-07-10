@@ -75,6 +75,7 @@
 #include "chrome/browser/ui/webui/bug_report_ui.h"
 #include "chrome/browser/ui/window_sizer.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/debugger/devtools_window.h"
@@ -1161,11 +1162,11 @@ void BrowserWindowGtk::ConfirmBrowserCloseWithPendingDownloads() {
   new DownloadInProgressDialogGtk(browser());
 }
 
-void BrowserWindowGtk::Observe(NotificationType type,
+void BrowserWindowGtk::Observe(int type,
                                const NotificationSource& source,
                                const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::PREF_CHANGED: {
+  switch (type) {
+    case chrome::NOTIFICATION_PREF_CHANGED: {
       std::string* pref_name = Details<std::string>(details).ptr();
       if (*pref_name == prefs::kUseCustomChromeFrame) {
         UpdateCustomFrame();
@@ -1508,7 +1509,7 @@ bool BrowserWindowGtk::CanClose() const {
 
   // Empty TabStripModel, it's now safe to allow the Window to be closed.
   NotificationService::current()->Notify(
-      NotificationType::WINDOW_CLOSED,
+      chrome::NOTIFICATION_WINDOW_CLOSED,
       Source<GtkWindow>(window_),
       NotificationService::NoDetails());
   return true;

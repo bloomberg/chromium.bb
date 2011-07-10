@@ -57,7 +57,7 @@ class CustomDrawButtonBase : public NotificationObserver {
   void SetBackground(SkColor color, SkBitmap* image, SkBitmap* mask);
 
   // Provide NotificationObserver implementation.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -185,7 +185,7 @@ class CustomDrawButton : public NotificationObserver {
   void SetBackground(SkColor color, SkBitmap* image, SkBitmap* mask);
 
   // NotificationObserver implementation.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

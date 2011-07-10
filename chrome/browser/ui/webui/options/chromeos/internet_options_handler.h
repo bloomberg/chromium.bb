@@ -43,7 +43,7 @@ class InternetOptionsHandler
   virtual void OnCellularDataPlanChanged(chromeos::NetworkLibrary* network_lib);
 
   // NotificationObserver implementation.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
 

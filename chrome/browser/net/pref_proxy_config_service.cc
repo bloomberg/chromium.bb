@@ -8,11 +8,11 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_set_observer.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 
 PrefProxyConfigTracker::PrefProxyConfigTracker(PrefService* pref_service)
     : pref_service_(pref_service) {
@@ -52,11 +52,11 @@ void PrefProxyConfigTracker::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-void PrefProxyConfigTracker::Observe(NotificationType type,
+void PrefProxyConfigTracker::Observe(int type,
                                      const NotificationSource& source,
                                      const NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (type == NotificationType::PREF_CHANGED &&
+  if (type == chrome::NOTIFICATION_PREF_CHANGED &&
       Source<PrefService>(source).ptr() == pref_service_) {
     net::ProxyConfig new_config;
     ConfigState config_state = ReadPrefConfig(&new_config);
@@ -66,7 +66,7 @@ void PrefProxyConfigTracker::Observe(NotificationType type,
                           &PrefProxyConfigTracker::InstallProxyConfig,
                           new_config, config_state));
   } else {
-    NOTREACHED() << "Unexpected notification of type " << type.value;
+    NOTREACHED() << "Unexpected notification of type " << type;
   }
 }
 

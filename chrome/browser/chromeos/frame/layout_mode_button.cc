@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
 #include "grit/generated_resources.h"
@@ -42,17 +43,17 @@ bool LayoutModeButton::HitTest(const gfx::Point& l) const {
   return ImageButton::HitTest(point);
 }
 
-void LayoutModeButton::Observe(NotificationType type,
+void LayoutModeButton::Observe(int type,
                                const NotificationSource& source,
                                const NotificationDetails& details) {
-  DCHECK(type == NotificationType::LAYOUT_MODE_CHANGED);
+  DCHECK(type == chrome::NOTIFICATION_LAYOUT_MODE_CHANGED);
   UpdateForCurrentLayoutMode();
 }
 
 void LayoutModeButton::Init() {
   WmIpc* wm_ipc = WmIpc::instance();
   registrar_.Add(this,
-                 NotificationType::LAYOUT_MODE_CHANGED,
+                 chrome::NOTIFICATION_LAYOUT_MODE_CHANGED,
                  Source<WmIpc>(wm_ipc));
   UpdateForCurrentLayoutMode();
 }

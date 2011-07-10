@@ -7,6 +7,7 @@
 #include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/tab_contents/chrome_interstitial_page.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
@@ -95,7 +96,7 @@ class TestInterstitialPage : public ChromeInterstitialPage {
 
   void TestDomOperationResponse(const std::string& json_string) {
     DomOperationNotificationDetails details(json_string, 1);
-    Observe(NotificationType::DOM_OPERATION_RESPONSE,
+    Observe(chrome::NOTIFICATION_DOM_OPERATION_RESPONSE,
             Source<RenderViewHost>(render_view_host()),
             Details<DomOperationNotificationDetails>(&details));
   }

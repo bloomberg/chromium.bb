@@ -11,9 +11,9 @@
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
 #include "chrome/browser/prefs/pref_member.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
-#include "content/common/notification_type.h"
 #include "ui/base/models/menu_model.h"
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/view_menu_delegate.h"
@@ -89,7 +89,7 @@ class InputMethodMenu : public views::ViewMenuDelegate,
   virtual void FirstObserverIsAdded(input_method::InputMethodManager* manager);
 
   // NotificationObserver implementation.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

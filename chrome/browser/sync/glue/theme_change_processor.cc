@@ -12,6 +12,7 @@
 #include "chrome/browser/sync/protocol/theme_specifics.pb.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
@@ -27,12 +28,12 @@ ThemeChangeProcessor::ThemeChangeProcessor(
 
 ThemeChangeProcessor::~ThemeChangeProcessor() {}
 
-void ThemeChangeProcessor::Observe(NotificationType type,
+void ThemeChangeProcessor::Observe(int type,
                                    const NotificationSource& source,
                                    const NotificationDetails& details) {
   DCHECK(running());
   DCHECK(profile_);
-  DCHECK(type == NotificationType::BROWSER_THEME_CHANGED);
+  DCHECK(type == chrome::NOTIFICATION_BROWSER_THEME_CHANGED);
 
   sync_api::WriteTransaction trans(FROM_HERE, share_handle());
   sync_api::WriteNode node(&trans);
@@ -121,7 +122,7 @@ void ThemeChangeProcessor::StartObserving() {
   DCHECK(profile_);
   VLOG(1) << "Observing BROWSER_THEME_CHANGED";
   notification_registrar_.Add(
-      this, NotificationType::BROWSER_THEME_CHANGED,
+      this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
       Source<ThemeService>(
           ThemeServiceFactory::GetForProfile(profile_)));
 }

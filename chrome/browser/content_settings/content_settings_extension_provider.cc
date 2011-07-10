@@ -7,6 +7,7 @@
 #include "chrome/browser/content_settings/content_settings_details.h"
 #include "chrome/browser/extensions/extension_content_settings_store.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_source.h"
@@ -60,7 +61,7 @@ void ExtensionProvider::NotifyObservers(
     const ContentSettingsDetails& details) {
   DCHECK(map_);
   NotificationService::current()->Notify(
-      NotificationType::CONTENT_SETTINGS_CHANGED,
+      chrome::NOTIFICATION_CONTENT_SETTINGS_CHANGED,
       Source<HostContentSettingsMap>(map_),
       Details<const ContentSettingsDetails>(&details));
 }

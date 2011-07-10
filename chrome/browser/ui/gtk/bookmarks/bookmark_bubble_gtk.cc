@@ -19,6 +19,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
@@ -52,15 +53,15 @@ void BookmarkBubbleGtk::BubbleClosing(BubbleGtk* bubble,
   }
 
   NotificationService::current()->Notify(
-      NotificationType::BOOKMARK_BUBBLE_HIDDEN,
+      chrome::BOOKMARK_BUBBLE_HIDDEN,
       Source<Profile>(profile_->GetOriginalProfile()),
       NotificationService::NoDetails());
 }
 
-void BookmarkBubbleGtk::Observe(NotificationType type,
+void BookmarkBubbleGtk::Observe(int type,
                                 const NotificationSource& source,
                                 const NotificationDetails& details) {
-  DCHECK(type == NotificationType::BROWSER_THEME_CHANGED);
+  DCHECK(type == chrome::NOTIFICATION_BROWSER_THEME_CHANGED);
 
   if (theme_service_->UsingNativeTheme()) {
     for (std::vector<GtkWidget*>::iterator it = labels_.begin();
@@ -181,7 +182,7 @@ BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWidget* anchor,
   g_signal_connect(remove_button_, "clicked",
                    G_CALLBACK(&OnRemoveClickedThunk), this);
 
-  registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
+  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  Source<ThemeService>(theme_service_));
   theme_service_->InitThemesFor(this);
 }

@@ -12,6 +12,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
@@ -33,7 +34,7 @@ ThemeInstalledInfoBarDelegate::ThemeInstalledInfoBarDelegate(
       previous_using_native_theme_(previous_using_native_theme),
       tab_contents_(tab_contents) {
   theme_service_->OnInfobarDisplayed();
-  registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
+  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  Source<ThemeService>(theme_service_));
 }
 
@@ -97,10 +98,10 @@ string16 ThemeInstalledInfoBarDelegate::GetButtonLabel(
 }
 
 void ThemeInstalledInfoBarDelegate::Observe(
-    NotificationType type,
+    int type,
     const NotificationSource& source,
     const NotificationDetails& details) {
-  DCHECK_EQ(NotificationType::BROWSER_THEME_CHANGED, type.value);
+  DCHECK_EQ(chrome::NOTIFICATION_BROWSER_THEME_CHANGED, type);
   // If the new theme is different from what this info bar is associated
   // with, close this info bar since it is no longer relevant.
   if (theme_id_ != theme_service_->GetThemeID()) {

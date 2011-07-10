@@ -34,7 +34,7 @@ class PluginDataRemoverHelper : public NotificationObserver {
   bool GetValue() const { return pref_.GetValue(); }
 
   // NotificationObserver methods:
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

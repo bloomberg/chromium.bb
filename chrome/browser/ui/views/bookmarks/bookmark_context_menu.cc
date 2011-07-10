@@ -9,6 +9,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -40,7 +41,7 @@ BookmarkContextMenu::~BookmarkContextMenu() {
 
 void BookmarkContextMenu::RunMenuAt(const gfx::Point& point) {
   NotificationService::current()->Notify(
-      NotificationType::BOOKMARK_CONTEXT_MENU_SHOWN,
+      chrome::NOTIFICATION_BOOKMARK_CONTEXT_MENU_SHOWN,
       Source<BookmarkContextMenu>(this),
       NotificationService::NoDetails());
   // width/height don't matter here.

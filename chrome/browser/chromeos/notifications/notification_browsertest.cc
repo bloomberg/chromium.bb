@@ -17,6 +17,7 @@
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/common/notification_service.h"
@@ -110,10 +111,10 @@ class NotificationTest : public InProcessBrowserTest,
   }
 
   // NotificationObserver overrides.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
-    ASSERT_TRUE(NotificationType::PANEL_STATE_CHANGED == type);
+    ASSERT_TRUE(chrome::NOTIFICATION_PANEL_STATE_CHANGED == type);
     PanelController::State* state =
         reinterpret_cast<PanelController::State*>(details.map_key());
     state_ = *state;
@@ -301,7 +302,7 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestStateTransition2) {
   // Register observer here as the registration does not work in SetUp().
   NotificationRegistrar registrar;
   registrar.Add(this,
-                NotificationType::PANEL_STATE_CHANGED,
+                chrome::NOTIFICATION_PANEL_STATE_CHANGED,
                 NotificationService::AllSources());
 
   BalloonCollectionImpl* collection = GetBalloonCollectionImpl();
@@ -368,7 +369,7 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestStateTransition2) {
 IN_PROC_BROWSER_TEST_F(NotificationTest, TestCleanupOnExit) {
   NotificationRegistrar registrar;
   registrar.Add(this,
-                NotificationType::PANEL_STATE_CHANGED,
+                chrome::NOTIFICATION_PANEL_STATE_CHANGED,
                 NotificationService::AllSources());
 
   BalloonCollectionImpl* collection = GetBalloonCollectionImpl();

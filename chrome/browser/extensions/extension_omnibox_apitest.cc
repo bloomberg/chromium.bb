@@ -19,9 +19,10 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/ui_test_utils.h"
-#include "content/common/notification_type.h"
+#include "content/common/content_notification_types.h"
 
 #if defined(TOOLKIT_GTK)
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
@@ -68,14 +69,14 @@ class OmniboxApiTest : public ExtensionApiTest {
     model->Load();
     if (!model->loaded()) {
       ui_test_utils::WaitForNotification(
-          NotificationType::TEMPLATE_URL_SERVICE_LOADED);
+          chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED);
     }
   }
 
   void WaitForAutocompleteDone(AutocompleteController* controller) {
     while (!controller->done()) {
       ui_test_utils::WaitForNotification(
-          NotificationType::AUTOCOMPLETE_CONTROLLER_RESULT_READY);
+          chrome::NOTIFICATION_AUTOCOMPLETE_CONTROLLER_RESULT_READY);
     }
   }
 };

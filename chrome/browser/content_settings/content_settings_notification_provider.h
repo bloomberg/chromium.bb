@@ -56,7 +56,7 @@ class NotificationProvider : public ProviderInterface,
       ContentSettingsType content_type);
 
   // NotificationObserver implementation.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
  private:

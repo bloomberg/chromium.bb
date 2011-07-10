@@ -18,12 +18,13 @@
 #include "chrome/browser/status_icons/status_tray.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/user_metrics.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -162,7 +163,7 @@ BackgroundModeManager::BackgroundModeManager(CommandLine* command_line)
 
   // Listen for the application shutting down so we can decrement our KeepAlive
   // count.
-  registrar_.Add(this, NotificationType::APP_TERMINATING,
+  registrar_.Add(this, content::NOTIFICATION_APP_TERMINATING,
                  NotificationService::AllSources());
 }
 
@@ -198,15 +199,15 @@ void BackgroundModeManager::RegisterProfile(Profile* profile) {
   // Listen for when extensions are loaded/unloaded so we can track the
   // number of background apps and modify our keep-alive and launch-on-startup
   // state appropriately.
-  registrar_.Add(this, NotificationType::EXTENSION_LOADED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  Source<Profile>(profile));
-  registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  Source<Profile>(profile));
 
   // Check for the presence of background apps after all extensions have been
   // loaded, to handle the case where an extension has been manually removed
   // while Chrome was not running.
-  registrar_.Add(this, NotificationType::EXTENSIONS_READY,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
                  Source<Profile>(profile));
 
   bmd->applications_->AddObserver(this);
@@ -219,11 +220,11 @@ void BackgroundModeManager::RegisterProfile(Profile* profile) {
 
 ///////////////////////////////////////////////////////////////////////////////
 //  BackgroundModeManager, NotificationObserver overrides
-void BackgroundModeManager::Observe(NotificationType type,
+void BackgroundModeManager::Observe(int type,
                                     const NotificationSource& source,
                                     const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::PREF_CHANGED:
+  switch (type) {
+    case chrome::NOTIFICATION_PREF_CHANGED:
       DCHECK(*Details<std::string>(details).ptr() ==
              prefs::kBackgroundModeEnabled);
       if (IsBackgroundModePrefEnabled())
@@ -231,7 +232,7 @@ void BackgroundModeManager::Observe(NotificationType type,
       else
         DisableBackgroundMode();
       break;
-    case NotificationType::EXTENSIONS_READY:
+    case chrome::NOTIFICATION_EXTENSIONS_READY:
       // Extensions are loaded, so we don't need to manually keep the browser
       // process alive any more when running in no-startup-window mode.
       EndKeepAliveForStartup();
@@ -246,7 +247,7 @@ void BackgroundModeManager::Observe(NotificationType type,
       EnableLaunchOnStartup(background_app_count_ > 0);
 #endif
       break;
-    case NotificationType::EXTENSION_LOADED: {
+    case chrome::NOTIFICATION_EXTENSION_LOADED: {
         Extension* extension = Details<Extension>(details).ptr();
         if (BackgroundApplicationListModel::IsBackgroundApp(*extension)) {
           // Extensions loaded after the ExtensionsService is ready should be
@@ -258,7 +259,7 @@ void BackgroundModeManager::Observe(NotificationType type,
         }
       }
       break;
-    case NotificationType::EXTENSION_UNLOADED:
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED:
       if (BackgroundApplicationListModel::IsBackgroundApp(
               *Details<UnloadedExtensionInfo>(details)->extension)) {
         Details<UnloadedExtensionInfo> info =
@@ -273,7 +274,7 @@ void BackgroundModeManager::Observe(NotificationType type,
         OnBackgroundAppUninstalled();
       }
       break;
-    case NotificationType::APP_TERMINATING:
+    case content::NOTIFICATION_APP_TERMINATING:
       // Make sure we aren't still keeping the app alive (only happens if we
       // don't receive an EXTENSIONS_READY notification for some reason).
       EndKeepAliveForStartup();

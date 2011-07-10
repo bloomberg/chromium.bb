@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/jstemplate_builder.h"
@@ -162,12 +163,12 @@ void MediaPlayer::SetPlaybackError(GURL const& url) {
   NotifyPlaylistChanged();
 }
 
-void MediaPlayer::Observe(NotificationType type,
+void MediaPlayer::Observe(int type,
                           const NotificationSource& source,
                           const NotificationDetails& details) {
-  DCHECK(type == NotificationType::BROWSER_CLOSING);
+  DCHECK(type == chrome::NOTIFICATION_BROWSER_CLOSING);
   registrar_.Remove(this,
-                    NotificationType::BROWSER_CLOSING,
+                    chrome::NOTIFICATION_BROWSER_CLOSING,
                     source);
   if (Source<Browser>(source).ptr() == mediaplayer_browser_) {
     mediaplayer_browser_ = NULL;
@@ -203,7 +204,7 @@ void MediaPlayer::PopupPlaylist(Browser* creator) {
                                             gfx::Rect(),
                                             profile);
   registrar_.Add(this,
-                 NotificationType::BROWSER_CLOSING,
+                 chrome::NOTIFICATION_BROWSER_CLOSING,
                  Source<Browser>(playlist_browser_));
   playlist_browser_->AddSelectedTabWithURL(GetMediaplayerPlaylistUrl(),
                                            PageTransition::LINK);
@@ -228,7 +229,7 @@ void MediaPlayer::PopupMediaPlayer(Browser* creator) {
                                                gfx::Rect(),
                                                profile);
   registrar_.Add(this,
-                 NotificationType::BROWSER_CLOSING,
+                 chrome::NOTIFICATION_BROWSER_CLOSING,
                  Source<Browser>(mediaplayer_browser_));
 
 #if defined(OS_CHROMEOS)

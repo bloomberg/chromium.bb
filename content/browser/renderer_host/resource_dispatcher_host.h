@@ -23,7 +23,7 @@
 #include "base/timer.h"
 #include "content/browser/renderer_host/resource_queue.h"
 #include "content/common/child_process_info.h"
-#include "content/common/notification_type.h"
+#include "content/common/content_notification_types.h"
 #include "ipc/ipc_message.h"
 #include "net/url_request/url_request.h"
 #include "webkit/glue/resource_type.h"
@@ -407,7 +407,7 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
   // Sends the given notification on the UI thread.  The RenderViewHost's
   // controller is used as the source.
   template <class T>
-  static void NotifyOnUI(NotificationType type,
+  static void NotifyOnUI(int type,
                          int render_process_id,
                          int render_view_id,
                          T* detail);

@@ -24,6 +24,7 @@
 #include "crypto/sha2.h"
 #include "chrome/browser/net/service_providers_win.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
@@ -770,7 +771,7 @@ void EnumerateModulesModel::AcknowledgeConflictNotification() {
   if (!conflict_notification_acknowledged_) {
     conflict_notification_acknowledged_ = true;
     NotificationService::current()->Notify(
-        NotificationType::MODULE_INCOMPATIBILITY_BADGE_CHANGE,
+        chrome::NOTIFICATION_MODULE_INCOMPATIBILITY_BADGE_CHANGE,
         Source<EnumerateModulesModel>(this),
         NotificationService::NoDetails());
   }
@@ -925,7 +926,7 @@ void EnumerateModulesModel::DoneScanning() {
     return;
 
   NotificationService::current()->Notify(
-      NotificationType::MODULE_LIST_ENUMERATED,
+      chrome::NOTIFICATION_MODULE_LIST_ENUMERATED,
       Source<EnumerateModulesModel>(this),
       NotificationService::NoDetails());
 
@@ -937,7 +938,7 @@ void EnumerateModulesModel::DoneScanning() {
     return;
 
   NotificationService::current()->Notify(
-      NotificationType::MODULE_INCOMPATIBILITY_BADGE_CHANGE,
+      chrome::NOTIFICATION_MODULE_INCOMPATIBILITY_BADGE_CHANGE,
       Source<EnumerateModulesModel>(this),
       NotificationService::NoDetails());
 }

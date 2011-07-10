@@ -11,9 +11,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/sync/glue/non_frontend_data_type_controller.h"
 #include "content/browser/cancelable_request.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
-#include "content/common/notification_type.h"
 
 class NotificationSource;
 class NotificationDetails;
@@ -41,7 +41,7 @@ class TypedUrlDataTypeController : public NonFrontendDataTypeController,
   virtual browser_sync::ModelSafeGroup model_safe_group() const;
 
   // NotificationObserver implementation.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

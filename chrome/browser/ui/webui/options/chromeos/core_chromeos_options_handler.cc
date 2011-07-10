@@ -58,13 +58,13 @@ void CoreChromeOSOptionsHandler::StopObservingPref(const std::string& path) {
     ::CoreOptionsHandler::StopObservingPref(path);
 }
 
-void CoreChromeOSOptionsHandler::Observe(NotificationType type,
+void CoreChromeOSOptionsHandler::Observe(int type,
                                          const NotificationSource& source,
                                          const NotificationDetails& details) {
   // Ignore the notification if this instance had caused it.
   if (handling_change_)
     return;
-  if (type == NotificationType::SYSTEM_SETTING_CHANGED) {
+  if (type == chrome::SYSTEM_SETTING_CHANGED) {
     NotifySettingsChanged(Details<std::string>(details).ptr());
     return;
   }

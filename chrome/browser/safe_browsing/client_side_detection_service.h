@@ -74,7 +74,7 @@ class ClientSideDetectionService : public URLFetcher::Delegate,
                                   const std::string& data);
 
   // NotificationObserver overrides:
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

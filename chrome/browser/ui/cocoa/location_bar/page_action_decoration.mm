@@ -13,6 +13,7 @@
 #import "chrome/browser/ui/cocoa/extensions/extension_action_context_menu.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -58,7 +59,7 @@ PageActionDecoration::PageActionDecoration(
                        ImageLoadingTracker::DONT_CACHE);
   }
 
-  registrar_.Add(this, NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
       Source<Profile>(profile_));
 
   // We set the owner last of all so that we can determine whether we are in
@@ -185,7 +186,7 @@ void PageActionDecoration::UpdateVisibility(TabContents* contents,
   if (IsVisible() != visible) {
     SetVisible(visible);
     NotificationService::current()->Notify(
-        NotificationType::EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
+        chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
         Source<ExtensionAction>(page_action_),
         Details<TabContents>(contents));
   }
@@ -239,11 +240,11 @@ NSMenu* PageActionDecoration::GetMenu() {
 }
 
 void PageActionDecoration::Observe(
-    NotificationType type,
+    int type,
     const NotificationSource& source,
     const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE: {
+  switch (type) {
+    case chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE: {
       ExtensionPopupController* popup = [ExtensionPopupController popup];
       if (popup && ![popup isClosing])
         [popup close];

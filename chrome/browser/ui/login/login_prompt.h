@@ -69,7 +69,7 @@ class LoginHandler : public ResourceDispatcherHostLoginDelegate,
   // Listens for AUTH_SUPPLIED and AUTH_CANCELLED notifications from other
   // LoginHandlers so that this LoginHandler has the chance to dismiss itself
   // if it was waiting for the same authentication.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

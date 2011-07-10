@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/gtk/accelerators_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/common/notification_service.h"
@@ -213,9 +214,10 @@ GlobalMenuBar::GlobalMenuBar(Browser* browser)
   }
 
   // Listen for bookmark bar visibility changes and set the initial state.
-  registrar_.Add(this, NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
                  NotificationService::AllSources());
-  Observe(NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
+  Observe(chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
           NotificationService::AllSources(),
           NotificationService::NoDetails());
 }
@@ -302,10 +304,10 @@ void GlobalMenuBar::EnabledStateChangedForCommand(int id, bool enabled) {
     gtk_widget_set_sensitive(it->second, enabled);
 }
 
-void GlobalMenuBar::Observe(NotificationType type,
+void GlobalMenuBar::Observe(int type,
                             const NotificationSource& source,
                             const NotificationDetails& details) {
-  DCHECK(type.value == NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED);
+  DCHECK(type == chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED);
 
   CommandIDMenuItemMap::iterator it =
       id_to_menu_item_.find(IDC_SHOW_BOOKMARK_BAR);

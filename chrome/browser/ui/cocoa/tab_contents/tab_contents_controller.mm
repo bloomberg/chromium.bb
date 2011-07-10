@@ -9,11 +9,11 @@
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 
 @interface TabContentsController(Private)
 // Forwards frame update to |delegate_| (ResizeNotificationView calls it).
@@ -31,7 +31,7 @@ class TabContentsNotificationBridge : public NotificationObserver {
   explicit TabContentsNotificationBridge(TabContentsController* controller);
 
   // Overriden from NotificationObserver.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
   // Register for |contents|'s notifications, remove all prior registrations.
@@ -47,10 +47,10 @@ TabContentsNotificationBridge::TabContentsNotificationBridge(
 }
 
 void TabContentsNotificationBridge::Observe(
-    NotificationType type,
+    int type,
     const NotificationSource& source,
     const NotificationDetails& details) {
-  if (type == NotificationType::RENDER_VIEW_HOST_CHANGED) {
+  if (type == content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED) {
     RenderViewHostSwitchedDetails* switched_details =
         Details<RenderViewHostSwitchedDetails>(details).ptr();
     [controller_ tabContentsRenderViewHostChanged:switched_details->old_host
@@ -64,7 +64,7 @@ void TabContentsNotificationBridge::ChangeTabContents(TabContents* contents) {
   registrar_.RemoveAll();
   if (contents) {
     registrar_.Add(this,
-                   NotificationType::RENDER_VIEW_HOST_CHANGED,
+                   content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
                    Source<NavigationController>(&contents->controller()));
   }
 }

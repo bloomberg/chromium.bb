@@ -10,11 +10,11 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/in_process_browser_test.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
-#include "content/common/notification_type.h"
 
 class ExtensionFromWebAppTest
     : public InProcessBrowserTest, public NotificationObserver {
@@ -32,10 +32,10 @@ class ExtensionFromWebAppTest
   }
 
   // NotificationObserver
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
-    if (type == NotificationType::EXTENSION_INSTALLED) {
+    if (type == chrome::NOTIFICATION_EXTENSION_INSTALLED) {
       const Extension* extension = Details<const Extension>(details).ptr();
       if (extension->id() == expected_extension_id_) {
         installed_extension_ = extension;
@@ -51,7 +51,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionFromWebAppTest, Basic) {
       false);
 
   NotificationRegistrar registrar;
-  registrar.Add(this, NotificationType::EXTENSION_INSTALLED,
+  registrar.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
                 NotificationService::AllSources());
 
   expected_extension_id_ = "fnpgoaochgbdfjndakichfafiocjjpmm";

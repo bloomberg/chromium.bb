@@ -11,10 +11,10 @@
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
-#include "content/common/notification_type.h"
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
 

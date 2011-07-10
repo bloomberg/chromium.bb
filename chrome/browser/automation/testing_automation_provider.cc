@@ -87,6 +87,7 @@
 #include "chrome/browser/ui/webui/ntp/shown_sections_handler.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -161,7 +162,7 @@ TestingAutomationProvider::TestingAutomationProvider(Profile* profile)
 #endif
       redirect_query_(0) {
   BrowserList::AddObserver(this);
-  registrar_.Add(this, NotificationType::SESSION_END,
+  registrar_.Add(this, chrome::NOTIFICATION_SESSION_END,
                  NotificationService::AllSources());
 }
 
@@ -190,7 +191,7 @@ void TestingAutomationProvider::OnBrowserRemoved(const Browser* browser) {
   // last browser goes away.
   if (BrowserList::empty() && !CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kKeepAliveForTest)) {
-    // If you change this, update Observer for NotificationType::SESSION_END
+    // If you change this, update Observer for chrome::SESSION_END
     // below.
     MessageLoop::current()->PostTask(FROM_HERE,
         NewRunnableMethod(this, &TestingAutomationProvider::OnRemoveProvider));
@@ -231,10 +232,10 @@ void TestingAutomationProvider::OnSourceProfilesLoaded() {
                                      import_settings_data_.first_run);
 }
 
-void TestingAutomationProvider::Observe(NotificationType type,
+void TestingAutomationProvider::Observe(int type,
                                         const NotificationSource& source,
                                         const NotificationDetails& details) {
-  DCHECK(type == NotificationType::SESSION_END);
+  DCHECK(type == chrome::NOTIFICATION_SESSION_END);
   // OnBrowserRemoved does a ReleaseLater. When session end is received we exit
   // before the task runs resulting in this object not being deleted. This
   // Release balance out the Release scheduled by OnBrowserRemoved.
@@ -3869,7 +3870,7 @@ void TestingAutomationProvider::GetTranslateInfo(
       tab_contents)->translate_tab_helper();
   std::string language = helper->language_state().original_language();
   if (!language.empty()) {
-    observer->Observe(NotificationType::TAB_LANGUAGE_DETERMINED,
+    observer->Observe(chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
                       Source<TabContents>(tab_contents),
                       Details<std::string>(&language));
   }
@@ -4381,7 +4382,7 @@ void TestingAutomationProvider::AutofillTriggerSuggestions(
   }
 
   new AutofillDisplayedObserver(
-      NotificationType::AUTOFILL_DID_SHOW_SUGGESTIONS,
+      chrome::NOTIFICATION_AUTOFILL_DID_SHOW_SUGGESTIONS,
       tab_contents->render_view_host(), this, reply_message);
   SendWebKeyPressEventAsync(ui::VKEY_DOWN, tab_contents);
 }
@@ -4414,7 +4415,7 @@ void TestingAutomationProvider::AutofillHighlightSuggestion(
   int key_code = (direction == "up") ? ui::VKEY_UP : ui::VKEY_DOWN;
 
   new AutofillDisplayedObserver(
-      NotificationType::AUTOFILL_DID_FILL_FORM_DATA,
+      chrome::NOTIFICATION_AUTOFILL_DID_FILL_FORM_DATA,
       tab_contents->render_view_host(), this, reply_message);
   SendWebKeyPressEventAsync(key_code, tab_contents);
 }
@@ -4438,7 +4439,7 @@ void TestingAutomationProvider::AutofillAcceptSelection(
   }
 
   new AutofillDisplayedObserver(
-      NotificationType::AUTOFILL_DID_FILL_FORM_DATA,
+      chrome::NOTIFICATION_AUTOFILL_DID_FILL_FORM_DATA,
       tab_contents->render_view_host(), this, reply_message);
   SendWebKeyPressEventAsync(ui::VKEY_RETURN, tab_contents);
 }

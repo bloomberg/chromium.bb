@@ -47,7 +47,7 @@ class TestTabStripModelObserver : public TabStripModelObserver,
                              bool foreground) OVERRIDE;
 
   // NotificationObserver:
-  virtual void Observe(NotificationType type, const NotificationSource& source,
+  virtual void Observe(int type, const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
 
   NotificationRegistrar registrar_;

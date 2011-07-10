@@ -103,11 +103,11 @@ class VisitedLinkUpdater {
 };
 
 VisitedLinkEventListener::VisitedLinkEventListener() {
-  registrar_.Add(this, NotificationType::RENDERER_PROCESS_CREATED,
+  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::RENDERER_PROCESS_TERMINATED,
+  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::RENDER_WIDGET_VISIBILITY_CHANGED,
+  registrar_.Add(this, content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
                  NotificationService::AllSources());
 }
 
@@ -158,11 +158,11 @@ void VisitedLinkEventListener::CommitVisitedLinks() {
   pending_visited_links_.clear();
 }
 
-void VisitedLinkEventListener::Observe(NotificationType type,
+void VisitedLinkEventListener::Observe(int type,
                                        const NotificationSource& source,
                                        const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::RENDERER_PROCESS_CREATED: {
+  switch (type) {
+    case content::NOTIFICATION_RENDERER_PROCESS_CREATED: {
       RenderProcessHost* process = Source<RenderProcessHost>(source).ptr();
       updaters_[process->id()] =
           make_linked_ptr(new VisitedLinkUpdater(process->id()));
@@ -176,14 +176,14 @@ void VisitedLinkEventListener::Observe(NotificationType type,
       updaters_[process->id()]->SendVisitedLinkTable(master->shared_memory());
       break;
     }
-    case NotificationType::RENDERER_PROCESS_TERMINATED: {
+    case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED: {
       RenderProcessHost* process = Source<RenderProcessHost>(source).ptr();
       if (updaters_.count(process->id())) {
         updaters_.erase(process->id());
       }
       break;
     }
-    case NotificationType::RENDER_WIDGET_VISIBILITY_CHANGED: {
+    case content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED: {
       RenderWidgetHost* widget = Source<RenderWidgetHost>(source).ptr();
       int child_id = widget->process()->id();
       if (updaters_.count(child_id))

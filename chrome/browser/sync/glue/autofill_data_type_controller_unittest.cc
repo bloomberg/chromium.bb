@@ -19,8 +19,8 @@
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/test/profile_mock.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using base::WaitableEvent;

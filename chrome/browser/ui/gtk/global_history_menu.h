@@ -81,7 +81,7 @@ class GlobalHistoryMenu : public GlobalMenuOwner,
   static void ClearMenuCallback(GtkWidget* widget, ClearMenuClosure* closure);
 
   // NotificationObserver:
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

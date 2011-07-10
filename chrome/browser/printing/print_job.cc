@@ -8,6 +8,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/timer.h"
 #include "chrome/browser/printing/print_job_worker.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_service.h"
 #include "printing/printed_document.h"
 #include "printing/printed_page.h"
@@ -59,16 +60,16 @@ void PrintJob::Initialize(PrintJobWorkerOwner* job,
   UpdatePrintedDocument(new_doc);
 
   // Don't forget to register to our own messages.
-  registrar_.Add(this, NotificationType::PRINT_JOB_EVENT,
+  registrar_.Add(this, chrome::NOTIFICATION_PRINT_JOB_EVENT,
                  Source<PrintJob>(this));
 }
 
-void PrintJob::Observe(NotificationType type,
+void PrintJob::Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
   DCHECK_EQ(ui_message_loop_, MessageLoop::current());
-  switch (type.value) {
-    case NotificationType::PRINT_JOB_EVENT: {
+  switch (type) {
+    case chrome::NOTIFICATION_PRINT_JOB_EVENT: {
       OnNotifyPrintJobEvent(*Details<JobEventDetails>(details).ptr());
       break;
     }
@@ -124,7 +125,7 @@ void PrintJob::StartPrinting() {
   scoped_refptr<JobEventDetails> details(
       new JobEventDetails(JobEventDetails::NEW_DOC, document_.get(), NULL));
   NotificationService::current()->Notify(
-      NotificationType::PRINT_JOB_EVENT,
+      chrome::NOTIFICATION_PRINT_JOB_EVENT,
       Source<PrintJob>(this),
       Details<JobEventDetails>(details.get()));
 }
@@ -140,7 +141,7 @@ void PrintJob::Stop() {
     ControlledWorkerShutdown();
 
     is_job_pending_ = false;
-    registrar_.Remove(this, NotificationType::PRINT_JOB_EVENT,
+    registrar_.Remove(this, chrome::NOTIFICATION_PRINT_JOB_EVENT,
                       Source<PrintJob>(this));
   }
   // Flush the cached document.
@@ -166,7 +167,7 @@ void PrintJob::Cancel() {
   scoped_refptr<JobEventDetails> details(
       new JobEventDetails(JobEventDetails::FAILED, NULL, NULL));
   NotificationService::current()->Notify(
-      NotificationType::PRINT_JOB_EVENT,
+      chrome::NOTIFICATION_PRINT_JOB_EVENT,
       Source<PrintJob>(this),
       Details<JobEventDetails>(details.get()));
   Stop();
@@ -273,7 +274,7 @@ void PrintJob::OnDocumentDone() {
   scoped_refptr<JobEventDetails> details(
       new JobEventDetails(JobEventDetails::JOB_DONE, document_.get(), NULL));
   NotificationService::current()->Notify(
-      NotificationType::PRINT_JOB_EVENT,
+      chrome::NOTIFICATION_PRINT_JOB_EVENT,
       Source<PrintJob>(this),
       Details<JobEventDetails>(details.get()));
 }

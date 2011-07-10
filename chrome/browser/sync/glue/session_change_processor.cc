@@ -16,6 +16,7 @@
 #include "chrome/browser/sync/glue/session_model_associator.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_details.h"
@@ -53,7 +54,7 @@ SessionChangeProcessor::~SessionChangeProcessor() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void SessionChangeProcessor::Observe(NotificationType type,
+void SessionChangeProcessor::Observe(int type,
                                      const NotificationSource& source,
                                      const NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -63,8 +64,8 @@ void SessionChangeProcessor::Observe(NotificationType type,
   // Track which windows and/or tabs are modified.
   std::vector<TabContentsWrapper*> modified_tabs;
   bool windows_changed = false;
-  switch (type.value) {
-    case NotificationType::BROWSER_OPENED: {
+  switch (type) {
+    case chrome::NOTIFICATION_BROWSER_OPENED: {
       Browser* browser = Source<Browser>(source).ptr();
       if (browser->profile() != profile_) {
         return;
@@ -74,7 +75,7 @@ void SessionChangeProcessor::Observe(NotificationType type,
       break;
     }
 
-    case NotificationType::TAB_PARENTED: {
+    case content::NOTIFICATION_TAB_PARENTED: {
       TabContentsWrapper* tab = Source<TabContentsWrapper>(source).ptr();
       if (tab->profile() != profile_) {
         return;
@@ -84,7 +85,7 @@ void SessionChangeProcessor::Observe(NotificationType type,
       break;
     }
 
-    case NotificationType::TAB_CLOSED: {
+    case content::NOTIFICATION_TAB_CLOSED: {
       TabContentsWrapper* tab =
           TabContentsWrapper::GetCurrentWrapperForContents(
               Source<NavigationController>(source).ptr()->tab_contents());
@@ -96,7 +97,7 @@ void SessionChangeProcessor::Observe(NotificationType type,
       break;
     }
 
-    case NotificationType::NAV_LIST_PRUNED: {
+    case content::NOTIFICATION_NAV_LIST_PRUNED: {
       TabContentsWrapper* tab =
           TabContentsWrapper::GetCurrentWrapperForContents(
               Source<NavigationController>(source).ptr()->tab_contents());
@@ -107,7 +108,7 @@ void SessionChangeProcessor::Observe(NotificationType type,
       break;
     }
 
-    case NotificationType::NAV_ENTRY_CHANGED: {
+    case content::NOTIFICATION_NAV_ENTRY_CHANGED: {
       TabContentsWrapper* tab =
           TabContentsWrapper::GetCurrentWrapperForContents(
               Source<NavigationController>(source).ptr()->tab_contents());
@@ -118,7 +119,7 @@ void SessionChangeProcessor::Observe(NotificationType type,
       break;
     }
 
-    case NotificationType::NAV_ENTRY_COMMITTED: {
+    case content::NOTIFICATION_NAV_ENTRY_COMMITTED: {
       TabContentsWrapper* tab =
           TabContentsWrapper::GetCurrentWrapperForContents(
               Source<NavigationController>(source).ptr()->tab_contents());
@@ -129,7 +130,7 @@ void SessionChangeProcessor::Observe(NotificationType type,
       break;
     }
 
-    case NotificationType::TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED: {
+    case chrome::NOTIFICATION_TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED: {
       ExtensionTabHelper* extension_tab_helper =
           Source<ExtensionTabHelper>(source).ptr();
       if (extension_tab_helper->tab_contents()->profile() != profile_) {
@@ -142,7 +143,7 @@ void SessionChangeProcessor::Observe(NotificationType type,
     }
     default:
       LOG(ERROR) << "Received unexpected notification of type "
-                  << type.value;
+                  << type;
       break;
   }
 
@@ -220,7 +221,7 @@ void SessionChangeProcessor::ApplyChangesFromSyncModel(
 
   // Notify foreign session handlers that there are new sessions.
   NotificationService::current()->Notify(
-      NotificationType::FOREIGN_SESSION_UPDATED,
+      chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED,
       NotificationService::AllSources(),
       NotificationService::NoDetails());
 
@@ -244,20 +245,20 @@ void SessionChangeProcessor::StopImpl() {
 void SessionChangeProcessor::StartObserving() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(profile_);
-  notification_registrar_.Add(this, NotificationType::TAB_PARENTED,
+  notification_registrar_.Add(this, content::NOTIFICATION_TAB_PARENTED,
       NotificationService::AllSources());
-  notification_registrar_.Add(this, NotificationType::TAB_CLOSED,
+  notification_registrar_.Add(this, content::NOTIFICATION_TAB_CLOSED,
       NotificationService::AllSources());
-  notification_registrar_.Add(this, NotificationType::NAV_LIST_PRUNED,
+  notification_registrar_.Add(this, content::NOTIFICATION_NAV_LIST_PRUNED,
       NotificationService::AllSources());
-  notification_registrar_.Add(this, NotificationType::NAV_ENTRY_CHANGED,
+  notification_registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_CHANGED,
       NotificationService::AllSources());
-  notification_registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
+  notification_registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       NotificationService::AllSources());
-  notification_registrar_.Add(this, NotificationType::BROWSER_OPENED,
+  notification_registrar_.Add(this, chrome::NOTIFICATION_BROWSER_OPENED,
       NotificationService::AllSources());
   notification_registrar_.Add(this,
-      NotificationType::TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED,
+      chrome::NOTIFICATION_TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED,
       NotificationService::AllSources());
 }
 

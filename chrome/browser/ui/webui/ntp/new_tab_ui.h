@@ -89,7 +89,7 @@ class NewTabUI : public ChromeWebUI,
  private:
   FRIEND_TEST_ALL_PREFIXES(NewTabUITest, UpdateUserPrefsVersion);
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

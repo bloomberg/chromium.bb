@@ -64,7 +64,7 @@ void TabContentsContainerGtk::Init() {
 void TabContentsContainerGtk::SetTab(TabContentsWrapper* tab) {
   HideTab(tab_);
   if (tab_) {
-    registrar_.Remove(this, NotificationType::TAB_CONTENTS_DESTROYED,
+    registrar_.Remove(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
                       Source<TabContents>(tab_->tab_contents()));
   }
 
@@ -77,7 +77,7 @@ void TabContentsContainerGtk::SetTab(TabContentsWrapper* tab) {
   } else if (tab_) {
     // Otherwise we actually have to add it to the widget hierarchy.
     PackTab(tab);
-    registrar_.Add(this, NotificationType::TAB_CONTENTS_DESTROYED,
+    registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
                    Source<TabContents>(tab_->tab_contents()));
   }
 }
@@ -95,7 +95,7 @@ void TabContentsContainerGtk::SetPreview(TabContentsWrapper* preview) {
   preview_ = preview;
 
   PackTab(preview);
-  registrar_.Add(this, NotificationType::TAB_CONTENTS_DESTROYED,
+  registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
                  Source<TabContents>(preview_->tab_contents()));
 }
 
@@ -109,7 +109,7 @@ void TabContentsContainerGtk::RemovePreview() {
   if (preview_widget)
     gtk_container_remove(GTK_CONTAINER(expanded_), preview_widget);
 
-  registrar_.Remove(this, NotificationType::TAB_CONTENTS_DESTROYED,
+  registrar_.Remove(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
                     Source<TabContents>(preview_->tab_contents()));
   preview_ = NULL;
 }
@@ -168,10 +168,10 @@ void TabContentsContainerGtk::DetachTab(TabContentsWrapper* tab) {
   }
 }
 
-void TabContentsContainerGtk::Observe(NotificationType type,
+void TabContentsContainerGtk::Observe(int type,
                                       const NotificationSource& source,
                                       const NotificationDetails& details) {
-  DCHECK(type == NotificationType::TAB_CONTENTS_DESTROYED);
+  DCHECK(type == content::NOTIFICATION_TAB_CONTENTS_DESTROYED);
 
   TabContentsDestroyed(Source<TabContents>(source).ptr());
 }

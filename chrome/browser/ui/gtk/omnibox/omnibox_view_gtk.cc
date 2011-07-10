@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
 #include "googleurl/src/gurl.h"
@@ -212,7 +213,7 @@ OmniboxViewGtk::OmniboxViewGtk(
 }
 
 OmniboxViewGtk::~OmniboxViewGtk() {
-  NotificationService::current()->Notify(NotificationType::OMNIBOX_DESTROYED,
+  NotificationService::current()->Notify(chrome::OMNIBOX_DESTROYED,
                                          Source<OmniboxViewGtk>(this),
                                          NotificationService::NoDetails());
 
@@ -408,7 +409,7 @@ void OmniboxViewGtk::Init() {
 
 #if !defined(TOOLKIT_VIEWS)
   registrar_.Add(this,
-                 NotificationType::BROWSER_THEME_CHANGED,
+                 chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
   theme_service_->InitThemesFor(this);
 #else
@@ -910,10 +911,10 @@ OmniboxView* OmniboxViewGtk::Create(AutocompleteEditController* controller,
 }
 #endif
 
-void OmniboxViewGtk::Observe(NotificationType type,
+void OmniboxViewGtk::Observe(int type,
                              const NotificationSource& source,
                              const NotificationDetails& details) {
-  DCHECK(type == NotificationType::BROWSER_THEME_CHANGED);
+  DCHECK(type == chrome::NOTIFICATION_BROWSER_THEME_CHANGED);
 
   SetBaseColor();
 }

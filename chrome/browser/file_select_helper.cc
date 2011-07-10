@@ -238,9 +238,9 @@ void FileSelectHelper::RunFileChooser(
   DCHECK(!render_view_host_);
   render_view_host_ = render_view_host;
   notification_registrar_.RemoveAll();
-  notification_registrar_.Add(this,
-                              NotificationType::RENDER_WIDGET_HOST_DESTROYED,
-                              Source<RenderViewHost>(render_view_host));
+  notification_registrar_.Add(
+      this, content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
+      Source<RenderViewHost>(render_view_host));
 
   if (!select_file_dialog_.get())
     select_file_dialog_ = SelectFileDialog::Create(this);
@@ -289,10 +289,10 @@ void FileSelectHelper::EnumerateDirectory(int request_id,
   StartNewEnumeration(path, request_id, render_view_host);
 }
 
-void FileSelectHelper::Observe(NotificationType type,
+void FileSelectHelper::Observe(int type,
                                const NotificationSource& source,
                                const NotificationDetails& details) {
-  DCHECK(type == NotificationType::RENDER_WIDGET_HOST_DESTROYED);
+  DCHECK(type == content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED);
   DCHECK(Details<RenderViewHost>(details).ptr() == render_view_host_);
   render_view_host_ = NULL;
 }

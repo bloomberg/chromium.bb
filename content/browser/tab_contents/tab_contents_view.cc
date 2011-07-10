@@ -44,7 +44,7 @@ void TabContentsView::CreateNewWindow(
 
   if (new_contents) {
     NotificationService::current()->Notify(
-        NotificationType::CREATING_NEW_WINDOW,
+        content::NOTIFICATION_CREATING_NEW_WINDOW,
         Source<TabContents>(tab_contents_),
         Details<const ViewHostMsg_CreateWindow_Params>(&params));
 
@@ -52,7 +52,7 @@ void TabContentsView::CreateNewWindow(
       tab_contents_->delegate()->TabContentsCreated(new_contents);
   } else {
     NotificationService::current()->Notify(
-        NotificationType::CREATING_NEW_WINDOW_CANCELLED,
+        content::NOTIFICATION_CREATING_NEW_WINDOW_CANCELLED,
         Source<TabContents>(tab_contents_),
         Details<const ViewHostMsg_CreateWindow_Params>(&params));
   }

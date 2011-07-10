@@ -7,9 +7,10 @@
 #include "base/message_loop.h"
 #include "base/time.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 
 namespace chromeos {
 
@@ -69,7 +70,7 @@ void NetworkStateNotifier::UpdateNetworkState(
   state_ = new_state;
   NetworkStateDetails details(state_);
   NotificationService::current()->Notify(
-      NotificationType::NETWORK_STATE_CHANGED,
+      chrome::NOTIFICATION_NETWORK_STATE_CHANGED,
       NotificationService::AllSources(),
       Details<NetworkStateDetails>(&details));
 };

@@ -33,13 +33,13 @@
 #include "chrome/browser/sync/syncable/directory_manager.h"  // Cryptographer.
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/nigori_util.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/glue/webkit_glue.h"
 
@@ -537,7 +537,7 @@ void SyncBackendHost::Core::NotifyUpdatedToken(const std::string& token) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   TokenAvailableDetails details(GaiaConstants::kSyncService, token);
   NotificationService::current()->Notify(
-      NotificationType::TOKEN_UPDATED,
+      chrome::NOTIFICATION_TOKEN_UPDATED,
       NotificationService::AllSources(),
       Details<const TokenAvailableDetails>(&details));
 }

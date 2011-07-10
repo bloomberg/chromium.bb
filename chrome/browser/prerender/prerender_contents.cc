@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/download/download_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/icon_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
@@ -222,35 +223,36 @@ void PrerenderContents::StartPrerendering(
       prerender_manager_);
 
   // Close ourselves when the application is shutting down.
-  notification_registrar_.Add(this, NotificationType::APP_TERMINATING,
+  notification_registrar_.Add(this, content::NOTIFICATION_APP_TERMINATING,
                               NotificationService::AllSources());
 
   // Register for our parent profile to shutdown, so we can shut ourselves down
   // as well (should only be called for OTR profiles, as we should receive
   // APP_TERMINATING before non-OTR profiles are destroyed).
   // TODO(tburkard): figure out if this is needed.
-  notification_registrar_.Add(this, NotificationType::PROFILE_DESTROYED,
+  notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                               Source<Profile>(profile_));
 
   // Register to inform new RenderViews that we're prerendering.
   notification_registrar_.Add(
-      this, NotificationType::RENDER_VIEW_HOST_CREATED_FOR_TAB,
+      this, content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,
       Source<TabContents>(new_contents));
 
   // Register to be told when the RenderView is ready, so we can hide it.
   // It will automatically be set to visible when we resize it, otherwise.
-  notification_registrar_.Add(this, NotificationType::TAB_CONTENTS_CONNECTED,
+  notification_registrar_.Add(this,
+                              content::NOTIFICATION_TAB_CONTENTS_CONNECTED,
                               Source<TabContents>(new_contents));
 
   // Register for redirect notifications sourced from |this|.
   notification_registrar_.Add(
-      this, NotificationType::RESOURCE_RECEIVED_REDIRECT,
+      this, content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
       Source<RenderViewHostDelegate>(GetRenderViewHostDelegate()));
 
   // Register for new windows from any source.
-  notification_registrar_.Add(this,
-                              NotificationType::CREATING_NEW_WINDOW_CANCELLED,
-                              Source<TabContents>(new_contents));
+  notification_registrar_.Add(
+      this, content::NOTIFICATION_CREATING_NEW_WINDOW_CANCELLED,
+      Source<TabContents>(new_contents));
 
   DCHECK(load_start_time_.is_null());
   load_start_time_ = base::TimeTicks::Now();
@@ -311,19 +313,19 @@ PrerenderContents::~PrerenderContents() {
   prerender_tracker_->RemovePrerenderURLsOnUIThread(alias_urls_);
 }
 
-void PrerenderContents::Observe(NotificationType type,
+void PrerenderContents::Observe(int type,
                                 const NotificationSource& source,
                                 const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::PROFILE_DESTROYED:
+  switch (type) {
+    case chrome::NOTIFICATION_PROFILE_DESTROYED:
       Destroy(FINAL_STATUS_PROFILE_DESTROYED);
       return;
 
-    case NotificationType::APP_TERMINATING:
+    case content::NOTIFICATION_APP_TERMINATING:
       Destroy(FINAL_STATUS_APP_TERMINATING);
       return;
 
-    case NotificationType::RESOURCE_RECEIVED_REDIRECT: {
+    case content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT: {
       // RESOURCE_RECEIVED_REDIRECT can come for any resource on a page.
       // If it's a redirect on the top-level resource, the name needs
       // to be remembered for future matching, and if it redirects to
@@ -342,7 +344,7 @@ void PrerenderContents::Observe(NotificationType type,
       break;
     }
 
-    case NotificationType::RENDER_VIEW_HOST_CREATED_FOR_TAB: {
+    case content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB: {
       if (prerender_contents_.get()) {
         DCHECK_EQ(Source<TabContents>(source).ptr(),
                   prerender_contents_->tab_contents());
@@ -362,7 +364,7 @@ void PrerenderContents::Observe(NotificationType type,
       break;
     }
 
-    case NotificationType::TAB_CONTENTS_CONNECTED: {
+    case content::NOTIFICATION_TAB_CONTENTS_CONNECTED: {
       if (prerender_contents_.get()) {
         DCHECK_EQ(Source<TabContents>(source).ptr(),
                   prerender_contents_->tab_contents());
@@ -374,7 +376,7 @@ void PrerenderContents::Observe(NotificationType type,
       return;
     }
 
-    case NotificationType::CREATING_NEW_WINDOW_CANCELLED: {
+    case content::NOTIFICATION_CREATING_NEW_WINDOW_CANCELLED: {
       if (prerender_contents_.get()) {
         CHECK(Source<TabContents>(source).ptr() ==
               prerender_contents_->tab_contents());

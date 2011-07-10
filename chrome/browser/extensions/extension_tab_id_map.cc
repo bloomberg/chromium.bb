@@ -31,7 +31,7 @@ class ExtensionTabIdMap::TabObserver : public NotificationObserver {
 
  private:
   // NotificationObserver interface.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -40,11 +40,11 @@ class ExtensionTabIdMap::TabObserver : public NotificationObserver {
 
 ExtensionTabIdMap::TabObserver::TabObserver() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  registrar_.Add(this, NotificationType::RENDER_VIEW_HOST_CREATED_FOR_TAB,
+  registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::RENDER_VIEW_HOST_DELETED,
+  registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_DELETED,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::TAB_PARENTED,
+  registrar_.Add(this, content::NOTIFICATION_TAB_PARENTED,
                  NotificationService::AllSources());
 }
 
@@ -53,10 +53,10 @@ ExtensionTabIdMap::TabObserver::~TabObserver() {
 }
 
 void ExtensionTabIdMap::TabObserver::Observe(
-    NotificationType type, const NotificationSource& source,
+    int type, const NotificationSource& source,
     const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::RENDER_VIEW_HOST_CREATED_FOR_TAB: {
+  switch (type) {
+    case content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB: {
       TabContents* contents = Source<TabContents>(source).ptr();
       TabContentsWrapper* tab =
           TabContentsWrapper::GetCurrentWrapperForContents(contents);
@@ -75,7 +75,7 @@ void ExtensionTabIdMap::TabObserver::Observe(
               tab->restore_tab_helper()->window_id().id()));
       break;
     }
-    case NotificationType::TAB_PARENTED: {
+    case content::NOTIFICATION_TAB_PARENTED: {
       TabContentsWrapper* tab = Source<TabContentsWrapper>(source).ptr();
       RenderViewHost* host = tab->render_view_host();
       BrowserThread::PostTask(
@@ -88,7 +88,7 @@ void ExtensionTabIdMap::TabObserver::Observe(
               tab->restore_tab_helper()->window_id().id()));
       break;
     }
-    case NotificationType::RENDER_VIEW_HOST_DELETED: {
+    case content::NOTIFICATION_RENDER_VIEW_HOST_DELETED: {
       RenderViewHost* host = Source<RenderViewHost>(source).ptr();
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,

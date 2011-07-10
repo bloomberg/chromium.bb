@@ -250,7 +250,7 @@ class ExtensionMenuManager : public NotificationObserver {
   const SkBitmap& GetIconForExtension(const std::string& extension_id);
 
   // Implements the NotificationObserver interface.
-  virtual void Observe(NotificationType type, const NotificationSource& source,
+  virtual void Observe(int type, const NotificationSource& source,
                        const NotificationDetails& details);
 
   // Returns true if |url| has an allowed scheme for extension context menu

@@ -19,6 +19,7 @@
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -28,7 +29,6 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
@@ -591,10 +591,10 @@ bool PromptBrowserLoginFunction::RunImpl() {
   // Start listening for notifications about the token.
   TokenService* token_service = profile->GetTokenService();
   registrar_.Add(this,
-                 NotificationType::TOKEN_AVAILABLE,
+                 chrome::NOTIFICATION_TOKEN_AVAILABLE,
                  Source<TokenService>(token_service));
   registrar_.Add(this,
-                 NotificationType::TOKEN_REQUEST_FAILED,
+                 chrome::NOTIFICATION_TOKEN_REQUEST_FAILED,
                  Source<TokenService>(token_service));
 
   GetBrowserSignin(profile)->RequestSignin(tab,
@@ -646,16 +646,16 @@ void PromptBrowserLoginFunction::OnLoginFailure(
   Release();
 }
 
-void PromptBrowserLoginFunction::Observe(NotificationType type,
+void PromptBrowserLoginFunction::Observe(int type,
                                          const NotificationSource& source,
                                          const NotificationDetails& details) {
   // Make sure this notification is for the service we are interested in.
   std::string service;
-  if (type == NotificationType::TOKEN_AVAILABLE) {
+  if (type == chrome::NOTIFICATION_TOKEN_AVAILABLE) {
     TokenService::TokenAvailableDetails* available =
         Details<TokenService::TokenAvailableDetails>(details).ptr();
     service = available->service();
-  } else if (type == NotificationType::TOKEN_REQUEST_FAILED) {
+  } else if (type == chrome::NOTIFICATION_TOKEN_REQUEST_FAILED) {
     TokenService::TokenRequestFailedDetails* failed =
         Details<TokenService::TokenRequestFailedDetails>(details).ptr();
     service = failed->service();

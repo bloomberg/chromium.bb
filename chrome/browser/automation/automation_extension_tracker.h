@@ -32,7 +32,7 @@ class AutomationExtensionTracker
   // Observe expects the NotificationSource to be the object that is closing.
   // This is not true for the relevant extension notifications, so we have to
   // the observation ourselves.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 };

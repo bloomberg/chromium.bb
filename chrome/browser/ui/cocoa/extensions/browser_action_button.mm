@@ -12,13 +12,13 @@
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/ui/cocoa/extensions/extension_action_context_menu.h"
 #import "chrome/browser/ui/cocoa/image_utils.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 #include "ui/gfx/canvas_skia_paint.h"
@@ -58,7 +58,7 @@ class ExtensionImageTrackerBridge : public NotificationObserver,
                                    Extension::kBrowserActionIconMaxSize),
                          ImageLoadingTracker::DONT_CACHE);
     }
-    registrar_.Add(this, NotificationType::EXTENSION_BROWSER_ACTION_UPDATED,
+    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
                    Source<ExtensionAction>(extension->browser_action()));
   }
 
@@ -73,10 +73,10 @@ class ExtensionImageTrackerBridge : public NotificationObserver,
   }
 
   // Overridden from NotificationObserver.
-  void Observe(NotificationType type,
+  void Observe(int type,
                const NotificationSource& source,
                const NotificationDetails& details) {
-    if (type == NotificationType::EXTENSION_BROWSER_ACTION_UPDATED)
+    if (type == chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED)
       [owner_ updateState];
     else
       NOTREACHED();

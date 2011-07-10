@@ -44,7 +44,7 @@ class AutofillChangeProcessor : public ChangeProcessor,
 
   // NotificationObserver implementation.
   // WebDataService -> sync_api model change application.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
 #include "chrome/browser/chromeos/views/copy_background.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -116,7 +117,7 @@ void ScreenLockView::Layout() {
 
 void ScreenLockView::Init() {
   registrar_.Add(this,
-                 NotificationType::LOGIN_USER_IMAGE_CHANGED,
+                 chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
                  NotificationService::AllSources());
 
   user_view_ = new UserView(this,
@@ -250,10 +251,10 @@ bool ScreenLockView::HandleKeyEvent(
 }
 
 void ScreenLockView::Observe(
-    NotificationType type,
+    int type,
     const NotificationSource& source,
     const NotificationDetails& details) {
-  if (type != NotificationType::LOGIN_USER_IMAGE_CHANGED || !user_view_)
+  if (type != chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED || !user_view_)
     return;
 
   UserManager::User* user = Details<UserManager::User>(details).ptr();

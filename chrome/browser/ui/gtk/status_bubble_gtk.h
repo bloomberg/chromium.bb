@@ -58,7 +58,7 @@ class StatusBubbleGtk : public StatusBubble,
   virtual void UpdateDownloadShelfVisibility(bool visible);
 
   // Overridden from NotificationObserver:
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

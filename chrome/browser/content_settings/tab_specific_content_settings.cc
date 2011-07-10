@@ -17,6 +17,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/cookies_tree_model.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -54,7 +55,7 @@ TabSpecificContentSettings::TabSpecificContentSettings(TabContents* tab)
   ClearCookieSpecificContentSettings();
   g_tab_specific.Get().push_back(this);
 
-  registrar_.Add(this, NotificationType::CONTENT_SETTINGS_CHANGED,
+  registrar_.Add(this, chrome::NOTIFICATION_CONTENT_SETTINGS_CHANGED,
                  Source<HostContentSettingsMap>(
                      tab->profile()->GetHostContentSettingsMap()));
 }
@@ -213,7 +214,7 @@ void TabSpecificContentSettings::OnContentBlocked(
     content_blocked_[type] = true;
     // TODO: it would be nice to have a way of mocking this in tests.
     NotificationService::current()->Notify(
-        NotificationType::TAB_CONTENT_SETTINGS_CHANGED,
+        chrome::NOTIFICATION_TAB_CONTENT_SETTINGS_CHANGED,
         Source<TabContents>(tab_contents()),
         NotificationService::NoDetails());
   }
@@ -225,7 +226,7 @@ void TabSpecificContentSettings::OnContentAccessed(ContentSettingsType type) {
   if (!content_accessed_[type]) {
     content_accessed_[type] = true;
     NotificationService::current()->Notify(
-        NotificationType::TAB_CONTENT_SETTINGS_CHANGED,
+        chrome::NOTIFICATION_TAB_CONTENT_SETTINGS_CHANGED,
         Source<TabContents>(tab_contents()),
         NotificationService::NoDetails());
   }
@@ -351,7 +352,7 @@ void TabSpecificContentSettings::OnGeolocationPermissionSet(
   geolocation_settings_state_.OnGeolocationPermissionSet(requesting_origin,
                                                          allowed);
   NotificationService::current()->Notify(
-      NotificationType::TAB_CONTENT_SETTINGS_CHANGED,
+      chrome::NOTIFICATION_TAB_CONTENT_SETTINGS_CHANGED,
       Source<TabContents>(tab_contents()),
       NotificationService::NoDetails());
 }
@@ -367,7 +368,7 @@ void TabSpecificContentSettings::ClearBlockedContentSettingsExceptForCookies() {
   }
   load_plugins_link_enabled_ = true;
   NotificationService::current()->Notify(
-      NotificationType::TAB_CONTENT_SETTINGS_CHANGED,
+      chrome::NOTIFICATION_TAB_CONTENT_SETTINGS_CHANGED,
       Source<TabContents>(tab_contents()),
       NotificationService::NoDetails());
 }
@@ -379,7 +380,7 @@ void TabSpecificContentSettings::ClearCookieSpecificContentSettings() {
   content_accessed_[CONTENT_SETTINGS_TYPE_COOKIES] = false;
   content_blockage_indicated_to_user_[CONTENT_SETTINGS_TYPE_COOKIES] = false;
   NotificationService::current()->Notify(
-      NotificationType::TAB_CONTENT_SETTINGS_CHANGED,
+      chrome::NOTIFICATION_TAB_CONTENT_SETTINGS_CHANGED,
       Source<TabContents>(tab_contents()),
       NotificationService::NoDetails());
 }
@@ -388,7 +389,7 @@ void TabSpecificContentSettings::SetPopupsBlocked(bool blocked) {
   content_blocked_[CONTENT_SETTINGS_TYPE_POPUPS] = blocked;
   content_blockage_indicated_to_user_[CONTENT_SETTINGS_TYPE_POPUPS] = false;
   NotificationService::current()->Notify(
-      NotificationType::TAB_CONTENT_SETTINGS_CHANGED,
+      chrome::NOTIFICATION_TAB_CONTENT_SETTINGS_CHANGED,
       Source<TabContents>(tab_contents()),
       NotificationService::NoDetails());
 }
@@ -456,10 +457,10 @@ void TabSpecificContentSettings::DidStartProvisionalLoadForFrame(
   ClearGeolocationContentSettings();
 }
 
-void TabSpecificContentSettings::Observe(NotificationType type,
+void TabSpecificContentSettings::Observe(int type,
                                          const NotificationSource& source,
                                          const NotificationDetails& details) {
-  DCHECK(type.value == NotificationType::CONTENT_SETTINGS_CHANGED);
+  DCHECK(type == chrome::NOTIFICATION_CONTENT_SETTINGS_CHANGED);
 
   Details<const ContentSettingsDetails> settings_details(details);
   const NavigationController& controller = tab_contents()->controller();

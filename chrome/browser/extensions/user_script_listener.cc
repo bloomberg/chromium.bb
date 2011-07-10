@@ -6,6 +6,7 @@
 
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "content/browser/browser_thread.h"
@@ -19,11 +20,11 @@ UserScriptListener::UserScriptListener()
       user_scripts_ready_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  registrar_.Add(this, NotificationType::EXTENSION_LOADED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::USER_SCRIPTS_UPDATED,
+  registrar_.Add(this, chrome::NOTIFICATION_USER_SCRIPTS_UPDATED,
                  NotificationService::AllSources());
   AddRef();  // Will be balanced in Cleanup().
 }
@@ -120,13 +121,13 @@ void UserScriptListener::CollectURLPatterns(const Extension* extension,
   }
 }
 
-void UserScriptListener::Observe(NotificationType type,
+void UserScriptListener::Observe(int type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  switch (type.value) {
-    case NotificationType::EXTENSION_LOADED: {
+  switch (type) {
+    case chrome::NOTIFICATION_EXTENSION_LOADED: {
       const Extension* extension = Details<const Extension>(details).ptr();
       if (extension->content_scripts().empty())
         return;  // no new patterns from this extension.
@@ -143,7 +144,7 @@ void UserScriptListener::Observe(NotificationType type,
       break;
     }
 
-    case NotificationType::EXTENSION_UNLOADED: {
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
       const Extension* unloaded_extension =
           Details<UnloadedExtensionInfo>(details)->extension;
       if (unloaded_extension->content_scripts().empty())
@@ -165,7 +166,7 @@ void UserScriptListener::Observe(NotificationType type,
       break;
     }
 
-    case NotificationType::USER_SCRIPTS_UPDATED: {
+    case chrome::NOTIFICATION_USER_SCRIPTS_UPDATED: {
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
           NewRunnableMethod(this, &UserScriptListener::StartDelayedRequests));

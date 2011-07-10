@@ -27,8 +27,8 @@
 #include "content/browser/renderer_host/resource_request_details.h"
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 #include "content/common/view_messages.h"
 #include "googleurl/src/gurl.h"
 
@@ -275,7 +275,7 @@ ClientSideDetectionHost::ClientSideDetectionHost(TabContents* tab)
   DCHECK(tab);
   // Note: csd_service_ and sb_service_ might be NULL.
   sb_service_ = g_browser_process->safe_browsing_service();
-  registrar_.Add(this, NotificationType::RESOURCE_RESPONSE_STARTED,
+  registrar_.Add(this, content::NOTIFICATION_RESOURCE_RESPONSE_STARTED,
                  Source<RenderViewHostDelegate>(tab));
 }
 
@@ -423,11 +423,11 @@ void ClientSideDetectionHost::FeatureExtractionDone(
           &ClientSideDetectionHost::MaybeShowPhishingWarning));
 }
 
-void ClientSideDetectionHost::Observe(NotificationType type,
+void ClientSideDetectionHost::Observe(int type,
                                       const NotificationSource& source,
                                       const NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(type.value, NotificationType::RESOURCE_RESPONSE_STARTED);
+  DCHECK_EQ(type, content::NOTIFICATION_RESOURCE_RESPONSE_STARTED);
   const ResourceRequestDetails* req = Details<ResourceRequestDetails>(
       details).ptr();
   if (req && browse_info_.get()) {

@@ -605,7 +605,7 @@ class HistoryService : public CancelableRequestProvider,
   friend class TestingProfile;
 
   // Implementation of NotificationObserver.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -628,7 +628,7 @@ class HistoryService : public CancelableRequestProvider,
   // notification. The function takes ownership of the pointer and deletes it
   // when the notification is sent (it is coming from another thread, so must
   // be allocated on the heap).
-  void BroadcastNotifications(NotificationType type,
+  void BroadcastNotifications(int type,
                               history::HistoryDetails* details_deleted);
 
   // Initializes the backend.

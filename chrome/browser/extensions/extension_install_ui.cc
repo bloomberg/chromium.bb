@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_resource.h"
@@ -197,7 +198,7 @@ void ExtensionInstallUI::OnImageLoaded(
       // TODO(jcivelli): http://crbug.com/44771 We should not show an install
       //                 dialog when installing an app from the gallery.
       NotificationService* service = NotificationService::current();
-      service->Notify(NotificationType::EXTENSION_WILL_SHOW_CONFIRM_DIALOG,
+      service->Notify(chrome::NOTIFICATION_EXTENSION_WILL_SHOW_CONFIRM_DIALOG,
           Source<ExtensionInstallUI>(this),
           NotificationService::NoDetails());
 

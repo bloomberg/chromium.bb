@@ -70,7 +70,7 @@ class TranslateManager : public NotificationObserver,
   void ClearTranslateScript() { translate_script_.clear(); }
 
   // NotificationObserver implementation:
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

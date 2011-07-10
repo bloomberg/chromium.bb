@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/bubble/bubble.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
@@ -104,7 +105,7 @@ void BookmarkBubbleView::Show(views::Widget* parent,
   bubble->SizeToContents();
   GURL url_ptr(url);
   NotificationService::current()->Notify(
-      NotificationType::BOOKMARK_BUBBLE_SHOWN,
+      chrome::NOTIFICATION_BOOKMARK_BUBBLE_SHOWN,
       Source<Profile>(profile->GetOriginalProfile()),
       Details<GURL>(&url_ptr));
   bookmark_bubble_->BubbleShown();
@@ -325,7 +326,7 @@ void BookmarkBubbleView::BubbleClosing(Bubble* bubble,
   if (delegate_)
     delegate_->BubbleClosing(bubble, closed_by_escape);
   NotificationService::current()->Notify(
-      NotificationType::BOOKMARK_BUBBLE_HIDDEN,
+      chrome::NOTIFICATION_BOOKMARK_BUBBLE_HIDDEN,
       Source<Profile>(profile_->GetOriginalProfile()),
       NotificationService::NoDetails());
 }

@@ -12,6 +12,7 @@
 #include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/sync/test_http_bridge_factory.h"
 
 using browser_sync::ModelSafeRoutingInfo;
@@ -245,11 +246,11 @@ void TestProfileSyncService::OnBackendInitialized() {
   }
 }
 
-void TestProfileSyncService::Observe(NotificationType type,
+void TestProfileSyncService::Observe(int type,
                                      const NotificationSource& source,
                                      const NotificationDetails& details) {
   ProfileSyncService::Observe(type, source, details);
-  if (type == NotificationType::SYNC_CONFIGURE_DONE &&
+  if (type == chrome::NOTIFICATION_SYNC_CONFIGURE_DONE &&
       !synchronous_sync_configuration_) {
     MessageLoop::current()->Quit();
   }

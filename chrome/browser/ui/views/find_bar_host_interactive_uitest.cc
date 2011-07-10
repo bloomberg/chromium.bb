@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/find_bar_host.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -325,7 +326,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, PasteWithoutTextChange) {
   Source<TabContents> notification_source(browser()->GetSelectedTabContents());
   ui_test_utils::WindowedNotificationObserverWithDetails
       <FindNotificationDetails> observer(
-          NotificationType::FIND_RESULT_AVAILABLE, notification_source);
+          chrome::NOTIFICATION_FIND_RESULT_AVAILABLE, notification_source);
 
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
       browser(), ui::VKEY_V, true, false, false, false));

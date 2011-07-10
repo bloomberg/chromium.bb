@@ -572,7 +572,7 @@ void ThreadWatcherObserver::RemoveNotifications() {
   delete g_thread_watcher_observer_;
 }
 
-void ThreadWatcherObserver::Observe(NotificationType type,
+void ThreadWatcherObserver::Observe(int type,
                                     const NotificationSource& source,
                                     const NotificationDetails& details) {
   // There is some user activity, see if thread watchers are to be awakened.

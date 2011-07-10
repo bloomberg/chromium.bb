@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_service.h"
 #include "googleurl/src/gurl.h"
@@ -14,12 +15,12 @@ namespace {
 class MessageSender : public NotificationObserver {
  public:
   MessageSender() {
-    registrar_.Add(this, NotificationType::EXTENSION_HOST_DID_STOP_LOADING,
+    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
                    NotificationService::AllSources());
   }
 
  private:
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
     ExtensionEventRouter* event_router =

@@ -54,6 +54,7 @@
 #include "chrome/browser/tab_closeable_state_watcher.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/default_plugin.h"
@@ -611,10 +612,10 @@ bool BrowserProcessImpl::plugin_finder_disabled() const {
   return *plugin_finder_disabled_pref_;
 }
 
-void BrowserProcessImpl::Observe(NotificationType type,
+void BrowserProcessImpl::Observe(int type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {
-  if (type == NotificationType::PREF_CHANGED) {
+  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
     std::string* pref = Details<std::string>(details).ptr();
     if (*pref == prefs::kDefaultBrowserSettingEnabled) {
       if (local_state_->GetBoolean(prefs::kDefaultBrowserSettingEnabled))

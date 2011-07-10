@@ -19,10 +19,10 @@
 #include "chrome/browser/extensions/extension_proxy_api.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_permission_set.h"
 #include "chrome/common/pref_names.h"
-#include "content/common/notification_type.h"
 #include "content/common/notification_service.h"
 
 namespace {
@@ -233,10 +233,10 @@ ExtensionPreferenceEventRouter::ExtensionPreferenceEventRouter(
 ExtensionPreferenceEventRouter::~ExtensionPreferenceEventRouter() { }
 
 void ExtensionPreferenceEventRouter::Observe(
-    NotificationType type,
+    int type,
     const NotificationSource& source,
     const NotificationDetails& details) {
-  if (type == NotificationType::PREF_CHANGED) {
+  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
     const std::string* pref_key =
         Details<const std::string>(details).ptr();
     OnPrefChanged(Source<PrefService>(source).ptr(), *pref_key);

@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
@@ -273,12 +274,12 @@ void ChromeURLRequestContextGetter::CleanupOnUIThread() {
 
 // NotificationObserver implementation.
 void ChromeURLRequestContextGetter::Observe(
-    NotificationType type,
+    int type,
     const NotificationSource& source,
     const NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (NotificationType::PREF_CHANGED == type) {
+  if (chrome::NOTIFICATION_PREF_CHANGED == type) {
     std::string* pref_name_in = Details<std::string>(details).ptr();
     PrefService* prefs = Source<PrefService>(source).ptr();
     DCHECK(pref_name_in && prefs);
@@ -388,7 +389,7 @@ ChromeURLRequestContext::~ChromeURLRequestContext() {
     appcache_service_->set_request_context(NULL);
 
   NotificationService::current()->Notify(
-      NotificationType::URL_REQUEST_CONTEXT_RELEASED,
+      chrome::NOTIFICATION_URL_REQUEST_CONTEXT_RELEASED,
       Source<net::URLRequestContext>(this),
       NotificationService::NoDetails());
 }

@@ -76,6 +76,7 @@
 #include "chrome/browser/web_resource/promo_resource_service.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
@@ -309,7 +310,7 @@ ProfileImpl::ProfileImpl(const FilePath& path,
         true));
     // Wait for the notifcation that prefs has been loaded (successfully or
     // not).
-    registrar_.Add(this, NotificationType::PREF_INITIALIZATION_COMPLETED,
+    registrar_.Add(this, chrome::NOTIFICATION_PREF_INITIALIZATION_COMPLETED,
                    Source<PrefService>(prefs_.get()));
   } else {
     // Load prefs synchronously.
@@ -350,7 +351,7 @@ void ProfileImpl::DoFinalInit() {
 #if !defined(OS_CHROMEOS)
   // Listen for bookmark model load, to bootstrap the sync service.
   // On CrOS sync service will be initialized after sign in.
-  registrar_.Add(this, NotificationType::BOOKMARK_MODEL_LOADED,
+  registrar_.Add(this, chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED,
                  Source<Profile>(this));
 #endif
 
@@ -585,7 +586,7 @@ void ProfileImpl::set_last_selected_directory(const FilePath& path) {
 
 ProfileImpl::~ProfileImpl() {
   NotificationService::current()->Notify(
-      NotificationType::PROFILE_DESTROYED,
+      chrome::NOTIFICATION_PROFILE_DESTROYED,
       Source<Profile>(this),
       NotificationService::NoDetails());
 
@@ -698,7 +699,7 @@ Profile* ProfileImpl::GetOffTheRecordProfile() {
     off_the_record_profile_.swap(p);
 
     NotificationService::current()->Notify(
-        NotificationType::OTR_PROFILE_CREATED,
+        chrome::NOTIFICATION_OTR_PROFILE_CREATED,
         Source<Profile>(off_the_record_profile_.get()),
         NotificationService::NoDetails());
   }
@@ -866,7 +867,7 @@ net::URLRequestContextGetter* ProfileImpl::GetRequestContext() {
     // TODO(eroman): this isn't terribly useful anymore now that the
     // net::URLRequestContext is constructed by the IO thread...
     NotificationService::current()->Notify(
-        NotificationType::DEFAULT_REQUEST_CONTEXT_AVAILABLE,
+        chrome::NOTIFICATION_DEFAULT_REQUEST_CONTEXT_AVAILABLE,
         NotificationService::AllSources(), NotificationService::NoDetails());
   }
 
@@ -973,7 +974,7 @@ HostZoomMap* ProfileImpl::GetHostZoomMap() {
       }
     }
 
-    registrar_.Add(this, NotificationType::ZOOM_LEVEL_CHANGED,
+    registrar_.Add(this, content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
                  Source<HostZoomMap>(host_zoom_map_));
   }
   return host_zoom_map_.get();
@@ -1022,7 +1023,7 @@ HistoryService* ProfileImpl::GetHistoryService(ServiceAccessType sat) {
 
     // Send out the notification that the history service was created.
     NotificationService::current()->
-        Notify(NotificationType::HISTORY_CREATED, Source<Profile>(this),
+        Notify(chrome::NOTIFICATION_HISTORY_CREATED, Source<Profile>(this),
                Details<HistoryService>(history_service_.get()));
   }
   return history_service_.get();
@@ -1354,20 +1355,21 @@ void ProfileImpl::MarkAsCleanShutdown() {
   }
 }
 
-void ProfileImpl::Observe(NotificationType type,
+void ProfileImpl::Observe(int type,
                           const NotificationSource& source,
                           const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::PREF_INITIALIZATION_COMPLETED: {
+  switch (type) {
+    case chrome::NOTIFICATION_PREF_INITIALIZATION_COMPLETED: {
       bool* succeeded = Details<bool>(details).ptr();
       PrefService *prefs = Source<PrefService>(source).ptr();
       DCHECK(prefs == prefs_.get());
-      registrar_.Remove(this, NotificationType::PREF_INITIALIZATION_COMPLETED,
+      registrar_.Remove(this,
+                        chrome::NOTIFICATION_PREF_INITIALIZATION_COMPLETED,
                         Source<PrefService>(prefs));
       OnPrefsLoaded(*succeeded);
       break;
     }
-    case NotificationType::PREF_CHANGED: {
+    case chrome::NOTIFICATION_PREF_CHANGED: {
       std::string* pref_name_in = Details<std::string>(details).ptr();
       PrefService* prefs = Source<PrefService>(source).ptr();
       DCHECK(pref_name_in && prefs);
@@ -1406,12 +1408,12 @@ void ProfileImpl::Observe(NotificationType type,
       }
       break;
     }
-    case NotificationType::BOOKMARK_MODEL_LOADED:
+    case chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED:
       GetProfileSyncService();  // Causes lazy-load if sync is enabled.
-      registrar_.Remove(this, NotificationType::BOOKMARK_MODEL_LOADED,
+      registrar_.Remove(this, chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED,
                         Source<Profile>(this));
       break;
-    case NotificationType::ZOOM_LEVEL_CHANGED: {
+    case content::NOTIFICATION_ZOOM_LEVEL_CHANGED: {
       const std::string& host = *(Details<const std::string>(details).ptr());
       if (!host.empty()) {
         double level = host_zoom_map_->GetZoomLevel(host);

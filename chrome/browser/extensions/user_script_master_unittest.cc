@@ -12,6 +12,7 @@
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_registrar.h"
@@ -33,7 +34,7 @@ class UserScriptMasterTest : public testing::Test,
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     // Register for all user script notifications.
-    registrar_.Add(this, NotificationType::USER_SCRIPTS_UPDATED,
+    registrar_.Add(this, chrome::NOTIFICATION_USER_SCRIPTS_UPDATED,
                    NotificationService::AllSources());
 
     // UserScriptMaster posts tasks to the file thread so make the current
@@ -49,10 +50,10 @@ class UserScriptMasterTest : public testing::Test,
     ui_thread_.reset();
   }
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
-    DCHECK(type == NotificationType::USER_SCRIPTS_UPDATED);
+    DCHECK(type == chrome::NOTIFICATION_USER_SCRIPTS_UPDATED);
 
     shared_memory_ = Details<base::SharedMemory>(details).ptr();
     if (MessageLoop::current() == &message_loop_)

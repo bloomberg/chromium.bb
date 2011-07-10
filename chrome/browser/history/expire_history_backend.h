@@ -19,7 +19,6 @@
 
 class BookmarkService;
 class GURL;
-class NotificationType;
 class TestingProfile;
 
 namespace history {
@@ -35,7 +34,7 @@ class BroadcastNotificationDelegate {
  public:
   // Schedules a broadcast of the given notification on the application main
   // thread. The details argument will have ownership taken by this function.
-  virtual void BroadcastNotifications(NotificationType type,
+  virtual void BroadcastNotifications(int type,
                                       HistoryDetails* details_deleted) = 0;
 
  protected:

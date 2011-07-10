@@ -12,6 +12,7 @@
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -191,29 +192,29 @@ void LoginHandler::OnRequestCancelled() {
 void LoginHandler::AddObservers() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  registrar_.Add(this, NotificationType::AUTH_SUPPLIED,
+  registrar_.Add(this, chrome::NOTIFICATION_AUTH_SUPPLIED,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::AUTH_CANCELLED,
+  registrar_.Add(this, chrome::NOTIFICATION_AUTH_CANCELLED,
                  NotificationService::AllSources());
 }
 
 void LoginHandler::RemoveObservers() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  registrar_.Remove(this, NotificationType::AUTH_SUPPLIED,
+  registrar_.Remove(this, chrome::NOTIFICATION_AUTH_SUPPLIED,
                     NotificationService::AllSources());
-  registrar_.Remove(this, NotificationType::AUTH_CANCELLED,
+  registrar_.Remove(this, chrome::NOTIFICATION_AUTH_CANCELLED,
                     NotificationService::AllSources());
 
   DCHECK(registrar_.IsEmpty());
 }
 
-void LoginHandler::Observe(NotificationType type,
+void LoginHandler::Observe(int type,
                            const NotificationSource& source,
                            const NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(type == NotificationType::AUTH_SUPPLIED ||
-         type == NotificationType::AUTH_CANCELLED);
+  DCHECK(type == chrome::NOTIFICATION_AUTH_SUPPLIED ||
+         type == chrome::NOTIFICATION_AUTH_CANCELLED);
 
   TabContents* requesting_contents = GetTabContentsForLogin();
   if (!requesting_contents)
@@ -235,12 +236,12 @@ void LoginHandler::Observe(NotificationType type,
     return;
 
   // Set or cancel the auth in this handler.
-  if (type == NotificationType::AUTH_SUPPLIED) {
+  if (type == chrome::NOTIFICATION_AUTH_SUPPLIED) {
     AuthSuppliedLoginNotificationDetails* supplied_details =
         Details<AuthSuppliedLoginNotificationDetails>(details).ptr();
     SetAuth(supplied_details->username(), supplied_details->password());
   } else {
-    DCHECK(type == NotificationType::AUTH_CANCELLED);
+    DCHECK(type == chrome::NOTIFICATION_AUTH_CANCELLED);
     CancelAuth();
   }
 }
@@ -271,7 +272,7 @@ void LoginHandler::NotifyAuthNeeded() {
 
   LoginNotificationDetails details(this);
 
-  service->Notify(NotificationType::AUTH_NEEDED,
+  service->Notify(chrome::NOTIFICATION_AUTH_NEEDED,
                   Source<NavigationController>(controller),
                   Details<LoginNotificationDetails>(&details));
 }
@@ -289,7 +290,7 @@ void LoginHandler::NotifyAuthCancelled() {
 
   LoginNotificationDetails details(this);
 
-  service->Notify(NotificationType::AUTH_CANCELLED,
+  service->Notify(chrome::NOTIFICATION_AUTH_CANCELLED,
                   Source<NavigationController>(controller),
                   Details<LoginNotificationDetails>(&details));
 }
@@ -307,7 +308,7 @@ void LoginHandler::NotifyAuthSupplied(const string16& username,
   NavigationController* controller = &requesting_contents->controller();
   AuthSuppliedLoginNotificationDetails details(this, username, password);
 
-  service->Notify(NotificationType::AUTH_SUPPLIED,
+  service->Notify(chrome::NOTIFICATION_AUTH_SUPPLIED,
                   Source<NavigationController>(controller),
                   Details<AuthSuppliedLoginNotificationDetails>(&details));
 }

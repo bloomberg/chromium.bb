@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "content/browser/debugger/devtools_window.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
@@ -50,30 +51,30 @@ ExtensionPopupGtk::ExtensionPopupGtk(Browser* browser,
   if (host->did_stop_loading()) {
     ShowPopup();
   } else {
-    registrar_.Add(this, NotificationType::EXTENSION_HOST_DID_STOP_LOADING,
+    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
                    Source<Profile>(host->profile()));
   }
 
-  registrar_.Add(this, NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
                  Source<Profile>(host->profile()));
 }
 
 ExtensionPopupGtk::~ExtensionPopupGtk() {
 }
 
-void ExtensionPopupGtk::Observe(NotificationType type,
+void ExtensionPopupGtk::Observe(int type,
                                 const NotificationSource& source,
                                 const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::EXTENSION_HOST_DID_STOP_LOADING:
+  switch (type) {
+    case chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING:
       if (Details<ExtensionHost>(host_.get()) == details)
         ShowPopup();
       break;
-    case NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE:
+    case chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE:
       if (Details<ExtensionHost>(host_.get()) == details)
         DestroyPopup();
       break;
-    case NotificationType::DEVTOOLS_WINDOW_CLOSING:
+    case content::NOTIFICATION_DEVTOOLS_WINDOW_CLOSING:
       // Make sure its the devtools window that inspecting our popup.
       if (Details<RenderViewHost>(host_->render_view_host()) != details)
         break;
@@ -98,7 +99,7 @@ void ExtensionPopupGtk::ShowPopup() {
   if (being_inspected_) {
     DevToolsWindow::OpenDevToolsWindow(host_->render_view_host());
     // Listen for the the devtools window closing.
-    registrar_.Add(this, NotificationType::DEVTOOLS_WINDOW_CLOSING,
+    registrar_.Add(this, content::NOTIFICATION_DEVTOOLS_WINDOW_CLOSING,
         Source<Profile>(host_->profile()));
   }
 

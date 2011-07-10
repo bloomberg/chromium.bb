@@ -30,7 +30,7 @@ class LayoutModeButton : public views::ImageButton,
   virtual bool HitTest(const gfx::Point& l) const OVERRIDE;
 
   // NotificationObserver implementation.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
 

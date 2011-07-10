@@ -31,7 +31,7 @@ IN_PROC_BROWSER_TEST_F(DOMViewTest, TestShowAndHide) {
 
   dom_view->Init(browser()->profile(), NULL);
   dom_view->LoadURL(GURL("http://www.google.com"));
-  ui_test_utils::WaitForNotification(NotificationType::LOAD_STOP);
+  ui_test_utils::WaitForNotification(content::NOTIFICATION_LOAD_STOP);
   one->Show();
 
   ui_test_utils::RunAllPendingInMessageLoop();
@@ -49,7 +49,7 @@ IN_PROC_BROWSER_TEST_F(DOMViewTest, TestRemoveAndDelete) {
 
   dom_view->Init(browser()->profile(), NULL);
   dom_view->LoadURL(GURL("http://www.google.com"));
-  ui_test_utils::WaitForNotification(NotificationType::LOAD_STOP);
+  ui_test_utils::WaitForNotification(content::NOTIFICATION_LOAD_STOP);
   one->Show();
 
   ui_test_utils::RunAllPendingInMessageLoop();
@@ -71,7 +71,7 @@ IN_PROC_BROWSER_TEST_F(DOMViewTest, TestReparent) {
 
   dom_view->Init(browser()->profile(), NULL);
   dom_view->LoadURL(GURL("http://www.google.com"));
-  ui_test_utils::WaitForNotification(NotificationType::LOAD_STOP);
+  ui_test_utils::WaitForNotification(content::NOTIFICATION_LOAD_STOP);
   one->Show();
 
   ui_test_utils::RunAllPendingInMessageLoop();

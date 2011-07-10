@@ -21,11 +21,12 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/user_metrics.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -213,10 +214,10 @@ void LoginPerformer::OnCheckWhitelistCompleted(SignedSettings::ReturnCode code,
 // LoginPerformer, NotificationObserver implementation:
 //
 
-void LoginPerformer::Observe(NotificationType type,
+void LoginPerformer::Observe(int type,
                              const NotificationSource& source,
                              const NotificationDetails& details) {
-  if (type != NotificationType::SCREEN_LOCK_STATE_CHANGED)
+  if (type != chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED)
     return;
 
   bool is_screen_locked = *Details<bool>(details).ptr();
@@ -314,7 +315,7 @@ void LoginPerformer::RequestScreenLock() {
   DVLOG(1) << "Screen lock requested";
   // Will receive notifications on screen unlock and delete itself.
   registrar_.Add(this,
-                 NotificationType::SCREEN_LOCK_STATE_CHANGED,
+                 chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
                  NotificationService::AllSources());
   if (ScreenLocker::default_screen_locker()) {
     DVLOG(1) << "Screen already locked";

@@ -31,9 +31,9 @@ DownloadRequestLimiter::TabDownloadState::TabDownloadState(
       download_count_(0),
       infobar_(NULL) {
   Source<NavigationController> notification_source(controller);
-  registrar_.Add(this, NotificationType::NAV_ENTRY_PENDING,
+  registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
                  notification_source);
-  registrar_.Add(this, NotificationType::TAB_CLOSED, notification_source);
+  registrar_.Add(this, content::NOTIFICATION_TAB_CLOSED, notification_source);
 
   NavigationEntry* active_entry = originating_controller ?
       originating_controller->GetActiveEntry() : controller->GetActiveEntry();
@@ -91,18 +91,18 @@ void DownloadRequestLimiter::TabDownloadState::Accept() {
 }
 
 void DownloadRequestLimiter::TabDownloadState::Observe(
-    NotificationType type,
+    int type,
     const NotificationSource& source,
     const NotificationDetails& details) {
-  if ((type != NotificationType::NAV_ENTRY_PENDING &&
-       type != NotificationType::TAB_CLOSED) ||
+  if ((type != content::NOTIFICATION_NAV_ENTRY_PENDING &&
+       type != content::NOTIFICATION_TAB_CLOSED) ||
       Source<NavigationController>(source).ptr() != controller_) {
     NOTREACHED();
     return;
   }
 
-  switch (type.value) {
-    case NotificationType::NAV_ENTRY_PENDING: {
+  switch (type) {
+    case content::NOTIFICATION_NAV_ENTRY_PENDING: {
       // NOTE: resetting state on a pending navigate isn't ideal. In particular
       // it is possible that queued up downloads for the page before the
       // pending navigate will be delivered to us after we process this
@@ -131,7 +131,7 @@ void DownloadRequestLimiter::TabDownloadState::Observe(
       break;
     }
 
-    case NotificationType::TAB_CLOSED:
+    case content::NOTIFICATION_TAB_CLOSED:
       // Tab closed, no need to handle closing the dialog as it's owned by the
       // TabContents, break so that we get deleted after switch.
       break;

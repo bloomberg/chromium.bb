@@ -90,7 +90,7 @@ class BackendDelegate : public HistoryBackend::Delegate {
 
   virtual void NotifyProfileError(sql::InitStatus init_status) OVERRIDE {}
   virtual void SetInMemoryBackend(InMemoryHistoryBackend* backend) OVERRIDE;
-  virtual void BroadcastNotifications(NotificationType type,
+  virtual void BroadcastNotifications(int type,
                                       HistoryDetails* details) OVERRIDE;
   virtual void DBLoaded() OVERRIDE {}
   virtual void StartTopSitesMigration() OVERRIDE {}
@@ -290,7 +290,7 @@ void BackendDelegate::SetInMemoryBackend(InMemoryHistoryBackend* backend) {
   history_test_->in_mem_backend_.reset(backend);
 }
 
-void BackendDelegate::BroadcastNotifications(NotificationType type,
+void BackendDelegate::BroadcastNotifications(int type,
                                              HistoryDetails* details) {
   // Currently, just send the notifications directly to the in-memory database.
   // We may want do do something more fancy in the future.

@@ -6,6 +6,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/ui_test_utils.h"
 #include "googleurl/src/gurl.h"
@@ -69,7 +70,7 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(StartTestServer());
 
   ui_test_utils::WindowedNotificationObserver signal(
-      NotificationType::USER_SCRIPTS_UPDATED,
+      chrome::NOTIFICATION_USER_SCRIPTS_UPDATED,
       Source<Profile>(browser()->profile()));
 
   // Start with a renderer already open at a URL.

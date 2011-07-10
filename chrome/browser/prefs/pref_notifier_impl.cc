@@ -6,6 +6,7 @@
 
 #include "base/stl_util-inl.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_service.h"
 
@@ -78,7 +79,7 @@ void PrefNotifierImpl::OnInitializationCompleted(bool succeeded) {
   DCHECK(CalledOnValidThread());
 
   NotificationService::current()->Notify(
-      NotificationType::PREF_INITIALIZATION_COMPLETED,
+      chrome::NOTIFICATION_PREF_INITIALIZATION_COMPLETED,
       Source<PrefService>(pref_service_),
       Details<bool>(&succeeded));
 }
@@ -98,7 +99,7 @@ void PrefNotifierImpl::FireObservers(const std::string& path) {
   NotificationObserverList::Iterator it(*(observer_iterator->second));
   NotificationObserver* observer;
   while ((observer = it.GetNext()) != NULL) {
-    observer->Observe(NotificationType::PREF_CHANGED,
+    observer->Observe(chrome::NOTIFICATION_PREF_CHANGED,
                       Source<PrefService>(pref_service_),
                       Details<const std::string>(&path));
   }

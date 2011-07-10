@@ -14,6 +14,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/testing_browser_process.h"
 #include "chrome/test/testing_browser_process_test.h"
 #include "chrome/test/testing_profile.h"
@@ -122,7 +123,7 @@ class AutocompleteProviderTest : public testing::Test,
 
  private:
   // NotificationObserver
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -159,7 +160,8 @@ void AutocompleteProviderTest::ResetControllerWithTestProviders(
 
   // The providers don't complete synchronously, so listen for "result updated"
   // notifications.
-  registrar_.Add(this, NotificationType::AUTOCOMPLETE_CONTROLLER_RESULT_READY,
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_AUTOCOMPLETE_CONTROLLER_RESULT_READY,
                  NotificationService::AllSources());
 }
 
@@ -230,7 +232,7 @@ void AutocompleteProviderTest::RunExactKeymatchTest(
       controller_->result().default_match()->provider);
 }
 
-void AutocompleteProviderTest::Observe(NotificationType type,
+void AutocompleteProviderTest::Observe(int type,
                                        const NotificationSource& source,
                                        const NotificationDetails& details) {
   if (controller_->done()) {

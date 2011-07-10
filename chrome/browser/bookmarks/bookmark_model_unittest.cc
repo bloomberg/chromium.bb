@@ -21,6 +21,7 @@
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/model_test_utils.h"
@@ -548,13 +549,14 @@ namespace {
 class StarredListener : public NotificationObserver {
  public:
   StarredListener() : notification_count_(0), details_(false) {
-    registrar_.Add(this, NotificationType::URLS_STARRED, Source<Profile>(NULL));
+    registrar_.Add(this, chrome::NOTIFICATION_URLS_STARRED,
+                   Source<Profile>(NULL));
   }
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
-    if (type == NotificationType::URLS_STARRED) {
+    if (type == chrome::NOTIFICATION_URLS_STARRED) {
       notification_count_++;
       details_ = *(Details<history::URLsStarredDetails>(details).ptr());
     }

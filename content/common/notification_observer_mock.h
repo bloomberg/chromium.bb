@@ -6,8 +6,8 @@
 #define CONTENT_COMMON_NOTIFICATION_OBSERVER_MOCK_H_
 #pragma once
 
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_observer.h"
-#include "content/common/notification_type.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 class NotificationDetails;
@@ -18,7 +18,7 @@ class NotificationObserverMock : public NotificationObserver {
   NotificationObserverMock();
   virtual ~NotificationObserverMock();
 
-  MOCK_METHOD3(Observe, void(NotificationType type,
+  MOCK_METHOD3(Observe, void(int type,
                              const NotificationSource& source,
                              const NotificationDetails& details));
 };

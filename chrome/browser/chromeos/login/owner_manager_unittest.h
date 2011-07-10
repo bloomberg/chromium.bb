@@ -14,10 +14,10 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/synchronization/waitable_event.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -29,7 +29,7 @@ class MockKeyLoadObserver : public NotificationObserver {
   virtual ~MockKeyLoadObserver();
 
   // NotificationObserver implementation.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

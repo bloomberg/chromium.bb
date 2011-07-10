@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/rounded_window.h"
 #include "chrome/browser/ui/gtk/slide_animator_gtk.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_service.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/text/text_elider.h"
@@ -49,7 +50,7 @@ StatusBubbleGtk::StatusBubbleGtk(Profile* profile)
   InitWidgets();
 
   theme_service_->InitThemesFor(this);
-  registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
+  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  Source<ThemeService>(theme_service_));
 }
 
@@ -234,10 +235,10 @@ void StatusBubbleGtk::UpdateDownloadShelfVisibility(bool visible) {
   download_shelf_is_visible_ = visible;
 }
 
-void StatusBubbleGtk::Observe(NotificationType type,
+void StatusBubbleGtk::Observe(int type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
-  if (type == NotificationType::BROWSER_THEME_CHANGED) {
+  if (type == chrome::NOTIFICATION_BROWSER_THEME_CHANGED) {
     UserChangedTheme();
   }
 }

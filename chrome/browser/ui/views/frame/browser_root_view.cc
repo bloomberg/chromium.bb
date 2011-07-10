@@ -19,8 +19,8 @@
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #if defined(TOUCH_UI)
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 #include "views/ime/input_method.h"
 #endif
 
@@ -48,7 +48,7 @@ ui::TouchStatus BrowserRootView::OnTouchEvent(const views::TouchEvent& event) {
   ui::TextInputType text_input_type = input_method->GetTextInputType();
   if (text_input_type != ui::TEXT_INPUT_TYPE_NONE) {
     NotificationService::current()->Notify(
-        NotificationType::EDITABLE_ELEMENT_TOUCHED,
+        chrome::EDITABLE_ELEMENT_TOUCHED,
         Source<View>(this),
         Details<ui::TextInputType>(&text_input_type));
   }

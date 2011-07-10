@@ -13,6 +13,7 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/tab_contents/background_contents.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_browser_process.h"
 #include "chrome/test/testing_browser_process_test.h"
@@ -73,7 +74,7 @@ class MockBackgroundContents : public BackgroundContents {
   virtual void Navigate(GURL url) {
     url_ = url;
     NotificationService::current()->Notify(
-        NotificationType::BACKGROUND_CONTENTS_NAVIGATED,
+        chrome::NOTIFICATION_BACKGROUND_CONTENTS_NAVIGATED,
         Source<Profile>(profile_),
         Details<BackgroundContents>(this));
   }
@@ -81,7 +82,7 @@ class MockBackgroundContents : public BackgroundContents {
 
   void MockClose(Profile* profile) {
     NotificationService::current()->Notify(
-        NotificationType::BACKGROUND_CONTENTS_CLOSED,
+        chrome::NOTIFICATION_BACKGROUND_CONTENTS_CLOSED,
         Source<Profile>(profile),
         Details<BackgroundContents>(this));
     delete this;
@@ -89,7 +90,7 @@ class MockBackgroundContents : public BackgroundContents {
 
   ~MockBackgroundContents() {
     NotificationService::current()->Notify(
-        NotificationType::BACKGROUND_CONTENTS_DELETED,
+        chrome::NOTIFICATION_BACKGROUND_CONTENTS_DELETED,
         Source<Profile>(profile_),
         Details<BackgroundContents>(this));
   }

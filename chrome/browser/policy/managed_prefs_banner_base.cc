@@ -7,9 +7,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_set_observer.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/common/notification_details.h"
-#include "content/common/notification_type.h"
 
 namespace policy {
 
@@ -98,10 +98,10 @@ void ManagedPrefsBannerBase::Init(PrefService* local_state,
   }
 }
 
-void ManagedPrefsBannerBase::Observe(NotificationType type,
+void ManagedPrefsBannerBase::Observe(int type,
                                      const NotificationSource& source,
                                      const NotificationDetails& details) {
-  if (NotificationType::PREF_CHANGED == type) {
+  if (chrome::NOTIFICATION_PREF_CHANGED == type) {
     std::string* pref = Details<std::string>(details).ptr();
     if (pref && (local_state_set_->IsObserved(*pref) ||
                  user_pref_set_->IsObserved(*pref)))

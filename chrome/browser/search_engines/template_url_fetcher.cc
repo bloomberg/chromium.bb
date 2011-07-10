@@ -14,10 +14,10 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/template_url_parser.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 #include "content/common/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 
@@ -34,7 +34,7 @@ class TemplateURLFetcher::RequestDelegate : public URLFetcher::Delegate,
                   ProviderType provider_type);
 
   // NotificationObserver:
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -97,7 +97,7 @@ TemplateURLFetcher::RequestDelegate::RequestDelegate(
   if (!model->loaded()) {
     // Start the model load and set-up waiting for it.
     registrar_.Add(this,
-                   NotificationType::TEMPLATE_URL_SERVICE_LOADED,
+                   chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED,
                    Source<TemplateURLService>(model));
     model->Load();
   }
@@ -107,10 +107,10 @@ TemplateURLFetcher::RequestDelegate::RequestDelegate(
 }
 
 void TemplateURLFetcher::RequestDelegate::Observe(
-    NotificationType type,
+    int type,
     const NotificationSource& source,
     const NotificationDetails& details) {
-  DCHECK(type == NotificationType::TEMPLATE_URL_SERVICE_LOADED);
+  DCHECK(type == chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED);
 
   if (!template_url_.get())
     return;

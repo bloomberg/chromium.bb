@@ -199,7 +199,7 @@ class SessionService : public BaseSessionService,
   bool RestoreIfNecessary(const std::vector<GURL>& urls_to_open,
                           Browser* browser);
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -381,7 +381,7 @@ class SessionService : public BaseSessionService,
   // currently called when Save() is called to compare how often the
   // session data is currently saved verses when we may want to save it.
   // It records the data in UMA stats.
-  void RecordSessionUpdateHistogramData(NotificationType type,
+  void RecordSessionUpdateHistogramData(int type,
     base::TimeTicks* last_updated_time);
 
   // Helper methods to record the histogram data

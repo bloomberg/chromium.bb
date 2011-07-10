@@ -9,6 +9,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/ui_test_utils.h"
 
 namespace chromeos {
@@ -41,7 +42,7 @@ void WizardInProcessBrowserTest::CleanUpOnMainThread() {
   // which delays deleting itself). Run the message loop until we know the
   // wizard has been deleted.
   ui_test_utils::WaitForNotification(
-      NotificationType::WIZARD_CONTENT_VIEW_DESTROYED);
+      chrome::NOTIFICATION_WIZARD_CONTENT_VIEW_DESTROYED);
 }
 
 }  // namespace chromeos

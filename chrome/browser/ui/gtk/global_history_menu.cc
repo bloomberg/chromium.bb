@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/owned_widget_gtk.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
 #include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
@@ -118,7 +119,7 @@ void GlobalHistoryMenu::Init(GtkWidget* history_menu,
 
       // Register for notification when TopSites changes so that we can update
       // ourself.
-      registrar_.Add(this, NotificationType::TOP_SITES_CHANGED,
+      registrar_.Add(this, chrome::NOTIFICATION_TOP_SITES_CHANGED,
                      Source<history::TopSites>(top_sites_));
     }
   }
@@ -278,10 +279,10 @@ void GlobalHistoryMenu::ClearMenuCallback(GtkWidget* menu_item,
   }
 }
 
-void GlobalHistoryMenu::Observe(NotificationType type,
+void GlobalHistoryMenu::Observe(int type,
                                 const NotificationSource& source,
                                 const NotificationDetails& details) {
-  if (type.value == NotificationType::TOP_SITES_CHANGED) {
+  if (type == chrome::NOTIFICATION_TOP_SITES_CHANGED) {
     if (Source<history::TopSites>(source).ptr() == top_sites_)
       GetTopSitesData();
   } else {

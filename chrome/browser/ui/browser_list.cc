@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/tab_contents/navigation_details.h"
@@ -42,17 +43,17 @@ namespace {
 class BrowserActivityObserver : public NotificationObserver {
  public:
   BrowserActivityObserver() {
-    registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
+    registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                    NotificationService::AllSources());
   }
   ~BrowserActivityObserver() {}
 
  private:
   // NotificationObserver implementation.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
-    DCHECK(type == NotificationType::NAV_ENTRY_COMMITTED);
+    DCHECK(type == content::NOTIFICATION_NAV_ENTRY_COMMITTED);
     const content::LoadCommittedDetails& load =
         *Details<content::LoadCommittedDetails>(details).ptr();
     if (!load.is_navigation_to_different_page())
@@ -242,7 +243,7 @@ void BrowserList::AddBrowser(Browser* browser) {
     activity_observer = new BrowserActivityObserver;
 
   NotificationService::current()->Notify(
-      NotificationType::BROWSER_OPENED,
+      chrome::NOTIFICATION_BROWSER_OPENED,
       Source<Browser>(browser),
       NotificationService::NoDetails());
 
@@ -263,7 +264,7 @@ void BrowserList::MarkAsCleanShutdown() {
 
 void BrowserList::AttemptExitInternal() {
   NotificationService::current()->Notify(
-      NotificationType::APP_EXITING,
+      content::NOTIFICATION_APP_EXITING,
       NotificationService::AllSources(),
       NotificationService::NoDetails());
 
@@ -286,9 +287,10 @@ void BrowserList::NotifyAndTerminate(bool fast_path) {
 #endif
 
   if (fast_path) {
-    NotificationService::current()->Notify(NotificationType::APP_TERMINATING,
-                                           NotificationService::AllSources(),
-                                           NotificationService::NoDetails());
+    NotificationService::current()->Notify(
+        content::NOTIFICATION_APP_TERMINATING,
+        NotificationService::AllSources(),
+        NotificationService::NoDetails());
   }
 
 #if defined(OS_CHROMEOS)
@@ -319,7 +321,7 @@ void BrowserList::RemoveBrowser(Browser* browser) {
   // TODO(andybons): Fix the UI tests to Do The Right Thing.
   bool closing_last_browser = (browsers_.size() == 1);
   NotificationService::current()->Notify(
-      NotificationType::BROWSER_CLOSED,
+      chrome::NOTIFICATION_BROWSER_CLOSED,
       Source<Browser>(browser), Details<bool>(&closing_last_browser));
 
   RemoveBrowserFrom(browser, &browsers_);
@@ -350,9 +352,10 @@ void BrowserList::RemoveBrowser(Browser* browser) {
     // to call ProfileManager::ShutdownSessionServices() as part of the
     // shutdown, because Browser::WindowClosing() already makes sure that the
     // SessionService is created and notified.
-    NotificationService::current()->Notify(NotificationType::APP_TERMINATING,
-                                           NotificationService::AllSources(),
-                                           NotificationService::NoDetails());
+    NotificationService::current()->Notify(
+        content::NOTIFICATION_APP_TERMINATING,
+        NotificationService::AllSources(),
+        NotificationService::NoDetails());
     AllBrowsersClosedAndAppExiting();
   }
 }
@@ -513,7 +516,7 @@ void BrowserList::SessionEnding() {
   browser_shutdown::OnShutdownStarting(browser_shutdown::END_SESSION);
 
   NotificationService::current()->Notify(
-      NotificationType::APP_EXITING,
+      content::NOTIFICATION_APP_EXITING,
       NotificationService::AllSources(),
       NotificationService::NoDetails());
 
@@ -525,7 +528,7 @@ void BrowserList::SessionEnding() {
   // Send out notification. This is used during testing so that the test harness
   // can properly shutdown before we exit.
   NotificationService::current()->Notify(
-      NotificationType::SESSION_END,
+      chrome::NOTIFICATION_SESSION_END,
       NotificationService::AllSources(),
       NotificationService::NoDetails());
 

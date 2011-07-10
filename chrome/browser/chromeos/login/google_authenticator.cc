@@ -24,6 +24,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
@@ -165,7 +166,7 @@ void GoogleAuthenticator::LoginOffTheRecord() {
   if (CrosLibrary::Get()->GetCryptohomeLibrary()->MountForBwsi(&mount_error)) {
     AuthenticationNotificationDetails details(true);
     NotificationService::current()->Notify(
-        NotificationType::LOGIN_AUTHENTICATION,
+        chrome::NOTIFICATION_LOGIN_AUTHENTICATION,
         NotificationService::AllSources(),
         Details<AuthenticationNotificationDetails>(&details));
     consumer_->OnOffTheRecordLoginSuccess();
@@ -275,7 +276,7 @@ void GoogleAuthenticator::OnLoginSuccess(
   // Send notification of success
   AuthenticationNotificationDetails details(true);
   NotificationService::current()->Notify(
-      NotificationType::LOGIN_AUTHENTICATION,
+      chrome::NOTIFICATION_LOGIN_AUTHENTICATION,
       NotificationService::AllSources(),
       Details<AuthenticationNotificationDetails>(&details));
 
@@ -350,7 +351,7 @@ void GoogleAuthenticator::OnLoginFailure(const LoginFailure& error) {
   // Send notification of failure
   AuthenticationNotificationDetails details(false);
   NotificationService::current()->Notify(
-      NotificationType::LOGIN_AUTHENTICATION,
+      chrome::NOTIFICATION_LOGIN_AUTHENTICATION,
       NotificationService::AllSources(),
       Details<AuthenticationNotificationDetails>(&details));
   LOG(WARNING) << "Login failed: " << error.GetErrorString();

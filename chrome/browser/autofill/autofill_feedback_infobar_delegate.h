@@ -11,7 +11,6 @@
 #include "chrome/browser/tab_contents/link_infobar_delegate.h"
 #include "webkit/glue/window_open_disposition.h"
 
-class NotificationType;
 class TabContents;
 
 // An InfoBar delegate that prompts the user to provide additional feedback for

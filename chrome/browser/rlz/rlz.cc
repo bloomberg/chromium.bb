@@ -26,6 +26,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/installer/util/google_update_settings.h"
@@ -71,18 +72,18 @@ class OmniBoxUsageObserver : public NotificationObserver {
     : first_run_(first_run),
       send_ping_immediately_(send_ping_immediately),
       google_default_search_(google_default_search) {
-    registrar_.Add(this, NotificationType::OMNIBOX_OPENED_URL,
+    registrar_.Add(this, chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
                    NotificationService::AllSources());
     // If instant is enabled we'll start searching as soon as the user starts
     // typing in the omnibox (which triggers INSTANT_CONTROLLER_UPDATED).
-    registrar_.Add(this, NotificationType::INSTANT_CONTROLLER_UPDATED,
+    registrar_.Add(this, chrome::NOTIFICATION_INSTANT_CONTROLLER_UPDATED,
                    NotificationService::AllSources());
     omnibox_used_ = false;
     DCHECK(!instance_);
     instance_ = this;
   }
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -231,7 +232,7 @@ class DelayedInitTask : public Task {
 
 bool DelayedInitTask::already_ran_ = false;
 
-void OmniBoxUsageObserver::Observe(NotificationType type,
+void OmniBoxUsageObserver::Observe(int type,
                                    const NotificationSource& source,
                                    const NotificationDetails& details) {
   // Needs to be evaluated. See http://crbug.com/62328.

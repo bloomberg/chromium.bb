@@ -8,6 +8,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/browser/browser_thread.h"
 
 namespace chromeos {
@@ -16,15 +17,15 @@ EnterpriseExtensionObserver::EnterpriseExtensionObserver(Profile* profile)
     : profile_(profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   registrar_.Add(this,
-                 NotificationType::EXTENSION_INSTALLED,
+                 chrome::NOTIFICATION_EXTENSION_INSTALLED,
                  Source<Profile>(profile_));
 }
 
-void EnterpriseExtensionObserver::Observe(NotificationType type,
+void EnterpriseExtensionObserver::Observe(int type,
                                           const NotificationSource& source,
                                           const NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(type == NotificationType::EXTENSION_INSTALLED);
+  DCHECK(type == chrome::NOTIFICATION_EXTENSION_INSTALLED);
   if (Source<Profile>(source).ptr() != profile_) {
     return;
   }

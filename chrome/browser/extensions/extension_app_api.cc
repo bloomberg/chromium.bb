@@ -8,10 +8,10 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/render_messages.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 
 
 const char kBodyTextKey[] = "bodyText";
@@ -29,7 +29,7 @@ AppNotification::~AppNotification() {}
 
 AppNotificationManager::AppNotificationManager() {
   registrar_.Add(this,
-                 NotificationType::EXTENSION_UNINSTALLED,
+                 chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
                  NotificationService::AllSources());
 }
 
@@ -69,10 +69,10 @@ void AppNotificationManager::ClearAll(const std::string& extension_id) {
     notifications_.erase(found);
 }
 
-void AppNotificationManager::Observe(NotificationType type,
+void AppNotificationManager::Observe(int type,
                                      const NotificationSource& source,
                                      const NotificationDetails& details) {
-  CHECK(type == NotificationType::EXTENSION_UNINSTALLED);
+  CHECK(type == chrome::NOTIFICATION_EXTENSION_UNINSTALLED);
   const std::string& id =
       Details<UninstalledExtensionInfo>(details)->extension_id;
   ClearAll(id);
@@ -125,7 +125,7 @@ bool AppNotifyFunction::RunImpl() {
   manager->Add(item.release());
 
   NotificationService::current()->Notify(
-      NotificationType::APP_NOTIFICATION_STATE_CHANGED,
+      chrome::NOTIFICATION_APP_NOTIFICATION_STATE_CHANGED,
       Source<Profile>(profile_),
       Details<const std::string>(&extension_id()));
 
@@ -137,7 +137,7 @@ bool AppClearAllNotificationsFunction::RunImpl() {
       profile()->GetExtensionService()->app_notification_manager();
   manager->ClearAll(extension_id());
   NotificationService::current()->Notify(
-      NotificationType::APP_NOTIFICATION_STATE_CHANGED,
+      chrome::NOTIFICATION_APP_NOTIFICATION_STATE_CHANGED,
       Source<Profile>(profile_),
       Details<const std::string>(&extension_id()));
   return true;

@@ -47,7 +47,7 @@ class PrintJob : public PrintJobWorkerOwner,
                   int page_count);
 
   // NotificationObserver
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
@@ -156,7 +157,7 @@ TabRendererGtk::LoadingAnimation::LoadingAnimation(
       animation_state_(ANIMATION_NONE),
       animation_frame_(0) {
   registrar_.Add(this,
-                 NotificationType::BROWSER_THEME_CHANGED,
+                 chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  Source<ThemeService>(theme_service_));
 }
 
@@ -200,10 +201,10 @@ bool TabRendererGtk::LoadingAnimation::ValidateLoadingAnimation(
 }
 
 void TabRendererGtk::LoadingAnimation::Observe(
-    NotificationType type,
+    int type,
     const NotificationSource& source,
     const NotificationDetails& details) {
-  DCHECK(type == NotificationType::BROWSER_THEME_CHANGED);
+  DCHECK(type == chrome::NOTIFICATION_BROWSER_THEME_CHANGED);
   data_.reset(new Data(theme_service_));
 }
 
@@ -273,7 +274,7 @@ TabRendererGtk::TabRendererGtk(ThemeService* theme_service)
   hover_animation_.reset(new ui::SlideAnimation(this));
   hover_animation_->SetSlideDuration(kHoverDurationMs);
 
-  registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
+  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  Source<ThemeService>(theme_service_));
 }
 
@@ -559,10 +560,10 @@ void TabRendererGtk::SetBounds(const gfx::Rect& bounds) {
   gtk_widget_set_size_request(tab_.get(), bounds.width(), bounds.height());
 }
 
-void TabRendererGtk::Observe(NotificationType type,
+void TabRendererGtk::Observe(int type,
                              const NotificationSource& source,
                              const NotificationDetails& details) {
-  DCHECK(type == NotificationType::BROWSER_THEME_CHANGED);
+  DCHECK(type == chrome::NOTIFICATION_BROWSER_THEME_CHANGED);
 
   // Clear our cache when we receive a theme change notification because it
   // contains cached bitmaps based off the previous theme.

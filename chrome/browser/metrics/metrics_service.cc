@@ -181,6 +181,7 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/child_process_logging.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/guid.h"
 #include "chrome/common/pref_names.h"
@@ -533,39 +534,39 @@ bool MetricsService::reporting_active() const {
 // static
 void MetricsService::SetUpNotifications(NotificationRegistrar* registrar,
                                         NotificationObserver* observer) {
-    registrar->Add(observer, NotificationType::BROWSER_OPENED,
+    registrar->Add(observer, chrome::NOTIFICATION_BROWSER_OPENED,
                    NotificationService::AllSources());
-    registrar->Add(observer, NotificationType::BROWSER_CLOSED,
+    registrar->Add(observer, chrome::NOTIFICATION_BROWSER_CLOSED,
                    NotificationService::AllSources());
-    registrar->Add(observer, NotificationType::USER_ACTION,
+    registrar->Add(observer, content::NOTIFICATION_USER_ACTION,
                    NotificationService::AllSources());
-    registrar->Add(observer, NotificationType::TAB_PARENTED,
+    registrar->Add(observer, content::NOTIFICATION_TAB_PARENTED,
                    NotificationService::AllSources());
-    registrar->Add(observer, NotificationType::TAB_CLOSING,
+    registrar->Add(observer, content::NOTIFICATION_TAB_CLOSING,
                    NotificationService::AllSources());
-    registrar->Add(observer, NotificationType::LOAD_START,
+    registrar->Add(observer, content::NOTIFICATION_LOAD_START,
                    NotificationService::AllSources());
-    registrar->Add(observer, NotificationType::LOAD_STOP,
+    registrar->Add(observer, content::NOTIFICATION_LOAD_STOP,
                    NotificationService::AllSources());
-    registrar->Add(observer, NotificationType::RENDERER_PROCESS_CLOSED,
+    registrar->Add(observer, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
                    NotificationService::AllSources());
-    registrar->Add(observer, NotificationType::RENDERER_PROCESS_HANG,
+    registrar->Add(observer, content::NOTIFICATION_RENDERER_PROCESS_HANG,
                    NotificationService::AllSources());
-    registrar->Add(observer, NotificationType::CHILD_PROCESS_HOST_CONNECTED,
+    registrar->Add(observer, content::NOTIFICATION_CHILD_PROCESS_HOST_CONNECTED,
                    NotificationService::AllSources());
-    registrar->Add(observer, NotificationType::CHILD_INSTANCE_CREATED,
+    registrar->Add(observer, content::NOTIFICATION_CHILD_INSTANCE_CREATED,
                    NotificationService::AllSources());
-    registrar->Add(observer, NotificationType::CHILD_PROCESS_CRASHED,
+    registrar->Add(observer, content::NOTIFICATION_CHILD_PROCESS_CRASHED,
                    NotificationService::AllSources());
-    registrar->Add(observer, NotificationType::TEMPLATE_URL_SERVICE_LOADED,
+    registrar->Add(observer, chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED,
                    NotificationService::AllSources());
-    registrar->Add(observer, NotificationType::OMNIBOX_OPENED_URL,
+    registrar->Add(observer, chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
                    NotificationService::AllSources());
-    registrar->Add(observer, NotificationType::BOOKMARK_MODEL_LOADED,
+    registrar->Add(observer, chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED,
                    NotificationService::AllSources());
 }
 
-void MetricsService::Observe(NotificationType type,
+void MetricsService::Observe(int type,
                              const NotificationSource& source,
                              const NotificationDetails& details) {
   DCHECK(current_log_);
@@ -574,30 +575,30 @@ void MetricsService::Observe(NotificationType type,
   if (!CanLogNotification(type, source, details))
     return;
 
-  switch (type.value) {
-    case NotificationType::USER_ACTION:
+  switch (type) {
+    case content::NOTIFICATION_USER_ACTION:
         current_log_->RecordUserAction(*Details<const char*>(details).ptr());
       break;
 
-    case NotificationType::BROWSER_OPENED:
-    case NotificationType::BROWSER_CLOSED:
+    case chrome::NOTIFICATION_BROWSER_OPENED:
+    case chrome::NOTIFICATION_BROWSER_CLOSED:
       LogWindowChange(type, source, details);
       break;
 
-    case NotificationType::TAB_PARENTED:
-    case NotificationType::TAB_CLOSING:
+    case content::NOTIFICATION_TAB_PARENTED:
+    case content::NOTIFICATION_TAB_CLOSING:
       LogWindowChange(type, source, details);
       break;
 
-    case NotificationType::LOAD_STOP:
+    case content::NOTIFICATION_LOAD_STOP:
       LogLoadComplete(type, source, details);
       break;
 
-    case NotificationType::LOAD_START:
+    case content::NOTIFICATION_LOAD_START:
       LogLoadStarted();
       break;
 
-    case NotificationType::RENDERER_PROCESS_CLOSED: {
+    case content::NOTIFICATION_RENDERER_PROCESS_CLOSED: {
         RenderProcessHost::RendererClosedDetails* process_details =
             Details<RenderProcessHost::RendererClosedDetails>(details).ptr();
         if (process_details->status ==
@@ -613,21 +614,21 @@ void MetricsService::Observe(NotificationType type,
       }
       break;
 
-    case NotificationType::RENDERER_PROCESS_HANG:
+    case content::NOTIFICATION_RENDERER_PROCESS_HANG:
       LogRendererHang();
       break;
 
-    case NotificationType::CHILD_PROCESS_HOST_CONNECTED:
-    case NotificationType::CHILD_PROCESS_CRASHED:
-    case NotificationType::CHILD_INSTANCE_CREATED:
+    case content::NOTIFICATION_CHILD_PROCESS_HOST_CONNECTED:
+    case content::NOTIFICATION_CHILD_PROCESS_CRASHED:
+    case content::NOTIFICATION_CHILD_INSTANCE_CREATED:
       LogChildProcessChange(type, source, details);
       break;
 
-    case NotificationType::TEMPLATE_URL_SERVICE_LOADED:
+    case chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED:
       LogKeywords(Source<TemplateURLService>(source).ptr());
       break;
 
-    case NotificationType::OMNIBOX_OPENED_URL: {
+    case chrome::NOTIFICATION_OMNIBOX_OPENED_URL: {
       MetricsLog* current_log = current_log_->AsMetricsLog();
       DCHECK(current_log);
       current_log->RecordOmniboxOpenedURL(
@@ -635,7 +636,7 @@ void MetricsService::Observe(NotificationType type,
       break;
     }
 
-    case NotificationType::BOOKMARK_MODEL_LOADED: {
+    case chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED: {
       Profile* p = Source<Profile>(source).ptr();
       if (p)
         LogBookmarks(p->GetBookmarkModel());
@@ -1384,7 +1385,7 @@ void MetricsService::LogBadResponseCode() {
   }
 }
 
-void MetricsService::LogWindowChange(NotificationType type,
+void MetricsService::LogWindowChange(int type,
                                      const NotificationSource& source,
                                      const NotificationDetails& details) {
   int controller_id = -1;
@@ -1402,14 +1403,14 @@ void MetricsService::LogWindowChange(NotificationType type,
   }
   DCHECK_NE(controller_id, -1);
 
-  switch (type.value) {
-    case NotificationType::TAB_PARENTED:
-    case NotificationType::BROWSER_OPENED:
+  switch (type) {
+    case content::NOTIFICATION_TAB_PARENTED:
+    case chrome::NOTIFICATION_BROWSER_OPENED:
       window_type = MetricsLog::WINDOW_CREATE;
       break;
 
-    case NotificationType::TAB_CLOSING:
-    case NotificationType::BROWSER_CLOSED:
+    case content::NOTIFICATION_TAB_CLOSING:
+    case chrome::NOTIFICATION_BROWSER_CLOSED:
       window_map_.erase(window_map_.find(window_or_tab));
       window_type = MetricsLog::WINDOW_DESTROY;
       break;
@@ -1423,7 +1424,7 @@ void MetricsService::LogWindowChange(NotificationType type,
   current_log_->RecordWindowEvent(window_type, controller_id, 0);
 }
 
-void MetricsService::LogLoadComplete(NotificationType type,
+void MetricsService::LogLoadComplete(int type,
                                      const NotificationSource& source,
                                      const NotificationDetails& details) {
   if (details == NotificationService::NoDetails())
@@ -1497,7 +1498,7 @@ void MetricsService::LogChromeOSCrash(const std::string &crash_type) {
 #endif  // OS_CHROMEOS
 
 void MetricsService::LogChildProcessChange(
-    NotificationType type,
+    int type,
     const NotificationSource& source,
     const NotificationDetails& details) {
   Details<ChildProcessInfo> child_details(details);
@@ -1510,16 +1511,16 @@ void MetricsService::LogChildProcessChange(
   }
 
   ChildProcessStats& stats = child_process_stats_buffer_[child_name];
-  switch (type.value) {
-    case NotificationType::CHILD_PROCESS_HOST_CONNECTED:
+  switch (type) {
+    case content::NOTIFICATION_CHILD_PROCESS_HOST_CONNECTED:
       stats.process_launches++;
       break;
 
-    case NotificationType::CHILD_INSTANCE_CREATED:
+    case content::NOTIFICATION_CHILD_INSTANCE_CREATED:
       stats.instances++;
       break;
 
-    case NotificationType::CHILD_PROCESS_CRASHED:
+    case content::NOTIFICATION_CHILD_PROCESS_CRASHED:
       stats.process_crashes++;
       // Exclude plugin crashes from the count below because we report them via
       // a separate UMA metric.
@@ -1529,7 +1530,7 @@ void MetricsService::LogChildProcessChange(
       break;
 
     default:
-      NOTREACHED() << "Unexpected notification type " << type.value;
+      NOTREACHED() << "Unexpected notification type " << type;
       return;
   }
 }
@@ -1659,7 +1660,7 @@ void MetricsService::RecordPluginChanges(PrefService* pref) {
   child_process_stats_buffer_.clear();
 }
 
-bool MetricsService::CanLogNotification(NotificationType type,
+bool MetricsService::CanLogNotification(int type,
                                         const NotificationSource& source,
                                         const NotificationDetails& details) {
   // We simply don't log anything to UMA if there is a single incognito

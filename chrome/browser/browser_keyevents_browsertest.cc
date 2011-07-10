@@ -12,6 +12,7 @@
 #include "base/values.h"
 #include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
@@ -85,7 +86,7 @@ class TestFinishObserver : public NotificationObserver {
  public:
   explicit TestFinishObserver(RenderViewHost* render_view_host)
       : finished_(false), waiting_(false) {
-    registrar_.Add(this, NotificationType::DOM_OPERATION_RESPONSE,
+    registrar_.Add(this, chrome::NOTIFICATION_DOM_OPERATION_RESPONSE,
                    Source<RenderViewHost>(render_view_host));
   }
 
@@ -98,10 +99,10 @@ class TestFinishObserver : public NotificationObserver {
     return finished_;
   }
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
-    DCHECK(type == NotificationType::DOM_OPERATION_RESPONSE);
+    DCHECK(type == chrome::NOTIFICATION_DOM_OPERATION_RESPONSE);
     Details<DomOperationNotificationDetails> dom_op_details(details);
     // We might receive responses for other script execution, but we only
     // care about the test finished message.
@@ -674,7 +675,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, DISABLED_ReservedAccelerators) {
   };
 
   ui_test_utils::WindowedNotificationObserver wait_for_new_tab(
-      NotificationType::TAB_PARENTED,
+      content::NOTIFICATION_TAB_PARENTED,
       NotificationService::AllSources());
 
   // Press Ctrl/Cmd+T, which will open a new tab. It cannot be suppressed.
@@ -704,7 +705,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, DISABLED_ReservedAccelerators) {
   ASSERT_NO_FATAL_FAILURE(SuppressAllEvents(1, true));
 
   ui_test_utils::WindowedNotificationObserver wait_for_tab_closed(
-      NotificationType::TAB_CLOSED, Source<NavigationController>(
+      content::NOTIFICATION_TAB_CLOSED, Source<NavigationController>(
           &browser()->GetTabContentsAt(1)->controller()));
 
   // Press Ctrl/Cmd+W, which will close the tab.

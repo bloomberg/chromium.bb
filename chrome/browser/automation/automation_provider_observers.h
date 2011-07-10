@@ -37,9 +37,9 @@
 #include "chrome/common/automation_constants.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/browser/cancelable_request.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
-#include "content/common/notification_type.h"
 #include "ui/gfx/size.h"
 
 class AutocompleteEditModel;
@@ -73,7 +73,7 @@ class InitialLoadObserver : public NotificationObserver {
   InitialLoadObserver(size_t tab_count, AutomationProvider* automation);
   virtual ~InitialLoadObserver();
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -128,7 +128,7 @@ class NewTabUILoadObserver : public NotificationObserver {
   explicit NewTabUILoadObserver(AutomationProvider* automation);
   virtual ~NewTabUILoadObserver();
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -146,7 +146,7 @@ class NavigationControllerRestoredObserver : public NotificationObserver {
                                        IPC::Message* reply_message);
   virtual ~NavigationControllerRestoredObserver();
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -172,7 +172,7 @@ class NavigationNotificationObserver : public NotificationObserver {
                                  bool use_json_interface);
   virtual ~NavigationNotificationObserver();
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -192,11 +192,11 @@ class NavigationNotificationObserver : public NotificationObserver {
 
 class TabStripNotificationObserver : public NotificationObserver {
  public:
-  TabStripNotificationObserver(NotificationType notification,
+  TabStripNotificationObserver(int notification,
                                AutomationProvider* automation);
   virtual ~TabStripNotificationObserver();
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -205,7 +205,7 @@ class TabStripNotificationObserver : public NotificationObserver {
  protected:
   NotificationRegistrar registrar_;
   base::WeakPtr<AutomationProvider> automation_;
-  NotificationType notification_;
+  int notification_;
 };
 
 class TabAppendedNotificationObserver : public TabStripNotificationObserver {
@@ -285,7 +285,7 @@ class ExtensionInstallNotificationObserver : public NotificationObserver {
   virtual ~ExtensionInstallNotificationObserver();
 
   // Implementation of NotificationObserver.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -310,7 +310,7 @@ class ExtensionUninstallObserver : public NotificationObserver {
   virtual ~ExtensionUninstallObserver();
 
   // Implementation of NotificationObserver.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -334,7 +334,7 @@ class ExtensionReadyNotificationObserver : public NotificationObserver {
   virtual ~ExtensionReadyNotificationObserver();
 
   // Implementation of NotificationObserver.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -355,7 +355,7 @@ class ExtensionUnloadNotificationObserver : public NotificationObserver {
   virtual ~ExtensionUnloadNotificationObserver();
 
   // Implementation of NotificationObserver.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -382,7 +382,7 @@ class ExtensionsUpdatedObserver : public NotificationObserver {
   virtual ~ExtensionsUpdatedObserver();
 
   // Implementation of NotificationObserver.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -404,7 +404,7 @@ class ExtensionTestResultNotificationObserver : public NotificationObserver {
   virtual ~ExtensionTestResultNotificationObserver();
 
   // Implementation of NotificationObserver.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -436,7 +436,7 @@ class BrowserOpenedNotificationObserver : public NotificationObserver {
                                     IPC::Message* reply_message);
   virtual ~BrowserOpenedNotificationObserver();
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -459,7 +459,7 @@ class BrowserClosedNotificationObserver : public NotificationObserver {
                                     IPC::Message* reply_message);
   virtual ~BrowserClosedNotificationObserver();
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -481,7 +481,7 @@ class BrowserCountChangeNotificationObserver : public NotificationObserver {
                                          IPC::Message* reply_message);
   virtual ~BrowserCountChangeNotificationObserver();
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -500,7 +500,7 @@ class AppModalDialogShownObserver : public NotificationObserver {
                               IPC::Message* reply_message);
   virtual ~AppModalDialogShownObserver();
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -521,7 +521,7 @@ class ExecuteBrowserCommandObserver : public NotificationObserver {
                                         int command,
                                         IPC::Message* reply_message);
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -531,11 +531,11 @@ class ExecuteBrowserCommandObserver : public NotificationObserver {
 
   bool Register(int command);
 
-  bool GetNotificationType(int command, NotificationType::Type* type);
+  bool Getint(int command, int* type);
 
   NotificationRegistrar registrar_;
   base::WeakPtr<AutomationProvider> automation_;
-  NotificationType::Type notification_type_;
+  int notification_type_;
   scoped_ptr<IPC::Message> reply_message_;
 
   DISALLOW_COPY_AND_ASSIGN(ExecuteBrowserCommandObserver);
@@ -549,7 +549,7 @@ class FindInPageNotificationObserver : public NotificationObserver {
                                  IPC::Message* reply_message);
   virtual ~FindInPageNotificationObserver();
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -580,7 +580,7 @@ class DomOperationObserver : public NotificationObserver {
   DomOperationObserver();
   virtual ~DomOperationObserver();
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -617,7 +617,7 @@ class DocumentPrintedNotificationObserver : public NotificationObserver {
                                       IPC::Message* reply_message);
   virtual ~DocumentPrintedNotificationObserver();
 
-  virtual void Observe(NotificationType type, const NotificationSource& source,
+  virtual void Observe(int type, const NotificationSource& source,
                        const NotificationDetails& details);
 
  private:
@@ -639,7 +639,7 @@ class MetricEventDurationObserver : public NotificationObserver {
   int GetEventDurationMs(const std::string& event_name);
 
   // NotificationObserver interface.
-  virtual void Observe(NotificationType type, const NotificationSource& source,
+  virtual void Observe(int type, const NotificationSource& source,
                        const NotificationDetails& details);
 
  private:
@@ -659,7 +659,7 @@ class PageTranslatedObserver : public NotificationObserver {
   virtual ~PageTranslatedObserver();
 
   // NotificationObserver interface.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -680,7 +680,7 @@ class TabLanguageDeterminedObserver : public NotificationObserver {
   virtual ~TabLanguageDeterminedObserver();
 
   // NotificationObserver interface.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -703,7 +703,7 @@ class InfoBarCountObserver : public NotificationObserver {
   virtual ~InfoBarCountObserver();
 
   // NotificationObserver interface.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -740,7 +740,7 @@ class LoginObserver : public chromeos::LoginStatusConsumer,
       const GaiaAuthConsumer::ClientLoginResult& credentials,
       bool pending_requests);
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                const NotificationSource& source,
                const NotificationDetails& details);
 
@@ -765,7 +765,7 @@ class ScreenLockUnlockObserver : public NotificationObserver {
   virtual ~ScreenLockUnlockObserver();
 
   // NotificationObserver interface.
-  virtual void Observe(NotificationType type, const NotificationSource& source,
+  virtual void Observe(int type, const NotificationSource& source,
                        const NotificationDetails& details);
 
  protected:
@@ -1105,7 +1105,7 @@ class PasswordStoreLoginsChangedObserver
   virtual void Init();
 
   // NotificationObserver interface.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -1161,7 +1161,7 @@ class OmniboxAcceptNotificationObserver : public NotificationObserver {
                                  IPC::Message* reply_message);
   virtual ~OmniboxAcceptNotificationObserver();
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -1182,7 +1182,7 @@ class SavePackageNotificationObserver : public NotificationObserver {
                                   IPC::Message* reply_message);
   virtual ~SavePackageNotificationObserver();
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -1238,7 +1238,7 @@ class NTPInfoObserver : public NotificationObserver {
                   CancelableRequestConsumer* consumer);
   virtual ~NTPInfoObserver();
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -1267,7 +1267,7 @@ class AppLaunchObserver : public NotificationObserver {
                     extension_misc::LaunchContainer launch_container);
   virtual ~AppLaunchObserver();
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -1289,19 +1289,19 @@ class AppLaunchObserver : public NotificationObserver {
 // notification to wait for.
 class AutofillDisplayedObserver : public NotificationObserver {
  public:
-  AutofillDisplayedObserver(NotificationType notification,
+  AutofillDisplayedObserver(int notification,
                             RenderViewHost* render_view_host,
                             AutomationProvider* automation,
                             IPC::Message* reply_message);
   virtual ~AutofillDisplayedObserver();
 
   // NotificationObserver interface.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
  private:
-  NotificationType notification_;
+  int notification_;
   RenderViewHost* render_view_host_;
   base::WeakPtr<AutomationProvider> automation_;
   scoped_ptr<IPC::Message> reply_message_;
@@ -1329,7 +1329,7 @@ class AutofillChangedObserver
   virtual void Init();
 
   // NotificationObserver interface.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -1365,7 +1365,7 @@ class GetActiveNotificationsObserver : public NotificationObserver {
                                  IPC::Message* reply_message);
   virtual ~GetActiveNotificationsObserver();
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -1395,7 +1395,7 @@ class OnNotificationBalloonCountObserver : public NotificationObserver {
   // message is sent or if |automation_| is invalid.
   void CheckBalloonCount();
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -1418,7 +1418,7 @@ class RendererProcessClosedObserver : public NotificationObserver {
                                 IPC::Message* reply_message);
   virtual ~RendererProcessClosedObserver();
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -1439,7 +1439,7 @@ class InputEventAckNotificationObserver : public NotificationObserver {
                                     int event_type, int count);
   virtual ~InputEventAckNotificationObserver();
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -1487,7 +1487,7 @@ class NewTabObserver : public NotificationObserver {
  public:
   NewTabObserver(AutomationProvider* automation, IPC::Message* reply_message);
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
 
@@ -1544,7 +1544,7 @@ class DragTargetDropAckNotificationObserver : public NotificationObserver {
                                         IPC::Message* reply_message);
   virtual ~DragTargetDropAckNotificationObserver();
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

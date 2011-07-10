@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -185,7 +186,7 @@ class TestPrerenderContents : public PrerenderContents {
     // subsequently shown.
     notification_registrar().Add(
         this,
-        NotificationType::RENDER_WIDGET_VISIBILITY_CHANGED,
+        content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
         Source<RenderWidgetHost>(new_render_view_host));
 
     new_render_view_host_ = new_render_view_host;
@@ -193,11 +194,11 @@ class TestPrerenderContents : public PrerenderContents {
     PrerenderContents::OnRenderViewHostCreated(new_render_view_host);
   }
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE {
-    if (type.value ==
-        NotificationType::RENDER_WIDGET_VISIBILITY_CHANGED) {
+    if (type ==
+        content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED) {
       EXPECT_EQ(new_render_view_host_, Source<RenderWidgetHost>(source).ptr());
       bool is_visible = *Details<bool>(details).ptr();
 
@@ -1460,7 +1461,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderFavicon) {
   TestPrerenderContents* prerender_contents = GetPrerenderContents();
   ASSERT_TRUE(prerender_contents != NULL);
   ui_test_utils::WindowedNotificationObserver favicon_update_watcher(
-      NotificationType::FAVICON_UPDATED,
+      chrome::NOTIFICATION_FAVICON_UPDATED,
       Source<TabContents>(prerender_contents->prerender_contents()->
                           tab_contents()));
   NavigateToDestURL();

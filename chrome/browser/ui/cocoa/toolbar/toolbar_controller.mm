@@ -44,12 +44,12 @@
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/browser/upgrade_detector.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -123,19 +123,19 @@ class NotificationBridge : public NotificationObserver {
  public:
   explicit NotificationBridge(ToolbarController* controller)
       : controller_(controller) {
-    registrar_.Add(this, NotificationType::UPGRADE_RECOMMENDED,
+    registrar_.Add(this, chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
                    NotificationService::AllSources());
   }
 
   // Overridden from NotificationObserver:
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
-    switch (type.value) {
-      case NotificationType::PREF_CHANGED:
+    switch (type) {
+      case chrome::NOTIFICATION_PREF_CHANGED:
         [controller_ prefChanged:Details<std::string>(details).ptr()];
         break;
-      case NotificationType::UPGRADE_RECOMMENDED:
+      case chrome::NOTIFICATION_UPGRADE_RECOMMENDED:
         [controller_ badgeWrenchMenuIfNeeded];
         break;
       default:

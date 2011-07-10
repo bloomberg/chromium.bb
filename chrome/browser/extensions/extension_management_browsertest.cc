@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/ui_test_utils.h"
@@ -234,10 +235,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, DisableEnable) {
 class NotificationListener : public NotificationObserver {
  public:
   NotificationListener() : started_(false), finished_(false) {
-    NotificationType::Type types[] = {
-      NotificationType::EXTENSION_UPDATING_STARTED,
-      NotificationType::EXTENSION_UPDATING_FINISHED,
-      NotificationType::EXTENSION_UPDATE_FOUND
+    int types[] = {
+      chrome::NOTIFICATION_EXTENSION_UPDATING_STARTED,
+      chrome::NOTIFICATION_EXTENSION_UPDATING_FINISHED,
+      chrome::NOTIFICATION_EXTENSION_UPDATE_FOUND
     };
     for (size_t i = 0; i < arraysize(types); i++) {
       registrar_.Add(this, types[i], NotificationService::AllSources());
@@ -258,21 +259,21 @@ class NotificationListener : public NotificationObserver {
   }
 
   // Implements NotificationObserver interface.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
-    switch (type.value) {
-      case NotificationType::EXTENSION_UPDATING_STARTED: {
+    switch (type) {
+      case chrome::NOTIFICATION_EXTENSION_UPDATING_STARTED: {
         DCHECK(!started_);
         started_ = true;
         break;
       }
-      case NotificationType::EXTENSION_UPDATING_FINISHED: {
+      case chrome::NOTIFICATION_EXTENSION_UPDATING_FINISHED: {
         DCHECK(!finished_);
         finished_ = true;
         break;
       }
-      case NotificationType::EXTENSION_UPDATE_FOUND: {
+      case chrome::NOTIFICATION_EXTENSION_UPDATE_FOUND: {
         const std::string* id = Details<const std::string>(details).ptr();
         updates_.insert(*id);
         break;

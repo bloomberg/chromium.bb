@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
@@ -25,9 +26,9 @@ BookmarkTabHelper::BookmarkTabHelper(TabContentsWrapper* tab_contents)
       delegate_(NULL),
       bookmark_drag_(NULL) {
   // Register for notifications about URL starredness changing on any profile.
-  registrar_.Add(this, NotificationType::URLS_STARRED,
+  registrar_.Add(this, chrome::NOTIFICATION_URLS_STARRED,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::BOOKMARK_MODEL_LOADED,
+  registrar_.Add(this, chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED,
                  NotificationService::AllSources());
 }
 
@@ -61,13 +62,13 @@ void BookmarkTabHelper::DidNavigateMainFramePostCommit(
   UpdateStarredStateForCurrentURL();
 }
 
-void BookmarkTabHelper::Observe(NotificationType type,
+void BookmarkTabHelper::Observe(int type,
                                 const NotificationSource& source,
                                 const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::BOOKMARK_MODEL_LOADED:
+  switch (type) {
+    case chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED:
       // BookmarkModel finished loading, fall through to update starred state.
-    case NotificationType::URLS_STARRED: {
+    case chrome::NOTIFICATION_URLS_STARRED: {
       // Somewhere, a URL has been starred.
       // Ignore notifications for profiles other than our current one.
       Profile* source_profile = Source<Profile>(source).ptr();

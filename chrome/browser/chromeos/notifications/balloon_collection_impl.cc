@@ -13,6 +13,7 @@
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/window_sizer.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_service.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
@@ -29,7 +30,7 @@ namespace chromeos {
 
 BalloonCollectionImpl::BalloonCollectionImpl()
     : notification_ui_(new NotificationPanel()) {
-  registrar_.Add(this, NotificationType::BROWSER_CLOSED,
+  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSED,
                  NotificationService::AllSources());
 }
 
@@ -146,10 +147,10 @@ const BalloonCollectionImpl::Balloons&
   return base_.balloons();
 }
 
-void BalloonCollectionImpl::Observe(NotificationType type,
+void BalloonCollectionImpl::Observe(int type,
                                     const NotificationSource& source,
                                     const NotificationDetails& details) {
-  DCHECK(type == NotificationType::BROWSER_CLOSED);
+  DCHECK(type == chrome::NOTIFICATION_BROWSER_CLOSED);
   bool app_closing = *Details<bool>(details).ptr();
   // When exiting, we need to shutdown all renderers in
   // BalloonViewImpl before IO thread gets deleted in the

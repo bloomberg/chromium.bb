@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "chrome/browser/ui/views/bubble/border_contents.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_service.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/keycodes/keyboard_codes.h"
@@ -273,9 +274,9 @@ void Bubble::InitBubble(views::Widget* parent,
   GetWidget()->SetBounds(window_bounds);
 
   // Done creating the bubble.
-  NotificationService::current()->Notify(NotificationType::INFO_BUBBLE_CREATED,
-                                         Source<Bubble>(this),
-                                         NotificationService::NoDetails());
+  NotificationService::current()->Notify(
+      chrome::NOTIFICATION_INFO_BUBBLE_CREATED, Source<Bubble>(this),
+      NotificationService::NoDetails());
 
   // Show the window.
 #if defined(OS_WIN)

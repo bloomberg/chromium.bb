@@ -6,6 +6,7 @@
 
 #include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/renderer_preferences_util.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_source.h"
@@ -26,14 +27,15 @@ ChromeInterstitialPage::~ChromeInterstitialPage() {
 void ChromeInterstitialPage::Show() {
   InterstitialPage::Show();
 
-  notification_registrar_.Add(this, NotificationType::DOM_OPERATION_RESPONSE,
+  notification_registrar_.Add(
+      this, chrome::NOTIFICATION_DOM_OPERATION_RESPONSE,
       Source<RenderViewHost>(render_view_host()));
 }
 
-void ChromeInterstitialPage::Observe(NotificationType type,
+void ChromeInterstitialPage::Observe(int type,
                                      const NotificationSource& source,
                                      const NotificationDetails& details) {
-  if (NotificationType::DOM_OPERATION_RESPONSE == type.value) {
+  if (chrome::NOTIFICATION_DOM_OPERATION_RESPONSE == type) {
     if (enabled()) {
       Details<DomOperationNotificationDetails> dom_op_details(details);
       CommandReceived(dom_op_details->json());

@@ -8,6 +8,7 @@
 #include "chrome/browser/net/gaia/token_service_unittest.h"
 #include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/browser/webdata/web_data_service.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/test/signaling_task.h"
 #include "chrome/test/testing_profile.h"
@@ -22,9 +23,10 @@ class SigninManagerTest : public TokenServiceTestHarness {
   virtual void SetUp() {
     TokenServiceTestHarness::SetUp();
     manager_.reset(new SigninManager());
-    google_login_success_.ListenFor(NotificationType::GOOGLE_SIGNIN_SUCCESSFUL,
-                                    Source<Profile>(profile_.get()));
-    google_login_failure_.ListenFor(NotificationType::GOOGLE_SIGNIN_FAILED,
+    google_login_success_.ListenFor(
+        chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
+        Source<Profile>(profile_.get()));
+    google_login_failure_.ListenFor(chrome::NOTIFICATION_GOOGLE_SIGNIN_FAILED,
                                     Source<Profile>(profile_.get()));
 
     URLFetcher::set_factory(&factory_);

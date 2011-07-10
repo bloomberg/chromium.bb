@@ -35,6 +35,7 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/download/download_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
@@ -46,7 +47,6 @@
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 #include "grit/generated_resources.h"
 #include "net/base/io_buffer.h"
 #include "net/base/mime_util.h"
@@ -747,7 +747,7 @@ void SavePackage::Finish() {
   download_->MarkAsComplete();
 
   NotificationService::current()->Notify(
-      NotificationType::SAVE_PACKAGE_SUCCESSFULLY_FINISHED,
+      chrome::NOTIFICATION_SAVE_PACKAGE_SUCCESSFULLY_FINISHED,
       Source<SavePackage>(this),
       Details<GURL>(&page_url_));
 }

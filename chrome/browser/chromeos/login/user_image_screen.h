@@ -39,7 +39,7 @@ class UserImageScreen: public ViewScreen<UserImageView>,
   virtual void OnDefaultImageSelected(int index);
 
   // NotificationObserver implementation:
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

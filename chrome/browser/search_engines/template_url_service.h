@@ -229,7 +229,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   // . NOTIFY_GOOGLE_URL_UPDATED: updates mapping for any keywords containing
   //   a google base url replacement term.
   // . PREF_CHANGED: checks whether the default search engine has changed.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

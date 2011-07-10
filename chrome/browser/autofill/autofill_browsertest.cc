@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/translate_helper.h"
 #include "chrome/test/in_process_browser_test.h"
@@ -183,7 +184,7 @@ class AutofillTest : public InProcessBrowserTest {
     LOG(WARNING) << "Typing 'M' to bring up the Autofill popup.";
     ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
         browser(), ui::VKEY_M, false, true, false, false,
-        NotificationType::AUTOFILL_DID_SHOW_SUGGESTIONS,
+        chrome::NOTIFICATION_AUTOFILL_DID_SHOW_SUGGESTIONS,
         Source<RenderViewHost>(render_view_host())));
 
     // Press the down arrow to select the suggestion and preview the autofilled
@@ -191,7 +192,7 @@ class AutofillTest : public InProcessBrowserTest {
     LOG(WARNING) << "Simulating down arrow press to initiate Autofill preview.";
     ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
         browser(), ui::VKEY_DOWN, false, false, false, false,
-        NotificationType::AUTOFILL_DID_FILL_FORM_DATA,
+        chrome::NOTIFICATION_AUTOFILL_DID_FILL_FORM_DATA,
         Source<RenderViewHost>(render_view_host())));
 
     // The previewed values should not be accessible to JavaScript.
@@ -211,7 +212,7 @@ class AutofillTest : public InProcessBrowserTest {
     LOG(WARNING) << "Simulating Return press to fill the form.";
     ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
         browser(), ui::VKEY_RETURN, false, false, false, false,
-        NotificationType::AUTOFILL_DID_FILL_FORM_DATA,
+        chrome::NOTIFICATION_AUTOFILL_DID_FILL_FORM_DATA,
         Source<RenderViewHost>(render_view_host())));
 
     // The form should be filled.
@@ -251,20 +252,20 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, AutofillViaDownArrow) {
   // shown.
   ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
       browser(), ui::VKEY_DOWN, false, false, false, false,
-      NotificationType::AUTOFILL_DID_SHOW_SUGGESTIONS,
+      chrome::NOTIFICATION_AUTOFILL_DID_SHOW_SUGGESTIONS,
       Source<RenderViewHost>(render_view_host())));
 
   // Press the down arrow to select the suggestion and preview the autofilled
   // form.
   ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
       browser(), ui::VKEY_DOWN, false, false, false, false,
-      NotificationType::AUTOFILL_DID_FILL_FORM_DATA,
+      chrome::NOTIFICATION_AUTOFILL_DID_FILL_FORM_DATA,
       Source<RenderViewHost>(render_view_host())));
 
   // Press Enter to accept the autofill suggestions.
   ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
       browser(), ui::VKEY_RETURN, false, false, false, false,
-      NotificationType::AUTOFILL_DID_FILL_FORM_DATA,
+      chrome::NOTIFICATION_AUTOFILL_DID_FILL_FORM_DATA,
       Source<RenderViewHost>(render_view_host())));
 
   // The form should be filled.
@@ -308,20 +309,20 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, OnChangeAfterAutofill) {
   // shown.
   ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
       browser(), ui::VKEY_M, false, true, false, false,
-      NotificationType::AUTOFILL_DID_SHOW_SUGGESTIONS,
+      chrome::NOTIFICATION_AUTOFILL_DID_SHOW_SUGGESTIONS,
       Source<RenderViewHost>(render_view_host())));
 
   // Press the down arrow to select the suggestion and preview the autofilled
   // form.
   ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
       browser(), ui::VKEY_DOWN, false, false, false, false,
-      NotificationType::AUTOFILL_DID_FILL_FORM_DATA,
+      chrome::NOTIFICATION_AUTOFILL_DID_FILL_FORM_DATA,
       Source<RenderViewHost>(render_view_host())));
 
   // Press Enter to accept the autofill suggestions.
   ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
       browser(), ui::VKEY_RETURN, false, false, false, false,
-      NotificationType::AUTOFILL_DID_FILL_FORM_DATA,
+      chrome::NOTIFICATION_AUTOFILL_DID_FILL_FORM_DATA,
       Source<RenderViewHost>(render_view_host())));
 
   // The form should be filled.
@@ -484,7 +485,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, AutofillAfterTranslate) {
       L"cr.googleTranslate.onTranslateElementLoad();"));
 
   // Simulate the render notifying the translation has been done.
-  ui_test_utils::WaitForNotification(NotificationType::PAGE_TRANSLATED);
+  ui_test_utils::WaitForNotification(chrome::NOTIFICATION_PAGE_TRANSLATED);
 
   TryBasicFormFill();
 }

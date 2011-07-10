@@ -26,12 +26,12 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -438,7 +438,7 @@ void CrxInstaller::InstallUIAbort(bool user_initiated) {
 
   // Kill the theme loading bubble.
   NotificationService* service = NotificationService::current();
-  service->Notify(NotificationType::NO_THEME_DETECTED,
+  service->Notify(chrome::NOTIFICATION_NO_THEME_DETECTED,
                   Source<CrxInstaller>(this),
                   NotificationService::NoDetails());
   Release();  // balanced in ConfirmInstall().
@@ -511,7 +511,7 @@ void CrxInstaller::ReportFailureFromUIThread(const std::string& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   NotificationService* service = NotificationService::current();
-  service->Notify(NotificationType::EXTENSION_INSTALL_ERROR,
+  service->Notify(chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
                   Source<CrxInstaller>(this),
                   Details<const std::string>(&error));
 
@@ -572,7 +572,7 @@ void CrxInstaller::NotifyCrxInstallComplete() {
   // extension before it is unpacked, so they can not filter based
   // on the extension.
   NotificationService::current()->Notify(
-      NotificationType::CRX_INSTALLER_DONE,
+      chrome::NOTIFICATION_CRX_INSTALLER_DONE,
       Source<CrxInstaller>(this),
       NotificationService::NoDetails());
 }

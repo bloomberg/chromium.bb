@@ -32,6 +32,7 @@
 #include "chrome/browser/ui/views/tab_contents/tab_contents_container.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/debugger/devtools_toggle_action.h"
@@ -177,19 +178,19 @@ bool ExternalTabContainer::Init(Profile* profile,
   }
 
   NavigationController* controller = &tab_contents_->controller();
-  registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
+  registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                  Source<NavigationController>(controller));
-  registrar_.Add(this, NotificationType::FAIL_PROVISIONAL_LOAD_WITH_ERROR,
+  registrar_.Add(this, content::NOTIFICATION_FAIL_PROVISIONAL_LOAD_WITH_ERROR,
                  Source<NavigationController>(controller));
-  registrar_.Add(this, NotificationType::LOAD_STOP,
+  registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
                  Source<NavigationController>(controller));
-  registrar_.Add(this, NotificationType::RENDER_VIEW_HOST_CREATED_FOR_TAB,
+  registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,
                  Source<TabContents>(tab_contents_->tab_contents()));
-  registrar_.Add(this, NotificationType::RENDER_VIEW_HOST_DELETED,
+  registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_DELETED,
                  NotificationService::AllSources());
 
   NotificationService::current()->Notify(
-      NotificationType::EXTERNAL_TAB_CREATED,
+      chrome::NOTIFICATION_EXTERNAL_TAB_CREATED,
       Source<NavigationController>(controller),
       NotificationService::NoDetails());
 
@@ -233,7 +234,7 @@ void ExternalTabContainer::Uninitialize() {
       GetWidget()->GetRootView()->RemoveAllChildViews(true);
 
     NotificationService::current()->Notify(
-        NotificationType::EXTERNAL_TAB_CLOSED,
+        chrome::NOTIFICATION_EXTERNAL_TAB_CLOSED,
         Source<NavigationController>(&tab_contents_->controller()),
         Details<ExternalTabContainer>(this));
 
@@ -701,7 +702,7 @@ void ExternalTabContainer::OnForwardMessageToExternalHost(
 ////////////////////////////////////////////////////////////////////////////////
 // ExternalTabContainer, NotificationObserver implementation:
 
-void ExternalTabContainer::Observe(NotificationType type,
+void ExternalTabContainer::Observe(int type,
                                    const NotificationSource& source,
                                    const NotificationDetails& details) {
   if (!automation_)
@@ -710,8 +711,8 @@ void ExternalTabContainer::Observe(NotificationType type,
   static const int kHttpClientErrorStart = 400;
   static const int kHttpServerErrorEnd = 510;
 
-  switch (type.value) {
-    case NotificationType::LOAD_STOP: {
+  switch (type) {
+    case content::NOTIFICATION_LOAD_STOP: {
         const LoadNotificationDetails* load =
             Details<LoadNotificationDetails>(details).ptr();
         if (load != NULL && PageTransition::IsMainFrame(load->origin())) {
@@ -722,7 +723,7 @@ void ExternalTabContainer::Observe(NotificationType type,
         }
         break;
       }
-    case NotificationType::NAV_ENTRY_COMMITTED: {
+    case content::NOTIFICATION_NAV_ENTRY_COMMITTED: {
         if (ignore_next_load_notification_) {
           ignore_next_load_notification_ = false;
           return;
@@ -750,7 +751,7 @@ void ExternalTabContainer::Observe(NotificationType type,
         }
         break;
       }
-    case NotificationType::FAIL_PROVISIONAL_LOAD_WITH_ERROR: {
+    case content::NOTIFICATION_FAIL_PROVISIONAL_LOAD_WITH_ERROR: {
       const ProvisionalLoadDetails* load_details =
           Details<ProvisionalLoadDetails>(details).ptr();
       automation_->Send(new AutomationMsg_NavigationFailed(
@@ -759,14 +760,14 @@ void ExternalTabContainer::Observe(NotificationType type,
       ignore_next_load_notification_ = true;
       break;
     }
-    case NotificationType::RENDER_VIEW_HOST_CREATED_FOR_TAB: {
+    case content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB: {
       if (load_requests_via_automation_) {
         RenderViewHost* rvh = Details<RenderViewHost>(details).ptr();
         RegisterRenderViewHostForAutomation(rvh, false);
       }
       break;
     }
-    case NotificationType::RENDER_VIEW_HOST_DELETED: {
+    case content::NOTIFICATION_RENDER_VIEW_HOST_DELETED: {
       if (load_requests_via_automation_) {
         RenderViewHost* rvh = Source<RenderViewHost>(source).ptr();
         UnregisterRenderViewHost(rvh);

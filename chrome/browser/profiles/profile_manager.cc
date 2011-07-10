@@ -27,8 +27,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 #include "grit/generated_resources.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request_context.h"
@@ -104,7 +104,7 @@ ProfileManager::ProfileManager() : logged_in_(false) {
 #if defined(OS_CHROMEOS)
   registrar_.Add(
       this,
-      NotificationType::LOGIN_USER_CHANGED,
+      chrome::LOGIN_USER_CHANGED,
       NotificationService::AllSources());
 #endif
 }
@@ -342,11 +342,11 @@ Profile* ProfileManager::GetProfileByPath(const FilePath& path) const {
 }
 
 void ProfileManager::Observe(
-    NotificationType type,
+    int type,
     const NotificationSource& source,
     const NotificationDetails& details) {
 #if defined(OS_CHROMEOS)
-  if (type == NotificationType::LOGIN_USER_CHANGED) {
+  if (type == chrome::LOGIN_USER_CHANGED) {
     const CommandLine& command_line = *CommandLine::ForCurrentProcess();
     if (!command_line.HasSwitch(switches::kTestType)) {
       // This will fail when running on non cros os.

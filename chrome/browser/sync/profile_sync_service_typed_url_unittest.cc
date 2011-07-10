@@ -28,6 +28,7 @@
 #include "chrome/browser/sync/protocol/typed_url_specifics.pb.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/test/profile_mock.h"
 #include "chrome/test/sync/engine/test_id_factory.h"
@@ -434,7 +435,7 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeAdd) {
   history::URLsModifiedDetails details;
   details.changed_urls.push_back(added_entry);
   scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&history_thread_));
-  notifier->Notify(NotificationType::HISTORY_TYPED_URLS_MODIFIED,
+  notifier->Notify(chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED,
                    Details<history::URLsModifiedDetails>(&details));
 
   std::vector<history::URLRow> new_sync_entries;
@@ -470,7 +471,7 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeUpdate) {
   history::URLsModifiedDetails details;
   details.changed_urls.push_back(updated_entry);
   scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&history_thread_));
-  notifier->Notify(NotificationType::HISTORY_TYPED_URLS_MODIFIED,
+  notifier->Notify(chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED,
                    Details<history::URLsModifiedDetails>(&details));
 
   std::vector<history::URLRow> new_sync_entries;
@@ -497,7 +498,7 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeAddFromVisit) {
   details.row = added_entry;
   details.transition = PageTransition::TYPED;
   scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&history_thread_));
-  notifier->Notify(NotificationType::HISTORY_URL_VISITED,
+  notifier->Notify(chrome::NOTIFICATION_HISTORY_URL_VISITED,
                    Details<history::URLVisitedDetails>(&details));
 
   std::vector<history::URLRow> new_sync_entries;
@@ -534,7 +535,7 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeUpdateFromVisit) {
   details.row = updated_entry;
   details.transition = PageTransition::TYPED;
   scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&history_thread_));
-  notifier->Notify(NotificationType::HISTORY_URL_VISITED,
+  notifier->Notify(chrome::NOTIFICATION_HISTORY_URL_VISITED,
                    Details<history::URLVisitedDetails>(&details));
 
   std::vector<history::URLRow> new_sync_entries;
@@ -573,7 +574,7 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserIgnoreChangeUpdateFromVisit) {
   // Should ignore this change because it's not TYPED.
   details.transition = PageTransition::RELOAD;
   scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&history_thread_));
-  notifier->Notify(NotificationType::HISTORY_URL_VISITED,
+  notifier->Notify(chrome::NOTIFICATION_HISTORY_URL_VISITED,
                    Details<history::URLVisitedDetails>(&details));
 
   GetTypedUrlsFromSyncDB(&new_sync_entries);
@@ -589,7 +590,7 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserIgnoreChangeUpdateFromVisit) {
                                                   &updated_visits));
   details.row = twelve_visits;
   details.transition = PageTransition::TYPED;
-  notifier->Notify(NotificationType::HISTORY_URL_VISITED,
+  notifier->Notify(chrome::NOTIFICATION_HISTORY_URL_VISITED,
                    Details<history::URLVisitedDetails>(&details));
   GetTypedUrlsFromSyncDB(&new_sync_entries);
   // Should be no changes to the sync DB from this notification.
@@ -603,7 +604,7 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserIgnoreChangeUpdateFromVisit) {
                                                   &updated_visits));
   details.row = twenty_visits;
   details.transition = PageTransition::TYPED;
-  notifier->Notify(NotificationType::HISTORY_URL_VISITED,
+  notifier->Notify(chrome::NOTIFICATION_HISTORY_URL_VISITED,
                    Details<history::URLVisitedDetails>(&details));
   GetTypedUrlsFromSyncDB(&new_sync_entries);
   ASSERT_EQ(1U, new_sync_entries.size());
@@ -636,7 +637,7 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeRemove) {
   changes.all_history = false;
   changes.urls.insert(GURL("http://mine.com"));
   scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&history_thread_));
-  notifier->Notify(NotificationType::HISTORY_URLS_DELETED,
+  notifier->Notify(chrome::NOTIFICATION_HISTORY_URLS_DELETED,
                    Details<history::URLsDeletedDetails>(&changes));
 
   std::vector<history::URLRow> new_sync_entries;
@@ -670,7 +671,7 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeRemoveAll) {
   history::URLsDeletedDetails changes;
   changes.all_history = true;
   scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&history_thread_));
-  notifier->Notify(NotificationType::HISTORY_URLS_DELETED,
+  notifier->Notify(chrome::NOTIFICATION_HISTORY_URLS_DELETED,
                    Details<history::URLsDeletedDetails>(&changes));
 
   std::vector<history::URLRow> new_sync_entries;

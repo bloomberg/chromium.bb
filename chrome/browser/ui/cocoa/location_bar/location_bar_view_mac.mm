@@ -41,6 +41,7 @@
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
 #include "chrome/browser/ui/omnibox/location_bar_util.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_resource.h"
@@ -100,7 +101,7 @@ LocationBarViewMac::LocationBarViewMac(
   }
 
   registrar_.Add(this,
-      NotificationType::EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
+      chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
       NotificationService::AllSources());
 
   edit_bookmarks_enabled_.Init(prefs::kEditBookmarksEnabled,
@@ -181,7 +182,7 @@ void LocationBarViewMac::UpdatePageActions() {
   Layout();
   if (page_action_decorations_.size() != count_before) {
     NotificationService::current()->Notify(
-        NotificationType::EXTENSION_PAGE_ACTION_COUNT_CHANGED,
+        chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_COUNT_CHANGED,
         Source<LocationBar>(this),
         NotificationService::NoDetails());
   }
@@ -193,7 +194,7 @@ void LocationBarViewMac::InvalidatePageActions() {
   Layout();
   if (page_action_decorations_.size() != count_before) {
     NotificationService::current()->Notify(
-        NotificationType::EXTENSION_PAGE_ACTION_COUNT_CHANGED,
+        chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_COUNT_CHANGED,
         Source<LocationBar>(this),
         NotificationService::NoDetails());
   }
@@ -474,11 +475,11 @@ NSImage* LocationBarViewMac::GetKeywordImage(const string16& keyword) {
   return OmniboxViewMac::ImageForResource(IDR_OMNIBOX_SEARCH);
 }
 
-void LocationBarViewMac::Observe(NotificationType type,
+void LocationBarViewMac::Observe(int type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED: {
+  switch (type) {
+    case chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED: {
       TabContents* contents = GetTabContents();
       if (Details<TabContents>(contents) != details)
         return;
@@ -488,7 +489,7 @@ void LocationBarViewMac::Observe(NotificationType type,
       break;
     }
 
-    case NotificationType::PREF_CHANGED:
+    case chrome::NOTIFICATION_PREF_CHANGED:
       star_decoration_->SetVisible(IsStarEnabled());
       OnChanged();
       break;

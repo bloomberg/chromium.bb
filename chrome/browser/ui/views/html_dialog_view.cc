@@ -10,9 +10,9 @@
 #include "chrome/browser/ui/views/window.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/native_web_keyboard_event.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "views/events/event.h"
 #include "views/widget/root_view.h"
@@ -251,33 +251,33 @@ void HtmlDialogView::InitDialog() {
                                                   this);
   notification_registrar_.Add(
       this,
-      NotificationType::RENDER_VIEW_HOST_CREATED_FOR_TAB,
+      content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,
       Source<TabContents>(tab_contents()));
   notification_registrar_.Add(
       this,
-      NotificationType::LOAD_COMPLETED_MAIN_FRAME,
+      content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
       Source<TabContents>(tab_contents()));
 
   DOMView::LoadURL(GetDialogContentURL());
 }
 
-void HtmlDialogView::Observe(NotificationType type,
+void HtmlDialogView::Observe(int type,
                              const NotificationSource& source,
                              const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::RENDER_VIEW_HOST_CREATED_FOR_TAB: {
+  switch (type) {
+    case content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB: {
       RenderWidgetHost* rwh = Details<RenderWidgetHost>(details).ptr();
       notification_registrar_.Add(
           this,
-          NotificationType::RENDER_WIDGET_HOST_DID_PAINT,
+          content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT,
           Source<RenderWidgetHost>(rwh));
       break;
     }
-    case NotificationType::LOAD_COMPLETED_MAIN_FRAME:
+    case content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME:
       if (state_ == INITIALIZED)
         state_ = LOADED;
       break;
-    case NotificationType::RENDER_WIDGET_HOST_DID_PAINT:
+    case content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT:
       if (state_ == LOADED) {
         state_ = PAINTED;
 #if defined(OS_CHROMEOS)
@@ -287,7 +287,7 @@ void HtmlDialogView::Observe(NotificationType type,
       }
       break;
     default:
-      NOTREACHED() << "unknown type" << type.value;
+      NOTREACHED() << "unknown type" << type;
   }
 }
 

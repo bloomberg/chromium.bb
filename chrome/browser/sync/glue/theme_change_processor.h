@@ -9,9 +9,9 @@
 #include "base/basictypes.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/change_processor.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
-#include "content/common/notification_type.h"
 
 class NotificationDetails;
 class NotificationSource;
@@ -33,7 +33,7 @@ class ThemeChangeProcessor : public ChangeProcessor,
 
   // NotificationObserver implementation.
   // ThemeService -> sync_api model change application.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

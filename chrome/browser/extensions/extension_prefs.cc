@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/prefs/pref_notifier.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/url_pattern.h"
@@ -1042,7 +1043,7 @@ void ExtensionPrefs::SetBrowserActionVisibility(const Extension* extension,
   UpdateExtensionPref(extension->id(), kBrowserActionVisible,
                       Value::CreateBooleanValue(visible));
   NotificationService::current()->Notify(
-      NotificationType::EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
+      chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
       Source<ExtensionPrefs>(this),
       Details<const Extension>(extension));
 }
@@ -1354,7 +1355,7 @@ void ExtensionPrefs::SetAppLauncherOrder(
     SetAppLaunchIndex(extension_ids.at(i), i);
 
   NotificationService::current()->Notify(
-      NotificationType::EXTENSION_LAUNCHER_REORDERED,
+      chrome::NOTIFICATION_EXTENSION_LAUNCHER_REORDERED,
       Source<ExtensionPrefs>(this),
       NotificationService::NoDetails());
 }

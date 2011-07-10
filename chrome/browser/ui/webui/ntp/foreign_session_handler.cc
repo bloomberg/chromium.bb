@@ -16,6 +16,7 @@
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_service.h"
 #include "chrome/common/url_constants.h"
@@ -42,24 +43,24 @@ void ForeignSessionHandler::RegisterMessages() {
 }
 
 void ForeignSessionHandler::Init() {
-  registrar_.Add(this, NotificationType::SYNC_CONFIGURE_DONE,
+  registrar_.Add(this, chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::FOREIGN_SESSION_UPDATED,
+  registrar_.Add(this, chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::FOREIGN_SESSION_DISABLED,
+  registrar_.Add(this, chrome::NOTIFICATION_FOREIGN_SESSION_DISABLED,
                  NotificationService::AllSources());
 }
 
-void ForeignSessionHandler::Observe(NotificationType type,
+void ForeignSessionHandler::Observe(int type,
                                     const NotificationSource& source,
                                     const NotificationDetails& details) {
   ListValue list_value;
-  switch (type.value) {
-    case NotificationType::SYNC_CONFIGURE_DONE:
-    case NotificationType::FOREIGN_SESSION_UPDATED:
+  switch (type) {
+    case chrome::NOTIFICATION_SYNC_CONFIGURE_DONE:
+    case chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED:
       HandleGetForeignSessions(&list_value);
       break;
-    case NotificationType::FOREIGN_SESSION_DISABLED:
+    case chrome::NOTIFICATION_FOREIGN_SESSION_DISABLED:
       // Calling foreignSessions with empty list will automatically hide
       // foreign session section.
       web_ui_->CallJavascriptFunction("foreignSessions", list_value);

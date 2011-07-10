@@ -50,7 +50,7 @@ class DownloadStartedAnimationWin : public ui::LinearAnimation,
   virtual void AnimateToState(double state);
 
   // NotificationObserver
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -92,11 +92,11 @@ DownloadStartedAnimationWin::DownloadStartedAnimationWin(
 
   registrar_.Add(
       this,
-      NotificationType::TAB_CONTENTS_HIDDEN,
+      content::NOTIFICATION_TAB_CONTENTS_HIDDEN,
       Source<TabContents>(tab_contents_));
   registrar_.Add(
       this,
-      NotificationType::TAB_CONTENTS_DESTROYED,
+      content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
       Source<TabContents>(tab_contents_));
 
   SetImage(kDownloadImage);
@@ -139,11 +139,11 @@ void DownloadStartedAnimationWin::Close() {
 
   registrar_.Remove(
       this,
-      NotificationType::TAB_CONTENTS_HIDDEN,
+      content::NOTIFICATION_TAB_CONTENTS_HIDDEN,
       Source<TabContents>(tab_contents_));
   registrar_.Remove(
       this,
-      NotificationType::TAB_CONTENTS_DESTROYED,
+      content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
       Source<TabContents>(tab_contents_));
   tab_contents_ = NULL;
   popup_->Close();
@@ -166,7 +166,7 @@ void DownloadStartedAnimationWin::AnimateToState(double state) {
   }
 }
 
-void DownloadStartedAnimationWin::Observe(NotificationType type,
+void DownloadStartedAnimationWin::Observe(int type,
                                           const NotificationSource& source,
                                           const NotificationDetails& details) {
   Close();

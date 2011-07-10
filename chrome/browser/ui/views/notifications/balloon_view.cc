@@ -15,11 +15,12 @@
 #include "chrome/browser/notifications/notification_options_menu_model.h"
 #include "chrome/browser/ui/views/bubble/bubble_border.h"
 #include "chrome/browser/ui/views/notifications/balloon_view_host.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -357,8 +358,9 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   html_container_->Show();
   frame_container_->Show();
 
-  notification_registrar_.Add(this,
-    NotificationType::NOTIFY_BALLOON_DISCONNECTED, Source<Balloon>(balloon));
+  notification_registrar_.Add(
+    this, chrome::NOTIFICATION_NOTIFY_BALLOON_DISCONNECTED,
+    Source<Balloon>(balloon));
 }
 
 void BalloonViewImpl::RunOptionsMenu(const gfx::Point& pt) {
@@ -488,17 +490,18 @@ void BalloonViewImpl::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   SizeContentsWindow();
 }
 
-void BalloonViewImpl::Observe(NotificationType type,
+void BalloonViewImpl::Observe(int type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
-  if (type != NotificationType::NOTIFY_BALLOON_DISCONNECTED) {
+  if (type != chrome::NOTIFICATION_NOTIFY_BALLOON_DISCONNECTED) {
     NOTREACHED();
     return;
   }
 
   // If the renderer process attached to this balloon is disconnected
   // (e.g., because of a crash), we want to close the balloon.
-  notification_registrar_.Remove(this,
-      NotificationType::NOTIFY_BALLOON_DISCONNECTED, Source<Balloon>(balloon_));
+  notification_registrar_.Remove(
+      this, chrome::NOTIFICATION_NOTIFY_BALLOON_DISCONNECTED,
+      Source<Balloon>(balloon_));
   Close(false);
 }

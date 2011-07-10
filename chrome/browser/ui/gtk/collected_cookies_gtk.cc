@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/gtk/gtk_chrome_cookie_view.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_source.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -82,7 +83,7 @@ CollectedCookiesGtk::CollectedCookiesGtk(GtkWindow* parent,
   TabSpecificContentSettings* content_settings =
       TabContentsWrapper::GetCurrentWrapperForContents(tab_contents)->
           content_settings();
-  registrar_.Add(this, NotificationType::COLLECTED_COOKIES_SHOWN,
+  registrar_.Add(this, chrome::NOTIFICATION_COLLECTED_COOKIES_SHOWN,
                  Source<TabSpecificContentSettings>(content_settings));
 
   Init();
@@ -420,10 +421,10 @@ void CollectedCookiesGtk::EnableControls() {
                            enable_for_blocked_cookies);
 }
 
-void CollectedCookiesGtk::Observe(NotificationType type,
+void CollectedCookiesGtk::Observe(int type,
                                   const NotificationSource& source,
                                   const NotificationDetails& details) {
-  DCHECK(type == NotificationType::COLLECTED_COOKIES_SHOWN);
+  DCHECK(type == chrome::NOTIFICATION_COLLECTED_COOKIES_SHOWN);
   window_->CloseConstrainedWindow();
 }
 

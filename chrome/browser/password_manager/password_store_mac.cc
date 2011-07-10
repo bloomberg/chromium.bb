@@ -20,6 +20,7 @@
 #include "chrome/browser/keychain_mac.h"
 #include "chrome/browser/password_manager/login_database.h"
 #include "chrome/browser/password_manager/password_store_change.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_service.h"
 
 using webkit_glue::PasswordForm;
@@ -770,7 +771,7 @@ void PasswordStoreMac::AddLoginImpl(const PasswordForm& form) {
       PasswordStoreChangeList changes;
       changes.push_back(PasswordStoreChange(PasswordStoreChange::ADD, form));
       NotificationService::current()->Notify(
-          NotificationType::LOGINS_CHANGED,
+          chrome::NOTIFICATION_LOGINS_CHANGED,
           Source<PasswordStore>(this),
           Details<PasswordStoreChangeList>(&changes));
     }
@@ -805,7 +806,7 @@ void PasswordStoreMac::UpdateLoginImpl(const PasswordForm& form) {
     }
     if (!changes.empty()) {
       NotificationService::current()->Notify(
-          NotificationType::LOGINS_CHANGED,
+          chrome::NOTIFICATION_LOGINS_CHANGED,
           Source<PasswordStore>(this),
           Details<PasswordStoreChangeList>(&changes));
     }
@@ -836,7 +837,7 @@ void PasswordStoreMac::RemoveLoginImpl(const PasswordForm& form) {
     PasswordStoreChangeList changes;
     changes.push_back(PasswordStoreChange(PasswordStoreChange::REMOVE, form));
     NotificationService::current()->Notify(
-        NotificationType::LOGINS_CHANGED,
+        chrome::NOTIFICATION_LOGINS_CHANGED,
         Source<PasswordStore>(this),
         Details<PasswordStoreChangeList>(&changes));
   }
@@ -870,7 +871,7 @@ void PasswordStoreMac::RemoveLoginsCreatedBetweenImpl(
                                               **it));
       }
       NotificationService::current()->Notify(
-          NotificationType::LOGINS_CHANGED,
+          chrome::NOTIFICATION_LOGINS_CHANGED,
           Source<PasswordStore>(this),
           Details<PasswordStoreChangeList>(&changes));
     }

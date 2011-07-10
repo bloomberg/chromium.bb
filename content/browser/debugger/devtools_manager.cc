@@ -41,7 +41,7 @@ void DevToolsManager::RegisterUserPrefs(PrefService* prefs) {
 
 DevToolsManager::DevToolsManager()
     : last_orphan_cookie_(0) {
-  registrar_.Add(this, NotificationType::RENDER_VIEW_HOST_DELETED,
+  registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_DELETED,
                  NotificationService::AllSources());
 }
 
@@ -135,17 +135,17 @@ void DevToolsManager::ClientHostClosing(DevToolsClientHost* host) {
   }
 
   NotificationService::current()->Notify(
-      NotificationType::DEVTOOLS_WINDOW_CLOSING,
+      content::NOTIFICATION_DEVTOOLS_WINDOW_CLOSING,
       Source<Profile>(inspected_rvh->site_instance()->GetProcess()->profile()),
       Details<RenderViewHost>(inspected_rvh));
 
   UnbindClientHost(inspected_rvh, host);
 }
 
-void DevToolsManager::Observe(NotificationType type,
+void DevToolsManager::Observe(int type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
-  DCHECK(type == NotificationType::RENDER_VIEW_HOST_DELETED);
+  DCHECK(type == content::NOTIFICATION_RENDER_VIEW_HOST_DELETED);
   UnregisterDevToolsClientHostFor(Source<RenderViewHost>(source).ptr());
 }
 

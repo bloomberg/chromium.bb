@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/password_manager/encryptor.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/gaia_auth_fetcher_unittest.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
@@ -18,11 +19,11 @@ TokenAvailableTracker::TokenAvailableTracker() {}
 
 TokenAvailableTracker::~TokenAvailableTracker() {}
 
-void TokenAvailableTracker::Observe(NotificationType type,
+void TokenAvailableTracker::Observe(int type,
                                     const NotificationSource& source,
                                     const NotificationDetails& details) {
   TestNotificationTracker::Observe(type, source, details);
-  if (type == NotificationType::TOKEN_AVAILABLE) {
+  if (type == chrome::NOTIFICATION_TOKEN_AVAILABLE) {
     Details<const TokenService::TokenAvailableDetails> full = details;
     details_ = *full.ptr();
   }
@@ -32,11 +33,11 @@ TokenFailedTracker::TokenFailedTracker() {}
 
 TokenFailedTracker::~TokenFailedTracker() {}
 
-void TokenFailedTracker::Observe(NotificationType type,
+void TokenFailedTracker::Observe(int type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {
   TestNotificationTracker::Observe(type, source, details);
-  if (type == NotificationType::TOKEN_REQUEST_FAILED) {
+  if (type == chrome::NOTIFICATION_TOKEN_REQUEST_FAILED) {
     Details<const TokenService::TokenRequestFailedDetails> full = details;
     details_ = *full.ptr();
   }
@@ -64,9 +65,9 @@ void TokenServiceTestHarness::SetUp() {
   profile_->CreateWebDataService(false);
   WaitForDBLoadCompletion();
 
-  success_tracker_.ListenFor(NotificationType::TOKEN_AVAILABLE,
+  success_tracker_.ListenFor(chrome::NOTIFICATION_TOKEN_AVAILABLE,
                              Source<TokenService>(&service_));
-  failure_tracker_.ListenFor(NotificationType::TOKEN_REQUEST_FAILED,
+  failure_tracker_.ListenFor(chrome::NOTIFICATION_TOKEN_REQUEST_FAILED,
                              Source<TokenService>(&service_));
 
   service_.Initialize("test", profile_.get());

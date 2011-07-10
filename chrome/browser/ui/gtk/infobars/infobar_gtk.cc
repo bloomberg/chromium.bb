@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/infobars/infobar_container_gtk.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_service.h"
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/image/image.h"
@@ -91,7 +92,7 @@ InfoBarGtk::InfoBarGtk(TabContentsWrapper* owner, InfoBarDelegate* delegate)
                    G_CALLBACK(OnChildSizeRequestThunk),
                    this);
 
-  registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
+  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  Source<ThemeService>(theme_service_));
   UpdateBorderColor();
 }
@@ -251,7 +252,7 @@ void InfoBarGtk::PlatformSpecificOnHeightsRecalculated() {
   gtk_widget_queue_draw(widget_.get());
 }
 
-void InfoBarGtk::Observe(NotificationType type,
+void InfoBarGtk::Observe(int type,
                          const NotificationSource& source,
                          const NotificationDetails& details) {
   UpdateBorderColor();

@@ -9,6 +9,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_browser_process_test.h"
 #include "chrome/test/testing_pref_service.h"
@@ -30,7 +31,7 @@ class TestNotificationObserver : public NotificationObserver {
   TestNotificationObserver();
   virtual ~TestNotificationObserver();
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
   bool notified() const { return notified_; }
@@ -46,7 +47,7 @@ TestNotificationObserver::TestNotificationObserver() : notified_(false) {
 TestNotificationObserver::~TestNotificationObserver() {
 }
 
-void TestNotificationObserver::Observe(NotificationType type,
+void TestNotificationObserver::Observe(int type,
                                        const NotificationSource& source,
                                        const NotificationDetails& details) {
   notified_ = true;
@@ -186,9 +187,9 @@ void GoogleURLTrackerTest::MockSearchDomainCheckResponse(
 
 void GoogleURLTrackerTest::RequestServerCheck() {
   if (!registrar_.IsRegistered(observer_.get(),
-                               NotificationType::GOOGLE_URL_UPDATED,
+                               chrome::NOTIFICATION_GOOGLE_URL_UPDATED,
                                NotificationService::AllSources())) {
-    registrar_.Add(observer_.get(), NotificationType::GOOGLE_URL_UPDATED,
+    registrar_.Add(observer_.get(), chrome::NOTIFICATION_GOOGLE_URL_UPDATED,
                    NotificationService::AllSources());
   }
   GoogleURLTracker::RequestServerCheck();
@@ -228,7 +229,7 @@ void GoogleURLTrackerTest::SearchCommitted(const GURL& search_url) {
       g_browser_process->google_url_tracker();
   google_url_tracker->SearchCommitted();
   if (google_url_tracker->registrar_.IsRegistered(google_url_tracker,
-      NotificationType::NAV_ENTRY_PENDING,
+      content::NOTIFICATION_NAV_ENTRY_PENDING,
       NotificationService::AllSources()))
     google_url_tracker->search_url_ = search_url;
 }

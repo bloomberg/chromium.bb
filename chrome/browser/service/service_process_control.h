@@ -76,7 +76,7 @@ class ServiceProcessControl : public IPC::Channel::Sender,
   virtual bool Send(IPC::Message* message);
 
   // NotificationObserver implementation.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

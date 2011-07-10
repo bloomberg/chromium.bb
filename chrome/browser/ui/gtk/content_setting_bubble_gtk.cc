@@ -18,8 +18,8 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/common/content_settings.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -58,7 +58,7 @@ ContentSettingBubbleGtk::ContentSettingBubbleGtk(
       delegate_(delegate),
       content_setting_bubble_model_(content_setting_bubble_model),
       bubble_(NULL) {
-  registrar_.Add(this, NotificationType::TAB_CONTENTS_DESTROYED,
+  registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
                  Source<TabContents>(tab_contents));
   BuildBubble();
 }
@@ -77,10 +77,10 @@ void ContentSettingBubbleGtk::BubbleClosing(BubbleGtk* bubble,
   delete this;
 }
 
-void ContentSettingBubbleGtk::Observe(NotificationType type,
+void ContentSettingBubbleGtk::Observe(int type,
                                       const NotificationSource& source,
                                       const NotificationDetails& details) {
-  DCHECK(type == NotificationType::TAB_CONTENTS_DESTROYED);
+  DCHECK(type == content::NOTIFICATION_TAB_CONTENTS_DESTROYED);
   DCHECK(source == Source<TabContents>(tab_contents_));
   tab_contents_ = NULL;
 }

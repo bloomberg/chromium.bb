@@ -16,6 +16,7 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_content_client.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
@@ -70,10 +71,10 @@ void PluginUpdater::EnablePlugin(bool enable,
   NotifyPluginStatusChanged();
 }
 
-void PluginUpdater::Observe(NotificationType type,
+void PluginUpdater::Observe(int type,
                             const NotificationSource& source,
                             const NotificationDetails& details) {
-  DCHECK_EQ(NotificationType::PREF_CHANGED, type.value);
+  DCHECK_EQ(chrome::NOTIFICATION_PREF_CHANGED, type);
   const std::string* pref_name = Details<std::string>(details).ptr();
   if (!pref_name) {
     NOTREACHED();
@@ -328,7 +329,7 @@ void PluginUpdater::NotifyPluginStatusChanged() {
 void PluginUpdater::OnNotifyPluginStatusChanged() {
   GetInstance()->notify_pending_ = false;
   NotificationService::current()->Notify(
-      NotificationType::PLUGIN_ENABLE_STATUS_CHANGED,
+      content::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED,
       Source<PluginUpdater>(GetInstance()),
       NotificationService::NoDetails());
 }

@@ -6,6 +6,7 @@
 #include "chrome/browser/prefs/pref_observer_mock.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_value_store.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/testing_pref_service.h"
 #include "content/common/notification_observer_mock.h"
 #include "content/common/notification_registrar.h"
@@ -80,11 +81,10 @@ TEST_F(PrefNotifierTest, OnInitializationCompleted) {
   MockPrefNotifier notifier(&pref_service_);
   NotificationObserverMock observer;
   NotificationRegistrar registrar;
-  registrar.Add(&observer, NotificationType::PREF_INITIALIZATION_COMPLETED,
+  registrar.Add(&observer, chrome::NOTIFICATION_PREF_INITIALIZATION_COMPLETED,
                 Source<PrefService>(&pref_service_));
   EXPECT_CALL(observer, Observe(
-      Field(&NotificationType::value,
-            NotificationType::PREF_INITIALIZATION_COMPLETED),
+      int(chrome::NOTIFICATION_PREF_INITIALIZATION_COMPLETED),
       Source<PrefService>(&pref_service_),
       Property(&Details<bool>::ptr, testing::Pointee(true))));
   notifier.OnInitializationCompleted(true);

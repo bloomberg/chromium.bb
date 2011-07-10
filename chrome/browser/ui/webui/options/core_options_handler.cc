@@ -14,11 +14,12 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/user_metrics.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_details.h"
-#include "content/common/notification_type.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -95,10 +96,10 @@ WebUIMessageHandler* CoreOptionsHandler::Attach(WebUI* web_ui) {
   return result;
 }
 
-void CoreOptionsHandler::Observe(NotificationType type,
+void CoreOptionsHandler::Observe(int type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {
-  if (type == NotificationType::PREF_CHANGED)
+  if (type == chrome::NOTIFICATION_PREF_CHANGED)
     NotifyPrefChanged(Details<std::string>(details).ptr());
 }
 

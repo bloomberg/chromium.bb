@@ -31,6 +31,7 @@
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/webdata/web_data_service.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
@@ -153,7 +154,7 @@ void BrowsingDataRemover::Remove(int remove_mask) {
     TemplateURLService* keywords_model =
         TemplateURLServiceFactory::GetForProfile(profile_);
     if (keywords_model && !keywords_model->loaded()) {
-      registrar_.Add(this, NotificationType::TEMPLATE_URL_SERVICE_LOADED,
+      registrar_.Add(this, chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED,
                      Source<TemplateURLService>(keywords_model));
       keywords_model->Load();
     } else if (keywords_model) {
@@ -361,13 +362,13 @@ base::Time BrowsingDataRemover::CalculateBeginDeleteTime(
   return delete_begin_time - diff;
 }
 
-void BrowsingDataRemover::Observe(NotificationType type,
+void BrowsingDataRemover::Observe(int type,
                                   const NotificationSource& source,
                                   const NotificationDetails& details) {
   // TODO(brettw) bug 1139736: This should also observe session
   // clearing (what about other things such as passwords, etc.?) and wait for
   // them to complete before continuing.
-  DCHECK(type == NotificationType::TEMPLATE_URL_SERVICE_LOADED);
+  DCHECK(type == chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED);
   TemplateURLService* model = Source<TemplateURLService>(source).ptr();
   if (model->profile() == profile_->GetOriginalProfile()) {
     registrar_.RemoveAll();

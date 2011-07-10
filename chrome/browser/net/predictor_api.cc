@@ -25,6 +25,7 @@
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_registrar.h"
@@ -304,24 +305,24 @@ class OffTheRecordObserver : public NotificationObserver {
   void Register() {
     // TODO(pkasting): This test should not be necessary.  See crbug.com/12475.
     if (registrar_.IsEmpty()) {
-      registrar_.Add(this, NotificationType::BROWSER_CLOSED,
+      registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSED,
                      NotificationService::AllSources());
-      registrar_.Add(this, NotificationType::BROWSER_OPENED,
+      registrar_.Add(this, chrome::NOTIFICATION_BROWSER_OPENED,
                      NotificationService::AllSources());
     }
   }
 
-  void Observe(NotificationType type, const NotificationSource& source,
+  void Observe(int type, const NotificationSource& source,
                const NotificationDetails& details) {
-    switch (type.value) {
-      case NotificationType::BROWSER_OPENED:
+    switch (type) {
+      case chrome::NOTIFICATION_BROWSER_OPENED:
         if (!Source<Browser>(source)->profile()->IsOffTheRecord())
           break;
         ++count_off_the_record_windows_;
         OnTheRecord(false);
         break;
 
-      case NotificationType::BROWSER_CLOSED:
+      case chrome::NOTIFICATION_BROWSER_CLOSED:
         if (!Source<Browser>(source)->profile()->IsOffTheRecord())
         break;  // Ignore ordinary windows.
         DCHECK_LT(0, count_off_the_record_windows_);

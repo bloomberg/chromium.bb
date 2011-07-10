@@ -10,9 +10,9 @@
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 #include "net/base/ssl_config_service.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -73,7 +73,7 @@ class SSLConfigServiceManagerPref
 
   // Callback for preference changes.  This will post the changes to the IO
   // thread with SetNewSSLConfig.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -129,7 +129,7 @@ net::SSLConfigService* SSLConfigServiceManagerPref::Get() {
   return ssl_config_service_;
 }
 
-void SSLConfigServiceManagerPref::Observe(NotificationType type,
+void SSLConfigServiceManagerPref::Observe(int type,
                                           const NotificationSource& source,
                                           const NotificationDetails& details) {
   base::Thread* io_thread = g_browser_process->io_thread();

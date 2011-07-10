@@ -113,7 +113,7 @@ TEST_F(ProfileManagerTest, LoggedInProfileDir) {
   EXPECT_EQ(expected_default.value(),
             profile_manager_->GetCurrentProfileDir().value());
 
-  profile_manager_->Observe(NotificationType::LOGIN_USER_CHANGED,
+  profile_manager_->Observe(chrome::LOGIN_USER_CHANGED,
                            NotificationService::AllSources(),
                            NotificationService::NoDetails());
   FilePath expected_logged_in(profile_dir);

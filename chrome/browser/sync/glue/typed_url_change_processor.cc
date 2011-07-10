@@ -13,8 +13,8 @@
 #include "chrome/browser/sync/glue/typed_url_model_associator.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/protocol/typed_url_specifics.pb.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 
 namespace browser_sync {
 
@@ -50,7 +50,7 @@ TypedUrlChangeProcessor::~TypedUrlChangeProcessor() {
   DCHECK(expected_loop_ == MessageLoop::current());
 }
 
-void TypedUrlChangeProcessor::Observe(NotificationType type,
+void TypedUrlChangeProcessor::Observe(int type,
                                       const NotificationSource& source,
                                       const NotificationDetails& details) {
   DCHECK(expected_loop_ == MessageLoop::current());
@@ -59,14 +59,14 @@ void TypedUrlChangeProcessor::Observe(NotificationType type,
 
   VLOG(1) << "Observed typed_url change.";
   DCHECK(running());
-  DCHECK(NotificationType::HISTORY_TYPED_URLS_MODIFIED == type ||
-         NotificationType::HISTORY_URLS_DELETED == type ||
-         NotificationType::HISTORY_URL_VISITED == type);
-  if (type == NotificationType::HISTORY_TYPED_URLS_MODIFIED) {
+  DCHECK(chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED == type ||
+         chrome::NOTIFICATION_HISTORY_URLS_DELETED == type ||
+         chrome::NOTIFICATION_HISTORY_URL_VISITED == type);
+  if (type == chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED) {
     HandleURLsModified(Details<history::URLsModifiedDetails>(details).ptr());
-  } else if (type == NotificationType::HISTORY_URLS_DELETED) {
+  } else if (type == chrome::NOTIFICATION_HISTORY_URLS_DELETED) {
     HandleURLsDeleted(Details<history::URLsDeletedDetails>(details).ptr());
-  } else if (type == NotificationType::HISTORY_URL_VISITED) {
+  } else if (type == chrome::NOTIFICATION_HISTORY_URL_VISITED) {
     HandleURLsVisited(Details<history::URLVisitedDetails>(details).ptr());
   }
 }
@@ -347,24 +347,24 @@ void TypedUrlChangeProcessor::StopImpl() {
 void TypedUrlChangeProcessor::StartObserving() {
   DCHECK(expected_loop_ == MessageLoop::current());
   notification_registrar_.Add(this,
-                              NotificationType::HISTORY_TYPED_URLS_MODIFIED,
+                              chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED,
                               NotificationService::AllSources());
-  notification_registrar_.Add(this, NotificationType::HISTORY_URLS_DELETED,
+  notification_registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,
                               NotificationService::AllSources());
-  notification_registrar_.Add(this, NotificationType::HISTORY_URL_VISITED,
+  notification_registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URL_VISITED,
                               NotificationService::AllSources());
 }
 
 void TypedUrlChangeProcessor::StopObserving() {
   DCHECK(expected_loop_ == MessageLoop::current());
+  notification_registrar_.Remove(
+      this, chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED,
+      NotificationService::AllSources());
   notification_registrar_.Remove(this,
-                                 NotificationType::HISTORY_TYPED_URLS_MODIFIED,
+                                 chrome::NOTIFICATION_HISTORY_URLS_DELETED,
                                  NotificationService::AllSources());
   notification_registrar_.Remove(this,
-                                 NotificationType::HISTORY_URLS_DELETED,
-                                 NotificationService::AllSources());
-  notification_registrar_.Remove(this,
-                                 NotificationType::HISTORY_URL_VISITED,
+                                 chrome::NOTIFICATION_HISTORY_URL_VISITED,
                                  NotificationService::AllSources());
 }
 

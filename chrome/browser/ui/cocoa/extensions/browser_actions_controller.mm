@@ -22,6 +22,7 @@
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
 #import "chrome/browser/ui/cocoa/menu_button.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -183,16 +184,16 @@ class ExtensionServiceObserverBridge : public NotificationObserver,
  public:
   ExtensionServiceObserverBridge(BrowserActionsController* owner,
                                   Profile* profile) : owner_(owner) {
-    registrar_.Add(this, NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE,
+    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
                    Source<Profile>(profile));
   }
 
   // Overridden from NotificationObserver.
-  void Observe(NotificationType type,
+  void Observe(int type,
                const NotificationSource& source,
                const NotificationDetails& details) {
-    switch (type.value) {
-      case NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE: {
+    switch (type) {
+      case chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE: {
         ExtensionPopupController* popup = [ExtensionPopupController popup];
         if (popup && ![popup isClosing])
           [popup close];

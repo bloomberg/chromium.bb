@@ -14,6 +14,7 @@
 #include "chrome/browser/sync/glue/extension_sync.h"
 #include "chrome/browser/sync/glue/extension_util.h"
 #include "chrome/browser/sync/protocol/extension_specifics.pb.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_details.h"
@@ -39,24 +40,24 @@ AppChangeProcessor::~AppChangeProcessor() {
 // the browser or the syncapi are done in order; this is tricky since
 // some events (e.g., extension installation) are done asynchronously.
 
-void AppChangeProcessor::Observe(NotificationType type,
+void AppChangeProcessor::Observe(int type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(running());
   DCHECK(profile_);
-  if ((type != NotificationType::EXTENSION_LOADED) &&
-      (type != NotificationType::EXTENSION_UPDATE_DISABLED) &&
-      (type != NotificationType::EXTENSION_UNLOADED)) {
+  if ((type != chrome::NOTIFICATION_EXTENSION_LOADED) &&
+      (type != chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED) &&
+      (type != chrome::NOTIFICATION_EXTENSION_UNLOADED)) {
     LOG(DFATAL) << "Received unexpected notification of type "
-                << type.value;
+                << type;
     return;
   }
 
   // Filter out unhandled extensions first.
   DCHECK_EQ(Source<Profile>(source).ptr(), profile_);
   const Extension& extension =
-      (type == NotificationType::EXTENSION_UNLOADED) ?
+      (type == chrome::NOTIFICATION_EXTENSION_UNLOADED) ?
       *Details<UnloadedExtensionInfo>(details)->extension :
       *Details<const Extension>(details).ptr();
   if (!traits_.is_valid_and_syncable(extension)) {
@@ -66,7 +67,7 @@ void AppChangeProcessor::Observe(NotificationType type,
   const std::string& id = extension.id();
 
   // Then handle extension uninstalls.
-  if (type == NotificationType::EXTENSION_UNLOADED) {
+  if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED) {
     const UnloadedExtensionInfo& info =
         *Details<UnloadedExtensionInfo>(details).ptr();
     if (info.reason == UnloadedExtensionInfo::UNINSTALL) {
@@ -78,7 +79,7 @@ void AppChangeProcessor::Observe(NotificationType type,
   }
 
   VLOG(1) << "Updating server data for extension " << id
-          << " (notification type = " << type.value << ")";
+          << " (notification type = " << type << ")";
   std::string error;
   if (!UpdateServerData(traits_, extension, *extension_service_,
                         share_handle(), &error)) {
@@ -163,16 +164,16 @@ void AppChangeProcessor::StartObserving() {
   DCHECK(profile_);
 
   notification_registrar_.Add(
-      this, NotificationType::EXTENSION_LOADED,
+      this, chrome::NOTIFICATION_EXTENSION_LOADED,
       Source<Profile>(profile_));
   // Despite the name, this notification is exactly like
   // EXTENSION_LOADED but with an initial state of DISABLED.
   notification_registrar_.Add(
-      this, NotificationType::EXTENSION_UPDATE_DISABLED,
+      this, chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED,
       Source<Profile>(profile_));
 
   notification_registrar_.Add(
-      this, NotificationType::EXTENSION_UNLOADED,
+      this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
       Source<Profile>(profile_));
 }
 

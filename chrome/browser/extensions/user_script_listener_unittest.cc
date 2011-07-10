@@ -6,6 +6,7 @@
 #include "base/threading/thread.h"
 #include "chrome/browser/extensions/extension_service_unittest.h"
 #include "chrome/browser/extensions/user_script_listener.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "content/browser/mock_resource_context.h"
@@ -14,7 +15,6 @@
 #include "content/browser/renderer_host/resource_handler.h"
 #include "content/browser/renderer_host/resource_queue.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_job.h"
 #include "net/url_request/url_request_test_util.h"
@@ -184,7 +184,7 @@ TEST_F(UserScriptListenerTest, DelayAndUpdate) {
   ASSERT_FALSE(request->is_pending());
 
   NotificationService::current()->Notify(
-      NotificationType::USER_SCRIPTS_UPDATED,
+      chrome::NOTIFICATION_USER_SCRIPTS_UPDATED,
       Source<Profile>(profile_.get()),
       NotificationService::NoDetails());
   MessageLoop::current()->RunAllPending();
@@ -207,7 +207,7 @@ TEST_F(UserScriptListenerTest, DelayAndUnload) {
   ASSERT_FALSE(request->is_pending());
 
   NotificationService::current()->Notify(
-      NotificationType::USER_SCRIPTS_UPDATED,
+      chrome::NOTIFICATION_USER_SCRIPTS_UPDATED,
       Source<Profile>(profile_.get()),
       NotificationService::NoDetails());
   MessageLoop::current()->RunAllPending();

@@ -145,7 +145,7 @@ class DetectTabLanguageFunction : public AsyncExtensionFunction,
   virtual ~DetectTabLanguageFunction() {}
   virtual bool RunImpl();
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
   void GotLanguage(const std::string& language);
@@ -166,7 +166,7 @@ class CaptureVisibleTabFunction : public AsyncExtensionFunction,
   virtual ~CaptureVisibleTabFunction() {}
   virtual bool RunImpl();
   virtual bool CaptureSnapshotFromBackingStore(BackingStore* backing_store);
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
   virtual void SendResultFromBitmap(const SkBitmap& screen_capture);

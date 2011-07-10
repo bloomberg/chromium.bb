@@ -11,6 +11,7 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/common/notification_details.h"
@@ -106,10 +107,10 @@ PasswordStore* PasswordManagerHandler::GetPasswordStore() {
   return web_ui_->GetProfile()->GetPasswordStore(Profile::EXPLICIT_ACCESS);
 }
 
-void PasswordManagerHandler::Observe(NotificationType type,
+void PasswordManagerHandler::Observe(int type,
                                      const NotificationSource& source,
                                      const NotificationDetails& details) {
-  if (type.value == NotificationType::PREF_CHANGED) {
+  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
     std::string* pref_name = Details<std::string>(details).ptr();
     if (*pref_name == prefs::kPasswordManagerAllowShowPasswords) {
       UpdatePasswordLists(NULL);

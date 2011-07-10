@@ -6,6 +6,7 @@
 
 #include "base/task.h"
 #include "chrome/browser/extensions/extension_bookmarks_module.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
@@ -31,7 +32,8 @@ class RegistrationTask : public Task {
     // the fly so there is no reliable object to point to (same problem if we
     // wanted to use the string name).  Thus, we use all sources and filter in
     // Observe.
-    registrar_->Add(monitor_, NotificationType::EXTENSION_BOOKMARKS_API_INVOKED,
+    registrar_->Add(monitor_,
+                    chrome::NOTIFICATION_EXTENSION_BOOKMARKS_API_INVOKED,
                     NotificationService::AllSources());
   }
 
@@ -78,7 +80,7 @@ void ExtensionsActivityMonitor::PutRecords(const Records& records) {
   }
 }
 
-void ExtensionsActivityMonitor::Observe(NotificationType type,
+void ExtensionsActivityMonitor::Observe(int type,
                                         const NotificationSource& source,
                                         const NotificationDetails& details) {
   base::AutoLock lock(records_lock_);

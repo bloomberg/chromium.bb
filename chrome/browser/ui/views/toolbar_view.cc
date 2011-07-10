@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/views/event_utils.h"
 #include "chrome/browser/ui/views/wrench_menu.h"
 #include "chrome/browser/upgrade_detector.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/accessibility/browser_accessibility_state.h"
 #include "content/browser/user_metrics.h"
@@ -103,9 +104,10 @@ ToolbarView::ToolbarView(Browser* browser)
         IDR_LOCATIONBG_POPUPMODE_EDGE);
   }
 
-  registrar_.Add(this, NotificationType::UPGRADE_RECOMMENDED,
+  registrar_.Add(this, chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::MODULE_INCOMPATIBILITY_BADGE_CHANGE,
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_MODULE_INCOMPATIBILITY_BADGE_CHANGE,
                  NotificationService::AllSources());
 }
 
@@ -404,17 +406,18 @@ void ToolbarView::ButtonPressed(views::Button* sender,
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, NotificationObserver implementation:
 
-void ToolbarView::Observe(NotificationType type,
+void ToolbarView::Observe(int type,
                           const NotificationSource& source,
                           const NotificationDetails& details) {
-  if (type == NotificationType::PREF_CHANGED) {
+  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
     std::string* pref_name = Details<std::string>(details).ptr();
     if (*pref_name == prefs::kShowHomeButton) {
       Layout();
       SchedulePaint();
     }
-  } else if (type == NotificationType::UPGRADE_RECOMMENDED ||
-             type == NotificationType::MODULE_INCOMPATIBILITY_BADGE_CHANGE) {
+  } else if (
+        type == chrome::NOTIFICATION_UPGRADE_RECOMMENDED ||
+        type == chrome::NOTIFICATION_MODULE_INCOMPATIBILITY_BADGE_CHANGE) {
     UpdateAppMenuBadge();
   }
 }

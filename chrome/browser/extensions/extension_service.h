@@ -470,7 +470,7 @@ class ExtensionService
   // This method is public because ExtensionServiceBackend can post to here.
   void ReportExtensionLoadError(const FilePath& extension_path,
                                 const std::string& error,
-                                NotificationType type,
+                                int type,
                                 bool be_noisy);
 
   // ExtensionHost of background page calls this method right after its render
@@ -501,7 +501,7 @@ class ExtensionService
   virtual void OnExternalProviderReady();
 
   // NotificationObserver
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -660,7 +660,7 @@ class ExtensionService
   // Used by dispatchers to limit API quota for individual extensions.
   ExtensionsQuotaService quota_service_;
 
-  // Record that Init() has been called, and NotificationType::EXTENSIONS_READY
+  // Record that Init() has been called, and chrome::EXTENSIONS_READY
   // has fired.
   bool ready_;
 

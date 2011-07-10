@@ -18,7 +18,6 @@
 
 class NotificationDetails;
 class NotificationSource;
-class NotificationType;
 class TabContents;
 
 namespace safe_browsing {
@@ -74,7 +73,7 @@ class ClientSideDetectionHost : public TabContentsObserver,
 
   // From NotificationObserver.  Called when a notification comes in.  This
   // method is called in the UI thread.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

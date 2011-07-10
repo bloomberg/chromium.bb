@@ -10,8 +10,8 @@
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/chromeos/login/user_image_view.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -32,7 +32,7 @@ UserImageScreen::UserImageScreen(ViewScreenDelegate* delegate)
   camera_controller_.set_frame_height(kFrameHeight);
   registrar_.Add(
       this,
-      NotificationType::SCREEN_LOCK_STATE_CHANGED,
+      chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
       NotificationService::AllSources());
 }
 
@@ -113,10 +113,10 @@ void UserImageScreen::OnDefaultImageSelected(int index) {
     delegate()->GetObserver()->OnExit(ScreenObserver::USER_IMAGE_SELECTED);
 }
 
-void UserImageScreen::Observe(NotificationType type,
+void UserImageScreen::Observe(int type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
-  if (type != NotificationType::SCREEN_LOCK_STATE_CHANGED)
+  if (type != chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED)
     return;
 
   bool is_screen_locked = *Details<bool>(details).ptr();

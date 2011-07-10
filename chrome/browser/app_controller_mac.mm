@@ -52,6 +52,7 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/user_metrics.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_service.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -474,7 +475,7 @@ void RecordLastRunAppBundlePath() {
     return;
 
   NotificationService::current()->Notify(
-      NotificationType::NO_KEY_WINDOW,
+      chrome::NOTIFICATION_NO_KEY_WINDOW,
       NotificationService::AllSources(),
       NotificationService::NoDetails());
 }
@@ -549,7 +550,7 @@ void RecordLastRunAppBundlePath() {
 // This is called after profiles have been loaded and preferences registered.
 // It is safe to access the default profile here.
 - (void)applicationDidBecomeActive:(NSNotification*)notify {
-  NotificationService::current()->Notify(NotificationType::APP_ACTIVATED,
+  NotificationService::current()->Notify(chrome::NOTIFICATION_APP_ACTIVATED,
                                          NotificationService::AllSources(),
                                          NotificationService::NoDetails());
 }

@@ -28,6 +28,7 @@
 #include "chrome/browser/tab_contents/background_contents.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/extension_icon_source.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/url_pattern.h"
@@ -41,8 +42,8 @@
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 #include "googleurl/src/gurl.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
@@ -290,31 +291,31 @@ void ExtensionsDOMHandler::HandleRequestExtensionsData(const ListValue* args) {
 
 void ExtensionsDOMHandler::RegisterForNotifications() {
   // Register for notifications that we need to reload the page.
-  registrar_.Add(this, NotificationType::EXTENSION_LOADED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
       NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::EXTENSION_PROCESS_CREATED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_PROCESS_CREATED,
       NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
       NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::EXTENSION_UPDATE_DISABLED,
-      NotificationService::AllSources());
-  registrar_.Add(this,
-      NotificationType::NAV_ENTRY_COMMITTED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED,
       NotificationService::AllSources());
   registrar_.Add(this,
-      NotificationType::RENDER_VIEW_HOST_CREATED,
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       NotificationService::AllSources());
   registrar_.Add(this,
-      NotificationType::RENDER_VIEW_HOST_DELETED,
+      content::NOTIFICATION_RENDER_VIEW_HOST_CREATED,
       NotificationService::AllSources());
   registrar_.Add(this,
-      NotificationType::BACKGROUND_CONTENTS_NAVIGATED,
+      content::NOTIFICATION_RENDER_VIEW_HOST_DELETED,
       NotificationService::AllSources());
   registrar_.Add(this,
-      NotificationType::BACKGROUND_CONTENTS_DELETED,
+      chrome::NOTIFICATION_BACKGROUND_CONTENTS_NAVIGATED,
       NotificationService::AllSources());
   registrar_.Add(this,
-      NotificationType::EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
+      chrome::NOTIFICATION_BACKGROUND_CONTENTS_DELETED,
+      NotificationService::AllSources());
+  registrar_.Add(this,
+      chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
       NotificationService::AllSources());
 }
 
@@ -617,10 +618,10 @@ void ExtensionsDOMHandler::MultiFilesSelected(
   NOTREACHED();
 }
 
-void ExtensionsDOMHandler::Observe(NotificationType type,
+void ExtensionsDOMHandler::Observe(int type,
                                    const NotificationSource& source,
                                    const NotificationDetails& details) {
-  switch (type.value) {
+  switch (type) {
     // We listen for notifications that will result in the page being
     // repopulated with data twice for the same event in certain cases.
     // For instance, EXTENSION_LOADED & EXTENSION_PROCESS_CREATED because
@@ -635,22 +636,22 @@ void ExtensionsDOMHandler::Observe(NotificationType type,
     //
     // Doing it this way gets everything but causes the page to be rendered
     // more than we need. It doesn't seem to result in any noticeable flicker.
-    case NotificationType::RENDER_VIEW_HOST_DELETED:
+    case content::NOTIFICATION_RENDER_VIEW_HOST_DELETED:
       deleting_rvh_ = Source<RenderViewHost>(source).ptr();
       MaybeUpdateAfterNotification();
       break;
-    case NotificationType::BACKGROUND_CONTENTS_DELETED:
+    case chrome::NOTIFICATION_BACKGROUND_CONTENTS_DELETED:
       deleting_rvh_ = Details<BackgroundContents>(details)->render_view_host();
       MaybeUpdateAfterNotification();
       break;
-    case NotificationType::EXTENSION_LOADED:
-    case NotificationType::EXTENSION_PROCESS_CREATED:
-    case NotificationType::EXTENSION_UNLOADED:
-    case NotificationType::EXTENSION_UPDATE_DISABLED:
-    case NotificationType::RENDER_VIEW_HOST_CREATED:
-    case NotificationType::NAV_ENTRY_COMMITTED:
-    case NotificationType::BACKGROUND_CONTENTS_NAVIGATED:
-    case NotificationType::EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED:
+    case chrome::NOTIFICATION_EXTENSION_LOADED:
+    case chrome::NOTIFICATION_EXTENSION_PROCESS_CREATED:
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED:
+    case chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED:
+    case content::NOTIFICATION_RENDER_VIEW_HOST_CREATED:
+    case content::NOTIFICATION_NAV_ENTRY_COMMITTED:
+    case chrome::NOTIFICATION_BACKGROUND_CONTENTS_NAVIGATED:
+    case chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED:
       MaybeUpdateAfterNotification();
       break;
     default:

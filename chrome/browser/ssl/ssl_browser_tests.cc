@@ -351,7 +351,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndGoBackViaButton) {
   // Wait until we hear the load failure, and make sure we haven't swapped out
   // the previous page.  Prevents regression of http://crbug.com/82667.
   ui_test_utils::WaitForNotification(
-      NotificationType::FAIL_PROVISIONAL_LOAD_WITH_ERROR);
+      content::NOTIFICATION_FAIL_PROVISIONAL_LOAD_WITH_ERROR);
   EXPECT_FALSE(tab->render_view_host()->is_swapped_out());
 
   // We should be back at the original good page.

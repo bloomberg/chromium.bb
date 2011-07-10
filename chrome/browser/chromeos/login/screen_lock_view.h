@@ -53,7 +53,7 @@ class ScreenLockView : public ThrobberHostView,
   virtual gfx::Size GetPreferredSize();
 
   // NotificationObserver:
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

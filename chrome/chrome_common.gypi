@@ -37,6 +37,7 @@
           'common/child_process_logging_linux.cc',
           'common/child_process_logging_mac.mm',
           'common/child_process_logging_win.cc',
+          'common/chrome_notification_types.h',
           'common/chrome_version_info.cc',
           'common/chrome_version_info_linux.cc',
           'common/chrome_version_info_mac.mm',

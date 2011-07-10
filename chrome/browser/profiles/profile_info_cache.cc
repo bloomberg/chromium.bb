@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
@@ -244,7 +245,7 @@ void ProfileInfoCache::SetInfoForProfileAtIndex(size_t index,
   cache->Set(sorted_keys_[index], info);
 
   NotificationService::current()->Notify(
-    NotificationType::PROFILE_CACHED_INFO_CHANGED,
+    chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
     NotificationService::AllSources(),
     NotificationService::NoDetails());
 }

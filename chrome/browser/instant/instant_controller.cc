@@ -22,6 +22,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -207,7 +208,7 @@ void InstantController::Update(TabContentsWrapper* tab_contents,
   }
 
   NotificationService::current()->Notify(
-      NotificationType::INSTANT_CONTROLLER_UPDATED,
+      chrome::NOTIFICATION_INSTANT_CONTROLLER_UPDATED,
       Source<InstantController>(this),
       NotificationService::NoDetails());
 }
@@ -569,7 +570,7 @@ void InstantController::UpdateDisplayableLoader() {
   } else {
     delegate_->ShowInstant(displayable_loader_->preview_contents());
     NotificationService::current()->Notify(
-        NotificationType::INSTANT_CONTROLLER_SHOWN,
+        chrome::NOTIFICATION_INSTANT_CONTROLLER_SHOWN,
         Source<InstantController>(this),
         NotificationService::NoDetails());
   }

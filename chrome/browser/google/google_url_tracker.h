@@ -89,7 +89,7 @@ class GoogleURLTracker : public URLFetcher::Delegate,
                                              const GURL&);
 
   // Registers consumer interest in getting an updated URL from the server.
-  // It will be notified as NotificationType::GOOGLE_URL_UPDATED, so the
+  // It will be notified as chrome::GOOGLE_URL_UPDATED, so the
   // consumer should observe this notification before calling this.
   void SetNeedToFetch();
 
@@ -114,7 +114,7 @@ class GoogleURLTracker : public URLFetcher::Delegate,
                                   const std::string& data);
 
   // NotificationObserver
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -125,7 +125,7 @@ class GoogleURLTracker : public URLFetcher::Delegate,
   void OnNavigationPending(const NotificationSource& source,
                            const GURL& pending_url);
   void OnNavigationCommittedOrTabClosed(TabContents* tab_contents,
-                                        NotificationType::Type type);
+                                        int type);
   void ShowGoogleURLInfoBarIfNecessary(TabContents* tab_contents);
 
   NotificationRegistrar registrar_;
@@ -147,7 +147,7 @@ class GoogleURLTracker : public URLFetcher::Delegate,
                            // updated URL.  If this is never set, we won't
                            // bother to fetch anything.
                            // Consumers should observe
-                           // NotificationType::GOOGLE_URL_UPDATED.
+                           // chrome::GOOGLE_URL_UPDATED.
   bool need_to_prompt_;    // True if the last fetched Google URL is not
                            // matched with current user's default Google URL
                            // nor the last prompted Google URL.

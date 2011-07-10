@@ -102,7 +102,7 @@ class SpellCheckHostImpl : public SpellCheckHost,
                                   const std::string& data);
 
   // NotificationObserver implementation.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

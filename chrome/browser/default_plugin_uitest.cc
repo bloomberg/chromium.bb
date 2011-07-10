@@ -17,7 +17,7 @@ class DefaultPluginUITest : public UITest {
 };
 
 #if defined(OS_WIN)
-#define MAYBE_DefaultPluginLoadTest DISABLED_DefaultPluginLoadTest
+#define MAYBE_DefaultPluginLoadTest DefaultPluginLoadTest
 #else
 #define MAYBE_DefaultPluginLoadTest DefaultPluginLoadTest
 #endif

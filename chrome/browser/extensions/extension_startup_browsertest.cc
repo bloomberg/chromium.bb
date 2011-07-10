@@ -12,13 +12,13 @@
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_details.h"
-#include "content/common/notification_type.h"
 #include "net/base/net_util.h"
 
 // This file contains high-level startup tests for the extensions system. We've
@@ -93,7 +93,7 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
     UserScriptMaster* master = browser()->profile()->GetUserScriptMaster();
     if (!master->ScriptsReady()) {
       ui_test_utils::WaitForNotification(
-          NotificationType::USER_SCRIPTS_UPDATED);
+          chrome::NOTIFICATION_USER_SCRIPTS_UPDATED);
     }
     ASSERT_TRUE(master->ScriptsReady());
   }
@@ -168,7 +168,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionsStartupTest, MAYBE_NoFileAccess) {
     if (service->AllowFileAccess(service->extensions()->at(i))) {
       service->SetAllowFileAccess(service->extensions()->at(i), false);
       ui_test_utils::WaitForNotification(
-           NotificationType::USER_SCRIPTS_UPDATED);
+           chrome::NOTIFICATION_USER_SCRIPTS_UPDATED);
     }
   }
 

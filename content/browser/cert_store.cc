@@ -35,9 +35,9 @@ CertStore::CertStore() : next_cert_id_(1) {
   //                removed from cache, and remove the cert when we know it
   //                is not used anymore.
 
-  registrar_.Add(this, NotificationType::RENDERER_PROCESS_TERMINATED,
+  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::RENDERER_PROCESS_CLOSED,
+  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
                  NotificationService::AllSources());
 }
 
@@ -135,11 +135,11 @@ void CertStore::RemoveCertsForRenderProcesHost(int process_id) {
   }
 }
 
-void CertStore::Observe(NotificationType type,
+void CertStore::Observe(int type,
                         const NotificationSource& source,
                         const NotificationDetails& details) {
-  DCHECK(type == NotificationType::RENDERER_PROCESS_TERMINATED ||
-         type == NotificationType::RENDERER_PROCESS_CLOSED);
+  DCHECK(type == content::NOTIFICATION_RENDERER_PROCESS_TERMINATED ||
+         type == content::NOTIFICATION_RENDERER_PROCESS_CLOSED);
   RenderProcessHost* rph = Source<RenderProcessHost>(source).ptr();
   DCHECK(rph);
   RemoveCertsForRenderProcesHost(rph->id());

@@ -16,6 +16,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/common/notification_service.h"
 
@@ -52,53 +53,53 @@ void ExtensionAccessibilityEventRouter::ObserveProfile(Profile* profile) {
 
   if (registrar_.IsEmpty()) {
     registrar_.Add(this,
-                   NotificationType::ACCESSIBILITY_WINDOW_OPENED,
+                   chrome::NOTIFICATION_ACCESSIBILITY_WINDOW_OPENED,
                    NotificationService::AllSources());
     registrar_.Add(this,
-                   NotificationType::ACCESSIBILITY_WINDOW_CLOSED,
+                   chrome::NOTIFICATION_ACCESSIBILITY_WINDOW_CLOSED,
                    NotificationService::AllSources());
     registrar_.Add(this,
-                   NotificationType::ACCESSIBILITY_CONTROL_FOCUSED,
+                   chrome::NOTIFICATION_ACCESSIBILITY_CONTROL_FOCUSED,
                    NotificationService::AllSources());
     registrar_.Add(this,
-                   NotificationType::ACCESSIBILITY_CONTROL_ACTION,
+                   chrome::NOTIFICATION_ACCESSIBILITY_CONTROL_ACTION,
                    NotificationService::AllSources());
     registrar_.Add(this,
-                   NotificationType::ACCESSIBILITY_TEXT_CHANGED,
+                   chrome::NOTIFICATION_ACCESSIBILITY_TEXT_CHANGED,
                    NotificationService::AllSources());
     registrar_.Add(this,
-                   NotificationType::ACCESSIBILITY_MENU_OPENED,
+                   chrome::NOTIFICATION_ACCESSIBILITY_MENU_OPENED,
                    NotificationService::AllSources());
     registrar_.Add(this,
-                   NotificationType::ACCESSIBILITY_MENU_CLOSED,
+                   chrome::NOTIFICATION_ACCESSIBILITY_MENU_CLOSED,
                    NotificationService::AllSources());
   }
 }
 
 void ExtensionAccessibilityEventRouter::Observe(
-    NotificationType type,
+    int type,
     const NotificationSource& source,
     const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::ACCESSIBILITY_WINDOW_OPENED:
+  switch (type) {
+    case chrome::NOTIFICATION_ACCESSIBILITY_WINDOW_OPENED:
       OnWindowOpened(Details<const AccessibilityWindowInfo>(details).ptr());
       break;
-    case NotificationType::ACCESSIBILITY_WINDOW_CLOSED:
+    case chrome::NOTIFICATION_ACCESSIBILITY_WINDOW_CLOSED:
       OnWindowClosed(Details<const AccessibilityWindowInfo>(details).ptr());
       break;
-    case NotificationType::ACCESSIBILITY_CONTROL_FOCUSED:
+    case chrome::NOTIFICATION_ACCESSIBILITY_CONTROL_FOCUSED:
       OnControlFocused(Details<const AccessibilityControlInfo>(details).ptr());
       break;
-    case NotificationType::ACCESSIBILITY_CONTROL_ACTION:
+    case chrome::NOTIFICATION_ACCESSIBILITY_CONTROL_ACTION:
       OnControlAction(Details<const AccessibilityControlInfo>(details).ptr());
       break;
-    case NotificationType::ACCESSIBILITY_TEXT_CHANGED:
+    case chrome::NOTIFICATION_ACCESSIBILITY_TEXT_CHANGED:
       OnTextChanged(Details<const AccessibilityControlInfo>(details).ptr());
       break;
-    case NotificationType::ACCESSIBILITY_MENU_OPENED:
+    case chrome::NOTIFICATION_ACCESSIBILITY_MENU_OPENED:
       OnMenuOpened(Details<const AccessibilityMenuInfo>(details).ptr());
       break;
-    case NotificationType::ACCESSIBILITY_MENU_CLOSED:
+    case chrome::NOTIFICATION_ACCESSIBILITY_MENU_CLOSED:
       OnMenuClosed(Details<const AccessibilityMenuInfo>(details).ptr());
       break;
     default:

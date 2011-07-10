@@ -7,8 +7,8 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 
 RestoreTabHelper::RestoreTabHelper(TabContentsWrapper* tab)
     : TabContentsObserver(tab->tab_contents()),
@@ -21,7 +21,7 @@ RestoreTabHelper::~RestoreTabHelper() {
 void RestoreTabHelper::SetWindowID(const SessionID& id) {
   window_id_ = id;
   NotificationService::current()->Notify(
-      NotificationType::TAB_PARENTED,
+      content::NOTIFICATION_TAB_PARENTED,
       Source<TabContentsWrapper>(tab_),
       NotificationService::NoDetails());
 

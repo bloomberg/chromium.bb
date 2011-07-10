@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -206,7 +207,7 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(BrowserFrame* frame,
     AddChildView(avatar_button_.get());
     UpdateAvatarInfo();
     if (!browser_view_->IsOffTheRecord()) {
-      registrar_.Add(this, NotificationType::PROFILE_CACHED_INFO_CHANGED,
+      registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
                      NotificationService::AllSources());
     }
   }
@@ -507,11 +508,11 @@ SkBitmap OpaqueBrowserFrameView::GetFaviconForTabIconView() {
 ///////////////////////////////////////////////////////////////////////////////
 // OpaqueBrowserFrameView, protected:
 
-void OpaqueBrowserFrameView::Observe(NotificationType type,
+void OpaqueBrowserFrameView::Observe(int type,
                                      const NotificationSource& source,
                                      const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::PROFILE_CACHED_INFO_CHANGED:
+  switch (type) {
+    case chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED:
       UpdateAvatarInfo();
       LayoutAvatar();
       break;

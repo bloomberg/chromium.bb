@@ -24,7 +24,7 @@
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_type.h"
+#include "content/common/content_notification_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Autocomplete test is flaky on ChromeOS.

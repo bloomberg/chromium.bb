@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/views/tabs/base_tab_strip.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -137,7 +138,7 @@ BrowserTabStripController::BrowserTabStripController(Browser* browser,
   model_->AddObserver(this);
 
   notification_registrar_.Add(this,
-      NotificationType::TAB_CLOSEABLE_STATE_CHANGED,
+      chrome::NOTIFICATION_TAB_CLOSEABLE_STATE_CHANGED,
       NotificationService::AllSources());
 }
 
@@ -403,9 +404,9 @@ void BrowserTabStripController::TabBlockedStateChanged(
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserTabStripController, NotificationObserver implementation:
 
-void BrowserTabStripController::Observe(NotificationType type,
+void BrowserTabStripController::Observe(int type,
     const NotificationSource& source, const NotificationDetails& details) {
-  DCHECK(type.value == NotificationType::TAB_CLOSEABLE_STATE_CHANGED);
+  DCHECK(type == chrome::NOTIFICATION_TAB_CLOSEABLE_STATE_CHANGED);
   // Note that this notification may be fired during a model mutation and
   // possibly before the tabstrip has processed the change.
   // Here, we just re-layout each existing tab to reflect the change in its

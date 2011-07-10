@@ -36,8 +36,8 @@
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/time_format.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -52,9 +52,9 @@ static const char kOtherNetworksFakePath[] = "?";
 InternetOptionsHandler::InternetOptionsHandler()
     : chromeos::CrosOptionsPageUIHandler(
           new chromeos::UserCrosSettingsProvider) {
-  registrar_.Add(this, NotificationType::REQUIRE_PIN_SETTING_CHANGE_ENDED,
+  registrar_.Add(this, chrome::REQUIRE_PIN_SETTING_CHANGE_ENDED,
       NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::ENTER_PIN_ENDED,
+  registrar_.Add(this, chrome::ENTER_PIN_ENDED,
       NotificationService::AllSources());
   cros_ = chromeos::CrosLibrary::Get()->GetNetworkLibrary();
   if (cros_) {
@@ -527,17 +527,17 @@ void InternetOptionsHandler::OnCellularDataPlanChanged(
 }
 
 
-void InternetOptionsHandler::Observe(NotificationType type,
+void InternetOptionsHandler::Observe(int type,
                                      const NotificationSource& source,
                                      const NotificationDetails& details) {
   chromeos::CrosOptionsPageUIHandler::Observe(type, source, details);
-  if (type == NotificationType::REQUIRE_PIN_SETTING_CHANGE_ENDED) {
+  if (type == chrome::REQUIRE_PIN_SETTING_CHANGE_ENDED) {
     bool require_pin = *Details<bool>(details).ptr();
     DictionaryValue dictionary;
     dictionary.SetBoolean("requirePin", require_pin);
     web_ui_->CallJavascriptFunction(
         "options.InternetOptions.updateSecurityTab", dictionary);
-  } else if (type == NotificationType::ENTER_PIN_ENDED) {
+  } else if (type == chrome::ENTER_PIN_ENDED) {
     // We make an assumption (which is valid for now) that the SIM
     // unlock dialog is put up only when the user is trying to enable
     // mobile data.

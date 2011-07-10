@@ -493,7 +493,7 @@ void SafeBrowsingService::OnIOInitialize(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   enabled_ = true;
 
-  registrar_.Add(this, NotificationType::PURGE_MEMORY,
+  registrar_.Add(this, content::NOTIFICATION_PURGE_MEMORY,
                  NotificationService::AllSources());
 
   MakeDatabaseAvailable();
@@ -1208,11 +1208,11 @@ void SafeBrowsingService::UpdateWhitelist(const UnsafeResource& resource) {
   white_listed_entries_.push_back(entry);
 }
 
-void SafeBrowsingService::Observe(NotificationType type,
+void SafeBrowsingService::Observe(int type,
                                   const NotificationSource& source,
                                   const NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(type == NotificationType::PURGE_MEMORY);
+  DCHECK(type == content::NOTIFICATION_PURGE_MEMORY);
   CloseDatabase();
 }
 

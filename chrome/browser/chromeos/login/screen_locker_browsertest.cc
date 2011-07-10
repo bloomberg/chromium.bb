@@ -16,10 +16,10 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "views/controls/textfield/textfield.h"
@@ -33,7 +33,7 @@ class Waiter : public NotificationObserver {
       : browser_(browser),
         running_(false) {
     registrar_.Add(this,
-                   NotificationType::SCREEN_LOCK_STATE_CHANGED,
+                   chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
                    NotificationService::AllSources());
     handler_id_ = g_signal_connect(
         G_OBJECT(browser_->window()->GetNativeHandle()),
@@ -48,10 +48,10 @@ class Waiter : public NotificationObserver {
         handler_id_);
   }
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
-    DCHECK(type == NotificationType::SCREEN_LOCK_STATE_CHANGED);
+    DCHECK(type == chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED);
     if (running_)
       MessageLoop::current()->Quit();
   }
@@ -117,7 +117,7 @@ class ScreenLockerTest : public CrosInProcessBrowserTest {
     tester->EmulateWindowManagerReady();
     if (!chromeos::ScreenLocker::GetTester()->IsLocked())
       ui_test_utils::WaitForNotification(
-          NotificationType::SCREEN_LOCK_STATE_CHANGED);
+          chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED);
     EXPECT_TRUE(tester->IsLocked());
     tester->InjectMockAuthenticator("", "");
 
@@ -139,7 +139,7 @@ class ScreenLockerTest : public CrosInProcessBrowserTest {
     tester->EmulateWindowManagerReady();
     if (!tester->IsLocked()) {
       ui_test_utils::WaitForNotification(
-          NotificationType::SCREEN_LOCK_STATE_CHANGED);
+          chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED);
     }
     EXPECT_TRUE(tester->IsLocked());
   }
@@ -184,7 +184,7 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, DISABLED_TestBasic) {
   tester->EmulateWindowManagerReady();
   if (!chromeos::ScreenLocker::GetTester()->IsLocked())
     ui_test_utils::WaitForNotification(
-        NotificationType::SCREEN_LOCK_STATE_CHANGED);
+        chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED);
 
   // Test to make sure that the widget is actually appearing and is of
   // reasonable size, preventing a regression of

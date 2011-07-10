@@ -35,6 +35,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/autofill_messages.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/guid.h"
 #include "chrome/common/pref_names.h"
@@ -42,7 +43,6 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "ipc/ipc_message_macros.h"
@@ -724,14 +724,14 @@ void AutofillManager::OnShowAutofillDialog() {
 
 void AutofillManager::OnDidFillAutofillFormData() {
   NotificationService::current()->Notify(
-      NotificationType::AUTOFILL_DID_FILL_FORM_DATA,
+      chrome::NOTIFICATION_AUTOFILL_DID_FILL_FORM_DATA,
       Source<RenderViewHost>(tab_contents()->render_view_host()),
       NotificationService::NoDetails());
 }
 
 void AutofillManager::OnDidShowAutofillSuggestions() {
   NotificationService::current()->Notify(
-      NotificationType::AUTOFILL_DID_SHOW_SUGGESTIONS,
+      chrome::NOTIFICATION_AUTOFILL_DID_SHOW_SUGGESTIONS,
       Source<RenderViewHost>(tab_contents()->render_view_host()),
       NotificationService::NoDetails());
 }

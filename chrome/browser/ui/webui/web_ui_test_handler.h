@@ -24,7 +24,7 @@ class WebUITestHandler : public WebUIMessageHandler,
   virtual void RegisterMessages() {}
 
   // From NotificationObserver.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
 

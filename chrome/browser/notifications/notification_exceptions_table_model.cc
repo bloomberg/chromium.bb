@@ -5,12 +5,12 @@
 #include "chrome/browser/notifications/notification_exceptions_table_model.h"
 
 #include "base/auto_reset.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_helper.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/url_constants.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/table_model_observer.h"
@@ -28,7 +28,8 @@ NotificationExceptionsTableModel::NotificationExceptionsTableModel(
     : service_(service),
       updates_disabled_(false),
       observer_(NULL) {
-  registrar_.Add(this, NotificationType::DESKTOP_NOTIFICATION_SETTINGS_CHANGED,
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_DESKTOP_NOTIFICATION_SETTINGS_CHANGED,
                  NotificationService::AllSources());
   LoadEntries();
 }
@@ -98,11 +99,11 @@ void NotificationExceptionsTableModel::SetObserver(
 }
 
 void NotificationExceptionsTableModel::Observe(
-    NotificationType type,
+    int type,
     const NotificationSource& source,
     const NotificationDetails& details) {
   if (!updates_disabled_) {
-    DCHECK(type == NotificationType::DESKTOP_NOTIFICATION_SETTINGS_CHANGED);
+    DCHECK(type == chrome::NOTIFICATION_DESKTOP_NOTIFICATION_SETTINGS_CHANGED);
     entries_.clear();
     LoadEntries();
 

@@ -29,6 +29,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/chrome_version_info.h"
@@ -894,7 +895,7 @@ bool ExtensionUpdater::MaybeInstallCRXFile() {
       // Source parameter ensures that we only see the completion event for the
       // the installer we started.
       registrar_.Add(this,
-                     NotificationType::CRX_INSTALLER_DONE,
+                     chrome::NOTIFICATION_CRX_INSTALLER_DONE,
                      Source<CrxInstaller>(installer));
     }
     in_progress_ids_.erase(crx_file.id);
@@ -905,14 +906,14 @@ bool ExtensionUpdater::MaybeInstallCRXFile() {
   return crx_install_is_running_;
 }
 
-void ExtensionUpdater::Observe(NotificationType type,
+void ExtensionUpdater::Observe(int type,
                                const NotificationSource& source,
                                const NotificationDetails& details) {
-  DCHECK(type == NotificationType::CRX_INSTALLER_DONE);
+  DCHECK(type == chrome::NOTIFICATION_CRX_INSTALLER_DONE);
 
   // No need to listen for CRX_INSTALLER_DONE anymore.
   registrar_.Remove(this,
-                    NotificationType::CRX_INSTALLER_DONE,
+                    chrome::NOTIFICATION_CRX_INSTALLER_DONE,
                     source);
   crx_install_is_running_ = false;
   // If any files are available to update, start one.
@@ -1207,14 +1208,14 @@ void ExtensionUpdater::FetchUpdatedExtension(const std::string& id,
 
 void ExtensionUpdater::NotifyStarted() {
   NotificationService::current()->Notify(
-      NotificationType::EXTENSION_UPDATING_STARTED,
+      chrome::NOTIFICATION_EXTENSION_UPDATING_STARTED,
       Source<Profile>(profile_),
       NotificationService::NoDetails());
 }
 
 void ExtensionUpdater::NotifyUpdateFound(const std::string& extension_id) {
   NotificationService::current()->Notify(
-      NotificationType::EXTENSION_UPDATE_FOUND,
+      chrome::NOTIFICATION_EXTENSION_UPDATE_FOUND,
       Source<Profile>(profile_),
       Details<const std::string>(&extension_id));
 }
@@ -1222,7 +1223,7 @@ void ExtensionUpdater::NotifyUpdateFound(const std::string& extension_id) {
 void ExtensionUpdater::NotifyIfFinished() {
   if (in_progress_ids_.empty()) {
     NotificationService::current()->Notify(
-        NotificationType::EXTENSION_UPDATING_FINISHED,
+        chrome::NOTIFICATION_EXTENSION_UPDATING_FINISHED,
         Source<Profile>(profile_),
         NotificationService::NoDetails());
     VLOG(1) << "Sending EXTENSION_UPDATING_FINISHED";

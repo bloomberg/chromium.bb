@@ -13,9 +13,9 @@
 #include <map>
 
 #include "base/observer_list.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 
 class NotificationObserver;
 
@@ -38,7 +38,7 @@ class NotificationService {
   // Details is a reference to an object containing additional data about
   // the notification.  If no additional data is needed, NoDetails() is used.
   // There is no particular order in which the observers will be notified.
-  void Notify(NotificationType type,
+  void Notify(int type,
               const NotificationSource& source,
               const NotificationDetails& details);
 
@@ -55,6 +55,8 @@ class NotificationService {
 
   typedef ObserverList<NotificationObserver> NotificationObserverList;
   typedef std::map<uintptr_t, NotificationObserverList*> NotificationSourceMap;
+  typedef std::map<int, NotificationSourceMap> NotificationObserverMap;
+  typedef std::map<int, int> NotificationObserverCount;
 
   // Convenience function to determine whether a source has a
   // NotificationObserverList in the given map;
@@ -68,7 +70,8 @@ class NotificationService {
   // notification is posted.  Observer is a pointer to an object subclassing
   // NotificationObserver to be notified when an event matching the other two
   // parameters is posted to this service.  Type is the type of events to be
-  // notified about (or NotificationType::ALL to receive events of all types).
+  // notified about (or content::NOTIFICATION_ALL to receive events of all
+  // types).
   // Source is a NotificationSource object (created using
   // "Source<classname>(pointer)"), if this observer only wants to
   // receive events from that object, or NotificationService::AllSources()
@@ -80,7 +83,7 @@ class NotificationService {
   //
   // The caller retains ownership of the object pointed to by observer.
   void AddObserver(NotificationObserver* observer,
-                   NotificationType type, const NotificationSource& source);
+                   int type, const NotificationSource& source);
 
   // NOTE: Rather than using this directly, you should use a
   // NotificationRegistrar.
@@ -89,17 +92,17 @@ class NotificationService {
   // that match type and source.  If no object matching the parameters is
   // currently registered, this method is a no-op.
   void RemoveObserver(NotificationObserver* observer,
-                      NotificationType type, const NotificationSource& source);
+                      int type, const NotificationSource& source);
 
   // Keeps track of the observers for each type of notification.
   // Until we get a prohibitively large number of notification types,
   // a simple array is probably the fastest way to dispatch.
-  NotificationSourceMap observers_[NotificationType::NOTIFICATION_TYPE_COUNT];
+  NotificationObserverMap observers_;
 
 #ifndef NDEBUG
   // Used to check to see that AddObserver and RemoveObserver calls are
   // balanced.
-  int observer_counts_[NotificationType::NOTIFICATION_TYPE_COUNT];
+  NotificationObserverCount observer_counts_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(NotificationService);

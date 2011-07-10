@@ -16,12 +16,12 @@
 #include "chrome/browser/sync/glue/sync_backend_host_mock.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/syncable/model_type.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_observer_mock.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -73,10 +73,10 @@ class DataTypeManagerImplTest : public testing::Test {
  protected:
   virtual void SetUp() {
     registrar_.Add(&observer_,
-                   NotificationType::SYNC_CONFIGURE_START,
+                   chrome::NOTIFICATION_SYNC_CONFIGURE_START,
                    NotificationService::AllSources());
     registrar_.Add(&observer_,
-                   NotificationType::SYNC_CONFIGURE_DONE,
+                   chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
                    NotificationService::AllSources());
   }
 
@@ -145,7 +145,7 @@ class DataTypeManagerImplTest : public testing::Test {
   void SetConfigureStartExpectation() {
     EXPECT_CALL(
         observer_,
-        Observe(NotificationType(NotificationType::SYNC_CONFIGURE_START),
+        Observe(int(chrome::NOTIFICATION_SYNC_CONFIGURE_START),
                 _, _));
   }
 
@@ -153,7 +153,7 @@ class DataTypeManagerImplTest : public testing::Test {
   void SetConfigureDoneExpectation(DataTypeManager::ConfigureResult result) {
     EXPECT_CALL(
         observer_,
-        Observe(NotificationType(NotificationType::SYNC_CONFIGURE_DONE), _,
+        Observe(int(chrome::NOTIFICATION_SYNC_CONFIGURE_DONE), _,
         ::testing::ResultOf(&GetResult, result)));
   }
 

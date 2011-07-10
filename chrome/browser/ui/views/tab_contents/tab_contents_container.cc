@@ -26,15 +26,15 @@ TabContentsContainer::~TabContentsContainer() {
 ////////////////////////////////////////////////////////////////////////////////
 // TabContentsContainer, NotificationObserver implementation:
 
-void TabContentsContainer::Observe(NotificationType type,
+void TabContentsContainer::Observe(int type,
                                    const NotificationSource& source,
                                    const NotificationDetails& details) {
-  if (type == NotificationType::RENDER_VIEW_HOST_CHANGED) {
+  if (type == content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED) {
     RenderViewHostSwitchedDetails* switched_details =
         Details<RenderViewHostSwitchedDetails>(details).ptr();
     RenderViewHostChanged(switched_details->old_host,
                           switched_details->new_host);
-  } else if (type == NotificationType::TAB_CONTENTS_DESTROYED) {
+  } else if (type == content::NOTIFICATION_TAB_CONTENTS_DESTROYED) {
     TabContentsDestroyed(Source<TabContents>(source).ptr());
   } else {
     NOTREACHED();
@@ -56,11 +56,11 @@ void TabContentsContainer::AddObservers() {
   // shown and getting focused.  We need to keep track of that so we install
   // the focus subclass on the shown HWND so we intercept focus change events.
   registrar_.Add(this,
-                 NotificationType::RENDER_VIEW_HOST_CHANGED,
+                 content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
                  Source<NavigationController>(&tab_contents_->controller()));
 
   registrar_.Add(this,
-                 NotificationType::TAB_CONTENTS_DESTROYED,
+                 content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
                  Source<TabContents>(tab_contents_));
 }
 

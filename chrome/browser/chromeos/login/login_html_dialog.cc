@@ -64,9 +64,9 @@ void LoginHtmlDialog::Show() {
   }
   if (bubble_frame_view_) {
     bubble_frame_view_->StartThrobber();
-    notification_registrar_.Add(this,
-                                NotificationType::LOAD_COMPLETED_MAIN_FRAME,
-                                NotificationService::AllSources());
+    notification_registrar_.Add(
+        this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
+        NotificationService::AllSources());
   }
   html_view->InitDialog();
   html_view->GetWidget()->Show();
@@ -128,10 +128,10 @@ bool LoginHtmlDialog::HandleContextMenu(const ContextMenuParams& params) {
   return true;
 }
 
-void LoginHtmlDialog::Observe(NotificationType type,
+void LoginHtmlDialog::Observe(int type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
-  DCHECK(type.value == NotificationType::LOAD_COMPLETED_MAIN_FRAME);
+  DCHECK(type == content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME);
   if (bubble_frame_view_)
     bubble_frame_view_->StopThrobber();
 }

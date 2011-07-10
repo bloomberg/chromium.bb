@@ -18,6 +18,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -25,7 +26,6 @@
 #include "content/browser/user_metrics.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
@@ -123,7 +123,7 @@ HostContentSettingsMap::HostContentSettingsMap(Profile* profile)
 
   pref_change_registrar_.Init(prefs);
   pref_change_registrar_.Add(prefs::kBlockThirdPartyCookies, this);
-  notification_registrar_.Add(this, NotificationType::PROFILE_DESTROYED,
+  notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                               Source<Profile>(profile_));
 }
 
@@ -446,12 +446,12 @@ void HostContentSettingsMap::SetBlockThirdPartyCookies(bool block) {
   profile_->GetPrefs()->SetBoolean(prefs::kBlockThirdPartyCookies, block);
 }
 
-void HostContentSettingsMap::Observe(NotificationType type,
+void HostContentSettingsMap::Observe(int type,
                                      const NotificationSource& source,
                                      const NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (type == NotificationType::PREF_CHANGED) {
+  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
     DCHECK_EQ(profile_->GetPrefs(), Source<PrefService>(source).ptr());
     if (updating_preferences_)
       return;
@@ -468,7 +468,7 @@ void HostContentSettingsMap::Observe(NotificationType type,
       NOTREACHED() << "Unexpected preference observed";
       return;
     }
-  } else if (type == NotificationType::PROFILE_DESTROYED) {
+  } else if (type == chrome::NOTIFICATION_PROFILE_DESTROYED) {
     DCHECK_EQ(profile_, Source<Profile>(source).ptr());
     UnregisterObservers();
   } else {
@@ -504,7 +504,7 @@ void HostContentSettingsMap::UnregisterObservers() {
   if (!profile_)
     return;
   pref_change_registrar_.RemoveAll();
-  notification_registrar_.Remove(this, NotificationType::PROFILE_DESTROYED,
+  notification_registrar_.Remove(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                                  Source<Profile>(profile_));
   profile_ = NULL;
 }

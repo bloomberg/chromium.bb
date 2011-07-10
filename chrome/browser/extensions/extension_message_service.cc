@@ -116,11 +116,11 @@ void ExtensionMessageService::AllocatePortIdPair(int* port1, int* port2) {
 
 ExtensionMessageService::ExtensionMessageService(Profile* profile)
     : profile_(profile) {
-  registrar_.Add(this, NotificationType::RENDERER_PROCESS_TERMINATED,
+  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::RENDERER_PROCESS_CLOSED,
+  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::RENDER_VIEW_HOST_DELETED,
+  registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_DELETED,
                  NotificationService::AllSources());
 }
 
@@ -324,17 +324,17 @@ void ExtensionMessageService::PostMessageFromRenderer(
 
   DispatchOnMessage(port, message, dest_port_id);
 }
-void ExtensionMessageService::Observe(NotificationType type,
+void ExtensionMessageService::Observe(int type,
                                       const NotificationSource& source,
                                       const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::RENDERER_PROCESS_TERMINATED:
-    case NotificationType::RENDERER_PROCESS_CLOSED: {
+  switch (type) {
+    case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED:
+    case content::NOTIFICATION_RENDERER_PROCESS_CLOSED: {
       RenderProcessHost* renderer = Source<RenderProcessHost>(source).ptr();
       OnSenderClosed(renderer);
       break;
     }
-    case NotificationType::RENDER_VIEW_HOST_DELETED:
+    case content::NOTIFICATION_RENDER_VIEW_HOST_DELETED:
       OnSenderClosed(Source<RenderViewHost>(source).ptr());
       break;
     default:

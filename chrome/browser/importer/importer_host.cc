@@ -19,6 +19,7 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_source.h"
 #include "grit/generated_resources.h"
@@ -207,7 +208,7 @@ void ImporterHost::CheckForLoadedModels(uint16 items) {
     if (!writer_->TemplateURLServiceIsLoaded()) {
       TemplateURLService* model =
           TemplateURLServiceFactory::GetForProfile(profile_);
-      registrar_.Add(this, NotificationType::TEMPLATE_URL_SERVICE_LOADED,
+      registrar_.Add(this, chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED,
                      Source<TemplateURLService>(model));
       model->Load();
     }
@@ -237,10 +238,10 @@ void ImporterHost::BookmarkModelBeingDeleted(BookmarkModel* model) {
 void ImporterHost::BookmarkModelChanged() {
 }
 
-void ImporterHost::Observe(NotificationType type,
+void ImporterHost::Observe(int type,
                            const NotificationSource& source,
                            const NotificationDetails& details) {
-  DCHECK(type == NotificationType::TEMPLATE_URL_SERVICE_LOADED);
+  DCHECK(type == chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED);
   registrar_.RemoveAll();
   InvokeTaskIfDone();
 }

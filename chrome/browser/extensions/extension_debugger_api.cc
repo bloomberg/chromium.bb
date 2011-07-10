@@ -24,6 +24,7 @@
 #include "content/browser/debugger/devtools_client_host.h"
 #include "content/browser/debugger/devtools_manager.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/devtools_messages.h"
 #include "content/common/notification_service.h"
 
@@ -53,7 +54,7 @@ class ExtensionDevToolsClientHost : public DevToolsClientHost,
 
  private:
   // NotificationObserver implementation.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
   void OnDispatchOnInspectorFrontend(const std::string& data);
@@ -116,7 +117,7 @@ ExtensionDevToolsClientHost::ExtensionDevToolsClientHost(
   AttachedClientHosts::GetInstance()->Add(this);
 
   // Detach from debugger when extension unloads.
-  registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  Source<Profile>(tab_contents_->profile()));
 
   // Attach to debugger and tell it we are ready.
@@ -194,10 +195,10 @@ void ExtensionDevToolsClientHost::SendMessageToBackend(
 }
 
 void ExtensionDevToolsClientHost::Observe(
-    NotificationType type,
+    int type,
     const NotificationSource& source,
     const NotificationDetails& details) {
-  DCHECK(type == NotificationType::EXTENSION_UNLOADED);
+  DCHECK(type == chrome::NOTIFICATION_EXTENSION_UNLOADED);
   Close();
 }
 

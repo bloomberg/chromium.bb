@@ -908,7 +908,7 @@ class Browser : public TabHandlerDelegate,
   virtual void FileSelected(const FilePath& path, int index, void* params);
 
   // Overridden from NotificationObserver:
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

@@ -58,7 +58,7 @@ void SSLClientAuthHandler::CertificateSelected(net::X509Certificate* cert) {
 
   SSLClientAuthNotificationDetails details(cert_request_info_, cert);
   NotificationService* service = NotificationService::current();
-  service->Notify(NotificationType::SSL_CLIENT_AUTH_CERT_SELECTED,
+  service->Notify(content::NOTIFICATION_SSL_CLIENT_AUTH_CERT_SELECTED,
                   Source<SSLClientAuthHandler>(this),
                   Details<SSLClientAuthNotificationDetails>(&details));
 
@@ -111,12 +111,12 @@ SSLClientAuthObserver::~SSLClientAuthObserver() {
 }
 
 void SSLClientAuthObserver::Observe(
-    NotificationType type,
+    int type,
     const NotificationSource& source,
     const NotificationDetails& details) {
   VLOG(1) << "SSLClientAuthObserver::Observe " << this << " " << handler_.get();
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(type == NotificationType::SSL_CLIENT_AUTH_CERT_SELECTED);
+  DCHECK(type == content::NOTIFICATION_SSL_CLIENT_AUTH_CERT_SELECTED);
 
   if (Source<SSLClientAuthHandler>(source).ptr() == handler_.get()) {
     VLOG(1) << "got notification from ourself " << handler_.get();
@@ -138,9 +138,9 @@ void SSLClientAuthObserver::Observe(
 
 void SSLClientAuthObserver::StartObserving() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  notification_registrar_.Add(this,
-                              NotificationType::SSL_CLIENT_AUTH_CERT_SELECTED,
-                              NotificationService::AllSources());
+  notification_registrar_.Add(
+      this, content::NOTIFICATION_SSL_CLIENT_AUTH_CERT_SELECTED,
+      NotificationService::AllSources());
 }
 
 void SSLClientAuthObserver::StopObserving() {

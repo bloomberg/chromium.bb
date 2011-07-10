@@ -89,7 +89,7 @@ class LoginPerformer : public LoginStatusConsumer,
                                          const std::string& email);
 
   // NotificationObserver implementation:
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

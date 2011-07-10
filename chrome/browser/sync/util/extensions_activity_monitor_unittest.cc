@@ -9,6 +9,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_bookmarks_module.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/browser/browser_thread.h"
@@ -46,7 +47,7 @@ class BookmarkAPIEventTask : public Task {
    virtual void Run() {
      for (size_t i = 0; i < repeats_; i++) {
        NotificationService::current()->Notify(
-           NotificationType::EXTENSION_BOOKMARKS_API_INVOKED,
+           chrome::NOTIFICATION_EXTENSION_BOOKMARKS_API_INVOKED,
            Source<Extension>(extension_.get()),
            Details<const BookmarksFunction>(function_.get()));
      }

@@ -9,6 +9,7 @@
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_factory.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
@@ -18,7 +19,6 @@
 #include "content/common/bindings_policy.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 #include "content/common/renderer_preferences.h"
 #include "content/common/view_messages.h"
 #include "ipc/ipc_message.h"
@@ -100,7 +100,7 @@ void BalloonHost::RenderViewCreated(RenderViewHost* render_view_host) {
 void BalloonHost::RenderViewReady(RenderViewHost* render_view_host) {
   should_notify_on_disconnect_ = true;
   NotificationService::current()->Notify(
-      NotificationType::NOTIFY_BALLOON_CONNECTED,
+      chrome::NOTIFICATION_NOTIFY_BALLOON_CONNECTED,
       Source<BalloonHost>(this), NotificationService::NoDetails());
 }
 
@@ -229,7 +229,7 @@ void BalloonHost::NotifyDisconnect() {
 
   should_notify_on_disconnect_ = false;
   NotificationService::current()->Notify(
-      NotificationType::NOTIFY_BALLOON_DISCONNECTED,
+      chrome::NOTIFICATION_NOTIFY_BALLOON_DISCONNECTED,
       Source<BalloonHost>(this), NotificationService::NoDetails());
 }
 

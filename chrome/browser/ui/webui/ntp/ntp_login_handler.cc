@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_setup_flow.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/common/notification_details.h"
 
@@ -33,10 +34,10 @@ void NTPLoginHandler::RegisterMessages() {
       NewCallback(this, &NTPLoginHandler::HandleInitializeLogin));
 }
 
-void NTPLoginHandler::Observe(NotificationType type,
+void NTPLoginHandler::Observe(int type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
-  DCHECK(type == NotificationType::PREF_CHANGED);
+  DCHECK(type == chrome::NOTIFICATION_PREF_CHANGED);
   std::string* name = Details<std::string>(details).ptr();
   if (prefs::kGoogleServicesUsername == *name)
     UpdateLogin();

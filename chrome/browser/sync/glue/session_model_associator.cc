@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/navigation_controller.h"
@@ -426,7 +427,7 @@ bool SessionModelAssociator::DisassociateModels() {
   // There is no local model stored with which to disassociate, just notify
   // foreign session handlers.
   NotificationService::current()->Notify(
-      NotificationType::FOREIGN_SESSION_DISABLED,
+      chrome::NOTIFICATION_FOREIGN_SESSION_DISABLED,
       NotificationService::AllSources(),
       NotificationService::NoDetails());
   return true;

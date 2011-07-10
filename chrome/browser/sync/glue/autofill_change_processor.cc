@@ -19,6 +19,7 @@
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/webdata/web_database.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/guid.h"
 #include "content/common/notification_service.h"
 
@@ -55,7 +56,7 @@ AutofillChangeProcessor::AutofillChangeProcessor(
 
 AutofillChangeProcessor::~AutofillChangeProcessor() {}
 
-void AutofillChangeProcessor::Observe(NotificationType type,
+void AutofillChangeProcessor::Observe(int type,
                                       const NotificationSource& source,
                                       const NotificationDetails& details) {
   // Ensure this notification came from our web database.
@@ -77,7 +78,7 @@ void AutofillChangeProcessor::Observe(NotificationType type,
     return;
   }
 
-  DCHECK(type.value == NotificationType::AUTOFILL_ENTRIES_CHANGED);
+  DCHECK(type == chrome::NOTIFICATION_AUTOFILL_ENTRIES_CHANGED);
 
   AutofillChangeList* changes = Details<AutofillChangeList>(details).ptr();
   ObserveAutofillEntriesChanged(changes, &trans, autofill_root);
@@ -419,7 +420,8 @@ void AutofillChangeProcessor::StopImpl() {
 
 void AutofillChangeProcessor::StartObserving() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-  notification_registrar_.Add(this, NotificationType::AUTOFILL_ENTRIES_CHANGED,
+  notification_registrar_.Add(this,
+                              chrome::NOTIFICATION_AUTOFILL_ENTRIES_CHANGED,
                               NotificationService::AllSources());
 }
 

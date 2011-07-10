@@ -37,7 +37,6 @@ class FilePath;
 class GURL;
 class MessageLoop;
 class NavigationController;
-class NotificationType;
 class Profile;
 class RenderViewHost;
 class RenderWidgetHost;
@@ -217,17 +216,17 @@ bool IsViewFocused(const Browser* browser, ViewID vid);
 void ClickOnView(const Browser* browser, ViewID vid);
 
 // Blocks until a notification for given |type| is received.
-void WaitForNotification(NotificationType type);
+void WaitForNotification(int type);
 
 // Blocks until a notification for given |type| from the specified |source|
 // is received.
-void WaitForNotificationFrom(NotificationType type,
+void WaitForNotificationFrom(int type,
                              const NotificationSource& source);
 
 // Register |observer| for the given |type| and |source| and run
 // the message loop until the observer posts a quit task.
 void RegisterAndWait(NotificationObserver* observer,
-                     NotificationType type,
+                     int type,
                      const NotificationSource& source);
 
 // Blocks until |model| finishes loading.
@@ -268,7 +267,7 @@ bool SendKeyPressAndWait(const Browser* browser,
                          bool shift,
                          bool alt,
                          bool command,
-                         NotificationType type,
+                         int type,
                          const NotificationSource& source) WARN_UNUSED_RESULT;
 
 // Run a message loop only for the specified amount of time.
@@ -364,7 +363,7 @@ class TestNotificationObserver : public NotificationObserver {
   }
 
   // NotificationObserver:
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -390,7 +389,7 @@ class WindowedNotificationObserver : public NotificationObserver {
   // Register to listen for notifications of the given type from either a
   // specific source, or from all sources if |source| is
   // NotificationService::AllSources().
-  WindowedNotificationObserver(NotificationType notification_type,
+  WindowedNotificationObserver(int notification_type,
                                const NotificationSource& source);
   virtual ~WindowedNotificationObserver();
 
@@ -420,7 +419,7 @@ class WindowedNotificationObserver : public NotificationObserver {
   void WaitFor(const NotificationSource& source);
 
   // NotificationObserver:
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
 
@@ -442,7 +441,7 @@ template <class U>
 class WindowedNotificationObserverWithDetails
     : public WindowedNotificationObserver {
  public:
-  WindowedNotificationObserverWithDetails(NotificationType notification_type,
+  WindowedNotificationObserverWithDetails(int notification_type,
                                           const NotificationSource& source)
       : WindowedNotificationObserver(notification_type, source) {}
 
@@ -456,7 +455,7 @@ class WindowedNotificationObserverWithDetails
     return true;
   }
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
     const U* details_ptr = Details<U>(details).ptr();
@@ -486,7 +485,7 @@ class TitleWatcher : public NotificationObserver {
 
  private:
   // NotificationObserver
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
 
@@ -509,7 +508,7 @@ bool SendKeyPressAndWaitWithDetails(
     bool shift,
     bool alt,
     bool command,
-    NotificationType type,
+    int type,
     const NotificationSource& source,
     const Details<U>& details) WARN_UNUSED_RESULT;
 
@@ -521,7 +520,7 @@ bool SendKeyPressAndWaitWithDetails(
     bool shift,
     bool alt,
     bool command,
-    NotificationType type,
+    int type,
     const NotificationSource& source,
     const Details<U>& details) {
   WindowedNotificationObserverWithDetails<U> observer(type, source);
@@ -559,7 +558,7 @@ class DOMMessageQueue : public NotificationObserver {
   bool WaitForMessage(std::string* message) WARN_UNUSED_RESULT;
 
   // Overridden NotificationObserver methods.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

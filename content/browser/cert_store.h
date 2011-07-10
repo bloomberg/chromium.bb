@@ -42,7 +42,7 @@ class CertStore : public NotificationObserver {
   bool RetrieveCert(int cert_id, scoped_refptr<net::X509Certificate>* cert);
 
   // NotificationObserver implementation.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

@@ -8,6 +8,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/ui_test_utils.h"
 
 namespace {
@@ -97,7 +98,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, LaunchPanelApp) {
 
   // Close the app panel.
   ui_test_utils::WindowedNotificationObserver signal(
-      NotificationType::BROWSER_CLOSED,
+      chrome::NOTIFICATION_BROWSER_CLOSED,
       Source<Browser>(app_browser));
 
   app_browser->CloseWindow();

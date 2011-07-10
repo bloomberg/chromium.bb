@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/extension_accessibility_api.h"
 #include "chrome/browser/extensions/extension_accessibility_api_constants.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
 #include "grit/generated_resources.h"
@@ -100,7 +101,7 @@ void AppendIndexOfCount(int index, int count, std::string* str) {
 namespace chromeos {
 
 void WizardAccessibilityHandler::Observe(
-    NotificationType type,
+    int type,
     const NotificationSource& source,
     const NotificationDetails& details) {
   const AccessibilityControlInfo *control_info =
@@ -130,27 +131,27 @@ void WizardAccessibilityHandler::Speak(const char* speak_str,
 }
 
 void WizardAccessibilityHandler::DescribeAccessibilityEvent(
-    NotificationType event_type,
+    int event_type,
     const AccessibilityControlInfo* control_info,
     std::string* out_spoken_description,
     EarconType* out_earcon) {
   *out_spoken_description = std::string();
   *out_earcon = NO_EARCON;
 
-  switch (event_type.value) {
-    case NotificationType::ACCESSIBILITY_CONTROL_FOCUSED:
+  switch (event_type) {
+    case chrome::NOTIFICATION_ACCESSIBILITY_CONTROL_FOCUSED:
       DescribeControl(control_info, false, out_spoken_description, out_earcon);
       break;
-    case NotificationType::ACCESSIBILITY_CONTROL_ACTION:
+    case chrome::NOTIFICATION_ACCESSIBILITY_CONTROL_ACTION:
       DescribeControl(control_info, true, out_spoken_description, out_earcon);
       break;
-    case NotificationType::ACCESSIBILITY_TEXT_CHANGED:
+    case chrome::NOTIFICATION_ACCESSIBILITY_TEXT_CHANGED:
       DescribeTextChanged(control_info, out_spoken_description, out_earcon);
       break;
-    case NotificationType::ACCESSIBILITY_MENU_OPENED:
+    case chrome::NOTIFICATION_ACCESSIBILITY_MENU_OPENED:
       *out_earcon = EARCON_OBJECT_OPENED;
       break;
-    case NotificationType::ACCESSIBILITY_MENU_CLOSED:
+    case chrome::NOTIFICATION_ACCESSIBILITY_MENU_CLOSED:
       *out_earcon = EARCON_OBJECT_CLOSED;
       break;
     default:

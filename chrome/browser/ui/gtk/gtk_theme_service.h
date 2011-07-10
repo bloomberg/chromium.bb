@@ -60,7 +60,7 @@ class GtkThemeService : public ThemeService {
   virtual bool UsingNativeTheme() const;
 
   // Overridden from ThemeService, NotificationObserver:
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

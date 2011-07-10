@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/notification_service.h"
@@ -500,7 +501,7 @@ void AutocompleteEditModel::OpenMatch(const AutocompleteMatch& match,
     else if (!has_temporary_text_)
       log.inline_autocompleted_length = inline_autocomplete_text_.length();
     NotificationService::current()->Notify(
-        NotificationType::OMNIBOX_OPENED_URL, Source<Profile>(profile_),
+        chrome::NOTIFICATION_OMNIBOX_OPENED_URL, Source<Profile>(profile_),
         Details<AutocompleteLog>(&log));
   }
 
@@ -590,7 +591,7 @@ const AutocompleteResult& AutocompleteEditModel::result() const {
 void AutocompleteEditModel::OnSetFocus(bool control_down) {
   has_focus_ = true;
   control_key_state_ = control_down ? DOWN_WITHOUT_CHANGE : UP;
-  NotificationService::current()->Notify(NotificationType::OMNIBOX_FOCUSED,
+  NotificationService::current()->Notify(chrome::NOTIFICATION_OMNIBOX_FOCUSED,
                                          Source<AutocompleteEditModel>(this),
                                          NotificationService::NoDetails());
   InstantController* instant = controller_->GetInstant();

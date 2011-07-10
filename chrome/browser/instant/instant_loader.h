@@ -75,7 +75,7 @@ class InstantLoader : public NotificationObserver {
                            const TemplateURL* template_url);
 
   // NotificationObserver:
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
 

@@ -9,9 +9,9 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 
 class AccessibilityControlInfo;
 class AccessibilityTextBoxInfo;
@@ -44,13 +44,13 @@ class WizardAccessibilityHandler : public NotificationObserver {
 
  private:
   // Override from NotificationObserver.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
   // Get text to speak and an earcon identifier (which may be NONE) for any
   // accessibility event.
-  void DescribeAccessibilityEvent(NotificationType event_type,
+  void DescribeAccessibilityEvent(int event_type,
                                   const AccessibilityControlInfo* control_info,
                                   std::string* out_spoken_description,
                                   EarconType* out_earcon);

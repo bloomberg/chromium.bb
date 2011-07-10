@@ -219,11 +219,11 @@ class MockPaintingObserver : public NotificationObserver {
     size_ = size;
   }
 
-  void Observe(NotificationType type,
+  void Observe(int type,
                const NotificationSource& source,
                const NotificationDetails& details) {
     if (type ==
-        NotificationType::RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK) {
+        content::NOTIFICATION_RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK) {
       RenderWidgetHost::PaintAtSizeAckDetails* size_ack_details =
           Details<RenderWidgetHost::PaintAtSizeAckDetails>(details).ptr();
       WidgetDidReceivePaintAtSizeAck(
@@ -574,7 +574,7 @@ TEST_F(RenderWidgetHostTest, PaintAtSize) {
   MockPaintingObserver observer;
   registrar.Add(
       &observer,
-      NotificationType::RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK,
+      content::NOTIFICATION_RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK,
       Source<RenderWidgetHost>(host_.get()));
 
   host_->OnMsgPaintAtSizeAck(kPaintAtSizeTag, gfx::Size(20, 30));

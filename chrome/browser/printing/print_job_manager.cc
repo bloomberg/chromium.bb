@@ -8,6 +8,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/print_job.h"
 #include "chrome/browser/printing/printer_query.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/common/notification_service.h"
 #include "printing/printed_document.h"
@@ -16,7 +17,7 @@
 namespace printing {
 
 PrintJobManager::PrintJobManager() {
-  registrar_.Add(this, NotificationType::PRINT_JOB_EVENT,
+  registrar_.Add(this, chrome::NOTIFICATION_PRINT_JOB_EVENT,
                  NotificationService::AllSources());
 }
 
@@ -93,11 +94,11 @@ void PrintJobManager::RegisterPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kPrintingEnabled, true);
 }
 
-void PrintJobManager::Observe(NotificationType type,
+void PrintJobManager::Observe(int type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::PRINT_JOB_EVENT: {
+  switch (type) {
+    case chrome::NOTIFICATION_PRINT_JOB_EVENT: {
       OnPrintJobEvent(Source<PrintJob>(source).ptr(),
                       *Details<JobEventDetails>(details).ptr());
       break;

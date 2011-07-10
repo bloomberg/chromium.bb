@@ -18,7 +18,6 @@
 
 class GURL;
 class NotificationSource;
-class NotificationType;
 class SearchHostToURLsMap;
 class Task;
 class TemplateURL;
@@ -46,7 +45,7 @@ class SearchProviderInstallData : public WebDataServiceConsumer,
   // be kept up to date. (Note that this class may be deleted before or after
   // that notification occurs. It doesn't matter.)
   SearchProviderInstallData(WebDataService* web_service,
-                            NotificationType ui_death_notification,
+                            int ui_death_notification,
                             const NotificationSource& ui_death_source);
   virtual ~SearchProviderInstallData();
 

@@ -14,8 +14,8 @@
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/user_metrics.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 #include "content/common/result_codes.h"
 
 // static
@@ -27,15 +27,15 @@ UIThreadExtensionFunction::RenderViewHostTracker::RenderViewHostTracker(
     UIThreadExtensionFunction* function)
     : function_(function) {
   registrar_.Add(this,
-                 NotificationType::RENDER_VIEW_HOST_DELETED,
+                 content::NOTIFICATION_RENDER_VIEW_HOST_DELETED,
                  Source<RenderViewHost>(function->render_view_host()));
 }
 
 void UIThreadExtensionFunction::RenderViewHostTracker::Observe(
-    NotificationType type,
+    int type,
     const NotificationSource& source,
     const NotificationDetails& details) {
-  CHECK(type == NotificationType::RENDER_VIEW_HOST_DELETED);
+  CHECK(type == content::NOTIFICATION_RENDER_VIEW_HOST_DELETED);
   CHECK(Source<RenderViewHost>(source).ptr() ==
         function_->render_view_host());
   function_->SetRenderViewHost(NULL);

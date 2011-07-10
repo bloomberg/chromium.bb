@@ -13,13 +13,13 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_test_util.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_pref_service.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Create a TemplateURL. The caller owns the returned TemplateURL*.
@@ -167,7 +167,7 @@ class SearchProviderInstallDataTest : public testing::Test {
     util_.StartIOThread();
     install_data_ = new SearchProviderInstallData(
         util_.GetWebDataService(),
-        NotificationType::RENDERER_PROCESS_TERMINATED,
+        content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
         Source<SearchProviderInstallDataTest>(this));
   }
 
@@ -180,7 +180,7 @@ class SearchProviderInstallDataTest : public testing::Test {
     // Make sure that the install data class on the UI thread gets cleaned up.
     // It doesn't matter that this happens after install_data_ is deleted.
     NotificationService::current()->Notify(
-        NotificationType::RENDERER_PROCESS_TERMINATED,
+        content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
         Source<SearchProviderInstallDataTest>(this),
         NotificationService::NoDetails());
 
@@ -206,7 +206,7 @@ class SearchProviderInstallDataTest : public testing::Test {
     service->SetManagedPref(
         prefs::kDefaultSearchProviderPrepopulateID, new StringValue(""));
     util_.model()->Observe(
-        NotificationType::PREF_CHANGED,
+        chrome::NOTIFICATION_PREF_CHANGED,
         Source<PrefService>(util_.profile()->GetTestingPrefService()),
         Details<std::string>(NULL));
   }

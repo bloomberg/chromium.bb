@@ -122,7 +122,7 @@ class TaskManagerTabContentsResourceProvider
   virtual void StopUpdating();
 
   // NotificationObserver method:
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -191,7 +191,7 @@ class TaskManagerBackgroundContentsResourceProvider
   virtual void StopUpdating();
 
   // NotificationObserver method:
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -268,7 +268,7 @@ class TaskManagerChildProcessResourceProvider
   virtual void StopUpdating();
 
   // NotificationObserver method:
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -357,7 +357,7 @@ class TaskManagerExtensionProcessResourceProvider
   virtual void StopUpdating();
 
   // NotificationObserver method:
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -427,7 +427,7 @@ class TaskManagerNotificationResourceProvider
   virtual void StopUpdating();
 
   // NotificationObserver interface
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

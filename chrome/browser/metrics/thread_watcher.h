@@ -393,7 +393,7 @@ class ThreadWatcherObserver : public NotificationObserver {
   // method is accessible on UI thread.
   static void SetupNotifications(const base::TimeDelta& wakeup_interval);
 
-  // Removes all NotificationTypes from |registrar_| and deletes
+  // Removes all ints from |registrar_| and deletes
   // |g_thread_watcher_observer_|. This method is accessible on UI thread.
   static void RemoveNotifications();
 
@@ -409,14 +409,14 @@ class ThreadWatcherObserver : public NotificationObserver {
   // seconds. This is the implementation of NotificationObserver. When a
   // matching notification is posted to the notification service, this method is
   // called.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
   // The singleton of this class.
   static ThreadWatcherObserver* g_thread_watcher_observer_;
 
-  // The registrar that holds NotificationTypes to be observed.
+  // The registrar that holds ints to be observed.
   NotificationRegistrar registrar_;
 
   // This is the last time when woke all thread watchers up.

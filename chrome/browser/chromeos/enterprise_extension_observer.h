@@ -7,11 +7,11 @@
 #pragma once
 
 #include "chrome/common/extensions/extension.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 
 class FilePath;
 class Profile;
@@ -26,7 +26,7 @@ class EnterpriseExtensionObserver
   explicit EnterpriseExtensionObserver(Profile* profile);
   virtual ~EnterpriseExtensionObserver() {}
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

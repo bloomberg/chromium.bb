@@ -10,6 +10,7 @@
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/balloon_host.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/common/notification_service.h"
@@ -103,9 +104,9 @@ void TaskManagerNotificationResourceProvider::StartUpdating() {
   }
 
   // Register for notifications about extension process changes.
-  registrar_.Add(this, NotificationType::NOTIFY_BALLOON_CONNECTED,
+  registrar_.Add(this, chrome::NOTIFICATION_NOTIFY_BALLOON_CONNECTED,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::NOTIFY_BALLOON_DISCONNECTED,
+  registrar_.Add(this, chrome::NOTIFICATION_NOTIFY_BALLOON_DISCONNECTED,
                  NotificationService::AllSources());
 }
 
@@ -114,9 +115,9 @@ void TaskManagerNotificationResourceProvider::StopUpdating() {
   updating_ = false;
 
   // Unregister for notifications about extension process changes.
-  registrar_.Remove(this, NotificationType::NOTIFY_BALLOON_CONNECTED,
+  registrar_.Remove(this, chrome::NOTIFICATION_NOTIFY_BALLOON_CONNECTED,
                     NotificationService::AllSources());
-  registrar_.Remove(this, NotificationType::NOTIFY_BALLOON_DISCONNECTED,
+  registrar_.Remove(this, chrome::NOTIFICATION_NOTIFY_BALLOON_DISCONNECTED,
                     NotificationService::AllSources());
 
   // Delete all the resources.
@@ -125,14 +126,14 @@ void TaskManagerNotificationResourceProvider::StopUpdating() {
 }
 
 void TaskManagerNotificationResourceProvider::Observe(
-    NotificationType type,
+    int type,
     const NotificationSource& source,
     const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::NOTIFY_BALLOON_CONNECTED:
+  switch (type) {
+    case chrome::NOTIFICATION_NOTIFY_BALLOON_CONNECTED:
       AddToTaskManager(Source<BalloonHost>(source).ptr());
       break;
-    case NotificationType::NOTIFY_BALLOON_DISCONNECTED:
+    case chrome::NOTIFICATION_NOTIFY_BALLOON_DISCONNECTED:
       RemoveFromTaskManager(Source<BalloonHost>(source).ptr());
       break;
     default:

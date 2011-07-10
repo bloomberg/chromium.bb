@@ -15,6 +15,7 @@
 #import "chrome/browser/ui/cocoa/vertical_gradient_view.h"
 #include "chrome/browser/ui/collected_cookies_infobar_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
@@ -84,7 +85,7 @@ CollectedCookiesMac::CollectedCookiesMac(NSWindow* parent,
   TabSpecificContentSettings* content_settings =
       TabContentsWrapper::GetCurrentWrapperForContents(tab_contents)->
           content_settings();
-  registrar_.Add(this, NotificationType::COLLECTED_COOKIES_SHOWN,
+  registrar_.Add(this, chrome::NOTIFICATION_COLLECTED_COOKIES_SHOWN,
                  Source<TabSpecificContentSettings>(content_settings));
 
   sheet_controller_ = [[CollectedCookiesWindowController alloc]
@@ -107,10 +108,10 @@ void CollectedCookiesMac::DeleteDelegate() {
   delete this;
 }
 
-void CollectedCookiesMac::Observe(NotificationType type,
+void CollectedCookiesMac::Observe(int type,
                                   const NotificationSource& source,
                                   const NotificationDetails& details) {
-  DCHECK(type == NotificationType::COLLECTED_COOKIES_SHOWN);
+  DCHECK(type == chrome::NOTIFICATION_COLLECTED_COOKIES_SHOWN);
   window_->CloseConstrainedWindow();
 }
 

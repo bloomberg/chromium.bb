@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/navigation_controller.h"
@@ -85,7 +86,7 @@ class TabLoader : public NotificationObserver {
 
   // NotificationObserver method. Removes the specified tab and loads the next
   // tab.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -177,7 +178,7 @@ void TabLoader::TabIsLoading(NavigationController* controller) {
 }
 
 void TabLoader::StartLoading() {
-  registrar_.Add(this, NotificationType::RENDER_WIDGET_HOST_DID_PAINT,
+  registrar_.Add(this, content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT,
                  NotificationService::AllSources());
 #if defined(OS_CHROMEOS)
   if (chromeos::NetworkStateNotifier::is_connected()) {
@@ -185,7 +186,7 @@ void TabLoader::StartLoading() {
     LoadNextTab();
   } else {
     // Start listening to network state notification now.
-    registrar_.Add(this, NotificationType::NETWORK_STATE_CHANGED,
+    registrar_.Add(this, chrome::NETWORK_STATE_CHANGED,
                    NotificationService::AllSources());
   }
 #else
@@ -227,12 +228,12 @@ void TabLoader::LoadNextTab() {
   }
 }
 
-void TabLoader::Observe(NotificationType type,
+void TabLoader::Observe(int type,
                         const NotificationSource& source,
                         const NotificationDetails& details) {
-  switch (type.value) {
+  switch (type) {
 #if defined(OS_CHROMEOS)
-    case NotificationType::NETWORK_STATE_CHANGED: {
+    case chrome::NETWORK_STATE_CHANGED: {
       chromeos::NetworkStateDetails* state_details =
           Details<chromeos::NetworkStateDetails>(details).ptr();
       switch (state_details->state()) {
@@ -256,7 +257,7 @@ void TabLoader::Observe(NotificationType type,
       break;
     }
 #endif
-    case NotificationType::LOAD_START: {
+    case content::NOTIFICATION_LOAD_START: {
       // Add this render_widget_host to the set of those we're waiting for
       // paints on. We want to only record stats for paints that occur after
       // a load has finished.
@@ -266,7 +267,7 @@ void TabLoader::Observe(NotificationType type,
       render_widget_hosts_loading_.insert(render_widget_host);
       break;
     }
-    case NotificationType::TAB_CONTENTS_DESTROYED: {
+    case content::NOTIFICATION_TAB_CONTENTS_DESTROYED: {
       TabContents* tab_contents = Source<TabContents>(source).ptr();
       if (!got_first_paint_) {
         RenderWidgetHost* render_widget_host =
@@ -276,13 +277,13 @@ void TabLoader::Observe(NotificationType type,
       HandleTabClosedOrLoaded(&tab_contents->controller());
       break;
     }
-    case NotificationType::LOAD_STOP: {
+    case content::NOTIFICATION_LOAD_STOP: {
       NavigationController* tab = Source<NavigationController>(source).ptr();
       render_widget_hosts_to_paint_.insert(GetRenderWidgetHost(tab));
       HandleTabClosedOrLoaded(tab);
       break;
     }
-    case NotificationType::RENDER_WIDGET_HOST_DID_PAINT: {
+    case content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT: {
       if (!got_first_paint_) {
         RenderWidgetHost* render_widget_host =
             Source<RenderWidgetHost>(source).ptr();
@@ -323,7 +324,7 @@ void TabLoader::Observe(NotificationType type,
       break;
     }
     default:
-      NOTREACHED() << "Unknown notification received:" << type.value;
+      NOTREACHED() << "Unknown notification received:" << type;
   }
   // Delete ourselves when we're not waiting for any more notifications.
   if ((got_first_paint_ || render_widget_hosts_to_paint_.empty()) &&
@@ -332,11 +333,11 @@ void TabLoader::Observe(NotificationType type,
 }
 
 void TabLoader::RemoveTab(NavigationController* tab) {
-  registrar_.Remove(this, NotificationType::TAB_CONTENTS_DESTROYED,
+  registrar_.Remove(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
                     Source<TabContents>(tab->tab_contents()));
-  registrar_.Remove(this, NotificationType::LOAD_STOP,
+  registrar_.Remove(this, content::NOTIFICATION_LOAD_STOP,
                     Source<NavigationController>(tab));
-  registrar_.Remove(this, NotificationType::LOAD_START,
+  registrar_.Remove(this, content::NOTIFICATION_LOAD_START,
                     Source<NavigationController>(tab));
 
   TabsLoading::iterator i = tabs_loading_.find(tab);
@@ -366,11 +367,11 @@ RenderWidgetHost* TabLoader::GetRenderWidgetHost(NavigationController* tab) {
 }
 
 void TabLoader::RegisterForNotifications(NavigationController* controller) {
-  registrar_.Add(this, NotificationType::TAB_CONTENTS_DESTROYED,
+  registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
                  Source<TabContents>(controller->tab_contents()));
-  registrar_.Add(this, NotificationType::LOAD_STOP,
+  registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
                  Source<NavigationController>(controller));
-  registrar_.Add(this, NotificationType::LOAD_START,
+  registrar_.Add(this, content::NOTIFICATION_LOAD_START,
                  Source<NavigationController>(controller));
   ++tab_count_;
 }
@@ -447,7 +448,7 @@ class SessionRestoreImpl : public NotificationObserver {
     }
 
     if (browser_) {
-      registrar_.Add(this, NotificationType::BROWSER_CLOSED,
+      registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSED,
                      Source<Browser>(browser_));
     }
 
@@ -499,11 +500,11 @@ class SessionRestoreImpl : public NotificationObserver {
     g_browser_process->ReleaseModule();
   }
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
-    switch (type.value) {
-      case NotificationType::BROWSER_CLOSED:
+    switch (type) {
+      case chrome::NOTIFICATION_BROWSER_CLOSED:
         delete this;
         return;
 

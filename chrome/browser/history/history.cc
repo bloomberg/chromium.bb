@@ -44,6 +44,7 @@
 #include "chrome/browser/ui/profile_error_dialog.h"
 #include "chrome/browser/visitedlink/visitedlink_master.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/common/url_constants.h"
@@ -87,7 +88,7 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
   }
 
   virtual void BroadcastNotifications(
-      NotificationType type,
+      int type,
       history::HistoryDetails* details) OVERRIDE {
     // Send the notification on the history thread.
     if (NotificationService::current()) {
@@ -136,9 +137,9 @@ HistoryService::HistoryService(Profile* profile)
       no_db_(false),
       needs_top_sites_migration_(false) {
   DCHECK(profile_);
-  registrar_.Add(this, NotificationType::HISTORY_URLS_DELETED,
+  registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,
                  Source<Profile>(profile_));
-  registrar_.Add(this, NotificationType::TEMPLATE_URL_REMOVED,
+  registrar_.Add(this, chrome::NOTIFICATION_TEMPLATE_URL_REMOVED,
                  Source<Profile>(profile_));
 }
 
@@ -618,14 +619,14 @@ HistoryService::Handle HistoryService::QueryMostVisitedURLs(
                   result_count, days_back);
 }
 
-void HistoryService::Observe(NotificationType type,
+void HistoryService::Observe(int type,
                              const NotificationSource& source,
                              const NotificationDetails& details) {
   if (!thread_)
     return;
 
-  switch (type.value) {
-    case NotificationType::HISTORY_URLS_DELETED: {
+  switch (type) {
+    case chrome::NOTIFICATION_HISTORY_URLS_DELETED: {
       // Update the visited link system for deleted URLs. We will update the
       // visited link system for added URLs as soon as we get the add
       // notification (we don't have to wait for the backend, which allows us to
@@ -648,7 +649,7 @@ void HistoryService::Observe(NotificationType type,
       break;
     }
 
-    case NotificationType::TEMPLATE_URL_REMOVED:
+    case chrome::NOTIFICATION_TEMPLATE_URL_REMOVED:
       DeleteAllSearchTermsForKeyword(*(Details<TemplateURLID>(details).ptr()));
       break;
 
@@ -742,7 +743,7 @@ void HistoryService::ExpireHistoryBetween(
 }
 
 void HistoryService::BroadcastNotifications(
-    NotificationType type,
+    int type,
     history::HistoryDetails* details_deleted) {
   // We take ownership of the passed-in pointer and delete it. It was made for
   // us on another thread, so the caller doesn't know when we will handle it.
@@ -789,7 +790,7 @@ void HistoryService::LoadBackendIfNecessary() {
 
 void HistoryService::OnDBLoaded() {
   backend_loaded_ = true;
-  NotificationService::current()->Notify(NotificationType::HISTORY_LOADED,
+  NotificationService::current()->Notify(chrome::NOTIFICATION_HISTORY_LOADED,
                                          Source<Profile>(profile_),
                                          Details<HistoryService>(this));
   if (thread_ && profile_) {

@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/gtk/global_menu_bar.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -60,7 +61,7 @@ GlobalBookmarkMenu::GlobalBookmarkMenu(Browser* browser)
 
   default_favicon_ = GtkThemeService::GetDefaultFavicon(true);
   default_folder_ = GtkThemeService::GetFolderIcon(true);
-  registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
+  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  Source<ThemeService>(
                      ThemeServiceFactory::GetForProfile(profile_)));
 }
@@ -225,10 +226,10 @@ void GlobalBookmarkMenu::ClearBookmarkItemCallback(GtkWidget* menu_item,
     gtk_widget_destroy(menu_item);
 }
 
-void GlobalBookmarkMenu::Observe(NotificationType type,
+void GlobalBookmarkMenu::Observe(int type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {
-  DCHECK(type.value == NotificationType::BROWSER_THEME_CHANGED);
+  DCHECK(type == chrome::NOTIFICATION_BROWSER_THEME_CHANGED);
 
   // Change the icon and invalidate the menu.
   default_favicon_ = GtkThemeService::GetDefaultFavicon(true);

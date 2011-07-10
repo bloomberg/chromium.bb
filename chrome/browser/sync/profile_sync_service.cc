@@ -38,6 +38,7 @@
 #include "chrome/browser/sync/signin_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
@@ -46,7 +47,6 @@
 #include "chrome/common/url_constants.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 #include "grit/generated_resources.h"
 #include "net/base/cookie_monster.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -175,20 +175,20 @@ void ProfileSyncService::Initialize() {
 
 void ProfileSyncService::RegisterAuthNotifications() {
   registrar_.Add(this,
-                 NotificationType::TOKEN_AVAILABLE,
+                 chrome::NOTIFICATION_TOKEN_AVAILABLE,
                  Source<TokenService>(profile_->GetTokenService()));
   registrar_.Add(this,
-                 NotificationType::TOKEN_LOADING_FINISHED,
+                 chrome::NOTIFICATION_TOKEN_LOADING_FINISHED,
                  Source<TokenService>(profile_->GetTokenService()));
   registrar_.Add(this,
-                 NotificationType::GOOGLE_SIGNIN_SUCCESSFUL,
+                 chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
                  Source<Profile>(profile_));
   registrar_.Add(this,
-                 NotificationType::GOOGLE_SIGNIN_FAILED,
+                 chrome::NOTIFICATION_GOOGLE_SIGNIN_FAILED,
                  Source<Profile>(profile_));
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableSyncOAuth)) {
     registrar_.Add(this,
-                   NotificationType::COOKIE_CHANGED,
+                   chrome::NOTIFICATION_COOKIE_CHANGED,
                    Source<Profile>(profile_));
   }
 }
@@ -409,10 +409,10 @@ void ProfileSyncService::Shutdown(bool sync_disabled) {
     }
 
     registrar_.Remove(this,
-                      NotificationType::SYNC_CONFIGURE_START,
+                      chrome::NOTIFICATION_SYNC_CONFIGURE_START,
                       Source<DataTypeManager>(data_type_manager_.get()));
     registrar_.Remove(this,
-                      NotificationType::SYNC_CONFIGURE_DONE,
+                      chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
                       Source<DataTypeManager>(data_type_manager_.get()));
     data_type_manager_.reset();
   }
@@ -1093,10 +1093,10 @@ void ProfileSyncService::ConfigureDataTypeManager() {
         factory_->CreateDataTypeManager(backend_.get(),
                                         data_type_controllers_));
     registrar_.Add(this,
-                   NotificationType::SYNC_CONFIGURE_START,
+                   chrome::NOTIFICATION_SYNC_CONFIGURE_START,
                    Source<DataTypeManager>(data_type_manager_.get()));
     registrar_.Add(this,
-                   NotificationType::SYNC_CONFIGURE_DONE,
+                   chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
                    Source<DataTypeManager>(data_type_manager_.get()));
 
     // We create the migrator at the same time.
@@ -1238,16 +1238,16 @@ void ProfileSyncService::GetEncryptedDataTypes(
   }
 }
 
-void ProfileSyncService::Observe(NotificationType type,
+void ProfileSyncService::Observe(int type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::SYNC_CONFIGURE_START: {
+  switch (type) {
+    case chrome::NOTIFICATION_SYNC_CONFIGURE_START: {
       NotifyObservers();
       // TODO(sync): Maybe toast?
       break;
     }
-    case NotificationType::SYNC_CONFIGURE_DONE: {
+    case chrome::NOTIFICATION_SYNC_CONFIGURE_DONE: {
       DataTypeManager::ConfigureResultWithErrorLocation* result_with_location =
           Details<DataTypeManager::ConfigureResultWithErrorLocation>(
               details).ptr();
@@ -1300,7 +1300,7 @@ void ProfileSyncService::Observe(NotificationType type,
       }
       break;
     }
-    case NotificationType::PREF_CHANGED: {
+    case chrome::NOTIFICATION_PREF_CHANGED: {
       std::string* pref_name = Details<std::string>(details).ptr();
       if (*pref_name == prefs::kSyncManaged) {
         NotifyObservers();
@@ -1312,7 +1312,7 @@ void ProfileSyncService::Observe(NotificationType type,
       }
       break;
     }
-    case NotificationType::GOOGLE_SIGNIN_SUCCESSFUL: {
+    case chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL: {
       const GoogleServiceSigninSuccessDetails* successful =
           (Details<const GoogleServiceSigninSuccessDetails>(details).ptr());
       // We pass 'false' to SetPassphrase to denote that this is an implicit
@@ -1323,13 +1323,13 @@ void ProfileSyncService::Observe(NotificationType type,
       SetPassphrase(successful->password, false, true);
       break;
     }
-    case NotificationType::GOOGLE_SIGNIN_FAILED: {
+    case chrome::NOTIFICATION_GOOGLE_SIGNIN_FAILED: {
       GoogleServiceAuthError error =
           *(Details<const GoogleServiceAuthError>(details).ptr());
       UpdateAuthErrorState(error);
       break;
     }
-    case NotificationType::TOKEN_AVAILABLE: {
+    case chrome::NOTIFICATION_TOKEN_AVAILABLE: {
       if (AreCredentialsAvailable()) {
         if (backend_initialized_) {
           backend_->UpdateCredentials(GetCredentials());
@@ -1340,7 +1340,7 @@ void ProfileSyncService::Observe(NotificationType type,
       }
       break;
     }
-    case NotificationType::TOKEN_LOADING_FINISHED: {
+    case chrome::NOTIFICATION_TOKEN_LOADING_FINISHED: {
       // If not in Chrome OS, and we have a username without tokens,
       // the user will need to signin again, so sign out.
       if (cros_user_.empty() &&
@@ -1350,7 +1350,7 @@ void ProfileSyncService::Observe(NotificationType type,
       }
       break;
     }
-    case NotificationType::COOKIE_CHANGED: {
+    case chrome::NOTIFICATION_COOKIE_CHANGED: {
       OnCookieChanged(Source<Profile>(source).ptr(),
                       Details<ChromeCookieDetails>(details).ptr());
       break;

@@ -49,12 +49,12 @@ ThreadNotifier::ThreadNotifier(base::Thread* notify_thread)
     : done_event_(false, false),
       notify_thread_(notify_thread) {}
 
-void ThreadNotifier::Notify(NotificationType type,
+void ThreadNotifier::Notify(int type,
                             const NotificationDetails& details) {
   Notify(type, NotificationService::AllSources(), details);
 }
 
-void ThreadNotifier::Notify(NotificationType type,
+void ThreadNotifier::Notify(int type,
                             const NotificationSource& source,
                             const NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -70,7 +70,7 @@ void ThreadNotifier::Notify(NotificationType type,
 
 ThreadNotifier::~ThreadNotifier() {}
 
-void ThreadNotifier::NotifyTask(NotificationType type,
+void ThreadNotifier::NotifyTask(int type,
                                 const NotificationSource& source,
                                 const NotificationDetails& details) {
   NotificationService::current()->Notify(type, source, details);

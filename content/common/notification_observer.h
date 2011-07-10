@@ -8,7 +8,6 @@
 
 class NotificationDetails;
 class NotificationSource;
-class NotificationType;
 
 // This is the base class for notification observers. When a matching
 // notification is posted to the notification service, Observe is called.
@@ -17,7 +16,7 @@ class NotificationObserver {
   NotificationObserver();
   virtual ~NotificationObserver();
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) = 0;
 };

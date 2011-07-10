@@ -114,7 +114,7 @@ class PluginsDOMHandler : public WebUIMessageHandler,
   void HandleGetShowDetails(const ListValue* args);
 
   // NotificationObserver method overrides
-  void Observe(NotificationType type,
+  void Observe(int type,
                const NotificationSource& source,
                const NotificationDetails& details);
 
@@ -151,7 +151,7 @@ class PluginsDOMHandler : public WebUIMessageHandler,
 PluginsDOMHandler::PluginsDOMHandler()
     : ALLOW_THIS_IN_INITIALIZER_LIST(get_plugins_factory_(this)) {
   registrar_.Add(this,
-                 NotificationType::PLUGIN_ENABLE_STATUS_CHANGED,
+                 content::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED,
                  NotificationService::AllSources());
 }
 
@@ -247,10 +247,10 @@ void PluginsDOMHandler::HandleGetShowDetails(const ListValue* args) {
   web_ui_->CallJavascriptFunction("loadShowDetailsFromPrefs", show_details);
 }
 
-void PluginsDOMHandler::Observe(NotificationType type,
+void PluginsDOMHandler::Observe(int type,
                                 const NotificationSource& source,
                                 const NotificationDetails& details) {
-  DCHECK_EQ(NotificationType::PLUGIN_ENABLE_STATUS_CHANGED, type.value);
+  DCHECK_EQ(content::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED, type);
   LoadPlugins();
 }
 

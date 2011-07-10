@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/ntp/shown_sections_handler.h"
 #include "chrome/browser/web_resource/promo_resource_service.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -34,7 +35,6 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -154,10 +154,10 @@ bool InDateRange(double begin, double end) {
 }  // namespace
 
 NTPResourceCache::NTPResourceCache(Profile* profile) : profile_(profile) {
-  registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
+  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  Source<ThemeService>(
                      ThemeServiceFactory::GetForProfile(profile)));
-  registrar_.Add(this, NotificationType::PROMO_RESOURCE_STATE_CHANGED,
+  registrar_.Add(this, chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED,
                  NotificationService::AllSources());
 
   // Watch for pref changes that cause us to need to invalidate the HTML cache.
@@ -195,16 +195,16 @@ RefCountedBytes* NTPResourceCache::GetNewTabCSS(bool is_incognito) {
                       : new_tab_css_.get();
 }
 
-void NTPResourceCache::Observe(NotificationType type,
+void NTPResourceCache::Observe(int type,
     const NotificationSource& source, const NotificationDetails& details) {
   // Invalidate the cache.
-  if (NotificationType::BROWSER_THEME_CHANGED == type ||
-      NotificationType::PROMO_RESOURCE_STATE_CHANGED == type) {
+  if (chrome::NOTIFICATION_BROWSER_THEME_CHANGED == type ||
+      chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED == type) {
     new_tab_incognito_html_ = NULL;
     new_tab_html_ = NULL;
     new_tab_incognito_css_ = NULL;
     new_tab_css_ = NULL;
-  } else if (NotificationType::PREF_CHANGED == type) {
+  } else if (chrome::NOTIFICATION_PREF_CHANGED == type) {
     std::string* pref_name = Details<std::string>(details).ptr();
     if (*pref_name == prefs::kShowBookmarkBar ||
         *pref_name == prefs::kEnableBookmarkBar ||

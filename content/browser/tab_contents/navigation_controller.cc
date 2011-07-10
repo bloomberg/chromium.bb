@@ -42,7 +42,7 @@ void NotifyPrunedEntries(NavigationController* nav_controller,
   details.from_front = from_front;
   details.count = count;
   NotificationService::current()->Notify(
-      NotificationType::NAV_LIST_PRUNED,
+      content::NOTIFICATION_NAV_LIST_PRUNED,
       Source<NavigationController>(nav_controller),
       Details<content::PrunedDetails>(&details));
 }
@@ -133,7 +133,7 @@ NavigationController::~NavigationController() {
   DiscardNonCommittedEntriesInternal();
 
   NotificationService::current()->Notify(
-      NotificationType::TAB_CLOSED,
+      content::NOTIFICATION_TAB_CLOSED,
       Source<NavigationController>(this),
       NotificationService::NoDetails());
 }
@@ -183,7 +183,7 @@ void NavigationController::ReloadInternal(bool check_for_repost,
     // they really want to do this. If they do, the dialog will call us back
     // with check_for_repost = false.
     NotificationService::current()->Notify(
-        NotificationType::REPOST_WARNING_SHOWN,
+        content::NOTIFICATION_REPOST_WARNING_SHOWN,
         Source<NavigationController>(this),
         NotificationService::NoDetails());
 
@@ -270,7 +270,7 @@ void NavigationController::LoadEntry(NavigationEntry* entry) {
   DiscardNonCommittedEntriesInternal();
   pending_entry_ = entry;
   NotificationService::current()->Notify(
-      NotificationType::NAV_ENTRY_PENDING,
+      content::NOTIFICATION_NAV_ENTRY_PENDING,
       Source<NavigationController>(this),
       NotificationService::NoDetails());
   NavigateToPendingEntry(NO_RELOAD);
@@ -1061,7 +1061,7 @@ void NavigationController::NotifyNavigationEntryCommitted(
   tab_contents_->NotifyNavigationStateChanged(kInvalidateAll);
 
   NotificationService::current()->Notify(
-      NotificationType::NAV_ENTRY_COMMITTED,
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       Source<NavigationController>(this),
       notification_details);
 }
@@ -1092,7 +1092,8 @@ void NavigationController::NotifyEntryChanged(const NavigationEntry* entry,
   content::EntryChangedDetails det;
   det.changed_entry = entry;
   det.index = index;
-  NotificationService::current()->Notify(NotificationType::NAV_ENTRY_CHANGED,
+  NotificationService::current()->Notify(
+      content::NOTIFICATION_NAV_ENTRY_CHANGED,
       Source<NavigationController>(this),
       Details<content::EntryChangedDetails>(&det));
 }

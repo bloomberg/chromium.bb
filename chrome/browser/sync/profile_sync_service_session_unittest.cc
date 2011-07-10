@@ -28,6 +28,7 @@
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/test/browser_with_test_window_test.h"
 #include "chrome/test/profile_mock.h"
@@ -78,15 +79,15 @@ class ProfileSyncServiceSessionTest
     helper_.set_service(session_service);
     service()->SetWindowType(window_id_, Browser::TYPE_TABBED);
     service()->SetWindowBounds(window_id_, window_bounds_, false);
-    registrar_.Add(this, NotificationType::FOREIGN_SESSION_UPDATED,
+    registrar_.Add(this, chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED,
         NotificationService::AllSources());
   }
 
-  void Observe(NotificationType type,
+  void Observe(int type,
       const NotificationSource& source,
       const NotificationDetails& details) {
-    switch (type.value) {
-      case NotificationType::FOREIGN_SESSION_UPDATED:
+    switch (type) {
+      case chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED:
         notified_of_update_ = true;
         break;
       default:

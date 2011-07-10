@@ -20,9 +20,9 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // This value is used to seed the PRNG at the beginning of a sequence of

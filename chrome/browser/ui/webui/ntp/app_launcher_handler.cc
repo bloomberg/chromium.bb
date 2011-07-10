@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/extension_icon_source.h"
 #include "chrome/browser/ui/webui/ntp/shown_sections_handler.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -37,7 +38,6 @@
 #include "content/browser/disposition_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 #include "googleurl/src/gurl.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
@@ -214,14 +214,14 @@ void AppLauncherHandler::RegisterMessages() {
       NewCallback(this, &AppLauncherHandler::HandleSaveAppPageName));
 }
 
-void AppLauncherHandler::Observe(NotificationType type,
+void AppLauncherHandler::Observe(int type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {
   if (ignore_changes_)
     return;
 
-  switch (type.value) {
-    case NotificationType::APP_NOTIFICATION_STATE_CHANGED: {
+  switch (type) {
+    case chrome::NOTIFICATION_APP_NOTIFICATION_STATE_CHANGED: {
       const std::string& id = *Details<const std::string>(details).ptr();
       const AppNotification* notification =
           extensions_service_->app_notification_manager()->GetLast(id);
@@ -232,10 +232,10 @@ void AppLauncherHandler::Observe(NotificationType type,
       web_ui_->CallJavascriptFunction("appNotificationChanged", args);
       break;
     }
-    case NotificationType::EXTENSION_LOADED:
-    case NotificationType::EXTENSION_UNLOADED: {
+    case chrome::NOTIFICATION_EXTENSION_LOADED:
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
       const Extension* extension =
-          type == NotificationType::EXTENSION_LOADED ?
+          type == chrome::NOTIFICATION_EXTENSION_LOADED ?
               Details<const Extension>(details).ptr() :
               Details<UnloadedExtensionInfo>(details)->extension;
       if (!extension->is_app())
@@ -244,7 +244,7 @@ void AppLauncherHandler::Observe(NotificationType type,
       if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewTabPage4)) {
         scoped_ptr<DictionaryValue> app_info(GetAppInfo(extension));
         std::string function =
-            type.value == NotificationType::EXTENSION_LOADED ?
+            type == chrome::NOTIFICATION_EXTENSION_LOADED ?
                 "ntp4.appAdded" : "ntp4.appRemoved";
         web_ui_->CallJavascriptFunction(function, *app_info);
       } else if (web_ui_->tab_contents()) {
@@ -253,14 +253,14 @@ void AppLauncherHandler::Observe(NotificationType type,
 
       break;
     }
-    case NotificationType::EXTENSION_LAUNCHER_REORDERED:
+    case chrome::NOTIFICATION_EXTENSION_LAUNCHER_REORDERED:
     // The promo may not load until a couple seconds after the first NTP view,
     // so we listen for the load notification and notify the NTP when ready.
-    case NotificationType::WEB_STORE_PROMO_LOADED:
+    case chrome::NOTIFICATION_WEB_STORE_PROMO_LOADED:
       if (web_ui_->tab_contents())
         HandleGetApps(NULL);
       break;
-    case NotificationType::PREF_CHANGED: {
+    case chrome::NOTIFICATION_PREF_CHANGED: {
       if (!web_ui_->tab_contents())
         break;
       // Handle app page renames.
@@ -399,15 +399,15 @@ void AppLauncherHandler::HandleGetApps(const ListValue* args) {
   // First time we get here we set up the observer so that we can tell update
   // the apps as they change.
   if (registrar_.IsEmpty()) {
-    registrar_.Add(this, NotificationType::APP_NOTIFICATION_STATE_CHANGED,
+    registrar_.Add(this, chrome::NOTIFICATION_APP_NOTIFICATION_STATE_CHANGED,
         NotificationService::AllSources());
-    registrar_.Add(this, NotificationType::EXTENSION_LOADED,
+    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
         NotificationService::AllSources());
-    registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
+    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
         NotificationService::AllSources());
-    registrar_.Add(this, NotificationType::EXTENSION_LAUNCHER_REORDERED,
+    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LAUNCHER_REORDERED,
         NotificationService::AllSources());
-    registrar_.Add(this, NotificationType::WEB_STORE_PROMO_LOADED,
+    registrar_.Add(this, chrome::NOTIFICATION_WEB_STORE_PROMO_LOADED,
         NotificationService::AllSources());
   }
   if (pref_change_registrar_.IsEmpty()) {

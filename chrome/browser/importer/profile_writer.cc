@@ -17,6 +17,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/common/notification_service.h"
 
@@ -61,7 +62,7 @@ void ShowBookmarkBar(Profile* profile) {
     prefs->ScheduleSavePersistentPrefs();
     Source<Profile> source(profile);
     NotificationService::current()->Notify(
-        NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED, source,
+        chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED, source,
         NotificationService::NoDetails());
   }
 }

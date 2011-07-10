@@ -22,6 +22,7 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/ntp/most_visited_handler.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/thumbnail_score.h"
@@ -142,9 +143,9 @@ TopSites::TopSites(Profile* profile)
     return;
 
   if (NotificationService::current()) {
-    registrar_.Add(this, NotificationType::HISTORY_URLS_DELETED,
+    registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,
                    Source<Profile>(profile_));
-    registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
+    registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                    NotificationService::AllSources());
   }
 
@@ -784,13 +785,13 @@ void TopSites::ProcessPendingCallbacks(
   }
 }
 
-void TopSites::Observe(NotificationType type,
+void TopSites::Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
   if (!loaded_)
     return;
 
-  if (type == NotificationType::HISTORY_URLS_DELETED) {
+  if (type == chrome::NOTIFICATION_HISTORY_URLS_DELETED) {
     Details<history::URLsDeletedDetails> deleted_details(details);
     if (deleted_details->all_history) {
       SetTopSites(MostVisitedURLList());
@@ -816,7 +817,7 @@ void TopSites::Observe(NotificationType type,
       SetTopSites(new_top_sites);
     }
     StartQueryForMostVisited();
-  } else if (type == NotificationType::NAV_ENTRY_COMMITTED) {
+  } else if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
     if (!IsFull()) {
       content::LoadCommittedDetails* load_details =
           Details<content::LoadCommittedDetails>(details).ptr();
@@ -911,7 +912,7 @@ void TopSites::MoveStateToLoaded() {
 
   ProcessPendingCallbacks(pending_callbacks, filtered_urls);
 
-  NotificationService::current()->Notify(NotificationType::TOP_SITES_LOADED,
+  NotificationService::current()->Notify(chrome::NOTIFICATION_TOP_SITES_LOADED,
                                          Source<Profile>(profile_),
                                          Details<TopSites>(this));
 }
@@ -931,7 +932,7 @@ void TopSites::ResetThreadSafeImageCache() {
 
 void TopSites::NotifyTopSitesChanged() {
   NotificationService::current()->Notify(
-      NotificationType::TOP_SITES_CHANGED,
+      chrome::NOTIFICATION_TOP_SITES_CHANGED,
       Source<TopSites>(this),
       NotificationService::NoDetails());
 }
@@ -1005,7 +1006,7 @@ void TopSites::OnTopSitesAvailableFromHistory(
 
   // Used only in testing.
   NotificationService::current()->Notify(
-      NotificationType::TOP_SITES_UPDATED,
+      chrome::NOTIFICATION_TOP_SITES_UPDATED,
       Source<TopSites>(this),
       Details<CancelableRequestProvider::Handle>(&handle));
 }

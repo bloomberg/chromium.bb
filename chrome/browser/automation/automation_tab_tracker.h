@@ -12,7 +12,6 @@
 #include "chrome/browser/automation/automation_resource_tracker.h"
 
 class NavigationController;
-class NotificationType;
 
 class AutomationTabTracker
   : public AutomationResourceTracker<NavigationController*> {
@@ -23,7 +22,7 @@ class AutomationTabTracker
   virtual void AddObserver(NavigationController* resource);
   virtual void RemoveObserver(NavigationController* resource);
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

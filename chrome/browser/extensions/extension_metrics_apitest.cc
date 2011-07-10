@@ -64,7 +64,7 @@ class UserActionObserver : public NotificationObserver {
                            const RecordedUserAction* recorded,
                            int count);
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -85,11 +85,11 @@ class UserActionObserver : public NotificationObserver {
 };
 
 UserActionObserver::UserActionObserver() {
-  registrar_.Add(this, NotificationType::USER_ACTION,
+  registrar_.Add(this, content::NOTIFICATION_USER_ACTION,
                  NotificationService::AllSources());
 }
 
-void UserActionObserver::Observe(NotificationType type,
+void UserActionObserver::Observe(int type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {
   const char* name = *Details<const char*>(details).ptr();

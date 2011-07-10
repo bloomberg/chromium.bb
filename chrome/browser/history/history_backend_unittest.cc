@@ -55,7 +55,7 @@ class HistoryBackendTestDelegate : public HistoryBackend::Delegate {
 
   virtual void NotifyProfileError(sql::InitStatus init_status) OVERRIDE {}
   virtual void SetInMemoryBackend(InMemoryHistoryBackend* backend) OVERRIDE;
-  virtual void BroadcastNotifications(NotificationType type,
+  virtual void BroadcastNotifications(int type,
                                       HistoryDetails* details) OVERRIDE;
   virtual void DBLoaded() OVERRIDE;
   virtual void StartTopSitesMigration() OVERRIDE;
@@ -169,7 +169,7 @@ class HistoryBackendTest : public testing::Test {
     mem_backend_.reset(backend);
   }
 
-  void BroadcastNotifications(NotificationType type,
+  void BroadcastNotifications(int type,
                                       HistoryDetails* details) {
     // Send the notifications directly to the in-memory database.
     Details<HistoryDetails> det(details);
@@ -189,7 +189,7 @@ void HistoryBackendTestDelegate::SetInMemoryBackend(
 }
 
 void HistoryBackendTestDelegate::BroadcastNotifications(
-    NotificationType type,
+    int type,
     HistoryDetails* details) {
   test_->BroadcastNotifications(type, details);
 }

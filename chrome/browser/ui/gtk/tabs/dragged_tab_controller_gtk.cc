@@ -164,10 +164,10 @@ DraggedTabControllerGtk::GetJavaScriptDialogCreator() {
 ////////////////////////////////////////////////////////////////////////////////
 // DraggedTabControllerGtk, NotificationObserver implementation:
 
-void DraggedTabControllerGtk::Observe(NotificationType type,
+void DraggedTabControllerGtk::Observe(int type,
                                    const NotificationSource& source,
                                    const NotificationDetails& details) {
-  DCHECK(type == NotificationType::TAB_CONTENTS_DESTROYED);
+  DCHECK(type == content::NOTIFICATION_TAB_CONTENTS_DESTROYED);
   DCHECK_EQ(Source<TabContents>(source).ptr(),
             dragged_contents_->tab_contents());
   EndDragImpl(TAB_DESTROYED);
@@ -187,7 +187,7 @@ void DraggedTabControllerGtk::SetDraggedContents(
     TabContentsWrapper* new_contents) {
   if (dragged_contents_) {
     registrar_.Remove(this,
-                      NotificationType::TAB_CONTENTS_DESTROYED,
+                      content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
                       Source<TabContents>(dragged_contents_->tab_contents()));
     if (original_delegate_)
       dragged_contents_->tab_contents()->set_delegate(original_delegate_);
@@ -196,7 +196,7 @@ void DraggedTabControllerGtk::SetDraggedContents(
   dragged_contents_ = new_contents;
   if (dragged_contents_) {
     registrar_.Add(this,
-                   NotificationType::TAB_CONTENTS_DESTROYED,
+                   content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
                    Source<TabContents>(dragged_contents_->tab_contents()));
 
     // We need to be the delegate so we receive messages about stuff,

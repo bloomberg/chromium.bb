@@ -8,6 +8,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/printing/print_job.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
 #include "printing/print_job_constants.h"
@@ -38,7 +39,7 @@ class PrintJobWorker::NotificationTask : public Task {
   virtual void Run() {
     // Send the notification in the right thread.
     NotificationService::current()->Notify(
-        NotificationType::PRINT_JOB_EVENT,
+        chrome::NOTIFICATION_PRINT_JOB_EVENT,
         // We know that is is a PrintJob object in this circumstance.
         Source<PrintJob>(static_cast<PrintJob*>(print_job_.get())),
         Details<JobEventDetails>(details_));

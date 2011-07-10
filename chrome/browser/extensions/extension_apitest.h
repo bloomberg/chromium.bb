@@ -49,7 +49,7 @@ class ExtensionApiTest : public ExtensionBrowserTest {
     const std::string& message() { return message_; }
 
    private:
-    virtual void Observe(NotificationType type,
+    virtual void Observe(int type,
                          const NotificationSource& source,
                          const NotificationDetails& details);
 

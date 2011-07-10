@@ -17,6 +17,7 @@
 #include "chrome/browser/policy/dummy_configuration_policy_provider.h"
 #include "chrome/browser/policy/user_policy_cache.h"
 #include "chrome/browser/policy/user_policy_token_cache.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
@@ -246,7 +247,7 @@ void BrowserPolicyConnector::InitializeUserPolicy(const std::string& user_name,
   if (command_line->HasSwitch(switches::kDeviceManagementUrl)) {
     token_service_ = token_service;
     registrar_.Add(this,
-                   NotificationType::TOKEN_AVAILABLE,
+                   chrome::NOTIFICATION_TOKEN_AVAILABLE,
                    Source<TokenService>(token_service_));
 
     FilePath policy_cache_dir = policy_dir.Append(kPolicyDir);
@@ -336,11 +337,11 @@ void BrowserPolicyConnector::InitializeDevicePolicySubsystem() {
 #endif
 }
 
-void BrowserPolicyConnector::Observe(NotificationType type,
+void BrowserPolicyConnector::Observe(int type,
                                      const NotificationSource& source,
                                      const NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (type == NotificationType::TOKEN_AVAILABLE) {
+  if (type == chrome::NOTIFICATION_TOKEN_AVAILABLE) {
     const TokenService* token_source =
         Source<const TokenService>(source).ptr();
     DCHECK_EQ(token_service_, token_source);

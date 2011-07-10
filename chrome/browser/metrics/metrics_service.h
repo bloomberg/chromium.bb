@@ -98,7 +98,7 @@ class MetricsService : public NotificationObserver,
                                  NotificationObserver* observer);
 
   // Implementation of NotificationObserver
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -266,7 +266,7 @@ class MetricsService : public NotificationObserver,
   void LogBadResponseCode();
 
   // Records a window-related notification.
-  void LogWindowChange(NotificationType type,
+  void LogWindowChange(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -302,7 +302,7 @@ class MetricsService : public NotificationObserver,
   // Records a child process related notification.  These are recorded to an
   // in-object buffer because these notifications are sent on page load, and we
   // don't want to slow that down.
-  void LogChildProcessChange(NotificationType type,
+  void LogChildProcessChange(int type,
                              const NotificationSource& source,
                              const NotificationDetails& details);
 
@@ -322,12 +322,12 @@ class MetricsService : public NotificationObserver,
   void LogLoadStarted();
 
   // Records a page load notification.
-  void LogLoadComplete(NotificationType type,
+  void LogLoadComplete(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
   // Checks whether a notification can be logged.
-  bool CanLogNotification(NotificationType type,
+  bool CanLogNotification(int type,
                           const NotificationSource& source,
                           const NotificationDetails& details);
 

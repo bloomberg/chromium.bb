@@ -133,7 +133,7 @@ class KeywordProvider : public AutocompleteProvider,
   void MaybeEndExtensionKeywordMode();
 
   // NotificationObserver interface.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

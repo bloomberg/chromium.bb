@@ -101,7 +101,7 @@ class ExtensionEventRouter : public NotificationObserver {
   // An extension listening to an event.
   struct EventListener;
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

@@ -77,18 +77,18 @@ TabContents* PrintPreviewTabController::GetPrintPreviewForTab(
   return NULL;
 }
 
-void PrintPreviewTabController::Observe(NotificationType type,
+void PrintPreviewTabController::Observe(int type,
                                         const NotificationSource& source,
                                         const NotificationDetails& details) {
   TabContents* source_tab = NULL;
   content::LoadCommittedDetails* detail_info = NULL;
 
-  switch (type.value) {
-    case NotificationType::TAB_CONTENTS_DESTROYED: {
+  switch (type) {
+    case content::NOTIFICATION_TAB_CONTENTS_DESTROYED: {
       source_tab = Source<TabContents>(source).ptr();
       break;
     }
-    case NotificationType::NAV_ENTRY_COMMITTED: {
+    case content::NOTIFICATION_NAV_ENTRY_COMMITTED: {
       NavigationController* controller =
           Source<NavigationController>(source).ptr();
       source_tab = controller->tab_contents();
@@ -234,16 +234,16 @@ TabContents* PrintPreviewTabController::CreatePrintPreviewTab(
 }
 
 void PrintPreviewTabController::AddObservers(TabContents* tab) {
-  registrar_.Add(this, NotificationType::TAB_CONTENTS_DESTROYED,
+  registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
                  Source<TabContents>(tab));
-  registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
+  registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                  Source<NavigationController>(&tab->controller()));
 }
 
 void PrintPreviewTabController::RemoveObservers(TabContents* tab) {
-  registrar_.Remove(this, NotificationType::TAB_CONTENTS_DESTROYED,
+  registrar_.Remove(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
                     Source<TabContents>(tab));
-  registrar_.Remove(this, NotificationType::NAV_ENTRY_COMMITTED,
+  registrar_.Remove(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                     Source<NavigationController>(&tab->controller()));
 }
 

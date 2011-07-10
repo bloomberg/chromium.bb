@@ -137,7 +137,7 @@ bool SendKeyboardEventInputFunction::RunImpl() {
 #if defined(TOUCH_UI)
 bool HideKeyboardFunction::RunImpl() {
   NotificationService::current()->Notify(
-      NotificationType::HIDE_KEYBOARD_INVOKED,
+      chrome::HIDE_KEYBOARD_INVOKED,
       Source<HideKeyboardFunction>(this),
       NotificationService::NoDetails());
   return true;
@@ -156,7 +156,7 @@ bool SetKeyboardHeightFunction::RunImpl() {
   // and set the height of virtual keyboard directly instead of using
   // notification.
   NotificationService::current()->Notify(
-      NotificationType::SET_KEYBOARD_HEIGHT_INVOKED,
+      chrome::SET_KEYBOARD_HEIGHT_INVOKED,
       Source<SetKeyboardHeightFunction>(this),
       Details<int>(&height));
   return true;

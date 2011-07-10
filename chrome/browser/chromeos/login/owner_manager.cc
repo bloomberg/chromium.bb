@@ -13,8 +13,8 @@
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/login/signed_settings_temp_storage.h"
 #include "content/browser/browser_thread.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 
 namespace chromeos {
 
@@ -42,13 +42,13 @@ void OwnerManager::LoadOwnerKey() {
   BootTimesLoader::Get()->AddLoginTimeMarker("LoadOwnerKeyStart", false);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   VLOG(1) << "Loading owner key";
-  NotificationType result = NotificationType::OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED;
+  int result = chrome::NOTIFICATION_OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED;
 
   // If |public_key_| isn't empty, we already have the key, so don't
   // try to import again.
   if (public_key_.empty() &&
       !utils_->ImportPublicKey(utils_->GetOwnerKeyFilePath(), &public_key_)) {
-    result = NotificationType::OWNER_KEY_FETCH_ATTEMPT_FAILED;
+    result = chrome::NOTIFICATION_OWNER_KEY_FETCH_ATTEMPT_FAILED;
   }
 
   // Whether we loaded the public key or not, send a notification indicating
@@ -140,7 +140,7 @@ void OwnerManager::Verify(const BrowserThread::ID thread_id,
   BootTimesLoader::Get()->AddLoginTimeMarker("VerifyEnd", false);
 }
 
-void OwnerManager::SendNotification(NotificationType type,
+void OwnerManager::SendNotification(int type,
                                     const NotificationDetails& details) {
   NotificationService::current()->Notify(
       type,

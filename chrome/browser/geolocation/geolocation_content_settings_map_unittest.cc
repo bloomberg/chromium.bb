@@ -7,6 +7,7 @@
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
@@ -23,7 +24,7 @@ class MockGeolocationSettingsObserver : public NotificationObserver {
  public:
   MockGeolocationSettingsObserver();
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
@@ -36,12 +37,12 @@ class MockGeolocationSettingsObserver : public NotificationObserver {
 };
 
 MockGeolocationSettingsObserver::MockGeolocationSettingsObserver() {
-  registrar_.Add(this, NotificationType::GEOLOCATION_SETTINGS_CHANGED,
+  registrar_.Add(this, chrome::NOTIFICATION_GEOLOCATION_SETTINGS_CHANGED,
                  NotificationService::AllSources());
 }
 
 void MockGeolocationSettingsObserver::Observe(
-    NotificationType type,
+    int type,
     const NotificationSource& source,
     const NotificationDetails& details) {
   GeolocationContentSettingsMap* map =

@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/download/download_tab_helper_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper_delegate.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -37,12 +38,12 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 #include "content/common/page_transition_types.h"
 #include "content/common/renderer_preferences.h"
 #include "net/http/http_util.h"
@@ -78,7 +79,7 @@ class InstantLoader::FrameLoadObserver : public NotificationObserver {
         text_(text),
         verbatim_(verbatim),
         unique_id_(tab_contents_->controller().pending_entry()->unique_id()) {
-    registrar_.Add(this, NotificationType::LOAD_COMPLETED_MAIN_FRAME,
+    registrar_.Add(this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
                    Source<TabContents>(tab_contents_));
   }
 
@@ -89,7 +90,7 @@ class InstantLoader::FrameLoadObserver : public NotificationObserver {
   void set_verbatim(bool verbatim) { verbatim_ = verbatim; }
 
   // NotificationObserver:
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
 
@@ -115,11 +116,11 @@ class InstantLoader::FrameLoadObserver : public NotificationObserver {
 };
 
 void InstantLoader::FrameLoadObserver::Observe(
-    NotificationType type,
+    int type,
     const NotificationSource& source,
     const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::LOAD_COMPLETED_MAIN_FRAME: {
+  switch (type) {
+    case content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME: {
       int page_id = *(Details<int>(details).ptr());
       NavigationEntry* active_entry =
           tab_contents_->controller().GetActiveEntry();
@@ -176,7 +177,7 @@ class InstantLoader::TabContentsDelegateImpl
   void UnregisterForPaintNotifications();
 
   // NotificationObserver:
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
 
@@ -268,9 +269,9 @@ InstantLoader::TabContentsDelegateImpl::TabContentsDelegateImpl(
       is_mouse_down_from_activate_(false),
       user_typed_before_load_(false) {
   DCHECK(loader->preview_contents());
-  registrar_.Add(this, NotificationType::INTERSTITIAL_ATTACHED,
+  registrar_.Add(this, content::NOTIFICATION_INTERSTITIAL_ATTACHED,
       Source<TabContents>(loader->preview_contents()->tab_contents()));
-  registrar_.Add(this, NotificationType::FAIL_PROVISIONAL_LOAD_WITH_ERROR,
+  registrar_.Add(this, content::NOTIFICATION_FAIL_PROVISIONAL_LOAD_WITH_ERROR,
       Source<NavigationController>(&loader->preview_contents()->controller()));
 }
 
@@ -354,9 +355,9 @@ void InstantLoader::TabContentsDelegateImpl::RegisterForPaintNotifications(
   registered_render_widget_host_ = render_widget_host;
   Source<RenderWidgetHost> source =
       Source<RenderWidgetHost>(registered_render_widget_host_);
-  registrar_.Add(this, NotificationType::RENDER_WIDGET_HOST_DID_PAINT,
+  registrar_.Add(this, content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT,
                  source);
-  registrar_.Add(this, NotificationType::RENDER_WIDGET_HOST_DESTROYED,
+  registrar_.Add(this, content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
                  source);
 }
 
@@ -364,20 +365,20 @@ void InstantLoader::TabContentsDelegateImpl::UnregisterForPaintNotifications() {
   if (registered_render_widget_host_) {
     Source<RenderWidgetHost> source =
         Source<RenderWidgetHost>(registered_render_widget_host_);
-    registrar_.Remove(this, NotificationType::RENDER_WIDGET_HOST_DID_PAINT,
+    registrar_.Remove(this, content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT,
                       source);
-    registrar_.Remove(this, NotificationType::RENDER_WIDGET_HOST_DESTROYED,
+    registrar_.Remove(this, content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
                       source);
     registered_render_widget_host_ = NULL;
   }
 }
 
 void InstantLoader::TabContentsDelegateImpl::Observe(
-    NotificationType type,
+    int type,
     const NotificationSource& source,
     const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::FAIL_PROVISIONAL_LOAD_WITH_ERROR:
+  switch (type) {
+    case content::NOTIFICATION_FAIL_PROVISIONAL_LOAD_WITH_ERROR:
       if (Details<ProvisionalLoadDetails>(details)->url() == loader_->url_) {
         // This typically happens with downloads (which are disabled with
         // instant active). To ensure the download happens when the user presses
@@ -385,14 +386,14 @@ void InstantLoader::TabContentsDelegateImpl::Observe(
         loader_->needs_reload_ = true;
       }
       break;
-    case NotificationType::RENDER_WIDGET_HOST_DID_PAINT:
+    case content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT:
       UnregisterForPaintNotifications();
       PreviewPainted();
       break;
-    case NotificationType::RENDER_WIDGET_HOST_DESTROYED:
+    case content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED:
       UnregisterForPaintNotifications();
       break;
-    case NotificationType::INTERSTITIAL_ATTACHED:
+    case content::NOTIFICATION_INTERSTITIAL_ATTACHED:
       PreviewPainted();
       break;
     default:
@@ -551,7 +552,7 @@ void InstantLoader::TabContentsDelegateImpl::OnInstantSupportDetermined(
 
   Details<const bool> details(&result);
   NotificationService::current()->Notify(
-      NotificationType::INSTANT_SUPPORT_DETERMINED,
+      chrome::NOTIFICATION_INSTANT_SUPPORT_DETERMINED,
       NotificationService::AllSources(),
       details);
 
@@ -747,7 +748,7 @@ TabContentsWrapper* InstantLoader::ReleasePreviewContents(
           SetTakesFocusOnlyOnMouseDown(false);
       registrar_.Remove(
           this,
-          NotificationType::RENDER_VIEW_HOST_CHANGED,
+          chrome::RENDER_VIEW_HOST_CHANGED,
           Source<NavigationController>(&preview_contents_->controller()));
 #endif
     }
@@ -853,11 +854,11 @@ void InstantLoader::ShowPreview() {
   }
 }
 
-void InstantLoader::Observe(NotificationType type,
+void InstantLoader::Observe(int type,
                             const NotificationSource& source,
                             const NotificationDetails& details) {
 #if defined(OS_MACOSX)
-  if (type.value == NotificationType::RENDER_VIEW_HOST_CHANGED) {
+  if (type == chrome::RENDER_VIEW_HOST_CHANGED) {
     if (preview_contents_->tab_contents()->GetRenderWidgetHostView()) {
       preview_contents_->tab_contents()->GetRenderWidgetHostView()->
           SetTakesFocusOnlyOnMouseDown(true);
@@ -865,7 +866,7 @@ void InstantLoader::Observe(NotificationType type,
     return;
   }
 #endif
-  if (type.value == NotificationType::NAV_ENTRY_COMMITTED) {
+  if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
     content::LoadCommittedDetails* load_details =
         Details<content::LoadCommittedDetails>(details).ptr();
     if (load_details->is_main_frame) {
@@ -954,11 +955,11 @@ void InstantLoader::ReplacePreviewContents(TabContentsWrapper* old_tc,
 
 #if defined(OS_MACOSX)
   registrar_.Remove(this,
-                    NotificationType::RENDER_VIEW_HOST_CHANGED,
+                    content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
                     Source<NavigationController>(&old_tc->controller()));
 #endif
   registrar_.Remove(this,
-                 NotificationType::NAV_ENTRY_COMMITTED,
+                 content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                  Source<NavigationController>(&old_tc->controller()));
 
   // We prerendered so we should be ready to show. If we're ready, swap in
@@ -995,13 +996,13 @@ void InstantLoader::SetupPreviewContents(TabContentsWrapper* tab_contents) {
   }
   registrar_.Add(
       this,
-      NotificationType::RENDER_VIEW_HOST_CHANGED,
+      content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
       Source<NavigationController>(&preview_contents_->controller()));
 #endif
 
   registrar_.Add(
       this,
-      NotificationType::NAV_ENTRY_COMMITTED,
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       Source<NavigationController>(&preview_contents_->controller()));
 
   gfx::Rect tab_bounds;

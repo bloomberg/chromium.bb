@@ -14,10 +14,10 @@
 #import "chrome/browser/ui/cocoa/wrench_menu/menu_tracked_root_view.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "content/browser/user_metrics.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -35,14 +35,14 @@ class ZoomLevelObserver : public NotificationObserver {
  public:
   explicit ZoomLevelObserver(WrenchMenuController* controller)
       : controller_(controller) {
-    registrar_.Add(this, NotificationType::ZOOM_LEVEL_CHANGED,
+    registrar_.Add(this, content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
                    NotificationService::AllSources());
   }
 
-  void Observe(NotificationType type,
+  void Observe(int type,
                const NotificationSource& source,
                const NotificationDetails& details) {
-    DCHECK_EQ(type.value, NotificationType::ZOOM_LEVEL_CHANGED);
+    DCHECK_EQ(type, content::NOTIFICATION_ZOOM_LEVEL_CHANGED);
     WrenchMenuModel* wrenchMenuModel = [controller_ wrenchMenuModel];
     wrenchMenuModel->UpdateZoomControls();
     const string16 level =

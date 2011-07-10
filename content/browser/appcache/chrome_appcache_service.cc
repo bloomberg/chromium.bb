@@ -51,7 +51,8 @@ void ChromeAppCacheService::InitializeOnIOThread(
   cache_path_ = cache_path;
   resource_context_ = resource_context;
   registrar_.Add(
-      this, NotificationType::PURGE_MEMORY, NotificationService::AllSources());
+      this, content::NOTIFICATION_PURGE_MEMORY,
+      NotificationService::AllSources());
   SetClearLocalStateOnExit(clear_local_state_on_exit);
 
   // Init our base class.
@@ -98,11 +99,11 @@ int ChromeAppCacheService::CanCreateAppCache(
       manifest_url, *resource_context_) ? net::OK : net::ERR_ACCESS_DENIED;
 }
 
-void ChromeAppCacheService::Observe(NotificationType type,
+void ChromeAppCacheService::Observe(int type,
                                     const NotificationSource& source,
                                     const NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(type == NotificationType::PURGE_MEMORY);
+  DCHECK(type == content::NOTIFICATION_PURGE_MEMORY);
   PurgeMemory();
 }
 

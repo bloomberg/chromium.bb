@@ -50,7 +50,7 @@ class ShownSectionsHandler : public WebUIMessageHandler,
   virtual void RegisterMessages();
 
   // NotificationObserver implementation.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

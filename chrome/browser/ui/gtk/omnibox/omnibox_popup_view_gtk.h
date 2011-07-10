@@ -47,7 +47,7 @@ class OmniboxPopupViewGtk : public AutocompletePopupView,
   virtual void OnDragCanceled();
 
   // Overridden from NotificationObserver:
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

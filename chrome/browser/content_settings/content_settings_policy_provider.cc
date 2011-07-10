@@ -14,6 +14,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_details.h"
@@ -122,7 +123,7 @@ PolicyDefaultProvider::PolicyDefaultProvider(Profile* profile)
   pref_change_registrar_.Add(prefs::kManagedDefaultJavaScriptSetting, this);
   pref_change_registrar_.Add(prefs::kManagedDefaultPluginsSetting, this);
   pref_change_registrar_.Add(prefs::kManagedDefaultPopupsSetting, this);
-  notification_registrar_.Add(this, NotificationType::PROFILE_DESTROYED,
+  notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                               Source<Profile>(profile_));
 }
 
@@ -152,12 +153,12 @@ bool PolicyDefaultProvider::DefaultSettingIsManaged(
   }
 }
 
-void PolicyDefaultProvider::Observe(NotificationType type,
+void PolicyDefaultProvider::Observe(int type,
                                     const NotificationSource& source,
                                     const NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (type == NotificationType::PREF_CHANGED) {
+  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
     DCHECK_EQ(profile_->GetPrefs(), Source<PrefService>(source).ptr());
     std::string* name = Details<std::string>(details).ptr();
     if (*name == prefs::kManagedDefaultCookiesSetting) {
@@ -182,7 +183,7 @@ void PolicyDefaultProvider::Observe(NotificationType type,
                                      std::string());
       NotifyObservers(details);
     }
-  } else if (type == NotificationType::PROFILE_DESTROYED) {
+  } else if (type == chrome::NOTIFICATION_PROFILE_DESTROYED) {
     DCHECK_EQ(profile_, Source<Profile>(source).ptr());
     UnregisterObservers();
   } else {
@@ -195,7 +196,7 @@ void PolicyDefaultProvider::UnregisterObservers() {
   if (!profile_)
     return;
   pref_change_registrar_.RemoveAll();
-  notification_registrar_.Remove(this, NotificationType::PROFILE_DESTROYED,
+  notification_registrar_.Remove(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                                  Source<Profile>(profile_));
   profile_ = NULL;
 }
@@ -207,7 +208,7 @@ void PolicyDefaultProvider::NotifyObservers(
   if (profile_ == NULL)
     return;
   NotificationService::current()->Notify(
-      NotificationType::CONTENT_SETTINGS_CHANGED,
+      chrome::NOTIFICATION_CONTENT_SETTINGS_CHANGED,
       Source<HostContentSettingsMap>(profile_->GetHostContentSettingsMap()),
       Details<const ContentSettingsDetails>(&details));
 }
@@ -316,7 +317,7 @@ void PolicyProvider::Init() {
   pref_change_registrar_.Add(prefs::kManagedPopupsBlockedForUrls, this);
   pref_change_registrar_.Add(prefs::kManagedPopupsAllowedForUrls, this);
 
-  notification_registrar_.Add(this, NotificationType::PROFILE_DESTROYED,
+  notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                               Source<Profile>(profile_));
 }
 
@@ -447,7 +448,7 @@ void PolicyProvider::UnregisterObservers() {
   if (!profile_)
     return;
   pref_change_registrar_.RemoveAll();
-  notification_registrar_.Remove(this, NotificationType::PROFILE_DESTROYED,
+  notification_registrar_.Remove(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                                  Source<Profile>(profile_));
   profile_ = NULL;
 }
@@ -458,17 +459,17 @@ void PolicyProvider::NotifyObservers(
   if (profile_ == NULL)
     return;
   NotificationService::current()->Notify(
-      NotificationType::CONTENT_SETTINGS_CHANGED,
+      chrome::NOTIFICATION_CONTENT_SETTINGS_CHANGED,
       Source<HostContentSettingsMap>(profile_->GetHostContentSettingsMap()),
       Details<const ContentSettingsDetails>(&details));
 }
 
-void PolicyProvider::Observe(NotificationType type,
+void PolicyProvider::Observe(int type,
                              const NotificationSource& source,
                              const NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (type == NotificationType::PREF_CHANGED) {
+  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
     DCHECK_EQ(profile_->GetPrefs(), Source<PrefService>(source).ptr());
     std::string* name = Details<std::string>(details).ptr();
     if (*name == prefs::kManagedCookiesAllowedForUrls ||
@@ -489,7 +490,7 @@ void PolicyProvider::Observe(NotificationType type,
                                      std::string());
       NotifyObservers(details);
     }
-  } else if (type == NotificationType::PROFILE_DESTROYED) {
+  } else if (type == chrome::NOTIFICATION_PROFILE_DESTROYED) {
     DCHECK_EQ(profile_, Source<Profile>(source).ptr());
     UnregisterObservers();
   } else {

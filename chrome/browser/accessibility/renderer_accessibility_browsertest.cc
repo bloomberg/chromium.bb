@@ -15,7 +15,7 @@
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_type.h"
+#include "content/common/content_notification_types.h"
 
 #if defined(OS_WIN)
 #include <atlbase.h>
@@ -40,7 +40,7 @@ class RendererAccessibilityBrowserTest : public InProcessBrowserTest {
     view_host->set_save_accessibility_tree_for_testing(true);
     view_host->EnableRendererAccessibility();
     ui_test_utils::WaitForNotification(
-        NotificationType::RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED);
+        content::NOTIFICATION_RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED);
     return view_host->accessibility_tree();
   }
 

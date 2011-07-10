@@ -151,7 +151,7 @@ class TabStripGtk : public TabStripModelObserver,
   virtual void DidProcessEvent(GdkEvent* event);
 
   // Overridden from NotificationObserver:
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

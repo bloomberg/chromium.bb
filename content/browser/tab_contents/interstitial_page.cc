@@ -204,7 +204,7 @@ void InterstitialPage::Show() {
   // NOTIFY_TAB_CONTENTS_DESTROYED as at that point the RenderViewHost has
   // already been destroyed.
   notification_registrar_.Add(
-      this, NotificationType::RENDER_WIDGET_HOST_DESTROYED,
+      this, content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
       Source<RenderWidgetHost>(tab_->render_view_host()));
 
   // Update the tab_to_interstitial_page_ map.
@@ -232,11 +232,12 @@ void InterstitialPage::Show() {
                          EscapePath(GetHTMLContents());
   render_view_host_->NavigateToURL(GURL(data_url));
 
-  notification_registrar_.Add(this, NotificationType::TAB_CONTENTS_DESTROYED,
+  notification_registrar_.Add(this,
+                              content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
                               Source<TabContents>(tab_));
-  notification_registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
+  notification_registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       Source<NavigationController>(&tab_->controller()));
-  notification_registrar_.Add(this, NotificationType::NAV_ENTRY_PENDING,
+  notification_registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
       Source<NavigationController>(&tab_->controller()));
 }
 
@@ -271,11 +272,11 @@ void InterstitialPage::Hide() {
   delete this;
 }
 
-void InterstitialPage::Observe(NotificationType type,
+void InterstitialPage::Observe(int type,
                                const NotificationSource& source,
                                const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::NAV_ENTRY_PENDING:
+  switch (type) {
+    case content::NOTIFICATION_NAV_ENTRY_PENDING:
       // We are navigating away from the interstitial (the user has typed a URL
       // in the location bar or clicked a bookmark).  Make sure clicking on the
       // interstitial will have no effect.  Also cancel any blocked requests
@@ -288,7 +289,7 @@ void InterstitialPage::Observe(NotificationType type,
       Disable();
       TakeActionOnResourceDispatcher(CANCEL);
       break;
-    case NotificationType::RENDER_WIDGET_HOST_DESTROYED:
+    case content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED:
       if (action_taken_ == NO_ACTION) {
         // The RenderViewHost is being destroyed (as part of the tab being
         // closed), make sure we clear the blocked requests.
@@ -298,8 +299,8 @@ void InterstitialPage::Observe(NotificationType type,
         TakeActionOnResourceDispatcher(CANCEL);
       }
       break;
-    case NotificationType::TAB_CONTENTS_DESTROYED:
-    case NotificationType::NAV_ENTRY_COMMITTED:
+    case content::NOTIFICATION_TAB_CONTENTS_DESTROYED:
+    case content::NOTIFICATION_NAV_ENTRY_COMMITTED:
       if (action_taken_ == NO_ACTION) {
         // We are navigating away from the interstitial or closing a tab with an
         // interstitial.  Default to DontProceed(). We don't just call Hide as
@@ -358,7 +359,7 @@ void InterstitialPage::DidNavigate(
   // a callback to |tab_| testing if an interstitial page is showing before
   // hiding the bookmark bar.
   NotificationService::current()->Notify(
-      NotificationType::INTERSTITIAL_ATTACHED,
+      content::NOTIFICATION_INTERSTITIAL_ATTACHED,
       Source<TabContents>(tab_),
       NotificationService::NoDetails());
 

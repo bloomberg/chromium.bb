@@ -130,7 +130,7 @@ class PluginService
   virtual void OnWaitableEventSignaled(base::WaitableEvent* waitable_event);
 
   // NotificationObserver implementation
-  virtual void Observe(NotificationType type, const NotificationSource& source,
+  virtual void Observe(int type, const NotificationSource& source,
                        const NotificationDetails& details);
 
   void RegisterPepperPlugins();

@@ -10,6 +10,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
 #include "chrome/browser/ui/search_engines/template_url_table_model.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_pref_service.h"
 #include "chrome/test/testing_profile.h"
@@ -83,7 +84,7 @@ class KeywordEditorControllerTest : public testing::Test,
     service->SetManagedPref(
         prefs::kDefaultSearchProviderPrepopulateID, new StringValue(""));
     model_->Observe(
-        NotificationType::PREF_CHANGED,
+        chrome::NOTIFICATION_PREF_CHANGED,
         Source<PrefService>(profile_->GetTestingPrefService()),
         Details<std::string>(NULL));
   }

@@ -80,7 +80,7 @@ class MachBroker : public base::ProcessMetrics::PortProvider,
   virtual mach_port_t TaskForPid(base::ProcessHandle process) const;
 
   // Implement |NotificationObserver|.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
  private:

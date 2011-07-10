@@ -67,7 +67,7 @@ class ContentSettingBubbleContents : public views::View,
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
   // NotificationObserver:
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

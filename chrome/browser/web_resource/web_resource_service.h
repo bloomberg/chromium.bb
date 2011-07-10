@@ -9,7 +9,7 @@
 #include <string>
 
 #include "content/browser/utility_process_host.h"
-#include "content/common/notification_type.h"
+#include "content/common/content_notification_types.h"
 
 class DictionaryValue;
 class PrefService;
@@ -24,7 +24,7 @@ class WebResourceService : public UtilityProcessHost::Client {
   WebResourceService(PrefService* prefs,
                      const char* web_resource_server,
                      bool apply_locale_to_url_,
-                     NotificationType::Type notification_type,
+                     int notification_type,
                      const char* last_update_time_pref_name,
                      int start_fetch_delay,
                      int cache_update_delay);
@@ -87,7 +87,7 @@ class WebResourceService : public UtilityProcessHost::Client {
   bool apply_locale_to_url_;
 
   // Notification type when an update is done.
-  NotificationType::Type notification_type_;
+  int notification_type_;
 
   // Pref name to store the last update's time.
   const char* last_update_time_pref_name_;

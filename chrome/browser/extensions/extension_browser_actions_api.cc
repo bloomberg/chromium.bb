@@ -8,6 +8,7 @@
 
 #include "base/values.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/render_messages.h"
 #include "content/common/notification_service.h"
@@ -38,7 +39,7 @@ bool BrowserActionFunction::RunImpl() {
     return false;
 
   NotificationService::current()->Notify(
-      NotificationType::EXTENSION_BROWSER_ACTION_UPDATED,
+      chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
       Source<ExtensionAction>(browser_action_),
       NotificationService::NoDetails());
   return true;

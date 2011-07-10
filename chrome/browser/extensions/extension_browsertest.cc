@@ -22,12 +22,12 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 
 ExtensionBrowserTest::ExtensionBrowserTest()
     : loaded_(false),
@@ -64,7 +64,7 @@ const Extension* ExtensionBrowserTest::LoadExtensionImpl(
   ExtensionService* service = browser()->profile()->GetExtensionService();
   {
     NotificationRegistrar registrar;
-    registrar.Add(this, NotificationType::EXTENSION_LOADED,
+    registrar.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                   NotificationService::AllSources());
     service->LoadExtension(path);
     ui_test_utils::RunMessageLoop();
@@ -94,7 +94,7 @@ const Extension* ExtensionBrowserTest::LoadExtensionImpl(
   service->SetIsIncognitoEnabled(extension_id, incognito_enabled);
 
   ui_test_utils::WindowedNotificationObserver extension_loaded_signal(
-      NotificationType::EXTENSION_LOADED,
+      chrome::NOTIFICATION_EXTENSION_LOADED,
       Source<Profile>(browser()->profile()));
   service->SetAllowFileAccess(extension, fileaccess_enabled);
 
@@ -226,11 +226,11 @@ bool ExtensionBrowserTest::InstallOrUpdateExtension(const std::string& id,
 
   {
     NotificationRegistrar registrar;
-    registrar.Add(this, NotificationType::EXTENSION_LOADED,
+    registrar.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                   NotificationService::AllSources());
-    registrar.Add(this, NotificationType::EXTENSION_UPDATE_DISABLED,
+    registrar.Add(this, chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED,
                   NotificationService::AllSources());
-    registrar.Add(this, NotificationType::EXTENSION_INSTALL_ERROR,
+    registrar.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
                   NotificationService::AllSources());
 
     ExtensionInstallUI* install_ui = NULL;
@@ -284,7 +284,7 @@ void ExtensionBrowserTest::ReloadExtension(const std::string& extension_id) {
   ExtensionService* service = browser()->profile()->GetExtensionService();
   service->ReloadExtension(extension_id);
   ui_test_utils::RegisterAndWait(this,
-                                 NotificationType::EXTENSION_LOADED,
+                                 chrome::NOTIFICATION_EXTENSION_LOADED,
                                  NotificationService::AllSources());
 }
 
@@ -314,7 +314,7 @@ bool ExtensionBrowserTest::WaitForPageActionCountChangeTo(int count) {
   if (location_bar->PageActionCount() != count) {
     target_page_action_count_ = count;
     ui_test_utils::RegisterAndWait(this,
-        NotificationType::EXTENSION_PAGE_ACTION_COUNT_CHANGED,
+        chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_COUNT_CHANGED,
         NotificationService::AllSources());
   }
   return location_bar->PageActionCount() == count;
@@ -326,7 +326,7 @@ bool ExtensionBrowserTest::WaitForPageActionVisibilityChangeTo(int count) {
   if (location_bar->PageActionVisibleCount() != count) {
     target_visible_page_action_count_ = count;
     ui_test_utils::RegisterAndWait(this,
-        NotificationType::EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
+        chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
         NotificationService::AllSources());
   }
   return location_bar->PageActionVisibleCount() == count;
@@ -335,7 +335,7 @@ bool ExtensionBrowserTest::WaitForPageActionVisibilityChangeTo(int count) {
 bool ExtensionBrowserTest::WaitForExtensionHostsToLoad() {
   // Wait for all the extension hosts that exist to finish loading.
   NotificationRegistrar registrar;
-  registrar.Add(this, NotificationType::EXTENSION_HOST_DID_STOP_LOADING,
+  registrar.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
                 NotificationService::AllSources());
 
   ExtensionProcessManager* manager =
@@ -358,7 +358,8 @@ bool ExtensionBrowserTest::WaitForExtensionHostsToLoad() {
 
 bool ExtensionBrowserTest::WaitForExtensionInstall() {
   int before = extension_installs_observed_;
-  ui_test_utils::RegisterAndWait(this, NotificationType::EXTENSION_INSTALLED,
+  ui_test_utils::RegisterAndWait(this,
+                                 chrome::NOTIFICATION_EXTENSION_INSTALLED,
                                  NotificationService::AllSources());
   return extension_installs_observed_ == (before + 1);
 }
@@ -366,13 +367,13 @@ bool ExtensionBrowserTest::WaitForExtensionInstall() {
 bool ExtensionBrowserTest::WaitForExtensionInstallError() {
   int before = extension_installs_observed_;
   ui_test_utils::RegisterAndWait(this,
-                                 NotificationType::EXTENSION_INSTALL_ERROR,
+                                 chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
                                  NotificationService::AllSources());
   return extension_installs_observed_ == before;
 }
 
 void ExtensionBrowserTest::WaitForExtensionLoad() {
-  ui_test_utils::RegisterAndWait(this, NotificationType::EXTENSION_LOADED,
+  ui_test_utils::RegisterAndWait(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                                  NotificationService::AllSources());
   WaitForExtensionHostsToLoad();
 }
@@ -385,54 +386,54 @@ bool ExtensionBrowserTest::WaitForExtensionCrash(
     // The extension is already unloaded, presumably due to a crash.
     return true;
   }
-  ui_test_utils::RegisterAndWait(this,
-                                 NotificationType::EXTENSION_PROCESS_TERMINATED,
-                                 NotificationService::AllSources());
+  ui_test_utils::RegisterAndWait(
+      this, chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
+      NotificationService::AllSources());
   return (service->GetExtensionById(extension_id, true) == NULL);
 }
 
-void ExtensionBrowserTest::Observe(NotificationType type,
+void ExtensionBrowserTest::Observe(int type,
                                    const NotificationSource& source,
                                    const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::EXTENSION_LOADED:
+  switch (type) {
+    case chrome::NOTIFICATION_EXTENSION_LOADED:
       last_loaded_extension_id_ = Details<const Extension>(details).ptr()->id();
       VLOG(1) << "Got EXTENSION_LOADED notification.";
       MessageLoopForUI::current()->Quit();
       break;
 
-    case NotificationType::EXTENSION_UPDATE_DISABLED:
+    case chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED:
       VLOG(1) << "Got EXTENSION_UPDATE_DISABLED notification.";
       MessageLoopForUI::current()->Quit();
       break;
 
-    case NotificationType::EXTENSION_HOST_DID_STOP_LOADING:
+    case chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING:
       VLOG(1) << "Got EXTENSION_HOST_DID_STOP_LOADING notification.";
       MessageLoopForUI::current()->Quit();
       break;
 
-    case NotificationType::EXTENSION_INSTALLED:
+    case chrome::NOTIFICATION_EXTENSION_INSTALLED:
       VLOG(1) << "Got EXTENSION_INSTALLED notification.";
       ++extension_installs_observed_;
       MessageLoopForUI::current()->Quit();
       break;
 
-    case NotificationType::EXTENSION_INSTALL_ERROR:
+    case chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR:
       VLOG(1) << "Got EXTENSION_INSTALL_ERROR notification.";
       MessageLoopForUI::current()->Quit();
       break;
 
-    case NotificationType::EXTENSION_PROCESS_CREATED:
+    case chrome::NOTIFICATION_EXTENSION_PROCESS_CREATED:
       VLOG(1) << "Got EXTENSION_PROCESS_CREATED notification.";
       MessageLoopForUI::current()->Quit();
       break;
 
-    case NotificationType::EXTENSION_PROCESS_TERMINATED:
+    case chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED:
       VLOG(1) << "Got EXTENSION_PROCESS_TERMINATED notification.";
       MessageLoopForUI::current()->Quit();
       break;
 
-    case NotificationType::EXTENSION_PAGE_ACTION_COUNT_CHANGED: {
+    case chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_COUNT_CHANGED: {
       LocationBarTesting* location_bar =
           browser()->window()->GetLocationBar()->GetLocationBarForTesting();
       VLOG(1) << "Got EXTENSION_PAGE_ACTION_COUNT_CHANGED notification. Number "
@@ -445,7 +446,7 @@ void ExtensionBrowserTest::Observe(NotificationType type,
       break;
     }
 
-    case NotificationType::EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED: {
+    case chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED: {
       LocationBarTesting* location_bar =
           browser()->window()->GetLocationBar()->GetLocationBarForTesting();
       VLOG(1) << "Got EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED notification. "

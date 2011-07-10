@@ -13,6 +13,7 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/url_database.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_service.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -103,13 +104,13 @@ void ExtensionAppProvider::RefreshAppList() {
 }
 
 void ExtensionAppProvider::RegisterForNotifications() {
-  registrar_.Add(this, NotificationType::EXTENSION_LOADED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::EXTENSION_UNINSTALLED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
                  NotificationService::AllSources());
 }
 
-void ExtensionAppProvider::Observe(NotificationType type,
+void ExtensionAppProvider::Observe(int type,
                                    const NotificationSource& source,
                                    const NotificationDetails& details) {
   RefreshAppList();

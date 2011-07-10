@@ -23,6 +23,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/webui/options/options_managed_banner_handler.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
@@ -50,7 +51,7 @@ PersonalOptionsHandler::PersonalOptionsHandler() {
   multiprofile_ = ProfileManager::IsMultipleProfilesEnabled();
 #if defined(OS_CHROMEOS)
   registrar_.Add(this,
-                 NotificationType::LOGIN_USER_IMAGE_CHANGED,
+                 chrome::LOGIN_USER_IMAGE_CHANGED,
                  NotificationService::AllSources());
 #endif
 }
@@ -203,13 +204,13 @@ void PersonalOptionsHandler::RegisterMessages() {
 #endif
 }
 
-void PersonalOptionsHandler::Observe(NotificationType type,
+void PersonalOptionsHandler::Observe(int type,
                                      const NotificationSource& source,
                                      const NotificationDetails& details) {
-  if (type == NotificationType::BROWSER_THEME_CHANGED) {
+  if (type == chrome::NOTIFICATION_BROWSER_THEME_CHANGED) {
     ObserveThemeChanged();
 #if defined(OS_CHROMEOS)
-  } else if (type == NotificationType::LOGIN_USER_IMAGE_CHANGED) {
+  } else if (type == chrome::LOGIN_USER_IMAGE_CHANGED) {
     LoadAccountPicture(NULL);
 #endif
   } else {
@@ -354,7 +355,7 @@ void PersonalOptionsHandler::Initialize() {
                                           OPTIONS_PAGE_CONTENT));
 
   // Listen for theme installation.
-  registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
+  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
   ObserveThemeChanged();
 

@@ -12,13 +12,13 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/browser/debugger/devtools_window.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 
@@ -60,11 +60,11 @@ ExtensionPopup::ExtensionPopup(ExtensionHost* host,
 
   // We wait to show the popup until the contained host finishes loading.
   registrar_.Add(this,
-                 NotificationType::EXTENSION_HOST_DID_STOP_LOADING,
+                 chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
                  Source<Profile>(host->profile()));
 
   // Listen for the containing view calling window.close();
-  registrar_.Add(this, NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
                  Source<Profile>(host->profile()));
 }
 
@@ -116,11 +116,11 @@ void ExtensionPopup::BubbleLostFocus(BrowserBubble* bubble,
 }
 
 
-void ExtensionPopup::Observe(NotificationType type,
+void ExtensionPopup::Observe(int type,
                              const NotificationSource& source,
                              const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::EXTENSION_HOST_DID_STOP_LOADING:
+  switch (type) {
+    case chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING:
       // Once we receive did stop loading, the content will be complete and
       // the width will have been computed.  Now it's safe to show.
       if (extension_host_.get() == Details<ExtensionHost>(details).ptr()) {
@@ -128,7 +128,7 @@ void ExtensionPopup::Observe(NotificationType type,
 
         if (inspect_with_devtools_) {
           // Listen for the the devtools window closing.
-          registrar_.Add(this, NotificationType::DEVTOOLS_WINDOW_CLOSING,
+          registrar_.Add(this, content::NOTIFICATION_DEVTOOLS_WINDOW_CLOSING,
               Source<Profile>(extension_host_->profile()));
           DevToolsWindow::ToggleDevToolsWindow(
               extension_host_->render_view_host(),
@@ -136,14 +136,14 @@ void ExtensionPopup::Observe(NotificationType type,
         }
       }
       break;
-    case NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE:
+    case chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE:
       // If we aren't the host of the popup, then disregard the notification.
       if (Details<ExtensionHost>(host()) != details)
         return;
       Close();
 
       break;
-    case NotificationType::DEVTOOLS_WINDOW_CLOSING:
+    case content::NOTIFICATION_DEVTOOLS_WINDOW_CLOSING:
       // Make sure its the devtools window that inspecting our popup.
       if (Details<RenderViewHost>(extension_host_->render_view_host()) !=
           details)

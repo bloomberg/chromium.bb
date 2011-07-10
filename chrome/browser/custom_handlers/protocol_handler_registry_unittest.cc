@@ -12,6 +12,7 @@
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/custom_handlers/protocol_handler.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/testing_browser_process.h"
 #include "chrome/test/testing_browser_process_test.h"
 #include "chrome/test/testing_pref_service.h"
@@ -67,20 +68,20 @@ class NotificationCounter : public NotificationObserver {
       : events_(0),
         notification_registrar_() {
     notification_registrar_.Add(this,
-        NotificationType::PROTOCOL_HANDLER_REGISTRY_CHANGED,
+        chrome::NOTIFICATION_PROTOCOL_HANDLER_REGISTRY_CHANGED,
         NotificationService::AllSources());
   }
 
   ~NotificationCounter() {
     notification_registrar_.Remove(this,
-        NotificationType::PROTOCOL_HANDLER_REGISTRY_CHANGED,
+        chrome::NOTIFICATION_PROTOCOL_HANDLER_REGISTRY_CHANGED,
         NotificationService::AllSources());
   }
 
   int events() { return events_; }
   bool notified() { return events_ > 0; }
   void Clear() { events_ = 0; }
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
     ++events_;
@@ -97,11 +98,11 @@ class QueryProtocolHandlerOnChange : public NotificationObserver {
       called_(false),
       notification_registrar_() {
     notification_registrar_.Add(this,
-        NotificationType::PROTOCOL_HANDLER_REGISTRY_CHANGED,
+        chrome::NOTIFICATION_PROTOCOL_HANDLER_REGISTRY_CHANGED,
         NotificationService::AllSources());
   }
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
     std::vector<std::string> output;

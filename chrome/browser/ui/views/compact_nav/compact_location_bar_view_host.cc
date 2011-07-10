@@ -352,9 +352,9 @@ void CompactLocationBarViewHost::TabChangedAt(TabContentsWrapper* contents,
       if (tab_contents->is_loading()) {
         // Register to NavigationController LOAD_STOP so that we can autohide
         // when loading is done.
-        if (!registrar_.IsRegistered(this, NotificationType::LOAD_STOP,
+        if (!registrar_.IsRegistered(this, content::NOTIFICATION_LOAD_STOP,
             Source<NavigationController>(&tab_contents->controller()))) {
-          registrar_.Add(this, NotificationType::LOAD_STOP,
+          registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
               Source<NavigationController>(&tab_contents->controller()));
         }
       } else {
@@ -374,14 +374,14 @@ void CompactLocationBarViewHost::ActiveTabClicked(int index) {
 ////////////////////////////////////////////////////////////////////////////////
 // CompactLocationBarViewHost, NotificationObserver implementation:
 
-void CompactLocationBarViewHost::Observe(NotificationType type,
+void CompactLocationBarViewHost::Observe(int type,
                                          const NotificationSource& source,
                                          const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::LOAD_STOP: {
+  switch (type) {
+    case content::NOTIFICATION_LOAD_STOP: {
       StartAutoHideTimer();
       // This is one shot deal...
-      registrar_.Remove(this, NotificationType::LOAD_STOP, source);
+      registrar_.Remove(this, content::NOTIFICATION_LOAD_STOP, source);
       break;
     }
     default:

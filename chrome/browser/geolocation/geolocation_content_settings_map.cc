@@ -24,12 +24,12 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 #include "net/base/dns_util.h"
 #include "net/base/static_cookie_policy.h"
 
@@ -43,7 +43,7 @@ GeolocationContentSettingsMap::GeolocationContentSettingsMap(Profile* profile)
   prefs_registrar_.Init(profile_->GetPrefs());
   prefs_registrar_.Add(prefs::kGeolocationDefaultContentSetting, this);
   prefs_registrar_.Add(prefs::kGeolocationContentSettings, this);
-  notification_registrar_.Add(this, NotificationType::PROFILE_DESTROYED,
+  notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                               Source<Profile>(profile_));
 }
 
@@ -199,16 +199,16 @@ void GeolocationContentSettingsMap::ResetToDefault() {
 void GeolocationContentSettingsMap::NotifyObservers(
     const ContentSettingsDetails& details) {
   NotificationService::current()->Notify(
-      NotificationType::GEOLOCATION_SETTINGS_CHANGED,
+      chrome::NOTIFICATION_GEOLOCATION_SETTINGS_CHANGED,
       Source<GeolocationContentSettingsMap>(this),
       Details<const ContentSettingsDetails>(&details));
 }
 
 void GeolocationContentSettingsMap::Observe(
-    NotificationType type,
+    int type,
     const NotificationSource& source,
     const NotificationDetails& details) {
-  if (type == NotificationType::PREF_CHANGED) {
+  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
     const std::string& name = *Details<std::string>(details).ptr();
     if (name == prefs::kGeolocationDefaultContentSetting) {
       ContentSettingsDetails details(ContentSettingsPattern(),
@@ -217,7 +217,7 @@ void GeolocationContentSettingsMap::Observe(
                                      std::string());
       NotifyObservers(details);
     }
-  } else if (NotificationType::PROFILE_DESTROYED == type) {
+  } else if (chrome::NOTIFICATION_PROFILE_DESTROYED == type) {
     UnregisterObservers();
   } else {
     NOTREACHED();
@@ -229,7 +229,7 @@ void GeolocationContentSettingsMap::UnregisterObservers() {
   if (!profile_)
     return;
   prefs_registrar_.RemoveAll();
-  notification_registrar_.Remove(this, NotificationType::PROFILE_DESTROYED,
+  notification_registrar_.Remove(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                                  Source<Profile>(profile_));
   profile_ = NULL;
 }

@@ -198,7 +198,7 @@ class TabContentsWrapper : public TabContentsObserver,
   virtual void TabContentsDestroyed(TabContents* tab) OVERRIDE;
 
   // NotificationObserver overrides:
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
 

@@ -25,7 +25,7 @@ struct NotificationRegistrar::Record {
   bool operator==(const Record& other) const;
 
   NotificationObserver* observer;
-  NotificationType type;
+  int type;
   NotificationSource source;
   base::PlatformThreadId thread_id;
 };
@@ -51,7 +51,7 @@ NotificationRegistrar::~NotificationRegistrar() {
 }
 
 void NotificationRegistrar::Add(NotificationObserver* observer,
-                                NotificationType type,
+                                int type,
                                 const NotificationSource& source) {
   DCHECK(!IsRegistered(observer, type, source)) << "Duplicate registration.";
 
@@ -62,11 +62,11 @@ void NotificationRegistrar::Add(NotificationObserver* observer,
 }
 
 void NotificationRegistrar::Remove(NotificationObserver* observer,
-                                   NotificationType type,
+                                   int type,
                                    const NotificationSource& source) {
   if (!IsRegistered(observer, type, source)) {
     NOTREACHED() << "Trying to remove unregistered observer of type " <<
-        type.value << " from list of size " << registered_.size() << ".";
+        type << " from list of size " << registered_.size() << ".";
     return;
   }
 
@@ -113,7 +113,7 @@ bool NotificationRegistrar::IsEmpty() const {
 }
 
 bool NotificationRegistrar::IsRegistered(NotificationObserver* observer,
-                                         NotificationType type,
+                                         int type,
                                          const NotificationSource& source) {
   Record record = { observer, type, source };
   return std::find(registered_.begin(), registered_.end(), record) !=

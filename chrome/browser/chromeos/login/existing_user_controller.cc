@@ -28,11 +28,12 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/window.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/pref_names.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "views/widget/widget.h"
@@ -80,7 +81,7 @@ ExistingUserController::ExistingUserController(LoginDisplayHost* host)
   login_display_ = host_->CreateLoginDisplay(this);
 
   registrar_.Add(this,
-                 NotificationType::LOGIN_USER_IMAGE_CHANGED,
+                 chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
                  NotificationService::AllSources());
 }
 
@@ -114,10 +115,10 @@ void ExistingUserController::Init(const UserVector& users) {
 // ExistingUserController, NotificationObserver implementation:
 //
 
-void ExistingUserController::Observe(NotificationType type,
+void ExistingUserController::Observe(int type,
                                      const NotificationSource& source,
                                      const NotificationDetails& details) {
-  if (type != NotificationType::LOGIN_USER_IMAGE_CHANGED)
+  if (type != chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED)
     return;
 
   UserManager::User* user = Details<UserManager::User>(details).ptr();

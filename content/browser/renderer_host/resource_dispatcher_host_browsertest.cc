@@ -5,10 +5,10 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/notification_type.h"
 #include "net/test/test_server.h"
 
 class ResourceDispatcherHostBrowserTest : public InProcessBrowserTest {
@@ -30,7 +30,7 @@ bool ResourceDispatcherHostBrowserTest::GetPopupTitle(const GURL& url,
   ui_test_utils::NavigateToURL(browser(), url);
 
   ui_test_utils::WindowedNotificationObserver observer(
-      NotificationType::BROWSER_WINDOW_READY,
+      chrome::NOTIFICATION_BROWSER_WINDOW_READY,
       NotificationService::AllSources());
 
   // Create dynamic popup.

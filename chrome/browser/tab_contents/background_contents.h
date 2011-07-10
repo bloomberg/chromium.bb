@@ -120,7 +120,7 @@ class BackgroundContents : public RenderViewHostDelegate,
   virtual void UpdatePreferredSize(const gfx::Size& new_size) {}
 
   // NotificationObserver
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

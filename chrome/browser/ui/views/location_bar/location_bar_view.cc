@@ -36,6 +36,7 @@
 #include "chrome/browser/ui/views/location_bar/selected_keyword_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
@@ -319,7 +320,7 @@ void LocationBarView::UpdatePageActions() {
   RefreshPageActionViews();
   if (page_action_views_.size() != count_before) {
     NotificationService::current()->Notify(
-        NotificationType::EXTENSION_PAGE_ACTION_COUNT_CHANGED,
+        chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_COUNT_CHANGED,
         Source<LocationBar>(this),
         NotificationService::NoDetails());
   }
@@ -333,7 +334,7 @@ void LocationBarView::InvalidatePageActions() {
   DeletePageActionViews();
   if (page_action_views_.size() != count_before) {
     NotificationService::current()->Notify(
-        NotificationType::EXTENSION_PAGE_ACTION_COUNT_CHANGED,
+        chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_COUNT_CHANGED,
         Source<LocationBar>(this),
         NotificationService::NoDetails());
   }
@@ -984,7 +985,7 @@ void LocationBarView::RefreshPageActionViews() {
       if (old_visibility.find(action) == old_visibility.end() ||
           old_visibility[action] != (*i)->IsVisible()) {
         NotificationService::current()->Notify(
-            NotificationType::EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
+            chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
             Source<ExtensionAction>(action),
             Details<TabContents>(contents));
       }
@@ -1239,10 +1240,10 @@ void LocationBarView::OnTemplateURLServiceChanged() {
     ShowFirstRunBubble(bubble_type_);
 }
 
-void LocationBarView::Observe(NotificationType type,
+void LocationBarView::Observe(int type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
-  if (type.value == NotificationType::PREF_CHANGED) {
+  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
     std::string* name = Details<std::string>(details).ptr();
     if (*name == prefs::kEditBookmarksEnabled)
       Update(NULL);

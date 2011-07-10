@@ -243,7 +243,7 @@ RenderWidgetHostViewWin::RenderWidgetHostViewWin(RenderWidgetHost* widget)
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE) {
   render_widget_host_->SetView(this);
   registrar_.Add(this,
-                 NotificationType::RENDERER_PROCESS_TERMINATED,
+                 content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                  NotificationService::AllSources());
 }
 
@@ -1460,10 +1460,10 @@ void RenderWidgetHostViewWin::OnAccessibilityNotifications(
   browser_accessibility_manager_->OnAccessibilityNotifications(params);
 }
 
-void RenderWidgetHostViewWin::Observe(NotificationType type,
+void RenderWidgetHostViewWin::Observe(int type,
                                       const NotificationSource& source,
                                       const NotificationDetails& details) {
-  DCHECK(type == NotificationType::RENDERER_PROCESS_TERMINATED);
+  DCHECK(type == content::NOTIFICATION_RENDERER_PROCESS_TERMINATED);
 
   // Get the RenderProcessHost that posted this notification, and exit
   // if it's not the one associated with this host view.

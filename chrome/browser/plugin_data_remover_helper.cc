@@ -74,16 +74,16 @@ void PluginDataRemoverHelper::Init(const char* pref_name,
                                    PrefService* prefs,
                                    NotificationObserver* observer) {
   pref_.Init(pref_name, prefs, observer);
-  registrar_.Add(this, NotificationType::PLUGIN_ENABLE_STATUS_CHANGED,
+  registrar_.Add(this, content::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED,
                  NotificationService::AllSources());
   internal_ = make_scoped_refptr(new Internal(pref_name, prefs));
   internal_->StartUpdate();
 }
 
-void PluginDataRemoverHelper::Observe(NotificationType type,
+void PluginDataRemoverHelper::Observe(int type,
                                       const NotificationSource& source,
                                       const NotificationDetails& details) {
-  if (type.value == NotificationType::PLUGIN_ENABLE_STATUS_CHANGED) {
+  if (type == content::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED) {
     internal_->StartUpdate();
   } else {
     NOTREACHED();

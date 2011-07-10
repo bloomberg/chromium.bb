@@ -30,7 +30,7 @@ class ForeignSessionHandler : public WebUIMessageHandler,
   void Init();
 
   // Determines how ForeignSessionHandler will interact with the new tab page.
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 

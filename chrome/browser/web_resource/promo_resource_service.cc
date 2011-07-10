@@ -13,11 +13,11 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/sync_ui_util.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 #include "googleurl/src/gurl.h"
 
 namespace {
@@ -115,7 +115,7 @@ PromoResourceService::PromoResourceService(Profile* profile)
     : WebResourceService(profile->GetPrefs(),
                          PromoResourceService::kDefaultPromoResourceServer,
                          true,  // append locale to URL
-                         NotificationType::PROMO_RESOURCE_STATE_CHANGED,
+                         chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED,
                          prefs::kNTPPromoResourceCacheUpdate,
                          kStartResourceFetchDelay,
                          kCacheUpdateDelay),
@@ -381,7 +381,7 @@ void PromoResourceService::UnpackWebStoreSignal(
   AppsPromo::SetWebStoreSupportedForLocale(is_webstore_active);
 
   NotificationService::current()->Notify(
-      NotificationType::WEB_STORE_PROMO_LOADED,
+      chrome::NOTIFICATION_WEB_STORE_PROMO_LOADED,
       Source<PromoResourceService>(this),
       NotificationService::NoDetails());
 
@@ -450,7 +450,7 @@ void PromoResourceService::UnpackLogoSignal(
     prefs_->SetDouble(prefs::kNTPCustomLogoStart, logo_start);
     prefs_->SetDouble(prefs::kNTPCustomLogoEnd, logo_end);
     NotificationService* service = NotificationService::current();
-    service->Notify(NotificationType::PROMO_RESOURCE_STATE_CHANGED,
+    service->Notify(chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED,
                     Source<WebResourceService>(this),
                     NotificationService::NoDetails());
   }

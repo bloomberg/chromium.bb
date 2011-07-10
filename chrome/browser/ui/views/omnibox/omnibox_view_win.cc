@@ -29,6 +29,7 @@
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/notification_service.h"
@@ -482,9 +483,9 @@ OmniboxViewWin::OmniboxViewWin(const gfx::Font& font,
 }
 
 OmniboxViewWin::~OmniboxViewWin() {
-  NotificationService::current()->Notify(NotificationType::OMNIBOX_DESTROYED,
-                                         Source<OmniboxViewWin>(this),
-                                         NotificationService::NoDetails());
+  NotificationService::current()->Notify(
+      chrome::NOTIFICATION_OMNIBOX_DESTROYED, Source<OmniboxViewWin>(this),
+      NotificationService::NoDetails());
 
   // Explicitly release the text object model now that we're done with it, and
   // before we free the library. If the library gets unloaded before this

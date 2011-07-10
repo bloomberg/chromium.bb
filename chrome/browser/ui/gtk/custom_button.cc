@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/gtk/gtk_chrome_button.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_service.h"
 #include "grit/theme_resources_standard.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -39,7 +40,7 @@ CustomDrawButtonBase::CustomDrawButtonBase(GtkThemeService* theme_provider,
     theme_provider->InitThemesFor(this);
 
     registrar_.Add(this,
-                   NotificationType::BROWSER_THEME_CHANGED,
+                   chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                    NotificationService::AllSources());
   } else {
     // Load the button images from the resource bundle.
@@ -140,10 +141,10 @@ void CustomDrawButtonBase::SetBackground(SkColor color,
   }
 }
 
-void CustomDrawButtonBase::Observe(NotificationType type,
+void CustomDrawButtonBase::Observe(int type,
     const NotificationSource& source, const NotificationDetails& details) {
   DCHECK(theme_service_);
-  DCHECK(NotificationType::BROWSER_THEME_CHANGED == type);
+  DCHECK(chrome::NOTIFICATION_BROWSER_THEME_CHANGED == type);
 
   surfaces_[GTK_STATE_NORMAL]->UsePixbuf(normal_id_ ?
       theme_service_->GetRTLEnabledPixbufNamed(normal_id_) : NULL);
@@ -244,7 +245,7 @@ CustomDrawButton::CustomDrawButton(GtkThemeService* theme_provider,
 
   theme_service_->InitThemesFor(this);
   registrar_.Add(this,
-                 NotificationType::BROWSER_THEME_CHANGED,
+                 chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
 }
 
@@ -262,7 +263,7 @@ CustomDrawButton::CustomDrawButton(GtkThemeService* theme_provider,
 
   theme_service_->InitThemesFor(this);
   registrar_.Add(this,
-                 NotificationType::BROWSER_THEME_CHANGED,
+                 chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
 }
 
@@ -279,9 +280,9 @@ void CustomDrawButton::Init() {
   hover_controller_.Init(widget());
 }
 
-void CustomDrawButton::Observe(NotificationType type,
+void CustomDrawButton::Observe(int type,
     const NotificationSource& source, const NotificationDetails& details) {
-  DCHECK(NotificationType::BROWSER_THEME_CHANGED == type);
+  DCHECK(chrome::NOTIFICATION_BROWSER_THEME_CHANGED == type);
   SetBrowserTheme();
 }
 

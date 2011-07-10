@@ -29,8 +29,8 @@
 #include "content/browser/tab_contents/interstitial_page.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
@@ -99,7 +99,7 @@ TabContentsViewGtk::TabContentsViewGtk(TabContents* tab_contents)
   gtk_container_add(GTK_CONTAINER(floating_.get()), expanded_);
   gtk_widget_show(expanded_);
   gtk_widget_show(floating_.get());
-  registrar_.Add(this, NotificationType::TAB_CONTENTS_CONNECTED,
+  registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_CONNECTED,
                  Source<TabContents>(tab_contents));
   drag_source_.reset(new TabContentsDragSource(this));
 }
@@ -282,11 +282,11 @@ void TabContentsViewGtk::TakeFocus(bool reverse) {
   }
 }
 
-void TabContentsViewGtk::Observe(NotificationType type,
+void TabContentsViewGtk::Observe(int type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::TAB_CONTENTS_CONNECTED: {
+  switch (type) {
+    case content::NOTIFICATION_TAB_CONTENTS_CONNECTED: {
       // No need to remove the SadTabGtk's widget from the container since
       // the new RenderWidgetHostViewGtk instance already removed all the
       // vbox's children.

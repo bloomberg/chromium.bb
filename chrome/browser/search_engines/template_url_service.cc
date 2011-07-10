@@ -28,6 +28,7 @@
 #include "chrome/browser/search_engines/template_url_service_observer.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/search_engines/util.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/extensions/extension.h"
@@ -579,19 +580,19 @@ string16 TemplateURLService::GetKeywordShortName(const string16& keyword,
   return string16();
 }
 
-void TemplateURLService::Observe(NotificationType type,
+void TemplateURLService::Observe(int type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {
-  if (type == NotificationType::HISTORY_URL_VISITED) {
+  if (type == chrome::NOTIFICATION_HISTORY_URL_VISITED) {
     Details<history::URLVisitedDetails> visit_details(details);
     if (!loaded())
       visits_to_add_.push_back(*visit_details.ptr());
     else
       UpdateKeywordSearchTermsForURL(*visit_details.ptr());
-  } else if (type == NotificationType::GOOGLE_URL_UPDATED) {
+  } else if (type == chrome::NOTIFICATION_GOOGLE_URL_UPDATED) {
     if (loaded_)
       GoogleBaseURLChanged();
-  } else if (type == NotificationType::PREF_CHANGED) {
+  } else if (type == chrome::NOTIFICATION_PREF_CHANGED) {
     const std::string* pref_name = Details<std::string>(details).ptr();
     if (!pref_name || default_search_prefs_->IsObserved(*pref_name)) {
       // A preference related to default search engine has changed.
@@ -655,13 +656,13 @@ void TemplateURLService::Init(const Initializer* initializers,
     // db, which will mean we no longer need this notification and the history
     // backend can handle automatically adding the search terms as the user
     // navigates.
-    registrar_.Add(this, NotificationType::HISTORY_URL_VISITED,
+    registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URL_VISITED,
                    Source<Profile>(profile_->GetOriginalProfile()));
     PrefService* prefs = GetPrefs();
     default_search_prefs_.reset(
         PrefSetObserver::CreateDefaultSearchPrefSetObserver(prefs, this));
   }
-  registrar_.Add(this, NotificationType::GOOGLE_URL_UPDATED,
+  registrar_.Add(this, chrome::NOTIFICATION_GOOGLE_URL_UPDATED,
                  NotificationService::AllSources());
 
   if (num_initializers > 0) {
@@ -775,7 +776,7 @@ void TemplateURLService::ChangeToLoadedState() {
 
 void TemplateURLService::NotifyLoaded() {
   NotificationService::current()->Notify(
-      NotificationType::TEMPLATE_URL_SERVICE_LOADED,
+      chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED,
       Source<TemplateURLService>(this),
       NotificationService::NoDetails());
 
@@ -1266,7 +1267,7 @@ void TemplateURLService::RemoveNoNotify(const TemplateURL* template_url) {
     Source<Profile> source(profile_);
     TemplateURLID id = template_url->id();
     NotificationService::current()->Notify(
-        NotificationType::TEMPLATE_URL_REMOVED,
+        chrome::NOTIFICATION_TEMPLATE_URL_REMOVED,
         source,
         Details<TemplateURLID>(&id));
   }

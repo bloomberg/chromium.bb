@@ -30,6 +30,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "content/common/notification_service.h"
@@ -77,7 +78,7 @@ void BookmarksFunction::Run() {
   BookmarkModel* model = profile()->GetBookmarkModel();
   if (!model->IsLoaded()) {
     // Bookmarks are not ready yet.  We'll wait.
-    registrar_.Add(this, NotificationType::BOOKMARK_MODEL_LOADED,
+    registrar_.Add(this, chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED,
                    NotificationService::AllSources());
     AddRef();  // Balanced in Observe().
     return;
@@ -86,7 +87,7 @@ void BookmarksFunction::Run() {
   bool success = RunImpl();
   if (success) {
     NotificationService::current()->Notify(
-        NotificationType::EXTENSION_BOOKMARKS_API_INVOKED,
+        chrome::NOTIFICATION_EXTENSION_BOOKMARKS_API_INVOKED,
         Source<const Extension>(GetExtension()),
         Details<const BookmarksFunction>(this));
   }
@@ -109,10 +110,10 @@ bool BookmarksFunction::EditBookmarksEnabled() {
   return false;
 }
 
-void BookmarksFunction::Observe(NotificationType type,
+void BookmarksFunction::Observe(int type,
                                 const NotificationSource& source,
                                 const NotificationDetails& details) {
-  DCHECK(type == NotificationType::BOOKMARK_MODEL_LOADED);
+  DCHECK(type == chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED);
   DCHECK(profile()->GetBookmarkModel()->IsLoaded());
   Run();
   Release();  // Balanced in Run().

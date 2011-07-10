@@ -19,6 +19,7 @@
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/test/testing_browser_process.h"
@@ -31,7 +32,6 @@
 #include "content/common/notification_details.h"
 #include "content/common/notification_observer_mock.h"
 #include "content/common/notification_registrar.h"
-#include "content/common/notification_type.h"
 #include "content/common/test_url_fetcher_factory.h"
 #include "content/common/view_messages.h"
 #include "grit/generated_resources.h"
@@ -138,10 +138,10 @@ class TranslateManagerTest : public TabContentsWrapperTestHarness,
     return true;
   }
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
-    DCHECK_EQ(NotificationType::TAB_CONTENTS_INFOBAR_REMOVED, type.value);
+    DCHECK_EQ(chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED, type);
     removed_infobars_.insert(Details<InfoBarRemovedDetails>(details)->first);
   }
 
@@ -164,7 +164,7 @@ class TranslateManagerTest : public TabContentsWrapperTestHarness,
     TabContentsWrapperTestHarness::SetUp();
 
     notification_registrar_.Add(this,
-        NotificationType::TAB_CONTENTS_INFOBAR_REMOVED,
+        chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
         Source<TabContentsWrapper>(contents_wrapper()));
   }
 
@@ -172,7 +172,7 @@ class TranslateManagerTest : public TabContentsWrapperTestHarness,
     process()->sink().ClearMessages();
 
     notification_registrar_.Remove(this,
-        NotificationType::TAB_CONTENTS_INFOBAR_REMOVED,
+        chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
         Source<TabContentsWrapper>(contents_wrapper()));
 
     TabContentsWrapperTestHarness::TearDown();
@@ -223,7 +223,7 @@ class TranslateManagerTest : public TabContentsWrapperTestHarness,
   void SetPrefObserverExpectation(const char* path) {
     EXPECT_CALL(
         pref_observer_,
-        Observe(NotificationType(NotificationType::PREF_CHANGED),
+        Observe(int(chrome::NOTIFICATION_PREF_CHANGED),
                 _,
                 Property(&Details<std::string>::ptr, Pointee(path))));
   }
@@ -247,14 +247,14 @@ class TranslateManagerTest : public TabContentsWrapperTestHarness,
 class NavEntryCommittedObserver : public NotificationObserver {
  public:
   explicit NavEntryCommittedObserver(TabContents* tab_contents) {
-    registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
+    registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                    Source<NavigationController>(&tab_contents->controller()));
   }
 
-  virtual void Observe(NotificationType type,
+  virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
-    DCHECK(type == NotificationType::NAV_ENTRY_COMMITTED);
+    DCHECK(type == content::NOTIFICATION_NAV_ENTRY_COMMITTED);
     details_ =
         *(Details<content::LoadCommittedDetails>(details).ptr());
   }

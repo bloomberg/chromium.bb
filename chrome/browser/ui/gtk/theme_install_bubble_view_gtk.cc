@@ -8,8 +8,8 @@
 
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/rounded_window.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_type.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -34,7 +34,7 @@ void ThemeInstallBubbleViewGtk::Show(GtkWindow* parent) {
     instance_ = new ThemeInstallBubbleViewGtk(GTK_WIDGET(parent));
 }
 
-void ThemeInstallBubbleViewGtk::Observe(NotificationType type,
+void ThemeInstallBubbleViewGtk::Observe(int type,
                                         const NotificationSource& source,
                                         const NotificationDetails& details) {
   if (--num_loads_extant_ == 0)
@@ -52,27 +52,27 @@ ThemeInstallBubbleViewGtk::ThemeInstallBubbleViewGtk(GtkWidget* parent)
   // Close when theme has been installed.
   registrar_.Add(
       this,
-      NotificationType::BROWSER_THEME_CHANGED,
+      chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
       NotificationService::AllSources());
 
   // Close when we are installing an extension, not a theme.
   registrar_.Add(
       this,
-      NotificationType::NO_THEME_DETECTED,
+      chrome::NOTIFICATION_NO_THEME_DETECTED,
       NotificationService::AllSources());
   registrar_.Add(
       this,
-      NotificationType::EXTENSION_INSTALLED,
+      chrome::NOTIFICATION_EXTENSION_INSTALLED,
       NotificationService::AllSources());
   registrar_.Add(
       this,
-      NotificationType::EXTENSION_INSTALL_ERROR,
+      chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
       NotificationService::AllSources());
 
   // Don't let the bubble overlap the confirm dialog.
   registrar_.Add(
       this,
-      NotificationType::EXTENSION_WILL_SHOW_CONFIRM_DIALOG,
+      chrome::NOTIFICATION_EXTENSION_WILL_SHOW_CONFIRM_DIALOG,
       NotificationService::AllSources());
 }
 

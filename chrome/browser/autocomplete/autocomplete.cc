@@ -30,6 +30,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/ui/webui/history_ui.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -984,7 +985,7 @@ void AutocompleteController::NotifyChanged(bool notify_default_match) {
     delegate_->OnResultChanged(notify_default_match);
   if (done_) {
     NotificationService::current()->Notify(
-        NotificationType::AUTOCOMPLETE_CONTROLLER_RESULT_READY,
+        chrome::NOTIFICATION_AUTOCOMPLETE_CONTROLLER_RESULT_READY,
         Source<AutocompleteController>(this),
         NotificationService::NoDetails());
   }

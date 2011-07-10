@@ -17,7 +17,7 @@ void RunAndDeleteClosure(invalidation::Closure* task) {
 bool RealModelTypeToObjectId(syncable::ModelType model_type,
                              invalidation::ObjectId* object_id) {
   std::string notification_type;
-  if (!syncable::RealModelTypeToNotificationType(
+  if (!syncable::RealModelTypeToint(
           model_type, &notification_type)) {
     return false;
   }
@@ -29,7 +29,7 @@ bool RealModelTypeToObjectId(syncable::ModelType model_type,
 bool ObjectIdToRealModelType(const invalidation::ObjectId& object_id,
                              syncable::ModelType* model_type) {
   return
-      syncable::NotificationTypeToRealModelType(
+      syncable::intToRealModelType(
           object_id.name(), model_type);
 }
 

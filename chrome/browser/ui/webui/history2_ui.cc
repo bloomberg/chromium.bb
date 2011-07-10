@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
@@ -135,7 +136,7 @@ WebUIMessageHandler* BrowsingHistoryHandler2::Attach(WebUI* web_ui) {
       new FaviconSource(profile, FaviconSource::FAVICON));
 
   // Get notifications when history is cleared.
-  registrar_.Add(this, NotificationType::HISTORY_URLS_DELETED,
+  registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,
       Source<Profile>(web_ui->GetProfile()->GetOriginalProfile()));
   return WebUIMessageHandler::Attach(web_ui);
 }
@@ -374,10 +375,10 @@ history::QueryOptions BrowsingHistoryHandler2::CreateMonthQueryOptions(
   return options;
 }
 
-void BrowsingHistoryHandler2::Observe(NotificationType type,
+void BrowsingHistoryHandler2::Observe(int type,
                                      const NotificationSource& source,
                                      const NotificationDetails& details) {
-  if (type != NotificationType::HISTORY_URLS_DELETED) {
+  if (type != chrome::NOTIFICATION_HISTORY_URLS_DELETED) {
     NOTREACHED();
     return;
   }

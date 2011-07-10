@@ -23,12 +23,12 @@
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/hover_controller_gtk.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "grit/ui_resources.h"
@@ -334,7 +334,7 @@ bool GtkThemeService::HasCustomImage(int id) const {
 }
 
 void GtkThemeService::InitThemesFor(NotificationObserver* observer) {
-  observer->Observe(NotificationType::BROWSER_THEME_CHANGED,
+  observer->Observe(chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                     Source<ThemeService>(this),
                     NotificationService::NoDetails());
 }
@@ -366,10 +366,10 @@ bool GtkThemeService::UsingNativeTheme() const {
   return use_gtk_;
 }
 
-void GtkThemeService::Observe(NotificationType type,
+void GtkThemeService::Observe(int type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
-  if ((type == NotificationType::PREF_CHANGED) &&
+  if ((type == chrome::NOTIFICATION_PREF_CHANGED) &&
       (*Details<std::string>(details).ptr() == prefs::kUsesSystemTheme)) {
 #if !defined(OS_CHROMEOS)
     use_gtk_ = profile()->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme);

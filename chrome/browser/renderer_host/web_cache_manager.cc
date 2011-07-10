@@ -15,6 +15,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/renderer_host/browser_render_process_host.h"
@@ -63,9 +64,9 @@ WebCacheManager* WebCacheManager::GetInstance() {
 WebCacheManager::WebCacheManager()
     : global_size_limit_(GetDefaultGlobalSizeLimit()),
       ALLOW_THIS_IN_INITIALIZER_LIST(revise_allocation_factory_(this)) {
-  registrar_.Add(this, NotificationType::RENDERER_PROCESS_CREATED,
+  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::RENDERER_PROCESS_TERMINATED,
+  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                  NotificationService::AllSources());
 }
 
@@ -142,7 +143,7 @@ void WebCacheManager::ObserveStats(int renderer_id,
   // &stats_details is only valid during the notification.
   // See notification_types.h.
   NotificationService::current()->Notify(
-      NotificationType::WEB_CACHE_STATS_OBSERVED,
+      chrome::NOTIFICATION_WEB_CACHE_STATS_OBSERVED,
       Source<RenderProcessHost>(RenderProcessHost::FromID(renderer_id)),
       Details<WebCache::UsageStats>(&stats_details));
 }
@@ -158,16 +159,16 @@ void WebCacheManager::ClearCache() {
   ClearRendederCache(inactive_renderers_);
 }
 
-void WebCacheManager::Observe(NotificationType type,
+void WebCacheManager::Observe(int type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::RENDERER_PROCESS_CREATED: {
+  switch (type) {
+    case content::NOTIFICATION_RENDERER_PROCESS_CREATED: {
       RenderProcessHost* process = Source<RenderProcessHost>(source).ptr();
       Add(process->id());
       break;
     }
-    case NotificationType::RENDERER_PROCESS_TERMINATED: {
+    case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED: {
       RenderProcessHost* process = Source<RenderProcessHost>(source).ptr();
       Remove(process->id());
       break;

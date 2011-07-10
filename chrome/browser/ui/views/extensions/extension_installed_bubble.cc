@@ -16,11 +16,11 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
-#include "content/common/notification_type.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -264,18 +264,18 @@ ExtensionInstalledBubble::ExtensionInstalledBubble(const Extension* extension,
   // fired, but all of the EXTENSION_LOADED Observers have run. Only then can we
   // be sure that a BrowserAction or PageAction has had views created which we
   // can inspect for the purpose of previewing of pointing to them.
-  registrar_.Add(this, NotificationType::EXTENSION_LOADED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
       Source<Profile>(browser->profile()));
-  registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
       Source<Profile>(browser->profile()));
 }
 
 ExtensionInstalledBubble::~ExtensionInstalledBubble() {}
 
-void ExtensionInstalledBubble::Observe(NotificationType type,
+void ExtensionInstalledBubble::Observe(int type,
                                        const NotificationSource& source,
                                        const NotificationDetails& details) {
-  if (type == NotificationType::EXTENSION_LOADED) {
+  if (type == chrome::NOTIFICATION_EXTENSION_LOADED) {
     const Extension* extension = Details<const Extension>(details).ptr();
     if (extension == extension_) {
       animation_wait_retries_ = 0;
@@ -283,7 +283,7 @@ void ExtensionInstalledBubble::Observe(NotificationType type,
       MessageLoopForUI::current()->PostTask(FROM_HERE, NewRunnableMethod(this,
           &ExtensionInstalledBubble::ShowInternal));
     }
-  } else if (type == NotificationType::EXTENSION_UNLOADED) {
+  } else if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED) {
     const Extension* extension =
         Details<UnloadedExtensionInfo>(details)->extension;
     if (extension == extension_)
