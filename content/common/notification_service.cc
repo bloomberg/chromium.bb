@@ -119,7 +119,7 @@ NotificationService::~NotificationService() {
   lazy_tls_ptr.Pointer()->Set(NULL);
 
 #ifndef NDEBUG
-  for (size_t i = 0; i < observer_counts_.size(); i++) {
+  for (int i = 0; i < static_cast<int>(observer_counts_.size()); i++) {
     if (observer_counts_[i] > 0) {
       // This may not be completely fixable -- see
       // http://code.google.com/p/chromium/issues/detail?id=11010 .
