@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -113,7 +114,7 @@ TEST_F(ProfileManagerTest, LoggedInProfileDir) {
   EXPECT_EQ(expected_default.value(),
             profile_manager_->GetCurrentProfileDir().value());
 
-  profile_manager_->Observe(chrome::LOGIN_USER_CHANGED,
+  profile_manager_->Observe(chrome::NOTIFICATION_LOGIN_USER_CHANGED,
                            NotificationService::AllSources(),
                            NotificationService::NoDetails());
   FilePath expected_logged_in(profile_dir);
