@@ -65,7 +65,19 @@ class MediaTest : public UITest {
   }
 };
 
-TEST_F(MediaTest, VideoBearTheora) {
+#if defined(OS_MACOSX)
+// http://crbug.com/88834 - VideoBearTheora, VideoBearWav and VideoBearWebm
+// are flaky on Mac.
+#define MAYBE_VideoBearTheora FLAKY_VideoBearTheora
+#define MAYBE_VideoBearWav FLAKY_VideoBearWav
+#define MAYBE_VideoBearWebm FLAKY_VideoBearWebm
+#else
+#define MAYBE_VideoBearTheora VideoBearTheora
+#define MAYBE_VideoBearWav  VideoBearWav
+#define MAYBE_VideoBearWebm VideoBearWebm
+#endif
+
+TEST_F(MediaTest, MAYBE_VideoBearTheora) {
   PlayVideo("bear.ogv");
 }
 
@@ -73,7 +85,7 @@ TEST_F(MediaTest, VideoBearSilentTheora) {
   PlayVideo("bear_silent.ogv");
 }
 
-TEST_F(MediaTest, VideoBearWebm) {
+TEST_F(MediaTest, MAYBE_VideoBearWebm) {
   PlayVideo("bear.webm");
 }
 
@@ -91,7 +103,7 @@ TEST_F(MediaTest, VideoBearSilentMp4) {
 }
 #endif
 
-TEST_F(MediaTest, VideoBearWav) {
+TEST_F(MediaTest, MAYBE_VideoBearWav) {
   PlayVideo("bear.wav");
 }
 
