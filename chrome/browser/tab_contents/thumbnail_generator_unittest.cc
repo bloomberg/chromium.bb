@@ -68,7 +68,7 @@ class ThumbnailGeneratorTest : public testing::Test {
     // a little scary in that we don't have a RenderView, but the only listener
     // will want a RenderWidget, so it works out OK.
     NotificationService::current()->Notify(
-        chrome::RENDER_VIEW_HOST_CREATED_FOR_TAB,
+        content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,
         Source<RenderViewHostManager>(NULL),
         Details<RenderViewHost>(reinterpret_cast<RenderViewHost*>(
             widget_.get())));

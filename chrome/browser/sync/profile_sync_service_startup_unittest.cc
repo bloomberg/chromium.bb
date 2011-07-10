@@ -250,11 +250,13 @@ TEST_F(ProfileSyncServiceStartupTest, SKIP_MACOSX(StartFailure)) {
   browser_sync::DataTypeManager::ConfigureResultWithErrorLocation result(
       configure_result, FROM_HERE, syncable::ModelTypeSet());
   EXPECT_CALL(*data_type_manager, Configure(_, _)).
-      WillRepeatedly(DoAll(NotifyFromDataTypeManager(data_type_manager,
-                         chrome::NOTIFICATION_SYNC_CONFIGURE_START),
-                     NotifyFromDataTypeManagerWithResult(data_type_manager,
-                         chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
-                         &result)));
+      WillRepeatedly(
+          DoAll(
+              NotifyFromDataTypeManager(data_type_manager,
+                  static_cast<int>(chrome::NOTIFICATION_SYNC_CONFIGURE_START)),
+              NotifyFromDataTypeManagerWithResult(data_type_manager,
+                  static_cast<int>(chrome::NOTIFICATION_SYNC_CONFIGURE_DONE),
+                  &result)));
   EXPECT_CALL(*data_type_manager, state()).
       WillOnce(Return(DataTypeManager::STOPPED));
 
