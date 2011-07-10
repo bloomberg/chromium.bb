@@ -8,7 +8,6 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/stl_util-inl.h"
 #include "base/stringprintf.h"
@@ -48,8 +47,7 @@
 #endif  // defined(TOOLKIT_GTK)
 
 PersonalOptionsHandler::PersonalOptionsHandler() {
-  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
-  multiprofile_ = browser_command_line.HasSwitch(switches::kMultiProfiles);
+  multiprofile_ = ProfileManager::IsMultipleProfilesEnabled();
 #if defined(OS_CHROMEOS)
   registrar_.Add(this,
                  NotificationType::LOGIN_USER_IMAGE_CHANGED,

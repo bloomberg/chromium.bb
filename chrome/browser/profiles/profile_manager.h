@@ -155,6 +155,9 @@ class ProfileManager : public base::NonThreadSafe,
   // Schedules the profile at the given path to be deleted on shutdown.
   void ScheduleProfileForDeletion(const FilePath& profile_dir);
 
+  // Checks if multiple profiles is enabled.
+  static bool IsMultipleProfilesEnabled();
+
  protected:
   // Does final initial actions.
   virtual void DoFinalInit(Profile* profile);

@@ -15,6 +15,7 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_ui_util_mac.h"
 #include "chrome/browser/tab_contents/tab_contents_view_mac.h"
@@ -1310,7 +1311,7 @@
 
 - (BOOL)shouldShowAvatar {
   return [self hasTabStrip] && (browser_->profile()->IsOffTheRecord() ||
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kMultiProfiles));
+                                ProfileManager::IsMultipleProfilesEnabled());
 }
 
 - (BOOL)isBookmarkBarVisible {

@@ -4,12 +4,12 @@
 
 #include "chrome/browser/sync/sync_ui_util.h"
 
-#include "base/command_line.h"
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/time_formatting.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/protocol/proto_enum_conversions.h"
 #include "chrome/browser/sync/sessions/session_state.h"
@@ -76,9 +76,8 @@ string16 GetSyncedStateStatusLabel(ProfileSyncService* service) {
   if (user_name.empty())
     return label;
 
-  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
   return l10n_util::GetStringFUTF16(
-      browser_command_line.HasSwitch(switches::kMultiProfiles) ?
+      ProfileManager::IsMultipleProfilesEnabled() ?
           IDS_PROFILES_SYNCED_TO_USER_WITH_TIME :
           IDS_SYNC_ACCOUNT_SYNCED_TO_USER_WITH_TIME,
       user_name,

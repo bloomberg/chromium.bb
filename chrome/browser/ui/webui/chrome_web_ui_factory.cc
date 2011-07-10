@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extensions_ui.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/bookmarks_ui.h"
 #include "chrome/browser/ui/webui/bug_report_ui.h"
 #include "chrome/browser/ui/webui/constrained_html_ui.h"
@@ -228,7 +229,7 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
     return &NewWebUI<ConstrainedHtmlUI>;
 
 #if !defined(OS_CHROMEOS)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kMultiProfiles)) {
+  if (ProfileManager::IsMultipleProfilesEnabled()) {
     if (url.host() == chrome::kChromeUINewProfileHost)
       return &NewWebUI<NewProfileUI>;
   }

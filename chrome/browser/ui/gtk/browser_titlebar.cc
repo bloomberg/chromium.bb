@@ -18,6 +18,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/accelerators_gtk.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
@@ -309,8 +310,7 @@ void BrowserTitlebar::Init() {
 
   // If multi-profile is enabled set up profile button and login notifications.
   // The button lives in its own vbox in container_hbox_.
-  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
-  if (browser_command_line.HasSwitch(switches::kMultiProfiles) &&
+  if (ProfileManager::IsMultipleProfilesEnabled() &&
       !browser_window_->browser()->profile()->IsOffTheRecord()) {
     PrefService* prefs = browser_window_->browser()->profile()->GetPrefs();
     usernamePref_.Init(prefs::kGoogleServicesUsername, prefs, this);

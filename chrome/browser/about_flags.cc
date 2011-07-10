@@ -294,7 +294,7 @@ const Experiment kExperiments[] = {
     "multi-profiles",
     IDS_FLAGS_MULTI_PROFILES_NAME,
     IDS_FLAGS_MULTI_PROFILES_DESCRIPTION,
-    kOsMac | kOsWin | kOsLinux,  // This switch is not available in CrOS.
+    kOsMac | kOsLinux,  // This switch is not available in CrOS.
     SINGLE_VALUE_TYPE(switches::kMultiProfiles)
   },
   {

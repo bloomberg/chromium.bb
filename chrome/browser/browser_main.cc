@@ -900,8 +900,7 @@ void InitializeBrokerServices(const MainFunctionParams& parameters,
 // should not continue.
 Profile* CreateProfile(const MainFunctionParams& parameters,
                        const FilePath& user_data_dir) {
-  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
-  Profile* profile = browser_command_line.HasSwitch(switches::kMultiProfiles) ?
+  Profile* profile = ProfileManager::IsMultipleProfilesEnabled() ?
       g_browser_process->profile_manager()->GetLastUsedProfile(user_data_dir) :
       g_browser_process->profile_manager()->GetDefaultProfile(user_data_dir);
   if (profile)

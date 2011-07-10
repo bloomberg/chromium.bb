@@ -476,7 +476,7 @@ bool BrowserView::ShouldShowAvatar() const {
   if (IsOffTheRecord())
     return true;
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kMultiProfiles)) {
+  if (ProfileManager::IsMultipleProfilesEnabled()) {
     // TODO(sail): Once the multi-profile options UI is done we only want to
     // show the avatar if the user has more than one profile.
     return true;
