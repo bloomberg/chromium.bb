@@ -12,12 +12,12 @@ import types
 import unittest
 
 from chromedriver_launcher import ChromeDriverLauncher
-import chromedriver_paths
 from gtest_text_test_runner import GTestTextTestRunner
+import test_paths
 
 # Add the PYTHON_BINDINGS first so that our 'test' module is found instead of
 # Python's.
-sys.path = [chromedriver_paths.PYTHON_BINDINGS] + sys.path
+sys.path = [test_paths.PYTHON_BINDINGS] + sys.path
 
 from selenium.webdriver.remote.webdriver import WebDriver
 
@@ -270,15 +270,16 @@ class Main(object):
 
     # The tests expect to run with preset 'driver' and 'webserver' class
     # properties.
-    launcher = ChromeDriverLauncher(self._options.driver_exe,
-                                    chromedriver_paths.WEBDRIVER_TEST_DATA)
-    driver = WebDriver(launcher.GetURL(), {})
+    server = ChromeDriverLauncher(
+        self._options.driver_exe or test_paths.CHROMEDRIVER_EXE,
+        test_paths.WEBDRIVER_TEST_DATA).Launch()
+    driver = WebDriver(server.GetUrl(), {})
     # The tests expect a webserver. Since ChromeDriver also operates as one,
     # just pass this dummy class with the right info.
     class DummyWebserver:
       pass
     webserver = DummyWebserver()
-    webserver.port = launcher.GetPort()
+    webserver.port = server.GetPort()
     for test in test_names:
       Main._SetTestClassAttributes(test, 'driver', driver)
       Main._SetTestClassAttributes(test, 'webserver', webserver)
@@ -292,7 +293,7 @@ class Main(object):
     if self._options.verbose:
       verbosity = 2
     result = GTestTextTestRunner(verbosity=verbosity).run(test_suite)
-    launcher.Kill()
+    server.Kill()
     sys.exit(not result.wasSuccessful())
 
 
