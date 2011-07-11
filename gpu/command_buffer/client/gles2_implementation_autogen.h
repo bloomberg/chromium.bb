@@ -1263,5 +1263,8 @@ void SetSurfaceCHROMIUM(GLint surface_id) {
 void GetMultipleIntegervCHROMIUM(
     const GLenum* pnames, GLuint count, GLint* results, GLsizeiptr size);
 
+void GetProgramInfoCHROMIUM(
+    GLuint program, GLsizei bufsize, GLsizei* size, void* info);
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_AUTOGEN_H_
 

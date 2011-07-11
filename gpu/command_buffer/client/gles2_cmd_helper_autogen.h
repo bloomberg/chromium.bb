@@ -1244,5 +1244,11 @@
         results_shm_offset, size);
   }
 
+  void GetProgramInfoCHROMIUM(GLuint program, uint32 bucket_id) {
+    gles2::GetProgramInfoCHROMIUM& c =
+        GetCmdSpace<gles2::GetProgramInfoCHROMIUM>();
+    c.Init(program, bucket_id);
+  }
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_AUTOGEN_H_
 

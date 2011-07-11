@@ -209,6 +209,7 @@
   OP(WaitLatchCHROMIUM)                                        /* 452 */ \
   OP(SetSurfaceCHROMIUM)                                       /* 453 */ \
   OP(GetMultipleIntegervCHROMIUM)                              /* 454 */ \
+  OP(GetProgramInfoCHROMIUM)                                   /* 455 */ \
 
 enum CommandId {
   kStartPoint = cmd::kLastCommonId,  // All GLES2 commands start after this.

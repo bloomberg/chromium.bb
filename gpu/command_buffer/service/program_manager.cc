@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
+#include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 
 namespace gpu {
@@ -441,6 +442,88 @@ bool ProgramManager::ProgramInfo::CanLink() const {
     }
   }
   return true;
+}
+
+static uint32 ComputeOffset(const void* start, const void* position) {
+  return static_cast<const uint8*>(position) -
+         static_cast<const uint8*>(start);
+}
+
+void ProgramManager::ProgramInfo::GetProgramInfo(
+    CommonDecoder::Bucket* bucket) const {
+  // NOTE: It seems to me the math in here does not need check for overflow
+  // because the data being calucated from has various small limits. The max
+  // number of attribs + uniforms is somewhere well under 1024. The maximum size
+  // of an identifier is 256 characters.
+  uint32 num_locations = 0;
+  uint32 total_string_size = 0;
+
+  for (size_t ii = 0; ii < attrib_infos_.size(); ++ii) {
+    const VertexAttribInfo& info = attrib_infos_[ii];
+    num_locations += 1;
+    total_string_size += info.name.size();
+  }
+
+  for (size_t ii = 0; ii < uniform_infos_.size(); ++ii) {
+    const UniformInfo& info = uniform_infos_[ii];
+    num_locations += info.element_locations.size();
+    total_string_size += info.name.size();
+  }
+
+  uint32 num_inputs = attrib_infos_.size() + uniform_infos_.size();
+  uint32 input_size = num_inputs * sizeof(ProgramInput);
+  uint32 location_size = num_locations * sizeof(int32);
+  uint32 size = sizeof(ProgramInfoHeader) +
+      input_size + location_size + total_string_size;
+
+  bucket->SetSize(size);
+  ProgramInfoHeader* header = bucket->GetDataAs<ProgramInfoHeader*>(0, size);
+  ProgramInput* inputs = bucket->GetDataAs<ProgramInput*>(
+      sizeof(ProgramInfoHeader), input_size);
+  int32* locations = bucket->GetDataAs<int32*>(
+      sizeof(ProgramInfoHeader) + input_size, location_size);
+  char* strings = bucket->GetDataAs<char*>(
+      sizeof(ProgramInfoHeader) + input_size + location_size,
+      total_string_size);
+  DCHECK(header);
+  DCHECK(inputs);
+  DCHECK(locations);
+  DCHECK(strings);
+
+  header->link_status = link_status_;
+  header->num_attribs = attrib_infos_.size();
+  header->num_uniforms = uniform_infos_.size();
+
+  for (size_t ii = 0; ii < attrib_infos_.size(); ++ii) {
+    const VertexAttribInfo& info = attrib_infos_[ii];
+    inputs->size = info.size;
+    inputs->type = info.type;
+    inputs->location_offset = ComputeOffset(header, locations);
+    inputs->name_offset = ComputeOffset(header, strings);
+    inputs->name_length = info.name.size();
+    *locations++ = info.location;
+    memcpy(strings, info.name.c_str(), info.name.size());
+    strings += info.name.size();
+    ++inputs;
+  }
+
+  for (size_t ii = 0; ii < uniform_infos_.size(); ++ii) {
+    const UniformInfo& info = uniform_infos_[ii];
+    inputs->size = info.size;
+    inputs->type = info.type;
+    inputs->location_offset = ComputeOffset(header, locations);
+    inputs->name_offset = ComputeOffset(header, strings);
+    inputs->name_length = info.name.size();
+    DCHECK(static_cast<size_t>(info.size) == info.element_locations.size());
+    for (size_t jj = 0; jj < info.element_locations.size(); ++jj) {
+      *locations++ = info.element_locations[jj];
+    }
+    memcpy(strings, info.name.c_str(), info.name.size());
+    strings += info.name.size();
+    ++inputs;
+  }
+
+  DCHECK_EQ(ComputeOffset(header, strings), size);
 }
 
 ProgramManager::ProgramInfo::~ProgramInfo() {}

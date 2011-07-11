@@ -10,6 +10,8 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "gpu/command_buffer/common/gl_mock.h"
+#include "gpu/command_buffer/common/gles2_cmd_format.h"
+#include "gpu/command_buffer/service/common_decoder.h"
 #include "gpu/command_buffer/service/mocks.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -187,6 +189,7 @@ class ProgramManagerWithShaderTest : public testing::Test {
 
   struct UniformInfo {
     const char* name;
+    const char* good_name;
     GLint size;
     GLenum type;
     GLint location;
@@ -381,9 +384,24 @@ const size_t ProgramManagerWithShaderTest::kNumAttribs =
 
 ProgramManagerWithShaderTest::UniformInfo
     ProgramManagerWithShaderTest::kUniforms[] = {
-  { kUniform1Name, kUniform1Size, kUniform1Type, kUniform1Location, },
-  { kUniform2Name, kUniform2Size, kUniform2Type, kUniform2Location, },
-  { kUniform3BadName, kUniform3Size, kUniform3Type, kUniform3Location, },
+  { kUniform1Name,
+    kUniform1Name,
+    kUniform1Size,
+    kUniform1Type,
+    kUniform1Location,
+  },
+  { kUniform2Name,
+    kUniform2Name,
+    kUniform2Size,
+    kUniform2Type,
+    kUniform2Location,
+  },
+  { kUniform3BadName,
+    kUniform3GoodName,
+    kUniform3Size,
+    kUniform3Type,
+    kUniform3Location,
+  },
 };
 
 const size_t ProgramManagerWithShaderTest::kNumUniforms =
@@ -572,9 +590,24 @@ TEST_F(ProgramManagerWithShaderTest, GetUniformInfoByLocation) {
 TEST_F(ProgramManagerWithShaderTest, GLDriverReturnsGLUnderscoreUniform) {
   static const char* kUniform2Name = "gl_longNameWeCanCheckFor";
   static ProgramManagerWithShaderTest::UniformInfo kUniforms[] = {
-    { kUniform1Name, kUniform1Size, kUniform1Type, kUniform1Location, },
-    { kUniform2Name, kUniform2Size, kUniform2Type, kUniform2Location, },
-    { kUniform3BadName, kUniform3Size, kUniform3Type, kUniform3Location, },
+    { kUniform1Name,
+      kUniform1Name,
+      kUniform1Size,
+      kUniform1Type,
+      kUniform1Location,
+    },
+    { kUniform2Name,
+      kUniform2Name,
+      kUniform2Size,
+      kUniform2Type,
+      kUniform2Location,
+    },
+    { kUniform3BadName,
+      kUniform3GoodName,
+      kUniform3Size,
+      kUniform3Type,
+      kUniform3Location,
+    },
   };
   const size_t kNumUniforms = arraysize(kUniforms);
   static const GLuint kClientProgramId = 1234;
@@ -656,9 +689,24 @@ TEST_F(ProgramManagerWithShaderTest, GLDriverReturnsWrongTypeInfo) {
     { kAttrib3Name, kAttrib3Size, kAttrib3Type, kAttrib3Location, },
   };
   static ProgramManagerWithShaderTest::UniformInfo kUniforms[] = {
-    { kUniform1Name, kUniform1Size, kUniform1Type, kUniform1Location, },
-    { kUniform2Name, kUniform2Size, kUniform2BadType, kUniform2Location, },
-    { kUniform3BadName, kUniform3Size, kUniform3Type, kUniform3Location, },
+    { kUniform1Name,
+      kUniform1Name,
+      kUniform1Size,
+      kUniform1Type,
+      kUniform1Location,
+    },
+    { kUniform2Name,
+      kUniform2Name,
+      kUniform2Size,
+      kUniform2BadType,
+      kUniform2Location,
+    },
+    { kUniform3BadName,
+      kUniform3GoodName,
+      kUniform3Size,
+      kUniform3Type,
+      kUniform3Location,
+    },
   };
   const size_t kNumAttribs= arraysize(kAttribs);
   const size_t kNumUniforms = arraysize(kUniforms);
@@ -793,6 +841,61 @@ TEST_F(ProgramManagerWithShaderTest, ProgramInfoUseCount2) {
   EXPECT_TRUE(info2 == NULL);
   EXPECT_FALSE(vshader->InUse());
   EXPECT_FALSE(fshader->InUse());
+}
+
+TEST_F(ProgramManagerWithShaderTest, ProgramInfoGetProgramInfo) {
+  CommonDecoder::Bucket bucket;
+  const ProgramManager::ProgramInfo* program_info =
+      manager_.GetProgramInfo(kClientProgramId);
+  ASSERT_TRUE(program_info != NULL);
+  program_info->GetProgramInfo(&bucket);
+  ProgramInfoHeader* header =
+      bucket.GetDataAs<ProgramInfoHeader*>(0, sizeof(ProgramInfoHeader));
+  ASSERT_TRUE(header != NULL);
+  EXPECT_EQ(1u, header->link_status);
+  EXPECT_EQ(arraysize(kAttribs), header->num_attribs);
+  EXPECT_EQ(arraysize(kUniforms), header->num_uniforms);
+  const ProgramInput* inputs = bucket.GetDataAs<const ProgramInput*>(
+      sizeof(*header),
+      sizeof(ProgramInput) * (header->num_attribs + header->num_attribs));
+  ASSERT_TRUE(inputs != NULL);
+  const ProgramInput* input = inputs;
+  // TODO(gman): Don't assume these are in order.
+  for (uint32 ii = 0; ii < header->num_attribs; ++ii) {
+    const AttribInfo& expected = kAttribs[ii];
+    EXPECT_EQ(expected.size, input->size);
+    EXPECT_EQ(expected.type, input->type);
+    const int32* location = bucket.GetDataAs<const int32*>(
+        input->location_offset, sizeof(int32));
+    ASSERT_TRUE(location != NULL);
+    EXPECT_EQ(expected.location, *location);
+    const char* name_buf = bucket.GetDataAs<const char*>(
+        input->name_offset, input->name_length);
+    ASSERT_TRUE(name_buf != NULL);
+    std::string name(name_buf, input->name_length);
+    EXPECT_STREQ(expected.name, name.c_str());
+    ++input;
+  }
+  // TODO(gman): Don't assume these are in order.
+  for (uint32 ii = 0; ii < header->num_uniforms; ++ii) {
+    const UniformInfo& expected = kUniforms[ii];
+    EXPECT_EQ(expected.size, input->size);
+    EXPECT_EQ(expected.type, input->type);
+    const int32* locations = bucket.GetDataAs<const int32*>(
+        input->location_offset, sizeof(int32) * input->size);
+    ASSERT_TRUE(locations != NULL);
+    for (int32 jj = 0; jj < input->size; ++jj) {
+      EXPECT_EQ(expected.location + jj * 2, locations[jj]);
+    }
+    const char* name_buf = bucket.GetDataAs<const char*>(
+        input->name_offset, input->name_length);
+    ASSERT_TRUE(name_buf != NULL);
+    std::string name(name_buf, input->name_length);
+    EXPECT_STREQ(expected.good_name, name.c_str());
+    ++input;
+  }
+  EXPECT_EQ(header->num_attribs + header->num_uniforms,
+            static_cast<uint32>(input - inputs));
 }
 
 }  // namespace gles2

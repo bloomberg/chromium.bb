@@ -448,7 +448,8 @@ GLES2Implementation::GLES2Implementation(
       client_side_array_id_(0),
       client_side_element_array_id_(0),
       error_bits_(0),
-      debug_(false) {
+      debug_(false),
+      sharing_resources_(share_resources) {
   GPU_CLIENT_LOG_CODE_BLOCK({
     debug_ = CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kEnableGPUClientLogging);
@@ -2148,6 +2149,39 @@ void GLES2Implementation::GetMultipleIntegervCHROMIUM(
       GPU_CLIENT_LOG("  " << i << ": " << (results[i]));
     }
   });
+}
+
+void GLES2Implementation::GetProgramInfoCHROMIUM(
+    GLuint program, GLsizei bufsize, GLsizei* size, void* info) {
+  if (bufsize < 0) {
+    SetGLError(GL_INVALID_VALUE, "glProgramInfoCHROMIUM: bufsize less than 0.");
+    return;
+  }
+  if (size == NULL) {
+    SetGLError(GL_INVALID_VALUE, "glProgramInfoCHROMIUM: size is null.");
+    return;
+  }
+  // Make sure they've set size to 0 else the value will be undefined on
+  // lost context.
+  GPU_DCHECK(*size == 0);
+  // Clear the bucket so if the command fails nothing will be in it.
+  helper_->SetBucketSize(kResultBucketId, 0);
+  helper_->GetProgramInfoCHROMIUM(program, kResultBucketId);
+  std::vector<int8> result;
+  GetBucketContents(kResultBucketId, &result);
+  if (result.size() == 0) {
+    return;
+  }
+  *size = result.size();
+  if (!info) {
+    return;
+  }
+  if (static_cast<size_t>(bufsize) < result.size()) {
+    SetGLError(GL_INVALID_OPERATION,
+               "glProgramInfoCHROMIUM: bufsize is too small for result.");
+    return;
+  }
+  memcpy(info, &result[0], result.size());
 }
 
 }  // namespace gles2

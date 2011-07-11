@@ -6700,6 +6700,29 @@ error::Error GLES2DecoderImpl::HandleGetMultipleIntegervCHROMIUM(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleGetProgramInfoCHROMIUM(
+    uint32 immediate_data_size, const gles2::GetProgramInfoCHROMIUM& c) {
+  GLuint program = static_cast<GLuint>(c.program);
+  uint32 bucket_id = c.bucket_id;
+  Bucket* bucket = CreateBucket(bucket_id);
+  bucket->SetSize(sizeof(ProgramInfoHeader));  // in case we fail.
+  ProgramManager::ProgramInfo* info = NULL;
+  if (program) {
+    info = GetProgramInfoNotShader(program, "glGetProgramInfoCHROMIUM");
+    if (!info) {
+      return error::kNoError;
+    }
+    if (!info->IsValid()) {
+      // Program was not linked successfully. (ie, glLinkProgram)
+      SetGLError(GL_INVALID_OPERATION,
+                 "glGetProgramInfoCHROMIUM: program not linked");
+      return error::kNoError;
+    }
+  }
+  info->GetProgramInfo(bucket);
+  return error::kNoError;
+}
+
 // Include the auto-generated part of this file. We split this because it means
 // we can easily edit the non-auto generated parts right here in this file
 // instead of having to edit some template or the code generator.

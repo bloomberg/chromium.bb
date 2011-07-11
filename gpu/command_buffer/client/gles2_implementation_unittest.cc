@@ -1143,6 +1143,95 @@ TEST_F(GLES2ImplementationTest, GetMultipleIntegervCHROMIUMBadArgs) {
   EXPECT_EQ(kSentinel, results[num_results]);
 }
 
+TEST_F(GLES2ImplementationTest, GetProgramInfoCHROMIUMGoodArgs) {
+  const uint32 kBucketId = 1;  // This id is hardcoded into GLES2Implemenation
+  const GLuint kProgramId = 123;
+  const char kBad = 0x12;
+  GLsizei size = 0;
+  const Str7 kString = {"foobar"};
+  char buf[20];
+
+  memset(buf, kBad, sizeof(buf));
+  uint32 offset = AllocateTransferBuffer(sizeof(kString));
+  EXPECT_CALL(*command_buffer_, OnFlush(_))
+      .WillOnce(SetMemory(uint32(sizeof(kString))))
+      .WillOnce(SetMemoryAtOffset(offset, kString))
+      .WillOnce(SetMemory(GLuint(GL_NO_ERROR)))
+      .RetiresOnSaturation();
+
+  struct Cmds {
+    cmd::SetBucketSize set_bucket_size1;
+    GetProgramInfoCHROMIUM get_program_info;
+    cmd::GetBucketSize get_bucket_size;
+    cmd::GetBucketData get_bucket_data;
+    cmd::SetToken set_token1;
+    cmd::SetBucketSize set_bucket_size2;
+  };
+  Cmds expected;
+  expected.set_bucket_size1.Init(kBucketId, 0);
+  expected.get_program_info.Init(kProgramId, kBucketId);
+  expected.get_bucket_size.Init(kBucketId, kTransferBufferId, 0);
+  expected.get_bucket_data.Init(
+      kBucketId, 0, sizeof(kString), kTransferBufferId, offset);
+  expected.set_token1.Init(GetNextToken());
+  expected.set_bucket_size2.Init(kBucketId, 0);
+  gl_->GetProgramInfoCHROMIUM(kProgramId, sizeof(buf), &size, &buf);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), gl_->GetError());
+  EXPECT_EQ(sizeof(kString), static_cast<size_t>(size));
+  EXPECT_STREQ(kString.str, buf);
+  EXPECT_EQ(buf[sizeof(kString)], kBad);
+}
+
+TEST_F(GLES2ImplementationTest, GetProgramInfoCHROMIUMBadArgs) {
+  const uint32 kBucketId = 1;  // This id is hardcoded into GLES2Implemenation
+  const GLuint kProgramId = 123;
+  GLsizei size = 0;
+  const Str7 kString = {"foobar"};
+  char buf[20];
+
+  uint32 offset = AllocateTransferBuffer(sizeof(kString));
+  EXPECT_CALL(*command_buffer_, OnFlush(_))
+      .WillOnce(SetMemory(uint32(sizeof(kString))))
+      .WillOnce(SetMemoryAtOffset(offset, kString))
+      .WillOnce(SetMemory(GLuint(GL_NO_ERROR)))
+      .WillOnce(SetMemory(GLuint(GL_NO_ERROR)))
+      .WillOnce(SetMemory(GLuint(GL_NO_ERROR)))
+      .RetiresOnSaturation();
+
+  // try bufsize not big enough.
+  struct Cmds {
+    cmd::SetBucketSize set_bucket_size1;
+    GetProgramInfoCHROMIUM get_program_info;
+    cmd::GetBucketSize get_bucket_size;
+    cmd::GetBucketData get_bucket_data;
+    cmd::SetToken set_token1;
+    cmd::SetBucketSize set_bucket_size2;
+  };
+  Cmds expected;
+  expected.set_bucket_size1.Init(kBucketId, 0);
+  expected.get_program_info.Init(kProgramId, kBucketId);
+  expected.get_bucket_size.Init(kBucketId, kTransferBufferId, 0);
+  expected.get_bucket_data.Init(
+      kBucketId, 0, sizeof(kString), kTransferBufferId, offset);
+  expected.set_token1.Init(GetNextToken());
+  expected.set_bucket_size2.Init(kBucketId, 0);
+  gl_->GetProgramInfoCHROMIUM(kProgramId, 6, &size, &buf);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_OPERATION), gl_->GetError());
+  ClearCommands();
+
+  // try bad bufsize
+  gl_->GetProgramInfoCHROMIUM(kProgramId, -1, &size, &buf);
+  EXPECT_TRUE(NoCommandsWritten());
+  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), gl_->GetError());
+  ClearCommands();
+  // try no size ptr.
+  gl_->GetProgramInfoCHROMIUM(kProgramId, sizeof(buf), NULL, &buf);
+  EXPECT_TRUE(NoCommandsWritten());
+  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), gl_->GetError());
+}
+
 }  // namespace gles2
 }  // namespace gpu
 

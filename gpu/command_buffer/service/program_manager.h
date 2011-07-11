@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "gpu/command_buffer/service/common_decoder.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/shader_manager.h"
 
@@ -108,6 +109,9 @@ class ProgramManager {
     // Gets the UniformInfo of a uniform by location.
     const UniformInfo* GetUniformInfoByLocation(
         GLint location, GLint* array_index) const;
+
+    // Gets all the program info.
+    void GetProgramInfo(CommonDecoder::Bucket* bucket) const;
 
     // Sets the sampler values for a uniform.
     // This is safe to call for any location. If the location is not

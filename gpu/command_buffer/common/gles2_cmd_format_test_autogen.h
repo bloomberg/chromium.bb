@@ -3572,5 +3572,20 @@ TEST(GLES2FormatTest, GetMultipleIntegervCHROMIUM) {
   EXPECT_EQ(static_cast<GLsizeiptr>(16), cmd.size);
 }
 
+TEST(GLES2FormatTest, GetProgramInfoCHROMIUM) {
+  GetProgramInfoCHROMIUM cmd = { { 0 } };
+  void* next_cmd = cmd.Set(
+      &cmd,
+      static_cast<GLuint>(11),
+      static_cast<uint32>(12));
+  EXPECT_EQ(static_cast<uint32>(GetProgramInfoCHROMIUM::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<char*>(next_cmd),
+            reinterpret_cast<char*>(&cmd) + sizeof(cmd));
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.program);
+  EXPECT_EQ(static_cast<uint32>(12), cmd.bucket_id);
+}
+
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_TEST_AUTOGEN_H_
 

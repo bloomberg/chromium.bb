@@ -9077,6 +9077,56 @@ COMPILE_ASSERT(offsetof(GetMultipleIntegervCHROMIUM, results_shm_offset) == 20,
 COMPILE_ASSERT(offsetof(GetMultipleIntegervCHROMIUM, size) == 24,
                OffsetOf_GetMultipleIntegervCHROMIUM_size_not_24);
 
+struct GetProgramInfoCHROMIUM {
+  typedef GetProgramInfoCHROMIUM ValueType;
+  static const CommandId kCmdId = kGetProgramInfoCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  struct Result {
+    uint32 link_status;
+    uint32 num_attribs;
+    uint32 num_uniforms;
+  };
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(GLuint _program, uint32 _bucket_id) {
+    SetHeader();
+    program = _program;
+    bucket_id = _bucket_id;
+  }
+
+  void* Set(void* cmd, GLuint _program, uint32 _bucket_id) {
+    static_cast<ValueType*>(cmd)->Init(_program, _bucket_id);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32 program;
+  uint32 bucket_id;
+};
+
+COMPILE_ASSERT(sizeof(GetProgramInfoCHROMIUM) == 12,
+               Sizeof_GetProgramInfoCHROMIUM_is_not_12);
+COMPILE_ASSERT(offsetof(GetProgramInfoCHROMIUM, header) == 0,
+               OffsetOf_GetProgramInfoCHROMIUM_header_not_0);
+COMPILE_ASSERT(offsetof(GetProgramInfoCHROMIUM, program) == 4,
+               OffsetOf_GetProgramInfoCHROMIUM_program_not_4);
+COMPILE_ASSERT(offsetof(GetProgramInfoCHROMIUM, bucket_id) == 8,
+               OffsetOf_GetProgramInfoCHROMIUM_bucket_id_not_8);
+COMPILE_ASSERT(offsetof(GetProgramInfoCHROMIUM::Result, link_status) == 0,
+               OffsetOf_GetProgramInfoCHROMIUM_Result_link_status_not_0);
+COMPILE_ASSERT(offsetof(GetProgramInfoCHROMIUM::Result, num_attribs) == 4,
+               OffsetOf_GetProgramInfoCHROMIUM_Result_num_attribs_not_4);
+COMPILE_ASSERT(offsetof(GetProgramInfoCHROMIUM::Result, num_uniforms) == 8,
+               OffsetOf_GetProgramInfoCHROMIUM_Result_num_uniforms_not_8);
+
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_
 

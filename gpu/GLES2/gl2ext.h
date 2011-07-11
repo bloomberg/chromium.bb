@@ -999,11 +999,14 @@ typedef void (GL_APIENTRYP PFNGLRATELIMITOFFSCREENCONTEXTCHROMIUM) ();
 #define GL_CHROMIUM_get_multiple 1
 #ifdef GL_GLEXT_PROTOTYPES
 #define glGetMultipleIntegervCHROMIUM  GLES2_GET_FUN(GetMultipleIntegervCHROMIUM)
+#define glGetProgramInfoCHROMIUM  GLES2_GET_FUN(GetProgramInfovCHROMIUM)
 #if !defined(GLES2_USE_CPP_BINDINGS)
 GL_APICALL void GL_APIENTRY glGetMultipleIntegervCHROMIUM (void);
+GL_APICALL void GL_APIENTRY glGetProgrmaInfoCHROMIUM (GLuint program, GLsizei bufsize, GLsizei* size, void* info);
 #endif
 #else
 typedef void (GL_APIENTRYP PFNGLGETMULTIPLEINTEGERVCHROMIUM) ();
+typedef void (GL_APIENTRYP PFNGLGETPROGRAMINFOCHROMIUM) ();
 #endif
 #endif
 

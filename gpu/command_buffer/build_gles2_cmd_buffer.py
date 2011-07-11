@@ -222,6 +222,7 @@ GL_APICALL void         GL_APIENTRY glWaitLatchCHROMIUM (GLuint latch_id);
 GL_APICALL void         GL_APIENTRY glRateLimitOffscreenContextCHROMIUM (void);
 GL_APICALL void         GL_APIENTRY glSetSurfaceCHROMIUM (GLint surface_id);
 GL_APICALL void         GL_APIENTRY glGetMultipleIntegervCHROMIUM (const GLenum* pnames, GLuint count, GLint* results, GLsizeiptr size);
+GL_APICALL void         GL_APIENTRY glGetProgramInfoCHROMIUM (GLidProgram program, GLsizeiNotNegative bufsize, GLsizei* size, void* info);
 """
 
 # This is the list of all commmands that will be generated and their Id.
@@ -429,6 +430,7 @@ _CMD_ID_TABLE = {
   'WaitLatchCHROMIUM':                                         452,
   'SetSurfaceCHROMIUM':                                        453,
   'GetMultipleIntegervCHROMIUM':                               454,
+  'GetProgramInfoCHROMIUM':                                    455,
 }
 
 # This is a list of enum names and their valid values. It is used to map
@@ -1348,6 +1350,20 @@ _FUNCTION_INFO = {
     'type': 'GETn',
     'decoder_func': 'DoGetProgramiv',
     'result': ['SizedResult<GLint>'],
+  },
+  'GetProgramInfoCHROMIUM': {
+    'type': 'Custom',
+    'immediate': False,
+    'expectation': False,
+    'impl_func': False,
+    'extension': True,
+    'chromium': True,
+    'cmd_args': 'GLidProgram program, uint32 bucket_id',
+    'result': [
+      'uint32 link_status',
+      'uint32 num_attribs',
+      'uint32 num_uniforms',
+    ],
   },
   'GetProgramInfoLog': {
     'type': 'STRn',

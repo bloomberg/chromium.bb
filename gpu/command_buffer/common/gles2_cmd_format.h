@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -114,6 +114,44 @@ COMPILE_ASSERT(offsetof(SizedResult<int8>, size) == 0,
                OffsetOf_SizedResult_size_not_0);
 COMPILE_ASSERT(offsetof(SizedResult<int8>, data) == 4,
                OffsetOf_SizedResult_data_not_4);
+
+// The data for one attrib or uniform from GetProgramInfoCHROMIUM.
+struct ProgramInput {
+  uint32 type;             // The type (GL_VEC3, GL_MAT3, GL_SAMPLER_2D, etc.
+  int32 size;              // The size (how big the array is for uniforms)
+  uint32 location_offset;  // offset from ProgramInfoHeader to 'size' locations
+                           // for uniforms, 1 for attribs.
+  uint32 name_offset;      // offset from ProgrmaInfoHeader to start of name.
+  uint32 name_length;      // length of the name.
+};
+
+// The format of the bucket filled out by GetProgramInfoCHROMIUM
+struct ProgramInfoHeader {
+  uint32 link_status;
+  uint32 num_attribs;
+  uint32 num_uniforms;
+  // ProgramInput inputs[num_attribs + num_uniforms];
+};
+
+COMPILE_ASSERT(sizeof(ProgramInput) == 20, ProgramInput_size_not_20);
+COMPILE_ASSERT(offsetof(ProgramInput, type) == 0,
+               OffsetOf_ProgramInput_type_not_0);
+COMPILE_ASSERT(offsetof(ProgramInput, size) == 4,
+               OffsetOf_ProgramInput_size_not_4);
+COMPILE_ASSERT(offsetof(ProgramInput, location_offset) == 8,
+               OffsetOf_ProgramInput_location_offset_not_8);
+COMPILE_ASSERT(offsetof(ProgramInput, name_offset) == 12,
+               OffsetOf_ProgramInput_name_offset_not_12);
+COMPILE_ASSERT(offsetof(ProgramInput, name_length) == 16,
+               OffsetOf_ProgramInput_name_length_not_16);
+
+COMPILE_ASSERT(sizeof(ProgramInfoHeader) == 12, ProgramInfoHeader_size_not_12);
+COMPILE_ASSERT(offsetof(ProgramInfoHeader, link_status) == 0,
+               OffsetOf_ProgramInfoHeader_link_status_not_0);
+COMPILE_ASSERT(offsetof(ProgramInfoHeader, num_attribs) == 4,
+               OffsetOf_ProgramInfoHeader_num_attribs_not_4);
+COMPILE_ASSERT(offsetof(ProgramInfoHeader, num_uniforms) == 8,
+               OffsetOf_ProgramInfoHeader_num_uniforms_not_8);
 
 #include "../common/gles2_cmd_format_autogen.h"
 

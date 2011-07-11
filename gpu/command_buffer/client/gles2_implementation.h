@@ -424,6 +424,9 @@ class GLES2Implementation {
   // Whether or not to print debugging info.
   bool debug_;
 
+  // Whether or not this context is sharing resources.
+  bool sharing_resources_;
+
   // Map of GLenum to Strings for glGetString.  We need to cache these because
   // the pointer passed back to the client has to remain valid for eternity.
   typedef std::map<uint32, std::set<std::string> > GLStringMap;

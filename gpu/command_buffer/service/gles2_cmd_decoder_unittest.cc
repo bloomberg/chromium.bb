@@ -4319,6 +4319,34 @@ TEST_F(GLES2DecoderManualInitTest, GetNoCompressedTextureFormats) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
+TEST_F(GLES2DecoderWithShaderTest, GetProgramInfoCHROMIUMValidArgs) {
+  const uint32 kBucketId = 123;
+  GetProgramInfoCHROMIUM cmd;
+  cmd.Init(client_program_id_, kBucketId);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  CommonDecoder::Bucket* bucket = decoder_->GetBucket(kBucketId);
+  EXPECT_GT(bucket->size(), 0u);
+}
+
+TEST_F(GLES2DecoderWithShaderTest, GetProgramInfoCHROMIUMInvalidArgs) {
+  const uint32 kBucketId = 123;
+  CommonDecoder::Bucket* bucket = decoder_->GetBucket(kBucketId);
+  EXPECT_TRUE(bucket == NULL);
+  GetProgramInfoCHROMIUM cmd;
+  cmd.Init(kInvalidClientId, kBucketId);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+  bucket = decoder_->GetBucket(kBucketId);
+  ASSERT_TRUE(bucket != NULL);
+  EXPECT_EQ(sizeof(ProgramInfoHeader), bucket->size());
+  ProgramInfoHeader* info = bucket->GetDataAs<ProgramInfoHeader*>(
+      0, sizeof(ProgramInfoHeader));
+  ASSERT_TRUE(info != 0);
+  EXPECT_EQ(0u, info->link_status);
+  EXPECT_EQ(0u, info->num_attribs);
+  EXPECT_EQ(0u, info->num_uniforms);
+}
+
 // TODO(gman): Complete this test.
 // TEST_F(GLES2DecoderTest, CompressedTexImage2DGLError) {
 // }
