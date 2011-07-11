@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "views/events/event.h"
 #include "views/ime/input_method.h"
 #include "views/widget/widget.h"
@@ -137,7 +138,7 @@ bool SendKeyboardEventInputFunction::RunImpl() {
 #if defined(TOUCH_UI)
 bool HideKeyboardFunction::RunImpl() {
   NotificationService::current()->Notify(
-      chrome::HIDE_KEYBOARD_INVOKED,
+      chrome::NOTIFICATION_HIDE_KEYBOARD_INVOKED,
       Source<HideKeyboardFunction>(this),
       NotificationService::NoDetails());
   return true;
@@ -156,7 +157,7 @@ bool SetKeyboardHeightFunction::RunImpl() {
   // and set the height of virtual keyboard directly instead of using
   // notification.
   NotificationService::current()->Notify(
-      chrome::SET_KEYBOARD_HEIGHT_INVOKED,
+      chrome::NOTIFICATION_SET_KEYBOARD_HEIGHT_INVOKED,
       Source<SetKeyboardHeightFunction>(this),
       Details<int>(&height));
   return true;

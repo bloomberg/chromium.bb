@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "grit/chromium_strings.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
@@ -48,7 +49,7 @@ ui::TouchStatus BrowserRootView::OnTouchEvent(const views::TouchEvent& event) {
   ui::TextInputType text_input_type = input_method->GetTextInputType();
   if (text_input_type != ui::TEXT_INPUT_TYPE_NONE) {
     NotificationService::current()->Notify(
-        chrome::EDITABLE_ELEMENT_TOUCHED,
+        chrome::NOTIFICATION_EDITABLE_ELEMENT_TOUCHED,
         Source<View>(this),
         Details<ui::TextInputType>(&text_input_type));
   }
