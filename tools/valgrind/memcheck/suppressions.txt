@@ -4846,6 +4846,22 @@
    ...
    fun:_ZN11ProfileImplC1ERK8FilePathPN7Profile8DelegateE
 }
+{
+   bug_88863_a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3IPC11SyncMessage13GenerateReplyEPKNS_7MessageE
+   fun:_ZN3IPC16MessageWithReplyI6Tuple1IbES1_IRSt6vectorIN6webkit5npapi13WebPluginInfoESaIS6_EEEE8DispatchI19RenderMessageFilterSD_MSD_FvbPS8_EEEbPKNS_7MessageEPT_PT0_T1_
+   fun:_ZN19RenderMessageFilter17OnMessageReceivedERKN3IPC7MessageEPb
+}
+{
+   bug_88863_b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocatorI13scoped_refptrIN3IPC12ChannelProxy13MessageFilterEEE8allocateEjPKv
+   fun:_ZNSt12_Vector_baseI13scoped_refptrIN3IPC12ChannelProxy13MessageFilterEESaIS4_EE11_M_allocateEj
+   fun:_ZNSt6vectorI13scoped_refptrIN3IPC12ChannelProxy13MessageFilterEESaIS4_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS4_S6_EERKS4_
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
