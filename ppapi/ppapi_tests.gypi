@@ -79,6 +79,8 @@
         'tests/test_c_includes.c',
         'tests/test_char_set.cc',
         'tests/test_char_set.h',
+        'tests/test_core.cc',
+        'tests/test_core.h',
         'tests/test_cpp_includes.cc',
         'tests/test_cursor_control.cc',
         'tests/test_cursor_control.h',

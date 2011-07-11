@@ -35,8 +35,8 @@ base::Time PPTimeToTime(PP_Time t) {
 }
 
 PP_TimeTicks TimeTicksToPPTimeTicks(base::TimeTicks t) {
-  return static_cast<double>(t.ToInternalValue() /
-                             base::Time::kMicrosecondsPerSecond);
+  return static_cast<double>(t.ToInternalValue()) /
+      base::Time::kMicrosecondsPerSecond;
 }
 
 PP_TimeTicks EventTimeToPPTimeTicks(double event_time) {

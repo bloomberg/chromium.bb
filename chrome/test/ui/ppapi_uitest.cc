@@ -132,6 +132,13 @@ TEST_F(PPAPITest, Broker) {
   RunTest("Broker");
 }
 
+TEST_F(PPAPITest, Core) {
+  RunTest("Core");
+}
+TEST_F(OutOfProcessPPAPITest, Core) {
+  RunTest("Core");
+}
+
 TEST_F(PPAPITest, CursorControl) {
   RunTest("CursorControl");
 }
