@@ -234,6 +234,8 @@
         'command_buffer/service/surface_manager.h',
         'command_buffer/service/texture_manager.h',
         'command_buffer/service/texture_manager.cc',
+        'command_buffer/service/vertex_attrib_manager.h',
+        'command_buffer/service/vertex_attrib_manager.cc',
       ],
       'conditions': [
         ['toolkit_uses_gtk == 1', {
@@ -309,6 +311,7 @@
         'command_buffer/service/test_helper.cc',
         'command_buffer/service/test_helper.h',
         'command_buffer/service/texture_manager_unittest.cc',
+        'command_buffer/service/vertex_attrib_manager_unittest.cc',
       ],
     },
     {
