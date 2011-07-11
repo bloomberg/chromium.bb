@@ -27,6 +27,14 @@
 #include "base/synchronization/waitable_event.h"
 #include "net/base/net_errors.h"
 
+#if defined(OS_ANDROID)
+// Android's bionic libc only supports the LFS transitional API.
+#define off_t off64_t
+#define lseek lseek64
+#define stat stat64
+#define fstat fstat64
+#endif
+
 namespace net {
 
 // We cast back and forth, so make sure it's the size we're expecting.
