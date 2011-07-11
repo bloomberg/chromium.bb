@@ -25,21 +25,8 @@ class VertexAttribManager {
       float v[4];
     };
 
-    VertexAttribInfo()
-        : index_(0),
-          enabled_(false),
-          size_(4),
-          type_(GL_FLOAT),
-          offset_(0),
-          normalized_(GL_FALSE),
-          gl_stride_(0),
-          real_stride_(16),
-          list_(NULL) {
-      value_.v[0] = 0.0f;
-      value_.v[1] = 0.0f;
-      value_.v[2] = 0.0f;
-      value_.v[3] = 1.0f;
-    }
+    VertexAttribInfo();
+    ~VertexAttribInfo();
 
     // Returns true if this VertexAttrib can access index.
     bool CanAccess(GLuint index) const;
@@ -164,10 +151,8 @@ class VertexAttribManager {
 
   typedef std::list<VertexAttribInfo*> VertexAttribInfoList;
 
-  VertexAttribManager()
-      : max_vertex_attribs_(0),
-        num_fixed_attribs_(0) {
-  }
+  VertexAttribManager();
+  ~VertexAttribManager();
 
   void Initialize(uint32 num_vertex_attribs);
 

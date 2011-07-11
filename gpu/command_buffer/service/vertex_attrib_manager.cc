@@ -17,6 +17,25 @@
 namespace gpu {
 namespace gles2 {
 
+VertexAttribManager::VertexAttribInfo::VertexAttribInfo()
+    : index_(0),
+      enabled_(false),
+      size_(4),
+      type_(GL_FLOAT),
+      offset_(0),
+      normalized_(GL_FALSE),
+      gl_stride_(0),
+      real_stride_(16),
+      list_(NULL) {
+  value_.v[0] = 0.0f;
+  value_.v[1] = 0.0f;
+  value_.v[2] = 0.0f;
+  value_.v[3] = 1.0f;
+}
+
+VertexAttribManager::VertexAttribInfo::~VertexAttribInfo() {
+}
+
 bool VertexAttribManager::VertexAttribInfo::CanAccess(GLuint index) const {
   if (!enabled_) {
     return true;
@@ -39,6 +58,13 @@ bool VertexAttribManager::VertexAttribInfo::CanAccess(GLuint index) const {
   return index < num_elements;
 }
 
+VertexAttribManager::VertexAttribManager()
+    : max_vertex_attribs_(0),
+      num_fixed_attribs_(0) {
+}
+
+VertexAttribManager::~VertexAttribManager() {
+}
 
 void VertexAttribManager::Initialize(uint32 max_vertex_attribs) {
   max_vertex_attribs_ = max_vertex_attribs;
@@ -61,6 +87,7 @@ bool VertexAttribManager::Enable(GLuint index, bool enable) {
   }
   return true;
 }
+
 
 }  // namespace gles2
 }  // namespace gpu
