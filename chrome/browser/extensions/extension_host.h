@@ -138,6 +138,14 @@ class ExtensionHost : public RenderViewHostDelegate,
                                     bool* did_suppress_message);
   virtual void Close(RenderViewHost* render_view_host);
   virtual RendererPreferences GetRendererPrefs(Profile* profile) const;
+  virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
+                                      bool* is_keyboard_shortcut);
+  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
+  virtual void HandleMouseMove();
+  virtual void HandleMouseDown();
+  virtual void HandleMouseLeave();
+  virtual void HandleMouseUp();
+  virtual void HandleMouseActivate();
 
   // RenderViewHostDelegate::View
   virtual void CreateNewWindow(
@@ -166,17 +174,6 @@ class ExtensionHost : public RenderViewHostDelegate,
   virtual void UpdateDragCursor(WebKit::WebDragOperation operation);
   virtual void GotFocus();
   virtual void TakeFocus(bool reverse);
-  virtual void LostCapture();
-  virtual void Activate();
-  virtual void Deactivate();
-  virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
-                                      bool* is_keyboard_shortcut);
-  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
-  virtual void HandleMouseMove();
-  virtual void HandleMouseDown();
-  virtual void HandleMouseLeave();
-  virtual void HandleMouseUp();
-  virtual void HandleMouseActivate();
   virtual void UpdatePreferredSize(const gfx::Size& new_size);
   virtual void UpdateInspectorSetting(const std::string& key,
                                       const std::string& value);

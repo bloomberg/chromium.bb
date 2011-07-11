@@ -98,9 +98,8 @@ class TabContentsView : public RenderViewHostDelegate::View {
   void RenderWidgetHostDestroyed(RenderWidgetHost* host);
 
   // Invoked when the TabContents is notified that the RenderView has been
-  // fully created. The default implementation does nothing; override
-  // for platform-specific behavior is needed.
-  virtual void RenderViewCreated(RenderViewHost* host);
+  // fully created.
+  virtual void RenderViewCreated(RenderViewHost* host) {}
 
   // Sets focus to the native widget for this tab.
   virtual void Focus() = 0;
@@ -116,29 +115,8 @@ class TabContentsView : public RenderViewHostDelegate::View {
   // invoked, SetInitialFocus is invoked.
   virtual void RestoreFocus() = 0;
 
-  // RenderViewHostDelegate::View method. Forwards to the TabContentsDelegate.
-  virtual void LostCapture();
-
-  // Keyboard events forwarding from the RenderViewHost.
-  // The default implementation just forward the events to the
-  // TabContentsDelegate object.
-  virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
-                                      bool* is_keyboard_shortcut);
-
-  // Keyboard events forwarding from the RenderViewHost.
-  // The default implementation just forward the events to the
-  // TabContentsDelegate object.
-  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
-
-  // Simple mouse event forwarding from the RenderViewHost.
-  virtual void HandleMouseMove() {}
-  virtual void HandleMouseDown() {}
-  virtual void HandleMouseLeave() {}
-  virtual void HandleMouseUp();
-  virtual void HandleMouseActivate();
-
   // Notification that the preferred size of the contents has changed.
-  virtual void UpdatePreferredSize(const gfx::Size& pref_size);
+  virtual void UpdatePreferredSize(const gfx::Size& pref_size) {}
 
   // If we try to close the tab while a drag is in progress, we crash.  These
   // methods allow the tab contents to determine if a drag is in progress and
@@ -196,8 +174,6 @@ class TabContentsView : public RenderViewHostDelegate::View {
                                  const gfx::Rect& initial_pos,
                                  bool user_gesture);
   virtual void ShowCreatedWidget(int route_id, const gfx::Rect& initial_pos);
-  virtual void Activate();
-  virtual void Deactivate();
   virtual void ShowCreatedFullscreenWidget(int route_id);
 
   // The TabContents whose contents we display.

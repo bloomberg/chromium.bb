@@ -39,7 +39,7 @@ TEST_F(PrintPreviewTabControllerTest, GetOrCreatePreviewTab) {
   EXPECT_NE(initiator_tab, preview_tab);
 
   // Activate initiator_tab.
-  initiator_tab->Activate();
+  static_cast<RenderViewHostDelegate*>(initiator_tab)->Activate();
 
   // Get the print preview tab for initiator tab.
   TabContents* new_preview_tab =
@@ -104,7 +104,7 @@ TEST_F(PrintPreviewTabControllerTest, MultiplePreviewTabs) {
   EXPECT_EQ(preview_tab_2_index, browser()->active_index());
 
   // Activate |tab_contents_1| tab.
-  tab_contents_1->Activate();
+  static_cast<RenderViewHostDelegate*>(tab_contents_1)->Activate();
 
   // When we get the preview tab for |tab_contents_1|,
   // |preview_tab_1| is activated and focused.
@@ -143,7 +143,7 @@ TEST_F(PrintPreviewTabControllerTest, ClearInitiatorTabDetails) {
   tab_controller->EraseInitiatorTabInfo(preview_tab);
 
   // Activate initiator_tab.
-  initiator_tab->Activate();
+  static_cast<RenderViewHostDelegate*>(initiator_tab)->Activate();
 
   // Get the print preview tab for initiator tab.
   TabContents* new_preview_tab =

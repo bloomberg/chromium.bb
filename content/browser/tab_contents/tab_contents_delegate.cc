@@ -208,13 +208,6 @@ gfx::NativeWindow TabContentsDelegate::GetFrameNativeWindow() {
 void TabContentsDelegate::TabContentsCreated(TabContents* new_contents) {
 }
 
-bool TabContentsDelegate::ShouldEnablePreferredSizeNotifications() {
-  return false;
-}
-
-void TabContentsDelegate::UpdatePreferredSize(const gfx::Size& pref_size) {
-}
-
 void TabContentsDelegate::ContentRestrictionsChanged(TabContents* source) {
 }
 

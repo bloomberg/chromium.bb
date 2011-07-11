@@ -206,7 +206,8 @@ void ExtensionProcessManager::OpenOptionsPage(const Extension* extension,
   browser->OpenURL(extension->options_url(), GURL(), SINGLETON_TAB,
                    PageTransition::LINK);
   browser->window()->Show();
-  browser->GetSelectedTabContents()->Activate();
+  static_cast<RenderViewHostDelegate*>(browser->GetSelectedTabContents())->
+      Activate();
 }
 
 ExtensionHost* ExtensionProcessManager::GetBackgroundHostForExtension(

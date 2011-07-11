@@ -115,12 +115,6 @@ void BackgroundContents::RunJavaScriptMessage(
   *did_suppress_message = true;
 }
 
-bool BackgroundContents::PreHandleKeyboardEvent(
-    const NativeWebKeyboardEvent& event,
-    bool* is_keyboard_shortcut) {
-  return false;
-}
-
 void BackgroundContents::Observe(int type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {

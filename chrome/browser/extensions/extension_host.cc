@@ -541,6 +541,54 @@ RenderViewHostDelegate::View* ExtensionHost::GetViewDelegate() {
   return this;
 }
 
+bool ExtensionHost::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
+                                           bool* is_keyboard_shortcut) {
+  if (extension_host_type_ == ViewType::EXTENSION_POPUP &&
+      event.type == NativeWebKeyboardEvent::RawKeyDown &&
+      event.windowsKeyCode == ui::VKEY_ESCAPE) {
+    DCHECK(is_keyboard_shortcut != NULL);
+    *is_keyboard_shortcut = true;
+  }
+  return false;
+}
+
+void ExtensionHost::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
+  if (extension_host_type_ == ViewType::EXTENSION_POPUP) {
+    if (event.type == NativeWebKeyboardEvent::RawKeyDown &&
+        event.windowsKeyCode == ui::VKEY_ESCAPE) {
+      NotificationService::current()->Notify(
+          chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
+          Source<Profile>(profile_),
+          Details<ExtensionHost>(this));
+      return;
+    }
+  }
+  UnhandledKeyboardEvent(event);
+}
+
+void ExtensionHost::HandleMouseMove() {
+#if defined(OS_WIN)
+  if (view_.get())
+    view_->HandleMouseMove();
+#endif
+}
+
+void ExtensionHost::HandleMouseDown() {
+}
+
+void ExtensionHost::HandleMouseLeave() {
+#if defined(OS_WIN)
+  if (view_.get())
+    view_->HandleMouseLeave();
+#endif
+}
+
+void ExtensionHost::HandleMouseUp() {
+}
+
+void ExtensionHost::HandleMouseActivate() {
+}
+
 void ExtensionHost::CreateNewWindow(
     int route_id,
     const ViewHostMsg_CreateWindow_Params& params) {
@@ -711,63 +759,6 @@ void ExtensionHost::GotFocus() {
 }
 
 void ExtensionHost::TakeFocus(bool reverse) {
-}
-
-void ExtensionHost::LostCapture() {
-}
-
-void ExtensionHost::Activate() {
-}
-
-void ExtensionHost::Deactivate() {
-}
-
-bool ExtensionHost::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
-                                           bool* is_keyboard_shortcut) {
-  if (extension_host_type_ == ViewType::EXTENSION_POPUP &&
-      event.type == NativeWebKeyboardEvent::RawKeyDown &&
-      event.windowsKeyCode == ui::VKEY_ESCAPE) {
-    DCHECK(is_keyboard_shortcut != NULL);
-    *is_keyboard_shortcut = true;
-  }
-  return false;
-}
-
-void ExtensionHost::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
-  if (extension_host_type_ == ViewType::EXTENSION_POPUP) {
-    if (event.type == NativeWebKeyboardEvent::RawKeyDown &&
-        event.windowsKeyCode == ui::VKEY_ESCAPE) {
-      NotificationService::current()->Notify(
-          chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
-          Source<Profile>(profile_),
-          Details<ExtensionHost>(this));
-      return;
-    }
-  }
-  UnhandledKeyboardEvent(event);
-}
-
-void ExtensionHost::HandleMouseMove() {
-#if defined(OS_WIN)
-  if (view_.get())
-    view_->HandleMouseMove();
-#endif
-}
-
-void ExtensionHost::HandleMouseDown() {
-}
-
-void ExtensionHost::HandleMouseLeave() {
-#if defined(OS_WIN)
-  if (view_.get())
-    view_->HandleMouseLeave();
-#endif
-}
-
-void ExtensionHost::HandleMouseUp() {
-}
-
-void ExtensionHost::HandleMouseActivate() {
 }
 
 ViewType::Type ExtensionHost::GetRenderViewType() const {

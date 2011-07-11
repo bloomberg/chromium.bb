@@ -921,8 +921,10 @@ void TaskManager::ActivateProcess(int index) {
   // the Browser process or a plugin), GetTabContents will return NULL.
   TabContentsWrapper* chosen_tab_contents =
       model_->GetResourceTabContents(index);
-  if (chosen_tab_contents)
-    chosen_tab_contents->tab_contents()->Activate();
+  if (chosen_tab_contents) {
+    static_cast<RenderViewHostDelegate*>(chosen_tab_contents->tab_contents())->
+        Activate();
+  }
 }
 
 void TaskManager::AddResource(Resource* resource) {

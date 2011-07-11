@@ -256,16 +256,6 @@ class TabContentsDelegate {
   // typically happens when popups are created.
   virtual void TabContentsCreated(TabContents* new_contents);
 
-  // Whether the renderer should report its preferred size when it changes by
-  // calling UpdatePreferredSize().
-  // Note that this is set when the RenderViewHost is created and cannot be
-  // changed after that.
-  virtual bool ShouldEnablePreferredSizeNotifications();
-
-  // Notification that the preferred size of the contents has changed.
-  // Only called if ShouldEnablePreferredSizeNotifications() returns true.
-  virtual void UpdatePreferredSize(const gfx::Size& pref_size);
-
   // Notifies the delegate that the content restrictions for this tab has
   // changed.
   virtual void ContentRestrictionsChanged(TabContents* source);

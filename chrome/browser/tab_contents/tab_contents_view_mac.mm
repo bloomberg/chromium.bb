@@ -236,7 +236,6 @@ void TabContentsViewMac::RestoreFocus() {
 
 void TabContentsViewMac::UpdatePreferredSize(const gfx::Size& pref_size) {
   preferred_width_ = pref_size.width();
-  TabContentsView::UpdatePreferredSize(pref_size);
 }
 
 void TabContentsViewMac::UpdateDragCursor(WebDragOperation operation) {

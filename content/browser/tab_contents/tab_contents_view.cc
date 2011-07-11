@@ -26,10 +26,6 @@ void TabContentsView::RenderWidgetHostDestroyed(RenderWidgetHost* host) {
   delegate_view_helper_.RenderWidgetHostDestroyed(host);
 }
 
-void TabContentsView::RenderViewCreated(RenderViewHost* host) {
-  // Default implementation does nothing. Platforms may override.
-}
-
 void TabContentsView::CreateNewWindow(
     int route_id,
     const ViewHostMsg_CreateWindow_Params& params) {
@@ -85,35 +81,10 @@ void TabContentsView::ShowCreatedWidget(int route_id,
   ShowCreatedWidgetInternal(widget_host_view, initial_pos);
 }
 
-void TabContentsView::Activate() {
-  tab_contents_->Activate();
-}
-
-void TabContentsView::Deactivate() {
-  tab_contents_->Deactivate();
-}
-
 void TabContentsView::ShowCreatedFullscreenWidget(int route_id) {
   RenderWidgetHostView* widget_host_view =
       delegate_view_helper_.GetCreatedWidget(route_id);
   ShowCreatedFullscreenWidgetInternal(widget_host_view);
-}
-
-void TabContentsView::LostCapture() {
-  if (tab_contents_->delegate())
-    tab_contents_->delegate()->LostCapture();
-}
-
-bool TabContentsView::PreHandleKeyboardEvent(
-    const NativeWebKeyboardEvent& event, bool* is_keyboard_shortcut) {
-  return tab_contents_->delegate() &&
-    tab_contents_->delegate()->PreHandleKeyboardEvent(
-        event, is_keyboard_shortcut);
-}
-
-void TabContentsView::UpdatePreferredSize(const gfx::Size& pref_size) {
-  if (tab_contents_->delegate())
-    tab_contents_->delegate()->UpdatePreferredSize(pref_size);
 }
 
 bool TabContentsView::IsDoingDrag() const {
@@ -125,21 +96,6 @@ bool TabContentsView::IsEventTracking() const {
 }
 
 TabContentsView::TabContentsView() : tab_contents_(NULL) {}
-
-void TabContentsView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
-  if (tab_contents_->delegate())
-    tab_contents_->delegate()->HandleKeyboardEvent(event);
-}
-
-void TabContentsView::HandleMouseUp() {
-  if (tab_contents_->delegate())
-    tab_contents_->delegate()->HandleMouseUp();
-}
-
-void TabContentsView::HandleMouseActivate() {
-  if (tab_contents_->delegate())
-    tab_contents_->delegate()->HandleMouseActivate();
-}
 
 RenderWidgetHostView* TabContentsView::CreateNewWidgetInternal(
     int route_id, WebKit::WebPopupType popup_type) {

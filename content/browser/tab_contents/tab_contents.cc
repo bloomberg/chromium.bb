@@ -469,6 +469,32 @@ void TabContents::Deactivate() {
     delegate_->DeactivateContents(this);
 }
 
+void TabContents::LostCapture() {
+  if (delegate_)
+    delegate_->LostCapture();
+}
+
+bool TabContents::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
+                                         bool* is_keyboard_shortcut) {
+  return delegate_ &&
+      delegate_->PreHandleKeyboardEvent(event, is_keyboard_shortcut);
+}
+
+void TabContents::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
+  if (delegate_)
+    delegate_->HandleKeyboardEvent(event);
+}
+
+void TabContents::HandleMouseUp() {
+  if (delegate_)
+    delegate_->HandleMouseUp();
+}
+
+void TabContents::HandleMouseActivate() {
+  if (delegate_)
+    delegate_->HandleMouseActivate();
+}
+
 void TabContents::ShowContents() {
   RenderWidgetHostView* rwhv = GetRenderWidgetHostView();
   if (rwhv)
@@ -514,12 +540,6 @@ bool TabContents::NavigateToEntry(
   RenderViewHost* dest_render_view_host = render_manager_.Navigate(entry);
   if (!dest_render_view_host)
     return false;  // Unable to create the desired render view host.
-
-  if (delegate_ && delegate_->ShouldEnablePreferredSizeNotifications()) {
-    dest_render_view_host->Send(new ViewMsg_EnablePreferredSizeChangedMode(
-        dest_render_view_host->routing_id(),
-        kPreferredSizeWidth | kPreferredSizeHeightThisIsSlow));
-  }
 
   // For security, we should never send non-Web-UI URLs to a Web UI renderer.
   // Double check that here.

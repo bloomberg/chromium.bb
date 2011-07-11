@@ -55,7 +55,7 @@ TabContents* PrintPreviewTabController::GetOrCreatePreviewTab(
   TabContents* preview_tab = GetPrintPreviewForTab(initiator_tab);
   if (preview_tab) {
     // Show current preview tab.
-    preview_tab->Activate();
+    static_cast<RenderViewHostDelegate*>(preview_tab)->Activate();
     return preview_tab;
   }
   return CreatePrintPreviewTab(initiator_tab);
@@ -221,7 +221,7 @@ TabContents* PrintPreviewTabController::CreatePrintPreviewTab(
       GetWrapperIndex(initiator_tab) + 1;
   browser::Navigate(&params);
   TabContentsWrapper* preview_tab = params.target_contents;
-  preview_tab->tab_contents()->Activate();
+  static_cast<RenderViewHostDelegate*>(preview_tab->tab_contents())->Activate();
 
   // Add an entry to the map.
   preview_tab_map_[preview_tab->tab_contents()] = initiator_tab;

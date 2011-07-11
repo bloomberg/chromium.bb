@@ -92,19 +92,6 @@ class MockDraggingRenderViewHostDelegateView
   virtual void UpdateDragCursor(WebKit::WebDragOperation operation) {}
   virtual void GotFocus() {}
   virtual void TakeFocus(bool reverse) {}
-  virtual void LostCapture() {}
-  virtual void Activate() {}
-  virtual void Deactivate() {}
-  virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
-                                      bool* is_keyboard_shortcut) {
-    return false;
-  }
-  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {}
-  virtual void HandleMouseMove() {}
-  virtual void HandleMouseDown() {}
-  virtual void HandleMouseLeave() {}
-  virtual void HandleMouseUp() {}
-  virtual void HandleMouseActivate() {}
   virtual void UpdatePreferredSize(const gfx::Size& pref_size) {}
 
   GURL drag_url() {

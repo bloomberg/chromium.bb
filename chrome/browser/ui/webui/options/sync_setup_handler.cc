@@ -329,7 +329,7 @@ void SyncSetupHandler::SetFlow(SyncSetupFlow* flow) {
 }
 
 void SyncSetupHandler::Focus() {
-  web_ui_->tab_contents()->Activate();
+  static_cast<RenderViewHostDelegate*>(web_ui_->tab_contents())->Activate();
 }
 
 void SyncSetupHandler::OnDidClosePage(const ListValue* args) {

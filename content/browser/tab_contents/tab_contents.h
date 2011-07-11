@@ -227,13 +227,6 @@ class TabContents : public PageNavigator,
   // NOTE: If you override this, call the superclass version too!
   virtual void WasHidden();
 
-  // Activates this contents within its containing window, bringing that window
-  // to the foreground if necessary.
-  void Activate();
-
-  // Deactivates this contents by deactivating its containing window.
-  void Deactivate();
-
   // TODO(brettw) document these.
   virtual void ShowContents();
   virtual void HideContents();
@@ -668,6 +661,14 @@ class TabContents : public PageNavigator,
   virtual void LoadStateChanged(const GURL& url, net::LoadState load_state,
                                 uint64 upload_position, uint64 upload_size);
   virtual void WorkerCrashed();
+  virtual void Activate();
+  virtual void Deactivate();
+  virtual void LostCapture();
+  virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
+                                      bool* is_keyboard_shortcut);
+  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
+  virtual void HandleMouseUp();
+  virtual void HandleMouseActivate();
 
   // RenderViewHostManager::Delegate -------------------------------------------
 

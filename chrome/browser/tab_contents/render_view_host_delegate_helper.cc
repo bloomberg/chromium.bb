@@ -22,6 +22,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/gpu/gpu_data_manager.h"
+#include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_widget_fullscreen_host.h"
@@ -212,8 +213,6 @@ void RenderViewHostDelegateViewHelper::RenderWidgetHostDestroyed(
   }
 }
 
-bool RenderViewHostDelegateHelper::gpu_enabled_ = true;
-
 // static
 WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
     Profile* profile, bool is_web_ui) {
@@ -296,7 +295,7 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
     web_prefs.webaudio_enabled =
         !command_line.HasSwitch(switches::kDisableWebAudio);
     web_prefs.experimental_webgl_enabled =
-        gpu_enabled() &&
+        GpuProcessHost::gpu_enabled() &&
         !command_line.HasSwitch(switches::kDisable3DAPIs) &&
         !prefs->GetBoolean(prefs::kDisable3DAPIs) &&
         !command_line.HasSwitch(switches::kDisableExperimentalWebGL);
@@ -313,15 +312,15 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
     web_prefs.show_fps_counter =
         command_line.HasSwitch(switches::kShowFPSCounter);
     web_prefs.accelerated_compositing_enabled =
-        gpu_enabled() &&
+        GpuProcessHost::gpu_enabled() &&
         !command_line.HasSwitch(switches::kDisableAcceleratedCompositing);
     web_prefs.force_compositing_mode =
         command_line.HasSwitch(switches::kForceCompositingMode);
     web_prefs.accelerated_2d_canvas_enabled =
-        gpu_enabled() &&
+        GpuProcessHost::gpu_enabled() &&
         !command_line.HasSwitch(switches::kDisableAccelerated2dCanvas);
     web_prefs.accelerated_drawing_enabled =
-        gpu_enabled() &&
+        GpuProcessHost::gpu_enabled() &&
         command_line.HasSwitch(switches::kEnableAcceleratedDrawing);
     web_prefs.accelerated_layers_enabled =
         !command_line.HasSwitch(switches::kDisableAcceleratedLayers);

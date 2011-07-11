@@ -59,7 +59,7 @@ void BackgroundPrintingManager::OwnTabContents(TabContentsWrapper* contents) {
       contents->tab_contents());
   if (!initiator_tab)
     return;
-  initiator_tab->Activate();
+  static_cast<RenderViewHostDelegate*>(initiator_tab)->Activate();
 }
 
 void BackgroundPrintingManager::Observe(int type,

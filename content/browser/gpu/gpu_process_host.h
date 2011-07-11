@@ -28,6 +28,8 @@ class GpuMainThread;
 class GpuProcessHost : public BrowserChildProcessHost,
                        public base::NonThreadSafe {
  public:
+  static bool gpu_enabled() { return gpu_enabled_; }
+
   // Creates a new GpuProcessHost or gets one for a particular
   // renderer process, resulting in the launching of a GPU process if required.
   // Returns null on failure. It is not safe to store the pointer once control
@@ -147,6 +149,11 @@ class GpuProcessHost : public BrowserChildProcessHost,
   bool in_process_;
 
   scoped_ptr<GpuMainThread> in_process_gpu_thread_;
+
+  // Master switch for enabling/disabling GPU acceleration for the current
+  // browser session. It does not change the acceleration settings for
+  // existing tabs, just the future ones.
+  static bool gpu_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuProcessHost);
 };

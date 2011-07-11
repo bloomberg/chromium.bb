@@ -578,10 +578,7 @@ void RenderViewHost::GotFocus() {
 
 void RenderViewHost::LostCapture() {
   RenderWidgetHost::LostCapture();
-
-  RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
-  if (view)
-    view->LostCapture();
+  delegate_->LostCapture();
 }
 
 void RenderViewHost::SetInitialFocus(bool reverse) {
@@ -1084,15 +1081,12 @@ void RenderViewHost::RemoveObserver(RenderViewHostObserver* observer) {
 
 bool RenderViewHost::PreHandleKeyboardEvent(
     const NativeWebKeyboardEvent& event, bool* is_keyboard_shortcut) {
-  RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
-  return view && view->PreHandleKeyboardEvent(event, is_keyboard_shortcut);
+  return delegate_->PreHandleKeyboardEvent(event, is_keyboard_shortcut);
 }
 
 void RenderViewHost::UnhandledKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
-  RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
-  if (view)
-    view->HandleKeyboardEvent(event);
+  delegate_->HandleKeyboardEvent(event);
 }
 
 void RenderViewHost::OnUserGesture() {
@@ -1135,15 +1129,11 @@ void RenderViewHost::NotifyRendererResponsive() {
 }
 
 void RenderViewHost::OnMsgFocus() {
-  RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
-  if (view)
-    view->Activate();
+  delegate_->Activate();
 }
 
 void RenderViewHost::OnMsgBlur() {
-  RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
-  if (view)
-    view->Deactivate();
+  delegate_->Deactivate();
 }
 
 void RenderViewHost::ForwardMouseEvent(
@@ -1154,35 +1144,30 @@ void RenderViewHost::ForwardMouseEvent(
   WebKit::WebMouseEvent event_copy(mouse_event);
   RenderWidgetHost::ForwardMouseEvent(event_copy);
 
-  RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
-  if (view) {
-    switch (event_copy.type) {
-      case WebInputEvent::MouseMove:
-        view->HandleMouseMove();
-        break;
-      case WebInputEvent::MouseLeave:
-        view->HandleMouseLeave();
-        break;
-      case WebInputEvent::MouseDown:
-        view->HandleMouseDown();
-        break;
-      case WebInputEvent::MouseWheel:
-        if (ignore_input_events())
-          delegate_->OnIgnoredUIEvent();
-        break;
-      case WebInputEvent::MouseUp:
-        view->HandleMouseUp();
-      default:
-        // For now, we don't care about the rest.
-        break;
-    }
+  switch (event_copy.type) {
+    case WebInputEvent::MouseMove:
+      delegate_->HandleMouseMove();
+      break;
+    case WebInputEvent::MouseLeave:
+      delegate_->HandleMouseLeave();
+      break;
+    case WebInputEvent::MouseDown:
+      delegate_->HandleMouseDown();
+      break;
+    case WebInputEvent::MouseWheel:
+      if (ignore_input_events())
+        delegate_->OnIgnoredUIEvent();
+      break;
+    case WebInputEvent::MouseUp:
+      delegate_->HandleMouseUp();
+    default:
+      // For now, we don't care about the rest.
+      break;
   }
 }
 
 void RenderViewHost::OnMouseActivate() {
-  RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
-  if (view)
-    view->HandleMouseActivate();
+  delegate_->HandleMouseActivate();
 }
 
 void RenderViewHost::ForwardKeyboardEvent(

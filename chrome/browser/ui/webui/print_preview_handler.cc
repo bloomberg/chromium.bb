@@ -604,7 +604,7 @@ void PrintPreviewHandler::ReportStats() {
 void PrintPreviewHandler::ActivateInitiatorTabAndClosePreviewTab() {
   TabContents* initiator_tab = GetInitiatorTab();
   if (initiator_tab)
-    initiator_tab->Activate();
+    static_cast<RenderViewHostDelegate*>(initiator_tab)->Activate();
   ClosePrintPreviewTab();
 }
 
@@ -650,10 +650,7 @@ void PrintPreviewHandler::ClosePrintPreviewTab() {
 }
 
 void PrintPreviewHandler::OnPrintDialogShown() {
-  TabContents* initiator_tab = GetInitiatorTab();
-  DCHECK(initiator_tab);
-
-  initiator_tab->Activate();
+  static_cast<RenderViewHostDelegate*>(GetInitiatorTab())->Activate();
   ClosePrintPreviewTab();
 }
 

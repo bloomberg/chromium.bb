@@ -11,7 +11,6 @@
 #include "base/process_util.h"
 #include "base/string_piece.h"
 #include "base/threading/thread.h"
-#include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/gpu/gpu_data_manager.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
@@ -30,6 +29,8 @@
 #if defined(TOOLKIT_USES_GTK)
 #include "ui/gfx/gtk_native_view_id_manager.h"
 #endif
+
+bool GpuProcessHost::gpu_enabled_ = true;
 
 namespace {
 
@@ -502,17 +503,15 @@ void GpuProcessHost::OnProcessCrashed(int exit_code) {
   SendOutstandingReplies();
   if (++g_gpu_crash_count >= kGpuMaxCrashCount) {
     // The gpu process is too unstable to use. Disable it for current session.
-    RenderViewHostDelegateHelper::set_gpu_enabled(false);
+    gpu_enabled_ = false;
   }
   BrowserChildProcessHost::OnProcessCrashed(exit_code);
 }
 
 bool GpuProcessHost::LaunchGpuProcess() {
-  if (!RenderViewHostDelegateHelper::gpu_enabled() ||
-      g_gpu_crash_count >= kGpuMaxCrashCount)
-  {
+  if (!gpu_enabled_ || g_gpu_crash_count >= kGpuMaxCrashCount) {
     SendOutstandingReplies();
-    RenderViewHostDelegateHelper::set_gpu_enabled(false);
+    gpu_enabled_ = false;
     return false;
   }
 
