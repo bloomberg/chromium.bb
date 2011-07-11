@@ -218,15 +218,17 @@ class RenderWidget : public IPC::Channel::Listener,
   virtual void DidFlushPaint() {}
 
   // Override and return true when the widget is rendered with a graphics
-  // context that supports asynchronous swapbuffers. When returning true,
-  // the subclass must call RenderWidget::OnSwapBuffersComplete() when
-  // swaps complete, and OnSwapBuffersAborted if the context is lost.
+  // context that supports asynchronous swapbuffers. When returning true, the
+  // subclass must call OnSwapBuffersPosted() when swap is posted,
+  // OnSwapBuffersComplete() when swaps complete, and OnSwapBuffersAborted if
+  // the context is lost.
   virtual bool SupportsAsynchronousSwapBuffers();
 
   // Notifies scheduler that the RenderWidget's subclass has finished or aborted
   // a swap buffers.
-  void OnSwapBuffersAborted();
+  void OnSwapBuffersPosted();
   void OnSwapBuffersComplete();
+  void OnSwapBuffersAborted();
 
   // Detects if a suitable opaque plugin covers the given paint bounds with no
   // compositing necessary.

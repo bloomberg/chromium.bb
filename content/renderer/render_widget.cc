@@ -387,8 +387,13 @@ void RenderWidget::OnSwapBuffersAborted()
   scheduleComposite();
 }
 
-void RenderWidget::OnSwapBuffersComplete()
-{
+void RenderWidget::OnSwapBuffersPosted() {
+  TRACE_EVENT0("renderer", "RenderWidget::OnSwapBuffersPosted");
+  if (using_asynchronous_swapbuffers_)
+    num_swapbuffers_complete_pending_++;
+}
+
+void RenderWidget::OnSwapBuffersComplete() {
   TRACE_EVENT0("renderer", "RenderWidget::OnSwapBuffersComplete");
   // When compositing deactivates, we reset the swapbuffers pending count.  The
   // swapbuffers acks may still arrive, however.
@@ -800,8 +805,6 @@ void RenderWidget::DoDeferredUpdate() {
   } else {  // Accelerated compositing path
     // Begin painting.
     webwidget_->composite(false);
-    if (using_asynchronous_swapbuffers_)
-      num_swapbuffers_complete_pending_++;
   }
 
   // sending an ack to browser process that the paint is complete...

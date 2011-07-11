@@ -209,6 +209,10 @@ WebGLId WebGraphicsContext3DCommandBufferImpl::getPlatformTextureId() {
 void WebGraphicsContext3DCommandBufferImpl::prepareTexture() {
   // Copies the contents of the off-screen render target into the texture
   // used by the compositor.
+  RenderView* renderview =
+      web_view_ ? RenderView::FromWebView(web_view_) : NULL;
+  if (renderview)
+    renderview->OnViewContextSwapBuffersPosted();
   context_->SwapBuffers();
 }
 
@@ -1023,8 +1027,7 @@ void WebGraphicsContext3DCommandBufferImpl::OnSwapBuffersComplete() {
 }
 
 void WebGraphicsContext3DCommandBufferImpl::setContextLostCallback(
-    WebGraphicsContext3D::WebGraphicsContextLostCallback* cb)
-{
+    WebGraphicsContext3D::WebGraphicsContextLostCallback* cb) {
   context_lost_callback_ = cb;
 }
 

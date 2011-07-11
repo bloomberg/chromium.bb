@@ -201,7 +201,8 @@ class RenderView : public RenderWidget,
   WebKit::WebView* webview() const;
 
   // Called by a GraphicsContext associated with this view when swapbuffers
-  // completes or is aborted.
+  // is posted, completes or is aborted.
+  void OnViewContextSwapBuffersPosted();
   void OnViewContextSwapBuffersComplete();
   void OnViewContextSwapBuffersAborted();
 

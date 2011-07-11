@@ -90,7 +90,7 @@ class PepperWidget : public WebWidget {
     unsigned int texture = plugin_->GetBackingTextureId();
     gl->BindTexture(GL_TEXTURE_2D, texture);
     gl->DrawArrays(GL_TRIANGLES, 0, 3);
-    context->SwapBuffers();
+    widget_->SwapBuffers();
   }
 
   virtual void themeChanged() {
@@ -463,6 +463,12 @@ bool RenderWidgetFullscreenPepper::CheckCompositing() {
     didActivateAcceleratedCompositing(compositing);
   }
   return compositing;
+}
+
+void RenderWidgetFullscreenPepper::SwapBuffers() {
+  DCHECK(context_);
+  OnSwapBuffersPosted();
+  context_->SwapBuffers();
 }
 
 void RenderWidgetFullscreenPepper::OnLostContext() {

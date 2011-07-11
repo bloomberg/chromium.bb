@@ -39,6 +39,7 @@ class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen,
   virtual webkit::ppapi::PluginDelegate::PlatformContext3D* CreateContext3D();
 
   RendererGLContext* context() const { return context_; }
+  void SwapBuffers();
 
  protected:
   RenderWidgetFullscreenPepper(RenderThreadBase* render_thread,

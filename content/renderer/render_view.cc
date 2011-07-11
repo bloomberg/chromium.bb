@@ -3709,6 +3709,10 @@ void RenderView::DidFlushPaint() {
   }
 }
 
+void RenderView::OnViewContextSwapBuffersPosted() {
+  RenderWidget::OnSwapBuffersPosted();
+}
+
 void RenderView::OnViewContextSwapBuffersComplete() {
   RenderWidget::OnSwapBuffersComplete();
 }
