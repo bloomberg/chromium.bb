@@ -25,7 +25,7 @@ static const double kTimeSecondsSlop =
 #if defined(OS_LINUX)
 #define MAYBE_Time FAILS_Time
 #else
-#define MAYBE_TIME Time
+#define MAYBE_Time Time
 #endif
 TEST(TimeConversion, MAYBE_Time) {
   // Should be able to round-trip.
