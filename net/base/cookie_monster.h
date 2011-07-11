@@ -629,6 +629,9 @@ class NET_API CookieMonster::CanonicalCookie {
   static std::string GetCookieSourceFromURL(const GURL& url);
 
  private:
+  // Gives the session cookie an expiration time if needed
+  void SetSessionCookieExpiryTime();
+
   // The source member of a canonical cookie is the origin of the URL that tried
   // to set this cookie, minus the port number if any.  This field is not
   // persistent though; its only used in the in-tab cookies dialog to show the

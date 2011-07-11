@@ -99,6 +99,10 @@ const int kVlogGarbageCollection = 5;
 const int kVlogSetCookies = 7;
 const int kVlogGetCookies = 9;
 
+#if defined(ENABLE_PERSISTENT_SESSION_COOKIES)
+const int kPersistentSessionCookieExpiryInDays = 14;
+#endif
+
 // Mozilla sorts on the path length (longest first), and then it
 // sorts by creation time (oldest first).
 // The RFC says the sort order for the domain attribute is undefined.
@@ -1956,6 +1960,7 @@ CookieMonster::CanonicalCookie::CanonicalCookie()
     : secure_(false),
       httponly_(false),
       has_expires_(false) {
+  SetSessionCookieExpiryTime();
 }
 
 CookieMonster::CanonicalCookie::CanonicalCookie(
@@ -1977,6 +1982,8 @@ CookieMonster::CanonicalCookie::CanonicalCookie(
       secure_(secure),
       httponly_(httponly),
       has_expires_(has_expires) {
+  if (!has_expires_)
+    SetSessionCookieExpiryTime();
 }
 
 CookieMonster::CanonicalCookie::CanonicalCookie(const GURL& url,
@@ -1994,6 +2001,8 @@ CookieMonster::CanonicalCookie::CanonicalCookie(const GURL& url,
       has_expires_(pc.HasExpires()) {
   if (has_expires_)
     expiry_date_ = CanonExpiration(pc, creation_date_, CookieOptions());
+  else
+    SetSessionCookieExpiryTime();
 
   // Do the best we can with the domain.
   std::string cookie_domain;
@@ -2023,6 +2032,16 @@ std::string CookieMonster::CanonicalCookie::GetCookieSourceFromURL(
     replacements.SetScheme("http", url_parse::Component(0, 4));
 
   return url.GetOrigin().ReplaceComponents(replacements).spec();
+}
+
+void CookieMonster::CanonicalCookie::SetSessionCookieExpiryTime() {
+#if defined(ENABLE_PERSISTENT_SESSION_COOKIES)
+  // Mobile apps can sometimes be shut down without any warning, so the session
+  // cookie has to be persistent and given a default expiration time.
+  expiry_date_ = base::Time::Now() +
+      base::TimeDelta::FromDays(kPersistentSessionCookieExpiryInDays);
+  has_expires_ = true;
+#endif
 }
 
 CookieMonster::CanonicalCookie* CookieMonster::CanonicalCookie::Create(
