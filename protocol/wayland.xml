@@ -48,7 +48,7 @@
          server will always announce an object before the object sends
          out events. -->
     <event name="global">
-      <arg name="id" type="new_id" interface="wl_object"/>
+      <arg name="id" type="uint" interface="wl_object"/>
       <arg name="name" type="string"/>
       <arg name="version" type="uint"/>
     </event>
