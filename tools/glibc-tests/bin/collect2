@@ -8,7 +8,7 @@ function usage() {
 cat 1>&2 <<END
 $0: Error: these variables need to be exported:
   GLIBC_TST_STATIC_LDSCRIPT - linker script for static linking
-  GLIBC_TST_NACL_TOOLCHAIN  - base toolchain directory
+  GLIBC_TST_NACL_LIBDIR     - library directory
   GLIBC_TST_NACL_LOADER     - sel_ldr
   GLIBC_TST_COLLECT2        - real collect2 binary
 END
@@ -26,7 +26,7 @@ if [[ ! -x "$GLIBC_TST_NACL_LOADER" ]]; then
   usage
   exit 103
 fi
-if [[ ! -d "$GLIBC_TST_NACL_TOOLCHAIN" ]]; then
+if [[ ! -d "$GLIBC_TST_NACL_LIBDIR" ]]; then
   usage
   exit 104
 fi
@@ -88,8 +88,8 @@ if [ "$?" = "0" ] ; then
     exit 0
   fi
 
-  readonly ldso="$GLIBC_TST_NACL_TOOLCHAIN"/nacl64/lib/runnable-ld.so
-  readonly libs="$GLIBC_TST_NACL_TOOLCHAIN"/nacl64/lib
+  readonly ldso="$GLIBC_TST_NACL_LIBDIR"/runnable-ld.so
+  readonly libs="$GLIBC_TST_NACL_LIBDIR"
 
   if [[ "$is_static" = "yes" ]]; then
     opts="-a -c --"
