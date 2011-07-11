@@ -944,6 +944,14 @@ void RenderWidgetHost::OnMsgUpdateRect(
   // be re-used, so the bitmap may be invalid after this call.
   Send(new ViewMsg_UpdateRect_ACK(routing_id_));
 
+  // Move the plugins if the view hasn't already been destroyed.  Plugin moves
+  // will not be re-issued, so must move them now, regardless of whether we
+  // paint or not.  MovePluginWindows attempts to move the plugin windows and
+  // in the process could dispatch other window messages which could cause the
+  // view to be destroyed.
+  if (view_)
+    view_->MovePluginWindows(params.plugin_window_moves);
+
   // We don't need to update the view if the view is hidden. We must do this
   // early return after the ACK is sent, however, or the renderer will not send
   // us more data.
@@ -951,18 +959,11 @@ void RenderWidgetHost::OnMsgUpdateRect(
     return;
 
   // Now paint the view. Watch out: it might be destroyed already.
-  if (view_) {
-    view_->MovePluginWindows(params.plugin_window_moves);
-    // The view_ pointer could be destroyed in the context of MovePluginWindows
-    // which attempts to move the plugin windows and in the process could
-    // dispatch other window messages which could cause the view to be
-    // destroyed.
-    if (view_ && !is_accelerated_compositing_active_) {
-      view_being_painted_ = true;
-      view_->DidUpdateBackingStore(params.scroll_rect, params.dx, params.dy,
-                                   params.copy_rects);
-      view_being_painted_ = false;
-    }
+  if (view_ && !is_accelerated_compositing_active_) {
+    view_being_painted_ = true;
+    view_->DidUpdateBackingStore(params.scroll_rect, params.dx, params.dy,
+                                 params.copy_rects);
+    view_being_painted_ = false;
   }
 
   NotificationService::current()->Notify(
