@@ -93,10 +93,9 @@ static DictionaryValue* SerializeNotification(
 // static
 void AppLauncherHandler::CreateAppInfo(const Extension* extension,
                                        const AppNotification* notification,
-                                       ExtensionPrefs* prefs,
+                                       ExtensionService* service,
                                        DictionaryValue* value) {
-  bool enabled =
-      prefs->GetExtensionState(extension->id()) != Extension::DISABLED;
+  bool enabled = service->IsExtensionEnabled(extension->id());
   GURL icon_big =
       ExtensionIconSource::GetIconURL(extension,
                                       Extension::EXTENSION_ICON_LARGE,
@@ -113,17 +112,17 @@ void AppLauncherHandler::CreateAppInfo(const Extension* extension,
   value->SetString("name", extension->name());
   value->SetString("description", extension->description());
   value->SetString("launch_url", extension->GetFullLaunchURL().spec());
-  if (enabled) {
+  if (enabled)
     value->SetString("options_url", extension->options_url().spec());
-  }
   value->SetBoolean("can_uninstall",
                     Extension::UserMayDisable(extension->location()));
   value->SetString("icon_big", icon_big.spec());
   value->SetString("icon_small", icon_small.spec());
   value->SetInteger("launch_container", extension->launch_container());
+  ExtensionPrefs* prefs = service->extension_prefs();
   value->SetInteger("launch_type",
       prefs->GetLaunchType(extension->id(),
-                                     ExtensionPrefs::LAUNCH_DEFAULT));
+                           ExtensionPrefs::LAUNCH_DEFAULT));
   value->SetBoolean("is_component",
       extension->location() == Extension::COMPONENT);
 
@@ -295,12 +294,14 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
 
   extensions = extensions_service_->disabled_extensions();
   for (it = extensions->begin(); it != extensions->end(); ++it) {
+    bool ntp3 =
+        !CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewTabPage4);
     if ((*it)->is_app() &&
-        (*it)->id() != extension_misc::kWebStoreAppId) {
+        !(ntp3 && (*it)->id() == extension_misc::kWebStoreAppId)) {
       DictionaryValue* app_info = new DictionaryValue();
       CreateAppInfo(*it,
                     NULL,
-                    extensions_service_->extension_prefs(),
+                    extensions_service_,
                     app_info);
       list->Append(app_info);
     }
@@ -336,8 +337,10 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
 }
 
 DictionaryValue* AppLauncherHandler::GetAppInfo(const Extension* extension) {
+  bool ntp3 =
+      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewTabPage4);
   if (!extension->is_app() ||
-      extension->id() == extension_misc::kWebStoreAppId) {
+      (ntp3 && extension->id() == extension_misc::kWebStoreAppId)) {
     return NULL;
   }
 
@@ -346,7 +349,7 @@ DictionaryValue* AppLauncherHandler::GetAppInfo(const Extension* extension) {
       extensions_service_->app_notification_manager();
   CreateAppInfo(extension,
                 notification_manager->GetLast(extension->id()),
-                extensions_service_->extension_prefs(),
+                extensions_service_,
                 app_info);
   return app_info;
 }
@@ -596,6 +599,11 @@ void AppLauncherHandler::HandleSetPageIndex(const ListValue* args) {
   double page_index;
   CHECK(args->GetString(0, &extension_id));
   CHECK(args->GetDouble(1, &page_index));
+
+  // Don't update the page; it already knows the apps have been reordered.
+  scoped_ptr<AutoReset<bool> > auto_reset;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewTabPage4))
+    auto_reset.reset(new AutoReset<bool>(&ignore_changes_, true));
 
   extensions_service_->extension_prefs()->SetPageIndex(extension_id,
       static_cast<int>(page_index));

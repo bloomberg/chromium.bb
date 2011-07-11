@@ -40,7 +40,7 @@ class AppLauncherHandler : public WebUIMessageHandler,
   // Populate a dictionary with the information from an extension.
   static void CreateAppInfo(const Extension* extension,
                             const AppNotification* notification,
-                            ExtensionPrefs* extension_prefs,
+                            ExtensionService* service,
                             DictionaryValue* value);
 
   // Callback for pings related to launching apps on the NTP.

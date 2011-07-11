@@ -77,9 +77,12 @@ ExtensionIconSource::~ExtensionIconSource() {
 
 // static
 GURL ExtensionIconSource::GetIconURL(const Extension* extension,
-                                            Extension::Icons icon_size,
-                                            ExtensionIconSet::MatchType match,
-                                            bool grayscale) {
+                                     Extension::Icons icon_size,
+                                     ExtensionIconSet::MatchType match,
+                                     bool grayscale) {
+  if (extension->id() == extension_misc::kWebStoreAppId)
+    return GURL("chrome://theme/IDR_WEBSTORE_ICON");
+
   GURL icon_url(base::StringPrintf("%s%s/%d/%d%s",
                                    chrome::kChromeUIExtensionIconURL,
                                    extension->id().c_str(),

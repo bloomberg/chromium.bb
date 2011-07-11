@@ -248,23 +248,6 @@ cr.define('ntp4', function() {
   }
 
   /**
-   * Make a synthesized app object representing the chrome web store.  It seems
-   * like this could just as easily come from the back-end, and then would
-   * support being rearranged, etc.
-   * @return {Object} The app object as would be sent from the webui back-end.
-   */
-  function makeWebstoreApp() {
-    return {
-      id: '',   // Empty ID signifies this is a special synthesized app
-      page_index: 0,
-      app_launch_index: -1,   // always first
-      name: templateData.web_store_title,
-      launch_url: templateData.web_store_url,
-      icon_big: getThemeUrl('IDR_WEBSTORE_ICON')
-    };
-  }
-
-  /**
    * Called by chrome when a new app has been added to chrome.
    * @param {Object} app A data structure full of relevant information for the
    *     app.
@@ -557,6 +540,7 @@ cr.define('ntp4', function() {
    */
   function isRTL() {
     return document.documentElement.dir == 'rtl';
+  }
 
   /*
    * Save the name of an app page.

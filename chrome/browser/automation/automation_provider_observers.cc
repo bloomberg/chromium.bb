@@ -1944,7 +1944,7 @@ namespace {
 // of the created vector.
 std::vector<DictionaryValue*>* GetAppInfoFromExtensions(
     const ExtensionList* extensions,
-    ExtensionPrefs* ext_prefs) {
+    ExtensionService* ext_service) {
   std::vector<DictionaryValue*>* apps_list =
       new std::vector<DictionaryValue*>();
   for (ExtensionList::const_iterator ext = extensions->begin();
@@ -1952,7 +1952,7 @@ std::vector<DictionaryValue*>* GetAppInfoFromExtensions(
     // Only return information about extensions that are actually apps.
     if ((*ext)->is_app()) {
       DictionaryValue* app_info = new DictionaryValue();
-      AppLauncherHandler::CreateAppInfo(*ext, NULL, ext_prefs, app_info);
+      AppLauncherHandler::CreateAppInfo(*ext, NULL, ext_service, app_info);
       app_info->SetBoolean("is_component_extension",
                            (*ext)->location() == Extension::COMPONENT);
 
@@ -2014,11 +2014,10 @@ NTPInfoObserver::NTPInfoObserver(
     return;
   }
   // Process enabled extensions.
-  ExtensionPrefs* ext_prefs = ext_service->extension_prefs();
   ListValue* apps_list = new ListValue();
   const ExtensionList* extensions = ext_service->extensions();
   std::vector<DictionaryValue*>* enabled_apps = GetAppInfoFromExtensions(
-      extensions, ext_prefs);
+      extensions, ext_service);
   for (std::vector<DictionaryValue*>::const_iterator app =
        enabled_apps->begin(); app != enabled_apps->end(); ++app) {
     (*app)->SetBoolean("is_disabled", false);
@@ -2028,7 +2027,7 @@ NTPInfoObserver::NTPInfoObserver(
   // Process disabled extensions.
   const ExtensionList* disabled_extensions = ext_service->disabled_extensions();
   std::vector<DictionaryValue*>* disabled_apps = GetAppInfoFromExtensions(
-      disabled_extensions, ext_prefs);
+      disabled_extensions, ext_service);
   for (std::vector<DictionaryValue*>::const_iterator app =
        disabled_apps->begin(); app != disabled_apps->end(); ++app) {
     (*app)->SetBoolean("is_disabled", true);
