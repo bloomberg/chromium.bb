@@ -96,26 +96,16 @@ Widget* CreateChildPlatformWidget(gfx::NativeView parent_native_view) {
   child_params.native_widget = CreatePlatformNativeWidget(child);
   child_params.parent = parent_native_view;
   child->Init(child_params);
-  child->SetContentsView(new View);
-  return child;
-}
-
-Widget* CreateChildNativeWidgetViewsWithParent(Widget* parent) {
-  Widget* child = new Widget;
-  Widget::InitParams params(Widget::InitParams::TYPE_CONTROL);
-  params.native_widget = new NativeWidgetViews(child);
-  params.parent_widget = parent;
-  child->Init(params);
-  child->SetContentsView(new View);
   return child;
 }
 
 Widget* CreateChildNativeWidgetViews() {
-  return CreateChildNativeWidgetViewsWithParent(NULL);
+  Widget* child = new Widget;
+  Widget::InitParams child_params(Widget::InitParams::TYPE_CONTROL);
+  child_params.native_widget = new NativeWidgetViews(child);
+  child->Init(child_params);
+  return child;
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// Widget::GetTopLevelWidget tests.
 
 TEST_F(WidgetTest, GetTopLevelWidget_Native) {
   // Create a hierarchy of native widgets.
@@ -150,24 +140,8 @@ TEST_F(WidgetTest, GetTopLevelWidget_Synthetic) {
   // |child| should be automatically destroyed with |toplevel|.
 }
 
-// Creates a hierarchy consisting of a top level platform native widget, a child
-// NativeWidgetViews, and a child of that child, another NativeWidgetViews.
-TEST_F(WidgetTest, GetTopLevelWidget_SyntheticParent) {
-  Widget* toplevel = CreateTopLevelPlatformWidget();
-  views_delegate.set_default_parent_view(toplevel->GetRootView());
-
-  Widget* child1 = CreateChildNativeWidgetViews(); // Will be parented
-                                                   // automatically to
-                                                   // |toplevel|.
-  Widget* child11 = CreateChildNativeWidgetViewsWithParent(child1);
-
-  EXPECT_EQ(toplevel, toplevel->GetTopLevelWidget());
-  EXPECT_EQ(child1, child1->GetTopLevelWidget());
-  EXPECT_EQ(child1, child11->GetTopLevelWidget());
-
-  toplevel->CloseNow();
-  // |child1| and |child11| should be destroyed with |toplevel|.
-}
+// TODO(beng): write test cases for child NativeWidgetViews parented to
+//             arbitrary views that aren't the default parent view.
 
 ////////////////////////////////////////////////////////////////////////////////
 // Widget ownership tests.
