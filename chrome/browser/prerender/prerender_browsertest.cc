@@ -275,6 +275,7 @@ class WaitForLoadPrerenderContentsFactory : public PrerenderContents::Factory {
   std::deque<FinalStatus> expected_final_status_queue_;
 };
 
+#if defined(ENABLE_SAFE_BROWSING)
 // A SafeBrowingService implementation that returns a fixed result for a given
 // URL.
 class FakeSafeBrowsingService :  public SafeBrowsingService {
@@ -341,14 +342,17 @@ class TestSafeBrowsingServiceFactory : public SafeBrowsingServiceFactory {
  private:
   FakeSafeBrowsingService* most_recent_service_;
 };
+#endif
 
 }  // namespace
 
 class PrerenderBrowserTest : public InProcessBrowserTest {
  public:
   PrerenderBrowserTest()
-      : safe_browsing_factory_(new TestSafeBrowsingServiceFactory()),
-        prerender_contents_factory_(NULL),
+      : prerender_contents_factory_(NULL),
+#if defined(ENABLE_SAFE_BROWSING)
+        safe_browsing_factory_(new TestSafeBrowsingServiceFactory()),
+#endif
         use_https_src_server_(false),
         call_javascript_(true),
         loader_path_("files/prerender/prerender_loader.html") {
@@ -356,7 +360,9 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
   }
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+#if defined(ENABLE_SAFE_BROWSING)
     SafeBrowsingService::RegisterFactory(safe_browsing_factory_.get());
+#endif
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
@@ -511,9 +517,11 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     return static_cast<int>(history_list->GetSize());
   }
 
+#if defined(ENABLE_SAFE_BROWSING)
   FakeSafeBrowsingService* GetSafeBrowsingService() {
     return safe_browsing_factory_->most_recent_service();
   }
+#endif
 
   TestPrerenderContents* GetPrerenderContents() const {
     return static_cast<TestPrerenderContents*>(
@@ -646,8 +654,10 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     }
   }
 
-  scoped_ptr<TestSafeBrowsingServiceFactory> safe_browsing_factory_;
   WaitForLoadPrerenderContentsFactory* prerender_contents_factory_;
+#if defined(ENABLE_SAFE_BROWSING)
+  scoped_ptr<TestSafeBrowsingServiceFactory> safe_browsing_factory_;
+#endif
   GURL dest_url_;
   bool use_https_src_server_;
   bool call_javascript_;
@@ -1427,6 +1437,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLClientCertIframe) {
                    1);
 }
 
+#if defined(ENABLE_SAFE_BROWSING)
 // Ensures that we do not prerender pages with a safe browsing
 // interstitial.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, SafeBrowsingPage) {
@@ -1436,6 +1447,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, SafeBrowsingPage) {
   PrerenderTestURL("files/prerender/prerender_page.html",
                    FINAL_STATUS_SAFE_BROWSING, 1);
 }
+#endif
 
 // Checks that a local storage read will not cause prerender to fail.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderLocalStorageRead) {

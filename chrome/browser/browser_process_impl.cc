@@ -200,8 +200,10 @@ BrowserProcessImpl::~BrowserProcessImpl() {
     devtools_legacy_handler_ = NULL;
   }
 
+#if defined(ENABLE_SAFE_BROWSING)
   if (safe_browsing_service_.get())
     safe_browsing_service()->ShutDown();
+#endif
 
   if (resource_dispatcher_host_.get()) {
     // Cancel pending requests and prevent new requests.
@@ -934,8 +936,10 @@ void BrowserProcessImpl::CreateBackgroundPrintingManager() {
 void BrowserProcessImpl::CreateSafeBrowsingService() {
   DCHECK(safe_browsing_service_.get() == NULL);
   created_safe_browsing_service_ = true;
+#if defined(ENABLE_SAFE_BROWSING)
   safe_browsing_service_ = SafeBrowsingService::CreateSafeBrowsingService();
   safe_browsing_service_->Initialize();
+#endif
 }
 
 void BrowserProcessImpl::CreateSafeBrowsingDetectionService() {
@@ -944,6 +948,7 @@ void BrowserProcessImpl::CreateSafeBrowsingDetectionService() {
   // create the service class if there was an error.
   created_safe_browsing_detection_service_ = true;
 
+#if defined(ENABLE_SAFE_BROWSING)
   FilePath model_file_dir;
   Profile* profile = profile_manager() ?
     profile_manager()->GetDefaultProfile() : NULL;
@@ -954,19 +959,20 @@ void BrowserProcessImpl::CreateSafeBrowsingDetectionService() {
         safe_browsing::ClientSideDetectionService::Create(
             model_file_dir, profile->GetRequestContext()));
   }
+#endif
 }
 
 bool BrowserProcessImpl::IsSafeBrowsingDetectionServiceEnabled() {
   // The safe browsing client-side detection is enabled only if the switch is
   // not disabled and when safe browsing related stats are allowed to be
   // collected.
-#ifdef OS_CHROMEOS
-  return false;
-#else
+#if defined(ENABLE_SAFE_BROWSING) && !defined(OS_CHROMEOS)
   return !CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableClientSidePhishingDetection) &&
       safe_browsing_service() &&
       safe_browsing_service()->CanReportStats();
+#else
+  return false;
 #endif
 }
 

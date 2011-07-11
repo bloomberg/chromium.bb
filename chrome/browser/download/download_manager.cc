@@ -266,12 +266,16 @@ void DownloadManager::StartDownload(int32 download_id) {
   if (!download)
     return;
 
+#if defined(ENABLE_SAFE_BROWSING)
   // Create a client to verify download URL with safebrowsing.
   // It deletes itself after the callback.
   scoped_refptr<DownloadSBClient> sb_client = new DownloadSBClient(
       download_id, download->url_chain(), download->referrer_url());
   sb_client->CheckDownloadUrl(
       NewCallback(this, &DownloadManager::CheckDownloadUrlDone));
+#else
+  CheckDownloadUrlDone(download_id, false);
+#endif
 }
 
 void DownloadManager::CheckForHistoryFilesRemoval() {
@@ -665,12 +669,16 @@ void DownloadManager::OnAllDataSaved(int32 download_id,
   // or there is error while it is calculated. We will skip the download hash
   // check in that case.
   if (!hash.empty()) {
+#if defined(ENABLE_SAFE_BROWSING)
     scoped_refptr<DownloadSBClient> sb_client =
         new DownloadSBClient(download_id,
                              download->url_chain(),
                              download->referrer_url());
     sb_client->CheckDownloadHash(
         hash, NewCallback(this, &DownloadManager::CheckDownloadHashDone));
+#else
+    CheckDownloadHashDone(download_id, false);
+#endif
   }
   MaybeCompleteDownload(download);
 }

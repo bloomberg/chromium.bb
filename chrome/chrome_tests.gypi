@@ -2058,6 +2058,19 @@
             ['exclude', '^browser/prefs/proxy_policy_unittest.cc'],
           ],
         }],
+        ['safe_browsing==1', {
+          'defines': [
+            'ENABLE_SAFE_BROWSING',
+          ],
+        }, {  # safe_browsing == 0
+          'sources!': [
+            'browser/download/download_safe_browsing_client_unittest.cc',
+          ],
+          'sources/': [
+            ['exclude', '^browser/safe_browsing/'],
+            ['exclude', '^renderer/safe_browsing/'],
+          ],
+        }],
         ['chromeos==1', {
           'sources/': [
             # TODO(thestig) Enable PrintPreviewUI tests on CrOS when
@@ -2596,6 +2609,16 @@
             'browser/extensions/extension_input_apitest.cc',
           ],
         }],
+        ['safe_browsing==1', {
+          'defines': [
+            'ENABLE_SAFE_BROWSING',
+          ],
+        }, {  # safe_browsing == 0
+          'sources/': [
+            ['exclude', '^browser/safe_browsing/'],
+            ['exclude', '^renderer/safe_browsing/'],
+          ],
+        }],
         ['internal_pdf', {
           'sources': [
             'test/plugin/pdf_browsertest.cc',
@@ -2784,6 +2807,11 @@
         'test/out_of_proc_test_runner.cc',
       ],
       'conditions': [
+        ['safe_browsing==0', {
+          'sources!': [
+            'browser/safe_browsing/safe_browsing_test.cc',
+          ],
+        }],
         ['OS=="win"', {
           'dependencies': [
             'chrome_dll_version',

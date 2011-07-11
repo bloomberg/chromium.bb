@@ -183,6 +183,15 @@
             'renderer/nacl_desc_wrapper_chrome.cc',
           ],
         }],
+        ['safe_browsing==1', {
+          'defines': [
+            'ENABLE_SAFE_BROWSING',
+          ],
+        }, {  # safe_browsing==0
+          'sources/': [
+            ['exclude', '^renderer/safe_browsing/'],
+          ],
+        }],
         ['OS=="mac"', {
           'dependencies': [
             '../third_party/mach_override/mach_override.gyp:mach_override',

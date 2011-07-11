@@ -118,12 +118,14 @@ ResourceHandler* ChromeResourceDispatcherHostDelegate::RequestBeginning(
   if (prerender_tracker_->IsPrerenderingOnIOThread(child_id, route_id))
     request->set_load_flags(request->load_flags() | net::LOAD_PRERENDERING);
 
+#if defined(ENABLE_SAFE_BROWSING)
   // Insert safe browsing at the front of the chain, so it gets to decide
   // on policies first.
   if (safe_browsing_->enabled()) {
     handler = CreateSafeBrowsingResourceHandler(
         handler, child_id, route_id, is_subresource);
   }
+#endif
 
 #if defined(OS_CHROMEOS)
   // We check offline first, then check safe browsing so that we still can block
@@ -138,10 +140,14 @@ ResourceHandler* ChromeResourceDispatcherHostDelegate::DownloadStarting(
     ResourceHandler* handler,
     int child_id,
     int route_id) {
+#if defined(ENABLE_SAFE_BROWSING)
   if (!safe_browsing_->enabled())
     return handler;
 
   return CreateSafeBrowsingResourceHandler(handler, child_id, route_id, false);
+#else
+  return handler;
+#endif
 }
 
 bool ChromeResourceDispatcherHostDelegate::ShouldDeferStart(
@@ -209,6 +215,7 @@ void ChromeResourceDispatcherHostDelegate::HandleExternalProtocol(
           &ExternalProtocolHandler::LaunchUrl, url, child_id, route_id));
 }
 
+#if defined(ENABLE_SAFE_BROWSING)
 ResourceHandler*
     ChromeResourceDispatcherHostDelegate::CreateSafeBrowsingResourceHandler(
         ResourceHandler* handler, int child_id, int route_id,
@@ -217,6 +224,7 @@ ResourceHandler*
       handler, child_id, route_id, subresource, safe_browsing_,
       resource_dispatcher_host_);
 }
+#endif
 
 bool ChromeResourceDispatcherHostDelegate::ShouldForceDownloadResource(
     const GURL& url, const std::string& mime_type) {

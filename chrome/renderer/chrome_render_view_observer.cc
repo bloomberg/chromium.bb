@@ -635,9 +635,11 @@ void ChromeRenderViewObserver::CapturePageInfo(int load_id,
     CaptureThumbnail();
   }
 
+#if defined(ENABLE_SAFE_BROWSING)
   // Will swap out the string.
   if (phishing_classifier_)
     phishing_classifier_->PageCaptured(&contents, preliminary_capture);
+#endif
 }
 
 void ChromeRenderViewObserver::CaptureText(WebFrame* frame,

@@ -373,6 +373,7 @@ void BugReportUtil::SendReport(Profile* profile,
   DispatchFeedback(profile, post_body, 0);
 }
 
+#if defined(ENABLE_SAFE_BROWSING)
 // static
 void BugReportUtil::ReportPhishing(TabContents* currentTab,
                                    const std::string& phishing_url) {
@@ -383,3 +384,4 @@ void BugReportUtil::ReportPhishing(TabContents* currentTab,
       GURL(),
       PageTransition::LINK);
 }
+#endif

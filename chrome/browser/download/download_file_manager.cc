@@ -144,8 +144,12 @@ void DownloadFileManager::StartDownload(DownloadCreateInfo* info) {
 
   manager->CreateDownloadItem(info);
 
+#if defined(ENABLE_SAFE_BROWSING)
   bool hash_needed = g_browser_process->safe_browsing_service()->
       DownloadBinHashNeeded();
+#else
+  bool hash_needed = false;
+#endif
 
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(this, &DownloadFileManager::CreateDownloadFile,

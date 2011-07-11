@@ -3677,6 +3677,26 @@
              ['exclude', '^browser/ui/webui/options/options_managed_banner_handler.cc'],
            ],
         }],
+        ['safe_browsing==1', {
+          'defines': [
+            'ENABLE_SAFE_BROWSING',
+          ],
+        }, {  # safe_browsing==0
+          'dependencies!': [
+            'safe_browsing_report_proto',
+          ],
+          'sources!': [
+            'browser/download/download_safe_browsing_client.cc',
+            'browser/download/download_safe_browsing_client.h',
+            'browser/renderer_host/safe_browsing_resource_handler.cc',
+            'browser/renderer_host/safe_browsing_resource_handler.h',
+            '<(protoc_out_dir)/chrome/browser/safe_browsing/report.pb.cc',
+            '<(protoc_out_dir)/chrome/browser/safe_browsing/report.pb.h',
+          ],
+          'sources/': [
+            ['exclude', '^browser/safe_browsing/'],
+          ],
+        }],
         ['chromeos==0', {
           'sources/': [
             ['exclude', '^browser/chromeos'],

@@ -127,8 +127,10 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   password_manager_delegate_.reset(new PasswordManagerDelegateImpl(this));
   password_manager_.reset(
       new PasswordManager(contents, password_manager_delegate_.get()));
+#if defined(ENABLE_SAFE_BROWSING)
   safebrowsing_detection_host_.reset(
       safe_browsing::ClientSideDetectionHost::Create(contents));
+#endif
   search_engine_tab_helper_.reset(new SearchEngineTabHelper(contents));
   ssl_helper_.reset(new TabContentsSSLHelper(this));
   content_settings_.reset(new TabSpecificContentSettings(contents));

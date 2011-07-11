@@ -98,7 +98,9 @@ void RegisterLocalState(PrefService* local_state) {
   MetricsService::RegisterPrefs(local_state);
   printing::PrintJobManager::RegisterPrefs(local_state);
   PromoResourceService::RegisterPrefs(local_state);
+#if defined(ENABLE_SAFE_BROWSING)
   SafeBrowsingService::RegisterPrefs(local_state);
+#endif
   browser_shutdown::RegisterPrefs(local_state);
 #if defined(TOOLKIT_VIEWS)
   BrowserView::RegisterBrowserViewPrefs(local_state);
