@@ -139,7 +139,7 @@ void RecentlyClosedTabsHandler::HandleReopenTab(const ListValue* args) {
       break;
   }
   // There are actually less than 20 restore tab items displayed in the UI.
-  HISTOGRAM_ENUMERATION("NewTabPage.SessionRestore", index, 20);
+  UMA_HISTOGRAM_ENUMERATION("NewTabPage.SessionRestore", index, 20);
 
   tab_restore_service_->RestoreEntryById(delegate, session_to_restore, true);
   // The current tab has been nuked at this point; don't touch any member
@@ -239,7 +239,13 @@ void MetricsHandler::HandleRecordInHistogram(const ListValue* args) {
   int int_boundary_value = static_cast<int>(boundary_value);
   CHECK_LE(int_boundary_value, 200);
 
-  HISTOGRAM_ENUMERATION(histogram_name, int_value, int_boundary_value);
+  // As |histogram_name| may change between calls, the UMA_HISTOGRAM_ENUMERATION
+  // macro cannot be used here.
+  base::Histogram* counter =
+      base::LinearHistogram::FactoryGet(
+          histogram_name, 1, int_boundary_value, int_boundary_value + 1,
+          base::Histogram::kUmaTargetedHistogramFlag);
+  counter->Add(int_value);
 }
 
 void MetricsHandler::HandleLogEventTime(const ListValue* args) {
