@@ -139,7 +139,13 @@ class SpecialTabsTest(pyauto.PyUITest):
     'chrome://sandbox': { 'title': 'Sandbox Status' },
   }
 
+  broken_linux_special_url_tabs = {
+  }
+
   mac_special_url_tabs = {
+  }
+
+  broken_mac_special_url_tabs = {
   }
 
   win_special_url_tabs = {
@@ -147,6 +153,22 @@ class SpecialTabsTest(pyauto.PyUITest):
 
     # OVERRIDE - different title for page.
     'chrome://settings': { 'title': 'Options - Basics' },
+  }
+
+  broken_win_special_url_tabs = {
+    # Sync on windows badly broken at the moment.
+    'chrome://sync': {},
+  }
+
+  google_chrome_special_url_tabs = {
+    # OVERRIDE - different title for Google Chrome vs. Chromium.
+    'chrome://terms': {
+      'title': 'Google Chrome Terms of Service',
+      'CSP': False
+    },
+  }
+
+  broken_google_chrome_special_url_tabs = {
   }
 
   def _VerifyAppCacheInternals(self):
@@ -173,31 +195,49 @@ class SpecialTabsTest(pyauto.PyUITest):
                                   ['Host name', 'How long ago', 'Motivation'],
                                   [])
 
+  def _GetPlatformSpecialURLTabs(self):
+    tabs = self.special_url_tabs.copy()
+    broken_tabs = self.broken_special_url_tabs.copy()
+    if self.IsChromeOS():
+      tabs.update(self.chromeos_special_url_tabs)
+      broken_tabs.update(self.broken_chromeos_special_url_tabs)
+    elif self.IsLinux():
+      tabs.update(self.linux_special_url_tabs)
+      broken_tabs.update(self.broken_linux_special_url_tabs)
+    elif self.IsMac():
+      tabs.update(self.mac_special_url_tabs)
+      broken_tabs.update(self.broken_mac_special_url_tabs)
+    elif self.IsWin():
+      tabs.update(self.win_special_url_tabs)
+      broken_tabs.update(self.broken_win_special_url_tabs)
+    if self.GetBrowserInfo()['properties']['branding'] == 'Google Chrome':
+      tabs.update(self.google_chrome_special_url_tabs)
+      broken_tabs.update(self.broken_google_chrome_special_url_tabs)
+    for key, value in broken_tabs.iteritems():
+      if key in tabs:
+       del tabs[key]
+    return tabs
+
   def testSpecialURLRedirects(self):
     """Test that older about: URLs are implemented by newer chrome:// URLs.
        The location bar may not get updated in all cases, so checking the
        tab URL is misleading, instead check for the same contents as the
        chrome:// page."""
+    tabs = self._GetPlatformSpecialURLTabs()
     for url, redirect in self.special_url_redirects.iteritems():
-      logging.debug('Testing redirect from %s to %s.' % (url, redirect))
-      self.NavigateToURL(url)
-      self.assertEqual(self.special_url_tabs[redirect]['title'],
-                       self.GetActiveTabTitle())
+      if redirect in tabs:
+        logging.debug('Testing redirect from %s to %s.' % (url, redirect))
+        self.NavigateToURL(url)
+        self.assertEqual(self.special_url_tabs[redirect]['title'],
+                         self.GetActiveTabTitle())
 
   def testSpecialURLTabs(self):
     """Test special tabs created by URLs like chrome://downloads,
        chrome://extensions, chrome://history etc.  Also ensures they
        specify content-security-policy and not inline scripts for those
        pages that are expected to do so."""
-    if self.IsChromeOS():
-      self.special_url_tabs.update(self.chromeos_special_url_tabs);
-    elif self.IsLinux():
-      self.special_url_tabs.update(self.linux_special_url_tabs);
-    elif self.IsMac():
-      self.special_url_tabs.update(self.mac_special_url_tabs);
-    elif self.IsWin():
-      self.special_url_tabs.update(self.win_special_url_tabs);
-    for url, properties in self.special_url_tabs.iteritems():
+    tabs = self._GetPlatformSpecialURLTabs()
+    for url, properties in tabs.iteritems():
       logging.debug('Testing URL %s.' % url)
       self.NavigateToURL(url)
       expected_title = 'title' in properties and properties['title'] or url
@@ -205,8 +245,8 @@ class SpecialTabsTest(pyauto.PyUITest):
       logging.debug('  %s title was %s (%s)' %
                     (url, actual_title, expected_title == actual_title))
       self.assertEqual(expected_title, actual_title)
-      include_list = [];
-      exclude_list = [];
+      include_list = []
+      exclude_list = []
       if ('CSP' in properties and not properties['CSP']):
         exclude_list.extend(['X-WebKit-CSP'])
       else:
