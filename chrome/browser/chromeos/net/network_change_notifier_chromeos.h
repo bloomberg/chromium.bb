@@ -40,6 +40,8 @@ class NetworkChangeNotifierChromeos
 
   // Updates data members that keep the track the network stack state.
   void UpdateNetworkState(chromeos::NetworkLibrary* cros);
+  // Updates network connectivity state.
+  void UpdateConnectivityState(const chromeos::Network* network);
 
   // True if we previously had an active network around.
   bool has_active_network_;

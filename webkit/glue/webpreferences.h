@@ -63,7 +63,7 @@ struct WebPreferences {
   bool tabs_to_links;
   bool caret_browsing_enabled;
   bool hyperlink_auditing_enabled;
-
+  bool is_online;
   bool user_style_sheet_enabled;
   GURL user_style_sheet_location;
   bool author_and_user_styles_enabled;
@@ -92,7 +92,6 @@ struct WebPreferences {
   bool allow_running_insecure_content;
   bool should_print_backgrounds;
   bool enable_scroll_animator;
-
   // We try to keep the default values the same as the default values in
   // chrome, except for the cases where it would require lots of extra work for
   // the embedder to use the same default value.

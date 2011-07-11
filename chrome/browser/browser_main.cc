@@ -147,7 +147,7 @@
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/metrics_cros_settings_provider.h"
-#include "chrome/browser/chromeos/net/network_change_notifier_chromeos.h"
+#include "chrome/browser/chromeos/net/cros_network_change_notifier_factory.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/browser/chromeos/xinput_hierarchy_changed_event_listener.h"
 #include "chrome/browser/oom_priority_manager.h"
@@ -570,15 +570,7 @@ void BrowserMainParts::MainMessageLoopStart() {
 
   InitializeMainThread();
 
-#if defined(OS_CHROMEOS)
-  // TODO(zelidrag): We need to move cros library glue code outside of
-  // chrome/browser directory to avoid check_deps issues and then migrate
-  // NetworkChangeNotifierCros class to net/base where other OS implementations
-  // live.
-  network_change_notifier_.reset(new chromeos::NetworkChangeNotifierChromeos());
-#else
   network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
-#endif
 
   PostMainMessageLoopStart();
   Profiling::MainMessageLoopStarted();
@@ -1285,6 +1277,11 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // SetUseStubImpl doesn't do anything.
   if (parameters.command_line_.HasSwitch(switches::kStubCros))
     chromeos::CrosLibrary::Get()->GetTestApi()->SetUseStubImpl();
+
+  // Replace the default NetworkChangeNotifierFactory with ChromeOS specific
+  // implementation.
+  net::NetworkChangeNotifier::SetFactory(
+      new chromeos::CrosNetworkChangeNotifierFactory());
 #endif
 
   parts->MainMessageLoopStart();

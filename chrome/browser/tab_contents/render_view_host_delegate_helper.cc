@@ -33,6 +33,7 @@
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/webui/web_ui.h"
 #include "content/common/notification_service.h"
+#include "net/base/network_change_notifier.h"
 
 RenderViewHostDelegateViewHelper::RenderViewHostDelegateViewHelper() {
   registrar_.Add(this, content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
@@ -394,6 +395,8 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
     web_prefs.loads_images_automatically = true;
     web_prefs.javascript_enabled = true;
   }
+
+  web_prefs.is_online = !net::NetworkChangeNotifier::IsOffline();
 
   return web_prefs;
 }

@@ -635,6 +635,8 @@
         'browser/chromeos/metrics_cros_settings_provider.h',
         'browser/chromeos/native_dialog_window.cc',
         'browser/chromeos/native_dialog_window.h',
+        'browser/chromeos/net/cros_network_change_notifier_factory.cc',
+        'browser/chromeos/net/cros_network_change_notifier_factory.h',
         'browser/chromeos/net/network_change_notifier_chromeos.cc',
         'browser/chromeos/net/network_change_notifier_chromeos.h',
         'browser/chromeos/network_login_observer.cc',
