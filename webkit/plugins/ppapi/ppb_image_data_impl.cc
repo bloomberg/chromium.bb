@@ -58,7 +58,7 @@ bool PPB_ImageData_Impl::Init(PP_ImageDataFormat format,
     return false;  // Only support this one format for now.
   if (width <= 0 || height <= 0)
     return false;
-  if (static_cast<int64>(width) * static_cast<int64>(height) >=
+  if (static_cast<int64>(width) * static_cast<int64>(height) * 4 >=
       std::numeric_limits<int32>::max())
     return false;  // Prevent overflow of signed 32-bit ints.
 
