@@ -16,6 +16,9 @@ import tempfile
 
 from chromite.lib import cros_build_lib as cros_lib
 
+# File that marks a buildroot as being used by a trybot
+_TRYBOT_MARKER = '.trybot'
+
 class SrcCheckOutException(Exception):
   """Exception gets thrown for failure to sync sources"""
   pass
@@ -48,6 +51,25 @@ def CloneGitRepo(working_dir, repo_url):
   cros_lib.RunCommand(['git', 'clone', repo_url, working_dir])
 
 
+def GetTrybotMarkerPath(buildroot):
+  """Get path to trybot marker file given the buildroot."""
+  return os.path.join(buildroot, _TRYBOT_MARKER)
+
+
+def CreateTrybotMarker(buildroot):
+  """Create the file that identifies a buildroot as being used by a trybot."""
+  open(GetTrybotMarkerPath(buildroot), 'w').close()
+
+
+def ClearBuildRoot(buildroot):
+  """Remove and recreate the buildroot while preserving the trybot marker."""
+  trybot_root = os.path.exists(GetTrybotMarkerPath(buildroot))
+  cros_lib.RunCommand(['sudo', 'rm', '-rf', buildroot], error_ok=True)
+  os.makedirs(buildroot)
+  if trybot_root:
+    CreateTrybotMarker(buildroot)
+
+
 def DisableInteractiveRepoManifestCommand():
   """Set the PAGER repo manifest uses to be non-interactive."""
   os.environ['PAGER'] = 'cat'
@@ -69,7 +91,7 @@ class RepoRepository(object):
     self.branch = branch
 
     if clobber or not os.path.exists(os.path.join(self.directory, '.repo')):
-      cros_lib.RunCommand(['sudo', 'rm', '-rf', self.directory], error_ok=True)
+      ClearBuildRoot(self.directory)
 
   def Initialize(self):
     """Initializes a repository."""
@@ -113,8 +135,7 @@ class RepoRepository(object):
     may be used to set it back to the default manifest.
     """
     try:
-      if not os.path.exists(self.directory):
-        os.makedirs(self.directory)
+      if not InARepoRepository(self.directory):
         self.Initialize()
 
       self._ReinitializeIfNecessary(local_manifest)

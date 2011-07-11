@@ -27,6 +27,7 @@ from chromite.buildbot import cbuildbot_commands as commands
 from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import cbuildbot_stages as stages
 from chromite.buildbot import patch as cros_patch
+from chromite.buildbot import repository
 from chromite.lib import cros_build_lib as cros_lib
 
 
@@ -287,19 +288,16 @@ def _GetInput(prompt):
   return raw_input(prompt)
 
 
-def _ValidateClobber(buildroot, buildbot):
+def _ValidateClobber(buildroot):
   """Do due diligence if user wants to clobber buildroot.
 
-  Args:
-    buildroot: passed in buildroot
-    buildbot: whether this is running on a buildbot
+    buildroot: buildroot that's potentially clobbered.
   """
   cwd = os.path.dirname(os.path.realpath(__file__))
   if cwd.startswith(buildroot):
     cros_lib.Die('You are trying to clobber this chromite checkout!')
 
-  # Don't ask for clobber confirmation if we are run with --buildbot
-  if not buildbot and os.path.exists(buildroot):
+  if os.path.exists(buildroot):
     cros_lib.Warning('This will delete %s' % buildroot)
     prompt = ('\nDo you want to continue (yes/NO)? ')
     response = _GetInput(prompt).lower()
@@ -308,7 +306,7 @@ def _ValidateClobber(buildroot, buildbot):
 
 
 def _ConfirmBuildRoot(buildroot):
-  """Make sure the user wants to use inferred buildroot."""
+  """Confirm with user the inferred buildroot, and mark it as confirmed."""
   cros_lib.Warning('Using default directory %s as buildroot' % buildroot)
   prompt = ('\nDo you want to continue (yes/NO)? ')
   response = _GetInput(prompt).lower()
@@ -316,9 +314,14 @@ def _ConfirmBuildRoot(buildroot):
     print('Please specify a buildroot with the --buildroot option.')
     sys.exit(0)
 
+  if not os.path.exists(buildroot):
+    os.mkdir(buildroot)
+
+  repository.CreateTrybotMarker(buildroot)
+
 
 def _DetermineDefaultBuildRoot(git_url):
-  """Default buildroot to a top-level directory in current source checkout.
+  """Default buildroot to be under the directory that contains current checkout.
 
   We separate the buildroot for external and internal configurations.
   """
@@ -327,11 +330,12 @@ def _DetermineDefaultBuildRoot(git_url):
     cros_lib.Die('Could not find root of local checkout.  Please specify'
                  'using --buildroot option.')
 
-  srcroot = os.path.realpath(os.path.dirname(repo_dir))
+  # Place trybot buildroot under the directory containing current checkout.
+  top_level = os.path.dirname(os.path.realpath(os.path.dirname(repo_dir)))
   if git_url == cbuildbot_config.MANIFEST_INT_URL:
-    buildroot = os.path.join(srcroot, _DEFAULT_INT_BUILDROOT)
+    buildroot = os.path.join(top_level, _DEFAULT_INT_BUILDROOT)
   else:
-    buildroot = os.path.join(srcroot, _DEFAULT_EXT_BUILDROOT)
+    buildroot = os.path.join(top_level, _DEFAULT_EXT_BUILDROOT)
 
   return buildroot
 
@@ -546,11 +550,13 @@ def main(argv=None):
       parser.error('Please specify a buildroot with the --buildroot option.')
     else:
       options.buildroot = _DetermineDefaultBuildRoot(build_config['git_url'])
-      if not os.path.exists(options.buildroot):
+      # We use a marker file in the buildroot to indicate the user has consented
+      # to using this directory.
+      if not os.path.exists(repository.GetTrybotMarkerPath(options.buildroot)):
         _ConfirmBuildRoot(options.buildroot)
 
-  if options.clobber:
-    _ValidateClobber(options.buildroot, options.buildbot)
+  if not options.buildbot and options.clobber:
+    _ValidateClobber(options.buildroot)
 
   _SetupRedirectOutputToFile()
 

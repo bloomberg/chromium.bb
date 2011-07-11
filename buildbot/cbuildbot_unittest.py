@@ -6,6 +6,7 @@
 
 """Unittests for build stages."""
 
+import getpass
 import mox
 import os
 import sys
@@ -22,11 +23,13 @@ class TestExitedException(Exception):
   """Exception used by sys.exit() mock to halt execution."""
   pass
 
+class TestHaltedException(Exception):
+  """Exception used by mocks to halt execution without indicating failure."""
+  pass
 
 class TestFailedException(Exception):
   """Exception used by mocks to halt execution and indicate failure."""
   pass
-
 
 class RunBuildStagesTest(mox.MoxTestBase):
 
@@ -149,13 +152,6 @@ class InterfaceTest(mox.MoxTestBase):
     (options, args) = self.parser.parse_args(args=args)
     self.assertEquals(options.profile, 'carp')
 
-  def testNoClobberConfirmationForBuildBotBuilds(self):
-    """Test that we don't ask for clobber confirmation for --buildbot runs."""
-    self.mox.StubOutWithMock(cbuildbot, '_GetInput')
-    self.mox.ReplayAll()
-    cbuildbot._ValidateClobber(self._BUILD_ROOT, buildbot=True)
-    self.mox.VerifyAll()
-
   def testValidateClobberUserDeclines_1(self):
     """Test case where user declines in prompt."""
     self.mox.StubOutWithMock(os.path, 'exists')
@@ -167,7 +163,7 @@ class InterfaceTest(mox.MoxTestBase):
     sys.exit(0)
 
     self.mox.ReplayAll()
-    cbuildbot._ValidateClobber(self._BUILD_ROOT, False)
+    cbuildbot._ValidateClobber(self._BUILD_ROOT)
     self.mox.VerifyAll()
 
   def testValidateClobberUserDeclines_2(self):
@@ -181,7 +177,7 @@ class InterfaceTest(mox.MoxTestBase):
     sys.exit(0)
 
     self.mox.ReplayAll()
-    cbuildbot._ValidateClobber(self._BUILD_ROOT, False)
+    cbuildbot._ValidateClobber(self._BUILD_ROOT)
     self.mox.VerifyAll()
 
   def testValidateClobberProtectRunningChromite(self):
@@ -191,7 +187,7 @@ class InterfaceTest(mox.MoxTestBase):
     buildroot = os.path.dirname(cwd)
     cros_lib.Die(mox.IgnoreArg()).AndRaise(Exception)
     self.mox.ReplayAll()
-    self.assertRaises(Exception, cbuildbot._ValidateClobber, buildroot, False)
+    self.assertRaises(Exception, cbuildbot._ValidateClobber, buildroot)
     self.mox.VerifyAll()
 
 
@@ -201,6 +197,8 @@ class FullInterfaceTest(unittest.TestCase):
   Don't inherit from MoxTestBase since it runs VerifyAll() at the end of every
   test which we don't want.
   """
+  _BUILD_ROOT = '/b/test_build1'
+
   def setUp(self):
     self.mox = mox.Mox()
 
@@ -231,6 +229,9 @@ class FullInterfaceTest(unittest.TestCase):
     cbuildbot.RunBuildStages(mox.IgnoreArg(), mox.IgnoreArg(),
                              mox.IgnoreArg()).InAnyOrder().AndReturn(True)
 
+    self.external_marker = ('/b/trybot/.trybot')
+    self.internal_marker = ('/b/trybot-internal/.trybot')
+
   def tearDown(self):
     self.mox.UnsetStubs()
 
@@ -242,24 +243,29 @@ class FullInterfaceTest(unittest.TestCase):
 
   def testInferExternalBuildRoot(self):
     """Test that we default to correct buildroot for external config."""
-    os.path.exists('/b/test_build1/trybot').InAnyOrder().AndReturn(False)
-    cbuildbot._GetInput(mox.IgnoreArg()).InAnyOrder().AndReturn('yes')
+    self.mox.StubOutWithMock(cbuildbot, '_ConfirmBuildRoot')
+    (cbuildbot._ConfirmBuildRoot(mox.IgnoreArg()).InAnyOrder()
+        .AndRaise(TestHaltedException()))
+    os.path.exists(self.external_marker).InAnyOrder().AndReturn(False)
 
     self.mox.ReplayAll()
-    cbuildbot.main(['x86-generic-pre-flight-queue'])
+    self.assertRaises(TestHaltedException, cbuildbot.main,
+                      ['x86-generic-pre-flight-queue'])
 
   def testInferInternalBuildRoot(self):
     """Test that we default to correct buildroot for internal config."""
-    (os.path.exists('/b/test_build1/trybot-internal').InAnyOrder().
-        AndReturn(False))
-    cbuildbot._GetInput(mox.IgnoreArg()).InAnyOrder().AndReturn('yes')
+    self.mox.StubOutWithMock(cbuildbot, '_ConfirmBuildRoot')
+    (cbuildbot._ConfirmBuildRoot(mox.IgnoreArg()).InAnyOrder()
+        .AndRaise(TestHaltedException()))
+    os.path.exists(self.internal_marker).InAnyOrder().AndReturn(False)
 
     self.mox.ReplayAll()
-    cbuildbot.main(['x86-mario-pre-flight-queue'])
+    self.assertRaises(TestHaltedException, cbuildbot.main,
+                      ['x86-mario-pre-flight-queue'])
 
   def testInferBuildRootPromptNo(self):
     """Test that a 'no' answer on the prompt halts execution."""
-    os.path.exists('/b/test_build1/trybot').InAnyOrder().AndReturn(False)
+    os.path.exists(self.external_marker).InAnyOrder().AndReturn(False)
     cbuildbot._GetInput(mox.IgnoreArg()).InAnyOrder().AndReturn('no')
 
     self.mox.ReplayAll()
@@ -267,15 +273,30 @@ class FullInterfaceTest(unittest.TestCase):
                       ['x86-generic-pre-flight-queue'])
 
   def testInferBuildRootExists(self):
-    """Test that we don't prompt the user if the buildroot already exists."""
-    os.path.exists('/b/test_build1/trybot').InAnyOrder().AndReturn(False)
+    """Test that we don't prompt the user if buildroot already exists."""
+    os.path.exists(self.external_marker).InAnyOrder().AndReturn(True)
     (cbuildbot._GetInput(mox.IgnoreArg()).InAnyOrder()
         .AndRaise(TestFailedException()))
 
     self.mox.ReplayAll()
-    self.assertRaises(TestFailedException, cbuildbot.main,
-                      ['x86-generic-pre-flight-queue'])
+    cbuildbot.main(['x86-generic-pre-flight-queue'])
 
+  def testValidateClobberForClobberOption(self):
+    """Test that we ask for clobber confirmation for trybot runs."""
+    os.path.realpath(self._BUILD_ROOT).InAnyOrder().AndReturn(self._BUILD_ROOT)
+    self.mox.StubOutWithMock(cbuildbot, '_ValidateClobber')
+    cbuildbot._ValidateClobber(self._BUILD_ROOT)
+    self.mox.ReplayAll()
+    cbuildbot.main(['-r', self._BUILD_ROOT, '--clobber',
+                    'x86-generic-pre-flight-queue'])
+
+  def testNoClobberConfirmationForBuildBotBuilds(self):
+    """Test that we don't ask for clobber confirmation for --buildbot runs."""
+    os.path.realpath(self._BUILD_ROOT).InAnyOrder().AndReturn(self._BUILD_ROOT)
+    self.mox.StubOutWithMock(cbuildbot, '_ValidateClobber')
+    self.mox.ReplayAll()
+    cbuildbot.main(['-r', self._BUILD_ROOT, '--clobber', '--buildbot',
+                    'x86-generic-pre-flight-queue'])
 
 if __name__ == '__main__':
   unittest.main()
