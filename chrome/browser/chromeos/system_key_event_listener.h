@@ -30,7 +30,7 @@ class SystemKeyEventListener : public WmMessageListener::Observer,
  public:
   class CapslockObserver {
    public:
-    virtual void OnCapslockChange() = 0;
+    virtual void OnCapslockChange(bool enabled) = 0;
   };
   static SystemKeyEventListener* GetInstance();
 
@@ -74,7 +74,7 @@ class SystemKeyEventListener : public WmMessageListener::Observer,
   void OnVolumeMute();
   void OnVolumeDown();
   void OnVolumeUp();
-  void OnCapslock();
+  void OnCapslock(bool enabled);
 
   // Returns true if the event was processed, false otherwise.
   virtual bool ProcessedXEvent(XEvent* xevent);

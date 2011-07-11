@@ -33,10 +33,10 @@ class CapslockMenuButton : public StatusAreaButton,
   virtual void RunMenu(views::View* unused_source, const gfx::Point& pt);
 
   // SystemKeyEventListener::CapslockObserver implementation
-  virtual void OnCapslockChange();
+  virtual void OnCapslockChange(bool enabled);
 
   // Updates the UI from the current state.
-  void UpdateUIFromCurrentCapslock();
+  void UpdateUIFromCurrentCapslock(bool enabled);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CapslockMenuButton);

@@ -402,7 +402,6 @@ std::string CreateFullXkbLayoutName(const std::string& layout_name,
   return full_xkb_layout_name;
 }
 
-// This function is only for unittest.
 bool CapsLockIsEnabled() {
   ScopedDisplay display(XOpenDisplay(NULL));
   if (!display.get()) {

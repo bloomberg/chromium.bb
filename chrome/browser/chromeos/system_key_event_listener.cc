@@ -68,8 +68,8 @@ SystemKeyEventListener::SystemKeyEventListener()
   }
 
   if (!XkbSelectEvents(GDK_DISPLAY(), XkbUseCoreKbd,
-                       XkbIndicatorStateNotifyMask,
-                       XkbIndicatorStateNotifyMask)) {
+                       XkbStateNotifyMask,
+                       XkbStateNotifyMask)) {
     LOG(WARNING) << "Could not install Xkb Indicator observer";
   }
 
@@ -197,15 +197,16 @@ void SystemKeyEventListener::OnVolumeUp() {
   BrightnessBubble::GetInstance()->HideBubble();
 }
 
-void SystemKeyEventListener::OnCapslock() {
-  FOR_EACH_OBSERVER(CapslockObserver, capslock_observers_, OnCapslockChange());
+void SystemKeyEventListener::OnCapslock(bool enabled) {
+  FOR_EACH_OBSERVER(
+      CapslockObserver, capslock_observers_, OnCapslockChange(enabled));
 }
 
 bool SystemKeyEventListener::ProcessedXEvent(XEvent* xevent) {
   if (xevent->type == xkb_event_base_code_) {
     XkbEvent* xkey_event = reinterpret_cast<XkbEvent*>(xevent);
-    if (xkey_event->any.xkb_type == XkbIndicatorStateNotify) {
-      OnCapslock();
+    if (xkey_event->any.xkb_type == XkbStateNotify) {
+      OnCapslock((xkey_event->state.locked_mods) & LockMask);
       return true;
     }
   } else if (xevent->type == KeyPress) {

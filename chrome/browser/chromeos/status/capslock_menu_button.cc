@@ -5,13 +5,12 @@
 #include "chrome/browser/chromeos/status/capslock_menu_button.h"
 
 #include <string>
-#include <X11/XKBlib.h>
 
+#include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/x/x11_util.h"
 
 namespace chromeos {
 
@@ -24,7 +23,7 @@ CapslockMenuButton::CapslockMenuButton(StatusAreaHost* host)
       l10n_util::GetStringUTF16(IDS_STATUSBAR_CAPSLOCK_ENABLED)));
   SetAccessibleName(l10n_util::GetStringUTF16(
       IDS_STATUSBAR_CAPSLOCK_ENABLED));
-  UpdateUIFromCurrentCapslock();
+  UpdateUIFromCurrentCapslock(input_method::CapsLockIsEnabled());
   SystemKeyEventListener::GetInstance()->AddCapslockObserver(this);
 }
 
@@ -40,7 +39,7 @@ gfx::Size CapslockMenuButton::GetPreferredSize() {
 }
 
 void CapslockMenuButton::OnLocaleChanged() {
-  UpdateUIFromCurrentCapslock();
+  UpdateUIFromCurrentCapslock(input_method::CapsLockIsEnabled());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -54,15 +53,11 @@ void CapslockMenuButton::RunMenu(views::View* unused_source,
 ////////////////////////////////////////////////////////////////////////////////
 // SystemKeyEventListener::CapslockObserver implementation
 
-void CapslockMenuButton::OnCapslockChange() {
-  UpdateUIFromCurrentCapslock();
+void CapslockMenuButton::OnCapslockChange(bool enabled) {
+  UpdateUIFromCurrentCapslock(enabled);
 }
 
-void CapslockMenuButton::UpdateUIFromCurrentCapslock() {
-  XkbStateRec status;
-  XkbGetState(ui::GetXDisplay(), XkbUseCoreKbd, &status);
-  bool enabled = status.locked_mods & LockMask;
-
+void CapslockMenuButton::UpdateUIFromCurrentCapslock(bool enabled) {
   if (enabled) {
     SetIcon(*ResourceBundle::GetSharedInstance().GetBitmapNamed(
         IDR_STATUSBAR_CAPSLOCK));

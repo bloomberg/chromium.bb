@@ -96,7 +96,6 @@ std::string CreateFullXkbLayoutName(const std::string& layout_name,
                                     const ModifierMap& modifire_map);
 
 // Returns true if caps lock is enabled.
-// ONLY FOR UNIT TEST. DO NOT USE THIS FUNCTION.
 bool CapsLockIsEnabled();
 
 // Sets the caps lock status to |enable_caps_lock|.
