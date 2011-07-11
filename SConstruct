@@ -1835,8 +1835,11 @@ base_env.Append(
     ['NACL_TARGET_SUBARCH', '${TARGET_SUBARCH}' ],
     ['NACL_STANDALONE', 1],
     ],
-  CPPPATH = ['${SOURCE_ROOT}',
-             '${MAIN_DIR}/src/third_party'],
+  CPPPATH = [
+    # third_party goes first so we get nacl's ppapi in preference to others.
+    '${MAIN_DIR}/src/third_party',
+    '${SOURCE_ROOT}',
+  ],
 
   EXTRA_CFLAGS = [],
   EXTRA_CCFLAGS = [],
@@ -2301,7 +2304,11 @@ nacl_common_env = pre_base_env.Clone(
     ARFLAGS = 'rc',
 
     # ${SOURCE_ROOT} for #include <ppapi/...>
-    CPPPATH = ['${SOURCE_ROOT}', '${MAIN_DIR}/src/third_party'],
+    CPPPATH = [
+      # third_party goes first so we get nacl's ppapi in preference to others.
+      '${MAIN_DIR}/src/third_party',
+      '${SOURCE_ROOT}',
+    ],
 
     EXTRA_CFLAGS = [],
     EXTRA_CCFLAGS = ARGUMENTS.get('nacl_ccflags', '').split(':'),

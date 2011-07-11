@@ -7,10 +7,6 @@ import gyp_extract
 
 Import('env')
 
-# Put $SOURCE_ROOT at the back (so we get the right ppapi).
-env.FilterOut(CPPPATH=['$SOURCE_ROOT'])
-env.Append(CPPPATH=['$SOURCE_ROOT'])
-
 # Underlay $MAIN_DIR/third_party/ppapi in this directory.
 Dir('.').addRepository(Dir('#/src/third_party/ppapi'))
 
