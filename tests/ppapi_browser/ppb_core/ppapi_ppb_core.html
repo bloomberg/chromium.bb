@@ -37,7 +37,10 @@
         }
 
         addTest('TestGetTime');
-        addTest('TestGetTimeTicks');
+        // TODO(dmichael): Re-enable this test when the fix from Chrome rolls
+        //     through. GetTimeTicks regressed to have 1 second time resolution
+        //     in chromium r91860.  crbug.com/88935
+        // addTest('TestGetTimeTicks');
         addTest('TestIsMainThread_FromMainThread');
         addTest('TestIsMainThread_FromNonMainThread');
         addTest('TestAddRefAndReleaseResource');

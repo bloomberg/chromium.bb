@@ -41,7 +41,7 @@ ppapi_tests_sources = [
     #'${MAIN_DIR}/src/third_party/ppapi/tests/test_video_decoder.cc',
 
     # Deprecated test cases.
-    '${MAIN_DIR}/src/third_party/ppapi/tests/test_instance_deprecated.cc',
+    #'${MAIN_DIR}/src/third_party/ppapi/tests/test_instance_deprecated.cc',
     # Var_deprecated fails in TestPassReference, and we probably won't
     # fix it.
     #'${MAIN_DIR}/src/third_party/ppapi/tests/test_var_deprecated.cc'

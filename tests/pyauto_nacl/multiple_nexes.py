@@ -45,7 +45,6 @@ class NaClTest(pyauto.PyUITest):
            ('srpc_url_as_nacl_desc.html', 1),
            ('test_case.html?mode=nacl&testcase=Graphics2D', 1),
            ('test_case.html?mode=nacl&testcase=ImageData', 1),
-           ('test_case.html?mode=nacl&testcase=Instance', 1),
            ('test_case.html?mode=nacl&testcase=PaintAggregator', 1),
            ('test_case.html?mode=nacl&testcase=PostMessage', 1),
            ('test_case.html?mode=nacl&testcase=Scrollbar', 1)]

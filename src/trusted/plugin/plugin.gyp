@@ -64,9 +64,7 @@
             '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio',
             '<(DEPTH)/native_client/src/shared/imc/imc.gyp:imc',
             '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
-            #TODO(brettw) use the _nacl one instead.
-            #'<(DEPTH)/native_client/src/shared/ppapi/ppapi.gyp:ppapi_cpp_nacl',
-            '<(DEPTH)/native_client/src/shared/ppapi/ppapi.gyp:ppapi_cpp',
+            '<(DEPTH)/native_client/src/shared/ppapi/ppapi.gyp:ppapi_cpp_nacl',
             '<(DEPTH)/native_client/src/shared/ppapi_proxy/ppapi_proxy.gyp:nacl_ppapi_browser',
             '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc',
             '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc',
