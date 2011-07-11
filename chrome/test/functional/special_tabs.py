@@ -57,7 +57,6 @@ class SpecialTabsTest(pyauto.PyUITest):
     'chrome://history': { 'title': 'History' },
     'chrome://history2': { 'title': 'History', 'CSP': False },
     'chrome://media-internals': { 'title': 'Media Internals', 'CSP': False },
-    'chrome://memory': { 'CSP': False },
     'chrome://memory-redirect': { 'title': 'About Memory' },
     'chrome://net-internals': { 'CSP': False },
     'chrome://newtab': { 'title': 'New Tab', 'CSP': False },
@@ -88,6 +87,9 @@ class SpecialTabsTest(pyauto.PyUITest):
 
     # separate window on mac, PC untested, not implemented elsewhere.
     'chrome://ipc': { 'CSP': False },
+
+    # race against redirects via meta-refresh.
+    'chrome://memory': { 'CSP': False },
   }
 
   chromeos_special_url_tabs = {
