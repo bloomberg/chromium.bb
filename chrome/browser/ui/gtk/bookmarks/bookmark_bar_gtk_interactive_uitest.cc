@@ -52,7 +52,9 @@ IN_PROC_BROWSER_TEST_F(BookmarkBarGtkInteractiveUITest, FindBarTest) {
 }
 
 // Makes sure that you can click on the floating bookmark bar.
-IN_PROC_BROWSER_TEST_F(BookmarkBarGtkInteractiveUITest, ClickOnFloatingTest) {
+// Disabled due to http://crbug.com/88933.
+IN_PROC_BROWSER_TEST_F(
+    BookmarkBarGtkInteractiveUITest, DISABLED_ClickOnFloatingTest) {
   ASSERT_TRUE(test_server()->Start());
 
   GtkWidget* other_bookmarks =

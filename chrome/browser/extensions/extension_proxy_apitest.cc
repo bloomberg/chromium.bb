@@ -69,7 +69,8 @@ class ProxySettingsApiTest : public ExtensionApiTest {
 };
 
 // Tests direct connection settings.
-IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest, ProxyDirectSettings) {
+// Disabled due to http://crbug.com/88937.
+IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest, DISABLED_ProxyDirectSettings) {
   ASSERT_TRUE(RunExtensionTestIncognito("proxy/direct")) << message_;
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension);
