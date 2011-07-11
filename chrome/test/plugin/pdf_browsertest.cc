@@ -11,12 +11,12 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/window_sizer.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/content_notification_types.h"
 #include "content/common/notification_observer.h"
 #include "net/test/test_server.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -81,7 +81,7 @@ class PDFBrowserTest : public InProcessBrowserTest,
     TabContentsWrapper* wrapper =  browser()->GetSelectedTabContentsWrapper();
     wrapper->CaptureSnapshot();
     ui_test_utils::RegisterAndWait(this,
-                                   chrome::TAB_SNAPSHOT_TAKEN,
+                                   chrome::NOTIFICATION_TAB_SNAPSHOT_TAKEN,
                                    Source<TabContentsWrapper>(wrapper));
     ASSERT_FALSE(snapshot_different_) << "Rendering didn't match, see result "
         "at " << snapshot_filename_.value().c_str();
@@ -109,7 +109,7 @@ class PDFBrowserTest : public InProcessBrowserTest,
   virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
-    if (type == chrome::TAB_SNAPSHOT_TAKEN) {
+    if (type == chrome::NOTIFICATION_TAB_SNAPSHOT_TAKEN) {
       MessageLoopForUI::current()->Quit();
       FilePath reference = ui_test_utils::GetTestFilePath(
           GetPDFTestDir(),
@@ -172,7 +172,7 @@ class PDFBrowserTest : public InProcessBrowserTest,
               reinterpret_cast<char*>(&png_data[0]), png_data.size());
         }
       }
-    } else if (type == chrome::LOAD_STOP) {
+    } else if (type == content::NOTIFICATION_LOAD_STOP) {
       load_stop_notification_count_++;
     }
   }
@@ -276,7 +276,7 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, FLAKY_SLOW_Loading) {
       &(browser()->GetSelectedTabContents()->controller());
   NotificationRegistrar registrar;
   registrar.Add(this,
-                chrome::LOAD_STOP,
+                content::NOTIFICATION_LOAD_STOP,
                 Source<NavigationController>(controller));
   std::string base_url = std::string("files/");
 
