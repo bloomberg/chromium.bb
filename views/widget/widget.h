@@ -509,6 +509,11 @@ class Widget : public internal::NativeWidgetDelegate,
   // Invoked when the tooltip text changes for the specified views.
   void TooltipTextChanged(View* view);
 
+  // Returns a View* that any child Widgets backed by NativeWidgetViews
+  // are added to.  The default implementation returns the contents view
+  // if it exists and the root view otherwise.
+  virtual View* GetChildViewParent();
+
   // Overridden from NativeWidgetDelegate:
   virtual bool IsModal() const OVERRIDE;
   virtual bool IsDialogBox() const OVERRIDE;

@@ -58,18 +58,20 @@ void NativeWidgetViews::OnActivate(bool active) {
 
 void NativeWidgetViews::InitNativeWidget(const Widget::InitParams& params) {
   ownership_ = params.ownership;
-  View* desktop_view = ViewsDelegate::views_delegate->GetDefaultParentView();
-  hosting_widget_ = desktop_view->GetWidget();
   view_ = new internal::NativeWidgetView(this);
   view_->SetBoundsRect(params.bounds);
   view_->SetPaintToLayer(true);
-  // TODO(beng): This is insufficient. While this handles the case where
-  //             params.parent_widget is NULL, we need to somehow handle a case
-  //             where we are passed a specified, valid parent. We may have to
-  //             add View* Widget::GetContainerView().
-  desktop_view->AddChildView(view_);
 
-  // TODO(beng): handle parenting.
+  View* parent_view = NULL;
+  if (params.parent_widget) {
+    hosting_widget_ = params.parent_widget;
+    parent_view = hosting_widget_->GetChildViewParent();
+  } else {
+    parent_view = ViewsDelegate::views_delegate->GetDefaultParentView();
+    hosting_widget_ = parent_view->GetWidget();
+  }
+  parent_view->AddChildView(view_);
+
   // TODO(beng): SetInitParams().
 }
 
@@ -405,4 +407,3 @@ const internal::NativeWidgetPrivate*
 }
 
 }  // namespace views
-

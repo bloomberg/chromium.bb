@@ -702,6 +702,10 @@ void Widget::TooltipTextChanged(View* view) {
     manager->TooltipTextChanged(view);
 }
 
+View* Widget::GetChildViewParent() {
+  return GetContentsView() ? GetContentsView() : GetRootView();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, NativeWidgetDelegate implementation:
 
