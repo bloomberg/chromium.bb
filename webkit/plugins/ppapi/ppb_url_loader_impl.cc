@@ -123,11 +123,6 @@ int32_t PPB_URLLoader_Impl::Open(PP_Resource request_id,
     return PP_ERROR_FAILED;
 
   loader_->loadAsynchronously(web_request, this);
-  // TODO(bbudge) Remove this code when AssociatedURLLoader is changed to
-  // return errors asynchronously.
-  if (done_status_ == PP_ERROR_FAILED ||
-      done_status_ == PP_ERROR_NOACCESS)
-    return done_status_;
 
   request_info_ = scoped_refptr<PPB_URLRequestInfo_Impl>(request);
 
@@ -321,7 +316,11 @@ void PPB_URLLoader_Impl::didReceiveData(WebURLLoader* loader,
 void PPB_URLLoader_Impl::didFinishLoading(WebURLLoader* loader,
                                           double finish_time) {
   done_status_ = PP_OK;
-  RunCallback(done_status_);
+  if (user_buffer_ || is_streaming_to_file_) {
+    RunCallback(done_status_);
+  } else {
+    DCHECK(!pending_callback_.get() || pending_callback_->completed());
+  }
 }
 
 void PPB_URLLoader_Impl::didFail(WebURLLoader* loader,
@@ -370,9 +369,7 @@ void PPB_URLLoader_Impl::RegisterCallback(PP_CompletionCallback callback) {
 void PPB_URLLoader_Impl::RunCallback(int32_t result) {
   // This may be null only when this is a main document loader.
   if (!pending_callback_.get()) {
-    // TODO(viettrungluu): put this CHECK back when the callback race condition
-    // is fixed: http://code.google.com/p/chromium/issues/detail?id=70347.
-    //CHECK(main_document_loader_);
+    CHECK(main_document_loader_);
     return;
   }
 

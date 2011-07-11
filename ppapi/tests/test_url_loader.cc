@@ -43,18 +43,18 @@ bool TestURLLoader::Init() {
 }
 
 void TestURLLoader::RunTest() {
-  RUN_TEST(BasicGET);
-  RUN_TEST_FORCEASYNC(BasicPOST);
+  RUN_TEST_FORCEASYNC_AND_NOT(BasicGET);
+  RUN_TEST_FORCEASYNC_AND_NOT(BasicPOST);
   RUN_TEST_FORCEASYNC_AND_NOT(CompoundBodyPOST);
-  RUN_TEST_FORCEASYNC(EmptyDataPOST);
-  RUN_TEST(BinaryDataPOST);
+  RUN_TEST_FORCEASYNC_AND_NOT(EmptyDataPOST);
+  RUN_TEST_FORCEASYNC_AND_NOT(BinaryDataPOST);
   RUN_TEST_FORCEASYNC_AND_NOT(CustomRequestHeader);
-  RUN_TEST_FORCEASYNC(IgnoresBogusContentLength);
-  RUN_TEST(SameOriginRestriction);
-  RUN_TEST_FORCEASYNC(CrossOriginRequest);
+  RUN_TEST_FORCEASYNC_AND_NOT(IgnoresBogusContentLength);
+  RUN_TEST_FORCEASYNC_AND_NOT(SameOriginRestriction);
+  RUN_TEST_FORCEASYNC_AND_NOT(CrossOriginRequest);
   RUN_TEST_FORCEASYNC_AND_NOT(StreamToFile);
-  RUN_TEST(AuditURLRedirect);
-  RUN_TEST_FORCEASYNC(AbortCalls);
+  RUN_TEST_FORCEASYNC_AND_NOT(AuditURLRedirect);
+  RUN_TEST_FORCEASYNC_AND_NOT(AbortCalls);
 }
 
 std::string TestURLLoader::ReadEntireFile(pp::FileIO_Dev* file_io,
