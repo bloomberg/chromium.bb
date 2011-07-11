@@ -17,7 +17,6 @@
 #include "chrome/browser/chromeos/cros/power_library.h"
 #include "chrome/browser/chromeos/cros/screen_lock_library.h"
 #include "chrome/browser/chromeos/cros/speech_synthesis_library.h"
-#include "chrome/browser/chromeos/cros/touchpad_library.h"
 #include "chrome/browser/chromeos/cros/update_library.h"
 
 #define DEFINE_GET_LIBRARY_METHOD(class_prefix, var_prefix)                    \
@@ -66,7 +65,6 @@ DEFINE_GET_LIBRARY_METHOD(Network, network);
 DEFINE_GET_LIBRARY_METHOD(Power, power);
 DEFINE_GET_LIBRARY_METHOD(ScreenLock, screen_lock);
 DEFINE_GET_LIBRARY_METHOD(SpeechSynthesis, speech_synthesis);
-DEFINE_GET_LIBRARY_METHOD(Touchpad, touchpad);
 DEFINE_GET_LIBRARY_METHOD(Update, update);
 
 bool CrosLibrary::EnsureLoaded() {
@@ -122,7 +120,6 @@ DEFINE_SET_LIBRARY_METHOD(Network, network);
 DEFINE_SET_LIBRARY_METHOD(Power, power);
 DEFINE_SET_LIBRARY_METHOD(ScreenLock, screen_lock);
 DEFINE_SET_LIBRARY_METHOD(SpeechSynthesis, speech_synthesis);
-DEFINE_SET_LIBRARY_METHOD(Touchpad, touchpad);
 DEFINE_SET_LIBRARY_METHOD(Update, update);
 
 } // namespace chromeos

@@ -18,7 +18,6 @@ class MockNetworkLibrary;
 class MockPowerLibrary;
 class MockScreenLockLibrary;
 class MockSpeechSynthesisLibrary;
-class MockTouchpadLibrary;
 
 // Class for initializing mocks for some parts of CrosLibrary. Once you mock
 // part of CrosLibrary it will be considered as successfully loaded and
@@ -31,7 +30,7 @@ class CrosMock {
   virtual ~CrosMock();
 
   // This method sets up basic mocks that are used by status area items:
-  // LibraryLoader, Language, Network, Power, Touchpad libraries.
+  // LibraryLoader, Language, Network, Power, libraries.
   // Add a call to this method at the beginning of your
   // SetUpInProcessBrowserTestFixture.
   void InitStatusAreaMocks();
@@ -47,7 +46,6 @@ class CrosMock {
   void InitMockPowerLibrary();
   void InitMockScreenLockLibrary();
   void InitMockSpeechSynthesisLibrary();
-  void InitMockTouchpadLibrary();
 
   // Get mocks.
   MockCryptohomeLibrary* mock_cryptohome_library();
@@ -56,7 +54,6 @@ class CrosMock {
   MockPowerLibrary* mock_power_library();
   MockScreenLockLibrary* mock_screen_lock_library();
   MockSpeechSynthesisLibrary* mock_speech_synthesis_library();
-  MockTouchpadLibrary* mock_touchpad_library();
 
   // This method sets up corresponding expectations for basic mocks that
   // are used by status area items.
@@ -72,7 +69,6 @@ class CrosMock {
   void SetPowerLibraryStatusAreaExpectations();
   void SetPowerLibraryExpectations();
   void SetSpeechSynthesisLibraryExpectations();
-  void SetTouchpadLibraryExpectations();
 
   void TearDownMocks();
 
@@ -88,7 +84,6 @@ class CrosMock {
   MockPowerLibrary* mock_power_library_;
   MockScreenLockLibrary* mock_screen_lock_library_;
   MockSpeechSynthesisLibrary* mock_speech_synthesis_library_;
-  MockTouchpadLibrary* mock_touchpad_library_;
 
   WifiNetworkVector wifi_networks_;
   CellularNetworkVector cellular_networks_;
