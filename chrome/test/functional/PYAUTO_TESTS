@@ -264,6 +264,9 @@
       # ==================================================
       # Flaky: crosbug.com/14394
       '-browsing_data.BrowsingDataTest.testClearHistoryAndDownloads',
+      # Chrome freezes and then system reboots when downloading large files
+      # crosbug.com/17459
+      '-downloads.DownloadsTest.testBigZip',
       # Downloads panel stays even after declining a download.
       # crosbug.com/14728
       '-downloads.DownloadsTest.testDeclineDangerousDownload',
