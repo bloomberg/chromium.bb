@@ -193,8 +193,9 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest,
 }
 
 // Tests setting values also for incognito mode
+// Test disabled due to http://crbug.com/88972.
 IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest,
-                       ProxyFixedIndividualIncognitoAlso) {
+                       DISABLED_ProxyFixedIndividualIncognitoAlso) {
   ASSERT_TRUE(RunExtensionTestIncognito("proxy/individual_incognito_also")) <<
       message_;
   const Extension* extension = GetSingleLoadedExtension();
