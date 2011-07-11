@@ -138,6 +138,10 @@
 
   'target_defaults': {
     'include_dirs': [
+      # Putting this first so that people who include "ppapi/..." get the
+      # third_party version instead of any other version (the chrome location
+      # for instance).
+      '../src/third_party',
       '../..',
     ],
     'variables': {
