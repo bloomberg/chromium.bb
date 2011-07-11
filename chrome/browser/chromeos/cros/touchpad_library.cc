@@ -1,14 +1,19 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/cros/touchpad_library.h"
 
+#include "base/command_line.h"
 #include "base/message_loop.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "base/process_util.h"
+#include "base/stringprintf.h"
 #include "content/browser/browser_thread.h"
 
 namespace chromeos {
+namespace {
+const char* kTpControl = "/opt/google/touchpad/tpcontrol";
+}  // namespace
 
 class TouchpadLibraryImpl : public TouchpadLibrary {
  public:
@@ -16,19 +21,43 @@ class TouchpadLibraryImpl : public TouchpadLibrary {
   virtual ~TouchpadLibraryImpl() {}
 
   void SetSensitivity(int value) {
-    if (CrosLibrary::Get()->EnsureLoaded()) {
+    // Run this on the FILE thread.
+    if (!BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
       BrowserThread::PostTask(
           BrowserThread::FILE, FROM_HERE,
-          NewRunnableFunction(&SetTouchpadSensitivity, value));
+          NewRunnableMethod(this,
+                            &TouchpadLibraryImpl::SetSensitivity, value));
+      return;
     }
+    std::vector<std::string> argv;
+    argv.push_back(kTpControl);
+    argv.push_back("sensitivity");
+    argv.push_back(StringPrintf("%d", value));
+
+    base::LaunchOptions options;
+    options.wait = false;  // Launch asynchronously.
+
+    base::LaunchProcess(CommandLine(argv), options);
   }
 
   void SetTapToClick(bool enabled) {
-    if (CrosLibrary::Get()->EnsureLoaded()) {
+    // Run this on the FILE thread.
+    if (!BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
       BrowserThread::PostTask(
           BrowserThread::FILE, FROM_HERE,
-          NewRunnableFunction(&SetTouchpadTapToClick, enabled));
+          NewRunnableMethod(this,
+                            &TouchpadLibraryImpl::SetTapToClick, enabled));
+      return;
     }
+    std::vector<std::string> argv;
+    argv.push_back(kTpControl);
+    argv.push_back("taptoclick");
+    argv.push_back(enabled ? "on" : "off");
+
+    base::LaunchOptions options;
+    options.wait = false;  // Launch asynchronously.
+
+    base::LaunchProcess(CommandLine(argv), options);
   }
 
   DISALLOW_COPY_AND_ASSIGN(TouchpadLibraryImpl);
@@ -54,3 +83,6 @@ TouchpadLibrary* TouchpadLibrary::GetImpl(bool stub) {
 }
 
 }  // namespace chromeos
+
+// Needed for NewRunnableMethod() call above.
+DISABLE_RUNNABLE_METHOD_REFCOUNT(chromeos::TouchpadLibraryImpl);
