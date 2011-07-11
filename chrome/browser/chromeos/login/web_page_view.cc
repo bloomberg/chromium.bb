@@ -30,7 +30,6 @@
 using base::TimeDelta;
 using views::Label;
 using views::View;
-using webkit_glue::FormData;
 
 namespace chromeos {
 
