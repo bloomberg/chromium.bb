@@ -6061,6 +6061,9 @@ ls' lab.">
       <message name="IDS_BOOMARK_EDITOR_TITLE" desc="Title of the window the bookmark editor is in.">
         Edit Bookmark
       </message>
+      <message name="IDS_BOOMARK_EDITOR_CONFIRM_DELETE" desc="The message shown in the dialog asking the user to confirm deleting a folder.">
+        This folder contains <ph name="COUNT">$1<ex>5</ex></ph> bookmarks. Are you sure you want to delete it?
+      </message>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_BOOMARK_BAR_FOLDER_NAME" desc="Name shown in the tree for the bookmarks bar folder">
           Bookmarks bar

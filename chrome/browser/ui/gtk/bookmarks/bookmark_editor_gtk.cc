@@ -53,6 +53,7 @@ class BookmarkEditorGtk::ContextMenuController
         running_menu_for_root_(false) {
     menu_model_.reset(new ui::SimpleMenuModel(this));
     menu_model_->AddItemWithStringId(COMMAND_EDIT, IDS_EDIT);
+    menu_model_->AddItemWithStringId(COMMAND_DELETE, IDS_DELETE);
     menu_model_->AddItemWithStringId(
         COMMAND_NEW_FOLDER,
         IDS_BOOMARK_EDITOR_NEW_FOLDER_MENU_ITEM);
@@ -86,14 +87,24 @@ class BookmarkEditorGtk::ContextMenuController
 
  private:
   enum ContextMenuCommand {
+    COMMAND_DELETE,
     COMMAND_EDIT,
     COMMAND_NEW_FOLDER
   };
 
   // Overridden from ui::SimpleMenuModel::Delegate:
   virtual bool IsCommandIdEnabled(int command_id) const {
-    return !(command_id == COMMAND_EDIT && running_menu_for_root_) &&
-        (editor_ != NULL);
+    if (editor_ == NULL)
+      return false;
+
+    switch (command_id) {
+      case COMMAND_DELETE:
+      case COMMAND_EDIT:
+        return !running_menu_for_root_;
+      case COMMAND_NEW_FOLDER:
+        return true;
+    }
+    return false;
   }
 
   virtual bool IsCommandIdChecked(int command_id) const {
@@ -110,6 +121,29 @@ class BookmarkEditorGtk::ContextMenuController
       return;
 
     switch (command_id) {
+      case COMMAND_DELETE: {
+        GtkTreeIter iter;
+        GtkTreeModel* model = NULL;
+        if (!gtk_tree_selection_get_selected(editor_->tree_selection_,
+                                             &model,
+                                             &iter)) {
+          break;
+        }
+        const BookmarkNode* selected_node = GetNodeAt(model, &iter);
+        if (selected_node) {
+          DCHECK(selected_node->is_folder());
+          // Deleting an existing bookmark folder. Confirm if it has other
+          // bookmarks.
+          if (!selected_node->empty()) {
+            if (!bookmark_utils::ConfirmDeleteBookmarkNode(selected_node,
+                  GTK_WINDOW(editor_->dialog_)))
+              break;
+          }
+          editor_->deletes_.push_back(selected_node->id());
+        }
+        gtk_tree_store_remove(editor_->tree_store_, &iter);
+        break;
+      }
       case COMMAND_EDIT: {
         GtkTreeIter iter;
         if (!gtk_tree_selection_get_selected(editor_->tree_selection_,
@@ -139,7 +173,7 @@ class BookmarkEditorGtk::ContextMenuController
     }
   }
 
-  int64 GetRowIdAt(GtkTreeModel* model, GtkTreeIter* iter) {
+  int64 GetRowIdAt(GtkTreeModel* model, GtkTreeIter* iter) const {
     GValue value = { 0, };
     gtk_tree_model_get_value(model, iter, bookmark_utils::ITEM_ID, &value);
     int64 id = g_value_get_int64(&value);
@@ -147,12 +181,12 @@ class BookmarkEditorGtk::ContextMenuController
     return id;
   }
 
-  const BookmarkNode* GetNodeAt(GtkTreeModel* model, GtkTreeIter* iter) {
+  const BookmarkNode* GetNodeAt(GtkTreeModel* model, GtkTreeIter* iter) const {
     int64 id = GetRowIdAt(model, iter);
     return (id > 0) ? editor_->bb_model_->GetNodeByID(id) : NULL;
   }
 
-  const BookmarkNode* GetSelectedNode() {
+  const BookmarkNode* GetSelectedNode() const {
     GtkTreeModel* model;
     GtkTreeIter iter;
     if (!gtk_tree_selection_get_selected(editor_->tree_selection_,
@@ -480,6 +514,10 @@ void BookmarkEditorGtk::ApplyEdits(GtkTreeIter* selected_parent) {
 
   bookmark_utils::ApplyEditsWithPossibleFolderChange(
       bb_model_, new_parent, details_, new_title, new_url);
+
+  // Remove the folders that were removed. This has to be done after all the
+  // other changes have been committed.
+  bookmark_utils::DeleteBookmarkFolders(bb_model_, deletes_);
 }
 
 void BookmarkEditorGtk::AddNewFolder(GtkTreeIter* parent, GtkTreeIter* child) {

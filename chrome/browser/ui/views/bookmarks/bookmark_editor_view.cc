@@ -47,7 +47,7 @@ static const int kTreeWidth = 300;
 static const int kNewFolderButtonID = 1002;
 
 // static
-void BookmarkEditor::Show(HWND parent_hwnd,
+void BookmarkEditor::Show(gfx::NativeWindow parent_hwnd,
                           Profile* profile,
                           const BookmarkNode* parent,
                           const EditDetails& details,
@@ -202,7 +202,16 @@ bool BookmarkEditorView::IsCommandIdChecked(int command_id) const {
 }
 
 bool BookmarkEditorView::IsCommandIdEnabled(int command_id) const {
-  return (command_id != IDS_EDIT || !running_menu_for_root_);
+  switch (command_id) {
+    case IDS_EDIT:
+    case IDS_DELETE:
+      return !running_menu_for_root_;
+    case IDS_BOOMARK_EDITOR_NEW_FOLDER_MENU_ITEM:
+      return true;
+    default:
+      NOTREACHED();
+      return false;
+  }
 }
 
 bool BookmarkEditorView::GetAcceleratorForCommandId(
@@ -215,13 +224,28 @@ void BookmarkEditorView::ExecuteCommand(int command_id) {
   DCHECK(tree_view_->GetSelectedNode());
   if (command_id == IDS_EDIT) {
     tree_view_->StartEditing(tree_view_->GetSelectedNode());
+  } else if (command_id == IDS_DELETE) {
+    EditorNode* node = tree_model_->AsNode(tree_view_->GetSelectedNode());
+    if (!node)
+      return;
+    if (node->value != 0) {
+      const BookmarkNode* b_node = bb_model_->GetNodeByID(node->value);
+      if (!b_node->empty() &&
+          !bookmark_utils::ConfirmDeleteBookmarkNode(b_node,
+            GetWidget()->GetNativeWindow())) {
+        // The folder is not empty and the user didn't confirm.
+        return;
+      }
+      deletes_.push_back(node->value);
+    }
+    tree_model_->Remove(node->parent(), node);
   } else {
     DCHECK(command_id == IDS_BOOMARK_EDITOR_NEW_FOLDER_MENU_ITEM);
     NewFolder();
   }
 }
 
-void BookmarkEditorView::Show(HWND parent_hwnd) {
+void BookmarkEditorView::Show(gfx::NativeWindow parent_hwnd) {
   views::Widget::CreateWindowWithParent(this, parent_hwnd);
   UserInputChanged();
   if (show_tree_ && bb_model_->IsLoaded())
@@ -250,6 +274,7 @@ void BookmarkEditorView::ShowContextMenuForView(View* source,
   if (!context_menu_contents_.get()) {
     context_menu_contents_.reset(new ui::SimpleMenuModel(this));
     context_menu_contents_->AddItemWithStringId(IDS_EDIT, IDS_EDIT);
+    context_menu_contents_->AddItemWithStringId(IDS_DELETE, IDS_DELETE);
     context_menu_contents_->AddItemWithStringId(
         IDS_BOOMARK_EDITOR_NEW_FOLDER_MENU_ITEM,
         IDS_BOOMARK_EDITOR_NEW_FOLDER_MENU_ITEM);
@@ -560,6 +585,10 @@ void BookmarkEditorView::ApplyEdits(EditorNode* parent) {
 
   bookmark_utils::ApplyEditsWithPossibleFolderChange(
       bb_model_, new_parent, details_, new_title, new_url);
+
+  // Remove the folders that were removed. This has to be done after all the
+  // other changes have been committed.
+  bookmark_utils::DeleteBookmarkFolders(bb_model_, deletes_);
 }
 
 void BookmarkEditorView::ApplyNameChangesAndCreateNewFolders(

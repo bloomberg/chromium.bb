@@ -156,6 +156,9 @@ class BookmarkEditorGtk : public BookmarkEditor,
   // Is the tree shown?
   bool show_tree_;
 
+  // List of deleted bookmark folders.
+  std::vector<int64> deletes_;
+
   // The context menu controller.
   scoped_ptr<ContextMenuController> menu_controller_;
 

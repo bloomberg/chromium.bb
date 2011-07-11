@@ -118,7 +118,7 @@ class BookmarkEditorView : public BookmarkEditor,
 
   // Creates a Window and adds the BookmarkEditorView to it. When the window is
   // closed the BookmarkEditorView is deleted.
-  void Show(HWND parent_hwnd);
+  void Show(gfx::NativeWindow parent_hwnd);
 
   // Closes the dialog.
   void Close();
@@ -261,6 +261,9 @@ class BookmarkEditorView : public BookmarkEditor,
 
   // Is the tree shown?
   bool show_tree_;
+
+  // List of deleted bookmark folders.
+  std::vector<int64> deletes_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkEditorView);
 };

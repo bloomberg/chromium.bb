@@ -118,6 +118,18 @@ int ChildURLCount(const BookmarkNode* node) {
   return result;
 }
 
+// Returns the total number of descendants nodes.
+int ChildURLCountTotal(const BookmarkNode* node) {
+  int result = 0;
+  for (int i = 0; i < node->child_count(); ++i) {
+    const BookmarkNode* child = node->GetChild(i);
+    result++;
+    if (child->is_folder())
+      result += ChildURLCountTotal(child);
+  }
+  return result;
+}
+
 // Implementation of OpenAll. Opens all nodes of type URL and any children of
 // |node| that are of type URL. |navigator| is the PageNavigator used to open
 // URLs. After the first url is opened |opened_url| is set to true and
@@ -703,6 +715,30 @@ bool NodeHasURLs(const BookmarkNode* node) {
       return true;
   }
   return false;
+}
+
+bool ConfirmDeleteBookmarkNode(const BookmarkNode* node,
+                               gfx::NativeWindow window) {
+  DCHECK(node && node->is_folder() && !node->empty());
+  return platform_util::SimpleYesNoBox(window,
+      l10n_util::GetStringUTF16(IDS_DELETE),
+      l10n_util::GetStringFUTF16Int(IDS_BOOMARK_EDITOR_CONFIRM_DELETE,
+                                    ChildURLCountTotal(node)));
+}
+
+void DeleteBookmarkFolders(BookmarkModel* model,
+                           const std::vector<int64>& ids) {
+  // Remove the folders that were removed. This has to be done after all the
+  // other changes have been committed.
+  for (std::vector<int64>::const_iterator iter = ids.begin();
+       iter != ids.end();
+       ++iter) {
+    const BookmarkNode* node = model->GetNodeByID(*iter);
+    if (!node)
+      continue;
+    const BookmarkNode* parent = node->parent();
+    model->Remove(parent, parent->GetIndexOf(node));
+  }
 }
 
 }  // namespace bookmark_utils

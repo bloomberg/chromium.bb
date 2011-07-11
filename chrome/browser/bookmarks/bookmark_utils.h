@@ -217,6 +217,14 @@ const BookmarkNode* GetParentForNewNodes(
 // of type URL.
 bool NodeHasURLs(const BookmarkNode* node);
 
+// Ask the user before deleting a non-empty bookmark folder.
+bool ConfirmDeleteBookmarkNode(const BookmarkNode* node,
+                               gfx::NativeWindow window);
+
+// Delete the list of nodes.
+void DeleteBookmarkFolders(BookmarkModel* model,
+                           const std::vector<int64>& ids);
+
 // Number of bookmarks we'll open before prompting the user to see if they
 // really want to open all.
 //
