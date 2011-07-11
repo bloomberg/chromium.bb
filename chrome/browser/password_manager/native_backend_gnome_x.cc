@@ -4,7 +4,6 @@
 
 #include "chrome/browser/password_manager/native_backend_gnome_x.h"
 
-#include <dbus/dbus-glib.h>
 #include <dlfcn.h>
 #include <gnome-keyring.h>
 
