@@ -1,7 +1,5 @@
 #include "version.h"
 
-#include "winresrc.h"
-
 #ifdef APSTUDIO_INVOKED
 # error Do not open this in the GUI, it will be massacred on save. Do not do it.
 #endif // APSTUDIO_INVOKED
@@ -11,7 +9,7 @@
 // Version
 //
 
-VS_VERSION_INFO VERSIONINFO
+1 VERSIONINFO
  FILEVERSION CHROME_VERSION
  PRODUCTVERSION CHROME_VERSION
  FILEFLAGSMASK 0x17L
