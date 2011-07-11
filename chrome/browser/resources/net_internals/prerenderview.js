@@ -17,6 +17,10 @@ function PrerenderView(mainBoxId, prerenderEnabledSpanId, prerenderHistoryDivId,
 
 inherits(PrerenderView, DivView);
 
+PrerenderView.prototype.onLoadLogFinish = function(data) {
+  return this.onPrerenderInfoChanged(data.prerenderInfo);
+};
+
 function IsValidPrerenderInfo(prerenderInfo) {
   if (prerenderInfo == null) {
     return false;
@@ -33,9 +37,9 @@ PrerenderView.prototype.onPrerenderInfoChanged = function(prerenderInfo) {
   this.prerenderEnabledSpan_.innerText = '';
   this.prerenderHistoryDiv_.innerHTML = '';
   this.prerenderActiveDiv_.innerHTML = '';
-  if (!IsValidPrerenderInfo(prerenderInfo)) {
-    return;
-  }
+
+  if (!IsValidPrerenderInfo(prerenderInfo))
+    return false;
 
   this.prerenderEnabledSpan_.innerText = prerenderInfo.enabled.toString();
 
@@ -46,6 +50,8 @@ PrerenderView.prototype.onPrerenderInfoChanged = function(prerenderInfo) {
   var tabPrinter = PrerenderView.createActiveTablePrinter(
       prerenderInfo.active);
   tabPrinter.toHTML(this.prerenderActiveDiv_, 'styledTable');
+
+  return true;
 };
 
 PrerenderView.createHistoryTablePrinter = function(prerenderHistory) {

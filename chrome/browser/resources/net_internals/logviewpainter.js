@@ -12,6 +12,7 @@
 var PaintLogView;
 var PrintSourceEntriesAsText;
 var proxySettingsToString;
+var stripCookiesAndLoginInfo;
 
 // Start of anonymous namespace.
 (function() {
@@ -23,8 +24,6 @@ PaintLogView = function(sourceEntries, node) {
     addSourceEntry_(node, sourceEntries[i]);
   }
 }
-
-const INDENTATION_PX = 20;
 
 function addSourceEntry_(node, sourceEntry) {
   var div = addNode(node, 'div');
@@ -180,15 +179,19 @@ function formatHexString(hexString, asciiCharsPerLine) {
 function getTextForExtraParams(entry, enableSecurityStripping) {
   // Format the extra parameters (use a custom formatter for certain types,
   // but default to displaying as JSON).
+
+  // If security stripping is enabled, remove data as needed.
+  if (enableSecurityStripping)
+    entry = stripCookiesAndLoginInfo(entry);
+
   switch (entry.type) {
     case LogEventType.HTTP_TRANSACTION_SEND_REQUEST_HEADERS:
     case LogEventType.HTTP_TRANSACTION_SEND_TUNNEL_HEADERS:
-      return getTextForRequestHeadersExtraParam(entry, enableSecurityStripping);
+      return getTextForRequestHeadersExtraParam(entry);
 
     case LogEventType.HTTP_TRANSACTION_READ_RESPONSE_HEADERS:
     case LogEventType.HTTP_TRANSACTION_READ_TUNNEL_RESPONSE_HEADERS:
-      return getTextForResponseHeadersExtraParam(entry,
-                                                 enableSecurityStripping);
+      return getTextForResponseHeadersExtraParam(entry);
 
     case LogEventType.PROXY_CONFIG_CHANGED:
       return getTextForProxyConfigChangedExtraParam(entry);
@@ -197,9 +200,7 @@ function getTextForExtraParams(entry, enableSecurityStripping) {
       var out = [];
       for (var k in entry.params) {
         if (k == 'headers' && entry.params[k] instanceof Array) {
-          out.push(
-              getTextForResponseHeadersExtraParam(entry,
-                                                  enableSecurityStripping));
+          out.push(getTextForResponseHeadersExtraParam(entry));
           continue;
         }
         var value = entry.params[k];
@@ -324,31 +325,37 @@ function stripCookieOrLoginInfo(line) {
 }
 
 /**
- * Removes all cookie and unencrypted login text from a list of HTTP
- * header lines.
+ * If |entry| has headers, returns a copy of |entry| with all cookie and
+ * unencrypted login text removed.  Otherwise, returns original |entry| object.
+ * This is needed so that JSON log dumps can be made without affecting the
+ * source data.
  */
-function stripCookiesAndLoginInfo(headers) {
-  return headers.map(stripCookieOrLoginInfo);
+stripCookiesAndLoginInfo = function(entry) {
+  if (!entry.params || !entry.params.headers ||
+      !(entry.params.headers instanceof Array)) {
+    return entry;
+  }
+
+  // Duplicate the top level object, and |entry.params|.  All other fields are
+  // just pointers to the original values, as they won't be modified, other than
+  // |entry.params.headers|.
+  entry = shallowCloneObject(entry);
+  entry.params = shallowCloneObject(entry.params);
+
+  entry.params.headers = entry.params.headers.map(stripCookieOrLoginInfo);
+  return entry;
 }
 
-function getTextForRequestHeadersExtraParam(entry, enableSecurityStripping) {
+function getTextForRequestHeadersExtraParam(entry) {
   var params = entry.params;
 
   // Strip the trailing CRLF that params.line contains.
   var lineWithoutCRLF = params.line.replace(/\r\n$/g, '');
-
-  var headers = params.headers;
-  if (enableSecurityStripping)
-    headers = stripCookiesAndLoginInfo(headers);
-
-  return indentLines(' --> ', [lineWithoutCRLF].concat(headers));
+  return indentLines(' --> ', [lineWithoutCRLF].concat(params.headers));
 }
 
-function getTextForResponseHeadersExtraParam(entry, enableSecurityStripping) {
-  var headers = entry.params.headers;
-  if (enableSecurityStripping)
-    headers = stripCookiesAndLoginInfo(headers);
-  return indentLines(' --> ', headers);
+function getTextForResponseHeadersExtraParam(entry) {
+  return indentLines(' --> ', entry.params.headers);
 }
 
 function getTextForProxyConfigChangedExtraParam(entry) {

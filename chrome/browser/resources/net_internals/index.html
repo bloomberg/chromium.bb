@@ -15,6 +15,7 @@ found in the LICENSE file.
     <script src="httpcacheview.js"></script>
     <script src="testview.js"></script>
     <script src="hstsview.js"></script>
+    <script src="logdumputil.js"></script>
     <script src="main.js"></script>
     <script src="dnsview.js"></script>
     <script src="eventsview.js"></script>
@@ -59,7 +60,7 @@ found in the LICENSE file.
     <div id=proxyTabContent>
       <h4>
         Current proxy settings
-        <input type=button value="Re-apply settings" id=proxyReloadSettings />
+        <input type=button value="Re-apply settings" id=proxyReloadSettings class="hideOnLoadLog"/>
       </h4>
 
       <table><tr>
@@ -92,7 +93,7 @@ found in the LICENSE file.
 
       <h4>
         Proxies which have failed recently, and are marked as bad
-        <input type=button value="Clear bad proxies" id=clearBadProxies />
+        <input type=button value="Clear bad proxies" id=clearBadProxies class="hideOnLoadLog" />
       </h4>
       <table class="styledTable">
         <thead>
@@ -119,7 +120,7 @@ found in the LICENSE file.
 
       <h4>
         Host resolver cache
-        <input type=button value="Clear host cache" id=clearHostResolverCache />
+        <input type=button value="Clear host cache" id=clearHostResolverCache class="hideOnLoadLog" />
       </h4>
       <ul>
         <li>Capacity: <span id=hostResolverCacheCapacity></span></li>
@@ -145,9 +146,11 @@ found in the LICENSE file.
     <div id=socketsTabContent>
       <h4>Socket pools</h4>
       <ul>
-        <li><input type=button value="Close idle sockets" id=socketPoolCloseIdleButton />
+        <li class="hideOnLoadLog">
+          <input type=button value="Close idle sockets" id=socketPoolCloseIdleButton />
         </li>
-        <li><input type=button value="Flush socket pools" id=socketPoolFlushButton />
+        <li class="hideOnLoadLog">
+          <input type=button value="Flush socket pools" id=socketPoolFlushButton />
           <span class=warningText >May break pages with active connections</span>
         </li>
         <li><a href='#events&q=type:SOCKET%20is:active'>View live sockets</a>
@@ -189,8 +192,10 @@ found in the LICENSE file.
         </div>
     </div>
     <div id=httpCacheTabContent>
-      <h4>Entries</h4>
-      <a href="chrome://view-http-cache" target=_blank>Explore cache entries</a>
+      <div class="hideOnLoadLog">
+        <h4>Entries</h4>
+        <a href="chrome://view-http-cache" target=_blank>Explore cache entries</a>
+      </div>
 
       <h4>Statistics</h4>
       <div id=httpCacheStats>Nothing loaded yet.</div>
@@ -277,19 +282,27 @@ found in the LICENSE file.
               Help: How to get data for bug reports?
             </a>
           </p>
-          <button id=exportToFile class=bigButton>Dump to file</button>
+          <button id=dataViewSaveLogFile class=bigButton>Dump to file</button>
+          <pre id=dataViewSaveStatusText></pre>
         </div>
       </div>
-      <div id=dataViewLoadDataDiv>
+      <div id=dataViewLoadedDiv style="display: none">
+        <h2>Data Loaded</h2>
+        <p id=dataViewLoadedClientInfoText></p>
+      </div>
+      <div>
         <h2>Load data</h2>
+        <p><input type=file value="Load log from file" id=dataViewLoadLogFile /></p>
+        <pre id=dataViewLoadStatusText></pre>
         <div style="margin: 8px">
-          <p><input type=file value="Load log from file" id=dataViewLoadLogFile /></p>
-          <p>Only works with log files created with "--log-net-log=file_name".
-             "--net-log-level=#" will set the default log level used.
+          <p>Works for both log dumps generated from this page with Chrome 14
+             and later, and with log files created with
+              "--log-net-log=file_name".  "--net-log-level=#" will set the
+              default log level used.
           </p>
           <p>Once a log is loaded, this page will stop collecting data, and will
-             only start gathering data again when the page is
-             <a href="javascript:history.go(0);">reloaded</a>.<BR>
+             only start gathering data again when
+             <a href="javascript:history.go(0);">reloaded</a>.
           </p>
         </div>
       </div>
@@ -305,7 +318,7 @@ found in the LICENSE file.
         </span>
         <table style="margin: 8px">
           <tr>
-            <td>Passively captured:</td>
+            <td>Passively&nbsp;captured:</td>
             <td align=right id=passivelyCapturedCount></td>
           </tr>
           <tr>
@@ -313,8 +326,10 @@ found in the LICENSE file.
             <td align=right id=activelyCapturedCount></td>
           </tr>
         </table>
-        <p><input type=button value="Delete all" id=dataViewDeleteAll /></p>
-        <p><input id=byteLoggingCheckbox type=checkbox>
+        <p class="hideOnLoadLog">
+          <input type=button value="Delete all" id=dataViewDeleteAll />
+        </p>
+        <p class="hideOnLoadLog"><input id=byteLoggingCheckbox type=checkbox />
             Log actual bytes sent/received.
         </p>
       </div>
@@ -350,6 +365,8 @@ function displayHelpForBugDump() {
 <li>Email the log file to the bug investigator,
   <b>along with an explanation of what went wrong, including any relevant
      URLs.</b>
+  You may want to compress the file before sending, as the log files can be
+  fairly large but compress well.
 </li>
 
 </ol>
@@ -360,7 +377,8 @@ function displayHelpForBugDump() {
   IP addresses, URLs, and cookies.</li>
 <ul>
 <li>You can edit the log to obscure information if you like, but sometimes it
-  is relevant to the bug.</li>
+  is relevant to the bug.  If you choose do this, please make sure you can still
+  load the log file.</li>
 <li>If you choose not to have cookies removed from the log, you must toggle
   the checkbox before clicking the button.</li>
 </ul>

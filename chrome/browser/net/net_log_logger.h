@@ -15,6 +15,10 @@ class FilePath;
 // VLOG(1) or a path specified on creation.  This is to debug errors that
 // prevent getting to the about:net-internals page.
 //
+// When writing directly to a file rather than VLOG(1), the text file will
+// contain a single JSON object, with an extra comma on the end and missing
+// a terminal "]}".
+//
 // Relies on ChromeNetLog only calling an Observer once at a time for
 // thread-safety.
 class NetLogLogger : public ChromeNetLog::ThreadSafeObserver {

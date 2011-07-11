@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -68,6 +68,23 @@ View.prototype.getBottom = function() {
 };
 
 View.prototype.setParameters = function(params) {};
+
+/**
+ * Called when loading a log file, after clearing all events, but before
+ * loading the new ones.  |polledData| contains the data from all
+ * PollableData helpers, and |tabData| contains the data for the particular tab.
+ */
+View.prototype.onLoadLogStart = function(polledData, tabData) {
+};
+
+/**
+ * Called as the final step of loading a log file.  Arguments are the same as
+ * onLoadLogStart.  Returns true to indicate the tab should be shown, false
+ * otherwise.
+ */
+View.prototype.onLoadLogFinish = function(polledData, tabData) {
+  return false;
+};
 
 //-----------------------------------------------------------------------------
 

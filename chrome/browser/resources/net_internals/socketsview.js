@@ -28,12 +28,16 @@ function SocketsView(mainBoxId, socketPoolDivId, socketPoolGroupsDivId,
 
 inherits(SocketsView, DivView);
 
+SocketsView.prototype.onLoadLogFinish = function(data) {
+  return this.onSocketPoolInfoChanged(data.socketPoolInfo);
+};
+
 SocketsView.prototype.onSocketPoolInfoChanged = function(socketPoolInfo) {
   this.socketPoolDiv_.innerHTML = '';
   this.socketPoolGroupsDiv_.innerHTML = '';
 
   if (!socketPoolInfo)
-    return;
+    return false;
 
   var socketPools = SocketPoolWrapper.createArrayFrom(socketPoolInfo);
   var tablePrinter = SocketPoolWrapper.createTablePrinter(socketPools);
@@ -48,6 +52,7 @@ SocketsView.prototype.onSocketPoolInfoChanged = function(socketPoolInfo) {
       groupTablePrinter.toHTML(p, 'styledTable');
     }
   }
+  return true;
 };
 
 SocketsView.prototype.closeIdleSockets = function() {

@@ -495,13 +495,16 @@ EventsView.prototype.onAllLogEntriesDeleted = function() {
 };
 
 /**
- * Called when either a log file is loaded or when going back to actively
- * logging events.  In either case, called after clearing the old entries,
+ * Called when either a log file is loaded, after clearing the old entries,
  * but before getting any new ones.
  */
-EventsView.prototype.onSetIsViewingLogFile = function(isViewingLogFile) {
+EventsView.prototype.onLoadLogStart = function() {
   // Needed to sort new sourceless entries correctly.
   this.maxReceivedSourceId_ = 0;
+};
+
+EventsView.prototype.onLoadLogFinish = function(data) {
+  return true;
 };
 
 EventsView.prototype.incrementPrefilterCount = function(offset) {

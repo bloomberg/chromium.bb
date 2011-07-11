@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,10 +31,15 @@ function ServiceProvidersView(tabId,
 
 inherits(ServiceProvidersView, DivView);
 
+ServiceProvidersView.prototype.onLoadLogFinish = function(data) {
+  return this.onServiceProvidersChanged(data.serviceProviders);
+};
+
 ServiceProvidersView.prototype.onServiceProvidersChanged =
 function(serviceProviders) {
-  this.updateServiceProviders_(serviceProviders['service_providers']);
-  this.updateNamespaceProviders_(serviceProviders['namespace_providers']);
+  return serviceProviders &&
+      this.updateServiceProviders_(serviceProviders['service_providers']) &&
+      this.updateNamespaceProviders_(serviceProviders['namespace_providers']);
 };
 
 /**
@@ -105,6 +110,9 @@ ServiceProvidersView.prototype.updateServiceProviders_ =
 function(serviceProviders) {
   this.serviceProvidersTbody_.innerHTML = '';
 
+  if (!serviceProviders)
+    return false;
+
   // Add a table row for each service provider.
   for (var i = 0; i < serviceProviders.length; ++i) {
     var tr = addNode(this.serviceProvidersTbody_, 'tr');
@@ -118,6 +126,7 @@ function(serviceProviders) {
     addNodeWithText(tr, 'td', ServiceProvidersView.getProtocolType(entry));
     addNodeWithText(tr, 'td', entry.path);
   }
+  return true;
 };
 
 /**
@@ -126,6 +135,9 @@ function(serviceProviders) {
 ServiceProvidersView.prototype.updateNamespaceProviders_ =
 function(namespaceProviders) {
   this.namespaceProvidersTbody_.innerHTML = '';
+
+  if (!namespaceProviders)
+    return false;
 
   // Add a table row for each namespace provider.
   for (var i = 0; i < namespaceProviders.length; ++i) {
@@ -137,5 +149,5 @@ function(namespaceProviders) {
                     ServiceProvidersView.getNamespaceProviderType(entry));
     addNodeWithText(tr, 'td', entry.active);
   }
+  return true;
 };
-

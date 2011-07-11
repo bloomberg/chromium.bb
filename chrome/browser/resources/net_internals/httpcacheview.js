@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,8 +17,15 @@ function HttpCacheView(mainBoxId, statsDivId) {
 
 inherits(HttpCacheView, DivView);
 
+HttpCacheView.prototype.onLoadLogFinish = function(data) {
+  return this.onHttpCacheInfoChanged(data.httpCacheInfo);
+};
+
 HttpCacheView.prototype.onHttpCacheInfoChanged = function(info) {
   this.statsDiv_.innerHTML = '';
+
+  if (!info)
+    return false;
 
   // Print the statistics.
   var statsUl = addNode(this.statsDiv_, 'ul');
@@ -26,5 +33,6 @@ HttpCacheView.prototype.onHttpCacheInfoChanged = function(info) {
     var li = addNode(statsUl, 'li');
     addTextNode(li, statName + ': ' + info.stats[statName]);
   }
+  return true;
 };
 

@@ -47,20 +47,56 @@ function ProxyView(mainBoxId,
 
 inherits(ProxyView, DivView);
 
+ProxyView.prototype.onLoadLogStart = function(data) {
+  // Need to reset this so the latest proxy source from the dump can be
+  // identified when the log entries are loaded.
+  this.latestProxySourceId_ = 0;
+};
+
+ProxyView.prototype.onLoadLogFinish = function(data, tabData) {
+  // It's possible that the last INIT_PROXY_RESOLVER source was deleted from the
+  // log, but earlier sources remain.  When that happens, clear the list of
+  // entries here, to avoid displaying misleading information.
+  if (tabData != this.latestProxySourceId_)
+    this.clearLog_();
+  return this.onProxySettingsChanged(data.proxySettings) &&
+         this.onBadProxiesChanged(data.badProxies);
+};
+
+/**
+ * Save view-specific state.
+ *
+ * Save the greatest seen proxy source id, so we will not incorrectly identify
+ * the log source associated with the current proxy configuration.
+ */
+ProxyView.prototype.saveState = function() {
+  return this.latestProxySourceId_;
+};
+
 ProxyView.prototype.onProxySettingsChanged = function(proxySettings) {
+  // Both |original| and |effective| are dictionaries describing the settings.
+  this.originalSettingsDiv_.innerHTML = '';
+  this.effectiveSettingsDiv_.innerHTML = '';
+
+  if (!proxySettings)
+    return false;
+
   var original = proxySettings.original;
   var effective = proxySettings.effective;
 
-  // Both |original| and |effective| are dictionaries describing the settings.
-  this.originalSettingsDiv_.innerHTML = ''
-  this.effectiveSettingsDiv_.innerHTML = ''
+  if (!original || !effective)
+    return false;
 
   addTextNode(this.originalSettingsDiv_, proxySettingsToString(original));
   addTextNode(this.effectiveSettingsDiv_, proxySettingsToString(effective));
+  return true;
 };
 
 ProxyView.prototype.onBadProxiesChanged = function(badProxies) {
   this.badProxiesTbody_.innerHTML = '';
+
+  if (!badProxies)
+    return false;
 
   // Add a table row for each bad proxy entry.
   for (var i = 0; i < badProxies.length; ++i) {
@@ -75,6 +111,7 @@ ProxyView.prototype.onBadProxiesChanged = function(badProxies) {
     addTextNode(nameCell, entry.proxy_uri);
     addTextNode(badUntilCell, badUntilDate.toLocaleString());
   }
+  return true;
 };
 
 ProxyView.prototype.onLogEntryAdded = function(logEntry) {
@@ -114,7 +151,3 @@ ProxyView.prototype.onLogEntriesDeleted = function(sourceIds) {
 ProxyView.prototype.onAllLogEntriesDeleted = function() {
   this.clearLog_();
 };
-
-ProxyView.prototype.onSetIsViewingLogFile = function(isViewingLogFile) {
-};
-

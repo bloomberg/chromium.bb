@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,8 +19,8 @@ function DetailsView(tabHandlesContainerId,
   this.logView_ = new DetailsLogView(logBoxId);
   this.timelineView_ = new DetailsTimelineView(timelineBoxId);
 
-  this.addTab(logTabId, this.logView_, true);
-  this.addTab(timelineTabId, this.timelineView_, true);
+  this.addTab(logTabId, this.logView_, true, true);
+  this.addTab(timelineTabId, this.timelineView_, true, true);
 
   // Default to the log view.
   this.switchToTab(logTabId, null);

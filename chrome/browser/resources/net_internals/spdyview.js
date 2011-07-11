@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,9 +36,16 @@ function SpdyView(mainBoxId, spdyEnabledSpanId,
 
 inherits(SpdyView, DivView);
 
+SpdyView.prototype.onLoadLogFinish = function(data) {
+  return this.onSpdySessionInfoChanged(data.spdySessionInfo) &&
+         this.onSpdyStatusChanged(data.spdyStatus) &&
+         this.onSpdyAlternateProtocolMappingsChanged(
+             data.spdyAlternateProtocolMappings);
+};
+
 /**
- * If |spdySessionInfo| is not null, displays a single table with information
- * on each SPDY session.  Otherwise, displays "None".
+ * If |spdySessionInfo| there are any sessions, display a single table with
+ * information on each SPDY session.  Otherwise, displays "None".
  */
 SpdyView.prototype.onSpdySessionInfoChanged = function(spdySessionInfo) {
   this.spdySessionDiv_.innerHTML = '';
@@ -47,12 +54,17 @@ SpdyView.prototype.onSpdySessionInfoChanged = function(spdySessionInfo) {
   setNodeDisplay(this.spdySessionNoneSpan_, hasNoSession);
   setNodeDisplay(this.spdySessionLinkSpan_, !hasNoSession);
 
-  if (hasNoSession)
-    return;
+  // Only want to be hide the tab if there's no data.  In the case of having
+  // data but no sessions, still show the tab.
+  if (!spdySessionInfo)
+    return false;
 
-  var tablePrinter = SpdyView.createSessionTablePrinter(spdySessionInfo);
-  tablePrinter.toHTML(this.spdySessionDiv_, 'styledTable');
+  if (!hasNoSession) {
+    var tablePrinter = SpdyView.createSessionTablePrinter(spdySessionInfo);
+    tablePrinter.toHTML(this.spdySessionDiv_, 'styledTable');
+  }
 
+  return true;
 };
 
 /**
@@ -65,7 +77,9 @@ SpdyView.prototype.onSpdyStatusChanged = function(spdyStatus) {
   this.spdyForceAlwaysSpan_.innerText = spdyStatus.force_spdy_always;
   this.spdyForceOverSslSpan_.innerText = spdyStatus.force_spdy_over_ssl;
   this.spdyNextProtocolsSpan_.innerText = spdyStatus.next_protos;
-}
+
+  return true;
+};
 
 /**
  * If |spdyAlternateProtocolMappings| is not empty, displays a single table
@@ -85,6 +99,7 @@ SpdyView.prototype.onSpdyAlternateProtocolMappingsChanged =
   } else {
     this.spdyAlternateProtocolMappingsDiv_.innerHTML = 'None';
   }
+  return true;
 };
 
 /**

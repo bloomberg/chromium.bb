@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,6 +46,10 @@ function DnsView(mainBoxId,
 
 inherits(DnsView, DivView);
 
+DnsView.prototype.onLoadLogFinish = function(data) {
+  return this.onHostResolverInfoChanged(data.hostResolverInfo);
+};
+
 DnsView.prototype.onHostResolverInfoChanged = function(hostResolverInfo) {
   // Clear the existing values.
   this.defaultFamilySpan_.innerHTML = '';
@@ -55,8 +59,8 @@ DnsView.prototype.onHostResolverInfoChanged = function(hostResolverInfo) {
   this.cacheTbody_.innerHTML = '';
 
   // No info.
-  if (!hostResolverInfo)
-    return;
+  if (!hostResolverInfo || !hostResolverInfo.cache)
+    return false;
 
   var family = hostResolverInfo.default_address_family;
   addTextNode(this.defaultFamilySpan_, getKeyWithValue(AddressFamily, family));
@@ -98,4 +102,6 @@ DnsView.prototype.onHostResolverInfoChanged = function(hostResolverInfo) {
     var expiresCell = addNode(tr, 'td');
     addTextNode(expiresCell, expiresDate.toLocaleString());
   }
+
+  return true;
 };

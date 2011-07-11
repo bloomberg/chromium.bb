@@ -99,7 +99,7 @@ function changeClassName(node, classNameToAddOrRemove, isAdd) {
 }
 
 function getKeyWithValue(map, value) {
-  for (key in map) {
+  for (var key in map) {
     if (map[key] == value)
       return key;
   }
@@ -126,6 +126,20 @@ function makeRepeatedString(str, count) {
   for (var i = 0; i < count; ++i)
     out.push(str);
   return out.join('');
+}
+
+/**
+ * Clones a basic POD object.  Only a new top level object will be cloned.  It
+ * will continue to reference the same values as the original object.
+ */
+function shallowCloneObject(object) {
+  if (!(object instanceof Object))
+    return object;
+  var copy = {};
+  for (var key in object) {
+    copy[key] = object[key];
+  }
+  return copy;
 }
 
 /**
