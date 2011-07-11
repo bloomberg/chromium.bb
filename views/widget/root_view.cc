@@ -54,8 +54,8 @@ RootView::~RootView() {
 // Tree operations -------------------------------------------------------------
 
 void RootView::SetContentsView(View* contents_view) {
-  DCHECK(contents_view && GetWidget()->GetNativeView()) <<
-      "Can't be called until after the native view is created!";
+  DCHECK(contents_view && GetWidget()->native_widget()) <<
+      "Can't be called until after the native widget is created!";
   // The ContentsView must be set up _after_ the window is created so that its
   // Widget pointer is valid.
   SetLayoutManager(new FillLayout);
@@ -415,6 +415,10 @@ void RootView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
     if (touch_pressed_handler_ == child)
       touch_pressed_handler_ = NULL;
   }
+}
+
+void RootView::OnPaint(gfx::Canvas* canvas) {
+  canvas->AsCanvasSkia()->drawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
 }
 
 const ui::Compositor* RootView::GetCompositor() const {

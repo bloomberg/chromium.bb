@@ -121,6 +121,7 @@ class RootView : public View,
   // Overridden from View:
   virtual void ViewHierarchyChanged(bool is_add, View* parent,
                                     View* child) OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual const ui::Compositor* GetCompositor() const OVERRIDE;
   virtual ui::Compositor* GetCompositor() OVERRIDE;
   virtual void MarkLayerDirty() OVERRIDE;
