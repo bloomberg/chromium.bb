@@ -20,3 +20,6 @@ BUGCR86570 MAC : platform/mac/fast/text/thai-combining-mark-positioning.html = C
 BUGCR88801 WIN : printing/allowed-page-breaks.html = CRASH
 BUGCR88801 WIN : svg/dynamic-updates/SVGFEDropShadowElement-svgdom-dy-prop.html = CRASH
 BUGCR88801 WIN : svg/dynamic-updates/SVGFEFloodElement-dom-flood-color-attr.html = CRASH
+
+// We now follow spec on toisostring, changes needs to be upstreamed.
+BUGRICOW : fast/js/date-toisostring.html = TEXT
