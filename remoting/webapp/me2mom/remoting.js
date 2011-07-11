@@ -43,10 +43,6 @@ var kHostSecretLen = 5;
 var kAccessCodeLen = kSupportIdLen + kHostSecretLen;
 var kDigitsPerGroup = 4;
 
-function hasClass(element, cls) {
-  return element.className.match(new RegExp('\\b' + cls + '\\b'));
-}
-
 function retrieveEmail_(access_token) {
   var headers = {
     'Authorization': 'OAuth ' + remoting.oauth2.getAccessToken()
@@ -74,29 +70,6 @@ function refreshEmail_() {
   }
 }
 
-function addClass(element, cls) {
-  if (!hasClass(element, cls))
-    element.className = element.className + ' ' + cls;
-}
-
-function removeClass(element, cls) {
-  element.className =
-      element.className.replace(new RegExp('\\b' + cls + '\\b', 'g'), '');
-}
-
-function showElement(element, visible) {
-  if (visible) {
-    // Reset to default visibility.
-    removeClass(element, 'hidden');
-  } else {
-    addClass(element, 'hidden');
-  }
-}
-
-function showElementById(id, visible) {
-  showElement(document.getElementById(id), visible);
-}
-
 // This code moved into this subroutine (instead of being inlined in
 // updateAuthStatus_() because of bug in V8.
 // http://code.google.com/p/v8/issues/detail?id=1423
@@ -110,8 +83,8 @@ function updateControls_(disable) {
 
 function updateAuthStatus_() {
   var oauthValid = remoting.oauth2.isAuthenticated();
-  showElementById('oauth2-token-button', !oauthValid);
-  showElementById('oauth2-clear-button', oauthValid);
+  document.getElementById('oauth2-token-button').hidden = oauthValid;
+  document.getElementById('oauth2-clear-button').hidden = !oauthValid;
 
   var loginName = getEmail();
   if (loginName) {
@@ -160,7 +133,7 @@ remoting.clearOAuth2 = function() {
 // Show the div with id |mode| and hide those with other ids in |modes|.
 function setMode_(mode, modes) {
   for (var i = 0; i < modes.length; ++i) {
-    showElement(modes[i], mode == modes[i].id);
+    modes[i].hidden = (mode != modes[i].id);
   }
 }
 
@@ -187,8 +160,8 @@ remoting.init = function() {
   remoting.setHostMode('unshared');
   remoting.setClientMode('unconnected');
   setGlobalMode(getAppStartupMode());
-  addClass(document.getElementById('loading-mode'), 'hidden');
-  removeClass(document.getElementById('choice-mode'), 'hidden');
+  document.getElementById('loading-mode').hidden = true;
+  document.getElementById('choice-mode').hidden = false;
 }
 
 function setGlobalMode(mode) {
@@ -214,12 +187,12 @@ function setGlobalMode(mode) {
 
   // Hide first and then show since an element may be in both lists.
   for (var i = 0; i < elementsToHide.length; ++i) {
-    showElement(elementsToHide[i], false);
+    elementsToHide[i].hidden = true;
   }
   for (var i = 0; i < elementsToShow.length; ++i) {
-    showElement(elementsToShow[i], true);
+    elementsToShow[i].hidden = false;
   }
-  showElement(document.getElementById('waiting-footer', false));
+  document.getElementById('waiting-footer').hidden = true;
   remoting.currentMode = mode;
 }
 
@@ -249,9 +222,9 @@ remoting.setClientMode = function(mode) {
 }
 
 function showWaiting_() {
-  showElement(document.getElementById('client-footer-text'), false);
-  showElement(document.getElementById('host-footer-text'), false);
-  showElement(document.getElementById('waiting-footer'), true);
+  document.getElementById('client-footer-text').hidden = true;
+  document.getElementById('host-footer-text').hidden = true;
+  document.getElementById('waiting-footer').hidden = false;
   document.getElementById('cancel-button').disabled = false;
 }
 
