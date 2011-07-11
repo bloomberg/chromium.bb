@@ -405,7 +405,8 @@ void Widget::CloseNow() {
 }
 
 void Widget::EnableClose(bool enable) {
-  non_client_view_->EnableClose(enable);
+  if (non_client_view_)
+    non_client_view_->EnableClose(enable);
   native_widget_->EnableClose(enable);
 }
 
@@ -446,7 +447,8 @@ bool Widget::IsActive() const {
 
 void Widget::DisableInactiveRendering() {
   disable_inactive_rendering_ = true;
-  non_client_view_->DisableInactiveRendering(disable_inactive_rendering_);
+  if (non_client_view_)
+    non_client_view_->DisableInactiveRendering(disable_inactive_rendering_);
 }
 
 void Widget::SetAlwaysOnTop(bool on_top) {
@@ -598,7 +600,8 @@ void Widget::UpdateWindowTitle() {
 }
 
 void Widget::UpdateWindowIcon() {
-  non_client_view_->UpdateWindowIcon();
+  if (non_client_view_)
+    non_client_view_->UpdateWindowIcon();
   native_widget_->SetWindowIcons(widget_delegate_->GetWindowIcon(),
                                  widget_delegate_->GetWindowAppIcon());
 }
@@ -727,7 +730,8 @@ bool Widget::IsInactiveRenderingDisabled() const {
 
 void Widget::EnableInactiveRendering() {
   disable_inactive_rendering_ = false;
-  non_client_view_->DisableInactiveRendering(false);
+  if (non_client_view_)
+    non_client_view_->DisableInactiveRendering(false);
 }
 
 void Widget::OnNativeWidgetActivationChanged(bool active) {
@@ -815,7 +819,7 @@ void Widget::OnNativeWidgetPaint(gfx::Canvas* canvas) {
 }
 
 int Widget::GetNonClientComponent(const gfx::Point& point) {
-  return non_client_view_->NonClientHitTest(point);
+  return non_client_view_ ? non_client_view_->NonClientHitTest(point) : 0;
 }
 
 bool Widget::OnKeyEvent(const KeyEvent& event) {
