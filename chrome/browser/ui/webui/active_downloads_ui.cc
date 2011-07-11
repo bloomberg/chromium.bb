@@ -283,7 +283,7 @@ bool ActiveDownloadsHandler::SelectTab(const GURL& url) {
   for (TabContentsIterator it; !it.done(); ++it) {
     TabContents* tab_contents = it->tab_contents();
     if (tab_contents->GetURL() == url) {
-      tab_contents->Activate();
+      static_cast<RenderViewHostDelegate*>(tab_contents)->Activate();
       return true;
     }
   }
