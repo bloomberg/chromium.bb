@@ -104,7 +104,8 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
                               const Extension::Location& location,
                               bool external_uninstall);
 
-  // Returns the state (enabled/disabled) of the given extension.
+  // Returns the state (enabled/disabled) of the given extension. Generally you
+  // should use ExtensionService::IsExtensionEnabled instead.
   Extension::State GetExtensionState(const std::string& extension_id) const;
 
   // Called to change the extension's state when it is enabled/disabled.

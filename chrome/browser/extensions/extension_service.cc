@@ -894,8 +894,14 @@ void ExtensionService::ClearExtensionData(const GURL& extension_url) {
 
 bool ExtensionService::IsExtensionEnabled(
     const std::string& extension_id) const {
-  return
-      extension_prefs_->GetExtensionState(extension_id) == Extension::ENABLED;
+  const Extension* extension =
+      GetExtensionByIdInternal(extension_id, true, false, false);
+  if (extension)
+    return true;
+
+  // If the extension hasn't been loaded yet, check the prefs for it.
+  return extension_prefs_->GetExtensionState(extension_id) ==
+      Extension::ENABLED;
 }
 
 bool ExtensionService::IsExternalExtensionUninstalled(
@@ -1898,8 +1904,10 @@ void ExtensionService::AddExtension(const Extension* extension) {
   // extension if necessary.
   DisableIfPrivilegeIncrease(extension);
 
-  Extension::State state = extension_prefs_->GetExtensionState(extension->id());
-  if (state == Extension::DISABLED) {
+  bool disabled = Extension::UserMayDisable(extension->location()) &&
+      extension_prefs_->GetExtensionState(extension->id()) ==
+          Extension::DISABLED;
+  if (disabled) {
     disabled_extensions_.push_back(scoped_extension);
     // TODO(aa): This seems dodgy. It seems that AddExtension() could get called
     // with a disabled extension for other reasons other than that an update was
@@ -1911,9 +1919,6 @@ void ExtensionService::AddExtension(const Extension* extension) {
     return;
   }
 
-  // It should not be possible to get here with EXTERNAL_EXTENSION_UNINSTALLED
-  // because we would not have loaded the extension in that case.
-  CHECK(state == Extension::ENABLED);
   extensions_.push_back(scoped_extension);
   NotifyExtensionLoaded(extension);
 }

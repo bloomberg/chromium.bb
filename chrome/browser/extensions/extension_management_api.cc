@@ -156,9 +156,7 @@ bool GetExtensionByIdFunction::RunImpl() {
                                                      extension_id);
     return false;
   }
-  bool enabled = service()->extension_prefs()->
-      GetExtensionState(extension_id) == Extension::ENABLED;
-
+  bool enabled = service()->IsExtensionEnabled(extension_id);
   DictionaryValue* result = CreateExtensionInfo(*extension, enabled);
   result_.reset(result);
 

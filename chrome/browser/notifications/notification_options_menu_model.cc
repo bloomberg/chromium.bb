@@ -168,12 +168,10 @@ string16 NotificationOptionsMenuModel::GetLabelForCommandId(int command_id)
           balloon_->profile()->GetExtensionService();
       const Extension* extension = ext_service->GetExtensionByURL(origin);
       if (extension) {
-        ExtensionPrefs* extension_prefs = ext_service->extension_prefs();
-        const std::string& id = extension->id();
-        if (extension_prefs->GetExtensionState(id) == Extension::ENABLED)
-          return l10n_util::GetStringUTF16(IDS_EXTENSIONS_DISABLE);
-        else
-          return l10n_util::GetStringUTF16(IDS_EXTENSIONS_ENABLE);
+        return l10n_util::GetStringUTF16(
+            ext_service->IsExtensionEnabled(extension->id()) ?
+                IDS_EXTENSIONS_DISABLE :
+                IDS_EXTENSIONS_ENABLE);
       }
     } else {
       if (service->GetContentSetting(origin) == CONTENT_SETTING_ALLOW) {
@@ -226,9 +224,8 @@ void NotificationOptionsMenuModel::ExecuteCommand(int command_id) {
     case kToggleExtensionCommand: {
       const Extension* extension = ext_service->GetExtensionByURL(origin);
       if (extension) {
-        ExtensionPrefs* extension_prefs = ext_service->extension_prefs();
         const std::string& id = extension->id();
-        if (extension_prefs->GetExtensionState(id) == Extension::ENABLED)
+        if (ext_service->IsExtensionEnabled(id))
           ext_service->DisableExtension(id);
         else
           ext_service->EnableExtension(id);
