@@ -4033,7 +4033,6 @@
           'type': 'none',
           'dependencies': [
             'automated_ui_tests',
-            '../app/app.gyp:app_unittests',
             '../base/base.gyp:base_unittests',
             # browser_tests's use of subprocesses chokes gcov on 10.6?
             # Disabling for now (enabled on linux/windows below).
@@ -4045,6 +4044,7 @@
             '../net/net.gyp:net_unittests',
             '../printing/printing.gyp:printing_unittests',
             '../remoting/remoting.gyp:remoting_unittests',
+            '../sql/sql.gyp:sql_unittests',
             # ui_tests seem unhappy on both Mac and Win when run under
             # coverage (all tests fail, often with a
             # "server_->WaitForInitialLoads()").  TODO(jrg):
