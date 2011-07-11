@@ -79,6 +79,30 @@ body {
   height: 20px;
 }
 
+/* Bullets on the left of row. */
+.table-row > .table-row-cell:first-child:before {
+  -webkit-border-radius: 3px;
+  background: #CCCCCC;
+  margin: 7px 4px 7px 7px;
+  width: 6px;
+  content: "";
+  display: block;
+}
+
+/* Cells in table. */
+.table-row-cell {
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+}
+
+/* Containers of titles of tasks on the process. */
+.detail-container-title {
+  -webkit-box-flex: 1;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  margin-left: 3px;
+}
+
 .detail-title-image {
   height: 16px;
   width: 16px;

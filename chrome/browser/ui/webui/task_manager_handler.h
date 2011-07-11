@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_TASK_MANAGER_HANDLER_H_
 #pragma once
 
+#include <vector>
 #include "content/browser/webui/web_ui.h"
 #include "chrome/browser/task_manager/task_manager.h"
 
@@ -45,6 +46,18 @@ class TaskManagerHandler : public WebUIMessageHandler,
   TaskManagerModel* model_;
 
   bool is_enabled_;
+
+  // Table to cache the group index of the resource index.
+  std::vector<int> resource_to_group_table_;
+
+  // Invoked when group(s) are added/changed/removed.
+  // These method are called from OnItemAdded/-Changed/-Removed internally.
+  void OnGroupAdded(int start, int length);
+  void OnGroupChanged(int start, int length);
+  void OnGroupRemoved(int start, int length);
+
+  // Updates |resource_to_group_table_|.
+  void UpdateResourceGroupTable(int start, int length);
 
   DISALLOW_COPY_AND_ASSIGN(TaskManagerHandler);
 };

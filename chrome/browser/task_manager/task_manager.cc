@@ -105,6 +105,10 @@ int TaskManagerModel::ResourceCount() const {
   return resources_.size();
 }
 
+int TaskManagerModel::GroupCount() const {
+  return group_map_.size();
+}
+
 void TaskManagerModel::AddObserver(TaskManagerModelObserver* observer) {
   observer_list_.AddObserver(observer);
 }
@@ -254,6 +258,15 @@ bool TaskManagerModel::IsResourceFirstInGroup(int index) const {
   return ((*group)[0] == resource);
 }
 
+bool TaskManagerModel::IsResourceLastInGroup(int index) const {
+  CHECK_LT(index, ResourceCount());
+  TaskManager::Resource* resource = resources_[index];
+  GroupMap::const_iterator iter = group_map_.find(resource->GetProcess());
+  DCHECK(iter != group_map_.end());
+  const ResourceList* group = iter->second;
+  return (group->back() == resource);
+}
+
 bool TaskManagerModel::IsBackgroundResource(int index) const {
   CHECK_LT(index, ResourceCount());
   return resources_[index]->IsBackground();
@@ -289,6 +302,38 @@ std::pair<int, int> TaskManagerModel::GetGroupRangeForResource(int index)
     NOTREACHED();
     return std::make_pair(-1, -1);
   }
+}
+
+int TaskManagerModel::GetGroupIndexForResource(int index) const {
+  int group_index = -1;
+  for (int i = 0; i <= index; ++i) {
+    if (IsResourceFirstInGroup(i))
+        group_index++;
+  }
+
+  DCHECK(group_index != -1);
+  return group_index;
+}
+
+int TaskManagerModel::GetResourceIndexForGroup(int group_index,
+                                               int index_in_group) const {
+  int group_count = -1;
+  int count_in_group = -1;
+  for (int i = 0; i < ResourceCount(); ++i) {
+    if (IsResourceFirstInGroup(i))
+      group_count++;
+
+    if (group_count == group_index) {
+      count_in_group++;
+      if (count_in_group == index_in_group)
+        return i;
+    } else if (group_count > group_index) {
+      break;
+    }
+  }
+
+  NOTREACHED();
+  return -1;
 }
 
 int TaskManagerModel::CompareValues(int row1, int row2, int col_id) const {

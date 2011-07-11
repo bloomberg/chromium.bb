@@ -101,15 +101,15 @@ TaskManager.prototype = {
     var dm = this.dataModel_;
     dm.setCompareFunction('networkUsage', function(a, b) {
         var value_id = 'networkUsageValue';
-        return dm.defaultValuesCompareFunction(a[value_id], b[value_id]);
+        return dm.defaultValuesCompareFunction(a[value_id][0], b[value_id][0]);
     });
     dm.setCompareFunction('cpuUsage', function(a, b) {
         var value_id = 'cpuUsageValue';
-        return dm.defaultValuesCompareFunction(a[value_id], b[value_id]);
+        return dm.defaultValuesCompareFunction(a[value_id][0], b[value_id][0]);
     });
     dm.setCompareFunction('privateMemory', function(a, b) {
         var value_id = 'privateMemoryValue';
-        return dm.defaultValuesCompareFunction(a[value_id], b[value_id]);
+        return dm.defaultValuesCompareFunction(a[value_id][0], b[value_id][0]);
     });
 
     this.initTable_();
@@ -147,41 +147,31 @@ TaskManager.prototype = {
   },
 
   renderText_: function(entry, columnId, table) {
-    var label = this.document_.createElement('div');
-    switch (columnId) {
-      case 'processId':
-        label.className = 'detail-process-id pid' + entry.processId;
-        label.textContent = entry.processId;
-        break;
-      case 'title':
-        var image_str = "url(" + entry.icon + ")";
-        label.className = 'detail-title';
-        var image = this.document_.createElement('img');
-        image.className = 'detail-title-image';
-        image.src = entry.icon;
-        label.appendChild(image)
-        var text = this.document_.createElement('div');
-        text.className = 'detail-title-text';
-        text.textContent = entry.title;
-        label.appendChild(text)
-        break;
-      case 'privateMemory':
-        label.className = 'detail-private-memory pid' + entry.processId;
-        label.textContent = entry.privateMemory;
-        break;
-      case 'cpuUsage':
-        label.className = 'detail-cpu-usage';
-        label.textContent = entry.cpuUsage;
-        break;
-      case 'networkUsage':
-        label.className = 'detail-cpu-usage';
-        label.textContent = entry.networkUsage;
-        break;
-      default:
-        label.className = 'detail-unknown';
-        label.textContent = '(unknown)'
+    var container = this.document_.createElement('div');
+    container.id = 'detail-container-' + columnId + '-pid' + entry.processId;
+    container.className = 'detail-container-' + columnId;
+
+    if (entry[columnId]) {
+      for (var i = 0; i < entry[columnId].length; i++) {
+        var label = document.createElement('div');
+        if (columnId == 'title') {
+          var image = this.document_.createElement('img');
+          image.className = 'detail-title-image';
+          image.src = entry['icon'][i];
+          label.appendChild(image);
+          var text = this.document_.createElement('div');
+          text.className = 'detail-title-text';
+          text.textContent = entry['title'][i];
+          label.appendChild(text);
+        } else {
+          label.textContent = entry[columnId][i];
+        }
+        label.id = 'detail-' + columnId + '-pid' + entry.processId + '-' + i;
+        label.className = 'detail-' + columnId + ' pid' + entry.processId;
+        container.appendChild(label);
+      }
     }
-    return label;
+    return container;
   },
 
   onTaskChange: function (start, length, tasks) {
