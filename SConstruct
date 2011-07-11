@@ -98,10 +98,6 @@ ACCEPTABLE_ARGUMENTS = set([
     'chrome_browser_path',
     # used for chrome_browser_tests: path to a pre-built browser plugin.
     'force_ppapi_plugin',
-    # where should we store extrasdk libraries
-    'extra_sdk_lib_destination',
-    # where should we store extrasdk headers
-    'extra_sdk_include_destination',
     # force emulator use by tests
     'force_emulator',
     # force sel_ldr use by tests
@@ -1349,7 +1345,7 @@ def CommandGdbTestNacl(env, name, command,
     print 'WARNING: no sel_ldr found. Skipping test %s' % name
     return []
 
-  gdb = nacl_extra_sdk_env['GDB']
+  gdb = nacl_env['GDB']
   command = ([gdb, '-q', '-batch', '-x', input, '--loader', sel_ldr] +
              gdb_flags + command)
 
@@ -1953,14 +1949,6 @@ Common tasks:
 
 * build the plugin:         scons --mode=opt-linux ppNaClPlugin
 *      or:                  scons --mode=opt-linux src/trusted/plugin
-
-* build libs needed by sdk: scons --mode=nacl_extra_sdk extra_sdk_update
-* purge libs needed by sdk: scons --mode=nacl_extra_sdk extra_sdk_clean
-* rebuild sdk:              scons --mode=nacl_extra_sdk \
-extra_sdk_clean \
-extra_sdk_update_header \
-install_libpthread \
-extra_sdk_update
 
 Targets to build trusted code destined for the SDK:
 * build trusted-code tools:     scons build_bin
@@ -2687,49 +2675,6 @@ def AddPrebuiltBinaryToRepository(env, nodes):
   return n
 
 nacl_env.AddMethod(AddPrebuiltBinaryToRepository)
-# ----------------------------------------------------------
-# We force this into a separate env so that the tests in nacl_env
-# have NO access to any libraries build here but need to link them
-# from the sdk libdir
-# ----------------------------------------------------------
-nacl_extra_sdk_env = nacl_common_env.Clone(
-    BUILD_TYPE = 'nacl_extra_sdk',
-    BUILD_TYPE_DESCRIPTION = 'NaCl SDK extra library build',
-)
-
-AddTargetRootSuffix(nacl_extra_sdk_env, 'bitcode', 'pnacl')
-AddTargetRootSuffix(nacl_extra_sdk_env, 'nacl_glibc', 'glibc')
-
-# TODO(robertm): consider moving some of these flags to the naclsdk tool
-nacl_extra_sdk_env.Append(CCFLAGS=['-Wall',
-                                   '-fdiagnostics-show-option',
-                                   '-pedantic'] +
-                                  werror_flags +
-                                  ['${EXTRA_CCFLAGS}',
-                               ])
-
-# Optionally disable certain link warning which cause ASMs to
-# be injected into the object files
-# This undoes the effect of src/untrusted/nosys/warning.h
-if nacl_extra_sdk_env.Bit('disable_nosys_linker_warnings'):
-  nacl_extra_sdk_env.Append(
-      CPPDEFINES=['NATIVE_CLIENT_SRC_UNTRUSTED_NOSYS_WARNING_H_=1',
-                  'stub_warning(n)=struct xyzzy',
-                  'link_warning(n,m)=struct xyzzy',
-                  ])
-
-# TODO(robertm): remove this work-around for an llvm debug info bug
-# http://code.google.com/p/nativeclient/issues/detail?id=235
-if nacl_extra_sdk_env.Bit('target_arm'):
-  nacl_extra_sdk_env.FilterOut(CCFLAGS=['-g'])
-
-# TODO(robertm): remove this ASAP, we currently have llvm issue with c++
-#                llvm-gcc is based on gcc 4.2 and has warning bug related
-#                class constructors
-if nacl_extra_sdk_env.Bit('target_arm'):
-  nacl_extra_sdk_env.FilterOut(CCFLAGS = ['-Werror'])
-  nacl_extra_sdk_env.Append(CFLAGS = werror_flags)
-
 
 def NaClSdkLibrary(env, lib_name, *args, **kwargs):
   n = [env.ComponentLibrary(lib_name, *args, **kwargs)]
@@ -2740,7 +2685,6 @@ def NaClSdkLibrary(env, lib_name, *args, **kwargs):
     n.append(env_shared.ComponentLibrary(lib_name, *args, **kwargs))
   return n
 
-nacl_extra_sdk_env.AddMethod(NaClSdkLibrary)
 nacl_env.AddMethod(NaClSdkLibrary)
 
 
@@ -2770,132 +2714,6 @@ def RawSyscallObjects(env, sources):
 
 nacl_env.AddMethod(RawSyscallObjects)
 
-# TODO(khim): document this
-if not nacl_extra_sdk_env.Bit('nocpp'):
-  nacl_extra_sdk_env.Append(
-      BUILD_SCONSCRIPTS = [
-        ####  ALPHABETICALLY SORTED ####
-        'src/shared/imc/nacl.scons',
-        'src/shared/ppapi/nacl.scons',
-        'src/shared/ppapi_proxy/nacl.scons',
-        'src/untrusted/ppapi/nacl.scons',
-        ####  ALPHABETICALLY SORTED ####
-      ],
-  )
-
-if not nacl_extra_sdk_env.Bit('nacl_glibc'):
-  # These are all specific to nacl-newlib so we do not include them
-  # when building against nacl-glibc.  The functionality of
-  # pthread/startup/stubs/nosys is provided by glibc.  The valgrind
-  # code currently assumes nc_threads.
-  nacl_extra_sdk_env.Append(
-      BUILD_SCONSCRIPTS = [
-        ####  ALPHABETICALLY SORTED ####
-        'src/untrusted/pthread/nacl.scons',
-        'src/untrusted/startup/nacl.scons',
-        'src/untrusted/stubs/nacl.scons',
-        'src/untrusted/nosys/nacl.scons',
-        ####  ALPHABETICALLY SORTED ####
-        ])
-
-nacl_extra_sdk_env.Append(
-    BUILD_SCONSCRIPTS = [
-      ####  ALPHABETICALLY SORTED ####
-      'src/include/nacl/nacl.scons',
-      'src/shared/gio/nacl.scons',
-      'src/shared/platform/nacl.scons',
-      'src/shared/srpc/nacl.scons',
-      'src/untrusted/irt_stub/nacl.scons',
-      'src/untrusted/ehsupport/nacl.scons',
-      'src/untrusted/nacl/nacl.scons',
-      'src/untrusted/valgrind/nacl.scons',
-      ####  ALPHABETICALLY SORTED ####
-   ],
-)
-
-
-environment_list.append(nacl_extra_sdk_env)
-
-# ----------------------------------------------------------
-# Targets for updating sdk headers and libraries
-# NACL_SDK_XXX vars are defined by  site_scons/site_tools/naclsdk.py
-# NOTE: our task here is complicated by the fact that there might already
-#       some (outdated) headers/libraries at the new location
-#       One of the hacks we employ here is to make every library depend
-#       on the installation on ALL headers (sdk_headers)
-
-# Contains all the headers to be installed
-sdk_headers = nacl_extra_sdk_env.Alias('extra_sdk_update_header', [])
-# Contains all the libraries and .o files to be installed
-libs_platform = nacl_extra_sdk_env.Alias('extra_sdk_libs_platform', [])
-libs = nacl_extra_sdk_env.Alias('extra_sdk_libs', [])
-nacl_extra_sdk_env.Alias('extra_sdk_update', [libs, libs_platform])
-
-
-# Add a header file to the toolchain.  By default, Native Client-specific
-# headers go under nacl/, but there are non-specific headers, such as
-# the OpenGLES2 headers, that go under their own subdir.
-def AddHeaderToSdk(env, nodes, subdir = 'nacl/'):
-  dir = ARGUMENTS.get('extra_sdk_include_destination')
-  if not dir:
-    dir = '${NACL_SDK_INCLUDE}'
-  if subdir is not None:
-    dir = os.path.join(dir, subdir)
-  n = env.Replicate(dir, nodes)
-  env.Alias('extra_sdk_update_header', n)
-  return n
-
-nacl_extra_sdk_env.AddMethod(AddHeaderToSdk)
-
-
-def AddLibraryToSdkHelper(env, nodes, is_lib, is_platform):
-  """"Helper function to install libs/objs into the toolchain
-  and associate the action with the extra_sdk_update.
-
-  Args:
-    env: Environment in which we were called.
-    nodes: list of libc/objs
-    is_lib: treat nodes as libs
-    is_platform: nodes are truly platform specific
-  """
-  # NOTE: hack see comment
-  nacl_extra_sdk_env.Requires(nodes, sdk_headers)
-
-  dir = ARGUMENTS.get('extra_sdk_lib_destination')
-  if not dir:
-    dir = '${NACL_SDK_LIB}/'
-
-  if is_lib:
-    n = env.ReplicatePublished(dir, nodes, 'link')
-  else:
-    n = env.Replicate(dir, nodes)
-
-  if is_platform:
-    env.Alias('extra_sdk_libs_platform', n)
-  else:
-    env.Alias('extra_sdk_libs', n)
-  return n
-
-
-def AddLibraryToSdk(env, nodes, is_platform=False):
-  return AddLibraryToSdkHelper(env, nodes, True, is_platform)
-
-nacl_extra_sdk_env.AddMethod(AddLibraryToSdk)
-
-
-def AddObjectToSdk(env, nodes, is_platform=False):
-    return AddLibraryToSdkHelper(env, nodes, False, is_platform)
-
-
-nacl_extra_sdk_env.AddMethod(AddObjectToSdk)
-
-# NOTE: a helpful target to test the sdk_extra magic
-#       combine this with a 'MODE=nacl -c'
-# TODO: the cleanup of libs is not complete
-nacl_extra_sdk_env.Command('extra_sdk_clean', [],
-                           ['rm -rf ${NACL_SDK_INCLUDE}/nacl*',
-                            'rm -rf ${NACL_SDK_LIB}/libgoogle*',
-                            'rm -rf ${NACL_SDK_LIB_PLATFORM}/crt[1in].*'])
 
 # The IRT-building environment was cloned from nacl_env, but it should
 # ignore the --nacl_glibc, nacl_pic=1 and bitcode=1 switches.
@@ -2914,10 +2732,7 @@ nacl_irt_env.Replace(LIBPATH='${LIB_DIR}')
 if nacl_irt_env.Bit('bitcode'):
   nacl_irt_env.AddBiasForPNaCl()
 
-# We have to stub out various methods that are only defined in
-# nacl_extra_sdk_env, because we doubly use these nacl.scons files
-# in nacl_irt_env.
-# TODO(mcgrathr): Remove these when nacl_extra_sdk_env is removed.
+# TODO(mcgrathr): Clean up uses of these methods.
 def AddLibraryDummy(env, nodes, is_platform=False):
   return [env.File('${LIB_DIR}/%s.a' % x) for x in nodes]
 nacl_irt_env.AddMethod(AddLibraryDummy, 'AddLibraryToSdk')
@@ -2932,7 +2747,7 @@ def IrtNaClSdkLibrary(env, lib_name, *args, **kwargs):
 nacl_irt_env.AddMethod(IrtNaClSdkLibrary, 'NaClSdkLibrary')
 
 # Populate the internal include directory when AddHeaderToSdk
-# is used inside nacl_env rather than nacl_extra_sdk_env.
+# is used inside nacl_env.
 def AddHeaderInternal(env, nodes, subdir='nacl'):
   dir = '${INCLUDE_DIR}'
   if subdir is not None:
@@ -3030,19 +2845,6 @@ def AddImplicitLibs(env):
 AddImplicitLibs(nacl_env)
 AddImplicitLibs(nacl_irt_env)
 
-# Give the environment for building the IRT and its libraries
-# the -Ds used for building those libraries for the SDK.
-# TODO(mcgrathr,bradnelson): clean up when nacl_extra_sdk_env goes away.
-#
-# Since we will use a locally-built libpthread rather than the
-# one from the toolchain, find its header files in the source
-# rather than using the ones installed in the toolchain.
-nacl_irt_env.AppendUnique(CPPDEFINES = nacl_extra_sdk_env['CPPDEFINES'],
-                          CPPPATH = ['${MAIN_DIR}/src/untrusted/pthread'])
-
-# TODO(mcgrathr): nacl, crt_platform are implicitly linked in from toolchain,
-# scons does not know about the dependencies.  We may be building all of
-# src/untrusted/nacl but only actually getting libimc_syscalls.a from there.
 nacl_irt_env.Append(
     BUILD_SCONSCRIPTS = [
         'src/include/nacl/nacl.scons',

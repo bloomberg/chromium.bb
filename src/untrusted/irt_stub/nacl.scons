@@ -35,16 +35,7 @@ static_script = env.AddObjectToSdk(['libppapi.a'])
 # libppapi.a or libppapi.so linker script file, but also the object and
 # library it refers to.  By telling scons that libppapi.a depends on these
 # objects, we ensure that it builds them before something using ${PPAPI_LIBS}.
-#
-# But for PNaCl, don't add a dependency on gap_obj here, because PNaCl installs
-# native objects separately. A dependency here would force link_segment_gap
-# to be built in this invocation, and it would end up in the wrong place.
-# TODO: This can go away when the extrasdk does.
-
-if env.Bit('bitcode') and env['BUILD_TYPE'] == 'nacl_extra_sdk':
-  script_deps = [lib]
-else:
-  script_deps = [gap_obj, lib]
+script_deps = [gap_obj, lib]
 env.Depends(static_script, script_deps)
 
 # The static libppapi.a refers to libpthread.a, and in the non-glibc
