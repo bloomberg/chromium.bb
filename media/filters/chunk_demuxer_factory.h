@@ -32,7 +32,7 @@ class MediaDataSink {
   void Flush();
 
   // Sends media data to the demuxer. Returns true if the data is valid.
-  bool AddData(const uint8* data, unsigned length);
+  bool AppendData(const uint8* data, unsigned length);
 
   // Signals that playback is shutting down and further AddData() calls
   // should fail. This also cancels pending Read()s on DemuxerStreams.
@@ -46,7 +46,7 @@ class MediaDataSink {
 class ChunkDemuxerFactory : public DemuxerFactory {
  public:
   // Takes a reference to |demuxer_factory|.
-  ChunkDemuxerFactory(DataSourceFactory* data_source_factory);
+  ChunkDemuxerFactory();
   virtual ~ChunkDemuxerFactory();
 
   bool IsUrlSupported(const std::string& url) const;
@@ -58,12 +58,9 @@ class ChunkDemuxerFactory : public DemuxerFactory {
 
  private:
   static const char kURLPrefix[];
-  class BuildState;
-
-  scoped_ptr<DataSourceFactory> data_source_factory_;
   scoped_refptr<ChunkDemuxer> demuxer_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(ChunkDemuxerFactory);
+  DISALLOW_COPY_AND_ASSIGN(ChunkDemuxerFactory);
 };
 
 }  // namespace media

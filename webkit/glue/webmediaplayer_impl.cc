@@ -340,8 +340,7 @@ bool WebMediaPlayerImpl::Initialize(
   }
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableAdaptive)) {
-    chunk_demuxer_factory_.reset(new media::ChunkDemuxerFactory(
-        data_source_factory->Clone()));
+    chunk_demuxer_factory_.reset(new media::ChunkDemuxerFactory());
   }
 
   scoped_ptr<media::DemuxerFactory> demuxer_factory(
@@ -350,6 +349,7 @@ bool WebMediaPlayerImpl::Initialize(
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableAdaptive)) {
     demuxer_factory.reset(new media::AdaptiveDemuxerFactory(
         demuxer_factory.release()));
+    chunk_demuxer_factory_.reset(new media::ChunkDemuxerFactory());
   }
   filter_collection_->SetDemuxerFactory(demuxer_factory.release());
 
@@ -417,13 +417,14 @@ void WebMediaPlayerImpl::pause() {
   paused_time_ = pipeline_->GetCurrentTime();
 }
 
-bool WebMediaPlayerImpl::addData(const unsigned char* data, unsigned length) {
+bool WebMediaPlayerImpl::appendData(const unsigned char* data,
+                                    unsigned length) {
   DCHECK(MessageLoop::current() == main_loop_);
 
   if (!media_data_sink_.get())
     return false;
 
-  return media_data_sink_->AddData(data, length);
+  return media_data_sink_->AppendData(data, length);
 }
 
 bool WebMediaPlayerImpl::supportsFullscreen() const {
