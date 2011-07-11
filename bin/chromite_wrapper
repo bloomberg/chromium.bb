@@ -3,9 +3,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Wrapper for the chromite shell.
+"""Wrapper for chromite tools.
 
-This script is intended to run in several ways:
+The script is intend to be symlinked to any number of chromite tools, attempts
+to find the path for chromite, and runs the right tool based on argv[0].
+
+It is intended to run in several ways:
 - Outside the chroot, it should be _copied_ to someplace that is in the
   path (like depot_tools).  It will search for the right chromite by looking
   for a file 'chromite/shell/main.py' upward based on the CWD.
@@ -48,11 +51,20 @@ def Search(path):
       yield [path]
       path, prev_path = os.path.dirname(path), path
 
+# Decide what the name of the called binary will be.
+our_name = os.path.basename(sys.argv[0])
+
+# Some tools map to an arbitrary path, rather than to a .py file of the same
+# exact name. By default, we pick the tool from chromite/bin/
+TOOLS_MAP = {
+  'chromite' : 'shell.main'
+}
+our_name = TOOLS_MAP.get(our_name, 'bin.' + our_name)
 
 for path in Search(os.getcwd()):
   sys.path = path + sys.path
   try:
-    import chromite.shell.main
+    exec 'import chromite.' + our_name + ' as our_tool'
     break
   except ImportError, e:
     # Just in case there is actually something wrong with Chromite, print
@@ -62,7 +74,7 @@ for path in Search(os.getcwd()):
     # Note: If you hit the directory containing chromite on the way up, then
     # the error will be 'No module named shell.main' so we must check only the
     # shell.main part.
-    if not str(e).endswith('shell.main'):
+    if not str(e).endswith(our_name):
       raise
 
     # We've got different modules named chromite in the tree, pulling in the
@@ -81,4 +93,4 @@ else:
       "  http://www.chromium.org/chromium-os/developer-guide\n")
   sys.exit(1)
 
-chromite.shell.main.main()
+our_tool.main()
