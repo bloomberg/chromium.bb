@@ -154,7 +154,6 @@ struct PPB_Graphics2D_Impl::QueuedOperation {
 PPB_Graphics2D_Impl::PPB_Graphics2D_Impl(PluginInstance* instance)
     : Resource(instance),
       bound_instance_(NULL),
-      flushed_any_data_(false),
       offscreen_flush_pending_(false),
       is_always_opaque_(false) {
 }
@@ -340,7 +339,6 @@ int32_t PPB_Graphics2D_Impl::Flush(PP_CompletionCallback callback) {
     }
   }
   queued_operations_.clear();
-  flushed_any_data_ = true;
 
   if (nothing_visible) {
     // There's nothing visible to invalidate so just schedule the callback to
@@ -423,15 +421,8 @@ bool PPB_Graphics2D_Impl::BindToInstance(PluginInstance* new_instance) {
       std::swap(callback, painted_flush_callback_);
       ScheduleOffscreenCallback(callback);
     }
-  } else if (flushed_any_data_) {
-    // Only schedule a paint if this backing store has had any data flushed to
-    // it. This is an optimization. A "normal" plugin will first allocated a
-    // backing store, bind it, and then execute their normal painting and
-    // update loop. If binding a device always invalidated, it would mean we
-    // would get one paint for the bind, and one for the first time the plugin
-    // actually painted something. By not bothering to schedule an invalidate
-    // when an empty device is initially bound, we can save an extra paint for
-    // many plugins during the critical page initialization phase.
+  } else {
+    // Devices being replaced, redraw the plugin.
     new_instance->InvalidateRect(gfx::Rect());
   }
 

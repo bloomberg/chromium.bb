@@ -148,10 +148,6 @@ class PPB_Graphics2D_Impl
   typedef std::vector<QueuedOperation> OperationQueue;
   OperationQueue queued_operations_;
 
-  // Indicates whether any changes have been flushed to the backing store.
-  // This is initially false and is set to true at the first Flush() call.
-  bool flushed_any_data_;
-
   // The plugin can give us one "Flush" at a time. This flush will either be in
   // the "unpainted" state (in which case unpainted_flush_callback_ will be
   // non-NULL) or painted, in which case painted_flush_callback_ will be
