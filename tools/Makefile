@@ -628,8 +628,8 @@ glibc-adhoc-files: | SRC/glibc SRC/linux-headers-for-nacl
 	install -m 755 -d  $(ARCH_DEST)/lib/ldscripts
 	cp -f SRC/glibc/nacl/dyn-link/ldscripts/* \
 	    $(ARCH_DEST)/lib/ldscripts/
+	mkdir -p $(ARCH_DEST)/include/{sys,machine,bits}
 	cp -rf $(LINUX_HEADERS)/* $(ARCH_DEST)/include
-	mkdir -p $(ARCH_DEST)/include/{sys,machine}
 	cp -f $(NACL_BITS_HEADERS) $(ARCH_DEST)/include/bits
 	cp -f $(NACL_SYS_HEADERS) $(ARCH_DEST)/include/sys
 	cp -f $(NACL_MACHINE_HEADERS) $(ARCH_DEST)/include/machine
