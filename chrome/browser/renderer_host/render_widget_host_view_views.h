@@ -76,7 +76,6 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   virtual void RenderViewGone(base::TerminationStatus status,
                               int error_code) OVERRIDE;
   virtual void Destroy() OVERRIDE;
-  virtual void WillDestroyRenderWidget(RenderWidgetHost* rwh) OVERRIDE {}
   virtual void SetTooltipText(const std::wstring& tooltip_text) OVERRIDE;
   virtual void SelectionChanged(const std::string& text,
                                 const ui::Range& range) OVERRIDE;

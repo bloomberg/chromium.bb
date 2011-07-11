@@ -691,11 +691,6 @@ void RenderWidgetHostViewWin::WillWmDestroy() {
   CleanupCompositorWindow();
 }
 
-void RenderWidgetHostViewWin::WillDestroyRenderWidget(RenderWidgetHost* rwh) {
-  if (rwh == render_widget_host_)
-    render_widget_host_ = NULL;
-}
-
 void RenderWidgetHostViewWin::Destroy() {
   // We've been told to destroy.
   // By clearing close_on_deactivate_, we prevent further deactivations
@@ -703,6 +698,7 @@ void RenderWidgetHostViewWin::Destroy() {
   // triggering further destructions.  The deletion of this is handled by
   // OnFinalMessage();
   close_on_deactivate_ = false;
+  render_widget_host_ = NULL;
   being_destroyed_ = true;
   CleanupCompositorWindow();
   DestroyWindow();
@@ -1688,8 +1684,7 @@ LRESULT RenderWidgetHostViewWin::OnParentNotify(UINT message, WPARAM wparam,
 
 void RenderWidgetHostViewWin::OnFinalMessage(HWND window) {
   // When the render widget host is being destroyed, it ends up calling
-  // WillDestroyRenderWidget (through the RENDER_WIDGET_HOST_DESTROYED
-  // notification) which NULLs render_widget_host_.
+  // Destroy() which NULLs render_widget_host_.
   // Note: the following bug http://crbug.com/24248 seems to report that
   // OnFinalMessage is called with a deleted |render_widget_host_|. It is not
   // clear how this could happen, hence the NULLing of render_widget_host_

@@ -20,12 +20,6 @@ TabContentsView::TabContentsView(TabContents* tab_contents)
 
 TabContentsView::~TabContentsView() {}
 
-void TabContentsView::RenderWidgetHostDestroyed(RenderWidgetHost* host) {
-  if (host->view())
-    host->view()->WillDestroyRenderWidget(host);
-  delegate_view_helper_.RenderWidgetHostDestroyed(host);
-}
-
 void TabContentsView::CreateNewWindow(
     int route_id,
     const ViewHostMsg_CreateWindow_Params& params) {

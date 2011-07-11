@@ -23,7 +23,6 @@
 #include "content/browser/tab_contents/render_view_host_manager.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/browser/webui/web_ui.h"
-#include "content/common/notification_registrar.h"
 #include "content/common/property_bag.h"
 #include "content/common/renderer_preferences.h"
 #include "net/base/load_states.h"
@@ -58,7 +57,6 @@ class WebUI;
 // Describes what goes in the main content area of a tab. TabContents is
 // the only type of TabContents, and these should be merged together.
 class TabContents : public PageNavigator,
-                    public NotificationObserver,
                     public RenderViewHostDelegate,
                     public RenderViewHostManager::Delegate,
                     public content::JavaScriptDialogDelegate,
@@ -699,12 +697,6 @@ class TabContents : public PageNavigator,
   virtual bool CreateRenderViewForRenderManager(
       RenderViewHost* render_view_host);
 
-  // NotificationObserver ------------------------------------------------------
-
-  virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
-
   // NetworkChangeNotifier::OnlineStateObserver:
   virtual void OnOnlineStateChanged(bool online);
 
@@ -731,9 +723,6 @@ class TabContents : public PageNavigator,
 
   // Manages creation and swapping of render views.
   RenderViewHostManager render_manager_;
-
-  // Registers and unregisters us for notifications.
-  NotificationRegistrar registrar_;
 
   // Data for loading state ----------------------------------------------------
 

@@ -32,10 +32,29 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/webui/web_ui.h"
+#include "content/common/notification_service.h"
 
-RenderViewHostDelegateViewHelper::RenderViewHostDelegateViewHelper() {}
+RenderViewHostDelegateViewHelper::RenderViewHostDelegateViewHelper() {
+  registrar_.Add(this, content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
+                 NotificationService::AllSources());
+}
 
 RenderViewHostDelegateViewHelper::~RenderViewHostDelegateViewHelper() {}
+
+void RenderViewHostDelegateViewHelper::Observe(
+    int type,
+    const NotificationSource& source,
+    const NotificationDetails& details) {
+  DCHECK_EQ(type, content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED);
+  RenderWidgetHost* host = Source<RenderWidgetHost>(source).ptr();
+  for (PendingWidgetViews::iterator i = pending_widget_views_.begin();
+       i != pending_widget_views_.end(); ++i) {
+    if (host->view() == i->second) {
+      pending_widget_views_.erase(i);
+      break;
+    }
+  }
+}
 
 BackgroundContents*
 RenderViewHostDelegateViewHelper::MaybeCreateBackgroundContents(
@@ -200,17 +219,6 @@ RenderWidgetHostView* RenderViewHostDelegateViewHelper::GetCreatedWidget(
   }
 
   return widget_host_view;
-}
-
-void RenderViewHostDelegateViewHelper::RenderWidgetHostDestroyed(
-    RenderWidgetHost* host) {
-  for (PendingWidgetViews::iterator i = pending_widget_views_.begin();
-       i != pending_widget_views_.end(); ++i) {
-    if (host->view() == i->second) {
-      pending_widget_views_.erase(i);
-      return;
-    }
-  }
 }
 
 // static

@@ -170,9 +170,6 @@ class RenderWidgetHostView {
   virtual void RenderViewGone(base::TerminationStatus status,
                               int error_code) = 0;
 
-  // Notifies the View that the renderer will be delete soon.
-  virtual void WillDestroyRenderWidget(RenderWidgetHost* rwh) = 0;
-
   // Tells the View to destroy itself.
   virtual void Destroy() = 0;
 

@@ -199,9 +199,6 @@ TabContents::TabContents(Profile* profile,
   view_->CreateView(base_tab_contents ?
       base_tab_contents->view()->GetContainerSize() : gfx::Size());
 
-  registrar_.Add(this, content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
-                 NotificationService::AllSources());
-
   // Can only add observers after render_manager_.Init() is called, since that's
   // what sets up the render_view_host which TabContentObserver's constructor
   // uses to get the routing_id.
@@ -210,9 +207,6 @@ TabContents::TabContents(Profile* profile,
 
 TabContents::~TabContents() {
   is_being_destroyed_ = true;
-
-  // We don't want any notifications while we're running our destructor.
-  registrar_.RemoveAll();
 
   // Clear out any JavaScript state.
   if (delegate_)
@@ -1809,20 +1803,6 @@ bool TabContents::CreateRenderViewForRenderManager(
                              render_view_host);
   return true;
 }
-
-void TabContents::Observe(int type,
-                          const NotificationSource& source,
-                          const NotificationDetails& details) {
-  switch (type) {
-    case content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED:
-      view_->RenderWidgetHostDestroyed(Source<RenderWidgetHost>(source).ptr());
-      break;
-    default:
-      NOTREACHED();
-  }
-}
-
-// Overridden from JavaScriptDialogDelegate
 
 void TabContents::OnDialogClosed(IPC::Message* reply_msg,
                                  bool success,

@@ -159,7 +159,6 @@ class RenderWidgetHostViewWin
                               int error_code) OVERRIDE;
   // called by TabContents before DestroyWindow
   virtual void WillWmDestroy() OVERRIDE;
-  virtual void WillDestroyRenderWidget(RenderWidgetHost* rwh) OVERRIDE;
   virtual void Destroy() OVERRIDE;
   virtual void SetTooltipText(const std::wstring& tooltip_text) OVERRIDE;
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) OVERRIDE;
