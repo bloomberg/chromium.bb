@@ -215,7 +215,8 @@ TEST_F(PPAPITest, MAYBE_DirectoryReader) {
 }
 
 #if defined(ENABLE_P2P_APIS)
-TEST_F(PPAPITest, Transport) {
+// Flaky. http://crbug.com/84295
+TEST_F(PPAPITest, FLAKY_Transport) {
   RunTest("Transport");
 }
 #endif // ENABLE_P2P_APIS
