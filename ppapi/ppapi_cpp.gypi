@@ -8,7 +8,7 @@
       'target_name': 'ppapi_c<(nacl_ppapi_library_suffix)',
       'type': 'none',
       'all_dependent_settings': {
-        'include_dirs': [
+        'include_dirs+': [
           '..',
         ],
       },
@@ -129,7 +129,7 @@
       'dependencies': [
         'ppapi_c<(nacl_ppapi_library_suffix)'
       ],
-      'include_dirs': [
+      'include_dirs+': [
         '..',
       ],
       'sources': [
@@ -270,7 +270,7 @@
         'ppapi_c<(nacl_ppapi_library_suffix)',
         'ppapi_cpp_objects<(nacl_ppapi_library_suffix)',
       ],
-      'include_dirs': [
+      'include_dirs+': [
         '..',
       ],
       'sources': [
