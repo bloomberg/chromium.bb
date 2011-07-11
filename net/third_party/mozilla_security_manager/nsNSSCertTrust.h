@@ -42,6 +42,8 @@
 #include <certt.h>
 #include <certdb.h>
 
+#include "net/base/net_api.h"
+
 namespace mozilla_security_manager {
 
 /*
@@ -49,7 +51,7 @@ namespace mozilla_security_manager {
  * 
  * Class for maintaining trust flags for an NSS certificate.
  */
-class nsNSSCertTrust
+class NET_API nsNSSCertTrust
 {
 public:
   nsNSSCertTrust();
