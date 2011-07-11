@@ -19,13 +19,9 @@
 #include "net/base/sys_addrinfo.h"
 #include "net/base/test_completion_callback.h"
 #include "net/base/transport_security_state.h"
-#include "net/http/http_transaction_factory.h"
 #include "net/proxy/proxy_service.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket_stream/socket_stream.h"
-#include "net/spdy/spdy_session.h"
-#include "net/spdy/spdy_test_util.h"
-#include "net/spdy/spdy_websocket_test_util.h"
 #include "net/url_request/url_request_context.h"
 #include "net/websockets/websocket_throttle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -202,65 +198,6 @@ class MockURLRequestContext : public net::URLRequestContext {
   scoped_refptr<net::TransportSecurityState> transport_security_state_;
 };
 
-class MockHttpTransactionFactory : public net::HttpTransactionFactory {
- public:
-  MockHttpTransactionFactory(scoped_refptr<net::OrderedSocketData>& data) {
-    data_ = data;
-    data_->AddRef();
-    net::MockConnect connect_data(false, net::OK);
-    data_->set_connect_data(connect_data);
-    session_deps_.reset(new net::SpdySessionDependencies);
-    session_deps_->socket_factory->AddSocketDataProvider(data_.get());
-    http_session_ =
-        net::SpdySessionDependencies::SpdyCreateSession(session_deps_.get());
-    host_port_pair_.set_host("example.com");
-    host_port_pair_.set_port(80);
-    host_port_proxy_pair_.first = host_port_pair_;
-    host_port_proxy_pair_.second = net::ProxyServer::Direct();
-    net::SpdySessionPool* spdy_session_pool =
-        http_session_->spdy_session_pool();
-    DCHECK(spdy_session_pool);
-    EXPECT_FALSE(spdy_session_pool->HasSession(host_port_proxy_pair_));
-    session_ =
-        spdy_session_pool->Get(host_port_proxy_pair_, net::BoundNetLog());
-    EXPECT_TRUE(spdy_session_pool->HasSession(host_port_proxy_pair_));
-
-    transport_params_ = new net::TransportSocketParams(host_port_pair_,
-                                                       net::MEDIUM,
-                                                       GURL(),
-                                                       false,
-                                                       false);
-    net::ClientSocketHandle* connection = new net::ClientSocketHandle;
-    EXPECT_EQ(net::OK, connection->Init(host_port_pair_.ToString(),
-                                        transport_params_,
-                                        net::MEDIUM,
-                                        NULL,
-                                        http_session_->transport_socket_pool(),
-                                        net::BoundNetLog()));
-    EXPECT_EQ(net::OK,
-              session_->InitializeWithSocket(connection, false, net::OK));
-  }
-  virtual int CreateTransaction(scoped_ptr<net::HttpTransaction>* trans) {
-    NOTREACHED();
-    return net::ERR_UNEXPECTED;
-  }
-  virtual net::HttpCache* GetCache() {
-    NOTREACHED();
-    return NULL;
-  }
-  virtual net::HttpNetworkSession* GetSession() {
-    return http_session_.get();
-  }
- private:
-  scoped_refptr<net::OrderedSocketData> data_;
-  scoped_ptr<net::SpdySessionDependencies> session_deps_;
-  scoped_refptr<net::HttpNetworkSession> http_session_;
-  scoped_refptr<net::TransportSocketParams> transport_params_;
-  scoped_refptr<net::SpdySession> session_;
-  net::HostPortPair host_port_pair_;
-  net::HostPortProxyPair host_port_proxy_pair_;
-};
-
 }
 
 namespace net {
@@ -268,7 +205,6 @@ namespace net {
 class WebSocketJobTest : public PlatformTest {
  public:
   virtual void SetUp() {
-    spdy::SpdyFramer::set_enable_compression_default(false);
     stream_type_ = STREAM_INVALID;
     cookie_store_ = new MockCookieStore;
     context_ = new MockURLRequestContext(cookie_store_.get());
@@ -303,33 +239,37 @@ class WebSocketJobTest : public PlatformTest {
   void InitWebSocketJob(const GURL& url,
                         MockSocketStreamDelegate* delegate,
                         StreamType stream_type) {
-    DCHECK_NE(STREAM_INVALID, stream_type);
     stream_type_ = stream_type;
     websocket_ = new WebSocketJob(delegate);
 
-    if (stream_type == STREAM_MOCK_SOCKET)
-      socket_ = new MockSocketStream(url, websocket_.get());
-
-    if (stream_type == STREAM_SOCKET || stream_type == STREAM_SPDY_WEBSOCKET) {
-      if (stream_type == STREAM_SPDY_WEBSOCKET) {
-        http_factory_.reset(new MockHttpTransactionFactory(data_));
-        context_->set_http_transaction_factory(http_factory_.get());
-      }
-
+    if (stream_type == STREAM_SOCKET ||
+        stream_type == STREAM_SPDY_WEBSOCKET) {
       ssl_config_service_ = new MockSSLConfigService();
       context_->set_ssl_config_service(ssl_config_service_);
       proxy_service_.reset(net::ProxyService::CreateDirect());
       context_->set_proxy_service(proxy_service_.get());
       host_resolver_.reset(new net::MockHostResolver);
       context_->set_host_resolver(host_resolver_.get());
-
-      socket_ = new SocketStream(url, websocket_.get());
-      socket_factory_.reset(new MockClientSocketFactory);
-      DCHECK(data_.get());
-      socket_factory_->AddSocketDataProvider(data_.get());
-      socket_->SetClientSocketFactory(socket_factory_.get());
     }
 
+    switch (stream_type) {
+      case STREAM_INVALID:
+        NOTREACHED();
+        break;
+      case STREAM_MOCK_SOCKET:
+        socket_ = new MockSocketStream(url, websocket_.get());
+        break;
+      case STREAM_SOCKET:
+        socket_ = new SocketStream(url, websocket_.get());
+        socket_factory_.reset(new MockClientSocketFactory);
+        DCHECK(data_.get());
+        socket_factory_->AddSocketDataProvider(data_.get());
+        socket_->SetClientSocketFactory(socket_factory_.get());
+        break;
+      case STREAM_SPDY_WEBSOCKET:
+        // TODO(toyoshim): Support SpdyWebSocketStream.
+        break;
+    }
     websocket_->InitSocketStream(socket_.get());
     websocket_->set_context(context_.get());
     struct addrinfo addr;
@@ -384,7 +324,6 @@ class WebSocketJobTest : public PlatformTest {
   void TestHSTSUpgrade();
   void TestInvalidSendData();
   void TestConnectByWebSocket();
-  void TestConnectBySpdy(bool use_spdy);
 
   StreamType stream_type_;
   scoped_refptr<MockCookieStore> cookie_store_;
@@ -397,7 +336,6 @@ class WebSocketJobTest : public PlatformTest {
   scoped_refptr<MockSSLConfigService> ssl_config_service_;
   scoped_ptr<net::ProxyService> proxy_service_;
   scoped_ptr<net::MockHostResolver> host_resolver_;
-  scoped_ptr<MockHttpTransactionFactory> http_factory_;
 
   static const char kHandshakeRequestWithoutCookie[];
   static const char kHandshakeRequestWithCookie[];
@@ -406,8 +344,6 @@ class WebSocketJobTest : public PlatformTest {
   static const char kHandshakeResponseWithCookie[];
   static const char kDataHello[];
   static const char kDataWorld[];
-  static const char* const kHandshakeRequestForSpdy[];
-  static const char* const kHandshakeResponseForSpdy[];
   static const size_t kHandshakeRequestWithoutCookieLength;
   static const size_t kHandshakeRequestWithCookieLength;
   static const size_t kHandshakeRequestWithFilteredCookieLength;
@@ -479,22 +415,6 @@ const char WebSocketJobTest::kHandshakeResponseWithCookie[] =
 const char WebSocketJobTest::kDataHello[] = "Hello, ";
 
 const char WebSocketJobTest::kDataWorld[] = "World!\n";
-
-// TODO(toyoshim): I should clarify which WebSocket headers for handshake must
-// be exported to SPDY SYN_STREAM and SYN_REPLY.
-// Because it depends on HyBi versions, just define it as follow for now.
-const char* const WebSocketJobTest::kHandshakeRequestForSpdy[] = {
-  "host", "example.com",
-  "origin", "http://example.com",
-  "sec-websocket-protocol", "sample",
-  "url", "ws://example.com/demo"
-};
-
-const char* const WebSocketJobTest::kHandshakeResponseForSpdy[] = {
-  "sec-websocket-origin", "http://example.com",
-  "sec-websocket-location", "ws://example.com/demo",
-  "sec-websocket-protocol", "sample",
-};
 
 const size_t WebSocketJobTest::kHandshakeRequestWithoutCookieLength =
     arraysize(kHandshakeRequestWithoutCookie) - 1;
@@ -704,6 +624,7 @@ void WebSocketJobTest::TestInvalidSendData() {
 // OrderedSocketData provide socket level verifiation by checking out-going
 // packets in comparison with the MockWrite array and emulating in-coming
 // packets with MockRead array.
+// TODO(toyoshim): Add tests which verify protocol switch and ERR_IO_PENDING.
 
 void WebSocketJobTest::TestConnectByWebSocket() {
   // This is a test for verifying cooperation between WebSocketJob and
@@ -745,94 +666,6 @@ void WebSocketJobTest::TestConnectByWebSocket() {
 
   websocket_->Connect();
   EXPECT_EQ(OK, WaitForResult());
-  EXPECT_TRUE(data_->at_read_eof());
-  EXPECT_TRUE(data_->at_write_eof());
-  EXPECT_EQ(WebSocketJob::CLOSED, GetWebSocketJobState());
-}
-
-void WebSocketJobTest::TestConnectBySpdy(bool use_spdy) {
-  // This is a test for verifying cooperation between WebSocketJob and
-  // SocketStream in the situation we have SPDY session to the server.
-  MockWrite writes_websocket[] = {
-    MockWrite(true,
-              kHandshakeRequestWithoutCookie,
-              kHandshakeRequestWithoutCookieLength,
-              1),
-    MockWrite(true,
-              kDataHello,
-              kDataHelloLength,
-              3)
-  };
-  MockRead reads_websocket[] = {
-    MockRead(true,
-             kHandshakeResponseWithoutCookie,
-             kHandshakeResponseWithoutCookieLength,
-             2),
-    MockRead(true,
-             kDataWorld,
-             kDataWorldLength,
-             4),
-    MockRead(false, 0, 5)  // EOF
-  };
-
-  const spdy::SpdyStreamId kStreamId = 1;
-  scoped_ptr<spdy::SpdyFrame> request_frame(
-      ConstructSpdyWebSocketHandshakeRequestFrame(
-          kHandshakeRequestForSpdy,
-          arraysize(kHandshakeRequestForSpdy) / 2,
-          kStreamId,
-          MEDIUM));
-  scoped_ptr<spdy::SpdyFrame> response_frame(
-      ConstructSpdyWebSocketHandshakeResponseFrame(
-          kHandshakeResponseForSpdy,
-          arraysize(kHandshakeResponseForSpdy) / 2,
-          kStreamId,
-          MEDIUM));
-  scoped_ptr<spdy::SpdyFrame> data_hello_frame(
-      ConstructSpdyWebSocketDataFrame(
-          kDataHello,
-          kDataHelloLength,
-          kStreamId,
-          false));
-  scoped_ptr<spdy::SpdyFrame> data_world_frame(
-      ConstructSpdyWebSocketDataFrame(
-          kDataWorld,
-          kDataWorldLength,
-          kStreamId,
-          false));
-  MockWrite writes_spdy[] = {
-    CreateMockWrite(*request_frame.get(), 1),
-    CreateMockWrite(*data_hello_frame.get(), 3),
-  };
-  MockRead reads_spdy[] = {
-    CreateMockRead(*response_frame.get(), 2),
-    CreateMockRead(*data_world_frame.get(), 4),
-    MockRead(false, 0, 5)  // EOF
-  };
-
-  if (use_spdy)
-    data_ = new OrderedSocketData(
-        reads_spdy, arraysize(reads_spdy),
-        writes_spdy, arraysize(writes_spdy));
-  else
-    data_ = new OrderedSocketData(
-        reads_websocket, arraysize(reads_websocket),
-        writes_websocket, arraysize(writes_websocket));
-
-  GURL url("ws://example.com/demo");
-  MockSocketStreamDelegate delegate;
-  WebSocketJobTest* test = this;
-  delegate.SetOnConnected(
-      NewCallback(test, &WebSocketJobTest::DoSendRequest));
-  delegate.SetOnReceivedData(
-      NewCallback(test, &WebSocketJobTest::DoSendData));
-  delegate.SetOnClose(
-      NewCallback(test, &WebSocketJobTest::DoSync));
-  InitWebSocketJob(url, &delegate, STREAM_SPDY_WEBSOCKET);
-
-  websocket_->Connect();
-  EXPECT_EQ(OK, WaitForResult());
-
   EXPECT_TRUE(data_->at_read_eof());
   EXPECT_TRUE(data_->at_write_eof());
   EXPECT_EQ(WebSocketJob::CLOSED, GetWebSocketJobState());
@@ -908,18 +741,5 @@ TEST_F(WebSocketJobTest, ConnectByWebSocketSpdyEnabled) {
   WebSocketJob::set_websocket_over_spdy_enabled(true);
   TestConnectByWebSocket();
 }
-
-TEST_F(WebSocketJobTest, ConnectBySpdy) {
-  WebSocketJob::set_websocket_over_spdy_enabled(false);
-  TestConnectBySpdy(false);
-}
-
-TEST_F(WebSocketJobTest, ConnectBySpdySpdyEnabled) {
-  WebSocketJob::set_websocket_over_spdy_enabled(true);
-  TestConnectBySpdy(true);
-}
-
-// TODO(toyoshim): Add tests to verify throttling, SPDY stream limitation.
-// TODO(toyoshim,yutak): Add tests to verify closing handshake.
 
 }  // namespace net
