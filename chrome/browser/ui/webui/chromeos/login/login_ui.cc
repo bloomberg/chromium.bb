@@ -57,7 +57,8 @@ std::string LoginUIHTMLSource::GetMimeType(const std::string&) const {
 
 // LoginUIHandlerDelegate, public: ------------------------------------------
 
-void LoginUIHandlerDelegate::set_login_handler(LoginUIHandler* login_handler) {
+void LoginUIHandlerDelegate::set_login_handler(
+    BaseLoginUIHandler* login_handler) {
   login_handler_ = login_handler;
 }
 
@@ -94,13 +95,28 @@ void LoginUIHandler::RegisterMessages() {
                   &LoginUIHandler::HandleShutdownSystem));
 }
 
+// LoginUIHandler, private: ----------------------------------------------------
+
+void LoginUIHandler::ClearAndEnablePassword() {
+  web_ui_->CallJavascriptFunction(kResetPrompt);
+}
+
+void LoginUIHandler::ShowError(const std::string& error_text,
+                               const std::string& help_link_text,
+                               HelpAppLauncher::HelpTopic help_topic_id) {
+  // TODO(xiyuan): Pass error + help to a propery error UI and save topic id.
+  ClearAndEnablePassword();
+}
+
 void LoginUIHandler::HandleAuthenticateUser(const ListValue* args) {
   std::string username;
   std::string password;
-  size_t expected_size = 2;
-  CHECK_EQ(args->GetSize(), expected_size);
-  args->GetString(0, &username);
-  args->GetString(1, &password);
+  if (!args->GetString(0, &username) ||
+      !args->GetString(1, &password)) {
+    NOTREACHED();
+    return;
+  }
+
   delegate_->Login(username, password);
 }
 
@@ -111,10 +127,6 @@ void LoginUIHandler::HandleLaunchIncognito(const ListValue* args) {
 void LoginUIHandler::HandleShutdownSystem(const ListValue* args) {
   DCHECK(CrosLibrary::Get()->EnsureLoaded());
   CrosLibrary::Get()->GetPowerLibrary()->RequestShutdown();
-}
-
-void LoginUIHandler::ClearAndEnablePassword() {
-  web_ui_->CallJavascriptFunction(kResetPrompt);
 }
 
 // LoginUI, public: ------------------------------------------------------------

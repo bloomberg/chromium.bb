@@ -8,6 +8,9 @@
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "grit/chromium_strings.h"
+#include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "views/widget/widget.h"
 
 #if defined(TOUCH_UI)
@@ -88,7 +91,41 @@ void WebUILoginDisplay::SelectPod(int index) {
 void WebUILoginDisplay::ShowError(int error_msg_id,
                                   int login_attempts,
                                   HelpAppLauncher::HelpTopic help_topic_id) {
-  // TODO(rharrison): Figure out what we should be doing here.
+  DCHECK(login_handler_);
+
+  std::string error_text;
+  switch (error_msg_id) {
+    case IDS_LOGIN_ERROR_AUTHENTICATING_HOSTED:
+      error_text = l10n_util::GetStringFUTF8(
+          error_msg_id, l10n_util::GetStringUTF16(IDS_PRODUCT_OS_NAME));
+      break;
+    case IDS_LOGIN_ERROR_CAPTIVE_PORTAL:
+      error_text = l10n_util::GetStringFUTF8(
+          error_msg_id, delegate()->GetConnectedNetworkName());
+      break;
+    default:
+      error_text = l10n_util::GetStringUTF8(error_msg_id);
+      break;
+  }
+
+  std::string help_link;
+  switch (error_msg_id) {
+    case IDS_LOGIN_ERROR_CAPTIVE_PORTAL:
+      help_link = l10n_util::GetStringUTF8(IDS_LOGIN_FIX_CAPTIVE_PORTAL);
+      break;
+    case IDS_LOGIN_ERROR_CAPTIVE_PORTAL_NO_GUEST_MODE:
+      // No help link is needed.
+      break;
+    case IDS_LOGIN_ERROR_AUTHENTICATING_HOSTED:
+      help_link = l10n_util::GetStringUTF8(IDS_LEARN_MORE);
+      break;
+    default:
+      if (login_attempts > 1)
+        help_link = l10n_util::GetStringUTF8(IDS_LEARN_MORE);
+      break;
+  }
+
+  login_handler_->ShowError(error_text, help_link, help_topic_id);
 }
 
 // WebUILoginDisplay, LoginUIHandlerDelegate implementation: -------------------

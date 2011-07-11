@@ -18,7 +18,10 @@ const char kSigninScreen[] = "signin";
 
 namespace chromeos {
 
-SigninScreenHandler::SigninScreenHandler() : show_on_init_(false) {
+SigninScreenHandler::SigninScreenHandler()
+    : delegate_(WebUILoginDisplay::GetInstance()),
+      show_on_init_(false) {
+  delegate_->set_login_handler(this);
 }
 
 void SigninScreenHandler::GetLocalizedStrings(
@@ -55,6 +58,17 @@ void SigninScreenHandler::RegisterMessages() {
       NewCallback(this, &SigninScreenHandler::HandleAuthenticateUser));
 }
 
+void SigninScreenHandler::ClearAndEnablePassword() {
+  web_ui_->CallJavascriptFunction("login.SigninScreen.reset");
+}
+
+void SigninScreenHandler::ShowError(const std::string& error_text,
+                                    const std::string& help_link_text,
+                                    HelpAppLauncher::HelpTopic help_topic_id) {
+  // TODO(xiyuan): Pass error + help to a propery error UI and save topic id.
+  ClearAndEnablePassword();
+}
+
 void SigninScreenHandler::HandleAuthenticateUser(const ListValue* args) {
   std::string username;
   std::string password;
@@ -63,8 +77,7 @@ void SigninScreenHandler::HandleAuthenticateUser(const ListValue* args) {
     return;
   }
 
-  WebUILoginDisplay* login_display = WebUILoginDisplay::GetInstance();
-  login_display->Login(username, password);
+  delegate_->Login(username, password);
 }
 
 }  // namespace chromeos

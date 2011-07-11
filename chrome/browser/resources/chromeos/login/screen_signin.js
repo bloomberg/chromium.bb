@@ -83,6 +83,16 @@ cr.define('login', function() {
     },
 
     /**
+     * Clears input fields and switches to input mode.
+     */
+    reset: function() {
+      $('email').value = '';
+      $('password').value = '';
+      $('email').focus();
+      this.state = SigninScreen.STATE_INPUT;
+    },
+
+    /**
      * Handles sign in button click.
      * @private
      */
@@ -91,10 +101,15 @@ cr.define('login', function() {
 
       chrome.send('authenticateUser',
           [$('email').value, $('password').value]);
-
-      // TODO(xiyuan): Hook up with LoginDisplay::ShowError to show and reset
-      // crendentical input UI.
     }
+  };
+
+  /**
+   * Expose 'reset' method that resets sign-in screen.
+   * @public
+   */
+  SigninScreen.reset = function() {
+    $('signin').reset();
   };
 
   return {

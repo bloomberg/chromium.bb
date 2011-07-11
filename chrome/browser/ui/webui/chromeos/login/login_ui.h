@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
 
@@ -36,11 +37,20 @@ class LoginUIHTMLSource : public ChromeURLDataManager::DataSource {
   DISALLOW_COPY_AND_ASSIGN(LoginUIHTMLSource);
 };
 
-class LoginUIHandler;
+// An interface between WebUILoginDisplay and LoginUIHandler.
+class BaseLoginUIHandler {
+ public:
+  virtual void ClearAndEnablePassword() = 0;
+  virtual void ShowError(const std::string& error_text,
+                         const std::string& help_link_text,
+                         HelpAppLauncher::HelpTopic help_topic_id) = 0;
+};
+
 class LoginUIHandlerDelegate {
  public:
   LoginUIHandlerDelegate()
       : login_handler_(NULL) { }
+
   // Sign in using |username| and |password| specified.
   // Used for both known and new users.
   virtual void Login(const std::string& username,
@@ -48,36 +58,44 @@ class LoginUIHandlerDelegate {
 
   // Sign in into Guest session.
   virtual void LoginAsGuest() = 0;
+
   // Let the delegate know about the handler it is supposed to be using.
-  virtual void set_login_handler(LoginUIHandler* login_handler);
+  virtual void set_login_handler(BaseLoginUIHandler* login_handler);
 
  protected:
   // Reference to the WebUI handling layer for the login screen
-  LoginUIHandler* login_handler_;
+  BaseLoginUIHandler* login_handler_;
 
   virtual ~LoginUIHandlerDelegate();
 };
 
 // Main LoginUI handling function. It handles the WebUI hooks that are supplied
 // for the login page to use for authentication.
-class LoginUIHandler : public WebUIMessageHandler {
+class LoginUIHandler : public WebUIMessageHandler,
+                       public BaseLoginUIHandler {
  public:
   LoginUIHandler();
   virtual ~LoginUIHandler();
 
   // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(WebUI* web_ui);
-  virtual void RegisterMessages();
-
-  void HandleAuthenticateUser(const ListValue* args);
-  void HandleLaunchIncognito(const ListValue* args);
-  void HandleShutdownSystem(const ListValue* args);
-  void ClearAndEnablePassword();
+  virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
+  virtual void RegisterMessages() OVERRIDE;
 
  protected:
   LoginUIHandlerDelegate* delegate_;
 
  private:
+  // BaseLoginUIHandler implementation.
+  virtual void ClearAndEnablePassword() OVERRIDE;
+  virtual void ShowError(const std::string& error_text,
+                         const std::string& help_link_text,
+                         HelpAppLauncher::HelpTopic help_topic_id) OVERRIDE;
+
+  // Callbacks from javascript.
+  void HandleAuthenticateUser(const ListValue* args);
+  void HandleLaunchIncognito(const ListValue* args);
+  void HandleShutdownSystem(const ListValue* args);
+
   DISALLOW_COPY_AND_ASSIGN(LoginUIHandler);
 };
 
