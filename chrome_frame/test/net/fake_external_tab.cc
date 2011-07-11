@@ -230,7 +230,9 @@ void FakeExternalTab::Initialize() {
   icu_util::Initialize();
   TestTimeouts::Initialize();
 
-  chrome::RegisterPathProvider();
+  // Do not call chrome::RegisterPathProvider() since it is also called by our
+  // test runner, CFUrlRequestUnittestRunner, and calling it twice unfortunately
+  // causes a DCHECK().
   content::RegisterPathProvider();
   ui::RegisterPathProvider();
 
