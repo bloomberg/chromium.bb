@@ -11790,7 +11790,7 @@ ls' lab.">
         Searching for Wi-Fi networks...
       </message>
       <message name="IDS_STATUSBAR_CAPSLOCK_ENABLED" desc="The tooltip for the capslock indicator button.">
-        Capslock active.
+        Caps lock active
       </message>
       <message name="IDS_STATUSBAR_CLOCK_OPEN_OPTIONS_DIALOG" desc="The menu item in the clock menu button for opening the options dialog">
         Open date and time options...

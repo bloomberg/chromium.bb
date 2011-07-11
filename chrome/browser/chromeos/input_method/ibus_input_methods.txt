@@ -37,6 +37,15 @@
 # *1 For some complicated reason, we use different IDs for 2) and 3). Ask
 #    mazda for why.
 
+# U.S. English
+xkb:us::eng	us	en_US	eng
+xkb:us:intl:eng	us(intl)	en_US_intl	eng
+xkb:us:altgr-intl:eng	us(altgr-intl)	en_US_altgr_intl	eng
+xkb:us:dvorak:eng	us(dvorak)	en_US_dvorak	eng
+xkb:us:colemak:eng	us(colemak)	en_US_colemak	eng
+# U.S. English entiries have to be above the Dutch entry so that xkb:us:intl:eng
+# will be selected as the default keyboard when the UI language is set to Dutch.
+
 # Dutch
 xkb:be::nld	be	nl	nld
 # We don't support xkb:nl::nld. See b/4430951.
@@ -89,13 +98,6 @@ m17n:vi:vni	us	vi	vi
 # Vietnames input methods, except 4 input methods above, in m17n-db should
 # not work fine. The 4 input methods in m17n-db (>= 1.6.0) don't require the
 # feature.
-
-# U.S. English
-xkb:us::eng	us	en_US	eng
-xkb:us:intl:eng	us(intl)	en_US_intl	eng
-xkb:us:altgr-intl:eng	us(altgr-intl)	en_US_altgr_intl	eng
-xkb:us:dvorak:eng	us(dvorak)	en_US_dvorak	eng
-xkb:us:colemak:eng	us(colemak)	en_US_colemak	eng
 
 # Other languages
 hangul	kr(kr104)	ko	ko
