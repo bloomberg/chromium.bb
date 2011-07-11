@@ -107,7 +107,7 @@ def RefreshSudoCredentials():
   cros_build_lib.RunCommand(['sudo', 'true'])
 
 
-if __name__ == '__main__':
+def main():
   usage="""usage: %prog [options] [--enter -- <args>]
 
 This script downloads and installs a CrOS SDK. If an SDK already
@@ -153,3 +153,5 @@ To replace, use --replace."""
   if options.enter:
     EnterChroot(chroot_path, remaining_arguments)
 
+if __name__ == '__main__':
+  main()
