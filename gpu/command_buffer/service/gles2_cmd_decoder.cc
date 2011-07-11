@@ -2452,6 +2452,13 @@ bool GLES2DecoderImpl::SetParent(GLES2Decoder* new_parent,
     // Map the ID of the saved offscreen texture into the parent so that
     // it can reference it.
     GLuint service_id = offscreen_saved_color_texture_->id();
+
+    // Replace texture info when ID is already in use by parent.
+    if (new_parent_impl->texture_manager()->GetTextureInfo(
+            new_parent_texture_id))
+      new_parent_impl->texture_manager()->RemoveTextureInfo(
+          feature_info_, new_parent_texture_id);
+
     TextureManager::TextureInfo* info =
         new_parent_impl->CreateTextureInfo(new_parent_texture_id, service_id);
     info->SetNotOwned();
