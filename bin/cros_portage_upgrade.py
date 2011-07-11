@@ -142,23 +142,52 @@ class Upgrader(object):
   UPSTREAM_OVERLAY_NAME = 'portage'
   STABLE_OVERLAY_NAME = 'portage-stable'
   CROS_OVERLAY_NAME = 'chromiumos-overlay'
+  HOST_BOARD = 'amd64-host'
+  OPT_SLOTS = ['amend', 'board', 'csv_file', 'html_file', 'rdeps',
+               'stable_only', 'upgrade', 'upgrade_deep', 'upstream', 'verbose']
+
+  __slots__ = ['_amend',        # Boolean to use --amend with upgrade commit
+               '_arch',         # Architecture for current board
+               '_args',         # Commandline arguments (portage targets)
+               '_board',        # Board for current run
+               '_cros_overlay', # Path to chromiumos-overlay repo
+               '_csv_file',     # File path for writing csv output
+               '_deps_graph',   # Dependency graph from portage
+               '_emptydir',     # Path to temporary empty directory
+               '_html_file',    # File path for writing html output
+               '_porttree',     # Reference to portage porttree object
+               '_rdeps',        # Boolean, if True pass --root-deps=rdeps
+               '_stable_only',  # Boolean to require only stable upstream
+               '_stable_repo',  # Path to portage-stable
+               '_table',        # chromite.lib.table holding package status
+               '_upgrade',      # Boolean indicating upgrade requested
+               '_upgrade_deep', # Boolean indicating upgrade_deep requested
+               '_upstream',     # User-provided path to upstream repo
+               '_upstream_repo',# Path to upstream portage repo
+               '_verbose',      # Boolean
+               ]
 
   def __init__(self, options=None, args=None):
-    # TODO(mtennant): Don't save options object, but instead grab option
-    # values that are needed now.  This makes mocking easier.
-    # For example: self._board = options.board
-    self._options = options
     self._args = args
-    self._stable_repo = os.path.join(self._options.srcroot, 'third_party',
+
+    self._stable_repo = os.path.join(options.srcroot, 'third_party',
                                      self.STABLE_OVERLAY_NAME)
-    self._upstream_repo = self._options.upstream
+    self._upstream_repo = options.upstream
     if not self._upstream_repo:
-      self._upstream_repo = os.path.join(self._options.srcroot, 'third_party',
+      self._upstream_repo = os.path.join(options.srcroot, 'third_party',
                                          self.UPSTREAM_OVERLAY_NAME)
-    self._cros_overlay = os.path.join(self._options.srcroot, 'third_party',
+    self._cros_overlay = os.path.join(options.srcroot, 'third_party',
                                       self.CROS_OVERLAY_NAME)
 
-    self._arch = Upgrader._FindBoardArch(self._options.board)
+    # Save options needed later.
+    for opt in self.OPT_SLOTS:
+      setattr(self, '_' + opt, getattr(options, opt, None))
+
+    # TODO(mtennant): Attributes below are specific to one run with a specific
+    # board and should be cleared before each run when multiple boards are
+    # supported at once.
+    self._board = options.board
+    self._arch = Upgrader._FindBoardArch(self._board)
     self._table = UpgradeTable(self._arch)
 
     self._porttree = None
@@ -188,10 +217,10 @@ class Upgrader(object):
 
   def _PkgUpgradeRequested(self, info):
     """Return True if upgrade of pkg in |info| hash was requested by user."""
-    if self._options.upgrade_deep:
+    if self._upgrade_deep:
       return True
 
-    if self._options.upgrade:
+    if self._upgrade:
       # See if this package was directly requested at command line.
       for pkg in self._args:
         if pkg == info['package'] or pkg == info['package_name']:
@@ -202,6 +231,10 @@ class Upgrader(object):
   @staticmethod
   def _FindBoardArch(board):
     """Return the architecture for a given board name."""
+    # Host is a special case
+    if board == Upgrader.HOST_BOARD:
+      return 'amd64'
+
     # Leverage Portage 'portageq' tool to do this.
     cmd = ['portageq-%s' % board, 'envvar', 'ARCH']
     cmd_result = cros_lib.RunCommand(cmd, print_cmd=False,
@@ -268,7 +301,7 @@ class Upgrader(object):
     cmdline = ['/bin/sh', '-c', 'cd %s && git -c core.pager=" " %s' %
                (repo, command)]
     result = cros_lib.RunCommand(cmdline, exit_code=True,
-                                 print_cmd=self._options.verbose,
+                                 print_cmd=self._verbose,
                                  redirect_stdout=redirect_stdout)
     return result
 
@@ -327,7 +360,7 @@ class Upgrader(object):
     # Point equery to the upstream source to get latest version for keywords.
     equery = ['equery', 'which', pkg ]
     cmd_result = cros_lib.RunCommand(equery, extra_env=envvars,
-                                     print_cmd=self._options.verbose,
+                                     print_cmd=self._verbose,
                                      exit_code=True, error_ok=True,
                                      redirect_stdout=True,
                                      combine_stdout_stderr=True,
@@ -355,8 +388,8 @@ class Upgrader(object):
     envvars = self._GenPortageEnvvars(self._arch, not stable_only)
 
     emerge = 'emerge'
-    if self._options.board != 'amd64-host':
-      emerge = 'emerge-%s' % self._options.board
+    if self._board != self.HOST_BOARD:
+      emerge = 'emerge-%s' % self._board
 
     cmd = [emerge, '-p', '=' + cpv]
     result = cros_lib.RunCommand(cmd, exit_code=True, error_ok=True,
@@ -381,8 +414,8 @@ class Upgrader(object):
     envvars = self._GenPortageEnvvars(self._arch, not stable_only)
 
     equery = 'equery'
-    if self._options.board != 'amd64-host':
-      equery = 'equery-%s' % self._options.board
+    if self._board != self.HOST_BOARD:
+      equery = 'equery-%s' % self._board
 
     cmd = [equery, 'which', cpv]
     result = cros_lib.RunCommand(cmd, exit_code=True, error_ok=True,
@@ -536,7 +569,7 @@ class Upgrader(object):
                                                         unstable_ok=True)
 
     # The upstream version can be either latest stable or latest overall.
-    if self._options.stable_only:
+    if self._stable_only:
       upstream_cpv = info['stable_upstream_cpv']
     else:
       upstream_cpv = info['latest_upstream_cpv']
@@ -599,7 +632,7 @@ class Upgrader(object):
       if filehandle:
         print "Writing package status as csv to %s" % csv
         hiddencols = None
-        if not self._options.upgrade_deep and not self._options.upgrade:
+        if not self._upgrade_deep and not self._upgrade:
           hiddencols = set([self._table.COL_ACTION_TAKEN])
         self._table.WriteCSV(filehandle, hiddencols)
         filehandle.close()
@@ -653,14 +686,14 @@ class Upgrader(object):
 
     self._table.Clear()
     dash_q = ''
-    if not self._options.verbose: dash_q = '-q'
+    if not self._verbose: dash_q = '-q'
     try:
       # TODO(petkov): Currently portage's master branch is stale so we need to
       # checkout latest upstream. At some point portage's master branch will be
       # upstream so there will be no need to chdir/checkout. At that point we
       # can also fuse this loop into the caller and avoid generating a separate
       # list.
-      if not self._options.upstream:
+      if not self._upstream:
         cros_lib.Info('Checking out cros/gentoo at %s as upstream reference.' %
                       self._upstream_repo)
         self._RunGit(self._upstream_repo, 'checkout %s cros/gentoo' % dash_q)
@@ -698,7 +731,7 @@ class Upgrader(object):
         # TODO(mtennant): On second thought, it's probably cleaner to reset the
         # changes automatically.  Will do this in another changelist.
       elif upgrade_lines:
-        if self._options.amend:
+        if self._amend:
           message = self._AmendCommitMessage(upgrade_lines)
           self._RunGit(self._stable_repo, "commit --amend -am '%s'" % message)
         else:
@@ -720,7 +753,7 @@ class Upgrader(object):
                       self._stable_repo)
 
     finally:
-      if not self._options.upstream:
+      if not self._upstream:
         cros_lib.Info('Undoing checkout of cros/gentoo at %s.' %
                       self._upstream_repo)
         self._RunGit(self._upstream_repo, 'checkout %s cros/master' % dash_q)
@@ -729,11 +762,11 @@ class Upgrader(object):
   def _GenParallelEmergeArgv(self):
     """Creates an argv for parallel_emerge based on current options."""
     argv = ['--emptytree', '--pretend']
-    if self._options.board:
-      argv.append('--board=%s' % self._options.board)
-    if not self._options.verbose:
+    if self._board and self._board != self.HOST_BOARD:
+      argv.append('--board=%s' % self._board)
+    if not self._verbose:
       argv.append('--quiet')
-    if self._options.rdeps:
+    if self._rdeps:
       argv.append('--root-deps=rdeps')
     argv.extend(self._args)
 
@@ -795,15 +828,15 @@ class Upgrader(object):
     Currently just lists all package dependencies in pre-order along with
     potential upgrades."""
     # Upfront check(s) if upgrade is requested.
-    if self._options.upgrade or self._options.upgrade_deep:
+    if self._upgrade or self._upgrade_deep:
       # Stable source must be on branch.
       self._CheckStableRepoOnBranch()
 
     cpvlist = self._GetCurrentVersions()
     infolist = self._GetInfoListWithOverlays(cpvlist)
     self._UpgradePackages(infolist)
-    self._WriteTableFiles(csv=self._options.csv_file,
-                          html=self._options.html_file)
+    self._WriteTableFiles(csv=self._csv_file,
+                          html=self._html_file)
 
 def _BoardIsSetUp(board):
   """Return true if |board| has been setup."""
@@ -883,7 +916,6 @@ def main():
 
   if (options.verbose): logging.basicConfig(level=logging.DEBUG)
 
-  # Only the unit tests are allowed to not have the board option set.
   if not options.board:
     parser.print_help()
     cros_lib.Die('board is required')
@@ -904,7 +936,8 @@ def main():
     cros_lib.Die('argument to --upstream must be a valid directory')
 
   # If a board is given, verify that the board is already set up.
-  if options.board and not _BoardIsSetUp(options.board):
+  if (options.board and options.board != Upgrader.HOST_BOARD and
+      not _BoardIsSetUp(options.board)):
     parser.print_help()
     cros_lib.Die('You must setup the %s board first.' % options.board)
 

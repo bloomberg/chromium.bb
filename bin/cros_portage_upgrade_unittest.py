@@ -165,10 +165,10 @@ GOLDEN_DEP_LISTS = {
   "dev-libs/C" : ['dev-libs/C-2'],
   "virtual/libusb" : ['virtual/libusb-1', 'dev-libs/libusb-1.0.5'],
   "chromeos-base/libcros" : ['chromeos-base/libcros-1',
-                             'dev-libs/B-2',
-                             'dev-libs/C-2',
                              'chromeos-base/libchrome-57098-r4',
                              'dev-libs/E-3',
+                             'dev-libs/B-2',
+                             'dev-libs/C-2',
                              'chromeos-base/flimflam-0.0.1-r228',
                              'dev-libs/D-2',
                              ],
@@ -249,11 +249,10 @@ class UpgraderTest(mox.MoxTestBase):
     """Set up a mocked Upgrader object with the given args."""
     upgrader = self.mox.CreateMock(cpu.Upgrader)
 
-    (options, args) = self._MockUpgraderOptions(board=board, package=package,
-                                                verbose=verbose, rdeps=rdeps)
-
-    upgrader._options = options
-    upgrader._args = args
+    upgrader._args = [package]
+    upgrader._board = board
+    upgrader._verbose = verbose
+    upgrader._rdeps = rdeps
     upgrader._stable_repo = stable_repo
     upgrader._upstream_repo = upstream_repo
     upgrader._csv_file = csv_file
@@ -271,6 +270,12 @@ class UpgraderTest(mox.MoxTestBase):
       srcroot = '%s/trunk/src' % os.environ['HOME']
 
     options = self.mox.CreateMock(optparse.Values)
+
+    # Make sure all attributes are initialized.
+    for opt in cpu.Upgrader.OPT_SLOTS:
+      setattr(options, opt, None)
+
+    # Set the attributes we care about for testing.
     options.board = board
     options.verbose = verbose
     options.rdeps = rdeps
