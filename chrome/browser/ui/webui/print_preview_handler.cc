@@ -54,7 +54,8 @@ const char kDuplex[] = "Duplex";
 const char kDuplexNone[] = "None";
 #elif defined(OS_WIN)
 const char kPskColor[] = "psk:Color";
-const char kPskOneSided[] = "psk:OneSided";
+const char kPskDuplexFeature[] = "psk:JobDuplexAllDocumentsContiguously";
+const char kPskTwoSided[] = "psk:TwoSided";
 #endif
 
 enum UserActionBuckets {
@@ -295,7 +296,10 @@ class PrintSystemTaskProxy
     supports_color = (printer_info.printer_capabilities.find(kPskColor) !=
                       std::string::npos);
     set_duplex_as_default =
-        (printer_info.printer_defaults.find(kPskOneSided) == std::string::npos);
+        (printer_info.printer_defaults.find(kPskDuplexFeature) !=
+            std::string::npos) &&
+        (printer_info.printer_defaults.find(kPskTwoSided) !=
+            std::string::npos);
 #else
   NOTIMPLEMENTED();
 #endif
