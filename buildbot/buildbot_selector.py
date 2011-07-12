@@ -182,7 +182,7 @@ BOT_ASSIGNMENT = {
     'mac-pnacl-x86_32-newlib':
         'bash buildbot/buildbot_toolchain_arm_untrusted.sh mac 32 newlib',
     'win-pnacl-x86_32-newlib':
-        'bash buildbot/buildbot_toolchain_arm_untrusted.sh win 32 newlib',
+        'buildbot\\buildbot_toolchain_arm_untrusted.bat win 32 newlib',
 
     # Toolchain trybots.
     'nacl-toolchain-lucid64-newlib':
