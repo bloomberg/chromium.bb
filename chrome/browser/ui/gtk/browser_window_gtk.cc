@@ -1294,7 +1294,7 @@ void BrowserWindowGtk::MaybeShowBookmarkBar(bool animate) {
 
   if (tab) {
     bookmark_bar_->SetProfile(tab->profile());
-    bookmark_bar_->SetPageNavigator(tab->tab_contents());
+    bookmark_bar_->SetPageNavigator(browser_.get());
   }
 
   BookmarkBar::State state = browser_->bookmark_bar_state();

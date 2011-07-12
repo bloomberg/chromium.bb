@@ -96,7 +96,8 @@ void AdjustNavigateParamsForURL(browser::NavigateParams* params) {
     Profile* profile =
         params->browser ? params->browser->profile() : params->profile;
 
-    if (profile->IsOffTheRecord() && !Profile::IsGuestSession()) {
+    if ((profile->IsOffTheRecord() && !Profile::IsGuestSession()) ||
+        params->disposition == OFF_THE_RECORD) {
       profile = profile->GetOriginalProfile();
 
       params->disposition = SINGLETON_TAB;

@@ -836,6 +836,25 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
             browser()->GetSelectedTabContents()->GetURL());
 }
 
+// This test verifies that the settings page isn't opened in the incognito
+// window from a non-incognito window (bookmark open-in-incognito trigger).
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
+                       Disposition_Settings_UseNonIncognitoWindowForBookmark) {
+  browser::NavigateParams params(browser(), GURL("chrome://settings"),
+                                 PageTransition::AUTO_BOOKMARK);
+  params.disposition = OFF_THE_RECORD;
+  {
+    ui_test_utils::WindowedNotificationObserver observer(
+        content::NOTIFICATION_LOAD_STOP, NotificationService::AllSources());
+    browser::Navigate(&params);
+    observer.Wait();
+  }
+
+  EXPECT_EQ(1u, BrowserList::size());
+  EXPECT_EQ(GURL("chrome://settings"),
+            browser()->GetSelectedTabContents()->GetURL().GetOrigin());
+}
+
 // This test verifies that the bookmarks page isn't opened in the incognito
 // window.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
