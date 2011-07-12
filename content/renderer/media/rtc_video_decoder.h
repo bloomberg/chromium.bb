@@ -10,14 +10,14 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/time.h"
-#include "content/renderer/media/external_renderer.h"
 #include "media/base/filters.h"
 #include "media/base/video_frame.h"
 #include "media/filters/decoder_base.h"
+#include "third_party/libjingle/source/talk/session/phone/mediachannel.h"
 
 class RTCVideoDecoder
     : public media::VideoDecoder,
-      public ExternalRenderer {
+      public cricket::VideoRenderer {
  public:
   RTCVideoDecoder(MessageLoop* message_loop, const std::string& url);
   virtual ~RTCVideoDecoder();
@@ -36,20 +36,16 @@ class RTCVideoDecoder
   virtual void ProduceVideoFrame(scoped_refptr<media::VideoFrame> video_frame);
   virtual bool ProvidesBuffer();
 
-  // ExternalRenderer implementation
-  virtual int FrameSizeChange(unsigned int width,
-                              unsigned int height,
-                              unsigned int number_of_streams);
-
-  virtual int DeliverFrame(unsigned char* buffer,
-                           int buffer_size);
+  // cricket::VideoRenderer implementation
+  virtual bool SetSize(int width, int height, int reserved);
+  virtual bool RenderFrame(const cricket::VideoFrame *frame);
 
  private:
   friend class RTCVideoDecoderTest;
   FRIEND_TEST_ALL_PREFIXES(RTCVideoDecoderTest, Initialize_Successful);
   FRIEND_TEST_ALL_PREFIXES(RTCVideoDecoderTest, DoSeek);
-  FRIEND_TEST_ALL_PREFIXES(RTCVideoDecoderTest, DoDeliverFrame);
-  FRIEND_TEST_ALL_PREFIXES(RTCVideoDecoderTest, DoFrameSizeChange);
+  FRIEND_TEST_ALL_PREFIXES(RTCVideoDecoderTest, DoRenderFrame);
+  FRIEND_TEST_ALL_PREFIXES(RTCVideoDecoderTest, DoSetSize);
 
   enum DecoderState {
     kUnInitialized,

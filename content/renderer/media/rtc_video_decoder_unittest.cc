@@ -124,7 +124,7 @@ TEST_F(RTCVideoDecoderTest, DoSeek) {
   EXPECT_EQ(RTCVideoDecoder::kNormal, decoder_->state_);
 }
 
-TEST_F(RTCVideoDecoderTest, DoDeliverFrame) {
+TEST_F(RTCVideoDecoderTest, DoRenderFrame) {
   const base::TimeDelta kZero;
   EXPECT_CALL(host_, GetTime()).WillRepeatedly(Return(base::TimeDelta()));
 
@@ -142,29 +142,27 @@ TEST_F(RTCVideoDecoderTest, DoDeliverFrame) {
   EXPECT_CALL(*renderer_.get(), ConsumeVideoFrame(_))
       .Times(Limits::kMaxVideoFrames);
 
-  unsigned int video_frame_size = decoder_->width_ * decoder_->height_ * 3 / 2;
-  uint8* video_frame = new uint8[video_frame_size];
+  cricket::NullVideoFrame video_frame;
 
   for (size_t i = 0; i < Limits::kMaxVideoFrames; ++i) {
-    decoder_->DeliverFrame(video_frame, video_frame_size);
+    decoder_->RenderFrame(&video_frame);
   }
-  delete [] video_frame;
 
   message_loop_.RunAllPending();
   EXPECT_EQ(RTCVideoDecoder::kNormal, decoder_->state_);
 }
 
-TEST_F(RTCVideoDecoderTest, DoFrameSizeChange) {
+TEST_F(RTCVideoDecoderTest, DoSetSize) {
   InitializeDecoderSuccessfully();
 
   int new_width = kWidth * 2;
   int new_height = kHeight * 2;
-  int new_number_of_streams = 0;
+  int new_reserved = 0;
 
   EXPECT_CALL(host_,
               SetVideoSize(new_width, new_height)).WillRepeatedly(Return());
 
-  decoder_->FrameSizeChange(new_width, new_height, new_number_of_streams);
+  decoder_->SetSize(new_width, new_height, new_reserved);
 
   const MediaFormat& media_format = decoder_->media_format();
   int width = 0;

@@ -66,7 +66,6 @@
         'renderer/media/audio_message_filter.h',
         'renderer/media/audio_renderer_impl.cc',
         'renderer/media/audio_renderer_impl.h',
-        'renderer/media/external_renderer.h',
         'renderer/media/media_stream_dispatcher.cc',
         'renderer/media/media_stream_dispatcher.h',
         'renderer/media/media_stream_dispatcher_eventhandler.h',

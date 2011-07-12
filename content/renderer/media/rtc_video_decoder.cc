@@ -115,8 +115,6 @@ void RTCVideoDecoder::Stop(FilterCallback* callback) {
   state_ = kStopped;
 
   VideoDecoder::Stop(callback);
-
-  // TODO(ronghuawu): Stop rtc
 }
 
 void RTCVideoDecoder::Seek(base::TimeDelta time, const FilterStatusCB& cb) {
@@ -169,8 +167,6 @@ void RTCVideoDecoder::Seek(base::TimeDelta time, const FilterStatusCB& cb) {
   state_ = kNormal;
 
   cb.Run(PIPELINE_OK);
-
-  // TODO(ronghuawu): Start rtc
 }
 
 const MediaFormat& RTCVideoDecoder::media_format() {
@@ -187,42 +183,40 @@ void RTCVideoDecoder::ProduceVideoFrame(
     return;
   }
   DCHECK_EQ(MessageLoop::current(), message_loop_);
-  lock_.Acquire();
+  base::AutoLock auto_lock(lock_);
   frame_queue_available_.push_back(video_frame);
-  lock_.Release();
 }
 
 bool RTCVideoDecoder::ProvidesBuffer() {
   return true;
 }
 
-int RTCVideoDecoder::FrameSizeChange(unsigned int width,
-                                     unsigned int height,
-                                     unsigned int number_of_streams) {
+bool RTCVideoDecoder::SetSize(int width, int height, int reserved) {
   width_ = width;
   height_ = height;
 
   media_format_.SetAsInteger(MediaFormat::kWidth, width_);
   media_format_.SetAsInteger(MediaFormat::kHeight, height_);
   host()->SetVideoSize(width_, height_);
-  return 0;
+  return true;
 }
 
-int RTCVideoDecoder::DeliverFrame(unsigned char* buffer,
-                                  int buffer_size) {
-  DCHECK(buffer);
-
-  if (frame_queue_available_.size() == 0)
-    return 0;
+bool RTCVideoDecoder::RenderFrame(const cricket::VideoFrame* frame) {
+  DCHECK(frame);
 
   if (state_ != kNormal)
-    return 0;
+    return true;
 
   // This is called from another thread
-  lock_.Acquire();
-  scoped_refptr<VideoFrame> video_frame = frame_queue_available_.front();
-  frame_queue_available_.pop_front();
-  lock_.Release();
+  scoped_refptr<VideoFrame> video_frame;
+  {
+    base::AutoLock auto_lock(lock_);
+    if (frame_queue_available_.size() == 0) {
+      return true;
+    }
+    video_frame = frame_queue_available_.front();
+    frame_queue_available_.pop_front();
+  }
 
   // Check if there's a size change
   if (video_frame->width() != width_ || video_frame->height() != height_) {
@@ -234,32 +228,31 @@ int RTCVideoDecoder::DeliverFrame(unsigned char* buffer,
                             kNoTimestamp,
                             kNoTimestamp,
                             &video_frame);
-    if (!video_frame.get()) {
-      return -1;
-    }
   }
 
   video_frame->SetTimestamp(host()->GetTime());
   video_frame->SetDuration(base::TimeDelta::FromMilliseconds(30));
 
   uint8* y_plane = video_frame->data(VideoFrame::kYPlane);
+  const uint8* y_plane_src = frame->GetYPlane();
   for (size_t row = 0; row < video_frame->height(); ++row) {
-    memcpy(y_plane, buffer, width_);
+    memcpy(y_plane, y_plane_src, frame->GetYPitch());
     y_plane += video_frame->stride(VideoFrame::kYPlane);
-    buffer += width_;
+    y_plane_src += frame->GetYPitch();
   }
-  size_t uv_width = width_/2;
   uint8* u_plane = video_frame->data(VideoFrame::kUPlane);
+  const uint8* u_plane_src = frame->GetUPlane();
   for (size_t row = 0; row < video_frame->height(); row += 2) {
-    memcpy(u_plane, buffer, uv_width);
+    memcpy(u_plane, u_plane_src, frame->GetUPitch());
     u_plane += video_frame->stride(VideoFrame::kUPlane);
-    buffer += uv_width;
+    u_plane_src += frame->GetUPitch();
   }
   uint8* v_plane = video_frame->data(VideoFrame::kVPlane);
+  const uint8* v_plane_src = frame->GetVPlane();
   for (size_t row = 0; row < video_frame->height(); row += 2) {
-    memcpy(v_plane, buffer, uv_width);
+    memcpy(v_plane, v_plane_src, frame->GetVPitch());
     v_plane += video_frame->stride(VideoFrame::kVPlane);
-    buffer += uv_width;
+    v_plane_src += frame->GetVPitch();
   }
 
   if (MessageLoop::current() != message_loop_) {
@@ -272,5 +265,5 @@ int RTCVideoDecoder::DeliverFrame(unsigned char* buffer,
     VideoFrameReady(video_frame);
   }
 
-  return 0;
+  return true;
 }
