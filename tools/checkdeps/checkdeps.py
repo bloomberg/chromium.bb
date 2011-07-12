@@ -243,7 +243,7 @@ def ApplyDirectoryRules(existing_rules, dir_name):
   # Check the DEPS file in this directory.
   if VERBOSE:
     print "Applying rules from", dir_name
-  def FromImpl(unused):
+  def FromImpl(unused, unused2):
     pass  # NOP function so "From" doesn't fail.
 
   class _VarImpl:
