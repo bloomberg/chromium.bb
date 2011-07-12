@@ -129,8 +129,6 @@ class BrowserProcessImpl : public BrowserProcess,
   void CreateIOThread();
   static void CleanupOnIOThread();
 
-  void WaitForPluginDataRemoverToFinish();
-
   void CreateFileThread();
   void CreateDBThread();
   void CreateProcessLauncherThread();
