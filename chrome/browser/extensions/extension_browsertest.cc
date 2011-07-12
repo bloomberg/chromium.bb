@@ -90,7 +90,7 @@ const Extension* ExtensionBrowserTest::LoadExtensionImpl(
   // The call to OnExtensionInstalled ensures the other extension prefs
   // are set up with the defaults.
   service->extension_prefs()->OnExtensionInstalled(
-      extension, Extension::ENABLED);
+      extension, Extension::ENABLED, false);
   service->SetIsIncognitoEnabled(extension_id, incognito_enabled);
 
   ui_test_utils::WindowedNotificationObserver extension_loaded_signal(

@@ -183,7 +183,8 @@ void SimpleExtensionLoadPrompt::ShowPrompt() {
 
 void SimpleExtensionLoadPrompt::InstallUIProceed() {
   if (extension_service_.get())
-    extension_service_->OnExtensionInstalled(extension_);
+    extension_service_->OnExtensionInstalled(
+        extension_, false);  // Not from web store.
   delete this;
 }
 
@@ -466,6 +467,10 @@ bool ExtensionService::IsDownloadFromGallery(const GURL& download_url,
   }
 
   return (referrer_valid && download_valid);
+}
+
+bool ExtensionService::IsFromWebStore(const std::string& id) const {
+  return extension_prefs_->IsFromWebStore(id);
 }
 
 bool ExtensionService::IsDownloadFromMiniGallery(const GURL& download_url) {
@@ -2021,10 +2026,11 @@ void ExtensionService::OnLoadSingleExtension(const Extension* extension) {
     prompt->ShowPrompt();
     return;  // continues in SimpleExtensionLoadPrompt::InstallUI*
   }
-  OnExtensionInstalled(extension);
+  OnExtensionInstalled(extension, false);  // Not from web store.
 }
 
-void ExtensionService::OnExtensionInstalled(const Extension* extension) {
+void ExtensionService::OnExtensionInstalled(
+    const Extension* extension, bool from_webstore) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Ensure extension is deleted unless we transfer ownership.
@@ -2076,7 +2082,9 @@ void ExtensionService::OnExtensionInstalled(const Extension* extension) {
 
   ShownSectionsHandler::OnExtensionInstalled(profile_->GetPrefs(), extension);
   extension_prefs_->OnExtensionInstalled(
-      extension, initial_enable ? Extension::ENABLED : Extension::DISABLED);
+      extension,
+      initial_enable ? Extension::ENABLED : Extension::DISABLED,
+      from_webstore);
 
   // Unpacked extensions default to allowing file access, but if that has been
   // overridden, don't reset the value.

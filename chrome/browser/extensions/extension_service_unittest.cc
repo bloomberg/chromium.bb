@@ -582,11 +582,16 @@ class ExtensionServiceTest
   // method directly.  Instead, use InstallCrx(), which waits for
   // the crx to be installed and does extra error checking.
   void StartCrxInstall(const FilePath& crx_path) {
+    StartCrxInstall(crx_path, false);
+  }
+
+  void StartCrxInstall(const FilePath& crx_path, bool from_webstore) {
     ASSERT_TRUE(file_util::PathExists(crx_path))
         << "Path does not exist: "<< crx_path.value().c_str();
     scoped_refptr<CrxInstaller> installer(
         service_->MakeCrxInstaller(NULL));
     installer->set_allow_silent_install(true);
+    installer->set_is_gallery_install(from_webstore);
     installer->InstallCrx(crx_path);
   }
 
@@ -1910,6 +1915,38 @@ TEST_F(ExtensionServiceTest, Reinstall) {
   ValidatePrefKeyCount(1);
   ValidateIntegerPref(good_crx, "state", Extension::ENABLED);
   ValidateIntegerPref(good_crx, "location", Extension::INTERNAL);
+}
+
+// Test that extension prefs remember if .crx came from web store.
+TEST_F(ExtensionServiceTest, FromWebStore) {
+  InitializeEmptyExtensionService();
+
+  // A simple extension that should install without error.
+  FilePath path = data_dir_.AppendASCII("good.crx");
+  StartCrxInstall(path, false);  // Not from web store.
+  loop_.RunAllPending();
+
+  ASSERT_TRUE(installed_);
+  ASSERT_EQ(1u, loaded_.size());
+  ASSERT_EQ(0u, GetErrors().size());
+  ValidatePrefKeyCount(1);
+  ValidateBooleanPref(good_crx, "from_webstore", false);
+  ASSERT_FALSE(service_->IsFromWebStore(good_crx));
+
+  installed_ = NULL;
+  loaded_.clear();
+  ExtensionErrorReporter::GetInstance()->ClearErrors();
+
+  // Test install from web store.
+  StartCrxInstall(path, true);  // From web store.
+  loop_.RunAllPending();
+
+  ASSERT_TRUE(installed_);
+  ASSERT_EQ(1u, loaded_.size());
+  ASSERT_EQ(0u, GetErrors().size());
+  ValidatePrefKeyCount(1);
+  ValidateBooleanPref(good_crx, "from_webstore", true);
+  ASSERT_TRUE(service_->IsFromWebStore(good_crx));
 }
 
 // Test upgrading a signed extension.

@@ -50,7 +50,8 @@ void LiveSyncExtensionHelper::InstallExtension(
   scoped_refptr<Extension> extension = GetExtension(profile, name, type);
   ASSERT_TRUE(extension.get()) << "Could not get extension " << name
                                << " (profile = " << profile << ")";
-  profile->GetExtensionService()->OnExtensionInstalled(extension);
+  profile->GetExtensionService()->OnExtensionInstalled(
+      extension, extension->UpdatesFromGallery());
 }
 
 void LiveSyncExtensionHelper::UninstallExtension(

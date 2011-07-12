@@ -114,7 +114,7 @@ scoped_refptr<Extension> TestExtensionPrefs::AddExtensionWithManifest(
     return NULL;
 
   EXPECT_TRUE(Extension::IdIsValid(extension->id()));
-  prefs_->OnExtensionInstalled(extension, Extension::ENABLED);
+  prefs_->OnExtensionInstalled(extension, Extension::ENABLED, false);
   return extension;
 }
 

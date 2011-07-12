@@ -166,6 +166,9 @@ class ExtensionService
   bool IsDownloadFromGallery(const GURL& download_url,
                              const GURL& referrer_url);
 
+  // Returns true if the extension was installed from the web store.
+  bool IsFromWebStore(const std::string& id) const;
+
   // Determine if the downloaded extension came from the theme mini-gallery,
   // Used to test if we need to show the "Loading" dialog for themes.
   static bool IsDownloadFromMiniGallery(const GURL& download_url);
@@ -397,7 +400,8 @@ class ExtensionService
   void OnLoadSingleExtension(const Extension* extension);
 
   // Called by the backend when an extension has been installed.
-  void OnExtensionInstalled(const Extension* extension);
+  void OnExtensionInstalled(
+      const Extension* extension, bool from_webstore);
 
   // Checks if the privileges requested by |extension| have increased, and if
   // so, disables the extension and prompts the user to approve the change.
@@ -406,7 +410,7 @@ class ExtensionService
   // Go through each extensions in pref, unload blacklisted extensions
   // and update the blacklist state in pref.
   virtual void UpdateExtensionBlacklist(
-    const std::vector<std::string>& blacklist) OVERRIDE;
+      const std::vector<std::string>& blacklist) OVERRIDE;
 
   // Go through each extension and unload those that the network admin has
   // put on the blacklist (not to be confused with the Google managed blacklist

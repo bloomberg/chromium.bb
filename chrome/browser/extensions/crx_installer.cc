@@ -556,7 +556,7 @@ void CrxInstaller::ReportSuccessFromUIThread() {
 
   // Tell the frontend about the installation and hand off ownership of
   // extension_ to it.
-  frontend_weak_->OnExtensionInstalled(extension_);
+  frontend_weak_->OnExtensionInstalled(extension_, is_gallery_install());
   extension_ = NULL;
 
   NotifyCrxInstallComplete();

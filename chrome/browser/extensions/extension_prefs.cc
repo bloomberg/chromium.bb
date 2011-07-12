@@ -116,6 +116,10 @@ const char kPrefOldGrantedAPIs[] = "granted_permissions.api";
 // A preference that indicates when an extension was installed.
 const char kPrefInstallTime[] = "install_time";
 
+// A preference that indicates whether the extension was installed from the
+// Chrome Web Store.
+const char kPrefFromWebStore[] = "from_webstore";
+
 // A preference that contains any extension-controlled preferences.
 const char kPrefPreferences[] = "preferences";
 
@@ -881,7 +885,9 @@ void ExtensionPrefs::SetToolbarOrder(
 }
 
 void ExtensionPrefs::OnExtensionInstalled(
-    const Extension* extension, Extension::State initial_state) {
+    const Extension* extension,
+    Extension::State initial_state,
+    bool from_webstore) {
   const std::string& id = extension->id();
   CHECK(Extension::IdIsValid(id));
   ScopedExtensionPrefUpdate update(prefs_, id);
@@ -890,6 +896,8 @@ void ExtensionPrefs::OnExtensionInstalled(
   extension_dict->Set(kPrefState, Value::CreateIntegerValue(initial_state));
   extension_dict->Set(kPrefLocation,
                       Value::CreateIntegerValue(extension->location()));
+  extension_dict->Set(kPrefFromWebStore,
+                      Value::CreateBooleanValue(from_webstore));
   extension_dict->Set(kPrefInstallTime,
                       Value::CreateStringValue(
                           base::Int64ToString(install_time.ToInternalValue())));
@@ -1347,6 +1355,15 @@ void ExtensionPrefs::OnContentSettingChanged(
         content_settings_store_->GetSettingsForExtension(
             extension_id, kExtensionPrefsScopeRegular));
   }
+}
+
+bool ExtensionPrefs::IsFromWebStore(
+    const std::string& extension_id) const {
+  const DictionaryValue* dictionary = GetExtensionPref(extension_id);
+  bool result = false;
+  if (dictionary && dictionary->GetBoolean(kPrefFromWebStore, &result))
+    return result;
+  return false;
 }
 
 base::Time ExtensionPrefs::GetInstallTime(

@@ -545,7 +545,8 @@ class ExtensionPrefsOnExtensionInstalled : public ExtensionPrefsTest {
     extension_ = prefs_.AddExtension("on_extension_installed");
     EXPECT_EQ(Extension::ENABLED,
               prefs()->GetExtensionState(extension_->id()));
-    prefs()->OnExtensionInstalled(extension_.get(), Extension::DISABLED);
+    prefs()->OnExtensionInstalled(
+        extension_.get(), Extension::DISABLED, false);
   }
 
   virtual void Verify() {
@@ -568,7 +569,7 @@ class ExtensionPrefsAppLaunchIndex : public ExtensionPrefsTest {
     extension_ = prefs_.AddExtension("on_extension_installed");
     EXPECT_EQ(Extension::ENABLED,
         prefs()->GetExtensionState(extension_->id()));
-    prefs()->OnExtensionInstalled(extension_.get(), Extension::ENABLED);
+    prefs()->OnExtensionInstalled(extension_.get(), Extension::ENABLED, false);
   }
 
   virtual void Verify() {
@@ -623,7 +624,7 @@ class ExtensionPrefsAppDraggedByUser : public ExtensionPrefsTest {
   virtual void Initialize() {
     extension_ = prefs_.AddExtension("on_extension_installed");
     EXPECT_FALSE(prefs()->WasAppDraggedByUser(extension_->id()));
-    prefs()->OnExtensionInstalled(extension_.get(), Extension::ENABLED);
+    prefs()->OnExtensionInstalled(extension_.get(), Extension::ENABLED, false);
   }
 
   virtual void Verify() {
@@ -737,7 +738,7 @@ class ExtensionPrefsPreferencesBase : public ExtensionPrefsTest {
     Extension* extensions[] = {ext1_, ext2_, ext3_};
     for (int i = 0; i < 3; ++i) {
       if (ext == extensions[i] && !installed[i]) {
-        prefs()->OnExtensionInstalled(ext, Extension::ENABLED);
+        prefs()->OnExtensionInstalled(ext, Extension::ENABLED, false);
         installed[i] = true;
         break;
       }

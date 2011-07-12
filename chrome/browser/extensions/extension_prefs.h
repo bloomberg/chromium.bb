@@ -97,7 +97,8 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
 
   // Called when an extension is installed, so that prefs get created.
   void OnExtensionInstalled(const Extension* extension,
-                            Extension::State initial_state);
+                            Extension::State initial_state,
+                            bool from_webstore);
 
   // Called when an extension is uninstalled, so that prefs get cleaned up.
   void OnExtensionUninstalled(const std::string& extension_id,
@@ -321,6 +322,9 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
 
   // Clears incognito session-only content settings for all extensions.
   void ClearIncognitoSessionOnlyContentSettings();
+
+  // Returns true if the extension was installed from the Chrome Web Store.
+  bool IsFromWebStore(const std::string& extension_id) const;
 
   // Helper method to acquire the installation time of an extension.
   // Returns base::Time() if the installation time could not be parsed or
