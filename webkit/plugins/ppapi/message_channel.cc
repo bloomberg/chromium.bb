@@ -235,6 +235,9 @@ bool MessageChannelEnumerate(NPObject *np_obj, NPIdentifier **value,
     bool success = WebBindings::enumerate(NULL, passthrough, value, count);
     if (success) {
       // Add postMessage to the list and return it.
+      if (std::numeric_limits<size_t>::max() / sizeof(NPIdentifier) <=
+          (*count + 1))
+        return false;
       NPIdentifier* new_array = static_cast<NPIdentifier*>(
           std::malloc(sizeof(NPIdentifier) * (*count + 1)));
       std::memcpy(new_array, *value, sizeof(NPIdentifier)*(*count));
