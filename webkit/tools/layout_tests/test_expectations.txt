@@ -15,8 +15,3 @@ BUGCR86570 MAC : platform/gtk/fonts/custom-font-missing-glyphs.html = IMAGE+TEXT
 BUGCR86570 MAC : platform/gtk/fonts/font-face-with-complex-text.html = IMAGE+TEXT CRASH
 BUGCR86570 MAC : platform/mac/fast/text/myanmar-shaping.html = CRASH
 BUGCR86570 MAC : platform/mac/fast/text/thai-combining-mark-positioning.html = CRASH
-
-// Started crashing after skia r1814:r1832 roll.
-BUGCR88801 WIN : printing/allowed-page-breaks.html = CRASH
-BUGCR88801 WIN : svg/dynamic-updates/SVGFEDropShadowElement-svgdom-dy-prop.html = CRASH
-BUGCR88801 WIN : svg/dynamic-updates/SVGFEFloodElement-dom-flood-color-attr.html = CRASH
