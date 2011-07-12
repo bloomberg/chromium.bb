@@ -73,6 +73,7 @@
 #include "ppapi/c/trusted/ppb_file_io_trusted.h"
 #include "ppapi/c/trusted/ppb_image_data_trusted.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
+#include "ppapi/shared_impl/time_conversion.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
 #include "webkit/plugins/ppapi/callbacks.h"
@@ -106,6 +107,8 @@
 
 using ppapi::thunk::EnterResource;
 using ppapi::thunk::PPB_Graphics2D_API;
+using ppapi::TimeTicksToPPTimeTicks;
+using ppapi::TimeToPPTime;
 
 namespace webkit {
 namespace ppapi {
@@ -282,7 +285,7 @@ const void* GetInterface(const char* name) {
   if (strcmp(name, PPB_FULLSCREEN_DEV_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_Fullscreen_Thunk();
   if (strcmp(name, PPB_GRAPHICS_2D_INTERFACE) == 0)
-    return PPB_Graphics2D_Impl::GetInterface();
+    return ::ppapi::thunk::GetPPB_Graphics2D_Thunk();
   if (strcmp(name, PPB_IMAGEDATA_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_ImageData_Thunk();
   if (strcmp(name, PPB_IMAGEDATA_TRUSTED_INTERFACE) == 0)

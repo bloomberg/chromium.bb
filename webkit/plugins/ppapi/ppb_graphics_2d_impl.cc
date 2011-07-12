@@ -174,11 +174,6 @@ PP_Resource PPB_Graphics2D_Impl::Create(PluginInstance* instance,
   return graphics_2d->GetReference();
 }
 
-// static
-const PPB_Graphics2D* PPB_Graphics2D_Impl::GetInterface() {
-  return ::ppapi::thunk::GetPPB_Graphics2D_Thunk();
-}
-
 bool PPB_Graphics2D_Impl::Init(int width, int height, bool is_always_opaque) {
   // The underlying PPB_ImageData_Impl will validate the dimensions.
   image_data_ = new PPB_ImageData_Impl(instance());

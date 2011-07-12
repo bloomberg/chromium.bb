@@ -11,6 +11,7 @@
 #include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/ppb_file_io.h"
 #include "ppapi/c/private/ppb_flash_file.h"
+#include "ppapi/shared_impl/time_conversion.h"
 #include "ppapi/thunk/enter.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/file_path.h"
@@ -20,7 +21,6 @@
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_file_ref_impl.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
-#include "webkit/plugins/ppapi/time_conversion.h"
 
 #if defined(OS_WIN)
 #include "base/utf_string_conversions.h"
@@ -28,6 +28,7 @@
 
 using ppapi::thunk::EnterResource;
 using ppapi::thunk::PPB_FileRef_API;
+using ppapi::TimeToPPTime;
 
 namespace webkit {
 namespace ppapi {

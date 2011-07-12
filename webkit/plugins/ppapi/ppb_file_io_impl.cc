@@ -15,6 +15,7 @@
 #include "ppapi/c/trusted/ppb_file_io_trusted.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/shared_impl/time_conversion.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_file_ref_api.h"
 #include "webkit/plugins/ppapi/common.h"
@@ -23,8 +24,9 @@
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_file_ref_impl.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
-#include "webkit/plugins/ppapi/time_conversion.h"
 
+using ppapi::PPTimeToTime;
+using ppapi::TimeToPPTime;
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_FileIO_API;
 using ppapi::thunk::PPB_FileRef_API;

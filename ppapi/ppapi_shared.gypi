@@ -47,6 +47,8 @@
         'shared_impl/ppp_instance_combined.h',
         'shared_impl/resource_object_base.cc',
         'shared_impl/resource_object_base.h',
+        'shared_impl/time_conversion.cc',
+        'shared_impl/time_conversion.h',
         'shared_impl/tracker_base.cc',
         'shared_impl/tracker_base.h',
         'shared_impl/url_util_impl.cc',

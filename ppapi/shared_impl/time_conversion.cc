@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/plugins/ppapi/time_conversion.h"
+#include "ppapi/shared_impl/time_conversion.h"
 
-namespace webkit {
 namespace ppapi {
 
 namespace {
@@ -48,4 +47,3 @@ double PPTimeTicksToEventTime(PP_TimeTicks t) {
 }
 
 }  // namespace ppapi
-}  // namespace webkit

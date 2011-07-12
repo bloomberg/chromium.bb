@@ -37,10 +37,6 @@ class PPB_Graphics2D_Impl
                             const PP_Size& size,
                             PP_Bool is_always_opaque);
 
-  // Returns a pointer to the interface implementing PPB_ImageData that is
-  // exposed to the plugin.
-  static const PPB_Graphics2D* GetInterface();
-
   bool is_always_opaque() const { return is_always_opaque_; }
 
   virtual ::ppapi::thunk::PPB_Graphics2D_API* AsPPB_Graphics2D_API();

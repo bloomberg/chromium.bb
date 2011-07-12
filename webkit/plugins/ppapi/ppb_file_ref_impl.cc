@@ -8,6 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/shared_impl/time_conversion.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_file_system_api.h"
 #include "webkit/plugins/ppapi/common.h"
@@ -17,9 +18,9 @@
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_directory_reader_impl.h"
 #include "webkit/plugins/ppapi/ppb_file_system_impl.h"
-#include "webkit/plugins/ppapi/time_conversion.h"
 #include "webkit/plugins/ppapi/var.h"
 
+using ppapi::PPTimeToTime;
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_FileRef_API;
 using ppapi::thunk::PPB_FileSystem_API;

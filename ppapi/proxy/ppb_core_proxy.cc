@@ -16,6 +16,10 @@
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/shared_impl/time_conversion.h"
+
+using ppapi::TimeToPPTime;
+using ppapi::TimeTicksToPPTimeTicks;
 
 namespace pp {
 namespace proxy {
@@ -45,14 +49,11 @@ void MemFree(void* ptr) {
 }
 
 double GetTime() {
-  return base::Time::Now().ToDoubleT();
+  return TimeToPPTime(base::Time::Now());
 }
 
 double GetTimeTicks() {
-  // TODO(brettw) http://code.google.com/p/chromium/issues/detail?id=57448
-  // This should be a tick timer rather than wall clock time, but needs to
-  // match message times, which also currently use wall clock time.
-  return GetTime();
+  return TimeTicksToPPTimeTicks(base::TimeTicks::Now());
 }
 
 void CallOnMainThread(int delay_in_ms,

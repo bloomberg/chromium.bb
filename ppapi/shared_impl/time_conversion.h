@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_PLUGINS_PPAPI_TIME_CONVERSION_H_
-#define WEBKIT_PLUGINS_PPAPI_TIME_CONVERSION_H_
+#ifndef PPAPI_SHARED_IMPL_TIME_CONVERSION_H_
+#define PPAPI_SHARED_IMPL_TIME_CONVERSION_H_
 
 #include "base/time.h"
 #include "ppapi/c/pp_time.h"
 
-namespace webkit {
 namespace ppapi {
 
 PP_Time TimeToPPTime(base::Time t);
@@ -24,6 +23,5 @@ PP_TimeTicks EventTimeToPPTimeTicks(double event_time);
 double PPTimeTicksToEventTime(PP_TimeTicks t);
 
 }  // namespace ppapi
-}  // namespace webkit
 
-#endif  // WEBKIT_PLUGINS_PPAPI_TIME_CONVERSION_H_
+#endif  // PPAPI_SHARED_IMPL_TIME_CONVERSION_H_

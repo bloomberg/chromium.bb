@@ -13,11 +13,13 @@
 #include "base/utf_string_conversion_utils.h"
 #include "ppapi/c/pp_input_event.h"
 #include "ppapi/shared_impl/input_event_impl.h"
+#include "ppapi/shared_impl/time_conversion.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "webkit/plugins/ppapi/common.h"
-#include "webkit/plugins/ppapi/time_conversion.h"
 
+using ppapi::EventTimeToPPTimeTicks;
 using ppapi::InputEventData;
+using ppapi::PPTimeTicksToEventTime;
 using WebKit::WebInputEvent;
 using WebKit::WebKeyboardEvent;
 using WebKit::WebMouseEvent;

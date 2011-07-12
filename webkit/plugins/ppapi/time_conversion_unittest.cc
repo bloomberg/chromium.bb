@@ -6,9 +6,8 @@
 #include <stdlib.h>
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/plugins/ppapi/time_conversion.h"
+#include "ppapi/shared_impl/time_conversion.h"
 
-namespace webkit {
 namespace ppapi {
 
 // Slop we'll allow in two Time "internal values" to consider them equal.
@@ -30,29 +29,30 @@ static const double kTimeSecondsSlop =
 TEST(TimeConversion, MAYBE_Time) {
   // Should be able to round-trip.
   base::Time now = base::Time::Now();
-  base::Time converted = PPTimeToTime(TimeToPPTime(now));
+  base::Time converted = ppapi::PPTimeToTime(TimeToPPTime(now));
   EXPECT_GE(kTimeInternalValueSlop,
             abs(static_cast<int>((converted - now).ToInternalValue())));
 
   // Units should be in seconds.
   base::Time one_second_from_now = now + base::TimeDelta::FromSeconds(1);
-  EXPECT_EQ(1.0, TimeToPPTime(one_second_from_now) - TimeToPPTime(now));
+  EXPECT_EQ(1.0, ppapi::TimeToPPTime(one_second_from_now) -
+                 ppapi::TimeToPPTime(now));
 }
 
 TEST(TimeConversion, EventTime) {
   // Should be able to round-trip.
   base::Time now = base::Time::Now();
   double event_now = now.ToDoubleT();
-  double converted = EventTimeToPPTimeTicks(PPTimeTicksToEventTime(event_now));
+  double converted =
+      ppapi::EventTimeToPPTimeTicks(ppapi::PPTimeTicksToEventTime(event_now));
   EXPECT_GE(kTimeSecondsSlop, fabs(converted - event_now));
 
   // Units should be in seconds.
   base::Time one_second_from_now = now + base::TimeDelta::FromSeconds(1);
   double event_one_second_from_now = one_second_from_now.ToDoubleT();
   EXPECT_GE(kTimeSecondsSlop,
-            1.0 - EventTimeToPPTimeTicks(event_one_second_from_now) -
-                EventTimeToPPTimeTicks(event_now));
+            1.0 - ppapi::EventTimeToPPTimeTicks(event_one_second_from_now) -
+                ppapi::EventTimeToPPTimeTicks(event_now));
 }
 
 }  // namespace ppapi
-}  // namespace webkit
