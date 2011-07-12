@@ -103,7 +103,7 @@
         middle.*name|mname|middle$<!-- es -->|apellido.?materno|lastlastname
       </message>
       <message name="IDS_AUTOFILL_LAST_NAME_RE">
-        last.*name|lname|surname|last$|secondname<!-- de-DE -->|nachname<!-- es -->|apellidos<!-- fr-FR -->|famille|^nom<!-- it-IT -->|cognome<!-- ja-JP -->|姓<!-- pt-BR, pt-PT -->|morada|apelidos|surename|sobrenome<!-- ru -->|Фамилия<!-- ko-KR -->|성[^명]?
+        last.*name|lname|surname|last$|secondname<!-- de-DE -->|nachname<!-- es -->|apellido<!-- fr-FR -->|famille|^nom<!-- it-IT -->|cognome<!-- ja-JP -->|姓<!-- pt-BR, pt-PT -->|morada|apelidos|surename|sobrenome<!-- ru -->|Фамилия<!-- ko-KR -->|성[^명]?
       </message>
       <message name="IDS_AUTOFILL_PHONE_RE">
         phone|mobile<!-- de-DE -->|telefonnummer<!-- es -->|telefono|teléfono<!-- fr-FR -->|telfixe<!-- ja-JP -->|電話<!-- pt-BR, pt-PT -->|telefone|telemovel<!-- ru -->|телефон<!-- zh-CN -->|电话<!-- ko-KR -->|(전화|핸드폰|휴대폰|휴대전화)(.?번호)?
