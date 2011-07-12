@@ -19,12 +19,12 @@ void TestIsFullFrame() {
   // TODO(elijahtaylor): Need a test when IsFullFrame is true, should be
   // covered by http://code.google.com/p/nativeclient/issues/detail?id=1932
   PP_Bool full_frame = PPBInstance()->IsFullFrame(pp_instance());
-  EXPECT_ASYNC(full_frame == PP_FALSE);
+  EXPECT(full_frame == PP_FALSE);
 
   full_frame = PPBInstance()->IsFullFrame(kInvalidInstance);
-  EXPECT_ASYNC(full_frame == PP_FALSE);
+  EXPECT(full_frame == PP_FALSE);
 
-  TEST_PASSED_ASYNC;
+  TEST_PASSED;
 }
 
 void TestBindGraphics() {
@@ -35,40 +35,40 @@ void TestBindGraphics() {
   PP_Resource graphics2 = PPBGraphics2D()->Create(
       pp_instance(), &size, PP_TRUE);
 
-  EXPECT_ASYNC(graphics1 != kInvalidResource);
-  EXPECT_ASYNC(graphics2 != kInvalidResource);
+  EXPECT(graphics1 != kInvalidResource);
+  EXPECT(graphics2 != kInvalidResource);
 
   PP_Bool ret = PPBInstance()->BindGraphics(pp_instance(), graphics1);
-  EXPECT_ASYNC(ret == PP_TRUE);
+  EXPECT(ret == PP_TRUE);
 
   // We should be allowed to replace one device with another.
   ret = PPBInstance()->BindGraphics(pp_instance(), graphics2);
-  EXPECT_ASYNC(ret == PP_TRUE);
+  EXPECT(ret == PP_TRUE);
 
   // This should fail because instance is not valid.
   ret = PPBInstance()->BindGraphics(kInvalidInstance, graphics1);
-  EXPECT_ASYNC(ret == PP_FALSE);
+  EXPECT(ret == PP_FALSE);
 
   // This should fail because instance is not valid and graphics2 is bound.
   ret = PPBInstance()->BindGraphics(kInvalidInstance, graphics2);
-  EXPECT_ASYNC(ret == PP_FALSE);
+  EXPECT(ret == PP_FALSE);
 
   // This is not a failure, binding resource 0 simply unbinds all devices.
   ret = PPBInstance()->BindGraphics(pp_instance(), kInvalidResource);
-  EXPECT_ASYNC(ret == PP_TRUE);
+  EXPECT(ret == PP_TRUE);
 
   PP_Resource image_data = PPBImageData()->Create(
       pp_instance(), PP_IMAGEDATAFORMAT_RGBA_PREMUL, &size, PP_FALSE);
-  EXPECT_ASYNC(image_data != kInvalidResource);
+  EXPECT(image_data != kInvalidResource);
 
   // TODO(elijahtaylor): Enable this test once fixed in chrome.
   // http://code.google.com/p/nativeclient/issues/detail?id=1999
 
   // This should fail because the resource is the wrong type.
   // ret = PPBInstance()->BindGraphics(pp_instance(), image_data);
-  // EXPECT_ASYNC(ret == PP_FALSE);
+  // EXPECT(ret == PP_FALSE);
 
-  TEST_PASSED_ASYNC;
+  TEST_PASSED;
 }
 
 }  // namespace
