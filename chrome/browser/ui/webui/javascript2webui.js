@@ -4,36 +4,60 @@
 if (arguments.length < 3) {
   print('usage: ' +
         arguments[0] + ' path-to-testfile.js testfile.js [output.cc]');
-  quit();
-}
-var js_file = arguments[1];
-var js_file_base = arguments[2];
-var outputfile = arguments[3];
-var prevfuncs = {};
-for (var func in this) {
-  if (this[func] instanceof Function)
-    prevfuncs[func] = func;
-}
-var js = load(js_file);
-if (!('test_fixture' in this)) {
-  print(js_file + ' did not define test_fixture.');
   quit(-1);
 }
-if (!('test_add_library' in this)) {
-  this['test_add_library'] = true;
-}
+var jsFile = arguments[1];
+var jsFileBase = arguments[2];
+var outputFile = arguments[3];
+
+// Generate the file to stdout.
 print('// GENERATED FILE');
 print('// ' + arguments.join(' '));
 print('// PLEASE DO NOT HAND EDIT!');
 print();
-for (var func in this) {
-  if (!prevfuncs[func] && this[func] instanceof Function) {
-    print('IN_PROC_BROWSER_TEST_F(' + test_fixture + ', ' + func + ') {');
-    if (test_add_library)
-      print('  AddLibrary(FilePath(FILE_PATH_LITERAL("' + js_file_base +
-            '")));');
-    print('  ASSERT_TRUE(RunJavascriptTest("' + func + '"));');
-    print('}');
-    print();
-  }
+print('#include "chrome/browser/ui/webui/web_ui_browsertest.h"');
+print('#include "googleurl/src/gurl.h"');
+print('#include "testing/gtest/include/gtest/gtest.h"');
+print();
+
+function GEN(code) {
+  print(code);
 }
+
+var typedeffedCppFixtures = {};
+
+function TEST_F(testFixture, testFunction, testBody) {
+  var browsePreload = this[testFixture].prototype.browsePreload;
+  var browsePrintPreload = this[testFixture].prototype.browsePrintPreload;
+  var testGenPreamble = this[testFixture].prototype.testGenPreamble;
+  var testGenPostamble = this[testFixture].prototype.testGenPostamble;
+  var typedefCppFixture = this[testFixture].prototype.typedefCppFixture;
+
+  if (typedefCppFixture && !(testFixture in typedeffedCppFixtures)) {
+    print('typedef ' + typedefCppFixture + ' ' + testFixture + ';');
+    typedeffedCppFixtures[testFixture] = typedefCppFixture;
+  }
+
+  print('IN_PROC_BROWSER_TEST_F(' + testFixture + ', ' + testFunction + ') {');
+  if (testGenPreamble)
+    testGenPreamble(testFixture, testFunction);
+  print('  AddLibrary(FilePath(FILE_PATH_LITERAL("' + jsFileBase + '")));');
+  if (browsePreload) {
+    print('  BrowsePreload(GURL("' + browsePreload + '"), "' + testFixture +
+          '", "' + testFunction + '");');
+    }
+  if (browsePrintPreload) {
+    print('  BrowsePrintPreload(GURL(WebUITestDataPathToURL(\n' +
+          '      FILE_PATH_LITERAL("' + browsePrintPreload + '"))),\n' +
+          '      "' + testFixture + '", "' + testFunction + '");');
+  }
+  print('  ASSERT_TRUE(RunJavascriptTestF("' + testFixture + '", "' +
+        testFunction + '"));');
+  if (testGenPostamble)
+    testGenPostamble(testFixture, testFunction);
+  print('}');
+  print();
+}
+
+var js = read(jsFile);
+eval(js);

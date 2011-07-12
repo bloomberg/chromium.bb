@@ -153,6 +153,8 @@
         'test/test_launcher_utils.h',
         'test/test_location_bar.cc',
         'test/test_location_bar.h',
+        'test/test_navigation_observer.cc',
+        'test/test_navigation_observer.h',
         'test/test_switches.cc',
         'test/test_switches.h',
         'test/test_tab_strip_model_observer.cc',
@@ -2294,7 +2296,9 @@
         'gypv8sh': '../tools/gypv8sh.py',
         'js2webui': 'browser/ui/webui/javascript2webui.js',
         'js2webui_out_dir': '<(SHARED_INTERMEDIATE_DIR)/js2webui',
+        'mock_js': 'third_party/mock4js/mock4js.js',
         'rule_input_relpath': 'test/data/webui',
+        'test_api_js': 'test/data/webui/test_api.js',
       },
       'dependencies': [
         'browser',
@@ -2529,8 +2533,6 @@
         'browser/ui/views/html_dialog_view_browsertest.cc',
         'browser/ui/webui/chrome_url_data_manager_browsertest.cc',
         'browser/ui/webui/ntp/most_visited_browsertest.cc',
-        'browser/ui/webui/print_preview_browsertest.cc',
-        'browser/ui/webui/settings_browsertest.cc',
         'browser/ui/webui/test_chrome_web_ui_factory_browsertest.cc',
         'browser/ui/webui/BidiCheckerWebUITest.cc',
         'browser/ui/webui/BidiCheckerWebUITest.h',
@@ -2556,7 +2558,7 @@
         'renderer/translate_helper_browsertest.cc',
         'test/automation/dom_automation_browsertest.cc',
         'test/data/webui/print_preview.js',
-        'test/data/webui/sample_pass.js',
+        'test/data/webui/options.js',
         'test/gpu/gpu_browsertest.cc',
         'test/in_process_browser_test_browsertest.cc',
         'test/out_of_proc_test_runner.cc',
@@ -2594,7 +2596,7 @@
         }, { #else: OS == "chromeos"
           'sources!': [
             'browser/service/service_process_control_browsertest.cc',
-            'browser/ui/webui/print_preview_browsertest.cc',
+            'browser/ui/webui/print_preview.js',
           ],
         }],
         ['file_manager_extension==0', {
@@ -2757,19 +2759,18 @@
               'inputs': [
                 '<(gypv8sh)',
                 '<(PRODUCT_DIR)/v8_shell<(EXECUTABLE_SUFFIX)',
+                '<(mock_js)',
+                '<(test_api_js)',
                 '<(js2webui)',
               ],
               'outputs': [
-                '<(js2webui_out_dir)/js2webui/chrome/<(rule_input_relpath)/<(RULE_INPUT_ROOT)-inl.h',
+                '<(js2webui_out_dir)/chrome/<(rule_input_relpath)/<(RULE_INPUT_ROOT).cc',
               ],
               'process_outputs_as_sources': 1,
               'action': [
                 'python', '<@(_inputs)', '<(RULE_INPUT_PATH)', '<@(_outputs)',
               ],
             },
-          ],
-          'include_dirs': [
-            '<(js2webui_out_dir)',
           ],
           'dependencies': [
             # build time dependency.

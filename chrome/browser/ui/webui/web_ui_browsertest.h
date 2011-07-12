@@ -11,6 +11,7 @@
 #include "base/file_path.h"
 #include "chrome/browser/ui/webui/web_ui_test_handler.h"
 #include "chrome/test/in_process_browser_test.h"
+#include "chrome/test/test_navigation_observer.h"
 
 class Value;
 class WebUIMessageHandler;
@@ -29,7 +30,9 @@ class WebUIMessageHandler;
 // These tests should follow the form given in:
 // chrome/test/data/webui/sample_downloads.js.
 // and the lone test within this class.
-class WebUIBrowserTest : public InProcessBrowserTest {
+class WebUIBrowserTest
+    : public InProcessBrowserTest,
+      public TestNavigationObserver::JsInjectionReadyObserver {
  public:
   typedef std::vector<const Value*> ConstValueVector;
   virtual ~WebUIBrowserTest();
@@ -50,6 +53,10 @@ class WebUIBrowserTest : public InProcessBrowserTest {
   bool RunJavascriptFunction(const std::string& function_name,
                              const ConstValueVector& function_arguments);
 
+  // Runs a test fixture that may include calls to functions in test_api.js.
+  bool RunJavascriptTestF(const std::string& test_fixture,
+                          const std::string& test_name);
+
   // Runs a test that may include calls to functions in test_api.js.
   bool RunJavascriptTest(const std::string& test_name);
   bool RunJavascriptTest(const std::string& test_name,
@@ -64,7 +71,24 @@ class WebUIBrowserTest : public InProcessBrowserTest {
   // to prevent re-loading at next javascript invocation. If
   // |override_chrome_send| is true, then chrome.send is overridden for
   // javascript to register handlers.
-  void PreLoadJavascriptLibraries(bool override_chrome_send);
+  void PreLoadJavascriptLibraries(const std::string& preload_test_fixture,
+                                  const std::string& preload_test_name);
+
+  // Called by javascript-generated test bodies to browse to a page and preload
+  // the javascript for the given |preload_test_fixture| and
+  // |preload_test_name|. chrome.send will be overridden to allow javascript
+  // handler mocking.
+  void BrowsePreload(const GURL& browse_to,
+                     const std::string& preload_test_fixture,
+                     const std::string& preload_test_name);
+
+  // Called by javascript-generated test bodies to browse to a page and preload
+  // the javascript for the given |preload_test_fixture| and
+  // |preload_test_name|. chrome.send will be overridden to allow javascript
+  // handler mocking.
+  void BrowsePrintPreload(const GURL& browse_to,
+                          const std::string& preload_test_fixture,
+                          const std::string& preload_test_name);
 
  protected:
   WebUIBrowserTest();
@@ -75,14 +99,14 @@ class WebUIBrowserTest : public InProcessBrowserTest {
   // Returns a mock WebUI object under test (if any).
   virtual WebUIMessageHandler* GetMockMessageHandler();
 
-  // Skip this test with |skip_test_message|.
-  void skipTest(const std::string& skip_test_message);
-
   // Returns a file:// GURL constructed from |path| inside the test data dir for
   // webui tests.
   static GURL WebUITestDataPathToURL(const FilePath::StringType& path);
 
  private:
+  // TestNavigationObserver::JsInjectionReadyObserver implementation.
+  virtual void OnJsInjectionReady() OVERRIDE;
+
   // Builds a string containing all added javascript libraries.
   void BuildJavascriptLibraries(std::string* content);
 
@@ -114,8 +138,10 @@ class WebUIBrowserTest : public InProcessBrowserTest {
   // again.
   bool libraries_preloaded_;
 
-  bool skip_test_;
-  std::string skip_test_message_;
+  // Saves the states of |test_fixture| and |test_name| for calling
+  // PreloadJavascriptLibraries().
+  std::string preload_test_fixture_;
+  std::string preload_test_name_;
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_WEB_UI_BROWSERTEST_H_
