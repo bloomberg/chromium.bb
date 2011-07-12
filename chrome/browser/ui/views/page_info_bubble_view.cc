@@ -81,7 +81,7 @@ class Section : public views::View,
   PageInfoModel::SectionInfo info_;
 
   views::ImageView* status_image_;
-  views::Label* headline_label_;
+  views::Textfield* headline_label_;
   views::Label* description_label_;
   views::Link* link_;
 
@@ -328,14 +328,19 @@ Section::Section(PageInfoBubbleView* owner,
     AddChildView(status_image_);
   }
 
-  headline_label_ = new views::Label(UTF16ToWideHack(info_.headline));
+  // This is a text field so that text can be selected and copied.
+  headline_label_ = new views::Textfield();
+  headline_label_->SetText(info_.headline);
+  headline_label_->SetReadOnly(true);
+  headline_label_->RemoveBorder();
+  headline_label_->SetTextColor(SK_ColorBLACK);
+  headline_label_->SetBackgroundColor(SK_ColorWHITE);
   headline_label_->SetFont(
       headline_label_->font().DeriveFont(0, gfx::Font::BOLD));
-  headline_label_->set_background(
-      views::Background::CreateSolidBackground(SK_ColorWHITE));
-  headline_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   AddChildView(headline_label_);
 
+  // Can't make this a text field to enable copying until multiline support is
+  // added to text fields.
   description_label_ = new views::Label(UTF16ToWideHack(info_.description));
   description_label_->set_background(
       views::Background::CreateSolidBackground(SK_ColorWHITE));
@@ -403,7 +408,7 @@ gfx::Size Section::LayoutItems(bool compute_bounds_only, int width) {
   int w = width - x - kTextPaddingRight;
   y = kVGapToHeadline;
   int headline_height = 0;
-  if (!headline_label_->GetText().empty()) {
+  if (!headline_label_->text().empty()) {
     size = headline_label_->GetPreferredSize();
     headline_height = size.height();
     if (!compute_bounds_only)
