@@ -335,7 +335,10 @@ void ExtensionPrefs::MakePathsRelative() {
   for (std::set<std::string>::iterator i = absolute_keys.begin();
        i != absolute_keys.end(); ++i) {
     DictionaryValue* extension_dict = NULL;
-    update_dict->GetDictionaryWithoutPathExpansion(*i, &extension_dict);
+    if (!update_dict->GetDictionaryWithoutPathExpansion(*i, &extension_dict)) {
+      NOTREACHED() << "Control should never reach here for extension " << *i;
+      continue;
+    }
     FilePath::StringType path_string;
     extension_dict->GetString(kPrefPath, &path_string);
     FilePath path(path_string);
