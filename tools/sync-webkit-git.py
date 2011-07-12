@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -57,7 +57,8 @@ def GetGClientBranchName():
 
 def GetWebKitRev():
   """Extract the 'webkit_revision' variable out of DEPS."""
-  locals = {'Var': lambda _: locals["vars"][_]}
+  locals = {'Var': lambda _: locals["vars"][_],
+            'From': lambda *args: None}
   execfile('DEPS', {}, locals)
   return locals['vars']['webkit_revision']
 
