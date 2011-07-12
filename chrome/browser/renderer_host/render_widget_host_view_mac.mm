@@ -640,6 +640,12 @@ void RenderWidgetHostViewMac::SelectionChanged(const std::string& text,
                                                const ui::Range& range) {
   selected_text_ = text;
   [cocoa_view_ setSelectedRange:range.ToNSRange()];
+  // Updaes markedRange when there is no marked text so that retrieving
+  // markedRange immediately after calling setMarkdText: returns the current
+  // caret position.
+  if (![cocoa_view_ hasMarkedText]) {
+    [cocoa_view_ setMarkedRange:range.ToNSRange()];
+  }
 }
 
 bool RenderWidgetHostViewMac::IsPopup() const {
