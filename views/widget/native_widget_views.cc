@@ -23,29 +23,23 @@ NativeWidgetViews::NativeWidgetViews(internal::NativeWidgetDelegate* delegate)
       minimized_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(close_widget_factory_(this)),
       hosting_widget_(NULL),
-      ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET),
-      delete_native_view_(true) {
+      ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET) {
 }
 
 NativeWidgetViews::~NativeWidgetViews() {
   delegate_->OnNativeWidgetDestroying();
-  if (delete_native_view_) {
-    view_->parent()->RemoveChildView(view_);
-    // We must prevent the NativeWidgetView from attempting to delete us.
-    view_->set_delete_native_widget(false);
-    delete view_;
-  }
   delegate_->OnNativeWidgetDestroyed();
   if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)
     delete delegate_;
+  view_.reset();
 }
 
 View* NativeWidgetViews::GetView() {
-  return view_;
+  return view_.get();
 }
 
 const View* NativeWidgetViews::GetView() const {
-  return view_;
+  return view_.get();
 }
 
 void NativeWidgetViews::OnActivate(bool active) {
@@ -58,7 +52,7 @@ void NativeWidgetViews::OnActivate(bool active) {
 
 void NativeWidgetViews::InitNativeWidget(const Widget::InitParams& params) {
   ownership_ = params.ownership;
-  view_ = new internal::NativeWidgetView(this);
+  view_.reset(new internal::NativeWidgetView(this));
   view_->SetBoundsRect(params.bounds);
   view_->SetPaintToLayer(true);
 
@@ -70,7 +64,7 @@ void NativeWidgetViews::InitNativeWidget(const Widget::InitParams& params) {
     parent_view = ViewsDelegate::views_delegate->GetDefaultParentView();
     hosting_widget_ = parent_view->GetWidget();
   }
-  parent_view->AddChildView(view_);
+  parent_view->AddChildView(view_.get());
 
   // TODO(beng): SetInitParams().
 }
@@ -109,7 +103,12 @@ gfx::NativeWindow NativeWidgetViews::GetNativeWindow() const {
 Widget* NativeWidgetViews::GetTopLevelWidget() {
   if (view_->parent() == ViewsDelegate::views_delegate->GetDefaultParentView())
     return GetWidget();
-  return view_->GetWidget()->GetTopLevelWidget();
+  // During Widget destruction, this function may be called after |view_| is
+  // detached from a Widget, at which point this NativeWidget's Widget becomes
+  // the effective toplevel.
+  Widget* containing_widget = view_->GetWidget();
+  return containing_widget ? containing_widget->GetTopLevelWidget()
+                           : GetWidget();
 }
 
 const ui::Compositor* NativeWidgetViews::GetCompositor() const {
@@ -130,7 +129,9 @@ void NativeWidgetViews::CalculateOffsetToAncestorWithLayer(gfx::Point* offset,
 }
 
 void NativeWidgetViews::ViewRemoved(View* view) {
-  return GetParentNativeWidget()->ViewRemoved(view);
+  internal::NativeWidgetPrivate* parent = GetParentNativeWidget();
+  if (parent)
+    parent->ViewRemoved(view);
 }
 
 void NativeWidgetViews::SetNativeWindowProperty(const char* name, void* value) {
@@ -143,7 +144,8 @@ void* NativeWidgetViews::GetNativeWindowProperty(const char* name) const {
 }
 
 TooltipManager* NativeWidgetViews::GetTooltipManager() const {
-  return GetParentNativeWidget()->GetTooltipManager();
+  const internal::NativeWidgetPrivate* parent = GetParentNativeWidget();
+  return parent ? parent->GetTooltipManager() : NULL;
 }
 
 bool NativeWidgetViews::IsScreenReaderActive() const {
@@ -246,7 +248,7 @@ void NativeWidgetViews::MoveAbove(gfx::NativeView native_view) {
 }
 
 void NativeWidgetViews::MoveToTop() {
-  view_->parent()->ReorderChildView(view_, -1);
+  view_->parent()->ReorderChildView(view_.get(), -1);
 }
 
 void NativeWidgetViews::SetShape(gfx::NativeRegion region) {
@@ -264,7 +266,7 @@ void NativeWidgetViews::Close() {
 void NativeWidgetViews::CloseNow() {
   // TODO(beng): what about the other case??
   if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)
-    delete view_;
+    delete this;
 }
 
 void NativeWidgetViews::EnableClose(bool enable) {
@@ -396,14 +398,18 @@ void NativeWidgetViews::SetCursor(gfx::NativeCursor cursor) {
 // NativeWidgetViews, private:
 
 internal::NativeWidgetPrivate* NativeWidgetViews::GetParentNativeWidget() {
-  return static_cast<internal::NativeWidgetPrivate*>(
-      view_->GetWidget()->native_widget());
+  Widget* containing_widget = view_->GetWidget();
+  return containing_widget ? static_cast<internal::NativeWidgetPrivate*>(
+      containing_widget->native_widget()) :
+      NULL;
 }
 
 const internal::NativeWidgetPrivate*
     NativeWidgetViews::GetParentNativeWidget() const {
-  return static_cast<const internal::NativeWidgetPrivate*>(
-      view_->GetWidget()->native_widget());
+  const Widget* containing_widget = view_->GetWidget();
+  return containing_widget ? static_cast<const internal::NativeWidgetPrivate*>(
+      containing_widget->native_widget()) :
+      NULL;
 }
 
 }  // namespace views

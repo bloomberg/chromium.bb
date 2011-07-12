@@ -116,6 +116,7 @@ class NativeWidgetViews : public internal::NativeWidgetPrivate {
   virtual void SetCursor(gfx::NativeCursor cursor) OVERRIDE;
 
  private:
+  // These functions may return NULL during Widget destruction.
   internal::NativeWidgetPrivate* GetParentNativeWidget();
   const internal::NativeWidgetPrivate* GetParentNativeWidget() const;
 
@@ -124,7 +125,7 @@ class NativeWidgetViews : public internal::NativeWidgetPrivate {
 
   internal::NativeWidgetDelegate* delegate_;
 
-  internal::NativeWidgetView* view_;
+  scoped_ptr<internal::NativeWidgetView> view_;
 
   bool active_;
 

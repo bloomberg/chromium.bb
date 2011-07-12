@@ -36,10 +36,6 @@ class NativeWidgetView : public View {
 
   Widget* GetAssociatedWidget();
 
-  void set_delete_native_widget(bool delete_native_widget) {
-    delete_native_widget_ = delete_native_widget;
-  }
-
   // Overridden from View:
   virtual void SchedulePaintInternal(const gfx::Rect& r) OVERRIDE;
   virtual void MarkLayerDirty() OVERRIDE;
@@ -82,8 +78,6 @@ class NativeWidgetView : public View {
 
   // Have we sent OnNativeWidgetCreated?
   bool sent_create_;
-
-  bool delete_native_widget_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetView);
 };

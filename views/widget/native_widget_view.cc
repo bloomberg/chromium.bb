@@ -17,15 +17,11 @@ const char NativeWidgetView::kViewClassName[] = "views/NativeWidgetView";
 
 NativeWidgetView::NativeWidgetView(NativeWidgetViews* native_widget)
     : native_widget_(native_widget),
-      sent_create_(false),
-      delete_native_widget_(true) {
+      sent_create_(false) {
+  set_parent_owned(false);
 }
 
 NativeWidgetView::~NativeWidgetView() {
-  if (delete_native_widget_) {
-    native_widget_->set_delete_native_view(false);
-    delete native_widget_;
-  }
 }
 
 Widget* NativeWidgetView::GetAssociatedWidget() {
@@ -54,6 +50,12 @@ void NativeWidgetView::ViewHierarchyChanged(bool is_add,
   if (is_add && child == this && !sent_create_) {
     sent_create_ = true;
     delegate()->OnNativeWidgetCreated();
+  } else if (!is_add && child == this) {
+    // We need to return to the message loop to unwind the stack before
+    // processing the close action, since CloseNow() would synchronously delete
+    // this object while it's still being unparented by its containing view.
+    // TODO(beng): This will be problematic should we need to reparent a widget.
+    GetAssociatedWidget()->Close();
   }
 }
 
