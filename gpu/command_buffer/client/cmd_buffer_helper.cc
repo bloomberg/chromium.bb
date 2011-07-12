@@ -10,6 +10,11 @@
 
 namespace gpu {
 
+namespace {
+const int kCommandsPerFlushCheck = 100;
+const double kFlushDelay = 1.0 / (5.0 * 60.0);
+}
+
 CommandBufferHelper::CommandBufferHelper(CommandBuffer* command_buffer)
     : command_buffer_(command_buffer),
       entries_(NULL),
@@ -19,7 +24,9 @@ CommandBufferHelper::CommandBufferHelper(CommandBuffer* command_buffer)
       last_token_read_(-1),
       get_(0),
       put_(0),
-      last_put_sent_(0) {
+      last_put_sent_(0),
+      commands_issued_(0),
+      last_flush_time_(0) {
 }
 
 bool CommandBufferHelper::Initialize(int32 ring_buffer_size) {
@@ -48,6 +55,7 @@ CommandBufferHelper::~CommandBufferHelper() {
 }
 
 bool CommandBufferHelper::FlushSync() {
+  time(&last_flush_time_);
   last_put_sent_ = put_;
   CommandBuffer::State state = command_buffer_->FlushSync(put_, get_);
   SynchronizeState(state);
@@ -55,6 +63,7 @@ bool CommandBufferHelper::FlushSync() {
 }
 
 void CommandBufferHelper::Flush() {
+  time(&last_flush_time_);
   last_put_sent_ = put_;
   command_buffer_->Flush(put_);
 }
@@ -152,17 +161,17 @@ void CommandBufferHelper::WaitForAvailableEntries(int32 count) {
         return;
     }
   }
-  // Force a flush if the buffer is getting half full, or even earlier if the
-  // reader is known to be idle.
-  int32 pending =
-      (put_ + usable_entry_count_ - last_put_sent_) % usable_entry_count_;
-  int32 limit = usable_entry_count_ / ((get_ == last_put_sent_) ? 16 : 2);
-  if (pending > limit) {
-    Flush();
+  // Allow this command buffer to be pre-empted by another if a "reasonable"
+  // amount of work has been done.
+  if (commands_issued_ % kCommandsPerFlushCheck == 0) {
+    clock_t current_time = time(NULL);
+    if (difftime(current_time, last_flush_time_) > kFlushDelay)
+      Flush();
   }
 }
 
 CommandBufferEntry* CommandBufferHelper::GetSpace(uint32 entries) {
+  ++commands_issued_;
   WaitForAvailableEntries(entries);
   CommandBufferEntry* space = &entries_[put_];
   put_ += entries;

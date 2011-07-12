@@ -8,6 +8,7 @@
 #define GPU_COMMAND_BUFFER_CLIENT_CMD_BUFFER_HELPER_H_
 
 #include <string.h>
+#include <time.h>
 
 #include "../common/logging.h"
 #include "../common/constants.h"
@@ -87,8 +88,8 @@ class CommandBufferHelper {
   // particularly useful after inserting a token that will be waited on.
   void YieldScheduler();
 
-  // Waits for a certain amount of space to be available. Returns address
-  // of space.
+  // Called prior to each command being issued. Waits for a certain amount of
+  // space to be available. Returns address of space.
   CommandBufferEntry* GetSpace(uint32 entries);
 
   // Typed version of GetSpace. Gets enough room for the given type and returns
@@ -236,6 +237,10 @@ class CommandBufferHelper {
   int32 get_;
   int32 put_;
   int32 last_put_sent_;
+  int commands_issued_;
+
+  // Using C runtime instead of base because this file cannot depend on base.
+  time_t last_flush_time_;
 
   friend class CommandBufferHelperTest;
   DISALLOW_COPY_AND_ASSIGN(CommandBufferHelper);
