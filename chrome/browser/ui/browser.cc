@@ -2463,6 +2463,7 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_INTERNET_OPTIONS:      OpenInternetOptionsDialog();      break;
     case IDC_LANGUAGE_OPTIONS:      OpenLanguageOptionsDialog();      break;
 #endif
+    case IDC_SHOW_SYNC_SETUP:       ShowSyncSetup();                  break;
 
     default:
       LOG(WARNING) << "Received Unimplemented Command: " << id;
@@ -3862,6 +3863,7 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_SYSTEM_OPTIONS, true);
   command_updater_.UpdateCommandEnabled(IDC_INTERNET_OPTIONS, true);
 #endif
+  command_updater_.UpdateCommandEnabled(IDC_SHOW_SYNC_SETUP, true);
 
   ExtensionService* extension_service = profile()->GetExtensionService();
   bool enable_extensions =
@@ -4753,4 +4755,12 @@ void Browser::UpdateBookmarkBarState(BookmarkBarStateChangeReason reason) {
       BookmarkBar::ANIMATE_STATE_CHANGE :
       BookmarkBar::DONT_ANIMATE_STATE_CHANGE;
   window_->BookmarkBarStateChanged(animate_type);
+}
+
+void Browser::ShowSyncSetup() {
+  ProfileSyncService* service = profile()->GetProfileSyncService();
+  if (service->HasSyncSetupCompleted())
+    ShowOptionsTab(chrome::kSyncSetupSubPage);
+  else
+    profile()->GetProfileSyncService()->ShowLoginDialog();
 }

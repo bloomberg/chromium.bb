@@ -459,6 +459,14 @@ void WrenchMenuModel::Build() {
   AddItemWithStringId(IDC_SHOW_DOWNLOADS, IDS_SHOW_DOWNLOADS);
   AddSeparator();
 
+#if !defined(OS_CHROMEOS)
+  const string16 short_product_name =
+        l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
+  AddItem(IDC_SHOW_SYNC_SETUP, l10n_util::GetStringFUTF16(
+      IDS_SHOW_SYNC_SETUP, short_product_name));
+  AddSeparator();
+#endif
+
 #if defined(OS_CHROMEOS)
   AddItemWithStringId(IDC_OPTIONS, IDS_SETTINGS);
 #elif defined(OS_MACOSX)

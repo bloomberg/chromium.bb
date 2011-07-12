@@ -592,6 +592,7 @@ class Browser : public TabHandlerDelegate,
   void OpenMobilePlanTabAndActivate();
 #endif
   void OpenPluginsTabAndActivate();
+  void ShowSyncSetup();
 
   virtual void UpdateDownloadShelfVisibility(bool visible);
 

@@ -8372,7 +8372,16 @@ ls' lab.">
       <message name="IDS_SYNC_USE_DEFAULT_SETTINGS" desc="The text to display on the link to go back to the default sync preferences.">
         Use default settings
       </message>
-
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_SHOW_SYNC_SETUP" desc="In title case. The title of the menu item to open the sync setup page. Shown in the Wrench menu.">
+          Set Up <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> Sync
+        </message>
+      </if>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_SHOW_SYNC_SETUP" desc="The title of the menu item to open the sync setup page. Shown in the Wrench menu.">
+          Set up <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> sync
+        </message>
+      </if>
       <!-- SafeBrowsing -->
       <message name="IDS_SAFE_BROWSING_MALWARE_TITLE" desc="SafeBrowsing Malware HTML title">
         Malware Detected!

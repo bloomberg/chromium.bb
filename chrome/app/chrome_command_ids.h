@@ -170,6 +170,7 @@
 #define IDC_PROFILING_ENABLED           40030
 #define IDC_FILE_MANAGER                40031
 #define IDC_BOOKMARKS_MENU              40032
+#define IDC_SHOW_SYNC_SETUP             40033
 
 // Spell-check
 // Insert any additional suggestions before _LAST; these have to be consecutive.
