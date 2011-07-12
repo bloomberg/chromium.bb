@@ -37,6 +37,9 @@ bool MockDefaultProvider::DefaultSettingIsManaged(
   return content_type == content_type_ && is_managed_;
 }
 
+void MockDefaultProvider::ShutdownOnUIThread() {
+}
+
 MockProvider::MockProvider()
     : requesting_url_pattern_(ContentSettingsPattern()),
       embedding_url_pattern_(ContentSettingsPattern()),

@@ -21,15 +21,15 @@
 
 class ContentSettingsDetails;
 class DictionaryValue;
+class HostContentSettingsMap;
 class PrefService;
-class Profile;
 
 namespace content_settings {
 
 class PolicyDefaultProvider : public DefaultProviderInterface,
                               public NotificationObserver {
  public:
-  explicit PolicyDefaultProvider(Profile* profile);
+  PolicyDefaultProvider(HostContentSettingsMap* map, PrefService* prefs);
   virtual ~PolicyDefaultProvider();
 
   // DefaultContentSettingsProvider implementation.
@@ -38,6 +38,8 @@ class PolicyDefaultProvider : public DefaultProviderInterface,
   virtual void UpdateDefaultSetting(ContentSettingsType content_type,
                                     ContentSetting setting);
   virtual bool DefaultSettingIsManaged(ContentSettingsType content_type) const;
+
+  void ShutdownOnUIThread();
 
   static void RegisterUserPrefs(PrefService* prefs);
 
@@ -53,8 +55,6 @@ class PolicyDefaultProvider : public DefaultProviderInterface,
   // mutex deadlock.
   void NotifyObservers(const ContentSettingsDetails& details);
 
-  void UnregisterObservers();
-
   // Reads the policy managed default settings.
   void ReadManagedDefaultSettings();
 
@@ -64,10 +64,8 @@ class PolicyDefaultProvider : public DefaultProviderInterface,
   // Copies of the pref data, so that we can read it on the IO thread.
   ContentSettings managed_default_content_settings_;
 
-  Profile* profile_;
-
-  // Whether this settings map is for an OTR session.
-  bool is_off_the_record_;
+  HostContentSettingsMap* host_content_settings_map_;
+  PrefService* prefs_;
 
   // Used around accesses to the managed_default_content_settings_ object to
   // guarantee thread safety.
@@ -83,14 +81,13 @@ class PolicyDefaultProvider : public DefaultProviderInterface,
 class PolicyProvider : public ProviderInterface,
                        public NotificationObserver {
  public:
-  explicit PolicyProvider(Profile* profile,
-                          DefaultProviderInterface* default_provider);
+  PolicyProvider(HostContentSettingsMap* map,
+                 PrefService* prefs,
+                 DefaultProviderInterface* default_provider);
   virtual ~PolicyProvider();
   static void RegisterUserPrefs(PrefService* prefs);
 
   // ProviderInterface Implementation
-  virtual void Init();
-
   virtual void SetContentSetting(
       const ContentSettingsPattern& primary_pattern,
       const ContentSettingsPattern& secondary_pattern,
@@ -112,6 +109,8 @@ class PolicyProvider : public ProviderInterface,
   virtual void ClearAllContentSettingsRules(
       ContentSettingsType content_type);
 
+  virtual void ShutdownOnUIThread();
+
   // NotificationObserver implementation.
   virtual void Observe(int type,
                        const NotificationSource& source,
@@ -128,25 +127,21 @@ class PolicyProvider : public ProviderInterface,
 
   void ReadManagedContentSettings(bool overwrite);
 
-  void GetContentSettingsFromPreferences(PrefService* prefs,
-                                         ContentSettingsRules* rules);
+  void GetContentSettingsFromPreferences(ContentSettingsRules* rules);
 
-  void ReadManagedContentSettingsTypes(
-      ContentSettingsType content_type);
+  void ReadManagedContentSettingsTypes(ContentSettingsType content_type);
 
   void NotifyObservers(const ContentSettingsDetails& details);
 
-  void UnregisterObservers();
-
   OriginIdentifierValueMap value_map_;
 
-  Profile* profile_;
+  HostContentSettingsMap* host_content_settings_map_;
+  PrefService* prefs_;
 
   // Weak, owned by HostContentSettingsMap.
   DefaultProviderInterface* default_provider_;
 
   PrefChangeRegistrar pref_change_registrar_;
-  NotificationRegistrar notification_registrar_;
 
   // Used around accesses to the content_settings_ object to guarantee
   // thread safety.

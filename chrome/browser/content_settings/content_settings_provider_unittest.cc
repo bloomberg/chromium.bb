@@ -11,9 +11,9 @@ namespace content_settings {
 
 TEST(ContentSettingsProviderTest, Mock) {
   MockDefaultProvider provider(CONTENT_SETTINGS_TYPE_COOKIES,
-                                       CONTENT_SETTING_ALLOW,
-                                       false,
-                                       true);
+                               CONTENT_SETTING_ALLOW,
+                               false,
+                               true);
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             provider.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES));
   EXPECT_EQ(CONTENT_SETTING_DEFAULT,

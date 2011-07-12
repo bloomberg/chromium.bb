@@ -517,8 +517,10 @@ class OffTheRecordProfileImpl : public Profile,
     // Retrieve the host content settings map of the parent profile in order to
     // ensure the preferences have been migrated.
     profile_->GetHostContentSettingsMap();
-    if (!host_content_settings_map_.get())
-      host_content_settings_map_ = new HostContentSettingsMap(this);
+    if (!host_content_settings_map_.get()) {
+      host_content_settings_map_ = new HostContentSettingsMap(
+          GetPrefs(), GetExtensionService(), true);
+    }
     return host_content_settings_map_.get();
   }
 

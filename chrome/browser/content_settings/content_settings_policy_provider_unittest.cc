@@ -35,8 +35,8 @@ class PolicyDefaultProviderTest : public TestingBrowserProcessTest {
 
 TEST_F(PolicyDefaultProviderTest, DefaultValues) {
   TestingProfile profile;
-  PolicyDefaultProvider provider(&profile);
   TestingPrefService* prefs = profile.GetTestingPrefService();
+  PolicyDefaultProvider provider(profile.GetHostContentSettingsMap(), prefs);
 
   // By default, policies should be off.
   ASSERT_FALSE(
@@ -54,6 +54,8 @@ TEST_F(PolicyDefaultProviderTest, DefaultValues) {
   prefs->RemoveManagedPref(prefs::kManagedDefaultCookiesSetting);
   ASSERT_FALSE(
       provider.DefaultSettingIsManaged(CONTENT_SETTINGS_TYPE_COOKIES));
+
+  provider.ShutdownOnUIThread();
 }
 
 // When a default-content-setting is set to a managed setting a
@@ -107,7 +109,7 @@ TEST_F(PolicyProviderTest, Default) {
   prefs->SetManagedPref(prefs::kManagedImagesBlockedForUrls,
                         value);
 
-  PolicyProvider provider(&profile, NULL);
+  PolicyProvider provider(profile.GetHostContentSettingsMap(), prefs, NULL);
 
   ContentSettingsPattern yt_url_pattern =
       ContentSettingsPattern::FromString("www.youtube.com");
@@ -130,6 +132,8 @@ TEST_F(PolicyProviderTest, Default) {
   EXPECT_EQ(CONTENT_SETTING_DEFAULT,
             provider.GetContentSetting(
                 youtube_url, youtube_url, CONTENT_SETTINGS_TYPE_COOKIES, ""));
+
+  provider.ShutdownOnUIThread();
 }
 
 TEST_F(PolicyProviderTest, ResourceIdentifier) {
@@ -145,7 +149,7 @@ TEST_F(PolicyProviderTest, ResourceIdentifier) {
   prefs->SetManagedPref(prefs::kManagedPluginsAllowedForUrls,
                         value);
 
-  PolicyProvider provider(&profile, NULL);
+  PolicyProvider provider(profile.GetHostContentSettingsMap(), prefs, NULL);
 
   GURL youtube_url("http://www.youtube.com");
   GURL google_url("http://mail.google.com");
@@ -173,6 +177,8 @@ TEST_F(PolicyProviderTest, ResourceIdentifier) {
                 google_url,
                 CONTENT_SETTINGS_TYPE_PLUGINS,
                 "someplugin"));
+
+  provider.ShutdownOnUIThread();
 }
 
 }  // namespace content_settings

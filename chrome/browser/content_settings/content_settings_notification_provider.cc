@@ -156,6 +156,9 @@ void NotificationProvider::ClearAllContentSettingsRules(
     ResetAllOrigins();
 }
 
+void NotificationProvider::ShutdownOnUIThread() {
+}
+
 void NotificationProvider::Observe(int type,
                                    const NotificationSource& source,
                                    const NotificationDetails& details) {

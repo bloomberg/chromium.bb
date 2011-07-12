@@ -175,14 +175,14 @@ TestingProfile::~TestingProfile() {
 
   profile_dependency_manager_->DestroyProfileServices(this);
 
+  if (host_content_settings_map_)
+    host_content_settings_map_->ShutdownOnUIThread();
+
   DestroyTopSites();
   DestroyHistoryService();
   // FaviconService depends on HistoryServce so destroying it later.
   DestroyFaviconService();
   DestroyWebDataService();
-  if (extension_service_.get()) {
-    extension_service_.reset();
-  }
 
   if (pref_proxy_config_tracker_.get())
     pref_proxy_config_tracker_->DetachFromPrefService();
@@ -611,8 +611,10 @@ FindBarState* TestingProfile::GetFindBarState() {
 }
 
 HostContentSettingsMap* TestingProfile::GetHostContentSettingsMap() {
-  if (!host_content_settings_map_.get())
-    host_content_settings_map_ = new HostContentSettingsMap(this);
+  if (!host_content_settings_map_.get()) {
+    host_content_settings_map_ = new HostContentSettingsMap(
+        GetPrefs(), GetExtensionService(), false);
+  }
   return host_content_settings_map_.get();
 }
 

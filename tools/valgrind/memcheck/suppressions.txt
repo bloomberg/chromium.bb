@@ -3328,23 +3328,6 @@
    fun:_ZN14ProfileManager10AddProfileEP7Profileb
 }
 {
-   bug_66853_b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN11ProfileImpl25GetHostContentSettingsMapEv
-   ...
-   fun:_ZNK17ProfileImplIOData6Handle27GetMainRequestContextGetterEv
-   fun:_ZN11ProfileImpl17GetRequestContextEv
-   fun:_ZN19SafeBrowsingService5StartEv
-   fun:_ZN19SafeBrowsingService10InitializeEv
-   fun:_ZN22ResourceDispatcherHost10InitializeEv
-   fun:_ZN18BrowserProcessImpl28CreateResourceDispatcherHostEv
-   fun:_ZN18BrowserProcessImpl24resource_dispatcher_hostEv
-   fun:_ZN16ExtensionService4InitEv
-   fun:_ZN11ProfileImpl14InitExtensionsE*
-   fun:_ZN14ProfileManager10AddProfileEP7Profileb
-}
-{
    bug_67142
    Memcheck:Leak
    fun:_Znw*
@@ -4803,22 +4786,6 @@
    fun:_ZN8chromeos12input_method18InputMethodManager11GetInstanceEv
 }
 
-{
-  bug_88557
-  Memcheck:Leak
-  fun:_Znw*
-  fun:_ZN14ExtensionPrefsC1EP11PrefServiceRK8FilePathP21ExtensionPrefValueMap
-  fun:_ZN11ProfileImpl13OnPrefsLoadedEb
-  fun:_ZN11ProfileImplC1ERK8FilePathPN7Profile8DelegateE
-  fun:_ZN7Profile13CreateProfileERK8FilePath
-  fun:_ZN14ProfileManager10GetProfileERK8FilePath
-  fun:_ZN14ProfileManager17GetDefaultProfileERK8FilePath
-  fun:_ZN12_GLOBAL__N_113CreateProfileERK18MainFunctionParamsRK8FilePath
-  fun:_Z11BrowserMainRK18MainFunctionParams
-  fun:_ZN12_GLOBAL__N_123RunNamedProcessTypeMainERKSsRK18MainFunctionParams
-  fun:ChromeMain
-  fun:main
-}
 {
    bug_88735
    Memcheck:Leak

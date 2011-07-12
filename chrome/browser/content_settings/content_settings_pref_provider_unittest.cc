@@ -30,63 +30,63 @@ namespace content_settings {
 class PrefDefaultProviderTest : public TestingBrowserProcessTest {
  public:
   PrefDefaultProviderTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_) {
+      : ui_thread_(BrowserThread::UI, &message_loop_),
+        provider_(profile_.GetHostContentSettingsMap(),
+                  profile_.GetPrefs(),
+                  false) {
+  }
+  ~PrefDefaultProviderTest() {
+    provider_.ShutdownOnUIThread();
   }
 
  protected:
   MessageLoop message_loop_;
   BrowserThread ui_thread_;
+  TestingProfile profile_;
+  PrefDefaultProvider provider_;
 };
 
 TEST_F(PrefDefaultProviderTest, DefaultValues) {
-  TestingProfile profile;
-  content_settings::PrefDefaultProvider provider(&profile);
-
   ASSERT_FALSE(
-      provider.DefaultSettingIsManaged(CONTENT_SETTINGS_TYPE_COOKIES));
+      provider_.DefaultSettingIsManaged(CONTENT_SETTINGS_TYPE_COOKIES));
 
   // Check setting defaults.
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            provider.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES));
-  provider.UpdateDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES,
+            provider_.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES));
+  provider_.UpdateDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES,
                                 CONTENT_SETTING_BLOCK);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            provider.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES));
+            provider_.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES));
 }
 
 TEST_F(PrefDefaultProviderTest, Observer) {
-  TestingProfile profile;
-  PrefDefaultProvider provider(&profile);
   MockSettingsObserver observer;
 
   EXPECT_CALL(observer,
-              OnContentSettingsChanged(profile.GetHostContentSettingsMap(),
+              OnContentSettingsChanged(profile_.GetHostContentSettingsMap(),
                                        CONTENT_SETTINGS_TYPE_IMAGES, false,
                                        _, _, true));
   // Expect a second call because the PrefDefaultProvider in the TestingProfile
   // also observes the default content settings preference.
   EXPECT_CALL(observer,
-              OnContentSettingsChanged(profile.GetHostContentSettingsMap(),
+              OnContentSettingsChanged(profile_.GetHostContentSettingsMap(),
                                        CONTENT_SETTINGS_TYPE_DEFAULT, true,
                                        _, _, true));
-  provider.UpdateDefaultSetting(
+  provider_.UpdateDefaultSetting(
       CONTENT_SETTINGS_TYPE_IMAGES, CONTENT_SETTING_BLOCK);
 }
 
 TEST_F(PrefDefaultProviderTest, ObserveDefaultPref) {
-  TestingProfile profile;
-  PrefDefaultProvider provider(&profile);
-
-  PrefService* prefs = profile.GetPrefs();
+  PrefService* prefs = profile_.GetPrefs();
 
   // Make a copy of the default pref value so we can reset it later.
   scoped_ptr<Value> default_value(prefs->FindPreference(
       prefs::kDefaultContentSettings)->GetValue()->DeepCopy());
 
-  provider.UpdateDefaultSetting(
+  provider_.UpdateDefaultSetting(
       CONTENT_SETTINGS_TYPE_COOKIES, CONTENT_SETTING_BLOCK);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            provider.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES));
+            provider_.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES));
 
   // Make a copy of the pref's new value so we can reset it later.
   scoped_ptr<Value> new_value(prefs->FindPreference(
@@ -95,33 +95,30 @@ TEST_F(PrefDefaultProviderTest, ObserveDefaultPref) {
   // Clearing the backing pref should also clear the internal cache.
   prefs->Set(prefs::kDefaultContentSettings, *default_value);
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            provider.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES));
+            provider_.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES));
 
   // Reseting the pref to its previous value should update the cache.
   prefs->Set(prefs::kDefaultContentSettings, *new_value);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            provider.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES));
+            provider_.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES));
 }
 
 TEST_F(PrefDefaultProviderTest, OffTheRecord) {
-  TestingProfile profile;
-  PrefDefaultProvider provider(&profile);
-
-  profile.set_incognito(true);
-  PrefDefaultProvider otr_provider(&profile);
-  profile.set_incognito(false);
+  PrefDefaultProvider otr_provider(profile_.GetHostContentSettingsMap(),
+                                   profile_.GetPrefs(),
+                                   true);
 
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            provider.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES));
+            provider_.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES));
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             otr_provider.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES));
 
   // Changing content settings on the main provider should also affect the
   // incognito map.
-  provider.UpdateDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES,
+  provider_.UpdateDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES,
                                 CONTENT_SETTING_BLOCK);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            provider.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES));
+            provider_.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             otr_provider.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES));
 
@@ -129,9 +126,11 @@ TEST_F(PrefDefaultProviderTest, OffTheRecord) {
   otr_provider.UpdateDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES,
                                    CONTENT_SETTING_ALLOW);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            provider.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES));
+            provider_.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             otr_provider.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES));
+
+  otr_provider.ShutdownOnUIThread();
 }
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -160,17 +159,8 @@ class PrefProviderTest : public TestingBrowserProcessTest {
 
 TEST_F(PrefProviderTest, Observer) {
   TestingProfile profile;
-  // Get the |HostContentSettingsMap| one time in order to initialize it.
-  // Otherwise we end up in a dead lock when the |PrefProvider| tries to notify
-  // content settings change observers. The |PrefProvider| set's the
-  // |HostContentSettingsMap| as notification source and would trigger in
-  // infinite recursive instantiation loop.
-  // TODO(markusheintz): Let the HostContentSettingsMap sent out notifications.
-  // Providers and HostContentSettingsMap should communicate via a observer
-  // pattern.
-  profile.GetHostContentSettingsMap();
-  Profile* p = &profile;
-  PrefProvider pref_content_settings_provider(p);
+  PrefProvider pref_content_settings_provider(
+      profile.GetHostContentSettingsMap(), profile.GetPrefs(), false);
   MockSettingsObserver observer;
   ContentSettingsPattern pattern =
       ContentSettingsPattern::FromString("[*.]example.com");
@@ -198,6 +188,8 @@ TEST_F(PrefProviderTest, Observer) {
       CONTENT_SETTINGS_TYPE_IMAGES,
       "",
       CONTENT_SETTING_ALLOW);
+
+  pref_content_settings_provider.ShutdownOnUIThread();
 }
 
 // Test for regression in which the PrefProvider modified the user pref store
@@ -224,10 +216,11 @@ TEST_F(PrefProviderTest, Incognito) {
   profile.SetPrefService(regular_prefs);
   otr_profile->set_incognito(true);
   otr_profile->SetPrefService(otr_prefs);
-  profile.GetHostContentSettingsMap();
 
-  PrefProvider pref_content_settings_provider(&profile);
-  PrefProvider pref_content_settings_provider_incognito(otr_profile);
+  PrefProvider pref_content_settings_provider(
+      profile.GetHostContentSettingsMap(), regular_prefs, false);
+  PrefProvider pref_content_settings_provider_incognito(
+      otr_profile->GetHostContentSettingsMap(), otr_prefs, true);
   ContentSettingsPattern pattern =
       ContentSettingsPattern::FromString("[*.]example.com");
   pref_content_settings_provider.SetContentSetting(
@@ -248,13 +241,16 @@ TEST_F(PrefProviderTest, Incognito) {
                 host, host, CONTENT_SETTINGS_TYPE_IMAGES, ""));
   // But the value should not be overridden in the OTR user prefs accidentally.
   EXPECT_FALSE(otr_user_prefs->IsSetInOverlay(prefs::kContentSettingsPatterns));
+
+  pref_content_settings_provider.ShutdownOnUIThread();
+  pref_content_settings_provider_incognito.ShutdownOnUIThread();
 }
 
 TEST_F(PrefProviderTest, Patterns) {
   TestingProfile testing_profile;
-  testing_profile.GetHostContentSettingsMap();
   PrefProvider pref_content_settings_provider(
-      testing_profile.GetOriginalProfile());
+      testing_profile.GetHostContentSettingsMap(),
+      testing_profile.GetPrefs(), false);
 
   GURL host1("http://example.com/");
   GURL host2("http://www.example.com/");
@@ -308,6 +304,8 @@ TEST_F(PrefProviderTest, Patterns) {
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             pref_content_settings_provider.GetContentSetting(
                 host4, host4, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+
+  pref_content_settings_provider.ShutdownOnUIThread();
 }
 
 TEST_F(PrefProviderTest, ResourceIdentifier) {
@@ -317,9 +315,10 @@ TEST_F(PrefProviderTest, ResourceIdentifier) {
   cmd->AppendSwitch(switches::kEnableResourceContentSettings);
 
   TestingProfile testing_profile;
-  testing_profile.GetHostContentSettingsMap();
   PrefProvider pref_content_settings_provider(
-      testing_profile.GetOriginalProfile());
+      testing_profile.GetHostContentSettingsMap(),
+      testing_profile.GetPrefs(),
+      false);
 
   GURL host("http://example.com/");
   ContentSettingsPattern pattern =
@@ -342,6 +341,8 @@ TEST_F(PrefProviderTest, ResourceIdentifier) {
   EXPECT_EQ(CONTENT_SETTING_DEFAULT,
             pref_content_settings_provider.GetContentSetting(
                 host, host, CONTENT_SETTINGS_TYPE_PLUGINS, resource2));
+
+  pref_content_settings_provider.ShutdownOnUIThread();
 }
 
 TEST_F(PrefProviderTest, MigrateSinglePatternSettings) {
@@ -364,7 +365,8 @@ TEST_F(PrefProviderTest, MigrateSinglePatternSettings) {
   prefs->Set(prefs::kContentSettingsPatterns, *all_settings_dictionary);
 
   // Test if single pattern settings are properly migrated.
-  content_settings::PrefProvider provider(profile.GetOriginalProfile());
+  content_settings::PrefProvider provider(profile.GetHostContentSettingsMap(),
+                                          prefs, false);
 
   // Validate migrated preferences
   const DictionaryValue* const_all_settings_dictionary =
@@ -386,6 +388,8 @@ TEST_F(PrefProviderTest, MigrateSinglePatternSettings) {
       GURL("http://www.example.com"),
       CONTENT_SETTINGS_TYPE_POPUPS,
       ""));
+
+  provider.ShutdownOnUIThread();
 }
 
 }  // namespace content_settings

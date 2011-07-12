@@ -55,6 +55,8 @@ class NotificationProvider : public ProviderInterface,
   virtual void ClearAllContentSettingsRules(
       ContentSettingsType content_type);
 
+  virtual void ShutdownOnUIThread();
+
   // NotificationObserver implementation.
   virtual void Observe(int type,
                        const NotificationSource& source,

@@ -947,8 +947,10 @@ net::SSLConfigService* ProfileImpl::GetSSLConfigService() {
 }
 
 HostContentSettingsMap* ProfileImpl::GetHostContentSettingsMap() {
-  if (!host_content_settings_map_.get())
-    host_content_settings_map_ = new HostContentSettingsMap(this);
+  if (!host_content_settings_map_.get()) {
+    host_content_settings_map_ = new HostContentSettingsMap(
+        GetPrefs(), GetExtensionService(), false);
+  }
   return host_content_settings_map_.get();
 }
 

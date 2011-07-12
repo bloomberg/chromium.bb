@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/content_settings/content_settings_details.h"
@@ -149,14 +150,15 @@ ContentSetting FixObsoleteCookiePromptMode(ContentSettingsType content_type,
 
 namespace content_settings {
 
-PrefDefaultProvider::PrefDefaultProvider(Profile* profile)
-    : profile_(profile),
-      is_incognito_(profile_->IsOffTheRecord()),
+PrefDefaultProvider::PrefDefaultProvider(HostContentSettingsMap* map,
+                                         PrefService* prefs,
+                                         bool incognito)
+    : host_content_settings_map_(map),
+      prefs_(prefs),
+      is_incognito_(incognito),
       updating_preferences_(false) {
-  initializing_ = true;
-  PrefService* prefs = profile->GetPrefs();
-
-  MigrateObsoleteNotificationPref(prefs);
+  DCHECK(prefs_);
+  MigrateObsoleteNotificationPref();
 
   // Read global defaults.
   DCHECK_EQ(arraysize(kTypeNames),
@@ -171,15 +173,12 @@ PrefDefaultProvider::PrefDefaultProvider(Profile* profile)
         UserMetricsAction("CookieBlockingDisabledPerDefault"));
   }
 
-  pref_change_registrar_.Init(prefs);
+  pref_change_registrar_.Init(prefs_);
   pref_change_registrar_.Add(prefs::kDefaultContentSettings, this);
-  notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                              Source<Profile>(profile_));
-  initializing_ = false;
 }
 
 PrefDefaultProvider::~PrefDefaultProvider() {
-  UnregisterObservers();
+  DCHECK(!prefs_);
 }
 
 ContentSetting PrefDefaultProvider::ProvideDefaultSetting(
@@ -192,6 +191,7 @@ void PrefDefaultProvider::UpdateDefaultSetting(
     ContentSettingsType content_type,
     ContentSetting setting) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(prefs_);
   DCHECK(kTypeNames[content_type] != NULL);  // Don't call this for Geolocation.
 
   // The default settings may not be directly modified for OTR sessions.
@@ -199,13 +199,11 @@ void PrefDefaultProvider::UpdateDefaultSetting(
   if (is_incognito_)
     return;
 
-  PrefService* prefs = profile_->GetPrefs();
-
   std::string dictionary_path(kTypeNames[content_type]);
-  updating_preferences_ = true;
   {
+    AutoReset<bool> auto_reset(&updating_preferences_, true);
     base::AutoLock lock(lock_);
-    DictionaryPrefUpdate update(prefs, prefs::kDefaultContentSettings);
+    DictionaryPrefUpdate update(prefs_, prefs::kDefaultContentSettings);
     DictionaryValue* default_settings_dictionary = update.Get();
     if ((setting == CONTENT_SETTING_DEFAULT) ||
         (setting == kDefaultSettings[content_type])) {
@@ -219,7 +217,6 @@ void PrefDefaultProvider::UpdateDefaultSetting(
           dictionary_path, Value::CreateIntegerValue(setting));
     }
   }
-  updating_preferences_ = false;
 
   ContentSettingsDetails details(
       ContentSettingsPattern(),
@@ -240,7 +237,7 @@ void PrefDefaultProvider::Observe(int type,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (type == chrome::NOTIFICATION_PREF_CHANGED) {
-    DCHECK_EQ(profile_->GetPrefs(), Source<PrefService>(source).ptr());
+    DCHECK_EQ(prefs_, Source<PrefService>(source).ptr());
     if (updating_preferences_)
       return;
 
@@ -252,35 +249,27 @@ void PrefDefaultProvider::Observe(int type,
       return;
     }
 
-    if (!is_incognito_) {
-      ContentSettingsDetails details(ContentSettingsPattern(),
-                                     ContentSettingsPattern(),
-                                     CONTENT_SETTINGS_TYPE_DEFAULT,
-                                     std::string());
-      NotifyObservers(details);
-    }
-  } else if (type == chrome::NOTIFICATION_PROFILE_DESTROYED) {
-    DCHECK_EQ(profile_, Source<Profile>(source).ptr());
-    UnregisterObservers();
+    ContentSettingsDetails details(ContentSettingsPattern(),
+                                   ContentSettingsPattern(),
+                                   CONTENT_SETTINGS_TYPE_DEFAULT,
+                                   std::string());
+    NotifyObservers(details);
   } else {
     NOTREACHED() << "Unexpected notification";
   }
 }
 
-void PrefDefaultProvider::UnregisterObservers() {
+void PrefDefaultProvider::ShutdownOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!profile_)
-    return;
+  DCHECK(prefs_);
   pref_change_registrar_.RemoveAll();
-  notification_registrar_.Remove(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                                 Source<Profile>(profile_));
-  profile_ = NULL;
+  prefs_ = NULL;
+  host_content_settings_map_ = NULL;
 }
 
 void PrefDefaultProvider::ReadDefaultSettings(bool overwrite) {
-  PrefService* prefs = profile_->GetPrefs();
   const DictionaryValue* default_settings_dictionary =
-      prefs->GetDictionary(prefs::kDefaultContentSettings);
+      prefs_->GetDictionary(prefs::kDefaultContentSettings);
 
   base::AutoLock lock(lock_);
 
@@ -335,20 +324,20 @@ void PrefDefaultProvider::GetSettingsFromDictionary(
 void PrefDefaultProvider::NotifyObservers(
     const ContentSettingsDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (initializing_ || profile_ == NULL)
+  if (host_content_settings_map_ == NULL)
     return;
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_CONTENT_SETTINGS_CHANGED,
-      Source<HostContentSettingsMap>(profile_->GetHostContentSettingsMap()),
+      Source<HostContentSettingsMap>(host_content_settings_map_),
       Details<const ContentSettingsDetails>(&details));
 }
 
-void PrefDefaultProvider::MigrateObsoleteNotificationPref(PrefService* prefs) {
-  if (prefs->HasPrefPath(prefs::kDesktopNotificationDefaultContentSetting)) {
+void PrefDefaultProvider::MigrateObsoleteNotificationPref() {
+  if (prefs_->HasPrefPath(prefs::kDesktopNotificationDefaultContentSetting)) {
     ContentSetting setting = IntToContentSetting(
-        prefs->GetInteger(prefs::kDesktopNotificationDefaultContentSetting));
+        prefs_->GetInteger(prefs::kDesktopNotificationDefaultContentSetting));
     UpdateDefaultSetting(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, setting);
-    prefs->ClearPref(prefs::kDesktopNotificationDefaultContentSetting);
+    prefs_->ClearPref(prefs::kDesktopNotificationDefaultContentSetting);
   }
 }
 
@@ -395,28 +384,27 @@ void PrefProvider::RegisterUserPrefs(PrefService* prefs) {
                                 PrefService::UNSYNCABLE_PREF);
 }
 
-PrefProvider::PrefProvider(Profile* profile)
-  : profile_(profile),
-    is_incognito_(profile_->IsOffTheRecord()),
+PrefProvider::PrefProvider(HostContentSettingsMap* map,
+                           PrefService* prefs,
+                           bool incognito)
+  : prefs_(prefs),
+    host_content_settings_map_(map),
+    is_incognito_(incognito),
     updating_preferences_(false) {
-  Init();
-}
-
-void PrefProvider::Init() {
-  initializing_ = true;
-  PrefService* prefs = profile_->GetPrefs();
-
-  // Migrate obsolete preferences.
-  MigrateObsoletePerhostPref(prefs);
-  MigrateObsoletePopupsPref(prefs);
-  MigrateObsoleteContentSettingsPatternPref(prefs);
+  DCHECK(prefs_);
+  if (!is_incognito_) {
+    // Migrate obsolete preferences.
+    MigrateObsoletePerhostPref();
+    MigrateObsoletePopupsPref();
+    MigrateObsoleteContentSettingsPatternPref();
+  }
 
   // Verify preferences version.
-  if (!prefs->HasPrefPath(prefs::kContentSettingsVersion)) {
-    prefs->SetInteger(prefs::kContentSettingsVersion,
+  if (!prefs_->HasPrefPath(prefs::kContentSettingsVersion)) {
+    prefs_->SetInteger(prefs::kContentSettingsVersion,
                       ContentSettingsPattern::kContentSettingsPatternVersion);
   }
-  if (prefs->GetInteger(prefs::kContentSettingsVersion) >
+  if (prefs_->GetInteger(prefs::kContentSettingsVersion) >
       ContentSettingsPattern::kContentSettingsPatternVersion) {
     LOG(ERROR) << "Unknown content settings version in preferences.";
     return;
@@ -430,20 +418,16 @@ void PrefProvider::Init() {
                          value_map_.size());
   }
 
-  pref_change_registrar_.Init(prefs);
+  pref_change_registrar_.Init(prefs_);
   pref_change_registrar_.Add(prefs::kContentSettingsPatterns, this);
   pref_change_registrar_.Add(prefs::kContentSettingsPatternPairs, this);
-
-  notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                              Source<Profile>(profile_));
-  initializing_ = false;
 }
 
 ContentSetting PrefProvider::GetContentSetting(
-      const GURL& primary_url,
-      const GURL& secondary_url,
-      ContentSettingsType content_type,
-      const ResourceIdentifier& resource_identifier) const {
+    const GURL& primary_url,
+    const GURL& secondary_url,
+    ContentSettingsType content_type,
+    const ResourceIdentifier& resource_identifier) const {
   // For a |PrefProvider| used in a |HostContentSettingsMap| of a non incognito
   // profile, this will always return NULL.
   // TODO(markusheintz): I don't like this. I'd like to have an
@@ -469,9 +453,9 @@ ContentSetting PrefProvider::GetContentSetting(
 }
 
 void PrefProvider::GetAllContentSettingsRules(
-      ContentSettingsType content_type,
-      const ResourceIdentifier& resource_identifier,
-      Rules* content_setting_rules) const {
+    ContentSettingsType content_type,
+    const ResourceIdentifier& resource_identifier,
+    Rules* content_setting_rules) const {
   DCHECK(content_setting_rules);
   content_setting_rules->clear();
 
@@ -500,8 +484,9 @@ void PrefProvider::SetContentSetting(
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
     ContentSetting setting) {
-  DCHECK(kTypeNames[content_type] != NULL);  // Don't call this for Geolocation.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(prefs_);
+  DCHECK(kTypeNames[content_type] != NULL);  // Don't call this for Geolocation.
 
   // Update in memory value map.
   OriginIdentifierValueMap* map_to_modify = &incognito_value_map_;
@@ -527,7 +512,7 @@ void PrefProvider::SetContentSetting(
   }
 
   // Update the content settings preference.
-  if (!is_incognito_ && profile_) {
+  if (!is_incognito_) {
     UpdatePref(primary_pattern,
                secondary_pattern,
                content_type,
@@ -536,13 +521,15 @@ void PrefProvider::SetContentSetting(
   }
 
   ContentSettingsDetails details(
-      primary_pattern, secondary_pattern, content_type, std::string());
+      primary_pattern, secondary_pattern, content_type, resource_identifier);
   NotifyObservers(details);
 }
 
 void PrefProvider::ClearAllContentSettingsRules(
     ContentSettingsType content_type) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(kTypeNames[content_type] != NULL);  // Don't call this for Geolocation.
+  DCHECK(prefs_);
 
   OriginIdentifierValueMap* map_to_modify = &incognito_value_map_;
   if (!is_incognito_)
@@ -582,41 +569,35 @@ void PrefProvider::Observe(
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (type == chrome::NOTIFICATION_PREF_CHANGED) {
-    DCHECK_EQ(profile_->GetPrefs(), Source<PrefService>(source).ptr());
+    DCHECK_EQ(prefs_, Source<PrefService>(source).ptr());
     if (updating_preferences_)
       return;
 
     std::string* name = Details<std::string>(details).ptr();
     if (*name == prefs::kContentSettingsPatternPairs) {
-      SyncObsoletePref(profile_->GetPrefs());
+      SyncObsoletePref();
       ReadContentSettingsFromPref(true);
     } else if (*name == prefs::kContentSettingsPatterns) {
-      updating_preferences_ = true;
-      MigrateObsoleteContentSettingsPatternPref(profile_->GetPrefs());
-      updating_preferences_ = false;
+      AutoReset<bool> auto_reset(&updating_preferences_, true);
+      MigrateObsoleteContentSettingsPatternPref();
       ReadContentSettingsFromPref(true);
     } else {
       NOTREACHED() << "Unexpected preference observed";
       return;
     }
 
-    if (!is_incognito_) {
-      ContentSettingsDetails details(ContentSettingsPattern(),
-                                     ContentSettingsPattern(),
-                                     CONTENT_SETTINGS_TYPE_DEFAULT,
-                                     std::string());
-      NotifyObservers(details);
-    }
-  } else if (type == chrome::NOTIFICATION_PROFILE_DESTROYED) {
-    DCHECK_EQ(profile_, Source<Profile>(source).ptr());
-    UnregisterObservers();
+    ContentSettingsDetails details(ContentSettingsPattern(),
+                                   ContentSettingsPattern(),
+                                   CONTENT_SETTINGS_TYPE_DEFAULT,
+                                   std::string());
+    NotifyObservers(details);
   } else {
     NOTREACHED() << "Unexpected notification";
   }
 }
 
 PrefProvider::~PrefProvider() {
-  UnregisterObservers();
+  DCHECK(!prefs_);
 }
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -628,7 +609,7 @@ void PrefProvider::UpdatePref(
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
     ContentSetting setting) {
-  updating_preferences_ = true;
+  AutoReset<bool> auto_reset(&updating_preferences_, true);
   UpdatePatternPairsPref(primary_pattern,
                          secondary_pattern,
                          content_type,
@@ -639,23 +620,21 @@ void PrefProvider::UpdatePref(
                      content_type,
                      resource_identifier,
                      setting);
-  updating_preferences_ = false;
 }
 
 void PrefProvider::ReadContentSettingsFromPref(bool overwrite) {
   base::AutoLock auto_lock(lock_);
 
-  PrefService* prefs = profile_->GetPrefs();
   const DictionaryValue* all_settings_dictionary =
-      prefs->GetDictionary(prefs::kContentSettingsPatternPairs);
+      prefs_->GetDictionary(prefs::kContentSettingsPatternPairs);
 
   if (overwrite)
     value_map_.clear();
 
-  updating_preferences_ = true;
+  AutoReset<bool> auto_reset(&updating_preferences_, true);
   // Careful: The returned value could be NULL if the pref has never been set.
   if (all_settings_dictionary != NULL) {
-    DictionaryPrefUpdate update(prefs, prefs::kContentSettingsPatternPairs);
+    DictionaryPrefUpdate update(prefs_, prefs::kContentSettingsPatternPairs);
     DictionaryValue* mutable_settings;
     scoped_ptr<DictionaryValue> mutable_settings_scope;
 
@@ -733,7 +712,6 @@ void PrefProvider::ReadContentSettingsFromPref(bool overwrite) {
       }
     }
   }
-  updating_preferences_ = false;
 }
 
 void PrefProvider::UpdatePatternsPref(
@@ -742,7 +720,7 @@ void PrefProvider::UpdatePatternsPref(
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
       ContentSetting setting) {
-  DictionaryPrefUpdate update(profile_->GetPrefs(),
+  DictionaryPrefUpdate update(prefs_,
                               prefs::kContentSettingsPatterns);
   DictionaryValue* all_settings_dictionary = update.Get();
 
@@ -808,13 +786,13 @@ void PrefProvider::UpdatePatternPairsPref(
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
       ContentSetting setting) {
-  DictionaryPrefUpdate update(profile_->GetPrefs(),
+  DictionaryPrefUpdate update(prefs_,
                               prefs::kContentSettingsPatternPairs);
   DictionaryValue* all_settings_dictionary = update.Get();
 
   // Get settings dictionary for the given patterns.
   std::string pattern_str(CreatePatternString(primary_pattern,
-                                            secondary_pattern));
+                                              secondary_pattern));
   DictionaryValue* settings_dictionary = NULL;
   bool found = all_settings_dictionary->GetDictionaryWithoutPathExpansion(
       pattern_str, &settings_dictionary);
@@ -869,6 +847,7 @@ void PrefProvider::UpdatePatternPairsPref(
   }
 }
 
+// static
 void PrefProvider::CanonicalizeContentSettingsExceptions(
     DictionaryValue* all_settings_dictionary) {
   DCHECK(all_settings_dictionary);
@@ -921,29 +900,25 @@ void PrefProvider::CanonicalizeContentSettingsExceptions(
 void PrefProvider::NotifyObservers(
     const ContentSettingsDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (initializing_ || profile_ == NULL)
-    return;
+  DCHECK(host_content_settings_map_);
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_CONTENT_SETTINGS_CHANGED,
-      Source<HostContentSettingsMap>(
-          profile_->GetHostContentSettingsMap()),
+      Source<HostContentSettingsMap>(host_content_settings_map_),
       Details<const ContentSettingsDetails>(&details));
 }
 
-void PrefProvider::UnregisterObservers() {
+void PrefProvider::ShutdownOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!profile_)
-    return;
+  DCHECK(prefs_);
   pref_change_registrar_.RemoveAll();
-  notification_registrar_.Remove(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                                 Source<Profile>(profile_));
-  profile_ = NULL;
+  prefs_ = NULL;
+  host_content_settings_map_ = NULL;
 }
 
-void PrefProvider::MigrateObsoletePerhostPref(PrefService* prefs) {
-  if (prefs->HasPrefPath(prefs::kPerHostContentSettings)) {
+void PrefProvider::MigrateObsoletePerhostPref() {
+  if (prefs_->HasPrefPath(prefs::kPerHostContentSettings)) {
     const DictionaryValue* all_settings_dictionary =
-        prefs->GetDictionary(prefs::kPerHostContentSettings);
+        prefs_->GetDictionary(prefs::kPerHostContentSettings);
     DCHECK(all_settings_dictionary);
     for (DictionaryValue::key_iterator
          i(all_settings_dictionary->begin_keys());
@@ -995,14 +970,14 @@ void PrefProvider::MigrateObsoletePerhostPref(PrefService* prefs) {
         }
       }
     }
-    prefs->ClearPref(prefs::kPerHostContentSettings);
+    prefs_->ClearPref(prefs::kPerHostContentSettings);
   }
 }
 
-void PrefProvider::MigrateObsoletePopupsPref(PrefService* prefs) {
-  if (prefs->HasPrefPath(prefs::kPopupWhitelistedHosts)) {
+void PrefProvider::MigrateObsoletePopupsPref() {
+  if (prefs_->HasPrefPath(prefs::kPopupWhitelistedHosts)) {
     const ListValue* whitelist_pref =
-        prefs->GetList(prefs::kPopupWhitelistedHosts);
+        prefs_->GetList(prefs::kPopupWhitelistedHosts);
     for (ListValue::const_iterator i(whitelist_pref->begin());
          i != whitelist_pref->end(); ++i) {
       std::string host;
@@ -1013,18 +988,16 @@ void PrefProvider::MigrateObsoletePopupsPref(PrefService* prefs) {
                         "",
                         CONTENT_SETTING_ALLOW);
     }
-    prefs->ClearPref(prefs::kPopupWhitelistedHosts);
+    prefs_->ClearPref(prefs::kPopupWhitelistedHosts);
   }
 }
 
-void PrefProvider::MigrateObsoleteContentSettingsPatternPref(
-    PrefService* prefs) {
-  if (prefs->HasPrefPath(prefs::kContentSettingsPatterns) &&
-      !is_incognito_) {
+void PrefProvider::MigrateObsoleteContentSettingsPatternPref() {
+  if (prefs_->HasPrefPath(prefs::kContentSettingsPatterns) && !is_incognito_) {
     const DictionaryValue* all_settings_dictionary =
-      prefs->GetDictionary(prefs::kContentSettingsPatterns);
+      prefs_->GetDictionary(prefs::kContentSettingsPatterns);
 
-    DictionaryPrefUpdate update(prefs, prefs::kContentSettingsPatternPairs);
+    DictionaryPrefUpdate update(prefs_, prefs::kContentSettingsPatternPairs);
     DictionaryValue* exceptions_dictionary;
     exceptions_dictionary = update.Get();
     for (DictionaryValue::key_iterator i(all_settings_dictionary->begin_keys());
@@ -1057,14 +1030,14 @@ void PrefProvider::MigrateObsoleteContentSettingsPatternPref(
   }
 }
 
-void PrefProvider::SyncObsoletePref(PrefService* prefs) {
-  updating_preferences_ = true;
-  if (prefs->HasPrefPath(prefs::kContentSettingsPatternPairs) &&
+void PrefProvider::SyncObsoletePref() {
+  AutoReset<bool> auto_reset(&updating_preferences_, true);
+  if (prefs_->HasPrefPath(prefs::kContentSettingsPatternPairs) &&
       !is_incognito_) {
     const DictionaryValue* pattern_pairs_dictionary =
-      prefs->GetDictionary(prefs::kContentSettingsPatternPairs);
+      prefs_->GetDictionary(prefs::kContentSettingsPatternPairs);
 
-    DictionaryPrefUpdate update(prefs, prefs::kContentSettingsPatterns);
+    DictionaryPrefUpdate update(prefs_, prefs::kContentSettingsPatterns);
     DictionaryValue* obsolete_settings_dictionary = update.Get();
 
     for (DictionaryValue::key_iterator i =
@@ -1089,7 +1062,6 @@ void PrefProvider::SyncObsoletePref(PrefService* prefs) {
           new_key, dictionary->DeepCopy());
     }
   }
-  updating_preferences_ = false;
 }
 
 }  // namespace content_settings

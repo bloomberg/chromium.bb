@@ -32,20 +32,22 @@ class ProviderInterface;
 
 class ContentSettingsDetails;
 class DictionaryValue;
+class ExtensionService;
 class GURL;
 class PrefService;
 class Profile;
 
 class HostContentSettingsMap
     : public NotificationObserver,
-      public base::RefCountedThreadSafe<HostContentSettingsMap,
-                                        BrowserThread::DeleteOnUIThread> {
+      public base::RefCountedThreadSafe<HostContentSettingsMap> {
  public:
   typedef Tuple3<ContentSettingsPattern, ContentSetting, std::string>
       PatternSettingSourceTriple;
   typedef std::vector<PatternSettingSourceTriple> SettingsForOneType;
 
-  explicit HostContentSettingsMap(Profile* profile);
+  HostContentSettingsMap(PrefService* prefs,
+                         ExtensionService* extension_service,
+                         bool incognito);
 
   static void RegisterUserPrefs(PrefService* prefs);
 
@@ -194,8 +196,7 @@ class HostContentSettingsMap
                        const NotificationDetails& details);
 
  private:
-  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
-  friend class DeleteTask<HostContentSettingsMap>;
+  friend class base::RefCountedThreadSafe<HostContentSettingsMap>;
 
   virtual ~HostContentSettingsMap();
 
@@ -205,16 +206,13 @@ class HostContentSettingsMap
       ContentSettingsType content_type,
       const std::string& resource_identifier) const;
 
-  void UnregisterObservers();
-
   // Various migration methods (old cookie, popup and per-host data gets
   // migrated to the new format).
-  void MigrateObsoleteCookiePref(PrefService* prefs);
+  void MigrateObsoleteCookiePref();
 
-  // The profile we're associated with.
-  Profile* profile_;
+  // Weak; owned by the Profile.
+  PrefService* prefs_;
 
-  NotificationRegistrar notification_registrar_;
   PrefChangeRegistrar pref_change_registrar_;
 
   // Whether this settings map is for an OTR session.

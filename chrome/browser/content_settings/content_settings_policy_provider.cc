@@ -100,17 +100,16 @@ const PrefsForManagedContentSettingsMapEntry
 
 namespace content_settings {
 
-PolicyDefaultProvider::PolicyDefaultProvider(Profile* profile)
-    : profile_(profile),
-      is_off_the_record_(profile_->IsOffTheRecord()) {
-  PrefService* prefs = profile->GetPrefs();
-
+PolicyDefaultProvider::PolicyDefaultProvider(HostContentSettingsMap* map,
+                                             PrefService* prefs)
+    : host_content_settings_map_(map),
+      prefs_(prefs) {
   // Read global defaults.
   DCHECK_EQ(arraysize(kPrefToManageType),
             static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
   ReadManagedDefaultSettings();
 
-  pref_change_registrar_.Init(prefs);
+  pref_change_registrar_.Init(prefs_);
   // The following preferences are only used to indicate if a
   // default-content-setting is managed and to hold the managed default-setting
   // value. If the value for any of the following perferences is set then the
@@ -123,12 +122,10 @@ PolicyDefaultProvider::PolicyDefaultProvider(Profile* profile)
   pref_change_registrar_.Add(prefs::kManagedDefaultJavaScriptSetting, this);
   pref_change_registrar_.Add(prefs::kManagedDefaultPluginsSetting, this);
   pref_change_registrar_.Add(prefs::kManagedDefaultPopupsSetting, this);
-  notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                              Source<Profile>(profile_));
 }
 
 PolicyDefaultProvider::~PolicyDefaultProvider() {
-  UnregisterObservers();
+  DCHECK(!prefs_);
 }
 
 ContentSetting PolicyDefaultProvider::ProvideDefaultSetting(
@@ -159,7 +156,7 @@ void PolicyDefaultProvider::Observe(int type,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (type == chrome::NOTIFICATION_PREF_CHANGED) {
-    DCHECK_EQ(profile_->GetPrefs(), Source<PrefService>(source).ptr());
+    DCHECK_EQ(prefs_, Source<PrefService>(source).ptr());
     std::string* name = Details<std::string>(details).ptr();
     if (*name == prefs::kManagedDefaultCookiesSetting) {
       UpdateManagedDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES);
@@ -176,40 +173,33 @@ void PolicyDefaultProvider::Observe(int type,
       return;
     }
 
-    if (!is_off_the_record_) {
-      ContentSettingsDetails details(ContentSettingsPattern(),
-                                     ContentSettingsPattern(),
-                                     CONTENT_SETTINGS_TYPE_DEFAULT,
-                                     std::string());
-      NotifyObservers(details);
-    }
-  } else if (type == chrome::NOTIFICATION_PROFILE_DESTROYED) {
-    DCHECK_EQ(profile_, Source<Profile>(source).ptr());
-    UnregisterObservers();
+    ContentSettingsDetails details(ContentSettingsPattern(),
+                                   ContentSettingsPattern(),
+                                   CONTENT_SETTINGS_TYPE_DEFAULT,
+                                   std::string());
+    NotifyObservers(details);
   } else {
     NOTREACHED() << "Unexpected notification";
   }
 }
 
-void PolicyDefaultProvider::UnregisterObservers() {
+void PolicyDefaultProvider::ShutdownOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!profile_)
-    return;
+  DCHECK(prefs_);
   pref_change_registrar_.RemoveAll();
-  notification_registrar_.Remove(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                                 Source<Profile>(profile_));
-  profile_ = NULL;
+  prefs_ = NULL;
+  host_content_settings_map_ = NULL;
 }
 
 
 void PolicyDefaultProvider::NotifyObservers(
     const ContentSettingsDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (profile_ == NULL)
+  if (host_content_settings_map_ == NULL)
     return;
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_CONTENT_SETTINGS_CHANGED,
-      Source<HostContentSettingsMap>(profile_->GetHostContentSettingsMap()),
+      Source<HostContentSettingsMap>(host_content_settings_map_),
       Details<const ContentSettingsDetails>(&details));
 }
 
@@ -230,12 +220,11 @@ void PolicyDefaultProvider::UpdateManagedDefaultSetting(
   // preference to manage a default-content-settings is CONTENT_SETTING_DEFAULT.
   // This indicates that no managed value is set. If a pref was set, than it
   // MUST be managed.
-  PrefService* prefs = profile_->GetPrefs();
-  DCHECK(!prefs->HasPrefPath(kPrefToManageType[type]) ||
-          prefs->IsManagedPreference(kPrefToManageType[type]));
+  DCHECK(!prefs_->HasPrefPath(kPrefToManageType[type]) ||
+          prefs_->IsManagedPreference(kPrefToManageType[type]));
   base::AutoLock auto_lock(lock_);
   managed_default_content_settings_.settings[type] = IntToContentSetting(
-      prefs->GetInteger(kPrefToManageType[type]));
+      prefs_->GetInteger(kPrefToManageType[type]));
 }
 
 // static
@@ -288,23 +277,15 @@ void PolicyProvider::RegisterUserPrefs(PrefService* prefs) {
                           PrefService::UNSYNCABLE_PREF);
 }
 
-PolicyProvider::PolicyProvider(Profile* profile,
+PolicyProvider::PolicyProvider(HostContentSettingsMap* map,
+                               PrefService* prefs,
                                DefaultProviderInterface* default_provider)
-    : profile_(profile),
+    : host_content_settings_map_(map),
+      prefs_(prefs),
       default_provider_(default_provider) {
-  Init();
-}
-
-PolicyProvider::~PolicyProvider() {
-  UnregisterObservers();
-}
-
-void PolicyProvider::Init() {
-  PrefService* prefs = profile_->GetPrefs();
-
   ReadManagedContentSettings(false);
 
-  pref_change_registrar_.Init(prefs);
+  pref_change_registrar_.Init(prefs_);
   pref_change_registrar_.Add(prefs::kManagedCookiesBlockedForUrls, this);
   pref_change_registrar_.Add(prefs::kManagedCookiesAllowedForUrls, this);
   pref_change_registrar_.Add(prefs::kManagedCookiesSessionOnlyForUrls, this);
@@ -316,29 +297,32 @@ void PolicyProvider::Init() {
   pref_change_registrar_.Add(prefs::kManagedPluginsAllowedForUrls, this);
   pref_change_registrar_.Add(prefs::kManagedPopupsBlockedForUrls, this);
   pref_change_registrar_.Add(prefs::kManagedPopupsAllowedForUrls, this);
+}
 
-  notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                              Source<Profile>(profile_));
+PolicyProvider::~PolicyProvider() {
+  DCHECK(!prefs_);
 }
 
 void PolicyProvider::GetContentSettingsFromPreferences(
-    PrefService* prefs,
     ContentSettingsRules* rules) {
   for (size_t i = 0; i < arraysize(kPrefsForManagedContentSettingsMap); ++i) {
     const char* pref_name = kPrefsForManagedContentSettingsMap[i].pref_name;
     // Skip unset policies.
-    if (!prefs->HasPrefPath(pref_name)) {
+    if (!prefs_->HasPrefPath(pref_name)) {
       VLOG(2) << "Skipping unset preference: " << pref_name;
       continue;
     }
 
-    const PrefService::Preference* pref = prefs->FindPreference(pref_name);
+    const PrefService::Preference* pref = prefs_->FindPreference(pref_name);
     DCHECK(pref);
     DCHECK(pref->IsManaged());
-    DCHECK_EQ(Value::TYPE_LIST, pref->GetType());
 
-    const ListValue* pattern_str_list =
-        static_cast<const ListValue*>(pref->GetValue());
+    const ListValue* pattern_str_list = NULL;
+    if (!pref->GetValue()->GetAsList(&pattern_str_list)) {
+      NOTREACHED();
+      return;
+    }
+
     for (size_t j = 0; j < pattern_str_list->GetSize(); ++j) {
       std::string original_pattern_str;
       pattern_str_list->GetString(j, &original_pattern_str);
@@ -366,8 +350,7 @@ void PolicyProvider::GetContentSettingsFromPreferences(
 
 void PolicyProvider::ReadManagedContentSettings(bool overwrite) {
   ContentSettingsRules rules;
-  PrefService* prefs = profile_->GetPrefs();
-  GetContentSettingsFromPreferences(prefs, &rules);
+  GetContentSettingsFromPreferences(&rules);
   {
     base::AutoLock auto_lock(lock_);
     if (overwrite)
@@ -443,24 +426,23 @@ void PolicyProvider::ClearAllContentSettingsRules(
     ContentSettingsType content_type) {
 }
 
-void PolicyProvider::UnregisterObservers() {
+void PolicyProvider::ShutdownOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!profile_)
+  if (!prefs_)
     return;
   pref_change_registrar_.RemoveAll();
-  notification_registrar_.Remove(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                                 Source<Profile>(profile_));
-  profile_ = NULL;
+  prefs_ = NULL;
+  host_content_settings_map_ = NULL;
 }
 
 void PolicyProvider::NotifyObservers(
     const ContentSettingsDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (profile_ == NULL)
+  if (host_content_settings_map_ == NULL)
     return;
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_CONTENT_SETTINGS_CHANGED,
-      Source<HostContentSettingsMap>(profile_->GetHostContentSettingsMap()),
+      Source<HostContentSettingsMap>(host_content_settings_map_),
       Details<const ContentSettingsDetails>(&details));
 }
 
@@ -470,7 +452,7 @@ void PolicyProvider::Observe(int type,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (type == chrome::NOTIFICATION_PREF_CHANGED) {
-    DCHECK_EQ(profile_->GetPrefs(), Source<PrefService>(source).ptr());
+    DCHECK_EQ(prefs_, Source<PrefService>(source).ptr());
     std::string* name = Details<std::string>(details).ptr();
     if (*name == prefs::kManagedCookiesAllowedForUrls ||
         *name == prefs::kManagedCookiesBlockedForUrls ||
@@ -490,9 +472,6 @@ void PolicyProvider::Observe(int type,
                                      std::string());
       NotifyObservers(details);
     }
-  } else if (type == chrome::NOTIFICATION_PROFILE_DESTROYED) {
-    DCHECK_EQ(profile_, Source<Profile>(source).ptr());
-    UnregisterObservers();
   } else {
     NOTREACHED() << "Unexpected notification";
   }

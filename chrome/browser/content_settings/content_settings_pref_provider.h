@@ -23,8 +23,8 @@
 
 class ContentSettingsDetails;
 class DictionaryValue;
+class HostContentSettingsMap;
 class PrefService;
-class Profile;
 
 namespace content_settings {
 
@@ -33,7 +33,9 @@ namespace content_settings {
 class PrefDefaultProvider : public DefaultProviderInterface,
                             public NotificationObserver {
  public:
-  explicit PrefDefaultProvider(Profile* profile);
+  PrefDefaultProvider(HostContentSettingsMap* map,
+                      PrefService* prefs,
+                      bool incognito);
   virtual ~PrefDefaultProvider();
 
   // DefaultContentSettingsProvider implementation.
@@ -42,6 +44,8 @@ class PrefDefaultProvider : public DefaultProviderInterface,
   virtual void UpdateDefaultSetting(ContentSettingsType content_type,
                                     ContentSetting setting);
   virtual bool DefaultSettingIsManaged(ContentSettingsType content_type) const;
+
+  void ShutdownOnUIThread();
 
   static void RegisterUserPrefs(PrefService* prefs);
 
@@ -57,8 +61,6 @@ class PrefDefaultProvider : public DefaultProviderInterface,
   // mutex deadlock.
   void NotifyObservers(const ContentSettingsDetails& details);
 
-  void UnregisterObservers();
-
   // Sets the fields of |settings| based on the values in |dictionary|.
   void GetSettingsFromDictionary(const DictionaryValue* dictionary,
                                  ContentSettings* settings);
@@ -71,12 +73,13 @@ class PrefDefaultProvider : public DefaultProviderInterface,
   // true and the preference is missing, the local copy will be cleared as well.
   void ReadDefaultSettings(bool overwrite);
 
-  void MigrateObsoleteNotificationPref(PrefService* prefs);
+  void MigrateObsoleteNotificationPref();
 
   // Copies of the pref data, so that we can read it on the IO thread.
   ContentSettings default_content_settings_;
 
-  Profile* profile_;
+  HostContentSettingsMap* host_content_settings_map_;
+  PrefService* prefs_;
 
   // Whether this settings map is for an Incognito session.
   bool is_incognito_;
@@ -86,13 +89,10 @@ class PrefDefaultProvider : public DefaultProviderInterface,
   mutable base::Lock lock_;
 
   PrefChangeRegistrar pref_change_registrar_;
-  NotificationRegistrar notification_registrar_;
 
   // Whether we are currently updating preferences, this is used to ignore
   // notifications from the preferences service that we triggered ourself.
   bool updating_preferences_;
-
-  bool initializing_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefDefaultProvider);
 };
@@ -104,7 +104,9 @@ class PrefProvider : public ProviderInterface,
  public:
   static void RegisterUserPrefs(PrefService* prefs);
 
-  explicit PrefProvider(Profile* profile);
+  PrefProvider(HostContentSettingsMap* map,
+               PrefService* prefs,
+               bool incognito);
   virtual ~PrefProvider();
 
   // ProviderInterface implementations.
@@ -128,6 +130,8 @@ class PrefProvider : public ProviderInterface,
 
   virtual void ClearAllContentSettingsRules(
       ContentSettingsType content_type);
+
+  virtual void ShutdownOnUIThread();
 
   // NotificationObserver implementation.
   virtual void Observe(int type,
@@ -172,36 +176,34 @@ class PrefProvider : public ProviderInterface,
 
   // Various migration methods (old cookie, popup and per-host data gets
   // migrated to the new format).
-  void MigrateObsoletePerhostPref(PrefService* prefs);
-  void MigrateObsoletePopupsPref(PrefService* prefs);
-  void MigrateObsoleteContentSettingsPatternPref(PrefService* prefs);
+  void MigrateObsoletePerhostPref();
+  void MigrateObsoletePopupsPref();
+  void MigrateObsoleteContentSettingsPatternPref();
 
   // Copies the value of the preference that stores the content settings
   // exceptions to the obsolete preference for content settings exceptions. This
   // is necessary to allow content settings exceptions beeing synced to older
   // versions of chrome that only use the obsolete.
-  void SyncObsoletePref(PrefService* pref);
+  void SyncObsoletePref();
 
-  void CanonicalizeContentSettingsExceptions(
+  static void CanonicalizeContentSettingsExceptions(
       DictionaryValue* all_settings_dictionary);
 
   void NotifyObservers(const ContentSettingsDetails& details);
 
-  void UnregisterObservers();
+  // Weak; owned by the Profile and reset in ShutdownOnUIThread.
+  PrefService* prefs_;
 
-  Profile* profile_;
+  // Weak; owns us
+  HostContentSettingsMap* host_content_settings_map_;
 
   bool is_incognito_;
 
   PrefChangeRegistrar pref_change_registrar_;
-  NotificationRegistrar notification_registrar_;
 
   // Whether we are currently updating preferences, this is used to ignore
   // notifications from the preferences service that we triggered ourself.
   bool updating_preferences_;
-
-  // Do not fire any Notifications as long as we are in the constructor.
-  bool initializing_;
 
   OriginIdentifierValueMap value_map_;
 

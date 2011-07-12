@@ -42,6 +42,8 @@ class DefaultProviderInterface {
   // there shouldn't be any UI shown to modify this setting.
   virtual bool DefaultSettingIsManaged(
       ContentSettingsType content_type) const = 0;
+
+  virtual void ShutdownOnUIThread() = 0;
 };
 
 class ProviderInterface {
@@ -103,7 +105,7 @@ class ProviderInterface {
 
   // Resets all content settings for the given |content_type| to
   // CONTENT_SETTING_DEFAULT. For content types that require a resource
-  // identifier all content settings for any resource identifieres of the given
+  // identifier all content settings for any resource identifiers of the given
   // |content_type| will be reset to CONTENT_SETTING_DEFAULT.
   //
   // This should only be called on the UI thread, and not after
@@ -115,7 +117,7 @@ class ProviderInterface {
   // This methods needs to be called before destroying the Profile.
   // Afterwards, none of the methods above that should only be called on the UI
   // thread should be called anymore.
-  virtual void ShutdownOnUIThread() {}
+  virtual void ShutdownOnUIThread() = 0;
 };
 
 }  // namespace content_settings

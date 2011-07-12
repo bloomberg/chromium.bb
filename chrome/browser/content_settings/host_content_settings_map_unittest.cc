@@ -617,10 +617,10 @@ TEST_F(HostContentSettingsMapTest, OffTheRecord) {
   TestingProfile profile;
   HostContentSettingsMap* host_content_settings_map =
       profile.GetHostContentSettingsMap();
-  profile.set_incognito(true);
   scoped_refptr<HostContentSettingsMap> otr_map(
-      new HostContentSettingsMap(&profile));
-  profile.set_incognito(false);
+      new HostContentSettingsMap(profile.GetPrefs(),
+                                 profile.GetExtensionService(),
+                                 true));
 
   GURL host("http://example.com/");
   ContentSettingsPattern pattern =
@@ -660,6 +660,8 @@ TEST_F(HostContentSettingsMapTest, OffTheRecord) {
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             otr_map->GetContentSetting(
                 host, host, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+
+  otr_map->ShutdownOnUIThread();
 }
 
 TEST_F(HostContentSettingsMapTest, MigrateObsoletePrefs) {
