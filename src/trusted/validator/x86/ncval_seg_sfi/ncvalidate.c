@@ -19,7 +19,7 @@
 #include <assert.h>
 
 #include "native_client/src/include/portability.h"
-#include "native_client/src/trusted/service_runtime/sel_ldr.h"
+#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/validator/x86/halt_trim.h"
 #include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncdecode.h"
 #include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncvalidate_internaltypes.h"
@@ -483,7 +483,7 @@ int NCValidateFinish(struct NCValidatorState *vstate) {
 }
 
 void NCValidateFreeState(struct NCValidatorState **vstate) {
-  if (*vstate == NULL) return;
+  CHECK(*vstate != NULL);
   free((*vstate)->vttable);
   free((*vstate)->kttable);
   free(*vstate);
@@ -1027,8 +1027,8 @@ int NCValidateSegmentPair(uint8_t *mbase_old, uint8_t *mbase_new,
       NCDecoderStateDestruct(&new_vstate->dstate);
       NCValidateFreeState(&new_vstate);
     }
-    NCDecoderStateDestruct(&new_vstate->dstate);
-    NCValidateFreeState(&new_vstate);
+    NCDecoderStateDestruct(&old_vstate->dstate);
+    NCValidateFreeState(&old_vstate);
   }
   return result;
 }

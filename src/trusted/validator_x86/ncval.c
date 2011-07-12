@@ -158,8 +158,8 @@ static int AnalyzeSegmentCodeSegments(ncfile *ncf, const char *fname) {
 
   GetVBaseAndLimit(ncf, &vbase, &vlimit);
   vstate = NCValidateInit(vbase, vlimit, ncf->ncalign);
-  NCValidateSetErrorReporter(vstate, &kNCVerboseErrorReporter);
   if (vstate == NULL) return 0;
+  NCValidateSetErrorReporter(vstate, &kNCVerboseErrorReporter);
   if (AnalyzeSegmentSections(ncf, vstate) < 0) {
     SegmentInfo("%s: text validate failed\n", fname);
   }
