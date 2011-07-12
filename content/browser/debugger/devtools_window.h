@@ -97,6 +97,7 @@ class DevToolsWindow
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
                                       bool* is_keyboard_shortcut);
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
+  virtual content::JavaScriptDialogCreator* GetJavaScriptDialogCreator();
 
   virtual void FrameNavigating(const std::string& url) {}
 
