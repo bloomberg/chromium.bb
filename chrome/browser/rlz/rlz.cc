@@ -45,7 +45,7 @@ enum {
 };
 
 // Tracks if we have tried and succeeded sending the ping. This helps us
-// decide if we need to refresh the some cached strings.
+// decide if we need to refresh the cached RLZ string.
 volatile int access_values_state = ACCESS_VALUES_STALE;
 base::Lock rlz_lock;
 
@@ -57,6 +57,20 @@ bool SendFinancialPing(const std::wstring& brand, const std::wstring& lang,
   std::string brand_ascii(WideToASCII(brand));
   std::string lang_ascii(WideToASCII(lang));
   std::string referral_ascii(WideToASCII(referral));
+
+  // If chrome has been reactivated, send a ping for this brand as well.
+  // We ignore the return value of SendFinancialPing() since we'll try again
+  // later anyway.  Callers of this function are only interested in whether
+  // the ping for the main brand succeeded or not.
+  std::wstring reactivation_brand;
+  if (GoogleUpdateSettings::GetReactivationBrand(&reactivation_brand)) {
+    std::string reactivation_brand_ascii(WideToASCII(reactivation_brand));
+    rlz_lib::SupplementaryBranding branding(reactivation_brand.c_str());
+    rlz_lib::SendFinancialPing(rlz_lib::CHROME, points, "chrome",
+                               reactivation_brand_ascii.c_str(),
+                               referral_ascii.c_str(), lang_ascii.c_str(),
+                               exclude_id, NULL, true);
+  }
 
   return rlz_lib::SendFinancialPing(rlz_lib::CHROME, points, "chrome",
                                     brand_ascii.c_str(), referral_ascii.c_str(),
@@ -182,40 +196,56 @@ class DelayedInitTask : public Task {
         GoogleUpdateSettings::IsOrganic(brand))
       return;
 
-    // Do the initial event recording if is the first run or if we have an
-    // empty rlz which means we haven't got a chance to do it.
-    std::wstring omnibox_rlz;
-    RLZTracker::GetAccessPointRlz(rlz_lib::CHROME_OMNIBOX, &omnibox_rlz);
+    RecordProductEvents(first_run_, google_default_search_, already_ran_);
 
-    if ((first_run_ || omnibox_rlz.empty()) && !already_ran_) {
-      already_ran_ = true;
+    // If chrome has been reactivated, record the events for this brand
+    // as well.
+    std::wstring reactivation_brand;
+    if (GoogleUpdateSettings::GetReactivationBrand(&reactivation_brand)) {
+      rlz_lib::SupplementaryBranding branding(reactivation_brand.c_str());
+      RecordProductEvents(first_run_, google_default_search_, already_ran_);
+    }
 
-      // Record the installation of chrome.
-      RLZTracker::RecordProductEvent(rlz_lib::CHROME,
-                                     rlz_lib::CHROME_OMNIBOX,
-                                     rlz_lib::INSTALL);
-      RLZTracker::RecordProductEvent(rlz_lib::CHROME,
-                                     rlz_lib::CHROME_HOME_PAGE,
-                                     rlz_lib::INSTALL);
-      // Record if google is the initial search provider.
-      if (google_default_search_) {
-        RLZTracker::RecordProductEvent(rlz_lib::CHROME,
-                                       rlz_lib::CHROME_OMNIBOX,
-                                       rlz_lib::SET_TO_GOOGLE);
-      }
-    }
-    // Record first user interaction with the omnibox. We call this all the
-    // time but the rlz lib should ingore all but the first one.
-    if (OmniBoxUsageObserver::used()) {
-      RLZTracker::RecordProductEvent(rlz_lib::CHROME,
-                                     rlz_lib::CHROME_OMNIBOX,
-                                     rlz_lib::FIRST_SEARCH);
-    }
+    already_ran_ = true;
+
     // Schedule the daily RLZ ping.
     MessageLoop::current()->PostTask(FROM_HERE, new DailyPingTask());
   }
 
  private:
+  static void RecordProductEvents(bool first_run, bool google_default_search,
+                                  bool already_ran) {
+    // Record the installation of chrome. We call this all the time but the rlz
+    // lib should ingore all but the first one.
+    rlz_lib::RecordProductEvent(rlz_lib::CHROME,
+                                rlz_lib::CHROME_OMNIBOX,
+                                rlz_lib::INSTALL);
+    rlz_lib::RecordProductEvent(rlz_lib::CHROME,
+                                rlz_lib::CHROME_HOME_PAGE,
+                                rlz_lib::INSTALL);
+
+    // Do the initial event recording if is the first run or if we have an
+    // empty rlz which means we haven't got a chance to do it.
+    std::wstring omnibox_rlz;
+    RLZTracker::GetAccessPointRlz(rlz_lib::CHROME_OMNIBOX, &omnibox_rlz);
+
+    // Record if google is the initial search provider.
+    if ((first_run || omnibox_rlz.empty()) && google_default_search &&
+        !already_ran) {
+      rlz_lib::RecordProductEvent(rlz_lib::CHROME,
+                                  rlz_lib::CHROME_OMNIBOX,
+                                  rlz_lib::SET_TO_GOOGLE);
+    }
+
+    // Record first user interaction with the omnibox. We call this all the
+    // time but the rlz lib should ingore all but the first one.
+    if (OmniBoxUsageObserver::used()) {
+      rlz_lib::RecordProductEvent(rlz_lib::CHROME,
+                                  rlz_lib::CHROME_OMNIBOX,
+                                  rlz_lib::FIRST_SEARCH);
+    }
+  }
+
   // Flag that remembers if the delayed task already ran or not.  This is
   // needed only in the first_run case, since we don't want to record the
   // set-to-google event more than once.  We need to worry about this event
@@ -291,11 +321,29 @@ bool RLZTracker::InitRlzDelayed(bool first_run, int delay,
 bool RLZTracker::RecordProductEvent(rlz_lib::Product product,
                                     rlz_lib::AccessPoint point,
                                     rlz_lib::Event event_id) {
-  return rlz_lib::RecordProductEvent(product, point, event_id);
+  bool ret = rlz_lib::RecordProductEvent(product, point, event_id);
+
+  // If chrome has been reactivated, record the event for this brand as well.
+  std::wstring reactivation_brand;
+  if (GoogleUpdateSettings::GetReactivationBrand(&reactivation_brand)) {
+    rlz_lib::SupplementaryBranding branding(reactivation_brand.c_str());
+    ret &= rlz_lib::RecordProductEvent(product, point, event_id);
+  }
+
+  return ret;
 }
 
 bool RLZTracker::ClearAllProductEvents(rlz_lib::Product product) {
-  return rlz_lib::ClearAllProductEvents(product);
+  bool ret = rlz_lib::ClearAllProductEvents(product);
+
+  // If chrome has been reactivated, clear all events for this brand as well.
+  std::wstring reactivation_brand;
+  if (GoogleUpdateSettings::GetReactivationBrand(&reactivation_brand)) {
+    rlz_lib::SupplementaryBranding branding(reactivation_brand.c_str());
+    ret &= rlz_lib::ClearAllProductEvents(product);
+  }
+
+  return ret;
 }
 
 // We implement caching of the answer of get_access_point() if the request
