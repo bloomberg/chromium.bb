@@ -106,7 +106,7 @@ class NetworkControlReportOnActivate : public NetworkDropdownButton {
   NetworkControlReportOnActivate(bool browser_mode,
                                  gfx::NativeWindow parent_window,
                                  ViewsNetworkScreenActor* actor)
-      : NetworkDropdownButton(browser_mode, parent_window),
+      : NetworkDropdownButton(browser_mode, parent_window, false),
         actor_(actor) {}
 
   // Overridden from MenuButton:

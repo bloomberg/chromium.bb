@@ -6,7 +6,9 @@
 #define CHROME_BROWSER_CHROMEOS_STATUS_NETWORK_DROPDOWN_BUTTON_H_
 #pragma once
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/login/login_html_dialog.h"
 #include "chrome/browser/chromeos/status/network_menu.h"
 #include "chrome/browser/chromeos/views/dropdown_button.h"
 #include "ui/base/animation/animation_delegate.h"
@@ -21,9 +23,12 @@ namespace chromeos {
 class NetworkDropdownButton : public DropDownButton,
                               public views::ViewMenuDelegate,
                               public NetworkMenu::Delegate,
-                              public NetworkLibrary::NetworkManagerObserver {
+                              public NetworkLibrary::NetworkManagerObserver,
+                              public LoginHtmlDialog::Delegate {
  public:
-  NetworkDropdownButton(bool is_browser_mode, gfx::NativeWindow parent_window);
+  NetworkDropdownButton(bool is_browser_mode,
+                        gfx::NativeWindow parent_window,
+                        bool should_show_options);
   virtual ~NetworkDropdownButton();
 
   // ui::AnimationDelegate implementation.
@@ -48,6 +53,13 @@ class NetworkDropdownButton : public DropDownButton,
   // views::ViewMenuDelegate implementation.
   virtual void RunMenu(views::View* source, const gfx::Point& pt);
 
+ protected:
+  // Overridden from views::View.
+  virtual void OnLocaleChanged() OVERRIDE;
+
+  // LoginHtmlDialog::Delegate implementation:
+  virtual void OnDialogClosed() OVERRIDE;
+
  private:
   // The Network menu.
   scoped_ptr<NetworkMenu> network_menu_;
@@ -57,8 +69,14 @@ class NetworkDropdownButton : public DropDownButton,
 
   gfx::NativeWindow parent_window_;
 
+  // If true things like proxy settings menu item will be supported.
+  bool should_show_options_;
+
   // The last network we connected to (or tried to).
   ConnectionType last_network_type_;
+
+  // Proxy settings dialog that can be invoked from network menu.
+  scoped_ptr<LoginHtmlDialog> proxy_settings_dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkDropdownButton);
 };

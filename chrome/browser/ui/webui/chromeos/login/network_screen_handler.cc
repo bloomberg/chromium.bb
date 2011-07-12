@@ -283,7 +283,9 @@ void NetworkScreenHandler::CreateOrUpdateNetworkWindow() {
         chromeos::WM_IPC_WINDOW_CHROME_INFO_BUBBLE,
         &params);
     NetworkDropdownButton* button =
-        new NetworkDropdownButton(false, login_window->GetNativeWindow());
+        new NetworkDropdownButton(false /* not a browser mode */,
+                                  login_window->GetNativeWindow(),
+                                  true /* show proxy settings in menu */);
     InitMenuButtonProperties(button);
     network_window_->SetContentsView(button);
     network_window_->Show();

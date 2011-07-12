@@ -4,10 +4,13 @@
 
 #include "chrome/browser/chromeos/status/network_dropdown_button.h"
 
+#include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/login/proxy_settings_dialog.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
+#include "chrome/common/chrome_switches.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -26,7 +29,8 @@ namespace chromeos {
 // NetworkDropdownButton
 
 NetworkDropdownButton::NetworkDropdownButton(bool is_browser_mode,
-                                             gfx::NativeWindow parent_window)
+                                             gfx::NativeWindow parent_window,
+                                             bool should_show_options)
     : DropDownButton(NULL,
                      UTF16ToWide(l10n_util::GetStringUTF16(
                          IDS_STATUSBAR_NO_NETWORKS_MESSAGE)),
@@ -34,6 +38,7 @@ NetworkDropdownButton::NetworkDropdownButton(bool is_browser_mode,
                      true),
       ALLOW_THIS_IN_INITIALIZER_LIST(animation_connecting_(this)),
       parent_window_(parent_window),
+      should_show_options_(should_show_options),
       last_network_type_(TYPE_WIFI) {
   network_menu_.reset(new NetworkMenu(this, is_browser_mode));
   animation_connecting_.SetThrobDuration(kThrobDuration);
@@ -85,10 +90,15 @@ gfx::NativeWindow NetworkDropdownButton::GetNativeWindow() const {
 }
 
 void NetworkDropdownButton::OpenButtonOptions() {
+  if (proxy_settings_dialog_.get() == NULL) {
+    proxy_settings_dialog_.reset(new ProxySettingsDialog(this,
+                                                         GetNativeWindow()));
+  }
+  proxy_settings_dialog_->Show();
 }
 
 bool NetworkDropdownButton::ShouldOpenButtonOptions() const {
-  return false;
+  return should_show_options_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -96,6 +106,20 @@ bool NetworkDropdownButton::ShouldOpenButtonOptions() const {
 
 void NetworkDropdownButton::RunMenu(views::View* source, const gfx::Point& pt) {
   network_menu_->RunMenu(source);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NetworkDropdownButton, overridden from views::View.
+
+void NetworkDropdownButton::OnLocaleChanged() {
+  // Proxy settings dialog contains localized strings.
+  proxy_settings_dialog_.reset();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NetworkDropdownButton, LoginHtmlDialog::Delegate implementation:
+
+void NetworkDropdownButton::OnDialogClosed() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////

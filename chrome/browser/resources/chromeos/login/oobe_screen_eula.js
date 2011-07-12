@@ -28,6 +28,9 @@ cr.define('oobe', function() {
 
     /** @inheritDoc */
     decorate: function() {
+      $('stats-help-link').addEventListener('click', function(event) {
+        chrome.send('eulaOnLearnMore');
+      });
     },
 
     /**
@@ -55,7 +58,7 @@ cr.define('oobe', function() {
 
       var acceptButton = this.ownerDocument.createElement('button');
       acceptButton.id = 'accept-button';
-      acceptButton.textContent = localStrings.getString('back');
+      acceptButton.textContent = localStrings.getString('acceptAgreement');
       acceptButton.addEventListener('click', function(e) {
         chrome.send('eulaOnExit', [true, $('usage-stats').checked]);
       });

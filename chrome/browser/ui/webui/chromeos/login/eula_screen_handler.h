@@ -16,6 +16,8 @@ class ListValue;
 
 namespace chromeos {
 
+class HelpAppLauncher;
+
 // WebUI implementation of EulaScreenActor. It is used to interact
 // with the eula part of the JS page.
 class EulaScreenHandler : public EulaScreenActor,
@@ -41,10 +43,14 @@ class EulaScreenHandler : public EulaScreenActor,
 
  private:
   // JS messages handlers.
-  void OnExit(const ListValue* args);
-  void OnTpmPopupOpened(const ListValue* args);
+  void HandleOnExit(const ListValue* args);
+  void HandleOnLearnMore(const ListValue* args);
+  void HandleOnTpmPopupOpened(const ListValue* args);
 
   Delegate* delegate_;
+
+  // Help application used for help dialogs.
+  scoped_refptr<HelpAppLauncher> help_app_;
 
   // Keeps whether screen should be shown right after initialization.
   bool show_on_init_;

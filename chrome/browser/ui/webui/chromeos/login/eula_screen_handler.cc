@@ -5,10 +5,13 @@
 #include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
 
 #include "base/values.h"
+#include "chrome/browser/chromeos/login/help_app_launcher.h"
+#include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "views/widget/widget.h"
 
 namespace {
 
@@ -92,9 +95,11 @@ void EulaScreenHandler::Initialize() {
 
 void EulaScreenHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("eulaOnExit",
-      NewCallback(this, &EulaScreenHandler::OnExit));
+      NewCallback(this, &EulaScreenHandler::HandleOnExit));
+  web_ui_->RegisterMessageCallback("eulaOnLearnMore",
+      NewCallback(this, &EulaScreenHandler::HandleOnLearnMore));
   web_ui_->RegisterMessageCallback("eulaOnTpmPopupOpened",
-      NewCallback(this, &EulaScreenHandler::OnTpmPopupOpened));
+      NewCallback(this, &EulaScreenHandler::HandleOnTpmPopupOpened));
 }
 
 void EulaScreenHandler::OnPasswordFetched(const std::string& tpm_password) {
@@ -103,7 +108,7 @@ void EulaScreenHandler::OnPasswordFetched(const std::string& tpm_password) {
                                   tpm_password_value);
 }
 
-void EulaScreenHandler::OnExit(const ListValue* args) {
+void EulaScreenHandler::HandleOnExit(const ListValue* args) {
   DCHECK(args->GetSize() == 2);
 
   bool accepted = false;
@@ -120,7 +125,15 @@ void EulaScreenHandler::OnExit(const ListValue* args) {
   delegate_->OnExit(accepted, is_usage_stats_checked);
 }
 
-void EulaScreenHandler::OnTpmPopupOpened(const ListValue* args) {
+void EulaScreenHandler::HandleOnLearnMore(const ListValue* args) {
+  if (!help_app_.get()) {
+    views::Widget* login_window = WebUILoginDisplay::GetLoginWindow();
+    help_app_ = new HelpAppLauncher(login_window->GetNativeWindow());
+  }
+  help_app_->ShowHelpTopic(HelpAppLauncher::HELP_STATS_USAGE);
+}
+
+void EulaScreenHandler::HandleOnTpmPopupOpened(const ListValue* args) {
   if (!delegate_)
     return;
   delegate_->InitiatePasswordFetch();
