@@ -215,18 +215,6 @@ class AboutSource : public ChromeURLDataManager::DataSource {
   DISALLOW_COPY_AND_ASSIGN(AboutSource);
 };
 
-// Register a data source for a known source name. Safe to call multiple times.
-// |name| may be an unkown host (e.g. "chrome://foo/"); only handle known hosts.
-void InitializeAboutDataSource(const std::string& name, Profile* profile) {
-  ChromeURLDataManager* manager = profile->GetChromeURLDataManager();
-  for (size_t i = 0; i < arraysize(kAboutSourceNames); i++) {
-    if (name == kAboutSourceNames[i]) {
-      manager->AddDataSource(new AboutSource(name, profile));
-      return;
-    }
-  }
-}
-
 // When you type about:memory, it actually loads this intermediate URL that
 // redirects you to the final page. This avoids the problem where typing
 // "about:memory" on the new tab page or any other page where a process
@@ -1400,6 +1388,16 @@ std::string AboutSource::GetMimeType(const std::string& path) const {
 }
 
 // -----------------------------------------------------------------------------
+
+void InitializeAboutDataSource(const std::string& name, Profile* profile) {
+  ChromeURLDataManager* manager = profile->GetChromeURLDataManager();
+  for (size_t i = 0; i < arraysize(kAboutSourceNames); i++) {
+    if (name == kAboutSourceNames[i]) {
+      manager->AddDataSource(new AboutSource(name, profile));
+      return;
+    }
+  }
+}
 
 bool WillHandleBrowserAboutURL(GURL* url, Profile* profile) {
   // TODO(msw): Eliminate "about:*" constants and literals from code and tests,

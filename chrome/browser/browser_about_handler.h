@@ -19,6 +19,14 @@ template <typename T> struct DefaultSingletonTraits;
 class GURL;
 class Profile;
 
+// Register a data source for a known source name. Safe to call multiple times.
+// |name| may be an unkown host (e.g. "chrome://foo/"); only handle known hosts.
+// In general case WillHandleBrowserAboutURL will initialize all data sources.
+// But in some case like navigating to chrome://oobe on boot and loading
+// chrome://terms in an iframe there, kChromeUITermsHost data source needs to
+// be initialized separately.
+void InitializeAboutDataSource(const std::string& name, Profile* profile);
+
 // Returns true if the given URL will be handled by the browser about handler.
 // |url| should have been processed by URLFixerUpper::FixupURL, which replaces
 // the about: scheme with chrome:// for all about:foo URLs except "about:blank".

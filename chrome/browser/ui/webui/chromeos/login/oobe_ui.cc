@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/values.h"
+#include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_screen_handler.h"
+#include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -168,6 +170,13 @@ OobeUI::OobeUI(TabContents* contents)
   GetLocalizedStrings(localized_strings);
   OobeUIHTMLSource* html_source =
       new OobeUIHTMLSource(localized_strings);
+
+  // Set up the chrome://theme/ source, for Chrome logo.
+  ThemeSource* theme = new ThemeSource(contents->profile());
+  contents->profile()->GetChromeURLDataManager()->AddDataSource(theme);
+
+  // Set up the chrome://terms/ data source, for EULA content.
+  InitializeAboutDataSource(chrome::kChromeUITermsHost, contents->profile());
 
   // Set up the chrome://oobe/ source.
   contents->profile()->GetChromeURLDataManager()->AddDataSource(html_source);
