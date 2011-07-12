@@ -5,6 +5,7 @@
 #include "chrome/common/extensions/url_pattern_set.h"
 
 #include <algorithm>
+#include <iterator>
 
 #include "chrome/common/extensions/url_pattern.h"
 #include "googleurl/src/gurl.h"
