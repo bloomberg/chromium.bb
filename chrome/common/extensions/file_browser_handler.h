@@ -37,8 +37,8 @@ class FileBrowserHandler {
   void set_title(const std::string& title) { title_ = title; }
 
   // File schema URL patterns.
-  const URLPatternSet& file_url_patterns() const {
-    return url_set_;
+  const URLPatternList& file_url_patterns() const {
+    return url_set_.patterns();
   }
   void AddPattern(const URLPattern& pattern);
   bool MatchesURL(const GURL& url) const;

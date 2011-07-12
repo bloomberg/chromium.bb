@@ -81,8 +81,9 @@ const char kWindowsPermission[] = "windows";
 
 void AddPatternsAndRemovePaths(const URLPatternSet& set, URLPatternSet* out) {
   CHECK(out);
-  for (URLPatternSet::const_iterator i = set.begin(); i != set.end(); ++i) {
-    URLPattern p = *i;
+  const URLPatternList& patterns = set.patterns();
+  for (size_t i = 0; i < patterns.size(); ++i) {
+    URLPattern p = patterns.at(i);
     p.SetPath("/*");
     out->AddPattern(p);
   }
@@ -96,37 +97,35 @@ void AddPatternsAndRemovePaths(const URLPatternSet& set, URLPatternSet* out) {
 
 // static
 ExtensionPermissionMessage ExtensionPermissionMessage::CreateFromHostList(
-    const std::set<std::string>& hosts) {
-  std::vector<std::string> host_list(hosts.begin(), hosts.end());
-  CHECK(host_list.size() > 0);
+    const std::vector<std::string>& hosts) {
+  CHECK(hosts.size() > 0);
   ID message_id;
   string16 message;
-
-  switch (host_list.size()) {
+  switch (hosts.size()) {
     case 1:
       message_id = kHosts1;
       message = l10n_util::GetStringFUTF16(IDS_EXTENSION_PROMPT_WARNING_1_HOST,
-                                           UTF8ToUTF16(host_list[0]));
+                                           UTF8ToUTF16(hosts[0]));
       break;
     case 2:
       message_id = kHosts2;
       message = l10n_util::GetStringFUTF16(IDS_EXTENSION_PROMPT_WARNING_2_HOSTS,
-                                           UTF8ToUTF16(host_list[0]),
-                                           UTF8ToUTF16(host_list[1]));
+                                           UTF8ToUTF16(hosts[0]),
+                                           UTF8ToUTF16(hosts[1]));
       break;
     case 3:
       message_id = kHosts3;
       message = l10n_util::GetStringFUTF16(IDS_EXTENSION_PROMPT_WARNING_3_HOSTS,
-                                           UTF8ToUTF16(host_list[0]),
-                                           UTF8ToUTF16(host_list[1]),
-                                           UTF8ToUTF16(host_list[2]));
+                                           UTF8ToUTF16(hosts[0]),
+                                           UTF8ToUTF16(hosts[1]),
+                                           UTF8ToUTF16(hosts[2]));
       break;
     default:
       message_id = kHosts4OrMore;
       message = l10n_util::GetStringFUTF16(
           IDS_EXTENSION_PROMPT_WARNING_4_OR_MORE_HOSTS,
-          UTF8ToUTF16(host_list[0]),
-          UTF8ToUTF16(host_list[1]),
+          UTF8ToUTF16(hosts[0]),
+          UTF8ToUTF16(hosts[1]),
           base::IntToString16(hosts.size() - 2));
       break;
   }
@@ -455,9 +454,9 @@ std::set<std::string> ExtensionPermissionSet::GetAPIsAsStrings() const {
   return apis_str;
 }
 
-std::set<std::string>
+std::vector<std::string>
     ExtensionPermissionSet::GetDistinctHostsForDisplay() const {
-  return GetDistinctHosts(effective_hosts_, true);
+  return GetDistinctHosts(effective_hosts_.patterns(), true);
 }
 
 ExtensionPermissionMessages
@@ -476,7 +475,7 @@ ExtensionPermissionMessages
         ExtensionPermissionMessage::kHostsAll,
         l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS)));
   } else {
-    std::set<std::string> hosts = GetDistinctHostsForDisplay();
+    std::vector<std::string> hosts = GetDistinctHostsForDisplay();
     if (!hosts.empty())
       messages.push_back(ExtensionPermissionMessage::CreateFromHostList(hosts));
   }
@@ -562,8 +561,9 @@ bool ExtensionPermissionSet::HasEffectiveAccessToAllHosts() const {
   // There are two ways this set can have effective access to all hosts:
   //  1) it has an <all_urls> URL pattern.
   //  2) it has a named permission with implied full URL access.
-  for (URLPatternSet::const_iterator host = effective_hosts().begin();
-       host != effective_hosts().end(); ++host) {
+  const URLPatternList patterns = effective_hosts().patterns();
+  for (URLPatternList::const_iterator host = patterns.begin();
+       host != patterns.end(); ++host) {
     if (host->match_all_urls() ||
         (host->match_subdomains() && host->host().empty()))
       return true;
@@ -626,19 +626,18 @@ bool ExtensionPermissionSet::HasLessPrivilegesThan(
 }
 
 // static
-std::set<std::string> ExtensionPermissionSet::GetDistinctHosts(
-    const URLPatternSet& host_patterns, bool include_rcd) {
+std::vector<std::string> ExtensionPermissionSet::GetDistinctHosts(
+    const URLPatternList& host_patterns, bool include_rcd) {
   // Use a vector to preserve order (also faster than a map on small sets).
   // Each item is a host split into two parts: host without RCDs and
   // current best RCD.
   typedef std::vector<std::pair<std::string, std::string> > HostVector;
   HostVector hosts_best_rcd;
-  for (URLPatternSet::const_iterator i = host_patterns.begin();
-       i != host_patterns.end(); ++i) {
-    std::string host = i->host();
+  for (size_t i = 0; i < host_patterns.size(); ++i) {
+    std::string host = host_patterns[i].host();
 
     // Add the subdomain wildcard back to the host, if necessary.
-    if (i->match_subdomains())
+    if (host_patterns[i].match_subdomains())
       host = "*." + host;
 
     // If the host has an RCD, split it off so we can detect duplicates.
@@ -667,10 +666,10 @@ std::set<std::string> ExtensionPermissionSet::GetDistinctHosts(
   }
 
   // Build up the final vector by concatenating hosts and RCDs.
-  std::set<std::string> distinct_hosts;
+  std::vector<std::string> distinct_hosts;
   for (HostVector::iterator it = hosts_best_rcd.begin();
        it != hosts_best_rcd.end(); ++it)
-    distinct_hosts.insert(it->first + it->second);
+    distinct_hosts.push_back(it->first + it->second);
   return distinct_hosts;
 }
 
@@ -679,7 +678,7 @@ void ExtensionPermissionSet::InitEffectiveHosts() {
 
   if (HasEffectiveAccessToAllHosts()) {
     URLPattern all_urls(URLPattern::SCHEME_ALL);
-    all_urls.SetMatchAllURLs(true);
+    all_urls.set_match_all_urls(true);
     effective_hosts_.AddPattern(all_urls);
     return;
   }
@@ -701,7 +700,7 @@ void ExtensionPermissionSet::InitImplicitExtensionPermissions(
   for (UserScriptList::const_iterator content_script =
            extension->content_scripts().begin();
        content_script != extension->content_scripts().end(); ++content_script) {
-    URLPatternSet::const_iterator pattern =
+    URLPatternList::const_iterator pattern =
         content_script->url_patterns().begin();
     for (; pattern != content_script->url_patterns().end(); ++pattern)
       scriptable_hosts_.AddPattern(*pattern);
@@ -758,14 +757,17 @@ bool ExtensionPermissionSet::HasLessHostPrivilegesThan(
   if (permissions->HasEffectiveAccessToAllHosts())
     return true;
 
-  const URLPatternSet& old_list = effective_hosts();
-  const URLPatternSet& new_list = permissions->effective_hosts();
+  const URLPatternList old_list = effective_hosts().patterns();
+  const URLPatternList new_list = permissions->effective_hosts().patterns();
 
   // TODO(jstritar): This is overly conservative with respect to subdomains.
   // For example, going from *.google.com to www.google.com will be
   // considered an elevation, even though it is not (http://crbug.com/65337).
-  std::set<std::string> new_hosts_set = GetDistinctHosts(new_list, false);
-  std::set<std::string> old_hosts_set = GetDistinctHosts(old_list, false);
+  std::vector<std::string> new_hosts = GetDistinctHosts(new_list, false);
+  std::vector<std::string> old_hosts = GetDistinctHosts(old_list, false);
+
+  std::set<std::string> old_hosts_set(old_hosts.begin(), old_hosts.end());
+  std::set<std::string> new_hosts_set(new_hosts.begin(), new_hosts.end());
   std::set<std::string> new_hosts_only;
 
   std::set_difference(new_hosts_set.begin(), new_hosts_set.end(),

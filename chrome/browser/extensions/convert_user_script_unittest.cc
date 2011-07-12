@@ -15,15 +15,6 @@
 #include "chrome/common/extensions/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
-
-static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
-  int schemes = URLPattern::SCHEME_ALL;
-  extent->AddPattern(URLPattern(schemes, pattern));
-}
-
-}
-
 TEST(ExtensionFromUserScript, Basic) {
   FilePath test_file;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_file));
@@ -56,9 +47,8 @@ TEST(ExtensionFromUserScript, Basic) {
   EXPECT_EQ("http://www.yahoo.com/*", script.globs().at(1));
   ASSERT_EQ(1u, script.exclude_globs().size());
   EXPECT_EQ("*foo*", script.exclude_globs().at(0));
-  ASSERT_EQ(1u, script.url_patterns().patterns().size());
-  EXPECT_EQ("http://www.google.com/*",
-            script.url_patterns().begin()->GetAsString());
+  ASSERT_EQ(1u, script.url_patterns().size());
+  EXPECT_EQ("http://www.google.com/*", script.url_patterns()[0].GetAsString());
 
   // Make sure the files actually exist on disk.
   EXPECT_TRUE(file_util::PathExists(
@@ -96,11 +86,9 @@ TEST(ExtensionFromUserScript, NoMetdata) {
   ASSERT_EQ(1u, script.globs().size());
   EXPECT_EQ("*", script.globs()[0]);
   EXPECT_EQ(0u, script.exclude_globs().size());
-
-  URLPatternSet expected;
-  AddPattern(&expected, "http://*/*");
-  AddPattern(&expected, "https://*/*");
-  EXPECT_EQ(expected, script.url_patterns());
+  ASSERT_EQ(2u, script.url_patterns().size());
+  EXPECT_EQ("http://*/*", script.url_patterns()[0].GetAsString());
+  EXPECT_EQ("https://*/*", script.url_patterns()[1].GetAsString());
 
   // Make sure the files actually exist on disk.
   EXPECT_TRUE(file_util::PathExists(

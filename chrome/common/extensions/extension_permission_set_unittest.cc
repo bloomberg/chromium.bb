@@ -58,6 +58,23 @@ static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
   extent->AddPattern(URLPattern(schemes, pattern));
 }
 
+static void AssertEqualExtents(const URLPatternSet& extent1,
+                               const URLPatternSet& extent2) {
+  URLPatternList patterns1 = extent1.patterns();
+  URLPatternList patterns2 = extent2.patterns();
+  std::set<std::string> strings1;
+  EXPECT_EQ(patterns1.size(), patterns2.size());
+
+  for (size_t i = 0; i < patterns1.size(); ++i)
+    strings1.insert(patterns1.at(i).GetAsString());
+
+  std::set<std::string> strings2;
+  for (size_t i = 0; i < patterns2.size(); ++i)
+    strings2.insert(patterns2.at(i).GetAsString());
+
+  EXPECT_EQ(strings1, strings2);
+}
+
 } // namespace
 
 class ExtensionAPIPermissionTest : public testing::Test {
@@ -319,9 +336,9 @@ TEST(ExtensionPermissionSetTest, CreateUnion) {
 
   EXPECT_FALSE(union_set->HasEffectiveFullAccess());
   EXPECT_EQ(expected_apis, union_set->apis());
-  EXPECT_EQ(expected_explicit_hosts, union_set->explicit_hosts());
-  EXPECT_EQ(expected_scriptable_hosts, union_set->scriptable_hosts());
-  EXPECT_EQ(expected_explicit_hosts, union_set->effective_hosts());
+  AssertEqualExtents(expected_explicit_hosts, union_set->explicit_hosts());
+  AssertEqualExtents(expected_scriptable_hosts, union_set->scriptable_hosts());
+  AssertEqualExtents(expected_explicit_hosts, union_set->effective_hosts());
 
   // Now use a real second set.
   apis2.insert(ExtensionAPIPermission::kTab);
@@ -347,9 +364,9 @@ TEST(ExtensionPermissionSetTest, CreateUnion) {
   EXPECT_TRUE(union_set->HasEffectiveFullAccess());
   EXPECT_TRUE(union_set->HasEffectiveAccessToAllHosts());
   EXPECT_EQ(expected_apis, union_set->apis());
-  EXPECT_EQ(expected_explicit_hosts, union_set->explicit_hosts());
-  EXPECT_EQ(expected_scriptable_hosts, union_set->scriptable_hosts());
-  EXPECT_EQ(effective_hosts, union_set->effective_hosts());
+  AssertEqualExtents(expected_explicit_hosts, union_set->explicit_hosts());
+  AssertEqualExtents(expected_scriptable_hosts, union_set->scriptable_hosts());
+  AssertEqualExtents(effective_hosts, union_set->effective_hosts());
 }
 
 TEST(ExtensionPermissionSetTest, HasLessPrivilegesThan) {
@@ -547,7 +564,7 @@ TEST(ExtensionPermissionSetTest, GetWarningMessages_ManyHosts) {
   std::vector<string16> warnings =
       extension->permission_set()->GetWarningMessages();
   ASSERT_EQ(1u, warnings.size());
-  EXPECT_EQ("Your data on encrypted.google.com and www.google.com",
+  EXPECT_EQ("Your data on www.google.com and encrypted.google.com",
             UTF16ToUTF8(warnings[0]));
 }
 
@@ -572,10 +589,10 @@ TEST(ExtensionPermissionSetTest, GetWarningMessages_Plugins) {
 TEST(ExtensionPermissionSetTest, GetDistinctHostsForDisplay) {
   scoped_ptr<ExtensionPermissionSet> perm_set;
   ExtensionAPIPermissionSet empty_perms;
-  std::set<std::string> expected;
-  expected.insert("www.foo.com");
-  expected.insert("www.bar.com");
-  expected.insert("www.baz.com");
+  std::vector<std::string> expected;
+  expected.push_back("www.foo.com");
+  expected.push_back("www.bar.com");
+  expected.push_back("www.baz.com");
   URLPatternSet explicit_hosts;
   URLPatternSet scriptable_hosts;
 
@@ -591,7 +608,7 @@ TEST(ExtensionPermissionSetTest, GetDistinctHostsForDisplay) {
         URLPattern(URLPattern::SCHEME_HTTP, "http://www.baz.com/path"));
     perm_set.reset(new ExtensionPermissionSet(
        empty_perms, explicit_hosts, scriptable_hosts));
-    EXPECT_EQ(expected, perm_set->GetDistinctHostsForDisplay());
+    CompareLists(expected, perm_set->GetDistinctHostsForDisplay());
   }
 
   {
@@ -604,7 +621,7 @@ TEST(ExtensionPermissionSetTest, GetDistinctHostsForDisplay) {
         URLPattern(URLPattern::SCHEME_HTTP, "http://www.baz.com/path"));
     perm_set.reset(new ExtensionPermissionSet(
             empty_perms, explicit_hosts, scriptable_hosts));
-    EXPECT_EQ(expected, perm_set->GetDistinctHostsForDisplay());
+    CompareLists(expected, perm_set->GetDistinctHostsForDisplay());
   }
 
   {
@@ -615,7 +632,7 @@ TEST(ExtensionPermissionSetTest, GetDistinctHostsForDisplay) {
         URLPattern(URLPattern::SCHEME_HTTPS, "https://www.bar.com/path"));
     perm_set.reset(new ExtensionPermissionSet(
             empty_perms, explicit_hosts, scriptable_hosts));
-    EXPECT_EQ(expected, perm_set->GetDistinctHostsForDisplay());
+    CompareLists(expected, perm_set->GetDistinctHostsForDisplay());
   }
 
   {
@@ -626,7 +643,7 @@ TEST(ExtensionPermissionSetTest, GetDistinctHostsForDisplay) {
         URLPattern(URLPattern::SCHEME_HTTP, "http://www.bar.com/pathypath"));
     perm_set.reset(new ExtensionPermissionSet(
             empty_perms, explicit_hosts, scriptable_hosts));
-    EXPECT_EQ(expected, perm_set->GetDistinctHostsForDisplay());
+    CompareLists(expected, perm_set->GetDistinctHostsForDisplay());
   }
 
   {
@@ -638,12 +655,12 @@ TEST(ExtensionPermissionSetTest, GetDistinctHostsForDisplay) {
     explicit_hosts.AddPattern(
         URLPattern(URLPattern::SCHEME_HTTP, "http://bar.com/path"));
 
-    expected.insert("monkey.www.bar.com");
-    expected.insert("bar.com");
+    expected.push_back("monkey.www.bar.com");
+    expected.push_back("bar.com");
 
     perm_set.reset(new ExtensionPermissionSet(
             empty_perms, explicit_hosts, scriptable_hosts));
-    EXPECT_EQ(expected, perm_set->GetDistinctHostsForDisplay());
+    CompareLists(expected, perm_set->GetDistinctHostsForDisplay());
   }
 
   {
@@ -670,11 +687,11 @@ TEST(ExtensionPermissionSetTest, GetDistinctHostsForDisplay) {
     explicit_hosts.AddPattern(
         URLPattern(URLPattern::SCHEME_HTTP, "http://www.foo.xyzzy/path"));
 
-    expected.insert("www.foo.xyzzy");
+    expected.push_back("www.foo.xyzzy");
 
     perm_set.reset(new ExtensionPermissionSet(
             empty_perms, explicit_hosts, scriptable_hosts));
-    EXPECT_EQ(expected, perm_set->GetDistinctHostsForDisplay());
+    CompareLists(expected, perm_set->GetDistinctHostsForDisplay());
   }
 
   {
@@ -683,11 +700,11 @@ TEST(ExtensionPermissionSetTest, GetDistinctHostsForDisplay) {
     explicit_hosts.AddPattern(
         URLPattern(URLPattern::SCHEME_HTTP, "http://*.google.com/*"));
 
-    expected.insert("*.google.com");
+    expected.push_back("*.google.com");
 
     perm_set.reset(new ExtensionPermissionSet(
             empty_perms, explicit_hosts, scriptable_hosts));
-    EXPECT_EQ(expected, perm_set->GetDistinctHostsForDisplay());
+    CompareLists(expected, perm_set->GetDistinctHostsForDisplay());
   }
 
   {
@@ -701,12 +718,12 @@ TEST(ExtensionPermissionSetTest, GetDistinctHostsForDisplay) {
     scriptable_hosts.AddPattern(
         URLPattern(URLPattern::SCHEME_HTTP, "http://*.example.com/*"));
 
-    expected.insert("*.google.com");
-    expected.insert("*.example.com");
+    expected.push_back("*.google.com");
+    expected.push_back("*.example.com");
 
     perm_set.reset(new ExtensionPermissionSet(
             empty_perms, explicit_hosts, scriptable_hosts));
-    EXPECT_EQ(expected, perm_set->GetDistinctHostsForDisplay());
+    CompareLists(expected, perm_set->GetDistinctHostsForDisplay());
   }
 }
 
@@ -728,11 +745,11 @@ TEST(ExtensionPermissionSetTest, GetDistinctHostsForDisplay_ComIsBestRcd) {
   explicit_hosts.AddPattern(
       URLPattern(URLPattern::SCHEME_HTTP, "http://www.foo.com/path"));
 
-  std::set<std::string> expected;
-  expected.insert("www.foo.com");
+  std::vector<std::string> expected;
+  expected.push_back("www.foo.com");
   perm_set.reset(new ExtensionPermissionSet(
       empty_perms, explicit_hosts, scriptable_hosts));
-  EXPECT_EQ(expected, perm_set->GetDistinctHostsForDisplay());
+  CompareLists(expected, perm_set->GetDistinctHostsForDisplay());
 }
 
 TEST(ExtensionPermissionSetTest, GetDistinctHostsForDisplay_NetIs2ndBestRcd) {
@@ -752,11 +769,11 @@ TEST(ExtensionPermissionSetTest, GetDistinctHostsForDisplay_NetIs2ndBestRcd) {
       URLPattern(URLPattern::SCHEME_HTTP, "http://www.foo.jp/path"));
   // No http://www.foo.com/path
 
-  std::set<std::string> expected;
-  expected.insert("www.foo.net");
+  std::vector<std::string> expected;
+  expected.push_back("www.foo.net");
   perm_set.reset(new ExtensionPermissionSet(
       empty_perms, explicit_hosts, scriptable_hosts));
-  EXPECT_EQ(expected, perm_set->GetDistinctHostsForDisplay());
+  CompareLists(expected, perm_set->GetDistinctHostsForDisplay());
 }
 
 TEST(ExtensionPermissionSetTest,
@@ -776,11 +793,11 @@ TEST(ExtensionPermissionSetTest,
       URLPattern(URLPattern::SCHEME_HTTP, "http://www.foo.jp/path"));
   // No http://www.foo.com/path
 
-  std::set<std::string> expected;
-  expected.insert("www.foo.org");
+  std::vector<std::string> expected;
+  expected.push_back("www.foo.org");
   perm_set.reset(new ExtensionPermissionSet(
       empty_perms, explicit_hosts, scriptable_hosts));
-  EXPECT_EQ(expected, perm_set->GetDistinctHostsForDisplay());
+  CompareLists(expected, perm_set->GetDistinctHostsForDisplay());
 }
 
 TEST(ExtensionPermissionSetTest,
@@ -799,11 +816,11 @@ TEST(ExtensionPermissionSetTest,
       URLPattern(URLPattern::SCHEME_HTTP, "http://www.foo.jp/path"));
   // No http://www.foo.com/path
 
-  std::set<std::string> expected;
-  expected.insert("www.foo.ca");
+  std::vector<std::string> expected;
+  expected.push_back("www.foo.ca");
   perm_set.reset(new ExtensionPermissionSet(
       empty_perms, explicit_hosts, scriptable_hosts));
-  EXPECT_EQ(expected, perm_set->GetDistinctHostsForDisplay());
+  CompareLists(expected, perm_set->GetDistinctHostsForDisplay());
 }
 
 TEST(ExtensionPermissionSetTest, HasLessHostPrivilegesThan) {

@@ -142,8 +142,27 @@ class URLPattern {
 
   ~URLPattern();
 
-  bool operator<(const URLPattern& other) const;
-  bool operator==(const URLPattern& other) const;
+  // Gets the bitmask of valid schemes.
+  int valid_schemes() const { return valid_schemes_; }
+  void set_valid_schemes(int valid_schemes) { valid_schemes_ = valid_schemes; }
+
+  // Gets the host the pattern matches. This can be an empty string if the
+  // pattern matches all hosts (the input was <scheme>://*/<whatever>).
+  const std::string& host() const { return host_; }
+  void set_host(const std::string& host) { host_ = host; }
+
+  // Gets whether to match subdomains of host().
+  bool match_subdomains() const { return match_subdomains_; }
+  void set_match_subdomains(bool val) { match_subdomains_ = val; }
+
+  // Gets the path the pattern matches with the leading slash. This can have
+  // embedded asterisks which are interpreted using glob rules.
+  const std::string& path() const { return path_; }
+  void SetPath(const std::string& path);
+
+  // Returns true if this pattern matches all urls.
+  bool match_all_urls() const { return match_all_urls_; }
+  void set_match_all_urls(bool val) { match_all_urls_ = val; }
 
   // Initializes this instance by parsing the provided string. Returns
   // URLPattern::PARSE_SUCCESS on success, or an error code otherwise. On
@@ -158,28 +177,6 @@ class URLPattern {
   // as component extensions).
   ParseResult Parse(const std::string& pattern_str,
                     ParseOption strictness);
-
-  // Gets the bitmask of valid schemes.
-  int valid_schemes() const { return valid_schemes_; }
-  void SetValidSchemes(int valid_schemes);
-
-  // Gets the host the pattern matches. This can be an empty string if the
-  // pattern matches all hosts (the input was <scheme>://*/<whatever>).
-  const std::string& host() const { return host_; }
-  void SetHost(const std::string& host);
-
-  // Gets whether to match subdomains of host().
-  bool match_subdomains() const { return match_subdomains_; }
-  void SetMatchSubdomains(bool val);
-
-  // Gets the path the pattern matches with the leading slash. This can have
-  // embedded asterisks which are interpreted using glob rules.
-  const std::string& path() const { return path_; }
-  void SetPath(const std::string& path);
-
-  // Returns true if this pattern matches all urls.
-  bool match_all_urls() const { return match_all_urls_; }
-  void SetMatchAllURLs(bool val);
 
   // Sets the scheme for pattern matches. This can be a single '*' if the
   // pattern matches all valid schemes (as defined by the valid_schemes_
@@ -214,7 +211,7 @@ class URLPattern {
   const std::string& port() const { return port_; }
 
   // Returns a string representing this instance.
-  const std::string& GetAsString() const;
+  std::string GetAsString() const;
 
   // Determine whether there is a URL that would match this instance and another
   // instance. This method is symmetrical: Calling other.OverlapsWith(this)
@@ -290,9 +287,6 @@ class URLPattern {
   // The path with "?" and "\" characters escaped for use with the
   // MatchPattern() function.
   std::string path_escaped_;
-
-  // A string representing this URLPattern.
-  mutable std::string spec_;
 };
 
 typedef std::vector<URLPattern> URLPatternList;

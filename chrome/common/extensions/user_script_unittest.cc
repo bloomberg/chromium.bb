@@ -208,8 +208,11 @@ TEST(ExtensionUserScriptTest, Pickle) {
   for (size_t i = 0; i < script1.globs().size(); ++i) {
     EXPECT_EQ(script1.globs()[i], script2.globs()[i]);
   }
-
-  ASSERT_EQ(script1.url_patterns(), script2.url_patterns());
+  ASSERT_EQ(script1.url_patterns().size(), script2.url_patterns().size());
+  for (size_t i = 0; i < script1.url_patterns().size(); ++i) {
+    EXPECT_EQ(script1.url_patterns()[i].GetAsString(),
+              script2.url_patterns()[i].GetAsString());
+  }
 }
 
 TEST(ExtensionUserScriptTest, Defaults) {

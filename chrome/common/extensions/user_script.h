@@ -149,11 +149,10 @@ class UserScript {
 
   // The URLPatterns, if any, that determine which pages this script runs
   // against.
-  const URLPatternSet& url_patterns() const { return url_set_; }
+  const URLPatternList& url_patterns() const { return url_set_.patterns(); }
   void add_url_pattern(const URLPattern& pattern);
-  const URLPatternSet& exclude_url_patterns() const {
-    return exclude_url_set_;
-  }
+  const URLPatternList& exclude_url_patterns() const {
+    return exclude_url_set_.patterns(); }
   void add_exclude_url_pattern(const URLPattern& pattern);
 
   // List of js scripts for this user script

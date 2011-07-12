@@ -19,15 +19,6 @@
 #include "content/common/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
-
-static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
-  int schemes = URLPattern::SCHEME_ALL;
-  extent->AddPattern(URLPattern(schemes, pattern));
-}
-
-}
-
 // Test bringing up a master on a specific directory, putting a script
 // in there, etc.
 
@@ -151,15 +142,15 @@ TEST_F(UserScriptMasterTest, Parse4) {
     "// @match  \t http://mail.yahoo.com/*\n"
     "// ==/UserScript==\n");
 
-  URLPatternSet expected_patterns;
-  AddPattern(&expected_patterns, "http://*.mail.google.com/*");
-  AddPattern(&expected_patterns, "http://mail.yahoo.com/*");
-
   UserScript script;
   EXPECT_TRUE(UserScriptMaster::ScriptReloader::ParseMetadataHeader(
       text, &script));
   EXPECT_EQ(0U, script.globs().size());
-  EXPECT_EQ(expected_patterns, script.url_patterns());
+  ASSERT_EQ(2U, script.url_patterns().size());
+  EXPECT_EQ("http://*.mail.google.com/*",
+            script.url_patterns()[0].GetAsString());
+  EXPECT_EQ("http://mail.yahoo.com/*",
+            script.url_patterns()[1].GetAsString());
 }
 
 TEST_F(UserScriptMasterTest, Parse5) {
@@ -201,9 +192,9 @@ TEST_F(UserScriptMasterTest, Parse7) {
       text, &script));
   ASSERT_EQ("hello", script.name());
   ASSERT_EQ("wiggity woo", script.description());
-  ASSERT_EQ(1U, script.url_patterns().patterns().size());
+  ASSERT_EQ(1U, script.url_patterns().size());
   EXPECT_EQ("http://mail.yahoo.com/*",
-            script.url_patterns().begin()->GetAsString());
+            script.url_patterns()[0].GetAsString());
 }
 
 TEST_F(UserScriptMasterTest, SkipBOMAtTheBeginning) {

@@ -458,7 +458,7 @@ bool Extension::LoadUserScriptHelper(const DictionaryValue* content_script,
 
     URLPattern pattern(UserScript::kValidUserScriptSchemes);
     if (CanExecuteScriptEverywhere())
-      pattern.SetValidSchemes(URLPattern::SCHEME_ALL);
+      pattern.set_valid_schemes(URLPattern::SCHEME_ALL);
 
     URLPattern::ParseResult parse_result = pattern.Parse(match_str,
                                                          parse_strictness);
@@ -475,7 +475,7 @@ bool Extension::LoadUserScriptHelper(const DictionaryValue* content_script,
         !CanExecuteScriptEverywhere()) {
       wants_file_access_ = true;
       if (!(flags & ALLOW_FILE_ACCESS))
-        pattern.SetValidSchemes(
+        pattern.set_valid_schemes(
             pattern.valid_schemes() & ~URLPattern::SCHEME_FILE);
     }
 
@@ -505,7 +505,7 @@ bool Extension::LoadUserScriptHelper(const DictionaryValue* content_script,
 
       URLPattern pattern(UserScript::kValidUserScriptSchemes);
       if (CanExecuteScriptEverywhere())
-        pattern.SetValidSchemes(URLPattern::SCHEME_ALL);
+        pattern.set_valid_schemes(URLPattern::SCHEME_ALL);
       URLPattern::ParseResult parse_result = pattern.Parse(match_str,
                                                            parse_strictness);
       if (parse_result != URLPattern::PARSE_SUCCESS) {
@@ -1026,7 +1026,7 @@ bool Extension::LoadLaunchURL(const DictionaryValue* manifest,
       *error = errors::kInvalidLaunchWebURL;
       return false;
     }
-    pattern.SetHost(launch_url.host());
+    pattern.set_host(launch_url.host());
     pattern.SetPath("/*");
     extent_.AddPattern(pattern);
   }
@@ -1956,7 +1956,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
             !CanExecuteScriptEverywhere()) {
           wants_file_access_ = true;
           if (!(flags & ALLOW_FILE_ACCESS))
-            pattern.SetValidSchemes(
+            pattern.set_valid_schemes(
                 pattern.valid_schemes() & ~URLPattern::SCHEME_FILE);
         }
 
@@ -2705,7 +2705,7 @@ bool Extension::OverlapsWithOrigin(const GURL& origin) const {
   URLPattern origin_only_pattern(kValidWebExtentSchemes);
   if (!origin_only_pattern.SetScheme(origin.scheme()))
     return false;
-  origin_only_pattern.SetHost(origin.host());
+  origin_only_pattern.set_host(origin.host());
   origin_only_pattern.SetPath("/*");
 
   URLPatternSet origin_only_pattern_list;

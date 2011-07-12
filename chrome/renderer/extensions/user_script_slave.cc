@@ -84,10 +84,9 @@ int UserScriptSlave::GetIsolatedWorldId(
 void UserScriptSlave::InitializeIsolatedWorld(
     int isolated_world_id,
     const Extension* extension) {
-  const URLPatternSet& permissions =
-      extension->GetEffectiveHostPermissions();
-  for (URLPatternSet::const_iterator i = permissions.begin();
-       i != permissions.end(); ++i) {
+  const URLPatternList& permissions =
+      extension->GetEffectiveHostPermissions().patterns();
+  for (size_t i = 0; i < permissions.size(); ++i) {
     const char* schemes[] = {
       chrome::kHttpScheme,
       chrome::kHttpsScheme,
@@ -95,12 +94,12 @@ void UserScriptSlave::InitializeIsolatedWorld(
       chrome::kChromeUIScheme,
     };
     for (size_t j = 0; j < arraysize(schemes); ++j) {
-      if (i->MatchesScheme(schemes[j])) {
+      if (permissions[i].MatchesScheme(schemes[j])) {
         WebSecurityPolicy::addOriginAccessWhitelistEntry(
             extension->url(),
             WebString::fromUTF8(schemes[j]),
-            WebString::fromUTF8(i->host()),
-            i->match_subdomains());
+            WebString::fromUTF8(permissions[i].host()),
+            permissions[i].match_subdomains());
       }
     }
   }
@@ -199,10 +198,9 @@ bool UserScriptSlave::UpdateScripts(base::SharedMemoryHandle shared_memory) {
 
     WebVector<WebString> patterns;
     std::vector<WebString> temp_patterns;
-    const URLPatternSet& url_patterns = script->url_patterns();
-    for (URLPatternSet::const_iterator k = url_patterns.begin();
-         k != url_patterns.end(); ++k) {
-      URLPatternList explicit_patterns = k->ConvertToExplicitSchemes();
+    for (size_t k = 0; k < script->url_patterns().size(); ++k) {
+      URLPatternList explicit_patterns =
+          script->url_patterns()[k].ConvertToExplicitSchemes();
       for (size_t m = 0; m < explicit_patterns.size(); ++m) {
         temp_patterns.push_back(WebString::fromUTF8(
             explicit_patterns[m].GetAsString()));

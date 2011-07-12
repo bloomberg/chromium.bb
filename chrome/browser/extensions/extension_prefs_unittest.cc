@@ -44,6 +44,23 @@ static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
   extent->AddPattern(URLPattern(schemes, pattern));
 }
 
+static void AssertEqualExtents(const URLPatternSet& extent1,
+                               const URLPatternSet& extent2) {
+  URLPatternList patterns1 = extent1.patterns();
+  URLPatternList patterns2 = extent2.patterns();
+  EXPECT_EQ(patterns1.size(), patterns2.size());
+
+  std::set<std::string> strings1;
+  for (size_t i = 0; i < patterns1.size(); ++i)
+    strings1.insert(patterns1.at(i).GetAsString());
+
+  std::set<std::string> strings2;
+  for (size_t i = 0; i < patterns2.size(); ++i)
+    strings2.insert(patterns2.at(i).GetAsString());
+
+  EXPECT_EQ(strings1, strings2);
+}
+
 // Base class for tests.
 class ExtensionPrefsTest : public testing::Test {
  public:
@@ -248,10 +265,10 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
     EXPECT_FALSE(granted_permissions->IsEmpty());
     EXPECT_FALSE(granted_permissions->HasEffectiveFullAccess());
     EXPECT_EQ(expected_apis, granted_permissions->apis());
-    EXPECT_EQ(ehost_perm_set1_,
-              granted_permissions->explicit_hosts());
-    EXPECT_EQ(ehost_perm_set1_,
-              granted_permissions->effective_hosts());
+    AssertEqualExtents(ehost_perm_set1_,
+                       granted_permissions->explicit_hosts());
+    AssertEqualExtents(ehost_perm_set1_,
+                       granted_permissions->effective_hosts());
 
     // Add part of the scriptable host permissions.
     permissions.reset(new ExtensionPermissionSet(
@@ -261,14 +278,14 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
     EXPECT_FALSE(granted_permissions->IsEmpty());
     EXPECT_FALSE(granted_permissions->HasEffectiveFullAccess());
     EXPECT_EQ(expected_apis, granted_permissions->apis());
-    EXPECT_EQ(ehost_perm_set1_,
-              granted_permissions->explicit_hosts());
-    EXPECT_EQ(shost_perm_set1_,
-              granted_permissions->scriptable_hosts());
-
+    AssertEqualExtents(ehost_perm_set1_,
+                       granted_permissions->explicit_hosts());
+    AssertEqualExtents(shost_perm_set1_,
+                       granted_permissions->scriptable_hosts());
     URLPatternSet::CreateUnion(ehost_perm_set1_, shost_perm_set1_,
                                &effective_permissions_);
-    EXPECT_EQ(effective_permissions_, granted_permissions->effective_hosts());
+    AssertEqualExtents(effective_permissions_,
+                       granted_permissions->effective_hosts());
 
     // Add the rest of both the permissions.
     permissions.reset(new ExtensionPermissionSet(
@@ -283,14 +300,15 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
     EXPECT_TRUE(granted_permissions.get());
     EXPECT_FALSE(granted_permissions->IsEmpty());
     EXPECT_EQ(api_permissions_, granted_permissions->apis());
-    EXPECT_EQ(ehost_permissions_,
-              granted_permissions->explicit_hosts());
-    EXPECT_EQ(shost_permissions_,
-              granted_permissions->scriptable_hosts());
+    AssertEqualExtents(ehost_permissions_,
+                       granted_permissions->explicit_hosts());
+    AssertEqualExtents(shost_permissions_,
+                       granted_permissions->scriptable_hosts());
     effective_permissions_.ClearPatterns();
     URLPatternSet::CreateUnion(ehost_permissions_, shost_permissions_,
                                &effective_permissions_);
-    EXPECT_EQ(effective_permissions_, granted_permissions->effective_hosts());
+    AssertEqualExtents(effective_permissions_,
+                       granted_permissions->effective_hosts());
   }
 
   virtual void Verify() {
@@ -299,10 +317,8 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
     EXPECT_TRUE(permissions.get());
     EXPECT_FALSE(permissions->HasEffectiveFullAccess());
     EXPECT_EQ(api_permissions_, permissions->apis());
-    EXPECT_EQ(ehost_permissions_,
-              permissions->explicit_hosts());
-    EXPECT_EQ(shost_permissions_,
-              permissions->scriptable_hosts());
+    AssertEqualExtents(ehost_permissions_, permissions->explicit_hosts());
+    AssertEqualExtents(shost_permissions_, permissions->scriptable_hosts());
   }
 
  private:

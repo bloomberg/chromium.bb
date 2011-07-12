@@ -7,6 +7,27 @@
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace {
+
+static void AssertEqualExtents(const URLPatternSet& extent1,
+                               const URLPatternSet& extent2) {
+  URLPatternList patterns1 = extent1.patterns();
+  URLPatternList patterns2 = extent2.patterns();
+  std::set<std::string> strings1;
+  EXPECT_EQ(patterns1.size(), patterns2.size());
+
+  for (size_t i = 0; i < patterns1.size(); ++i)
+    strings1.insert(patterns1.at(i).GetAsString());
+
+  std::set<std::string> strings2;
+  for (size_t i = 0; i < patterns2.size(); ++i)
+    strings2.insert(patterns2.at(i).GetAsString());
+
+  EXPECT_EQ(strings1, strings2);
+}
+
+} // namespace
+
 static const int kAllSchemes =
     URLPattern::SCHEME_HTTP |
     URLPattern::SCHEME_HTTPS |
@@ -75,7 +96,7 @@ TEST(URLPatternSetTest, CreateUnion) {
   // Union with an empty set.
   URLPatternSet result;
   URLPatternSet::CreateUnion(extent1, empty_extent, &result);
-  EXPECT_EQ(expected, result);
+  AssertEqualExtents(expected, result);
 
   // Union with a real set (including a duplicate).
   URLPatternSet extent2;
@@ -90,5 +111,5 @@ TEST(URLPatternSetTest, CreateUnion) {
 
   result.ClearPatterns();
   URLPatternSet::CreateUnion(extent1, extent2, &result);
-  EXPECT_EQ(expected, result);
+  AssertEqualExtents(expected, result);
 }

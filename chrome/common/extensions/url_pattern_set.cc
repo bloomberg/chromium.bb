@@ -4,9 +4,6 @@
 
 #include "chrome/common/extensions/url_pattern_set.h"
 
-#include <algorithm>
-#include <iterator>
-
 #include "chrome/common/extensions/url_pattern.h"
 #include "googleurl/src/gurl.h"
 
@@ -14,30 +11,31 @@
 void URLPatternSet::CreateUnion(const URLPatternSet& set1,
                                 const URLPatternSet& set2,
                                 URLPatternSet* out) {
+  const URLPatternList list1 = set1.patterns();
+  const URLPatternList list2 = set2.patterns();
+
   out->ClearPatterns();
-  std::set_union(set1.patterns_.begin(), set1.patterns_.end(),
-                 set2.patterns_.begin(), set2.patterns_.end(),
-                 std::inserter<std::set<URLPattern> >(
-                     out->patterns_, out->patterns_.begin()));
+
+  for (size_t i = 0; i < list1.size(); ++i)
+    out->AddPattern(list1.at(i));
+
+  for (size_t i = 0; i < list2.size(); ++i)
+    out->AddPattern(list2.at(i));
 }
 
-URLPatternSet::URLPatternSet() {}
+URLPatternSet::URLPatternSet() {
+}
 
 URLPatternSet::URLPatternSet(const URLPatternSet& rhs)
-    : patterns_(rhs.patterns_) {}
+    : patterns_(rhs.patterns_) {
+}
 
-URLPatternSet::URLPatternSet(const std::set<URLPattern>& patterns)
-    : patterns_(patterns) {}
-
-URLPatternSet::~URLPatternSet() {}
+URLPatternSet::~URLPatternSet() {
+}
 
 URLPatternSet& URLPatternSet::operator=(const URLPatternSet& rhs) {
   patterns_ = rhs.patterns_;
   return *this;
-}
-
-bool URLPatternSet::operator==(const URLPatternSet& other) const {
-  return patterns_ == other.patterns_;
 }
 
 bool URLPatternSet::is_empty() const {
@@ -45,7 +43,7 @@ bool URLPatternSet::is_empty() const {
 }
 
 void URLPatternSet::AddPattern(const URLPattern& pattern) {
-  patterns_.insert(pattern);
+  patterns_.push_back(pattern);
 }
 
 void URLPatternSet::ClearPatterns() {
@@ -53,7 +51,7 @@ void URLPatternSet::ClearPatterns() {
 }
 
 bool URLPatternSet::MatchesURL(const GURL& url) const {
-  for (URLPatternSet::const_iterator pattern = patterns_.begin();
+  for (URLPatternList::const_iterator pattern = patterns_.begin();
        pattern != patterns_.end(); ++pattern) {
     if (pattern->MatchesURL(url))
       return true;
@@ -65,9 +63,9 @@ bool URLPatternSet::MatchesURL(const GURL& url) const {
 bool URLPatternSet::OverlapsWith(const URLPatternSet& other) const {
   // Two extension extents overlap if there is any one URL that would match at
   // least one pattern in each of the extents.
-  for (URLPatternSet::const_iterator i = patterns_.begin();
+  for (URLPatternList::const_iterator i = patterns_.begin();
        i != patterns_.end(); ++i) {
-    for (URLPatternSet::const_iterator j = other.patterns().begin();
+    for (URLPatternList::const_iterator j = other.patterns().begin();
          j != other.patterns().end(); ++j) {
       if (i->OverlapsWith(*j))
         return true;

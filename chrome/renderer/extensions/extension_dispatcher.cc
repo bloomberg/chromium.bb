@@ -243,10 +243,9 @@ void ExtensionDispatcher::InitHostPermissions(const Extension* extension) {
         false);
   }
 
-  const URLPatternSet& permissions =
-      extension->permission_set()->explicit_hosts();
-  for (URLPatternSet::const_iterator i = permissions.begin();
-       i != permissions.end(); ++i) {
+  const URLPatternList& permissions =
+      extension->permission_set()->explicit_hosts().patterns();
+  for (size_t i = 0; i < permissions.size(); ++i) {
     const char* schemes[] = {
       chrome::kHttpScheme,
       chrome::kHttpsScheme,
@@ -254,12 +253,12 @@ void ExtensionDispatcher::InitHostPermissions(const Extension* extension) {
       chrome::kChromeUIScheme,
     };
     for (size_t j = 0; j < arraysize(schemes); ++j) {
-      if (i->MatchesScheme(schemes[j])) {
+      if (permissions[i].MatchesScheme(schemes[j])) {
         WebSecurityPolicy::addOriginAccessWhitelistEntry(
             extension->url(),
             WebString::fromUTF8(schemes[j]),
-            WebString::fromUTF8(i->host()),
-            i->match_subdomains());
+            WebString::fromUTF8(permissions[i].host()),
+            permissions[i].match_subdomains());
       }
     }
   }
