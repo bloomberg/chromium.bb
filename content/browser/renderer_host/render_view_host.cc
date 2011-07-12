@@ -903,7 +903,8 @@ void RenderViewHost::OnMsgUpdateTargetURL(int32 page_id,
 
 void RenderViewHost::OnUpdateInspectorSetting(
     const std::string& key, const std::string& value) {
-  delegate_->UpdateInspectorSetting(key, value);
+  content::GetContentClient()->browser()->UpdateInspectorSetting(
+      this, key, value);
 }
 
 void RenderViewHost::OnMsgClose() {

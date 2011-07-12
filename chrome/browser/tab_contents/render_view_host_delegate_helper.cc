@@ -30,9 +30,11 @@
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/webui/web_ui.h"
 #include "content/common/notification_service.h"
+#include "content/common/view_messages.h"
 #include "net/base/network_change_notifier.h"
 
 RenderViewHostDelegateViewHelper::RenderViewHostDelegateViewHelper() {
@@ -219,6 +221,75 @@ RenderWidgetHostView* RenderViewHostDelegateViewHelper::GetCreatedWidget(
     return NULL;
   }
 
+  return widget_host_view;
+}
+
+TabContents* RenderViewHostDelegateViewHelper::CreateNewWindowFromTabContents(
+    TabContents* tab_contents,
+    int route_id,
+    const ViewHostMsg_CreateWindow_Params& params) {
+  TabContents* new_contents = CreateNewWindow(
+      route_id,
+      tab_contents->profile(),
+      tab_contents->GetSiteInstance(),
+      tab_contents->GetWebUITypeForCurrentState(),
+      tab_contents,
+      params.window_container_type,
+      params.frame_name);
+
+  if (new_contents) {
+    NotificationService::current()->Notify(
+        content::NOTIFICATION_CREATING_NEW_WINDOW,
+        Source<TabContents>(tab_contents),
+        Details<const ViewHostMsg_CreateWindow_Params>(&params));
+
+    if (tab_contents->delegate())
+      tab_contents->delegate()->TabContentsCreated(new_contents);
+  } else {
+    NotificationService::current()->Notify(
+        content::NOTIFICATION_CREATING_NEW_WINDOW_CANCELLED,
+        Source<TabContents>(tab_contents),
+        Details<const ViewHostMsg_CreateWindow_Params>(&params));
+  }
+
+  return new_contents;
+}
+
+TabContents* RenderViewHostDelegateViewHelper::ShowCreatedWindow(
+    TabContents* tab_contents,
+    int route_id,
+    WindowOpenDisposition disposition,
+    const gfx::Rect& initial_pos,
+    bool user_gesture) {
+  TabContents* contents = GetCreatedWindow(route_id);
+  if (contents) {
+    tab_contents->AddNewContents(
+        contents, disposition, initial_pos, user_gesture);
+  }
+  return contents;
+}
+
+RenderWidgetHostView* RenderViewHostDelegateViewHelper::ShowCreatedWidget(
+    TabContents* tab_contents, int route_id, const gfx::Rect& initial_pos) {
+  if (tab_contents->delegate())
+    tab_contents->delegate()->RenderWidgetShowing();
+
+  RenderWidgetHostView* widget_host_view = GetCreatedWidget(route_id);
+  widget_host_view->InitAsPopup(tab_contents->GetRenderWidgetHostView(),
+                                initial_pos);
+  widget_host_view->GetRenderWidgetHost()->Init();
+  return widget_host_view;
+}
+
+RenderWidgetHostView*
+    RenderViewHostDelegateViewHelper::ShowCreatedFullscreenWidget(
+        TabContents* tab_contents, int route_id) {
+  if (tab_contents->delegate())
+    tab_contents->delegate()->RenderWidgetShowing();
+
+  RenderWidgetHostView* widget_host_view = GetCreatedWidget(route_id);
+  widget_host_view->InitAsFullscreen();
+  widget_host_view->GetRenderWidgetHost()->Init();
   return widget_host_view;
 }
 

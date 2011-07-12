@@ -244,12 +244,6 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
   // The destination URL has changed should be updated
   virtual void UpdateTargetURL(int32 page_id, const GURL& url) {}
 
-  // Inspector setting was changed and should be persisted.
-  virtual void UpdateInspectorSetting(const std::string& key,
-                                      const std::string& value) = 0;
-
-  virtual void ClearInspectorSettings() = 0;
-
   // The page is trying to close the RenderView's representation in the client.
   virtual void Close(RenderViewHost* render_view_host) {}
 

@@ -39,7 +39,7 @@ TabContentsView* TabContentsView::Create(TabContents* tab_contents) {
 }
 
 TabContentsViewTouch::TabContentsViewTouch(TabContents* tab_contents)
-    : TabContentsView(tab_contents),
+    : tab_contents_(tab_contents),
       sad_tab_(NULL),
       ignore_next_char_event_(false) {
   last_focused_view_storage_id_ =
@@ -107,7 +107,7 @@ gfx::NativeView TabContentsViewTouch::GetNativeView() const {
 }
 
 gfx::NativeView TabContentsViewTouch::GetContentNativeView() const {
-  RenderWidgetHostView* rwhv = tab_contents()->GetRenderWidgetHostView();
+  RenderWidgetHostView* rwhv = tab_contents_->GetRenderWidgetHostView();
   if (!rwhv)
     return NULL;
   return rwhv->GetNativeView();
@@ -139,7 +139,7 @@ void TabContentsViewTouch::OnTabCrashed(base::TerminationStatus status,
     return;
 
   sad_tab_.reset(new SadTabView(
-      tab_contents(),
+      tab_contents_,
       status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED ?
           SadTabView::KILLED : SadTabView::CRASHED));
   RemoveAllChildViews(true);
@@ -151,30 +151,33 @@ void TabContentsViewTouch::SizeContents(const gfx::Size& size) {
   WasSized(size);
 
   // We need to send this immediately.
-  RenderWidgetHostView* rwhv = tab_contents()->GetRenderWidgetHostView();
+  RenderWidgetHostView* rwhv = tab_contents_->GetRenderWidgetHostView();
   if (rwhv)
     rwhv->SetSize(size);
 }
 
+void TabContentsViewTouch::RenderViewCreated(RenderViewHost* host) {
+}
+
 void TabContentsViewTouch::Focus() {
-  if (tab_contents()->interstitial_page()) {
-    tab_contents()->interstitial_page()->Focus();
+  if (tab_contents_->interstitial_page()) {
+    tab_contents_->interstitial_page()->Focus();
     return;
   }
 
-  if (tab_contents()->is_crashed() && sad_tab_ != NULL) {
+  if (tab_contents_->is_crashed() && sad_tab_ != NULL) {
     sad_tab_->RequestFocus();
     return;
   }
 
-  RenderWidgetHostView* rwhv = tab_contents()->GetRenderWidgetHostView();
+  RenderWidgetHostView* rwhv = tab_contents_->GetRenderWidgetHostView();
   if (rwhv)
     rwhv->Focus();
 }
 
 void TabContentsViewTouch::SetInitialFocus() {
-  if (tab_contents()->FocusLocationBarByDefault())
-    tab_contents()->SetFocusToLocationBar(false);
+  if (tab_contents_->FocusLocationBarByDefault())
+    tab_contents_->SetFocusToLocationBar(false);
   else
     Focus();
 }
@@ -224,6 +227,23 @@ void TabContentsViewTouch::RestoreFocus() {
   }
 }
 
+void TabContentsViewTouch::UpdatePreferredSize(const gfx::Size& pref_size) {
+}
+
+bool TabContentsViewTouch::IsDoingDrag() const {
+  return false;
+}
+
+void TabContentsViewTouch::CancelDragAndCloseTab() {
+}
+
+bool TabContentsViewTouch::IsEventTracking() const {
+  return false;
+}
+
+void TabContentsViewTouch::CloseTabAfterEventTracking() {
+}
+
 void TabContentsViewTouch::GetViewBounds(gfx::Rect* out) const {
   out->SetRect(x(), y(), width(), height());
 }
@@ -247,13 +267,13 @@ void TabContentsViewTouch::UpdateDragCursor(WebDragOperation operation) {
 }
 
 void TabContentsViewTouch::GotFocus() {
-  if (tab_contents()->delegate())
-    tab_contents()->delegate()->TabContentsFocused(tab_contents());
+  if (tab_contents_->delegate())
+    tab_contents_->delegate()->TabContentsFocused(tab_contents_);
 }
 
 void TabContentsViewTouch::TakeFocus(bool reverse) {
-  if (tab_contents()->delegate() &&
-      !tab_contents()->delegate()->TakeFocus(reverse)) {
+  if (tab_contents_->delegate() &&
+      !tab_contents_->delegate()->TakeFocus(reverse)) {
 
     views::FocusManager* focus_manager =
         views::FocusManager::GetFocusManagerForNativeView(GetNativeView());
@@ -273,18 +293,55 @@ void TabContentsViewTouch::VisibilityChanged(views::View *, bool is_visible) {
   }
 }
 
+
+void TabContentsViewTouch::CreateNewWindow(
+    int route_id,
+    const ViewHostMsg_CreateWindow_Params& params) {
+  delegate_view_helper_.CreateNewWindowFromTabContents(
+      tab_contents_, route_id, params);
+}
+
+void TabContentsViewTouch::CreateNewWidget(
+    int route_id, WebKit::WebPopupType popup_type) {
+  delegate_view_helper_.CreateNewWidget(route_id, popup_type,
+      tab_contents_->render_view_host()->process());
+}
+
+void TabContentsViewTouch::CreateNewFullscreenWidget(int route_id) {
+  delegate_view_helper_.CreateNewFullscreenWidget(
+      route_id, tab_contents_->render_view_host()->process());
+}
+
+void TabContentsViewTouch::ShowCreatedWindow(int route_id,
+                                             WindowOpenDisposition disposition,
+                                             const gfx::Rect& initial_pos,
+                                             bool user_gesture) {
+  delegate_view_helper_.ShowCreatedWindow(
+      tab_contents_, route_id, disposition, initial_pos, user_gesture);
+}
+
+void TabContentsViewTouch::ShowCreatedWidget(
+    int route_id, const gfx::Rect& initial_pos) {
+  delegate_view_helper_.ShowCreatedWidget(
+      tab_contents_, route_id, initial_pos);
+}
+
+void TabContentsViewTouch::ShowCreatedFullscreenWidget(int route_id) {
+  delegate_view_helper_.ShowCreatedFullscreenWidget(tab_contents_, route_id);
+}
+
 void TabContentsViewTouch::ShowContextMenu(const ContextMenuParams& params) {
   // Allow delegates to handle the context menu operation first.
-  if (tab_contents()->delegate() &&
-      tab_contents()->delegate()->HandleContextMenu(params))
+  if (tab_contents_->delegate() &&
+      tab_contents_->delegate()->HandleContextMenu(params))
     return;
 
-  context_menu_.reset(new RenderViewContextMenuViews(tab_contents(), params));
+  context_menu_.reset(new RenderViewContextMenuViews(tab_contents_, params));
   context_menu_->Init();
 
   gfx::Point screen_point(params.x, params.y);
   RenderWidgetHostViewViews* rwhv = static_cast<RenderWidgetHostViewViews*>
-      (tab_contents()->GetRenderWidgetHostView());
+      (tab_contents_->GetRenderWidgetHostView());
   if (rwhv) {
     views::View::ConvertPointToScreen(rwhv, &screen_point);
   }
@@ -308,11 +365,11 @@ void TabContentsViewTouch::ShowPopupMenu(const gfx::Rect& bounds,
 }
 
 void TabContentsViewTouch::WasHidden() {
-  tab_contents()->HideContents();
+  tab_contents_->HideContents();
 }
 
 void TabContentsViewTouch::WasShown() {
-  tab_contents()->ShowContents();
+  tab_contents_->ShowContents();
 }
 
 void TabContentsViewTouch::WasSized(const gfx::Size& size) {
@@ -323,11 +380,11 @@ void TabContentsViewTouch::WasSized(const gfx::Size& size) {
 
   if (needs_resize) {
     size_ = size;
-    if (tab_contents()->interstitial_page())
-      tab_contents()->interstitial_page()->SetSize(size);
+    if (tab_contents_->interstitial_page())
+      tab_contents_->interstitial_page()->SetSize(size);
   }
 
-  RenderWidgetHostView* rwhv = tab_contents()->GetRenderWidgetHostView();
+  RenderWidgetHostView* rwhv = tab_contents_->GetRenderWidgetHostView();
   if (rwhv && rwhv->GetViewBounds().size() != size)
     rwhv->SetSize(size);
 

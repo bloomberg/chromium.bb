@@ -70,7 +70,7 @@ NativeTabContentsViewGtk::NativeTabContentsViewGtk(
       delegate_(delegate),
       ignore_next_char_event_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(drag_source_(
-          new TabContentsDragSource(delegate->GetTabContents()->view()))) {
+          new TabContentsDragSource(delegate->GetTabContents()))) {
 }
 
 NativeTabContentsViewGtk::~NativeTabContentsViewGtk() {

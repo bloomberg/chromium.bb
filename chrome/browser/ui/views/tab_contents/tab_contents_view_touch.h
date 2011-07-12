@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "ui/gfx/size.h"
 #include "views/view.h"
@@ -58,10 +59,16 @@ class TabContentsViewTouch : public TabContentsView, public views::View {
   virtual void OnTabCrashed(base::TerminationStatus status,
                             int error_code) OVERRIDE;
   virtual void SizeContents(const gfx::Size& size) OVERRIDE;
+  virtual void RenderViewCreated(RenderViewHost* host) OVERRIDE;
   virtual void Focus() OVERRIDE;
   virtual void SetInitialFocus() OVERRIDE;
   virtual void StoreFocus() OVERRIDE;
   virtual void RestoreFocus() OVERRIDE;
+  virtual void UpdatePreferredSize(const gfx::Size& pref_size) OVERRIDE;
+  virtual bool IsDoingDrag() const OVERRIDE;
+  virtual void CancelDragAndCloseTab() OVERRIDE;
+  virtual bool IsEventTracking() const OVERRIDE;
+  virtual void CloseTabAfterEventTracking() OVERRIDE;
   virtual void GetViewBounds(gfx::Rect* out) const OVERRIDE;
 
   // views::View implementation
@@ -70,6 +77,17 @@ class TabContentsViewTouch : public TabContentsView, public views::View {
   virtual std::string GetClassName() const OVERRIDE;
 
   // Backend implementation of RenderViewHostDelegate::View.
+  virtual void CreateNewWindow(
+      int route_id,
+      const ViewHostMsg_CreateWindow_Params& params);
+  virtual void CreateNewWidget(int route_id, WebKit::WebPopupType popup_type);
+  virtual void CreateNewFullscreenWidget(int route_id);
+  virtual void ShowCreatedWindow(int route_id,
+                                 WindowOpenDisposition disposition,
+                                 const gfx::Rect& initial_pos,
+                                 bool user_gesture);
+  virtual void ShowCreatedWidget(int route_id, const gfx::Rect& initial_pos);
+  virtual void ShowCreatedFullscreenWidget(int route_id);
   virtual void ShowContextMenu(const ContextMenuParams& params);
   virtual void ShowPopupMenu(const gfx::Rect& bounds,
                              int item_height,
@@ -102,6 +120,12 @@ class TabContentsViewTouch : public TabContentsView, public views::View {
   // within this view. It's called whem a ConstrainedDialog is attached and
   // when this view is resized.
   void SetFloatingPosition(const gfx::Size& size);
+
+  // The TabContents whose contents we display.
+  TabContents* tab_contents_;
+
+  // Common implementations of some RenderViewHostDelegate::View methods.
+  RenderViewHostDelegateViewHelper delegate_view_helper_;
 
   // Used to render the sad tab. This will be non-NULL only when the sad tab is
   // visible.

@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/memory/scoped_nsobject.h"
+#include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "chrome/browser/ui/cocoa/base_view.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/common/notification_observer.h"
@@ -69,20 +70,24 @@ class TabContentsViewMac : public TabContentsView,
   virtual void StoreFocus();
   virtual void RestoreFocus();
   virtual void UpdatePreferredSize(const gfx::Size& pref_size);
-  virtual RenderWidgetHostView* CreateNewWidgetInternal(
-      int route_id,
-      WebKit::WebPopupType popup_type);
-  virtual void ShowCreatedWidgetInternal(RenderWidgetHostView* widget_host_view,
-                                         const gfx::Rect& initial_pos);
-
-  virtual RenderWidgetHostView* CreateNewFullscreenWidgetInternal(int route_id);
-  virtual void ShowCreatedFullscreenWidgetInternal(
-      RenderWidgetHostView* widget_host_view);
+  virtual bool IsDoingDrag() const;
+  virtual void CancelDragAndCloseTab();
   virtual bool IsEventTracking() const;
   virtual void CloseTabAfterEventTracking();
   virtual void GetViewBounds(gfx::Rect* out) const;
 
   // Backend implementation of RenderViewHostDelegate::View.
+  virtual void CreateNewWindow(
+      int route_id,
+      const ViewHostMsg_CreateWindow_Params& params);
+  virtual void CreateNewWidget(int route_id, WebKit::WebPopupType popup_type);
+  virtual void CreateNewFullscreenWidget(int route_id);
+  virtual void ShowCreatedWindow(int route_id,
+                                 WindowOpenDisposition disposition,
+                                 const gfx::Rect& initial_pos,
+                                 bool user_gesture);
+  virtual void ShowCreatedWidget(int route_id, const gfx::Rect& initial_pos);
+  virtual void ShowCreatedFullscreenWidget(int route_id);
   virtual void ShowContextMenu(const ContextMenuParams& params);
   virtual void ShowPopupMenu(const gfx::Rect& bounds,
                              int item_height,
@@ -108,9 +113,16 @@ class TabContentsViewMac : public TabContentsView,
   // CloseTabAfterEventTracking() implementation.
   void CloseTab();
 
+  TabContents* tab_contents() { return tab_contents_; }
   int preferred_width() const { return preferred_width_; }
 
  private:
+  // The TabContents whose contents we display.
+  TabContents* tab_contents_;
+
+  // Common implementations of some RenderViewHostDelegate::View methods.
+  RenderViewHostDelegateViewHelper delegate_view_helper_;
+
   // The Cocoa NSView that lives in the view hierarchy.
   scoped_nsobject<TabContentsViewCocoa> cocoa_view_;
 

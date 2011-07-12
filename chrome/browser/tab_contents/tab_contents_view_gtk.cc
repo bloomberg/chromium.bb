@@ -84,7 +84,7 @@ TabContentsView* TabContentsView::Create(TabContents* tab_contents) {
 }
 
 TabContentsViewGtk::TabContentsViewGtk(TabContents* tab_contents)
-    : TabContentsView(tab_contents),
+    : tab_contents_(tab_contents),
       floating_(gtk_floating_container_new()),
       expanded_(gtk_expanded_container_new()),
       constrained_window_(NULL) {
@@ -101,7 +101,7 @@ TabContentsViewGtk::TabContentsViewGtk(TabContents* tab_contents)
   gtk_widget_show(floating_.get());
   registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_CONNECTED,
                  Source<TabContents>(tab_contents));
-  drag_source_.reset(new TabContentsDragSource(this));
+  drag_source_.reset(new TabContentsDragSource(tab_contents));
 }
 
 TabContentsViewGtk::~TabContentsViewGtk() {
@@ -148,17 +148,17 @@ RenderWidgetHostView* TabContentsViewGtk::CreateViewForWidget(
   gfx::NativeView content_view = view->native_view();
   g_signal_connect(content_view, "focus", G_CALLBACK(OnFocusThunk), this);
   g_signal_connect(content_view, "leave-notify-event",
-                   G_CALLBACK(OnLeaveNotify), tab_contents());
+                   G_CALLBACK(OnLeaveNotify), tab_contents_);
   g_signal_connect(content_view, "motion-notify-event",
-                   G_CALLBACK(OnMouseMove), tab_contents());
+                   G_CALLBACK(OnMouseMove), tab_contents_);
   g_signal_connect(content_view, "scroll-event",
-                   G_CALLBACK(OnMouseScroll), tab_contents());
+                   G_CALLBACK(OnMouseScroll), tab_contents_);
   gtk_widget_add_events(content_view, GDK_LEAVE_NOTIFY_MASK |
                         GDK_POINTER_MOTION_MASK);
   InsertIntoContentArea(content_view);
 
   // Renderer target DnD.
-  drag_dest_.reset(new WebDragDestGtk(tab_contents(), content_view));
+  drag_dest_.reset(new WebDragDestGtk(tab_contents_, content_view));
 
   return view;
 }
@@ -168,7 +168,7 @@ gfx::NativeView TabContentsViewGtk::GetNativeView() const {
 }
 
 gfx::NativeView TabContentsViewGtk::GetContentNativeView() const {
-  RenderWidgetHostView* rwhv = tab_contents()->GetRenderWidgetHostView();
+  RenderWidgetHostView* rwhv = tab_contents_->GetRenderWidgetHostView();
   if (!rwhv)
     return NULL;
   return rwhv->GetNativeView();
@@ -202,9 +202,9 @@ void TabContentsViewGtk::SetPageTitle(const std::wstring& title) {
 
 void TabContentsViewGtk::OnTabCrashed(base::TerminationStatus status,
                                       int error_code) {
-  if (tab_contents() != NULL && !sad_tab_.get()) {
+  if (tab_contents_ != NULL && !sad_tab_.get()) {
     sad_tab_.reset(new SadTabGtk(
-        tab_contents(),
+        tab_contents_,
         status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED ?
         SadTabGtk::KILLED : SadTabGtk::CRASHED));
     InsertIntoContentArea(sad_tab_->widget());
@@ -217,14 +217,17 @@ void TabContentsViewGtk::SizeContents(const gfx::Size& size) {
   // need to pass the sizing information on to the RWHV which will pass the
   // sizing information on to the renderer.
   requested_size_ = size;
-  RenderWidgetHostView* rwhv = tab_contents()->GetRenderWidgetHostView();
+  RenderWidgetHostView* rwhv = tab_contents_->GetRenderWidgetHostView();
   if (rwhv)
     rwhv->SetSize(size);
 }
 
+void TabContentsViewGtk::RenderViewCreated(RenderViewHost* host) {
+}
+
 void TabContentsViewGtk::Focus() {
-  if (tab_contents()->showing_interstitial_page()) {
-    tab_contents()->interstitial_page()->Focus();
+  if (tab_contents_->showing_interstitial_page()) {
+    tab_contents_->interstitial_page()->Focus();
   } else if (!constrained_window_) {
     GtkWidget* widget = GetContentNativeView();
     if (widget)
@@ -233,8 +236,8 @@ void TabContentsViewGtk::Focus() {
 }
 
 void TabContentsViewGtk::SetInitialFocus() {
-  if (tab_contents()->FocusLocationBarByDefault())
-    tab_contents()->SetFocusToLocationBar(false);
+  if (tab_contents_->FocusLocationBarByDefault())
+    tab_contents_->SetFocusToLocationBar(false);
   else
     Focus();
 }
@@ -248,6 +251,23 @@ void TabContentsViewGtk::RestoreFocus() {
     gtk_widget_grab_focus(focus_store_.widget());
   else
     SetInitialFocus();
+}
+
+void TabContentsViewGtk::UpdatePreferredSize(const gfx::Size& pref_size) {
+}
+
+bool TabContentsViewGtk::IsDoingDrag() const {
+  return false;
+}
+
+void TabContentsViewGtk::CancelDragAndCloseTab() {
+}
+
+bool TabContentsViewGtk::IsEventTracking() const {
+  return false;
+}
+
+void TabContentsViewGtk::CloseTabAfterEventTracking() {
 }
 
 void TabContentsViewGtk::GetViewBounds(gfx::Rect* out) const {
@@ -276,7 +296,7 @@ void TabContentsViewGtk::GotFocus() {
 // This is called when we the renderer asks us to take focus back (i.e., it has
 // iterated past the last focusable element on the page).
 void TabContentsViewGtk::TakeFocus(bool reverse) {
-  if (!tab_contents()->delegate()->TakeFocus(reverse)) {
+  if (!tab_contents_->delegate()->TakeFocus(reverse)) {
     gtk_widget_child_focus(GTK_WIDGET(GetTopLevelNativeWindow()),
         reverse ? GTK_DIR_TAB_BACKWARD : GTK_DIR_TAB_FORWARD);
   }
@@ -299,6 +319,43 @@ void TabContentsViewGtk::Observe(int type,
   }
 }
 
+
+void TabContentsViewGtk::CreateNewWindow(
+    int route_id,
+    const ViewHostMsg_CreateWindow_Params& params) {
+  delegate_view_helper_.CreateNewWindowFromTabContents(
+      tab_contents_, route_id, params);
+}
+
+void TabContentsViewGtk::CreateNewWidget(
+    int route_id, WebKit::WebPopupType popup_type) {
+  delegate_view_helper_.CreateNewWidget(route_id, popup_type,
+      tab_contents_->render_view_host()->process());
+}
+
+void TabContentsViewGtk::CreateNewFullscreenWidget(int route_id) {
+  delegate_view_helper_.CreateNewFullscreenWidget(
+      route_id, tab_contents_->render_view_host()->process());
+}
+
+void TabContentsViewGtk::ShowCreatedWindow(int route_id,
+                                           WindowOpenDisposition disposition,
+                                           const gfx::Rect& initial_pos,
+                                           bool user_gesture) {
+  delegate_view_helper_.ShowCreatedWindow(
+      tab_contents_, route_id, disposition, initial_pos, user_gesture);
+}
+
+void TabContentsViewGtk::ShowCreatedWidget(
+    int route_id, const gfx::Rect& initial_pos) {
+  delegate_view_helper_.ShowCreatedWidget(
+      tab_contents_, route_id, initial_pos);
+}
+
+void TabContentsViewGtk::ShowCreatedFullscreenWidget(int route_id) {
+  delegate_view_helper_.ShowCreatedFullscreenWidget(tab_contents_, route_id);
+}
+
 void TabContentsViewGtk::ShowContextMenu(const ContextMenuParams& params) {
   // Find out the RenderWidgetHostView that corresponds to the render widget on
   // which this context menu is showed, so that we can retrieve the last mouse
@@ -308,7 +365,7 @@ void TabContentsViewGtk::ShowContextMenu(const ContextMenuParams& params) {
   if (params.custom_context.render_widget_id !=
       webkit_glue::CustomContextMenuContext::kCurrentRenderWidget) {
     IPC::Channel::Listener* listener =
-        tab_contents()->render_view_host()->process()->GetListenerByID(
+        tab_contents_->render_view_host()->process()->GetListenerByID(
             params.custom_context.render_widget_id);
     if (!listener) {
       NOTREACHED();
@@ -316,7 +373,7 @@ void TabContentsViewGtk::ShowContextMenu(const ContextMenuParams& params) {
     }
     view = static_cast<RenderWidgetHost*>(listener)->view();
   } else {
-    view = tab_contents()->GetRenderWidgetHostView();
+    view = tab_contents_->GetRenderWidgetHostView();
   }
   RenderWidgetHostViewGtk* view_gtk =
       static_cast<RenderWidgetHostViewGtk*>(view);
@@ -324,7 +381,7 @@ void TabContentsViewGtk::ShowContextMenu(const ContextMenuParams& params) {
     return;
 
   context_menu_.reset(new RenderViewContextMenuGtk(
-      tab_contents(), params, view_gtk->last_mouse_down()->time));
+      tab_contents_, params, view_gtk->last_mouse_down()->time));
   context_menu_->Init();
 
   gfx::Rect bounds;
@@ -354,7 +411,7 @@ void TabContentsViewGtk::StartDragging(const WebDropData& drop_data,
   DCHECK(GetContentNativeView());
 
   RenderWidgetHostViewGtk* view_gtk = static_cast<RenderWidgetHostViewGtk*>(
-      tab_contents()->GetRenderWidgetHostView());
+      tab_contents_->GetRenderWidgetHostView());
   if (!view_gtk || !view_gtk->last_mouse_down())
     return;
 
@@ -396,16 +453,16 @@ gboolean TabContentsViewGtk::OnFocus(GtkWidget* widget,
 
   gtk_widget_grab_focus(widget);
   bool reverse = focus == GTK_DIR_TAB_BACKWARD;
-  tab_contents()->FocusThroughTabTraversal(reverse);
+  tab_contents_->FocusThroughTabTraversal(reverse);
   return TRUE;
 }
 
 void TabContentsViewGtk::OnChildSizeRequest(GtkWidget* widget,
                                             GtkWidget* child,
                                             GtkRequisition* requisition) {
-  if (tab_contents()->delegate()) {
+  if (tab_contents_->delegate()) {
     requisition->height +=
-        tab_contents()->delegate()->GetExtraRenderViewHeight();
+        tab_contents_->delegate()->GetExtraRenderViewHeight();
   }
 }
 
@@ -414,18 +471,18 @@ void TabContentsViewGtk::OnSizeAllocate(GtkWidget* widget,
   int width = allocation->width;
   int height = allocation->height;
   // |delegate()| can be NULL here during browser teardown.
-  if (tab_contents()->delegate())
-    height += tab_contents()->delegate()->GetExtraRenderViewHeight();
+  if (tab_contents_->delegate())
+    height += tab_contents_->delegate()->GetExtraRenderViewHeight();
   gfx::Size size(width, height);
   requested_size_ = size;
 
   // We manually tell our RWHV to resize the renderer content.  This avoids
   // spurious resizes from GTK+.
-  RenderWidgetHostView* rwhv = tab_contents()->GetRenderWidgetHostView();
+  RenderWidgetHostView* rwhv = tab_contents_->GetRenderWidgetHostView();
   if (rwhv)
     rwhv->SetSize(size);
-  if (tab_contents()->interstitial_page())
-    tab_contents()->interstitial_page()->SetSize(size);
+  if (tab_contents_->interstitial_page())
+    tab_contents_->interstitial_page()->SetSize(size);
 }
 
 void TabContentsViewGtk::OnSetFloatingPosition(

@@ -6,11 +6,9 @@
 #define CONTENT_BROWSER_TAB_CONTENTS_TAB_CONTENTS_VIEW_H_
 #pragma once
 
-#include <map>
 #include <string>
 
 #include "base/basictypes.h"
-#include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
@@ -25,20 +23,14 @@ class TabContents;
 // dependent web contents views. The TabContents uses this interface to talk to
 // them. View-related messages will also get forwarded directly to this class
 // from RenderViewHost via RenderViewHostDelegate::View.
-//
-// It contains a small amount of logic with respect to creating new sub-view
-// that should be the same for all platforms.
 class TabContentsView : public RenderViewHostDelegate::View {
  public:
-  explicit TabContentsView(TabContents* tab_contents);
   virtual ~TabContentsView();
 
   // Creates the appropriate type of TabContentsView for the current system.
   // The return value is a new heap allocated view with ownership passing to
   // the caller.
   static TabContentsView* Create(TabContents* tab_contents);
-
-  TabContents* tab_contents() const { return tab_contents_; }
 
   virtual void CreateView(const gfx::Size& initial_size) = 0;
 
@@ -95,7 +87,7 @@ class TabContentsView : public RenderViewHostDelegate::View {
 
   // Invoked when the TabContents is notified that the RenderView has been
   // fully created.
-  virtual void RenderViewCreated(RenderViewHost* host) {}
+  virtual void RenderViewCreated(RenderViewHost* host) = 0;
 
   // Sets focus to the native widget for this tab.
   virtual void Focus() = 0;
@@ -112,21 +104,21 @@ class TabContentsView : public RenderViewHostDelegate::View {
   virtual void RestoreFocus() = 0;
 
   // Notification that the preferred size of the contents has changed.
-  virtual void UpdatePreferredSize(const gfx::Size& pref_size) {}
+  virtual void UpdatePreferredSize(const gfx::Size& pref_size) = 0;
 
   // If we try to close the tab while a drag is in progress, we crash.  These
   // methods allow the tab contents to determine if a drag is in progress and
   // postpone the tab closing.
-  virtual bool IsDoingDrag() const;
-  virtual void CancelDragAndCloseTab() {}
+  virtual bool IsDoingDrag() const = 0;
+  virtual void CancelDragAndCloseTab() = 0;
 
   // If we close the tab while a UI control is in an event-tracking
   // loop, the control may message freed objects and crash.
   // TabContents::Close() calls IsEventTracking(), and if it returns
   // true CloseTabAfterEventTracking() is called and the close is not
   // completed.
-  virtual bool IsEventTracking() const;
-  virtual void CloseTabAfterEventTracking() {}
+  virtual bool IsEventTracking() const = 0;
+  virtual void CloseTabAfterEventTracking() = 0;
 
   // Get the bounds of the View, relative to the parent.
   // TODO(beng): Return a rect rather than using an out param.
@@ -135,56 +127,7 @@ class TabContentsView : public RenderViewHostDelegate::View {
  protected:
   TabContentsView();  // Abstract interface.
 
-  // Internal functions used to support the CreateNewWidget() method. If a
-  // platform requires plugging into widget creation at a lower level then a
-  // subclass might want to override these functions, but otherwise they should
-  // be fine just implementing RenderWidgetHostView::InitAsPopup().
-  //
-  // The Create function returns the newly created widget so it can be
-  // associated with the given route. When the widget needs to be shown later,
-  // we'll look it up again and pass the object to the Show functions rather
-  // than the route ID.
-  virtual RenderWidgetHostView* CreateNewWidgetInternal(
-      int route_id,
-      WebKit::WebPopupType popup_type);
-  virtual void ShowCreatedWidgetInternal(RenderWidgetHostView* widget_host_view,
-                                         const gfx::Rect& initial_pos);
-  virtual RenderWidgetHostView* CreateNewFullscreenWidgetInternal(int route_id);
-  virtual void ShowCreatedFullscreenWidgetInternal(
-      RenderWidgetHostView* widget_host_view);
-
-  // Common implementations of some RenderViewHostDelegate::View methods.
-  RenderViewHostDelegateViewHelper delegate_view_helper_;
-
  private:
-  // We implement these functions on RenderViewHostDelegate::View directly and
-  // do some book-keeping associated with the request. The request is then
-  // forwarded to *Internal which does platform-specific work.
-  virtual void CreateNewWindow(
-      int route_id,
-      const ViewHostMsg_CreateWindow_Params& params);
-  virtual void CreateNewWidget(int route_id, WebKit::WebPopupType popup_type);
-  virtual void CreateNewFullscreenWidget(int route_id);
-  virtual void ShowCreatedWindow(int route_id,
-                                 WindowOpenDisposition disposition,
-                                 const gfx::Rect& initial_pos,
-                                 bool user_gesture);
-  virtual void ShowCreatedWidget(int route_id, const gfx::Rect& initial_pos);
-  virtual void ShowCreatedFullscreenWidget(int route_id);
-
-  // The TabContents whose contents we display.
-  TabContents* tab_contents_;
-
-  // Tracks created TabContents objects that have not been shown yet. They are
-  // identified by the route ID passed to CreateNewWindow.
-  typedef std::map<int, TabContents*> PendingContents;
-  PendingContents pending_contents_;
-
-  // These maps hold on to the widgets that we created on behalf of the
-  // renderer that haven't shown yet.
-  typedef std::map<int, RenderWidgetHostView*> PendingWidgetViews;
-  PendingWidgetViews pending_widget_views_;
-
   DISALLOW_COPY_AND_ASSIGN(TabContentsView);
 };
 

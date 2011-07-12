@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "chrome/browser/ui/gtk/focus_store_gtk.h"
 #include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
@@ -56,13 +57,30 @@ class TabContentsViewGtk : public TabContentsView,
   virtual void OnTabCrashed(base::TerminationStatus status,
                             int error_code);
   virtual void SizeContents(const gfx::Size& size);
+  virtual void RenderViewCreated(RenderViewHost* host);
   virtual void Focus();
   virtual void SetInitialFocus();
   virtual void StoreFocus();
   virtual void RestoreFocus();
+  virtual void UpdatePreferredSize(const gfx::Size& pref_size);
+  virtual bool IsDoingDrag() const;
+  virtual void CancelDragAndCloseTab();
+  virtual bool IsEventTracking() const;
+  virtual void CloseTabAfterEventTracking();
   virtual void GetViewBounds(gfx::Rect* out) const;
 
   // Backend implementation of RenderViewHostDelegate::View.
+  virtual void CreateNewWindow(
+      int route_id,
+      const ViewHostMsg_CreateWindow_Params& params);
+  virtual void CreateNewWidget(int route_id, WebKit::WebPopupType popup_type);
+  virtual void CreateNewFullscreenWidget(int route_id);
+  virtual void ShowCreatedWindow(int route_id,
+                                 WindowOpenDisposition disposition,
+                                 const gfx::Rect& initial_pos,
+                                 bool user_gesture);
+  virtual void ShowCreatedWidget(int route_id, const gfx::Rect& initial_pos);
+  virtual void ShowCreatedFullscreenWidget(int route_id);
   virtual void ShowContextMenu(const ContextMenuParams& params);
   virtual void ShowPopupMenu(const gfx::Rect& bounds,
                              int item_height,
@@ -108,6 +126,13 @@ class TabContentsViewGtk : public TabContentsView,
 
   CHROMEGTK_CALLBACK_1(TabContentsViewGtk, void, OnSetFloatingPosition,
                        GtkAllocation*);
+
+  // The TabContents whose contents we display.
+  TabContents* tab_contents_;
+
+  // Common implementations of some RenderViewHostDelegate::View methods.
+  RenderViewHostDelegateViewHelper delegate_view_helper_;
+
 
   // Contains |expanded_| as its GtkBin member.
   OwnedWidgetGtk floating_;

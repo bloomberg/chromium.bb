@@ -663,13 +663,3 @@ void InterstitialPage::InterstitialPageRVHViewDelegate::OnFindReply(
     int request_id, int number_of_matches, const gfx::Rect& selection_rect,
     int active_match_ordinal, bool final_update) {
 }
-
-void InterstitialPage::UpdateInspectorSetting(const std::string& key,
-                                              const std::string& value) {
-  RenderViewHostDelegateHelper::UpdateInspectorSetting(
-      tab_->profile(), key, value);
-}
-
-void InterstitialPage::ClearInspectorSettings() {
-  RenderViewHostDelegateHelper::ClearInspectorSettings(tab_->profile());
-}

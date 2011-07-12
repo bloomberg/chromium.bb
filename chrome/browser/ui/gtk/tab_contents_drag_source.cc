@@ -28,9 +28,8 @@ using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;
 using WebKit::WebDragOperationNone;
 
-TabContentsDragSource::TabContentsDragSource(
-    TabContentsView* tab_contents_view)
-    : tab_contents_view_(tab_contents_view),
+TabContentsDragSource::TabContentsDragSource(TabContents* tab_contents)
+    : tab_contents_(tab_contents),
       drag_pixbuf_(NULL),
       drag_failed_(false),
       drag_widget_(gtk_invisible_new()),
@@ -63,10 +62,6 @@ TabContentsDragSource::~TabContentsDragSource() {
   gtk_widget_destroy(drag_icon_);
 }
 
-TabContents* TabContentsDragSource::tab_contents() const {
-  return tab_contents_view_->tab_contents();
-}
-
 void TabContentsDragSource::StartDragging(const WebDropData& drop_data,
                                           WebDragOperationsMask allowed_ops,
                                           GdkEventButton* last_mouse_down,
@@ -75,7 +70,7 @@ void TabContentsDragSource::StartDragging(const WebDropData& drop_data,
   // Guard against re-starting before previous drag completed.
   if (drag_context_) {
     NOTREACHED();
-    tab_contents()->SystemDragEnded();
+    tab_contents_->SystemDragEnded();
     return;
   }
 
@@ -142,7 +137,7 @@ void TabContentsDragSource::StartDragging(const WebDropData& drop_data,
   if (!drag_context_) {
     drag_failed_ = true;
     drop_data_.reset();
-    tab_contents()->SystemDragEnded();
+    tab_contents_->SystemDragEnded();
     return;
   }
 
@@ -160,8 +155,8 @@ void TabContentsDragSource::DidProcessEvent(GdkEvent* event) {
   GdkEventMotion* event_motion = reinterpret_cast<GdkEventMotion*>(event);
   gfx::Point client = gtk_util::ClientPoint(GetContentNativeView());
 
-  if (tab_contents()->render_view_host()) {
-    tab_contents()->render_view_host()->DragSourceMovedTo(
+  if (tab_contents_->render_view_host()) {
+    tab_contents_->render_view_host()->DragSourceMovedTo(
         client.x(), client.y(),
         static_cast<int>(event_motion->x_root),
         static_cast<int>(event_motion->y_root));
@@ -240,14 +235,13 @@ void TabContentsDragSource::OnDragDataGet(GtkWidget* sender,
               drag_download_util::CreateFileStreamForDrop(&file_path);
           if (file_stream) {
               // Start downloading the file to the stream.
-              TabContents* tab_contents = tab_contents_view_->tab_contents();
               scoped_refptr<DragDownloadFile> drag_file_downloader =
                   new DragDownloadFile(file_path,
                                        linked_ptr<net::FileStream>(file_stream),
                                        download_url_,
-                                       tab_contents->GetURL(),
-                                       tab_contents->encoding(),
-                                       tab_contents);
+                                       tab_contents_->GetURL(),
+                                       tab_contents_->encoding(),
+                                       tab_contents_);
               drag_file_downloader->Start(
                   new drag_download_util::PromiseFileFinalizer(
                       drag_file_downloader));
@@ -280,8 +274,8 @@ gboolean TabContentsDragSource::OnDragFailed(GtkWidget* sender,
   gfx::Point root = gtk_util::ScreenPoint(GetContentNativeView());
   gfx::Point client = gtk_util::ClientPoint(GetContentNativeView());
 
-  if (tab_contents()->render_view_host()) {
-    tab_contents()->render_view_host()->DragSourceEndedAt(
+  if (tab_contents_->render_view_host()) {
+    tab_contents_->render_view_host()->DragSourceEndedAt(
         client.x(), client.y(), root.x(), root.y(),
         WebDragOperationNone);
   }
@@ -349,21 +343,21 @@ void TabContentsDragSource::OnDragEnd(GtkWidget* sender,
     gfx::Point root = gtk_util::ScreenPoint(GetContentNativeView());
     gfx::Point client = gtk_util::ClientPoint(GetContentNativeView());
 
-    if (tab_contents()->render_view_host()) {
-      tab_contents()->render_view_host()->DragSourceEndedAt(
+    if (tab_contents_->render_view_host()) {
+      tab_contents_->render_view_host()->DragSourceEndedAt(
           client.x(), client.y(), root.x(), root.y(),
           gtk_util::GdkDragActionToWebDragOp(drag_context->action));
     }
   }
 
-  tab_contents()->SystemDragEnded();
+  tab_contents_->SystemDragEnded();
 
   drop_data_.reset();
   drag_context_ = NULL;
 }
 
 gfx::NativeView TabContentsDragSource::GetContentNativeView() const {
-  return tab_contents_view_->GetContentNativeView();
+  return tab_contents_->view()->GetContentNativeView();
 }
 
 gboolean TabContentsDragSource::OnDragIconExpose(GtkWidget* sender,

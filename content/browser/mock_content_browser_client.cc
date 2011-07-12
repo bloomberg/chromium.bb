@@ -10,6 +10,7 @@
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "webkit/glue/webpreferences.h"
 
 namespace content {
 
@@ -181,6 +182,18 @@ ui::Clipboard* MockContentBrowserClient::GetClipboard() {
 
 bool MockContentBrowserClient::IsFastShutdownPossible() {
   return true;
+}
+
+WebPreferences MockContentBrowserClient::GetWebkitPrefs(Profile* profile,
+                                                        bool is_web_ui) {
+  return WebPreferences();
+}
+
+void MockContentBrowserClient::UpdateInspectorSetting(
+    RenderViewHost* rvh, const std::string& key, const std::string& value) {
+}
+
+void MockContentBrowserClient::ClearInspectorSettings(RenderViewHost* rvh) {
 }
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)

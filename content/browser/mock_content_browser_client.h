@@ -93,6 +93,12 @@ class MockContentBrowserClient : public ContentBrowserClient {
   virtual ResourceDispatcherHost* GetResourceDispatcherHost() OVERRIDE;
   virtual ui::Clipboard* GetClipboard() OVERRIDE;
   virtual bool IsFastShutdownPossible() OVERRIDE;
+  virtual WebPreferences GetWebkitPrefs(Profile* profile,
+                                        bool is_web_ui) OVERRIDE;
+  virtual void UpdateInspectorSetting(RenderViewHost* rvh,
+                                      const std::string& key,
+                                      const std::string& value) OVERRIDE;
+  virtual void ClearInspectorSettings(RenderViewHost* rvh) OVERRIDE;
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   virtual int GetCrashSignalFD(const std::string& process_type) OVERRIDE;

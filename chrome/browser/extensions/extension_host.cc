@@ -301,15 +301,6 @@ void ExtensionHost::UpdatePreferredSize(const gfx::Size& new_size) {
     view_->UpdatePreferredSize(new_size);
 }
 
-void ExtensionHost::UpdateInspectorSetting(const std::string& key,
-                                         const std::string& value) {
-  RenderViewHostDelegateHelper::UpdateInspectorSetting(profile(), key, value);
-}
-
-void ExtensionHost::ClearInspectorSettings() {
-  RenderViewHostDelegateHelper::ClearInspectorSettings(profile());
-}
-
 void ExtensionHost::RenderViewGone(RenderViewHost* render_view_host,
                                    base::TerminationStatus status,
                                    int error_code) {

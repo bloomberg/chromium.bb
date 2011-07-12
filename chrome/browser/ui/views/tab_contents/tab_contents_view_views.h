@@ -8,6 +8,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
+#include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_view_delegate.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "views/widget/widget.h"
@@ -58,13 +59,30 @@ class TabContentsViewViews : public views::Widget,
   virtual void OnTabCrashed(base::TerminationStatus status,
                             int error_code) OVERRIDE;
   virtual void SizeContents(const gfx::Size& size) OVERRIDE;
+  virtual void RenderViewCreated(RenderViewHost* host) OVERRIDE;
   virtual void Focus() OVERRIDE;
   virtual void SetInitialFocus() OVERRIDE;
   virtual void StoreFocus() OVERRIDE;
   virtual void RestoreFocus() OVERRIDE;
+  virtual void UpdatePreferredSize(const gfx::Size& pref_size) OVERRIDE;
   virtual bool IsDoingDrag() const OVERRIDE;
   virtual void CancelDragAndCloseTab() OVERRIDE;
+  virtual bool IsEventTracking() const;
+  virtual void CloseTabAfterEventTracking();
   virtual void GetViewBounds(gfx::Rect* out) const OVERRIDE;
+  virtual void CreateNewWindow(
+      int route_id,
+      const ViewHostMsg_CreateWindow_Params& params) OVERRIDE;
+  virtual void CreateNewWidget(int route_id,
+                               WebKit::WebPopupType popup_type) OVERRIDE;
+  virtual void CreateNewFullscreenWidget(int route_id) OVERRIDE;
+  virtual void ShowCreatedWindow(int route_id,
+                                 WindowOpenDisposition disposition,
+                                 const gfx::Rect& initial_pos,
+                                 bool user_gesture) OVERRIDE;
+  virtual void ShowCreatedWidget(int route_id,
+                                 const gfx::Rect& initial_pos) OVERRIDE;
+  virtual void ShowCreatedFullscreenWidget(int route_id) OVERRIDE;
   virtual void ShowContextMenu(const ContextMenuParams& params) OVERRIDE;
   virtual void ShowPopupMenu(const gfx::Rect& bounds,
                              int item_height,
@@ -115,6 +133,12 @@ class TabContentsViewViews : public views::Widget,
   void WheelZoom(int distance);
 
   // ---------------------------------------------------------------------------
+
+  // The TabContents whose contents we display.
+  TabContents* tab_contents_;
+
+  // Common implementations of some RenderViewHostDelegate::View methods.
+  RenderViewHostDelegateViewHelper delegate_view_helper_;
 
   NativeTabContentsView* native_tab_contents_view_;
 

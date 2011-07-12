@@ -14,6 +14,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
+#include "content/browser/content_browser_client.h"
 #include "content/browser/debugger/devtools_client_host.h"
 #include "content/browser/debugger/devtools_manager.h"
 #include "content/browser/debugger/devtools_window.h"
@@ -256,7 +257,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
                        TestScriptsTabIsPopulatedOnInspectedPageRefresh) {
   // Clear inspector settings to ensure that Elements will be
   // current panel when DevTools window is open.
-  GetInspectedTab()->render_view_host()->delegate()->ClearInspectorSettings();
+  content::GetContentClient()->browser()->ClearInspectorSettings(
+      GetInspectedTab()->render_view_host());
   RunTest("testScriptsTabIsPopulatedOnInspectedPageRefresh",
           kDebuggerTestPage);
 }

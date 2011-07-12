@@ -31,6 +31,7 @@
 #include "chrome/browser/spellcheck_message_filter.h"
 #include "chrome/browser/ssl/ssl_add_cert_handler.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
+#include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "chrome/browser/tab_contents/tab_contents_ssl_helper.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -632,6 +633,22 @@ ui::Clipboard* ChromeContentBrowserClient::GetClipboard() {
 bool ChromeContentBrowserClient::IsFastShutdownPossible() {
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
   return !browser_command_line.HasSwitch(switches::kChromeFrame);
+}
+
+WebPreferences ChromeContentBrowserClient::GetWebkitPrefs(Profile* profile,
+                                                          bool is_web_ui) {
+  return RenderViewHostDelegateHelper::GetWebkitPrefs(profile, is_web_ui);
+}
+
+void ChromeContentBrowserClient::UpdateInspectorSetting(
+    RenderViewHost* rvh, const std::string& key, const std::string& value) {
+  RenderViewHostDelegateHelper::UpdateInspectorSetting(
+      rvh->process()->profile(), key, value);
+}
+
+void ChromeContentBrowserClient::ClearInspectorSettings(RenderViewHost* rvh) {
+  RenderViewHostDelegateHelper::ClearInspectorSettings(
+      rvh->process()->profile());
 }
 
 #if defined(OS_LINUX)

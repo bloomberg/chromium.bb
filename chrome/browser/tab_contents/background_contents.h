@@ -119,10 +119,6 @@ class BackgroundContents : public RenderViewHostDelegate,
                               const string16& user_input) OVERRIDE;
   virtual gfx::NativeWindow GetDialogRootWindow() OVERRIDE;
 
-  virtual void UpdateInspectorSetting(const std::string& key,
-                                      const std::string& value);
-  virtual void ClearInspectorSettings();
-
   // Helper to find the BackgroundContents that originated the given request.
   // Can be NULL if the page has been closed or some other error occurs.
   // Should only be called from the UI thread, since it accesses

@@ -93,6 +93,12 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual ResourceDispatcherHost* GetResourceDispatcherHost() OVERRIDE;
   virtual ui::Clipboard* GetClipboard() OVERRIDE;
   virtual bool IsFastShutdownPossible() OVERRIDE;
+  virtual WebPreferences GetWebkitPrefs(Profile* profile,
+                                        bool is_web_ui) OVERRIDE;
+  virtual void UpdateInspectorSetting(RenderViewHost* rvh,
+                                      const std::string& key,
+                                      const std::string& value) OVERRIDE;
+  virtual void ClearInspectorSettings(RenderViewHost* rvh) OVERRIDE;
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Can return an optional fd for crash handling, otherwise returns -1.

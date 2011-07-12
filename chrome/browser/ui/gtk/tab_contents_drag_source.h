@@ -21,17 +21,16 @@
 
 class SkBitmap;
 class TabContents;
-class TabContentsView;
 struct WebDropData;
 
 // TabContentsDragSource takes care of managing the drag from a TabContents
 // with Gtk.
 class TabContentsDragSource : public MessageLoopForUI::Observer {
  public:
-  explicit TabContentsDragSource(TabContentsView* tab_contents_view);
+  explicit TabContentsDragSource(TabContents* tab_contents);
   virtual ~TabContentsDragSource();
 
-  TabContents* tab_contents() const;
+  TabContents* tab_contents() const { return tab_contents_; }
 
   // Starts a drag for the tab contents this TabContentsDragSource was
   // created for.
@@ -59,8 +58,8 @@ class TabContentsDragSource : public MessageLoopForUI::Observer {
 
   gfx::NativeView GetContentNativeView() const;
 
-  // The view we're manging the drag for.
-  TabContentsView* tab_contents_view_;
+  // The tab we're manging the drag for.
+  TabContents* tab_contents_;
 
   // The drop data for the current drag (for drags that originate in the render
   // view). Non-NULL iff there is a current drag.

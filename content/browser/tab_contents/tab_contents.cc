@@ -1448,15 +1448,6 @@ void TabContents::UpdateTargetURL(int32 page_id, const GURL& url) {
     delegate()->UpdateTargetURL(this, url);
 }
 
-void TabContents::UpdateInspectorSetting(const std::string& key,
-                                         const std::string& value) {
-  RenderViewHostDelegateHelper::UpdateInspectorSetting(profile(), key, value);
-}
-
-void TabContents::ClearInspectorSettings() {
-  RenderViewHostDelegateHelper::ClearInspectorSettings(profile());
-}
-
 void TabContents::Close(RenderViewHost* rvh) {
   // The UI may be in an event-tracking loop, such as between the
   // mouse-down and mouse-up in text selection or a button click.
@@ -1637,10 +1628,9 @@ void TabContents::RunBeforeUnloadConfirm(const RenderViewHost* rvh,
 }
 
 WebPreferences TabContents::GetWebkitPrefs() {
-  Profile* profile = render_view_host()->process()->profile();
-  bool is_web_ui = false;
   WebPreferences web_prefs =
-      RenderViewHostDelegateHelper::GetWebkitPrefs(profile, is_web_ui);
+      content::GetContentClient()->browser()->GetWebkitPrefs(
+          render_view_host()->process()->profile(), false);
 
   // Force accelerated compositing and 2d canvas off for chrome:, about: and
   // chrome-devtools: pages.

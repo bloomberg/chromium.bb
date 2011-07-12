@@ -102,10 +102,6 @@ class BalloonHost : public RenderViewHostDelegate,
   // Enable Web UI. This has to be called before renderer is created.
   void EnableWebUI();
 
-  virtual void UpdateInspectorSetting(const std::string& key,
-                                      const std::string& value);
-  virtual void ClearInspectorSettings();
-
   // Returns whether the associated render view is ready. Used only for testing.
   bool IsRenderViewReady() const;
 

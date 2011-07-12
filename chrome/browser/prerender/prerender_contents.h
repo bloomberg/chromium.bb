@@ -11,10 +11,11 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
+#include "base/values.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
-#include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "chrome/browser/ui/download/download_tab_helper_delegate.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
+#include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/common/notification_registrar.h"
 
 class RenderViewHost;
@@ -209,9 +210,6 @@ class PrerenderContents : public NotificationObserver,
 
   // The prerender tracker tracking prerenders.
   PrerenderTracker* prerender_tracker_;
-
-  // Common implementations of some RenderViewHostDelegate::View methods.
-  RenderViewHostDelegateViewHelper delegate_view_helper_;
 
   // The URL being prerendered.
   GURL prerender_url_;

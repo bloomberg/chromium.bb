@@ -28,6 +28,7 @@ class SkBitmap;
 class TabContents;
 class WorkerProcessHost;
 struct DesktopNotificationHostMsg_Show_Params;
+struct WebPreferences;
 
 namespace crypto {
 class CryptoModuleBlockingPasswordDelegate;
@@ -230,6 +231,17 @@ class ContentBrowserClient {
 
   // Returns true if fast shutdown is possible.
   virtual bool IsFastShutdownPossible() = 0;
+
+  // Returns the WebKit preferences that are used by the renderer.
+  virtual WebPreferences GetWebkitPrefs(Profile* profile, bool is_web_ui) = 0;
+
+  // Inspector setting was changed and should be persisted.
+  virtual void UpdateInspectorSetting(RenderViewHost* rvh,
+                                      const std::string& key,
+                                      const std::string& value) = 0;
+
+  // Clear the Inspector settings.
+  virtual void ClearInspectorSettings(RenderViewHost* rvh) = 0;
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Can return an optional fd for crash handling, otherwise returns -1.

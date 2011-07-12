@@ -623,9 +623,6 @@ class TabContents : public PageNavigator,
   virtual void UpdateEncoding(RenderViewHost* render_view_host,
                               const std::string& encoding);
   virtual void UpdateTargetURL(int32 page_id, const GURL& url);
-  virtual void UpdateInspectorSetting(const std::string& key,
-                                      const std::string& value);
-  virtual void ClearInspectorSettings();
   virtual void Close(RenderViewHost* render_view_host);
   virtual void RequestMove(const gfx::Rect& new_bounds);
   virtual void DidStartLoading();

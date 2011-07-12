@@ -175,9 +175,6 @@ class ExtensionHost : public RenderViewHostDelegate,
   virtual void GotFocus();
   virtual void TakeFocus(bool reverse);
   virtual void UpdatePreferredSize(const gfx::Size& new_size);
-  virtual void UpdateInspectorSetting(const std::string& key,
-                                      const std::string& value);
-  virtual void ClearInspectorSettings();
 
   // NotificationObserver
   virtual void Observe(int type,

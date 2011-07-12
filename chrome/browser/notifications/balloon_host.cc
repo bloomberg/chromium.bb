@@ -204,16 +204,6 @@ void BalloonHost::EnableWebUI() {
   enable_web_ui_ = true;
 }
 
-void BalloonHost::UpdateInspectorSetting(const std::string& key,
-                                         const std::string& value) {
-  RenderViewHostDelegateHelper::UpdateInspectorSetting(
-      GetProfile(), key, value);
-}
-
-void BalloonHost::ClearInspectorSettings() {
-  RenderViewHostDelegateHelper::ClearInspectorSettings(GetProfile());
-}
-
 BalloonHost::~BalloonHost() {
   DCHECK(!render_view_host_);
 }
