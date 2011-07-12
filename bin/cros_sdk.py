@@ -44,30 +44,30 @@ def GetArchStageTarball(tarballArch, version):
   except KeyError:
     sys.exit('Unsupported arch: ' + arch)
 
-def CreateChroot(sdk_path, sdk_url, chroot_path, replace):
+def CreateChroot(sdk_path, sdk_url, sdk_version, chroot_path, replace):
   """Creates a new chroot from a given SDK"""
-  if options.sdk_path and options.sdk_url:
+  if sdk_path and sdk_url:
     sys.exit('You can either select path or url, not both!')
 
   if not os.path.exists(SDK_DIR):
     cros_build_lib.RunCommand(['mkdir', '-p', SDK_DIR])
 
   # Based on selections, fetch the tarball
-  if options.sdk_path:
-    print 'Using "%s" as sdk' % options.sdk_path
-    if not os.path.exists(options.sdk_path):
-      sys.exit('No such file: %s' % options.sdk_path)
+  if sdk_path:
+    print 'Using "%s" as sdk' % sdk_path
+    if not os.path.exists(sdk_path):
+      sys.exit('No such file: %s' % sdk_path)
 
-    cros_build_lib.RunCommand(['cp', '-f', options.sdk_path, SDK_DIR])
+    cros_build_lib.RunCommand(['cp', '-f', sdk_path, SDK_DIR])
     tarball_dest = os.path.join(SDK_DIR,
-        os.path.basename(options.sdk_path))
+        os.path.basename(sdk_path))
   else:
-    if options.sdk_url:
-      url = options.sdk_url
+    if sdk_url:
+      url = sdk_url
     else:
       arch = GetHostArch()
-      if options.sdk_version:
-        url = GetArchStageTarball(arch, options.sdk_version)
+      if sdk_version:
+        url = GetArchStageTarball(arch, sdk_version)
       else:
         url = GetArchStageTarball(arch)
 
@@ -147,7 +147,7 @@ To replace, use --replace."""
   RefreshSudoCredentials()
 
   if not os.path.exists(chroot_path) or options.replace:
-    CreateChroot(options.sdk_path, options.sdk_url,
+    CreateChroot(options.sdk_path, options.sdk_url, options.sdk_version,
                  chroot_path, options.replace)
 
   if options.enter:
