@@ -41,6 +41,13 @@ class CookieList;
 // This class IS thread-safe. Normally, it is only used on the I/O thread, but
 // is also accessed directly through Automation for UI testing.
 //
+// Several methods exist in asynchronous forms. Calls may be deferred if all
+// affected cookies are not yet loaded from the backing store. Otherwise, the
+// callback may be invoked immediately (prior to return of the asynchronous
+// function).
+//
+// Callbacks are guaranteed to be invoked on the calling thread.
+//
 // TODO(deanm) Implement CookieMonster, the cookie database.
 //  - Verify that our domain enforcement and non-dotted handling is correct
 class NET_API CookieMonster : public CookieStore {
@@ -144,12 +151,22 @@ class NET_API CookieMonster : public CookieStore {
                             const std::string& path,
                             const base::Time& expiration_time,
                             bool secure, bool http_only);
+  void SetCookieWithDetailsAsync(const GURL& url,
+                                 const std::string& name,
+                                 const std::string& value,
+                                 const std::string& domain,
+                                 const std::string& path,
+                                 const base::Time& expiration_time,
+                                 bool secure, bool http_only,
+                                 const SetCookiesCallback& callback);
 
   // Returns all the cookies, for use in management UI, etc. This does not mark
   // the cookies as having been accessed.
   // The returned cookies are ordered by longest path, then by earliest
   // creation date.
   CookieList GetAllCookies();
+  typedef base::Callback<void(const CookieList& cookies)> GetCookieListCallback;
+  void GetAllCookiesAsync(const GetCookieListCallback& callback);
 
   // Returns all the cookies, for use in management UI, etc. Filters results
   // using given url scheme, host / domain and path and options. This does not
@@ -158,21 +175,30 @@ class NET_API CookieMonster : public CookieStore {
   // creation date.
   CookieList GetAllCookiesForURLWithOptions(const GURL& url,
                                             const CookieOptions& options);
+  void GetAllCookiesForURLWithOptionsAsync(
+      const GURL& url,
+      const CookieOptions& options,
+      const GetCookieListCallback& callback);
 
   // Invokes GetAllCookiesForURLWithOptions with options set to include HTTP
   // only cookies.
   CookieList GetAllCookiesForURL(const GURL& url);
+  void GetAllCookiesForURLAsync(const GURL& url,
+                                const GetCookieListCallback& callback);
 
   // Deletes all of the cookies.
   int DeleteAll(bool sync_to_store);
   // Deletes all of the cookies that have a creation_date greater than or equal
   // to |delete_begin| and less than |delete_end|
+  // Returns the number of cookies that have been deleted.
   int DeleteAllCreatedBetween(const base::Time& delete_begin,
                               const base::Time& delete_end,
                               bool sync_to_store);
-  // Deletes all of the cookies that have a creation_date more recent than the
-  // one passed into the function via |delete_after|.
-  int DeleteAllCreatedAfter(const base::Time& delete_begin, bool sync_to_store);
+  typedef base::Callback<void(int num_deleted)> DeleteCallback;
+  void DeleteAllCreatedBetweenAsync(const base::Time& delete_begin,
+                                    const base::Time& delete_end,
+                                    bool sync_to_store,
+                                    const DeleteCallback& callback);
 
   // Deletes all cookies that match the host of the given URL
   // regardless of path.  This includes all http_only and secure cookies,
@@ -180,8 +206,16 @@ class NET_API CookieMonster : public CookieStore {
   // Returns the number of cookies deleted.
   int DeleteAllForHost(const GURL& url);
 
+  void DeleteAllForHostAsync(const GURL& url,
+                             const DeleteCallback& callback);
+
   // Deletes one specific cookie.
   bool DeleteCanonicalCookie(const CanonicalCookie& cookie);
+
+  typedef SetCookiesCallback DeleteCookieCallback;
+
+  void DeleteCanonicalCookieAsync(const CanonicalCookie& cookie,
+                                  const DeleteCookieCallback& callback);
 
   // Override the default list of schemes that are allowed to be set in
   // this cookie store.  Calling his overrides the value of
@@ -225,19 +259,36 @@ class NET_API CookieMonster : public CookieStore {
                                     const std::string& cookie_line,
                                     const CookieOptions& options);
 
+  virtual void SetCookieWithOptionsAsync(const GURL& url,
+                                         const std::string& cookie_line,
+                                         const CookieOptions& options,
+                                         const SetCookiesCallback& callback);
+
   // Gets all cookies that apply to |url| given |options|.
   // The returned cookies are ordered by longest path, then earliest
   // creation date.
   virtual std::string GetCookiesWithOptions(const GURL& url,
                                             const CookieOptions& options);
 
+  virtual void GetCookiesWithOptionsAsync(
+      const GURL& url,
+      const CookieOptions& options,
+      const GetCookiesCallback& callback);
+
   virtual void GetCookiesWithInfo(const GURL& url,
                                   const CookieOptions& options,
                                   std::string* cookie_line,
-                                  std::vector<CookieInfo>* cookie_info);
+                                  std::vector<CookieInfo>* cookie_infos);
+
+  virtual void GetCookiesWithInfoAsync(const GURL& url,
+                                       const CookieOptions& options,
+                                       const GetCookieInfoCallback& callback);
 
   // Deletes all cookies with that might apply to |url| that has |cookie_name|.
   virtual void DeleteCookie(const GURL& url, const std::string& cookie_name);
+  virtual void DeleteCookieAsync(
+      const GURL& url, const std::string& cookie_name,
+      const base::Closure& callback);
 
   virtual CookieMonster* GetCookieMonster();
 
@@ -255,8 +306,6 @@ class NET_API CookieMonster : public CookieStore {
  private:
   // Testing support.
   // For SetCookieWithCreationTime.
-  FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest,
-                           TestCookieDeleteAllCreatedAfterTimestamp);
   FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest,
                            TestCookieDeleteAllCreatedBetweenTimestamps);
 

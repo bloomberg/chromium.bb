@@ -45,6 +45,7 @@
 #include "net/base/cookie_monster.h"
 
 #include <algorithm>
+#include <set>
 
 #include "base/basictypes.h"
 #include "base/format_macros.h"
@@ -599,6 +600,16 @@ bool CookieMonster::SetCookieWithDetails(
   return SetCanonicalCookie(&cc, creation_time, options);
 }
 
+void CookieMonster::SetCookieWithDetailsAsync(
+    const GURL& url, const std::string& name, const std::string& value,
+    const std::string& domain, const std::string& path,
+    const base::Time& expiration_time, bool secure, bool http_only,
+    const SetCookiesCallback& callback) {
+  bool success_ = SetCookieWithDetails(url, name, value, domain, path,
+                                       expiration_time, secure, http_only);
+  if (!callback.is_null())
+    callback.Run(success_);
+}
 
 CookieList CookieMonster::GetAllCookies() {
   base::AutoLock autolock(lock_);
@@ -633,6 +644,11 @@ CookieList CookieMonster::GetAllCookies() {
   return cookie_list;
 }
 
+void CookieMonster::GetAllCookiesAsync(const GetCookieListCallback& callback) {
+  if (!callback.is_null())
+    callback.Run(GetAllCookies());
+}
+
 CookieList CookieMonster::GetAllCookiesForURLWithOptions(
     const GURL& url,
     const CookieOptions& options) {
@@ -651,11 +667,25 @@ CookieList CookieMonster::GetAllCookiesForURLWithOptions(
   return cookies;
 }
 
+void CookieMonster::GetAllCookiesForURLWithOptionsAsync(
+    const GURL& url,
+    const CookieOptions& options,
+    const GetCookieListCallback& callback) {
+  if (!callback.is_null())
+    callback.Run(GetAllCookiesForURLWithOptions(url, options));
+}
+
 CookieList CookieMonster::GetAllCookiesForURL(const GURL& url) {
   CookieOptions options;
   options.set_include_httponly();
 
   return GetAllCookiesForURLWithOptions(url, options);
+}
+
+void CookieMonster::GetAllCookiesForURLAsync(
+    const GURL& url, const GetCookieListCallback& callback) {
+  if (!callback.is_null())
+    callback.Run(GetAllCookiesForURL(url));
 }
 
 int CookieMonster::DeleteAll(bool sync_to_store) {
@@ -698,9 +728,14 @@ int CookieMonster::DeleteAllCreatedBetween(const Time& delete_begin,
   return num_deleted;
 }
 
-int CookieMonster::DeleteAllCreatedAfter(const Time& delete_begin,
-                                         bool sync_to_store) {
-  return DeleteAllCreatedBetween(delete_begin, Time(), sync_to_store);
+void CookieMonster::DeleteAllCreatedBetweenAsync(
+    const Time& delete_begin, const Time& delete_end,
+    bool sync_to_store,
+    const DeleteCallback& callback) {
+  int num_deleted = DeleteAllCreatedBetween(
+      delete_begin, delete_end, sync_to_store);
+  if (!callback.is_null())
+    callback.Run(num_deleted);
 }
 
 int CookieMonster::DeleteAllForHost(const GURL& url) {
@@ -734,6 +769,13 @@ int CookieMonster::DeleteAllForHost(const GURL& url) {
   return num_deleted;
 }
 
+void CookieMonster::DeleteAllForHostAsync(
+    const GURL& url, const DeleteCallback& callback) {
+  int num_deleted = DeleteAllForHost(url);
+  if (!callback.is_null())
+    callback.Run(num_deleted);
+}
+
 bool CookieMonster::DeleteCanonicalCookie(const CanonicalCookie& cookie) {
   base::AutoLock autolock(lock_);
   InitIfNecessary();
@@ -747,6 +789,14 @@ bool CookieMonster::DeleteCanonicalCookie(const CanonicalCookie& cookie) {
     }
   }
   return false;
+}
+
+void CookieMonster::DeleteCanonicalCookieAsync(
+    const CanonicalCookie& cookie,
+    const DeleteCookieCallback& callback) {
+  bool result = DeleteCanonicalCookie(cookie);
+  if (!callback.is_null())
+    callback.Run(result);
 }
 
 void CookieMonster::SetCookieableSchemes(
@@ -802,6 +852,16 @@ bool CookieMonster::SetCookieWithOptions(const GURL& url,
   return SetCookieWithCreationTimeAndOptions(url, cookie_line, Time(), options);
 }
 
+void CookieMonster::SetCookieWithOptionsAsync(
+    const GURL& url,
+    const std::string& cookie_line,
+    const CookieOptions& options,
+    const SetCookiesCallback& callback) {
+  bool result = SetCookieWithOptions(url, cookie_line, options);
+    if (!callback.is_null())
+      callback.Run(result);
+}
+
 std::string CookieMonster::GetCookiesWithOptions(const GURL& url,
                                                  const CookieOptions& options) {
   base::AutoLock autolock(lock_);
@@ -823,6 +883,14 @@ std::string CookieMonster::GetCookiesWithOptions(const GURL& url,
   VLOG(kVlogGetCookies) << "GetCookies() result: " << cookie_line;
 
   return cookie_line;
+}
+
+void CookieMonster::GetCookiesWithOptionsAsync(
+    const GURL& url, const CookieOptions& options,
+    const GetCookiesCallback& callback) {
+  std::string cookie = GetCookiesWithOptions(url, options);
+  if (!callback.is_null())
+    callback.Run(cookie);
 }
 
 void CookieMonster::GetCookiesWithInfo(const GURL& url,
@@ -850,6 +918,18 @@ void CookieMonster::GetCookiesWithInfo(const GURL& url,
   TimeTicks mac_start_time = TimeTicks::Now();
   BuildCookieInfoList(cookies, cookie_infos);
   histogram_time_mac_->AddTime(TimeTicks::Now() - mac_start_time);
+}
+
+void CookieMonster::GetCookiesWithInfoAsync(
+    const GURL& url,
+    const CookieOptions& options,
+    const GetCookieInfoCallback& callback) {
+  std::string cookie_line;
+  std::vector<CookieInfo> cookie_infos;
+  GetCookiesWithInfo(url, options, &cookie_line, &cookie_infos);
+
+  if (!callback.is_null())
+    callback.Run(&cookie_line, &cookie_infos);
 }
 
 void CookieMonster::DeleteCookie(const GURL& url,
@@ -883,6 +963,14 @@ void CookieMonster::DeleteCookie(const GURL& url,
       InternalDeleteCookie(curit, true, DELETE_COOKIE_EXPLICIT);
     }
   }
+}
+
+void CookieMonster::DeleteCookieAsync(const GURL& url,
+                                      const std::string& cookie_name,
+                                      const base::Closure& callback) {
+  DeleteCookie(url, cookie_name);
+  if (!callback.is_null())
+    callback.Run();
 }
 
 CookieMonster* CookieMonster::GetCookieMonster() {

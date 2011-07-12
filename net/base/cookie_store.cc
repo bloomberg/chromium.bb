@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,11 @@ bool CookieStore::SetCookie(const GURL& url, const std::string& cookie_line) {
 
 std::string CookieStore::GetCookies(const GURL& url) {
   return GetCookiesWithOptions(url, CookieOptions());
+}
+
+void CookieStore::GetCookiesAsync(
+    const GURL& url, const GetCookiesCallback& callback) {
+  GetCookiesWithOptionsAsync(url, CookieOptions(), callback);
 }
 
 void CookieStore::SetCookiesWithOptions(

@@ -145,6 +145,16 @@ class MockCookieStore : public net::CookieStore {
     entries_.push_back(entry);
     return true;
   }
+
+  virtual void SetCookieWithOptionsAsync(
+      const GURL& url,
+      const std::string& cookie_line,
+      const net::CookieOptions& options,
+      const SetCookiesCallback& callback) {
+    bool result = SetCookieWithOptions(url, cookie_line, options);
+    if (!callback.is_null())
+      callback.Run(result);
+  }
   virtual std::string GetCookiesWithOptions(
       const GURL& url,
       const net::CookieOptions& options) {
@@ -160,14 +170,34 @@ class MockCookieStore : public net::CookieStore {
     }
     return result;
   }
+  virtual void GetCookiesWithOptionsAsync(
+      const GURL& url,
+      const net::CookieOptions& options,
+      const GetCookiesCallback& callback) {
+  if (!callback.is_null())
+    callback.Run(GetCookiesWithOptions(url, options));
+  }
   virtual void GetCookiesWithInfo(const GURL& url,
                                   const net::CookieOptions& options,
                                   std::string* cookie_line,
                                   std::vector<CookieInfo>* cookie_infos) {
     NOTREACHED();
   }
+  virtual void GetCookiesWithInfoAsync(
+      const GURL& url,
+      const net::CookieOptions& options,
+      const GetCookieInfoCallback& callback) {
+    NOTREACHED();
+  }
   virtual void DeleteCookie(const GURL& url,
                             const std::string& cookie_name) {}
+
+  virtual void DeleteCookieAsync(const GURL& url,
+                                 const std::string& cookie_name,
+                                 const base::Closure& callback) {
+    NOTREACHED();
+}
+
   virtual net::CookieMonster* GetCookieMonster() { return NULL; }
 
   const std::vector<Entry>& entries() const { return entries_; }
@@ -259,7 +289,6 @@ class MockHttpTransactionFactory : public net::HttpTransactionFactory {
   net::HostPortPair host_port_pair_;
   net::HostPortProxyPair host_port_proxy_pair_;
 };
-
 }
 
 namespace net {

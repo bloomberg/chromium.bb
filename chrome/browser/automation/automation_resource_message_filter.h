@@ -7,19 +7,19 @@
 #pragma once
 
 #include <map>
+#include <string>
+#include <vector>
 
 #include "base/atomicops.h"
 #include "base/lazy_instance.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "net/base/completion_callback.h"
-#include "net/base/cookie_store.h"
 
 class GURL;
 class BrowserMessageFilter;
 class URLRequestAutomationJob;
 
 namespace net {
-class CookieStore;
 class URLRequestContext;
 }  // namespace net
 
@@ -39,23 +39,12 @@ class AutomationResourceMessageFilter
                       bool pending_view);
     ~AutomationDetails();
 
-    void set_cookie_store(net::CookieStore* cookie_store) {
-      cookie_store_ = cookie_store;
-    }
-
-    net::CookieStore* cookie_store() {
-      return cookie_store_.get();
-    }
-
     int tab_handle;
     int ref_count;
     scoped_refptr<AutomationResourceMessageFilter> filter;
     // Indicates whether network requests issued by this render view need to
     // be executed later.
     bool is_pending_render_view;
-
-    // The cookie store associated with this render view.
-    scoped_refptr<net::CookieStore> cookie_store_;
   };
 
   // Create the filter.
