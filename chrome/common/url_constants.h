@@ -16,31 +16,8 @@ namespace chrome {
 // Null terminated list of schemes that are savable.
 extern const char* kSavableSchemes[];
 
-// About URLs (including schemes).
-extern const char kAboutAboutURL[];
-extern const char kAboutAppCacheInternalsURL[];
-extern const char kAboutBrowserCrash[];
-extern const char kAboutConflicts[];
-extern const char kAboutCacheURL[];
-extern const char kAboutKillURL[];
-extern const char kAboutCreditsURL[];
-extern const char kAboutDNSURL[];
-extern const char kAboutFlagsURL[];
-extern const char kAboutFlashURL[];
-extern const char kAboutGpuURL[];
-extern const char kAboutGpuCleanURL[];
-extern const char kAboutGpuCrashURL[];
-extern const char kAboutGpuHangURL[];
-extern const char kAboutHangURL[];
-extern const char kAboutHistogramsURL[];
-extern const char kAboutIPCURL[];
-extern const char kAboutMemoryURL[];
-extern const char kAboutNetInternalsURL[];
+// TODO(msw): Resolve chrome_frame dependency on these constants.
 extern const char kAboutPluginsURL[];
-extern const char kAboutShorthangURL[];
-extern const char kAboutSyncURL[];
-extern const char kAboutSyncInternalsURL[];
-extern const char kAboutTermsURL[];
 extern const char kAboutVersionURL[];
 
 // chrome: URLs (including schemes). Should be kept in sync with the
@@ -57,18 +34,19 @@ extern const char kChromeUICrashURL[];
 extern const char kChromeUICreditsURL[];
 extern const char kChromeUIDevToolsURL[];
 extern const char kChromeUIDownloadsURL[];
-extern const char kChromeUITaskManagerURL[];
 extern const char kChromeUIExtensionIconURL[];
 extern const char kChromeUIExtensionsURL[];
 extern const char kChromeUIFlagsURL[];
 extern const char kChromeUIFlashURL[];
 extern const char kChromeUIFaviconURL[];
+extern const char kChromeUIGpuCrashURL[];
 extern const char kChromeUIHangURL[];
 extern const char kChromeUIHistory2URL[];
 extern const char kChromeUIHistoryURL[];
 extern const char kChromeUIIPCURL[];
 extern const char kChromeUIKeyboardURL[];
 extern const char kChromeUIKillURL[];
+extern const char kChromeUIMemoryURL[];
 extern const char kChromeUIMemoryRedirectURL[];
 extern const char kChromeUINetworkViewCacheURL[];
 extern const char kChromeUINewProfile[];
@@ -78,6 +56,8 @@ extern const char kChromeUIPrintURL[];
 extern const char kChromeUISessionsURL[];
 extern const char kChromeUISettingsURL[];
 extern const char kChromeUIShorthangURL[];
+extern const char kChromeUITaskManagerURL[];
+extern const char kChromeUITermsURL[];
 extern const char kChromeUITextfieldsURL[];
 extern const char kChromeUIVersionURL[];
 
@@ -124,7 +104,6 @@ extern const char kChromeUIDevToolsHost[];
 extern const char kChromeUIDialogHost[];
 extern const char kChromeUIDNSHost[];
 extern const char kChromeUIDownloadsHost[];
-extern const char kChromeUITaskManagerHost[];
 extern const char kChromeUIExtensionIconHost[];
 extern const char kChromeUIExtensionsHost[];
 extern const char kChromeUIFaviconHost[];
@@ -160,7 +139,7 @@ extern const char kChromeUIStatsHost[];
 extern const char kChromeUISyncHost[];
 extern const char kChromeUISyncInternalsHost[];
 extern const char kChromeUISyncResourcesHost[];
-extern const char kChromeUITasksHost[];
+extern const char kChromeUITaskManagerHost[];
 extern const char kChromeUITCMallocHost[];
 extern const char kChromeUITextfieldsHost[];
 extern const char kChromeUITermsHost[];

@@ -211,14 +211,14 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
         process.titles.push_back(title);
 
         // We need to check the pending entry as well as the virtual_url to
-        // see if it's an about:memory URL (we don't want to count these in the
-        // total memory usage of the browser).
+        // see if it's a chrome://memory URL (we don't want to count these in
+        // the total memory usage of the browser).
         //
-        // When we reach here, about:memory will be the pending entry since we
-        // haven't responded with any data such that it would be committed. If
-        // you have another about:memory tab open (which would be committed),
-        // we don't want to count it either, so we also check the last committed
-        // entry.
+        // When we reach here, chrome://memory will be the pending entry since
+        // we haven't responded with any data such that it would be committed.
+        // If you have another chrome://memory tab open (which would be
+        // committed), we don't want to count it either, so we also check the
+        // last committed entry.
         //
         // Either the pending or last committed entries can be NULL.
         const NavigationEntry* pending_entry =
@@ -227,10 +227,10 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
             contents->controller().GetLastCommittedEntry();
         if ((last_committed_entry &&
              LowerCaseEqualsASCII(last_committed_entry->virtual_url().spec(),
-                                  chrome::kAboutMemoryURL)) ||
+                                  chrome::kChromeUIMemoryURL)) ||
             (pending_entry &&
              LowerCaseEqualsASCII(pending_entry->virtual_url().spec(),
-                                  chrome::kAboutMemoryURL)))
+                                  chrome::kChromeUIMemoryURL)))
           process.is_diagnostics = true;
       }
     }

@@ -40,7 +40,7 @@ class TestHtmlDialogUIDelegate : public HtmlDialogUIDelegate {
     return std::wstring(L"Test");
   }
   virtual GURL GetDialogContentURL() const {
-    return GURL(chrome::kAboutAboutURL);
+    return GURL(chrome::kChromeUIChromeURLsURL);
   }
   virtual void GetWebUIMessageHandlers(
       std::vector<WebUIMessageHandler*>* handlers) const { }

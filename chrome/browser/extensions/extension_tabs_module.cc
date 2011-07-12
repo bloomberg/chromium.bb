@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
+#include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -127,16 +128,12 @@ std::string GetWindowTypeText(const Browser* browser) {
 }
 
 bool IsCrashURL(const GURL& url) {
-  // GURL does not parse about: URL hosts, so compare against these entire URLs.
-  if (url == GURL(chrome::kAboutBrowserCrash) ||
-      url == GURL(chrome::kAboutCrashURL))
-    return true;
-
-  // Catch any crash-like URL here.
-  return ((url.SchemeIs(chrome::kAboutScheme) ||
-           url.SchemeIs(chrome::kChromeUIScheme)) &&
-          (url.host() == chrome::kChromeUIBrowserCrashHost ||
-           url.host() == chrome::kChromeUICrashHost));
+  // Check a fixed-up URL, to normalize the scheme and parse hosts correctly.
+  GURL fixed_url =
+      URLFixerUpper::FixupURL(url.possibly_invalid_spec(), std::string());
+  return (fixed_url.SchemeIs(chrome::kChromeUIScheme) &&
+          (fixed_url.host() == chrome::kChromeUIBrowserCrashHost ||
+           fixed_url.host() == chrome::kChromeUICrashHost));
 }
 
 }  // namespace

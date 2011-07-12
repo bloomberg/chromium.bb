@@ -226,7 +226,7 @@ void ShowAboutDialogForProfile(GtkWindow* parent, Profile* profile) {
                    const_cast<char*>(GetChromiumUrl()));
   g_signal_connect(chromium_url_appears_first ? second_link : first_link,
                    "clicked", G_CALLBACK(OnLinkButtonClick),
-                   const_cast<char*>(chrome::kAboutCreditsURL));
+                   const_cast<char*>(chrome::kChromeUICreditsURL));
 
   GtkWidget* license_hbox = gtk_hbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(license_hbox), license_chunk1,
@@ -275,7 +275,7 @@ void ShowAboutDialogForProfile(GtkWindow* parent, Profile* profile) {
   gtk_box_pack_start(GTK_BOX(tos_hbox), tos_chunk2, FALSE, FALSE, 0);
 
   g_signal_connect(tos_link, "clicked", G_CALLBACK(OnLinkButtonClick),
-    const_cast<char*>(chrome::kAboutTermsURL));
+    const_cast<char*>(chrome::kChromeUITermsURL));
   gtk_box_pack_start(GTK_BOX(vbox), tos_hbox, TRUE, TRUE, 0);
 #endif
 

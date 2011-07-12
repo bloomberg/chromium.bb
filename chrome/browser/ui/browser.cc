@@ -2088,7 +2088,7 @@ void Browser::OpenMobilePlanTabAndActivate() {
 #endif
 
 void Browser::OpenPluginsTabAndActivate() {
-  OpenURL(GURL(chrome::kAboutPluginsURL), GURL(),
+  OpenURL(GURL(chrome::kChromeUIPluginsURL), GURL(),
           NEW_FOREGROUND_TAB, PageTransition::LINK);
   window_->Activate();
 }

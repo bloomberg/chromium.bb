@@ -21,7 +21,7 @@ namespace {
 void SimulateGPUCrash(Browser* browser) {
   LOG(ERROR) << "SimulateGPUCrash, before NavigateToURLWithDisposition";
   ui_test_utils::NavigateToURLWithDisposition(browser,
-      GURL(chrome::kAboutGpuCrashURL), NEW_FOREGROUND_TAB,
+      GURL(chrome::kChromeUIGpuCrashURL), NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_NONE);
   browser->SelectPreviousTab();
   LOG(ERROR) << "SimulateGPUCrash, after CloseTab";

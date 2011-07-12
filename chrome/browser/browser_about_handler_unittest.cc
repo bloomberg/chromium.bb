@@ -116,7 +116,7 @@ TEST_F(BrowserAboutHandlerTest, WillHandleBrowserAboutURL) {
     EXPECT_EQ(test_data[i].result_url, url);
   }
 
-  // Crash the browser process for about:inducebrowsercrashforrealz.
-  GURL url(chrome::kAboutBrowserCrash);
+  // Crash the browser process for chrome://inducebrowsercrashforrealz.
+  GURL url(chrome_prefix + chrome::kChromeUIBrowserCrashHost);
   EXPECT_DEATH(WillHandleBrowserAboutURL(&url, NULL), "");
 }

@@ -128,7 +128,7 @@ const char* const kChromePaths[] = {
   chrome::kChromeUITermsHost,
   chrome::kChromeUIVersionHost,
 #ifdef TRACK_ALL_TASK_OBJECTS
-  chrome::kChromeUITasksHost,
+  chrome::kChromeUITaskManagerHost,
 #endif
 #if defined(OS_WIN)
   chrome::kChromeUIConflictsHost,
@@ -167,7 +167,7 @@ const char* const kAboutSourceNames[] = {
   chrome::kChromeUITermsHost,
   chrome::kChromeUIVersionHost,
 #ifdef TRACK_ALL_TASK_OBJECTS
-  chrome::kChromeUITasksHost,
+  chrome::kChromeUITaskManagerHost,
 #endif
 #if defined(USE_TCMALLOC)
   chrome::kChromeUITCMallocHost,
@@ -1325,7 +1325,7 @@ void AboutSource::StartDataRequest(const std::string& path,
     AboutMemory(path, this, request_id);
     return;
 #ifdef TRACK_ALL_TASK_OBJECTS
-  } else if (host == chrome::kChromeUITasksHost) {
+  } else if (host == chrome::kChromeUITaskManagerHost) {
     response = AboutObjects(path);
 #endif
   } else if (host == chrome::kChromeUIStatsHost) {

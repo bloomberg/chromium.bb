@@ -23,34 +23,8 @@ const char* kSavableSchemes[] = {
   NULL
 };
 
-const char kAboutAboutURL[] = "about:about";
-const char kAboutAppCacheInternalsURL[] = "about:appcache-internals";
-const char kAboutCacheURL[] = "about:cache";
-const char kAboutConflicts[] = "about:conflicts";
-const char kAboutKillURL[] = "about:kill";
-const char kAboutCreditsURL[] = "about:credits";
-const char kAboutDNSURL[] = "about:dns";
-const char kAboutFlagsURL[] = "about:flags";
-const char kAboutFlashURL[] = "about:flash";
-const char kAboutGpuURL[] = "about:gpu";
-const char kAboutGpuCleanURL[] = "about:gpuclean";
-const char kAboutGpuCrashURL[] = "about:gpucrash";
-const char kAboutGpuHangURL[] = "about:gpuhang";
-const char kAboutHangURL[] = "about:hang";
-const char kAboutHistogramsURL[] = "about:histograms";
-const char kAboutIPCURL[] = "about:ipc";
-const char kAboutMemoryURL[] = "about:memory";
-const char kAboutNetInternalsURL[] = "about:net-internals";
 const char kAboutPluginsURL[] = "about:plugins";
-const char kAboutShorthangURL[] = "about:shorthang";
-const char kAboutSyncURL[] = "about:sync";
-const char kAboutSyncInternalsURL[] = "about:sync-internals";
-const char kAboutTermsURL[] = "about:terms";
 const char kAboutVersionURL[] = "about:version";
-
-// Use an obfuscated URL to make this nondiscoverable, we only want this
-// to be used for testing.
-const char kAboutBrowserCrash[] = "about:inducebrowsercrashforrealz";
 
 const char kChromeUIAboutURL[] = "chrome://about/";
 const char kChromeUIBookmarksURL[] = "chrome://bookmarks/";
@@ -64,18 +38,19 @@ const char kChromeUICrashURL[] = "chrome://crash/";
 const char kChromeUICreditsURL[] = "chrome://credits/";
 const char kChromeUIDevToolsURL[] = "chrome-devtools://devtools/";
 const char kChromeUIDownloadsURL[] = "chrome://downloads/";
-const char kChromeUITaskManagerURL[] = "chrome://tasks/";
 const char kChromeUIExtensionIconURL[] = "chrome://extension-icon/";
 const char kChromeUIExtensionsURL[] = "chrome://extensions/";
 const char kChromeUIFaviconURL[] = "chrome://favicon/";
 const char kChromeUIFlagsURL[] = "chrome://flags/";
 const char kChromeUIFlashURL[] = "chrome://flash/";
+const char kChromeUIGpuCrashURL[] = "chrome://gpucrash";
 const char kChromeUIHangURL[] = "chrome://hang/";
 const char kChromeUIHistory2URL[] = "chrome://history2/";
 const char kChromeUIHistoryURL[] = "chrome://history/";
 const char kChromeUIIPCURL[] = "chrome://ipc/";
 const char kChromeUIKeyboardURL[] = "chrome://keyboard/";
 const char kChromeUIKillURL[] = "chrome://kill/";
+const char kChromeUIMemoryURL[] = "chrome://memory/";
 const char kChromeUIMemoryRedirectURL[] = "chrome://memory-redirect/";
 const char kChromeUINetworkViewCacheURL[] = "chrome://view-http-cache/";
 const char kChromeUINewTabURL[] = "chrome://newtab/";
@@ -85,6 +60,8 @@ const char kChromeUIPrintURL[] = "chrome://print/";
 const char kChromeUISessionsURL[] = "chrome://sessions/";
 const char kChromeUISettingsURL[] = "chrome://settings/";
 const char kChromeUIShorthangURL[] = "chrome://shorthang/";
+const char kChromeUITaskManagerURL[] = "chrome://tasks/";
+const char kChromeUITermsURL[] = "chrome://terms/";
 const char kChromeUITextfieldsURL[] = "chrome://textfields/";
 const char kChromeUIVersionURL[] = "chrome://version/";
 
@@ -133,7 +110,6 @@ const char kChromeUIDevToolsHost[] = "devtools";
 const char kChromeUIDialogHost[] = "dialog";
 const char kChromeUIDNSHost[] = "dns";
 const char kChromeUIDownloadsHost[] = "downloads";
-const char kChromeUITaskManagerHost[] = "tasks";
 const char kChromeUIExtensionIconHost[] = "extension-icon";
 const char kChromeUIExtensionsHost[] = "extensions";
 const char kChromeUIFaviconHost[] = "favicon";
@@ -169,7 +145,7 @@ const char kChromeUIStatsHost[] = "stats";
 const char kChromeUISyncHost[] = "sync";
 const char kChromeUISyncInternalsHost[] = "sync-internals";
 const char kChromeUISyncResourcesHost[] = "syncresources";
-const char kChromeUITasksHost[] = "tasks";
+const char kChromeUITaskManagerHost[] = "tasks";
 const char kChromeUITCMallocHost[] = "tcmalloc";
 const char kChromeUITextfieldsHost[] = "textfields";
 const char kChromeUITermsHost[] = "terms";
