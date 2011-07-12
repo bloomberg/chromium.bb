@@ -960,7 +960,8 @@ void ProfileSyncService::OnUserSubmittedAuth(
 
 void ProfileSyncService::OnUserChoseDatatypes(bool sync_everything,
     const syncable::ModelTypeSet& chosen_types) {
-  if (!backend_.get()) {
+  if (!backend_.get() &&
+      unrecoverable_error_detected_ == false) {
     NOTREACHED();
     return;
   }
@@ -1019,7 +1020,21 @@ void ProfileSyncService::ChangePreferredDataTypes(
   // If we haven't initialized yet, don't configure the DTM as it could cause
   // association to start before a Directory has even been created.
   if (backend_initialized_) {
+    DCHECK(backend_.get());
     ConfigureDataTypeManager();
+  } else if (unrecoverable_error_detected()) {
+    // TODO(tim): crbug.com/87575 . We should have per data type unrecoverable
+    // errors.
+
+    // Close the wizard.
+    if (WizardIsVisible()) {
+       wizard_.Step(SyncSetupWizard::DONE);
+    }
+    // There is nothing more to configure. So inform the listeners,
+    NotifyObservers();
+
+    VLOG(1) << "ConfigureDataTypeManager not invoked because of an "
+            << "Unrecoverable error.";
   } else {
     VLOG(0) << "ConfigureDataTypeManager not invoked because backend is not "
             << "initialized";
