@@ -8,7 +8,8 @@ set -e
 
 # Script assumed to be run in native_client/
 if [[ $(pwd) != */native_client ]]; then
-  echo "ERROR: must be run in native_client!"
+  echo 'ERROR: must be run in native_client/ directory!'
+  echo "       (Current directory is $(pwd))"
   exit 1
 fi
 
