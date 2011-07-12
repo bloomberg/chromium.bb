@@ -517,8 +517,11 @@ void UITest::SetUp() {
   // Force tests to use OSMesa if they launch the GPU process. This is in
   // UITest::SetUp so that it does not affect pyautolib, which runs tests that
   // do not work with OSMesa.
-  launch_arguments_.AppendSwitchASCII(switches::kUseGL,
-                                      gfx::kGLImplementationOSMesaName);
+  // Note, if the launch arguments already declared a GL implementation, do not
+  // force OSMesa.
+  if (!launch_arguments_.HasSwitch(switches::kUseGL))
+    launch_arguments_.AppendSwitchASCII(switches::kUseGL,
+                                        gfx::kGLImplementationOSMesaName);
 
   // Mac does not support accelerated compositing with OSMesa. Disable on all
   // platforms so it is consistent. http://crbug.com/58343

@@ -1,0 +1,49 @@
+<html>
+<head>
+<script type="text/javascript"
+        src="webgl_conformance/resources/webgl-test-harness.js">
+</script>
+<script>
+var reportType = WebGLTestHarnessModule.TestHarness.reportType;
+var running;
+var result;
+var message;
+
+// Report function called by each conformance test.
+function report(type, msg, success) {
+  switch (type) {
+    case reportType.START_PAGE:
+      // Accept every page loaded.
+      return true;
+    case reportType.TEST_RESULT:
+      if (!success) {
+        // If any test fails, the result is false.
+        result = false;
+        message += msg + "\n";
+      }
+      break;
+    case reportType.FINISHED_ALL_TESTS:
+      running = false;
+      break;
+  }
+}
+
+function start(start_url) {
+  running = true;
+  result = true;
+  message = "";
+  var iframe = document.getElementById("testframe");
+  var testHarness = new WebGLTestHarnessModule.TestHarness(
+      iframe,
+      start_url,
+      report);
+  window.webglTestHarness = testHarness;
+  window.webglTestHarness.runTests();
+}
+</script>
+</head>
+<body>
+<iframe id="testframe" scrolling="yes" width="100%" height="100%"></iframe>
+</table>
+</body>
+</html>

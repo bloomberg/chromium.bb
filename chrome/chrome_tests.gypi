@@ -3555,6 +3555,7 @@
         'chrome_strings',
         'renderer',
         'test_support_common',
+        'test_support_ui',
         '../base/base.gyp:base',
         '../base/base.gyp:test_support_base',
         '../net/net.gyp:net_test_support',
@@ -3573,6 +3574,7 @@
         'browser/gpu_pixel_browsertest.cc',
         'browser/gpu_crash_browsertest.cc',
         'test/out_of_proc_test_runner.cc',
+        'test/gpu/webgl_conformance_tests.cc',
       ],
       'conditions': [
         ['OS=="win"', {
