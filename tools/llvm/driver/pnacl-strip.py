@@ -29,15 +29,16 @@ EXTRA_ENV = {
 env.update(EXTRA_ENV)
 
 StripPatterns = [
-    ( ('-o','(.*)'),            "env.set('OUTPUT', $0)"),
-    ( '--strip-all',            "env.set('MODE', 'all')"),
-    ( '-s',                     "env.set('MODE', 'all')"),
+    ( ('-o','(.*)'),     "env.set('OUTPUT', pathtools.normalize($0))"),
+    ( ('-o','(.*)'),     "env.set('OUTPUT', pathtools.normalize($0))"),
+    ( '--strip-all',     "env.set('MODE', 'all')"),
+    ( '-s',              "env.set('MODE', 'all')"),
 
-    ( '--strip-debug',          "env.set('MODE', 'debug')"),
-    ( '-S',                     "env.set('MODE', 'debug')"),
-    ( '(-.*)',                  UnrecognizedOption),
+    ( '--strip-debug',   "env.set('MODE', 'debug')"),
+    ( '-S',              "env.set('MODE', 'debug')"),
+    ( '(-.*)',           UnrecognizedOption),
 
-    ( '(.*)',                   "env.append('INPUTS', $0)"),
+    ( '(.*)',            "env.append('INPUTS', pathtools.normalize($0))"),
 ]
 
 def main(argv):
@@ -58,7 +59,7 @@ def main(argv):
     elif IsELF(f):
       RunWithEnv('${RUN_STRIP}', input = f, output = f_output)
     else:
-      Log.Fatal('%s: File is neither ELF nor bitcode', f)
+      Log.Fatal('%s: File is neither ELF nor bitcode', pathtools.touser(f))
   return 0
 
 if __name__ == "__main__":

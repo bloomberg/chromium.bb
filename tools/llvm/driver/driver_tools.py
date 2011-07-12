@@ -19,6 +19,7 @@ import threading
 import Queue
 import artools
 import ldtools
+import pathtools
 
 ######################################################################
 #
@@ -99,6 +100,12 @@ INITIAL_ENV = {
   'SO_EXT_linux'    : '.so',
   'SO_EXT_windows'  : '.dll',
 
+  'SO_DIR'          : '${SO_DIR_%BUILD_OS%}',
+  'SO_DIR_darwin'   : 'lib',
+  'SO_DIR_linux'    : 'lib',
+  'SO_DIR_windows'  : 'bin',  # On Windows, DLLs are placed in bin/
+                              # because the dynamic loader searches %PATH%
+
   'SO_PREFIX'        : '${SO_PREFIX_%BUILD_OS%}',
   'SO_PREFIX_darwin' : 'lib',
   'SO_PREFIX_linux'  : 'lib',
@@ -115,7 +122,7 @@ INITIAL_ENV = {
   'SCONS_OS_windows'    : 'win',
 
   # Tool Pathnames
-  'GOLD_PLUGIN_SO'      : '${BASE_LLVM}/lib/${SO_PREFIX}LLVMgold${SO_EXT}',
+  'GOLD_PLUGIN_SO': '${BASE_LLVM}/${SO_DIR}/${SO_PREFIX}LLVMgold${SO_EXT}',
 
   'SCONS_STAGING'       : '${SCONS_STAGING_%ARCH%}',
   'SCONS_STAGING_X8632' : '${SCONS_OUT}/opt-${SCONS_OS}-x86-32/staging',
@@ -552,7 +559,9 @@ def RunDriver(invocation, args, suppress_arch = False):
       i = driver_args.index('-arch')
       driver_args = driver_args[:i] + driver_args[i+2:]
 
-  cmd = [script] + driver_args + args
+  python_interpreter = pathtools.normalize(sys.executable)
+  script = pathtools.tosys(script)
+  cmd = [python_interpreter, script] + driver_args + args
 
   # The invoked driver will do it's own logging, so
   # don't use RunWithLog() for the recursive driver call.
@@ -619,20 +628,20 @@ def FindBaseDir(function):
   Depth = 0
   cur = DriverPath()
   while not function(cur) and Depth < 16:
-    cur = os.path.dirname(cur)
+    cur = pathtools.dirname(cur)
     Depth += 1
   if function(cur):
     return cur
   return None
 
 def DriverPath():
-  return os.path.abspath(sys.argv[0])
+  return pathtools.abspath(pathtools.normalize(sys.argv[0]))
 
 @env.register
 @memoize
 def FindBaseNaCl():
   """ Find native_client/ directory """
-  dir = FindBaseDir(lambda cur: os.path.basename(cur) == 'native_client')
+  dir = FindBaseDir(lambda cur: pathtools.basename(cur) == 'native_client')
   if dir is None:
     Log.Fatal("Unable to find 'native_client' directory")
   return shell.escape(dir)
@@ -645,9 +654,9 @@ def FindBasePNaCl():
   # Normally, the driver is in pnacl_*_*_*/bin/.
   # But we can also be invoked from tools/llvm/driver.
   # For now, default to using newlib when invoked from tools/llvm/driver.
-  bindir = os.path.dirname(DriverPath())
-  if os.path.basename(bindir) == 'bin':
-    dir = os.path.dirname(bindir)
+  bindir = pathtools.dirname(DriverPath())
+  if pathtools.basename(bindir) == 'bin':
+    dir = pathtools.dirname(bindir)
     return shell.escape(dir)
   else:
     # If we've invoked from tools/llvm/driver
@@ -658,21 +667,21 @@ def FindBasePNaCl():
 @memoize
 def FindBaseDriver():
   """Find the directory with the driver"""
-  return shell.escape(os.path.dirname(DriverPath()))
+  return shell.escape(pathtools.dirname(DriverPath()))
 
 @env.register
 @memoize
 def GetDriverExt():
-  return os.path.splitext(sys.argv[0])[1]
+  return pathtools.splitext(DriverPath())[1]
 
 @env.register
 @memoize
 def DetectLibMode():
   """ Determine if this is glibc or newlib """
-  dir = os.path.dirname(DriverPath())
+  dir = pathtools.dirname(DriverPath())
 
-  is_newlib = os.path.exists(os.path.join(dir, 'newlib.cfg'))
-  is_glibc = os.path.exists(os.path.join(dir, 'glibc.cfg'))
+  is_newlib = pathtools.exists(pathtools.join(dir, 'newlib.cfg'))
+  is_glibc = pathtools.exists(pathtools.join(dir, 'glibc.cfg'))
 
   assert(not (is_newlib and is_glibc))
 
@@ -967,7 +976,7 @@ def GetBitcodeType(filename):
 ######################################################################
 
 def DefaultOutputName(filename, outtype):
-  base = os.path.basename(filename)
+  base = pathtools.basename(filename)
   base = RemoveExtension(base)
 
   if outtype in ('pp','dis'): return '-'; # stdout
@@ -982,7 +991,7 @@ def RemoveExtension(filename):
   if filename.endswith('.opt.bc'):
     return filename[0:-len('.opt.bc')]
 
-  name, ext = os.path.splitext(filename)
+  name, ext = pathtools.splitext(filename)
   if ext == '':
     Log.Fatal('File has no extension: ' + filename)
   return name
@@ -991,7 +1000,7 @@ def PathSplit(f):
   paths = []
   cur = f
   while True:
-    cur, piece = os.path.split(cur)
+    cur, piece = pathtools.split(cur)
     if piece == '':
       break
     paths.append(piece)
@@ -1003,8 +1012,8 @@ def PathSplit(f):
 # add parent directories. Rinse, repeat.
 class TempNameGen(object):
   def __init__(self, inputs, output):
-    inputs = [ os.path.abspath(i) for i in inputs ]
-    output = os.path.abspath(output)
+    inputs = [ pathtools.abspath(i) for i in inputs ]
+    output = pathtools.abspath(output)
 
     self.TempBase = output + '---linked'
 
@@ -1060,7 +1069,7 @@ class TempNameGen(object):
     return temp
 
   def TempNameForInput(self, input, imtype):
-    fullpath = os.path.abspath(input)
+    fullpath = pathtools.abspath(input)
     # If input is already a temporary name, just change the extension
     if fullpath.startswith(self.TempBase):
       temp = self.TempBase + '.' + imtype
@@ -1119,9 +1128,6 @@ class shell(object):
         inspace = False
         i += 1
         buf += s[i]
-      elif s[i] == '/':
-        inspace = False
-        buf += os.sep
       else:
         inspace = False
         buf += s[i]
@@ -1146,7 +1152,6 @@ class shell(object):
     """
     s = s.replace('\\', '\\\\')
     s = s.replace('"', '\\"')
-    s = s.replace('/', '\\/')
     if ' ' in s:
       s = '"' + s + '"'
     return s
@@ -1172,8 +1177,8 @@ class Log(object):
 
   @classmethod
   def AddFile(cls, filename, sizelimit):
-    file_too_big = os.path.isfile(filename) and \
-                   os.path.getsize(filename) > sizelimit
+    file_too_big = pathtools.isfile(filename) and \
+                   pathtools.getsize(filename) > sizelimit
     mode = 'a'
     if file_too_big:
       mode = 'w'
@@ -1359,6 +1364,8 @@ def Run(args,                    # Command and arguments
   if isinstance(args, str):
     args = shell.split(env.eval(args))
 
+  args = [pathtools.tosys(args[0])] + args[1:]
+
   if log_command:
     Log.Info('-' * 60)
     Log.Info('\n' + StringifyCommand(args, stdin))
@@ -1526,24 +1533,33 @@ def FixArch(arch):
     Log.Fatal('Unrecognized arch "%s"!', arch)
   return archfix[arch]
 
+def IsWindowsPython():
+  return 'windows' in platform.system().lower()
+
+def SetupCygwinLibs():
+  bindir = os.path.dirname(os.path.abspath(sys.argv[0]))
+  os.environ['PATH'] += os.pathsep + bindir
+
 def DriverMain(main):
   SetupSignalHandlers()
   env.reset()
-  argv = sys.argv
+
+  if IsWindowsPython():
+    SetupCygwinLibs()
 
   # Parse driver arguments
-  (driver_flags, main_args) = ParseArgs(argv[1:],
+  (driver_flags, main_args) = ParseArgs(sys.argv[1:],
                                         DriverPatterns,
                                         must_match = False)
   env.append('DRIVER_FLAGS', *driver_flags)
 
   # Start the Log
   Log.reset()
-  Log.Banner(argv)
+  Log.Banner(sys.argv)
 
   # Pull the arch from the filename
   # Examples: pnacl-i686-as  (as incarnation, i686 arch)
-  tokens = os.path.basename(argv[0]).split('-')
+  tokens = pathtools.basename(DriverPath()).split('-')
   if len(tokens) > 2:
     arch = FixArch(tokens[-2])
     env.set('ARCH', arch)
@@ -1601,7 +1617,7 @@ class TempFileHandler(object):
     self.files = []
 
   def add(self, path):
-    path = os.path.abspath(path)
+    path = pathtools.abspath(path)
     self.files.append(path)
 
   def wipe(self):
@@ -1623,19 +1639,19 @@ def DriverExit(code):
 def CheckPresenceSelUniversal():
   'Assert that both sel_universal and sel_ldr exist'
   sel_universal = env.getone('SEL_UNIVERSAL')
-  if not os.path.exists(sel_universal):
+  if not pathtools.exists(sel_universal):
     Log.Fatal('Could not find sel_universal [%s]', sel_universal)
 
   sel_ldr = env.getone('SEL_LDR')
-  if not os.path.exists(sel_ldr):
+  if not pathtools.exists(sel_ldr):
     Log.Fatal('Could not find sel_ldr [%s]', sel_ldr)
 
 def DriverOpen(filename, mode, fail_ok = False):
   try:
-    fp = open(filename, mode)
+    fp = open(pathtools.tosys(filename), mode)
   except Exception:
     if not fail_ok:
-      Log.Fatal("%s: Unable to open file", filename)
+      Log.Fatal("%s: Unable to open file", pathtools.touser(filename))
       DriverExit(1)
     else:
       return None

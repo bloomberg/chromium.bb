@@ -45,12 +45,15 @@ if [ "${BUILD_PLATFORM}" == "linux" ] ; then
   SCONS_BUILD_PLATFORM=linux
   SO_PREFIX=lib
   SO_EXT=.so
+  SO_DIR=lib
 elif [[ "${BUILD_PLATFORM}" =~ cygwin_nt ]]; then
   BUILD_PLATFORM=windows
   BUILD_PLATFORM_WIN=true
   SCONS_BUILD_PLATFORM=win
   SO_PREFIX=cyg
   SO_EXT=.dll
+  SO_DIR=bin  # On Windows, DLLs are placed in bin/
+              # because the dynamic loader searches %PATH%
 elif [ "${BUILD_PLATFORM}" == "darwin" ] ; then
   BUILD_PLATFORM_MAC=true
   SCONS_BUILD_PLATFORM=mac
@@ -58,6 +61,7 @@ elif [ "${BUILD_PLATFORM}" == "darwin" ] ; then
   HOST_ARCH=${HOST_ARCH:-i386}
   SO_PREFIX=lib
   SO_EXT=.dylib
+  SO_DIR=lib
 else
   echo "Unknown system '${BUILD_PLATFORM}'"
   exit -1
@@ -70,6 +74,7 @@ readonly BUILD_PLATFORM_WIN
 readonly SCONS_BUILD_PLATFORM
 readonly SO_PREFIX
 readonly SO_EXT
+readonly SO_DIR
 
 BUILD_ARCH=$(uname -m)
 BUILD_ARCH_X8632=false
@@ -110,6 +115,18 @@ if [ "${BUILD_ARCH}" != "${HOST_ARCH}" ]; then
     exit -1
   fi
 fi
+
+# On Windows, scons expects Windows-style paths (C:\foo\bar)
+# This function converts cygwin posix paths to Windows-style paths.
+# On all other platforms, this function does nothing to the path.
+PosixToSysPath() {
+  local path="$1"
+  if ${BUILD_PLATFORM_WIN}; then
+    cygpath -w "$(GetAbsolutePath "${path}")"
+  else
+    echo "${path}"
+  fi
+}
 
 ######################################################################
 # Mercurial repository tools

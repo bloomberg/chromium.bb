@@ -19,9 +19,9 @@ EXTRA_ENV = {
 env.update(EXTRA_ENV)
 
 DISPatterns = [
-  ( ('-o','(.*)'),            "env.set('OUTPUT', $0)"),
+  ( ('-o','(.*)'),            "env.set('OUTPUT', pathtools.normalize($0))"),
   ( '(-.*)',                  "env.append('FLAGS', $0)"),
-  ( '(.*)',                   "env.append('INPUTS', $0)"),
+  ( '(.*)',                   "env.append('INPUTS', pathtools.normalize($0))"),
 ]
 
 def main(argv):

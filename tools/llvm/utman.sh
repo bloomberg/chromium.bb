@@ -1022,15 +1022,29 @@ llvm-install() {
   spushd "${TC_BUILD_LLVM}"
   RunWithLog llvm.install \
        make ${MAKE_OPTS} install
+  spopd
 
+  llvm-install-links
+}
+
+llvm-install-links() {
+  local makelink="ln -sf"
+
+  # On Windows, these can't be symlinks.
+  if ${BUILD_PLATFORM_WIN}; then
+    makelink="cp -a"
+  fi
+
+  # TODO(pdox): These may no longer be necessary.
   mkdir -p "${BFD_PLUGIN_DIR}"
+  spushd "${BFD_PLUGIN_DIR}"
+  ${makelink} ../../../llvm/${SO_DIR}/${SO_PREFIX}LLVMgold${SO_EXT} .
+  ${makelink} ../../../llvm/${SO_DIR}/${SO_PREFIX}LTO${SO_EXT} .
+  spopd
 
-  ln -sf ../../../llvm/lib/${SO_PREFIX}LLVMgold${SO_EXT} "${BFD_PLUGIN_DIR}"
-  ln -sf ../../../llvm/lib/${SO_PREFIX}LTO${SO_EXT} "${BFD_PLUGIN_DIR}"
-
-  # On Mac, libLTO seems to be loaded from lib/
-  ln -sf ../../llvm/lib/${SO_PREFIX}LTO${SO_EXT} "${BINUTILS_INSTALL_DIR}"/lib
-
+  spushd "${BINUTILS_INSTALL_DIR}/${SO_DIR}"
+  ${makelink} ../../llvm/${SO_DIR}/${SO_PREFIX}LTO${SO_EXT} .
+  ${makelink} ../../llvm/${SO_DIR}/${SO_PREFIX}LLVMgold${SO_EXT} .
   spopd
 }
 
@@ -1619,11 +1633,6 @@ binutils-install() {
       install ${MAKE_OPTS}
 
   spopd
-
-  # Binutils builds readelf and size, but doesn't install it.
-  mkdir -p "${PNACL_BIN}"
-  cp -f "${objdir}"/binutils/readelf "${PNACL_READELF}"
-  cp -f "${objdir}"/binutils/size "${PNACL_SIZE}"
 }
 
 #+-------------------------------------------------------------------------
@@ -2487,7 +2496,7 @@ sdk-headers() {
       ${extra_flags} \
       platform=${neutral_platform} \
       install_headers \
-      includedir="${PNACL_SDK_INCLUDE}"
+      includedir="$(PosixToSysPath "${PNACL_SDK_INCLUDE}")"
 }
 
 sdk-libs() {
@@ -2506,7 +2515,7 @@ sdk-libs() {
       ${extra_flags} \
       platform=${neutral_platform} \
       install_lib_portable \
-      libdir="${PNACL_SDK_LIB}"
+      libdir="$(PosixToSysPath "${PNACL_SDK_LIB}")"
 
   for platform in arm x86-32 x86-64; do
     if [ "${platform}" == "arm" ] && ${LIBMODE_GLIBC}; then
@@ -2518,7 +2527,7 @@ sdk-libs() {
       ${extra_flags} \
       platform=${platform} \
       install_lib_platform \
-      libdir="${PNACL_SDK_LIB}-${platform}"
+      libdir="$(PosixToSysPath "${PNACL_SDK_LIB}-${platform}")"
   done
 }
 
@@ -2698,14 +2707,33 @@ driver-install() {
   cp driver_tools.py "${PNACL_BIN}"
   cp artools.py "${PNACL_BIN}"
   cp ldtools.py "${PNACL_BIN}"
+  cp pathtools.py "${PNACL_BIN}"
   for t in pnacl-*; do
     local name=$(basename "$t")
     cp "${t}" "${PNACL_BIN}/${name/.py}"
+    if ${BUILD_PLATFORM_WIN}; then
+      cp redirect.bat "${PNACL_BIN}/${name/.py}.bat"
+    fi
   done
   spopd
 
   # Tell the driver the library mode
   touch "${PNACL_BIN}"/${LIBMODE}.cfg
+
+  # Install readelf and size
+  cp -a "${BINUTILS_INSTALL_DIR}/bin/${BINUTILS_TARGET}-readelf" \
+        "${PNACL_BIN}/readelf"
+  cp -a "${BINUTILS_INSTALL_DIR}/bin/${BINUTILS_TARGET}-size" \
+        "${PNACL_BIN}/size"
+
+  # On windows, copy the cygwin DLLs needed by the driver tools
+  if ${BUILD_PLATFORM_WIN}; then
+    StepBanner "DRIVER" "Copying cygwin libraries"
+    local deps="gcc_s-1 iconv-2 win1 intl-8 stdc++-6 z"
+    for name in ${deps}; do
+      cp "/bin/cyg${name}.dll" "${PNACL_BIN}"
+    done
+  fi
 }
 
 ######################################################################
@@ -2800,6 +2828,9 @@ VerifyArchive() {
       # A linker script with C comments looks like C to "file".
       VerifyLinkerScript "$archive"
       ;;
+    text/plain)
+      VerifyLinkerScript "$archive"
+      ;;
     *)
       echo "FAIL - unknown file type ($type): ${archive}"
       exit -1
@@ -2812,9 +2843,7 @@ VerifyArchive() {
 #
 #   Verifies that a given .o file is bitcode and free of ASMSs
 verify-object-llvm() {
-  local t=$(${LLVM_DIS} $1 -o -)
-
-  if grep asm <<<$t ; then
+  if ${LLVM_DIS} $1 -o - | grep asm ; then
     echo
     echo "ERROR asm in $1"
     echo
@@ -2825,7 +2854,7 @@ verify-object-llvm() {
 
 
 check-elf-abi() {
-  local arch_info=$(${NACL_OBJDUMP} -f $1)
+  local arch_info="$(${NACL_OBJDUMP} -f $1)"
   if ! grep -q $2 <<< ${arch_info} ; then
     echo "ERROR $1 - bad file format: $2 vs ${arch_info}\n"
     echo ${arch_info}
@@ -2840,7 +2869,7 @@ check-elf-abi() {
 #   fragile and needs to be updated when tools change
 verify-object-arm() {
   check-elf-abi $1 "elf32-littlearm-nacl"
-  arch_info=$("${PNACL_READELF}" -A $1)
+  arch_info="$("${PNACL_READELF}" -A "$1")"
   #TODO(robertm): some refactoring and cleanup needed
   if ! grep -q "Tag_FP_arch: VFPv2" <<< ${arch_info} ; then
     echo "ERROR $1 - bad Tag_FP_arch\n"

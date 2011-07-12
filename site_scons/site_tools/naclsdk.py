@@ -52,7 +52,11 @@ NACL_PLATFORM_DIR_MAP = {
 def _PlatformSubdirs(env):
   if env.Bit('bitcode'):
     import platform
-    name = 'pnacl_%s_%s' % (platform.system().lower(), platform.machine())
+    machine = platform.machine()
+    # Make Windows python consistent with Cygwin python
+    if machine == 'x86':
+      machine = 'i686'
+    name = 'pnacl_%s_%s' % (platform.system().lower(), machine)
     if env.Bit('nacl_glibc'):
       name += '_glibc'
     else:
@@ -206,66 +210,69 @@ def _SetEnvForPnacl(env, root):
 
   arch_flag = ' -arch %s' % arch
 
-  env['PNACL_ROOT'] = root
-  pnacl_sdk_lib = '${PNACL_ROOT}/libs-bitcode'
-  #TODO(robertm): remove NACL_SDK_INCLUDE ASAP
-  pnacl_sdk_include = '${PNACL_ROOT}/sysroot/include'
-  pnacl_sdk_ar = '${PNACL_ROOT}/bin/pnacl-ar'
-  pnacl_sdk_nm = '${PNACL_ROOT}/bin/pnacl-nm'
-  pnacl_sdk_ranlib = '${PNACL_ROOT}/bin/pnacl-ranlib'
+  binprefix = os.path.join(root, 'bin', 'pnacl-')
 
-  pnacl_sdk_cc = '${PNACL_ROOT}/bin/pnacl-gcc'
-  pnacl_sdk_cxx = '${PNACL_ROOT}/bin/pnacl-g++'
-  pnacl_sdk_ld =  '${PNACL_ROOT}/bin/pnacl-ld'
-  pnacl_sdk_disass = '${PNACL_ROOT}/bin/pnacl-dis'
-  pnacl_sdk_strip = '${PNACL_ROOT}/bin/pnacl-strip'
+  pnacl_lib = os.path.join(root, 'lib')
+  #TODO(robertm): remove NACL_SDK_INCLUDE ASAP
+  pnacl_include = os.path.join(root, 'sysroot', 'include')
+  pnacl_ar = binprefix + 'ar'
+  pnacl_nm = binprefix + 'nm'
+  pnacl_ranlib = binprefix + 'ranlib'
+
+  pnacl_cc = binprefix + 'gcc'
+  pnacl_cxx = binprefix + 'g++'
+  pnacl_ld = binprefix + 'ld'
+  pnacl_disass = binprefix + 'dis'
+  pnacl_strip = binprefix + 'strip'
+
   # NOTE: XXX_flags start with space for easy concatenation
   # The flags generated here get baked into the commands (CC, CXX, LINK)
   # instead of CFLAGS etc to keep them from getting blown away by some
   # tests. Don't add flags here unless they always need to be preserved.
-  pnacl_sdk_cxx_flags = ''
-  pnacl_sdk_cc_flags = ' -std=gnu99'
-  pnacl_sdk_cc_native_flags = ' -std=gnu99' + arch_flag
-  pnacl_sdk_ld_flags = ' ' + ' '.join(env['PNACL_BCLDFLAGS'])
+  pnacl_cxx_flags = ''
+  pnacl_cc_flags = ' -std=gnu99'
+  pnacl_cc_native_flags = ' -std=gnu99' + arch_flag
+  pnacl_ld_flags = ' ' + ' '.join(env['PNACL_BCLDFLAGS'])
 
   if env.Bit('nacl_pic'):
-    pnacl_sdk_cc_flags += ' -fPIC'
-    pnacl_sdk_cxx_flags += ' -fPIC'
+    pnacl_cc_flags += ' -fPIC'
+    pnacl_cxx_flags += ' -fPIC'
     # NOTE: this is a special hack for the pnacl backend which
     #       does more than linking
-    pnacl_sdk_ld_flags += ' -fPIC'
+    pnacl_ld_flags += ' -fPIC'
 
   if env.Bit('use_sandboxed_translator'):
-    pnacl_sdk_ld_flags += ' --pnacl-sb'
+    pnacl_ld_flags += ' --pnacl-sb'
 
   # TODO(pdox): Remove PNaCl's dependency on the gcc toolchain here.
   platform = NACL_CANONICAL_PLATFORM_MAP[env['PLATFORM']]
   nnacl_root = os.path.join(env['MAIN_DIR'], 'toolchain', '%s_x86' % platform)
 
   env.Replace(# Replace header and lib paths.
-              NACL_SDK_INCLUDE=pnacl_sdk_include,
-              NACL_SDK_LIB=pnacl_sdk_lib,
+              PNACL_ROOT=root,
+              NACL_SDK_INCLUDE=pnacl_include,
+              NACL_SDK_LIB=pnacl_lib,
               # Replace the normal unix tools with the PNaCl ones.
-              CC=pnacl_sdk_cc + pnacl_sdk_cc_flags,
-              CXX=pnacl_sdk_cxx + pnacl_sdk_cxx_flags,
+              CC=pnacl_cc + pnacl_cc_flags,
+              CXX=pnacl_cxx + pnacl_cxx_flags,
               LIBPREFIX="lib",
               SHLIBPREFIX="lib",
               SHLIBSUFFIX=".pso",
               OBJSUFFIX=".bc",
-              LINK=pnacl_sdk_cxx + arch_flag + pnacl_sdk_ld_flags,
+              LINK=pnacl_cxx + arch_flag + pnacl_ld_flags,
               # Although we are currently forced to produce native output
               # for LINK, we are free to produce bitcode for SHLINK
               # (SharedLibrary linking) because scons doesn't do anything
               # with shared libraries except use them with the toolchain.
-              SHLINK=pnacl_sdk_cxx + pnacl_sdk_ld_flags,
+              SHLINK=pnacl_cxx + pnacl_ld_flags,
               # C_ONLY_LINK is needed when building libehsupport,
               # because libstdc++ is not yet available.
-              C_ONLY_LINK=pnacl_sdk_cc + arch_flag + pnacl_sdk_ld_flags,
-              LD=pnacl_sdk_ld,
-              AR=pnacl_sdk_ar,
-              RANLIB=pnacl_sdk_ranlib,
-              DISASS=pnacl_sdk_disass,
-              STRIP=pnacl_sdk_strip,
+              C_ONLY_LINK=pnacl_cc + arch_flag + pnacl_ld_flags,
+              LD=pnacl_ld,
+              AR=pnacl_ar,
+              RANLIB=pnacl_ranlib,
+              DISASS=pnacl_disass,
+              STRIP=pnacl_strip,
               # Strip doesn't seem to be a first-class citizen in SCons country,
               # so we have to add these *COM, *COMSTR manually.
               # Note: it appears we cannot add this in component_setup.py

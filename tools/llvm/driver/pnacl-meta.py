@@ -19,7 +19,7 @@ EXTRA_ENV = {
 env.update(EXTRA_ENV)
 
 META_PATTERNS = [
-  ( '(.*)',      "env.append('INPUTS', $0)"),
+  ( '(.*)',      "env.append('INPUTS', pathtools.normalize($0))"),
 ]
 
 def Usage():
@@ -37,9 +37,9 @@ def main(argv):
 
   for f in inputs:
     if not IsBitcode(f):
-      Log.Fatal("%s: File is not bitcode", f)
+      Log.Fatal("%s: File is not bitcode", pathtools.touser(f))
     metadata = GetBitcodeMetadata(f)
-    print f + ":"
+    print pathtools.touser(f) + ":"
     for k, v in metadata.iteritems():
       if isinstance(v, list):
         v = "[ " + ', '.join(v) + " ]"

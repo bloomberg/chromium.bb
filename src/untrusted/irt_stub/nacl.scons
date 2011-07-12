@@ -20,8 +20,7 @@ gap_env.Append(CPPDEFINES=[
 if gap_env.Bit('bitcode'):
   # This is not actually a platform-specific, it's generic to any assembler
   # for an ELF target.  But it can't be compiled to LLVM bitcode.
-  gap_env.Replace(OBJSUFFIX='.o')
-  gap_env.Append(ASFLAGS=['-arch', '${TARGET_FULLARCH}'])
+  gap_env.PNaClForceNative()
 
 link_segment_gap = gap_env.ComponentObject(
     'link_segment_gap',

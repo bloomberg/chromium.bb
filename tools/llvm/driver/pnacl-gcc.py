@@ -194,29 +194,30 @@ def AddCCFlag(*args):
   env.append('CC_FLAGS', *args)
 
 def AddBPrefix(prefix):
-  if os.path.isdir(prefix) and not prefix.endswith(os.sep):
-    prefix += os.sep
+  prefix = pathtools.normalize(prefix)
+  if pathtools.isdir(prefix) and not prefix.endswith('/'):
+    prefix += '/'
 
   env.append('PREFIXES_USER', prefix)
 
   # Add prefix/include to isystem if it exists
   include_dir = prefix + 'include'
-  if os.path.isdir(include_dir):
+  if pathtools.isdir(include_dir):
     env.append('ISYSTEM_USER', include_dir)
 
 CustomPatterns = [
-  ( '--driver=(.+)',                   "env.set('CC', $0)\n"),
-  ( '--pnacl-skip-ll',                 "env.set('EMIT_LL', '0')"),
-  ( '--pnacl-gxx',                     "env.set('USE_GXX', '1')"),
-  ( '--pnacl-allow-native',            "env.set('ALLOW_NATIVE', '1')"),
-  ( '--pnacl-allow-translate',         "env.set('ALLOW_TRANSLATE', '1')"),
+  ( '--driver=(.+)',             "env.set('CC', pathtools.normalize($0))\n"),
+  ( '--pnacl-skip-ll',           "env.set('EMIT_LL', '0')"),
+  ( '--pnacl-gxx',               "env.set('USE_GXX', '1')"),
+  ( '--pnacl-allow-native',      "env.set('ALLOW_NATIVE', '1')"),
+  ( '--pnacl-allow-translate',   "env.set('ALLOW_TRANSLATE', '1')"),
   ( '--pnacl-native-hack', "env.append('LD_FLAGS', '--pnacl-native-hack')\n"
                            "env.set('ALLOW_NATIVE', '1')"),
 ]
 
 GCCPatterns = [
-  ( '-o(.+)',          "env.set('OUTPUT', $0)"),
-  ( ('-o', '(.+)'),    "env.set('OUTPUT', $0)"),
+  ( '-o(.+)',          "env.set('OUTPUT', pathtools.normalize($0))"),
+  ( ('-o', '(.+)'),    "env.set('OUTPUT', pathtools.normalize($0))"),
 
   ( '-E',              "env.set('GCC_MODE', '-E')"),
   ( '-S',              "env.set('GCC_MODE', '-S')"),
@@ -241,14 +242,16 @@ GCCPatterns = [
   ( '-O([0-4s])',         "env.set('OPT_LEVEL', $0)\n"),
   ( '-O',                 "env.set('OPT_LEVEL', 1)\n"),
 
+  ( ('-isystem', '(.*)'),
+                       "env.append('ISYSTEM_USER', pathtools.normalize($0))"),
+  ( ('-I', '(.+)'),    "env.append('CC_FLAGS', '-I'+pathtools.normalize($0))"),
+  ( '-I(.+)',          "env.append('CC_FLAGS', '-I'+pathtools.normalize($0))"),
+
   ( '(-g)',                   AddCCFlag),
   ( '(-W.*)',                 AddCCFlag),
   ( '(-std=.*)',              AddCCFlag),
   ( '(-D.*)',                 AddCCFlag),
   ( '(-f.*)',                 AddCCFlag),
-  ( ('(-I)', '(.+)'),         AddCCFlag),
-  ( '(-I.+)',                 AddCCFlag),
-  ( ('-isystem', '(.*)'),     "env.append('ISYSTEM_USER', $0)"),
   ( '(-pedantic)',            AddCCFlag),
   ( '(-g.*)',                 AddCCFlag),
   ( '(-xassembler-with-cpp)', AddCCFlag),
@@ -259,15 +262,15 @@ GCCPatterns = [
   ( ('-B','(.*)'),            AddBPrefix),
   ( ('-B(.+)'),               AddBPrefix),
 
-  ( ('-L','(.+)'),            "env.append('SEARCH_DIRS_USER', $0)"),
-  ( '-L(.+)',                 "env.append('SEARCH_DIRS_USER', $0)"),
+  ( ('-L','(.+)'), "env.append('SEARCH_DIRS_USER', pathtools.normalize($0))"),
+  ( '-L(.+)',      "env.append('SEARCH_DIRS_USER', pathtools.normalize($0))"),
 
-  ( '(-Wp,.*)',               AddCCFlag),
-  ( '(-MMD)',                 AddCCFlag),
-  ( '(-MP)',                  AddCCFlag),
-  ( '(-MD)',                  AddCCFlag),
-  ( ('(-MF)','(.*)'),         AddCCFlag),
-  ( ('(-MT)','(.*)'),         AddCCFlag),
+  ( '(-Wp,.*)',       AddCCFlag),
+  ( '(-MMD)',         AddCCFlag),
+  ( '(-MP)',          AddCCFlag),
+  ( '(-MD)',          AddCCFlag),
+  ( ('(-MT)','(.*)'), AddCCFlag),
+  ( ('(-MF)','(.*)'), "env.append('CC_FLAGS', $0, pathtools.normalize($1))"),
 
   # With -xc, GCC considers future inputs to be an input source file.
   # The following is not the correct handling of -x,
@@ -310,8 +313,8 @@ GCCPatterns = [
   # parsed on the command-line. This ensures that the gcc "-x"
   # setting is correctly applied.
 
-  ( '(.*)',                   "env.append('INPUTS', $0)\n"
-                              "ForceFileType($0)"),
+  ( '(.*)',  "env.append('INPUTS', pathtools.normalize($0))\n"
+             "ForceFileType(pathtools.normalize($0))"),
 ]
 
 
@@ -395,7 +398,8 @@ def main(argv):
           (output_type == 'po' and intype not in ('src','ll')) or
           (output_type == 's' and intype not in ('src','ll','po','S')) or
           (output_type == 'o' and intype not in ('src','ll','po','S','s'))):
-        Log.Fatal("%s: Unexpected type of file for '%s'", f, gcc_mode)
+        Log.Fatal("%s: Unexpected type of file for '%s'",
+                  pathtools.touser(f), gcc_mode)
 
       if output == '':
         f_output = DefaultOutputName(f, output_type)
@@ -411,7 +415,7 @@ def main(argv):
   assert(output_type in ('pso','so','pexe','nexe'))
 
   if output == '':
-    output = 'a.out'
+    output = pathtools.normalize('a.out')
   namegen = TempNameGen(inputs, output)
 
   # Compile all source files (c/c++/ll) to .po
@@ -439,7 +443,7 @@ def main(argv):
     if intype in ('o','nlib','s','S'):
       if not env.getbool('ALLOW_NATIVE'):
         Log.Fatal('%s: Native object files not allowed in link. '
-                  'Use --pnacl-allow-native to override.', f)
+                  'Use --pnacl-allow-native to override.', pathtools.touser(f))
       assert(intype in ('o','nlib'))
       # ARCH must match
       if IsELF(f):
@@ -484,7 +488,7 @@ def FindObj(name):
 
   for prefix in prefixes:
     guess = prefix + name
-    if os.path.exists(guess):
+    if pathtools.exists(guess):
       # If the file is ELF, check ARCH.
       if IsELF(guess):
         if not ArchMerge(guess, False):
@@ -518,7 +522,8 @@ def RunTranslate(input, output, mode):
   if not env.getbool('ALLOW_TRANSLATE'):
     Log.Fatal('%s: Trying to convert bitcode to an object file before '
               'bitcode linking. This is supposed to wait until '
-              'translation. Use --pnacl-allow-translate to override.', input)
+              'translation. Use --pnacl-allow-translate to override.',
+              pathtools.touser(input))
   args = [mode, input, '-o', output]
   if env.getbool('PIC'):
     args += ['-fPIC']

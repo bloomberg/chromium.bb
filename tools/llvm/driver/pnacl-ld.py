@@ -116,8 +116,8 @@ LDPatterns = [
   ( ('--add-opt-option=(.+)'),
                        "env.append('OPT_FLAGS', $0)"),
 
-  ( '-o(.+)',          "env.set('OUTPUT', $0)"),
-  ( ('-o', '(.+)'),    "env.set('OUTPUT', $0)"),
+  ( '-o(.+)',          "env.set('OUTPUT', pathtools.normalize($0))"),
+  ( ('-o', '(.+)'),    "env.set('OUTPUT', pathtools.normalize($0))"),
 
   ( '-barebones-link',       "env.set('BAREBONES_LINK', '1')"),
 
@@ -126,20 +126,26 @@ LDPatterns = [
   ( '-static',         "env.set('STATIC', '1')\n"
                        "env.set('SHARED', '0')"),
 
-  ( ('-L', '(.+)'),    "env.append('SEARCH_DIRS', $0)\n"
-                       "env.append('LD_SEARCH_DIRS', '-L'+$0)"),
-  ( '-L(.+)',          "env.append('SEARCH_DIRS', $0)\n"
-                       "env.append('LD_SEARCH_DIRS', '-L'+$0)"),
+  ( ('-L', '(.+)'),
+    "env.append('SEARCH_DIRS', pathtools.normalize($0))\n"
+    "env.append('LD_SEARCH_DIRS', '-L'+pathtools.normalize($0))"),
+  ( '-L(.+)',
+    "env.append('SEARCH_DIRS', pathtools.normalize($0))\n"
+    "env.append('LD_SEARCH_DIRS', '-L'+pathtools.normalize($0))"),
 
-  ( ('(-rpath)','(.*)'), "env.append('LD_FLAGS', $0+'='+$1)"),
-  ( ('(-rpath=.*)'),     "env.append('LD_FLAGS', $0)"),
+  ( ('(-rpath)','(.*)'),
+    "env.append('LD_FLAGS', $0+'='+pathtools.normalize($1))"),
+  ( ('(-rpath)=(.*)'),
+    "env.append('LD_FLAGS', $0+'='+pathtools.normalize($1))"),
 
-  ( ('(-rpath-link)','(.*)'), "env.append('LD_FLAGS', $0+'='+$1)"),
-  ( ('(-rpath-link=.*)'),     "env.append('LD_FLAGS', $0)"),
+  ( ('(-rpath-link)','(.*)'),
+    "env.append('LD_FLAGS', $0+'='+pathtools.normalize($1))"),
+  ( ('(-rpath-link)=(.*)'),
+    "env.append('LD_FLAGS', $0+'='+pathtools.normalize($1))"),
 
   ( ('(-Ttext)','(.*)'), "env.append('LD_FLAGS', $0, $1)"),
   ( ('(-Ttext=.*)'),     "env.append('LD_FLAGS', $0)"),
-  ( ('-T', '(.*)'),    "env.set('LD_SCRIPT', $0)"),
+  ( ('-T', '(.*)'),    "env.set('LD_SCRIPT', pathtools.normalize($0))"),
 
   ( ('-e','(.*)'),     "env.append('LD_FLAGS', '-e', $0)"),
   ( ('(--section-start)','(.*)'), "env.append('LD_FLAGS', $0, $1)"),
@@ -186,7 +192,7 @@ LDPatterns = [
   ( '(-Bstatic)',          "env.append('INPUTS', $0)"),
   ( '(-Bdynamic)',          "env.append('INPUTS', $0)"),
   ( '(-.*)',               UnrecognizedOption),
-  ( '(.*)',                "env.append('INPUTS', $0)"),
+  ( '(.*)',                "env.append('INPUTS', pathtools.normalize($0))"),
 ]
 
 
@@ -197,7 +203,7 @@ def main(argv):
   output = env.getone('OUTPUT')
 
   if output == '':
-    output = 'a.out'
+    output = pathtools.normalize('a.out')
 
   # If the user passed -arch, then they want native output.
   arch_flag_given = GetArch() is not None
@@ -343,7 +349,7 @@ def ForceSegmentGap(inputs):
   for f in inputs:
     if IsFlag(f):
       continue
-    if os.path.basename(f) == 'libppapi.a':
+    if pathtools.basename(f) == 'libppapi.a':
       return True
   return False
 
@@ -396,7 +402,8 @@ def AnalyzeInputs(inputs):
     elif intype in ['bclib','po']:
       has_bitcode |= True
     else:
-      Log.Fatal("%s: Unexpected type of file for linking (%s)", f, intype)
+      Log.Fatal("%s: Unexpected type of file for linking (%s)",
+                pathtools.touser(f), intype)
     count += 1
 
   if count == 0:
@@ -441,7 +448,7 @@ def MakeSelUniversalScriptForFile(filename):
   """ Return sel_universal script text for sending a commandline argument
       representing an input file to LD.nexe. """
   script = []
-  basename = os.path.basename(filename)
+  basename = pathtools.basename(filename)
   # A nice name for making a sel_universal variable.
   # Hopefully this does not clash...
   nicename = basename.replace('.','_').replace('-','_')
@@ -480,7 +487,7 @@ def MakeSelUniversalScriptForLD(ld_flags,
   for f in files:
     if f == main_input:
       # Reload the temporary main_input object file into a new shmem region.
-      basename = os.path.basename(f)
+      basename = pathtools.basename(f)
       script.append('file_size %s in_size' % f)
       script.append('shmem in_file in_addr ${in_size}')
       script.append('load_from_file %s ${in_addr} 0 ${in_size}' % f)
@@ -605,16 +612,16 @@ def TranslatePSO(arch, path):
   """ Translates a pso and returns the filename of the native so """
   assert(FileType(path) == 'pso')
   assert(arch)
-  if not os.path.exists(path):
-    Log.Fatal("Couldn't open %s", path)
-  path_dir = os.path.dirname(path)
-  cache_dir = os.path.join(path_dir, 'pnacl_cache')
+  if not pathtools.exists(path):
+    Log.Fatal("Couldn't open %s", pathtools.touser(path))
+  path_dir = pathtools.dirname(path)
+  cache_dir = pathtools.join(path_dir, 'pnacl_cache')
   try:
     os.mkdir(cache_dir)
   except OSError:
     pass
 
-  output_base = os.path.join(cache_dir, os.path.basename(path)) + '.' + arch
+  output_base = pathtools.join(cache_dir, pathtools.basename(path)) + '.' + arch
 
   # Acquire a lock.
   lock = FileLock(output_base)
@@ -628,7 +635,7 @@ def TranslatePSO(arch, path):
   if lock:
     md5file = '%s.md5' % output_base
     md5 = GetMD5Sum(path)
-    if os.path.exists(output):
+    if pathtools.exists(output):
       existing_md5 = ReadMD5(md5file)
       if existing_md5 == md5:
         lock.release()
@@ -654,22 +661,21 @@ def TranslatePSO(arch, path):
   return output
 
 def ReadMD5(file):
-  try:
-    fp = open(file, 'r')
-  except IOError:
+  fp = DriverOpen(file, 'r', fail_ok = True)
+  if not fp:
     return ''
   s = fp.read()
   fp.close()
   return s
 
 def WriteMD5(s, file):
-  fp = open(file, 'w')
+  fp = DriverOpen(file, 'w')
   fp.write(s)
   fp.close()
 
 def GetMD5Sum(path):
   m = hashlib.md5()
-  fp = open(path, 'r')
+  fp = DriverOpen(path, 'r')
   m.update(fp.read())
   fp.close()
   return m.hexdigest()
@@ -687,7 +693,7 @@ class FileLockUnix(object):
     self.acquire()
 
   def acquire(self):
-    fd = open(self.lockfile, 'w+')
+    fd = DriverOpen(self.lockfile, 'w+')
     fcntl.lockf(fd, fcntl.LOCK_EX)
     self.fd = fd
 
@@ -745,8 +751,8 @@ def FindLib(arg):
 
   for curdir in searchdirs:
     for name in searchnames:
-      guess = os.path.join(curdir, name)
-      if os.path.exists(guess):
+      guess = pathtools.join(curdir, name)
+      if pathtools.exists(guess):
         return guess
 
   Log.Fatal("Unable to find library '%s'", arg)
@@ -759,8 +765,8 @@ def LinkerFiles(args):
     if IsFlag(f):
       continue
     else:
-      if not os.path.exists(f):
-        Log.Fatal("Unable to open '%s'", f)
+      if not pathtools.exists(f):
+        Log.Fatal("Unable to open '%s'", pathtools.touser(f))
       ret.append(f)
   return ret
 

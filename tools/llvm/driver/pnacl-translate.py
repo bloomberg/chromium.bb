@@ -74,8 +74,8 @@ env.update(EXTRA_ENV)
 
 
 TranslatorPatterns = [
-  ( '-o(.+)',          "env.set('OUTPUT', $0)"),
-  ( ('-o', '(.+)'),    "env.set('OUTPUT', $0)"),
+  ( '-o(.+)',          "env.set('OUTPUT', pathtools.normalize($0))"),
+  ( ('-o', '(.+)'),    "env.set('OUTPUT', pathtools.normalize($0))"),
 
   ( '-S',              "env.set('OUTPUT_TYPE', 's')"), # Stop at .s
   ( '-c',              "env.set('OUTPUT_TYPE', 'o')"), # Stop at .o
@@ -93,7 +93,7 @@ TranslatorPatterns = [
 
   ( '(-*)',            UnrecognizedOption),
 
-  ( '(.*)',            "env.append('INPUTS', $0)"),
+  ( '(.*)',            "env.append('INPUTS', pathtools.normalize($0))"),
 ]
 
 
@@ -112,7 +112,7 @@ def main(argv):
   infile = inputs[0]
 
   if not IsBitcode(infile):
-    Log.Fatal('%s: File is not bitcode', infile)
+    Log.Fatal('%s: File is not bitcode', pathtools.touser(infile))
 
   intype = FileType(infile)
   if intype not in ('pso', 'po', 'pexe'):
