@@ -102,11 +102,6 @@ class PluginsDOMHandler : public WebUIMessageHandler,
   // Callback for the "enablePlugin" message.
   void HandleEnablePluginMessage(const ListValue* args);
 
-  // Callback for the "showTermsOfService" message. This really just opens a new
-  // window with about:terms. Flash can't link directly to about:terms due to
-  // the security model.
-  void HandleShowTermsOfServiceMessage(const ListValue* args);
-
   // Callback for the "saveShowDetailsToPrefs" message.
   void HandleSaveShowDetailsToPrefs(const ListValue* args);
 
@@ -168,8 +163,6 @@ void PluginsDOMHandler::RegisterMessages() {
       NewCallback(this, &PluginsDOMHandler::HandleRequestPluginsData));
   web_ui_->RegisterMessageCallback("enablePlugin",
       NewCallback(this, &PluginsDOMHandler::HandleEnablePluginMessage));
-  web_ui_->RegisterMessageCallback("showTermsOfService",
-      NewCallback(this, &PluginsDOMHandler::HandleShowTermsOfServiceMessage));
   web_ui_->RegisterMessageCallback("saveShowDetailsToPrefs",
       NewCallback(this, &PluginsDOMHandler::HandleSaveShowDetailsToPrefs));
   web_ui_->RegisterMessageCallback("getShowDetails",
@@ -223,14 +216,6 @@ void PluginsDOMHandler::HandleEnablePluginMessage(const ListValue* args) {
   // list is always written to prefs even when the user hasn't disabled a
   // plugin. <http://crbug.com/39101>
   plugin_updater->UpdatePreferences(web_ui_->GetProfile(), 0);
-}
-
-void PluginsDOMHandler::HandleShowTermsOfServiceMessage(const ListValue* args) {
-  // Show it in a new browser window....
-  Browser* browser = Browser::Create(web_ui_->GetProfile());
-  browser->OpenURL(GURL(chrome::kAboutTermsURL),
-                   GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
-  browser->window()->Show();
 }
 
 void PluginsDOMHandler::HandleSaveShowDetailsToPrefs(const ListValue* args) {

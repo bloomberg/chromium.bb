@@ -104,13 +104,6 @@ function loadShowDetailsFromPrefs(show_details) {
 }
 
 /**
- * Asks the C++ PluginsDOMHandler to show the terms of service (about:terms).
- */
-function showTermsOfService() {
-  chrome.send('showTermsOfService', []);
-}
-
-/**
  * Called by the web_ui_ to re-populate the page with data representing the
  * current state of installed plugins.
  */
