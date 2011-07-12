@@ -2735,6 +2735,13 @@ nacl_irt_env.Replace(LIBPATH='${LIB_DIR}')
 if nacl_irt_env.Bit('bitcode'):
   nacl_irt_env.AddBiasForPNaCl()
 
+# All IRT code must avoid direct use of the TLS ABI register, which
+# is reserved for user TLS.  Instead, ensure all TLS accesses use a
+# call to __nacl_read_tp, which the IRT code overrides to segregate
+# IRT-private TLS from user TLS.
+if not nacl_irt_env.Bit('bitcode'):
+  nacl_irt_env.Append(CCFLAGS=['-mtls-use-call'])
+
 # TODO(mcgrathr): Clean up uses of these methods.
 def AddLibraryDummy(env, nodes, is_platform=False):
   return [env.File('${LIB_DIR}/%s.a' % x) for x in nodes]

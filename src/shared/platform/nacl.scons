@@ -6,14 +6,6 @@
 Import('env')
 env.Append(CCFLAGS=['-Wno-long-long'])
 
-# This library is linked into irt.nexe (see src/untrusted/irt/).
-# All IRT code must avoid direct use of the TLS ABI register, which
-# is reserved for user TLS.  Instead, ensure all TLS accesses use a
-# call to __nacl_read_tp, which the IRT code overrides to segregate
-# IRT-private TLS from user TLS.
-if not env.Bit('bitcode') and not env.Bit('nacl_glibc'):
-  env.Append(CCFLAGS=['-mtls-use-call'])
-
 platform_inputs = [
     'nacl_check.c',
     'nacl_log.c',
