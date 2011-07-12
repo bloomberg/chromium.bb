@@ -168,10 +168,13 @@ class TranslateManager : public NotificationObserver,
   // translate infobar is showing, it just replaces it with the new one.
   void ShowInfoBar(TabContents* tab, TranslateInfoBarDelegate* infobar);
 
-  // Returns the language to translate to, which is the language the UI is
-  // configured in.  Returns an empty string if that language is not supported
-  // by the translation service.
-  static std::string GetTargetLanguage();
+  // Returns the language to translate to. The language returned is the
+  // first language found in the following list that is supported by the
+  // translation service:
+  //     the UI language
+  //     the accept-language list
+  // If no language is found then an empty string is returned.
+  static std::string GetTargetLanguage(PrefService* prefs);
 
   // Returns the translate info bar showing in |tab| or NULL if none is showing.
   static TranslateInfoBarDelegate* GetTranslateInfoBarDelegate(

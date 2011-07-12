@@ -873,6 +873,10 @@ TEST_F(TranslateManagerTest, UnsupportedUILanguage) {
   std::string original_lang = browser_process->GetApplicationLocale();
   browser_process->SetApplicationLocale("qbz");
 
+  // Make sure that the accept language list only contains unsupported languages
+  PrefService* prefs = contents()->profile()->GetPrefs();
+  prefs->SetString(prefs::kAcceptLanguages, "qbz");
+
   // Simulate navigating to a page in a language supported by the translate
   // server.
   SimulateNavigation(GURL("http://www.google.com"), "en", true);
@@ -881,6 +885,24 @@ TEST_F(TranslateManagerTest, UnsupportedUILanguage) {
   EXPECT_TRUE(GetTranslateInfoBar() == NULL);
 
   browser_process->SetApplicationLocale(original_lang);
+}
+
+// Tests that the first supported accept language is selected
+TEST_F(TranslateManagerTest, TranslateAcceptLanguage) {
+  // Set locate to non-existant language
+  TestingBrowserProcess* browser_process = testing_browser_process_.get();
+  std::string original_lang = browser_process->GetApplicationLocale();
+  browser_process->SetApplicationLocale("qbz");
+
+  // Set Qbz and French as the only accepted languages
+  PrefService* prefs = contents()->profile()->GetPrefs();
+  prefs->SetString(prefs::kAcceptLanguages, "qbz,fr");
+
+  // Go to a German page
+  SimulateNavigation(GURL("http://google.de"), "de", true);
+
+  // Expect the infobar to pop up
+  EXPECT_TRUE(GetTranslateInfoBar() != NULL);
 }
 
 // Tests that the translate enabled preference is honored.

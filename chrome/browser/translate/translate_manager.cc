@@ -459,7 +459,7 @@ void TranslateManager::InitiateTranslation(TabContents* tab,
   if (GetTranslateInfoBarDelegate(tab))
     return;
 
-  std::string target_lang = GetTargetLanguage();
+  std::string target_lang = GetTargetLanguage(prefs);
   std::string language_code = GetLanguageCode(page_lang);
   // Nothing to do if either the language Chrome is in or the language of the
   // page is not supported by the translation server.
@@ -761,10 +761,27 @@ void TranslateManager::ShowInfoBar(TabContents* tab,
 }
 
 // static
-std::string TranslateManager::GetTargetLanguage() {
-  std::string target_lang =
-      GetLanguageCode(g_browser_process->GetApplicationLocale());
-  return IsSupportedLanguage(target_lang) ? target_lang : std::string();
+std::string TranslateManager::GetTargetLanguage(PrefService* prefs) {
+  std::string ui_lang =
+    GetLanguageCode(g_browser_process->GetApplicationLocale());
+  if (IsSupportedLanguage(ui_lang))
+    return ui_lang;
+
+  // Getting the accepted languages list
+  std::string accept_langs_str = prefs->GetString(prefs::kAcceptLanguages);
+
+  std::vector<std::string> accept_langs_list;
+  base::SplitString(accept_langs_str, ',', &accept_langs_list);
+
+  // Will translate to the first supported language on the Accepted Language
+  // list or not at all if no such candidate exists
+  std::vector<std::string>::iterator iter;
+  for (iter = accept_langs_list.begin();
+       iter != accept_langs_list.end(); ++iter) {
+    if (IsSupportedLanguage(GetLanguageCode(*iter)))
+      return *iter;
+  }
+  return std::string();
 }
 
 // static
