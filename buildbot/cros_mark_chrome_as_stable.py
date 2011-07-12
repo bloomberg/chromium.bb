@@ -27,7 +27,7 @@ import urllib
 import cros_mark_as_stable
 from cros_build_lib import RunCommand, Info, Warning
 
-BASE_CHROME_SVN_URL = 'svn://svn.chromium.org/chrome/'
+BASE_CHROME_SVN_URL = 'http://src.chromium.org/svn'
 
 # Helper regex's for finding ebuilds.
 _CHROME_VERSION_REGEX = '\d+\.\d+\.\d+\.\d+'

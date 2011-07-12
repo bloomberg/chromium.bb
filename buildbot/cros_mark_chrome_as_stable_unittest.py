@@ -172,7 +172,7 @@ class CrosMarkChromeAsStable(mox.MoxTestBase):
                            'LATEST.txt'])
     self.mox.StubOutWithMock(cros_mark_chrome_as_stable, 'RunCommand')
     cros_mark_chrome_as_stable.RunCommand(
-        ['svn', 'ls', 'svn://svn.chromium.org/chrome/releases'],
+        ['svn', 'ls', 'http://src.chromium.org/svn/releases'],
         redirect_stdout=True).AndReturn('some_data')
     cros_mark_chrome_as_stable.RunCommand(
         ['sort', '--version-sort'], input='some_data',
@@ -190,7 +190,7 @@ class CrosMarkChromeAsStable(mox.MoxTestBase):
                            'LATEST.txt'])
     self.mox.StubOutWithMock(cros_mark_chrome_as_stable, 'RunCommand')
     cros_mark_chrome_as_stable.RunCommand(
-        ['svn', 'ls', 'svn://svn.chromium.org/chrome/releases'],
+        ['svn', 'ls', 'http://src.chromium.org/svn/releases'],
         redirect_stdout=True).AndReturn('some_data')
     cros_mark_chrome_as_stable.RunCommand(
         ['sort', '--version-sort'], input='some_data',
