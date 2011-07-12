@@ -4,9 +4,10 @@
 
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
+#include "chrome/browser/policy/cloud_policy_data_store.h"
 #include "chrome/browser/policy/cloud_policy_provider.h"
 #include "chrome/browser/policy/cloud_policy_subsystem.h"
-#include "chrome/browser/policy/user_policy_identity_strategy.h"
+#include "chrome/browser/policy/user_policy_token_cache.h"
 
 // Policies are optionally built, hence the following stubs.
 
