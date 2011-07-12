@@ -33,10 +33,11 @@
 #ifndef NATIVE_CLIENT_SRC_INCLUDE_ATOMIC_OPS_H_
 #define NATIVE_CLIENT_SRC_INCLUDE_ATOMIC_OPS_H_ 1
 
-// ------------------------------------------------------------------------
-// Include the platform specific implementations of the types
-// and operations listed below.
-// ------------------------------------------------------------------------
+/* ------------------------------------------------------------------------
+ * Include the platform specific implementations of the types
+ * and operations listed below.
+ * ------------------------------------------------------------------------
+ */
 
 #include "native_client/src/include/nacl_base.h"
 
@@ -58,45 +59,47 @@
 #error You need to implement atomic operations for this architecture
 #endif
 
-// ------------------------------------------------------------------------
-// Commented out type definitions and method declarations for documentation
-// of the interface provided by this module.
-// ------------------------------------------------------------------------
+/* ------------------------------------------------------------------------
+ * Interface provided by this module
+ * ------------------------------------------------------------------------
+ */
 
-#if 0
+/*
+ * typedef int32_t Atomic32;
+ *
+ * Signed type that can hold a pointer and supports the atomic ops below, as
+ *  well as atomic loads and stores.  Instances must be naturally-aligned.
+ */
 
-// Signed type that can hold a pointer and supports the atomic ops below, as
-// well as atomic loads and stores.  Instances must be naturally-aligned.
-typedef intptr_t AtomicWord;
+/*
+ *  Atomic32 CompareAndSwap(volatile Atomic32* ptr,
+ *                         Atomic32 old_value,
+ *                         Atomic32 new_value);
+ *
+ *  Atomically execute:
+ *      result = *ptr;
+ *      if (*ptr == old_value)
+ *          *ptr = new_value;
+ *        return result;
+ *
+ *  I.e., replace "*ptr" with "new_value" if "*ptr" used to be "old_value".
+ *  Always return the old value of "*ptr"
+ *  This routine implies no memory barriers.
+ */
 
-// Signed 32-bit type that supports the atomic ops below, as well as atomic
-// loads and stores.  Instances must be naturally aligned.  This type differs
-// from AtomicWord in 64-bit binaries where AtomicWord is 64-bits.
-typedef int32_t Atomic32;
+/*
+ *  Atomic32 AtomicExchange(volatile Atomic32* ptr, Atomic32 new_value);
+ *
+ *  Atomically store new_value into *ptr, returning the previous value held in
+ *  *ptr.  This routine implies no memory barriers.
+ */
 
-// Atomically execute:
-//      result = *ptr;
-//      if (*ptr == old_value)
-//        *ptr = new_value;
-//      return result;
-//
-// I.e., replace "*ptr" with "new_value" if "*ptr" used to be "old_value".
-// Always return the old value of "*ptr"
-//
-// This routine implies no memory barriers.
-AtomicWord CompareAndSwap(volatile AtomicWord* ptr,
-                          AtomicWord old_value,
-                          AtomicWord new_value);
+/*
+ * Atomic32 AtomicIncrement(volatile Atomic32* ptr, Atomic32 increment);
+ *
+ *   Atomically increment *ptr by "increment".  Returns the new value of
+ *   *ptr with the increment applied.  This routine implies no memory
+ *   barriers.
+ */
 
-// Atomically store new_value into *ptr, returning the previous value held in
-// *ptr.  This routine implies no memory barriers.
-AtomicWord AtomicExchange(volatile AtomicWord* ptr, AtomicWord new_value);
-
-// Atomically increment *ptr by "increment".  Returns the new value of
-// *ptr with the increment applied.  This routine implies no memory
-// barriers.
-AtomicWord AtomicIncrement(volatile AtomicWord* ptr, AtomicWord increment);
-
-#endif
-
-#endif  // NATIVE_CLIENT_SRC_INCLUDE_ATOMIC_OPS_H_
+#endif  /* NATIVE_CLIENT_SRC_INCLUDE_ATOMIC_OPS_H_ */

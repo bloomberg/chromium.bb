@@ -70,7 +70,7 @@ int GetLastErrorString(char* buffer, size_t length) {
 #endif
 }
 
-static AtomicWord memory_object_count = 0;
+static Atomic32 memory_object_count = 0;
 
 static int TryShmOrTempOpen(size_t length, const char* prefix, bool use_temp) {
   if (0 == length) {

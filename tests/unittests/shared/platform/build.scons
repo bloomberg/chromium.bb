@@ -24,3 +24,16 @@ env.AddNodeToTestSuite(node, ['small_tests'],
                        is_broken=env.Bit('target_arm') and env.UsingEmulator())
 
 
+native_atomic_ops_test_exe = env.ComponentProgram(
+    'native_atomic_ops_test',
+    'native_atomic_ops_test.c',
+    EXTRA_LIBS=['platform', 'gio'])
+node = env.CommandTest(
+    'native_atomic_ops_test.out',
+    command=[native_atomic_ops_test_exe, '25'],
+    size='medium')
+
+# NOTE: the arm emulator does not handle atomic ops properly
+env.AddNodeToTestSuite(node, ['medium_tests'],
+                       'run_native_atomic_ops_test',
+                       is_broken=env.Bit('target_arm') and env.UsingEmulator())

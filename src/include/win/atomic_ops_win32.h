@@ -34,62 +34,37 @@
 #define NATIVE_CLIENT_SRC_INCLUDE_WIN_ATOMIC_OPS_WIN32_H_ 1
 
 #include <windows.h>
-#include <crtdefs.h>  // for intptr_t on WINCE
 
-typedef intptr_t AtomicWord;
-#ifdef _WIN64
 typedef LONG Atomic32;
-#else
-typedef AtomicWord Atomic32;
-#endif
 
-// TODO(aa): we don't have COMPILE_ASSERT in Gears.
-// COMPILE_ASSERT(sizeof(AtomicWord) == sizeof(PVOID), atomic_word_is_atomic);
-
-inline AtomicWord CompareAndSwap(volatile AtomicWord* ptr,
-                                 AtomicWord old_value,
-                                 AtomicWord new_value) {
-  PVOID result = InterlockedCompareExchangePointer(
-    reinterpret_cast<volatile PVOID*>(ptr),
-    reinterpret_cast<PVOID>(new_value), reinterpret_cast<PVOID>(old_value));
-  return reinterpret_cast<AtomicWord>(result);
+__inline
+Atomic32 CompareAndSwap(volatile Atomic32* ptr,
+               Atomic32 old_value,
+               Atomic32 new_value) {
+  return InterlockedCompareExchange(ptr,
+                                    new_value,
+                                    old_value);
 }
 
-inline AtomicWord AtomicExchange(volatile AtomicWord* ptr,
-                                 AtomicWord new_value) {
-  PVOID result = InterlockedExchangePointer(
-    const_cast<PVOID*>(reinterpret_cast<volatile PVOID*>(ptr)),
-    reinterpret_cast<PVOID>(new_value));
-  return reinterpret_cast<AtomicWord>(result);
+__inline
+Atomic32 AtomicExchange(volatile Atomic32* ptr,
+                        Atomic32 new_value) {
+  return (Atomic32)InterlockedExchange(ptr, new_value);
 }
 
-#ifdef _WIN64
-inline Atomic32 AtomicIncrement(volatile Atomic32* ptr, Atomic32 increment) {
-  // InterlockedExchangeAdd returns *ptr before being incremented
-  // and we must return nonzero iff *ptr is nonzero after being
-  // incremented.
-  return InterlockedExchangeAdd(ptr, increment) + increment;
-}
-
-inline AtomicWord AtomicIncrement(volatile AtomicWord* ptr,
-                                  AtomicWord increment) {
-  return InterlockedExchangeAdd64(
-    reinterpret_cast<volatile LONGLONG*>(ptr),
-    static_cast<LONGLONG>(increment)) + increment;
-}
-#else
-inline AtomicWord AtomicIncrement(volatile AtomicWord* ptr,
-                                  AtomicWord increment) {
-  return InterlockedExchangeAdd(
+__inline
+Atomic32 AtomicIncrement(volatile Atomic32* ptr, Atomic32 increment) {
+  Atomic32 result = InterlockedExchangeAdd(
 #ifdef WINCE
-      // It seems that for WinCE InterlockedExchangeAdd takes LONG* as its first
-      // parameter. The const_cast is required to remove the volatile modifier.
-      const_cast<LONG*>(reinterpret_cast<volatile LONG*>(ptr)),
+     /* It seems that for WinCE InterlockedExchangeAdd takes LONG* as its first
+      * parameter. The cast is required to remove the volatile modifier.
+      */
+      (Atomic32*) ptr,
 #else
-      reinterpret_cast<volatile LONG*>(ptr),
+      ptr,
 #endif
-      static_cast<LONG>(increment)) + increment;
+      increment);
+  return result + increment;
 }
-#endif
 
-#endif  // NATIVE_CLIENT_SRC_INCLUDE_WIN_ATOMIC_OPS_WIN32_H_
+#endif  /* NATIVE_CLIENT_SRC_INCLUDE_WIN_ATOMIC_OPS_WIN32_H_ */

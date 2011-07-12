@@ -37,54 +37,6 @@
 #include <stdint.h>
 
 typedef int32_t Atomic32;
-typedef intptr_t AtomicWord;
-
-#ifdef __LP64__   // Indicates 64-bit pointers under OS
-#define OSAtomicCastIntPtr(p) \
-               reinterpret_cast<int64_t *>(const_cast<AtomicWord *>(p))
-#define OSAtomicCompareAndSwapIntPtr OSAtomicCompareAndSwap64
-#define OSAtomicAddIntPtr OSAtomicAdd64
-#else
-#define OSAtomicCastIntPtr(p) \
-               reinterpret_cast<int32_t *>(const_cast<AtomicWord *>(p))
-#define OSAtomicCompareAndSwapIntPtr OSAtomicCompareAndSwap32
-#define OSAtomicAddIntPtr OSAtomicAdd32
-#endif
-
-inline AtomicWord CompareAndSwap(volatile AtomicWord *ptr,
-                                 AtomicWord old_value,
-                                 AtomicWord new_value) {
-  AtomicWord prev_value;
-  do {
-    if (OSAtomicCompareAndSwapIntPtr(old_value, new_value,
-                                     OSAtomicCastIntPtr(ptr))) {
-      return old_value;
-    }
-    prev_value = *ptr;
-  } while (prev_value == old_value);
-  return prev_value;
-}
-
-inline AtomicWord AtomicExchange(volatile AtomicWord *ptr,
-                                 AtomicWord new_value) {
-  AtomicWord old_value;
-  do {
-    old_value = *ptr;
-  } while (!OSAtomicCompareAndSwapIntPtr(old_value, new_value,
-                                         OSAtomicCastIntPtr(ptr)));
-  return old_value;
-}
-
-
-inline AtomicWord AtomicIncrement(volatile AtomicWord *ptr,
-                                  AtomicWord increment) {
-  return OSAtomicAddIntPtr(increment, OSAtomicCastIntPtr(ptr));
-}
-
-
-// MacOS uses long for intptr_t, AtomicWord and Atomic32 are always different
-// on the Mac, even when they are the same size.  Thus, we always provide
-// Atomic32 versions.
 
 inline Atomic32 CompareAndSwap(volatile Atomic32 *ptr,
                                Atomic32 old_value,
@@ -92,7 +44,7 @@ inline Atomic32 CompareAndSwap(volatile Atomic32 *ptr,
   Atomic32 prev_value;
   do {
     if (OSAtomicCompareAndSwap32(old_value, new_value,
-                                 const_cast<Atomic32*>(ptr))) {
+                                 (Atomic32*) ptr)) {
       return old_value;
     }
     prev_value = *ptr;
@@ -106,12 +58,12 @@ inline Atomic32 AtomicExchange(volatile Atomic32 *ptr,
   do {
     old_value = *ptr;
   } while (!OSAtomicCompareAndSwap32(old_value, new_value,
-                                     const_cast<Atomic32*>(ptr)));
+                                     (Atomic32*) ptr));
   return old_value;
 }
 
 inline Atomic32 AtomicIncrement(volatile Atomic32 *ptr, Atomic32 increment) {
-  return OSAtomicAdd32(increment, const_cast<Atomic32*>(ptr));
+  return OSAtomicAdd32(increment, (Atomic32*) ptr);
 }
 
 #endif  // NATIVE_CLIENT_SRC_INCLUDE_OSX_ATOMIC_OPS_OSX_H_

@@ -174,7 +174,7 @@ Handle BoundSocket(const SocketAddress* address) {
 }
 
 int SocketPair(Handle pair[2]) {
-  static AtomicWord socket_pair_count;
+  static Atomic32 socket_pair_count;
 
   char name[kPipePathMax];
   do {
