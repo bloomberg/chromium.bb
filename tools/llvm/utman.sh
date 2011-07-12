@@ -119,6 +119,9 @@ readonly TC_SRC_NEWLIB="${TC_SRC}/newlib"
 readonly TC_SRC_COMPILER_RT="${TC_SRC}/compiler-rt"
 readonly TC_SRC_LIBSTDCPP="${TC_SRC_LLVM_GCC}/llvm-gcc-4.2/libstdc++-v3"
 readonly TC_SRC_GOOGLE_PERFTOOLS="${TC_SRC}/google-perftools"
+readonly TC_SRC_LLVM_MQ_PATCHES="${TC_SRC}/llvm-mq-patches"
+readonly TC_SRC_LLVM_GCC_MQ_PATCHES="${TC_SRC}/llvm-gcc-mq-patches"
+
 
 # Unfortunately, binutils/configure generates this untracked file
 # in the binutils source directory
@@ -213,6 +216,9 @@ readonly NEWLIB_REV=9bef47f82918
 readonly BINUTILS_REV=c02b0252b557
 readonly COMPILER_RT_REV=1a3a6ffb31ea
 readonly GOOGLE_PERFTOOLS_REV=867799d6e777
+# Mercurial Queues Repos for Merges
+readonly LLVM_MQ_REV=2b2a4c101299
+readonly LLVM_GCC_MQ_REV=00eb50705e47
 
 # Repositories
 readonly REPO_LLVM_GCC="llvm-gcc.nacl-llvm-branches"
@@ -221,6 +227,8 @@ readonly REPO_NEWLIB="newlib.nacl-llvm-branches"
 readonly REPO_BINUTILS="binutils.nacl-llvm-branches"
 readonly REPO_COMPILER_RT="compiler-rt.nacl-llvm-branches"
 readonly REPO_GOOGLE_PERFTOOLS="google-perftools.nacl-llvm-branches"
+readonly REPO_LLVM_MQ_PATCHES="llvm-mq-patches.nacl-llvm-branches"
+readonly REPO_LLVM_GCC_MQ_PATCHES="llvm-gcc-mq-patches.nacl-llvm-branches"
 
 
 # TODO(espindola): This should be ${CXX:-}, but llvm-gcc's configure has a
@@ -316,6 +324,8 @@ hg-info-all() {
   hg-info "${TC_SRC_BINUTILS}"   ${BINUTILS_REV}
   hg-info "${TC_SRC_COMPILER_RT}" ${COMPILER_RT_REV}
   hg-info "${TC_SRC_GOOGLE_PERFTOOLS}" ${GOOGLE_PERFTOOLS_REV}
+  hg-info "${TC_SRC_LLVM_MQ_PATCHES}"  ${LLVM_MQ_REV}
+  hg-info "${TC_SRC_LLVM_GCC_MQ_PATCHES}"  ${LLVM_MQ_REV}
 }
 
 #@ hg-update-all      - Update all repos to the latest stable rev
@@ -326,18 +336,35 @@ hg-update-all() {
   hg-update-binutils
   hg-update-compiler-rt
   hg-update-google-perftools
+  hg-update-llvm-mq-patches
+  hg-update-llvm-gcc-mq-patches
 }
+
 
 hg-assert-safe-to-update() {
   local name="$1"
   local dir="$2"
   local rev="$3"
-  local defstr=$(echo "${name}" | tr '[a-z]-' '[A-Z]_')
 
   if ! hg-on-branch "${dir}" pnacl-sfi ; then
     Banner "hg/${name} is not on branch pnacl-sfi"
     exit -1
   fi
+  hg-assert-safe-to-update-inner "$name" "$dir" "$rev"
+}
+
+hg-assert-safe-to-update-nosfi() {
+  local name="$1"
+  local dir="$2"
+  local rev="$3"
+  hg-assert-safe-to-update-inner "$name" "$dir" "$rev"
+}
+
+hg-assert-safe-to-update-inner() {
+  local name="$1"
+  local dir="$2"
+  local rev="$3"
+  local defstr=$(echo "${name}" | tr '[a-z]-' '[A-Z]_')
 
   if ! hg-has-changes "${dir}"; then
     return 0
@@ -403,6 +430,27 @@ hg-update-common() {
   fi
 }
 
+hg-update-nosfi() {
+  local name="$1"
+  local rev="$2"
+  local dir="$3"
+
+  # If this is a buildbot, do sanity checks here.
+  hg-bot-sanity "${name}" "${dir}"
+
+  # Make sure it is safe to update
+  hg-assert-safe-to-update-nosfi "${name}" "${dir}" "${rev}"
+
+  if hg-at-revision "${dir}" "${rev}" ; then
+    StepBanner "HG-UPDATE" "Repo ${name} already at ${rev}"
+  else
+    StepBanner "HG-UPDATE" "Updating ${name} to ${rev}"
+    hg-pull "${dir}"
+    hg-update "${dir}" ${rev}
+  fi
+}
+
+
 #@ hg-update-llvm-gcc    - Update LLVM-GCC to the stable revision
 hg-update-llvm-gcc() {
   hg-update-common "llvm-gcc" ${LLVM_GCC_REV} "${TC_SRC_LLVM_GCC}"
@@ -443,6 +491,17 @@ hg-update-google-perftools() {
     "${TC_SRC_GOOGLE_PERFTOOLS}"
 }
 
+# Next two repos do not have a pnacl-sfi branch
+hg-update-llvm-mq-patches() {
+  hg-update-nosfi "llvm-mq-patches" ${LLVM_MQ_REV} \
+   "${TC_SRC_LLVM_MQ_PATCHES}"
+}
+
+hg-update-llvm-gcc-mq-patches() {
+  hg-update-nosfi "llvm-gcc-mq-patches" ${LLVM_GCC_MQ_REV} \
+   "${TC_SRC_LLVM_GCC_MQ_PATCHES}"
+}
+
 #@ hg-pull-all           - Pull all repos. (but do not update working copy)
 #@ hg-pull-REPO          - Pull repository REPO.
 #@                         (REPO can be llvm-gcc, llvm, newlib, binutils)
@@ -454,6 +513,8 @@ hg-pull-all() {
   hg-pull-binutils
   hg-pull-compiler-rt
   hg-pull-google-perftools
+  hg-pull-llvm-mq-patches
+  hg-pull-llvm-gcc-mq-patches
 }
 
 hg-pull-llvm-gcc() {
@@ -490,6 +551,8 @@ hg-checkout-all() {
   hg-checkout-newlib
   hg-checkout-compiler-rt
   hg-checkout-google-perftools
+  hg-checkout-llvm-mq-patches
+  hg-checkout-llvm-gcc-mq-patches
 }
 
 hg-checkout-llvm-gcc() {
@@ -516,6 +579,16 @@ hg-checkout-compiler-rt() {
 hg-checkout-google-perftools() {
   hg-checkout ${REPO_GOOGLE_PERFTOOLS} ${TC_SRC_GOOGLE_PERFTOOLS} \
     ${GOOGLE_PERFTOOLS_REV}
+}
+
+hg-checkout-llvm-mq-patches() {
+  hg-checkout ${REPO_LLVM_MQ_PATCHES}     ${TC_SRC_LLVM_MQ_PATCHES}   \
+     ${LLVM_MQ_REV}
+}
+
+hg-checkout-llvm-gcc-mq-patches() {
+  hg-checkout ${REPO_LLVM_GCC_MQ_PATCHES}     ${TC_SRC_LLVM_GCC_MQ_PATCHES}  \
+     ${LLVM_GCC_MQ_REV}
 }
 
 #@ hg-clean              - Remove all repos. (WARNING: local changes are lost)
@@ -1035,9 +1108,23 @@ llvm-install-links() {
     makelink="cp -a"
   fi
 
-  # TODO(pdox): These may no longer be necessary.
   mkdir -p "${BFD_PLUGIN_DIR}"
+
+  # TODO(pdox): These may no longer be necessary.
+  if [ -f "${BFD_PLUGIN_DIR}/../../../llvm/${SO_DIR}/LLVMgold${SO_EXT}" ]; then
+    # this is to make sure whatever name LLVMgold.so is, it is always
+    # libLLVMgold.so as far as PNaCl is concerned
+
+    StepBanner "Symlinking LLVMgold.so to libLLVMgold.so in " \
+     "${BFD_PLUGIN_DIR}/../../../llvm/${SO_DIR}"
+
+    (cd "${BFD_PLUGIN_DIR}/../../../llvm/${SO_DIR}";
+      ${makelink} "LLVMgold${SO_EXT}" "${SO_PREFIX}LLVMgold${SO_EXT}";
+    )
+  fi
+
   spushd "${BFD_PLUGIN_DIR}"
+
   ${makelink} ../../../llvm/${SO_DIR}/${SO_PREFIX}LLVMgold${SO_EXT} .
   ${makelink} ../../../llvm/${SO_DIR}/${SO_PREFIX}LTO${SO_EXT} .
   spopd
