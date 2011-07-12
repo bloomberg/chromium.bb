@@ -6,35 +6,17 @@
 
 Import('env')
 
-# Since the integrated runtime will be built with newlib,
-# there's no need to build this module against glibc.
+# This module shouldn't be built in an environment that uses glibc.
 if env.Bit('nacl_glibc'):
-  Return()
-# Although the regular PNaCl frontend is able to link object files
-# generated from assembly code, the sandboxed version cannot.
-if env.Bit('use_sandboxed_translator'):
-  Return()
+  raise UserError('src/untrusted/irt/nacl.scons in the wrong environment?')
 
 blob_env = env.Clone()
-blob_env.Append(CPPDEFINES=[
-    ['NACL_BLOCK_SHIFT', '5'],
-    ['NACL_BUILD_ARCH', '${BUILD_ARCHITECTURE}'],
-    ['NACL_BUILD_SUBARCH', '${BUILD_SUBARCH}'],
-    ['NACL_TARGET_ARCH', '${TARGET_ARCHITECTURE}' ],
-    ['NACL_TARGET_SUBARCH', '${TARGET_SUBARCH}' ],
-    ])
-
 blob_env.Append(LINKFLAGS='-Wl,--section-start,.rodata=${IRT_BLOB_DATA_START}')
 # The PNaCl linker (gold) does not implement the "-Ttext-segment"
 # option.  However, with the linker for x86, the "-Ttext" option does
 # not affect the executable's base address.
 if blob_env.Bit('bitcode'):
   blob_env.Append(LINKFLAGS='-Wl,-Ttext=${IRT_BLOB_CODE_START}')
-  # To allow elf_restart_*.o in the link line
-  blob_env.Append(LINKFLAGS='--pnacl-allow-native')
-  # Without this llc asserts
-  # c.f. http://code.google.com/p/nativeclient/issues/detail?id=1225
-#  blob_env.Append(LINKFLAGS=['-O0'])
 else:
   blob_env.Append(LINKFLAGS='-Wl,-Ttext-segment=${IRT_BLOB_CODE_START}')
 
