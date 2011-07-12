@@ -15,7 +15,6 @@
 #include <pthread.h>
 #endif
 #include "native_client/src/trusted/service_runtime/include/sys/time.h"
-#include "native_client/src/include/atomic_ops.h"
 #include "native_client/src/include/nacl_compiler_annotations.h"
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/trusted/service_runtime/include/machine/_types.h"
@@ -42,23 +41,9 @@ struct NaClMutex {
 #endif
 };
 
-/*
- * pthread_cond_broadcast seems to be broken on ARM and/or QEMU.
- * It only wakes one thread up instead of all of them.
- * This is an ugly workaround.
- */
-#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
-#define NACL_COND_BROADCAST_HACK   1
-#else
-#define NACL_COND_BROADCAST_HACK   0
-#endif
-
 struct NaClCondVar {
 #if defined(__native_client__) || NACL_LINUX || NACL_OSX
   pthread_cond_t cv;
-#if NACL_COND_BROADCAST_HACK
-  AtomicWord waiting;
-#endif
 #else
   void* cv;
 #endif
