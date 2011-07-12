@@ -6,12 +6,3 @@
 // until the changes can be landed upstream.
 
 // PLEASE DO NOT LEAVE ENTRIES IN THIS FILE FOR MORE THAN 24 HRS.
-
-// Started crashing in the r89132 roll; canaries seem unaffected.
-BUGCR86570 MAC : http/tests/misc/acid3.html = IMAGE CRASH
-BUGCR86570 MAC : http/tests/misc/font-face-in-multiple-segmented-faces.html = CRASH
-BUGCR86570 MAC : platform/chromium-linux/fast/text/international/arabic-vertical-offset.html = IMAGE+TEXT CRASH
-BUGCR86570 MAC : platform/gtk/fonts/custom-font-missing-glyphs.html = IMAGE+TEXT CRASH
-BUGCR86570 MAC : platform/gtk/fonts/font-face-with-complex-text.html = IMAGE+TEXT CRASH
-BUGCR86570 MAC : platform/mac/fast/text/myanmar-shaping.html = CRASH
-BUGCR86570 MAC : platform/mac/fast/text/thai-combining-mark-positioning.html = CRASH
