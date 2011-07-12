@@ -401,17 +401,20 @@ string16 InferLabelForElement(const WebFormControlElement& element) {
 // Fills |option_strings| with the values of the <option> elements present in
 // |select_element|.
 void GetOptionStringsFromElement(const WebSelectElement& select_element,
-                                 std::vector<string16>* option_strings) {
+                                 std::vector<string16>* option_values,
+                                 std::vector<string16>* option_contents) {
   DCHECK(!select_element.isNull());
-  DCHECK(option_strings);
 
-  option_strings->clear();
+  option_values->clear();
+  option_contents->clear();
   WebVector<WebElement> list_items = select_element.listItems();
-  option_strings->reserve(list_items.size());
+  option_values->reserve(list_items.size());
+  option_contents->reserve(list_items.size());
   for (size_t i = 0; i < list_items.size(); ++i) {
     if (IsOptionElement(list_items[i])) {
-      option_strings->push_back(
-          list_items[i].toConst<WebOptionElement>().value());
+      const WebOptionElement option = list_items[i].toConst<WebOptionElement>();
+      option_values->push_back(option.value());
+      option_contents->push_back(option.text());
     }
   }
 }
@@ -584,9 +587,9 @@ void FormManager::WebFormControlElementToFormField(
     // Set option strings on the field if available.
     DCHECK(IsSelectElement(element));
     const WebSelectElement select_element = element.toConst<WebSelectElement>();
-    std::vector<string16> option_strings;
-    GetOptionStringsFromElement(select_element, &option_strings);
-    field->option_strings = option_strings;
+    GetOptionStringsFromElement(select_element,
+                                &field->option_values,
+                                &field->option_contents);
   }
 
   if (!(extract_mask & EXTRACT_VALUE))

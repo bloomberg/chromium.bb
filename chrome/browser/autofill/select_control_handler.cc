@@ -123,11 +123,11 @@ bool SetSelectControlValue(const string16& value,
                            webkit_glue::FormField* field) {
   string16 value_lowercase = StringToLowerASCII(value);
 
-  for (std::vector<string16>::const_iterator iter =
-           field->option_strings.begin();
-       iter != field->option_strings.end(); ++iter) {
-    if (value_lowercase == StringToLowerASCII(*iter)) {
-      field->value = *iter;
+  DCHECK_EQ(field->option_values.size(), field->option_contents.size());
+  for (size_t i = 0; i < field->option_values.size(); ++i) {
+    if (value_lowercase == StringToLowerASCII(field->option_values[i]) ||
+        value_lowercase == StringToLowerASCII(field->option_contents[i])) {
+      field->value = field->option_values[i];
       return true;
     }
   }
@@ -163,14 +163,15 @@ bool FillCountrySelectControl(const FormGroup& form_group,
   std::string country_code = profile.CountryCode();
   std::string app_locale = AutofillCountry::ApplicationLocale();
 
-  for (std::vector<string16>::const_iterator iter =
-           field->option_strings.begin();
-       iter != field->option_strings.end();
-       ++iter) {
+  DCHECK_EQ(field->option_values.size(), field->option_contents.size());
+  for (size_t i = 0; i < field->option_values.size(); ++i) {
     // Canonicalize each <option> value to a country code, and compare to the
     // target country code.
-    if (country_code == AutofillCountry::GetCountryCode(*iter, app_locale)) {
-      field->value = *iter;
+    string16 value = field->option_values[i];
+    string16 contents = field->option_contents[i];
+    if (country_code == AutofillCountry::GetCountryCode(value, app_locale) ||
+        country_code == AutofillCountry::GetCountryCode(contents, app_locale)) {
+      field->value = value;
       return true;
     }
   }
@@ -202,24 +203,27 @@ void FillSelectControl(const FormGroup& form_group,
                        webkit_glue::FormField* field) {
   DCHECK(field);
   DCHECK_EQ(ASCIIToUTF16("select-one"), field->form_control_type);
+  DCHECK_EQ(field->option_values.size(), field->option_contents.size());
 
   string16 field_text = form_group.GetInfo(type);
+  string16 field_text_lower = StringToLowerASCII(field_text);
   if (field_text.empty())
     return;
 
   string16 value;
-  for (size_t i = 0; i < field->option_strings.size(); ++i) {
-    if (field_text == field->option_strings[i]) {
+  for (size_t i = 0; i < field->option_values.size(); ++i) {
+    if (field_text == field->option_values[i] ||
+        field_text == field->option_contents[i]) {
       // An exact match, use it.
-      value = field_text;
+      value = field->option_values[i];
       break;
     }
 
-    if (StringToLowerASCII(field->option_strings[i]) ==
-        StringToLowerASCII(field_text)) {
+    if (field_text_lower == StringToLowerASCII(field->option_values[i]) ||
+        field_text_lower == StringToLowerASCII(field->option_contents[i])) {
       // A match, but not in the same case. Save it in case an exact match is
       // not found.
-      value = field->option_strings[i];
+      value = field->option_values[i];
     }
   }
 

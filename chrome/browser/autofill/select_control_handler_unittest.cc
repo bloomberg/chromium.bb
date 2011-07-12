@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/autofill_type.h"
@@ -20,7 +21,8 @@ TEST(SelectControlHandlerTest, CreditCardMonthExact) {
 
   webkit_glue::FormField field;
   field.form_control_type = ASCIIToUTF16("select-one");
-  field.option_strings = options;
+  field.option_values = options;
+  field.option_contents = options;
 
   CreditCard credit_card;
   credit_card.SetInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("01"));
@@ -39,7 +41,8 @@ TEST(SelectControlHandlerTest, CreditCardMonthAbbreviated) {
 
   webkit_glue::FormField field;
   field.form_control_type = ASCIIToUTF16("select-one");
-  field.option_strings = options;
+  field.option_values = options;
+  field.option_contents = options;
 
   CreditCard credit_card;
   credit_card.SetInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("01"));
@@ -58,7 +61,8 @@ TEST(SelectControlHandlerTest, CreditCardMonthFull) {
 
   webkit_glue::FormField field;
   field.form_control_type = ASCIIToUTF16("select-one");
-  field.option_strings = options;
+  field.option_values = options;
+  field.option_contents = options;
 
   CreditCard credit_card;
   credit_card.SetInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("01"));
@@ -76,7 +80,8 @@ TEST(SelectControlHandlerTest, CreditCardMonthNumeric) {
 
   webkit_glue::FormField field;
   field.form_control_type = ASCIIToUTF16("select-one");
-  field.option_strings = options;
+  field.option_values = options;
+  field.option_contents = options;
 
   CreditCard credit_card;
   credit_card.SetInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("01"));
@@ -94,7 +99,8 @@ TEST(SelectControlHandlerTest, AddressCountryFull) {
 
   webkit_glue::FormField field;
   field.form_control_type = ASCIIToUTF16("select-one");
-  field.option_strings = options;
+  field.option_values = options;
+  field.option_contents = options;
 
   AutofillProfile profile;
   profile.SetInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("CA"));
@@ -112,7 +118,8 @@ TEST(SelectControlHandlerTest, AddressCountryAbbrev) {
 
   webkit_glue::FormField field;
   field.form_control_type = ASCIIToUTF16("select-one");
-  field.option_strings = options;
+  field.option_values = options;
+  field.option_contents = options;
 
   AutofillProfile profile;
   profile.SetInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("Canada"));
@@ -130,7 +137,8 @@ TEST(SelectControlHandlerTest, AddressStateFull) {
 
   webkit_glue::FormField field;
   field.form_control_type = ASCIIToUTF16("select-one");
-  field.option_strings = options;
+  field.option_values = options;
+  field.option_contents = options;
 
   AutofillProfile profile;
   profile.SetInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("CA"));
@@ -148,10 +156,55 @@ TEST(SelectControlHandlerTest, AddressStateAbbrev) {
 
   webkit_glue::FormField field;
   field.form_control_type = ASCIIToUTF16("select-one");
-  field.option_strings = options;
+  field.option_values = options;
+  field.option_contents = options;
 
   AutofillProfile profile;
   profile.SetInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("California"));
   autofill::FillSelectControl(profile, ADDRESS_HOME_STATE, &field);
   EXPECT_EQ(ASCIIToUTF16("CA"), field.value);
+}
+
+TEST(SelectControlHandlerTest, FillByValue) {
+  const char* const kStates[] = {
+    "Alabama", "California"
+  };
+  std::vector<string16> values(arraysize(kStates));
+  std::vector<string16> contents(arraysize(kStates));
+  for (size_t i = 0; i < arraysize(kStates); ++i) {
+    values[i] = ASCIIToUTF16(kStates[i]);
+    contents[i] = ASCIIToUTF16(base::StringPrintf("%d", static_cast<int>(i)));
+  }
+
+  webkit_glue::FormField field;
+  field.form_control_type = ASCIIToUTF16("select-one");
+  field.option_values = values;
+  field.option_contents = contents;
+
+  AutofillProfile profile;
+  profile.SetInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("California"));
+  autofill::FillSelectControl(profile, ADDRESS_HOME_STATE, &field);
+  EXPECT_EQ(ASCIIToUTF16("California"), field.value);
+}
+
+TEST(SelectControlHandlerTest, FillByContents) {
+  const char* const kStates[] = {
+    "Alabama", "California"
+  };
+  std::vector<string16> values(arraysize(kStates));
+  std::vector<string16> contents(arraysize(kStates));
+  for (size_t i = 0; i < arraysize(kStates); ++i) {
+    values[i] = ASCIIToUTF16(base::StringPrintf("%d", static_cast<int>(i + 1)));
+    contents[i] = ASCIIToUTF16(kStates[i]);
+  }
+
+  webkit_glue::FormField field;
+  field.form_control_type = ASCIIToUTF16("select-one");
+  field.option_values = values;
+  field.option_contents = contents;
+
+  AutofillProfile profile;
+  profile.SetInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("California"));
+  autofill::FillSelectControl(profile, ADDRESS_HOME_STATE, &field);
+  EXPECT_EQ(ASCIIToUTF16("2"), field.value);
 }

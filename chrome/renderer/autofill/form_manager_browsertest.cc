@@ -258,9 +258,12 @@ TEST_F(FormManagerTest, WebFormControlElementToFormFieldSelect) {
                                                    ASCIIToUTF16("select-one"),
                                                    0,
                                                    false)));
-  ASSERT_EQ(2U, result3.option_strings.size());
-  EXPECT_EQ(ASCIIToUTF16("CA"), result3.option_strings[0]);
-  EXPECT_EQ(ASCIIToUTF16("TX"), result3.option_strings[1]);
+  ASSERT_EQ(2U, result3.option_values.size());
+  ASSERT_EQ(2U, result3.option_contents.size());
+  EXPECT_EQ(ASCIIToUTF16("CA"), result3.option_values[0]);
+  EXPECT_EQ(ASCIIToUTF16("California"), result3.option_contents[0]);
+  EXPECT_EQ(ASCIIToUTF16("TX"), result3.option_values[1]);
+  EXPECT_EQ(ASCIIToUTF16("Texas"), result3.option_contents[1]);
 }
 
 // We should be not extract the value for non-text and non-select fields.

@@ -15,7 +15,6 @@ namespace webkit_glue {
 // Stores information about a field in a form.
 struct FormField {
   FormField();
-  explicit FormField(WebKit::WebFormControlElement element);
   FormField(const string16& label,
             const string16& name,
             const string16& value,
@@ -41,7 +40,11 @@ struct FormField {
   string16 form_control_type;
   int max_length;
   bool is_autofilled;
-  std::vector<string16> option_strings;
+
+  // For the HTML snippet |<option value="US">United States</option>|, the
+  // value is "US" and the contents are "United States".
+  std::vector<string16> option_values;
+  std::vector<string16> option_contents;
 };
 
 // So we can compare FormFields with EXPECT_EQ().
