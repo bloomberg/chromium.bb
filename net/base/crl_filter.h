@@ -17,8 +17,6 @@
 #include "base/synchronization/lock.h"
 #include "net/base/net_api.h"
 
-class DictionaryValue;
-
 namespace net {
 
 class GolombCompressedSet;

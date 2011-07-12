@@ -17,10 +17,8 @@
 #include "base/string16.h"
 #include "chrome/common/extensions/url_pattern_set.h"
 
-class DictionaryValue;
 class Extension;
 class ExtensionPrefs;
-class ListValue;
 
 // When prompting the user to install or approve permissions, we display
 // messages describing the effects of the permissions rather than listing the

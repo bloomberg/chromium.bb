@@ -12,9 +12,12 @@
 
 class ExtensionDispatcher;
 class GURL;
-class ListValue;
 class RenderThreadBase;
 class RenderView;
+
+namespace base {
+class ListValue;
+}
 
 namespace WebKit {
 class WebFrame;
@@ -46,7 +49,7 @@ class EventBindings {
   // v8::Undefined(). A DCHECK is setup to break if it is otherwise.
   static void CallFunction(const std::string& extension_id,
                            const std::string& function_name,
-                           const ListValue& arguments,
+                           const base::ListValue& arguments,
                            RenderView* render_view,
                            const GURL& event_url);
 };

@@ -9,7 +9,9 @@
 #include "base/basictypes.h"
 #include "policy/configuration_policy_type.h"
 
+namespace base {
 class Value;
+}
 
 namespace policy {
 
@@ -40,7 +42,7 @@ class ConfigurationPolicyStoreInterface {
   // A |ConfigurationPolicyProvider| specifies the value of a policy
   // setting through a call to |Apply|.  The configuration policy pref
   // store takes over the ownership of |value|.
-  virtual void Apply(ConfigurationPolicyType policy, Value* value) = 0;
+  virtual void Apply(ConfigurationPolicyType policy, base::Value* value) = 0;
 
  protected:
   ConfigurationPolicyStoreInterface() {}

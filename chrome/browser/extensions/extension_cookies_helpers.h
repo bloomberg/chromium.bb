@@ -16,10 +16,13 @@
 #include "net/base/cookie_monster.h"
 
 class Browser;
-class DictionaryValue;
 class Extension;
-class ListValue;
 class Profile;
+
+namespace base {
+class DictionaryValue;
+class ListValue;
+}
 
 namespace extension_cookies_helpers {
 
@@ -36,15 +39,15 @@ const char* GetStoreIdFromProfile(Profile* profile);
 // Constructs a Cookie object as defined by the cookies API. This function
 // allocates a new DictionaryValue object; the caller is responsible for
 // freeing it.
-DictionaryValue* CreateCookieValue(
+base::DictionaryValue* CreateCookieValue(
     const net::CookieMonster::CanonicalCookie& cookie,
     const std::string& store_id);
 
 // Constructs a CookieStore object as defined by the cookies API. This function
 // allocates a new DictionaryValue object; the caller is responsible for
 // freeing it.
-DictionaryValue* CreateCookieStoreValue(Profile* profile,
-                                        ListValue* tab_ids);
+base::DictionaryValue* CreateCookieStoreValue(Profile* profile,
+                                              base::ListValue* tab_ids);
 
 // Retrieves all cookies from the given cookie store corresponding to the given
 // URL. If the URL is empty, all cookies in the cookie store are retrieved.
@@ -65,13 +68,13 @@ GURL GetURLFromCanonicalCookie(
 void AppendMatchingCookiesToList(
     const net::CookieList& all_cookies,
     const std::string& store_id,
-    const GURL& url, const DictionaryValue* details,
+    const GURL& url, const base::DictionaryValue* details,
     const Extension* extension,
-    ListValue* match_list);
+    base::ListValue* match_list);
 
 // Appends the IDs of all tabs belonging to the given browser to the
 // given list.
-void AppendToTabIdList(Browser* browser, ListValue* tab_ids);
+void AppendToTabIdList(Browser* browser, base::ListValue* tab_ids);
 
 // A class representing the cookie filter parameters passed into
 // cookies.getAll().
@@ -84,7 +87,7 @@ class MatchFilter {
   // Takes the details dictionary argument given by the user as input.
   // This class does not take ownership of the lifetime of the DictionaryValue
   // object.
-  explicit MatchFilter(const DictionaryValue* details);
+  explicit MatchFilter(const base::DictionaryValue* details);
 
   // Returns true if the given cookie matches the properties in the match
   // filter.
@@ -110,7 +113,7 @@ class MatchFilter {
   // 'foo.bar.com', '.foo.bar.com', and 'baz.foo.bar.com'.
   bool MatchesDomain(const std::string& domain);
 
-  const DictionaryValue* details_;
+  const base::DictionaryValue* details_;
 };
 
 }  // namespace extension_cookies_helpers

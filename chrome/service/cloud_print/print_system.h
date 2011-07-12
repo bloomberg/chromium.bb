@@ -15,8 +15,11 @@
 
 #include "printing/backend/print_backend.h"
 
-class DictionaryValue;
 class FilePath;
+
+namespace base {
+class DictionaryValue;
+}
 
 namespace printing {
 class PrintBackend;
@@ -197,7 +200,7 @@ class PrintSystem : public base::RefCountedThreadSafe<PrintSystem> {
   // If print settings are NULL, default settings will be used.
   // Return NULL if no print system available.
   static scoped_refptr<PrintSystem> CreateInstance(
-      const DictionaryValue* print_system_settings);
+      const base::DictionaryValue* print_system_settings);
 };
 
 

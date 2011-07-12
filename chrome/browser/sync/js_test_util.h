@@ -15,8 +15,10 @@
 #include "chrome/browser/sync/js_event_router.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+namespace base {
 class DictionaryValue;
 class ListValue;
+}
 
 namespace browser_sync {
 
@@ -34,7 +36,7 @@ void PrintTo(const JsEventDetails& details, ::std::ostream* os);
 
 // Like HasArgs() but takes a ListValue instead.
 ::testing::Matcher<const JsArgList&> HasArgsAsList(
-    const ListValue& expected_args);
+    const base::ListValue& expected_args);
 
 // A gmock matcher for JsEventDetails.  Use like:
 //
@@ -44,7 +46,7 @@ void PrintTo(const JsEventDetails& details, ::std::ostream* os);
 
 // Like HasDetails() but takes a DictionaryValue instead.
 ::testing::Matcher<const JsEventDetails&> HasDetailsAsDictionary(
-    const DictionaryValue& expected_details);
+    const base::DictionaryValue& expected_details);
 
 // Mocks.
 

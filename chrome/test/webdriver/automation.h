@@ -18,12 +18,15 @@
 
 class AutomationProxy;
 class CommandLine;
-class DictionaryValue;
 class FilePath;
 class GURL;
-class ListValue;
 class ProxyLauncher;
 struct WebKeyEvent;
+
+namespace base {
+class DictionaryValue;
+class ListValue;
+}
 
 namespace gfx {
 class Point;
@@ -92,7 +95,9 @@ class Automation {
   void GoBack(int tab_id, Error** error);
   void Reload(int tab_id, Error** error);
 
-  void GetCookies(const std::string& url, ListValue** cookies, Error** error);
+  void GetCookies(const std::string& url,
+                  base::ListValue** cookies,
+                  Error** error);
   void GetCookiesDeprecated(
       int tab_id, const GURL& gurl, std::string* cookies, bool* success);
   void DeleteCookie(const std::string& url,
@@ -102,8 +107,9 @@ class Automation {
                               const GURL& gurl,
                               const std::string& cookie_name,
                               bool* success);
-  void SetCookie(
-      const std::string& url, DictionaryValue* cookie_dict, Error** error);
+  void SetCookie(const std::string& url,
+                 base::DictionaryValue* cookie_dict,
+                 Error** error);
   void SetCookieDeprecated(
       int tab_id, const GURL& gurl, const std::string& cookie, bool* success);
 

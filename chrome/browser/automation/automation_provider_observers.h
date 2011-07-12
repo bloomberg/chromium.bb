@@ -84,7 +84,7 @@ class InitialLoadObserver : public NotificationObserver {
   // stop_time_ms values may be null if WaitForInitialLoads has not finished.
   // Only includes entries for the |tab_count| tabs we are monitoring.
   // There is no defined ordering of the return value.
-  DictionaryValue* GetTimingInformation() const;
+  base::DictionaryValue* GetTimingInformation() const;
 
  private:
   class TabTime;
@@ -1250,7 +1250,7 @@ class NTPInfoObserver : public NotificationObserver {
   scoped_ptr<IPC::Message> reply_message_;
   CancelableRequestConsumer* consumer_;
   CancelableRequestProvider::Handle request_;
-  scoped_ptr<DictionaryValue> ntp_info_;
+  scoped_ptr<base::DictionaryValue> ntp_info_;
   history::TopSites* top_sites_;
   NotificationRegistrar registrar_;
 

@@ -12,10 +12,13 @@
 #include "base/scoped_temp_dir.h"
 #include "chrome/common/extensions/extension.h"
 
-class DictionaryValue;
 class ExtensionPrefs;
 class ExtensionPrefValueMap;
 class PrefService;
+
+namespace base {
+class DictionaryValue;
+}
 
 // This is a test class intended to make it easier to work with ExtensionPrefs
 // in tests.
@@ -39,7 +42,7 @@ class TestExtensionPrefs {
 
   // Similar to AddExtension, but takes a dictionary with manifest values.
   scoped_refptr<Extension> AddExtensionWithManifest(
-      const DictionaryValue& manifest, Extension::Location location);
+      const base::DictionaryValue& manifest, Extension::Location location);
 
   // Similar to AddExtension, this adds a new test Extension. This is useful for
   // cases when you don't need the Extension object, but just the id it was

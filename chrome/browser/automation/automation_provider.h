@@ -55,7 +55,6 @@ class AutomationTabTracker;
 class AutomationWindowTracker;
 class Browser;
 class CreditCard;
-class DictionaryValue;
 class DownloadItem;
 class Extension;
 class ExtensionPortContainer;
@@ -63,7 +62,6 @@ class ExtensionTestResultNotificationObserver;
 class ExternalTabContainer;
 class FilePath;
 class InitialLoadObserver;
-class ListValue;
 class LoginHandler;
 class MetricEventDurationObserver;
 class NavigationController;
@@ -72,6 +70,10 @@ class Profile;
 class RenderViewHost;
 class TabContents;
 struct AutocompleteMatchData;
+
+namespace base {
+class DictionaryValue;
+}
 
 namespace gfx {
 class Point;
@@ -149,7 +151,8 @@ class AutomationProvider
 
   // Get the DictionaryValue equivalent for a download item. Caller owns the
   // DictionaryValue.
-  DictionaryValue* GetDictionaryFromDownloadItem(const DownloadItem* download);
+  base::DictionaryValue* GetDictionaryFromDownloadItem(
+      const DownloadItem* download);
 
  protected:
   friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;

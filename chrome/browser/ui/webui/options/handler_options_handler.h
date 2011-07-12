@@ -12,7 +12,9 @@
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "content/common/notification_registrar.h"
 
+namespace base {
 class DictionaryValue;
+}
 
 class HandlerOptionsHandler : public OptionsPageUIHandler {
  public:
@@ -20,7 +22,7 @@ class HandlerOptionsHandler : public OptionsPageUIHandler {
   virtual ~HandlerOptionsHandler();
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(DictionaryValue* localized_strings);
+  virtual void GetLocalizedValues(base::DictionaryValue* localized_strings);
   virtual void Initialize();
   virtual void RegisterMessages();
 
@@ -46,7 +48,7 @@ class HandlerOptionsHandler : public OptionsPageUIHandler {
 
   // Returns a JSON object describing the set of protocol handlers for the
   // given protocol.
-  DictionaryValue* GetHandlersForProtocol(const std::string& protocol);
+  base::DictionaryValue* GetHandlersForProtocol(const std::string& protocol);
 
   // Called when the JS PasswordManager object is initialized.
   void UpdateHandlerList();

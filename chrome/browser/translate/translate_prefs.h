@@ -10,9 +10,12 @@
 
 #include "googleurl/src/gurl.h"
 
+class PrefService;
+
+namespace base {
 class DictionaryValue;
 class ListValue;
-class PrefService;
+}
 
 class TranslatePrefs {
  public:
@@ -64,17 +67,17 @@ class TranslatePrefs {
   bool IsValueBlacklisted(const char* pref_id, const std::string& value);
   void BlacklistValue(const char* pref_id, const std::string& value);
   void RemoveValueFromBlacklist(const char* pref_id, const std::string& value);
-  bool IsValueInList(const ListValue* list, const std::string& value);
+  bool IsValueInList(const base::ListValue* list, const std::string& value);
   bool IsLanguageWhitelisted(const std::string& original_language,
       std::string* target_language);
 
   // Retrieves the dictionary mapping the number of times translation has been
   // denied for a language, creating it if necessary.
-  DictionaryValue* GetTranslationDeniedCountDictionary();
+  base::DictionaryValue* GetTranslationDeniedCountDictionary();
 
   // Retrieves the dictionary mapping the number of times translation has been
   // accepted for a language, creating it if necessary.
-  DictionaryValue* GetTranslationAcceptedCountDictionary();
+  base::DictionaryValue* GetTranslationAcceptedCountDictionary();
 
   PrefService* prefs_;  // Weak.
 };

@@ -20,7 +20,6 @@
 #include "content/common/notification_registrar.h"
 
 class ContentSettingsDetails;
-class DictionaryValue;
 class HostContentSettingsMap;
 class PrefService;
 

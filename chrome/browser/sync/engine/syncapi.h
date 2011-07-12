@@ -55,8 +55,11 @@
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "googleurl/src/gurl.h"
 
-class DictionaryValue;
 class FilePath;
+
+namespace base {
+class DictionaryValue;
+}
 
 namespace browser_sync {
 class JsBackend;
@@ -284,11 +287,11 @@ class BaseNode {
 
   // Dumps a summary of node info into a DictionaryValue and returns it.
   // Transfers ownership of the DictionaryValue to the caller.
-  DictionaryValue* GetSummaryAsValue() const;
+  base::DictionaryValue* GetSummaryAsValue() const;
 
   // Dumps all node details into a DictionaryValue and returns it.
   // Transfers ownership of the DictionaryValue to the caller.
-  DictionaryValue* GetDetailsAsValue() const;
+  base::DictionaryValue* GetDetailsAsValue() const;
 
  protected:
   BaseNode();
@@ -637,7 +640,7 @@ class SyncManager {
     virtual ~ExtraPasswordChangeRecordData();
 
     // Transfers ownership of the DictionaryValue to the caller.
-    virtual DictionaryValue* ToValue() const;
+    virtual base::DictionaryValue* ToValue() const;
 
     const sync_pb::PasswordSpecificsData& unencrypted() const;
    private:
@@ -658,7 +661,7 @@ class SyncManager {
     ~ChangeRecord();
 
     // Transfers ownership of the DictionaryValue to the caller.
-    DictionaryValue* ToValue(const BaseTransaction* trans) const;
+    base::DictionaryValue* ToValue(const BaseTransaction* trans) const;
 
     int64 id;
     Action action;

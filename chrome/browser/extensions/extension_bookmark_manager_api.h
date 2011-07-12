@@ -12,9 +12,12 @@
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 
 struct BookmarkNodeData;
-class ListValue;
 class Profile;
 class TabContentsWrapper;
+
+namespace base {
+class ListValue;
+}
 
 // Class that handles the chrome.experimental.bookmarkManager events.
 class ExtensionBookmarkManagerEventRouter
@@ -39,7 +42,7 @@ class ExtensionBookmarkManagerEventRouter
 
  private:
   // Helper to actually dispatch an event to extension listeners.
-  void DispatchEvent(const char* event_name, const ListValue* args);
+  void DispatchEvent(const char* event_name, const base::ListValue* args);
 
   void DispatchDragEvent(const BookmarkNodeData& data, const char* event_name);
 

@@ -11,11 +11,14 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/external_extension_loader.h"
 
-class DictionaryValue;
 class ExternalExtensionLoader;
 class Profile;
-class ValueSerializer;
 class Version;
+
+namespace base {
+class DictionaryValue;
+class ValueSerializer;
+}
 
 // A specialization of the ExternalExtensionProvider that uses an instance
 // of ExternalExtensionLoader to provide external extensions. This class
@@ -47,7 +50,7 @@ class ExternalExtensionProviderImpl
 
   // Sets underlying prefs and notifies provider. Only to be called by the
   // owned ExternalExtensionLoader instance.
-  void SetPrefs(DictionaryValue* prefs);
+  void SetPrefs(base::DictionaryValue* prefs);
 
   // ExternalExtensionProvider implementation:
   virtual void VisitRegisteredExtension() const;
@@ -83,7 +86,7 @@ class ExternalExtensionProviderImpl
   VisitorInterface* service_;  // weak
 
   // Dictionary of the external extensions that are provided by this provider.
-  scoped_ptr<DictionaryValue> prefs_;
+  scoped_ptr<base::DictionaryValue> prefs_;
 
   // Indicates that the extensions provided by this provider are loaded
   // entirely.

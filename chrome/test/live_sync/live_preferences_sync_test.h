@@ -64,7 +64,7 @@ class LivePreferencesSyncTest : public LiveSyncTest {
   // |verifier| if DisableVerifier() hasn't been called.
   void ChangeListPref(int index,
                       const char* pref_name,
-                      const ListValue& new_value);
+                      const base::ListValue& new_value);
 
   // Used to verify that the boolean preference with name |pref_name| has the
   // same value across all profiles. Also checks |verifier| if DisableVerifier()

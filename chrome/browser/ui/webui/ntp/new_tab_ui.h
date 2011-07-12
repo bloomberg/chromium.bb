@@ -43,7 +43,7 @@ class NewTabUI : public ChromeWebUI,
 
   // Adds "url", "title", and "direction" keys on incoming dictionary, setting
   // title as the url as a fallback on empty title.
-  static void SetURLTitleAndDirection(DictionaryValue* dictionary,
+  static void SetURLTitleAndDirection(base::DictionaryValue* dictionary,
                                       const string16& title,
                                       const GURL& gurl);
 
@@ -51,7 +51,7 @@ class NewTabUI : public ChromeWebUI,
   // by the NTP and adds them to the given list value.
   static void AddRecentlyClosedEntries(
       const TabRestoreService::Entries& entries,
-      ListValue* entry_list_value);
+      base::ListValue* entry_list_value);
 
   // The current preference version.
   static int current_pref_version() { return current_pref_version_; }

@@ -21,7 +21,9 @@ namespace sync_pb {
 class PreferenceSpecifics;
 }
 
+namespace base {
 class Value;
+}
 
 // Contains all preference sync related logic.
 // TODO(sync): Merge this into PrefService once we separate the profile
@@ -66,17 +68,18 @@ class PrefModelAssociator
   // value always takes precedence. Note that only certain preferences will
   // actually be merged, all others will return a copy of the server value. See
   // the method's implementation for details.
-  static Value* MergePreference(const PrefService::Preference& local_pref,
-                                const Value& server_value);
+  static base::Value* MergePreference(
+      const PrefService::Preference& local_pref,
+      const base::Value& server_value);
 
   // Fills |sync_data| with a sync representation of the preference data
   // provided.
   static bool CreatePrefSyncData(const std::string& name,
-                                 const Value& value,
+                                 const base::Value& value,
                                  SyncData* sync_data);
 
   // Extract preference value and name from sync specifics.
-  Value* ReadPreferenceSpecifics(
+  base::Value* ReadPreferenceSpecifics(
       const sync_pb::PreferenceSpecifics& specifics,
       std::string* name);
 
@@ -104,9 +107,10 @@ class PrefModelAssociator
   // preference has been updated.
   void SendUpdateNotificationsIfNecessary(const std::string& pref_name);
 
-  static Value* MergeListValues(const Value& from_value, const Value& to_value);
-  static Value* MergeDictionaryValues(const Value& from_value,
-                                      const Value& to_value);
+  static base::Value* MergeListValues(
+      const base::Value& from_value, const base::Value& to_value);
+  static base::Value* MergeDictionaryValues(const base::Value& from_value,
+                                            const base::Value& to_value);
 
   // Do we have an active association between the preferences and sync models?
   // Set when start syncing, reset in StopSyncing. While this is not set, we

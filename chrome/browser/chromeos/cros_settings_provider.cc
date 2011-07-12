@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/string_util.h"
+#include "base/values.h"
 #include "chrome/common/chrome_switches.h"
 
 namespace chromeos {

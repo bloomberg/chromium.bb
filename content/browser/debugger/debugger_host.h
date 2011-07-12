@@ -13,7 +13,9 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 
+namespace base {
 class ListValue;
+}
 
 class DebuggerHost : public base::RefCountedThreadSafe<DebuggerHost> {
  public:
@@ -36,7 +38,7 @@ class DebuggerHost : public base::RefCountedThreadSafe<DebuggerHost> {
   virtual void ProcessCommand(const std::wstring& data) {}
 
   // Handles messages from debugger UI.
-  virtual void OnDebuggerHostMsg(const ListValue* args) {}
+  virtual void OnDebuggerHostMsg(const base::ListValue* args) {}
 
   // Shows the debugger UI and returns true if it has any.
   virtual bool ShowWindow() { return false; }

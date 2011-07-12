@@ -13,9 +13,12 @@
 #include "content/browser/webui/web_ui.h"
 
 class FilePath;
-class FundamentalValue;
 class PrintSystemTaskProxy;
+
+namespace base {
+class FundamentalValue;
 class StringValue;
+}
 
 namespace printing {
 class PrintBackend;
@@ -54,52 +57,52 @@ class PrintPreviewHandler : public WebUIMessageHandler,
   TabContents* preview_tab();
 
   // Get the default printer. |args| is unused.
-  void HandleGetDefaultPrinter(const ListValue* args);
+  void HandleGetDefaultPrinter(const base::ListValue* args);
 
   // Get the list of printers. |args| is unused.
-  void HandleGetPrinters(const ListValue* args);
+  void HandleGetPrinters(const base::ListValue* args);
 
   // Ask the initiator renderer to generate a preview.
   // First element of |args| is a job settings JSON string.
-  void HandleGetPreview(const ListValue* args);
+  void HandleGetPreview(const base::ListValue* args);
 
   // Get the job settings from Web UI and initiate printing.
   // First element of |args| is a job settings JSON string.
-  void HandlePrint(const ListValue* args);
+  void HandlePrint(const base::ListValue* args);
 
   // Handles the request to hide the preview tab for printing.
   // |args| is unused.
-  void HandleHidePreview(const ListValue* args);
+  void HandleHidePreview(const base::ListValue* args);
 
   // Handles the request to cancel the pending print request.
   // |args| is unused.
-  void HandleCancelPendingPrintRequest(const ListValue* args);
+  void HandleCancelPendingPrintRequest(const base::ListValue* args);
 
   // Get the printer capabilities.
   // First element of |args| is the printer name.
-  void HandleGetPrinterCapabilities(const ListValue* args);
+  void HandleGetPrinterCapabilities(const base::ListValue* args);
 
   // Ask the initiator renderer to show the native print system dialog.
   // |args| is unused.
-  void HandleShowSystemDialog(const ListValue* args);
+  void HandleShowSystemDialog(const base::ListValue* args);
 
   // Ask the browser to show the native printer management dialog.
   // |args| is unused.
-  void HandleManagePrinters(const ListValue* args);
+  void HandleManagePrinters(const base::ListValue* args);
 
   // Ask the browser to close the preview tab.
   // |args| is unused.
-  void HandleClosePreviewTab(const ListValue* args);
+  void HandleClosePreviewTab(const base::ListValue* args);
 
   // Send the printer capabilities to the Web UI.
   // |settings_info| contains printer capabilities information.
-  void SendPrinterCapabilities(const DictionaryValue& settings_info);
+  void SendPrinterCapabilities(const base::DictionaryValue& settings_info);
 
   // Send the default printer to the Web UI.
-  void SendDefaultPrinter(const StringValue& default_printer);
+  void SendDefaultPrinter(const base::StringValue& default_printer);
 
   // Send the list of printers to the Web UI.
-  void SendPrinterList(const ListValue& printers);
+  void SendPrinterList(const base::ListValue& printers);
 
   // Helper function to get the initiator tab for the print preview tab.
   TabContents* GetInitiatorTab();

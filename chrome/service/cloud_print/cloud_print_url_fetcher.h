@@ -11,8 +11,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/common/url_fetcher.h"
 
-class DictionaryValue;
 class GURL;
+
+namespace base {
+class DictionaryValue;
+}
 
 namespace net {
 class URLRequestStatus;
@@ -65,7 +68,7 @@ class CloudPrintURLFetcher
     // |succeeded| is the value of the "success" field in the response JSON.
     virtual ResponseAction HandleJSONData(const URLFetcher* source,
                                           const GURL& url,
-                                          DictionaryValue* json_data,
+                                          base::DictionaryValue* json_data,
                                           bool succeeded) {
       return CONTINUE_PROCESSING;
     }

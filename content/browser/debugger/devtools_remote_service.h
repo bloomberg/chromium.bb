@@ -11,8 +11,10 @@
 
 class DevToolsRemoteMessage;
 class DevToolsProtocolHandler;
+
+namespace base {
 class DictionaryValue;
-class Value;
+}
 
 // Contains constants for DevToolsRemoteService tool protocol commands.
 struct DevToolsRemoteServiceCommand {
@@ -39,7 +41,8 @@ class DevToolsRemoteService : public DevToolsRemoteListener {
     static const int kUnknownCommand = 1;
   };
   virtual ~DevToolsRemoteService();
-  void ProcessJson(DictionaryValue* json, const DevToolsRemoteMessage& message);
+  void ProcessJson(base::DictionaryValue* json,
+                   const DevToolsRemoteMessage& message);
   DevToolsProtocolHandler* delegate_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsRemoteService);
 };

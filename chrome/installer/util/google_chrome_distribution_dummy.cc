@@ -14,6 +14,7 @@
 
 #include "base/file_path.h"
 #include "base/logging.h"
+#include "base/values.h"
 
 GoogleChromeDistribution::GoogleChromeDistribution()
     : BrowserDistribution(CHROME_BROWSER) {

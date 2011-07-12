@@ -18,15 +18,14 @@ class GpuBlacklistUpdater : public WebResourceService {
  private:
   virtual ~GpuBlacklistUpdater();
 
-  virtual void Unpack(const DictionaryValue& parsed_json);
+  virtual void Unpack(const base::DictionaryValue& parsed_json);
 
   void InitializeGpuBlacklist();
 
   void UpdateGpuBlacklist(
-      const DictionaryValue& gpu_blacklist_cache, bool preliminary);
+      const base::DictionaryValue& gpu_blacklist_cache, bool preliminary);
 
   DISALLOW_COPY_AND_ASSIGN(GpuBlacklistUpdater);
 };
 
 #endif  // CHROME_BROWSER_WEB_RESOURCE_GPU_BLACKLIST_UPDATER_H_
-

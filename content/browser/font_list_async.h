@@ -9,7 +9,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 
+namespace base {
 class ListValue;
+}
 
 namespace content {
 
@@ -20,7 +22,7 @@ struct FontListResult : public base::RefCountedThreadSafe<FontListResult> {
   FontListResult();
   ~FontListResult();
 
-  scoped_ptr<ListValue> list;
+  scoped_ptr<base::ListValue> list;
 };
 
 // Retrieves the list of fonts on the system as a list of strings. It provides

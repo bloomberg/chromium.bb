@@ -14,9 +14,12 @@
 #include "content/common/page_transition_types.h"
 
 struct AutocompleteLog;
-class DictionaryValue;
 class GURL;
 class PrefService;
+
+namespace base {
+class DictionaryValue;
+}
 
 namespace webkit {
 namespace npapi {
@@ -42,7 +45,7 @@ class MetricsLog : public MetricsLogBase {
   // dictionary giving the metrics for the profile.
   void RecordEnvironment(
       const std::vector<webkit::npapi::WebPluginInfo>& plugin_list,
-      const DictionaryValue* profile_metrics);
+      const base::DictionaryValue* profile_metrics);
 
   // Records the input text, available choices, and selected entry when the
   // user uses the Omnibox to open a URL.
@@ -96,12 +99,13 @@ class MetricsLog : public MetricsLogBase {
 
   // Writes all profile metrics. This invokes WriteProfileMetrics for each key
   // in all_profiles_metrics that starts with kProfilePrefix.
-  void WriteAllProfilesMetrics(const DictionaryValue& all_profiles_metrics);
+  void WriteAllProfilesMetrics(
+      const base::DictionaryValue& all_profiles_metrics);
 
   // Writes metrics for the profile identified by key. This writes all
   // key/value pairs in profile_metrics.
   void WriteProfileMetrics(const std::string& key,
-                           const DictionaryValue& profile_metrics);
+                           const base::DictionaryValue& profile_metrics);
 
   DISALLOW_COPY_AND_ASSIGN(MetricsLog);
 };

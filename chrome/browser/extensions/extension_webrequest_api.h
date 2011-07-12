@@ -20,11 +20,14 @@
 #include "net/base/completion_callback.h"
 #include "webkit/glue/resource_type.h"
 
-class DictionaryValue;
 class ExtensionInfoMap;
 class GURL;
+
+namespace base {
+class DictionaryValue;
 class ListValue;
 class StringValue;
+}
 
 namespace net {
 class HostPortPair;
@@ -63,7 +66,7 @@ class ExtensionWebRequestEventRouter {
     // Returns false if there was an error initializing. If it is a user error,
     // an error message is provided, otherwise the error is internal (and
     // unexpected).
-    bool InitFromValue(const DictionaryValue& value, std::string* error);
+    bool InitFromValue(const base::DictionaryValue& value, std::string* error);
   };
 
   // Internal representation of the extraInfoSpec parameter on webRequest
@@ -78,7 +81,8 @@ class ExtensionWebRequestEventRouter {
       BLOCKING = 1<<4,
     };
 
-    static bool InitFromValue(const ListValue& value, int* extra_info_spec);
+    static bool InitFromValue(const base::ListValue& value,
+                              int* extra_info_spec);
   };
 
   // Contains an extension's response to a blocking event.
@@ -215,7 +219,7 @@ class ExtensionWebRequestEventRouter {
       ProfileId profile_id,
       net::URLRequest* request,
       const std::vector<const EventListener*>& listeners,
-      const ListValue& args);
+      const base::ListValue& args);
 
   // Returns a list of event listeners that care about the given event, based
   // on their filter parameters. |extra_info_spec| will contain the combined

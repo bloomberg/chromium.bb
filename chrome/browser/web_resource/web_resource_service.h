@@ -11,9 +11,12 @@
 #include "content/browser/utility_process_host.h"
 #include "content/common/content_notification_types.h"
 
-class DictionaryValue;
 class PrefService;
 class ResourceDispatcherHost;
+
+namespace base {
+class DictionaryValue;
+}
 
 // A WebResourceService fetches data from a web resource server and store
 // locally as user preference.
@@ -40,7 +43,7 @@ class WebResourceService : public UtilityProcessHost::Client {
  protected:
   virtual ~WebResourceService();
 
-  virtual void Unpack(const DictionaryValue& parsed_json) = 0;
+  virtual void Unpack(const base::DictionaryValue& parsed_json) = 0;
 
   // If delay_ms is positive, schedule notification with the delay.
   // If delay_ms is 0, notify immediately by calling WebResourceStateChange().
@@ -61,7 +64,7 @@ class WebResourceService : public UtilityProcessHost::Client {
   void EndFetch();
 
   // Puts parsed json data in the right places, and writes to prefs file.
-  void OnWebResourceUnpacked(const DictionaryValue& parsed_json);
+  void OnWebResourceUnpacked(const base::DictionaryValue& parsed_json);
 
   // Notify listeners that the state of a web resource has changed.
   void WebResourceStateChange();

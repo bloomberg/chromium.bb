@@ -16,9 +16,12 @@
 
 class DevToolsProtocolHandler;
 class DevToolsRemoteMessage;
+class TabContents;
+
+namespace base {
 class DictionaryValue;
 class Value;
-class TabContents;
+}
 
 // Contains constants for DebuggerRemoteService tool protocol commands
 // (V8-related only).
@@ -58,7 +61,7 @@ class DebuggerRemoteService : public DevToolsRemoteListener {
   // as the "result" field in |response|, otherwise the result
   // will not be propagated back to the caller.
   void DetachFromTab(const std::string& destination,
-                     DictionaryValue* response);
+                     base::DictionaryValue* response);
 
   // DevToolsRemoteListener interface.
 
@@ -89,7 +92,7 @@ class DebuggerRemoteService : public DevToolsRemoteListener {
   // Attaches a remote debugger to the tab specified by |destination|.
   // Writes the attachment result (one of Result enum values) into |response|.
   void AttachToTab(const std::string& destination,
-                   DictionaryValue* response);
+                   base::DictionaryValue* response);
 
   // Retrieves a WebContents instance for the specified |tab_uid|
   // or NULL if no such tab is found or no WebContents instance
@@ -98,7 +101,7 @@ class DebuggerRemoteService : public DevToolsRemoteListener {
 
   // Sends a JSON message with the |response| to the remote debugger.
   // |tool| and |destination| are used as the respective header values.
-  void SendResponse(const Value& response,
+  void SendResponse(const base::Value& response,
                     const std::string& tool,
                     const std::string& destination);
 
@@ -106,15 +109,15 @@ class DebuggerRemoteService : public DevToolsRemoteListener {
   // with the |tab_uid| and writes the result into |response| if it becomes
   // known immediately.
   bool DispatchDebuggerCommand(int tab_uid,
-                               DictionaryValue* content,
-                               DictionaryValue* response);
+                               base::DictionaryValue* content,
+                               base::DictionaryValue* response);
 
   // Redirects a Javascript evaluation command from |content| to
   // a V8 debugger associated with the |tab_uid| and writes the result
   // into |response| if it becomes known immediately.
   bool DispatchEvaluateJavascript(int tab_uid,
-                                  DictionaryValue* content,
-                                  DictionaryValue* response);
+                                  base::DictionaryValue* content,
+                                  base::DictionaryValue* response);
 
   // The delegate is used to get an InspectableTabProxy instance.
   DevToolsProtocolHandler* delegate_;

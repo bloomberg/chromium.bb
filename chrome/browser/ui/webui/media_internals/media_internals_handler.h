@@ -10,6 +10,10 @@
 
 class MediaInternalsProxy;
 
+namespace base {
+class ListValue;
+}
+
 // This class handles messages to and from MediaInternalsUI.
 // It does all its work on the IO thread through the proxy below.
 class MediaInternalsMessageHandler : public WebUIMessageHandler {
@@ -22,7 +26,7 @@ class MediaInternalsMessageHandler : public WebUIMessageHandler {
   virtual void RegisterMessages();
 
   // Javascript message handlers.
-  void OnGetEverything(const ListValue* list);
+  void OnGetEverything(const base::ListValue* list);
 
   // MediaInternals message handlers.
   void OnUpdate(const string16& update);

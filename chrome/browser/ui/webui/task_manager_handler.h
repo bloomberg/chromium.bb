@@ -10,7 +10,9 @@
 #include "content/browser/webui/web_ui.h"
 #include "chrome/browser/task_manager/task_manager.h"
 
+namespace base {
 class ListValue;
+}
 
 class TaskManagerHandler : public WebUIMessageHandler,
                            public TaskManagerModelObserver {
@@ -34,11 +36,11 @@ class TaskManagerHandler : public WebUIMessageHandler,
   virtual void RegisterMessages() OVERRIDE;
 
   // Callback for the "killProcess" message.
-  void HandleKillProcess(const ListValue* args);
+  void HandleKillProcess(const base::ListValue* args);
 
-  void EnableTaskManager(const ListValue* indexes);
-  void DisableTaskManager(const ListValue* indexes);
-  void OpenAboutMemory(const ListValue* indexes);
+  void EnableTaskManager(const base::ListValue* indexes);
+  void DisableTaskManager(const base::ListValue* indexes);
+  void OpenAboutMemory(const base::ListValue* indexes);
 
  private:
   // Models

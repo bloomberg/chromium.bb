@@ -20,8 +20,9 @@
 #include "chrome/common/content_settings.h"
 #include "googleurl/src/gurl.h"
 
-class DictionaryValue;
+namespace base {
 class ListValue;
+}
 
 // This class is the backend for extension-defined content settings. It is used
 // by the content_settings::ExtensionProvider to integrate its settings into the
@@ -82,13 +83,13 @@ class ExtensionContentSettingsStore
   // Serializes all content settings set by the extension with ID |extension_id|
   // and returns them as a ListValue. The caller takes ownership of the returned
   // value.
-  ListValue* GetSettingsForExtension(const std::string& extension_id,
-                                     ExtensionPrefsScope scope) const;
+  base::ListValue* GetSettingsForExtension(const std::string& extension_id,
+                                           ExtensionPrefsScope scope) const;
 
   // Deserializes content settings rules from |list| and applies them as set by
   // the extension with ID |extension_id|.
   void SetExtensionContentSettingsFromList(const std::string& extension_id,
-                                           const ListValue* list,
+                                           const base::ListValue* list,
                                            ExtensionPrefsScope scope);
 
   // //////////////////////////////////////////////////////////////////////////

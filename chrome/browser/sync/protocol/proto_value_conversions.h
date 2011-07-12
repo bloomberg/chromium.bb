@@ -8,7 +8,9 @@
 #define CHROME_BROWSER_SYNC_PROTOCOL_PROTO_VALUE_CONVERSIONS_H_
 #pragma once
 
+namespace base {
 class DictionaryValue;
+}
 
 namespace sync_pb {
 class AppSpecifics;
@@ -48,73 +50,73 @@ namespace browser_sync {
 // caller.
 
 // TODO(akalin): Perhaps extend this to decrypt?
-DictionaryValue* EncryptedDataToValue(
+base::DictionaryValue* EncryptedDataToValue(
     const sync_pb::EncryptedData& encrypted_data);
 
 // Sub-protocols of SessionSpecifics.
 
-DictionaryValue* SessionHeaderToValue(
+base::DictionaryValue* SessionHeaderToValue(
     const sync_pb::SessionHeader& session_header);
 
-DictionaryValue* SessionTabToValue(
+base::DictionaryValue* SessionTabToValue(
     const sync_pb::SessionTab& session_tab);
 
-DictionaryValue* SessionWindowToValue(
+base::DictionaryValue* SessionWindowToValue(
     const sync_pb::SessionWindow& session_window);
 
-DictionaryValue* TabNavigationToValue(
+base::DictionaryValue* TabNavigationToValue(
     const sync_pb::TabNavigation& tab_navigation);
 
 // Sub-protocol of PasswordSpecifics.
 
-DictionaryValue* PasswordSpecificsDataToValue(
+base::DictionaryValue* PasswordSpecificsDataToValue(
     const sync_pb::PasswordSpecificsData& password_specifics_data);
 
 // Main *SpecificsToValue functions.
 
-DictionaryValue* AppSpecificsToValue(
+base::DictionaryValue* AppSpecificsToValue(
     const sync_pb::AppSpecifics& app_specifics);
 
-DictionaryValue* AutofillSpecificsToValue(
+base::DictionaryValue* AutofillSpecificsToValue(
     const sync_pb::AutofillSpecifics& autofill_specifics);
 
-DictionaryValue* AutofillCreditCardSpecificsToValue(
+base::DictionaryValue* AutofillCreditCardSpecificsToValue(
     const sync_pb::AutofillCreditCardSpecifics&
         autofill_credit_card_specifics);
 
-DictionaryValue* AutofillProfileSpecificsToValue(
+base::DictionaryValue* AutofillProfileSpecificsToValue(
     const sync_pb::AutofillProfileSpecifics& autofill_profile_specifics);
 
-DictionaryValue* BookmarkSpecificsToValue(
+base::DictionaryValue* BookmarkSpecificsToValue(
     const sync_pb::BookmarkSpecifics& bookmark_specifics);
 
-DictionaryValue* ExtensionSpecificsToValue(
+base::DictionaryValue* ExtensionSpecificsToValue(
     const sync_pb::ExtensionSpecifics& extension_specifics);
 
-DictionaryValue* NigoriSpecificsToValue(
+base::DictionaryValue* NigoriSpecificsToValue(
     const sync_pb::NigoriSpecifics& nigori_specifics);
 
-DictionaryValue* PasswordSpecificsToValue(
+base::DictionaryValue* PasswordSpecificsToValue(
     const sync_pb::PasswordSpecifics& password_specifics);
 
-DictionaryValue* PreferenceSpecificsToValue(
+base::DictionaryValue* PreferenceSpecificsToValue(
     const sync_pb::PreferenceSpecifics& password_specifics);
 
-DictionaryValue* SearchEngineSpecificsToValue(
+base::DictionaryValue* SearchEngineSpecificsToValue(
     const sync_pb::SearchEngineSpecifics& search_engine_specifics);
 
-DictionaryValue* SessionSpecificsToValue(
+base::DictionaryValue* SessionSpecificsToValue(
     const sync_pb::SessionSpecifics& session_specifics);
 
-DictionaryValue* ThemeSpecificsToValue(
+base::DictionaryValue* ThemeSpecificsToValue(
     const sync_pb::ThemeSpecifics& theme_specifics);
 
-DictionaryValue* TypedUrlSpecificsToValue(
+base::DictionaryValue* TypedUrlSpecificsToValue(
     const sync_pb::TypedUrlSpecifics& typed_url_specifics);
 
 // Any present extensions are mapped to sub-dictionary values with the
 // key equal to the extension name.
-DictionaryValue* EntitySpecificsToValue(
+base::DictionaryValue* EntitySpecificsToValue(
     const sync_pb::EntitySpecifics& entity_specifics);
 
 }  // namespace browser_sync

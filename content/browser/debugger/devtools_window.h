@@ -24,7 +24,10 @@ class Browser;
 class BrowserWindow;
 class Profile;
 class RenderViewHost;
+
+namespace base {
 class Value;
+}
 
 class DevToolsWindow
     : public DevToolsClientHost,
@@ -77,7 +80,7 @@ class DevToolsWindow
   void UpdateTheme();
   void AddDevToolsExtensionsToClient();
   void CallClientFunction(const string16& function_name,
-                          const Value& arg);
+                          const base::Value& arg);
   // Overridden from TabContentsDelegate.
   virtual void OpenURLFromTab(TabContents* source,
                               const GURL& url,

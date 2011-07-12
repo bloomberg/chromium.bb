@@ -12,8 +12,6 @@
 #include "chrome/browser/prefs/pref_value_map.h"
 #include "chrome/common/persistent_pref_store.h"
 
-class DictionaryValue;
-
 // |TestingPrefStore| is a preference store implementation that allows tests to
 // explicitly manipulate the contents of the store, triggering notifications
 // where appropriate.
@@ -24,16 +22,17 @@ class TestingPrefStore : public PersistentPrefStore {
 
   // Overriden from PrefStore.
   virtual ReadResult GetValue(const std::string& key,
-                              const Value** result) const;
+                              const base::Value** result) const;
   virtual void AddObserver(PrefStore::Observer* observer);
   virtual void RemoveObserver(PrefStore::Observer* observer);
   virtual bool IsInitializationComplete() const;
 
   // PersistentPrefStore overrides:
-  virtual ReadResult GetMutableValue(const std::string& key, Value** result);
+  virtual ReadResult GetMutableValue(const std::string& key,
+                                     base::Value** result);
   virtual void ReportValueChanged(const std::string& key);
-  virtual void SetValue(const std::string& key, Value* value);
-  virtual void SetValueSilently(const std::string& key, Value* value);
+  virtual void SetValue(const std::string& key, base::Value* value);
+  virtual void SetValueSilently(const std::string& key, base::Value* value);
   virtual void RemoveValue(const std::string& key);
   virtual bool ReadOnly() const;
   virtual PersistentPrefStore::PrefReadError ReadPrefs();

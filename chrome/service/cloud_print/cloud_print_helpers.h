@@ -12,9 +12,12 @@
 #include "chrome/service/cloud_print/print_system.h"
 #include "googleurl/src/gurl.h"
 
-class DictionaryValue;
 class Task;
 class URLFetcher;
+
+namespace base {
+class DictionaryValue;
+}
 
 // Helper methods for the cloud print proxy code.
 class CloudPrintHelpers {
@@ -47,7 +50,8 @@ class CloudPrintHelpers {
   // value returns the value of the "success" value in the response JSON.
   // Returns the response as a dictionary value.
   static bool ParseResponseJSON(const std::string& response_data,
-      bool* succeeded, DictionaryValue** response_dict);
+                                bool* succeeded,
+                                base::DictionaryValue** response_dict);
 
   // Prepares one value as part of a multi-part upload request.
   static void AddMultipartValueForUpload(
@@ -72,4 +76,3 @@ class CloudPrintHelpers {
 };
 
 #endif  // CHROME_SERVICE_CLOUD_PRINT_CLOUD_PRINT_HELPERS_H_
-

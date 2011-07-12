@@ -10,7 +10,9 @@
 
 #include "chrome/test/webdriver/commands/command.h"
 
+namespace base {
 class DictionaryValue;
+}
 
 namespace webdriver {
 
@@ -26,7 +28,7 @@ class Session;
 class WebDriverCommand : public Command {
  public:
   WebDriverCommand(const std::vector<std::string>& path_segments,
-                   const DictionaryValue* const parameters);
+                   const base::DictionaryValue* const parameters);
   virtual ~WebDriverCommand();
 
   // Initializes this webdriver command by fetching the command session.

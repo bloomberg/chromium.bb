@@ -10,6 +10,10 @@
 
 #include "chrome/common/json_pref_store.h"
 
+namespace base {
+class DictionaryValue;
+}
+
 // Manages persistent preferences for the service process. This is basically a
 // thin wrapper around JsonPrefStore for more comfortable use.
 class ServiceProcessPrefs {
@@ -39,7 +43,8 @@ class ServiceProcessPrefs {
   void SetBoolean(const std::string& key, bool value);
 
   // Get a dictionary preference for |key| and store it in |result|.
-  void GetDictionary(const std::string& key, const DictionaryValue** result);
+  void GetDictionary(const std::string& key,
+                     const base::DictionaryValue** result);
 
   // Removes the pref specified by |key|.
   void RemovePref(const std::string& key);

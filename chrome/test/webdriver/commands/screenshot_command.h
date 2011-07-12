@@ -10,7 +10,9 @@
 
 #include "chrome/test/webdriver/commands/webdriver_command.h"
 
+namespace base {
 class DictionaryValue;
+}
 
 namespace webdriver {
 
@@ -21,7 +23,7 @@ class Response;
 class ScreenshotCommand : public WebDriverCommand {
  public:
   ScreenshotCommand(const std::vector<std::string>& path_segments,
-                    const DictionaryValue* const parameters);
+                    const base::DictionaryValue* const parameters);
   virtual ~ScreenshotCommand();
 
   virtual bool DoesGet();
@@ -34,4 +36,3 @@ class ScreenshotCommand : public WebDriverCommand {
 }  // namespace webdriver
 
 #endif  // CHROME_TEST_WEBDRIVER_COMMANDS_SCREENSHOT_COMMAND_H_
-

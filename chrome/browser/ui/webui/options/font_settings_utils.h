@@ -8,7 +8,6 @@
 
 #include "base/basictypes.h"
 
-class ListValue;
 class PrefService;
 
 // Chrome advanced options utility methods.

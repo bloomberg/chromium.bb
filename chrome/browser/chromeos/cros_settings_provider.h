@@ -7,7 +7,9 @@
 
 #include <string>
 
+namespace base {
 class Value;
+}
 
 namespace chromeos {
 
@@ -17,18 +19,18 @@ class CrosSettingsProvider {
 
   // Sets |in_value| to given |path| in cros settings.
   // Note that this takes ownership of |in_value|.
-  void Set(const std::string& path, Value* in_value);
+  void Set(const std::string& path, base::Value* in_value);
 
   // Gets settings value of given |path| to |out_value|.
   // Note that |out_value| is owned by the caller, not this class.
-  virtual bool Get(const std::string& path, Value** out_value) const = 0;
+  virtual bool Get(const std::string& path, base::Value** out_value) const = 0;
 
   // Gets the namespace prefix provided by this provider
   virtual bool HandlesSetting(const std::string& path) = 0;
 
  private:
   // Does the real job for Set().
-  virtual void DoSet(const std::string& path, Value* in_value) = 0;
+  virtual void DoSet(const std::string& path, base::Value* in_value) = 0;
 };
 
 }  // namespace chromeos

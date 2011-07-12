@@ -15,28 +15,31 @@
 
 class BackingStore;
 class Browser;
-class DictionaryValue;
-class ListValue;
 class SkBitmap;
 class TabContents;
 class TabContentsWrapper;
 class TabStripModel;
+
+namespace base {
+class DictionaryValue;
+class ListValue;
+}
 
 namespace ExtensionTabUtil {
 int GetWindowId(const Browser* browser);
 int GetTabId(const TabContents* tab_contents);
 std::string GetTabStatusText(bool is_loading);
 int GetWindowIdOfTab(const TabContents* tab_contents);
-ListValue* CreateTabList(const Browser* browser);
-DictionaryValue* CreateTabValue(const TabContents* tab_contents);
-DictionaryValue* CreateTabValue(const TabContents* tab_contents,
-                                TabStripModel* tab_strip,
-                                int tab_index);
+base::ListValue* CreateTabList(const Browser* browser);
+base::DictionaryValue* CreateTabValue(const TabContents* tab_contents);
+base::DictionaryValue* CreateTabValue(const TabContents* tab_contents,
+                                      TabStripModel* tab_strip,
+                                      int tab_index);
 // Create a tab value, overriding its kSelectedKey to the provided boolean.
-DictionaryValue* CreateTabValueActive(const TabContents* tab_contents,
-                                      bool active);
-DictionaryValue* CreateWindowValue(const Browser* browser,
-                                   bool populate_tabs);
+base::DictionaryValue* CreateTabValueActive(const TabContents* tab_contents,
+                                            bool active);
+base::DictionaryValue* CreateWindowValue(const Browser* browser,
+                                         bool populate_tabs);
 // Gets the |tab_strip_model| and |tab_index| for the given |tab_contents|.
 bool GetTabStripModel(const TabContents* tab_contents,
                       TabStripModel** tab_strip_model,

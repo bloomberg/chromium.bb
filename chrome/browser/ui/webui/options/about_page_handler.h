@@ -21,23 +21,23 @@ class AboutPageHandler : public OptionsPageUIHandler {
   virtual ~AboutPageHandler();
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(DictionaryValue* localized_strings);
+  virtual void GetLocalizedValues(base::DictionaryValue* localized_strings);
   virtual void RegisterMessages();
 
  private:
   // The function is called from JavaScript when the about page is ready.
-  void PageReady(const ListValue* args);
+  void PageReady(const base::ListValue* args);
 
   // The function is called from JavaScript to set the release track like
   // "beta-channel" and "dev-channel".
-  void SetReleaseTrack(const ListValue* args);
+  void SetReleaseTrack(const base::ListValue* args);
 
 #if defined(OS_CHROMEOS)
   // Initiates update check.
-  void CheckNow(const ListValue* args);
+  void CheckNow(const base::ListValue* args);
 
   // Restarts the system.
-  void RestartNow(const ListValue* args);
+  void RestartNow(const base::ListValue* args);
 
   // Callback from chromeos::VersionLoader giving the version.
   void OnOSVersion(chromeos::VersionLoader::Handle handle,

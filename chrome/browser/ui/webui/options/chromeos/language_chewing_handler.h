@@ -10,7 +10,9 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 
+namespace base {
 class DictionaryValue;
+}
 
 namespace chromeos {
 
@@ -21,7 +23,8 @@ class LanguageChewingHandler : public OptionsPageUIHandler {
   virtual ~LanguageChewingHandler();
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(DictionaryValue* localized_strings) OVERRIDE;
+  virtual void GetLocalizedValues(
+      base::DictionaryValue* localized_strings) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LanguageChewingHandler);

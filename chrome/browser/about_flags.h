@@ -11,8 +11,11 @@
 
 #include "base/command_line.h"
 
-class ListValue;
 class PrefService;
+
+namespace base {
+class ListValue;
+}
 
 namespace about_flags {
 
@@ -87,7 +90,7 @@ struct Experiment {
 void ConvertFlagsToSwitches(PrefService* prefs, CommandLine* command_line);
 
 // Get a list of all available experiments. The caller owns the result.
-ListValue* GetFlagsExperimentsData(PrefService* prefs);
+base::ListValue* GetFlagsExperimentsData(PrefService* prefs);
 
 // Returns true if one of the experiment flags has been flipped since startup.
 bool IsRestartNeededToCommitChanges();

@@ -7,9 +7,11 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace base {
 class DictionaryValue;
 class ListValue;
 class Value;
+}
 
 // Base class for unit tests for JSONSchemaValidator. There is currently only
 // one implementation, JSONSchemaValidatorCPPTest.
@@ -29,12 +31,14 @@ class JSONSchemaValidatorTestBase : public testing::Test {
 
  protected:
   virtual void ExpectValid(const std::string& test_source,
-                           Value* instance, DictionaryValue* schema,
-                           ListValue* types) = 0;
+                           base::Value* instance,
+                           base::DictionaryValue* schema,
+                           base::ListValue* types) = 0;
 
   virtual void ExpectNotValid(const std::string& test_source,
-                              Value* instance, DictionaryValue* schema,
-                              ListValue* types,
+                              base::Value* instance,
+                              base::DictionaryValue* schema,
+                              base::ListValue* types,
                               const std::string& expected_error_path,
                               const std::string& expected_error_message) = 0;
 

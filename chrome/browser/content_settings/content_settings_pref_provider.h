@@ -22,9 +22,12 @@
 #include "content/common/notification_registrar.h"
 
 class ContentSettingsDetails;
-class DictionaryValue;
 class HostContentSettingsMap;
 class PrefService;
+
+namespace base {
+class DictionaryValue;
+}
 
 namespace content_settings {
 
@@ -62,7 +65,7 @@ class PrefDefaultProvider : public DefaultProviderInterface,
   void NotifyObservers(const ContentSettingsDetails& details);
 
   // Sets the fields of |settings| based on the values in |dictionary|.
-  void GetSettingsFromDictionary(const DictionaryValue* dictionary,
+  void GetSettingsFromDictionary(const base::DictionaryValue* dictionary,
                                  ContentSettings* settings);
 
   // Forces the default settings to be explicitly set instead of themselves
@@ -187,7 +190,7 @@ class PrefProvider : public ProviderInterface,
   void SyncObsoletePref();
 
   static void CanonicalizeContentSettingsExceptions(
-      DictionaryValue* all_settings_dictionary);
+      base::DictionaryValue* all_settings_dictionary);
 
   void NotifyObservers(const ContentSettingsDetails& details);
 

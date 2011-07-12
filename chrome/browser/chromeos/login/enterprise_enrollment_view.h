@@ -15,7 +15,9 @@
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "views/view.h"
 
+namespace base {
 class DictionaryValue;
+}
 
 namespace views {
 class GridLayout;
@@ -63,7 +65,7 @@ class EnterpriseEnrollmentView : public views::View,
 
  private:
   // Updates the gaia login box.
-  void UpdateGaiaLogin(const DictionaryValue& args);
+  void UpdateGaiaLogin(const base::DictionaryValue& args);
 
   // Display the given i18n string as error message.
   void ShowError(int message_id);

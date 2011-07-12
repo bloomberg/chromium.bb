@@ -8,7 +8,9 @@
 
 #include "content/browser/webui/web_ui.h"
 
+namespace base {
 class ListValue;
+}
 
 // A place to add handlers for messages shared across all WebUI pages.
 class GenericHandler : public WebUIMessageHandler {
@@ -20,7 +22,7 @@ class GenericHandler : public WebUIMessageHandler {
   virtual void RegisterMessages();
 
  private:
-  void HandleNavigateToUrl(const ListValue* args);
+  void HandleNavigateToUrl(const base::ListValue* args);
 
   DISALLOW_COPY_AND_ASSIGN(GenericHandler);
 };

@@ -14,8 +14,11 @@
 
 class Browser;
 class Profile;
+
+namespace base {
 class ListValue;
 class DictionaryValue;
+}
 
 // Utility functions to gather current sync status information from the sync
 // service and constructs messages suitable for showing in UI.
@@ -58,7 +61,7 @@ void OpenSyncMyBookmarksDialog(Profile* profile,
                                Browser* browser,
                                ProfileSyncService::SyncEventCodes code);
 
-void AddBoolSyncDetail(ListValue* details,
+void AddBoolSyncDetail(base::ListValue* details,
                        const std::string& stat_name,
                        bool stat_value);
 
@@ -66,7 +69,7 @@ void AddBoolSyncDetail(ListValue* details,
 void ConstructAboutInformation(ProfileSyncService* service,
                                DictionaryValue* strings);
 
-void AddIntSyncDetail(ListValue* details,
+void AddIntSyncDetail(base::ListValue* details,
                       const std::string& stat_name,
                       int64 stat_value);
 }  // namespace sync_ui_util

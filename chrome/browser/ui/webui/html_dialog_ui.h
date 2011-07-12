@@ -19,6 +19,10 @@ class Size;
 
 struct ContextMenuParams;
 
+namespace base {
+class ListValue;
+}
+
 // Implement this class to receive notifications.
 class HtmlDialogUIDelegate {
  public:
@@ -106,7 +110,7 @@ class HtmlDialogUI : public ChromeWebUI {
   virtual void RenderViewCreated(RenderViewHost* render_view_host);
 
   // JS message handler.
-  void OnDialogClosed(const ListValue* args);
+  void OnDialogClosed(const base::ListValue* args);
 
   DISALLOW_COPY_AND_ASSIGN(HtmlDialogUI);
 };

@@ -27,7 +27,6 @@ class ChildProcessSecurityPolicy;
 struct DesktopNotificationHostMsg_Show_Params;
 class FilePath;
 class GURL;
-class ListValue;
 class RenderViewHostDelegate;
 class RenderViewHostObserver;
 class SessionStorageNamespace;
@@ -42,6 +41,10 @@ struct ViewHostMsg_ShowPopup_Params;
 struct ViewMsg_Navigate_Params;
 struct WebDropData;
 struct UserMetricsAction;
+
+namespace base {
+class ListValue;
+}
 
 namespace gfx {
 class Point;
@@ -450,7 +453,7 @@ class RenderViewHost : public RenderWidgetHost {
   void OnMsgClosePageACK();
   void OnAccessibilityNotifications(
       const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params);
-  void OnScriptEvalResponse(int id, const ListValue& result);
+  void OnScriptEvalResponse(int id, const base::ListValue& result);
   void OnDidZoomURL(double zoom_level, bool remember, const GURL& url);
   void OnRequestDesktopNotificationPermission(const GURL& origin,
                                               int callback_id);

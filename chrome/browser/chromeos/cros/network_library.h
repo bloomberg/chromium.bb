@@ -17,8 +17,10 @@
 #include "base/timer.h"
 #include "third_party/cros/chromeos_network.h"
 
+namespace base {
 class DictionaryValue;
 class Value;
+}
 
 namespace chromeos {
 
@@ -242,8 +244,8 @@ class NetworkDevice {
   bool support_network_scan() const { return support_network_scan_; }
 
  private:
-  bool ParseValue(int index, const Value* value);
-  void ParseInfo(const DictionaryValue* info);
+  bool ParseValue(int index, const base::Value* value);
+  void ParseInfo(const base::DictionaryValue* info);
 
   // General device info.
   std::string device_path_;
@@ -364,8 +366,8 @@ class Network {
   Network(const std::string& service_path, ConnectionType type);
 
   // Parse name/value pairs from libcros.
-  virtual bool ParseValue(int index, const Value* value);
-  virtual void ParseInfo(const DictionaryValue* info);
+  virtual bool ParseValue(int index, const base::Value* value);
+  virtual void ParseInfo(const base::DictionaryValue* info);
 
   // Erase cached credentials, used when "Save password" is unchecked.
   virtual void EraseCredentials();
@@ -378,7 +380,7 @@ class Network {
                                  std::string* dest);
   virtual void SetBooleanProperty(const char* prop, bool b, bool* dest);
   virtual void SetIntegerProperty(const char* prop, int i, int* dest);
-  virtual void SetValueProperty(const char* prop, Value* val);
+  virtual void SetValueProperty(const char* prop, base::Value* val);
   virtual void ClearProperty(const char* prop);
 
   // This will clear the property if string is empty. Otherwise, it will set it.
@@ -502,13 +504,13 @@ class VirtualNetwork : public Network {
 
  private:
   // Network overrides.
-  virtual bool ParseValue(int index, const Value* value);
-  virtual void ParseInfo(const DictionaryValue* info);
+  virtual bool ParseValue(int index, const base::Value* value);
+  virtual void ParseInfo(const base::DictionaryValue* info);
   virtual void EraseCredentials();
   virtual void CalculateUniqueId();
 
   // VirtualNetwork private methods.
-  bool ParseProviderValue(int index, const Value* value);
+  bool ParseProviderValue(int index, const base::Value* value);
 
   void set_server_hostname(const std::string& server_hostname) {
     server_hostname_ = server_hostname;
@@ -559,7 +561,7 @@ class WirelessNetwork : public Network {
   int strength_;
 
   // Network overrides.
-  virtual bool ParseValue(int index, const Value* value);
+  virtual bool ParseValue(int index, const base::Value* value);
 
  private:
   void set_strength(int strength) { strength_ = strength; }
@@ -592,7 +594,7 @@ class CellularNetwork : public WirelessNetwork {
     Apn(const std::string& apn, const std::string& network_id,
         const std::string& username, const std::string& password);
     ~Apn();
-    void Set(const DictionaryValue& dict);
+    void Set(const base::DictionaryValue& dict);
   };
 
   explicit CellularNetwork(const std::string& service_path);
@@ -654,7 +656,7 @@ class CellularNetwork : public WirelessNetwork {
 
  protected:
   // WirelessNetwork overrides.
-  virtual bool ParseValue(int index, const Value* value);
+  virtual bool ParseValue(int index, const base::Value* value);
 
   ActivationState activation_state_;
   NetworkTechnology network_technology_;
@@ -747,7 +749,7 @@ class WifiNetwork : public WirelessNetwork {
   virtual void CalculateUniqueId();
 
   // WirelessNetwork overrides.
-  virtual bool ParseValue(int index, const Value* value);
+  virtual bool ParseValue(int index, const base::Value* value);
 
   void set_encryption(ConnectionSecurity encryption) {
     encryption_ = encryption;

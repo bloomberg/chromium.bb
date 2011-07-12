@@ -15,11 +15,14 @@
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "content/common/notification_observer.h"
 
-class DictionaryValue;
-class ListValue;
 class NotificationDetails;
 class NotificationSource;
 class Profile;
+
+namespace base {
+class DictionaryValue;
+class ListValue;
+}
 
 namespace webkit {
 namespace npapi {
@@ -32,7 +35,7 @@ class PluginUpdater : public NotificationObserver {
  public:
   // Get a list of all the plugin groups. The caller should take ownership
   // of the returned ListValue.
-  static ListValue* GetPluginGroupsData();
+  static base::ListValue* GetPluginGroupsData();
 
   // Enable or disable a plugin group.
   void EnablePluginGroup(bool enable, const string16& group_name);
@@ -80,18 +83,19 @@ class PluginUpdater : public NotificationObserver {
   // Used for the post task to notify that plugin enabled status changed.
   static void OnNotifyPluginStatusChanged();
 
-  static DictionaryValue* CreatePluginFileSummary(
+  static base::DictionaryValue* CreatePluginFileSummary(
       const webkit::npapi::WebPluginInfo& plugin);
 
   // Force plugins to be enabled or disabled due to policy.
   // |disabled_list| contains the list of StringValues of the names of the
   // policy-disabled plugins, |exceptions_list| the policy-allowed plugins,
   // and |enabled_list| the policy-enabled plugins.
-  void UpdatePluginsStateFromPolicy(const ListValue* disabled_list,
-                                    const ListValue* exceptions_list,
-                                    const ListValue* enabled_list);
+  void UpdatePluginsStateFromPolicy(const base::ListValue* disabled_list,
+                                    const base::ListValue* exceptions_list,
+                                    const base::ListValue* enabled_list);
 
-  void ListValueToStringSet(const ListValue* src, std::set<string16>* dest);
+  void ListValueToStringSet(const base::ListValue* src,
+                            std::set<string16>* dest);
 
   // Needed to allow singleton instantiation using private constructor.
   friend struct DefaultSingletonTraits<PluginUpdater>;

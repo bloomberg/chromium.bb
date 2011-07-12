@@ -20,13 +20,13 @@
 #include "ui/gfx/point.h"
 
 class CommandLine;
-class DictionaryValue;
 class FilePath;
 class GURL;
-class ListValue;
-class Value;
 
 namespace base {
+class DictionaryValue;
+class ListValue;
+class Value;
 class WaitableEvent;
 }
 
@@ -77,13 +77,13 @@ class Session {
   // |value|, which is set only if there is no error.
   Error* ExecuteScript(const FrameId& frame_id,
                        const std::string& script,
-                       const ListValue* const args,
-                       Value** value);
+                       const base::ListValue* const args,
+                       base::Value** value);
 
   // Same as above, but uses the currently targeted window and frame.
   Error* ExecuteScript(const std::string& script,
-                       const ListValue* const args,
-                       Value** value);
+                       const base::ListValue* const args,
+                       base::Value** value);
 
   // Executes given |script| in the context of the given frame.
   // The |script| should be in the form of a function body
@@ -92,8 +92,8 @@ class Session {
   // |value|, which is set only if there is no error.
   Error* ExecuteAsyncScript(const FrameId& frame_id,
                             const std::string& script,
-                            const ListValue* const args,
-                            Value** value);
+                            const base::ListValue* const args,
+                            base::Value** value);
 
   // Send the given keys to the given element dictionary. This function takes
   // ownership of |element|.
@@ -122,14 +122,14 @@ class Session {
   Error* GetTitle(std::string* tab_title);
   Error* GetScreenShot(std::string* png);
 
-  Error* GetCookies(const std::string& url, ListValue** cookies);
+  Error* GetCookies(const std::string& url, base::ListValue** cookies);
   bool GetCookiesDeprecated(const GURL& url, std::string* cookies);
   bool GetCookieByNameDeprecated(const GURL& url,
                                  const std::string& cookie_name,
                                  std::string* cookie);
   Error* DeleteCookie(const std::string& url, const std::string& cookie_name);
   bool DeleteCookieDeprecated(const GURL& url, const std::string& cookie_name);
-  Error* SetCookie(const std::string& url, DictionaryValue* cookie_dict);
+  Error* SetCookie(const std::string& url, base::DictionaryValue* cookie_dict);
   bool SetCookieDeprecated(const GURL& url, const std::string& cookie);
 
   // Gets all the currently existing window IDs. Returns true on success.
@@ -268,7 +268,7 @@ class Session {
   // Gets the attribute of the given element. If there are no errors, the
   // function sets |value| and the caller takes ownership.
   Error* GetAttribute(const WebElementId& element, const std::string& key,
-                      Value** value);
+                      base::Value** value);
 
   // Waits for all tabs to stop loading. Returns true on success.
   Error* WaitForAllTabsToStopLoading();
@@ -306,12 +306,12 @@ class Session {
   // The caller is responsible for the script result |value|.
   Error* ExecuteScriptAndParseResponse(const FrameId& frame_id,
                                        const std::string& script,
-                                       Value** value);
+                                       base::Value** value);
 
   void SendKeysOnSessionThread(const string16& keys, Error** error);
   Error* SwitchToFrameWithJavaScriptLocatedFrame(
       const std::string& script,
-      ListValue* args);
+      base::ListValue* args);
   Error* FindElementsHelper(const FrameId& frame_id,
                             const WebElementId& root_element,
                             const std::string& locator,

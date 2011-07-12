@@ -17,13 +17,13 @@
 #include "content/common/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 
-class DictionaryValue;
 class FilePath;
-class ListValue;
 class PrefService;
 
 namespace base {
-  class Time;
+class DictionaryValue;
+class ListValue;
+class Time;
 }
 
 namespace chromeos {
@@ -50,7 +50,7 @@ class CustomizationDocument {
                                       const std::string& dictionary_name,
                                       const std::string& entry_name) const;
 
-  scoped_ptr<DictionaryValue> root_;
+  scoped_ptr<base::DictionaryValue> root_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CustomizationDocument);
@@ -111,7 +111,7 @@ class ServicesCustomizationDocument : public CustomizationDocument,
   // OEM specific carrier deal.
   class CarrierDeal {
    public:
-    explicit CarrierDeal(DictionaryValue* deal_dict);
+    explicit CarrierDeal(base::DictionaryValue* deal_dict);
     ~CarrierDeal();
 
     // Returns string with the specified |locale| and |id|.
@@ -132,7 +132,7 @@ class ServicesCustomizationDocument : public CustomizationDocument,
     std::string top_up_url_;
     int notification_count_;
     base::Time expire_date_;
-    DictionaryValue* localized_strings_;
+    base::DictionaryValue* localized_strings_;
 
     DISALLOW_COPY_AND_ASSIGN(CarrierDeal);
   };

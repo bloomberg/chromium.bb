@@ -16,7 +16,6 @@
 #include "content/browser/browser_thread.h"
 #include "ui/gfx/color_utils.h"
 
-class DictionaryValue;
 class FilePath;
 class RefCountedMemory;
 namespace ui {
@@ -24,6 +23,9 @@ class DataPack;
 }
 namespace gfx {
 class Image;
+}
+namespace base {
+class DictionaryValue;
 }
 
 // An optimized representation of a theme, backed by a mmapped DataPack.
@@ -117,22 +119,22 @@ class BrowserThemePack : public base::RefCountedThreadSafe<
 
   // Transforms the JSON tint values into their final versions in the |tints_|
   // array.
-  void BuildTintsFromJSON(DictionaryValue* tints_value);
+  void BuildTintsFromJSON(base::DictionaryValue* tints_value);
 
   // Transforms the JSON color values into their final versions in the
   // |colors_| array and also fills in unspecified colors based on tint values.
-  void BuildColorsFromJSON(DictionaryValue* color_value);
+  void BuildColorsFromJSON(base::DictionaryValue* color_value);
 
   // Implementation details of BuildColorsFromJSON().
-  void ReadColorsFromJSON(DictionaryValue* colors_value,
+  void ReadColorsFromJSON(base::DictionaryValue* colors_value,
                           std::map<int, SkColor>* temp_colors);
   void GenerateMissingColors(std::map<int, SkColor>* temp_colors);
 
   // Transforms the JSON display properties into |display_properties_|.
-  void BuildDisplayPropertiesFromJSON(DictionaryValue* display_value);
+  void BuildDisplayPropertiesFromJSON(base::DictionaryValue* display_value);
 
   // Parses the image names out of an extension.
-  void ParseImageNamesFromJSON(DictionaryValue* images_value,
+  void ParseImageNamesFromJSON(base::DictionaryValue* images_value,
                                const FilePath& images_path,
                                FilePathMap* file_paths) const;
 

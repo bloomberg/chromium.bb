@@ -15,15 +15,15 @@
 // storing the preference values.
 class ValueMapPrefStore : public PrefStore {
  public:
-  typedef std::map<std::string, Value*>::iterator iterator;
-  typedef std::map<std::string, Value*>::const_iterator const_iterator;
+  typedef std::map<std::string, base::Value*>::iterator iterator;
+  typedef std::map<std::string, base::Value*>::const_iterator const_iterator;
 
   ValueMapPrefStore();
   virtual ~ValueMapPrefStore();
 
   // PrefStore overrides:
   virtual ReadResult GetValue(const std::string& key,
-                              const Value** value) const;
+                              const base::Value** value) const;
   virtual void AddObserver(PrefStore::Observer* observer);
   virtual void RemoveObserver(PrefStore::Observer* observer);
 
@@ -35,7 +35,7 @@ class ValueMapPrefStore : public PrefStore {
  protected:
   // Store a |value| for |key| in the store. Also generates an notification if
   // the value changed. Assumes ownership of |value|, which must be non-NULL.
-  void SetValue(const std::string& key, Value* value);
+  void SetValue(const std::string& key, base::Value* value);
 
   // Remove the value for |key| from the store. Sends a notification if there
   // was a value to be removed.

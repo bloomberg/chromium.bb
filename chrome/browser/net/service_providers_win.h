@@ -8,8 +8,6 @@
 
 #include <vector>
 
-class Value;
-
 struct WinsockNamespaceProvider {
   std::wstring name;
   int version;
@@ -38,4 +36,3 @@ void GetWinsockLayeredServiceProviders(
     WinsockLayeredServiceProviderList* service_list);
 
 #endif  // CHROME_BROWSER_NET_SERVICE_PROVIDERS_WIN_H_
-

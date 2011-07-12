@@ -11,10 +11,10 @@
 #include "ui/gfx/native_widget_types.h"
 
 class CancelableTask;
-class DictionaryValue;
 class MessageLoop;
 
 namespace base {
+class DictionaryValue;
 class Thread;
 }
 
@@ -53,7 +53,7 @@ class PrinterQuery : public PrintJobWorkerOwner {
                    CancelableTask* callback);
 
   // Updates the current settings with |new_settings| dictionary values.
-  void SetSettings(const DictionaryValue& new_settings,
+  void SetSettings(const base::DictionaryValue& new_settings,
                    CancelableTask* callback);
 
   // Stops the worker thread since the client is done with this object.

@@ -25,6 +25,10 @@ class ServiceProcessControl;
 class GoogleServiceAuthError;
 class Browser;
 
+namespace base {
+class DictionaryValue;
+}
+
 // This class is responsible for showing a cloud print setup dialog
 // and perform operations to fill the content of the dialog and handle
 // user actions in the dialog.
@@ -109,7 +113,7 @@ class CloudPrintSetupFlow : public HtmlDialogUIDelegate,
   void OnUserClickedPrintTestPage();
 
   // The following methods control which iframe is visible.
-  void ShowGaiaLogin(const DictionaryValue& args);
+  void ShowGaiaLogin(const base::DictionaryValue& args);
   void ShowGaiaSuccessAndSettingUp();
   void ShowGaiaFailed(const GoogleServiceAuthError& error);
   void ShowSetupDone();

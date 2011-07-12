@@ -13,11 +13,14 @@
 #include "content/browser/browser_thread.h"
 
 class ChromeURLDataManagerBackend;
-class DictionaryValue;
 class FilePath;
 class MessageLoop;
 class Profile;
 class RefCountedMemory;
+
+namespace base {
+class DictionaryValue;
+}
 
 // To serve dynamic data off of chrome: URLs, implement the
 // ChromeURLDataManager::DataSource interface and register your handler
@@ -102,7 +105,8 @@ class ChromeURLDataManager {
     // TODO: nuke this and convert all callers to not replace.
     virtual bool ShouldReplaceExistingSource() const;
 
-    static void SetFontAndTextDirection(DictionaryValue* localized_strings);
+    static void SetFontAndTextDirection(
+        base::DictionaryValue* localized_strings);
 
    protected:
     virtual ~DataSource();

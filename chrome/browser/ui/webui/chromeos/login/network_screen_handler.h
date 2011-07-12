@@ -11,7 +11,9 @@
 #include "content/browser/webui/web_ui.h"
 #include "ui/gfx/point.h"
 
+namespace base {
 class ListValue;
+}
 
 namespace views {
 class Widget;
@@ -39,7 +41,7 @@ class NetworkScreenHandler : public NetworkScreenActor,
   virtual void EnableContinue(bool enabled);
 
   // OobeMessageHandler implementation:
-  virtual void GetLocalizedStrings(DictionaryValue* localized_strings);
+  virtual void GetLocalizedStrings(base::DictionaryValue* localized_strings);
   virtual void Initialize();
 
   // WebUIMessageHandler implementation:
@@ -47,24 +49,24 @@ class NetworkScreenHandler : public NetworkScreenActor,
 
  private:
   // Handles change of the network control position.
-  void HandleNetworkControlPosition(const ListValue* args);
+  void HandleNetworkControlPosition(const base::ListValue* args);
 
   // Handles moving off the screen.
-  void HandleOnExit(const ListValue* args);
+  void HandleOnExit(const base::ListValue* args);
 
   // Handles change of the language.
-  void HandleOnLanguageChanged(const ListValue* args);
+  void HandleOnLanguageChanged(const base::ListValue* args);
 
   // Handles change of the input method.
-  void HandleOnInputMethodChanged(const ListValue* args);
+  void HandleOnInputMethodChanged(const base::ListValue* args);
 
   // Returns available languages. Caller gets the ownership. Note, it does
   // depend on the current locale.
-  static ListValue* GetLanguageList();
+  static base::ListValue* GetLanguageList();
 
   // Returns available input methods. Caller gets the ownership. Note, it does
   // depend on the current locale.
-  static ListValue* GetInputMethods();
+  static base::ListValue* GetInputMethods();
 
   // Creates network window or updates it's bounds.
   void CreateOrUpdateNetworkWindow();

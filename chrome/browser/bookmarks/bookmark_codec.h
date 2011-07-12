@@ -19,9 +19,12 @@
 
 class BookmarkModel;
 class BookmarkNode;
+
+namespace base {
 class DictionaryValue;
 class ListValue;
 class Value;
+}
 
 // BookmarkCodec is responsible for encoding/decoding bookmarks into JSON
 // values. BookmarkCodec is used by BookmarkService.
@@ -39,13 +42,13 @@ class BookmarkCodec {
   // returned object. This is invoked to encode the contents of the bookmark bar
   // model and is currently a convenience to invoking Encode that takes the
   // bookmark bar node and other folder node.
-  Value* Encode(BookmarkModel* model);
+  base::Value* Encode(BookmarkModel* model);
 
   // Encodes the bookmark bar and other folders returning the JSON value. It's
   // up to the caller to delete the returned object.
   // This method is public for use by StarredURLDatabase in migrating the
   // bookmarks out of the database.
-  Value* Encode(const BookmarkNode* bookmark_bar_node,
+  base::Value* Encode(const BookmarkNode* bookmark_bar_node,
                 const BookmarkNode* other_folder_node,
                 const BookmarkNode* synced_folder_node);
 
@@ -58,7 +61,7 @@ class BookmarkCodec {
               BookmarkNode* other_folder_node,
               BookmarkNode* synced_folder_node,
               int64* max_node_id,
-              const Value& value);
+              const base::Value& value);
 
   // Returns the checksum computed during last encoding/decoding call.
   const std::string& computed_checksum() const { return computed_checksum_; }
@@ -96,16 +99,16 @@ class BookmarkCodec {
  private:
   // Encodes node and all its children into a Value object and returns it.
   // The caller takes ownership of the returned object.
-  Value* EncodeNode(const BookmarkNode* node);
+  base::Value* EncodeNode(const BookmarkNode* node);
 
   // Helper to perform decoding.
   bool DecodeHelper(BookmarkNode* bb_node,
                     BookmarkNode* other_folder_node,
                     BookmarkNode* synced_folder_node,
-                    const Value& value);
+                    const base::Value& value);
 
   // Decodes the children of the specified node. Returns true on success.
-  bool DecodeChildren(const ListValue& child_value_list,
+  bool DecodeChildren(const base::ListValue& child_value_list,
                       BookmarkNode* parent);
 
   // Reassigns bookmark IDs for all nodes.
@@ -120,7 +123,7 @@ class BookmarkCodec {
   // created appropriately by way of DecodeChildren. If node is NULL a new
   // node is created and added to parent (parent must then be non-NULL),
   // otherwise node is used.
-  bool DecodeNode(const DictionaryValue& value,
+  bool DecodeNode(const base::DictionaryValue& value,
                   BookmarkNode* parent,
                   BookmarkNode* node);
 

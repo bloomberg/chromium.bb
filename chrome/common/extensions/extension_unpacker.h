@@ -13,8 +13,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/tuple.h"
 
-class DictionaryValue;
 class SkBitmap;
+
+namespace base {
+class DictionaryValue;
+}
 
 // This class unpacks an extension.  It is designed to be used in a sandboxed
 // child process.  We unpack and parse various bits of the extension, then
@@ -51,19 +54,19 @@ class ExtensionUnpacker {
   // |extension_path| is the path to the extension we unpacked that wrote the
   // data. Returns true on success.
   static bool ReadMessageCatalogsFromFile(const FilePath& extension_path,
-                                          DictionaryValue* catalogs);
+                                          base::DictionaryValue* catalogs);
 
   const std::string& error_message() { return error_message_; }
-  DictionaryValue* parsed_manifest() {
+  base::DictionaryValue* parsed_manifest() {
     return parsed_manifest_.get();
   }
   const DecodedImages& decoded_images() { return decoded_images_; }
-  DictionaryValue* parsed_catalogs() { return parsed_catalogs_.get(); }
+  base::DictionaryValue* parsed_catalogs() { return parsed_catalogs_.get(); }
 
  private:
   // Parse the manifest.json file inside the extension (not in the header).
   // Caller takes ownership of return value.
-  DictionaryValue* ReadManifest();
+  base::DictionaryValue* ReadManifest();
 
   // Parse all _locales/*/messages.json files inside the extension.
   bool ReadAllMessageCatalogs(const std::string& default_locale);
@@ -86,7 +89,7 @@ class ExtensionUnpacker {
   FilePath temp_install_dir_;
 
   // The parsed version of the manifest JSON contained in the extension.
-  scoped_ptr<DictionaryValue> parsed_manifest_;
+  scoped_ptr<base::DictionaryValue> parsed_manifest_;
 
   // A list of decoded images and the paths where those images came from.  Paths
   // are relative to the manifest file.
@@ -94,7 +97,7 @@ class ExtensionUnpacker {
 
   // Dictionary of relative paths and catalogs per path. Paths are in the form
   // of _locales/locale, without messages.json base part.
-  scoped_ptr<DictionaryValue> parsed_catalogs_;
+  scoped_ptr<base::DictionaryValue> parsed_catalogs_;
 
   // The last error message that was set.  Empty if there were no errors.
   std::string error_message_;

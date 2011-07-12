@@ -20,14 +20,17 @@
 #include "content/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 
-class DictionaryValue;
 class Extension;
 class ExtensionService;
 class FilePath;
-class ListValue;
 class PrefService;
 class RenderProcessHost;
 class UserScript;
+
+namespace base {
+class DictionaryValue;
+class ListValue;
+}
 
 // Information about a page running in an extension, for example a toolstrip,
 // a background page, or a tab contents.
@@ -84,7 +87,7 @@ class ExtensionsDOMHandler : public WebUIMessageHandler,
     // Load |icons|. Will call handler->OnIconsLoaded when complete. IconLoader
     // takes ownership of both arguments.
     void LoadIcons(std::vector<ExtensionResource>* icons,
-                   DictionaryValue* json);
+                   base::DictionaryValue* json);
 
     // Cancel the load. IconLoader won't try to call back to the handler after
     // this.
@@ -94,10 +97,10 @@ class ExtensionsDOMHandler : public WebUIMessageHandler,
     // Load the icons and call ReportResultOnUIThread when done. This method
     // takes ownership of both arguments.
     void LoadIconsOnFileThread(std::vector<ExtensionResource>* icons,
-                               DictionaryValue* json);
+                               base::DictionaryValue* json);
 
     // Report back to the handler. This method takes ownership of |json|.
-    void ReportResultOnUIThread(DictionaryValue* json);
+    void ReportResultOnUIThread(base::DictionaryValue* json);
 
     // The handler we will report back to.
     ExtensionsDOMHandler* handler_;
@@ -111,7 +114,7 @@ class ExtensionsDOMHandler : public WebUIMessageHandler,
 
   // Extension Detail JSON Struct for page. (static for ease of testing).
   // Note: service can be NULL in unit tests.
-  static DictionaryValue* CreateExtensionDetailValue(
+  static base::DictionaryValue* CreateExtensionDetailValue(
       ExtensionService* service,
       const Extension* extension,
       const std::vector<ExtensionPage>& pages,
@@ -119,7 +122,7 @@ class ExtensionsDOMHandler : public WebUIMessageHandler,
       bool terminated);
 
   // ContentScript JSON Struct for page. (static for ease of testing).
-  static DictionaryValue* CreateContentScriptDetailValue(
+  static base::DictionaryValue* CreateContentScriptDetailValue(
       const UserScript& script,
       const FilePath& extension_path);
 
@@ -135,52 +138,52 @@ class ExtensionsDOMHandler : public WebUIMessageHandler,
 
  private:
   // Callback for "requestExtensionsData" message.
-  void HandleRequestExtensionsData(const ListValue* args);
+  void HandleRequestExtensionsData(const base::ListValue* args);
 
   // Callback for "toggleDeveloperMode" message.
-  void HandleToggleDeveloperMode(const ListValue* args);
+  void HandleToggleDeveloperMode(const base::ListValue* args);
 
   // Callback for "inspect" message.
-  void HandleInspectMessage(const ListValue* args);
+  void HandleInspectMessage(const base::ListValue* args);
 
   // Callback for "reload" message.
-  void HandleReloadMessage(const ListValue* args);
+  void HandleReloadMessage(const base::ListValue* args);
 
   // Callback for "enable" message.
-  void HandleEnableMessage(const ListValue* args);
+  void HandleEnableMessage(const base::ListValue* args);
 
   // Callback for "enableIncognito" message.
-  void HandleEnableIncognitoMessage(const ListValue* args);
+  void HandleEnableIncognitoMessage(const base::ListValue* args);
 
   // Callback for "allowFileAcces" message.
-  void HandleAllowFileAccessMessage(const ListValue* args);
+  void HandleAllowFileAccessMessage(const base::ListValue* args);
 
   // Callback for "uninstall" message.
-  void HandleUninstallMessage(const ListValue* args);
+  void HandleUninstallMessage(const base::ListValue* args);
 
   // Callback for "options" message.
-  void HandleOptionsMessage(const ListValue* args);
+  void HandleOptionsMessage(const base::ListValue* args);
 
   // Callback for "showButton" message.
-  void HandleShowButtonMessage(const ListValue* args);
+  void HandleShowButtonMessage(const base::ListValue* args);
 
   // Callback for "load" message.
-  void HandleLoadMessage(const ListValue* args);
+  void HandleLoadMessage(const base::ListValue* args);
 
   // Callback for "pack" message.
-  void HandlePackMessage(const ListValue* args);
+  void HandlePackMessage(const base::ListValue* args);
 
   // Callback for "autoupdate" message.
-  void HandleAutoUpdateMessage(const ListValue* args);
+  void HandleAutoUpdateMessage(const base::ListValue* args);
 
   // Utility for calling javascript window.alert in the page.
   void ShowAlert(const std::string& message);
 
   // Callback for "selectFilePath" message.
-  void HandleSelectFilePathMessage(const ListValue* args);
+  void HandleSelectFilePathMessage(const base::ListValue* args);
 
   // Utility for callbacks that get an extension ID as the sole argument.
-  const Extension* GetExtension(const ListValue* args);
+  const Extension* GetExtension(const base::ListValue* args);
 
   // Forces a UI update if appropriate after a notification is received.
   void MaybeUpdateAfterNotification();
@@ -213,11 +216,11 @@ class ExtensionsDOMHandler : public WebUIMessageHandler,
   // Takes ownership of |icons|.
   // Called on the file thread.
   void LoadExtensionIcons(std::vector<ExtensionResource>* icons,
-                          DictionaryValue* json_data);
+                          base::DictionaryValue* json_data);
 
   // Takes ownership of |json_data| and tells HTML about it.
   // Called on the UI thread.
-  void OnIconsLoaded(DictionaryValue* json_data);
+  void OnIconsLoaded(base::DictionaryValue* json_data);
 
   // Returns the ExtensionUninstallDialog object for this class, creating it if
   // needed.

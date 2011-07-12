@@ -186,7 +186,7 @@ bool PrintBackendWin::IsValidPrinter(const std::string& printer_name) {
 }
 
 scoped_refptr<PrintBackend> PrintBackend::CreateInstance(
-    const DictionaryValue* print_backend_settings) {
+    const base::DictionaryValue* print_backend_settings) {
   return new PrintBackendWin;
 }
 

@@ -15,12 +15,15 @@
 #include "base/compiler_specific.h"
 #include "ui/gfx/native_widget_types.h"
 
-class ListValue;
 class GURL;
+
+namespace base {
+class ListValue;
+}
 
 namespace chromeos {
 
-typedef Callback1<const ListValue*>::Type MessageCallback;
+typedef Callback1<const base::ListValue*>::Type MessageCallback;
 
 class BalloonViewHost : public ::BalloonViewHost {
  public:
@@ -45,7 +48,7 @@ class BalloonViewHost : public ::BalloonViewHost {
   // Message handlers.
   virtual void OnWebUISend(const GURL& source_url,
                            const std::string& name,
-                           const ListValue& args);
+                           const base::ListValue& args);
 
   DISALLOW_COPY_AND_ASSIGN(BalloonViewHost);
 };

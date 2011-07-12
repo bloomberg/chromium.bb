@@ -7,7 +7,9 @@
 
 #include <string>
 
+namespace base {
 class Value;
+}
 
 namespace webdriver {
 
@@ -15,7 +17,7 @@ namespace webdriver {
 std::string GenerateRandomID();
 
 // Returns the equivalent JSON string for the given value.
-std::string JsonStringify(const Value* value);
+std::string JsonStringify(const base::Value* value);
 
 }  // namespace webdriver
 

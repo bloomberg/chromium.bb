@@ -12,10 +12,13 @@
 #include "base/basictypes.h"
 #include "build/build_config.h"
 
-class DictionaryValue;
 class FilePath;
 class GURL;
 class TemplateURL;
+
+namespace base {
+class DictionaryValue;
+}
 
 #if defined(OS_WIN)
 // Detects which version of Firefox is installed from registry. Returns its
@@ -62,7 +65,7 @@ FilePath GetProfilesINI();
 //   Path=Profiles/abcdefeg.default
 // We set "[value]" in path "<Section>.<Key>". For example, the path
 // "Genenral.StartWithLastProfile" has the value "1".
-void ParseProfileINI(const FilePath& file, DictionaryValue* root);
+void ParseProfileINI(const FilePath& file, base::DictionaryValue* root);
 
 // Returns true if we want to add the URL to the history. We filter out the URL
 // with a unsupported scheme.
@@ -93,7 +96,7 @@ bool IsDefaultHomepage(const GURL& homepage, const FilePath& app_path);
 // |prefs| is not filled).
 // Note: for strings, only valid UTF-8 string values are supported. If a
 // key/pair is not valid UTF-8, it is ignored and will not appear in |prefs|.
-bool ParsePrefFile(const FilePath& pref_file, DictionaryValue* prefs);
+bool ParsePrefFile(const FilePath& pref_file, base::DictionaryValue* prefs);
 
 // Parses the value of a particular firefox preference from a string that is the
 // contents of the prefs file.

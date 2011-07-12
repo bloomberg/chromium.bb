@@ -84,7 +84,8 @@ class BeginInstallWithManifestFunction : public AsyncExtensionFunction,
 
   // Called when we've successfully parsed the manifest and icon data in the
   // utility process. Ownership of parsed_manifest is transferred.
-  void OnParseSuccess(const SkBitmap& icon, DictionaryValue* parsed_manifest);
+  void OnParseSuccess(const SkBitmap& icon,
+                      base::DictionaryValue* parsed_manifest);
 
   // Called to indicate a parse failure. The |result_code| parameter should
   // indicate whether the problem was with the manifest or icon data.
@@ -109,7 +110,7 @@ class BeginInstallWithManifestFunction : public AsyncExtensionFunction,
   std::string localized_name_;
 
   // The results of parsing manifest_ and icon_data_ go into these two.
-  scoped_ptr<DictionaryValue> parsed_manifest_;
+  scoped_ptr<base::DictionaryValue> parsed_manifest_;
   SkBitmap icon_;
 
   // A dummy Extension object we create for the purposes of using

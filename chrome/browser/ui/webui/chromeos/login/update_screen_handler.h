@@ -17,7 +17,7 @@ class UpdateScreenHandler : public UpdateScreenActor,
   virtual ~UpdateScreenHandler();
 
   // OobeMessageHandler implementation:
-  virtual void GetLocalizedStrings(DictionaryValue* localized_strings);
+  virtual void GetLocalizedStrings(base::DictionaryValue* localized_strings);
   virtual void Initialize();
 
   // UpdateScreenActor implementation:

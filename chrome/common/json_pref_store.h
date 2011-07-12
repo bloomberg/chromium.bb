@@ -16,12 +16,12 @@
 #include "chrome/common/persistent_pref_store.h"
 
 namespace base {
+class DictionaryValue;
 class MessageLoopProxy;
+class Value;
 }
 
-class DictionaryValue;
 class FilePath;
-class Value;
 
 // A writable PrefStore implementation that is used for user preferences.
 class JsonPrefStore : public PersistentPrefStore,
@@ -35,15 +35,16 @@ class JsonPrefStore : public PersistentPrefStore,
 
   // PrefStore overrides:
   virtual ReadResult GetValue(const std::string& key,
-                              const Value** result) const;
+                              const base::Value** result) const;
   virtual void AddObserver(PrefStore::Observer* observer);
   virtual void RemoveObserver(PrefStore::Observer* observer);
   virtual bool IsInitializationComplete() const;
 
   // PersistentPrefStore overrides:
-  virtual ReadResult GetMutableValue(const std::string& key, Value** result);
-  virtual void SetValue(const std::string& key, Value* value);
-  virtual void SetValueSilently(const std::string& key, Value* value);
+  virtual ReadResult GetMutableValue(const std::string& key,
+                                     base::Value** result);
+  virtual void SetValue(const std::string& key, base::Value* value);
+  virtual void SetValueSilently(const std::string& key, base::Value* value);
   virtual void RemoveValue(const std::string& key);
   virtual bool ReadOnly() const;
   virtual PrefReadError ReadPrefs();
@@ -57,7 +58,7 @@ class JsonPrefStore : public PersistentPrefStore,
   // ownership of the |value| pointer. Note, this method is used with
   // asynchronous file reading, so class exposes it only for the internal needs.
   // (read: do not call it manually).
-  void OnFileRead(Value* value_owned, PrefReadError error, bool no_dir);
+  void OnFileRead(base::Value* value_owned, PrefReadError error, bool no_dir);
 
  private:
   // ImportantFileWriter::DataSerializer overrides:
@@ -66,7 +67,7 @@ class JsonPrefStore : public PersistentPrefStore,
   FilePath path_;
   scoped_refptr<base::MessageLoopProxy> file_message_loop_proxy_;
 
-  scoped_ptr<DictionaryValue> prefs_;
+  scoped_ptr<base::DictionaryValue> prefs_;
 
   bool read_only_;
 

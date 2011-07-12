@@ -16,10 +16,13 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebViewClient.h"
 #include "ui/gfx/size.h"
 
-class DictionaryValue;
 struct PrintMsg_Print_Params;
 struct PrintMsg_PrintPage_Params;
 struct PrintMsg_PrintPages_Params;
+
+namespace base {
+class DictionaryValue;
+}
 
 // Class that calls the Begin and End print functions on the frame and changes
 // the size of the view temporarily to support full page printing..
@@ -107,14 +110,14 @@ class PrintWebViewHelper : public RenderViewObserver,
   void OnInitiatePrintPreview();
 
   // Generate a print preview using |settings|.
-  void OnPrintPreview(const DictionaryValue& settings);
+  void OnPrintPreview(const base::DictionaryValue& settings);
 
   // Print / preview the node under the context menu.
   void OnPrintNodeUnderContextMenu();
 
   // Print the pages for print preview. Do not display the native print dialog
   // for user settings. |job_settings| has new print job settings values.
-  void OnPrintForPrintPreview(const DictionaryValue& job_settings);
+  void OnPrintForPrintPreview(const base::DictionaryValue& job_settings);
 
   void OnPrintingDone(bool success);
 
@@ -124,7 +127,7 @@ class PrintWebViewHelper : public RenderViewObserver,
 
   void PrintPreview(WebKit::WebFrame* frame,
                     WebKit::WebNode* node,
-                    const DictionaryValue& settings);
+                    const base::DictionaryValue& settings);
 
   enum PrintingResult {
     OK,
@@ -144,7 +147,7 @@ class PrintWebViewHelper : public RenderViewObserver,
   // Update the current print settings with new |job_settings|. |job_settings|
   // dictionary contains print job details such as printer name, number of
   // copies, page range, etc.
-  bool UpdatePrintSettings(const DictionaryValue& job_settings);
+  bool UpdatePrintSettings(const base::DictionaryValue& job_settings);
 
   // Get final print settings from the user.
   // Return false if the user cancels or on error.

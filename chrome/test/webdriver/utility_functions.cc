@@ -9,6 +9,7 @@
 #include "base/json/json_writer.h"
 #include "base/rand_util.h"
 #include "base/stringprintf.h"
+#include "base/values.h"
 
 namespace webdriver {
 

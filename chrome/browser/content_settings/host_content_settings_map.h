@@ -31,7 +31,6 @@ class ProviderInterface;
 }  // namespace content_settings
 
 class ContentSettingsDetails;
-class DictionaryValue;
 class ExtensionService;
 class GURL;
 class PrefService;

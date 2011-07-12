@@ -14,6 +14,10 @@
 #include "chrome/browser/extensions/extension_function.h"
 #include "webkit/glue/window_open_disposition.h"
 
+namespace base {
+class ListValue;
+}
+
 // Event router class for events related to the omnibox API.
 class ExtensionOmniboxEventRouter {
  public:
@@ -61,7 +65,7 @@ struct ExtensionOmniboxSuggestion {
 
   // Converts a list of style ranges from the extension into the format expected
   // by the autocomplete system.
-  bool ReadStylesFromValue(const ListValue& value);
+  bool ReadStylesFromValue(const base::ListValue& value);
 
   // The text that gets put in the edit box.
   string16 content;

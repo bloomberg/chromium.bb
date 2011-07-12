@@ -10,7 +10,9 @@
 
 #include "chrome/test/webdriver/commands/webdriver_command.h"
 
+namespace base {
 class DictionaryValue;
+}
 
 namespace webdriver {
 
@@ -20,7 +22,7 @@ class Response;
 class AlertTextCommand : public WebDriverCommand {
  public:
   AlertTextCommand(const std::vector<std::string>& path_segments,
-                   DictionaryValue* parameters);
+                   base::DictionaryValue* parameters);
   virtual ~AlertTextCommand();
 
   virtual bool DoesGet();
@@ -35,7 +37,7 @@ class AlertTextCommand : public WebDriverCommand {
 class AcceptAlertCommand : public WebDriverCommand {
  public:
   AcceptAlertCommand(const std::vector<std::string>& path_segments,
-                     DictionaryValue* parameters);
+                     base::DictionaryValue* parameters);
   virtual ~AcceptAlertCommand();
 
   virtual bool DoesPost();
@@ -48,7 +50,7 @@ class AcceptAlertCommand : public WebDriverCommand {
 class DismissAlertCommand : public WebDriverCommand {
  public:
   DismissAlertCommand(const std::vector<std::string>& path_segments,
-                      DictionaryValue* parameters);
+                      base::DictionaryValue* parameters);
   virtual ~DismissAlertCommand();
 
   virtual bool DoesPost();

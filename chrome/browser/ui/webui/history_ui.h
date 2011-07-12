@@ -29,16 +29,16 @@ class BrowsingHistoryHandler : public WebUIMessageHandler,
   virtual void RegisterMessages();
 
   // Callback for the "getHistory" message.
-  void HandleGetHistory(const ListValue* args);
+  void HandleGetHistory(const base::ListValue* args);
 
   // Callback for the "searchHistory" message.
-  void HandleSearchHistory(const ListValue* args);
+  void HandleSearchHistory(const base::ListValue* args);
 
   // Callback for the "removeURLsOnOneDay" message.
-  void HandleRemoveURLsOnOneDay(const ListValue* args);
+  void HandleRemoveURLsOnOneDay(const base::ListValue* args);
 
   // Handle for "clearBrowsingData" message.
-  void HandleClearBrowsingData(const ListValue* args);
+  void HandleClearBrowsingData(const base::ListValue* args);
 
   // NotificationObserver implementation.
   virtual void Observe(int type,
@@ -54,7 +54,7 @@ class BrowsingHistoryHandler : public WebUIMessageHandler,
   void RemoveComplete();
 
   // Extract the arguments from the call to HandleSearchHistory.
-  void ExtractSearchHistoryArguments(const ListValue* args,
+  void ExtractSearchHistoryArguments(const base::ListValue* args,
                                      int* month,
                                      string16* query);
 

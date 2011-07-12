@@ -16,8 +16,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "googleurl/src/gurl.h"
 
-class DictionaryValue;
 class FilePath;
+
+namespace base {
+class DictionaryValue;
+}
 
 namespace installer {
 
@@ -149,7 +152,7 @@ class MasterPreferences {
   //     }
   //  }
   //
-  bool GetExtensionsBlock(DictionaryValue** extensions) const;
+  bool GetExtensionsBlock(base::DictionaryValue** extensions) const;
 
   // Returns true iff the master preferences were successfully read from a file.
   bool read_from_file() const {
@@ -184,8 +187,8 @@ class MasterPreferences {
   void InitializeFromCommandLine(const CommandLine& cmd_line);
 
  protected:
-  scoped_ptr<DictionaryValue> master_dictionary_;
-  DictionaryValue* distribution_;
+  scoped_ptr<base::DictionaryValue> master_dictionary_;
+  base::DictionaryValue* distribution_;
   bool preferences_read_from_file_;
   bool ceee_;
   bool chrome_;

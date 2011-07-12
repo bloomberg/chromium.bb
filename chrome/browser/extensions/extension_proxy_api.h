@@ -16,8 +16,11 @@
 #include "chrome/browser/prefs/proxy_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 
-class Value;
 class ExtensionEventRouterForwarder;
+
+namespace base {
+class Value;
+}
 
 // Class to convert between the representation of proxy settings used
 // in the Proxy Settings API and the representation used in the PrefStores.
@@ -28,10 +31,11 @@ class ProxyPrefTransformer : public PrefTransformerInterface {
   virtual ~ProxyPrefTransformer();
 
   // Implementation of PrefTransformerInterface.
-  virtual Value* ExtensionToBrowserPref(const Value* extension_pref,
-                                        std::string* error,
-                                        bool* bad_message) OVERRIDE;
-  virtual Value* BrowserToExtensionPref(const Value* browser_pref) OVERRIDE;
+  virtual base::Value* ExtensionToBrowserPref(const base::Value* extension_pref,
+                                              std::string* error,
+                                              bool* bad_message) OVERRIDE;
+  virtual base::Value* BrowserToExtensionPref(
+      const base::Value* browser_pref) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ProxyPrefTransformer);

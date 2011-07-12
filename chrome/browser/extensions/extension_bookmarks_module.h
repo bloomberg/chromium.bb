@@ -20,6 +20,10 @@
 
 class FilePath;
 
+namespace base {
+class ListValue;
+}
+
 // Observes BookmarkModel and then routes the notifications as events to
 // the extension system.
 class ExtensionBookmarkEventRouter : public BookmarkModelObserver {
@@ -143,7 +147,7 @@ class RemoveBookmarkFunction : public BookmarksFunction {
  public:
   // Returns true on successful parse and sets invalid_id to true if conversion
   // from id string to int64 failed.
-  static bool ExtractIds(const ListValue* args, std::list<int64>* ids,
+  static bool ExtractIds(const base::ListValue* args, std::list<int64>* ids,
                          bool* invalid_id);
   // BookmarksFunction:
   virtual bool RunImpl() OVERRIDE;
@@ -171,7 +175,7 @@ class CreateBookmarkFunction : public BookmarksFunction {
 
 class MoveBookmarkFunction : public BookmarksFunction {
  public:
-  static bool ExtractIds(const ListValue* args, std::list<int64>* ids,
+  static bool ExtractIds(const base::ListValue* args, std::list<int64>* ids,
                          bool* invalid_id);
   virtual void GetQuotaLimitHeuristics(
       std::list<QuotaLimitHeuristic*>* heuristics) const;
@@ -184,7 +188,7 @@ class MoveBookmarkFunction : public BookmarksFunction {
 
 class UpdateBookmarkFunction : public BookmarksFunction {
  public:
-  static bool ExtractIds(const ListValue* args, std::list<int64>* ids,
+  static bool ExtractIds(const base::ListValue* args, std::list<int64>* ids,
                          bool* invalid_id);
   virtual void GetQuotaLimitHeuristics(
       std::list<QuotaLimitHeuristic*>* heuristics) const;

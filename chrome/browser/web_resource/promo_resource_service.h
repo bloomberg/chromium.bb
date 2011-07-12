@@ -90,7 +90,7 @@ class PromoResourceService
   // Overrides the current Chrome release channel for testing purposes.
   void set_channel(chrome::VersionInfo::Channel channel) { channel_ = channel; }
 
-  virtual void Unpack(const DictionaryValue& parsed_json);
+  virtual void Unpack(const base::DictionaryValue& parsed_json);
 
   // Unpack the web resource as a custom promo signal. Expects a start and end
   // signal, with the promo to be shown in the tooltip of the start signal
@@ -132,7 +132,7 @@ class PromoResourceService
   // For example, "7:24" would indicate that all builds should see the promo,
   // and each group should see it for 24 hours.
   //
-  void UnpackPromoSignal(const DictionaryValue& parsed_json);
+  void UnpackPromoSignal(const base::DictionaryValue& parsed_json);
 
   // Unpack the promo resource as a custom logo signal. Expects a start and end
   // signal. Delivery will be in json in the form of:
@@ -160,7 +160,7 @@ class PromoResourceService
   //   }
   // }
   //
-  void UnpackLogoSignal(const DictionaryValue& parsed_json);
+  void UnpackLogoSignal(const base::DictionaryValue& parsed_json);
 
   // Unpack the web store promo. Expects JSON delivery in the following format:
   // {
@@ -190,11 +190,11 @@ class PromoResourceService
   //         the logo image. In the example above, the URL is empty so the
   //         default webstore logo will be used.
   //   answer_id: the promo's id
-  void UnpackWebStoreSignal(const DictionaryValue& parsed_json);
+  void UnpackWebStoreSignal(const base::DictionaryValue& parsed_json);
 
   // Gets mutable dictionary attached to user's preferences, so that we
   // can write resource data back to user's pref file.
-  DictionaryValue* web_resource_cache_;
+  base::DictionaryValue* web_resource_cache_;
 
   // Overrides the current Chrome release channel for testing purposes.
   chrome::VersionInfo::Channel channel_;

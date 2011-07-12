@@ -104,7 +104,7 @@ class ExecuteTasksFileBrowserFunction : public AsyncExtensionFunction {
   // Initates execution of context menu tasks identified with |task_id| for
   // each element of |files_list|.
   bool InitiateFileTaskExecution(const std::string& task_id,
-                                 ListValue* files_list);
+                                 base::ListValue* files_list);
   void RequestFileEntryOnFileThread(const GURL& source_url,
                                     const std::string& task_id,
                                     const std::vector<GURL>& file_urls);

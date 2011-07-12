@@ -44,7 +44,6 @@ class ScopedTempDir;
 class SkBitmap;
 class TabContents;
 class TabContentsWrapper;
-class Value;
 
 namespace gfx {
 class Size;

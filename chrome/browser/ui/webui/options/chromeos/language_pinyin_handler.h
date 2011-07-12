@@ -8,7 +8,9 @@
 
 #include "chrome/browser/ui/webui/options/options_ui.h"
 
+namespace base {
 class DictionaryValue;
+}
 
 namespace chromeos {
 
@@ -19,7 +21,7 @@ class LanguagePinyinHandler : public OptionsPageUIHandler {
   virtual ~LanguagePinyinHandler();
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(DictionaryValue* localized_strings);
+  virtual void GetLocalizedValues(base::DictionaryValue* localized_strings);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LanguagePinyinHandler);

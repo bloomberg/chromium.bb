@@ -10,7 +10,10 @@
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "content/browser/webui/web_ui.h"
 
+namespace base {
+class DictionaryValue;
 class ListValue;
+}
 
 namespace chromeos {
 
@@ -25,7 +28,8 @@ class SigninScreenHandler : public OobeMessageHandler,
 
  private:
   // OobeMessageHandler implementation:
-  virtual void GetLocalizedStrings(DictionaryValue* localized_strings) OVERRIDE;
+  virtual void GetLocalizedStrings(
+      base::DictionaryValue* localized_strings) OVERRIDE;
   virtual void Initialize() OVERRIDE;
 
   // WebUIMessageHandler implementation:
@@ -38,7 +42,7 @@ class SigninScreenHandler : public OobeMessageHandler,
                          HelpAppLauncher::HelpTopic help_topic_id) OVERRIDE;
 
   // Handles authenticate user request from javascript.
-  void HandleAuthenticateUser(const ListValue* args);
+  void HandleAuthenticateUser(const base::ListValue* args);
 
   // A delegate that glues this handler with backend LoginDisplay.
   LoginUIHandlerDelegate* delegate_;

@@ -10,7 +10,9 @@
 
 #include "chrome/test/webdriver/commands/webdriver_command.h"
 
+namespace base {
 class DictionaryValue;
+}
 
 namespace webdriver {
 
@@ -21,7 +23,7 @@ class Response;
 class SourceCommand : public WebDriverCommand {
  public:
   SourceCommand(const std::vector<std::string>& path_segments,
-                const DictionaryValue* const parameters);
+                const base::DictionaryValue* const parameters);
   virtual ~SourceCommand();
 
   virtual bool DoesGet();

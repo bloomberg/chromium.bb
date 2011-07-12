@@ -9,8 +9,10 @@
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "ui/gfx/native_widget_types.h"
 
+namespace base {
 class DictionaryValue;
 class ListValue;
+}
 
 namespace chromeos {
 
@@ -22,23 +24,23 @@ class ChangePictureOptionsHandler : public OptionsPageUIHandler,
   virtual ~ChangePictureOptionsHandler();
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(DictionaryValue* localized_strings);
+  virtual void GetLocalizedValues(base::DictionaryValue* localized_strings);
 
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages();
 
  private:
   // Opens a file selection dialog to choose user image from file.
-  void ChooseFile(const ListValue* args);
+  void ChooseFile(const base::ListValue* args);
 
   // Opens the camera capture dialog.
-  void TakePhoto(const ListValue* args);
+  void TakePhoto(const base::ListValue* args);
 
   // Gets the list of available user images and sends it to the page.
-  void GetAvailableImages(const ListValue* args);
+  void GetAvailableImages(const base::ListValue* args);
 
   // Selects one of the available images as user's.
-  void SelectImage(const ListValue* args);
+  void SelectImage(const base::ListValue* args);
 
   // SelectFileDialog::Delegate implementation.
   virtual void FileSelected(const FilePath& path, int index, void* params);

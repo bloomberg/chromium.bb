@@ -21,7 +21,7 @@ class StatsOptionsHandler : public CrosOptionsPageUIHandler {
   StatsOptionsHandler();
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(DictionaryValue* localized_strings);
+  virtual void GetLocalizedValues(base::DictionaryValue* localized_strings);
   virtual void Initialize();
 
   // WebUIMessageHandler implementation.
@@ -29,7 +29,7 @@ class StatsOptionsHandler : public CrosOptionsPageUIHandler {
 
  private:
   MetricsCrosSettingsProvider* provider() const;
-  void HandleMetricsReportingCheckbox(const ListValue* args);
+  void HandleMetricsReportingCheckbox(const base::ListValue* args);
   void SetupMetricsReportingCheckbox(bool user_changed);
 
   DISALLOW_COPY_AND_ASSIGN(StatsOptionsHandler);

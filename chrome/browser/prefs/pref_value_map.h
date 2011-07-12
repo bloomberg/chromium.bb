@@ -12,13 +12,15 @@
 
 #include "base/basictypes.h"
 
+namespace base {
 class Value;
+}
 
 // A generic string to value map used by the PrefStore implementations.
 class PrefValueMap {
  public:
-  typedef std::map<std::string, Value*>::iterator iterator;
-  typedef std::map<std::string, Value*>::const_iterator const_iterator;
+  typedef std::map<std::string, base::Value*>::iterator iterator;
+  typedef std::map<std::string, base::Value*>::const_iterator const_iterator;
 
   PrefValueMap();
   virtual ~PrefValueMap();
@@ -26,12 +28,12 @@ class PrefValueMap {
   // Gets the value for |key| and stores it in |value|. Ownership remains with
   // the map. Returns true if a value is present. If not, |value| is not
   // touched.
-  bool GetValue(const std::string& key, const Value** value) const;
-  bool GetValue(const std::string& key, Value** value);
+  bool GetValue(const std::string& key, const base::Value** value) const;
+  bool GetValue(const std::string& key, base::Value** value);
 
   // Sets a new |value| for |key|. Takes ownership of |value|, which must be
   // non-NULL. Returns true if the value changed.
-  bool SetValue(const std::string& key, Value* value);
+  bool SetValue(const std::string& key, base::Value* value);
 
   // Removes the value for |key| from the map. Returns true if a value was
   // removed.
@@ -63,7 +65,7 @@ class PrefValueMap {
                         std::vector<std::string>* differing_keys) const;
 
  private:
-  typedef std::map<std::string, Value*> Map;
+  typedef std::map<std::string, base::Value*> Map;
 
   Map prefs_;
 

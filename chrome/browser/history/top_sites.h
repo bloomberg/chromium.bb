@@ -25,10 +25,13 @@
 #include "content/browser/cancelable_request.h"
 #include "googleurl/src/gurl.h"
 
-class DictionaryValue;
 class FilePath;
 class SkBitmap;
 class Profile;
+
+namespace base {
+class DictionaryValue;
+}
 
 namespace history {
 
@@ -361,12 +364,12 @@ class TopSites
   // storing all URLs, but filtering on access. It is a dictionary,
   // key is the URL, value is a dummy value. This is owned by the
   // PrefService.
-  const DictionaryValue* blacklist_;
+  const base::DictionaryValue* blacklist_;
 
   // This is a dictionary for the pinned URLs for the the most visited part of
   // the new tab page. Key is the URL, value is index where it is pinned at (may
   // be the same as key). This is owned by the PrefService.
-  const DictionaryValue* pinned_urls_;
+  const base::DictionaryValue* pinned_urls_;
 
   // See description above HistoryLoadState.
   HistoryLoadState history_state_;

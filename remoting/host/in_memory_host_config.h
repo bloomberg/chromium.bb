@@ -12,8 +12,11 @@
 #include "base/synchronization/lock.h"
 #include "remoting/host/host_config.h"
 
-class DictionaryValue;
 class Task;
+
+namespace base {
+class DictionaryValue;
+}
 
 namespace remoting {
 
@@ -35,7 +38,7 @@ class InMemoryHostConfig : public MutableHostConfig {
  protected:
   // |lock_| must be locked whenever |values_| is used.
   base::Lock lock_;
-  scoped_ptr<DictionaryValue> values_;
+  scoped_ptr<base::DictionaryValue> values_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InMemoryHostConfig);

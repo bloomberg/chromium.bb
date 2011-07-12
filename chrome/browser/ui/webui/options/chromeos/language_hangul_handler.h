@@ -8,8 +8,10 @@
 
 #include "chrome/browser/ui/webui/options/options_ui.h"
 
+namespace base {
 class DictionaryValue;
 class ListValue;
+}
 
 namespace chromeos {
 
@@ -20,11 +22,11 @@ class LanguageHangulHandler : public OptionsPageUIHandler {
   virtual ~LanguageHangulHandler();
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(DictionaryValue* localized_strings);
+  virtual void GetLocalizedValues(base::DictionaryValue* localized_strings);
 
  private:
   // Returns the list of hangul keyboards.
-  static ListValue* GetKeyboardLayoutList();
+  static base::ListValue* GetKeyboardLayoutList();
 
   DISALLOW_COPY_AND_ASSIGN(LanguageHangulHandler);
 };

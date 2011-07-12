@@ -12,7 +12,9 @@
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "content/browser/webui/web_ui.h"
 
+namespace base {
 class ListValue;
+}
 
 // Sends sync-state changes to the New Tab Page for UI updating and forwards
 // link clicks on the page to the sync service.
@@ -27,9 +29,9 @@ class NewTabPageSyncHandler : public WebUIMessageHandler,
   virtual void RegisterMessages();
 
   // Callback for "GetSyncMessage".
-  void HandleGetSyncMessage(const ListValue* args);
+  void HandleGetSyncMessage(const base::ListValue* args);
   // Callback for "SyncLinkClicked".
-  void HandleSyncLinkClicked(const ListValue* args);
+  void HandleSyncLinkClicked(const base::ListValue* args);
 
   // ProfileSyncServiceObserver
   virtual void OnStateChanged();

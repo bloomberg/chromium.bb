@@ -1289,7 +1289,7 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_ShowPopup,
 // String.
 IPC_MESSAGE_ROUTED2(ViewHostMsg_ScriptEvalResponse,
                     int  /* id */,
-                    ListValue  /* result */)
+                    base::ListValue  /* result */)
 
 // Result of string search in the page.
 // Response to ViewMsg_Find with the results of the requested find-in-page
@@ -1601,7 +1601,7 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_DidContentsPreferredSizeChange,
 IPC_MESSAGE_ROUTED3(ViewHostMsg_WebUISend,
                     GURL /* source_url */,
                     std::string  /* message */,
-                    ListValue /* args */)
+                    base::ListValue /* args */)
 
 // A renderer sends this to the browser process when it wants to
 // create a ppapi plugin.  The browser will create the plugin process if

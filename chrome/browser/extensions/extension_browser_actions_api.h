@@ -9,8 +9,11 @@
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/common/extensions/extension_action.h"
 
-class DictionaryValue;
 class ExtensionAction;
+
+namespace base {
+class DictionaryValue;
+}
 
 // Base class for chrome.browserAction.* APIs.
 class BrowserActionFunction : public SyncExtensionFunction {
@@ -25,7 +28,7 @@ class BrowserActionFunction : public SyncExtensionFunction {
 
   // All the browser action APIs take a single argument called details that is
   // a dictionary.
-  DictionaryValue* details_;
+  base::DictionaryValue* details_;
 
   // The tab id the browser action function should apply to, if any, or
   // kDefaultTabId if none was specified.

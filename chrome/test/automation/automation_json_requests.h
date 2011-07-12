@@ -17,9 +17,12 @@
 class AutomationMessageSender;
 class FilePath;
 class GURL;
+
+namespace base {
 class DictionaryValue;
 class ListValue;
 class Value;
+}
 
 struct WebKeyEvent {
   WebKeyEvent(automation::KeyEventTypes type,
@@ -91,7 +94,7 @@ bool SendExecuteJavascriptJSONRequest(
     int tab_index,
     const std::string& frame_xpath,
     const std::string& javascript,
-    Value** result,
+    base::Value** result,
     std::string* error_msg) WARN_UNUSED_RESULT;
 
 // Requests the specified tab to go forward. Waits for the load to complete.
@@ -150,7 +153,7 @@ bool SendGetTabTitleJSONRequest(
 bool SendGetCookiesJSONRequest(
     AutomationMessageSender* sender,
     const std::string& url,
-    ListValue** cookies,
+    base::ListValue** cookies,
     std::string* error_msg) WARN_UNUSED_RESULT;
 
 // Requests all the cookies for the given URL. Returns true on success.
@@ -185,7 +188,7 @@ bool SendDeleteCookieJSONRequestDeprecated(
 bool SendSetCookieJSONRequest(
     AutomationMessageSender* sender,
     const std::string& url,
-    DictionaryValue* cookie_dict,
+    base::DictionaryValue* cookie_dict,
     std::string* error_msg) WARN_UNUSED_RESULT;
 
 // Requests setting the given cookie for the given URL. Returns true on

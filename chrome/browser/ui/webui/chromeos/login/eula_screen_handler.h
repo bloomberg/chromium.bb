@@ -12,7 +12,10 @@
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "content/browser/webui/web_ui.h"
 
+namespace base {
+class DictionaryValue;
 class ListValue;
+}
 
 namespace chromeos {
 
@@ -35,7 +38,7 @@ class EulaScreenHandler : public EulaScreenActor,
   virtual void OnPasswordFetched(const std::string& tpm_password);
 
   // OobeMessageHandler implementation:
-  virtual void GetLocalizedStrings(DictionaryValue* localized_strings);
+  virtual void GetLocalizedStrings(base::DictionaryValue* localized_strings);
   virtual void Initialize();
 
   // WebUIMessageHandler implementation:
@@ -43,9 +46,9 @@ class EulaScreenHandler : public EulaScreenActor,
 
  private:
   // JS messages handlers.
-  void HandleOnExit(const ListValue* args);
-  void HandleOnLearnMore(const ListValue* args);
-  void HandleOnTpmPopupOpened(const ListValue* args);
+  void HandleOnExit(const base::ListValue* args);
+  void HandleOnLearnMore(const base::ListValue* args);
+  void HandleOnTpmPopupOpened(const base::ListValue* args);
 
   Delegate* delegate_;
 

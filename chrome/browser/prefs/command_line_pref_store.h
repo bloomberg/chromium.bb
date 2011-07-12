@@ -12,8 +12,6 @@
 #include "base/values.h"
 #include "chrome/browser/prefs/value_map_pref_store.h"
 
-class DictionaryValue;
-
 // This PrefStore keeps track of preferences set by command-line switches,
 // such as proxy settings.
 class CommandLinePrefStore : public ValueMapPrefStore {

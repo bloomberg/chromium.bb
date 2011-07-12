@@ -21,8 +21,11 @@
 #include "content/common/page_type.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
-class DictionaryValue;
 class TemplateURLService;
+
+namespace base {
+class DictionaryValue;
+}
 
 // This is an automation provider containing testing calls.
 class TestingAutomationProvider : public AutomationProvider,
@@ -351,20 +354,20 @@ class TestingAutomationProvider : public AutomationProvider,
 
   // Method ptr for json handlers.
   // Uses the JSON interface for input/output.
-  typedef void (TestingAutomationProvider::*JsonHandler)(DictionaryValue*,
+  typedef void (TestingAutomationProvider::*JsonHandler)(base::DictionaryValue*,
                                                          IPC::Message*);
 
   // Method ptr for json handlers that take a browser argument.
   // Uses the JSON interface for input/output.
   typedef void (TestingAutomationProvider::*BrowserJsonHandler)(
       Browser* browser,
-      DictionaryValue*,
+      base::DictionaryValue*,
       IPC::Message*);
 
     // Set window dimensions.
   // Uses the JSON interface for input/output.
   void SetWindowDimensions(Browser* browser,
-                           DictionaryValue* args,
+                           base::DictionaryValue* args,
                            IPC::Message* reply_message);
 
   // Get info about infobars in the given TabContents object.
@@ -376,103 +379,103 @@ class TestingAutomationProvider : public AutomationProvider,
   // Perform actions on an infobar like dismiss, accept, cancel.
   // Uses the JSON interface for input/output.
   void PerformActionOnInfobar(Browser* browser,
-                              DictionaryValue* args,
+                              base::DictionaryValue* args,
                               IPC::Message* reply_message);
 
   // Get info about the chromium/chrome in use.
   // This includes things like version, executable name, executable path.
   // Uses the JSON interface for input/output.
   void GetBrowserInfo(Browser* browser,
-                      DictionaryValue* args,
+                      base::DictionaryValue* args,
                       IPC::Message* reply_message);
 
   // Get info about the state of navigation in a given tab.
   // This includes ssl info.
   // Uses the JSON interface for input/output.
   void GetNavigationInfo(Browser* browser,
-                         DictionaryValue* args,
+                         base::DictionaryValue* args,
                          IPC::Message* reply_message);
 
   // Get info about downloads. This includes only ones that have been
   // registered by the history system.
   // Uses the JSON interface for input/output.
   void GetDownloadsInfo(Browser* browser,
-                        DictionaryValue* args,
+                        base::DictionaryValue* args,
                         IPC::Message* reply_message);
 
   // Wait for all downloads to complete.
   // Uses the JSON interface for input/output.
   void WaitForDownloadsToComplete(Browser* browser,
-                                  DictionaryValue* args,
+                                  base::DictionaryValue* args,
                                   IPC::Message* reply_message);
 
   // Performs the given action on the specified download.
   // Uses the JSON interface for input/output.
   void PerformActionOnDownload(Browser* browser,
-                               DictionaryValue* args,
+                               base::DictionaryValue* args,
                                IPC::Message* reply_message);
 
   // Get info about history.
   // Uses the JSON interface for input/output.
   void GetHistoryInfo(Browser* browser,
-                      DictionaryValue* args,
+                      base::DictionaryValue* args,
                       IPC::Message* reply_message);
 
   // Add an item to the history service.
   // Uses the JSON interface for input/output.
   void AddHistoryItem(Browser* browser,
-                      DictionaryValue* args,
+                      base::DictionaryValue* args,
                       IPC::Message* reply_message);
 
   // Invoke loading of template url model.
   // Uses the JSON interface for input/output.
   void LoadSearchEngineInfo(Browser* browser,
-                            DictionaryValue* args,
+                            base::DictionaryValue* args,
                             IPC::Message* reply_message);
 
   // Get search engines list.
   // Assumes that the profile's template url model is loaded.
   // Uses the JSON interface for input/output.
   void GetSearchEngineInfo(Browser* browser,
-                           DictionaryValue* args,
+                           base::DictionaryValue* args,
                            IPC::Message* reply_message);
 
   // Add or edit search engine.
   // Assumes that the profile's template url model is loaded.
   // Uses the JSON interface for input/output.
   void AddOrEditSearchEngine(Browser* browser,
-                             DictionaryValue* args,
+                             base::DictionaryValue* args,
                              IPC::Message* reply_message);
 
   // Perform a given action on an existing search engine.
   // Assumes that the profile's template url model is loaded.
   // Uses the JSON interface for input/output.
   void PerformActionOnSearchEngine(Browser* browser,
-                                   DictionaryValue* args,
+                                   base::DictionaryValue* args,
                                    IPC::Message* reply_message);
 
   // Get info about preferences stored in Local State.
   // Uses the JSON interface for input/output.
   void GetLocalStatePrefsInfo(Browser* browser,
-                              DictionaryValue* args,
+                              base::DictionaryValue* args,
                               IPC::Message* reply_message);
 
   // Set local state prefs.
   // Uses the JSON interface for input/output.
   void SetLocalStatePrefs(Browser* browser,
-                          DictionaryValue* args,
+                          base::DictionaryValue* args,
                           IPC::Message* reply_message);
 
   // Get info about preferences.
   // Uses the JSON interface for input/output.
   void GetPrefsInfo(Browser* browser,
-                    DictionaryValue* args,
+                    base::DictionaryValue* args,
                     IPC::Message* reply_message);
 
   // Set prefs.
   // Uses the JSON interface for input/output.
   void SetPrefs(Browser* browser,
-                DictionaryValue* args,
+                base::DictionaryValue* args,
                 IPC::Message* reply_message);
 
   // Return load times of initial tabs.
@@ -481,25 +484,25 @@ class TestingAutomationProvider : public AutomationProvider,
   // See declaration of InitialLoadObserver in automation_provider_observers.h
   // for example response.
   void GetInitialLoadTimes(Browser* browser,
-                           DictionaryValue* args,
+                           base::DictionaryValue* args,
                            IPC::Message* reply_message);
 
   // Get info about plugins.
   // Uses the JSON interface for input/output.
   void GetPluginsInfo(Browser* browser,
-                      DictionaryValue* args,
+                      base::DictionaryValue* args,
                       IPC::Message* reply_message);
 
   // Enable a plugin.
   // Uses the JSON interface for input/output.
   void EnablePlugin(Browser* browser,
-                    DictionaryValue* args,
+                    base::DictionaryValue* args,
                     IPC::Message* reply_message);
 
   // Disable a plugin.
   // Uses the JSON interface for input/output.
   void DisablePlugin(Browser* browser,
-                     DictionaryValue* args,
+                     base::DictionaryValue* args,
                      IPC::Message* reply_message);
 
   // Get info about omnibox.
@@ -507,19 +510,19 @@ class TestingAutomationProvider : public AutomationProvider,
   // in the omnibox popup, the text in the omnibox.
   // Uses the JSON interface for input/output.
   void GetOmniboxInfo(Browser* browser,
-                      DictionaryValue* args,
+                      base::DictionaryValue* args,
                       IPC::Message* reply_message);
 
   // Set text in the omnibox. This sets focus to the omnibox.
   // Uses the JSON interface for input/output.
   void SetOmniboxText(Browser* browser,
-                      DictionaryValue* args,
+                      base::DictionaryValue* args,
                       IPC::Message* reply_message);
 
   // Move omnibox popup selection up or down.
   // Uses the JSON interface for input/output.
   void OmniboxMovePopupSelection(Browser* browser,
-                                 DictionaryValue* args,
+                                 base::DictionaryValue* args,
                                  IPC::Message* reply_message);
 
   // Accept the current string of text in the omnibox.
@@ -527,25 +530,25 @@ class TestingAutomationProvider : public AutomationProvider,
   // Blocks until the page loads.
   // Uses the JSON interface for input/output.
   void OmniboxAcceptInput(Browser* browser,
-                          DictionaryValue* args,
+                          base::DictionaryValue* args,
                           IPC::Message* reply_message);
 
   // Generate dictionary info about instant tab.
   // Uses the JSON interface for input/output.
   void GetInstantInfo(Browser* browser,
-                      DictionaryValue* args,
+                      base::DictionaryValue* args,
                       IPC::Message* reply_message);
 
   // Save the contents of a tab into a file.
   // Uses the JSON interface for input/output.
   void SaveTabContents(Browser* browser,
-                       DictionaryValue* args,
+                       base::DictionaryValue* args,
                        IPC::Message* reply_message);
 
   // Import the given settings from the given browser.
   // Uses the JSON interface for input/output.
   void ImportSettings(Browser* browser,
-                      DictionaryValue* args,
+                      base::DictionaryValue* args,
                       IPC::Message* reply_message);
 
   // Add a new entry to the password store based on the password information
@@ -553,57 +556,57 @@ class TestingAutomationProvider : public AutomationProvider,
   // will never fill in the password).
   // Uses the JSON interface for input/output.
   void AddSavedPassword(Browser* browser,
-                        DictionaryValue* args,
+                        base::DictionaryValue* args,
                         IPC::Message* reply_message);
 
   // Removes the password matching the information provided. This method can
   // also be used to remove a blacklisted site.
   // Uses the JSON interface for input/output.
   void RemoveSavedPassword(Browser* browser,
-                           DictionaryValue* args,
+                           base::DictionaryValue* args,
                            IPC::Message* reply_message);
 
   // Return the saved username/password combinations.
   // Uses the JSON interface for input/output.
   void GetSavedPasswords(Browser* browser,
-                         DictionaryValue* args,
+                         base::DictionaryValue* args,
                          IPC::Message* reply_message);
 
   // Clear the specified browsing data. This call provides similar
   // functionality to RemoveBrowsingData but is synchronous.
   // Uses the JSON interface for input/output.
   void ClearBrowsingData(Browser* browser,
-                         DictionaryValue* args,
+                         base::DictionaryValue* args,
                          IPC::Message* reply_message);
 
   // Get info about blocked popups in a tab.
   // Uses the JSON interface for input/output.
   void GetBlockedPopupsInfo(Browser* browser,
-                            DictionaryValue* args,
+                            base::DictionaryValue* args,
                             IPC::Message* reply_message);
 
   // Launch a blocked popup.
   // Uses the JSON interface for input/output.
   void UnblockAndLaunchBlockedPopup(Browser* browser,
-                                    DictionaryValue* args,
+                                    base::DictionaryValue* args,
                                     IPC::Message* reply_message);
 
   // Get info about theme.
   // Uses the JSON interface for input/output.
   void GetThemeInfo(Browser* browser,
-                    DictionaryValue* args,
+                    base::DictionaryValue* args,
                     IPC::Message* reply_message);
 
   // Get info about all intalled extensions.
   // Uses the JSON interface for input/output.
   void GetExtensionsInfo(Browser* browser,
-                         DictionaryValue* args,
+                         base::DictionaryValue* args,
                          IPC::Message* reply_message);
 
   // Uninstalls the extension with the given id.
   // Uses the JSON interface for input/output.
   void UninstallExtensionById(Browser* browser,
-                              DictionaryValue* args,
+                              base::DictionaryValue* args,
                               IPC::Message* reply_message);
 
   // Set extension states:
@@ -611,42 +614,42 @@ class TestingAutomationProvider : public AutomationProvider,
   //   Allow/disallow extension in incognito mode.
   // Uses the JSON interface for input/output.
   void SetExtensionStateById(Browser* browser,
-                             DictionaryValue* args,
+                             base::DictionaryValue* args,
                              IPC::Message* reply_message);
 
   // Responds to the Find request and returns the match count.
   void FindInPage(Browser* browser,
-                  DictionaryValue* args,
+                  base::DictionaryValue* args,
                   IPC::Message* reply_message);
 
   // Returns information about translation for a given tab. Includes
   // information about the translate bar if it is showing.
   void GetTranslateInfo(Browser* browser,
-                        DictionaryValue* args,
+                        base::DictionaryValue* args,
                         IPC::Message* reply_message);
 
   // Takes the specified action on the translate bar.
   // Uses the JSON interface for input/output.
   void SelectTranslateOption(Browser* browser,
-                             DictionaryValue* args,
+                             base::DictionaryValue* args,
                              IPC::Message* reply_message);
 
   // Get the profiles that are currently saved to the DB.
   // Uses the JSON interface for input/output.
   void GetAutofillProfile(Browser* browser,
-                          DictionaryValue* args,
+                          base::DictionaryValue* args,
                           IPC::Message* reply_message);
 
   // Fill in an AutofillProfile with the given profile information.
   // Uses the JSON interface for input/output.
   void FillAutofillProfile(Browser* browser,
-                           DictionaryValue* args,
+                           base::DictionaryValue* args,
                            IPC::Message* reply_message);
 
   // Causes the autofill popup to be displayed in an already-focused webpage
   // form field.  Waits until the popup is displayed before returning.
   void AutofillTriggerSuggestions(Browser* browser,
-                                  DictionaryValue* args,
+                                  base::DictionaryValue* args,
                                   IPC::Message* message);
 
   // Highlights the previous or next autofill entry in an already-displayed
@@ -655,7 +658,7 @@ class TestingAutomationProvider : public AutomationProvider,
   // to be displayed in the webpage form before returning.  Use
   // AutofillTriggerSuggestions() to cause the autofill popup to be displayed.
   void AutofillHighlightSuggestion(Browser* browser,
-                                   DictionaryValue* args,
+                                   base::DictionaryValue* args,
                                    IPC::Message* message);
 
   // Causes a webpage form to be filled with autofill information from an
@@ -663,43 +666,43 @@ class TestingAutomationProvider : public AutomationProvider,
   // AutofillHighlightSuggestion() as needed to highlight the desired profile
   // in the autofill popup.
   void AutofillAcceptSelection(Browser* browser,
-                               DictionaryValue* args,
+                               base::DictionaryValue* args,
                                IPC::Message* message);
 
   // Signs in to sync using the given username and password.
   // Uses the JSON interface for input/output.
   void SignInToSync(Browser* browser,
-                    DictionaryValue* args,
+                    base::DictionaryValue* args,
                     IPC::Message* reply_message);
 
   // Returns info about sync.
   // Uses the JSON interface for input/output.
   void GetSyncInfo(Browser* browser,
-                   DictionaryValue* args,
+                   base::DictionaryValue* args,
                    IPC::Message* reply_message);
 
   // Waits for the ongoing sync cycle to complete.
   // Uses the JSON interface for input/output.
   void AwaitSyncCycleCompletion(Browser* browser,
-                                DictionaryValue* args,
+                                base::DictionaryValue* args,
                                 IPC::Message* reply_message);
 
   // Waits for sync to reinitialize (for example, after a browser restart).
   // Uses the JSON interface for input/output.
   void AwaitSyncRestart(Browser* browser,
-                        DictionaryValue* args,
+                        base::DictionaryValue* args,
                         IPC::Message* reply_message);
 
   // Enables sync for one or more sync datatypes.
   // Uses the JSON interface for input/output.
   void EnableSyncForDatatypes(Browser* browser,
-                              DictionaryValue* args,
+                              base::DictionaryValue* args,
                               IPC::Message* reply_message);
 
   // Disables sync for one or more sync datatypes.
   // Uses the JSON interface for input/output.
   void DisableSyncForDatatypes(Browser* browser,
-                               DictionaryValue* args,
+                               base::DictionaryValue* args,
                                IPC::Message* reply_message);
 
   // Translate DictionaryValues of autofill profiles and credit cards to the
@@ -708,16 +711,16 @@ class TestingAutomationProvider : public AutomationProvider,
   //   profiles/cards: the ListValue of profiles/credit cards to translate.
   //   error_message: a pointer to the return string in case of error.
   static std::vector<AutofillProfile> GetAutofillProfilesFromList(
-      const ListValue& profiles, std::string* error_message);
+      const base::ListValue& profiles, std::string* error_message);
   static std::vector<CreditCard> GetCreditCardsFromList(
-      const ListValue& cards, std::string* error_message);
+      const base::ListValue& cards, std::string* error_message);
 
   // The opposite of the above: translates from the internal data structure
   // for profiles and credit cards to a ListValue of DictionaryValues. The
   // caller owns the returned object.
-  static ListValue* GetListFromAutofillProfiles(
+  static base::ListValue* GetListFromAutofillProfiles(
       const std::vector<AutofillProfile*>& autofill_profiles);
-  static ListValue* GetListFromCreditCards(
+  static base::ListValue* GetListFromCreditCards(
       const std::vector<CreditCard*>& credit_cards);
 
   // Return the map from the internal data representation to the string value
@@ -730,63 +733,63 @@ class TestingAutomationProvider : public AutomationProvider,
   // Get a list of active HTML5 notifications.
   // Uses the JSON interface for input/output.
   void GetActiveNotifications(Browser* browser,
-                              DictionaryValue* args,
+                              base::DictionaryValue* args,
                               IPC::Message* reply_message);
 
   // Close an active HTML5 notification.
   // Uses the JSON interface for input/output.
   void CloseNotification(Browser* browser,
-                         DictionaryValue* args,
+                         base::DictionaryValue* args,
                          IPC::Message* reply_message);
 
   // Waits for the number of active HTML5 notifications to reach a given count.
   // Uses the JSON interface for input/output.
   void WaitForNotificationCount(Browser* browser,
-                                DictionaryValue* args,
+                                base::DictionaryValue* args,
                                 IPC::Message* reply_message);
 
   // Gets info about the elements in the NTP.
   // Uses the JSON interface for input/output.
   void GetNTPInfo(Browser* browser,
-                  DictionaryValue* args,
+                  base::DictionaryValue* args,
                   IPC::Message* reply_message);
 
   // Moves a thumbnail in the NTP's Most Visited sites section to a different
   // index.
   // Uses the JSON interface for input/output.
   void MoveNTPMostVisitedThumbnail(Browser* browser,
-                                   DictionaryValue* args,
+                                   base::DictionaryValue* args,
                                    IPC::Message* reply_message);
 
   // Removes a thumbnail from the NTP's Most Visited sites section.
   // Uses the JSON interface for input/output.
   void RemoveNTPMostVisitedThumbnail(Browser* browser,
-                                     DictionaryValue* args,
+                                     base::DictionaryValue* args,
                                      IPC::Message* reply_message);
 
   // Unpins a thumbnail in the NTP's Most Visited sites section.
   // Uses the JSON interface for input/output.
   void UnpinNTPMostVisitedThumbnail(Browser* browser,
-                                    DictionaryValue* args,
+                                    base::DictionaryValue* args,
                                     IPC::Message* reply_message);
 
   // Restores all thumbnails that have been removed (i.e., blacklisted) from the
   // NTP's Most Visited sites section.
   // Uses the JSON interface for input/output.
   void RestoreAllNTPMostVisitedThumbnails(Browser* browser,
-                                          DictionaryValue* args,
+                                          base::DictionaryValue* args,
                                           IPC::Message* reply_message);
 
   // Kills the given renderer process and returns after the associated
   // RenderProcessHost receives notification of its closing.
   void KillRendererProcess(Browser* browser,
-                           DictionaryValue* args,
+                           base::DictionaryValue* args,
                            IPC::Message* reply_message);
 
   // Populates the fields of the event parameter with what is found in the
   // args parameter.  Upon failure, returns false and puts the error message in
   // the error parameter, otherwise returns true.
-  bool BuildWebKeyEventFromArgs(DictionaryValue* args,
+  bool BuildWebKeyEventFromArgs(base::DictionaryValue* args,
                                 std::string* error,
                                 NativeWebKeyboardEvent* event);
 
@@ -804,38 +807,38 @@ class TestingAutomationProvider : public AutomationProvider,
 
   // Determines whether each relevant section of the NTP is in thumbnail mode.
   void GetNTPThumbnailMode(Browser* browser,
-                           DictionaryValue* args,
+                           base::DictionaryValue* args,
                            IPC::Message* reply_message);
 
   // Puts or removes the specified section of the NTP into/from thumbnail mode.
   // If the section is put into thumbnail mode, all other relevant sections are
   // removed from thumbnail mode.
   void SetNTPThumbnailMode(Browser* browser,
-                           DictionaryValue* args,
+                           base::DictionaryValue* args,
                            IPC::Message* reply_message);
 
   // Determines whether each relevant section of the NTP is in menu mode.
   void GetNTPMenuMode(Browser* browser,
-                      DictionaryValue* args,
+                      base::DictionaryValue* args,
                       IPC::Message* reply_message);
 
   // Puts or removes the specified section of the NTP into/from menu mode.
   void SetNTPMenuMode(Browser* browser,
-                      DictionaryValue* args,
+                      base::DictionaryValue* args,
                       IPC::Message* reply_message);
 
   // Launches the specified app from the currently-selected tab.
   void LaunchApp(Browser* browser,
-                 DictionaryValue* args,
+                 base::DictionaryValue* args,
                  IPC::Message* reply_message);
 
   // Sets the launch type for the specified app.
   void SetAppLaunchType(Browser* browser,
-                        DictionaryValue* args,
+                        base::DictionaryValue* args,
                         IPC::Message* reply_message);
 
   // Waits for all tabs to stop loading.
-  void WaitForAllTabsToStopLoading(DictionaryValue* args,
+  void WaitForAllTabsToStopLoading(base::DictionaryValue* args,
                                    IPC::Message* reply_message);
 
   // Gets the browser and tab index of the given tab. Uses the JSON interface.
@@ -847,7 +850,8 @@ class TestingAutomationProvider : public AutomationProvider,
   //            "tab_handle": 3  // optional
   //          }
   //   output: { "windex": 1, "tab_index": 5 }
-  void GetIndicesFromTab(DictionaryValue* args, IPC::Message* reply_message);
+  void GetIndicesFromTab(base::DictionaryValue* args,
+                         IPC::Message* reply_message);
 
   // Navigates to the given URL. Uses the JSON interface.
   // Example:
@@ -857,7 +861,7 @@ class TestingAutomationProvider : public AutomationProvider,
   //            "navigation_count": 1  // number of navigations to wait for
   //          }
   //   output: { "result": AUTOMATION_MSG_NAVIGATION_SUCCESS }
-  void NavigateToURL(DictionaryValue* args, IPC::Message* reply_message);
+  void NavigateToURL(base::DictionaryValue* args, IPC::Message* reply_message);
 
   // Executes javascript in the specified frame. Uses the JSON interface.
   // Waits for a result from the |DOMAutomationController|. The javascript
@@ -877,7 +881,7 @@ class TestingAutomationProvider : public AutomationProvider,
   // dropped.
   // TODO(kkania): Replace the non-JSON counterparts and drop the JSON suffix.
   void ExecuteJavascriptJSON(
-      DictionaryValue* args, IPC::Message* reply_message);
+      base::DictionaryValue* args, IPC::Message* reply_message);
 
   // Goes forward in the specified tab. Uses the JSON interface.
   // Example:
@@ -885,7 +889,7 @@ class TestingAutomationProvider : public AutomationProvider,
   //   output: { "did_go_forward": true,                      // optional
   //             "result": AUTOMATION_MSG_NAVIGATION_SUCCESS  // optional
   //           }
-  void GoForward(DictionaryValue* args, IPC::Message* reply_message);
+  void GoForward(base::DictionaryValue* args, IPC::Message* reply_message);
 
   // Goes back in the specified tab. Uses the JSON interface.
   // Example:
@@ -893,25 +897,26 @@ class TestingAutomationProvider : public AutomationProvider,
   //   output: { "did_go_back": true,                         // optional
   //             "result": AUTOMATION_MSG_NAVIGATION_SUCCESS  // optional
   //           }
-  void GoBack(DictionaryValue* args, IPC::Message* reply_message);
+  void GoBack(base::DictionaryValue* args, IPC::Message* reply_message);
 
   // Reload the specified tab. Uses the JSON interface.
   // Example:
   //   input: { "windex": 1, "tab_index": 1 }
   //   output: { "result": AUTOMATION_MSG_NAVIGATION_SUCCESS  // optional }
-  void ReloadJSON(DictionaryValue* args, IPC::Message* reply_message);
+  void ReloadJSON(base::DictionaryValue* args, IPC::Message* reply_message);
 
   // Get the current url of the specified tab. Uses the JSON interface.
   // Example:
   //   input: { "windex": 1, "tab_index": 1 }
   //   output: { "url": "http://www.google.com" }
-  void GetTabURLJSON(DictionaryValue* args, IPC::Message* reply_message);
+  void GetTabURLJSON(base::DictionaryValue* args, IPC::Message* reply_message);
 
   // Get the current url of the specified tab. Uses the JSON interface.
   // Example:
   //   input: { "windex": 1, "tab_index": 1 }
   //   output: { "title": "Google" }
-  void GetTabTitleJSON(DictionaryValue* args, IPC::Message* reply_message);
+  void GetTabTitleJSON(base::DictionaryValue* args,
+                       IPC::Message* reply_message);
 
   // Captures the entire page of the the specified tab, including the
   // non-visible portions of the page, and saves the PNG to a file.
@@ -919,7 +924,7 @@ class TestingAutomationProvider : public AutomationProvider,
   //   input: { "windex": 1, "tab_index": 1, "path":"/tmp/foo.png"}
   //   output: none
   void CaptureEntirePageJSON(
-      DictionaryValue* args, IPC::Message* reply_message);
+      base::DictionaryValue* args, IPC::Message* reply_message);
 
   // Gets the cookies for the given URL. Uses the JSON interface.
   // "expiry" refers to the amount of seconds since the Unix epoch. If omitted,
@@ -937,7 +942,7 @@ class TestingAutomationProvider : public AutomationProvider,
   //               }
   //             ]
   //           }
-  void GetCookiesJSON(DictionaryValue* args, IPC::Message* reply_message);
+  void GetCookiesJSON(base::DictionaryValue* args, IPC::Message* reply_message);
 
   // Deletes the cookie with the given name for the URL. Uses the JSON
   // interface.
@@ -947,7 +952,8 @@ class TestingAutomationProvider : public AutomationProvider,
   //            "name": "my_cookie"
   //          }
   //   output: none
-  void DeleteCookieJSON(DictionaryValue* args, IPC::Message* reply_message);
+  void DeleteCookieJSON(base::DictionaryValue* args,
+                        IPC::Message* reply_message);
 
   // Sets a cookie for the given URL. Uses the JSON interface.
   // "expiry" refers to the amount of seconds since the Unix epoch. If omitted,
@@ -971,25 +977,25 @@ class TestingAutomationProvider : public AutomationProvider,
   //            }
   //          }
   //   output: none
-  void SetCookieJSON(DictionaryValue* args, IPC::Message* reply_message);
+  void SetCookieJSON(base::DictionaryValue* args, IPC::Message* reply_message);
 
   // Gets the ID for every open tab. This ID is unique per session.
   // Example:
   //   input: none
   //   output: { "ids": [4124, 213, 1] }
-  void GetTabIds(DictionaryValue* args, IPC::Message* reply_message);
+  void GetTabIds(base::DictionaryValue* args, IPC::Message* reply_message);
 
   // Checks if the given tab ID refers to an open tab.
   // Example:
   //   input: { "id": 41 }
   //   output: { "is_valid": false }
-  void IsTabIdValid(DictionaryValue* args, IPC::Message* reply_message);
+  void IsTabIdValid(base::DictionaryValue* args, IPC::Message* reply_message);
 
   // Closes the specified tab.
   // Example:
   //   input: { "windex": 1, "tab_index": 1 }
   //   output: none
-  void CloseTabJSON(DictionaryValue* args, IPC::Message* reply_message);
+  void CloseTabJSON(base::DictionaryValue* args, IPC::Message* reply_message);
 
   // Sends the WebKit events for a mouse click at a given coordinate.
   // Example:
@@ -1000,7 +1006,7 @@ class TestingAutomationProvider : public AutomationProvider,
   //            "y": 100
   //          }
   //   output: none
-  void WebkitMouseClick(DictionaryValue* args,
+  void WebkitMouseClick(base::DictionaryValue* args,
                         IPC::Message* message);
 
   // Sends the WebKit event for a mouse move to a given coordinate.
@@ -1011,7 +1017,7 @@ class TestingAutomationProvider : public AutomationProvider,
   //            "y": 100
   //          }
   //   output: none
-  void WebkitMouseMove(DictionaryValue* args,
+  void WebkitMouseMove(base::DictionaryValue* args,
                        IPC::Message* message);
 
   // Sends the WebKit events for a mouse drag between two coordinates.
@@ -1024,7 +1030,7 @@ class TestingAutomationProvider : public AutomationProvider,
   //            "end_y": 100
   //          }
   //   output: none
-  void WebkitMouseDrag(DictionaryValue* args,
+  void WebkitMouseDrag(base::DictionaryValue* args,
                        IPC::Message* message);
 
   // Sends the WebKit events for a mouse button down at a given coordinate.
@@ -1035,7 +1041,7 @@ class TestingAutomationProvider : public AutomationProvider,
   //            "y": 100
   //          }
   //   output: none
-  void WebkitMouseButtonDown(DictionaryValue* args,
+  void WebkitMouseButtonDown(base::DictionaryValue* args,
                              IPC::Message* message);
 
   // Sends the WebKit events for a mouse button up at a given coordinate.
@@ -1046,7 +1052,7 @@ class TestingAutomationProvider : public AutomationProvider,
   //            "y": 100
   //          }
   //   output: none
-  void WebkitMouseButtonUp(DictionaryValue* args,
+  void WebkitMouseButtonUp(base::DictionaryValue* args,
                            IPC::Message* message);
 
   // Sends the WebKit events for a mouse double click at a given coordinate.
@@ -1057,7 +1063,7 @@ class TestingAutomationProvider : public AutomationProvider,
   //            "y": 100
   //          }
   //   output: none
-  void WebkitMouseDoubleClick(DictionaryValue* args,
+  void WebkitMouseDoubleClick(base::DictionaryValue* args,
                               IPC::Message* message);
 
   // Drag and drop file paths at a given coordinate.
@@ -1071,7 +1077,7 @@ class TestingAutomationProvider : public AutomationProvider,
   //            ],
   //          }
   //   output: none
-  void DragAndDropFilePaths(DictionaryValue* args,
+  void DragAndDropFilePaths(base::DictionaryValue* args,
                             IPC::Message* message);
 
   // Sends the WebKit key event with the specified properties.
@@ -1087,7 +1093,7 @@ class TestingAutomationProvider : public AutomationProvider,
   //            "isSystemKey": false
   //          }
   //   output: none
-  void SendWebkitKeyEvent(DictionaryValue* args,
+  void SendWebkitKeyEvent(base::DictionaryValue* args,
                           IPC::Message* message);
 
   // Sends the key event from the OS level to the browser window,
@@ -1100,7 +1106,7 @@ class TestingAutomationProvider : public AutomationProvider,
   //            "modifiers": automation::kShiftKeyMask,
   //          }
   //   output: none
-  void SendOSLevelKeyEventToTab(DictionaryValue* args,
+  void SendOSLevelKeyEventToTab(base::DictionaryValue* args,
                                 IPC::Message* message);
 
   // Method used as a Task that sends a success AutomationJSONReply.
@@ -1111,7 +1117,7 @@ class TestingAutomationProvider : public AutomationProvider,
   //   input: none
   //   output: { "message": "This is an alert!" }
   void GetAppModalDialogMessage(
-      DictionaryValue* args, IPC::Message* reply_message);
+      base::DictionaryValue* args, IPC::Message* reply_message);
 
   // Accepts or dismisses the active JavaScript modal dialog. If optional
   // prompt text is given, it will be used as the result of the prompt dialog.
@@ -1121,7 +1127,7 @@ class TestingAutomationProvider : public AutomationProvider,
   //          }
   //   output: none
   void AcceptOrDismissAppModalDialog(
-      DictionaryValue* args, IPC::Message* reply_message);
+      base::DictionaryValue* args, IPC::Message* reply_message);
 
   // Activates the given tab.
   // Example:
@@ -1129,78 +1135,86 @@ class TestingAutomationProvider : public AutomationProvider,
   //            "tab_index": 1,
   //          }
   //   output: none
-  void ActivateTabJSON(DictionaryValue* args, IPC::Message* message);
+  void ActivateTabJSON(base::DictionaryValue* args, IPC::Message* message);
 
   // Gets the version of ChromeDriver automation supported by this server.
   // Example:
   //   input: none
   //   output: { "version": 1 }
-  void GetChromeDriverAutomationVersion(DictionaryValue* args,
+  void GetChromeDriverAutomationVersion(base::DictionaryValue* args,
                                         IPC::Message* message);
 
   // Auto-updates installed extensions.
   // Uses the JSON interface for input/output.
-  void UpdateExtensionsNow(DictionaryValue* args, IPC::Message* reply_message);
+  void UpdateExtensionsNow(base::DictionaryValue* args,
+                           IPC::Message* reply_message);
 
 #if defined(OS_CHROMEOS)
-  void GetLoginInfo(DictionaryValue* args, IPC::Message* reply_message);
+  void GetLoginInfo(base::DictionaryValue* args, IPC::Message* reply_message);
 
-  void ShowCreateAccountUI(DictionaryValue* args, IPC::Message* reply_message);
+  void ShowCreateAccountUI(base::DictionaryValue* args,
+                           IPC::Message* reply_message);
 
-  void LoginAsGuest(DictionaryValue* args, IPC::Message* reply_message);
+  void LoginAsGuest(base::DictionaryValue* args, IPC::Message* reply_message);
 
-  void Login(DictionaryValue* args, IPC::Message* reply_message);
+  void Login(base::DictionaryValue* args, IPC::Message* reply_message);
 
-  void LockScreen(DictionaryValue* args, IPC::Message* reply_message);
+  void LockScreen(base::DictionaryValue* args, IPC::Message* reply_message);
 
-  void UnlockScreen(DictionaryValue* args, IPC::Message* reply_message);
+  void UnlockScreen(base::DictionaryValue* args, IPC::Message* reply_message);
 
-  void SignoutInScreenLocker(DictionaryValue* args,
+  void SignoutInScreenLocker(base::DictionaryValue* args,
                              IPC::Message* reply_message);
 
-  void GetBatteryInfo(DictionaryValue* args, IPC::Message* reply_message);
+  void GetBatteryInfo(base::DictionaryValue* args, IPC::Message* reply_message);
 
-  void GetNetworkInfo(DictionaryValue* args, IPC::Message* reply_message);
+  void GetNetworkInfo(base::DictionaryValue* args, IPC::Message* reply_message);
 
-  void NetworkScan(DictionaryValue* args, IPC::Message* reply_message);
+  void NetworkScan(base::DictionaryValue* args, IPC::Message* reply_message);
 
-  void GetProxySettings(DictionaryValue* args, IPC::Message* reply_message);
+  void GetProxySettings(base::DictionaryValue* args,
+                        IPC::Message* reply_message);
 
-  void SetProxySettings(DictionaryValue* args, IPC::Message* reply_message);
+  void SetProxySettings(base::DictionaryValue* args,
+                        IPC::Message* reply_message);
 
-  void ConnectToWifiNetwork(DictionaryValue* args, IPC::Message* reply_message);
+  void ConnectToWifiNetwork(base::DictionaryValue* args,
+                            IPC::Message* reply_message);
 
-  void ConnectToHiddenWifiNetwork(DictionaryValue* args,
+  void ConnectToHiddenWifiNetwork(base::DictionaryValue* args,
                                   IPC::Message* reply_message);
 
-  void DisconnectFromWifiNetwork(DictionaryValue* args,
+  void DisconnectFromWifiNetwork(base::DictionaryValue* args,
                                  IPC::Message* reply_message);
 
   // VPN automation
-  void AddPrivateNetwork(DictionaryValue* args, IPC::Message* reply_message);
+  void AddPrivateNetwork(base::DictionaryValue* args,
+                         IPC::Message* reply_message);
 
-  void GetPrivateNetworkInfo(DictionaryValue* args,
+  void GetPrivateNetworkInfo(base::DictionaryValue* args,
                              IPC::Message* reply_message);
 
-  void ConnectToPrivateNetwork(DictionaryValue* args,
+  void ConnectToPrivateNetwork(base::DictionaryValue* args,
                                IPC::Message* reply_message);
 
-  void DisconnectFromPrivateNetwork(DictionaryValue* args,
+  void DisconnectFromPrivateNetwork(base::DictionaryValue* args,
                                     IPC::Message* reply_message);
 
-  void ForgetWifiNetwork(DictionaryValue* args, IPC::Message* reply_message);
+  void ForgetWifiNetwork(base::DictionaryValue* args,
+                         IPC::Message* reply_message);
 
-  void GetUpdateInfo(DictionaryValue* args, IPC::Message* reply_message);
+  void GetUpdateInfo(base::DictionaryValue* args, IPC::Message* reply_message);
 
-  void UpdateCheck(DictionaryValue* args, IPC::Message* reply_message);
+  void UpdateCheck(base::DictionaryValue* args, IPC::Message* reply_message);
 
-  void SetReleaseTrack(DictionaryValue* args, IPC::Message* reply_message);
+  void SetReleaseTrack(base::DictionaryValue* args,
+                       IPC::Message* reply_message);
 
-  void GetVolumeInfo(DictionaryValue* args, IPC::Message* reply_message);
+  void GetVolumeInfo(base::DictionaryValue* args, IPC::Message* reply_message);
 
-  void SetVolume(DictionaryValue* args, IPC::Message* reply_message);
+  void SetVolume(base::DictionaryValue* args, IPC::Message* reply_message);
 
-  void SetMute(DictionaryValue* args, IPC::Message* reply_message);
+  void SetMute(base::DictionaryValue* args, IPC::Message* reply_message);
 #endif  // defined(OS_CHROMEOS)
 
   void WaitForTabCountToBecome(int browser_handle,

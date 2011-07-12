@@ -28,13 +28,16 @@
 
 class BookmarkModel;
 class BookmarkNode;
-class DictionaryValue;
-class ListValue;
 class HistogramSynchronizer;
 class MetricsLogBase;
 class MetricsReportingScheduler;
 class PrefService;
 class TemplateURLService;
+
+namespace base {
+class DictionaryValue;
+class ListValue;
+}
 
 namespace webkit {
 namespace npapi {
@@ -237,12 +240,12 @@ class MetricsService : public NotificationObserver,
   void RecallUnsentLogs();
   // Decode and verify written pref log data.
   static MetricsService::LogRecallStatus RecallUnsentLogsHelper(
-      const ListValue& list,
+      const base::ListValue& list,
       std::vector<std::string>* local_list);
   // Encode and write list size and checksum for perf log data.
   static void StoreUnsentLogsHelper(const std::vector<std::string>& local_list,
                                     const size_t kMaxLocalListSize,
-                                    ListValue* list);
+                                    base::ListValue* list);
   // Convert |pending_log_| to XML in |compressed_log_|, and compress it for
   // transmission.
   void PreparePendingLogText();
@@ -406,7 +409,7 @@ class MetricsService : public NotificationObserver,
 
   // Dictionary containing all the profile specific metrics. This is set
   // at creation time from the prefs.
-  scoped_ptr<DictionaryValue> profile_dictionary_;
+  scoped_ptr<base::DictionaryValue> profile_dictionary_;
 
   // The scheduler for determining when uploads should happen.
   scoped_ptr<MetricsReportingScheduler> scheduler_;

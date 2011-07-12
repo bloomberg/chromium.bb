@@ -36,11 +36,14 @@
 #include "chrome/browser/tab_contents/chrome_interstitial_page.h"
 #include "googleurl/src/gurl.h"
 
-class DictionaryValue;
 class MessageLoop;
 class SafeBrowsingBlockingPageFactory;
 class MalwareDetails;
 class TabContents;
+
+namespace base {
+class DictionaryValue;
+}
 
 class SafeBrowsingBlockingPage : public ChromeInterstitialPage {
  public:
@@ -96,13 +99,13 @@ class SafeBrowsingBlockingPage : public ChromeInterstitialPage {
 
   // Fills the passed dictionary with the strings passed to JS Template when
   // creating the HTML.
-  void PopulateMultipleThreatStringDictionary(DictionaryValue* strings);
-  void PopulateMalwareStringDictionary(DictionaryValue* strings);
-  void PopulatePhishingStringDictionary(DictionaryValue* strings);
+  void PopulateMultipleThreatStringDictionary(base::DictionaryValue* strings);
+  void PopulateMalwareStringDictionary(base::DictionaryValue* strings);
+  void PopulatePhishingStringDictionary(base::DictionaryValue* strings);
 
   // A helper method used by the Populate methods above used to populate common
   // fields.
-  void PopulateStringDictionary(DictionaryValue* strings,
+  void PopulateStringDictionary(base::DictionaryValue* strings,
                                 const string16& title,
                                 const string16& headline,
                                 const string16& description1,

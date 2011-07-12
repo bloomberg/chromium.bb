@@ -15,11 +15,15 @@
 #include "chrome/common/extensions/extension.h"
 
 class GURL;
-class ListValue;
 class PrefService;
 class Profile;
 class RenderViewHost;
 class TabContents;
+
+namespace base {
+class ListValue;
+class Value;
+}
 
 // This class implements WebUI for extensions and allows extensions to put UI in
 // the main tab contents area. For example, each extension can specify an
@@ -49,7 +53,7 @@ class ExtensionWebUI : public ChromeWebUI {
       const Extension::URLOverrideMap& overrides);
   static void UnregisterChromeURLOverride(const std::string& page,
                                           Profile* profile,
-                                          Value* override);
+                                          base::Value* override);
 
   // Called from BrowserPrefs
   static void RegisterUserPrefs(PrefService* prefs);
@@ -64,8 +68,8 @@ class ExtensionWebUI : public ChromeWebUI {
   // ensure that something takes its place.
   static void UnregisterAndReplaceOverride(const std::string& page,
                                            Profile* profile,
-                                           ListValue* list,
-                                           Value* override);
+                                           base::ListValue* list,
+                                           base::Value* override);
 
   // TODO(aa): This seems out of place. Why is it not with the event routers for
   // the other extension APIs?

@@ -57,7 +57,7 @@ class ConstrainedHtmlUI : public ChromeWebUI {
   ConstrainedHtmlUIDelegate* GetConstrainedDelegate();
 
   // JS Message Handler
-  void OnDialogClose(const ListValue* args);
+  void OnDialogClose(const base::ListValue* args);
 
   DISALLOW_COPY_AND_ASSIGN(ConstrainedHtmlUI);
 };

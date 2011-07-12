@@ -16,7 +16,7 @@ class LanguageOptionsHandler : public LanguageOptionsHandlerCommon {
   virtual ~LanguageOptionsHandler();
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(DictionaryValue* localized_strings);
+  virtual void GetLocalizedValues(base::DictionaryValue* localized_strings);
 
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages();
@@ -27,7 +27,7 @@ class LanguageOptionsHandler : public LanguageOptionsHandlerCommon {
   // The return value will look like:
   // [{'code': 'fi', 'displayName': 'Finnish', 'nativeDisplayName': 'suomi'},
   //  ...]
-  static ListValue* GetLanguageList();
+  static base::ListValue* GetLanguageList();
 
  private:
   // LanguageOptionsHandlerCommon implementation.
@@ -35,7 +35,7 @@ class LanguageOptionsHandler : public LanguageOptionsHandlerCommon {
   virtual void SetApplicationLocale(const std::string& language_code);
 
   // Called when the restart button is clicked.
-  void RestartCallback(const ListValue* args);
+  void RestartCallback(const base::ListValue* args);
 
   DISALLOW_COPY_AND_ASSIGN(LanguageOptionsHandler);
 };

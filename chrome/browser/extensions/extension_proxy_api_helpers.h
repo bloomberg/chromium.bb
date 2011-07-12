@@ -13,9 +13,12 @@
 #include "chrome/browser/prefs/proxy_prefs.h"
 #include "net/proxy/proxy_config.h"
 
+class ProxyConfigDictionary;
+
+namespace base {
 class DictionaryValue;
 class ListValue;
-class ProxyConfigDictionary;
+}
 
 namespace extension_proxy_api_helpers {
 
@@ -46,27 +49,28 @@ bool CreatePACScriptFromDataURL(
 //
 // The parameter |bad_message| is passed to simulate the behavior of
 // EXTENSION_FUNCTION_VALIDATE. It is never NULL.
-bool GetProxyModeFromExtensionPref(const DictionaryValue* proxy_config,
+bool GetProxyModeFromExtensionPref(const base::DictionaryValue* proxy_config,
                                    ProxyPrefs::ProxyMode* out,
                                    std::string* error,
                                    bool* bad_message);
-bool GetPacMandatoryFromExtensionPref(const DictionaryValue* proxy_config,
+bool GetPacMandatoryFromExtensionPref(const base::DictionaryValue* proxy_config,
                                       bool* out,
                                       std::string* error,
                                       bool* bad_message);
-bool GetPacUrlFromExtensionPref(const DictionaryValue* proxy_config,
+bool GetPacUrlFromExtensionPref(const base::DictionaryValue* proxy_config,
                                 std::string* out,
                                 std::string* error,
                                 bool* bad_message);
-bool GetPacDataFromExtensionPref(const DictionaryValue* proxy_config,
+bool GetPacDataFromExtensionPref(const base::DictionaryValue* proxy_config,
                                  std::string* out,
                                  std::string* error,
                                  bool* bad_message);
-bool GetProxyRulesStringFromExtensionPref(const DictionaryValue* proxy_config,
-                                          std::string* out,
-                                          std::string* error,
-                                          bool* bad_message);
-bool GetBypassListFromExtensionPref(const DictionaryValue* proxy_config,
+bool GetProxyRulesStringFromExtensionPref(
+    const base::DictionaryValue* proxy_config,
+    std::string* out,
+    std::string* error,
+    bool* bad_message);
+bool GetBypassListFromExtensionPref(const base::DictionaryValue* proxy_config,
                                     std::string* out,
                                     std::string* error,
                                     bool* bad_message);
@@ -74,20 +78,21 @@ bool GetBypassListFromExtensionPref(const DictionaryValue* proxy_config,
 // Creates and returns a ProxyConfig dictionary (as defined in the extension
 // API) from the given parameters. Ownership is passed to the caller.
 // Depending on the value of |mode_enum|, several of the strings may be empty.
-DictionaryValue* CreateProxyConfigDict(ProxyPrefs::ProxyMode mode_enum,
-                                       bool pac_mandatory,
-                                       const std::string& pac_url,
-                                       const std::string& pac_data,
-                                       const std::string& proxy_rules_string,
-                                       const std::string& bypass_list,
-                                       std::string* error);
+base::DictionaryValue* CreateProxyConfigDict(
+    ProxyPrefs::ProxyMode mode_enum,
+    bool pac_mandatory,
+    const std::string& pac_url,
+    const std::string& pac_data,
+    const std::string& proxy_rules_string,
+    const std::string& bypass_list,
+    std::string* error);
 
 // Converts a ProxyServer dictionary instance (as defined in the extension API)
 // |proxy_server| to a net::ProxyServer.
 // |default_scheme| is the default scheme that is filled in, in case the
 // caller did not pass one.
 // Returns true if successful and sets |error| otherwise.
-bool GetProxyServer(const DictionaryValue* proxy_server,
+bool GetProxyServer(const base::DictionaryValue* proxy_server,
                     net::ProxyServer::Scheme default_scheme,
                     net::ProxyServer* out,
                     std::string* error,
@@ -95,7 +100,7 @@ bool GetProxyServer(const DictionaryValue* proxy_server,
 
 // Joins a list of URLs (stored as StringValues) in |list| with |joiner|
 // to |out|. Returns true if successful and sets |error| otherwise.
-bool JoinUrlList(ListValue* list,
+bool JoinUrlList(base::ListValue* list,
                  const std::string& joiner,
                  std::string* out,
                  std::string* error,
@@ -107,23 +112,24 @@ bool JoinUrlList(ListValue* list,
 // Creates and returns a ProxyRules dictionary as defined in the extension API
 // with the values of a ProxyConfigDictionary configured for fixed proxy
 // servers. Returns NULL in case of failures. Ownership is passed to the caller.
-DictionaryValue* CreateProxyRulesDict(
+base::DictionaryValue* CreateProxyRulesDict(
     const ProxyConfigDictionary& proxy_config);
 
 // Creates and returns a ProxyServer dictionary as defined in the extension API
 // with values from a net::ProxyServer object. Never returns NULL. Ownership is
 // passed to the caller.
-DictionaryValue* CreateProxyServerDict(const net::ProxyServer& proxy);
+base::DictionaryValue* CreateProxyServerDict(const net::ProxyServer& proxy);
 
 // Creates and returns a PacScript dictionary as defined in the extension API
 // with the values of a ProxyconfigDictionary configured for pac scripts.
 // Returns NULL in case of failures. Ownership is passed to the caller.
-DictionaryValue* CreatePacScriptDict(const ProxyConfigDictionary& proxy_config);
+base::DictionaryValue* CreatePacScriptDict(
+    const ProxyConfigDictionary& proxy_config);
 
 // Tokenizes the |in| at delimiters |delims| and returns a new ListValue with
 // StringValues created from the tokens. Ownership is passed to the caller.
-ListValue* TokenizeToStringList(const std::string& in,
-                                const std::string& delims);
+base::ListValue* TokenizeToStringList(const std::string& in,
+                                      const std::string& delims);
 
 }  // namespace extension_proxy_api_helpers
 

@@ -18,7 +18,7 @@ class AddressListNetLogParam : public NetLog::EventParameters {
  public:
   explicit AddressListNetLogParam(const AddressList& address_list);
 
-  virtual Value* ToValue() const;
+  virtual base::Value* ToValue() const;
 
  private:
   AddressList address_list_;

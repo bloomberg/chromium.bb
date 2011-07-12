@@ -18,9 +18,8 @@
 
 namespace base {
 template <typename T> struct DefaultLazyInstanceTraits;
-}
-
 class Value;
+}
 
 namespace chromeos {
 
@@ -37,14 +36,14 @@ class CrosSettings : public base::NonThreadSafe {
 
   // Sets |in_value| to given |path| in cros settings.
   // Note that this takes ownership of |in_value|.
-  void Set(const std::string& path, Value* in_value);
+  void Set(const std::string& path, base::Value* in_value);
 
   // Fires system setting change notification.
   void FireObservers(const char* path);
 
   // Gets settings value of given |path| to |out_value|.
   // Note that the caller owns |out_value| returned.
-  bool Get(const std::string& path, Value** out_value) const;
+  bool Get(const std::string& path, base::Value** out_value) const;
 
   // Convenience forms of Set().  These methods will replace any existing
   // value at that path, even if it has a different type.

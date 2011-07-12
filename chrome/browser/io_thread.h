@@ -21,11 +21,14 @@
 class ChromeNetLog;
 class ChromeURLRequestContextGetter;
 class ExtensionEventRouterForwarder;
-class ListValue;
 class MediaInternals;
 class PrefProxyConfigTracker;
 class PrefService;
 class SystemURLRequestContextGetter;
+
+namespace base {
+class ListValue;
+}
 
 namespace chrome_browser_net {
 class ConnectInterceptor;
@@ -111,7 +114,7 @@ class IOThread : public BrowserProcessSubThread {
                             base::TimeDelta max_dns_queue_delay,
                             size_t max_speculative_parallel_resolves,
                             const chrome_common_net::UrlList& startup_urls,
-                            ListValue* referral_list,
+                            base::ListValue* referral_list,
                             bool preconnect_enabled);
 
   // Registers |url_request_context_getter| into the IO thread.  During
@@ -165,7 +168,7 @@ class IOThread : public BrowserProcessSubThread {
       base::TimeDelta max_dns_queue_delay,
       size_t max_speculative_parallel_resolves,
       const chrome_common_net::UrlList& startup_urls,
-      ListValue* referral_list,
+      base::ListValue* referral_list,
       bool preconnect_enabled);
 
   void ChangedToOnTheRecordOnIOThread();

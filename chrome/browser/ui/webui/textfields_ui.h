@@ -46,7 +46,7 @@ class TextfieldsDOMHandler : public WebUIMessageHandler {
   // Handles the "textfieldValue" call from the JavaScript. This call
   // synchonizes the value inside the JavaScript textfield with the copy in the
   // DOM object.
-  virtual void HandleTextfieldValue(const ListValue* args);
+  virtual void HandleTextfieldValue(const base::ListValue* args);
 
  protected:
   virtual void RegisterMessages();

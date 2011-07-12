@@ -14,8 +14,11 @@
 #include "content/browser/webui/web_ui.h"
 
 class GURL;
-class ListValue;
 class Profile;
+
+namespace base {
+class ListValue;
+}
 
 class FaviconWebUIHandler : public WebUIMessageHandler {
  public:
@@ -25,7 +28,7 @@ class FaviconWebUIHandler : public WebUIMessageHandler {
   // WebUIMessageHandler
   virtual void RegisterMessages();
 
-  void HandleGetFaviconDominantColor(const ListValue* args);
+  void HandleGetFaviconDominantColor(const base::ListValue* args);
 
  private:
   // Called when favicon data is available from the history backend.

@@ -10,6 +10,10 @@
 
 class RefCountedMemory;
 
+namespace base {
+class ListValue;
+}
+
 // The handler for Javascript messages related to the "new profile" page.
 class NewProfileHandler : public WebUIMessageHandler {
  public:
@@ -19,13 +23,13 @@ class NewProfileHandler : public WebUIMessageHandler {
   virtual void RegisterMessages();
 
   // Callback for the "create" message - finishes creating a profile.
-  void HandleCreate(const ListValue* args);
+  void HandleCreate(const base::ListValue* args);
 
   // Callback for the "cancel" message - cancels creating a profile.
-  void HandleCancel(const ListValue* args);
+  void HandleCancel(const base::ListValue* args);
 
   // Callback for the "requestProfileInfo" message - sends profile info.
-  void HandleRequestProfileInfo(const ListValue* args);
+  void HandleRequestProfileInfo(const base::ListValue* args);
 
  private:
   // Send the default avatar images to the page.

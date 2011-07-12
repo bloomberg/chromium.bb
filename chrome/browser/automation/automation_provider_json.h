@@ -14,9 +14,12 @@
 
 class AutomationProvider;
 class Browser;
-class DictionaryValue;
 class TabContents;
+
+namespace base {
+class DictionaryValue;
 class Value;
+}
 
 namespace IPC {
 class Message;
@@ -35,7 +38,7 @@ class AutomationJSONReply {
 
   // Send a success reply along with data contained in |value|.
   // An empty message will be sent if |value| is NULL.
-  void SendSuccess(const Value* value);
+  void SendSuccess(const base::Value* value);
 
   // Send an error reply along with error message |error_message|.
   void SendError(const std::string& error_message);
@@ -48,7 +51,7 @@ class AutomationJSONReply {
 // Gets the browser specified by the given dictionary |args|. |args| should
 // contain a key 'windex' which refers to the index of the browser. Returns
 // true on success and sets |browser|. Otherwise, |error| will be set.
-bool GetBrowserFromJSONArgs(DictionaryValue* args,
+bool GetBrowserFromJSONArgs(base::DictionaryValue* args,
                             Browser** browser,
                             std::string* error) WARN_UNUSED_RESULT;
 
@@ -56,7 +59,7 @@ bool GetBrowserFromJSONArgs(DictionaryValue* args,
 // contain a key 'windex' which refers to the index of the parent browser,
 // and a key 'tab_index' which refers to the index of the tab in that browser.
 // Returns true on success and sets |tab|. Otherwise, |error| will be set.
-bool GetTabFromJSONArgs(DictionaryValue* args,
+bool GetTabFromJSONArgs(base::DictionaryValue* args,
                         TabContents** tab,
                         std::string* error) WARN_UNUSED_RESULT;
 
@@ -65,7 +68,7 @@ bool GetTabFromJSONArgs(DictionaryValue* args,
 // a key 'tab_index' which refers to the index of the tab in that browser.
 // Returns true on success and sets |browser| and |tab|. Otherwise, |error|
 // will be set.
-bool GetBrowserAndTabFromJSONArgs(DictionaryValue* args,
+bool GetBrowserAndTabFromJSONArgs(base::DictionaryValue* args,
                                   Browser** browser,
                                   TabContents** tab,
                                   std::string* error) WARN_UNUSED_RESULT;

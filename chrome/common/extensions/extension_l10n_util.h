@@ -12,13 +12,16 @@
 #include <string>
 #include <vector>
 
-class DictionaryValue;
 class Extension;
 class ExtensionMessageBundle;
 class FilePath;
 class GURL;
 class ResourceDispatcherHostRequestInfo;
 struct ExtensionInfo;
+
+namespace base {
+class DictionaryValue;
+}
 
 namespace extension_l10n_util {
 
@@ -29,7 +32,7 @@ void SetProcessLocale(const std::string& locale);
 
 // Returns default locale in form "en-US" or "sr" or empty string if
 // "default_locale" section was not defined in the manifest.json file.
-std::string GetDefaultLocaleFromManifest(const DictionaryValue& manifest,
+std::string GetDefaultLocaleFromManifest(const base::DictionaryValue& manifest,
                                          std::string* error);
 
 // Returns true iff the extension was localized, and the current locale
@@ -39,13 +42,13 @@ bool ShouldRelocalizeManifest(const ExtensionInfo& info);
 // Localize extension name, description, browser_action and other fields
 // in the manifest.
 bool LocalizeManifest(const ExtensionMessageBundle& messages,
-                      DictionaryValue* manifest,
+                      base::DictionaryValue* manifest,
                       std::string* error);
 
 // Load message catalogs, localize manifest and attach message bundle to the
 // extension.
 bool LocalizeExtension(const FilePath& extension_path,
-                       DictionaryValue* manifest,
+                       base::DictionaryValue* manifest,
                        std::string* error);
 
 // Adds locale_name to the extension if it's in chrome_locales, and

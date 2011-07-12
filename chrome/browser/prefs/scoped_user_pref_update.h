@@ -17,9 +17,12 @@
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_service.h"
 
+class PrefService;
+
+namespace base {
 class DictionaryValue;
 class ListValue;
-class PrefService;
+}
 
 namespace subtle {
 
@@ -37,7 +40,7 @@ class ScopedUserPrefUpdateBase : public base::NonThreadSafe {
   virtual ~ScopedUserPrefUpdateBase();
 
   // Sets |value_| to |service_|->GetMutableUserPref and returns it.
-  Value* Get(Value::ValueType type);
+  base::Value* Get(Value::ValueType type);
 
  private:
   // If |value_| is not null, triggers a notification of PrefObservers and
@@ -49,7 +52,7 @@ class ScopedUserPrefUpdateBase : public base::NonThreadSafe {
   // Path of the preference being updated.
   std::string path_;
   // Cache of value from user pref store (set between Get() and Notify() calls).
-  Value* value_;
+  base::Value* value_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedUserPrefUpdateBase);
 };
@@ -96,8 +99,8 @@ class ScopedUserPrefUpdate : public subtle::ScopedUserPrefUpdateBase {
   DISALLOW_COPY_AND_ASSIGN(ScopedUserPrefUpdate);
 };
 
-typedef ScopedUserPrefUpdate<DictionaryValue, Value::TYPE_DICTIONARY>
+typedef ScopedUserPrefUpdate<base::DictionaryValue, Value::TYPE_DICTIONARY>
     DictionaryPrefUpdate;
-typedef ScopedUserPrefUpdate<ListValue, Value::TYPE_LIST> ListPrefUpdate;
+typedef ScopedUserPrefUpdate<base::ListValue, Value::TYPE_LIST> ListPrefUpdate;
 
 #endif  // CHROME_BROWSER_PREFS_SCOPED_USER_PREF_UPDATE_H_

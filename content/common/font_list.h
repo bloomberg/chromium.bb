@@ -5,7 +5,9 @@
 #ifndef CONTENT_COMMON_FONT_LIST_H_
 #define CONTENT_COMMON_FONT_LIST_H_
 
+namespace base {
 class ListValue;
+}
 
 namespace content {
 
@@ -19,7 +21,7 @@ namespace content {
 //
 // Most callers will want to use the GetFontListAsync function in
 // content/browser/font_list_async.h which does an asynchronous call.
-ListValue* GetFontList_SlowBlocking();
+base::ListValue* GetFontList_SlowBlocking();
 
 }  // namespace content
 

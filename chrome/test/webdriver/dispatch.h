@@ -13,9 +13,8 @@
 #include "chrome/test/webdriver/commands/response.h"
 #include "third_party/mongoose/mongoose.h"
 
-class DictionaryValue;
-
 namespace base {
+class DictionaryValue;
 class WaitableEvent;
 }
 
@@ -43,7 +42,7 @@ void SendResponse(struct mg_connection* const connection,
 bool ParseRequestInfo(const struct mg_request_info* const request_info,
                       std::string* method,
                       std::vector<std::string>* path_segments,
-                      DictionaryValue** parameters,
+                      base::DictionaryValue** parameters,
                       Response* const response);
 
 // Allows the bulk of the implementation of |Dispatch| to be moved out of this
@@ -62,7 +61,7 @@ void Dispatch(struct mg_connection* connection,
               void* user_data) {
   std::string method;
   std::vector<std::string> path_segments;
-  DictionaryValue* parameters = NULL;
+  base::DictionaryValue* parameters = NULL;
   Response response;
   if (internal::ParseRequestInfo(request_info,
                                  &method,

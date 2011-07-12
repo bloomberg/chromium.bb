@@ -169,7 +169,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // Returns a Value object containing the active pages being prerendered, and
   // a history of pages which were prerendered. The caller is responsible for
   // deleting the return value.
-  Value* GetAsValue() const;
+  base::Value* GetAsValue() const;
 
   // Clears the data indicated by which bits of clear_flags are set.
   //
@@ -308,7 +308,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   // Returns a new Value representing the pages currently being prerendered. The
   // caller is responsible for delete'ing the return value.
-  Value* GetActivePrerendersAsValue() const;
+  base::Value* GetActivePrerendersAsValue() const;
 
   // Destroys all pending prerenders using FinalStatus.  Also deletes them as
   // well as any swapped out TabContents queued for destruction.

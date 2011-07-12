@@ -18,13 +18,13 @@
 #include "content/common/child_thread.h"
 #include "webkit/glue/password_form.h"
 
-class DictionaryValue;
 class ExternalProcessImporterBridge;
 class GURL;
 class Importer;
 class TemplateURL;
 
 namespace base {
+class DictionaryValue;
 class Thread;
 }
 
@@ -75,7 +75,7 @@ class ProfileImportThread : public ChildThread {
   void OnImportStart(
       const importer::SourceProfile& source_profile,
       uint16 items,
-      const DictionaryValue& localized_strings);
+      const base::DictionaryValue& localized_strings);
 
   // Calls cleanup to stop the import operation.
   void OnImportCancel();

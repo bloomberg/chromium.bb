@@ -15,8 +15,11 @@
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/util_constants.h"
 
-class DictionaryValue;
 class FilePath;
+
+namespace base {
+class DictionaryValue;
+}
 
 class GoogleChromeDistribution : public BrowserDistribution {
  public:
@@ -115,7 +118,7 @@ class GoogleChromeDistribution : public BrowserDistribution {
       const FilePath& file_path, std::wstring* uninstall_metrics);
 
   // Extracts uninstall metrics from the given JSON value.
-  virtual bool ExtractUninstallMetrics(const DictionaryValue& root,
+  virtual bool ExtractUninstallMetrics(const base::DictionaryValue& root,
                                        std::wstring* uninstall_metrics);
 
   // Given a DictionaryValue containing a set of uninstall metrics,
@@ -123,7 +126,7 @@ class GoogleChromeDistribution : public BrowserDistribution {
   // Returns true if at least one uninstall metric was found in
   // uninstall_metrics_dict, false otherwise.
   virtual bool BuildUninstallMetricsString(
-      DictionaryValue* uninstall_metrics_dict, std::wstring* metrics);
+      base::DictionaryValue* uninstall_metrics_dict, std::wstring* metrics);
 
   // The product ID for Google Update.
   std::wstring product_guid_;

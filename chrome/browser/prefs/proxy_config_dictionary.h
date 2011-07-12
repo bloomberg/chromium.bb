@@ -12,7 +12,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/prefs/proxy_prefs.h"
 
+namespace base {
 class DictionaryValue;
+}
 
 // Factory and wrapper for proxy config dictionaries that are stored
 // in the user preferences. The dictionary has the following structure:
@@ -26,7 +28,7 @@ class DictionaryValue;
 class ProxyConfigDictionary {
  public:
   // Creates a deep copy of |dict| and leaves ownership to caller.
-  explicit ProxyConfigDictionary(const DictionaryValue* dict);
+  explicit ProxyConfigDictionary(const base::DictionaryValue* dict);
   ~ProxyConfigDictionary();
 
   bool GetMode(ProxyPrefs::ProxyMode* out) const;
@@ -36,22 +38,23 @@ class ProxyConfigDictionary {
   bool GetBypassList(std::string* out) const;
   bool HasBypassList() const;
 
-  static DictionaryValue* CreateDirect();
-  static DictionaryValue* CreateAutoDetect();
-  static DictionaryValue* CreatePacScript(const std::string& pac_url,
+  static base::DictionaryValue* CreateDirect();
+  static base::DictionaryValue* CreateAutoDetect();
+  static base::DictionaryValue* CreatePacScript(const std::string& pac_url,
                                           bool pac_mandatory);
-  static DictionaryValue* CreateFixedServers(
+  static base::DictionaryValue* CreateFixedServers(
       const std::string& proxy_server,
       const std::string& bypass_list);
-  static DictionaryValue* CreateSystem();
+  static base::DictionaryValue* CreateSystem();
  private:
-  static DictionaryValue* CreateDictionary(ProxyPrefs::ProxyMode mode,
-                                           const std::string& pac_url,
-                                           bool pac_mandatory,
-                                           const std::string& proxy_server,
-                                           const std::string& bypass_list);
+  static base::DictionaryValue* CreateDictionary(
+      ProxyPrefs::ProxyMode mode,
+      const std::string& pac_url,
+      bool pac_mandatory,
+      const std::string& proxy_server,
+      const std::string& bypass_list);
 
-  scoped_ptr<DictionaryValue> dict_;
+  scoped_ptr<base::DictionaryValue> dict_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyConfigDictionary);
 };

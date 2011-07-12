@@ -164,7 +164,7 @@ class PrerenderContents : public NotificationObserver,
 
   int32 starting_page_id() { return starting_page_id_; }
 
-  Value* GetAsValue() const;
+  base::Value* GetAsValue() const;
 
  protected:
   PrerenderContents(PrerenderManager* prerender_manager,

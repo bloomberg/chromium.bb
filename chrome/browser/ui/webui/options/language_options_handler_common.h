@@ -8,8 +8,10 @@
 
 #include "chrome/browser/ui/webui/options/options_ui.h"
 
+namespace base {
 class DictionaryValue;
 class ListValue;
+}
 
 // The base class for language options page UI handlers.  This class has code
 // common to the Chrome OS and non-Chrome OS implementation of the handler.
@@ -19,7 +21,7 @@ class LanguageOptionsHandlerCommon : public OptionsPageUIHandler {
   virtual ~LanguageOptionsHandlerCommon();
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(DictionaryValue* localized_strings);
+  virtual void GetLocalizedValues(base::DictionaryValue* localized_strings);
 
   // DOMMessageHandler implementation.
   virtual void RegisterMessages();
@@ -32,7 +34,7 @@ class LanguageOptionsHandlerCommon : public OptionsPageUIHandler {
   //
   // Note that true in values does not mean anything. We just use the
   // dictionary as a set.
-  static DictionaryValue* GetUILanguageCodeSet();
+  static base::DictionaryValue* GetUILanguageCodeSet();
 
   // Gets the set of language codes that can be used for spellchecking.
   // The return value will look like:
@@ -40,7 +42,7 @@ class LanguageOptionsHandlerCommon : public OptionsPageUIHandler {
   //
   // Note that true in values does not mean anything. We just use the
   // dictionary as a set.
-  static DictionaryValue* GetSpellCheckLanguageCodeSet();
+  static base::DictionaryValue* GetSpellCheckLanguageCodeSet();
 
  private:
   // Returns the name of the product (ex. "Chrome" or "Chrome OS").
@@ -50,15 +52,15 @@ class LanguageOptionsHandlerCommon : public OptionsPageUIHandler {
   virtual void SetApplicationLocale(const std::string& language_code) = 0;
 
   // Called when the language options is opened.
-  void LanguageOptionsOpenCallback(const ListValue* args);
+  void LanguageOptionsOpenCallback(const base::ListValue* args);
 
   // Called when the UI language is changed.
   // |args| will contain the language code as string (ex. "fr").
-  void UiLanguageChangeCallback(const ListValue* args);
+  void UiLanguageChangeCallback(const base::ListValue* args);
 
   // Called when the spell check language is changed.
   // |args| will contain the language code as string (ex. "fr").
-  void SpellCheckLanguageChangeCallback(const ListValue* args);
+  void SpellCheckLanguageChangeCallback(const base::ListValue* args);
 
   DISALLOW_COPY_AND_ASSIGN(LanguageOptionsHandlerCommon);
 };

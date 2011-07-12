@@ -13,7 +13,9 @@
 #include "printing/print_settings.h"
 #include "ui/gfx/native_widget_types.h"
 
+namespace base {
 class DictionaryValue;
+}
 
 namespace printing {
 
@@ -51,7 +53,7 @@ class PrintingContext {
 
   // Updates print settings. |job_settings| contains all print job settings
   // information. |ranges| has the new page range settings.
-  virtual Result UpdatePrintSettings(const DictionaryValue& job_settings,
+  virtual Result UpdatePrintSettings(const base::DictionaryValue& job_settings,
                                      const PageRanges& ranges) = 0;
 
   // Initializes with predefined settings.

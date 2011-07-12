@@ -96,12 +96,12 @@ enum IPCMessageStart {
   LastIPCMsgStart      // Must come last.
 };
 
-class DictionaryValue;
 class FilePath;
-class ListValue;
 class NullableString16;
 
 namespace base {
+class DictionaryValue;
+class ListValue;
 class Time;
 class TimeDelta;
 struct FileDescriptor;
@@ -382,16 +382,16 @@ struct ParamTraits<MSG> {
 #endif  // defined(OS_WIN)
 
 template <>
-struct ParamTraits<DictionaryValue> {
-  typedef DictionaryValue param_type;
+struct ParamTraits<base::DictionaryValue> {
+  typedef base::DictionaryValue param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 
 template <>
-struct ParamTraits<ListValue> {
-  typedef ListValue param_type;
+struct ParamTraits<base::ListValue> {
+  typedef base::ListValue param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
   static void Log(const param_type& p, std::string* l);

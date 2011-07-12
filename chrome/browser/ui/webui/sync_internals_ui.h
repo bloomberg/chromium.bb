@@ -39,7 +39,7 @@ class SyncInternalsUI : public ChromeWebUI,
   // getAboutInfo() be handled by the sync service.
   virtual void OnWebUISend(const GURL& source_url,
                            const std::string& name,
-                           const ListValue& args) OVERRIDE;
+                           const base::ListValue& args) OVERRIDE;
 
   // browser_sync::JsEventHandler implementation.
   virtual void HandleJsEvent(

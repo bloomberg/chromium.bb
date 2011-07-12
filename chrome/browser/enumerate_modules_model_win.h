@@ -19,7 +19,10 @@
 
 class EnumerateModulesModel;
 class FilePath;
+
+namespace base {
 class ListValue;
+}
 
 // A helper class that implements the enumerate module functionality on the File
 // thread.
@@ -261,7 +264,7 @@ class EnumerateModulesModel {
   void ScanNow();
 
   // Gets the whole module list as a ListValue.
-  ListValue* GetModuleList() const;
+  base::ListValue* GetModuleList() const;
 
  private:
   friend struct DefaultSingletonTraits<EnumerateModulesModel>;

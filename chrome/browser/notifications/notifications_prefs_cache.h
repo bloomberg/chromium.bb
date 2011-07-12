@@ -14,7 +14,9 @@
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPresenter.h"
 
+namespace base {
 class ListValue;
+}
 
 // Class which caches notification preferences.
 // Construction occurs on the UI thread when the contents
@@ -45,7 +47,7 @@ class NotificationsPrefsCache
   void SetCacheDeniedOrigins(const std::vector<GURL>& denied);
   void SetCacheDefaultContentSetting(ContentSetting setting);
 
-  static void ListValueToGurlVector(const ListValue& origin_list,
+  static void ListValueToGurlVector(const base::ListValue& origin_list,
                                     std::vector<GURL>* origin_vector);
 
   // Exposed for testing.

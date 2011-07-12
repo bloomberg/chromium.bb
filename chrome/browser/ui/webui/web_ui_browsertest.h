@@ -13,8 +13,11 @@
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/test_navigation_observer.h"
 
-class Value;
 class WebUIMessageHandler;
+
+namespace base {
+class Value;
+}
 
 // This macro simplifies the declaration of simple javascript unit tests.
 // Use:
@@ -34,7 +37,7 @@ class WebUIBrowserTest
     : public InProcessBrowserTest,
       public TestNavigationObserver::JsInjectionReadyObserver {
  public:
-  typedef std::vector<const Value*> ConstValueVector;
+  typedef std::vector<const base::Value*> ConstValueVector;
   virtual ~WebUIBrowserTest();
 
   // Add a custom helper JS library for your test.
@@ -46,10 +49,10 @@ class WebUIBrowserTest
   // Note that calls to functions in test_api.js are not supported.
   bool RunJavascriptFunction(const std::string& function_name);
   bool RunJavascriptFunction(const std::string& function_name,
-                             const Value& arg);
+                             const base::Value& arg);
   bool RunJavascriptFunction(const std::string& function_name,
-                             const Value& arg1,
-                             const Value& arg2);
+                             const base::Value& arg1,
+                             const base::Value& arg2);
   bool RunJavascriptFunction(const std::string& function_name,
                              const ConstValueVector& function_arguments);
 
@@ -60,10 +63,10 @@ class WebUIBrowserTest
   // Runs a test that may include calls to functions in test_api.js.
   bool RunJavascriptTest(const std::string& test_name);
   bool RunJavascriptTest(const std::string& test_name,
-                         const Value& arg);
+                         const base::Value& arg);
   bool RunJavascriptTest(const std::string& test_name,
-                         const Value& arg1,
-                         const Value& arg2);
+                         const base::Value& arg1,
+                         const base::Value& arg2);
   bool RunJavascriptTest(const std::string& test_name,
                          const ConstValueVector& test_arguments);
 

@@ -33,7 +33,9 @@
 #include "chrome/common/net/predictor_common.h"
 #include "net/base/host_port_pair.h"
 
+namespace base {
 class ListValue;
+}
 
 namespace net {
 class HostResolver;
@@ -113,14 +115,14 @@ class Predictor : public base::RefCountedThreadSafe<Predictor> {
 
   // Construct a ListValue object that contains all the data in the referrers_
   // so that it can be persisted in a pref.
-  void SerializeReferrers(ListValue* referral_list);
+  void SerializeReferrers(base::ListValue* referral_list);
 
   // Process a ListValue that contains all the data from a previous reference
   // list, as constructed by SerializeReferrers(), and add all the identified
   // values into the current referrer list.
-  void DeserializeReferrers(const ListValue& referral_list);
+  void DeserializeReferrers(const base::ListValue& referral_list);
 
-  void DeserializeReferrersThenDelete(ListValue* referral_list);
+  void DeserializeReferrersThenDelete(base::ListValue* referral_list);
 
   // For unit test code only.
   size_t max_concurrent_dns_lookups() const {

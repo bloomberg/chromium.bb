@@ -12,9 +12,12 @@
 #include "chrome/browser/chromeos/cros_settings_provider.h"
 #include "chrome/browser/chromeos/login/signed_settings_helper.h"
 
-class ListValue;
 class PrefService;
 class Task;
+
+namespace base {
+class ListValue;
+}
 
 namespace chromeos {
 
@@ -48,7 +51,7 @@ class UserCrosSettingsProvider : public CrosSettingsProvider {
   static bool cached_allow_new_user();
   static bool cached_data_roaming_enabled();
   static bool cached_show_users_on_signin();
-  static const ListValue* cached_whitelist();
+  static const base::ListValue* cached_whitelist();
   static std::string cached_owner();
 
   // Returns true if given email is in user whitelist.
@@ -57,7 +60,7 @@ class UserCrosSettingsProvider : public CrosSettingsProvider {
   static bool IsEmailInCachedWhitelist(const std::string& email);
 
   // CrosSettingsProvider implementation.
-  virtual bool Get(const std::string& path, Value** out_value) const;
+  virtual bool Get(const std::string& path, base::Value** out_value) const;
   virtual bool HandlesSetting(const std::string& path);
 
   void WhitelistUser(const std::string& email);
@@ -68,7 +71,7 @@ class UserCrosSettingsProvider : public CrosSettingsProvider {
 
  private:
   // CrosSettingsProvider implementation.
-  virtual void DoSet(const std::string& path, Value* value);
+  virtual void DoSet(const std::string& path, base::Value* value);
 
   DISALLOW_COPY_AND_ASSIGN(UserCrosSettingsProvider);
 };

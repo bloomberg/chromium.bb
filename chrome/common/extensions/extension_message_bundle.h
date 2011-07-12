@@ -12,14 +12,16 @@
 
 #include "base/memory/linked_ptr.h"
 
+namespace base {
 class DictionaryValue;
+}
 
 // Contains localized extension messages for one locale. Any messages that the
 // locale does not provide are pulled from the default locale.
 class ExtensionMessageBundle {
  public:
   typedef std::map<std::string, std::string> SubstitutionMap;
-  typedef std::vector<linked_ptr<DictionaryValue> > CatalogVector;
+  typedef std::vector<linked_ptr<base::DictionaryValue> > CatalogVector;
 
   // JSON keys of interest for messages file.
   static const char* kContentKey;
@@ -123,12 +125,12 @@ class ExtensionMessageBundle {
   // They replace all $PLACEHOLDERS$ with their value, and return just key/value
   // of the message.
   bool GetMessageValue(const std::string& key,
-                       const DictionaryValue& catalog,
+                       const base::DictionaryValue& catalog,
                        std::string* value,
                        std::string* error) const;
 
   // Get all placeholders for a given message from JSON subtree.
-  bool GetPlaceholders(const DictionaryValue& name_tree,
+  bool GetPlaceholders(const base::DictionaryValue& name_tree,
                        const std::string& name_key,
                        SubstitutionMap* placeholders,
                        std::string* error) const;

@@ -11,7 +11,9 @@
 #include "chrome/test/webdriver/commands/webdriver_command.h"
 #include "chrome/test/webdriver/web_element_id.h"
 
+namespace base {
 class DictionaryValue;
+}
 
 namespace gfx {
   class Point;
@@ -27,7 +29,7 @@ class Response;
 class WebElementCommand : public WebDriverCommand {
  public:
   WebElementCommand(const std::vector<std::string>& path_segments,
-                    const DictionaryValue* const parameters);
+                    const base::DictionaryValue* const parameters);
   virtual ~WebElementCommand();
 
   virtual bool Init(Response* const response);
@@ -45,7 +47,7 @@ class WebElementCommand : public WebDriverCommand {
 class ElementAttributeCommand : public WebElementCommand {
  public:
   ElementAttributeCommand(const std::vector<std::string>& path_segments,
-                          DictionaryValue* parameters);
+                          base::DictionaryValue* parameters);
   virtual ~ElementAttributeCommand();
 
   virtual bool DoesGet();
@@ -60,7 +62,7 @@ class ElementAttributeCommand : public WebElementCommand {
 class ElementClearCommand : public WebElementCommand {
  public:
   ElementClearCommand(const std::vector<std::string>& path_segments,
-                      DictionaryValue* parameters);
+                      base::DictionaryValue* parameters);
   virtual ~ElementClearCommand();
 
   virtual bool DoesPost();
@@ -75,7 +77,7 @@ class ElementClearCommand : public WebElementCommand {
 class ElementCssCommand : public WebElementCommand {
  public:
   ElementCssCommand(const std::vector<std::string>& path_segments,
-                    DictionaryValue* parameters);
+                    base::DictionaryValue* parameters);
   virtual ~ElementCssCommand();
 
   virtual bool DoesGet();
@@ -90,7 +92,7 @@ class ElementCssCommand : public WebElementCommand {
 class ElementDisplayedCommand : public WebElementCommand {
  public:
   ElementDisplayedCommand(const std::vector<std::string>& path_segments,
-                          DictionaryValue* parameters);
+                          base::DictionaryValue* parameters);
   virtual ~ElementDisplayedCommand();
 
   virtual bool DoesGet();
@@ -105,7 +107,7 @@ class ElementDisplayedCommand : public WebElementCommand {
 class ElementEnabledCommand : public WebElementCommand {
  public:
   ElementEnabledCommand(const std::vector<std::string>& path_segments,
-                        DictionaryValue* parameters);
+                        base::DictionaryValue* parameters);
   virtual ~ElementEnabledCommand();
 
   virtual bool DoesGet();
@@ -120,7 +122,7 @@ class ElementEnabledCommand : public WebElementCommand {
 class ElementEqualsCommand : public WebElementCommand {
  public:
   ElementEqualsCommand(const std::vector<std::string>& path_segments,
-                       DictionaryValue* parameters);
+                       base::DictionaryValue* parameters);
   virtual ~ElementEqualsCommand();
 
   virtual bool DoesGet();
@@ -135,7 +137,7 @@ class ElementEqualsCommand : public WebElementCommand {
 class ElementLocationCommand : public WebElementCommand {
  public:
   ElementLocationCommand(const std::vector<std::string>& path_segments,
-                         DictionaryValue* parameters);
+                         base::DictionaryValue* parameters);
   virtual ~ElementLocationCommand();
 
   virtual bool DoesGet();
@@ -151,7 +153,7 @@ class ElementLocationCommand : public WebElementCommand {
 class ElementLocationInViewCommand : public WebElementCommand {
  public:
   ElementLocationInViewCommand(const std::vector<std::string>& path_segments,
-                               DictionaryValue* parameters);
+                               base::DictionaryValue* parameters);
   virtual ~ElementLocationInViewCommand();
 
   virtual bool DoesGet();
@@ -166,7 +168,7 @@ class ElementLocationInViewCommand : public WebElementCommand {
 class ElementNameCommand : public WebElementCommand {
  public:
   ElementNameCommand(const std::vector<std::string>& path_segments,
-                     DictionaryValue* parameters);
+                     base::DictionaryValue* parameters);
   virtual ~ElementNameCommand();
 
   virtual bool DoesGet();
@@ -182,7 +184,7 @@ class ElementNameCommand : public WebElementCommand {
 class ElementSelectedCommand : public WebElementCommand {
  public:
   ElementSelectedCommand(const std::vector<std::string>& path_segments,
-                         DictionaryValue* parameters);
+                         base::DictionaryValue* parameters);
   virtual ~ElementSelectedCommand();
 
   virtual bool DoesGet();
@@ -199,7 +201,7 @@ class ElementSelectedCommand : public WebElementCommand {
 class ElementSizeCommand : public WebElementCommand {
  public:
   ElementSizeCommand(const std::vector<std::string>& path_segments,
-                     DictionaryValue* parameters);
+                     base::DictionaryValue* parameters);
   virtual ~ElementSizeCommand();
 
   virtual bool DoesGet();
@@ -214,7 +216,7 @@ class ElementSizeCommand : public WebElementCommand {
 class ElementSubmitCommand : public WebElementCommand {
  public:
   ElementSubmitCommand(const std::vector<std::string>& path_segments,
-                       DictionaryValue* parameters);
+                       base::DictionaryValue* parameters);
   virtual ~ElementSubmitCommand();
 
   virtual bool DoesPost();
@@ -229,7 +231,7 @@ class ElementSubmitCommand : public WebElementCommand {
 class ElementToggleCommand : public WebElementCommand {
  public:
   ElementToggleCommand(const std::vector<std::string>& path_segments,
-                       DictionaryValue* parameters);
+                       base::DictionaryValue* parameters);
   virtual ~ElementToggleCommand();
 
   virtual bool DoesPost();
@@ -245,7 +247,7 @@ class ElementToggleCommand : public WebElementCommand {
 class ElementValueCommand : public WebElementCommand {
  public:
   ElementValueCommand(const std::vector<std::string>& path_segments,
-                      DictionaryValue* parameters);
+                      base::DictionaryValue* parameters);
   virtual ~ElementValueCommand();
 
   virtual bool DoesGet();
@@ -269,7 +271,7 @@ class ElementValueCommand : public WebElementCommand {
 class ElementTextCommand : public WebElementCommand {
  public:
   ElementTextCommand(const std::vector<std::string>& path_segments,
-                     DictionaryValue* parameters);
+                     base::DictionaryValue* parameters);
   virtual ~ElementTextCommand();
 
   virtual bool DoesGet();

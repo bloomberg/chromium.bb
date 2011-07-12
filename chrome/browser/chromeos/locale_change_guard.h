@@ -15,10 +15,13 @@
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 
-class ListValue;
 class NotificationDetails;
 class NotificationSource;
 class Profile;
+
+namespace base {
+class ListValue;
+}
 
 namespace chromeos {
 
@@ -40,7 +43,7 @@ class LocaleChangeGuard : public NotificationObserver {
  private:
   class Delegate;
 
-  void RevertLocaleChange(const ListValue* list);
+  void RevertLocaleChange(const base::ListValue* list);
   void AcceptLocaleChange();
   void Check();
 

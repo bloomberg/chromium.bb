@@ -17,7 +17,10 @@ namespace gfx {
 class Image;
 }
 
+namespace base {
 class DictionaryValue;
+}
+
 class PrefService;
 
 
@@ -65,11 +68,11 @@ class ProfileInfoCache {
   static void RegisterPrefs(PrefService* prefs);
 
  private:
-  const DictionaryValue* GetInfoForProfileAtIndex(size_t index) const;
+  const base::DictionaryValue* GetInfoForProfileAtIndex(size_t index) const;
   // Saves the profile info to a cache and takes ownership of |info|.
   // Currently the only information that is cached is the profiles name and
   // avatar icon.
-  void SetInfoForProfileAtIndex(size_t index, DictionaryValue* info);
+  void SetInfoForProfileAtIndex(size_t index, base::DictionaryValue* info);
   std::string CacheKeyFromProfilePath(const FilePath& profile_path) const;
   std::vector<std::string>::iterator FindPositionForProfile(
       std::string search_key,

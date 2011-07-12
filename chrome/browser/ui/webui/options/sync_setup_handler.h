@@ -17,16 +17,16 @@ class SyncSetupHandler : public OptionsPageUIHandler,
   virtual ~SyncSetupHandler();
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(DictionaryValue* localized_strings);
+  virtual void GetLocalizedValues(base::DictionaryValue* localized_strings);
   virtual void Initialize();
   virtual void RegisterMessages();
 
   // SyncSetupFlowHandler implementation.
-  virtual void ShowGaiaLogin(const DictionaryValue& args);
+  virtual void ShowGaiaLogin(const base::DictionaryValue& args);
   virtual void ShowGaiaSuccessAndClose();
   virtual void ShowGaiaSuccessAndSettingUp();
-  virtual void ShowConfigure(const DictionaryValue& args);
-  virtual void ShowPassphraseEntry(const DictionaryValue& args);
+  virtual void ShowConfigure(const base::DictionaryValue& args);
+  virtual void ShowPassphraseEntry(const base::DictionaryValue& args);
   virtual void ShowSettingUp();
   virtual void ShowSetupDone(const std::wstring& user);
   virtual void SetFlow(SyncSetupFlow* flow);
@@ -47,14 +47,14 @@ class SyncSetupHandler : public OptionsPageUIHandler,
 
   // Callbacks from the page. Protected in order to be called by the
   // SyncSetupWizardTest.
-  void OnDidClosePage(const ListValue* args);
-  void HandleSubmitAuth(const ListValue* args);
-  void HandleConfigure(const ListValue* args);
-  void HandlePassphraseEntry(const ListValue* args);
-  void HandlePassphraseCancel(const ListValue* args);
-  void HandleAttachHandler(const ListValue* args);
-  void HandleShowErrorUI(const ListValue* args);
-  void HandleShowSetupUI(const ListValue* args);
+  void OnDidClosePage(const base::ListValue* args);
+  void HandleSubmitAuth(const base::ListValue* args);
+  void HandleConfigure(const base::ListValue* args);
+  void HandlePassphraseEntry(const base::ListValue* args);
+  void HandlePassphraseCancel(const base::ListValue* args);
+  void HandleAttachHandler(const base::ListValue* args);
+  void HandleShowErrorUI(const base::ListValue* args);
+  void HandleShowSetupUI(const base::ListValue* args);
 
   SyncSetupFlow* flow() { return flow_; }
 

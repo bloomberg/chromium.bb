@@ -16,11 +16,14 @@
 #include "chrome/common/extensions/extension_set.h"
 
 class GURL;
-class ListValue;
 class RenderThread;
 class URLPattern;
 class UserScriptSlave;
 struct ExtensionMsg_Loaded_Params;
+
+namespace base {
+class ListValue;
+}
 
 namespace WebKit {
 class WebFrame;
@@ -63,7 +66,7 @@ class ExtensionDispatcher : public RenderProcessObserver {
 
   void OnMessageInvoke(const std::string& extension_id,
                        const std::string& function_name,
-                       const ListValue& args,
+                       const base::ListValue& args,
                        const GURL& event_url);
   void OnSetFunctionNames(const std::vector<std::string>& names);
   void OnLoaded(const ExtensionMsg_Loaded_Params& params);

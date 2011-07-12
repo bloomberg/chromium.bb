@@ -13,7 +13,9 @@
 #include "chrome/browser/download/download_manager.h"
 #include "content/browser/webui/web_ui.h"
 
+namespace base {
 class ListValue;
+}
 
 // The handler for Javascript messages related to the "downloads" view,
 // also observes changes to the download manager.
@@ -37,37 +39,37 @@ class DownloadsDOMHandler : public WebUIMessageHandler,
   virtual void ModelChanged();
 
   // Callback for the "getDownloads" message.
-  void HandleGetDownloads(const ListValue* args);
+  void HandleGetDownloads(const base::ListValue* args);
 
   // Callback for the "openFile" message - opens the file in the shell.
-  void HandleOpenFile(const ListValue* args);
+  void HandleOpenFile(const base::ListValue* args);
 
   // Callback for the "drag" message - initiates a file object drag.
-  void HandleDrag(const ListValue* args);
+  void HandleDrag(const base::ListValue* args);
 
   // Callback for the "saveDangerous" message - specifies that the user
   // wishes to save a dangerous file.
-  void HandleSaveDangerous(const ListValue* args);
+  void HandleSaveDangerous(const base::ListValue* args);
 
   // Callback for the "discardDangerous" message - specifies that the user
   // wishes to discard (remove) a dangerous file.
-  void HandleDiscardDangerous(const ListValue* args);
+  void HandleDiscardDangerous(const base::ListValue* args);
 
   // Callback for the "show" message - shows the file in explorer.
-  void HandleShow(const ListValue* args);
+  void HandleShow(const base::ListValue* args);
 
   // Callback for the "pause" message - pauses the file download.
-  void HandlePause(const ListValue* args);
+  void HandlePause(const base::ListValue* args);
 
   // Callback for the "remove" message - removes the file download from shelf
   // and list.
-  void HandleRemove(const ListValue* args);
+  void HandleRemove(const base::ListValue* args);
 
   // Callback for the "cancel" message - cancels the download.
-  void HandleCancel(const ListValue* args);
+  void HandleCancel(const base::ListValue* args);
 
   // Callback for the "clearAll" message - clears all the downloads.
-  void HandleClearAll(const ListValue* args);
+  void HandleClearAll(const base::ListValue* args);
 
  private:
   // Send the current list of downloads to the page.
@@ -80,7 +82,7 @@ class DownloadsDOMHandler : public WebUIMessageHandler,
   DownloadItem* GetDownloadById(int id);
 
   // Return the download that is referred to in a given value.
-  DownloadItem* GetDownloadByValue(const ListValue* args);
+  DownloadItem* GetDownloadByValue(const base::ListValue* args);
 
   // Current search text.
   std::wstring search_text_;

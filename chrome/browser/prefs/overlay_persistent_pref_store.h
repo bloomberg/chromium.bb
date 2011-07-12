@@ -34,12 +34,13 @@ class OverlayPersistentPrefStore : public PersistentPrefStore,
   virtual void RemoveObserver(PrefStore::Observer* observer);
   virtual bool IsInitializationComplete() const;
   virtual ReadResult GetValue(const std::string& key,
-                              const Value** result) const;
+                              const base::Value** result) const;
 
   // Methods of PersistentPrefStore.
-  virtual ReadResult GetMutableValue(const std::string& key, Value** result);
-  virtual void SetValue(const std::string& key, Value* value);
-  virtual void SetValueSilently(const std::string& key, Value* value);
+  virtual ReadResult GetMutableValue(const std::string& key,
+                                     base::Value** result);
+  virtual void SetValue(const std::string& key, base::Value* value);
+  virtual void SetValueSilently(const std::string& key, base::Value* value);
   virtual void RemoveValue(const std::string& key);
   virtual bool ReadOnly() const;
   virtual PrefReadError ReadPrefs();

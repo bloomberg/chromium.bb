@@ -59,7 +59,7 @@ class CrxInstaller
     WhitelistEntry();
     ~WhitelistEntry();
 
-    scoped_ptr<DictionaryValue> parsed_manifest;
+    scoped_ptr<base::DictionaryValue> parsed_manifest;
     std::string localized_name;
   };
 
@@ -168,7 +168,7 @@ class CrxInstaller
   virtual void OnUnpackFailure(const std::string& error_message);
   virtual void OnUnpackSuccess(const FilePath& temp_dir,
                                const FilePath& extension_dir,
-                               const DictionaryValue* original_manifest,
+                               const base::DictionaryValue* original_manifest,
                                const Extension* extension);
 
   // Returns true if we can skip confirmation because the install was
@@ -237,7 +237,7 @@ class CrxInstaller
 
   // A parsed copy of the unmodified original manifest, before any
   // transformations like localization have taken place.
-  scoped_ptr<DictionaryValue> original_manifest_;
+  scoped_ptr<base::DictionaryValue> original_manifest_;
 
   // If non-empty, contains the current version of the extension we're
   // installing (for upgrades).

@@ -12,7 +12,9 @@
 
 #include "base/memory/ref_counted.h"
 
+namespace base {
 class DictionaryValue;
+}
 
 // This is the interface for platform-specific code for a print backend
 namespace printing {
@@ -69,7 +71,7 @@ class PrintBackend : public base::RefCountedThreadSafe<PrintBackend> {
   // settings will be used.
   // Return NULL if no print backend available.
   static scoped_refptr<PrintBackend> CreateInstance(
-      const DictionaryValue* print_backend_settings);
+      const base::DictionaryValue* print_backend_settings);
 };
 
 }  // namespace printing

@@ -51,8 +51,8 @@ class HistoryFunction : public AsyncExtensionFunction {
   virtual void Run();
   virtual bool RunImpl() = 0;
 
-  bool GetUrlFromValue(Value* value, GURL* url);
-  bool GetTimeFromValue(Value* value, base::Time* time);
+  bool GetUrlFromValue(base::Value* value, GURL* url);
+  bool GetTimeFromValue(base::Value* value, base::Time* time);
 };
 
 // Base class for history funciton APIs which require async interaction with

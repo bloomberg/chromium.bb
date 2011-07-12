@@ -8,9 +8,12 @@
 
 #include <string>
 
-class DictionaryValue;
 class GURL;
 class PrefService;
+
+namespace base {
+class DictionaryValue;
+}
 
 class ExternalProtocolHandler {
  public:
@@ -66,7 +69,7 @@ class ExternalProtocolHandler {
 
   // Prepopulates the dictionary with known protocols to deny or allow, if
   // preferences for them do not already exist.
-  static void PrepopulateDictionary(DictionaryValue* win_pref);
+  static void PrepopulateDictionary(base::DictionaryValue* win_pref);
 
   // Allows LaunchUrl to proceed with launching an external protocol handler.
   // This is typically triggered by a user gesture, but is also called for

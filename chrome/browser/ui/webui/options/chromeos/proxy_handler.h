@@ -16,7 +16,7 @@ class ProxyHandler : public CrosOptionsPageUIHandler {
   virtual ~ProxyHandler();
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(DictionaryValue* localized_strings);
+  virtual void GetLocalizedValues(base::DictionaryValue* localized_strings);
 
  private:
 

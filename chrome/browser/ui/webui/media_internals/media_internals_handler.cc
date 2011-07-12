@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/media_internals/media_internals_handler.h"
 
+#include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/webui/media_internals/media_internals_proxy.h"
 #include "content/browser/browser_thread.h"

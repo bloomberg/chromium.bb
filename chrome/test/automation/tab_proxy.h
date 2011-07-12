@@ -29,9 +29,12 @@
 
 class BrowserProxy;
 class GURL;
-class Value;
 namespace IPC {
 class Message;
+}
+
+namespace base {
+class Value;
 }
 
 class TabProxy : public AutomationResourceProxy,
@@ -87,7 +90,7 @@ class TabProxy : public AutomationResourceProxy,
                             int* value) WARN_UNUSED_RESULT;
   bool ExecuteAndExtractValue(const std::wstring& frame_xpath,
                               const std::wstring& jscript,
-                              Value** value) WARN_UNUSED_RESULT;
+                              base::Value** value) WARN_UNUSED_RESULT;
 
   // Returns a DOMElementProxyRef to the tab's current DOM document.
   // This proxy is invalidated when the document changes.

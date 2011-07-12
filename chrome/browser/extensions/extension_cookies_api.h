@@ -20,7 +20,9 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/cookie_monster.h"
 
+namespace base {
 class DictionaryValue;
+}
 
 namespace net {
 class URLRequestContextGetter;
@@ -74,7 +76,7 @@ class CookiesFunction : public AsyncExtensionFunction {
   // URL is invalid or isn't found in the dictionary. If check_host_permissions
   // is true, the URL is also checked against the extension's host permissions,
   // and if there is no permission for the URL, this function returns false.
-  bool ParseUrl(const DictionaryValue* details, GURL* url,
+  bool ParseUrl(const base::DictionaryValue* details, GURL* url,
                 bool check_host_permissions);
 
   // Checks the given details dictionary for a 'storeId' value, and retrieves
@@ -84,7 +86,7 @@ class CookiesFunction : public AsyncExtensionFunction {
   // assigns the internal error_ value if that occurs.
   // At least one of the output parameters store and store_id should be
   // non-NULL.
-  bool ParseStoreContext(const DictionaryValue* details,
+  bool ParseStoreContext(const base::DictionaryValue* details,
                          net::URLRequestContextGetter** context,
                          std::string* store_id);
 };
@@ -119,7 +121,7 @@ class GetAllCookiesFunction : public CookiesFunction {
   void GetAllCookiesOnIOThread();
   void RespondOnUIThread();
 
-  DictionaryValue* details_;
+  base::DictionaryValue* details_;
   GURL url_;
   std::string store_id_;
   scoped_refptr<net::URLRequestContextGetter> store_context_;

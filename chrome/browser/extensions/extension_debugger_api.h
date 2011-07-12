@@ -15,9 +15,12 @@
 
 // Base debugger function.
 
-class DictionaryValue;
 class ExtensionDevToolsClientHost;
 class TabContents;
+
+namespace base {
+class DictionaryValue;
+}
 
 class DebuggerFunction : public AsyncExtensionFunction {
  protected:
@@ -56,7 +59,7 @@ class SendRequestDebuggerFunction : public DebuggerFunction {
   virtual ~SendRequestDebuggerFunction();
   virtual bool RunImpl();
 
-  void SendResponseBody(DictionaryValue* dictionary);
+  void SendResponseBody(base::DictionaryValue* dictionary);
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.debugger.sendRequest")
 };
 

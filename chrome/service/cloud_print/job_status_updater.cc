@@ -7,6 +7,7 @@
 #include "base/json/json_reader.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/common/net/http_return.h"
 #include "chrome/service/cloud_print/cloud_print_consts.h"
 #include "chrome/service/cloud_print/cloud_print_helpers.h"

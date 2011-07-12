@@ -28,7 +28,7 @@ class InternetOptionsHandler
   virtual ~InternetOptionsHandler();
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(DictionaryValue* localized_strings);
+  virtual void GetLocalizedValues(base::DictionaryValue* localized_strings);
   virtual void Initialize();
 
   // WebUIMessageHandler implementation.
@@ -58,7 +58,7 @@ class InternetOptionsHandler
   // 'forget'
   // Handle{Wifi,Cellular}ButtonClick handles button click on a wireless
   // network item and a cellular network item respectively.
-  void ButtonClickCallback(const ListValue* args);
+  void ButtonClickCallback(const base::ListValue* args);
   void HandleWifiButtonClick(const std::string& service_path,
                              const std::string& command);
   void HandleCellularButtonClick(const std::string& service_path,
@@ -69,61 +69,61 @@ class InternetOptionsHandler
   // Initiates cellular plan data refresh. The results from libcros will be
   // passed through CellularDataPlanChanged() callback method.
   // |args| will be [ service_path ]
-  void RefreshCellularPlanCallback(const ListValue* args);
+  void RefreshCellularPlanCallback(const base::ListValue* args);
   void SetActivationButtonVisibility(
       const chromeos::CellularNetwork* cellular,
-      DictionaryValue* dictionary);
+      base::DictionaryValue* dictionary);
 
-  void SetAutoConnectCallback(const ListValue* args);
-  void SetSharedCallback(const ListValue* args);
-  void SetIPConfigCallback(const ListValue* args);
-  void EnableWifiCallback(const ListValue* args);
-  void DisableWifiCallback(const ListValue* args);
-  void EnableCellularCallback(const ListValue* args);
-  void DisableCellularCallback(const ListValue* args);
-  void BuyDataPlanCallback(const ListValue* args);
-  void SetApnCallback(const ListValue* args);
-  void SetSimCardLockCallback(const ListValue* args);
-  void ChangePinCallback(const ListValue* args);
-  void ShareNetworkCallback(const ListValue* args);
+  void SetAutoConnectCallback(const base::ListValue* args);
+  void SetSharedCallback(const base::ListValue* args);
+  void SetIPConfigCallback(const base::ListValue* args);
+  void EnableWifiCallback(const base::ListValue* args);
+  void DisableWifiCallback(const base::ListValue* args);
+  void EnableCellularCallback(const base::ListValue* args);
+  void DisableCellularCallback(const base::ListValue* args);
+  void BuyDataPlanCallback(const base::ListValue* args);
+  void SetApnCallback(const base::ListValue* args);
+  void SetSimCardLockCallback(const base::ListValue* args);
+  void ChangePinCallback(const base::ListValue* args);
+  void ShareNetworkCallback(const base::ListValue* args);
 
   // Populates the ui with the details of the given device path. This forces
   // an overlay to be displayed in the UI.
   void PopulateDictionaryDetails(const chromeos::Network* network);
   void PopulateWifiDetails(const chromeos::WifiNetwork* wifi,
-                           DictionaryValue* dictionary);
+                           base::DictionaryValue* dictionary);
   void PopulateCellularDetails(const chromeos::CellularNetwork* cellular,
-                               DictionaryValue* dictionary);
+                               base::DictionaryValue* dictionary);
   void PopulateVPNDetails(const chromeos::VirtualNetwork* vpn,
-                          DictionaryValue* dictionary);
+                          base::DictionaryValue* dictionary);
 
   // Converts CellularDataPlan structure into dictionary for JS. Formats plan
   // settings into human readable texts.
-  DictionaryValue* CellularDataPlanToDictionary(
+  base::DictionaryValue* CellularDataPlanToDictionary(
       const chromeos::CellularDataPlan* plan);
   // Creates the map of a network.
-  ListValue* GetNetwork(const std::string& service_path,
-                        const SkBitmap& icon,
-                        const std::string& name,
-                        bool connecting,
-                        bool connected,
-                        bool connectable,
-                        chromeos::ConnectionType connection_type,
-                        bool remembered,
-                        bool shared,
-                        chromeos::ActivationState activation_state,
-                        bool restricted_ip);
+  base::ListValue* GetNetwork(const std::string& service_path,
+                              const SkBitmap& icon,
+                              const std::string& name,
+                              bool connecting,
+                              bool connected,
+                              bool connectable,
+                              chromeos::ConnectionType connection_type,
+                              bool remembered,
+                              bool shared,
+                              chromeos::ActivationState activation_state,
+                              bool restricted_ip);
 
   // Creates the map of wired networks.
-  ListValue* GetWiredList();
+  base::ListValue* GetWiredList();
   // Creates the map of wireless networks.
-  ListValue* GetWirelessList();
+  base::ListValue* GetWirelessList();
   // Creates the map of virtual networks.
-  ListValue* GetVPNList();
+  base::ListValue* GetVPNList();
   // Creates the map of remembered networks.
-  ListValue* GetRememberedList();
+  base::ListValue* GetRememberedList();
   // Fills network information into JS dictionary for displaying network lists.
-  void FillNetworkInfo(DictionaryValue* dictionary);
+  void FillNetworkInfo(base::DictionaryValue* dictionary);
   // Refreshes the display of network information.
   void RefreshNetworkData();
   // Adds observers for wireless networks, if any, so that we can dynamically

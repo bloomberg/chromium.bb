@@ -27,7 +27,9 @@
 #include "chrome/browser/sync/syncable/model_type_payload_map.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 
+namespace base {
 class DictionaryValue;
+}
 
 namespace syncable {
 class DirectoryManager;
@@ -50,7 +52,7 @@ struct SyncSourceInfo {
   ~SyncSourceInfo();
 
   // Caller takes ownership of the returned dictionary.
-  DictionaryValue* ToValue() const;
+  base::DictionaryValue* ToValue() const;
 
   sync_pb::GetUpdatesCallerInfo::GetUpdatesSource updates_source;
   syncable::ModelTypePayloadMap types;
@@ -62,7 +64,7 @@ struct SyncerStatus {
   ~SyncerStatus();
 
   // Caller takes ownership of the returned dictionary.
-  DictionaryValue* ToValue() const;
+  base::DictionaryValue* ToValue() const;
 
   // True when we get such an INVALID_STORE error from the server.
   bool invalid_store;
@@ -91,7 +93,7 @@ struct ErrorCounters {
   ErrorCounters();
 
   // Caller takes ownership of the returned dictionary.
-  DictionaryValue* ToValue() const;
+  base::DictionaryValue* ToValue() const;
 
   int num_conflicting_commits;
 
@@ -106,7 +108,7 @@ struct ErrorCounters {
 };
 
 // Caller takes ownership of the returned dictionary.
-DictionaryValue* DownloadProgressMarkersToValue(
+base::DictionaryValue* DownloadProgressMarkersToValue(
     const std::string
         (&download_progress_markers)[syncable::MODEL_TYPE_COUNT]);
 
@@ -132,7 +134,7 @@ struct SyncSessionSnapshot {
   ~SyncSessionSnapshot();
 
   // Caller takes ownership of the returned dictionary.
-  DictionaryValue* ToValue() const;
+  base::DictionaryValue* ToValue() const;
 
   std::string ToString() const;
 

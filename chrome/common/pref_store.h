@@ -11,7 +11,9 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 
+namespace base {
 class Value;
+}
 
 // This is an abstract interface for reading and writing from/to a persistent
 // preference store, used by PrefService. An implementation using a JSON file
@@ -56,7 +58,7 @@ class PrefStore : public base::RefCounted<PrefStore> {
   // |result| is only modified if the return value is READ_OK. Ownership of the
   // |result| value remains with the PrefStore.
   virtual ReadResult GetValue(const std::string& key,
-                              const Value** result) const = 0;
+                              const base::Value** result) const = 0;
 
  protected:
   friend class base::RefCounted<PrefStore>;

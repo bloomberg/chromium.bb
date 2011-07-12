@@ -16,11 +16,14 @@
 #include "base/string16.h"
 #include "webkit/plugins/npapi/webplugininfo.h"
 
-class DictionaryValue;
 class FilePath;
 class TableModelArrayControllerTest;
 class PluginExceptionsTableModelTest;
 class Version;
+
+namespace base {
+class DictionaryValue;
+}
 
 namespace webkit {
 namespace npapi {
@@ -165,10 +168,10 @@ class PluginGroup {
   const string16& description() const { return description_; }
 
   // Returns a DictionaryValue with data to display in the UI.
-  DictionaryValue* GetDataForUI() const;
+  base::DictionaryValue* GetDataForUI() const;
 
   // Returns a DictionaryValue with data to save in the preferences.
-  DictionaryValue* GetSummary() const;
+  base::DictionaryValue* GetSummary() const;
 
   // Returns the update URL.
   std::string GetUpdateURL() const { return update_url_; }

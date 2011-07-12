@@ -76,7 +76,7 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
   // Returns a copy of the Extensions prefs.
   // TODO(erikkay) Remove this so that external consumers don't need to be
   // aware of the internal structure of the preferences.
-  DictionaryValue* CopyCurrentExtensions();
+  base::DictionaryValue* CopyCurrentExtensions();
 
   // Returns true if the specified external extension was uninstalled by the
   // user.
@@ -297,7 +297,7 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
   void SetExtensionControlledPref(const std::string& extension_id,
                                   const std::string& pref_key,
                                   ExtensionPrefsScope scope,
-                                  Value* value);
+                                  base::Value* value);
 
   void RemoveExtensionControlledPref(const std::string& extension_id,
                                      const std::string& pref_key,
@@ -353,19 +353,19 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
 
   // Converts internal relative paths to be absolute. Used for export to
   // consumers who expect full paths.
-  void MakePathsAbsolute(DictionaryValue* dict);
+  void MakePathsAbsolute(base::DictionaryValue* dict);
 
   // Sets the pref |key| for extension |id| to |value|.
   void UpdateExtensionPref(const std::string& id,
                            const std::string& key,
-                           Value* value);
+                           base::Value* value);
 
   // Deletes the pref dictionary for extension |id|.
   void DeleteExtensionPrefs(const std::string& id);
 
   // Reads a boolean pref from |ext| with key |pref_key|.
   // Return false if the value is false or |pref_key| does not exist.
-  static bool ReadBooleanFromPref(const DictionaryValue* ext,
+  static bool ReadBooleanFromPref(const base::DictionaryValue* ext,
                                   const std::string& pref_key);
 
   // Reads a boolean pref |pref_key| from extension with id |extension_id|.
@@ -374,7 +374,7 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
 
   // Reads an integer pref from |ext| with key |pref_key|.
   // Return false if the value does not exist.
-  static bool ReadIntegerFromPref(const DictionaryValue* ext,
+  static bool ReadIntegerFromPref(const base::DictionaryValue* ext,
                                   const std::string& pref_key,
                                   int* out_value);
 
@@ -386,7 +386,7 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
   // Reads a list pref |pref_key| from extension with id |extension_id|.
   bool ReadExtensionPrefList(const std::string& extension_id,
                              const std::string& pref_key,
-                             const ListValue** out_value);
+                             const base::ListValue** out_value);
 
   // Interprets the list pref, |pref_key| in |extension_id|'s preferences, as a
   // URLPatternSet. The |valid_schemes| specify how to parse the URLPatterns.
@@ -403,12 +403,12 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
 
   // Returns a dictionary for extension |id|'s prefs or NULL if it doesn't
   // exist.
-  const DictionaryValue* GetExtensionPref(const std::string& id) const;
+  const base::DictionaryValue* GetExtensionPref(const std::string& id) const;
 
   // Returns the dictionary of preferences controlled by the specified extension
   // or creates a new one. All entries in the dictionary contain non-expanded
   // paths.
-  const DictionaryValue* GetExtensionControlledPrefs(
+  const base::DictionaryValue* GetExtensionControlledPrefs(
       const std::string& id,
       bool incognito) const;
 
@@ -420,7 +420,7 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
   // Checks if kPrefBlacklist is set to true in the DictionaryValue.
   // Return false if the value is false or kPrefBlacklist does not exist.
   // This is used to decide if an extension is blacklisted.
-  static bool IsBlacklistBitSet(DictionaryValue* ext);
+  static bool IsBlacklistBitSet(base::DictionaryValue* ext);
 
   // Fix missing preference entries in the extensions that are were introduced
   // in a later Chrome version.

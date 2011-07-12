@@ -16,10 +16,13 @@
 #include "content/common/notification_registrar.h"
 
 class GURL;
-class ListValue;
 class PageUsageData;
 class PrefService;
+
+namespace base {
+class ListValue;
 class Value;
+}
 
 // The handler for Javascript messages related to the "most visited" view.
 //
@@ -43,22 +46,22 @@ class MostVisitedHandler : public WebUIMessageHandler,
   virtual void RegisterMessages();
 
   // Callback for the "getMostVisited" message.
-  void HandleGetMostVisited(const ListValue* args);
+  void HandleGetMostVisited(const base::ListValue* args);
 
   // Callback for the "blacklistURLFromMostVisited" message.
-  void HandleBlacklistURL(const ListValue* args);
+  void HandleBlacklistURL(const base::ListValue* args);
 
   // Callback for the "removeURLsFromMostVisitedBlacklist" message.
-  void HandleRemoveURLsFromBlacklist(const ListValue* args);
+  void HandleRemoveURLsFromBlacklist(const base::ListValue* args);
 
   // Callback for the "clearMostVisitedURLsBlacklist" message.
-  void HandleClearBlacklist(const ListValue* args);
+  void HandleClearBlacklist(const base::ListValue* args);
 
   // Callback for the "addPinnedURL" message.
-  void HandleAddPinnedURL(const ListValue* args);
+  void HandleAddPinnedURL(const base::ListValue* args);
 
   // Callback for the "removePinnedURL" message.
-  void HandleRemovePinnedURL(const ListValue* args);
+  void HandleRemovePinnedURL(const base::ListValue* args);
 
   // NotificationObserver implementation.
   virtual void Observe(int type,
@@ -125,7 +128,7 @@ class MostVisitedHandler : public WebUIMessageHandler,
   bool got_first_most_visited_request_;
 
   // Keep the results of the db query here.
-  scoped_ptr<ListValue> pages_value_;
+  scoped_ptr<base::ListValue> pages_value_;
 
   DISALLOW_COPY_AND_ASSIGN(MostVisitedHandler);
 };

@@ -12,6 +12,10 @@
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "content/common/notification_observer.h"
 
+namespace base {
+class Value;
+}
+
 class ExtensionPreferenceEventRouter : public NotificationObserver {
  public:
   explicit ExtensionPreferenceEventRouter(Profile* profile);
@@ -39,8 +43,6 @@ class ExtensionPreferenceEventRouter : public NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(ExtensionPreferenceEventRouter);
 };
 
-class Value;
-
 class PrefTransformerInterface {
  public:
   virtual ~PrefTransformerInterface() {}
@@ -51,15 +53,17 @@ class PrefTransformerInterface {
   // |error| and returns NULL otherwise. |bad_message| is passed to simulate
   // the behavior of EXTENSION_FUNCTION_VALIDATE. It is never NULL.
   // The ownership of the returned value is passed to the caller.
-  virtual Value* ExtensionToBrowserPref(const Value* extension_pref,
-                                        std::string* error,
-                                        bool* bad_message) = 0;
+  virtual base::Value* ExtensionToBrowserPref(
+      const base::Value* extension_pref,
+      std::string* error,
+      bool* bad_message) = 0;
 
   // Converts the representation of the preference as stored in the browser
   // into a representation that is used by the extension.
   // Returns the extension representation in case of success or NULL otherwise.
   // The ownership of the returned value is passed to the caller.
-  virtual Value* BrowserToExtensionPref(const Value* browser_pref) = 0;
+  virtual base::Value* BrowserToExtensionPref(
+      const base::Value* browser_pref) = 0;
 };
 
 class GetPreferenceFunction : public SyncExtensionFunction {

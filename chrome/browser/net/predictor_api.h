@@ -32,7 +32,7 @@ namespace chrome_browser_net {
 void FinalizePredictorInitialization(
     Predictor* global_predictor,
     const std::vector<GURL>& urls_to_prefetch,
-    ListValue* referral_list);
+    base::ListValue* referral_list);
 
 // Free all resources allocated by FinalizePredictorInitialization. After that
 // you must not call any function from this file.

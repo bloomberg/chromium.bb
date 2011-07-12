@@ -18,11 +18,10 @@ std::string PrintSystem::GenerateProxyId() {
 }
 
 scoped_refptr<PrintSystem> PrintSystem::CreateInstance(
-    const DictionaryValue* print_system_settings) {
+    const base::DictionaryValue* print_system_settings) {
   NOTREACHED();
   return NULL;
 }
 }  // namespace cloud_print
 
 #endif  // CP_PRINT_SYSTEM_AVAILABLE
-

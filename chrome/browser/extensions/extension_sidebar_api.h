@@ -8,10 +8,13 @@
 #include <string>
 #include "chrome/browser/extensions/extension_function.h"
 
-class DictionaryValue;
 class Profile;
 class RenderViewHost;
 class TabContents;
+
+namespace base {
+class DictionaryValue;
+}
 
 namespace extension_sidebar_constants {
 extern const char kActiveState[];
@@ -38,14 +41,14 @@ class SidebarFunction : public SyncExtensionFunction {
  private:
   virtual bool RunImpl(TabContents* tab,
                        const std::string& content_id,
-                       const DictionaryValue& details) = 0;
+                       const base::DictionaryValue& details) = 0;
 };
 
 class CollapseSidebarFunction : public SidebarFunction {
  private:
   virtual bool RunImpl(TabContents* tab,
                        const std::string& content_id,
-                       const DictionaryValue& details);
+                       const base::DictionaryValue& details);
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.sidebar.collapse");
 };
 
@@ -53,7 +56,7 @@ class ExpandSidebarFunction : public SidebarFunction {
  private:
   virtual bool RunImpl(TabContents* tab,
                        const std::string& content_id,
-                       const DictionaryValue& details);
+                       const base::DictionaryValue& details);
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.sidebar.expand");
 };
 
@@ -61,7 +64,7 @@ class GetStateSidebarFunction : public SidebarFunction {
  private:
   virtual bool RunImpl(TabContents* tab,
                        const std::string& content_id,
-                       const DictionaryValue& details);
+                       const base::DictionaryValue& details);
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.sidebar.getState");
 };
 
@@ -69,7 +72,7 @@ class HideSidebarFunction : public SidebarFunction {
  private:
   virtual bool RunImpl(TabContents* tab,
                        const std::string& content_id,
-                       const DictionaryValue& details);
+                       const base::DictionaryValue& details);
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.sidebar.hide");
 };
 
@@ -77,7 +80,7 @@ class NavigateSidebarFunction : public SidebarFunction {
  private:
   virtual bool RunImpl(TabContents* tab,
                        const std::string& content_id,
-                       const DictionaryValue& details);
+                       const base::DictionaryValue& details);
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.sidebar.navigate");
 };
 
@@ -85,7 +88,7 @@ class SetBadgeTextSidebarFunction : public SidebarFunction {
  private:
   virtual bool RunImpl(TabContents* tab,
                        const std::string& content_id,
-                       const DictionaryValue& details);
+                       const base::DictionaryValue& details);
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.sidebar.setBadgeText");
 };
 
@@ -93,7 +96,7 @@ class SetIconSidebarFunction : public SidebarFunction {
  private:
   virtual bool RunImpl(TabContents* tab,
                        const std::string& content_id,
-                       const DictionaryValue& details);
+                       const base::DictionaryValue& details);
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.sidebar.setIcon");
 };
 
@@ -101,7 +104,7 @@ class SetTitleSidebarFunction : public SidebarFunction {
  private:
   virtual bool RunImpl(TabContents* tab,
                        const std::string& content_id,
-                       const DictionaryValue& details);
+                       const base::DictionaryValue& details);
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.sidebar.setTitle");
 };
 
@@ -109,9 +112,8 @@ class ShowSidebarFunction : public SidebarFunction {
  private:
   virtual bool RunImpl(TabContents* tab,
                        const std::string& content_id,
-                       const DictionaryValue& details);
+                       const base::DictionaryValue& details);
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.sidebar.show");
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_SIDEBAR_API_H_
-

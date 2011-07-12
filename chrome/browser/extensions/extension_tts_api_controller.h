@@ -13,13 +13,15 @@
 #include "base/scoped_ptr.h"
 #include "googleurl/src/gurl.h"
 
-class DictionaryValue;
 class Extension;
 class ExtensionTtsPlatformImpl;
-class ListValue;
 class Profile;
-class Value;
 
+namespace base {
+class DictionaryValue;
+class ListValue;
+class Value;
+}
 
 // Events sent back from the TTS engine indicating the progress.
 enum TtsEventType {
@@ -67,8 +69,8 @@ class Utterance {
   void set_text(const std::string& text) { text_ = text; }
   const std::string& text() const { return text_; }
 
-  void set_options(const Value* options);
-  const Value* options() const { return options_.get(); }
+  void set_options(const base::Value* options);
+  const base::Value* options() const { return options_.get(); }
 
   void set_src_extension_id(const std::string& src_extension_id) {
     src_extension_id_ = src_extension_id;
@@ -151,7 +153,7 @@ class Utterance {
 
   // The full options arg passed to tts.speak, which may include fields
   // other than the ones we explicitly parse, below.
-  scoped_ptr<Value> options_;
+  scoped_ptr<base::Value> options_;
 
   // The extension ID of the extension that called speak() and should
   // receive events.
@@ -212,7 +214,7 @@ class ExtensionTtsController {
 
   // Return a list of all available voices, including the native voice,
   // if supported, and all voices registered by extensions.
-  ListValue* GetVoices(Profile* profile);
+  base::ListValue* GetVoices(Profile* profile);
 
   // For unit testing.
   void SetPlatformImpl(ExtensionTtsPlatformImpl* platform_impl);

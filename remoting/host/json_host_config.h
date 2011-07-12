@@ -12,7 +12,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "remoting/host/in_memory_host_config.h"
 
-class DictionaryValue;
 class Task;
 
 namespace base {

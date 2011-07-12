@@ -7,9 +7,11 @@
 
 #include "v8/include/v8.h"
 
-class Value;
-class ListValue;
+namespace base {
 class DictionaryValue;
+class ListValue;
+class Value;
+}
 
 // Converts between v8::Value (JavaScript values in the v8 heap) and Chrome's
 // values (from base/values.h). Lists and dictionaries are converted
@@ -34,23 +36,23 @@ class V8ValueConverter {
   // Converts Value to v8::Value. Unsupported types are replaced with null.
   // If an array or object throws while setting a value, that property or item
   // is skipped, leaving a hole in the case of arrays.
-  v8::Handle<v8::Value> ToV8Value(Value* value,
+  v8::Handle<v8::Value> ToV8Value(base::Value* value,
                                   v8::Handle<v8::Context> context) const;
 
   // Converts v8::Value to Value. Unsupported types are replaced with null.
   // If an array or object throws while getting a value, that property or item
   // is replaced with null.
-  Value* FromV8Value(v8::Handle<v8::Value> value,
-                     v8::Handle<v8::Context> context) const;
+  base::Value* FromV8Value(v8::Handle<v8::Value> value,
+                           v8::Handle<v8::Context> context) const;
 
  private:
-  v8::Handle<v8::Value> ToV8ValueImpl(Value* value) const;
-  v8::Handle<v8::Value> ToV8Array(ListValue* list) const;
-  v8::Handle<v8::Value> ToV8Object(DictionaryValue* dictionary) const;
+  v8::Handle<v8::Value> ToV8ValueImpl(base::Value* value) const;
+  v8::Handle<v8::Value> ToV8Array(base::ListValue* list) const;
+  v8::Handle<v8::Value> ToV8Object(base::DictionaryValue* dictionary) const;
 
-  Value* FromV8ValueImpl(v8::Handle<v8::Value> value) const;
-  ListValue* FromV8Array(v8::Handle<v8::Array> array) const;
-  DictionaryValue* FromV8Object(v8::Handle<v8::Object> object) const;
+  base::Value* FromV8ValueImpl(v8::Handle<v8::Value> value) const;
+  base::ListValue* FromV8Array(v8::Handle<v8::Array> array) const;
+  base::DictionaryValue* FromV8Object(v8::Handle<v8::Object> object) const;
 
   // If true, we will convert undefined JavaScript values to null.
   bool allow_undefined_;

@@ -8,7 +8,9 @@
 
 #include <string>
 
+namespace base {
 class Value;
+}
 
 namespace webdriver {
 
@@ -25,13 +27,13 @@ class WebElementId {
 
   // Creates a |WebElementId| from an element dictionary returned by a WebDriver
   // atom. It will be valid iff the dictionary is correctly constructed.
-  explicit WebElementId(Value* value);
+  explicit WebElementId(base::Value* value);
 
   ~WebElementId();
 
   // Returns the appropriate |Value| type to be used to identify the element
   // to a WebDriver atom. The client takes ownership.
-  Value* ToValue() const;
+  base::Value* ToValue() const;
 
   // Returns whether this ID is valid. Even if the ID is valid, it may not refer
   // to a valid ID on the page.

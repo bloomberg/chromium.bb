@@ -27,10 +27,13 @@ class ExtensionFunction;
 class ExtensionFunctionDispatcher;
 class UIThreadExtensionFunction;
 class IOThreadExtensionFunction;
-class ListValue;
 class QuotaLimitHeuristic;
 class RenderViewHost;
+
+namespace base {
+class ListValue;
 class Value;
+}
 
 #define EXTENSION_FUNCTION_VALIDATE(test) do { \
     if (!(test)) { \
@@ -81,7 +84,7 @@ class ExtensionFunction
       std::list<QuotaLimitHeuristic*>* heuristics) const {}
 
   // Specifies the raw arguments to the function, as a JSON value.
-  virtual void SetArgs(const ListValue* args);
+  virtual void SetArgs(const base::ListValue* args);
 
   // Retrieves the results of the function as a JSON-encoded string (may
   // be empty).
@@ -176,11 +179,11 @@ class ExtensionFunction
   bool user_gesture_;
 
   // The arguments to the API. Only non-null if argument were specified.
-  scoped_ptr<ListValue> args_;
+  scoped_ptr<base::ListValue> args_;
 
   // The result of the API. This should be populated by the derived class before
   // SendResponse() is called.
-  scoped_ptr<Value> result_;
+  scoped_ptr<base::Value> result_;
 
   // Any detailed error from the API. This should be populated by the derived
   // class before Run() returns.

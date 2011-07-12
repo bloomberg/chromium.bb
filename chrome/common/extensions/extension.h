@@ -25,14 +25,17 @@
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/size.h"
 
-class DictionaryValue;
 class ExtensionAction;
 class ExtensionResource;
 class ExtensionSidebarDefaults;
 class FileBrowserHandler;
-class ListValue;
 class SkBitmap;
 class Version;
+
+namespace base {
+class DictionaryValue;
+class ListValue;
+}
 
 // Represents a Chrome extension.
 class Extension : public base::RefCountedThreadSafe<Extension> {
@@ -176,18 +179,19 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   static scoped_refptr<Extension> Create(const FilePath& path,
                                          Location location,
-                                         const DictionaryValue& value,
+                                         const base::DictionaryValue& value,
                                          int flags,
                                          std::string* error);
 
   // In a few special circumstances, we want to create an Extension and give it
   // an explicit id. Most consumers should just use the plain Create() method.
-  static scoped_refptr<Extension> CreateWithId(const FilePath& path,
-                                               Location location,
-                                               const DictionaryValue& value,
-                                               int flags,
-                                               const std::string& explicit_id,
-                                               std::string* error);
+  static scoped_refptr<Extension> CreateWithId(
+      const FilePath& path,
+      Location location,
+      const base::DictionaryValue& value,
+      int flags,
+      const std::string& explicit_id,
+      std::string* error);
 
   // Return the update url used by gallery/webstore extensions.
   static GURL GalleryUpdateUrl(bool secure);
@@ -487,7 +491,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   }
   const GURL& update_url() const { return update_url_; }
   const ExtensionIconSet& icons() const { return icons_; }
-  const DictionaryValue* manifest_value() const {
+  const base::DictionaryValue* manifest_value() const {
     return manifest_value_.get();
   }
   const std::string default_locale() const { return default_locale_; }
@@ -520,10 +524,10 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Theme-related.
   bool is_theme() const { return is_theme_; }
-  DictionaryValue* GetThemeImages() const { return theme_images_.get(); }
-  DictionaryValue* GetThemeColors() const {return theme_colors_.get(); }
-  DictionaryValue* GetThemeTints() const { return theme_tints_.get(); }
-  DictionaryValue* GetThemeDisplayProperties() const {
+  base::DictionaryValue* GetThemeImages() const { return theme_images_.get(); }
+  base::DictionaryValue* GetThemeColors() const {return theme_colors_.get(); }
+  base::DictionaryValue* GetThemeTints() const { return theme_tints_.get(); }
+  base::DictionaryValue* GetThemeDisplayProperties() const {
     return theme_display_properties_.get();
   }
 
@@ -563,7 +567,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   ~Extension();
 
   // Initialize the extension from a parsed manifest.
-  bool InitFromValue(const DictionaryValue& value, int flags,
+  bool InitFromValue(const base::DictionaryValue& value, int flags,
                      std::string* error);
 
   // Helper function for implementing HasCachedImage/GetCachedImage. A return
@@ -574,7 +578,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Helper method that loads a UserScript object from a
   // dictionary in the content_script list of the manifest.
-  bool LoadUserScriptHelper(const DictionaryValue* content_script,
+  bool LoadUserScriptHelper(const base::DictionaryValue* content_script,
                             int definition_index,
                             int flags,
                             std::string* error,
@@ -582,7 +586,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Helper method that loads either the include_globs or exclude_globs list
   // from an entry in the content_script lists of the manifest.
-  bool LoadGlobsHelper(const DictionaryValue* content_script,
+  bool LoadGlobsHelper(const base::DictionaryValue* content_script,
                        int content_script_index,
                        const char* globs_property_name,
                        std::string* error,
@@ -590,35 +594,39 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
                        UserScript *instance);
 
   // Helpers to load various chunks of the manifest.
-  bool LoadIsApp(const DictionaryValue* manifest, std::string* error);
-  bool LoadExtent(const DictionaryValue* manifest,
+  bool LoadIsApp(const base::DictionaryValue* manifest, std::string* error);
+  bool LoadExtent(const base::DictionaryValue* manifest,
                   const char* key,
                   URLPatternSet* extent,
                   const char* list_error,
                   const char* value_error,
                   URLPattern::ParseOption parse_strictness,
                   std::string* error);
-  bool LoadLaunchContainer(const DictionaryValue* manifest, std::string* error);
-  bool LoadLaunchURL(const DictionaryValue* manifest, std::string* error);
-  bool LoadAppIsolation(const DictionaryValue* manifest, std::string* error);
-  bool EnsureNotHybridApp(const DictionaryValue* manifest, std::string* error);
+  bool LoadLaunchContainer(const base::DictionaryValue* manifest,
+                           std::string* error);
+  bool LoadLaunchURL(const base::DictionaryValue* manifest,
+                     std::string* error);
+  bool LoadAppIsolation(const base::DictionaryValue* manifest,
+                        std::string* error);
+  bool EnsureNotHybridApp(const base::DictionaryValue* manifest,
+                          std::string* error);
 
   // Helper method to load an ExtensionAction from the page_action or
   // browser_action entries in the manifest.
   ExtensionAction* LoadExtensionActionHelper(
-      const DictionaryValue* extension_action, std::string* error);
+      const base::DictionaryValue* extension_action, std::string* error);
 
   // Helper method to load an FileBrowserHandlerList from the manifest.
   FileBrowserHandlerList* LoadFileBrowserHandlers(
-      const ListValue* extension_actions, std::string* error);
+      const base::ListValue* extension_actions, std::string* error);
   // Helper method to load an FileBrowserHandler from manifest.
   FileBrowserHandler* LoadFileBrowserHandler(
-      const DictionaryValue* file_browser_handlers, std::string* error);
+      const base::DictionaryValue* file_browser_handlers, std::string* error);
 
   // Helper method to load an ExtensionSidebarDefaults from the sidebar manifest
   // entry.
   ExtensionSidebarDefaults* LoadExtensionSidebarDefaults(
-      const DictionaryValue* sidebar, std::string* error);
+      const base::DictionaryValue* sidebar, std::string* error);
 
   // Returns true if the extension has more than one "UI surface". For example,
   // an extension that has a browser action and a page action.
@@ -626,7 +634,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Figures out if a source contains keys not associated with themes - we
   // don't want to allow scripts and such to be bundled with themes.
-  bool ContainsNonThemeKeys(const DictionaryValue& source) const;
+  bool ContainsNonThemeKeys(const base::DictionaryValue& source) const;
 
   // Only allow the experimental API permission if the command line
   // flag is present.
@@ -729,16 +737,16 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   std::string public_key_;
 
   // A map of resource id's to relative file paths.
-  scoped_ptr<DictionaryValue> theme_images_;
+  scoped_ptr<base::DictionaryValue> theme_images_;
 
   // A map of color names to colors.
-  scoped_ptr<DictionaryValue> theme_colors_;
+  scoped_ptr<base::DictionaryValue> theme_colors_;
 
   // A map of color names to colors.
-  scoped_ptr<DictionaryValue> theme_tints_;
+  scoped_ptr<base::DictionaryValue> theme_tints_;
 
   // A map of display properties.
-  scoped_ptr<DictionaryValue> theme_display_properties_;
+  scoped_ptr<base::DictionaryValue> theme_display_properties_;
 
   // Whether the extension is a theme.
   bool is_theme_;
@@ -751,7 +759,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   GURL update_url_;
 
   // A copy of the manifest that this extension was created from.
-  scoped_ptr<DictionaryValue> manifest_value_;
+  scoped_ptr<base::DictionaryValue> manifest_value_;
 
   // A map of chrome:// hostnames (newtab, downloads, etc.) to Extension URLs
   // which override the handling of those URLs. (see ExtensionOverrideUI).
@@ -811,13 +819,13 @@ typedef std::set<std::string> ExtensionIdSet;
 
 // Handy struct to pass core extension info around.
 struct ExtensionInfo {
-  ExtensionInfo(const DictionaryValue* manifest,
+  ExtensionInfo(const base::DictionaryValue* manifest,
                 const std::string& id,
                 const FilePath& path,
                 Extension::Location location);
   ~ExtensionInfo();
 
-  scoped_ptr<DictionaryValue> extension_manifest;
+  scoped_ptr<base::DictionaryValue> extension_manifest;
   std::string extension_id;
   FilePath extension_path;
   Extension::Location extension_location;

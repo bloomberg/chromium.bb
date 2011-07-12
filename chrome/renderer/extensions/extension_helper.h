@@ -15,9 +15,12 @@
 
 class ExtensionDispatcher;
 class GURL;
-class ListValue;
 struct ExtensionMsg_ExecuteCode_Params;
 struct WebApplicationInfo;
+
+namespace base {
+class ListValue;
+}
 
 namespace webkit_glue {
 class ResourceFetcher;
@@ -57,7 +60,7 @@ class ExtensionHelper : public RenderViewObserver,
                            const std::string& error);
   void OnExtensionMessageInvoke(const std::string& extension_id,
                                 const std::string& function_name,
-                                const ListValue& args,
+                                const base::ListValue& args,
                                 const GURL& event_url);
   void OnExecuteCode(const ExtensionMsg_ExecuteCode_Params& params);
   void OnGetApplicationInfo(int page_id);

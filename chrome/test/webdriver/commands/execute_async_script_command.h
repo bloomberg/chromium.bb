@@ -10,7 +10,9 @@
 
 #include "chrome/test/webdriver/commands/webdriver_command.h"
 
+namespace base {
 class DictionaryValue;
+}
 
 namespace webdriver {
 
@@ -24,7 +26,7 @@ class Response;
 class ExecuteAsyncScriptCommand : public WebDriverCommand {
  public:
   ExecuteAsyncScriptCommand(const std::vector<std::string>& path_segments,
-                            const DictionaryValue* const parameters);
+                            const base::DictionaryValue* const parameters);
   virtual ~ExecuteAsyncScriptCommand();
 
   virtual bool DoesPost();
@@ -37,4 +39,3 @@ class ExecuteAsyncScriptCommand : public WebDriverCommand {
 }  // namespace webdriver
 
 #endif  // CHROME_TEST_WEBDRIVER_COMMANDS_EXECUTE_ASYNC_SCRIPT_COMMAND_H_
-

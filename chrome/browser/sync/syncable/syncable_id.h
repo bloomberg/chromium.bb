@@ -13,7 +13,9 @@
 
 #include "base/hash_tables.h"
 
+namespace base {
 class StringValue;
+}
 
 namespace syncable {
 struct EntryKernel;
@@ -95,7 +97,7 @@ class Id {
 
   // Dumps the ID as a value and returns it.  Transfers ownership of
   // the StringValue to the caller.
-  StringValue* ToValue() const;
+  base::StringValue* ToValue() const;
 
   // Three functions are used to work with our proto buffers.
   std::string GetServerId() const;

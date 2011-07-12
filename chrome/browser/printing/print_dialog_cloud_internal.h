@@ -18,8 +18,13 @@
 #include "content/common/notification_registrar.h"
 
 class GURL;
-class StringValue;
 class CloudPrintHtmlDialogDelegateTest;
+
+namespace base {
+class ListValue;
+class StringValue;
+class Value;
+}
 
 namespace internal_cloud_print_helpers {
 
@@ -33,10 +38,10 @@ class CloudPrintDataSenderHelper {
   // facilitate unit testing.
   virtual void CallJavascriptFunction(const std::wstring& function_name);
   virtual void CallJavascriptFunction(const std::wstring& function_name,
-                                      const Value& arg);
+                                      const base::Value& arg);
   virtual void CallJavascriptFunction(const std::wstring& function_name,
-                                      const Value& arg1,
-                                      const Value& arg2);
+                                      const base::Value& arg1,
+                                      const base::Value& arg2);
 
  private:
   WebUI* web_ui_;
@@ -73,7 +78,7 @@ class CloudPrintDataSender
 
   base::Lock lock_;
   CloudPrintDataSenderHelper* volatile helper_;
-  scoped_ptr<StringValue> print_data_;
+  scoped_ptr<base::StringValue> print_data_;
   string16 print_job_title_;
   std::string file_type_;
 
@@ -106,9 +111,9 @@ class CloudPrintFlowHandler : public WebUIMessageHandler,
                        const NotificationDetails& details);
 
   // Callbacks from the page.
-  void HandleShowDebugger(const ListValue* args);
-  void HandleSendPrintData(const ListValue* args);
-  void HandleSetPageParameters(const ListValue* args);
+  void HandleShowDebugger(const base::ListValue* args);
+  void HandleSendPrintData(const base::ListValue* args);
+  void HandleSetPageParameters(const base::ListValue* args);
 
   virtual void SetDialogDelegate(CloudPrintHtmlDialogDelegate *delegate);
   void StoreDialogClientSize() const;

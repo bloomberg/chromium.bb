@@ -13,7 +13,6 @@
 #include "chrome/browser/chromeos/input_method/ibus_ui_controller.h"
 #include "chrome/browser/extensions/extension_function.h"
 
-class ListValue;
 class Profile;
 
 class ExtensionInputUiEventRouter

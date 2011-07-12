@@ -10,8 +10,11 @@
 #include "chrome/browser/extensions/extension_menu_manager.h"
 #include "chrome/common/extensions/url_pattern_set.h"
 
-class DictionaryValue;
 class ExtensionMenuItem;
+
+namespace base {
+class DictionaryValue;
+}
 
 class ExtensionContextMenuFunction : public SyncExtensionFunction {
  public:
@@ -19,7 +22,7 @@ class ExtensionContextMenuFunction : public SyncExtensionFunction {
 
  protected:
   // Helper function to read and parse a list of menu item contexts.
-  bool ParseContexts(const DictionaryValue& properties,
+  bool ParseContexts(const base::DictionaryValue& properties,
                      const char* key,
                      ExtensionMenuItem::ContextList* result);
 
@@ -27,25 +30,25 @@ class ExtensionContextMenuFunction : public SyncExtensionFunction {
   // error, returns false and puts an error message into error_. If the key is
   // not present, |result| is set to |default_value| and the return value is
   // true.
-  bool ParseType(const DictionaryValue& properties,
+  bool ParseType(const base::DictionaryValue& properties,
                  const ExtensionMenuItem::Type& default_value,
                  ExtensionMenuItem::Type* result);
 
   // Helper to read and parse the "checked" property.
   bool ParseChecked(ExtensionMenuItem::Type type,
-                    const DictionaryValue& properties,
+                    const base::DictionaryValue& properties,
                     bool default_value,
                     bool* checked);
 
   // Helper to read in a set of url patterns from a property with the given key
   // name.
-  bool ParseURLPatterns(const DictionaryValue& properties,
+  bool ParseURLPatterns(const base::DictionaryValue& properties,
                         const char* key,
                         URLPatternSet* result);
 
   // Reads in any document and targetUrl patterns from |properties| and sets
   // them on |item|.
-  bool SetURLPatterns(const DictionaryValue& properties,
+  bool SetURLPatterns(const base::DictionaryValue& properties,
                       ExtensionMenuItem* item);
 
   // If the parentId key was specified in properties, this will try looking up
@@ -54,7 +57,7 @@ class ExtensionContextMenuFunction : public SyncExtensionFunction {
   // parentId key is not in properties, this will return true and leave |result|
   // unset. Also, it is considered an error if the item found has a type other
   // than NORMAL.
-  bool GetParent(const DictionaryValue& properties,
+  bool GetParent(const base::DictionaryValue& properties,
                  const ExtensionMenuManager& manager,
                  ExtensionMenuItem** result);
 };

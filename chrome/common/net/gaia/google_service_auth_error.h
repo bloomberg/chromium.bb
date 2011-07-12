@@ -27,7 +27,9 @@
 
 #include "googleurl/src/gurl.h"
 
+namespace base {
 class DictionaryValue;
+}
 
 class GoogleServiceAuthError {
  public:
@@ -114,7 +116,7 @@ class GoogleServiceAuthError {
 
   // Returns info about this object in a dictionary.  Caller takes
   // ownership of returned dictionary.
-  DictionaryValue* ToValue() const;
+  base::DictionaryValue* ToValue() const;
 
  private:
   GoogleServiceAuthError(State s, int error);

@@ -24,7 +24,7 @@ class PrintDialogGtkInterface {
   // dictionary of settings with possible keys from
   // printing/print_job_constants.h. Only used when printing without the system
   // print dialog. E.g. for Print Preview. Returns false on error.
-  virtual bool UpdateSettings(const DictionaryValue& settings,
+  virtual bool UpdateSettings(const base::DictionaryValue& settings,
                               const PageRanges& ranges) = 0;
 
   // Shows the dialog and handles the response with |callback|. Only used when

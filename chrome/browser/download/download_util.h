@@ -22,7 +22,6 @@
 
 class BaseDownloadItemModel;
 class CrxInstaller;
-class DictionaryValue;
 class DownloadItem;
 class DownloadManager;
 class GURL;
@@ -34,6 +33,7 @@ struct DownloadCreateInfo;
 struct DownloadSaveInfo;
 
 namespace base {
+class DictionaryValue;
 class TimeTicks;
 }
 
@@ -227,7 +227,7 @@ void DragDownload(const DownloadItem* download,
 
 // Creates a representation of a download in a format that the downloads
 // HTML page can understand.
-DictionaryValue* CreateDownloadItemValue(DownloadItem* download, int id);
+base::DictionaryValue* CreateDownloadItemValue(DownloadItem* download, int id);
 
 // Get the localized status text for an in-progress download.
 string16 GetProgressStatusText(DownloadItem* download);

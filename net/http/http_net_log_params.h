@@ -13,7 +13,9 @@
 #include "net/base/net_log.h"
 #include "net/http/http_request_headers.h"
 
+namespace base {
 class Value;
+}
 
 namespace net {
 
@@ -33,7 +35,7 @@ class NetLogHttpRequestParameter : public NetLog::EventParameters {
   }
 
   // NetLog::EventParameters
-  virtual Value* ToValue() const;
+  virtual base::Value* ToValue() const;
 
  private:
   virtual ~NetLogHttpRequestParameter();
@@ -54,7 +56,7 @@ class NetLogHttpResponseParameter : public NetLog::EventParameters {
   }
 
   // NetLog::EventParameters
-  virtual Value* ToValue() const;
+  virtual base::Value* ToValue() const;
 
  private:
   virtual ~NetLogHttpResponseParameter();
@@ -67,4 +69,3 @@ class NetLogHttpResponseParameter : public NetLog::EventParameters {
 }  // namespace net
 
 #endif  // NET_HTTP_HTTP_NET_LOG_PARAMS_H_
-

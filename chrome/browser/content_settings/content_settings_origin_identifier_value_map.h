@@ -15,7 +15,10 @@
 #include "chrome/common/content_settings_types.h"
 
 class GURL;
+
+namespace base {
 class Value;
+}
 
 namespace content_settings {
 
@@ -28,14 +31,14 @@ class OriginIdentifierValueMap {
           const ContentSettingsPattern& secondary_pattern,
           ContentSettingsType content_type,
           ResourceIdentifier identifier,
-          Value* value);
+          base::Value* value);
     ~Entry();
 
     ContentSettingsPattern primary_pattern;
     ContentSettingsPattern secondary_pattern;
     ContentSettingsType content_type;
     ResourceIdentifier identifier;
-    linked_ptr<Value> value;
+    linked_ptr<base::Value> value;
   };
 
   typedef std::list<Entry> EntryList;
@@ -70,7 +73,7 @@ class OriginIdentifierValueMap {
   // Returns a weak pointer to the value for the given |primary_pattern|,
   // |secondary_pattern|, |content_type|, |resource_identifier| tuple. If
   // no value is stored for the passed parameter |NULL| is returned.
-  Value* GetValue(
+  base::Value* GetValue(
       const GURL& primary_url,
       const GURL& secondary_url,
       ContentSettingsType content_type,
@@ -84,7 +87,7 @@ class OriginIdentifierValueMap {
       const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
-      Value* value);
+      base::Value* value);
 
   // Deletes the map entry for the given |primary_pattern|,
   // |secondary_pattern|, |content_type|, |resource_identifier| tuple.

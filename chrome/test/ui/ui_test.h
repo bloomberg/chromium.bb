@@ -31,11 +31,14 @@
 
 class AutomationProxy;
 class BrowserProxy;
-class DictionaryValue;
 class FilePath;
 class GURL;
 class ScopedTempDir;
 class TabProxy;
+
+namespace base {
+class DictionaryValue;
+}
 
 // Base class for UI Tests. This implements the core of the functions.
 // This base class decouples all automation functionality from testing
@@ -376,12 +379,12 @@ class UITest : public UITestBase, public PlatformTest {
 
   // Returns a copy of local state preferences. The caller is responsible for
   // deleting the returned object. Returns NULL if there is an error.
-  DictionaryValue* GetLocalState();
+  base::DictionaryValue* GetLocalState();
 
   // Returns a copy of the default profile preferences. The caller is
   // responsible for deleting the returned object. Returns NULL if there is an
   // error.
-  DictionaryValue* GetDefaultProfilePreferences();
+  base::DictionaryValue* GetDefaultProfilePreferences();
 
   // Waits for the test case to finish.
   // ASSERTS if there are test failures.

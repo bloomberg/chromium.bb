@@ -14,9 +14,12 @@
 #include "base/values.h"
 #include "content/common/gpu/gpu_feature_flags.h"
 
-class DictionaryValue;
 class Version;
 struct GPUInfo;
+
+namespace base {
+class DictionaryValue;
+}
 
 class GpuBlacklist {
  public:
@@ -39,7 +42,7 @@ class GpuBlacklist {
   // If failed, the current GpuBlacklist is un-touched.
   bool LoadGpuBlacklist(const std::string& json_context,
                         bool current_os_only);
-  bool LoadGpuBlacklist(const DictionaryValue& parsed_json,
+  bool LoadGpuBlacklist(const base::DictionaryValue& parsed_json,
                         bool current_os_only);
 
   // Collects system information and combines them with gpu_info and blacklist
@@ -87,11 +90,11 @@ class GpuBlacklist {
   //    "crBugs": [1234],
   //    "webkitBugs": []
   // }
-  Value* GetFeatureStatus(bool gpu_access_allowed,
-                          bool disable_accelerated_compositing,
-                          bool disable_accelerated_2D_canvas,
-                          bool disable_experimental_webgl,
-                          bool disable_multisampling) const;
+  base::Value* GetFeatureStatus(bool gpu_access_allowed,
+                                bool disable_accelerated_compositing,
+                                bool disable_accelerated_2D_canvas,
+                                bool disable_experimental_webgl,
+                                bool disable_multisampling) const;
 
   // Return the largest entry id.  This is used for histogramming.
   uint32 max_entry_id() const;
@@ -103,7 +106,7 @@ class GpuBlacklist {
   // Collects the version of the current blacklist from a parsed json file.
   // Returns false and sets major and minor to 0 on failure.
   static bool GetVersion(
-      const DictionaryValue& parsed_json, uint16* major, uint16* minor);
+      const base::DictionaryValue& parsed_json, uint16* major, uint16* minor);
 
  private:
   class VersionInfo {
@@ -194,7 +197,7 @@ class GpuBlacklist {
     // Constructs GpuBlacklistEntry from DictionaryValue loaded from json.
     // Top-level entry must have an id number.  Others are exceptions.
     static GpuBlacklistEntry* GetGpuBlacklistEntryFromValue(
-        DictionaryValue* value, bool top_level);
+        base::DictionaryValue* value, bool top_level);
 
     // Determines if a given os/gc/driver is included in the Entry set.
     bool Contains(OsType os_type,
@@ -284,7 +287,7 @@ class GpuBlacklist {
   // By default, if there is no browser version information in the entry,
   // return kSupported;
   BrowserVersionSupport IsEntrySupportedByCurrentBrowserVersion(
-      DictionaryValue* value);
+      base::DictionaryValue* value);
 
   scoped_ptr<Version> version_;
   std::vector<GpuBlacklistEntry*> blacklist_;

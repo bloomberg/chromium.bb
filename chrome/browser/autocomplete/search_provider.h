@@ -29,7 +29,10 @@
 #include "content/common/url_fetcher.h"
 
 class Profile;
+
+namespace base {
 class Value;
+}
 
 // Autocomplete provider for searches and suggestions from a search engine.
 //
@@ -199,7 +202,7 @@ class SearchProvider : public AutocompleteProvider,
 
   // Parses the results from the Suggest server and stores up to kMaxMatches of
   // them in server_results_.  Returns whether parsing succeeded.
-  bool ParseSuggestResults(Value* root_val,
+  bool ParseSuggestResults(base::Value* root_val,
                            bool is_keyword,
                            const string16& input_text,
                            SuggestResults* suggest_results);

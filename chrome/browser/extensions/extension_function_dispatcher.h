@@ -19,7 +19,6 @@ class Browser;
 class ChromeRenderMessageFilter;
 class Extension;
 class ExtensionFunction;
-class ListValue;
 class Profile;
 class RenderViewHost;
 class TabContents;

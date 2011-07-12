@@ -8,7 +8,9 @@
 
 #include "chrome/browser/ui/webui/options/chromeos/cros_options_page_ui_handler.h"
 
+namespace base {
 class DictionaryValue;
+}
 
 // ChromeOS system options page UI handler.
 class SystemOptionsHandler : public chromeos::CrosOptionsPageUIHandler {
@@ -17,7 +19,7 @@ class SystemOptionsHandler : public chromeos::CrosOptionsPageUIHandler {
   virtual ~SystemOptionsHandler();
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(DictionaryValue* localized_strings);
+  virtual void GetLocalizedValues(base::DictionaryValue* localized_strings);
   virtual void Initialize();
 
   virtual void RegisterMessages();
@@ -25,7 +27,7 @@ class SystemOptionsHandler : public chromeos::CrosOptionsPageUIHandler {
   // Called when the accessibility checkbox value is changed.
   // |args| will contain the checkbox checked state as a string
   // ("true" or "false").
-  void AccessibilityChangeCallback(const ListValue* args);
+  void AccessibilityChangeCallback(const base::ListValue* args);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SystemOptionsHandler);

@@ -39,7 +39,7 @@ class PrintDialogGtk
 
   // printing::PrintDialogGtkInterface implementation.
   virtual void UseDefaultSettings();
-  virtual bool UpdateSettings(const DictionaryValue& settings,
+  virtual bool UpdateSettings(const base::DictionaryValue& settings,
                               const printing::PageRanges& ranges);
   virtual void ShowDialog(
       PrintingContextCairo::PrintSettingsCallback* callback);

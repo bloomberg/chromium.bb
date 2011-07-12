@@ -14,7 +14,9 @@
 #include "chrome/browser/prerender/prerender_origin.h"
 #include "googleurl/src/gurl.h"
 
+namespace base {
 class Value;
+}
 
 namespace prerender {
 
@@ -64,7 +66,7 @@ class PrerenderHistory : public base::NonThreadSafe {
   void Clear();
 
   // Retrieves the entries as a value which can be displayed.
-  Value* GetEntriesAsValue() const;
+  base::Value* GetEntriesAsValue() const;
 
  private:
   std::list<Entry> entries_;

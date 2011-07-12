@@ -72,7 +72,7 @@ class ExtensionPrefValueMap {
   void SetExtensionPref(const std::string& ext_id,
                         const std::string& key,
                         ExtensionPrefsScope scope,
-                        Value* value);
+                        base::Value* value);
 
   // Remove the extension preference value for |key| of extension |ext_id|.
   // Precondition: the extension must be registered.
@@ -122,9 +122,9 @@ class ExtensionPrefValueMap {
 
   void RemoveObserver(Observer* observer);
 
-  const Value* GetEffectivePrefValue(const std::string& key,
-                                     bool incognito,
-                                     bool* from_incognito) const;
+  const base::Value* GetEffectivePrefValue(const std::string& key,
+                                           bool incognito,
+                                           bool* from_incognito) const;
 
  private:
   struct ExtensionEntry;

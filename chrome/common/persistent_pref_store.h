@@ -43,7 +43,7 @@ class PersistentPrefStore : public PrefStore {
 
   // Equivalent to PrefStore::GetValue but returns a mutable value.
   virtual ReadResult GetMutableValue(const std::string& key,
-                                     Value** result) = 0;
+                                     base::Value** result) = 0;
 
   // Triggers a value changed notification. This function needs to be called
   // if one retrieves a list or dictionary with GetMutableValue and change its
@@ -53,13 +53,13 @@ class PersistentPrefStore : public PrefStore {
 
   // Sets a |value| for |key| in the store. Assumes ownership of |value|, which
   // must be non-NULL.
-  virtual void SetValue(const std::string& key, Value* value) = 0;
+  virtual void SetValue(const std::string& key, base::Value* value) = 0;
 
   // Same as SetValue, but doesn't generate notifications. This is used by
   // PrefService::GetMutableUserPref() in order to put empty entries
   // into the user pref store. Using SetValue is not an option since existing
   // tests rely on the number of notifications generated.
-  virtual void SetValueSilently(const std::string& key, Value* value) = 0;
+  virtual void SetValueSilently(const std::string& key, base::Value* value) = 0;
 
   // Removes the value for |key|.
   virtual void RemoveValue(const std::string& key) = 0;

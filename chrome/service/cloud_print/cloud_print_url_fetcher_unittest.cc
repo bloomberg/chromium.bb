@@ -7,6 +7,7 @@
 #include "base/message_loop_proxy.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
+#include "base/values.h"
 #include "chrome/service/cloud_print/cloud_print_url_fetcher.h"
 #include "chrome/service/service_process.h"
 #include "googleurl/src/gurl.h"

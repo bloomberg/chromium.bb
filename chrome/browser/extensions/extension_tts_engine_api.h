@@ -11,8 +11,12 @@
 class Extension;
 class Utterance;
 
+namespace base {
+class ListValue;
+}
+
 // Return a list of all available voices registered by extensions.
-void GetExtensionVoices(Profile* profile, ListValue* result_voices);
+void GetExtensionVoices(Profile* profile, base::ListValue* result_voices);
 
 // Find the first extension with a tts_voices in its
 // manifest that matches the speech parameters of this utterance.

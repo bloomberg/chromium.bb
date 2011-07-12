@@ -10,7 +10,9 @@
 
 #include "chrome/test/webdriver/commands/webdriver_command.h"
 
+namespace base {
 class DictionaryValue;
+}
 
 namespace webdriver {
 
@@ -22,7 +24,7 @@ class WebElementId;
 class WindowHandleCommand : public WebDriverCommand {
  public:
   WindowHandleCommand(const std::vector<std::string>& path_segments,
-                      DictionaryValue* parameters);
+                      base::DictionaryValue* parameters);
   virtual ~WindowHandleCommand();
 
   virtual bool DoesGet();
@@ -37,7 +39,7 @@ class WindowHandleCommand : public WebDriverCommand {
 class WindowHandlesCommand : public WebDriverCommand {
  public:
   WindowHandlesCommand(const std::vector<std::string>& path_segments,
-                       DictionaryValue* parameters);
+                       base::DictionaryValue* parameters);
   virtual ~WindowHandlesCommand();
 
   virtual bool DoesGet();
@@ -53,7 +55,7 @@ class WindowHandlesCommand : public WebDriverCommand {
 class WindowCommand : public WebDriverCommand {
  public:
   WindowCommand(const std::vector<std::string>& path_segments,
-                DictionaryValue* parameters);
+                base::DictionaryValue* parameters);
   virtual ~WindowCommand();
 
   virtual bool DoesPost();
@@ -70,7 +72,7 @@ class WindowCommand : public WebDriverCommand {
 class SwitchFrameCommand : public WebDriverCommand {
  public:
   SwitchFrameCommand(const std::vector<std::string>& path_segments,
-                     DictionaryValue* parameters);
+                     base::DictionaryValue* parameters);
   virtual ~SwitchFrameCommand();
 
   virtual bool DoesPost();
@@ -86,7 +88,7 @@ class SwitchFrameCommand : public WebDriverCommand {
 class ActiveElementCommand : public WebDriverCommand {
  public:
   ActiveElementCommand(const std::vector<std::string>& path_segments,
-                       DictionaryValue* parameters);
+                       base::DictionaryValue* parameters);
   virtual ~ActiveElementCommand();
 
   virtual bool DoesPost();

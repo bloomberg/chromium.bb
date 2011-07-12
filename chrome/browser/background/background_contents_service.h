@@ -21,11 +21,14 @@
 #include "webkit/glue/window_open_disposition.h"
 
 class CommandLine;
-class DictionaryValue;
 class NotificationDelegate;
 class PrefService;
 class Profile;
 class TabContents;
+
+namespace base {
+class DictionaryValue;
+}
 
 namespace gfx {
 class Rect;
@@ -114,9 +117,10 @@ class BackgroundContentsService : private NotificationObserver,
 
   // Load a BackgroundContent; the settings are read from the provided
   // dictionary.
-  void LoadBackgroundContentsFromDictionary(Profile* profile,
-                                            const std::string& extension_id,
-                                            const DictionaryValue* contents);
+  void LoadBackgroundContentsFromDictionary(
+      Profile* profile,
+      const std::string& extension_id,
+      const base::DictionaryValue* contents);
 
   // Load the manifest-specified BackgroundContents for all apps for the
   // profile.

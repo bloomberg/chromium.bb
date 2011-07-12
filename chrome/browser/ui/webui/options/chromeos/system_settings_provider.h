@@ -12,8 +12,10 @@
 #include "chrome/browser/chromeos/system/timezone_settings.h"
 #include "third_party/icu/public/i18n/unicode/timezone.h"
 
+namespace base {
 class Value;
 class ListValue;
+}
 
 namespace chromeos {
 
@@ -24,18 +26,18 @@ class SystemSettingsProvider : public CrosSettingsProvider,
   virtual ~SystemSettingsProvider();
 
   // CrosSettingsProvider overrides.
-  virtual bool Get(const std::string& path, Value** out_value) const;
+  virtual bool Get(const std::string& path, base::Value** out_value) const;
   virtual bool HandlesSetting(const std::string& path);
 
   // Overridden from TimezoneSettings::Observer:
   virtual void TimezoneChanged(const icu::TimeZone& timezone);
 
   // Creates the map of timezones used by the options page.
-  ListValue* GetTimezoneList();
+  base::ListValue* GetTimezoneList();
 
  private:
   // CrosSettingsProvider overrides.
-  virtual void DoSet(const std::string& path, Value* in_value);
+  virtual void DoSet(const std::string& path, base::Value* in_value);
 
   // Gets timezone name.
   static string16 GetTimezoneName(const icu::TimeZone& timezone);

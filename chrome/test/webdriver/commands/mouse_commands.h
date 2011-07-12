@@ -11,7 +11,9 @@
 #include "chrome/test/webdriver/commands/webelement_commands.h"
 #include "chrome/test/webdriver/web_element_id.h"
 
+namespace base {
 class DictionaryValue;
+}
 
 namespace gfx {
 class Point;
@@ -27,7 +29,7 @@ class Response;
 class MoveAndClickCommand : public WebElementCommand {
  public:
   MoveAndClickCommand(const std::vector<std::string>& path_segments,
-                      const DictionaryValue* const parameters);
+                      const base::DictionaryValue* const parameters);
   virtual ~MoveAndClickCommand();
 
   virtual bool DoesPost();
@@ -42,7 +44,7 @@ class MoveAndClickCommand : public WebElementCommand {
 class HoverCommand : public WebElementCommand {
  public:
   HoverCommand(const std::vector<std::string>& path_segments,
-               const DictionaryValue* const parameters);
+               const base::DictionaryValue* const parameters);
   virtual ~HoverCommand();
 
   virtual bool DoesPost();
@@ -58,7 +60,7 @@ class HoverCommand : public WebElementCommand {
 class DragCommand : public WebElementCommand {
  public:
   DragCommand(const std::vector<std::string>& path_segments,
-              const DictionaryValue* const parameters);
+              const base::DictionaryValue* const parameters);
   virtual ~DragCommand();
 
   virtual bool Init(Response* const response);
@@ -80,7 +82,7 @@ class DragCommand : public WebElementCommand {
 class AdvancedMouseCommand : public WebDriverCommand {
  public:
   AdvancedMouseCommand(const std::vector<std::string>& path_segments,
-                       const DictionaryValue* const parameters);
+                       const base::DictionaryValue* const parameters);
   virtual ~AdvancedMouseCommand();
 
   virtual bool DoesPost();
@@ -97,7 +99,7 @@ class AdvancedMouseCommand : public WebDriverCommand {
 class MoveToCommand : public AdvancedMouseCommand {
  public:
   MoveToCommand(const std::vector<std::string>& path_segments,
-                const DictionaryValue* const parameters);
+                const base::DictionaryValue* const parameters);
   virtual ~MoveToCommand();
 
   virtual bool Init(Response* const response);
@@ -121,7 +123,7 @@ class MoveToCommand : public AdvancedMouseCommand {
 class ClickCommand : public AdvancedMouseCommand {
  public:
   ClickCommand(const std::vector<std::string>& path_segments,
-               const DictionaryValue* const parameters);
+               const base::DictionaryValue* const parameters);
   virtual ~ClickCommand();
 
   virtual bool Init(Response* const response);
@@ -141,7 +143,7 @@ class ClickCommand : public AdvancedMouseCommand {
 class ButtonDownCommand : public AdvancedMouseCommand {
  public:
   ButtonDownCommand(const std::vector<std::string>& path_segments,
-                    const DictionaryValue* const parameters);
+                    const base::DictionaryValue* const parameters);
   virtual ~ButtonDownCommand();
 
   virtual void ExecutePost(Response* const response);
@@ -157,7 +159,7 @@ class ButtonDownCommand : public AdvancedMouseCommand {
 class ButtonUpCommand : public AdvancedMouseCommand {
  public:
   ButtonUpCommand(const std::vector<std::string>& path_segments,
-                  const DictionaryValue* const parameters);
+                  const base::DictionaryValue* const parameters);
   virtual ~ButtonUpCommand();
 
   virtual void ExecutePost(Response* const response);
@@ -171,7 +173,7 @@ class ButtonUpCommand : public AdvancedMouseCommand {
 class DoubleClickCommand : public AdvancedMouseCommand {
  public:
   DoubleClickCommand(const std::vector<std::string>& ps,
-                     const DictionaryValue* const parameters);
+                     const base::DictionaryValue* const parameters);
   virtual ~DoubleClickCommand();
 
   virtual void ExecutePost(Response* const response);

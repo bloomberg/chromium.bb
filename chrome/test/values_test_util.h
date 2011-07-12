@@ -8,9 +8,11 @@
 
 #include <string>
 
+namespace base {
 class DictionaryValue;
 class ListValue;
 class StringValue;
+}
 
 namespace test {
 
@@ -18,27 +20,28 @@ namespace test {
 // the given dictionary equals the given expected value.
 
 void ExpectDictBooleanValue(bool expected_value,
-                            const DictionaryValue& value,
+                            const base::DictionaryValue& value,
                             const std::string& key);
 
-void ExpectDictDictionaryValue(const DictionaryValue& expected_value,
-                               const DictionaryValue& value,
+void ExpectDictDictionaryValue(const base::DictionaryValue& expected_value,
+                               const base::DictionaryValue& value,
                                const std::string& key);
 
 void ExpectDictIntegerValue(int expected_value,
-                            const DictionaryValue& value,
+                            const base::DictionaryValue& value,
                             const std::string& key);
 
-void ExpectDictListValue(const ListValue& expected_value,
-                         const DictionaryValue& value,
+void ExpectDictListValue(const base::ListValue& expected_value,
+                         const base::DictionaryValue& value,
                          const std::string& key);
 
 void ExpectDictStringValue(const std::string& expected_value,
-                           const DictionaryValue& value,
+                           const base::DictionaryValue& value,
                            const std::string& key);
 
 // Takes ownership of |actual|.
-void ExpectStringValue(const std::string& expected_str, StringValue* actual);
+void ExpectStringValue(const std::string& expected_str,
+                       base::StringValue* actual);
 
 }  // namespace test
 

@@ -12,21 +12,24 @@
 
 class BookmarkModel;
 class BookmarkNode;
+
+namespace base {
 class DictionaryValue;
 class ListValue;
+}
 
 // Helper functions.
 namespace extension_bookmark_helpers {
 
-DictionaryValue* GetNodeDictionary(const BookmarkNode* node,
-                                   bool recurse,
-                                   bool only_folders);
+base::DictionaryValue* GetNodeDictionary(const BookmarkNode* node,
+                                         bool recurse,
+                                         bool only_folders);
 
 // Add a JSON representation of |node| to the JSON |list|.
-void AddNode(const BookmarkNode* node, ListValue* list, bool recurse);
+void AddNode(const BookmarkNode* node, base::ListValue* list, bool recurse);
 
 void AddNodeFoldersOnly(const BookmarkNode* node,
-                        ListValue* list,
+                        base::ListValue* list,
                         bool recurse);
 
 bool RemoveNode(BookmarkModel* model,

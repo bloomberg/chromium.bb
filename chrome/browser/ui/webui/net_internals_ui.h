@@ -8,7 +8,9 @@
 
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
 
+namespace base {
 class Value;
+}
 
 class NetInternalsUI : public ChromeWebUI {
  public:
@@ -16,7 +18,7 @@ class NetInternalsUI : public ChromeWebUI {
 
   // Returns a Value containing constants NetInternals needs to load a log file.
   // Safe to call on any thread.  Caller takes ownership of the returned Value.
-  static Value* GetConstants();
+  static base::Value* GetConstants();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetInternalsUI);

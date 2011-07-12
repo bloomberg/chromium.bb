@@ -56,7 +56,7 @@ class PrefService : public base::NonThreadSafe {
     // your own; use the PrefService::Register*Pref methods instead.
     Preference(const PrefService* service,
                const char* name,
-               Value::ValueType type);
+               base::Value::ValueType type);
     ~Preference() {}
 
     // Returns the name of the Preference (i.e., the key, e.g.,
@@ -64,11 +64,11 @@ class PrefService : public base::NonThreadSafe {
     const std::string name() const { return name_; }
 
     // Returns the registered type of the preference.
-    Value::ValueType GetType() const;
+    base::Value::ValueType GetType() const;
 
     // Returns the value of the Preference, falling back to the registered
     // default value if no other has been set.
-    const Value* GetValue() const;
+    const base::Value* GetValue() const;
 
     // Returns true if the Preference is managed, i.e. set by an admin policy.
     // Since managed prefs have the highest priority, this also indicates
@@ -115,7 +115,7 @@ class PrefService : public base::NonThreadSafe {
 
     std::string name_;
 
-    Value::ValueType type_;
+    base::Value::ValueType type_;
 
     // Reference to the PrefService in which this pref was created.
     const PrefService* pref_service_;
@@ -178,8 +178,10 @@ class PrefService : public base::NonThreadSafe {
   void RegisterListPref(const char* path);
   void RegisterDictionaryPref(const char* path);
   // These take ownership of the default_value:
-  void RegisterListPref(const char* path, ListValue* default_value);
-  void RegisterDictionaryPref(const char* path, DictionaryValue* default_value);
+  void RegisterListPref(const char* path,
+                        base::ListValue* default_value);
+  void RegisterDictionaryPref(const char* path,
+                              base::DictionaryValue* default_value);
   // These variants use a default value from the locale dll instead.
   void RegisterLocalizedBooleanPref(const char* path,
                                     int locale_default_message_id);
@@ -213,10 +215,10 @@ class PrefService : public base::NonThreadSafe {
   void RegisterDictionaryPref(const char* path, PrefSyncStatus sync_status);
   // These take ownership of the default_value:
   void RegisterListPref(const char* path,
-                        ListValue* default_value,
+                        base::ListValue* default_value,
                         PrefSyncStatus sync_status);
   void RegisterDictionaryPref(const char* path,
-                              DictionaryValue* default_value,
+                              base::DictionaryValue* default_value,
                               PrefSyncStatus sync_status);
   // These variants use a default value from the locale dll instead.
   void RegisterLocalizedBooleanPref(const char* path,
@@ -247,8 +249,8 @@ class PrefService : public base::NonThreadSafe {
   // Returns the branch if it exists, or the registered default value otherwise.
   // Note that |path| must point to a registered preference. In that case, these
   // functions will never return NULL.
-  const DictionaryValue* GetDictionary(const char* path) const;
-  const ListValue* GetList(const char* path) const;
+  const base::DictionaryValue* GetDictionary(const char* path) const;
+  const base::ListValue* GetList(const char* path) const;
 
   // Removes a user pref and restores the pref to its default value.
   void ClearPref(const char* path);
@@ -258,7 +260,7 @@ class PrefService : public base::NonThreadSafe {
   // To set the value of dictionary or list values in the pref tree use
   // Set(), but to modify the value of a dictionary or list use either
   // ListPrefUpdate or DictionaryPrefUpdate from scoped_user_pref_update.h.
-  void Set(const char* path, const Value& value);
+  void Set(const char* path, const base::Value& value);
   void SetBoolean(const char* path, bool value);
   void SetInteger(const char* path, int value);
   void SetDouble(const char* path, double value);
@@ -279,7 +281,7 @@ class PrefService : public base::NonThreadSafe {
 
   // Returns a dictionary with effective preference values. The ownership
   // is passed to the caller.
-  DictionaryValue* GetPreferenceValues() const;
+  base::DictionaryValue* GetPreferenceValues() const;
 
   // A helper method to quickly look up a preference.  Returns NULL if the
   // preference is not registered.
@@ -354,12 +356,12 @@ class PrefService : public base::NonThreadSafe {
   // RegisterPreference must not be called twice for the same path.
   // This method takes ownership of |default_value|.
   void RegisterPreference(const char* path,
-                          Value* default_value,
+                          base::Value* default_value,
                           PrefSyncStatus sync_status);
 
   // Sets the value for this pref path in the user pref store and informs the
   // PrefNotifier of the change.
-  void SetUserPrefValue(const char* path, Value* new_value);
+  void SetUserPrefValue(const char* path, base::Value* new_value);
 
   // Load preferences from storage, attempting to diagnose and handle errors.
   // This should only be called from the constructor.
@@ -372,7 +374,8 @@ class PrefService : public base::NonThreadSafe {
   // |type| may only be Values::TYPE_DICTIONARY or Values::TYPE_LIST and
   // |path| must point to a registered preference of type |type|.
   // Ownership of the returned value remains at the user pref store.
-  Value* GetMutableUserPref(const char* path, Value::ValueType type);
+  base::Value* GetMutableUserPref(const char* path,
+                                  base::Value::ValueType type);
 
   // The PrefValueStore provides prioritized preference values. It is created
   // and owned by this PrefService. Subclasses may access it for unit testing.

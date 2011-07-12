@@ -13,7 +13,9 @@
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "ui/base/l10n/l10n_util.h"
 
+namespace base {
 class ListValue;
+}
 
 namespace chromeos {
 
@@ -52,7 +54,7 @@ Value* CreateValue(int in_value);
 
 // Creates a multiple choice list from the given preference.
 template <typename T>
-ListValue* CreateMultipleChoiceList(
+base::ListValue* CreateMultipleChoiceList(
     const language_prefs::LanguageMultipleChoicePreference<T>& preference) {
   int list_length = 0;
   for (size_t i = 0;
@@ -64,12 +66,12 @@ ListValue* CreateMultipleChoiceList(
   }
   DCHECK_GT(list_length, 0);
 
-  ListValue* list_value = new ListValue();
+  base::ListValue* list_value = new base::ListValue();
   for (int i = 0; i < list_length; ++i) {
-    ListValue* option = new ListValue();
+    base::ListValue* option = new base::ListValue();
     option->Append(CreateValue(
         preference.values_and_ids[i].ibus_config_value));
-    option->Append(Value::CreateStringValue(l10n_util::GetStringUTF16(
+    option->Append(base::Value::CreateStringValue(l10n_util::GetStringUTF16(
         preference.values_and_ids[i].item_message_id)));
     list_value->Append(option);
   }

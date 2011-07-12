@@ -9,7 +9,9 @@
 #include "chrome/browser/chromeos/login/oobe_display.h"
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
 
+namespace base {
 class DictionaryValue;
+}
 
 namespace chromeos {
 class SigninScreenHandler;
@@ -24,7 +26,8 @@ class OobeMessageHandler : public WebUIMessageHandler {
   virtual ~OobeMessageHandler();
 
   // Gets localized strings to be used on the page.
-  virtual void GetLocalizedStrings(DictionaryValue* localized_strings) = 0;
+  virtual void GetLocalizedStrings(
+      base::DictionaryValue* localized_strings) = 0;
 
   // This method is called when page is ready. It propagates to inherited class
   // via virtual Initialize() method (see below).
@@ -65,7 +68,7 @@ class OobeUI : public OobeDisplay,
   virtual ViewScreenDelegate* GetHTMLPageScreenActor();
 
   // Collects localized strings from the owned handlers.
-  void GetLocalizedStrings(DictionaryValue* localized_strings);
+  void GetLocalizedStrings(base::DictionaryValue* localized_strings);
 
   // Initializes the handlers.
   void InitializeHandlers();

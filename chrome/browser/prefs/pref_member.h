@@ -47,7 +47,7 @@ class PrefMemberBase : public NotificationObserver {
     // Update the value, either by calling |UpdateValueInternal| directly
     // or by dispatching to the right thread.
     // Takes ownership of |value|.
-    virtual void UpdateValue(Value* value, bool is_managed) const;
+    virtual void UpdateValue(base::Value* value, bool is_managed) const;
 
     void MoveToThread(BrowserThread::ID thread_id);
 
@@ -67,7 +67,7 @@ class PrefMemberBase : public NotificationObserver {
    private:
     // This method actually updates the value. It should only be called from
     // the thread the PrefMember is on.
-    virtual bool UpdateValueInternal(const Value& value) const = 0;
+    virtual bool UpdateValueInternal(const base::Value& value) const = 0;
 
     bool IsOnCorrectThread() const;
 
@@ -217,7 +217,7 @@ class PrefMember : public subtle::PrefMemberBase {
    protected:
     virtual ~Internal() {}
 
-    virtual bool UpdateValueInternal(const Value& value) const;
+    virtual bool UpdateValueInternal(const base::Value& value) const;
 
     // We cache the value of the pref so we don't have to keep walking the pref
     // tree.

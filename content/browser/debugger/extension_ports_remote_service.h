@@ -21,10 +21,13 @@
 
 class DevToolsProtocolHandler;
 class DevToolsRemoteMessage;
-class DictionaryValue;
 class GURL;
+
+namespace base {
+class DictionaryValue;
 class ListValue;
 class Value;
+}
 
 class ExtensionPortsRemoteService : public DevToolsRemoteListener,
                                     public IPC::Message::Sender {
@@ -70,14 +73,14 @@ class ExtensionPortsRemoteService : public DevToolsRemoteListener,
 
   // Sends a JSON message with the |response| to the external client.
   // |tool| and |destination| are used as the respective header values.
-  void SendResponse(const Value& response,
+  void SendResponse(const base::Value& response,
                     const std::string& tool,
                     const std::string& destination);
 
   // Handles a message from the ExtensionMessageService.
   void OnExtensionMessageInvoke(const std::string& extension_id,
                                 const std::string& function_name,
-                                const ListValue& args,
+                                const base::ListValue& args,
                                 const GURL& event_url);
   // Handles a message sent from an extension through the
   // ExtensionMessageService, to be passed to the external client.
@@ -87,12 +90,14 @@ class ExtensionPortsRemoteService : public DevToolsRemoteListener,
 
   // Implementation for the commands we can receive from the external client.
   // Opens a channel to an extension.
-  void ConnectCommand(DictionaryValue* content, DictionaryValue* response);
+  void ConnectCommand(base::DictionaryValue* content,
+                      base::DictionaryValue* response);
   // Disconnects a message port.
-  void DisconnectCommand(int port_id, DictionaryValue* response);
+  void DisconnectCommand(int port_id, base::DictionaryValue* response);
   // Sends a message to an extension through an established message port.
-  void PostMessageCommand(int port_id, DictionaryValue* content,
-                          DictionaryValue* response);
+  void PostMessageCommand(int port_id,
+                          base::DictionaryValue* content,
+                          base::DictionaryValue* response);
 
   // The delegate is used to send responses and events back to the
   // external client, and to resolve tab IDs.

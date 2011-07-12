@@ -14,7 +14,9 @@
 #include "printing/printing_context.h"
 #include "ui/gfx/native_widget_types.h"
 
+namespace base {
 class DictionaryValue;
+}
 
 namespace printing {
 
@@ -46,7 +48,7 @@ class PrintJobWorker : public base::Thread {
 
   // Set the new print settings. This function takes ownership of
   // |new_settings|.
-  void SetSettings(const DictionaryValue* const new_settings);
+  void SetSettings(const base::DictionaryValue* const new_settings);
 
   // Starts the printing loop. Every pages are printed as soon as the data is
   // available. Makes sure the new_document is the right one.
@@ -100,7 +102,7 @@ class PrintJobWorker : public base::Thread {
 
   // Called on the UI thread to update the print settings. This function takes
   // the ownership of |new_settings|.
-  void UpdatePrintSettings(const DictionaryValue* const new_settings);
+  void UpdatePrintSettings(const base::DictionaryValue* const new_settings);
 
   // Reports settings back to owner_.
   void GetSettingsDone(PrintingContext::Result result);

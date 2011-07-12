@@ -33,8 +33,12 @@
 #include "chrome/browser/sync/util/dbgq.h"
 #include "chrome/common/deprecated/event_sys.h"
 
-class DictionaryValue;
 struct PurgeInfo;
+
+namespace base {
+class DictionaryValue;
+class ListValue;
+}
 
 namespace sync_api {
 class ReadTransaction;
@@ -344,7 +348,7 @@ struct EntryKernel {
 
   // Dumps all kernel info into a DictionaryValue and returns it.
   // Transfers ownership of the DictionaryValue to the caller.
-  DictionaryValue* ToValue() const;
+  base::DictionaryValue* ToValue() const;
 
  private:
   // Tracks whether this entry needs to be saved to the database.
@@ -434,7 +438,7 @@ class Entry {
 
   // Dumps all entry info into a DictionaryValue and returns it.
   // Transfers ownership of the DictionaryValue to the caller.
-  DictionaryValue* ToValue() const;
+  base::DictionaryValue* ToValue() const;
 
  protected:  // Don't allow creation on heap, except by sync API wrappers.
   friend class sync_api::ReadNode;
@@ -567,7 +571,7 @@ typedef std::set<EntryKernelMutation, EntryKernelMutationLessByMetaHandle>
     EntryKernelMutationSet;
 
 // Caller owns the return value.
-ListValue* EntryKernelMutationSetToValue(
+base::ListValue* EntryKernelMutationSetToValue(
     const EntryKernelMutationSet& mutations);
 
 // How syncable indices & Indexers work.

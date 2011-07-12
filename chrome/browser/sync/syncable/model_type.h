@@ -17,8 +17,10 @@
 #include "base/logging.h"
 #include "base/time.h"
 
+namespace base {
 class ListValue;
 class StringValue;
+}
 
 namespace sync_pb {
 class EntitySpecifics;
@@ -116,7 +118,7 @@ std::string ModelTypeToString(ModelType model_type);
 // Handles all model types, and not just real ones.
 //
 // Caller takes ownership of returned value.
-StringValue* ModelTypeToValue(ModelType model_type);
+base::StringValue* ModelTypeToValue(ModelType model_type);
 
 std::string ModelTypeSetToString(const ModelTypeSet& model_types);
 
@@ -135,10 +137,10 @@ bool ModelTypeBitSetFromString(
 ModelTypeBitSet ModelTypeBitSetFromSet(const ModelTypeSet& set);
 
 // Caller takes ownership of returned list.
-ListValue* ModelTypeBitSetToValue(const ModelTypeBitSet& model_types);
+base::ListValue* ModelTypeBitSetToValue(const ModelTypeBitSet& model_types);
 
 // Caller takes ownership of returned list.
-ListValue* ModelTypeSetToValue(const ModelTypeSet& model_types);
+base::ListValue* ModelTypeSetToValue(const ModelTypeSet& model_types);
 
 // Returns a string corresponding to the syncable tag for this datatype.
 std::string ModelTypeToRootTag(ModelType type);

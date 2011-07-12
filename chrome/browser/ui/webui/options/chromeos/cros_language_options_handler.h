@@ -19,7 +19,7 @@ class CrosLanguageOptionsHandler : public LanguageOptionsHandlerCommon {
   virtual ~CrosLanguageOptionsHandler();
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(DictionaryValue* localized_strings);
+  virtual void GetLocalizedValues(base::DictionaryValue* localized_strings);
 
   // DOMMessageHandler implementation.
   virtual void RegisterMessages();
@@ -33,14 +33,14 @@ class CrosLanguageOptionsHandler : public LanguageOptionsHandlerCommon {
   //
   // Note that true in languageCodeSet does not mean anything. We just use
   // the dictionary as a set.
-  static ListValue* GetInputMethodList(
+  static base::ListValue* GetInputMethodList(
       const input_method::InputMethodDescriptors& descriptors);
 
   // Gets the list of languages from the given input descriptors.
   // The return value will look like:
   // [{'code': 'fi', 'displayName': 'Finnish', 'nativeDisplayName': 'suomi'},
   //  ...]
-  static ListValue* GetLanguageList(
+  static base::ListValue* GetLanguageList(
       const input_method::InputMethodDescriptors& descriptors);
 
  private:
@@ -49,19 +49,19 @@ class CrosLanguageOptionsHandler : public LanguageOptionsHandlerCommon {
   virtual void SetApplicationLocale(const std::string& language_code);
 
   // Called when the sign-out button is clicked.
-  void RestartCallback(const ListValue* args);
+  void RestartCallback(const base::ListValue* args);
 
   // Called when the input method is disabled.
   // |args| will contain the input method ID as string (ex. "mozc").
-  void InputMethodDisableCallback(const ListValue* args);
+  void InputMethodDisableCallback(const base::ListValue* args);
 
   // Called when the input method is enabled.
   // |args| will contain the input method ID as string (ex. "mozc").
-  void InputMethodEnableCallback(const ListValue* args);
+  void InputMethodEnableCallback(const base::ListValue* args);
 
   // Called when the input method options page is opened.
   // |args| will contain the input method ID as string (ex. "mozc").
-  void InputMethodOptionsOpenCallback(const ListValue* args);
+  void InputMethodOptionsOpenCallback(const base::ListValue* args);
 
   DISALLOW_COPY_AND_ASSIGN(CrosLanguageOptionsHandler);
 };

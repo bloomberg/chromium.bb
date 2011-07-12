@@ -12,7 +12,9 @@
 #include "chrome/test/webdriver/commands/webdriver_command.h"
 #include "googleurl/src/gurl.h"
 
+namespace base {
 class DictionaryValue;
+}
 
 namespace webdriver {
 
@@ -25,7 +27,7 @@ class Response;
 class CookieCommand : public WebDriverCommand {
  public:
   CookieCommand(const std::vector<std::string>& path_segments,
-                const DictionaryValue* const parameters);
+                const base::DictionaryValue* const parameters);
   virtual ~CookieCommand();
 
   virtual bool Init(Response* const response);
@@ -51,7 +53,7 @@ class CookieCommand : public WebDriverCommand {
 class NamedCookieCommand : public WebDriverCommand {
  public:
   NamedCookieCommand(const std::vector<std::string>& path_segments,
-                     const DictionaryValue* const parameters);
+                     const base::DictionaryValue* const parameters);
   virtual ~NamedCookieCommand();
 
   virtual bool Init(Response* const response);

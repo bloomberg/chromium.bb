@@ -24,9 +24,12 @@
 #include "googleurl/src/gurl.h"
 
 class ContentSettingsDetails;
-class DictionaryValue;
 class PrefService;
 class Profile;
+
+namespace base {
+class DictionaryValue;
+}
 
 class GeolocationContentSettingsMap
     : public base::RefCountedThreadSafe<GeolocationContentSettingsMap>,
@@ -109,7 +112,7 @@ class GeolocationContentSettingsMap
   // Sets the fields of |one_origin_settings| based on the values in
   // |dictionary|.
   static void GetOneOriginSettingsFromDictionary(
-      const DictionaryValue* dictionary,
+      const base::DictionaryValue* dictionary,
       OneOriginSettings* one_origin_settings);
 
   // The profile we're associated with.

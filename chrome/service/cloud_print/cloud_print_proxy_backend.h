@@ -13,7 +13,10 @@
 
 class CloudPrintProxyService;
 class GURL;
+
+namespace base {
 class DictionaryValue;
+}
 
 namespace gaia {
 struct OAuthClientInfo;
@@ -56,7 +59,7 @@ class CloudPrintProxyBackend {
   CloudPrintProxyBackend(
       CloudPrintProxyFrontend* frontend,
       const GURL& cloud_print_server_url,
-      const DictionaryValue* print_sys_settings,
+      const base::DictionaryValue* print_sys_settings,
       const gaia::OAuthClientInfo& oauth_client_info,
       bool enable_job_poll);
   ~CloudPrintProxyBackend();

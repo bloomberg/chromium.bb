@@ -18,7 +18,7 @@ class CookiesViewHandler : public OptionsPageUIHandler,
   virtual ~CookiesViewHandler();
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(DictionaryValue* localized_strings);
+  virtual void GetLocalizedValues(base::DictionaryValue* localized_strings);
   virtual void RegisterMessages();
 
   // CookiesTreeModel::Observer implementation.
@@ -40,17 +40,17 @@ class CookiesViewHandler : public OptionsPageUIHandler,
   void EnsureCookiesTreeModelCreated();
 
   // Updates search filter for cookies tree model.
-  void UpdateSearchResults(const ListValue* args);
+  void UpdateSearchResults(const base::ListValue* args);
 
   // Remove all sites data.
-  void RemoveAll(const ListValue* args);
+  void RemoveAll(const base::ListValue* args);
 
   // Remove selected sites data.
-  void Remove(const ListValue* args);
+  void Remove(const base::ListValue* args);
 
   // Get the tree node using the tree path info in |args| and call
   // SendChildren to pass back children nodes data to WebUI.
-  void LoadChildren(const ListValue* args);
+  void LoadChildren(const base::ListValue* args);
 
   // Get children nodes data and pass it to 'CookiesView.loadChildren' to
   // update the WebUI.

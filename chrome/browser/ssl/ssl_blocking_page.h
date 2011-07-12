@@ -13,8 +13,11 @@
 #include "base/string16.h"
 #include "chrome/browser/tab_contents/chrome_interstitial_page.h"
 
-class DictionaryValue;
 class SSLCertErrorHandler;
+
+namespace base {
+class DictionaryValue;
+}
 
 // This class is responsible for showing/hiding the interstitial page that is
 // shown when a certificate error happens.
@@ -30,7 +33,7 @@ class SSLBlockingPage : public ChromeInterstitialPage {
   // vector so that they can be used to resource the ssl_roadblock.html/
   // ssl_error.html files.
   // Note: there can be up to 5 strings in |extra_info|.
-  static void SetExtraInfo(DictionaryValue* strings,
+  static void SetExtraInfo(base::DictionaryValue* strings,
                            const std::vector<string16>& extra_info);
 
  protected:
