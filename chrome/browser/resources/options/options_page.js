@@ -915,8 +915,18 @@ cr.define('options', function() {
       }
       var isSubpage = !this.isOverlay;
 
-      if (!container || container.hidden != visible)
+      if (!container)
         return;
+
+      if (container.hidden != visible) {
+        if (visible) {
+          // If the container is set hidden and then immediately set visible
+          // again, the fadeCompleted_ callback would cause it to be erroneously
+          // hidden again. Removing the transparent tag avoids that.
+          container.classList.remove('transparent');
+        }
+        return;
+      }
 
       if (visible) {
         container.hidden = false;
