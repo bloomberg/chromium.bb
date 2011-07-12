@@ -11,7 +11,7 @@
 namespace fileapi {
 
 const char FileSystemUsageCache::kUsageFileName[] = ".usage";
-const char FileSystemUsageCache::kUsageFileHeader[] = "FSU1";
+const char FileSystemUsageCache::kUsageFileHeader[] = "FSU2";
 const int FileSystemUsageCache::kUsageFileHeaderSize = 4;
 const int FileSystemUsageCache::kUsageFileSize =
     sizeof(Pickle::Header) +
@@ -71,6 +71,7 @@ int FileSystemUsageCache::AtomicUpdateUsageByDelta(
     const FilePath& usage_file_path, int64 delta) {
   uint32 dirty = 0;
   int64 fs_usage;
+  // TODO(dmikurube): Make sure that usage_file_path is available.
   fs_usage = Read(usage_file_path, &dirty);
 
   return Write(usage_file_path, dirty, fs_usage + delta);

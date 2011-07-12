@@ -846,6 +846,20 @@ FilePath ObfuscatedFileSystemFileUtil::GetDirectoryForOrigin(
   return path;
 }
 
+bool ObfuscatedFileSystemFileUtil::DeleteDirectoryForOriginAndType(
+    const GURL& origin, FileSystemType type) {
+  FilePath path_for_origin = GetDirectoryForOriginAndType(origin, type, false);
+  if (!file_util::PathExists(path_for_origin))
+    return true;
+
+  // TODO(dmikurube): Consider the return value of DestroyDirectoryDatabase.
+  // We ignore its error now since 1) it doesn't matter the final result, and
+  // 2) it always returns false in Windows because of LevelDB's implementation.
+  // Information about failure would be useful for debugging.
+  DestroyDirectoryDatabase(origin, type);
+  return file_util::Delete(path_for_origin, true /* recursive */);
+}
+
 bool ObfuscatedFileSystemFileUtil::MigrateFromOldSandbox(
     const GURL& origin_url, FileSystemType type, const FilePath& src_root) {
   if (!DestroyDirectoryDatabase(origin_url, type))
@@ -1008,8 +1022,11 @@ bool ObfuscatedFileSystemFileUtil::DestroyDirectoryDatabase(
   }
   std::string key = GetOriginIdentifierFromURL(origin) + type_string;
   DirectoryMap::iterator iter = directories_.find(key);
-  if (iter != directories_.end())
+  if (iter != directories_.end()) {
+    FileSystemDirectoryDatabase* database = iter->second;
     directories_.erase(iter);
+    delete database;
+  }
 
   FilePath path = GetDirectoryForOriginAndType(origin, type, false);
   if (path.empty())

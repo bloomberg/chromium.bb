@@ -15,6 +15,7 @@
 #include "base/stringprintf.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
+#include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_usage_cache.h"
@@ -478,13 +479,12 @@ FilePath SandboxMountPointProvider::GetBaseDirectoryForOriginAndType(
 bool SandboxMountPointProvider::DeleteOriginDataOnFileThread(
     QuotaManagerProxy* proxy, const GURL& origin_url,
     fileapi::FileSystemType type) {
-  FilePath path_for_origin =
-      GetBaseDirectoryForOriginAndType(origin_url, type, false);
-  if (!file_util::PathExists(path_for_origin))
-    return true;
+  MigrateIfNeeded(sandbox_file_util_, old_base_path());
 
   int64 usage = GetOriginUsageOnFileThread(origin_url, type);
-  bool result = file_util::Delete(path_for_origin, true /* recursive */);
+
+  bool result =
+      sandbox_file_util_->DeleteDirectoryForOriginAndType(origin_url, type);
   if (result && proxy) {
     proxy->NotifyStorageModified(
         quota::QuotaClient::kFileSystem,
@@ -529,8 +529,7 @@ int64 SandboxMountPointProvider::GetOriginUsageOnFileThread(
          type == fileapi::kFileSystemTypePersistent);
   FilePath base_path =
       GetBaseDirectoryForOriginAndType(origin_url, type, false);
-  if (base_path.empty() || !file_util::DirectoryExists(base_path))
-    return 0;
+  if (base_path.empty() || !file_util::DirectoryExists(base_path)) return 0;
   FilePath usage_file_path =
       base_path.AppendASCII(FileSystemUsageCache::kUsageFileName);
 
@@ -544,11 +543,35 @@ int64 SandboxMountPointProvider::GetOriginUsageOnFileThread(
   }
   // The usage cache has not been initialized or the cache is dirty.
   // Get the directory size now and update the cache.
-  if (FileSystemUsageCache::Exists(usage_file_path))
-    FileSystemUsageCache::Delete(usage_file_path);
-  int64 usage = file_util::ComputeDirectorySize(base_path);
-  // The result of ComputeDirectorySize does not include .usage file size.
-  usage += FileSystemUsageCache::kUsageFileSize;
+  FileSystemUsageCache::Delete(usage_file_path);
+
+  FileSystemOperationContext context(NULL, sandbox_file_util_);
+  context.set_src_origin_url(origin_url);
+  context.set_src_type(type);
+  scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> enumerator(
+      sandbox_file_util_->CreateFileEnumerator(&context, FilePath()));
+
+  FilePath file_path_each;
+  int64 usage = 0;
+
+  // TODO(ericu): This could be made much more efficient if the
+  // AbstractFileEnumerator also had an interface to tell you the size of the
+  // file.  ObfuscatedFileSystemFileEnumerator has already looked up the data,
+  // and it's a big waste to look it up again.  The other implementers could
+  // easily add it on-demand, so as not to waste time when it's not needed.
+  while (!(file_path_each = enumerator->Next()).empty()) {
+    base::PlatformFileInfo file_info;
+    FilePath platform_file_path;
+    if (!enumerator->IsDirectory()) {
+      base::PlatformFileError error = sandbox_file_util_->GetFileInfo(
+          &context, file_path_each, &file_info, &platform_file_path);
+      if (error != base::PLATFORM_FILE_OK)
+        NOTREACHED();
+      else
+        usage += file_info.size;
+    }
+    // TODO(dmikurube): Add some cost as described at crbug.com/86114.
+  }
   // This clears the dirty flag too.
   FileSystemUsageCache::UpdateUsage(usage_file_path, usage);
   return usage;
@@ -575,6 +598,7 @@ void SandboxMountPointProvider::UpdateOriginUsageOnFileThread(
   FilePath usage_file_path = GetUsageCachePathForOriginAndType(
       origin_url, type);
   DCHECK(!usage_file_path.empty());
+  // TODO(dmikurbe): Make sure that usage_file_path is available.
   FileSystemUsageCache::AtomicUpdateUsageByDelta(usage_file_path, delta);
   if (proxy) {
     proxy->NotifyStorageModified(

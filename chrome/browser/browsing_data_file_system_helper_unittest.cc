@@ -28,7 +28,7 @@ const GURL kOrigin1(kTestOrigin1);
 const GURL kOrigin2(kTestOrigin2);
 const GURL kOrigin3(kTestOrigin3);
 
-const int kEmptyFileSystemSize = fileapi::FileSystemUsageCache::kUsageFileSize;
+const int kEmptyFileSystemSize = 0;
 
 typedef std::vector<BrowsingDataFileSystemHelper::FileSystemInfo>
     FileSystemInfoVector;

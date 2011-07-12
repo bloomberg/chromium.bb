@@ -139,6 +139,10 @@ class ObfuscatedFileSystemFileUtil : public FileSystemFileUtil,
   // contain both the filesystem type subdirectories.
   FilePath GetDirectoryForOrigin(const GURL& origin, bool create);
 
+  // Deletes the topmost directory specific to this origin and type.  This will
+  // delete its directory database.
+  bool DeleteDirectoryForOriginAndType(const GURL& origin, FileSystemType type);
+
   // This will migrate a filesystem from the old passthrough sandbox into the
   // new obfuscated one.  It won't obfuscate the old filenames [it will maintain
   // the old structure, but move it to a new root], but any new files created
@@ -178,6 +182,10 @@ class ObfuscatedFileSystemFileUtil : public FileSystemFileUtil,
   virtual AbstractFileEnumerator* CreateFileEnumerator(
       FileSystemOperationContext* context,
       const FilePath& root_path) OVERRIDE;
+
+  // Deletes a directory database from the database list in the ObfuscatedFSFU
+  // and destroys the database on the disk.
+  bool DestroyDirectoryDatabase(const GURL& origin, FileSystemType type);
 
  private:
   typedef FileSystemDirectoryDatabase::FileId FileId;
@@ -222,7 +230,6 @@ class ObfuscatedFileSystemFileUtil : public FileSystemFileUtil,
       const GURL& origin_url, FileSystemType type, bool create);
   void MarkUsed();
   void DropDatabases();
-  bool DestroyDirectoryDatabase(const GURL& origin, FileSystemType type);
   bool InitOriginDatabase(bool create);
 
   typedef std::map<std::string, FileSystemDirectoryDatabase*> DirectoryMap;
