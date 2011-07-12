@@ -42,6 +42,10 @@ class InputMethodBase : public InputMethod,
   // correctly.
   virtual void OnBlur() OVERRIDE;
 
+  // If a derived class overrides this method, it should call parent's
+  // implementation.
+  virtual void OnTextInputTypeChanged(View* view) OVERRIDE;
+
   virtual TextInputClient* GetTextInputClient() const OVERRIDE;
   virtual ui::TextInputType GetTextInputType() const OVERRIDE;
 

@@ -284,6 +284,8 @@
         'ime/input_method_win.cc',
         'ime/input_method_win.h',
         'ime/text_input_client.h',
+        'ime/text_input_type_tracker.h',
+        'ime/text_input_type_tracker.cc',
         'layer_helper.cc',
         'layer_helper.h',
         'layer_property_setter.cc',

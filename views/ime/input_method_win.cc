@@ -72,6 +72,7 @@ void InputMethodWin::OnTextInputTypeChanged(View* view) {
     ime_input_.CancelIME(hwnd());
     UpdateIMEState();
   }
+  InputMethodBase::OnTextInputTypeChanged(view);
 }
 
 void InputMethodWin::OnCaretBoundsChanged(View* view) {

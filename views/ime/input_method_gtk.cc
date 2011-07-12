@@ -161,6 +161,7 @@ void InputMethodGtk::OnTextInputTypeChanged(View* view) {
     DCHECK(!composing_text_);
     UpdateContextFocusState();
   }
+  InputMethodBase::OnTextInputTypeChanged(view);
 }
 
 void InputMethodGtk::OnCaretBoundsChanged(View* view) {

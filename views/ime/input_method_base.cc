@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "views/ime/input_method_base.h"
+#include "views/ime/text_input_type_tracker.h"
 #include "views/view.h"
 #include "views/widget/widget.h"
 
@@ -47,10 +48,21 @@ void InputMethodBase::Init(Widget* widget) {
 
 void InputMethodBase::OnFocus() {
   widget_focused_ = true;
+  TextInputTypeTracker::GetInstance()->OnTextInputTypeChanged(
+      GetTextInputType(), widget_);
 }
 
 void InputMethodBase::OnBlur() {
   widget_focused_ = false;
+  TextInputTypeTracker::GetInstance()->OnTextInputTypeChanged(
+      GetTextInputType(), widget_);
+}
+
+void InputMethodBase::OnTextInputTypeChanged(View* view) {
+  if (IsViewFocused(view)) {
+    TextInputTypeTracker::GetInstance()->OnTextInputTypeChanged(
+        GetTextInputType(), widget_);
+  }
 }
 
 TextInputClient* InputMethodBase::GetTextInputClient() const {
@@ -68,6 +80,11 @@ void InputMethodBase::FocusWillChange(View* focused_before, View* focused) {
   FocusedViewWillChange();
   focused_view_ = focused;
   FocusedViewDidChange();
+
+  if (widget_focused_) {
+    TextInputTypeTracker::GetInstance()->OnTextInputTypeChanged(
+        GetTextInputType(), widget_);
+  }
 }
 
 bool InputMethodBase::IsViewFocused(View* view) const {

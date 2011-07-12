@@ -416,6 +416,7 @@ void InputMethodIBus::OnTextInputTypeChanged(View* view) {
     ResetContext();
     UpdateContextFocusState();
   }
+  InputMethodBase::OnTextInputTypeChanged(view);
 }
 
 void InputMethodIBus::OnCaretBoundsChanged(View* view) {
