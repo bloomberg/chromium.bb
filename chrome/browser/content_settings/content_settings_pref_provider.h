@@ -45,7 +45,7 @@ class PrefDefaultProvider : public DefaultProviderInterface,
                                     ContentSetting setting);
   virtual bool DefaultSettingIsManaged(ContentSettingsType content_type) const;
 
-  void ShutdownOnUIThread();
+  virtual void ShutdownOnUIThread();
 
   static void RegisterUserPrefs(PrefService* prefs);
 
