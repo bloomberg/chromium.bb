@@ -96,7 +96,7 @@
     </enum>
 
     <event name="token_visual">
-      <arg name="id" type="new_id" interface="wl_object"/>
+      <arg name="visual" type="new_id" interface="wl_visual"/>
       <arg name="token" type="uint"/>
     </event>
   </interface>
