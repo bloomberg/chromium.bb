@@ -88,19 +88,19 @@ class WebUILoginView : public views::View,
 
   StatusAreaView* status_area_;
 
+  Profile* profile_;
+
+  // DOMView for rendering a webpage as a webui login.
+  DOMView* webui_login_;
+
  private:
   // Overridden from TabContentsDelegate.
   virtual bool HandleContextMenu(const ContextMenuParams& params) OVERRIDE;
-
-  Profile* profile_;
 
   // Window that contains status area.
   // TODO(nkostylev): Temporary solution till we have
   // RenderWidgetHostViewViews working.
   views::Widget* status_window_;
-
-  // DOMView for rendering a webpage as a webui login.
-  DOMView* webui_login_;
 
   // Proxy settings dialog that can be invoked from network menu.
   scoped_ptr<LoginHtmlDialog> proxy_settings_dialog_;

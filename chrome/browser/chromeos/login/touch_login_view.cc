@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/touch_login_view.h"
 
+#include "chrome/browser/chromeos/status/status_area_view.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_views.h"
 #include "chrome/browser/ui/touch/frame/keyboard_container_view.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_view_touch.h"

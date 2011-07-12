@@ -34,8 +34,8 @@ const int WebUILoginView::kStatusAreaCornerPadding = 5;
 WebUILoginView::WebUILoginView()
     : status_area_(NULL),
       profile_(NULL),
-      status_window_(NULL),
-      webui_login_(NULL) {
+      webui_login_(NULL),
+      status_window_(NULL) {
 }
 
 WebUILoginView::~WebUILoginView() {
