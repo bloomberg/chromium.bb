@@ -433,6 +433,7 @@ ContentSetting PrefProvider::GetContentSetting(
   // TODO(markusheintz): I don't like this. I'd like to have an
   // IncognitoProviderWrapper that wrapps the pref provider for a host content
   // settings map of an incognito profile.
+  base::AutoLock auto_lock(lock_);
   Value* incognito_value = incognito_value_map_.GetValue(
       primary_url,
       secondary_url,
