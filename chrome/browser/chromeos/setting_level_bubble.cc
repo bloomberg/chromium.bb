@@ -113,8 +113,7 @@ void SettingLevelBubble::ShowBubble(int percent) {
         kBubbleXRatio * (bounds.width() - view_size.width());
     const int y = bounds.height() - view_size.height() / 2 - kBubbleBottomGap;
 
-    // ShowFocusless doesn't set ESC accelerator. The Esc key is handled in
-    // SystemKeyEventListener instead.
+    // ShowFocusless doesn't set ESC accelerator.
     bubble_ = Bubble::ShowFocusless(widget,  // parent
                                     gfx::Rect(x, y, 0, 20),
                                     BubbleBorder::FLOAT,
@@ -137,10 +136,6 @@ void SettingLevelBubble::ShowBubble(int percent) {
 void SettingLevelBubble::HideBubble() {
   if (bubble_)
     bubble_->Close();
-}
-
-bool SettingLevelBubble::IsShown() const {
-  return bubble_ != NULL;
 }
 
 void SettingLevelBubble::UpdateWithoutShowingBubble(int percent) {

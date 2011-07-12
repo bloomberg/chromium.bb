@@ -25,7 +25,6 @@ class SettingLevelBubble : public BubbleDelegate,
  public:
   void ShowBubble(int percent);
   void HideBubble();
-  bool IsShown() const;
 
   // Update the bubble's current level without showing the bubble onscreen.
   // We _do_ still animate the level moving to |percent| in case the bubble is

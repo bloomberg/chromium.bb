@@ -72,7 +72,7 @@ Bubble* Bubble::ShowFocusless(
     views::View* contents,
     BubbleDelegate* delegate,
     bool show_while_screen_is_locked) {
-  Bubble* bubble = new Bubble(views::Widget::InitParams::TYPE_WINDOW_FRAMELESS,
+  Bubble* bubble = new Bubble(views::Widget::InitParams::TYPE_POPUP,
                               show_while_screen_is_locked);
   bubble->InitBubble(parent, position_relative_to, arrow_location,
                      contents, delegate);
