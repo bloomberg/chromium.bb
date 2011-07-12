@@ -36,3 +36,6 @@ BalloonControllerTest.SizesTest
 
 # http://crbug.com/87839
 LinkInfoBarControllerTest.ShowAndClickLink
+
+# htt://crbug.com/89030
+ConnectionTesterTest.DeleteWhileInProgress
