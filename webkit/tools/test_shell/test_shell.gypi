@@ -357,6 +357,7 @@
         '<(DEPTH)/testing/gmock.gyp:gmock',
         '<(DEPTH)/testing/gtest.gyp:gtest',
         '<(DEPTH)/third_party/leveldb/leveldb.gyp:leveldb',
+        '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
       ],
       'sources': [
         '../../../skia/ext/convolver_unittest.cc',
