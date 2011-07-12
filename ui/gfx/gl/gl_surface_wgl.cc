@@ -260,7 +260,8 @@ bool NativeViewGLSurfaceWGL::SwapBuffers() {
 
 gfx::Size NativeViewGLSurfaceWGL::GetSize() {
   RECT rect;
-  DCHECK(GetClientRect(child_window_, &rect));
+  BOOL result = GetClientRect(child_window_, &rect);
+  DCHECK(result);
   return gfx::Size(rect.right - rect.left, rect.bottom - rect.top);
 }
 
