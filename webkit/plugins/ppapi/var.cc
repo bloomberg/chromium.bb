@@ -107,7 +107,7 @@ bool PPVarToNPVariantNoCopy(PP_Var var, NPVariant* result) {
 class ObjectAccessorTryCatch : public TryCatch {
  public:
   ObjectAccessorTryCatch(PP_Var object, PP_Var* exception)
-      : TryCatch(NULL, exception),
+      : TryCatch(0, exception),
         object_(ObjectVar::FromPPVar(object)) {
     if (!object_) {
       // No object or an invalid object was given. This means we have no module
