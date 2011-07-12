@@ -389,6 +389,7 @@ void PrintWebViewHelper::PrintPreview(WebKit::WebFrame* frame,
 }
 
 void PrintWebViewHelper::DidFinishPrinting(PrintingResult result) {
+  bool store_print_pages_params = true;
   if (result == FAIL_PRINT) {
     DisplayPrintJobError();
 
@@ -398,6 +399,7 @@ void PrintWebViewHelper::DidFinishPrinting(PrintingResult result) {
     }
   } else if (result == FAIL_PREVIEW) {
     int cookie = print_pages_params_->params.document_cookie;
+    store_print_pages_params = false;
     if (notify_browser_of_print_failure_) {
       Send(new PrintHostMsg_PrintPreviewFailed(routing_id(), cookie));
     } else {
@@ -410,7 +412,12 @@ void PrintWebViewHelper::DidFinishPrinting(PrintingResult result) {
     print_web_view_ = NULL;
   }
 
-  old_print_pages_params_ .reset(print_pages_params_.release());
+  if (store_print_pages_params) {
+    old_print_pages_params_.reset(print_pages_params_.release());
+  } else {
+    print_pages_params_.reset();
+    old_print_pages_params_.reset();
+  }
 
   notify_browser_of_print_failure_ = true;
 }
