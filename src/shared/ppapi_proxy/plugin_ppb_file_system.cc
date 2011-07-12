@@ -49,7 +49,7 @@ PP_Bool IsFileSystem(PP_Resource resource) {
   if (NACL_SRPC_RESULT_OK != srpc_result) {
     return PP_FALSE;
   }
-  return pp::BoolToPPBool(is_file_system);
+  return PP_FromBool(is_file_system);
 }
 
 int32_t Open(PP_Resource file_system,

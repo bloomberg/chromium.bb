@@ -217,7 +217,7 @@ PP_Bool IsAudio(PP_Resource resource) {
   if (NACL_SRPC_RESULT_OK != srpc_result) {
     return PP_FALSE;
   }
-  return pp::BoolToPPBool(success);
+  return PP_FromBool(success);
 }
 
 PP_Resource GetCurrentConfig(PP_Resource audio) {
@@ -291,10 +291,10 @@ PP_Bool StopPlayback(PP_Resource audio_resource) {
     return PP_FALSE;
   }
   if (audio->state() != AUDIO_PLAYING) {
-    return pp::BoolToPPBool(success);
+    return PP_FromBool(success);
   }
   // stop and join the audio thread
-  return pp::BoolToPPBool(audio->StopAudioThread());
+  return PP_FromBool(audio->StopAudioThread());
 }
 }  // namespace
 

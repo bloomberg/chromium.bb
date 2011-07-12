@@ -228,7 +228,7 @@ class FindAdapter : public pp::Find_Dev {
       PP_Bool pp_success =
           ppp_find_->StartFind(plugin_->pp_instance(),
                                text.c_str(),
-                               pp::BoolToPPBool(case_sensitive));
+                               PP_FromBool(case_sensitive));
       return pp_success == PP_TRUE;
     }
     return false;
@@ -237,7 +237,7 @@ class FindAdapter : public pp::Find_Dev {
   void SelectFindResult(bool forward) {
     if (ppp_find_ != NULL) {
       ppp_find_->SelectFindResult(plugin_->pp_instance(),
-                                  pp::BoolToPPBool(forward));
+                                  PP_FromBool(forward));
     }
   }
 
@@ -324,7 +324,7 @@ class SelectionAdapter : public pp::Selection_Dev {
   pp::Var GetSelectedText(bool html) {
     if (ppp_selection_ != NULL) {
       PP_Var var = ppp_selection_->GetSelectedText(plugin_->pp_instance(),
-                                                   pp::BoolToPPBool(html));
+                                                   PP_FromBool(html));
       return pp::Var(pp::Var::PassRef(), var);
     }
     return pp::Var();
@@ -395,7 +395,7 @@ class ZoomAdapter : public pp::Zoom_Dev {
     if (ppp_zoom_ != NULL) {
       ppp_zoom_->Zoom(plugin_->pp_instance(),
                       factor,
-                      pp::BoolToPPBool(text_only));
+                      PP_FromBool(text_only));
     }
   }
 
@@ -651,7 +651,7 @@ void PluginPpapi::DidChangeFocus(bool has_focus) {
     return;
   } else {
     ppapi_proxy_->ppp_instance_interface()->DidChangeFocus(
-        pp_instance(), pp::BoolToPPBool(has_focus));
+        pp_instance(), PP_FromBool(has_focus));
   }
 }
 

@@ -98,7 +98,7 @@ PP_TimeTicks GetTimeTicks() {
 
 PP_Bool IsMainThread() {
   DebugPrintf("PPB_Core::IsMainThread\n");
-  return pp::BoolToPPBool(is_main_thread);
+  return PP_FromBool(is_main_thread);
 }
 
 void CallOnMainThread(int32_t delay_in_milliseconds,
