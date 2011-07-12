@@ -30,6 +30,16 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
+
+namespace {
+
+static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
+  int schemes = URLPattern::SCHEME_ALL;
+  extent->AddPattern(URLPattern(schemes, pattern));
+}
+
+}
+
 namespace errors = extension_manifest_errors;
 namespace keys = extension_manifest_keys;
 
@@ -302,11 +312,10 @@ TEST_F(ExtensionManifestTest, OldUnlimitedStoragePermission) {
 
 TEST_F(ExtensionManifestTest, ValidApp) {
   scoped_refptr<Extension> extension(LoadAndExpectSuccess("valid_app.json"));
-  ASSERT_EQ(2u, extension->web_extent().patterns().size());
-  EXPECT_EQ("http://www.google.com/mail/*",
-            extension->web_extent().patterns()[0].GetAsString());
-  EXPECT_EQ("http://www.google.com/foobar/*",
-            extension->web_extent().patterns()[1].GetAsString());
+  URLPatternSet expected_patterns;
+  AddPattern(&expected_patterns, "http://www.google.com/mail/*");
+  AddPattern(&expected_patterns, "http://www.google.com/foobar/*");
+  EXPECT_EQ(expected_patterns, extension->web_extent());
   EXPECT_EQ(extension_misc::LAUNCH_TAB, extension->launch_container());
   EXPECT_EQ("http://www.google.com/mail/", extension->launch_web_url());
 }
@@ -365,7 +374,7 @@ TEST_F(ExtensionManifestTest, AppWebUrls) {
       LoadAndExpectSuccess("web_urls_default.json"));
   ASSERT_EQ(1u, extension->web_extent().patterns().size());
   EXPECT_EQ("*://www.google.com/*",
-            extension->web_extent().patterns()[0].GetAsString());
+            extension->web_extent().patterns().begin()->GetAsString());
 }
 
 TEST_F(ExtensionManifestTest, AppLaunchContainer) {
@@ -692,7 +701,7 @@ TEST_F(ExtensionManifestTest, DefaultPathForExtent) {
       LoadAndExpectSuccess("default_path_for_extent.json"));
 
   ASSERT_EQ(1u, extension->web_extent().patterns().size());
-  EXPECT_EQ("/*", extension->web_extent().patterns()[0].path());
+  EXPECT_EQ("/*", extension->web_extent().patterns().begin()->path());
   EXPECT_TRUE(extension->web_extent().MatchesURL(
       GURL("http://www.google.com/monkey")));
 }
@@ -790,8 +799,8 @@ TEST_F(ExtensionManifestTest, FileBrowserHandlers) {
       extension->file_browser_handlers()->at(0).get();
   EXPECT_EQ(action->title(), "Default title");
   EXPECT_EQ(action->icon_path(), "icon.png");
-  const URLPatternList& patterns = action->file_url_patterns();
-  ASSERT_EQ(patterns.size(), 1U);
+  const URLPatternSet& patterns = action->file_url_patterns();
+  ASSERT_EQ(patterns.patterns().size(), 1U);
   ASSERT_TRUE(action->MatchesURL(
       GURL("filesystem:chrome-extension://foo/local/test.txt")));
 }

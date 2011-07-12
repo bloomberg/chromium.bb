@@ -99,7 +99,7 @@ bool ParamTraits<URLPattern>::Read(const Message* m, void** iter,
       !ReadParam(m, iter, &spec))
     return false;
 
-  p->set_valid_schemes(valid_schemes);
+  p->SetValidSchemes(valid_schemes);
   return URLPattern::PARSE_SUCCESS == p->Parse(spec, URLPattern::IGNORE_PORTS);
 }
 
@@ -113,14 +113,15 @@ void ParamTraits<URLPatternSet>::Write(Message* m, const param_type& p) {
 
 bool ParamTraits<URLPatternSet>::Read(const Message* m, void** iter,
                                         param_type* p) {
-  URLPatternList patterns;
+  URLPatternSet patterns;
   bool success =
       ReadParam(m, iter, &patterns);
   if (!success)
     return false;
 
-  for (size_t i = 0; i < patterns.size(); ++i)
-    p->AddPattern(patterns[i]);
+  for (URLPatternSet::const_iterator i = patterns.begin();
+       i != patterns.end(); ++i)
+    p->AddPattern(*i);
   return true;
 }
 

@@ -114,23 +114,6 @@ static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
   extent->AddPattern(URLPattern(schemes, pattern));
 }
 
-static void AssertEqualExtents(const URLPatternSet& extent1,
-                               const URLPatternSet& extent2) {
-  URLPatternList patterns1 = extent1.patterns();
-  URLPatternList patterns2 = extent2.patterns();
-  std::set<std::string> strings1;
-  EXPECT_EQ(patterns1.size(), patterns2.size());
-
-  for (size_t i = 0; i < patterns1.size(); ++i)
-    strings1.insert(patterns1.at(i).GetAsString());
-
-  std::set<std::string> strings2;
-  for (size_t i = 0; i < patterns2.size(); ++i)
-    strings2.insert(patterns2.at(i).GetAsString());
-
-  EXPECT_EQ(strings1, strings2);
-}
-
 }  // namespace
 
 class MockExtensionProvider : public ExternalExtensionProviderInterface {
@@ -1000,16 +983,14 @@ TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectorySuccess) {
   ValidateIntegerPref(good2, "state", Extension::ENABLED);
   ValidateIntegerPref(good2, "location", Extension::INTERNAL);
 
+  URLPatternSet expected_patterns;
+  AddPattern(&expected_patterns, "file:///*");
+  AddPattern(&expected_patterns, "http://*.google.com/*");
+  AddPattern(&expected_patterns, "https://*.google.com/*");
   const Extension* extension = loaded_[0];
   const UserScriptList& scripts = extension->content_scripts();
   ASSERT_EQ(2u, scripts.size());
-  EXPECT_EQ(3u, scripts[0].url_patterns().size());
-  EXPECT_EQ("file:///*",
-            scripts[0].url_patterns()[0].GetAsString());
-  EXPECT_EQ("http://*.google.com/*",
-            scripts[0].url_patterns()[1].GetAsString());
-  EXPECT_EQ("https://*.google.com/*",
-            scripts[0].url_patterns()[2].GetAsString());
+  EXPECT_EQ(expected_patterns, scripts[0].url_patterns());
   EXPECT_EQ(2u, scripts[0].js_scripts().size());
   ExtensionResource resource00(extension->id(),
                                scripts[0].js_scripts()[0].extension_root(),
@@ -1024,8 +1005,9 @@ TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectorySuccess) {
   ASSERT_TRUE(file_util::AbsolutePath(&expected_path));
   EXPECT_TRUE(resource01.ComparePathWithDefault(expected_path));
   EXPECT_TRUE(extension->plugins().empty());
-  EXPECT_EQ(1u, scripts[1].url_patterns().size());
-  EXPECT_EQ("http://*.news.com/*", scripts[1].url_patterns()[0].GetAsString());
+  EXPECT_EQ(1u, scripts[1].url_patterns().patterns().size());
+  EXPECT_EQ("http://*.news.com/*",
+            scripts[1].url_patterns().begin()->GetAsString());
   ExtensionResource resource10(extension->id(),
                                scripts[1].js_scripts()[0].extension_root(),
                                scripts[1].js_scripts()[0].relative_path());
@@ -1033,11 +1015,11 @@ TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectorySuccess) {
       extension->path().AppendASCII("js_files").AppendASCII("script3.js");
   ASSERT_TRUE(file_util::AbsolutePath(&expected_path));
   EXPECT_TRUE(resource10.ComparePathWithDefault(expected_path));
-  const URLPatternList permissions =
-      extension->permission_set()->explicit_hosts().patterns();
-  ASSERT_EQ(2u, permissions.size());
-  EXPECT_EQ("http://*.google.com/*", permissions[0].GetAsString());
-  EXPECT_EQ("https://*.google.com/*", permissions[1].GetAsString());
+
+  expected_patterns.ClearPatterns();
+  AddPattern(&expected_patterns, "http://*.google.com/*");
+  AddPattern(&expected_patterns, "https://*.google.com/*");
+  EXPECT_EQ(expected_patterns, extension->permission_set()->explicit_hosts());
 
   EXPECT_EQ(std::string(good1), loaded_[1]->id());
   EXPECT_EQ(std::string("My extension 2"), loaded_[1]->name());
@@ -1402,7 +1384,7 @@ TEST_F(ExtensionServiceTest, GrantedPermissions) {
   EXPECT_FALSE(known_perms->IsEmpty());
   EXPECT_EQ(expected_api_perms, known_perms->apis());
   EXPECT_FALSE(known_perms->HasEffectiveFullAccess());
-  AssertEqualExtents(expected_host_perms, known_perms->effective_hosts());
+  EXPECT_EQ(expected_host_perms, known_perms->effective_hosts());
 }
 
 #if !defined(OS_CHROMEOS)
@@ -1497,8 +1479,7 @@ TEST_F(ExtensionServiceTest, GrantedAPIAndHostPermissions) {
   ASSERT_FALSE(current_perms->IsEmpty());
   ASSERT_FALSE(current_perms->HasEffectiveFullAccess());
   ASSERT_EQ(expected_api_permissions, current_perms->apis());
-  AssertEqualExtents(expected_host_permissions,
-                     current_perms->effective_hosts());
+  ASSERT_EQ(expected_host_permissions, current_perms->effective_hosts());
 
   // Tests that the extension is disabled when a host permission is missing from
   // the extension's granted host permissions preference. (This simulates
@@ -1539,8 +1520,7 @@ TEST_F(ExtensionServiceTest, GrantedAPIAndHostPermissions) {
   ASSERT_FALSE(current_perms->IsEmpty());
   ASSERT_FALSE(current_perms->HasEffectiveFullAccess());
   ASSERT_EQ(expected_api_permissions, current_perms->apis());
-  AssertEqualExtents(expected_host_permissions,
-                     current_perms->effective_hosts());
+  ASSERT_EQ(expected_host_permissions, current_perms->effective_hosts());
 }
 
 // Test Packaging and installing an extension.

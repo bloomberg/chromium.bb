@@ -106,10 +106,10 @@ static DictionaryValue* CreateExtensionInfo(const Extension& extension,
   ListValue* host_permission_list = new ListValue();
   if (!extension.is_hosted_app()) {
     // Skip host permissions for hosted apps.
-    const URLPatternList host_perms =
-        extension.permission_set()->explicit_hosts().patterns();
-    if (!host_perms.empty()) {
-      URLPatternList::const_iterator host_perms_iter;
+    const URLPatternSet host_perms =
+        extension.permission_set()->explicit_hosts();
+    if (!host_perms.is_empty()) {
+      URLPatternSet::const_iterator host_perms_iter;
       for (host_perms_iter = host_perms.begin();
            host_perms_iter != host_perms.end();
            ++host_perms_iter) {

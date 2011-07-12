@@ -51,7 +51,7 @@ class ExtensionPermissionMessage {
   // simply a convenience method around the constructor, since the messages
   // change depending on what hosts are present.
   static ExtensionPermissionMessage CreateFromHostList(
-      const std::vector<std::string>& hosts);
+      const std::set<std::string>& hosts);
 
   // Creates the corresponding permission message.
   ExtensionPermissionMessage(ID id, const string16& message);
@@ -292,7 +292,7 @@ class ExtensionPermissionSet {
   // Gets a list of the distinct hosts for displaying to the user.
   // NOTE: do not use this for comparing permissions, since this disgards some
   // information.
-  std::vector<std::string> GetDistinctHostsForDisplay() const;
+  std::set<std::string> GetDistinctHostsForDisplay() const;
 
   // Gets the localized permission messages that represent this set.
   ExtensionPermissionMessages GetPermissionMessages() const;
@@ -348,8 +348,8 @@ class ExtensionPermissionSet {
   FRIEND_TEST_ALL_PREFIXES(ExtensionPermissionSetTest,
                            HasLessHostPrivilegesThan);
 
-  static std::vector<std::string> GetDistinctHosts(
-      const URLPatternList& host_patterns, bool include_rcd);
+  static std::set<std::string> GetDistinctHosts(
+      const URLPatternSet& host_patterns, bool include_rcd);
 
   // Initializes the set based on |extension|'s manifest data.
   void InitImplicitExtensionPermissions(const Extension* extension);

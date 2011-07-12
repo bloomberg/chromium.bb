@@ -394,7 +394,7 @@ bool ExtensionPrefs::ReadExtensionPrefURLPatternSet(
       return false;
     }
     if (!allow_file_access && pattern.MatchesScheme(chrome::kFileScheme)) {
-      pattern.set_valid_schemes(
+      pattern.SetValidSchemes(
           pattern.valid_schemes() & ~URLPattern::SCHEME_FILE);
     }
     result->AddPattern(pattern);
@@ -408,8 +408,8 @@ void ExtensionPrefs::SetExtensionPrefURLPatternSet(
     const std::string& pref_key,
     const URLPatternSet& new_value) {
   ListValue* value = new ListValue();
-  for (URLPatternList::const_iterator i = new_value.patterns().begin();
-       i != new_value.patterns().end(); ++i)
+  for (URLPatternSet::const_iterator i = new_value.begin();
+       i != new_value.end(); ++i)
     value->AppendIfNotPresent(Value::CreateStringValue(i->GetAsString()));
 
   UpdateExtensionPref(extension_id, pref_key, value);

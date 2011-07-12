@@ -4080,15 +4080,15 @@ void TestingAutomationProvider::GetThemeInfo(
 namespace {
 
 ListValue* GetHostPermissions(const Extension* ext, bool effective_perm) {
-  URLPatternList pattern_list;
+  URLPatternSet pattern_set;
   if (effective_perm)
-    pattern_list = ext->GetEffectiveHostPermissions().patterns();
+    pattern_set = ext->GetEffectiveHostPermissions();
   else
-    pattern_list = ext->permission_set()->explicit_hosts().patterns();
+    pattern_set = ext->permission_set()->explicit_hosts();
 
   ListValue* permissions = new ListValue;
-  for (URLPatternList::const_iterator perm = pattern_list.begin();
-       perm != pattern_list.end(); ++perm) {
+  for (URLPatternSet::const_iterator perm = pattern_set.begin();
+       perm != pattern_set.end(); ++perm) {
     permissions->Append(new StringValue(perm->GetAsString()));
   }
 

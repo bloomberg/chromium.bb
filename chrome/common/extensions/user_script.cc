@@ -121,9 +121,9 @@ void UserScript::Pickle(::Pickle* pickle) const {
   }
 
   // Write url patterns.
-  URLPatternList pattern_list = url_set_.patterns();
-  pickle->WriteSize(pattern_list.size());
-  for (URLPatternList::const_iterator pattern = pattern_list.begin();
+  URLPatternSet pattern_list = url_set_;
+  pickle->WriteSize(pattern_list.patterns().size());
+  for (URLPatternSet::const_iterator pattern = pattern_list.begin();
        pattern != pattern_list.end(); ++pattern) {
     pickle->WriteInt(pattern->valid_schemes());
     pickle->WriteString(pattern->GetAsString());
@@ -191,11 +191,11 @@ void UserScript::Unpickle(const ::Pickle& pickle, void** iter) {
     // pattern so that it's valid.
     bool had_file_scheme = (valid_schemes & URLPattern::SCHEME_FILE) != 0;
     if (!had_file_scheme)
-      pattern.set_valid_schemes(valid_schemes | URLPattern::SCHEME_FILE);
+      pattern.SetValidSchemes(valid_schemes | URLPattern::SCHEME_FILE);
     CHECK(URLPattern::PARSE_SUCCESS ==
           pattern.Parse(pattern_str, URLPattern::IGNORE_PORTS));
     if (!had_file_scheme)
-      pattern.set_valid_schemes(valid_schemes);
+      pattern.SetValidSchemes(valid_schemes);
 
     url_set_.AddPattern(pattern);
   }

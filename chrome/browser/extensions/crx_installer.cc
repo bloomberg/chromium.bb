@@ -283,12 +283,13 @@ bool CrxInstaller::AllowInstall(const Extension* extension,
       // host (or a subdomain of the host) the download happened from.  There's
       // no way for us to verify that the app controls any other hosts.
       URLPattern pattern(UserScript::kValidUserScriptSchemes);
-      pattern.set_host(original_url_.host());
-      pattern.set_match_subdomains(true);
+      pattern.SetHost(original_url_.host());
+      pattern.SetMatchSubdomains(true);
 
-      URLPatternList patterns = extension_->web_extent().patterns();
-      for (size_t i = 0; i < patterns.size(); ++i) {
-        if (!pattern.MatchesHost(patterns[i].host())) {
+      URLPatternSet patterns = extension_->web_extent();
+      for (URLPatternSet::const_iterator i = patterns.begin();
+           i != patterns.end(); ++i) {
+        if (!pattern.MatchesHost(i->host())) {
           *error = base::StringPrintf(
               "Apps must be served from the host that they affect.");
           return false;
