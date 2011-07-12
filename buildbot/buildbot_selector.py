@@ -181,6 +181,8 @@ BOT_ASSIGNMENT = {
         'bash buildbot/buildbot_toolchain_arm_untrusted.sh linux 64 glibc',
     'mac-pnacl-x86_32-newlib':
         'bash buildbot/buildbot_toolchain_arm_untrusted.sh mac 32 newlib',
+    'win-pnacl-x86_32-newlib':
+        'bash buildbot/buildbot_toolchain_arm_untrusted.sh win 32 newlib',
 
     # Toolchain trybots.
     'nacl-toolchain-lucid64-newlib':

@@ -14,7 +14,7 @@ fi
 
 if [ $# -ne 3 ]; then
   echo "USAGE: $0 [os] [arch] [libmode]"
-  echo "os     : linux, mac"
+  echo "os     : linux, mac, win"
   echo "arch   : 32, 64"
   echo "libmode: newlib, glibc"
   exit 2
@@ -69,6 +69,11 @@ case ${BUILD_OS}-${BUILD_ARCH}-${BUILD_LIBMODE} in
   mac-32-glibc)
     TOOLCHAIN_LABEL=pnacl_darwin_i386_glibc
     UTMAN="tools/llvm/gutman.sh"
+    # TODO(pdox): Determine which tests should be run.
+    RUN_TESTS=""
+    ;;
+  win-32-newlib)
+    TOOLCHAIN_LABEL=pnacl_windows_i686_newlib
     # TODO(pdox): Determine which tests should be run.
     RUN_TESTS=""
     ;;
