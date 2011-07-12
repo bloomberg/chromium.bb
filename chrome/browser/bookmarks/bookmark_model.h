@@ -20,7 +20,6 @@
 #include "content/browser/cancelable_request.h"
 #include "content/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/models/tree_node_model.h"
 
@@ -159,20 +158,15 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
 
 // BookmarkModel --------------------------------------------------------------
 
-// BookmarkModel provides a directed acyclic graph of the starred entries
-// and folders. Two graphs are provided for the two entry points: those on
-// the bookmark bar, and those in the other folder.
+// BookmarkModel provides a directed acyclic graph of URLs and folders.
+// Three graphs are provided for the three entry points: those on the 'bookmarks
+// bar', those in the 'other bookmarks' folder and those in the 'synced' folder.
 //
-// An observer may be attached to observer relevant events.
+// An observer may be attached to observe relevant events.
 //
 // You should NOT directly create a BookmarkModel, instead go through the
 // Profile.
-
 class BookmarkModel : public NotificationObserver, public BookmarkService {
-  friend class BookmarkCodecTest;
-  friend class BookmarkModelTest;
-  friend class BookmarkStorage;
-
  public:
   explicit BookmarkModel(Profile* profile);
   virtual ~BookmarkModel();
@@ -334,6 +328,10 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
   int64 next_node_id() const { return next_node_id_; }
 
  private:
+  friend class BookmarkCodecTest;
+  friend class BookmarkModelTest;
+  friend class BookmarkStorage;
+
   // Used to order BookmarkNodes by URL.
   class NodeURLComparator {
    public:
