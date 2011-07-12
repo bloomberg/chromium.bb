@@ -157,7 +157,7 @@ class ChildProcessLauncher::Context
 #if defined(OS_MACOSX)
       // It is possible for the child process to die immediately after
       // launching.  To prevent leaking MachBroker map entries in this case,
-      // lock around all of LaunchApp().  If the child dies, the death
+      // lock around all of LaunchProcess().  If the child dies, the death
       // notification will be processed by the MachBroker after the call to
       // AddPlaceholderForPid(), enabling proper cleanup.
       {  // begin scope for AutoLock
@@ -166,12 +166,17 @@ class ChildProcessLauncher::Context
 
         // This call to |PrepareForFork()| will start the MachBroker listener
         // thread, if it is not already running.  Therefore the browser process
-        // will be listening for Mach IPC before LaunchApp() is called.
+        // will be listening for Mach IPC before LaunchProcess() is called.
         broker->PrepareForFork();
 #endif
+
         // Actually launch the app.
-        launched = base::LaunchApp(cmd_line->argv(), env, fds_to_map,
-                                   /* wait= */false, &handle);
+        base::LaunchOptions options;
+        options.environ = &env;
+        options.fds_to_remap = &fds_to_map;
+        options.process_handle = &handle;
+        launched = base::LaunchProcess(*cmd_line, options);
+
 #if defined(OS_MACOSX)
         if (launched)
           broker->AddPlaceholderForPid(handle);

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,7 +53,12 @@ bool LaunchNSSDecrypterChildProcess(const FilePath& nss_path,
 
   bool debug_on_start = CommandLine::ForCurrentProcess()->HasSwitch(
                             switches::kDebugChildren);
-  return base::LaunchApp(cl.argv(), env, fds_to_map, debug_on_start, handle);
+  base::LaunchOptions options;
+  options.environ = &env;
+  options.fds_to_remap = &fds_to_map;
+  options.wait = debug_on_start;
+  options.process_handle = handle;
+  return base::LaunchProcess(cl.argv(), options);
 }
 
 }  // namespace
