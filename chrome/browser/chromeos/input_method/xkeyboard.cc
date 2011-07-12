@@ -85,7 +85,7 @@ const char* kCapsLockRemapped[] = {
 
 bool KeepRightAlt(const std::string& layout_name) {
   for (size_t c = 0; c < arraysize(kKeepRightAltOverlays); ++c) {
-    if (GetKeyboardOverlayId(layout_name) == kKeepRightAltOverlays[c]) {
+    if (GetKeyboardOverlayIdFromXkb(layout_name) == kKeepRightAltOverlays[c]) {
       return true;
     }
   }
@@ -94,7 +94,7 @@ bool KeepRightAlt(const std::string& layout_name) {
 
 bool KeepCapsLock(const std::string& layout_name) {
   for (size_t c = 0; c < arraysize(kCapsLockRemapped); ++c) {
-    if (GetKeyboardOverlayId(layout_name) == kCapsLockRemapped[c]) {
+    if (GetKeyboardOverlayIdFromXkb(layout_name) == kCapsLockRemapped[c]) {
       return true;
     }
   }

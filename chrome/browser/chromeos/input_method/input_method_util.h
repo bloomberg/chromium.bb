@@ -93,6 +93,16 @@ std::string GetKeyboardLayoutName(const std::string& input_method_id);
 // "xkb:gb::eng"       => "en_GB"
 std::string GetKeyboardOverlayId(const std::string& input_method_id);
 
+// Gets the ID for the keyboard overlay from the given xkb layout ID.
+// If the ID is invalid, an empty string will be returned.
+//
+// Examples:
+//
+// "us"                => "en_US"
+// "us(dvorak)"        => "en_US_dvorak"
+// "gb(extd)"          => "en_GB"
+std::string GetKeyboardOverlayIdFromXkb(const std::string& xkb_layout_id);
+
 // Converts an input method ID to a language code of the IME. Returns "Eng"
 // when |input_method_id| is unknown.
 // Example: "hangul" => "ko"

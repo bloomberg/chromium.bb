@@ -506,6 +506,15 @@ std::string GetKeyboardOverlayId(const std::string& input_method_id) {
   return "";
 }
 
+std::string GetKeyboardOverlayIdFromXkb(const std::string& xkb_layout_id) {
+  for (size_t i = 0; i < arraysize(kIBusEngines); ++i) {
+    if (kIBusEngines[i].xkb_layout_id == xkb_layout_id) {
+      return kIBusEngines[i].keyboard_overlay_id;
+    }
+  }
+  return "";
+}
+
 std::string GetInputMethodDisplayNameFromId(
     const std::string& input_method_id) {
   const std::string display_name =
