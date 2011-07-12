@@ -33,6 +33,7 @@ class RendererWebAudioDeviceImpl : public WebKit::WebAudioDevice,
 
  private:
   scoped_refptr<AudioDevice> audio_device_;
+  bool is_running_;
 
   // Weak reference to the callback into WebKit code.
   WebKit::WebAudioDevice::RenderCallback* client_callback_;

@@ -9,7 +9,8 @@ using WebKit::WebVector;
 
 RendererWebAudioDeviceImpl::RendererWebAudioDeviceImpl(size_t buffer_size,
     int channels, double sample_rate, WebAudioDevice::RenderCallback* callback)
-    : client_callback_(callback) {
+    : is_running_(false),
+      client_callback_(callback) {
   audio_device_ = new AudioDevice(buffer_size, channels, sample_rate, this);
 }
 
@@ -18,11 +19,17 @@ RendererWebAudioDeviceImpl::~RendererWebAudioDeviceImpl() {
 }
 
 void RendererWebAudioDeviceImpl::start() {
-  audio_device_->Start();
+  if (!is_running_) {
+    if (audio_device_->Start())
+      is_running_ = true;
+  }
 }
 
 void RendererWebAudioDeviceImpl::stop() {
-  audio_device_->Stop();
+  if (is_running_) {
+    if (audio_device_->Stop())
+      is_running_ = false;
+  }
 }
 
 double RendererWebAudioDeviceImpl::sampleRate() {
