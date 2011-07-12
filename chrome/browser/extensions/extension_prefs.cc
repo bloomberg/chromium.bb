@@ -198,70 +198,6 @@ class ScopedExtensionControlledPrefUpdate : public DictionaryPrefUpdate {
   DISALLOW_COPY_AND_ASSIGN(ScopedExtensionControlledPrefUpdate);
 };
 
-// TODO(mihaip): This is cleanup code for keys for unpacked extensions (which
-// are derived from paths). As part of the wstring removal, we changed the way
-// we hash paths, so we need to move prefs from their old synthesized IDs to
-// their new ones. We can remove this by July 2011. (See http://crbug.com/75945
-// for more details).
-static void CleanupBadExtensionKeys(const FilePath& root_dir,
-                                    PrefService* prefs) {
-  const DictionaryValue* dictionary =
-      prefs->GetDictionary(ExtensionPrefs::kExtensionsPref);
-  std::map<std::string, std::string> remapped_keys;
-  for (DictionaryValue::key_iterator i = dictionary->begin_keys();
-       i != dictionary->end_keys(); ++i) {
-    DictionaryValue* ext;
-    if (!dictionary->GetDictionaryWithoutPathExpansion(*i, &ext))
-      continue;
-
-    int location;
-    FilePath::StringType path_str;
-    if (!ext->GetInteger(kPrefLocation, &location) ||
-        !ext->GetString(kPrefPath, &path_str)) {
-      continue;
-    }
-
-    // Only unpacked extensions have generated IDs.
-    if (location != Extension::LOAD)
-      continue;
-
-    const std::string& prefs_id(*i);
-    FilePath path(path_str);
-    // The persisted path can be relative to the root dir (see
-    // MakePath(s)Relative), but the ID is generated before that, using the
-    // absolute path, so we need to undo that.
-    if (!path.IsAbsolute()) {
-      path = root_dir.Append(path);
-    }
-    std::string computed_id = Extension::GenerateIdForPath(path);
-
-    if (prefs_id != computed_id) {
-      remapped_keys[prefs_id] = computed_id;
-    }
-  }
-
-  if (!remapped_keys.empty()) {
-    DictionaryPrefUpdate update(prefs, ExtensionPrefs::kExtensionsPref);
-    DictionaryValue* update_dictionary = update.Get();
-    for (std::map<std::string, std::string>::const_iterator i =
-            remapped_keys.begin();
-        i != remapped_keys.end();
-        ++i) {
-      // Don't clobber prefs under the correct ID if they already exist.
-      if (update_dictionary->HasKey(i->second)) {
-        CHECK(update_dictionary->RemoveWithoutPathExpansion(i->first, NULL));
-        continue;
-      }
-      Value* extension_prefs = NULL;
-      CHECK(update_dictionary->RemoveWithoutPathExpansion(
-          i->first, &extension_prefs));
-      update_dictionary->SetWithoutPathExpansion(i->second, extension_prefs);
-    }
-
-    prefs->ScheduleSavePersistentPrefs();
-  }
-}
-
 }  // namespace
 
 ExtensionPrefs::ExtensionPrefs(
@@ -272,9 +208,6 @@ ExtensionPrefs::ExtensionPrefs(
       install_directory_(root_dir),
       extension_pref_value_map_(extension_pref_value_map),
       content_settings_store_(new ExtensionContentSettingsStore()) {
-  // TODO(mihaip): Remove this by July 2011 (see comment above).
-  CleanupBadExtensionKeys(root_dir, prefs_);
-
   MakePathsRelative();
 
   InitPrefStore();
