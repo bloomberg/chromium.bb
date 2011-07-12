@@ -3454,6 +3454,7 @@
         'test/live_sync/performance_live_autofill_sync_test.cc',
         'test/live_sync/performance_live_bookmarks_sync_test.cc',
         'test/live_sync/performance_live_extensions_sync_test.cc',
+        'test/live_sync/performance_live_passwords_sync_test.cc',
         'test/live_sync/single_client_live_apps_sync_test.cc',
         'test/live_sync/single_client_live_bookmarks_sync_test.cc',
         'test/live_sync/single_client_live_extensions_sync_test.cc',
