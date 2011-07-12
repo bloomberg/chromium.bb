@@ -1258,7 +1258,6 @@ un certificáu válidu d'otra entidá emisora.</translation>
 <translation id="1486096554574027028">Guetar contraseñes</translation>
 <translation id="2489435327075806094">Velocidá del punteru:</translation>
 <translation id="2492538245231809938">Tipos de datos encriptaos</translation>
-<translation id="2498131838700757846">Activar el motor esperimental LevelDB pa IndexedDB.</translation>
 <translation id="2589855374197350858">Tipos de Datos Encriptaos</translation>
 <translation id="1071139452646369777"><ph name="HANDLER_TITLE"/> ya se ta usando pa remanar enllaces de <ph name="PROTOCOL"/>:.</translation>
 <translation id="1119447706177454957">Fallu internu</translation>
@@ -1309,4 +1308,5 @@ un certificáu válidu d'otra entidá emisora.</translation>
 <translation id="4010065515774514159">Aición del navegador</translation>
 <translation id="4013794286379809233">Robla otra vuelta</translation>
 <translation id="4018133169783460046">Amosar <ph name="PRODUCT_NAME"/> nesta llingua</translation>
+<translation id="154603084978752493">Amestar como mo&amp;tor de gueta...</translation>
 </translationbundle>

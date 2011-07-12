@@ -1531,7 +1531,6 @@
 <translation id="6206311232642889873">Copia&amp;r imaxe</translation>
 <translation id="621638399744152264"><ph name="VALUE"/>%</translation>
 <translation id="6219717821796422795">Hanyu</translation>
-<translation id="6219983382864672018">Web Audio</translation>
 <translation id="6242054993434749861">fax: num. <ph name="FAX"/></translation>
 <translation id="6245028464673554252">Se pecha <ph name="PRODUCT_NAME"/>, esta descarga cancelarase.</translation>
 <translation id="6248988683584659830">Configuración da busca</translation>
@@ -1954,17 +1953,6 @@
 <translation id="7751005832163144684">Imprimir unha páxina de proba</translation>
 <translation id="7751559664766943798">Mostrar sempre a barra de marcadores</translation>
 <translation id="7754704193130578113">Preguntar onde gardar cada ficheiro antes da descarga</translation>
-<translation id="7762841930144642410"><ph name="BEGIN_BOLD"/>Entrou en modo de incógnito<ph name="END_BOLD"/>. As páxinas que vexa nesta xanela non aparecerán no historial de navegación ou no de buscas e non deixará ningunha outra traza no seu equipo, como cookies, unha vez que peche a xanela de incógnito. Porén, calquera ficheiro que descargue ou o que envíe a marcadores conservarase.
-        <ph name="LINE_BREAK"/>
-        <ph name="BEGIN_BOLD"/>Empregar a navegación de incógnito non afectará ao comportamento doutras persoas, servidores ou software. Preste atención a:<ph name="END_BOLD"/>
-        <ph name="BEGIN_LIST"/>
-          <ph name="BEGIN_LIST_ITEM"/>Sitios web que toman ou comparten información sobre vostede<ph name="END_LIST_ITEM"/>
-          <ph name="BEGIN_LIST_ITEM"/>Provedores de servizos de internet ou empregadores que rastrexen as páxinas que visita<ph name="END_LIST_ITEM"/>
-          <ph name="BEGIN_LIST_ITEM"/>Software mal intencionado que rastrexe as súas pulsacións a cambio de cariñas sorrintes (emoticonas) de balde<ph name="END_LIST_ITEM"/>
-          <ph name="BEGIN_LIST_ITEM"/>Vixilancia de axentes secretos<ph name="END_LIST_ITEM"/>
-          <ph name="BEGIN_LIST_ITEM"/>Xente que o segue<ph name="END_LIST_ITEM"/>
-        <ph name="END_LIST"/>
-        <ph name="BEGIN_LINK"/>Saber máis<ph name="END_LINK"/> sobre a navegación de incógnito.</translation>
 <translation id="7764209408768029281">Ferra&amp;mentas</translation>
 <translation id="7772127298218883077">Sobre <ph name="PRODUCT_NAME"/></translation>
 <translation id="7780428956635859355">Enviar unha captura de pantalla gardada</translation>
@@ -2408,7 +2396,6 @@ Garde o seu ficheiro de chave nalgún sito seguro, xa que precisarao para crear 
 <translation id="9181716872983600413">Unicode</translation>
 <translation id="9187787570099877815">Seguir bloqueando complementos</translation>
 <translation id="9187827965378254003">Ah, semella que non hai experimentos dispoñíbeis.</translation>
-<translation id="9194519262242876737">Activa a API Web Audio.</translation>
 <translation id="9199258761842902152">Pór en esperta ou continuar</translation>
 <translation id="9204065299849069896">Opcións de autocompletado</translation>
 <translation id="9207194316435230304">ATOK</translation>
@@ -2691,7 +2678,6 @@ Garde o seu ficheiro de chave nalgún sito seguro, xa que precisarao para crear 
 <translation id="4520722934040288962">Seleccionar por apertura</translation>
 <translation id="5078796286268621944">PIN incorrecto</translation>
 <translation id="529172024324796256">Nome de usuario:</translation>
-<translation id="5376120287135475614">Cambiar de xanela</translation>
 <translation id="5613695965848159202">Identidade anónima:</translation>
 <translation id="5661272705528507004">Esta tarxeta SIM está desactivada e non pode ser usada. Póñase en contacto co seu provedor de servizos para que lla substitúa.</translation>
 <translation id="5976690834266782200">Engadir elementos ao menú de contexto para agrupacións de lapelas</translation>
@@ -3023,7 +3009,6 @@ Garde o seu ficheiro de chave nalgún sito seguro, xa que precisarao para crear 
 <translation id="2448312741937722512">Tipo</translation>
 <translation id="2489435327075806094">Velocidade do punteiro:</translation>
 <translation id="2492538245231809938">Tipos de datos cifrados</translation>
-<translation id="2498131838700757846">Activar a infraestrutura experimental LevelDB para IndexedDB.</translation>
 <translation id="2519040785135695148">Impediuse que este sitio web rexistrara un manexador personalizado de URL.</translation>
 <translation id="2589855374197350858">Tipos de datos cifrados</translation>
 <translation id="26224892172169984">Non permitir que calquera sitio xestione os protocolos</translation>
@@ -3064,10 +3049,8 @@ Garde o seu ficheiro de chave nalgún sito seguro, xa que precisarao para crear 
 <translation id="455627352480893350">Marcadores sincronizados</translation>
 <translation id="4572673395966285802">Sistema de ficheiros</translation>
 <translation id="4693789964669838452">FPS</translation>
-<translation id="4743103415223548376">Non foi posíbel obter a vista previa de impresión xa que a páxina que está tentando imprimir foi pechada.</translation>
 <translation id="4839122884004914586">Sobrescribir a lista de software de renderización</translation>
 <translation id="4994474651455208930">Permitir que os sitios pregunten para facer predeterminados os manexadores de protocolos</translation>
-<translation id="5037358328087281103">IndexedDB usar LevelDB.</translation>
 <translation id="5279641203372218761">Administrar as impresoras locais...</translation>
 <translation id="532340483382036194">Permite instalar aplicativos de Chrome distribuidos empregando un ficheiro de manifesto nunha páxina web, no canto de empaquetar o manifesto e as iconas nun ficheiro crx.</translation>
 <translation id="5509519625080982753">Impresoras locais</translation>
@@ -3090,7 +3073,6 @@ Garde o seu ficheiro de chave nalgún sito seguro, xa que precisarao para crear 
 <translation id="5892507820957994680">Sobrescribir a lista de software de renderización incrustado e activar a aceleración da GPU en configuracións de sistema non compatíbel.</translation>
 <translation id="6157714576637082050">Impresoras na «nube»</translation>
 <translation id="6272247697534482847">Desactivar a sincronización vertical da GPU</translation>
-<translation id="6280731100889067253">Vista previa da impresión</translation>
 <translation id="6468702002867725697">Cifrar os datos confidenciais (contrasinais)</translation>
 <translation id="6780786534712515143">Con «Instant» activado, a maioría das páxinas web comezaran a cargarse segundo se escribe un enderezo URL na caixa multifunción, antes de premer Intro. Ademais, se é compatíbel co seu motor de busca predeterminado, os resultados da busca apareceran inmediatamente segundo escriba a consulta na caixa multifunción, e as predicións en liña seranlle de axuda na busca.\n\nXa que os resultados da busca son solicitados segundo escribe a consulta, o motor predeterminado de busca pode rexistrar estas como consultas de busca.\n</translation>
 <translation id="7005848115657603926">Intervalo de páxinas incorrecto, use <ph name="EXAMPLE_PAGE_RANGE"/></translation>
@@ -3115,7 +3097,6 @@ Garde o seu ficheiro de chave nalgún sito seguro, xa que precisarao para crear 
         outrs dispositivos de rede que estea a utilizar.</translation>
 <translation id="8268437482190589132">Almacenamento temporal:</translation>
 <translation id="8315720913203253727">Esta páxina web precisa de datos que foron introducidos anteriormente para poder mostrarse correctamente. Pode enviar estes datos de novo, porén, facendo iso repetirá calquera acción teña feito a páxina. Prema «Recargar» para volver a enviar eses datos e mostrar a páxina.</translation>
-<translation id="8428252096944387389">Vista previa de impresión - <ph name="PREVIEW_TAB_TITLE"/></translation>
 <translation id="8638842473654406096">Abrir a páxina de novo</translation>
 <translation id="8741168824058335685">Almacenamento permanente:</translation>
 <translation id="8765985713192161328">Administrar os manexadores...</translation>
@@ -3199,7 +3180,6 @@ Garde o seu ficheiro de chave nalgún sito seguro, xa que precisarao para crear 
 <translation id="7460131386973988868">Activa a configuración de IP estático. E posíbel que non funcione.</translation>
 <translation id="1243196447546764522">Bloquear as cookies de terceiros, de estaren estabelecido</translation>
 <translation id="1267777119553169704">Desactivar o acceso previo e o automático</translation>
-<translation id="1404800430464094476">Activar a sincronización dos URL escritos.</translation>
 <translation id="1751752860232137596">Activar a aplicación experimental dun desprazamento suave.</translation>
 <translation id="2951809536086907720">tipo heuristico: <ph name="HEURISTIC_TYPE"/>\ntipo de servidor: <ph name="SERVER_TYPE"/>\ncampo de sinatura: <ph name="FIELD_SIGNATURE"/>\nformulario de sinatura: <ph name="FORM_SIGNATURE"/>\nID experimental: «<ph name="EXPERIMENT_ID"/>»</translation>
 <translation id="3448976534399424402">Enfocar o menú da chave inglesa</translation>
@@ -3211,7 +3191,7 @@ Garde o seu ficheiro de chave nalgún sito seguro, xa que precisarao para crear 
 <translation id="4882473678324857464">Enfocar os marcadores</translation>
 <translation id="497421865427891073">Avanzar</translation>
 <translation id="50501183967525113">Debuxo coa GPU acelerada</translation>
-<translation id="5227808808023563348">Atopar o texto anterior</translation>
+<translation id="5227808808023563348">Buscar o texto anterior</translation>
 <translation id="539755880180803351">Couta os formularios web coas predicións de tipo de completado automático do campo como texto de substitución.</translation>
 <translation id="6928955981459329182">Prerenderizar as suxestións previas na caixa multifunción.</translation>
 <translation id="6970856801391541997">Imprimir páxinas específicas</translation>
@@ -3221,10 +3201,61 @@ Garde o seu ficheiro de chave nalgún sito seguro, xa que precisarao para crear 
 <translation id="7469237359338869056">Buscar de novo o texto</translation>
 <translation id="7777698395338723844">Activar os URL escritos nas opcións de sincronización. Isto permite a sincronización do seu historial de URL escritos noutros clientes para axudar á caixa multifunción a facer o completado automático.</translation>
 <translation id="8004512796067398576">Incremento</translation>
-<translation id="8161748135357245347">Prerenderización da caixa multifunción</translation>
 <translation id="8306243285620593545">Enfocar a icona de estado</translation>
 <translation id="8418240940464873056">Modo «hanja»</translation>
 <translation id="9023098643850923329">Desactiva o acceso previo aos servizos cando a sincronización esta activada. Desactiva tamén a barra de información nas páxinas de acceso que axudan a automatizar o proceso de acceso.
         Os accesos previo e o automático están sempre desactivados se a sincronización está desactivada.</translation>
 <translation id="9049835026521739061">Modo «hangul»</translation>
+<translation id="104086161873270383">Novo perfil</translation>
+<translation id="112818052757437142">O directorio nomeado «$1» xa existe. Escolla un nome diferente.</translation>
+<translation id="1142012852508714031">Nome do perfil</translation>
+<translation id="1282227640663454719">O formulario de sinatura <ph name="FORM_SIGNATURE"/> é para <ph name="FORM_URL"/>.</translation>
+<translation id="154603084978752493">En&amp;gadir motor de busca...</translation>
+<translation id="1588870296199743671">Abrir a ligazón con...</translation>
+<translation id="1834398142751010799">Novo perfil</translation>
+<translation id="2065605535667375562">Icona do perfil</translation>
+<translation id="2189470649391435617">Axustar tamaño á dereita</translation>
+<translation id="2860629542417543629">Bloq Maiús activo.</translation>
+<translation id="2889064240420137087">Abrir a ligazón con...</translation>
+<translation id="2951310213712249777">Prerenderización da caixa multifunción</translation>
+<translation id="3206175707080061730">Xa existe un ficheiro nomeado «$1». Quere substituílo?</translation>
+<translation id="3589447798447761053"><ph name="PRODUCT_NAME"/>
+        Detectou que un produto de Kaspersky está a interceptar as conexións seguras.
+        Isto, normalmente, non é un problema de seguranza, xa que o software de
+        Kaspersky adoita a executarse no mesmo equipo. Porén,
+        <ph name="PRODUCT_NAME"/>
+        é intolerante con algúns aspectos específicos das conexións seguras, polo que
+        os produtos de Karpersky teñen que ser configurados para que non executen
+        esta interceptación. Prema en «Aprender máis» para ver as instrucións que o
+        guiarán á opción de configuración para a desactivación.</translation>
+<translation id="3595946410121365924">Axustar tamaño á esquerda</translation>
+<translation id="3703445029708071516">Activar a sincronización dos URL escritos.</translation>
+<translation id="3719388386220274270">Enviar comentarios adicionais sobre o completado automático</translation>
+<translation id="4008217099472149670">Non é posíbel dispor de conexións seguras por mor do antivirus Kaspersky</translation>
+<translation id="434849659521617751">Seleccionado un directorio</translation>
+<translation id="4536111748245793305">Perfil <ph name="VALUE"/></translation>
+<translation id="4977041425614823233">Opcións do manexador...</translation>
+<translation id="5342221287123687807">Restaurar o tema predeterminado</translation>
+<translation id="5685236799358487266">Engadir como mo&amp;tor de busca...</translation>
+<translation id="5835133142369577970">Especifique o nome do cartafol</translation>
+<translation id="6021987327127625071">Seleccionados $1directorios</translation>
+<translation id="6173478701774033550">Icona do perfil</translation>
+<translation id="6745789064498140868">Imprimir <ph name="PREVIEW_TAB_TITLE"/></translation>
+<translation id="7118654600979854368">Opcións do manexador...</translation>
+<translation id="7325521623703686754">Escolla un nome e un «avatar», a seguir prema en Crear para crear un novo perfil</translation>
+<translation id="7415834062450491574">Enviar comentarios a Google.</translation>
+<translation id="7523913831415327888">$1 elementos seleccionados, $2</translation>
+<translation id="7609538960069667341">Crear un novo perfil <ph name="SHORT_PRODUCT_NAME"/></translation>
+<translation id="7651319298187296870">É necesario acceder para o certificado de usuario.</translation>
+<translation id="7737525395960596244">Axude a mellorar o completado automático. Con esta opción activada, de cando en vez Chrome pediralle que envíe información adicional para o equipo de completado automático.</translation>
+<translation id="7871467315479343122">Axude a que o completado automático mellore.</translation>
+<translation id="8048178988014360106">Crear un novo perfil <ph name="SHORT_PRODUCT_NAME"/></translation>
+<translation id="8059178146866384858">Xa existe un ficheiro nomeado «$1». Escolla un nome diferente.</translation>
+<translation id="8456681095658380701">Nome incorrecto</translation>
+<translation id="8558056454375650717">Un peril <ph name="SHORT_PRODUCT_NAME"/> conten
+      un conxunto de marcadores, historial de navegación, contrasinais gardadas, e os temas.
+      Se vostede necesita administrar a configuración por separado pode crear varios perfís. 
+      Por exemplo, pode utilizar un perfil, e o seu amigo pode utilizar outro.</translation>
+<translation id="8586353611925512169">Nome do perfil</translation>
+<translation id="8789464255255332543">Non é posíbel imprimir, xa que a páxina que tentou imprimir foi pechada.</translation>
 </translationbundle>

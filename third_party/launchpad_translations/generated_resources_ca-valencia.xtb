@@ -1454,7 +1454,6 @@
 <translation id="5362741141255528695">Seleccioneu el fitxer de clau privada.</translation>
 <translation id="5365539031341696497">Mètode d'entrada de tailandés (teclat kesmanee)</translation>
 <translation id="5374359983950678924">Canvia la imatge</translation>
-<translation id="5376120287135475614">Canvia les finestres</translation>
 <translation id="5376169624176189338">Feu clic per tornar arrere, o bé espereu per veure l'historial</translation>
 <translation id="5388588172257446328">Nom d'usuari:</translation>
 <translation id="5392544185395226057">Activa la compatibilitat amb el client nadiu.</translation>
@@ -1795,7 +1794,6 @@
 <translation id="621638399744152264"><ph name="VALUE"/>%</translation>
 <translation id="6216679966696797604">Inicia una sessió de convidat</translation>
 <translation id="6219717821796422795">Hanyu</translation>
-<translation id="6219983382864672018">Àudio web</translation>
 <translation id="6242054993434749861">fax: núm. <ph name="FAX"/></translation>
 <translation id="6245028464673554252">Si tanqueu <ph name="PRODUCT_NAME"/> ara, es cancel·larà esta baixada.</translation>
 <translation id="6248988683584659830">Configuració de la cerca</translation>
@@ -2287,7 +2285,6 @@
 <translation id="7751559664766943798">Mostra sempre la barra d'adreces d'interés</translation>
 <translation id="7754704193130578113">Pregunta on alçar cada fitxer abans de descarregar-lo</translation>
 <translation id="7761701407923456692">El certificat del servidor no coincideix amb l'URL.</translation>
-<translation id="7762841930144642410"><ph name="BEGIN_BOLD"/>Heu passat a l'estat d'incògnit<ph name="END_BOLD"/>. Les pàgines que visualitzeu en esta finestra no apareixeran a l'historial del navegador ni a l'historial de cerques, i no deixaran cap pista (com ara, galetes) a l'equip després de tancar la finestra en mode d'incògnit. Tanmateix, es conservaran tots els fitxers que baixeu o les adreces d'interés que creeu.        <ph name="LINE_BREAK"/>        <ph name="BEGIN_BOLD"/>Utilitzar el mode d'incògnit no afecta el comportament d'altres usuaris, servidors ni programaris. Teniu en compte:<ph name="END_BOLD"/>        <ph name="BEGIN_LIST"/>          <ph name="BEGIN_LIST_ITEM"/>llocs web que recopilen o comparteixen informació sobre la vostra identitat,<ph name="END_LIST_ITEM"/>          <ph name="BEGIN_LIST_ITEM"/>proveïdors de serveis d'Internet o treballadors que segueixen les pàgines que visiteu,<ph name="END_LIST_ITEM"/>          <ph name="BEGIN_LIST_ITEM"/>programari maliciós que segueix les vostres pulsacions del teclat a canvi d'emoticones,<ph name="END_LIST_ITEM"/>          <ph name="BEGIN_LIST_ITEM"/>vigilància per part d'agents secrets,<ph name="END_LIST_ITEM"/>          <ph name="BEGIN_LIST_ITEM"/>persones que estan darrere vostre.<ph name="END_LIST_ITEM"/>        <ph name="END_LIST"/>        <ph name="BEGIN_LINK"/>Més informació<ph name="END_LINK"/> sobre la navegació en mode d'incògnit.</translation>
 <translation id="7764209408768029281">Ein&amp;es</translation>
 <translation id="7771452384635174008">Disseny</translation>
 <translation id="7772032839648071052">Confirmeu la contrasenya</translation>
@@ -2809,7 +2806,6 @@ Alceu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="9181716872983600413">Unicode</translation>
 <translation id="9187787570099877815">Continua bloquejant els connectors</translation>
 <translation id="9187827965378254003">I ara! Pareix que no hi ha experiments actuals disponibles.</translation>
-<translation id="9194519262242876737">Activa l'API d'àudio web.</translation>
 <translation id="9199258761842902152">En espera o reprén</translation>
 <translation id="9203398526606335860">Creació de &amp;perfils activada</translation>
 <translation id="9204065299849069896">Opcions de l'Emplenament automàtic...</translation>
@@ -2851,4 +2847,6 @@ Alceu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="996250603853062861">S'està establint una connexió segura...</translation>
 <translation id="3009731429620355204">Sessions</translation>
 <translation id="473775607612524610">Actualitza</translation>
+<translation id="154603084978752493">Afegeix com a mo&amp;tor de cerca...</translation>
+<translation id="5685236799358487266">Afegeix com a mo&amp;tor de cerca...</translation>
 </translationbundle>
