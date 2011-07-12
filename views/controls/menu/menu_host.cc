@@ -18,9 +18,10 @@ namespace views {
 // MenuHost, public:
 
 MenuHost::MenuHost(SubmenuView* submenu)
-    : submenu_(submenu),
-      destroying_(false),
-      showing_(false) {
+    : ALLOW_THIS_IN_INITIALIZER_LIST(native_menu_host_(
+          NativeMenuHost::CreateNativeMenuHost(this))),
+      submenu_(submenu),
+      destroying_(false) {
 }
 
 MenuHost::~MenuHost() {
@@ -38,6 +39,7 @@ void MenuHost::InitMenuHost(gfx::NativeWindow parent,
   params.parent = GTK_WIDGET(parent);
 #endif
   params.bounds = bounds;
+  params.native_widget = native_menu_host_->AsNativeWidget();
   Init(params);
   SetContentsView(contents_view);
   ShowMenuHost(do_capture);
@@ -48,18 +50,9 @@ bool MenuHost::IsMenuHostVisible() {
 }
 
 void MenuHost::ShowMenuHost(bool do_capture) {
-  // Doing a capture may make us get capture lost. Ignore it while we're in the
-  // process of showing.
-  showing_ = true;
   Show();
-  if (do_capture) {
-    native_widget_private()->SetMouseCapture();
-    // We do this to effectively disable window manager keyboard accelerators
-    // for chromeos. Such accelerators could cause cause another window to
-    // become active and confuse things.
-    native_widget_private()->SetKeyboardCapture();
-  }
-  showing_ = false;
+  if (do_capture)
+    native_menu_host_->StartCapturing();
 }
 
 void MenuHost::HideMenuHost() {
@@ -81,8 +74,6 @@ void MenuHost::SetMenuHostBounds(const gfx::Rect& bounds) {
 void MenuHost::ReleaseMenuHostCapture() {
   if (native_widget_private()->HasMouseCapture())
     native_widget_private()->ReleaseMouseCapture();
-  if (native_widget_private()->HasKeyboardCapture())
-    native_widget_private()->ReleaseKeyboardCapture();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -96,24 +87,29 @@ bool MenuHost::ShouldReleaseCaptureOnMouseReleased() const {
   return false;
 }
 
-void MenuHost::OnMouseCaptureLost() {
-  if (destroying_ || showing_)
-    return;
-  MenuController* menu_controller =
-      submenu_->GetMenuItem()->GetMenuController();
-  if (menu_controller && !menu_controller->drag_in_progress())
-    menu_controller->CancelAll();
-  Widget::OnMouseCaptureLost();
-}
+////////////////////////////////////////////////////////////////////////////////
+// MenuHost, internal::NativeMenuHostDelegate implementation:
 
-void MenuHost::OnNativeWidgetDestroyed() {
+void MenuHost::OnNativeMenuHostDestroy() {
   if (!destroying_) {
     // We weren't explicitly told to destroy ourselves, which means the menu was
     // deleted out from under us (the window we're parented to was closed). Tell
     // the SubmenuView to drop references to us.
     submenu_->MenuHostDestroyed();
   }
-  Widget::OnNativeWidgetDestroyed();
+}
+
+void MenuHost::OnNativeMenuHostCancelCapture() {
+  if (destroying_)
+    return;
+  MenuController* menu_controller =
+      submenu_->GetMenuItem()->GetMenuController();
+  if (menu_controller && !menu_controller->drag_in_progress())
+    menu_controller->CancelAll();
+}
+
+internal::NativeWidgetDelegate* MenuHost::AsNativeWidgetDelegate() {
+  return this;
 }
 
 }  // namespace views

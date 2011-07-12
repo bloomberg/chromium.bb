@@ -20,14 +20,17 @@ class SubmenuView;
 class View;
 class Widget;
 
-// SubmenuView uses a MenuHost to house the SubmenuView.
+// SubmenuView uses a MenuHost to house the SubmenuView. MenuHost typically
+// extends the native Widget type, but is defined here for clarity of what
+// methods SubmenuView uses.
 //
 // SubmenuView owns the MenuHost. When SubmenuView is done with the MenuHost
 // |DestroyMenuHost| is invoked. The one exception to this is if the native
 // OS destroys the widget out from under us, in which case |MenuHostDestroyed|
 // is invoked back on the SubmenuView and the SubmenuView then drops references
 // to the MenuHost.
-class MenuHost : public Widget {
+class MenuHost : public Widget,
+                 public internal::NativeMenuHostDelegate {
  public:
   explicit MenuHost(SubmenuView* submenu);
   virtual ~MenuHost();
@@ -64,17 +67,19 @@ class MenuHost : public Widget {
   // Overridden from Widget:
   virtual internal::RootView* CreateRootView() OVERRIDE;
   virtual bool ShouldReleaseCaptureOnMouseReleased() const OVERRIDE;
-  virtual void OnMouseCaptureLost() OVERRIDE;
-  virtual void OnNativeWidgetDestroyed() OVERRIDE;
+
+  // Overridden from NativeMenuHostDelegate:
+  virtual void OnNativeMenuHostDestroy() OVERRIDE;
+  virtual void OnNativeMenuHostCancelCapture() OVERRIDE;
+  virtual internal::NativeWidgetDelegate* AsNativeWidgetDelegate() OVERRIDE;
+
+  NativeMenuHost* native_menu_host_;
 
   // The view we contain.
   SubmenuView* submenu_;
 
   // If true, DestroyMenuHost has been invoked.
   bool destroying_;
-
-  // If true, we're attempting to Show.
-  bool showing_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuHost);
 };

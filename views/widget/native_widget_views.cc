@@ -160,33 +160,15 @@ void NativeWidgetViews::SendNativeAccessibilityEvent(
 }
 
 void NativeWidgetViews::SetMouseCapture() {
-  View* parent_root_view = GetParentNativeWidget()->GetWidget()->GetRootView();
-  static_cast<internal::RootView*>(parent_root_view)->set_capture_view(view_);
   GetParentNativeWidget()->SetMouseCapture();
 }
 
 void NativeWidgetViews::ReleaseMouseCapture() {
-  View* parent_root_view = GetParentNativeWidget()->GetWidget()->GetRootView();
-  static_cast<internal::RootView*>(parent_root_view)->set_capture_view(NULL);
   GetParentNativeWidget()->ReleaseMouseCapture();
 }
 
 bool NativeWidgetViews::HasMouseCapture() const {
-  // NOTE: we may need to tweak this to only return true if the parent native
-  // widget's RootView has us as the capture view.
   return GetParentNativeWidget()->HasMouseCapture();
-}
-
-void NativeWidgetViews::SetKeyboardCapture() {
-  GetParentNativeWidget()->SetKeyboardCapture();
-}
-
-void NativeWidgetViews::ReleaseKeyboardCapture() {
-  GetParentNativeWidget()->ReleaseKeyboardCapture();
-}
-
-bool NativeWidgetViews::HasKeyboardCapture() {
-  return GetParentNativeWidget()->HasKeyboardCapture();
 }
 
 InputMethod* NativeWidgetViews::GetInputMethodNative() {

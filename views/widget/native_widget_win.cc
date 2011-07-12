@@ -626,19 +626,6 @@ bool NativeWidgetWin::HasMouseCapture() const {
   return GetCapture() == hwnd();
 }
 
-void NativeWidgetWin::SetKeyboardCapture() {
-  // Windows doesn't really support keyboard grabs.
-}
-
-void NativeWidgetWin::ReleaseKeyboardCapture() {
-  // Windows doesn't really support keyboard grabs.
-}
-
-bool NativeWidgetWin::HasKeyboardCapture() {
-  // Windows doesn't really support keyboard grabs.
-  return false;
-}
-
 InputMethod* NativeWidgetWin::GetInputMethodNative() {
   return input_method_.get();
 }
@@ -1179,7 +1166,6 @@ LRESULT NativeWidgetWin::OnAppCommand(HWND window,
 }
 
 void NativeWidgetWin::OnCancelMode() {
-  SetMsgHandled(FALSE);
 }
 
 void NativeWidgetWin::OnCaptureChanged(HWND hwnd) {
