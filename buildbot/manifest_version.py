@@ -60,12 +60,11 @@ def _GitCleanDirectory(directory):
       raise GitCommandException(err_msg)
 
 
-def _PrepForChanges(git_repo, dry_run):
+def _PrepForChanges(git_repo):
   """Prepare a git/repo repository for making changes. It should
      have no files modified when you call this.
   Args:
     git_repo: git repo to push
-    dry_run: Run but we are not planning on pushing changes for real.
   raises: GitCommandException
   """
   _GitCleanDirectory(git_repo)
@@ -82,19 +81,11 @@ def _PrepForChanges(git_repo, dry_run):
       # exists for manifest_version git repos.
       try:
         cros_lib.RunCommand(['git', 'checkout', 'master'], cwd=git_repo)
-        if not dry_run:
-          cros_lib.RunCommand(['git', 'branch', '-D', _PUSH_BRANCH],
-                              cwd=git_repo)
+        cros_lib.RunCommand(['git', 'branch', '-D', _PUSH_BRANCH], cwd=git_repo)
       except:
         pass
 
       cros_lib.RunCommand(['git', 'pull', '--force'], cwd=git_repo)
-
-      # For debug users we want to keep previous commit history and cannot rely
-      # on sync to pick up new changes.
-      if not dry_run:
-        cros_lib.RunCommand(['git', 'checkout',
-                             '-b', _PUSH_BRANCH, '-t', 'master'], cwd=git_repo)
 
 # TODO Test fix for chromium-os:16249
 #    repository.FixExternalRepoPushUrls(git_repo)
@@ -294,7 +285,7 @@ class VersionInfo(object):
 
     repo_dir = os.path.dirname(self.version_file)
 
-    _PrepForChanges(repo_dir, dry_run)
+    _PrepForChanges(repo_dir)
 
     shutil.copyfile(temp_file, self.version_file)
     os.unlink(temp_file)
@@ -419,9 +410,6 @@ class BuildSpecsManager(object):
                                      BuildSpecsManager.STATUS_INFLIGHT, dir_pfx)
 
     # Conservatively grab the latest manifest versions repository.
-    # Note:  This is key to some of the Git push logic for non-repos for
-    # local developers.  If this is changed, please revisit PushChanges and
-    # PrepForChanges.
     _RemoveDirs(self._TMP_MANIFEST_DIR)
     repository.CloneGitRepo(self._TMP_MANIFEST_DIR, self.manifest_repo)
 
@@ -497,11 +485,14 @@ class BuildSpecsManager(object):
       logging.debug('Incremented version number to  %s', version)
       self.cros_source.Sync(repository.RepoRepository.DEFAULT_MANIFEST)
 
+    self._PrepSpecChanges()
     spec_file = '%s.xml' % os.path.join(self.all_specs_dir, version)
     if not os.path.exists(os.path.dirname(spec_file)):
       os.makedirs(os.path.dirname(spec_file))
 
     self.cros_source.ExportManifest(spec_file)
+    self._PushSpecChanges('Automatic: Creating new manifest file: %s.xml' %
+                          version)
     logging.debug('Created New Build Spec %s', version)
     return version
 
@@ -555,24 +546,22 @@ class BuildSpecsManager(object):
         version_info = self._GetCurrentVersionInfo()
         logging.debug('Using version %s' % version_info.VersionString())
         self._LoadSpecs(version_info)
-        if force_version:
-          # We don't need to re-set inflight.
-          return self.GetLocalManifest(force_version)
 
-        self._PrepSpecChanges()
-        if not self.unprocessed:
-          self.current_version = self._CreateNewBuildSpec(version_info)
-        elif latest:
-          self.current_version = self.latest_unprocessed
+        if not force_version:
+          if not self.unprocessed:
+            self.current_version = self._CreateNewBuildSpec(version_info)
+          elif latest:
+            self.current_version = self.latest_unprocessed
+          else:
+            self.current_version = self.unprocessed[0]
         else:
-          self.current_version = self.unprocessed[0]
+          self.current_version = force_version
 
         if self.current_version:
           logging.debug('Using build spec: %s', self.current_version)
           commit_message = 'Automatic: Start %s %s' % (self.build_name,
                                                        self.current_version)
-          self._SetInFlight()
-          self._PushSpecChanges(commit_message)
+          self._SetInFlight(commit_message)
           return self.GetLocalManifest(self.current_version)
         else:
           return None
@@ -585,33 +574,48 @@ class BuildSpecsManager(object):
     else:
       raise GenerateBuildSpecException(last_error)
 
-  def _SetInFlight(self):
-    """Marks the buildspec as inflight by creating a symlink in inflight dir."""
+  def _SetInFlight(self, message):
+    """Marks the current buildspec as inflight by creating a symlink.
+    Args:
+      message: Commit message to use when pushing new status.
+    """
     dest_file = '%s.xml' % os.path.join(self.inflight_dir, self.current_version)
     src_file = '%s.xml' % os.path.join(self.all_specs_dir, self.current_version)
     logging.debug('Setting build in flight  %s: %s', src_file, dest_file)
+    self._PrepSpecChanges()
     CreateSymlink(src_file, dest_file)
+    self._PushSpecChanges(message)
 
-  def _SetFailed(self):
-    """Marks the buildspec as failed by creating a symlink in fail dir."""
+  def _SetFailed(self, message):
+    """Marks the current buildspec as failed by creating a symlink in fail dir
+    Args:
+      message: Commit message to use when pushing new status.
+    """
     dest_file = '%s.xml' % os.path.join(self.fail_dir, self.current_version)
     src_file = '%s.xml' % os.path.join(self.all_specs_dir, self.current_version)
     remove_file = '%s.xml' % os.path.join(self.inflight_dir,
                                           self.current_version)
     logging.debug('Setting build to failed  %s: %s', src_file, dest_file)
+    self._PrepSpecChanges()
     CreateSymlink(src_file, dest_file, remove_file)
+    self._PushSpecChanges(message)
 
-  def _SetPassed(self):
-    """Marks the buildspec as passed by creating a symlink in passed dir."""
+  def _SetPassed(self, message):
+    """Marks the current buildspec as passed by creating a symlink in passed dir
+    Args:
+      message: Commit message to use when pushing new status.
+    """
     dest_file = '%s.xml' % os.path.join(self.pass_dir, self.current_version)
     src_file = '%s.xml' % os.path.join(self.all_specs_dir, self.current_version)
     remove_file = '%s.xml' % os.path.join(self.inflight_dir,
                                           self.current_version)
     logging.debug('Setting build to passed  %s: %s', src_file, dest_file)
+    self._PrepSpecChanges()
     CreateSymlink(src_file, dest_file, remove_file)
+    self._PushSpecChanges(message)
 
   def _PrepSpecChanges(self):
-    _PrepForChanges(self._TMP_MANIFEST_DIR, self.dry_run)
+    _PrepForChanges(self._TMP_MANIFEST_DIR)
 
   def _PushSpecChanges(self, commit_message):
     _PushGitChanges(self._TMP_MANIFEST_DIR, commit_message,
@@ -626,18 +630,15 @@ class BuildSpecsManager(object):
     last_error = None
     for index in range(0, retries + 1):
       try:
-        self._PrepSpecChanges()
-        status = self.STATUS_PASSED if success else self.STATUS_FAILED
-        commit_message = ('Automatic checkin: status=%s build_version %s for '
-                          '%s' % (status,
-                                  self.current_version,
-                                  self.build_name))
+        commit_message = 'Automatic checkin: status=%s build_version %s for %s'
         if success:
-          self._SetPassed()
+          self._SetPassed(commit_message % (BuildSpecsManager.STATUS_PASSED,
+                                            self.current_version,
+                                            self.build_name))
         else:
-          self._SetFailed()
-
-        self._PushSpecChanges(commit_message)
+          self._SetFailed(commit_message % (BuildSpecsManager.STATUS_FAILED,
+                                            self.current_version,
+                                            self.build_name))
       except (GitCommandException, cros_lib.RunCommandError) as e:
         last_error = ('Failed to update the status for %s with the '
                       'following error %s' % (self.build_name,

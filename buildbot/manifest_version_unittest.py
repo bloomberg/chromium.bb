@@ -87,7 +87,7 @@ class HelperMethodsTest(unittest.TestCase):
         ('git config url.ssh://gerrit.chromium.org:29418.insteadof'
          ' http://git.chromium.org').split(), cwd=git_dir)
 
-    manifest_version._PrepForChanges(git_dir, dry_run=True)
+    manifest_version._PrepForChanges(git_dir)
 
     # Change something.
     cros_lib.RunCommand(('tee --append %s/AUTHORS' % git_dir).split(),
@@ -96,34 +96,6 @@ class HelperMethodsTest(unittest.TestCase):
     # Push the change with dryrun.
     manifest_version._PushGitChanges(git_dir, 'Test appending user.',
                                      dry_run=True)
-
-  def testPushGitChangesWithRealPrep(self):
-    """Another push test that tests push but on non-repo does it on a branch."""
-    git_dir = tempfile.mktemp('manifest_dir')
-    cros_lib.RunCommand(
-        ['git', 'clone',
-         'http://git.chromium.org/chromiumos/manifest-versions.git', git_dir])
-    try:
-      cros_lib.RunCommand(
-          ('git config url.ssh://gerrit.chromium.org:29418.insteadof'
-           ' http://git.chromium.org').split(), cwd=git_dir)
-
-      manifest_version._PrepForChanges(git_dir, dry_run=False)
-
-      # Change something.
-      cros_lib.RunCommand(('tee --append %s/AUTHORS' % git_dir).split(),
-                          input='TEST USER <test_user@chromium.org>')
-
-      # Push the change with dryrun.
-      manifest_version._PushGitChanges(git_dir, 'Test appending user.',
-                                       dry_run=True)
-
-      # This should not error out if we are running with dry_run=False for
-      # prep for changes.
-      cros_lib.RunCommand(['git', 'show', manifest_version._PUSH_BRANCH],
-                          cwd=git_dir)
-    finally:
-      shutil.rmtree(git_dir)
 
   def tearDown(self):
     shutil.rmtree(self.tmpdir)
@@ -161,7 +133,7 @@ class VersionInfoTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(manifest_version, '_PrepForChanges')
     self.mox.StubOutWithMock(manifest_version, '_PushGitChanges')
 
-    manifest_version._PrepForChanges(self.tmpdir, False)
+    manifest_version._PrepForChanges(self.tmpdir)
 
     version_file = self.CreateFakeVersionFile(self.tmpdir)
 
@@ -169,7 +141,7 @@ class VersionInfoTest(mox.MoxTestBase):
 
     self.mox.ReplayAll()
     info = manifest_version.VersionInfo(version_file=version_file,
-                                        incr_type='patch')
+                                         incr_type='patch')
     info.IncrementVersion(message, dry_run=False)
     new_info = manifest_version.VersionInfo(version_file=version_file,
                                              incr_type='patch')
@@ -272,12 +244,16 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
     Tests without pre-existing version file in manifest dir.
     """
     self.mox.StubOutWithMock(repository.RepoRepository, 'ExportManifest')
+    self.mox.StubOutWithMock(manifest_version, '_PrepForChanges')
+    self.mox.StubOutWithMock(manifest_version, '_PushGitChanges')
+
     info = manifest_version.VersionInfo(version_string=FAKE_VERSION_STRING,
-                                        incr_type='patch')
+                                         incr_type='patch')
     self.manager.all_specs_dir = os.path.join(self.manager._TMP_MANIFEST_DIR,
                                               'buildspecs', '1.2')
-
+    manifest_version._PrepForChanges(mox.IsA(str))
     repository.RepoRepository.ExportManifest(mox.IgnoreArg())
+    manifest_version._PushGitChanges(mox.IsA(str), mox.IsA(str), dry_run=True)
 
     self.mox.ReplayAll()
     self.manager.all = []
@@ -289,7 +265,10 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
     """Tests that we create a new version if a previous one exists."""
     self.mox.StubOutWithMock(manifest_version.VersionInfo, 'IncrementVersion')
     self.mox.StubOutWithMock(repository.RepoRepository, 'ExportManifest')
+
     self.mox.StubOutWithMock(repository.RepoRepository, 'Sync')
+    self.mox.StubOutWithMock(manifest_version, '_PrepForChanges')
+    self.mox.StubOutWithMock(manifest_version, '_PushGitChanges')
 
     version_file = VersionInfoTest.CreateFakeVersionFile(self.tmpdir)
     info = manifest_version.VersionInfo(version_file=version_file,
@@ -302,7 +281,9 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
         dry_run=True).AndReturn(FAKE_VERSION_STRING_NEXT)
 
     repository.RepoRepository.Sync('default')
+    manifest_version._PrepForChanges(mox.IsA(str))
     repository.RepoRepository.ExportManifest(mox.IgnoreArg())
+    manifest_version._PushGitChanges(mox.IsA(str), mox.IsA(str), dry_run=True)
 
     self.mox.ReplayAll()
     # Add to existing so we are forced to increment.

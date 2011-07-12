@@ -150,8 +150,6 @@ class LKGMManagerTest(mox.MoxTestBase):
                              '_GetLatestCandidateByVersion')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_CreateNewBuildSpec')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_SetInFlight')
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_PrepSpecChanges')
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_PushSpecChanges')
 
     my_info = manifest_version.VersionInfo('1.2.3.4')
     most_recent_candidate = lkgm_manager._LKGMCandidateInfo('1.2.3.4-rc12')
@@ -161,11 +159,9 @@ class LKGMManagerTest(mox.MoxTestBase):
     lkgm_manager.LKGMManager._LoadSpecs(my_info)
     lkgm_manager.LKGMManager._GetLatestCandidateByVersion(my_info).AndReturn(
         most_recent_candidate)
-    lkgm_manager.LKGMManager._PrepSpecChanges()
     lkgm_manager.LKGMManager._CreateNewBuildSpec(
         most_recent_candidate).AndReturn(new_candidate.VersionString())
-    lkgm_manager.LKGMManager._SetInFlight()
-    lkgm_manager.LKGMManager._PushSpecChanges(
+    lkgm_manager.LKGMManager._SetInFlight(
         mox.StrContains(new_candidate.VersionString()))
 
     self.mox.ReplayAll()
@@ -183,8 +179,6 @@ class LKGMManagerTest(mox.MoxTestBase):
                              '_GetLatestCandidateByVersion')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_CreateNewBuildSpec')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_SetInFlight')
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_PrepSpecChanges')
-
 
     my_info = manifest_version.VersionInfo('1.2.3.4')
     most_recent_candidate = lkgm_manager._LKGMCandidateInfo('1.2.3.4-rc12')
@@ -193,7 +187,6 @@ class LKGMManagerTest(mox.MoxTestBase):
     lkgm_manager.LKGMManager._LoadSpecs(my_info)
     lkgm_manager.LKGMManager._GetLatestCandidateByVersion(my_info).AndReturn(
         most_recent_candidate)
-    lkgm_manager.LKGMManager._PrepSpecChanges()
     lkgm_manager.LKGMManager._CreateNewBuildSpec(
         most_recent_candidate).AndReturn(None)
 
@@ -207,17 +200,13 @@ class LKGMManagerTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_GetCurrentVersionInfo')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_LoadSpecs')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_SetInFlight')
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_PrepSpecChanges')
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_PushSpecChanges')
 
     my_info = manifest_version.VersionInfo('1.2.3.4')
     most_recent_candidate = lkgm_manager._LKGMCandidateInfo('1.2.3.4-rc12')
 
     lkgm_manager.LKGMManager._GetCurrentVersionInfo().AndReturn(my_info)
     lkgm_manager.LKGMManager._LoadSpecs(my_info)
-    lkgm_manager.LKGMManager._PrepSpecChanges()
-    lkgm_manager.LKGMManager._SetInFlight()
-    lkgm_manager.LKGMManager._PushSpecChanges(
+    lkgm_manager.LKGMManager._SetInFlight(
         mox.StrContains(most_recent_candidate.VersionString()))
 
     self.mox.ReplayAll()
