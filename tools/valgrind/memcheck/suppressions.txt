@@ -4838,6 +4838,15 @@
    fun:_ZN3IPC12ChannelProxyC1ERKNS_13ChannelHandleENS_7Channel4ModeEPNS4_8ListenerEPN4base16MessageLoopProxyE
    fun:_ZN18AutomationProvider17InitializeChannelERKSs
 }
+{
+   bug_89025
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN12invalidation20NewPermanentCallbackINS_22InvalidationClientImplESt4pairINS_6StatusESsEEEPN9Callback1IT0_E4TypeEPT_MSA_FvS6_E
+   fun:_ZN12invalidation22InvalidationClientImpl34ScheduleStartAfterReadingStateBlobEv
+   fun:_ZN12invalidation22InvalidationClientImpl5StartEv
+   fun:_ZN13sync_notifier24ChromeInvalidationClient5StartERKSsS2_S2_PNS0_8ListenerEPNS_11StateWriterEN4base7WeakPtrIN9talk_base4TaskEEE
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
