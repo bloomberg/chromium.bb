@@ -33,7 +33,10 @@ using ::base::files::FilePathWatcher;
 
 namespace {
 
-#define kServiceProcessSessionType "Background"
+// TODO(scottbyer): Determine if we really need to go back to "Background", and
+// subclass NSApplication to prevent -terminate from calling exit() in that
+// case. http://crbug.com/88954
+#define kServiceProcessSessionType "Aqua"
 
 CFStringRef CopyServiceProcessLaunchDName() {
   base::mac::ScopedNSAutoreleasePool pool;
