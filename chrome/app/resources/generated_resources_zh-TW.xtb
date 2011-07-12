@@ -1981,7 +1981,7 @@
 <translation id="77221669950527621">擴充功能或應用程式</translation>
 <translation id="6650142020817594541">建議您使用「Google Chrome 內嵌框架」(已安裝) 瀏覽這個網站。</translation>
 <translation id="6780786534712515143">只要啟用「互動智慧搜尋」，大多數的網頁不需等您按下 Enter 鍵，就會隨著您在網址列輸入網址的動作開始載入。此外，如果您的預設搜尋引擎支援這項功能，當您在網址列輸入查詢時，系統也會即時動態顯示搜尋結果，並於網址列內提供預測查詢字串，引導您構想搜尋字詞。\n\n由於您每一項輸入的查詢內容都會連帶產生相對應的搜尋結果，因此您的預設搜尋引擎可能會將這些輸入內容記錄成搜尋查詢。\n</translation>
-<translation id="6503077044568424649">常用網頁</translation>
+<translation id="6503077044568424649">最常造訪</translation>
 <translation id="4625904365165566833">抱歉，您沒有登入權限，請向筆記型電腦的擁有者確認。</translation>
 <translation id="7450633916678972976">請注意：如果您按一下 [提供意見]，Chrome 即會提交兩種版本的記錄 (瀏覽器版本和作業系統版本)，以及問題所在的網址。此外，您也可以提交相關的螢幕擷取畫面。我們會使用這些資訊來診斷問題，藉此協助我們改善 Chrome 的效能。意見回報所包含的任何個人資訊 (無論是在您的意見反映中可看到的資訊，或是在記錄、網址或螢幕擷取畫面中意外出現者) 均屬於我們隱私權政策的保障範圍。如果不想傳送網址，請取消勾選 [包含這個網址] 核取方塊；如果不想傳送螢幕擷取畫面，請勿勾選 [包含這個螢幕擷取畫面] 核取方塊。您同意 Google 可以使用您所提供的任何意見來改善任何 Google 產品或服務。</translation>
 <translation id="465365366590259328">您的變更將於下次重新啟動「<ph name="PRODUCT_NAME"/>」時生效。</translation>
@@ -2530,7 +2530,7 @@
 <translation id="2168725742002792683">副檔名</translation>
 <translation id="2285615095750412963">擴充功能安裝日期：<ph name="DATE"/></translation>
 <translation id="7861805612256278846">未登入</translation>
-<translation id="1753905327828125965">最常瀏覽</translation>
+<translation id="1753905327828125965">最常造訪</translation>
 <translation id="8116972784401310538">書籤管理員(&amp;B)</translation>
 <translation id="1849632043866553433">Application Caches</translation>
 <translation id="3591607774768458617">這個語言是「<ph name="PRODUCT_NAME"/>」目前的顯示語言。</translation>

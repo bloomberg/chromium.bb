@@ -26,10 +26,10 @@
 <translation id="2455652143675149114">시작 시 동작을 지정할 수 있습니다. '홈페이지 열기'를 선택하면 <ph name="PRODUCT_NAME"/>을(를) 시작할 때 홈페이지가 항상 열립니다. '가장 최근에 열어본 URL 다시 열기'를 선택하면 마지막으로<ph name="PRODUCT_NAME"/>을(를) 닫았을 때 열려 있었던 URL이 다시 열립니다. 'URL 목록 열기'를 선택하면 사용자가 <ph name="PRODUCT_NAME"/>을(를) 시작할 때 '시작 시 열리는 URL' 목록이 열립니다. 이 설정을 사용하면 사용자가 <ph name="PRODUCT_NAME"/>에서 이 설정을 변경하거나 무시할 수 없습니다. 이 설정을 사용 중지하면 설정하지 않는 것과 같습니다. 사용자는 <ph name="PRODUCT_NAME"/>에서 해당 설정을 변경할 수 있습니다.</translation>
 <translation id="4980635395568992380">데이터 유형:</translation>
 <translation id="3096595567015595053">사용 가능한 플러그인 목록</translation>
-<translation id="7998998292074133333">크롬 OS 기기가 유휴 상태이거나 일시 중지되었을 때 잠금을 사용합니다. 이 설정을 사용하면 크롬 OS 기기를 절전 모드에서 잠금 해제할 때 사용자에게 비밀번호를 묻습니다. 이 설정을 사용 중지하면 크롬 OS 기기의 절전 모드를 해제할 때 사용자에게 비밀번호를 묻지 않습니다. 이 설정을 사용하거나 사용 중지하면 사용자가 <ph name="PRODUCT_OS_NAME"/>에서 이 설정을 변경하거나 무시할 수 없습니다.</translation>
+<translation id="7998998292074133333">Chrome OS 기기가 유휴 상태이거나 일시 중지되었을 때 잠금을 사용합니다. 이 설정을 사용하면 Chrome OS 기기를 절전 모드에서 잠금 해제할 때 사용자에게 비밀번호를 묻습니다. 이 설정을 사용 중지하면 Chrome OS 기기의 절전 모드를 해제할 때 사용자에게 비밀번호를 묻지 않습니다. 이 설정을 사용하거나 사용 중지하면 사용자가 PRODUCT_OS_NAME에서 이 설정을 변경하거나 무시할 수 없습니다 <ph name="PRODUCT_OS_NAME"/>.</translation>
 <translation id="5912364507361265851">사용자가 비밀번호 관리자에 암호를 표시할 수 있도록 허용</translation>
 <translation id="6999540307315670568"><ph name="PRODUCT_NAME"/>의 새 탭 페이지에서 북마크바를 사용하도록 설정합니다. 이 설정을 사용하면 <ph name="PRODUCT_NAME"/>은(는) '새 탭' 페이지에 북마크바를 표시합니다. 이 설정을 사용 중지하면 북마크바가 표시되지 않습니다. 이 설정을 사용하거나 사용 중지하면 사용자가 <ph name="PRODUCT_NAME"/>에서 이 설정을 변경하거나 무시할 수 없습니다.</translation>
-<translation id="8828766846428537606"><ph name="PRODUCT_NAME"/>의 기본 홈페이지를 설정하고 사용자가 변경하지 못하게 합니다. 사용자의 홈페이지 설정은 홈페이지를 새 탭 페이지로 지정하거나 URL로 설정하여 홈페이지 URL을 지정하는 경우에만 완전히 잠깁니다. 홈페이지 URL을 지정하지 않아도 사용자는 계속 'chrome://newtab'을 지정하여 홈페이지를 새 탭 페이지로 설정할 수 있습니다.</translation>
+<translation id="8828766846428537606"><ph name="PRODUCT_NAME"/>PRODUCT_NAME의 기본 홈페이지를 설정하고 사용자가 변경하지 못하게 합니다. 사용자의 홈페이지 설정은 홈페이지를 새 탭 페이지로 지정하거나 URL로 설정하여 홈페이지 URL을 지정하는 경우에만 완전히 잠깁니다. 홈페이지 URL을 지정하지 않아도 사용자는 계속 'chrome://newtab'을 지정하여 홈페이지를 새 탭 페이지로 설정할 수 있습니다.</translation>
 <translation id="1353966721814789986">시작 페이지</translation>
 <translation id="5564962323737505851">비밀번호 관리자를 설정합니다. 비밀번호 관리자를 사용하면 사용자가 저장된 비밀번호를 일반 텍스트로 볼 수 있는지를 선택할 수 있습니다.</translation>
 <translation id="4668325077104657568">기본 이미지 설정</translation>
@@ -48,7 +48,7 @@
 <translation id="4276147605137721961"><ph name="PRODUCT_NAME"/>에서 북마크 수정을 사용하거나 사용하지 않도록 설정합니다. 이 설정은 기본적으로 사용하도록 되어 있으며 북마크를 추가, 삭제 또는 수정할 수 있습니다. 이 설정을 사용 중지하면 북마크를 추가, 삭제 또는 수정할 수 없습니다. 기존 북마크는 계속 사용할 수 있습니다.</translation>
 <translation id="6943577887654905793">Mac 및 Linux 환경설정 이름:</translation>
 <translation id="8621457834803281393">쿠키 설정이 허용되지 않는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.</translation>
-<translation id="254524874071906077">기본 브라우저로 크롬 설정</translation>
+<translation id="254524874071906077">기본 브라우저로 Chrome 설정</translation>
 <translation id="4377599627073874279">모든 사이트에서 모든 이미지를 표시하도록 허용</translation>
 <translation id="3915395663995367577">proxy .pac 파일에 대한 URL</translation>
 <translation id="7191531985645073769">Google에서 호스팅하는 동기화 서비스를 사용하는 <ph name="PRODUCT_NAME"/>의 데이터 동기화를 사용 중지하고 사용자가 이 설정을 변경하지 못하게 합니다. 이 설정을 사용하면 사용자가 <ph name="PRODUCT_NAME"/>에서 이 설정을 변경하거나 무시할 수 없습니다.</translation>
@@ -105,7 +105,7 @@
 <translation id="3292147213643666827"><ph name="CLOUD_PRINT_NAME"/>와(과) 컴퓨터에 연결된 기존 프린터 사이의 프록시로 작동하도록 <ph name="PRODUCT_NAME"/>을(를) 설정합니다. 이 설정을 사용하거나 설정하지 않으면 사용자는 Google 계정에서 인증한 클라우드 프린트 프록시를 사용할 수 있습니다. 이 설정을 사용 중지하면 사용자는 프록시를 사용할 수 없으며 컴퓨터는 <ph name="CLOUD_PRINT_NAME"/>와(과)의 프린트 공유를 허용하지 않습니다.</translation>
 <translation id="617204585863800180"><ph name="PRODUCT_NAME"/>에서 네트워크 예측을 사용하며 사용자가 이 설정을 변경할 수 없습니다. 이 설정을 사용하거나 사용 중지하면 사용자가 <ph name="PRODUCT_NAME"/>에서 이 설정을 변경하거나 무시할 수 없습니다.</translation>
 <translation id="6641981670621198190">3D 그래픽 API 지원 사용 중지</translation>
-<translation id="2741921267428646309"><ph name="PRODUCT_NAME"/>이(가) 준수하는 정책 목록입니다. 이 설정들은 직접 변경할 필요가 없습니다. 손쉽게 사용할 수 있는 템플릿을 <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>에서 다운로드하시면 편리합니다. Chromium 및 Google 크롬에 대한 지원 정책 목록은 동일하지만 Windows 레지스트리 위치는 다릅니다. Chromium 정책의 경우 <ph name="CHROMIUM_KEY"/>(으)로, Google 크롬 정책의 경우 <ph name="GOOGLE_CHROME_KEY"/>(으)로 시작합니다.</translation>
+<translation id="2741921267428646309"><ph name="PRODUCT_NAME"/>PRODUCT_NAME이(가) 준수하는 정책 목록입니다. 이 설정들은 직접 변경할 필요가 없습니다. 손쉽게 사용할 수 있는 템플릿을 POLICY_TEMPLATE_DOWNLOAD_URL에서 다운로드하시면 편리합니다. Chromium 및 Chrome에 대한 지원 정책 목록은 동일하지만 Windows 레지스트리 위치는 다릅니다. Chromium 정책의 경우 (으)로, Chrome 정책의 경우 (으)로 시작합니다.<ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/><ph name="CHROMIUM_KEY"/><ph name="GOOGLE_CHROME_KEY"/></translation>
 <translation id="7003746348783715221"><ph name="PRODUCT_NAME"/> 환경설정</translation>
 <translation id="9096086085182305205">인증 서버 허용목록</translation>
 <translation id="7063895219334505671">이러한 사이트에서 팝업 허용</translation>
@@ -217,7 +217,7 @@
 <translation id="4056910949759281379">SPDY 프로토콜 사용 중지</translation>
 <translation id="3808945828600697669">사용 중지된 플러그인 목록 지정</translation>
 <translation id="2187975305444384964">웹사이트에서 사용자의 실제 위치를 추적하도록 허용할지 여부를 설정할 수 있습니다. 사용자의 실제 위치를 추적하는 것은 기본적으로 허용되거나, 기본적으로 거부되거나 또는 웹사이트가 실제 위치를 요청할 때마다 사용자에게 알리도록 할 수 있습니다.</translation>
-<translation id="8397112610813153899">항상 <ph name="PRODUCT_FRAME_NAME"/>에서 렌더링해야 하는 URL 패턴 목록을 맞춤설정합니다. 패턴 예는 http://www.chromium.org/developers/how-tos/chrome-frame-getting-started를 참조하세요.</translation>
+<translation id="8397112610813153899"><ph name="PRODUCT_FRAME_NAME"/>항상 호스트 브라우저에서 렌더링되어야 하는 URL 패턴 목록을 맞춤설정합니다. 자세한 패턴 예는 http://www.chromium.org/developers/how-tos/chrome-frame-getting-started를 참조하세요.</translation>
 <translation id="2098658257603918882">사용 및 충돌 관련 데이터 보고 사용</translation>
 <translation id="1151353063931113432">이 사이트에서 이미지 허용</translation>
 <translation id="4498075447689127727">팝업 열기가 허용되지 않는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.</translation>
@@ -242,11 +242,11 @@
 <translation id="5512418063782665071">홈페이지 URL</translation>
 <translation id="8990655542335348641">장치 관리 서비스가 정책 정보를 검색하는 시간(밀리초)를 지정합니다. 이 정책을 설정하면 기본값인 3시간이 무시됩니다. 값은 30분에서 24시간 사이로 설정할 수 있으며, 이 범위에 포함되지 않는 모든 값은 해당 경계값으로 고정됩니다.</translation>
 <translation id="6049075103826767200"><ph name="PRODUCT_NAME"/> 사용 및 충돌 관련 데이터에 대해 Google에 익명으로 보고하며 사용자가 이 설정을 변경하지 못하게 합니다. 이 설정을 사용하면 사용 및 충돌 관련 데이터에 대한 익명의 보고서가 Google에 전송됩니다. 이 설정을 사용 중지하면 익명의 보고서가 Google에 전송되지 않습니다. 이 설정을 사용하거나 사용 중지하면 사용자가 <ph name="PRODUCT_NAME"/>에서 이 설정을 변경하거나 무시할 수 없습니다.</translation>
-<translation id="2263362640517427542">크롬 OS 기기가 유휴 상태이거나 일시 중지되었을 때 잠금 사용</translation>
+<translation id="2263362640517427542">Chrome OS 기기가 유휴 상태이거나 일시 중지되었을 때 잠금 사용</translation>
 <translation id="6808666497110319299"><ph name="PRODUCT_NAME"/>에 내장된 대체 오류 페이지(예: '페이지를 찾을 수 없습니다')를 사용하도록 설정하며 사용자가 이 설정을 변경하지 못하게 합니다. 이 설정을 사용하면 대체 오류 페이지가 사용됩니다. 이 설정을 사용 중지하면 대체 오류 페이지가 사용되지 않습니다. 이 설정을 사용하거나 사용 중지하면 사용자가 <ph name="PRODUCT_NAME"/>에서 이 설정을 변경하거나 무시할 수 없습니다.</translation>
 <translation id="1948757837129151165">HTTP 인증에 대한 정책</translation>
 <translation id="817926804885880359"><ph name="PRODUCT_NAME"/>의 자동완성 기능을 사용하며 사용자가 주소나 신용카드 정보와 같이 이전에 저장한 정보를 사용하여 웹 양식을 자동으로 완성할 수 있습니다. 이 설정을 사용 중지하면 사용자가 자동완성을 사용할 수 없습니다. 이 설정을 사용하거나 값을 설정하지 않으면 자동완성을 사용자가 제어할 수 있게 됩니다. 사용자가 자동완성 프로필을 설정하고 원하는 대로 자동완성을 설정하거나 해제할 수 있습니다.</translation>
-<translation id="6938581770853731947"><ph name="PRODUCT_NAME"/>에서 기본 홈페이지 유형을 설정하여 사용자가 홈페이지 환경설정을 변경할 수 없게 합니다. 홈페이지는 여기에서 지정하는 URL로 설정하거나 새 탭 페이지로 설정할 수 있습니다. 이 설정을 사용하면 새 탭 페이지가 항상 홈페이지로 사용되며 홈페이지 URL 위치는 무시됩니다. 이 설정을 사용 중지하면 사용자 홈페이지 URL을 'chrome://newtab'으로 설정하지 않는 한 사용자 홈페이지는 새 탭 페이지가 될 수 없습니다. 이 설정을 사용하거나 사용 중지하면 사용자가 <ph name="PRODUCT_NAME"/>에서 홈페이지 유형을 변경할 수 없습니다.</translation>
+<translation id="6938581770853731947"><ph name="PRODUCT_NAME"/>PRODUCT_NAME에서 기본 홈페이지 유형을 설정하여 사용자가 홈페이지 환경설정을 변경할 수 없게 합니다. 홈페이지는 여기에서 지정하는 URL로 설정하거나 새 탭 페이지로 설정할 수 있습니다. 이 설정을 사용하면 새 탭 페이지가 항상 홈페이지로 사용되며 홈페이지 URL 위치는 무시됩니다. 이 설정을 사용 중지하면 사용자 홈페이지 URL을 'chrome://newtab'으로 설정하지 않는 한 사용자 홈페이지는 새 탭 페이지가 될 수 없습니다. 이 설정을 사용하거나 사용 중지하면 사용자가 PRODUCT_NAME에서 홈페이지 유형을 변경할 수 없습니다 <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="5645779841392247734">이 사이트에서 쿠키 허용</translation>
 <translation id="3906388518501362918"><ph name="PRODUCT_NAME"/>에서 자바스크립트를 사용하고 사용자가 이 설정을 변경하지 못하게 합니다. 이 설정을 사용하거나 설정하지 않으면 웹페이지는 자바스크립트를 사용할 수 있습니다. 이 설정을 사용 중지하면 웹페이지는 자바스크립트를 사용할 수 없습니다.</translation>
 <translation id="4821854788360803313"><ph name="PRODUCT_NAME"/>에서 사용 중지되는 플러그인 목록을 지정하며 사용자가 이 설정을 변경하지 못하게 합니다. 와일드카드 문자 '*'와 '?'는 임의의 문자 시퀀스를 비교하는 데 사용됩니다. '*'는 임의 개수의 문자를 비교하며 '?'는 선택적 단일 문자를 지정합니다. 즉, 0이나 하나의 문자를 비교합니다. 실제 '*', '?', 또는'\'를 비교하는 이스케이프 문자는 '\'이며 앞에 '\'를 넣을 수 있습니다. 이 설정을 사용하면 지정된 플러그인 목록이 <ph name="PRODUCT_NAME"/>에서 사용되지 않습니다. 플러그인은 'about:plugins'에서 사용 중지로 표시되며 사용자가 이를 사용하도록 설정할 수 없습니다. 이 정책은 EnabledPlugins 및 DisabledPluginsExceptions을 무시합니다.</translation>

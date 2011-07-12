@@ -264,7 +264,7 @@
 <translation id="4497369307931735818">Vzdálená komunikace</translation>
 <translation id="1476822615785139447">Spravovat tiskárny...</translation>
 <translation id="3855676282923585394">Importovat záložky a nastavení...</translation>
-<translation id="1116694919640316211">O aplikaci</translation>
+<translation id="1116694919640316211">O</translation>
 <translation id="6878031674662373246">Zastavit synchronizaci tohoto účtu...</translation>
 <translation id="4422347585044846479">Upravit záložku pro tuto stránku</translation>
 <translation id="1880905663253319515">Smazat certifikát <ph name="CERTIFICATE_NAME"/>?</translation>
@@ -1142,7 +1142,7 @@
 <translation id="8496717697661868878">Spustit plugin</translation>
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="2916073183900451334">Stiskem klávesy Tab zvýrazníte na webové stránce odkazy a pole formulářů</translation>
-<translation id="7772127298218883077">O aplikaci <ph name="PRODUCT_NAME"/></translation>
+<translation id="7772127298218883077">O <ph name="PRODUCT_NAME"/></translation>
 <translation id="2090876986345970080">Bezpečnostní nastavení systému</translation>
 <translation id="9219103736887031265">Obrázky</translation>
 <translation id="5453632173748266363">Cyrilice</translation>
@@ -1893,7 +1893,7 @@
 <translation id="1455548678241328678">Norská klávesnice</translation>
 <translation id="2520481907516975884">Přepnout mezi čínským a anglickým režimem</translation>
 <translation id="8571890674111243710">Překlad stránky do jazyka: <ph name="LANGUAGE"/>...</translation>
-<translation id="4789872672210757069">O aplikaci <ph name="PRODUCT_NAME"/></translation>
+<translation id="4789872672210757069">O  &amp;<ph name="PRODUCT_NAME"/></translation>
 <translation id="4056561919922437609">Počet karet: <ph name="TAB_COUNT"/></translation>
 <translation id="4373894838514502496">Před <ph name="NUMBER_FEW"/> minutami</translation>
 <translation id="6358450015545214790">Nápověda</translation>

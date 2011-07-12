@@ -239,7 +239,7 @@
 <translation id="7104784605502674932">Configurar preferencias de sincronización</translation>
 <translation id="1788636309517085411">Usar predeterminado</translation>
 <translation id="1661867754829461514">Falta el número de PIN </translation>
-<translation id="8589311641140863898">Extensión experimental APIs</translation>
+<translation id="8589311641140863898">Extensión experimental API</translation>
 <translation id="2804922931795102237">Incluye información del sistema</translation>
 <translation id="869891660844655955">Fecha de vencimiento</translation>
 <translation id="2178614541317717477">Compromiso de entidad de certificación</translation>
@@ -1616,7 +1616,7 @@
 <translation id="1720318856472900922">Autenticación de servidor TLS WWW</translation>
 <translation id="8550022383519221471">El servicio de sincronización no está disponible para tu dominio.</translation>
 <translation id="3355823806454867987">Cambiar la configuración del proxy...</translation>
-<translation id="4780374166989101364">Habilita una extensión experimental APIs. Nota que la galería de extensión no te permite cargar extensiones que usen las APIs experimentales.</translation>
+<translation id="4780374166989101364">Habilita una extensión experimental API. Nota que la galería de extensión no te permite cargar extensiones que usen las API experimentales.</translation>
 <translation id="7227780179130368205">Detectado software malintencionado.</translation>
 <translation id="435243347905038008">Datos de <ph name="NETWORK"/> bajos</translation>
 <translation id="2489428929217601177">el último día</translation>
@@ -2157,7 +2157,7 @@
 <translation id="3707020109030358290">No es una Entidad de certificación.</translation>
 <translation id="2115926821277323019">Debe ser una URL válida</translation>
 <translation id="8986494364107987395">Enviar automáticamente estadísticas de uso e informes sobre fallos a Google</translation>
-<translation id="7070714457904110559">Habilita extensiones experimentales para la función de ubicación geográfica. Incluye la utilización del sistema operativo de ubicación de las APIs (si está disponible), y el envío de datos adicionales de configuración de la red local al servicio de ubicación de Google para brindar un posicionamiento de mayor exactitud.</translation>
+<translation id="7070714457904110559">Habilita extensiones experimentales para la función de ubicación geográfica. Incluye la utilización del sistema operativo de ubicación de las API (si está disponible), y el envío de datos adicionales de configuración de la red local al servicio de ubicación de Google para brindar un posicionamiento de mayor exactitud.</translation>
 <translation id="6701535245008341853">No se pudo obtener el perfil.</translation>
 <translation id="527605982717517565">Siempre permitir JavaScript en <ph name="HOST"/></translation>
 <translation id="702373420751953740">Versión de PRL:</translation>

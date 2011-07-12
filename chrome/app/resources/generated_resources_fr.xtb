@@ -44,7 +44,7 @@
 <translation id="5048179823246820836">Nordique</translation>
 <translation id="1763046204212875858">Créer des raccourcis vers des applications</translation>
 <translation id="2105006017282194539">Pas encore chargé</translation>
-<translation id="7821009361098626711">Le serveur <ph name="DOMAIN"/> requiert un nom d'utilisateur et un mot de passe. Le serveur dit : <ph name="REALM"/>.</translation>
+<translation id="7821009361098626711">Le serveur <ph name="DOMAIN"/> requiert un nom d'utilisateur et un mot de passe. Message du serveur : <ph name="REALM"/>.</translation>
 <translation id="524759338601046922">Confirmer le nouveau code PIN :</translation>
 <translation id="688547603556380205">L2TP/IPSec + Certificat utilisateur</translation>
 <translation id="777702478322588152">Préfecture</translation>
@@ -56,7 +56,7 @@
 <translation id="4610656722473172270">Barre d'outils Google</translation>
 <translation id="7845201717638045845">Données que vous copiez et collez</translation>
 <translation id="151501797353681931">Importés depuis Safari</translation>
-<translation id="7880025619322806991">État Portail</translation>
+<translation id="7880025619322806991">État du portail</translation>
 <translation id="6706684875496318067">Le plug-in <ph name="PLUGIN_NAME"/> n'est pas autorisé.</translation>
 <translation id="586567932979200359">Vous exécutez <ph name="PRODUCT_NAME"/> à partir de son image disque. Si vous l'installez sur votre ordinateur, vous pourrez l'utiliser sans image disque et bénéficierez de mises à jour automatiques.</translation>
 <translation id="3775432569830822555">Certificat du serveur SSL</translation>
@@ -312,7 +312,7 @@ cookies</translation>
 <translation id="715487527529576698">Le chinois simplifié est le mode de saisie initial</translation>
 <translation id="1674989413181946727">Paramètres SSL sur tout l'ordinateur :</translation>
 <translation id="8703575177326907206">Votre connexion à <ph name="DOMAIN"/> n'est pas chiffrée.</translation>
-<translation id="3042282020249392540">Ajoutez <ph name="PRODUCT_NAME"/> aux programmes autorisés dans les paramètres de votre pare-feu ou de votre antivirus. S'il est déjà autorisé, supprimez-le de la liste et ajoutez-le à nouveau à la liste des programmes autorisés.</translation>
+<translation id="3042282020249392540">Ajoutez <ph name="PRODUCT_NAME"/> aux programmes autorisés dans les paramètres de votre pare-feu ou de votre antivirus. S'il est déjà autorisé, supprimez-le de la liste des programmes autorisés et ajoutez-le à nouveau.</translation>
 <translation id="8472623782143987204">matériel requis</translation>
 <translation id="4865571580044923428">Gérer les exceptions...</translation>
 <translation id="2526619973349913024">Rechercher des mises à jour</translation>
@@ -541,7 +541,7 @@ cookies</translation>
 <translation id="1408167824939409937">Barre de navigation compacte</translation>
 <translation id="5612754943696799373">Autoriser le téléchargement ?</translation>
 <translation id="347699201225182431">Cette extension figure sur la liste noire.</translation>
-<translation id="2565875069387440417">Connexion à l'aide de votre compte Google</translation>
+<translation id="2565875069387440417">Connectez-vous avec votre compte Google</translation>
 <translation id="6353618411602605519">Clavier croate</translation>
 <translation id="5515810278159179124">Interdire à tous les sites de suivre ma position géographique</translation>
 <translation id="5999606216064768721">Utiliser la barre de titre du système et les bordures de la fenêtre</translation>
@@ -813,10 +813,10 @@ cookies</translation>
 <translation id="5184063094292164363">Console &amp;JavaScript</translation>
 <translation id="333371639341676808">Empêcher cette page de générer des boîtes de dialogue supplémentaires</translation>
 <translation id="7632380866023782514">En haut à droite</translation>
-<translation id="4693789964669838452">IPS</translation>
+<translation id="4693789964669838452">FPS</translation>
 <translation id="4925520021222027859">Entrez le mot de passe associé à votre application :</translation>
 <translation id="3494768541638400973">Mode de saisie Google du japonais (pour clavier japonais)</translation>
-<translation id="4994474651455208930">Autoriser les sites à demander à devenir gestionnaires par défaut pour les protocoles</translation>
+<translation id="4994474651455208930">Permettre aux sites de demander l'autorisation de devenir gestionnaires par défaut des protocoles</translation>
 <translation id="5844183150118566785"><ph name="PRODUCT_NAME"/> est à jour (<ph name="VERSION"/>)</translation>
 <translation id="3118046075435288765">Le serveur a mis fin à la connexion de manière inattendue.</translation>
 <translation id="8041140688818013446">Il est possible que le serveur hébergeant la page Web soit surchargé ou ait rencontré une erreur. Pour éviter de générer
@@ -874,7 +874,7 @@ cookies</translation>
           <ph name="END_BOLD"/>
           et désélectionnez les serveurs proxy sélectionnés.</translation>
 <translation id="7033648024564583278">Gravure en cours d'initialisation...</translation>
-<translation id="3759371141211657149">Gérer les paramètres du gestionnaire...</translation>
+<translation id="3759371141211657149">Gérer les paramètres des gestionnaires...</translation>
 <translation id="2246340272688122454">Téléchargement de l'image de récupération...</translation>
 <translation id="5305688511332277257">Aucun certificat installé</translation>
 <translation id="7770995925463083016">il y a <ph name="NUMBER_TWO"/> minutes</translation>
@@ -887,7 +887,7 @@ cookies</translation>
         coupées et les requêtes réseau échouent. L'actualisation de la page
         devrait permettre de résoudre ce problème.</translation>
 <translation id="2655386581175833247">Certificat utilisateur :</translation>
-<translation id="8082103788701842156">Cette fonctionnalité ajoute une entrée &quot;Masquer la barre d'outils&quot; dans le menu contextuel de la barre d'onglets. Utilisez cette option pour basculer entre l'affichage permanent de la barre d'outils (par défaut) et son ouverture dans une liste déroulante uniquement si nécessaire.</translation>
+<translation id="8082103788701842156">Ajoute une entrée &quot;Masquer la barre d'outils&quot; dans le menu contextuel de la barre d'onglets. Utilisez cette option pour basculer entre l'affichage permanent de la barre d'outils (par défaut) et son ouverture dans une liste déroulante uniquement si nécessaire.</translation>
 <translation id="5039804452771397117">Autoriser</translation>
 <translation id="5435964418642993308">Appuyer sur Entrée pour revenir en arrière et sur la touche de menu contextuel pour afficher l'historique</translation>
 <translation id="81686154743329117">ZRM</translation>
@@ -1015,7 +1015,7 @@ cookies</translation>
 <translation id="9027459031423301635">Ouvrir le lien dans un nouvel ongle&amp;t</translation>
 <translation id="2251809247798634662">Nouvelle fenêtre de navigation privée</translation>
 <translation id="358344266898797651">Celtique</translation>
-<translation id="5106282558266057405"><ph name="SHORT_PRODUCT_NAME"/> &gt; Petits caractères</translation>
+<translation id="5106282558266057405"><ph name="SHORT_PRODUCT_NAME"/> &gt; Les petits caractères</translation>
 <translation id="3625870480639975468">Réinitialiser le zoom</translation>
 <translation id="5199729219167945352">Prototypes</translation>
 <translation id="5055518462594137986">Mémoriser mes choix pour tous les liens de ce type</translation>
@@ -1125,7 +1125,7 @@ cookies</translation>
 <translation id="5586329397967040209">Utiliser comme page d'accueil</translation>
 <translation id="629730747756840877">Compte</translation>
 <translation id="8525306231823319788">Plein écran</translation>
-<translation id="5892507820957994680">Cette option remplace la liste intégrée de rendu logiciel et active l'accélération graphique pour les configurations système non compatibles.</translation>
+<translation id="5892507820957994680">Remplace la liste intégrée de rendu logiciel et active l'accélération graphique pour les configurations système non compatibles.</translation>
 <translation id="6280731100889067253">Aperçu avant impression</translation>
 <translation id="9054208318010838">Autoriser tous les sites à suivre ma position géographique</translation>
 <translation id="3058212636943679650">Si la restauration du système d'exploitation de votre ordinateur s'avère nécessaire, une carte SD ou une clé USB de récupération vous sera demandée.</translation>
@@ -1321,7 +1321,7 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="8886960478266132308"><ph name="PRODUCT_NAME"/> synchronise de manière sécurisée vos données avec votre compte Google.</translation>
 <translation id="8028993641010258682">Taille</translation>
 <translation id="5031603669928715570">Activer...</translation>
-<translation id="532340483382036194">Cette fonctionnalité autorise l'installation d'applications Google Chrome déployées à partir d'un fichier manifeste situé sur une page Web, plutôt qu'avec un fichier crx contenant le manifeste et les icônes.</translation>
+<translation id="532340483382036194">Cette fonctionnalité autorise l'installation d'applications Google Chrome déployées à partir d'un fichier manifeste situé sur une page Web, plutôt qu'avec un fichier crx contenant le fichier manifeste et les icônes.</translation>
 <translation id="1383876407941801731">Recherche</translation>
 <translation id="8398877366907290961">Poursuivre quand même</translation>
 <translation id="5063180925553000800">Nouveau code PIN :</translation>
@@ -1417,7 +1417,7 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="1664712100580477121">Voulez-vous vraiment graver l'image sur le périphérique suivant :</translation>
 <translation id="6639554308659482635">Mémoire SQLite</translation>
 <translation id="8141503649579618569"><ph name="DOWNLOAD_RECEIVED"/>/<ph name="DOWNLOAD_TOTAL"/>, <ph name="TIME_LEFT"/></translation>
-<translation id="7231224339346098802">Utilisez un nombre pour indiquer le nombre de copies à imprimer (une ou plus).</translation>
+<translation id="7231224339346098802">Indiquez le nombre de copies à imprimer (une ou plus).</translation>
 <translation id="7650701856438921772"><ph name="PRODUCT_NAME"/> est affiché dans cette langue.</translation>
 <translation id="740624631517654988">Fenêtre pop-up bloquée</translation>
 <translation id="3738924763801731196"><ph name="OID"/> :</translation>
@@ -1503,7 +1503,7 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="3122496702278727796">Échec de la création du répertoire des données</translation>
 <translation id="4517036173149081027">Fermer et annuler le chargement</translation>
 <translation id="7150146631451105528"><ph name="DATE"/></translation>
-<translation id="350945665292790777">Ces fonctionnalité utilise la composition graphique accélérée sur toutes les pages, et non uniquement celles qui comprennent des couches accélérées par le processeur graphique.</translation>
+<translation id="350945665292790777">Utilise la composition graphique accélérée sur toutes les pages, et non uniquement celles qui comprennent des couches accélérées par le processeur graphique.</translation>
 <translation id="3166547286524371413">Adresse :</translation>
 <translation id="4522570452068850558">Détails</translation>
 <translation id="59659456909144943">Notification : <ph name="NOTIFICATION_NAME"/></translation>
@@ -1941,7 +1941,7 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="8187473050234053012">Le certificat de sécurité du site a été révoqué !</translation>
 <translation id="7444983668544353857">Désactiver <ph name="NETWORKDEVICE"/></translation>
 <translation id="6003177993629630467"><ph name="PRODUCT_NAME"/> risque de ne pas rester à jour.</translation>
-<translation id="2374898461628345975">Cette fonctionnalité active les feuilles de style CSS 3D et la composition graphique haute performance des pages Web via le processeur graphique.</translation>
+<translation id="2374898461628345975">Active les feuilles de style CSS 3D et améliore la performance de la composition graphique des pages Web via le processeur graphique.</translation>
 <translation id="421577943854572179">intégré sur tout autre site</translation>
 <translation id="580886651983547002"><ph name="PRODUCT_NAME"/>
         ne parvient pas à atteindre le site Web. Cela vient probablement d'un problème de réseau,
@@ -1949,7 +1949,7 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="5445557969380904478">À propos de la reconnaissance vocale</translation>
 <translation id="3093473105505681231">Langues et paramètres du correcteur orthographique...</translation>
 <translation id="152482086482215392"><ph name="NUMBER_ONE"/> seconde restante</translation>
-<translation id="8678698760965522072">État En ligne</translation>
+<translation id="8678698760965522072">En ligne</translation>
 <translation id="529172024324796256">Nom d'utilisateur :</translation>
 <translation id="3308116878371095290">Le stockage des cookies n'est pas autorisé pour cette page.</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -2098,7 +2098,7 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="1199232041627643649">Maintenez la touche <ph name="KEY_EQUIVALENT"/> enfoncée pour quitter.</translation>
 <translation id="5428562714029661924">Masquer ce plug-in</translation>
 <translation id="7907591526440419938">Ouvrir le fichier</translation>
-<translation id="8074548357564495927">Activer le plug-in client de communication à distance. Avertissement : Il s'agit actuellement d'une version réservée aux tests par les développeurs. Si vous ne faites pas partie de l'équipe de développement et que vous ne figurez pas sur la liste blanche, aucun élément de l'interface activée ne fonctionnera.</translation>
+<translation id="8074548357564495927">Activer le plug-in client de communication à distance. Avertissement : Il s'agit actuellement d'une version réservée aux développeurs à des fins de test. Si vous ne faites pas partie de l'équipe de développement et que vous ne figurez pas sur la liste blanche, aucun élément de l'interface activée ne fonctionnera.</translation>
 <translation id="2568774940984945469">Conteneur de barres d'infos</translation>
 <translation id="8971063699422889582">Le certificat du serveur a expiré.</translation>
 <translation id="8281596639154340028">Utiliser <ph name="HANDLER_TITLE"/></translation>
@@ -2136,7 +2136,7 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="4126154898592630571">Conversion de la date et de l'heure</translation>
 <translation id="5088534251099454936">PKCS #1 SHA-512 avec chiffrement RSA</translation>
 <translation id="6392373519963504642">Clavier coréen</translation>
-<translation id="5037358328087281103">LevelDB utilise IndexedDB.</translation>
+<translation id="5037358328087281103">LevelDB utilise IndexedDB</translation>
 <translation id="7887334752153342268">Dupliquer</translation>
 <translation id="4980691186726139495">Ne pas conserver sur cette page</translation>
 <translation id="3081523290047420375">Désactiver <ph name="CLOUD_PRINT_NAME"/></translation>
@@ -2284,7 +2284,7 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="7422192691352527311">Préférences...</translation>
 <translation id="354211537509721945">L'administrateur a désactivé les mises à jour.</translation>
 <translation id="1375198122581997741">À propos de la version</translation>
-<translation id="2345435964258511234">Cette fonctionnalité désactive la synchronisation avec le taux d'actualisation verticale de l'écran lors du rendu graphique. Cela permet des fréquences d'images à plus de 60 hertz. Utile à des fins d'analyse comparative, cette option peut également provoquer des déchirures d'images lors de mises à jour d'écran rapides.</translation>
+<translation id="2345435964258511234">Désactive la synchronisation avec le taux d'actualisation verticale de l'écran lors du rendu graphique. Cela permet des fréquences d'images à plus de 60 hertz. Utile à des fins d'analyse comparative, cette option peut également provoquer des déchirures d'images lors de mises à jour d'écran rapides.</translation>
 <translation id="7915471803647590281">Veuillez nous indiquer ce qu'il se passe avant d'envoyer votre rapport.</translation>
 <translation id="5725124651280963564">Connectez-vous à <ph name="TOKEN_NAME"/> afin de générer une clé pour <ph name="HOST_NAME"/>.</translation>
 <translation id="8418113698656761985">Clavier roumain</translation>
@@ -2412,7 +2412,7 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="2812989263793994277">Ne pas afficher les images</translation>
 <translation id="7190251665563814471">Toujours autoriser ces plug-ins sur <ph name="HOST"/></translation>
 <translation id="6845383723252244143">Sélectionner un dossier</translation>
-<translation id="3653550165444444309">Ajouter une imprimante sur le cloud...</translation>
+<translation id="3653550165444444309">Ajouter une imprimante connectée au Web...</translation>
 <translation id="8925458182817574960">&amp;Paramètres</translation>
 <translation id="6361850914223837199">Informations sur l'erreur :</translation>
 <translation id="8948393169621400698">Toujours autoriser les plug-ins sur <ph name="HOST"/></translation>
@@ -2529,7 +2529,7 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK"/>En savoir plus<ph name="END_LINK"/> sur ce problème.</translation>
 <translation id="1699395855685456105">Version du matériel :</translation>
 <translation id="212464871579942993">Le site Web à l'adresse <ph name="HOST_NAME"/> contient des éléments provenant de sites qui semblent héberger des logiciels malveillants. Ces derniers peuvent nuire à votre ordinateur ou agir à votre insu. Le simple fait de visiter un site hébergeant ce type de logiciels peut infecter votre ordinateur. Ce site héberge également des informations provenant de sites signalés comme étant des sites de phishing. Ces derniers incitent les internautes à divulguer des informations personnelles en se faisant passer pour des institutions de confiance, telles que des banques.</translation>
-<translation id="6157714576637082050">Imprimantes du cloud</translation>
+<translation id="6157714576637082050">Imprimantes connectées au cloud</translation>
 <translation id="8156020606310233796">Afficher la liste</translation>
 <translation id="957120528631539888">Désactivez l'affichage des messages de confirmation et le blocage de l'envoi des formulaires.</translation>
 <translation id="146000042969587795">Ce cadre a été bloqué, car il contient des éléments non sécurisés.</translation>
@@ -2703,7 +2703,7 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="4443536555189480885">&amp;Aide</translation>
 <translation id="340485819826776184">Utiliser un service de prédiction afin de compléter les recherches et les URL saisies dans la barre d'adresse</translation>
 <translation id="4074900173531346617">Certificat du signataire de courrier électronique</translation>
-<translation id="4743103415223548376">Échec de l'aperçu avant l'impression, car la page que vous essayez d'imprimer a été fermée.</translation>
+<translation id="4743103415223548376">Échec de l'aperçu avant impression, car la page que vous essayez d'imprimer a été fermée.</translation>
 <translation id="6165508094623778733">En savoir plus</translation>
 <translation id="9052208328806230490">Vous avez enregistré vos imprimantes sur <ph name="CLOUD_PRINT_NAME"/> via le compte <ph name="EMAIL"/>.</translation>
 <translation id="822618367988303761">il y a <ph name="NUMBER_TWO"/> jours</translation>
@@ -2853,7 +2853,7 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="5811533512835101223">(Revenir à la capture d'écran d'origine)</translation>
 <translation id="5131817835990480221">Mettre à jour &amp;<ph name="PRODUCT_NAME"/></translation>
 <translation id="939519157834106403">SSID</translation>
-<translation id="7005848115657603926">Numéros de pages non valides, utilisez <ph name="EXAMPLE_PAGE_RANGE"/>.</translation>
+<translation id="7005848115657603926">Plage de pages non valide, veuillez utiliser <ph name="EXAMPLE_PAGE_RANGE"/>.</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="2635102990349508383">Les informations de connexion au compte n'ont pas encore été saisies.</translation>
 <translation id="6902055721023340732">URL de configuration automatique</translation>
@@ -3122,7 +3122,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="7339785458027436441">Vérifier l'orthographe lors de la frappe</translation>
 <translation id="8308427013383895095">Échec de la traduction en raison d'un problème de connexion réseau</translation>
 <translation id="1801298019027379214">Code PIN incorrect. Veuillez réessayer. Nombre de tentatives restantes : <ph name="TRIES_COUNT"/></translation>
-<translation id="3529020546926570314">Se connecter pour accéder aux imprimantes du cloud...</translation>
+<translation id="3529020546926570314">Se connecter pour accéder aux imprimantes connectées au cloud...</translation>
 <translation id="1384721974622518101">Vous pouvez effectuer une recherche directement à partir du champ ci-dessus.</translation>
 <translation id="992543612453727859">Ajouter les expressions au premier plan</translation>
 <translation id="1559528461873125649">Fichier ou répertoire inexistant</translation>

@@ -268,7 +268,7 @@
           For detailed examples, visit:
           <ph name="PROXY_HELP_URL"/></translation>
 <translation id="1808715480127969042">Block cookies on these sites</translation>
-<translation id="1115048775745697549">Cross-origin HTTP Basic Auth propmts</translation>
+<translation id="1115048775745697549">Cross-origin HTTP Basic Auth prompts</translation>
 <translation id="2745445908503591390">Clear site data on browser shutdown</translation>
 <translation id="8665913667133665583">Specifies which servers should be whitelisted for integrated authentication. Integrated authentication is only enabled when <ph name="PRODUCT_NAME"/> receives an authentication challenge from a proxy or from a server which is in this permitted list.
 

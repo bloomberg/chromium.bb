@@ -3,7 +3,7 @@
 <translationbundle lang="de">
 <translation id="4519964825805946997">Installation des Plug-ins von <ph name="URL"/> fehlgeschlagen</translation>
 <translation id="9186171386827445984">Dokument wird geladen <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> Seiten...</translation>
-<translation id="1235745349614807883">Vor kurzem durchgeführte Suchanfragen löschen</translation>
+<translation id="1235745349614807883">Vor Kurzem durchgeführte Suchanfragen löschen</translation>
 <translation id="1171774979989969504">Geben Sie eine E-Mail-Adresse ein.</translation>
 <translation id="709897737746224366">Ihre Eingabe muss mit dem geforderten Format übereinstimmen.</translation>
 <translation id="5048533449481078685">Listenmarkierung</translation>
@@ -19,7 +19,7 @@
 <translation id="6845533974506654842">klicken</translation>
 <translation id="8244226242650769279">Imagemap</translation>
 <translation id="310520048233152454">Geben Sie eine URL ein.</translation>
-<translation id="2548326553472216322">Keine vor kurzem durchgeführte Suchanfragen</translation>
+<translation id="2548326553472216322">Keine vor Kurzem durchgeführte Suchanfragen</translation>
 <translation id="7263440858009898357">Wählen Sie ein Element in der Liste aus.</translation>
 <translation id="5164977714490026579">Wert muss größer als oder gleich <ph name="MINIMUM"/> sein.</translation>
 <translation id="5944544982112848342">2048 (High Grade)</translation>
@@ -38,7 +38,7 @@
 <translation id="3789841737615482174">Installieren</translation>
 <translation id="2507943997699731163">Füllen Sie dieses Feld aus.</translation>
 <translation id="5253117816378681419">Bitte bestätigen Sie, dass Sie das Plug-in <ph name="PLUGIN"/> installieren möchten. Installieren Sie nur Plug-ins, denen Sie vertrauen.</translation>
-<translation id="6663448176199120256">Vor kurzem durchgeführte Suchanfragen</translation>
+<translation id="6663448176199120256">Vor Kurzem durchgeführte Suchanfragen</translation>
 <translation id="7335060848622232389">Die Installation von Plug-ins wurde deaktiviert.</translation>
 <translation id="2597378329261239068">Dieses Dokument ist passwortgeschützt. Geben Sie ein Passwort ein.</translation>
 <translation id="5466621249238537318">Wählen Sie eine oder mehrere Dateien aus.</translation>

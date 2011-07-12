@@ -10,7 +10,7 @@
 <translation id="7400722733683201933">Giới thiệu về Google Chrome</translation>
 <translation id="7781002470561365167">Hiện đã có phiên bản mới của Google Chrome.</translation>
 <translation id="7101265395643981223">Khởi động Google Chrome</translation>
-<translation id="647902066410369402">Tệp tuỳ chọn của bạn bị hỏng hoặc không hợp lệ.\n\nGoogle Chrome không thể phục hồi cài đặt của bạn.</translation>
+<translation id="647902066410369402">Tệp tùy chọn của bạn bị hỏng hoặc không hợp lệ.\n\nGoogle Chrome không thể phục hồi cài đặt của bạn.</translation>
 <translation id="4891791193823137474">Để Google Chrome chạy trên nền</translation>
 <translation id="2879385160622431163">Google Chrome Instant</translation>
 <translation id="2370289711218562573">Google Chrome hiện đang nhập Mục ưa thích/Dấu trang.</translation>
@@ -71,7 +71,7 @@
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome cho phép bạn nhấp vào số điện thoại trên web và gọi tới số đó bằng Skype!</translation>
 <translation id="3612333635265770873">Một mô-đun có cùng tên đã được xác định là xung đột với Google Chrome.</translation>
-<translation id="5947389362804196214">Không thể đọc tuỳ chọn của bạn.\n\nMột số tính năng có thể không khả dụng và thay đổi cho tuỳ chọn của bạn sẽ không được lưu.</translation>
+<translation id="5947389362804196214">Không thể đọc tùy chọn của bạn.\n\nMột số tính năng có thể không khả dụng và thay đổi cho tùy chọn của bạn sẽ không được lưu.</translation>
 <translation id="6650142020817594541">Trang web này khuyến nghị Google Chrome Frame (đã được cài đặt).</translation>
 <translation id="4127951844153999091">Trong trường hợp này, địa chỉ được liệt kê trong chứng chỉ không phù hợp với địa chỉ của trang web mà trình duyệt của bạn cố truy cập. Một nguyên nhân có thể xảy ra là giao tiếp của bạn đang bị kẻ tấn công, người đang xuất trình chứng chỉ cho trang web khác, chặn lại và gây ra lỗi không khớp. Một nguyên nhân khác có thể là do máy chủ được thiết lập để trả về cùng một chứng chỉ cho nhiều trang web, kể cả trang web mà bạn cố truy cập, mặc dù chứng chỉ đó không có giá trị cho tất cả trang web đó. Google Chrome có thể chắc chắn rằng bạn đã truy cập &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, nhưng không thể xác minh đó là trang web tương tự như &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; mà bạn dự định truy cập. Nếu bạn tiếp tục, Chrome sẽ không kiểm tra thêm bất kỳ sự không phù hợp về tên nào nữa. Nói chung, bạn không nên tiếp tục truy cập trang web.</translation>
 <translation id="2712549016134575851">Đã phát hiện thấy xung đột với một ứng dụng đã cài đặt khác.</translation>
