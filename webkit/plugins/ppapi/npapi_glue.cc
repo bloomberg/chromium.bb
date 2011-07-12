@@ -7,8 +7,9 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/string_util.h"
-#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/plugin_object.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/var.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npruntime.h"
@@ -193,8 +194,8 @@ NPObjectAccessorWithIdentifier::NPObjectAccessorWithIdentifier(
     : object_(PluginObject::FromNPObject(object)),
       identifier_(PP_MakeUndefined()) {
   if (object_) {
-    identifier_ = Var::NPIdentifierToPPVar(object_->instance()->module(),
-                                           identifier);
+    identifier_ = Var::NPIdentifierToPPVar(
+        object_->instance()->module()->pp_module(), identifier);
     if (identifier_.type == PP_VARTYPE_INT32 && !allow_integer_identifier)
       identifier_.type = PP_VARTYPE_UNDEFINED;  // Mark it invalid.
   }

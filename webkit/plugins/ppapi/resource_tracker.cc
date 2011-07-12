@@ -151,6 +151,10 @@ int32 ResourceTracker::AddVar(Var* var) {
   if (last_var_id_ == std::numeric_limits<int32>::max() >> kPPIdTypeBits)
     return 0;
 
+  // Validate the module.
+  if (!GetModule(var->pp_module()))
+    return 0;
+
   // Add the resource with plugin use-count 1.
   int32 new_id = MakeTypedId(++last_var_id_, PP_ID_TYPE_VAR);
   live_vars_.insert(std::make_pair(new_id, std::make_pair(var, 1)));

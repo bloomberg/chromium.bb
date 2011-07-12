@@ -128,7 +128,8 @@ PP_Var GetLocalizedString(PP_Instance instance_id,
     NOTREACHED();
   }
 
-  return webkit::ppapi::StringVar::StringToPPVar(instance->module(), rv);
+  return webkit::ppapi::StringVar::StringToPPVar(
+      instance->module()->pp_module(), rv);
 }
 
 PP_Resource GetResourceImage(PP_Instance instance_id,

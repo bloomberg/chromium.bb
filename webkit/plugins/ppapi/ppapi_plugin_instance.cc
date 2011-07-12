@@ -1431,7 +1431,7 @@ PP_Var PluginInstance::GetOwnerElementObject(PP_Instance instance) {
 PP_Var PluginInstance::ExecuteScript(PP_Instance instance,
                                      PP_Var script,
                                      PP_Var* exception) {
-  TryCatch try_catch(module(), exception);
+  TryCatch try_catch(module()->pp_module(), exception);
   if (try_catch.has_exception())
     return PP_MakeUndefined();
 

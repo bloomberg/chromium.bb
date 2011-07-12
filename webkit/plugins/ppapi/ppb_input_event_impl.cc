@@ -4,6 +4,7 @@
 
 #include "webkit/plugins/ppapi/ppb_input_event_impl.h"
 
+#include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/var.h"
 
@@ -33,7 +34,7 @@ PPB_InputEvent_API* PPB_InputEvent_Impl::AsPPB_InputEvent_API() {
 }
 
 PP_Var PPB_InputEvent_Impl::StringToPPVar(const std::string& str) {
-  return StringVar::StringToPPVar(instance()->module(), str);
+  return StringVar::StringToPPVar(instance()->module()->pp_module(), str);
 }
 
 }  // namespace ppapi

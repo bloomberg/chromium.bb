@@ -104,7 +104,7 @@ PP_Var CopyPPVar(const PP_Var& var) {
     scoped_refptr<StringVar> string(StringVar::FromPPVar(var));
     if (!string)
       return PP_MakeUndefined();
-    return StringVar::StringToPPVar(string->module(), string->value());
+    return StringVar::StringToPPVar(string->pp_module(), string->value());
   } else {
     return var;
   }

@@ -9,6 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "ppapi/c/pp_module.h"
 
 struct PP_Var;
 struct PPB_Var;
@@ -22,7 +23,6 @@ namespace ppapi {
 
 class ObjectVar;
 class PluginInstance;
-class PluginModule;
 class StringVar;
 
 // Var -------------------------------------------------------------------------
@@ -52,7 +52,7 @@ class Var : public base::RefCounted<Var> {
   // Returns a PP_Var corresponding to the given identifier. In the case of
   // a string identifier, the string will be allocated associated with the
   // given module. A returned string will have a reference count of 1.
-  static PP_Var NPIdentifierToPPVar(PluginModule* module, NPIdentifier id);
+  static PP_Var NPIdentifierToPPVar(PP_Module module, NPIdentifier id);
 
   // Returns a string representing the given var for logging purposes.
   static std::string PPVarToLogString(PP_Var var);
@@ -96,19 +96,25 @@ class Var : public base::RefCounted<Var> {
   virtual StringVar* AsStringVar();
   virtual ObjectVar* AsObjectVar();
 
-  PluginModule* module() const { return module_; }
+  // Creates a PP_Var corresponding to this object. The return value will have
+  // one reference addrefed on behalf of the caller.
+  virtual PP_Var GetPPVar() = 0;
 
-  // Returns the unique ID associated with this string or object. The object
-  // must be a string or an object var, and the return value is guaranteed
-  // nonzero.
-  int32 GetID();
+  PP_Module pp_module() const { return pp_module_; }
 
  protected:
   // This can only be constructed as a StringVar or an ObjectVar.
-  explicit Var(PluginModule* module);
+  explicit Var(PP_Module module);
+
+  // Returns the unique ID associated with this string or object. The return
+  // value will be 0 if the string or object is invalid.
+  //
+  // This function will take a reference to the var that will be passed to the
+  // caller.
+  int32 GetID();
 
  private:
-  PluginModule* module_;
+  PP_Module pp_module_;
 
   // This will be 0 if no ID has been assigned (this happens lazily).
   int32 var_id_;
@@ -130,13 +136,14 @@ class Var : public base::RefCounted<Var> {
 //   DoSomethingWithTheString(string->value());
 class StringVar : public Var {
  public:
-  StringVar(PluginModule* module, const char* str, uint32 len);
+  StringVar(PP_Module module, const char* str, uint32 len);
   virtual ~StringVar();
 
   const std::string& value() const { return value_; }
 
   // Var override.
   virtual StringVar* AsStringVar() OVERRIDE;
+  virtual PP_Var GetPPVar() OVERRIDE;
 
   // Helper function to create a PP_Var of type string that contains a copy of
   // the given string. The input data must be valid UTF-8 encoded text, if it
@@ -145,9 +152,8 @@ class StringVar : public Var {
   // The return value will have a reference count of 1. Internally, this will
   // create a StringVar, associate it with a module, and return the reference
   // to it in the var.
-  static PP_Var StringToPPVar(PluginModule* module, const std::string& str);
-  static PP_Var StringToPPVar(PluginModule* module,
-                              const char* str, uint32 len);
+  static PP_Var StringToPPVar(PP_Module module, const std::string& str);
+  static PP_Var StringToPPVar(PP_Module module, const char* str, uint32 len);
 
   // Helper function that converts a PP_Var to a string. This will return NULL
   // if the PP_Var is not of string type or the string is invalid.
@@ -177,6 +183,7 @@ class ObjectVar : public Var {
 
   // Var overrides.
   virtual ObjectVar* AsObjectVar() OVERRIDE;
+  virtual PP_Var GetPPVar() OVERRIDE;
 
   // Returns the underlying NPObject corresponding to this ObjectVar.
   // Guaranteed non-NULL.
@@ -240,12 +247,12 @@ class TryCatch {
   //
   // If an exception is thrown when the module is NULL, setting *any* exception
   // will result in using the InvalidObjectException.
-  TryCatch(PluginModule* module, PP_Var* exception);
+  TryCatch(PP_Module module, PP_Var* exception);
   ~TryCatch();
 
   // Get and set the module. This may be NULL (see the constructor).
-  PluginModule* module() { return module_; }
-  void set_module(PluginModule* module) { module_ = module; }
+  PP_Module pp_module() { return pp_module_; }
+  void set_pp_module(PP_Module module) { pp_module_ = module; }
 
   // Returns true is an exception has been thrown. This can be true immediately
   // after construction if the var passed to the constructor is non-void.
@@ -266,7 +273,7 @@ class TryCatch {
  private:
   static void Catch(void* self, const char* message);
 
-  PluginModule* module_;
+  PP_Module pp_module_;
 
   // True if an exception has been thrown. Since the exception itself may be
   // NULL if the plugin isn't interested in getting the exception, this will

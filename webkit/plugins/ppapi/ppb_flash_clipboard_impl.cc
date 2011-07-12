@@ -17,6 +17,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKitClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "webkit/plugins/ppapi/common.h"
+#include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
 #include "webkit/plugins/ppapi/var.h"
@@ -90,7 +91,7 @@ PP_Var ReadPlainText(PP_Instance instance_id,
 
   WebKit::WebCString s =
       web_clipboard->readPlainText(ConvertClipboardType(clipboard_type)).utf8();
-  return StringVar::StringToPPVar(instance->module(), s);
+  return StringVar::StringToPPVar(instance->module()->pp_module(), s);
 }
 
 int32_t WritePlainText(PP_Instance instance_id,

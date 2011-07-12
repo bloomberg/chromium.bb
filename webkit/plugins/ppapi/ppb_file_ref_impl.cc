@@ -136,13 +136,14 @@ PP_Var PPB_FileRef_Impl::GetName() const {
     result = virtual_path_.substr(pos + 1);
   }
 
-  return StringVar::StringToPPVar(instance()->module(), result);
+  return StringVar::StringToPPVar(instance()->module()->pp_module(), result);
 }
 
 PP_Var PPB_FileRef_Impl::GetPath() const {
   if (GetFileSystemType() == PP_FILESYSTEMTYPE_EXTERNAL)
     return PP_MakeUndefined();
-  return StringVar::StringToPPVar(instance()->module(), virtual_path_);
+  return StringVar::StringToPPVar(instance()->module()->pp_module(),
+                                  virtual_path_);
 }
 
 PP_Resource PPB_FileRef_Impl::GetParent() {

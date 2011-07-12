@@ -52,7 +52,7 @@ uint16_t* PPB_CharSet_Impl::CharSetToUTF16(PP_Instance instance,
 
 PP_Var PPB_CharSet_Impl::GetDefaultCharSet(PP_Instance instance) {
   std::string encoding = instance_->delegate()->GetDefaultEncoding();
-  return StringVar::StringToPPVar(instance_->module(), encoding);
+  return StringVar::StringToPPVar(instance_->module()->pp_module(), encoding);
 }
 
 }  // namespace ppapi

@@ -102,7 +102,7 @@ bool PPVarToNPVariantNoCopy(PP_Var var, NPVariant* result) {
 // an exception if it's invalid. At the end of construction, if there is no
 // exception, you know that there is no previously set exception, that the
 // object passed in is valid and ready to use (via the object() getter), and
-// that the TryCatch's module() getter is also set up properly and ready to
+// that the TryCatch's pp_module() getter is also set up properly and ready to
 // use.
 class ObjectAccessorTryCatch : public TryCatch {
  public:
@@ -116,7 +116,7 @@ class ObjectAccessorTryCatch : public TryCatch {
       SetInvalidObjectException();
     } else {
       // When the object is valid, we have a valid module to associate
-      set_module(object_->module());
+      set_pp_module(object_->pp_module());
     }
   }
 
@@ -138,7 +138,7 @@ class ObjectAccessorTryCatch : public TryCatch {
 // At the end of construction, if there is no exception, you know that there is
 // no previously set exception, that the object passed in is valid and ready to
 // use (via the object() getter), that the identifier is valid and ready to
-// use (via the identifier() getter), and that the TryCatch's module() getter
+// use (via the identifier() getter), and that the TryCatch's pp_module() getter
 // is also set up properly and ready to use.
 class ObjectAccessorWithIdentifierTryCatch : public ObjectAccessorTryCatch {
  public:
@@ -164,10 +164,7 @@ class ObjectAccessorWithIdentifierTryCatch : public ObjectAccessorTryCatch {
 
 // PPB_Var methods -------------------------------------------------------------
 
-PP_Var VarFromUtf8(PP_Module module_id, const char* data, uint32_t len) {
-  PluginModule* module = ResourceTracker::Get()->GetModule(module_id);
-  if (!module)
-    return PP_MakeNull();
+PP_Var VarFromUtf8(PP_Module module, const char* data, uint32_t len) {
   return StringVar::StringToPPVar(module, data, len);
 }
 
@@ -260,7 +257,7 @@ void EnumerateProperties(PP_Var var,
   *properties = static_cast<PP_Var*>(malloc(sizeof(PP_Var) * count));
   for (uint32_t i = 0; i < count; ++i) {
     (*properties)[i] = Var::NPIdentifierToPPVar(
-        accessor.object()->instance()->module(),
+        accessor.object()->instance()->module()->pp_module(),
         identifiers[i]);
   }
   free(identifiers);
@@ -449,7 +446,7 @@ const PPB_Var var_interface = {
 
 // Var -------------------------------------------------------------------------
 
-Var::Var(PluginModule* module) : module_(module), var_id_(0) {
+Var::Var(PP_Module module) : pp_module_(module), var_id_(0) {
 }
 
 Var::~Var() {
@@ -471,7 +468,7 @@ PP_Var Var::NPVariantToPPVar(PluginInstance* instance,
       return PP_MakeDouble(NPVARIANT_TO_DOUBLE(*variant));
     case NPVariantType_String:
       return StringVar::StringToPPVar(
-          instance->module(),
+          instance->module()->pp_module(),
           NPVARIANT_TO_STRING(*variant).UTF8Characters,
           NPVARIANT_TO_STRING(*variant).UTF8Length);
     case NPVariantType_Object:
@@ -499,7 +496,7 @@ NPIdentifier Var::PPVarToNPIdentifier(PP_Var var) {
 }
 
 // static
-PP_Var Var::NPIdentifierToPPVar(PluginModule* module, NPIdentifier id) {
+PP_Var Var::NPIdentifierToPPVar(PP_Module module, NPIdentifier id) {
   const NPUTF8* string_value = NULL;
   int32_t int_value = 0;
   bool is_string = false;
@@ -576,21 +573,21 @@ ObjectVar* Var::AsObjectVar() {
 }
 
 int32 Var::GetID() {
-  // This should only be called for objects and strings. POD vars like integers
-  // have no identifiers.
-  DCHECK(AsStringVar() || AsObjectVar());
-
   ResourceTracker *tracker = ResourceTracker::Get();
-  if (var_id_)
-    tracker->AddRefVar(var_id_);
-  else
+  if (var_id_) {
+    if (!tracker->AddRefVar(var_id_))
+      return 0;
+  } else {
     var_id_ = tracker->AddVar(this);
+    if (!var_id_)
+      return 0;
+  }
   return var_id_;
 }
 
 // StringVar -------------------------------------------------------------------
 
-StringVar::StringVar(PluginModule* module, const char* str, uint32 len)
+StringVar::StringVar(PP_Module module, const char* str, uint32 len)
     : Var(module),
       value_(str, len) {
 }
@@ -602,24 +599,29 @@ StringVar* StringVar::AsStringVar() {
   return this;
 }
 
+PP_Var StringVar::GetPPVar() {
+  int32 id = GetID();
+  if (!id)
+    return PP_MakeNull();
+
+  PP_Var result;
+  result.type = PP_VARTYPE_STRING;
+  result.value.as_id = id;
+  return result;
+}
+
 // static
-PP_Var StringVar::StringToPPVar(PluginModule* module, const std::string& var) {
+PP_Var StringVar::StringToPPVar(PP_Module module, const std::string& var) {
   return StringToPPVar(module, var.c_str(), var.size());
 }
 
 // static
-PP_Var StringVar::StringToPPVar(PluginModule* module,
+PP_Var StringVar::StringToPPVar(PP_Module module,
                                 const char* data, uint32 len) {
   scoped_refptr<StringVar> str(new StringVar(module, data, len));
   if (!str || !IsStringUTF8(str->value()))
     return PP_MakeNull();
-
-  PP_Var ret;
-  ret.type = PP_VARTYPE_STRING;
-
-  // The caller takes ownership now.
-  ret.value.as_id = str->GetID();
-  return ret;
+  return str->GetPPVar();
 }
 
 // static
@@ -636,7 +638,7 @@ scoped_refptr<StringVar> StringVar::FromPPVar(PP_Var var) {
 // ObjectVar -------------------------------------------------------------
 
 ObjectVar::ObjectVar(PluginInstance* instance, NPObject* np_object)
-    : Var(instance->module()),
+    : Var(instance->module()->pp_module()),
       instance_(instance),
       np_object_(np_object) {
   WebBindings::retainObject(np_object_);
@@ -653,6 +655,17 @@ ObjectVar* ObjectVar::AsObjectVar() {
   return this;
 }
 
+PP_Var ObjectVar::GetPPVar() {
+  int32 id = GetID();
+  if (!id)
+    return PP_MakeNull();
+
+  PP_Var result;
+  result.type = PP_VARTYPE_OBJECT;
+  result.value.as_id = id;
+  return result;
+}
+
 void ObjectVar::InstanceDeleted() {
   DCHECK(instance_);
   instance_ = NULL;
@@ -667,12 +680,7 @@ PP_Var ObjectVar::NPObjectToPPVar(PluginInstance* instance, NPObject* object) {
 
   if (!object_var)
     return PP_MakeUndefined();
-
-  // Convert to a PP_Var, GetID will AddRef for us.
-  PP_Var result;
-  result.type = PP_VARTYPE_OBJECT;
-  result.value.as_id = object_var->GetID();
-  return result;
+  return object_var->GetPPVar();
 }
 
 // static
@@ -688,8 +696,8 @@ scoped_refptr<ObjectVar> ObjectVar::FromPPVar(PP_Var var) {
 
 // TryCatch --------------------------------------------------------------------
 
-TryCatch::TryCatch(PluginModule* module, PP_Var* exception)
-    : module_(module),
+TryCatch::TryCatch(PP_Module module, PP_Var* exception)
+    : pp_module_(module),
       has_exception_(exception && exception->type != PP_VARTYPE_UNDEFINED),
       exception_(exception) {
   WebBindings::pushExceptionHandler(&TryCatch::Catch, this);
@@ -700,7 +708,7 @@ TryCatch::~TryCatch() {
 }
 
 void TryCatch::SetException(const char* message) {
-  if (!module_) {
+  if (!pp_module_) {
     // Don't have a module to make the string.
     SetInvalidObjectException();
     return;
@@ -708,8 +716,10 @@ void TryCatch::SetException(const char* message) {
 
   if (!has_exception()) {
     has_exception_ = true;
-    if (exception_)
-      *exception_ = StringVar::StringToPPVar(module_, message, strlen(message));
+    if (exception_) {
+      *exception_ = StringVar::StringToPPVar(pp_module_,
+                                             message, strlen(message));
+    }
   }
 }
 

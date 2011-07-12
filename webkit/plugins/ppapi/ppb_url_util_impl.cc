@@ -34,7 +34,7 @@ PP_Module GetModuleFromVar(PP_Var string_var) {
   scoped_refptr<StringVar> str(StringVar::FromPPVar(string_var));
   if (!str)
     return 0;
-  return str->module()->pp_module();
+  return str->pp_module();
 }
 
 const std::string* StringFromVar(PP_Var var) {
