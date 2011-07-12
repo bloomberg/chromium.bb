@@ -26,22 +26,8 @@ link_segment_gap = gap_env.ComponentObject(
     'link_segment_gap',
     '${SCONSTRUCT_DIR}/src/untrusted/irt/link_segment_gap.S'
     )
-gap_obj = gap_env.AddObjectToSdk(link_segment_gap, is_platform=True)
+gap_env.AddObjectToSdk(link_segment_gap, is_platform=True)
 
-static_script = env.AddObjectToSdk(['libppapi.a'])
-
-# Anything that links with -lppapi (i.e. ${PPAPI_LIBS}) needs not just the
-# libppapi.a or libppapi.so linker script file, but also the object and
-# library it refers to.  By telling scons that libppapi.a depends on these
-# objects, we ensure that it builds them before something using ${PPAPI_LIBS}.
-script_deps = [gap_obj, lib]
-env.Depends(static_script, script_deps)
-
-# The static libppapi.a refers to libpthread.a, and in the non-glibc
-# build, we are the one providing that too.
-if not env.Bit('nacl_glibc'):
-  env.Depends(static_script, env.File('${LIB_DIR}/libpthread.a'))
-
+env.AddObjectToSdk(['libppapi.a'])
 if not env.Bit('nacl_disable_shared'):
-  dyn_script = env.AddObjectToSdk(['libppapi.so'])
-  env.Depends(dyn_script, script_deps)
+  env.AddObjectToSdk(['libppapi.so'])

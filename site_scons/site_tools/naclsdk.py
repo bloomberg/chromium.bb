@@ -10,6 +10,7 @@ import re
 import os
 import shutil
 import sys
+import SCons.Scanner
 import SCons.Script
 import subprocess
 
@@ -376,6 +377,51 @@ Run: gclient runhooks --force or build the SDK yourself.
     sys.exit(-1)
 
 
+def ScanLinkerScript(node, env, libpath):
+  """SCons scanner for linker script files.
+This handles trivial linker scripts like those used for libc.so and libppapi.a.
+These scripts just indicate more input files to be linked in, so we want
+to produce dependencies on them.
+
+A typical such linker script looks like:
+
+        /* Some comments.  */
+        INPUT ( foo.a libbar.a libbaz.a )
+
+or:
+
+        /* GNU ld script
+           Use the shared library, but some functions are only in
+           the static library, so try that secondarily.  */
+        OUTPUT_FORMAT(elf64-x86-64)
+        GROUP ( /lib/libc.so.6 /usr/lib/libc_nonshared.a
+                AS_NEEDED ( /lib/ld-linux-x86-64.so.2 ) )
+"""
+  contents = node.get_text_contents()
+  if contents.startswith('!<arch>\n') or contents.startswith('\177ELF'):
+    # An archive or ELF file is not a linker script.
+    return []
+
+  comment_pattern = re.compile(r'/\*.*?\*/', re.DOTALL | re.MULTILINE)
+  def remove_comments(text):
+    return re.sub(comment_pattern, '', text)
+
+  tokens = remove_comments(contents).split()
+  libs = []
+  while tokens:
+    token = tokens.pop()
+    if token.startswith('OUTPUT_FORMAT('):
+      pass
+    elif token == 'OUTPUT_FORMAT':
+      # Swallow the next three tokens: '(', 'xyz', ')'
+      del tokens[0:2]
+    elif token in ['(', ')', 'INPUT', 'GROUP', 'AS_NEEDED']:
+      pass
+    else:
+      libs.append(token)
+
+  return [SCons.Node.FS.find_file(lib, libpath) for lib in libs]
+
 def generate(env):
   """SCons entry point for this tool.
 
@@ -425,3 +471,16 @@ def generate(env):
       assert 0
 
   env.Prepend(LIBPATH='${NACL_SDK_LIB}')
+
+  # Install our scanner for (potential) linker scripts.
+  # It applies to "source" files ending in .a or .so.
+  # Dependency files it produces are to be found in ${LIBPATH}.
+  # It is applied recursively to those dependencies in case
+  # some of them are linker scripts too.
+  ldscript_scanner = SCons.Scanner.Base(
+      function=ScanLinkerScript,
+      skeys=['.a', '.so'],
+      path_function=SCons.Scanner.FindPathDirs('LIBPATH'),
+      recursive=True
+      )
+  env.Append(SCANNERS=ldscript_scanner)
