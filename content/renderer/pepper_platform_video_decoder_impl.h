@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "media/video/video_decode_accelerator.h"
@@ -20,8 +19,7 @@ class CommandBufferHelper;
 
 class PlatformVideoDecoderImpl
     : public webkit::ppapi::PluginDelegate::PlatformVideoDecoder,
-      public media::VideoDecodeAccelerator::Client,
-      public base::RefCountedThreadSafe<PlatformVideoDecoderImpl> {
+      public media::VideoDecodeAccelerator::Client {
  public:
   PlatformVideoDecoderImpl(
       media::VideoDecodeAccelerator::Client* client,
@@ -33,7 +31,7 @@ class PlatformVideoDecoderImpl
   virtual bool GetConfigs(
       const std::vector<uint32>& requested_configs,
       std::vector<uint32>* matched_configs) OVERRIDE;
-  virtual bool Initialize(const std::vector<uint32>& config) OVERRIDE;
+  virtual bool Initialize(const std::vector<uint32>& configs) OVERRIDE;
   virtual void Decode(
       const media::BitstreamBuffer& bitstream_buffer) OVERRIDE;
   virtual void AssignGLESBuffers(
@@ -60,8 +58,6 @@ class PlatformVideoDecoderImpl
   virtual void NotifyAbortDone() OVERRIDE;
 
  private:
-  void InitializeDecoder(const std::vector<uint32>& configs);
-
   // Client lifetime must exceed lifetime of this class.
   // TODO(vrk/fischman): We should take another look at the overall
   // arcitecture of PPAPI Video Decode to make sure lifetime/ownership makes
@@ -75,20 +71,10 @@ class PlatformVideoDecoderImpl
   gpu::CommandBufferHelper* cmd_buffer_helper_;
 
   // Host for GpuVideoDecodeAccelerator.
-  scoped_ptr<media::VideoDecodeAccelerator> decoder_;
-
-  // Host for Gpu Channel.
-  scoped_refptr<GpuChannelHost> channel_;
+  // This is owned by the CommandBufferProxy associated with
+  // |command_buffer_route_id|.
+  media::VideoDecodeAccelerator* decoder_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformVideoDecoderImpl);
 };
-
-// PlatformVideoDecoderImpl must extend RefCountedThreadSafe in order to post
-// tasks on the IO loop. However, it is not actually ref counted:
-// PPB_VideoDecode_Impl is the only thing that holds reference to
-// PlatformVideoDecoderImpl, so ref counting is unnecessary.
-//
-// TODO(vrk): Not sure if this is the right thing to do. Talk with fischman.
-DISABLE_RUNNABLE_METHOD_REFCOUNT(PlatformVideoDecoderImpl);
-
 #endif  // CONTENT_RENDERER_PEPPER_PLATFORM_VIDEO_DECODER_IMPL_H_

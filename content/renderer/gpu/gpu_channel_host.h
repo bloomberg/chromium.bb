@@ -14,6 +14,7 @@
 #include "base/process_util.h"
 #include "content/common/gpu/gpu_info.h"
 #include "content/common/message_router.h"
+#include "content/renderer/gpu/gpu_video_decode_accelerator_host.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ui/gfx/native_widget_types.h"
@@ -22,7 +23,6 @@
 class CommandBufferProxy;
 class GpuSurfaceProxy;
 class GURL;
-class GpuVideoServiceHost;
 class TransportTextureService;
 
 // Encapsulates an IPC channel between the renderer and one plugin process.
@@ -80,6 +80,14 @@ class GpuChannelHost : public IPC::Channel::Listener,
       const std::vector<int32>& attribs,
       const GURL& active_url);
 
+  // Creates a video decoder in the GPU process.
+  // Returned pointer is owned by the CommandBufferProxy for |route_id|.
+  GpuVideoDecodeAcceleratorHost* CreateVideoDecoder(
+      int command_buffer_route_id,
+      const std::vector<uint32>& configs,
+      gpu::CommandBufferHelper* cmd_buffer_helper,
+      media::VideoDecodeAccelerator::Client* client);
+
   // Destroy a command buffer created by this channel.
   void DestroyCommandBuffer(CommandBufferProxy* command_buffer);
 
@@ -88,10 +96,6 @@ class GpuChannelHost : public IPC::Channel::Listener,
 
   // Destroy a surface in the GPU process.
   void DestroySurface(GpuSurfaceProxy* surface);
-
-  GpuVideoServiceHost* gpu_video_service_host() {
-    return gpu_video_service_host_.get();
-  }
 
   TransportTextureService* transport_texture_service() {
     return transport_texture_service_.get();
@@ -110,12 +114,8 @@ class GpuChannelHost : public IPC::Channel::Listener,
 
   // Keep track of all the registered CommandBufferProxies to
   // inform about OnChannelError
-  typedef base::hash_map<int, IPC::Channel::Listener*> ProxyMap;
+  typedef base::hash_map<int, CommandBufferProxy*> ProxyMap;
   ProxyMap proxies_;
-
-  // This is a MessageFilter to intercept IPC messages and distribute them
-  // to the corresponding GpuVideoDecoderHost.
-  scoped_refptr<GpuVideoServiceHost> gpu_video_service_host_;
 
   // This is a MessageFilter to intercept IPC messages related to transport
   // textures. These messages are routed to TransportTextureHost.

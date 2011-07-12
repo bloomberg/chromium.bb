@@ -14,6 +14,7 @@
 #include "base/callback_old.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/renderer/gpu/gpu_video_decode_accelerator_host.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message.h"
@@ -80,6 +81,19 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   // and needs to be repainted. Takes ownership of task.
   void SetNotifyRepaintTask(Task* task);
 
+  // Sends an IPC message to create a GpuVideoDecodeAccelerator. Creates and
+  // returns a pointer to a GpuVideoDecodeAcceleratorHost. CommandBufferProxy
+  // owns the GpuVideoDecodeAcceleratorHost and does not transfer ownership to
+  // the caller of this method.
+  // Returns NULL on failure to create the GpuVideoDecodeAcceleratorHost.
+  // Note that the GpuVideoDecodeAccelerator may still fail to be created in
+  // the GPU process, even if this returns non-NULL. In this case the client is
+  // notified of an error later.
+  GpuVideoDecodeAcceleratorHost* CreateVideoDecoder(
+      const std::vector<uint32>& configs,
+      gpu::CommandBufferHelper* cmd_buffer_helper,
+      media::VideoDecodeAccelerator::Client* client);
+
 #if defined(OS_MACOSX)
   virtual void SetWindowSize(const gfx::Size& size);
 #endif
@@ -108,6 +122,10 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   // Local cache of id to transfer buffer mapping.
   typedef std::map<int32, gpu::Buffer> TransferBufferMap;
   TransferBufferMap transfer_buffers_;
+
+  // The video decoder host corresponding to the stub's video decoder in the GPU
+  // process, if one exists.
+  scoped_ptr<GpuVideoDecodeAcceleratorHost> video_decoder_host_;
 
   // The last cached state received from the service.
   State last_state_;

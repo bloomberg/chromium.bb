@@ -10,8 +10,6 @@
 #include "base/logging.h"
 #include "content/common/child_process.h"
 #include "content/renderer/gpu/gpu_channel_host.h"
-#include "content/renderer/gpu/gpu_video_decode_accelerator_host.h"
-#include "content/renderer/gpu/gpu_video_service_host.h"
 #include "content/renderer/render_thread.h"
 
 using media::BitstreamBuffer;
@@ -37,75 +35,61 @@ bool PlatformVideoDecoderImpl::GetConfigs(
   return true;
 }
 
-bool PlatformVideoDecoderImpl::Initialize(const std::vector<uint32>& config) {
+bool PlatformVideoDecoderImpl::Initialize(const std::vector<uint32>& configs) {
   // TODO(vrk): Support multiple decoders.
-  if (decoder_.get())
+  if (decoder_)
     return true;
 
   RenderThread* render_thread = RenderThread::current();
   DCHECK(render_thread);
 
-  channel_ = render_thread->EstablishGpuChannelSync(
-      content::CAUSE_FOR_GPU_LAUNCH_VIDEODECODEACCELERATOR_INITIALIZE);
+  // This is not synchronous, but subsequent IPC messages will be buffered, so
+  // it is okay to immediately send IPC messages through the returned channel.
+  GpuChannelHost* channel =
+      render_thread->EstablishGpuChannelSync(
+          content::CAUSE_FOR_GPU_LAUNCH_VIDEODECODEACCELERATOR_INITIALIZE);
 
-  if (!channel_.get())
+  if (!channel)
     return false;
 
-  DCHECK_EQ(channel_->state(), GpuChannelHost::kConnected);
+  DCHECK_EQ(channel->state(), GpuChannelHost::kConnected);
 
-  // Set a callback to ensure decoder is only initialized after channel is
-  // connected and GpuVidoServiceHost message filter is added to channel.
-  base::Closure initialize = base::Bind(
-      &PlatformVideoDecoderImpl::InitializeDecoder,
-      base::Unretained(this),
-      config);
-
-  GpuVideoServiceHost* video_service = channel_->gpu_video_service_host();
-  video_service->SetOnInitialized(initialize);
+  // Send IPC message to initialize decoder in GPU process.
+  decoder_ = channel->CreateVideoDecoder(
+      command_buffer_route_id_, configs, cmd_buffer_helper_, this);
   return true;
 }
 
-void PlatformVideoDecoderImpl::InitializeDecoder(
-    const std::vector<uint32>& configs) {
-  DCHECK_EQ(RenderThread::current()->message_loop(), MessageLoop::current());
-  GpuVideoServiceHost* video_service = channel_->gpu_video_service_host();
-  decoder_.reset(video_service->CreateVideoAccelerator(
-      this, command_buffer_route_id_, cmd_buffer_helper_));
-
-  // Send IPC message to initialize decoder in GPU process.
-  decoder_->Initialize(configs);
-}
-
 void PlatformVideoDecoderImpl::Decode(const BitstreamBuffer& bitstream_buffer) {
-  DCHECK(decoder_.get());
+  DCHECK(decoder_);
   decoder_->Decode(bitstream_buffer);
 }
 
 void PlatformVideoDecoderImpl::AssignGLESBuffers(
     const std::vector<media::GLESBuffer>& buffers) {
-  DCHECK(decoder_.get());
+  DCHECK(decoder_);
   decoder_->AssignGLESBuffers(buffers);
 }
 
 void PlatformVideoDecoderImpl::AssignSysmemBuffers(
     const std::vector<media::SysmemBuffer>& buffers) {
-  DCHECK(decoder_.get());
+  DCHECK(decoder_);
   decoder_->AssignSysmemBuffers(buffers);
 }
 
 void PlatformVideoDecoderImpl::ReusePictureBuffer(
     int32 picture_buffer_id) {
-  DCHECK(decoder_.get());
+  DCHECK(decoder_);
   decoder_->ReusePictureBuffer(picture_buffer_id);
 }
 
 void PlatformVideoDecoderImpl::Flush() {
-  DCHECK(decoder_.get());
+  DCHECK(decoder_);
   decoder_->Flush();
 }
 
 void PlatformVideoDecoderImpl::Abort() {
-  DCHECK(decoder_.get());
+  DCHECK(decoder_);
   decoder_->Abort();
 }
 

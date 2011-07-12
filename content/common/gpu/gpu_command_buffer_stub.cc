@@ -584,9 +584,9 @@ void GpuCommandBufferStub::ReportState() {
 }
 
 void GpuCommandBufferStub::OnCreateVideoDecoder(
-    int32 decoder_host_id, const std::vector<uint32>& configs) {
+    const std::vector<uint32>& configs) {
   video_decoder_.reset(
-      new GpuVideoDecodeAccelerator(this, decoder_host_id, this));
+      new GpuVideoDecodeAccelerator(this, route_id_, this));
   video_decoder_->Initialize(configs);
 }
 

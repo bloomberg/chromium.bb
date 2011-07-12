@@ -35,7 +35,6 @@
 #include "content/plugin/npobject_util.h"
 #include "content/renderer/content_renderer_client.h"
 #include "content/renderer/gpu/gpu_channel_host.h"
-#include "content/renderer/gpu/gpu_video_service_host.h"
 #include "content/renderer/indexed_db_dispatcher.h"
 #include "content/renderer/media/audio_input_message_filter.h"
 #include "content/renderer/media/audio_message_filter.h"

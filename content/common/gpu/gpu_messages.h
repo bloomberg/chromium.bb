@@ -390,9 +390,8 @@ IPC_SYNC_MESSAGE_ROUTED1_2(GpuCommandBufferMsg_GetTransferBuffer,
                            uint32 /* size */)
 
 // Create and initialize a hardware video decoder.
-IPC_MESSAGE_ROUTED2(GpuCommandBufferMsg_CreateVideoDecoder,
-                    int32, /* decoder_host_id */
-                    std::vector<uint32>) /* configs */
+IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_CreateVideoDecoder,
+                    std::vector<uint32> /* configs */)
 
 // Release all resources held by the hardware video decoder associated with this
 // stub.

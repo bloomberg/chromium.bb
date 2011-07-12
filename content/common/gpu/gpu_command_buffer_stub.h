@@ -121,8 +121,7 @@ class GpuCommandBufferStub
   void OnGetTransferBuffer(int32 id, IPC::Message* reply_message);
   void OnResizeOffscreenFrameBuffer(const gfx::Size& size);
 
-  void OnCreateVideoDecoder(int32 decoder_host_id,
-                            const std::vector<uint32>& configs);
+  void OnCreateVideoDecoder(const std::vector<uint32>& configs);
   void OnDestroyVideoDecoder();
 
   void OnSwapBuffers();

@@ -49,11 +49,16 @@ bool CommandBufferProxy::OnMessageReceived(const IPC::Message& message) {
                         OnNotifyRepaint);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+
+  if (!handled && video_decoder_host_.get())
+    handled = video_decoder_host_->OnMessageReceived(message);
+
   DCHECK(handled);
   return handled;
 }
 
 void CommandBufferProxy::OnChannelError() {
+  video_decoder_host_->OnChannelError();
   OnDestroyed();
 }
 
@@ -372,6 +377,21 @@ void CommandBufferProxy::ResizeOffscreenFrameBuffer(const gfx::Size& size) {
 
 void CommandBufferProxy::SetNotifyRepaintTask(Task* task) {
   notify_repaint_task_.reset(task);
+}
+
+GpuVideoDecodeAcceleratorHost* CommandBufferProxy::CreateVideoDecoder(
+    const std::vector<uint32>& configs,
+    gpu::CommandBufferHelper* cmd_buffer_helper,
+    media::VideoDecodeAccelerator::Client* client) {
+  video_decoder_host_.reset(new GpuVideoDecodeAcceleratorHost(
+      channel_, route_id_, cmd_buffer_helper, client));
+
+  if (!Send(new GpuCommandBufferMsg_CreateVideoDecoder(route_id_, configs))) {
+    LOG(ERROR) << "Send(GpuChannelMsg_CreateVideoDecoder) failed";
+    video_decoder_host_.reset();
+  }
+
+  return video_decoder_host_.get();
 }
 
 #if defined(OS_MACOSX)

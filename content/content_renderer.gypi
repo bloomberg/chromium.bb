@@ -42,8 +42,6 @@
         'renderer/gpu/gpu_surface_proxy.h',
         'renderer/gpu/gpu_video_decode_accelerator_host.cc',
         'renderer/gpu/gpu_video_decode_accelerator_host.h',
-        'renderer/gpu/gpu_video_service_host.cc',
-        'renderer/gpu/gpu_video_service_host.h',
         'renderer/gpu/renderer_gl_context.cc',
         'renderer/gpu/renderer_gl_context.h',
         'renderer/gpu/transport_texture_host.cc',

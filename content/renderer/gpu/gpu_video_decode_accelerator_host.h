@@ -29,16 +29,13 @@ class GpuVideoDecodeAcceleratorHost
  public:
   // |router| is used to dispatch IPC messages to this object.
   // |ipc_sender| is used to send IPC messages to Gpu process.
-  GpuVideoDecodeAcceleratorHost(MessageRouter* router,
-                                IPC::Message::Sender* ipc_sender,
-                                int32 decoder_host_id,
+  GpuVideoDecodeAcceleratorHost(IPC::Message::Sender* ipc_sender,
                                 int32 command_buffer_route_id,
                                 gpu::CommandBufferHelper* cmd_buffer_helper,
                                 media::VideoDecodeAccelerator::Client* client);
   virtual ~GpuVideoDecodeAcceleratorHost();
 
   // IPC::Channel::Listener implementation.
-  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
@@ -61,6 +58,8 @@ class GpuVideoDecodeAcceleratorHost
   // sending over IPC for synchronization with the command buffer.
   gpu::ReadWriteTokens SyncTokens();
 
+  void Send(IPC::Message* message);
+
   void OnBitstreamBufferProcessed(int32 bitstream_buffer_id);
   void OnProvidePictureBuffer(
     uint32 num_requested_buffers, const gfx::Size& buffer_size, int32 mem_type);
@@ -75,17 +74,8 @@ class GpuVideoDecodeAcceleratorHost
   void OnEndOfStream();
   void OnErrorNotification(uint32 error);
 
-  // A router used to send us IPC messages.
-  MessageRouter* router_;
-
   // Sends IPC messages to the Gpu process.
   IPC::Message::Sender* ipc_sender_;
-
-  // ID of this GpuVideoDecodeAcceleratorHost.
-  int32 decoder_host_id_;
-
-  // ID of VideoDecodeAccelerator in the Gpu process.
-  int32 decoder_id_;
 
   // Route ID for the command buffer associated with the context the GPU Video
   // Decoder uses.

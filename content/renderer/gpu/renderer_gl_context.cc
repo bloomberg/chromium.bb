@@ -14,7 +14,6 @@
 #include "content/common/view_messages.h"
 #include "content/renderer/gpu/command_buffer_proxy.h"
 #include "content/renderer/gpu/gpu_channel_host.h"
-#include "content/renderer/gpu/gpu_video_service_host.h"
 #include "content/renderer/gpu/transport_texture_host.h"
 #include "content/renderer/gpu/transport_texture_service.h"
 #include "content/renderer/render_thread.h"
