@@ -51,23 +51,30 @@ static void NaClInstIterReportRemainingMemoryError(
 NaClInstIter* NaClInstIterCreateWithLookback(
     NaClSegment* segment,
     size_t lookback_size) {
-  size_t i;
   NaClInstIter* iter;
   /* Guarantee we don't wrap around while computing buffer index updates. */
   assert(((lookback_size + 1) * 2 + 1) > lookback_size);
   iter = (NaClInstIter*) malloc(sizeof(NaClInstIter));
-  iter->segment = segment;
-  NCRemainingMemoryInit(segment->mbase, segment->size, &iter->memory);
-  iter->memory.error_fn = NaClInstIterReportRemainingMemoryError;
-  iter->index = 0;
-  iter->inst_count = 0;
-  iter->buffer_size = lookback_size + 1;
-  iter->buffer_index = 0;
-  iter->buffer = (NaClInstState*)
-      calloc(iter->buffer_size, sizeof(NaClInstState));
-  for (i = 0; i < iter->buffer_size; ++i) {
-    iter->buffer[i].inst = NULL;
-    NCInstBytesInitMemory(&iter->buffer[i].bytes, &iter->memory);
+  if (NULL != iter) {
+    iter->segment = segment;
+    NCRemainingMemoryInit(segment->mbase, segment->size, &iter->memory);
+    iter->memory.error_fn = NaClInstIterReportRemainingMemoryError;
+    iter->index = 0;
+    iter->inst_count = 0;
+    iter->buffer_size = lookback_size + 1;
+    iter->buffer_index = 0;
+    iter->buffer = (NaClInstState*)
+        calloc(iter->buffer_size, sizeof iter->buffer[0]);
+    if (NULL == iter->buffer) {
+      free(iter);
+      iter = NULL;
+    } else {
+      size_t i;
+      for (i = 0; i < iter->buffer_size; ++i) {
+        iter->buffer[i].inst = NULL;
+        NCInstBytesInitMemory(&iter->buffer[i].bytes, &iter->memory);
+      }
+    }
   }
   return iter;
 }
@@ -77,8 +84,10 @@ NaClInstIter* NaClInstIterCreate(NaClSegment* segment) {
 }
 
 void NaClInstIterDestroy(NaClInstIter* iter) {
-  free(iter->buffer);
-  free(iter);
+  if (NULL != iter) {
+    free(iter->buffer);
+    free(iter);
+  }
 }
 
 NaClInstState* NaClInstIterGetUndecodedState(NaClInstIter* iter) {

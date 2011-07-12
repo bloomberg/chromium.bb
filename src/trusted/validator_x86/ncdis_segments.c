@@ -88,17 +88,21 @@ void NaClDisassembleSegment(uint8_t* mbase, NaClPcAddress vbase,
     NaClInstIter* iter;
     struct Gio* gout = NaClLogGetGio();
     NaClSegmentInitialize(mbase, vbase, size, &segment);
-    for (iter = NaClInstIterCreate(&segment); NaClInstIterHasNext(iter);
-         NaClInstIterAdvance(iter)) {
-      NaClInstState* state = NaClInstIterGetState(iter);
-      NaClInstStateInstPrint(gout, state);
-      if (NACL_FLAGS_internal) {
-        NaClInstPrintOpcodeSeq(gout, state);
-        NaClInstPrint(gout, NaClInstStateInst(state));
-        NaClExpVectorPrint(gout, NaClInstStateExpVector(state));
+    iter = NaClInstIterCreate(&segment); NaClInstIterHasNext(iter);
+    if (NULL == iter) {
+      gprintf(NaClLogGetGio(), "Error: not enough memory\n");
+    } else {
+      for (; NaClInstIterHasNext(iter); NaClInstIterAdvance(iter)) {
+        NaClInstState* state = NaClInstIterGetState(iter);
+        NaClInstStateInstPrint(gout, state);
+        if (NACL_FLAGS_internal) {
+          NaClInstPrintOpcodeSeq(gout, state);
+          NaClInstPrint(gout, NaClInstStateInst(state));
+          NaClExpVectorPrint(gout, NaClInstStateExpVector(state));
+        }
       }
+      NaClInstIterDestroy(iter);
     }
-    NaClInstIterDestroy(iter);
   } else {
     NCDecodeSegment(mbase, vbase, size);
   }

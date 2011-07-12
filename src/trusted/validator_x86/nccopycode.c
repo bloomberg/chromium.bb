@@ -313,7 +313,12 @@ int NaClCopyCodeIter(uint8_t *dst, uint8_t *src,
   NaClSegmentInitialize(src, vbase, size, &segment_new);
 
   iter_old = NaClInstIterCreate(&segment_old);
+  if (NULL == iter_old) return 0;
   iter_new = NaClInstIterCreate(&segment_new);
+  if (NULL == iter_new) {
+    NaClInstIterDestroy(iter_old);
+    return 0;
+  }
   while (1) {
     /* March over every instruction, which means NaCl pseudo-instructions are
      * treated as multiple instructions.  Checks in NaClValidateCodeReplacement

@@ -562,7 +562,7 @@ static void NaClApplyPostValidators(NaClValidatorState *state,
                                     NaClInstIter *iter) {
   int i;
   DEBUG(NaClLog(LOG_INFO, "applying post validators...\n"));
-  if (state->quit) return;
+  if (state->quit || (NULL == iter)) return;
   for (i = 0; i < state->number_validators; ++i) {
     if (NULL != state->validators[i].post_validate) {
       state->validators[i].post_validate(state, iter, state->local_memory[i]);
@@ -583,18 +583,23 @@ void NaClValidateSegment(uint8_t *mbase, NaClPcAddress vbase,
   if (NaClValidatorStateInitializeValidators(state)) {
     NCHaltTrimSegment(mbase, vbase, state->alignment, &size, &state->vlimit);
     NaClSegmentInitialize(mbase, vbase, size, &segment);
-    for (iter = NaClInstIterCreateWithLookback(&segment, kLookbackSize);
-         NaClInstIterHasNext(iter);
-         NaClInstIterAdvance(iter)) {
-      state->cur_inst_state = NaClInstIterGetState(iter);
-      state->cur_inst = NaClInstStateInst(state->cur_inst_state);
-      state->cur_inst_vector = NaClInstStateExpVector(state->cur_inst_state);
-      NaClApplyValidators(state, iter);
-      if (state->quit) break;
-    }
-    state->cur_inst_state = NULL;
-    state->cur_inst = NULL;
-    state->cur_inst_vector = NULL;
+    do {
+      iter = NaClInstIterCreateWithLookback(&segment, kLookbackSize);
+      if (NULL == iter) {
+        NaClValidatorMessage(LOG_ERROR, state, "Not enough memory\n");
+        break;
+      }
+      for (; NaClInstIterHasNext(iter); NaClInstIterAdvance(iter)) {
+        state->cur_inst_state = NaClInstIterGetState(iter);
+        state->cur_inst = NaClInstStateInst(state->cur_inst_state);
+        state->cur_inst_vector = NaClInstStateExpVector(state->cur_inst_state);
+        NaClApplyValidators(state, iter);
+        if (state->quit) break;
+      }
+      state->cur_inst_state = NULL;
+      state->cur_inst = NULL;
+      state->cur_inst_vector = NULL;
+    } while (0);
     NaClApplyPostValidators(state, iter);
     NaClInstIterDestroy(iter);
     NaClValidatorStatePrintStats(state);
@@ -775,34 +780,41 @@ void NaClValidateSegmentPair(uint8_t *mbase_old, uint8_t *mbase_new,
                            NaClPcAddress vbase, size_t size,
                            struct NaClValidatorState *state) {
   NaClSegment segment_old, segment_new;
-  NaClInstIter *iter_old, *iter_new;
+  NaClInstIter *iter_old = NULL;
+  NaClInstIter *iter_new = NULL;
 
   NaClValidatorStateInitializeValidators(state);
   NaClSegmentInitialize(mbase_old, vbase, size, &segment_old);
   NaClSegmentInitialize(mbase_new, vbase, size, &segment_new);
-  iter_old = NaClInstIterCreateWithLookback(&segment_old, kLookbackSize);
-  iter_new = NaClInstIterCreateWithLookback(&segment_new, kLookbackSize);
-  while (NaClInstIterHasNext(iter_old) &&
-         NaClInstIterHasNext(iter_new)) {
-    Bool inst_changed;
-    state->cur_inst_state = NaClInstIterGetState(iter_new);
-    state->cur_inst = NaClInstStateInst(state->cur_inst_state);
-    state->cur_inst_vector = NaClInstStateExpVector(state->cur_inst_state);
-    inst_changed = NaClValidateInstReplacement(iter_old, iter_new, state);
-    if (inst_changed)
-      NaClApplyValidators(state, iter_new);
-    else
-      NaClRememberIpOnly(state, iter_new);
-    if (state->quit) break;
-    NaClInstIterAdvance(iter_old);
-    NaClInstIterAdvance(iter_new);
-  }
+  do {
+    iter_old = NaClInstIterCreateWithLookback(&segment_old, kLookbackSize);
+    if (NULL == iter_old) break;
+    iter_new = NaClInstIterCreateWithLookback(&segment_new, kLookbackSize);
+    if (NULL == iter_new) break;
+    while (NaClInstIterHasNext(iter_old) &&
+           NaClInstIterHasNext(iter_new)) {
+      Bool inst_changed;
+      state->cur_inst_state = NaClInstIterGetState(iter_new);
+      state->cur_inst = NaClInstStateInst(state->cur_inst_state);
+      state->cur_inst_vector = NaClInstStateExpVector(state->cur_inst_state);
+      inst_changed = NaClValidateInstReplacement(iter_old, iter_new, state);
+      if (inst_changed)
+        NaClApplyValidators(state, iter_new);
+      else
+        NaClRememberIpOnly(state, iter_new);
+      if (state->quit) break;
+      NaClInstIterAdvance(iter_old);
+      NaClInstIterAdvance(iter_new);
+    }
 
-  if (NaClInstIterHasNext(iter_old) ||
-      NaClInstIterHasNext(iter_new)) {
-    NaClValidatorMessage(LOG_ERROR, state,
-    "Code modification: code segments have different number of instructions\n");
-  }
+    if (NaClInstIterHasNext(iter_old) ||
+        NaClInstIterHasNext(iter_new)) {
+      NaClValidatorMessage(
+          LOG_ERROR, state,
+          "Code modification: code segments have different "
+          "number of instructions\n");
+    }
+  } while (0);
 
   state->cur_inst_state = NULL;
   state->cur_inst = NULL;
