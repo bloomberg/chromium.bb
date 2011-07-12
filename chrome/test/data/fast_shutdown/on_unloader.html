@@ -1,4 +1,12 @@
-<BODY onUnload="alert('bye now!')" onClick="doPopup()">
+<script>
+function setCookie() {
+  var expires = new Date();
+  expires.setMinutes(expires.getMinutes() + 1);
+  document.cookie = "unloaded=ohyeah;path=/;expires=" + expires.toUTCString();
+}
+</script>
+
+<BODY onUnload="setCookie()" onClick="doPopup()">
 
 <script>
 
