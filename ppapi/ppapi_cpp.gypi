@@ -82,6 +82,7 @@
         'c/dev/ppp_cursor_control_dev.h',
         'c/dev/ppp_find_dev.h',
         'c/dev/ppp_graphics_3d_dev.h',
+        'c/dev/ppp_network_state_dev.h',
         'c/dev/ppp_scrollbar_dev.h',
         'c/dev/ppp_selection_dev.h',
         'c/dev/ppp_printing_dev.h',
