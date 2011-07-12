@@ -106,6 +106,9 @@ class AppCache : public base::RefCounted<AppCache> {
       AppCacheEntry* found_entry, AppCacheEntry* found_fallback_entry,
       GURL* found_fallback_namespace, bool* found_network_namespace);
 
+  // Populates the 'infos' vector with an element per entry in the appcache.
+  void ToResourceInfoVector(AppCacheResourceInfoVector* infos) const;
+
   static bool IsInNetworkNamespace(
       const GURL& url,
       const std::vector<GURL> &namespaces);

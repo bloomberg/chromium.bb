@@ -260,7 +260,8 @@ net::URLRequestJob* ChromeProtocolHandler::MaybeCreateJob(
 
   // Next check for chrome://appcache-internals/, which uses its own job type.
   if (IsViewAppCacheInternalsURL(request->url()))
-    return new appcache::ViewAppCacheInternalsJob(request, appcache_service_);
+    return appcache::ViewAppCacheInternalsJobFactory::CreateJobForRequest(
+        request, appcache_service_);
 
   // Next check for chrome://blob-internals/, which uses its own job type.
   if (ViewBlobInternalsJobFactory::IsSupportedURL(request->url()))

@@ -82,7 +82,10 @@ struct AppCacheResourceInfo {
   bool is_fallback;
   bool is_foreign;
   bool is_explicit;
+  int64 response_id;
 };
+
+typedef std::vector<AppCacheResourceInfo> AppCacheResourceInfoVector;
 
 // Interface used by backend (browser-process) to talk to frontend (renderer).
 class AppCacheFrontend {

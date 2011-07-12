@@ -278,22 +278,9 @@ AppCacheRequestHandler* AppCacheHost::CreateRequestHandler(
 }
 
 void AppCacheHost::GetResourceList(
-    std::vector<AppCacheResourceInfo>* resource_infos) {
-  if (associated_cache_.get() && associated_cache_->is_complete()) {
-    for (AppCache::EntryMap::const_iterator it =
-         associated_cache_->entries().begin();
-         it != associated_cache_->entries().end(); ++it) {
-      AppCacheResourceInfo info;
-      info.url = it->first;
-      info.is_master = it->second.IsMaster();
-      info.is_manifest = it->second.IsManifest();
-      info.is_fallback = it->second.IsFallback();
-      info.is_foreign = it->second.IsForeign();
-      info.is_explicit = it->second.IsExplicit();
-      info.size = it->second.response_size();
-      resource_infos->push_back(info);
-    }
-  }
+    AppCacheResourceInfoVector* resource_infos) {
+  if (associated_cache_.get() && associated_cache_->is_complete())
+    associated_cache_->ToResourceInfoVector(resource_infos);
 }
 
 Status AppCacheHost::GetStatus() {
