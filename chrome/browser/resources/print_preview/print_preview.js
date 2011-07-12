@@ -508,18 +508,12 @@ function printPreviewFailed() {
  * Called when the PDF plugin loads its document.
  */
 function onPDFLoad() {
-  if (isLandscape())
-    $('pdf-viewer').fitToWidth();
-  else
-    $('pdf-viewer').fitToHeight();
-
+  $('pdf-viewer').fitToHeight();
   setColor($('color').checked);
-
   hideLoadingAnimation();
 
   if (!previewModifiable)
     fadeOutElement($('landscape-option'));
-
   cr.dispatchSimpleEvent(document, 'PDFLoaded');
 }
 

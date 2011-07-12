@@ -21,8 +21,8 @@ cr.define('print_preview', function() {
     this.timerId_;
 
     // Contains the previously selected pages. It is used in
-    // onPageSelectionMayHaveChanged() to make sure that a new preview is not
-    // requested more often than necessary.
+    // |this.onSelectedPagesMayHaveChanged_()| to make sure that a new preview
+    // is not requested more often than necessary.
     this.previouslySelectedPages_ = [];
 
     // The total page count of the previewed document regardless of which pages
@@ -240,7 +240,6 @@ cr.define('print_preview', function() {
      */
     onSelectedPagesTextfieldChanged: function() {
       this.validateSelectedPages_();
-      this.resetSelectedPagesTextfieldTimer_();
       updatePrintButtonState();
       updatePrintSummary();
     },
