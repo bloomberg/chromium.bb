@@ -482,4 +482,4 @@ struct PPB_KeyboardInputEvent {
   struct PP_Var (*GetCharacterText)(PP_Resource character_event);
 };
 
-#endif  // PPAPI_C_PPB_INPUT_EVENT_H_
+#endif  /* PPAPI_C_PPB_INPUT_EVENT_H_ */

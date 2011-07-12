@@ -16,7 +16,8 @@
  * @{
  */
 
-/** This enumeration contains enumerators of all PPAPI error codes.
+/**
+ * This enumeration contains enumerators of all PPAPI error codes.
  * Errors are negative valued.
  */
 enum {
@@ -94,7 +95,8 @@ enum {
   /** This value indicates failure due to a time limit being exceeded. */
   PP_ERROR_TIMEDOUT = -30,
 
-  /** This value indicates that the user cancelled rather than providing
+  /**
+   * This value indicates that the user cancelled rather than providing
    * expected input.
    */
   PP_ERROR_USERCANCEL = -40
@@ -102,7 +104,6 @@ enum {
 
 /**
  * @}
- * End of addtogroup Enums
  */
 
 #endif  /* PPAPI_C_PP_ERRORS_H_ */

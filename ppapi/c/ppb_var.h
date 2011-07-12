@@ -6,10 +6,8 @@
 #define PPAPI_C_PPB_VAR_H_
 
 #include "ppapi/c/pp_bool.h"
-#include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_module.h"
-#include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
 
@@ -75,7 +73,8 @@ struct PPB_Var {
    * string object.
    */
   struct PP_Var (*VarFromUtf8)(PP_Module module,
-                               const char* data, uint32_t len);
+                               const char* data,
+                               uint32_t len);
 
   /**
    * VarToUtf8() converts a string-type var to a char* encoded in UTF-8. This

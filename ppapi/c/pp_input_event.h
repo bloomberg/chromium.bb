@@ -233,6 +233,31 @@ PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_InputEvent_Wheel, 24);
  */
 
 /**
+ * The PP_InputEventData union represents all input event data types.
+ */
+union PP_InputEventData {
+  struct PP_InputEvent_Key key;
+  struct PP_InputEvent_Character character;
+  struct PP_InputEvent_Mouse mouse;
+  struct PP_InputEvent_Wheel wheel;
+
+  /**
+   * This value allows new events to be added without changing the size of
+   * this struct.
+   */
+  char padding[64];
+};
+/**
+ * @}
+ */
+
+/**
+ *
+ * @addtogroup Structs
+ * @{
+ */
+
+/**
  * The PP_InputEvent struct represents all input events.
  */
 struct PP_InputEvent {
@@ -252,19 +277,11 @@ struct PP_InputEvent {
    */
   PP_TimeTicks time_stamp;
 
-  /** This value represents the event type and its specific data. */
-  union {
-    struct PP_InputEvent_Key key;
-    struct PP_InputEvent_Character character;
-    struct PP_InputEvent_Mouse mouse;
-    struct PP_InputEvent_Wheel wheel;
+  /**
+   * This value represents the event type and its specific data.
+   */
+  union PP_InputEventData u;
 
-    /**
-     * This value allows new events to be added without changing the size of
-     * this struct.
-     */
-    char padding[64];
-  } u;
 };
 PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_InputEvent, 80);
 /**

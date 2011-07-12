@@ -80,6 +80,54 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_VarType, 4);
  * @}
  */
 
+
+/**
+ * @addtogroup Structs
+ * @{
+ */
+
+/**
+ * The PP_VarValue union stores the data for any one of the types listed
+ * in the PP_VarType enum.
+ */
+union PP_VarValue {
+  /**
+   * If <code>type</code> is <code>PP_VARTYPE_BOOL</code>,
+   * <code>as_bool</code> represents the value of this <code>PP_Var</code> as
+   * <code>PP_Bool</code>.
+   */
+  PP_Bool as_bool;
+
+  /**
+   * If <code>type</code> is <code>PP_VARTYPE_INT32</code>,
+   * <code>as_int</code> represents the value of this <code>PP_Var</code> as
+   * <code>int32_t</code>.
+   */
+  int32_t as_int;
+
+  /**
+   * If <code>type</code> is <code>PP_VARTYPE_DOUBLE</code>,
+   * <code>as_double</code> represents the value of this <code>PP_Var</code>
+   * as <code>double</code>.
+   */
+  double as_double;
+
+  /**
+   * If <code>type</code> is <code>PP_VARTYPE_STRING</code>,
+   * <code>PP_VARTYPE_OBJECT</code>, <code>PP_VARTYPE_ARRAY</code>, or
+   * <code>PP_VARTYPE_DICTIONARY</code>,
+   * <code>as_id</code> represents the value of this <code>PP_Var</code> as
+   * an opaque handle assigned by the browser. This handle is guaranteed
+   * never to be 0, so a module can initialize this ID to 0 to indicate a
+   * "NULL handle."
+   */
+  int64_t as_id;
+};
+/**
+ * @}
+ */
+
+
 /**
  * @addtogroup Structs
  * @{
@@ -115,39 +163,7 @@ struct PP_Var {
    * the fields of <code>value</code> is valid at a time based upon
    * <code>type</code>.
    */
-  union {
-    /**
-     * If <code>type</code> is <code>PP_VARTYPE_BOOL</code>,
-     * <code>as_bool</code> represents the value of this <code>PP_Var</code> as
-     * <code>PP_Bool</code>.
-     */
-    PP_Bool as_bool;
-
-    /**
-     * If <code>type</code> is <code>PP_VARTYPE_INT32</code>,
-     * <code>as_int</code> represents the value of this <code>PP_Var</code> as
-     * <code>int32_t</code>.
-     */
-    int32_t as_int;
-
-    /**
-     * If <code>type</code> is <code>PP_VARTYPE_DOUBLE</code>,
-     * <code>as_double</code> represents the value of this <code>PP_Var</code>
-     * as <code>double</code>.
-     */
-    double as_double;
-
-    /**
-     * If <code>type</code> is <code>PP_VARTYPE_STRING</code>,
-     * <code>PP_VARTYPE_OBJECT</code>, <code>PP_VARTYPE_ARRAY</code>, or
-     * <code>PP_VARTYPE_DICTIONARY</code>,
-     * <code>as_id</code> represents the value of this <code>PP_Var</code> as
-     * an opaque handle assigned by the browser. This handle is guaranteed
-     * never to be 0, so a module can initialize this ID to 0 to indicate a
-     * "NULL handle."
-     */
-    int64_t as_id;
-  } value;
+  union PP_VarValue value;
 };
 PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_Var, 16);
 /**

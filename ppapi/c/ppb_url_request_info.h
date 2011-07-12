@@ -11,8 +11,7 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_time.h"
-
-struct PP_Var;
+#include "ppapi/c/pp_var.h"
 
 /**
  * @file

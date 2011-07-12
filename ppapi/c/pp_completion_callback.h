@@ -73,6 +73,9 @@ typedef enum {
 } PP_CompletionCallback_Flag;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_CompletionCallback_Flag, 4);
 
+/**
+ * @}
+ */
 
 /**
  * @addtogroup Structs

@@ -59,8 +59,8 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_FileSystemType, 4);
  * such as size, type, and creation time.
  */
 struct PP_FileInfo {
-  /** This value represents the size of the file. */
-  int64_t size;  /* Measured in bytes */
+  /** This value represents the size of the file measured in bytes */
+  int64_t size;
 
   /**
    * This value represents the type of file as defined by the

@@ -7,7 +7,6 @@
 
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
-#include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 
@@ -72,29 +71,31 @@ typedef void (*PPB_Audio_Callback)(void* sample_buffer,
  * ...audio_callback() will now be periodically invoked on a seperate thread...
  */
 struct PPB_Audio {
- /**
-  * Create is a pointer to a function that creates an audio resource.
-  * No sound will be heard until StartPlayback() is called. The callback
-  * is called with the buffer address and given user data whenever the
-  * buffer needs to be filled. From within the callback, you should not
-  * call PPB_Audio functions. The callback will be called on a different
-  * thread than the one which created the interface. For performance-critical
-  * applications (i.e. low-latency audio), the callback should avoid blocking
-  * or calling functions that can obtain locks, such as malloc. The layout and
-  * the size of the buffer passed to the audio callback will be determined by
-  * the device configuration and is specified in the AudioConfig documentation.
-  *
-  * @param[in] instance A PP_Instance indentifying one instance of a module.
-  * @param[in] config A PP_Resource containing the audio config resource.
-  * @param[in] audio_callback A PPB_Audio_Callback callback function that the
-  * browser calls when it needs more samples to play.
-  * @param[in] user_data A pointer to user data used in the callback function.
-  *
-  * @return A PP_Resource containing the audio resource if successful or
-  * 0 if the configuration cannot be honored or the callback is null.
-  */
-  PP_Resource (*Create)(PP_Instance instance, PP_Resource config,
-                        PPB_Audio_Callback audio_callback, void* user_data);
+  /**
+   * Create is a pointer to a function that creates an audio resource.
+   * No sound will be heard until StartPlayback() is called. The callback
+   * is called with the buffer address and given user data whenever the
+   * buffer needs to be filled. From within the callback, you should not
+   * call PPB_Audio functions. The callback will be called on a different
+   * thread than the one which created the interface. For performance-critical
+   * applications (i.e. low-latency audio), the callback should avoid blocking
+   * or calling functions that can obtain locks, such as malloc. The layout and
+   * the size of the buffer passed to the audio callback will be determined by
+   * the device configuration and is specified in the AudioConfig documentation.
+   *
+   * @param[in] instance A PP_Instance indentifying one instance of a module.
+   * @param[in] config A PP_Resource containing the audio config resource.
+   * @param[in] audio_callback A PPB_Audio_Callback callback function that the
+   * browser calls when it needs more samples to play.
+   * @param[in] user_data A pointer to user data used in the callback function.
+   *
+   * @return A PP_Resource containing the audio resource if successful or
+   * 0 if the configuration cannot be honored or the callback is null.
+   */
+  PP_Resource (*Create)(PP_Instance instance,
+                        PP_Resource config,
+                        PPB_Audio_Callback audio_callback,
+                        void* user_data);
   /**
    * IsAudio is a pointer to a function that determines if the given
    * resource is an audio resource.
@@ -145,5 +146,5 @@ struct PPB_Audio {
  * @}
  */
 
-#endif  /* PPAPI_C_PPB_DEVICE_CONTEXT_AUDIO_H_ */
+#endif  /* PPAPI_C_PPB_AUDIO_H_ */
 

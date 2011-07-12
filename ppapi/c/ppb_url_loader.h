@@ -6,11 +6,10 @@
 #define PPAPI_C_PPB_URL_LOADER_H_
 
 #include "ppapi/c/pp_bool.h"
+#include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
-
-struct PP_CompletionCallback;
 
 #define PPB_URLLOADER_INTERFACE_0_2 "PPB_URLLoader;0.2"
 #define PPB_URLLOADER_INTERFACE PPB_URLLOADER_INTERFACE_0_2

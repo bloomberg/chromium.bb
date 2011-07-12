@@ -67,7 +67,7 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_FileOpenFlags, 4);
 #define PPB_FILEIO_INTERFACE PPB_FILEIO_INTERFACE_0_5
 
 /**
- * @addtogroup Structs
+ * @addtogroup Interfaces
  * @{
  */
 /**
@@ -125,7 +125,7 @@ struct PPB_FileIO {
    *
    * @param[in] file_io A <code>PP_Resource</code> corresponding to a
    * FileIO.
-   * @param[in] info The <code>PP_FileInfo</code> structure representing all
+   * @param[out] info The <code>PP_FileInfo</code> structure representing all
    * information about the file.
    * @param[in] callback A <code>PP_CompletionCallback</code> to be called upon
    * completion of Query().
@@ -136,19 +136,19 @@ struct PPB_FileIO {
                    struct PP_FileInfo* info,
                    struct PP_CompletionCallback callback);
 
-   /**
-    * Touch() Updates time stamps for the file opened by this FileIO object.
-    * This function will fail if the FileIO object has not been opened.
-    *
-    * @param[in] file_io A <code>PP_Resource</code> corresponding to a file
-    * FileIO.
-    * @param[in] last_access_time The last time the FileIO was accessed.
-    * @param[in] last_modified_time The last time the FileIO was modified.
-    * @param[in] callback A <code>PP_CompletionCallback</code> to be called upon
-    * completion of Touch().
-    *
-    * @return An int32_t containing an error code from <code>pp_errors.h</code>.
-    */
+  /**
+   * Touch() Updates time stamps for the file opened by this FileIO object.
+   * This function will fail if the FileIO object has not been opened.
+   *
+   * @param[in] file_io A <code>PP_Resource</code> corresponding to a file
+   * FileIO.
+   * @param[in] last_access_time The last time the FileIO was accessed.
+   * @param[in] last_modified_time The last time the FileIO was modified.
+   * @param[in] callback A <code>PP_CompletionCallback</code> to be called upon
+   * completion of Touch().
+   *
+   * @return An int32_t containing an error code from <code>pp_errors.h</code>.
+   */
   int32_t (*Touch)(PP_Resource file_io,
                    PP_Time last_access_time,
                    PP_Time last_modified_time,
