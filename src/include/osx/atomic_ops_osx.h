@@ -38,9 +38,10 @@
 
 typedef int32_t Atomic32;
 
-inline Atomic32 CompareAndSwap(volatile Atomic32 *ptr,
-                               Atomic32 old_value,
-                               Atomic32 new_value) {
+static inline Atomic32
+CompareAndSwap(volatile Atomic32 *ptr,
+               Atomic32 old_value,
+               Atomic32 new_value) {
   Atomic32 prev_value;
   do {
     if (OSAtomicCompareAndSwap32(old_value, new_value,
@@ -52,8 +53,9 @@ inline Atomic32 CompareAndSwap(volatile Atomic32 *ptr,
   return prev_value;
 }
 
-inline Atomic32 AtomicExchange(volatile Atomic32 *ptr,
-                               Atomic32 new_value) {
+static inline Atomic32
+AtomicExchange(volatile Atomic32 *ptr,
+               Atomic32 new_value) {
   Atomic32 old_value;
   do {
     old_value = *ptr;
@@ -62,7 +64,8 @@ inline Atomic32 AtomicExchange(volatile Atomic32 *ptr,
   return old_value;
 }
 
-inline Atomic32 AtomicIncrement(volatile Atomic32 *ptr, Atomic32 increment) {
+static inline Atomic32
+AtomicIncrement(volatile Atomic32 *ptr, Atomic32 increment) {
   return OSAtomicAdd32(increment, (Atomic32*) ptr);
 }
 
