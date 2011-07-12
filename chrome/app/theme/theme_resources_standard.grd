@@ -102,6 +102,7 @@
       <include name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_C" file="ev_bubble_c.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_L" file="ev_bubble_l.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_R" file="ev_bubble_r.png" type="BINDATA" />
+      <include name="IDR_PLUGIN" file="plugin.png" type="BINDATA" />
       <include name="IDR_RELOAD" file="reload.png" type="BINDATA" />
       <include name="IDR_RELOAD_H" file="reload_h.png" type="BINDATA" />
       <include name="IDR_RELOAD_P" file="reload_p.png" type="BINDATA" />

@@ -188,7 +188,6 @@
       <include name="IDR_PAGEINFO_INFO" file="pageinfo_info.png" type="BINDATA" />
       <include name="IDR_PAGEINFO_WARNING_MAJOR" file="pageinfo_warning_major.png" type="BINDATA" />
       <include name="IDR_PAGEINFO_WARNING_MINOR" file="pageinfo_warning_minor.png" type="BINDATA" />
-      <include name="IDR_PLUGIN" file="plugin.png" type="BINDATA" />
       <include name="IDR_PRERENDER" file="prerender_succeed_icon.png" type="BINDATA" />
       <include name="IDR_PRERENDER_FAIL_ICON" file="prerender_fail_icon.png" type="BINDATA"/>
       <include name="IDR_PRERENDER_SUCCEED_ICON" file="prerender_succeed_icon.png" type="BINDATA"/>
