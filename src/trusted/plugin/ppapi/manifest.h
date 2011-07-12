@@ -40,8 +40,21 @@ class Manifest {
   // value is true if the manifest parses correctly and matches the schema.
   bool Init(const nacl::string& json, ErrorInfo* error_info);
 
-  // Gets the full nexe URL for the current sandbox ISA from the manifest file.
-  bool GetNexeURL(nacl::string* full_url, ErrorInfo* error_info);
+  // Gets the full program URL for the current sandbox ISA from the
+  // manifest file. Sets |is_portable| to |true| if the program is
+  // portable bitcode.
+  bool GetProgramURL(nacl::string* full_url,
+                     ErrorInfo* error_info,
+                     bool* is_portable);
+
+  // TODO(jvoung): Get rid of these when we find a better way to
+  // store / install these.
+  // Gets the full nexe URL for the LLC nexe from the manifest file.
+  bool GetLLCURL(nacl::string* full_url, ErrorInfo* error_info);
+
+  // Gets the full nexe URL for the LD nexe from the manifest file.
+  bool GetLDURL(nacl::string* full_url, ErrorInfo* error_info);
+  // end TODO(jvoung)
 
   // Resolves a URL relative to the manifest base URL
   bool ResolveURL(const nacl::string& relative_url,
@@ -55,7 +68,7 @@ class Manifest {
   Json::Value dictionary_;
 
   // Checks that |dictionary_| is a valid manifest, according to the schema.
-  // Returns true on success, and sets |error_string| to a detailed message
+  // Returns true on success, and sets |error_info| to a detailed message
   // if not.
   bool MatchesSchema(ErrorInfo* error_info);
 
