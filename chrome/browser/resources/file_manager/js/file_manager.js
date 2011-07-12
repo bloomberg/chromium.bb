@@ -2,13 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// WK Bug 55728 is fixed on the chrome 12 branch but not on the trunk.
-// TODO(rginda): Enable this everywhere once we have a trunk-worthy fix.
-const ENABLE_METADATA = true;
-
-// Thumbnail view is painful without the exif reader.
-const ENABLE_THUMBNAIL_VIEW = ENABLE_METADATA;
-
 var g_slideshow_data = null;
 
 /**
@@ -55,10 +48,34 @@ function FileManager(dialogDom, rootEntries, params) {
 
   // TODO(dgozman): This will be changed to LocaleInfo.
   this.locale_ = new v8Locale(navigator.language);
-  this.shortDateFormatter_ =
+
+  // TODO(rginda): 6/22/11: Remove this test when createDateTimeFormat is
+  // available in all chrome trunk builds.
+  if ('createDateTimeFormat' in this.locale_) {
+    this.shortDateFormatter_ =
       this.locale_.createDateTimeFormat({'dateType': 'medium'});
-  this.collator_ = this.locale_.createCollator({
+  } else {
+    this.shortDateFormatter_ = {
+      format: function(d) {
+        return (d.getMonth() + 1) + '/' + d.getDate() + '/' + d.getFullYear();
+      }
+    };
+  }
+
+  // TODO(rginda): 6/22/11: Remove this test when createCollator is
+  // available in all chrome trunk builds.
+  if ('createCollator' in this.locale_) {
+    this.collator_ = this.locale_.createCollator({
       'numeric': true, 'ignoreCase': true, 'ignoreAccents': true});
+  } else {
+    this.collator_ = {
+      compare: function(a, b) {
+        if (a > b) return 1;
+        if (a < b) return -1;
+        return 0;
+      }
+    };
+  }
 
   // Optional list of file types.
   this.fileTypes_ = this.params_.typeList;
@@ -96,17 +113,12 @@ function FileManager(dialogDom, rootEntries, params) {
 
   this.document_.querySelector('[tabindex="0"]').focus();
 
-  if (ENABLE_METADATA) {
-    // Pass all URLs to the metadata reader until we have a correct filter.
-    this.metadataUrlFilter_ = /.*/;
+  // Pass all URLs to the metadata reader until we have a correct filter.
+  this.metadataUrlFilter_ = /.*/;
 
-    this.metadataReader_ = new Worker('js/metadata_reader.js');
-    this.metadataReader_.onmessage = this.onMetadataMessage_.bind(this);
-    this.metadataReader_.postMessage({verb: 'init'});
-  } else {
-    // This regexp never matches anything, so the metadata reader is bypassed.
-    this.metadataUrlFilter_ = /$./;
-  }
+  this.metadataReader_ = new Worker('js/metadata_dispatcher.js');
+  this.metadataReader_.onmessage = this.onMetadataMessage_.bind(this);
+  this.metadataReader_.postMessage({verb: 'init'});
 }
 
 FileManager.prototype = {
@@ -494,6 +506,7 @@ FileManager.prototype = {
     this.previewImage_ = this.dialogDom_.querySelector('.preview-img');
     this.previewFilename_ = this.dialogDom_.querySelector('.preview-filename');
     this.previewSummary_ = this.dialogDom_.querySelector('.preview-summary');
+    this.previewMetadata_ = this.dialogDom_.querySelector('.preview-metadata');
     this.filenameInput_ = this.dialogDom_.querySelector('.filename-input');
     this.taskButtons_ = this.dialogDom_.querySelector('.task-buttons');
     this.okButton_ = this.dialogDom_.querySelector('.ok');
@@ -521,17 +534,10 @@ FileManager.prototype = {
     this.dialogDom_.querySelector('button.new-folder').addEventListener(
         'click', this.onNewFolderButtonClick_.bind(this));
 
-    if (ENABLE_THUMBNAIL_VIEW) {
-      this.dialogDom_.querySelector('button.detail-view').addEventListener(
-          'click', this.onDetailViewButtonClick_.bind(this));
-      this.dialogDom_.querySelector('button.thumbnail-view').addEventListener(
-          'click', this.onThumbnailViewButtonClick_.bind(this));
-    } else {
-      this.dialogDom_.querySelector(
-          'button.detail-view').style.display = 'none';
-      this.dialogDom_.querySelector(
-          'button.thumbnail-view').style.display = 'none';
-    }
+    this.dialogDom_.querySelector('button.detail-view').addEventListener(
+        'click', this.onDetailViewButtonClick_.bind(this));
+    this.dialogDom_.querySelector('button.thumbnail-view').addEventListener(
+        'click', this.onThumbnailViewButtonClick_.bind(this));
 
     this.dialogDom_.ownerDocument.defaultView.addEventListener(
         'resize', this.onResize_.bind(this));
@@ -875,7 +881,8 @@ FileManager.prototype = {
     function onBaseError(err) {
       // Set filename first so OK button will update in changeDirectory.
       self.filenameInput_.value = leafName;
-      console.log('Unexpected error resolving default base: ' + err);
+      console.log('Unexpected error resolving default base "' +
+                  baseName + '": ' + err);
       self.changeDirectory('/', CD_NO_HISTORY);
     }
 
@@ -1232,7 +1239,7 @@ FileManager.prototype = {
     cacheNextFile();
   };
 
-  FileManager.prototype.onMetadataReceived_ = function(fileURL, metadata) {
+  FileManager.prototype.onMetadataResult_ = function(fileURL, metadata) {
     var observers = this.metadataCache_[fileURL];
     if (!observers || !(observers instanceof Array)) {
       console.error('Missing or invalid metadata observers: ' + fileURL + ': ' +
@@ -1240,6 +1247,7 @@ FileManager.prototype = {
       return;
     }
 
+    console.log('metadata result:', metadata);
     for (var i = 0; i < observers.length; i++) {
       observers[i](metadata);
     }
@@ -1249,40 +1257,33 @@ FileManager.prototype = {
 
   FileManager.prototype.onMetadataError_ = function(fileURL, step, error) {
     console.warn('metadata: ' + fileURL + ': ' + step + ': ' + error);
-    this.onMetadataReceived_(fileURL, {});
+    this.onMetadataResult_(fileURL, {});
   };
 
-  FileManager.prototype.onMetadataUrlFilter_ = function(regexp) {
+  FileManager.prototype.onMetadataFilter_ = function(regexp) {
     this.metadataUrlFilter_ = regexp;
   };
 
+  FileManager.prototype.onMetadataLog_ = function(arglist) {
+    console.log.apply(console, ['metadata:'].concat(arglist));
+  };
+
+  /**
+   * Dispatch a message from a metadata reader to the appropriate onMetadata*
+   * method.
+   */
   FileManager.prototype.onMetadataMessage_ = function(event) {
     var data = event.data;
-    var self = this;
 
-    function fwd(methodName, args) { self[methodName].apply(self, args) };
+    var methodName = 'onMetadata' + data.verb.substr(0, 1).toUpperCase() +
+        data.verb.substr(1) + '_';
 
-    switch (data.verb) {
-      case 'log':
-        console.log.apply(console, ['metadata:'].concat(data.arguments));
-        break;
-
-      case 'result':
-        fwd('onMetadataReceived_', data.arguments);
-        break;
-
-      case 'error':
-        fwd('onMetadataError_', data.arguments);
-        break;
-
-      case 'filter':
-        fwd('onMetadataUrlFilter_', data.arguments);
-        break;
-
-      default:
-        console.log('Unknown message from metadata reader: ' + data.verb, data);
-        break;
+    if (!(methodName in this)) {
+      console.log('Unknown message from metadata reader: ' + data.verb, data);
+      return;
     }
+
+    this[methodName].apply(this, data.arguments);
   };
 
   FileManager.prototype.onTasksFound_ = function(tasksList) {
@@ -1427,7 +1428,20 @@ FileManager.prototype = {
     var self = this;
     var leadEntry = this.selection.leadEntry;
 
-    this.getThumbnailURL(this.selection.leadEntry, function(iconType, url) {
+    if (this.selection.totalCount == this.selection.fileCount == 1) {
+      this.cacheMetadata_(leadEntry, function (metadata) {
+          if (leadEntry != self.selection.leadEntry) {
+            // Selection has changed since we asked for the metadata, nevermind.
+            return;
+          }
+
+          self.setPreviewMetadata(metadata);
+        });
+    } else {
+      self.setPreviewMetadata(null);
+    }
+
+    this.getThumbnailURL(leadEntry, function(iconType, url) {
       if (self.selection.leadEntry != leadEntry) {
         // Selection has changed since we asked, nevermind.
         return;
@@ -1473,6 +1487,39 @@ FileManager.prototype = {
     }
 
     console.error('Unexpected metadata cache value:' + cacheValue);
+  };
+
+  FileManager.prototype.setPreviewMetadata = function(metadata) {
+    this.previewMetadata_.textContent = '';
+    if (!(metadata && metadata.ifd))
+      return;
+
+    var self = this;
+
+    function addProperty(id, v) {
+      var dom = self.document_.createElement('div');
+      dom.className = 'metadata-item';
+      var label = self.document_.createElement('div');
+      label.className = 'metadata-label';
+      label.textContent = str(id) || id;
+      dom.appendChild(label);
+      var value = self.document_.createElement('div');
+      value.className = 'metadata-value';
+      value.textContent = v;
+      dom.appendChild(value);
+
+      self.previewMetadata_.appendChild(dom);
+    }
+
+    // TODO(rginda): Split this function into metadata specific routines when
+    // we add new metadata types.
+    // TODO(rginda): Add const names for these numerics.
+    var exifDir = metadata.ifd.exif;
+    if (0xa002 in exifDir && 0xa003 in exifDir) {
+      addProperty('DIMENSIONS_LABEL',
+                  strf('DIMENSIONS_FORMAT', exifDir[0xa002].value,
+                       exifDir[0xa003].value));
+    }
   };
 
   FileManager.prototype.getThumbnailURL = function(entry, callback) {

@@ -344,6 +344,24 @@ li.thumbnail-item[selected] .file-checkbox {
   background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAAlwSFlzAAAOTQAADiYBwNzaZQAAAAd0SU1FB9sDExUSAaQ/5TMAAAAZdEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRoIEdJTVBXgQ4XAAAAQ0lEQVRYw+3VsQkAMQwDQOfJRt7r9/FQ3ilDuAiBUy84UKFVVX8M0t2TenxxOQAAAAAAAAB7+ueZaQIAAAAAAIC3AQceAAfi8EmRSgAAAABJRU5ErkJggg==);
 }
 
+.preview-metadata {
+  -webkit-box-orient: vertical;
+  -webkit-box-flex: 1;
+  display: -webkit-box;
+  color: #666;
+}
+
+.metadata-item {
+  -webkit-box-orient: horizontal;
+  -webkit-box-flex: 1;
+  display: -webkit-box;
+  -webkit-padding-start: 8px;
+}
+
+.metadata-label {
+  -webkit-margin-end: 6px;
+}
+
 /* The task buttons at the bottom of the preview pane. */
 .task-buttons {
   padding: 4px;

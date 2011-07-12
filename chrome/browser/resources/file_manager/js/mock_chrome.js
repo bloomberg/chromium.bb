@@ -134,6 +134,9 @@ chrome.fileBrowserPrivate = {
       NEW_FOLDER_BUTTON_LABEL: 'New folder',
       FILENAME_LABEL: 'File Name',
 
+      DIMENSIONS_LABEL: 'Dimensions',
+      DIMENSIONS_FORMAT: '$1 x $2',
+
       EJECT_BUTTON: 'Eject',
       IMAGE_DIMENSIONS: 'Image Dimensions',
       VOLUME_LABEL: 'Volume Label',
@@ -192,7 +195,10 @@ chrome.extension = {
 };
 
 chrome.test = {
+  verbose: false,
+
   sendMessage: function(msg) {
-    console.log('chrome.test.sendMessage: ' + msg);
+    if (chrome.test.verbose)
+      console.log('chrome.test.sendMessage: ' + msg);
   }
 };

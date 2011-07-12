@@ -129,7 +129,8 @@ var harness = {
       }
 
       currentSrc = files.shift();
-      var destPath = currentSrc.name.replace(/\^\^/g, '/');
+      var destPath = harness.fileManager.currentDirEntry_.fullPath + '/' +
+          currentSrc.name.replace(/\^\^/g, '/');
       self.getOrCreateFile(destPath, onFileFound,
                               util.flog('Error finding path: ' + destPath));
     }
