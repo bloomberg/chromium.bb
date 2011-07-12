@@ -35,7 +35,9 @@ class FileSystemContext;
 }  // namespace fileapi
 
 namespace net {
+class CookieStore;
 class DnsCertProvenanceChecker;
+class HttpTransactionFactory;
 class NetLog;
 class ProxyConfigService;
 class ProxyService;
@@ -113,12 +115,29 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
     virtual ~RequestContext();
 
     // Setter is used to transfer ownership of the ProfileIOData to the context.
-    void set_profile_io_data(const ProfileIOData* profile_io_data) {
+    void set_profile_io_data(ProfileIOData* profile_io_data) {
       profile_io_data_ = profile_io_data;
     }
 
+   protected:
+    ProfileIOData* profile_io_data() { return profile_io_data_; }
+
    private:
-    scoped_refptr<const ProfileIOData> profile_io_data_;
+    scoped_refptr<ProfileIOData> profile_io_data_;
+  };
+
+  class AppRequestContext : public RequestContext {
+   public:
+    explicit AppRequestContext(const std::string& app_id);
+    virtual ~AppRequestContext();
+
+    void SetCookieStore(net::CookieStore* cookie_store);
+    void SetHttpTransactionFactory(net::HttpTransactionFactory* http_factory);
+
+   private:
+    const std::string app_id_;
+    scoped_refptr<net::CookieStore> cookie_store_;
+    scoped_ptr<net::HttpTransactionFactory> http_factory_;
   };
 
   // Created on the UI thread, read on the IO thread during ProfileIOData lazy
@@ -210,6 +229,9 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
     const ProfileIOData* const io_data_;
   };
 
+  typedef base::hash_map<std::string, ChromeURLRequestContext*>
+      AppRequestContextMap;
+
   // --------------------------------------------
   // Virtual interface for subtypes to implement:
   // --------------------------------------------
@@ -228,7 +250,7 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
   // context from ProfileIOData to the URLRequestContextGetter.
   virtual scoped_refptr<ChromeURLRequestContext>
       AcquireMediaRequestContext() const = 0;
-  virtual scoped_refptr<ChromeURLRequestContext>
+  virtual scoped_refptr<RequestContext>
       AcquireIsolatedAppRequestContext(
           scoped_refptr<ChromeURLRequestContext> main_context,
           const std::string& app_id) const = 0;
@@ -272,6 +294,8 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
   // called.
   mutable scoped_refptr<RequestContext> main_request_context_;
   mutable scoped_refptr<RequestContext> extensions_request_context_;
+  // One AppRequestContext per isolated app.
+  mutable AppRequestContextMap app_request_context_map_;
 
   // Weak pointers to the request contexts. Only valid after LazyInitialize.
   // These are weak so that they don't hold a reference to the RequestContext,

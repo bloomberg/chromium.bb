@@ -159,9 +159,7 @@ ProfileImplIOData::LazyParams::~LazyParams() {}
 ProfileImplIOData::ProfileImplIOData()
     : ProfileIOData(false),
       clear_local_state_on_exit_(false) {}
-ProfileImplIOData::~ProfileImplIOData() {
-  STLDeleteValues(&app_http_factory_map_);
-}
+ProfileImplIOData::~ProfileImplIOData() {}
 
 void ProfileImplIOData::LazyInitializeInternal(
     ProfileParams* profile_params) const {
@@ -299,7 +297,7 @@ scoped_refptr<ProfileIOData::RequestContext>
 ProfileImplIOData::InitializeAppRequestContext(
     scoped_refptr<ChromeURLRequestContext> main_context,
     const std::string& app_id) const {
-  scoped_refptr<ProfileIOData::RequestContext> context = new RequestContext;
+  ProfileIOData::AppRequestContext* context = new AppRequestContext(app_id);
 
   // Copy most state from the main context.
   context->CopyFrom(main_context);
@@ -351,12 +349,8 @@ ProfileImplIOData::InitializeAppRequestContext(
     cookie_store = new net::CookieMonster(cookie_db.get(), NULL);
   }
 
-  context->set_cookie_store(cookie_store);
-
-  // Keep track of app_http_cache to delete it when we go away.
-  DCHECK(!app_http_factory_map_[app_id]);
-  app_http_factory_map_[app_id] = app_http_cache;
-  context->set_http_transaction_factory(app_http_cache);
+  context->SetCookieStore(cookie_store);
+  context->SetHttpTransactionFactory(app_http_cache);
 
   return context;
 }
@@ -365,12 +359,13 @@ scoped_refptr<ChromeURLRequestContext>
 ProfileImplIOData::AcquireMediaRequestContext() const {
   DCHECK(media_request_context_);
   scoped_refptr<ChromeURLRequestContext> context = media_request_context_;
-  media_request_context_->set_profile_io_data(this);
+  media_request_context_->set_profile_io_data(
+      const_cast<ProfileImplIOData*>(this));
   media_request_context_ = NULL;
   return context;
 }
 
-scoped_refptr<ChromeURLRequestContext>
+scoped_refptr<ProfileIOData::RequestContext>
 ProfileImplIOData::AcquireIsolatedAppRequestContext(
     scoped_refptr<ChromeURLRequestContext> main_context,
     const std::string& app_id) const {
@@ -378,6 +373,5 @@ ProfileImplIOData::AcquireIsolatedAppRequestContext(
   scoped_refptr<RequestContext> app_request_context =
       InitializeAppRequestContext(main_context, app_id);
   DCHECK(app_request_context);
-  app_request_context->set_profile_io_data(this);
   return app_request_context;
 }

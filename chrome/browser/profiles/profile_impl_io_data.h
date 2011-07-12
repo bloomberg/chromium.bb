@@ -109,7 +109,7 @@ class ProfileImplIOData : public ProfileIOData {
       const std::string& app_id) const;
   virtual scoped_refptr<ChromeURLRequestContext>
       AcquireMediaRequestContext() const;
-  virtual scoped_refptr<ChromeURLRequestContext>
+  virtual scoped_refptr<RequestContext>
       AcquireIsolatedAppRequestContext(
           scoped_refptr<ChromeURLRequestContext> main_context,
           const std::string& app_id) const;
@@ -121,9 +121,6 @@ class ProfileImplIOData : public ProfileIOData {
 
   mutable scoped_ptr<net::HttpTransactionFactory> main_http_factory_;
   mutable scoped_ptr<net::HttpTransactionFactory> media_http_factory_;
-
-  // One HttpTransactionFactory per isolated app.
-  mutable HttpTransactionFactoryMap app_http_factory_map_;
 
   // Parameters needed for isolated apps.
   FilePath app_path_;

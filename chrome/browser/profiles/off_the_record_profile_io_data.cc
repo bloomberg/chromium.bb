@@ -114,9 +114,7 @@ void OffTheRecordProfileIOData::Handle::LazyInitialize() const {
 
 OffTheRecordProfileIOData::OffTheRecordProfileIOData()
     : ProfileIOData(true) {}
-OffTheRecordProfileIOData::~OffTheRecordProfileIOData() {
-  STLDeleteValues(&app_http_factory_map_);
-}
+OffTheRecordProfileIOData::~OffTheRecordProfileIOData() {}
 
 void OffTheRecordProfileIOData::LazyInitializeInternal(
     ProfileParams* profile_params) const {
@@ -188,7 +186,7 @@ scoped_refptr<ProfileIOData::RequestContext>
 OffTheRecordProfileIOData::InitializeAppRequestContext(
     scoped_refptr<ChromeURLRequestContext> main_context,
     const std::string& app_id) const {
-  scoped_refptr<ProfileIOData::RequestContext> context = new RequestContext;
+  AppRequestContext* context = new AppRequestContext(app_id);
 
   // Copy most state from the main context.
   context->CopyFrom(main_context);
@@ -196,8 +194,7 @@ OffTheRecordProfileIOData::InitializeAppRequestContext(
   // Use a separate in-memory cookie store for the app.
   // TODO(creis): We should have a cookie delegate for notifying the cookie
   // extensions API, but we need to update it to understand isolated apps first.
-  context->set_cookie_store(
-      new net::CookieMonster(NULL, NULL));
+  context->SetCookieStore(new net::CookieMonster(NULL, NULL));
 
   // Use a separate in-memory cache for the app.
   net::HttpCache::BackendFactory* app_backend =
@@ -207,11 +204,7 @@ OffTheRecordProfileIOData::InitializeAppRequestContext(
   net::HttpCache* app_http_cache =
       new net::HttpCache(main_network_session, app_backend);
 
-  // Keep track of app_http_cache to delete it when we go away.
-  DCHECK(!app_http_factory_map_[app_id]);
-  app_http_factory_map_[app_id] = app_http_cache;
-  context->set_http_transaction_factory(app_http_cache);
-
+  context->SetHttpTransactionFactory(app_http_cache);
   return context;
 }
 
@@ -221,7 +214,7 @@ OffTheRecordProfileIOData::AcquireMediaRequestContext() const {
   return NULL;
 }
 
-scoped_refptr<ChromeURLRequestContext>
+scoped_refptr<ProfileIOData::RequestContext>
 OffTheRecordProfileIOData::AcquireIsolatedAppRequestContext(
     scoped_refptr<ChromeURLRequestContext> main_context,
     const std::string& app_id) const {
@@ -229,6 +222,5 @@ OffTheRecordProfileIOData::AcquireIsolatedAppRequestContext(
   scoped_refptr<RequestContext> app_request_context =
       InitializeAppRequestContext(main_context, app_id);
   DCHECK(app_request_context);
-  app_request_context->set_profile_io_data(this);
   return app_request_context;
 }

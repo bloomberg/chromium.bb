@@ -39,6 +39,7 @@
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/resource_context.h"
 #include "content/common/notification_service.h"
+#include "net/http/http_transaction_factory.h"
 #include "net/http/http_util.h"
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_script_fetcher_impl.h"
@@ -268,6 +269,25 @@ void ProfileIOData::InitializeProfileParams(Profile* profile) {
 ProfileIOData::RequestContext::RequestContext() {}
 ProfileIOData::RequestContext::~RequestContext() {}
 
+ProfileIOData::AppRequestContext::AppRequestContext(const std::string& app_id)
+    : app_id_(app_id) {}
+ProfileIOData::AppRequestContext::~AppRequestContext() {
+  DCHECK(ContainsKey(profile_io_data()->app_request_context_map_, app_id_));
+  profile_io_data()->app_request_context_map_.erase(app_id_);
+}
+
+void ProfileIOData::AppRequestContext::SetCookieStore(
+    net::CookieStore* cookie_store) {
+  cookie_store_ = cookie_store;
+  set_cookie_store(cookie_store);
+}
+
+void ProfileIOData::AppRequestContext::SetHttpTransactionFactory(
+    net::HttpTransactionFactory* http_factory) {
+  http_factory_.reset(http_factory);
+  set_http_transaction_factory(http_factory);
+}
+
 ProfileIOData::ProfileParams::ProfileParams()
     : is_incognito(false),
       clear_local_state_on_exit(false),
@@ -326,7 +346,7 @@ scoped_refptr<ChromeURLRequestContext>
 ProfileIOData::GetMainRequestContext() const {
   LazyInitialize();
   scoped_refptr<RequestContext> context = main_request_context_;
-  context->set_profile_io_data(this);
+  context->set_profile_io_data(const_cast<ProfileIOData*>(this));
   main_request_context_ = NULL;
   return context;
 }
@@ -345,7 +365,7 @@ ProfileIOData::GetExtensionsRequestContext() const {
   LazyInitialize();
   scoped_refptr<RequestContext> context =
       extensions_request_context_;
-  context->set_profile_io_data(this);
+  context->set_profile_io_data(const_cast<ProfileIOData*>(this));
   extensions_request_context_ = NULL;
   return context;
 }
@@ -355,8 +375,16 @@ ProfileIOData::GetIsolatedAppRequestContext(
     scoped_refptr<ChromeURLRequestContext> main_context,
     const std::string& app_id) const {
   LazyInitialize();
-  scoped_refptr<ChromeURLRequestContext> context =
-      AcquireIsolatedAppRequestContext(main_context, app_id);
+  scoped_refptr<ChromeURLRequestContext> context;
+  if (ContainsKey(app_request_context_map_, app_id)) {
+    context = app_request_context_map_[app_id];
+  } else {
+    scoped_refptr<RequestContext> request_context =
+        AcquireIsolatedAppRequestContext(main_context, app_id);
+    request_context->set_profile_io_data(const_cast<ProfileIOData*>(this));
+    app_request_context_map_[app_id] = request_context;
+    context = request_context;
+  }
   DCHECK(context);
   return context;
 }
