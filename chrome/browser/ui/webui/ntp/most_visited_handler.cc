@@ -121,11 +121,9 @@ void MostVisitedHandler::SendPagesValue() {
     history::TopSites* ts = profile->GetTopSites();
     if (ts)
       has_blacklisted_urls = ts->HasBlacklistedItems();
-    FundamentalValue first_run(IsFirstRun());
     FundamentalValue has_blacklisted_urls_value(has_blacklisted_urls);
     web_ui_->CallJavascriptFunction("setMostVisitedPages",
                                     *(pages_value_.get()),
-                                    first_run,
                                     has_blacklisted_urls_value);
     pages_value_.reset();
   }
@@ -314,41 +312,6 @@ void MostVisitedHandler::OnMostVisitedURLsAvailable(
   }
 }
 
-bool MostVisitedHandler::IsFirstRun() {
-  // If we found no pages we treat this as the first run.
-  bool first_run = NewTabUI::NewTabHTMLSource::first_run() &&
-      pages_value_->GetSize() ==
-          MostVisitedHandler::GetPrePopulatedPages().size();
-  // but first_run should only be true once.
-  NewTabUI::NewTabHTMLSource::set_first_run(false);
-  return first_run;
-}
-
-// static
-const std::vector<MostVisitedHandler::MostVisitedPage>&
-    MostVisitedHandler::GetPrePopulatedPages() {
-  // TODO(arv): This needs to get the data from some configurable place.
-  // http://crbug.com/17630
-  static std::vector<MostVisitedPage> pages;
-  if (pages.empty()) {
-    MostVisitedPage welcome_page = {
-        l10n_util::GetStringUTF16(IDS_NEW_TAB_CHROME_WELCOME_PAGE_TITLE),
-        GURL(l10n_util::GetStringUTF8(IDS_CHROME_WELCOME_URL)),
-        GURL("chrome://theme/IDR_NEWTAB_CHROME_WELCOME_PAGE_THUMBNAIL"),
-        GURL("chrome://theme/IDR_NEWTAB_CHROME_WELCOME_PAGE_FAVICON")};
-    pages.push_back(welcome_page);
-
-    MostVisitedPage gallery_page = {
-        l10n_util::GetStringUTF16(IDS_NEW_TAB_THEMES_GALLERY_PAGE_TITLE),
-        GURL(l10n_util::GetStringUTF8(IDS_THEMES_GALLERY_URL)),
-        GURL("chrome://theme/IDR_NEWTAB_THEMES_GALLERY_THUMBNAIL"),
-        GURL("chrome://theme/IDR_NEWTAB_THEMES_GALLERY_FAVICON")};
-    pages.push_back(gallery_page);
-  }
-
-  return pages;
-}
-
 void MostVisitedHandler::Observe(int type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {
@@ -375,14 +338,4 @@ void MostVisitedHandler::RegisterUserPrefs(PrefService* prefs) {
                                 PrefService::UNSYNCABLE_PREF);
   prefs->RegisterDictionaryPref(prefs::kNTPMostVisitedPinnedURLs,
                                 PrefService::UNSYNCABLE_PREF);
-}
-
-// static
-std::vector<GURL> MostVisitedHandler::GetPrePopulatedUrls() {
-  const std::vector<MostVisitedPage> pages =
-      MostVisitedHandler::GetPrePopulatedPages();
-  std::vector<GURL> page_urls;
-  for (size_t i = 0; i < pages.size(); ++i)
-    page_urls.push_back(pages[i].url);
-  return page_urls;
 }

@@ -152,15 +152,11 @@
       <include name="IDR_NEWTAB_BUTTON_H" file="newtab_h.png" type="BINDATA" />
       <include name="IDR_NEWTAB_BUTTON_MASK" file="newtab_button_mask.png" type="BINDATA" />
       <include name="IDR_NEWTAB_BUTTON_P" file="newtab_p.png" type="BINDATA" />
-      <include name="IDR_NEWTAB_CHROME_STORE_PAGE_FAVICON" file="ntp_store_favicon.png" type="BINDATA" />
-      <include name="IDR_NEWTAB_CHROME_STORE_PAGE_THUMBNAIL" file="ntp_store_thumb.png" type="BINDATA" />
-      <include name="IDR_NEWTAB_CHROME_WELCOME_PAGE_FAVICON" file="ntp_welcome_favicon.png" type="BINDATA" />
       <include name="IDR_NEWTAB_CHROME_WELCOME_PAGE_THUMBNAIL" file="ntp_welcome_thumb.png" type="BINDATA" />
       <include name="IDR_NEWTAB_MENU_MASK" file="ntp_menu_mask.png" type="BINDATA" />
       <include name="IDR_NEWTAB_OPTION" file="ntp_option.png" type="BINDATA" />
       <include name="IDR_NEWTAB_OPTION_H" file="ntp_option_h.png" type="BINDATA" />
       <include name="IDR_NEWTAB_OPTION_P" file="ntp_option_p.png" type="BINDATA" />
-      <include name="IDR_NEWTAB_THEMES_GALLERY_FAVICON" file="ntp_themes_gallery_favicon.png" type="BINDATA" />
       <include name="IDR_NEWTAB_THEMES_GALLERY_THUMBNAIL" file="ntp_themes_gallery_thumb.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_EXTENSION_APP" file="omnibox_extension_app.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_EXTENSION_APP_DARK" file="omnibox_extension_app_dark.png" type="BINDATA" />
@@ -192,19 +188,19 @@
       <include name="IDR_PRERENDER_FAIL_ICON" file="prerender_fail_icon.png" type="BINDATA"/>
       <include name="IDR_PRERENDER_SUCCEED_ICON" file="prerender_succeed_icon.png" type="BINDATA"/>
       <if expr="pp_ifdef('_google_chrome')">
-        <include name="IDR_PRODUCT_ICON_32" file="google_chrome/google_chrome_icon_32.png" type="BINDATA" />
         <include name="IDR_PRODUCT_LOGO" file="google_chrome/product_logo.png" type="BINDATA" />
         <include name="IDR_PRODUCT_LOGO_16" file="google_chrome/product_logo_16.png" type="BINDATA" />
         <include name="IDR_PRODUCT_LOGO_26" file="google_chrome/product_logo_26.png" type="BINDATA" />
+        <include name="IDR_PRODUCT_LOGO_32" file="google_chrome/product_logo_32.png" type="BINDATA" />
         <include name="IDR_PRODUCT_LOGO_64" file="google_chrome/product_logo_64.png" type="BINDATA" />
         <include name="IDR_PRODUCT_LOGO_WHITE" file="google_chrome/product_logo_white.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('_google_chrome')">
-        <include name="IDR_PRODUCT_ICON_32" file="chromium/chromium_icon_32.png" type="BINDATA" />
         <include name="IDR_PRODUCT_LOGO" file="chromium/product_logo.png" type="BINDATA" />
         <include name="IDR_PRODUCT_LOGO_WHITE" file="chromium/product_logo_white.png" type="BINDATA" />
         <include name="IDR_PRODUCT_LOGO_16" file="chromium/product_logo_16.png" type="BINDATA" />
         <include name="IDR_PRODUCT_LOGO_26" file="chromium/product_logo_26.png" type="BINDATA" />
+        <include name="IDR_PRODUCT_LOGO_32" file="chromium/product_logo_32.png" type="BINDATA" />
         <include name="IDR_PRODUCT_LOGO_64" file="chromium/product_logo_64.png" type="BINDATA" />
       </if>
       <!-- NOTE: product_logo_*.* files beyond what's listed above are
@@ -362,16 +358,14 @@
       <if expr="pp_ifdef('_google_chrome')">
         <include name="IDR_WEBSTORE_ICON" file="google_chrome/webstore_icon.png" type="BINDATA" />
         <include name="IDR_WEBSTORE_ICON_16" file="google_chrome/webstore_icon_16.png" type="BINDATA" />
-      </if>
-      <if expr="not pp_ifdef('_google_chrome')">
-        <include name="IDR_WEBSTORE_ICON" file="chromium/webstore_icon.png" type="BINDATA" />
-        <include name="IDR_WEBSTORE_ICON_16" file="chromium/webstore_icon_16.png" type="BINDATA" />
-      </if>
-      <if expr="pp_ifdef('_google_chrome')">
+        <include name="IDR_WEBSTORE_ICON_32" file="google_chrome/webstore_icon_32.png" type="BINDATA" />
         <include name="IDR_WIZARD_ICON" file="google_chrome/wizard_icon.png" type="BINDATA" />
         <include name="IDR_WIZARD_ICON_RTL" file="google_chrome/wizard_icon_rtl.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('_google_chrome')">
+        <include name="IDR_WEBSTORE_ICON" file="chromium/webstore_icon.png" type="BINDATA" />
+        <include name="IDR_WEBSTORE_ICON_16" file="chromium/webstore_icon_16.png" type="BINDATA" />
+        <include name="IDR_WEBSTORE_ICON_32" file="chromium/webstore_icon_32.png" type="BINDATA" />
         <include name="IDR_WIZARD_ICON" file="chromium/wizard_icon.png" type="BINDATA" />
         <include name="IDR_WIZARD_ICON_RTL" file="chromium/wizard_icon_rtl.png" type="BINDATA" />
       </if>

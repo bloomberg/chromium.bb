@@ -74,10 +74,6 @@ class MostVisitedHandler : public WebUIMessageHandler,
 
   static void RegisterUserPrefs(PrefService* prefs);
 
-  // Returns a vector containing the urls for the prepopulated pages.
-  // Used only in testing.
-  static std::vector<GURL> GetPrePopulatedUrls();
-
  private:
   struct MostVisitedPage;
 
@@ -106,11 +102,6 @@ class MostVisitedHandler : public WebUIMessageHandler,
 
   // Sends pages_value_ to the javascript side to and resets page_value_.
   void SendPagesValue();
-
-  // Returns true if we should treat this as the first run of the new tab page.
-  bool IsFirstRun();
-
-  static const std::vector<MostVisitedPage>& GetPrePopulatedPages();
 
   NotificationRegistrar registrar_;
 

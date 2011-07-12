@@ -547,7 +547,7 @@ cr.define('ntp4', function() {
     $('recently-closed-menu-button').dataItems = dataItems;
   }
 
-  function setMostVisitedPages(data, firstRun, hasBlacklistedUrls) {
+  function setMostVisitedPages(data, hasBlacklistedUrls) {
     mostVisitedPage.data = data;
   }
 

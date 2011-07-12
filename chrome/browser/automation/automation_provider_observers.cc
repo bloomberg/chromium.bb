@@ -32,6 +32,7 @@
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extension_updater.h"
+#include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/metrics/metric_event_duration_details.h"
 #include "chrome/browser/notifications/balloon.h"
@@ -2044,10 +2045,10 @@ NTPInfoObserver::NTPInfoObserver(
 
   // Add default site URLs.
   ListValue* default_sites_list = new ListValue;
-  std::vector<GURL> urls = MostVisitedHandler::GetPrePopulatedUrls();
+  history::MostVisitedURLList urls = history::TopSites::GetPrepopulatePages();
   for (size_t i = 0; i < urls.size(); ++i) {
     default_sites_list->Append(Value::CreateStringValue(
-        urls[i].possibly_invalid_spec()));
+        urls[i].url.possibly_invalid_spec()));
   }
   ntp_info_->Set("default_sites", default_sites_list);
 

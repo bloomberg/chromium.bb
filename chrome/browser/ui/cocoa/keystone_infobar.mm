@@ -89,7 +89,7 @@ bool KeystonePromotionInfoBarDelegate::ShouldExpire(
 
 gfx::Image* KeystonePromotionInfoBarDelegate::GetIcon() const {
   return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-      IDR_PRODUCT_ICON_32);
+      IDR_PRODUCT_LOGO_32);
 }
 
 string16 KeystonePromotionInfoBarDelegate::GetMessageText() const {

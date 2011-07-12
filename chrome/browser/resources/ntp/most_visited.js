@@ -136,7 +136,7 @@ var MostVisited = (function() {
       // Send 'getMostVisitedPages' with a callback since we want to find the
       // new page and add that in the place of the removed page.
       chromeSend('getMostVisited', [], 'setMostVisitedPages',
-                 function(data, firstRun, hasBlacklistedUrls) {
+                 function(data, hasBlacklistedUrls) {
         // Update settings link.
         self.updateSettingsLink(hasBlacklistedUrls);
 

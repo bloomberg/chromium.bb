@@ -192,7 +192,7 @@ bool DefaultBrowserInfoBarDelegate::ShouldExpire(
 
 gfx::Image* DefaultBrowserInfoBarDelegate::GetIcon() const {
   return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-     IDR_PRODUCT_ICON_32);
+     IDR_PRODUCT_LOGO_32);
 }
 
 string16 DefaultBrowserInfoBarDelegate::GetMessageText() const {

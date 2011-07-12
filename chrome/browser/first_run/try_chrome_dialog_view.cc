@@ -63,7 +63,7 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 
   views::ImageView* icon = new views::ImageView();
-  icon->SetImage(*rb.GetNativeImageNamed(IDR_PRODUCT_ICON_32));
+  icon->SetImage(*rb.GetNativeImageNamed(IDR_PRODUCT_LOGO_32));
   gfx::Size icon_size = icon->GetPreferredSize();
 
   // An approximate window size. After Layout() we'll get better bounds.

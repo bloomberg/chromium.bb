@@ -170,6 +170,9 @@ class TopSites
   // TopSites isn't loaded yet.
   virtual bool IsFull();
 
+  // Returns the set of prepopulate pages.
+  static MostVisitedURLList GetPrepopulatePages();
+
  protected:
   // For allowing inheritance.
   virtual ~TopSites();
@@ -242,9 +245,6 @@ class TopSites
   // The URL is assumed to be in the list. The destination is 0.
   static int GetRedirectDistanceForURL(const MostVisitedURL& most_visited,
                                        const GURL& url);
-
-  // Returns the set of prepopulate pages.
-  static MostVisitedURLList GetPrepopulatePages();
 
   // Add prepopulated pages: 'welcome to Chrome' and themes gallery to |urls|.
   // Returns true if any pages were added.

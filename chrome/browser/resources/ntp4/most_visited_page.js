@@ -224,7 +224,6 @@ cr.define('ntp4', function() {
 
     initialize: function() {
       this.classList.add('most-visited-page');
-
       this.data_ = null;
       this.mostVisitedTiles_ = this.getElementsByClassName('most-visited real');
     },

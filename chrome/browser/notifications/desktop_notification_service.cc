@@ -159,7 +159,7 @@ NotificationPermissionInfoBarDelegate::
 
 gfx::Image* NotificationPermissionInfoBarDelegate::GetIcon() const {
   return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-     IDR_PRODUCT_ICON_32);
+     IDR_PRODUCT_LOGO_32);
 }
 
 InfoBarDelegate::Type

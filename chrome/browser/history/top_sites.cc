@@ -59,9 +59,13 @@ static const int kPrepopulatePageIDs[] =
     { IDS_CHROME_WELCOME_URL, IDS_THEMES_GALLERY_URL };
 
 // Favicons of the sites we force into top sites.
-static const char kPrepopulateFaviconURLs[][54] =
-    { "chrome://theme/IDR_NEWTAB_CHROME_WELCOME_PAGE_FAVICON",
-      "chrome://theme/IDR_NEWTAB_THEMES_GALLERY_FAVICON" };
+static const char kPrepopulateFaviconURLs[][100] =
+    { "chrome://theme/IDR_PRODUCT_LOGO_16",
+      "chrome://theme/IDR_WEBSTORE_ICON_16" };
+// Same as above, but for NTP4. TODO(estade): remove the above.
+static const char kNewPrepopulateFaviconURLs[][100] =
+    { "chrome://theme/IDR_PRODUCT_LOGO_32",
+      "chrome://theme/IDR_WEBSTORE_ICON_32" };
 
 static const int kPrepopulateTitleIDs[] =
     { IDS_NEW_TAB_CHROME_WELCOME_PAGE_TITLE,
@@ -652,7 +656,10 @@ MostVisitedURLList TopSites::GetPrepopulatePages() {
     MostVisitedURL& url = urls[i];
     url.url = GURL(l10n_util::GetStringUTF8(kPrepopulatePageIDs[i]));
     url.redirects.push_back(url.url);
-    url.favicon_url = GURL(kPrepopulateFaviconURLs[i]);
+    url.favicon_url =
+        CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewTabPage4) ?
+        GURL(kNewPrepopulateFaviconURLs[i]) :
+        GURL(kPrepopulateFaviconURLs[i]);
     url.title = l10n_util::GetStringUTF16(kPrepopulateTitleIDs[i]);
   }
   return urls;

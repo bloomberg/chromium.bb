@@ -134,7 +134,7 @@ GList* GetIconList() {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   GList* icon_list = NULL;
   icon_list = g_list_append(icon_list,
-                            rb.GetNativeImageNamed(IDR_PRODUCT_ICON_32));
+                            rb.GetNativeImageNamed(IDR_PRODUCT_LOGO_32));
   icon_list = g_list_append(icon_list,
                             rb.GetNativeImageNamed(IDR_PRODUCT_LOGO_16));
   return icon_list;
