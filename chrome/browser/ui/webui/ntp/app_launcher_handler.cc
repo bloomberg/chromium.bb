@@ -265,6 +265,7 @@ void AppLauncherHandler::Observe(int type,
       // Handle app page renames.
       std::string* pref_name = Details<std::string>(details).ptr();
       if (*pref_name == prefs::kNTPAppPageNames) {
+        // TODO(estade): this doesn't need to regenerate the entire page.
         HandleGetApps(NULL);
       } else {
         // Default prefs change handling.
@@ -328,11 +329,13 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
       extensions_service_->apps_promo()->ShouldShowAppLauncher(
           extensions_service_->GetAppIds()));
 
-  PrefService* prefs = web_ui_->GetProfile()->GetPrefs();
-  const ListValue* app_page_names = prefs->GetList(prefs::kNTPAppPageNames);
-  if (app_page_names && app_page_names->GetSize()) {
-    dictionary->Set("appPageNames",
-                    static_cast<ListValue*>(app_page_names->DeepCopy()));
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewTabPage4)) {
+    PrefService* prefs = web_ui_->GetProfile()->GetPrefs();
+    const ListValue* app_page_names = prefs->GetList(prefs::kNTPAppPageNames);
+    if (app_page_names && app_page_names->GetSize()) {
+      dictionary->Set("appPageNames",
+                      static_cast<ListValue*>(app_page_names->DeepCopy()));
+    }
   }
 }
 

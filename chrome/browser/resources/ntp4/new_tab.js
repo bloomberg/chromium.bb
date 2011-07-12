@@ -77,6 +77,12 @@ cr.define('ntp4', function() {
   var eventTracker = new EventTracker;
 
   /**
+   * Object for accessing localized strings.
+   * @type {!LocalStrings}
+   */
+  var localStrings = new LocalStrings;
+
+  /**
    * The time in milliseconds for most transitions.  This should match what's
    * in new_tab.css.  Unfortunately there's no better way to try to time
    * something to occur until after a transition has completed.
@@ -216,6 +222,17 @@ cr.define('ntp4', function() {
     // Get a list of page names
     var pageNames = data.appPageNames;
 
+    function stringListIsEmpty(list) {
+      for (var i = 0; i < list.length; i++) {
+        if (list[i])
+          return false;
+      }
+      return true;
+    }
+
+    if (!pageNames || stringListIsEmpty(pageNames))
+      pageNames = [localStrings.getString('appDefaultPageName')];
+
     // Sort by launch index
     apps.sort(function(a, b) {
       return a.app_launch_index - b.app_launch_index;
@@ -227,7 +244,7 @@ cr.define('ntp4', function() {
       var pageIndex = (app.page_index || 0);
       while (pageIndex >= appsPages.length) {
         var pageName = '';
-        if (pageNames && appsPages.length < pageNames.length)
+        if (appsPages.length < pageNames.length)
           pageName = pageNames[appsPages.length];
 
         var origPageCount = appsPages.length;

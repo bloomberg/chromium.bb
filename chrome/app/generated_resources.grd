@@ -8205,6 +8205,10 @@ ls' lab.">
                desc="Text for the button that creates an app shortcut.">
         Create shortcut
       </message>
+      <message name="IDS_APP_DEFAULT_PAGE_NAME"
+               desc="Default name for the first 'Apps' page on the New Tab Page.">
+        Apps 
+      </message>
       <message name="IDS_APP_CONTEXT_MENU_OPEN_PINNED"
                desc="Text for the button that opens the app in a pinned tab.">
         Open as pinned tab

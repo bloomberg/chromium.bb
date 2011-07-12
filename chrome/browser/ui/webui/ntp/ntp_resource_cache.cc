@@ -330,6 +330,8 @@ void NTPResourceCache::CreateNewTabHTML() {
       l10n_util::GetStringUTF16(IDS_NEW_TAB_APP_OPTIONS));
   localized_strings.SetString("appcreateshortcut",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_APP_CREATE_SHORTCUT));
+  localized_strings.SetString("appDefaultPageName",
+      l10n_util::GetStringUTF16(IDS_APP_DEFAULT_PAGE_NAME));
   localized_strings.SetString("applaunchtypepinned",
       l10n_util::GetStringUTF16(IDS_APP_CONTEXT_MENU_OPEN_PINNED));
   localized_strings.SetString("applaunchtyperegular",
