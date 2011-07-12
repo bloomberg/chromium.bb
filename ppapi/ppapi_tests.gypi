@@ -198,15 +198,11 @@
   'conditions': [
     # NOTE: the PPAPI examples fail to build on mac & windows.
     # http://code.google.com/p/chromium/issues/detail?id=54005 tracks mac.
-    # TODO(ppapi authors):  Make the examples build on Windows as well.  In
-    # particular previous attempts have failed because the Win(clobber) and
-    # WinShared(dbg) builds try to build all, import *.gyp:*, and "all" becomes
-    # a direct dependent of ppapi_example_skeleton, making it a shared_library,
-    # and confusing the build system into failure.
-    ['OS!="win" and OS!="mac"', {
+    ['OS!="mac"', {
       'targets': [
         {
           'target_name': 'ppapi_example_skeleton',
+          'suppress_wildcard': 1,
           'type': 'none',
           'direct_dependent_settings': {
             'product_name': '>(_target_name)',
