@@ -18,6 +18,7 @@ from gtest_text_test_runner import GTestTextTestRunner
 import test_paths
 
 sys.path += [test_paths.PYTHON_BINDINGS]
+sys.path += [test_paths.SRC_THIRD_PARTY]
 
 import chromedriver_tests
 import test_environment
