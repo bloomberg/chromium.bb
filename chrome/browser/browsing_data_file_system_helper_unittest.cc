@@ -17,23 +17,35 @@
 
 namespace {
 
+// Shorter names for fileapi::* constants.
 const fileapi::FileSystemType kTemporary = fileapi::kFileSystemTypeTemporary;
 const fileapi::FileSystemType kPersistent = fileapi::kFileSystemTypePersistent;
 
+// We'll use these three distinct origins for testing, both as strings and as
+// GURLs in appropriate contexts.
 const char kTestOrigin1[] = "http://host1:1/";
-const char kTestOrigin2[] = "http://host2:1/";
-const char kTestOrigin3[] = "http://host3:1/";
+const char kTestOrigin2[] = "http://host2:2/";
+const char kTestOrigin3[] = "http://host3:3/";
 
 const GURL kOrigin1(kTestOrigin1);
 const GURL kOrigin2(kTestOrigin2);
 const GURL kOrigin3(kTestOrigin3);
 
+// TODO(mkwst): Update this size once the discussion in http://crbug.com/86114
+// is concluded.
 const int kEmptyFileSystemSize = 0;
 
 typedef std::vector<BrowsingDataFileSystemHelper::FileSystemInfo>
     FileSystemInfoVector;
 typedef scoped_ptr<FileSystemInfoVector> ScopedFileSystemInfoVector;
 
+// The FileSystem APIs are all asynchronous; this testing class wraps up the
+// boilerplate code necessary to deal with waiting for responses. In a nutshell,
+// any async call whose response we want to test ought to be followed by a call
+// to BlockUntilNotified(), which will (shockingly!) block until Notify() is
+// called. For this to work, you'll need to ensure that each async call is
+// implemented as a class method that that calls Notify() at an appropriate
+// point.
 class BrowsingDataFileSystemHelperTest : public testing::Test {
  public:
   BrowsingDataFileSystemHelperTest()
@@ -49,22 +61,41 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
     return &profile_;
   }
 
-  void FindFileSystemPathCallback(bool success,
+  // Blocks on the current MessageLoop until Notify() is called.
+  void BlockUntilNotified() {
+    MessageLoop::current()->Run();
+  }
+
+  // Unblocks the current MessageLoop. Should be called in response to some sort
+  // of async activity in a callback method.
+  void Notify() {
+    MessageLoop::current()->Quit();
+  }
+
+  // Callback that should be executed in response to
+  // fileapi::SandboxMountPointProvider::ValidateFileSystemRootAndGetURL
+  void CallbackFindFileSystemPath(bool success,
                                   const FilePath& path,
                                   const std::string& name) {
     found_file_system_ = success;
     Notify();
   }
 
+  // Calls fileapi::SandboxMountPointProvider::ValidateFileSystemRootAndGetURL
+  // to verify the existence of a file system for a specified type and origin,
+  // blocks until a response is available, then returns the result
+  // synchronously to it's caller.
   bool FileSystemContainsOriginAndType(const GURL& origin,
                                        fileapi::FileSystemType type) {
     sandbox_->ValidateFileSystemRootAndGetURL(
         origin, type, false, NewCallback(this,
-            &BrowsingDataFileSystemHelperTest::FindFileSystemPathCallback));
+            &BrowsingDataFileSystemHelperTest::CallbackFindFileSystemPath));
     BlockUntilNotified();
     return found_file_system_;
   }
 
+  // Callback that should be executed in response to StartFetching(), and stores
+  // found file systems locally so that they are available via GetFileSystems().
   void CallbackStartFetching(
       const std::vector<BrowsingDataFileSystemHelper::FileSystemInfo>&
           file_system_info_list) {
@@ -74,21 +105,25 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
     Notify();
   }
 
+  // Calls StartFetching() on the test's BrowsingDataFileSystemHelper
+  // object, then blocks until the callback is executed.
   void FetchFileSystems() {
     helper_->StartFetching(NewCallback(this,
         &BrowsingDataFileSystemHelperTest::CallbackStartFetching));
     BlockUntilNotified();
   }
 
+  // Calls StartFetching() on the test's CannedBrowsingDataFileSystemHelper
+  // object, then blocks until the callback is executed.
   void FetchCannedFileSystems() {
     canned_helper_->StartFetching(NewCallback(this,
         &BrowsingDataFileSystemHelperTest::CallbackStartFetching));
     BlockUntilNotified();
   }
 
+  // Sets up kOrigin1 with a temporary file system, kOrigin2 with a persistent
+  // file system, and kOrigin3 with both.
   virtual void PopulateTestFileSystemData() {
-    // Set up kOrigin1 with a temporary file system, kOrigin2 with a persistent
-    // file system, and kOrigin3 with both.
     sandbox_ = profile_.GetFileSystemContext()->path_manager()->
         sandbox_provider();
 
@@ -105,6 +140,8 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
     EXPECT_TRUE(FileSystemContainsOriginAndType(kOrigin3, kTemporary));
   }
 
+  // Uses the fileapi methods to create a filesystem of a given type for a
+  // specified origin.
   void CreateDirectoryForOriginAndType(const GURL& origin,
                                        fileapi::FileSystemType type) {
     FilePath target = sandbox_->ValidateFileSystemRootAndGetPathOnFileThread(
@@ -112,17 +149,12 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
     EXPECT_TRUE(file_util::DirectoryExists(target));
   }
 
+  // Returns a list of the FileSystemInfo objects gathered in the most recent
+  // call to StartFetching().
   FileSystemInfoVector* GetFileSystems() {
     return file_system_info_list_.get();
   }
 
-  void BlockUntilNotified() {
-    MessageLoop::current()->Run();
-  }
-
-  void Notify() {
-    MessageLoop::current()->Quit();
-  }
 
   // Temporary storage to pass information back from callbacks.
   bool found_file_system_;
@@ -133,7 +165,8 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
 
  private:
   // message_loop_, as well as all the threads associated with it must be
-  // defined before profile_ to prevent explosions. Oh how I love C++.
+  // defined before profile_ to prevent explosions. The threads also must be
+  // defined in the order they're listed here. Oh how I love C++.
   MessageLoopForUI message_loop_;
   BrowserThread ui_thread_;
   BrowserThread file_thread_;
@@ -146,6 +179,8 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataFileSystemHelperTest);
 };
 
+// Verifies that the BrowsingDataFileSystemHelper correctly finds the test file
+// system data, and that each file system returned contains the expected data.
 TEST_F(BrowsingDataFileSystemHelperTest, FetchData) {
   PopulateTestFileSystemData();
 
@@ -159,18 +194,21 @@ TEST_F(BrowsingDataFileSystemHelperTest, FetchData) {
     BrowsingDataFileSystemHelper::FileSystemInfo info =
         file_system_info_list_->at(i);
     if (info.origin == kOrigin1) {
+        EXPECT_FALSE(test_hosts_found[0]);
         test_hosts_found[0] = true;
         EXPECT_FALSE(info.has_persistent);
         EXPECT_TRUE(info.has_temporary);
         EXPECT_EQ(0, info.usage_persistent);
         EXPECT_EQ(kEmptyFileSystemSize, info.usage_temporary);
     } else if (info.origin == kOrigin2) {
+        EXPECT_FALSE(test_hosts_found[1]);
         test_hosts_found[1] = true;
         EXPECT_TRUE(info.has_persistent);
         EXPECT_FALSE(info.has_temporary);
         EXPECT_EQ(kEmptyFileSystemSize, info.usage_persistent);
         EXPECT_EQ(0, info.usage_temporary);
     } else if (info.origin == kOrigin3) {
+        EXPECT_FALSE(test_hosts_found[2]);
         test_hosts_found[2] = true;
         EXPECT_TRUE(info.has_persistent);
         EXPECT_TRUE(info.has_temporary);
@@ -185,6 +223,8 @@ TEST_F(BrowsingDataFileSystemHelperTest, FetchData) {
   }
 }
 
+// Verifies that the BrowsingDataFileSystemHelper correctly deletes file
+// systems via DeleteFileSystemOrigin().
 TEST_F(BrowsingDataFileSystemHelperTest, DeleteData) {
   PopulateTestFileSystemData();
 
@@ -209,6 +249,8 @@ TEST_F(BrowsingDataFileSystemHelperTest, DeleteData) {
   }
 }
 
+// Verifies that the CannedBrowsingDataFileSystemHelper correctly reports
+// whether or not it currently contains file systems.
 TEST_F(BrowsingDataFileSystemHelperTest, Empty) {
   ASSERT_TRUE(canned_helper_->empty());
   canned_helper_->AddFileSystem(kOrigin1, kTemporary, 0);
@@ -217,6 +259,8 @@ TEST_F(BrowsingDataFileSystemHelperTest, Empty) {
   ASSERT_TRUE(canned_helper_->empty());
 }
 
+// Verifies that AddFileSystem correctly adds file systems, and that both
+// the type and usage metadata are reported as provided.
 TEST_F(BrowsingDataFileSystemHelperTest, CannedAddFileSystem) {
   canned_helper_->AddFileSystem(kOrigin1, kPersistent, 200);
   canned_helper_->AddFileSystem(kOrigin2, kTemporary, 100);
@@ -236,18 +280,5 @@ TEST_F(BrowsingDataFileSystemHelperTest, CannedAddFileSystem) {
   EXPECT_EQ(100, file_system_info_list_->at(1).usage_temporary);
 }
 
-TEST_F(BrowsingDataFileSystemHelperTest, CannedUnique) {
-  canned_helper_->AddFileSystem(kOrigin3, kPersistent, 200);
-  canned_helper_->AddFileSystem(kOrigin3, kTemporary, 100);
-
-  FetchCannedFileSystems();
-
-  EXPECT_EQ(1U, file_system_info_list_->size());
-  EXPECT_EQ(kOrigin3, file_system_info_list_->at(0).origin);
-  EXPECT_TRUE(file_system_info_list_->at(0).has_persistent);
-  EXPECT_TRUE(file_system_info_list_->at(0).has_temporary);
-  EXPECT_EQ(200, file_system_info_list_->at(0).usage_persistent);
-  EXPECT_EQ(100, file_system_info_list_->at(0).usage_temporary);
-}
-
 }  // namespace
+

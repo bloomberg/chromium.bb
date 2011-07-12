@@ -191,26 +191,6 @@ BrowsingDataFileSystemHelper* BrowsingDataFileSystemHelper::Create(
   return new BrowsingDataFileSystemHelperImpl(profile);
 }
 
-CannedBrowsingDataFileSystemHelper::
-    PendingFileSystemInfo::PendingFileSystemInfo()
-        : type(fileapi::kFileSystemTypeUnknown),
-          size(0) {
-}
-
-CannedBrowsingDataFileSystemHelper::
-    PendingFileSystemInfo::PendingFileSystemInfo(
-        const GURL& origin,
-        const fileapi::FileSystemType type,
-        int64 size)
-    : origin(origin),
-      type(type),
-      size(size) {
-}
-
-CannedBrowsingDataFileSystemHelper::
-    PendingFileSystemInfo::~PendingFileSystemInfo() {
-}
-
 CannedBrowsingDataFileSystemHelper::CannedBrowsingDataFileSystemHelper(
     Profile* /* profile */)
     : is_fetching_(false) {
@@ -227,24 +207,53 @@ CannedBrowsingDataFileSystemHelper*
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CannedBrowsingDataFileSystemHelper* clone =
       new CannedBrowsingDataFileSystemHelper();
-  clone->pending_file_system_info_ = pending_file_system_info_;
+  // This list only mutates on the UI thread, so it's safe to work with it here
+  // (given the DCHECK above).
   clone->file_system_info_ = file_system_info_;
   return clone;
 }
 
 void CannedBrowsingDataFileSystemHelper::AddFileSystem(
     const GURL& origin, const fileapi::FileSystemType type, const int64 size) {
-  pending_file_system_info_.push_back(
-      PendingFileSystemInfo(origin, type, size));
+
+  // This canned implementation of AddFileSystem uses an O(n^2) algorithm; which
+  // is fine, as it isn't meant for use in a high-volume context. If it turns
+  // out that we want to start using this in a context with many, many origins,
+  // we should think about reworking the implementation.
+  bool duplicate_origin = false;
+  for (std::vector<FileSystemInfo>::iterator
+           file_system = file_system_info_.begin();
+       file_system != file_system_info_.end();
+       ++file_system) {
+    if (file_system->origin == origin) {
+      if (type == fileapi::kFileSystemTypePersistent) {
+        file_system->has_persistent = true;
+        file_system->usage_persistent = size;
+      } else {
+        file_system->has_temporary = true;
+        file_system->usage_temporary = size;
+      }
+      duplicate_origin = true;
+      break;
+    }
+  }
+  if (duplicate_origin)
+    return;
+
+  file_system_info_.push_back(FileSystemInfo(
+      origin,
+      (type == fileapi::kFileSystemTypePersistent),
+      (type == fileapi::kFileSystemTypeTemporary),
+      (type == fileapi::kFileSystemTypePersistent) ? size : 0,
+      (type == fileapi::kFileSystemTypeTemporary) ? size : 0));
 }
 
 void CannedBrowsingDataFileSystemHelper::Reset() {
   file_system_info_.clear();
-  pending_file_system_info_.clear();
 }
 
 bool CannedBrowsingDataFileSystemHelper::empty() const {
-  return file_system_info_.empty() && pending_file_system_info_.empty();
+  return file_system_info_.empty();
 }
 
 void CannedBrowsingDataFileSystemHelper::StartFetching(
@@ -254,39 +263,6 @@ void CannedBrowsingDataFileSystemHelper::StartFetching(
   DCHECK(callback);
   is_fetching_ = true;
   completion_callback_.reset(callback);
-
-  for (std::vector<PendingFileSystemInfo>::const_iterator
-           info = pending_file_system_info_.begin();
-       info != pending_file_system_info_.end();
-       ++info) {
-    bool duplicate = false;
-    for (std::vector<FileSystemInfo>::iterator
-             file_system = file_system_info_.begin();
-         file_system != file_system_info_.end();
-         ++file_system) {
-      if (file_system->origin == info->origin) {
-        if (info->type == fileapi::kFileSystemTypePersistent) {
-          file_system->has_persistent = true;
-          file_system->usage_persistent = info->size;
-        } else {
-          file_system->has_temporary = true;
-          file_system->usage_temporary = info->size;
-        }
-        duplicate = true;
-        break;
-      }
-    }
-    if (duplicate)
-      continue;
-
-    file_system_info_.push_back(FileSystemInfo(
-        info->origin,
-        (info->type == fileapi::kFileSystemTypePersistent),
-        (info->type == fileapi::kFileSystemTypeTemporary),
-        (info->type == fileapi::kFileSystemTypePersistent) ? info->size : 0,
-        (info->type == fileapi::kFileSystemTypeTemporary) ? info->size : 0));
-  }
-  pending_file_system_info_.clear();
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
