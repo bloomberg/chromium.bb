@@ -30,7 +30,6 @@ void SSLManager::OnSSLCertificateError(ResourceDispatcherHost* rdh,
 
   ResourceDispatcherHostRequestInfo* info =
       ResourceDispatcherHost::InfoForRequest(request);
-  DCHECK(info);
 
   // A certificate error occurred.  Construct a SSLCertErrorHandler object and
   // hand it over to the UI thread for processing.

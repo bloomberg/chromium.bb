@@ -186,8 +186,8 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
   virtual void OnReadCompleted(net::URLRequest* request, int bytes_read);
   void OnResponseCompleted(net::URLRequest* request);
 
-  // Helper functions to get our extra data out of a request. The given request
-  // must have been one we created so that it has the proper extra data pointer.
+  // Helper functions to get the dispatcher's request info for the request.
+  // If the dispatcher didn't create the request then NULL is returned.
   static ResourceDispatcherHostRequestInfo* InfoForRequest(
       net::URLRequest* request);
   static const ResourceDispatcherHostRequestInfo* InfoForRequest(

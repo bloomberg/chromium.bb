@@ -22,7 +22,6 @@ ResourceRequestDetails::ResourceRequestDetails(const net::URLRequest* request,
       socket_address_(request->GetSocketAddress()) {
   const ResourceDispatcherHostRequestInfo* info =
       ResourceDispatcherHost::InfoForRequest(request);
-  DCHECK(info);
   resource_type_ = info->resource_type();
 
   // If request is from the worker process on behalf of a renderer, use

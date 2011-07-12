@@ -1575,7 +1575,7 @@ void ResourceDispatcherHost::OnResponseCompleted(net::URLRequest* request) {
 // static
 ResourceDispatcherHostRequestInfo* ResourceDispatcherHost::InfoForRequest(
     net::URLRequest* request) {
-  // Avoid writing this function twice by casting the cosnt version.
+  // Avoid writing this function twice by casting the const version.
   const net::URLRequest* const_request = request;
   return const_cast<ResourceDispatcherHostRequestInfo*>(
       InfoForRequest(const_request));
@@ -1587,7 +1587,6 @@ const ResourceDispatcherHostRequestInfo* ResourceDispatcherHost::InfoForRequest(
   const ResourceDispatcherHostRequestInfo* info =
       static_cast<const ResourceDispatcherHostRequestInfo*>(
           request->GetUserData(NULL));
-  DLOG_IF(WARNING, !info) << "Request doesn't seem to have our data";
   return info;
 }
 

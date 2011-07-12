@@ -100,9 +100,8 @@ net::URLRequestJob* URLRequestAutomationJob::Factory(
 
   // Returning null here just means that the built-in handler will be used.
   if (scheme_is_http || scheme_is_https) {
-    ResourceDispatcherHostRequestInfo* request_info = NULL;
-    if (request->GetUserData(NULL))
-      request_info = ResourceDispatcherHost::InfoForRequest(request);
+    ResourceDispatcherHostRequestInfo* request_info =
+        ResourceDispatcherHost::InfoForRequest(request);
     if (request_info) {
       int child_id = request_info->child_id();
       int route_id = request_info->route_id();
