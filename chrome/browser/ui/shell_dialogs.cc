@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/shell_dialogs.h"
 
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"

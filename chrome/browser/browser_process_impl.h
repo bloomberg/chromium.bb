@@ -27,6 +27,7 @@
 #include "content/common/notification_registrar.h"
 #include "ipc/ipc_message.h"
 
+class BrowserOnlineStateObserver;
 class ChromeNetLog;
 class ChromeResourceDispatcherHostDelegate;
 class CommandLine;
@@ -311,6 +312,9 @@ class BrowserProcessImpl : public BrowserProcess,
   scoped_refptr<chromeos::ProxyConfigServiceImpl>
       chromeos_proxy_config_service_impl_;
 #endif
+
+  // Per-process listener for online state changes.
+  scoped_ptr<BrowserOnlineStateObserver> online_state_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserProcessImpl);
 };

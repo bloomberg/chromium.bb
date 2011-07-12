@@ -247,6 +247,7 @@ class RenderThread : public RenderThreadBase,
   void OnCreateNewView(const ViewMsg_New_Params& params);
   void OnTransferBitmap(const SkBitmap& bitmap, int resource_id);
   void OnPurgePluginListCache(bool reload_pages);
+  void OnNetworkStateChanged(bool online);
   void OnGetAccessibilityTree();
 
   // We initialize WebKit as late as possible.

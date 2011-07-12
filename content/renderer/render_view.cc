@@ -90,7 +90,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerAction.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebNetworkStateNotifier.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNodeList.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPlugin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
@@ -191,7 +190,6 @@ using WebKit::WebMediaPlayerAction;
 using WebKit::WebMediaPlayerClient;
 using WebKit::WebNavigationPolicy;
 using WebKit::WebNavigationType;
-using WebKit::WebNetworkStateNotifier;
 using WebKit::WebNode;
 using WebKit::WebPlugin;
 using WebKit::WebPluginContainer;
@@ -671,7 +669,6 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_SelectPopupMenuItem, OnSelectPopupMenuItem)
 #endif
     IPC_MESSAGE_HANDLER(ViewMsg_ContextMenuClosed, OnContextMenuClosed)
-    IPC_MESSAGE_HANDLER(ViewMsg_NetworkStateChanged, OnNetworkStateChanged)
     // TODO(viettrungluu): Move to a separate message filter.
 #if defined(ENABLE_FLAPPER_HACKS)
     IPC_MESSAGE_HANDLER(PepperMsg_ConnectTcpACK, OnConnectTcpACK)
@@ -4260,8 +4257,4 @@ void RenderView::OnContextMenuClosed(
     pepper_delegate_.OnContextMenuClosed(custom_context);
   else
     context_menu_node_.reset();
-}
-
-void RenderView::OnNetworkStateChanged(bool online) {
-  WebNetworkStateNotifier::setOnLine(online);
 }

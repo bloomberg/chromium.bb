@@ -13,6 +13,7 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 #include "base/string16.h"
 #include "content/browser/javascript_dialogs.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
@@ -26,7 +27,6 @@
 #include "content/common/property_bag.h"
 #include "content/common/renderer_preferences.h"
 #include "net/base/load_states.h"
-#include "net/base/network_change_notifier.h"
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_WIN)
@@ -59,8 +59,7 @@ class WebUI;
 class TabContents : public PageNavigator,
                     public RenderViewHostDelegate,
                     public RenderViewHostManager::Delegate,
-                    public content::JavaScriptDialogDelegate,
-                    public net::NetworkChangeNotifier::OnlineStateObserver {
+                    public content::JavaScriptDialogDelegate {
  public:
   // Flags passed to the TabContentsDelegate.NavigationStateChanged to tell it
   // what has changed. Combine them to update more than one thing.
@@ -506,9 +505,6 @@ class TabContents : public PageNavigator,
   // TODO(brettw) TestTabContents shouldn't exist!
   friend class TestTabContents;
 
-  // Add all the TabContentObservers.
-  void AddObservers();
-
   // Message handlers.
   void OnDidStartProvisionalLoadForFrame(int64 frame_id,
                                          bool main_frame,
@@ -693,9 +689,6 @@ class TabContents : public PageNavigator,
   // InitWithExistingID.
   virtual bool CreateRenderViewForRenderManager(
       RenderViewHost* render_view_host);
-
-  // NetworkChangeNotifier::OnlineStateObserver:
-  virtual void OnOnlineStateChanged(bool online);
 
   // Adds the given window to the list of child windows. The window will notify
   // via WillClose() when it is being destroyed.

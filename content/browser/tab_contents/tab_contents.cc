@@ -198,11 +198,6 @@ TabContents::TabContents(Profile* profile,
   // tab contents (normally a tab from the same window).
   view_->CreateView(base_tab_contents ?
       base_tab_contents->view()->GetContainerSize() : gfx::Size());
-
-  // Can only add observers after render_manager_.Init() is called, since that's
-  // what sets up the render_view_host which TabContentObserver's constructor
-  // uses to get the routing_id.
-  AddObservers();
 }
 
 TabContents::~TabContents() {
@@ -245,8 +240,6 @@ TabContents::~TabContents() {
 
   FOR_EACH_OBSERVER(TabContentsObserver, observers_, TabContentsDestroyed());
 
-  net::NetworkChangeNotifier::RemoveOnlineStateObserver(this);
-
   set_delegate(NULL);
 }
 
@@ -259,10 +252,6 @@ void TabContents::set_delegate(TabContentsDelegate* delegate) {
   delegate_ = delegate;
   if (delegate_)
     delegate_->Attach(this);
-}
-
-void TabContents::AddObservers() {
-  net::NetworkChangeNotifier::AddOnlineStateObserver(this);
 }
 
 bool TabContents::OnMessageReceived(const IPC::Message& message) {
@@ -1830,9 +1819,4 @@ void TabContents::SwapInRenderViewHost(RenderViewHost* rvh) {
 void TabContents::CreateViewAndSetSizeForRVH(RenderViewHost* rvh) {
   RenderWidgetHostView* rwh_view = view()->CreateViewForWidget(rvh);
   rwh_view->SetSize(view()->GetContainerSize());
-}
-
-void TabContents::OnOnlineStateChanged(bool online) {
-  render_view_host()->Send(new ViewMsg_NetworkStateChanged(
-      render_view_host()->routing_id(), online));
 }

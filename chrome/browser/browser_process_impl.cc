@@ -73,6 +73,7 @@
 #include "content/browser/debugger/devtools_manager.h"
 #include "content/browser/debugger/devtools_protocol_handler.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
+#include "content/browser/net/browser_online_state_observer.h"
 #include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
@@ -147,6 +148,8 @@ BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
   extension_event_router_forwarder_ = new ExtensionEventRouterForwarder;
 
   ExtensionTabIdMap::GetInstance()->Init();
+
+  online_state_observer_.reset(new BrowserOnlineStateObserver);
 }
 
 BrowserProcessImpl::~BrowserProcessImpl() {

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
