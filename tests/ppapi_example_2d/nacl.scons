@@ -10,9 +10,12 @@ Import('env')
 env.Prepend(CPPDEFINES=['XP_UNIX'])
 
 nexe_name = 'ppapi_example_2d_%s' % env.get('TARGET_FULLARCH')
-ppapi_example_2d_nexe = env.ComponentProgram(nexe_name,
-    [ '$MAIN_DIR/src/third_party/ppapi/examples/2d/graphics_2d_example.c' ],
-    EXTRA_LIBS=['${PPAPI_LIBS}'])
+obj = env.ComponentObject(
+    'graphics_2d_example',
+    '$MAIN_DIR/src/third_party/ppapi/examples/2d/graphics_2d_example.c'
+    )
+ppapi_example_2d_nexe = env.ComponentProgram(nexe_name, [obj],
+                                             EXTRA_LIBS=['${PPAPI_LIBS}'])
 
 # Note that the html is required to run this program.
 env.Publish(nexe_name, 'run',

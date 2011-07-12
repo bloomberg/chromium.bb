@@ -10,10 +10,12 @@ Import('env')
 env.Prepend(CPPDEFINES=['XP_UNIX'])
 
 nexe_name = 'ppapi_example_post_message_${TARGET_FULLARCH}'
-nexe = env.ComponentProgram(
-    nexe_name,
-    ['$MAIN_DIR/src/third_party/ppapi/examples/scripting/post_message.cc'],
-    EXTRA_LIBS=['${PPAPI_LIBS}', 'ppapi_cpp'])
+obj = env.ComponentObject(
+    'post_message',
+    '$MAIN_DIR/src/third_party/ppapi/examples/scripting/post_message.cc'
+    )
+nexe = env.ComponentProgram(nexe_name, [obj],
+                            EXTRA_LIBS=['${PPAPI_LIBS}', 'ppapi_cpp'])
 
 # Note that the html is required to run this program.
 env.Publish(nexe_name, 'run',

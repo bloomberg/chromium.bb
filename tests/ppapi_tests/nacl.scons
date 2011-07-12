@@ -1,54 +1,61 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# -*- python -*-
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 Import('env')
+import os
 
 ppapi_tests_target = 'ppapi_tests_${TARGET_FULLARCH}'
 
 ppapi_tests_sources = [
     # Common test files
-    '${MAIN_DIR}/src/third_party/ppapi/tests/test_case.cc',
-    '${MAIN_DIR}/src/third_party/ppapi/tests/test_utils.cc',
-    '${MAIN_DIR}/src/third_party/ppapi/tests/testing_instance.cc',
+    'test_case.cc',
+    'test_utils.cc',
+    'testing_instance.cc',
 
     # Compile-time tests
-    '${MAIN_DIR}/src/third_party/ppapi/tests/test_c_includes.c',
-    '${MAIN_DIR}/src/third_party/ppapi/tests/test_cpp_includes.cc',
-    '${MAIN_DIR}/src/third_party/ppapi/tests/test_struct_sizes.c',
+    'test_c_includes.c',
+    'test_cpp_includes.cc',
+    'test_struct_sizes.c',
 
     # Test cases (PLEASE KEEP THIS SECTION IN ALPHABETICAL ORDER)
     # Add/uncomment PPAPI interfaces below when they get proxied.
-    #'${MAIN_DIR}/src/third_party/ppapi/tests/test_buffer.cc',
-    #'${MAIN_DIR}/src/third_party/ppapi/tests/test_char_set.cc',
-    #'${MAIN_DIR}/src/third_party/ppapi/tests/test_directory_reader.cc',
-    #'${MAIN_DIR}/src/third_party/ppapi/tests/test_file_io.cc',
-    #'${MAIN_DIR}/src/third_party/ppapi/tests/test_file_ref.cc',
-    #'${MAIN_DIR}/src/third_party/ppapi/tests/test_file_system.cc',
-    '${MAIN_DIR}/src/third_party/ppapi/tests/test_graphics_2d.cc',
-    '${MAIN_DIR}/src/third_party/ppapi/tests/test_image_data.cc',
-    '${MAIN_DIR}/src/third_party/ppapi/tests/test_paint_aggregator.cc',
-    '${MAIN_DIR}/src/third_party/ppapi/tests/test_post_message.cc',
-    '${MAIN_DIR}/src/third_party/ppapi/tests/test_scrollbar.cc',
-    #'${MAIN_DIR}/src/third_party/ppapi/tests/test_transport.cc',
-    #'${MAIN_DIR}/src/third_party/ppapi/tests/test_uma.cc',
+    #'test_buffer.cc',
+    #'test_char_set.cc',
+    #'test_directory_reader.cc',
+    #'test_file_io.cc',
+    #'test_file_ref.cc',
+    #'test_file_system.cc',
+    'test_graphics_2d.cc',
+    'test_image_data.cc',
+    'test_paint_aggregator.cc',
+    'test_post_message.cc',
+    'test_scrollbar.cc',
+    #'test_transport.cc',
+    #'test_uma.cc',
     # Activating the URL loader test requires a test httpd that
     # understands HTTP POST, which our current httpd.py doesn't.
     # It also requires deactivating the tests that use FileIOTrusted
     # when running in NaCl.
-    #'${MAIN_DIR}/src/third_party/ppapi/tests/test_url_loader.cc',
-    #'${MAIN_DIR}/src/third_party/ppapi/tests/test_url_util.cc',
-    #'${MAIN_DIR}/src/third_party/ppapi/tests/test_video_decoder.cc',
+    #'test_url_loader.cc',
+    #'test_url_util.cc',
+    #'test_video_decoder.cc',
 
     # Deprecated test cases.
-    #'${MAIN_DIR}/src/third_party/ppapi/tests/test_instance_deprecated.cc',
+    #'test_instance_deprecated.cc',
     # Var_deprecated fails in TestPassReference, and we probably won't
     # fix it.
-    #'${MAIN_DIR}/src/third_party/ppapi/tests/test_var_deprecated.cc'
+    #'test_var_deprecated.cc'
     ]
 
+ppapi_tests_objs = [env.ComponentObject(
+    os.path.splitext(file)[0],
+    os.path.join('${MAIN_DIR}/src/third_party/ppapi/tests', file)
+    ) for file in ppapi_tests_sources]
+
 ppapi_tests_nexe = env.ComponentProgram(ppapi_tests_target,
-                                        ppapi_tests_sources,
+                                        ppapi_tests_objs,
                                         EXTRA_LIBS=['${PPAPI_LIBS}',
                                                     'ppapi_cpp'
                                                     ])
