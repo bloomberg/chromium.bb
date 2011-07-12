@@ -93,6 +93,9 @@ bool PPB_Surface3D_Impl::BindToContext(PPB_Context3D_Impl* context) {
   if (context == context_)
     return true;
 
+  if (!context && bound_to_instance_)
+    instance()->BindGraphics(instance()->pp_instance(), 0);
+
   // Unbind from the current context.
   if (context_ && context_->platform_context())
     context_->platform_context()->SetSwapBuffersCallback(NULL);

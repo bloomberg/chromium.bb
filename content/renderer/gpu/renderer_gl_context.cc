@@ -231,8 +231,14 @@ bool RendererGLContext::SetParent(RendererGLContext* new_parent) {
   }
 
   // Free the previous parent's texture ID.
-  if (parent_.get() && parent_texture_id_ != 0)
-    parent_->gles2_implementation_->FreeTextureId(parent_texture_id_);
+  if (parent_.get() && parent_texture_id_ != 0) {
+    // Flush any remaining commands in the parent context to make sure the
+    // texture id accounting stays consistent.
+    gpu::gles2::GLES2Implementation* parent_gles2 =
+        parent_->GetImplementation();
+    parent_gles2->helper()->CommandBufferHelper::Finish();
+    parent_gles2->FreeTextureId(parent_texture_id_);
+  }
 
   if (new_parent) {
     parent_ = new_parent->AsWeakPtr();
