@@ -60,9 +60,13 @@ void WebUILoginDisplayHost::SetShutdownButtonEnabled(bool enable) {
 }
 
 void WebUILoginDisplayHost::SetStatusAreaEnabled(bool enable) {
+  if (login_view_)
+    login_view_->SetStatusAreaEnabled(enable);
 }
 
 void WebUILoginDisplayHost::SetStatusAreaVisible(bool visible) {
+  if (login_view_)
+    login_view_->SetStatusAreaVisible(visible);
 }
 
 void WebUILoginDisplayHost::ShowBackground() {
@@ -105,6 +109,7 @@ void WebUILoginDisplayHost::LoadURL(const GURL& url) {
 
     login_window_->Show();
     WebUILoginDisplay::GetInstance()->set_login_window(login_window_);
+    login_view_->OnWindowCreated();
   }
   login_view_->LoadURL(url);
 }

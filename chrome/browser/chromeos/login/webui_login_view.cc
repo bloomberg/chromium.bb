@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/webui_login_view.h"
 
 #include "chrome/browser/chromeos/login/proxy_settings_dialog.h"
+#include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/chromeos/status/clock_menu_button.h"
 #include "chrome/browser/chromeos/status/input_method_menu_button.h"
 #include "chrome/browser/chromeos/status/network_menu_button.h"
@@ -13,6 +14,9 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/dom_view.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/size.h"
+#include "views/widget/widget.h"
 
 namespace {
 
@@ -22,15 +26,22 @@ const char kViewClassName[] = "browser/chromeos/login/WebUILoginView";
 
 namespace chromeos {
 
+// static
+const int WebUILoginView::kStatusAreaCornerPadding = 5;
+
 // WebUILoginView public: ------------------------------------------------------
 
 WebUILoginView::WebUILoginView()
-    : profile_(NULL),
-      status_area_(NULL),
+    : status_area_(NULL),
+      profile_(NULL),
+      status_window_(NULL),
       webui_login_(NULL) {
 }
 
 WebUILoginView::~WebUILoginView() {
+  if (status_window_)
+    status_window_->Close();
+  status_window_ = NULL;
 }
 
 void WebUILoginView::Init() {
@@ -41,8 +52,6 @@ void WebUILoginView::Init() {
   webui_login_->Init(profile_, NULL);
   webui_login_->SetVisible(true);
   webui_login_->tab_contents()->set_delegate(this);
-
-  InitStatusArea();
 }
 
 
@@ -54,13 +63,8 @@ gfx::NativeWindow WebUILoginView::GetNativeWindow() const {
   return GetWidget()->GetNativeWindow();
 }
 
-void WebUILoginView::OnDialogClosed() {
-}
-
-void WebUILoginView::OnLocaleChanged() {
-  // Proxy settings dialog contains localized strings.
-  proxy_settings_dialog_.reset();
-  SchedulePaint();
+void WebUILoginView::OnWindowCreated() {
+  InitStatusArea();
 }
 
 void WebUILoginView::UpdateWindowType() {
@@ -79,22 +83,20 @@ WebUI* WebUILoginView::GetWebUI() {
   return webui_login_->tab_contents()->web_ui();
 }
 
+void WebUILoginView::SetStatusAreaEnabled(bool enable) {
+  if (status_area_)
+    status_area_->MakeButtonsActive(enable);
+}
+
+void WebUILoginView::SetStatusAreaVisible(bool visible) {
+  if (status_area_)
+    status_area_->SetVisible(visible);
+}
+
 // WebUILoginView protected: ---------------------------------------------------
 
 void WebUILoginView::Layout() {
   DCHECK(webui_login_);
-  DCHECK(status_area_);
-
-  // Layout the Status Area up in the right corner. This should always be done.
-  const int kCornerPadding = 5;
-  gfx::Size status_area_size = status_area_->GetPreferredSize();
-  status_area_->SetBounds(
-      width() - status_area_size.width() - kCornerPadding,
-      kCornerPadding,
-      status_area_size.width(),
-      status_area_size.height());
-
-  // Layout the DOMView for the login page
   webui_login_->SetBoundsRect(bounds());
 }
 
@@ -140,14 +142,45 @@ StatusAreaHost::TextStyle WebUILoginView::GetTextStyle() const {
   return kWhitePlain;
 }
 
-// WebUILoginView private: -----------------------------------------------------
+void WebUILoginView::OnDialogClosed() {
+}
+
+void WebUILoginView::OnLocaleChanged() {
+  // Proxy settings dialog contains localized strings.
+  proxy_settings_dialog_.reset();
+  SchedulePaint();
+}
 
 void WebUILoginView::InitStatusArea() {
   DCHECK(status_area_ == NULL);
+  DCHECK(status_window_ == NULL);
   status_area_ = new StatusAreaView(this);
   status_area_->Init();
-  AddChildView(status_area_);
+
+  views::Widget* login_window = WebUILoginDisplay::GetLoginWindow();
+  gfx::Size size = status_area_->GetPreferredSize();
+  gfx::Rect bounds(width() - size.width() - kStatusAreaCornerPadding,
+                   kStatusAreaCornerPadding,
+                   size.width(),
+                   size.height());
+
+  views::Widget::InitParams widget_params(
+      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  widget_params.bounds = bounds;
+  widget_params.double_buffer = true;
+  widget_params.transparent = true;
+  widget_params.parent = login_window->GetNativeView();
+  views::Widget* status_window_ = new views::Widget;
+  status_window_->Init(widget_params);
+  chromeos::WmIpc::instance()->SetWindowType(
+      status_window_->GetNativeView(),
+      chromeos::WM_IPC_WINDOW_CHROME_INFO_BUBBLE,
+      NULL);
+  status_window_->SetContentsView(status_area_);
+  status_window_->Show();
 }
+
+// WebUILoginView private: -----------------------------------------------------
 
 bool WebUILoginView::HandleContextMenu(const ContextMenuParams& params) {
   // Do not show the context menu.

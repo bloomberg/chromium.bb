@@ -49,9 +49,15 @@ class TouchLoginView : public WebUILoginView,
   virtual void FocusWillChange(views::View* focused_before,
                                views::View* focused_now) OVERRIDE;
 
+  // Overridden from chromeos::WebUILoginView:
+  virtual void OnWindowCreated() OVERRIDE;
+
  protected:
   // Overridden from views::View:
   virtual void Layout() OVERRIDE;
+
+  // Overridden from chromeos::WebUILoginView:
+  virtual void InitStatusArea() OVERRIDE;
 
  private:
   void InitVirtualKeyboard();

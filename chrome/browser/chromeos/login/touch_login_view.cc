@@ -51,6 +51,7 @@ TouchLoginView::~TouchLoginView() {
 
 void TouchLoginView::Init() {
   WebUILoginView::Init();
+  InitStatusArea();
   InitVirtualKeyboard();
 
   registrar_.Add(this,
@@ -81,10 +82,24 @@ void TouchLoginView::FocusWillChange(views::View* focused_before,
   }
 }
 
+void TouchLoginView::OnWindowCreated() {
+}
+
 // TouchLoginView protected: ---------------------------------------------------
 
 void TouchLoginView::Layout() {
   WebUILoginView::Layout();
+  DCHECK(status_area_);
+
+  // Layout the Status Area up in the right corner. This should always be done.
+  gfx::Size status_area_size = status_area_->GetPreferredSize();
+  status_area_->SetBounds(
+      width() - status_area_size.width() -
+          WebUILoginView::kStatusAreaCornerPadding,
+      WebUILoginView::kStatusAreaCornerPadding,
+      status_area_size.width(),
+      status_area_size.height());
+
   if (!keyboard_)
     return;
 
@@ -100,6 +115,13 @@ void TouchLoginView::Layout() {
   keyboard_bounds.set_y(keyboard_bounds.height() - keyboard_height);
   keyboard_bounds.set_height(keyboard_height);
   keyboard_->SetBoundsRect(keyboard_bounds);
+}
+
+void TouchLoginView::InitStatusArea() {
+  DCHECK(status_area_ == NULL);
+  status_area_ = new StatusAreaView(this);
+  status_area_->Init();
+  AddChildView(status_area_);
 }
 
 // TouchLoginView private: -----------------------------------------------------

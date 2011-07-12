@@ -16,6 +16,10 @@ class GURL;
 class Profile;
 class WebUI;
 
+namespace views {
+class Widget;
+}
+
 namespace chromeos {
 
 class StatusAreaView;
@@ -28,6 +32,8 @@ class WebUILoginView : public views::View,
                        public TabContentsDelegate,
                        public chromeos::LoginHtmlDialog::Delegate {
  public:
+  static const int kStatusAreaCornerPadding;
+
   WebUILoginView();
   virtual ~WebUILoginView();
 
@@ -40,6 +46,9 @@ class WebUILoginView : public views::View,
   // Overridden from StatusAreaHost:
   virtual gfx::NativeWindow GetNativeWindow() const;
 
+  // Called when WebUI window is created.
+  virtual void OnWindowCreated();
+
   // Invokes SetWindowType for the window. This is invoked during startup and
   // after we've painted.
   void UpdateWindowType();
@@ -49,6 +58,12 @@ class WebUILoginView : public views::View,
 
   // Returns current WebUI.
   WebUI* GetWebUI();
+
+  // Toggles whether status area is enabled.
+  void SetStatusAreaEnabled(bool enable);
+
+  // Toggles status area visibility.
+  void SetStatusAreaVisible(bool visible);
 
  protected:
   // Overridden from views::View:
@@ -68,21 +83,28 @@ class WebUILoginView : public views::View,
   virtual void OnDialogClosed() OVERRIDE;
   virtual void OnLocaleChanged() OVERRIDE;
 
- protected:
-  // Creates and adds the status_area.
-  void InitStatusArea();
+  // Creates and adds the status area (separate window).
+  virtual void InitStatusArea();
 
+  StatusAreaView* status_area_;
+
+ private:
   // Overridden from TabContentsDelegate.
   virtual bool HandleContextMenu(const ContextMenuParams& params) OVERRIDE;
 
   Profile* profile_;
-  StatusAreaView* status_area_;
+
+  // Window that contains status area.
+  // TODO(nkostylev): Temporary solution till we have
+  // RenderWidgetHostViewViews working.
+  views::Widget* status_window_;
+
   // DOMView for rendering a webpage as a webui login.
   DOMView* webui_login_;
+
   // Proxy settings dialog that can be invoked from network menu.
   scoped_ptr<LoginHtmlDialog> proxy_settings_dialog_;
 
- private:
   DISALLOW_COPY_AND_ASSIGN(WebUILoginView);
 };
 
