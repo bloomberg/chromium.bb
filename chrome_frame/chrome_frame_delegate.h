@@ -21,6 +21,7 @@
 class GURL;
 struct AttachExternalTabParams;
 struct AutomationURLRequest;
+struct ContextMenuModel;
 struct MiniContextMenuParams;
 struct NavigationInfo;
 
@@ -105,7 +106,8 @@ class ChromeFrameDelegateImpl : public ChromeFrameDelegate {
   virtual void OnMessageFromChromeFrame(const std::string& message,
                                         const std::string& origin,
                                         const std::string& target) {}
-  virtual void OnHandleContextMenu(HANDLE menu_handle, int align_flags,
+  virtual void OnHandleContextMenu(const ContextMenuModel& context_menu_model,
+                                   int align_flags,
                                    const MiniContextMenuParams& params) {}
   virtual void OnRequestStart(
       int request_id, const AutomationURLRequest& request) {}

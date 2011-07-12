@@ -23,6 +23,7 @@
 class FilePath;
 interface IBrowserService;
 interface IWebBrowser2;
+struct ContextMenuModel;
 
 // utils.h : Various utility functions and classes
 
@@ -225,9 +226,8 @@ bool IsIEInPrivate();
 // Calls [ieframe|shdocvw]!DoFileDownload to initiate a download.
 HRESULT DoFileDownloadInIE(const wchar_t* url);
 
-// Creates a copy of a menu. We need this when original menu comes from
-// a process with higher integrity.
-HMENU UtilCloneContextMenu(HMENU original_menu);
+// Construct a menu from the model sent from Chrome.
+HMENU BuildContextMenu(const ContextMenuModel& menu_model);
 
 // Uses GURL internally to append 'relative' to 'document'
 std::string ResolveURL(const std::string& document,

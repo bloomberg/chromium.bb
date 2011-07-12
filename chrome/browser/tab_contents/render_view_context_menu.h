@@ -45,6 +45,9 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate {
   // Initializes the context menu.
   void Init();
 
+  // Provide access to the menu model for ExternalTabContainer.
+  const ui::MenuModel& menu_model() const { return menu_model_; }
+
   // SimpleMenuModel::Delegate implementation.
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
   virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;

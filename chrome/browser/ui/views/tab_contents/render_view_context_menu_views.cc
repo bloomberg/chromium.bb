@@ -8,10 +8,12 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/tab_contents/tab_contents_view.h"
 #include "grit/generated_resources.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "views/accelerator.h"
-#include "views/controls/menu/menu_2.h"
+#include "views/controls/menu/menu_item_view.h"
+#include "views/controls/menu/menu_model_adapter.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // RenderViewContextMenuViews, public:
@@ -26,7 +28,9 @@ RenderViewContextMenuViews::~RenderViewContextMenuViews() {
 }
 
 void RenderViewContextMenuViews::RunMenuAt(int x, int y) {
-  menu_->RunContextMenuAt(gfx::Point(x, y));
+  menu_->RunMenuAt(source_tab_contents_->view()->GetTopLevelNativeWindow(),
+      NULL, gfx::Rect(gfx::Point(x, y), gfx::Size()),
+      views::MenuItemView::TOPLEFT, true);
 }
 
 #if defined(OS_WIN)
@@ -36,30 +40,16 @@ void RenderViewContextMenuViews::SetExternal() {
 #endif
 
 void RenderViewContextMenuViews::UpdateMenuItemStates() {
-  menu_->UpdateStates();
+  menu_delegate_->BuildMenu(menu_.get());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // RenderViewContextMenuViews, protected:
 
 void RenderViewContextMenuViews::PlatformInit() {
-  menu_.reset(new views::Menu2(&menu_model_));
-
-#if defined(OS_WIN)
-  if (external_) {
-    // The external tab container needs to be notified by command
-    // and not by index. So we are turning off the MNS_NOTIFYBYPOS
-    // style.
-    HMENU menu = GetMenuHandle();
-    DCHECK(menu != NULL);
-
-    MENUINFO mi = {0};
-    mi.cbSize = sizeof(mi);
-    mi.fMask = MIM_STYLE | MIM_MENUDATA;
-    mi.dwMenuData = reinterpret_cast<ULONG_PTR>(this);
-    SetMenuInfo(menu, &mi);
-  }
-#endif
+  menu_delegate_.reset(new views::MenuModelAdapter(&menu_model_));
+  menu_.reset(new views::MenuItemView(menu_delegate_.get()));
+  UpdateMenuItemStates();
 }
 
 bool RenderViewContextMenuViews::GetAcceleratorForCommandId(

@@ -54,11 +54,42 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/view_prop.h"
+#include "ui/base/models/menu_model.h"
 #include "views/layout/grid_layout.h"
 
 using ui::ViewProp;
 
 static const char kWindowObjectKey[] = "ChromeWindowObject";
+
+namespace {
+
+// Convert ui::MenuModel into a serializable form for Chrome Frame
+ContextMenuModel* ConvertMenuModel(const ui::MenuModel* ui_model) {
+  ContextMenuModel* new_model = new ContextMenuModel;
+
+  const int index_base = ui_model->GetFirstItemIndex(NULL);
+  const int item_count = ui_model->GetItemCount();
+  new_model->items.reserve(item_count);
+  for (int i = 0; i < item_count; ++i) {
+    const int index = index_base + i;
+    if (ui_model->IsVisibleAt(index)) {
+      ContextMenuModel::Item item;
+      item.type = ui_model->GetTypeAt(index);
+      item.item_id = ui_model->GetCommandIdAt(index);
+      item.label = ui_model->GetLabelAt(index);
+      item.checked = ui_model->IsItemCheckedAt(index);
+      item.enabled = ui_model->IsEnabledAt(index);
+      if (item.type == ui::MenuModel::TYPE_SUBMENU)
+        item.submenu = ConvertMenuModel(ui_model->GetSubmenuModelAt(index));
+
+      new_model->items.push_back(item);
+    }
+  }
+
+  return new_model;
+}
+
+}  // namespace
 
 // This class overrides the LinkClicked function in the PageInfoBubbleView
 // class and routes the help center link navigation to the host browser.
@@ -596,6 +627,9 @@ bool ExternalTabContainer::HandleContextMenu(const ContextMenuParams& params) {
   external_context_menu_->Init();
   external_context_menu_->UpdateMenuItemStates();
 
+  scoped_ptr<ContextMenuModel> context_menu_model(
+    ConvertMenuModel(&external_context_menu_->menu_model()));
+
   POINT screen_pt = { params.x, params.y };
   MapWindowPoints(GetNativeView(), HWND_DESKTOP, &screen_pt, 1);
 
@@ -612,7 +646,7 @@ bool ExternalTabContainer::HandleContextMenu(const ContextMenuParams& params) {
   bool rtl = base::i18n::IsRTL();
   automation_->Send(
       new AutomationMsg_ForwardContextMenuToExternalHost(tab_handle_,
-          external_context_menu_->GetMenuHandle(),
+          *context_menu_model,
           rtl ? TPM_RIGHTALIGN : TPM_LEFTALIGN, ipc_params));
 
   return true;

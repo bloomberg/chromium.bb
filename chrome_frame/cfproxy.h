@@ -22,6 +22,7 @@ class ChromeProxyFactory;
 class GURL;
 struct AttachExternalTabParams;
 struct AutomationURLRequest;
+struct ContextMenuModel;
 struct ExternalTabSettings;
 struct MiniContextMenuParams;
 struct NavigationInfo;

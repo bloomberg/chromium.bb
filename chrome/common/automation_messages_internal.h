@@ -927,7 +927,7 @@ IPC_SYNC_MESSAGE_CONTROL0_1(AutomationMsg_GetBrowserLocale,
 
 #if defined(OS_WIN)
 IPC_MESSAGE_ROUTED3(AutomationMsg_ForwardContextMenuToExternalHost,
-                    HANDLE /* source menu handle */,
+                    ContextMenuModel /* description of menu */,
                     int    /* align flags */,
                     MiniContextMenuParams /* params */)
 

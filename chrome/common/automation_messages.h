@@ -4,8 +4,10 @@
 
 // Multiply-included message file, no traditional include guard.
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/common/automation_constants.h"
 #include "chrome/common/content_settings.h"
 #include "content/common/common_param_traits.h"
@@ -151,6 +153,42 @@ struct MiniContextMenuParams {
 
   // This is the URL of the subframe that the context menu was invoked on.
   GURL frame_url;
+};
+
+// This struct passes information about the context menu in Chrome stored
+// as a ui::MenuModel to Chrome Frame.  It is basically a container of
+// items that go in the menu.  An item may be a submenu, so the data
+// structure may be a tree.
+struct ContextMenuModel {
+  ContextMenuModel();
+  ~ContextMenuModel();
+
+  // This struct describes one item in the menu.
+  struct Item {
+    Item();
+
+    // This is the type of the menu item, using values from the enum
+    // ui::MenuModel::ItemType (serialized as an int).
+    int type;
+
+    // This is the command id of the menu item, which will be passed by
+    // Chrome Frame to Chrome if the item is selected.
+    int item_id;
+
+    // This the the menu label, if needed.
+    std::wstring label;
+
+    // These are states of the menu item.
+    bool checked;
+    bool enabled;
+
+    // This recursively describes the submenu if type is
+    // ui::MenuModel::TYPE_SUBMENU.
+    ContextMenuModel* submenu;
+  };
+
+  // This is the list of menu items.
+  std::vector<Item> items;
 };
 
 struct AttachExternalTabParams {
@@ -349,6 +387,15 @@ struct ParamTraits<NavigationInfo> {
 template <>
 struct ParamTraits<MiniContextMenuParams> {
   typedef MiniContextMenuParams param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
+};
+
+// Traits for ContextMenuModel structure to pack/unpack.
+template <>
+struct ParamTraits<ContextMenuModel> {
+  typedef ContextMenuModel param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);

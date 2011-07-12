@@ -504,11 +504,11 @@ END_MSG_MAP()
     HostNavigate(GURL(url), GURL(), chrome_frame::GetDisposition(params));
   }
 
-  virtual void OnHandleContextMenu(HANDLE menu_handle,
+  virtual void OnHandleContextMenu(const ContextMenuModel& menu_model,
                                    int align_flags,
                                    const MiniContextMenuParams& params) {
     scoped_refptr<BasePlugin> ref(this);
-    ChromeFramePlugin<T>::OnHandleContextMenu(menu_handle, align_flags, params);
+    ChromeFramePlugin<T>::OnHandleContextMenu(menu_model, align_flags, params);
   }
 
   LRESULT OnCreate(UINT message, WPARAM wparam, LPARAM lparam,

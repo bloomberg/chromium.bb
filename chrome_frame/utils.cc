@@ -25,6 +25,7 @@
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_variant.h"
+#include "chrome/common/automation_messages.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/installer/util/chrome_frame_distribution.h"
@@ -38,6 +39,7 @@
 #include "grit/chromium_strings.h"
 #include "net/base/escape.h"
 #include "net/http/http_util.h"
+#include "ui/base/models/menu_model.h"
 
 #include "chrome_tab.h"  // NOLINT
 
@@ -542,61 +544,66 @@ namespace {
 
 const int kMaxSubmenuDepth = 10;
 
-// Copies original_menu and returns the copy. The caller is responsible for
-// closing the returned HMENU. This does not currently copy over bitmaps
-// (e.g. hbmpChecked, hbmpUnchecked or hbmpItem), so checkmarks, radio buttons,
-// and custom icons won't work.
+// Builds a Windows menu from the menu model sent from Chrome.  The
+// caller is responsible for closing the returned HMENU.  This does
+// not currently handle bitmaps (e.g. hbmpChecked, hbmpUnchecked or
+// hbmpItem), so checkmarks, radio buttons, and custom icons won't work.
 // It also copies over submenus up to a maximum depth of kMaxSubMenuDepth.
-//
-// TODO(robertshield): Add support for the bitmap fields if need be.
-HMENU UtilCloneContextMenuImpl(HMENU original_menu, int depth) {
-  DCHECK(IsMenu(original_menu));
-
+HMENU BuildContextMenuImpl(const ContextMenuModel* menu_model, int depth) {
   if (depth >= kMaxSubmenuDepth)
     return NULL;
 
-  HMENU new_menu = CreatePopupMenu();
-  int item_count = GetMenuItemCount(original_menu);
-  if (item_count <= 0) {
-    NOTREACHED();
-  } else {
-    for (int i = 0; i < item_count; i++) {
-      MENUITEMINFO item_info = { 0 };
-      item_info.cbSize = sizeof(MENUITEMINFO);
-      item_info.fMask = MIIM_ID | MIIM_STRING | MIIM_FTYPE |
-                        MIIM_STATE | MIIM_DATA | MIIM_SUBMENU |
-                        MIIM_CHECKMARKS | MIIM_BITMAP;
+  HMENU menu = CreatePopupMenu();
+  for (size_t i = 0; i < menu_model->items.size(); i++) {
+    const ContextMenuModel::Item& item = menu_model->items[i];
 
-      // Call GetMenuItemInfo a first time to obtain the buffer size for
-      // the label.
-      if (GetMenuItemInfo(original_menu, i, TRUE, &item_info)) {
-        item_info.cch++;  // Increment this as per MSDN
-        std::vector<wchar_t> buffer(item_info.cch, 0);
-        item_info.dwTypeData = &buffer[0];
-
-        // Call GetMenuItemInfo a second time with dwTypeData set to a buffer
-        // of a correct size to get the label.
-        GetMenuItemInfo(original_menu, i, TRUE, &item_info);
-
-        // Clone any submenus. Within reason.
-        if (item_info.hSubMenu) {
-          HMENU new_submenu = UtilCloneContextMenuImpl(item_info.hSubMenu,
-                                                       depth + 1);
-          item_info.hSubMenu = new_submenu;
-        }
-
-        // Now insert the item into the new menu.
-        InsertMenuItem(new_menu, i, TRUE, &item_info);
-      }
+    MENUITEMINFO item_info = { 0 };
+    item_info.cbSize = sizeof(MENUITEMINFO);
+    switch (item.type) {
+      case ui::MenuModel::TYPE_COMMAND:
+      case ui::MenuModel::TYPE_CHECK:
+        item_info.fMask = MIIM_FTYPE | MIIM_ID | MIIM_STRING;
+        item_info.fType = MFT_STRING;
+        item_info.wID = item.item_id;
+        item_info.dwTypeData = const_cast<LPWSTR>(item.label.c_str());
+        break;
+      case ui::MenuModel::TYPE_RADIO:
+        item_info.fMask = MIIM_FTYPE | MIIM_ID | MIIM_STRING;
+        item_info.fType = MFT_STRING | MFT_RADIOCHECK;
+        item_info.wID = item.item_id;
+        item_info.dwTypeData = const_cast<LPWSTR>(item.label.c_str());
+        break;
+      case ui::MenuModel::TYPE_SEPARATOR:
+        item_info.fMask = MIIM_FTYPE;
+        item_info.fType = MFT_SEPARATOR;
+        break;
+      case ui::MenuModel::TYPE_SUBMENU:
+        item_info.fMask = MIIM_FTYPE | MIIM_ID | MIIM_STRING | MIIM_SUBMENU;
+        item_info.fType = MFT_STRING;
+        item_info.wID = item.item_id;
+        item_info.dwTypeData = const_cast<LPWSTR>(item.label.c_str());
+        item_info.hSubMenu = BuildContextMenuImpl(item.submenu, depth + 1);
+        break;
+      default:
+        NOTREACHED() << "Unsupported MenuModel::ItemType " << item.type;
+        break;
     }
+
+    item_info.fMask |= MIIM_STATE;
+    item_info.fState =
+        (item.checked ? MFS_CHECKED : MFS_UNCHECKED) |
+        (item.enabled ? MFS_ENABLED : (MFS_DISABLED | MFS_GRAYED));
+
+    InsertMenuItem(menu, i, TRUE, &item_info);
   }
-  return new_menu;
+
+  return menu;
 }
 
 }  // namespace
 
-HMENU UtilCloneContextMenu(HMENU original_menu) {
-  return UtilCloneContextMenuImpl(original_menu, 0);
+HMENU BuildContextMenu(const ContextMenuModel& menu_model) {
+  return BuildContextMenuImpl(&menu_model, 0);
 }
 
 std::string ResolveURL(const std::string& document,

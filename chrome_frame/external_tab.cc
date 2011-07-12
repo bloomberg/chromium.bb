@@ -282,11 +282,12 @@ void ExternalTabProxy::OnHandleAccelerator(const MSG& accel_message) {
 }
 
 void ExternalTabProxy::OnHandleContextMenu(
-    HANDLE menu_handle,
+    const ContextMenuModel& context_menu_model,
     int align_flags,
     const MiniContextMenuParams& params) {
   ui_.PostTask(FROM_HERE, NewRunnableMethod(ui_delegate_,
-      &UIDelegate::OnHandleContextMenu, menu_handle, align_flags, params));
+      &UIDelegate::OnHandleContextMenu, context_menu_model, align_flags,
+      params));
 }
 
 void ExternalTabProxy::OnTabbedOut(bool reverse) {

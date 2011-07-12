@@ -32,7 +32,6 @@ class WaitableEvent;
 
 namespace IPC {
 struct NavigationInfo;
-struct MiniContextMenuParams;
 }
 
 namespace gfx {
@@ -54,7 +53,7 @@ class UIDelegate {
       const std::string& message, const std::string& origin,
       const std::string& target) = 0;
   virtual void OnHandleContextMenu(
-      HANDLE menu_handle, int align_flags,
+      const ContextMenuModel& context_menu_model, int align_flags,
       const MiniContextMenuParams& params) = 0;
   virtual void OnHandleAccelerator(const MSG& accel_message) = 0;
   virtual void OnTabbedOut(bool reverse) = 0;
@@ -168,7 +167,8 @@ class ExternalTabProxy : public CWindowImpl<ExternalTabProxy>,
 
   // Misc. UI.
   virtual void OnHandleAccelerator(const MSG& accel_message);
-  virtual void OnHandleContextMenu(HANDLE menu_handle, int align_flags,
+  virtual void OnHandleContextMenu(const ContextMenuModel& context_menu_model,
+                                   int align_flags,
                                    const MiniContextMenuParams& params);
   virtual void OnTabbedOut(bool reverse);
 

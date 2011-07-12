@@ -9,7 +9,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
-#include "views/controls/menu/menu_2.h"
+
+namespace views {
+class MenuItemView;
+class MenuModelAdapter;
+}  // namespace views
 
 class RenderViewContextMenuViews : public RenderViewContextMenu {
  public:
@@ -19,10 +23,6 @@ class RenderViewContextMenuViews : public RenderViewContextMenu {
   virtual ~RenderViewContextMenuViews();
 
   void RunMenuAt(int x, int y);
-
-  gfx::NativeMenu GetMenuHandle() const {
-    return (menu_.get() ? menu_->GetNativeMenu() : NULL);
-  }
 
 #if defined(OS_WIN)
   // Set this menu to show for an external tab contents. This
@@ -39,7 +39,8 @@ class RenderViewContextMenuViews : public RenderViewContextMenu {
                                           ui::Accelerator* accelerator);
  private:
   // The context menu itself and its contents.
-  scoped_ptr<views::Menu2> menu_;
+  scoped_ptr<views::MenuModelAdapter> menu_delegate_;
+  scoped_ptr<views::MenuItemView> menu_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewContextMenuViews);
 };
