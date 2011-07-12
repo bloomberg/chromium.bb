@@ -263,6 +263,8 @@ void ExistingUserController::OnLoginFailure(const LoginFailure& failure) {
     else
       ShowError(IDS_LOGIN_ERROR_OFFLINE_FAILED_NETWORK_NOT_CONNECTED, error);
   } else {
+    // Network is connected.
+    const Network* active_network = network->active_network();
     if (failure.reason() == LoginFailure::NETWORK_AUTH_FAILED &&
         failure.error().state() == GoogleServiceAuthError::CAPTCHA_REQUIRED) {
       if (!failure.error().captcha().image_url.is_empty()) {
@@ -282,9 +284,11 @@ void ExistingUserController::OnLoginFailure(const LoginFailure& failure) {
                failure.error().state() ==
                    GoogleServiceAuthError::HOSTED_NOT_ALLOWED) {
       ShowError(IDS_LOGIN_ERROR_AUTHENTICATING_HOSTED, error);
-    } else if (failure.reason() == LoginFailure::NETWORK_AUTH_FAILED &&
-               failure.error().state() ==
-                   GoogleServiceAuthError::SERVICE_UNAVAILABLE) {
+    } else if ((active_network && active_network->restricted_pool()) ||
+               (failure.reason() == LoginFailure::NETWORK_AUTH_FAILED &&
+                failure.error().state() ==
+                    GoogleServiceAuthError::SERVICE_UNAVAILABLE)) {
+      // Use explicit captive portal state (restricted_pool()) or implicit one.
       // SERVICE_UNAVAILABLE is generated in 2 cases:
       // 1. ClientLogin returns ServiceUnavailable code.
       // 2. Internet connectivity may be behind the captive portal.

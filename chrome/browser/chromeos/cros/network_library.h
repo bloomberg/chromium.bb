@@ -304,6 +304,7 @@ class Network {
   }
   bool ready() const { return state_ == STATE_READY; }
   bool online() const { return state_ == STATE_ONLINE; }
+  bool restricted_pool() const { return state_ == STATE_PORTAL; }
   ConnectionError error() const { return error_; }
   ConnectionState state() const { return state_; }
   // Is this network connectable. Currently, this is mainly used by 802.1x
@@ -613,9 +614,6 @@ class CellularNetwork : public WirelessNetwork {
     return network_technology_;
   }
   const NetworkRoamingState roaming_state() const { return roaming_state_; }
-  bool restricted_pool() const {
-    return state_ == STATE_PORTAL;
-  }
   bool needs_new_plan() const {
     return SupportsDataPlan() && restricted_pool()
         && connected() && activated();
