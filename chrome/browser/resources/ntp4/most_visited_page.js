@@ -45,26 +45,17 @@ cr.define('ntp4', function() {
      */
     reset: function() {
       this.className = 'most-visited filler real';
-      // TODO(estade): why do we need edit-mode-border?
       this.innerHTML =
-          '<div class="edit-mode-border fills-parent">' +
-            '<div class="edit-bar-wrapper">' +
-              '<div class="edit-bar">' +
-                '<div class="pin"></div>' +
-                '<div class="spacer"></div>' +
-                '<div class="remove"></div>' +
-              '</div>' +
-            '</div>' +
-            '<span class="thumbnail-wrapper fills-parent">' +
-              '<span class="thumbnail fills-parent">' +
-                // thumbnail-shield provides a gradient fade effect.
-                '<div class="thumbnail-shield fills-parent"></div>' +
-              '</span>' +
-              '<span class="favicon"></span>' +
+          '<span class="thumbnail-wrapper fills-parent">' +
+            '<div class="close-button"></div>' +
+            '<span class="thumbnail fills-parent">' +
+              // thumbnail-shield provides a gradient fade effect.
+              '<div class="thumbnail-shield fills-parent"></div>' +
             '</span>' +
-            '<div class="color-stripe"></div>' +
-            '<span class="title"></span>' +
-          '</div>';
+            '<span class="favicon"></span>' +
+          '</span>' +
+          '<div class="color-stripe"></div>' +
+          '<span class="title"></span>';
 
       this.tabIndex = -1;
       this.data_ = null;
@@ -107,8 +98,6 @@ cr.define('ntp4', function() {
           url(thumbnailUrl);
 
       this.href = data.url;
-
-      this.updatePinnedState_();
     },
 
     /**
@@ -124,16 +113,9 @@ cr.define('ntp4', function() {
      * @param {Event} e The click event.
      */
     handleClick_: function(e) {
-      var target = e.target;
-
-      // Don't navigate on edit bar clicks.
-      if (this.querySelector('.edit-bar').contains(target))
-        e.preventDefault();
-
-      if (target.classList.contains('pin')) {
-        this.setPinned_(!this.data_.pinned);
-      } else if (target.classList.contains('remove')) {
+      if (e.target.classList.contains('close-button')) {
         this.blacklist_();
+        e.preventDefault();
       } else {
         chrome.send('recordInHistogram', ['NTP_MostVisited', this.index, 8]);
       }
@@ -150,41 +132,6 @@ cr.define('ntp4', function() {
     },
 
     /**
-     * Changes the visual state of the page and updates the model.
-     */
-    setPinned_: function(pinned) {
-      var data = this.data_;
-      data.pinned = pinned;
-      if (data.pinned) {
-        chrome.send('addPinnedURL', [
-          data.url,
-          data.title,
-          data.faviconUrl || '',
-          data.thumbnailUrl || '',
-          // TODO(estade): should not need to convert index to string.
-          String(this.index)
-        ]);
-      } else {
-        chrome.send('removePinnedURL', [data.url]);
-      }
-
-      this.updatePinnedState_();
-    },
-
-    /**
-     * Updates the DOM for the current pinned state.
-     */
-    updatePinnedState_: function() {
-      if (this.data_.pinned) {
-        this.classList.add('pinned');
-        this.querySelector('.pin').title = templateData.unpinthumbnailtooltip;
-      } else {
-        this.classList.remove('pinned');
-        this.querySelector('.pin').title = templateData.pinthumbnailtooltip;
-      }
-    },
-
-    /**
      * Permanently removes a page from Most Visited.
      */
     blacklist_: function() {
@@ -196,13 +143,10 @@ cr.define('ntp4', function() {
 
     showUndoNotification_: function() {
       var data = this.data_;
-      var pinned = data.pinned;
       var self = this;
       var doUndo = function () {
         chrome.send('removeURLsFromMostVisitedBlacklist', [data.url]);
         self.updateForData(data);
-        self.setPinned_(data.pinned);
-        // chrome.send('getMostVisited');
       }
 
       var undo = {
@@ -252,12 +196,12 @@ cr.define('ntp4', function() {
 
   /**
    * Calculates the height for a Most Visited tile for a given width. The size
-   * is based on the thumbnail, which should have a 212:132 ratio (the rest of
-   * the arithmetic accounts for padding).
+   * is based on the thumbnail, which should have a 212:132 ratio.
    * @return {number} The height.
    */
   function heightForWidth(width) {
-    return (width - 2) * 132 / 212 + 48;
+    // The 2s are for borders, the 23 is for the title.
+    return (width - 2) * 132 / 212 + 2 + 23;
   }
 
   var THUMBNAIL_COUNT = 8;
@@ -331,7 +275,7 @@ cr.define('ntp4', function() {
 
     /** @inheritDoc */
     shouldAcceptDrag: function(dataTransfer) {
-      return this.contains(ntp4.getCurrentlyDraggingTile());
+      return false;
     },
 
     /** @inheritDoc */

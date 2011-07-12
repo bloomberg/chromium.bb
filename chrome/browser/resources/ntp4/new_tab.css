@@ -54,26 +54,30 @@ body {
   display: inline-block;
 }
 
-#notification button {
+#notification .close-button {
+  vertical-align: middle;
+  -webkit-margin-start: 0.5em;
+}
+
+.close-button {
   background: no-repeat;
   background-color: transparent;
   /* TODO(estade): this should animate between states. */
   background-image: url('chrome://theme/IDR_CLOSE_BAR');
   border: 0;
+  cursor: default;
   display: inline-block;
   height: 16px;
   padding: 0;
-  vertical-align: middle;
   width: 16px;
-  -webkit-margin-start: 0.5em;
 }
 
-#notification button:hover,
-#notification button:focus {
+.close-button:hover,
+.close-button:focus {
   background-image: url('chrome://theme/IDR_CLOSE_BAR_H');
 }
 
-#notification button:active {
+.close-button:active {
   background-image: url('chrome://theme/IDR_CLOSE_BAR_P');
 }
 

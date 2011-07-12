@@ -18,11 +18,6 @@
   outline: none;
 }
 
-.edit-mode-border {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-}
-
 .fills-parent {
   bottom: 0;
   display: -webkit-box;
@@ -42,96 +37,19 @@
   pointer-events: none;
 }
 
-/* The point of edit-bar-wrapper is to clip the edit bar. Otherwise it can show
- * through from behind the thumbnail (some themes have a partially transparent
- * thumbnail border color). */
-.edit-bar-wrapper {
-  height: 23px;
-  overflow: hidden;
-  width: 100%;
-}
-
-/* The edit bar appears on hover. */
-.edit-bar {
-  border-top-left-radius: 5px;
-  border-top-right-radius: 5px;
-  box-sizing: border-box;
-  cursor: move;
-  display: -webkit-box;
-  font-size: 100%;
-  height: 100%;
-  line-height: 20px;
-  padding: 3px;
-  padding-bottom: 0;
-  position: relative;
-  top: 23px;
-  width: 100%;
-  -webkit-box-align: stretch;
-  -webkit-box-orient: horizontal;
-  -webkit-transition: top .15s;
-}
-
-.most-visited:focus .edit-bar,
-.most-visited:hover .edit-bar {
+.most-visited .close-button {
+  opacity: 0;
+  position: absolute;
+  right: 0;
   top: 0;
+  z-index: 5;
+  -webkit-transition: opacity 0.15s;
 }
 
-.most-visited:hover .edit-bar {
-  /* Delay the appearance of the edit bar on hover. */
-  -webkit-transition-delay: .5s;
-}
-
-.edit-bar > * {
-  display: block;
-  position: relative;
-}
-
-.edit-bar > .spacer {
-  -webkit-box-flex: 1;
-}
-
-.edit-bar > .pin,
-.edit-bar > .remove {
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-  background-image: no-repeat 50% 50%;
-}
-
-.edit-bar > .pin {
-  background-image: url('../ntp/ntp_pin_off.png');
-}
-
-.edit-bar > .pin:hover {
-  background-image: url('../ntp/ntp_pin_off_h.png');
-}
-
-.edit-bar > .pin:active {
-  background-image: url('../ntp/ntp_pin_off_p.png');
-}
-
-.pinned .edit-bar > .pin {
-  background-image: url('../ntp/ntp_pin_on.png');
-}
-
-.pinned .edit-bar > .pin:hover {
-  background-image: url('../ntp/ntp_pin_on_h.png');
-}
-
-.pinned .edit-bar > .pin:active {
-  background-image: url('../ntp/ntp_pin_on_p.png');
-}
-
-.edit-bar > .remove {
-  background-image: url('../ntp/ntp_close.png');
-}
-
-.edit-bar > .remove:hover {
-  background-image: url('../ntp/ntp_close_h.png');
-}
-
-.edit-bar > .remove:active {
-  background-image: url('../ntp/ntp_close_p.png');
+.most-visited:hover .close-button,
+.most-visited:focus .close-button {
+  opacity: 1;
+  -webkit-transition-delay: 0.5s;
 }
 
 .most-visited .favicon {
@@ -172,6 +90,7 @@
   /* The extra 2% hides the scrollbar in the screenshot. */
   background-size: 102%;
   border-radius: 5px;
+  -webkit-transition: opacity 0.15s;
 }
 
 .filler .thumbnail {
@@ -183,8 +102,28 @@
 
 .thumbnail-shield {
   border-radius: 5px;
-  -webkit-mask-box-image: -webkit-linear-gradient(
-      rgba(0, 0, 0, 0), rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, .9));
+  background: -webkit-linear-gradient(rgba(255, 255, 255, 0),
+                                      rgba(255, 255, 255, 0) 50%,
+                                      rgba(255, 255, 255, 0.9));
+}
+
+.most-visited:hover .thumbnail {
+  opacity: 0.95;
+}
+
+.most-visited:active .thumbnail {
+  opacity: 0.9;
+}
+
+.most-visited:hover .thumbnail-shield,
+.most-visited:active .thumbnail-shield {
+  background: -webkit-linear-gradient(rgba(255, 255, 255, 0),
+                                      rgba(255, 255, 255, 0) 80%,
+                                      rgba(255, 255, 255, 0.9));
+}
+
+.most-visited:active .thumbnail-shield {
+  -webkit-box-shadow: inset 0 1px 10px rgba(0, 0, 0, 0.2);
 }
 
 .thumbnail-wrapper {
@@ -194,30 +133,9 @@
   position: relative;
   z-index: 5;
   -webkit-box-flex: 1;
-  -webkit-transition: background-color .15s,
-      border-top-left-radius 0, border-top-right-radius 0;
-  /* The border radiuses have 0 transition duration but .15s delay, meaning they
-   * will snap into place after .15s. */
-  -webkit-transition-delay: 0, .15s, .15s;
+  -webkit-transition: background-color .15s;
 }
 
 .filler .thumbnail-wrapper {
   visibility: visible;
-}
-
-/* Filler tiles can't get focused, but focused tiles can become filler. */
-.most-visited:focus:not(.filler) .thumbnail-wrapper,
-.most-visited:hover .thumbnail-wrapper {
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
-}
-
-.most-visited:hover .thumbnail-wrapper {
-  /* Make the corner radius transitions match the edit bar's slide. */
-  -webkit-transition-delay: 0, .5s, .5s;
-}
-
-.most-visited:focus .thumbnail-wrapper {
-  /* In the focus case, the transition is not delayed. */
-  -webkit-transition-delay: 0, 0, 0;
 }
