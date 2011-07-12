@@ -204,6 +204,10 @@ const float kAnimateCloseDuration = 0.12;
   // currently-running animations, so do not set |infoBarClosing_| until after
   // starting the animation.
   infoBarClosing_ = YES;
+
+  // The owner called this method to close the infobar, so there will
+  // be no need to forward future remove events to the owner.
+  owner_ = NULL;
 }
 
 - (void)addAdditionalControls {
