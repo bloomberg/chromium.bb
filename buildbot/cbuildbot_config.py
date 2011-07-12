@@ -293,7 +293,7 @@ add_config('arm-tegra2-bin', [arm, {
   'uprev' : True,
   'overlays': 'public',
   'push_overlays': None,
-  'important': False,
+  'important': True,
   'manifest_version': _MANIFEST_VERSIONS_URL,
 }])
 
