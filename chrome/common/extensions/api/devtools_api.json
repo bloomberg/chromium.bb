@@ -132,7 +132,7 @@
               {
                 "name": "url",
                 "type": "string",
-                "description": "An URL of an extension page to display within the sidebar."
+                "description": "A URL of an extension page to display within the sidebar."
               }
             ]
           }
@@ -159,12 +159,12 @@
           {
             "name": "iconURL",
             "type": "string",
-            "description": "An URL of the toolbar icon."
+            "description": "A URL of the toolbar icon."
           },
           {
             "name": "pageURL",
             "type": "string",
-            "description": "An URL of the page that represents this panel."
+            "description": "A URL of the page that represents this panel."
           },
           {
             "name": "callback",
@@ -244,7 +244,7 @@
         "type": "function",
         "description": "Fired when a resource request is finished and all resource data are available.",
         "parameters": [
-          { "name": "resource", "$ref": "Resource" }
+          { "name": "resource", "$ref": "Resource", "description": "Description of a newly finished resource in the form of a HAR entry. See HAR specification for details." }
         ]
       },
       {
@@ -296,7 +296,7 @@
       {
         "id": "FormattedValue",
         "type": "object",
-        "description": "A value returned from one of the formatters (an URL, code snippet etc), to be passed to createResult or addChild."
+        "description": "A value returned from one of the formatters (a URL, code snippet etc), to be passed to createResult or addChild."
       },
       {
         "id": "AuditResults",
@@ -340,7 +340,7 @@
                   { "type": "string" },
                   { "$ref": "FormattedValue" }
                 ],
-                "description": "Either string or formatted values returned by one of AuditResult formatters (url, snippet etc)."
+                "description": "Either string or formatted values returned by one of the AuditResult formatters (URL, snippet etc). If multiple arguments are passed, these will be concatenated into a single node."
               }
             ],
             "returns": {
@@ -353,17 +353,17 @@
             "description": "Signals the WebInspector Audits panel that the run of this category is over. Normally the run completes automatically when a number of added top-level results is equal to that declared when AuditCategory was created."
           },
           {
-            "name": "url",
+            "name": "createURL",
             "type": "function",
-            "description": "Render passed value as an URL in the Audits panel",
+            "description": "Render passed value as a URL in the Audits panel",
             "parameters": [
-              { "name": "href", "type": "string", "description": "An URL that will appear as the href value on the resulting link." },
+              { "name": "href", "type": "string", "description": "A URL that will appear as the href value on the resulting link." },
               { "name": "displayText", "type": "string", "description": "A text that will appear to the user.", "optional": true }
             ],
             "returns": { "$ref": "FormattedValue" }
           },
           {
-            "name": "snippet",
+            "name": "createSnippet",
             "type": "function",
             "description": "Render passed text as a code snippet in the Audits panel.",
             "parameters": [
@@ -409,7 +409,7 @@
                   { "type": "string" },
                   { "$ref": "FormattedValue" }
                 ],
-                "description": "Either string or formatted values returned by one of AuditResult formatters (url, snippet etc)."
+                "description": "Either string or formatted values returned by one of the AuditResult formatters (URL, snippet etc). If multiple arguments are passed, these will be concatenated into a single node."
               }
             ],
             "returns": {

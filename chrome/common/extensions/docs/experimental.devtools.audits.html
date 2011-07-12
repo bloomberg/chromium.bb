@@ -361,10 +361,12 @@ calls AuditResult's <code>done()</code> method.
 tree by the Audits panel. You may build the details tree using
 <code>createResult()</code> and <code>addChild()</code> methods. The child node
 may include specially formatted fragments created by
-<code>auditResults.snippet()</code> or <code>auditResults.url()</code>.
-</p>
+<code>auditResults.createSnippet()</code>
+or <code>auditResults.createURL()</code>.
+</p><p>
 The following example adds a handler for onAuditStarted event that creates two
 audit results and populates one of them with the additional details:
+</p>
 
 <pre>category.onAuditStarted.addListener(function(results) {
   var details = results.createResult("Details...");
@@ -449,7 +451,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
                         <a> Type</a>
@@ -459,7 +461,7 @@ You can find examples that use this API in
                           array of <span><span></span></span>
                         </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
+                        <span></span>
                       </span>
                     </span>
                   )
@@ -517,7 +519,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
                         <a> Type</a>
@@ -527,7 +529,7 @@ You can find examples that use this API in
                           array of <span><span></span></span>
                         </span>
                         <span>number</span>
-                        <span style="display: none; "></span>
+                        <span></span>
                       </span>
                     </span>
                   )
@@ -591,7 +593,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span>
                         <a href="experimental.devtools.audits.html#type-AuditCategory">AuditCategory</a>
@@ -766,7 +768,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
                         <a> Type</a>
@@ -776,7 +778,7 @@ You can find examples that use this API in
                           array of <span><span></span></span>
                         </span>
                         <span>object</span>
-                        <span style="display: none; "></span>
+                        <span></span>
                       </span>
                     </span>
                   )
@@ -846,7 +848,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span>
                         <a href="experimental.devtools.audits.html#type-AuditResults">AuditResults</a>
@@ -956,7 +958,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
                         <a> Type</a>
@@ -966,7 +968,7 @@ You can find examples that use this API in
                           array of <span><span></span></span>
                         </span>
                         <span>object</span>
-                        <span style="display: none; "></span>
+                        <span></span>
                       </span>
                     </span>
                   )
@@ -977,7 +979,7 @@ You can find examples that use this API in
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>A value returned from one of the formatters (an URL, code snippet etc), to be passed to createResult or addChild.</dd>
+          <dd>A value returned from one of the formatters (a URL, code snippet etc), to be passed to createResult or addChild.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1028,7 +1030,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
                         <a> Type</a>
@@ -1038,7 +1040,7 @@ You can find examples that use this API in
                           array of <span><span></span></span>
                         </span>
                         <span>object</span>
-                        <span style="display: none; "></span>
+                        <span></span>
                       </span>
                     </span>
                   )
@@ -1073,7 +1075,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span>
                         <a href="experimental.devtools.audits.html#type-AuditResultSeverity">AuditResultSeverity</a>
@@ -1141,7 +1143,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
                         <a> Type</a>
@@ -1151,7 +1153,7 @@ You can find examples that use this API in
                           array of <span><span></span></span>
                         </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
+                        <span></span>
                       </span>
                     </span>
                   )
@@ -1209,7 +1211,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
                         <a> Type</a>
@@ -1230,7 +1232,7 @@ You can find examples that use this API in
                     </span></span>
                         </span>
                         <span style="display: none; ">paramType</span>
-                        <span style="display: none; "></span>
+                        <span></span>
                       </span>
                     </span>
                   )
@@ -1288,7 +1290,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
                         <a> Type</a>
@@ -1298,7 +1300,7 @@ You can find examples that use this API in
                           array of <span><span></span></span>
                         </span>
                         <span>boolean</span>
-                        <span style="display: none; "></span>
+                        <span></span>
                       </span>
                     </span>
                   )
@@ -1386,7 +1388,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
                         <a> Type</a>
@@ -1396,7 +1398,7 @@ You can find examples that use this API in
                           array of <span><span></span></span>
                         </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
+                        <span></span>
                       </span>
                     </span>
                   )
@@ -1454,7 +1456,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
                         <a> Type</a>
@@ -1464,7 +1466,7 @@ You can find examples that use this API in
                           array of <span><span></span></span>
                         </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
+                        <span></span>
                       </span>
                     </span>
                   )
@@ -1522,7 +1524,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span style="">
                         <a>AuditResultSeverety</a>
@@ -1532,7 +1534,7 @@ You can find examples that use this API in
                           array of <span><span></span></span>
                         </span>
                         <span>number</span>
-                        <span style="display: none; "></span>
+                        <span></span>
                       </span>
                     </span>
                   )
@@ -1590,7 +1592,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span style="">
                         <a href="experimental.devtools.audits.html#type-AuditResultNode">AuditResultNode</a>
@@ -1600,7 +1602,7 @@ You can find examples that use this API in
                           array of <span><span></span></span>
                         </span>
                         <span>number</span>
-                        <span style="display: none; "></span>
+                        <span></span>
                       </span>
                     </span>
                   )
@@ -1664,7 +1666,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span>
                         <a href="experimental.devtools.audits.html#type-AuditCategory">AuditCategory</a>
@@ -1786,7 +1788,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
                         <a> Type</a>
@@ -1796,7 +1798,7 @@ You can find examples that use this API in
                           array of <span><span></span></span>
                         </span>
                         <span>string or FormattedValue</span>
-                        <span style="display: none; "></span>
+                        <span></span>
                       </span>
                     </span>
                   )
@@ -1807,7 +1809,7 @@ You can find examples that use this API in
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Either string or formatted values returned by one of AuditResult formatters (url, snippet etc).</dd>
+          <dd>Either string or formatted values returned by one of the AuditResult formatters (URL, snippet etc). If multiple arguments are passed, these will be concatenated into a single node.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1860,10 +1862,471 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span>
                         <a href="experimental.devtools.audits.html#type-AuditResultNode">AuditResultNode</a>
+                      </span>
+                      <span style="display: none; ">
+                        <span>
+                          array of <span><span></span></span>
+                        </span>
+                        <span>paramType</span>
+                        <span></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <dd style="display: none; ">
+            Description of this parameter from the json schema.
+          </dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
+                  </div>
+                </dl>
+
+                <!-- CALLBACK -->
+                <div style="display: none; ">
+                  <div>
+                  <h4>Callback function</h4>
+                  <p>
+                    The callback <em>parameter</em> should specify a function
+                    that looks like this:
+                  </p>
+                  <p>
+                    If you specify the <em>callback</em> parameter, it should
+                    specify a function that looks like this:
+                  </p>
+
+                  <!-- Note: intentionally longer 80 columns -->
+                  <pre>function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span>;</pre>
+                  <dl>
+                    <div>
+                      <div>
+                      </div>
+                    </div>
+                  </dl>
+                  </div>
+                </div>
+
+                <!-- MIN_VERSION -->
+                <p style="display: none; ">
+                  This function was added in version <b><span></span></b>.
+                  If you require this function, the manifest key
+                  <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+                  can ensure that your extension won't be run in an earlier browser version.
+                </p>
+              </div> <!-- /description -->
+
+            </div><div class="apiItem">
+              <a name="method-AuditResults-createSnippet"></a> <!-- method-anchor -->
+              <h4>createSnippet</h4>
+
+              <div class="summary"><span>FormattedValue</span>
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>auditResults.createSnippet</span>(<span class="null"><span style="display: none; ">, </span><span>string</span>
+                      <var><span>text</span></var></span>)</div>
+
+              <div class="description">
+                <p class="todo" style="display: none; ">Undocumented.</p>
+                <p>Render passed text as a code snippet in the Audits panel.</p>
+
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>text</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span class="enum">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>string</span>
+                        <span></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>Snippet text.</dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
+                  </div>
+                </dl>
+
+                <!-- RETURNS -->
+                <h4>Returns</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var style="display: none; ">paramName</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span class="enum">enumerated</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="experimental.devtools.audits.html#type-FormattedValue">FormattedValue</a>
+                      </span>
+                      <span style="display: none; ">
+                        <span>
+                          array of <span><span></span></span>
+                        </span>
+                        <span>paramType</span>
+                        <span></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <dd style="display: none; ">
+            Description of this parameter from the json schema.
+          </dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
+                  </div>
+                </dl>
+
+                <!-- CALLBACK -->
+                <div style="display: none; ">
+                  <div>
+                  <h4>Callback function</h4>
+                  <p>
+                    The callback <em>parameter</em> should specify a function
+                    that looks like this:
+                  </p>
+                  <p>
+                    If you specify the <em>callback</em> parameter, it should
+                    specify a function that looks like this:
+                  </p>
+
+                  <!-- Note: intentionally longer 80 columns -->
+                  <pre>function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span>;</pre>
+                  <dl>
+                    <div>
+                      <div>
+                      </div>
+                    </div>
+                  </dl>
+                  </div>
+                </div>
+
+                <!-- MIN_VERSION -->
+                <p style="display: none; ">
+                  This function was added in version <b><span></span></b>.
+                  If you require this function, the manifest key
+                  <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+                  can ensure that your extension won't be run in an earlier browser version.
+                </p>
+              </div> <!-- /description -->
+
+            </div><div class="apiItem">
+              <a name="method-AuditResults-createURL"></a> <!-- method-anchor -->
+              <h4>createURL</h4>
+
+              <div class="summary"><span>FormattedValue</span>
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>auditResults.createURL</span>(<span class="null"><span style="display: none; ">, </span><span>string</span>
+                      <var><span>href</span></var></span><span class="optional"><span>, </span><span>string</span>
+                      <var><span>displayText</span></var></span>)</div>
+
+              <div class="description">
+                <p class="todo" style="display: none; ">Undocumented.</p>
+                <p>Render passed value as a URL in the Audits panel</p>
+
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>href</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span class="enum">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>string</span>
+                        <span></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>A URL that will appear as the href value on the resulting link.</dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>displayText</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="">optional</span>
+                    <span class="enum">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>string</span>
+                        <span></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>A text that will appear to the user.</dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
+                  </div>
+                </dl>
+
+                <!-- RETURNS -->
+                <h4>Returns</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var style="display: none; ">paramName</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span class="enum">enumerated</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="experimental.devtools.audits.html#type-FormattedValue">FormattedValue</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -1983,7 +2446,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
                         <a> Type</a>
@@ -1993,7 +2456,7 @@ You can find examples that use this API in
                           array of <span><span></span></span>
                         </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
+                        <span></span>
                       </span>
                     </span>
                   )
@@ -2051,7 +2514,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
                         <a> Type</a>
@@ -2061,7 +2524,7 @@ You can find examples that use this API in
                           array of <span><span></span></span>
                         </span>
                         <span>number</span>
-                        <span style="display: none; "></span>
+                        <span></span>
                       </span>
                     </span>
                   )
@@ -2125,471 +2588,10 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span>
                         <a href="experimental.devtools.audits.html#type-AuditCategory">AuditCategory</a>
-                      </span>
-                      <span style="display: none; ">
-                        <span>
-                          array of <span><span></span></span>
-                        </span>
-                        <span>paramType</span>
-                        <span></span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
-          <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-        </div>
-                  </div>
-                </dl>
-
-                <!-- CALLBACK -->
-                <div style="display: none; ">
-                  <div>
-                  <h4>Callback function</h4>
-                  <p>
-                    The callback <em>parameter</em> should specify a function
-                    that looks like this:
-                  </p>
-                  <p>
-                    If you specify the <em>callback</em> parameter, it should
-                    specify a function that looks like this:
-                  </p>
-
-                  <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span>;</pre>
-                  <dl>
-                    <div>
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                  </div>
-                </div>
-
-                <!-- MIN_VERSION -->
-                <p style="display: none; ">
-                  This function was added in version <b><span></span></b>.
-                  If you require this function, the manifest key
-                  <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-                  can ensure that your extension won't be run in an earlier browser version.
-                </p>
-              </div> <!-- /description -->
-
-            </div><div class="apiItem">
-              <a name="method-AuditResults-snippet"></a> <!-- method-anchor -->
-              <h4>snippet</h4>
-
-              <div class="summary"><span>FormattedValue</span>
-                  <!-- Note: intentionally longer 80 columns -->
-                  <span>auditResults.snippet</span>(<span class="null"><span style="display: none; ">, </span><span>string</span>
-                      <var><span>text</span></var></span>)</div>
-
-              <div class="description">
-                <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Render passed text as a code snippet in the Audits panel.</p>
-
-                <!-- PARAMETERS -->
-                <h4>Parameters</h4>
-                <dl>
-                  <div>
-                    <div>
-          <dt>
-            <var>text</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>string</span>
-                        <span style="display: none; "></span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
-          <dd>Snippet text.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
-          <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-        </div>
-                  </div>
-                </dl>
-
-                <!-- RETURNS -->
-                <h4>Returns</h4>
-                <dl>
-                  <div>
-                    <div>
-          <dt>
-            <var style="display: none; ">paramName</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <a href="experimental.devtools.audits.html#type-FormattedValue">FormattedValue</a>
-                      </span>
-                      <span style="display: none; ">
-                        <span>
-                          array of <span><span></span></span>
-                        </span>
-                        <span>paramType</span>
-                        <span></span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
-          <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-        </div>
-                  </div>
-                </dl>
-
-                <!-- CALLBACK -->
-                <div style="display: none; ">
-                  <div>
-                  <h4>Callback function</h4>
-                  <p>
-                    The callback <em>parameter</em> should specify a function
-                    that looks like this:
-                  </p>
-                  <p>
-                    If you specify the <em>callback</em> parameter, it should
-                    specify a function that looks like this:
-                  </p>
-
-                  <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span>;</pre>
-                  <dl>
-                    <div>
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                  </div>
-                </div>
-
-                <!-- MIN_VERSION -->
-                <p style="display: none; ">
-                  This function was added in version <b><span></span></b>.
-                  If you require this function, the manifest key
-                  <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-                  can ensure that your extension won't be run in an earlier browser version.
-                </p>
-              </div> <!-- /description -->
-
-            </div><div class="apiItem">
-              <a name="method-AuditResults-url"></a> <!-- method-anchor -->
-              <h4>url</h4>
-
-              <div class="summary"><span>FormattedValue</span>
-                  <!-- Note: intentionally longer 80 columns -->
-                  <span>auditResults.url</span>(<span class="null"><span style="display: none; ">, </span><span>string</span>
-                      <var><span>href</span></var></span><span class="optional"><span>, </span><span>string</span>
-                      <var><span>displayText</span></var></span>)</div>
-
-              <div class="description">
-                <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Render passed value as an URL in the Audits panel</p>
-
-                <!-- PARAMETERS -->
-                <h4>Parameters</h4>
-                <dl>
-                  <div>
-                    <div>
-          <dt>
-            <var>href</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>string</span>
-                        <span style="display: none; "></span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
-          <dd>An URL that will appear as the href value on the resulting link.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
-          <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-        </div>
-                  </div><div>
-                    <div>
-          <dt>
-            <var>displayText</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional" style="">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>string</span>
-                        <span style="display: none; "></span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
-          <dd>A text that will appear to the user.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
-          <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-        </div>
-                  </div>
-                </dl>
-
-                <!-- RETURNS -->
-                <h4>Returns</h4>
-                <dl>
-                  <div>
-                    <div>
-          <dt>
-            <var style="display: none; ">paramName</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <a href="experimental.devtools.audits.html#type-FormattedValue">FormattedValue</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -2712,7 +2714,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
                         <a> Type</a>
@@ -2722,7 +2724,7 @@ You can find examples that use this API in
                           array of <span><span></span></span>
                         </span>
                         <span>object</span>
-                        <span style="display: none; "></span>
+                        <span></span>
                       </span>
                     </span>
                   )
@@ -2757,7 +2759,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
                         <a> Type</a>
@@ -2767,7 +2769,7 @@ You can find examples that use this API in
                           array of <span><span></span></span>
                         </span>
                         <span>boolean</span>
-                        <span style="display: none; "></span>
+                        <span></span>
                       </span>
                     </span>
                   )
@@ -2852,7 +2854,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
                         <a> Type</a>
@@ -2862,7 +2864,7 @@ You can find examples that use this API in
                           array of <span><span></span></span>
                         </span>
                         <span>string or FormattedValue</span>
-                        <span style="display: none; "></span>
+                        <span></span>
                       </span>
                     </span>
                   )
@@ -2873,7 +2875,7 @@ You can find examples that use this API in
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Either string or formatted values returned by one of AuditResult formatters (url, snippet etc).</dd>
+          <dd>Either string or formatted values returned by one of the AuditResult formatters (URL, snippet etc). If multiple arguments are passed, these will be concatenated into a single node.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -2926,7 +2928,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span>
                         <a href="experimental.devtools.audits.html#type-AuditResultNode">AuditResultNode</a>
@@ -3052,7 +3054,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
                         <a> Type</a>
@@ -3062,7 +3064,7 @@ You can find examples that use this API in
                           array of <span><span></span></span>
                         </span>
                         <span>object</span>
-                        <span style="display: none; "></span>
+                        <span></span>
                       </span>
                     </span>
                   )
@@ -3099,7 +3101,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
                         <a> Type</a>
@@ -3109,7 +3111,7 @@ You can find examples that use this API in
                           array of <span><span></span></span>
                         </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
+                        <span></span>
                       </span>
                     </span>
                   )
@@ -3169,7 +3171,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
                         <a> Type</a>
@@ -3179,7 +3181,7 @@ You can find examples that use this API in
                           array of <span><span></span></span>
                         </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
+                        <span></span>
                       </span>
                     </span>
                   )
@@ -3239,7 +3241,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
                         <a> Type</a>
@@ -3249,7 +3251,7 @@ You can find examples that use this API in
                           array of <span><span></span></span>
                         </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
+                        <span></span>
                       </span>
                     </span>
                   )

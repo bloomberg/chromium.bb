@@ -49,6 +49,12 @@ upload extensions that use experimental APIs.
     >experimental.devtools.panels</a>
     API.
   </li>
+  <li>
+    The chrome.experimental.devtools.* API modules are available only to the
+    pages loaded within the Developer Tools window. Content scripts and other
+    extension pages do not have these APIs. Thus, the APIs are available only
+    through the lifetime of the Developer Tools window.
+  </li>
   <li>The APIs available to extension pages within the Developer Tools
     window include all <a href="#api-list">experimental.devtools modules
     listed above</a> and <a href="extension.html">chrome.extension</a> API.

@@ -354,7 +354,8 @@ and labeled as <em>Font Picker</em>:</p>
 
 <pre>chrome.experimental.devtools.panels.create("Font Picker",
                                            "FontPicker.png",
-                                           "Panel.html");
+                                           "Panel.html"
+                                           function(panel) { ... });
 </pre>
 <p>The following code adds a sidebar pane contained in
 <code>Sidebar.html</code> and titled <em>Font Properties</em> to the Elements
@@ -405,7 +406,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span>
                         <a href="experimental.devtools.panels.html#type-ElementsPanel">ElementsPanel</a>
@@ -502,7 +503,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
                         <a> Type</a>
@@ -512,7 +513,7 @@ You can find examples that use this API in
                           array of <span><span></span></span>
                         </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
+                        <span></span>
                       </span>
                     </span>
                   )
@@ -570,7 +571,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
                         <a> Type</a>
@@ -580,7 +581,7 @@ You can find examples that use this API in
                           array of <span><span></span></span>
                         </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
+                        <span></span>
                       </span>
                     </span>
                   )
@@ -591,7 +592,7 @@ You can find examples that use this API in
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>An URL of the toolbar icon.</dd>
+          <dd>A URL of the toolbar icon.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -638,7 +639,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
                         <a> Type</a>
@@ -648,7 +649,7 @@ You can find examples that use this API in
                           array of <span><span></span></span>
                         </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
+                        <span></span>
                       </span>
                     </span>
                   )
@@ -659,7 +660,7 @@ You can find examples that use this API in
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>An URL of the page that represents this panel.</dd>
+          <dd>A URL of the page that represents this panel.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -706,7 +707,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
                         <a> Type</a>
@@ -716,7 +717,7 @@ You can find examples that use this API in
                           array of <span><span></span></span>
                         </span>
                         <span>function</span>
-                        <span style="display: none; "></span>
+                        <span></span>
                       </span>
                     </span>
                   )
@@ -802,7 +803,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span>
                         <a href="experimental.devtools.panels.html#type-ExtensionPanel">ExtensionPanel</a>
@@ -953,7 +954,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
                         <a> Type</a>
@@ -963,7 +964,7 @@ You can find examples that use this API in
                           array of <span><span></span></span>
                         </span>
                         <span>Panel</span>
-                        <span style="display: none; "></span>
+                        <span></span>
                       </span>
                     </span>
                   )
@@ -1029,7 +1030,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
                         <a> Type</a>
@@ -1039,7 +1040,7 @@ You can find examples that use this API in
                           array of <span><span></span></span>
                         </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
+                        <span></span>
                       </span>
                     </span>
                   )
@@ -1097,7 +1098,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
                         <a> Type</a>
@@ -1107,7 +1108,7 @@ You can find examples that use this API in
                           array of <span><span></span></span>
                         </span>
                         <span>function</span>
-                        <span style="display: none; "></span>
+                        <span></span>
                       </span>
                     </span>
                   )
@@ -1193,7 +1194,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span>
                         <a href="experimental.devtools.panels.html#type-ExtensionSidebarPane">ExtensionSidebarPane</a>
@@ -1295,7 +1296,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
                         <a> Type</a>
@@ -1305,7 +1306,7 @@ You can find examples that use this API in
                           array of <span><span></span></span>
                         </span>
                         <span>PanelWithSidebars</span>
-                        <span style="display: none; "></span>
+                        <span></span>
                       </span>
                     </span>
                   )
@@ -1418,7 +1419,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
                         <a> Type</a>
@@ -1428,7 +1429,7 @@ You can find examples that use this API in
                           array of <span><span></span></span>
                         </span>
                         <span>Panel</span>
-                        <span style="display: none; "></span>
+                        <span></span>
                       </span>
                     </span>
                   )
@@ -1498,7 +1499,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
                         <a> Type</a>
@@ -1508,7 +1509,7 @@ You can find examples that use this API in
                           array of <span><span></span></span>
                         </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
+                        <span></span>
                       </span>
                     </span>
                   )
@@ -1566,7 +1567,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
                         <a> Type</a>
@@ -1576,7 +1577,7 @@ You can find examples that use this API in
                           array of <span><span></span></span>
                         </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
+                        <span></span>
                       </span>
                     </span>
                   )
@@ -1674,7 +1675,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
                         <a> Type</a>
@@ -1684,7 +1685,7 @@ You can find examples that use this API in
                           array of <span><span></span></span>
                         </span>
                         <span>object</span>
-                        <span style="display: none; "></span>
+                        <span></span>
                       </span>
                     </span>
                   )
@@ -1750,7 +1751,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
                         <a> Type</a>
@@ -1760,7 +1761,7 @@ You can find examples that use this API in
                           array of <span><span></span></span>
                         </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
+                        <span></span>
                       </span>
                     </span>
                   )
@@ -1818,7 +1819,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
                         <a> Type</a>
@@ -1828,7 +1829,7 @@ You can find examples that use this API in
                           array of <span><span></span></span>
                         </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
+                        <span></span>
                       </span>
                     </span>
                   )
@@ -1914,7 +1915,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span>
                         <a href="experimental.devtools.panels.html#type-ExtensionPanel">ExtensionPanel</a>
@@ -2012,7 +2013,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
                         <a> Type</a>
@@ -2022,7 +2023,7 @@ You can find examples that use this API in
                           array of <span><span></span></span>
                         </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
+                        <span></span>
                       </span>
                     </span>
                   )
@@ -2108,7 +2109,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span>
                         <a href="experimental.devtools.panels.html#type-ExtensionPanel">ExtensionPanel</a>
@@ -2207,7 +2208,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
                         <a> Type</a>
@@ -2217,7 +2218,7 @@ You can find examples that use this API in
                           array of <span><span></span></span>
                         </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
+                        <span></span>
                       </span>
                     </span>
                   )
@@ -2275,7 +2276,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
                         <a> Type</a>
@@ -2285,7 +2286,7 @@ You can find examples that use this API in
                           array of <span><span></span></span>
                         </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
+                        <span></span>
                       </span>
                     </span>
                   )
@@ -2371,7 +2372,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span>
                         <a href="experimental.devtools.panels.html#type-ExtensionPanel">ExtensionPanel</a>
@@ -2469,7 +2470,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
                         <a> Type</a>
@@ -2479,7 +2480,7 @@ You can find examples that use this API in
                           array of <span><span></span></span>
                         </span>
                         <span>string</span>
-                        <span style="display: none; "></span>
+                        <span></span>
                       </span>
                     </span>
                   )
@@ -2490,7 +2491,7 @@ You can find examples that use this API in
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>An URL of an extension page to display within the sidebar.</dd>
+          <dd>A URL of an extension page to display within the sidebar.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -2565,7 +2566,7 @@ You can find examples that use this API in
                 <div style="display:inline">
                   (
                     <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span>
                         <a href="experimental.devtools.panels.html#type-ExtensionPanel">ExtensionPanel</a>

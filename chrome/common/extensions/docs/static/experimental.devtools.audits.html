@@ -36,10 +36,12 @@ calls AuditResult's <code>done()</code> method.
 tree by the Audits panel. You may build the details tree using
 <code>createResult()</code> and <code>addChild()</code> methods. The child node
 may include specially formatted fragments created by
-<code>auditResults.snippet()</code> or <code>auditResults.url()</code>.
-</p>
+<code>auditResults.createSnippet()</code>
+or <code>auditResults.createURL()</code>.
+</p><p>
 The following example adds a handler for onAuditStarted event that creates two
 audit results and populates one of them with the additional details:
+</p>
 
 <pre>
 category.onAuditStarted.addListener(function(results) {

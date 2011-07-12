@@ -16,8 +16,8 @@ category.onAuditStarted.addListener(function callback(auditResults) {
       var details = auditResults.createResult(results.badlinks.length +
           " links out of " + results.total + " are broken");
       for (var i = 0; i < results.badlinks.length; ++i) {
-        details.addChild(auditResults.url(results.badlinks[i].href,
-                                          results.badlinks[i].text));
+        details.addChild(auditResults.createURL(results.badlinks[i].href,
+                                                results.badlinks[i].text));
       }
       auditResults.addResult("Broken links found (" + results.badlinks.length +
                                  ")", "",
