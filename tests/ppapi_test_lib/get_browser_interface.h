@@ -23,7 +23,6 @@ struct PPB_URLLoader;
 struct PPB_URLRequestInfo;
 struct PPB_URLResponseInfo;
 struct PPB_Var;
-struct PPB_Var_Deprecated;
 
 // Looks up the interface and returns its pointer or NULL.
 const void* GetBrowserInterface(const char* interface_name);
@@ -44,8 +43,6 @@ const PPB_URLLoader* PPBURLLoader();
 const PPB_URLRequestInfo* PPBURLRequestInfo();
 const PPB_URLResponseInfo* PPBURLResponseInfo();
 const PPB_Var* PPBVar();
-
-const PPB_Var_Deprecated* PPBVarDeprecated();
 
 //
 // Experimental (aka Dev) interfaces.

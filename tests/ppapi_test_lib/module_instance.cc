@@ -88,7 +88,6 @@ PP_Bool DidCreate(PP_Instance instance,
   CHECK(PPBURLRequestInfo() != NULL);
   CHECK(PPBURLResponseInfo() != NULL);
   CHECK(PPBVar() != NULL);
-  CHECK(PPBVarDeprecated() != NULL);
 
   set_pp_instance(instance);
   SetupTests();
@@ -118,10 +117,6 @@ PP_Bool HandleDocumentLoad(PP_Instance instance,
   return PP_TRUE;
 }
 
-PP_Var GetInstanceObject(PP_Instance instance) {
-  return GetScriptableObject(instance);
-}
-
 const PPP_Instance ppp_instance_interface = {
   DidCreate,
   DidDestroy,
@@ -129,9 +124,6 @@ const PPP_Instance ppp_instance_interface = {
   DidChangeFocus,
   HandleInputEvent,
   HandleDocumentLoad
-#ifndef PPAPI_INSTANCE_REMOVE_SCRIPTING
-  , GetInstanceObject
-#endif
 };
 
 ///////////////////////////////////////////////////////////////////////////////

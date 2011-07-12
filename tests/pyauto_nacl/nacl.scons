@@ -7,7 +7,6 @@ Import('env')
 
 platform = env.get('TARGET_FULLARCH')
 cat_nexe_name = 'cat_%s${PROGSUFFIX}' % platform
-ppapi_basic_object_nexe_name = 'ppapi_basic_object_%s${PROGSUFFIX}' % platform
 ppapi_example_events_nexe_name = 'ppapi_example_events_%s${PROGSUFFIX}' % platform
 ppapi_user_main_nexe_name = 'ppapi_user_main_%s${PROGSUFFIX}' % platform
 srpc_test_nexe_name = 'srpc_test_%s${PROGSUFFIX}' % platform
@@ -20,12 +19,6 @@ def CreateDefaultDeps(base_name):
           env.File('${STAGING_DIR}/' + base_name + '.html'),
           env.File('${STAGING_DIR}/' + base_name + '.nmf')]
 
-basic_object_files = [
-    env.File('${STAGING_DIR}/' + ppapi_basic_object_nexe_name),
-    env.File('${STAGING_DIR}/basic_object.html'),
-    env.File('${STAGING_DIR}/basic_object.nmf'),
-    env.File('${STAGING_DIR}/' + ppapi_user_main_nexe_name),
-    env.File('${STAGING_DIR}/user_main.nmf')]
 earth_c_files = CreateDefaultDeps('earth_c')
 earth_cc_files = CreateDefaultDeps('earth_cc')
 ppapi_example_events_files = [
@@ -111,7 +104,6 @@ env.AddNodeToTestSuite(node,
                        is_broken=env.PyAutoTesterIsBroken())
 
 core_test_files = [env.File('${STAGING_DIR}/nacltest.js'),
-                   basic_object_files +
                    earth_c_files +
                    earth_cc_files +
                    ppapi_example_events_files +

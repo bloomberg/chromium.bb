@@ -13,8 +13,6 @@
 #include "native_client/tests/ppapi_test_lib/get_browser_interface.h"
 #include "native_client/tests/ppapi_test_lib/internal_utils.h"
 
-#include "ppapi/c/dev/ppb_var_deprecated.h"
-
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_var.h"
@@ -47,13 +45,6 @@ class TestTable {
     return &table;
   }
 
-  void AddScriptableTest(nacl::string test_name,
-                         ScriptableTestFunction test_function) {
-    scriptable_test_map_[test_name] = test_function;
-  }
-  bool HasScriptableTest(nacl::string test_name);
-  PP_Var RunScriptableTest(nacl::string test_name);
-
   void AddTest(nacl::string test_name, TestFunction test_function) {
     test_map_[test_name] = test_function;
   }
@@ -64,25 +55,9 @@ class TestTable {
 
   TestTable() {}
 
-  typedef std::map<nacl::string, ScriptableTestFunction> ScriptableTestMap;
-  ScriptableTestMap scriptable_test_map_;  // DEPRECATED.
   typedef std::map<nacl::string, TestFunction> TestMap;
   TestMap test_map_;
 };
-
-bool TestTable::HasScriptableTest(nacl::string test_name) {
-  ScriptableTestMap::iterator it = scriptable_test_map_.find(test_name);
-  return it != scriptable_test_map_.end();
-}
-
-PP_Var TestTable::RunScriptableTest(nacl::string test_name) {
-  ScriptableTestMap::iterator it = scriptable_test_map_.find(test_name);
-  if (it == scriptable_test_map_.end())
-    return PP_MakeUndefined();
-  CHECK(it->second != NULL);
-  ScriptableTestFunction test_function = it->second;
-  return test_function();
-}
 
 void TestTable::RunTest(nacl::string test_name) {
   TestMap::iterator it = test_map_.find(test_name);
@@ -96,19 +71,6 @@ void TestTable::RunTest(nacl::string test_name) {
 }
 
 }  // namespace
-
-void RegisterScriptableTest(nacl::string test_name,
-                            ScriptableTestFunction test_func) {
-  TestTable::Get()->AddScriptableTest(test_name, test_func);
-}
-
-bool HasScriptableTest(nacl::string test_name) {
-  return TestTable::Get()->HasScriptableTest(test_name);
-}
-
-PP_Var RunScriptableTest(nacl::string test_name) {
-  return TestTable::Get()->RunScriptableTest(test_name);
-}
 
 void RegisterTest(nacl::string test_name, TestFunction test_func) {
   TestTable::Get()->AddTest(test_name, test_func);
@@ -133,17 +95,6 @@ void ReportCallbackInvocationToJS(const char* callback_name) {
   PP_Var callback_var = PPBVar()->VarFromUtf8(pp_module(),
                                               callback_name,
                                               strlen(callback_name));
-  // Report using synchronous scripting for sync tests.
-  // This is deprecated and will be removed shortly.
-#ifndef PPAPI_INSTANCE_REMOVE_SCRIPTING
-  PP_Var window = PPBInstance()->GetWindowObject(pp_instance());
-  CHECK(window.type == PP_VARTYPE_OBJECT);
-
-  PP_Var exception = PP_MakeUndefined();
-  PPBVarDeprecated()->Call(window, callback_var, 0, NULL, &exception);
-  PPBVarDeprecated()->Release(window);
-#endif
-
   // Report using postmessage for async tests.
   PPBMessaging()->PostMessage(pp_instance(), callback_var);
   PPBVar()->Release(callback_var);

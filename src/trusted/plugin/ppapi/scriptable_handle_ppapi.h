@@ -30,18 +30,6 @@ class ScriptableHandlePpapi : public pp::deprecated::ScriptableObject,
   // If not NULL, this var should be reused to pass this object to the browser.
   pp::VarPrivate* var() { return var_; }
 
-// Turn off the ability to set a proxy if we're removing scripting.  In this
-// case, the ScriptableHandle can only refer to the NaCl plugin.
-// TODO(dmichael): Clean up all traces of scripting proxying.
-#ifndef PPAPI_INSTANCE_REMOVE_SCRIPTING
-  // If this scriptable handle corresponds to the NaCl plugin itself and the
-  // plugin has successfully loaded the NaCl module and started proxied
-  // execution, scripting should be redirected via this proxy.
-  void set_scriptable_proxy(const pp::VarPrivate& proxy) {
-    scriptable_proxy_ = proxy;
-  }
-#endif
-
   // ------ Methods inherited from pp::deprecated::ScriptableObject:
 
   // Returns true for preloaded NaCl Plugin properties.
@@ -120,19 +108,6 @@ class ScriptableHandlePpapi : public pp::deprecated::ScriptableObject,
   int num_unref_calls_;
 
   bool handle_is_plugin_;  // Whether (portable) handle() is a plugin.
-
-#ifdef PPAPI_INSTANCE_REMOVE_SCRIPTING
-  // If untrusted scripting is disabled, make this a VarPrivate just so that
-  // it has all the methods it needs to compile.  This is a hack to avoid having
-  // conditional compilation at every call-site for things like HasProperty,
-  // HasMethod, etc.  We turn off untrusted scripting above by removing the
-  // setter for scriptable_proxy_, so it's always invalid.
-  // TODO(dmichael): Remove scriptable_proxy_ and all other traces of untrusted
-  // scripting.
-  pp::VarPrivate scriptable_proxy_;
-#else
-  pp::Var scriptable_proxy_;  // Proxy for NaCl module's scripting interface.
-#endif
 };
 
 }  // namespace plugin

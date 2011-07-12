@@ -11,8 +11,7 @@ import random
 class NaClTest(pyauto.PyUITest):
   """Tests for NaCl."""
   # (test.html, number of nexes loaded concurrently on page)
-  nexes = [('basic_object.html', 2),
-           ('earth_c.html', 1),
+  nexes = [('earth_c.html', 1),
            ('earth_cc.html', 1),
            ('ppapi_example_audio.html#mute', 1),
            ('ppapi_example_font.html', 1),

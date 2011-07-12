@@ -43,9 +43,6 @@ class NaClTest(pyauto.PyUITest):
   def testSurfAwaySRPCURLContentAsNaclResourceDescriptor(self):
     self.surfAway('srpc_url_as_nacl_desc.html', 'SRPC')
 
-  def testSurfAwayScripting(self):
-    self.surfAway('basic_object.html', 'PPAPI')
-
   def testSurfAwayExampleAudio(self):
     self.surfAway('ppapi_example_audio.html#mute', 'PPAPI')
 

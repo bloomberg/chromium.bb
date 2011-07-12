@@ -184,74 +184,74 @@ void TestCreate() {
 
   // Invalid instance and size -> invalid resource.
   graphics2d = ppb->Create(kInvalidInstance, &k30x30, kAlwaysOpaque);
-  EXPECT_ASYNC(graphics2d == kInvalidResource);
+  EXPECT(graphics2d == kInvalidResource);
   graphics2d = ppb->Create(kInvalidInstance, &k30x30, kNotAlwaysOpaque);
-  EXPECT_ASYNC(graphics2d == kInvalidResource);
+  EXPECT(graphics2d == kInvalidResource);
   graphics2d = ppb->Create(kNotAnInstance, &k30x30, kAlwaysOpaque);
-  EXPECT_ASYNC(graphics2d == kInvalidResource);
+  EXPECT(graphics2d == kInvalidResource);
   graphics2d = ppb->Create(kNotAnInstance, &k30x30, kNotAlwaysOpaque);
-  EXPECT_ASYNC(graphics2d == kInvalidResource);
+  EXPECT(graphics2d == kInvalidResource);
   graphics2d = ppb->Create(pp_instance(), &k100000x100000, kAlwaysOpaque);
-  EXPECT_ASYNC(graphics2d == kInvalidResource);
+  EXPECT(graphics2d == kInvalidResource);
   graphics2d = ppb->Create(pp_instance(), &k100000x100000, kNotAlwaysOpaque);
-  EXPECT_ASYNC(graphics2d == kInvalidResource);
+  EXPECT(graphics2d == kInvalidResource);
   graphics2d = ppb->Create(pp_instance(), &kZeroPixels, kAlwaysOpaque);
-  EXPECT_ASYNC(graphics2d == kInvalidResource);
+  EXPECT(graphics2d == kInvalidResource);
   graphics2d = ppb->Create(pp_instance(), &kZeroPixels, kNotAlwaysOpaque);
-  EXPECT_ASYNC(graphics2d == kInvalidResource);
+  EXPECT(graphics2d == kInvalidResource);
   graphics2d = ppb->Create(pp_instance(), &kNegativeWidth, kAlwaysOpaque);
-  EXPECT_ASYNC(graphics2d == kInvalidResource);
+  EXPECT(graphics2d == kInvalidResource);
   graphics2d = ppb->Create(pp_instance(), &kNegativeHeight, kNotAlwaysOpaque);
-  EXPECT_ASYNC(graphics2d == kInvalidResource);
+  EXPECT(graphics2d == kInvalidResource);
   // NULL size -> Internal error in rpc method.
   graphics2d = ppb->Create(pp_instance(), NULL, kAlwaysOpaque);
-  EXPECT_ASYNC(graphics2d == kInvalidResource);
+  EXPECT(graphics2d == kInvalidResource);
   graphics2d = ppb->Create(pp_instance(), NULL, kNotAlwaysOpaque);
-  EXPECT_ASYNC(graphics2d == kInvalidResource);
+  EXPECT(graphics2d == kInvalidResource);
 
   // Valid instance and size -> valid resource.
   graphics2d = ppb->Create(pp_instance(), &kOnePixel, kAlwaysOpaque);
-  EXPECT_ASYNC(graphics2d != kInvalidResource);
+  EXPECT(graphics2d != kInvalidResource);
   PPBCore()->ReleaseResource(graphics2d);
   graphics2d = ppb->Create(pp_instance(), &kOnePixel, kNotAlwaysOpaque);
-  EXPECT_ASYNC(graphics2d != kInvalidResource);
+  EXPECT(graphics2d != kInvalidResource);
   PPBCore()->ReleaseResource(graphics2d);
   graphics2d = ppb->Create(pp_instance(), &k30x30, kAlwaysOpaque);
-  EXPECT_ASYNC(graphics2d != kInvalidResource);
+  EXPECT(graphics2d != kInvalidResource);
   PPBCore()->ReleaseResource(graphics2d);
   graphics2d = ppb->Create(pp_instance(), &k30x30, kNotAlwaysOpaque);
-  EXPECT_ASYNC(graphics2d != kInvalidResource);
+  EXPECT(graphics2d != kInvalidResource);
   PPBCore()->ReleaseResource(graphics2d);
   graphics2d = ppb->Create(pp_instance(), &k2500x2500, kAlwaysOpaque);
-  EXPECT_ASYNC(graphics2d != kInvalidResource);
+  EXPECT(graphics2d != kInvalidResource);
   PPBCore()->ReleaseResource(graphics2d);
   graphics2d = ppb->Create(pp_instance(), &k2500x2500, kNotAlwaysOpaque);
-  EXPECT_ASYNC(graphics2d != kInvalidResource);
+  EXPECT(graphics2d != kInvalidResource);
   PPBCore()->ReleaseResource(graphics2d);
 
-  TEST_PASSED_ASYNC;
+  TEST_PASSED;
 }
 
 // Tests PPB_Graphics2D::IsGraphics2D().
 void TestIsGraphics2D() {
   // Invalid / non-existent / non-Graphics2D resource -> false.
-  EXPECT_ASYNC(PP_FALSE == PPBGraphics2D()->IsGraphics2D(kInvalidResource));
-  EXPECT_ASYNC(PP_FALSE == PPBGraphics2D()->IsGraphics2D(kNotAResource));
+  EXPECT(PP_FALSE == PPBGraphics2D()->IsGraphics2D(kInvalidResource));
+  EXPECT(PP_FALSE == PPBGraphics2D()->IsGraphics2D(kNotAResource));
   PP_Resource url_loader = PPBURLLoader()->Create(pp_instance());
   CHECK(url_loader != kInvalidResource);
-  EXPECT_ASYNC(PP_FALSE == PPBGraphics2D()->IsGraphics2D(url_loader));
+  EXPECT(PP_FALSE == PPBGraphics2D()->IsGraphics2D(url_loader));
   PPBCore()->ReleaseResource(url_loader);
 
   // Current Graphics2D resource -> true.
   PP_Resource graphics2d = PPBGraphics2D()->Create(
       pp_instance(), &k30x30, kAlwaysOpaque);
-  EXPECT_ASYNC(PP_TRUE == PPBGraphics2D()->IsGraphics2D(graphics2d));
+  EXPECT(PP_TRUE == PPBGraphics2D()->IsGraphics2D(graphics2d));
 
   // Released Graphis2D resource -> false.
   PPBCore()->ReleaseResource(graphics2d);
-  EXPECT_ASYNC(PP_FALSE == PPBGraphics2D()->IsGraphics2D(graphics2d));
+  EXPECT(PP_FALSE == PPBGraphics2D()->IsGraphics2D(graphics2d));
 
-  TEST_PASSED_ASYNC;
+  TEST_PASSED;
 }
 
 // Tests PPB_Graphics2D::Describe().
@@ -263,30 +263,30 @@ void TestDescribe() {
 
   // Valid resource -> output = configuration, true.
   graphics2d = ppb->Create(pp_instance(), &k30x30, kNotAlwaysOpaque);
-  EXPECT_ASYNC(PP_TRUE == ppb->Describe(graphics2d, &size, &is_always_opaque));
-  EXPECT_ASYNC(is_always_opaque == PP_FALSE && IsEqualSize(size, k30x30));
+  EXPECT(PP_TRUE == ppb->Describe(graphics2d, &size, &is_always_opaque));
+  EXPECT(is_always_opaque == PP_FALSE && IsEqualSize(size, k30x30));
   PPBCore()->ReleaseResource(graphics2d);
 
   graphics2d = ppb->Create(pp_instance(), &k30x30, kAlwaysOpaque);
-  EXPECT_ASYNC(PP_TRUE == ppb->Describe(graphics2d, &size, &is_always_opaque));
-  EXPECT_ASYNC(is_always_opaque == PP_TRUE && IsEqualSize(size, k30x30));
+  EXPECT(PP_TRUE == ppb->Describe(graphics2d, &size, &is_always_opaque));
+  EXPECT(is_always_opaque == PP_TRUE && IsEqualSize(size, k30x30));
   PPBCore()->ReleaseResource(graphics2d);
 
   // NULL outputs -> output = unchanged, false.
-  EXPECT_ASYNC(PP_FALSE == ppb->Describe(graphics2d, NULL, &is_always_opaque));
-  EXPECT_ASYNC(PP_FALSE == ppb->Describe(graphics2d, &size, NULL));
-  EXPECT_ASYNC(is_always_opaque == PP_TRUE && IsEqualSize(size, k30x30));
+  EXPECT(PP_FALSE == ppb->Describe(graphics2d, NULL, &is_always_opaque));
+  EXPECT(PP_FALSE == ppb->Describe(graphics2d, &size, NULL));
+  EXPECT(is_always_opaque == PP_TRUE && IsEqualSize(size, k30x30));
 
   // Invalid / non-existent resource -> output = 0, false.
-  EXPECT_ASYNC(PP_FALSE == ppb->Describe(kInvalidResource, &size, &is_always_opaque));
-  EXPECT_ASYNC(is_always_opaque == PP_FALSE && IsEqualSize(size, kZeroPixels));
+  EXPECT(PP_FALSE == ppb->Describe(kInvalidResource, &size, &is_always_opaque));
+  EXPECT(is_always_opaque == PP_FALSE && IsEqualSize(size, kZeroPixels));
 
   is_always_opaque = PP_TRUE;
   size = k90x90;
-  EXPECT_ASYNC(PP_FALSE == ppb->Describe(kNotAResource, &size, &is_always_opaque));
-  EXPECT_ASYNC(is_always_opaque == PP_FALSE && IsEqualSize(size, kZeroPixels));
+  EXPECT(PP_FALSE == ppb->Describe(kNotAResource, &size, &is_always_opaque));
+  EXPECT(is_always_opaque == PP_FALSE && IsEqualSize(size, kZeroPixels));
 
-  TEST_PASSED_ASYNC;
+  TEST_PASSED;
 }
 
 // Tests PPB_Graphics2D::PaintImageData() with specified image rect.
@@ -323,17 +323,17 @@ void TestPaintImageData() {
 
   // Paints backing store image to screen only after Flush().
   PP_Point top_right = PP_MakePoint(60, 0);
-  EXPECT_ASYNC(!IsSquareOnScreen(graphics2d, top_right, k30x30, kSheerBlue));
+  EXPECT(!IsSquareOnScreen(graphics2d, top_right, k30x30, kSheerBlue));
   PP_CompletionCallback cc = MakeTestableFlushCallback(
       "PaintImageDataFlushCallback", graphics2d, image_data, 1);
-  EXPECT_ASYNC(PP_OK_COMPLETIONPENDING == ppb->Flush(graphics2d, cc));
-  EXPECT_ASYNC(IsSquareOnScreen(graphics2d, top_right, k30x30, kSheerBlue));
+  EXPECT(PP_OK_COMPLETIONPENDING == ppb->Flush(graphics2d, cc));
+  EXPECT(IsSquareOnScreen(graphics2d, top_right, k30x30, kSheerBlue));
 
   // This should have no effect on Flush().
   ppb->PaintImageData(graphics2d, image_data_noop, &top_left, &src_rect);
   PPBCore()->ReleaseResource(image_data_noop);
 
-  TEST_PASSED_ASYNC;
+  TEST_PASSED;
 }
 
 // Tests PPB_Graphics2D::PaintImageData() with default rect for entire image.
@@ -369,17 +369,17 @@ void TestPaintImageDataEntire() {
   ppb->PaintImageData(kInvalidResource, kNotAResource, NULL, kEntireImage);
 
   // Paints backing store image to the screen only after Flush().
-  EXPECT_ASYNC(!IsSquareOnScreen(graphics2d, bottom_left, k30x30, kOpaqueYellow));
+  EXPECT(!IsSquareOnScreen(graphics2d, bottom_left, k30x30, kOpaqueYellow));
   PP_CompletionCallback cc = MakeTestableFlushCallback(
       "PaintImageDataEntireFlushCallback", graphics2d, image_data, 1);
-  EXPECT_ASYNC(PP_OK_COMPLETIONPENDING == ppb->Flush(graphics2d, cc));
-  EXPECT_ASYNC(IsSquareOnScreen(graphics2d, bottom_left, k30x30, kOpaqueYellow));
+  EXPECT(PP_OK_COMPLETIONPENDING == ppb->Flush(graphics2d, cc));
+  EXPECT(IsSquareOnScreen(graphics2d, bottom_left, k30x30, kOpaqueYellow));
 
   // This should have no effect on Flush().
   ppb->PaintImageData(graphics2d, image_data_noop, &bottom_left, kEntireImage);
   PPBCore()->ReleaseResource(image_data_noop);
 
-  TEST_PASSED_ASYNC;
+  TEST_PASSED;
 }
 
 // Tests PPB_Graphics2D::Scroll() with specified image rect.
@@ -403,13 +403,13 @@ void TestScroll() {
   ppb->Scroll(graphics2d, &clip_rect, NULL);  // Internal error in rpc method.
 
   // Paints backing store image to the sreen only after Flush().
-  EXPECT_ASYNC(!IsSquareOnScreen(graphics2d, middle, k30x30, kOpaqueWhite));
+  EXPECT(!IsSquareOnScreen(graphics2d, middle, k30x30, kOpaqueWhite));
   PP_CompletionCallback cc = MakeTestableFlushCallback(
       "ScrollFlushCallback", graphics2d, image_data, 1);
-  EXPECT_ASYNC(PP_OK_COMPLETIONPENDING == ppb->Flush(graphics2d, cc));
-  EXPECT_ASYNC(IsSquareOnScreen(graphics2d, middle, k30x30, kOpaqueWhite));
+  EXPECT(PP_OK_COMPLETIONPENDING == ppb->Flush(graphics2d, cc));
+  EXPECT(IsSquareOnScreen(graphics2d, middle, k30x30, kOpaqueWhite));
 
-  TEST_PASSED_ASYNC;
+  TEST_PASSED;
 }
 
 // Tests PPB_Graphics2D::Scroll() with default rect for entire image..
@@ -431,14 +431,14 @@ void TestScrollEntire() {
   ppb->Scroll(graphics2d, kEntireImage, NULL);  // Internal error in rpc method.
 
   // Paints backing store image to the screen only after Flush().
-  EXPECT_ASYNC(!IsSquareOnScreen(graphics2d, bottom_right, k30x30, kOpaqueGreen));
+  EXPECT(!IsSquareOnScreen(graphics2d, bottom_right, k30x30, kOpaqueGreen));
   ppb->Scroll(graphics2d, kEntireImage, &bottom_right);
   PP_CompletionCallback cc = MakeTestableFlushCallback(
       "ScrollEntireFlushCallback", graphics2d, image_data, 1);
-  EXPECT_ASYNC(PP_OK_COMPLETIONPENDING == ppb->Flush(graphics2d, cc));
-  EXPECT_ASYNC(IsSquareOnScreen(graphics2d, bottom_right, k30x30, kOpaqueGreen));
+  EXPECT(PP_OK_COMPLETIONPENDING == ppb->Flush(graphics2d, cc));
+  EXPECT(IsSquareOnScreen(graphics2d, bottom_right, k30x30, kOpaqueGreen));
 
-  TEST_PASSED_ASYNC;
+  TEST_PASSED;
 }
 
 // Tests PPB_Graphics2D::ReplaceContents().
@@ -462,18 +462,18 @@ void TestReplaceContents() {
   PPBGraphics2D()->ReplaceContents(graphics2d, image_data_size_mismatch);
 
   // Paints backing store image to the screen only after Flush().
-  EXPECT_ASYNC(!IsSquareOnScreen(graphics2d, kOrigin, k90x90, kSheerGray));
+  EXPECT(!IsSquareOnScreen(graphics2d, kOrigin, k90x90, kSheerGray));
   PP_CompletionCallback cc = MakeTestableFlushCallback(
       "ReplaceContentsFlushCallback", graphics2d, image_data, 1);
-  EXPECT_ASYNC(PP_OK_COMPLETIONPENDING == PPBGraphics2D()->Flush(graphics2d, cc));
-  EXPECT_ASYNC(IsSquareOnScreen(graphics2d, kOrigin, k90x90, kSheerGray));
+  EXPECT(PP_OK_COMPLETIONPENDING == PPBGraphics2D()->Flush(graphics2d, cc));
+  EXPECT(IsSquareOnScreen(graphics2d, kOrigin, k90x90, kSheerGray));
 
   // This should have no effect on Flush().
   PPBGraphics2D()->ReplaceContents(graphics2d, image_data_noop);
   PPBCore()->ReleaseResource(image_data_noop);
   PPBCore()->ReleaseResource(image_data_size_mismatch);
 
-  TEST_PASSED_ASYNC;
+  TEST_PASSED;
 }
 
 // Tests PPB_Graphics2D::Flush().
@@ -484,18 +484,18 @@ void TestFlush() {
       "FlushCallback", graphics2d, kInvalidResource, 1);
 
   // Invalid args -> PP_ERROR_BAD..., no callback.
-  EXPECT_ASYNC(PP_ERROR_BADRESOURCE == PPBGraphics2D()->Flush(kInvalidResource, cc));
-  EXPECT_ASYNC(PP_ERROR_BADRESOURCE == PPBGraphics2D()->Flush(kNotAResource, cc));
-  EXPECT_ASYNC(PP_ERROR_BADARGUMENT ==
+  EXPECT(PP_ERROR_BADRESOURCE == PPBGraphics2D()->Flush(kInvalidResource, cc));
+  EXPECT(PP_ERROR_BADRESOURCE == PPBGraphics2D()->Flush(kNotAResource, cc));
+  EXPECT(PP_ERROR_BADARGUMENT ==
          PPBGraphics2D()->Flush(graphics2d, PP_BlockUntilComplete()));
 
   // Valid args -> PP_OK_COMPLETIONPENDING, expect callback.
-  EXPECT_ASYNC(PP_OK_COMPLETIONPENDING == PPBGraphics2D()->Flush(graphics2d, cc));
+  EXPECT(PP_OK_COMPLETIONPENDING == PPBGraphics2D()->Flush(graphics2d, cc));
 
   // Duplicate call -> PP_ERROR_INPROGRESS, no callback.
-  EXPECT_ASYNC(PP_ERROR_INPROGRESS == PPBGraphics2D()->Flush(graphics2d, cc));
+  EXPECT(PP_ERROR_INPROGRESS == PPBGraphics2D()->Flush(graphics2d, cc));
 
-  TEST_PASSED_ASYNC;
+  TEST_PASSED;
 }
 
 // Tests continious Paint/Flush chaining.
@@ -506,9 +506,9 @@ void TestFlushAnimation() {
   PPBGraphics2D()->PaintImageData(graphics2d, image_data, &kOrigin, NULL);
   PP_CompletionCallback cc = MakeTestableFlushCallback(
       "FlushAnimationCallback", graphics2d, image_data, 10);
-  EXPECT_ASYNC(PP_OK_COMPLETIONPENDING == PPBGraphics2D()->Flush(graphics2d, cc));
+  EXPECT(PP_OK_COMPLETIONPENDING == PPBGraphics2D()->Flush(graphics2d, cc));
 
-  TEST_PASSED_ASYNC;
+  TEST_PASSED;
 }
 
 // Stress testing of a large number of resources.
@@ -519,15 +519,15 @@ void TestStress() {
 
   for (int i = 0; i < kManyResources; i++) {
     graphics2d[i] = ppb->Create(pp_instance(), &k30x30, kAlwaysOpaque);
-    EXPECT_ASYNC(graphics2d[i] != kInvalidResource);
-    EXPECT_ASYNC(PP_TRUE == ppb->IsGraphics2D(graphics2d[i]));
+    EXPECT(graphics2d[i] != kInvalidResource);
+    EXPECT(PP_TRUE == ppb->IsGraphics2D(graphics2d[i]));
   }
   for (int i = 0; i < kManyResources; i++) {
     PPBCore()->ReleaseResource(graphics2d[i]);
-    EXPECT_ASYNC(PP_FALSE == PPBGraphics2D()->IsGraphics2D(graphics2d[i]));
+    EXPECT(PP_FALSE == PPBGraphics2D()->IsGraphics2D(graphics2d[i]));
   }
 
-  TEST_PASSED_ASYNC;
+  TEST_PASSED;
 }
 
 }  // namespace

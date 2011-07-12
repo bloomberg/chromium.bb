@@ -75,9 +75,6 @@ class NaClTest(pyauto.PyUITest):
   def testReloadSRPCURLContentAsNaclResourceDescriptor(self):
     self.reloader('srpc_url_as_nacl_desc.html', 'SRPC')
 
-  def testReloadScripting(self):
-    self.reloader('basic_object.html', 'PPAPI')
-
   def testReloadExampleAudio(self):
     self.reloader('ppapi_example_audio.html#mute', 'PPAPI')
 

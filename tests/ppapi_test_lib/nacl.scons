@@ -9,7 +9,6 @@
 # TODO(polina): add trusted build.scons.
 #
 # module_instance.cc - implements PPP and PPP_Instance interfaces.
-# scriptable_object.cc - implements the scripting interface.
 # get_browser_interface.cc - implements interface lookup helpers.
 # internal_utils.cc - implements internal helper functions and globals.
 # test_interface.cc - implements the test interface.
@@ -24,5 +23,4 @@ env.ComponentLibrary('ppapi_test_lib',
                      ['get_browser_interface.cc',
                       'internal_utils.cc',
                       'module_instance.cc',
-                      'scriptable_object.cc',
                       'test_interface.cc']);

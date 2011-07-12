@@ -93,27 +93,27 @@ void* InvokeIsMainThread(void* thread_argument) {
 // Tests PPB_Core::GetTime().
 void TestGetTime() {
   PP_Time time1 = PPBCore()->GetTime();
-  EXPECT_ASYNC(time1 > 0);
+  EXPECT(time1 > 0);
 
   usleep(100000);  // 0.1 second
 
   PP_Time time2 = PPBCore()->GetTime();
-  EXPECT_ASYNC(time2 > time1);
+  EXPECT(time2 > time1);
 
-  TEST_PASSED_ASYNC;
+  TEST_PASSED;
 }
 
 // Tests PPB_Core::GetTimeTicks().
 void TestGetTimeTicks() {
   PP_TimeTicks time_ticks1 = PPBCore()->GetTimeTicks();
-  EXPECT_ASYNC(time_ticks1 > 0);
+  EXPECT(time_ticks1 > 0);
 
   usleep(100000);  // 0.1 second
 
   PP_TimeTicks time_ticks2 = PPBCore()->GetTimeTicks();
-  EXPECT_ASYNC(time_ticks2 > time_ticks1);
+  EXPECT(time_ticks2 > time_ticks1);
 
-  TEST_PASSED_ASYNC;
+  TEST_PASSED;
 }
 
 // Tests PPB_Core::CallOnMainThread() from the main thread.
@@ -124,7 +124,7 @@ void TestCallOnMainThread_FromMainThread() {
       NULL /*user_data*/);
   PPBCore()->CallOnMainThread(0 /*delay*/, callback, kNotPPError);
 
-  TEST_PASSED_ASYNC;
+  TEST_PASSED;
 }
 
 // Tests PPB_Core::CallOnMainThread() from the main thread after a long delay.
@@ -137,7 +137,7 @@ void TestCallOnMainThread_FromMainThreadDelayed() {
       NULL /*user_data*/);
   PPBCore()->CallOnMainThread(1000 /*delay in ms*/, callback, kNotPPError);
 
-  TEST_PASSED_ASYNC;
+  TEST_PASSED;
 }
 
 // Tests PPB_Core::CallOnMainThread from non-main thread.
@@ -150,7 +150,7 @@ void TestCallOnMainThread_FromNonMainThread() {
   // is called concurrently with the main thread.
   CHECK(pthread_detach(tid) == 0);
 
-  TEST_PASSED_ASYNC;
+  TEST_PASSED;
 }
 
 // Tests PPB_Core::CallOnMainThread from non-main thread.
@@ -166,13 +166,13 @@ void TestCallOnMainThread_FromNonMainThreadStress() {
         &tid, NULL, InvokeCallOnMainThreadStress, stress) == 0);
     CHECK(pthread_detach(tid) == 0);
   }
-  TEST_PASSED_ASYNC;
+  TEST_PASSED;
 }
 
 // Tests PPB_Core::IsMainThread() from the main thread.
 void TestIsMainThread_FromMainThread() {
-  EXPECT_ASYNC(PPBCore()->IsMainThread() == PP_TRUE);
-  TEST_PASSED_ASYNC;
+  EXPECT(PPBCore()->IsMainThread() == PP_TRUE);
+  TEST_PASSED;
 }
 
 // Tests PPB_Core::IsMainThread() from non-main thread.
@@ -182,9 +182,9 @@ void TestIsMainThread_FromNonMainThread() {
   void* ppb_core = reinterpret_cast<void*>(const_cast<PPB_Core*>(PPBCore()));
   CHECK(pthread_create(&tid, NULL, InvokeIsMainThread, ppb_core) == 0);
   CHECK(pthread_join(tid, &thread_result) == 0);
-  EXPECT_ASYNC(reinterpret_cast<int>(thread_result) == PP_FALSE);
+  EXPECT(reinterpret_cast<int>(thread_result) == PP_FALSE);
 
-  TEST_PASSED_ASYNC;
+  TEST_PASSED;
 }
 
 
@@ -192,20 +192,20 @@ void TestIsMainThread_FromNonMainThread() {
 // a valid resource.
 void TestAddRefAndReleaseResource() {
   PP_Resource valid_resource = PPBURLRequestInfo()->Create(pp_instance());
-  EXPECT_ASYNC(valid_resource != kInvalidResource);
-  EXPECT_ASYNC(PPBURLRequestInfo()->IsURLRequestInfo(valid_resource) == PP_TRUE);
+  EXPECT(valid_resource != kInvalidResource);
+  EXPECT(PPBURLRequestInfo()->IsURLRequestInfo(valid_resource) == PP_TRUE);
 
   // Adjusting ref count should not delete the resource.
   for (size_t j = 0; j < 100; ++j) PPBCore()->AddRefResource(valid_resource);
-  EXPECT_ASYNC(PPBURLRequestInfo()->IsURLRequestInfo(valid_resource) == PP_TRUE);
+  EXPECT(PPBURLRequestInfo()->IsURLRequestInfo(valid_resource) == PP_TRUE);
   for (size_t j = 0; j < 100; ++j) PPBCore()->ReleaseResource(valid_resource);
-  EXPECT_ASYNC(PPBURLRequestInfo()->IsURLRequestInfo(valid_resource) == PP_TRUE);
+  EXPECT(PPBURLRequestInfo()->IsURLRequestInfo(valid_resource) == PP_TRUE);
 
   // Releasing the ref count from Create() must delete the resource.
   PPBCore()->ReleaseResource(valid_resource);
-  EXPECT_ASYNC(PPBURLRequestInfo()->IsURLRequestInfo(valid_resource) != PP_TRUE);
+  EXPECT(PPBURLRequestInfo()->IsURLRequestInfo(valid_resource) != PP_TRUE);
 
-  TEST_PASSED_ASYNC;
+  TEST_PASSED;
 }
 
 // Tests PPB_Core::AddRefResource() and PPB_Core::ReleaseResource() with
@@ -216,7 +216,7 @@ void TestAddRefAndReleaseInvalidResource() {
     PPBCore()->ReleaseResource(kInvalidResource);
   }
 
-  TEST_PASSED_ASYNC;
+  TEST_PASSED;
 }
 
 }  // namespace

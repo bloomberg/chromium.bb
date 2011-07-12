@@ -23,22 +23,22 @@ namespace {
 void TestCreate() {
   // Create a vertical scrollbar.
   PP_Resource scrollbar = PPBScrollbarDev()->Create(pp_instance(), PP_TRUE);
-  EXPECT_ASYNC(scrollbar != kInvalidResource);
-  EXPECT_ASYNC(PPBScrollbarDev()->IsScrollbar(scrollbar));
+  EXPECT(scrollbar != kInvalidResource);
+  EXPECT(PPBScrollbarDev()->IsScrollbar(scrollbar));
   PPBCore()->ReleaseResource(scrollbar);
 
   // Create a horizontal scrollbar.
   scrollbar = PPBScrollbarDev()->Create(pp_instance(), PP_FALSE);
-  EXPECT_ASYNC(scrollbar != kInvalidResource);
-  EXPECT_ASYNC(PPBScrollbarDev()->IsScrollbar(scrollbar));
+  EXPECT(scrollbar != kInvalidResource);
+  EXPECT(PPBScrollbarDev()->IsScrollbar(scrollbar));
   PPBCore()->ReleaseResource(scrollbar);
 
   // Test that an invalid instance causes failure.
   scrollbar = PPBScrollbarDev()->Create(kInvalidInstance, PP_TRUE);
-  EXPECT_ASYNC(scrollbar == kInvalidResource);
-  EXPECT_ASYNC(!PPBScrollbarDev()->IsScrollbar(scrollbar));
+  EXPECT(scrollbar == kInvalidResource);
+  EXPECT(!PPBScrollbarDev()->IsScrollbar(scrollbar));
 
-  TEST_PASSED_ASYNC;
+  TEST_PASSED;
 }
 
 // Test PPB_Scrollbar_Dev::GetThickness().
@@ -46,9 +46,9 @@ void TestGetThickness() {
   // Thickness is a platform-defined constant; about all we can assume is
   // that it is greater than 0.
   uint32_t thickness = PPBScrollbarDev()->GetThickness();
-  EXPECT_ASYNC(thickness > 0);
+  EXPECT(thickness > 0);
 
-  TEST_PASSED_ASYNC;
+  TEST_PASSED;
 }
 
 // Test PPB_Scrollbar_Dev::GetValue(), PPB_Scrollbar_Dev::SetValue().
@@ -56,20 +56,20 @@ void TestValue() {
   // Test that initial value is 0.
   PP_Resource scrollbar = PPBScrollbarDev()->Create(pp_instance(), PP_TRUE);
   uint32_t value = PPBScrollbarDev()->GetValue(scrollbar);
-  EXPECT_ASYNC(value == 0);
+  EXPECT(value == 0);
 
   PPBScrollbarDev()->SetValue(scrollbar, 10);
   // TODO(bbudge): Uncomment this when issue is fixed
   // http://code.google.com/p/nativeclient/issues/detail?id=1952
   // value = PPBScrollbarDev()->GetValue(scrollbar);
-  // EXPECT_ASYNC(value == 10);
+  // EXPECT(value == 10);
 
   PPBScrollbarDev()->SetValue(scrollbar, 0);
   value = PPBScrollbarDev()->GetValue(scrollbar);
-  EXPECT_ASYNC(value == 0);
+  EXPECT(value == 0);
 
   PPBCore()->ReleaseResource(scrollbar);
-  TEST_PASSED_ASYNC;
+  TEST_PASSED;
 }
 
 // Test PPB_Scrollbar_Dev::SetDocumentSize(). This only effects scrollbar
@@ -79,7 +79,7 @@ void TestSetDocumentSize() {
   PPBScrollbarDev()->SetDocumentSize(scrollbar, 100);
   PPBCore()->ReleaseResource(scrollbar);
 
-  TEST_PASSED_ASYNC;
+  TEST_PASSED;
 }
 
 // Test PPB_Scrollbar_Dev::ScrollBy().
@@ -89,10 +89,10 @@ void TestScrollBy() {
   // TODO(bbudge): Uncomment this when issue is fixed
   // http://code.google.com/p/nativeclient/issues/detail?id=1952
   // uint32_t value = PPBScrollbarDev()->GetValue(scrollbar);
-  // EXPECT_ASYNC(value == 10);
+  // EXPECT(value == 10);
   PPBCore()->ReleaseResource(scrollbar);
 
-  TEST_PASSED_ASYNC;
+  TEST_PASSED;
 }
 
 // Test PPB_Scrollbar_Dev::SetTickMarks(). This only effects scrollbar
@@ -109,7 +109,7 @@ void TestSetTickMarks() {
   PPBScrollbarDev()->SetTickMarks(scrollbar, NULL, 0);
   PPBCore()->ReleaseResource(scrollbar);
 
-  TEST_PASSED_ASYNC;
+  TEST_PASSED;
 }
 
 }  // namespace

@@ -853,15 +853,6 @@ bool PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel,
 
   ppapi_proxy_ = ppapi_proxy.release();
 
-// TODO(dmichael):  Remove the scripting proxy code entirely.
-#ifndef PPAPI_INSTANCE_REMOVE_SCRIPTING
-  ScriptableHandlePpapi* handle =
-      static_cast<ScriptableHandlePpapi*>(scriptable_handle());
-  PP_Var scriptable_proxy =
-      instance_interface->GetInstanceObject(pp_instance());
-  handle->set_scriptable_proxy(pp::Var(pp::Var::PassRef(), scriptable_proxy));
-#endif
-
   // Create PPP* interface adapters to forward calls to .nexe.
   find_adapter_.reset(new(std::nothrow) FindAdapter(this));
   printing_adapter_.reset(new(std::nothrow) PrintingAdapter(this));

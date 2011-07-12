@@ -12,7 +12,7 @@
 //
 //   void MyCallback(void* user_data, int32_t result) { ... }
 //
-//   PP_Var TestPPBFooDeprecated() {
+//   void TestPPBFoo() {
 //     // sync test case
 //     PP_Resource my_resource = PPBFoo()->Create(kInvalidInstance);
 //     EXPECT(my_resource == kInvalidResource);
@@ -23,25 +23,10 @@
 //     int32_t pp_error = PPBFoo()->AsyncFunction(testable_callback);
 //     EXPECT(pp_error == PP_OK_COMPLETIONPENDING);
 //
-//     return TEST_PASSED;
-//   }
-//
-//   void TestPPBFoo() {
-//     // sync test case
-//     PP_Resource my_resource = PPBFoo()->Create(kInvalidInstance);
-//     EXPECT_ASYNC(my_resource == kInvalidResource);
-//
-//     // async test case
-//     PP_CompletionCallback testable_callback = MakeTestableCompletionCallback(
-//         "MyCallback", MyCallback, NULL);
-//     int32_t pp_error = PPBFoo()->AsyncFunction(testable_callback);
-//     EXPECT_ASYNC(pp_error == PP_OK_COMPLETIONPENDING);
-//
-//     TEST_PASSED_ASYNC;
+//     TEST_PASSED;
 //   }
 //
 //   void SetupTests() {
-//     RegisterScriptableTest("TestFooDeprecated", TestPPBFooDeprecated);
 //     RegisterTest("TestPPBFoo", TestPPBFoo);
 //   }
 //
@@ -71,7 +56,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 // Use RegisterTest() to register each TestFunction.
-// Use RegisterScriptableTest() to register each ScriptableTestFunction.
 void SetupTests();
 // Use RegisterPluginInterface() to register custom PPP_ interfaces other than
 // PPP_Instance that is required and provided by default.
@@ -86,12 +70,6 @@ void SetupPluginInterfaces();
 typedef void (*TestFunction)();
 void RegisterTest(nacl::string test_name, TestFunction test_function);
 
-// DEPRECATED: Registers test_function, so it is callable from JS
-// using plugin.test_name().
-typedef PP_Var (*ScriptableTestFunction)();
-void RegisterScriptableTest(nacl::string test_name,
-                            ScriptableTestFunction test_function);
-
 // Registers ppp_interface, so it is returned by PPP_GetInterface().
 void RegisterPluginInterface(const char* interface_name,
                              const void* ppp_interface);
@@ -105,9 +83,8 @@ PP_CompletionCallback MakeTestableCompletionCallback(
 // Uses PPB_Messaging interface to post "test_name:message".
 void PostTestMessage(nacl::string test_name, nacl::string message);
 
-// Use these macros to verify the result of a test and report failures.
-// TODO(polina): rename EXPECT_ASYNC to EXPECT when sync scripting is removed.
-#define EXPECT_ASYNC(expr) do { \
+// Use to verify the result of a test and report failures.
+#define EXPECT(expr) do { \
   if (!(expr)) { \
     char error[1024]; \
     snprintf(error, sizeof(error), \
@@ -117,19 +94,8 @@ void PostTestMessage(nacl::string test_name, nacl::string message);
   } \
 } while (0)
 
-#define EXPECT(expr) do { \
-  if (!(expr)) { \
-    char error[1024]; \
-    snprintf(error, sizeof(error), \
-             "ERROR at %s:%d: %s\n", __FILE__, __LINE__, #expr); \
-    fprintf(stderr, "%s", error); \
-    return PP_MakeBool(PP_FALSE); \
-  } \
-} while (0)
-
-// Use these macros to report success.
-#define TEST_PASSED_ASYNC PostTestMessage(__FUNCTION__, "PASSED");
-#define TEST_PASSED PP_MakeBool(PP_TRUE)  // Usage: return TEST_PASSED;
+// Use to report success.
+#define TEST_PASSED PostTestMessage(__FUNCTION__, "PASSED");
 
 // Use this constant for stress testing
 // (i.e. creating and using a large number of resources).

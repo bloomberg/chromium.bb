@@ -71,16 +71,13 @@ bool ScriptableHandlePpapi::HasCallType(CallType call_type,
 
 bool ScriptableHandlePpapi::HasProperty(const pp::Var& name,
                                         pp::Var* exception) {
+  UNREFERENCED_PARAMETER(exception);
   PLUGIN_PRINTF(("ScriptableHandlePpapi::HasProperty (this=%p, name=%s)\n",
                  static_cast<void*>(this), name.DebugString().c_str()));
   if (!name.is_string() && !name.is_int())
     return false;
-  bool has_property = false;
-  if (scriptable_proxy_.is_undefined()) {
-    has_property = HasCallType(PROPERTY_GET, NameAsString(name), "HasProperty");
-  } else {
-    has_property = scriptable_proxy_.HasProperty(name, exception);
-  }
+  bool has_property =
+      HasCallType(PROPERTY_GET, NameAsString(name), "HasProperty");
   PLUGIN_PRINTF(("ScriptableHandlePpapi::HasProperty (has_property=%d)\n",
                  has_property));
   return has_property;
@@ -88,16 +85,13 @@ bool ScriptableHandlePpapi::HasProperty(const pp::Var& name,
 
 
 bool ScriptableHandlePpapi::HasMethod(const pp::Var& name, pp::Var* exception) {
+  UNREFERENCED_PARAMETER(exception);
   PLUGIN_PRINTF(("ScriptableHandlePpapi::HasMethod (this=%p, name='%s')\n",
                  static_cast<void*>(this), name.DebugString().c_str()));
   if (!name.is_string())
     return false;
-  bool has_method = false;
-  if (scriptable_proxy_.is_undefined()) {
-    has_method = HasCallType(METHOD_CALL, name.AsString(), "HasMethod");
-  } else {
-    has_method = scriptable_proxy_.HasMethod(name, exception);
-  }
+  bool has_method =
+      HasCallType(METHOD_CALL, name.AsString(), "HasMethod");
   PLUGIN_PRINTF(("ScriptableHandlePpapi::HasMethod (has_method=%d)\n",
                  has_method));
   return has_method;
@@ -203,13 +197,9 @@ pp::Var ScriptableHandlePpapi::GetProperty(const pp::Var& name,
                                            pp::Var* exception) {
   PLUGIN_PRINTF(("ScriptableHandlePpapi::GetProperty (name=%s)\n",
                  name.DebugString().c_str()));
-  pp::Var property;
-  if (scriptable_proxy_.is_undefined()) {
-    property = Invoke(PROPERTY_GET, NameAsString(name), "GetProperty",
-                      std::vector<pp::Var>(), exception);
-  } else {
-    property = scriptable_proxy_.GetProperty(name, exception);
-  }
+  pp::Var property =
+      Invoke(PROPERTY_GET, NameAsString(name), "GetProperty",
+             std::vector<pp::Var>(), exception);
   PLUGIN_PRINTF(("ScriptableHandlePpapi::GetProperty (property=%s)\n",
                  property.DebugString().c_str()));
   return property;
@@ -221,14 +211,9 @@ void ScriptableHandlePpapi::SetProperty(const pp::Var& name,
                                         pp::Var* exception) {
   PLUGIN_PRINTF(("ScriptableHandlePpapi::SetProperty (name=%s, value=%s)\n",
                  name.DebugString().c_str(), value.DebugString().c_str()));
-  if (scriptable_proxy_.is_undefined()) {
-    std::vector<pp::Var> args;
-    args.push_back(pp::Var(pp::Var::DontManage(), value.pp_var()));
-    Invoke(PROPERTY_SET, NameAsString(name), "SetProperty", args, exception);
-  } else {
-    scriptable_proxy_.SetProperty(name, value, exception);
-  }
-
+  std::vector<pp::Var> args;
+  args.push_back(pp::Var(pp::Var::DontManage(), value.pp_var()));
+  Invoke(PROPERTY_SET, NameAsString(name), "SetProperty", args, exception);
   std::string exception_string("NULL");
   if (exception != NULL) {
     exception_string = exception->DebugString();
@@ -252,21 +237,18 @@ void ScriptableHandlePpapi::RemoveProperty(const pp::Var& name,
 void ScriptableHandlePpapi::GetAllPropertyNames(
     std::vector<pp::Var>* properties,
     pp::Var* exception) {
+  UNREFERENCED_PARAMETER(exception);
   PLUGIN_PRINTF(("ScriptableHandlePpapi::GetAllPropertyNames ()\n"));
-  if (scriptable_proxy_.is_undefined()) {
-    std::vector<uintptr_t>* ids = handle()->GetPropertyIdentifiers();
-    PLUGIN_PRINTF(("ScriptableHandlePpapi::GetAllPropertyNames "
-                   "(ids=%"NACL_PRIuS")\n", ids->size()));
-    for (size_t i = 0; i < ids->size(); ++i) {
-      nacl::string name =
-          handle()->browser_interface()->IdentifierToString(ids->at(i));
-      properties->push_back(pp::Var(name));
-    }
-    PLUGIN_PRINTF(("ScriptableHandlePpapi::GetAllPropertyNames "
-                   "(properties=%"NACL_PRIuS")\n", properties->size()));
-  } else {
-    scriptable_proxy_.GetAllPropertyNames(properties, exception);
+  std::vector<uintptr_t>* ids = handle()->GetPropertyIdentifiers();
+  PLUGIN_PRINTF(("ScriptableHandlePpapi::GetAllPropertyNames "
+                 "(ids=%"NACL_PRIuS")\n", ids->size()));
+  for (size_t i = 0; i < ids->size(); ++i) {
+    nacl::string name =
+        handle()->browser_interface()->IdentifierToString(ids->at(i));
+    properties->push_back(pp::Var(name));
   }
+  PLUGIN_PRINTF(("ScriptableHandlePpapi::GetAllPropertyNames "
+                 "(properties=%"NACL_PRIuS")\n", properties->size()));
 }
 
 
@@ -278,21 +260,8 @@ pp::Var ScriptableHandlePpapi::Call(const pp::Var& name,
   if (name.is_undefined())  // invoke default
     return pp::Var();
   assert(name.is_string());
-  pp::Var return_var;
-  if (scriptable_proxy_.is_undefined()) {
-    return_var = Invoke(METHOD_CALL, name.AsString(), "Call", args, exception);
-  } else {
-    uint32_t argc = static_cast<uint32_t>(args.size());
-    pp::Var* args_array = NULL;
-    // Check that array has at least 1 element. Visual Studio's STL will
-    // throw an exception if we access args[0] in DEBUG configurations.
-    if (argc > 0) {
-      // STL vectors are guaranteed to use continguous memory, so we can use
-      // some pointer magic to convert the vector into an array.
-      args_array = const_cast<pp::Var*>(&args[0]);
-    }
-    return_var = scriptable_proxy_.Call(name, argc, args_array, exception);
-  }
+  pp::Var return_var =
+      Invoke(METHOD_CALL, name.AsString(), "Call", args, exception);
   PLUGIN_PRINTF(("ScriptableHandlePpapi::Call (return=%s)\n",
                  return_var.DebugString().c_str()));
   return return_var;

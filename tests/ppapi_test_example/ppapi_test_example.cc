@@ -19,53 +19,26 @@ void Callback(void* /*data*/, int32_t /*result*/) {
   printf("--- Callback\n");
 }
 
-// Below are the before & after versions of sample test cases demonstrating
-// how to transition from synchronous scripting to postMessage as the test
-// driving mechanism.
-
-// Before.
-PP_Var TestSimpleSync() {
-  printf("--- TestSimpleSync\n");
+void TestSimple() {
+  printf("--- TestSimple\n");
   EXPECT(pp_instance() != kInvalidInstance);
   EXPECT(pp_module() != kInvalidModule);
-  return TEST_PASSED;
+  TEST_PASSED;
 }
 
-// After.
-void TestSimpleAsync() {
-  printf("--- TestSimpleAsync\n");
-  EXPECT_ASYNC(pp_instance() != kInvalidInstance);
-  EXPECT_ASYNC(pp_module() != kInvalidModule);
-  TEST_PASSED_ASYNC;
-}
-
-// Before.
-PP_Var TestCallbackSync() {
-  printf("--- TestCallbackSync\n");
+void TestCallback() {
+  printf("--- TestCallback\n");
   PP_CompletionCallback callback = MakeTestableCompletionCallback(
-      "CallbackSync", Callback, NULL /*user_data*/);
+      "Callback", Callback, NULL /*user_data*/);
   PPBCore()->CallOnMainThread(10, callback, PP_OK);
-  return TEST_PASSED;
-}
-
-// After.
-void TestCallbackAsync() {
-  printf("--- TestCallbackAsync\n");
-  PP_CompletionCallback callback = MakeTestableCompletionCallback(
-      "CallbackAsync", Callback, NULL /*user_data*/);
-  PPBCore()->CallOnMainThread(10, callback, PP_OK);
-  TEST_PASSED_ASYNC;
+  TEST_PASSED;
 }
 
 }  // namespace
 
 void SetupTests() {
-  // Before.
-  RegisterScriptableTest("TestSimpleSync", TestSimpleSync);
-  RegisterScriptableTest("TestCallbackSync", TestCallbackSync);
-  // After.
-  RegisterTest("TestSimpleAsync", TestSimpleAsync);
-  RegisterTest("TestCallbackAsync", TestCallbackAsync);
+  RegisterTest("TestSimple", TestSimple);
+  RegisterTest("TestCallback", TestCallback);
 }
 
 void SetupPluginInterfaces() {

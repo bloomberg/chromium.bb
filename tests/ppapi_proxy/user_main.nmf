@@ -1,7 +1,0 @@
-{
-  "program": {
-    "x86-32": {"url": "ppapi_user_main_x86-32.nexe"},
-    "x86-64": {"url": "ppapi_user_main_x86-64.nexe"},
-    "arm": {"url": "ppapi_user_main_arm.nexe"}
-  }
-}
