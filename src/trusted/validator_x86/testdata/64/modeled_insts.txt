@@ -498,82 +498,82 @@ Target: x86-64 bit mode
       RegDX                   OpUse OpImplicit
       RegES_EDI               OpUse OpImplicit
   --- 70 ---
-  70                          386 OpcodeHasImmed OperandSize_b
+  70                          386 OpcodeHasImmed OperandSize_b ConditionalJump
     Jo {%rip}, $Jb
       RegRIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 71 ---
-  71                          386 OpcodeHasImmed OperandSize_b
+  71                          386 OpcodeHasImmed OperandSize_b ConditionalJump
     Jno {%rip}, $Jb
       RegRIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 72 ---
-  72                          386 OpcodeHasImmed OperandSize_b
+  72                          386 OpcodeHasImmed OperandSize_b ConditionalJump
     Jb {%rip}, $Jb
       RegRIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 73 ---
-  73                          386 OpcodeHasImmed OperandSize_b
+  73                          386 OpcodeHasImmed OperandSize_b ConditionalJump
     Jnb {%rip}, $Jb
       RegRIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 74 ---
-  74                          386 OpcodeHasImmed OperandSize_b
+  74                          386 OpcodeHasImmed OperandSize_b ConditionalJump
     Jz {%rip}, $Jb
       RegRIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 75 ---
-  75                          386 OpcodeHasImmed OperandSize_b
+  75                          386 OpcodeHasImmed OperandSize_b ConditionalJump
     Jnz {%rip}, $Jb
       RegRIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 76 ---
-  76                          386 OpcodeHasImmed OperandSize_b
+  76                          386 OpcodeHasImmed OperandSize_b ConditionalJump
     Jbe {%rip}, $Jb
       RegRIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 77 ---
-  77                          386 OpcodeHasImmed OperandSize_b
+  77                          386 OpcodeHasImmed OperandSize_b ConditionalJump
     Jnbe {%rip}, $Jb
       RegRIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 78 ---
-  78                          386 OpcodeHasImmed OperandSize_b
+  78                          386 OpcodeHasImmed OperandSize_b ConditionalJump
     Js {%rip}, $Jb
       RegRIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 79 ---
-  79                          386 OpcodeHasImmed OperandSize_b
+  79                          386 OpcodeHasImmed OperandSize_b ConditionalJump
     Jns {%rip}, $Jb
       RegRIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 7a ---
-  7a                          386 OpcodeHasImmed OperandSize_b
+  7a                          386 OpcodeHasImmed OperandSize_b ConditionalJump
     Jp {%rip}, $Jb
       RegRIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 7b ---
-  7b                          386 OpcodeHasImmed OperandSize_b
+  7b                          386 OpcodeHasImmed OperandSize_b ConditionalJump
     Jnp {%rip}, $Jb
       RegRIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 7c ---
-  7c                          386 OpcodeHasImmed OperandSize_b
+  7c                          386 OpcodeHasImmed OperandSize_b ConditionalJump
     Jl {%rip}, $Jb
       RegRIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 7d ---
-  7d                          386 OpcodeHasImmed OperandSize_b
+  7d                          386 OpcodeHasImmed OperandSize_b ConditionalJump
     Jnl {%rip}, $Jb
       RegRIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 7e ---
-  7e                          386 OpcodeHasImmed OperandSize_b
+  7e                          386 OpcodeHasImmed OperandSize_b ConditionalJump
     Jle {%rip}, $Jb
       RegRIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 7f ---
-  7f                          386 OpcodeHasImmed OperandSize_b
+  7f                          386 OpcodeHasImmed OperandSize_b ConditionalJump
     Jnle {%rip}, $Jb
       RegRIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
@@ -1571,27 +1571,27 @@ Target: x86-64 bit mode
       M_Operand               OpSet OpDest
       RegST0                  OpUse
   --- e0 ---
-  e0                          386 OpcodeHasImmed OperandSize_b
+  e0                          386 OpcodeHasImmed OperandSize_b ConditionalJump
     Loopne {%rip}, $Jb
       RegRIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- e1 ---
-  e1                          386 OpcodeHasImmed OperandSize_b
+  e1                          386 OpcodeHasImmed OperandSize_b ConditionalJump
     Loope {%rip}, $Jb
       RegRIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- e2 ---
-  e2                          386 OpcodeHasImmed OperandSize_b
+  e2                          386 OpcodeHasImmed OperandSize_b JumpInstruction
     Loop {%rip}, $Jb
       RegRIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- e3 ---
-  e3                          386 OpcodeHasImmed OperandSize_b AddressSize_v
+  e3                          386 OpcodeHasImmed OperandSize_b AddressSize_v ConditionalJump
     Jecxz {%rip}, {%ecx}, $Jb
       RegRIP                  OpSet OpImplicit
       RegECX                  OpUse OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
-  e3                          386 OpcodeHasImmed OperandSize_b AddressSize_o
+  e3                          386 OpcodeHasImmed OperandSize_b AddressSize_o ConditionalJump
     Jrcxz {%rip}, {%rcx}, $Jb
       RegRIP                  OpSet OpImplicit
       RegRCX                  OpUse OpImplicit
@@ -1617,23 +1617,23 @@ Target: x86-64 bit mode
       I_Operand               OpSet OpDest
       RegREAX                 OpUse
   --- e8 ---
-  e8                          386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w NaClIllegal
+  e8                          386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w NaClIllegal JumpInstruction
     Call {%rip}, {%rsp}, $Jzw
       RegRIP                  OpUse OpSet OpImplicit
       RegRSP                  OpUse OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
-  e8                          386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+  e8                          386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64 JumpInstruction
     Call {%rip}, {%rsp}, $Jz
       RegRIP                  OpUse OpSet OpImplicit
       RegRSP                  OpUse OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- e9 ---
-  e9                          386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+  e9                          386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64 JumpInstruction
     Jmp {%rip}, $Jz
       RegRIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- eb ---
-  eb                          386 OpcodeHasImmed OperandSize_b
+  eb                          386 OpcodeHasImmed OperandSize_b JumpInstruction
     Jmp {%rip}, $Jb
       RegRIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
@@ -1780,21 +1780,21 @@ Target: x86-64 bit mode
   ff / 1                      386 OpcodeInModRm OpcodeUsesModRm OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Dec $Ev
       E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
-  ff / 2                      386 OpcodeInModRm OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+  ff / 2                      386 OpcodeInModRm OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64 JumpInstruction
     Call {%rip}, {%rsp}, $Ev
       RegRIP                  OpUse OpSet OpImplicit
       RegRSP                  OpUse OpSet OpImplicit
       E_Operand               OpUse OperandNear
-  ff / 3                      386 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm NaClIllegal
+  ff / 3                      386 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm NaClIllegal JumpInstruction
     Call {%rip}, {%rsp}, $Mp
       RegRIP                  OpUse OpSet OpImplicit
       RegRSP                  OpUse OpSet OpImplicit
       M_Operand               OpUse OperandFar
-  ff / 4                      386 OpcodeInModRm OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+  ff / 4                      386 OpcodeInModRm OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64 JumpInstruction
     Jmp {%rip}, $Ev
       RegRIP                  OpSet OpImplicit
       E_Operand               OpUse OperandNear
-  ff / 5                      386 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm NaClIllegal
+  ff / 5                      386 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm NaClIllegal JumpInstruction
     Jmp {%rip}, $Mp
       RegRIP                  OpSet OpImplicit
       M_Operand               OpUse OperandFar
@@ -2521,82 +2521,82 @@ Target: x86-64 bit mode
       Mmx_E_Operand           OpSet OpDest
       Mmx_G_Operand           OpUse
   --- 80 ---
-  0f 80                       386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+  0f 80                       386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64 ConditionalJump
     Jo {%rip}, $Jz
       RegRIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 81 ---
-  0f 81                       386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+  0f 81                       386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64 ConditionalJump
     Jno {%rip}, $Jz
       RegRIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 82 ---
-  0f 82                       386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+  0f 82                       386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64 ConditionalJump
     Jb {%rip}, $Jz
       RegRIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 83 ---
-  0f 83                       386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+  0f 83                       386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64 ConditionalJump
     Jnb {%rip}, $Jz
       RegRIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 84 ---
-  0f 84                       386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+  0f 84                       386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64 ConditionalJump
     Jz {%rip}, $Jz
       RegRIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 85 ---
-  0f 85                       386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+  0f 85                       386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64 ConditionalJump
     Jnz {%rip}, $Jz
       RegRIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 86 ---
-  0f 86                       386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+  0f 86                       386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64 ConditionalJump
     Jbe {%rip}, $Jz
       RegRIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 87 ---
-  0f 87                       386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+  0f 87                       386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64 ConditionalJump
     Jnbe {%rip}, $Jz
       RegRIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 88 ---
-  0f 88                       386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+  0f 88                       386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64 ConditionalJump
     Js {%rip}, $Jz
       RegRIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 89 ---
-  0f 89                       386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+  0f 89                       386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64 ConditionalJump
     Jns {%rip}, $Jz
       RegRIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 8a ---
-  0f 8a                       386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+  0f 8a                       386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64 ConditionalJump
     Jp {%rip}, $Jz
       RegRIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 8b ---
-  0f 8b                       386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+  0f 8b                       386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64 ConditionalJump
     Jnp {%rip}, $Jz
       RegRIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 8c ---
-  0f 8c                       386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+  0f 8c                       386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64 ConditionalJump
     Jl {%rip}, $Jz
       RegRIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 8d ---
-  0f 8d                       386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+  0f 8d                       386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64 ConditionalJump
     Jnl {%rip}, $Jz
       RegRIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 8e ---
-  0f 8e                       386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+  0f 8e                       386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64 ConditionalJump
     Jle {%rip}, $Jz
       RegRIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 8f ---
-  0f 8f                       386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+  0f 8f                       386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64 ConditionalJump
     Jnle {%rip}, $Jz
       RegRIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative

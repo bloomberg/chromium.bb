@@ -151,6 +151,8 @@ LongMode
 # in NACL.
 IgnorePrefixDATA16
 
-# Ignore Prefix SEGCS when counting the number of prefices allowed
-# in NACL.
-IgnorePrefixSEGCS
+# Mark instruction as (unconditional) jump.
+JumpInstruction
+
+# Mark instruction as conditional jump.
+ConditionalJump

@@ -613,38 +613,12 @@ void NaClJumpValidator(NaClValidatorState* state,
   NaClInstState* inst_state = state->cur_inst_state;
   NaClPcAddress pc = NaClInstStateVpc(inst_state);
   NaClRememberIp(state, pc, inst_state, jump_sets);
-  switch (state->cur_inst->name) {
-    case InstJb:
-    case InstJbe:
-    case InstJcxz:
-    case InstJecxz:
-    case InstJrcxz:
-    case InstJnl:
-    case InstJnle:
-    case InstJl:
-    case InstJle:
-    case InstJmp:
-    case InstJnb:
-    case InstJnbe:
-    case InstJno:
-    case InstJnp:
-    case InstJns:
-    case InstJnz:
-    case InstJo:
-    case InstJp:
-    case InstJs:
-    case InstJz:
-    case InstLoop:
-    case InstLoope:
-    case InstLoopne:
-      NaClAddExprJumpTarget(state, iter, pc, jump_sets);
-      break;
-    case InstCall:
-      NaClAddExprJumpTarget(state, iter, pc, jump_sets);
+  if (state->cur_inst->flags &
+      (NACL_IFLAG(JumpInstruction) | NACL_IFLAG(ConditionalJump))) {
+    NaClAddExprJumpTarget(state, iter, pc, jump_sets);
+    if (state->cur_inst->name == InstCall) {
       NaClValidateCallAlignment(state, pc, inst_state);
-      break;
-    default:
-      break;
+    }
   }
 }
 

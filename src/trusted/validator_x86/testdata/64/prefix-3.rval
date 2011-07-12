@@ -1,7 +1,11 @@
 VALIDATOR: 000000000000000c: 64 66 41 89 c0                               mov %r8w, %ax
 VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+VALIDATOR: 000000000000000c: 64 66 41 89 c0                               mov %r8w, %ax
+VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
 VALIDATOR: 0000000000000011: 66 64 41 89 c0                               mov %r8w, %ax
 VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+VALIDATOR: 0000000000000011: 66 64 41 89 c0                               mov %r8w, %ax
+VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
 VALIDATOR: 000000000000001c: 66 f3 48 ab                                  stosq
 VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
 VALIDATOR: 000000000000001c: 66 f3 48 ab                                  stosq

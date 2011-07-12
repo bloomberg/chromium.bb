@@ -110,7 +110,7 @@ NaClExpVector[4] = {
   { ExprConstant[0] , 0x8, ExprUsed | ExprSize8 | ExprUnsignedHex },
 };
 00000000004003d4: e8 83 00 00 00                               call 0x40045c
-  e8                          386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+  e8                          386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64 JumpInstruction
     Call {%rip}, {%rsp}, $Jz
       RegRIP                  OpUse OpSet OpImplicit
       RegRSP                  OpUse OpSet OpImplicit
@@ -124,7 +124,7 @@ NaClExpVector[6] = {
   { ExprConstant[0] , 0x40045c, ExprUsed | ExprUnsignedHex | ExprJumpTarget },
 };
 00000000004003de: e8 7d 05 00 00                               call 0x400960
-  e8                          386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+  e8                          386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64 JumpInstruction
     Call {%rip}, {%rsp}, $Jz
       RegRIP                  OpUse OpSet OpImplicit
       RegRSP                  OpUse OpSet OpImplicit
@@ -164,7 +164,7 @@ NaClExpVector[8] = {
   { ExprConstant[0] , 0x200dea, ExprSize32 | ExprSignedHex },
 };
 0000000000000000: ff 25 ec 0d 20 00                            jmp [%rip+0x200dec]
-  ff / 4                      386 OpcodeInModRm OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+  ff / 4                      386 OpcodeInModRm OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64 JumpInstruction
     Jmp {%rip}, $Ev
       RegRIP                  OpSet OpImplicit
       E_Operand               OpUse OperandNear
@@ -195,7 +195,7 @@ NaClExpVector[4] = {
   { ExprConstant[0] , 0x0, ExprUsed | ExprSize32 | ExprUnsignedHex },
 };
 0000000000400403: e9 e0 ff ff ff                               jmp 0x4003e8
-  e9                          386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+  e9                          386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64 JumpInstruction
     Jmp {%rip}, $Jz
       RegRIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
@@ -270,7 +270,7 @@ NaClExpVector[4] = {
   { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
 };
 000000000040046a: 74 02                                        jz 0x40046e
-  74                          386 OpcodeHasImmed OperandSize_b
+  74                          386 OpcodeHasImmed OperandSize_b ConditionalJump
     Jz {%rip}, $Jb
       RegRIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
@@ -281,7 +281,7 @@ NaClExpVector[4] = {
   { ExprConstant[0] , 0x40046e, ExprUsed | ExprUnsignedHex | ExprJumpTarget },
 };
 0000000000000000: ff d0                                        call %rax
-  ff / 2                      386 OpcodeInModRm OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+  ff / 2                      386 OpcodeInModRm OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64 JumpInstruction
     Call {%rip}, {%rsp}, $Ev
       RegRIP                  OpUse OpSet OpImplicit
       RegRSP                  OpUse OpSet OpImplicit
@@ -295,7 +295,7 @@ NaClExpVector[6] = {
   { ExprRegister[0] , %rax, ExprUsed | ExprSize64 | ExprJumpTarget },
 };
 000000000040048d: eb 24                                        jmp 0x4004b3
-  eb                          386 OpcodeHasImmed OperandSize_b
+  eb                          386 OpcodeHasImmed OperandSize_b JumpInstruction
     Jmp {%rip}, $Jb
       RegRIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
@@ -2659,7 +2659,7 @@ NaClExpVector[4] = {
   { ExprRegister[0] , %xmm2, ExprUsed },
 };
 0000000000000000: 66 e9 00 00 01 02                            jmp 0x2010006
-  e9                          386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
+  e9                          386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64 JumpInstruction
     Jmp {%rip}, $Jz
       RegRIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
@@ -3011,7 +3011,7 @@ NaClExpVector[8] = {
   { ExprConstant[0] , 0, ExprSize8 },
 };
 0000000000001000: 40 e0 00                                     loopne 0x1003
-  e0                          386 OpcodeHasImmed OperandSize_b
+  e0                          386 OpcodeHasImmed OperandSize_b ConditionalJump
     Loopne {%rip}, $Jb
       RegRIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
@@ -3022,7 +3022,7 @@ NaClExpVector[4] = {
   { ExprConstant[0] , 0x1003, ExprUsed | ExprUnsignedHex | ExprJumpTarget },
 };
 0000000000000000: 40 e3 00                                     jrcxz 0x3
-  e3                          386 OpcodeHasImmed OperandSize_b AddressSize_o
+  e3                          386 OpcodeHasImmed OperandSize_b AddressSize_o ConditionalJump
     Jrcxz {%rip}, {%rcx}, $Jb
       RegRIP                  OpSet OpImplicit
       RegRCX                  OpUse OpImplicit
@@ -3036,7 +3036,7 @@ NaClExpVector[6] = {
   { ExprConstant[0] , 0x3, ExprUsed | ExprUnsignedHex | ExprJumpTarget },
 };
 0000000000000000: 67 40 e3 00                                  jecxz 0x4
-  e3                          386 OpcodeHasImmed OperandSize_b AddressSize_v
+  e3                          386 OpcodeHasImmed OperandSize_b AddressSize_v ConditionalJump
     Jecxz {%rip}, {%ecx}, $Jb
       RegRIP                  OpSet OpImplicit
       RegECX                  OpUse OpImplicit
@@ -3088,7 +3088,7 @@ NaClExpVector[6] = {
   { ExprConstant[0] , 0x0, ExprUsed | ExprSize8 | ExprUnsignedHex },
 };
 0000000000000000: 26 66 e8 00 01 02 03                         call 0x3020107
-  e8                          386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w NaClIllegal
+  e8                          386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w NaClIllegal JumpInstruction
     Call {%rip}, {%rsp}, $Jzw
       RegRIP                  OpUse OpSet OpImplicit
       RegRSP                  OpUse OpSet OpImplicit
@@ -3683,7 +3683,7 @@ NaClExpVector[8] = {
   { ExprConstant[0] , 0x0, ExprSize32 | ExprSignedHex },
 };
 0000000000000000: eb 1d                                        jmp 0x1f
-  eb                          386 OpcodeHasImmed OperandSize_b
+  eb                          386 OpcodeHasImmed OperandSize_b JumpInstruction
     Jmp {%rip}, $Jb
       RegRIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative

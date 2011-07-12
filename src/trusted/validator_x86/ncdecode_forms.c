@@ -27,6 +27,7 @@
 #include "native_client/src/trusted/validator_x86/lock_insts.h"
 #include "native_client/src/trusted/validator_x86/long_mode.h"
 #include "native_client/src/trusted/validator_x86/nacl_illegal.h"
+#include "native_client/src/trusted/validator_x86/nc_def_jumps.h"
 #include "native_client/src/trusted/validator_x86/nc_rep_prefix.h"
 #include "native_client/src/trusted/validator_x86/ncdecode_st.h"
 #include "native_client/src/trusted/validator_x86/ncdecode_tablegen.h"
@@ -267,6 +268,7 @@ static void NaClAddMiscellaneousFlags() {
   NaClAddLongModeIfApplicable();
   NaClAddNaClIllegalIfApplicable();
   NaClAddRepPrefixFlagsIfApplicable();
+  NaClAddJumpFlagsIfApplicable();
   DEBUG(NaClLog(LOG_INFO, "<- Adding Miscellaneous Flags\n"));
 }
 

@@ -136,6 +136,7 @@ ncdecode_tablegen = gen_env.ComponentProgram(
     ['ncdecode_tablegen.c',
      'ncdecode_forms.c',
      'zero_extends.c',
+     'nc_def_jumps.c',
      'long_mode.c',
      'nc_rep_prefix.c',
      'defsize64.c',

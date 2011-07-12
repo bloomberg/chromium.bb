@@ -89,6 +89,69 @@ static const char* NaClGetReasonWhyDisallowed(NaClDisallowsFlag flag) {
   return why;
 }
 
+/* A mask of possible segment prefixes. */
+static const uint32_t kNaClSegmentPrefixMask =
+    kPrefixSEGES | kPrefixSEGFS | kPrefixSEGGS | kPrefixSEGSS |
+    kPrefixSEGCS | kPrefixSEGDS;
+
+/*
+ * A mask for prefixes that can't appear with any jump instruction.
+ * Note: We rule these out because of Intel's Software Developer's
+ * Manual (volume 2a) documents in section 2.1.1 that such uses may
+ * cause unpredictable behaviour.
+ */
+static const uint32_t kNaClUnsafeJumpPrefixes =
+    kPrefixSEGES | kPrefixSEGFS | kPrefixSEGGS | kPrefixSEGSS;
+
+/*
+ * A mask for prefixes that can only appear with conditional jump
+ * instructions.
+ */
+static const uint32_t kNaClUnsafeUnconditionalJumpPrefixes =
+    kPrefixSEGCS | kPrefixSEGDS;
+
+/* This function checks properties about segment registers on an
+ * instruction, reporting issues not allowed by native client.
+ */
+static void NaClCheckSegmentPrefixes(NaClValidatorState* state,
+                                     Bool* is_legal,
+                                     NaClDisallowsFlags* disallows_flags) {
+  NaClInstState* inst_state = state->cur_inst_state;
+  Bool segment_prefixes_ok = TRUE;
+
+  if (0 == (inst_state->prefix_mask & kNaClSegmentPrefixMask)) return;
+
+  if (state->cur_inst->flags &
+      (NACL_IFLAG(JumpInstruction) | NACL_IFLAG(ConditionalJump))) {
+    if (inst_state->prefix_mask & kNaClUnsafeJumpPrefixes) {
+      segment_prefixes_ok = FALSE;
+    }
+    if ((state->cur_inst->flags & NACL_IFLAG(JumpInstruction)) &&
+        (inst_state->prefix_mask & kNaClUnsafeUnconditionalJumpPrefixes)) {
+      segment_prefixes_ok = FALSE;
+    }
+  } else {
+    /* We don't allow any prefix masks on data accesses. */
+    segment_prefixes_ok = FALSE;
+  }
+
+  if (!segment_prefixes_ok) {
+    *is_legal = FALSE;
+    *disallows_flags |= NACL_DISALLOWS_FLAG(NaClHasBadSegmentPrefix);
+    DEBUG(NaClLog(LOG_INFO, "%s\n",
+                  NaClGetReasonWhyDisallowed(NaClHasBadSegmentPrefix)));
+  }
+
+  /* Don't allow ambiguous prefix forms. */
+  if (inst_state->has_ambig_segment_prefixes) {
+    *is_legal = FALSE;
+    *disallows_flags |= NACL_DISALLOWS_FLAG(NaClHasAmbigSegmentPrefixes);
+    DEBUG(NaClLog(LOG_INFO, "%s\n",
+                  NaClGetReasonWhyDisallowed(NaClHasAmbigSegmentPrefixes)));
+  }
+
+}
+
 /* This function checks properties of prefix bytes on an instruction,
  * reporting issues not allowed by native client.
  *
@@ -190,31 +253,7 @@ static void NaClCheckForPrefixIssues(NaClValidatorState* state,
                   NaClGetReasonWhyDisallowed(NaClCantUsePrefix67)));
   }
 
-  /* Don't allow CS, DS, ES, or SS prefix overrides in 64-bit mode,
-   * since it has no effect, unless explicitly stated
-   * otherwise.
-   */
-  if (NACL_TARGET_SUBARCH == 64) {
-    if (inst_state->prefix_mask &
-        (kPrefixSEGCS | kPrefixSEGSS | kPrefixSEGES |
-         kPrefixSEGDS)) {
-      if (NACL_EMPTY_IFLAGS ==
-          (inst->flags & NACL_IFLAG(IgnorePrefixSEGCS))) {
-        *is_legal = FALSE;
-        *disallows_flags |= NACL_DISALLOWS_FLAG(NaClHasBadSegmentPrefix);
-        DEBUG(NaClLog(LOG_INFO, "%s\n",
-                      NaClGetReasonWhyDisallowed(NaClHasBadSegmentPrefix)));
-      }
-    }
-  }
-
-  /* Don't allow ambiguous prefix forms. */
-  if (inst_state->has_ambig_segment_prefixes) {
-    *is_legal = FALSE;
-    *disallows_flags |= NACL_DISALLOWS_FLAG(NaClHasAmbigSegmentPrefixes);
-    DEBUG(NaClLog(LOG_INFO, "%s\n",
-                  NaClGetReasonWhyDisallowed(NaClHasAmbigSegmentPrefixes)));
-  }
+  NaClCheckSegmentPrefixes(state, is_legal, disallows_flags);
 
   /* Don't allow duplicated prefixes. Note: Don't report if multiple
    * REX prefixes has been reported, since we don't know what duplicates

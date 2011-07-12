@@ -51,7 +51,8 @@ static const char* const g_NaClIFlagName[NaClIFlagEnumSize + 1] = {
   "OperandSizeForce64",
   "LongMode",
   "IgnorePrefixDATA16",
-  "IgnorePrefixSEGCS",
+  "JumpInstruction",
+  "ConditionalJump",
   "NaClIFlagEnumSize"
 };
 

@@ -1,3 +1,5 @@
+VALIDATOR: 0000000000000000: 64 41 8b 07                                  mov %eax, %fs:[%r15]
+VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
 VALIDATOR: Checking jump targets: 0 to 4
 VALIDATOR: Checking that basic blocks are aligned
-***module is safe***
+***MODULE IS UNSAFE***
