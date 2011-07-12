@@ -1,15 +1,13 @@
 # -*- python -*-
-# Copyright 2008 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
-
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 Import('env')
 
 env.NaClSdkLibrary('imc', ['nacl_imc_common.cc',
                            'nacl_imc_c.cc',
-                           'nacl/nacl_imc.cc'],
-                          LIBS=['nacl'])
+                           'nacl/nacl_imc.cc'])
 
 env.AddLibraryToSdk(['imc'])
 env.AddHeaderToSdk(['nacl_imc.h', 'nacl_imc_c.h'])

@@ -10,7 +10,7 @@ Import('env')
 #   - use #include "nacl/nacl_file.h"
 # TODO(nfullagar): explain wrap linker magic w/ open, read, close, etc.
 #                   Also might need stc++ when using gcc.
-env.NaClSdkLibrary('nacl_file', [ 'nacl_file.cc', ], LIBS=['nacl'])
+env.NaClSdkLibrary('nacl_file', [ 'nacl_file.cc', ])
 header_install = env.AddHeaderToSdk([ 'nacl_file.h', ])
 env.AddLibraryToSdk(['nacl_file'])
 env.Requires('nacl_file', header_install)

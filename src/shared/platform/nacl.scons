@@ -28,7 +28,7 @@ platform_inputs = [
 
 env.NaClSdkLibrary('platform',
                    platform_inputs,
-                   LIBS=['nacl', 'pthread', 'gio'])
+                   LIBS=['pthread', 'gio'])
 
 headers = [
     'nacl_check.h',

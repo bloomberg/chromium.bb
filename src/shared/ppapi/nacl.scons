@@ -27,7 +27,7 @@ cpp_sources = (
     gyp_extract.GypTargetSources(
         ppapi_cpp_gypi, 'ppapi_cpp', '.*\.cc')
 )
-env.NaClSdkLibrary('ppapi_cpp', cpp_sources, LIBS=['nacl'])
+env.NaClSdkLibrary('ppapi_cpp', cpp_sources)
 env.AddLibraryToSdk(['ppapi_cpp'])
 
 env.Append(CPPPATH=[
@@ -42,6 +42,6 @@ ppapi_gl_gypi = gyp_extract.LoadGypFile(
 # From ppapi_gl.gypi:ppapi_gles2:.*\.c
 gles2_sources = gyp_extract.GypTargetSources(
     ppapi_gl_gypi, 'ppapi_gles2', '.*\.c')
-env.NaClSdkLibrary('ppapi_gles2', gles2_sources, LIBS=['nacl'])
+env.NaClSdkLibrary('ppapi_gles2', gles2_sources)
 
 env.AddLibraryToSdk(['ppapi_gles2'])
