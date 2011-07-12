@@ -60,6 +60,8 @@ struct protocol {
 	char *name;
 	char *uppercase_name;
 	struct wl_list interface_list;
+	int type_index;
+	int null_run_length;
 };
 
 struct interface {
@@ -77,6 +79,9 @@ struct message {
 	char *uppercase_name;
 	struct wl_list arg_list;
 	struct wl_list link;
+	int arg_count;
+	int type_index;
+	int all_null;
 	int destructor;
 };
 
@@ -204,6 +209,7 @@ start_element(void *data, const char *element_name, const char **atts)
 		message->name = strdup(name);
 		message->uppercase_name = uppercase_dup(name);
 		wl_list_init(&message->arg_list);
+		message->arg_count = 0;
 
 		if (strcmp(element_name, "request") == 0)
 			wl_list_insert(ctx->interface->request_list.prev,
@@ -250,6 +256,7 @@ start_element(void *data, const char *element_name, const char **atts)
 		}
 
 		wl_list_insert(ctx->message->arg_list.prev, &arg->link);
+		ctx->message->arg_count++;
 	} else if (strcmp(element_name, "enum") == 0) {
 		if (name == NULL)
 			fail(ctx, "no enum name given");
@@ -599,6 +606,80 @@ emit_header(struct protocol *protocol, int server)
 }
 
 static void
+emit_types_forward_declarations(struct protocol *protocol,
+				struct wl_list *message_list)
+{
+	struct message *m;
+	struct arg *a;
+	int length;
+
+	wl_list_for_each(m, message_list, link) {
+		length = 0;
+		m->all_null = 1;
+		wl_list_for_each(a, &m->arg_list, link) {
+			length++;
+			switch (a->type) {
+			case NEW_ID:
+			case OBJECT:
+				m->all_null = 0;
+				printf("extern const struct wl_interface %s_interface;\n",
+				       a->interface_name);
+				break;
+			default:
+				break;
+			}
+		}
+
+		if (m->all_null && length > protocol->null_run_length)
+			protocol->null_run_length = length;
+	}
+}
+
+static void
+emit_null_run(struct protocol *protocol)
+{
+	int i;
+
+	for (i = 0; i < protocol->null_run_length; i++)
+		printf("\tNULL,\n");
+}
+
+static void
+emit_types(struct protocol *protocol, struct wl_list *message_list)
+{
+	struct message *m;
+	struct arg *a;
+
+	wl_list_for_each(m, message_list, link) {
+		if (m->all_null) {
+			m->type_index = 0;
+			continue;
+		}
+
+		m->type_index =
+			protocol->null_run_length + protocol->type_index;
+		protocol->type_index += m->arg_count;
+
+		wl_list_for_each(a, &m->arg_list, link) {
+			switch (a->type) {
+			case NEW_ID:
+			case OBJECT:
+				if (strcmp(a->interface_name,
+					   "wl_object") != 0)
+					printf("\t&%s_interface,\n",
+					       a->interface_name);
+				else
+					printf("\tNULL,\n");
+				break;
+			default:
+				printf("\tNULL,\n");
+				break;
+			}
+		}
+	}
+}
+
+static void
 emit_messages(struct wl_list *message_list,
 	      struct interface *interface, const char *suffix)
 {
@@ -640,7 +721,7 @@ emit_messages(struct wl_list *message_list,
 				break;
 			}
 		}
-		printf("\", NULL },\n");
+		printf("\", types + %d },\n", m->type_index);
 	}
 
 	printf("};\n\n");
@@ -656,6 +737,20 @@ emit_code(struct protocol *protocol)
 	       "#include <stdint.h>\n"
 	       "#include \"wayland-util.h\"\n\n",
 	       copyright);
+
+	wl_list_for_each(i, &protocol->interface_list, link) {
+		emit_types_forward_declarations(protocol, &i->request_list);
+		emit_types_forward_declarations(protocol, &i->event_list);
+	}
+	printf("\n");
+
+	printf("static const struct wl_interface *types[] = {\n");
+	emit_null_run(protocol);
+	wl_list_for_each(i, &protocol->interface_list, link) {
+		emit_types(protocol, &i->request_list);
+		emit_types(protocol, &i->event_list);
+	}
+	printf("};\n\n");
 
 	wl_list_for_each(i, &protocol->interface_list, link) {
 
@@ -694,6 +789,8 @@ int main(int argc, char *argv[])
 		usage(EXIT_FAILURE);
 
 	wl_list_init(&protocol.interface_list);
+	protocol.type_index = 0;
+	protocol.null_run_length = 0;
 	ctx.protocol = &protocol;
 
 	ctx.filename = "<stdin>";

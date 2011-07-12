@@ -47,7 +47,7 @@ extern "C" {
 struct wl_message {
 	const char *name;
 	const char *signature;
-	const void **types;
+	const struct wl_interface **types;
 };
 
 struct wl_interface {
