@@ -17,6 +17,8 @@ class Cryptographer;
 
 namespace syncable {
 
+const char kEncryptedString[] = "encrypted";
+
 class BaseTransaction;
 class ReadTransaction;
 class WriteTransaction;
@@ -39,12 +41,11 @@ bool VerifyUnsyncedChangesAreEncrypted(
 // or unencrypted, based on |encrypted_types|.
 bool ProcessUnsyncedChangesForEncryption(
     WriteTransaction* const trans,
-    const syncable::ModelTypeSet& encrypted_types,
     browser_sync::Cryptographer* cryptographer);
 
-// Verifies all data of type |type| is encrypted if |is_encrypted| is true or is
-// unencrypted otherwise.
+// Verifies all data of type |type| is encrypted appropriately.
 bool VerifyDataTypeEncryption(BaseTransaction* const trans,
+                              browser_sync::Cryptographer* cryptographer,
                               ModelType type,
                               bool is_encrypted);
 

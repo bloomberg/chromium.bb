@@ -95,6 +95,7 @@ using syncable::Directory;
 using syncable::DirectoryManager;
 using syncable::Entry;
 using syncable::EntryKernelMutationSet;
+using syncable::kEncryptedString;
 using syncable::ModelTypeBitSet;
 using syncable::WriterTag;
 using syncable::SPECIFICS;
@@ -107,13 +108,12 @@ typedef GoogleServiceAuthError AuthError;
 static const int kThreadExitTimeoutMsec = 60000;
 static const int kSSLPort = 443;
 static const int kSyncSchedulerDelayMsec = 250;
-static const char kEncryptedString [] = "encrypted";
 
 #if defined(OS_CHROMEOS)
 static const int kChromeOSNetworkChangeReactionDelayHackMsec = 5000;
 #endif  // OS_CHROMEOS
 
-} // namespace
+}  // namespace
 
 // We manage the lifetime of sync_api::SyncManager::SyncInternal ourselves.
 DISABLE_RUNNABLE_METHOD_REFCOUNT(sync_api::SyncManager::SyncInternal);
@@ -173,11 +173,43 @@ static void ServerNameToSyncAPIName(const std::string& server_name,
                                     std::wstring* out) {
   int length_to_copy = server_name.length();
   if (IsNameServerIllegalAfterTrimming(server_name) &&
-      EndsWithSpace(server_name))
+      EndsWithSpace(server_name)) {
     --length_to_copy;
+  }
   if (!UTF8ToWide(server_name.c_str(), length_to_copy, out)) {
     NOTREACHED() << "Could not convert server name from UTF8 to wide";
   }
+}
+
+// Compare the values of two EntitySpecifics, accounting for encryption.
+static bool AreSpecificsEqual(const browser_sync::Cryptographer* cryptographer,
+                              const sync_pb::EntitySpecifics& left,
+                              const sync_pb::EntitySpecifics& right) {
+  // Note that we can't compare encrypted strings directly as they are seeded
+  // with a random value.
+  std::string left_plaintext, right_plaintext;
+  if (left.has_encrypted()) {
+    if (!cryptographer->CanDecrypt(left.encrypted())) {
+      NOTREACHED() << "Attempting to compare undecryptable data.";
+      return false;
+    }
+    left_plaintext = cryptographer->DecryptToString(left.encrypted());
+  } else {
+    left_plaintext = left.SerializeAsString();
+  }
+  if (right.has_encrypted()) {
+    if (!cryptographer->CanDecrypt(right.encrypted())) {
+      NOTREACHED() << "Attempting to compare undecryptable data.";
+      return false;
+    }
+    right_plaintext = cryptographer->DecryptToString(right.encrypted());
+  } else {
+    right_plaintext = right.SerializeAsString();
+  }
+  if (left_plaintext == right_plaintext) {
+    return true;
+  }
+  return false;
 }
 
 // Helper function that converts a PassphraseRequiredReason value to a string.
@@ -463,45 +495,75 @@ void BaseNode::SetUnencryptedSpecifics(
 
 ////////////////////////////////////
 // WriteNode member definitions
-void WriteNode::EncryptIfNecessary(sync_pb::EntitySpecifics* unencrypted) {
-  syncable::ModelType type = syncable::GetModelTypeFromSpecifics(*unencrypted);
-  DCHECK_NE(type, syncable::UNSPECIFIED);
-  // Passwords use their own encryption.
-  if (type == syncable::PASSWORDS) {
-    return;
-  }
-  // Nigori is encrypted separately.
-  if (type == syncable::NIGORI) {
-    return;
+// Static.
+bool WriteNode::UpdateEntryWithEncryption(
+    browser_sync::Cryptographer* cryptographer,
+    const sync_pb::EntitySpecifics& new_specifics,
+    syncable::MutableEntry* entry) {
+  syncable::ModelType type = syncable::GetModelTypeFromSpecifics(new_specifics);
+  DCHECK_GE(type, syncable::FIRST_REAL_MODEL_TYPE);
+  syncable::ModelTypeSet encrypted_types = cryptographer->GetEncryptedTypes();
+
+  sync_pb::EntitySpecifics generated_specifics;
+  if (type == syncable::PASSWORDS ||        // Has own encryption scheme.
+      type == syncable::NIGORI ||           // Encrypted separately.
+      encrypted_types.count(type) == 0 ||
+      new_specifics.has_encrypted()) {
+    // No encryption required.
+    generated_specifics.CopyFrom(new_specifics);
+  } else {
+    // Encrypt new_specifics into generated_specifics.
+    if (VLOG_IS_ON(2)) {
+      scoped_ptr<DictionaryValue> value(entry->ToValue());
+      std::string info;
+      base::JSONWriter::Write(value.get(), true, &info);
+      VLOG(2) << "Encrypting specifics of type "
+              << syncable::ModelTypeToString(type)
+              << " with content: "
+              << info;
+    }
+    if (!cryptographer->is_initialized())
+      return false;
+    syncable::AddDefaultExtensionValue(type, &generated_specifics);
+    if (!cryptographer->Encrypt(new_specifics,
+                                generated_specifics.mutable_encrypted())) {
+      NOTREACHED() << "Could not encrypt data for node of type "
+                   << syncable::ModelTypeToString(type);
+      return false;
+    }
   }
 
-  syncable::ModelTypeSet encrypted_types =
-      GetEncryptedTypes(GetTransaction());
-  if (encrypted_types.count(type) == 0) {
-    // This datatype does not require encryption.
-    return;
+  const sync_pb::EntitySpecifics& old_specifics = entry->Get(SPECIFICS);
+  if (AreSpecificsEqual(cryptographer, old_specifics, generated_specifics)) {
+    // Even if the data is the same but the old specifics are encrypted with an
+    // old key, we should go ahead and re-encrypt with the new key.
+    if ((!old_specifics.has_encrypted() &&
+         !generated_specifics.has_encrypted()) ||
+         cryptographer->CanDecryptUsingDefaultKey(old_specifics.encrypted())) {
+      VLOG(2) << "Specifics of type " << syncable::ModelTypeToString(type)
+              << " already match, dropping change.";
+      return true;
+    }
+    // TODO(zea): Add some way to keep track of how often we're reencrypting
+    // because of a passphrase change.
   }
 
-  if (unencrypted->has_encrypted()) {
-    // This specifics is already encrypted, our work is done.
-    LOG(WARNING) << "Attempted to encrypt an already encrypted entity"
-      << " specifics of type " << syncable::ModelTypeToString(type)
-      << ". Dropping.";
-    return;
+  if (generated_specifics.has_encrypted()) {
+    // Overwrite the possibly sensitive non-specifics data.
+    entry->Put(syncable::NON_UNIQUE_NAME, kEncryptedString);
+    // For bookmarks we actually put bogus data into the unencrypted specifics,
+    // else the server will try to do it for us.
+    if (type == syncable::BOOKMARKS) {
+      sync_pb::BookmarkSpecifics* bookmark_specifics =
+          generated_specifics.MutableExtension(sync_pb::bookmark);
+      if (!entry->Get(syncable::IS_DIR))
+        bookmark_specifics->set_url(kEncryptedString);
+      bookmark_specifics->set_title(kEncryptedString);
+    }
   }
-  VLOG(2) << "Encrypting specifics of type "
-          << syncable::ModelTypeToString(type)
-          << " with content: " << unencrypted->SerializeAsString();
-
-  sync_pb::EntitySpecifics encrypted;
-  syncable::AddDefaultExtensionValue(type, &encrypted);
-  if (!GetTransaction()->GetCryptographer()->Encrypt(
-          *unencrypted, encrypted.mutable_encrypted())) {
-    LOG(ERROR) << "Could not encrypt data for node of type " <<
-      syncable::ModelTypeToString(type);
-    NOTREACHED();
-  }
-  unencrypted->CopyFrom(encrypted);
+  entry->Put(syncable::SPECIFICS, generated_specifics);
+  syncable::MarkForSyncing(entry);
+  return true;
 }
 
 void WriteNode::SetIsFolder(bool folder) {
@@ -639,44 +701,30 @@ void WriteNode::SetEntitySpecifics(
   if (GetModelType() != syncable::UNSPECIFIED) {
     DCHECK_EQ(new_specifics_type, GetModelType());
   }
-  sync_pb::EntitySpecifics entity_specifics;
+  browser_sync::Cryptographer* cryptographer =
+      GetTransaction()->GetCryptographer();
 
   // Preserve unknown fields.
-  entity_specifics.CopyFrom(new_value);
-  entity_specifics.mutable_unknown_fields()->
-      MergeFrom(GetEntitySpecifics().unknown_fields());
+  const sync_pb::EntitySpecifics& old_specifics = entry_->Get(SPECIFICS);
+  sync_pb::EntitySpecifics new_specifics;
+  new_specifics.CopyFrom(new_value);
+  new_specifics.mutable_unknown_fields()->MergeFrom(
+      old_specifics.unknown_fields());
 
-  EncryptIfNecessary(&entity_specifics);
-  DCHECK_EQ(new_specifics_type,
-            syncable::GetModelTypeFromSpecifics(entity_specifics));
-
-  // Skip redundant changes.
-  if (entity_specifics.SerializeAsString() ==
-      entry_->Get(SPECIFICS).SerializeAsString()) {
-    VLOG(2) << "Dropping EntitySpecifics write, no change.";
+  // Will update the entry if encryption was necessary.
+  if (!UpdateEntryWithEncryption(cryptographer, new_specifics, entry_)) {
     return;
   }
-
-  if (entity_specifics.has_encrypted()) {
-    // Overwrite the non-specifics data.
-    entry_->Put(syncable::NON_UNIQUE_NAME, kEncryptedString);
-    // For bookmarks we actually put bogus data into the unencrypted specifics,
-    // else the server will try to do it for us.
-    if (GetModelType() == syncable::BOOKMARKS) {
-      sync_pb::BookmarkSpecifics *bookmark_specifics =
-          entity_specifics.MutableExtension(sync_pb::bookmark);
-      if (!GetIsFolder())
-        bookmark_specifics->set_url(kEncryptedString);
-      bookmark_specifics->set_title(kEncryptedString);
-    }
-
-    // We make a copy of the unencrypted specifics so that if this node is
-    // updated, we do not have to decrypt the old data. Note that this only
-    // modifies the node's local data and is not synced
+  if (entry_->Get(SPECIFICS).has_encrypted()) {
+    // EncryptIfNecessary already updated the entry for us and marked for
+    // syncing if it was needed. Now we just make a copy of the unencrypted
+    // specifics so that if this node is updated, we do not have to decrypt the
+    // old data. Note that this only modifies the node's local data, not the
+    // entry itself.
     SetUnencryptedSpecifics(new_value);
   }
-  entry_->Put(SPECIFICS, entity_specifics);
-  MarkForSyncing();
+
+  DCHECK_EQ(new_specifics_type, GetModelType());
 }
 
 void WriteNode::ResetFromSpecifics() {
@@ -1436,27 +1484,18 @@ class SyncManager::SyncInternal
         !a.ref(syncable::UNIQUE_SERVER_TAG).empty()) {
       return false;
     }
-    if (a.ref(syncable::NON_UNIQUE_NAME) != b.ref(syncable::NON_UNIQUE_NAME))
-      return true;
     if (a.ref(syncable::IS_DIR) != b.ref(syncable::IS_DIR))
       return true;
-    // Check if data has changed (account for encryption).
-    std::string a_str, b_str;
-    if (a_specifics.has_encrypted()) {
-      const sync_pb::EncryptedData& encrypted = a_specifics.encrypted();
-      a_str = cryptographer->DecryptToString(encrypted);
-    } else {
-      a_str = a_specifics.SerializeAsString();
-    }
-    if (b_specifics.has_encrypted()) {
-      const sync_pb::EncryptedData& encrypted = b_specifics.encrypted();
-      b_str = cryptographer->DecryptToString(encrypted);
-    } else {
-      b_str = b_specifics.SerializeAsString();
-    }
-    if (a_str != b_str) {
+    if (!AreSpecificsEqual(cryptographer,
+                           a.ref(syncable::SPECIFICS),
+                           b.ref(syncable::SPECIFICS))) {
       return true;
     }
+    // We only care if the name has changed if neither specifics is encrypted
+    // (encrypted nodes blow away the NON_UNIQUE_NAME).
+    if (!a_specifics.has_encrypted() && !b_specifics.has_encrypted() &&
+        a.ref(syncable::NON_UNIQUE_NAME) != b.ref(syncable::NON_UNIQUE_NAME))
+      return true;
     if (VisiblePositionsDiffer(mutation))
       return true;
     return false;
@@ -2035,6 +2074,8 @@ void SyncManager::SyncInternal::EncryptDataTypes(
                  encrypted_types.begin(), encrypted_types.end(),
                  std::inserter(newly_encrypted_types,
                                newly_encrypted_types.begin()));
+  if (newly_encrypted_types == current_encrypted_types)
+    return;  // Set of encrypted types did not change.
   syncable::FillNigoriEncryptedTypes(newly_encrypted_types, &nigori);
   node.SetNigoriSpecifics(nigori);
 
@@ -2047,6 +2088,8 @@ void SyncManager::SyncInternal::EncryptDataTypes(
   return;
 }
 
+// TODO(zea): Add unit tests that ensure no sync changes are made when not
+// needed.
 void SyncManager::SyncInternal::ReEncryptEverything(WriteTransaction* trans) {
   syncable::ModelTypeSet encrypted_types =
       GetEncryptedTypes(trans);

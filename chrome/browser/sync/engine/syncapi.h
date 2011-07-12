@@ -441,6 +441,14 @@ class WriteNode : public BaseNode {
   // Should only be called if GetModelType() == SESSIONS.
   void SetSessionSpecifics(const sync_pb::SessionSpecifics& specifics);
 
+  // Stores |new_specifics| into |entry|, encrypting if necessary.
+  // Returns false if an error encrypting occurred (does not modify |entry|).
+  // Note: gracefully handles new_specifics aliasing with entry->Get(SPECIFICS).
+  static bool UpdateEntryWithEncryption(
+      browser_sync::Cryptographer* cryptographer,
+      const sync_pb::EntitySpecifics& new_specifics,
+      syncable::MutableEntry* entry);
+
   // Implementation of BaseNode's abstract virtual accessors.
   virtual const syncable::Entry* GetEntry() const;
 
@@ -458,9 +466,6 @@ class WriteNode : public BaseNode {
   // Sets IS_UNSYNCED and SYNCING to ensure this entry is considered in an
   // upcoming commit pass.
   void MarkForSyncing();
-
-  // Encrypt the specifics if the datatype requries it.
-  void EncryptIfNecessary(sync_pb::EntitySpecifics* new_value);
 
   // The underlying syncable object which this class wraps.
   syncable::MutableEntry* entry_;

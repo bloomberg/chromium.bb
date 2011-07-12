@@ -248,7 +248,6 @@ UpdateAttemptResponse SyncerUtil::AttemptToUpdateEntry(
     syncable::MutableEntry* const entry,
     ConflictResolver* resolver,
     Cryptographer* cryptographer) {
-
   CHECK(entry->good());
   if (!entry->Get(IS_UNAPPLIED_UPDATE))
     return SUCCESS;  // No work to do.
@@ -303,7 +302,7 @@ UpdateAttemptResponse SyncerUtil::AttemptToUpdateEntry(
         cryptographer->GetEncryptedTypes();
     if (!VerifyUnsyncedChangesAreEncrypted(trans, encrypted_types) &&
         (!cryptographer->is_ready() ||
-         !syncable::ProcessUnsyncedChangesForEncryption(trans, encrypted_types,
+         !syncable::ProcessUnsyncedChangesForEncryption(trans,
                                                         cryptographer))) {
       // We were unable to encrypt the changes, possibly due to a missing
       // passphrase. We return conflict, even though the conflict is with the

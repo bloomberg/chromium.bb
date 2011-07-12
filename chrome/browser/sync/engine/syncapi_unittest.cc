@@ -1321,12 +1321,15 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     EXPECT_TRUE(syncable::VerifyDataTypeEncryption(trans.GetWrappedTrans(),
+                                                   trans.GetCryptographer(),
                                                    syncable::BOOKMARKS,
                                                    false /* not encrypted */));
     EXPECT_TRUE(syncable::VerifyDataTypeEncryption(trans.GetWrappedTrans(),
+                                                   trans.GetCryptographer(),
                                                    syncable::SESSIONS,
                                                    false /* not encrypted */));
     EXPECT_TRUE(syncable::VerifyDataTypeEncryption(trans.GetWrappedTrans(),
+                                                   trans.GetCryptographer(),
                                                    syncable::THEMES,
                                                    false /* not encrypted */));
   }
@@ -1340,18 +1343,48 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
 
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
-    EXPECT_EQ(encrypted_types,
-              GetEncryptedTypes(&trans));
+    EXPECT_EQ(encrypted_types, GetEncryptedTypes(&trans));
     EXPECT_TRUE(syncable::VerifyDataTypeEncryption(trans.GetWrappedTrans(),
+                                                   trans.GetCryptographer(),
                                                    syncable::BOOKMARKS,
                                                    true /* is encrypted */));
     EXPECT_TRUE(syncable::VerifyDataTypeEncryption(trans.GetWrappedTrans(),
+                                                   trans.GetCryptographer(),
                                                    syncable::SESSIONS,
                                                    true /* is encrypted */));
     EXPECT_TRUE(syncable::VerifyDataTypeEncryption(trans.GetWrappedTrans(),
+                                                   trans.GetCryptographer(),
                                                    syncable::THEMES,
                                                    false /* not encrypted */));
   }
+
+  // Trigger's a ReEncryptEverything with new passphrase.
+  testing::Mock::VerifyAndClearExpectations(&observer_);
+  EXPECT_CALL(observer_, OnPassphraseAccepted(_)).Times(1);
+  EXPECT_CALL(observer_, OnEncryptionComplete(_)).Times(1);
+  sync_manager_.SetPassphrase("new_passphrase", true);
+  {
+    ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    EXPECT_EQ(encrypted_types, GetEncryptedTypes(&trans));
+    EXPECT_TRUE(syncable::VerifyDataTypeEncryption(trans.GetWrappedTrans(),
+                                                   trans.GetCryptographer(),
+                                                   syncable::BOOKMARKS,
+                                                   true /* is encrypted */));
+    EXPECT_TRUE(syncable::VerifyDataTypeEncryption(trans.GetWrappedTrans(),
+                                                   trans.GetCryptographer(),
+                                                   syncable::SESSIONS,
+                                                   true /* is encrypted */));
+    EXPECT_TRUE(syncable::VerifyDataTypeEncryption(trans.GetWrappedTrans(),
+                                                   trans.GetCryptographer(),
+                                                   syncable::THEMES,
+                                                   false /* not encrypted */));
+  }
+  // Calling EncryptDataTypes with the same encrypted types should not trigger
+  // a re-encryption.
+  testing::Mock::VerifyAndClearExpectations(&observer_);
+  EXPECT_CALL(observer_, OnPassphraseAccepted(_)).Times(0);
+  EXPECT_CALL(observer_, OnEncryptionComplete(_)).Times(0);
+  sync_manager_.EncryptDataTypes(encrypted_types);
 }
 
 TEST_F(SyncManagerTest, SetPassphraseWithPassword) {
@@ -1373,9 +1406,6 @@ TEST_F(SyncManagerTest, SetPassphraseWithPassword) {
   sync_manager_.SetPassphrase("new_passphrase", true);
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
-    ReadNode root_node(&trans);
-    root_node.InitByRootLookup();
-
     ReadNode password_node(&trans);
     EXPECT_TRUE(password_node.InitByClientTagLookup(syncable::PASSWORDS,
                                                     "foo"));
@@ -1404,18 +1434,12 @@ TEST_F(SyncManagerTest, SetPassphraseWithEmptyPasswordNode) {
   sync_manager_.SetPassphrase("new_passphrase", true);
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
-    ReadNode root_node(&trans);
-    root_node.InitByRootLookup();
-
     ReadNode password_node(&trans);
     EXPECT_FALSE(password_node.InitByClientTagLookup(syncable::PASSWORDS,
                                                      tag));
   }
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
-    ReadNode root_node(&trans);
-    root_node.InitByRootLookup();
-
     ReadNode password_node(&trans);
     EXPECT_FALSE(password_node.InitByIdLookup(node_id));
   }

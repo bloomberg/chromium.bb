@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/engine/syncer_util.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/util/cryptographer.h"
@@ -30,8 +31,10 @@ void FillNigoriEncryptedTypes(const ModelTypeSet& types,
 
 bool ProcessUnsyncedChangesForEncryption(
     WriteTransaction* const trans,
-    const ModelTypeSet& encrypted_types,
     browser_sync::Cryptographer* cryptographer) {
+  DCHECK(cryptographer->is_ready());
+  syncable::ModelTypeSet encrypted_types = cryptographer->GetEncryptedTypes();
+
   // Get list of all datatypes with unsynced changes. It's possible that our
   // local changes need to be encrypted if encryption for that datatype was
   // just turned on (and vice versa). This should never affect passwords.
@@ -39,41 +42,11 @@ bool ProcessUnsyncedChangesForEncryption(
   browser_sync::SyncerUtil::GetUnsyncedEntries(trans, &handles);
   for (size_t i = 0; i < handles.size(); ++i) {
     MutableEntry entry(trans, GET_BY_HANDLE, handles[i]);
-    sync_pb::EntitySpecifics new_specifics;
-    const sync_pb::EntitySpecifics& entry_specifics = entry.Get(SPECIFICS);
-    ModelType type = entry.GetModelType();
-    if (type == PASSWORDS)
-      continue;
-    if (encrypted_types.count(type) > 0 &&
-        !entry_specifics.has_encrypted()) {
-      // This entry now requires encryption.
-      AddDefaultExtensionValue(type, &new_specifics);
-      if (!cryptographer->Encrypt(
-          entry_specifics,
-          new_specifics.mutable_encrypted())) {
-        LOG(ERROR) << "Could not encrypt data for newly encrypted type " <<
-            ModelTypeToString(type);
-        NOTREACHED();
-        return false;
-      } else {
-        VLOG(1) << "Encrypted change for newly encrypted type " <<
-            ModelTypeToString(type);
-        entry.Put(SPECIFICS, new_specifics);
-      }
-    } else if (encrypted_types.count(type) == 0 &&
-               entry_specifics.has_encrypted()) {
-      // This entry no longer requires encryption.
-      if (!cryptographer->Decrypt(entry_specifics.encrypted(),
-                                  &new_specifics)) {
-        LOG(ERROR) << "Could not decrypt data for newly unencrypted type " <<
-            ModelTypeToString(type);
-        NOTREACHED();
-        return false;
-      } else {
-        VLOG(1) << "Decrypted change for newly unencrypted type " <<
-            ModelTypeToString(type);
-        entry.Put(SPECIFICS, new_specifics);
-      }
+    if (!sync_api::WriteNode::UpdateEntryWithEncryption(cryptographer,
+                                                        entry.Get(SPECIFICS),
+                                                        &entry)) {
+      NOTREACHED();
+      return false;
     }
   }
   return true;
@@ -105,6 +78,7 @@ bool VerifyUnsyncedChangesAreEncrypted(
 
 // Mainly for testing.
 bool VerifyDataTypeEncryption(BaseTransaction* const trans,
+                              browser_sync::Cryptographer* cryptographer,
                               ModelType type,
                               bool is_encrypted) {
   if (type == PASSWORDS || type == NIGORI) {
@@ -137,12 +111,20 @@ bool VerifyDataTypeEncryption(BaseTransaction* const trans,
       // Traverse the children.
       to_visit.push(
           trans->directory()->GetFirstChildId(trans, child.Get(ID)));
-    } else {
-      const sync_pb::EntitySpecifics& specifics = child.Get(SPECIFICS);
-      DCHECK_EQ(type, child.GetModelType());
-      DCHECK_EQ(type, GetModelTypeFromSpecifics(specifics));
+    }
+    const sync_pb::EntitySpecifics& specifics = child.Get(SPECIFICS);
+    DCHECK_EQ(type, child.GetModelType());
+    DCHECK_EQ(type, GetModelTypeFromSpecifics(specifics));
+    // We don't encrypt the server's permanent items.
+    if (child.Get(UNIQUE_SERVER_TAG).empty()) {
       if (specifics.has_encrypted() != is_encrypted)
         return false;
+      if (specifics.has_encrypted()) {
+        if (child.Get(NON_UNIQUE_NAME) != kEncryptedString)
+          return false;
+        if (!cryptographer->CanDecryptUsingDefaultKey(specifics.encrypted()))
+          return false;
+      }
     }
     // Push the successor.
     to_visit.push(child.Get(NEXT_ID));
