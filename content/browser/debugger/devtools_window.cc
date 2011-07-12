@@ -569,11 +569,3 @@ DevToolsWindow* DevToolsWindow::AsDevToolsWindow(
     return NULL;
   return *it;
 }
-
-content::JavaScriptDialogCreator* DevToolsWindow::GetJavaScriptDialogCreator() {
-  if (inspected_tab_) {
-    return inspected_tab_->tab_contents()->delegate()->
-        GetJavaScriptDialogCreator();
-  }
-  return TabContentsDelegate::GetJavaScriptDialogCreator();
-}
