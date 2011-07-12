@@ -18,6 +18,8 @@ ProductState::ProductState()
       usagestats_(0),
       msi_(false),
       multi_install_(false),
+      has_eula_accepted_(false),
+      has_oem_install_(false),
       has_usagestats_(false) {
 }
 
@@ -97,6 +99,12 @@ bool ProductState::Initialize(bool system_install,
     // we find.
     has_usagestats_ = (key.ReadValueDW(google_update::kRegUsageStatsField,
                                        &usagestats_) == ERROR_SUCCESS);
+    // "oeminstall" may be present with any value or absent.
+    has_oem_install_ = (key.ReadValue(google_update::kRegOemInstallField,
+                                      &oem_install_) == ERROR_SUCCESS);
+    // "eulaaccepted" may be absent, 0 or 1.
+    has_eula_accepted_ = (key.ReadValueDW(google_update::kRegEULAAceptedField,
+                                          &eula_accepted_) == ERROR_SUCCESS);
     // "msi" may be absent, 0 or 1
     DWORD dw_value = 0;
     msi_ = (key.ReadValueDW(google_update::kRegMSIField,
@@ -108,17 +116,23 @@ bool ProductState::Initialize(bool system_install,
       multi_install_ = uninstall_command_.HasSwitch(switches::kMultiInstall);
   }
 
-  // Read from the ClientStateMedium key.
+  // Read from the ClientStateMedium key.  Values here override those in
+  // ClientState.
   if (system_install &&
       key.Open(root_key, distribution->GetStateMediumKey().c_str(),
                KEY_QUERY_VALUE) == ERROR_SUCCESS) {
-    DWORD usagestats = 0;
+    DWORD dword_value = 0;
 
-    // A usagestats value in ClientStateMedium overrides that in ClientState.
     if (key.ReadValueDW(google_update::kRegUsageStatsField,
-                        &usagestats) == ERROR_SUCCESS) {
+                        &dword_value) == ERROR_SUCCESS) {
       has_usagestats_ = true;
-      usagestats_ = usagestats;
+      usagestats_ = dword_value;
+    }
+
+    if (key.ReadValueDW(google_update::kRegEULAAceptedField,
+                        &dword_value) == ERROR_SUCCESS) {
+      has_eula_accepted_ = true;
+      eula_accepted_ = dword_value;
     }
   }
 
@@ -142,10 +156,14 @@ ProductState& ProductState::CopyFrom(const ProductState& other) {
   brand_ = other.brand_;
   rename_cmd_ = other.rename_cmd_;
   uninstall_command_ = other.uninstall_command_;
+  oem_install_ = other.oem_install_;
   commands_.CopyFrom(other.commands_);
+  eula_accepted_ = other.eula_accepted_;
   usagestats_ = other.usagestats_;
   msi_ = other.msi_;
   multi_install_ = other.multi_install_;
+  has_eula_accepted_ = other.has_eula_accepted_;
+  has_oem_install_ = other.has_oem_install_;
   has_usagestats_ = other.has_usagestats_;
 
   return *this;
@@ -157,12 +175,32 @@ void ProductState::Clear() {
   old_version_.reset();
   brand_.clear();
   rename_cmd_.clear();
+  oem_install_.clear();
   uninstall_command_ = CommandLine(CommandLine::NO_PROGRAM);
   commands_.Clear();
+  eula_accepted_ = 0;
   usagestats_ = 0;
   msi_ = false;
   multi_install_ = false;
+  has_eula_accepted_ = false;
+  has_oem_install_ = false;
   has_usagestats_ = false;
+}
+
+bool ProductState::GetEulaAccepted(DWORD* eula_accepted) const {
+  DCHECK(eula_accepted);
+  if (!has_eula_accepted_)
+    return false;
+  *eula_accepted = eula_accepted_;
+  return true;
+}
+
+bool ProductState::GetOemInstall(std::wstring* oem_install) const {
+  DCHECK(oem_install);
+  if (!has_oem_install_)
+    return false;
+  *oem_install = oem_install_;
+  return true;
 }
 
 bool ProductState::GetUsageStats(DWORD* usagestats) const {

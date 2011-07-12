@@ -250,6 +250,106 @@ void AddProductSpecificWorkItems(const InstallationState& original_state,
   }
 }
 
+// Mirror oeminstall the first time anything is installed multi.  There is no
+// need to update the value on future install/update runs since this value never
+// changes.  Note that the value is removed by Google Update after EULA
+// acceptance is processed.
+void AddOemInstallWorkItems(const InstallationState& original_state,
+                            const InstallerState& installer_state,
+                            WorkItemList* install_list) {
+  DCHECK(installer_state.is_multi_install());
+  const bool system_install = installer_state.system_install();
+  if (!original_state.GetProductState(system_install,
+                                      BrowserDistribution::CHROME_BINARIES)) {
+    const HKEY root_key = installer_state.root_key();
+    std::wstring multi_key(
+        installer_state.multi_package_binaries_distribution()->GetStateKey());
+
+    // Copy the value from Chrome unless Chrome isn't installed or being
+    // installed.
+    BrowserDistribution::Type source_type;
+    if (installer_state.FindProduct(BrowserDistribution::CHROME_BROWSER)) {
+      source_type = BrowserDistribution::CHROME_BROWSER;
+    } else if (!installer_state.products().empty()) {
+      // Pick a product, any product.
+      source_type = installer_state.products()[0]->distribution()->GetType();
+    } else {
+      // Nothing is being installed?  Entirely unexpected, so do no harm.
+      LOG(ERROR) << "No products found in AddOemInstallWorkItems";
+      return;
+    }
+    const ProductState* source_product =
+        original_state.GetNonVersionedProductState(system_install, source_type);
+
+    std::wstring oem_install;
+    if (source_product->GetOemInstall(&oem_install)) {
+      VLOG(1) << "Mirroring oeminstall=\"" << oem_install << "\" from "
+              << BrowserDistribution::GetSpecificDistribution(source_type)
+                     ->GetAppShortCutName();
+      install_list->AddCreateRegKeyWorkItem(root_key, multi_key);
+      // Always overwrite an old value.
+      install_list->AddSetRegValueWorkItem(root_key, multi_key,
+                                           google_update::kRegOemInstallField,
+                                           oem_install, true);
+    } else {
+      // Clear any old value.
+      install_list->AddDeleteRegValueWorkItem(
+          root_key, multi_key, google_update::kRegOemInstallField);
+    }
+  }
+}
+
+// Mirror eulaaccepted the first time anything is installed multi.  There is no
+// need to update the value on future install/update runs since
+// GoogleUpdateSettings::SetEULAConsent will modify the value for both the
+// relevant product and for the binaries.
+void AddEulaAcceptedWorkItems(const InstallationState& original_state,
+                              const InstallerState& installer_state,
+                              WorkItemList* install_list) {
+  DCHECK(installer_state.is_multi_install());
+  const bool system_install = installer_state.system_install();
+  if (!original_state.GetProductState(system_install,
+                                      BrowserDistribution::CHROME_BINARIES)) {
+    const HKEY root_key = installer_state.root_key();
+    std::wstring multi_key(
+        installer_state.multi_package_binaries_distribution()->GetStateKey());
+
+    // Copy the value from the product with the greatest value.
+    bool have_eula_accepted = false;
+    BrowserDistribution::Type product_type;
+    DWORD eula_accepted;
+    const Products& products = installer_state.products();
+    for (size_t i = 0, count = products.size(); i != count; ++i) {
+      DWORD dword_value = 0;
+      BrowserDistribution::Type this_type =
+          products[i]->distribution()->GetType();
+      const ProductState* product_state =
+          original_state.GetNonVersionedProductState(
+              system_install, this_type);
+      if (product_state->GetEulaAccepted(&dword_value) &&
+          (!have_eula_accepted || dword_value > eula_accepted)) {
+        have_eula_accepted = true;
+        eula_accepted = dword_value;
+        product_type = this_type;
+      }
+    }
+
+    if (have_eula_accepted) {
+      VLOG(1) << "Mirroring eulaaccepted=" << eula_accepted << " from "
+              << BrowserDistribution::GetSpecificDistribution(product_type)
+                     ->GetAppShortCutName();
+      install_list->AddCreateRegKeyWorkItem(root_key, multi_key);
+      install_list->AddSetRegValueWorkItem(
+          root_key, multi_key, google_update::kRegEULAAceptedField,
+          eula_accepted, true);
+    } else {
+      // Clear any old value.
+      install_list->AddDeleteRegValueWorkItem(
+          root_key, multi_key, google_update::kRegEULAAceptedField);
+    }
+  }
+}
+
 // Adds work items that make registry adjustments for Google Update.
 void AddGoogleUpdateWorkItems(const InstallationState& original_state,
                               const InstallerState& installer_state,
@@ -261,30 +361,44 @@ void AddGoogleUpdateWorkItems(const InstallationState& original_state,
     return;
   }
 
+  const bool system_install = installer_state.system_install();
+  const HKEY root_key = installer_state.root_key();
+  std::wstring multi_key(
+      installer_state.multi_package_binaries_distribution()->GetStateKey());
+
+  // For system-level installs, make sure the ClientStateMedium key for the
+  // binaries exists.
+  if (system_install) {
+    install_list->AddCreateRegKeyWorkItem(
+        root_key,
+        installer_state.multi_package_binaries_distribution()->
+            GetStateMediumKey().c_str());
+  }
+
   // Creating the ClientState key for binaries, if we're migrating to multi then
   // copy over Chrome's brand code if it has one. Chrome Frame currently never
   // has a brand code.
   if (installer_state.state_type() != BrowserDistribution::CHROME_BINARIES) {
-    std::wstring multi_key(
-        installer_state.multi_package_binaries_distribution()->GetStateKey());
     const ProductState* chrome_product_state =
         original_state.GetNonVersionedProductState(
-            installer_state.system_install(),
-            BrowserDistribution::CHROME_BROWSER);
+            system_install, BrowserDistribution::CHROME_BROWSER);
 
     const std::wstring& brand(chrome_product_state->brand());
     if (!brand.empty()) {
-      install_list->AddCreateRegKeyWorkItem(installer_state.root_key(),
-                                            multi_key);
+      install_list->AddCreateRegKeyWorkItem(root_key, multi_key);
       // Write Chrome's brand code to the multi key. Never overwrite the value
       // if one is already present (although this shouldn't happen).
-      install_list->AddSetRegValueWorkItem(installer_state.root_key(),
+      install_list->AddSetRegValueWorkItem(root_key,
                                            multi_key,
                                            google_update::kRegBrandField,
                                            brand,
                                            false);
     }
   }
+
+  AddOemInstallWorkItems(original_state, installer_state, install_list);
+
+  AddEulaAcceptedWorkItems(original_state, installer_state, install_list);
 
   AddUsageStatsWorkItems(original_state, installer_state, install_list);
 

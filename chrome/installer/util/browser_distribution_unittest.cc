@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -24,14 +24,10 @@ class BrowserDistributionTest : public testing::Test {
 // The distribution strings should not be empty. The unit tests are not linking
 // with the chrome resources so we cannot test official build.
 TEST(BrowserDistributionTest, StringsTest) {
-  BrowserDistribution::Type browser_tests[] = {
-    BrowserDistribution::CHROME_BROWSER,
-    BrowserDistribution::CHROME_FRAME,
-  };
-
-  for (int i = 0; i < arraysize(browser_tests); ++i) {
+  for (size_t i = 0; i < BrowserDistribution::kNumProductTypes; ++i) {
     BrowserDistribution* dist =
-        BrowserDistribution::GetSpecificDistribution(browser_tests[i]);
+        BrowserDistribution::GetSpecificDistribution(
+            BrowserDistribution::kProductTypes[i]);
     ASSERT_TRUE(dist != NULL);
     std::wstring name = dist->GetApplicationName();
     EXPECT_FALSE(name.empty());

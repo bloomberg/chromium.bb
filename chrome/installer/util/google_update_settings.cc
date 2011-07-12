@@ -18,11 +18,11 @@
 #include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/install_util.h"
-#include "chrome/installer/util/installer_state.h"
+#include "chrome/installer/util/installation_state.h"
 #include "chrome/installer/util/product.h"
 
 using base::win::RegKey;
-using installer::InstallerState;
+using installer::InstallationState;
 
 namespace {
 
@@ -268,49 +268,44 @@ bool GoogleUpdateSettings::SetMetricsId(const std::wstring& metrics_id) {
   return WriteGoogleUpdateStrKey(google_update::kRegMetricsId, metrics_id);
 }
 
+// EULA consent is only relevant for system-level installs.
 bool GoogleUpdateSettings::SetEULAConsent(
-    const InstallerState& installer_state,
+    const InstallationState& machine_state,
     bool consented) {
-  // If this is a multi install, Google Update will have put eulaaccepted=0 into
-  // the ClientState key of the multi-installer.  Conduct a brief search for
-  // this value and store the consent in the corresponding location.
-  HKEY root = installer_state.root_key();
-  EulaSearchResult status = NO_SETTING;
-  std::wstring reg_path;
-  std::wstring fallback_reg_path;
+  const DWORD eula_accepted = consented ? 1 : 0;
+  // This magical method will return the right instance based on such details as
+  // whether or not --chrome-frame is present on the command-line.
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  std::wstring reg_path = dist->GetStateMediumKey();
+  bool succeeded = true;
+  RegKey key;
 
-  if (installer_state.package_type() == InstallerState::MULTI_PACKAGE) {
-    BrowserDistribution* binaries_dist =
-        installer_state.multi_package_binaries_distribution();
-    fallback_reg_path = reg_path = binaries_dist->GetStateMediumKey();
-    status = HasEULASetting(root, binaries_dist->GetStateKey(), !consented);
+  // Write the consent value into the product's ClientStateMedium key.
+  if (key.Create(HKEY_LOCAL_MACHINE, reg_path.c_str(),
+                 KEY_SET_VALUE) != ERROR_SUCCESS ||
+      key.WriteValue(google_update::kRegEULAAceptedField,
+                     eula_accepted) != ERROR_SUCCESS) {
+    succeeded = false;
   }
-  if (status != FOUND_SAME_SETTING) {
-    EulaSearchResult new_status = NO_SETTING;
-    installer::Products::const_iterator scan =
-        installer_state.products().begin();
-    installer::Products::const_iterator end =
-        installer_state.products().end();
-    for (; status != FOUND_SAME_SETTING && scan != end; ++scan) {
-      if (fallback_reg_path.empty())
-        fallback_reg_path = (*scan)->distribution()->GetStateMediumKey();
-      new_status = HasEULASetting(root, (*scan)->distribution()->GetStateKey(),
-                                  !consented);
-      if (new_status > status) {
-        status = new_status;
-        reg_path = (*scan)->distribution()->GetStateMediumKey();
-      }
-    }
-    if (status == NO_SETTING) {
-      LOG(WARNING)
-          << "eulaaccepted value not found; setting consent in key "
-          << fallback_reg_path;
-      reg_path = fallback_reg_path;
+
+  // If this is a multi-install, also write it into the binaries' key.
+  // --mutli-install is not provided on the command-line, so deduce it from
+  // the product's state.
+  const installer::ProductState* product_state =
+      machine_state.GetProductState(true, dist->GetType());
+  if (product_state != NULL && product_state->is_multi_install()) {
+    dist = BrowserDistribution::GetSpecificDistribution(
+        BrowserDistribution::CHROME_BINARIES);
+    reg_path = dist->GetStateMediumKey();
+    if (key.Create(HKEY_LOCAL_MACHINE, reg_path.c_str(),
+                   KEY_SET_VALUE) != ERROR_SUCCESS ||
+        key.WriteValue(google_update::kRegEULAAceptedField,
+                       eula_accepted) != ERROR_SUCCESS) {
+        succeeded = false;
     }
   }
-  RegKey key(HKEY_LOCAL_MACHINE, reg_path.c_str(), KEY_SET_VALUE);
-  return (key.WriteValue(google_update::kRegEULAAceptedField,
-                         consented ? 1 : 0) == ERROR_SUCCESS);
+
+  return succeeded;
 }
 
 int GoogleUpdateSettings::GetLastRunTime() {

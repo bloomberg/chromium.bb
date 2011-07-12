@@ -65,6 +65,17 @@ class ProductState {
   // awaiting update; may be empty.
   const std::wstring& rename_cmd() const { return rename_cmd_; }
 
+  // Returns true and populates |eula_accepted| if the product has such a value;
+  // otherwise, returns false and does not modify |eula_accepted|.  Expected
+  // values are 0 (false) and 1 (true), although |eula_accepted| is given
+  // whatever is found.
+  bool GetEulaAccepted(DWORD* eula_accepted) const;
+
+  // Returns true and populates |oem_install| if the product has such a value;
+  // otherwise, returns false and does not modify |oem_install|.  Expected
+  // value is "1", although |oem_install| is given whatever is found.
+  bool GetOemInstall(std::wstring* oem_install) const;
+
   // Returns true and populates |usagestats| if the product has such a value;
   // otherwise, returns false and does not modify |usagestats|.  Expected values
   // are 0 (false) and 1 (true), although |usagestats| is given whatever is
@@ -98,12 +109,16 @@ class ProductState {
   scoped_ptr<Version> old_version_;
   std::wstring brand_;
   std::wstring rename_cmd_;
+  std::wstring oem_install_;
   CommandLine uninstall_command_;
   AppCommands commands_;
+  DWORD eula_accepted_;
   DWORD usagestats_;
-  bool msi_;
-  bool multi_install_;
-  bool has_usagestats_;
+  bool msi_ : 1;
+  bool multi_install_ : 1;
+  bool has_eula_accepted_ : 1;
+  bool has_oem_install_ : 1;
+  bool has_usagestats_ : 1;
 
  private:
   friend class InstallationState;

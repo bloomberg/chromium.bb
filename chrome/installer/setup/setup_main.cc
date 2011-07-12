@@ -147,14 +147,8 @@ DWORD UnPackArchive(const FilePath& archive,
 void AddExistingMultiInstalls(const InstallationState& original_state,
                               InstallerState* installer_state) {
   if (installer_state->is_multi_install()) {
-    // TODO(grt): Find all occurrences of such arrays and generalize/centralize.
-    static const BrowserDistribution::Type product_checks[] = {
-      BrowserDistribution::CHROME_BROWSER,
-      BrowserDistribution::CHROME_FRAME
-    };
-
-    for (size_t i = 0; i < arraysize(product_checks); ++i) {
-      BrowserDistribution::Type type = product_checks[i];
+    for (size_t i = 0; i < BrowserDistribution::kNumProductTypes; ++i) {
+      BrowserDistribution::Type type = BrowserDistribution::kProductTypes[i];
       if (!installer_state->FindProduct(type)) {
         const ProductState* state =
             original_state.GetProductState(installer_state->system_install(),
@@ -347,7 +341,6 @@ bool CheckMultiInstallConditions(const InstallationState& original_state,
   const Products& products = installer_state->products();
   DCHECK(products.size());
 
-  bool is_first_install = true;
   const bool system_level = installer_state->system_install();
 
   if (installer_state->is_multi_install()) {
@@ -899,7 +892,7 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
         cmd_line.GetSwitchValueNative(installer::switches::kShowEula);
     *exit_code = ShowEULADialog(inner_frame);
     if (installer::EULA_REJECTED != *exit_code)
-      GoogleUpdateSettings::SetEULAConsent(*installer_state, true);
+      GoogleUpdateSettings::SetEULAConsent(original_state, true);
   } else if (cmd_line.HasSwitch(
       installer::switches::kRegisterChromeBrowser)) {
     installer::InstallStatus status = installer::UNKNOWN_STATUS;

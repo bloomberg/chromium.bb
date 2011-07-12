@@ -54,6 +54,16 @@ BrowserDistribution::Type GetCurrentDistributionType() {
 
 }  // end namespace
 
+// CHROME_BINARIES represents the binaries shared by multi-install products and
+// is not a product in and of itself, so it is not present in this collection.
+const BrowserDistribution::Type BrowserDistribution::kProductTypes[] = {
+  BrowserDistribution::CHROME_BROWSER,
+  BrowserDistribution::CHROME_FRAME,
+};
+
+const size_t BrowserDistribution::kNumProductTypes =
+    arraysize(BrowserDistribution::kProductTypes);
+
 BrowserDistribution::BrowserDistribution()
     : type_(CHROME_BROWSER) {
 }

@@ -93,11 +93,21 @@ class MockProductState : public ProductState {
   void set_version(Version* version) { version_.reset(version); }
   void set_multi_install(bool multi) { multi_install_ = multi; }
   void set_brand(const std::wstring& brand) { brand_ = brand; }
+  void set_eula_accepted(DWORD eula_accepted) {
+    has_eula_accepted_ = true;
+    eula_accepted_ = eula_accepted;
+  }
+  void clear_eula_accepted() { has_eula_accepted_ = false; }
   void set_usagestats(DWORD usagestats) {
     has_usagestats_ = true;
     usagestats_ = usagestats;
   }
   void clear_usagestats() { has_usagestats_ = false; }
+  void set_oem_install(const std::wstring& oem_install) {
+    has_oem_install_ = true;
+    oem_install_ = oem_install;
+  }
+  void clear_oem_install() { has_oem_install_ = false; }
   void SetUninstallProgram(const FilePath& setup_exe) {
     uninstall_command_ = CommandLine(setup_exe);
   }
@@ -175,6 +185,7 @@ class InstallWorkerTest : public testing::Test {
     product_state.set_version(current_version_->Clone());
     product_state.set_multi_install(multi_install);
     product_state.set_brand(L"TEST");
+    product_state.set_eula_accepted(1);
     BrowserDistribution* dist =
         BrowserDistribution::GetSpecificDistribution(
             BrowserDistribution::CHROME_BROWSER);
@@ -543,14 +554,22 @@ TEST_F(InstallWorkerTest, GoogleUpdateWorkItemsTest) {
       BrowserDistribution::GetSpecificDistribution(
           BrowserDistribution::CHROME_BINARIES);
   std::wstring multi_app_guid(multi_dist->GetAppGuid());
+  std::wstring multi_client_state_suffix(L"ClientState\\" + multi_app_guid);
   EXPECT_CALL(work_item_list,
-              AddCreateRegKeyWorkItem(_, HasSubstr(multi_app_guid))).Times(1);
+              AddCreateRegKeyWorkItem(_, HasSubstr(multi_client_state_suffix)))
+      .Times(testing::AnyNumber());
+
+  // Expect ClientStateMedium to be created for system-level installs.
+  EXPECT_CALL(work_item_list,
+              AddCreateRegKeyWorkItem(_, HasSubstr(L"ClientStateMedium\\" +
+                                                   multi_app_guid)))
+      .Times(system_level ? 1 : 0);
 
   // Expect to see a set value for the "TEST" brand code in the multi Client
   // State key.
   EXPECT_CALL(work_item_list,
               AddSetRegStringValueWorkItem(_,
-                                           HasSubstr(multi_app_guid),
+                                           HasSubstr(multi_client_state_suffix),
                                            StrEq(google_update::kRegBrandField),
                                            StrEq(L"TEST"),
                                            _)).Times(1);
@@ -560,6 +579,22 @@ TEST_F(InstallWorkerTest, GoogleUpdateWorkItemsTest) {
               AddSetRegStringValueWorkItem(_, _,
                                            StrEq(google_update::kRegApField),
                                            _, _)).Times(testing::AnyNumber());
+
+  // Expect "oeminstall" to be cleared.
+  EXPECT_CALL(work_item_list,
+              AddDeleteRegValueWorkItem(
+                  _,
+                  HasSubstr(multi_client_state_suffix),
+                  StrEq(google_update::kRegOemInstallField))).Times(1);
+
+  // Expect "eulaaccepted" to set.
+  EXPECT_CALL(work_item_list,
+              AddSetRegDwordValueWorkItem(
+                  _,
+                  HasSubstr(multi_client_state_suffix),
+                  StrEq(google_update::kRegEULAAceptedField),
+                  Eq(static_cast<DWORD>(1)),
+                  _)).Times(1);
 
   AddGoogleUpdateWorkItems(*installation_state.get(),
                            *installer_state.get(),

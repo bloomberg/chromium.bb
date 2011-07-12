@@ -28,8 +28,18 @@ class InstallerState;
 class Package;
 class Product;
 
+// Helper function for AddGoogleUpdateWorkItems that mirrors oeminstall.
+void AddOemInstallWorkItems(const InstallationState& original_state,
+                            const InstallerState& installer_state,
+                            WorkItemList* install_list);
+
+// Helper function for AddGoogleUpdateWorkItems that mirrors eulaaccepted.
+void AddEulaAcceptedWorkItems(const InstallationState& original_state,
+                              const InstallerState& installer_state,
+                              WorkItemList* install_list);
+
 // Adds work items that make registry adjustments for Google Update; namely,
-// copy a brand value and move a usagestats value.
+// copy brand, oeminstall, and eulaaccepted values; and move a usagestats value.
 void AddGoogleUpdateWorkItems(const InstallationState& original_state,
                               const InstallerState& installer_state,
                               WorkItemList* install_list);

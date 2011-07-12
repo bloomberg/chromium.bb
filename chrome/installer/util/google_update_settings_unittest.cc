@@ -5,20 +5,14 @@
 #include <windows.h>
 #include <shlwapi.h>  // For SHDeleteKey.
 
-#include <functional>
-#include <map>
-
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/win/registry.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/channel_info.h"
+#include "chrome/installer/util/fake_installation_state.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
-#include "chrome/installer/util/installation_state.h"
-#include "chrome/installer/util/installer_state.h"
-#include "chrome/installer/util/master_preferences.h"
-#include "chrome/installer/util/product.h"
 #include "chrome/installer/util/work_item_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -427,50 +421,36 @@ TEST_F(GoogleUpdateSettingsTest, UpdateInstallStatusTest) {
 }
 
 TEST_F(GoogleUpdateSettingsTest, SetEULAConsent) {
+  using installer::FakeInstallationState;
+
   const bool multi_install = true;
   const bool system_level = true;
-  CommandLine cmd_line = CommandLine::FromString(
-      std::wstring(L"setup.exe") +
-      (multi_install ? L" --multi-install --chrome" : L"") +
-      (system_level ? L" --system-level" : L""));
-  installer::MasterPreferences prefs(cmd_line);
-  installer::InstallationState machine_state;
-  machine_state.Initialize();
-  installer::InstallerState installer_state;
-  installer_state.Initialize(cmd_line, prefs, machine_state);
-  HKEY root = installer_state.root_key();
+  FakeInstallationState machine_state;
+
+  // Chrome is installed.
+  machine_state.AddChrome(system_level, multi_install,
+      Version::GetVersionFromString(chrome::kChromeVersion));
 
   RegKey key;
   DWORD value;
   BrowserDistribution* binaries =
-      installer_state.multi_package_binaries_distribution();
-  EXPECT_EQ(BrowserDistribution::CHROME_BINARIES, binaries->GetType());
+      BrowserDistribution::GetSpecificDistribution(
+          BrowserDistribution::CHROME_BINARIES);
   BrowserDistribution* chrome =
-      installer_state.products()[0]->distribution();
-  EXPECT_EQ(BrowserDistribution::CHROME_BROWSER, chrome->GetType());
+      BrowserDistribution::GetSpecificDistribution(
+          BrowserDistribution::CHROME_BROWSER);
 
-  // By default, eulaconsent ends up on the package.
-  EXPECT_TRUE(GoogleUpdateSettings::SetEULAConsent(installer_state, true));
+  // eulaconsent is set on both the product and the binaries.
+  EXPECT_TRUE(GoogleUpdateSettings::SetEULAConsent(machine_state, true));
   EXPECT_EQ(ERROR_SUCCESS,
       key.Open(HKEY_LOCAL_MACHINE, binaries->GetStateMediumKey().c_str(),
-               KEY_QUERY_VALUE | KEY_SET_VALUE));
+               KEY_QUERY_VALUE));
   EXPECT_EQ(ERROR_SUCCESS,
       key.ReadValueDW(google_update::kRegEULAAceptedField, &value));
   EXPECT_EQ(1U, value);
   EXPECT_EQ(ERROR_SUCCESS,
-      key.DeleteValue(google_update::kRegEULAAceptedField));
-
-  // But it will end up on the product if needed
-  EXPECT_EQ(ERROR_SUCCESS,
-      key.Create(HKEY_LOCAL_MACHINE, chrome->GetStateKey().c_str(),
-                 KEY_SET_VALUE));
-  EXPECT_EQ(ERROR_SUCCESS,
-      key.WriteValue(google_update::kRegEULAAceptedField,
-                     static_cast<DWORD>(0)));
-  EXPECT_TRUE(GoogleUpdateSettings::SetEULAConsent(installer_state, true));
-  EXPECT_EQ(ERROR_SUCCESS,
       key.Open(HKEY_LOCAL_MACHINE, chrome->GetStateMediumKey().c_str(),
-               KEY_QUERY_VALUE | KEY_SET_VALUE));
+               KEY_QUERY_VALUE));
   EXPECT_EQ(ERROR_SUCCESS,
       key.ReadValueDW(google_update::kRegEULAAceptedField, &value));
   EXPECT_EQ(1U, value);

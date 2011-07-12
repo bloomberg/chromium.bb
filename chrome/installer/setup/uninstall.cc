@@ -801,13 +801,10 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
 
   bool can_delete_files = true;
   if (installer_state.is_multi_install()) {
-    BrowserDistribution::Type types[] = {
-      BrowserDistribution::CHROME_BROWSER,
-      BrowserDistribution::CHROME_FRAME
-    };
     ProductState prod_state;
-    for (int i = 0; i < arraysize(types); ++i) {
-      if (prod_state.Initialize(installer_state.system_install(), types[i]) &&
+    for (size_t i = 0; i < BrowserDistribution::kNumProductTypes; ++i) {
+      if (prod_state.Initialize(installer_state.system_install(),
+                                BrowserDistribution::kProductTypes[i]) &&
           prod_state.is_multi_install()) {
         can_delete_files = false;
         break;

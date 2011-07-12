@@ -41,6 +41,7 @@ extern const wchar_t kRegLastCheckedField[];
 extern const wchar_t kRegMetricsId[];
 extern const wchar_t kRegMSIField[];
 extern const wchar_t kRegNameField[];
+extern const wchar_t kRegOemInstallField[];
 extern const wchar_t kRegOldVersionField[];
 extern const wchar_t kRegOopcrashesField[];
 extern const wchar_t kRegRLZBrandField[];
