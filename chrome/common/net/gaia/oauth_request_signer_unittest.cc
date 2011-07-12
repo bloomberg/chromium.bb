@@ -7,6 +7,70 @@
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+// This value is used to seed the PRNG at the beginning of a sequence of
+// operations to produce a repeatable sequence.
+#define RANDOM_SEED (0x69E3C47D)
+
+TEST(OAuthRequestSignerTest, Encode) {
+  ASSERT_EQ(OAuthRequestSigner::Encode("ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                                       "abcdefghijklmnopqrstuvwxyz"
+                                       "0123456789"
+                                       "-._~"),
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            "abcdefghijklmnopqrstuvwxyz"
+            "0123456789"
+            "-._~");
+  ASSERT_EQ(OAuthRequestSigner::Encode(
+                "https://www.google.com/accounts/OAuthLogin"),
+            "https%3A%2F%2Fwww.google.com%2Faccounts%2FOAuthLogin");
+  ASSERT_EQ(OAuthRequestSigner::Encode("%"), "%25");
+  ASSERT_EQ(OAuthRequestSigner::Encode("%25"), "%2525");
+  ASSERT_EQ(OAuthRequestSigner::Encode(
+                "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed "
+                "do eiusmod tempor incididunt ut labore et dolore magna "
+                "aliqua. Ut enim ad minim veniam, quis nostrud exercitation "
+                "ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis "
+                "aute irure dolor in reprehenderit in voluptate velit esse "
+                "cillum dolore eu fugiat nulla pariatur. Excepteur sint "
+                "occaecat cupidatat non proident, sunt in culpa qui officia "
+                "deserunt mollit anim id est laborum."),
+            "Lorem%20ipsum%20dolor%20sit%20amet%2C%20consectetur%20"
+            "adipisicing%20elit%2C%20sed%20do%20eiusmod%20tempor%20"
+            "incididunt%20ut%20labore%20et%20dolore%20magna%20aliqua.%20Ut%20"
+            "enim%20ad%20minim%20veniam%2C%20quis%20nostrud%20exercitation%20"
+            "ullamco%20laboris%20nisi%20ut%20aliquip%20ex%20ea%20commodo%20"
+            "consequat.%20Duis%20aute%20irure%20dolor%20in%20reprehenderit%20"
+            "in%20voluptate%20velit%20esse%20cillum%20dolore%20eu%20fugiat%20"
+            "nulla%20pariatur.%20Excepteur%20sint%20occaecat%20cupidatat%20"
+            "non%20proident%2C%20sunt%20in%20culpa%20qui%20officia%20"
+            "deserunt%20mollit%20anim%20id%20est%20laborum.");
+  ASSERT_EQ(OAuthRequestSigner::Encode("!5}&QF~0R-Ecy[?2Cig>6g=;hH!\\Ju4K%UK;"),
+            "%215%7D%26QF~0R-Ecy%5B%3F2Cig%3E6g%3D%3BhH%21%5CJu4K%25UK%3B");
+  ASSERT_EQ(OAuthRequestSigner::Encode("1UgHf(r)SkMRS`fRZ/8PsTcXT0:\\<9I=6{|:"),
+            "1UgHf%28r%29SkMRS%60fRZ%2F8PsTcXT0%3A%5C%3C9I%3D6%7B%7C%3A");
+  ASSERT_EQ(OAuthRequestSigner::Encode("|<XIy1?o`r\"RuGSX#!:MeP&RLZQM@:\\';2X"),
+            "%7C%3CXIy1%3Fo%60r%22RuGSX%23%21%3AMeP%26RLZQM%40%3A%5C%27%3B2X");
+  ASSERT_EQ(OAuthRequestSigner::Encode("#a@A>ZtcQ/yb.~^Q_]daRT?ffK>@A:afWuZL"),
+            "%23a%40A%3EZtcQ%2Fyb.~%5EQ_%5DdaRT%3FffK%3E%40A%3AafWuZL");
+}
+
+TEST(OAuthRequestSignerTest, DecodeEncoded) {
+  srand(RANDOM_SEED);
+  static const int kIterations = 500;
+  static const int kLengthLimit = 500;
+  for (int iteration = 0; iteration < kIterations; ++iteration) {
+    std::string text;
+    int length = rand() % kLengthLimit;
+    for (int position = 0; position < length; ++position) {
+      text += static_cast<char>(rand() % 256);
+    }
+    std::string encoded = OAuthRequestSigner::Encode(text);
+    std::string decoded;
+    ASSERT_TRUE(OAuthRequestSigner::Decode(encoded, &decoded));
+    ASSERT_EQ(decoded, text);
+  }
+}
+
 TEST(OAuthRequestSignerTest, SignGet1) {
   GURL request_url("https://www.google.com/accounts/o8/GetOAuthToken");
   OAuthRequestSigner::Parameters parameters;

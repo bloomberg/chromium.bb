@@ -5,8 +5,9 @@
 #include "chrome/common/net/gaia/oauth_request_signer.h"
 
 #include <cctype>
-#include <cstdlib>
 #include <cstddef>
+#include <cstdlib>
+#include <cstring>
 #include <ctime>
 #include <map>
 #include <string>
@@ -74,51 +75,15 @@ const std::string SignatureMethodName(
   return *(new std::string());
 }
 
-// The form of percent encoding used for OAuth request signing is very
-// specific and strict.  See http://oauth.net/core/1.0/#encoding_parameters.
-//
-// Any character which is in the "unreserved set" must not be encoded.
-// All other characters must be encoded.
-//
-// The unreserved set is comprised of the alphanumeric characters and these
-// others:
-//   - minus (-)
-//   - period (.)
-//   - underscore (_)
-//   - tilde (~)
-std::string EncodedOAuthParameter(const std::string& text) {
-  std::string result = "";
-  std::string::const_iterator cursor;
-  std::string::const_iterator limit;
-  for (limit = text.end(), cursor = text.begin(); cursor != limit; ++cursor) {
-    char character = *cursor;
-    if (isalnum(character)) {
-      result += character;
-    } else {
-      switch (character) {
-        case '-':
-        case '.':
-        case '_':
-        case '~':
-          result += character;
-          break;
-        default:
-          unsigned char byte = static_cast<unsigned char>(character);
-          result = result + '%' + kHexDigits[byte / kHexBase] +
-              kHexDigits[byte % kHexBase];
-      }
-    }
-  }
-  return result;
-}
-
 std::string BuildBaseString(const GURL& request_base_url,
                             OAuthRequestSigner::HttpMethod http_method,
                             const std::string base_parameters) {
   return StringPrintf("%s&%s&%s",
                       HttpMethodName(http_method).c_str(),
-                      EncodedOAuthParameter(request_base_url.spec()).c_str(),
-                      EncodedOAuthParameter(base_parameters).c_str());
+                      OAuthRequestSigner::Encode(
+                          request_base_url.spec()).c_str(),
+                      OAuthRequestSigner::Encode(
+                          base_parameters).c_str());
 }
 
 std::string BuildBaseStringParameters(
@@ -130,14 +95,13 @@ std::string BuildBaseStringParameters(
   for (cursor = parameters.begin(), limit = parameters.end();
        cursor != limit;
        ++cursor) {
-    if (first) {
+    if (first)
       first = false;
-    } else {
+    else
       result += '&';
-    }
-    result += EncodedOAuthParameter(cursor->first);
+    result += OAuthRequestSigner::Encode(cursor->first);
     result += '=';
-    result += EncodedOAuthParameter(cursor->second);
+    result += OAuthRequestSigner::Encode(cursor->second);
   }
   return result;
 }
@@ -273,6 +237,72 @@ bool SignRsaSha1(const std::string& text,
 }  // namespace
 
 // static
+bool OAuthRequestSigner::Decode(const std::string& text,
+                                std::string* decoded_text) {
+  std::string accumulator = "";
+  std::string::const_iterator cursor;
+  std::string::const_iterator limit;
+  for (limit = text.end(), cursor = text.begin(); cursor != limit; ++cursor) {
+    char character = *cursor;
+    if (character == '%') {
+      ++cursor;
+      if (cursor == limit)
+        return false;
+      char* first = strchr(kHexDigits, *cursor);
+      if (!first)
+        return false;
+      int high = first - kHexDigits;
+      DCHECK(high >= 0 && high < kHexBase);
+
+      ++cursor;
+      if (cursor == limit)
+        return false;
+      char* second = strchr(kHexDigits, *cursor);
+      if (!second)
+        return false;
+      int low = second - kHexDigits;
+      DCHECK(low >= 0 || low < kHexBase);
+
+      char decoded = static_cast<char>(high * kHexBase + low);
+      DCHECK(!isalnum(decoded));
+      DCHECK(!(decoded && strchr("-._~", decoded)));
+      accumulator += decoded;
+    } else {
+      accumulator += character;
+    }
+  }
+  *decoded_text = accumulator;
+  return true;
+}
+
+// static
+std::string OAuthRequestSigner::Encode(const std::string& text) {
+  std::string result = "";
+  std::string::const_iterator cursor;
+  std::string::const_iterator limit;
+  for (limit = text.end(), cursor = text.begin(); cursor != limit; ++cursor) {
+    char character = *cursor;
+    if (isalnum(character)) {
+      result += character;
+    } else {
+      switch (character) {
+        case '-':
+        case '.':
+        case '_':
+        case '~':
+          result += character;
+          break;
+        default:
+          unsigned char byte = static_cast<unsigned char>(character);
+          result = result + '%' + kHexDigits[byte / kHexBase] +
+              kHexDigits[byte % kHexBase];
+      }
+    }
+  }
+  return result;
+}
+
+// static
 bool OAuthRequestSigner::ParseAndSign(const GURL& request_url_with_parameters,
                                       SignatureMethod signature_method,
                                       HttpMethod http_method,
@@ -293,9 +323,8 @@ bool OAuthRequestSigner::ParseAndSign(const GURL& request_url_with_parameters,
   std::string spec = request_url_with_parameters.spec();
   std::string url_without_parameters = spec;
   std::string::size_type question = spec.find("?");
-  if (question != std::string::npos) {
+  if (question != std::string::npos)
     url_without_parameters = spec.substr(0,question);
-  }
   return Sign (GURL(url_without_parameters), parameters, signature_method,
                http_method, consumer_key, consumer_secret, token_key,
                token_secret, result);
@@ -370,7 +399,7 @@ bool OAuthRequestSigner::Sign(
         // Intentionally falling through
       case POST_METHOD:
         signed_text += base_parameters + '&' + kOAuthSignatureLabel + '=' +
-            EncodedOAuthParameter(signature);
+            Encode(signature);
         break;
       default:
         NOTREACHED();

@@ -32,6 +32,26 @@ class OAuthRequestSigner {
 
   typedef std::map<std::string,std::string> Parameters;
 
+  // Percent encoding and decoding for OAuth.
+  //
+  // The form of percent encoding used for OAuth request signing is very
+  // specific and strict.  See http://oauth.net/core/1.0/#encoding_parameters.
+  // This definition is considered the current standard as of January 2005.
+  // While as of July 2011 many systems to do not comply, any valid OAuth
+  // implementation must comply.
+  //
+  // Any character which is in the "unreserved set" MUST NOT be encoded.
+  // All other characters MUST be encoded.
+  //
+  // The unreserved set is comprised of the alphanumeric characters and these
+  // others:
+  //   - minus (-)
+  //   - period (.)
+  //   - underscore (_)
+  //   - tilde (~)
+  static bool Decode(const std::string& text, std::string* decoded_text);
+  static std::string Encode(const std::string& text);
+
   // Signs a request specified as URL string, complete with parameters.
   //
   // If HttpMethod is GET_METHOD, the signed result is the full URL, otherwise
