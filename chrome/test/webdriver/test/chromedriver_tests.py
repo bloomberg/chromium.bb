@@ -486,11 +486,12 @@ class ElementEqualityTest(ChromeDriverTest):
 class LoggingTest(unittest.TestCase):
 
   def setUp(self):
-    self._factory = ChromeDriverFactory(
-        ChromeDriverLauncher(test_paths.CHROMEDRIVER_EXE).Launch())
+    self._server = ChromeDriverLauncher(test_paths.CHROMEDRIVER_EXE).Launch()
+    self._factory = ChromeDriverFactory(self._server)
 
   def tearDown(self):
     self._factory.QuitAll()
+    self._server.Kill()
 
   def testNoVerboseLogging(self):
     driver = self._factory.GetNewDriver()
