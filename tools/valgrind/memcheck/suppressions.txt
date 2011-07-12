@@ -4829,6 +4829,15 @@
    fun:_ZNSt12_Vector_baseI13scoped_refptrIN3IPC12ChannelProxy13MessageFilterEESaIS4_EE11_M_allocateEj
    fun:_ZNSt6vectorI13scoped_refptrIN3IPC12ChannelProxy13MessageFilterEESaIS4_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS4_S6_EERKS4_
 }
+{
+   bug_81796
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base16MessageLoopProxy22CreateForCurrentThreadEv
+   fun:_ZN3IPC12ChannelProxy7ContextC1EPNS_7Channel8ListenerEPN4base16MessageLoopProxyE
+   fun:_ZN3IPC12ChannelProxyC1ERKNS_13ChannelHandleENS_7Channel4ModeEPNS4_8ListenerEPN4base16MessageLoopProxyE
+   fun:_ZN18AutomationProvider17InitializeChannelERKSs
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
