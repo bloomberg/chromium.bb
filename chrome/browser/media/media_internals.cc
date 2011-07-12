@@ -18,28 +18,27 @@ static const char kSendEverythingFunction[] = "onReceiveEverything";
 
 MediaInternals::~MediaInternals() {}
 
-void MediaInternals::OnDeleteAudioStream(
-    void* host, int32 render_view, int stream_id) {
-  std::string stream = base::StringPrintf("audio_streams.%p:%d:%d",
-                                          host, render_view, stream_id);
+void MediaInternals::OnDeleteAudioStream(void* host, int stream_id) {
+  std::string stream = base::StringPrintf("audio_streams.%p:%d",
+                                          host, stream_id);
   DeleteItem(stream);
 }
 
 void MediaInternals::OnSetAudioStreamPlaying(
-    void* host, int32 render_view, int stream_id, bool playing) {
-  UpdateAudioStream(host, render_view, stream_id,
+    void* host, int stream_id, bool playing) {
+  UpdateAudioStream(host, stream_id,
                     "playing", Value::CreateBooleanValue(playing));
 }
 
 void MediaInternals::OnSetAudioStreamStatus(
-    void* host, int32 render_view, int stream_id, const std::string& status) {
-  UpdateAudioStream(host, render_view, stream_id,
+    void* host, int stream_id, const std::string& status) {
+  UpdateAudioStream(host, stream_id,
                     "status", Value::CreateStringValue(status));
 }
 
 void MediaInternals::OnSetAudioStreamVolume(
-    void* host, int32 render_view, int stream_id, double volume) {
-  UpdateAudioStream(host, render_view, stream_id,
+    void* host, int stream_id, double volume) {
+  UpdateAudioStream(host, stream_id,
                     "volume", Value::CreateDoubleValue(volume));
 }
 
@@ -59,10 +58,9 @@ MediaInternals::MediaInternals()
     : observers_(new ObserverListThreadSafe<MediaInternalsObserver>()) {}
 
 void MediaInternals::UpdateAudioStream(
-    void* host, int32 render_view, int stream_id,
-    const std::string& property, Value* value) {
-  std::string stream = base::StringPrintf("audio_streams.%p:%d:%d",
-                                          host, render_view, stream_id);
+    void* host, int stream_id, const std::string& property, Value* value) {
+  std::string stream = base::StringPrintf("audio_streams.%p:%d",
+                                          host, stream_id);
   UpdateItem(kAudioUpdateFunction, stream, property, value);
 }
 

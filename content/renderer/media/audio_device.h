@@ -1,6 +1,47 @@
 // Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+//
+// Low-latency audio rendering unit utilizing audio output stream provided
+// by browser process through IPC.
+//
+// Relationship of classes.
+//
+//  AudioOutputController                AudioDevice
+//           ^                                ^
+//           |                                |
+//           v               IPC              v
+//    AudioRendererHost  <---------> AudioMessageFilter
+//
+// Transportation of audio samples from the render to the browser process
+// is done by using shared memory in combination with a sync socket pair
+// to generate a low latency transport. The AudioDevice user registers an
+// AudioDevice::RenderCallback at construction and will be polled by the
+// AudioDevice for audio to be played out by the underlying audio layers.
+//
+// State sequences.
+//
+//            Task [IO thread]                  IPC [IO thread]
+//
+// Start -> InitializeOnIOThread ------> AudioHostMsg_CreateStream -------->
+//       <- OnLowLatencyCreated <- AudioMsg_NotifyLowLatencyStreamCreated <-
+//       ---> StartOnIOThread -----------> AudioHostMsg_PlayStream -------->
+//
+// AudioDevice::Render => audio transport on audio thread with low latency =>
+//                               |
+// Stop --> ShutDownOnIOThread -------->  AudioHostMsg_CloseStream -> Close
+//
+// This class utilizes three threads during its lifetime, namely:
+// 1. Creating thread.
+//    Must be the main render thread. Start and Stop should be called on
+//    this thread.
+// 2. IO thread.
+//    The thread within which this class receives all the IPC messages and
+//    IPC communications can only happen in this thread.
+// 3. Audio transport thread.
+//    Responsible for calling the RenderCallback and feed audio samples to
+//    the audio layer in the browser process using sync sockets and shared
+//    memory.
 
 #ifndef CONTENT_RENDERER_MEDIA_AUDIO_DEVICE_H_
 #define CONTENT_RENDERER_MEDIA_AUDIO_DEVICE_H_
@@ -16,9 +57,6 @@
 
 struct AudioParameters;
 
-// Each instance of AudioDevice corresponds to one host stream.
-// This class is not thread-safe, so its methods must be called from
-// the same thread.
 class AudioDevice : public AudioMessageFilter::Delegate,
                     public base::DelegateSimpleThread::Delegate,
                     public base::RefCountedThreadSafe<AudioDevice> {
@@ -32,7 +70,7 @@ class AudioDevice : public AudioMessageFilter::Delegate,
     virtual ~RenderCallback() {}
   };
 
-  // |buffer_size| is the number of sample-frames.
+  // Methods called on main render thread -------------------------------------
   AudioDevice(size_t buffer_size,
               int channels,
               double sample_rate,
@@ -56,14 +94,8 @@ class AudioDevice : public AudioMessageFilter::Delegate,
   double sample_rate() const { return sample_rate_; }
   size_t buffer_size() const { return buffer_size_; }
 
- private:
-  // I/O thread backends to above functions.
-  void InitializeOnIOThread(const AudioParameters& params);
-  void StartOnIOThread();
-  void ShutDownOnIOThread();
-  void SetVolumeOnIOThread(double volume);
-
-  // AudioMessageFilter::Delegate implementation.
+  // Methods called on IO thread ----------------------------------------------
+  // AudioMessageFilter::Delegate methods, called by AudioMessageFilter.
   virtual void OnRequestPacket(AudioBuffersState buffers_state);
   virtual void OnStateChanged(AudioStreamState state);
   virtual void OnCreated(base::SharedMemoryHandle handle, uint32 length);
@@ -71,6 +103,23 @@ class AudioDevice : public AudioMessageFilter::Delegate,
                                    base::SyncSocket::Handle socket_handle,
                                    uint32 length);
   virtual void OnVolume(double volume);
+
+ private:
+  // Methods called on IO thread ----------------------------------------------
+  // The following methods are tasks posted on the IO thread that needs to
+  // be executed on that thread. They interact with AudioMessageFilter and
+  // sends IPC messages on that thread.
+  void InitializeOnIOThread(const AudioParameters& params);
+  void StartOnIOThread();
+  void ShutDownOnIOThread();
+  void SetVolumeOnIOThread(double volume);
+
+  void Send(IPC::Message* message);
+
+  // Method called on the audio thread (+ one call on the IO thread) ----------
+  // Calls the client's callback for rendering audio. There will also be one
+  // initial call on the IO thread before the audio thread has been created.
+  void FireRenderCallback();
 
   // DelegateSimpleThread::Delegate implementation.
   virtual void Run();
@@ -81,8 +130,6 @@ class AudioDevice : public AudioMessageFilter::Delegate,
   int bits_per_sample_;
   double sample_rate_;
 
-  // Calls the client's callback for rendering audio.
-  void FireRenderCallback();
   RenderCallback* callback_;
 
   // The client callback renders audio into here.
@@ -104,18 +151,18 @@ class AudioDevice : public AudioMessageFilter::Delegate,
   base::SyncSocket* socket() { return socket_.get(); }
   void* shared_memory_data() { return shared_memory()->memory(); }
 
-  // MessageFilter used to send/receive IPC. THIS MUST ONLY BE ACCESSED ON THE
-  // I/O thread except to send messages and get the message loop.
-  static scoped_refptr<AudioMessageFilter> filter_;
+  // Cached audio message filter (lives on the main render thread).
+  scoped_refptr<AudioMessageFilter> filter_;
 
-  // Our ID on the message filter. THIS MUST ONLY BE ACCESSED ON THE I/O THREAD
-  // or else you could race with the initialize function which sets it.
+  // Our stream ID on the message filter. Only modified on the IO thread.
   int32 stream_id_;
 
+  // Data transfer between browser and render process uses a combination
+  // of sync sockets and shared memory to provide lowest possible latency.
   scoped_ptr<base::SharedMemory> shared_memory_;
   scoped_ptr<base::SyncSocket> socket_;
 
-  DISALLOW_COPY_AND_ASSIGN(AudioDevice);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(AudioDevice);
 };
 
 #endif  // CONTENT_RENDERER_MEDIA_AUDIO_DEVICE_H_

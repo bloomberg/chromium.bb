@@ -2,6 +2,47 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Low-latency audio capturing unit utilizing audio input stream provided
+// by browser process through IPC.
+//
+// Relationship of classes.
+//
+//  AudioInputController                 AudioInputDevice
+//           ^                                  ^
+//           |                                  |
+//           v                  IPC             v
+// AudioInputRendererHost  <---------> AudioInputMessageFilter
+//
+// Transportation of audio samples from the browser to the render process
+// is done by using shared memory in combination with a sync socket pair
+// to generate a low latency transport. The AudioInputDevice user registers
+// an AudioInputDevice::CaptureCallback at construction and will be called
+// by the AudioInputDevice with recorded audio from the underlying audio layers.
+//
+// State sequences.
+//
+//            Task [IO thread]                  IPC [IO thread]
+//
+// Start -> InitializeOnIOThread -----> AudioInputHostMsg_CreateStream ------->
+//     <- OnLowLatencyCreated <- AudioInputMsg_NotifyLowLatencyStreamCreated <-
+//       ---> StartOnIOThread ---------> AudioInputHostMsg_PlayStream -------->
+//
+// AudioInputDevice::Capture => low latency audio transport on audio thread =>
+//                               |
+// Stop --> ShutDownOnIOThread ------>  AudioInputHostMsg_CloseStream -> Close
+//
+// This class utilizes three threads during its lifetime, namely:
+// 1. Creating thread.
+//    Must be the main render thread. Start and Stop should be called on
+//    this thread.
+// 2. IO thread.
+//    The thread within which this class receives all the IPC messages and
+//    IPC communications can only happen in this thread.
+// 3. Audio transport thread.
+//    Responsible for calling the CaptrureCallback and feed audio samples from
+//    the audio layer in the browser process using sync sockets and shared
+//    memory.
+
 #ifndef CONTENT_RENDERER_MEDIA_AUDIO_INPUT_DEVICE_H_
 #define CONTENT_RENDERER_MEDIA_AUDIO_INPUT_DEVICE_H_
 #pragma once
@@ -15,10 +56,6 @@
 #include "content/renderer/media/audio_input_message_filter.h"
 
 struct AudioParameters;
-
-// Each instance of AudioInputDevice corresponds to one host stream.
-// This class is not thread-safe, so its methods must be called from
-// the same thread.
 
 // TODO(henrika): This class is based on the AudioDevice class and it has
 // many components in common. Investigate potential for re-factoring.
@@ -35,7 +72,7 @@ class AudioInputDevice : public AudioInputMessageFilter::Delegate,
     virtual ~CaptureCallback() {}
   };
 
-  // |buffer_size| is the number of sample-frames.
+  // Methods called on main render thread -------------------------------------
   AudioInputDevice(size_t buffer_size,
                    int channels,
                    double sample_rate,
@@ -57,21 +94,30 @@ class AudioInputDevice : public AudioInputMessageFilter::Delegate,
   bool GetVolume(double* volume);
 
   double sample_rate() const { return sample_rate_; }
-
   size_t buffer_size() const { return buffer_size_; }
 
+  // Methods called on IO thread ----------------------------------------------
+  // AudioInputMessageFilter::Delegate impl., called by AudioInputMessageFilter
+  virtual void OnLowLatencyCreated(base::SharedMemoryHandle handle,
+                                   base::SyncSocket::Handle socket_handle,
+                                   uint32 length);
+  virtual void OnVolume(double volume);
+
  private:
-  // I/O thread backends to above functions.
+  // Methods called on IO thread ----------------------------------------------
+  // The following methods are tasks posted on the IO thread that needs to
+  // be executed on that thread. They interact with AudioInputMessageFilter and
+  // sends IPC messages on that thread.
   void InitializeOnIOThread(const AudioParameters& params);
   void StartOnIOThread();
   void ShutDownOnIOThread();
   void SetVolumeOnIOThread(double volume);
 
-  // AudioInputMessageFilter::Delegate implementation
-  virtual void OnLowLatencyCreated(base::SharedMemoryHandle handle,
-                                   base::SyncSocket::Handle socket_handle,
-                                   uint32 length);
-  virtual void OnVolume(double volume);
+  void Send(IPC::Message* message);
+
+  // Method called on the audio thread ----------------------------------------
+  // Calls the client's callback for capturing audio.
+  void FireCaptureCallback();
 
   // DelegateSimpleThread::Delegate implementation.
   virtual void Run();
@@ -82,8 +128,6 @@ class AudioInputDevice : public AudioInputMessageFilter::Delegate,
   int bits_per_sample_;
   double sample_rate_;
 
-  // Calls the client's callback for capturing audio.
-  void FireCaptureCallback();
   CaptureCallback* callback_;
 
   // The client callback receives captured audio here.
@@ -105,12 +149,10 @@ class AudioInputDevice : public AudioInputMessageFilter::Delegate,
   base::SyncSocket* socket() { return socket_.get(); }
   void* shared_memory_data() { return shared_memory()->memory(); }
 
-  // MessageFilter used to send/receive IPC. THIS MUST ONLY BE ACCESSED ON THE
-  // I/O thread except to send messages and get the message loop.
-  static scoped_refptr<AudioInputMessageFilter> filter_;
+  // Cached audio input message filter (lives on the main render thread).
+  scoped_refptr<AudioInputMessageFilter> filter_;
 
-  // Our ID on the message filter. THIS MUST ONLY BE ACCESSED ON THE I/O THREAD
-  // or else you could race with the initialize function which sets it.
+  // Our stream ID on the message filter. Only modified on the IO thread.
   int32 stream_id_;
 
   scoped_ptr<base::SharedMemory> shared_memory_;

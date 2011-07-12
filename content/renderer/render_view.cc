@@ -402,9 +402,6 @@ RenderView::RenderView(RenderThreadBase* render_thread,
   if (command_line.HasSwitch(switches::kEnableAccessibility))
     WebAccessibilityCache::enableAccessibility();
 
-  audio_message_filter_ = new AudioMessageFilter(routing_id_);
-  render_thread_->AddFilter(audio_message_filter_);
-
 #if defined(ENABLE_P2P_APIS)
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableP2PApi))
     p2p_socket_dispatcher_ = new P2PSocketDispatcher(this);
@@ -435,8 +432,6 @@ RenderView::~RenderView() {
     DestroyFakePluginWindowHandle(*fake_plugin_window_handles_.begin());
   }
 #endif
-
-  render_thread_->RemoveFilter(audio_message_filter_);
 
 #ifndef NDEBUG
   // Make sure we are no longer referenced by the ViewMap.
@@ -1351,7 +1346,7 @@ void RenderView::didAddMessageToConsole(
     const WebConsoleMessage& message, const WebString& source_name,
     unsigned source_line) {
   logging::LogSeverity log_severity = logging::LOG_VERBOSE;
-  switch(message.level) {
+  switch (message.level) {
     case WebConsoleMessage::LevelTip:
       log_severity = logging::LOG_VERBOSE;
       break;
@@ -1889,7 +1884,7 @@ WebMediaPlayer* RenderView::createMediaPlayer(
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
   if (!cmd_line->HasSwitch(switches::kDisableAudio)) {
     // Add the chrome specific audio renderer.
-    collection->AddAudioRenderer(new AudioRendererImpl(audio_message_filter()));
+    collection->AddAudioRenderer(new AudioRendererImpl());
   }
 
   scoped_refptr<webkit_glue::WebVideoRenderer> video_renderer;

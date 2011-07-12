@@ -17,6 +17,7 @@
 #include "base/task.h"
 #include "base/time.h"
 #include "content/common/child_process_messages.h"
+#include "content/common/child_process.h"
 #include "content/common/child_thread.h"
 #include "content/common/content_switches.h"
 #include "content/common/file_system/file_system_dispatcher.h"
@@ -159,10 +160,10 @@ class PlatformAudioImpl
       public AudioMessageFilter::Delegate,
       public base::RefCountedThreadSafe<PlatformAudioImpl> {
  public:
-  explicit PlatformAudioImpl(scoped_refptr<AudioMessageFilter> filter)
-      : client_(NULL), filter_(filter), stream_id_(0),
+  PlatformAudioImpl()
+      : client_(NULL), stream_id_(0),
         main_message_loop_(MessageLoop::current()) {
-    DCHECK(filter_);
+    filter_ = RenderThread::current()->audio_message_filter();
   }
 
   virtual ~PlatformAudioImpl() {
@@ -239,7 +240,8 @@ bool PlatformAudioImpl::Initialize(
   params.bits_per_sample = 16;
   params.samples_per_packet = sample_count;
 
-  filter_->message_loop()->PostTask(FROM_HERE,
+  ChildProcess::current()->io_message_loop()->PostTask(
+      FROM_HERE,
       NewRunnableMethod(this, &PlatformAudioImpl::InitializeOnIOThread,
                         params));
   return true;
@@ -247,7 +249,8 @@ bool PlatformAudioImpl::Initialize(
 
 bool PlatformAudioImpl::StartPlayback() {
   if (filter_) {
-    filter_->message_loop()->PostTask(FROM_HERE,
+    ChildProcess::current()->io_message_loop()->PostTask(
+        FROM_HERE,
         NewRunnableMethod(this, &PlatformAudioImpl::StartPlaybackOnIOThread));
     return true;
   }
@@ -256,7 +259,8 @@ bool PlatformAudioImpl::StartPlayback() {
 
 bool PlatformAudioImpl::StopPlayback() {
   if (filter_) {
-    filter_->message_loop()->PostTask(FROM_HERE,
+    ChildProcess::current()->io_message_loop()->PostTask(
+        FROM_HERE,
         NewRunnableMethod(this, &PlatformAudioImpl::StopPlaybackOnIOThread));
     return true;
   }
@@ -267,23 +271,24 @@ void PlatformAudioImpl::ShutDown() {
   // Called on the main thread to stop all audio callbacks. We must only change
   // the client on the main thread, and the delegates from the I/O thread.
   client_ = NULL;
-  filter_->message_loop()->PostTask(FROM_HERE,
+  ChildProcess::current()->io_message_loop()->PostTask(
+      FROM_HERE,
       NewRunnableMethod(this, &PlatformAudioImpl::ShutDownOnIOThread));
 }
 
 void PlatformAudioImpl::InitializeOnIOThread(const AudioParameters& params) {
   stream_id_ = filter_->AddDelegate(this);
-  filter_->Send(new AudioHostMsg_CreateStream(0, stream_id_, params, true));
+  filter_->Send(new AudioHostMsg_CreateStream(stream_id_, params, true));
 }
 
 void PlatformAudioImpl::StartPlaybackOnIOThread() {
   if (stream_id_)
-    filter_->Send(new AudioHostMsg_PlayStream(0, stream_id_));
+    filter_->Send(new AudioHostMsg_PlayStream(stream_id_));
 }
 
 void PlatformAudioImpl::StopPlaybackOnIOThread() {
   if (stream_id_)
-    filter_->Send(new AudioHostMsg_PauseStream(0, stream_id_));
+    filter_->Send(new AudioHostMsg_PauseStream(stream_id_));
 }
 
 void PlatformAudioImpl::ShutDownOnIOThread() {
@@ -291,7 +296,7 @@ void PlatformAudioImpl::ShutDownOnIOThread() {
   if (!stream_id_)
     return;
 
-  filter_->Send(new AudioHostMsg_CloseStream(0, stream_id_));
+  filter_->Send(new AudioHostMsg_CloseStream(stream_id_));
   filter_->RemoveDelegate(stream_id_);
   stream_id_ = 0;
 
@@ -851,8 +856,7 @@ webkit::ppapi::PluginDelegate::PlatformAudio*
 PepperPluginDelegateImpl::CreateAudio(
     uint32_t sample_rate, uint32_t sample_count,
     webkit::ppapi::PluginDelegate::PlatformAudio::Client* client) {
-  scoped_refptr<PlatformAudioImpl> audio(
-      new PlatformAudioImpl(render_view_->audio_message_filter()));
+  scoped_refptr<PlatformAudioImpl> audio(new PlatformAudioImpl());
   if (audio->Initialize(sample_rate, sample_count, client)) {
     // Balanced by Release invoked in PlatformAudioImpl::ShutDownOnIOThread().
     return audio.release();
@@ -991,9 +995,9 @@ bool PepperPluginDelegateImpl::ReadDirectory(
   return file_system_dispatcher->ReadDirectory(directory_path, dispatcher);
 }
 
-class AsyncOpenFileSystemURLCallbackTranslator :
-    public fileapi::FileSystemCallbackDispatcher {
-public:
+class AsyncOpenFileSystemURLCallbackTranslator
+    : public fileapi::FileSystemCallbackDispatcher {
+ public:
   AsyncOpenFileSystemURLCallbackTranslator(
       webkit::ppapi::PluginDelegate::AsyncOpenFileCallback* callback)
     : callback_(callback) {

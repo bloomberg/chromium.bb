@@ -22,6 +22,8 @@
 #include "ui/gfx/native_widget_types.h"
 
 class AppCacheDispatcher;
+class AudioInputMessageFilter;
+class AudioMessageFilter;
 class DBMessageFilter;
 class FilePath;
 class GpuChannelHost;
@@ -165,6 +167,14 @@ class RenderThread : public RenderThreadBase,
     return indexed_db_dispatcher_.get();
   }
 
+  AudioInputMessageFilter* audio_input_message_filter() {
+    return audio_input_message_filter_.get();
+  }
+
+  AudioMessageFilter* audio_message_filter() {
+    return audio_message_filter_.get();
+  }
+
   VideoCaptureImplManager* video_capture_impl_manager() const {
     return vc_manager_.get();
   }
@@ -251,6 +261,8 @@ class RenderThread : public RenderThreadBase,
 
   // Used on the renderer and IPC threads.
   scoped_refptr<DBMessageFilter> db_message_filter_;
+  scoped_refptr<AudioInputMessageFilter> audio_input_message_filter_;
+  scoped_refptr<AudioMessageFilter> audio_message_filter_;
 
   // Used on multiple threads.
   scoped_refptr<VideoCaptureImplManager> vc_manager_;

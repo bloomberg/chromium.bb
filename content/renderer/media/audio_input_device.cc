@@ -4,47 +4,12 @@
 
 #include "content/renderer/media/audio_input_device.h"
 
-#include "base/memory/singleton.h"
 #include "base/message_loop.h"
 #include "content/common/child_process.h"
 #include "content/common/media/audio_messages.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_thread.h"
 #include "media/audio/audio_util.h"
-
-scoped_refptr<AudioInputMessageFilter> AudioInputDevice::filter_;
-
-namespace {
-
-// AudioMessageFilterCreator is intended to be used as a singleton so we can
-// get access to a shared AudioInputMessageFilter.
-// Example usage:
-//   AudioInputMessageFilter* filter =
-//       AudioInputMessageFilterCreator::SharedFilter();
-
-class AudioInputMessageFilterCreator {
- public:
-  AudioInputMessageFilterCreator() {
-    int routing_id;
-    RenderThread::current()->Send(
-        new ViewHostMsg_GenerateRoutingID(&routing_id));
-    filter_ = new AudioInputMessageFilter(routing_id);
-    RenderThread::current()->AddFilter(filter_);
-  }
-
-  static AudioInputMessageFilter* SharedFilter() {
-    return GetInstance()->filter_.get();
-  }
-
-  static AudioInputMessageFilterCreator* GetInstance() {
-    return Singleton<AudioInputMessageFilterCreator>::get();
-  }
-
- private:
-  scoped_refptr<AudioInputMessageFilter> filter_;
-};
-
-}  // namespace
 
 AudioInputDevice::AudioInputDevice(size_t buffer_size,
                                    int channels,
@@ -58,14 +23,12 @@ AudioInputDevice::AudioInputDevice(size_t buffer_size,
       audio_delay_milliseconds_(0),
       volume_(1.0),
       stream_id_(0) {
+  filter_ = RenderThread::current()->audio_input_message_filter();
   audio_data_.reserve(channels);
   for (int i = 0; i < channels; ++i) {
     float* channel_data = new float[buffer_size];
     audio_data_.push_back(channel_data);
   }
-  // Lazily create the message filter and share across AudioInputDevice
-  // instances.
-  filter_ = AudioInputMessageFilterCreator::SharedFilter();
 }
 
 AudioInputDevice::~AudioInputDevice() {
@@ -90,17 +53,9 @@ bool AudioInputDevice::Start() {
   params.bits_per_sample = bits_per_sample_;
   params.samples_per_packet = buffer_size_;
 
-  // Ensure that the initialization task is posted on the I/O thread by
-  // accessing the I/O message loop directly. This approach avoids a race
-  // condition which could exist if the message loop of the filter was
-  // used instead.
-  DCHECK(ChildProcess::current()) << "Must be in the renderer";
-  MessageLoop* message_loop = ChildProcess::current()->io_message_loop();
-  if (!message_loop)
-    return false;
-
-  message_loop->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &AudioInputDevice::InitializeOnIOThread, params));
+  ChildProcess::current()->io_message_loop()->PostTask(
+    FROM_HERE,
+    NewRunnableMethod(this, &AudioInputDevice::InitializeOnIOThread, params));
 
   return true;
 }
@@ -109,7 +64,8 @@ bool AudioInputDevice::Stop() {
   if (!stream_id_)
     return false;
 
-  filter_->message_loop()->PostTask(FROM_HERE,
+  ChildProcess::current()->io_message_loop()->PostTask(
+      FROM_HERE,
       NewRunnableMethod(this, &AudioInputDevice::ShutDownOnIOThread));
 
   if (audio_thread_.get()) {
@@ -132,13 +88,12 @@ bool AudioInputDevice::GetVolume(double* volume) {
 
 void AudioInputDevice::InitializeOnIOThread(const AudioParameters& params) {
   stream_id_ = filter_->AddDelegate(this);
-  filter_->Send(
-      new AudioInputHostMsg_CreateStream(0, stream_id_, params, true));
+  Send(new AudioInputHostMsg_CreateStream(stream_id_, params, true));
 }
 
 void AudioInputDevice::StartOnIOThread() {
   if (stream_id_)
-    filter_->Send(new AudioInputHostMsg_RecordStream(0, stream_id_));
+    Send(new AudioInputHostMsg_RecordStream(stream_id_));
 }
 
 void AudioInputDevice::ShutDownOnIOThread() {
@@ -146,20 +101,21 @@ void AudioInputDevice::ShutDownOnIOThread() {
   if (!stream_id_)
     return;
 
-  filter_->Send(new AudioInputHostMsg_CloseStream(0, stream_id_));
   filter_->RemoveDelegate(stream_id_);
+  Send(new AudioInputHostMsg_CloseStream(stream_id_));
   stream_id_ = 0;
 }
 
 void AudioInputDevice::SetVolumeOnIOThread(double volume) {
   if (stream_id_)
-    filter_->Send(new AudioInputHostMsg_SetVolume(0, stream_id_, volume));
+    Send(new AudioInputHostMsg_SetVolume(stream_id_, volume));
 }
 
 void AudioInputDevice::OnLowLatencyCreated(
     base::SharedMemoryHandle handle,
     base::SyncSocket::Handle socket_handle,
     uint32 length) {
+  DCHECK(MessageLoop::current() == ChildProcess::current()->io_message_loop());
 #if defined(OS_WIN)
   DCHECK(handle);
   DCHECK(socket_handle);
@@ -169,31 +125,33 @@ void AudioInputDevice::OnLowLatencyCreated(
 #endif
   DCHECK(length);
 
-  // TODO(henrika) : check that length is big enough for buffer_size_
-
   shared_memory_.reset(new base::SharedMemory(handle, false));
   shared_memory_->Map(length);
 
   socket_.reset(new base::SyncSocket(socket_handle));
 
-  // TODO(henrika): we could optionally set the thread to high-priority
   audio_thread_.reset(
       new base::DelegateSimpleThread(this, "renderer_audio_input_thread"));
   audio_thread_->Start();
 
-  if (filter_) {
-    filter_->message_loop()->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &AudioInputDevice::StartOnIOThread));
-  }
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      NewRunnableMethod(this, &AudioInputDevice::StartOnIOThread));
 }
 
 void AudioInputDevice::OnVolume(double volume) {
   NOTIMPLEMENTED();
 }
 
+void AudioInputDevice::Send(IPC::Message* message) {
+  filter_->Send(message);
+}
+
 // Our audio thread runs here. We receive captured audio samples on
 // this thread.
 void AudioInputDevice::Run() {
+  audio_thread_->SetThreadPriority(base::kThreadPriority_RealtimeAudio);
+
   int pending_data;
   const int samples_per_ms = static_cast<int>(sample_rate_) / 1000;
   const int bytes_per_ms = channels_ * (bits_per_sample_ / 8) * samples_per_ms;

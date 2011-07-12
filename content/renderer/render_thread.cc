@@ -37,6 +37,8 @@
 #include "content/renderer/gpu/gpu_channel_host.h"
 #include "content/renderer/gpu/gpu_video_service_host.h"
 #include "content/renderer/indexed_db_dispatcher.h"
+#include "content/renderer/media/audio_input_message_filter.h"
+#include "content/renderer/media/audio_message_filter.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/media/video_capture_message_filter.h"
 #include "content/renderer/plugin_channel_host.h"
@@ -174,6 +176,12 @@ void RenderThread::Init() {
   vc_manager_ = new VideoCaptureImplManager();
   AddFilter(vc_manager_->video_capture_message_filter());
 
+  audio_input_message_filter_ = new AudioInputMessageFilter();
+  AddFilter(audio_input_message_filter_.get());
+
+  audio_message_filter_ = new AudioMessageFilter();
+  AddFilter(audio_message_filter_.get());
+
   content::GetContentClient()->renderer()->RenderThreadStarted();
 
   TRACE_EVENT_END_ETW("RenderThread::Init", 0, "");
@@ -188,6 +196,12 @@ RenderThread::~RenderThread() {
     web_database_observer_impl_->WaitForAllDatabasesToClose();
 
   // Shutdown in reverse of the initialization order.
+  RemoveFilter(audio_input_message_filter_.get());
+  audio_input_message_filter_ = NULL;
+
+  RemoveFilter(audio_message_filter_.get());
+  audio_message_filter_ = NULL;
+
   RemoveFilter(vc_manager_->video_capture_message_filter());
 
   RemoveFilter(db_message_filter_.get());
@@ -594,7 +608,7 @@ void RenderThread::EnsureWebKitInitialized() {
       !command_line.HasSwitch(switches::kDisableGeolocation));
 
   WebKit::WebRuntimeFeatures::enableMediaStream(
-    command_line.HasSwitch(switches::kEnableMediaStream));
+      command_line.HasSwitch(switches::kEnableMediaStream));
 
 #if defined(OS_CHROMEOS)
   // TODO(crogers): enable once Web Audio has been tested and optimized.

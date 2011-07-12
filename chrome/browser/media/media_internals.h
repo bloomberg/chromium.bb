@@ -19,14 +19,11 @@ class MediaInternals : public MediaObserver {
   virtual ~MediaInternals();
 
   // MediaObserver implementation. These are called from the IO thread:
-  virtual void OnDeleteAudioStream(void* host, int32 render_view,
-                                   int stream_id);
-  virtual void OnSetAudioStreamPlaying(void* host, int32 render_view,
-                                       int stream_id, bool playing);
-  virtual void OnSetAudioStreamStatus(void* host, int32 render_view,
-                                      int stream_id, const std::string& status);
-  virtual void OnSetAudioStreamVolume(void* host, int32 render_view,
-                                      int stream_id, double volume);
+  virtual void OnDeleteAudioStream(void* host, int stream_id);
+  virtual void OnSetAudioStreamPlaying(void* host, int stream_id, bool playing);
+  virtual void OnSetAudioStreamStatus(void* host, int stream_id,
+                                      const std::string& status);
+  virtual void OnSetAudioStreamVolume(void* host, int stream_id, double volume);
 
   // Methods for observers. Called from the observer's own thread:
   // UIs should add themselves on construction and remove themselves
@@ -42,9 +39,9 @@ class MediaInternals : public MediaObserver {
   MediaInternals();
 
   // Sets |property| of an audio stream to |value| and notifies observers.
-  // (host, render_view, stream_id) is a unique id for the audio stream.
+  // (host, stream_id) is a unique id for the audio stream.
   // |host| will never be dereferenced.
-  void UpdateAudioStream(void* host, int32 render_view, int stream_id,
+  void UpdateAudioStream(void* host, int stream_id,
                          const std::string& property, Value* value);
 
   // Removes |item| from |data_|.

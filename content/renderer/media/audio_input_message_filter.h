@@ -4,7 +4,7 @@
 //
 // MessageFilter that handles audio input messages and delegates them to
 // audio capturers. Created on render thread, AudioMessageFilter is operated on
-// IO thread (main thread of render process), it intercepts audio messages
+// IO thread (secondary thread of render process), it intercepts audio messages
 // and process them on IO thread since these messages are time critical.
 // This implementation only supports low-latency (based on SyncSocket)
 // messaging.
@@ -39,7 +39,7 @@ class AudioInputMessageFilter : public IPC::ChannelProxy::MessageFilter {
     virtual ~Delegate() {}
   };
 
-  explicit AudioInputMessageFilter(int32 route_id);
+  AudioInputMessageFilter();
   virtual ~AudioInputMessageFilter();
 
   // Add a delegate to the map and return id of the entry.
@@ -51,11 +51,7 @@ class AudioInputMessageFilter : public IPC::ChannelProxy::MessageFilter {
   // Sends an IPC message using |channel_|.
   bool Send(IPC::Message* message);
 
-  MessageLoop* message_loop() { return message_loop_; }
-
  private:
-  // TODO(henrika): add unit tests (compare with AudioMessageFilter)
-
   // IPC::ChannelProxy::MessageFilter override. Called on IO thread.
   virtual bool OnMessageReceived(const IPC::Message& message);
   virtual void OnFilterAdded(IPC::Channel* channel);
@@ -80,11 +76,7 @@ class AudioInputMessageFilter : public IPC::ChannelProxy::MessageFilter {
 
   IPC::Channel* channel_;
 
-  int32 route_id_;
-
-  MessageLoop* message_loop_;
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(AudioInputMessageFilter);
+  DISALLOW_COPY_AND_ASSIGN(AudioInputMessageFilter);
 };
 
 #endif  // CONTENT_RENDERER_MEDIA_AUDIO_INPUT_MESSAGE_FILTER_H_

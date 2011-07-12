@@ -27,8 +27,6 @@ using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::SetArgumentPointee;
 
-static const int kInvalidId = -1;
-static const int kRouteId = 200;
 static const int kStreamId = 50;
 
 static bool IsRunningHeadless() {
@@ -49,18 +47,16 @@ class MockAudioRendererHost : public AudioRendererHost {
   }
 
   // A list of mock methods.
-  MOCK_METHOD3(OnRequestPacket,
-               void(int routing_id, int stream_id,
-                    AudioBuffersState buffers_state));
-  MOCK_METHOD3(OnStreamCreated,
-               void(int routing_id, int stream_id, int length));
-  MOCK_METHOD3(OnLowLatencyStreamCreated,
-               void(int routing_id, int stream_id, int length));
-  MOCK_METHOD2(OnStreamPlaying, void(int routing_id, int stream_id));
-  MOCK_METHOD2(OnStreamPaused, void(int routing_id, int stream_id));
-  MOCK_METHOD2(OnStreamError, void(int routing_id, int stream_id));
-  MOCK_METHOD3(OnStreamVolume,
-               void(int routing_id, int stream_id, double volume));
+  MOCK_METHOD2(OnRequestPacket,
+               void(int stream_id, AudioBuffersState buffers_state));
+  MOCK_METHOD2(OnStreamCreated,
+               void(int stream_id, int length));
+  MOCK_METHOD2(OnLowLatencyStreamCreated,
+               void(int stream_id, int length));
+  MOCK_METHOD1(OnStreamPlaying, void(int stream_id));
+  MOCK_METHOD1(OnStreamPaused, void(int stream_id));
+  MOCK_METHOD1(OnStreamError, void(int stream_id));
+  MOCK_METHOD2(OnStreamVolume, void(int stream_id, double volume));
 
   base::SharedMemory* shared_memory() { return shared_memory_.get(); }
   uint32 shared_memory_length() { return shared_memory_length_; }
@@ -96,7 +92,7 @@ class MockAudioRendererHost : public AudioRendererHost {
   // These handler methods do minimal things and delegate to the mock methods.
   void OnRequestPacket(const IPC::Message& msg, int stream_id,
                        AudioBuffersState buffers_state) {
-    OnRequestPacket(msg.routing_id(), stream_id, buffers_state);
+    OnRequestPacket(stream_id, buffers_state);
   }
 
   void OnStreamCreated(const IPC::Message& msg, int stream_id,
@@ -108,7 +104,7 @@ class MockAudioRendererHost : public AudioRendererHost {
     shared_memory_length_ = length;
 
     // And then delegate the call to the mock method.
-    OnStreamCreated(msg.routing_id(), stream_id, length);
+    OnStreamCreated(stream_id, length);
   }
 
   void OnLowLatencyStreamCreated(const IPC::Message& msg, int stream_id,
@@ -135,24 +131,24 @@ class MockAudioRendererHost : public AudioRendererHost {
     sync_socket_.reset(new base::SyncSocket(sync_socket_handle));
 
     // And then delegate the call to the mock method.
-    OnLowLatencyStreamCreated(msg.routing_id(), stream_id, length);
+    OnLowLatencyStreamCreated(stream_id, length);
   }
 
   void OnStreamStateChanged(const IPC::Message& msg, int stream_id,
                             AudioStreamState state) {
     if (state == kAudioStreamPlaying) {
-      OnStreamPlaying(msg.routing_id(), stream_id);
+      OnStreamPlaying(stream_id);
     } else if (state == kAudioStreamPaused) {
-      OnStreamPaused(msg.routing_id(), stream_id);
+      OnStreamPaused(stream_id);
     } else if (state == kAudioStreamError) {
-      OnStreamError(msg.routing_id(), stream_id);
+      OnStreamError(stream_id);
     } else {
       FAIL() << "Unknown stream state";
     }
   }
 
   void OnStreamVolume(const IPC::Message& msg, int stream_id, double volume) {
-    OnStreamVolume(msg.routing_id(), stream_id, volume);
+    OnStreamVolume(stream_id, volume);
   }
 
   scoped_ptr<base::SharedMemory> shared_memory_;
@@ -208,20 +204,16 @@ class AudioRendererHostTest : public testing::Test {
 
   void Create() {
     EXPECT_CALL(*observer_,
-                OnSetAudioStreamStatus(_, kRouteId, kStreamId, "created"));
-    EXPECT_CALL(*observer_, OnDeleteAudioStream(_, kRouteId, kStreamId));
+                OnSetAudioStreamStatus(_, kStreamId, "created"));
+    EXPECT_CALL(*observer_, OnDeleteAudioStream(_, kStreamId));
 
     InSequence s;
     // 1. We will first receive a OnStreamCreated() signal.
-    EXPECT_CALL(*host_,
-                OnStreamCreated(kRouteId, kStreamId, _));
+    EXPECT_CALL(*host_, OnStreamCreated(kStreamId, _));
 
     // 2. First packet request will arrive.
-    EXPECT_CALL(*host_, OnRequestPacket(kRouteId, kStreamId, _))
+    EXPECT_CALL(*host_, OnRequestPacket(kStreamId, _))
         .WillOnce(QuitMessageLoop(message_loop_.get()));
-
-    IPC::Message msg;
-    msg.set_routing_id(kRouteId);
 
     AudioParameters params;
     if (mock_stream_)
@@ -235,23 +227,20 @@ class AudioRendererHostTest : public testing::Test {
 
     // Send a create stream message to the audio output stream and wait until
     // we receive the created message.
-    host_->OnCreateStream(msg, kStreamId, params, false);
+    host_->OnCreateStream(kStreamId, params, false);
     message_loop_->Run();
   }
 
   void CreateLowLatency() {
     EXPECT_CALL(*observer_,
-                OnSetAudioStreamStatus(_, kRouteId, kStreamId, "created"));
-    EXPECT_CALL(*observer_, OnDeleteAudioStream(_, kRouteId, kStreamId));
+                OnSetAudioStreamStatus(_, kStreamId, "created"));
+    EXPECT_CALL(*observer_, OnDeleteAudioStream(_, kStreamId));
 
     InSequence s;
     // We will first receive a OnLowLatencyStreamCreated() signal.
     EXPECT_CALL(*host_,
-                OnLowLatencyStreamCreated(kRouteId, kStreamId, _))
+                OnLowLatencyStreamCreated(kStreamId, _))
         .WillOnce(QuitMessageLoop(message_loop_.get()));
-
-    IPC::Message msg;
-    msg.set_routing_id(kRouteId);
 
     AudioParameters params;
     if (mock_stream_)
@@ -265,70 +254,60 @@ class AudioRendererHostTest : public testing::Test {
 
     // Send a create stream message to the audio output stream and wait until
     // we receive the created message.
-    host_->OnCreateStream(msg, kStreamId, params, true);
+    host_->OnCreateStream(kStreamId, params, true);
     message_loop_->Run();
   }
 
   void Close() {
     EXPECT_CALL(*observer_,
-                OnSetAudioStreamStatus(_, kRouteId, kStreamId, "closed"));
+                OnSetAudioStreamStatus(_, kStreamId, "closed"));
 
     // Send a message to AudioRendererHost to tell it we want to close the
     // stream.
-    IPC::Message msg;
-    msg.set_routing_id(kRouteId);
-    host_->OnCloseStream(msg, kStreamId);
+    host_->OnCloseStream(kStreamId);
     message_loop_->RunAllPending();
   }
 
   void Play() {
     EXPECT_CALL(*observer_,
-                OnSetAudioStreamPlaying(_, kRouteId, kStreamId, true));
-    EXPECT_CALL(*host_, OnStreamPlaying(kRouteId, kStreamId))
+                OnSetAudioStreamPlaying(_, kStreamId, true));
+    EXPECT_CALL(*host_, OnStreamPlaying(kStreamId))
         .WillOnce(QuitMessageLoop(message_loop_.get()));
 
-    IPC::Message msg;
-    msg.set_routing_id(kRouteId);
-    host_->OnPlayStream(msg, kStreamId);
+    host_->OnPlayStream(kStreamId);
     message_loop_->Run();
   }
 
   void Pause() {
     EXPECT_CALL(*observer_,
-                OnSetAudioStreamPlaying(_, kRouteId, kStreamId, false));
-    EXPECT_CALL(*host_, OnStreamPaused(kRouteId, kStreamId))
+                OnSetAudioStreamPlaying(_, kStreamId, false));
+    EXPECT_CALL(*host_, OnStreamPaused(kStreamId))
         .WillOnce(QuitMessageLoop(message_loop_.get()));
 
-    IPC::Message msg;
-    msg.set_routing_id(kRouteId);
-    host_->OnPauseStream(msg, kStreamId);
+    host_->OnPauseStream(kStreamId);
     message_loop_->Run();
   }
 
   void SetVolume(double volume) {
     EXPECT_CALL(*observer_,
-                OnSetAudioStreamVolume(_, kRouteId, kStreamId, volume));
-    IPC::Message msg;
-    msg.set_routing_id(kRouteId);
-    host_->OnSetVolume(msg, kStreamId, volume);
+                OnSetAudioStreamVolume(_, kStreamId, volume));
+
+    host_->OnSetVolume(kStreamId, volume);
     message_loop_->RunAllPending();
   }
 
   void NotifyPacketReady() {
-    EXPECT_CALL(*host_, OnRequestPacket(kRouteId, kStreamId, _))
+    EXPECT_CALL(*host_, OnRequestPacket(kStreamId, _))
         .WillOnce(QuitMessageLoop(message_loop_.get()));
 
-    IPC::Message msg;
-    msg.set_routing_id(kRouteId);
     memset(host_->shared_memory()->memory(), 0, host_->shared_memory_length());
-    host_->OnNotifyPacketReady(msg, kStreamId,
-                               host_->shared_memory_length());
+    host_->OnNotifyPacketReady(kStreamId, host_->shared_memory_length());
     message_loop_->Run();
   }
 
   void SimulateError() {
     EXPECT_CALL(*observer_,
-                OnSetAudioStreamStatus(_, kRouteId, kStreamId, "error"));
+                OnSetAudioStreamStatus(_, kStreamId, "error"));
     // Find the first AudioOutputController in the AudioRendererHost.
     CHECK(host_->audio_entries_.size())
         << "Calls Create() before calling this method";
@@ -337,7 +316,7 @@ class AudioRendererHostTest : public testing::Test {
     CHECK(controller) << "AudioOutputController not found";
 
     // Expect an error signal sent through IPC.
-    EXPECT_CALL(*host_, OnStreamError(kRouteId, kStreamId));
+    EXPECT_CALL(*host_, OnStreamError(kStreamId));
 
     // Simulate an error sent from the audio device.
     host_->OnError(controller, 0);

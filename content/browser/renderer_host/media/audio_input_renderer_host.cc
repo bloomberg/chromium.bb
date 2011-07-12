@@ -14,8 +14,7 @@
 
 
 AudioInputRendererHost::AudioEntry::AudioEntry()
-    : render_view_id(0),
-      stream_id(0),
+    : stream_id(0),
       pending_close(false) {
 }
 
@@ -80,7 +79,6 @@ void AudioInputRendererHost::OnData(media::AudioInputController* controller,
 
 void AudioInputRendererHost::DoCompleteCreation(
     media::AudioInputController* controller) {
-  VLOG(1) << "AudioInputRendererHost::DoCompleteCreation()";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   AudioEntry* entry = LookupByController(controller);
@@ -129,7 +127,7 @@ void AudioInputRendererHost::DoCompleteCreation(
     }
 
     Send(new AudioInputMsg_NotifyLowLatencyStreamCreated(
-             entry->render_view_id, entry->stream_id, foreign_memory_handle,
+             entry->stream_id, foreign_memory_handle,
              foreign_socket_handle, entry->shared_memory.created_size()));
     return;
   }
@@ -181,12 +179,11 @@ bool AudioInputRendererHost::OnMessageReceived(const IPC::Message& message,
 }
 
 void AudioInputRendererHost::OnCreateStream(
-    const IPC::Message& msg, int stream_id,
-    const AudioParameters& params, bool low_latency) {
+    int stream_id, const AudioParameters& params, bool low_latency) {
   VLOG(1) << "AudioInputRendererHost::OnCreateStream(stream_id="
           << stream_id << ")";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(LookupById(msg.routing_id(), stream_id) == NULL);
+  DCHECK(LookupById(stream_id) == NULL);
 
   // Prevent the renderer process from asking for a normal-latency
   // input stream.
@@ -207,7 +204,7 @@ void AudioInputRendererHost::OnCreateStream(
   // Create the shared memory and share with the renderer process.
   if (!entry->shared_memory.CreateAndMapAnonymous(packet_size)) {
     // If creation of shared memory failed then send an error message.
-    SendErrorMessage(msg.routing_id(), stream_id);
+    SendErrorMessage(stream_id);
     return;
   }
 
@@ -217,7 +214,7 @@ void AudioInputRendererHost::OnCreateStream(
 
   // Then try to initialize the sync writer.
   if (!writer->Init()) {
-    SendErrorMessage(msg.routing_id(), stream_id);
+    SendErrorMessage(stream_id);
     return;
   }
 
@@ -230,50 +227,44 @@ void AudioInputRendererHost::OnCreateStream(
                                                     entry->writer.get());
 
   if (!entry->controller) {
-    SendErrorMessage(msg.routing_id(), stream_id);
+    SendErrorMessage(stream_id);
     return;
   }
 
   // If we have created the controller successfully create a entry and add it
   // to the map.
-  entry->render_view_id = msg.routing_id();
   entry->stream_id = stream_id;
 
-  audio_entries_.insert(std::make_pair(
-      AudioEntryId(msg.routing_id(), stream_id),
-      entry.release()));
+  audio_entries_.insert(std::make_pair(stream_id, entry.release()));
 }
 
-void AudioInputRendererHost::OnRecordStream(const IPC::Message& msg,
-                                            int stream_id) {
+void AudioInputRendererHost::OnRecordStream(int stream_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  AudioEntry* entry = LookupById(msg.routing_id(), stream_id);
+  AudioEntry* entry = LookupById(stream_id);
   if (!entry) {
-    SendErrorMessage(msg.routing_id(), stream_id);
+    SendErrorMessage(stream_id);
     return;
   }
 
   entry->controller->Record();
 }
 
-void AudioInputRendererHost::OnCloseStream(const IPC::Message& msg,
-                                           int stream_id) {
+void AudioInputRendererHost::OnCloseStream(int stream_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  AudioEntry* entry = LookupById(msg.routing_id(), stream_id);
+  AudioEntry* entry = LookupById(stream_id);
 
   if (entry)
     CloseAndDeleteStream(entry);
 }
 
-void AudioInputRendererHost::OnSetVolume(const IPC::Message& msg, int stream_id,
-                                    double volume) {
+void AudioInputRendererHost::OnSetVolume(int stream_id, double volume) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  AudioEntry* entry = LookupById(msg.routing_id(), stream_id);
+  AudioEntry* entry = LookupById(stream_id);
   if (!entry) {
-    SendErrorMessage(msg.routing_id(), stream_id);
+    SendErrorMessage(stream_id);
     return;
   }
 
@@ -281,13 +272,12 @@ void AudioInputRendererHost::OnSetVolume(const IPC::Message& msg, int stream_id,
   NOTIMPLEMENTED();
 }
 
-void AudioInputRendererHost::OnGetVolume(const IPC::Message& msg,
-                                         int stream_id) {
+void AudioInputRendererHost::OnGetVolume(int stream_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  AudioEntry* entry = LookupById(msg.routing_id(), stream_id);
+  AudioEntry* entry = LookupById(stream_id);
   if (!entry) {
-    SendErrorMessage(msg.routing_id(), stream_id);
+    SendErrorMessage(stream_id);
     return;
   }
 
@@ -295,11 +285,9 @@ void AudioInputRendererHost::OnGetVolume(const IPC::Message& msg,
   NOTIMPLEMENTED();
 }
 
-void AudioInputRendererHost::SendErrorMessage(int32 render_view_id,
-                                              int32 stream_id) {
+void AudioInputRendererHost::SendErrorMessage(int stream_id) {
   // TODO(henrika): error state for audio input is not unique
-  Send(new AudioMsg_NotifyStreamStateChanged(render_view_id,
-                                             stream_id,
+  Send(new AudioMsg_NotifyStreamStateChanged(stream_id,
                                              kAudioStreamError));
 }
 
@@ -337,8 +325,7 @@ void AudioInputRendererHost::DeleteEntry(AudioEntry* entry) {
   scoped_ptr<AudioEntry> entry_deleter(entry);
 
   // Erase the entry from the map.
-  audio_entries_.erase(
-      AudioEntryId(entry->render_view_id, entry->stream_id));
+  audio_entries_.erase(entry->stream_id);
 }
 
 void AudioInputRendererHost::DeleteEntryOnError(AudioEntry* entry) {
@@ -346,16 +333,15 @@ void AudioInputRendererHost::DeleteEntryOnError(AudioEntry* entry) {
 
   // Sends the error message first before we close the stream because
   // |entry| is destroyed in DeleteEntry().
-  SendErrorMessage(entry->render_view_id, entry->stream_id);
+  SendErrorMessage(entry->stream_id);
   CloseAndDeleteStream(entry);
 }
 
 AudioInputRendererHost::AudioEntry* AudioInputRendererHost::LookupById(
-    int route_id, int stream_id) {
+    int stream_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  AudioEntryMap::iterator i = audio_entries_.find(
-      AudioEntryId(route_id, stream_id));
+  AudioEntryMap::iterator i = audio_entries_.find(stream_id);
   if (i != audio_entries_.end())
     return i->second;
   return NULL;

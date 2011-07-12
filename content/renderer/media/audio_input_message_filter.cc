@@ -6,43 +6,38 @@
 
 #include "base/message_loop.h"
 #include "base/time.h"
+#include "content/common/child_process.h"
 #include "content/common/media/audio_messages.h"
 #include "ipc/ipc_logging.h"
 
-AudioInputMessageFilter::AudioInputMessageFilter(int32 route_id)
-    : channel_(NULL),
-      route_id_(route_id),
-      message_loop_(NULL) {
-  VLOG(1) << "AudioInputMessageFilter(route_id=" << route_id << ")";
+AudioInputMessageFilter::AudioInputMessageFilter()
+    : channel_(NULL) {
+  VLOG(1) << "AudioInputMessageFilter()";
 }
 
-AudioInputMessageFilter::~AudioInputMessageFilter() {}
+AudioInputMessageFilter::~AudioInputMessageFilter() {
+  VLOG(1) << "AudioInputMessageFilter::~AudioInputMessageFilter()";
+}
 
-// Called on the IPC thread.
 bool AudioInputMessageFilter::Send(IPC::Message* message) {
   if (!channel_) {
     delete message;
     return false;
   }
 
-  if (MessageLoop::current() != message_loop_) {
+  if (MessageLoop::current() != ChildProcess::current()->io_message_loop()) {
     // Can only access the IPC::Channel on the IPC thread since it's not thread
     // safe.
-    message_loop_->PostTask(
-        FROM_HERE, NewRunnableMethod(this,
-                                     &AudioInputMessageFilter::Send,
-                                     message));
+    ChildProcess::current()->io_message_loop()->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &AudioInputMessageFilter::Send, message));
     return true;
   }
 
-  message->set_routing_id(route_id_);
   return channel_->Send(message);
 }
 
 bool AudioInputMessageFilter::OnMessageReceived(const IPC::Message& message) {
-  if (message.routing_id() != route_id_)
-    return false;
-
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(AudioInputMessageFilter, message)
     IPC_MESSAGE_HANDLER(AudioInputMsg_NotifyLowLatencyStreamCreated,
@@ -55,8 +50,7 @@ bool AudioInputMessageFilter::OnMessageReceived(const IPC::Message& message) {
 
 void AudioInputMessageFilter::OnFilterAdded(IPC::Channel* channel) {
   VLOG(1) << "AudioInputMessageFilter::OnFilterAdded()";
-  // Captures the message loop for IPC.
-  message_loop_ = MessageLoop::current();
+  // Captures the channel for IPC.
   channel_ = channel;
 }
 

@@ -209,10 +209,6 @@ class RenderView : public RenderWidget,
   int page_id() const { return page_id_; }
   PepperPluginDelegateImpl* pepper_delegate() { return &pepper_delegate_; }
 
-  AudioMessageFilter* audio_message_filter() {
-    return audio_message_filter_;
-  }
-
   const WebPreferences& webkit_preferences() const {
     return webkit_preferences_;
   }
@@ -1078,8 +1074,6 @@ class RenderView : public RenderWidget,
 
   // Device orientation dispatcher attached to this view; lazily initialized.
   DeviceOrientationDispatcher* device_orientation_dispatcher_;
-
-  scoped_refptr<AudioMessageFilter> audio_message_filter_;
 
   // Handles accessibility requests into the renderer side, as well as
   // maintains the cache and other features of the accessibility tree.

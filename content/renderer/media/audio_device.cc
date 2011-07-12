@@ -4,46 +4,12 @@
 
 #include "content/renderer/media/audio_device.h"
 
-#include "base/memory/singleton.h"
 #include "base/message_loop.h"
 #include "content/common/child_process.h"
 #include "content/common/media/audio_messages.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_thread.h"
 #include "media/audio/audio_util.h"
-
-scoped_refptr<AudioMessageFilter> AudioDevice::filter_;
-
-namespace {
-
-// AudioMessageFilterCreator is intended to be used as a singleton so we can
-// get access to a shared AudioMessageFilter.
-// Example usage:
-//   AudioMessageFilter* filter = AudioMessageFilterCreator::SharedFilter();
-
-class AudioMessageFilterCreator {
- public:
-  AudioMessageFilterCreator() {
-    int routing_id;
-    RenderThread::current()->Send(
-        new ViewHostMsg_GenerateRoutingID(&routing_id));
-    filter_ = new AudioMessageFilter(routing_id);
-    RenderThread::current()->AddFilter(filter_);
-  }
-
-  static AudioMessageFilter* SharedFilter() {
-    return GetInstance()->filter_.get();
-  }
-
-  static AudioMessageFilterCreator* GetInstance() {
-    return Singleton<AudioMessageFilterCreator>::get();
-  }
-
- private:
-  scoped_refptr<AudioMessageFilter> filter_;
-};
-
-}  // namespace
 
 AudioDevice::AudioDevice(size_t buffer_size,
                          int channels,
@@ -57,13 +23,12 @@ AudioDevice::AudioDevice(size_t buffer_size,
       audio_delay_milliseconds_(0),
       volume_(1.0),
       stream_id_(0) {
+  filter_ = RenderThread::current()->audio_message_filter();
   audio_data_.reserve(channels);
   for (int i = 0; i < channels; ++i) {
     float* channel_data = new float[buffer_size];
     audio_data_.push_back(channel_data);
   }
-  // Lazily create the message filter and share across AudioDevice instances.
-  filter_ = AudioMessageFilterCreator::SharedFilter();
 }
 
 AudioDevice::~AudioDevice() {
@@ -87,16 +52,8 @@ bool AudioDevice::Start() {
   params.bits_per_sample = bits_per_sample_;
   params.samples_per_packet = buffer_size_;
 
-  // Ensure that the initialization task is posted on the I/O thread by
-  // accessing the I/O message loop directly. This approach avoids a race
-  // condition which could exist if the message loop of the filter was
-  // used instead.
-  DCHECK(ChildProcess::current()) << "Must be in the renderer";
-  MessageLoop* message_loop = ChildProcess::current()->io_message_loop();
-  if (!message_loop)
-    return false;
-
-  message_loop->PostTask(FROM_HERE,
+  ChildProcess::current()->io_message_loop()->PostTask(
+      FROM_HERE,
       NewRunnableMethod(this, &AudioDevice::InitializeOnIOThread, params));
 
   return true;
@@ -106,7 +63,8 @@ bool AudioDevice::Stop() {
   if (!stream_id_)
     return false;
 
-  filter_->message_loop()->PostTask(FROM_HERE,
+  ChildProcess::current()->io_message_loop()->PostTask(
+      FROM_HERE,
       NewRunnableMethod(this, &AudioDevice::ShutDownOnIOThread));
 
   if (audio_thread_.get()) {
@@ -124,7 +82,8 @@ bool AudioDevice::SetVolume(double volume) {
   if (volume < 0 || volume > 1.0)
     return false;
 
-  filter_->message_loop()->PostTask(FROM_HERE,
+  ChildProcess::current()->io_message_loop()->PostTask(
+      FROM_HERE,
       NewRunnableMethod(this, &AudioDevice::SetVolumeOnIOThread, volume));
 
   volume_ = volume;
@@ -144,12 +103,12 @@ bool AudioDevice::GetVolume(double* volume) {
 
 void AudioDevice::InitializeOnIOThread(const AudioParameters& params) {
   stream_id_ = filter_->AddDelegate(this);
-  filter_->Send(new AudioHostMsg_CreateStream(0, stream_id_, params, true));
+  Send(new AudioHostMsg_CreateStream(stream_id_, params, true));
 }
 
 void AudioDevice::StartOnIOThread() {
   if (stream_id_)
-    filter_->Send(new AudioHostMsg_PlayStream(0, stream_id_));
+    Send(new AudioHostMsg_PlayStream(stream_id_));
 }
 
 void AudioDevice::ShutDownOnIOThread() {
@@ -157,14 +116,14 @@ void AudioDevice::ShutDownOnIOThread() {
   if (!stream_id_)
     return;
 
-  filter_->Send(new AudioHostMsg_CloseStream(0, stream_id_));
   filter_->RemoveDelegate(stream_id_);
+  Send(new AudioHostMsg_CloseStream(stream_id_));
   stream_id_ = 0;
 }
 
 void AudioDevice::SetVolumeOnIOThread(double volume) {
   if (stream_id_)
-    filter_->Send(new AudioHostMsg_SetVolume(0, stream_id_, volume));
+    Send(new AudioHostMsg_SetVolume(stream_id_, volume));
 }
 
 void AudioDevice::OnRequestPacket(AudioBuffersState buffers_state) {
@@ -189,6 +148,7 @@ void AudioDevice::OnLowLatencyCreated(
     base::SharedMemoryHandle handle,
     base::SyncSocket::Handle socket_handle,
     uint32 length) {
+  DCHECK(MessageLoop::current() == ChildProcess::current()->io_message_loop());
 #if defined(OS_WIN)
   DCHECK(handle);
   DCHECK(socket_handle);
@@ -197,8 +157,6 @@ void AudioDevice::OnLowLatencyCreated(
   DCHECK_GE(socket_handle, 0);
 #endif
   DCHECK(length);
-
-  // TODO(crogers) : check that length is big enough for buffer_size_
 
   shared_memory_.reset(new base::SharedMemory(handle, false));
   shared_memory_->Map(length);
@@ -211,19 +169,22 @@ void AudioDevice::OnLowLatencyCreated(
       new base::DelegateSimpleThread(this, "renderer_audio_thread"));
   audio_thread_->Start();
 
-  if (filter_) {
-    filter_->message_loop()->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &AudioDevice::StartOnIOThread));
-  }
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      NewRunnableMethod(this, &AudioDevice::StartOnIOThread));
 }
 
 void AudioDevice::OnVolume(double volume) {
   NOTIMPLEMENTED();
 }
 
+void AudioDevice::Send(IPC::Message* message) {
+  filter_->Send(message);
+}
+
 // Our audio thread runs here.
 void AudioDevice::Run() {
-    audio_thread_->SetThreadPriority(base::kThreadPriority_RealtimeAudio);
+  audio_thread_->SetThreadPriority(base::kThreadPriority_RealtimeAudio);
 
   int pending_data;
   const int samples_per_ms = static_cast<int>(sample_rate_) / 1000;
@@ -232,11 +193,9 @@ void AudioDevice::Run() {
   while (sizeof(pending_data) == socket_->Receive(&pending_data,
                                                   sizeof(pending_data)) &&
                                                   pending_data >= 0) {
-    {
-      // Convert the number of pending bytes in the render buffer
-      // into milliseconds.
-      audio_delay_milliseconds_ = pending_data / bytes_per_ms;
-    }
+    // Convert the number of pending bytes in the render buffer
+    // into milliseconds.
+    audio_delay_milliseconds_ = pending_data / bytes_per_ms;
 
     FireRenderCallback();
   }

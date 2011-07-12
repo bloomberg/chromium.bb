@@ -6,6 +6,7 @@
 
 #include <math.h>
 
+#include "content/common/child_process.h"
 #include "base/command_line.h"
 #include "content/common/content_switches.h"
 #include "content/common/media/audio_messages.h"
@@ -20,19 +21,17 @@
 AudioRendererImpl::LatencyType AudioRendererImpl::latency_type_ =
     AudioRendererImpl::kUninitializedLatency;
 
-AudioRendererImpl::AudioRendererImpl(AudioMessageFilter* filter)
+AudioRendererImpl::AudioRendererImpl()
     : AudioRendererBase(),
       bytes_per_second_(0),
-      filter_(filter),
       stream_id_(0),
       shared_memory_(NULL),
       shared_memory_size_(0),
-      io_loop_(filter->message_loop()),
       stopped_(false),
       pending_request_(false),
       prerolling_(false),
       preroll_bytes_(0) {
-  DCHECK(io_loop_);
+  filter_ = RenderThread::current()->audio_message_filter();
   // Figure out if we are planning to use high or low latency code path.
   // We are initializing only one variable and double initialization is Ok,
   // so there would not be any issues caused by CPU memory model.
@@ -69,7 +68,8 @@ bool AudioRendererImpl::OnInitialize(const media::AudioDecoderConfig& config) {
 
   bytes_per_second_ = params.GetBytesPerSecond();
 
-  io_loop_->PostTask(FROM_HERE,
+  ChildProcess::current()->io_message_loop()->PostTask(
+      FROM_HERE,
       NewRunnableMethod(this, &AudioRendererImpl::CreateStreamTask, params));
   return true;
 }
@@ -80,9 +80,8 @@ void AudioRendererImpl::OnStop() {
     return;
   stopped_ = true;
 
-  // We should never touch |io_loop_| after being stopped, so post our final
-  // task to clean up.
-  io_loop_->PostTask(FROM_HERE,
+  ChildProcess::current()->io_message_loop()->PostTask(
+      FROM_HERE,
       NewRunnableMethod(this, &AudioRendererImpl::DestroyTask));
 
   if (audio_thread_.get()) {
@@ -94,7 +93,8 @@ void AudioRendererImpl::OnStop() {
 void AudioRendererImpl::NotifyDataAvailableIfNecessary() {
   if (latency_type_ == kHighLatency) {
     // Post a task to render thread to notify a packet reception.
-    io_loop_->PostTask(FROM_HERE,
+    ChildProcess::current()->io_message_loop()->PostTask(
+        FROM_HERE,
         NewRunnableMethod(this, &AudioRendererImpl::NotifyPacketReadyTask));
   }
 }
@@ -117,7 +117,7 @@ void AudioRendererImpl::SetPlaybackRate(float rate) {
   DCHECK_LE(0.0f, rate);
 
   base::AutoLock auto_lock(lock_);
-  // Handle the case where we stopped due to |io_loop_| dying.
+  // Handle the case where we stopped due to IO message loop dying.
   if (stopped_) {
     AudioRendererBase::SetPlaybackRate(rate);
     return;
@@ -127,12 +127,14 @@ void AudioRendererImpl::SetPlaybackRate(float rate) {
   // Play: GetPlaybackRate() == 0.0 && rate != 0.0
   // Pause: GetPlaybackRate() != 0.0 && rate == 0.0
   if (GetPlaybackRate() == 0.0f && rate != 0.0f) {
-    io_loop_->PostTask(FROM_HERE,
-                       NewRunnableMethod(this, &AudioRendererImpl::PlayTask));
+    ChildProcess::current()->io_message_loop()->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &AudioRendererImpl::PlayTask));
   } else if (GetPlaybackRate() != 0.0f && rate == 0.0f) {
     // Pause is easy, we can always pause.
-    io_loop_->PostTask(FROM_HERE,
-                       NewRunnableMethod(this, &AudioRendererImpl::PauseTask));
+    ChildProcess::current()->io_message_loop()->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &AudioRendererImpl::PauseTask));
   }
   AudioRendererBase::SetPlaybackRate(rate);
 
@@ -149,7 +151,8 @@ void AudioRendererImpl::Pause(media::FilterCallback* callback) {
   if (stopped_)
     return;
 
-  io_loop_->PostTask(FROM_HERE,
+  ChildProcess::current()->io_message_loop()->PostTask(
+      FROM_HERE,
       NewRunnableMethod(this, &AudioRendererImpl::PauseTask));
 }
 
@@ -160,7 +163,8 @@ void AudioRendererImpl::Seek(base::TimeDelta time,
   if (stopped_)
     return;
 
-  io_loop_->PostTask(FROM_HERE,
+  ChildProcess::current()->io_message_loop()->PostTask(
+      FROM_HERE,
       NewRunnableMethod(this, &AudioRendererImpl::SeekTask));
 }
 
@@ -172,11 +176,13 @@ void AudioRendererImpl::Play(media::FilterCallback* callback) {
     return;
 
   if (GetPlaybackRate() != 0.0f) {
-    io_loop_->PostTask(FROM_HERE,
-                       NewRunnableMethod(this, &AudioRendererImpl::PlayTask));
+    ChildProcess::current()->io_message_loop()->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &AudioRendererImpl::PlayTask));
   } else {
-    io_loop_->PostTask(FROM_HERE,
-                       NewRunnableMethod(this, &AudioRendererImpl::PauseTask));
+    ChildProcess::current()->io_message_loop()->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &AudioRendererImpl::PauseTask));
   }
 }
 
@@ -184,14 +190,14 @@ void AudioRendererImpl::SetVolume(float volume) {
   base::AutoLock auto_lock(lock_);
   if (stopped_)
     return;
-  io_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(
-          this, &AudioRendererImpl::SetVolumeTask, volume));
+  ChildProcess::current()->io_message_loop()->PostTask(
+      FROM_HERE,
+      NewRunnableMethod(this, &AudioRendererImpl::SetVolumeTask, volume));
 }
 
 void AudioRendererImpl::OnCreated(base::SharedMemoryHandle handle,
                                   uint32 length) {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(MessageLoop::current() == ChildProcess::current()->io_message_loop());
   DCHECK_EQ(kHighLatency, latency_type_);
 
   base::AutoLock auto_lock(lock_);
@@ -224,7 +230,7 @@ void AudioRendererImpl::OnLowLatencyCreated(
     base::SharedMemoryHandle handle,
     base::SyncSocket::Handle socket_handle,
     uint32 length) {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(MessageLoop::current() == ChildProcess::current()->io_message_loop());
   DCHECK_EQ(kLowLatency, latency_type_);
 #if defined(OS_WIN)
   DCHECK(handle);
@@ -246,7 +252,7 @@ void AudioRendererImpl::OnLowLatencyCreated(
 }
 
 void AudioRendererImpl::OnRequestPacket(AudioBuffersState buffers_state) {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(MessageLoop::current() == ChildProcess::current()->io_message_loop());
   DCHECK_EQ(kHighLatency, latency_type_);
   {
     base::AutoLock auto_lock(lock_);
@@ -260,7 +266,7 @@ void AudioRendererImpl::OnRequestPacket(AudioBuffersState buffers_state) {
 }
 
 void AudioRendererImpl::OnStateChanged(AudioStreamState state) {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(MessageLoop::current() == ChildProcess::current()->io_message_loop());
 
   base::AutoLock auto_lock(lock_);
   if (stopped_)
@@ -291,7 +297,7 @@ void AudioRendererImpl::OnVolume(double volume) {
 }
 
 void AudioRendererImpl::CreateStreamTask(const AudioParameters& audio_params) {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(MessageLoop::current() == ChildProcess::current()->io_message_loop());
 
   base::AutoLock auto_lock(lock_);
   if (stopped_)
@@ -300,60 +306,59 @@ void AudioRendererImpl::CreateStreamTask(const AudioParameters& audio_params) {
   // Make sure we don't call create more than once.
   DCHECK_EQ(0, stream_id_);
   stream_id_ = filter_->AddDelegate(this);
-  io_loop_->AddDestructionObserver(this);
+  ChildProcess::current()->io_message_loop()->AddDestructionObserver(this);
 
   AudioParameters params_to_send(audio_params);
   // Let the browser choose packet size.
   params_to_send.samples_per_packet = 0;
 
-  filter_->Send(new AudioHostMsg_CreateStream(0,
-                                              stream_id_,
-                                              params_to_send,
-                                              latency_type_ == kLowLatency));
+  Send(new AudioHostMsg_CreateStream(stream_id_,
+                                     params_to_send,
+                                     latency_type_ == kLowLatency));
 }
 
 void AudioRendererImpl::PlayTask() {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(MessageLoop::current() == ChildProcess::current()->io_message_loop());
 
-  filter_->Send(new AudioHostMsg_PlayStream(0, stream_id_));
+  Send(new AudioHostMsg_PlayStream(stream_id_));
 }
 
 void AudioRendererImpl::PauseTask() {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(MessageLoop::current() == ChildProcess::current()->io_message_loop());
 
-  filter_->Send(new AudioHostMsg_PauseStream(0, stream_id_));
+  Send(new AudioHostMsg_PauseStream(stream_id_));
 }
 
 void AudioRendererImpl::SeekTask() {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(MessageLoop::current() == ChildProcess::current()->io_message_loop());
 
   // We have to pause the audio stream before we can flush.
-  filter_->Send(new AudioHostMsg_PauseStream(0, stream_id_));
-  filter_->Send(new AudioHostMsg_FlushStream(0, stream_id_));
+  Send(new AudioHostMsg_PauseStream(stream_id_));
+  Send(new AudioHostMsg_FlushStream(stream_id_));
 }
 
 void AudioRendererImpl::DestroyTask() {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(MessageLoop::current() == ChildProcess::current()->io_message_loop());
 
   // Make sure we don't call destroy more than once.
   DCHECK_NE(0, stream_id_);
   filter_->RemoveDelegate(stream_id_);
-  filter_->Send(new AudioHostMsg_CloseStream(0, stream_id_));
-  io_loop_->RemoveDestructionObserver(this);
+  Send(new AudioHostMsg_CloseStream(stream_id_));
+  ChildProcess::current()->io_message_loop()->RemoveDestructionObserver(this);
   stream_id_ = 0;
 }
 
 void AudioRendererImpl::SetVolumeTask(double volume) {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(MessageLoop::current() == ChildProcess::current()->io_message_loop());
 
   base::AutoLock auto_lock(lock_);
   if (stopped_)
     return;
-  filter_->Send(new AudioHostMsg_SetVolume(0, stream_id_, volume));
+  Send(new AudioHostMsg_SetVolume(stream_id_, volume));
 }
 
 void AudioRendererImpl::NotifyPacketReadyTask() {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(MessageLoop::current() == ChildProcess::current()->io_message_loop());
   DCHECK_EQ(kHighLatency, latency_type_);
 
   base::AutoLock auto_lock(lock_);
@@ -393,12 +398,12 @@ void AudioRendererImpl::NotifyPacketReadyTask() {
                                request_buffers_state_.pending_bytes == 0);
     pending_request_ = false;
     // Then tell browser process we are done filling into the buffer.
-    filter_->Send(new AudioHostMsg_NotifyPacketReady(0, stream_id_, filled));
+    Send(new AudioHostMsg_NotifyPacketReady(stream_id_, filled));
   }
 }
 
 void AudioRendererImpl::WillDestroyCurrentMessageLoop() {
-  DCHECK(MessageLoop::current() == io_loop_);
+  DCHECK(MessageLoop::current() == ChildProcess::current()->io_message_loop());
 
   // We treat the IO loop going away the same as stopping.
   base::AutoLock auto_lock(lock_);
@@ -416,7 +421,7 @@ void AudioRendererImpl::Run() {
 
   int bytes;
   while (sizeof(bytes) == socket_->Receive(&bytes, sizeof(bytes))) {
-LOG(ERROR) << "+++ bytes: " << bytes;
+    LOG(ERROR) << "+++ bytes: " << bytes;
     if (bytes == media::AudioOutputController::kPauseMark)
       continue;
     else if (bytes < 0)
@@ -440,4 +445,8 @@ LOG(ERROR) << "+++ bytes: " << bytes;
                request_delay,
                true  /* buffers empty */);
   }
+}
+
+void AudioRendererImpl::Send(IPC::Message* message) {
+  filter_->Send(message);
 }

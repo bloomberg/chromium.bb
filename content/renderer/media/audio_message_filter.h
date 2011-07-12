@@ -4,7 +4,7 @@
 //
 // MessageFilter that handles audio messages and delegates them to audio
 // renderers. Created on render thread, AudioMessageFilter is operated on
-// IO thread (main thread of render process), it intercepts audio messages
+// IO thread (secondary thread of render process) it intercepts audio messages
 // and process them on IO thread since these messages are time critical.
 
 #ifndef CONTENT_RENDERER_MEDIA_AUDIO_MESSAGE_FILTER_H_
@@ -52,7 +52,7 @@ class AudioMessageFilter : public IPC::ChannelProxy::MessageFilter {
     virtual ~Delegate() {}
   };
 
-  explicit AudioMessageFilter(int32 route_id);
+  AudioMessageFilter();
   virtual ~AudioMessageFilter();
 
   // Add a delegate to the map and return id of the entry.
@@ -64,12 +64,7 @@ class AudioMessageFilter : public IPC::ChannelProxy::MessageFilter {
   // Sends an IPC message using |channel_|.
   bool Send(IPC::Message* message);
 
-  MessageLoop* message_loop() { return message_loop_; }
-
  private:
-  // For access to |message_loop_|.
-  friend class AudioRendererImplTest;
-
   FRIEND_TEST_ALL_PREFIXES(AudioMessageFilterTest, Basic);
   FRIEND_TEST_ALL_PREFIXES(AudioMessageFilterTest, Delegates);
 
@@ -80,8 +75,7 @@ class AudioMessageFilter : public IPC::ChannelProxy::MessageFilter {
   virtual void OnChannelClosing();
 
   // Received when browser process wants more audio packet.
-  void OnRequestPacket(const IPC::Message& msg, int stream_id,
-                       AudioBuffersState buffers_state);
+  void OnRequestPacket(int stream_id, AudioBuffersState buffers_state);
 
   // Received when browser process has created an audio output stream.
   void OnStreamCreated(int stream_id, base::SharedMemoryHandle handle,
@@ -109,10 +103,6 @@ class AudioMessageFilter : public IPC::ChannelProxy::MessageFilter {
   IDMap<Delegate> delegates_;
 
   IPC::Channel* channel_;
-
-  int32 route_id_;
-
-  MessageLoop* message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioMessageFilter);
 };

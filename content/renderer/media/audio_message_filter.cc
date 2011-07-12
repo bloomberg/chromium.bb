@@ -6,41 +6,38 @@
 
 #include "base/message_loop.h"
 #include "base/time.h"
+#include "content/common/child_process.h"
 #include "content/common/media/audio_messages.h"
 #include "ipc/ipc_logging.h"
 
-AudioMessageFilter::AudioMessageFilter(int32 route_id)
-    : channel_(NULL),
-      route_id_(route_id),
-      message_loop_(NULL) {
+AudioMessageFilter::AudioMessageFilter()
+    : channel_(NULL) {
+  VLOG(1) << "AudioMessageFilter::AudioMessageFilter()";
 }
 
 AudioMessageFilter::~AudioMessageFilter() {
+  VLOG(1) << "AudioMessageFilter::~AudioMessageFilter()";
 }
 
-// Called on the IPC thread.
 bool AudioMessageFilter::Send(IPC::Message* message) {
   if (!channel_) {
     delete message;
     return false;
   }
 
-  if (MessageLoop::current() != message_loop_) {
+  if (MessageLoop::current() != ChildProcess::current()->io_message_loop()) {
     // Can only access the IPC::Channel on the IPC thread since it's not thread
     // safe.
-    message_loop_->PostTask(
-        FROM_HERE, NewRunnableMethod(this, &AudioMessageFilter::Send, message));
+    ChildProcess::current()->io_message_loop()->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &AudioMessageFilter::Send, message));
     return true;
   }
 
-  message->set_routing_id(route_id_);
   return channel_->Send(message);
 }
 
 bool AudioMessageFilter::OnMessageReceived(const IPC::Message& message) {
-  if (message.routing_id() != route_id_)
-    return false;
-
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(AudioMessageFilter, message)
     IPC_MESSAGE_HANDLER(AudioMsg_RequestPacket, OnRequestPacket)
@@ -55,8 +52,8 @@ bool AudioMessageFilter::OnMessageReceived(const IPC::Message& message) {
 }
 
 void AudioMessageFilter::OnFilterAdded(IPC::Channel* channel) {
-  // Captures the message loop for IPC.
-  message_loop_ = MessageLoop::current();
+  VLOG(1) << "AudioMessageFilter::OnFilterAdded()";
+  // Captures the channel for IPC.
   channel_ = channel;
 }
 
@@ -68,8 +65,7 @@ void AudioMessageFilter::OnChannelClosing() {
   channel_ = NULL;
 }
 
-void AudioMessageFilter::OnRequestPacket(const IPC::Message& msg,
-                                         int stream_id,
+void AudioMessageFilter::OnRequestPacket(int stream_id,
                                          AudioBuffersState buffers_state) {
   Delegate* delegate = delegates_.Lookup(stream_id);
   if (!delegate) {

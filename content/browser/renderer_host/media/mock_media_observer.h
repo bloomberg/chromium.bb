@@ -17,17 +17,14 @@ class MockMediaObserver : public MediaObserver {
   MockMediaObserver();
   virtual ~MockMediaObserver();
 
-  MOCK_METHOD3(OnDeleteAudioStream,
-               void(void* host, int32 render_view, int stream_id));
-  MOCK_METHOD4(OnSetAudioStreamPlaying,
-               void(void* host, int32 render_view, int stream_id,
-                    bool playing));
-  MOCK_METHOD4(OnSetAudioStreamStatus,
-               void(void* host, int32 render_view, int stream_id,
-                    const std::string& status));
-  MOCK_METHOD4(OnSetAudioStreamVolume,
-               void(void* host, int32 render_view, int stream_id,
-                    double volume));
+  MOCK_METHOD2(OnDeleteAudioStream,
+               void(void* host, int stream_id));
+  MOCK_METHOD3(OnSetAudioStreamPlaying,
+               void(void* host, int stream_id, bool playing));
+  MOCK_METHOD3(OnSetAudioStreamStatus,
+               void(void* host, int stream_id, const std::string& status));
+  MOCK_METHOD3(OnSetAudioStreamVolume,
+               void(void* host, int stream_id, double volume));
 };
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_MEDIA_MOCK_MEDIA_OBSERVER_H_

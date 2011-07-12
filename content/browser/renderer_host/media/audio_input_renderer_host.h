@@ -38,17 +38,12 @@ struct AudioParameters;
 class AudioInputRendererHost : public BrowserMessageFilter,
     public media::AudioInputController::EventHandler {
  public:
-  typedef std::pair<int32, int> AudioEntryId;
-
   struct AudioEntry {
     AudioEntry();
     ~AudioEntry();
 
     // The AudioInputController that manages the audio input stream.
     scoped_refptr<media::AudioInputController> controller;
-
-    // Render view ID that requested the audio input stream.
-    int32 render_view_id;
 
     // The audio input stream ID in the render view.
     int stream_id;
@@ -64,7 +59,7 @@ class AudioInputRendererHost : public BrowserMessageFilter,
     bool pending_close;
   };
 
-  typedef std::map<AudioEntryId, AudioEntry*> AudioEntryMap;
+  typedef std::map<int, AudioEntry*> AudioEntryMap;
 
   // Called from UI thread from the owner of this object.
   AudioInputRendererHost();
@@ -91,30 +86,27 @@ class AudioInputRendererHost : public BrowserMessageFilter,
 
   virtual ~AudioInputRendererHost();
 
-  // Methods called on IO thread.
-  // Returns true if the message is an audio input related message and should
-  // be handled by this class.
-  bool IsAudioRendererHostMessage(const IPC::Message& message);
+  // Methods called on IO thread ----------------------------------------------
 
   // Audio related IPC message handlers.
   // Creates an audio input stream with the specified format. If this call is
   // successful this object would keep an internal entry of the stream for the
   // required properties.
-  void OnCreateStream(const IPC::Message& msg, int stream_id,
+  void OnCreateStream(int stream_id,
                       const AudioParameters& params,
                       bool low_latency);
 
   // Record the audio input stream referenced by |stream_id|.
-  void OnRecordStream(const IPC::Message& msg, int stream_id);
+  void OnRecordStream(int stream_id);
 
   // Close the audio stream referenced by |stream_id|.
-  void OnCloseStream(const IPC::Message& msg, int stream_id);
+  void OnCloseStream(int stream_id);
 
   // Set the volume of the audio stream referenced by |stream_id|.
-  void OnSetVolume(const IPC::Message& msg, int stream_id, double volume);
+  void OnSetVolume(int stream_id, double volume);
 
   // Get the volume of the audio stream referenced by |stream_id|.
-  void OnGetVolume(const IPC::Message& msg, int stream_id);
+  void OnGetVolume(int stream_id);
 
   // Complete the process of creating an audio input stream. This will set up
   // the shared memory or shared socket in low latency mode.
@@ -128,7 +120,7 @@ class AudioInputRendererHost : public BrowserMessageFilter,
   void DoHandleError(media::AudioInputController* controller, int error_code);
 
   // Send an error message to the renderer.
-  void SendErrorMessage(int32 render_view_id, int32 stream_id);
+  void SendErrorMessage(int stream_id);
 
   // Delete all audio entry and all audio streams
   void DeleteEntries();
@@ -146,16 +138,16 @@ class AudioInputRendererHost : public BrowserMessageFilter,
   // Delete audio entry and close the related audio input stream.
   void DeleteEntryOnError(AudioEntry* entry);
 
-  // A helper method to look up a AudioEntry with a tuple of render view
-  // id and stream id. Returns NULL if not found.
-  AudioEntry* LookupById(int render_view_id, int stream_id);
+  // A helper method to look up a AudioEntry identified by |stream_id|.
+  // Returns NULL if not found.
+  AudioEntry* LookupById(int stream_id);
 
   // Search for a AudioEntry having the reference to |controller|.
   // This method is used to look up an AudioEntry after a controller
   // event is received.
   AudioEntry* LookupByController(media::AudioInputController* controller);
 
-  // A map of id to audio sources.
+  // A map of stream IDs to audio sources.
   AudioEntryMap audio_entries_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioInputRendererHost);
