@@ -1398,6 +1398,9 @@ PP_Bool PluginInstance::BindGraphics(PP_Instance instance,
 
     setBackingTextureId(graphics_3d->GetBackingTextureId());
     bound_graphics_ = graphics_3d;
+  } else {
+    // The device is not a valid resource type.
+    return PP_FALSE;
   }
 
   return PP_TRUE;
