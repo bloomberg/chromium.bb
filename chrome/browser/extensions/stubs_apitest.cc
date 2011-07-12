@@ -15,7 +15,13 @@
 // failing, most likely you need to either mark it as "unprivileged" (if it
 // should be available in content scripts) or update the list of privileged APIs
 // in renderer_extension_bindings.js.
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Stubs) {
+// Timey-outy on mac. http://crbug.com/89116
+#if defined(OS_MACOSX)
+#define MAYBE_Stubs DISABLED_Stubs
+#else
+#define MAYBE_Stubs Stubs
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Stubs) {
   ASSERT_TRUE(test_server()->Start());
 
   ASSERT_TRUE(RunExtensionTest("stubs")) << message_;
