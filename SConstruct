@@ -2297,9 +2297,11 @@ pre_base_env.Append(
 # NOTE: this loads stuff from: site_scons/site_tools/naclsdk.py
 # ----------------------------------------------------------
 
-nacl_common_env = pre_base_env.Clone(
+nacl_env = pre_base_env.Clone(
     tools = ['naclsdk'],
     NACL_BUILD_FAMILY = 'UNTRUSTED',
+    BUILD_TYPE = 'nacl',
+    BUILD_TYPE_DESCRIPTION = 'NaCl module build',
 
     ARFLAGS = 'rc',
 
@@ -2335,6 +2337,18 @@ nacl_common_env = pre_base_env.Clone(
                 ] +
                ['${EXTRA_CXXFLAGS}'],
 
+    # This magic is copied from scons-2.0.1/engine/SCons/Defaults.py
+    # where this pattern is used for _LIBDIRFLAGS, which produces -L
+    # switches.  Here we are producing a -Wl,-rpath-link,DIR for each
+    # element of LIBPATH, i.e. for each -LDIR produced.
+    RPATH_LINK_FLAGS = '$( ${_concat(RPATHLINKPREFIX, LIBPATH, RPATHLINKSUFFIX,'
+                       '__env__, RDirs, TARGET, SOURCE)} $)',
+    RPATHLINKPREFIX = '-Wl,-rpath-link,',
+    RPATHLINKSUFFIX = '',
+
+    LIBS = [],
+    LINKFLAGS = ['${EXTRA_LINKFLAGS}', '${RPATH_LINK_FLAGS}'],
+
     # This is the address at which a user executable is expected to
     # place its data segment in order to be compatible with the
     # integrated runtime (IRT) library.
@@ -2345,7 +2359,7 @@ nacl_common_env = pre_base_env.Clone(
     )
 
 # These add on to those set in pre_base_env, above.
-nacl_common_env.Append(
+nacl_env.Append(
     CPPDEFINES = [
         # This ensures that UINT32_MAX gets defined.
         ['__STDC_LIMIT_MACROS', '1'],
@@ -2369,38 +2383,20 @@ def FixWindowsAssembler(env):
     # Without this we use nacl-as, which doesn't handle include directives, etc.
     env.Replace(ASCOM='${CCCOM}')
 
-FixWindowsAssembler(nacl_common_env)
+FixWindowsAssembler(nacl_env)
 
 # TODO(mcgrathr,pdox): llc troubles at final link time if the libraries are
 # built with optimization, remove this hack when the compiler is fixed.
 # http://code.google.com/p/nativeclient/issues/detail?id=1225
-if nacl_common_env.Bit('bitcode'):
+if nacl_env.Bit('bitcode'):
   optflags = ['-O0','-O1','-O2','-O3']
-  nacl_common_env.FilterOut(CCFLAGS=optflags)
-  nacl_common_env.FilterOut(LINKFLAGS=optflags)
-  nacl_common_env.FilterOut(CCFLAGS=optflags)
-  nacl_common_env.FilterOut(CXXFLAGS=optflags)
+  nacl_env.FilterOut(CCFLAGS=optflags,
+                     LINKFLAGS=optflags,
+                     CXXFLAGS=optflags)
   # TODO(pdox): Remove this as soon as build_config.h can be
   #             changed to accept __pnacl__.
   # pending http://codereview.chromium.org/6667035/
-  nacl_common_env.AddBiasForPNaCl()
-
-nacl_env = nacl_common_env.Clone(
-    BUILD_TYPE = 'nacl',
-    BUILD_TYPE_DESCRIPTION = 'NaCl module build',
-
-    # This magic is copied from scons-2.0.1/engine/SCons/Defaults.py
-    # where this pattern is used for _LIBDIRFLAGS, which produces -L
-    # switches.  Here we are producing a -Wl,-rpath-link,DIR for each
-    # element of LIBPATH, i.e. for each -LDIR produced.
-    RPATH_LINK_FLAGS = '$( ${_concat(RPATHLINKPREFIX, LIBPATH, RPATHLINKSUFFIX,'
-                       '__env__, RDirs, TARGET, SOURCE)} $)',
-    RPATHLINKPREFIX = '-Wl,-rpath-link,',
-    RPATHLINKSUFFIX = '',
-
-    LIBS = [],
-    LINKFLAGS = ['${EXTRA_LINKFLAGS}', '${RPATH_LINK_FLAGS}'],
-)
+  nacl_env.AddBiasForPNaCl()
 
 # Look in the local include and lib directories before the toolchain's.
 nacl_env['INCLUDE_DIR'] = '${TARGET_ROOT}/include'
