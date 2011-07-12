@@ -9,9 +9,9 @@ vars = {
   "swig_revision": "69281",
   # These hashes need to be updated when nacl_revision is changed.
   # After changing nacl_revision, run 'gclient runhooks' to get the new values.
-  "nacl_irt_hash_x86_32": "f58b1fc4543b5cd8fdb7c005a85b722195302b47",
-  "nacl_irt_hash_x86_64": "708d059217517766ab96d19788802781b0aaffbd",
-  "nacl_revision": "5941",
+  "nacl_irt_hash_x86_32": "40737ff789c03561a79dc7802f16e84d4dbe3b07",
+  "nacl_irt_hash_x86_64": "8d7d2f6f5ef19467981eb89ab2a138e79aa5926d",
+  "nacl_revision": "5988",  # If you update this, change ppapi below.
   "nacl_tools_revision": "5360",  # tools_rev in native_client/DEPS
   "libjingle_revision": "71",
   "libvpx_revision": "90416",
@@ -83,6 +83,16 @@ deps = {
 
   "src/native_client":
     Var("nacl_trunk") + "/src/native_client@" + Var("nacl_revision"),
+
+  "src/native_client/src/third_party/ppapi":
+    # TODO(brettw) We should use this "From" syntax to avoid hardcoding the
+    # revision here, but it makes checkdeps confused. We should fix checkdeps
+    # and re-enable the From() line.
+    #
+    # Currently, take the revision of PPAPI from the DEPS file of the NaCl
+    # revision you're pulling.
+    #From("src/native_client", "native_client/src/third_party/ppapi"),
+    "http://src.chromium.org/svn/trunk/src/ppapi@91987",
 
   "src/chrome/test/data/extensions/api_test/permissions/nacl_enabled/bin":
     Var("nacl_trunk") + "/src/native_client/tests/prebuilt@" +
