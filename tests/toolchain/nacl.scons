@@ -31,52 +31,39 @@ wa_env.AddNodeToTestSuite(node,
                           ['toolchain_tests', 'small_tests'],
                           'run_whole_archive_test')
 
-nexe = env.ComponentProgram('setlongjmp', 'setlongjmp.c')
-node = env.CommandSelLdrTestNacl('setlongjmp.out',
-                                 nexe,
-                                 exit_status='55')
-env.AddNodeToTestSuite(node,
-                       ['toolchain_tests','small_tests'],
-                       'run_setlongjmp_test')
 
-nexe = env.ComponentProgram('intrinsics', 'intrinsics.cc')
-node = env.CommandSelLdrTestNacl('intrinsics.out',
-                                 nexe,
-                                 exit_status='55')
-env.AddNodeToTestSuite(node,
-                       ['toolchain_tests','small_tests'],
-                       'run_intrinsics_test')
-
-nexe = env.ComponentProgram('float2', 'float2.c')
-node = env.CommandSelLdrTestNacl('float2.out',
-                                 nexe,
-                                 stdout_golden=env.File('float2.stdout'))
-env.AddNodeToTestSuite(node,
-                       ['toolchain_tests','small_tests'],
-                       'run_float2_test')
+TESTS_TO_RUN = [
+     # (src, exit_status, golden_file, cond),
+     # The valus None for golden_file means no golden file, c.f.
+     #  SConstruct::CommandTest()
+     ('setlongjmp.c', '55', None, True),
+     ('intrinsics.cc', '55', None, True),
+     ('float2.c', '0', True, True),
+     # NOTE: this test uses bitcode asm's
+     ('llvm_math_intrinsics.c', '0', True, env.Bit('bitcode')),
+     # NOTE: this test uses bitcode asm's
+     ('llvm_bitmanip_intrinsics.c', '0', True, env.Bit('bitcode')),
+     # NOTE: this currently only works for PNaCl, c.f:
+     # http://code.google.com/p/nativeclient/issues/detail?id=968
+     ('initfini.c', '0', True, env.Bit('bitcode')),
+]
 
 
-if env.Bit('bitcode'):
-  # NOTE: this test uses bitcode asm's
-  nexe = env.ComponentProgram('llvm_math_intrinsics', 'llvm_math_intrinsics.c')
-  node = env.CommandSelLdrTestNacl(
-      'llvm_math_intrinsics.out',
-      nexe,
-      stdout_golden=env.File('llvm_math_intrinsics.stdout'))
+for src, exit_status, golden_file, cond in TESTS_TO_RUN:
+  if not cond: continue
+  name = src.split('.')[0]
+  if golden_file == True:
+    golden_file = env.File(name + '.stdout')
+
+  nexe = env.ComponentProgram(name, src)
+  node = env.CommandSelLdrTestNacl(name + '.out',
+                                   nexe,
+                                   exit_status=exit_status,
+                                   stdout_golden=golden_file)
   env.AddNodeToTestSuite(node,
                          ['toolchain_tests','small_tests'],
-                         'run_llvm_math_intrinsics_test')
+                         'run_' + name + '_test')
 
-
-nexe = env.ComponentProgram('initfini', 'initfini.c')
-node = env.CommandSelLdrTestNacl('initfini.out',
-                                 nexe,
-                                 stdout_golden=env.File('initfini.stdout'))
-
-# NOTE: this currently only works for PNaCl, c.f:
-# http://code.google.com/p/nativeclient/issues/detail?id=968
-env.AddNodeToTestSuite(node, ['toolchain_tests', 'small_tests'],
-                       'run_initfini_test', is_broken=not env.Bit('bitcode'))
 
 
 # NOTE: the tests below break easily under valgrid and since

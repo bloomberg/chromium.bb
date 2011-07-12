@@ -1,0 +1,24 @@
+
+i32 value is: 000000aa
+ctpop: 4
+ctlz: 24
+cttz: 1
+bswap: aa000000
+
+i32 value is: 0000aa00
+ctpop: 4
+ctlz: 16
+cttz: 9
+bswap: 00aa0000
+
+i64 value is: 00000000aa000000
+ctpopll: 4
+ctlzll: 32
+cttzll: 25
+bswapll: 000000aa00000000
+
+i64 value is: 000000aa00000000
+ctpopll: 4
+ctlzll: 24
+cttzll: 33
+bswapll: 00000000aa000000
