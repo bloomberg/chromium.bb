@@ -68,19 +68,24 @@ class ExtensionProcessManager : public NotificationObserver {
   // Returns the SiteInstance that the given URL belongs to.
   virtual SiteInstance* GetSiteInstanceForURL(const GURL& url);
 
-  // Registers an extension process by |extension_id| and specifying which
-  // |process_id| it belongs to.
-  void RegisterExtensionProcess(const std::string& extension_id,
-                                int process_id);
+  // Registers a SiteInstance with |site_instance_id| as hosting the extension
+  // with |extension_id|.
+  void RegisterExtensionSiteInstance(int site_instance_id,
+                                     const std::string& extension_id);
 
-  // Unregisters an extension process with specified |process_id|.
-  void UnregisterExtensionProcess(int process_id);
+  // Unregisters the extension associated with |site_instance_id|.
+  void UnregisterExtensionSiteInstance(int site_instance_id);
 
   // Returns the extension process that |url| is associated with if it exists.
+  // This is not valid for hosted apps without the background permission, since
+  // such apps may have multiple processes.
   virtual RenderProcessHost* GetExtensionProcess(const GURL& url);
 
   // Returns the process that the extension with the given ID is running in.
   RenderProcessHost* GetExtensionProcess(const std::string& extension_id);
+
+  // Returns the Extension associated with the given SiteInstance id, if any.
+  virtual const Extension* GetExtensionForSiteInstance(int site_instance_id);
 
   // Returns true if |host| is managed by this process manager.
   bool HasExtensionHost(ExtensionHost* host) const;
@@ -116,9 +121,9 @@ class ExtensionProcessManager : public NotificationObserver {
   // controls process grouping.
   scoped_refptr<BrowsingInstance> browsing_instance_;
 
-  // A map of extension ID to the render_process_id that the extension lives in.
-  typedef std::map<std::string, int> ProcessIDMap;
-  ProcessIDMap process_ids_;
+  // A map of site instance ID to the ID of the extension it hosts.
+  typedef std::map<int, std::string> SiteInstanceIDMap;
+  SiteInstanceIDMap extension_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionProcessManager);
 };

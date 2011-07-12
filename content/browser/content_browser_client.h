@@ -86,6 +86,11 @@ class ContentBrowserClient {
   // group different url schemes in the same SiteInstance.
   virtual GURL GetEffectiveURL(Profile* profile, const GURL& url) = 0;
 
+  // Returns whether all instances of the specified effective URL should be
+  // rendered by the same process, rather than using process-per-site-instance.
+  virtual bool ShouldUseProcessPerSite(Profile* profile,
+                                       const GURL& effective_url) = 0;
+
   // Returns whether a specified URL is to be considered the same as any
   // SiteInstance.
   virtual bool IsURLSameAsAnySiteInstance(const GURL& url) = 0;

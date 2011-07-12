@@ -2171,12 +2171,16 @@ const Extension* ExtensionService::GetExtensionByWebExtent(const GURL& url) {
 }
 
 bool ExtensionService::ExtensionBindingsAllowed(const GURL& url) {
-  // Allow bindings for all packaged extension.
-  if (GetExtensionByURL(url))
+  // Allow bindings for all packaged extensions.
+  // Note that GetExtensionByURL may return an Extension for hosted apps
+  // if the URL came from GetEffectiveURL.
+  const Extension* extension = GetExtensionByURL(url);
+  if (extension && extension->GetType() != Extension::TYPE_HOSTED_APP)
     return true;
 
   // Allow bindings for all component, hosted apps.
-  const Extension* extension = GetExtensionByWebExtent(url);
+  if (!extension)
+    extension = GetExtensionByWebExtent(url);
   return (extension && extension->location() == Extension::COMPONENT);
 }
 

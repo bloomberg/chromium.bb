@@ -37,6 +37,7 @@ class IncognitoExtensionProcessManager : public ExtensionProcessManager {
                                     const GURL& url);
   virtual SiteInstance* GetSiteInstanceForURL(const GURL& url);
   virtual RenderProcessHost* GetExtensionProcess(const GURL& url);
+  virtual const Extension* GetExtensionForSiteInstance(int site_instance_id);
 
  private:
   // NotificationObserver:
@@ -95,9 +96,7 @@ ExtensionProcessManager::ExtensionProcessManager(Profile* profile)
                  Source<Profile>(original_profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
                  Source<Profile>(profile));
-  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-                 NotificationService::AllSources());
-  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
+  registrar_.Add(this, content::NOTIFICATION_SITE_INSTANCE_DELETED,
                  NotificationService::AllSources());
   registrar_.Add(this, content::NOTIFICATION_APP_TERMINATING,
                  NotificationService::AllSources());
@@ -221,28 +220,23 @@ ExtensionHost* ExtensionProcessManager::GetBackgroundHostForExtension(
   return NULL;
 }
 
-void ExtensionProcessManager::RegisterExtensionProcess(
-    const std::string& extension_id, int process_id) {
-  // TODO(mpcomplete): This is the only place we actually read process_ids_.
-  // Is it necessary?
-  ProcessIDMap::const_iterator it = process_ids_.find(extension_id);
-  if (it != process_ids_.end() && (*it).second == process_id)
+void ExtensionProcessManager::RegisterExtensionSiteInstance(
+    int site_instance_id, const std::string& extension_id) {
+  SiteInstanceIDMap::const_iterator it = extension_ids_.find(site_instance_id);
+  if (it != extension_ids_.end() && (*it).second == extension_id)
     return;
 
-  // Extension ids should get removed from the map before the process ids get
-  // reused from a dead renderer.
-  DCHECK(it == process_ids_.end());
-  process_ids_[extension_id] = process_id;
+  // SiteInstance ids should get removed from the map before the extension ids
+  // get used for a new SiteInstance.
+  DCHECK(it == extension_ids_.end());
+  extension_ids_[site_instance_id] = extension_id;
 }
 
-void ExtensionProcessManager::UnregisterExtensionProcess(int process_id) {
-  ProcessIDMap::iterator it = process_ids_.begin();
-  while (it != process_ids_.end()) {
-    if (it->second == process_id)
-      process_ids_.erase(it++);
-    else
-      ++it;
-  }
+void ExtensionProcessManager::UnregisterExtensionSiteInstance(
+    int site_instance_id) {
+  SiteInstanceIDMap::iterator it = extension_ids_.find(site_instance_id);
+  if (it != extension_ids_.end())
+    extension_ids_.erase(it++);
 }
 
 RenderProcessHost* ExtensionProcessManager::GetExtensionProcess(
@@ -260,6 +254,20 @@ RenderProcessHost* ExtensionProcessManager::GetExtensionProcess(
     const std::string& extension_id) {
   return GetExtensionProcess(
       Extension::GetBaseURLFromExtensionId(extension_id));
+}
+
+const Extension* ExtensionProcessManager::GetExtensionForSiteInstance(
+    int site_instance_id) {
+  SiteInstanceIDMap::const_iterator it = extension_ids_.find(site_instance_id);
+  if (it != extension_ids_.end()) {
+    // Look up the extension by ID, including disabled extensions in case
+    // this gets called while an old process is still around.
+    ExtensionService* service =
+        browsing_instance_->profile()->GetExtensionService();
+    return service->GetExtensionById(it->second, false);
+  }
+
+  return NULL;
 }
 
 SiteInstance* ExtensionProcessManager::GetSiteInstanceForURL(const GURL& url) {
@@ -313,10 +321,9 @@ void ExtensionProcessManager::Observe(int type,
       break;
     }
 
-    case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED:
-    case content::NOTIFICATION_RENDERER_PROCESS_CLOSED: {
-      RenderProcessHost* host = Source<RenderProcessHost>(source).ptr();
-      UnregisterExtensionProcess(host->id());
+    case content::NOTIFICATION_SITE_INSTANCE_DELETED: {
+      SiteInstance* site_instance = Source<SiteInstance>(source).ptr();
+      UnregisterExtensionSiteInstance(site_instance->id());
       break;
     }
 
@@ -419,6 +426,17 @@ RenderProcessHost* IncognitoExtensionProcessManager::GetExtensionProcess(
     return ExtensionProcessManager::GetExtensionProcess(url);
   } else {
     return original_manager_->GetExtensionProcess(url);
+  }
+}
+
+const Extension* IncognitoExtensionProcessManager::GetExtensionForSiteInstance(
+    int site_instance_id) {
+  const Extension* extension =
+      ExtensionProcessManager::GetExtensionForSiteInstance(site_instance_id);
+  if (extension && extension->incognito_split_mode()) {
+    return extension;
+  } else {
+    return original_manager_->GetExtensionForSiteInstance(site_instance_id);
   }
 }
 

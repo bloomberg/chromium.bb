@@ -37,7 +37,8 @@ bool BrowsingInstance::ShouldUseProcessPerSite(const GURL& url) {
   // process creation logic in RenderProcessHost, so we do not need to worry
   // about it here.
 
-  if (url.SchemeIs(chrome::kExtensionScheme))
+  if (content::GetContentClient()->browser()->ShouldUseProcessPerSite(profile_,
+                                                                      url))
     return true;
 
   // DevTools pages have WebUI type but should not reuse the same host.

@@ -42,6 +42,11 @@ class SiteInstanceTestBrowserClient : public content::MockContentBrowserClient {
     return &factory_;
   }
 
+  virtual bool ShouldUseProcessPerSite(Profile* profile,
+                                       const GURL& effective_url) OVERRIDE {
+    return false;
+  }
+
   virtual bool IsURLSameAsAnySiteInstance(const GURL& url) OVERRIDE {
     return url == GURL(kSameAsAnyInstanceURL) ||
            url == GURL(chrome::kAboutCrashURL);

@@ -109,9 +109,10 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_AppProcess) {
                   is_extension_process());
   EXPECT_FALSE(browser()->GetTabContentsAt(3)->web_ui());
 
-  // The extension should have opened 3 new tabs. Including the original blank
-  // tab, we now have 4 tabs. Two should be part of the extension app, and
-  // grouped in the same process.
+  // We should have opened 3 new extension tabs. Including the original blank
+  // tab, we now have 4 tabs. Because the app_process app has the background
+  // permission, all of its instances are in the same process.  Thus two tabs
+  // should be part of the extension app and grouped in the same process.
   ASSERT_EQ(4, browser()->tab_count());
   RenderViewHost* host = browser()->GetTabContentsAt(1)->render_view_host();
 
@@ -152,6 +153,61 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_AppProcess) {
       L"window.domAutomationController.send(window.opener != null)",
       &windowOpenerValid));
   ASSERT_TRUE(windowOpenerValid);
+}
+
+// Test that hosted apps without the background permission use a process per app
+// instance model, such that separate instances are in separate processes.
+IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcessInstances) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kDisablePopupBlocking);
+
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(test_server()->Start());
+
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("app_process_instances")));
+
+  // Open two tabs in the app, one outside it.
+  GURL base_url = test_server()->GetURL(
+      "files/extensions/api_test/app_process_instances/");
+
+  // The app under test acts on URLs whose host is "localhost",
+  // so the URLs we navigate to must have host "localhost".
+  GURL::Replacements replace_host;
+  std::string host_str("localhost");  // must stay in scope with replace_host
+  replace_host.SetHostStr(host_str);
+  base_url = base_url.ReplaceComponents(replace_host);
+
+  // Test both opening a URL in a new tab, and opening a tab and then navigating
+  // it.  Either way, app tabs should be considered extension processes, but
+  // they have no elevated privileges and thus should not have WebUI bindings.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), base_url.Resolve("path1/empty.html"), NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  EXPECT_TRUE(browser()->GetTabContentsAt(1)->render_view_host()->process()->
+                  is_extension_process());
+  EXPECT_FALSE(browser()->GetTabContentsAt(1)->web_ui());
+  browser()->NewTab();
+  ui_test_utils::NavigateToURL(browser(), base_url.Resolve("path2/empty.html"));
+  EXPECT_TRUE(browser()->GetTabContentsAt(2)->render_view_host()->process()->
+                  is_extension_process());
+  EXPECT_FALSE(browser()->GetTabContentsAt(2)->web_ui());
+
+  // We should have opened 2 new extension tabs. Including the original blank
+  // tab, we now have 3 tabs. The two app tabs should not be in the same
+  // process, since they do not have the background permission.  (Thus, we want
+  // to separate them to improve responsiveness.)
+  ASSERT_EQ(3, browser()->tab_count());
+  RenderViewHost* host1 = browser()->GetTabContentsAt(1)->render_view_host();
+  RenderViewHost* host2 = browser()->GetTabContentsAt(2)->render_view_host();
+  EXPECT_NE(host1->process(), host2->process());
+
+  // Opening tabs with window.open should keep the page in the opener's process.
+  ASSERT_EQ(1u, BrowserList::GetBrowserCount(browser()->profile()));
+  WindowOpenHelper(browser(), host1,
+                   base_url.Resolve("path1/empty.html"), true);
+  WindowOpenHelper(browser(), host2,
+                   base_url.Resolve("path2/empty.html"), true);
 }
 
 // Tests that app process switching works properly in the following scenario:

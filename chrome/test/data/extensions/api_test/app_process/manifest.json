@@ -1,7 +1,7 @@
 {
   "name": "app_process",
   "version": "0.1",
-  "description": "Tests that app URLs are grouped into the right process",
+  "description": "Tests that app URLs with the background permission are grouped into the same process.",
   "app": {
     "urls": [
       "http://localhost/files/extensions/api_test/app_process/path1",
@@ -13,5 +13,8 @@
     "launch": {
       "web_url": "http://localhost/files/extensions/api_test/app_process/path1/foo.html"
     }
-  }
+  },
+  "permissions": [
+    "background"
+  ]
 }

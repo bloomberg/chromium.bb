@@ -22,7 +22,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/geolocation/geolocation_provider.h"
-#include "content/browser/renderer_host/render_process_host.h"
+#include "content/browser/renderer_host/render_view_host.h"
 #include "content/common/content_notification_types.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_source.h"
@@ -519,12 +519,18 @@ void ChromeGeolocationPermissionContext::RequestGeolocationPermission(
     if (!ext)
       ext = extensions->GetExtensionByWebExtent(requesting_frame);
     if (ext && ext->HasAPIPermission(ExtensionAPIPermission::kGeolocation)) {
-      ExtensionProcessManager* epm = profile_->GetExtensionProcessManager();
-      RenderProcessHost* process = epm->GetExtensionProcess(requesting_frame);
-      if (process && process->id() == render_process_id) {
-        NotifyPermissionSet(render_process_id, render_view_id, bridge_id,
-                            requesting_frame, true);
-        return;
+      // Make sure this matches the current extension.
+      RenderViewHost* rvh = RenderViewHost::FromID(render_process_id,
+                                                   render_view_id);
+      if (rvh && rvh->site_instance()) {
+        ExtensionProcessManager* epm = profile_->GetExtensionProcessManager();
+        const Extension* current_ext = epm->GetExtensionForSiteInstance(
+            rvh->site_instance()->id());
+        if (ext == current_ext) {
+          NotifyPermissionSet(render_process_id, render_view_id, bridge_id,
+                              requesting_frame, true);
+          return;
+        }
       }
     }
   }

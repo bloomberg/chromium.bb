@@ -21,6 +21,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual void PluginProcessHostCreated(PluginProcessHost* host) OVERRIDE;
   virtual void WorkerProcessHostCreated(WorkerProcessHost* host) OVERRIDE;
   virtual content::WebUIFactory* GetWebUIFactory() OVERRIDE;
+  virtual bool ShouldUseProcessPerSite(Profile* profile,
+                                       const GURL& effective_url) OVERRIDE;
   virtual GURL GetEffectiveURL(Profile* profile, const GURL& url) OVERRIDE;
   virtual bool IsURLSameAsAnySiteInstance(const GURL& url) OVERRIDE;
   virtual std::string GetCanonicalEncodingNameByAliasName(

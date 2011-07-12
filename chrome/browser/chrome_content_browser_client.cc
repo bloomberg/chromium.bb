@@ -98,9 +98,11 @@ void InitRenderViewHostForExtensions(RenderViewHost* render_view_host) {
 
   site_instance->GetProcess()->mark_is_extension_process();
 
-  // Register the association between extension and process with
+  // Register the association between extension and SiteInstance with
   // ExtensionProcessManager.
-  process_manager->RegisterExtensionProcess(extension->id(), process->id());
+  // TODO(creis): Use this to replace SetInstalledAppForRenderer below.
+  process_manager->RegisterExtensionSiteInstance(site_instance->id(),
+                                                 extension->id());
 
   if (extension->is_app()) {
     render_view_host->Send(
@@ -192,6 +194,36 @@ GURL ChromeContentBrowserClient::GetEffectiveURL(Profile* profile,
   // If the URL is part of an extension's web extent, convert it to an
   // extension URL.
   return extension->GetResourceURL(url.path());
+}
+
+bool ChromeContentBrowserClient::ShouldUseProcessPerSite(
+    Profile* profile,
+    const GURL& effective_url) {
+  // Non-extension URLs should generally use process-per-site-instance.
+  // Because we expect to use the effective URL, hosted apps URLs should have
+  // an extension scheme by now.
+  if (!effective_url.SchemeIs(chrome::kExtensionScheme))
+    return false;
+
+  if (!profile || !profile->GetExtensionService())
+    return false;
+
+  const Extension* extension =
+      profile->GetExtensionService()->GetExtensionByURL(effective_url);
+  if (!extension)
+    return false;
+
+  // If the URL is part of a hosted app that does not have the background
+  // permission, we want to give each instance its own process to improve
+  // responsiveness.
+  if (extension->GetType() == Extension::TYPE_HOSTED_APP &&
+      !extension->HasAPIPermission(ExtensionAPIPermission::kBackground))
+    return false;
+
+  // Hosted apps that have the background permission must use process per site,
+  // since all instances can make synchronous calls to the background window.
+  // Other extensions should use process per site as well.
+  return true;
 }
 
 bool ChromeContentBrowserClient::IsURLSameAsAnySiteInstance(const GURL& url) {

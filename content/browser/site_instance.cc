@@ -42,6 +42,11 @@ SiteInstance::SiteInstance(BrowsingInstance* browsing_instance)
 }
 
 SiteInstance::~SiteInstance() {
+  NotificationService::current()->Notify(
+      content::NOTIFICATION_SITE_INSTANCE_DELETED,
+      Source<SiteInstance>(this),
+      NotificationService::NoDetails());
+
   // Now that no one is referencing us, we can safely remove ourselves from
   // the BrowsingInstance.  Any future visits to a page from this site
   // (within the same BrowsingInstance) can safely create a new SiteInstance.
