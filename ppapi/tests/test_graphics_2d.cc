@@ -61,7 +61,7 @@ void TestGraphics2D::QuitMessageLoop() {
 bool TestGraphics2D::ReadImageData(const pp::Graphics2D& dc,
                                    pp::ImageData* image,
                                    const pp::Point& top_left) const {
-  return pp::PPBoolToBool(testing_interface_->ReadImageData(
+  return PP_ToBool(testing_interface_->ReadImageData(
       dc.pp_resource(),
       image->pp_resource(),
       &top_left.pp_point()));
@@ -301,7 +301,7 @@ std::string TestGraphics2D::TestDescribe() {
                                         &is_always_opaque))
     return "Describe failed";
   if (size.width != w || size.height != h ||
-      is_always_opaque != pp::BoolToPPBool(always_opaque))
+      is_always_opaque != PP_FromBool(always_opaque))
     return "Mismatch of data.";
 
   PASS();
