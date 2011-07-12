@@ -35,7 +35,8 @@
  * Wraps GetModuleFileNameW to always succeed in finding a buffer of
  * appropriate size.
  */
-static int get_module_name_safely(wchar_t **oldpath) {
+static
+int get_module_name_safely(wchar_t **oldpath) {
   int length = 128, done;
   do {
     *oldpath = HeapAlloc(
@@ -53,14 +54,16 @@ static int get_module_name_safely(wchar_t **oldpath) {
 }
 
 
-static wchar_t* find_last_slash_or_backslash_delimiter(wchar_t *start) {
-  wchar_t *delimiter = start + lstrlenW(start);
+static
+const wchar_t* find_last_slash_or_backslash_delimiter(const wchar_t *start) {
+  const wchar_t *delimiter = start + lstrlenW(start);
   while (delimiter > start && *delimiter != L'/' && *delimiter != L'\\')
     --delimiter;
   return delimiter;
 }
 
-static wchar_t* find_program_arguments() {
+static
+wchar_t* find_program_arguments() {
   wchar_t *arguments;
 
   arguments = GetCommandLineW();
@@ -80,6 +83,7 @@ static wchar_t* find_program_arguments() {
   return arguments;
 }
 
+static
 wchar_t reduce_wchar(wchar_t c) {
   if (c == L'/')
     return L'\\';
@@ -89,7 +93,8 @@ wchar_t reduce_wchar(wchar_t c) {
 /*
  * Returns whether path ends with redirect
  */
-int check_path (wchar_t *path, wchar_t *redirect) {
+static
+int check_path (const wchar_t *path, const wchar_t *redirect) {
   int path_len = lstrlenW(path);
   int redirect_len = lstrlenW(redirect);
   int path_offset;
@@ -104,25 +109,31 @@ int check_path (wchar_t *path, wchar_t *redirect) {
   return 1;
 }
 
-int is_driver(wchar_t *option) {
+static
+int is_driver(const wchar_t *option) {
   return lstrcmpW(option, L"-m32") == 0 || lstrcmpW(option, L"-m64") == 0;
 }
 
-void println_wstring(wchar_t *str) {
-  int length;
-  int i;
+static
+void println_redirect(const redirect_t *redirect) {
+  const wchar_t *str;
   int tmp;
   HANDLE output;
-  length = lstrlenW(str);
   output = GetStdHandle(STD_OUTPUT_HANDLE);
-  for (i = 0; i < length; i++)
-    WriteFile(output, str + i, 1, &tmp, NULL);
-  WriteFile(output, "\n", 1, &tmp, NULL);
+  for (str = redirect->from; *str; ++str)
+    WriteFile(output, str, 1, &tmp, NULL);
+  WriteFile(output, L"|", 1, &tmp, NULL);
+  for (str = redirect->to; *str; ++str)
+    WriteFile(output, str, 1, &tmp, NULL);
+  WriteFile(output, L"|", 1, &tmp, NULL);
+  for (str = redirect->args; *str; ++str)
+    WriteFile(output, str, 1, &tmp, NULL);
+  WriteFile(output, L"\n", 1, &tmp, NULL);
 }
 
 void entry() {
   wchar_t *newpath = NULL, *oldpath = NULL;
-  wchar_t *cmdline, *arguments, *selector;
+  const wchar_t *cmdline, *arguments, *selector;
   int length, done;
   int redirect_index;
   int length_from;
@@ -131,38 +142,38 @@ void entry() {
   int tmp;
   HANDLE output;
   int n_redirects = sizeof(redirects)/sizeof(redirect_t);
-  static STARTUPINFOW si = { sizeof(STARTUPINFOW), 0};
+  static STARTUPINFOW si = {sizeof(STARTUPINFOW), 0};
   static PROCESS_INFORMATION pi;
 
   length = get_module_name_safely(&oldpath);
   if (!oldpath) goto ShowErrorMessage;
-  /* If redirector is called inside make file */
+  /* If redirector is called as "redirector.exe", dump redirector table.  */
   if (check_path(oldpath, L"redirector.exe")) {
     output = GetStdHandle(STD_OUTPUT_HANDLE);
     for (redirect_index = 0;
          redirect_index < n_redirects;
          redirect_index++) {
-      println_wstring(redirects[redirect_index][0]);
+      println_redirect(redirects + redirect_index);
     }
     ExitProcess(0);
   }
   for (redirect_index = 0;
        redirect_index < n_redirects;
        redirect_index++) {
-    if (check_path(oldpath, redirects[redirect_index][0]))
+    if (check_path(oldpath, redirects[redirect_index].from))
       break;
   }
   if (redirect_index >= n_redirects) goto ShowErrorMessage;
   newpath = HeapAlloc(GetProcessHeap(), 0, sizeof(wchar_t)*(length + 64));
   if (!newpath) goto ShowErrorMessage;
   length = lstrlenW(oldpath);
-  length_from = lstrlenW(redirects[redirect_index][0]);
-  length_to = lstrlenW(redirects[redirect_index][1]);
+  length_from = lstrlenW(redirects[redirect_index].from);
+  length_to = lstrlenW(redirects[redirect_index].to);
   lstrcpynW(newpath, oldpath, length - length_from + 1);
-  lstrcpyW(newpath + length - length_from, redirects[redirect_index][1]);
+  lstrcpyW(newpath + length - length_from, redirects[redirect_index].to);
 
-  selector = redirects[redirect_index][2];
-  cmdline = redirects[redirect_index][1];
+  selector = redirects[redirect_index].args;
+  cmdline = redirects[redirect_index].to;
   if (!is_driver(selector)) {
     cmdline = find_last_slash_or_backslash_delimiter (cmdline);
   } else {

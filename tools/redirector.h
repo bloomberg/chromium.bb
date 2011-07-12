@@ -8,8 +8,14 @@
 #define NATIVE_CLIENT_TOOLS_REDIRECTOR_H_
 
 #include <wchar.h>
-typedef wchar_t* redirect_t[3];
-redirect_t redirects[] = {
+
+typedef struct {
+  const wchar_t *from;
+  const wchar_t *to;
+  const wchar_t *args;
+} redirect_t;
+
+const redirect_t redirects[] = {
   {L"/bin/nacl-addr2line.exe", L"/libexec/nacl64-addr2line.exe", L""},
   {L"/bin/nacl-ar.exe", L"/libexec/nacl64-ar.exe", L""},
   {L"/bin/nacl-as.exe", L"/libexec/nacl64-as.exe", L"--32"},
@@ -67,4 +73,5 @@ redirect_t redirects[] = {
   {L"/nacl64/bin/ranlib.exe", L"/libexec/nacl64-ranlib.exe", L""},
   {L"/nacl64/bin/strip.exe", L"/libexec/nacl64-strip.exe", L""},
 };
+
 #endif
