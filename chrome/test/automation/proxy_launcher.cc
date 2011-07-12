@@ -440,12 +440,9 @@ bool ProxyLauncher::LaunchBrowserHelper(const LaunchState& state, bool wait,
   // TODO(phajdan.jr): Only run it for "main" browser launch.
   browser_launch_time_ = base::TimeTicks::Now();
 
-  base::LaunchOptions options;
-  options.wait = wait;
-  options.process_handle = process;
-
 #if defined(OS_WIN)
-  options.start_hidden = !state.show_window;
+  bool started = base::LaunchApp(command_line, wait,
+                                 !state.show_window, process);
 #elif defined(OS_POSIX)
   // Sometimes one needs to run the browser under a special environment
   // (e.g. valgrind) without also running the test harness (e.g. python)
@@ -461,10 +458,11 @@ bool ProxyLauncher::LaunchBrowserHelper(const LaunchState& state, bool wait,
   base::file_handle_mapping_vector fds;
   if (automation_proxy_.get())
     fds = automation_proxy_->fds_to_map();
-  options.fds_to_remap = &fds;
+
+  bool started = base::LaunchApp(command_line.argv(), fds, wait, process);
 #endif
 
-  return base::LaunchProcess(command_line, options);
+  return started;
 }
 
 AutomationProxy* ProxyLauncher::automation() const {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -111,10 +111,7 @@ TEST_F(ProcessInfoSnapshotMacTest, EffectiveVsRealUserIDTest) {
   argv.push_back("0");
 
   base::ProcessHandle process_handle;
-  base::LaunchOptions options;
-  options.fds_to_remap = &fds_to_remap;
-  options.process_handle = &process_handle;
-  ASSERT_TRUE(base::LaunchProcess(argv, options));
+  ASSERT_TRUE(base::LaunchApp(argv, fds_to_remap, false, &process_handle));
   PCHECK(HANDLE_EINTR(close(fds[1])) == 0);
 
   // Wait until there's some output form top. This is an easy way to tell that

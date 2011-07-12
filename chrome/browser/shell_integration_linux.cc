@@ -58,10 +58,7 @@ bool LaunchXdgUtility(const std::vector<std::string>& argv, int* exit_code) {
   no_stdin.push_back(std::make_pair(devnull, STDIN_FILENO));
 
   base::ProcessHandle handle;
-  base::LaunchOptions options;
-  options.process_handle = &handle;
-  options.fds_to_remap = &no_stdin;
-  if (!base::LaunchProcess(argv, options)) {
+  if (!base::LaunchApp(argv, no_stdin, false, &handle)) {
     close(devnull);
     return false;
   }
