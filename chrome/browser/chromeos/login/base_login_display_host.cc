@@ -257,6 +257,23 @@ void ShowLoginWizard(const std::string& first_screen_name,
   }
 
   if (show_login_screen && chromeos::CrosLibrary::Get()->EnsureLoaded()) {
+    // R11 > R12 migration fix. See http://crosbug.com/p/4898.
+    // If user has manually changed locale during R11 OOBE, locale will be set.
+    // On R12 > R12|R13 etc. this fix won't get activated since
+    // OOBE process has set kApplicationLocale to non-default value.
+    PrefService* prefs = g_browser_process->local_state();
+    if (!prefs->HasPrefPath(prefs::kApplicationLocale)) {
+      std::string locale = chromeos::WizardController::GetInitialLocale();
+      prefs->SetString(prefs::kApplicationLocale, locale);
+      chromeos::input_method::EnableInputMethods(
+          locale,
+          chromeos::input_method::kKeyboardLayoutsOnly,
+          chromeos::input_method::GetHardwareInputMethodId());
+      base::ThreadRestrictions::ScopedAllowIO allow_io;
+      const std::string loaded_locale =
+          ResourceBundle::ReloadSharedInstance(locale);
+      g_browser_process->SetApplicationLocale(loaded_locale);
+    }
     display_host->StartSignInScreen();
     return;
   }
