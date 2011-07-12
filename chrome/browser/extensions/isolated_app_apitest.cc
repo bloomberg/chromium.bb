@@ -113,6 +113,12 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppApiTest, MAYBE_CookieIsolation) {
 }
 
 // Ensure that cookies are not isolated if the isolated apps are not installed.
+#if defined(OS_WIN)
+// Disabled due to http://crbug.com/89090.
+#define MAYBE_NoCookieIsolationWithoutApp DISABLED_NoCookieIsolationWithoutApp
+#else
+#define MAYBE_NoCookieIsolationWithoutApp NoCookieIsolationWithoutApp
+#endif
 IN_PROC_BROWSER_TEST_F(IsolatedAppApiTest, NoCookieIsolationWithoutApp) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisablePopupBlocking);
