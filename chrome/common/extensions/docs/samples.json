@@ -63,12 +63,14 @@
     "chrome.experimental.sidebar.setIcon": "experimental.sidebar.html#method-setIcon",
     "chrome.experimental.sidebar.setTitle": "experimental.sidebar.html#method-setTitle",
     "chrome.experimental.sidebar.show": "experimental.sidebar.html#method-show",
+    "chrome.experimental.tts.getVoices": "experimental.tts.html#method-getVoices",
     "chrome.experimental.tts.isSpeaking": "experimental.tts.html#method-isSpeaking",
-    "chrome.experimental.tts.onSpeak": "experimental.tts.html#event-onSpeak",
-    "chrome.experimental.tts.onStop": "experimental.tts.html#event-onStop",
     "chrome.experimental.tts.speak": "experimental.tts.html#method-speak",
-    "chrome.experimental.tts.speakCompleted": "experimental.tts.html#method-speakCompleted",
     "chrome.experimental.tts.stop": "experimental.tts.html#method-stop",
+    "chrome.experimental.ttsEngine.onEvent": "experimental.ttsEngine.html#event-onEvent",
+    "chrome.experimental.ttsEngine.onSpeak": "experimental.ttsEngine.html#event-onSpeak",
+    "chrome.experimental.ttsEngine.onStop": "experimental.ttsEngine.html#event-onStop",
+    "chrome.experimental.ttsEngine.sendTtsEvent": "experimental.ttsEngine.html#method-sendTtsEvent",
     "chrome.experimental.webNavigation.onBeforeNavigate": "experimental.webNavigation.html#event-onBeforeNavigate",
     "chrome.experimental.webNavigation.onBeforeRetarget": "experimental.webNavigation.html#event-onBeforeRetarget",
     "chrome.experimental.webNavigation.onCommitted": "experimental.webNavigation.html#event-onCommitted",
@@ -953,7 +955,7 @@
         "manifest.json",
         "options.html"
       ],
-      "source_hash": "030b77992ed5bbbbc18f1b717bc330b965b26aaf",
+      "source_hash": "327e6bf6005b861f17848b59dc50ebb18d1a57f4",
       "zip_path": "examples\/extensions\/gmail.zip"
     },
     {
