@@ -283,7 +283,6 @@ RenderMessageFilter::RenderMessageFilter(
       render_process_id_(render_process_id) {
   DCHECK(request_context_);
 
-  profile_->GetPrefs();
   render_widget_helper_->Init(render_process_id_, resource_dispatcher_host_);
 }
 
