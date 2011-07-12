@@ -18,6 +18,7 @@
 
 @interface BookmarkButtonCell(Private)
 - (void)configureBookmarkButtonCell;
+- (void)applyTextColor;
 @end
 
 
@@ -45,7 +46,7 @@
         cellImage:(NSImage*)cellImage {
   if ((self = [super initTextCell:cellText])) {
     [self configureBookmarkButtonCell];
-
+    [self setTextColor:[NSColor redColor]];
     [self setBookmarkNode:node];
 
     if (node) {
@@ -160,20 +161,26 @@
   return menu;
 }
 
-// Unfortunately, NSCell doesn't already have something like this.
-// TODO(jrg): consider placing in GTM.
+- (void)setTitle:(NSString*)title {
+  if ([[self title] isEqualTo:title])
+    return;
+  [super setTitle:title];
+  [self applyTextColor];
+}
+
 - (void)setTextColor:(NSColor*)color {
+  if ([textColor_ isEqualTo:color])
+    return;
+  textColor_.reset([color copy]);
+  [self applyTextColor];
+}
 
-  // We can't properly set the cell's text color without a control.
-  // In theory we could just save the next for later and wait until
-  // the cell is moved to a control, but there is no obvious way to
-  // accomplish that (e.g. no "cellDidMoveToControl" notification.)
-  DCHECK([self controlView]);
-
+// We must reapply the text color after any setTitle: call
+- (void)applyTextColor {
   scoped_nsobject<NSMutableParagraphStyle> style([NSMutableParagraphStyle new]);
   [style setAlignment:NSLeftTextAlignment];
   NSDictionary* dict = [NSDictionary
-                         dictionaryWithObjectsAndKeys:color,
+                         dictionaryWithObjectsAndKeys:textColor_,
                          NSForegroundColorAttributeName,
                          [self font], NSFontAttributeName,
                          style.get(), NSParagraphStyleAttributeName,
@@ -181,11 +188,7 @@
   scoped_nsobject<NSAttributedString> ats([[NSAttributedString alloc]
                                             initWithString:[self title]
                                                 attributes:dict]);
-  NSButton* button = static_cast<NSButton*>([self controlView]);
-  if (button) {
-    DCHECK([button isKindOfClass:[NSButton class]]);
-    [button setAttributedTitle:ats.get()];
-  }
+  [self setAttributedTitle:ats.get()];
 }
 
 // To implement "hover open a bookmark button to open the folder"

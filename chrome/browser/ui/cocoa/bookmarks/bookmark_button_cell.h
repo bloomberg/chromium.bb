@@ -28,6 +28,9 @@ class BookmarkNode;
 
   // Arrow for folders
   scoped_nsobject<NSImage> arrowImage_;
+
+  // Text color for title.
+  scoped_nsobject<NSColor> textColor_;
 }
 
 @property(nonatomic, readwrite, assign) const BookmarkNode* bookmarkNode;
