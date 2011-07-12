@@ -708,14 +708,14 @@ int MenuController::OnPerformDrop(SubmenuView* source,
   showing_ = false;
   exit_type_ = EXIT_ALL;
 
+  // If over an empty menu item, drop occurs on the parent.
+  if (drop_target->id() == MenuItemView::kEmptyMenuItemViewID)
+    drop_target = drop_target->GetParentMenuItem();
+
   if (!IsBlockingRun())
     item->GetRootMenuItem()->DropMenuClosed(false);
 
   // WARNING: the call to MenuClosed deletes us.
-
-  // If over an empty menu item, drop occurs on the parent.
-  if (drop_target->id() == MenuItemView::kEmptyMenuItemViewID)
-    drop_target = drop_target->GetParentMenuItem();
 
   return drop_target->GetDelegate()->OnPerformDrop(
       drop_target, drop_position, event);
