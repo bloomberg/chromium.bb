@@ -11,6 +11,7 @@
 #include "base/scoped_temp_dir.h"
 #include "base/timer.h"
 #include "chrome/browser/profiles/profile.h"
+#include "content/browser/appcache/chrome_appcache_service.h"
 
 namespace content {
 class ResourceContextGetter;
@@ -152,6 +153,7 @@ class TestingProfile : public Profile {
   virtual bool HasOffTheRecordProfile();
 
   virtual Profile* GetOriginalProfile();
+  void SetAppCacheService(ChromeAppCacheService* appcache_service);
   virtual ChromeAppCacheService* GetAppCacheService();
   virtual webkit_database::DatabaseTracker* GetDatabaseTracker();
   virtual VisitedLinkMaster* GetVisitedLinkMaster();
@@ -161,6 +163,8 @@ class TestingProfile : public Profile {
   virtual ExtensionProcessManager* GetExtensionProcessManager();
   virtual ExtensionMessageService* GetExtensionMessageService();
   virtual ExtensionEventRouter* GetExtensionEventRouter();
+  void SetExtensionSpecialStoragePolicy(
+      ExtensionSpecialStoragePolicy* extension_special_storage_policy);
   virtual ExtensionSpecialStoragePolicy* GetExtensionSpecialStoragePolicy();
   virtual SSLHostState* GetSSLHostState();
   virtual net::TransportSecurityState* GetTransportSecurityState();
@@ -393,6 +397,8 @@ class TestingProfile : public Profile {
   // death. Defaults to the Singleton implementation but overridable for
   // testing.
   ProfileDependencyManager* profile_dependency_manager_;
+
+  scoped_refptr<ChromeAppCacheService> appcache_service_;
 };
 
 // A profile that derives from another profile.  This does not actually

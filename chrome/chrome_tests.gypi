@@ -68,6 +68,8 @@
         'browser/chromeos/cros/mock_network_library.cc',
         'browser/chromeos/cros/mock_network_library.h',
         # The only thing used from browser is Browser::Type.
+        'browser/extensions/mock_extension_special_storage_policy.cc',
+        'browser/extensions/mock_extension_special_storage_policy.h',
         'browser/extensions/test_extension_prefs.cc',
         'browser/extensions/test_extension_prefs.h',
         'browser/extensions/test_extension_service.cc',

@@ -391,8 +391,13 @@ Profile* TestingProfile::GetOriginalProfile() {
   return this;
 }
 
+void TestingProfile::SetAppCacheService(
+    ChromeAppCacheService* appcache_service) {
+  appcache_service_ = appcache_service;
+}
+
 ChromeAppCacheService* TestingProfile::GetAppCacheService() {
-  return NULL;
+  return appcache_service_.get();
 }
 
 webkit_database::DatabaseTracker* TestingProfile::GetDatabaseTracker() {
@@ -430,6 +435,11 @@ ExtensionMessageService* TestingProfile::GetExtensionMessageService() {
 
 ExtensionEventRouter* TestingProfile::GetExtensionEventRouter() {
   return NULL;
+}
+
+void TestingProfile::SetExtensionSpecialStoragePolicy(
+    ExtensionSpecialStoragePolicy* extension_special_storage_policy) {
+  extension_special_storage_policy_ = extension_special_storage_policy;
 }
 
 ExtensionSpecialStoragePolicy*
