@@ -5,9 +5,11 @@
 #include <string.h>
 
 #include <iostream>
+#include <list>
 #include <map>
 #include <set>
 #include <vector>
+
 #include "ppapi/c/dev/ppb_opengles_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/cpp/dev/context_3d_dev.h"
@@ -27,6 +29,11 @@
 // include-guards), make sure this is the last file #include'd in this file.
 #undef NDEBUG
 #include <assert.h>
+
+// Assert |context_| isn't holding any GL Errors.  Done as a macro instead of a
+// function to preserve line number information in the failure message.
+#define assertNoGLError() \
+  assert(!gles2_if_->GetError(context_->pp_resource()));
 
 namespace {
 
@@ -64,14 +71,6 @@ class GLES2DemoInstance : public pp::Instance, public pp::Graphics3DClient_Dev,
  private:
   enum { kNumConcurrentDecodes = 7 };
 
-  // Helper struct that stores data used by the shader program.
-  struct ShaderInfo {
-    GLint pos_location;
-    GLint tc_location;
-    GLint tex_location;
-    GLuint vertex_buffers[2];
-  };
-
   // Initialize Video Decoder.
   void InitializeDecoder();
 
@@ -95,19 +94,17 @@ class GLES2DemoInstance : public pp::Instance, public pp::Graphics3DClient_Dev,
   void DeleteTexture(GLuint id);
   void PaintFinished(int32_t result, int picture_buffer_id);
 
-  // Assert |context_| isn't holding any GL Errors.
-  void assertNoGLError() {
-    assert(!gles2_if_->GetError(context_->pp_resource()));
-  }
-
   pp::Size position_size_;
-  ShaderInfo program_data_;
   int next_picture_buffer_id_;
   int next_bitstream_buffer_id_;
   bool is_painting_;
   pp::CompletionCallbackFactory<GLES2DemoInstance> callback_factory_;
   size_t encoded_data_next_pos_to_decode_;
   std::set<int> bitstream_ids_at_decoder_;
+  // When decode outpaces render, we queue up decoded pictures for later
+  // painting.
+  std::list<PP_Picture_Dev> pictures_pending_paint_;
+  int num_frames_rendered_;
 
   // Map of texture buffers indexed by buffer id.
   typedef std::map<int, PP_GLESBuffer_Dev> PictureBufferMap;
@@ -115,8 +112,12 @@ class GLES2DemoInstance : public pp::Instance, public pp::Graphics3DClient_Dev,
   // Map of bitstream buffers indexed by id.
   typedef std::map<int, pp::Buffer_Dev*> BitstreamBufferMap;
   BitstreamBufferMap bitstream_buffers_by_id_;
+  PP_TimeTicks first_frame_delivered_ticks_;
+  PP_TimeTicks last_swap_request_ticks_;
+  PP_TimeTicks swap_ticks_;
 
   // Unowned pointers.
+  const struct PPB_Core* core_if_;
   const struct PPB_OpenGLES2_Dev* gles2_if_;
 
   // Owned data.
@@ -132,12 +133,16 @@ GLES2DemoInstance::GLES2DemoInstance(PP_Instance instance, pp::Module* module)
       next_bitstream_buffer_id_(0),
       callback_factory_(this),
       encoded_data_next_pos_to_decode_(0),
+      num_frames_rendered_(0),
+      first_frame_delivered_ticks_(-1),
+      swap_ticks_(0),
       context_(NULL),
       surface_(NULL),
       video_decoder_(NULL) {
-  gles2_if_ = static_cast<const struct PPB_OpenGLES2_Dev*>(
-      module->GetBrowserInterface(PPB_OPENGLES2_DEV_INTERFACE));
-  assert(gles2_if_);
+  assert((core_if_ = static_cast<const struct PPB_Core*>(
+      module->GetBrowserInterface(PPB_CORE_INTERFACE))));
+  assert((gles2_if_ = static_cast<const struct PPB_OpenGLES2_Dev*>(
+      module->GetBrowserInterface(PPB_OPENGLES2_DEV_INTERFACE))));
 }
 
 GLES2DemoInstance::~GLES2DemoInstance() {
@@ -162,8 +167,7 @@ void GLES2DemoInstance::DidChangeView(
 }
 
 void GLES2DemoInstance::InitializeDecoder() {
-  if (video_decoder_)
-    return;
+  assert(!video_decoder_);
   video_decoder_ = new pp::VideoDecoder_Dev(*this);
 
   PP_VideoConfigElement configs = PP_VIDEOATTR_DICTIONARY_TERMINATOR;
@@ -276,6 +280,12 @@ void GLES2DemoInstance::DismissPictureBuffer(
 
 void GLES2DemoInstance::PictureReady(
     pp::VideoDecoder_Dev decoder, const PP_Picture_Dev& picture) {
+  if (first_frame_delivered_ticks_ == -1)
+    assert((first_frame_delivered_ticks_ = core_if_->GetTimeTicks()) != -1);
+  if (is_painting_) {
+    pictures_pending_paint_.push_back(picture);
+    return;
+  }
   PictureBufferMap::iterator it =
       buffers_by_id_.find(picture.picture_buffer_id);
   assert(it != buffers_by_id_.end());
@@ -331,30 +341,37 @@ void GLES2DemoInstance::InitGL() {
 }
 
 void GLES2DemoInstance::Render(const PP_GLESBuffer_Dev& buffer) {
-  if (is_painting_) {
-    // We are dropping frames if we don't render fast enough -
-    // that is why sometimes the last frame rendered is < 249.
-    if (video_decoder_)
-      video_decoder_->ReusePictureBuffer(buffer.info.id);
-    return;
-  }
+  assert(!is_painting_);
   is_painting_ = true;
   gles2_if_->ActiveTexture(context_->pp_resource(), GL_TEXTURE0);
   gles2_if_->BindTexture(
       context_->pp_resource(), GL_TEXTURE_2D, buffer.texture_id);
-  gles2_if_->Uniform1i(context_->pp_resource(), program_data_.tex_location, 0);
   gles2_if_->DrawArrays(context_->pp_resource(), GL_TRIANGLE_STRIP, 0, 4);
   pp::CompletionCallback cb =
       callback_factory_.NewCallback(
           &GLES2DemoInstance::PaintFinished, buffer.info.id);
+  last_swap_request_ticks_ = core_if_->GetTimeTicks();
   assert(surface_->SwapBuffers(cb) == PP_OK_COMPLETIONPENDING);
-  assertNoGLError();
 }
 
 void GLES2DemoInstance::PaintFinished(int32_t result, int picture_buffer_id) {
+  swap_ticks_ += core_if_->GetTimeTicks() - last_swap_request_ticks_;
   is_painting_ = false;
-  if (video_decoder_)
-    video_decoder_->ReusePictureBuffer(picture_buffer_id);
+  ++num_frames_rendered_;
+  if (num_frames_rendered_ % 50 == 0) {
+    double elapsed = core_if_->GetTimeTicks() - first_frame_delivered_ticks_;
+    double fps = (elapsed > 0) ? num_frames_rendered_ / elapsed : 1000;
+    double ms_per_swap = (swap_ticks_ * 1e3) / num_frames_rendered_;
+    std::cerr << "Rendered frames: " << num_frames_rendered_ << ", fps: "
+              << fps << ", with average ms/swap of: " << ms_per_swap
+              << std::endl;
+  }
+  video_decoder_->ReusePictureBuffer(picture_buffer_id);
+  while (!pictures_pending_paint_.empty() && !is_painting_) {
+    PP_Picture_Dev picture = pictures_pending_paint_.front();
+    pictures_pending_paint_.pop_front();
+    PictureReady(*video_decoder_, picture);
+  }
 }
 
 GLuint GLES2DemoInstance::CreateTexture(int32_t width, int32_t height) {
@@ -404,46 +421,12 @@ void GLES2DemoInstance::CreateGLObjects() {
 
   static const char kFragmentShader[] =
       "precision mediump float;            \n"
-      "precision mediump int;              \n"
       "varying vec2 v_texCoord;            \n"
       "uniform sampler2D s_texture;        \n"
       "void main()                         \n"
       "{"
-      "    vec4 value = texture2D(s_texture, vec2(v_texCoord.x, 1.0 - v_texCoord.y)); \n"
-      "    gl_FragColor = vec4(value.rgb, 1); \n"
+      "    gl_FragColor = texture2D(s_texture, v_texCoord); \n"
       "}";
-
-  static const GLfloat kVertices[] = {
-      -1.f,  1.f,   // Position 0
-      0.0f,  0.0f,  // TexCoord 0
-      -1.f, -1.f,   // Position 1
-      0.0f,  1.0f,  // TexCoord 1
-      1.f, 1.f,     // Position 2
-      1.0f,  0.0f,  // TexCoord 2
-      1.0f,  -1.f,  // Position 3
-      1.0f,  1.0f   // TexCoord 3
-  };
-
-  static const GLushort kIndices[] = { 0, 1, 2, 3 };
-
-  // Create vertex position and texture coordinate buffers.
-  gles2_if_->GenBuffers(
-      context_->pp_resource(), 2, program_data_.vertex_buffers);
-
-  // Creates and binds vertex/texture data to buffers.
-  gles2_if_->BindBuffer(
-      context_->pp_resource(), GL_ARRAY_BUFFER,
-      program_data_.vertex_buffers[0]);
-  gles2_if_->BufferData(
-      context_->pp_resource(), GL_ARRAY_BUFFER, sizeof(kVertices),
-      kVertices, GL_STATIC_DRAW);
-  gles2_if_->BindBuffer(
-      context_->pp_resource(),GL_ELEMENT_ARRAY_BUFFER,
-      program_data_.vertex_buffers[1]);
-  gles2_if_->BufferData(
-      context_->pp_resource(),GL_ELEMENT_ARRAY_BUFFER,
-      sizeof(kIndices), kIndices, GL_STATIC_DRAW);
-  assertNoGLError();
 
   // Create shader program.
   GLuint program = gles2_if_->CreateProgram(context_->pp_resource());
@@ -453,31 +436,37 @@ void GLES2DemoInstance::CreateGLObjects() {
   gles2_if_->LinkProgram(context_->pp_resource(), program);
   gles2_if_->UseProgram(context_->pp_resource(), program);
   gles2_if_->DeleteProgram(context_->pp_resource(), program);
-  assertNoGLError();
-
-  // Remember locations for shader variables.
-  program_data_.pos_location = gles2_if_->GetAttribLocation(
-      context_->pp_resource(), program, "a_position");
-  program_data_.tc_location = gles2_if_->GetAttribLocation(
-      context_->pp_resource(), program, "a_texCoord");
-  program_data_.tex_location = gles2_if_->GetAttribLocation(
-      context_->pp_resource(), program, "s_texture");
+  gles2_if_->Uniform1i(
+      context_->pp_resource(),
+      gles2_if_->GetAttribLocation(
+          context_->pp_resource(), program, "s_texture"), 0);
   assertNoGLError();
 
   // Assign vertex positions and texture coordinates to buffers for use in
   // shader program.
-  GLfloat* ptr = (GLfloat*) 0;
+  static const float kVertices[] = {
+    -1, 1, -1, -1, 1, 1, 1, -1,  // Position coordinates.
+    0, 1, 0, 0, 1, 1, 1, 0,  // Texture coordinates.
+  };
+
+  GLuint buffer;
+  gles2_if_->GenBuffers(context_->pp_resource(), 1, &buffer);
+  gles2_if_->BindBuffer(context_->pp_resource(), GL_ARRAY_BUFFER, buffer);
+  gles2_if_->BufferData(context_->pp_resource(), GL_ARRAY_BUFFER,
+                        sizeof(kVertices), kVertices, GL_STATIC_DRAW);
+  assertNoGLError();
+  GLint pos_location = gles2_if_->GetAttribLocation(
+      context_->pp_resource(), program, "a_position");
+  GLint tc_location = gles2_if_->GetAttribLocation(
+      context_->pp_resource(), program, "a_texCoord");
+  assertNoGLError();
+  gles2_if_->EnableVertexAttribArray(context_->pp_resource(), pos_location);
+  gles2_if_->VertexAttribPointer(context_->pp_resource(), pos_location, 2,
+                                 GL_FLOAT, GL_FALSE, 0, 0);
+  gles2_if_->EnableVertexAttribArray(context_->pp_resource(), tc_location);
   gles2_if_->VertexAttribPointer(
-      context_->pp_resource(), program_data_.pos_location, 2, GL_FLOAT,
-      GL_FALSE, 4 * sizeof(GLfloat), ptr);
-  gles2_if_->EnableVertexAttribArray(
-      context_->pp_resource(), program_data_.pos_location);
-  ptr += 2;
-  gles2_if_->VertexAttribPointer(
-      context_->pp_resource(), program_data_.tc_location, 2, GL_FLOAT,
-      GL_FALSE, 4 * sizeof(GLfloat), ptr);
-  gles2_if_->EnableVertexAttribArray(
-      context_->pp_resource(), program_data_.tc_location);
+      context_->pp_resource(), tc_location, 2, GL_FLOAT, GL_FALSE, 0,
+      static_cast<float*>(0) + 8);  // Skip position coordinates.
   assertNoGLError();
 }
 
