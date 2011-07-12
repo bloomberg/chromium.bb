@@ -34,8 +34,6 @@
       'ppapi/manifest.cc',
       'ppapi/module_ppapi.cc',
       'ppapi/file_downloader.cc',
-      'ppapi/pnacl_coordinator.cc',
-      'ppapi/pnacl_srpc_lib.cc',
       'ppapi/scriptable_handle_ppapi.cc',
       'ppapi/var_utils.cc',
     ],

@@ -23,40 +23,18 @@ no_ports_broken = env.Bit('target_arm') or \
 #----------------------------------------------------------------------
 # Get list of translator files
 
-# Seriously, we need to make up our minds about whether or not we
-# want a dash in the ISA string. My vote is for keeping the dash,
-# since that is what the plugin will respond with.
-def DashFreeArch(arch):
-  return arch.replace('-', '')
-
-# Sigh, cases where we use the dash.
-def ArchFromTargetPlatform():
+def TranslatorArchDir():
   if env.Bit('target_x86_32'):
-    return 'x86-32'
+    return 'x8632'
   elif env.Bit('target_x86_64'):
-    return 'x86-64'
+    return 'x8664'
   elif env.Bit('target_arm'):
     return 'arm'
   else:
     raise Exception('unknown architecture')
 
-# Return a pair of files, representing a mapping
-# from an URL to path in the staging directory.
 def MappingForStagedFile(f):
-  return (f.replace('${STAGING_DIR}/', ''), f)
-
-def ReplicateAndMap(files, dash_free_isa, replicates, map_files):
-  # Replicate to STAGING (files can be copied from there).
-  replicates += env.Replicate('${STAGING_DIR}/pnacl_support/%s' %
-                              dash_free_isa,
-                              files)
-  # Above, we have the full path w/ variables like ${TARGET_ROOT}.
-  # Here, we need an "evaluated" string. Hack that w/ basename...
-  basefiles = [ os.path.basename(f) for f in files ]
-  # Set up file mapping for test runner:
-  map_files += [MappingForStagedFile('${STAGING_DIR}/pnacl_support/%s/%s' %
-                                     (dash_free_isa, f))
-                for f in basefiles]
+  return (f.replace('$STAGING_DIR/', ''), f)
 
 def LayoutTranslatorBinariesOnServer():
   ''' Lay out the translator support files in a way that imitates
@@ -77,67 +55,60 @@ def LayoutTranslatorBinariesOnServer():
   # copy the files from the toolchain-dir to their webserver).
   map_files = []
   replicates = [] # track staging dependencies
-
-  # We need to pull some files from extra_sdk. Unfortunately, this is
-  # only guaranteed to be built for the current target platform.
-  # TODO(jvoung): stage the sdk libs for other platforms, not
-  # just the one that you are building.
-  sdk_lib_dir = '${TARGET_ROOT}/lib/'
-  sdk_native_libs = [(sdk_lib_dir + x)
-                     for x in ['crt1.o', 'libcrt_platform.a']]
-
-  arch = ArchFromTargetPlatform()
-  dash_free_arch = DashFreeArch(arch)
-  ReplicateAndMap(sdk_native_libs, dash_free_arch, replicates, map_files)
-
   toolchain_dir = '${PNACL_ROOT}'
-  for arch in ['arm', 'x86-32', 'x86-64']:
-    dash_free_arch = DashFreeArch(arch)
+  # TODO(jvoung): add ARM when we have a sandboxed LD in tools-sb.
+  for arch in ['x8632', 'x8664']:
     toolchain_bin = '%s/tools-sb/%s/srpc/bin/' % (toolchain_dir,
-                                                  dash_free_arch)
-    toolchain_binaries = [toolchain_bin + 'llc', toolchain_bin + 'ld']
+                                                  arch)
+    toolchain_binaries = [toolchain_bin + 'llc',
+                          toolchain_bin + 'ld']
     # We should really be consistent and use directory structure
     # to separate the arch-specific ld_script instead of embedding
     # the arch in the basename.
-    toolchain_ldscript = (
-        '%s/ldscripts/ld_script_%s_untrusted' % (toolchain_dir,
-                                                 dash_free_arch))
-    toolchain_lib_dir = '%s/lib-%s/' % (toolchain_dir, arch)
-    toolchain_native_libs = [(toolchain_lib_dir + x)
-                             for x in ['libgcc.a', 'libehsupport.a']]
-
+    toolchain_ldscript = '%s/ldscripts/ld_script_%s_untrusted' % (toolchain_dir,
+                                                                  arch)
+    toolchain_lib_dir = '%s/libs-%s/' % (toolchain_dir, arch)
+    toolchain_native_libs = [ (toolchain_lib_dir + x)
+                              for x in ['crt1.o',
+                                        'libcrt_platform.a',
+                                        'libgcc.a',
+                                        'libehsupport.a'] ]
     toolchain_local_files = toolchain_native_libs + \
         toolchain_binaries + [toolchain_ldscript]
-    ReplicateAndMap(toolchain_local_files,
-                    dash_free_arch,
-                    replicates,
-                    map_files)
+    # Replicate to STAGING (files can be copied from there).
+    replicates += env.Replicate('$STAGING_DIR/pnacl_support/%s' % arch,
+                  toolchain_local_files)
+    # Set up file mapping for test runner:
+    map_files += [MappingForStagedFile('$STAGING_DIR/pnacl_support/%s/%s' %
+                                       (arch,
+                                        os.path.basename(f)))
+                  for f in toolchain_local_files]
 
   # Do the same for pnacl_coordinator, etc.
   # TODO(jvoung): we may want to move these to the toolchain directory.
-  # We could also get rid of these now that we are off of pnacl_coordinator.js
   other_support_files = ['pnacl_coordinator.js',
                          'llc_manifest.nmf',
                          'ld_manifest.nmf']
-  replicates += env.Replicate('${STAGING_DIR}/pnacl_support',
+  replicates += env.Replicate('$STAGING_DIR/pnacl_support',
                 other_support_files)
-  map_files += [MappingForStagedFile('${STAGING_DIR}/pnacl_support/%s' % f)
+  map_files += [MappingForStagedFile('$STAGING_DIR/pnacl_support/%s' % f)
                 for f in other_support_files]
   # Stage the nacltest.js too, so that you can run this test by starting up
   # your own http server, your own browser, and visit the staging directory.
-  replicates += env.Replicate('${STAGING_DIR}',
+  replicates += env.Replicate('$STAGING_DIR',
               '${SCONSTRUCT_DIR}/tools/browser_tester/browserdata/nacltest.js')
   # Don't need to add nacltest.js to map_files, since the browser tester
   # always loads up that file.
   return (map_files, replicates)
 
 
-def LayoutPageAssetsOnServer(files):
+def LayoutPageAssetsOnServer(bitcode_file, webpage):
   map_files = []
   replicates = []
-  for f in files:
-    replicates += env.Replicate('${STAGING_DIR}', f)
-    map_files.append(MappingForStagedFile('${STAGING_DIR}/%s' % f))
+  replicates += env.Replicate('$STAGING_DIR', bitcode_file)
+  map_files.append(MappingForStagedFile('$STAGING_DIR/%s' % bitcode_file))
+  replicates += env.Replicate('$STAGING_DIR', webpage)
+  map_files.append(MappingForStagedFile('$STAGING_DIR/%s' % webpage))
   return (map_files, replicates)
 
 #----------------------------------------------------------------------
@@ -160,28 +131,31 @@ bitcode_env = StripArchFromLDCommand(env)
 # in source directory (tests/srpc_hw/). SCons will default to point "-o"
 # to the source directory if it is an absolute directory.
 
-pnacl_srpc_hello_world_obj = bitcode_env.ComponentObject(
-    'pnacl_srpc_hw', '${SCONSTRUCT_DIR}/tests/srpc_hw/srpc_hw.c')
+# TODO(mcgrathr): Disabled build of unused test pending fixing of pnacl tools.
+# cf http://codereview.chromium.org/7275037/
+if False:
+  pnacl_srpc_hello_world_obj = bitcode_env.ComponentObject(
+      'pnacl_srpc_hw', '${SCONSTRUCT_DIR}/tests/srpc_hw/srpc_hw.c')
 
-pnacl_srpc_hello_world_pexe = bitcode_env.ComponentProgram(
-    'pnacl_srpc_hw.pexe',
-    [ pnacl_srpc_hello_world_obj ],
-    EXTRA_LIBS=['srpc',
-                'platform',
-                'gio',
-                'imc',
-                'imc_syscalls',
-                'pthread'])
+  pnacl_srpc_hello_world_pexe = bitcode_env.ComponentProgram(
+      'pnacl_srpc_hw.pexe',
+      [ pnacl_srpc_hello_world_obj ],
+      EXTRA_LIBS=['srpc',
+                  'platform',
+                  'gio',
+                  'imc',
+                  'imc_syscalls',
+                  'pthread'])
+else:
+  pnacl_srpc_hello_world_pexe = []
 
 # Page independent support assets.
 (map_files_toolchain, replicates_toolchain) = LayoutTranslatorBinariesOnServer()
 
 # Assets for the page.
 (map_files_page, replicates_page) = LayoutPageAssetsOnServer(
-    [pnacl_srpc_hello_world_pexe,
-     'pnacl_srpc_hw.html',
-     'pnacl_srpc_hw.nmf',
-     'pnacl_srpc_hw2.html'])
+    pnacl_srpc_hello_world_pexe,
+    'pnacl_srpc_hw.html')
 
 node = bitcode_env.PPAPIBrowserTester(
     'pnacl_srpc_hw.out',
@@ -196,27 +170,10 @@ env.Depends(node, replicates_toolchain + replicates_page)
 bitcode_env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],
                        'run_pnacl_srpc_hw_browser_test',
+                               is_broken=(True or
              # http://code.google.com/p/nativeclient/issues/detail?id=1521
              # This test is flaky, so turning it off for now...
-                               is_broken=(True or no_ports_broken or
-                                   bitcode_env.PPAPIBrowserTesterIsBroken()),
-                               is_flaky=True)
+                                 bitcode_env.PPAPIBrowserTesterIsBroken()))
 
-node = bitcode_env.PPAPIBrowserTester(
-    'pnacl_srpc_hw2.out',
-    url='pnacl_srpc_hw2.html',
-    files=[], # all of them should be in map_files
-    map_files=map_files_toolchain + map_files_page,
-    args=['--enable_experimental_js'])
 
-# Make sure the files are actually staged when this test runs.
-env.Depends(node, replicates_toolchain + replicates_page)
-
-bitcode_env.AddNodeToTestSuite(node,
-                       ['chrome_browser_tests'],
-                       'run_pnacl_srpc_hw2_browser_test',
-              # http://code.google.com/p/nativeclient/issues/detail?id=1521
-              # This test is flaky, so turning it off for now...
-                               is_broken=(True or no_ports_broken or
-                                     bitcode_env.PPAPIBrowserTesterIsBroken()),
-                               is_flaky=True)
+# TODO(jvoung) Add a PPAPI example like pi_generator.

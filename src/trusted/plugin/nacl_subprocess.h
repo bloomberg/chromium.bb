@@ -57,13 +57,9 @@ class NaClSubprocess {
   bool StartJSObjectProxy(Plugin* plugin, ErrorInfo* error_info);
 
   // Interact.
-  bool HasMethod(uintptr_t method_id, CallType call_type) const;
-  bool InitParams(uintptr_t method_id,
-                  CallType call_type,
-                  SrpcParams* params) const;
-  bool Invoke(uintptr_t method_id,
-              CallType call_type,
-              SrpcParams* params) const;
+  bool HasMethod(uintptr_t method_id, CallType call_type);
+  bool InitParams(uintptr_t method_id, CallType call_type, SrpcParams* params);
+  bool Invoke(uintptr_t method_id, CallType call_type, SrpcParams* params);
 
   // Fully shut down the subprocess.
   void Shutdown();

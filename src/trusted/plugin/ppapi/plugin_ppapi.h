@@ -18,7 +18,6 @@
 #include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/trusted/plugin/plugin.h"
 #include "native_client/src/trusted/plugin/ppapi/file_downloader.h"
-#include "native_client/src/trusted/plugin/ppapi/pnacl_coordinator.h"
 
 #include "native_client/src/third_party/ppapi/cpp/private/instance_private.h"
 #include "native_client/src/third_party/ppapi/cpp/rect.h"
@@ -170,17 +169,10 @@ class PluginPpapi : public pp::InstancePrivate, public Plugin {
   FileDownloader nexe_downloader_;
   pp::CompletionCallbackFactory<PluginPpapi> callback_factory_;
 
-  PnaclCoordinator pnacl_;
-
   // Callback used when getting the URL for the .nexe file.  If the URL loading
   // is successful, the file descriptor is opened and can be passed to sel_ldr
   // with the sandbox on.
   void NexeFileDidOpen(int32_t pp_error);
-
-  // Callback used when a .nexe is translated from bitcode.  If the translation
-  // is successful, the file descriptor is opened and can be passed to sel_ldr
-  // with the sandbox on.
-  void BitcodeDidTranslate(int32_t pp_error);
 
   // NaCl ISA selection manifest file support.  The manifest file is specified
   // using the "nacl" attribute in the <embed> tag.  First, the manifest URL (or
@@ -205,22 +197,12 @@ class PluginPpapi : public pp::InstancePrivate, public Plugin {
   bool SetManifestObject(const nacl::string& manifest_json,
                          ErrorInfo* error_info);
 
-  // Determines the URL of the program module appropriate for the NaCl sandbox
+  // Determines the URL of the nexe module appropriate for the NaCl sandbox
   // implemented by the installed sel_ldr.  The URL is determined from the
   // Manifest in |manifest_|.  On success, |true| is returned and |result| is
-  // set to the URL to use for the program, and |is_portable| is set to
-  // |true| if the program is portable bitcode.
-  // On failure, |false| is returned.
-  bool SelectProgramURLFromManifest(nacl::string* result,
-                                    ErrorInfo* error_info,
-                                    bool* is_portable);
-
-  // TODO(jvoung): get rid of these once we find a better way to store / install
-  // the pnacl translator nexes.
-  bool SelectLLCURLFromManifest(nacl::string* result,
-                                ErrorInfo* error_info);
-  bool SelectLDURLFromManifest(nacl::string* result,
-                               ErrorInfo* error_info);
+  // set to the URL to use for the nexe.  On failure, |false| is returned.
+  bool SelectNexeURLFromManifest(nacl::string* result,
+                                 ErrorInfo* error_info);
 
   // Logs timing information to a UMA histogram, and also logs the same timing
   // information divided by the size of the nexe to another histogram.

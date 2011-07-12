@@ -54,7 +54,7 @@ bool NaClSubprocess::StartJSObjectProxy(Plugin* plugin, ErrorInfo* error_info) {
   return socket_->handle()->StartJSObjectProxy(plugin, error_info);
 }
 
-bool NaClSubprocess::HasMethod(uintptr_t method_id, CallType call_type) const {
+bool NaClSubprocess::HasMethod(uintptr_t method_id, CallType call_type) {
   if (NULL == socket()) {
     return false;
   }
@@ -63,7 +63,7 @@ bool NaClSubprocess::HasMethod(uintptr_t method_id, CallType call_type) const {
 
 bool NaClSubprocess::InitParams(uintptr_t method_id,
                                 CallType call_type,
-                                SrpcParams* params) const {
+                                SrpcParams* params) {
   if (NULL == socket()) {
     return false;
   }
@@ -72,7 +72,7 @@ bool NaClSubprocess::InitParams(uintptr_t method_id,
 
 bool NaClSubprocess::Invoke(uintptr_t method_id,
                             CallType call_type,
-                            SrpcParams* params) const {
+                            SrpcParams* params) {
   if (NULL == socket()) {
     return false;
   }
