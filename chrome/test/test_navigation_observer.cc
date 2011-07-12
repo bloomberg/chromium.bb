@@ -28,6 +28,17 @@ TestNavigationObserver::TestNavigationObserver(
   RegisterAsObserver(controller);
 }
 
+TestNavigationObserver::~TestNavigationObserver() {
+}
+
+void TestNavigationObserver::WaitForObservation() {
+  if (!done_) {
+    EXPECT_FALSE(running_);
+    running_ = true;
+    ui_test_utils::RunMessageLoop();
+  }
+}
+
 TestNavigationObserver::TestNavigationObserver(
     TestNavigationObserver::JsInjectionReadyObserver*
         js_injection_ready_observer,
@@ -40,9 +51,6 @@ TestNavigationObserver::TestNavigationObserver(
       running_(false) {
 }
 
-TestNavigationObserver::~TestNavigationObserver() {
-}
-
 void TestNavigationObserver::RegisterAsObserver(
     NavigationController* controller) {
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
@@ -53,31 +61,29 @@ void TestNavigationObserver::RegisterAsObserver(
                  Source<NavigationController>(controller));
 }
 
-void TestNavigationObserver::WaitForObservation() {
-  if (!done_) {
-    EXPECT_FALSE(running_);
-    running_ = true;
-    ui_test_utils::RunMessageLoop();
-  }
-}
-
 void TestNavigationObserver::Observe(
     int type, const NotificationSource& source,
     const NotificationDetails& details) {
-  if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
-    if (!navigation_entry_committed_ && js_injection_ready_observer_)
-      js_injection_ready_observer_->OnJsInjectionReady();
-    navigation_started_ = true;
-    navigation_entry_committed_ = true;
-  } else if (type == content::NOTIFICATION_LOAD_START) {
-    navigation_started_ = true;
-  } else if (type == content::NOTIFICATION_LOAD_STOP) {
-    if (navigation_started_ &&
-        ++navigations_completed_ == number_of_navigations_) {
-      navigation_started_ = false;
-      done_ = true;
-      if (running_)
-        MessageLoopForUI::current()->Quit();
-    }
+  switch (type) {
+    case content::NOTIFICATION_NAV_ENTRY_COMMITTED:
+      if (!navigation_entry_committed_ && js_injection_ready_observer_)
+        js_injection_ready_observer_->OnJsInjectionReady();
+      navigation_started_ = true;
+      navigation_entry_committed_ = true;
+      break;
+    case content::NOTIFICATION_LOAD_START:
+      navigation_started_ = true;
+      break;
+    case content::NOTIFICATION_LOAD_STOP:
+      if (navigation_started_ &&
+          ++navigations_completed_ == number_of_navigations_) {
+        navigation_started_ = false;
+        done_ = true;
+        if (running_)
+          MessageLoopForUI::current()->Quit();
+      }
+      break;
+    default:
+      assert(false);
   }
 }

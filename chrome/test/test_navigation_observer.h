@@ -47,7 +47,8 @@ class TestNavigationObserver : public NotificationObserver {
 
  protected:
   // Note: |js_injection_ready_observer| is owned by the caller and should be
-  // valid until this class is destroyed.
+  // valid until this class is destroyed. Subclasses using this constructor MUST
+  // call RegisterAsObserver when a NavigationController becomes available.
   explicit TestNavigationObserver(
       JsInjectionReadyObserver* js_injection_ready_observer,
       int number_of_navigations);

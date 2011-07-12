@@ -434,13 +434,16 @@ var currentTestCase = null;
    * @see runTest
    **/
   function RUN_TEST_F(testFixture, testName) {
-    if (!currentTestCase)
-      currentTestCase = createTestCase(testFixture, testName);
-    assertEquals(currentTestCase.name, testName);
-    assertEquals(currentTestCase.fixture.name, testFixture);
-    console.log('Running TestCase ' + testFixture + '.' + testName);
-    currentTestCase.Run();
-    currentTestCase = null;
+    try {
+      if (!currentTestCase)
+        currentTestCase = createTestCase(testFixture, testName);
+      assertEquals(currentTestCase.name, testName);
+      assertEquals(currentTestCase.fixture.name, testFixture);
+      console.log('Running TestCase ' + testFixture + '.' + testName);
+      currentTestCase.Run();
+    } finally {
+      currentTestCase = null;
+    }
   }
 
   /**
