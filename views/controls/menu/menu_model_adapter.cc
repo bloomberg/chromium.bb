@@ -13,7 +13,9 @@
 namespace views {
 
 MenuModelAdapter::MenuModelAdapter(ui::MenuModel* menu_model)
-    : menu_model_(menu_model) {
+    : menu_model_(menu_model),
+      triggerable_event_flags_(ui::EF_LEFT_BUTTON_DOWN |
+                               ui::EF_RIGHT_BUTTON_DOWN) {
   DCHECK(menu_model);
 }
 
@@ -63,6 +65,11 @@ void MenuModelAdapter::ExecuteCommand(int id, int mouse_event_flags) {
   }
 
   NOTREACHED();
+}
+
+bool MenuModelAdapter::IsTriggerableEvent(MenuItemView* source,
+                                          const MouseEvent& e) {
+  return (triggerable_event_flags_ & e.flags()) != 0;
 }
 
 bool MenuModelAdapter::GetAccelerator(int id,
@@ -183,4 +190,4 @@ void MenuModelAdapter::BuildMenuImpl(MenuItemView* menu, ui::MenuModel* model) {
   menu->set_has_icons(model->HasIcons());
 }
 
-}  // views
+}  // namespace views

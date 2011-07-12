@@ -154,6 +154,7 @@ void ButtonDropDown::ShowDropDownMenu(gfx::NativeView window) {
   // Create and run menu.  Display an empty menu if model is NULL.
   if (model_) {
     MenuModelAdapter menu_delegate(model_);
+    menu_delegate.set_triggerable_event_flags(triggerable_event_flags());
     MenuItemView menu(&menu_delegate);
     menu_delegate.BuildMenu(&menu);
 

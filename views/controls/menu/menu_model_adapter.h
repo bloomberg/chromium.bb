@@ -31,10 +31,17 @@ class MenuModelAdapter : public MenuDelegate {
   // (including submenus).
   virtual void BuildMenu(MenuItemView* menu);
 
+  void set_triggerable_event_flags(int triggerable_event_flags) {
+    triggerable_event_flags_ = triggerable_event_flags;
+  }
+  int triggerable_event_flags() const { return triggerable_event_flags_; }
+
  protected:
   // views::MenuDelegate implementation.
   virtual void ExecuteCommand(int id) OVERRIDE;
   virtual void ExecuteCommand(int id, int mouse_event_flags) OVERRIDE;
+  virtual bool IsTriggerableEvent(MenuItemView* source,
+                                  const MouseEvent& e) OVERRIDE;
   virtual bool GetAccelerator(int id,
                               views::Accelerator* accelerator) OVERRIDE;
   virtual std::wstring GetLabel(int id) const OVERRIDE;
@@ -55,6 +62,9 @@ class MenuModelAdapter : public MenuDelegate {
   // traversal.  The first element is always the top-level model
   // passed to the constructor.
   ui::MenuModel* menu_model_;
+
+  // Mouse event flags which can trigger menu actions.
+  int triggerable_event_flags_;
 
   // Map MenuItems to MenuModels.  Used to implement WillShowMenu().
   std::map<MenuItemView*, ui::MenuModel*> menu_map_;
