@@ -61,9 +61,8 @@ void PerformanceLiveBookmarksSyncTest::UpdateURLs(int profile) {
 }
 
 void PerformanceLiveBookmarksSyncTest::RemoveURLs(int profile) {
-  while (GetBookmarkBarNode(profile)->child_count()) {
+  while (!GetBookmarkBarNode(profile)->empty())
     Remove(profile, GetBookmarkBarNode(profile), 0);
-  }
 }
 
 void PerformanceLiveBookmarksSyncTest::Cleanup() {

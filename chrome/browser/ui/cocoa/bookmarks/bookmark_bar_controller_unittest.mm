@@ -583,12 +583,12 @@ TEST_F(BookmarkBarControllerTest, OffTheSideButtonHidden) {
   BookmarkBarFolderController* bbfc = [bar_ folderController];
   EXPECT_TRUE(bbfc);
   [bbfc setIgnoreAnimations:YES];
-  while (parent->child_count()) {
+  while (!parent->empty()) {
     // We've completed the job so we're done.
     if ([bar_ offTheSideButtonIsHidden])
       break;
     // Delete the last button.
-    model->Remove(parent, parent->child_count()-1);
+    model->Remove(parent, parent->child_count() - 1);
     // If last one make sure the menu is closed and the button is hidden.
     // Else make sure menu stays open.
     if ([bar_ offTheSideButtonIsHidden]) {
@@ -627,7 +627,7 @@ TEST_F(BookmarkBarControllerTest, DeleteFromOffTheSideWhileItIsOpen) {
   // Start deleting items; try and delete randomish ones in case it
   // makes a difference.
   int indices[] = { 2, 4, 5, 1, 7, 9, 2, 0, 10, 9 };
-  while (parent->child_count()) {
+  while (!parent->empty()) {
     for (unsigned int i = 0; i < arraysize(indices); i++) {
       if (indices[i] < parent->child_count()) {
         // First we mouse-enter the button to make things harder.

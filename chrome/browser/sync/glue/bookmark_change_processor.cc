@@ -398,7 +398,7 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
       if (!dst) // Can't do anything if we can't find the chrome node.
         continue;
       const BookmarkNode* parent = dst->parent();
-      if (dst->child_count()) {
+      if (!dst->empty()) {
         if (!foster_parent) {
           foster_parent = model->AddFolder(model->other_node(),
                                            model->other_node()->child_count(),

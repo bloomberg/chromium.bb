@@ -121,7 +121,7 @@ class CookiesTreeModelTest : public testing::Test {
   std::string GetNodesOfChildren(
       const CookieTreeNode* node,
       CookieTreeNode::DetailedInfo::NodeType node_type) {
-    if (node->child_count()) {
+    if (!node->empty()) {
       std::string retval;
       for (int i = 0; i < node->child_count(); ++i) {
         retval += GetNodesOfChildren(node->GetChild(i), node_type);

@@ -98,14 +98,14 @@ void GlobalBookmarkMenu::RebuildMenu() {
   ClearBookmarkMenu();
 
   const BookmarkNode* bar_node = model->GetBookmarkBarNode();
-  if (bar_node->child_count()) {
+  if (!bar_node->empty()) {
     AddBookmarkMenuItem(bookmark_menu_.get(), gtk_separator_menu_item_new());
     AddNodeToMenu(bar_node, bookmark_menu_.get());
   }
 
   // Only display the other bookmarks folder in the menu if it has items in it.
   const BookmarkNode* other_node = model->other_node();
-  if (other_node->child_count()) {
+  if (!other_node->empty()) {
     GtkWidget* submenu = gtk_menu_new();
     AddNodeToMenu(other_node, submenu);
 

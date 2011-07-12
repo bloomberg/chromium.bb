@@ -760,16 +760,14 @@ struct LayoutMetrics {
   // TODO(jrg): combine with addNodesToButtonList: code from
   // bookmark_bar_controller.mm (but use y offset)
   // http://crbug.com/35966
-  if (!node->child_count()) {
+  if (node->empty()) {
     // If no children we are the empty button.
     BookmarkButton* button = [self makeButtonForNode:nil
                                                frame:buttonsOuterFrame];
     [buttons_ addObject:button];
     [folderView_ addSubview:button];
   } else {
-    for (int i = startingIndex;
-         i < node->child_count();
-         i++) {
+    for (int i = startingIndex; i < node->child_count(); ++i) {
       const BookmarkNode* child = node->GetChild(i);
       BookmarkButton* button = [self makeButtonForNode:child
                                                  frame:buttonsOuterFrame];

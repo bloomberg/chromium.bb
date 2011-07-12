@@ -1049,7 +1049,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   if (menu == [[self view] menu]) {
     thingsToDo = [buttons_ count] ? YES : NO;
   } else {
-    if (node && node->is_folder() && node->child_count()) {
+    if (node && node->is_folder() && !node->empty()) {
       thingsToDo = YES;
     }
   }
@@ -1142,7 +1142,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   if (child->is_folder()) {
     NSMenu* submenu = [[[NSMenu alloc] initWithTitle:title] autorelease];
     [menu setSubmenu:submenu forItem:item];
-    if (child->child_count()) {
+    if (!child->empty()) {
       [self addFolderNode:child toMenu:submenu];  // potentially recursive
     } else {
       [self tagEmptyMenu:submenu];

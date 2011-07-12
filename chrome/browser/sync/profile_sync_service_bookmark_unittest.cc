@@ -398,9 +398,8 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
       EXPECT_EQ(gnode.GetSuccessorId(), gnext.GetId());
       EXPECT_EQ(gnode.GetParentId(), gnext.GetParentId());
     }
-    if (bnode->child_count()) {
+    if (!bnode->empty())
       EXPECT_TRUE(gnode.GetFirstChildId());
-    }
   }
 
   void ExpectSyncerNodeMatching(const BookmarkNode* bnode) {
