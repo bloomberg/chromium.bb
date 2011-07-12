@@ -138,12 +138,12 @@
     'remoting': {
       'filepath': 'remoting/.*',
     },
-    'domui_options' : {
+    'domui_options': {
       'filepath': 'chrome/browser/resources/options/.*|'\
                   'chrome/browser/resources/options.html|'\
                   'chrome/browser/dom_ui/options/.*',
     },
-    'ntp' : {
+    'ntp': {
       'filepath': 'chrome/browser/resources/ntp/.*|'\
         'chrome/browser/resources/ntp4/.*|'\
         'chrome/browser/resources/touch_ntp/.*|'\
@@ -195,7 +195,7 @@
     'chromedriver': {
       'filepath': 'chrome/test/webdriver|third_party/webdriver'
     },
-    'dom_login' : {
+    'dom_login': {
       'filepath': 'chrome/browser/chromeos/frame/.*dom.*' \
                   '|chrome/browser/chromeos/login/.*dom.*'  \
                   '|chrome/browser/chromeos/login/.*login_display.*' \
@@ -203,12 +203,12 @@
                   '|chrome/browser/resources/login.html' \
                   '|chrome/browser/ui/webui/chromeos/login/.*'
     },
-    'filebrowse' : {
+    'filebrowse': {
       'filepath': 'file_browser' \
                   '|file_manager' \
                   '|filebrowse'
     },
-    'imageburner' : {
+    'imageburner': {
       'filepath': 'imageburner'
     },
     'clang_update': {
@@ -220,15 +220,22 @@
     'accelerator_table_gtk': {
       'filepath': 'chrome/browser/ui/views/accelerator_table_gtk.cc',
     },
-    'downloads_ui' : {
+    'downloads_ui': {
       'filepath': 'chrome/browser/resources/downloads\..*' \
                   '|chrome/browser/ui/webui/.*downloads.*' \
-		  '|chrome/browser/ui/views/download/.*' \
-		  '|chrome/browser/ui/cocoa/download/.*' \
-		  '|chrome/browser/ui/gtk/download/.*'
+                  '|chrome/browser/ui/views/download/.*' \
+                  '|chrome/browser/ui/cocoa/download/.*' \
+                  '|chrome/browser/ui/gtk/download/.*'
+    },
+    'x11': {
+      'filepath': 'content/browser/renderer_host/backing_store_x\..*' \
+                  '|chrome/browser/chromeos/input_method/xkeyboard\..*' \
+                  '|chrome/browser/chromeos/system_key_event_listener\..*' \
+                  '|chrome/browser/chromeos/wm_.*' \
+                  '|ui/base/x/.*'
     },
   },
-  
+
   'WATCHLISTS': {
     'this_file': ['nirnimesh@chromium.org'],
     'valgrind': ['timurrrr@chromium.org',
@@ -264,8 +271,8 @@
     'tools': ['pam+watch@chromium.org'],
     'tests': ['phajdan.jr@chromium.org'],
     'automation': ['phajdan.jr@chromium.org', 'kkania@chromium.org'],
-    'chrome_frame' : ['amit@chromium.org'],
-    'nacl' : ['native-client-reviews@googlegroups.com'],
+    'chrome_frame': ['amit@chromium.org'],
+    'nacl': ['native-client-reviews@googlegroups.com'],
     'appcache': ['michaeln@chromium.org'],
     'gpu': ['apatrick@chromium.org'],
     'locale_settings': ['finnur+watch@chromium.org'],
@@ -299,10 +306,11 @@
     'clang_update': ['fischman+watch@chromium.org', 'ukai+watch@chromium.org'],
     'panels': ['dimich@chromium.org', 'jennb@chromium.org',
                'prasadt@chromium.org', 'dcheng@chromium.org',
-	       'jianli@chromium.org'],
+               'jianli@chromium.org'],
     'importer': ['tfarina@chromium.org'],
     'views': ['dhollowa@chromium.org'],
-    'accelerator_table_gtk': ['mazda@chromium.org'],
+    'accelerator_table_gtk': ['mazda@chromium.org', 'derat+watch@chromium.org'],
     'downloads_ui': ['rdsmith@chromium.org'],
+    'x11': ['derat+watch@chromium.org'],
   },
 }
