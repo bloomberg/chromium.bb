@@ -21,7 +21,10 @@
 
 #include <vector>
 
+#include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/id_map.h"
+#include "base/observer_list_threadsafe.h"
 #include "base/synchronization/lock.h"
 #include "content/common/p2p_sockets.h"
 #include "content/renderer/p2p/socket_client.h"
@@ -36,11 +39,30 @@ class MessageLoopProxy;
 // same thread.
 class P2PSocketDispatcher : public RenderViewObserver {
  public:
+  class NetworkListObserver {
+   public:
+    virtual ~NetworkListObserver() { }
+
+    virtual void OnNetworkListChanged(
+        const net::NetworkInterfaceList& list) = 0;
+
+   protected:
+    NetworkListObserver() { }
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(NetworkListObserver);
+  };
+
   explicit P2PSocketDispatcher(RenderView* render_view);
   virtual ~P2PSocketDispatcher();
 
-  void RequestNetworks();
-  void GetNetworks(net::NetworkInterfaceList* networks);
+  // Add a new network list observer. Each observer is called
+  // immidiately after its't registered and then later whenever
+  // network configuration changes.
+  void AddNetworkListObserver(NetworkListObserver* network_list_observer);
+
+  // Removes network list observer.
+  void RemoveNetworkListObserver(NetworkListObserver* network_list_observer);
 
   // RenderViewObserver overrides.
   virtual bool OnMessageReceived(const IPC::Message& message);
@@ -55,7 +77,7 @@ class P2PSocketDispatcher : public RenderViewObserver {
   base::MessageLoopProxy* message_loop();
 
   // Incoming message handlers.
-  void OnNetworkList(const net::NetworkInterfaceList& networks);
+  void OnNetworkListChanged(const net::NetworkInterfaceList& networks);
   void OnSocketCreated(int socket_id, const net::IPEndPoint& address);
   void OnIncomingTcpConnection(int socket_id, const net::IPEndPoint& address);
   void OnError(int socket_id);
@@ -66,8 +88,10 @@ class P2PSocketDispatcher : public RenderViewObserver {
 
   scoped_refptr<base::MessageLoopProxy> message_loop_;
   IDMap<P2PSocketClient> clients_;
-  net::NetworkInterfaceList networks_;
-  base::Lock networks_lock_;
+
+  bool network_notifications_started_;
+  scoped_refptr<ObserverListThreadSafe<NetworkListObserver> >
+      network_list_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(P2PSocketDispatcher);
 };

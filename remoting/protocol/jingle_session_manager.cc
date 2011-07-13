@@ -78,7 +78,7 @@ void JingleSessionManager::Init(
 
   if (!network_manager_.get()) {
     VLOG(1) << "Creating talk_base::NetworkManager.";
-    network_manager_.reset(new talk_base::NetworkManager());
+    network_manager_.reset(new talk_base::BasicNetworkManager());
   }
   if (!socket_factory_.get()) {
     VLOG(1) << "Creating talk_base::BasicPacketSocketFactory.";

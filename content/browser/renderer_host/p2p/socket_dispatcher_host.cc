@@ -8,11 +8,15 @@
 #include "content/browser/renderer_host/p2p/socket_host.h"
 #include "content/common/p2p_messages.h"
 
-P2PSocketDispatcherHost::P2PSocketDispatcherHost() {
+P2PSocketDispatcherHost::P2PSocketDispatcherHost()
+    : monitoring_networks_(false) {
 }
 
 P2PSocketDispatcherHost::~P2PSocketDispatcherHost() {
   DCHECK(sockets_.empty());
+
+  if (monitoring_networks_)
+    net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
 }
 
 void P2PSocketDispatcherHost::OnChannelClosing() {
@@ -31,7 +35,10 @@ bool P2PSocketDispatcherHost::OnMessageReceived(const IPC::Message& message,
                                                 bool* message_was_ok) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(P2PSocketDispatcherHost, message, *message_was_ok)
-    IPC_MESSAGE_HANDLER(P2PHostMsg_GetNetworkList, OnGetNetworkList)
+    IPC_MESSAGE_HANDLER(P2PHostMsg_StartNetworkNotifications,
+                        OnStartNetworkNotifications)
+    IPC_MESSAGE_HANDLER(P2PHostMsg_StopNetworkNotifications,
+                        OnStopNetworkNotifications)
     IPC_MESSAGE_HANDLER(P2PHostMsg_CreateSocket, OnCreateSocket)
     IPC_MESSAGE_HANDLER(P2PHostMsg_AcceptIncomingTcpConnection,
                         OnAcceptIncomingTcpConnection)
@@ -52,23 +59,46 @@ P2PSocketHost* P2PSocketDispatcherHost::LookupSocket(
     return it->second;
 }
 
-void P2PSocketDispatcherHost::OnGetNetworkList(const IPC::Message& msg) {
+void P2PSocketDispatcherHost::OnStartNetworkNotifications(
+    const IPC::Message& msg) {
+  if (!monitoring_networks_) {
+    net::NetworkChangeNotifier::AddIPAddressObserver(this);
+    monitoring_networks_ = true;
+  }
+
+  notifications_routing_ids_.insert(msg.routing_id());
+
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE, NewRunnableMethod(
-          this, &P2PSocketDispatcherHost::DoGetNetworkList, msg.routing_id()));
+          this, &P2PSocketDispatcherHost::DoGetNetworkList));
 }
 
-void P2PSocketDispatcherHost::DoGetNetworkList(int routing_id) {
+void P2PSocketDispatcherHost::OnStopNetworkNotifications(
+    const IPC::Message& msg) {
+  notifications_routing_ids_.erase(msg.routing_id());
+}
+
+void P2PSocketDispatcherHost::OnIPAddressChanged() {
+  // Notify the renderer about changes to list of network interfaces.
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE, NewRunnableMethod(
+          this, &P2PSocketDispatcherHost::DoGetNetworkList));
+}
+
+void P2PSocketDispatcherHost::DoGetNetworkList() {
   net::NetworkInterfaceList list;
   net::GetNetworkList(&list);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE, NewRunnableMethod(
-          this, &P2PSocketDispatcherHost::SendNetworkList, routing_id, list));
+          this, &P2PSocketDispatcherHost::SendNetworkList, list));
 }
 
 void P2PSocketDispatcherHost::SendNetworkList(
-    int routing_id, const net::NetworkInterfaceList& list) {
-  Send(new P2PMsg_NetworkList(routing_id, list));
+    const net::NetworkInterfaceList& list) {
+  for (std::set<int>::iterator it = notifications_routing_ids_.begin();
+       it != notifications_routing_ids_.end(); ++it) {
+    Send(new P2PMsg_NetworkListChanged(*it, list));
+  }
 }
 
 void P2PSocketDispatcherHost::OnCreateSocket(

@@ -10,10 +10,13 @@
 #include "content/browser/browser_message_filter.h"
 #include "content/common/p2p_sockets.h"
 #include "net/base/ip_endpoint.h"
+#include "net/base/network_change_notifier.h"
 
 class P2PSocketHost;
 
-class P2PSocketDispatcherHost : public BrowserMessageFilter {
+class P2PSocketDispatcherHost
+    : public BrowserMessageFilter,
+      public net::NetworkChangeNotifier::IPAddressObserver {
  public:
   P2PSocketDispatcherHost();
   virtual ~P2PSocketDispatcherHost();
@@ -24,6 +27,9 @@ class P2PSocketDispatcherHost : public BrowserMessageFilter {
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 
+  // net::NetworkChangeNotifier::IPAddressObserver interface.
+  virtual void OnIPAddressChanged() OVERRIDE;
+
  private:
   typedef std::pair<int32, int> ExtendedSocketId;
   typedef std::map<ExtendedSocketId, P2PSocketHost*> SocketsMap;
@@ -31,7 +37,9 @@ class P2PSocketDispatcherHost : public BrowserMessageFilter {
   P2PSocketHost* LookupSocket(int32 routing_id, int socket_id);
 
   // Handlers for the messages coming from the renderer.
-  void OnGetNetworkList(const IPC::Message& msg);
+  void OnStartNetworkNotifications(const IPC::Message& msg);
+  void OnStopNetworkNotifications(const IPC::Message& msg);
+
   void OnCreateSocket(const IPC::Message& msg,
                       P2PSocketType type,
                       int socket_id,
@@ -46,10 +54,16 @@ class P2PSocketDispatcherHost : public BrowserMessageFilter {
               const std::vector<char>& data);
   void OnDestroySocket(const IPC::Message& msg, int socket_id);
 
-  void DoGetNetworkList(int routing_id);
-  void SendNetworkList(int routing_id, const net::NetworkInterfaceList& list);
+  void DoGetNetworkList();
+  void SendNetworkList(const net::NetworkInterfaceList& list);
 
   SocketsMap sockets_;
+
+  bool monitoring_networks_;
+
+  // List or routing IDs for the hosts that have subscribed to the
+  // network list notifications.
+  std::set<int> notifications_routing_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(P2PSocketDispatcherHost);
 };

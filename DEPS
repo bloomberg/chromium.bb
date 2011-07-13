@@ -13,7 +13,7 @@ vars = {
   "nacl_irt_hash_x86_64": "8d7d2f6f5ef19467981eb89ab2a138e79aa5926d",
   "nacl_revision": "5988",  # If you update this, change ppapi below.
   "nacl_tools_revision": "5360",  # tools_rev in native_client/DEPS
-  "libjingle_revision": "71",
+  "libjingle_revision": "73",
   "libvpx_revision": "90416",
   "ffmpeg_revision": "90064",
   "skia_revision": "1832",

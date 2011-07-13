@@ -9,29 +9,39 @@
 
 P2PSocketDispatcher::P2PSocketDispatcher(RenderView* render_view)
     : RenderViewObserver(render_view),
-      message_loop_(base::MessageLoopProxy::CreateForCurrentThread()) {
+      message_loop_(base::MessageLoopProxy::CreateForCurrentThread()),
+      network_notifications_started_(false),
+      network_list_observers_(
+          new ObserverListThreadSafe<NetworkListObserver>()) {
 }
 
 P2PSocketDispatcher::~P2PSocketDispatcher() {
+  if (network_notifications_started_)
+    Send(new P2PHostMsg_StopNetworkNotifications(routing_id()));
   for (IDMap<P2PSocketClient>::iterator i(&clients_); !i.IsAtEnd();
        i.Advance()) {
     i.GetCurrentValue()->Detach();
   }
 }
 
-void P2PSocketDispatcher::RequestNetworks() {
-  Send(new P2PHostMsg_GetNetworkList(routing_id()));
+void P2PSocketDispatcher::AddNetworkListObserver(
+    NetworkListObserver* network_list_observer) {
+  network_list_observers_->AddObserver(network_list_observer);
+  network_notifications_started_ = true;
+  Send(new P2PHostMsg_StartNetworkNotifications(routing_id()));
 }
 
-void P2PSocketDispatcher::GetNetworks(net::NetworkInterfaceList* networks) {
-  base::AutoLock auto_lock(networks_lock_);
-  *networks = networks_;
+void P2PSocketDispatcher::RemoveNetworkListObserver(
+    NetworkListObserver* network_list_observer) {
+  network_list_observers_->RemoveObserver(network_list_observer);
+  network_notifications_started_ = false;
+  Send(new P2PHostMsg_StopNetworkNotifications(routing_id()));
 }
 
 bool P2PSocketDispatcher::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(P2PSocketDispatcher, message)
-    IPC_MESSAGE_HANDLER(P2PMsg_NetworkList, OnNetworkList)
+    IPC_MESSAGE_HANDLER(P2PMsg_NetworkListChanged, OnNetworkListChanged)
     IPC_MESSAGE_HANDLER(P2PMsg_OnSocketCreated, OnSocketCreated)
     IPC_MESSAGE_HANDLER(P2PMsg_OnIncomingTcpConnection, OnIncomingTcpConnection)
     IPC_MESSAGE_HANDLER(P2PMsg_OnError, OnError)
@@ -58,10 +68,10 @@ base::MessageLoopProxy* P2PSocketDispatcher::message_loop() {
   return message_loop_;
 }
 
-void P2PSocketDispatcher::OnNetworkList(
+void P2PSocketDispatcher::OnNetworkListChanged(
     const net::NetworkInterfaceList& networks) {
-  base::AutoLock auto_lock(networks_lock_);
-  networks_ = networks;
+  network_list_observers_->Notify(&NetworkListObserver::OnNetworkListChanged,
+                                  networks);
 }
 
 void P2PSocketDispatcher::OnSocketCreated(

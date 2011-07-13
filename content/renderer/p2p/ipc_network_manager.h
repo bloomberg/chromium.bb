@@ -7,26 +7,37 @@
 
 #include <vector>
 
+#include "base/task.h"
 #include "base/compiler_specific.h"
+#include "content/renderer/p2p/socket_dispatcher.h"
+#include "net/base/net_util.h"
 #include "third_party/libjingle/source/talk/base/network.h"
-
-class P2PSocketDispatcher;
 
 // IpcNetworkManager is a NetworkManager for libjingle that gets a
 // list of network interfaces from the browser.
-class IpcNetworkManager : public talk_base::NetworkManager {
+class IpcNetworkManager : public talk_base::NetworkManagerBase,
+                          public P2PSocketDispatcher::NetworkListObserver {
  public:
   // Constructor doesn't take ownership of the |socket_dispatcher|.
   IpcNetworkManager(P2PSocketDispatcher* socket_dispatcher);
   virtual ~IpcNetworkManager();
 
- protected:
-  // Fills the supplied list with all usable networks.
-  virtual bool EnumNetworks(
-      bool include_ignored,
-      std::vector<talk_base::Network*>* networks) OVERRIDE;
+  virtual void StartUpdating() OVERRIDE;
+  virtual void StopUpdating() OVERRIDE;
 
+  // P2PSocketDispatcher::NetworkListObserver interface.
+  virtual void OnNetworkListChanged(
+      const net::NetworkInterfaceList& list) OVERRIDE;
+
+ private:
+  void SendNetworksChangedSignal();
+
+  MessageLoop* message_loop_;
   P2PSocketDispatcher* socket_dispatcher_;
+  bool started_;
+  bool first_update_sent_;
+
+  ScopedRunnableMethodFactory<IpcNetworkManager> task_factory_;
 };
 
 #endif  // CONTENT_RENDERER_P2P_IPC_NETWORK_MANAGER_H_

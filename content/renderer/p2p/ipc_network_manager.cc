@@ -6,27 +6,42 @@
 
 #include "net/base/net_util.h"
 #include "net/base/sys_byteorder.h"
-#include "content/renderer/p2p/socket_dispatcher.h"
-
-// TODO(sergeyu): Currently the NetworkManager interface is
-// syncronous, but it gets list of networks from the browser process
-// asyncrhonously, so EnumNetworks() may return an empty list if we
-// haven't received list of networks from the browser. Make
-// NetworkManager interface asynchronous to avoid this problem.
 
 IpcNetworkManager::IpcNetworkManager(P2PSocketDispatcher* socket_dispatcher)
-    : socket_dispatcher_(socket_dispatcher) {
-  socket_dispatcher_->RequestNetworks();
+    : socket_dispatcher_(socket_dispatcher),
+      started_(false),
+      first_update_sent_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)) {
 }
 
 IpcNetworkManager::~IpcNetworkManager() {
+  socket_dispatcher_->RemoveNetworkListObserver(this);
 }
 
-bool IpcNetworkManager::EnumNetworks(
-    bool include_ignored, std::vector<talk_base::Network*>* networks) {
-  socket_dispatcher_->RequestNetworks();
-  net::NetworkInterfaceList list;
-  socket_dispatcher_->GetNetworks(&list);
+void IpcNetworkManager::StartUpdating() {
+  if (!started_) {
+    first_update_sent_ = false;
+    started_ = true;
+    socket_dispatcher_->AddNetworkListObserver(this);
+  } else {
+    // Post a task to avoid reentrancy.
+    MessageLoop::current()->PostTask(
+        FROM_HERE,task_factory_.NewRunnableMethod(
+            &IpcNetworkManager::SendNetworksChangedSignal));
+  }
+}
+
+void IpcNetworkManager::StopUpdating() {
+  started_ = false;
+  socket_dispatcher_->RemoveNetworkListObserver(this);
+}
+
+void IpcNetworkManager::OnNetworkListChanged(
+    const net::NetworkInterfaceList& list) {
+  if (!started_)
+    return;
+
+  std::vector<talk_base::Network*> networks;
   for (net::NetworkInterfaceList::const_iterator it = list.begin();
        it != list.end(); it++) {
     uint32 address;
@@ -34,7 +49,14 @@ bool IpcNetworkManager::EnumNetworks(
       continue;
     memcpy(&address, &it->address[0], sizeof(uint32));
     address = ntohl(address);
-    networks->push_back(new talk_base::Network(it->name, it->name, address, 0));
+    networks.push_back(
+        new talk_base::Network(it->name, it->name, address, 0));
   }
-  return true;
+
+  MergeNetworkList(networks, !first_update_sent_);
+  first_update_sent_ = false;
+}
+
+void IpcNetworkManager::SendNetworksChangedSignal() {
+  SignalNetworksChanged();
 }

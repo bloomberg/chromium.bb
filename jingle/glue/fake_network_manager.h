@@ -8,6 +8,8 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/task.h"
 #include "net/base/net_util.h"
 #include "third_party/libjingle/source/talk/base/network.h"
 
@@ -20,13 +22,18 @@ class FakeNetworkManager : public talk_base::NetworkManager {
   FakeNetworkManager(const net::IPAddressNumber& address);
   virtual ~FakeNetworkManager();
 
- protected:
-  // Override from talk_base::NetworkManager.
-  virtual bool EnumNetworks(
-      bool include_ignored,
-      std::vector<talk_base::Network*>* networks) OVERRIDE;
+  // talk_base::NetworkManager interface.
+  virtual void StartUpdating() OVERRIDE;
+  virtual void StopUpdating() OVERRIDE;
+  virtual void GetNetworks(NetworkList* networks) const OVERRIDE;
 
-  net::IPAddressNumber address_;
+ protected:
+  void SendNetworksChangedSignal();
+
+  bool started_;
+  scoped_ptr<talk_base::Network> network_;
+
+  ScopedRunnableMethodFactory<FakeNetworkManager> task_factory_;
 };
 
 }  // namespace jingle_glue

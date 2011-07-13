@@ -21,7 +21,7 @@ IPC_STRUCT_TRAITS_END()
 
 // P2P Socket messages sent from the browser to the renderer.
 
-IPC_MESSAGE_ROUTED1(P2PMsg_NetworkList,
+IPC_MESSAGE_ROUTED1(P2PMsg_NetworkListChanged,
                     net::NetworkInterfaceList /* networks */)
 
 IPC_MESSAGE_ROUTED2(P2PMsg_OnSocketCreated,
@@ -42,7 +42,10 @@ IPC_MESSAGE_ROUTED3(P2PMsg_OnDataReceived,
 
 // P2P Socket messages sent from the renderer to the browser.
 
-IPC_MESSAGE_ROUTED0(P2PHostMsg_GetNetworkList)
+// Start/stop sending P2PMsg_NetworkListChanged messages when network
+// configuration changes.
+IPC_MESSAGE_ROUTED0(P2PHostMsg_StartNetworkNotifications)
+IPC_MESSAGE_ROUTED0(P2PHostMsg_StopNetworkNotifications)
 
 IPC_MESSAGE_ROUTED4(P2PHostMsg_CreateSocket,
                     P2PSocketType /* type */,
