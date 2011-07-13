@@ -35,6 +35,9 @@ const CGFloat kTextPaddingRight = 13;
 // y coordinate of title, in view coords.
 const CGFloat kTextPosTop = 10;
 
+// Width of outer stroke
+const CGFloat kOuterStrokeWidth = 1;
+
 @interface DownloadShowAllCell(Private)
 - (ui::ThemeProvider*)backgroundThemeWrappingProvider:
     (ui::ThemeProvider*)provider;
@@ -174,7 +177,8 @@ const CGFloat kTextPosTop = 10;
 
   // Custom width:
   NSSize textSize = [[self title] sizeWithAttributes:[self textAttributes]];
-  size.width = kTextPosLeft + textSize.width + kTextPaddingRight;
+  size.width = kTextPosLeft + textSize.width + kTextPaddingRight +
+      kOuterStrokeWidth * 2;
   return size;
 }
 @end
