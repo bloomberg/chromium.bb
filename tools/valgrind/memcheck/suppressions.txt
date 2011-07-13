@@ -4835,7 +4835,6 @@
    fun:_ZN4base16MessageLoopProxy22CreateForCurrentThreadEv
    fun:_ZN3IPC12ChannelProxy7ContextC1EPNS_7Channel8ListenerEPN4base16MessageLoopProxyE
    fun:_ZN3IPC12ChannelProxyC1ERKNS_13ChannelHandleENS_7Channel4ModeEPNS4_8ListenerEPN4base16MessageLoopProxyE
-   fun:_ZN18AutomationProvider17InitializeChannelERKSs
 }
 {
    bug_89025
