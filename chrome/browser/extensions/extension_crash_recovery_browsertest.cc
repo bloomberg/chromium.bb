@@ -350,7 +350,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
   ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, TwoExtensionsIgnoreFirst) {
+// Flaky on linux due to http://crbug.com/89078.
+#if defined(OS_LINUX)
+#define MAYBE_TwoExtensionsIgnoreFirst FLAKY_TwoExtensionsIgnoreFirst
+#else
+#define MAYBE_TwoExtensionsIgnoreFirst TwoExtensionsIgnoreFirst
+#endif  // defined(OS_LINUX)
+IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
+                       MAYBE_TwoExtensionsIgnoreFirst) {
   const size_t size_before = GetExtensionService()->extensions()->size();
   LoadTestExtension();
   LoadSecondExtension();
