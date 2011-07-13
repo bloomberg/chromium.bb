@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
         .global template_func
@@ -304,4 +304,14 @@ external_jump_replace_return:
 # error "Unsupported architecture"
 #endif
 template_func_external_jump_target_replace_end:
+.global template_instr
+.global template_instr_end
+.global template_instr_replace
+.global template_instr_replace_end
+template_instr:
+        mov $0,%eax
+template_instr_end:
+template_instr_replace:
+        mov $0x11111111,%eax
+template_instr_replace_end:
 

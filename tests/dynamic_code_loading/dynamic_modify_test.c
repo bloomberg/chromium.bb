@@ -159,6 +159,45 @@ void test_replacing_code_unaligned() {
   assert(rc == 4321);
 }
 
+#if defined(__i386__) || defined(__x86_64__)
+/* Check that we can rewrite instruction that crosses align boundaries. */
+void test_replacing_code_slowpaths() {
+  uint8_t *load_area = allocate_code_space(1);
+  uint8_t buf[NACL_BUNDLE_SIZE];
+  size_t size;
+  int rc;
+  /* Offsets to copy an instruction to. */
+  int off1, off2, off3;
+
+  fill_nops(buf, sizeof(buf));
+  size = (size_t) (&template_instr_end - &template_instr);
+  assert(size <= 5);
+  off1 = 4 - size + 1; /* Cross 4 byte boundary */
+  off2 = 24 - size + 1; /* Cross 8 byte boundary */
+  off3 = 16 - size + 1; /* Cross 16 byte boundary */
+  memcpy(buf + off1, &template_instr, size);
+  memcpy(buf + off2, &template_instr, size);
+  memcpy(buf + off3, &template_instr, size);
+  rc = nacl_dyncode_create(load_area, buf, sizeof(buf));
+  assert(rc == 0);
+
+  memcpy(buf + off1, &template_instr_replace, size);
+  rc = nacl_dyncode_modify(load_area + off1, buf + off1, size);
+  assert(rc == 0);
+  assert(memcmp(buf + off1, load_area + off1, size) == 0);
+
+  memcpy(buf + off2, &template_instr_replace, size);
+  rc = nacl_dyncode_modify(load_area + off2, buf + off2, size);
+  assert(rc == 0);
+  assert(memcmp(buf + off2, load_area + off2, size) == 0);
+
+  memcpy(buf + off3, &template_instr_replace, size);
+  rc = nacl_dyncode_modify(load_area + off3, buf + off3, size);
+  assert(rc == 0);
+  assert(memcmp(buf + off3, load_area + off3, size) == 0);
+}
+#endif
+
 /* Check code replacement constraints */
 void test_illegal_code_replacment() {
   uint8_t *load_area = allocate_code_space(1);
@@ -293,6 +332,11 @@ int TestMain() {
 
   RUN_TEST(test_replacing_code);
   RUN_TEST(test_replacing_code_unaligned);
+#ifndef DISABLE_SLOWPATH_TEST
+#if defined(__i386__) || defined(__x86_64__)
+  RUN_TEST(test_replacing_code_slowpaths);
+#endif
+#endif
   RUN_TEST(test_illegal_code_replacment);
   RUN_TEST(test_external_jump_target_replacement);
 
