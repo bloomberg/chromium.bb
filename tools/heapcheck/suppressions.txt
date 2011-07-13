@@ -1430,12 +1430,21 @@
    fun:fileapi::FileSystemOriginDatabase::Init
 }
 {
-   bug_81796
+   bug_81796_a
    Heapcheck:Leak
    fun:base::MessageLoopProxy::CreateForCurrentThread
    fun:IPC::ChannelProxy::Context::Context
    fun:IPC::ChannelProxy::ChannelProxy
    fun:IPCChannelTest_ChannelProxyTest_Test::TestBody
+}
+{
+   bug_81796_b
+   Heapcheck:Leak
+   fun:base::MessageLoopProxy::CreateForCurrentThread
+   ...
+   fun:IPC::SyncChannel::SyncContext::SyncContext
+   fun:IPC::SyncChannel::SyncChannel
+   fun:ChildThread::Init
 }
 {
    bug_82974a
