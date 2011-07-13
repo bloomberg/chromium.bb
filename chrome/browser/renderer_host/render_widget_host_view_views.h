@@ -206,8 +206,8 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   // The native cursor.
   gfx::NativeCursor native_cursor_;
 
-  // Whether we are showing a popup menu.
-  bool is_showing_popup_menu_;
+  // Whether we are showing a context menu.
+  bool is_showing_context_menu_;
 
   // The time at which this view started displaying white pixels as a result of
   // not having anything to paint (empty backing store from renderer). This

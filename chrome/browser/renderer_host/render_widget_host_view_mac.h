@@ -206,6 +206,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   virtual void SetTooltipText(const std::wstring& tooltip_text) OVERRIDE;
   virtual void SelectionChanged(const std::string& text,
                                 const ui::Range& range) OVERRIDE;
+  virtual void ShowingContextMenu(bool showing) OVERRIDE;
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) OVERRIDE;
   virtual void SetTakesFocusOnlyOnMouseDown(bool flag) OVERRIDE;
   // See comment in RenderWidgetHostView!
@@ -366,6 +367,9 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
 
   // true if the View is not visible.
   bool is_hidden_;
+
+  // Whether we are showing a context menu.
+  bool is_showing_context_menu_;
 
   // The text to be shown in the tooltip, supplied by the renderer.
   std::wstring tooltip_text_;

@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/memory/scoped_nsobject.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "chrome/browser/ui/cocoa/base_view.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
@@ -20,6 +21,7 @@
 #include "ui/gfx/size.h"
 
 @class FocusTracker;
+class RenderViewContextMenuMac;
 @class SadTabController;
 class SkBitmap;
 class TabContentsViewMac;
@@ -136,6 +138,9 @@ class TabContentsViewMac : public TabContentsView,
   // Used to render the sad tab. This will be non-NULL only when the sad tab is
   // visible.
   scoped_nsobject<SadTabController> sad_tab_;
+
+  // The context menu. Callbacks are asynchronous so we need to keep it around.
+  scoped_ptr<RenderViewContextMenuMac> context_menu_;
 
   // The page content's intrinsic width.
   int preferred_width_;

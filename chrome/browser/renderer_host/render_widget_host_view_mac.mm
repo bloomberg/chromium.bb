@@ -237,6 +237,7 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
       spellcheck_checked_(false),
       is_loading_(false),
       is_hidden_(false),
+      is_showing_context_menu_(false),
       shutdown_factory_(this),
       needs_gpu_visibility_update_after_repaint_(false),
       compositing_surface_(gfx::kNullPluginWindow) {
@@ -473,6 +474,11 @@ void RenderWidgetHostViewMac::UpdateCursor(const WebCursor& cursor) {
 void RenderWidgetHostViewMac::UpdateCursorIfNecessary() {
   // Do something special (as Win Chromium does) for arrow cursor while loading
   // a page? TODO(avi): decide
+
+  // Don't update the cursor if a context menu is being shown.
+  if (is_showing_context_menu_)
+    return;
+
   // Can we synchronize to the event stream? Switch to -[NSWindow
   // mouseLocationOutsideOfEventStream] if we cannot. TODO(avi): test and see
   NSEvent* event = [[cocoa_view_ window] currentEvent];
@@ -646,6 +652,35 @@ void RenderWidgetHostViewMac::SelectionChanged(const std::string& text,
   if (![cocoa_view_ hasMarkedText]) {
     [cocoa_view_ setMarkedRange:range.ToNSRange()];
   }
+}
+
+void RenderWidgetHostViewMac::ShowingContextMenu(bool showing) {
+  DCHECK_NE(is_showing_context_menu_, showing);
+  is_showing_context_menu_ = showing;
+
+  // Create a fake mouse event to inform the render widget that the mouse
+  // left or entered.
+  NSWindow* window = [cocoa_view_ window];
+  // TODO(asvitkine): If the location outside of the event stream doesn't
+  // correspond to the current event (due to delayed event processing), then
+  // this may result in a cursor flicker if there are later mouse move events
+  // in the pipeline. Find a way to use the mouse location from the event that
+  // dismissed the context menu.
+  NSPoint location = [window mouseLocationOutsideOfEventStream];
+  NSEvent* event = [NSEvent mouseEventWithType:NSMouseMoved
+                                      location:location
+                                 modifierFlags:0
+                                     timestamp:0
+                                  windowNumber:[window windowNumber]
+                                       context:nil
+                                   eventNumber:0
+                                    clickCount:0
+                                      pressure:0];
+  WebMouseEvent web_event =
+      WebInputEventFactory::mouseEvent(event, cocoa_view_);
+  if (showing)
+    web_event.type = WebInputEvent::MouseLeave;
+  render_widget_host_->ForwardMouseEvent(web_event);
 }
 
 bool RenderWidgetHostViewMac::IsPopup() const {

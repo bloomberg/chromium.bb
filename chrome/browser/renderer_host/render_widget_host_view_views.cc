@@ -83,7 +83,7 @@ RenderWidgetHostViewViews::RenderWidgetHostViewViews(RenderWidgetHost* host)
       is_hidden_(false),
       is_loading_(false),
       native_cursor_(NULL),
-      is_showing_popup_menu_(false),
+      is_showing_context_menu_(false),
       visually_deemphasized_(false),
       touch_event_(),
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
@@ -108,7 +108,7 @@ void RenderWidgetHostViewViews::InitAsPopup(
   // If the parent loses focus then the popup will close. So we need
   // to tell the parent it's showing a popup so that it doesn't respond to
   // blurs.
-  parent->is_showing_popup_menu_ = true;
+  parent->is_showing_context_menu_ = true;
   views::View* root_view = GetWidget()->GetRootView();
   // TODO(fsamuel): WebKit is computing the screen coordinates incorrectly.
   // Fixing this is a long and involved process, because WebKit needs to know
@@ -284,7 +284,7 @@ void RenderWidgetHostViewViews::Destroy() {
   if (parent()) {
     if (IsPopup()) {
       static_cast<RenderWidgetHostViewViews*>
-          (parent())->is_showing_popup_menu_ = false;
+          (parent())->is_showing_context_menu_ = false;
       // We're hiding the popup so we need to make sure we repaint
       // what's underneath.
       parent()->SchedulePaintInRect(bounds());
@@ -311,7 +311,7 @@ void RenderWidgetHostViewViews::SelectionChanged(const std::string& text,
 }
 
 void RenderWidgetHostViewViews::ShowingContextMenu(bool showing) {
-  is_showing_popup_menu_ = showing;
+  is_showing_context_menu_ = showing;
 }
 
 BackingStore* RenderWidgetHostViewViews::AllocBackingStore(
@@ -677,7 +677,7 @@ void RenderWidgetHostViewViews::OnBlur() {
   View::OnBlur();
   // If we are showing a context menu, maintain the illusion that webkit has
   // focus.
-  if (!is_showing_popup_menu_ && !is_hidden_)
+  if (!is_showing_context_menu_ && !is_hidden_)
     host_->Blur();
   host_->SetInputMethodActive(false);
 }

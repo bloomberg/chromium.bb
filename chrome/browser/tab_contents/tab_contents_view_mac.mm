@@ -328,10 +328,10 @@ void TabContentsViewMac::ShowCreatedFullscreenWidget(int route_id) {
 }
 
 void TabContentsViewMac::ShowContextMenu(const ContextMenuParams& params) {
-  RenderViewContextMenuMac menu(tab_contents_,
-                                params,
-                                GetContentNativeView());
-  menu.Init();
+  context_menu_.reset(new RenderViewContextMenuMac(tab_contents(),
+                                                   params,
+                                                   GetContentNativeView()));
+  context_menu_->Init();
 }
 
 // Display a popup menu for WebKit using Cocoa widgets.
