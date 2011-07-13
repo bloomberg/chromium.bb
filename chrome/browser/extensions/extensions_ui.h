@@ -45,23 +45,6 @@ struct ExtensionPage {
   bool incognito;
 };
 
-class ExtensionsUIHTMLSource : public ChromeURLDataManager::DataSource {
- public:
-  ExtensionsUIHTMLSource();
-
-  // Called when the network layer has requested a resource underneath
-  // the path we registered.
-  virtual void StartDataRequest(const std::string& path,
-                                bool is_incognito,
-                                int request_id);
-  virtual std::string GetMimeType(const std::string&) const;
-
- private:
-  virtual ~ExtensionsUIHTMLSource() {}
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionsUIHTMLSource);
-};
-
 // The handler for JavaScript messages related to the "extensions" view.
 class ExtensionsDOMHandler : public WebUIMessageHandler,
                              public NotificationObserver,

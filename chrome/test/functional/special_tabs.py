@@ -49,7 +49,7 @@ class SpecialTabsTest(pyauto.PyUITest):
     'chrome://crashes': { 'title': 'Crashes' },
     'chrome://credits': { 'title': 'Credits', 'CSP': False },
     'chrome://downloads': { 'title': 'Downloads' },
-    'chrome://extensions': { 'title': 'Extensions', 'CSP': False },
+    'chrome://extensions': { 'title': 'Extensions' },
     'chrome://flags': {},
     'chrome://flash': {},
     'chrome://gpu-internals': { 'CSP': False },
@@ -265,14 +265,15 @@ class SpecialTabsTest(pyauto.PyUITest):
       self.assertEqual(expected_title, actual_title)
       include_list = []
       exclude_list = []
-      if ('CSP' in properties and not properties['CSP']):
+      if 'CSP' in properties and not properties['CSP']:
         exclude_list.extend(['X-WebKit-CSP'])
       else:
         include_list.extend(['X-WebKit-CSP'])
-        exclude_list.extend(['<script>', 'onclick=', 'onload='])
-      if ('includes' in properties):
+        exclude_list.extend(['<script>', 'onclick=', 'onload=',
+                             'onchange=', 'onsubmit='])
+      if 'includes' in properties:
         include_list.extend(properties['includes'])
-      if ('excludes' in properties):
+      if 'excludes' in properties:
         exclude_list.extend(properties['exlcudes'])
       test_utils.StringContentCheck(self, self.GetTabContents(),
                                     include_list, exclude_list)
