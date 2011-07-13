@@ -116,4 +116,9 @@ const PP_Resource kNotAResource = 0xAAAAA0;
 PP_Instance pp_instance();
 PP_Module pp_module();
 
+// If you are providing your own version of PPP_Instance::DidCreate
+// call this function to ensure proper test set-up.
+PP_Bool DidCreateDefault(PP_Instance instance,
+                         uint32_t argc, const char* argn[], const char* argv[]);
+
 #endif  // NATIVE_CLIENT_TESTS_PPAPI_TEST_PPB_TEMPLATE_TEST_INTERFACE_H

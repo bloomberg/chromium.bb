@@ -39,8 +39,7 @@ env.Publish(nexe, 'run',
 
 node = env.PPAPIBrowserTester('ppapi_test_example_browser_test.out',
                               url='ppapi_test_example.html',
-                              files=env.ExtractPublishedFiles(nexe),
-                              args=['--enable_experimental_js'])
+                              files=env.ExtractPublishedFiles(nexe))
 
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],

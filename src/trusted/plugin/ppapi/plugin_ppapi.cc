@@ -661,9 +661,11 @@ bool PluginPpapi::HandleInputEvent(const PP_InputEvent& event) {
   if (ppapi_proxy_ == NULL) {
     return false;  // event is not handled here.
   } else {
-    return pp::PPBoolToBool(
+    bool handled = pp::PPBoolToBool(
       ppapi_proxy_->ppp_instance_interface()->HandleInputEvent(
           pp_instance(), &event));
+    PLUGIN_PRINTF(("PluginPpapi::HandleInputEvent (handled=%d)\n", handled));
+    return handled;
   }
 }
 
@@ -880,6 +882,9 @@ void PluginPpapi::ShutdownProxy() {
   PLUGIN_PRINTF(("PluginPpapi::ShutdownProxy (ppapi_proxy=%p)\n",
                 reinterpret_cast<void*>(ppapi_proxy_)));
   if (ppapi_proxy_ != NULL) {
+    // TODO(polina): put this back when we figure out why pyauto_reload_test
+    // is unhappy about it.
+    //ppapi_proxy_->ppp_instance_interface()->DidDestroy(pp_instance());
     ppapi_proxy_->ShutdownModule();
     delete ppapi_proxy_;
     ppapi_proxy_ = NULL;

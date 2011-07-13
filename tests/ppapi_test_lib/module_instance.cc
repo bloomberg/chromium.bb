@@ -72,12 +72,10 @@ void RegisterPluginInterface(const char* interface_name,
 // PPP_Instance implementation
 ///////////////////////////////////////////////////////////////////////////////
 
-namespace {
-
-PP_Bool DidCreate(PP_Instance instance,
-                  uint32_t /*argc*/,
-                  const char* /*argn*/[],
-                  const char* /*argv*/[]) {
+PP_Bool DidCreateDefault(PP_Instance instance,
+                         uint32_t /*argc*/,
+                         const char* /*argn*/[],
+                         const char* /*argv*/[]) {
   CHECK(ppb_get_interface() != NULL);
   CHECK(PPBCore() != NULL);
   CHECK(PPBGraphics2D() != NULL);
@@ -94,6 +92,8 @@ PP_Bool DidCreate(PP_Instance instance,
 
   return PP_TRUE;
 }
+
+namespace {
 
 void DidDestroy(PP_Instance /*instance*/) {
 }
@@ -118,7 +118,7 @@ PP_Bool HandleDocumentLoad(PP_Instance instance,
 }
 
 const PPP_Instance ppp_instance_interface = {
-  DidCreate,
+  DidCreateDefault,
   DidDestroy,
   DidChangeView,
   DidChangeFocus,
@@ -160,16 +160,22 @@ void PPP_ShutdownModule() {
 }
 
 const void* PPP_GetInterface(const char* interface_name) {
-  // The PPP_Instance interface is required for every plugin.
-  if (0 == strncmp(PPP_INSTANCE_INTERFACE, interface_name,
-                   strlen(PPP_INSTANCE_INTERFACE))) {
+  const void* ppp = PluginInterfaceTable::Get()->GetInterface(interface_name);
+
+  // The PPP_Instance interface is required for every plugin,
+  // so supply one if the tester has not.
+  if (ppp == NULL && 0 == strncmp(PPP_INSTANCE_INTERFACE, interface_name,
+                                  strlen(PPP_INSTANCE_INTERFACE))) {
     return &ppp_instance_interface;
   }
-  // The PPP_Messaging interface is required for the test set-up.
+  // The PPP_Messaging interface is required for the test set-up,
+  // so we supply our own.
   if (0 == strncmp(PPP_MESSAGING_INTERFACE, interface_name,
                    strlen(PPP_MESSAGING_INTERFACE))) {
+    CHECK(ppp == NULL);
     return &ppp_messaging_interface;
   }
-  // All other interfaces are to be optionally supplied by the tester.
-  return PluginInterfaceTable::Get()->GetInterface(interface_name);
+  // All other interfaces are to be optionally supplied by the tester,
+  // so we return whatever was added in SetupPluginInterfaces() (if anything).
+  return ppp;
 }
