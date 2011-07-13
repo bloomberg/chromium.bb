@@ -137,6 +137,7 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { ui::VKEY_8,              false, true,  false, IDC_SELECT_TAB_7 },
   { ui::VKEY_NUMPAD8,        false, true,  false, IDC_SELECT_TAB_7 },
   { ui::VKEY_B,              true,  true,  false, IDC_SHOW_BOOKMARK_BAR },
+  { ui::VKEY_O,              true,  true,  false, IDC_SHOW_BOOKMARK_MANAGER },
   { ui::VKEY_J,              false, true,  false, IDC_SHOW_DOWNLOADS },
   { ui::VKEY_H,              false, true,  false, IDC_SHOW_HISTORY },
   { ui::VKEY_F,              false, false, true,  IDC_SHOW_APP_MENU},

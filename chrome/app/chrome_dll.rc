@@ -104,6 +104,7 @@ BEGIN
     "8",            IDC_SELECT_TAB_7,           VIRTKEY, CONTROL
     VK_NUMPAD8,     IDC_SELECT_TAB_7,           VIRTKEY, CONTROL
     "B",            IDC_SHOW_BOOKMARK_BAR,      VIRTKEY, CONTROL, SHIFT
+    "O",            IDC_SHOW_BOOKMARK_MANAGER,  VIRTKEY, CONTROL, SHIFT
     "J",            IDC_SHOW_DOWNLOADS,         VIRTKEY, CONTROL
     "H",            IDC_SHOW_HISTORY,           VIRTKEY, CONTROL
     "F",            IDC_SHOW_APP_MENU,          VIRTKEY, ALT

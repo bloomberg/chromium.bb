@@ -160,6 +160,8 @@ const struct AcceleratorMapping {
   { GDK_p, IDC_PRINT, GDK_CONTROL_MASK },
   { GDK_b, IDC_SHOW_BOOKMARK_BAR,
     GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
+  { GDK_o, IDC_SHOW_BOOKMARK_MANAGER,
+    GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
   { GDK_F11, IDC_FULLSCREEN, GdkModifierType(0) },
   { GDK_Delete, IDC_CLEAR_BROWSING_DATA,
     GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
