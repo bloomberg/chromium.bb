@@ -9,9 +9,7 @@
 
 struct PP_Var;
 
-#define PPP_MESSAGING_INTERFACE_0_1 "PPP_Messaging;0.1"
-#define PPP_MESSAGING_INTERFACE_1_0 "PPP_Messaging;1.0"
-#define PPP_MESSAGING_INTERFACE PPP_MESSAGING_INTERFACE_1_0
+#define PPP_MESSAGING_INTERFACE "PPP_Messaging;0.1"
 
 /**
  * @file

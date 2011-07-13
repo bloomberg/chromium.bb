@@ -54,9 +54,9 @@ struct PPB_Zoom_Dev;
 
 #ifdef PPAPI_INSTANCE_REMOVE_SCRIPTING
 struct PPB_Instance_0_4;
-typedef PPB_Instance PPB_Instance_1_0;
+typedef PPB_Instance PPB_Instance_0_5;
 #else
-struct PPB_Instance_1_0;
+struct PPB_Instance_0_5;
 typedef PPB_Instance PPB_Instance_0_4;
 #endif
 
@@ -93,7 +93,7 @@ const PPB_InputEvent* GetPPB_InputEvent_Thunk();
 const PPB_ImageData* GetPPB_ImageData_Thunk();
 const PPB_ImageDataTrusted* GetPPB_ImageDataTrusted_Thunk();
 const PPB_Instance_0_4* GetPPB_Instance_0_4_Thunk();
-const PPB_Instance_1_0* GetPPB_Instance_1_0_Thunk();
+const PPB_Instance_0_5* GetPPB_Instance_0_5_Thunk();
 const PPB_Instance_Private* GetPPB_Instance_Private_Thunk();
 const PPB_KeyboardInputEvent* GetPPB_KeyboardInputEvent_Thunk();
 const PPB_LayerCompositor_Dev* GetPPB_LayerCompositor_Thunk();

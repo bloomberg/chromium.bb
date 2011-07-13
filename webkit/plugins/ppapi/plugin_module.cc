@@ -232,9 +232,9 @@ const void* GetInterface(const char* name) {
 
   // Please keep alphabetized by interface macro name with "special" stuff at
   // the bottom.
-  if (strcmp(name, PPB_AUDIO_CONFIG_INTERFACE_1_0) == 0)
+  if (strcmp(name, PPB_AUDIO_CONFIG_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_AudioConfig_Thunk();
-  if (strcmp(name, PPB_AUDIO_INTERFACE_1_0) == 0)
+  if (strcmp(name, PPB_AUDIO_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_Audio_Thunk();
   if (strcmp(name, PPB_AUDIO_TRUSTED_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_AudioTrusted_Thunk();
@@ -258,13 +258,13 @@ const void* GetInterface(const char* name) {
     return ::ppapi::thunk::GetPPB_DirectoryReader_Thunk();
   if (strcmp(name, PPB_FILECHOOSER_DEV_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_FileChooser_Thunk();
-  if (strcmp(name, PPB_FILEIO_INTERFACE_1_0) == 0)
+  if (strcmp(name, PPB_FILEIO_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_FileIO_Thunk();
   if (strcmp(name, PPB_FILEIOTRUSTED_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_FileIOTrusted_Thunk();
-  if (strcmp(name, PPB_FILEREF_INTERFACE_1_0) == 0)
+  if (strcmp(name, PPB_FILEREF_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_FileRef_Thunk();
-  if (strcmp(name, PPB_FILESYSTEM_INTERFACE_1_0) == 0)
+  if (strcmp(name, PPB_FILESYSTEM_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_FileSystem_Thunk();
   if (strcmp(name, PPB_FIND_DEV_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_Find_Thunk();
@@ -284,23 +284,25 @@ const void* GetInterface(const char* name) {
     return ::ppapi::thunk::GetPPB_Font_Thunk();
   if (strcmp(name, PPB_FULLSCREEN_DEV_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_Fullscreen_Thunk();
-  if (strcmp(name, PPB_GRAPHICS_2D_INTERFACE_1_0) == 0)
+  if (strcmp(name, PPB_GRAPHICS_2D_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_Graphics2D_Thunk();
-  if (strcmp(name, PPB_IMAGEDATA_INTERFACE_1_0) == 0)
+  if (strcmp(name, PPB_IMAGEDATA_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_ImageData_Thunk();
   if (strcmp(name, PPB_IMAGEDATA_TRUSTED_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_ImageDataTrusted_Thunk();
   if (strcmp(name, PPB_INPUT_EVENT_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_InputEvent_Thunk();
-  if (strcmp(name, PPB_INSTANCE_INTERFACE_1_0) == 0)
-    return ::ppapi::thunk::GetPPB_Instance_1_0_Thunk();
+  if (strcmp(name, PPB_INSTANCE_INTERFACE_0_4) == 0)
+    return ::ppapi::thunk::GetPPB_Instance_0_4_Thunk();
+  if (strcmp(name, PPB_INSTANCE_INTERFACE_0_5) == 0)
+    return ::ppapi::thunk::GetPPB_Instance_0_5_Thunk();
   if (strcmp(name, PPB_INSTANCE_PRIVATE_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_Instance_Private_Thunk();
   if (strcmp(name, PPB_KEYBOARD_INPUT_EVENT_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_KeyboardInputEvent_Thunk();
   if (strcmp(name, PPB_MEMORY_DEV_INTERFACE) == 0)
     return PPB_Memory_Impl::GetInterface();
-  if (strcmp(name, PPB_MESSAGING_INTERFACE_1_0) == 0)
+  if (strcmp(name, PPB_MESSAGING_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_Messaging_Thunk();
   if (strcmp(name, PPB_MOUSE_INPUT_EVENT_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_MouseInputEvent_Thunk();
@@ -312,19 +314,19 @@ const void* GetInterface(const char* name) {
     return PPB_Scrollbar_Impl::Get0_3Interface();
   if (strcmp(name, PPB_UMA_PRIVATE_INTERFACE) == 0)
     return PPB_UMA_Private_Impl::GetInterface();
-  if (strcmp(name, PPB_URLLOADER_INTERFACE_1_0) == 0)
+  if (strcmp(name, PPB_URLLOADER_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_URLLoader_Thunk();
   if (strcmp(name, PPB_URLLOADERTRUSTED_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_URLLoaderTrusted_Thunk();
-  if (strcmp(name, PPB_URLREQUESTINFO_INTERFACE_1_0) == 0)
+  if (strcmp(name, PPB_URLREQUESTINFO_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_URLRequestInfo_Thunk();
-  if (strcmp(name, PPB_URLRESPONSEINFO_INTERFACE_1_0) == 0)
+  if (strcmp(name, PPB_URLRESPONSEINFO_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_URLResponseInfo_Thunk();
   if (strcmp(name, PPB_URLUTIL_DEV_INTERFACE) == 0)
     return PPB_URLUtil_Impl::GetInterface();
   if (strcmp(name, PPB_VAR_DEPRECATED_INTERFACE) == 0)
     return Var::GetDeprecatedInterface();
-  if (strcmp(name, PPB_VAR_INTERFACE_1_0) == 0)
+  if (strcmp(name, PPB_VAR_INTERFACE) == 0)
     return Var::GetInterface();
   if (strcmp(name, PPB_VIDEODECODER_DEV_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_VideoDecoder_Thunk();
@@ -366,42 +368,6 @@ const void* GetInterface(const char* name) {
   if (strcmp(name, PPB_TRANSPORT_DEV_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_Transport_Thunk();
 #endif
-
-  // Support pre-1.0 version strings of stable interfaces until the changes
-  // have rippled through the system (especially NaCl tree).
-  // TODO(dmichael): Remove this.
-  if (strcmp(name, PPB_AUDIO_CONFIG_INTERFACE_0_5) == 0)
-    return ::ppapi::thunk::GetPPB_AudioConfig_Thunk();
-  if (strcmp(name, PPB_AUDIO_INTERFACE_0_6) == 0)
-    return ::ppapi::thunk::GetPPB_Audio_Thunk();
-  if (strcmp(name, PPB_FILEIO_INTERFACE_0_5) == 0)
-    return ::ppapi::thunk::GetPPB_FileIO_Thunk();
-  if (strcmp(name, PPB_FILEREF_INTERFACE_0_9) == 0)
-    return ::ppapi::thunk::GetPPB_FileRef_Thunk();
-  if (strcmp(name, PPB_FILESYSTEM_INTERFACE_0_7) == 0)
-    return ::ppapi::thunk::GetPPB_FileSystem_Thunk();
-  if (strcmp(name, PPB_GRAPHICS_2D_INTERFACE_0_4) == 0)
-    return PPB_Graphics2D_Impl::GetInterface();
-  if (strcmp(name, PPB_IMAGEDATA_INTERFACE_0_3) == 0)
-    return ::ppapi::thunk::GetPPB_ImageData_Thunk();
-  if (strcmp(name, PPB_INSTANCE_INTERFACE_0_5) == 0)
-    return ::ppapi::thunk::GetPPB_Instance_1_0_Thunk();
-  if (strcmp(name, PPB_MESSAGING_INTERFACE_0_1) == 0)
-    return ::ppapi::thunk::GetPPB_Messaging_Thunk();
-  if (strcmp(name, PPB_URLLOADER_INTERFACE_0_2) == 0)
-    return ::ppapi::thunk::GetPPB_URLLoader_Thunk();
-  if (strcmp(name, PPB_URLREQUESTINFO_INTERFACE_0_2) == 0)
-    return ::ppapi::thunk::GetPPB_URLRequestInfo_Thunk();
-  if (strcmp(name, PPB_URLRESPONSEINFO_INTERFACE_0_1) == 0)
-    return ::ppapi::thunk::GetPPB_URLResponseInfo_Thunk();
-  if (strcmp(name, PPB_VAR_INTERFACE_0_5) == 0)
-    return Var::GetInterface();
-
-  // Support the 0.4 version of PPB_Instance that includes scripting, until it
-  // is no longer being used.
-  // TODO(dmichael): Remove this.
-  if (strcmp(name, PPB_INSTANCE_INTERFACE_0_4) == 0)
-    return ::ppapi::thunk::GetPPB_Instance_0_4_Thunk();
 
   // Support the dev interfaces for file io, fileref and file system
   // until relevant tests and examples are migrated over to non-dev interfaces

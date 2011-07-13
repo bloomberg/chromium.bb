@@ -12,9 +12,8 @@
 
 #define PPB_INSTANCE_INTERFACE_0_4 "PPB_Instance;0.4"
 #define PPB_INSTANCE_INTERFACE_0_5 "PPB_Instance;0.5"
-#define PPB_INSTANCE_INTERFACE_1_0 "PPB_Instance;1.0"
 #ifdef PPAPI_INSTANCE_REMOVE_SCRIPTING
-#define PPB_INSTANCE_INTERFACE PPB_INSTANCE_INTERFACE_1_0
+#define PPB_INSTANCE_INTERFACE PPB_INSTANCE_INTERFACE_0_5
 #else
 #define PPB_INSTANCE_INTERFACE PPB_INSTANCE_INTERFACE_0_4
 #endif
@@ -38,7 +37,7 @@
 #ifdef PPAPI_INSTANCE_REMOVE_SCRIPTING
 struct PPB_Instance {
 #else
-struct PPB_Instance_1_0 {
+struct PPB_Instance_0_5 {
 #endif
   /**
    * BindGraphics() binds the given graphics as the current drawing surface.
@@ -101,7 +100,7 @@ struct PPB_Instance {
 };
 
 #ifdef PPAPI_INSTANCE_REMOVE_SCRIPTING
-typedef struct PPB_Instance PPB_Instance_1_0;
+typedef struct PPB_Instance PPB_Instance_0_5;
 #else
 typedef struct PPB_Instance PPB_Instance_0_4;
 #endif

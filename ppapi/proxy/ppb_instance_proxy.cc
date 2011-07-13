@@ -51,7 +51,7 @@ const InterfaceProxy::Info* PPB_Instance_Proxy::GetInfo0_4() {
   static const Info info = {
     ppapi::thunk::GetPPB_Instance_0_4_Thunk(),
     PPB_INSTANCE_INTERFACE_0_4,
-    INTERFACE_ID_NONE,  // 1_0 is the canonical one.
+    INTERFACE_ID_NONE,  // 0_5 is the canonical one.
     false,
     &CreateInstanceProxy,
   };
@@ -61,20 +61,8 @@ const InterfaceProxy::Info* PPB_Instance_Proxy::GetInfo0_4() {
 // static
 const InterfaceProxy::Info* PPB_Instance_Proxy::GetInfo0_5() {
   static const Info info = {
-    ppapi::thunk::GetPPB_Instance_1_0_Thunk(),
+    ppapi::thunk::GetPPB_Instance_0_5_Thunk(),
     PPB_INSTANCE_INTERFACE_0_5,
-    INTERFACE_ID_NONE,  // 1_0 is the canonical one.
-    false,
-    &CreateInstanceProxy,
-  };
-  return &info;
-}
-
-// static
-const InterfaceProxy::Info* PPB_Instance_Proxy::GetInfo1_0() {
-  static const Info info = {
-    ppapi::thunk::GetPPB_Instance_1_0_Thunk(),
-    PPB_INSTANCE_INTERFACE_1_0,
     INTERFACE_ID_PPB_INSTANCE,
     false,
     &CreateInstanceProxy,

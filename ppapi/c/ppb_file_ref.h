@@ -20,8 +20,7 @@
 struct PP_CompletionCallback;
 
 #define PPB_FILEREF_INTERFACE_0_9 "PPB_FileRef;0.9"
-#define PPB_FILEREF_INTERFACE_1_0 "PPB_FileRef;1.0"
-#define PPB_FILEREF_INTERFACE PPB_FILEREF_INTERFACE_1_0
+#define PPB_FILEREF_INTERFACE PPB_FILEREF_INTERFACE_0_9
 
 /**
  * @addtogroup Structs
