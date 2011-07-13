@@ -61,8 +61,4 @@ bool GLContext::LosesAllContextsOnContextLost()
   }
 }
 
-bool GLContext::WasAllocatedUsingARBRobustness() {
-  return false;
-}
-
 }  // namespace gfx

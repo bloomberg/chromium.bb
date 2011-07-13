@@ -64,8 +64,6 @@ class GLContext : public base::RefCounted<GLContext> {
 
   static bool LosesAllContextsOnContextLost();
 
-  virtual bool WasAllocatedUsingARBRobustness();
-
  protected:
   virtual ~GLContext();
 

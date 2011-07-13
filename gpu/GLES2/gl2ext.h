@@ -1010,26 +1010,6 @@ typedef void (GL_APIENTRYP PFNGLGETPROGRAMINFOCHROMIUM) ();
 #endif
 #endif
 
-/* GL_ARB_robustness */
-/* This extension is subsetted for the moment, incorporating only the
- * enums necessary to describe the reasons that we might encounter for
- * losing the context. The entry point querying the reset status is
- * not yet incorporated; to do so, a spec will be needed of a GLES2
- * subset of GL_ARB_robustness.
- */
-#ifndef GL_ARB_robustness
-#define GL_ARB_robustness 1
-#ifndef GL_GUILTY_CONTEXT_RESET_ARB
-#define GL_GUILTY_CONTEXT_RESET_ARB 0x8253
-#endif
-#ifndef GL_INNOCENT_CONTEXT_RESET_ARB
-#define GL_INNOCENT_CONTEXT_RESET_ARB 0x8254
-#endif
-#ifndef GL_UNKNOWN_CONTEXT_RESET_ARB
-#define GL_UNKNOWN_CONTEXT_RESET_ARB 0x8255
-#endif
-#endif
-
 #ifdef __cplusplus
 }
 #endif

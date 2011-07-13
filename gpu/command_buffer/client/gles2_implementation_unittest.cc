@@ -95,11 +95,6 @@ class GLES2MockCommandBufferHelper : public CommandBuffer {
     state_.error = error;
   }
 
-  virtual void SetContextLostReason(error::ContextLostReason reason) {
-    GPU_NOTREACHED();
-    state_.context_lost_reason = reason;
-  }
-
   virtual void OnFlush(void* transfer_buffer) = 0;
 
  private:

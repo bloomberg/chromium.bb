@@ -32,8 +32,6 @@ class ScopedPtrXFree {
 };
 
 Display* g_display;
-const char* g_glx_extensions = NULL;
-bool g_glx_create_context_robustness_supported = false;
 
 }  // namespace anonymous
 
@@ -65,10 +63,6 @@ bool GLSurfaceGLX::InitializeOneOff() {
     return false;
   }
 
-  g_glx_extensions = glXQueryExtensionsString(g_display, 0);
-  g_glx_create_context_robustness_supported =
-      HasGLXExtension("GLX_ARB_create_context_robustness");
-
   initialized = true;
   return true;
 }
@@ -77,31 +71,8 @@ Display* GLSurfaceGLX::GetDisplay() {
   return g_display;
 }
 
-const char* GLSurfaceGLX::GetGLXExtensions() {
-  return g_glx_extensions;
-}
-
-bool GLSurfaceGLX::HasGLXExtension(const char* name) {
-  DCHECK(name);
-  const char* c_extensions = GetGLXExtensions();
-  if (!c_extensions)
-    return false;
-  std::string extensions(c_extensions);
-  extensions += " ";
-
-  std::string delimited_name(name);
-  delimited_name += " ";
-
-  return extensions.find(delimited_name) != std::string::npos;
-}
-
-bool GLSurfaceGLX::IsCreateContextRobustnessSupported() {
-  return g_glx_create_context_robustness_supported;
-}
-
 NativeViewGLSurfaceGLX::NativeViewGLSurfaceGLX(gfx::PluginWindowHandle window)
-  : window_(window),
-    config_(NULL) {
+  : window_(window) {
 }
 
 NativeViewGLSurfaceGLX::~NativeViewGLSurfaceGLX() {
@@ -135,59 +106,7 @@ void* NativeViewGLSurfaceGLX::GetHandle() {
 }
 
 void* NativeViewGLSurfaceGLX::GetConfig() {
-  if (!config_) {
-    // This code path is expensive, but we only take it when
-    // attempting to use GLX_ARB_create_context_robustness, in which
-    // case we need a GLXFBConfig for the window in order to create a
-    // context for it.
-    //
-    // TODO(kbr): this is not a reliable code path. On platforms which
-    // support it, we should use glXChooseFBConfig in the browser
-    // process to choose the FBConfig and from there the X Visual to
-    // use when creating the window in the first place. Then we can
-    // pass that FBConfig down rather than attempting to reconstitute
-    // it.
-
-    XWindowAttributes attributes;
-    XGetWindowAttributes(
-        g_display,
-        reinterpret_cast<GLXDrawable>(GetHandle()),
-        &attributes);
-    int visual_id = XVisualIDFromVisual(attributes.visual);
-
-    int num_elements = 0;
-    scoped_ptr_malloc<GLXFBConfig, ScopedPtrXFree> configs(
-        glXGetFBConfigs(g_display,
-                        DefaultScreen(g_display),
-                        &num_elements));
-    if (!configs.get()) {
-      LOG(ERROR) << "glXGetFBConfigs failed.";
-      return NULL;
-    }
-    if (!num_elements) {
-      LOG(ERROR) << "glXGetFBConfigs returned 0 elements.";
-      return NULL;
-    }
-    bool found = false;
-    int i;
-    for (i = 0; i < num_elements; ++i) {
-      int value;
-      if (glXGetFBConfigAttrib(
-              g_display, configs.get()[i], GLX_VISUAL_ID, &value)) {
-        LOG(ERROR) << "glXGetFBConfigAttrib failed.";
-        return NULL;
-      }
-      if (value == visual_id) {
-        found = true;
-        break;
-      }
-    }
-    if (found) {
-      config_ = configs.get()[i];
-    }
-  }
-
-  return config_;
+  return NULL;
 }
 
 PbufferGLSurfaceGLX::PbufferGLSurfaceGLX(const gfx::Size& size)

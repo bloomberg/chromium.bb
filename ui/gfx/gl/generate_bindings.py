@@ -121,7 +121,6 @@ GL_FUNCTIONS = [
 ['void', ['glGetFramebufferAttachmentParameterivEXT',
     'glGetFramebufferAttachmentParameteriv'], 'GLenum target, '
     'GLenum attachment, GLenum pname, GLint* params'],
-['GLenum', ['glGetGraphicsResetStatusARB'], 'void'],
 ['void', ['glGetIntegerv'], 'GLenum pname, GLint* params'],
 ['void', ['glGetProgramiv'], 'GLuint program, GLenum pname, GLint* params'],
 ['void', ['glGetProgramInfoLog'],
@@ -433,9 +432,6 @@ GLX_FUNCTIONS = [
     'Display* dpy, GLXDrawable drawable, int interval'],
 ['GLXFBConfig', ['glXGetFBConfigFromVisualSGIX'],
     'Display* dpy, XVisualInfo* visualInfo'],
-['GLXContext', ['glXCreateContextAttribsARB'],
-    'Display* dpy, GLXFBConfig config, GLXContext share_context, int direct, '
-    'const int* attrib_list'],
 ]
 
 FUNCTION_SETS = [

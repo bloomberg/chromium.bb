@@ -752,7 +752,6 @@ WebGraphicsContext3DInProcessCommandBufferImpl::
       plugin_handle_(NULL),
 #endif  // defined(OS_MACOSX)
       context_lost_callback_(0),
-      context_lost_reason_(GL_NO_ERROR),
       cached_width_(0),
       cached_height_(0),
       bound_fbo_(0) {
@@ -1789,14 +1788,7 @@ void WebGraphicsContext3DInProcessCommandBufferImpl::setContextLostCallback(
   context_lost_callback_ = cb;
 }
 
-WGC3Denum WebGraphicsContext3DInProcessCommandBufferImpl::
-    getGraphicsResetStatusARB() {
-  return context_lost_reason_;
-}
-
 void WebGraphicsContext3DInProcessCommandBufferImpl::OnContextLost() {
-  // TODO(kbr): improve the precision here.
-  context_lost_reason_ = GL_UNKNOWN_CONTEXT_RESET_ARB;
   if (context_lost_callback_) {
     context_lost_callback_->onContextLost();
   }

@@ -431,8 +431,6 @@ class MockGLInterface : public GLInterface {
   MOCK_METHOD3(GetFenceivNV, void(GLuint fence, GLenum pname, GLint *params));
 
   MOCK_METHOD1(SetSurfaceCHROMIUM, void(GLuint));
-
-  MOCK_METHOD0(GetGraphicsResetStatusARB, GLenum());
 };
 
 }  // namespace gfx

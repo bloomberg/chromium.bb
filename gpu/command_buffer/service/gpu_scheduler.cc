@@ -170,7 +170,6 @@ void GpuScheduler::ProcessCommands() {
   if (decoder_.get()) {
     if (!decoder_->MakeCurrent()) {
       LOG(ERROR) << "Context lost because MakeCurrent failed.";
-      command_buffer_->SetContextLostReason(decoder_->GetContextLostReason());
       command_buffer_->SetParseError(error::kLostContext);
       return;
     }
@@ -214,7 +213,6 @@ void GpuScheduler::ProcessCommands() {
         is_break = true;
         break;
       } else if (error::IsError(error)) {
-        command_buffer_->SetContextLostReason(decoder_->GetContextLostReason());
         command_buffer_->SetParseError(error);
         return;
       }

@@ -145,24 +145,6 @@ bool LatchAllocator::FreeLatch(uint32 latch_id) {
 static base::LazyInstance<GLES2Initializer> g_gles2_initializer(
     base::LINKER_INITIALIZED);
 
-////////////////////////////////////////////////////////////////////////////////
-
-#if defined(ENABLE_GPU)
-RendererGLContext::ContextLostReason ConvertReason(
-    gpu::error::ContextLostReason reason) {
-  switch (reason) {
-  case gpu::error::kGuilty:
-    return RendererGLContext::kGuilty;
-  case gpu::error::kInnocent:
-    return RendererGLContext::kInnocent;
-  case gpu::error::kUnknown:
-    return RendererGLContext::kUnknown;
-  }
-  NOTREACHED();
-  return RendererGLContext::kUnknown;
-}
-#endif
-
 }  // namespace anonymous
 
 RendererGLContext::~RendererGLContext() {
@@ -326,8 +308,7 @@ void RendererGLContext::SetSwapBuffersCallback(Callback0::Type* callback) {
   swap_buffers_callback_.reset(callback);
 }
 
-void RendererGLContext::SetContextLostCallback(
-    Callback1<ContextLostReason>::Type* callback) {
+void RendererGLContext::SetContextLostCallback(Callback0::Type* callback) {
   context_lost_callback_.reset(callback);
 }
 
@@ -596,14 +577,8 @@ void RendererGLContext::OnSwapBuffers() {
 }
 
 void RendererGLContext::OnContextLost() {
-  if (context_lost_callback_.get()) {
-    RendererGLContext::ContextLostReason reason = kUnknown;
-    if (command_buffer_) {
-      reason = ConvertReason(
-          command_buffer_->GetLastState().context_lost_reason);
-    }
-    context_lost_callback_->Run(reason);
-  }
+  if (context_lost_callback_.get())
+    context_lost_callback_->Run();
 }
 
 bool RendererGLContext::CreateLatch(uint32* ret_latch) {

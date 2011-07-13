@@ -38,7 +38,6 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl()
       plugin_handle_(NULL),
 #endif  // defined(OS_MACOSX)
       context_lost_callback_(0),
-      context_lost_reason_(GL_NO_ERROR),
       cached_width_(0),
       cached_height_(0),
       bound_fbo_(0) {
@@ -686,8 +685,7 @@ WGC3Denum WebGraphicsContext3DCommandBufferImpl::getError() {
 }
 
 bool WebGraphicsContext3DCommandBufferImpl::isContextLost() {
-  return context_->IsCommandBufferContextLost() ||
-      context_lost_reason_ != GL_NO_ERROR;
+  return context_->IsCommandBufferContextLost();
 }
 
 DELEGATE_TO_GL_2(getFloatv, GetFloatv, WGC3Denum, WGC3Dfloat*)
@@ -1033,36 +1031,7 @@ void WebGraphicsContext3DCommandBufferImpl::setContextLostCallback(
   context_lost_callback_ = cb;
 }
 
-WGC3Denum WebGraphicsContext3DCommandBufferImpl::getGraphicsResetStatusARB() {
-  if (context_->IsCommandBufferContextLost() &&
-      context_lost_reason_ == GL_NO_ERROR) {
-    return GL_UNKNOWN_CONTEXT_RESET_ARB;
-  }
-
-  return context_lost_reason_;
-}
-
-namespace {
-
-WGC3Denum convertReason(RendererGLContext::ContextLostReason reason) {
-  switch (reason) {
-  case RendererGLContext::kGuilty:
-    return GL_GUILTY_CONTEXT_RESET_ARB;
-  case RendererGLContext::kInnocent:
-    return GL_INNOCENT_CONTEXT_RESET_ARB;
-  case RendererGLContext::kUnknown:
-    return GL_UNKNOWN_CONTEXT_RESET_ARB;
-  }
-
-  NOTREACHED();
-  return GL_UNKNOWN_CONTEXT_RESET_ARB;
-}
-
-}  // anonymous namespace
-
-void WebGraphicsContext3DCommandBufferImpl::OnContextLost(
-    RendererGLContext::ContextLostReason reason) {
-  context_lost_reason_ = convertReason(reason);
+void WebGraphicsContext3DCommandBufferImpl::OnContextLost() {
   if (context_lost_callback_) {
     context_lost_callback_->onContextLost();
   }

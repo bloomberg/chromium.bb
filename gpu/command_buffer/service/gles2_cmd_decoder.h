@@ -120,9 +120,6 @@ class GLES2Decoder : public CommonDecoder {
   virtual bool GetServiceTextureId(uint32 client_texture_id,
                                    uint32* service_texture_id);
 
-  // Provides detail about a lost context if one occurred.
-  virtual error::ContextLostReason GetContextLostReason() = 0;
-
  protected:
   GLES2Decoder();
 

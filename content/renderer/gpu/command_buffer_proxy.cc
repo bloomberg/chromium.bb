@@ -59,17 +59,16 @@ bool CommandBufferProxy::OnMessageReceived(const IPC::Message& message) {
 
 void CommandBufferProxy::OnChannelError() {
   video_decoder_host_->OnChannelError();
-  OnDestroyed(gpu::error::kUnknown);
+  OnDestroyed();
 }
 
-void CommandBufferProxy::OnDestroyed(gpu::error::ContextLostReason reason) {
+void CommandBufferProxy::OnDestroyed() {
   // Prevent any further messages from being sent.
   channel_ = NULL;
 
   // When the client sees that the context is lost, they should delete this
   // CommandBufferProxy and create a new one.
   last_state_.error = gpu::error::kLostContext;
-  last_state_.context_lost_reason = reason;
 
   if (channel_error_callback_.get()) {
     channel_error_callback_->Run();
@@ -329,12 +328,6 @@ void CommandBufferProxy::OnNotifyRepaint() {
 
 void CommandBufferProxy::SetParseError(
     gpu::error::Error error) {
-  // Not implemented in proxy.
-  NOTREACHED();
-}
-
-void CommandBufferProxy::SetContextLostReason(
-    gpu::error::ContextLostReason reason) {
   // Not implemented in proxy.
   NOTREACHED();
 }

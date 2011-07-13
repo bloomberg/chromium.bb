@@ -13,7 +13,6 @@
 #include "content/common/gpu/gpu_info.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "gpu/command_buffer/common/command_buffer.h"
-#include "gpu/command_buffer/common/constants.h"
 #include "gpu/ipc/gpu_command_buffer_traits.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
@@ -106,7 +105,6 @@ IPC_STRUCT_TRAITS_BEGIN(gpu::ReadWriteTokens)
 IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS(content::CauseForGpuLaunch)
-IPC_ENUM_TRAITS(gpu::error::ContextLostReason)
 
 //------------------------------------------------------------------------------
 // GPU Messages
@@ -419,8 +417,7 @@ IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_SetWindowSize,
 
 // Tells the proxy that there was an error and the command buffer had to be
 // destroyed for some reason.
-IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_Destroyed,
-                    gpu::error::ContextLostReason /* reason */)
+IPC_MESSAGE_ROUTED0(GpuCommandBufferMsg_Destroyed)
 
 // --------------------------------------------------------------------------
 // TransportTexture messages

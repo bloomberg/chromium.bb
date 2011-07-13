@@ -496,8 +496,6 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   bool BoundFramebufferHasDepthAttachment();
   bool BoundFramebufferHasStencilAttachment();
 
-  virtual error::ContextLostReason GetContextLostReason();
-
  private:
   friend class ScopedGLErrorSuppressor;
   friend class ScopedResolvedFrameBufferBinder;
@@ -890,6 +888,9 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // Wrapper for glDetachShader
   void DoDetachShader(GLuint client_program_id, GLint client_shader_id);
 
+  // Wrapper for glDrawArrays.
+  void DoDrawArrays(GLenum mode, GLint first, GLsizei count);
+
   // Wrapper for glDisable
   void DoDisable(GLenum cap);
 
@@ -1133,9 +1134,6 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
       error::Error* error, GLuint* service_id, void** result,
       GLenum* result_type);
 
-  // Returns true if the context was just lost due to e.g. GL_ARB_robustness.
-  bool WasContextLost();
-
   // Generate a member function prototype for each command in an automated and
   // typesafe way.
   #define GLES2_CMD_OP(name) \
@@ -1302,9 +1300,6 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   bool tex_image_2d_failed_;
 
   int frame_number_;
-
-  bool has_arb_robustness_;
-  GLenum reset_status_;
 
   DISALLOW_COPY_AND_ASSIGN(GLES2DecoderImpl);
 };
@@ -1642,9 +1637,7 @@ GLES2DecoderImpl::GLES2DecoderImpl(SurfaceManager* surface_manager,
       validators_(group_->feature_info()->validators()),
       feature_info_(group_->feature_info()),
       tex_image_2d_failed_(false),
-      frame_number_(0),
-      has_arb_robustness_(false),
-      reset_status_(GL_NO_ERROR) {
+      frame_number_(0) {
   attrib_0_value_.v[0] = 0.0f;
   attrib_0_value_.v[1] = 0.0f;
   attrib_0_value_.v[2] = 0.0f;
@@ -1892,8 +1885,6 @@ bool GLES2DecoderImpl::Initialize(
     glEnable(GL_POINT_SPRITE);
   }
 
-  has_arb_robustness_ = context->HasExtension("GL_ARB_robustness");
-
   if (!InitializeShaderTranslator()) {
     return false;
   }
@@ -2073,13 +2064,7 @@ void GLES2DecoderImpl::DeleteTexturesHelper(
 // }  // anonymous namespace
 
 bool GLES2DecoderImpl::MakeCurrent() {
-  bool result = context_.get() ? context_->MakeCurrent(surface_.get()) : false;
-  if (result && WasContextLost()) {
-    LOG(ERROR) << "  GLES2DecoderImpl: Context lost during MakeCurrent.";
-    result = false;
-  }
-
-  return result;
+  return context_.get() ? context_->MakeCurrent(surface_.get()) : false;
 }
 
 void GLES2DecoderImpl::RestoreCurrentRenderbufferBindings() {
@@ -3376,6 +3361,43 @@ void GLES2DecoderImpl::DoClear(GLbitfield mask) {
   }
 }
 
+void GLES2DecoderImpl::DoDrawArrays(
+    GLenum mode, GLint first, GLsizei count) {
+  if (!CheckFramebufferComplete("glDrawArrays")) {
+    return;
+  }
+  // We have to check this here because the prototype for glDrawArrays
+  // is GLint not GLsizei.
+  if (first < 0) {
+    SetGLError(GL_INVALID_VALUE, "glDrawArrays: first < 0");
+    return;
+  }
+
+  if (count == 0) {
+    return;
+  }
+
+  GLuint max_vertex_accessed = first + count - 1;
+  if (IsDrawValid(max_vertex_accessed)) {
+    bool simulated_attrib_0 = SimulateAttrib0(max_vertex_accessed);
+    bool simulated_fixed_attribs = false;
+    if (SimulateFixedAttribs(max_vertex_accessed, &simulated_fixed_attribs)) {
+      bool textures_set = SetBlackTextureForNonRenderableTextures();
+      ApplyDirtyState();
+      glDrawArrays(mode, first, count);
+      if (textures_set) {
+        RestoreStateForNonRenderableTextures();
+      }
+      if (simulated_fixed_attribs) {
+        RestoreStateForSimulatedFixedAttribs();
+      }
+    }
+    if (simulated_attrib_0) {
+      RestoreStateForSimulatedAttrib0();
+    }
+  }
+}
+
 void GLES2DecoderImpl::DoFramebufferRenderbuffer(
     GLenum target, GLenum attachment, GLenum renderbuffertarget,
     GLuint client_renderbuffer_id) {
@@ -4349,59 +4371,6 @@ void GLES2DecoderImpl::RestoreStateForSimulatedFixedAttribs() {
                bound_array_buffer_ ? bound_array_buffer_->service_id() : 0);
 }
 
-error::Error GLES2DecoderImpl::HandleDrawArrays(
-    uint32 immediate_data_size, const gles2::DrawArrays& c) {
-  GLenum mode = static_cast<GLenum>(c.mode);
-  GLint first = static_cast<GLint>(c.first);
-  GLsizei count = static_cast<GLsizei>(c.count);
-  if (!validators_->draw_mode.IsValid(mode)) {
-    SetGLError(GL_INVALID_ENUM, "glDrawArrays: mode GL_INVALID_ENUM");
-    return error::kNoError;
-  }
-  if (count < 0) {
-    SetGLError(GL_INVALID_VALUE, "glDrawArrays: count < 0");
-    return error::kNoError;
-  }
-  if (!CheckFramebufferComplete("glDrawArrays")) {
-    return error::kNoError;
-  }
-  // We have to check this here because the prototype for glDrawArrays
-  // is GLint not GLsizei.
-  if (first < 0) {
-    SetGLError(GL_INVALID_VALUE, "glDrawArrays: first < 0");
-    return error::kNoError;
-  }
-
-  if (count == 0) {
-    return error::kNoError;
-  }
-
-  GLuint max_vertex_accessed = first + count - 1;
-  if (IsDrawValid(max_vertex_accessed)) {
-    bool simulated_attrib_0 = SimulateAttrib0(max_vertex_accessed);
-    bool simulated_fixed_attribs = false;
-    if (SimulateFixedAttribs(max_vertex_accessed, &simulated_fixed_attribs)) {
-      bool textures_set = SetBlackTextureForNonRenderableTextures();
-      ApplyDirtyState();
-      glDrawArrays(mode, first, count);
-      if (textures_set) {
-        RestoreStateForNonRenderableTextures();
-      }
-      if (simulated_fixed_attribs) {
-        RestoreStateForSimulatedFixedAttribs();
-      }
-    }
-    if (simulated_attrib_0) {
-      RestoreStateForSimulatedAttrib0();
-    }
-    if (WasContextLost()) {
-      LOG(ERROR) << "  GLES2DecoderImpl: Context lost during DrawArrays.";
-      return error::kLostContext;
-    }
-  }
-  return error::kNoError;
-}
-
 error::Error GLES2DecoderImpl::HandleDrawElements(
     uint32 immediate_data_size, const gles2::DrawElements& c) {
   if (!bound_element_array_buffer_ ||
@@ -4465,10 +4434,6 @@ error::Error GLES2DecoderImpl::HandleDrawElements(
     }
     if (simulated_attrib_0) {
       RestoreStateForSimulatedAttrib0();
-    }
-    if (WasContextLost()) {
-      LOG(ERROR) << "  GLES2DecoderImpl: Context lost during DrawElements.";
-      return error::kLostContext;
     }
   }
   return error::kNoError;
@@ -6763,39 +6728,6 @@ error::Error GLES2DecoderImpl::HandleGetProgramInfoCHROMIUM(
   }
   info->GetProgramInfo(bucket);
   return error::kNoError;
-}
-
-error::ContextLostReason GLES2DecoderImpl::GetContextLostReason() {
-  switch (reset_status_) {
-  case GL_NO_ERROR:
-    // TODO(kbr): improve the precision of the error code in this case.
-    // Consider delegating to context for error code if MakeCurrent fails.
-    return error::kUnknown;
-  case GL_GUILTY_CONTEXT_RESET_ARB:
-    return error::kGuilty;
-  case GL_INNOCENT_CONTEXT_RESET_ARB:
-    return error::kInnocent;
-  case GL_UNKNOWN_CONTEXT_RESET_ARB:
-    return error::kUnknown;
-  }
-
-  NOTREACHED();
-  return error::kUnknown;
-}
-
-bool GLES2DecoderImpl::WasContextLost() {
-  if (context_->WasAllocatedUsingARBRobustness() && has_arb_robustness_) {
-    GLenum status = glGetGraphicsResetStatusARB();
-    if (status != GL_NO_ERROR) {
-      // The graphics card was reset. Signal a lost context to the application.
-      reset_status_ = status;
-      LOG(ERROR) << (surface_->IsOffscreen() ? "Offscreen" : "Onscreen")
-                 << " context lost via ARB_robustness. Reset status = 0x"
-                 << std::hex << status << std::dec;
-      return true;
-    }
-  }
-  return false;
 }
 
 // Include the auto-generated part of this file. We split this because it means

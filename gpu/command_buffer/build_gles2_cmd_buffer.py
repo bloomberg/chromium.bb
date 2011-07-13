@@ -1220,8 +1220,9 @@ _FUNCTION_INFO = {
     'impl_decl': False,
   },
   'DrawArrays': {
-    'type': 'Manual',
-    'cmd_args': 'GLenum mode, GLint first, GLsizei count',
+    'decoder_func': 'DoDrawArrays',
+    'unit_test': False,
+    'impl_decl': False,
   },
   'DrawElements': {
     'type': 'Manual',

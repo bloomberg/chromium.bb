@@ -40,7 +40,6 @@ class CommandBufferService : public CommandBuffer {
   virtual Buffer GetTransferBuffer(int32 handle);
   virtual void SetToken(int32 token);
   virtual void SetParseError(error::Error error);
-  virtual void SetContextLostReason(error::ContextLostReason);
 
   // Sets a callback that is called whenever the put offset is changed. When
   // called with sync==true, the callback must not return until some progress
@@ -65,7 +64,6 @@ class CommandBufferService : public CommandBuffer {
   int32 token_;
   uint32 generation_;
   error::Error error_;
-  error::ContextLostReason context_lost_reason_;
 };
 
 }  // namespace gpu

@@ -1573,11 +1573,6 @@ void WebGraphicsContext3DInProcessImpl::deleteTexture(WebGLId texture) {
   glDeleteTextures(1, &texture);
 }
 
-WGC3Denum WebGraphicsContext3DInProcessImpl::getGraphicsResetStatusARB() {
-  // TODO(kbr): this implementation doesn't support lost contexts yet.
-  return GL_NO_ERROR;
-}
-
 bool WebGraphicsContext3DInProcessImpl::AngleCreateCompilers() {
   if (!ShInitialize())
     return false;

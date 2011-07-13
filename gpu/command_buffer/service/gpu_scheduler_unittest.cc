@@ -217,8 +217,6 @@ TEST_F(GpuSchedulerTest, SetsErrorCodeOnCommandBuffer) {
         error::kUnknownCommand));
   EXPECT_CALL(*command_buffer_, SetGetOffset(1));
 
-  EXPECT_CALL(*decoder_, GetContextLostReason())
-    .WillOnce(Return(error::kUnknown));
   EXPECT_CALL(*command_buffer_,
       SetParseError(error::kUnknownCommand));
 

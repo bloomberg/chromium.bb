@@ -56,81 +56,50 @@ GLContextGLX::~GLContextGLX() {
 bool GLContextGLX::Initialize(GLSurface* compatible_surface) {
   GLSurfaceGLX* surface_glx = static_cast<GLSurfaceGLX*>(compatible_surface);
 
+  GLXFBConfig config = static_cast<GLXFBConfig>(surface_glx->GetConfig());
   GLXContext share_handle = static_cast<GLXContext>(
       share_group() ? share_group()->GetHandle() : NULL);
 
-  if (GLSurfaceGLX::IsCreateContextRobustnessSupported()) {
-    DLOG(INFO) << "GLX_ARB_create_context_robustness supported.";
-
-    std::vector<int> attribs;
-    attribs.push_back(GLX_CONTEXT_RESET_NOTIFICATION_STRATEGY_ARB);
-    attribs.push_back(GLX_LOSE_CONTEXT_ON_RESET_ARB);
-    attribs.push_back(0);
-    context_ = glXCreateContextAttribsARB(
+  // The means by which the context is created depends on whether the drawable
+  // type works reliably with GLX 1.3. If it does not then fall back to GLX 1.2.
+  if (config) {
+    context_ = glXCreateNewContext(
         GLSurfaceGLX::GetDisplay(),
         static_cast<GLXFBConfig>(surface_glx->GetConfig()),
+        GLX_RGBA_TYPE,
         share_handle,
-        True,
-        &attribs.front());
-    if (context_) {
-      DLOG(INFO) << "  Successfully allocated "
-                 << (surface_glx->IsOffscreen() ? "offscreen" : "onscreen")
-                 << " GL context with LOSE_CONTEXT_ON_RESET_ARB";
-    } else {
-      // TODO(kbr): it is not expected that things will work properly
-      // in this case, since we will likely allocate our offscreen
-      // contexts with this bit set and the onscreen contexts without,
-      // and won't be able to put them in the same share group.
-      // Consider what to do here; force loss of all contexts and
-      // reallocation without ARB_robustness?
-      LOG(ERROR) <<
-          "  FAILED to allocate GL context with LOSE_CONTEXT_ON_RESET_ARB";
+        True);
+  } else {
+    Display* display = GLSurfaceGLX::GetDisplay();
+
+    // Get the visuals for the X drawable.
+    XWindowAttributes attributes;
+    XGetWindowAttributes(
+        display,
+        reinterpret_cast<GLXDrawable>(surface_glx->GetHandle()),
+        &attributes);
+
+    XVisualInfo visual_info_template;
+    visual_info_template.visualid = XVisualIDFromVisual(attributes.visual);
+
+    int visual_info_count = 0;
+    scoped_ptr_malloc<XVisualInfo, ScopedPtrXFree> visual_info_list(
+        XGetVisualInfo(display, VisualIDMask,
+                       &visual_info_template,
+                       &visual_info_count));
+
+    DCHECK(visual_info_list.get());
+    if (visual_info_count == 0) {
+      LOG(ERROR) << "No visual info for visual ID.";
+      return false;
     }
-  }
 
-  if (!context_) {
-    // The means by which the context is created depends on whether
-    // the drawable type works reliably with GLX 1.3. If it does not
-    // then fall back to GLX 1.2.
-    if (surface_glx->IsOffscreen()) {
-      context_ = glXCreateNewContext(
-          GLSurfaceGLX::GetDisplay(),
-          static_cast<GLXFBConfig>(surface_glx->GetConfig()),
-          GLX_RGBA_TYPE,
-          share_handle,
-          True);
-    } else {
-      Display* display = GLSurfaceGLX::GetDisplay();
-
-      // Get the visuals for the X drawable.
-      XWindowAttributes attributes;
-      XGetWindowAttributes(
-          display,
-          reinterpret_cast<GLXDrawable>(surface_glx->GetHandle()),
-          &attributes);
-
-      XVisualInfo visual_info_template;
-      visual_info_template.visualid = XVisualIDFromVisual(attributes.visual);
-
-      int visual_info_count = 0;
-      scoped_ptr_malloc<XVisualInfo, ScopedPtrXFree> visual_info_list(
-          XGetVisualInfo(display, VisualIDMask,
-                         &visual_info_template,
-                         &visual_info_count));
-
-      DCHECK(visual_info_list.get());
-      if (visual_info_count == 0) {
-        LOG(ERROR) << "No visual info for visual ID.";
-        return false;
-      }
-
-      // Attempt to create a context with each visual in turn until one works.
-      context_ = glXCreateContext(
-          display,
-          visual_info_list.get(),
-          share_handle,
-          True);
-    }
+    // Attempt to create a context with each visual in turn until one works.
+    context_ = glXCreateContext(
+        display,
+        visual_info_list.get(),
+        share_handle,
+        True);
   }
 
   if (!context_) {
@@ -138,13 +107,6 @@ bool GLContextGLX::Initialize(GLSurface* compatible_surface) {
     Destroy();
     return false;
   }
-
-  DLOG(INFO) << (surface_glx->IsOffscreen() ? "Offscreen" : "Onscreen")
-             << " context was "
-             << (glXIsDirect(GLSurfaceGLX::GetDisplay(),
-                             static_cast<GLXContext>(context_))
-                     ? "direct" : "indirect")
-             << ".";
 
   return true;
 }
@@ -226,16 +188,14 @@ void GLContextGLX::SetSwapInterval(int interval) {
 
 std::string GLContextGLX::GetExtensions() {
   DCHECK(IsCurrent(NULL));
-  const char* extensions = GLSurfaceGLX::GetGLXExtensions();
+  const char* extensions = glXQueryExtensionsString(
+      GLSurfaceGLX::GetDisplay(),
+      0);
   if (extensions) {
     return GLContext::GetExtensions() + " " + extensions;
   }
 
   return GLContext::GetExtensions();
-}
-
-bool GLContextGLX::WasAllocatedUsingARBRobustness() {
-  return GLSurfaceGLX::IsCreateContextRobustnessSupported();
 }
 
 }  // namespace gfx

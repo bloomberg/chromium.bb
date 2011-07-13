@@ -54,7 +54,6 @@ class MockGLES2Decoder : public GLES2Decoder {
                                        const void* cmd_data));
   MOCK_METHOD2(GetServiceTextureId, bool(uint32 client_texture_id,
                                          uint32* service_texture_id));
-  MOCK_METHOD0(GetContextLostReason, error::ContextLostReason());
   MOCK_CONST_METHOD1(GetCommandName, const char*(unsigned int command_id));
 
   DISALLOW_COPY_AND_ASSIGN(MockGLES2Decoder);

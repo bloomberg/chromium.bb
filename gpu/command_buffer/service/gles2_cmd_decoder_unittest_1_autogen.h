@@ -704,7 +704,6 @@ TEST_F(GLES2DecoderTest1, DisableVertexAttribArrayValidArgs) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 // TODO(gman): DrawArrays
-
 // TODO(gman): DrawElements
 
 

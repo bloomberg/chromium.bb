@@ -98,7 +98,6 @@ CommandBufferService::State CommandBufferService::GetState() {
   state.put_offset = put_offset_;
   state.token = token_;
   state.error = error_;
-  state.context_lost_reason = context_lost_reason_;
   state.generation = ++generation_;
 
   return state;
@@ -253,11 +252,6 @@ void CommandBufferService::SetParseError(error::Error error) {
     if (parse_error_callback_.get())
       parse_error_callback_->Run();
   }
-}
-
-void CommandBufferService::SetContextLostReason(
-    error::ContextLostReason reason) {
-  context_lost_reason_ = reason;
 }
 
 void CommandBufferService::SetPutOffsetChangeCallback(

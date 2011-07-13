@@ -6,8 +6,6 @@
 // command buffer commands.
 
 #include "../common/cmd_buffer_common.h"
-#include "../common/command_buffer.h"
-#include "../common/logging.h"
 
 namespace gpu {
 #if !defined(_WIN32)
@@ -30,17 +28,6 @@ const char* GetCommandName(CommandId command_id) {
 }
 
 }  // namespace cmd
-
-// TODO(kbr): this method body is here instead of command_buffer.cc
-// because NaCl currently compiles in this file but not the other.
-// Remove this method body and the includes of command_buffer.h and
-// logging.h above once NaCl defines SetContextLostReason() in its
-// CommandBuffer subclass and has been rolled forward. See
-// http://crbug.com/89127 .
-void CommandBuffer::SetContextLostReason(error::ContextLostReason) {
-  GPU_NOTREACHED();
-}
-
 }  // namespace gpu
 
 
