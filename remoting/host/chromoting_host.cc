@@ -70,6 +70,7 @@ ChromotingHost::ChromotingHost(ChromotingHostContext* context,
       is_it2me_(false) {
   DCHECK(desktop_environment_.get());
   desktop_environment_->set_host(this);
+  logger_->SetThread(MessageLoop::current());
 }
 
 ChromotingHost::~ChromotingHost() {

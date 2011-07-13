@@ -7,10 +7,6 @@
 
 #include "remoting/base/logger.h"
 
-#include "base/task.h"
-
-class MessageLoop;
-
 namespace remoting {
 
 class HostNPScriptObject;
@@ -20,21 +16,14 @@ class HostPluginLogger : public Logger {
   explicit HostPluginLogger(HostNPScriptObject* scriptable);
   virtual ~HostPluginLogger();
 
-  virtual void va_Log(logging::LogSeverity severity, const char* format,
-                      va_list ap);
-  virtual void va_VLog(int verboselevel, const char* format, va_list ap);
+  virtual void LogToUI(const std::string& message);
 
  private:
-  void LogToHostUI(const std::string& message);
-
   HostNPScriptObject* scriptable_object_;
-  MessageLoop* message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(HostPluginLogger);
 };
 
 }  // namespace remoting
-
-DISABLE_RUNNABLE_METHOD_REFCOUNT(remoting::HostPluginLogger);
 
 #endif  // REMOTING_HOST_PLUGIN_HOST_PLUGIN_LOGGER_H_
