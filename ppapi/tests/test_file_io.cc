@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "base/memory/scoped_ptr.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/dev/ppb_file_io_dev.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"
@@ -114,9 +115,11 @@ void TestFileIO::RunTest() {
   RUN_TEST_FORCEASYNC_AND_NOT(Open);
   RUN_TEST_FORCEASYNC_AND_NOT(ReadWriteSetLength);
   RUN_TEST_FORCEASYNC_AND_NOT(TouchQuery);
-  RUN_TEST_FORCEASYNC_AND_NOT(TouchQuery);
   RUN_TEST_FORCEASYNC_AND_NOT(AbortCalls);
-  RUN_TEST_FORCEASYNC_AND_NOT(AbortCalls);
+  RUN_TEST_FORCEASYNC_AND_NOT(ParallelReads);
+  RUN_TEST_FORCEASYNC_AND_NOT(ParallelWrites);
+  RUN_TEST_FORCEASYNC_AND_NOT(NotAllowMixedReadWrite);
+
   // TODO(viettrungluu): add tests:
   //  - that PP_ERROR_PENDING is correctly returned
   //  - that operations respect the file open modes (flags)
@@ -148,7 +151,7 @@ std::string TestFileIO::TestOpen() {
   //     PP_FILEOPENFLAG_TRUNCATE,
   //     PP_FILEOPENFLAG_EXCLUSIVE }.
 
-  // First of all, none of them are specificed.
+  // First of all, none of them are specified.
   result = MatchOpenExpectations(
       &file_system,
       PP_FILEOPENFLAG_WRITE,
@@ -642,6 +645,256 @@ std::string TestFileIO::TestAbortCalls() {
 
   // TODO(viettrungluu): Also test that Close() aborts callbacks.
   // crbug.com/69457
+
+  PASS();
+}
+
+std::string TestFileIO::TestParallelReads() {
+  TestCompletionCallback callback(instance_->pp_instance(), force_async_);
+  pp::FileSystem_Dev file_system(instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY);
+  pp::FileRef_Dev file_ref(file_system, "/file_parallel_reads");
+  int32_t rv = file_system.Open(1024, callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("FileSystem::Open force_async", rv);
+  if (rv == PP_OK_COMPLETIONPENDING)
+    rv = callback.WaitForResult();
+  if (rv != PP_OK)
+    return ReportError("FileSystem::Open", rv);
+
+  pp::FileIO_Dev file_io(instance_);
+  rv = file_io.Open(file_ref,
+                    PP_FILEOPENFLAG_CREATE |
+                    PP_FILEOPENFLAG_TRUNCATE |
+                    PP_FILEOPENFLAG_READ |
+                    PP_FILEOPENFLAG_WRITE,
+                    callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("FileIO::Open force_async", rv);
+  if (rv == PP_OK_COMPLETIONPENDING)
+    rv = callback.WaitForResult();
+  if (rv != PP_OK)
+    return ReportError("FileIO::Open", rv);
+
+  // Set up testing contents.
+  rv = WriteEntireBuffer(instance_->pp_instance(), &file_io, 0, "abcdefghijkl");
+  if (rv != PP_OK)
+    return ReportError("FileIO::Write", rv);
+
+  // Parallel read operations.
+  const char* border = "__border__";
+  const int32_t border_size = strlen(border);
+
+  TestCompletionCallback callback_1(instance_->pp_instance(), force_async_);
+  int32_t read_offset_1 = 0;
+  int32_t size_1 = 3;
+  char* extended_buf_1 = new char[border_size * 2 + size_1];
+  scoped_array<char> extended_buf_1_deleter(extended_buf_1);
+  char* buf_1 = extended_buf_1 + border_size;
+  memcpy(extended_buf_1, border, border_size);
+  memcpy(buf_1 + size_1, border, border_size);
+
+  TestCompletionCallback callback_2(instance_->pp_instance(), force_async_);
+  int32_t read_offset_2 = size_1;
+  int32_t size_2 = 9;
+  char* extended_buf_2 = new char[border_size * 2 + size_2];
+  scoped_array<char> extended_buf_2_deleter(extended_buf_2);
+  char* buf_2 = extended_buf_2 + border_size;
+  memcpy(extended_buf_2, border, border_size);
+  memcpy(buf_2 + size_2, border, border_size);
+
+  int32_t rv_1 = PP_OK;
+  int32_t rv_2 = PP_OK;
+  while (size_1 >= 0 && size_2 >= 0 && size_1 + size_2 > 0) {
+    if (size_1 > 0) {
+      rv_1 = file_io.Read(read_offset_1, buf_1, size_1, callback_1);
+      if (rv_1 != PP_OK_COMPLETIONPENDING)
+        return ReportError("FileIO::Read", rv_1);
+    }
+
+    if (size_2 > 0) {
+      rv_2 = file_io.Read(read_offset_2, buf_2, size_2, callback_2);
+      if (rv_2 != PP_OK_COMPLETIONPENDING)
+        return ReportError("FileIO::Read", rv_2);
+    }
+
+    if (size_1 > 0) {
+      rv_1 = callback_1.WaitForResult();
+      if (rv_1 <= 0)
+        return ReportError("FileIO::Read", rv_1);
+      read_offset_1 += rv_1;
+      buf_1 += rv_1;
+      size_1 -= rv_1;
+    }
+
+    if (size_2 > 0) {
+      rv_2 = callback_2.WaitForResult();
+      if (rv_2 <= 0)
+        return ReportError("FileIO::Read", rv_2);
+      read_offset_2 += rv_2;
+      buf_2 += rv_2;
+      size_2 -= rv_2;
+    }
+  }
+
+  // If |size_1| or |size_2| is less than 0, we have invoked wrong
+  // callback(s).
+  if (size_1 < 0 || size_2 < 0) {
+    return std::string(
+        "Parallel FileIO::Read operations have invoked wrong callbacks.");
+  }
+
+  // Make sure every read operation writes into the correct buffer.
+  const char* expected_result_1 = "__border__abc__border__";
+  const char* expected_result_2 = "__border__defghijkl__border__";
+  if (strncmp(extended_buf_1, expected_result_1,
+              sizeof(expected_result_1)) != 0 ||
+      strncmp(extended_buf_2, expected_result_2,
+              sizeof(expected_result_2)) != 0) {
+    return std::string(
+        "Parallel FileIO::Read operations have written into wrong buffers.");
+  }
+
+  PASS();
+}
+
+std::string TestFileIO::TestParallelWrites() {
+  TestCompletionCallback callback(instance_->pp_instance(), force_async_);
+  pp::FileSystem_Dev file_system(instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY);
+  pp::FileRef_Dev file_ref(file_system, "/file_parallel_writes");
+  int32_t rv = file_system.Open(1024, callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("FileSystem::Open force_async", rv);
+  if (rv == PP_OK_COMPLETIONPENDING)
+    rv = callback.WaitForResult();
+  if (rv != PP_OK)
+    return ReportError("FileSystem::Open", rv);
+
+  pp::FileIO_Dev file_io(instance_);
+  rv = file_io.Open(file_ref,
+                    PP_FILEOPENFLAG_CREATE |
+                    PP_FILEOPENFLAG_TRUNCATE |
+                    PP_FILEOPENFLAG_READ |
+                    PP_FILEOPENFLAG_WRITE,
+                    callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("FileIO::Open force_async", rv);
+  if (rv == PP_OK_COMPLETIONPENDING)
+    rv = callback.WaitForResult();
+  if (rv != PP_OK)
+    return ReportError("FileIO::Open", rv);
+
+  // Parallel write operations.
+  TestCompletionCallback callback_1(instance_->pp_instance(), force_async_);
+  int32_t write_offset_1 = 0;
+  const char* buf_1 = "abc";
+  int32_t size_1 = strlen(buf_1);
+
+  TestCompletionCallback callback_2(instance_->pp_instance(), force_async_);
+  int32_t write_offset_2 = size_1;
+  const char* buf_2 = "defghijkl";
+  int32_t size_2 = strlen(buf_2);
+
+  int32_t rv_1 = PP_OK;
+  int32_t rv_2 = PP_OK;
+  while (size_1 >= 0 && size_2 >= 0 && size_1 + size_2 > 0) {
+    if (size_1 > 0) {
+      rv_1 = file_io.Write(write_offset_1, buf_1, size_1, callback_1);
+      if (rv_1 != PP_OK_COMPLETIONPENDING)
+        return ReportError("FileIO::Write", rv_1);
+    }
+
+    if (size_2 > 0) {
+      rv_2 = file_io.Write(write_offset_2, buf_2, size_2, callback_2);
+      if (rv_2 != PP_OK_COMPLETIONPENDING)
+        return ReportError("FileIO::Write", rv_2);
+    }
+
+    if (size_1 > 0) {
+      rv_1 = callback_1.WaitForResult();
+      if (rv_1 <= 0)
+        return ReportError("FileIO::Write", rv_1);
+      write_offset_1 += rv_1;
+      buf_1 += rv_1;
+      size_1 -= rv_1;
+    }
+
+    if (size_2 > 0) {
+      rv_2 = callback_2.WaitForResult();
+      if (rv_2 <= 0)
+        return ReportError("FileIO::Write", rv_2);
+      write_offset_2 += rv_2;
+      buf_2 += rv_2;
+      size_2 -= rv_2;
+    }
+  }
+
+  // If |size_1| or |size_2| is less than 0, we have invoked wrong
+  // callback(s).
+  if (size_1 < 0 || size_2 < 0) {
+    return std::string(
+        "Parallel FileIO::Write operations have invoked wrong callbacks.");
+  }
+
+  // Check the file contents.
+  std::string read_buffer;
+  rv = ReadEntireFile(instance_->pp_instance(), &file_io, 0, &read_buffer);
+  if (rv != PP_OK)
+    return ReportError("FileIO::Read", rv);
+  if (read_buffer != "abcdefghijkl")
+    return ReportMismatch("FileIO::Read", read_buffer, "abcdefghijkl");
+
+  PASS();
+}
+
+std::string TestFileIO::TestNotAllowMixedReadWrite() {
+  TestCompletionCallback callback(instance_->pp_instance(), force_async_);
+
+  pp::FileSystem_Dev file_system(instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY);
+  pp::FileRef_Dev file_ref(file_system, "/file_not_allow_mixed_read_write");
+  int32_t rv = file_system.Open(1024, callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("FileSystem::Open force_async", rv);
+  if (rv == PP_OK_COMPLETIONPENDING)
+    rv = callback.WaitForResult();
+  if (rv != PP_OK)
+    return ReportError("FileSystem::Open", rv);
+
+  pp::FileIO_Dev file_io(instance_);
+  rv = file_io.Open(file_ref,
+                    PP_FILEOPENFLAG_CREATE |
+                    PP_FILEOPENFLAG_TRUNCATE |
+                    PP_FILEOPENFLAG_READ |
+                    PP_FILEOPENFLAG_WRITE,
+                    callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("FileIO::Open force_async", rv);
+  if (rv == PP_OK_COMPLETIONPENDING)
+    rv = callback.WaitForResult();
+  if (rv != PP_OK)
+    return ReportError("FileIO::Open", rv);
+
+  // Cannot read and write in parallel.
+  TestCompletionCallback callback_1(instance_->pp_instance(), force_async_);
+  int32_t write_offset_1 = 0;
+  const char* buf_1 = "mnopqrstuvw";
+  int32_t rv_1 = file_io.Write(write_offset_1, buf_1, strlen(buf_1),
+                               callback_1);
+  if (rv_1 != PP_OK_COMPLETIONPENDING)
+    return ReportError("FileIO::Write", rv_1);
+
+  TestCompletionCallback callback_2(instance_->pp_instance(), force_async_);
+  int32_t read_offset_2 = 4;
+  char buf_2[3];
+  int32_t rv_2 = file_io.Read(read_offset_2, buf_2, sizeof(buf_2),
+                              callback_2);
+  if (force_async_ && rv_2 != PP_OK_COMPLETIONPENDING)
+    return ReportError("FileIO::Read force_async", rv_2);
+  if (rv_2 == PP_OK_COMPLETIONPENDING)
+    rv_2 = callback_2.WaitForResult();
+  if (rv_2 != PP_ERROR_INPROGRESS)
+    return ReportError("FileIO::Read", rv_2);
+
+  callback_1.WaitForResult();
 
   PASS();
 }

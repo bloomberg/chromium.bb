@@ -5,6 +5,8 @@
 #ifndef WEBKIT_PLUGINS_PPAPI_PPB_FILE_IO_IMPL_H_
 #define WEBKIT_PLUGINS_PPAPI_PPB_FILE_IO_IMPL_H_
 
+#include <queue>
+
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
@@ -66,20 +68,50 @@ class PPB_FileIO_Impl : public Resource,
                                 PP_CompletionCallback callback) OVERRIDE;
 
  private:
+  struct CallbackEntry {
+    CallbackEntry();
+    CallbackEntry(const CallbackEntry& entry);
+    ~CallbackEntry();
+
+    scoped_refptr<TrackedCompletionCallback> callback;
+    // Pointer back to the caller's read buffer; only used by |Read()|.
+    // Not owned.
+    char* read_buffer;
+  };
+
+  enum OperationType {
+    // If there are pending reads, any other kind of async operation is not
+    // allowed.
+    OPERATION_READ,
+    // If there are pending writes, any other kind of async operation is not
+    // allowed.
+    OPERATION_WRITE,
+    // If there is a pending operation that is neither read nor write, no
+    // further async operation is allowed.
+    OPERATION_EXCLUSIVE,
+    // There is no pending operation right now.
+    OPERATION_NONE,
+  };
+
   // Verifies:
   //  - that |callback| is valid (only nonblocking operation supported);
   //  - that the file is already open or not, depending on |should_be_open|; and
-  //  - that no callback is already pending.
+  //  - that no callback is already pending, or it is a read(write) request
+  //    and currently the pending operations are reads(writes).
   // Returns |PP_OK| to indicate that everything is valid or |PP_ERROR_...| if
   // the call should be aborted and that code returned to the plugin.
   int32_t CommonCallValidation(bool should_be_open,
+                               OperationType new_op,
                                PP_CompletionCallback callback);
 
-  // Sets up |callback| as the pending callback. This should only be called once
-  // it is certain that |PP_OK_COMPLETIONPENDING| will be returned.
-  void RegisterCallback(PP_CompletionCallback callback);
+  // Sets up a pending callback. This should only be called once it is certain
+  // that |PP_OK_COMPLETIONPENDING| will be returned.
+  // |read_buffer| is only used by read operations.
+  void RegisterCallback(OperationType op,
+                        PP_CompletionCallback callback,
+                        char* rend_buffer);
 
-  void RunPendingCallback(int32_t result);
+  void RunAndRemoveFirstPendingCallback(int32_t result);
 
   void StatusCallback(base::PlatformFileError error_code);
   void AsyncOpenFileCallback(base::PlatformFileError error_code,
@@ -95,15 +127,12 @@ class PPB_FileIO_Impl : public Resource,
   base::PlatformFile file_;
   PP_FileSystemType file_system_type_;
 
-  // Any pending callback for any PPB_FileIO(Trusted) call taking a callback.
-  scoped_refptr<TrackedCompletionCallback> callback_;
+  std::queue<CallbackEntry> callbacks_;
+  OperationType pending_op_;
 
   // Output buffer pointer for |Query()|; only non-null when a callback is
   // pending for it.
   PP_FileInfo* info_;
-
-  // Pointer back to the caller's read buffer; used by |Read()|. Not owned.
-  char* read_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_FileIO_Impl);
 };
