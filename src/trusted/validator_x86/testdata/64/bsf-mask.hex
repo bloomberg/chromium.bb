@@ -1,0 +1,3 @@
+# Test if we disallow bsf to zero-extend (i.e. mask) a memory reference.
+0f bc c3
+49 89 14 07

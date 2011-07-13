@@ -34,8 +34,10 @@ static const NaClMnemonic kZeroExtend32Op[] = {
   InstAdc,            /* 11, 13, 15, 81/2, 83/2 */
   InstAdd,            /* 01, 03, 05, 81/0, 83/0 */
   InstAnd,            /* 21, 23, 25, 81/4, 83/4 */
-  InstBsf,            /* OF BC */
-  InstBsr,            /* OF DB */
+  /* Bsf and Bsr have been removed, because they write to the
+   * destination conditionally. See
+   * http://code.google.com/p/nativeclient/issues/detail?id=2010
+   */
   InstBswap,          /* OF C* through OF CF */
   InstBt,             /* OF A3, 0F BA/4 */
   InstBtc,            /* OF BB, OF BA/7 */

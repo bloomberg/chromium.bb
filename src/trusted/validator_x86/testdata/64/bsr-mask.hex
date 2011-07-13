@@ -1,0 +1,3 @@
+# Test if we disallow bsr to zero-extend (i.e. mask) a memory reference.
+0f bd c3
+49 89 14 07

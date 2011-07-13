@@ -2874,12 +2874,12 @@ Target: x86-64 bit mode
   --- bc ---
   0f bc                       386 OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Bsf $Gv, $Ev
-      G_Operand               OpSet OpDest OperandZeroExtends_v
+      G_Operand               OpSet OpDest
       E_Operand               OpUse
   --- bd ---
   0f bd                       386 OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Bsr $Gv, $Ev
-      G_Operand               OpSet OpDest OperandZeroExtends_v
+      G_Operand               OpSet OpDest
       E_Operand               OpUse
   --- be ---
   0f be                       386 OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o

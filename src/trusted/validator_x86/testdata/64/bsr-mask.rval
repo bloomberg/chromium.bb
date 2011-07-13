@@ -1,0 +1,5 @@
+VALIDATOR: 0000000000000003: 49 89 14 07                                  mov [%r15+%rax*1], %rdx
+VALIDATOR: ERROR: Invalid index register in memory offset
+VALIDATOR: Checking jump targets: 0 to 7
+VALIDATOR: Checking that basic blocks are aligned
+***MODULE IS UNSAFE***
