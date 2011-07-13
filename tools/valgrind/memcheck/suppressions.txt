@@ -4846,6 +4846,14 @@
    fun:_ZN12invalidation22InvalidationClientImpl5StartEv
    fun:_ZN13sync_notifier24ChromeInvalidationClient5StartERKSsS2_S2_PNS0_8ListenerEPNS_11StateWriterEN4base7WeakPtrIN9talk_base4TaskEEE
 }
+{
+   bug_89144
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN18AppLauncherHandler17FillAppDictionaryEPN4base15DictionaryValueE
+   fun:_ZN18AppLauncherHandler13HandleGetAppsEPKN4base9ListValueE
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
