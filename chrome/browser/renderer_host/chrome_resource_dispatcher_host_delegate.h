@@ -37,14 +37,18 @@ class ChromeResourceDispatcherHostDelegate
       const ResourceHostMsg_Request& request_data,
       const content::ResourceContext& resource_context,
       const GURL& referrer) OVERRIDE;
-  virtual ResourceHandler* RequestBeginning(ResourceHandler* handler,
-                                            net::URLRequest* request,
-                                            bool is_subresource,
-                                            int child_id,
-                                            int route_id) OVERRIDE;
-  virtual ResourceHandler* DownloadStarting(ResourceHandler* handler,
-                                            int child_id,
-                                            int route_id) OVERRIDE;
+  virtual ResourceHandler* RequestBeginning(
+      ResourceHandler* handler,
+      net::URLRequest* request,
+      const content::ResourceContext& resource_context,
+      bool is_subresource,
+      int child_id,
+      int route_id) OVERRIDE;
+  virtual ResourceHandler* DownloadStarting(
+      ResourceHandler* handler,
+      const content::ResourceContext& resource_context,
+      int child_id,
+      int route_id) OVERRIDE;
   virtual bool ShouldDeferStart(
       net::URLRequest* request,
       const content::ResourceContext& resource_context) OVERRIDE;

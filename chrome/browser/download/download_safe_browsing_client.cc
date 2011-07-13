@@ -23,10 +23,12 @@
 
 DownloadSBClient::DownloadSBClient(int32 download_id,
                                    const std::vector<GURL>& url_chain,
-                                   const GURL& referrer_url)
+                                   const GURL& referrer_url,
+                                   bool safe_browsing_enabled)
   : download_id_(download_id),
     url_chain_(url_chain),
-    referrer_url_(referrer_url) {
+    referrer_url_(referrer_url),
+    safe_browsing_enabled_(safe_browsing_enabled) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!url_chain.empty());
   ResourceDispatcherHost* rdh = g_browser_process->resource_dispatcher_host();
@@ -73,7 +75,8 @@ void DownloadSBClient::CheckDownloadUrlOnIOThread(
 
   // Will be released in OnDownloadUrlCheckResult.
   AddRef();
-  if (sb_service_.get() && !sb_service_->CheckDownloadUrl(url_chain, this)) {
+  if (safe_browsing_enabled_ && sb_service_.get() &&
+      !sb_service_->CheckDownloadUrl(url_chain, this)) {
     // Wait for SafeBrowsingService to call back OnDownloadUrlCheckResult.
     return;
   }
@@ -97,7 +100,8 @@ void DownloadSBClient::CheckDownloadHashOnIOThread(const std::string& hash) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // Will be released in OnDownloadUrlCheckResult.
   AddRef();
-  if (sb_service_.get() && !sb_service_->CheckDownloadHash(hash, this)) {
+  if (safe_browsing_enabled_ && sb_service_.get() &&
+      !sb_service_->CheckDownloadHash(hash, this)) {
     // Wait for SafeBrowsingService to call back OnDownloadUrlCheckResult.
     return;
   }

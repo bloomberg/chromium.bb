@@ -9,6 +9,7 @@
 #include "chrome/browser/autocomplete_history_manager.h"
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/automation/automation_tab_helper.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
@@ -75,6 +76,9 @@ const char* kPrefsToObserve[] = {
   prefs::kDefaultCharset,
   prefs::kDefaultZoomLevel,
   prefs::kEnableReferrers,
+#if defined (ENABLE_SAFE_BROWSING)
+  prefs::kSafeBrowsingEnabled,
+#endif
   prefs::kWebKitAllowDisplayingInsecureContent,
   prefs::kWebKitAllowRunningInsecureContent,
   prefs::kWebKitDefaultFixedFontSize,
@@ -128,8 +132,11 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   password_manager_.reset(
       new PasswordManager(contents, password_manager_delegate_.get()));
 #if defined(ENABLE_SAFE_BROWSING)
-  safebrowsing_detection_host_.reset(
-      safe_browsing::ClientSideDetectionHost::Create(contents));
+  if (profile()->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled) &&
+      g_browser_process->safe_browsing_detection_service()) {
+    safebrowsing_detection_host_.reset(
+        safe_browsing::ClientSideDetectionHost::Create(contents));
+  }
 #endif
   search_engine_tab_helper_.reset(new SearchEngineTabHelper(contents));
   ssl_helper_.reset(new TabContentsSSLHelper(this));
@@ -458,6 +465,8 @@ void TabContentsWrapper::Observe(int type,
             routing_id(), tab_contents()->GetZoomLevel()));
       } else if (*pref_name_in == prefs::kEnableReferrers) {
         UpdateRendererPreferences();
+      } else if (*pref_name_in == prefs::kSafeBrowsingEnabled) {
+        UpdateSafebrowsingDetectionHost();
       } else {
         NOTREACHED() << "unexpected pref change notification" << *pref_name_in;
       }
@@ -629,6 +638,22 @@ void TabContentsWrapper::UpdateRendererPreferences() {
   renderer_preferences_util::UpdateFromSystemSettings(
       tab_contents()->GetMutableRendererPrefs(), profile());
   render_view_host()->SyncRendererPrefs();
+}
+
+void TabContentsWrapper::UpdateSafebrowsingDetectionHost() {
+  PrefService* prefs = profile()->GetPrefs();
+  bool safe_browsing = prefs->GetBoolean(prefs::kSafeBrowsingEnabled);
+  if (safe_browsing &&
+      g_browser_process->safe_browsing_detection_service()) {
+    if (!safebrowsing_detection_host_.get()) {
+      safebrowsing_detection_host_.reset(
+          safe_browsing::ClientSideDetectionHost::Create(tab_contents()));
+    }
+  } else {
+    safebrowsing_detection_host_.reset();
+  }
+  render_view_host()->Send(
+      new ViewMsg_SetClientSidePhishingDetection(routing_id(), safe_browsing));
 }
 
 void TabContentsWrapper::RemoveInfoBarInternal(InfoBarDelegate* delegate,

@@ -545,4 +545,5 @@ void ProfileIOData::ShutdownOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   enable_referrers_.Destroy();
   clear_local_state_on_exit_.Destroy();
+  safe_browsing_enabled_.Destroy();
 }

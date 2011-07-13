@@ -12,6 +12,7 @@
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/sqlite_persistent_cookie_store.h"
+#include "chrome/browser/prefs/pref_member.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -131,6 +132,7 @@ ProfileImplIOData::Handle::GetIsolatedAppRequestContextGetter(
   if (iter != app_request_context_getter_map_.end())
     return iter->second;
 
+
   ChromeURLRequestContextGetter* context =
       ChromeURLRequestContextGetter::CreateOriginalForIsolatedApp(
           profile_, io_data_, app_id);
@@ -147,6 +149,11 @@ void ProfileImplIOData::Handle::LazyInitialize() const {
     io_data_->clear_local_state_on_exit()->Init(
         prefs::kClearSiteDataOnExit, profile_->GetPrefs(), NULL);
     io_data_->clear_local_state_on_exit()->MoveToThread(BrowserThread::IO);
+#if defined(ENABLE_SAFE_BROWSING)
+    io_data_->safe_browsing_enabled()->Init(prefs::kSafeBrowsingEnabled,
+        profile_->GetPrefs(), NULL);
+    io_data_->safe_browsing_enabled()->MoveToThread(BrowserThread::IO);
+#endif
     initialized_ = true;
   }
 }

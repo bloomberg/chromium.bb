@@ -59,7 +59,7 @@ TEST_F(DownloadSBClientTest, UrlHit) {
   url_chain.push_back(GURL(kUrl3));
 
   scoped_refptr<DownloadSBClient> client(
-      new DownloadSBClient(1, url_chain, GURL(kRefUrl)));
+      new DownloadSBClient(1, url_chain, GURL(kRefUrl), true));
   client->SetSBService(sb_service.get());
 
   client->ReportMalware(SafeBrowsingService::BINARY_MALWARE_URL, "");
@@ -82,7 +82,7 @@ TEST_F(DownloadSBClientTest, DigestHit) {
   url_chain.push_back(GURL(kUrl3));
 
   scoped_refptr<DownloadSBClient> client(
-      new DownloadSBClient(1, url_chain, GURL(kRefUrl)));
+      new DownloadSBClient(1, url_chain, GURL(kRefUrl), true));
   client->SetSBService(sb_service.get());
 
   client->ReportMalware(SafeBrowsingService::BINARY_MALWARE_HASH, hash_data);

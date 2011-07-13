@@ -21,6 +21,7 @@ bool ResourceDispatcherHostDelegate::ShouldBeginRequest(
 ResourceHandler* ResourceDispatcherHostDelegate::RequestBeginning(
     ResourceHandler* handler,
     net::URLRequest* request,
+    const content::ResourceContext& resource_context,
     bool is_subresource,
     int child_id,
     int route_id) {
@@ -29,6 +30,7 @@ ResourceHandler* ResourceDispatcherHostDelegate::RequestBeginning(
 
 ResourceHandler* ResourceDispatcherHostDelegate::DownloadStarting(
     ResourceHandler* handler,
+    const content::ResourceContext& resource_context,
     int child_id,
     int route_id) {
   return handler;

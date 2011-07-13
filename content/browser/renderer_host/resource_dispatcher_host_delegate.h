@@ -42,17 +42,21 @@ class ResourceDispatcherHostDelegate {
   // content layer have been added.  To add new handlers to the front, return
   // a new handler that is chained to the given one, otherwise just reutrn the
   // given handler.
-  virtual ResourceHandler* RequestBeginning(ResourceHandler* handler,
-                                            net::URLRequest* request,
-                                            bool is_subresource,
-                                            int child_id,
-                                            int route_id);
+  virtual ResourceHandler* RequestBeginning(
+      ResourceHandler* handler,
+      net::URLRequest* request,
+      const content::ResourceContext& resource_context,
+      bool is_subresource,
+      int child_id,
+      int route_id);
 
   // Called when a download is starting, after the resource handles from the
   // content layer have been added.
-  virtual ResourceHandler* DownloadStarting(ResourceHandler* handler,
-                                            int child_id,
-                                            int route_id);
+  virtual ResourceHandler* DownloadStarting(
+      ResourceHandler* handler,
+      const content::ResourceContext& resource_context,
+      int child_id,
+      int route_id);
 
   // Called to determine whether a request's start should be deferred. This
   // is only called if the ResourceHandler associated with the request does

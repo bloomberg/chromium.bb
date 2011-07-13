@@ -20,6 +20,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -145,8 +146,9 @@ void DownloadFileManager::StartDownload(DownloadCreateInfo* info) {
   manager->CreateDownloadItem(info);
 
 #if defined(ENABLE_SAFE_BROWSING)
-  bool hash_needed = g_browser_process->safe_browsing_service()->
-      DownloadBinHashNeeded();
+  bool hash_needed = manager->profile()->GetPrefs()->GetBoolean(
+      prefs::kSafeBrowsingEnabled) &&
+          g_browser_process->safe_browsing_service()->DownloadBinHashNeeded();
 #else
   bool hash_needed = false;
 #endif

@@ -938,6 +938,8 @@ void BrowserProcessImpl::CreateBackgroundPrintingManager() {
 
 void BrowserProcessImpl::CreateSafeBrowsingService() {
   DCHECK(safe_browsing_service_.get() == NULL);
+  // Set this flag to true so that we don't retry indefinitely to
+  // create the service class if there was an error.
   created_safe_browsing_service_ = true;
 #if defined(ENABLE_SAFE_BROWSING)
   safe_browsing_service_ = SafeBrowsingService::CreateSafeBrowsingService();
@@ -953,14 +955,11 @@ void BrowserProcessImpl::CreateSafeBrowsingDetectionService() {
 
 #if defined(ENABLE_SAFE_BROWSING)
   FilePath model_file_dir;
-  Profile* profile = profile_manager() ?
-    profile_manager()->GetDefaultProfile() : NULL;
   if (IsSafeBrowsingDetectionServiceEnabled() &&
-      PathService::Get(chrome::DIR_USER_DATA, &model_file_dir) &&
-      profile && profile->GetRequestContext()) {
+      PathService::Get(chrome::DIR_USER_DATA, &model_file_dir)) {
     safe_browsing_detection_service_.reset(
         safe_browsing::ClientSideDetectionService::Create(
-            model_file_dir, profile->GetRequestContext()));
+            model_file_dir, g_browser_process->system_request_context()));
   }
 #endif
 }

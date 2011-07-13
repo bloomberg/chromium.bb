@@ -158,13 +158,12 @@ ChromeRenderViewObserver::ChromeRenderViewObserver(
     RenderView* render_view,
     ContentSettingsObserver* content_settings,
     ExtensionDispatcher* extension_dispatcher,
-    TranslateHelper* translate_helper,
-    safe_browsing::PhishingClassifierDelegate* phishing_classifier)
+    TranslateHelper* translate_helper)
     : RenderViewObserver(render_view),
       content_settings_(content_settings),
       extension_dispatcher_(extension_dispatcher),
       translate_helper_(translate_helper),
-      phishing_classifier_(phishing_classifier),
+      phishing_classifier_(NULL),
       last_indexed_page_id_(-1),
       allow_displaying_insecure_content_(false),
       allow_running_insecure_content_(false),
@@ -176,6 +175,8 @@ ChromeRenderViewObserver::ChromeRenderViewObserver(
         old_bindings |= BindingsPolicy::DOM_AUTOMATION);
   }
   render_view->webview()->setPermissionClient(this);
+  if (!command_line.HasSwitch(switches::kDisableClientSidePhishingDetection))
+    OnSetClientSidePhishingDetection(true);
 }
 
 ChromeRenderViewObserver::~ChromeRenderViewObserver() {
@@ -200,6 +201,8 @@ bool ChromeRenderViewObserver::OnMessageReceived(const IPC::Message& message) {
                         OnSetAllowDisplayingInsecureContent)
     IPC_MESSAGE_HANDLER(ViewMsg_SetAllowRunningInsecureContent,
                         OnSetAllowRunningInsecureContent)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetClientSidePhishingDetection,
+                        OnSetClientSidePhishingDetection)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -337,6 +340,16 @@ void ChromeRenderViewObserver::OnSetAllowDisplayingInsecureContent(bool allow) {
 void ChromeRenderViewObserver::OnSetAllowRunningInsecureContent(bool allow) {
   allow_running_insecure_content_ = allow;
   OnSetAllowDisplayingInsecureContent(allow);
+}
+
+void ChromeRenderViewObserver::OnSetClientSidePhishingDetection(
+    bool enable_phishing_detection) {
+#if !defined(OS_CHROMEOS) || !defined(ENABLE_SAFE_BROWSING)
+  phishing_classifier_ = enable_phishing_detection ?
+      safe_browsing::PhishingClassifierDelegate::Create(
+          render_view(), NULL) :
+      NULL;
+#endif
 }
 
 void ChromeRenderViewObserver::didSerializeDataForFrame(

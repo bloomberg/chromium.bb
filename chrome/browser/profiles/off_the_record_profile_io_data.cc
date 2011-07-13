@@ -13,6 +13,7 @@
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/resource_context.h"
@@ -108,6 +109,11 @@ void OffTheRecordProfileIOData::Handle::LazyInitialize() const {
     io_data_->InitializeProfileParams(profile_);
     ChromeNetworkDelegate::InitializeReferrersEnabled(
         io_data_->enable_referrers(), profile_->GetPrefs());
+#if defined(ENABLE_SAFE_BROWSING)
+    io_data_->safe_browsing_enabled()->Init(prefs::kSafeBrowsingEnabled,
+        profile_->GetPrefs(), NULL);
+    io_data_->safe_browsing_enabled()->MoveToThread(BrowserThread::IO);
+#endif
     initialized_ = true;
   }
 }

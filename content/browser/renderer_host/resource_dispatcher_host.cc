@@ -493,8 +493,8 @@ void ResourceDispatcherHost::BeginRequest(
 
   if (delegate_) {
     bool sub = request_data.resource_type != ResourceType::MAIN_FRAME;
-    handler = delegate_->RequestBeginning(
-        handler, request, sub, child_id, route_id);
+    handler = delegate_->RequestBeginning(handler, request, resource_context,
+                                          sub, child_id, route_id);
   }
 
   // Make extra info and read footer (contains request ID).
@@ -710,8 +710,10 @@ void ResourceDispatcherHost::BeginDownload(
                                   prompt_for_save_location,
                                   save_info));
 
-  if (delegate_)
-    handler = delegate_->DownloadStarting(handler, child_id, route_id);
+  if (delegate_) {
+    handler = delegate_->DownloadStarting(handler, context, child_id,
+                                          route_id);
+  }
 
   const net::URLRequestContext* request_context = context.request_context();
 

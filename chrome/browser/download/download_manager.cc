@@ -37,6 +37,7 @@
 #include "chrome/browser/ui/download/download_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -270,7 +271,8 @@ void DownloadManager::StartDownload(int32 download_id) {
   // Create a client to verify download URL with safebrowsing.
   // It deletes itself after the callback.
   scoped_refptr<DownloadSBClient> sb_client = new DownloadSBClient(
-      download_id, download->url_chain(), download->referrer_url());
+      download_id, download->url_chain(), download->referrer_url(),
+          profile_->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled));
   sb_client->CheckDownloadUrl(
       NewCallback(this, &DownloadManager::CheckDownloadUrlDone));
 #else
@@ -673,7 +675,9 @@ void DownloadManager::OnAllDataSaved(int32 download_id,
     scoped_refptr<DownloadSBClient> sb_client =
         new DownloadSBClient(download_id,
                              download->url_chain(),
-                             download->referrer_url());
+                             download->referrer_url(),
+                             profile_->GetPrefs()->GetBoolean(
+                                 prefs::kSafeBrowsingEnabled));
     sb_client->CheckDownloadHash(
         hash, NewCallback(this, &DownloadManager::CheckDownloadHashDone));
 #else

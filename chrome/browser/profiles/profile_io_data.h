@@ -106,6 +106,10 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
     return weak_extensions_request_context_.get();
   }
 
+  BooleanPrefMember* safe_browsing_enabled() const {
+    return &safe_browsing_enabled_;
+  }
+
  protected:
   friend class base::RefCountedThreadSafe<ProfileIOData>;
 
@@ -267,6 +271,7 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
   // Member variables which are pointed to by the various context objects.
   mutable BooleanPrefMember enable_referrers_;
   mutable BooleanPrefMember clear_local_state_on_exit_;
+  mutable BooleanPrefMember safe_browsing_enabled_;
 
   // Pointed to by URLRequestContext.
   mutable scoped_ptr<ChromeURLDataManagerBackend>

@@ -149,7 +149,8 @@ class ClientSideDetectionHostTest : public TabContentsWrapperTestHarness {
     // Inject service classes.
     csd_service_.reset(new StrictMock<MockClientSideDetectionService>());
     sb_service_ = new StrictMock<MockSafeBrowsingService>();
-    csd_host_ = contents_wrapper()->safebrowsing_detection_host();
+    csd_host_.reset(safe_browsing::ClientSideDetectionHost::Create(
+        contents_wrapper()->tab_contents()));
     csd_host_->set_client_side_detection_service(csd_service_.get());
     csd_host_->set_safe_browsing_service(sb_service_.get());
   }
@@ -225,7 +226,7 @@ class ClientSideDetectionHostTest : public TabContentsWrapperTestHarness {
   }
 
  protected:
-  ClientSideDetectionHost* csd_host_;
+  scoped_ptr<ClientSideDetectionHost> csd_host_;
   scoped_ptr<StrictMock<MockClientSideDetectionService> > csd_service_;
   scoped_refptr<StrictMock<MockSafeBrowsingService> > sb_service_;
   MockTestingProfile* mock_profile_;  // We don't own this object

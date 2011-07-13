@@ -14,7 +14,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/malware_details.h"
 #include "chrome/browser/safe_browsing/protocol_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
@@ -53,14 +53,6 @@ const int64 kDownloadUrlCheckTimeoutMs = 10000;
 
 // Similar to kDownloadUrlCheckTimeoutMs, but for download hash checks.
 const int64 kDownloadHashCheckTimeoutMs = 10000;
-
-// TODO(lzheng): Replace this with Profile* ProfileManager::GetDefaultProfile().
-Profile* GetDefaultProfile() {
-  FilePath user_data_dir;
-  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  return profile_manager->GetDefaultProfile(user_data_dir);
-}
 
 // Records disposition information about the check.  |hit| should be
 // |true| if there were any prefix hits in |full_hashes|.
@@ -172,10 +164,11 @@ SafeBrowsingService::SafeBrowsingService()
 }
 
 void SafeBrowsingService::Initialize() {
-  // Get the profile's preference for SafeBrowsing.
-  PrefService* pref_service = GetDefaultProfile()->GetPrefs();
-  if (pref_service->GetBoolean(prefs::kSafeBrowsingEnabled))
-    Start();
+  // Always initialize the safe browsing service. Each profile will decide
+  // whether to use it based on per-user preferences. TODO(mirandac): in
+  // follow-up CL, only initialize if a profile is launched for which safe
+  // browsing is enabled. see http://crbug.com/88661
+  Start();
 }
 
 void SafeBrowsingService::ShutDown() {
@@ -190,13 +183,11 @@ bool SafeBrowsingService::CanCheckUrl(const GURL& url) const {
          url.SchemeIs(chrome::kHttpsScheme);
 }
 
-// Only report SafeBrowsing related stats when UMA is enabled and
-// safe browsing is enabled.
+// Only report SafeBrowsing related stats when UMA is enabled. User must also
+// ensure that safe browsing is enabled from the calling profile.
 bool SafeBrowsingService::CanReportStats() const {
   const MetricsService* metrics = g_browser_process->metrics_service();
-  const PrefService* pref_service = GetDefaultProfile()->GetPrefs();
-  return metrics && metrics->reporting_active() &&
-      pref_service && pref_service->GetBoolean(prefs::kSafeBrowsingEnabled);
+  return metrics && metrics->reporting_active();
 }
 
 // Binhash verification is only enabled for UMA users for now.
@@ -861,9 +852,9 @@ void SafeBrowsingService::Start() {
       local_state->GetString(prefs::kSafeBrowsingWrappedKey);
   }
 
-  // We will issue network fetches using the default profile's request context.
+  // We will issue network fetches using the system request context.
   scoped_refptr<net::URLRequestContextGetter> request_context_getter(
-      GetDefaultProfile()->GetRequestContext());
+    g_browser_process->system_request_context());
 
   CommandLine* cmdline = CommandLine::ForCurrentProcess();
   enable_download_protection_ =
@@ -988,13 +979,13 @@ void SafeBrowsingService::DoDisplayBlockingPage(
   }
 
   // The tab might have been closed.
-  TabContents* wc =
+  TabContents* tab_contents =
       tab_util::GetTabContentsByID(resource.render_process_host_id,
                                    resource.render_view_id);
 
-  if (!wc) {
+  if (!tab_contents) {
     // The tab is gone and we did not have a chance at showing the interstitial.
-    // Just act as "Don't Proceed" was chosen.
+    // Just act as if "Don't Proceed" were chosen.
     std::vector<UnsafeResource> resources;
     resources.push_back(resource);
     BrowserThread::PostTask(
@@ -1004,10 +995,11 @@ void SafeBrowsingService::DoDisplayBlockingPage(
     return;
   }
 
-  if (resource.threat_type != SafeBrowsingService::SAFE && CanReportStats()) {
-    GURL page_url = wc->GetURL();
+  if (resource.threat_type != SafeBrowsingService::SAFE &&
+      CanReportStats()) {
+    GURL page_url = tab_contents->GetURL();
     GURL referrer_url;
-    NavigationEntry* entry = wc->controller().GetActiveEntry();
+    NavigationEntry* entry = tab_contents->controller().GetActiveEntry();
     if (entry)
       referrer_url = entry->referrer();
 

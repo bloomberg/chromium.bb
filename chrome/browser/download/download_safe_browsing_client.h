@@ -35,9 +35,10 @@ class DownloadSBClient
 
   DownloadSBClient(int32 download_id,
                    const std::vector<GURL>& url_chain,
-                   const GURL& referrer_url);
+                   const GURL& referrer_url,
+                   bool safe_browsing_enabled);
 
-  // Call safebrowsing service to verifiy the download.
+  // Call safebrowsing service to verify the download.
   // For each DownloadSBClient instance, either CheckDownloadUrl or
   // CheckDownloadHash can be called, and be called only once.
   // DownloadSBClient instance.
@@ -109,6 +110,10 @@ class DownloadSBClient
 
   // When a safebrowsing check starts, for stats purpose.
   base::TimeTicks start_time_;
+
+  // Whether the profile from which this client was created has enabled the
+  // safe browsing service.
+  bool safe_browsing_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadSBClient);
 };

@@ -276,6 +276,10 @@ IPC_MESSAGE_ROUTED1(ViewMsg_SetAllowDisplayingInsecureContent,
 IPC_MESSAGE_ROUTED1(ViewMsg_SetAllowRunningInsecureContent,
                     bool /* allowed */)
 
+// Sent when the profile changes the kSafeBrowsingEnabled preference.
+IPC_MESSAGE_ROUTED1(ViewMsg_SetClientSidePhishingDetection,
+                    bool /* enable_phishing_detection */)
+
 // Instructs the renderer to save the current page to MHTML.
 IPC_MESSAGE_ROUTED2(ViewMsg_SavePageAsMHTML,
                     int /* job_id */,

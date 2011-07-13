@@ -259,6 +259,10 @@ class TabContentsWrapper : public TabContentsObserver,
   // Update the TabContents's RendererPreferences.
   void UpdateRendererPreferences();
 
+  // Create or destroy SafebrowsingDetectionHost as needed if the user's
+  // safe browsing preference has changed.
+  void UpdateSafebrowsingDetectionHost();
+
   void RemoveInfoBarInternal(InfoBarDelegate* delegate, bool animate);
   void RemoveAllInfoBars(bool animate);
 

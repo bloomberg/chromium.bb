@@ -112,6 +112,7 @@ bool ChromeResourceDispatcherHostDelegate::ShouldBeginRequest(
 ResourceHandler* ChromeResourceDispatcherHostDelegate::RequestBeginning(
     ResourceHandler* handler,
     net::URLRequest* request,
+    const content::ResourceContext& resource_context,
     bool is_subresource,
     int child_id,
     int route_id) {
@@ -121,7 +122,9 @@ ResourceHandler* ChromeResourceDispatcherHostDelegate::RequestBeginning(
 #if defined(ENABLE_SAFE_BROWSING)
   // Insert safe browsing at the front of the chain, so it gets to decide
   // on policies first.
-  if (safe_browsing_->enabled()) {
+  ProfileIOData* io_data = reinterpret_cast<ProfileIOData*>(
+      resource_context.GetUserData(NULL));
+  if (io_data->safe_browsing_enabled()->GetValue()) {
     handler = CreateSafeBrowsingResourceHandler(
         handler, child_id, route_id, is_subresource);
   }
@@ -138,10 +141,13 @@ ResourceHandler* ChromeResourceDispatcherHostDelegate::RequestBeginning(
 
 ResourceHandler* ChromeResourceDispatcherHostDelegate::DownloadStarting(
     ResourceHandler* handler,
+    const content::ResourceContext& resource_context,
     int child_id,
     int route_id) {
 #if defined(ENABLE_SAFE_BROWSING)
-  if (!safe_browsing_->enabled())
+  ProfileIOData* io_data = reinterpret_cast<ProfileIOData*>(
+      resource_context.GetUserData(NULL));
+  if (!io_data->safe_browsing_enabled()->GetValue())
     return handler;
 
   return CreateSafeBrowsingResourceHandler(handler, child_id, route_id, false);

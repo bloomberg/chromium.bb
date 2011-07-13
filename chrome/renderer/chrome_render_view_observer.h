@@ -41,13 +41,12 @@ class ChromeRenderViewObserver : public RenderViewObserver,
                                  public WebKit::WebPageSerializerClient,
                                  public WebKit::WebPermissionClient {
  public:
-  // translate_helper and/or phishing_classifier can be NULL.
+  // translate_helper can be NULL.
   ChromeRenderViewObserver(
       RenderView* render_view,
       ContentSettingsObserver* content_settings,
       ExtensionDispatcher* extension_dispatcher,
-      TranslateHelper* translate_helper,
-      safe_browsing::PhishingClassifierDelegate* phishing_classifier);
+      TranslateHelper* translate_helper);
   virtual ~ChromeRenderViewObserver();
 
  private:
@@ -118,6 +117,7 @@ class ChromeRenderViewObserver : public RenderViewObserver,
   void OnSetIsPrerendering(bool is_prerendering);
   void OnSetAllowDisplayingInsecureContent(bool allow);
   void OnSetAllowRunningInsecureContent(bool allow);
+  void OnSetClientSidePhishingDetection(bool enable_phishing_detection);
 
   // Captures the thumbnail and text contents for indexing for the given load
   // ID. If the view's load ID is different than the parameter, this call is

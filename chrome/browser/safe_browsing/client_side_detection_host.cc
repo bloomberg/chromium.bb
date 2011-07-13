@@ -12,11 +12,13 @@
 #include "base/metrics/histogram.h"
 #include "base/task.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/browser_feature_extractor.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/common/safe_browsing/safebrowsing_messages.h"
 #include "content/browser/browser_thread.h"
@@ -266,15 +268,13 @@ ClientSideDetectionHost* ClientSideDetectionHost::Create(
 
 ClientSideDetectionHost::ClientSideDetectionHost(TabContents* tab)
     : TabContentsObserver(tab),
-      csd_service_(g_browser_process->safe_browsing_detection_service()),
-      feature_extractor_(
-          new BrowserFeatureExtractor(
-              tab,
-              g_browser_process->safe_browsing_detection_service())),
+      csd_service_(NULL),
       cb_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(tab);
-  // Note: csd_service_ and sb_service_ might be NULL.
+  csd_service_ = g_browser_process->safe_browsing_detection_service();
+  feature_extractor_.reset(new BrowserFeatureExtractor(tab, csd_service_));
   sb_service_ = g_browser_process->safe_browsing_service();
+  // Note: csd_service_ and sb_service_ will be NULL here in testing.
   registrar_.Add(this, content::NOTIFICATION_RESOURCE_RESPONSE_STARTED,
                  Source<RenderViewHostDelegate>(tab));
 }

@@ -197,15 +197,6 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 }
 
 void ChromeContentRendererClient::RenderViewCreated(RenderView* render_view) {
-  safe_browsing::PhishingClassifierDelegate* phishing_classifier = NULL;
-#if defined(ENABLE_SAFE_BROWSING) && !defined(OS_CHROMEOS)
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableClientSidePhishingDetection)) {
-    phishing_classifier =
-        safe_browsing::PhishingClassifierDelegate::Create(render_view, NULL);
-  }
-#endif
-
   ContentSettingsObserver* content_settings =
       new ContentSettingsObserver(render_view);
   new DevToolsAgent(render_view);
@@ -236,8 +227,7 @@ void ChromeContentRendererClient::RenderViewCreated(RenderView* render_view) {
 
   TranslateHelper* translate = new TranslateHelper(render_view, autofill_agent);
   new ChromeRenderViewObserver(
-      render_view, content_settings, extension_dispatcher_.get(),
-      translate, phishing_classifier);
+      render_view, content_settings, extension_dispatcher_.get(), translate);
 
   // Used only for testing/automation.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
