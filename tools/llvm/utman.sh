@@ -216,9 +216,17 @@ readonly NEWLIB_REV=9bef47f82918
 readonly BINUTILS_REV=c02b0252b557
 readonly COMPILER_RT_REV=1a3a6ffb31ea
 readonly GOOGLE_PERFTOOLS_REV=867799d6e777
+
+# Update these revs when you want to experiment with rebasing to a newer
+# version of llvm and llvm-gcc
 # Mercurial Queues Repos for Merges
-readonly LLVM_MQ_REV=2b2a4c101299
-readonly LLVM_GCC_MQ_REV=00eb50705e47
+# todo(jasonwkim): figure out why hg tag can not be pushed!
+readonly LLVM_MQ_REV=2b2a4c101299      ## patches for svn124151
+readonly LLVM_GCC_MQ_REV=00eb50705e47  ## patches for svn124444
+# Vendor Revs of llvm and llvm-gcc to which the qeues apply
+readonly LLVM_QPARENT_REV=4ca8cbf6756b      # svn124151
+readonly LLVM_GCC_QPARENT_REV=b5bd5728d7a2  # svn124444
+
 
 # Repositories
 readonly REPO_LLVM_GCC="llvm-gcc.nacl-llvm-branches"
@@ -683,13 +691,20 @@ everything() {
 
   mkdir -p "${PNACL_ROOT}"
 
+  hg-checkout-all
+  hg-update-all
+
+  everything-post-hg
+}
+
+# this does everything except for hg setup
+everything-post-hg() {
+
+  mkdir -p "${PNACL_ROOT}"
   # This is needed to build misc-tools and run ARM tests.
   # We check this early so that there are no surprises later, and we can
   # handle all user interaction early.
   check-for-trusted
-
-  hg-checkout-all
-  hg-update-all
 
   clean-install
 
@@ -705,9 +720,9 @@ everything() {
   # NOTE: we delay the tool building till after the sdk is essentially
   #      complete, so that sdk sanity checks don't fail
   misc-tools
-
   verify
 }
+
 
 glibc() {
   StepBanner "GLIBC" "Copying glibc from NNaCl toolchain"
@@ -3121,6 +3136,64 @@ verify-triple-build() {
     exit -1
   fi
   StepBanner "VERIFY" "Verified ${arch} OK"
+}
+
+######################################################################
+######################################################################
+#
+# Hg MQ Magic
+#
+######################################################################
+######################################################################
+readonly GOOD_HG_VERSION="1.8.";
+check-hg-vers() {
+  local vers=$(hg --version | grep version |
+      sed -e 's/.*version \([0-9A-Za-z._-]*\).*/\1/g');
+  if ! echo "${vers}" | grep -q "${GOOD_HG_VERSION}"; then
+     StepBanner "You are using hg version ${vers}, but you need at least " \
+         "${GOOD_HG_VERSION}. Expect things to be strange."
+  else
+     StepBanner "You are using hg version ${vers}";
+  fi;
+}
+
+setup-hg-mq() {
+  check-hg-vers
+  if [ -e "${TC_SRC_LLVM}/.hg/patches" ]; then
+    StepBanner "Popping off existing patches in LLVM"
+    (cd "${TC_SRC_LLVM}"; hg qpop -a );
+  fi;
+
+  if [ -e "${TC_SRC_LLVM_GCC}/.hg/patches" ]; then
+    StepBanner "Popping off existing patches in LLVM"
+    (cd "${TC_SRC_LLVM_GCC}"; hg qpop -a );
+  fi;
+
+  StepBanner "Updating LLVM and LLVM-gcc to appropriate vendor branch"
+  hg-checkout ${REPO_LLVM_GCC} ${TC_SRC_LLVM_GCC} ${LLVM_GCC_QPARENT_REV}
+  hg-checkout ${REPO_LLVM}     ${TC_SRC_LLVM}     ${LLVM_QPARENT_REV}
+  hg-checkout-llvm-mq-patches
+  hg-checkout-llvm-gcc-mq-patches
+
+  StepBanner "Forcing symlink to appropriate queue "
+  ln -sf "${TC_SRC_LLVM_MQ_PATCHES}" "${TC_SRC_LLVM}/.hg/patches"
+  ln -sf "${TC_SRC_LLVM_GCC_MQ_PATCHES}" "${TC_SRC_LLVM_GCC}/.hg/patches"
+
+  StepBanner "Pushing the patch queues onto the vendor branches"
+  (cd "${TC_SRC_LLVM}"; hg qpush -a)
+  (cd "${TC_SRC_LLVM_GCC}"; hg qpush -a)
+
+  StepBanner "Patch Queues have been applied against vendor"
+  StepBanner "Cleaning the llvm and llvm-gcc build directories"
+  llvm-clean
+  llvm-gcc-clean
+  StepBanner "You may now execute utman.sh everything-post-hg"
+}
+
+everything-mq() {
+  setup-hg-mq
+
+  everything-post-hg
 }
 
 ######################################################################
