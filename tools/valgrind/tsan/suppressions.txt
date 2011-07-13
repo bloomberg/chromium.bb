@@ -560,6 +560,19 @@
   fun:ProcessSingleton::LinuxWatcher::SocketReader::FinishWithACK
   fun:ProcessSingleton::LinuxWatcher::HandleMessage
 }
+{
+  bug_89141_a
+  ThreadSanitizer:Race
+  fun:base::Thread::message_loop
+  fun:BrowserThread::IsMessageLoopValid
+  fun:ThreadWatcherList::StartWatching
+  fun:ThreadWatcherList::InitializeAndStartWatching
+}
+{
+  bug_89141_b
+  fun::base::Thread::ThreadMain
+  fun::base::::ThreadFunc
+}
 
 ############################
 # TSan false positives
