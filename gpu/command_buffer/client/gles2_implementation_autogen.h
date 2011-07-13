@@ -11,10 +11,7 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_AUTOGEN_H_
 
-void ActiveTexture(GLenum texture) {
-  GPU_CLIENT_LOG("[" << this << "] glActiveTexture(" << GLES2Util::GetStringEnum(texture) << ")");  // NOLINT
-  helper_->ActiveTexture(texture);
-}
+void ActiveTexture(GLenum texture);
 
 void AttachShader(GLuint program, GLuint shader) {
   GPU_CLIENT_LOG("[" << this << "] glAttachShader(" << program << ", " << shader << ")");  // NOLINT
@@ -23,6 +20,16 @@ void AttachShader(GLuint program, GLuint shader) {
 
 void BindAttribLocation(GLuint program, GLuint index, const char* name);
 
+void BindBuffer(GLenum target, GLuint buffer) {
+  GPU_CLIENT_LOG("[" << this << "] glBindBuffer(" << GLES2Util::GetStringBufferTarget(target) << ", " << buffer << ")");  // NOLINT
+  if (IsBufferReservedId(buffer)) {
+    SetGLError(GL_INVALID_OPERATION, "BindBuffer: buffer reserved id");
+    return;
+  }
+  BindBufferHelper(target, buffer);
+  helper_->BindBuffer(target, buffer);
+}
+
 void BindFramebuffer(GLenum target, GLuint framebuffer) {
   GPU_CLIENT_LOG("[" << this << "] glBindFramebuffer(" << GLES2Util::GetStringFrameBufferTarget(target) << ", " << framebuffer << ")");  // NOLINT
   if (IsFramebufferReservedId(framebuffer)) {
@@ -30,7 +37,7 @@ void BindFramebuffer(GLenum target, GLuint framebuffer) {
         GL_INVALID_OPERATION, "BindFramebuffer: framebuffer reserved id");
     return;
   }
-  framebuffer_id_handler_->MarkAsUsedForBind(framebuffer);
+  BindFramebufferHelper(target, framebuffer);
   helper_->BindFramebuffer(target, framebuffer);
 }
 
@@ -41,7 +48,7 @@ void BindRenderbuffer(GLenum target, GLuint renderbuffer) {
         GL_INVALID_OPERATION, "BindRenderbuffer: renderbuffer reserved id");
     return;
   }
-  renderbuffer_id_handler_->MarkAsUsedForBind(renderbuffer);
+  BindRenderbufferHelper(target, renderbuffer);
   helper_->BindRenderbuffer(target, renderbuffer);
 }
 
@@ -51,7 +58,7 @@ void BindTexture(GLenum target, GLuint texture) {
     SetGLError(GL_INVALID_OPERATION, "BindTexture: texture reserved id");
     return;
   }
-  texture_id_handler_->MarkAsUsedForBind(texture);
+  BindTextureHelper(target, texture);
   helper_->BindTexture(target, texture);
 }
 
@@ -197,6 +204,26 @@ void CullFace(GLenum mode) {
   helper_->CullFace(mode);
 }
 
+void DeleteBuffers(GLsizei n, const GLuint* buffers) {
+  GPU_CLIENT_LOG("[" << this << "] glDeleteBuffers(" << n << ", " << static_cast<const void*>(buffers) << ")");  // NOLINT
+  GPU_CLIENT_LOG_CODE_BLOCK({
+    for (GLsizei i = 0; i < n; ++i) {
+      GPU_CLIENT_LOG("  " << i << ": " << buffers[i]);
+    }
+  });
+  GPU_CLIENT_DCHECK_CODE_BLOCK({
+    for (GLsizei i = 0; i < n; ++i) {
+      GPU_DCHECK(buffers[i] != 0);
+    }
+  });
+  if (n < 0) {
+    SetGLError(GL_INVALID_VALUE, "glDeleteBuffers: n < 0");
+    return;
+  }
+  DeleteBuffersHelper(n, buffers);
+  helper_->DeleteBuffersImmediate(n, buffers);
+}
+
 void DeleteFramebuffers(GLsizei n, const GLuint* framebuffers) {
   GPU_CLIENT_LOG("[" << this << "] glDeleteFramebuffers(" << n << ", " << static_cast<const void*>(framebuffers) << ")");  // NOLINT
   GPU_CLIENT_LOG_CODE_BLOCK({
@@ -213,7 +240,7 @@ void DeleteFramebuffers(GLsizei n, const GLuint* framebuffers) {
     SetGLError(GL_INVALID_VALUE, "glDeleteFramebuffers: n < 0");
     return;
   }
-  framebuffer_id_handler_->FreeIds(n, framebuffers);
+  DeleteFramebuffersHelper(n, framebuffers);
   helper_->DeleteFramebuffersImmediate(n, framebuffers);
 }
 
@@ -240,7 +267,7 @@ void DeleteRenderbuffers(GLsizei n, const GLuint* renderbuffers) {
     SetGLError(GL_INVALID_VALUE, "glDeleteRenderbuffers: n < 0");
     return;
   }
-  renderbuffer_id_handler_->FreeIds(n, renderbuffers);
+  DeleteRenderbuffersHelper(n, renderbuffers);
   helper_->DeleteRenderbuffersImmediate(n, renderbuffers);
 }
 
@@ -267,7 +294,7 @@ void DeleteTextures(GLsizei n, const GLuint* textures) {
     SetGLError(GL_INVALID_VALUE, "glDeleteTextures: n < 0");
     return;
   }
-  texture_id_handler_->FreeIds(n, textures);
+  DeleteTexturesHelper(n, textures);
   helper_->DeleteTexturesImmediate(n, textures);
 }
 

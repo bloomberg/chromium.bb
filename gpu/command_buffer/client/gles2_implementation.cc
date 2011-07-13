@@ -443,6 +443,9 @@ GLES2Implementation::GLES2Implementation(
       transfer_buffer_id_(transfer_buffer_id),
       pack_alignment_(4),
       unpack_alignment_(4),
+      active_texture_unit_(0),
+      bound_framebuffer_(0),
+      bound_renderbuffer_(0),
       bound_array_buffer_id_(0),
       bound_element_array_buffer_id_(0),
       client_side_array_id_(0),
@@ -504,6 +507,9 @@ GLES2Implementation::GLES2Implementation(
   GetMultipleIntegervCHROMIUM(
       pnames, arraysize(pnames), &gl_state_.max_combined_texture_image_units,
       sizeof(gl_state_));
+
+  texture_units_.reset(
+      new TextureUnit[gl_state_.max_combined_texture_image_units]);
 
 #if defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
   buffer_id_handler_->MakeIds(
@@ -691,6 +697,27 @@ bool GLES2Implementation::GetHelper(GLenum pname, GLint* params) {
       return true;
     case GL_NUM_SHADER_BINARY_FORMATS:
       *params = gl_state_.num_shader_binary_formats;
+      return true;
+    case GL_ARRAY_BUFFER_BINDING:
+      *params = bound_array_buffer_id_;
+      return true;
+    case GL_ELEMENT_ARRAY_BUFFER_BINDING:
+      *params = bound_element_array_buffer_id_;
+      return true;
+    case GL_ACTIVE_TEXTURE:
+      *params = active_texture_unit_ + GL_TEXTURE0;
+      return true;
+    case GL_TEXTURE_BINDING_2D:
+      *params = texture_units_[active_texture_unit_].bound_texture_2d;
+      return true;
+    case GL_TEXTURE_BINDING_CUBE_MAP:
+      *params = texture_units_[active_texture_unit_].bound_texture_cube_map;
+      return true;
+    case GL_FRAMEBUFFER_BINDING:
+      *params = bound_framebuffer_;
+      return true;
+    case GL_RENDERBUFFER_BINDING:
+      *params = bound_renderbuffer_;
       return true;
     default:
       return false;
@@ -1703,31 +1730,30 @@ void GLES2Implementation::ReadPixels(
   }
 }
 
-#if defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
-bool GLES2Implementation::IsBufferReservedId(GLuint id) {
-  for (size_t ii = 0; ii < arraysize(reserved_ids_); ++ii) {
-    if (id == reserved_ids_[ii]) {
-      return true;
-    }
-  }
-  return false;
-}
-#else
-bool GLES2Implementation::IsBufferReservedId(GLuint) {  // NOLINT
-  return false;
-}
-#endif
-
-void GLES2Implementation::BindBuffer(GLenum target, GLuint buffer) {
-  GPU_CLIENT_LOG("[" << this << "] glBindBuffer("
-      << GLES2Util::GetStringBufferTarget(target) << ", "
-      << buffer << ")");
-  if (IsBufferReservedId(buffer)) {
-    SetGLError(GL_INVALID_OPERATION, "glBindBuffer: reserved buffer id");
+void GLES2Implementation::ActiveTexture(GLenum texture) {
+  GPU_CLIENT_LOG("[" << this << "] glActiveTexture("
+      << GLES2Util::GetStringEnum(texture) << ")");
+  GLuint texture_index = texture - GL_TEXTURE0;
+  if (texture_index >=
+      static_cast<GLuint>(gl_state_.max_combined_texture_image_units)) {
+    SetGLError(GL_INVALID_ENUM, "glActiveTexture: texture_unit out of range.");
     return;
   }
-  buffer_id_handler_->MarkAsUsedForBind(buffer);
-#if defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
+
+  active_texture_unit_ = texture_index;
+  helper_->ActiveTexture(texture);
+}
+
+// NOTE #1: On old versions of OpenGL, calling glBindXXX with an unused id
+// generates a new resource. On newer versions of OpenGL they don't. The code
+// related to binding below will need to change if we switch to the new OpenGL
+// model. Specifically it assumes a bind will succeed which is always true in
+// the old model but possibly not true in the new model if another context has
+// deleted the resource.
+
+void GLES2Implementation::BindBufferHelper(
+    GLenum target, GLuint buffer) {
+  // TODO(gman): See note #1 above.
   switch (target) {
     case GL_ARRAY_BUFFER:
       bound_array_buffer_id_ = buffer;
@@ -1738,29 +1764,77 @@ void GLES2Implementation::BindBuffer(GLenum target, GLuint buffer) {
     default:
       break;
   }
-#endif
-  helper_->BindBuffer(target, buffer);
+  // TODO(gman): There's a bug here. If the target is invalid the ID will not be
+  // used even though it's marked it as used here.
+  buffer_id_handler_->MarkAsUsedForBind(buffer);
 }
 
-void GLES2Implementation::DeleteBuffers(GLsizei n, const GLuint* buffers) {
-  GPU_CLIENT_LOG("[" << this << "] glDeleteBuffers("
-      << n << ", " << static_cast<const void*>(buffers) << ")");
-  GPU_CLIENT_LOG_CODE_BLOCK({
-    for (GLsizei i = 0; i < n; ++i) {
-      GPU_CLIENT_LOG("  " << i << ": " << buffers[i]);
-    }
-  });
-  GPU_CLIENT_DCHECK_CODE_BLOCK({
-    for (GLsizei i = 0; i < n; ++i) {
-      GPU_DCHECK(buffers[i] != 0);
-    }
-  });
-  if (n < 0) {
-    SetGLError(GL_INVALID_VALUE, "glDeleteBuffers: n < 0");
-    return;
+void GLES2Implementation::BindFramebufferHelper(
+    GLenum target, GLuint framebuffer) {
+  // TODO(gman): See note #1 above.
+  switch (target) {
+    case GL_FRAMEBUFFER:
+      bound_framebuffer_ = framebuffer;
+      break;
+    default:
+      break;
   }
-  buffer_id_handler_->FreeIds(n, buffers);
+  // TODO(gman): There's a bug here. If the target is invalid the ID will not be
+  // used even though it's marked it as used here.
+  framebuffer_id_handler_->MarkAsUsedForBind(framebuffer);
+}
+
+void GLES2Implementation::BindRenderbufferHelper(
+    GLenum target, GLuint renderbuffer) {
+  // TODO(gman): See note #1 above.
+  switch (target) {
+    case GL_RENDERBUFFER:
+      bound_renderbuffer_ = renderbuffer;
+      break;
+    default:
+      break;
+  }
+  // TODO(gman): There's a bug here. If the target is invalid the ID will not be
+  // used even though it's marked it as used here.
+  renderbuffer_id_handler_->MarkAsUsedForBind(renderbuffer);
+}
+
+void GLES2Implementation::BindTextureHelper(GLenum target, GLuint texture) {
+  // TODO(gman): See note #1 above.
+  TextureUnit& unit = texture_units_[active_texture_unit_];
+  switch (target) {
+    case GL_TEXTURE_2D:
+      unit.bound_texture_2d = texture;
+      break;
+    case GL_TEXTURE_CUBE_MAP:
+      unit.bound_texture_cube_map = texture;
+      break;
+    default:
+      break;
+  }
+  // TODO(gman): There's a bug here. If the target is invalid the ID will not be
+  // used. even though it's marked it as used here.
+  texture_id_handler_->MarkAsUsedForBind(texture);
+}
+
 #if defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
+bool GLES2Implementation::IsBufferReservedId(GLuint id) {
+  for (size_t ii = 0; ii < arraysize(reserved_ids_); ++ii) {
+    if (id == reserved_ids_[ii]) {
+      return true;
+    }
+  }
+  return false;
+}
+#else
+bool GLES2Implementation::IsBufferReservedId(GLuint /* id */) {
+  return false;
+}
+#endif
+
+void GLES2Implementation::DeleteBuffersHelper(
+    GLsizei n, const GLuint* buffers) {
+  buffer_id_handler_->FreeIds(n, buffers);
   for (GLsizei ii = 0; ii < n; ++ii) {
     if (buffers[ii] == bound_array_buffer_id_) {
       bound_array_buffer_id_ = 0;
@@ -1769,12 +1843,42 @@ void GLES2Implementation::DeleteBuffers(GLsizei n, const GLuint* buffers) {
       bound_element_array_buffer_id_ = 0;
     }
   }
-#endif
-  // TODO(gman): compute the number of buffers we can delete in 1 call
-  //    based on the size of command buffer and the limit of argument size
-  //    for comments then loop to delete all the buffers.  The same needs to
-  //    happen for GenBuffer, GenTextures, DeleteTextures, etc...
-  helper_->DeleteBuffersImmediate(n, buffers);
+}
+
+void GLES2Implementation::DeleteFramebuffersHelper(
+    GLsizei n, const GLuint* framebuffers) {
+  framebuffer_id_handler_->FreeIds(n, framebuffers);
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    if (framebuffers[ii] == bound_framebuffer_) {
+      bound_framebuffer_ = 0;
+    }
+  }
+}
+
+void GLES2Implementation::DeleteRenderbuffersHelper(
+    GLsizei n, const GLuint* renderbuffers) {
+  renderbuffer_id_handler_->FreeIds(n, renderbuffers);
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    if (renderbuffers[ii] == bound_renderbuffer_) {
+      bound_renderbuffer_ = 0;
+    }
+  }
+}
+
+void GLES2Implementation::DeleteTexturesHelper(
+    GLsizei n, const GLuint* textures) {
+  texture_id_handler_->FreeIds(n, textures);
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    for (GLint tt = 0; tt < gl_state_.max_combined_texture_image_units; ++tt) {
+      TextureUnit& unit = texture_units_[active_texture_unit_];
+      if (textures[ii] == unit.bound_texture_2d) {
+        unit.bound_texture_2d = 0;
+      }
+      if (textures[ii] == unit.bound_texture_cube_map) {
+        unit.bound_texture_cube_map = 0;
+      }
+    }
+  }
 }
 
 void GLES2Implementation::DisableVertexAttribArray(GLuint index) {

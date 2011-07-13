@@ -170,8 +170,6 @@ class GLES2Implementation {
   // this file instead of having to edit some template or the code generator.
   #include "../client/gles2_implementation_autogen.h"
 
-  void BindBuffer(GLenum target, GLuint buffer);
-  void DeleteBuffers(GLsizei n, const GLuint* buffers);
   void DisableVertexAttribArray(GLuint index);
   void DrawArrays(GLenum mode, GLint first, GLsizei count);
   void EnableVertexAttribArray(GLuint index);
@@ -295,6 +293,20 @@ class GLES2Implementation {
     GLsizeiptr size;
   };
 
+  struct TextureUnit {
+    TextureUnit()
+        : bound_texture_2d(0),
+          bound_texture_cube_map(0) {
+    }
+
+    // texture currently bound to this unit's GL_TEXTURE_2D with glBindTexture
+    GLuint bound_texture_2d;
+
+    // texture currently bound to this unit's GL_TEXTURE_CUBE_MAP with
+    // glBindTexture
+    GLuint bound_texture_cube_map;
+  };
+
   // Gets the shared memory id for the result buffer.
   uint32 result_shm_id() const {
     return transfer_buffer_id_;
@@ -351,6 +363,16 @@ class GLES2Implementation {
   bool IsRenderbufferReservedId(GLuint id) { return false; }
   bool IsTextureReservedId(GLuint id) { return false; }
 
+  void BindBufferHelper(GLenum target, GLuint texture);
+  void BindFramebufferHelper(GLenum target, GLuint texture);
+  void BindRenderbufferHelper(GLenum target, GLuint texture);
+  void BindTextureHelper(GLenum target, GLuint texture);
+
+  void DeleteBuffersHelper(GLsizei n, const GLuint* buffers);
+  void DeleteFramebuffersHelper(GLsizei n, const GLuint* framebuffers);
+  void DeleteRenderbuffersHelper(GLsizei n, const GLuint* renderbuffers);
+  void DeleteTexturesHelper(GLsizei n, const GLuint* textures);
+
   // Helper for GetVertexAttrib
   bool GetVertexAttribHelper(GLuint index, GLenum pname, uint32* param);
 
@@ -401,6 +423,14 @@ class GLES2Implementation {
 
   // unpack alignment as last set by glPixelStorei
   GLint unpack_alignment_;
+
+  scoped_array<TextureUnit> texture_units_;
+
+  // 0 to gl_state_.max_combined_texture_image_units.
+  GLuint active_texture_unit_;
+
+  GLuint bound_framebuffer_;
+  GLuint bound_renderbuffer_;
 
   // The currently bound array buffer.
   GLuint bound_array_buffer_id_;
