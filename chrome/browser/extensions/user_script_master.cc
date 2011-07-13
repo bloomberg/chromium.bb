@@ -130,7 +130,7 @@ bool UserScriptMaster::ScriptReloader::ParseMetadataHeader(
 
   // If no patterns were specified, default to @include *. This is what
   // Greasemonkey does.
-  if (script->globs().empty() && script->url_patterns().empty())
+  if (script->globs().empty() && script->url_patterns().is_empty())
     script->add_glob("*");
 
   return true;

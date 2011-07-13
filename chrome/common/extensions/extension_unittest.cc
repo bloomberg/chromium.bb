@@ -551,7 +551,7 @@ TEST(ExtensionTest, GetHostPermissionMessages_ManyHosts) {
   extension = LoadManifest("permissions", "many-hosts.json");
   std::vector<string16> warnings = extension->GetPermissionMessageStrings();
   ASSERT_EQ(1u, warnings.size());
-  EXPECT_EQ("Your data on www.google.com and encrypted.google.com",
+  EXPECT_EQ("Your data on encrypted.google.com and www.google.com",
             UTF16ToUTF8(warnings[0]));
 }
 

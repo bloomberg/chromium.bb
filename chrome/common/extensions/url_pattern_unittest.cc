@@ -580,3 +580,97 @@ TEST(ExtensionURLPatternTest, IgnorePorts) {
   EXPECT_FALSE(pattern1.MatchesURL(url));
   EXPECT_FALSE(pattern2.MatchesURL(url));
 }
+
+TEST(ExtensionURLPatternTest, Equals) {
+  const struct {
+    const char* pattern1;
+    const char* pattern2;
+    bool expected_equal;
+  } kEqualsTestCases[] = {
+    // schemes
+    { "http://en.google.com/blah/*/foo",
+      "https://en.google.com/blah/*/foo",
+      false
+    },
+    { "https://en.google.com/blah/*/foo",
+      "https://en.google.com/blah/*/foo",
+      true
+    },
+    { "https://en.google.com/blah/*/foo",
+      "ftp://en.google.com/blah/*/foo",
+      false
+    },
+
+    // subdomains
+    { "https://en.google.com/blah/*/foo",
+      "https://fr.google.com/blah/*/foo",
+      false
+    },
+    { "https://www.google.com/blah/*/foo",
+      "https://*.google.com/blah/*/foo",
+      false
+    },
+    { "https://*.google.com/blah/*/foo",
+      "https://*.google.com/blah/*/foo",
+      true
+    },
+
+    // domains
+    { "http://en.example.com/blah/*/foo",
+      "http://en.google.com/blah/*/foo",
+      false
+    },
+
+    // ports
+    { "http://en.google.com:8000/blah/*/foo",
+      "http://en.google.com/blah/*/foo",
+      false
+    },
+    { "http://fr.google.com:8000/blah/*/foo",
+      "http://fr.google.com:8000/blah/*/foo",
+      true
+    },
+    { "http://en.google.com:8000/blah/*/foo",
+      "http://en.google.com:8080/blah/*/foo",
+      false
+    },
+
+    // paths
+    { "http://en.google.com/blah/*/foo",
+      "http://en.google.com/blah/*",
+      false
+    },
+    { "http://en.google.com/*",
+      "http://en.google.com/",
+      false
+    },
+    { "http://en.google.com/*",
+      "http://en.google.com/*",
+      true
+    },
+
+    // all_urls
+    { "<all_urls>",
+      "<all_urls>",
+      true
+    },
+    { "<all_urls>",
+      "http://*/*",
+      false
+    }
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kEqualsTestCases); ++i) {
+    std::string message = kEqualsTestCases[i].pattern1;
+    message += " ";
+    message += kEqualsTestCases[i].pattern2;
+
+    URLPattern pattern1(URLPattern::SCHEME_ALL);
+    URLPattern pattern2(URLPattern::SCHEME_ALL);
+
+    pattern1.Parse(kEqualsTestCases[i].pattern1, URLPattern::USE_PORTS);
+    pattern2.Parse(kEqualsTestCases[i].pattern2, URLPattern::USE_PORTS);
+    EXPECT_EQ(kEqualsTestCases[i].expected_equal, pattern1 == pattern2)
+        << message;
+  }
+}

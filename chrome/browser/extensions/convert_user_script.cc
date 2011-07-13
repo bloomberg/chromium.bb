@@ -102,10 +102,10 @@ scoped_refptr<Extension> ConvertUserScriptToExtension(
   // If the script provides its own match patterns, we use those. Otherwise, we
   // generate some using the include globs.
   ListValue* matches = new ListValue();
-  if (!script.url_patterns().empty()) {
-    for (size_t i = 0; i < script.url_patterns().size(); ++i) {
-      matches->Append(Value::CreateStringValue(
-          script.url_patterns()[i].GetAsString()));
+  if (!script.url_patterns().is_empty()) {
+    for (URLPatternSet::const_iterator i = script.url_patterns().begin();
+         i != script.url_patterns().end(); ++i) {
+      matches->Append(Value::CreateStringValue(i->GetAsString()));
     }
   } else {
     // TODO(aa): Derive tighter matches where possible.

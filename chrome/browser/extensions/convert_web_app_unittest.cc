@@ -128,7 +128,7 @@ TEST(ExtensionFromWebApp, Basic) {
   EXPECT_TRUE(extension->HasAPIPermission("notifications"));
   ASSERT_EQ(1u, extension->web_extent().patterns().size());
   EXPECT_EQ("http://aaronboodman.com/gearpad/*",
-            extension->web_extent().patterns()[0].GetAsString());
+            extension->web_extent().patterns().begin()->GetAsString());
 
   EXPECT_EQ(web_app.icons.size(), extension->icons().map().size());
   for (size_t i = 0; i < web_app.icons.size(); ++i) {
@@ -170,5 +170,5 @@ TEST(ExtensionFromWebApp, Minimal) {
   EXPECT_EQ(0u, extension->permission_set()->apis().size());
   ASSERT_EQ(1u, extension->web_extent().patterns().size());
   EXPECT_EQ("*://aaronboodman.com/*",
-            extension->web_extent().patterns()[0].GetAsString());
+            extension->web_extent().patterns().begin()->GetAsString());
 }

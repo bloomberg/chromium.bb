@@ -124,8 +124,18 @@ URLPattern::URLPattern(int valid_schemes, const std::string& pattern)
 URLPattern::~URLPattern() {
 }
 
+bool URLPattern::operator<(const URLPattern& other) const {
+  return GetAsString() < other.GetAsString();
+}
+
+bool URLPattern::operator==(const URLPattern& other) const {
+  return GetAsString() == other.GetAsString();
+}
+
 URLPattern::ParseResult URLPattern::Parse(const std::string& pattern,
                                           ParseOption strictness) {
+  spec_.clear();
+
   // Special case pattern to match every valid URL.
   if (pattern == kAllUrlsPattern) {
     match_all_urls_ = true;
@@ -234,7 +244,28 @@ URLPattern::ParseResult URLPattern::Parse(const std::string& pattern,
   return PARSE_SUCCESS;
 }
 
+void URLPattern::SetValidSchemes(int valid_schemes) {
+  spec_.clear();
+  valid_schemes_ = valid_schemes;
+}
+
+void URLPattern::SetHost(const std::string& host) {
+  spec_.clear();
+  host_ = host;
+}
+
+void URLPattern::SetMatchAllURLs(bool val) {
+  spec_.clear();
+  match_all_urls_ = val;
+}
+
+void URLPattern::SetMatchSubdomains(bool val) {
+  spec_.clear();
+  match_subdomains_ = val;
+}
+
 bool URLPattern::SetScheme(const std::string& scheme) {
+  spec_.clear();
   scheme_ = scheme;
   if (scheme_ == "*") {
     valid_schemes_ &= (SCHEME_HTTP | SCHEME_HTTPS);
@@ -257,6 +288,7 @@ bool URLPattern::IsValidScheme(const std::string& scheme) const {
 }
 
 void URLPattern::SetPath(const std::string& path) {
+  spec_.clear();
   path_ = path;
   path_escaped_ = path_;
   ReplaceSubstringsAfterOffset(&path_escaped_, 0, "\\", "\\\\");
@@ -264,6 +296,7 @@ void URLPattern::SetPath(const std::string& path) {
 }
 
 bool URLPattern::SetPort(const std::string& port) {
+  spec_.clear();
   if (IsValidPortForScheme(scheme_, port)) {
     port_ = port;
     return true;
@@ -351,9 +384,15 @@ bool URLPattern::MatchesPort(int port) const {
   return port_ == "*" || port_ == base::IntToString(port);
 }
 
-std::string URLPattern::GetAsString() const {
-  if (match_all_urls_)
-    return kAllUrlsPattern;
+
+const std::string& URLPattern::GetAsString() const {
+  if (!spec_.empty())
+    return spec_;
+
+  if (match_all_urls_) {
+    spec_ = kAllUrlsPattern;
+    return spec_;
+  }
 
   bool standard_scheme = IsStandardScheme(scheme_);
 
@@ -379,7 +418,8 @@ std::string URLPattern::GetAsString() const {
   if (!path_.empty())
     spec += path_;
 
-  return spec;
+  spec_ = spec;
+  return spec_;
 }
 
 bool URLPattern::OverlapsWith(const URLPattern& other) const {
@@ -445,7 +485,7 @@ std::vector<URLPattern> URLPattern::ConvertToExplicitSchemes() const {
        i != explicit_schemes.end(); ++i) {
     URLPattern temp = *this;
     temp.SetScheme(*i);
-    temp.set_match_all_urls(false);
+    temp.SetMatchAllURLs(false);
     result.push_back(temp);
   }
 

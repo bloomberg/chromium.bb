@@ -6,7 +6,7 @@
 #define CHROME_COMMON_EXTENSIONS_URL_PATTERN_SET_H_
 #pragma once
 
-#include <vector>
+#include <set>
 
 #include "chrome/common/extensions/url_pattern.h"
 
@@ -15,20 +15,27 @@ class GURL;
 // Represents the set of URLs an extension uses for web content.
 class URLPatternSet {
  public:
+  typedef std::set<URLPattern>::const_iterator const_iterator;
+  typedef std::set<URLPattern>::iterator iterator;
+
   // Clears |out| and populates the set with the union of |set1| and |set2|.
-  // NOTE: this does not discard duplicates.
   static void CreateUnion(const URLPatternSet& set1,
                           const URLPatternSet& set2,
                           URLPatternSet* out);
 
   URLPatternSet();
   URLPatternSet(const URLPatternSet& rhs);
+  explicit URLPatternSet(const std::set<URLPattern>& patterns);
   ~URLPatternSet();
+
   URLPatternSet& operator=(const URLPatternSet& rhs);
+  bool operator==(const URLPatternSet& rhs) const;
 
   bool is_empty() const;
+  const std::set<URLPattern>& patterns() const { return patterns_; }
+  const_iterator begin() const { return patterns_.begin(); }
+  const_iterator end() const { return patterns_.end(); }
 
-  const URLPatternList& patterns() const { return patterns_; }
   void AddPattern(const URLPattern& pattern);
   void ClearPatterns();
 
@@ -40,7 +47,7 @@ class URLPatternSet {
 
  private:
   // The list of URL patterns that comprise the extent.
-  URLPatternList patterns_;
+  std::set<URLPattern> patterns_;
 };
 
 #endif  // CHROME_COMMON_EXTENSIONS_URL_PATTERN_SET_H_
