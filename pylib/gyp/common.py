@@ -11,6 +11,22 @@ import re
 import tempfile
 import sys
 
+
+# A minimal memoizing decorator. It'll blow up if the args aren't immutable,
+# among other "problems".
+class memoize(object):
+  def __init__(self, func):
+    self.func = func
+    self.cache = {}
+  def __call__(self, *args):
+    try:
+      return self.cache[args]
+    except KeyError:
+      result = self.func(*args)
+      self.cache[args] = result
+      return result
+
+
 def ExceptionAppend(e, msg):
   """Append a message to the given exception's message."""
   if not e.args:
@@ -86,6 +102,7 @@ def QualifiedTarget(build_file, target, toolset):
   return fully_qualified
 
 
+@memoize
 def RelativePath(path, relative_to):
   # Assuming both |path| and |relative_to| are relative to the current
   # directory, returns a relative path that identifies path relative to
