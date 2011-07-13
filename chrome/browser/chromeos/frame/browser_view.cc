@@ -19,6 +19,8 @@
 #include "chrome/browser/chromeos/status/status_area_view.h"
 #include "chrome/browser/chromeos/view_ids.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
+#include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/views/frame/browser_frame_gtk.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -573,10 +575,14 @@ StatusAreaHost::ScreenMode BrowserView::GetScreenMode() const {
 }
 
 StatusAreaHost::TextStyle BrowserView::GetTextStyle() const {
-  ui::ThemeProvider* tp = GetThemeProvider();
-  return tp->HasCustomImage(IDR_THEME_FRAME) ?
-      StatusAreaHost::kWhiteHaloed : (IsOffTheRecord() ?
-          StatusAreaHost::kWhitePlain : StatusAreaHost::kGrayEmbossed);
+  ThemeService* theme_service =
+      ThemeServiceFactory::GetForProfile(GetProfile());
+
+  if (!theme_service->UsingDefaultTheme())
+    return StatusAreaHost::kWhiteHaloed;
+
+  return IsOffTheRecord() ?
+      StatusAreaHost::kWhitePlain : StatusAreaHost::kGrayEmbossed;
 }
 
 // BrowserView, MessageLoopForUI::Observer implementation.

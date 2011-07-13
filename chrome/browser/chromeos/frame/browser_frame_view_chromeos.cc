@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/frame/browser_frame_view_chromeos.h"
 
+#include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -69,7 +71,8 @@ void BrowserFrameViewChromeos::ModifyMaximizedFramePainting(
     int* top_offset, SkBitmap** left_corner, SkBitmap** right_corner) {
   *top_offset = kThemeOffset;
   ui::ThemeProvider* tp = GetThemeProvider();
-  if (tp->HasCustomImage(IDR_THEME_FRAME))
+  if (!ThemeServiceFactory::GetForProfile(
+      browser_view()->browser()->profile())->UsingDefaultTheme())
     return;
   if (browser_view()->IsOffTheRecord()) {
     *left_corner = tp->GetBitmapNamed(IDR_THEME_FRAME_INCOGNITO_LEFT);
