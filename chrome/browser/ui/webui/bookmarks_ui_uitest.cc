@@ -92,7 +92,7 @@ TEST_F(BookmarksUITest, CommandOpensBookmarksTab) {
   // Bring up the bookmarks manager tab.
   ASSERT_TRUE(browser->RunCommand(IDC_SHOW_BOOKMARK_MANAGER));
   ASSERT_TRUE(browser->GetTabCount(&tab_count));
-  ASSERT_EQ(1, tab_count);
+  ASSERT_EQ(2, tab_count);
 
   scoped_refptr<TabProxy> tab = browser->GetActiveTab();
   ASSERT_TRUE(tab.get());
@@ -108,7 +108,6 @@ TEST_F(BookmarksUITest, CommandAgainGoesBackToBookmarksTab) {
 
   int tab_count = -1;
   ASSERT_TRUE(browser->GetTabCount(&tab_count));
-  NavigateToURL(GURL("http://www.google.com/"));
   ASSERT_EQ(1, tab_count);
 
   // Bring up the bookmarks manager tab.
@@ -147,7 +146,7 @@ TEST_F(BookmarksUITest, TwoCommandsOneTab) {
   ASSERT_TRUE(browser->RunCommand(IDC_SHOW_BOOKMARK_MANAGER));
   ASSERT_TRUE(browser->RunCommand(IDC_SHOW_BOOKMARK_MANAGER));
   ASSERT_TRUE(browser->GetTabCount(&tab_count));
-  ASSERT_EQ(1, tab_count);
+  ASSERT_EQ(2, tab_count);
 }
 
 TEST_F(BookmarksUITest, BookmarksLoaded) {

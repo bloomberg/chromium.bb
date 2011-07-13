@@ -164,9 +164,7 @@ void BackForwardMenuModel::ActivatedAtWithDisposition(
   // Execute the command for the last item: "Show Full History".
   if (index == GetItemCount() - 1) {
     UserMetrics::RecordComputedAction(BuildActionName("ShowFullHistory", -1));
-    browser_->ShowSingletonTabOverwritingNTP(
-        browser_->GetSingletonTabNavigateParams(
-            GURL(chrome::kChromeUIHistoryURL)));
+    browser_->ShowSingletonTab(GURL(chrome::kChromeUIHistoryURL));
     return;
   }
 

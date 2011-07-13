@@ -785,7 +785,7 @@ void RecordLastRunAppBundlePath() {
       if (Browser* browser = ActivateBrowser(lastProfile)) {
         browser->OpenClearBrowsingDataDialog();
       } else {
-        Browser::OpenClearBrowsingDataDialogWindow(lastProfile);
+        Browser::OpenClearBrowingDataDialogWindow(lastProfile);
       }
       break;
     }
