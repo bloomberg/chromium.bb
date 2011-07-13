@@ -279,18 +279,16 @@ class XKeyboard {
     const std::string layout_to_set = execute_queue_.front();
 
     std::vector<std::string> argv;
-    base::file_handle_mapping_vector fds_to_remap;
     base::ProcessHandle handle = base::kNullProcessHandle;
 
     argv.push_back(kSetxkbmapCommand);
     argv.push_back("-layout");
     argv.push_back(layout_to_set);
     argv.push_back("-synch");
-    const bool result = base::LaunchApp(argv,
-                                        fds_to_remap,  // No remapping.
-                                        false,  // Don't wait.
-                                        &handle);
-    if (!result) {
+
+    base::LaunchOptions options;
+    options.process_handle = &handle;
+    if (!base::LaunchProcess(argv, options)) {
       LOG(ERROR) << "Failed to execute setxkbmap: " << layout_to_set;
       execute_queue_ = std::queue<std::string>();  // clear the queue.
       return;

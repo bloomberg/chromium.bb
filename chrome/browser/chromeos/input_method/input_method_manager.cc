@@ -757,16 +757,14 @@ class InputMethodManagerImpl : public InputMethodManager,
   bool LaunchInputMethodProcess(const std::string& command_line,
                                 base::ProcessHandle* process_handle) {
     std::vector<std::string> argv;
-    base::file_handle_mapping_vector fds_to_remap;
     base::ProcessHandle handle = base::kNullProcessHandle;
 
     // TODO(zork): export "LD_PRELOAD=/usr/lib/libcrash.so"
     base::SplitString(command_line, ' ', &argv);
-    const bool result = base::LaunchApp(argv,
-                                        fds_to_remap,  // no remapping
-                                        false,  // wait
-                                        &handle);
-    if (!result) {
+
+    base::LaunchOptions options;
+    options.process_handle = &handle;
+    if (!base::LaunchProcess(argv, options)) {
       LOG(ERROR) << "Could not launch: " << command_line;
       return false;
     }

@@ -153,8 +153,10 @@ bool RelaunchAppWithHelper(const std::string& helper,
   base::file_handle_mapping_vector fd_map;
   fd_map.push_back(std::make_pair(*pipe_write_fd, kRelauncherSyncFD));
 
-  if (!base::LaunchApp(relaunch_args, fd_map, false, NULL)) {
-    LOG(ERROR) << "base::LaunchApp failed";
+  base::LaunchOptions options;
+  options.fds_to_remap = &fd_map;
+  if (!base::LaunchProcess(relaunch_args, options)) {
+    LOG(ERROR) << "base::LaunchProcess failed";
     return false;
   }
 

@@ -149,8 +149,11 @@ void ZygoteHost::Init(const std::string& sandbox_cmd) {
     fds_to_map.push_back(std::make_pair(dummy_fd, 7));
   }
 
-  base::ProcessHandle process;
-  base::LaunchApp(cmd_line.argv(), fds_to_map, false, &process);
+  base::ProcessHandle process = -1;
+  base::LaunchOptions options;
+  options.process_handle = &process;
+  options.fds_to_remap = &fds_to_map;
+  base::LaunchProcess(cmd_line.argv(), options);
   CHECK(process != -1) << "Failed to launch zygote process";
 
   if (using_suid_sandbox_) {
