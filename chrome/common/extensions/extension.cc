@@ -21,7 +21,6 @@
 #include "base/values.h"
 #include "base/version.h"
 #include "crypto/sha2.h"
-#include "crypto/third_party/nss/blapi.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"

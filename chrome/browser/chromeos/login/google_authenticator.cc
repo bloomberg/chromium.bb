@@ -13,8 +13,7 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/synchronization/lock.h"
-#include "crypto/third_party/nss/blapi.h"
-#include "crypto/third_party/nss/sha256.h"
+#include "crypto/sha2.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/login/auth_response_handler.h"
@@ -437,18 +436,8 @@ std::string GoogleAuthenticator::HashPassword(const std::string& password) {
   char ascii_buf[kPassHashLen + 1];
 
   // Hash salt and password
-  SHA256Context ctx;
-  SHA256_Begin(&ctx);
-  SHA256_Update(&ctx,
-                reinterpret_cast<const unsigned char*>(ascii_salt.data()),
-                static_cast<unsigned int>(ascii_salt.length()));
-  SHA256_Update(&ctx,
-                reinterpret_cast<const unsigned char*>(password.data()),
-                static_cast<unsigned int>(password.length()));
-  SHA256_End(&ctx,
-             passhash_buf,
-             NULL,
-             static_cast<unsigned int>(sizeof(passhash_buf)));
+  crypto::SHA256HashString(ascii_salt + password,
+                           &passhash_buf, sizeof(passhash_buf));
 
   std::vector<unsigned char> passhash(passhash_buf,
                                       passhash_buf + sizeof(passhash_buf));

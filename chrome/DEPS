@@ -18,6 +18,8 @@ include_rules = [
   "-webkit",
   "-tools",
 
+  "-crypto/third_party",
+
   # Allow inclusion of WebKit API files.
   "+third_party/WebKit/Source/WebKit/chromium",
   "+webkit/appcache",
