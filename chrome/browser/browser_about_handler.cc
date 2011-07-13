@@ -55,6 +55,7 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "net/base/escape.h"
+#include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/glue/webkit_glue.h"
@@ -71,6 +72,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/version_loader.h"
 #include "content/browser/zygote_host_linux.h"
@@ -288,15 +290,20 @@ class ChromeOSAboutVersionHandler {
 class ChromeOSTermsHandler
     : public base::RefCountedThreadSafe<ChromeOSTermsHandler> {
  public:
-  static void Start(AboutSource* source, int request_id) {
+  static void Start(AboutSource* source,
+                    const std::string& path,
+                    int request_id) {
     scoped_refptr<ChromeOSTermsHandler> handler(
-        new ChromeOSTermsHandler(source, request_id));
+        new ChromeOSTermsHandler(source, path, request_id));
     handler->StartOnUIThread();
   }
 
  private:
-  ChromeOSTermsHandler(AboutSource* source, int request_id)
+  ChromeOSTermsHandler(AboutSource* source,
+                       const std::string& path,
+                       int request_id)
     : source_(source),
+      path_(path),
       request_id_(request_id),
       locale_(chromeos::WizardController::GetInitialLocale()) {
   }
@@ -310,14 +317,29 @@ class ChromeOSTermsHandler
 
   void LoadFileOnFileThread() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-    std::string path = StringPrintf(chrome::kEULAPathFormat, locale_.c_str());
-    if (!file_util::ReadFileToString(FilePath(path), &contents_)) {
-      // No EULA for given language - try en-US as default.
-      path = StringPrintf(chrome::kEULAPathFormat, "en-US");
-      if (!file_util::ReadFileToString(FilePath(path), &contents_)) {
-        // File with EULA not found, ResponseOnUIThread will load EULA from
-        // resources if contents_ is empty.
-        contents_.clear();
+    if (path_ == chrome::kOemEulaURLPath) {
+      const chromeos::StartupCustomizationDocument* customization =
+          chromeos::StartupCustomizationDocument::GetInstance();
+      if (customization->IsReady()) {
+        FilePath oem_eula_file_path;
+        if (net::FileURLToFilePath(GURL(customization->GetEULAPage(locale_)),
+                                   &oem_eula_file_path)) {
+          if (!file_util::ReadFileToString(oem_eula_file_path, &contents_)) {
+            contents_.clear();
+          }
+        }
+      }
+    } else {
+      std::string file_path =
+          StringPrintf(chrome::kEULAPathFormat, locale_.c_str());
+      if (!file_util::ReadFileToString(FilePath(file_path), &contents_)) {
+        // No EULA for given language - try en-US as default.
+        file_path = StringPrintf(chrome::kEULAPathFormat, "en-US");
+        if (!file_util::ReadFileToString(FilePath(file_path), &contents_)) {
+          // File with EULA not found, ResponseOnUIThread will load EULA from
+          // resources if contents_ is empty.
+          contents_.clear();
+        }
       }
     }
     BrowserThread::PostTask(
@@ -327,7 +349,9 @@ class ChromeOSTermsHandler
 
   void ResponseOnUIThread() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    if (contents_.empty()) {
+    // If we fail to load Chrome OS EULA from disk, load it from resources.
+    // Do nothing if OEM EULA load failed.
+    if (contents_.empty() && path_ != chrome::kOemEulaURLPath) {
       contents_ = ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_TERMS_HTML).as_string();
     }
@@ -337,11 +361,16 @@ class ChromeOSTermsHandler
   // Where the results are fed to.
   scoped_refptr<AboutSource> source_;
 
+  // Path in the URL.
+  std::string path_;
+
   // ID identifying the request.
   int request_id_;
 
+  // Locale of the EULA.
   std::string locale_;
 
+  // EULA contents that was loaded from file.
   std::string contents_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeOSTermsHandler);
@@ -1352,7 +1381,7 @@ void AboutSource::StartDataRequest(const std::string& path,
 #endif
   } else if (host == chrome::kChromeUITermsHost) {
 #if defined(OS_CHROMEOS)
-    ChromeOSTermsHandler::Start(this, request_id);
+    ChromeOSTermsHandler::Start(this, path, request_id);
     return;
 #else
     response = ResourceBundle::GetSharedInstance().GetRawDataResource(

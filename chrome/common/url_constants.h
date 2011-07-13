@@ -78,6 +78,7 @@ extern const char kChromeUIRegisterPageURL[];
 extern const char kChromeUISlideshowURL[];
 extern const char kChromeUISimUnlockURL[];
 extern const char kChromeUISystemInfoURL[];
+extern const char kChromeUITermsOemURL[];
 extern const char kChromeUIUserImageURL[];
 extern const char kChromeUIEnterpriseEnrollmentURL[];
 #endif
@@ -185,6 +186,7 @@ extern const char kChromeUIWrenchMenu[];
 extern const char kChromeUINetworkMenu[];
 
 extern const char kEULAPathFormat[];
+extern const char kOemEulaURLPath[];
 #endif
 
 // Options sub-pages.

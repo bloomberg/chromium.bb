@@ -4,9 +4,12 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
 
+#include <string>
+
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
+#include "chrome/common/url_constants.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -84,8 +87,12 @@ void EulaScreenHandler::Initialize() {
   FundamentalValue checked(delegate_->IsUsageStatsEnabled());
   web_ui_->CallJavascriptFunction("cr.ui.Oobe.setUsageStats", checked);
 
-  StringValue oem_eula_url(delegate_->GetOemEulaUrl().spec());
-  web_ui_->CallJavascriptFunction("cr.ui.Oobe.setOemEulaUrl", oem_eula_url);
+  // This OEM EULA is a file:// URL which we're unable to load in iframe.
+  // Instead if it's defined we use chrome://terms/oem that will load same file.
+  if (!delegate_->GetOemEulaUrl().is_empty()) {
+    StringValue oem_eula_url(chrome::kChromeUITermsOemURL);
+    web_ui_->CallJavascriptFunction("cr.ui.Oobe.setOemEulaUrl", oem_eula_url);
+  }
 
   if (show_on_init_) {
     Show();

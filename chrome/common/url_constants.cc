@@ -83,6 +83,7 @@ const char kChromeUIRegisterPageURL[] = "chrome://register/";
 const char kChromeUISlideshowURL[] = "chrome://slideshow/";
 const char kChromeUISimUnlockURL[] = "chrome://sim-unlock/";
 const char kChromeUISystemInfoURL[] = "chrome://system/";
+const char kChromeUITermsOemURL[] = "chrome://terms/oem";
 const char kChromeUIUserImageURL[] = "chrome://userimage/";
 const char kChromeUIEnterpriseEnrollmentURL[] =
     "chrome://enterprise-enrollment/";
@@ -191,6 +192,7 @@ const char kChromeUIWrenchMenu[] = "wrench-menu";
 const char kChromeUINetworkMenu[] = "network-menu";
 
 const char kEULAPathFormat[] = "/usr/share/chromeos-assets/eula/%s/eula.html";
+const char kOemEulaURLPath[] = "oem";
 #endif
 
 // Option sub pages.

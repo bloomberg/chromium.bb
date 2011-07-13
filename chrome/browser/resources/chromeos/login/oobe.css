@@ -226,9 +226,9 @@ button {
 .eula-frame {
   border: none;
   height: 200px;
-  margin-right: 20px;
-  padding: 0 0 0 10px;
-  width: 270px;
+  margin-right: 10px;
+  padding: 0 0 0 5px;
+  width: 310px;
 }
 
 #eulas.one-column #cros-eula {
