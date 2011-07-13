@@ -8,7 +8,6 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/browser_about_handler.h"
-#include "chrome/browser/browser_url_handler.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -24,6 +23,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/browser_url_handler.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/tab_contents.h"
 

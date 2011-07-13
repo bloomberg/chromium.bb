@@ -99,6 +99,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                                       const std::string& key,
                                       const std::string& value) OVERRIDE;
   virtual void ClearInspectorSettings(RenderViewHost* rvh) OVERRIDE;
+  virtual void BrowserURLHandlerCreated(BrowserURLHandler* handler) OVERRIDE;
+  virtual void ClearCache(RenderViewHost* rvh);
+  virtual void ClearCookies(RenderViewHost* rvh);
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Can return an optional fd for crash handling, otherwise returns -1.
@@ -109,9 +112,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       crypto::CryptoModuleBlockingPasswordDelegate* GetCryptoPasswordDelegate(
           const GURL& url) OVERRIDE;
 #endif
-
-  virtual void ClearCache(RenderViewHost* rvh);
-  virtual void ClearCookies(RenderViewHost* rvh);
 };
 
 }  // namespace chrome

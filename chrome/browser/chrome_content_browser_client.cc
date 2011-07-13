@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "chrome/app/breakpad_mac.h"
+#include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/character_encoding.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_message_handler.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
@@ -45,6 +47,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/browser_url_handler.h"
 #include "content/browser/browsing_instance.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/debugger/devtools_handler.h"
@@ -133,6 +136,23 @@ void InitRenderViewHostForExtensions(RenderViewHost* render_view_host) {
     render_view_host->Send(new ExtensionMsg_ActivateExtension(extension->id()));
     render_view_host->AllowBindings(BindingsPolicy::EXTENSION);
   }
+}
+
+// Handles rewriting Web UI URLs.
+static bool HandleWebUI(GURL* url, Profile* profile) {
+  if (!ChromeWebUIFactory::GetInstance()->UseWebUIForURL(profile, *url))
+    return false;
+
+  // Special case the new tab page. In older versions of Chrome, the new tab
+  // page was hosted at chrome-internal:<blah>. This might be in people's saved
+  // sessions or bookmarks, so we say any URL with that scheme triggers the new
+  // tab page.
+  if (url->SchemeIs(chrome::kChromeInternalScheme)) {
+    // Rewrite it with the proper new tab URL.
+    *url = GURL(chrome::kChromeUINewTabURL);
+  }
+
+  return true;
 }
 
 }  // namespace
@@ -653,6 +673,41 @@ void ChromeContentBrowserClient::ClearInspectorSettings(RenderViewHost* rvh) {
       rvh->process()->profile());
 }
 
+void ChromeContentBrowserClient::BrowserURLHandlerCreated(
+    BrowserURLHandler* handler) {
+  // Add the default URL handlers.
+  handler->AddHandlerPair(&ExtensionWebUI::HandleChromeURLOverride,
+                          BrowserURLHandler::null_handler());
+  handler->AddHandlerPair(BrowserURLHandler::null_handler(),
+                          &ExtensionWebUI::HandleChromeURLOverrideReverse);
+
+  // about:
+  handler->AddHandlerPair(&WillHandleBrowserAboutURL,
+                          BrowserURLHandler::null_handler());
+  // chrome: & friends.
+  handler->AddHandlerPair(&HandleWebUI,
+                          BrowserURLHandler::null_handler());
+}
+
+void ChromeContentBrowserClient::ClearCache(RenderViewHost* rvh) {
+  Profile* profile = rvh->site_instance()->GetProcess()->profile();
+  BrowsingDataRemover* remover = new BrowsingDataRemover(profile,
+      BrowsingDataRemover::EVERYTHING,
+      base::Time());
+  remover->Remove(BrowsingDataRemover::REMOVE_CACHE);
+  // BrowsingDataRemover takes care of deleting itself when done.
+}
+
+void ChromeContentBrowserClient::ClearCookies(RenderViewHost* rvh) {
+  Profile* profile = rvh->site_instance()->GetProcess()->profile();
+  BrowsingDataRemover* remover = new BrowsingDataRemover(profile,
+      BrowsingDataRemover::EVERYTHING,
+      base::Time());
+  int remove_mask = BrowsingDataRemover::REMOVE_COOKIES;
+  remover->Remove(remove_mask);
+  // BrowsingDataRemover takes care of deleting itself when done.
+}
+
 #if defined(OS_LINUX)
 int ChromeContentBrowserClient::GetCrashSignalFD(
     const std::string& process_type) {
@@ -686,24 +741,5 @@ crypto::CryptoModuleBlockingPasswordDelegate*
       browser::kCryptoModulePasswordKeygen, url.host());
 }
 #endif
-
-void ChromeContentBrowserClient::ClearCache(RenderViewHost* rvh) {
-  Profile* profile = rvh->site_instance()->GetProcess()->profile();
-  BrowsingDataRemover* remover = new BrowsingDataRemover(profile,
-      BrowsingDataRemover::EVERYTHING,
-      base::Time());
-  remover->Remove(BrowsingDataRemover::REMOVE_CACHE);
-  // BrowsingDataRemover takes care of deleting itself when done.
-}
-
-void ChromeContentBrowserClient::ClearCookies(RenderViewHost* rvh) {
-  Profile* profile = rvh->site_instance()->GetProcess()->profile();
-  BrowsingDataRemover* remover = new BrowsingDataRemover(profile,
-      BrowsingDataRemover::EVERYTHING,
-      base::Time());
-  int remove_mask = BrowsingDataRemover::REMOVE_COOKIES;
-  remover->Remove(remove_mask);
-  // BrowsingDataRemover takes care of deleting itself when done.
-}
 
 }  // namespace chrome

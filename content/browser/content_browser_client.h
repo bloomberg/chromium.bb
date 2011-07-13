@@ -14,6 +14,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPresenter.h"
 
 class BrowserRenderProcessHost;
+class BrowserURLHandler;
 class CommandLine;
 class FilePath;
 class GURL;
@@ -243,6 +244,16 @@ class ContentBrowserClient {
   // Clear the Inspector settings.
   virtual void ClearInspectorSettings(RenderViewHost* rvh) = 0;
 
+  // Notifies that BrowserURLHandler has been created, so that the embedder can
+  // optionally add their own handlers.
+  virtual void BrowserURLHandlerCreated(BrowserURLHandler* handler) = 0;
+
+  // Clears browser cache.
+  virtual void ClearCache(RenderViewHost* rvh) = 0;
+
+  // Clears browser cookies.
+  virtual void ClearCookies(RenderViewHost* rvh) = 0;
+
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Can return an optional fd for crash handling, otherwise returns -1.
   virtual int GetCrashSignalFD(const std::string& process_type) = 0;
@@ -255,12 +266,6 @@ class ContentBrowserClient {
       crypto::CryptoModuleBlockingPasswordDelegate* GetCryptoPasswordDelegate(
           const GURL& url) = 0;
 #endif
-
-  // Clears browser cache.
-  virtual void ClearCache(RenderViewHost* rvh) = 0;
-
-  // Clears browser cookies.
-  virtual void ClearCookies(RenderViewHost* rvh) = 0;
 };
 
 }  // namespace content

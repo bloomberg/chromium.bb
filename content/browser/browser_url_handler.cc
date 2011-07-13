@@ -2,15 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/browser_url_handler.h"
+#include "content/browser/browser_url_handler.h"
 
 #include "base/string_util.h"
-#include "chrome/browser/browser_about_handler.h"
-#include "chrome/browser/extensions/extension_web_ui.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_factory.h"
-#include "chrome/common/url_constants.h"
+#include "content/browser/content_browser_client.h"
 #include "content/browser/webui/web_ui.h"
+#include "content/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 
 // Handles rewriting view-source URLs for what we'll actually load.
@@ -60,23 +57,6 @@ static bool ReverseViewSource(GURL* url, Profile* profile) {
   return true;
 }
 
-// Handles rewriting Web UI URLs.
-static bool HandleWebUI(GURL* url, Profile* profile) {
-  if (!ChromeWebUIFactory::GetInstance()->UseWebUIForURL(profile, *url))
-    return false;
-
-  // Special case the new tab page. In older versions of Chrome, the new tab
-  // page was hosted at chrome-internal:<blah>. This might be in people's saved
-  // sessions or bookmarks, so we say any URL with that scheme triggers the new
-  // tab page.
-  if (url->SchemeIs(chrome::kChromeInternalScheme)) {
-    // Rewrite it with the proper new tab URL.
-    *url = GURL(chrome::kChromeUINewTabURL);
-  }
-
-  return true;
-}
-
 // static
 BrowserURLHandler* BrowserURLHandler::GetInstance() {
   return Singleton<BrowserURLHandler>::get();
@@ -95,6 +75,10 @@ BrowserURLHandler::URLHandler BrowserURLHandler::null_handler() {
 }
 
 BrowserURLHandler::BrowserURLHandler() {
+  content::GetContentClient()->browser()->BrowserURLHandlerCreated(this);
+
+  // view-source:
+  AddHandlerPair(&HandleViewSource, &ReverseViewSource);
 }
 
 BrowserURLHandler::~BrowserURLHandler() {
@@ -105,27 +89,8 @@ void BrowserURLHandler::AddHandlerPair(URLHandler handler,
   url_handlers_.push_back(HandlerPair(handler, reverse_handler));
 }
 
-void BrowserURLHandler::InitURLHandlers() {
-  if (!url_handlers_.empty())
-    return;
-
-  // Add the default URL handlers.
-  AddHandlerPair(&ExtensionWebUI::HandleChromeURLOverride, null_handler());
-  AddHandlerPair(null_handler(),
-                 &ExtensionWebUI::HandleChromeURLOverrideReverse);
-
-  // about:
-  AddHandlerPair(&WillHandleBrowserAboutURL, null_handler());
-  // chrome: & friends.
-  AddHandlerPair(&HandleWebUI, null_handler());
-  // view-source:
-  AddHandlerPair(&HandleViewSource, &ReverseViewSource);
-}
-
 void BrowserURLHandler::RewriteURLIfNecessary(GURL* url, Profile* profile,
                                               bool* reverse_on_redirect) {
-  if (url_handlers_.empty())
-    InitURLHandlers();
   for (size_t i = 0; i < url_handlers_.size(); ++i) {
     URLHandler handler = *url_handlers_[i].first;
     if (handler && handler(url, profile)) {

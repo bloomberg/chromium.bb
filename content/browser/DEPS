@@ -7,8 +7,6 @@ include_rules = [
   # See https://sites.google.com/a/chromium.org/dev/developers/content-module
   # for more information.
 
-  "+chrome/browser/browser_url_handler.h",
-
   # http://crbug.com/82782
   "+chrome/browser/download/download_file_manager.h",
   "+chrome/browser/download/download_manager.h",

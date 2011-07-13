@@ -196,6 +196,16 @@ void MockContentBrowserClient::UpdateInspectorSetting(
 void MockContentBrowserClient::ClearInspectorSettings(RenderViewHost* rvh) {
 }
 
+void MockContentBrowserClient::BrowserURLHandlerCreated(
+    BrowserURLHandler* handler) {
+}
+
+void MockContentBrowserClient::ClearCache(RenderViewHost* rvh) {
+}
+
+void MockContentBrowserClient::ClearCookies(RenderViewHost* rvh) {
+}
+
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 int MockContentBrowserClient::GetCrashSignalFD(
     const std::string& process_type) {
@@ -209,11 +219,5 @@ crypto::CryptoModuleBlockingPasswordDelegate*
   return NULL;
 }
 #endif
-
-void MockContentBrowserClient::ClearCache(RenderViewHost* rvh) {
-}
-
-void MockContentBrowserClient::ClearCookies(RenderViewHost* rvh) {
-}
 
 }  // namespace content

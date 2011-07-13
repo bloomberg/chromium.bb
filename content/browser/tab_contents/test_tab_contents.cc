@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "chrome/browser/browser_url_handler.h"
+#include "content/browser/browser_url_handler.h"
 #include "content/browser/renderer_host/mock_render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/test_render_view_host.h"

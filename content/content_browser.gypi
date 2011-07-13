@@ -57,6 +57,8 @@
         'browser/browser_message_filter.h',
         'browser/browser_thread.cc',
         'browser/browser_thread.h',
+        'browser/browser_url_handler.cc',
+        'browser/browser_url_handler.h',
         'browser/browsing_instance.cc',
         'browser/browsing_instance.h',
         'browser/cancelable_request.cc',

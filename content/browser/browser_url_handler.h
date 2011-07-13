@@ -9,8 +9,8 @@
 // random web pages (because from the resource loader's perspective, these
 // URL schemes don't exist).
 
-#ifndef CHROME_BROWSER_BROWSER_URL_HANDLER_H_
-#define CHROME_BROWSER_BROWSER_URL_HANDLER_H_
+#ifndef CONTENT_BROWSER_BROWSER_URL_HANDLER_H_
+#define CONTENT_BROWSER_BROWSER_URL_HANDLER_H_
 #pragma once
 
 #include <vector>
@@ -46,9 +46,11 @@ class BrowserURLHandler {
   bool ReverseURLRewrite(GURL* url, const GURL& original,
                          Profile* profile);
 
-  // We initialize the list of url_handlers_ lazily the first time
-  // RewriteURLIfNecessary is called.
-  void InitURLHandlers();
+  // Add the specified handler pair to the list of URL handlers.
+  void AddHandlerPair(URLHandler handler, URLHandler reverse_handler);
+
+  // Returns the null handler for use with |AddHandlerPair()|.
+  static URLHandler null_handler();
 
  private:
   // This object is a singleton:
@@ -60,16 +62,10 @@ class BrowserURLHandler {
   typedef std::pair<URLHandler, URLHandler> HandlerPair;
   std::vector<HandlerPair> url_handlers_;
 
-  // Returns the null handler for use with |AddHandlerPair()|.
-  static URLHandler null_handler();
-
-  // Add the specified handler pair to the list of URL handlers.
-  void AddHandlerPair(URLHandler handler, URLHandler reverse_handler);
-
   FRIEND_TEST_ALL_PREFIXES(BrowserURLHandlerTest, BasicRewriteAndReverse);
   FRIEND_TEST_ALL_PREFIXES(BrowserURLHandlerTest, NullHandlerReverse);
 
   DISALLOW_COPY_AND_ASSIGN(BrowserURLHandler);
 };
 
-#endif  // CHROME_BROWSER_BROWSER_URL_HANDLER_H_
+#endif  // CONTENT_BROWSER_BROWSER_URL_HANDLER_H_
