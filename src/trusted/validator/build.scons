@@ -13,4 +13,5 @@ Import('env')
 #
 lib_env = env.Clone();
 lib_env.Append(CPPPATH=['${TARGET_ROOT}'])
-lib_env.ComponentLibrary('ncfileutils', ['ncfileutil.c'])
+lib_env.ComponentLibrary(lib_env.NaClTargetArchSuffix('ncfileutils'),
+                         ['ncfileutil.c'])

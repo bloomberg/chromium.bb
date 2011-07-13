@@ -14,18 +14,9 @@ trusted_env = env['TRUSTED_ENV']
 # between libraries.
 VALIDATOR_LIBS = []
 if trusted_env.Bit('target_x86'):
-  if trusted_env.Bit('target_x86_64'):
-    VALIDATOR_LIBS += ['ncvalidate_x86_64',
-                       'ncval_reg_sfi_x86_64',
-                       'nccopy_x86_64',
-                       'ncval_base_x86_64']
-  else:
-    VALIDATOR_LIBS += ['ncvalidate_x86_32',
-                       'ncval_seg_sfi_x86_32',
-                       'nccopy_x86_32',
-                       'ncval_base_x86_32']
+  VALIDATOR_LIBS += [trusted_env.NaClTargetArchSuffix('ncvalidate')]
 elif trusted_env.Bit('target_arm'):
-  VALIDATOR_LIBS += ['ncvalidate_arm_v2', 'arm_validator_core']
+  VALIDATOR_LIBS += ['ncvalidate_arm_v2']
 
 DEBUG_LIBS = ['debug_stub_init', 'gdb_rsp', 'debug_stub']
 

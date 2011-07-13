@@ -479,6 +479,12 @@ def EnsureRequiredBuildWarnings(env):
 
 pre_base_env.AddMethod(EnsureRequiredBuildWarnings)
 
+# ----------------------------------------------------------
+# Method to add target suffix to name.
+def NaClTargetArchSuffix(env, name):
+  return name + '_' + env['TARGET_FULLARCH'].replace('-', '_')
+
+pre_base_env.AddMethod(NaClTargetArchSuffix)
 
 # ----------------------------------------------------------
 # Generic Test Wrapper
@@ -834,7 +840,6 @@ def FixupArmEnvironment():
   for key, value in arm_env.iteritems():
     if key in shell_exports:
       os.environ[key] = value
-
 
 # Source setup bash scripts and glean the settings.
 if (pre_base_env.Bit('target_arm') and

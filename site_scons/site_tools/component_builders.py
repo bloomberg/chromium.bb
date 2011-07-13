@@ -1,6 +1,7 @@
 #!/usr/bin/python2.4
-# Copyright 2009, Google Inc.
-# All rights reserved.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
@@ -32,7 +33,7 @@
 
 
 import SCons
-
+import library_deps
 
 __component_list = {}
 
@@ -136,7 +137,9 @@ def _ComponentPlatformSetup(env, builder_name, **kwargs):
     # The SubstList2 method expands and flattens so that scons will
     # correctly know about the library dependencies in cases like
     # EXTRA_LIBS=['${FOO_LIBS}', 'bar'].
-    env['LIBS'] = env.SubstList2('${EXTRA_LIBS}', '${LIBS}')
+    env['LIBS'] = (library_deps.AddLibDeps(env['TARGET_FULLARCH'],
+                                           env.SubstList2('${EXTRA_LIBS}')) +
+                   env.SubstList2('${LIBS}'))
 
   # Call platform-specific component setup function, if any
   if env.get('COMPONENT_PLATFORM_SETUP'):

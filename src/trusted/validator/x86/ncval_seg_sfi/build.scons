@@ -28,10 +28,6 @@ if env.AllBits('windows', 'debug'):
 # TODO(bradchen): eliminate need for the following line
 env.FilterOut(CCFLAGS=['-Wextra', '-Wswitch-enum', '-Wsign-compare'])
 
-# Convert a library name into a target specific libary name
-def TargetLib(env, name):
-  return name + '_' + env['TARGET_FULLARCH'].replace('-', '_')
-
 # Create environment for command-line tools and testing, rather than
 # part of the TCB. Then define compile-time flag that communicates
 # that we are compiling in the test environment (rather than for the TCB).
@@ -39,9 +35,5 @@ test_env = env.Clone();
 test_env.Append(CCFLAGS=['-DNACL_TRUSTED_BUT_NOT_TCB'])
 
 # Segment register validator library
-NCVALIDATE_SOURCES = ['ncdecode.c',
-                      'ncvalidate.c',
-                      ]
-
-env.ComponentLibrary(TargetLib(env, 'ncval_seg_sfi'),
-                     NCVALIDATE_SOURCES)
+env.ComponentLibrary(env.NaClTargetArchSuffix('ncval_seg_sfi'),
+                     ['ncdecode.c', 'ncvalidate.c'])

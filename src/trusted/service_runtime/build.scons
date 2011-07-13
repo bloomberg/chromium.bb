@@ -243,27 +243,17 @@ if env.Bit('windows'):
       ],
   )
 
-VALIDATOR_LIBS = []
+if env.Bit('target_x86'):
+  VALIDATOR_LIB = env.NaClTargetArchSuffix('ncvalidate')
+elif env.Bit('target_arm'):
+  VALIDATOR_LIB = 'ncvalidate_arm_v2'
+else:
+  # Unknown architecture
+  raise AssertionError('Unknown architecture')
+
 if ((not env.Bit('coverage_enabled') or not env.Bit('windows')) and
     not env.CrossToolsBuild()):
 
-
-  if env.Bit('target_x86'):
-    if env.Bit('target_x86_64'):
-      VALIDATOR_LIBS += ['ncvalidate_x86_64',
-                         'ncval_reg_sfi_x86_64',
-                         'nccopy_x86_64',
-                         'ncval_base_x86_64']
-    else:
-      VALIDATOR_LIBS += ['ncvalidate_x86_32',
-                         'ncval_seg_sfi_x86_32',
-                         'nccopy_x86_32',
-                         'ncval_base_x86_32']
-  elif env.Bit('target_arm'):
-    VALIDATOR_LIBS += ['ncvalidate_arm_v2', 'arm_validator_core']
-  else:
-    # Unknown architecture
-    assert 0
 
   # TODO(ncbray) why do we need to link against Cocoa?
   # run_fake_browser_ppapi_test fails on mac, otherwise.
@@ -272,26 +262,27 @@ if ((not env.Bit('coverage_enabled') or not env.Bit('windows')) and
   if env.Bit('mac'):
     sel_ldr_env.Append(FRAMEWORKS=['Cocoa'])
 
-  SEL_LDR_NODE = sel_ldr_env.ComponentProgram('sel_ldr',
-                                          'sel_main.c',
-                                          EXTRA_LIBS=['sel',
-                                                      'env_cleanser',
-                                                      'nacl_error_code',
-                                                      'manifest_proxy',
-                                                      'simple_service',
-                                                      'thread_interface',
-                                                      'gio_wrapped_desc',
-                                                      'nonnacl_srpc',
-                                                      'nrd_xfer',
-                                                      'nacl_perf_counter',
-                                                      'nacl_base',
-                                                      'imc',
-                                                      'container',
-                                                      'platform',
-                                                      'platform_qual_lib',
-                                                      'gio',
-                                                      ] + VALIDATOR_LIBS
-                                                      + DEBUG_LIBS)
+  SEL_LDR_NODE = sel_ldr_env.ComponentProgram(
+      'sel_ldr',
+      'sel_main.c',
+      EXTRA_LIBS=['sel',
+                  'env_cleanser',
+                  'nacl_error_code',
+                  'manifest_proxy',
+                  'simple_service',
+                  'thread_interface',
+                  'gio_wrapped_desc',
+                  'nonnacl_srpc',
+                  'nrd_xfer',
+                  'nacl_perf_counter',
+                  'nacl_base',
+                  'imc',
+                  'container',
+                  'platform',
+                  'platform_qual_lib',
+                  'gio',
+                  VALIDATOR_LIB,
+                  ] + DEBUG_LIBS)
 
   # NOTE: we do not have segments on ARM
   if env.Bit('build_x86'):
@@ -342,24 +333,25 @@ unittest_inputs = [
 
 if (not env.CrossToolsBuild() and
     (not env.Bit('coverage_enabled') or not env.Bit('windows'))):
-  unit_tests_exe = gtest_env.ComponentProgram('service_runtime_tests',
-                                              unittest_inputs,
-                                              EXTRA_LIBS=['gtest',
-                                                          'sel',
-                                                          'env_cleanser',
-                                                          'manifest_proxy',
-                                                          'simple_service',
-                                                          'thread_interface',
-                                                          'gio_wrapped_desc',
-                                                          'nonnacl_srpc',
-                                                          'nrd_xfer',
-                                                          'nacl_perf_counter',
-                                                          'nacl_base',
-                                                          'imc',
-                                                          'platform',
-                                                          'gio',
-                                                          ] + VALIDATOR_LIBS
-                                                          + DEBUG_LIBS)
+  unit_tests_exe = gtest_env.ComponentProgram(
+      'service_runtime_tests',
+      unittest_inputs,
+      EXTRA_LIBS=['gtest',
+                  'sel',
+                  'env_cleanser',
+                  'manifest_proxy',
+                  'simple_service',
+                  'thread_interface',
+                  'gio_wrapped_desc',
+                  'nonnacl_srpc',
+                  'nrd_xfer',
+                  'nacl_perf_counter',
+                  'nacl_base',
+                  'imc',
+                  'platform',
+                  'gio',
+                  VALIDATOR_LIB,
+                  ] + DEBUG_LIBS)
   gtest_env.Requires(unit_tests_exe, crt)
 
   node = gtest_env.CommandTest(
@@ -397,23 +389,24 @@ else:
 if ((not env.Bit('windows') or not env.Bit('coverage_enabled')) and
     not env.CrossToolsBuild()):
   # NOTE: uses validator
-  mmap_test_exe = env.ComponentProgram('mmap_test',
-                                           ['mmap_test.c'],
-                                           EXTRA_LIBS=['sel',
-                                                       'env_cleanser',
-                                                       'manifest_proxy',
-                                                       'simple_service',
-                                                       'thread_interface',
-                                                       'gio_wrapped_desc',
-                                                       'nonnacl_srpc',
-                                                       'nrd_xfer',
-                                                       'nacl_perf_counter',
-                                                       'nacl_base',
-                                                       'imc',
-                                                       'platform',
-                                                       'gio',
-                                                       ] + VALIDATOR_LIBS
-                                                        + DEBUG_LIBS)
+  mmap_test_exe = env.ComponentProgram(
+      'mmap_test',
+      ['mmap_test.c'],
+      EXTRA_LIBS=['sel',
+                  'env_cleanser',
+                  'manifest_proxy',
+                  'simple_service',
+                  'thread_interface',
+                  'gio_wrapped_desc',
+                  'nonnacl_srpc',
+                  'nrd_xfer',
+                  'nacl_perf_counter',
+                  'nacl_base',
+                  'imc',
+                  'platform',
+                  'gio',
+                  VALIDATOR_LIB,
+                  ] + DEBUG_LIBS)
   env.Requires(mmap_test_exe, crt)
 
   # TODO(robertm): This test emits lots of messages to stderr
@@ -449,8 +442,8 @@ nacl_sync_cond_test_exe = env.ComponentProgram(
                 'imc',
                 'platform',
                 'gio',
-                ] + VALIDATOR_LIBS
-                 + DEBUG_LIBS)
+                VALIDATOR_LIB,
+                ] + DEBUG_LIBS)
 env.Requires(nacl_sync_cond_test_exe, crt)
 node = env.CommandTest(
     'nacl_sync_cond_test.out',
@@ -633,26 +626,26 @@ if not env.CrossToolsBuild():
 if ((not env.Bit('windows') or not env.Bit('coverage_enabled')) and
     not env.CrossToolsBuild()):
   obj_proxy_test_inputs = [ 'fs/obj_proxy_test.c', ]
-  obj_proxy_test = env.ComponentProgram('obj_proxy_test',
-                                            obj_proxy_test_inputs,
-                                            EXTRA_LIBS=['sel',
-                                                        'env_cleanser',
-                                                        'manifest_proxy',
-                                                        'simple_service',
-                                                        'thread_interface',
-                                                        'gio_wrapped_desc',
-                                                        'nonnacl_srpc',
-                                                        'nrd_xfer',
-                                                        'nacl_perf_counter',
-                                                        'nacl_base',
-                                                        'imc',
-                                                        'platform',
-                                                        'gio',
-                                                        'nacl_xdr',
-                                                        'container',
-                                                        ] + VALIDATOR_LIBS
-                                                        + DEBUG_LIBS)
-
+  obj_proxy_test = env.ComponentProgram(
+      'obj_proxy_test',
+      obj_proxy_test_inputs,
+      EXTRA_LIBS=['sel',
+                  'env_cleanser',
+                  'manifest_proxy',
+                  'simple_service',
+                  'thread_interface',
+                  'gio_wrapped_desc',
+                  'nonnacl_srpc',
+                  'nrd_xfer',
+                  'nacl_perf_counter',
+                  'nacl_base',
+                  'imc',
+                  'platform',
+                  'gio',
+                  'nacl_xdr',
+                  'container',
+                  VALIDATOR_LIB,
+                  ] + DEBUG_LIBS)
 
   node = env.CommandTest(
       'obj_proxy_test.out',
@@ -793,8 +786,8 @@ if (not env.CrossToolsBuild() and
                   'imc',
                   'platform',
                   'gio',
-                  ] + VALIDATOR_LIBS
-                  + DEBUG_LIBS)
+                  VALIDATOR_LIB,
+                  ] + DEBUG_LIBS)
 
   # NaClAbort() behaves differently when code coverage is enabled: it
   # calls exit() rather than abort().

@@ -12,10 +12,6 @@ Import('env')
 #
 if not env.Bit('target_x86'): Return()
 
-# Convert a library name into a target specific libary name
-def TargetLib(env, name):
-  return name + '_' + env['TARGET_FULLARCH'].replace('-', '_')
-
 # Make a copy of debug CRT for now.
 # TODO(bradnelson): there should be a better way to generalize this requirement.
 # NOTE: debug builds on windows break without this
@@ -31,7 +27,7 @@ lib_env = env.Clone();
 lib_env.Append(CPPPATH=['${TARGET_ROOT}'])
 lib_env.FilterOut(CCFLAGS=['-Wextra', '-Wswitch-enum', '-Wsign-compare'])
 
-lib_env.ComponentLibrary(TargetLib(lib_env, 'ncval_base'), [
+lib_env.ComponentLibrary(lib_env.NaClTargetArchSuffix('ncval_base'), [
     'error_reporter.c',
     'halt_trim.c',
     'nacl_cpuid.c',
@@ -45,9 +41,10 @@ lib_env.ComponentLibrary(TargetLib(lib_env, 'ncval_base'), [
 test_env = lib_env.Clone();
 test_env.Append(CCFLAGS=['-DNACL_TRUSTED_BUT_NOT_TCB'])
 
-nacl_cpuid = test_env.ComponentProgram('nacl_cpuid',
-                                       ['nacl_cpuid_test.c'],
-                                       EXTRA_LIBS=[TargetLib(test_env, 'ncval_base')])
+nacl_cpuid = test_env.ComponentProgram(
+    'nacl_cpuid',
+    ['nacl_cpuid_test.c'],
+    EXTRA_LIBS=[test_env.NaClTargetArchSuffix('ncval_base')])
 
 test_env.Requires(nacl_cpuid, crt)
 node = test_env.CommandTest(
@@ -78,11 +75,11 @@ for source in gtest_sources:
     'x86_validator_tests_' + source,
     [source+'_tests.cc'],
     EXTRA_LIBS=['gtest',
-                TargetLib(gtest_env, 'ncvalidate'),
-                TargetLib(gtest_env, 'ncval_base'),
+                gtest_env.NaClTargetArchSuffix('ncvalidate'),
+                gtest_env.NaClTargetArchSuffix('ncval_base'),
                 'platform',
                 'gio',
-                ]);
+                ])
   test_node = gtest_env.CommandTest(
       source+'Tests.out',
       command=[test_exe])

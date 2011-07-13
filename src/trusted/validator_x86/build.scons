@@ -28,10 +28,6 @@ if env.AllBits('windows', 'debug'):
 # TODO(bradchen): eliminate need for the following line
 env.FilterOut(CCFLAGS=['-Wextra', '-Wswitch-enum', '-Wsign-compare'])
 
-# Convert a library name into a target specific libary name
-def TargetLib(env, name):
-  return name + '_' + env['TARGET_FULLARCH'].replace('-', '_')
-
 #
 #
 # ncopcode_desc_o
@@ -152,11 +148,10 @@ ncdecode_tablegen = gen_env.ComponentProgram(
      ncopcode_desc_o,
      force_cpp_o,
     ],
-    EXTRA_LIBS=[
-        TargetLib(gen_env, 'ncval_base'),
-        'utils',
-        'gio',
-        'platform'])
+    EXTRA_LIBS=[gen_env.NaClTargetArchSuffix('ncval_base'),
+                'utils',
+                'gio',
+                'platform'])
 
 gen_env.Requires(ncdecode_tablegen, crt)
 
@@ -243,14 +238,14 @@ env_decode_table['COVERAGE_LINKCOM_EXTRAS'] = None
 ncdecode_table = env_decode_table.ComponentProgram(
     'ncdecode_table',
     ['ncdecode_table.c'],
-    EXTRA_LIBS=[TargetLib(env_decode_table, 'ncval_base')])
+    EXTRA_LIBS=[env_decode_table.NaClTargetArchSuffix('ncval_base')])
 
 env.Requires(ncdecode_table, crt)
 
 # SFI validator library.
 # Note: When loading this library, follow it with ncvalidate, since
 # it contains many routines and constants needed by this library.
-env.ComponentLibrary(TargetLib(env, 'ncval_reg_sfi'),
+env.ComponentLibrary(env.NaClTargetArchSuffix('ncval_reg_sfi'),
                      ['ncvalidate_iter.c',
                       'ncvalidator_registry.c',
                       'nc_opcode_histogram.c',
@@ -271,7 +266,7 @@ env.ComponentLibrary(TargetLib(env, 'ncval_reg_sfi'),
 
 # The following are common library components that use elements
 # of both x86-32 and x86-64 validators.
-test_env.ComponentLibrary(TargetLib(env, 'ncdis_util'),
+test_env.ComponentLibrary(test_env.NaClTargetArchSuffix('ncdis_util'),
                           ['ncdis_util.c',
                            'ncdis_segments.c',
                            'ncval_driver.c',
@@ -281,7 +276,7 @@ test_env.ComponentLibrary(TargetLib(env, 'ncdis_util'),
 # The following are copycode routines for x86-32 and x86-64.
 # TODO(karl): Break this up so that we don't need to load
 # non-shared code in library.
-env.ComponentLibrary(TargetLib(env, 'nccopy'), [
+env.ComponentLibrary(env.NaClTargetArchSuffix('nccopy'), [
     'nccopycode.c',
     'nccopycode_stores.S',
     ])
@@ -330,9 +325,9 @@ if test_env.Bit('target_x86_32'):
     ncdecode_tests = test_env.ComponentProgram(
         'ncdecode_tests',
         ['ncdecode_tests.c'],
-        EXTRA_LIBS=[TargetLib(env, 'ncdis_util'),
-                    TargetLib(env, 'ncval_seg_sfi'),
-                    TargetLib(env, 'ncval_base'),
+        EXTRA_LIBS=[test_env.NaClTargetArchSuffix('ncdis_util'),
+                    test_env.NaClTargetArchSuffix('ncval_seg_sfi'),
+                    test_env.NaClTargetArchSuffix('ncval_base'),
                     'platform',
                     'gio'
                     ])
@@ -350,16 +345,15 @@ ncdis = test_env.ComponentProgram(
     'ncdis.c',
     force_cpp_o,
   ],
-  EXTRA_LIBS=[
-    TargetLib(test_env, 'ncdis_util'),
-    TargetLib(test_env, 'ncval_seg_sfi'),
-    TargetLib(test_env, 'ncval_reg_sfi'),
-    TargetLib(test_env, 'ncval_base'),
-    'ncfileutils',
-    'utils',
-    'platform',
-    'gio'
-  ])
+  EXTRA_LIBS=[test_env.NaClTargetArchSuffix('ncdis_util'),
+              test_env.NaClTargetArchSuffix('ncval_seg_sfi'),
+              test_env.NaClTargetArchSuffix('ncval_reg_sfi'),
+              test_env.NaClTargetArchSuffix('ncval_base'),
+              test_env.NaClTargetArchSuffix('ncfileutils'),
+              'utils',
+              'platform',
+              'gio'
+              ])
 
 env.Requires(ncdis, crt)
 
@@ -369,11 +363,11 @@ if test_env.Bit('target_x86_32'):
   ncval_tests = test_env.ComponentProgram(
       'ncval_tests',
       ['ncval_tests.c'],
-      EXTRA_LIBS=[TargetLib(test_env, 'ncval_seg_sfi'),
-                  TargetLib(test_env, 'ncdis_util'),
-                  TargetLib(test_env, 'ncval_seg_sfi'),
-                  TargetLib(test_env, 'ncval_base'),
-                  'ncfileutils',
+      EXTRA_LIBS=[test_env.NaClTargetArchSuffix('ncval_seg_sfi'),
+                  test_env.NaClTargetArchSuffix('ncdis_util'),
+                  test_env.NaClTargetArchSuffix('ncval_seg_sfi'),
+                  test_env.NaClTargetArchSuffix('ncval_base'),
+                  test_env.NaClTargetArchSuffix('ncfileutils'),
                   'platform',
                   'gio'])
   test_env.Requires(ncval_tests, crt)
@@ -454,16 +448,15 @@ ncval = test_env.ComponentProgram(
     'ncval.c',
     force_cpp_o,
   ],
-  EXTRA_LIBS=[
-    TargetLib(test_env, 'ncval_reg_sfi'),
-    TargetLib(test_env, 'ncval_seg_sfi'),
-    TargetLib(test_env, 'ncdis_util'),
-    TargetLib(test_env, 'ncval_base'),
-    'ncfileutils',
-    'platform',
-    'gio',
-    'utils'
-  ])
+  EXTRA_LIBS=[test_env.NaClTargetArchSuffix('ncval_reg_sfi'),
+              test_env.NaClTargetArchSuffix('ncval_seg_sfi'),
+              test_env.NaClTargetArchSuffix('ncdis_util'),
+              test_env.NaClTargetArchSuffix('ncval_base'),
+              test_env.NaClTargetArchSuffix('ncfileutils'),
+              'platform',
+              'gio',
+              'utils'
+              ])
 
 test_env.SDKInstallTrusted('ncval', ncval)
 
@@ -665,12 +658,12 @@ for source in gtest_sources:
     'x86_validator_tests_' + source,
     [source+'_tests.cc'],
     EXTRA_LIBS=['gtest',
-                TargetLib(gtest_env, 'ncval_seg_sfi'),
-                TargetLib(gtest_env, 'ncval_reg_sfi'),
-                TargetLib(gtest_env, 'ncval_base'),
+                gtest_env.NaClTargetArchSuffix('ncval_seg_sfi'),
+                gtest_env.NaClTargetArchSuffix('ncval_reg_sfi'),
+                gtest_env.NaClTargetArchSuffix('ncval_base'),
                 'platform',
                 'gio',
-                ]);
+                ])
   test_node = gtest_env.CommandTest(
       source+'Tests.out',
       command=[test_exe])
