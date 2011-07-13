@@ -163,6 +163,33 @@ TEST(XKeyboardTest, TestCreateFullXkbLayoutNameBasic) {
       "jp", GetMap(kVoidKey, kVoidKey, kVoidKey)).find(",us"));
 }
 
+TEST(XKeyboardTest, TestCreateFullXkbLayoutNameKeepCapsLock) {
+  EXPECT_STREQ("us(colemak)+chromeos(search_disabled_disabled)",
+               CreateFullXkbLayoutName(
+                   "us(colemak)",
+                   // The 1st kVoidKey should be ignored.
+                   GetMap(kVoidKey, kVoidKey, kVoidKey)).c_str());
+  EXPECT_STREQ("de(neo)+"
+               "chromeos(search_leftcontrol_leftcontrol_keepralt),us",
+               CreateFullXkbLayoutName(
+                   // The 1st kLeftControlKey should be ignored.
+                   "de(neo)", GetMap(kLeftControlKey,
+                                     kLeftControlKey,
+                                     kLeftControlKey)).c_str());
+}
+
+TEST(XKeyboardTest, TestCreateFullXkbLayoutNameKeepAlt) {
+  EXPECT_STREQ("us(intl)+chromeos(disabled_disabled_disabled_keepralt)",
+               CreateFullXkbLayoutName(
+                   "us(intl)", GetMap(kVoidKey, kVoidKey, kVoidKey)).c_str());
+  EXPECT_STREQ("kr(kr104)+"
+               "chromeos(leftcontrol_leftcontrol_leftcontrol_keepralt),us",
+               CreateFullXkbLayoutName(
+                   "kr(kr104)", GetMap(kLeftControlKey,
+                                       kLeftControlKey,
+                                       kLeftControlKey)).c_str());
+}
+
 // Tests if CreateFullXkbLayoutName and ExtractLayoutNameFromFullXkbLayoutName
 // functions could handle all combinations of modifier remapping.
 TEST(XKeyboardTest, TestCreateFullXkbLayoutNameModifierKeys) {

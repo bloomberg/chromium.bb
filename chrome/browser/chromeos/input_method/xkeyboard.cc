@@ -82,19 +82,20 @@ const char* kCapsLockRemapped[] = {
   "en_US_colemak",
 };
 
-
-bool KeepRightAlt(const std::string& layout_name) {
+bool KeepRightAlt(const std::string& xkb_layout_name) {
+  const std::string overlay_id = GetKeyboardOverlayIdFromXkb(xkb_layout_name);
   for (size_t c = 0; c < arraysize(kKeepRightAltOverlays); ++c) {
-    if (GetKeyboardOverlayIdFromXkb(layout_name) == kKeepRightAltOverlays[c]) {
+    if (overlay_id == kKeepRightAltOverlays[c]) {
       return true;
     }
   }
   return false;
 }
 
-bool KeepCapsLock(const std::string& layout_name) {
+bool KeepCapsLock(const std::string& xkb_layout_name) {
+  const std::string overlay_id = GetKeyboardOverlayIdFromXkb(xkb_layout_name);
   for (size_t c = 0; c < arraysize(kCapsLockRemapped); ++c) {
-    if (GetKeyboardOverlayIdFromXkb(layout_name) == kCapsLockRemapped[c]) {
+    if (overlay_id == kCapsLockRemapped[c]) {
       return true;
     }
   }
