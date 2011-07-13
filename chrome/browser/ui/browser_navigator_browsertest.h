@@ -25,8 +25,6 @@ struct NavigateParams;
 class BrowserNavigatorTest : public InProcessBrowserTest,
                              public NotificationObserver {
  protected:
-  GURL GetGoogleURL() const;
-
   browser::NavigateParams MakeNavigateParams() const;
   browser::NavigateParams MakeNavigateParams(Browser* browser) const;
 
