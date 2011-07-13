@@ -183,9 +183,11 @@ class SpecialTabsTest(pyauto.PyUITest):
         lambda: self.GetDOMValue('document.getElementById("result").innerHTML'),
                                  expect_retval='SUCCESS')
     self.GetBrowserWindow(0).GetTab(0).GoBack()
-    test_utils.StringContentCheck(self, self.GetTabContents(),
-                                  ['Manifest', 'Remove this AppCache'],
-                                  [])
+    test_utils.StringContentCheck(
+        self, self.GetTabContents(),
+        ['Manifest',
+         'http://static.webvm.net/appcache-test/resources/simple.manifest'],
+        [])
 
   def _VerifyAboutDNS(self):
     """Confirm about:dns contains expected content related to DNS info.
