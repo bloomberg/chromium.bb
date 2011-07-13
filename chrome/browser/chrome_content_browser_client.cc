@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "chrome/app/breakpad_mac.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/character_encoding.h"
 #include "chrome/browser/chrome_plugin_message_filter.h"
 #include "chrome/browser/chrome_quota_permission_context.h"
@@ -685,5 +686,24 @@ crypto::CryptoModuleBlockingPasswordDelegate*
       browser::kCryptoModulePasswordKeygen, url.host());
 }
 #endif
+
+void ChromeContentBrowserClient::ClearCache(RenderViewHost* rvh) {
+  Profile* profile = rvh->site_instance()->GetProcess()->profile();
+  BrowsingDataRemover* remover = new BrowsingDataRemover(profile,
+      BrowsingDataRemover::EVERYTHING,
+      base::Time());
+  remover->Remove(BrowsingDataRemover::REMOVE_CACHE);
+  // BrowsingDataRemover takes care of deleting itself when done.
+}
+
+void ChromeContentBrowserClient::ClearCookies(RenderViewHost* rvh) {
+  Profile* profile = rvh->site_instance()->GetProcess()->profile();
+  BrowsingDataRemover* remover = new BrowsingDataRemover(profile,
+      BrowsingDataRemover::EVERYTHING,
+      base::Time());
+  int remove_mask = BrowsingDataRemover::REMOVE_COOKIES;
+  remover->Remove(remove_mask);
+  // BrowsingDataRemover takes care of deleting itself when done.
+}
 
 }  // namespace chrome

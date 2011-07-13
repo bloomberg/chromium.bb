@@ -255,6 +255,12 @@ class ContentBrowserClient {
       crypto::CryptoModuleBlockingPasswordDelegate* GetCryptoPasswordDelegate(
           const GURL& url) = 0;
 #endif
+
+  // Clears browser cache.
+  virtual void ClearCache(RenderViewHost* rvh) = 0;
+
+  // Clears browser cookies.
+  virtual void ClearCookies(RenderViewHost* rvh) = 0;
 };
 
 }  // namespace content

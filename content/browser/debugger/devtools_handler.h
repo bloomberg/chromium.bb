@@ -27,6 +27,8 @@ class DevToolsHandler : public RenderViewHostObserver {
                 const std::string& content);
   void OnRuntimePropertyChanged(const std::string& name,
                                 const std::string& value);
+  void OnClearBrowserCache();
+  void OnClearBrowserCookies();
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsHandler);
 };

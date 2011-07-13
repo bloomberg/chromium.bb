@@ -54,6 +54,8 @@ class DevToolsAgent : public RenderViewObserver,
   virtual WebKit::WebDevToolsAgentClient::WebKitClientMessageLoop*
       createClientMessageLoop();
   virtual bool exposeV8DebuggerProtocol();
+  virtual void clearBrowserCache();
+  virtual void clearBrowserCookies();
 
   void OnAttach(const DevToolsRuntimeProperties& runtime_properties);
   void OnDetach();

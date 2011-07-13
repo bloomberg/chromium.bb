@@ -4,6 +4,7 @@
 
 #include "content/browser/debugger/devtools_handler.h"
 
+#include "content/browser/content_browser_client.h"
 #include "content/browser/debugger/devtools_file_util.h"
 #include "content/browser/debugger/devtools_manager.h"
 #include "content/browser/debugger/devtools_window.h"
@@ -33,6 +34,9 @@ bool DevToolsHandler::OnMessageReceived(const IPC::Message& message) {
                         OnSaveAs)
     IPC_MESSAGE_HANDLER(DevToolsHostMsg_RuntimePropertyChanged,
                         OnRuntimePropertyChanged)
+    IPC_MESSAGE_HANDLER(DevToolsHostMsg_ClearBrowserCache, OnClearBrowserCache)
+    IPC_MESSAGE_HANDLER(DevToolsHostMsg_ClearBrowserCookies,
+                        OnClearBrowserCookies)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -97,4 +101,12 @@ void DevToolsHandler::OnRuntimePropertyChanged(const std::string& name,
                                                const std::string& value) {
   DevToolsManager::GetInstance()->RuntimePropertyChanged(
       render_view_host(), name, value);
+}
+
+void DevToolsHandler::OnClearBrowserCache() {
+  content::GetContentClient()->browser()->ClearCache(render_view_host());
+}
+
+void DevToolsHandler::OnClearBrowserCookies() {
+  content::GetContentClient()->browser()->ClearCookies(render_view_host());
 }

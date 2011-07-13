@@ -109,6 +109,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       crypto::CryptoModuleBlockingPasswordDelegate* GetCryptoPasswordDelegate(
           const GURL& url) OVERRIDE;
 #endif
+
+  virtual void ClearCache(RenderViewHost* rvh);
+  virtual void ClearCookies(RenderViewHost* rvh);
 };
 
 }  // namespace chrome

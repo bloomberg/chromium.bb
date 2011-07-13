@@ -210,4 +210,10 @@ crypto::CryptoModuleBlockingPasswordDelegate*
 }
 #endif
 
+void MockContentBrowserClient::ClearCache(RenderViewHost* rvh) {
+}
+
+void MockContentBrowserClient::ClearCookies(RenderViewHost* rvh) {
+}
+
 }  // namespace content

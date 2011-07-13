@@ -137,6 +137,13 @@ bool DevToolsAgent::exposeV8DebuggerProtocol() {
   return expose_v8_debugger_protocol_;
 }
 
+void DevToolsAgent::clearBrowserCache() {
+  Send(new DevToolsHostMsg_ClearBrowserCache(routing_id()));
+}
+
+void DevToolsAgent::clearBrowserCookies() {
+  Send(new DevToolsHostMsg_ClearBrowserCookies(routing_id()));
+}
 
 // static
 DevToolsAgent* DevToolsAgent::FromHostId(int host_id) {

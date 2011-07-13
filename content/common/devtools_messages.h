@@ -146,6 +146,12 @@ IPC_MESSAGE_ROUTED2(DevToolsHostMsg_RuntimePropertyChanged,
                     std::string /* name */,
                     std::string /* value */)
 
+// Clears browser cache.
+IPC_MESSAGE_ROUTED0(DevToolsHostMsg_ClearBrowserCache)
+
+// Clears browser cookies.
+IPC_MESSAGE_ROUTED0(DevToolsHostMsg_ClearBrowserCookies)
+
 
 //-----------------------------------------------------------------------------
 // These are messages sent from the inspected page renderer to the worker
