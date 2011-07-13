@@ -126,7 +126,7 @@ function dateToText(value) {
   if (result)
     return result;
 
-  var lastAccessTime = new Date(value);
+  var time = new Date(value);
   var now = new Date();
   var delta = Date.now() - value;
 
@@ -154,7 +154,7 @@ function dateToText(value) {
     result = Math.ceil(delta / DAY) + ' day ago ';
   }
 
-  result += '(' + lastAccessTime.toString() + ')';
+  result += '(' + time.toString() + ')';
   return result;
 }
 
@@ -273,7 +273,7 @@ function handleAvailableSpace(event) {
 };
 
 /**
- * Event Handler for |cr.quota.onGlobalDataUpdated|.
+ * Event Handler for |cr.quota.onGlobalInfoUpdated|.
  * |event.detail| contains a record which has:
  *   |type|:
  *     Storage type, that is either 'temporary' or 'persistent'.
@@ -286,9 +286,9 @@ function handleAvailableSpace(event) {
  *
  *  |usage|, |unlimitedUsage| and |quota| can be missing,
  *  and some additional fields can be included.
- * @param {CustomEvent} event GlobalDataUpdated event.
+ * @param {CustomEvent} event GlobalInfoUpdated event.
  */
-function handleGlobalData(event) {
+function handleGlobalInfo(event) {
   /**
    * @type {{
    *         type: {!string},
@@ -301,10 +301,13 @@ function handleGlobalData(event) {
   var storageObject = getStorageObject(data.type);
   copyAttributes_(data, storageObject.detail.payload);
   storageObject.reveal();
+  if (getTreeViewObject().selectedItem == storageObject)
+    updateDescription();
+
 };
 
 /**
- * Event Handler for |cr.quota.onHostDataUpdated|.
+ * Event Handler for |cr.quota.onPerHostInfoUpdated|.
  * |event.detail| contains records which have:
  *   |host|:
  *     Hostname of the entry. (e.g. 'example.com')
@@ -317,9 +320,9 @@ function handleGlobalData(event) {
  *
  * |usage| and |quota| can be missing,
  * and some additional fields can be included.
- * @param {CustomEvent} event HostDataUpdated event.
+ * @param {CustomEvent} event PerHostInfoUpdated event.
  */
-function handleHostData(event) {
+function handlePerHostInfo(event) {
   /**
    * @type {Array<{
    *         host: {!string},
@@ -335,11 +338,14 @@ function handleHostData(event) {
     var hostObject = getHostObject(data.type, data.host);
     copyAttributes_(data, hostObject.detail.payload);
     hostObject.reveal();
+    if (getTreeViewObject().selectedItem == hostObject)
+      updateDescription();
+
   }
 }
 
 /**
- * Event Handler for |cr.quota.onOriginDataUpdated|.
+ * Event Handler for |cr.quota.onPerOriginInfoUpdated|.
  * |event.detail| contains records which have:
  *   |origin|:
  *     Origin URL of the entry.
@@ -354,12 +360,15 @@ function handleHostData(event) {
  *   |lastAccessTime|:
  *     Last storage access time from the origin.
  *     Number of milliseconds since UNIX epoch (Jan 1, 1970, 0:00:00 UTC).
+ *   |lastModifiedTime|:
+ *     Last modified time of the storage from the origin.
+ *     Number of milliseconds since UNIX epoch.
  *
- * |inUse|, |usedCount| and |lastAccessTime| can be missing,
+ * |inUse|, |usedCount|, |lastAccessTime| and |lastModifiedTime| can be missing,
  * and some additional fields can be included.
- * @param {CustomEvent} event OriginDataUpdated event.
+ * @param {CustomEvent} event PerOriginInfoUpdated event.
  */
-function handleOriginData(event) {
+function handlePerOriginInfo(event) {
   /**
    * @type {Array<{
    *         origin: {!string},
@@ -368,6 +377,7 @@ function handleOriginData(event) {
    *         inUse: {?boolean},
    *         usedCount: {?number},
    *         lastAccessTime: {?number}
+   *         lastModifiedTime: {?number}
    *       }>}
    */
   var dataArray = event.detail;
@@ -377,6 +387,8 @@ function handleOriginData(event) {
     var originObject = getOriginObject(data.type, data.host, data.origin);
     copyAttributes_(data, originObject.detail.payload);
     originObject.reveal();
+    if (getTreeViewObject().selectedItem == originObject)
+      updateDescription();
   }
 }
 
@@ -425,6 +437,8 @@ function updateDescription() {
                        ['inUse', 'Origin is in use?'],
                        ['usedCount', 'Used count'],
                        ['lastAccessTime', 'Last Access Time',
+                        dateToText],
+                       ['lastModifiedTime', 'Last Modified Time',
                         dateToText]
                       ];
     for (var i = 0; i < keyAndLabel.length; ++i) {
@@ -508,13 +522,14 @@ function onLoad() {
 
   cr.quota.onAvailableSpaceUpdated.addEventListener('update',
                                                     handleAvailableSpace);
-  cr.quota.onGlobalDataUpdated.addEventListener('update', handleGlobalData);
-  cr.quota.onHostDataUpdated.addEventListener('update', handleHostData);
-  cr.quota.onOriginDataUpdated.addEventListener('update', handleOriginData);
+  cr.quota.onGlobalInfoUpdated.addEventListener('update', handleGlobalInfo);
+  cr.quota.onPerHostInfoUpdated.addEventListener('update', handlePerHostInfo);
+  cr.quota.onPerOriginInfoUpdated.addEventListener('update',
+                                                   handlePerOriginInfo);
   cr.quota.onStatisticsUpdated.addEventListener('update', handleStatistics);
-  cr.quota.requestData();
+  cr.quota.requestInfo();
 
-  $('refresh-button').addEventListener('click', cr.quota.requestData, false);
+  $('refresh-button').addEventListener('click', cr.quota.requestInfo, false);
   $('dump-button').addEventListener('click', dump, false);
 }
 

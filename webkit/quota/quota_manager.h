@@ -30,6 +30,10 @@ class MessageLoopProxy;
 }
 class FilePath;
 
+namespace quota_internals {
+class QuotaInternalsProxy;
+}
+
 namespace quota {
 
 struct QuotaManagerDeleter;
@@ -222,6 +226,7 @@ class QuotaManager : public QuotaTaskObserver,
   typedef std::map<HostAndType, UsageAndQuotaDispatcherTask*>
       UsageAndQuotaDispatcherTaskMap;
 
+  friend class quota_internals::QuotaInternalsProxy;
   friend struct QuotaManagerDeleter;
   friend class MockStorageClient;
   friend class QuotaManagerProxy;

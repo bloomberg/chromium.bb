@@ -4,10 +4,11 @@
 
 #include "chrome/browser/ui/webui/quota_internals_ui.h"
 
-#include <algorithm>
 #include <string>
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "chrome/browser/ui/webui/quota_internals_handler.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/json_value_serializer.h"
@@ -17,7 +18,8 @@
 
 QuotaInternalsUI::QuotaInternalsUI(TabContents* contents)
     : ChromeWebUI(contents) {
-  // TODO(tzik): implement and attach message handler
+  WebUIMessageHandler* handler = new quota_internals::QuotaInternalsHandler;
+  AddMessageHandler(handler->Attach(this));
   contents->profile()->GetChromeURLDataManager()->
       AddDataSource(new quota_internals::QuotaInternalsHTMLSource);
 }

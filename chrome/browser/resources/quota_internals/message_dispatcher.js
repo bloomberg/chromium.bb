@@ -18,25 +18,25 @@ cr.define('cr.quota', function() {
   'use strict';
 
   /**
-   * Post requestData message to Browser.
+   * Post requestInfo message to Browser.
    */
-  function requestData() {
-    chrome.send('requestData');
+  function requestInfo() {
+    chrome.send('requestInfo');
   }
 
   /**
    * Callback entry point from Browser.
    * Messages are Dispatched as Event to:
    *   * onAvailableSpaceUpdated,
-   *   * onGlobalDataUpdated,
-   *   * onHostDataUpdated,
-   *   * onOriginDataUpdated,
+   *   * onGlobalInfoUpdated,
+   *   * onPerHostInfoUpdated,
+   *   * onPerOriginInfoUpdated,
    *   * onStatisticsUpdated.
    * @param {string} message Message label. Possible Values are:
    *   * 'AvailableSpaceUpdated',
-   *   * 'GlobalDataUpdated',
-   *   * 'HostDataUpdated',
-   *   * 'OriginDataUpdated',
+   *   * 'GlobalInfoUpdated',
+   *   * 'PerHostInfoUpdated',
+   *   * 'PerOriginInfoUpdated',
    *   * 'StatisticsUpdated'.
    * @param {Object} detail Message specific additional data.
    */
@@ -46,14 +46,14 @@ cr.define('cr.quota', function() {
       case 'AvailableSpaceUpdated':
         target = cr.quota.onAvailableSpaceUpdated;
         break;
-      case 'GlobalDataUpdated':
-        target = cr.quota.onGlobalDataUpdated;
+      case 'GlobalInfoUpdated':
+        target = cr.quota.onGlobalInfoUpdated;
         break;
-      case 'HostDataUpdated':
-        target = cr.quota.onHostDataUpdated;
+      case 'PerHostInfoUpdated':
+        target = cr.quota.onPerHostInfoUpdated;
         break;
-      case 'OriginDataUpdated':
-        target = cr.quota.onOriginDataUpdated;
+      case 'PerOriginInfoUpdated':
+        target = cr.quota.onPerOriginInfoUpdated;
         break;
       case 'StatisticsUpdated':
         target = cr.quota.onStatisticsUpdated;
@@ -71,12 +71,12 @@ cr.define('cr.quota', function() {
 
   return {
     onAvailableSpaceUpdated: new cr.EventTarget(),
-    onGlobalDataUpdated: new cr.EventTarget(),
-    onHostDataUpdated: new cr.EventTarget(),
-    onOriginDataUpdated: new cr.EventTarget(),
+    onGlobalInfoUpdated: new cr.EventTarget(),
+    onPerHostInfoUpdated: new cr.EventTarget(),
+    onPerOriginInfoUpdated: new cr.EventTarget(),
     onStatisticsUpdated: new cr.EventTarget(),
 
-    requestData: requestData,
+    requestInfo: requestInfo,
     messageHandler: messageHandler
   };
 });
