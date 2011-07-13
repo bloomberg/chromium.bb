@@ -144,7 +144,7 @@ void SearchProvider::Start(const AutocompleteInput& input,
     default_provider = NULL;
 
   if (keyword_provider == default_provider)
-    keyword_provider = NULL;  // No use in querying the same provider twice.
+    default_provider = NULL;  // No use in querying the same provider twice.
 
   if (!default_provider && !keyword_provider) {
     // No valid providers.
@@ -715,7 +715,7 @@ int SearchProvider::CalculateRelevanceForHistory(const Time& time,
     // Searches with the past two days get a different curve.
     const double autocomplete_time= 2 * 24 * 60 * 60;
     if (elapsed_time < autocomplete_time) {
-      return 1399 - static_cast<int>(99 *
+      return (is_keyword ? 1599 : 1399) - static_cast<int>(99 *
           std::pow(elapsed_time / autocomplete_time, 2.5));
     }
     elapsed_time -= autocomplete_time;
@@ -821,6 +821,7 @@ void SearchProvider::AddMatchToMap(const string16& query_string,
   if (is_keyword) {
     match.fill_into_edit.append(
         providers_.keyword_provider().keyword() + char16(' '));
+    search_start += providers_.keyword_provider().keyword().size() + 1;
   }
   match.fill_into_edit.append(query_string);
   // Not all suggestions start with the original input.

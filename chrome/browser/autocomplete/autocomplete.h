@@ -112,6 +112,7 @@
 //
 // QUERY input type:
 // --------------------------------------------------------------------|-----
+// Search Primary or Secondary (past query in history within 2 days)   | 1599**
 // Keyword (non-substituting or in keyword UI mode, exact match)       | 1500
 // Keyword (substituting, exact match)                                 | 1450
 // Extension App (exact match)                                         | 1425
