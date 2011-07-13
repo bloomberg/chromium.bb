@@ -10,7 +10,7 @@
 // exported to consumers, and NET_TEST that allows unit tests to access features
 // not intended to be used directly by real consumers.
 
-#if defined(COMPONENT_BUILD)
+#if defined(NET_DLL)
 #if defined(WIN32)
 
 #if defined(NET_IMPLEMENTATION)
@@ -26,7 +26,7 @@
 #define NET_TEST __attribute__((visibility("default")))
 #endif
 
-#else  /// defined(COMPONENT_BUILD)
+#else  /// defined(NET_DLL)
 #define NET_API
 #define NET_TEST
 #endif

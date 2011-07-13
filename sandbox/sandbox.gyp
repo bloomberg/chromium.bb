@@ -239,7 +239,6 @@
           'dependencies': [
             '../testing/gtest.gyp:gtest',
             '../base/base.gyp:base_nacl_win64',
-            '../base/base.gyp:base_static_win64',
           ],
           'configurations': {
             'Common_Base': {

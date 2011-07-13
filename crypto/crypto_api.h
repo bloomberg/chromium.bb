@@ -6,7 +6,7 @@
 #define CRYPTO_CRYPTO_API_H_
 #pragma once
 
-#if defined(COMPONENT_BUILD)
+#if defined(CRYPTO_DLL)
 #if defined(WIN32)
 
 #if defined(CRYPTO_IMPLEMENTATION)
@@ -19,7 +19,7 @@
 #define CRYPTO_API __attribute__((visibility("default")))
 #endif
 
-#else  // defined(COMPONENT_BUILD)
+#else  // defined(CRYPTO_DLL)
 #define CRYPTO_API
 #endif
 

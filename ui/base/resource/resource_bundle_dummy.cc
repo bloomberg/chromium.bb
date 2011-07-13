@@ -8,19 +8,26 @@
 
 #include "base/logging.h"
 #include "base/synchronization/lock.h"
+#include "ui/gfx/font.h"
+#include "ui/gfx/platform_font_win.h"
 
 // NOTE(gregoryd): This is a hack to avoid creating more nacl_win64-specific
 // files. The font members of ResourceBundle are never initialized in our code
-// so we can get away with an empty class definition.
+// so this destructor is never called.
 namespace gfx {
-class Font {};
+Font::~Font() {
+  NOTREACHED();
+}
+PlatformFontWin::HFontRef::~HFontRef() {
+  NOTREACHED();
+}
 }
 
 namespace ui {
 
 ResourceBundle* ResourceBundle::g_shared_instance_ = NULL;
 
-// static
+/* static */
 std::string ResourceBundle::InitSharedInstance(
     const std::string& pref_locale) {
   DCHECK(g_shared_instance_ == NULL) << "ResourceBundle initialized twice";
@@ -28,7 +35,7 @@ std::string ResourceBundle::InitSharedInstance(
   return std::string();
 }
 
-// static
+/* static */
 void ResourceBundle::CleanupSharedInstance() {
   if (g_shared_instance_) {
     delete g_shared_instance_;
@@ -36,7 +43,7 @@ void ResourceBundle::CleanupSharedInstance() {
   }
 }
 
-// static
+/* static */
 ResourceBundle& ResourceBundle::GetSharedInstance() {
   // Must call InitSharedInstance before this function.
   CHECK(g_shared_instance_ != NULL);

@@ -14,11 +14,11 @@ namespace net {
 // to TLS False Start. Because this set is several hundred long, it's
 // precompiled by the code in ssl_false_start_blacklist_process.cc into a hash
 // table for fast lookups.
-class SSLFalseStartBlacklist {
+class NET_TEST SSLFalseStartBlacklist {
  public:
   // IsMember returns true if the given host is in the blacklist.
   //   host: a DNS name in dotted form (i.e. "www.example.com")
-  NET_TEST static bool IsMember(const char* host);
+  static bool IsMember(const char* host);
 
   // Hash returns the modified djb2 hash of the given string.
   static unsigned Hash(const char* str) {

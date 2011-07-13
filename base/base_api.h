@@ -6,7 +6,7 @@
 #define BASE_BASE_API_H_
 #pragma once
 
-#if defined(COMPONENT_BUILD)
+#if defined(BASE_DLL)
 #if defined(WIN32)
 
 #if defined(BASE_IMPLEMENTATION)
@@ -19,7 +19,7 @@
 #define BASE_API __attribute__((visibility("default")))
 #endif
 
-#else  // defined(COMPONENT_BUILD)
+#else  // defined(BASE_DLL)
 #define BASE_API
 #endif
 

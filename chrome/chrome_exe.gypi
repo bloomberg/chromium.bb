@@ -505,7 +505,6 @@
             '../breakpad/breakpad.gyp:breakpad_handler_win64',
             '../breakpad/breakpad.gyp:breakpad_sender_win64',
             '../base/base.gyp:base_nacl_win64',
-            '../base/base.gyp:base_static_win64',
             '../sandbox/sandbox.gyp:sandbox_win64',
           ],
           'defines': [
