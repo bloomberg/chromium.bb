@@ -21,7 +21,7 @@ class BookmarkExpandedStateTracker : public BaseBookmarkModelObserver {
   typedef std::set<const BookmarkNode*> Nodes;
 
   BookmarkExpandedStateTracker(Profile* profile, const char* path);
-  ~BookmarkExpandedStateTracker();
+  virtual ~BookmarkExpandedStateTracker();
 
   // The set of expanded nodes.
   void SetExpandedNodes(const Nodes& nodes);
