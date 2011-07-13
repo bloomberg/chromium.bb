@@ -355,7 +355,14 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
 }
 
 gfx::Size TabStrip::GetPreferredSize() {
-  return gfx::Size(0, Tab::GetMinimumUnselectedSize().height());
+  // Report the minimum width as the size required for a single selected tab
+  // plus the new tab button. Don't base it on the actual number of tabs because
+  // it's undesirable to have the minimum window size change when a new tab is
+  // opened.
+  int needed_width = Tab::GetMinimumSelectedSize().width();
+  needed_width += kNewTabButtonHOffset - kTabHOffset;
+  needed_width += newtab_button_bounds_.width();
+  return gfx::Size(needed_width, Tab::GetMinimumUnselectedSize().height());
 }
 
 void TabStrip::OnDragEntered(const DropTargetEvent& event) {
