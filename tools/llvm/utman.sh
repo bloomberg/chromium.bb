@@ -1075,7 +1075,7 @@ llvm-needs-make() {
   local srcdir="${TC_SRC_LLVM}"
   local objdir="${TC_BUILD_LLVM}"
 
-  ts-modified "$srcdir" "$objdir"
+  ts-modified "${srcdir}" "${objdir}"
   return $?
 }
 
@@ -1526,7 +1526,7 @@ libstdcpp-needs-make() {
   local srcdir="${TC_SRC_LIBSTDCPP}"
   local objdir="${TC_BUILD_LIBSTDCPP}"
 
-  ts-modified "$srcdir" "$objdir"
+  ts-modified "${srcdir}" "${objdir}"
   return $?
 }
 
@@ -2079,6 +2079,18 @@ google-perftools-clean() {
   rm -rf "${TC_BUILD_GOOGLE_PERFTOOLS}"
 }
 
+google-perftools-needs-configure() {
+  [ ! -f "${TC_BUILD_GOOGLE_PERFTOOLS}/config.status" ]
+  return $?
+}
+
+google-perftools-needs-make() {
+  local srcdir="${TC_SRC_GOOGLE_PERFTOOLS}"
+  local objdir="${TC_BUILD_GOOGLE_PERFTOOLS}"
+  ts-modified "${srcdir}" "${objdir}"
+}
+
+#+ google-perftools-configure - conifgure tcmalloc-minimal for bitcode
 google-perftools-configure() {
   local src="${TC_SRC_GOOGLE_PERFTOOLS}"/google-perftools
   local flags="-static"
@@ -2102,23 +2114,49 @@ google-perftools-configure() {
   spopd
 }
 
-#+ build-google-perftools - Build libtcmalloc_minimal for use with newlib
-#                           sandboxed binaries
-build-google-perftools() {
-  StepBanner "GOOGLE-PERFTOOLS (tcmalloc)"
-  google-perftools-configure
-
-  spushd "${TC_BUILD_GOOGLE_PERFTOOLS}"
+#+ google-perftools-make - Make tcmalloc-minimal in bitcode
+google-perftools-make() {
+  local objdir="${TC_BUILD_GOOGLE_PERFTOOLS}"
+  spushd "${objdir}"
   StepBanner "GOOGLE-PERFTOOLS" "Make"
+  ts-touch-open "${objdir}"
   RunWithLog google-perftools.make \
     make -j ${UTMAN_CONCURRENCY}
+  ts-touch-commit "${objdir}"
+  spopd
+}
+
+#+ google-perftools-install - Install libtcmalloc_minimal.a into toolchain
+google-perftools-install() {
   StepBanner "GOOGLE-PERFTOOLS" "Install"
+  spushd "${TC_BUILD_GOOGLE_PERFTOOLS}"
   RunWithLog google-perftools.install \
     make install
-  spopd
-  mkdir -p "${PNACL_SDK_LIB}"
+
+  mkdir -p "${PNACL_LIB_ROOT}"
   cp "${TC_BUILD_GOOGLE_PERFTOOLS}"/install/lib/libtcmalloc_minimal.a \
-    "${PNACL_SDK_LIB}"
+    "${PNACL_LIB_ROOT}"
+  spopd
+}
+
+#+ google-perftools - Build libtcmalloc_minimal for use with newlib
+#                           sandboxed binaries
+google-perftools() {
+  StepBanner "GOOGLE-PERFTOOLS (tcmalloc)"
+
+  if google-perftools-needs-configure; then
+    google-perftools-clean
+    google-perftools-configure
+  else
+    SkipBanner "GOOGLE-PERFTOOLS" "Configure"
+  fi
+
+  if google-perftools-needs-make; then
+      google-perftools-make
+  else
+    SkipBanner "GOOGLE-PERFTOOLS" "Make"
+  fi
+  google-perftools-install
 }
 
 #---------------------------------------------------------------------
@@ -2335,7 +2373,7 @@ install-translators() {
   fi
 
   if ${LIBMODE_NEWLIB}; then
-      build-google-perftools
+      google-perftools
   fi
   local srpc_kind=$1
   check-sb-mode ${srpc_kind}
