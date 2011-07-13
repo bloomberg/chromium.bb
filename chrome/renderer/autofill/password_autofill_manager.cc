@@ -467,7 +467,11 @@ bool PasswordAutofillManager::ShowSuggestionPopup(
   std::vector<string16> labels(suggestions.size());
   std::vector<string16> icons(suggestions.size());
   std::vector<int> ids(suggestions.size(), 0);
+#if defined(CRBUG_72758_FIXED)
+  webview->applyAutofillSuggestions(
+#else
   webview->applyAutoFillSuggestions(
+#endif
       user_input, suggestions, labels, icons, ids, -1);
   return true;
 }

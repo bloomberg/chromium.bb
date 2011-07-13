@@ -68,7 +68,7 @@ TEST_F(RenderViewTest, SendForms) {
                 0,
                 false))) << forms[0].fields[2];
 
-  // Verify that |didAcceptAutoFillSuggestion()| sends the expected number of
+  // Verify that |didAcceptAutofillSuggestion()| sends the expected number of
   // fields.
   WebFrame* web_frame = GetMainFrame();
   WebDocument document = web_frame->document();
@@ -78,7 +78,11 @@ TEST_F(RenderViewTest, SendForms) {
   // Accept suggestion that contains a label.  Labeled items indicate Autofill
   // as opposed to Autocomplete.  We're testing this distinction below with
   // the |AutofillHostMsg_FillAutofillFormData::ID| message.
+#if defined(CRBUG_72758_FIXED)
+  autofill_agent_->didAcceptAutofillSuggestion(
+#else
   autofill_agent_->didAcceptAutoFillSuggestion(
+#endif
       firstname,
       WebKit::WebString::fromUTF8("Johnny"),
       WebKit::WebString::fromUTF8("Home"),
@@ -133,7 +137,7 @@ TEST_F(RenderViewTest, FillFormElement) {
       AutofillHostMsg_FormsSeen::ID);
   ASSERT_EQ(static_cast<IPC::Message*>(NULL), message);
 
-  // Verify that |didAcceptAutoFillSuggestion()| sets the value of the expected
+  // Verify that |didAcceptAutofillSuggestion()| sets the value of the expected
   // field.
   WebFrame* web_frame = GetMainFrame();
   WebDocument document = web_frame->document();
@@ -145,7 +149,11 @@ TEST_F(RenderViewTest, FillFormElement) {
 
   // Accept a suggestion in a form that has been auto-filled.  This triggers
   // the direct filling of the firstname element with value parameter.
+#if defined(CRBUG_72758_FIXED)
+  autofill_agent_->didAcceptAutofillSuggestion(firstname,
+#else
   autofill_agent_->didAcceptAutoFillSuggestion(firstname,
+#endif
                                                WebString::fromUTF8("David"),
                                                WebString(),
                                                0,
