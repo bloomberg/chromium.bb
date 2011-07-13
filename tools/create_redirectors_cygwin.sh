@@ -21,26 +21,22 @@ fi
 echo "WARNING: hang can occur on FAT, use NTFS"
 
 
-# Before:
-#   bin/
-#     nacl64-foo
-#     nacl64-bar
-#   nacl64/
-#     bin/
-#       bar
+# Redirectors on windows:
+#   NaCl tools are cygwin programs. To run, they need cygwin DLLs of the same
+#   or later version of cygwin they were compiled with.
 #
-# After(=> redirector):
-#   bin/
-#     nacl64-foo => ../libexec/nacl64-foo
-#     nacl64-bar => ../libexec/nacl64-bar
-#     nacl-foo   => ../libexec/nacl64-foo
-#     nacl-bar   => ../libexec/nacl64-bar
-#   libexec/
-#     nacl64-foo
-#     nacl64-bar
-#   nacl64/
-#     bin/
-#       bar => ../../libexec/nacl64-bar
+#   To avoid requiring users to install or upgrade cygwin, we couple the tools
+#   with the corresponding DLLs. We place these DLLs in every directory where
+#   the tools are, so that windows algorithm for locating DLLs pick DLLs
+#   provided by us.
+#
+#   Unfortunately, when cygwin program is forked/execed by another cygwin
+#   program, both are required to use the same version of cygwin DLLs. The
+#   common case is when user starts a tool from cygwin bash.
+#
+#   This is solved by hiding actual tools under /libexec (which is a directory
+#   for programs to be run by other programs rather than by users) and providing
+#   trivial non-cygwin redirectors (launchers) for these tools.
 #
 # Symbolic links vs. hard links:
 #   On windows/cygwin, hard links are needed to run linked programs outside of
@@ -48,26 +44,29 @@ echo "WARNING: hang can occur on FAT, use NTFS"
 #   Here we handle only the windows/cygwin case and use the hard links.
 
 
-# Move each "/bin/nacl64-foo" to "/libexec/nacl64-foo" unless it is a redirector
-for exe in "$prefix/bin/nacl64-"*.exe; do
-  if ! cmp -s ./redirector.exe "$exe"; then
-    mv -f "$exe" "$prefix/libexec/"
+# Destination of a redirector is always under /libexec. When redirector source
+# name is equal to redirector destination name, it means the source is an actual
+# tool to be hidden under /libexec.
+#
+# Redirector source can be updated after the redirector was created. Overwrite
+# the destination in this case.
+
+./redirector.exe | while IFS='|' read src dst arg; do
+  if [[ -e "$prefix/$src" ]]; then
+    if ! cmp -s ./redirector.exe "$prefix/$src"; then
+      if [[ "$(basename "$src")" = "$(basename "$dst")" ]]; then
+        mv -f "$prefix/$src" "$prefix/$dst"
+      fi
+    fi
   fi
 done
 
+# Install redirectors for existing redirector destinations.
 
-# For each "/libexec/nacl64-foo" create "/bin/nacl64-foo" and "/bin/nacl-foo"
-for exe in "$prefix/libexec/nacl64-"*.exe; do
-  name="$(basename "$exe")"
-  ln -fn ./redirector.exe "$prefix/bin/$name"
-  ln -fn ./redirector.exe "$prefix/bin/nacl-${name/nacl64-}"
-done
-
-
-# For each "/nacl64/bin/bar" create "/nacl64/bin/bar"
-for exe in "$prefix/nacl64/bin/"*.exe; do
-  name="$(basename "$exe")"
-  ln -fn ./redirector.exe "$prefix/nacl64/bin/$name"
+./redirector.exe | while IFS='|' read src dst arg; do
+  if [[ -e "$prefix/$dst" ]]; then
+    ln -fn ./redirector.exe "$prefix/$src"
+  fi
 done
 
 
@@ -81,7 +80,6 @@ done
 #       add link to the dll in the directory
 #
 # We dump all DLLs and filter /usr/bin DLLs later to save cygpath calls.
-
 
 find "$prefix" -name "*.exe" -print0 | while read -r -d $'\0' exe; do
   dir="$(dirname "$exe")"
