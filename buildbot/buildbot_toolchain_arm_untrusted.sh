@@ -6,6 +6,11 @@
 set -u
 set -e
 
+# On Windows, this script is invoked from a batch file.
+# The inherited PWD environmental variable is a Windows-style path.
+# This can cause problems with pwd and bash. This line fixes it.
+cd -P .
+
 # Script assumed to be run in native_client/
 if [[ $(pwd) != */native_client ]]; then
   echo 'ERROR: must be run in native_client/ directory!'
