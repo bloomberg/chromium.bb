@@ -2297,12 +2297,22 @@ void NativeWidgetWin::RedrawLayeredWindowContents() {
 
 void NativeWidgetWin::LockUpdates() {
   lock_updates_ = true;
-  saved_window_style_ = GetWindowLong(GWL_STYLE);
-  SetWindowLong(GWL_STYLE, saved_window_style_ & ~WS_VISIBLE);
+
+  // We skip locked updates when Aero is on for two reasons:
+  // 1. Because it isn't necessary
+  // 2. Because toggling the WS_VISIBLE flag may occur while the GPU process is
+  //    attempting to present a child window's backbuffer onscreen. When these
+  //    two actions race with one another, the child window will either flicker
+  //    or will simply stop updating entirely.
+  if (!IsAeroGlassEnabled()) {
+    saved_window_style_ = GetWindowLong(GWL_STYLE);
+    SetWindowLong(GWL_STYLE, saved_window_style_ & ~WS_VISIBLE);
+  }
 }
 
 void NativeWidgetWin::UnlockUpdates() {
-  SetWindowLong(GWL_STYLE, saved_window_style_);
+  if (!IsAeroGlassEnabled())
+    SetWindowLong(GWL_STYLE, saved_window_style_);
   lock_updates_ = false;
 }
 
