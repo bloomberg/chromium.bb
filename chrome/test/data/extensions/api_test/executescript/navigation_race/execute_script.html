@@ -1,8 +1,9 @@
 <script src="test.js"></script>
 <script>
 function executeCodeInTab(tabId, callback) {
-  chrome.tabs.executeScript(tabId,
-                            {code: "console.log('hi')"},
-                            callback);
+  chrome.tabs.executeScript(
+      tabId,
+      {code: "document.title = 'hi, I\\'m on ' + location;"},
+      callback);
 }
 </script>

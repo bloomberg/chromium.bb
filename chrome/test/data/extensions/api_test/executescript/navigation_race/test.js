@@ -13,10 +13,23 @@ chrome.test.getConfig(function(config) {
       chrome.tabs.onUpdated.removeListener(onTabUpdated);
       chrome.tabs.update(tabId, {url: urlB});
       executeCodeInTab(testTabId, function() {
-        chrome.test.assertTrue(
-            chrome.extension.lastError.message.indexOf(
-                'Cannot access contents of url "http://a.com:') == 0);
-        chrome.test.notifyPass();
+        // Generally, the tab navigation hasn't happened by the time we execute
+        // the script, so it's still showing a.com, where we don't have
+        // permission to run it.
+        if (chrome.extension.lastError) {
+          chrome.test.assertTrue(
+              chrome.extension.lastError.message.indexOf(
+                  'Cannot access contents of url "http://a.com:') == 0);
+          chrome.test.notifyPass();
+        } else {
+          // If there were no errors, then the script did run, but it should
+          // have run on on b.com (where we do have permission).
+          chrome.tabs.get(tabId, function(tab) {
+            chrome.test.assertTrue(
+                tab.title.indexOf("hi, I'm on http://b.com:") == 0);
+            chrome.test.notifyPass();
+          });
+        }
       });
     }
   }
