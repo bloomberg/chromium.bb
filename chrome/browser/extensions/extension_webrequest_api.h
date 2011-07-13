@@ -115,7 +115,7 @@ class ExtensionWebRequestEventRouter {
   // Dispatches the OnBeforeRequest event to any extensions whose filters match
   // the given request. Returns net::ERR_IO_PENDING if an extension is
   // intercepting the request, OK otherwise.
-  int OnBeforeRequest(ProfileId profile_id,
+  int OnBeforeRequest(void* profile,
                       ExtensionInfoMap* extension_info_map,
                       net::URLRequest* request,
                       net::CompletionCallback* callback,
@@ -125,7 +125,7 @@ class ExtensionWebRequestEventRouter {
   // requests only, and allows modification of the outgoing request headers.
   // Returns net::ERR_IO_PENDING if an extension is intercepting the request, OK
   // otherwise.
-  int OnBeforeSendHeaders(ProfileId profile_id,
+  int OnBeforeSendHeaders(void* profile,
                           ExtensionInfoMap* extension_info_map,
                           net::URLRequest* request,
                           net::CompletionCallback* callback,
@@ -133,7 +133,7 @@ class ExtensionWebRequestEventRouter {
 
   // Dispatches the onRequestSent event. This is fired for HTTP(s) requests
   // only.
-  void OnRequestSent(ProfileId profile_id,
+  void OnRequestSent(void* profile,
                      ExtensionInfoMap* extension_info_map,
                      uint64 request_id,
                      const net::HostPortPair& socket_address,
@@ -141,34 +141,34 @@ class ExtensionWebRequestEventRouter {
 
   // Dispatches the onBeforeRedirect event. This is fired for HTTP(s) requests
   // only.
-  void OnBeforeRedirect(ProfileId profile_id,
+  void OnBeforeRedirect(void* profile,
                         ExtensionInfoMap* extension_info_map,
                         net::URLRequest* request,
                         const GURL& new_location);
 
   // Dispatches the onResponseStarted event indicating that the first bytes of
   // the response have arrived.
-  void OnResponseStarted(ProfileId profile_id,
+  void OnResponseStarted(void* profile,
                          ExtensionInfoMap* extension_info_map,
                          net::URLRequest* request);
 
   // Dispatches the onComplete event.
-  void OnCompleted(ProfileId profile_id,
+  void OnCompleted(void* profile,
                    ExtensionInfoMap* extension_info_map,
                    net::URLRequest* request);
 
   // Dispatches an onErrorOccurred event.
-  void OnErrorOccurred(ProfileId profile_id,
+  void OnErrorOccurred(void* profile,
                       ExtensionInfoMap* extension_info_map,
                       net::URLRequest* request);
 
   // Notifications when objects are going away.
-  void OnURLRequestDestroyed(ProfileId profile_id, net::URLRequest* request);
-  void OnHttpTransactionDestroyed(ProfileId profile_id, uint64 request_id);
+  void OnURLRequestDestroyed(void* profile, net::URLRequest* request);
+  void OnHttpTransactionDestroyed(void* profile, uint64 request_id);
 
   // Called when an event listener handles a blocking event and responds.
   void OnEventHandled(
-      ProfileId profile_id,
+      void* profile,
       const std::string& extension_id,
       const std::string& event_name,
       const std::string& sub_event_name,
@@ -180,7 +180,7 @@ class ExtensionWebRequestEventRouter {
   // the extension process to correspond to the given filter and
   // extra_info_spec.
   void AddEventListener(
-      ProfileId profile_id,
+      void* profile,
       const std::string& extension_id,
       const std::string& event_name,
       const std::string& sub_event_name,
@@ -190,33 +190,33 @@ class ExtensionWebRequestEventRouter {
 
   // Removes the listener for the given sub-event.
   void RemoveEventListener(
-      ProfileId profile_id,
+      void* profile,
       const std::string& extension_id,
       const std::string& sub_event_name);
 
   // Called when an incognito profile is created or destroyed.
-  void OnOTRProfileCreated(ProfileId original_profile_id,
-                           ProfileId otr_profile_id);
-  void OnOTRProfileDestroyed(ProfileId original_profile_id,
-                             ProfileId otr_profile_id);
+  void OnOTRProfileCreated(void* original_profile,
+                           void* otr_profile);
+  void OnOTRProfileDestroyed(void* original_profile,
+                             void* otr_profile);
 
  private:
   friend struct DefaultSingletonTraits<ExtensionWebRequestEventRouter>;
   struct EventListener;
   struct BlockedRequest;
   typedef std::map<std::string, std::set<EventListener> > ListenerMapForProfile;
-  typedef std::map<ProfileId, ListenerMapForProfile> ListenerMap;
+  typedef std::map<void*, ListenerMapForProfile> ListenerMap;
   typedef std::map<uint64, BlockedRequest> BlockedRequestMap;
   typedef std::map<uint64, net::URLRequest*> HttpRequestMap;
   // Map of request_id -> bit vector of EventTypes already signaled
   typedef std::map<uint64, int> SignaledRequestMap;
-  typedef std::map<ProfileId, ProfileId> CrossProfileMap;
+  typedef std::map<void*, void*> CrossProfileMap;
 
   ExtensionWebRequestEventRouter();
   ~ExtensionWebRequestEventRouter();
 
   bool DispatchEvent(
-      ProfileId profile_id,
+      void* profile,
       net::URLRequest* request,
       const std::vector<const EventListener*>& listeners,
       const base::ListValue& args);
@@ -225,7 +225,7 @@ class ExtensionWebRequestEventRouter {
   // on their filter parameters. |extra_info_spec| will contain the combined
   // set of extra_info_spec flags that every matching listener asked for.
   std::vector<const EventListener*> GetMatchingListeners(
-      ProfileId profile_id,
+      void* profile,
       ExtensionInfoMap* extension_info_map,
       const std::string& event_name,
       const GURL& url,
@@ -236,7 +236,7 @@ class ExtensionWebRequestEventRouter {
 
   // Same as above, but retrieves the filter parameters from the request.
   std::vector<const EventListener*> GetMatchingListeners(
-      ProfileId profile_id,
+      void* profile,
       ExtensionInfoMap* extension_info_map,
       const std::string& event_name,
       net::URLRequest* request,
@@ -246,7 +246,7 @@ class ExtensionWebRequestEventRouter {
   // of the event, the next time for the "cross" profile (i.e. the incognito
   // profile if the event is originally for the normal profile, or vice versa).
   void GetMatchingListenersImpl(
-      ProfileId profile_id,
+      void* profile,
       ExtensionInfoMap* extension_info_map,
       bool crosses_incognito,
       const std::string& event_name,

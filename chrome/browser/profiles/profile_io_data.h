@@ -16,7 +16,6 @@
 #include "base/synchronization/lock.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/prefs/pref_member.h"
-#include "chrome/browser/profiles/profile.h"
 #include "content/browser/resource_context.h"
 #include "net/base/cookie_monster.h"
 
@@ -28,6 +27,7 @@ class ExtensionInfoMap;
 class HostContentSettingsMap;
 class HostZoomMap;
 class IOThread;
+class Profile;
 class ProtocolHandlerRegistry;
 
 namespace fileapi {
@@ -170,8 +170,10 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
     // because on linux it relies on initializing things through gconf,
     // and needs to be on the main thread.
     scoped_ptr<net::ProxyConfigService> proxy_config_service;
-    // The profile this struct was populated from.
-    ProfileId profile_id;
+    // The profile this struct was populated from. It's passed as a void* to
+    // ensure it's not accidently used on the IO thread. Before using it  on the
+    // UI thread, call ProfileManager::IsValidProfile to ensure it's alive.
+    void* profile;
   };
 
   explicit ProfileIOData(bool is_incognito);

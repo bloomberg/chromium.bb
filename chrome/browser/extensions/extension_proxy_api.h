@@ -14,7 +14,6 @@
 #include "base/string16.h"
 #include "chrome/browser/extensions/extension_preference_api.h"
 #include "chrome/browser/prefs/proxy_prefs.h"
-#include "chrome/browser/profiles/profile.h"
 
 class ExtensionEventRouterForwarder;
 
@@ -49,11 +48,11 @@ class ExtensionProxyEventRouter {
   static ExtensionProxyEventRouter* GetInstance();
 
   void OnProxyError(ExtensionEventRouterForwarder* event_router,
-                    ProfileId profile_id,
+                    void* profile,
                     int error_code);
 
   void OnPACScriptError(ExtensionEventRouterForwarder* event_router,
-                        ProfileId profile_id,
+                        void* profile,
                         int line_number,
                         const string16& error);
 

@@ -14,7 +14,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/process.h"
 #include "chrome/browser/extensions/extension_info_map.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_observer.h"
@@ -27,6 +26,7 @@ class ExtensionFunction;
 class ExtensionFunctionDispatcher;
 class UIThreadExtensionFunction;
 class IOThreadExtensionFunction;
+class Profile;
 class QuotaLimitHeuristic;
 class RenderViewHost;
 
@@ -97,8 +97,8 @@ class ExtensionFunction
   void set_name(const std::string& name) { name_ = name; }
   const std::string& name() const { return name_; }
 
-  void set_profile_id(ProfileId profile_id) { profile_id_ = profile_id; }
-  ProfileId profile_id() const { return profile_id_; }
+  void set_profile(void* profile) { profile_ = profile; }
+  void* profile() const { return profile_; }
 
   void set_extension(const Extension* extension) { extension_ = extension; }
   const Extension* GetExtension() const { return extension_.get(); }
@@ -153,8 +153,8 @@ class ExtensionFunction
   // Id of this request, used to map the response back to the caller.
   int request_id_;
 
-  // The ID of the Profile of this function's extension.
-  ProfileId profile_id_;
+  // The Profile of this function's extension.
+  void* profile_;
 
   // The extension that called this function.
   scoped_refptr<const Extension> extension_;

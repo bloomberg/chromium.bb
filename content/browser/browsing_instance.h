@@ -8,9 +8,9 @@
 
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/profiles/profile.h"
 
 class GURL;
+class Profile;
 class SiteInstance;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -93,13 +93,11 @@ class BrowsingInstance : public base::RefCounted<BrowsingInstance> {
 
  private:
   // Map of site to SiteInstance, to ensure we only have one SiteInstance per
-  // site.  The site string should be the possibly_invalid_spec() of a GURL
-  // obtained with SiteInstance::GetSiteForURL.
   typedef base::hash_map<std::string, SiteInstance*> SiteInstanceMap;
 
-  // Map of Profile runtime Id to SiteInstanceMap, for use in the
+  // Map of Profile to SiteInstanceMap, for use in the process-per-site model.
   // process-per-site model.
-  typedef base::hash_map<ProfileId, SiteInstanceMap> ProfileSiteInstanceMap;
+  typedef base::hash_map<Profile*, SiteInstanceMap> ProfileSiteInstanceMap;
 
   // Returns a pointer to the relevant SiteInstanceMap for this object.  If the
   // process-per-site model is in use, or if process-per-site-instance is in

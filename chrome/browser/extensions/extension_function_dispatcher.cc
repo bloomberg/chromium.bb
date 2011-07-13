@@ -431,7 +431,7 @@ void ExtensionFunctionDispatcher::ResetFunctions() {
 // static
 void ExtensionFunctionDispatcher::DispatchOnIOThread(
     const ExtensionInfoMap* extension_info_map,
-    ProfileId profile_id,
+    void* profile,
     int render_process_id,
     base::WeakPtr<ChromeRenderMessageFilter> ipc_sender,
     int routing_id,
@@ -440,7 +440,7 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
       extension_info_map->extensions().GetByURL(params.source_url);
 
   scoped_refptr<ExtensionFunction> function(
-      CreateExtensionFunction(params, extension, profile_id, render_process_id,
+      CreateExtensionFunction(params, extension, profile, render_process_id,
                               ipc_sender, routing_id));
   if (!function)
     return;
@@ -514,7 +514,7 @@ void ExtensionFunctionDispatcher::Dispatch(
     extension = service->GetExtensionByWebExtent(params.source_url);
 
   scoped_refptr<ExtensionFunction> function(CreateExtensionFunction(
-      params, extension, profile_->GetRuntimeId(),
+      params, extension, profile_,
       render_view_host->process()->id(),
       render_view_host, render_view_host->routing_id()));
   if (!function)
@@ -549,7 +549,7 @@ void ExtensionFunctionDispatcher::Dispatch(
 ExtensionFunction* ExtensionFunctionDispatcher::CreateExtensionFunction(
     const ExtensionHostMsg_Request_Params& params,
     const Extension* extension,
-    ProfileId profile_id,
+    void* profile,
     int render_process_id,
     IPC::Message::Sender* ipc_sender,
     int routing_id) {
@@ -590,7 +590,7 @@ ExtensionFunction* ExtensionFunctionDispatcher::CreateExtensionFunction(
   function->set_has_callback(params.has_callback);
   function->set_user_gesture(params.user_gesture);
   function->set_extension(extension);
-  function->set_profile_id(profile_id);
+  function->set_profile(profile);
   return function;
 }
 

@@ -24,14 +24,14 @@ namespace keys = extension_webrequest_api_constants;
 
 namespace {
 static void EventHandledOnIOThread(
-    ProfileId profile_id,
+    void* profile,
     const std::string& extension_id,
     const std::string& event_name,
     const std::string& sub_event_name,
     uint64 request_id,
     ExtensionWebRequestEventRouter::EventResponse* response) {
   ExtensionWebRequestEventRouter::GetInstance()->OnEventHandled(
-      profile_id, extension_id, event_name, sub_event_name, request_id,
+      profile, extension_id, event_name, sub_event_name, request_id,
       response);
 }
 }  // namespace
@@ -71,8 +71,7 @@ protected:
     enable_referrers_.Init(
         prefs::kEnableReferrers, profile_.GetTestingPrefService(), NULL);
     network_delegate_.reset(new ChromeNetworkDelegate(
-        event_router_.get(), NULL, profile_.GetRuntimeId(),
-        &enable_referrers_));
+        event_router_.get(), NULL, &profile_, &enable_referrers_));
     context_ = new TestURLRequestContext();
     context_->set_network_delegate(network_delegate_.get());
   }
@@ -98,13 +97,11 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedence) {
   const std::string kEventName(keys::kOnBeforeRequest);
   base::WeakPtrFactory<TestIPCSender> ipc_sender_factory(&ipc_sender_);
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
-      profile_.GetRuntimeId(), extension1_id, kEventName,
-      kEventName + "/1", filter,
+      &profile_, extension1_id, kEventName, kEventName + "/1", filter,
       ExtensionWebRequestEventRouter::ExtraInfoSpec::BLOCKING,
       ipc_sender_factory.GetWeakPtr());
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
-      profile_.GetRuntimeId(), extension2_id, kEventName,
-      kEventName + "/2", filter,
+      &profile_, extension2_id, kEventName, kEventName + "/2", filter,
       ExtensionWebRequestEventRouter::ExtraInfoSpec::BLOCKING,
       ipc_sender_factory.GetWeakPtr());
 
@@ -125,8 +122,8 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedence) {
     response->cancel = true;
     ipc_sender_.PushTask(
         NewRunnableFunction(&EventHandledOnIOThread,
-            profile_.GetRuntimeId(), extension1_id,
-            kEventName, kEventName + "/1", request.identifier(), response));
+            &profile_, extension1_id, kEventName, kEventName + "/1",
+            request.identifier(), response));
 
     // Extension2 response. Arrives second, and chosen because of install_time.
     response = new ExtensionWebRequestEventRouter::EventResponse(
@@ -134,16 +131,16 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedence) {
     response->new_url = redirect_url;
     ipc_sender_.PushTask(
         NewRunnableFunction(&EventHandledOnIOThread,
-            profile_.GetRuntimeId(), extension2_id,
-            kEventName, kEventName + "/2", request.identifier(), response));
+            &profile_, extension2_id, kEventName, kEventName + "/2",
+            request.identifier(), response));
 
     // Extension2 response to the redirected URL. Arrives first, and chosen.
     response = new ExtensionWebRequestEventRouter::EventResponse(
         extension2_id, base::Time::FromDoubleT(2));
     ipc_sender_.PushTask(
         NewRunnableFunction(&EventHandledOnIOThread,
-            profile_.GetRuntimeId(), extension2_id,
-            kEventName, kEventName + "/2", request.identifier(), response));
+            &profile_, extension2_id, kEventName, kEventName + "/2",
+            request.identifier(), response));
 
     // Extension1 response to the redirected URL. Arrives second, and ignored.
     response = new ExtensionWebRequestEventRouter::EventResponse(
@@ -151,8 +148,8 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedence) {
     response->cancel = true;
     ipc_sender_.PushTask(
         NewRunnableFunction(&EventHandledOnIOThread,
-            profile_.GetRuntimeId(), extension1_id,
-            kEventName, kEventName + "/1", request.identifier(), response));
+            &profile_, extension1_id, kEventName, kEventName + "/1",
+            request.identifier(), response));
 
     request.Start();
     MessageLoop::current()->Run();

@@ -23,11 +23,11 @@ namespace {
 const char kDispatchEvent[] = "Event.dispatchJSON";
 
 static void NotifyEventListenerRemovedOnIOThread(
-    ProfileId profile_id,
+    void* profile,
     const std::string& extension_id,
     const std::string& sub_event_name) {
   ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
-      profile_id, extension_id, sub_event_name);
+      profile, extension_id, sub_event_name);
 }
 
 }  // namespace
@@ -115,7 +115,7 @@ void ExtensionEventRouter::RemoveEventListener(
       BrowserThread::IO, FROM_HERE,
       NewRunnableFunction(
           &NotifyEventListenerRemovedOnIOThread,
-          profile_->GetRuntimeId(), listener.extension_id, event_name));
+          profile_, listener.extension_id, event_name));
 }
 
 bool ExtensionEventRouter::HasEventListener(const std::string& event_name) {

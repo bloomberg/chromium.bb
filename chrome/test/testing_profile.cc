@@ -367,10 +367,6 @@ std::string TestingProfile::GetProfileName() {
   return std::string("testing_profile");
 }
 
-ProfileId TestingProfile::GetRuntimeId() {
-  return reinterpret_cast<ProfileId>(this);
-}
-
 bool TestingProfile::IsOffTheRecord() {
   return incognito_;
 }
@@ -796,13 +792,4 @@ void TestingProfile::DestroyWebDataService() {
     return;
 
   web_data_service_->Shutdown();
-}
-
-DerivedTestingProfile::DerivedTestingProfile(Profile* profile)
-    : original_profile_(profile) {}
-
-DerivedTestingProfile::~DerivedTestingProfile() {}
-
-ProfileId DerivedTestingProfile::GetRuntimeId() {
-  return original_profile_->GetRuntimeId();
 }

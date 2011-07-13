@@ -9,11 +9,11 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/profiles/profile.h"
 #include "net/base/network_delegate.h"
 
 class ExtensionEventRouterForwarder;
 class ExtensionInfoMap;
+class PrefService;
 template<class T> class PrefMember;
 
 typedef PrefMember<bool> BooleanPrefMember;
@@ -22,15 +22,15 @@ typedef PrefMember<bool> BooleanPrefMember;
 // add hooks into the network stack.
 class ChromeNetworkDelegate : public net::NetworkDelegate {
  public:
-  // If |profile_id| is the invalid profile, events will be broadcasted to all
-  // profiles, otherwise, they will only be sent to the specified profile.
+  // If |profile| is NULL, events will be broadcasted to all profiles, otherwise
+  // they will only be sent to the specified profile.
   // |enable_referrers| should be initialized on the UI thread (see below)
   // beforehand. This object's owner is responsible for cleaning it up
   // at shutdown.
   ChromeNetworkDelegate(
       ExtensionEventRouterForwarder* event_router,
       ExtensionInfoMap* extension_info_map,
-      ProfileId profile_id,
+      void* profile,
       BooleanPrefMember* enable_referrers);
   virtual ~ChromeNetworkDelegate();
 
@@ -60,7 +60,7 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
   virtual void OnPACScriptError(int line_number, const string16& error);
 
   scoped_refptr<ExtensionEventRouterForwarder> event_router_;
-  const ProfileId profile_id_;
+  void* profile_;
 
   scoped_refptr<ExtensionInfoMap> extension_info_map_;
 

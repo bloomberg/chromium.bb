@@ -262,7 +262,7 @@ void ProfileIOData::InitializeProfileParams(Profile* profile) {
   params->proxy_config_service.reset(
       ProxyServiceFactory::CreateProxyConfigService(
           profile->GetProxyConfigTracker()));
-  params->profile_id = profile->GetRuntimeId();
+  params->profile = profile;
   profile_params_.reset(params.release());
 }
 
@@ -293,7 +293,7 @@ ProfileIOData::ProfileParams::ProfileParams()
       clear_local_state_on_exit(false),
       io_thread(NULL),
       notification_service(NULL),
-      profile_id(Profile::kInvalidProfileId) {}
+      profile(NULL) {}
 ProfileIOData::ProfileParams::~ProfileParams() {}
 
 ProfileIOData::ProfileIOData(bool is_incognito)
@@ -438,7 +438,7 @@ void ProfileIOData::LazyInitialize() const {
   network_delegate_.reset(new ChromeNetworkDelegate(
         io_thread_globals->extension_event_router_forwarder.get(),
         profile_params_->extension_info_map,
-        profile_params_->profile_id,
+        profile_params_->profile,
         &enable_referrers_));
 
   dns_cert_checker_.reset(

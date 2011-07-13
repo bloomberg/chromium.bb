@@ -25,12 +25,12 @@ void ExtensionEventRouterForwarder::BroadcastEventToRenderers(
 void ExtensionEventRouterForwarder::DispatchEventToRenderers(
     const std::string& event_name,
     const std::string& event_args,
-    ProfileId profile_id,
+    void* profile,
     bool use_profile_to_restrict_events,
     const GURL& event_url) {
-  if (profile_id == Profile::kInvalidProfileId)
+  if (!profile)
     return;
-  HandleEvent("", event_name, event_args, profile_id,
+  HandleEvent("", event_name, event_args, profile,
               use_profile_to_restrict_events, event_url);
 }
 
@@ -46,12 +46,12 @@ void ExtensionEventRouterForwarder::DispatchEventToExtension(
     const std::string& extension_id,
     const std::string& event_name,
     const std::string& event_args,
-    ProfileId profile_id,
+    void* profile,
     bool use_profile_to_restrict_events,
     const GURL& event_url) {
-  if (profile_id == Profile::kInvalidProfileId)
+  if (!profile)
     return;
-  HandleEvent(extension_id, event_name, event_args, profile_id,
+  HandleEvent(extension_id, event_name, event_args, profile,
               use_profile_to_restrict_events, event_url);
 }
 
@@ -59,7 +59,7 @@ void ExtensionEventRouterForwarder::HandleEvent(
     const std::string& extension_id,
     const std::string& event_name,
     const std::string& event_args,
-    ProfileId profile_id,
+    void* profile_ptr,
     bool use_profile_to_restrict_events,
     const GURL& event_url) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
@@ -68,7 +68,7 @@ void ExtensionEventRouterForwarder::HandleEvent(
         NewRunnableMethod(
             this,
             &ExtensionEventRouterForwarder::HandleEvent,
-            extension_id, event_name, event_args, profile_id,
+            extension_id, event_name, event_args, profile_ptr,
             use_profile_to_restrict_events, event_url));
     return;
   }
@@ -78,9 +78,9 @@ void ExtensionEventRouterForwarder::HandleEvent(
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   Profile* profile = NULL;
-  if (profile_id != Profile::kInvalidProfileId) {
-    profile = profile_manager->GetProfileWithId(profile_id);
-    if (!profile)
+  if (profile_ptr) {
+    profile = reinterpret_cast<Profile*>(profile_ptr);
+    if (!profile_manager->IsValidProfile(profile))
       return;
   }
   if (profile) {

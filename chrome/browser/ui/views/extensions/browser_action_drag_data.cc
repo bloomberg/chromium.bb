@@ -13,16 +13,16 @@ const char* BrowserActionDragData::kClipboardFormatString =
     "chromium/x-browser-actions";
 
 BrowserActionDragData::BrowserActionDragData()
-    : profile_id_(0), index_(-1) {
+    : profile_(NULL), index_(-1) {
 }
 
 BrowserActionDragData::BrowserActionDragData(
     const std::string& id, int index)
-    : profile_id_(0), id_(id), index_(index) {
+    : profile_(NULL), id_(id), index_(index) {
 }
 
 bool BrowserActionDragData::IsFromProfile(Profile* profile) const {
-  return (profile_id_ == profile->GetRuntimeId());
+  return profile_ == profile;
 }
 
 #if defined(TOOLKIT_VIEWS)
@@ -65,8 +65,7 @@ ui::OSExchangeData::CustomFormat
 
 void BrowserActionDragData::WriteToPickle(
     Profile* profile, Pickle* pickle) const {
-  ProfileId profile_id = profile->GetRuntimeId();
-  pickle->WriteBytes(&profile_id, sizeof(profile_id));
+  pickle->WriteBytes(&profile, sizeof(profile));
   pickle->WriteString(id_);
   pickle->WriteSize(index_);
 }
@@ -75,9 +74,9 @@ bool BrowserActionDragData::ReadFromPickle(Pickle* pickle) {
   void* data_iterator = NULL;
 
   const char* tmp;
-  if (!pickle->ReadBytes(&data_iterator, &tmp, sizeof(profile_id_)))
+  if (!pickle->ReadBytes(&data_iterator, &tmp, sizeof(profile_)))
     return false;
-  memcpy(&profile_id_, tmp, sizeof(profile_id_));
+  memcpy(&profile_, tmp, sizeof(profile_));
 
   if (!pickle->ReadString(&data_iterator, &id_))
     return false;

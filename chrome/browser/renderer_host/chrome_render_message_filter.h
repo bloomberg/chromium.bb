@@ -127,7 +127,6 @@ class ChromeRenderMessageFilter : public BrowserMessageFilter {
   void OnSavedPageAsMHTML(int job_id, bool success);
 
   int render_process_id_;
-  ProfileId profile_id_;
 
   // The Profile associated with our renderer process.  This should only be
   // accessed on the UI thread!

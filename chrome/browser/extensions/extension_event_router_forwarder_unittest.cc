@@ -145,8 +145,7 @@ TEST_F(ExtensionEventRouterForwarderTest, UnicastRendererUIRestricted) {
   EXPECT_CALL(*event_router,
       CallExtensionEventRouter(profile2_, _, _, _, _, _)).Times(0);
   event_router->DispatchEventToRenderers(kEventName, kEventArgs,
-                                         profile1_->GetRuntimeId(),
-                                         true, url);
+                                         profile1_, true, url);
 }
 
 TEST_F(ExtensionEventRouterForwarderTest,
@@ -164,8 +163,7 @@ TEST_F(ExtensionEventRouterForwarderTest,
   EXPECT_CALL(*event_router,
       CallExtensionEventRouter(profile2_, _, _, _, _, _)).Times(0);
   event_router->DispatchEventToRenderers(kEventName, kEventArgs,
-                                         profile1_->GetRuntimeId(),
-                                         true, url);
+                                         profile1_, true, url);
 }
 
 TEST_F(ExtensionEventRouterForwarderTest,
@@ -183,8 +181,7 @@ TEST_F(ExtensionEventRouterForwarderTest,
   EXPECT_CALL(*event_router,
       CallExtensionEventRouter(profile2_, _, _, _, _, _)).Times(0);
   event_router->DispatchEventToRenderers(kEventName, kEventArgs,
-                                         incognito->GetRuntimeId(),
-                                         true, url);
+                                         incognito, true, url);
 }
 
 TEST_F(ExtensionEventRouterForwarderTest, UnicastRendererUIUnrestricted) {
@@ -198,8 +195,7 @@ TEST_F(ExtensionEventRouterForwarderTest, UnicastRendererUIUnrestricted) {
   EXPECT_CALL(*event_router,
       CallExtensionEventRouter(profile2_, _, _, _, _, _)).Times(0);
   event_router->DispatchEventToRenderers(kEventName, kEventArgs,
-                                         profile1_->GetRuntimeId(),
-                                         false, url);
+                                         profile1_, false, url);
 }
 
 TEST_F(ExtensionEventRouterForwarderTest,
@@ -217,8 +213,7 @@ TEST_F(ExtensionEventRouterForwarderTest,
   EXPECT_CALL(*event_router,
       CallExtensionEventRouter(profile2_, _, _, _, _, _)).Times(0);
   event_router->DispatchEventToRenderers(kEventName, kEventArgs,
-                                         profile1_->GetRuntimeId(),
-                                         false, url);
+                                         profile1_, false, url);
 }
 
 TEST_F(ExtensionEventRouterForwarderTest, BroadcastExtensionUI) {
@@ -245,8 +240,7 @@ TEST_F(ExtensionEventRouterForwarderTest, UnicastExtensionUIRestricted) {
   EXPECT_CALL(*event_router,
       CallExtensionEventRouter(profile2_, _, _, _, _, _)).Times(0);
   event_router->DispatchEventToExtension(kExt, kEventName, kEventArgs,
-                                         profile1_->GetRuntimeId(),
-                                         true, url);
+                                         profile1_, true, url);
 }
 
 TEST_F(ExtensionEventRouterForwarderTest, UnicastExtensionUIUnrestricted) {
@@ -260,6 +254,5 @@ TEST_F(ExtensionEventRouterForwarderTest, UnicastExtensionUIUnrestricted) {
   EXPECT_CALL(*event_router,
       CallExtensionEventRouter(profile2_, _, _, _, _, _)).Times(0);
   event_router->DispatchEventToExtension(kExt, kEventName, kEventArgs,
-                                         profile1_->GetRuntimeId(),
-                                         false, url);
+                                         profile1_, false, url);
 }

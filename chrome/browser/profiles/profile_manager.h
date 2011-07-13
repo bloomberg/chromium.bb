@@ -81,10 +81,6 @@ class ProfileManager : public base::NonThreadSafe,
   // created, observer is called immediately. Should be called on the UI thread.
   static void CreateDefaultProfileAsync(ProfileManagerObserver* observer);
 
-  // Returns the profile with the given |profile_id| or NULL if no such profile
-  // exists.
-  Profile* GetProfileWithId(ProfileId profile_id);
-
   // Returns true if the profile pointer is known to point to an existing
   // profile.
   bool IsValidProfile(Profile* profile);

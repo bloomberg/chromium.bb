@@ -133,25 +133,15 @@ class TestingProfile : public Profile {
   TestingPrefService* GetTestingPrefService();
 
   virtual TestingProfile* AsTestingProfile();
-
   virtual std::string GetProfileName();
-  virtual ProfileId GetRuntimeId();
-
   virtual FilePath GetPath();
-
-  // Sets whether we're incognito. Default is false.
-  void set_incognito(bool incognito) {
-    incognito_ = incognito;
-  }
+  void set_incognito(bool incognito) { incognito_ = incognito; }
   virtual bool IsOffTheRecord();
   // Assumes ownership.
   virtual void SetOffTheRecordProfile(Profile* profile);
   virtual Profile* GetOffTheRecordProfile();
-
   virtual void DestroyOffTheRecordProfile() {}
-
   virtual bool HasOffTheRecordProfile();
-
   virtual Profile* GetOriginalProfile();
   void SetAppCacheService(ChromeAppCacheService* appcache_service);
   virtual ChromeAppCacheService* GetAppCacheService();
@@ -399,20 +389,6 @@ class TestingProfile : public Profile {
   ProfileDependencyManager* profile_dependency_manager_;
 
   scoped_refptr<ChromeAppCacheService> appcache_service_;
-};
-
-// A profile that derives from another profile.  This does not actually
-// override anything except the GetRuntimeId() in order to test sharing of
-// site information.
-class DerivedTestingProfile : public TestingProfile {
- public:
-  explicit DerivedTestingProfile(Profile* profile);
-  virtual ~DerivedTestingProfile();
-
-  virtual ProfileId GetRuntimeId();
-
- protected:
-  Profile* original_profile_;
 };
 
 #endif  // CHROME_TEST_TESTING_PROFILE_H_

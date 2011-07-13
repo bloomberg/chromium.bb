@@ -60,9 +60,7 @@ BrowsingInstance::SiteInstanceMap* BrowsingInstance::GetSiteInstanceMap(
 
   // Otherwise, process-per-site is in use, at least for this URL.  Look up the
   // global map for this profile, creating an entry if necessary.
-  ProfileId runtime_id = profile ? profile->GetRuntimeId()
-                                 : Profile::kInvalidProfileId;
-  return &profile_site_instance_map_[runtime_id];
+  return &profile_site_instance_map_[profile];
 }
 
 bool BrowsingInstance::HasSiteInstance(const GURL& url) {
@@ -127,10 +125,8 @@ void BrowsingInstance::UnregisterSiteInstance(SiteInstance* site_instance) {
   // the site was put into when it was originally registered.
   if (!RemoveSiteInstanceFromMap(&site_instance_map_, site, site_instance)) {
     // Wasn't in our local map, so look in the static per-profile map.
-    ProfileId runtime_id = profile_ ? profile_->GetRuntimeId()
-                                    : Profile::kInvalidProfileId;
     RemoveSiteInstanceFromMap(
-        &profile_site_instance_map_[runtime_id], site, site_instance);
+        &profile_site_instance_map_[profile_], site, site_instance);
   }
 }
 

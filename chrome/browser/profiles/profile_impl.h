@@ -45,7 +45,6 @@ class ProfileImpl : public Profile,
 
   // Profile implementation.
   virtual std::string GetProfileName();
-  virtual ProfileId GetRuntimeId();
   virtual FilePath GetPath();
   virtual bool IsOffTheRecord();
   virtual Profile* GetOffTheRecordProfile();

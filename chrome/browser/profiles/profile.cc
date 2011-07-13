@@ -82,16 +82,16 @@ net::URLRequestContextGetter* Profile::default_request_context_;
 
 namespace {
 
-void NotifyOTRProfileCreatedOnIOThread(ProfileId original_profile_id,
-                                       ProfileId otr_profile_id) {
+void NotifyOTRProfileCreatedOnIOThread(void* original_profile,
+                                       void* otr_profile) {
   ExtensionWebRequestEventRouter::GetInstance()->OnOTRProfileCreated(
-      original_profile_id, otr_profile_id);
+      original_profile, otr_profile);
 }
 
-void NotifyOTRProfileDestroyedOnIOThread(ProfileId original_profile_id,
-                                         ProfileId otr_profile_id) {
+void NotifyOTRProfileDestroyedOnIOThread(void* original_profile,
+                                         void* otr_profile) {
   ExtensionWebRequestEventRouter::GetInstance()->OnOTRProfileDestroyed(
-      original_profile_id, otr_profile_id);
+      original_profile, otr_profile);
 }
 
 }  // namespace
@@ -103,9 +103,6 @@ Profile::Profile()
 
 // static
 const char* Profile::kProfileKey = "__PROFILE__";
-
-// static
-const ProfileId Profile::kInvalidProfileId = static_cast<ProfileId>(0);
 
 // static
 void Profile::RegisterUserPrefs(PrefService* prefs) {
@@ -247,9 +244,7 @@ class OffTheRecordProfileImpl : public Profile,
 
     BrowserThread::PostTask(
     BrowserThread::IO, FROM_HERE,
-    NewRunnableFunction(
-        &NotifyOTRProfileCreatedOnIOThread,
-        profile_->GetRuntimeId(), GetRuntimeId()));
+    NewRunnableFunction(&NotifyOTRProfileCreatedOnIOThread, profile_, this));
   }
 
   virtual ~OffTheRecordProfileImpl() {
@@ -262,8 +257,7 @@ class OffTheRecordProfileImpl : public Profile,
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         NewRunnableFunction(
-            &NotifyOTRProfileDestroyedOnIOThread,
-            profile_->GetRuntimeId(), GetRuntimeId()));
+            &NotifyOTRProfileDestroyedOnIOThread, profile_, this));
 
     // Clean up all DB files/directories
     if (db_tracker_) {
@@ -287,10 +281,6 @@ class OffTheRecordProfileImpl : public Profile,
       ExtensionPrefs* extension_prefs = extension_service->extension_prefs();
       extension_prefs->ClearIncognitoSessionOnlyContentSettings();
     }
-  }
-
-  virtual ProfileId GetRuntimeId() {
-    return reinterpret_cast<ProfileId>(this);
   }
 
   virtual std::string GetProfileName() {

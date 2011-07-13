@@ -102,8 +102,6 @@ namespace net {
 class URLRequestContextGetter;
 }
 
-typedef intptr_t ProfileId;
-
 class Profile {
  public:
   // Profile services are accessed with the following parameter. This parameter
@@ -140,9 +138,6 @@ class Profile {
   // Key used to bind profile to the widget with which it is associated.
   static const char* kProfileKey;
 
-  // Value that represents no profile Id.
-  static const ProfileId kInvalidProfileId;
-
   Profile();
   virtual ~Profile() {}
 
@@ -166,10 +161,6 @@ class Profile {
   // Returns the name associated with this profile. This name is displayed in
   // the browser frame.
   virtual std::string GetProfileName() = 0;
-
-  // Returns a unique Id that can be used to identify this profile at runtime.
-  // This Id is not persistent and will not survive a restart of the browser.
-  virtual ProfileId GetRuntimeId() = 0;
 
   // Returns the path of the directory where this profile's data is stored.
   virtual FilePath GetPath() = 0;
@@ -572,5 +563,18 @@ class Profile {
   // true or false, so that calls can be nested.
   int accessibility_pause_level_;
 };
+
+#if defined(COMPILER_GCC)
+ namespace __gnu_cxx {
+
+ template<>
+ struct hash<Profile*> {
+   std::size_t operator()(Profile* const& p) const {
+     return reinterpret_cast<std::size_t>(p);
+   }
+ };
+
+ }  // namespace __gnu_cxx
+ #endif
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILE_H_

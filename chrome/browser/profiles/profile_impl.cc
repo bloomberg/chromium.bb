@@ -685,10 +685,6 @@ std::string ProfileImpl::GetProfileName() {
   return GetPrefs()->GetString(prefs::kGoogleServicesUsername);
 }
 
-ProfileId ProfileImpl::GetRuntimeId() {
-  return reinterpret_cast<ProfileId>(this);
-}
-
 FilePath ProfileImpl::GetPath() {
   return path_;
 }

@@ -78,7 +78,7 @@ class ExtensionFunctionDispatcher
   // functions that must be handled on the IO-thread.
   static void DispatchOnIOThread(
       const ExtensionInfoMap* extension_info_map,
-      ProfileId profile_id,
+      void* profile,
       int render_process_id,
       base::WeakPtr<ChromeRenderMessageFilter> ipc_sender,
       int routing_id,
@@ -117,7 +117,7 @@ class ExtensionFunctionDispatcher
   static ExtensionFunction* CreateExtensionFunction(
       const ExtensionHostMsg_Request_Params& params,
       const Extension* extension,
-      ProfileId profile_id,
+      void* profile,
       int render_process_id,
       IPC::Message::Sender* ipc_sender,
       int routing_id);

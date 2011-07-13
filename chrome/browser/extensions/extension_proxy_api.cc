@@ -33,7 +33,7 @@ ExtensionProxyEventRouter::~ExtensionProxyEventRouter() {
 
 void ExtensionProxyEventRouter::OnProxyError(
     ExtensionEventRouterForwarder* event_router,
-    ProfileId profile_id,
+    void* profile,
     int error_code) {
   ListValue args;
   DictionaryValue* dict = new DictionaryValue();
@@ -45,9 +45,9 @@ void ExtensionProxyEventRouter::OnProxyError(
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
 
-  if (profile_id != Profile::kInvalidProfileId) {
+  if (profile) {
     event_router->DispatchEventToRenderers(
-        keys::kProxyEventOnProxyError, json_args, profile_id, true, GURL());
+        keys::kProxyEventOnProxyError, json_args, profile, true, GURL());
   } else {
     event_router->BroadcastEventToRenderers(
         keys::kProxyEventOnProxyError, json_args, GURL());
@@ -56,7 +56,7 @@ void ExtensionProxyEventRouter::OnProxyError(
 
 void ExtensionProxyEventRouter::OnPACScriptError(
     ExtensionEventRouterForwarder* event_router,
-    ProfileId profile_id,
+    void* profile,
     int line_number,
     const string16& error) {
   ListValue args;
@@ -77,9 +77,9 @@ void ExtensionProxyEventRouter::OnPACScriptError(
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
 
-  if (profile_id != Profile::kInvalidProfileId) {
+  if (profile) {
     event_router->DispatchEventToRenderers(
-        keys::kProxyEventOnProxyError, json_args, profile_id, true, GURL());
+        keys::kProxyEventOnProxyError, json_args, profile, true, GURL());
   } else {
     event_router->BroadcastEventToRenderers(
         keys::kProxyEventOnProxyError, json_args, GURL());

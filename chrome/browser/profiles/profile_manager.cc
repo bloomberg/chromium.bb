@@ -213,24 +213,6 @@ Profile* ProfileManager::GetDefaultProfile(const FilePath& user_data_dir) {
   return GetProfile(default_profile_dir);
 }
 
-Profile* ProfileManager::GetProfileWithId(ProfileId profile_id) {
-  DCHECK_NE(Profile::kInvalidProfileId, profile_id);
-  for (ProfilesInfoMap::iterator iter = profiles_info_.begin();
-       iter != profiles_info_.end(); ++iter) {
-    if (iter->second->created) {
-      Profile* candidate = iter->second->profile.get();
-      if (candidate->GetRuntimeId() == profile_id)
-        return candidate;
-      if (candidate->HasOffTheRecordProfile()) {
-        candidate = candidate->GetOffTheRecordProfile();
-        if (candidate->GetRuntimeId() == profile_id)
-          return candidate;
-      }
-    }
-  }
-  return NULL;
-}
-
 bool ProfileManager::IsValidProfile(Profile* profile) {
   for (ProfilesInfoMap::iterator iter = profiles_info_.begin();
        iter != profiles_info_.end(); ++iter) {

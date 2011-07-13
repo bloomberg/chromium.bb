@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tts_api_constants.h"
 #include "chrome/browser/extensions/extension_tts_api_controller.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
 
 namespace constants = extension_tts_api_constants;

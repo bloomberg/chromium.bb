@@ -81,7 +81,6 @@ ChromeRenderMessageFilter::ChromeRenderMessageFilter(
     Profile* profile,
     net::URLRequestContextGetter* request_context)
     : render_process_id_(render_process_id),
-      profile_id_(profile->GetRuntimeId()),
       profile_(profile),
       request_context_(request_context),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
@@ -386,7 +385,7 @@ void ChromeRenderMessageFilter::OnExtensionRequestForIOThread(
   ChromeURLRequestContext* context = static_cast<ChromeURLRequestContext*>(
       request_context_->GetURLRequestContext());
   ExtensionFunctionDispatcher::DispatchOnIOThread(
-      context->extension_info_map(), profile_id_, render_process_id_,
+      context->extension_info_map(), profile_, render_process_id_,
       weak_ptr_factory_.GetWeakPtr(), routing_id, params);
 }
 
