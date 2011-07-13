@@ -113,15 +113,11 @@ void BubbleGtk::Init(GtkWidget* anchor_widget,
   gtk_window_set_resizable(GTK_WINDOW(window_), FALSE);
 
   // Attach all of the accelerators to the bubble.
-  BubbleAcceleratorGtkList acceleratorList =
-      BubbleAcceleratorsGtk::GetList();
-  for (BubbleAcceleratorGtkList::const_iterator iter =
-           acceleratorList.begin();
-       iter != acceleratorList.end();
-       ++iter) {
+  for (BubbleAcceleratorsGtk::const_iterator i(BubbleAcceleratorsGtk::begin());
+       i != BubbleAcceleratorsGtk::end(); ++i) {
     gtk_accel_group_connect(accel_group_,
-                            iter->keyval,
-                            iter->modifier_type,
+                            i->keyval,
+                            i->modifier_type,
                             GtkAccelFlags(0),
                             g_cclosure_new(G_CALLBACK(&OnGtkAcceleratorThunk),
                                            this,

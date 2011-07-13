@@ -15,7 +15,7 @@ namespace {
 // after discussion over which accelerators should be addressed in
 // bubbles. For a complete listing of accelerators that are used
 // in chrome consult accelerators_gtk.cc
-struct BubbleAcceleratorGtk BubbleAcceleratorGtkTable[] = {
+const BubbleAcceleratorGtk kAcceleratorMap[] = {
   // Tab/window controls.
   { GDK_w, GDK_CONTROL_MASK },
 
@@ -25,10 +25,12 @@ struct BubbleAcceleratorGtk BubbleAcceleratorGtkTable[] = {
 
 }  // namespace
 
-BubbleAcceleratorGtkList BubbleAcceleratorsGtk::GetList() {
-  BubbleAcceleratorGtkList accelerators;
-  for (size_t i = 0; i < arraysize(BubbleAcceleratorGtkTable); ++i)
-    accelerators.push_back(BubbleAcceleratorGtkTable[i]);
+// static
+BubbleAcceleratorsGtk::const_iterator BubbleAcceleratorsGtk::begin() {
+ return &kAcceleratorMap[0];
+}
 
-  return accelerators;
+// static
+BubbleAcceleratorsGtk::const_iterator BubbleAcceleratorsGtk::end() {
+ return &kAcceleratorMap[arraysize(kAcceleratorMap)];
 }
