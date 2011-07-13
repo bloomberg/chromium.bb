@@ -42,6 +42,9 @@ ExtensionDialog::ExtensionDialog(Browser* browser, ExtensionHost* host,
                  Source<Profile>(host->profile()));
 
   window_->Show();
+  window_->Activate();
+  // Ensure the DOM JavaScript can respond immediately to keyboard shortcuts.
+  host->render_view_host()->view()->Focus();
 }
 
 ExtensionDialog::~ExtensionDialog() {
