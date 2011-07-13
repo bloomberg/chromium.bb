@@ -9111,7 +9111,7 @@ ls' lab.">
         Error signing in.
       </message>
       <message name="IDS_SYNC_CONFIGURE_ENCRYPTION" desc="Link to configure sync encryption for passwords">
-        Configure password sync.
+        Please update your sync passphrase.
       </message>
       <message name="IDS_SYNC_NEW_PASSWORD_SYNC" desc="Promotional message for password sync setup.">
         New! Configure password sync.
@@ -9215,7 +9215,7 @@ ls' lab.">
         Sync
       </message>
       <message name="IDS_SYNC_NTP_SYNC_SECTION_ERROR_TITLE" desc="The title to display in the New Tab Page sync status section in case of an error.">
-        Sync needs your attention
+        Sync failed
       </message>
       <message name="IDS_SYNC_NTP_SYNC_SECTION_PROMO_TITLE" desc="The title to display in the New Tab Page sync status section in case of a promotion.">
         New!
