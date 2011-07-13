@@ -38,6 +38,7 @@
         '<(DEPTH)/testing/gtest.gyp:gtest',
         '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:inspector_resources',
         '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
+        '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
         '<(DEPTH)/webkit/support/webkit_support.gyp:appcache',
         '<(DEPTH)/webkit/support/webkit_support.gyp:blob',
         '<(DEPTH)/webkit/support/webkit_support.gyp:database',
