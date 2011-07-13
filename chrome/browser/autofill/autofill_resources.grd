@@ -37,7 +37,7 @@
         country|countries|location<!-- ja-JP -->|国<!-- zh-CN -->|国家<!-- ko-KR -->|국가|나라
       </message>
       <message name="IDS_AUTOFILL_ZIP_CODE_RE">
-        zip|postal|post.*code|pcode|^1z$<!-- de-DE -->|postleitzahl<!-- es -->|\bcp\b<!-- fr-FR -->|cdp<!-- it-IT -->|\bcap\b<!-- ja-JP -->|郵便番号<!-- pt-BR, pt-PT -->|codigo|codpos|cep<!-- ru -->|Почтовый.?Индекс<!--zh-CN -->|邮政编码|邮编<!-- zh-TW -->|郵遞區號<!-- ko-KR -->|우편.?번호
+        zip|postal|post.*code|pcode|^1z$<!-- de-DE -->|postleitzahl<!-- es -->|\bcp\b<!-- fr-FR -->|\bcdp\b<!-- it-IT -->|\bcap\b<!-- ja-JP -->|郵便番号<!-- pt-BR, pt-PT -->|codigo|codpos|\bcep\b<!-- ru -->|Почтовый.?Индекс<!--zh-CN -->|邮政编码|邮编<!-- zh-TW -->|郵遞區號<!-- ko-KR -->|우편.?번호
       </message>
       <message name="IDS_AUTOFILL_ZIP_4_RE">
         zip|^-$|post2<!-- pt-BR, pt-PT -->|codpos2
