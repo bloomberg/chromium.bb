@@ -914,6 +914,7 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
       // ShellUtil::kPotentialProtocolAssociations.
       // These options should only be used when setup.exe is launched with admin
       // rights. We do not make any user specific changes with this option.
+      DCHECK(IsUserAnAdmin());
       std::wstring chrome_exe(cmd_line.GetSwitchValueNative(
           installer::switches::kRegisterChromeBrowser));
       std::wstring suffix;
