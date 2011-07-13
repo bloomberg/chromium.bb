@@ -25,3 +25,4 @@ URLRequestTest.FileTest
 
 # http://crbug.com/88228
 SSLClientSocketTest.Connect
+SSLClientSocketTest.ConnectClientAuthSendNullCert
