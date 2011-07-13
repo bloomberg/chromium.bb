@@ -654,6 +654,8 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
         error_code = status.os_error();
       }
       WebURLError error;
+      if (error_code == net::ERR_ABORTED)
+        error.isCancellation = true;
       error.domain = WebString::fromUTF8(net::kErrorDomain);
       error.reason = error_code;
       error.unreachableURL = request_.url();
