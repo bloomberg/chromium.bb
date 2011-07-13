@@ -17,7 +17,11 @@
 namespace gfx {
 
 unsigned int NativeThemeLinux::button_length_ = 14;
+#if defined(TOUCH_UI)
+unsigned int NativeThemeLinux::scrollbar_width_ = 0;
+#else
 unsigned int NativeThemeLinux::scrollbar_width_ = 15;
+#endif
 
 // These are the default dimensions of radio buttons and checkboxes.
 static const int kCheckboxAndRadioWidth = 13;
