@@ -173,7 +173,7 @@ class Sandbox {
 
   FRIEND_TEST(MacDirAccessSandboxTest, StringEscape);
   FRIEND_TEST(MacDirAccessSandboxTest, RegexEscape);
-  FRIEND_TEST(MacDirAccessSandboxTest, SandboxAccess);
+  FRIEND_TEST(MacDirAccessSandboxTest, DISABLED_SandboxAccess);
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(Sandbox);
 };
