@@ -485,6 +485,13 @@ runTests([
           },
           retval: {redirectUrl: getURL("simpleLoad/a.html")}
         },
+        { label: "onErrorOccurred-1",
+          event: "onErrorOccurred",
+          details: {
+            url: getURL("complexLoad/a.html"),
+            error: "net::ERR_ABORTED"
+          }
+        },
         { label: "onBeforeRequest-2",
           event: "onBeforeRequest",
           details: {
@@ -510,8 +517,8 @@ runTests([
         },
       ],
       [  // event order
-        ["onBeforeRequest-1", "onBeforeRequest-2", "onResponseStarted",
-         "onCompleted"]
+        ["onBeforeRequest-1", "onErrorOccurred-1", "onBeforeRequest-2",
+         "onResponseStarted", "onCompleted"],
       ],
       {}, // filter
       ["blocking"]);
