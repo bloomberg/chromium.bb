@@ -570,6 +570,7 @@
 }
 {
   bug_89141_b
+  ThreadSanitizer:Race
   fun::base::Thread::ThreadMain
   fun::base::::ThreadFunc
 }
