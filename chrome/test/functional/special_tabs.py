@@ -69,7 +69,7 @@ class SpecialTabsTest(pyauto.PyUITest):
     'chrome://terms': { 'CSP': False },
     'chrome://textfields': { 'title': 'chrome://textfields', 'CSP': False },
     'chrome://version': { 'title': 'About Version' },
-    'chrome://view-http-cache': {  'CSP': False },
+    'chrome://view-http-cache': {},
   }
 
   broken_special_url_tabs = {

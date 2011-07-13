@@ -887,6 +887,16 @@ function load() {
     historyView.toggleEditMode();
   }
   historyView.setSearch(hashData.q, hashData.p);
+
+  // Add handlers to HTML elements.
+  $('history-section').onclick = function () {
+    setSearch('');
+    return false;
+  };
+  $('search-form').onsubmit = function () {
+    setSearch(this.term.value);
+    return false;
+  };
 }
 
 /**
@@ -1055,14 +1065,4 @@ function historyDeleted() {
     historyView.reload();
 }
 
-// Add handlers to HTML elements.
-document.body.onload = load;
-$('history-section').onclick = function () {
-  setSearch('');
-  return false;
-};
-$('search-form').onsubmit = function () {
-  setSearch(this.term.value);
-  return false;
-}
-
+document.addEventListener('DOMContentLoaded', load);
