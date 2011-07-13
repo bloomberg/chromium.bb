@@ -61,6 +61,7 @@
 
 .doppleganger {
   left: 0 !important;
+  right: 0 !important;
   top: 0 !important;
 }
 
@@ -80,7 +81,7 @@
 
 .animating-tile-page .tile,
 .tile.drag-representation.placing {
-  -webkit-transition: left 200ms, top 200ms;
+  -webkit-transition: left 200ms, right 200ms, top 200ms;
 }
 
 .animating-tile-page .top-margin {

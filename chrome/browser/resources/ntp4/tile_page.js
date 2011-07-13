@@ -78,7 +78,9 @@ cr.define('ntp4', function() {
      * @param {number} y The y coordinate, in pixels.
      */
     moveTo: function(x, y) {
+      // left overrides right in LTR, and right takes precedence in RTL.
       this.style.left = x + 'px';
+      this.style.right = x + 'px';
       this.style.top = y + 'px';
     },
 
@@ -103,13 +105,18 @@ cr.define('ntp4', function() {
       // It's attached to the top level document element so that it floats above
       // image masks.
       this.dragClone = this.cloneNode(true);
+      this.dragClone.style.right = '';
       this.dragClone.classList.add('drag-representation');
       $('card-slider-frame').appendChild(this.dragClone);
       this.eventTracker.add(this.dragClone, 'webkitTransitionEnd',
                             this.onDragCloneTransitionEnd_.bind(this));
 
       this.classList.add('dragging');
-      this.dragOffsetX = e.x - this.offsetLeft - this.parentNode.offsetLeft;
+      // offsetLeft is mirrored in RTL. Un-mirror it.
+      var offsetLeft = ntp4.isRTL() ?
+          this.parentNode.clientWidth - this.offsetLeft :
+          this.offsetLeft;
+      this.dragOffsetX = e.x - offsetLeft - this.parentNode.offsetLeft;
       this.dragOffsetY = e.y - this.offsetTop -
           // Unlike offsetTop, this value takes scroll position into account.
           this.parentNode.getBoundingClientRect().top;
@@ -188,6 +195,9 @@ cr.define('ntp4', function() {
 
       this.appendChild(clone);
       this.doppleganger_ = clone;
+
+      if (ntp4.isRTL())
+        x *= -1;
 
       this.doppleganger_.style.WebkitTransform = 'translate(' + x + 'px, ' +
                                                                 y + 'px)';
@@ -602,6 +612,9 @@ cr.define('ntp4', function() {
       var col = Math.floor((x - layout.leftMargin) / layout.colWidth);
       if (col < 0 || col >= layout.numRowTiles)
         return -1;
+
+      if (ntp4.isRTL())
+        col = layout.numRowTiles - 1 - col;
 
       var row = Math.floor(
           (y - this.tileGrid_.getBoundingClientRect().top) / layout.rowHeight);

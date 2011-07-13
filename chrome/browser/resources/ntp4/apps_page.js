@@ -209,7 +209,9 @@ cr.define('ntp4', function() {
       this.appImg_.style.width = this.appImg_.style.height =
           (size * APP_IMG_SIZE_FRACTION) + 'px';
       this.style.width = this.style.height = size + 'px';
+
       this.style.left = x + 'px';
+      this.style.right = x + 'px';
       this.style.top = y + 'px';
     },
 

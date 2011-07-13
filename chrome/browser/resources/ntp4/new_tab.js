@@ -393,6 +393,7 @@ cr.define('ntp4', function() {
     if (!tempPage.tileCount) {
       dot.animateRemove();
       tempPage.parentNode.removeChild(tempPage);
+      updateSliderCards();
     } else {
       tempPage.classList.remove('temporary');
       saveAppPageName(tempPage, '');

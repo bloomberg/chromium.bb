@@ -175,7 +175,9 @@ cr.define('ntp4', function() {
     setBounds: function(size, x, y) {
       this.style.width = size + 'px';
       this.style.height = heightForWidth(size) + 'px';
+
       this.style.left = x + 'px';
+      this.style.right = x + 'px';
       this.style.top = y + 'px';
     },
   };
