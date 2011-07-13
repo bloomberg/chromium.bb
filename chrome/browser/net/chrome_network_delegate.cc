@@ -122,7 +122,7 @@ void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request) {
   } else if (request->status().status() == net::URLRequestStatus::FAILED ||
              request->status().status() == net::URLRequestStatus::CANCELED) {
     ExtensionWebRequestEventRouter::GetInstance()->OnErrorOccurred(
-            profile_id_, extension_info_map_.get(), request);
+            profile_, extension_info_map_.get(), request);
   } else {
     NOTREACHED();
   }
