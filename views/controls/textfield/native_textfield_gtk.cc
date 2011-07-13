@@ -313,10 +313,12 @@ void NativeTextfieldGtk::OnActivate(GtkWidget* native_widget) {
   if (controller)
     handled = controller->HandleKeyEvent(textfield_, views_key_event);
 
-  NativeWidgetGtk* widget =
-      static_cast<NativeWidgetGtk*>(GetWidget()->native_widget());
-  if (!handled && widget)
-    handled = widget->HandleKeyboardEvent(views_key_event);
+  Widget* widget = GetWidget();
+  if (!handled && widget) {
+    NativeWidgetGtk* native_widget =
+        static_cast<NativeWidgetGtk*>(widget->native_widget());
+    handled = native_widget->HandleKeyboardEvent(views_key_event);
+  }
 
   // Stop signal emission if the key event is handled by us.
   if (handled) {
@@ -397,16 +399,10 @@ void NativeTextfieldGtk::CreateNativeControl() {
 void NativeTextfieldGtk::NativeControlCreated(GtkWidget* widget) {
   NativeControlGtk::NativeControlCreated(widget);
 
-  if (GTK_IS_TEXT_VIEW(widget)) {
-    GtkTextBuffer* text_buffer = gtk_text_view_get_buffer(
-        GTK_TEXT_VIEW(widget));
-    g_signal_connect(text_buffer, "changed", G_CALLBACK(OnChangedThunk), this);
-  } else {
-    g_signal_connect(widget, "changed", G_CALLBACK(OnChangedThunk), this);
-    // In order to properly trigger Accelerators bound to VKEY_RETURN, we need
-    // to send an event when the widget gets the activate signal.
-    g_signal_connect(widget, "activate", G_CALLBACK(OnActivateThunk), this);
-  }
+  g_signal_connect(widget, "changed", G_CALLBACK(OnChangedThunk), this);
+  // In order to properly trigger Accelerators bound to VKEY_RETURN, we need
+  // to send an event when the widget gets the activate signal.
+  g_signal_connect(widget, "activate", G_CALLBACK(OnActivateThunk), this);
   g_signal_connect(widget, "move-cursor", G_CALLBACK(OnMoveCursorThunk), this);
   g_signal_connect(widget, "button-press-event",
                    G_CALLBACK(OnButtonPressEventThunk), this);
