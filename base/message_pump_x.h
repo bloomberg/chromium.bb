@@ -70,6 +70,10 @@ class MessagePumpX : public MessagePumpGlib {
   // Overridden from MessagePumpGlib:
   virtual bool RunOnce(GMainContext* context, bool block) OVERRIDE;
 
+  // Disables Gtk/Gdk event pumping. This will be used when
+  // NativeWidgetX is enabled.
+  static void DisableGtkMessagePump();
+
  private:
   // Some XEvent's can't be directly read from X event queue and will go
   // through GDK's dispatching process and may get discarded. This function

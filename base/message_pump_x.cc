@@ -21,6 +21,10 @@ gboolean PlaceholderDispatch(GSource* source,
   return TRUE;
 }
 
+// A flag to disable GTK's message pump. This is intermediate step
+// to remove gtk and will be removed once migration is complete.
+bool use_gtk_message_pump = true;
+
 }  // namespace
 
 namespace base {
@@ -39,7 +43,8 @@ MessagePumpX::MessagePumpX() : MessagePumpGlib(),
 #if defined(HAVE_XINPUT2)
   InitializeXInput2();
 #endif
-  InitializeEventsToCapture();
+  if (use_gtk_message_pump)
+    InitializeEventsToCapture();
 }
 
 MessagePumpX::~MessagePumpX() {
@@ -48,14 +53,18 @@ MessagePumpX::~MessagePumpX() {
                         this, NULL);
 }
 
-bool MessagePumpX::ShouldCaptureXEvent(XEvent* xev) {
-  return capture_x_events_[xev->type]
-#if defined(HAVE_XINPUT2)
-        && (xev->type != GenericEvent || xev->xcookie.extension == xiopcode_)
-#endif
-    ;
+// static
+void MessagePumpX::DisableGtkMessagePump() {
+  use_gtk_message_pump = false;
 }
 
+bool MessagePumpX::ShouldCaptureXEvent(XEvent* xev) {
+  return (!use_gtk_message_pump || capture_x_events_[xev->type])
+#if defined(HAVE_XINPUT2)
+      && (xev->type != GenericEvent || xev->xcookie.extension == xiopcode_)
+#endif
+      ;
+}
 
 bool MessagePumpX::ProcessXEvent(XEvent* xev) {
   bool should_quit = false;
@@ -108,14 +117,14 @@ bool MessagePumpX::RunOnce(GMainContext* context, bool block) {
       // TODO(sad): A couple of extra events can still sneak in during this.
       // Those should be sent back to the X queue from the dispatcher
       // EventDispatcherX.
-      if (gdksource_)
+      if (gdksource_ && use_gtk_message_pump)
         gdksource_->source_funcs->dispatch = gdkdispatcher_;
       g_main_context_iteration(context, FALSE);
     }
   }
 
   bool retvalue;
-  if (gdksource_) {
+  if (gdksource_ && use_gtk_message_pump) {
     // Replace the dispatch callback of the GDK event source temporarily so that
     // it doesn't read events from X.
     gboolean (*cb)(GSource*, GSourceFunc, void*) =
@@ -160,6 +169,7 @@ bool MessagePumpX::WillProcessXEvent(XEvent* xevent) {
 
 void MessagePumpX::EventDispatcherX(GdkEvent* event, gpointer data) {
   MessagePumpX* pump_x = reinterpret_cast<MessagePumpX*>(data);
+  CHECK(use_gtk_message_pump);
 
   if (!pump_x->gdksource_) {
     pump_x->gdksource_ = g_main_current_source();
