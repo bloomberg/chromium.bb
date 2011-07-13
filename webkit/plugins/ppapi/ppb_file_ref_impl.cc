@@ -87,6 +87,10 @@ PP_Resource PPB_FileRef_Impl::Create(PP_Resource pp_file_system,
   if (!file_system->instance())
     return 0;
 
+  if (file_system->type() != PP_FILESYSTEMTYPE_LOCALPERSISTENT &&
+      file_system->type() != PP_FILESYSTEMTYPE_LOCALTEMPORARY)
+    return 0;
+
   std::string validated_path(path);
   if (!IsValidLocalPath(validated_path))
     return 0;
