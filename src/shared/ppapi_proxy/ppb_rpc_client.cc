@@ -1553,11 +1553,13 @@ NaClSrpcError PpbScrollbarRpcClient::PPB_Scrollbar_IsScrollbar(
 
 NaClSrpcError PpbScrollbarRpcClient::PPB_Scrollbar_GetThickness(
     NaClSrpcChannel* channel,
+    PP_Resource resource,
     int32_t* thickness)  {
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_Scrollbar_GetThickness::i",
+      "PPB_Scrollbar_GetThickness:i:i",
+      resource,
       thickness
   );
   return retval;

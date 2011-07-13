@@ -750,6 +750,7 @@ class PpbScrollbarRpcServer {
   static void PPB_Scrollbar_GetThickness(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
+      PP_Resource resource,
       int32_t* thickness);
   static void PPB_Scrollbar_GetValue(
       NaClSrpcRpc* rpc,

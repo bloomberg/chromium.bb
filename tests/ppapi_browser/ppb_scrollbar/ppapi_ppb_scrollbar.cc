@@ -45,8 +45,10 @@ void TestCreate() {
 void TestGetThickness() {
   // Thickness is a platform-defined constant; about all we can assume is
   // that it is greater than 0.
-  uint32_t thickness = PPBScrollbarDev()->GetThickness();
+  PP_Resource scrollbar = PPBScrollbarDev()->Create(pp_instance(), PP_FALSE);
+  uint32_t thickness = PPBScrollbarDev()->GetThickness(scrollbar);
   EXPECT(thickness > 0);
+  PPBCore()->ReleaseResource(scrollbar);
 
   TEST_PASSED;
 }
@@ -99,7 +101,7 @@ void TestScrollBy() {
 // appearance, so it should be verified visually.
 void TestSetTickMarks() {
   PP_Resource scrollbar = PPBScrollbarDev()->Create(pp_instance(), PP_TRUE);
-  uint32_t thickness = PPBScrollbarDev()->GetThickness();
+  uint32_t thickness = PPBScrollbarDev()->GetThickness(scrollbar);
   const int32_t kCount = 2;
   PP_Rect tick_marks[kCount] = {
       { {0, 0}, {thickness, 1} },

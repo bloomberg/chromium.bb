@@ -8,6 +8,11 @@
 #ifndef NATIVE_CLIENT_TESTS_PPAPI_TEST_PPB_TEMPLATE_GET_BROWSER_INTERFACE_H
 #define NATIVE_CLIENT_TESTS_PPAPI_TEST_PPB_TEMPLATE_GET_BROWSER_INTERFACE_H
 
+// The definition of scrollbar depends on the interface version.
+// TODO(brettw) either move all interfaces to this method, or encode all
+// versions explicitly in all interfaces.
+#include "native_client/src/third_party/ppapi/c/dev/ppb_scrollbar_dev.h"
+
 struct PPB_Context3D_Dev;
 struct PPB_Core;
 struct PPB_FileIO_Dev;
@@ -16,7 +21,6 @@ struct PPB_Graphics2D;
 struct PPB_ImageData;
 struct PPB_Instance;
 struct PPB_Messaging;
-struct PPB_Scrollbar_Dev;
 struct PPB_Surface3D_Dev;
 struct PPB_Testing_Dev;
 struct PPB_URLLoader;

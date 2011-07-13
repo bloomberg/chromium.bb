@@ -59,13 +59,14 @@ PP_Bool IsScrollbar(PP_Resource resource) {
   return PP_FALSE;
 }
 
-uint32_t GetThickness() {
+uint32_t GetThickness(PP_Resource resource) {
   DebugPrintf("PPB_Scrollbar::GetThickness");
 
   int32_t thickness = 0;
   NaClSrpcError srpc_result =
       PpbScrollbarRpcClient::PPB_Scrollbar_GetThickness(
           GetMainSrpcChannel(),
+          resource,
           &thickness);
 
   DebugPrintf("PPB_Scrollbar::GetThickness: %s\n",

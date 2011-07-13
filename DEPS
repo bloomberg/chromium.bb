@@ -3,7 +3,7 @@ vars = {
   "arm_toolchain_version": "5979",
   "x86_toolchain_version": "5979",
   # Keep them seperate from the rest of the list.
-  "chrome_rev": "91987",
+  "chrome_rev": "92230",
   "chromium_trunk": "http://src.chromium.org/svn/trunk",
   "gtest_rev": "364",
   "gyp_rev": "906",
@@ -41,7 +41,7 @@ deps = {
   "net/tools/testserver":
     Var("chromium_trunk") + "/src/net/tools/testserver@" + Var("chrome_rev"),
   "native_client/src/third_party/ppapi":
-    Var("chromium_trunk") + "/src/ppapi@92058",
+    Var("chromium_trunk") + "/src/ppapi@92230",
   "testing/gtest":
     "http://googletest.googlecode.com/svn/trunk@" + Var("gtest_rev"),
   "third_party/cloog":

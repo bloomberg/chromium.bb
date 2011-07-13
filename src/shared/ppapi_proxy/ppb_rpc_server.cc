@@ -1483,10 +1483,10 @@ static void PPB_Scrollbar_GetThicknessDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(inputs);
   PpbScrollbarRpcServer::PPB_Scrollbar_GetThickness(
       rpc,
       done,
+      inputs[0]->u.ival,
       &(outputs[0]->u.ival)
   );
 }
@@ -2100,7 +2100,7 @@ NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
   { "PPB_PDF_SaveAs:i:", PPB_PDF_SaveAsDispatcher },
   { "PPB_Scrollbar_Create:ii:i", PPB_Scrollbar_CreateDispatcher },
   { "PPB_Scrollbar_IsScrollbar:i:i", PPB_Scrollbar_IsScrollbarDispatcher },
-  { "PPB_Scrollbar_GetThickness::i", PPB_Scrollbar_GetThicknessDispatcher },
+  { "PPB_Scrollbar_GetThickness:i:i", PPB_Scrollbar_GetThicknessDispatcher },
   { "PPB_Scrollbar_GetValue:i:i", PPB_Scrollbar_GetValueDispatcher },
   { "PPB_Scrollbar_SetValue:ii:", PPB_Scrollbar_SetValueDispatcher },
   { "PPB_Scrollbar_SetDocumentSize:ii:", PPB_Scrollbar_SetDocumentSizeDispatcher },

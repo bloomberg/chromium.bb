@@ -52,11 +52,12 @@ void PpbScrollbarRpcServer::PPB_Scrollbar_IsScrollbar(
 void PpbScrollbarRpcServer::PPB_Scrollbar_GetThickness(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
+    PP_Resource resource,
     int32_t* thickness) {
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
-  *thickness = PPBScrollbarInterface()->GetThickness();
+  *thickness = PPBScrollbarInterface()->GetThickness(resource);
 
   DebugPrintf("PPB_Scrollbar::GetThickness: thickness=%"NACL_PRId32"\n",
               *thickness);

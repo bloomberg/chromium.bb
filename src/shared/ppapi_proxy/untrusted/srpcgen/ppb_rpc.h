@@ -654,6 +654,7 @@ class PpbScrollbarRpcClient {
       int32_t* is_scrollbar);
   static NaClSrpcError PPB_Scrollbar_GetThickness(
       NaClSrpcChannel* channel,
+      PP_Resource resource,
       int32_t* thickness);
   static NaClSrpcError PPB_Scrollbar_GetValue(
       NaClSrpcChannel* channel,

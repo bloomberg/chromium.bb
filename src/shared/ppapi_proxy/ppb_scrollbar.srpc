@@ -21,7 +21,7 @@
                       ]
           },
           {'name': 'PPB_Scrollbar_GetThickness',
-           'inputs': [
+           'inputs': [['resource', 'PP_Resource'],
                      ],
            'outputs': [['thickness', 'int32_t'],
                       ]
