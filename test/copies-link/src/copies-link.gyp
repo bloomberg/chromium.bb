@@ -52,7 +52,7 @@
             'libraries': ['-l"<(LIB_DIR)/cloned.lib"'],
           }, {
             'libraries': ['-lcloned'],
-            'ldflags': ['-L <(LIB_DIR)'],
+            'ldflags': ['-L<(LIB_DIR)'],
           }],
         ],
       },

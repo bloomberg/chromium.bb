@@ -35,13 +35,20 @@ def FindBuildFiles():
 
 
 def Load(build_files, format, default_variables={},
-         includes=[], depth='.', params={}, check=False, circular_check=True):
+         includes=[], depth='.', params=None, check=False, circular_check=True):
   """
   Loads one or more specified build files.
   default_variables and includes will be copied before use.
   Returns the generator for the specified format and the
   data returned by loading the specified build files.
   """
+  if params is None:
+    params = {}
+
+  flavor = None
+  if '-' in format:
+    format, params['flavor'] = format.split('-', 1)
+
   default_variables = copy.copy(default_variables)
 
   # Default variables provided by this program and its modules should be

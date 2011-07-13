@@ -28,6 +28,7 @@ import gyp.common
 import gyp.system_test
 import os.path
 import os
+import sys
 
 # Debugging-related imports -- remove me once we're solid.
 import code
@@ -36,11 +37,9 @@ import pprint
 generator_default_variables = {
   'EXECUTABLE_PREFIX': '',
   'EXECUTABLE_SUFFIX': '',
-  'OS': 'linux',
   'STATIC_LIB_PREFIX': 'lib',
   'SHARED_LIB_PREFIX': 'lib',
   'STATIC_LIB_SUFFIX': '.a',
-  'SHARED_LIB_SUFFIX': '.so',
   'INTERMEDIATE_DIR': '$(obj).$(TOOLSET)/geni',
   'SHARED_INTERMEDIATE_DIR': '$(obj)/gen',
   'PRODUCT_DIR': '$(builddir)',
@@ -61,10 +60,100 @@ generator_supports_multiple_toolsets = True
 # Request sorted dependencies in the order from dependents to dependencies.
 generator_wants_sorted_dependencies = False
 
+
+def GetFlavor(params):
+  """Returns |params.flavor| if it's set, the system's default flavor else."""
+  return params.get('flavor', 'mac' if sys.platform == 'darwin' else 'linux')
+
+
+def CalculateVariables(default_variables, params):
+  """Calculate additional variables for use in the build (called by gyp)."""
+  cc_target = os.environ.get('CC.target', os.environ.get('CC', 'cc'))
+  default_variables['LINKER_SUPPORTS_ICF'] = \
+      gyp.system_test.TestLinkerSupportsICF(cc_command=cc_target)
+
+  if GetFlavor(params) == 'mac':
+    default_variables.setdefault('OS', 'mac')
+    default_variables.setdefault('SHARED_LIB_SUFFIX', '.dylib')
+
+    # Copy additional generator configuration data from Xcode, which is shared
+    # by the Mac Make generator.
+    import gyp.generator.xcode as xcode_generator
+    global generator_additional_non_configuration_keys
+    generator_additional_non_configuration_keys = getattr(xcode_generator,
+        'generator_additional_non_configuration_keys', [])
+    global generator_additional_path_sections
+    generator_additional_path_sections = getattr(xcode_generator,
+        'generator_additional_path_sections', [])
+    global generator_extra_sources_for_rules
+    generator_extra_sources_for_rules = getattr(xcode_generator,
+        'generator_extra_sources_for_rules', [])
+  else:
+    default_variables.setdefault('OS', 'linux')
+    default_variables.setdefault('SHARED_LIB_SUFFIX', '.so')
+
+
+def CalculateGeneratorInputInfo(params):
+  """Calculate the generator specific info that gets fed to input (called by
+  gyp)."""
+  generator_flags = params.get('generator_flags', {})
+  android_ndk_version = generator_flags.get('android_ndk_version', None)
+  # Android NDK requires a strict link order.
+  if android_ndk_version:
+    global generator_wants_sorted_dependencies
+    generator_wants_sorted_dependencies = True
+
+
 def ensure_directory_exists(path):
   dir = os.path.dirname(path)
   if dir and not os.path.exists(dir):
     os.makedirs(dir)
+
+
+LINK_COMMANDS_LINUX = """\
+# Due to circular dependencies between libraries :(, we wrap the
+# special "figure out circular dependencies" flags around the entire
+# input list during linking.
+quiet_cmd_link = LINK($(TOOLSET)) $@
+cmd_link = $(LINK.$(TOOLSET)) $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -o $@ -Wl,--start-group $(filter-out FORCE_DO_CMD, $^) -Wl,--end-group $(LIBS)
+
+# We support two kinds of shared objects (.so):
+# 1) shared_library, which is just bundling together many dependent libraries
+# into a link line.
+# 2) loadable_module, which is generating a module intended for dlopen().
+#
+# They differ only slightly:
+# In the former case, we want to package all dependent code into the .so.
+# In the latter case, we want to package just the API exposed by the
+# outermost module.
+# This means shared_library uses --whole-archive, while loadable_module doesn't.
+# (Note that --whole-archive is incompatible with the --start-group used in
+# normal linking.)
+
+# Other shared-object link notes:
+# - Set SONAME to the library filename so our binaries don't reference
+# the local, absolute paths used on the link command-line.
+quiet_cmd_solink = SOLINK($(TOOLSET)) $@
+cmd_solink = $(LINK.$(TOOLSET)) -shared $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -Wl,-soname=$(@F) -o $@ -Wl,--whole-archive $(filter-out FORCE_DO_CMD, $^) -Wl,--no-whole-archive $(LIBS)
+
+quiet_cmd_solink_module = SOLINK_MODULE($(TOOLSET)) $@
+cmd_solink_module = $(LINK.$(TOOLSET)) -shared $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -Wl,-soname=$(@F) -o $@ -Wl,--start-group $(filter-out FORCE_DO_CMD, $^) -Wl,--end-group $(LIBS)
+"""
+
+LINK_COMMANDS_MAC = """\
+quiet_cmd_link = LINK($(TOOLSET)) $@
+cmd_link = $(LINK.$(TOOLSET)) $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -o $@ $(filter-out FORCE_DO_CMD, $^) $(LIBS)
+
+# TODO(thakis): Find out and document the difference between shared_library and
+# loadable_module on mac.
+quiet_cmd_solink = SOLINK($(TOOLSET)) $@
+cmd_solink = $(LINK.$(TOOLSET)) -shared $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -o $@ $(filter-out FORCE_DO_CMD, $^) $(LIBS)
+
+# TODO(thakis): The solink_module rule is likely wrong. Xcode seems to pass
+# -bundle -single_module here (for osmesa.so).
+quiet_cmd_solink_module = SOLINK_MODULE($(TOOLSET)) $@
+cmd_solink_module = $(LINK.$(TOOLSET)) -shared $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -o $@ $(filter-out FORCE_DO_CMD, $^) $(LIBS)
+"""
 
 # Header of toplevel Makefile.
 # This should go into the build tree, but it's easier to keep it here for now.
@@ -117,7 +206,7 @@ all_deps :=
 #   export LINK="$(CXX)"
 #
 # This will allow make to invoke N linker processes as specified in -jN.
-LINK ?= flock $(builddir)/linker.lock $(CXX) %(LINK_flags)s
+LINK ?= %(flock)s $(builddir)/linker.lock $(CXX) %(LINK_flags)s
 
 CC.target ?= $(CC)
 CFLAGS.target ?= $(CFLAGS)
@@ -204,33 +293,7 @@ quiet_cmd_copy = COPY $@
 # send stderr to /dev/null to ignore messages when linking directories.
 cmd_copy = ln -f $< $@ 2>/dev/null || cp -af $< $@
 
-# Due to circular dependencies between libraries :(, we wrap the
-# special "figure out circular dependencies" flags around the entire
-# input list during linking.
-quiet_cmd_link = LINK($(TOOLSET)) $@
-cmd_link = $(LINK.$(TOOLSET)) $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -o $@ -Wl,--start-group $(filter-out FORCE_DO_CMD, $^) -Wl,--end-group $(LIBS)
-
-# We support two kinds of shared objects (.so):
-# 1) shared_library, which is just bundling together many dependent libraries
-# into a link line.
-# 2) loadable_module, which is generating a module intended for dlopen().
-#
-# They differ only slightly:
-# In the former case, we want to package all dependent code into the .so.
-# In the latter case, we want to package just the API exposed by the
-# outermost module.
-# This means shared_library uses --whole-archive, while loadable_module doesn't.
-# (Note that --whole-archive is incompatible with the --start-group used in
-# normal linking.)
-
-# Other shared-object link notes:
-# - Set SONAME to the library filename so our binaries don't reference
-# the local, absolute paths used on the link command-line.
-quiet_cmd_solink = SOLINK($(TOOLSET)) $@
-cmd_solink = $(LINK.$(TOOLSET)) -shared $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -Wl,-soname=$(@F) -o $@ -Wl,--whole-archive $(filter-out FORCE_DO_CMD, $^) -Wl,--no-whole-archive $(LIBS)
-
-quiet_cmd_solink_module = SOLINK_MODULE($(TOOLSET)) $@
-cmd_solink_module = $(LINK.$(TOOLSET)) -shared $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -Wl,-soname=$(@F) -o $@ -Wl,--start-group $(filter-out FORCE_DO_CMD, $^) -Wl,--end-group $(LIBS)
+%(link_commands)s
 """
 
 r"""
@@ -277,7 +340,7 @@ define do_cmd
 $(if $(or $(command_changed),$(prereq_changed)),
   @$(call exact_echo,  $($(quiet)cmd_$(1)))
   @mkdir -p $(dir $@) $(dir $(depfile))
-  $(if $(findstring flock,$(word 1,$(cmd_$1))),
+  $(if $(findstring flock,$(word %(flock_index)d,$(cmd_$1))),
     @$(cmd_$(1))
     @echo "  $(quiet_cmd_$(1)): Finished",
     @$(cmd_$(1))
@@ -527,8 +590,9 @@ class MakefileWriter:
   Its only real entry point is Write(), and is mostly used for namespacing.
   """
 
-  def __init__(self, generator_flags):
+  def __init__(self, generator_flags, flavor):
     self.generator_flags = generator_flags
+    self.flavor = flavor
     # Keep track of the total number of outputs for this makefile.
     self._num_outputs = 0
 
@@ -951,6 +1015,13 @@ class MakefileWriter:
         target = target[3:]
       target_prefix = 'lib'
       target_ext = '.so'
+      if self.flavor == 'mac':
+        if self.type == 'shared_library':
+          target_ext = '.dylib'
+        else:
+          # Non-bundled loadable_modules are called foo.so for some reason
+          # (that is, .so and no prefix) with the xcode build -- match that.
+          target_prefix = ''
     elif self.type == 'none':
       target = '%s.stamp' % target
     elif self.type == 'settings':
@@ -1366,26 +1437,22 @@ def RunSystemTests():
            'LINK_flags': link_flags }
 
 
-def CalculateVariables(default_variables, params):
-  """Calculate additional variables for use in the build (called by gyp)."""
-  cc_target = os.environ.get('CC.target', os.environ.get('CC', 'cc'))
-  default_variables['LINKER_SUPPORTS_ICF'] = \
-      gyp.system_test.TestLinkerSupportsICF(cc_command=cc_target)
-
-
-def CalculateGeneratorInputInfo(params):
-  """Calculate the generator specific info that gets fed to input (called by
-  gyp)."""
-  generator_flags = params.get('generator_flags', {})
-  android_ndk_version = generator_flags.get('android_ndk_version', None)
-  # Android NDK requires a strict link order.
-  if android_ndk_version:
-    global generator_wants_sorted_dependencies
-    generator_wants_sorted_dependencies = True
+def CopyMacTool(out_path):
+  """Finds mac_tool.gyp in the gyp directory and copies it to |out_path|."""
+  source_path = os.path.join(
+      os.path.dirname(os.path.abspath(__file__)), '..', 'mac_tool.py')
+  source_file = open(source_path)
+  source = source_file.readlines()
+  source_file.close()
+  mactool_file = open(out_path, 'w')
+  mactool_file.write(
+      ''.join([source[0], '# Generated by gyp. Do not edit.\n'] + source[1:]))
+  mactool_file.close()
 
 
 def GenerateOutput(target_list, target_dicts, data, params):
   options = params['options']
+  flavor = GetFlavor(params)
   generator_flags = params.get('generator_flags', {})
   builddir_name = generator_flags.get('output_dir', 'out')
   android_ndk_version = generator_flags.get('android_ndk_version', None)
@@ -1432,7 +1499,16 @@ def GenerateOutput(target_list, target_dicts, data, params):
       'srcdir': srcdir,
       'builddir': builddir_name,
       'default_configuration': default_configuration,
+      'link_commands': LINK_COMMANDS_LINUX,
+      'flock': 'flock',
+      'flock_index': 1,
     }
+  if flavor == 'mac':
+    header_params.update({
+        'link_commands': LINK_COMMANDS_MAC,
+        'flock': './gyp-mac-tool flock',
+        'flock_index': 2,
+    })
   header_params.update(RunSystemTests())
 
   ensure_directory_exists(makefile_path)
@@ -1448,6 +1524,14 @@ def GenerateOutput(target_list, target_dicts, data, params):
   for toolset in toolsets:
     root_makefile.write('TOOLSET := %s\n' % toolset)
     root_makefile.write(ROOT_HEADER_SUFFIX_RULES)
+
+  # Put mac_tool next to the root Makefile.
+  if flavor == 'mac':
+    mactool_path = os.path.join(os.path.dirname(makefile_path), 'gyp-mac-tool')
+    if os.path.exists(mactool_path):
+      os.remove(mactool_path)
+    CopyMacTool(mactool_path)
+    os.chmod(mactool_path, 0o755)  # Make file executable.
 
   # Find the list of targets that derive from the gyp file(s) being built.
   needed_targets = set()
@@ -1485,7 +1569,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
     spec = target_dicts[qualified_target]
     configs = spec['configurations']
 
-    writer = MakefileWriter(generator_flags)
+    writer = MakefileWriter(generator_flags, flavor)
     writer.Write(qualified_target, base_path, output_file, spec, configs,
                  part_of_all=qualified_target in needed_targets)
     num_outputs += writer.NumOutputs()
