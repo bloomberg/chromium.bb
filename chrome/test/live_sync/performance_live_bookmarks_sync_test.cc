@@ -82,26 +82,19 @@ std::wstring PerformanceLiveBookmarksSyncTest::NextIndexedURLTitle() {
   return IndexedURLTitle(url_title_number++);
 }
 
-// TODO(braffert): Possibly split each of these into separate up / down test
-// cases?
 // TCM ID - 7556828.
 IN_PROC_BROWSER_TEST_F(PerformanceLiveBookmarksSyncTest, Add) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   DisableVerifier();
 
-  DisableNetwork(GetProfile(1));
   AddURLs(0, kNumBookmarks);
-  base::TimeDelta dt_up = LiveSyncTimingHelper::TimeSyncCycle(GetClient(0));
-  ASSERT_EQ(kNumBookmarks, GetBookmarkBarNode(0)->child_count());
-  ASSERT_EQ(0, GetBookmarkBarNode(1)->child_count());
-
-  EnableNetwork(GetProfile(1));
-  base::TimeDelta dt_down =
+  base::TimeDelta dt =
       LiveSyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(kNumBookmarks, GetBookmarkBarNode(0)->child_count());
   ASSERT_TRUE(AllModelsMatch());
 
   // TODO(braffert): Compare timings against some target value.
+  VLOG(0) << std::endl << "dt: " << dt.InSecondsF() << " s";
 }
 
 // TCM ID - 7564762.
@@ -111,22 +104,15 @@ IN_PROC_BROWSER_TEST_F(PerformanceLiveBookmarksSyncTest, Update) {
 
   AddURLs(0, kNumBookmarks);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatch());
 
-  DisableNetwork(GetProfile(1));
   UpdateURLs(0);
-  base::TimeDelta dt_up = LiveSyncTimingHelper::TimeSyncCycle(GetClient(0));
-  ASSERT_EQ(kNumBookmarks, GetBookmarkBarNode(0)->child_count());
-  ASSERT_EQ(kNumBookmarks, GetBookmarkBarNode(1)->child_count());
-  ASSERT_FALSE(AllModelsMatch());
-
-  EnableNetwork(GetProfile(1));
-  base::TimeDelta dt_down =
+  base::TimeDelta dt =
       LiveSyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(kNumBookmarks, GetBookmarkBarNode(0)->child_count());
-  ASSERT_EQ(kNumBookmarks, GetBookmarkBarNode(1)->child_count());
+  ASSERT_TRUE(AllModelsMatch());
 
   // TODO(braffert): Compare timings against some target value.
+  VLOG(0) << std::endl << "dt: " << dt.InSecondsF() << " s";
 }
 
 // TCM ID - 7566626.
@@ -136,21 +122,15 @@ IN_PROC_BROWSER_TEST_F(PerformanceLiveBookmarksSyncTest, Delete) {
 
   AddURLs(0, kNumBookmarks);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatch());
 
-  DisableNetwork(GetProfile(1));
   RemoveURLs(0);
-  base::TimeDelta dt_up = LiveSyncTimingHelper::TimeSyncCycle(GetClient(0));
-  ASSERT_EQ(0, GetBookmarkBarNode(0)->child_count());
-  ASSERT_EQ(kNumBookmarks, GetBookmarkBarNode(1)->child_count());
-
-  EnableNetwork(GetProfile(1));
-  base::TimeDelta dt_down =
+  base::TimeDelta dt =
       LiveSyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(0, GetBookmarkBarNode(0)->child_count());
-  ASSERT_EQ(0, GetBookmarkBarNode(1)->child_count());
+  ASSERT_TRUE(AllModelsMatch());
 
   // TODO(braffert): Compare timings against some target value.
+  VLOG(0) << std::endl << "dt: " << dt.InSecondsF() << " s";
 }
 
 IN_PROC_BROWSER_TEST_F(PerformanceLiveBookmarksSyncTest, DISABLED_Benchmark) {
@@ -159,58 +139,29 @@ IN_PROC_BROWSER_TEST_F(PerformanceLiveBookmarksSyncTest, DISABLED_Benchmark) {
 
   for (int i = 0; i < kNumBenchmarkPoints; ++i) {
     int num_bookmarks = kBenchmarkPoints[i];
-
-    // Disable client 1.  Add bookmarks and time commit by client 0.
-    DisableNetwork(GetProfile(1));
     AddURLs(0, num_bookmarks);
-    base::TimeDelta dt_up = LiveSyncTimingHelper::TimeSyncCycle(GetClient(0));
-    ASSERT_EQ(num_bookmarks, GetBookmarkBarNode(0)->child_count());
-    ASSERT_EQ(0, GetBookmarkBarNode(1)->child_count());
-
-    // Enable client 1 and time update (new bookmarks).
-    EnableNetwork(GetProfile(1));
-    base::TimeDelta dt_down =
+    base::TimeDelta dt_add =
         LiveSyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
     ASSERT_EQ(num_bookmarks, GetBookmarkBarNode(0)->child_count());
     ASSERT_TRUE(AllModelsMatch());
-
     VLOG(0) << std::endl << "Add: " << num_bookmarks << " "
-            << dt_up.InSecondsF() << " " << dt_down.InSecondsF();
+            << dt_add.InSecondsF();
 
-    // Disable client 1.  Modify bookmarks and time commit by client 0.
-    DisableNetwork(GetProfile(1));
     UpdateURLs(0);
-    dt_up = LiveSyncTimingHelper::TimeSyncCycle(GetClient(0));
-    ASSERT_EQ(num_bookmarks, GetBookmarkBarNode(0)->child_count());
-    ASSERT_EQ(num_bookmarks, GetBookmarkBarNode(1)->child_count());
-    ASSERT_FALSE(AllModelsMatch());
-
-    // Enable client 1 and time update (changed bookmarks).
-    EnableNetwork(GetProfile(1));
-    dt_down =
+    base::TimeDelta dt_update =
         LiveSyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
     ASSERT_EQ(num_bookmarks, GetBookmarkBarNode(0)->child_count());
     ASSERT_TRUE(AllModelsMatch());
-
     VLOG(0) << std::endl << "Update: " << num_bookmarks << " "
-            << dt_up.InSecondsF() << " " << dt_down.InSecondsF();
+            << dt_update.InSecondsF();
 
-    // Disable client 1.  Delete bookmarks and time commit by client 0.
-    DisableNetwork(GetProfile(1));
     RemoveURLs(0);
-    dt_up = LiveSyncTimingHelper::TimeSyncCycle(GetClient(0));
-    ASSERT_EQ(0, GetBookmarkBarNode(0)->child_count());
-    ASSERT_EQ(num_bookmarks, GetBookmarkBarNode(1)->child_count());
-
-    // Enable client 1 and time update (deleted bookmarks).
-    EnableNetwork(GetProfile(1));
-    dt_down =
+    base::TimeDelta dt_delete =
         LiveSyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
     ASSERT_EQ(0, GetBookmarkBarNode(0)->child_count());
-    ASSERT_EQ(0, GetBookmarkBarNode(1)->child_count());
-
+    ASSERT_TRUE(AllModelsMatch());
     VLOG(0) << std::endl << "Delete: " << num_bookmarks << " "
-            << dt_up.InSecondsF() << " " << dt_down.InSecondsF();
+            << dt_delete.InSecondsF();
 
     Cleanup();
   }
