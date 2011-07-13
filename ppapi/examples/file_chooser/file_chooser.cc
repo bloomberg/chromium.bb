@@ -7,14 +7,14 @@
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/dev/file_chooser_dev.h"
 #include "ppapi/cpp/dev/file_ref_dev.h"
-#include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
-#include "ppapi/cpp/var.h"
+#include "ppapi/cpp/private/instance_private.h"
+#include "ppapi/cpp/private/var_private.h"
 
-class MyInstance : public pp::Instance {
+class MyInstance : public pp::InstancePrivate {
  public:
   MyInstance(PP_Instance instance)
-      : pp::Instance(instance) {
+      : pp::InstancePrivate(instance) {
     callback_factory_.Initialize(this);
   }
 
@@ -66,8 +66,8 @@ class MyInstance : public pp::Instance {
   }
 
   void RecreateConsole() {
-    pp::Var doc = GetWindowObject().GetProperty("document");
-    pp::Var body = doc.GetProperty("body");
+    pp::VarPrivate doc = GetWindowObject().GetProperty("document");
+    pp::VarPrivate body = doc.GetProperty("body");
     if (!console_.is_undefined())
       body.Call("removeChild", console_);
 
@@ -78,13 +78,13 @@ class MyInstance : public pp::Instance {
   }
 
   void Log(const pp::Var& var) {
-    pp::Var doc = GetWindowObject().GetProperty("document");
+    pp::VarPrivate doc = GetWindowObject().GetProperty("document");
     console_.Call("appendChild", doc.Call("createTextNode", var));
     console_.Call("appendChild", doc.Call("createTextNode", "\n"));
   }
 
   pp::CompletionCallbackFactory<MyInstance> callback_factory_;
-  pp::Var console_;
+  pp::VarPrivate console_;
 };
 
 class MyModule : public pp::Module {

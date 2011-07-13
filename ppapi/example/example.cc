@@ -407,8 +407,8 @@ int gettimeofday(struct timeval *tv, struct timezone*) {
     for (size_t i = 0; i < props.size(); ++i)
       Log(PP_LOGLEVEL_LOG, props[i]);
 
-    pp::Var location = window.GetProperty("location");
-    pp::Var href = location.GetProperty("href");
+    pp::VarPrivate location = window.GetProperty("location");
+    pp::VarPrivate href = location.GetProperty("href");
 
     if (!fetcher_) {
       fetcher_ = new MyFetcher();

@@ -168,18 +168,13 @@ PP_Bool Instance_HandleDocumentLoad(PP_Instance pp_instance,
   return PP_FALSE;
 }
 
-struct PP_Var Instance_GetInstanceObject(PP_Instance pp_instance) {
-  return PP_MakeNull();
-}
-
 static struct PPP_Instance instance_interface = {
   &Instance_DidCreate,
   &Instance_DidDestroy,
   &Instance_DidChangeView,
   &Instance_DidChangeFocus,
   &Instance_HandleInputEvent,
-  &Instance_HandleDocumentLoad,
-  &Instance_GetInstanceObject,
+  &Instance_HandleDocumentLoad
 };
 
 
