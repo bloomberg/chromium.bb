@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/media_internals/media_internals_handler.h"
+#include "chrome/browser/ui/webui/media/media_internals_handler.h"
 
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/ui/webui/media_internals/media_internals_proxy.h"
+#include "chrome/browser/ui/webui/media/media_internals_proxy.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_view_host.h"
 

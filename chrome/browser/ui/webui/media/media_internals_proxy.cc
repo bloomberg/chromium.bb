@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/media_internals/media_internals_proxy.h"
+#include "chrome/browser/ui/webui/media/media_internals_proxy.h"
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/media/media_internals.h"
-#include "chrome/browser/ui/webui/media_internals/media_internals_handler.h"
+#include "chrome/browser/ui/webui/media/media_internals_handler.h"
 
 MediaInternalsProxy::MediaInternalsProxy() {
   io_thread_ = g_browser_process->io_thread();
