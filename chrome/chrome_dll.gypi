@@ -588,6 +588,7 @@
             '<@(nacl_win64_dependencies)',
             'chrome_dll_version',
             'nacl_win64',
+            '../base/base.gyp:base_i18n_nacl_win64',
           ],
           'defines': [
             '<@(nacl_win64_defines)',
