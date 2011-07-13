@@ -30,6 +30,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/user_metrics.h"
+#include "content/common/notification_details.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_source.h"
 #include "grit/chromium_strings.h"
@@ -137,7 +138,15 @@ void BrowserOptionsHandler::Initialize() {
                                g_browser_process->local_state(),
                                this);
   UpdateDefaultBrowserState();
+
+  startup_custom_pages_table_model_.reset(
+      new CustomHomePagesTableModel(profile));
+  startup_custom_pages_table_model_->SetObserver(this);
   UpdateStartupPages();
+
+  pref_change_registrar_.Init(profile->GetPrefs());
+  pref_change_registrar_.Add(prefs::kURLsToRestoreOnStartup, this);
+
   UpdateSearchEngines();
   banner_handler_.reset(
       OptionsManagedBannerHandler::Create(web_ui_,
@@ -309,10 +318,6 @@ void BrowserOptionsHandler::UpdateSearchEngines() {
 
 void BrowserOptionsHandler::UpdateStartupPages() {
   Profile* profile = web_ui_->GetProfile();
-  startup_custom_pages_table_model_.reset(
-      new CustomHomePagesTableModel(profile));
-  startup_custom_pages_table_model_->SetObserver(this);
-
   const SessionStartupPref startup_pref =
       SessionStartupPref::GetStartupPref(profile->GetPrefs());
   startup_custom_pages_table_model_->SetURLs(startup_pref.urls);
@@ -349,9 +354,20 @@ void BrowserOptionsHandler::OnItemsRemoved(int start, int length) {
 }
 
 void BrowserOptionsHandler::Observe(int type,
-                     const NotificationSource& source,
-                     const NotificationDetails& details) {
-  UpdateDefaultBrowserState();
+                                    const NotificationSource& source,
+                                    const NotificationDetails& details) {
+  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
+    std::string* pref = Details<std::string>(details).ptr();
+    if (*pref == prefs::kDefaultBrowserSettingEnabled) {
+      UpdateDefaultBrowserState();
+    } else if (*pref == prefs::kURLsToRestoreOnStartup) {
+      UpdateStartupPages();
+    } else {
+      NOTREACHED();
+    }
+  } else {
+    NOTREACHED();
+  }
 }
 
 void BrowserOptionsHandler::SetStartupPagesToCurrentPages(
