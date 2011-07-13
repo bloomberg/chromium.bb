@@ -55,14 +55,7 @@ IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest,
   ASSERT_TRUE(RunExtensionTest(extension_name)) << message_;
 }
 
-// Time-outy linux. http://crbug.com/89076
-#if defined(OS_LINUX)
-#define MAYBE_NavigationRaceExecuteScript DISABLED_NavigationRaceExecuteScript
-#else
-#define MAYBE_NavigationRaceExecuteScript NavigationRaceExecuteScript
-#endif
-IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest,
-                       MAYBE_NavigationRaceExecuteScript) {
+IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, NavigationRaceExecuteScript) {
   host_resolver()->AddRule("a.com", "127.0.0.1");
   host_resolver()->AddRule("b.com", "127.0.0.1");
   ASSERT_TRUE(StartTestServer());
