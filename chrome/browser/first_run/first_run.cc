@@ -137,7 +137,8 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
       int retcode = 0;
       if (!LaunchSetupWithParam(installer::switches::kShowEula,
                                 inner_html.value(), &retcode) ||
-          (retcode == installer::EULA_REJECTED)) {
+          (retcode != installer::EULA_ACCEPTED &&
+           retcode != installer::EULA_ACCEPTED_OPT_IN)) {
         LOG(WARNING) << "EULA rejected. Fast exit.";
         ::ExitProcess(1);
       }
