@@ -41,6 +41,9 @@ source tools/llvm/common-tools.sh
 SetScriptPath "${NACL_ROOT}/tools/llvm/utman.sh"
 SetLogDirectory "${NACL_ROOT}/toolchain/hg-log"
 
+# Set to true to use the MQ setup
+readonly UTMAN_USE_MQ=${UTMAN_USE_MQ:-false}
+
 # NOTE: gcc and llvm have to be synchronized
 #       we have chosen toolchains which both are based on gcc-4.2.1
 
@@ -686,20 +689,26 @@ libc() {
 }
 
 
-#@ everything            - Build and install untrusted SDK.
+#@ everything            - Build and install untrusted SDK. no translator
 everything() {
 
   mkdir -p "${PNACL_ROOT}"
 
   hg-checkout-all
-  hg-update-all
+
+  if ${UTMAN_USE_MQ}; then
+    StepBanner "Updating hg sources via MQ=${UTMAN_USE_MQ}";
+    setup-hg-mq
+  else
+    StepBanner "Updating all hg sources"
+    hg-update-all
+  fi
 
   everything-post-hg
 }
 
-# this does everything except for hg setup
+#@ everything-post-hg does everything AFTER hg setup
 everything-post-hg() {
-
   mkdir -p "${PNACL_ROOT}"
   # This is needed to build misc-tools and run ARM tests.
   # We check this early so that there are no surprises later, and we can
@@ -723,6 +732,17 @@ everything-post-hg() {
   verify
 }
 
+
+#@ everything-translator   - Build and install untrusted SDK AND translator
+everything-translator() {
+
+  everything
+  # Building the sandboxed tools requires the SDK
+  prune
+  sdk
+  install-translators srpc
+  prune-translator-install srpc
+}
 
 glibc() {
   StepBanner "GLIBC" "Copying glibc from NNaCl toolchain"
@@ -909,13 +929,7 @@ untrusted_sdk() {
   fi
 
   clean
-  everything
-  prune
-
-  # Building the sandboxed tools requires the SDK
-  sdk
-  install-translators srpc
-  prune-translator-install srpc
+  everything-translator
 
   # Remove the SDK so it doesn't end up in the tarball
   sdk-clean
@@ -3203,7 +3217,7 @@ setup-hg-mq() {
   fi;
 
   if [ -e "${TC_SRC_LLVM_GCC}/.hg/patches" ]; then
-    StepBanner "Popping off existing patches in LLVM"
+    StepBanner "Popping off existing patches in LLVM-gcc"
     (cd "${TC_SRC_LLVM_GCC}"; hg qpop -a );
   fi;
 
@@ -3224,14 +3238,17 @@ setup-hg-mq() {
   StepBanner "Patch Queues have been applied against vendor"
   StepBanner "Cleaning the llvm and llvm-gcc build directories"
   llvm-clean
-  llvm-gcc-clean
+  llvm-gcc-clean arm
   StepBanner "You may now execute utman.sh everything-post-hg"
 }
 
-everything-mq() {
-  setup-hg-mq
-
-  everything-post-hg
+track-pnacl-sfi() {
+  ## readonly PQHELPER=PQHelper.pl
+  ##   which $PQHELPER || echo "Need to access PQHELPER.pl"
+  ## todo: write the routine that will automatically pull in
+  ## new commits to pnacl-sfi and push them in as patches for MQ
+  ## for llvm and llvm-gcc
+  echo "nothing here yet"
 }
 
 ######################################################################
@@ -3249,7 +3266,7 @@ show-config() {
   echo "UTMAN_BUILDBOT:    ${UTMAN_BUILDBOT}"
   echo "UTMAN_CONCURRENCY: ${UTMAN_CONCURRENCY}"
   echo "UTMAN_DEBUG:       ${UTMAN_DEBUG}"
-
+  echo "UTMAN_USE_MQ:      ${UTMAN_USE_MQ}"
   Banner "Your Environment:"
   env | grep UTMAN
 }
