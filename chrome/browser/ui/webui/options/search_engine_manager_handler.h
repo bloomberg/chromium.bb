@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "ui/base/models/table_model_observer.h"
 
+class Extension;
 class KeywordEditorController;
 
 class SearchEngineManagerHandler : public OptionsPageUIHandler,
@@ -66,6 +67,10 @@ class SearchEngineManagerHandler : public OptionsPageUIHandler,
 
   // Returns a dictionary to pass to WebUI representing the given search engine.
   base::DictionaryValue* CreateDictionaryForEngine(int index, bool is_default);
+
+  // Returns a dictionary to pass to WebUI representing the extension.
+  base::DictionaryValue* CreateDictionaryForExtension(
+      const Extension& extension);
 
   DISALLOW_COPY_AND_ASSIGN(SearchEngineManagerHandler);
 };

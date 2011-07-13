@@ -60,4 +60,5 @@
 .search-engine-list > :not(:hover):not([editing]) .url-column button {
   display: none;
 }
+
 /* End temporary Make Default button styling */

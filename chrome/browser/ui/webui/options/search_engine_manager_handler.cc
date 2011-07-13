@@ -8,11 +8,13 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
 #include "chrome/browser/ui/search_engines/template_url_table_model.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -45,7 +47,7 @@ void SearchEngineManagerHandler::Initialize() {
 }
 
 void SearchEngineManagerHandler::GetLocalizedValues(
-    DictionaryValue* localized_strings) {
+    base::DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
   RegisterTitle(localized_strings, "searchEngineManagerPage",
@@ -54,6 +56,11 @@ void SearchEngineManagerHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_SEARCH_ENGINES_EDITOR_MAIN_SEPARATOR));
   localized_strings->SetString("otherSearchEngineListTitle",
       l10n_util::GetStringUTF16(IDS_SEARCH_ENGINES_EDITOR_OTHER_SEPARATOR));
+  localized_strings->SetString("extensionKeywordsListTitle",
+      l10n_util::GetStringUTF16(
+          IDS_SEARCH_ENGINES_EDITOR_EXTENSIONS_SEPARATOR));
+  localized_strings->SetString("manageExtensionsLinkText",
+      l10n_util::GetStringUTF16(IDS_MANAGE_EXTENSIONS));
   localized_strings->SetString("searchEngineTableNameHeader",
       l10n_util::GetStringUTF16(IDS_SEARCH_ENGINES_EDITOR_DESCRIPTION_COLUMN));
   localized_strings->SetString("searchEngineTableKeywordHeader",
@@ -125,8 +132,21 @@ void SearchEngineManagerHandler::OnModelChanged() {
     others_list.Append(CreateDictionaryForEngine(i, i == default_index));
   }
 
+  // Build the extension keywords list.
+  ListValue keyword_list;
+  ExtensionService* extension_service =
+      web_ui_->GetProfile()->GetExtensionService();
+  if (extension_service) {
+    const ExtensionList* extensions = extension_service->extensions();
+    for (ExtensionList::const_iterator it = extensions->begin();
+         it != extensions->end(); ++it) {
+      if ((*it)->omnibox_keyword().size() > 0)
+        keyword_list.Append(CreateDictionaryForExtension(*(*it)));
+    }
+  }
+
   web_ui_->CallJavascriptFunction("SearchEngineManager.updateSearchEngineList",
-                                  defaults_list, others_list);
+                                  defaults_list, others_list, keyword_list);
 }
 
 void SearchEngineManagerHandler::OnItemsChanged(int start, int length) {
@@ -141,12 +161,24 @@ void SearchEngineManagerHandler::OnItemsRemoved(int start, int length) {
   OnModelChanged();
 }
 
-DictionaryValue* SearchEngineManagerHandler::CreateDictionaryForEngine(
+base::DictionaryValue* SearchEngineManagerHandler::CreateDictionaryForExtension(
+    const Extension& extension) {
+  base::DictionaryValue* dict = new base::DictionaryValue();
+  dict->SetString("name",  extension.name());
+  dict->SetString("displayName", extension.name());
+  dict->SetString("keyword", extension.omnibox_keyword());
+  GURL icon = extension.GetIconURL(16, ExtensionIconSet::MATCH_BIGGER);
+  dict->SetString("iconURL", icon.spec());
+  dict->SetString("url", string16());
+  return dict;
+}
+
+base::DictionaryValue* SearchEngineManagerHandler::CreateDictionaryForEngine(
     int index, bool is_default) {
   TemplateURLTableModel* table_model = list_controller_->table_model();
   const TemplateURL* template_url = list_controller_->GetTemplateURL(index);
 
-  DictionaryValue* dict = new DictionaryValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("name",  template_url->short_name());
   dict->SetString("displayName", table_model->GetText(
     index, IDS_SEARCH_ENGINES_EDITOR_DESCRIPTION_COLUMN));
@@ -165,6 +197,7 @@ DictionaryValue* SearchEngineManagerHandler::CreateDictionaryForEngine(
     dict->SetString("canBeDefault", "1");
   if (is_default)
     dict->SetString("default", "1");
+  dict->SetString("canBeEdited", "1");
 
   return dict;
 }
@@ -241,7 +274,7 @@ void SearchEngineManagerHandler::CheckSearchEngineInfoValidity(
     return;
   }
 
-  DictionaryValue validity;
+  base::DictionaryValue validity;
   validity.SetBoolean("name", edit_controller_->IsTitleValid(name));
   validity.SetBoolean("keyword", edit_controller_->IsKeywordValid(keyword));
   validity.SetBoolean("url", edit_controller_->IsURLValid(url));

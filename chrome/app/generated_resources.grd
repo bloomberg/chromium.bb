@@ -1275,6 +1275,10 @@ are declared in build/common.gypi.
                desc="Title above the set of keywords Chrome automatically created as the user browses">
         Other search engines
       </message>
+      <message name="IDS_SEARCH_ENGINES_EDITOR_EXTENSIONS_SEPARATOR"
+               desc="Title above the set of keywords installed by active extensions">
+        Search engines added by extensions
+      </message>
 
       <message name="IDS_SEARCH_ENGINES_EDITOR_DEFAULT_ENGINE"
                desc="Engine name displayed for the engine in the list that is currently marked as default">

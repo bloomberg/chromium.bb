@@ -23,18 +23,21 @@ cr.define('options', function() {
     __proto__: OptionsPage.prototype,
 
     /**
-     * List for default search engine options
-     * @type {boolean}
+     * List for default search engine options.
      * @private
      */
     defaultsList_: null,
 
     /**
-     * List for other search engine options
-     * @type {boolean}
+     * List for other search engine options.
      * @private
      */
     othersList_: null,
+
+    /**
+     * List for extension keywords.
+     * @private
+    extensionList_ : null,
 
     /** inheritDoc */
     initializePage: function() {
@@ -45,6 +48,9 @@ cr.define('options', function() {
 
       this.othersList_ = $('otherSearchEngineList');
       this.setUpList_(this.othersList_);
+
+      this.extensionList_ = $('extensionKeywordList');
+      this.setUpList_(this.extensionList_);
     },
 
     /**
@@ -62,8 +68,9 @@ cr.define('options', function() {
      * @private
      * @param {Array} defaultEngines List of possible default search engines.
      * @param {Array} otherEngines List of other search engines.
+     * @param {Array} keywords List of keywords from extensions.
      */
-    updateSearchEngineList_: function(defaultEngines, otherEngines) {
+    updateSearchEngineList_: function(defaultEngines, otherEngines, keywords) {
       this.defaultsList_.dataModel = new ArrayDataModel(defaultEngines);
 
       otherEngines = otherEngines.map(function(x) {
@@ -80,13 +87,23 @@ cr.define('options', function() {
         'modelIndex': '-1'
       });
       this.othersList_.dataModel = othersModel;
+
+      if (keywords.length > 0) {
+        $('extensionKeywordListTitle').hidden = false;
+        $('extensionKeywordList').hidden = false;
+        $('manageExtensionLink').hidden = false;
+        var extensionsModel = new ArrayDataModel(keywords);
+        this.extensionList_.dataModel = extensionsModel;
+      }
     },
   };
 
   SearchEngineManager.updateSearchEngineList = function(defaultEngines,
-                                                        otherEngines) {
+                                                        otherEngines,
+                                                        keywords) {
     SearchEngineManager.getInstance().updateSearchEngineList_(defaultEngines,
-                                                              otherEngines);
+                                                              otherEngines,
+                                                              keywords);
   };
 
   SearchEngineManager.validityCheckCallback = function(validity, modelIndex) {

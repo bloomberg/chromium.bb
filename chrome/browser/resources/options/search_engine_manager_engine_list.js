@@ -160,9 +160,13 @@ cr.define('options.search_engines', function() {
       }
 
       // Listen for edit events.
-      this.addEventListener('edit', this.onEditStarted_.bind(this));
-      this.addEventListener('canceledit', this.onEditCancelled_.bind(this));
-      this.addEventListener('commitedit', this.onEditCommitted_.bind(this));
+      if (engine['canBeEdited']) {
+        this.addEventListener('edit', this.onEditStarted_.bind(this));
+        this.addEventListener('canceledit', this.onEditCancelled_.bind(this));
+        this.addEventListener('commitedit', this.onEditCommitted_.bind(this));
+      } else {
+        this.editable = false;
+      }
     },
 
     /** @inheritDoc */
