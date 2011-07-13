@@ -19,6 +19,7 @@
 #include "webkit/glue/form_data.h"
 
 using webkit_glue::FormData;
+using webkit_glue::FormField;
 
 namespace {
 
@@ -85,6 +86,16 @@ bool IsSSN(const string16& text) {
   return true;
 }
 
+bool IsTextField(const FormField& field) {
+  return
+      field.form_control_type == ASCIIToUTF16("text") ||
+      field.form_control_type == ASCIIToUTF16("search") ||
+      field.form_control_type == ASCIIToUTF16("tel") ||
+      field.form_control_type == ASCIIToUTF16("url") ||
+      field.form_control_type == ASCIIToUTF16("email") ||
+      field.form_control_type == ASCIIToUTF16("text");
+}
+
 }  // namespace
 
 AutocompleteHistoryManager::AutocompleteHistoryManager(
@@ -130,13 +141,13 @@ void AutocompleteHistoryManager::OnFormSubmitted(const FormData& form) {
   //  - text field
   //  - value is not a credit card number
   //  - value is not a SSN
-  std::vector<webkit_glue::FormField> values;
-  for (std::vector<webkit_glue::FormField>::const_iterator iter =
+  std::vector<FormField> values;
+  for (std::vector<FormField>::const_iterator iter =
            form.fields.begin();
        iter != form.fields.end(); ++iter) {
     if (!iter->value.empty() &&
         !iter->name.empty() &&
-        iter->form_control_type == ASCIIToUTF16("text") &&
+        IsTextField(*iter) &&
         !CreditCard::IsValidCreditCardNumber(iter->value) &&
         !IsSSN(iter->value)) {
       values.push_back(*iter);

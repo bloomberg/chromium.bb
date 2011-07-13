@@ -114,3 +114,25 @@ TEST_F(AutocompleteHistoryManagerTest, SSNValue) {
   EXPECT_CALL(*web_data_service_, AddFormFields(_)).Times(0);
   autocomplete_manager_->OnFormSubmitted(form);
 }
+
+// Verify that autocomplete text is saved for search fields.
+TEST_F(AutocompleteHistoryManagerTest, SearchField) {
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.method = ASCIIToUTF16("POST");
+  form.origin = GURL("http://myform.com/form.html");
+  form.action = GURL("http://myform.com/submit.html");
+  form.user_submitted = true;
+
+  // Invalid credit card number.
+  webkit_glue::FormField search_field(ASCIIToUTF16("Search"),
+                                      ASCIIToUTF16("search"),
+                                      ASCIIToUTF16("my favorite query"),
+                                      ASCIIToUTF16("search"),
+                                      20,
+                                      false);
+  form.fields.push_back(search_field);
+
+  EXPECT_CALL(*(web_data_service_.get()), AddFormFields(_)).Times(1);
+  autocomplete_manager_->OnFormSubmitted(form);
+}
