@@ -173,6 +173,17 @@ class SpecialTabsTest(pyauto.PyUITest):
   broken_google_chrome_special_url_tabs = {
   }
 
+  google_chromeos_special_url_tabs = {
+    # OVERRIDE - different title for Google Chrome OS vs. Chromium OS.
+    'chrome://terms': {
+      'title': 'Google Chrome OS Terms',
+      'CSP': False
+    },
+  }
+
+  broken_google_chromeos_special_url_tabs = {
+  }
+
   def _VerifyAppCacheInternals(self):
     """Confirm about:appcache-internals contains expected content for Caches.
        Also confirms that the about page populates Application Caches."""
@@ -217,6 +228,9 @@ class SpecialTabsTest(pyauto.PyUITest):
     if self.GetBrowserInfo()['properties']['branding'] == 'Google Chrome':
       tabs.update(self.google_chrome_special_url_tabs)
       broken_tabs.update(self.broken_google_chrome_special_url_tabs)
+      if self.IsChromeOS():
+        tabs.update(self.google_chromeos_special_url_tabs)
+        broken_tabs.update(self.broken_google_chromeos_special_url_tabs)
     for key, value in broken_tabs.iteritems():
       if key in tabs:
        del tabs[key]
