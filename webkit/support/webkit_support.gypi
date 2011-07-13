@@ -52,6 +52,8 @@
         'weburl_loader_mock.h',
         'weburl_loader_mock_factory.cc',
         'weburl_loader_mock_factory.h',
+        'web_audio_device_mock.cc',
+        'web_audio_device_mock.h',
       ],
       'conditions': [
         ['OS=="mac"', {

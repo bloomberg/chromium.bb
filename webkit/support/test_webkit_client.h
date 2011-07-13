@@ -17,6 +17,10 @@
 
 class TestShellWebBlobRegistryImpl;
 
+namespace WebKit {
+  class WebAudioDevice;
+}
+
 // An implementation of WebKitClient for tests.
 class TestWebKitClient : public webkit_glue::WebKitClientImpl {
  public:
@@ -89,6 +93,13 @@ class TestWebKitClient : public webkit_glue::WebKitClientImpl {
   const FilePath& file_system_root() const {
     return file_system_root_.path();
   }
+
+  // Mock out the WebAudioDevice since the real one
+  // talks with the browser process.
+  virtual double audioHardwareSampleRate();
+  virtual WebKit::WebAudioDevice* createAudioDevice(size_t bufferSize,
+      unsigned numberOfChannels, double sampleRate,
+      WebKit::WebAudioDevice::RenderCallback*);
 
  private:
   TestShellWebMimeRegistryImpl mime_registry_;

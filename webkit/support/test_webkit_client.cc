@@ -14,6 +14,7 @@
 #include "net/base/cookie_monster.h"
 #include "net/http/http_cache.h"
 #include "net/test/test_server.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebAudioDevice.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDatabase.h"
@@ -44,6 +45,7 @@
 #include "webkit/support/simple_database_system.h"
 #include "webkit/support/webkit_support.h"
 #include "webkit/support/weburl_loader_mock_factory.h"
+#include "webkit/support/web_audio_device_mock.h"
 #include "webkit/tools/test_shell/mock_webclipboard_impl.h"
 #include "webkit/tools/test_shell/simple_appcache_system.h"
 #include "webkit/tools/test_shell/simple_file_system.h"
@@ -369,4 +371,14 @@ WebKit::WebGraphicsContext3D* TestWebKitClient::createGraphicsContext3D() {
       CHECK(false) << "Unknown GraphicsContext3D Implementation";
       return NULL;
   }
+}
+
+double TestWebKitClient::audioHardwareSampleRate() {
+  return 44100.0;
+}
+
+WebKit::WebAudioDevice* TestWebKitClient::createAudioDevice(
+    size_t bufferSize, unsigned numberOfChannels, double sampleRate,
+    WebKit::WebAudioDevice::RenderCallback*) {
+  return new WebAudioDeviceMock(sampleRate);
 }
