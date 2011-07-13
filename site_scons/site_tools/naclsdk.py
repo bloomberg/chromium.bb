@@ -214,6 +214,8 @@ def _SetEnvForPnacl(env, root):
   binprefix = os.path.join(root, 'bin', 'pnacl-')
 
   pnacl_lib = os.path.join(root, 'lib')
+  pnacl_lib_arch = os.path.join(root, 'lib-%s' % arch)
+
   #TODO(robertm): remove NACL_SDK_INCLUDE ASAP
   pnacl_include = os.path.join(root, 'sysroot', 'include')
   pnacl_ar = binprefix + 'ar'
@@ -249,10 +251,13 @@ def _SetEnvForPnacl(env, root):
   platform = NACL_CANONICAL_PLATFORM_MAP[env['PLATFORM']]
   nnacl_root = os.path.join(env['MAIN_DIR'], 'toolchain', '%s_x86' % platform)
 
+  # NACL_SDK_LIB is prepended to LIBPATH in generate()
+  env.Prepend(LIBPATH=pnacl_lib)
+
   env.Replace(# Replace header and lib paths.
               PNACL_ROOT=root,
               NACL_SDK_INCLUDE=pnacl_include,
-              NACL_SDK_LIB=pnacl_lib,
+              NACL_SDK_LIB=pnacl_lib_arch,
               # Replace the normal unix tools with the PNaCl ones.
               CC=pnacl_cc + pnacl_cc_flags,
               CXX=pnacl_cxx + pnacl_cxx_flags,
