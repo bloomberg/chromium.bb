@@ -2592,8 +2592,7 @@
    Memcheck:Leak
    ...
    fun:_ZN32RenderViewHostDelegateViewHelper25CreateNewFullscreenWidgetEiP17RenderProcessHost
-   fun:_ZN15TabContentsView33CreateNewFullscreenWidgetInternalEi
-   fun:_ZN15TabContentsView25CreateNewFullscreenWidgetEi
+   fun:_ZN18TabContentsViewGtk25CreateNewFullscreenWidgetEi
    fun:_ZN14RenderViewHost25CreateNewFullscreenWidgetEi
    fun:_ZN46RenderViewHostTest_CreateFullscreenWidget_Test8TestBodyEv
 }
