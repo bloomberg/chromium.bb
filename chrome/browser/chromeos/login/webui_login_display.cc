@@ -13,10 +13,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "views/widget/widget.h"
 
-#if defined(TOUCH_UI)
-#include "chrome/browser/chromeos/login/touch_login_view.h"
-#endif
-
 namespace chromeos {
 
 // WebUILoginDisplay, public: --------------------------------------------------
