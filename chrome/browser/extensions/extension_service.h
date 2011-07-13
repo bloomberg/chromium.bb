@@ -325,6 +325,9 @@ class ExtensionService
   // Loads the extension from the directory |extension_path|.
   void LoadExtension(const FilePath& extension_path);
 
+  // Same as above, but for use with command line switch --load-extension=path.
+  void LoadExtensionFromCommandLine(const FilePath& extension_path);
+
   // Loads any component extensions.
   void LoadComponentExtensions();
 
@@ -397,7 +400,8 @@ class ExtensionService
   void AddExtension(const Extension* extension);
 
   // Called by the backend when an unpacked extension has been loaded.
-  void OnLoadSingleExtension(const Extension* extension);
+  void OnLoadSingleExtension(const Extension* extension,
+                             bool prompt_for_plugins);
 
   // Called by the backend when an extension has been installed.
   void OnExtensionInstalled(

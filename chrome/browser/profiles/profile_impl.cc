@@ -470,7 +470,7 @@ void ProfileImpl::InitExtensions(bool extensions_enabled) {
     if (command_line->HasSwitch(switches::kLoadExtension)) {
       FilePath path = command_line->GetSwitchValuePath(
           switches::kLoadExtension);
-      extension_service_->LoadExtension(path);
+      extension_service_->LoadExtensionFromCommandLine(path);
     }
   }
 

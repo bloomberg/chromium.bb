@@ -223,7 +223,7 @@ class PanelBrowserViewTest : public InProcessBrowserTest {
     ASSERT_TRUE(extension.get());
     EXPECT_STREQ("", error.c_str());
     browser()->GetProfile()->GetExtensionService()->OnLoadSingleExtension(
-        extension.get());
+        extension.get(), false);
 
     // Creates a panel with the app name that comes from the extension ID.
     PanelBrowserView* browser_view = CreatePanelBrowserView(

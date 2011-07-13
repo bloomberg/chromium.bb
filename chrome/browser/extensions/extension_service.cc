@@ -229,12 +229,14 @@ class ExtensionServiceBackend
       const FilePath& install_directory);
 
   // Loads a single extension from |path| where |path| is the top directory of
-  // a specific extension where its manifest file lives.
+  // a specific extension where its manifest file lives. If |prompt_for_plugins|
+  // is true and the extension contains plugins, we prompt the user before
+  // loading.
   // Errors are reported through ExtensionErrorReporter. On success,
   // AddExtension() is called.
   // TODO(erikkay): It might be useful to be able to load a packed extension
   // (presumably into memory) without installing it.
-  void LoadSingleExtension(const FilePath &path);
+  void LoadSingleExtension(const FilePath &path, bool prompt_for_plugins);
 
  private:
   friend class base::RefCountedThreadSafe<ExtensionServiceBackend>;
@@ -245,16 +247,18 @@ class ExtensionServiceBackend
   // to happen back on the UI thread, so it posts CheckExtensionFileAccess on
   // the UI thread. In turn, once that gets the pref, it goes back to the
   // file thread with LoadSingleExtensionWithFileAccess.
-  void CheckExtensionFileAccess(const FilePath& extension_path);
+  void CheckExtensionFileAccess(const FilePath& extension_path,
+                                bool prompt_for_plugins);
   void LoadSingleExtensionWithFileAccess(
-      const FilePath &path, bool allow_file_access);
+      const FilePath &path, bool allow_file_access, bool prompt_for_plugins);
 
   // Notify the frontend that there was an error loading an extension.
   void ReportExtensionLoadError(const FilePath& extension_path,
                                 const std::string& error);
 
   // Notify the frontend that an extension was installed.
-  void OnLoadSingleExtension(const scoped_refptr<const Extension>& extension);
+  void OnLoadSingleExtension(const scoped_refptr<const Extension>& extension,
+                             bool prompt_for_plugins);
 
   base::WeakPtr<ExtensionService> frontend_;
 
@@ -277,23 +281,21 @@ ExtensionServiceBackend::~ExtensionServiceBackend() {
         BrowserThread::CurrentlyOn(BrowserThread::FILE));
 }
 
-void ExtensionServiceBackend::LoadSingleExtension(const FilePath& path_in) {
+void ExtensionServiceBackend::LoadSingleExtension(const FilePath& path_in,
+                                                  bool prompt_for_plugins) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   FilePath extension_path = path_in;
   file_util::AbsolutePath(&extension_path);
 
-  if (!BrowserThread::PostTask(
-            BrowserThread::UI, FROM_HERE,
-            NewRunnableMethod(
-                this,
-                &ExtensionServiceBackend::CheckExtensionFileAccess,
-                extension_path)))
-    NOTREACHED();
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+      NewRunnableMethod(this,
+                        &ExtensionServiceBackend::CheckExtensionFileAccess,
+                        extension_path, prompt_for_plugins));
 }
 
 void ExtensionServiceBackend::CheckExtensionFileAccess(
-    const FilePath& extension_path) {
+    const FilePath& extension_path, bool prompt_for_plugins) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   std::string id = Extension::GenerateIdForPath(extension_path);
   // Unpacked extensions default to allowing file access, but if that has been
@@ -302,19 +304,17 @@ void ExtensionServiceBackend::CheckExtensionFileAccess(
       Extension::ShouldAlwaysAllowFileAccess(Extension::LOAD) &&
       !frontend_->extension_prefs()->HasAllowFileAccessSetting(id);
 
-  if (!BrowserThread::PostTask(
-          BrowserThread::FILE, FROM_HERE,
-          NewRunnableMethod(
-              this,
-              &ExtensionServiceBackend::LoadSingleExtensionWithFileAccess,
-              extension_path,
-              allow_file_access)))
-    NOTREACHED();
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+      NewRunnableMethod(
+          this,
+          &ExtensionServiceBackend::LoadSingleExtensionWithFileAccess,
+          extension_path, allow_file_access, prompt_for_plugins));
 }
 
-
 void ExtensionServiceBackend::LoadSingleExtensionWithFileAccess(
-    const FilePath& extension_path, bool allow_file_access) {
+    const FilePath& extension_path,
+    bool allow_file_access,
+    bool prompt_for_plugins) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   int flags = allow_file_access ?
       Extension::ALLOW_FILE_ACCESS : Extension::NO_FLAGS;
@@ -328,25 +328,21 @@ void ExtensionServiceBackend::LoadSingleExtensionWithFileAccess(
       &error));
 
   if (!extension) {
-    if (!BrowserThread::PostTask(
-            BrowserThread::UI, FROM_HERE,
-            NewRunnableMethod(
-                this,
-                &ExtensionServiceBackend::ReportExtensionLoadError,
-                extension_path, error)))
-      NOTREACHED() << error;
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+        NewRunnableMethod(
+            this,
+            &ExtensionServiceBackend::ReportExtensionLoadError,
+            extension_path, error));
     return;
   }
 
   // Report this as an installed extension so that it gets remembered in the
   // prefs.
-  if (!BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          NewRunnableMethod(
-              this,
-              &ExtensionServiceBackend::OnLoadSingleExtension,
-              extension)))
-    NOTREACHED();
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+      NewRunnableMethod(
+          this,
+          &ExtensionServiceBackend::OnLoadSingleExtension,
+          extension, prompt_for_plugins));
 }
 
 void ExtensionServiceBackend::ReportExtensionLoadError(
@@ -359,10 +355,10 @@ void ExtensionServiceBackend::ReportExtensionLoadError(
 }
 
 void ExtensionServiceBackend::OnLoadSingleExtension(
-    const scoped_refptr<const Extension>& extension) {
+    const scoped_refptr<const Extension>& extension, bool prompt_for_plugins) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (frontend_.get())
-    frontend_->OnLoadSingleExtension(extension);
+    frontend_->OnLoadSingleExtension(extension, prompt_for_plugins);
 }
 
 void ExtensionService::CheckExternalUninstall(const std::string& id) {
@@ -999,13 +995,18 @@ void ExtensionService::GrantPermissionsAndEnableExtension(
 }
 
 void ExtensionService::LoadExtension(const FilePath& extension_path) {
-  if (!BrowserThread::PostTask(
-          BrowserThread::FILE, FROM_HERE,
-          NewRunnableMethod(
-              backend_.get(),
-              &ExtensionServiceBackend::LoadSingleExtension,
-              extension_path)))
-    NOTREACHED();
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+      NewRunnableMethod(backend_.get(),
+                        &ExtensionServiceBackend::LoadSingleExtension,
+                        extension_path, true));
+}
+
+void ExtensionService::LoadExtensionFromCommandLine(
+    const FilePath& extension_path) {
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+      NewRunnableMethod(backend_.get(),
+                        &ExtensionServiceBackend::LoadSingleExtension,
+                        extension_path, false));
 }
 
 void ExtensionService::LoadComponentExtensions() {
@@ -2014,10 +2015,11 @@ void ExtensionService::UpdateActiveExtensionsInCrashReporter() {
   child_process_logging::SetActiveExtensions(extension_ids);
 }
 
-void ExtensionService::OnLoadSingleExtension(const Extension* extension) {
+void ExtensionService::OnLoadSingleExtension(const Extension* extension,
+                                             bool prompt_for_plugins) {
   // If this is a new install of an extension with plugins, prompt the user
   // first.
-  if (show_extensions_prompts_ &&
+  if (show_extensions_prompts_ && prompt_for_plugins &&
       !extension->plugins().empty() &&
       disabled_extension_paths_.find(extension->id()) ==
           disabled_extension_paths_.end()) {
