@@ -637,7 +637,8 @@ void ExtensionWebRequestEventRouter::OnErrorOccurred(
   if (!HasWebRequestScheme(request->url()))
     return;
 
-  DCHECK(request->status().status() == net::URLRequestStatus::FAILED);
+  DCHECK(request->status().status() == net::URLRequestStatus::FAILED ||
+         request->status().status() == net::URLRequestStatus::CANCELED);
 
   DCHECK(!GetAndSetSignaled(request->identifier(), kOnErrorOccurred));
 

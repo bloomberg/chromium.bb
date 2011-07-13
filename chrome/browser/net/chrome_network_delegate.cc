@@ -110,7 +110,8 @@ void ChromeNetworkDelegate::OnRawBytesRead(const net::URLRequest& request,
 }
 
 void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request) {
-  if (request->status().status() == net::URLRequestStatus::SUCCESS) {
+  if (request->status().status() == net::URLRequestStatus::SUCCESS ||
+      request->status().status() == net::URLRequestStatus::HANDLED_EXTERNALLY) {
     bool is_redirect = request->response_headers() &&
         net::HttpResponseHeaders::IsRedirectResponseCode(
             request->response_headers()->response_code());
@@ -118,9 +119,12 @@ void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request) {
       ExtensionWebRequestEventRouter::GetInstance()->OnCompleted(
           profile_id_, extension_info_map_.get(), request);
     }
-  } else if (request->status().status() == net::URLRequestStatus::FAILED) {
+  } else if (request->status().status() == net::URLRequestStatus::FAILED ||
+             request->status().status() == net::URLRequestStatus::CANCELED) {
     ExtensionWebRequestEventRouter::GetInstance()->OnErrorOccurred(
             profile_id_, extension_info_map_.get(), request);
+  } else {
+    NOTREACHED();
   }
   ForwardProxyErrors(request, event_router_.get(), profile_id_);
 }
