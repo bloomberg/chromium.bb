@@ -7,9 +7,9 @@
 
 #include <string>
 
-#include "chrome/browser/custom_handlers/protocol_handler.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
+#include "chrome/common/custom_handlers/protocol_handler.h"
 #include "content/common/notification_registrar.h"
 
 namespace base {

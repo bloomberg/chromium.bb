@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/custom_handlers/protocol_handler.h"
+#include "chrome/common/custom_handlers/protocol_handler.h"
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"

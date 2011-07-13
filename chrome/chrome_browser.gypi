@@ -780,8 +780,6 @@
         'browser/crash_upload_list_win.h',
         'browser/custom_home_pages_table_model.cc',
         'browser/custom_home_pages_table_model.h',
-        'browser/custom_handlers/protocol_handler.cc',
-        'browser/custom_handlers/protocol_handler.h',
         'browser/custom_handlers/protocol_handler_registry.cc',
         'browser/custom_handlers/protocol_handler_registry.h',
         'browser/custom_handlers/register_protocol_handler_infobar_delegate.cc',

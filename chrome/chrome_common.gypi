@@ -155,6 +155,8 @@
         'common/common_message_generator.h',
         'common/common_param_traits.cc',
         'common/common_param_traits.h',
+        'common/custom_handlers/protocol_handler.cc',
+        'common/custom_handlers/protocol_handler.h',
         'common/default_plugin.cc',
         'common/default_plugin.h',
         'common/deprecated/event_sys-inl.h',
