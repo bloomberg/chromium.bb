@@ -68,7 +68,8 @@ void PrintPreviewUI::OnDidPreviewPage(int page_number) {
 
 void PrintPreviewUI::OnPreviewDataIsAvailable(int expected_pages_count,
                                               const string16& job_title,
-                                              bool modifiable) {
+                                              bool modifiable,
+                                              int preview_request_id) {
   VLOG(1) << "Print preview request finished with "
           << expected_pages_count << " pages";
   DecrementRequestCount();
@@ -84,8 +85,9 @@ void PrintPreviewUI::OnPreviewDataIsAvailable(int expected_pages_count,
   StringValue title(job_title);
   FundamentalValue is_preview_modifiable(modifiable);
   StringValue ui_identifier(preview_ui_addr_str_);
+  FundamentalValue ui_preview_request_id(preview_request_id);
   CallJavascriptFunction("updatePrintPreview", title, is_preview_modifiable,
-                         ui_identifier);
+                         ui_identifier, ui_preview_request_id);
 }
 
 void PrintPreviewUI::OnNavigation() {

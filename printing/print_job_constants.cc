@@ -6,6 +6,9 @@
 
 namespace printing {
 
+// Unique ID sent along every preview request.
+const char kPreviewRequestID[] = "requestID";
+
 // Print using cloud print: true if selected, false if not.
 const char kSettingCloudPrintId[] = "cloudPrintID";
 

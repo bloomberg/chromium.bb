@@ -382,6 +382,8 @@ void PrintWebViewHelper::PrintPreview(WebKit::WebFrame* frame,
         print_pages_params_->params.document_cookie;
     preview_params.expected_pages_count = preview_page_count_;
     preview_params.modifiable = IsModifiable(frame, node);
+    preview_params.preview_request_id =
+        print_pages_params_->params.preview_request_id;
 
     Send(new PrintHostMsg_PagesReadyForPreview(routing_id(), preview_params));
     return;
@@ -685,6 +687,12 @@ bool PrintWebViewHelper::UpdatePrintSettingsLocal(
 
   if (settings.params.dpi < kMinDpi || !settings.params.document_cookie)
     return false;
+
+  if (!job_settings.GetInteger(printing::kPreviewRequestID,
+                               &settings.params.preview_request_id)) {
+    NOTREACHED();
+    return false;
+  }
 
   print_pages_params_.reset(new PrintMsg_PrintPages_Params(settings));
   Send(new PrintHostMsg_DidGetDocumentCookie(routing_id(),

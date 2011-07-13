@@ -49,6 +49,7 @@ bool PrintWebViewHelper::CreatePreviewDocument(
   preview_params.document_cookie = params.params.document_cookie;
   preview_params.expected_pages_count = preview_page_count_;
   preview_params.modifiable = IsModifiable(frame, node);
+  preview_params.preview_request_id = params.params.preview_request_id;
 
   if (!CopyMetafileDataToSharedMem(&metafile,
                                    &(preview_params.metafile_data_handle))) {

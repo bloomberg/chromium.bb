@@ -33,6 +33,9 @@ var defaultOrLastUsedPrinterName = '';
 // True when a pending print preview request exists.
 var hasPendingPreviewRequest = false;
 
+// The ID of the last preview request.
+var lastPreviewRequestID = -1;
+
 // True when a pending print file request exists.
 var hasPendingPrintFileRequest = false;
 
@@ -341,31 +344,40 @@ function getDuplexMode() {
 }
 
 /**
- * Creates a JSON string based on the values in the printer settings.
+ * Creates an object based on the values in the printer settings.
  *
- * @return {string} JSON string with print job settings.
+ * @return {Object} Object containing print job settings.
  */
-function getSettingsJSON() {
+function getSettings() {
   var deviceName = getSelectedPrinterName();
   var printToPDF = (deviceName == PRINT_TO_PDF);
 
-  var settings = {'deviceName': deviceName,
-                  'pageRange': pageSettings.selectedPageRanges,
-                  'printAll': pageSettings.allPagesRadioButton.checked,
-                  'duplex': getDuplexMode(),
-                  'copies': copiesSettings.numberOfCopies,
-                  'collate': isCollated(),
-                  'landscape': isLandscape(),
-                  'color': isColor(),
-                  'printToPDF': printToPDF};
+  var settings =
+      {'deviceName': deviceName,
+       'pageRange': pageSettings.selectedPageRanges,
+       'printAll': pageSettings.allPagesRadioButton.checked,
+       'duplex': getDuplexMode(),
+       'copies': copiesSettings.numberOfCopies,
+       'collate': isCollated(),
+       'landscape': isLandscape(),
+       'color': isColor(),
+       'printToPDF': printToPDF,
+       'requestID': 0};
+
   var printerList = $('printer-list');
   var selectedPrinter = printerList.selectedIndex;
   if (cloudprint.isCloudPrint(printerList.options[selectedPrinter])) {
     settings['cloudPrintID'] =
         printerList.options[selectedPrinter].value;
   }
+  return settings;
+}
 
-  return JSON.stringify(settings);
+/**
+ * @return {number} The next unused preview request id.
+ */
+function generatePreviewRequestID() {
+  return ++lastPreviewRequestID;
 }
 
 /**
@@ -441,7 +453,7 @@ function sendPrintFileRequest() {
   var printer = printerList[printerList.selectedIndex];
   chrome.send('saveLastPrinter', [printer.textContent,
                                   cloudprint.getData(printer)]);
-  chrome.send('print', [getSettingsJSON(),
+  chrome.send('print', [JSON.stringify(getSettings()),
                         cloudprint.getPrintTicketJSON(printer)]);
 }
 
@@ -455,7 +467,9 @@ function requestPrintPreview() {
   if (!isTabHidden)
     showLoadingAnimation();
 
-  chrome.send('getPreview', [getSettingsJSON()]);
+  var settings = getSettings();
+  settings.requestID = generatePreviewRequestID();
+  chrome.send('getPreview', [JSON.stringify(settings)]);
 }
 
 /**
@@ -800,8 +814,15 @@ function onDidPreviewPage(pageNumber) {
  * @param {string} jobTitle The print job title.
  * @param {boolean} modifiable If the preview is modifiable.
  * @param {string} previewUid Preview unique identifier.
+ * @param {number} previewRequestId The preview request id that resulted in this
+ *     response.
  */
-function updatePrintPreview(jobTitle, modifiable, previewUid) {
+function updatePrintPreview(jobTitle,
+                            modifiable,
+                            previewUid,
+                            previewRequestId) {
+  if (lastPreviewRequestID != previewRequestId)
+    return;
   hasPendingPreviewRequest = false;
 
   if (checkIfSettingsChangedAndRegeneratePreview())

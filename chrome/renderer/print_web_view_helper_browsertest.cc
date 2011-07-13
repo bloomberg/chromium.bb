@@ -41,6 +41,7 @@ void CreatePrintSettingsDictionary(DictionaryValue* dict) {
   dict->SetInteger(printing::kSettingDuplexMode, printing::SIMPLEX);
   dict->SetInteger(printing::kSettingCopies, 1);
   dict->SetString(printing::kSettingDeviceName, "dummy");
+  dict->SetInteger(printing::kPreviewRequestID, 12345);
 }
 
 }  // namespace

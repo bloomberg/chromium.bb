@@ -119,7 +119,8 @@ void PrintPreviewMessageHandler::OnPagesReadyForPreview(
     print_preview_ui->OnPreviewDataIsAvailable(
         params.expected_pages_count,
         wrapper->print_view_manager()->RenderSourceName(),
-        params.modifiable);
+        params.modifiable,
+        params.preview_request_id);
     return;
   }
 
@@ -146,7 +147,8 @@ void PrintPreviewMessageHandler::OnPagesReadyForPreview(
   print_preview_ui->OnPreviewDataIsAvailable(
       params.expected_pages_count,
       wrapper->print_view_manager()->RenderSourceName(),
-      params.modifiable);
+      params.modifiable,
+      params.preview_request_id);
 }
 
 void PrintPreviewMessageHandler::OnPrintPreviewFailed(int document_cookie) {

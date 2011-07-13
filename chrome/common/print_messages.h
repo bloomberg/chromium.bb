@@ -48,6 +48,8 @@ IPC_STRUCT_BEGIN(PrintMsg_Print_Params)
 
   // Does the printer support alpha blending?
   IPC_STRUCT_MEMBER(bool, supports_alpha_blend)
+
+  IPC_STRUCT_MEMBER(int, preview_request_id)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(PrintMsg_PrintPage_Params)
@@ -89,6 +91,9 @@ IPC_STRUCT_BEGIN(PrintHostMsg_DidPreviewDocument_Params)
 
   // Whether the preview can be modified.
   IPC_STRUCT_MEMBER(bool, modifiable)
+
+  // The id of the preview request.
+  IPC_STRUCT_MEMBER(int, preview_request_id)
 IPC_STRUCT_END()
 
 // Parameters to describe a rendered page.

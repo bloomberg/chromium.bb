@@ -7,6 +7,7 @@
 
 namespace printing {
 
+extern const char kPreviewRequestID[];
 extern const char kSettingCloudPrintId[];
 extern const char kSettingCollate[];
 extern const char kSettingColor[];

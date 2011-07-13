@@ -46,9 +46,11 @@ class PrintPreviewUI : public ChromeWebUI {
   // |job_title| is the title of the page being previewed.
   // |modifiable| indicates if the preview can be rerendered with different
   // print settings.
+  // |preview_request_id| indicates wich request resulted in this response.
   void OnPreviewDataIsAvailable(int expected_pages_count,
                                 const string16& job_title,
-                                bool modifiable);
+                                bool modifiable,
+                                int preview_request_id);
 
   // Notify the Web UI that a navigation has occurred in this tab. This is the
   // last chance to communicate with the source tab before the assocation is
