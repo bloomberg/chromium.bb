@@ -344,7 +344,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnChangeEvent) {
             browser()->instant()->GetCurrentURL().spec());
 
   // Check that the value is reflected and onchange is called.
-  EXPECT_EQ("true 0 0 1 2 d false def false 3 3",
+  EXPECT_EQ("true 0 0 1 1 d false def false 3 3",
             GetSearchStateAsString(preview_, true));
 }
 
@@ -748,11 +748,11 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnSubmitEvent) {
   ASSERT_TRUE(contents);
 
   // Check that the value is reflected and onsubmit is called.
-  EXPECT_EQ("true 1 0 1 2 d false defghi true 3 3",
+  EXPECT_EQ("true 1 0 1 1 d false defghi true 3 3",
             GetSearchStateAsString(preview_, true));
 
   // Make sure the searchbox values were reset.
-  EXPECT_EQ("true 1 0 1 2 d false  false 0 0",
+  EXPECT_EQ("true 1 0 1 1 d false  false 0 0",
             GetSearchStateAsString(preview_, false));
 }
 
@@ -785,11 +785,11 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnCancelEvent) {
   ASSERT_TRUE(contents);
 
   // Check that the value is reflected and oncancel is called.
-  EXPECT_EQ("true 0 1 1 2 d false def false 3 3",
+  EXPECT_EQ("true 0 1 1 1 d false def false 3 3",
             GetSearchStateAsString(preview_, true));
 
   // Make sure the searchbox values were reset.
-  EXPECT_EQ("true 0 1 1 2 d false  false 0 0",
+  EXPECT_EQ("true 0 1 1 1 d false  false 0 0",
             GetSearchStateAsString(preview_, false));
 }
 
