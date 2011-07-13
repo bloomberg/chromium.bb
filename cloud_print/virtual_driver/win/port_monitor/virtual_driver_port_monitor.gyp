@@ -17,6 +17,7 @@
       'userenv.lib',
     ],
     'sources': [
+      '../../virtual_driver_switches.cc',
       '../virtual_driver_consts.h',
       '../virtual_driver_consts.cc',
       '../virtual_driver_helpers.h',
