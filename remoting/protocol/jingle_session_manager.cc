@@ -86,6 +86,11 @@ void JingleSessionManager::Init(
         talk_base::Thread::Current()));
   }
 
+  // We always use PseudoTcp to provide a reliable channel. However
+  // when it is used together with TCP the performance is very bad
+  // so we explicitly disables TCP connections.
+  int port_allocator_flags = cricket::PORTALLOCATOR_DISABLE_TCP;
+
   if (enable_nat_traversing_) {
     http_port_allocator_ = new remoting::HttpPortAllocator(
         network_manager_.get(), socket_factory_.get(),
@@ -100,13 +105,14 @@ void JingleSessionManager::Init(
         task_factory_.NewRunnableMethod(
             &JingleSessionManager::DoStartSessionManager));
   } else {
+    port_allocator_flags |= cricket::PORTALLOCATOR_DISABLE_STUN |
+        cricket::PORTALLOCATOR_DISABLE_RELAY;
     port_allocator_.reset(
         new cricket::BasicPortAllocator(
             network_manager_.get(), socket_factory_.get()));
-    port_allocator_->set_flags(cricket::PORTALLOCATOR_DISABLE_STUN |
-                               cricket::PORTALLOCATOR_DISABLE_RELAY);
     DoStartSessionManager();
   }
+  port_allocator_->set_flags(port_allocator_flags);
 }
 
 void JingleSessionManager::Close() {
