@@ -700,7 +700,13 @@ bool PluginInstance::LoadMessagingInterface() {
     checked_for_plugin_messaging_interface_ = true;
     plugin_messaging_interface_ =
         static_cast<const PPP_Messaging*>(module_->GetPluginInterface(
-            PPP_MESSAGING_INTERFACE));
+            PPP_MESSAGING_INTERFACE_1_0));
+    // TODO(dmichael): Remove support for 0.1.
+    if (!plugin_messaging_interface_) {
+      plugin_messaging_interface_ =
+          static_cast<const PPP_Messaging*>(module_->GetPluginInterface(
+              PPP_MESSAGING_INTERFACE_0_1));
+    }
   }
 
   return !!plugin_messaging_interface_;

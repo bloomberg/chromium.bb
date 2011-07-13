@@ -31,6 +31,7 @@ class PPB_Instance_Proxy : public InterfaceProxy,
 
   static const Info* GetInfo0_4();
   static const Info* GetInfo0_5();
+  static const Info* GetInfo1_0();
   static const Info* GetInfoMessaging();
   static const Info* GetInfoPrivate();
   static const Info* GetInfoFullscreen();

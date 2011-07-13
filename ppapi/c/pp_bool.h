@@ -22,8 +22,8 @@
 /**
  * The <code>PP_Bool</code> enum is a boolean value for use in PPAPI C headers.
  * The standard bool type is not available to pre-C99 compilers, and is not
- * guaranteed to be compatible between C and C++, whereas the PPAPI C
- * headers can be included from C or C++ code.
+ * guaranteed to be compatible between C and C++, whereas the PPAPI C headers
+ * can be included from C or C++ code.
  */
 typedef enum {
   PP_FALSE = 0,
