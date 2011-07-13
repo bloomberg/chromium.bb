@@ -76,6 +76,13 @@ void PasswordManagerHandler::GetLocalizedValues(
 }
 
 void PasswordManagerHandler::Initialize() {
+  // Due to the way that handlers are (re)initialized under certain types of
+  // navigation, we may already be initialized. (See bugs 88986 and 86448.)
+  // If this is the case, return immediately. This is a hack.
+  // TODO(mdm): remove this hack once it is no longer necessary.
+  if (!show_passwords_.GetPrefName().empty())
+    return;
+
   show_passwords_.Init(prefs::kPasswordManagerAllowShowPasswords,
                        web_ui_->GetProfile()->GetPrefs(), this);
   // We should not cache web_ui_->GetProfile(). See crosbug.com/6304.
@@ -175,6 +182,13 @@ void PasswordManagerHandler::RemoveAllPasswordExceptions(
 }
 
 void PasswordManagerHandler::SetPasswordList() {
+  // Due to the way that handlers are (re)initialized under certain types of
+  // navigation, we may not be initialized yet. (See bugs 88986 and 86448.)
+  // If this is the case, initialize on demand. This is a hack.
+  // TODO(mdm): remove this hack once it is no longer necessary.
+  if (show_passwords_.GetPrefName().empty())
+    Initialize();
+
   ListValue entries;
   bool show_passwords = *show_passwords_;
   string16 empty;
