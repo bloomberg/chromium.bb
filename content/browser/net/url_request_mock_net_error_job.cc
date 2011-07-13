@@ -111,7 +111,8 @@ void URLRequestMockNetErrorJob::StartAsync() {
 
     if (net::IsCertificateError(error)) {
       DCHECK(ssl_cert_);
-      NotifySSLCertificateError(error, ssl_cert_.get());
+      request_->delegate()->OnSSLCertificateError(request_, error,
+                                                  ssl_cert_.get());
     } else {
       NotifyStartError(net::URLRequestStatus(net::URLRequestStatus::FAILED,
                                              error));
