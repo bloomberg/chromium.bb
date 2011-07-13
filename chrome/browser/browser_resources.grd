@@ -56,7 +56,6 @@
       <include name="IDR_HISTORY2_HTML" file="resources\history2.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_INCOGNITO_TAB_HTML" file="resources\incognito_tab.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_KEYBOARD_MANIFEST" file="resources\keyboard\manifest.json" type="BINDATA" />
-      <include name="IDR_LOGIN_HTML" file="resources\login.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_GPU_BLACKLIST" file="resources\software_rendering_list.json" type="BINDATA" />
       <include name="IDR_NEW_INCOGNITO_TAB_THEME_CSS" file="resources\new_incognito_tab_theme.css" flattenhtml="true" type="BINDATA" />
       <if expr="not pp_ifdef('touchui')">
@@ -115,6 +114,7 @@
         <include name="IDR_OOBE_HTML" file="resources\chromeos\login\oobe.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_OFFLINE_LOAD_HTML" file="resources\offline_load.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_OS_CREDITS_HTML" file="resources\about_os_credits.html" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_LOGIN_HTML" file="resources\login.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_PROXY_SETTINGS_HTML" file="resources\chromeos\proxy_settings.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_SIM_UNLOCK_HTML" file="resources\chromeos\sim_unlock.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_MENU_HTML" file="resources\menu.html" flattenhtml="true" type="BINDATA" />

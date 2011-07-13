@@ -92,9 +92,11 @@ class LoginUIHandler : public WebUIMessageHandler,
                          HelpAppLauncher::HelpTopic help_topic_id) OVERRIDE;
 
   // Callbacks from javascript.
+  void HandleGetUsers(const base::ListValue* args);
   void HandleAuthenticateUser(const base::ListValue* args);
   void HandleLaunchIncognito(const base::ListValue* args);
   void HandleShutdownSystem(const base::ListValue* args);
+  void HandleRemoveUser(const base::ListValue* args);
 
   DISALLOW_COPY_AND_ASSIGN(LoginUIHandler);
 };
