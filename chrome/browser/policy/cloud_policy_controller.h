@@ -20,7 +20,7 @@ namespace policy {
 class CloudPolicyCacheBase;
 class DeviceManagementBackend;
 
-// Coordinates the actions of DeviceTokenFetcher, CloudPolicyIdentityStrategy,
+// Coordinates the actions of DeviceTokenFetcher, CloudPolicyDataStore,
 // DeviceManagementBackend, and CloudPolicyCache: calls their methods and
 // listens to their callbacks/notifications.
 class CloudPolicyController

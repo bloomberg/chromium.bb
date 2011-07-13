@@ -95,7 +95,6 @@ void UserPolicyTokenCache::NotifyOnUIThread(const std::string& token,
   if (data_store_) {
     data_store_->set_device_id(device_id);
     data_store_->SetDeviceToken(token, true);
-    data_store_->NotifyDeviceTokenChanged();
   }
 }
 

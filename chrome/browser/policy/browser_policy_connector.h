@@ -61,7 +61,7 @@ class BrowserPolicyConnector : public NotificationObserver {
     return user_cloud_policy_subsystem_.get();
   }
 
-  // Used to set the credentials stored in the identity strategy associated
+  // Used to set the credentials stored in the data store associated
   // with this policy connector.
   void SetDeviceCredentials(const std::string& owner_email,
                             const std::string& gaia_token);
