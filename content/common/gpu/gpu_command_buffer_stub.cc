@@ -242,7 +242,9 @@ void GpuCommandBufferStub::OnGetState(IPC::Message* reply_message) {
 
 void GpuCommandBufferStub::OnParseError() {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnParseError");
-  IPC::Message* msg = new GpuCommandBufferMsg_Destroyed(route_id_);
+  gpu::CommandBuffer::State state = command_buffer_->GetState();
+  IPC::Message* msg = new GpuCommandBufferMsg_Destroyed(
+      route_id_, state.context_lost_reason);
   msg->set_unblock(true);
   Send(msg);
   // If an error occurs, the remaining commands will not be processed.

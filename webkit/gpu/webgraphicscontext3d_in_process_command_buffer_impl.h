@@ -429,6 +429,7 @@ class WebGraphicsContext3DInProcessCommandBufferImpl
 
   virtual void setContextLostCallback(
       WebGraphicsContext3D::WebGraphicsContextLostCallback* callback);
+  virtual WGC3Denum getGraphicsResetStatusARB();
 
  private:
   // SwapBuffers callback.
@@ -451,6 +452,7 @@ class WebGraphicsContext3DInProcessCommandBufferImpl
   gfx::PluginWindowHandle plugin_handle_;
 #endif
   WebGraphicsContext3D::WebGraphicsContextLostCallback* context_lost_callback_;
+  WGC3Denum context_lost_reason_;
 
   WebKit::WebGraphicsContext3D::Attributes attributes_;
   int cached_width_, cached_height_;

@@ -173,7 +173,6 @@ class GLES2Implementation {
   void BindBuffer(GLenum target, GLuint buffer);
   void DeleteBuffers(GLsizei n, const GLuint* buffers);
   void DisableVertexAttribArray(GLuint index);
-  void DrawArrays(GLenum mode, GLint first, GLsizei count);
   void EnableVertexAttribArray(GLuint index);
   void GetVertexAttribfv(GLuint index, GLenum pname, GLfloat* params);
   void GetVertexAttribiv(GLuint index, GLenum pname, GLint* params);

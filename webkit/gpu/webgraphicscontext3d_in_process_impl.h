@@ -407,6 +407,7 @@ class WebGraphicsContext3DInProcessImpl : public WebGraphicsContext3D {
 
   virtual void setContextLostCallback(
       WebGraphicsContext3D::WebGraphicsContextLostCallback* callback) {}
+  virtual WGC3Denum getGraphicsResetStatusARB();
 
  private:
   // ANGLE related.

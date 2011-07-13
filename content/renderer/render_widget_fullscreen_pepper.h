@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_RENDER_WIDGET_FULLSCREEN_PEPPER_H_
 
 #include "content/renderer/render_widget_fullscreen.h"
+#include "content/renderer/gpu/renderer_gl_context.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWidget.h"
 #include "webkit/plugins/ppapi/fullscreen_container.h"
 
@@ -16,8 +17,6 @@ class PluginInstance;
 
 }  // namespace ppapi
 }  // namespace webkit
-
-class RendererGLContext;
 
 // A RenderWidget that hosts a fullscreen pepper plugin. This provides a
 // FullscreenContainer that the plugin instance can callback into to e.g.
@@ -77,7 +76,7 @@ class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen,
   bool CheckCompositing();
 
   // Called when the compositing context gets lost.
-  void OnLostContext();
+  void OnLostContext(RendererGLContext::ContextLostReason);
 
   // Binding of RendererGLContext swapbuffers callback to
   // RenderWidget::OnSwapBuffersCompleted.

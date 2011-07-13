@@ -60,6 +60,7 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   virtual gpu::Buffer GetTransferBuffer(int32 handle);
   virtual void SetToken(int32 token);
   virtual void SetParseError(gpu::error::Error error);
+  virtual void SetContextLostReason(gpu::error::ContextLostReason reason);
   virtual void OnSwapBuffers();
 
   // Reparent a command buffer. TODO(apatrick): going forward, the notion of
@@ -113,7 +114,7 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   // Message handlers:
   void OnUpdateState(const gpu::CommandBuffer::State& state);
   void OnNotifyRepaint();
-  void OnDestroyed();
+  void OnDestroyed(gpu::error::ContextLostReason reason);
 
   // As with the service, the client takes ownership of the ring buffer.
   int32 num_entries_;

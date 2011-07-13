@@ -22,6 +22,13 @@ class GLSurfaceGLX : public GLSurface {
   static bool InitializeOneOff();
   static Display* GetDisplay();
 
+  // These aren't particularly tied to surfaces, but since we already
+  // have the static InitializeOneOff here, it's easiest to reuse its
+  // initialization guards.
+  static const char* GetGLXExtensions();
+  static bool HasGLXExtension(const char* name);
+  static bool IsCreateContextRobustnessSupported();
+
   // Get the FB config that the surface was created with or NULL if it is not
   // a GLX drawable.
   virtual void* GetConfig() = 0;
@@ -47,6 +54,7 @@ class NativeViewGLSurfaceGLX : public GLSurfaceGLX {
 
  private:
   gfx::PluginWindowHandle window_;
+  void* config_;
   DISALLOW_COPY_AND_ASSIGN(NativeViewGLSurfaceGLX);
 };
 

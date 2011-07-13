@@ -44,6 +44,18 @@ namespace error {
         return true;
     }
   }
+
+  // Provides finer grained information about why the context was lost.
+  enum ContextLostReason {
+    // This context definitely provoked the loss of context.
+    kGuilty,
+
+    // This context definitely did not provoke the loss of context.
+    kInnocent,
+
+    // It is unknown whether this context provoked the loss of context.
+    kUnknown
+  };
 }
 
 // Invalid shared memory Id, returned by RegisterSharedMemory in case of
