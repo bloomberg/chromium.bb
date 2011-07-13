@@ -142,7 +142,8 @@ class ScopedDirectoryDelete {
 
 typedef scoped_ptr_malloc<FilePath, ScopedDirectoryDelete> ScopedDirectory;
 
-TEST_F(MacDirAccessSandboxTest, SandboxAccess) {
+// Disabled as times out, taking out remaining tests: 89170.
+TEST_F(MacDirAccessSandboxTest, DISABLED_SandboxAccess) {
   using file_util::CreateDirectory;
 
   FilePath tmp_dir;
