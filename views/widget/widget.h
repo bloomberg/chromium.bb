@@ -425,6 +425,9 @@ class Widget : public internal::NativeWidgetDelegate,
   void SetFocusTraversableParent(FocusTraversable* parent);
   void SetFocusTraversableParentView(View* parent_view);
 
+  // Clear native focus set to the Widget's NativeWidget.
+  void ClearNativeFocus();
+
   // Updates the frame after an event caused it to be changed.
   virtual void UpdateFrameAfterFrameChange();
 

@@ -394,6 +394,10 @@ void NativeWidgetViews::SetCursor(gfx::NativeCursor cursor) {
   GetParentNativeWidget()->SetCursor(cursor);
 }
 
+void NativeWidgetViews::ClearNativeFocus() {
+  GetParentNativeWidget()->ClearNativeFocus();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetViews, private:
 

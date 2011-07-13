@@ -205,6 +205,7 @@ class NativeWidgetPrivate : public NativeWidget {
                             int operation) = 0;
   virtual void SchedulePaintInRect(const gfx::Rect& rect) = 0;
   virtual void SetCursor(gfx::NativeCursor cursor) = 0;
+  virtual void ClearNativeFocus() = 0;
 
   // Overridden from NativeWidget:
   virtual internal::NativeWidgetPrivate* AsNativeWidgetPrivate() OVERRIDE;

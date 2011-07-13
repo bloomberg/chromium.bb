@@ -265,6 +265,7 @@ class NativeWidgetWin : public ui::WindowImpl,
                             int operation) OVERRIDE;
   virtual void SchedulePaintInRect(const gfx::Rect& rect) OVERRIDE;
   virtual void SetCursor(gfx::NativeCursor cursor) OVERRIDE;
+  virtual void ClearNativeFocus() OVERRIDE;
 
  protected:
   // Information saved before going into fullscreen mode, used to restore the

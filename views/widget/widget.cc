@@ -626,6 +626,10 @@ void Widget::SetFocusTraversableParentView(View* parent_view) {
   root_view_->SetFocusTraversableParentView(parent_view);
 }
 
+void Widget::ClearNativeFocus() {
+  native_widget_->ClearNativeFocus();
+}
+
 void Widget::UpdateFrameAfterFrameChange() {
   native_widget_->UpdateFrameAfterFrameChange();
 }

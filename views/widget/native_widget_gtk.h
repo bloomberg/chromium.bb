@@ -111,9 +111,6 @@ class NativeWidgetGtk : public internal::NativeWidgetPrivate,
   // Overridden from ui::ActiveWindowWatcherX::Observer.
   virtual void ActiveWindowChanged(GdkWindow* active_window) OVERRIDE;
 
-  // Clears the focus on the native widget having the focus.
-  virtual void ClearNativeFocus();
-
   // Handles a keyboard event by sending it to our focus manager.
   // Returns true if it's handled by the focus manager.
   bool HandleKeyboardEvent(const KeyEvent& key);
@@ -230,6 +227,7 @@ class NativeWidgetGtk : public internal::NativeWidgetPrivate,
                             int operation) OVERRIDE;
   virtual void SchedulePaintInRect(const gfx::Rect& rect) OVERRIDE;
   virtual void SetCursor(gfx::NativeCursor cursor) OVERRIDE;
+  virtual void ClearNativeFocus() OVERRIDE;
 
  protected:
   // Modifies event coordinates to the targeted widget contained by this widget.

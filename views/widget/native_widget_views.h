@@ -114,6 +114,7 @@ class NativeWidgetViews : public internal::NativeWidgetPrivate {
                             int operation) OVERRIDE;
   virtual void SchedulePaintInRect(const gfx::Rect& rect) OVERRIDE;
   virtual void SetCursor(gfx::NativeCursor cursor) OVERRIDE;
+  virtual void ClearNativeFocus() OVERRIDE;
 
  private:
   // These functions may return NULL during Widget destruction.

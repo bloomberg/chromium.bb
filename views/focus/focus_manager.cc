@@ -168,6 +168,11 @@ void FocusManager::AdvanceFocus(bool reverse) {
   }
 }
 
+void FocusManager::ClearNativeFocus() {
+  // Keep the top root window focused so we get keyboard events.
+  widget_->ClearNativeFocus();
+}
+
 View* FocusManager::GetNextFocusableView(View* original_starting_view,
                                          bool reverse,
                                          bool dont_loop) {

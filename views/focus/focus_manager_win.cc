@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,11 +9,6 @@
 #include "views/widget/widget.h"
 
 namespace views {
-
-void FocusManager::ClearNativeFocus() {
-  // Keep the top root window focused so we get keyboard events.
-  ::SetFocus(widget_->GetNativeView());
-}
 
 void FocusManager::FocusNativeView(gfx::NativeView native_view) {
   // Only reset focus if hwnd is not already focused.

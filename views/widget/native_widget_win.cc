@@ -1076,6 +1076,10 @@ void NativeWidgetWin::SetCursor(gfx::NativeCursor cursor) {
   }
 }
 
+void NativeWidgetWin::ClearNativeFocus() {
+  ::SetFocus(GetNativeView());
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetWin, MessageLoop::Observer implementation:
 

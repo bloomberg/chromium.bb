@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,10 +10,6 @@
 #include "views/widget/native_widget_gtk.h"
 
 namespace views {
-
-void FocusManager::ClearNativeFocus() {
-  static_cast<NativeWidgetGtk*>(widget_->native_widget())->ClearNativeFocus();
-}
 
 void FocusManager::FocusNativeView(gfx::NativeView native_view) {
   if (native_view && !gtk_widget_is_focus(native_view))

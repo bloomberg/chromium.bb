@@ -577,15 +577,6 @@ void NativeWidgetGtk::ActiveWindowChanged(GdkWindow* active_window) {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetGtk implementation:
 
-void NativeWidgetGtk::ClearNativeFocus() {
-  DCHECK(!child_);
-  if (!GetNativeView()) {
-    NOTREACHED();
-    return;
-  }
-  gtk_window_set_focus(GTK_WINDOW(GetNativeView()), NULL);
-}
-
 bool NativeWidgetGtk::HandleKeyboardEvent(const KeyEvent& key) {
   if (!GetWidget()->GetFocusManager())
     return false;
@@ -1276,6 +1267,15 @@ void NativeWidgetGtk::SetCursor(gfx::NativeCursor cursor) {
   // set on |window_contents_| instead of |widget_|.
   if (window_contents_)
     gdk_window_set_cursor(window_contents_->window, cursor);
+}
+
+void NativeWidgetGtk::ClearNativeFocus() {
+  DCHECK(!child_);
+  if (!GetNativeView()) {
+    NOTREACHED();
+    return;
+  }
+  gtk_window_set_focus(GTK_WINDOW(GetNativeView()), NULL);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
