@@ -782,10 +782,10 @@ void MetricsService::InitializeMetricsState() {
     UMA_HISTOGRAM_COUNTS_100("Chrome.CommandLineAppModeCount", 1);
   }
 
-  UMA_HISTOGRAM_COUNTS_100("Chrome.CommandLineFlagCount",
-                           command_line->GetSwitchCount());
+  size_t switch_count = command_line->GetSwitches().size();
+  UMA_HISTOGRAM_COUNTS_100("Chrome.CommandLineFlagCount", switch_count);
   UMA_HISTOGRAM_COUNTS_100("Chrome.CommandLineUncommonFlagCount",
-                           command_line->GetSwitchCount() - common_commands);
+                           switch_count - common_commands);
 
   // Kick off the process of saving the state (so the uptime numbers keep
   // getting updated) every n minutes.

@@ -41,9 +41,9 @@ TEST_F(InstallUtilTest, MakeUninstallCommand) {
     InstallUtil::MakeUninstallCommand(param.first, param.second, &command_line);
     EXPECT_EQ(param.first, command_line.GetProgram().value());
     if (param.second.empty()) {
-      EXPECT_EQ(0U, command_line.GetSwitchCount());
+      EXPECT_TRUE(command_line.GetSwitches().empty());
     } else {
-      EXPECT_EQ(2U, command_line.GetSwitchCount());
+      EXPECT_EQ(2U, command_line.GetSwitches().size());
       EXPECT_TRUE(command_line.HasSwitch("do-something"));
       EXPECT_TRUE(command_line.HasSwitch("silly"));
     }
