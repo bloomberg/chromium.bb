@@ -77,7 +77,7 @@ void NativeWidgetViews::UpdateFrameAfterFrameChange() {
 }
 
 bool NativeWidgetViews::ShouldUseNativeFrame() const {
-  NOTIMPLEMENTED();
+//  NOTIMPLEMENTED();
   return false;
 }
 
@@ -378,7 +378,7 @@ void NativeWidgetViews::SetFullscreen(bool fullscreen) {
 }
 
 bool NativeWidgetViews::IsFullscreen() const {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
   return false;
 }
 

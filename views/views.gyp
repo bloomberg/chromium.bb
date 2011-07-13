@@ -406,7 +406,6 @@
             'widget/child_window_message_processor.cc',
             'widget/child_window_message_processor.h',
             'widget/native_widget_win.cc',
-            'window/native_frame_view.cc',
           ],
         }],
         ['touchui==1', {

@@ -7,6 +7,7 @@
 #include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/gtk_native_view_id_manager.h"
+#include "views/views_delegate.h"
 #include "views/widget/native_widget_gtk.h"
 
 void RenderWidgetHostViewViews::UpdateCursor(const WebCursor& cursor) {
@@ -53,9 +54,15 @@ gfx::PluginWindowHandle RenderWidgetHostViewViews::GetCompositingSurface() {
 #endif
 
 gfx::NativeView RenderWidgetHostViewViews::GetInnerNativeView() const {
+  const views::View* view = NULL;
+  if (views::ViewsDelegate::views_delegate)
+    view = views::ViewsDelegate::views_delegate->GetDefaultParentView();
+  if (!view)
+    view = this;
+
   // TODO(sad): Ideally this function should be equivalent to GetNativeView, and
   // NativeWidgetGtk-specific function call should not be necessary.
-  const views::Widget* widget = GetWidget();
+  const views::Widget* widget = view->GetWidget();
   const views::NativeWidget* native = widget ? widget->native_widget() : NULL;
   return native ? static_cast<const views::NativeWidgetGtk*>(native)->
       window_contents() : NULL;

@@ -1448,7 +1448,16 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // Launch the views desktop shell window and register it as the default parent
   // for all unparented views widgets.
   if (parsed_command_line.HasSwitch(switches::kViewsDesktop)) {
-    views::desktop::DesktopWindowView::CreateDesktopWindow();
+    std::string desktop_type_cmd =
+        parsed_command_line.GetSwitchValueASCII(switches::kViewsDesktop);
+    views::desktop::DesktopWindowView::DesktopType desktop_type;
+    if (desktop_type_cmd == "netbook")
+      desktop_type = views::desktop::DesktopWindowView::DESKTOP_NETBOOK;
+    else if (desktop_type_cmd == "other")
+      desktop_type = views::desktop::DesktopWindowView::DESKTOP_OTHER;
+    else
+      desktop_type = views::desktop::DesktopWindowView::DESKTOP_DEFAULT;
+    views::desktop::DesktopWindowView::CreateDesktopWindow(desktop_type);
     ChromeViewsDelegate* chrome_views_delegate =
         static_cast<ChromeViewsDelegate*>(views::ViewsDelegate::views_delegate);
     chrome_views_delegate->default_parent_view =

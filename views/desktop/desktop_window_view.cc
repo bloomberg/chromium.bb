@@ -12,6 +12,7 @@
 #include "views/widget/native_widget_view.h"
 #include "views/widget/native_widget_views.h"
 #include "views/widget/widget.h"
+#include "views/window/native_frame_view.h"
 
 #if defined(OS_WIN)
 #include "views/widget/native_widget_win.h"
@@ -87,18 +88,30 @@ class TestWindowContentView : public WidgetDelegateView {
 // static
 DesktopWindowView* DesktopWindowView::desktop_window_view = NULL;
 
-DesktopWindowView::DesktopWindowView() : active_widget_(NULL) {
-  set_background(new DesktopBackground);
+DesktopWindowView::DesktopWindowView(DesktopType type)
+    : active_widget_(NULL),
+      type_(type) {
+  switch (type_) {
+    case DESKTOP_DEFAULT:
+    case DESKTOP_NETBOOK:
+      set_background(new DesktopBackground);
+      break;
+    case DESKTOP_OTHER:
+      set_background(Background::CreateStandardPanelBackground());
+      break;
+  }
 }
 
 DesktopWindowView::~DesktopWindowView() {
 }
 
 // static
-void DesktopWindowView::CreateDesktopWindow() {
+void DesktopWindowView::CreateDesktopWindow(DesktopType type) {
   DCHECK(!desktop_window_view);
-  desktop_window_view = new DesktopWindowView;
+  desktop_window_view = new DesktopWindowView(type);
   views::Widget* window = new DesktopWindow(desktop_window_view);
+  desktop_window_view->widget_ = window;
+
   views::Widget::InitParams params;
   params.delegate = desktop_window_view;
   // In this environment, CreateChromeWindow will default to creating a views-
@@ -106,12 +119,13 @@ void DesktopWindowView::CreateDesktopWindow() {
   // TODO(beng): Replace this with NativeWindow::CreateNativeRootWindow().
 #if defined(OS_WIN)
   params.native_widget = new views::NativeWidgetWin(window);
+  params.bounds = gfx::Rect(20, 20, 1920, 1200);
 #elif defined(TOOLKIT_USES_GTK)
   params.native_widget = new views::NativeWidgetGtk(window);
 #endif
-  params.bounds = gfx::Rect(20, 20, 1920, 1200);
   window->Init(params);
   window->Show();
+  window->Maximize();
 }
 
 void DesktopWindowView::ActivateWidget(Widget* widget) {
@@ -159,6 +173,14 @@ void DesktopWindowView::Layout() {
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowView, WidgetDelegate implementation:
 
+Widget* DesktopWindowView::GetWidget() {
+  return widget_;
+}
+
+const Widget* DesktopWindowView::GetWidget() const {
+  return widget_;
+}
+
 bool DesktopWindowView::CanResize() const {
   return true;
 }
@@ -189,6 +211,18 @@ void DesktopWindowView::WindowClosing() {
 
 View* DesktopWindowView::GetContentsView() {
   return this;
+}
+
+NonClientFrameView* DesktopWindowView::CreateNonClientFrameView() {
+  switch (type_) {
+    case DESKTOP_DEFAULT:
+    case DESKTOP_NETBOOK:
+      return NULL;
+
+    case DESKTOP_OTHER:
+      return new NativeFrameView(widget_);
+  }
+  return NULL;
 }
 
 void DesktopWindowView::OnWidgetClosing(Widget* widget) {

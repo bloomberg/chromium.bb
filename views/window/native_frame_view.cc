@@ -1,12 +1,15 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "views/window/native_frame_view.h"
 
 #include "views/widget/native_widget.h"
-#include "views/widget/native_widget_win.h"
 #include "views/widget/widget.h"
+
+#if defined(OS_WIN)
+#include "views/widget/native_widget_win.h"
+#endif
 
 namespace views {
 
@@ -30,12 +33,17 @@ gfx::Rect NativeFrameView::GetBoundsForClientView() const {
 
 gfx::Rect NativeFrameView::GetWindowBoundsForClientBounds(
     const gfx::Rect& client_bounds) const {
+#if defined(OS_WIN)
   RECT rect = client_bounds.ToRECT();
   NativeWidgetWin* widget_win =
       static_cast<NativeWidgetWin*>(frame_->native_widget());
   AdjustWindowRectEx(&rect, widget_win->window_style(), FALSE,
                      widget_win->window_ex_style());
   return gfx::Rect(rect);
+#else
+  // TODO(sad):
+  return gfx::Rect(client_bounds);
+#endif
 }
 
 int NativeFrameView::NonClientHitTest(const gfx::Point& point) {

@@ -46,7 +46,8 @@ int main(int argc, char** argv) {
   // Desktop mode only supports a pure-views configuration.
   views::Widget::SetPureViews(true);
 
-  views::desktop::DesktopWindowView::CreateDesktopWindow();
+  views::desktop::DesktopWindowView::CreateDesktopWindow(
+      views::desktop::DesktopWindowView::DESKTOP_DEFAULT);
   views::desktop::DesktopWindowView::desktop_window_view->CreateTestWindow(
       L"Sample Window 1", SK_ColorWHITE, gfx::Rect(500, 200, 400, 400), true);
   views::desktop::DesktopWindowView::desktop_window_view->CreateTestWindow(

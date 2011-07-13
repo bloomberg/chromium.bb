@@ -17,12 +17,20 @@ namespace desktop {
 class DesktopWindowView : public WidgetDelegateView,
                           public Widget::Observer {
  public:
+  // The look and feel will be slightly different for different kinds of
+  // desktop.
+  enum DesktopType {
+    DESKTOP_DEFAULT,
+    DESKTOP_NETBOOK,
+    DESKTOP_OTHER
+  };
+
   static DesktopWindowView* desktop_window_view;
 
-  DesktopWindowView();
+  DesktopWindowView(DesktopType type);
   virtual ~DesktopWindowView();
 
-  static void CreateDesktopWindow();
+  static void CreateDesktopWindow(DesktopType type);
 
   // Changes activation to the specified Widget. The currently active Widget
   // is de-activated.
@@ -33,11 +41,15 @@ class DesktopWindowView : public WidgetDelegateView,
                         gfx::Rect initial_bounds,
                         bool rotate);
 
+  DesktopType type() const { return type_; }
+
  private:
   // Overridden from View:
   virtual void Layout() OVERRIDE;
 
   // Overridden from WidgetDelegate:
+  virtual Widget* GetWidget() OVERRIDE;
+  virtual const Widget* GetWidget() const OVERRIDE;
   virtual bool CanResize() const OVERRIDE;
   virtual bool CanMaximize() const OVERRIDE;
   virtual std::wstring GetWindowTitle() const OVERRIDE;
@@ -46,6 +58,7 @@ class DesktopWindowView : public WidgetDelegateView,
   virtual bool ShouldShowWindowIcon() const OVERRIDE;
   virtual void WindowClosing() OVERRIDE;
   virtual View* GetContentsView() OVERRIDE;
+  virtual NonClientFrameView* CreateNonClientFrameView() OVERRIDE;
 
   // Overridden from Widget::Observer.
   virtual void OnWidgetClosing(Widget* widget) OVERRIDE;
@@ -53,6 +66,8 @@ class DesktopWindowView : public WidgetDelegateView,
   virtual void OnWidgetActivationChanged(Widget* widget, bool active) OVERRIDE;
 
   NativeWidgetViews* active_widget_;
+  DesktopType type_;
+  Widget* widget_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopWindowView);
 };
