@@ -3,7 +3,13 @@ vars = {
   "arm_toolchain_version": "5979",
   "x86_toolchain_version": "5979",
   # Keep them seperate from the rest of the list.
+
+  # When possible, keep chrome_rev and chrome_rev_ppapi at the same value.
+  # chrome_rev should match LKGR so that we can download the binaries,
+  # but sometimes chrome_rev_ppapi needs to be more recent to get the
+  # latest Pepper changes when LKGR is lagging too far back.
   "chrome_rev": "92230",
+  "chrome_ppapi_rev": "92230",
   "chromium_trunk": "http://src.chromium.org/svn/trunk",
   "gtest_rev": "364",
   "gyp_rev": "906",
@@ -41,7 +47,7 @@ deps = {
   "net/tools/testserver":
     Var("chromium_trunk") + "/src/net/tools/testserver@" + Var("chrome_rev"),
   "native_client/src/third_party/ppapi":
-    Var("chromium_trunk") + "/src/ppapi@92230",
+    Var("chromium_trunk") + "/src/ppapi@" + Var("chrome_ppapi_rev"),
   "testing/gtest":
     "http://googletest.googlecode.com/svn/trunk@" + Var("gtest_rev"),
   "third_party/cloog":
