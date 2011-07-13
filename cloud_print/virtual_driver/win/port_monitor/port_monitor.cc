@@ -25,7 +25,29 @@
 #include "cloud_print/virtual_driver/win/port_monitor/spooler_win.h"
 #include "cloud_print/virtual_driver/win/virtual_driver_consts.h"
 #include "cloud_print/virtual_driver/win/virtual_driver_helpers.h"
-#include "cloud_print/virtual_driver/virtual_driver_switches.h"
+
+namespace switches {
+// These constants are duplicated from chrome/common/chrome_switches.cc
+// in order to avoid dependency problems.
+// TODO(abodenha@chromium.org) Reunify them in some sensible manner.
+
+// Used with kCloudPrintFile.  Tells Chrome to delete the file when
+// finished displaying the print dialog.
+const char kCloudPrintDeleteFile[]          = "cloud-print-delete-file";
+
+// Tells chrome to display the cloud print dialog and upload the
+// specified file for printing.
+const char kCloudPrintFile[]                = "cloud-print-file";
+
+// Used with kCloudPrintFile to specify a title for the resulting print
+// job.
+const char kCloudPrintJobTitle[]            = "cloud-print-job-title";
+
+// Specifies the mime type to be used when uploading data from the
+// file referenced by cloud-print-file.
+// Defaults to "application/pdf" if unspecified.
+const char kCloudPrintFileType[]            = "cloud-print-file-type";
+}
 
 namespace cloud_print {
 
