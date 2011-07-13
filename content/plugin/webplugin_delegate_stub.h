@@ -78,6 +78,7 @@ class WebPluginDelegateStub : public IPC::Channel::Listener,
                               const std::string& result,
                               bool success,
                               int notify_id);
+  void OnGetFormValue(string16* value, bool* success);
 
   void OnSetContentAreaFocus(bool has_focus);
 #if defined(OS_MACOSX)

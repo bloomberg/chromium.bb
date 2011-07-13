@@ -76,6 +76,7 @@ class WebViewPlugin: public WebKit::WebPlugin, public WebKit::WebViewClient,
   virtual void destroy();
 
   virtual NPObject* scriptableObject();
+  virtual bool getFormValue(WebKit::WebString* value);
 
   virtual void paint(WebKit::WebCanvas* canvas, const WebKit::WebRect& rect);
 

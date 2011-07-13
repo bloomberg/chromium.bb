@@ -183,6 +183,11 @@ IPC_MESSAGE_ROUTED0(PluginMsg_DidPaint)
 IPC_SYNC_MESSAGE_ROUTED0_1(PluginMsg_GetPluginScriptableObject,
                            int /* route_id */)
 
+// Gets the form value of the plugin instance synchronously.
+IPC_SYNC_MESSAGE_ROUTED0_2(PluginMsg_GetFormValue,
+                           string16 /* value */,
+                           bool /* success */)
+
 IPC_MESSAGE_ROUTED3(PluginMsg_DidFinishLoadWithReason,
                     GURL /* url */,
                     int /* reason */,

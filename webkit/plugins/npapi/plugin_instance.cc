@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -170,6 +170,19 @@ NPObject *PluginInstance::GetPluginScriptableObject() {
   if (error != NPERR_NO_ERROR || value == NULL)
     return NULL;
   return value;
+}
+
+bool PluginInstance::GetFormValue(string16* value) {
+  // Plugins will allocate memory for the return value by using NPN_MemAlloc().
+  char *plugin_value = NULL;
+  NPError error = NPP_GetValue(NPPVformValue, &plugin_value);
+  if (error != NPERR_NO_ERROR || !plugin_value) {
+    return false;
+  }
+  // Assumes the result is UTF8 text, as Firefox does.
+  *value = UTF8ToUTF16(plugin_value);
+  host_->host_functions()->memfree(plugin_value);
+  return true;
 }
 
 // WebPluginLoadDelegate methods

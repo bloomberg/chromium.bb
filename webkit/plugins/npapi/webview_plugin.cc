@@ -37,6 +37,7 @@ using WebKit::WebPluginContainer;
 using WebKit::WebPoint;
 using WebKit::WebRect;
 using WebKit::WebSize;
+using WebKit::WebString;
 using WebKit::WebURLError;
 using WebKit::WebURLRequest;
 using WebKit::WebURLResponse;
@@ -114,6 +115,10 @@ void WebViewPlugin::destroy() {
 
 NPObject* WebViewPlugin::scriptableObject() {
   return NULL;
+}
+
+bool WebViewPlugin::getFormValue(WebString* value) {
+  return false;
 }
 
 void WebViewPlugin::paint(WebCanvas* canvas, const WebRect& rect) {

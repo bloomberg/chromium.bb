@@ -102,6 +102,7 @@ bool WebPluginDelegateStub::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(PluginMsg_DidPaint, OnDidPaint)
     IPC_MESSAGE_HANDLER(PluginMsg_GetPluginScriptableObject,
                         OnGetPluginScriptableObject)
+    IPC_MESSAGE_HANDLER(PluginMsg_GetFormValue, OnGetFormValue)
     IPC_MESSAGE_HANDLER(PluginMsg_UpdateGeometry, OnUpdateGeometry)
     IPC_MESSAGE_HANDLER(PluginMsg_UpdateGeometrySync, OnUpdateGeometry)
     IPC_MESSAGE_HANDLER(PluginMsg_SendJavaScriptStream,
@@ -290,6 +291,13 @@ void WebPluginDelegateStub::OnGetPluginScriptableObject(int* route_id) {
 
   // Release ref added by GetPluginScriptableObject (our stub holds its own).
   WebBindings::releaseObject(object);
+}
+
+void WebPluginDelegateStub::OnGetFormValue(string16* value, bool* success) {
+  *success = false;
+  if (!delegate_)
+    return;
+  *success = delegate_->GetFormValue(value);
 }
 
 void WebPluginDelegateStub::OnSendJavaScriptStream(const GURL& url,

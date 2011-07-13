@@ -106,6 +106,7 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   virtual bool HandleInputEvent(const WebKit::WebInputEvent& event,
                                 WebKit::WebCursorInfo* cursor_info);
   virtual NPObject* GetPluginScriptableObject();
+  virtual bool GetFormValue(string16* value);
   virtual void DidFinishLoadWithReason(
       const GURL& url, NPReason reason, int notify_id);
   virtual int GetProcessId();

@@ -937,6 +937,12 @@ NPObject* WebPluginDelegateProxy::GetPluginScriptableObject() {
   return WebBindings::retainObject(npobject_);
 }
 
+bool WebPluginDelegateProxy::GetFormValue(string16* value) {
+  bool success = false;
+  Send(new PluginMsg_GetFormValue(instance_id_, value, &success));
+  return success;
+}
+
 void WebPluginDelegateProxy::DidFinishLoadWithReason(
     const GURL& url, NPReason reason, int notify_id) {
   Send(new PluginMsg_DidFinishLoadWithReason(

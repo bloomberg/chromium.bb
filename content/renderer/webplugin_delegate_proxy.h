@@ -71,6 +71,7 @@ class WebPluginDelegateProxy
                               const gfx::Rect& clip_rect);
   virtual void Paint(WebKit::WebCanvas* canvas, const gfx::Rect& rect);
   virtual NPObject* GetPluginScriptableObject();
+  virtual bool GetFormValue(string16* value);
   virtual void DidFinishLoadWithReason(const GURL& url, NPReason reason,
                                        int notify_id);
   virtual void SetFocus(bool focused);

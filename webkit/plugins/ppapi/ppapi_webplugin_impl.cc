@@ -107,6 +107,10 @@ NPObject* WebPluginImpl::scriptableObject() {
   return message_channel_np_object;
 }
 
+bool WebPluginImpl::getFormValue(WebString* value) {
+  return false;
+}
+
 void WebPluginImpl::paint(WebCanvas* canvas, const WebRect& rect) {
   if (!instance_->IsFullscreenOrPending())
     instance_->Paint(canvas, plugin_rect_, rect);

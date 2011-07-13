@@ -196,6 +196,10 @@ NPObject* WebPluginDelegateImpl::GetPluginScriptableObject() {
   return instance_->GetPluginScriptableObject();
 }
 
+bool WebPluginDelegateImpl::GetFormValue(string16* value) {
+  return instance_->GetFormValue(value);
+}
+
 void WebPluginDelegateImpl::DidFinishLoadWithReason(const GURL& url,
                                                     NPReason reason,
                                                     int notify_id) {

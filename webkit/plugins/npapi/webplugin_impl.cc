@@ -260,6 +260,16 @@ NPObject* WebPluginImpl::scriptableObject() {
   return delegate_->GetPluginScriptableObject();
 }
 
+bool WebPluginImpl::getFormValue(WebKit::WebString* value) {
+  if (!delegate_)
+    return false;
+  string16 form_value;
+  if (!delegate_->GetFormValue(&form_value))
+    return false;
+  *value = form_value;
+  return true;
+}
+
 void WebPluginImpl::paint(WebCanvas* canvas, const WebRect& paint_rect) {
   if (!delegate_ || !container_)
     return;

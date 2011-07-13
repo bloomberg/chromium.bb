@@ -152,6 +152,9 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
   // Have the plugin create it's script object.
   NPObject *GetPluginScriptableObject();
 
+  // Returns the form value of this instance.
+  bool GetFormValue(string16* value);
+
   // WebViewDelegate methods that we implement. This is for handling
   // callbacks during getURLNotify.
   void DidFinishLoadWithReason(const GURL& url, NPReason reason, int notify_id);
