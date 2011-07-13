@@ -79,7 +79,8 @@ class BufferedResourceLoader :
 
   // Reads the specified |read_size| from |position| into |buffer| and when
   // the operation is done invoke |callback| with number of bytes read or an
-  // error code.
+  // error code. If necessary, will temporarily increase forward capacity of
+  // buffer to accomodate an unusually large read.
   // |callback| is called with the following values:
   // - (Anything greater than or equal 0)
   //   Read was successful with the indicated number of bytes read.
@@ -228,6 +229,9 @@ class BufferedResourceLoader :
   // True if Range header is supported.
   bool range_supported_;
 
+  // Forward capacity to reset to after an extension.
+  size_t saved_forward_capacity_;
+
   // Does the work of loading and sends data back to this client.
   scoped_ptr<WebKit::WebURLLoader> url_loader_;
 
@@ -249,7 +253,7 @@ class BufferedResourceLoader :
   // read has completed or failed.
   scoped_ptr<net::CompletionCallback> read_callback_;
   int64 read_position_;
-  int read_size_;
+  size_t read_size_;
   uint8* read_buffer_;
 
   // Offsets of the requested first byte and last byte in |buffer_|. They are

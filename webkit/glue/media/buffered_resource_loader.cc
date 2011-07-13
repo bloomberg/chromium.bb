@@ -33,29 +33,33 @@ static const int kHttpPartialContent = 206;
 static const size_t kMegabyte = 1024 * 1024;
 
 // Backward capacity of the buffer, by default 2MB.
-static const size_t kBackwardCapcity = 2 * kMegabyte;
+static const size_t kBackwardCapacity = 2 * kMegabyte;
 
 // Forward capacity of the buffer, by default 10MB.
 static const size_t kForwardCapacity = 10 * kMegabyte;
 
-// The threshold of bytes that we should wait until the data arrives in the
-// future instead of restarting a new connection. This number is defined in the
-// number of bytes, we should determine this value from typical connection speed
-// and amount of time for a suitable wait. Now I just make a guess for this
-// number to be 2MB.
-// TODO(hclam): determine a better value for this.
+// Maximum forward capacity of the buffer, by default 20MB. This is effectively
+// the largest single read teh code path can handle. 20MB is an arbitrary limit;
+// it just seems to be "good enough" in practice.
+static const size_t kMaxForwardCapacity = 20 * kMegabyte;
+
+// Maximum number of bytes outside the buffer we will wait for in order to
+// fulfill a read. If a read starts more than 2MB away from the data we
+// currently have in the buffer, we will not wait for buffer to reach the read's
+// location and will instead reset the request.
 static const int kForwardWaitThreshold = 2 * kMegabyte;
 
 BufferedResourceLoader::BufferedResourceLoader(
     const GURL& url,
     int64 first_byte_position,
     int64 last_byte_position)
-    : buffer_(new media::SeekableBuffer(kBackwardCapcity, kForwardCapacity)),
+    : buffer_(new media::SeekableBuffer(kBackwardCapacity, kForwardCapacity)),
       deferred_(false),
       defer_strategy_(kReadThenDefer),
       completed_(false),
       range_requested_(false),
       range_supported_(false),
+      saved_forward_capacity_(0),
       url_(url),
       first_byte_position_(first_byte_position),
       last_byte_position_(last_byte_position),
@@ -161,6 +165,7 @@ void BufferedResourceLoader::Read(int64 position,
   DCHECK(buffer_.get());
   DCHECK(read_callback);
   DCHECK(buffer);
+  DCHECK_GT(read_size, 0);
 
   // Save the parameter of reading.
   read_callback_.reset(read_callback);
@@ -183,6 +188,13 @@ void BufferedResourceLoader::Read(int64 position,
     return;
   }
 
+  // Make sure |read_size_| is not too large for the buffer to ever be able to
+  // fulfill the read request.
+  if (read_size_ > kMaxForwardCapacity) {
+    DoneRead(net::ERR_FAILED);
+    return;
+  }
+
   // Prepare the parameters.
   first_offset_ = static_cast<int>(read_position_ - offset_);
   last_offset_ = first_offset_ + read_size_;
@@ -199,10 +211,17 @@ void BufferedResourceLoader::Read(int64 position,
   // Update defer behavior to re-enable deferring if need be.
   UpdateDeferBehavior();
 
-  // If we expected the read request to be fulfilled later, returns
-  // immediately and let more data to flow in.
-  if (WillFulfillRead())
-    return;
+  // If we expect the read request to be fulfilled later, return
+  // and let more data to flow in.
+  if (WillFulfillRead()) {
+    // If necessary, expand the forward capacity of the buffer to accomodate an
+    // unusually large read.
+    if (read_size_ > buffer_->forward_capacity()) {
+      saved_forward_capacity_ = buffer_->forward_capacity();
+      buffer_->set_forward_capacity(read_size_);
+    }
+   return;
+  }
 
   // Make a callback to report failure.
   DoneRead(net::ERR_CACHE_MISS);
@@ -562,13 +581,14 @@ bool BufferedResourceLoader::CanFulfillRead() {
 }
 
 bool BufferedResourceLoader::WillFulfillRead() {
-  // Reading too far in the backward direction.
+  // Trying to read too far behind.
   if (first_offset_ < 0 &&
       first_offset_ + static_cast<int>(buffer_->backward_bytes()) < 0)
     return false;
 
-  // Try to read too far ahead.
-  if (last_offset_ > kForwardWaitThreshold)
+  // Trying to read too far ahead.
+  if (first_offset_ - static_cast<int>(buffer_->forward_bytes()) >
+      kForwardWaitThreshold)
     return false;
 
   // The resource request has completed, there's no way we can fulfill the
@@ -641,6 +661,10 @@ std::string BufferedResourceLoader::GenerateHeaders(
 void BufferedResourceLoader::DoneRead(int error) {
   read_callback_->RunWithParams(Tuple1<int>(error));
   read_callback_.reset();
+  if (buffer_.get() && saved_forward_capacity_) {
+    buffer_->set_forward_capacity(saved_forward_capacity_);
+    saved_forward_capacity_ = 0;
+  }
   read_position_ = 0;
   read_size_ = 0;
   read_buffer_ = NULL;
