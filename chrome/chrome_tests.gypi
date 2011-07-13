@@ -1824,6 +1824,7 @@
         'browser/ui/content_settings/content_setting_bubble_model_unittest.cc',
         'browser/ui/content_settings/content_setting_image_model_unittest.cc',
         'browser/ui/find_bar/find_backend_unittest.cc',
+	'browser/ui/gtk/accelerators_gtk_unittest.cc',
         'browser/ui/gtk/bookmarks/bookmark_bar_gtk_unittest.cc',
         'browser/ui/gtk/bookmarks/bookmark_editor_gtk_unittest.cc',
         'browser/ui/gtk/bookmarks/bookmark_utils_gtk_unittest.cc',
@@ -2100,6 +2101,7 @@
             }],
             ['toolkit_views==1', {
               'sources!': [
+		 'browser/ui/gtk/accelerators_gtk_unittest.cc',
                  'browser/ui/gtk/bookmarks/bookmark_bar_gtk_unittest.cc',
                  'browser/ui/gtk/bookmarks/bookmark_editor_gtk_unittest.cc',
                  'browser/ui/gtk/gtk_chrome_shrinkable_hbox_unittest.cc',
