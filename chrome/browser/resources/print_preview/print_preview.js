@@ -108,7 +108,8 @@ function addEventListeners() {
  * Removes event listeners from the settings controls.
  */
 function removeEventListeners() {
-  clearTimeout(pageSettings.timerId_);
+  if (pageSettings)
+    clearTimeout(pageSettings.timerId_);
 
   // Controls that require preview rendering
   $('landscape').onclick = null;
