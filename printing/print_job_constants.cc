@@ -6,6 +6,9 @@
 
 namespace printing {
 
+// Print using cloud print: true if selected, false if not.
+const char kSettingCloudPrintId[] = "cloudPrintID";
+
 // Print job setting 'collate'.
 const char kSettingCollate[] = "collate";
 

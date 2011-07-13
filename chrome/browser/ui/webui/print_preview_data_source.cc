@@ -104,6 +104,20 @@ void SetLocalizedStrings(DictionaryValue* localized_strings) {
       l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_PAGE_RANGE_INSTRUCTION));
   localized_strings->SetString(std::string("copiesInstruction"),
       l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_COPIES_INSTRUCTION));
+  localized_strings->SetString(std::string("signIn"),
+      l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_SIGN_IN));
+  localized_strings->SetString(std::string("morePrinters"),
+      l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_MORE_PRINTERS));
+  localized_strings->SetString(std::string("addCloudPrinter"),
+      l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_ADD_CLOUD_PRINTER));
+  localized_strings->SetString(std::string("cloudPrinters"),
+      l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_CLOUD_PRINTERS));
+  localized_strings->SetString(std::string("localPrinters"),
+      l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_LOCAL_PRINTERS));
+  localized_strings->SetString(std::string("manageCloudPrinters"),
+      l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_MANAGE_CLOUD_PRINTERS));
+  localized_strings->SetString(std::string("manageLocalPrinters"),
+      l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_MANAGE_LOCAL_PRINTERS));
   localized_strings->SetString(std::string("managePrinters"),
       l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_MANAGE_PRINTERS));
   localized_strings->SetString(std::string("incrementTitle"),

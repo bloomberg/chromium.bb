@@ -218,12 +218,12 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
     return &NewWebUI<SystemInfoUI>;
   if (url.host() == chrome::kChromeUIEnterpriseEnrollmentHost)
     return &NewWebUI<chromeos::EnterpriseEnrollmentUI>;
-#else
+#endif  // defined(OS_CHROMEOS)
+
   if (url.host() == chrome::kChromeUIPrintHost &&
       switches::IsPrintPreviewEnabled()) {
     return &NewWebUI<PrintPreviewUI>;
   }
-#endif  // defined(OS_CHROMEOS)
 
   if (url.spec() == chrome::kChromeUIConstrainedHTMLTestURL)
     return &NewWebUI<ConstrainedHtmlUI>;

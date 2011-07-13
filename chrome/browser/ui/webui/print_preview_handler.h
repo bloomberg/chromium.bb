@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_UI_WEBUI_PRINT_PREVIEW_HANDLER_H_
 #pragma once
 
+#include <string>
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/printing/print_view_manager_observer.h"
@@ -78,6 +80,12 @@ class PrintPreviewHandler : public WebUIMessageHandler,
   // |args| is unused.
   void HandleCancelPendingPrintRequest(const base::ListValue* args);
 
+  // Handles a request to back up data about the last used cloud print
+  // printer.
+  // First element of |args| is the printer name.
+  // Second element of |args| is the current cloud print data JSON.
+  void HandleSaveLastPrinter(const base::ListValue* args);
+
   // Get the printer capabilities.
   // First element of |args| is the printer name.
   void HandleGetPrinterCapabilities(const base::ListValue* args);
@@ -85,6 +93,10 @@ class PrintPreviewHandler : public WebUIMessageHandler,
   // Ask the initiator renderer to show the native print system dialog.
   // |args| is unused.
   void HandleShowSystemDialog(const base::ListValue* args);
+
+  // Bring up a web page to allow the user to configure cloud print.
+  // |args| is unused.
+  void HandleManageCloudPrint(const base::ListValue* args);
 
   // Ask the browser to show the native printer management dialog.
   // |args| is unused.
@@ -99,10 +111,18 @@ class PrintPreviewHandler : public WebUIMessageHandler,
   void SendPrinterCapabilities(const base::DictionaryValue& settings_info);
 
   // Send the default printer to the Web UI.
-  void SendDefaultPrinter(const base::StringValue& default_printer);
+  void SendDefaultPrinter(const base::StringValue& default_printer,
+                          const base::StringValue& cloud_print_data);
 
   // Send the list of printers to the Web UI.
-  void SendPrinterList(const base::ListValue& printers);
+  void SetupPrinterList(const base::ListValue& printers);
+
+  // Send whether cloud print integration should be enabled.
+  void SendCloudPrintEnabled();
+
+  // Send the PDF data to the cloud to print.
+  void SendCloudPrintJob(const base::DictionaryValue& settings,
+                         std::string print_ticket);
 
   // Helper function to get the initiator tab for the print preview tab.
   TabContents* GetInitiatorTab();
@@ -129,7 +149,8 @@ class PrintPreviewHandler : public WebUIMessageHandler,
   scoped_refptr<SelectFileDialog> select_file_dialog_;
 
   static FilePath* last_saved_path_;
-  static std::string* last_used_printer_;
+  static std::string* last_used_printer_cloud_print_data_;
+  static std::string* last_used_printer_name_;
 
   // A count of how many requests received to regenerate preview data.
   // Initialized to 0 then incremented and emitted to a histogram.

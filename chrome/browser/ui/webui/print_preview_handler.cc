@@ -6,6 +6,10 @@
 
 #include <string>
 
+#include "base/base64.h"
+#if !defined(OS_CHROMEOS)
+#include "base/command_line.h"
+#endif
 #include "base/i18n/file_util_icu.h"
 #include "base/json/json_reader.h"
 #include "base/memory/ref_counted.h"
@@ -18,6 +22,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/printing/background_printing_manager.h"
+#include "chrome/browser/printing/cloud_print/cloud_print_url.h"
 #include "chrome/browser/printing/printer_manager_dialog.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
@@ -26,6 +31,9 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/print_preview_ui.h"
 #include "chrome/common/chrome_paths.h"
+#if !defined(OS_CHROMEOS)
+#include "chrome/common/chrome_switches.h"
+#endif
 #include "chrome/common/print_messages.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -176,28 +184,38 @@ class PrintSystemTaskProxy
   void GetDefaultPrinter() {
     VLOG(1) << "Get default printer start";
     StringValue* default_printer = NULL;
-    if (PrintPreviewHandler::last_used_printer_ == NULL) {
+    if (PrintPreviewHandler::last_used_printer_name_ == NULL) {
       default_printer = new StringValue(
           print_backend_->GetDefaultPrinterName());
     } else {
       default_printer = new StringValue(
-          *PrintPreviewHandler::last_used_printer_);
+          *PrintPreviewHandler::last_used_printer_name_);
     }
     std::string default_printer_string;
     default_printer->GetAsString(&default_printer_string);
     VLOG(1) << "Get default printer finished, found: "
             << default_printer_string;
 
+    StringValue* cloud_print_data = NULL;
+    if (PrintPreviewHandler::last_used_printer_cloud_print_data_ != NULL) {
+      cloud_print_data = new StringValue(
+          *PrintPreviewHandler::last_used_printer_cloud_print_data_);
+    } else {
+      cloud_print_data = new StringValue("");
+    }
+
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this,
                           &PrintSystemTaskProxy::SendDefaultPrinter,
-                          default_printer));
+                          default_printer,
+                          cloud_print_data));
   }
 
-  void SendDefaultPrinter(StringValue* default_printer) {
+  void SendDefaultPrinter(const StringValue* default_printer,
+                          const StringValue* cloud_print_data) {
     if (handler_)
-      handler_->SendDefaultPrinter(*default_printer);
+      handler_->SendDefaultPrinter(*default_printer, *cloud_print_data);
     delete default_printer;
   }
 
@@ -235,13 +253,14 @@ class PrintSystemTaskProxy
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this,
-                          &PrintSystemTaskProxy::SendPrinterList,
+                          &PrintSystemTaskProxy::SetupPrinterList,
                           printers));
   }
 
-  void SendPrinterList(ListValue* printers) {
-    if (handler_)
-      handler_->SendPrinterList(*printers);
+  void SetupPrinterList(ListValue* printers) {
+    if (handler_) {
+      handler_->SetupPrinterList(*printers);
+    }
     delete printers;
   }
 
@@ -366,7 +385,8 @@ class PrintToPdfTask : public Task {
 
 // static
 FilePath* PrintPreviewHandler::last_saved_path_ = NULL;
-std::string* PrintPreviewHandler::last_used_printer_ = NULL;
+std::string* PrintPreviewHandler::last_used_printer_cloud_print_data_ = NULL;
+std::string* PrintPreviewHandler::last_used_printer_name_ = NULL;
 
 PrintPreviewHandler::PrintPreviewHandler()
     : print_backend_(printing::PrintBackend::CreateInstance(NULL)),
@@ -395,7 +415,15 @@ void PrintPreviewHandler::RegisterMessages() {
       NewCallback(this, &PrintPreviewHandler::HandleGetPrinterCapabilities));
   web_ui_->RegisterMessageCallback("showSystemDialog",
       NewCallback(this, &PrintPreviewHandler::HandleShowSystemDialog));
-  web_ui_->RegisterMessageCallback("managePrinters",
+  web_ui_->RegisterMessageCallback("morePrinters",
+      NewCallback(this, &PrintPreviewHandler::HandleShowSystemDialog));
+  web_ui_->RegisterMessageCallback("signIn",
+      NewCallback(this, &PrintPreviewHandler::HandleManageCloudPrint));
+  web_ui_->RegisterMessageCallback("addCloudPrinter",
+      NewCallback(this, &PrintPreviewHandler::HandleManageCloudPrint));
+  web_ui_->RegisterMessageCallback("manageCloudPrinters",
+      NewCallback(this, &PrintPreviewHandler::HandleManageCloudPrint));
+  web_ui_->RegisterMessageCallback("manageLocalPrinters",
       NewCallback(this, &PrintPreviewHandler::HandleManagePrinters));
   web_ui_->RegisterMessageCallback("closePrintPreviewTab",
       NewCallback(this, &PrintPreviewHandler::HandleClosePreviewTab));
@@ -403,6 +431,8 @@ void PrintPreviewHandler::RegisterMessages() {
       NewCallback(this, &PrintPreviewHandler::HandleHidePreview));
   web_ui_->RegisterMessageCallback("cancelPendingPrintRequest",
       NewCallback(this, &PrintPreviewHandler::HandleCancelPendingPrintRequest));
+  web_ui_->RegisterMessageCallback("saveLastPrinter",
+      NewCallback(this, &PrintPreviewHandler::HandleSaveLastPrinter));
 }
 
 TabContents* PrintPreviewHandler::preview_tab() {
@@ -476,19 +506,18 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
   if (!settings.get())
     return;
 
-  // Initializing last_used_printer_ if it is not already initialized.
-  if (!last_used_printer_)
-    last_used_printer_ = new std::string();
-  // Storing last used printer.
-  settings->GetString("deviceName", last_used_printer_);
-
   bool print_to_pdf = false;
   settings->GetBoolean(printing::kSettingPrintToPDF, &print_to_pdf);
 
   TabContentsWrapper* preview_tab_wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(preview_tab());
 
-  if (print_to_pdf) {
+  bool print_to_cloud = settings->HasKey(printing::kSettingCloudPrintId);
+  if (print_to_cloud) {
+    std::string print_ticket;
+    args->GetString(1, &print_ticket);
+    SendCloudPrintJob(*settings, print_ticket);
+  } else if (print_to_pdf) {
     ReportUserActionHistogram(PRINT_TO_PDF);
     UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintToPDF",
                          GetPageCountFromSettingsDictionary(*settings));
@@ -549,6 +578,21 @@ void PrintPreviewHandler::HandleCancelPendingPrintRequest(
   delete TabContentsWrapper::GetCurrentWrapperForContents(preview_tab());
 }
 
+void PrintPreviewHandler::HandleSaveLastPrinter(
+    const ListValue* args) {
+  std::string data_to_save;
+  if (args->GetString(0, &data_to_save) && !data_to_save.empty()) {
+    if (last_used_printer_name_ == NULL)
+      last_used_printer_name_ = new std::string();
+    *last_used_printer_name_ = data_to_save;
+  }
+  if (args->GetString(1, &data_to_save) && !data_to_save.empty()) {
+    if (last_used_printer_cloud_print_data_ == NULL)
+      last_used_printer_cloud_print_data_ = new std::string();
+    *last_used_printer_cloud_print_data_ = data_to_save;
+  }
+}
+
 void PrintPreviewHandler::HandleGetPrinterCapabilities(
     const ListValue* args) {
   std::string printer_name;
@@ -566,6 +610,15 @@ void PrintPreviewHandler::HandleGetPrinterCapabilities(
       NewRunnableMethod(task.get(),
                         &PrintSystemTaskProxy::GetPrinterCapabilities,
                         printer_name));
+}
+
+void PrintPreviewHandler::HandleManageCloudPrint(const ListValue*) {
+  Browser* browser = BrowserList::GetLastActive();
+  browser->OpenURL(CloudPrintURL(browser->profile()).
+                   GetCloudPrintServiceManageURL(),
+                   GURL(),
+                   NEW_FOREGROUND_TAB,
+                   PageTransition::LINK);
 }
 
 void PrintPreviewHandler::HandleShowSystemDialog(const ListValue* args) {
@@ -620,12 +673,90 @@ void PrintPreviewHandler::SendPrinterCapabilities(
 }
 
 void PrintPreviewHandler::SendDefaultPrinter(
-    const StringValue& default_printer) {
-  web_ui_->CallJavascriptFunction("setDefaultPrinter", default_printer);
+    const StringValue& default_printer,
+    const StringValue& cloud_print_data) {
+  web_ui_->CallJavascriptFunction("setDefaultPrinter",
+                                  default_printer,
+                                  cloud_print_data);
 }
 
-void PrintPreviewHandler::SendPrinterList(const ListValue& printers) {
-  web_ui_->CallJavascriptFunction("setPrinters", printers);
+void PrintPreviewHandler::SetupPrinterList(const ListValue& printers) {
+  SendCloudPrintEnabled();
+  web_ui_->CallJavascriptFunction("setPrinters", printers,
+                                  *(Value::CreateBooleanValue(true)));
+}
+
+void PrintPreviewHandler::SendCloudPrintEnabled() {
+#if defined(OS_CHROMEOS)
+  bool enable_cloud_print_integration = true;
+#else
+  bool enable_cloud_print_integration =
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableCloudPrint);
+#endif
+  GURL gcp_url(CloudPrintURL(BrowserList::GetLastActive()->profile()).
+               GetCloudPrintServiceURL());
+  FundamentalValue enable(enable_cloud_print_integration);
+  StringValue gcp_url_value(gcp_url.spec());
+  web_ui_->CallJavascriptFunction("setUseCloudPrint", enable, gcp_url_value);
+}
+
+void PrintPreviewHandler::SendCloudPrintJob(const DictionaryValue& settings,
+                                            std::string print_ticket) {
+  scoped_refptr<RefCountedBytes> data;
+  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui_);
+  print_preview_ui->GetPrintPreviewData(&data);
+  CHECK(data->front());
+  DCHECK_GT(data->size(), 0U);
+
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(preview_tab());
+  string16 print_job_title_utf16 =
+      wrapper->print_view_manager()->RenderSourceName();
+  std::string print_job_title = UTF16ToUTF8(print_job_title_utf16);
+  std::string printer_id;
+  settings.GetString("cloudPrintID", &printer_id);
+// BASE64 encode the job data.
+  std::string raw_data(reinterpret_cast<const char*>(data->front()),
+                       data->size());
+  std::string base64_data;
+  if (!base::Base64Encode(raw_data, &base64_data)) {
+    NOTREACHED() << "Base64 encoding PDF data.";
+  }
+
+  const char boundary[] = "----CloudPrintFormBoundaryjc9wuprokl8i";
+  const char prolog[] = "--%s\r\n"
+    "Content-Disposition: form-data; name=\"capabilities\"\r\n\r\n%s\r\n"
+    "--%s\r\n"
+    "Content-Disposition: form-data; name=\"contentType\"\r\n\r\ndataUrl\r\n"
+    "--%s\r\n"
+    "Content-Disposition: form-data; name=\"title\"\r\n\r\n%s\r\n"
+    "--%s\r\n"
+    "Content-Disposition: form-data; name=\"printerid\"\r\n\r\n%s\r\n"
+    "--%s\r\n"
+    "Content-Disposition: form-data; name=\"content\"\r\n\r\n"
+    "data:application/pdf;base64,%s\r\n"
+    "--%s\r\n";
+
+// TODO(abodenha@chromium.org) This implies a large copy operation.
+// Profile this and optimize if necessary.
+  std::string final_data;
+  base::SStringPrintf(&final_data,
+                      prolog,
+                      boundary,
+                      print_ticket.c_str(),
+                      boundary,
+                      boundary,
+                      print_job_title.c_str(),
+                      boundary,
+                      printer_id.c_str(),
+                      boundary,
+                      base64_data.c_str(),
+                      boundary);
+
+  StringValue data_value(final_data);
+
+  web_ui_->CallJavascriptFunction("printToCloud",
+                                  data_value);
 }
 
 TabContents* PrintPreviewHandler::GetInitiatorTab() {

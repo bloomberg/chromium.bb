@@ -2,7 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// require: cr/ui/print_preview_cloud.js
+
 var localStrings = new LocalStrings();
+
+// If useCloudPrint is true we attempt to connect to cloud print
+// and populate the list of printers with cloud print printers.
+var useCloudPrint = false;
 
 // Store the last selected printer index.
 var lastSelectedPrinterIndex = 0;
@@ -11,8 +17,12 @@ var lastSelectedPrinterIndex = 0;
 var previewModifiable = false;
 
 // Destination list special value constants.
+const ADD_CLOUD_PRINTER = 'addCloudPrinter';
+const MANAGE_CLOUD_PRINTERS = 'manageCloudPrinters';
+const MANAGE_LOCAL_PRINTERS = 'manageLocalPrinters';
+const MORE_PRINTERS = 'morePrinters';
+const SIGN_IN = 'signIn';
 const PRINT_TO_PDF = 'Print To PDF';
-const MANAGE_PRINTERS = 'Manage Printers';
 
 // State of the print preview settings.
 var printSettings = new PrintSettings();
@@ -38,6 +48,10 @@ var copiesSettings;
 // True if the user has click 'Advanced...' in order to open the system print
 // dialog.
 var showingSystemDialog = false;
+
+// The range of options in the printer dropdown controlled by cloud print.
+var firstCloudPrintOptionPos = 0
+var lastCloudPrintOptionPos = firstCloudPrintOptionPos;
 
 /**
  * Window onload handler, sets up the page and starts print preview by getting
@@ -162,24 +176,61 @@ function updateControlsWithSelectedPrinterCapabilities() {
   var selectedIndex = printerList.selectedIndex;
   if (selectedIndex < 0)
     return;
-
+  var skip_refresh = false;
   var selectedValue = printerList.options[selectedIndex].value;
-  if (selectedValue == PRINT_TO_PDF) {
+  if (cloudprint.isCloudPrint(printerList.options[selectedIndex])) {
+    updateWithCloudPrinterCapabilities();
+    skip_refresh = true;
+  } else if (selectedValue == SIGN_IN ||
+             selectedValue == MANAGE_CLOUD_PRINTERS ||
+             selectedValue == MANAGE_LOCAL_PRINTERS ||
+             selectedValue == ADD_CLOUD_PRINTER) {
+    printerList.selectedIndex = lastSelectedPrinterIndex;
+    chrome.send(selectedValue);
+    skip_refresh = true;
+  } else if (selectedValue == PRINT_TO_PDF) {
     updateWithPrinterCapabilities({
         'disableColorOption': true,
         'setColorAsDefault': true,
         'setDuplexAsDefault': false,
         'disableCopiesOption': true});
-  } else if (selectedValue == MANAGE_PRINTERS) {
-    printerList.selectedIndex = lastSelectedPrinterIndex;
-    chrome.send('managePrinters');
-    return;
   } else {
     // This message will call back to 'updateWithPrinterCapabilities'
     // function.
     chrome.send('getPrinterCapabilities', [selectedValue]);
   }
+  if (!skip_refresh) {
+    lastSelectedPrinterIndex = selectedIndex;
 
+    // Regenerate the preview data based on selected printer settings.
+    setDefaultValuesAndRegeneratePreview();
+  }
+}
+
+/**
+ * Updates the printer capabilities for the currently selected
+ * cloud print printer.
+ */
+function updateWithCloudPrinterCapabilities() {
+  var printerList = $('printer-list');
+  var selectedIndex = printerList.selectedIndex;
+  cloudprint.updatePrinterCaps(printerList.options[selectedIndex],
+                               doUpdateCloudPrinterCapabilities);
+}
+
+/**
+ * Helper function to do the actual work of updating cloud printer
+ * capabilities.
+ * @param {Object} printer The printer object to set capabilities for.
+ */
+function doUpdateCloudPrinterCapabilities(printer) {
+  var settings = {'disableColorOption': !cloudprint.supportsColor(printer),
+                  'setColorAsDefault': cloudprint.colorIsDefault(printer),
+                  'disableCopiesOption': true,
+                  'disableLandscapeOption': true};
+  updateWithPrinterCapabilities(settings);
+  var printerList = $('printer-list');
+  var selectedIndex = printerList.selectedIndex;
   lastSelectedPrinterIndex = selectedIndex;
 
   // Regenerate the preview data based on selected printer settings.
@@ -194,6 +245,7 @@ function updateWithPrinterCapabilities(settingInfo) {
   var disableColorOption = settingInfo.disableColorOption;
   var disableCopiesOption = settingInfo.disableCopiesOption;
   var setColorAsDefault = settingInfo.setColorAsDefault;
+  var disableLandscapeOption = settingInfo.disableLandscapeOption;
   var setDuplexAsDefault = settingInfo.setDuplexAsDefault;
   var color = $('color');
   var bw = $('bw');
@@ -207,6 +259,12 @@ function updateWithPrinterCapabilities(settingInfo) {
     $('hr-before-copies').classList.add('invisible');
   }
 
+  if (disableLandscapeOption) {
+    fadeOutElement($('landscape-option'));
+  } else {
+    fadeInElement($('landscape-option'));
+  }
+
   disableColorOption ? fadeOutElement(colorOptions) :
       fadeInElement(colorOptions);
   colorOptions.setAttribute('aria-hidden', disableColorOption);
@@ -216,6 +274,32 @@ function updateWithPrinterCapabilities(settingInfo) {
     bw.checked = !setColorAsDefault;
   }
   copiesSettings.twoSidedCheckbox.checked = setDuplexAsDefault;
+}
+
+/**
+ * Turn on the integration of Cloud Print.
+ * @param {boolean} enable True if cloud print should be used.
+ * @param {string} cloudPrintUrl The URL to use for cloud print servers.
+ */
+function setUseCloudPrint(enable, cloudPrintURL) {
+  useCloudPrint = enable;
+  cloudprint.setBaseURL(cloudPrintURL);
+}
+
+/**
+ * Take the PDF data handed to us and submit it to the cloud, closing the print
+ * preview tab once the upload is successful.
+ * @param {string} data Data to send as the print job.
+ */
+function printToCloud(data) {
+  cloudprint.printToCloud(data, finishedCloudPrinting);
+}
+
+/**
+ * Cloud print upload of the PDF file is finished, time to close the dialog.
+ */
+function finishedCloudPrinting() {
+  window.location = cloudprint.getBaseURL();
 }
 
 /**
@@ -265,21 +349,29 @@ function getSettingsJSON() {
   var deviceName = getSelectedPrinterName();
   var printToPDF = (deviceName == PRINT_TO_PDF);
 
-  return JSON.stringify(
-      {'deviceName': deviceName,
-       'pageRange': pageSettings.selectedPageRanges,
-       'printAll': pageSettings.allPagesRadioButton.checked,
-       'duplex': getDuplexMode(),
-       'copies': copiesSettings.numberOfCopies,
-       'collate': isCollated(),
-       'landscape': isLandscape(),
-       'color': isColor(),
-       'printToPDF': printToPDF});
+  var settings = {'deviceName': deviceName,
+                  'pageRange': pageSettings.selectedPageRanges,
+                  'printAll': pageSettings.allPagesRadioButton.checked,
+                  'duplex': getDuplexMode(),
+                  'copies': copiesSettings.numberOfCopies,
+                  'collate': isCollated(),
+                  'landscape': isLandscape(),
+                  'color': isColor(),
+                  'printToPDF': printToPDF};
+  var printerList = $('printer-list');
+  var selectedPrinter = printerList.selectedIndex;
+  if (cloudprint.isCloudPrint(printerList.options[selectedPrinter])) {
+    settings['cloudPrintID'] =
+        printerList.options[selectedPrinter].value;
+  }
+
+  return JSON.stringify(settings);
 }
 
 /**
  * Returns the name of the selected printer or the empty string if no
  * printer is selected.
+ * @return {string} The name of the currently selected printer.
  */
 function getSelectedPrinterName() {
   var printerList = $('printer-list')
@@ -345,7 +437,12 @@ function cancelPendingPrintRequest() {
  * Sends a message to initiate print workflow.
  */
 function sendPrintFileRequest() {
-  chrome.send('print', [getSettingsJSON()]);
+  var printerList = $('printer-list');
+  var printer = printerList[printerList.selectedIndex];
+  chrome.send('saveLastPrinter', [printer.textContent,
+                                  cloudprint.getData(printer)]);
+  chrome.send('print', [getSettingsJSON(),
+                        cloudprint.getPrintTicketJSON(printer)]);
 }
 
 /**
@@ -372,14 +469,23 @@ function fileSelectionCancelled() {
 /**
  * Set the default printer. If there is one, generate a print preview.
  * @param {string} printer Name of the default printer. Empty if none.
+ * @param {string} cloudPrintData Cloud print related data to restore if
+ *                 the default printer is a cloud printer.
  */
-function setDefaultPrinter(printer) {
+function setDefaultPrinter(printer_name, cloudPrintData) {
   // Add a placeholder value so the printer list looks valid.
-  addDestinationListOption('', '', true, true);
-  if (printer) {
-    defaultOrLastUsedPrinterName = printer;
-    $('printer-list')[0].value = defaultOrLastUsedPrinterName;
-    updateControlsWithSelectedPrinterCapabilities();
+  addDestinationListOption('', '', true, true, true);
+  if (printer_name) {
+    defaultOrLastUsedPrinterName = printer_name;
+    if (cloudPrintData) {
+      cloudprint.setDefaultPrinter(printer_name,
+                                   cloudPrintData,
+                                   addCloudPrinters,
+                                   doUpdateCloudPrinterCapabilities);
+    } else {
+      $('printer-list')[0].value = defaultOrLastUsedPrinterName;
+      updateControlsWithSelectedPrinterCapabilities();
+    }
   }
   chrome.send('getPrinters');
 }
@@ -397,25 +503,34 @@ function setPrinters(printers) {
   for (var i = 0; i < printers.length; ++i) {
     var isDefault = (printers[i].deviceName == defaultOrLastUsedPrinterName);
     addDestinationListOption(printers[i].printerName, printers[i].deviceName,
-                             isDefault, false);
+                             isDefault, false, false);
   }
 
-  // Remove the dummy printer added in setDefaultPrinter().
-  printerList.remove(0);
+  if (!cloudprint.isCloudPrint(printerList[0]))
+    // Remove the dummy printer added in setDefaultPrinter().
+    printerList.remove(0);
 
   if (printers.length != 0)
-    addDestinationListOption('', '', false, true);
+    addDestinationListOption('', '', false, true, true);
 
   // Adding option for saving PDF to disk.
   addDestinationListOption(localStrings.getString('printToPDF'),
                            PRINT_TO_PDF,
                            defaultOrLastUsedPrinterName == PRINT_TO_PDF,
+                           false,
                            false);
-  addDestinationListOption('', '', false, true);
+  addDestinationListOption('', '', false, true, true);
 
-  // Add an option to manage printers.
-  addDestinationListOption(localStrings.getString('managePrinters'),
-                           MANAGE_PRINTERS, false, false);
+  // Add options to manage printers.
+  if (!cr.isChromeOS) {
+    addDestinationListOption(localStrings.getString('manageLocalPrinters'),
+        MANAGE_LOCAL_PRINTERS, false, false, false);
+  }
+  if (useCloudPrint) {
+    cloudprint.fetchPrinters(addCloudPrinters, false);
+    addDestinationListOption(localStrings.getString('manageCloudPrinters'),
+        MANAGE_CLOUD_PRINTERS, false, false, false);
+  }
 
   printerList.disabled = false;
 
@@ -424,24 +539,162 @@ function setPrinters(printers) {
 }
 
 /**
+ * Creates an option that can be added to the printer destination list.
+ * @param {String} optionText specifies the option text content.
+ * @param {String} optionValue specifies the option value.
+ * @param {boolean} isDefault is true if the option needs to be selected.
+ * @param {boolean} isDisabled is true if the option needs to be disabled.
+ * @param {boolean} isSeparator is true if the option is a visual separator and
+ *                  needs to be disabled.
+ * @return {Object} The created option.
+ */
+function createDestinationListOption(optionText, optionValue, isDefault,
+    isDisabled, isSeparator) {
+  var option = document.createElement('option');
+  option.textContent = optionText;
+  option.value = optionValue;
+  option.selected = isDefault;
+  option.disabled = isSeparator || isDisabled;
+  // Adding attribute for improved accessibility.
+  if (isSeparator)
+    option.setAttribute("role", "separator");
+  return option;
+}
+
+/**
  * Adds an option to the printer destination list.
  * @param {String} optionText specifies the option text content.
  * @param {String} optionValue specifies the option value.
  * @param {boolean} isDefault is true if the option needs to be selected.
- * @param {boolean} isSeparator is true if the option is a visual separator and
- *                  needs to be disabled.
+ * @param {boolean} isDisabled is true if the option needs to be disabled.
+ * @return {Object} The created option.
  */
 function addDestinationListOption(optionText, optionValue, isDefault,
-    isSeparator) {
-  var option = document.createElement('option');
-  option.textContent = optionText;
-  option.value = optionValue;
+    isDisabled, isSeparator) {
+  var option = createDestinationListOption(optionText,
+                                           optionValue,
+                                           isDefault,
+                                           isDisabled,
+                                           isSeparator);
   $('printer-list').add(option);
-  option.selected = isDefault;
-  option.disabled = isSeparator;
-  // Adding attribute for improved accessibility.
-  if (isSeparator)
-    option.setAttribute("role", "separator");
+  return option;
+}
+
+/**
+ * Adds an option to the printer destination list at a specified position.
+ * @param {Integer} position The index in the printer-list wher the option
+                             should be created.
+ * @param {String} optionText specifies the option text content.
+ * @param {String} optionValue specifies the option value.
+ * @param {boolean} isDefault is true if the option needs to be selected.
+ * @param {boolean} isDisabled is true if the option needs to be disabled.
+ * @return {Object} The created option.
+ */
+function addDestinationListOptionAtPosition(position,
+                                            optionText,
+                                            optionValue,
+                                            isDefault,
+                                            isDisabled,
+                                            isSeparator) {
+  var option = createDestinationListOption(optionText,
+                                           optionValue,
+                                           isDefault,
+                                           isDisabled,
+                                           isSeparator);
+  var printerList = $('printer-list');
+  var before = printerList[position];
+  printerList.add(option, before);
+  return option;
+}
+
+/**
+ * Removes the list of cloud printers from the printer pull down.
+ */
+function clearCloudPrinters() {
+  var printerList = $('printer-list');
+  while (firstCloudPrintOptionPos < lastCloudPrintOptionPos) {
+    lastCloudPrintOptionPos--;
+    printerList.remove(lastCloudPrintOptionPos);
+  }
+}
+
+/**
+ * Add cloud printers to the list drop down.
+ * Called from the cloudprint object on receipt of printer information from the
+ * cloud print server.
+ * @param {Array} printers Array of printer info objects.
+ * @return {Object} The currently selected printer.
+ */
+function addCloudPrinters(printers, showMorePrintersOption) {
+  // TODO(abodenha@chromium.org) Avoid removing printers from the list.
+  // Instead search for duplicates and don't add printers that already exist
+  // in the list.
+  clearCloudPrinters();
+  addDestinationListOptionAtPosition(
+      lastCloudPrintOptionPos++,
+      localStrings.getString('cloudPrinters'),
+      '',
+      false,
+      true,
+      false);
+  if (printers != null) {
+    if (printers.length == 0) {
+      addDestinationListOptionAtPosition(lastCloudPrintOptionPos++,
+          localStrings.getString('addCloudPrinter'),
+          ADD_CLOUD_PRINTER,
+          false,
+          false,
+          false);
+    } else {
+      for (printer in printers) {
+        var option = addDestinationListOptionAtPosition(
+            lastCloudPrintOptionPos++,
+            printers[printer]['name'],
+            printers[printer]['id'],
+            printers[printer]['name'] == defaultOrLastUsedPrinterName,
+            false,
+            false);
+        cloudprint.setCloudPrint(option,
+                                 printers[printer]['name'],
+                                 printers[printer]['id']);
+      }
+      if (showMorePrintersOption) {
+        addDestinationListOptionAtPosition(lastCloudPrintOptionPos++,
+                                           '',
+                                           '',
+                                           false,
+                                           true,
+                                           true);
+        addDestinationListOptionAtPosition(lastCloudPrintOptionPos++,
+            localStrings.getString('morePrinters'),
+            MORE_PRINTERS, false, false, false);
+      }
+    }
+  } else {
+    addDestinationListOptionAtPosition(lastCloudPrintOptionPos++,
+                                       localStrings.getString('signIn'),
+                                       SIGN_IN,
+                                       false,
+                                       false,
+                                       false);
+  }
+  addDestinationListOptionAtPosition(lastCloudPrintOptionPos++,
+                                     '',
+                                     '',
+                                     false,
+                                     true,
+                                     true);
+  addDestinationListOptionAtPosition(lastCloudPrintOptionPos++,
+                                     localStrings.getString('localPrinters'),
+                                     '',
+                                     false,
+                                     true,
+                                     false);
+  var printerList = $('printer-list')
+  var selectedPrinter = printerList.selectedIndex;
+  if (selectedPrinter < 0)
+    return null;
+  return printerList.options[selectedPrinter];
 }
 
 /**
@@ -455,6 +708,8 @@ function setColor(color) {
     return;
   }
   pdfViewer.grayscale(!color);
+  var printerList = $('printer-list')
+  cloudprint.setColor(printerList[printerList.selectedIndex], color);
 }
 
 /**
@@ -616,7 +871,7 @@ function createPDFPlugin(previewUid) {
 }
 
 /**
- * Returns true if a compatible pdf plugin exists, false if it doesn't.
+ * @return {boolean} true if a compatible pdf plugin exists.
  */
 function checkCompatiblePluginExists() {
   var dummyPlugin = $('dummy-viewer')
@@ -734,3 +989,4 @@ PrintSettings.prototype.save = function() {
   this.deviceName = getSelectedPrinterName();
   this.isLandscape = isLandscape();
 }
+

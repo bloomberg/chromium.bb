@@ -5749,9 +5749,6 @@ ls' lab.">
       <message name="IDS_PRINT_PREVIEW_TITLE_FORMAT" desc="The format for the print preview page title.">
         Print - <ph name="PREVIEW_TAB_TITLE">$1<ex>Google Search</ex></ph>
       </message>
-      <message name="IDS_PRINT_PREVIEW_LOADING_PRINTERS" desc="Message to display while the print preview is still loading the printer list.">
-        Loading additional printers
-      </message>
       <message name="IDS_PRINT_PREVIEW_LOADING" desc="Message to display while the print preview is still loading.">
         Loading preview
       </message>
@@ -5833,7 +5830,7 @@ ls' lab.">
       </message>
       <message name="IDS_PRINT_PREVIEW_ADD_CLOUD_PRINTER"
           desc="Option shown in printer drop-down list that takes the user to a page to add cloud based printers.">
-        Add a cloud printer...
+        Add cloud printers...
       </message>
       <message name="IDS_PRINT_PREVIEW_CLOUD_PRINTERS"
           desc="Option shown in printer drop-down list that serves as a heading above all cloud based printers.">

@@ -147,6 +147,16 @@
             'backend/print_backend_cups.cc',
           ],
         }],
+        ['OS=="linux" and chromeos==1', {
+          'defines': [
+            # PRINT_BACKEND_AVAILABLE disables the default dummy implementation
+            # of the print backend and enables a custom implementation instead.
+            'PRINT_BACKEND_AVAILABLE',
+          ],
+          'sources': [
+            'backend/print_backend_chromeos.cc',
+          ],
+        }],
       ],
     },
     {

@@ -14,10 +14,12 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/print_messages.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "content/renderer/render_view.h"
 #include "grit/generated_resources.h"
 #include "printing/metafile.h"
+#include "printing/print_job_constants.h"
 #include "printing/units.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
@@ -25,9 +27,9 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLResponse.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLResponse.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -50,6 +52,8 @@ using WebKit::WebURLRequest;
 using WebKit::WebView;
 
 namespace {
+
+const double kMinDpi = 1.0;
 
 int GetDPI(const PrintMsg_Print_Params* print_params) {
 #if defined(OS_MACOSX)
@@ -621,6 +625,10 @@ bool PrintWebViewHelper::InitPrintSettings(WebKit::WebFrame* frame,
                                            WebKit::WebNode* node) {
   PrintMsg_PrintPages_Params settings;
 
+  // TODO(abodenha@chromium.org) It doesn't make sense to do this if our
+  // "default" is a cloud based printer.  Split InitPrintSettings up
+  // so that we can avoid the overhead of unneeded calls into the native
+  // print system.
   Send(new PrintHostMsg_GetDefaultPrintSettings(routing_id(),
                                                 &settings.params));
   // Check if the printer returned any settings, if the settings is empty, we
@@ -632,7 +640,7 @@ bool PrintWebViewHelper::InitPrintSettings(WebKit::WebFrame* frame,
         l10n_util::GetStringUTF16(IDS_DEFAULT_PRINTER_NOT_FOUND_WARNING));
     return false;
   }
-  if (!settings.params.dpi || !settings.params.document_cookie) {
+  if (settings.params.dpi < kMinDpi || settings.params.document_cookie == 0) {
     // Invalid print page settings.
     NOTREACHED();
     return false;
@@ -645,19 +653,52 @@ bool PrintWebViewHelper::InitPrintSettings(WebKit::WebFrame* frame,
   return true;
 }
 
-bool PrintWebViewHelper::UpdatePrintSettings(
+bool PrintWebViewHelper::UpdatePrintSettingsCloud(
+    const DictionaryValue& job_settings) {
+  // Document cookie and pages are set by the
+  // PrintHostMsg_UpdatePrintSettings message above.
+  // TODO(abodenha@chromium.org) These numbers are for a letter sized
+  // page at 300dpi and half inch margins.
+  // Pull them from printer caps instead.
+  PrintMsg_PrintPages_Params settings;
+  settings.params.page_size = gfx::Size(2550, 3300);
+  settings.params.printable_size = gfx::Size(2250, 3000);
+  settings.params.margin_top = 150;
+  settings.params.margin_left = 150;
+  settings.params.dpi = 300.0;
+  settings.params.min_shrink = 1.25;
+  settings.params.max_shrink = 2.0;
+  settings.params.desired_dpi = 72;
+  settings.params.selection_only = false;
+  settings.params.supports_alpha_blend = false;
+  // TODO(abodenha@chromium.org) Parse page ranges from the job_settings.
+  print_pages_params_.reset(new PrintMsg_PrintPages_Params(settings));
+  return true;
+}
+
+bool PrintWebViewHelper::UpdatePrintSettingsLocal(
     const DictionaryValue& job_settings) {
   PrintMsg_PrintPages_Params settings;
+
   Send(new PrintHostMsg_UpdatePrintSettings(routing_id(),
       print_pages_params_->params.document_cookie, job_settings, &settings));
 
-  if (!settings.params.dpi || !settings.params.document_cookie)
+  if (settings.params.dpi < kMinDpi || !settings.params.document_cookie)
     return false;
 
   print_pages_params_.reset(new PrintMsg_PrintPages_Params(settings));
   Send(new PrintHostMsg_DidGetDocumentCookie(routing_id(),
                                              settings.params.document_cookie));
   return true;
+}
+
+bool PrintWebViewHelper::UpdatePrintSettings(
+    const DictionaryValue& job_settings) {
+  if (job_settings.HasKey(printing::kSettingCloudPrintId)) {
+    return UpdatePrintSettingsCloud(job_settings);
+  } else {
+    return UpdatePrintSettingsLocal(job_settings);
+  }
 }
 
 bool PrintWebViewHelper::GetPrintSettingsFromUser(WebKit::WebFrame* frame,
