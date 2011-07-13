@@ -38,7 +38,7 @@ class RTCVideoDecoder
 
   // cricket::VideoRenderer implementation
   virtual bool SetSize(int width, int height, int reserved);
-  virtual bool RenderFrame(const cricket::VideoFrame *frame);
+  virtual bool RenderFrame(const cricket::VideoFrame* frame);
 
  private:
   friend class RTCVideoDecoderTest;
