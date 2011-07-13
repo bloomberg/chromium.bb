@@ -8,6 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sync_channel.h"
 #include "base/debug/trace_event.h"
@@ -103,6 +104,7 @@ bool PluginDispatcher::IsPlugin() const {
 }
 
 bool PluginDispatcher::Send(IPC::Message* msg) {
+  DCHECK(MessageLoop::current());
   TRACE_EVENT2("ppapi proxy", "PluginDispatcher::Send",
                "Class", IPC_MESSAGE_ID_CLASS(msg->type()),
                "Line", IPC_MESSAGE_ID_LINE(msg->type()));

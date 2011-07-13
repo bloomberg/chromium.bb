@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/debug/trace_event.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/synchronization/waitable_event.h"
@@ -175,6 +176,7 @@ void FontImpl::Describe(base::WaitableEvent* event,
                         std::string* face,
                         PP_FontMetrics_Dev* metrics,
                         PP_Bool* result) {
+  TRACE_EVENT0("ppapi WebKit thread", "FontImpl::Describe");
   if (description->face.type != PP_VARTYPE_UNDEFINED) {
     *result = PP_FALSE;
   } else {
@@ -206,6 +208,7 @@ void FontImpl::Describe(base::WaitableEvent* event,
 
 void FontImpl::DrawTextAt(base::WaitableEvent* event,
                           const DrawTextParams& params) {
+  TRACE_EVENT0("ppapi WebKit thread", "FontImpl::DrawTextAt");
   WebTextRun run = TextRunToWebTextRun(params.text);
 
   // Convert position and clip.
@@ -233,6 +236,7 @@ void FontImpl::DrawTextAt(base::WaitableEvent* event,
 
 void FontImpl::MeasureText(base::WaitableEvent* event,
                            const TextRun& text, int32_t* result) {
+  TRACE_EVENT0("ppapi WebKit thread", "FontImpl::MeasureText");
   *result = font_->calculateWidth(TextRunToWebTextRun(text));
   if (event)
     event->Signal();
@@ -242,6 +246,7 @@ void FontImpl::CharacterOffsetForPixel(base::WaitableEvent* event,
                                        const TextRun& text,
                                        int32_t pixel_position,
                                        uint32_t* result) {
+  TRACE_EVENT0("ppapi WebKit thread", "FontImpl::CharacterOffsetForPixel");
   *result = static_cast<uint32_t>(font_->offsetForPosition(
       TextRunToWebTextRun(text), static_cast<float>(pixel_position)));
   if (event)
@@ -252,6 +257,7 @@ void FontImpl::PixelOffsetForCharacter(base::WaitableEvent* event,
                                        const TextRun& text,
                                        uint32_t char_offset,
                                        int32_t* result) {
+  TRACE_EVENT0("ppapi WebKit thread", "FontImpl::PixelOffsetForCharacter");
   WebTextRun run = TextRunToWebTextRun(text);
   if (char_offset >= run.text.length()) {
     *result = -1;
@@ -280,6 +286,8 @@ void WebKitForwardingImpl::CreateFontForwarding(
     const std::string& desc_face,
     const ::ppapi::Preferences& prefs,
     Font** result) {
+  TRACE_EVENT0("ppapi WebKit thread",
+               "WebKitForwardingImpl::CreateFontForwarding");
   *result = new FontImpl(desc, desc_face, prefs);
   if (event)
     event->Signal();

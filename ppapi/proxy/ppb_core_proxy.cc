@@ -6,6 +6,7 @@
 
 #include <stdlib.h>  // For malloc
 
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
@@ -56,12 +57,19 @@ double GetTimeTicks() {
   return TimeTicksToPPTimeTicks(base::TimeTicks::Now());
 }
 
+void CallbackWrapper(PP_CompletionCallback callback, int32_t result) {
+  TRACE_EVENT2("ppapi proxy", "CallOnMainThread callback",
+               "Func", reinterpret_cast<void*>(callback.func),
+               "UserData", callback.user_data);
+  PP_RunCompletionCallback(&callback, result);
+}
+
 void CallOnMainThread(int delay_in_ms,
                       PP_CompletionCallback callback,
                       int32_t result) {
   GetMainThreadMessageLoop()->PostDelayedTask(
       FROM_HERE,
-      NewRunnableFunction(callback.func, callback.user_data, result),
+      NewRunnableFunction(&CallbackWrapper, callback, result),
       delay_in_ms);
 }
 
