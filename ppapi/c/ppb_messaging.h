@@ -9,7 +9,8 @@
 #include "ppapi/c/pp_var.h"
 
 #define PPB_MESSAGING_INTERFACE_0_1 "PPB_Messaging;0.1"
-#define PPB_MESSAGING_INTERFACE PPB_MESSAGING_INTERFACE_0_1
+#define PPB_MESSAGING_INTERFACE_1_0 "PPB_Messaging;1.0"
+#define PPB_MESSAGING_INTERFACE PPB_MESSAGING_INTERFACE_1_0
 
 /**
  * @file

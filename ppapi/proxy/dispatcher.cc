@@ -141,6 +141,7 @@ InterfaceList::InterfaceList() {
   AddPPB(PPB_InputEvent_Proxy::GetInfo());
   AddPPB(PPB_Instance_Proxy::GetInfo0_4());
   AddPPB(PPB_Instance_Proxy::GetInfo0_5());
+  AddPPB(PPB_Instance_Proxy::GetInfo1_0());
   AddPPB(PPB_Instance_Proxy::GetInfoFullscreen());
   AddPPB(PPB_Instance_Proxy::GetInfoMessaging());
   AddPPB(PPB_Instance_Proxy::GetInfoPrivate());

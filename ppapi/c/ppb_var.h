@@ -12,7 +12,8 @@
 #include "ppapi/c/pp_var.h"
 
 #define PPB_VAR_INTERFACE_0_5 "PPB_Var;0.5"
-#define PPB_VAR_INTERFACE PPB_VAR_INTERFACE_0_5
+#define PPB_VAR_INTERFACE_1_0 "PPB_Var;1.0"
+#define PPB_VAR_INTERFACE PPB_VAR_INTERFACE_1_0
 
 /**
  * @file
