@@ -15,12 +15,11 @@ namespace pp {
 // A CompletionCallback provides a wrapper around PP_CompletionCallback.
 class CompletionCallback {
  public:
-  // Use this special constructor to create a 'blocking' CompletionCallback
+  // The default constructor will create a 'blocking' CompletionCallback
   // that may be passed to a method to indicate that the calling thread should
   // be blocked until the asynchronous operation corresponding to the method
   // completes.
-  struct Block {};
-  CompletionCallback(Block) {
+  CompletionCallback() {
     cc_ = PP_BlockUntilComplete();
   }
 
@@ -77,6 +76,9 @@ class CompletionCallback {
  protected:
   PP_CompletionCallback cc_;
 };
+
+// Create a 'blocking' CompletionCallback.
+CompletionCallback BlockUntilComplete();
 
 // CompletionCallbackFactory<T> may be used to create CompletionCallback
 // objects that are bound to member functions.

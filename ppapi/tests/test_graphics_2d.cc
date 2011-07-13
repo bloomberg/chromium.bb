@@ -517,7 +517,7 @@ std::string TestGraphics2D::TestFlush() {
     return "Failure to allocate background image";
   dc.PaintImageData(background, pp::Point(0, 0));
 
-  int32_t rv = dc.Flush(pp::CompletionCallback::Block());
+  int32_t rv = dc.Flush(pp::BlockUntilComplete());
   if (rv == PP_OK || rv == PP_OK_COMPLETIONPENDING)
     return "Flush succeeded from the main thread with no callback.";
 
