@@ -9,6 +9,7 @@
 #include <stack>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
@@ -89,6 +90,14 @@ class RootView;
 class Widget : public internal::NativeWidgetDelegate,
                public FocusTraversable {
  public:
+  // Observers can listen to various events on the Widgets.
+  class Observer {
+   public:
+    virtual void OnWidgetClosing(Widget* widget) {}
+    virtual void OnWidgetVisibilityChanged(Widget* widget, bool visible) {}
+    virtual void OnWidgetActivationChanged(Widget* widget, bool active) {}
+  };
+
   typedef std::set<Widget*> Widgets;
 
   enum FrameType {
@@ -220,6 +229,11 @@ class Widget : public internal::NativeWidgetDelegate,
   // NULL on some platforms if the widget was created with a type other than
   // TYPE_WINDOW.
   gfx::NativeWindow GetNativeWindow() const;
+
+  // Add/remove observer.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+  bool HasObserver(Observer* observer);
 
   // Returns the accelerator given a command id. Returns false if there is
   // no accelerator associated with a given id, which is a common condition.
@@ -521,6 +535,7 @@ class Widget : public internal::NativeWidgetDelegate,
   virtual void OnNativeWidgetActivationChanged(bool active) OVERRIDE;
   virtual void OnNativeFocus(gfx::NativeView focused_view) OVERRIDE;
   virtual void OnNativeBlur(gfx::NativeView focused_view) OVERRIDE;
+  virtual void OnNativeWidgetVisibilityChanged(bool visible) OVERRIDE;
   virtual void OnNativeWidgetCreated() OVERRIDE;
   virtual void OnNativeWidgetDestroying() OVERRIDE;
   virtual void OnNativeWidgetDestroyed() OVERRIDE;
@@ -590,6 +605,8 @@ class Widget : public internal::NativeWidgetDelegate,
   void SetInitialBounds(const gfx::Rect& bounds);
 
   internal::NativeWidgetPrivate* native_widget_;
+
+  ObserverList<Observer> observers_;
 
   // Non-owned pointer to the Widget's delegate.  May be NULL if no delegate is
   // being used.

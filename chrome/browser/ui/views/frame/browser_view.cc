@@ -975,6 +975,7 @@ void BrowserView::DestroyBrowser() {
   // After this returns other parts of Chrome are going to be shutdown. Close
   // the window now so that we are deleted immediately and aren't left holding
   // references to deleted objects.
+  GetWidget()->RemoveObserver(this);
   frame_->CloseNow();
 }
 
@@ -1664,7 +1665,8 @@ views::ClientView* BrowserView::CreateClientView(views::Widget* widget) {
   return this;
 }
 
-void BrowserView::OnWindowActivationChanged(bool active) {
+void BrowserView::OnWidgetActivationChanged(views::Widget* widget,
+                                            bool active) {
   if (active) {
     BrowserList::SetLastActive(browser_.get());
     browser_->OnWindowActivated();
@@ -1892,6 +1894,8 @@ ToolbarView* BrowserView::CreateToolbar() const {
 }
 
 void BrowserView::Init() {
+  GetWidget()->AddObserver(this);
+
   SetLayoutManager(CreateLayoutManager());
   // Stow a pointer to this object onto the window handle so that we can get at
   // it later when all we have is a native view.

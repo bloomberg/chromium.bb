@@ -70,10 +70,6 @@ class UserController::ControlsWidgetDelegate : public views::WidgetDelegate {
     return view_;
   }
 
-  virtual void OnWidgetActivated(bool active) OVERRIDE {
-    controller_->OnWidgetActivated(active);
-  }
-
   virtual views::Widget* GetWidget() OVERRIDE {
     return view_->GetWidget();
   }
@@ -256,18 +252,6 @@ std::string UserController::GetAccessibleUserLabel() {
 ////////////////////////////////////////////////////////////////////////////////
 // UserController, WidgetDelegate implementation:
 //
-void UserController::OnWidgetActivated(bool active) {
-  is_user_selected_ = active;
-  if (active) {
-    delegate_->OnUserSelected(this);
-    user_view_->SetRemoveButtonVisible(
-        !is_new_user_ && !is_guest_ && !is_owner_);
-  } else {
-    user_view_->SetRemoveButtonVisible(false);
-    delegate_->ClearErrors();
-  }
-}
-
 views::Widget* UserController::GetWidget() {
   return NULL;
 }
@@ -338,6 +322,22 @@ bool UserController::IsUserSelected() const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// UserController, views::Widget::Observer implementation:
+//
+void UserController::OnWidgetActivationChanged(views::Widget* widget,
+                                               bool active) {
+  is_user_selected_ = active;
+  if (active) {
+    delegate_->OnUserSelected(this);
+    user_view_->SetRemoveButtonVisible(
+        !is_new_user_ && !is_guest_ && !is_owner_);
+  } else {
+    user_view_->SetRemoveButtonVisible(false);
+    delegate_->ClearErrors();
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // UserController, private:
 //
 void UserController::ConfigureAndShow(Widget* widget,
@@ -394,6 +394,7 @@ void UserController::SetupControlsWidget(
       new ControlsWidgetDelegate(this, control_view));
   controls_widget_ = CreateControlsWidget(controls_widget_delegate_.get(),
                                           gfx::Rect(*width, *height));
+  controls_widget_->AddObserver(this);
   ConfigureAndShow(controls_widget_, index, WM_IPC_WINDOW_LOGIN_CONTROLS,
                    control_view);
 }
@@ -416,6 +417,7 @@ Widget* UserController::CreateImageWidget(int index) {
   Widget* widget =
       CreateClickNotifyingWidget(this,
                                  gfx::Rect(user_view_->GetPreferredSize()));
+  widget->AddObserver(this);
   ConfigureAndShow(widget, index, WM_IPC_WINDOW_LOGIN_IMAGE, user_view_);
 
   return widget;

@@ -398,5 +398,120 @@ TEST_F(WidgetOwnershipTest,
   EXPECT_TRUE(state.native_widget_deleted);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// Widget observer tests.
+//
+
+class WidgetObserverTest : public WidgetTest,
+                                  Widget::Observer {
+ public:
+  WidgetObserverTest()
+      : active_(NULL),
+        widget_closed_(NULL),
+        widget_activated_(NULL),
+        widget_shown_(NULL),
+        widget_hidden_(NULL) {
+  }
+
+  virtual ~WidgetObserverTest() {}
+
+  virtual void OnWidgetClosing(Widget* widget) OVERRIDE {
+    if (active_ == widget)
+      active_ = NULL;
+    widget_closed_ = widget;
+  }
+
+  virtual void OnWidgetActivationChanged(Widget* widget,
+                                         bool active) OVERRIDE {
+    if (active) {
+      widget_activated_ = widget;
+      active_ = widget;
+    } else
+      widget_deactivated_ = widget;
+  }
+
+  virtual void OnWidgetVisibilityChanged(Widget* widget,
+                                         bool visible) OVERRIDE {
+    if (visible)
+      widget_shown_ = widget;
+    else
+      widget_hidden_ = widget;
+  }
+
+  void reset() {
+    active_ = NULL;
+    widget_closed_ = NULL;
+    widget_activated_ = NULL;
+    widget_deactivated_ = NULL;
+    widget_shown_ = NULL;
+    widget_hidden_ = NULL;
+  }
+
+  Widget* NewWidget() {
+    Widget* widget = CreateChildNativeWidgetViews();
+    widget->AddObserver(this);
+    return widget;
+  }
+
+  const Widget* active() const { return active_; }
+  const Widget* widget_closed() const { return widget_closed_; }
+  const Widget* widget_activated() const { return widget_activated_; }
+  const Widget* widget_deactivated() const { return widget_deactivated_; }
+  const Widget* widget_shown() const { return widget_shown_; }
+  const Widget* widget_hidden() const { return widget_hidden_; }
+
+ private:
+
+  Widget* active_;
+
+  Widget* widget_closed_;
+  Widget* widget_activated_;
+  Widget* widget_deactivated_;
+  Widget* widget_shown_;
+  Widget* widget_hidden_;
+};
+
+// TODO: This test should be enabled when NativeWidgetViews::Activate is
+// implemented.
+TEST_F(WidgetObserverTest, DISABLED_ActivationChange) {
+  Widget* toplevel = CreateTopLevelPlatformWidget();
+  views_delegate.set_default_parent_view(toplevel->GetRootView());
+
+  Widget* child1 = NewWidget();
+  Widget* child2 = NewWidget();
+
+  reset();
+
+  child1->Activate();
+  EXPECT_EQ(child1, widget_activated());
+
+  child2->Activate();
+  EXPECT_EQ(child1, widget_deactivated());
+  EXPECT_EQ(child2, widget_activated());
+  EXPECT_EQ(child2, active());
+}
+
+TEST_F(WidgetObserverTest, VisibilityChange) {
+  Widget* toplevel = CreateTopLevelPlatformWidget();
+  views_delegate.set_default_parent_view(toplevel->GetRootView());
+
+  Widget* child1 = NewWidget();
+  Widget* child2 = NewWidget();
+
+  reset();
+
+  child1->Hide();
+  EXPECT_EQ(child1, widget_hidden());
+
+  child2->Hide();
+  EXPECT_EQ(child2, widget_hidden());
+
+  child1->Show();
+  EXPECT_EQ(child1, widget_shown());
+
+  child2->Show();
+  EXPECT_EQ(child2, widget_shown());
+}
+
 }  // namespace
 }  // namespace views

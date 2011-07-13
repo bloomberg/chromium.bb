@@ -2065,6 +2065,10 @@ void NativeWidgetWin::OnWindowPosChanging(WINDOWPOS* window_pos) {
 void NativeWidgetWin::OnWindowPosChanged(WINDOWPOS* window_pos) {
   if (DidClientAreaSizeChange(window_pos))
     ClientAreaSizeChanged();
+  if (window_pos->flags & SWP_SHOWWINDOW)
+    delegate_->OnNativeWidgetVisibilityChanged(true);
+  else if (window_pos->flags & SWP_HIDEWINDOW)
+    delegate_->OnNativeWidgetVisibilityChanged(false);
   SetMsgHandled(FALSE);
 }
 

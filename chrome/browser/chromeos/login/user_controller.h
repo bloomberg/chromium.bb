@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/login/user_view.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
+#include "views/widget/widget.h"
 #include "views/widget/widget_delegate.h"
 
 namespace views {
@@ -31,7 +32,8 @@ class ThrobberManager;
 // the nececessary set of UserControllers.
 class UserController : public views::WidgetDelegate,
                        public NewUserView::Delegate,
-                       public UserView::Delegate {
+                       public UserView::Delegate,
+                       public views::Widget::Observer {
  public:
   class Delegate {
    public:
@@ -109,7 +111,6 @@ class UserController : public views::WidgetDelegate,
   std::string GetAccessibleUserLabel();
 
   // views::WidgetDelegate implementation:
-  virtual void OnWidgetActivated(bool active) OVERRIDE;
   virtual views::Widget* GetWidget() OVERRIDE;
   virtual const views::Widget* GetWidget() const OVERRIDE;
 
@@ -128,6 +129,10 @@ class UserController : public views::WidgetDelegate,
 
   // UsernameView::Delegate implementation:
   virtual void OnLocaleChanged() OVERRIDE;
+
+  // Overridden from views::Widget::Observer.
+  virtual void OnWidgetActivationChanged(views::Widget* widget,
+                                         bool active) OVERRIDE;
 
   // Padding between the user windows.
   static const int kPadding;

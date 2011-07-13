@@ -31,11 +31,6 @@ class WidgetDelegate {
  public:
   WidgetDelegate();
 
-  // Called whenever the widget is activated or deactivated.
-  // TODO(beng): This should be consolidated with
-  //             WindowDelegate::OnWindowActivationChanged().
-  virtual void OnWidgetActivated(bool active);
-
   // Called whenever the widget's position changes.
   virtual void OnWidgetMove();
 
@@ -126,9 +121,6 @@ class WidgetDelegate {
   // after this point. The delegate can use this opportunity to delete itself at
   // this time if necessary.
   virtual void DeleteDelegate() {}
-
-  // Called when the window's activation state changes.
-  virtual void OnWindowActivationChanged(bool active) {}
 
   // Called when the user begins/ends to change the bounds of the window.
   virtual void OnWindowBeginUserBoundsChange() {}

@@ -54,7 +54,6 @@ class PanelBrowserView : public BrowserView,
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
   virtual void UpdateTitleBar() OVERRIDE;
   virtual bool GetSavedWindowBounds(gfx::Rect* bounds) const OVERRIDE;
-  virtual void OnWindowActivationChanged(bool active) OVERRIDE;
   virtual bool AcceleratorPressed(const views::Accelerator& accelerator)
       OVERRIDE;
 
@@ -62,6 +61,10 @@ class PanelBrowserView : public BrowserView,
   virtual void OnDisplayChanged() OVERRIDE;
   virtual void OnWorkAreaChanged() OVERRIDE;
   virtual bool WillProcessWorkAreaChange() const OVERRIDE;
+
+  // Overridden from views::Widget::Observer
+  virtual void OnWidgetActivationChanged(views::Widget* widget,
+                                         bool active) OVERRIDE;
 
   // Overridden from NativePanel:
   virtual void ShowPanel() OVERRIDE;

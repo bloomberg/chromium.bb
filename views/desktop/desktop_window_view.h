@@ -6,6 +6,7 @@
 #define VIEWS_DESKTOP_DESKTOP_WINDOW_H_
 
 #include "views/view.h"
+#include "views/widget/widget.h"
 #include "views/widget/widget_delegate.h"
 
 namespace views {
@@ -13,7 +14,8 @@ class NativeWidgetViews;
 
 namespace desktop {
 
-class DesktopWindowView : public WidgetDelegateView {
+class DesktopWindowView : public WidgetDelegateView,
+                          public Widget::Observer {
  public:
   static DesktopWindowView* desktop_window_view;
 
@@ -44,6 +46,11 @@ class DesktopWindowView : public WidgetDelegateView {
   virtual bool ShouldShowWindowIcon() const OVERRIDE;
   virtual void WindowClosing() OVERRIDE;
   virtual View* GetContentsView() OVERRIDE;
+
+  // Overridden from Widget::Observer.
+  virtual void OnWidgetClosing(Widget* widget) OVERRIDE;
+  virtual void OnWidgetVisibilityChanged(Widget* widget, bool visible) OVERRIDE;
+  virtual void OnWidgetActivationChanged(Widget* widget, bool active) OVERRIDE;
 
   NativeWidgetViews* active_widget_;
 

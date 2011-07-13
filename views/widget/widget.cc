@@ -293,6 +293,18 @@ gfx::NativeWindow Widget::GetNativeWindow() const {
   return native_widget_->GetNativeWindow();
 }
 
+void Widget::AddObserver(Widget::Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void Widget::RemoveObserver(Widget::Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+bool Widget::HasObserver(Widget::Observer* observer) {
+  return observers_.HasObserver(observer);
+}
+
 bool Widget::GetAccelerator(int cmd_id, ui::Accelerator* accelerator) {
   return false;
 }
@@ -732,9 +744,8 @@ void Widget::OnNativeWidgetActivationChanged(bool active) {
   if (!active)
     SaveWindowPosition();
 
-  // TODO(beng): merge these two.
-  widget_delegate_->OnWidgetActivated(active);
-  widget_delegate_->OnWindowActivationChanged(active);
+  FOR_EACH_OBSERVER(Observer, observers_,
+                    OnWidgetActivationChanged(this, active));
 }
 
 void Widget::OnNativeFocus(gfx::NativeView focused_view) {
@@ -747,6 +758,11 @@ void Widget::OnNativeBlur(gfx::NativeView focused_view) {
   GetFocusManager()->GetWidgetFocusManager()->OnWidgetFocusEvent(
       GetNativeView(),
       focused_view);
+}
+
+void Widget::OnNativeWidgetVisibilityChanged(bool visible) {
+  FOR_EACH_OBSERVER(Observer, observers_,
+                    OnWidgetVisibilityChanged(this, visible));
 }
 
 void Widget::OnNativeWidgetCreated() {
@@ -766,6 +782,7 @@ void Widget::OnNativeWidgetCreated() {
 }
 
 void Widget::OnNativeWidgetDestroying() {
+  FOR_EACH_OBSERVER(Observer, observers_, OnWidgetClosing(this));
   if (non_client_view_)
     non_client_view_->WindowClosing();
   widget_delegate_->WindowClosing();

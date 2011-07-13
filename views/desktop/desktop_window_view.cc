@@ -124,6 +124,8 @@ void DesktopWindowView::ActivateWidget(Widget* widget) {
     widget->MoveToTop();
     active_widget_ = static_cast<NativeWidgetViews*>(widget->native_widget());
     active_widget_->OnActivate(true);
+    if (!widget->HasObserver(this))
+      widget->AddObserver(this);
   }
 }
 
@@ -187,6 +189,20 @@ void DesktopWindowView::WindowClosing() {
 
 View* DesktopWindowView::GetContentsView() {
   return this;
+}
+
+void DesktopWindowView::OnWidgetClosing(Widget* widget) {
+  if (active_widget_ && static_cast<internal::NativeWidgetPrivate*>
+      (active_widget_)->GetWidget() == widget)
+    active_widget_ = NULL;
+}
+
+void DesktopWindowView::OnWidgetVisibilityChanged(Widget* widget,
+                                                  bool visible) {
+}
+
+void DesktopWindowView::OnWidgetActivationChanged(Widget* widget,
+                                                  bool active) {
 }
 
 }  // namespace desktop

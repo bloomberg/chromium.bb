@@ -54,6 +54,7 @@ void PanelBrowserView::Init() {
 }
 
 void PanelBrowserView::Close() {
+  GetWidget()->RemoveObserver(this);
   closed_ = true;
 
   // Cancel any currently running animation since we're closing down.
@@ -108,8 +109,9 @@ bool PanelBrowserView::GetSavedWindowBounds(gfx::Rect* bounds) const {
   return true;
 }
 
-void PanelBrowserView::OnWindowActivationChanged(bool active) {
-  ::BrowserView::OnWindowActivationChanged(active);
+void PanelBrowserView::OnWidgetActivationChanged(views::Widget* widget,
+                                                 bool active) {
+  ::BrowserView::OnWidgetActivationChanged(widget, active);
 
 #if defined(OS_WIN)
   // The panel window is in focus (actually accepting keystrokes) if it is

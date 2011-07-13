@@ -85,6 +85,7 @@ class BrowserView : public BrowserBubbleHost,
                     public TabStripModelObserver,
                     public ui::SimpleMenuModel::Delegate,
                     public views::WidgetDelegate,
+                    public views::Widget::Observer,
                     public views::ClientView,
                     public InfoBarContainer::Delegate,
                     public views::SingleSplitView::Observer {
@@ -395,11 +396,14 @@ class BrowserView : public BrowserBubbleHost,
   virtual bool GetSavedMaximizedState(bool* maximized) const OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
   virtual views::ClientView* CreateClientView(views::Widget* widget) OVERRIDE;
-  virtual void OnWindowActivationChanged(bool active) OVERRIDE;
   virtual void OnWindowBeginUserBoundsChange() OVERRIDE;
   virtual void OnWidgetMove() OVERRIDE;
   virtual views::Widget* GetWidget() OVERRIDE;
   virtual const views::Widget* GetWidget() const OVERRIDE;
+
+  // Overridden from views::Widget::Observer
+  virtual void OnWidgetActivationChanged(views::Widget* widget,
+                                         bool active) OVERRIDE;
 
   // Overridden from views::ClientView:
   virtual bool CanClose() OVERRIDE;

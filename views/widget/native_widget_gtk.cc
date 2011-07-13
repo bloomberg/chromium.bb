@@ -1196,6 +1196,7 @@ void NativeWidgetGtk::Show() {
     gtk_widget_show(widget_);
     if (widget_->window)
       gdk_window_raise(widget_->window);
+    delegate_->OnNativeWidgetVisibilityChanged(true);
   }
 }
 
@@ -1204,6 +1205,7 @@ void NativeWidgetGtk::Hide() {
     gtk_widget_hide(widget_);
     if (widget_->window)
       gdk_window_lower(widget_->window);
+    delegate_->OnNativeWidgetVisibilityChanged(false);
   }
 }
 

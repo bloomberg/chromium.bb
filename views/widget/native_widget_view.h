@@ -60,6 +60,7 @@ class NativeWidgetView : public View {
   virtual bool OnKeyPressed(const KeyEvent& event) OVERRIDE;
   virtual bool OnKeyReleased(const KeyEvent& event) OVERRIDE;
   virtual bool OnMouseWheel(const MouseWheelEvent& event) OVERRIDE;
+  virtual void VisibilityChanged(View* starting_from, bool is_visible) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;

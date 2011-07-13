@@ -118,6 +118,11 @@ bool NativeWidgetView::OnMouseWheel(const MouseWheelEvent& event) {
   return delegate()->OnMouseEvent(event);
 }
 
+void NativeWidgetView::VisibilityChanged(View* starting_from,
+                                         bool visible) {
+  delegate()->OnNativeWidgetVisibilityChanged(visible);
+}
+
 void NativeWidgetView::OnFocus() {
   // TODO(beng): check if we have to do this.
   //delegate()->OnNativeFocus(NULL);

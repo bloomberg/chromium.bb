@@ -18,9 +18,6 @@ namespace views {
 WidgetDelegate::WidgetDelegate() : default_contents_view_(NULL) {
 }
 
-void WidgetDelegate::OnWidgetActivated(bool active) {
-}
-
 void WidgetDelegate::OnWidgetMove() {
 }
 

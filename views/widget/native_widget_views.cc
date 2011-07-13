@@ -307,6 +307,7 @@ bool NativeWidgetViews::IsVisible() const {
 }
 
 void NativeWidgetViews::Activate() {
+  // Enable WidgetObserverTest.ActivationChange when this is implemented.
   NOTIMPLEMENTED();
 }
 
@@ -358,7 +359,7 @@ void NativeWidgetViews::Minimize() {
 }
 
 bool NativeWidgetViews::IsMaximized() const {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
   return false;
 }
 

@@ -112,8 +112,12 @@ bool PanelBrowserView::GetSavedWindowBounds(gfx::Rect* bounds) const {
   return res;
 }
 
-void PanelBrowserView::OnWindowActivationChanged(bool active) {
-  ::BrowserView::OnWindowActivationChanged(active);
+////////////////////////////////////////////////////////////////////////////////
+// views::Widget::Observer overrides.
+
+void PanelBrowserView::OnWidgetActivationChanged(views::Widget* widget,
+                                                 bool active) {
+  ::BrowserView::OnWidgetActivationChanged(widget, active);
   if (panel_controller_.get()) {
     if (active)
       panel_controller_->OnFocusIn();
