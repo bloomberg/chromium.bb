@@ -12,7 +12,7 @@ env.Prepend(CPPDEFINES=['XP_UNIX'])
 nexe = 'ppapi_ppb_instance_%s' % env.get('TARGET_FULLARCH')
 env.Alias('ppapi_ppb_instance${PROGSUFFIX}', ['$STAGING_DIR/%s${PROGSUFFIX}' % nexe])
 
-ppapi_ppb_instance_nexe = env.ComponentProgram(
+env.ComponentProgram(
     nexe,
     ['ppapi_ppb_instance.cc'],
     EXTRA_LIBS=['${PPAPI_LIBS}',
@@ -22,19 +22,15 @@ ppapi_ppb_instance_nexe = env.ComponentProgram(
                 'gio'])
 
 # Note that the html is required to run this program.
-dest_copy = env.Replicate('$STAGING_DIR',
-                          ['ppapi_ppb_instance.html',
-                           'ppapi_ppb_instance.nmf',
-                           env.File('${SCONSTRUCT_DIR}/tools/browser_tester/'
-                                    'browserdata/nacltest.js')]
-                          )
-env.Depends(nexe, dest_copy)
+env.Publish(nexe, 'run',
+            ['ppapi_ppb_instance.html',
+             'ppapi_ppb_instance.nmf',
+             env.File('${SCONSTRUCT_DIR}/tools/browser_tester/'
+                      'browserdata/nacltest.js')])
 
 node = env.PPAPIBrowserTester('ppapi_ppb_instance_browser_test.out',
                               url='ppapi_ppb_instance.html',
-                              files=[ppapi_ppb_instance_nexe,
-                                     env.File('ppapi_ppb_instance.nmf'),
-                                     env.File('ppapi_ppb_instance.html')])
+                              files=env.ExtractPublishedFiles(nexe))
 
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],

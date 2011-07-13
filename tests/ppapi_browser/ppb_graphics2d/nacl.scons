@@ -23,13 +23,12 @@ ppapi_ppb_graphics2d_nexe = env.ComponentProgram(
                  'gio',
                  ])
 
-dest_copy = env.Replicate('$STAGING_DIR',
+dest_copy = env.Publish(nexe, 'run',
                           [ 'ppapi_ppb_graphics2d.html',
                             'ppapi_ppb_graphics2d.nmf',
                             env.File('${SCONSTRUCT_DIR}/tools/browser_tester/'
                                      'browserdata/nacltest.js') ]
                           )
-env.Depends(nexe, dest_copy)
 
 node = env.PPAPIBrowserTester('ppapi_ppb_graphics2d_browser_test.out',
                               url='ppapi_ppb_graphics2d.html',

@@ -13,14 +13,14 @@ nexe = 'ppapi_ppb_file_system_%s' % env.get('TARGET_FULLARCH')
 env.Alias('ppapi_ppb_file_system${PROGSUFFIX}',
           ['$STAGING_DIR/%s${PROGSUFFIX}' % nexe])
 
-ppapi_ppb_file_system_nexe = env.ComponentProgram(nexe,
-                                                  ['ppapi_ppb_file_system.cc'],
-                                                  EXTRA_LIBS=['${PPAPI_LIBS}',
-                                                              'ppapi_test_lib',
-                                                              'platform',
-                                                              'pthread',
-                                                              'gio',
-                                                              ])
+env.ComponentProgram(nexe,
+                     ['ppapi_ppb_file_system.cc'],
+                     EXTRA_LIBS=['${PPAPI_LIBS}',
+                                 'ppapi_test_lib',
+                                 'platform',
+                                 'pthread',
+                                 'gio'])
+
 env.Publish(nexe, 'run',
             ['ppapi_ppb_file_system.html',
              'ppapi_ppb_file_system.nmf',
