@@ -222,7 +222,7 @@ void ImporterHost::InvokeTaskIfDone() {
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, task_);
 }
 
-void ImporterHost::Loaded(BookmarkModel* model) {
+void ImporterHost::Loaded(BookmarkModel* model, bool ids_reassigned) {
   DCHECK(model->IsLoaded());
   model->RemoveObserver(this);
   waiting_for_bookmarkbar_model_ = false;

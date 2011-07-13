@@ -26,7 +26,7 @@ class BookmarkBarBridge : public BookmarkModelObserver {
   virtual ~BookmarkBarBridge();
 
   // Overridden from BookmarkModelObserver
-  virtual void Loaded(BookmarkModel* model) OVERRIDE;
+  virtual void Loaded(BookmarkModel* model, bool ids_reassigned) OVERRIDE;
   virtual void BookmarkModelBeingDeleted(BookmarkModel* model) OVERRIDE;
   virtual void BookmarkNodeMoved(BookmarkModel* model,
                                  const BookmarkNode* old_parent,

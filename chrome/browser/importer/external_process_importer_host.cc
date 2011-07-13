@@ -62,7 +62,8 @@ void ExternalProcessImporterHost::InvokeTaskIfDone() {
   client_->Start();
 }
 
-void ExternalProcessImporterHost::Loaded(BookmarkModel* model) {
+void ExternalProcessImporterHost::Loaded(BookmarkModel* model,
+                                         bool ids_reassigned) {
   DCHECK(model->IsLoaded());
   model->RemoveObserver(this);
   waiting_for_bookmarkbar_model_ = false;

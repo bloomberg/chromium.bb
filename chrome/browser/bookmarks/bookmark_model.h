@@ -23,11 +23,13 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/models/tree_node_model.h"
 
+class BookmarkExpandedStateTracker;
 class BookmarkIndex;
 class BookmarkLoadDetails;
 class BookmarkModel;
 class BookmarkModelObserver;
 class BookmarkStorage;
+class PrefService;
 class Profile;
 
 namespace bookmark_utils {
@@ -170,6 +172,8 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
  public:
   explicit BookmarkModel(Profile* profile);
   virtual ~BookmarkModel();
+
+  static void RegisterUserPrefs(PrefService* prefs);
 
   // Loads the bookmarks. This is called by Profile upon creation of the
   // BookmarkModel. You need not invoke this directly.
@@ -327,6 +331,12 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
   // Returns the next node ID.
   int64 next_node_id() const { return next_node_id_; }
 
+  // Returns the object responsible for tracking the set of expanded nodes in
+  // the bookmark editor.
+  BookmarkExpandedStateTracker* expanded_state_tracker() {
+    return expanded_state_tracker_.get();
+  }
+
  private:
   friend class BookmarkCodecTest;
   friend class BookmarkModelTest;
@@ -456,6 +466,8 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
   scoped_ptr<BookmarkIndex> index_;
 
   base::WaitableEvent loaded_signal_;
+
+  scoped_ptr<BookmarkExpandedStateTracker> expanded_state_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkModel);
 };

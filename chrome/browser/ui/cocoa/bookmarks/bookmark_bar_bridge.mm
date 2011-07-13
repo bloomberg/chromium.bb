@@ -17,14 +17,14 @@ BookmarkBarBridge::BookmarkBarBridge(BookmarkBarController* controller,
   // Bookmark loading is async; it may may not have happened yet.
   // We will be notified when that happens with the AddObserver() call.
   if (model->IsLoaded())
-    Loaded(model);
+    Loaded(model, false);
 }
 
 BookmarkBarBridge::~BookmarkBarBridge() {
   model_->RemoveObserver(this);
 }
 
-void BookmarkBarBridge::Loaded(BookmarkModel* model) {
+void BookmarkBarBridge::Loaded(BookmarkModel* model, bool ids_reassigned) {
   [controller_ loaded:model];
 }
 

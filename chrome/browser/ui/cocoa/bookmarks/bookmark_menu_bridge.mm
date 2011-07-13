@@ -42,7 +42,7 @@ NSMenu* BookmarkMenuBridge::BookmarkMenu() {
   return [controller_ menu];
 }
 
-void BookmarkMenuBridge::Loaded(BookmarkModel* model) {
+void BookmarkMenuBridge::Loaded(BookmarkModel* model, bool ids_reassigned) {
   InvalidateMenu();
 }
 
@@ -155,7 +155,7 @@ void BookmarkMenuBridge::ObserveBookmarkModel() {
   BookmarkModel* model = GetBookmarkModel();
   model->AddObserver(this);
   if (model->IsLoaded())
-    Loaded(model);
+    Loaded(model, false);
 }
 
 BookmarkModel* BookmarkMenuBridge::GetBookmarkModel() {

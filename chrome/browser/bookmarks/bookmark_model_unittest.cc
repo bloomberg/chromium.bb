@@ -87,18 +87,18 @@ class BookmarkModelTest : public TestingBrowserProcessTest,
     int index2;
   };
 
-  BookmarkModelTest() :
-    model_(NULL),
-    original_command_line_(*CommandLine::ForCurrentProcess()) {
-      model_.AddObserver(this);
-      ClearCounts();
+  BookmarkModelTest()
+    : model_(NULL),
+      original_command_line_(*CommandLine::ForCurrentProcess()) {
+    model_.AddObserver(this);
+    ClearCounts();
   }
 
   virtual void TearDown() {
     *CommandLine::ForCurrentProcess() = original_command_line_;
   }
 
-  void Loaded(BookmarkModel* model) OVERRIDE {
+  void Loaded(BookmarkModel* model, bool ids_reassigned) OVERRIDE {
     // We never load from the db, so that this should never get invoked.
     NOTREACHED();
   }
@@ -703,8 +703,7 @@ static void PopulateBookmarkNode(TestNode* parent,
 }  // namespace
 
 // Test class that creates a BookmarkModel with a real history backend.
-class BookmarkModelTestWithProfile : public TestingBrowserProcessTest,
-                                     public BookmarkModelObserver {
+class BookmarkModelTestWithProfile : public TestingBrowserProcessTest {
  public:
   BookmarkModelTestWithProfile()
       : ui_thread_(BrowserThread::UI, &message_loop_),
@@ -751,10 +750,7 @@ class BookmarkModelTestWithProfile : public TestingBrowserProcessTest,
 
   void BlockTillBookmarkModelLoaded() {
     bb_model_ = profile_->GetBookmarkModel();
-    if (!bb_model_->IsLoaded())
-      BlockTillLoaded(bb_model_);
-    else
-      bb_model_->AddObserver(this);
+    profile_->BlockUntilBookmarkModelLoaded();
   }
 
   // Destroys the current profile, creates a new one and creates the history
@@ -769,37 +765,6 @@ class BookmarkModelTestWithProfile : public TestingBrowserProcessTest,
   BookmarkModel* bb_model_;
 
  private:
-  // Blocks until the BookmarkModel has finished loading.
-  void BlockTillLoaded(BookmarkModel* model) {
-    model->AddObserver(this);
-    MessageLoop::current()->Run();
-  }
-
-  // BookmarkModelObserver methods.
-  virtual void Loaded(BookmarkModel* model) OVERRIDE {
-    // Balances the call in BlockTillLoaded.
-    MessageLoop::current()->Quit();
-  }
-  virtual void BookmarkNodeMoved(BookmarkModel* model,
-                                 const BookmarkNode* old_parent,
-                                 int old_index,
-                                 const BookmarkNode* new_parent,
-                                 int new_index) OVERRIDE {}
-  virtual void BookmarkNodeAdded(BookmarkModel* model,
-                                 const BookmarkNode* parent,
-                                 int index) OVERRIDE {}
-  virtual void BookmarkNodeRemoved(BookmarkModel* model,
-                                   const BookmarkNode* parent,
-                                   int old_index,
-                                   const BookmarkNode* node) OVERRIDE {}
-  virtual void BookmarkNodeChanged(BookmarkModel* model,
-                                   const BookmarkNode* node) OVERRIDE {}
-  virtual void BookmarkNodeChildrenReordered(
-      BookmarkModel* model,
-      const BookmarkNode* node) OVERRIDE {}
-  virtual void BookmarkNodeFaviconChanged(BookmarkModel* model,
-                                          const BookmarkNode* node) OVERRIDE {}
-
   MessageLoopForUI message_loop_;
   BrowserThread ui_thread_;
   BrowserThread file_thread_;

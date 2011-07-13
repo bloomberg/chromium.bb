@@ -903,7 +903,7 @@ class SSIDConnectObserver : public NetworkConnectObserver {
 #endif  // defined(OS_CHROMEOS)
 
 // Waits for the bookmark model to load.
-class AutomationProviderBookmarkModelObserver : BookmarkModelObserver {
+class AutomationProviderBookmarkModelObserver : public BookmarkModelObserver {
  public:
   AutomationProviderBookmarkModelObserver(AutomationProvider* provider,
                                           IPC::Message* reply_message,
@@ -911,7 +911,7 @@ class AutomationProviderBookmarkModelObserver : BookmarkModelObserver {
   virtual ~AutomationProviderBookmarkModelObserver();
 
   // BookmarkModelObserver:
-  virtual void Loaded(BookmarkModel* model) OVERRIDE;
+  virtual void Loaded(BookmarkModel* model, bool ids_reassigned) OVERRIDE;
   virtual void BookmarkModelBeingDeleted(BookmarkModel* model) OVERRIDE;
   virtual void BookmarkNodeMoved(BookmarkModel* model,
                                  const BookmarkNode* old_parent,

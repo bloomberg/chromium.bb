@@ -60,7 +60,7 @@ class BookmarkModelObserverForCocoa : public BookmarkModelObserver {
 
   // Some notifications we don't care about, but by being pure virtual
   // in the base class we must implement them.
-  virtual void Loaded(BookmarkModel* model) OVERRIDE {
+  virtual void Loaded(BookmarkModel* model, bool ids_reassigned) OVERRIDE {
   }
   virtual void BookmarkNodeAdded(BookmarkModel* model,
                                  const BookmarkNode* parent,

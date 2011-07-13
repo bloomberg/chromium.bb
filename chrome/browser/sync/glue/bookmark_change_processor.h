@@ -29,7 +29,7 @@ class BookmarkChangeProcessor : public BookmarkModelObserver,
 
   // BookmarkModelObserver implementation.
   // BookmarkModel -> sync_api model change application.
-  virtual void Loaded(BookmarkModel* model) OVERRIDE;
+  virtual void Loaded(BookmarkModel* model, bool ids_reassigned) OVERRIDE;
   virtual void BookmarkModelBeingDeleted(BookmarkModel* model) OVERRIDE;
   virtual void BookmarkNodeMoved(BookmarkModel* model,
                                  const BookmarkNode* old_parent,

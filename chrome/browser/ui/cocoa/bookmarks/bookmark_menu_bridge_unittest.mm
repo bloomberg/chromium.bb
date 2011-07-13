@@ -93,7 +93,7 @@ class BookmarkMenuBridgeTest : public PlatformTest {
 
 TEST_F(BookmarkMenuBridgeTest, TestBookmarkMenuAutoSeparator) {
   BookmarkModel* model = bridge_->GetBookmarkModel();
-  bridge_->Loaded(model);
+  bridge_->Loaded(model, false);
   NSMenu* menu = bridge_->menu_;
   bridge_->UpdateMenu(menu);
   // The bare menu after loading used to have a separator and an
@@ -140,7 +140,7 @@ TEST_F(BookmarkMenuBridgeTest, TestClearBookmarkMenu) {
 // Test invalidation
 TEST_F(BookmarkMenuBridgeTest, TestInvalidation) {
   BookmarkModel* model = bridge_->GetBookmarkModel();
-  bridge_->Loaded(model);
+  bridge_->Loaded(model, false);
 
   EXPECT_FALSE(menu_is_valid());
   bridge_->UpdateMenu(bridge_->menu_);

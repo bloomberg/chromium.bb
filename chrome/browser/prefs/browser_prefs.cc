@@ -8,6 +8,7 @@
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/background/background_contents_service.h"
 #include "chrome/browser/background/background_mode_manager.h"
+#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
@@ -132,6 +133,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   AppsPromo::RegisterUserPrefs(user_prefs);
   AutofillManager::RegisterUserPrefs(user_prefs);
   SessionStartupPref::RegisterUserPrefs(user_prefs);
+  BookmarkModel::RegisterUserPrefs(user_prefs);
   Browser::RegisterUserPrefs(user_prefs);
   PasswordManager::RegisterUserPrefs(user_prefs);
   chrome_browser_net::RegisterUserPrefs(user_prefs);

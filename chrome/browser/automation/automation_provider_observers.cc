@@ -1424,7 +1424,8 @@ AutomationProviderBookmarkModelObserver::
   model_->RemoveObserver(this);
 }
 
-void AutomationProviderBookmarkModelObserver::Loaded(BookmarkModel* model) {
+void AutomationProviderBookmarkModelObserver::Loaded(BookmarkModel* model,
+                                                     bool ids_reassigned) {
   ReplyAndDelete(true);
 }
 

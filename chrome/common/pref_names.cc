@@ -137,6 +137,10 @@ const char kWebKitAllowRunningInsecureContent[] =
 // Boolean which specifies whether the bookmark bar is visible on all tabs.
 const char kShowBookmarkBar[] = "bookmark_bar.show_on_all_tabs";
 
+// Boolean which specifies the ids of the bookmark nodes that are expanded in
+// the bookmark editor.
+const char kBookmarkEditorExpandedNodes[] = "bookmark_editor.expanded_nodes";
+
 // Boolean that is true if the password manager is on (will record new
 // passwords and fill in known passwords).
 const char kPasswordManagerEnabled[] = "profile.password_manager_enabled";

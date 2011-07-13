@@ -11,15 +11,18 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_vector.h"
 #include "build/build_config.h"
+#include "chrome/browser/bookmarks/bookmark_expanded_state_tracker.h"
 #include "chrome/browser/bookmarks/bookmark_index.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/bookmarks/bookmark_storage.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_notifications.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -135,6 +138,12 @@ BookmarkModel::~BookmarkModel() {
   }
 }
 
+// static
+void BookmarkModel::RegisterUserPrefs(PrefService* prefs) {
+  prefs->RegisterListPref(prefs::kBookmarkEditorExpandedNodes, new ListValue,
+                          PrefService::SYNCABLE_PREF);
+}
+
 void BookmarkModel::Load() {
   if (store_.get()) {
     // If the store is non-null, it means Load was already invoked. Load should
@@ -142,6 +151,9 @@ void BookmarkModel::Load() {
     NOTREACHED();
     return;
   }
+
+  expanded_state_tracker_.reset(new BookmarkExpandedStateTracker(
+      profile_, prefs::kBookmarkEditorExpandedNodes));
 
   // Listen for changes to favicons so that we can update the favicon of the
   // node appropriately.
@@ -597,7 +609,8 @@ void BookmarkModel::DoneLoading(
   loaded_signal_.Signal();
 
   // Notify our direct observers.
-  FOR_EACH_OBSERVER(BookmarkModelObserver, observers_, Loaded(this));
+  FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
+                    Loaded(this, details->ids_reassigned()));
 
   // And generic notification.
   NotificationService::current()->Notify(

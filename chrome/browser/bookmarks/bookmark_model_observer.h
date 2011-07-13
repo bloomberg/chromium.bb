@@ -12,8 +12,9 @@ class BookmarkNode;
 // Observer for the BookmarkModel.
 class BookmarkModelObserver {
  public:
-  // Invoked when the model has finished loading.
-  virtual void Loaded(BookmarkModel* model) = 0;
+  // Invoked when the model has finished loading. |ids_reassigned| mirrors
+  // that of BookmarkLoadDetails::ids_reassigned. See it for details.
+  virtual void Loaded(BookmarkModel* model, bool ids_reassigned) = 0;
 
   // Invoked from the destructor of the BookmarkModel.
   virtual void BookmarkModelBeingDeleted(BookmarkModel* model) {}

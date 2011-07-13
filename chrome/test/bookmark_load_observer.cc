@@ -10,6 +10,6 @@ BookmarkLoadObserver::BookmarkLoadObserver() {}
 
 BookmarkLoadObserver::~BookmarkLoadObserver() {}
 
-void BookmarkLoadObserver::Loaded(BookmarkModel* model) {
+void BookmarkLoadObserver::Loaded(BookmarkModel* model, bool ids_reassigned) {
   MessageLoop::current()->Quit();
 }

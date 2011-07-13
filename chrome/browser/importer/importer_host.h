@@ -135,7 +135,7 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
   virtual void InvokeTaskIfDone();
 
   // BaseBookmarkModelObserver:
-  virtual void Loaded(BookmarkModel* model) OVERRIDE;
+  virtual void Loaded(BookmarkModel* model, bool ids_reassigned) OVERRIDE;
   virtual void BookmarkModelBeingDeleted(BookmarkModel* model) OVERRIDE;
   virtual void BookmarkModelChanged() OVERRIDE;
 

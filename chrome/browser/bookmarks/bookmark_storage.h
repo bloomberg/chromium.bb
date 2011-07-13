@@ -64,7 +64,10 @@ class BookmarkLoadDetails {
   }
   const std::string& stored_checksum() const { return stored_checksum_; }
 
-  // Whether ids were reassigned.
+  // Whether ids were reassigned. IDs are reassigned during decoding if the
+  // checksum of the file doesn't match, some IDs are missing or not
+  // unique. Basically, if the user modified the bookmarks directly we'll
+  // reassign the ids to ensure they are unique.
   void set_ids_reassigned(bool value) { ids_reassigned_ = value; }
   bool ids_reassigned() const { return ids_reassigned_; }
 

@@ -130,7 +130,8 @@ void BookmarkChangeProcessor::RemoveSyncNodeHierarchy(
   DCHECK(index_stack.empty());  // Nothing should be left on the stack.
 }
 
-void BookmarkChangeProcessor::Loaded(BookmarkModel* model) {
+void BookmarkChangeProcessor::Loaded(BookmarkModel* model,
+                                     bool ids_reassigned) {
   NOTREACHED();
 }
 

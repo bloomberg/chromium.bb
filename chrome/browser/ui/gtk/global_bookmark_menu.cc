@@ -79,7 +79,7 @@ void GlobalBookmarkMenu::Init(GtkWidget* bookmark_menu,
     BookmarkModel* model = profile_->GetBookmarkModel();
     model->AddObserver(this);
     if (model->IsLoaded())
-      Loaded(model);
+      Loaded(model, false);
   }
 }
 
@@ -237,7 +237,7 @@ void GlobalBookmarkMenu::Observe(int type,
   RebuildMenuInFuture();
 }
 
-void GlobalBookmarkMenu::Loaded(BookmarkModel* model) {
+void GlobalBookmarkMenu::Loaded(BookmarkModel* model, bool ids_reassigned) {
   // If we have a Loaded() event, then we need to build the menu immediately
   // for the first time.
   RebuildMenu();

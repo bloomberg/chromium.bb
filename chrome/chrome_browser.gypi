@@ -255,6 +255,8 @@
         'browser/bookmarks/bookmark_drop_info.h',
         'browser/bookmarks/bookmark_editor.cc',
         'browser/bookmarks/bookmark_editor.h',
+        'browser/bookmarks/bookmark_expanded_state_tracker.cc',
+        'browser/bookmarks/bookmark_expanded_state_tracker.h',
         'browser/bookmarks/bookmark_folder_editor_controller.cc',
         'browser/bookmarks/bookmark_folder_editor_controller.h',
         'browser/bookmarks/bookmark_html_writer.cc',

@@ -142,7 +142,8 @@ void ExtensionBookmarkEventRouter::DispatchEvent(Profile *profile,
   }
 }
 
-void ExtensionBookmarkEventRouter::Loaded(BookmarkModel* model) {
+void ExtensionBookmarkEventRouter::Loaded(BookmarkModel* model,
+                                          bool ids_reassigned) {
   // TODO(erikkay): Perhaps we should send this event down to the extension
   // so they know when it's safe to use the API?
 }

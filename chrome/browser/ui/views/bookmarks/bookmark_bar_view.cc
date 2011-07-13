@@ -440,7 +440,7 @@ void BookmarkBarView::SetProfile(Profile* profile) {
   if (model_) {
     model_->AddObserver(this);
     if (model_->IsLoaded())
-      Loaded(model_);
+      Loaded(model_, false);
     // else case: we'll receive notification back from the BookmarkModel when
     // done loading, then we'll populate the bar.
   }
@@ -896,7 +896,7 @@ void BookmarkBarView::ShowImportDialog() {
   browser_->OpenImportSettingsDialog();
 }
 
-void BookmarkBarView::Loaded(BookmarkModel* model) {
+void BookmarkBarView::Loaded(BookmarkModel* model, bool ids_reassigned) {
   volatile int button_count = GetBookmarkButtonCount();
   DCHECK(button_count == 0);  // If non-zero it means Load was invoked more than
                               // once, or we didn't properly clear things.

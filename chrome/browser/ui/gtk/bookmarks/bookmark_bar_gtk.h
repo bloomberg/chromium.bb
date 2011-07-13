@@ -206,7 +206,7 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
 
   // Invoked when the bookmark model has finished loading. Creates a button
   // for each of the children of the root node from the model.
-  virtual void Loaded(BookmarkModel* model) OVERRIDE;
+  virtual void Loaded(BookmarkModel* model, bool ids_reassigned) OVERRIDE;
 
   // Invoked when the model is being deleted.
   virtual void BookmarkModelBeingDeleted(BookmarkModel* model) OVERRIDE;

@@ -1289,6 +1289,7 @@
         'browser/background/background_mode_manager_unittest.cc',
         'browser/bookmarks/bookmark_codec_unittest.cc',
         'browser/bookmarks/bookmark_context_menu_controller_unittest.cc',
+        'browser/bookmarks/bookmark_expanded_state_tracker_unittest.cc',
         'browser/bookmarks/bookmark_html_writer_unittest.cc',
         'browser/bookmarks/bookmark_index_unittest.cc',
         'browser/bookmarks/bookmark_model_test_utils.cc',

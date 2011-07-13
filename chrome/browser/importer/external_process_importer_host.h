@@ -36,7 +36,7 @@ class ExternalProcessImporterHost : public ImporterHost {
       ProfileWriter* writer,
       bool first_run) OVERRIDE;
   virtual void InvokeTaskIfDone() OVERRIDE;
-  virtual void Loaded(BookmarkModel* model) OVERRIDE;
+  virtual void Loaded(BookmarkModel* model, bool ids_reassigned) OVERRIDE;
 
   // Used to pass notifications from the browser side to the external process.
   ExternalProcessImporterClient* client_;

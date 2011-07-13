@@ -18,7 +18,7 @@ class BookmarkLoadObserver : public BookmarkModelObserver {
   BookmarkLoadObserver();
   virtual ~BookmarkLoadObserver();
 
-  virtual void Loaded(BookmarkModel* model) OVERRIDE;
+  virtual void Loaded(BookmarkModel* model, bool ids_reassigned) OVERRIDE;
   virtual void BookmarkNodeMoved(BookmarkModel* model,
                                  const BookmarkNode* old_parent,
                                  int old_index,
