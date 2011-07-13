@@ -163,7 +163,7 @@ env.AddNodeToTestSuite(node,
                        ['pyauto_tests'],
                        'run_pyauto_reload_test',
                        is_broken=env.PyAutoTesterIsBroken() or
-                                 (env.Bit('windows') and
+                                 (env['TRUSTED_ENV'].Bit('windows') and
                                   env.Bit('target_x86_32')))
 
 # multiple_nexes.py
