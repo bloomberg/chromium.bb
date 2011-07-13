@@ -4,7 +4,11 @@
 
 #import "chrome/browser/ui/cocoa/hover_button.h"
 
+#import "chrome/browser/ui/cocoa/tracking_area.h"
+
 @implementation HoverButton
+
+@synthesize hoverState = hoverState_;
 
 - (id)initWithFrame:(NSRect)frameRect {
   if ((self = [super initWithFrame:frameRect])) {
@@ -17,7 +21,7 @@
 
 - (void)awakeFromNib {
   [self setTrackingEnabled:YES];
-  hoverState_ = kHoverStateNone;
+  self.hoverState = kHoverStateNone;
   [self updateTrackingAreas];
 }
 
@@ -27,18 +31,15 @@
 }
 
 - (void)mouseEntered:(NSEvent*)theEvent {
-  hoverState_ = kHoverStateMouseOver;
-  [self setNeedsDisplay:YES];
+  self.hoverState = kHoverStateMouseOver;
 }
 
 - (void)mouseExited:(NSEvent*)theEvent {
-  hoverState_ = kHoverStateNone;
-  [self setNeedsDisplay:YES];
+  self.hoverState = kHoverStateNone;
 }
 
 - (void)mouseDown:(NSEvent*)theEvent {
-  hoverState_ = kHoverStateMouseDown;
-  [self setNeedsDisplay:YES];
+  self.hoverState = kHoverStateMouseDown;
   // The hover button needs to hold onto itself here for a bit.  Otherwise,
   // it can be freed while |super mouseDown:| is in it's loop, and the
   // |checkImageState| call will crash.
@@ -57,10 +58,10 @@
 - (void)setTrackingEnabled:(BOOL)enabled {
   if (enabled) {
     trackingArea_.reset(
-        [[NSTrackingArea alloc] initWithRect:[self bounds]
+        [[CrTrackingArea alloc] initWithRect:[self bounds]
                                      options:NSTrackingMouseEnteredAndExited |
                                              NSTrackingActiveAlways
-                                       owner:self
+                                proxiedOwner:self
                                     userInfo:nil]);
     [self addTrackingArea:trackingArea_.get()];
 
@@ -68,7 +69,12 @@
     // move the mouse directly over the close button without entering another
     // part of the tab strip, we don't get any mouseEntered event since the
     // tracking area was disabled when we entered.
-    [self checkImageState];
+    // Done with a delay of 0 because sometimes an event appears to be missed
+    // between the activation of the tracking area and the call to
+    // checkImageState resulting in the button state being incorrect.
+    [self performSelector:@selector(checkImageState)
+               withObject:nil
+               afterDelay:0];
   } else {
     if (trackingArea_.get()) {
       [self removeTrackingArea:trackingArea_.get()];
@@ -89,8 +95,12 @@
   // Update the button's state if the button has moved.
   NSPoint mouseLoc = [[self window] mouseLocationOutsideOfEventStream];
   mouseLoc = [self convertPoint:mouseLoc fromView:nil];
-  hoverState_ = NSPointInRect(mouseLoc, [self bounds]) ?
+  self.hoverState = NSPointInRect(mouseLoc, [self bounds]) ?
       kHoverStateMouseOver : kHoverStateNone;
+}
+
+- (void)setHoverState:(HoverState)state {
+  hoverState_ = state;
   [self setNeedsDisplay:YES];
 }
 

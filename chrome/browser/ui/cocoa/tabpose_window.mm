@@ -20,6 +20,7 @@
 #include "chrome/browser/renderer_host/render_widget_host_view_mac.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
+#include "chrome/browser/ui/cocoa/animation_utils.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_constants.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
@@ -350,36 +351,6 @@ void ThumbnailLoader::LoadThumbnail() {
 }
 
 @end
-
-namespace {
-
-class ScopedCAActionDisabler {
- public:
-  ScopedCAActionDisabler() {
-    [CATransaction begin];
-    [CATransaction setValue:[NSNumber numberWithBool:YES]
-                     forKey:kCATransactionDisableActions];
-  }
-
-  ~ScopedCAActionDisabler() {
-    [CATransaction commit];
-  }
-};
-
-class ScopedCAActionSetDuration {
- public:
-  explicit ScopedCAActionSetDuration(CGFloat duration) {
-    [CATransaction begin];
-    [CATransaction setValue:[NSNumber numberWithFloat:duration]
-                     forKey:kCATransactionAnimationDuration];
-  }
-
-  ~ScopedCAActionSetDuration() {
-    [CATransaction commit];
-  }
-};
-
-}  // namespace
 
 // Given the number |n| of tiles with a desired aspect ratio of |a| and a
 // desired distance |dx|, |dy| between tiles, returns how many tiles fit

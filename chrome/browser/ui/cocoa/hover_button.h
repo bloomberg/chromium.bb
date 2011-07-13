@@ -5,6 +5,8 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/memory/scoped_nsobject.h"
+#include "chrome/browser/ui/cocoa/tracking_area.h"
+
 
 // A button that changes when you hover over it and click it.
 @interface HoverButton : NSButton {
@@ -21,10 +23,12 @@
 
  @private
   // Tracking area for button mouseover states.
-  scoped_nsobject<NSTrackingArea> trackingArea_;
+  ScopedCrTrackingArea trackingArea_;
 }
 
-// Enables or disables the |NSTrackingRect|s for the button.
+@property(nonatomic) HoverState hoverState;
+
+// Enables or disables the tracking for the button.
 - (void)setTrackingEnabled:(BOOL)enabled;
 
 // Checks to see whether the mouse is in the button's bounds and update

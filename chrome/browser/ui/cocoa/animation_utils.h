@@ -7,6 +7,7 @@
 #pragma once
 
 #import <Cocoa/Cocoa.h>
+#import <QuartzCore/QuartzCore.h>
 
 // This class is a stack-based helper useful for unit testing of Cocoa UI,
 // and any other situation where you want to temporarily turn off Cocoa
@@ -31,5 +32,32 @@ class WithNoAnimation {
   }
 };
 
+// Disables actions within a scope.
+class ScopedCAActionDisabler {
+ public:
+  ScopedCAActionDisabler() {
+    [CATransaction begin];
+    [CATransaction setValue:[NSNumber numberWithBool:YES]
+                     forKey:kCATransactionDisableActions];
+  }
+
+  ~ScopedCAActionDisabler() {
+    [CATransaction commit];
+  }
+};
+
+// Sets a duration on actions within a scope.
+class ScopedCAActionSetDuration {
+ public:
+  explicit ScopedCAActionSetDuration(NSTimeInterval duration) {
+    [CATransaction begin];
+    [CATransaction setValue:[NSNumber numberWithFloat:duration]
+                     forKey:kCATransactionAnimationDuration];
+  }
+
+  ~ScopedCAActionSetDuration() {
+    [CATransaction commit];
+  }
+};
 
 #endif // CHROME_BROWSER_UI_COCOA_ANIMATION_UTILS_H
