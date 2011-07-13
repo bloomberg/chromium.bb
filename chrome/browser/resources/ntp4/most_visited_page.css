@@ -46,8 +46,7 @@
   -webkit-transition: opacity 0.15s;
 }
 
-.most-visited:hover .close-button,
-.most-visited:focus .close-button {
+.most-visited:hover .close-button {
   opacity: 1;
   -webkit-transition-delay: 0.5s;
 }
@@ -111,10 +110,6 @@
   opacity: 0.95;
 }
 
-.most-visited:active .thumbnail {
-  opacity: 0.9;
-}
-
 .most-visited:hover .thumbnail-shield,
 .most-visited:active .thumbnail-shield {
   background: -webkit-linear-gradient(rgba(255, 255, 255, 0),
@@ -122,7 +117,15 @@
                                       rgba(255, 255, 255, 0.9));
 }
 
-.most-visited:active .thumbnail-shield {
+/* The thumbnail gets lighter when clicked, but not when the click is on the
+ * close button. */
+.most-visited:active .close-button:not(:active) + .thumbnail {
+  opacity: 0.9;
+}
+
+/* The thumbnail gets a shadow when clicked, but not when the click is on the
+ * close button. */
+.most-visited:active .close-button:not(:active) + .thumbnail .thumbnail-shield {
   -webkit-box-shadow: inset 0 1px 10px rgba(0, 0, 0, 0.2);
 }
 
