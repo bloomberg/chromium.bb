@@ -826,7 +826,9 @@ bool Widget::OnMouseEvent(const MouseEvent& event) {
   switch (event.type()) {
     case ui::ET_MOUSE_PRESSED:
       last_mouse_event_was_move_ = false;
-      if (GetRootView()->OnMousePressed(event)) {
+      // Make sure we're still visible before we attempt capture as the mouse
+      // press processing may have made the window hide (as happens with menus).
+      if (GetRootView()->OnMousePressed(event) && IsVisible()) {
         is_mouse_button_pressed_ = true;
         if (!native_widget_->HasMouseCapture())
           native_widget_->SetMouseCapture();

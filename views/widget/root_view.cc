@@ -30,6 +30,7 @@ const char RootView::kViewClassName[] = "views/RootView";
 
 RootView::RootView(Widget* widget)
     : widget_(widget),
+      capture_view_(NULL),
       mouse_pressed_handler_(NULL),
       mouse_move_handler_(NULL),
       last_click_handler_(NULL),
@@ -167,6 +168,10 @@ void RootView::SchedulePaintInternal(const gfx::Rect& rect) {
 }
 
 bool RootView::OnMousePressed(const MouseEvent& event) {
+  if (capture_view_) {
+    MouseEvent e(event, this, capture_view_);
+    return capture_view_->OnMousePressed(e);
+  }
   MouseEvent e(event, this);
 
   UpdateCursor(e);
@@ -242,6 +247,11 @@ bool RootView::OnMousePressed(const MouseEvent& event) {
 }
 
 bool RootView::OnMouseDragged(const MouseEvent& event) {
+  if (capture_view_) {
+    MouseEvent e(event, this, capture_view_);
+    return capture_view_->OnMouseDragged(e);
+  }
+
   MouseEvent e(event, this);
   UpdateCursor(e);
 
@@ -255,6 +265,12 @@ bool RootView::OnMouseDragged(const MouseEvent& event) {
 }
 
 void RootView::OnMouseReleased(const MouseEvent& event) {
+  if (capture_view_) {
+    MouseEvent e(event, this, capture_view_);
+    capture_view_->OnMouseReleased(e);
+    return;
+  }
+
   MouseEvent e(event, this);
   UpdateCursor(e);
 
@@ -270,6 +286,13 @@ void RootView::OnMouseReleased(const MouseEvent& event) {
 }
 
 void RootView::OnMouseCaptureLost() {
+  if (capture_view_) {
+    View* capture_view = capture_view_;
+    capture_view_ = NULL;
+    capture_view->OnMouseCaptureLost();
+    return;
+  }
+
   if (mouse_pressed_handler_) {
     // Synthesize a release event for UpdateCursor.
     MouseEvent release_event(ui::ET_MOUSE_RELEASED, last_mouse_event_x_,
@@ -285,6 +308,12 @@ void RootView::OnMouseCaptureLost() {
 }
 
 void RootView::OnMouseMoved(const MouseEvent& event) {
+  if (capture_view_) {
+    MouseEvent e(event, this, capture_view_);
+    capture_view_->OnMouseMoved(e);
+    return;
+  }
+
   MouseEvent e(event, this);
   View* v = GetEventHandlerForPoint(e.location());
   // Find the first enabled view, or the existing move handler, whichever comes
@@ -312,6 +341,12 @@ void RootView::OnMouseMoved(const MouseEvent& event) {
 }
 
 void RootView::OnMouseExited(const MouseEvent& event) {
+  if (capture_view_) {
+    MouseEvent e(event, this, capture_view_);
+    capture_view_->OnMouseExited(e);
+    return;
+  }
+
   if (mouse_move_handler_ != NULL) {
     mouse_move_handler_->OnMouseExited(event);
     mouse_move_handler_ = NULL;
@@ -319,6 +354,9 @@ void RootView::OnMouseExited(const MouseEvent& event) {
 }
 
 bool RootView::OnMouseWheel(const MouseWheelEvent& event) {
+  if (capture_view_)
+    return capture_view_->OnMouseWheel(event);
+
   MouseWheelEvent e(event, this);
   bool consumed = false;
   View* v = GetFocusManager()->GetFocusedView();
