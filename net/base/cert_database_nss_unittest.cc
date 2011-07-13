@@ -185,6 +185,24 @@ TEST_F(CertDatabaseNSSTest, ImportFromPKCS12AsExtractableAndExportAgain) {
   // TODO(mattm): further verification of exported data?
 }
 
+TEST_F(CertDatabaseNSSTest, ImportFromPKCS12Twice) {
+  std::string pkcs12_data = ReadTestFile("client.p12");
+
+  EXPECT_EQ(OK, cert_db_.ImportFromPKCS12(slot_,
+                                          pkcs12_data,
+                                          ASCIIToUTF16("12345"),
+                                          true));  // is_extractable
+  EXPECT_EQ(1U, ListCertsInSlot(slot_->os_module_handle()).size());
+
+  // NSS has a SEC_ERROR_PKCS12_DUPLICATE_DATA error, but it doesn't look like
+  // it's ever used.  This test verifies that.
+  EXPECT_EQ(OK, cert_db_.ImportFromPKCS12(slot_,
+                                          pkcs12_data,
+                                          ASCIIToUTF16("12345"),
+                                          true));  // is_extractable
+  EXPECT_EQ(1U, ListCertsInSlot(slot_->os_module_handle()).size());
+}
+
 TEST_F(CertDatabaseNSSTest, ImportFromPKCS12AsUnextractableAndExportAgain) {
   std::string pkcs12_data = ReadTestFile("client.p12");
 
@@ -203,6 +221,19 @@ TEST_F(CertDatabaseNSSTest, ImportFromPKCS12AsUnextractableAndExportAgain) {
   std::string exported_data;
   EXPECT_EQ(0, cert_db_.ExportToPKCS12(cert_list, ASCIIToUTF16("exportpw"),
                                        &exported_data));
+}
+
+TEST_F(CertDatabaseNSSTest, ImportFromPKCS12InvalidFile) {
+  std::string pkcs12_data = "Foobarbaz";
+
+  EXPECT_EQ(ERR_PKCS12_IMPORT_INVALID_FILE,
+            cert_db_.ImportFromPKCS12(slot_,
+                                      pkcs12_data,
+                                      ASCIIToUTF16(""),
+                                      true));  // is_extractable
+
+  // Test db should still be empty.
+  EXPECT_EQ(0U, ListCertsInSlot(slot_->os_module_handle()).size());
 }
 
 TEST_F(CertDatabaseNSSTest, ImportCACert_SSLTrust) {

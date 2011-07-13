@@ -3350,6 +3350,15 @@ are declared in build/common.gypi.
       <message name="IDS_CERT_MANAGER_PKCS12_IMPORT_ERROR_TITLE" desc="The title in the error dialog for PKCS #12 file import errors.">
         PKCS #12 Import Error
       </message>
+      <message name="IDS_CERT_MANAGER_PKCS12_IMPORT_INVALID_MAC" desc="The message in the error dialog for PKCS #12 files with invalid MAC.">
+        Incorrect password or corrupt file.
+      </message>
+      <message name="IDS_CERT_MANAGER_PKCS12_IMPORT_INVALID_FILE" desc="The message in the error dialog for corrupt PKCS #12 files.">
+        Invalid or corrupt file.
+      </message>
+      <message name="IDS_CERT_MANAGER_PKCS12_IMPORT_UNSUPPORTED" desc="The message in the error dialog for unsupported PKCS #12 files.">
+        File uses unsupported features.
+      </message>
       <message name="IDS_CERT_MANAGER_READ_ERROR_FORMAT" desc="The text in the error dialog for PKCS #12 file read errors.">
         There was an error while trying to read the file: <ph name="ERROR_TEXT">$1<ex>File not found.</ex></ph>.
       </message>

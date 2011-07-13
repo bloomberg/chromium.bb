@@ -678,22 +678,31 @@ void CertificateManagerHandler::ImportPersonalSlotUnlocked() {
       module_, file_data_, password_, is_extractable);
   ImportExportCleanup();
   web_ui_->CallJavascriptFunction("CertificateRestoreOverlay.dismiss");
+  int string_id;
   switch (result) {
     case net::OK:
-      break;
+      return;
     case net::ERR_PKCS12_IMPORT_BAD_PASSWORD:
-      ShowError(
-          l10n_util::GetStringUTF8(IDS_CERT_MANAGER_PKCS12_IMPORT_ERROR_TITLE),
-          l10n_util::GetStringUTF8(IDS_CERT_MANAGER_BAD_PASSWORD));
       // TODO(mattm): if the error was a bad password, we should reshow the
       // password dialog after the user dismisses the error dialog.
+      string_id = IDS_CERT_MANAGER_BAD_PASSWORD;
+      break;
+    case net::ERR_PKCS12_IMPORT_INVALID_MAC:
+      string_id = IDS_CERT_MANAGER_PKCS12_IMPORT_INVALID_MAC;
+      break;
+    case net::ERR_PKCS12_IMPORT_INVALID_FILE:
+      string_id = IDS_CERT_MANAGER_PKCS12_IMPORT_INVALID_FILE;
+      break;
+    case net::ERR_PKCS12_IMPORT_UNSUPPORTED:
+      string_id = IDS_CERT_MANAGER_PKCS12_IMPORT_UNSUPPORTED;
       break;
     default:
-      ShowError(
-          l10n_util::GetStringUTF8(IDS_CERT_MANAGER_PKCS12_IMPORT_ERROR_TITLE),
-          l10n_util::GetStringUTF8(IDS_CERT_MANAGER_UNKNOWN_ERROR));
+      string_id = IDS_CERT_MANAGER_UNKNOWN_ERROR;
       break;
   }
+  ShowError(
+      l10n_util::GetStringUTF8(IDS_CERT_MANAGER_PKCS12_IMPORT_ERROR_TITLE),
+      l10n_util::GetStringUTF8(string_id));
 }
 
 void CertificateManagerHandler::CancelImportExportProcess(
