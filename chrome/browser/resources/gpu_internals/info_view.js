@@ -148,7 +148,6 @@ cr.define('gpu', function() {
           diagnosticsLoadingDiv.hidden = true;
           $('diagnostics-table').hidden = false;
           this.setTable_('diagnostics-table', gpuInfo.diagnostics);
-          this.querySelector('diagnostics-status').hidden = true;
         } else if (gpuInfo.diagnostics === null) {
           // gpu_internals.cc sets diagnostics to null when it is being loaded
           diagnosticsDiv.hidden = false;
