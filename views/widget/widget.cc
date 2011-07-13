@@ -537,16 +537,6 @@ InputMethod* Widget::GetInputMethod() {
       toplevel_widget->native_widget_->GetInputMethodNative() : NULL;
 }
 
-bool Widget::ContainsNativeView(gfx::NativeView native_view) {
-  if (native_widget_->ContainsNativeView(native_view))
-    return true;
-
-  // A views::NativeViewHost may contain the given native view, without it being
-  // an ancestor of hwnd(), so traverse the views::View hierarchy looking for
-  // such views.
-  return GetRootView()->ContainsNativeView(native_view);
-}
-
 void Widget::RunShellDrag(View* view, const ui::OSExchangeData& data,
                           int operation) {
   dragged_view_ = view;

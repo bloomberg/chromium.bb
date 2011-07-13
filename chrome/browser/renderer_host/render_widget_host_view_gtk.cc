@@ -1114,14 +1114,6 @@ void RenderWidgetHostViewGtk::SetVisuallyDeemphasized(
   }
 }
 
-bool RenderWidgetHostViewGtk::ContainsNativeView(
-    gfx::NativeView native_view) const {
-  // TODO(port)
-  NOTREACHED() <<
-    "RenderWidgetHostViewGtk::ContainsNativeView not implemented.";
-  return false;
-}
-
 void RenderWidgetHostViewGtk::AcceleratedCompositingActivated(bool activated) {
   GtkPreserveWindow* widget =
     reinterpret_cast<GtkPreserveWindow*>(view_.get());

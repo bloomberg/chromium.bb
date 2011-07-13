@@ -1017,14 +1017,6 @@ void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {
         render_widget_host_->routing_id(), background));
 }
 
-bool RenderWidgetHostViewMac::ContainsNativeView(
-    gfx::NativeView native_view) const {
-  // TODO(port)
-  NOTREACHED() <<
-    "RenderWidgetHostViewMac::ContainsNativeView not implemented.";
-  return false;
-}
-
 void RenderWidgetHostViewMac::OnAccessibilityNotifications(
     const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params) {
   if (!browser_accessibility_manager_.get()) {

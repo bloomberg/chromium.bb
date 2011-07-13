@@ -330,14 +330,6 @@ void RenderWidgetHostViewViews::SetVisuallyDeemphasized(
   // TODO(anicolao)
 }
 
-bool RenderWidgetHostViewViews::ContainsNativeView(
-    gfx::NativeView native_view) const {
-  // TODO(port)
-  NOTREACHED() <<
-      "RenderWidgetHostViewViews::ContainsNativeView not implemented.";
-  return false;
-}
-
 std::string RenderWidgetHostViewViews::GetClassName() const {
   return kViewClassName;
 }

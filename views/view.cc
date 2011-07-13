@@ -245,15 +245,6 @@ int View::GetIndexOf(const View* view) const {
   return i != children_.end() ? static_cast<int>(i - children_.begin()) : -1;
 }
 
-// TODO(beng): remove
-bool View::ContainsNativeView(gfx::NativeView native_view) const {
-  for (int i = 0, count = child_count(); i < count; ++i) {
-    if (GetChildViewAt(i)->ContainsNativeView(native_view))
-      return true;
-  }
-  return false;
-}
-
 // Size and disposition --------------------------------------------------------
 
 void View::SetBounds(int x, int y, int width, int height) {

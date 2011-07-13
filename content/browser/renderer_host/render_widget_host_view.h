@@ -300,10 +300,6 @@ class RenderWidgetHostView {
   virtual void SetBackground(const SkBitmap& background);
   const SkBitmap& background() const { return background_; }
 
-  // Returns true if the native view, |native_view|, is contained within in the
-  // widget associated with this RenderWidgetHostView.
-  virtual bool ContainsNativeView(gfx::NativeView native_view) const = 0;
-
   virtual void UpdateAccessibilityTree(
       const webkit_glue::WebAccessibility& tree) { }
   virtual void OnAccessibilityNotifications(

@@ -88,7 +88,6 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
 #endif
   virtual void SetVisuallyDeemphasized(const SkColor* color,
                                        bool animate) OVERRIDE;
-  virtual bool ContainsNativeView(gfx::NativeView native_view) const OVERRIDE;
 #if defined(TOOLKIT_USES_GTK)
   virtual void AcceleratedCompositingActivated(bool activated) OVERRIDE;
 #endif

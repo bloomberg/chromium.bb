@@ -259,7 +259,6 @@ class NativeWidgetWin : public ui::WindowImpl,
   virtual void SetOpacity(unsigned char opacity) OVERRIDE;
   virtual void SetUseDragFrame(bool use_drag_frame) OVERRIDE;
   virtual bool IsAccessibleWidget() const OVERRIDE;
-  virtual bool ContainsNativeView(gfx::NativeView native_view) const OVERRIDE;
   virtual void RunShellDrag(View* view,
                             const ui::OSExchangeData& data,
                             int operation) OVERRIDE;

@@ -215,7 +215,6 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   virtual void SetWindowVisibility(bool visible) OVERRIDE;
   virtual void WindowFrameChanged() OVERRIDE;
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
-  virtual bool ContainsNativeView(gfx::NativeView native_view) const OVERRIDE;
 
   virtual void OnAccessibilityNotifications(
       const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params

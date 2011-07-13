@@ -155,11 +155,6 @@ class View : public AcceleratorTarget {
   // Returns the index of |view|, or -1 if |view| is not a child of this view.
   int GetIndexOf(const View* view) const;
 
-  // TODO(beng): REMOVE (TBD)
-  // Returns true if the native view |native_view| is contained in the view
-  // hierarchy beneath this view.
-  virtual bool ContainsNativeView(gfx::NativeView native_view) const;
-
   // Size and disposition ------------------------------------------------------
   // Methods for obtaining and modifying the position and size of the view.
   // Position is in the coordinate system of the view's parent.

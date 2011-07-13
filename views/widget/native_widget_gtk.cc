@@ -1231,12 +1231,6 @@ bool NativeWidgetGtk::IsAccessibleWidget() const {
   return false;
 }
 
-bool NativeWidgetGtk::ContainsNativeView(gfx::NativeView native_view) const {
-  // TODO(port)  See implementation in NativeWidgetWin::ContainsNativeView.
-  NOTREACHED() << "NativeWidgetGtk::ContainsNativeView is not implemented.";
-  return false;
-}
-
 void NativeWidgetGtk::RunShellDrag(View* view,
                                    const ui::OSExchangeData& data,
                                    int operation) {

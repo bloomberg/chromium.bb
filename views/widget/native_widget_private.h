@@ -199,7 +199,6 @@ class NativeWidgetPrivate : public NativeWidget {
   virtual void SetOpacity(unsigned char opacity) = 0;
   virtual void SetUseDragFrame(bool use_drag_frame) = 0;
   virtual bool IsAccessibleWidget() const = 0;
-  virtual bool ContainsNativeView(gfx::NativeView native_view) const = 0;
   virtual void RunShellDrag(View* view,
                             const ui::OSExchangeData& data,
                             int operation) = 0;

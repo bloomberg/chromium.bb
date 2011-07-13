@@ -254,11 +254,6 @@ gfx::PluginWindowHandle TestRenderWidgetHostView::GetCompositingSurface() {
   return gfx::kNullPluginWindow;
 }
 
-bool TestRenderWidgetHostView::ContainsNativeView(
-    gfx::NativeView native_view) const {
-  return false;
-}
-
 TestRenderViewHostFactory::TestRenderViewHostFactory(
     RenderProcessHostFactory* rph_factory)
     : render_process_host_factory_(rph_factory) {

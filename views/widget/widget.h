@@ -369,11 +369,6 @@ class Widget : public internal::NativeWidgetDelegate,
   // Note that all widgets in a widget hierarchy share the same input method.
   InputMethod* GetInputMethod();
 
-  // Returns true if the native view |native_view| is contained in the
-  // views::View hierarchy rooted at this widget.
-  // TODO(beng): const.
-  bool ContainsNativeView(gfx::NativeView native_view);
-
   // Starts a drag operation for the specified view. This blocks until the drag
   // operation completes. |view| can be NULL.
   // If the view is non-NULL it can be accessed during the drag by calling

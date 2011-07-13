@@ -151,8 +151,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
 
   virtual gfx::PluginWindowHandle GetCompositingSurface();
 
-  virtual bool ContainsNativeView(gfx::NativeView native_view) const;
-
   bool is_showing() const { return is_showing_; }
 
  private:

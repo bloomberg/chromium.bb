@@ -1031,10 +1031,6 @@ bool NativeWidgetWin::IsAccessibleWidget() const {
   return screen_reader_active_;
 }
 
-bool NativeWidgetWin::ContainsNativeView(gfx::NativeView native_view) const {
-  return hwnd() == native_view || ::IsChild(hwnd(), native_view);
-}
-
 void NativeWidgetWin::RunShellDrag(View* view,
                                    const ui::OSExchangeData& data,
                                    int operation) {

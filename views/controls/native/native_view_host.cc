@@ -180,19 +180,6 @@ void NativeViewHost::OnFocus() {
       this, ui::AccessibilityTypes::EVENT_FOCUS, true);
 }
 
-bool NativeViewHost::ContainsNativeView(gfx::NativeView native_view) const {
-  if (native_view == native_view_)
-    return true;
-  if (!native_view_)
-    return false;
-
-  views::Widget* widget = views::Widget::GetWidgetForNativeView(native_view);
-  if (widget && widget->ContainsNativeView(native_view))
-    return true;
-
-  return View::ContainsNativeView(native_view);
-}
-
 gfx::NativeViewAccessible NativeViewHost::GetNativeViewAccessible() {
   if (native_wrapper_.get()) {
     gfx::NativeViewAccessible accessible_view =

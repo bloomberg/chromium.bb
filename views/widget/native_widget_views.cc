@@ -375,11 +375,6 @@ bool NativeWidgetViews::IsAccessibleWidget() const {
   return false;
 }
 
-bool NativeWidgetViews::ContainsNativeView(gfx::NativeView native_view) const {
-  NOTIMPLEMENTED();
-  return GetParentNativeWidget()->ContainsNativeView(native_view);
-}
-
 void NativeWidgetViews::RunShellDrag(View* view,
                                      const ui::OSExchangeData& data,
                                      int operation) {

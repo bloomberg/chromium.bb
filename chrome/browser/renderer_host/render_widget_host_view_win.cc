@@ -743,23 +743,6 @@ void RenderWidgetHostViewWin::SetBackground(const SkBitmap& background) {
                                  background));
 }
 
-bool RenderWidgetHostViewWin::ContainsNativeView(
-    gfx::NativeView native_view) const {
-  if (m_hWnd == native_view)
-    return true;
-
-  // Traverse the set of parents of the given view to determine if native_view
-  // is a descendant of this window.
-  HWND parent_window = ::GetParent(native_view);
-  while (parent_window) {
-    if (parent_window == m_hWnd)
-      return true;
-    parent_window = ::GetParent(parent_window);
-  }
-
-  return false;
-}
-
 void RenderWidgetHostViewWin::SetVisuallyDeemphasized(const SkColor* color,
                                                       bool animate) {
   // |animate| is not yet implemented, and currently isn't used.

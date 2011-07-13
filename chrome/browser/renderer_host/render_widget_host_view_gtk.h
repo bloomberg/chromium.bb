@@ -94,7 +94,6 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView,
   virtual void DestroyPluginContainer(gfx::PluginWindowHandle id) OVERRIDE;
   virtual void SetVisuallyDeemphasized(const SkColor* color,
                                        bool animate) OVERRIDE;
-  virtual bool ContainsNativeView(gfx::NativeView native_view) const OVERRIDE;
   virtual void AcceleratedCompositingActivated(bool activated) OVERRIDE;
   virtual gfx::PluginWindowHandle GetCompositingSurface() OVERRIDE;
 
