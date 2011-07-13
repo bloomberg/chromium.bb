@@ -89,6 +89,15 @@ cr.define('cr.ui', function() {
     },
 
     /**
+     * The header of the table.
+     *
+     * @type {cr.ui.table.TableColumnModel}
+     */
+    get header() {
+      return this.header_;
+    },
+
+    /**
      * Sets width of the column at the given index.
      *
      * @param {number} index The index of the column.

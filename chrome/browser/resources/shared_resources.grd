@@ -36,6 +36,10 @@ without changes to the corresponding grd file. paaaae -->
                file="shared/images/select.png" type="BINDATA" />
       <include name="IDR_SHARED_IMAGES_THROBBER"
                file="shared/images/throbber.svg" type="BINDATA" />
+      <include name="IDR_SHARED_IMAGES_CHECKBOX_BLACK"
+               file="shared/images/checkbox_black.png" type="BINDATA" />
+      <include name="IDR_SHARED_IMAGES_CHECKBOX_WHITE"
+               file="shared/images/checkbox_white.png" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR"
                file="shared/js/cr.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_COMMAND_LINE"

@@ -8,13 +8,14 @@ function TaskManager() { }
 cr.addSingletonGetter(TaskManager);
 
 /*
- * Default columns (column_id, label, width)
+ * Default columns (column_id, label_id, width, is_default)
  * @const
  */
-var DEFAULT_COLUMNS = [['title', 'page_column', 300],
-                       ['networkUsage', 'network_column', 85],
-                       ['cpuUsage', 'cpu_column', 80],
-                       ['privateMemory', 'private_memory_column', 80]];
+var DEFAULT_COLUMNS = [['title', 'page_column', 300, true],
+                       ['networkUsage', 'network_column', 85, true],
+                       ['cpuUsage', 'cpu_column', 80, true],
+                       ['privateMemory', 'private_memory_column', 80, true],
+                       ['processId', 'process_id_column', 120, false]];
 
 var localStrings = new LocalStrings();
 
@@ -93,6 +94,22 @@ TaskManager.prototype = {
     $('about-memory-link').addEventListener('click',
                                             this.openAboutMemory.bind(this));
 
+    this.is_column_shown_ = [];
+    for (var i = 0; i < DEFAULT_COLUMNS.length; i++) {
+      this.is_column_shown_[i] = DEFAULT_COLUMNS[i][3];
+    }
+
+    this.localized_column_ = [];
+    for (var i = 0; i < DEFAULT_COLUMNS.length; i++) {
+      var column_label_id = DEFAULT_COLUMNS[i][1];
+      var localized_label = localStrings.getString(column_label_id);
+      // Falls back to raw column_label_id if localized string is not defined.
+      if (localized_label == "")
+        localized_label = column_label_id;
+
+      this.localized_column_[i] = localized_label;
+    }
+
     this.initColumnModel_();
     this.selectionModel_ = new cr.ui.ListSelectionModel();
     this.dataModel_ = new cr.ui.ArrayDataModel([]);
@@ -113,16 +130,20 @@ TaskManager.prototype = {
     });
 
     this.initTable_();
+    this.initColumnMenu_();
     this.table_.redraw();
   },
 
   initColumnModel_: function () {
     var table_columns = new Array();
     for (var i = 0; i < DEFAULT_COLUMNS.length; i++) {
-      var localized_label = localStrings.getString(DEFAULT_COLUMNS[i][1]);
-      table_columns.push(new cr.ui.table.TableColumn(DEFAULT_COLUMNS[i][0],
-                                                     localized_label,
-                                                     DEFAULT_COLUMNS[i][2]));
+      if (!this.is_column_shown_[i])
+        continue;
+
+      var column = DEFAULT_COLUMNS[i];
+      table_columns.push(new cr.ui.table.TableColumn(column[0],
+                                                     this.localized_column_[i],
+                                                     column[2]));
     }
 
     for (var i = 0; i < table_columns.length; i++) {
@@ -130,6 +151,45 @@ TaskManager.prototype = {
     }
 
     this.columnModel_ = new cr.ui.table.TableColumnModel(table_columns);
+  },
+
+  initColumnMenu_: function () {
+    this.column_menu_commands_ = [];
+
+    this.commandsElement_ = this.document_.createElement('commands');
+    this.document_.body.appendChild(this.commandsElement_);
+
+    this.columnSelectContextMenu_ = this.document_.createElement('menu');
+    for (var i = 0; i < DEFAULT_COLUMNS.length; i++) {
+      var column = DEFAULT_COLUMNS[i];
+
+      // Creates command element to receive event.
+      var command = this.document_.createElement('command');
+      command.id = 'columnContextMenu-' + column[0];
+      cr.ui.Command.decorate(command);
+      this.column_menu_commands_[command.id] = command;
+      this.commandsElement_.appendChild(command);
+
+      // Creates menuitem element.
+      var item = this.document_.createElement('menuitem');
+      item.command = command;
+      command.menuitem = item;
+      item.textContent = this.localized_column_[i];
+      if (this.is_column_shown_[i])
+        item.setAttributeNode(this.document_.createAttribute("checked"));
+      this.columnSelectContextMenu_.appendChild(item);
+    }
+
+    this.document_.body.appendChild(this.columnSelectContextMenu_);
+    cr.ui.Menu.decorate(this.columnSelectContextMenu_);
+
+    cr.ui.contextMenuHandler.addContextMenuProperty(this.table_.header);
+    this.table_.header.contextMenu = this.columnSelectContextMenu_;
+
+    this.document_.addEventListener('command', this.onCommand_.bind(this));
+    this.document_.addEventListener('canExecute',
+                                    this.onCommandCanExecute_.bind(this));
+
   },
 
   initTable_: function () {
@@ -208,6 +268,54 @@ TaskManager.prototype = {
     if (!dm)
       return;
     dm.splice(start, length);
+  },
+
+  /**
+   * Respond to a command being executed.
+   */
+  onCommand_: function(event) {
+    var command = event.command;
+    if (command.id.substr(0, 18) == 'columnContextMenu-') {
+      console.log(command.id.substr(18));
+      this.onColumnContextMenu_(command.id.substr(18), command);
+    }
+  },
+
+  onCommandCanExecute_: function(event) {
+    event.canExecute = true;
+  },
+
+  onColumnContextMenu_: function(id, command) {
+    var menuitem = command.menuitem;
+    var checked_item_count = 0;
+    var is_uncheck = 0;
+
+    // Leaves a item visible when user tries making invisible but it is the
+    // last one.
+    for (var i = 0; i < DEFAULT_COLUMNS.length; i++) {
+      var column = DEFAULT_COLUMNS[i];
+      if (column[0] == id && this.is_column_shown_[i]) {
+        is_uncheck = 1;
+      }
+      if (this.is_column_shown_[i])
+        checked_item_count++;
+    }
+    if (checked_item_count == 1 && is_uncheck) {
+      return;
+    }
+
+    // Toggles the visibility of the column.
+    for (var i = 0; i < DEFAULT_COLUMNS.length; i++) {
+      var column = DEFAULT_COLUMNS[i];
+      if (column[0] == id) {
+        this.is_column_shown_[i] = !this.is_column_shown_[i];
+        menuitem.checked = this.is_column_shown_[i];
+        this.initColumnModel_()
+        this.table_.columnModel = this.columnModel_;
+        this.table_.redraw();
+        return;
+      }
+    }
   },
 };
 
