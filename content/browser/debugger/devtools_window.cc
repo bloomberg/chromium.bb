@@ -75,6 +75,12 @@ DevToolsWindow* DevToolsWindow::FindDevToolsWindow(
 }
 
 // static
+DevToolsWindow* DevToolsWindow::CreateDevToolsWindowForWorker(
+    Profile* profile) {
+  return new DevToolsWindow(profile, NULL, false);
+}
+
+// static
 DevToolsWindow* DevToolsWindow::OpenDevToolsWindow(
     RenderViewHost* inspected_rvh) {
   return ToggleDevToolsWindow(inspected_rvh, true,
@@ -131,10 +137,12 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
       this,
       chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
       Source<ThemeService>(ThemeServiceFactory::GetForProfile(profile_)));
-  TabContents* tab = inspected_rvh->delegate()->GetAsTabContents();
-  if (tab)
-    inspected_tab_ = TabContentsWrapper::GetCurrentWrapperForContents(tab);
-
+  // There is no inspected_rvh in case of shared workers.
+  if (inspected_rvh) {
+    TabContents* tab = inspected_rvh->delegate()->GetAsTabContents();
+    if (tab)
+      inspected_tab_ = TabContentsWrapper::GetCurrentWrapperForContents(tab);
+  }
   instances_.push_back(this);
 }
 

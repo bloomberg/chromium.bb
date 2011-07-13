@@ -7,6 +7,7 @@
 #include "content/browser/debugger/devtools_file_util.h"
 #include "content/browser/debugger/devtools_manager.h"
 #include "content/browser/debugger/devtools_window.h"
+#include "content/browser/debugger/worker_devtools_manager_io.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/devtools_messages.h"
@@ -41,6 +42,9 @@ void DevToolsHandler::OnForwardToAgent(const IPC::Message& message) {
   DevToolsWindow* window = DevToolsWindow::FindDevToolsWindow(
       render_view_host());
   if (!window)
+    return;
+  if (WorkerDevToolsManagerIO::ForwardToWorkerDevToolsAgentOnUIThread(
+      window, message))
     return;
   DevToolsManager::GetInstance()->ForwardToDevToolsAgent(window, message);
 }

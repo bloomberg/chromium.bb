@@ -14,6 +14,8 @@ namespace WebKit {
 class WebSharedWorker;
 }
 
+class WorkerDevToolsAgent;
+
 // This class creates a WebSharedWorker, and translates incoming IPCs to the
 // appropriate WebSharedWorker APIs.
 class WebSharedWorkerStub : public WebWorkerStubBase {
@@ -39,6 +41,7 @@ class WebSharedWorkerStub : public WebWorkerStubBase {
   string16 name_;
   bool started_;
   GURL url_;
+  scoped_ptr<WorkerDevToolsAgent> worker_devtools_agent_;
 
   typedef std::pair<int, int> PendingConnectInfo;
   typedef std::vector<PendingConnectInfo> PendingConnectInfoList;

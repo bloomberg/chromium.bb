@@ -153,5 +153,3 @@ IPC_MESSAGE_ROUTED2(DevToolsHostMsg_RuntimePropertyChanged,
 
 IPC_MESSAGE_ROUTED0(WorkerDevToolsAgentMsg_Attach)
 IPC_MESSAGE_ROUTED0(WorkerDevToolsAgentMsg_Detach)
-IPC_MESSAGE_ROUTED1(WorkerDevToolsAgentMsg_DispatchOnInspectorBackend,
-                    std::string /* message */)

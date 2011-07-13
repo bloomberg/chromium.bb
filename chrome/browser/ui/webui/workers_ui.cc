@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/debugger/worker_devtools_manager_io.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/worker_host/worker_process_host.h"
 #include "content/common/devtools_messages.h"
@@ -129,8 +130,8 @@ void WorkersDOMHandler::RegisterMessages() {
 
 static void OpenDevToolsOnIOThread(int worker_process_host_id,
                                    int worker_route_id) {
-  // TODO(yurys): implement.
-  NOTIMPLEMENTED();
+  WorkerDevToolsManagerIO::GetInstance()->OpenDevToolsForWorker(
+      worker_process_host_id, worker_route_id);
 }
 
 void WorkersDOMHandler::HandleOpenDevTools(const ListValue* args) {

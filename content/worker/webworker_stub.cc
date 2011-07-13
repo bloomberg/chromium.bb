@@ -23,7 +23,7 @@ WebWorkerStub::WebWorkerStub(const GURL& url, int route_id,
       ALLOW_THIS_IN_INITIALIZER_LIST(impl_(WebWorker::create(client()))),
       url_(url),
       ALLOW_THIS_IN_INITIALIZER_LIST(worker_devtools_agent_(
-          new WorkerDevToolsAgent(route_id, impl_))) {
+          WorkerDevToolsAgent::CreateForDedicatedWorker(route_id, impl_))) {
   client()->set_devtools_agent(worker_devtools_agent_.get());
 }
 

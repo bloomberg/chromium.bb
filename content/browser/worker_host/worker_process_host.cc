@@ -16,6 +16,7 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/content_browser_client.h"
+#include "content/browser/debugger/worker_devtools_message_filter.h"
 #include "content/browser/file_system/file_system_dispatcher_host.h"
 #include "content/browser/mime_registry_message_filter.h"
 #include "content/browser/renderer_host/blob_message_filter.h"
@@ -255,6 +256,7 @@ void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
       new SocketStreamDispatcherHost(
           new URLRequestContextSelector(request_context), resource_context_);
   AddFilter(socket_stream_dispatcher_host);
+  AddFilter(new WorkerDevToolsMessageFilter(id()));
 }
 
 void WorkerProcessHost::CreateWorker(const WorkerInstance& instance) {

@@ -53,8 +53,7 @@ void WorkerDevToolsAgentProxy::DetachDevTools() {
 
 void WorkerDevToolsAgentProxy::SendDevToolsMessage(
     const std::string& message) {
-  Send(new WorkerDevToolsAgentMsg_DispatchOnInspectorBackend(route_id_,
-                                                             message));
+  Send(new DevToolsAgentMsg_DispatchOnInspectorBackend(route_id_, message));
 }
 
 void WorkerDevToolsAgentProxy::OnDispatchMessageFromWorker(

@@ -477,6 +477,10 @@
         '../content/browser/debugger/extension_ports_remote_service.h',
         '../content/browser/debugger/inspectable_tab_proxy.cc',
         '../content/browser/debugger/inspectable_tab_proxy.h',
+        '../content/browser/debugger/worker_devtools_manager_io.cc',
+        '../content/browser/debugger/worker_devtools_manager_io.h',
+        '../content/browser/debugger/worker_devtools_message_filter.cc',
+        '../content/browser/debugger/worker_devtools_message_filter.h',
       ],
       'conditions': [
         ['toolkit_uses_gtk == 1', {

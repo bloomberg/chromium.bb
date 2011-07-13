@@ -15,28 +15,30 @@ class Message;
 }
 
 namespace WebKit {
+class WebSharedWorker;
 class WebString;
 class WebWorker;
 }
 
 class WorkerDevToolsAgent {
  public:
-  WorkerDevToolsAgent(int route_id, WebKit::WebWorker*);
-  ~WorkerDevToolsAgent();
+  static WorkerDevToolsAgent* CreateForDedicatedWorker(
+      int route_id,
+      WebKit::WebWorker*);
+  static WorkerDevToolsAgent* CreateForSharedWorker(
+      int route_id,
+      WebKit::WebSharedWorker*);
+  virtual ~WorkerDevToolsAgent();
 
-  bool OnMessageReceived(const IPC::Message& message);
+  // Called on the Worker thread.
+  virtual bool OnMessageReceived(const IPC::Message& message) = 0;
+  virtual void SendDevToolsMessage(const WebKit::WebString&) = 0;
 
-  void SendDevToolsMessage(const WebKit::WebString&);
-
- private:
-  void OnAttach();
-  void OnDetach();
-  void OnDispatchOnInspectorBackend(const std::string& message);
+ protected:
+  explicit WorkerDevToolsAgent(int route_id);
 
   bool Send(IPC::Message* message);
-
-  int route_id_;
-  WebKit::WebWorker* webworker_;
+  const int route_id_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkerDevToolsAgent);
 };
