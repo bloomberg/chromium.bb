@@ -1525,8 +1525,11 @@ def _GetPathOfProject(qualified_target, spec, options, msvs_version):
   if options.generator_output:
     project_dir_path = os.path.dirname(os.path.abspath(proj_path))
     proj_path = os.path.join(options.generator_output, proj_path)
-    fix_prefix = gyp.common.RelativePath(project_dir_path,
-                                         os.path.dirname(proj_path))
+    if options.msvs_abspath_output:
+      fix_prefix = project_dir_path
+    else:
+      fix_prefix = gyp.common.RelativePath(project_dir_path,
+                                           os.path.dirname(proj_path))
   return proj_path, fix_prefix
 
 
@@ -1597,6 +1600,14 @@ def CalculateVariables(default_variables, params):
   # Stash msvs_version for later (so we don't have to probe the system twice).
   params['msvs_version'] = msvs_version
 
+  # The generation of Visual Studio vcproj files currently calculates the
+  # relative path of some files more than once, which can cause errors depending
+  # on the directory within which gyp is run.  With this option, we output
+  # these as absolute paths instead and are thus immune from that problem.
+  # See http://code.google.com/p/gyp/issues/detail?id=201
+  params['msvs_abspath_output'] = generator_flags.get(
+    'msvs_abspath_output', False)
+
   # Set a variable so conditions can be based on msvs_version.
   default_variables['MSVS_VERSION'] = msvs_version.ShortName()
 
@@ -1627,6 +1638,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
   # Get the project file format version back out of where we stashed it in
   # GeneratorCalculatedVariables.
   msvs_version = params['msvs_version']
+  options.msvs_abspath_output = params['msvs_abspath_output']
 
   # Prepare the set of configurations.
   configs = set()
