@@ -11,7 +11,7 @@
 
 namespace pp {
 
-class FileRef_Dev;
+class FileRef;
 class Instance;
 
 class URLRequestInfo : public Resource {
@@ -25,9 +25,9 @@ class URLRequestInfo : public Resource {
   // PPB_URLRequestInfo methods:
   bool SetProperty(PP_URLRequestProperty property, const Var& value);
   bool AppendDataToBody(const void* data, uint32_t len);
-  bool AppendFileToBody(const FileRef_Dev& file_ref,
+  bool AppendFileToBody(const FileRef& file_ref,
                         PP_Time expected_last_modified_time = 0);
-  bool AppendFileRangeToBody(const FileRef_Dev& file_ref,
+  bool AppendFileRangeToBody(const FileRef& file_ref,
                              int64_t start_offset,
                              int64_t length,
                              PP_Time expected_last_modified_time = 0);

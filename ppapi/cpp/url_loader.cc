@@ -7,7 +7,7 @@
 #include "ppapi/c/ppb_url_loader.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/cpp/completion_callback.h"
-#include "ppapi/cpp/dev/file_ref_dev.h"
+#include "ppapi/cpp/file_ref.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"

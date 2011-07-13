@@ -1,10 +1,10 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ppapi/cpp/url_response_info.h"
 
-#include "ppapi/cpp/dev/file_ref_dev.h"
+#include "ppapi/cpp/file_ref.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
 
@@ -34,12 +34,12 @@ Var URLResponseInfo::GetProperty(PP_URLResponseProperty property) const {
                                                                property));
 }
 
-FileRef_Dev URLResponseInfo::GetBodyAsFileRef() const {
+FileRef URLResponseInfo::GetBodyAsFileRef() const {
   if (!has_interface<PPB_URLResponseInfo>())
-    return FileRef_Dev();
-  return FileRef_Dev(FileRef_Dev::PassRef(),
-                     get_interface<PPB_URLResponseInfo>()->GetBodyAsFileRef(
-                         pp_resource()));
+    return FileRef();
+  return FileRef(FileRef::PassRef(),
+                 get_interface<PPB_URLResponseInfo>()->GetBodyAsFileRef(
+                     pp_resource()));
 }
 
 }  // namespace pp

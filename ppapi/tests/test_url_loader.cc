@@ -8,16 +8,16 @@
 #include <string.h>
 #include <string>
 
-#include "ppapi/c/dev/ppb_file_io_dev.h"
-#include "ppapi/c/dev/ppb_file_io_trusted_dev.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/dev/ppb_url_util_dev.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/c/ppb_file_io.h"
 #include "ppapi/c/ppb_url_loader.h"
-#include "ppapi/cpp/dev/file_io_dev.h"
-#include "ppapi/cpp/dev/file_ref_dev.h"
-#include "ppapi/cpp/dev/file_system_dev.h"
+#include "ppapi/c/trusted/ppb_file_io_trusted.h"
 #include "ppapi/cpp/dev/url_util_dev.h"
+#include "ppapi/cpp/file_io.h"
+#include "ppapi/cpp/file_ref.h"
+#include "ppapi/cpp/file_system.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/url_loader.h"
@@ -34,8 +34,8 @@ TestURLLoader::TestURLLoader(TestingInstance* instance)
 }
 
 bool TestURLLoader::Init() {
-  file_io_trusted_interface_ = static_cast<const PPB_FileIOTrusted_Dev*>(
-      pp::Module::Get()->GetBrowserInterface(PPB_FILEIOTRUSTED_DEV_INTERFACE));
+  file_io_trusted_interface_ = static_cast<const PPB_FileIOTrusted*>(
+      pp::Module::Get()->GetBrowserInterface(PPB_FILEIOTRUSTED_INTERFACE));
   if (!file_io_trusted_interface_) {
     instance_->AppendError("FileIOTrusted interface not available");
   }
@@ -57,7 +57,7 @@ void TestURLLoader::RunTest() {
   RUN_TEST_FORCEASYNC_AND_NOT(AbortCalls);
 }
 
-std::string TestURLLoader::ReadEntireFile(pp::FileIO_Dev* file_io,
+std::string TestURLLoader::ReadEntireFile(pp::FileIO* file_io,
                                           std::string* data) {
   TestCompletionCallback callback(instance_->pp_instance(), force_async_);
   char buf[256];
@@ -221,7 +221,7 @@ std::string TestURLLoader::TestStreamToFile() {
   if (status_code != 200)
     return "Unexpected HTTP status code";
 
-  pp::FileRef_Dev body(response_info.GetBodyAsFileRef());
+  pp::FileRef body(response_info.GetBodyAsFileRef());
   if (body.is_null())
     return "URLResponseInfo::GetBody returned null";
 
@@ -233,7 +233,7 @@ std::string TestURLLoader::TestStreamToFile() {
   if (rv != PP_OK)
     return ReportError("URLLoader::FinishStreamingToFile", rv);
 
-  pp::FileIO_Dev reader(instance_);
+  pp::FileIO reader(instance_);
   rv = reader.Open(body, PP_FILEOPENFLAG_READ, callback);
   if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
     return ReportError("FileIO::Open force_async", rv);

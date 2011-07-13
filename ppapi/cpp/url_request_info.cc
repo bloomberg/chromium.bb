@@ -1,10 +1,10 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ppapi/cpp/url_request_info.h"
 
-#include "ppapi/cpp/dev/file_ref_dev.h"
+#include "ppapi/cpp/file_ref.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
@@ -45,7 +45,7 @@ bool URLRequestInfo::AppendDataToBody(const void* data, uint32_t len) {
       pp_resource(), data, len));
 }
 
-bool URLRequestInfo::AppendFileToBody(const FileRef_Dev& file_ref,
+bool URLRequestInfo::AppendFileToBody(const FileRef& file_ref,
                                       PP_Time expected_last_modified_time) {
   if (!has_interface<PPB_URLRequestInfo>())
     return false;
@@ -59,7 +59,7 @@ bool URLRequestInfo::AppendFileToBody(const FileRef_Dev& file_ref,
 }
 
 bool URLRequestInfo::AppendFileRangeToBody(
-    const FileRef_Dev& file_ref,
+    const FileRef& file_ref,
     int64_t start_offset,
     int64_t length,
     PP_Time expected_last_modified_time) {

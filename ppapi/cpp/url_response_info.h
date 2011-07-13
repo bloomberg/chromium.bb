@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@
 
 namespace pp {
 
-class FileRef_Dev;
+class FileRef;
 
 class URLResponseInfo : public Resource {
  public:
@@ -27,7 +27,7 @@ class URLResponseInfo : public Resource {
 
   // PPB_URLResponseInfo methods:
   Var GetProperty(PP_URLResponseProperty property) const;
-  FileRef_Dev GetBodyAsFileRef() const;
+  FileRef GetBodyAsFileRef() const;
 
   // Convenient helpers for getting properties:
   Var GetURL() const {

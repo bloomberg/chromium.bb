@@ -9,10 +9,10 @@
 
 #include "ppapi/tests/test_case.h"
 
-struct PPB_FileIOTrusted_Dev;
+struct PPB_FileIOTrusted;
 
 namespace pp {
-class FileIO_Dev;
+class FileIO;
 class URLLoader;
 class URLRequestInfo;
 }
@@ -26,7 +26,7 @@ class TestURLLoader : public TestCase {
   virtual void RunTest();
 
  private:
-  std::string ReadEntireFile(pp::FileIO_Dev* file_io, std::string* data);
+  std::string ReadEntireFile(pp::FileIO* file_io, std::string* data);
   std::string ReadEntireResponseBody(pp::URLLoader* loader,
                                      std::string* body);
   std::string LoadAndCompareBody(const pp::URLRequestInfo& request,
@@ -45,7 +45,7 @@ class TestURLLoader : public TestCase {
   std::string TestAuditURLRedirect();
   std::string TestAbortCalls();
 
-  const PPB_FileIOTrusted_Dev* file_io_trusted_interface_;
+  const PPB_FileIOTrusted* file_io_trusted_interface_;
 };
 
 #endif  // PAPPI_TESTS_TEST_URL_LOADER_H_
