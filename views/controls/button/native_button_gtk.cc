@@ -251,7 +251,7 @@ void NativeRadioButtonGtk::ViewHierarchyChanged(bool is_add,
       container = container->parent();
     if (container) {
       Views other;
-      container->GetViewsWithGroup(native_button_->GetGroup(), &other);
+      container->GetViewsInGroup(native_button_->GetGroup(), &other);
       for (Views::iterator i(other.begin()); i != other.end(); ++i) {
         if (*i != native_button_) {
           if ((*i)->GetClassName() != NativeRadioButton::kViewClassName) {

@@ -110,8 +110,7 @@ bool FocusManager::OnKeyEvent(const KeyEvent& event) {
        key_code == ui::VKEY_LEFT || key_code == ui::VKEY_RIGHT)) {
     bool next = (key_code == ui::VKEY_RIGHT || key_code == ui::VKEY_DOWN);
     View::Views views;
-    focused_view_->parent()->GetViewsWithGroup(focused_view_->GetGroup(),
-                                               &views);
+    focused_view_->parent()->GetViewsInGroup(focused_view_->GetGroup(), &views);
     View::Views::const_iterator i(
         std::find(views.begin(), views.end(), focused_view_));
     DCHECK(i != views.end());

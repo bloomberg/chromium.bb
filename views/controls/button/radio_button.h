@@ -26,7 +26,7 @@ class NativeRadioButton : public NativeCheckbox {
 
   // Overridden from View:
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
-  virtual View* GetSelectedViewForGroup(int group_id) OVERRIDE;
+  virtual View* GetSelectedViewForGroup(int group) OVERRIDE;
   virtual bool IsGroupFocusTraversable() const OVERRIDE;
   virtual void OnMouseReleased(const MouseEvent& event) OVERRIDE;
   virtual void OnMouseCaptureLost() OVERRIDE;
@@ -59,7 +59,7 @@ class RadioButton : public Checkbox {
   // Overridden from View:
   virtual std::string GetClassName() const OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
-  virtual View* GetSelectedViewForGroup(int group_id) OVERRIDE;
+  virtual View* GetSelectedViewForGroup(int group) OVERRIDE;
   virtual bool IsGroupFocusTraversable() const OVERRIDE;
   virtual void OnFocus() OVERRIDE;
 

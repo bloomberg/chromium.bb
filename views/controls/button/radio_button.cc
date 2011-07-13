@@ -43,7 +43,7 @@ void NativeRadioButton::SetChecked(bool checked) {
       container = container->parent();
     if (container) {
       Views other;
-      container->GetViewsWithGroup(GetGroup(), &other);
+      container->GetViewsInGroup(GetGroup(), &other);
       for (Views::iterator i(other.begin()); i != other.end(); ++i) {
         if (*i != this) {
           if ((*i)->GetClassName() != kViewClassName) {
@@ -68,9 +68,9 @@ void NativeRadioButton::GetAccessibleState(ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_RADIOBUTTON;
 }
 
-View* NativeRadioButton::GetSelectedViewForGroup(int group_id) {
+View* NativeRadioButton::GetSelectedViewForGroup(int group) {
   Views views;
-  GetWidget()->GetRootView()->GetViewsWithGroup(group_id, &views);
+  GetWidget()->GetRootView()->GetViewsInGroup(group, &views);
   if (views.empty())
     return NULL;
 
@@ -140,7 +140,7 @@ void RadioButton::SetChecked(bool checked) {
       container = container->parent();
     if (container) {
       Views other;
-      container->GetViewsWithGroup(GetGroup(), &other);
+      container->GetViewsInGroup(GetGroup(), &other);
       for (Views::iterator i(other.begin()); i != other.end(); ++i) {
         if (*i != this) {
           if ((*i)->GetClassName() != kViewClassName) {
@@ -166,9 +166,9 @@ void RadioButton::GetAccessibleState(ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_RADIOBUTTON;
 }
 
-View* RadioButton::GetSelectedViewForGroup(int group_id) {
+View* RadioButton::GetSelectedViewForGroup(int group) {
   Views views;
-  GetWidget()->GetRootView()->GetViewsWithGroup(group_id, &views);
+  GetWidget()->GetRootView()->GetViewsInGroup(group, &views);
   if (views.empty())
     return NULL;
 

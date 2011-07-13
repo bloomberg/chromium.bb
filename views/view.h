@@ -383,14 +383,14 @@ class View : public AcceleratorTarget {
   // GetSelectedViewForGroup()) is focused.
   virtual bool IsGroupFocusTraversable() const;
 
-  // Fills the provided vector with all the available views which belong to the
-  // provided group.
-  void GetViewsWithGroup(int group_id, Views* out);
+  // Fills |views| with all the available views which belong to the provided
+  // |group|.
+  void GetViewsInGroup(int group, Views* views);
 
-  // Return the View that is currently selected in the specified group.
+  // Returns the View that is currently selected in |group|.
   // The default implementation simply returns the first View found for that
   // group.
-  virtual View* GetSelectedViewForGroup(int group_id);
+  virtual View* GetSelectedViewForGroup(int group);
 
   // Coordinate conversion -----------------------------------------------------
 

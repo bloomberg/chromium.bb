@@ -613,17 +613,17 @@ bool View::IsGroupFocusTraversable() const {
   return true;
 }
 
-void View::GetViewsWithGroup(int group_id, Views* out) {
-  if (group_ == group_id)
-    out->push_back(this);
+void View::GetViewsInGroup(int group, Views* views) {
+  if (group_ == group)
+    views->push_back(this);
 
   for (int i = 0, count = child_count(); i < count; ++i)
-    GetChildViewAt(i)->GetViewsWithGroup(group_id, out);
+    GetChildViewAt(i)->GetViewsInGroup(group, views);
 }
 
-View* View::GetSelectedViewForGroup(int group_id) {
+View* View::GetSelectedViewForGroup(int group) {
   Views views;
-  GetWidget()->GetRootView()->GetViewsWithGroup(group_id, &views);
+  GetWidget()->GetRootView()->GetViewsInGroup(group, &views);
   return views.empty() ? NULL : views[0];
 }
 

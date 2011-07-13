@@ -2290,6 +2290,20 @@ TEST_F(ViewTest, GetViewByID) {
 
   EXPECT_EQ(NULL, v1.GetViewByID(kV5ID));  // No V5 exists.
   EXPECT_EQ(NULL, v2.GetViewByID(kV1ID));  // It can get only from child views.
+
+  const int kGroup = 1;
+  v3.SetGroup(kGroup);
+  v4.SetGroup(kGroup);
+
+  View::Views views;
+  v1.GetViewsInGroup(kGroup, &views);
+  EXPECT_EQ(2U, views.size());
+
+  View::Views::const_iterator i(std::find(views.begin(), views.end(), &v3));
+  EXPECT_NE(views.end(), i);
+
+  i = std::find(views.begin(), views.end(), &v4);
+  EXPECT_NE(views.end(), i);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
