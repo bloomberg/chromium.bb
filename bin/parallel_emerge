@@ -950,6 +950,11 @@ def EmergeWorker(task_queue, job_queue, emerge, package_db):
         emerge.scheduler_graph.mergelist = install_list
         scheduler = Scheduler(settings, trees, mtimedb, opts, spinner,
             favorites=emerge.favorites, graph_config=emerge.scheduler_graph)
+
+        # Enable blocker handling even though we're in --nodeps mode. This
+        # allows us to unmerge the blocker after we've merged the replacement.
+        scheduler._opts_ignore_blockers = frozenset()
+
         retcode = scheduler.merge()
       except Exception:
         traceback.print_exc(file=output)
