@@ -109,24 +109,35 @@ namespace {
 const char* const kChromePaths[] = {
   chrome::kChromeUIAppCacheInternalsHost,
   chrome::kChromeUIBlobInternalsHost,
+  chrome::kChromeUIBookmarksHost,
+  chrome::kChromeUICacheHost,
   chrome::kChromeUIChromeURLsHost,
   chrome::kChromeUICrashesHost,
   chrome::kChromeUICreditsHost,
   chrome::kChromeUIDNSHost,
+  chrome::kChromeUIDownloadsHost,
+  chrome::kChromeUIExtensionsHost,
   chrome::kChromeUIFlagsHost,
   chrome::kChromeUIFlashHost,
   chrome::kChromeUIGpuInternalsHost,
   chrome::kChromeUIHistogramsHost,
+  chrome::kChromeUIHistoryHost,
+  chrome::kChromeUIIPCHost,
   chrome::kChromeUIMemoryHost,
   chrome::kChromeUINetInternalsHost,
   chrome::kChromeUINetworkViewCacheHost,
+  chrome::kChromeUINewTabHost,
   chrome::kChromeUIPluginsHost,
+  chrome::kChromeUIPrintHost,
+  chrome::kChromeUIQuotaInternalsHost,
+  chrome::kChromeUISessionsHost,
   chrome::kChromeUISettingsHost,
   chrome::kChromeUIStatsHost,
   chrome::kChromeUISyncInternalsHost,
   chrome::kChromeUITCMallocHost,
   chrome::kChromeUITermsHost,
   chrome::kChromeUIVersionHost,
+  chrome::kChromeUIWorkersHost,
 #ifdef TRACK_ALL_TASK_OBJECTS
   chrome::kChromeUITaskManagerHost,
 #endif
@@ -134,12 +145,21 @@ const char* const kChromePaths[] = {
   chrome::kChromeUIConflictsHost,
 #endif
 #if defined(OS_LINUX)
+  chrome::kChromeUILinuxProxyConfigHost,
   chrome::kChromeUISandboxHost,
 #endif
 #if defined(OS_CHROMEOS)
-  chrome::kChromeUINetworkHost,
+  chrome::kChromeUIActiveDownloadsHost,
+  chrome::kChromeUIChooseMobileNetworkHost,
   chrome::kChromeUICryptohomeHost,
+  chrome::kChromeUIImageBurnerHost,
+  chrome::kChromeUIKeyboardOverlayHost,
+  chrome::kChromeUILoginHost,
+  chrome::kChromeUINetworkHost,
+  chrome::kChromeUIOobeHost,
   chrome::kChromeUIOSCreditsHost,
+  chrome::kChromeUIProxySettingsHost,
+  chrome::kChromeUISystemInfoHost,
 #endif
 };
 
