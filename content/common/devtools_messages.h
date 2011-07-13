@@ -57,30 +57,30 @@ typedef std::map<std::string, std::string> DevToolsRuntimeProperties;
 // These are messages sent from DevToolsAgent to DevToolsClient through the
 // browser.
 // WebKit-level transport.
-IPC_MESSAGE_CONTROL1(DevToolsClientMsg_DispatchOnInspectorFrontend,
-                     std::string /* message */)
+IPC_MESSAGE_ROUTED1(DevToolsClientMsg_DispatchOnInspectorFrontend,
+                    std::string /* message */)
 
 // Legacy debugger output message.
-IPC_MESSAGE_CONTROL1(DevToolsClientMsg_DebuggerOutput,
-                     std::string /* message */)
+IPC_MESSAGE_ROUTED1(DevToolsClientMsg_DebuggerOutput,
+                    std::string /* message */)
 
 
 //-----------------------------------------------------------------------------
 // These are messages sent from DevToolsClient to DevToolsAgent through the
 // browser.
 // Tells agent that there is a client host connected to it.
-IPC_MESSAGE_CONTROL1(DevToolsAgentMsg_Attach,
-                     DevToolsRuntimeProperties /* properties */)
+IPC_MESSAGE_ROUTED1(DevToolsAgentMsg_Attach,
+                    DevToolsRuntimeProperties /* properties */)
 
 // Tells agent that there is no longer a client host connected to it.
-IPC_MESSAGE_CONTROL0(DevToolsAgentMsg_Detach)
+IPC_MESSAGE_ROUTED0(DevToolsAgentMsg_Detach)
 
 // Tells agent that the front-end has been loaded
-IPC_MESSAGE_CONTROL0(DevToolsAgentMsg_FrontendLoaded)
+IPC_MESSAGE_ROUTED0(DevToolsAgentMsg_FrontendLoaded)
 
 // WebKit-level transport.
-IPC_MESSAGE_CONTROL1(DevToolsAgentMsg_DispatchOnInspectorBackend,
-                     std::string /* message */)
+IPC_MESSAGE_ROUTED1(DevToolsAgentMsg_DispatchOnInspectorBackend,
+                    std::string /* message */)
 
 // WebKit-level transport for messages from WorkerInspectorController to
 // InspectorController.
@@ -91,13 +91,13 @@ IPC_MESSAGE_ROUTED1(DevToolsAgentMsg_DispatchMessageFromWorker,
 // be handled on IO thread(while all other devtools messages are handled in
 // the render thread) to allow executing the commands when v8 is on a
 // breakpoint.
-IPC_MESSAGE_CONTROL1(DevToolsAgentMsg_DebuggerCommand,
+IPC_MESSAGE_ROUTED1(DevToolsAgentMsg_DebuggerCommand,
                      std::string  /* command */)
 
 // Inspect element with the given coordinates.
-IPC_MESSAGE_CONTROL2(DevToolsAgentMsg_InspectElement,
-                     int /* x */,
-                     int /* y */)
+IPC_MESSAGE_ROUTED2(DevToolsAgentMsg_InspectElement,
+                    int /* x */,
+                    int /* y */)
 
 
 //-----------------------------------------------------------------------------

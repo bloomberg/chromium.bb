@@ -337,7 +337,7 @@ void DevToolsHttpProtocolHandler::OnWebSocketRequestUI(
       client_host);
   manager->ForwardToDevToolsAgent(
       client_host,
-      DevToolsAgentMsg_FrontendLoaded());
+      DevToolsAgentMsg_FrontendLoaded(MSG_ROUTING_NONE));
 
   AcceptWebSocket(connection_id, request);
 }
@@ -353,7 +353,7 @@ void DevToolsHttpProtocolHandler::OnWebSocketMessageUI(
   DevToolsManager* manager = DevToolsManager::GetInstance();
   manager->ForwardToDevToolsAgent(
       it->second,
-      DevToolsAgentMsg_DispatchOnInspectorBackend(data));
+      DevToolsAgentMsg_DispatchOnInspectorBackend(MSG_ROUTING_NONE, data));
 }
 
 void DevToolsHttpProtocolHandler::OnCloseUI(int connection_id) {

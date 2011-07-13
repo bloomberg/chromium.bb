@@ -126,7 +126,7 @@ ExtensionDevToolsClientHost::ExtensionDevToolsClientHost(
       this);
   DevToolsManager::GetInstance()->ForwardToDevToolsAgent(
       this,
-      DevToolsAgentMsg_FrontendLoaded());
+      DevToolsAgentMsg_FrontendLoaded(MSG_ROUTING_NONE));
 }
 
 ExtensionDevToolsClientHost::~ExtensionDevToolsClientHost() {
@@ -191,7 +191,8 @@ void ExtensionDevToolsClientHost::SendMessageToBackend(
   base::JSONWriter::Write(&protocol_request, false, &json_args);
   DevToolsManager::GetInstance()->ForwardToDevToolsAgent(
       this,
-      DevToolsAgentMsg_DispatchOnInspectorBackend(json_args));
+      DevToolsAgentMsg_DispatchOnInspectorBackend(MSG_ROUTING_NONE,
+                                                  json_args));
 }
 
 void ExtensionDevToolsClientHost::Observe(

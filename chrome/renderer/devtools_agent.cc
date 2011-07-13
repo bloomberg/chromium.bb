@@ -96,13 +96,14 @@ void DevToolsAgent::sendMessageToInspectorFrontend(
     const WebKit::WebString& message) {
   Send(new DevToolsHostMsg_ForwardToClient(
       routing_id(),
-      DevToolsClientMsg_DispatchOnInspectorFrontend(message.utf8())));
+      DevToolsClientMsg_DispatchOnInspectorFrontend(MSG_ROUTING_NONE,
+                                                    message.utf8())));
 }
 
 void DevToolsAgent::sendDebuggerOutput(const WebKit::WebString& data) {
   Send(new DevToolsHostMsg_ForwardToClient(
       routing_id(),
-      DevToolsClientMsg_DebuggerOutput(data.utf8())));
+      DevToolsClientMsg_DebuggerOutput(MSG_ROUTING_NONE, data.utf8())));
 }
 
 int DevToolsAgent::hostIdentifier() {

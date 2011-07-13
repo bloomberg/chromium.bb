@@ -81,7 +81,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionDevToolsBrowserTest, FLAKY_TimelineApi) {
   // Test onPageEvent event.
   result = false;
 
-  DevToolsClientMsg_DispatchOnInspectorFrontend pageEventMessage("");
+  DevToolsClientMsg_DispatchOnInspectorFrontend pageEventMessage(
+      MSG_ROUTING_NONE,
+      "");
   devtools_client_host->SendMessageToClient(pageEventMessage);
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
       host->render_view_host(), L"", L"testReceivePageEvent()", &result));

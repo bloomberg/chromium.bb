@@ -298,7 +298,8 @@ bool DebuggerRemoteService::DispatchDebuggerCommand(int tab_uid,
   content->GetDictionary(kDataKey, &v8_command_value);
   base::JSONWriter::Write(v8_command_value, false, &v8_command);
   manager->ForwardToDevToolsAgent(
-      client_host, DevToolsAgentMsg_DebuggerCommand(v8_command));
+      client_host, DevToolsAgentMsg_DebuggerCommand(MSG_ROUTING_NONE,
+                                                    v8_command));
   // Do not send the response right now, as the JSON will be received from
   // the V8 debugger asynchronously.
   return false;

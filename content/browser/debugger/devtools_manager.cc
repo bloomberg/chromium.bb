@@ -115,9 +115,10 @@ void DevToolsManager::RuntimePropertyChanged(RenderViewHost* inspected_rvh,
 void DevToolsManager::SendInspectElement(RenderViewHost* inspected_rvh,
                                          int x,
                                          int y) {
-  IPC::Message* m = new DevToolsAgentMsg_InspectElement(x, y);
-  m->set_routing_id(inspected_rvh->routing_id());
-  inspected_rvh->Send(m);
+  inspected_rvh->Send(new DevToolsAgentMsg_InspectElement(
+      inspected_rvh->routing_id(),
+      x,
+      y));
 }
 
 void DevToolsManager::ClientHostClosing(DevToolsClientHost* host) {
@@ -234,17 +235,16 @@ void DevToolsManager::SendAttachToAgent(RenderViewHost* inspected_rvh) {
       properties = DevToolsRuntimeProperties(it->second.begin(),
                                             it->second.end());
     }
-    IPC::Message* m = new DevToolsAgentMsg_Attach(properties);
-    m->set_routing_id(inspected_rvh->routing_id());
-    inspected_rvh->Send(m);
+    inspected_rvh->Send(new DevToolsAgentMsg_Attach(
+        inspected_rvh->routing_id(),
+        properties));
   }
 }
 
 void DevToolsManager::SendDetachToAgent(RenderViewHost* inspected_rvh) {
   if (inspected_rvh) {
-    IPC::Message* m = new DevToolsAgentMsg_Detach();
-    m->set_routing_id(inspected_rvh->routing_id());
-    inspected_rvh->Send(m);
+    inspected_rvh->Send(new DevToolsAgentMsg_Detach(
+        inspected_rvh->routing_id()));
   }
 }
 

@@ -49,15 +49,17 @@ bool DevToolsClient::OnMessageReceived(const IPC::Message& message) {
 }
 
 void DevToolsClient::sendFrontendLoaded() {
-  SendToAgent(DevToolsAgentMsg_FrontendLoaded());
+  SendToAgent(DevToolsAgentMsg_FrontendLoaded(MSG_ROUTING_NONE));
 }
 
 void DevToolsClient::sendMessageToBackend(const WebString& message)  {
-  SendToAgent(DevToolsAgentMsg_DispatchOnInspectorBackend(message.utf8()));
+  SendToAgent(DevToolsAgentMsg_DispatchOnInspectorBackend(MSG_ROUTING_NONE,
+                                                          message.utf8()));
 }
 
 void DevToolsClient::sendDebuggerCommandToAgent(const WebString& command) {
-  SendToAgent(DevToolsAgentMsg_DebuggerCommand(command.utf8()));
+  SendToAgent(DevToolsAgentMsg_DebuggerCommand(MSG_ROUTING_NONE,
+                                               command.utf8()));
 }
 
 void DevToolsClient::activateWindow() {
