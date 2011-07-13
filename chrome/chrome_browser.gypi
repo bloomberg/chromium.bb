@@ -3755,6 +3755,8 @@
             'browser/password_manager/native_backend_kwallet_x.cc',
             'browser/password_manager/native_backend_kwallet_x.h',
             'browser/platform_util_linux.cc',
+            'browser/printing/print_dialog_gtk.cc',
+            'browser/printing/print_dialog_gtk.h',
             'browser/upgrade_detector_impl.cc',
             'browser/upgrade_detector_impl.h',
           ],
